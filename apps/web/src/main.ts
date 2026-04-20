@@ -1,4 +1,5 @@
 import './styles.css'
+import { hydrateTwitchHeatmap } from './live/twitch-heatmap'
 
 type PageKind =
   | 'portal'
@@ -350,6 +351,13 @@ const app = document.querySelector<HTMLDivElement>('#app')
 if (!app) throw new Error('#app not found')
 
 app.innerHTML = renderPage(page)
+void initPage(page)
+
+async function initPage(kind: PageKind): Promise<void> {
+  if (kind === 'twitch-heatmap') {
+    await hydrateTwitchHeatmap()
+  }
+}
 
 function renderPage(kind: PageKind): string {
   if (kind === 'portal') return renderPortal()
