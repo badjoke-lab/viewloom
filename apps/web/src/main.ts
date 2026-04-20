@@ -33,9 +33,23 @@ type SiteMeta = {
   shellStatus: string
   intro: string
   featureLead: string
+  overviewTitle: string
+  overviewBody: string
   railTitle: string
   railItems: string[]
-  supportCards: { label: string; title: string; body: string }[]
+  supportCards: SupportCard[]
+}
+
+type SummaryCard = {
+  label: string
+  value: string
+  body: string
+}
+
+type SupportCard = {
+  label: string
+  title: string
+  body: string
 }
 
 type FeatureMeta = {
@@ -47,7 +61,9 @@ type FeatureMeta = {
   chartBody: string
   rightRailTitle: string
   rightRailItems: string[]
-  supportCards: { label: string; title: string; body: string }[]
+  supportCards: SupportCard[]
+  summaryCards: SummaryCard[]
+  railCards: SupportCard[]
 }
 
 const cards: SiteCard[] = [
@@ -83,7 +99,11 @@ const siteMeta: Record<SiteKey, SiteMeta> = {
     shellStatus: 'Shell ready for real Twitch mounting',
     intro:
       'A dedicated Twitch observatory that keeps Now, Today, and Compare separate while staying dense and readable.',
-    featureLead: 'Open the current live field, read the daily landscape, or inspect the strongest current battle.',
+    featureLead:
+      'Open the current live field, read the daily landscape, or inspect the strongest current battle.',
+    overviewTitle: 'Overview stage',
+    overviewBody:
+      'This surface will become the top-page overview stage: strong enough to make the home feel like a product surface, but not a replacement for the feature pages.',
     railTitle: 'Current build focus',
     railItems: [
       'Shared shell first',
@@ -117,7 +137,11 @@ const siteMeta: Record<SiteKey, SiteMeta> = {
     shellStatus: 'Shell ready for real Kick mounting',
     intro:
       'A parallel Kick observatory with the same layout grammar, but its own color identity, status surface, and future collector path.',
-    featureLead: 'Move through Heatmap, Day Flow, and Battle Lines without mixing platform scope or role boundaries.',
+    featureLead:
+      'Move through Heatmap, Day Flow, and Battle Lines without mixing platform scope or role boundaries.',
+    overviewTitle: 'Overview stage',
+    overviewBody:
+      'This surface will become the top-page overview stage for Kick, with the same shell logic as Twitch but a clearly separate provider identity.',
     railTitle: 'Current build focus',
     railItems: [
       'Same shell, separate provider identity',
@@ -166,6 +190,40 @@ const featureMeta: Record<FeatureKey, FeatureMeta> = {
         title: 'Selected stream detail',
         body: 'The right rail will hold selected stream reading, source notes, and legend instead of crowding the field.',
       },
+      {
+        label: 'State',
+        title: 'Honest activity notes',
+        body: 'Sampled, unavailable, and quiet states will be shown clearly without overwriting viewers or momentum as the main read.',
+      },
+    ],
+    summaryCards: [
+      {
+        label: 'Role',
+        value: 'Now',
+        body: 'This page answers who is big, rising, or active right now.',
+      },
+      {
+        label: 'Main field',
+        value: 'Treemap',
+        body: 'A dense board rather than rows of pseudo-tiles.',
+      },
+      {
+        label: 'Signals',
+        value: '3',
+        body: 'Viewers, momentum, and activity stay distinct.',
+      },
+    ],
+    railCards: [
+      {
+        label: 'Selected stream',
+        title: 'Focus state placeholder',
+        body: 'The production rail will show selected stream name, current viewers, momentum, activity, and open-stream action.',
+      },
+      {
+        label: 'Legend',
+        title: 'Color and state guide',
+        body: 'Rising, falling, stable, sampled, unavailable, and stale notes will sit here as a compact reading guide.',
+      },
     ],
   },
   'day-flow': {
@@ -189,6 +247,40 @@ const featureMeta: Record<FeatureKey, FeatureMeta> = {
         label: 'Support',
         title: 'Time focus lives outside the chart',
         body: 'Ranking at a selected moment, strongest momentum, and highest activity stay in the supporting areas.',
+      },
+      {
+        label: 'Modes',
+        title: 'Volume and share stay separate',
+        body: 'The shell keeps both readings visible without blending them into a single ambiguous metric.',
+      },
+    ],
+    summaryCards: [
+      {
+        label: 'Role',
+        value: 'Today',
+        body: 'This page reads the daily landscape instead of the current instant or a single battle.',
+      },
+      {
+        label: 'Bucketing',
+        value: '5m+',
+        body: 'Time buckets stay visible and deliberate in the control row.',
+      },
+      {
+        label: 'Focus',
+        value: 'Time',
+        body: 'Selected time and current ranking live in the rail, not on the terrain itself.',
+      },
+    ],
+    railCards: [
+      {
+        label: 'Time focus',
+        title: 'Selected window placeholder',
+        body: 'The production rail will show selected time ranking, strongest momentum, and highest activity or unavailable state.',
+      },
+      {
+        label: 'Detail',
+        title: 'Detail panel placeholder',
+        body: 'The right rail will keep today-reading support close without crowding the main terrain.',
       },
     ],
   },
@@ -214,6 +306,40 @@ const featureMeta: Record<FeatureKey, FeatureMeta> = {
         title: 'Reversal strip and battle feed',
         body: 'Pair events, feed notes, and focus state belong below the chart so the main stage stays readable.',
       },
+      {
+        label: 'State',
+        title: 'Recommended then custom',
+        body: 'The shell is built to show a primary battle first, then let the user move into a controlled custom state.',
+      },
+    ],
+    summaryCards: [
+      {
+        label: 'Role',
+        value: 'Compare',
+        body: 'This page reads a live battle instead of the whole field or the whole day.',
+      },
+      {
+        label: 'Entry',
+        value: 'Recommended',
+        body: 'Initial reading starts from a suggested battle rather than a blank chart.',
+      },
+      {
+        label: 'Events',
+        value: 'Reversal',
+        body: 'Reversal, rise, and pressure are first-class support reads.',
+      },
+    ],
+    railCards: [
+      {
+        label: 'Current battle',
+        title: 'Primary pair placeholder',
+        body: 'The rail will hold current gap, last reversal, fastest challenger, and the current pressure read.',
+      },
+      {
+        label: 'State',
+        title: 'Recommended vs custom',
+        body: 'The page will make it clear whether the user is in system-selected battle mode or a custom battle state.',
+      },
     ],
   },
 }
@@ -221,9 +347,7 @@ const featureMeta: Record<FeatureKey, FeatureMeta> = {
 const page = ((document.body.dataset.page as PageKind | undefined) ?? 'portal')
 const app = document.querySelector<HTMLDivElement>('#app')
 
-if (!app) {
-  throw new Error('#app not found')
-}
+if (!app) throw new Error('#app not found')
 
 app.innerHTML = renderPage(page)
 
@@ -361,19 +485,11 @@ function renderSiteHome(kind: SiteKey): string {
           </aside>
         </section>
 
-        <section class="feature-grid feature-grid--top">
-          ${(['heatmap', 'day-flow', 'battle-lines'] as FeatureKey[])
-            .map((feature) => renderFeatureCard(site, featureMeta[feature]))
-            .join('')}
-        </section>
-
         <section class="feature-layout feature-layout--top">
           <article class="chart-stage chart-stage--overview">
             <div class="chart-stage__label">Site overview</div>
-            <h2>Main stage placeholder</h2>
-            <p>
-              This surface will become the top-page overview stage: strong enough to make the home feel like a product surface, but not a replacement for the feature pages.
-            </p>
+            <h2>${site.overviewTitle}</h2>
+            <p>${site.overviewBody}</p>
             <div class="chart-placeholder chart-placeholder--overview">
               <div class="chart-placeholder__grid"></div>
               <div class="chart-placeholder__shape chart-placeholder__shape--1"></div>
@@ -398,8 +514,14 @@ function renderSiteHome(kind: SiteKey): string {
           </aside>
         </section>
 
+        <section class="feature-grid feature-grid--top">
+          ${(['heatmap', 'day-flow', 'battle-lines'] as FeatureKey[])
+            .map((feature) => renderFeatureCard(site, featureMeta[feature]))
+            .join('')}
+        </section>
+
         <section class="support-grid">
-          ${site.supportCards.map((card) => renderSupportCard(card)).join('')}
+          ${site.supportCards.map(renderSupportCard).join('')}
         </section>
       </main>
     </div>
@@ -417,13 +539,33 @@ function renderFeatureCard(site: SiteMeta, feature: FeatureMeta): string {
   `
 }
 
-function renderSupportCard(card: { label: string; title: string; body: string }): string {
+function renderSupportCard(card: SupportCard): string {
   return `
     <article class="support-card">
       <div class="support-card__label">${card.label}</div>
       <h2>${card.title}</h2>
       <p>${card.body}</p>
     </article>
+  `
+}
+
+function renderSummaryCard(card: SummaryCard): string {
+  return `
+    <article class="summary-card">
+      <div class="summary-card__label">${card.label}</div>
+      <div class="summary-card__value">${card.value}</div>
+      <p>${card.body}</p>
+    </article>
+  `
+}
+
+function renderRailDetailCard(card: SupportCard): string {
+  return `
+    <section class="rail-card rail-card--detail">
+      <div class="rail-card__label">${card.label}</div>
+      <h2>${card.title}</h2>
+      <p>${card.body}</p>
+    </section>
   `
 }
 
@@ -456,8 +598,12 @@ function renderFeaturePage(kind: Exclude<PageKind, 'portal' | 'twitch' | 'kick'>
           ${renderSiteSubnav(site.key, feature.key)}
         </div>
 
+        <section class="summary-grid">
+          ${feature.summaryCards.map(renderSummaryCard).join('')}
+        </section>
+
         <section class="feature-layout">
-          <article class="chart-stage">
+          <article class="chart-stage chart-stage--feature">
             <div class="chart-stage__label">${feature.label}</div>
             <h2>${feature.chartTitle}</h2>
             <p>${feature.chartBody}</p>
@@ -476,11 +622,12 @@ function renderFeaturePage(kind: Exclude<PageKind, 'portal' | 'twitch' | 'kick'>
                 ${feature.rightRailItems.map((item) => `<li>${item}</li>`).join('')}
               </ul>
             </section>
+            ${feature.railCards.map(renderRailDetailCard).join('')}
           </aside>
         </section>
 
         <section class="support-grid support-grid--feature">
-          ${feature.supportCards.map((card) => renderSupportCard(card)).join('')}
+          ${feature.supportCards.map(renderSupportCard).join('')}
         </section>
       </main>
     </div>
