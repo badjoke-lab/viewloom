@@ -1,4 +1,5 @@
 import './styles.css'
+import { initHeatmapLayout } from './live/heatmap-layout'
 import { hydrateTwitchHeatmap } from './live/twitch-heatmap'
 
 type PageKind =
@@ -355,6 +356,7 @@ void initPage(page)
 
 async function initPage(kind: PageKind): Promise<void> {
   if (kind === 'twitch-heatmap') {
+    initHeatmapLayout()
     await hydrateTwitchHeatmap()
   }
 }
@@ -582,6 +584,43 @@ function renderFeaturePage(kind: Exclude<PageKind, 'portal' | 'twitch' | 'kick'>
   const featureKey = rest.join('-') as FeatureKey
   const site = siteMeta[siteKey]
   const feature = featureMeta[featureKey]
+  const isLiveTwitchHeatmap = site.key === 'twitch' && feature.key === 'heatmap'
+
+  const featureLayoutSection = `
+    <section class="feature-layout ${isLiveTwitchHeatmap ? 'feature-layout--heatmap' : ''}">
+      <article class="chart-stage chart-stage--feature">
+        <div class="chart-stage__label">${feature.label}</div>
+        <h2>${feature.chartTitle}</h2>
+        <p>${feature.chartBody}</p>
+        <div class="chart-placeholder chart-placeholder--${feature.key}">
+          <div class="chart-placeholder__grid"></div>
+          <div class="chart-placeholder__shape chart-placeholder__shape--1"></div>
+          <div class="chart-placeholder__shape chart-placeholder__shape--2"></div>
+          <div class="chart-placeholder__shape chart-placeholder__shape--3"></div>
+        </div>
+      </article>
+
+      <aside class="rail-stack">
+        <section class="rail-card">
+          <div class="rail-card__label">${feature.rightRailTitle}</div>
+          <ul class="rail-list">
+            ${feature.rightRailItems.map((item) => `<li>${item}</li>`).join('')}
+          </ul>
+        </section>
+        ${feature.railCards.map(renderRailDetailCard).join('')}
+      </aside>
+    </section>
+  `
+
+  const supportGridSection = `
+    <section class="support-grid support-grid--feature">
+      ${feature.supportCards.map(renderSupportCard).join('')}
+    </section>
+  `
+
+  const layoutBody = isLiveTwitchHeatmap
+    ? `<div id="heatmap-layout-root" class="heatmap-layout-root" data-layout-mode="split">${featureLayoutSection}${supportGridSection}</div>`
+    : `${featureLayoutSection}${supportGridSection}`
 
   return `
     <div class="page-shell page-shell--site ${site.accentClass}">
@@ -606,39 +645,30 @@ function renderFeaturePage(kind: Exclude<PageKind, 'portal' | 'twitch' | 'kick'>
           ${renderSiteSubnav(site.key, feature.key)}
         </div>
 
+        ${isLiveTwitchHeatmap ? renderHeatmapViewModeBar() : ''}
+
         <section class="summary-grid">
           ${feature.summaryCards.map(renderSummaryCard).join('')}
         </section>
 
-        <section class="feature-layout">
-          <article class="chart-stage chart-stage--feature">
-            <div class="chart-stage__label">${feature.label}</div>
-            <h2>${feature.chartTitle}</h2>
-            <p>${feature.chartBody}</p>
-            <div class="chart-placeholder chart-placeholder--${feature.key}">
-              <div class="chart-placeholder__grid"></div>
-              <div class="chart-placeholder__shape chart-placeholder__shape--1"></div>
-              <div class="chart-placeholder__shape chart-placeholder__shape--2"></div>
-              <div class="chart-placeholder__shape chart-placeholder__shape--3"></div>
-            </div>
-          </article>
-
-          <aside class="rail-stack">
-            <section class="rail-card">
-              <div class="rail-card__label">${feature.rightRailTitle}</div>
-              <ul class="rail-list">
-                ${feature.rightRailItems.map((item) => `<li>${item}</li>`).join('')}
-              </ul>
-            </section>
-            ${feature.railCards.map(renderRailDetailCard).join('')}
-          </aside>
-        </section>
-
-        <section class="support-grid support-grid--feature">
-          ${feature.supportCards.map(renderSupportCard).join('')}
-        </section>
+        ${layoutBody}
       </main>
     </div>
+  `
+}
+
+function renderHeatmapViewModeBar(): string {
+  return `
+    <section class="view-mode-bar" aria-label="Heatmap layout mode">
+      <div>
+        <h2 class="view-mode-bar__title">Heatmap layout</h2>
+        <p class="view-mode-bar__body">Split view keeps the map beside the rail. Theater mode expands the map to full width and moves the rail below it instead of hiding it.</p>
+      </div>
+      <div class="view-mode-bar__actions">
+        <button type="button" class="layout-toggle is-active" data-layout-mode="split" aria-pressed="true">Split view</button>
+        <button type="button" class="layout-toggle" data-layout-mode="theater" aria-pressed="false">Theater mode</button>
+      </div>
+    </section>
   `
 }
 
