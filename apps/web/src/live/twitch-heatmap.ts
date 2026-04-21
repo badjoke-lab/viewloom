@@ -1,7 +1,7 @@
 import {
   createHeatmapViewport,
   type HeatmapViewportHandle,
-} from './heatmap-viewport'
+} from './heatmap-viewport-v2'
 
 type TwitchHeatmapApiResponse = {
   ok: boolean
@@ -563,7 +563,7 @@ function renderHeatmapShell(input: {
     <div class="heatmap-live-shell">
       <div class="heatmap-live-toolbar">
         <div>
-          <div class="heatmap-live-toolbar__hint">Scroll to zoom · drag to pan · reset to fit</div>
+          <div class="heatmap-live-toolbar__hint">Scroll to zoom · double-click to drill in · Shift + double-click to step out</div>
           <div class="heatmap-live-toolbar__stats">
             <span>${latest.total_viewers.toLocaleString()} viewers</span>
             <span>${layouts.length} streams</span>
