@@ -1,3 +1,8 @@
+import {
+  createHeatmapViewport,
+  type HeatmapViewportHandle,
+} from './heatmap-viewport'
+
 type TwitchHeatmapApiResponse = {
   ok: boolean
   provider: string
@@ -29,28 +34,228 @@ type TwitchHeatmapApiResponse = {
   } | null
 }
 
+type HeatmapItem = {
+  channelLogin: string
+  displayName: string
+  viewers: number
+  momentum: number
+  activity: number
+}
+
 type TwitchHeatmapPayload = {
   provider: string
   bucketMinute: string
-  items: Array<{
-    channelLogin: string
-    displayName: string
-    viewers: number
-    momentum: number
-    activity: number
-  }>
+  items: HeatmapItem[]
 }
 
+type TileLayout = HeatmapItem & {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+const CANVAS_WIDTH = 1600
+const CANVAS_HEIGHT = 960
+let viewportHandle: HeatmapViewportHandle | null = null
+
+const HEATMAP_CSS = `
+.chart-placeholder--heatmap.heatmap-live-stage {
+  min-height: 560px;
+  padding: 0;
+  background: linear-gradient(180deg, rgba(7, 16, 30, 0.98), rgba(9, 18, 33, 0.92));
+}
+.heatmap-live-shell {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 560px;
+  height: 100%;
+}
+.heatmap-live-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+}
+.heatmap-live-toolbar__hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.heatmap-live-toolbar__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+.heatmap-live-toolbar__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.heatmap-live-toolbar__zoom {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  font-weight: 700;
+}
+.heatmap-live-toolbar__button {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  cursor: pointer;
+}
+.heatmap-live-toolbar__button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.heatmap-live-viewport {
+  position: relative;
+  overflow: hidden;
+  min-height: 500px;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.heatmap-live-viewport.is-panning {
+  cursor: grabbing;
+}
+.heatmap-live-canvas {
+  position: absolute;
+  inset: 0 auto auto 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.heatmap-live-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  padding: 24px;
+  color: var(--muted);
+  text-align: center;
+}
+.heatmap-live-tile {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 22px;
+  padding: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+}
+.heatmap-live-tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 32%);
+  pointer-events: none;
+}
+.heatmap-live-tile > * {
+  position: relative;
+}
+.heatmap-live-tile.is-up {
+  background: linear-gradient(180deg, rgba(10, 38, 31, 0.98), rgba(8, 22, 20, 0.9));
+  border-color: rgba(94, 234, 154, 0.28);
+}
+.heatmap-live-tile.is-down {
+  background: linear-gradient(180deg, rgba(45, 19, 29, 0.98), rgba(25, 12, 18, 0.92));
+  border-color: rgba(251, 113, 133, 0.28);
+}
+.heatmap-live-tile.is-flat {
+  background: linear-gradient(180deg, rgba(19, 30, 49, 0.98), rgba(12, 20, 35, 0.92));
+  border-color: rgba(148, 163, 184, 0.18);
+}
+.heatmap-live-tile[data-density='small'] {
+  padding: 12px;
+  gap: 8px;
+}
+.heatmap-live-tile__eyebrow {
+  color: var(--muted);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.heatmap-live-tile__title {
+  margin: 0;
+  font-size: 1.16rem;
+  line-height: 1.15;
+}
+.heatmap-live-tile__viewers {
+  font-size: 2.15rem;
+  line-height: 1;
+  font-weight: 800;
+}
+.heatmap-live-tile__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.heatmap-live-tile__activity {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.heatmap-live-tile[data-density='medium'] .heatmap-live-tile__viewers {
+  font-size: 1.65rem;
+}
+.heatmap-live-tile[data-density='medium'] .heatmap-live-tile__title {
+  font-size: 1rem;
+}
+.heatmap-live-tile[data-density='small'] .heatmap-live-tile__title {
+  font-size: 0.92rem;
+}
+.heatmap-live-tile[data-density='small'] .heatmap-live-tile__viewers,
+.heatmap-live-tile[data-density='small'] .heatmap-live-tile__activity {
+  display: none;
+}
+.heatmap-live-tile[data-density='small'] .heatmap-live-tile__meta {
+  font-size: 0.82rem;
+  gap: 8px;
+}
+@media (max-width: 760px) {
+  .chart-placeholder--heatmap.heatmap-live-stage,
+  .heatmap-live-shell {
+    min-height: 420px;
+  }
+  .heatmap-live-toolbar {
+    grid-template-columns: 1fr;
+  }
+  .heatmap-live-toolbar__actions {
+    justify-content: space-between;
+  }
+  .heatmap-live-viewport,
+  .heatmap-live-empty {
+    min-height: 360px;
+  }
+}
+`
+
 export async function hydrateTwitchHeatmap(): Promise<void> {
+  ensureStyles()
+
   const stage = document.querySelector<HTMLElement>('.chart-placeholder--heatmap')
   if (!stage) return
 
-  stage.style.minHeight = '360px'
-  stage.style.display = 'grid'
-  stage.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))'
-  stage.style.gap = '14px'
-  stage.style.padding = '18px'
-  stage.innerHTML = '<div style="grid-column:1 / -1; color: var(--muted);">Loading Twitch heatmap snapshot…</div>'
+  stage.classList.add('heatmap-live-stage')
+  viewportHandle?.destroy()
+  viewportHandle = null
+  stage.innerHTML = renderLoadingShell()
 
   try {
     const response = await fetch('/api/twitch-heatmap')
@@ -58,67 +263,234 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
 
     const data = (await response.json()) as TwitchHeatmapApiResponse
     if (!data.latest) {
-      stage.innerHTML = '<div style="grid-column:1 / -1; color: var(--muted);">No Twitch snapshots yet.</div>'
+      stage.innerHTML = renderEmptyShell('No Twitch snapshots yet.')
       return
     }
 
     const payload = JSON.parse(data.latest.payload_json) as TwitchHeatmapPayload
-    const items = payload.items ?? []
+    const items = [...(payload.items ?? [])].sort((a, b) => b.viewers - a.viewers)
     if (!items.length) {
-      stage.innerHTML = '<div style="grid-column:1 / -1; color: var(--muted);">Snapshot exists, but payload items are empty.</div>'
+      stage.innerHTML = renderEmptyShell('Snapshot exists, but payload items are empty.')
       return
     }
 
-    const total = data.latest.total_viewers || 0
+    const layouts = buildTreemap(items, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+    stage.innerHTML = renderHeatmapShell({
+      latest: data.latest,
+      status: data.status,
+      layouts,
+    })
 
-    stage.innerHTML = items
-      .map((item) => {
-        const share = total > 0 ? ((item.viewers / total) * 100).toFixed(1) : '0.0'
-        const momentum = `${item.momentum > 0 ? '+' : ''}${(item.momentum * 100).toFixed(1)}%`
-        const activity = `${(item.activity * 100).toFixed(1)}% activity`
-        const border =
-          item.momentum > 0.02
-            ? 'rgba(120,255,180,0.35)'
-            : item.momentum < -0.02
-              ? 'rgba(255,120,160,0.35)'
-              : 'rgba(255,255,255,0.10)'
+    const viewport = stage.querySelector<HTMLElement>('#heatmap-live-viewport')
+    const canvas = stage.querySelector<HTMLElement>('#heatmap-live-canvas')
+    const zoomLabel = stage.querySelector<HTMLElement>('#heatmap-live-zoom')
+    const resetButton = stage.querySelector<HTMLButtonElement>('#heatmap-live-reset')
 
-        return `
-          <article style="
-            min-height: 180px;
-            border-radius: 20px;
-            padding: 18px;
-            border: 1px solid ${border};
-            background: linear-gradient(180deg, rgba(18,28,48,0.95), rgba(11,19,34,0.92));
-            box-shadow: 0 18px 48px rgba(0,0,0,0.25);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-          ">
-            <div>
-              <div style="font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);">
-                ${escapeHtml(item.channelLogin)}
-              </div>
-              <div style="margin-top: 10px; font-size: 1.2rem; font-weight: 700; line-height: 1.2;">
-                ${escapeHtml(item.displayName)}
-              </div>
-            </div>
-            <div>
-              <div style="font-size: 2rem; font-weight: 800; line-height: 1;">${item.viewers.toLocaleString()}</div>
-              <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 0.9rem;">
-                <span>${share}% share</span>
-                <span>${momentum}</span>
-              </div>
-              <div style="margin-top: 8px; color: var(--muted); font-size: 0.9rem;">${activity}</div>
-            </div>
-          </article>
-        `
-      })
-      .join('')
+    if (!viewport || !canvas || !zoomLabel || !resetButton) return
+
+    viewportHandle = createHeatmapViewport({
+      viewport,
+      canvas,
+      zoomLabel,
+      resetButton,
+    })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
-    stage.innerHTML = `<div style="grid-column:1 / -1; color: var(--muted);">Failed to load Twitch heatmap API: ${escapeHtml(message)}</div>`
+    stage.innerHTML = renderEmptyShell(`Failed to load Twitch heatmap API: ${escapeHtml(message)}`)
   }
+}
+
+function renderLoadingShell(): string {
+  return `
+    <div class="heatmap-live-shell">
+      <div class="heatmap-live-toolbar">
+        <div>
+          <div class="heatmap-live-toolbar__hint">Preparing Twitch heat field…</div>
+        </div>
+        <div class="heatmap-live-toolbar__actions">
+          <span class="heatmap-live-toolbar__zoom">100%</span>
+          <button class="heatmap-live-toolbar__button" type="button" disabled>Reset zoom</button>
+        </div>
+      </div>
+      <div class="heatmap-live-empty">Loading Twitch heatmap snapshot…</div>
+    </div>
+  `
+}
+
+function renderEmptyShell(message: string): string {
+  return `
+    <div class="heatmap-live-shell">
+      <div class="heatmap-live-toolbar">
+        <div>
+          <div class="heatmap-live-toolbar__hint">Scroll to zoom · drag to pan · reset to fit</div>
+        </div>
+        <div class="heatmap-live-toolbar__actions">
+          <span class="heatmap-live-toolbar__zoom">100%</span>
+          <button class="heatmap-live-toolbar__button" type="button" disabled>Reset zoom</button>
+        </div>
+      </div>
+      <div class="heatmap-live-empty">${message}</div>
+    </div>
+  `
+}
+
+function renderHeatmapShell(input: {
+  latest: NonNullable<TwitchHeatmapApiResponse['latest']>
+  status: TwitchHeatmapApiResponse['status']
+  layouts: TileLayout[]
+}): string {
+  const { latest, status, layouts } = input
+
+  return `
+    <div class="heatmap-live-shell">
+      <div class="heatmap-live-toolbar">
+        <div>
+          <div class="heatmap-live-toolbar__hint">Scroll to zoom · drag to pan · reset to fit</div>
+          <div class="heatmap-live-toolbar__stats">
+            <span>${latest.total_viewers.toLocaleString()} viewers</span>
+            <span>${layouts.length} streams</span>
+            <span>${status?.status ?? 'unknown'} · ${escapeHtml(latest.source_mode)}</span>
+            <span>${escapeHtml(formatIso(latest.collected_at))}</span>
+          </div>
+        </div>
+        <div class="heatmap-live-toolbar__actions">
+          <span id="heatmap-live-zoom" class="heatmap-live-toolbar__zoom">100%</span>
+          <button id="heatmap-live-reset" class="heatmap-live-toolbar__button" type="button">Reset zoom</button>
+        </div>
+      </div>
+      <div id="heatmap-live-viewport" class="heatmap-live-viewport">
+        <div
+          id="heatmap-live-canvas"
+          class="heatmap-live-canvas"
+          data-canvas-width="${CANVAS_WIDTH}"
+          data-canvas-height="${CANVAS_HEIGHT}"
+          style="width:${CANVAS_WIDTH}px;height:${CANVAS_HEIGHT}px"
+        >
+          ${layouts.map((layout) => renderTile(layout, latest.total_viewers)).join('')}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+function renderTile(layout: TileLayout, totalViewers: number): string {
+  const share = totalViewers > 0 ? (layout.viewers / totalViewers) * 100 : 0
+  const momentumClass = layout.momentum > 0.02 ? 'is-up' : layout.momentum < -0.02 ? 'is-down' : 'is-flat'
+  const momentumValue = `${layout.momentum > 0 ? '+' : ''}${(layout.momentum * 100).toFixed(1)}%`
+  const activityValue = `${(layout.activity * 100).toFixed(1)}% activity`
+  const density = getDensity(layout.width, layout.height)
+  const haloAlpha = Math.min(0.32, 0.06 + layout.activity * 1.9)
+  const haloColor = layout.momentum > 0.02 ? `rgba(74, 222, 128, ${haloAlpha})` : layout.momentum < -0.02 ? `rgba(251, 113, 133, ${haloAlpha})` : `rgba(148, 163, 184, ${haloAlpha * 0.8})`
+
+  return `
+    <article
+      class="heatmap-live-tile ${momentumClass}"
+      data-density="${density}"
+      style="left:${layout.x}px;top:${layout.y}px;width:${layout.width}px;height:${layout.height}px;box-shadow:0 18px 48px rgba(0,0,0,0.24), 0 0 0 1px rgba(255,255,255,0.02) inset, 0 0 ${16 + layout.activity * 46}px ${haloColor};"
+    >
+      <div>
+        <div class="heatmap-live-tile__eyebrow">${escapeHtml(layout.channelLogin)}</div>
+        <h3 class="heatmap-live-tile__title">${escapeHtml(layout.displayName)}</h3>
+      </div>
+      <div>
+        <div class="heatmap-live-tile__viewers">${layout.viewers.toLocaleString()}</div>
+        <div class="heatmap-live-tile__meta">
+          <span>${share.toFixed(1)}% share</span>
+          <span>${momentumValue}</span>
+        </div>
+        <div class="heatmap-live-tile__activity">${activityValue}</div>
+      </div>
+    </article>
+  `
+}
+
+function buildTreemap(items: HeatmapItem[], x: number, y: number, width: number, height: number): TileLayout[] {
+  const safeItems = items.filter((item) => item.viewers > 0)
+  const layouts: TileLayout[] = []
+  layoutGroup(safeItems, x, y, width, height, layouts)
+  return layouts
+}
+
+function layoutGroup(items: HeatmapItem[], x: number, y: number, width: number, height: number, out: TileLayout[]): void {
+  if (!items.length || width <= 0 || height <= 0) return
+
+  if (items.length === 1) {
+    out.push({
+      ...items[0],
+      x: Math.round(x),
+      y: Math.round(y),
+      width: Math.max(1, Math.round(width)),
+      height: Math.max(1, Math.round(height)),
+    })
+    return
+  }
+
+  const total = items.reduce((sum, item) => sum + item.viewers, 0)
+  let firstWeight = 0
+  let splitIndex = 1
+
+  for (let index = 0; index < items.length; index += 1) {
+    firstWeight += items[index].viewers
+    splitIndex = index + 1
+    if (firstWeight >= total / 2) break
+  }
+
+  const primary = items.slice(0, splitIndex)
+  const secondary = items.slice(splitIndex)
+  if (!secondary.length) {
+    out.push({
+      ...items[0],
+      x: Math.round(x),
+      y: Math.round(y),
+      width: Math.max(1, Math.round(width)),
+      height: Math.max(1, Math.round(height)),
+    })
+    return
+  }
+
+  const ratio = primary.reduce((sum, item) => sum + item.viewers, 0) / total
+  const gap = Math.min(10, Math.max(4, Math.min(width, height) * 0.015))
+
+  if (width >= height) {
+    const primaryWidth = Math.max(1, width * ratio - gap / 2)
+    const secondaryWidth = Math.max(1, width - primaryWidth - gap)
+    layoutGroup(primary, x, y, primaryWidth, height, out)
+    layoutGroup(secondary, x + primaryWidth + gap, y, secondaryWidth, height, out)
+    return
+  }
+
+  const primaryHeight = Math.max(1, height * ratio - gap / 2)
+  const secondaryHeight = Math.max(1, height - primaryHeight - gap)
+  layoutGroup(primary, x, y, width, primaryHeight, out)
+  layoutGroup(secondary, x, y + primaryHeight + gap, width, secondaryHeight, out)
+}
+
+function getDensity(width: number, height: number): 'large' | 'medium' | 'small' {
+  const area = width * height
+  const minEdge = Math.min(width, height)
+  if (area > 145000 && minEdge > 190) return 'large'
+  if (area > 52000 && minEdge > 110) return 'medium'
+  return 'small'
+}
+
+function formatIso(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function ensureStyles(): void {
+  if (document.getElementById('twitch-heatmap-live-style')) return
+
+  const style = document.createElement('style')
+  style.id = 'twitch-heatmap-live-style'
+  style.textContent = HEATMAP_CSS
+  document.head.appendChild(style)
 }
 
 function escapeHtml(input: string): string {
