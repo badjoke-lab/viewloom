@@ -1,4 +1,9 @@
-import type { FeatureMeta } from '../types/page-models'
+type HeatmapShellFeature = {
+  key: 'heatmap'
+  label: string
+  chartTitle: string
+  chartBody: string
+}
 
 export function renderHeatmapLiveSummaryGrid(): string {
   return `
@@ -25,7 +30,7 @@ export function renderHeatmapLiveSummaryGrid(): string {
   `
 }
 
-export function renderHeatmapLiveFeatureLayout(feature: FeatureMeta): string {
+export function renderHeatmapLiveFeatureLayout(feature: HeatmapShellFeature): string {
   return `
     <section class="feature-layout feature-layout--heatmap">
       <article class="chart-stage chart-stage--feature">
