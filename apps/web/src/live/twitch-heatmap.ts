@@ -58,6 +58,7 @@ type TileLayout = HeatmapItem & {
 const CANVAS_WIDTH = 1600
 const CANVAS_HEIGHT = 960
 let viewportHandle: HeatmapViewportHandle | null = null
+let selectedStreamLogin: string | null = null
 
 const HEATMAP_CSS = `
 .chart-placeholder--heatmap.heatmap-live-stage {
@@ -157,6 +158,8 @@ const HEATMAP_CSS = `
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  cursor: pointer;
+  transition: box-shadow 160ms ease, border-color 160ms ease;
 }
 .heatmap-live-tile::before {
   content: '';
@@ -167,6 +170,12 @@ const HEATMAP_CSS = `
 }
 .heatmap-live-tile > * {
   position: relative;
+}
+.heatmap-live-tile:focus-visible,
+.heatmap-live-tile.is-selected {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.42);
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.06) inset, 0 0 0 2px rgba(255, 255, 255, 0.16);
 }
 .heatmap-live-tile.is-up {
   background: linear-gradient(180deg, rgba(10, 38, 31, 0.98), rgba(8, 22, 20, 0.9));
@@ -228,6 +237,49 @@ const HEATMAP_CSS = `
   font-size: 0.82rem;
   gap: 8px;
 }
+.heatmap-live-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+.heatmap-live-detail-stat {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.heatmap-live-detail-stat__label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.76rem;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.heatmap-live-detail-stat__value {
+  display: block;
+  font-weight: 700;
+}
+.heatmap-live-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  margin-top: 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+}
+.heatmap-live-list {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+.heatmap-live-list li + li {
+  margin-top: 10px;
+}
 @media (max-width: 760px) {
   .chart-placeholder--heatmap.heatmap-live-stage,
   .heatmap-live-shell {
@@ -243,6 +295,9 @@ const HEATMAP_CSS = `
   .heatmap-live-empty {
     min-height: 360px;
   }
+  .heatmap-live-detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 `
 
@@ -256,6 +311,7 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
   viewportHandle?.destroy()
   viewportHandle = null
   stage.innerHTML = renderLoadingShell()
+  renderPendingSurfaceState()
 
   try {
     const response = await fetch('/api/twitch-heatmap')
@@ -264,6 +320,7 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
     const data = (await response.json()) as TwitchHeatmapApiResponse
     if (!data.latest) {
       stage.innerHTML = renderEmptyShell('No Twitch snapshots yet.')
+      renderUnavailableSurfaceState('No snapshot yet', 'D1 is connected, but there is no latest snapshot to read yet.')
       return
     }
 
@@ -271,6 +328,7 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
     const items = [...(payload.items ?? [])].sort((a, b) => b.viewers - a.viewers)
     if (!items.length) {
       stage.innerHTML = renderEmptyShell('Snapshot exists, but payload items are empty.')
+      renderUnavailableSurfaceState('Empty payload', 'The latest snapshot exists, but it contains no live items.')
       return
     }
 
@@ -294,10 +352,154 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
       zoomLabel,
       resetButton,
     })
+
+    bindSelection(canvas, items, data.latest, data.status)
+    populateLiveSurface(items, data.latest, data.status)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
     stage.innerHTML = renderEmptyShell(`Failed to load Twitch heatmap API: ${escapeHtml(message)}`)
+    renderUnavailableSurfaceState('API error', 'The Heatmap page rendered, but the Twitch heatmap API request failed.')
   }
+}
+
+function bindSelection(
+  canvas: HTMLElement,
+  items: HeatmapItem[],
+  latest: NonNullable<TwitchHeatmapApiResponse['latest']>,
+  status: TwitchHeatmapApiResponse['status'],
+): void {
+  const tiles = Array.from(canvas.querySelectorAll<HTMLElement>('[data-stream-login]'))
+  const itemMap = new Map(items.map((item) => [item.channelLogin, item]))
+
+  tiles.forEach((tile) => {
+    tile.addEventListener('click', () => {
+      const login = tile.dataset.streamLogin
+      if (!login) return
+      const item = itemMap.get(login)
+      if (!item) return
+      setSelectedTile(canvas, item, latest, status)
+    })
+
+    tile.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return
+      event.preventDefault()
+      const login = tile.dataset.streamLogin
+      if (!login) return
+      const item = itemMap.get(login)
+      if (!item) return
+      setSelectedTile(canvas, item, latest, status)
+    })
+  })
+
+  const initial = itemMap.get(selectedStreamLogin ?? '') ?? items[0]
+  setSelectedTile(canvas, initial, latest, status)
+}
+
+function setSelectedTile(
+  canvas: HTMLElement,
+  item: HeatmapItem,
+  latest: NonNullable<TwitchHeatmapApiResponse['latest']>,
+  status: TwitchHeatmapApiResponse['status'],
+): void {
+  selectedStreamLogin = item.channelLogin
+
+  const tiles = Array.from(canvas.querySelectorAll<HTMLElement>('[data-stream-login]'))
+  tiles.forEach((tile) => {
+    const selected = tile.dataset.streamLogin === item.channelLogin
+    tile.classList.toggle('is-selected', selected)
+    tile.setAttribute('aria-pressed', selected ? 'true' : 'false')
+  })
+
+  updateSelectedStreamDetail(item, latest, status)
+}
+
+function populateLiveSurface(
+  items: HeatmapItem[],
+  latest: NonNullable<TwitchHeatmapApiResponse['latest']>,
+  status: TwitchHeatmapApiResponse['status'],
+): void {
+  const strongestMomentum = [...items].sort((a, b) => b.momentum - a.momentum)[0] ?? items[0]
+  const highestActivity = [...items].sort((a, b) => b.activity - a.activity)[0] ?? items[0]
+  const movers = [...items].sort((a, b) => b.momentum - a.momentum).slice(0, 3)
+  const activityLeaders = [...items].sort((a, b) => b.activity - a.activity).slice(0, 3)
+
+  setText('#heatmap-summary-streams .summary-card__value', String(items.length))
+  setText(
+    '#heatmap-summary-streams p',
+    `${latest.stream_count.toLocaleString()} observed live streams in the latest Twitch snapshot.`,
+  )
+  setText('#heatmap-summary-viewers .summary-card__value', latest.total_viewers.toLocaleString())
+  setText(
+    '#heatmap-summary-viewers p',
+    `${latest.covered_pages} page${latest.covered_pages === 1 ? '' : 's'} covered${latest.has_more ? ' with more available' : ''}.`,
+  )
+  setText('#heatmap-summary-momentum .summary-card__value', strongestMomentum.displayName)
+  setText(
+    '#heatmap-summary-momentum p',
+    `${formatSignedPercent(strongestMomentum.momentum)} momentum · ${strongestMomentum.viewers.toLocaleString()} viewers right now.`,
+  )
+  setText('#heatmap-summary-activity .summary-card__value', highestActivity.displayName)
+  setText(
+    '#heatmap-summary-activity p',
+    `${formatPercent(highestActivity.activity)} activity signal · source ${latest.source_mode}.`,
+  )
+
+  setText('#heatmap-status-title', `${status?.status ?? 'unknown'} · ${latest.source_mode}`)
+  setText(
+    '#heatmap-status-body',
+    `${formatIso(latest.collected_at)} · ${latest.total_viewers.toLocaleString()} viewers · ${items.length} visible streams.`,
+  )
+
+  setHtml(
+    '#heatmap-legend-body',
+    `${
+      'Area tracks viewers. Tile color tracks momentum. Glow strength reflects activity signal when available.'
+    }`,
+  )
+
+  setHtml('#heatmap-support-movers', renderList(movers, (item) => `${escapeHtml(item.displayName)} · ${formatSignedPercent(item.momentum)} momentum`))
+  setHtml('#heatmap-support-activity', renderList(activityLeaders, (item) => `${escapeHtml(item.displayName)} · ${formatPercent(item.activity)} activity`))
+  setHtml(
+    '#heatmap-support-coverage',
+    renderList(
+      [
+        `${latest.covered_pages} page${latest.covered_pages === 1 ? '' : 's'} covered`,
+        latest.has_more ? 'More pages remain outside current hot snapshot' : 'Current hot snapshot exhausted visible pages',
+        `Latest bucket ${escapeHtml(latest.bucket_minute)}`,
+      ],
+      (text) => text,
+    ),
+  )
+}
+
+function updateSelectedStreamDetail(
+  item: HeatmapItem,
+  latest: NonNullable<TwitchHeatmapApiResponse['latest']>,
+  status: TwitchHeatmapApiResponse['status'],
+): void {
+  const share = latest.total_viewers > 0 ? item.viewers / latest.total_viewers : 0
+
+  setText('#heatmap-detail-title', item.displayName)
+  setText(
+    '#heatmap-detail-body',
+    `${item.channelLogin} is selected. Read its current audience, momentum, and activity without leaving the heat field.`,
+  )
+  setText('#heatmap-detail-viewers', item.viewers.toLocaleString())
+  setText('#heatmap-detail-share', `${(share * 100).toFixed(1)}%`)
+  setText('#heatmap-detail-momentum', formatSignedPercent(item.momentum))
+  setText('#heatmap-detail-activity', formatPercent(item.activity))
+
+  const link = document.querySelector<HTMLAnchorElement>('#heatmap-detail-link')
+  if (link) {
+    link.href = `https://www.twitch.tv/${encodeURIComponent(item.channelLogin)}`
+    link.textContent = `Open ${item.displayName}`
+  }
+
+  setText('#heatmap-status-title', `${status?.status ?? 'unknown'} · ${latest.source_mode}`)
+  setText(
+    '#heatmap-status-body',
+    `${formatIso(latest.collected_at)} · bucket ${latest.bucket_minute} · ${item.displayName} selected.`,
+  )
 }
 
 function renderLoadingShell(): string {
@@ -386,6 +588,11 @@ function renderTile(layout: TileLayout, totalViewers: number): string {
     <article
       class="heatmap-live-tile ${momentumClass}"
       data-density="${density}"
+      data-stream-login="${escapeHtml(layout.channelLogin)}"
+      tabindex="0"
+      role="button"
+      aria-pressed="false"
+      aria-label="${escapeHtml(layout.displayName)} ${layout.viewers.toLocaleString()} viewers"
       style="left:${layout.x}px;top:${layout.y}px;width:${layout.width}px;height:${layout.height}px;box-shadow:0 18px 48px rgba(0,0,0,0.24), 0 0 0 1px rgba(255,255,255,0.02) inset, 0 0 ${16 + layout.activity * 46}px ${haloColor};"
     >
       <div>
@@ -473,6 +680,60 @@ function getDensity(width: number, height: number): 'large' | 'medium' | 'small'
   return 'small'
 }
 
+function renderPendingSurfaceState(): void {
+  setText('#heatmap-status-title', 'Waiting for heatmap API')
+  setText('#heatmap-status-body', 'The rail and support blocks will switch to live Twitch values once the latest snapshot loads.')
+  setText('#heatmap-detail-title', 'No stream selected')
+  setText('#heatmap-detail-body', 'Select a tile to inspect its current viewers, momentum, activity, and stream link.')
+  setText('#heatmap-detail-viewers', '—')
+  setText('#heatmap-detail-share', '—')
+  setText('#heatmap-detail-momentum', '—')
+  setText('#heatmap-detail-activity', '—')
+  setText('#heatmap-summary-streams .summary-card__value', '—')
+  setText('#heatmap-summary-viewers .summary-card__value', '—')
+  setText('#heatmap-summary-momentum .summary-card__value', '—')
+  setText('#heatmap-summary-activity .summary-card__value', '—')
+  setText('#heatmap-summary-streams p', 'Waiting for live Twitch snapshot.')
+  setText('#heatmap-summary-viewers p', 'Waiting for live Twitch snapshot.')
+  setText('#heatmap-summary-momentum p', 'Waiting for live Twitch snapshot.')
+  setText('#heatmap-summary-activity p', 'Waiting for live Twitch snapshot.')
+  setHtml('#heatmap-legend-body', 'Area tracks viewers. Tile color tracks momentum. Glow strength reflects activity signal when available.')
+  setHtml('#heatmap-support-movers', '<p>Waiting for momentum ranking.</p>')
+  setHtml('#heatmap-support-activity', '<p>Waiting for activity ranking.</p>')
+  setHtml('#heatmap-support-coverage', '<p>Waiting for coverage note.</p>')
+
+  const link = document.querySelector<HTMLAnchorElement>('#heatmap-detail-link')
+  if (link) {
+    link.removeAttribute('href')
+    link.textContent = 'Open stream'
+  }
+}
+
+function renderUnavailableSurfaceState(title: string, body: string): void {
+  setText('#heatmap-status-title', title)
+  setText('#heatmap-status-body', body)
+  setText('#heatmap-detail-title', title)
+  setText('#heatmap-detail-body', body)
+  setText('#heatmap-detail-viewers', '—')
+  setText('#heatmap-detail-share', '—')
+  setText('#heatmap-detail-momentum', '—')
+  setText('#heatmap-detail-activity', '—')
+}
+
+function renderList<T>(items: T[], render: (item: T) => string): string {
+  return `<ul class="heatmap-live-list">${items.map((item) => `<li>${render(item)}</li>`).join('')}</ul>`
+}
+
+function setText(selector: string, value: string): void {
+  const element = document.querySelector<HTMLElement>(selector)
+  if (element) element.textContent = value
+}
+
+function setHtml(selector: string, value: string): void {
+  const element = document.querySelector<HTMLElement>(selector)
+  if (element) element.innerHTML = value
+}
+
 function formatIso(value: string): string {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
@@ -482,6 +743,14 @@ function formatIso(value: string): string {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+function formatSignedPercent(value: number): string {
+  return `${value > 0 ? '+' : ''}${(value * 100).toFixed(1)}%`
+}
+
+function formatPercent(value: number): string {
+  return `${(value * 100).toFixed(1)}%`
 }
 
 function ensureStyles(): void {
