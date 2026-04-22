@@ -30,7 +30,7 @@ const PROVIDER = 'twitch'
 const PAGE_SIZE = 100
 const MAX_PAGES = 3
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env, fetch }) => {
+export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const token = readToken(request)
   if (!token || token !== env.INGEST_TOKEN) {
     return Response.json({ ok: false, error: 'unauthorized' }, { status: 401 })
@@ -40,10 +40,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, fetch })
   await markCollectorAttempt(env, PROVIDER, attemptedAt)
 
   try {
-    const accessToken = await getAppAccessToken(fetch, env.TWITCH_CLIENT_ID, env.TWITCH_CLIENT_SECRET)
+    const accessToken = await getAppAccessToken(env.TWITCH_CLIENT_ID, env.TWITCH_CLIENT_SECRET)
     const previousItems = await readLatestSnapshotItems(env, PROVIDER)
     const previousMap = new Map(previousItems.map((item) => [item.channelLogin, item]))
-    const { items, coveredPages, hasMore } = await collectTopStreams(fetch, env.TWITCH_CLIENT_ID, accessToken, previousMap)
+    const { items, coveredPages, hasMore } = await collectTopStreams(env.TWITCH_CLIENT_ID, accessToken, previousMap)
 
     if (!items.length) {
       throw new Error('twitch_streams_empty')
@@ -79,7 +79,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, fetch })
   }
 }
 
-async function getAppAccessToken(fetchFn: typeof fetch, clientId: string, clientSecret: string): Promise<string> {
+async function getAppAccessToken(clientId: string, clientSecret: string): Promise<string> {
   if (!clientId || !clientSecret) {
     throw new Error('twitch_credentials_missing')
   }
@@ -89,7 +89,7 @@ async function getAppAccessToken(fetchFn: typeof fetch, clientId: string, client
   url.searchParams.set('client_secret', clientSecret)
   url.searchParams.set('grant_type', 'client_credentials')
 
-  const response = await fetchFn(url.toString(), { method: 'POST' })
+  const response = await fetch(url.toString(), { method: 'POST' })
   if (!response.ok) {
     throw new Error(`twitch_token_http_${response.status}`)
   }
@@ -103,7 +103,6 @@ async function getAppAccessToken(fetchFn: typeof fetch, clientId: string, client
 }
 
 async function collectTopStreams(
-  fetchFn: typeof fetch,
   clientId: string,
   accessToken: string,
   previousMap: Map<string, StoredHeatmapItem>,
@@ -118,7 +117,7 @@ async function collectTopStreams(
     url.searchParams.set('first', String(PAGE_SIZE))
     if (cursor) url.searchParams.set('after', cursor)
 
-    const response = await fetchFn(url.toString(), {
+    const response = await fetch(url.toString(), {
       headers: {
         'Client-Id': clientId,
         Authorization: `Bearer ${accessToken}`,
