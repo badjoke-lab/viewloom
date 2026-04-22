@@ -2,62 +2,23 @@ import {
   createHeatmapViewport,
   type HeatmapViewportHandle,
 } from './heatmap-viewport-v2'
+import {
+  escapeHtml,
+  formatIso,
+  formatPercent,
+  formatSignedPercent,
+} from '../features/twitch-heatmap/format'
+import { buildTreemap, getDensity } from '../features/twitch-heatmap/layout'
+import {
+  AUTO_REFRESH_MS,
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  type HeatmapItem,
+  type TileLayout,
+  type TwitchHeatmapApiResponse,
+  type TwitchHeatmapPayload,
+} from '../features/twitch-heatmap/model'
 
-type TwitchHeatmapApiResponse = {
-  ok: boolean
-  provider: string
-  latest: {
-    provider: string
-    bucket_minute: string
-    collected_at: string
-    covered_pages: number
-    has_more: number
-    stream_count: number
-    total_viewers: number
-    payload_json: string
-    source_mode: string
-  } | null
-  status: {
-    provider: string
-    status: string
-    last_attempt_at: string | null
-    last_success_at: string | null
-    last_failure_at: string | null
-    last_error: string | null
-    latest_bucket_minute: string | null
-    latest_collected_at: string | null
-    latest_stream_count: number
-    latest_total_viewers: number
-    covered_pages: number
-    has_more: number
-    updated_at: string
-  } | null
-}
-
-type HeatmapItem = {
-  channelLogin: string
-  displayName: string
-  viewers: number
-  momentum: number
-  activity: number
-}
-
-type TwitchHeatmapPayload = {
-  provider: string
-  bucketMinute: string
-  items: HeatmapItem[]
-}
-
-type TileLayout = HeatmapItem & {
-  x: number
-  y: number
-  width: number
-  height: number
-}
-
-const CANVAS_WIDTH = 1600
-const CANVAS_HEIGHT = 960
-const AUTO_REFRESH_MS = 60_000
 let viewportHandle: HeatmapViewportHandle | null = null
 let selectedStreamLogin: string | null = null
 let refreshTimer: number | null = null
@@ -367,7 +328,6 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
   }
 }
 
-
 function ensureHeatmapAutoRefresh(): void {
   if (refreshTimer !== null) {
     window.clearInterval(refreshTimer)
@@ -655,75 +615,6 @@ function renderTile(layout: TileLayout, totalViewers: number): string {
   `
 }
 
-function buildTreemap(items: HeatmapItem[], x: number, y: number, width: number, height: number): TileLayout[] {
-  const safeItems = items.filter((item) => item.viewers > 0)
-  const layouts: TileLayout[] = []
-  layoutGroup(safeItems, x, y, width, height, layouts)
-  return layouts
-}
-
-function layoutGroup(items: HeatmapItem[], x: number, y: number, width: number, height: number, out: TileLayout[]): void {
-  if (!items.length || width <= 0 || height <= 0) return
-
-  if (items.length === 1) {
-    out.push({
-      ...items[0],
-      x: Math.round(x),
-      y: Math.round(y),
-      width: Math.max(1, Math.round(width)),
-      height: Math.max(1, Math.round(height)),
-    })
-    return
-  }
-
-  const total = items.reduce((sum, item) => sum + item.viewers, 0)
-  let firstWeight = 0
-  let splitIndex = 1
-
-  for (let index = 0; index < items.length; index += 1) {
-    firstWeight += items[index].viewers
-    splitIndex = index + 1
-    if (firstWeight >= total / 2) break
-  }
-
-  const primary = items.slice(0, splitIndex)
-  const secondary = items.slice(splitIndex)
-  if (!secondary.length) {
-    out.push({
-      ...items[0],
-      x: Math.round(x),
-      y: Math.round(y),
-      width: Math.max(1, Math.round(width)),
-      height: Math.max(1, Math.round(height)),
-    })
-    return
-  }
-
-  const ratio = primary.reduce((sum, item) => sum + item.viewers, 0) / total
-  const gap = Math.min(10, Math.max(4, Math.min(width, height) * 0.015))
-
-  if (width >= height) {
-    const primaryWidth = Math.max(1, width * ratio - gap / 2)
-    const secondaryWidth = Math.max(1, width - primaryWidth - gap)
-    layoutGroup(primary, x, y, primaryWidth, height, out)
-    layoutGroup(secondary, x + primaryWidth + gap, y, secondaryWidth, height, out)
-    return
-  }
-
-  const primaryHeight = Math.max(1, height * ratio - gap / 2)
-  const secondaryHeight = Math.max(1, height - primaryHeight - gap)
-  layoutGroup(primary, x, y, width, primaryHeight, out)
-  layoutGroup(secondary, x, y + primaryHeight + gap, width, secondaryHeight, out)
-}
-
-function getDensity(width: number, height: number): 'large' | 'medium' | 'small' {
-  const area = width * height
-  const minEdge = Math.min(width, height)
-  if (area > 145000 && minEdge > 190) return 'large'
-  if (area > 52000 && minEdge > 110) return 'medium'
-  return 'small'
-}
-
 function renderPendingSurfaceState(): void {
   setText('#heatmap-status-title', 'Waiting for heatmap API')
   setText('#heatmap-status-body', 'The rail and support blocks will switch to live Twitch values once the latest snapshot loads.')
@@ -868,25 +759,6 @@ function setHtml(selector: string, value: string): void {
   if (element) element.innerHTML = value
 }
 
-function formatIso(value: string): string {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-function formatSignedPercent(value: number): string {
-  return `${value > 0 ? '+' : ''}${(value * 100).toFixed(1)}%`
-}
-
-function formatPercent(value: number): string {
-  return `${(value * 100).toFixed(1)}%`
-}
-
 function ensureStyles(): void {
   if (document.getElementById('twitch-heatmap-live-style')) return
 
@@ -894,13 +766,4 @@ function ensureStyles(): void {
   style.id = 'twitch-heatmap-live-style'
   style.textContent = HEATMAP_CSS
   document.head.appendChild(style)
-}
-
-function escapeHtml(input: string): string {
-  return input
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;')
 }
