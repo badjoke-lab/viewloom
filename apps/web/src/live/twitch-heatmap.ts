@@ -57,8 +57,11 @@ type TileLayout = HeatmapItem & {
 
 const CANVAS_WIDTH = 1600
 const CANVAS_HEIGHT = 960
+const AUTO_REFRESH_MS = 60_000
 let viewportHandle: HeatmapViewportHandle | null = null
 let selectedStreamLogin: string | null = null
+let refreshTimer: number | null = null
+let visibilityListenerBound = false
 
 const HEATMAP_CSS = `
 .chart-placeholder--heatmap.heatmap-live-stage {
@@ -304,6 +307,7 @@ const HEATMAP_CSS = `
 export async function hydrateTwitchHeatmap(): Promise<void> {
   ensureStyles()
   ensureLiveSurfaceSlots()
+  ensureHeatmapAutoRefresh()
 
   const stage = document.querySelector<HTMLElement>('.chart-placeholder--heatmap')
   if (!stage) return
@@ -361,6 +365,29 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
     stage.innerHTML = renderEmptyShell(`Failed to load Twitch heatmap API: ${escapeHtml(message)}`)
     renderUnavailableSurfaceState('API error', 'The Heatmap page rendered, but the Twitch heatmap API request failed.')
   }
+}
+
+
+function ensureHeatmapAutoRefresh(): void {
+  if (refreshTimer !== null) {
+    window.clearInterval(refreshTimer)
+  }
+
+  refreshTimer = window.setInterval(() => {
+    if (document.visibilityState === 'visible') {
+      void hydrateTwitchHeatmap()
+    }
+  }, AUTO_REFRESH_MS)
+
+  if (visibilityListenerBound) return
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      void hydrateTwitchHeatmap()
+    }
+  })
+
+  visibilityListenerBound = true
 }
 
 function ensureLiveSurfaceSlots(): void {
@@ -467,6 +494,11 @@ function populateLiveSurface(
     '#heatmap-status-body',
     `${formatIso(latest.collected_at)} · ${latest.total_viewers.toLocaleString()} viewers · ${items.length} visible streams.`,
   )
+  setText('#heatmap-hero-status-title', `${status?.status ?? 'unknown'} · ${latest.source_mode}`)
+  setText(
+    '#heatmap-hero-status-body',
+    `${formatIso(latest.collected_at)} · ${latest.total_viewers.toLocaleString()} viewers · ${items.length} streams · ${latest.covered_pages} page${latest.covered_pages === 1 ? '' : 's'} covered${latest.has_more ? ' · more available' : ''}.`,
+  )
 
   setHtml(
     '#heatmap-legend-body',
@@ -511,11 +543,7 @@ function updateSelectedStreamDetail(
     link.textContent = `Open ${item.displayName}`
   }
 
-  setText('#heatmap-status-title', `${status?.status ?? 'unknown'} · ${latest.source_mode}`)
-  setText(
-    '#heatmap-status-body',
-    `${formatIso(latest.collected_at)} · bucket ${latest.bucket_minute} · ${item.displayName} selected.`,
-  )
+  // keep live status tied to the snapshot, not the currently selected tile
 }
 
 function renderLoadingShell(): string {
@@ -699,6 +727,8 @@ function getDensity(width: number, height: number): 'large' | 'medium' | 'small'
 function renderPendingSurfaceState(): void {
   setText('#heatmap-status-title', 'Waiting for heatmap API')
   setText('#heatmap-status-body', 'The rail and support blocks will switch to live Twitch values once the latest snapshot loads.')
+  setText('#heatmap-hero-status-title', 'Waiting for live heatmap API')
+  setText('#heatmap-hero-status-body', 'The hero panel will switch to the latest Twitch snapshot once the heatmap API responds.')
   setText('#heatmap-detail-title', 'No stream selected')
   setText('#heatmap-detail-body', 'Select a tile to inspect its current viewers, momentum, activity, and stream link.')
   setText('#heatmap-detail-viewers', '—')
@@ -728,6 +758,8 @@ function renderPendingSurfaceState(): void {
 function renderUnavailableSurfaceState(title: string, body: string): void {
   setText('#heatmap-status-title', title)
   setText('#heatmap-status-body', body)
+  setText('#heatmap-hero-status-title', title)
+  setText('#heatmap-hero-status-body', body)
   setText('#heatmap-detail-title', title)
   setText('#heatmap-detail-body', body)
   setText('#heatmap-detail-viewers', '—')
