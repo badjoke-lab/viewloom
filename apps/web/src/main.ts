@@ -632,13 +632,25 @@ function renderFeaturePage(kind: Exclude<PageKind, 'portal' | 'twitch' | 'kick'>
             <h1>${feature.title}</h1>
             <p class="hero-copy">${feature.description}</p>
           </div>
+          ${
+            isLiveTwitchHeatmap
+              ? `
+          <aside class="status-panel">
+            <div class="status-panel__label">Live snapshot</div>
+            <div id="heatmap-hero-status-title" class="status-panel__title">Waiting for live heatmap API</div>
+            <p id="heatmap-hero-status-body">
+              The hero panel will switch to the latest Twitch snapshot once the heatmap API responds.
+            </p>
+          </aside>`
+              : `
           <aside class="status-panel">
             <div class="status-panel__label">Build state</div>
             <div class="status-panel__title">Feature shell ready</div>
             <p>
               This route exists on the new ViewLoom structure and is ready to receive the real renderer and provider-backed API path.
             </p>
-          </aside>
+          </aside>`
+          }
         </section>
 
         <div class="site-subnav" aria-label="Site sections">
