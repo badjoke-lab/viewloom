@@ -78,9 +78,8 @@ function drawNodeLabel(ctx: CanvasRenderingContext2D, node: HeatmapSceneNode, ca
   }
 
   currentY += smallSize + 6 / camera.scale
-  const share = Math.max(0, node.viewers) / 1
   ctx.fillStyle = 'rgba(226,232,240,0.9)'
-  ctx.fillText(`#${node.rank} · ${Math.round(share)} viewers node`, node.x + padding, currentY, availableWorldWidth)
+  ctx.fillText(`#${node.rank} · ${(node.activity * 100).toFixed(1)}% activity`, node.x + padding, currentY, availableWorldWidth)
   ctx.restore()
 }
 
