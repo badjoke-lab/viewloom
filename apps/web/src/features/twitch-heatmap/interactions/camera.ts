@@ -4,6 +4,9 @@ import {
   type WorldPoint,
 } from '../model'
 
+export const MIN_CAMERA_ZOOM = 1
+export const MAX_CAMERA_ZOOM = 12
+
 export function createFitCamera(
   viewportWidth: number,
   viewportHeight: number,
@@ -44,4 +47,33 @@ export function screenToWorld(point: WorldPoint, camera: CameraState): WorldPoin
     x: (point.x - camera.tx) / camera.scale,
     y: (point.y - camera.ty) / camera.scale,
   }
+}
+
+export function panCamera(camera: CameraState, deltaX: number, deltaY: number): CameraState {
+  return {
+    ...camera,
+    tx: camera.tx + deltaX,
+    ty: camera.ty + deltaY,
+  }
+}
+
+export function zoomCameraAroundPoint(
+  camera: CameraState,
+  anchor: WorldPoint,
+  nextZoom: number,
+): CameraState {
+  const zoom = clamp(nextZoom, MIN_CAMERA_ZOOM, MAX_CAMERA_ZOOM)
+  const scale = camera.baseScale * zoom
+
+  return {
+    ...camera,
+    zoom,
+    scale,
+    tx: camera.tx + anchor.x * (camera.scale - scale),
+    ty: camera.ty + anchor.y * (camera.scale - scale),
+  }
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
 }
