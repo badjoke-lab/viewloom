@@ -3,6 +3,10 @@ import {
   type HeatmapViewportHandle,
 } from './heatmap-viewport-v2'
 import {
+  renderCanvasScene,
+  shouldUseCanvasRenderer,
+} from '../features/twitch-heatmap/canvas-scene'
+import {
   escapeHtml,
   formatIso,
   formatPercent,
@@ -295,6 +299,26 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
     if (!items.length) {
       stage.innerHTML = renderEmptyShell('Snapshot exists, but payload items are empty.')
       renderUnavailableSurfaceState('Empty payload', 'The latest snapshot exists, but it contains no live items.')
+      return
+    }
+
+    if (shouldUseCanvasRenderer()) {
+      renderCanvasScene({
+        stage,
+        items,
+        latest: data.latest,
+        selectedStreamLogin,
+        onSelect: (item) => {
+          selectedStreamLogin = item.channelLogin
+          updateSelectedStreamDetail(item, data.latest, data.status)
+        },
+      })
+      populateLiveSurface(items, data.latest, data.status)
+      const initial = items.find((item) => item.channelLogin === selectedStreamLogin) ?? items[0]
+      if (initial) {
+        selectedStreamLogin = initial.channelLogin
+        updateSelectedStreamDetail(initial, data.latest, data.status)
+      }
       return
     }
 
