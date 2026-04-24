@@ -11,7 +11,9 @@ type TileMetrics = {
   screenArea: number
   shortEdge: number
   aspectRatio: number
+  rank: number
   isFeatured: boolean
+  isPriority: boolean
 }
 
 type TileProfile =
@@ -22,14 +24,19 @@ type TileProfile =
   | 'featured_vertical'
   | 'featured_horizontal'
 
-const TINY_AREA = 1200
-const NAME_AREA = 2600
-const COMPACT_AREA = 6200
-const FEATURED_AREA = 12000
-const MIN_SHORT_EDGE = 22
-const FEATURED_SHORT_EDGE = 58
+const TINY_AREA = 1800
+const NAME_AREA = 4200
+const COMPACT_AREA = 9000
+const FEATURED_AREA = 18000
+const PRIORITY_FEATURED_AREA = 10500
+const MIN_SHORT_EDGE = 24
+const COMPACT_SHORT_EDGE = 34
+const FEATURED_SHORT_EDGE = 62
+const PRIORITY_FEATURED_SHORT_EDGE = 42
 const VERTICAL_RATIO = 0.72
-const HORIZONTAL_RATIO = 1.4
+const HORIZONTAL_RATIO = 1.38
+const PRIORITY_RANK_LIMIT = 6
+const FEATURED_RANK_LIMIT = 14
 
 export function drawTilesLayer(
   ctx: CanvasRenderingContext2D,
@@ -49,8 +56,8 @@ export function drawTilesLayer(
     const profile = getTileProfile(metrics)
 
     ctx.fillStyle = node.momentum > 0.02 ? 'rgba(16,185,129,0.78)' : node.momentum < -0.02 ? 'rgba(244,63,94,0.78)' : 'rgba(51,65,85,0.92)'
-    ctx.strokeStyle = node.momentum > 0.02 ? 'rgba(167,243,208,0.8)' : node.momentum < -0.02 ? 'rgba(254,205,211,0.8)' : 'rgba(148,163,184,0.28)'
-    ctx.lineWidth = profile === 'tiny' ? Math.max(0.7 / camera.scale, 0.85) : Math.max(1 / camera.scale, 1.25)
+    ctx.strokeStyle = getTileStrokeStyle(node, profile)
+    ctx.lineWidth = profile === 'tiny' ? Math.max(0.45 / camera.scale, 0.55) : Math.max(1 / camera.scale, 1.15)
     ctx.fillRect(node.x, node.y, node.width, node.height)
     ctx.strokeRect(node.x, node.y, node.width, node.height)
 
@@ -58,6 +65,18 @@ export function drawTilesLayer(
   }
 
   ctx.restore()
+}
+
+function getTileStrokeStyle(node: HeatmapSceneNode, profile: TileProfile): string {
+  if (profile === 'tiny') {
+    if (node.momentum > 0.02) return 'rgba(167,243,208,0.32)'
+    if (node.momentum < -0.02) return 'rgba(254,205,211,0.32)'
+    return 'rgba(148,163,184,0.14)'
+  }
+
+  if (node.momentum > 0.02) return 'rgba(167,243,208,0.72)'
+  if (node.momentum < -0.02) return 'rgba(254,205,211,0.72)'
+  return 'rgba(148,163,184,0.26)'
 }
 
 function drawTileLabel(
@@ -69,7 +88,7 @@ function drawTileLabel(
 ): void {
   if (profile === 'tiny') return
 
-  const padding = clamp(Math.min(metrics.screenWidth, metrics.screenHeight) * 0.08, 8, 18) / camera.scale
+  const padding = clamp(Math.min(metrics.screenWidth, metrics.screenHeight) * 0.08, 7, 18) / camera.scale
   const availableWorldWidth = Math.max(0, node.width - padding * 2)
 
   ctx.save()
@@ -78,7 +97,7 @@ function drawTileLabel(
   ctx.clip()
 
   if (profile === 'name_only') {
-    drawSingleLineTitle(ctx, node, camera, padding, availableWorldWidth, clamp(Math.min(metrics.screenWidth * 0.16, metrics.screenHeight * 0.42), 11, 16) / camera.scale)
+    drawSingleLineTitle(ctx, node, camera, padding, availableWorldWidth, clamp(Math.min(metrics.screenWidth * 0.15, metrics.screenHeight * 0.4), 10, 15) / camera.scale)
     ctx.restore()
     return
   }
@@ -128,8 +147,8 @@ function drawCompactLabel(
   availableWorldWidth: number,
   metrics: TileMetrics,
 ): void {
-  const titleSize = clamp(Math.min(metrics.screenWidth * 0.13, metrics.screenHeight * 0.34), 11, 17) / camera.scale
-  const bodySize = clamp(titleSize * 0.84, 10, 14) / camera.scale
+  const titleSize = clamp(Math.min(metrics.screenWidth * 0.12, metrics.screenHeight * 0.32), 10, 16) / camera.scale
+  const bodySize = clamp(titleSize * 0.78, 9, 13) / camera.scale
   const maxChars = Math.max(5, Math.floor((metrics.screenWidth - padding * camera.scale * 2) / (titleSize * camera.scale * 0.62)))
 
   ctx.fillStyle = 'rgba(255,255,255,0.98)'
@@ -138,9 +157,11 @@ function drawCompactLabel(
   let y = node.y + padding + titleSize
   ctx.fillText(truncateText(node.displayName, maxChars), node.x + padding, y, availableWorldWidth)
 
-  ctx.fillStyle = 'rgba(255,255,255,0.94)'
+  if (metrics.shortEdge < COMPACT_SHORT_EDGE) return
+
+  ctx.fillStyle = 'rgba(255,255,255,0.92)'
   ctx.font = `700 ${bodySize}px Inter, system-ui, sans-serif`
-  y += bodySize + 6 / camera.scale
+  y += bodySize + 5 / camera.scale
   ctx.fillText(formatCompactViewers(node.viewers), node.x + padding, y, availableWorldWidth)
 }
 
@@ -152,9 +173,9 @@ function drawStandardLabel(
   availableWorldWidth: number,
   metrics: TileMetrics,
 ): void {
-  const titleSize = clamp(Math.min(metrics.screenWidth * 0.12, metrics.screenHeight * 0.28), 12, 18) / camera.scale
-  const bodySize = clamp(titleSize * 0.78, 10, 15) / camera.scale
-  const smallSize = clamp(bodySize * 0.9, 9, 13) / camera.scale
+  const titleSize = clamp(Math.min(metrics.screenWidth * 0.11, metrics.screenHeight * 0.26), 11, 17) / camera.scale
+  const bodySize = clamp(titleSize * 0.76, 10, 14) / camera.scale
+  const smallSize = clamp(bodySize * 0.86, 9, 12) / camera.scale
   const maxChars = Math.max(6, Math.floor((metrics.screenWidth - padding * camera.scale * 2) / (titleSize * camera.scale * 0.6)))
 
   ctx.fillStyle = 'rgba(255,255,255,0.98)'
@@ -168,7 +189,9 @@ function drawStandardLabel(
   y += bodySize + 7 / camera.scale
   ctx.fillText(`${formatCompactViewers(node.viewers)} viewers`, node.x + padding, y, availableWorldWidth)
 
-  ctx.fillStyle = 'rgba(241,245,249,0.92)'
+  if (metrics.screenHeight < 92 && !metrics.isPriority) return
+
+  ctx.fillStyle = 'rgba(241,245,249,0.9)'
   ctx.font = `600 ${smallSize}px Inter, system-ui, sans-serif`
   y += smallSize + 7 / camera.scale
   ctx.fillText(`${formatSignedPercent(node.momentum)} momentum`, node.x + padding, y, availableWorldWidth)
@@ -182,49 +205,10 @@ function drawFeaturedVerticalLabel(
   availableWorldWidth: number,
   metrics: TileMetrics,
 ): void {
-  const titleSize = clamp(Math.min(metrics.screenWidth * 0.16, metrics.screenHeight * 0.14), 13, 20) / camera.scale
-  const bodySize = clamp(titleSize * 0.95, 11, 18) / camera.scale
-  const smallSize = clamp(bodySize * 0.82, 9, 13) / camera.scale
-  const titleLines = wrapText(ctx, node.displayName, titleSize, availableWorldWidth, 2)
-
-  let y = node.y + padding + titleSize
-  ctx.fillStyle = 'rgba(255,255,255,0.98)'
-  ctx.font = `700 ${titleSize}px Inter, system-ui, sans-serif`
-  ctx.textBaseline = 'alphabetic'
-  for (const line of titleLines) {
-    ctx.fillText(line, node.x + padding, y, availableWorldWidth)
-    y += titleSize + 4 / camera.scale
-  }
-
-  ctx.fillStyle = 'rgba(255,255,255,0.96)'
-  ctx.font = `700 ${bodySize}px Inter, system-ui, sans-serif`
-  y += 6 / camera.scale
-  ctx.fillText(`${formatCompactViewers(node.viewers)} viewers`, node.x + padding, y, availableWorldWidth)
-
-  ctx.fillStyle = 'rgba(241,245,249,0.92)'
-  ctx.font = `600 ${smallSize}px Inter, system-ui, sans-serif`
-  y += smallSize + 8 / camera.scale
-  ctx.fillText(`${formatSignedPercent(node.momentum)} momentum`, node.x + padding, y, availableWorldWidth)
-
-  if (metrics.screenHeight >= 170) {
-    y += smallSize + 6 / camera.scale
-    ctx.fillStyle = 'rgba(226,232,240,0.9)'
-    ctx.fillText(`${formatPercent(node.activity)} activity`, node.x + padding, y, availableWorldWidth)
-  }
-}
-
-function drawFeaturedHorizontalLabel(
-  ctx: CanvasRenderingContext2D,
-  node: HeatmapSceneNode,
-  camera: CameraState,
-  padding: number,
-  availableWorldWidth: number,
-  metrics: TileMetrics,
-): void {
-  const titleSize = clamp(Math.min(metrics.screenWidth * 0.1, metrics.screenHeight * 0.28), 14, 24) / camera.scale
-  const bodySize = clamp(titleSize * 0.9, 11, 18) / camera.scale
-  const smallSize = clamp(bodySize * 0.82, 9, 13) / camera.scale
-  const titleLines = wrapText(ctx, node.displayName, titleSize, availableWorldWidth, 2)
+  const titleSize = clamp(Math.min(metrics.screenWidth * 0.15, metrics.screenHeight * 0.13), 12, 20) / camera.scale
+  const bodySize = clamp(titleSize * 0.9, 11, 17) / camera.scale
+  const smallSize = clamp(bodySize * 0.8, 9, 13) / camera.scale
+  const titleLines = wrapText(ctx, node.displayName, titleSize, availableWorldWidth, metrics.isPriority ? 2 : 1)
 
   let y = node.y + padding + titleSize
   ctx.fillStyle = 'rgba(255,255,255,0.98)'
@@ -240,14 +224,57 @@ function drawFeaturedHorizontalLabel(
   y += 4 / camera.scale
   ctx.fillText(`${formatCompactViewers(node.viewers)} viewers`, node.x + padding, y, availableWorldWidth)
 
-  ctx.fillStyle = 'rgba(241,245,249,0.92)'
+  if (metrics.screenHeight < 118 && !metrics.isPriority) return
+
+  ctx.fillStyle = 'rgba(241,245,249,0.9)'
   ctx.font = `600 ${smallSize}px Inter, system-ui, sans-serif`
   y += smallSize + 8 / camera.scale
   ctx.fillText(`${formatSignedPercent(node.momentum)} momentum`, node.x + padding, y, availableWorldWidth)
 
-  if (metrics.screenWidth >= 300) {
+  if (metrics.screenHeight >= 190) {
     y += smallSize + 6 / camera.scale
-    ctx.fillStyle = 'rgba(226,232,240,0.9)'
+    ctx.fillStyle = 'rgba(226,232,240,0.86)'
+    ctx.fillText(`${formatPercent(node.activity)} activity`, node.x + padding, y, availableWorldWidth)
+  }
+}
+
+function drawFeaturedHorizontalLabel(
+  ctx: CanvasRenderingContext2D,
+  node: HeatmapSceneNode,
+  camera: CameraState,
+  padding: number,
+  availableWorldWidth: number,
+  metrics: TileMetrics,
+): void {
+  const titleSize = clamp(Math.min(metrics.screenWidth * 0.085, metrics.screenHeight * 0.25), 13, 22) / camera.scale
+  const bodySize = clamp(titleSize * 0.84, 11, 17) / camera.scale
+  const smallSize = clamp(bodySize * 0.8, 9, 13) / camera.scale
+  const titleLines = wrapText(ctx, node.displayName, titleSize, availableWorldWidth, metrics.isPriority ? 2 : 1)
+
+  let y = node.y + padding + titleSize
+  ctx.fillStyle = 'rgba(255,255,255,0.98)'
+  ctx.font = `700 ${titleSize}px Inter, system-ui, sans-serif`
+  ctx.textBaseline = 'alphabetic'
+  for (const line of titleLines) {
+    ctx.fillText(line, node.x + padding, y, availableWorldWidth)
+    y += titleSize + 4 / camera.scale
+  }
+
+  ctx.fillStyle = 'rgba(255,255,255,0.96)'
+  ctx.font = `700 ${bodySize}px Inter, system-ui, sans-serif`
+  y += 3 / camera.scale
+  ctx.fillText(`${formatCompactViewers(node.viewers)} viewers`, node.x + padding, y, availableWorldWidth)
+
+  if (metrics.screenHeight < 104 && !metrics.isPriority) return
+
+  ctx.fillStyle = 'rgba(241,245,249,0.9)'
+  ctx.font = `600 ${smallSize}px Inter, system-ui, sans-serif`
+  y += smallSize + 8 / camera.scale
+  ctx.fillText(`${formatSignedPercent(node.momentum)} momentum`, node.x + padding, y, availableWorldWidth)
+
+  if (metrics.screenWidth >= 340 && metrics.screenHeight >= 150) {
+    y += smallSize + 6 / camera.scale
+    ctx.fillStyle = 'rgba(226,232,240,0.86)'
     ctx.fillText(`${formatPercent(node.activity)} activity`, node.x + padding, y, availableWorldWidth)
   }
 }
@@ -263,7 +290,9 @@ function getTileMetrics(node: HeatmapSceneNode, camera: CameraState): TileMetric
     screenArea: screenWidth * screenHeight,
     shortEdge,
     aspectRatio: screenWidth / Math.max(1, screenHeight),
-    isFeatured: node.rank <= 12,
+    rank: node.rank,
+    isFeatured: node.rank <= FEATURED_RANK_LIMIT,
+    isPriority: node.rank <= PRIORITY_RANK_LIMIT,
   }
 }
 
@@ -272,11 +301,17 @@ function getTileProfile(metrics: TileMetrics): TileProfile {
     return 'tiny'
   }
 
+  if (metrics.isPriority && metrics.screenArea >= PRIORITY_FEATURED_AREA && metrics.shortEdge >= PRIORITY_FEATURED_SHORT_EDGE) {
+    if (metrics.aspectRatio <= VERTICAL_RATIO) return 'featured_vertical'
+    if (metrics.aspectRatio >= HORIZONTAL_RATIO) return 'featured_horizontal'
+    return 'standard'
+  }
+
   if (metrics.screenArea < NAME_AREA) {
     return 'name_only'
   }
 
-  if (metrics.screenArea < COMPACT_AREA) {
+  if (metrics.screenArea < COMPACT_AREA || metrics.shortEdge < COMPACT_SHORT_EDGE) {
     return 'compact'
   }
 
@@ -286,7 +321,7 @@ function getTileProfile(metrics: TileMetrics): TileProfile {
     return 'standard'
   }
 
-  if (metrics.screenArea >= FEATURED_AREA && metrics.shortEdge >= FEATURED_SHORT_EDGE) {
+  if (metrics.screenArea >= FEATURED_AREA * 1.35 && metrics.shortEdge >= FEATURED_SHORT_EDGE) {
     if (metrics.aspectRatio <= VERTICAL_RATIO) return 'featured_vertical'
     if (metrics.aspectRatio >= HORIZONTAL_RATIO) return 'featured_horizontal'
   }
