@@ -6,8 +6,15 @@ import {
   type HeatmapSceneNode,
 } from './model'
 
-export function buildSceneNodes(items: HeatmapItem[]): HeatmapSceneNode[] {
-  return buildTreemap(items, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT).map((layout, index) => ({
+export function buildSceneNodes(
+  items: HeatmapItem[],
+  width = CANVAS_WIDTH,
+  height = CANVAS_HEIGHT,
+): HeatmapSceneNode[] {
+  const safeWidth = Math.max(1, width)
+  const safeHeight = Math.max(1, height)
+
+  return buildTreemap(items, 0, 0, safeWidth, safeHeight).map((layout, index) => ({
     ...layout,
     rank: index + 1,
   }))
