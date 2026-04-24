@@ -42,7 +42,7 @@ export function renderCanvasScene(input: {
   const nodes = buildSceneNodes(items)
   let selected = nodes.find((node) => node.channelLogin === selectedStreamLogin) ?? nodes[0] ?? null
 
-  stage.innerHTML = `<div class="heatmap-canvas-scene"><div class="heatmap-canvas-toolbar"><div><div class="heatmap-live-toolbar__hint">Experimental canvas scene · pan and zoom preview</div><div class="heatmap-live-toolbar__stats"><span>${latest.total_viewers.toLocaleString()} viewers</span><span>${nodes.length} streams</span><span>${formatIso(latest.collected_at)}</span></div></div><div class="heatmap-canvas-toolbar__group"><span id="heatmap-canvas-zoom" class="heatmap-canvas-badge">100%</span><button id="heatmap-canvas-reset" class="heatmap-canvas-button" type="button">Reset zoom</button><span class="heatmap-canvas-badge">Canvas scene preview</span></div></div><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer"></canvas></div></div>`
+  stage.innerHTML = `<div class="heatmap-canvas-scene"><div class="heatmap-canvas-toolbar"><div><div class="heatmap-live-toolbar__hint">Drag to pan · wheel to zoom · double-click to drill in</div><div class="heatmap-live-toolbar__stats"><span>${latest.total_viewers.toLocaleString()} viewers</span><span>${nodes.length} streams</span><span>${formatIso(latest.collected_at)}</span></div></div><div class="heatmap-canvas-toolbar__group"><span id="heatmap-canvas-zoom" class="heatmap-canvas-badge">100%</span><button id="heatmap-canvas-reset" class="heatmap-canvas-button" type="button">Reset zoom</button></div></div><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer"></canvas></div></div>`
 
   const viewport = stage.querySelector<HTMLElement>('#heatmap-canvas-viewport')
   const zoomLabel = stage.querySelector<HTMLElement>('#heatmap-canvas-zoom')
@@ -164,9 +164,14 @@ function drawSelectionOverlay(
   if (!selected) return
   ctx.save()
   ctx.setTransform(camera.scale * dpr, 0, 0, camera.scale * dpr, camera.tx * dpr, camera.ty * dpr)
-  ctx.strokeStyle = 'rgba(255,255,255,0.95)'
+  ctx.fillStyle = 'rgba(255,255,255,0.08)'
+  ctx.fillRect(selected.x + 2 / camera.scale, selected.y + 2 / camera.scale, selected.width - 4 / camera.scale, selected.height - 4 / camera.scale)
+  ctx.strokeStyle = 'rgba(255,255,255,0.98)'
   ctx.lineWidth = Math.max(3 / camera.scale, 3)
   ctx.strokeRect(selected.x + 1 / camera.scale, selected.y + 1 / camera.scale, selected.width - 2 / camera.scale, selected.height - 2 / camera.scale)
+  ctx.strokeStyle = 'rgba(255,255,255,0.42)'
+  ctx.lineWidth = Math.max(7 / camera.scale, 5)
+  ctx.strokeRect(selected.x - 2 / camera.scale, selected.y - 2 / camera.scale, selected.width + 4 / camera.scale, selected.height + 4 / camera.scale)
   ctx.restore()
 }
 

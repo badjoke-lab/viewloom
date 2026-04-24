@@ -72,4 +72,4 @@ export type WorldPoint = {
 export const CANVAS_WIDTH = 1600
 export const CANVAS_HEIGHT = 960
 export const AUTO_REFRESH_MS = 60_000
-export const HEATMAP_CAMERA_PADDING = 20
+export const HEATMAP_CAMERA_PADDING = 12
