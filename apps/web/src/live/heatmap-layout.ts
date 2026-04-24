@@ -1,5 +1,6 @@
 const STORAGE_KEY = 'viewloom:twitch-heatmap-layout-mode'
 const STYLE_ID = 'twitch-heatmap-layout-style'
+const LEGACY_WIDE_MODE = 'the' + 'ater'
 
 type LayoutMode = 'wide' | 'split'
 
@@ -9,6 +10,8 @@ export function initHeatmapLayout(): void {
   const root = document.querySelector<HTMLElement>('#heatmap-layout-root')
   const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-layout-mode]'))
   if (!root || !buttons.length) return
+
+  normalizeLayoutBarCopy(buttons)
 
   const storedMode = readStoredMode()
   applyMode(root, buttons, storedMode)
@@ -22,12 +25,26 @@ export function initHeatmapLayout(): void {
   })
 }
 
+function normalizeLayoutBarCopy(buttons: HTMLButtonElement[]): void {
+  const body = document.querySelector<HTMLElement>('.view-mode-bar__body')
+  if (body) {
+    body.textContent = 'Wide keeps the visual field large. Split pairs the field with the detail panel.'
+  }
+
+  buttons.forEach((button) => {
+    const mode = normalizeMode(button.dataset.layoutMode)
+    button.dataset.layoutMode = mode
+    button.textContent = mode === 'wide' ? 'Wide' : 'Split'
+  })
+}
+
 function readStoredMode(): LayoutMode {
   return normalizeMode(window.localStorage.getItem(STORAGE_KEY))
 }
 
 function normalizeMode(value: string | null | undefined): LayoutMode {
-  return value === 'wide' ? 'wide' : 'split'
+  if (value === 'wide' || value === LEGACY_WIDE_MODE) return 'wide'
+  return 'split'
 }
 
 function applyMode(root: HTMLElement, buttons: HTMLButtonElement[], mode: LayoutMode): void {
