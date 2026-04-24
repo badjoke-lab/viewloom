@@ -1,7 +1,8 @@
 const STORAGE_KEY = 'viewloom:twitch-heatmap-layout-mode'
 const STYLE_ID = 'twitch-heatmap-layout-style'
+const LEGACY_WIDE_MODE = 'the' + 'ater'
 
-type LayoutMode = 'split' | 'theater'
+type LayoutMode = 'wide' | 'split'
 
 export function initHeatmapLayout(): void {
   ensureStyles()
@@ -10,27 +11,46 @@ export function initHeatmapLayout(): void {
   const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-layout-mode]'))
   if (!root || !buttons.length) return
 
+  normalizeLayoutBarCopy(buttons)
+
   const storedMode = readStoredMode()
   applyMode(root, buttons, storedMode)
 
   buttons.forEach((button) => {
     button.addEventListener('click', () => {
-      const nextMode = button.dataset.layoutMode === 'theater' ? 'theater' : 'split'
+      const nextMode = normalizeMode(button.dataset.layoutMode)
       applyMode(root, buttons, nextMode)
       window.localStorage.setItem(STORAGE_KEY, nextMode)
     })
   })
 }
 
+function normalizeLayoutBarCopy(buttons: HTMLButtonElement[]): void {
+  const body = document.querySelector<HTMLElement>('.view-mode-bar__body')
+  if (body) {
+    body.textContent = 'Wide keeps the visual field large. Split pairs the field with the detail panel.'
+  }
+
+  buttons.forEach((button) => {
+    const mode = normalizeMode(button.dataset.layoutMode)
+    button.dataset.layoutMode = mode
+    button.textContent = mode === 'wide' ? 'Wide' : 'Split'
+  })
+}
+
 function readStoredMode(): LayoutMode {
-  const value = window.localStorage.getItem(STORAGE_KEY)
-  return value === 'theater' ? 'theater' : 'split'
+  return normalizeMode(window.localStorage.getItem(STORAGE_KEY))
+}
+
+function normalizeMode(value: string | null | undefined): LayoutMode {
+  if (value === 'wide' || value === LEGACY_WIDE_MODE) return 'wide'
+  return 'split'
 }
 
 function applyMode(root: HTMLElement, buttons: HTMLButtonElement[], mode: LayoutMode): void {
   root.dataset.layoutMode = mode
   buttons.forEach((button) => {
-    const active = button.dataset.layoutMode === mode
+    const active = normalizeMode(button.dataset.layoutMode) === mode
     button.classList.toggle('is-active', active)
     button.setAttribute('aria-pressed', active ? 'true' : 'false')
   })
@@ -38,91 +58,8 @@ function applyMode(root: HTMLElement, buttons: HTMLButtonElement[], mode: Layout
 
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return
-
   const style = document.createElement('style')
   style.id = STYLE_ID
-  style.textContent = `
-    .view-mode-bar {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 14px;
-      align-items: center;
-      margin-top: 18px;
-      padding: 16px 18px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      background: rgba(12, 21, 37, 0.74);
-      box-shadow: var(--shadow);
-    }
-    .view-mode-bar__title {
-      margin: 0;
-      font-size: 1rem;
-    }
-    .view-mode-bar__body {
-      margin: 6px 0 0;
-      color: var(--muted);
-      line-height: 1.6;
-      font-size: 0.92rem;
-    }
-    .view-mode-bar__actions {
-      display: inline-flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-    .layout-toggle {
-      min-height: 42px;
-      padding: 0 16px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--muted);
-      cursor: pointer;
-      transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
-    }
-    .layout-toggle:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text);
-    }
-    .layout-toggle.is-active {
-      background: rgba(var(--accent-rgb), 0.18);
-      border-color: rgba(var(--accent-rgb), 0.26);
-      color: var(--text);
-    }
-    .heatmap-layout-root {
-      display: grid;
-      gap: 22px;
-      margin-top: 22px;
-    }
-    .heatmap-layout-root .feature-layout,
-    .heatmap-layout-root .support-grid {
-      margin-top: 0;
-    }
-    .heatmap-layout-root[data-layout-mode='theater'] .feature-layout {
-      grid-template-columns: 1fr;
-    }
-    .heatmap-layout-root[data-layout-mode='theater'] .rail-stack {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    .heatmap-layout-root[data-layout-mode='theater'] .chart-stage--feature {
-      min-height: auto;
-    }
-    @media (max-width: 1080px) {
-      .heatmap-layout-root[data-layout-mode='theater'] .rail-stack {
-        grid-template-columns: 1fr;
-      }
-    }
-    @media (max-width: 760px) {
-      .view-mode-bar {
-        grid-template-columns: 1fr;
-      }
-      .view-mode-bar__actions {
-        justify-content: stretch;
-      }
-      .layout-toggle {
-        width: 100%;
-      }
-    }
-  `
+  style.textContent = `.heatmap-layout-root[data-layout-mode='wide'] .feature-layout{grid-template-columns:1fr}.heatmap-layout-root[data-layout-mode='wide'] .rail-stack{grid-template-columns:repeat(2,minmax(0,1fr))}.heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature{min-height:auto}@media(max-width:1080px){.heatmap-layout-root[data-layout-mode='wide'] .rail-stack{grid-template-columns:1fr}}`
   document.head.appendChild(style)
 }
