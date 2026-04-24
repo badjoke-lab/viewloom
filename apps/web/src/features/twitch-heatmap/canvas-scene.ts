@@ -7,8 +7,7 @@ import {
   zoomCameraAroundPoint,
 } from './interactions/camera'
 import {
-  CANVAS_HEIGHT,
-  CANVAS_WIDTH,
+  type CameraState,
   type HeatmapItem,
   type HeatmapSceneNode,
   type TwitchHeatmapApiResponse,
@@ -38,11 +37,10 @@ export function renderCanvasScene(input: {
   onSelect: (item: HeatmapItem) => void
 }): void {
   ensureCanvasStyles()
-  const { stage, items, latest, selectedStreamLogin, onSelect } = input
-  const nodes = buildSceneNodes(items)
-  let selected = nodes.find((node) => node.channelLogin === selectedStreamLogin) ?? nodes[0] ?? null
+  const { stage, items, latest, onSelect } = input
+  let selectedStreamLogin = input.selectedStreamLogin
 
-  stage.innerHTML = `<div class="heatmap-canvas-scene"><div class="heatmap-canvas-toolbar"><div><div class="heatmap-live-toolbar__hint">Drag to pan · Ctrl/Alt + wheel to zoom · double-click to zoom</div><div class="heatmap-live-toolbar__stats"><span>${latest.total_viewers.toLocaleString()} viewers</span><span>${nodes.length} streams</span><span>${formatIso(latest.collected_at)}</span></div></div><div class="heatmap-canvas-toolbar__group"><span id="heatmap-canvas-zoom" class="heatmap-canvas-badge">100%</span><button id="heatmap-canvas-move" class="heatmap-canvas-button" type="button" aria-pressed="false">Move map</button><button id="heatmap-canvas-reset" class="heatmap-canvas-button" type="button">Reset zoom</button></div></div><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer"></canvas></div></div>`
+  stage.innerHTML = `<div class="heatmap-canvas-scene"><div class="heatmap-canvas-toolbar"><div><div class="heatmap-live-toolbar__hint">Drag to pan · Ctrl/Alt + wheel to zoom · double-click to zoom</div><div class="heatmap-live-toolbar__stats"><span>${latest.total_viewers.toLocaleString()} viewers</span><span>${items.length} streams</span><span>${formatIso(latest.collected_at)}</span></div></div><div class="heatmap-canvas-toolbar__group"><span id="heatmap-canvas-zoom" class="heatmap-canvas-badge">100%</span><button id="heatmap-canvas-move" class="heatmap-canvas-button" type="button" aria-pressed="false">Move map</button><button id="heatmap-canvas-reset" class="heatmap-canvas-button" type="button">Reset zoom</button></div></div><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer"></canvas></div></div>`
 
   const viewport = stage.querySelector<HTMLElement>('#heatmap-canvas-viewport')
   const zoomLabel = stage.querySelector<HTMLElement>('#heatmap-canvas-zoom')
@@ -52,10 +50,13 @@ export function renderCanvasScene(input: {
   const overlayCanvas = stage.querySelector<HTMLCanvasElement>('#heatmap-canvas-overlay')
   if (!viewport || !zoomLabel || !moveButton || !resetButton || !tilesCanvas || !overlayCanvas) return
 
-  const viewportWidth = Math.max(1, viewport.clientWidth)
-  const viewportHeight = Math.max(360, viewport.clientHeight)
+  let viewportWidth = Math.max(1, viewport.clientWidth)
+  let viewportHeight = Math.max(360, viewport.clientHeight)
   const dpr = Math.min(window.devicePixelRatio || 1, 2)
-  let camera = createFitCamera(viewportWidth, viewportHeight, CANVAS_WIDTH, CANVAS_HEIGHT)
+  let nodes = buildSceneNodes(items, viewportWidth, viewportHeight)
+  let selected = nodes.find((node) => node.channelLogin === selectedStreamLogin) ?? nodes[0] ?? null
+  let camera = createFitCamera(viewportWidth, viewportHeight, viewportWidth, viewportHeight, 0)
+  let resizeFrame = 0
   let pointerId: number | null = null
   let pointerDown = false
   let dragging = false
@@ -78,6 +79,17 @@ export function renderCanvasScene(input: {
     zoomLabel.textContent = `${Math.round(camera.zoom * 100)}%`
   }
 
+  const resizeAndRelayout = (): void => {
+    viewportWidth = Math.max(1, viewport.clientWidth)
+    viewportHeight = Math.max(360, viewport.clientHeight)
+    syncCanvasSize(tilesCanvas, viewportWidth, viewportHeight, dpr)
+    syncCanvasSize(overlayCanvas, viewportWidth, viewportHeight, dpr)
+    nodes = buildSceneNodes(items, viewportWidth, viewportHeight)
+    selected = nodes.find((node) => node.channelLogin === selectedStreamLogin) ?? nodes[0] ?? null
+    camera = createFitCamera(viewportWidth, viewportHeight, viewportWidth, viewportHeight, 0)
+    redraw()
+  }
+
   const updateMoveMode = (): void => {
     viewport.classList.toggle('is-move-mode', moveMode)
     moveButton.classList.toggle('is-active', moveMode)
@@ -88,12 +100,19 @@ export function renderCanvasScene(input: {
   const selectNode = (node: HeatmapSceneNode | null): void => {
     if (!node) return
     selected = node
+    selectedStreamLogin = node.channelLogin
     redraw()
     onSelect(node)
   }
 
   redraw()
   updateMoveMode()
+
+  const resizeObserver = new ResizeObserver(() => {
+    window.cancelAnimationFrame(resizeFrame)
+    resizeFrame = window.requestAnimationFrame(resizeAndRelayout)
+  })
+  resizeObserver.observe(viewport)
 
   moveButton.addEventListener('click', () => {
     moveMode = !moveMode
@@ -105,7 +124,7 @@ export function renderCanvasScene(input: {
   })
 
   resetButton.addEventListener('click', () => {
-    camera = createFitCamera(viewportWidth, viewportHeight, CANVAS_WIDTH, CANVAS_HEIGHT)
+    camera = createFitCamera(viewportWidth, viewportHeight, viewportWidth, viewportHeight, 0)
     viewport.classList.remove('is-panning')
     redraw()
   })
@@ -175,7 +194,7 @@ export function renderCanvasScene(input: {
 function drawSelectionOverlay(
   ctx: CanvasRenderingContext2D,
   selected: HeatmapSceneNode | null,
-  camera: ReturnType<typeof createFitCamera>,
+  camera: CameraState,
   viewportWidth: number,
   viewportHeight: number,
   dpr: number,
