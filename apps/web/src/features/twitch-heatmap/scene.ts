@@ -1,4 +1,4 @@
-import { buildTreemap } from './layout'
+import { buildDirectedTreemap } from './layout'
 import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
@@ -14,7 +14,7 @@ export function buildSceneNodes(
   const safeWidth = Math.max(1, width)
   const safeHeight = Math.max(1, height)
 
-  return buildTreemap(items, 0, 0, safeWidth, safeHeight).map((layout, index) => ({
+  return buildDirectedTreemap(items, 0, 0, safeWidth, safeHeight).map((layout, index) => ({
     ...layout,
     rank: index + 1,
   }))
