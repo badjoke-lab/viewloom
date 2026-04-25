@@ -176,9 +176,9 @@ const featureMeta: Record<FeatureKey, FeatureMeta> = {
     label: 'Now',
     title: 'Heatmap',
     description: 'Read who is big, rising, or active right now through a dense production treemap.',
-    chartTitle: 'Treemap stage',
+    chartTitle: 'Heatmap field',
     chartBody:
-      'This main field will become the production heatmap: tile area for viewers, color for momentum, activity as secondary signal.',
+      'This main field renders the production heatmap: tile area for viewers, color for momentum, activity as secondary signal.',
     rightRailTitle: 'Read it through',
     rightRailItems: ['Area = viewers', 'Color = momentum', 'Activity = secondary signal'],
     supportCards: [
@@ -206,7 +206,7 @@ const featureMeta: Record<FeatureKey, FeatureMeta> = {
       },
       {
         label: 'Main field',
-        value: 'Treemap',
+        value: 'Heatmap',
         body: 'A dense board rather than rows of pseudo-tiles.',
       },
       {
@@ -619,7 +619,7 @@ function renderFeaturePage(kind: Exclude<PageKind, 'portal' | 'twitch' | 'kick'>
   `
 
   const layoutBody = isLiveTwitchHeatmap
-    ? `<div id="heatmap-layout-root" class="heatmap-layout-root" data-layout-mode="split">${featureLayoutSection}${supportGridSection}</div>`
+    ? `<div id="heatmap-layout-root" class="heatmap-layout-root" data-layout-mode="wide">${featureLayoutSection}${supportGridSection}</div>`
     : `${featureLayoutSection}${supportGridSection}`
 
   return `
@@ -674,11 +674,11 @@ function renderHeatmapViewModeBar(): string {
     <section class="view-mode-bar" aria-label="Heatmap layout mode">
       <div>
         <h2 class="view-mode-bar__title">Heatmap layout</h2>
-        <p class="view-mode-bar__body">Split view keeps the map beside the rail. Theater mode expands the map to full width and moves the rail below it instead of hiding it.</p>
+        <p class="view-mode-bar__body">Wide keeps the visual field large. Split pairs the field with the detail panel.</p>
       </div>
       <div class="view-mode-bar__actions">
-        <button type="button" class="layout-toggle is-active" data-layout-mode="split" aria-pressed="true">Split view</button>
-        <button type="button" class="layout-toggle" data-layout-mode="theater" aria-pressed="false">Theater mode</button>
+        <button type="button" class="layout-toggle is-active" data-layout-mode="wide" aria-pressed="true">Wide</button>
+        <button type="button" class="layout-toggle" data-layout-mode="split" aria-pressed="false">Split</button>
       </div>
     </section>
   `
