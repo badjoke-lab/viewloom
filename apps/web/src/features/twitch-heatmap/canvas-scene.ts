@@ -15,12 +15,17 @@ import {
 import { buildSceneNodes } from './scene'
 import { drawTilesLayer } from './tiles-layer'
 
-const SCENE_CSS = '.heatmap-canvas-scene{display:grid;grid-template-rows:auto 1fr;min-height:560px;height:100%}.heatmap-canvas-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01))}.heatmap-canvas-toolbar__group{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.heatmap-canvas-badge{display:inline-flex;align-items:center;min-height:32px;padding:0 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);font-size:.82rem;color:var(--muted)}.heatmap-canvas-button{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer}.heatmap-canvas-button.is-active{background:rgba(var(--accent-rgb),.18);border-color:rgba(var(--accent-rgb),.28);color:var(--text)}.heatmap-canvas-viewport{position:relative;overflow:hidden;min-height:500px;touch-action:pan-y;cursor:grab}.heatmap-canvas-viewport.is-panning{cursor:grabbing}.heatmap-canvas-viewport.is-move-mode{touch-action:none}.heatmap-canvas-layer{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}.heatmap-canvas-viewport.is-move-mode .heatmap-canvas-layer{touch-action:none}'
+const SCENE_CSS = '.heatmap-canvas-scene{display:grid;grid-template-rows:auto 1fr;min-height:560px;height:100%}.heatmap-canvas-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01))}.heatmap-canvas-toolbar__group{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.heatmap-canvas-badge,.heatmap-canvas-mode{display:inline-flex;align-items:center;min-height:32px;padding:0 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);font-size:.82rem;color:var(--muted)}.heatmap-canvas-mode.is-active{background:rgba(var(--accent-rgb),.14);border-color:rgba(var(--accent-rgb),.28);color:var(--text)}.heatmap-canvas-button{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer}.heatmap-canvas-button.is-active{background:rgba(var(--accent-rgb),.18);border-color:rgba(var(--accent-rgb),.28);color:var(--text)}.heatmap-canvas-viewport{position:relative;overflow:hidden;min-height:500px;touch-action:pan-y;cursor:grab}.heatmap-canvas-viewport.is-panning{cursor:grabbing}.heatmap-canvas-viewport.is-move-mode{touch-action:none}.heatmap-canvas-layer{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}.heatmap-canvas-viewport.is-move-mode .heatmap-canvas-layer{touch-action:none}'
 const PAN_THRESHOLD = 6
 const WHEEL_ZOOM_IN = 1.14
 const WHEEL_ZOOM_OUT = 1 / WHEEL_ZOOM_IN
 const DOUBLE_CLICK_ZOOM_IN = 1.5
 const DOUBLE_CLICK_ZOOM_OUT = 1 / DOUBLE_CLICK_ZOOM_IN
+
+type ActivePointer = {
+  x: number
+  y: number
+}
 
 export function shouldUseCanvasRenderer(): boolean {
   const params = new URLSearchParams(window.location.search)
@@ -40,15 +45,17 @@ export function renderCanvasScene(input: {
   const { stage, items, latest, onSelect } = input
   let selectedStreamLogin = input.selectedStreamLogin
 
-  stage.innerHTML = `<div class="heatmap-canvas-scene"><div class="heatmap-canvas-toolbar"><div><div class="heatmap-live-toolbar__hint">Drag to pan · Ctrl/Alt + wheel to zoom · double-click to zoom</div><div class="heatmap-live-toolbar__stats"><span>${latest.total_viewers.toLocaleString()} viewers</span><span>${items.length} streams</span><span>${formatIso(latest.collected_at)}</span></div></div><div class="heatmap-canvas-toolbar__group"><span id="heatmap-canvas-zoom" class="heatmap-canvas-badge">100%</span><button id="heatmap-canvas-move" class="heatmap-canvas-button" type="button" aria-pressed="false">Move map</button><button id="heatmap-canvas-reset" class="heatmap-canvas-button" type="button">Reset zoom</button></div></div><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer"></canvas></div></div>`
+  stage.innerHTML = `<div class="heatmap-canvas-scene"><div class="heatmap-canvas-toolbar"><div><div id="heatmap-canvas-hint" class="heatmap-live-toolbar__hint">Page scroll · Tap tiles</div><div class="heatmap-live-toolbar__stats"><span>${latest.total_viewers.toLocaleString()} viewers</span><span>${items.length} streams</span><span>${formatIso(latest.collected_at)}</span></div></div><div class="heatmap-canvas-toolbar__group"><span id="heatmap-canvas-mode" class="heatmap-canvas-mode">Page scroll</span><span id="heatmap-canvas-zoom" class="heatmap-canvas-badge">100%</span><button id="heatmap-canvas-move" class="heatmap-canvas-button" type="button" aria-pressed="false">Control map</button><button id="heatmap-canvas-reset" class="heatmap-canvas-button" type="button">Reset zoom</button></div></div><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer"></canvas></div></div>`
 
   const viewport = stage.querySelector<HTMLElement>('#heatmap-canvas-viewport')
+  const hintLabel = stage.querySelector<HTMLElement>('#heatmap-canvas-hint')
+  const modeLabel = stage.querySelector<HTMLElement>('#heatmap-canvas-mode')
   const zoomLabel = stage.querySelector<HTMLElement>('#heatmap-canvas-zoom')
   const moveButton = stage.querySelector<HTMLButtonElement>('#heatmap-canvas-move')
   const resetButton = stage.querySelector<HTMLButtonElement>('#heatmap-canvas-reset')
   const tilesCanvas = stage.querySelector<HTMLCanvasElement>('#heatmap-canvas-tiles')
   const overlayCanvas = stage.querySelector<HTMLCanvasElement>('#heatmap-canvas-overlay')
-  if (!viewport || !zoomLabel || !moveButton || !resetButton || !tilesCanvas || !overlayCanvas) return
+  if (!viewport || !hintLabel || !modeLabel || !zoomLabel || !moveButton || !resetButton || !tilesCanvas || !overlayCanvas) return
 
   let viewportWidth = Math.max(1, viewport.clientWidth)
   let viewportHeight = Math.max(360, viewport.clientHeight)
@@ -65,6 +72,10 @@ export function renderCanvasScene(input: {
   let downY = 0
   let lastX = 0
   let lastY = 0
+  let gestureActive = false
+  let gestureStartDistance = 0
+  let gestureStartZoom = 1
+  const activePointers = new Map<number, ActivePointer>()
 
   syncCanvasSize(tilesCanvas, viewportWidth, viewportHeight, dpr)
   syncCanvasSize(overlayCanvas, viewportWidth, viewportHeight, dpr)
@@ -93,8 +104,22 @@ export function renderCanvasScene(input: {
   const updateMoveMode = (): void => {
     viewport.classList.toggle('is-move-mode', moveMode)
     moveButton.classList.toggle('is-active', moveMode)
-    moveButton.textContent = moveMode ? 'Done' : 'Move map'
+    modeLabel.classList.toggle('is-active', moveMode)
+    modeLabel.textContent = moveMode ? 'Pan & pinch' : 'Page scroll'
+    hintLabel.textContent = moveMode ? 'Pan & pinch' : 'Page scroll · Tap tiles'
+    moveButton.textContent = moveMode ? 'Back to scroll' : 'Control map'
     moveButton.setAttribute('aria-pressed', moveMode ? 'true' : 'false')
+  }
+
+  const resetPointerState = (): void => {
+    pointerId = null
+    pointerDown = false
+    dragging = false
+    gestureActive = false
+    gestureStartDistance = 0
+    gestureStartZoom = camera.zoom
+    activePointers.clear()
+    viewport.classList.remove('is-panning')
   }
 
   const selectNode = (node: HeatmapSceneNode | null): void => {
@@ -116,16 +141,13 @@ export function renderCanvasScene(input: {
 
   moveButton.addEventListener('click', () => {
     moveMode = !moveMode
-    pointerId = null
-    pointerDown = false
-    dragging = false
-    viewport.classList.remove('is-panning')
+    resetPointerState()
     updateMoveMode()
   })
 
   resetButton.addEventListener('click', () => {
     camera = createFitCamera(viewportWidth, viewportHeight, viewportWidth, viewportHeight, 0)
-    viewport.classList.remove('is-panning')
+    resetPointerState()
     redraw()
   })
 
@@ -146,6 +168,18 @@ export function renderCanvasScene(input: {
   })
 
   overlayCanvas.addEventListener('pointerdown', (event) => {
+    if (event.pointerType !== 'mouse') {
+      activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
+      if (moveMode && activePointers.size >= 2) {
+        startGesture()
+        pointerDown = false
+        dragging = false
+        viewport.classList.add('is-panning')
+        if (!overlayCanvas.hasPointerCapture(event.pointerId)) overlayCanvas.setPointerCapture(event.pointerId)
+        return
+      }
+    }
+
     pointerId = event.pointerId
     pointerDown = true
     dragging = false
@@ -156,8 +190,17 @@ export function renderCanvasScene(input: {
   })
 
   overlayCanvas.addEventListener('pointermove', (event) => {
+    if (event.pointerType !== 'mouse') {
+      activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
+      if (moveMode && activePointers.size >= 2) {
+        if (!gestureActive) startGesture()
+        applyGesture()
+        return
+      }
+    }
+
     if (!pointerDown || pointerId !== event.pointerId) return
-    if (event.pointerType === 'touch' && !moveMode) return
+    if (event.pointerType !== 'mouse' && !moveMode) return
     const dx = event.clientX - downX
     const dy = event.clientY - downY
     if (!dragging && Math.hypot(dx, dy) >= PAN_THRESHOLD) {
@@ -173,6 +216,26 @@ export function renderCanvasScene(input: {
   })
 
   const finishPointer = (event: PointerEvent): void => {
+    const gestureWasActive = gestureActive || activePointers.size > 1
+
+    if (event.pointerType !== 'mouse') {
+      activePointers.delete(event.pointerId)
+    }
+
+    if (gestureWasActive && event.pointerType !== 'mouse') {
+      if (overlayCanvas.hasPointerCapture(event.pointerId)) overlayCanvas.releasePointerCapture(event.pointerId)
+      pointerId = null
+      pointerDown = false
+      dragging = false
+      if (activePointers.size < 2) {
+        gestureActive = false
+        gestureStartDistance = 0
+        gestureStartZoom = camera.zoom
+        viewport.classList.remove('is-panning')
+      }
+      return
+    }
+
     if (pointerId !== event.pointerId) return
     if (!dragging) {
       const rect = overlayCanvas.getBoundingClientRect()
@@ -189,6 +252,36 @@ export function renderCanvasScene(input: {
 
   overlayCanvas.addEventListener('pointerup', finishPointer)
   overlayCanvas.addEventListener('pointercancel', finishPointer)
+
+  function startGesture(): void {
+    const gesture = getGestureState(overlayCanvas, activePointers)
+    if (!gesture) return
+    gestureStartDistance = gesture.distance
+    gestureStartZoom = camera.zoom
+    gestureActive = true
+  }
+
+  function applyGesture(): void {
+    const gesture = getGestureState(overlayCanvas, activePointers)
+    if (!gesture || gestureStartDistance <= 0) return
+    const anchor = screenToWorld(gesture.center, camera)
+    camera = zoomCameraAroundPoint(camera, anchor, gestureStartZoom * (gesture.distance / gestureStartDistance))
+    redraw()
+  }
+}
+
+function getGestureState(canvas: HTMLCanvasElement, points: Map<number, ActivePointer>): { center: { x: number; y: number }; distance: number } | null {
+  const active = Array.from(points.values()).slice(0, 2)
+  if (active.length < 2) return null
+
+  const [first, second] = active
+  const rect = canvas.getBoundingClientRect()
+  const center = {
+    x: (first.x + second.x) / 2 - rect.left,
+    y: (first.y + second.y) / 2 - rect.top,
+  }
+  const distance = Math.hypot(second.x - first.x, second.y - first.y)
+  return { center, distance }
 }
 
 function drawSelectionOverlay(
