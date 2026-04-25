@@ -48,24 +48,25 @@ function ensureStyles(): void {
   style.textContent = `
     .page-shell--site.theme-twitch .hero--feature {
       min-height: auto;
-      padding: clamp(28px, 4vw, 52px);
-      margin-top: 10px;
+      padding: clamp(20px, 3vw, 40px);
+      margin-top: 8px;
     }
     .page-shell--site.theme-twitch .hero--feature h1 {
-      font-size: clamp(3rem, 6vw, 5.4rem);
+      font-size: clamp(2.5rem, 5vw, 4.8rem);
     }
     .page-shell--site.theme-twitch .hero--feature .hero-copy {
       max-width: 760px;
-      margin-top: 14px;
+      margin-top: 10px;
+      line-height: 1.55;
     }
     .page-shell--site.theme-twitch .hero--feature .status-panel {
       min-height: auto;
       align-self: center;
-      padding: 22px 24px;
+      padding: 18px 20px;
     }
     .page-shell--site.theme-twitch .site-subnav {
-      margin-top: 18px;
-      min-height: 56px;
+      margin-top: 14px;
+      min-height: auto;
     }
     .view-mode-bar {
       display: none !important;
@@ -77,8 +78,8 @@ function ensureStyles(): void {
       margin-top: 0;
     }
     .summary-card {
-      min-height: 124px;
-      padding: 17px 18px;
+      min-height: 116px;
+      padding: 16px 18px;
       border-radius: var(--radius-lg);
       border: 1px solid var(--border);
       background: var(--card);
@@ -106,8 +107,8 @@ function ensureStyles(): void {
     }
     .heatmap-layout-root {
       display: grid;
-      gap: 18px;
-      margin-top: 18px;
+      gap: 16px;
+      margin-top: 14px;
     }
     .heatmap-layout-root .feature-layout,
     .heatmap-layout-root .support-grid,
@@ -125,21 +126,22 @@ function ensureStyles(): void {
     .heatmap-layout-root[data-layout-mode='wide'] > .rail-stack {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 22px;
+      gap: 18px;
     }
     .heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature {
       min-height: auto;
-      padding: 14px;
+      padding: 12px;
     }
     .heatmap-layout-root[data-layout-mode='wide'] .chart-stage__label {
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature h2 {
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature p {
-      margin-bottom: 14px;
+      margin-bottom: 10px;
       max-width: 880px;
+      line-height: 1.5;
     }
     .heatmap-layout-root[data-layout-mode='wide'] .chart-placeholder--heatmap {
       min-height: clamp(620px, 74vh, 820px);
@@ -164,27 +166,49 @@ function ensureStyles(): void {
     }
     @media (max-width: 760px) {
       .page-shell--site.theme-twitch .hero--feature {
-        padding: 24px;
+        padding: 18px;
+      }
+      .page-shell--site.theme-twitch .hero--feature h1 {
+        font-size: clamp(2.05rem, 10vw, 2.6rem);
+      }
+      .page-shell--site.theme-twitch .hero--feature .hero-copy {
+        font-size: 0.84rem;
+        line-height: 1.42;
+      }
+      .page-shell--site.theme-twitch .hero--feature .status-panel {
+        padding: 14px;
       }
       .summary-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
       }
       .summary-card {
         min-height: auto;
-        padding: 16px;
+        padding: 10px 12px;
+        border-radius: 14px;
+      }
+      .summary-card p {
+        display: none;
+      }
+      .summary-card__label {
+        font-size: 0.62rem;
+      }
+      .summary-card__value {
+        margin-top: 4px;
+        font-size: 1.05rem;
       }
       .heatmap-layout-root {
-        gap: 14px;
-        margin-top: 14px;
+        gap: 12px;
+        margin-top: 12px;
       }
       .heatmap-layout-root[data-layout-mode='wide'] {
         width: min(calc(100vw - 24px), 760px);
       }
       .heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature {
-        padding: 12px;
+        padding: 10px;
       }
       .heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature p {
-        margin-bottom: 10px;
+        display: none;
       }
       .heatmap-layout-root[data-layout-mode='wide'] .chart-placeholder--heatmap {
         min-height: clamp(460px, 70vh, 660px);
