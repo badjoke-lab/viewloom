@@ -573,3 +573,96 @@ a.button {
     min-height: 260px;
   }
 }
+
+@media (max-width: 760px) {
+  .site-header {
+    width: min(calc(100% - 24px), var(--content-width));
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    justify-items: stretch;
+    gap: 10px;
+    padding-top: 12px;
+  }
+
+  .brand {
+    font-size: 0.98rem;
+    white-space: nowrap;
+  }
+
+  .site-nav {
+    min-width: 0;
+    max-width: 100%;
+    justify-self: end;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+
+  .site-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .header-note {
+    display: none;
+  }
+
+  .site-nav .nav-link {
+    width: auto;
+    flex: 0 0 auto;
+    min-height: 32px;
+    padding: 7px 10px;
+    font-size: 0.78rem;
+  }
+
+  .page-main {
+    padding-top: 16px;
+  }
+
+  .hero--portal,
+  .hero--site {
+    margin-top: 14px;
+  }
+
+  .hero {
+    gap: 16px;
+    border-radius: 22px;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.05rem, 11vw, 2.85rem);
+    line-height: 0.98;
+  }
+
+  .hero-copy {
+    margin-top: 10px;
+    line-height: 1.52;
+    font-size: 0.9rem;
+  }
+
+  .site-subnav {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 6px;
+    min-height: auto;
+    margin-top: 12px;
+    padding: 6px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+
+  .site-subnav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .site-subnav .subnav-link {
+    width: auto;
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+}
