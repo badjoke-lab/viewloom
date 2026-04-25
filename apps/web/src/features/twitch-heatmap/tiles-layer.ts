@@ -55,9 +55,9 @@ export function drawTilesLayer(
     const metrics = getTileMetrics(node, camera)
     const profile = getTileProfile(metrics)
 
-    ctx.fillStyle = node.momentum > 0.02 ? 'rgba(16,185,129,0.78)' : node.momentum < -0.02 ? 'rgba(244,63,94,0.78)' : 'rgba(51,65,85,0.92)'
+    ctx.fillStyle = getTileFillStyle(node)
     ctx.strokeStyle = getTileStrokeStyle(node, profile)
-    ctx.lineWidth = profile === 'tiny' ? Math.max(0.45 / camera.scale, 0.55) : Math.max(1 / camera.scale, 1.15)
+    ctx.lineWidth = profile === 'tiny' ? Math.max(0.28 / camera.scale, 0.36) : Math.max(0.9 / camera.scale, 1)
     ctx.fillRect(node.x, node.y, node.width, node.height)
     ctx.strokeRect(node.x, node.y, node.width, node.height)
 
@@ -67,16 +67,37 @@ export function drawTilesLayer(
   ctx.restore()
 }
 
-function getTileStrokeStyle(node: HeatmapSceneNode, profile: TileProfile): string {
-  if (profile === 'tiny') {
-    if (node.momentum > 0.02) return 'rgba(167,243,208,0.32)'
-    if (node.momentum < -0.02) return 'rgba(254,205,211,0.32)'
-    return 'rgba(148,163,184,0.14)'
+function getTileFillStyle(node: HeatmapSceneNode): string {
+  const strength = Math.min(1, Math.abs(node.momentum) / 1.6)
+  const alpha = 0.58 + strength * 0.32
+
+  if (node.momentum > 0.02) {
+    const green = Math.round(140 + strength * 60)
+    return `rgba(6, ${green}, 106, ${alpha})`
   }
 
-  if (node.momentum > 0.02) return 'rgba(167,243,208,0.72)'
-  if (node.momentum < -0.02) return 'rgba(254,205,211,0.72)'
-  return 'rgba(148,163,184,0.26)'
+  if (node.momentum < -0.02) {
+    const red = Math.round(170 + strength * 70)
+    return `rgba(${red}, 52, 82, ${alpha})`
+  }
+
+  return 'rgba(45, 58, 78, 0.9)'
+}
+
+function getTileStrokeStyle(node: HeatmapSceneNode, profile: TileProfile): string {
+  const strength = Math.min(1, Math.abs(node.momentum) / 1.6)
+  const tinyAlpha = 0.1 + strength * 0.12
+
+  if (profile === 'tiny') {
+    if (node.momentum > 0.02) return `rgba(167,243,208,${tinyAlpha})`
+    if (node.momentum < -0.02) return `rgba(254,205,211,${tinyAlpha})`
+    return 'rgba(148,163,184,0.08)'
+  }
+
+  const alpha = 0.36 + strength * 0.32
+  if (node.momentum > 0.02) return `rgba(167,243,208,${alpha})`
+  if (node.momentum < -0.02) return `rgba(254,205,211,${alpha})`
+  return 'rgba(148,163,184,0.22)'
 }
 
 function drawTileLabel(
