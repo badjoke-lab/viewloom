@@ -8,7 +8,7 @@ export function initHeatmapLayout(): void {
   ensureStyles()
 
   const root = document.querySelector<HTMLElement>('#heatmap-layout-root')
-  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-layout-mode]'))
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('.view-mode-bar__actions button[data-layout-mode]'))
   if (!root || !buttons.length) return
 
   normalizeLayoutBarCopy(buttons)
@@ -42,8 +42,8 @@ function normalizeLayoutBarCopy(buttons: HTMLButtonElement[]): void {
 
 function orderLayoutButtons(): void {
   const actions = document.querySelector<HTMLElement>('.view-mode-bar__actions')
-  const wideButton = document.querySelector<HTMLButtonElement>('[data-layout-mode="wide"]')
-  const splitButton = document.querySelector<HTMLButtonElement>('[data-layout-mode="split"]')
+  const wideButton = document.querySelector<HTMLButtonElement>('.view-mode-bar__actions button[data-layout-mode="wide"]')
+  const splitButton = document.querySelector<HTMLButtonElement>('.view-mode-bar__actions button[data-layout-mode="split"]')
   if (!actions || !wideButton || !splitButton) return
   actions.append(wideButton, splitButton)
 }
@@ -54,6 +54,7 @@ function readStoredMode(): LayoutMode {
 
 function normalizeMode(value: string | null | undefined): LayoutMode {
   if (value === 'split') return 'split'
+  if (value === 'wide' || value === LEGACY_WIDE_MODE) return 'wide'
   return 'wide'
 }
 
@@ -119,6 +120,39 @@ function ensureStyles(): void {
       border-color: rgba(var(--accent-rgb), 0.26);
       color: var(--text);
     }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+    }
+    .summary-card {
+      min-height: 150px;
+      padding: 20px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+    .summary-card__label {
+      color: rgba(var(--accent-rgb), 0.9);
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .summary-card__value {
+      margin-top: 10px;
+      font-size: clamp(1.4rem, 2.2vw, 2rem);
+      line-height: 1.1;
+      font-weight: 800;
+      color: var(--text);
+      word-break: break-word;
+    }
+    .summary-card p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
     .heatmap-layout-root {
       display: grid;
       gap: 22px;
@@ -147,6 +181,9 @@ function ensureStyles(): void {
       min-height: clamp(560px, 72vh, 780px);
     }
     @media (max-width: 1080px) {
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
       .heatmap-layout-root[data-layout-mode='wide'] {
         width: min(calc(100vw - 32px), 1280px);
       }
@@ -163,6 +200,13 @@ function ensureStyles(): void {
       }
       .layout-toggle {
         width: 100%;
+      }
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+      .summary-card {
+        min-height: auto;
+        padding: 18px;
       }
       .heatmap-layout-root[data-layout-mode='wide'] {
         width: min(calc(100vw - 24px), 760px);
