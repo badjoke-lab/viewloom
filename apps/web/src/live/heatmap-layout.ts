@@ -1,70 +1,43 @@
-const STORAGE_KEY = 'viewloom:twitch-heatmap-layout-mode'
 const STYLE_ID = 'twitch-heatmap-layout-style'
-const LEGACY_WIDE_MODE = 'the' + 'ater'
-
-type LayoutMode = 'wide' | 'split'
 
 export function initHeatmapLayout(): void {
   ensureStyles()
 
   const root = document.querySelector<HTMLElement>('#heatmap-layout-root')
-  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('.view-mode-bar__actions button[data-layout-mode]'))
-  if (!root || !buttons.length) return
+  if (!root) return
 
-  normalizeLayoutBarCopy(buttons)
-  orderLayoutButtons()
-
-  const storedMode = readStoredMode()
-  applyMode(root, buttons, storedMode)
-
-  buttons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const nextMode = normalizeMode(button.dataset.layoutMode)
-      applyMode(root, buttons, nextMode)
-      window.localStorage.setItem(STORAGE_KEY, nextMode)
-    })
-  })
+  root.dataset.layoutMode = 'wide'
+  removeLayoutModeBar()
+  moveHeatmapSections(root)
 }
 
-function normalizeLayoutBarCopy(buttons: HTMLButtonElement[]): void {
-  const body = document.querySelector<HTMLElement>('.view-mode-bar__body')
-  if (body) {
-    body.textContent = 'Wide keeps the visual field large. Split pairs the field with the detail panel.'
+function removeLayoutModeBar(): void {
+  document.querySelector<HTMLElement>('.view-mode-bar')?.remove()
+}
+
+function moveHeatmapSections(root: HTMLElement): void {
+  const featureLayout = root.querySelector<HTMLElement>('.feature-layout--heatmap')
+  const summaryGrid = document.querySelector<HTMLElement>('.summary-grid')
+  const railStack = featureLayout?.querySelector<HTMLElement>('.rail-stack') ?? null
+  const supportGrid = root.querySelector<HTMLElement>('.support-grid--feature')
+
+  if (featureLayout && summaryGrid && summaryGrid.parentElement !== root) {
+    featureLayout.after(summaryGrid)
   }
 
-  buttons.forEach((button) => {
-    const mode = normalizeMode(button.dataset.layoutMode)
-    button.dataset.layoutMode = mode
-    button.textContent = mode === 'wide' ? 'Wide' : 'Split'
-    button.classList.add('layout-toggle')
-  })
-}
+  if (railStack && railStack.parentElement !== root) {
+    if (summaryGrid?.parentElement === root) {
+      summaryGrid.after(railStack)
+    } else if (featureLayout) {
+      featureLayout.after(railStack)
+    } else {
+      root.append(railStack)
+    }
+  }
 
-function orderLayoutButtons(): void {
-  const actions = document.querySelector<HTMLElement>('.view-mode-bar__actions')
-  const wideButton = document.querySelector<HTMLButtonElement>('.view-mode-bar__actions button[data-layout-mode="wide"]')
-  const splitButton = document.querySelector<HTMLButtonElement>('.view-mode-bar__actions button[data-layout-mode="split"]')
-  if (!actions || !wideButton || !splitButton) return
-  actions.append(wideButton, splitButton)
-}
-
-function readStoredMode(): LayoutMode {
-  return normalizeMode(window.localStorage.getItem(STORAGE_KEY))
-}
-
-function normalizeMode(value: string | null | undefined): LayoutMode {
-  if (value === 'split') return 'split'
-  if (value === 'wide' || value === LEGACY_WIDE_MODE) return 'wide'
-  return 'wide'
-}
-
-function applyMode(root: HTMLElement, buttons: HTMLButtonElement[], mode: LayoutMode): void {
-  root.dataset.layoutMode = mode
-  buttons.forEach((button) => {
-    const active = normalizeMode(button.dataset.layoutMode) === mode
-    button.classList.toggle('is-active', active)
-    button.setAttribute('aria-pressed', active ? 'true' : 'false')
-  })
+  if (supportGrid) {
+    root.append(supportGrid)
+  }
 }
 
 function ensureStyles(): void {
@@ -95,57 +68,13 @@ function ensureStyles(): void {
       min-height: 56px;
     }
     .view-mode-bar {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 14px;
-      align-items: center;
-      margin-top: 16px;
-      padding: 12px 16px;
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      background: rgba(12, 21, 37, 0.74);
-      box-shadow: 0 14px 42px rgba(0, 0, 0, 0.18);
-    }
-    .view-mode-bar__title {
-      margin: 0;
-      font-size: 0.95rem;
-    }
-    .view-mode-bar__body {
-      margin: 4px 0 0;
-      color: var(--muted);
-      line-height: 1.45;
-      font-size: 0.86rem;
-    }
-    .view-mode-bar__actions {
-      display: inline-flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-    .layout-toggle {
-      min-height: 38px;
-      padding: 0 15px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--muted);
-      cursor: pointer;
-      transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
-    }
-    .layout-toggle:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text);
-    }
-    .layout-toggle.is-active {
-      background: rgba(var(--accent-rgb), 0.18);
-      border-color: rgba(var(--accent-rgb), 0.26);
-      color: var(--text);
+      display: none !important;
     }
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 14px;
-      margin-top: 16px;
+      margin-top: 0;
     }
     .summary-card {
       min-height: 124px;
@@ -181,7 +110,8 @@ function ensureStyles(): void {
       margin-top: 18px;
     }
     .heatmap-layout-root .feature-layout,
-    .heatmap-layout-root .support-grid {
+    .heatmap-layout-root .support-grid,
+    .heatmap-layout-root .rail-stack {
       margin-top: 0;
     }
     .heatmap-layout-root[data-layout-mode='wide'] {
@@ -192,8 +122,10 @@ function ensureStyles(): void {
     .heatmap-layout-root[data-layout-mode='wide'] .feature-layout {
       grid-template-columns: 1fr;
     }
-    .heatmap-layout-root[data-layout-mode='wide'] .rail-stack {
+    .heatmap-layout-root[data-layout-mode='wide'] > .rail-stack {
+      display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
     }
     .heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature {
       min-height: auto;
@@ -226,22 +158,13 @@ function ensureStyles(): void {
       .heatmap-layout-root[data-layout-mode='wide'] {
         width: min(calc(100vw - 32px), 1280px);
       }
-      .heatmap-layout-root[data-layout-mode='wide'] .rail-stack {
+      .heatmap-layout-root[data-layout-mode='wide'] > .rail-stack {
         grid-template-columns: 1fr;
       }
     }
     @media (max-width: 760px) {
       .page-shell--site.theme-twitch .hero--feature {
         padding: 24px;
-      }
-      .view-mode-bar {
-        grid-template-columns: 1fr;
-      }
-      .view-mode-bar__actions {
-        justify-content: stretch;
-      }
-      .layout-toggle {
-        width: 100%;
       }
       .summary-grid {
         grid-template-columns: 1fr;
@@ -250,11 +173,18 @@ function ensureStyles(): void {
         min-height: auto;
         padding: 16px;
       }
+      .heatmap-layout-root {
+        gap: 14px;
+        margin-top: 14px;
+      }
       .heatmap-layout-root[data-layout-mode='wide'] {
         width: min(calc(100vw - 24px), 760px);
       }
       .heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature {
         padding: 12px;
+      }
+      .heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature p {
+        margin-bottom: 10px;
       }
       .heatmap-layout-root[data-layout-mode='wide'] .chart-placeholder--heatmap {
         min-height: clamp(460px, 70vh, 660px);
