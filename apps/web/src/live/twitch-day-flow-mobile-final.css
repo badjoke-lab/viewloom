@@ -1,0 +1,50 @@
+@media (max-width: 640px) {
+  body[data-page="twitch-day-flow"] .df-summary {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    margin: 6px 0 8px !important;
+  }
+
+  body[data-page="twitch-day-flow"] .df-summary .summary-card {
+    min-height: 0 !important;
+    padding: 9px 8px !important;
+    border-radius: 14px !important;
+  }
+
+  body[data-page="twitch-day-flow"] .df-summary .summary-card__label {
+    font-size: 0.55rem !important;
+    letter-spacing: 0.07em !important;
+  }
+
+  body[data-page="twitch-day-flow"] .df-summary .summary-card__value {
+    margin-top: 4px !important;
+    font-size: 0.82rem !important;
+    line-height: 1.05 !important;
+    overflow-wrap: anywhere;
+  }
+
+  body[data-page="twitch-day-flow"] .df-summary p {
+    display: none !important;
+  }
+
+  body[data-page="twitch-day-flow"] .df-layout {
+    margin-top: 8px !important;
+  }
+
+  body[data-page="twitch-day-flow"] .df-main {
+    padding: 13px !important;
+  }
+
+  body[data-page="twitch-day-flow"] .df-main-head {
+    margin-bottom: 8px;
+  }
+
+  body[data-page="twitch-day-flow"] .df-chart-wrap {
+    min-height: 270px !important;
+  }
+
+  body[data-page="twitch-day-flow"] .df-canvas {
+    height: 270px !important;
+  }
+}
