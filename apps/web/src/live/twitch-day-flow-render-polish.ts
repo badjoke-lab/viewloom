@@ -3,6 +3,11 @@ type FillStyleDescriptor = PropertyDescriptor & {
   set?: (this: CanvasRenderingContext2D, value: string | CanvasGradient | CanvasPattern) => void
 }
 
+type GlobalAlphaDescriptor = PropertyDescriptor & {
+  get?: (this: CanvasRenderingContext2D) => number
+  set?: (this: CanvasRenderingContext2D, value: number) => void
+}
+
 // Blue / Violet Dominant palette: saturated violet, cyan, blue, magenta, and teal.
 // Keeps the PR #28 edge-label clamp while testing a tighter ViewLoom color family.
 const COLOR_REMAP = new Map<string, string>([
@@ -36,6 +41,16 @@ function remapColor(value: string): string {
   return COLOR_REMAP.get(normalizeColor(value)) ?? value
 }
 
+function remapAlpha(value: number): number {
+  // Day Flow's first impression is the unselected band field, so keep default bands vivid.
+  // Selection should rely less on making everything else muddy.
+  if (Math.abs(value - 0.72) < 0.01) return 0.9
+  if (Math.abs(value - 0.86) < 0.01) return 0.96
+  if (Math.abs(value - 0.38) < 0.01) return 0.62
+  if (Math.abs(value - 0.18) < 0.01) return 0.42
+  return value
+}
+
 function patchCanvasFillStyle(): void {
   const descriptor = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'fillStyle') as FillStyleDescriptor | undefined
   if (!descriptor?.get || !descriptor?.set) return
@@ -46,6 +61,20 @@ function patchCanvasFillStyle(): void {
     get: descriptor.get,
     set(value: string | CanvasGradient | CanvasPattern) {
       descriptor.set?.call(this, typeof value === 'string' ? remapColor(value) : value)
+    },
+  })
+}
+
+function patchCanvasGlobalAlpha(): void {
+  const descriptor = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'globalAlpha') as GlobalAlphaDescriptor | undefined
+  if (!descriptor?.get || !descriptor?.set) return
+
+  Object.defineProperty(CanvasRenderingContext2D.prototype, 'globalAlpha', {
+    configurable: true,
+    enumerable: descriptor.enumerable,
+    get: descriptor.get,
+    set(value: number) {
+      descriptor.set?.call(this, remapAlpha(value))
     },
   })
 }
@@ -87,5 +116,6 @@ function observeBandVars(): void {
 }
 
 patchCanvasFillStyle()
+patchCanvasGlobalAlpha()
 patchCanvasTextClamp()
 observeBandVars()
