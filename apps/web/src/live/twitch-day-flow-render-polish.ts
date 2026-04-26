@@ -3,29 +3,29 @@ type FillStyleDescriptor = PropertyDescriptor & {
   set?: (this: CanvasRenderingContext2D, value: string | CanvasGradient | CanvasPattern) => void
 }
 
-// ViewLoom Aurora palette: saturated cyan / violet / magenta / teal family.
-// This replaces the previous low-saturation remap while keeping the non-color label clamp fix in this PR.
+// Blue / Violet Dominant palette: saturated violet, cyan, blue, magenta, and teal.
+// Keeps the PR #28 edge-label clamp while testing a tighter ViewLoom color family.
 const COLOR_REMAP = new Map<string, string>([
-  ['#7DD3FC', '#8B5CF6'],
-  ['#A78BFA', '#22D3EE'],
-  ['#F0ABFC', '#F472B6'],
-  ['#F9A8D4', '#60A5FA'],
-  ['#FDBA74', '#2DD4BF'],
-  ['#BEF264', '#C084FC'],
-  ['#5EEAD4', '#38BDF8'],
-  ['#93C5FD', '#E879F9'],
-  ['#C4B5FD', '#818CF8'],
-  ['#FCA5A5', '#34D399'],
-  ['#67E8F9', '#FB7185'],
-  ['#86EFAC', '#06B6D4'],
-  ['#FDE68A', '#A78BFA'],
+  ['#7DD3FC', '#7C3AED'],
+  ['#A78BFA', '#06B6D4'],
+  ['#F0ABFC', '#6366F1'],
+  ['#F9A8D4', '#DB2777'],
+  ['#FDBA74', '#0EA5E9'],
+  ['#BEF264', '#9333EA'],
+  ['#5EEAD4', '#14B8A6'],
+  ['#93C5FD', '#4F46E5'],
+  ['#C4B5FD', '#EC4899'],
+  ['#FCA5A5', '#38BDF8'],
+  ['#67E8F9', '#A855F7'],
+  ['#86EFAC', '#2DD4BF'],
+  ['#FDE68A', '#3B82F6'],
   ['#D8B4FE', '#D946EF'],
-  ['#99F6E4', '#3B82F6'],
-  ['#BFDBFE', '#14B8A6'],
-  ['#FBCFE8', '#EC4899'],
-  ['#FED7AA', '#67E8F9'],
-  ['#A7F3D0', '#6366F1'],
-  ['#DDD6FE', '#10B981'],
+  ['#99F6E4', '#22D3EE'],
+  ['#BFDBFE', '#8B5CF6'],
+  ['#FBCFE8', '#10B981'],
+  ['#FED7AA', '#818CF8'],
+  ['#A7F3D0', '#F472B6'],
+  ['#DDD6FE', '#67E8F9'],
 ])
 
 function normalizeColor(value: string): string {
