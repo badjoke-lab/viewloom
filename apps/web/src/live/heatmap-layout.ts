@@ -21,17 +21,21 @@ function moveHeatmapSections(root: HTMLElement): void {
   const railStack = featureLayout?.querySelector<HTMLElement>('.rail-stack') ?? null
   const supportGrid = root.querySelector<HTMLElement>('.support-grid--feature')
 
-  if (featureLayout && summaryGrid && summaryGrid.parentElement !== root) {
-    featureLayout.after(summaryGrid)
-  }
-
   if (railStack && railStack.parentElement !== root) {
-    if (summaryGrid?.parentElement === root) {
-      summaryGrid.after(railStack)
-    } else if (featureLayout) {
+    if (featureLayout) {
       featureLayout.after(railStack)
     } else {
       root.append(railStack)
+    }
+  }
+
+  if (summaryGrid && summaryGrid.parentElement !== root) {
+    if (railStack?.parentElement === root) {
+      railStack.after(summaryGrid)
+    } else if (featureLayout) {
+      featureLayout.after(summaryGrid)
+    } else {
+      root.append(summaryGrid)
     }
   }
 
