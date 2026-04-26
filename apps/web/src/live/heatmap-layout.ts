@@ -9,6 +9,7 @@ export function initHeatmapLayout(): void {
   root.dataset.layoutMode = 'wide'
   removeLayoutModeBar()
   moveHeatmapSections(root)
+  observeLegendPlacement(root)
 }
 
 function removeLayoutModeBar(): void {
@@ -41,6 +42,38 @@ function moveHeatmapSections(root: HTMLElement): void {
 
   if (supportGrid) {
     root.append(supportGrid)
+  }
+}
+
+function observeLegendPlacement(root: HTMLElement): void {
+  moveLegendBelowSummary(root)
+
+  const observer = new MutationObserver(() => {
+    moveLegendBelowSummary(root)
+  })
+  observer.observe(root, { childList: true, subtree: true })
+}
+
+function moveLegendBelowSummary(root: HTMLElement): void {
+  const summaryGrid = root.querySelector<HTMLElement>('.summary-grid')
+  const supportGrid = root.querySelector<HTMLElement>('.support-grid--feature')
+  const legendBody = root.querySelector<HTMLElement>('#heatmap-legend-body')
+  const legendCard = legendBody?.closest<HTMLElement>('.rail-card, .support-card') ?? null
+
+  if (!legendCard || !summaryGrid) return
+
+  legendCard.classList.remove('rail-card', 'rail-card--detail')
+  legendCard.classList.add('support-card', 'support-card--live', 'heatmap-legend-card')
+
+  if (supportGrid) {
+    if (legendCard.parentElement !== supportGrid || supportGrid.firstElementChild !== legendCard) {
+      supportGrid.prepend(legendCard)
+    }
+    return
+  }
+
+  if (legendCard.parentElement !== root) {
+    summaryGrid.after(legendCard)
   }
 }
 
@@ -132,6 +165,9 @@ function ensureStyles(): void {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 18px;
     }
+    .heatmap-layout-root[data-layout-mode='wide'] .support-grid--feature {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
     .heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature {
       min-height: auto;
       padding: 12px;
@@ -164,7 +200,8 @@ function ensureStyles(): void {
       .heatmap-layout-root[data-layout-mode='wide'] {
         width: min(calc(100vw - 32px), 1280px);
       }
-      .heatmap-layout-root[data-layout-mode='wide'] > .rail-stack {
+      .heatmap-layout-root[data-layout-mode='wide'] > .rail-stack,
+      .heatmap-layout-root[data-layout-mode='wide'] .support-grid--feature {
         grid-template-columns: 1fr;
       }
     }
