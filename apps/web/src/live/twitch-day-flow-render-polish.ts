@@ -42,12 +42,12 @@ function remapColor(value: string): string {
 }
 
 function remapAlpha(value: number): number {
-  // Day Flow's first impression is the unselected band field, so keep default bands vivid.
-  // Selection should rely less on making everything else muddy.
-  if (Math.abs(value - 0.72) < 0.01) return 0.9
-  if (Math.abs(value - 0.86) < 0.01) return 0.96
-  if (Math.abs(value - 0.38) < 0.01) return 0.62
-  if (Math.abs(value - 0.18) < 0.01) return 0.42
+  // Keep the initial unselected field vivid, but avoid the over-bright game-UI look.
+  // Selection should use enough dimming to read focus without making the terrain muddy.
+  if (Math.abs(value - 0.72) < 0.01) return 0.86
+  if (Math.abs(value - 0.86) < 0.01) return 0.92
+  if (Math.abs(value - 0.38) < 0.01) return 0.56
+  if (Math.abs(value - 0.18) < 0.01) return 0.38
   return value
 }
 
