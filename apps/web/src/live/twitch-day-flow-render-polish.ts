@@ -3,29 +3,29 @@ type FillStyleDescriptor = PropertyDescriptor & {
   set?: (this: CanvasRenderingContext2D, value: string | CanvasGradient | CanvasPattern) => void
 }
 
-// ViewLoom Aurora palette: saturated cyan / violet / magenta / teal family.
-// This replaces the previous low-saturation remap while keeping the non-color label clamp fix in this PR.
+// Neon Signal palette: saturated live-stream style cyan / violet / pink / mint / blue family.
+// This keeps the label clamp fix from the previous render polish and only changes the band color mapping.
 const COLOR_REMAP = new Map<string, string>([
-  ['#7DD3FC', '#8B5CF6'],
-  ['#A78BFA', '#22D3EE'],
-  ['#F0ABFC', '#F472B6'],
-  ['#F9A8D4', '#60A5FA'],
-  ['#FDBA74', '#2DD4BF'],
-  ['#BEF264', '#C084FC'],
-  ['#5EEAD4', '#38BDF8'],
-  ['#93C5FD', '#E879F9'],
-  ['#C4B5FD', '#818CF8'],
-  ['#FCA5A5', '#34D399'],
-  ['#67E8F9', '#FB7185'],
-  ['#86EFAC', '#06B6D4'],
-  ['#FDE68A', '#A78BFA'],
-  ['#D8B4FE', '#D946EF'],
-  ['#99F6E4', '#3B82F6'],
-  ['#BFDBFE', '#14B8A6'],
-  ['#FBCFE8', '#EC4899'],
-  ['#FED7AA', '#67E8F9'],
-  ['#A7F3D0', '#6366F1'],
-  ['#DDD6FE', '#10B981'],
+  ['#7DD3FC', '#9D5CFF'],
+  ['#A78BFA', '#00D4FF'],
+  ['#F0ABFC', '#FF4FB8'],
+  ['#F9A8D4', '#39FFCE'],
+  ['#FDBA74', '#5E8CFF'],
+  ['#BEF264', '#C45CFF'],
+  ['#5EEAD4', '#00B8FF'],
+  ['#93C5FD', '#FF6B9E'],
+  ['#C4B5FD', '#42E8A8'],
+  ['#FCA5A5', '#7C6CFF'],
+  ['#67E8F9', '#E056FD'],
+  ['#86EFAC', '#00F0FF'],
+  ['#FDE68A', '#FF3D81'],
+  ['#D8B4FE', '#3BFFB8'],
+  ['#99F6E4', '#4D9DFF'],
+  ['#BFDBFE', '#B26CFF'],
+  ['#FBCFE8', '#18C8FF'],
+  ['#FED7AA', '#FF7AC8'],
+  ['#A7F3D0', '#5CFFD6'],
+  ['#DDD6FE', '#6F8CFF'],
 ])
 
 function normalizeColor(value: string): string {
