@@ -1,5 +1,5 @@
-/* Twitch Day Flow page-local layout rules.
-   Keep this as the only route-specific stylesheet for /twitch/day-flow/ until the renderer is split into modules. */
+/* Twitch Day Flow route-local layout rules.
+   Wide-only layout, mobile compression, and Time Focus readability live in this single stylesheet. */
 
 .df-controls label:nth-of-type(7) {
   display: none !important;
@@ -74,30 +74,240 @@
 }
 
 @media (max-width: 640px) {
-  .df-controls {
+  body[data-page="twitch-day-flow"] .page-main {
+    gap: 10px;
+  }
+
+  body[data-page="twitch-day-flow"] .hero--feature {
+    padding: 20px 14px 16px;
+    gap: 12px;
+    border-radius: 22px;
+  }
+
+  body[data-page="twitch-day-flow"] .hero--feature h1 {
+    font-size: clamp(2.4rem, 13vw, 3.35rem);
+    line-height: 0.92;
+    margin: 6px 0 8px;
+  }
+
+  body[data-page="twitch-day-flow"] .hero-copy {
+    margin: 0;
+    line-height: 1.45;
+  }
+
+  body[data-page="twitch-day-flow"] .status-panel {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  body[data-page="twitch-day-flow"] .status-panel__title {
+    font-size: 1.15rem;
+  }
+
+  body[data-page="twitch-day-flow"] .site-subnav {
+    margin-top: 8px;
+    padding: 6px;
+  }
+
+  body[data-page="twitch-day-flow"] .subnav-link {
+    min-height: 30px;
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+
+  body[data-page="twitch-day-flow"] .df-controls {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px;
+    margin: 10px 0 12px !important;
   }
 
-  .df-controls .button {
+  body[data-page="twitch-day-flow"] .df-controls label {
+    gap: 4px;
+    font-size: 0.68rem;
+  }
+
+  body[data-page="twitch-day-flow"] .df-controls select,
+  body[data-page="twitch-day-flow"] .df-controls input[type="date"] {
+    min-height: 34px;
+    border-radius: 11px;
+    padding: 0 9px;
+    font-size: 0.78rem;
+  }
+
+  body[data-page="twitch-day-flow"] .df-checkbox {
+    min-height: 26px;
+    font-size: 0.75rem !important;
+  }
+
+  body[data-page="twitch-day-flow"] .df-controls .button {
     grid-column: 1 / -1 !important;
+    min-height: 38px;
+    margin-top: 2px;
   }
 
-  .df-chart-wrap {
-    min-height: 300px !important;
+  body[data-page="twitch-day-flow"] .df-summary {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    margin: 6px 0 8px !important;
   }
 
-  .df-canvas {
-    height: 300px !important;
+  body[data-page="twitch-day-flow"] .df-summary .summary-card {
+    min-height: 0 !important;
+    padding: 9px 8px !important;
+    border-radius: 14px !important;
   }
 
-  .df-rail {
+  body[data-page="twitch-day-flow"] .df-summary .summary-card__label {
+    font-size: 0.55rem !important;
+    letter-spacing: 0.07em !important;
+  }
+
+  body[data-page="twitch-day-flow"] .df-summary .summary-card__value {
+    margin-top: 4px !important;
+    font-size: 0.82rem !important;
+    line-height: 1.05 !important;
+    overflow-wrap: anywhere;
+  }
+
+  body[data-page="twitch-day-flow"] .df-summary p {
     display: none !important;
   }
 
-  .df-mobile-focus,
-  .df-open-sheet {
+  body[data-page="twitch-day-flow"] .df-layout {
+    margin-top: 8px !important;
+  }
+
+  body[data-page="twitch-day-flow"] .df-main {
+    padding: 13px !important;
+    border-radius: 20px;
+  }
+
+  body[data-page="twitch-day-flow"] .df-main-head {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  body[data-page="twitch-day-flow"] .df-main-head h2 {
+    font-size: 1.35rem;
+    margin: 2px 0 4px;
+  }
+
+  body[data-page="twitch-day-flow"] .df-main-head p {
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+
+  body[data-page="twitch-day-flow"] .df-pills {
+    gap: 5px;
+  }
+
+  body[data-page="twitch-day-flow"] .df-pills span {
+    padding: 5px 8px;
+    font-size: 0.62rem;
+  }
+
+  body[data-page="twitch-day-flow"] .df-chart-wrap {
+    min-height: 270px !important;
+    border-radius: 14px;
+  }
+
+  body[data-page="twitch-day-flow"] .df-canvas {
+    height: 270px !important;
+  }
+
+  body[data-page="twitch-day-flow"] .df-time {
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 0.76rem;
+  }
+
+  body[data-page="twitch-day-flow"] .df-mobile-focus {
     display: block !important;
-    margin-top: 12px !important;
+    margin-top: 8px !important;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  body[data-page="twitch-day-flow"] .df-focus-head {
+    margin-bottom: 8px;
+  }
+
+  body[data-page="twitch-day-flow"] .df-focus-list {
+    gap: 6px;
+  }
+
+  body[data-page="twitch-day-flow"] .df-focus-row {
+    grid-template-columns: 26px 10px minmax(0, 1fr) auto !important;
+    grid-template-areas:
+      "rank dot name value"
+      "rank dot meta meta"
+      "bar bar bar bar";
+    gap: 4px 7px;
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  body[data-page="twitch-day-flow"] .df-focus-row > span {
+    grid-area: rank;
+  }
+
+  body[data-page="twitch-day-flow"] .df-focus-row > i {
+    grid-area: dot;
+  }
+
+  body[data-page="twitch-day-flow"] .df-focus-row > b {
+    grid-area: name;
+    min-width: 0;
+    font-size: 0.82rem;
+  }
+
+  body[data-page="twitch-day-flow"] .df-focus-row > strong {
+    grid-area: value;
+    font-size: 0.86rem;
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  body[data-page="twitch-day-flow"] .df-focus-row > small {
+    grid-area: meta !important;
+    display: block;
+    color: var(--muted);
+    font-size: 0.68rem;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  body[data-page="twitch-day-flow"] .df-focus-row > em {
+    grid-area: bar !important;
+    width: 100%;
+    margin-top: 2px;
+  }
+
+  body[data-page="twitch-day-flow"] .df-focus-meta {
+    margin-top: 8px;
+    font-size: 0.68rem;
+    line-height: 1.35;
+  }
+
+  body[data-page="twitch-day-flow"] .df-open-sheet {
+    display: block !important;
+    margin-top: 8px !important;
+    min-height: 38px;
+  }
+
+  body[data-page="twitch-day-flow"] .df-rail {
+    display: none !important;
+  }
+
+  body[data-page="twitch-day-flow"] .support-grid {
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  body[data-page="twitch-day-flow"] .support-card {
+    padding: 16px;
+    border-radius: 18px;
   }
 }
