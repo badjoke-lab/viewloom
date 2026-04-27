@@ -3,10 +3,17 @@ import './battle-lines.css'
 
 type Metric = 'viewers' | 'indexed'
 type ObservedState = 'observed' | 'offline' | 'not_observed' | 'missing'
-type Point = { value: number | null; state: ObservedState }
+type Point = { value: number | null; state: ObservedState; time: string }
 type Line = { id: string; name: string; color: string; points: Point[] }
 type Pair = [string, string]
 type BattleEvent = { time: string; index: number; label: string; pair: Pair }
+type NormalizedPayload = {
+  lines: Line[]
+  primaryPair?: Pair
+  secondaryPairs: Pair[]
+  events: BattleEvent[]
+  sourceText: string
+}
 type BattleState = {
   metric: Metric
   top: 3 | 5 | 10
@@ -15,6 +22,9 @@ type BattleState = {
   selected: number
   pair: Pair
   lines: Line[]
+  secondaryPairs: Pair[]
+  events: BattleEvent[]
+  sourceText: string
 }
 
 const app = document.querySelector<HTMLDivElement>('#app')
@@ -22,13 +32,13 @@ if (!app) throw new Error('#app not found')
 
 const site = document.body.dataset.page?.startsWith('kick') ? 'kick' : 'twitch'
 const palette = ['#3b82f6', '#a855f7', '#64748b', '#5eead4', '#94a3b8']
-const reversals: BattleEvent[] = [
+const fallbackEvents: BattleEvent[] = [
   { time: '00:40', index: 1, label: 'HasanAbi passed TheBurntPeanut', pair: ['hasan', 'burnt'] },
   { time: '00:35', index: 1, label: 'HasanAbi passed fauxty', pair: ['hasan', 'faux'] },
   { time: '00:10', index: 0, label: 'TheBurntPeanut passed xQc', pair: ['burnt', 'xqc'] },
 ]
-const secondaryPairs: Pair[] = [['burnt', 'xqc'], ['jynxzi', 'burnt'], ['hasan', 'faux']]
 
+const demoLines = makeLines()
 let state: BattleState = {
   metric: 'viewers',
   top: 5,
@@ -36,7 +46,10 @@ let state: BattleState = {
   mode: 'recommended',
   selected: 36,
   pair: ['xqc', 'jynxzi'],
-  lines: makeLines(),
+  lines: demoLines,
+  secondaryPairs: buildSecondaryPairs(demoLines, ['xqc', 'jynxzi']),
+  events: fallbackEvents,
+  sourceText: 'Demo · Partial · Top 5 · Viewers · 5m · Updated fallback',
 }
 
 app.innerHTML = renderPage()
@@ -47,13 +60,30 @@ void loadApi()
 async function loadApi(): Promise<void> {
   try {
     const response = await fetch(`/api/battle-lines?top=${state.top}&bucket=${state.bucket}&metric=${state.metric}`, { cache: 'no-store' })
-    if (!response.ok) return
-    const lines = normalize((await response.json()) as unknown)
-    if (lines.length >= 2) {
-      state = { ...state, lines, selected: Math.min(state.selected, lines[0].points.length - 1) }
+    if (!response.ok) {
+      state = { ...state, sourceText: `Error · HTTP ${response.status} · Demo fallback` }
       render()
+      return
     }
+    const normalized = normalizePayload((await response.json()) as unknown)
+    if (!normalized || normalized.lines.length < 2) {
+      state = { ...state, sourceText: 'Empty · No battle-lines series · Demo fallback' }
+      render()
+      return
+    }
+    const nextPair = normalized.primaryPair ?? (pairExists(state.pair, normalized.lines) ? state.pair : firstPair(normalized.lines))
+    state = {
+      ...state,
+      lines: normalized.lines,
+      pair: nextPair,
+      selected: Math.min(state.selected, normalized.lines[0].points.length - 1),
+      secondaryPairs: normalized.secondaryPairs.length > 0 ? normalized.secondaryPairs : buildSecondaryPairs(normalized.lines, nextPair),
+      events: normalized.events.length > 0 ? normalized.events : fallbackEventsForLines(normalized.lines, nextPair),
+      sourceText: normalized.sourceText,
+    }
+    render()
   } catch {
+    state = { ...state, sourceText: 'Error · API unavailable · Demo fallback' }
     render()
   }
 }
@@ -64,7 +94,7 @@ function renderPage(): string {
     <main class="page-main bl-main">
       <section class="bl-hero"><div><div class="eyebrow">${site} / Compare</div><h1>Battle Lines</h1><p>Compare live audience lines, reversals, and closing gaps.</p></div><button class="bl-icon" type="button">⇧</button></section>
       <section class="bl-controls">${segment('top', ['Top 3', 'Top 5', 'Top 10'], `Top ${state.top}`)}${segment('metric', ['Viewers', 'Indexed'], title(state.metric))}${segment('bucket', ['1m', '5m', '10m'], state.bucket)}<button class="bl-refresh" data-refresh type="button">Refresh</button></section>
-      <div class="bl-status">API · Partial · Top <span data-status-top></span> · <span data-status-metric></span> · <span data-status-bucket></span> · <span data-status-observed></span></div>
+      <div class="bl-status" data-status></div>
       <section class="bl-summary" data-summary></section>
       <section class="bl-chart-card"><div class="bl-chart-head"><h2>Battle Lines</h2><div data-legend></div></div><div class="bl-chart" data-chart></div><section class="bl-inspector" data-inspector></section></section>
       <section class="bl-section" data-reversals></section>
@@ -89,6 +119,7 @@ function bind(): void {
       if (group === 'bucket') state = { ...state, bucket: value === '1m' || value === '10m' ? value : '5m' }
       refreshButtons()
       render()
+      void loadApi()
     })
   })
   document.querySelector('[data-refresh]')?.addEventListener('click', () => void loadApi())
@@ -105,13 +136,11 @@ function render(): void {
   if (!pair) return
   const info = pairInfo(pair, state.selected)
   const coverage = coverageSummary()
-  setText('[data-status-top]', String(state.top))
-  setText('[data-status-metric]', title(state.metric))
-  setText('[data-status-bucket]', state.bucket)
-  setText('[data-status-observed]', coverage.status)
+  setText('[data-status]', `${state.sourceText} · ${coverage.status}`)
   setText('[data-coverage-note]', coverage.note)
+  const latestEvent = state.events[0]
   const summary = document.querySelector<HTMLElement>('[data-summary]')
-  if (summary) summary.innerHTML = `<div><span>${state.mode === 'inspect' ? 'Inspecting' : state.mode === 'custom' ? 'Custom' : 'Recommended'}</span><h2>${pair[0].name} vs ${pair[1].name}</h2><p>${info.trend} gap · ${format(info.gap)}</p></div><strong>Gap ${format(info.gap)}</strong><strong>${info.trend} ${signed(info.delta)}</strong><strong>Latest reversal ${reversals[0].time}</strong><strong>Observed ${coverage.short}</strong>`
+  if (summary) summary.innerHTML = `<div><span>${state.mode === 'inspect' ? 'Inspecting' : state.mode === 'custom' ? 'Custom' : 'Recommended'}</span><h2>${pair[0].name} vs ${pair[1].name}</h2><p>${info.trend} gap · ${format(info.gap)}</p></div><strong>Gap ${format(info.gap)}</strong><strong>${info.trend} ${signed(info.delta)}</strong><strong>Latest reversal ${latestEvent?.time ?? '—'}</strong><strong>Observed ${coverage.short}</strong>`
   const legend = document.querySelector<HTMLElement>('[data-legend]')
   if (legend) legend.innerHTML = `<span style="--c:${pair[0].color}">${pair[0].name}</span><span style="--c:${pair[1].color}">${pair[1].name}</span><span style="--c:#64748b">Other battles</span>`
   renderChart(pair)
@@ -196,21 +225,164 @@ function renderInspector(pair: [Line, Line], info: { gap: number; delta: number;
 
 function renderLists(): void {
   const rev = document.querySelector<HTMLElement>('[data-reversals]')
-  if (rev) rev.innerHTML = `<h2>Latest Reversals</h2><div>${reversals.map((event, index) => `<button type="button" data-reversal="${index}"><span>${event.time}</span> ${event.label}</button>`).join('')}</div>`
+  if (rev) rev.innerHTML = `<h2>Latest Reversals</h2><div>${state.events.slice(0, 3).map((event, index) => `<button type="button" data-reversal="${index}"><span>${event.time}</span> ${event.label}</button>`).join('')}</div>`
   rev?.querySelectorAll<HTMLButtonElement>('[data-reversal]').forEach((button) => button.addEventListener('click', () => {
-    const event = reversals[Number(button.dataset.reversal)]
+    const event = state.events[Number(button.dataset.reversal)]
     state = { ...state, mode: 'inspect', selected: event.index, pair: event.pair }
     render()
   }))
   const sec = document.querySelector<HTMLElement>('[data-secondary]')
-  if (sec) sec.innerHTML = `<h2>Secondary Battles</h2><div>${secondaryPairs.map((pair) => `<button type="button" data-pair="${pair[0]}:${pair[1]}">${pairLabel(pair)}</button>`).join('')}</div>`
+  if (sec) sec.innerHTML = `<h2>Secondary Battles</h2><div>${state.secondaryPairs.slice(0, 3).map((pair) => `<button type="button" data-pair="${pair[0]}:${pair[1]}">${pairLabel(pair)}</button>`).join('')}</div>`
   sec?.querySelectorAll<HTMLButtonElement>('[data-pair]').forEach((button) => button.addEventListener('click', () => {
     const [a, b] = String(button.dataset.pair).split(':') as Pair
     state = { ...state, mode: 'custom', pair: [a, b] }
     render()
   }))
   const feed = document.querySelector<HTMLElement>('[data-feed]')
-  if (feed) feed.innerHTML = `<h2>Battle Feed</h2><p>01:30 Jynxzi gained +9,212 viewers</p><p>01:15 xQc lost -6,231 viewers</p><p>00:40 HasanAbi passed TheBurntPeanut</p>`
+  if (feed) feed.innerHTML = `<h2>Battle Feed</h2>${state.events.length > 0 ? state.events.slice(0, 3).map((event) => `<p>${event.time} ${event.label}</p>`).join('') : '<p>No battle events for this range.</p>'}`
+}
+
+function normalizePayload(payload: unknown): NormalizedPayload | null {
+  if (!record(payload)) return null
+  const lines = normalizeLines(payload)
+  if (lines.length < 2) return null
+  const primaryPair = normalizePair(payload.primaryBattle ?? payload.primary_battle ?? payload.recommendedBattle ?? payload.recommended_battle, lines)
+  const secondaryPairs = normalizePairs(payload.secondaryBattles ?? payload.secondary_battles ?? payload.battles, lines, primaryPair ?? firstPair(lines))
+  const events = normalizeEvents(payload.reversals ?? payload.events ?? payload.feed, lines, primaryPair ?? firstPair(lines))
+  return {
+    lines,
+    primaryPair,
+    secondaryPairs,
+    events,
+    sourceText: buildSourceText(payload),
+  }
+}
+
+function normalizeLines(payload: Record<string, unknown>): Line[] {
+  const raw = Array.isArray(payload.lines) ? payload.lines : Array.isArray(payload.series) ? payload.series : []
+  return raw.slice(0, 10).map((item, index): Line | null => {
+    if (!record(item)) return null
+    const rawPoints = Array.isArray(item.points) ? item.points : Array.isArray(item.values) ? item.values : []
+    const points = rawPoints.map((point, pointIndex) => normalizePoint(point, pointIndex))
+    if (points.length < 2) return null
+    const id = resolveRawId(item, index)
+    const name = String(item.name ?? item.displayName ?? item.display_name ?? item.login ?? id)
+    return { id, name, color: palette[index % palette.length], points }
+  }).filter((line): line is Line => line !== null)
+}
+
+function normalizePoint(point: unknown, index: number): Point {
+  if (typeof point === 'number') return { value: point, state: 'observed', time: defaultTime(index) }
+  if (!record(point)) return { value: null, state: 'missing', time: defaultTime(index) }
+  const raw = point.viewers ?? point.value ?? point.y ?? point.viewerCount ?? point.viewer_count
+  const rawState = point.observedState ?? point.observed_state ?? point.state
+  const stateValue: ObservedState = rawState === 'offline' || rawState === 'not_observed' || rawState === 'missing' ? rawState : 'observed'
+  const value = typeof raw === 'number' && Number.isFinite(raw) ? raw : stateValue === 'offline' ? 0 : null
+  const time = normalizeTimeLabel(point.time ?? point.bucket ?? point.bucket_minute ?? point.x, index)
+  return { value, state: value === null && stateValue === 'observed' ? 'missing' : stateValue, time }
+}
+
+function normalizePairs(raw: unknown, lines: Line[], primaryPair: Pair): Pair[] {
+  const values = Array.isArray(raw) ? raw : []
+  const parsed = values.map((item) => normalizePair(item, lines)).filter((pair): pair is Pair => pair !== null)
+  return uniquePairs([...parsed, ...buildSecondaryPairs(lines, primaryPair)], primaryPair)
+}
+
+function normalizeEvents(raw: unknown, lines: Line[], fallbackPair: Pair): BattleEvent[] {
+  const values = Array.isArray(raw) ? raw : []
+  const events = values.map((item): BattleEvent | null => {
+    if (!record(item)) return null
+    const pair = normalizePair(item.pair ?? item.battle ?? item, lines) ?? fallbackPair
+    const timeLabel = normalizeTimeLabel(item.time ?? item.bucket ?? item.bucket_minute ?? item.at, 0)
+    const index = normalizeEventIndex(item.index, timeLabel, lines)
+    const passer = item.passer ?? item.winner ?? item.a ?? item.from ?? item.leader
+    const passed = item.passed ?? item.loser ?? item.b ?? item.to ?? item.chaser
+    const label = String(item.label ?? item.text ?? (passer && passed ? `${displayName(passer, lines)} passed ${displayName(passed, lines)}` : pairLabel(pair)))
+    return { time: timeLabel, index, label, pair }
+  }).filter((event): event is BattleEvent => event !== null)
+  return events.length > 0 ? events : fallbackEventsForLines(lines, fallbackPair)
+}
+
+function normalizeEventIndex(rawIndex: unknown, timeLabel: string, lines: Line[]): number {
+  if (typeof rawIndex === 'number' && Number.isFinite(rawIndex)) return clamp(Math.round(rawIndex), 0, lines[0].points.length - 1)
+  const target = parseTimeToMinutes(timeLabel)
+  if (target === null) return 0
+  let best = 0
+  let bestDelta = Number.POSITIVE_INFINITY
+  lines[0].points.forEach((point, index) => {
+    const minutes = parseTimeToMinutes(point.time)
+    if (minutes === null) return
+    const delta = Math.abs(minutes - target)
+    if (delta < bestDelta) {
+      best = index
+      bestDelta = delta
+    }
+  })
+  return best
+}
+
+function normalizePair(raw: unknown, lines: Line[]): Pair | null {
+  if (Array.isArray(raw) && raw.length >= 2) return resolvePair(raw[0], raw[1], lines)
+  if (!record(raw)) return null
+  return resolvePair(raw.a ?? raw.left ?? raw.streamerA ?? raw.streamer_a ?? raw.leader ?? raw.passer ?? raw.from, raw.b ?? raw.right ?? raw.streamerB ?? raw.streamer_b ?? raw.chaser ?? raw.passed ?? raw.to, lines)
+}
+
+function resolvePair(a: unknown, b: unknown, lines: Line[]): Pair | null {
+  const left = resolveLineId(a, lines)
+  const right = resolveLineId(b, lines)
+  if (!left || !right || left === right) return null
+  return [left, right]
+}
+
+function resolveLineId(value: unknown, lines: Line[]): string | null {
+  const key = slug(String(value ?? ''))
+  if (!key) return null
+  return lines.find((line) => line.id === key || slug(line.name) === key)?.id ?? key
+}
+
+function buildSourceText(payload: Record<string, unknown>): string {
+  const source = title(String(payload.source ?? 'api'))
+  const status = title(String(payload.state ?? payload.status ?? 'partial'))
+  const updated = String(payload.updatedAt ?? payload.updated_at ?? payload.generatedAt ?? payload.generated_at ?? 'live')
+  return `${source} · ${status} · Top ${state.top} · ${title(state.metric)} · ${state.bucket} · Updated ${updated}`
+}
+
+function resolveRawId(item: Record<string, unknown>, index: number): string {
+  return slug(String(item.id ?? item.streamerId ?? item.streamer_id ?? item.login ?? item.displayName ?? item.display_name ?? `line-${index}`))
+}
+
+function fallbackEventsForLines(lines: Line[], pair: Pair): BattleEvent[] {
+  const fallback = lines.length >= 2 ? pair : firstPair(lines)
+  return [{ time: lines[0]?.points[0]?.time ?? '00:00', index: 0, label: `${displayName(fallback[0], lines)} vs ${displayName(fallback[1], lines)} started`, pair: fallback }]
+}
+
+function buildSecondaryPairs(lines: Line[], primaryPair: Pair): Pair[] {
+  const ids = lines.map((line) => line.id)
+  return uniquePairs([[ids[0], ids[2]], [ids[1], ids[2]], [ids[3], ids[4]], [ids[0], ids[3]]].filter((pair): pair is Pair => Boolean(pair[0] && pair[1])) as Pair[], primaryPair)
+}
+
+function uniquePairs(pairs: Pair[], primaryPair: Pair): Pair[] {
+  const seen = new Set<string>()
+  return pairs.filter((pair) => {
+    if (!pair[0] || !pair[1] || pair[0] === pair[1]) return false
+    if (samePair(pair, primaryPair)) return false
+    const key = pair.slice().sort().join(':')
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+function firstPair(lines: Line[]): Pair {
+  return [lines[0]?.id ?? 'xqc', lines[1]?.id ?? 'jynxzi']
+}
+
+function pairExists(pair: Pair, lines: Line[]): boolean {
+  return Boolean(lines.find((line) => line.id === pair[0]) && lines.find((line) => line.id === pair[1]))
+}
+
+function samePair(a: Pair, b: Pair): boolean {
+  return a.includes(b[0]) && a.includes(b[1])
 }
 
 function pairLabel(pair: Pair): string {
@@ -226,30 +398,6 @@ function getPairByIds(pair: Pair): [Line, Line] | null {
   return a && b ? [a, b] : null
 }
 
-function normalize(payload: unknown): Line[] {
-  if (!record(payload)) return []
-  const raw = Array.isArray(payload.lines) ? payload.lines : Array.isArray(payload.series) ? payload.series : []
-  return raw.slice(0, 10).map((item, index): Line | null => {
-    if (!record(item)) return null
-    const rawPoints = Array.isArray(item.points) ? item.points : Array.isArray(item.values) ? item.values : []
-    const points = rawPoints.map((point) => normalizePoint(point))
-    if (points.length < 2) return null
-    const id = slug(String(item.id ?? item.streamerId ?? item.login ?? item.displayName ?? `line-${index}`))
-    const name = String(item.name ?? item.displayName ?? item.login ?? id)
-    return { id, name, color: palette[index % palette.length], points }
-  }).filter((line): line is Line => line !== null)
-}
-
-function normalizePoint(point: unknown): Point {
-  if (typeof point === 'number') return { value: point, state: 'observed' }
-  if (!record(point)) return { value: null, state: 'missing' }
-  const raw = point.viewers ?? point.value ?? point.y
-  const rawState = point.observedState ?? point.state
-  const stateValue: ObservedState = rawState === 'offline' || rawState === 'not_observed' || rawState === 'missing' ? rawState : 'observed'
-  const value = typeof raw === 'number' && Number.isFinite(raw) ? raw : stateValue === 'offline' ? 0 : null
-  return { value, state: value === null && stateValue === 'observed' ? 'missing' : stateValue }
-}
-
 function makeLines(): Line[] {
   const ids = [['xqc', 'xQc'], ['jynxzi', 'Jynxzi'], ['burnt', 'TheBurntPeanut'], ['hasan', 'HasanAbi'], ['faux', 'fauxty']] as const
   return ids.map(([id, name], lineIndex) => ({
@@ -259,7 +407,7 @@ function makeLines(): Line[] {
     points: Array.from({ length: 49 }, (_, index) => {
       const value = Math.max(0, Math.round(30000 + lineIndex * 9000 + Math.sin(index / (3 + lineIndex)) * 16000 + (lineIndex < 2 ? 120000 + index * (lineIndex === 0 ? 1200 : 900) : index * 900)))
       const pointState: ObservedState = lineIndex === 3 && index === 17 ? 'not_observed' : lineIndex === 4 && index === 31 ? 'missing' : lineIndex === 2 && index < 2 ? 'offline' : 'observed'
-      return { value: pointState === 'missing' || pointState === 'not_observed' ? null : pointState === 'offline' ? 0 : value, state: pointState }
+      return { value: pointState === 'missing' || pointState === 'not_observed' ? null : pointState === 'offline' ? 0 : value, state: pointState, time: defaultTime(index) }
     }),
   }))
 }
@@ -276,7 +424,12 @@ function format(value: number): string { return Math.round(value).toLocaleString
 function compact(value: number): string { return Math.abs(value) >= 1000 ? `${Math.round(value / 1000)}k` : String(Math.round(value)) }
 function signed(value: number): string { const rounded = Math.round(value); return `${rounded >= 0 ? '+' : ''}${rounded.toLocaleString('en-US')}` }
 function nice(value: number): number { const magnitude = 10 ** Math.floor(Math.log10(value)); return Math.ceil(value / magnitude) * magnitude }
-function time(index: number): string { const minute = index * 30; return `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}` }
+function time(index: number): string { return state.lines[0]?.points[index]?.time ?? defaultTime(index) }
+function defaultTime(index: number): string { const minute = index * 30; return `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}` }
+function normalizeTimeLabel(raw: unknown, index: number): string { const value = String(raw ?? defaultTime(index)); const match = /(\d{2}:\d{2})/.exec(value); return match?.[1] ?? value }
+function parseTimeToMinutes(value: string): number | null { const match = /(\d{2}):(\d{2})/.exec(value); return match ? Number(match[1]) * 60 + Number(match[2]) : null }
+function displayName(value: unknown, lines: Line[]): string { const id = resolveLineId(value, lines); return lines.find((line) => line.id === id)?.name ?? String(value ?? '') }
+function clamp(value: number, min: number, max: number): number { return Math.min(max, Math.max(min, value)) }
 function slug(value: string): string { return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') }
 function record(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null }
 function setText(selector: string, value: string): void { const el = document.querySelector(selector); if (el) el.textContent = value }
