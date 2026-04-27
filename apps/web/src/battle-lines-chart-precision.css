@@ -1,0 +1,36 @@
+.bl-chart svg[data-precision='true'] .bl-context-line {
+  transition: opacity 0.15s ease;
+}
+
+.bl-chart svg[data-precision='true'] .bl-context-line[data-context-index='0'],
+.bl-chart svg[data-precision='true'] .bl-context-line[data-context-index='1'] {
+  opacity: 0.24;
+}
+
+.bl-chart svg[data-precision='true'] .bl-context-line[data-context-index='2'] {
+  opacity: 0.18;
+}
+
+.bl-selected-points {
+  pointer-events: none;
+}
+
+.bl-selected-point {
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.28));
+}
+
+.bl-endpoint-box {
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.28));
+}
+
+@media (max-width: 760px) {
+  .bl-chart svg[data-precision='true'] .bl-context-line[data-context-index='2'],
+  .bl-chart svg[data-precision='true'] .bl-context-line[data-context-index='3'],
+  .bl-chart svg[data-precision='true'] .bl-context-line[data-context-index='4'] {
+    opacity: 0.08;
+  }
+
+  .bl-selected-point {
+    r: 5;
+  }
+}
