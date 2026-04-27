@@ -19,9 +19,9 @@ function polishHero(): void {
   const copy = document.querySelector<HTMLElement>('.bl-hero p')
   const icon = document.querySelector<HTMLButtonElement>('.bl-icon')
 
-  if (eyebrow) eyebrow.textContent = `${siteLabel} / Rivalry`
-  if (title) title.textContent = 'Rivalry Radar'
-  if (copy) copy.textContent = 'Find the closest audience battles, inspect a time, and return to live without losing context.'
+  if (eyebrow) eyebrow.textContent = `${siteLabel} / Compare`
+  if (title) title.textContent = 'Battle Lines'
+  if (copy) copy.textContent = 'Compare audience lines, inspect any time, and track reversals without losing live context.'
   if (icon) icon.setAttribute('aria-label', 'Jump to top')
 }
 
@@ -31,8 +31,8 @@ function polishChartHead(): void {
   const refresh = document.querySelector<HTMLButtonElement>('[data-refresh]')
 
   if (title) title.textContent = 'Audience lines'
-  if (chart) chart.setAttribute('aria-label', 'Primary battle chart with context lines')
-  if (refresh) refresh.setAttribute('aria-label', 'Refresh rivalry data')
+  if (chart) chart.setAttribute('aria-label', 'Battle Lines chart with primary pair and context lines')
+  if (refresh) refresh.setAttribute('aria-label', 'Refresh Battle Lines data')
 }
 
 function polishStatusNote(): void {
@@ -46,13 +46,8 @@ function polishStatusNote(): void {
   const meta = status.querySelector('span')
   const message = status.querySelector('small')
 
-  if (meta) {
-    meta.textContent = compactMeta(meta.textContent ?? '')
-  }
-
-  if (message) {
-    message.textContent = statusCopy(state, message.textContent ?? '')
-  }
+  if (meta) meta.textContent = compactMeta(meta.textContent ?? '')
+  if (message) message.textContent = statusCopy(state, message.textContent ?? '')
 }
 
 function polishPrimarySummary(): void {
@@ -95,22 +90,14 @@ function compactMeta(value: string): string {
 
 function statusCopy(state: string, fallback: string): string {
   switch (state) {
-    case 'loading':
-      return 'Loading the latest rivalry payload.'
-    case 'live':
-      return 'Real data loaded. Lines are drawn only from observed buckets.'
-    case 'partial':
-      return 'Partial coverage: observed channels only; missing buckets are visually marked.'
-    case 'stale':
-      return 'Stale payload: refresh to retry the latest available data.'
-    case 'empty':
-      return 'No qualifying battle lines for this filter set.'
-    case 'error':
-      return 'API failed; fallback or retry state is shown clearly.'
-    case 'demo':
-      return 'Demo fallback. Do not read this as live data.'
-    default:
-      return fallback
+    case 'loading': return 'Loading the latest Battle Lines payload.'
+    case 'live': return 'Real data loaded. Lines are drawn only from observed buckets.'
+    case 'partial': return 'Partial coverage: observed channels only; missing buckets are visually marked.'
+    case 'stale': return 'Stale payload: refresh to retry the latest available data.'
+    case 'empty': return 'No qualifying Battle Lines data for this filter set.'
+    case 'error': return 'API failed; fallback or retry state is shown clearly.'
+    case 'demo': return 'Demo fallback. Do not read this as live data.'
+    default: return fallback
   }
 }
 
