@@ -73,6 +73,14 @@
   cursor: pointer;
 }
 
+.bl-hero {
+  align-items: flex-start;
+}
+
+.bl-hero .bl-icon {
+  display: none;
+}
+
 @media (max-width: 520px) {
   .bl-status[data-state] {
     grid-template-columns: auto 1fr;
