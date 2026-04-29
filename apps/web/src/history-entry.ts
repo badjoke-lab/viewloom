@@ -46,6 +46,11 @@ type State = {
   payload: Payload | null
 }
 
+type ChartSlot = {
+  day: string
+  data: Day | null
+}
+
 const app = document.querySelector<HTMLDivElement>('#app')
 if (!app) throw new Error('#app not found')
 
@@ -75,7 +80,7 @@ function renderShell(): string {
       <section class="hero hero--site history-hero"><div><div class="eyebrow">Twitch / Trends</div><h1>History & Trends</h1><p class="hero-copy">Review observed Twitch days, top streamers, and daily trend changes.</p><div class="hero-actions"><a class="button button--secondary" href="/twitch/heatmap/">Heatmap</a><a class="button button--secondary" href="/twitch/day-flow/">Day Flow</a><a class="button button--secondary" href="/twitch/battle-lines/">Battle Lines</a><a class="button button--primary" href="/twitch/history/">History</a></div></div><aside class="status-panel"><div class="status-panel__label">Data state</div><div class="status-panel__title" id="history-state">Loading history</div><p id="history-state-note">Waiting for observed Twitch history.</p></aside></section>
       <section class="history-controls"><div class="history-seg"><button type="button" data-period="7d">Last 7 days</button><button type="button" data-period="30d">Last 30 days</button><button type="button" data-period="custom">Custom</button></div><div class="history-date-controls"><label>From <input type="date" id="history-from"></label><label>To <input type="date" id="history-to"></label><button type="button" id="history-apply">Apply</button></div><div class="history-seg"><button type="button" data-metric="viewer_minutes">Viewer-minutes</button><button type="button" data-metric="peak_viewers">Peak viewers</button></div></section>
       <section class="summary-grid history-summary" id="history-summary"></section>
-      <section class="history-card"><div class="history-head"><div><div class="eyebrow">Daily trend</div><h2>Observed days</h2></div><span id="history-chart-note"></span></div><div id="history-chart" class="history-chart"></div><div id="history-selected" class="history-selected"></div></section>
+      <section class="history-card history-trend-card"><div class="history-head"><div><div class="eyebrow">Daily trend</div><h2 id="history-chart-title">Viewer-minutes by day</h2></div><span id="history-chart-note"></span></div><div id="history-chart" class="history-chart"></div><div id="history-selected" class="history-selected"></div></section>
       <section class="history-two-col"><article class="history-card"><div class="history-head"><div><div class="eyebrow">Ranking</div><h2>Top streamers</h2></div><span id="history-ranking-note"></span></div><div id="history-ranking"></div></article><article class="history-card"><div class="history-head"><div><div class="eyebrow">Archive</div><h2>Daily cards</h2></div><span id="history-days-note"></span></div><div id="history-days"></div></article></section>
       <section class="history-coverage" id="history-coverage"></section>
     </main>
@@ -142,7 +147,9 @@ async function loadHistory(): Promise<void> {
 function renderLoading(): void {
   setText('history-state', 'Loading history')
   setText('history-state-note', 'Fetching observed Twitch history.')
-  setHtml('history-summary', ['Total observed', 'Peak day', 'Top streamer', 'Biggest rise', 'Coverage'].map((label) => card(label, '—', 'Loading…')).join(''))
+  setHtml('history-summary', ['Total observed', 'Peak day', 'Top streamer', 'Biggest rise', 'Coverage'].map((item) => card(item, '—', 'Loading…')).join(''))
+  setText('history-chart-title', chartTitle())
+  setText('history-chart-note', 'Loading daily trend')
   setHtml('history-chart', '<div class="history-empty">Loading daily trend…</div>')
   setHtml('history-selected', '')
   setHtml('history-ranking', '<div class="history-empty">Loading ranking…</div>')
@@ -171,14 +178,20 @@ function renderPayload(payload: Payload): void {
 }
 
 function renderChart(payload: Payload): void {
-  setText('history-chart-note', state.metric === 'viewer_minutes' ? 'Metric: viewer-minutes' : 'Metric: peak viewers')
+  const totalDays = daySpan(state.from, state.to)
+  const observedDays = payload.daily.length
+  setText('history-chart-title', chartTitle())
+  setText('history-chart-note', `${observedDays} / ${totalDays} days observed`)
   if (payload.daily.length === 0) {
     setHtml('history-chart', '<div class="history-empty">No observed history for this period. Try Last 30 days or a different custom range.</div>')
     return
   }
-  const values = payload.daily.map((day) => state.metric === 'viewer_minutes' ? day.totalViewerMinutes : day.peakViewers)
+
+  const slots = buildChartSlots(payload.daily)
+  const values = slots.map((slot) => slot.data ? chartValue(slot.data) : 0)
   const max = Math.max(...values, 1)
-  setHtml('history-chart', `<div class="history-bars">${payload.daily.map((day, index) => `<button type="button" class="history-bar ${state.selectedDay === day.day ? 'is-selected' : ''}" data-day="${day.day}" style="--bar-height:${Math.max(4, Math.round(values[index] / max * 180))}px"><span>${compact(values[index])}</span><i></i><small>${day.day.slice(5)}</small></button>`).join('')}</div>`)
+  const coverageHint = observedDays < totalDays ? `<p class="history-chart-help">Muted slots mark selected days without observed snapshots.</p>` : ''
+  setHtml('history-chart', `${coverageHint}<div class="history-bars history-bars--slots">${slots.map((slot) => renderChartSlot(slot, max)).join('')}</div>`)
   document.querySelectorAll<HTMLButtonElement>('[data-day]').forEach((button) => {
     button.addEventListener('click', () => {
       state.selectedDay = button.dataset.day ?? null
@@ -188,6 +201,15 @@ function renderChart(payload: Payload): void {
       renderDays(payload)
     })
   })
+}
+
+function renderChartSlot(slot: ChartSlot, max: number): string {
+  if (!slot.data) {
+    return `<div class="history-bar history-bar--missing" title="${slot.day}: no observed snapshots"><span>—</span><i></i><small>${slot.day.slice(5)}</small></div>`
+  }
+  const value = chartValue(slot.data)
+  const height = Math.max(4, Math.round(value / max * 156))
+  return `<button type="button" class="history-bar ${state.selectedDay === slot.day ? 'is-selected' : ''}" data-day="${slot.day}" style="--bar-height:${height}px"><span>${compact(value)}</span><i></i><small>${slot.day.slice(5)}</small></button>`
 }
 
 function renderSelected(payload: Payload): void {
@@ -268,7 +290,21 @@ function validateRange(): string | null {
   return null
 }
 
+function buildChartSlots(days: Day[]): ChartSlot[] {
+  const byDay = new Map(days.map((item) => [item.day, item]))
+  return dayRange(state.from, state.to).map((day) => ({ day, data: byDay.get(day) ?? null }))
+}
+
+function chartValue(day: Day): number {
+  return state.metric === 'viewer_minutes' ? day.totalViewerMinutes : day.peakViewers
+}
+
+function chartTitle(): string {
+  return state.metric === 'viewer_minutes' ? 'Viewer-minutes by day' : 'Peak viewers by day'
+}
+
 function rangeFor(days: number): { from: string; to: string } { const to = new Date(today); const from = new Date(today); from.setDate(to.getDate() - days + 1); return { from: dateString(from), to: dateString(to) } }
+function dayRange(from: string, to: string): string[] { const days: string[] = []; const cursor = new Date(`${from}T00:00:00Z`); const end = new Date(`${to}T00:00:00Z`); while (cursor <= end && days.length < 91) { days.push(dateString(cursor)); cursor.setUTCDate(cursor.getUTCDate() + 1) } return days }
 function daySpan(from: string, to: string): number { return Math.max(1, Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000) + 1) }
 function card(labelText: string, value: string, body: string): string { return `<article class="summary-card"><div class="summary-card__label">${text(labelText)}</div><div class="summary-card__value">${text(value)}</div><p>${text(body)}</p></article>` }
 function setText(id: string, value: string): void { const node = document.getElementById(id); if (node) node.textContent = value }
