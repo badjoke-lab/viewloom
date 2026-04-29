@@ -19,6 +19,14 @@ function addTwitchHistoryLinks(): void {
     link.textContent = 'History'
     actions.append(link)
   }
+
+  const grid = document.querySelector<HTMLElement>('.feature-grid--top')
+  if (document.body.dataset.page === 'twitch' && grid && !grid.querySelector(`[href="${href}"]`)) {
+    const card = document.createElement('article')
+    card.className = 'feature-card feature-card--top'
+    card.innerHTML = '<div class="feature-card__label">Trends</div><h2>History</h2><p>Review observed days, top streamers, viewer-minutes, peaks, and coverage quality.</p><a class="button button--ghost feature-card__link" href="/twitch/history/">Open History</a>'
+    grid.append(card)
+  }
 }
 
 addTwitchHistoryLinks()
