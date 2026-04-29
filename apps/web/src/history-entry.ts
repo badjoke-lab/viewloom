@@ -76,7 +76,7 @@ function renderShell(): string {
       <section class="history-controls"><div class="history-seg"><button type="button" data-period="7d">Last 7 days</button><button type="button" data-period="30d">Last 30 days</button><button type="button" data-period="custom">Custom</button></div><div class="history-date-controls"><label>From <input type="date" id="history-from"></label><label>To <input type="date" id="history-to"></label><button type="button" id="history-apply">Apply</button></div><div class="history-seg"><button type="button" data-metric="viewer_minutes">Viewer-minutes</button><button type="button" data-metric="peak_viewers">Peak viewers</button></div></section>
       <section class="summary-grid history-summary" id="history-summary"></section>
       <section class="history-card"><div class="history-head"><div><div class="eyebrow">Daily trend</div><h2>Observed days</h2></div><span id="history-chart-note"></span></div><div id="history-chart" class="history-chart"></div><div id="history-selected" class="history-selected"></div></section>
-      <section class="history-two-col"><article class="history-card"><div class="history-head"><div><div class="eyebrow">Ranking</div><h2>Top streamers</h2></div></div><div id="history-ranking"></div></article><article class="history-card"><div class="history-head"><div><div class="eyebrow">Archive</div><h2>Daily cards</h2></div></div><div id="history-days"></div></article></section>
+      <section class="history-two-col"><article class="history-card"><div class="history-head"><div><div class="eyebrow">Ranking</div><h2>Top streamers</h2></div><span id="history-ranking-note"></span></div><div id="history-ranking"></div></article><article class="history-card"><div class="history-head"><div><div class="eyebrow">Archive</div><h2>Daily cards</h2></div><span id="history-days-note"></span></div><div id="history-days"></div></article></section>
       <section class="history-coverage" id="history-coverage"></section>
     </main>
   </div>`
@@ -114,13 +114,12 @@ function bindControls(): void {
 
 async function loadHistory(): Promise<void> {
   syncControls()
+  renderLoading()
   const rangeError = validateRange()
   if (rangeError) {
     renderError(rangeError)
     return
   }
-  setText('history-state', 'Loading history')
-  setText('history-state-note', 'Fetching observed Twitch history.')
   try {
     const query = new URLSearchParams()
     if (state.period === 'custom') {
@@ -140,30 +139,41 @@ async function loadHistory(): Promise<void> {
   }
 }
 
+function renderLoading(): void {
+  setText('history-state', 'Loading history')
+  setText('history-state-note', 'Fetching observed Twitch history.')
+  setHtml('history-summary', ['Total observed', 'Peak day', 'Top streamer', 'Biggest rise', 'Coverage'].map((label) => card(label, '—', 'Loading…')).join(''))
+  setHtml('history-chart', '<div class="history-empty">Loading daily trend…</div>')
+  setHtml('history-selected', '')
+  setHtml('history-ranking', '<div class="history-empty">Loading ranking…</div>')
+  setHtml('history-days', '<div class="history-empty">Loading daily archive…</div>')
+  setHtml('history-coverage', '')
+}
+
 function renderPayload(payload: Payload): void {
   syncControls()
   const summary = payload.summary
-  setText('history-state', `${payload.state} · ${payload.coverage.state}`)
-  setText('history-state-note', `${payload.period.label} · ${payload.source}`)
+  setText('history-state', `${label(payload.state)} · ${label(payload.coverage.state)}`)
+  setText('history-state-note', `${payload.period.label} · ${payload.source === 'api' ? 'observed snapshots' : payload.source}`)
   const biggest = summary?.biggestRise
   setHtml('history-summary', [
     card('Total observed', compact(summary?.totalViewerMinutes ?? 0), 'Viewer-minutes across the selected range.'),
     card('Peak day', summary?.peakDay ?? '—', `${format(summary?.peakViewers ?? 0)} peak viewers.`),
     card('Top streamer', summary?.topStreamer?.displayName ?? '—', summary?.topStreamer ? `${compact(summary.topStreamer.viewerMinutes)} viewer-minutes.` : 'No ranking yet.'),
     card('Biggest rise', biggest?.displayName ?? '—', biggest ? `${signed(biggest.changePct)} vs previous period.` : 'Not enough previous data.'),
-    card('Coverage', summary?.coverageState ?? 'unknown', payload.coverage.notes.join(' ')),
+    card('Coverage', label(summary?.coverageState ?? 'unknown'), payload.coverage.notes.join(' ')),
   ].join(''))
   renderChart(payload)
   renderSelected(payload)
   renderRanking(payload)
   renderDays(payload)
-  setHtml('history-coverage', `<div class="rail-card"><div class="rail-card__label">Coverage</div><h2>${text(payload.coverage.state)}</h2><p>${text(payload.notes.concat(payload.coverage.notes).join(' '))}</p></div>`)
+  renderCoverage(payload)
 }
 
 function renderChart(payload: Payload): void {
   setText('history-chart-note', state.metric === 'viewer_minutes' ? 'Metric: viewer-minutes' : 'Metric: peak viewers')
   if (payload.daily.length === 0) {
-    setHtml('history-chart', '<div class="history-empty">No observed history for this period.</div>')
+    setHtml('history-chart', '<div class="history-empty">No observed history for this period. Try Last 30 days or a different custom range.</div>')
     return
   }
   const values = payload.daily.map((day) => state.metric === 'viewer_minutes' ? day.totalViewerMinutes : day.peakViewers)
@@ -186,19 +196,26 @@ function renderSelected(payload: Payload): void {
     setHtml('history-selected', '<div class="history-empty">Select a day to inspect it.</div>')
     return
   }
-  setHtml('history-selected', `<div><div class="eyebrow">Selected day</div><h2>${day.day}</h2><p>${compact(day.totalViewerMinutes)} viewer-minutes · ${format(day.peakViewers)} peak · ${text(day.peakStreamerName ?? 'unknown peak streamer')} · ${text(day.coverageState)} coverage.</p></div><div class="history-actions"><a class="button button--secondary" href="/twitch/day-flow/?date=${day.day}">Open Day Flow</a><a class="button button--secondary" href="/twitch/battle-lines/?date=${day.day}">Open Battle Lines</a></div>`)
+  setHtml('history-selected', `<div><div class="eyebrow">Selected day</div><h2>${day.day}</h2><p>${compact(day.totalViewerMinutes)} viewer-minutes · ${format(day.peakViewers)} peak · ${text(day.peakStreamerName ?? 'unknown peak streamer')} · ${label(day.coverageState)} coverage.</p></div><div class="history-actions"><a class="button button--secondary" href="/twitch/day-flow/?date=${day.day}">Open Day Flow</a><a class="button button--secondary" href="/twitch/battle-lines/?date=${day.day}">Open Battle Lines</a></div>`)
 }
 
 function renderRanking(payload: Payload): void {
-  if (payload.topStreamers.length === 0) {
-    setHtml('history-ranking', '<div class="history-empty">No ranking for this period.</div>')
+  const sorted = [...payload.topStreamers].sort((a, b) => state.metric === 'viewer_minutes' ? b.viewerMinutes - a.viewerMinutes : b.peakViewers - a.peakViewers)
+  setText('history-ranking-note', sorted.length ? `Top ${Math.min(sorted.length, 12)} by ${state.metric === 'viewer_minutes' ? 'viewer-minutes' : 'peak viewers'}` : '')
+  if (sorted.length === 0) {
+    setHtml('history-ranking', '<div class="history-empty">No streamer ranking is available for this period. This usually means the selected range has no payload-level stream data.</div>')
     return
   }
-  setHtml('history-ranking', `<div class="history-ranking">${payload.topStreamers.slice(0, 12).map((item, index) => `<article><strong>#${index + 1} ${text(item.displayName)}</strong><span>${compact(item.viewerMinutes)} viewer-minutes</span><span>${format(item.peakViewers)} peak</span><span>${item.changePct == null ? '—' : signed(item.changePct)}</span></article>`).join('')}</div>`)
+  setHtml('history-ranking', `<div class="history-ranking">${sorted.slice(0, 12).map((item, index) => `<article><strong>#${index + 1} ${text(item.displayName)}</strong><span>${compact(item.viewerMinutes)} viewer-minutes</span><span>${format(item.peakViewers)} peak</span><span>${item.changePct == null ? '—' : signed(item.changePct)}</span></article>`).join('')}</div>`)
 }
 
 function renderDays(payload: Payload): void {
-  setHtml('history-days', `<div class="history-day-list">${payload.daily.slice().reverse().map((day) => `<article class="history-day ${state.selectedDay === day.day ? 'is-selected' : ''}"><button type="button" data-select-day="${day.day}"><strong>${day.day}</strong><span>${compact(day.totalViewerMinutes)} viewer-minutes</span><span>${format(day.peakViewers)} peak · ${text(day.peakStreamerName ?? 'unknown')}</span><small>${text(day.coverageState)} coverage</small></button><div><a href="/twitch/day-flow/?date=${day.day}">Day Flow</a><a href="/twitch/battle-lines/?date=${day.day}">Battle Lines</a></div></article>`).join('')}</div>`)
+  setText('history-days-note', payload.daily.length ? `${payload.daily.length} observed day${payload.daily.length === 1 ? '' : 's'}` : '')
+  if (payload.daily.length === 0) {
+    setHtml('history-days', '<div class="history-empty">No daily cards are available for this period.</div>')
+    return
+  }
+  setHtml('history-days', `<div class="history-day-list">${payload.daily.slice().reverse().map((day) => `<article class="history-day ${state.selectedDay === day.day ? 'is-selected' : ''}"><button type="button" data-select-day="${day.day}"><strong>${day.day}</strong><span>${compact(day.totalViewerMinutes)} viewer-minutes</span><span>${format(day.peakViewers)} peak · ${text(day.peakStreamerName ?? 'unknown')}</span><small>${label(day.coverageState)} coverage</small></button><div><a href="/twitch/day-flow/?date=${day.day}">Day Flow</a><a href="/twitch/battle-lines/?date=${day.day}">Battle Lines</a></div></article>`).join('')}</div>`)
   document.querySelectorAll<HTMLButtonElement>('[data-select-day]').forEach((button) => {
     button.addEventListener('click', () => {
       state.selectedDay = button.dataset.selectDay ?? null
@@ -208,6 +225,11 @@ function renderDays(payload: Payload): void {
       renderDays(payload)
     })
   })
+}
+
+function renderCoverage(payload: Payload): void {
+  const notes = payload.notes.concat(payload.coverage.notes).filter(Boolean)
+  setHtml('history-coverage', `<div class="rail-card"><div class="rail-card__label">Coverage / Data quality</div><h2>${label(payload.coverage.state)}</h2><p>${text(notes.join(' '))}</p></div>`)
 }
 
 function renderError(message: string): void {
@@ -248,11 +270,12 @@ function validateRange(): string | null {
 
 function rangeFor(days: number): { from: string; to: string } { const to = new Date(today); const from = new Date(today); from.setDate(to.getDate() - days + 1); return { from: dateString(from), to: dateString(to) } }
 function daySpan(from: string, to: string): number { return Math.max(1, Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000) + 1) }
-function card(label: string, value: string, body: string): string { return `<article class="summary-card"><div class="summary-card__label">${text(label)}</div><div class="summary-card__value">${text(value)}</div><p>${text(body)}</p></article>` }
+function card(labelText: string, value: string, body: string): string { return `<article class="summary-card"><div class="summary-card__label">${text(labelText)}</div><div class="summary-card__value">${text(value)}</div><p>${text(body)}</p></article>` }
 function setText(id: string, value: string): void { const node = document.getElementById(id); if (node) node.textContent = value }
 function setHtml(id: string, value: string): void { const node = document.getElementById(id); if (node) node.innerHTML = value }
 function dateString(date: Date): string { return date.toISOString().slice(0, 10) }
 function format(value: number): string { return Math.round(value).toLocaleString('en-US') }
 function compact(value: number): string { if (Math.abs(value) >= 1000000) return `${(value / 1000000).toFixed(1)}M`; if (Math.abs(value) >= 1000) return `${(value / 1000).toFixed(1)}K`; return String(Math.round(value)) }
 function signed(value: number): string { const pct = value * 100; return `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%` }
+function label(value: string): string { return value.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()) }
 function text(value: string): string { const node = document.createElement('span'); node.textContent = value; return node.innerHTML }
