@@ -27,13 +27,14 @@ type DayAgg = {
   totalViewerMinutes: number
   peakViewers: number
   peakStreamerName: string | null
+  peakStreamerViewers: number
   observedStreamCount: number
   observedMinutes: number
   coverageState: string
   demoCount: number
 }
 
-type PublicDay = Omit<DayAgg, 'demoCount'>
+type PublicDay = Omit<DayAgg, 'demoCount' | 'peakStreamerViewers'>
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const url = new URL(request.url)
@@ -52,8 +53,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     const built = buildHistory(rows)
     const previousBuilt = buildHistory(previousRows)
     const daily = [...built.days.values()].map(toPublicDay).sort((a, b) => a.day.localeCompare(b.day))
-    const previousStreams = previousBuilt.streams
-    const topStreamers = buildTopStreamers(built.streams, previousStreams)
+    const topStreamers = buildTopStreamers(built.streams, previousBuilt.streams)
     const summary = buildSummary(daily, topStreamers)
     const coverage = buildCoverage(period, daily)
     const coverageState = coverage.state
@@ -108,8 +108,8 @@ function buildHistory(rows: SnapshotRow[]): { days: Map<string, DayAgg>; streams
       const id = slug(item.channelLogin ?? item.displayName ?? '')
       if (!id) continue
       const displayName = String(item.displayName ?? item.channelLogin ?? id)
-      if (viewers > day.peakViewers) {
-        day.peakViewers = viewers
+      if (viewers > day.peakStreamerViewers) {
+        day.peakStreamerViewers = viewers
         day.peakStreamerName = displayName
       }
       const stream = ensureStream(streams, id, displayName)
@@ -204,7 +204,7 @@ function toPublicDay(day: DayAgg): PublicDay {
 function ensureDay(map: Map<string, DayAgg>, key: string): DayAgg {
   const existing = map.get(key)
   if (existing) return existing
-  const created: DayAgg = { day: key, totalViewerMinutes: 0, peakViewers: 0, peakStreamerName: null, observedStreamCount: 0, observedMinutes: 0, coverageState: 'partial', demoCount: 0 }
+  const created: DayAgg = { day: key, totalViewerMinutes: 0, peakViewers: 0, peakStreamerName: null, peakStreamerViewers: 0, observedStreamCount: 0, observedMinutes: 0, coverageState: 'partial', demoCount: 0 }
   map.set(key, created)
   return created
 }
