@@ -12,6 +12,7 @@ export default defineConfig({
         twitchHeatmap: 'twitch/heatmap/index.html',
         twitchDayFlow: 'twitch/day-flow/index.html',
         twitchBattleLines: 'twitch/battle-lines/index.html',
+        twitchHistory: 'twitch/history/index.html',
         kick: 'kick/index.html',
         kickHeatmap: 'kick/heatmap/index.html',
         kickDayFlow: 'kick/day-flow/index.html',
