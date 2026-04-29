@@ -50,7 +50,7 @@ async function renderPeakArchive(): Promise<void> {
     section.innerHTML = `<div class="history-head"><div><div class="eyebrow">Peaks</div><h2>Peak archive</h2></div><span>Top ${peaks.length} daily peaks</span></div><div class="history-peak-list">${peaks.map((day, index) => `<article class="history-peak-card"><button type="button" data-peak-day="${day.day}"><strong>#${index + 1} ${day.day}</strong><span>${format(day.peakViewers)} peak viewers</span><small>${escapeHtml(day.peakStreamerName ?? 'unknown peak streamer')}</small></button><div><a href="/twitch/day-flow/?date=${day.day}">Day Flow</a><a href="/twitch/battle-lines/?date=${day.day}">Battle Lines</a></div></article>`).join('')}</div>`
 
     section.querySelectorAll<HTMLButtonElement>('[data-peak-day]').forEach((button) => {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', (): void => {
         const day = button.dataset.peakDay
         const target = day ? document.querySelector<HTMLButtonElement>(`[data-day="${day}"], [data-select-day="${day}"]`) : null
         if (target) target.click()
@@ -63,8 +63,8 @@ async function renderPeakArchive(): Promise<void> {
 }
 
 function schedulePeakRefresh(): void {
-  window.setTimeout(() => void renderPeakArchive(), 80)
-  window.setTimeout(() => void renderPeakArchive(), 500)
+  window.setTimeout((): void => { void renderPeakArchive() }, 80)
+  window.setTimeout((): void => { void renderPeakArchive() }, 500)
 }
 
 function format(value: number): string {
@@ -78,7 +78,7 @@ function escapeHtml(value: string): string {
 }
 
 void renderPeakArchive()
-document.addEventListener('click', (event) => {
+document.addEventListener('click', (event): void => {
   const target = event.target instanceof HTMLElement ? event.target.closest('[data-period], [data-metric], #history-apply') : null
   if (target) schedulePeakRefresh()
 })
