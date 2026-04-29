@@ -81,8 +81,10 @@ function renderShell(): string {
       <section class="history-controls"><div class="history-seg"><button type="button" data-period="7d">Last 7 days</button><button type="button" data-period="30d">Last 30 days</button><button type="button" data-period="custom">Custom</button></div><div class="history-date-controls"><label>From <input type="date" id="history-from"></label><label>To <input type="date" id="history-to"></label><button type="button" id="history-apply">Apply</button></div><div class="history-seg"><button type="button" data-metric="viewer_minutes">Viewer-minutes</button><button type="button" data-metric="peak_viewers">Peak viewers</button></div></section>
       <section class="summary-grid history-summary" id="history-summary"></section>
       <section class="history-card history-trend-card"><div class="history-head"><div><div class="eyebrow">Daily trend</div><h2 id="history-chart-title">Viewer-minutes by day</h2></div><span id="history-chart-note"></span></div><div id="history-chart" class="history-chart"></div><div id="history-selected" class="history-selected"></div></section>
+      <section class="history-card history-peak-archive"><div class="history-head"><div><div class="eyebrow">Peaks</div><h2>Peak archive</h2></div><span id="history-peaks-note"></span></div><div id="history-peaks"></div></section>
       <section class="history-two-col"><article class="history-card"><div class="history-head"><div><div class="eyebrow">Ranking</div><h2>Top streamers</h2></div><span id="history-ranking-note"></span></div><div id="history-ranking"></div></article><article class="history-card"><div class="history-head"><div><div class="eyebrow">Archive</div><h2>Daily cards</h2></div><span id="history-days-note"></span></div><div id="history-days"></div></article></section>
       <section class="history-coverage" id="history-coverage"></section>
+      ${renderMethodNotes()}
     </main>
   </div>`
 }
@@ -152,6 +154,8 @@ function renderLoading(): void {
   setText('history-chart-note', 'Loading daily trend')
   setHtml('history-chart', '<div class="history-empty">Loading daily trend…</div>')
   setHtml('history-selected', '')
+  setText('history-peaks-note', '')
+  setHtml('history-peaks', '<div class="history-empty">Loading peak archive…</div>')
   setHtml('history-ranking', '<div class="history-empty">Loading ranking…</div>')
   setHtml('history-days', '<div class="history-empty">Loading daily archive…</div>')
   setHtml('history-coverage', '')
@@ -172,6 +176,7 @@ function renderPayload(payload: Payload): void {
   ].join(''))
   renderChart(payload)
   renderSelected(payload)
+  renderPeaks(payload)
   renderRanking(payload)
   renderDays(payload)
   renderCoverage(payload)
@@ -198,6 +203,7 @@ function renderChart(payload: Payload): void {
       updateUrl()
       renderChart(payload)
       renderSelected(payload)
+      renderPeaks(payload)
       renderDays(payload)
     })
   })
@@ -219,6 +225,26 @@ function renderSelected(payload: Payload): void {
     return
   }
   setHtml('history-selected', `<div><div class="eyebrow">Selected day</div><h2>${day.day}</h2><p>${compact(day.totalViewerMinutes)} viewer-minutes · ${format(day.peakViewers)} peak · ${text(day.peakStreamerName ?? 'unknown peak streamer')} · ${label(day.coverageState)} coverage.</p></div><div class="history-actions"><a class="button button--secondary" href="/twitch/day-flow/?date=${day.day}">Open Day Flow</a><a class="button button--secondary" href="/twitch/battle-lines/?date=${day.day}">Open Battle Lines</a></div>`)
+}
+
+function renderPeaks(payload: Payload): void {
+  const peaks = payload.daily.slice().sort((a, b) => b.peakViewers - a.peakViewers).slice(0, 6)
+  setText('history-peaks-note', peaks.length ? `Top ${peaks.length} daily peaks` : '')
+  if (peaks.length === 0) {
+    setHtml('history-peaks', '<div class="history-empty">No peak archive is available for this period.</div>')
+    return
+  }
+  setHtml('history-peaks', `<div class="history-peak-list">${peaks.map((day, index) => `<article class="history-peak-card ${state.selectedDay === day.day ? 'is-selected' : ''}"><button type="button" data-peak-day="${day.day}"><strong>#${index + 1} ${day.day}</strong><span>${format(day.peakViewers)} peak viewers</span><small>${text(day.peakStreamerName ?? 'unknown peak streamer')}</small></button><div><a href="/twitch/day-flow/?date=${day.day}">Day Flow</a><a href="/twitch/battle-lines/?date=${day.day}">Battle Lines</a></div></article>`).join('')}</div>`)
+  document.querySelectorAll<HTMLButtonElement>('[data-peak-day]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.selectedDay = button.dataset.peakDay ?? null
+      updateUrl()
+      renderChart(payload)
+      renderSelected(payload)
+      renderPeaks(payload)
+      renderDays(payload)
+    })
+  })
 }
 
 function renderRanking(payload: Payload): void {
@@ -244,6 +270,7 @@ function renderDays(payload: Payload): void {
       updateUrl()
       renderChart(payload)
       renderSelected(payload)
+      renderPeaks(payload)
       renderDays(payload)
     })
   })
@@ -254,12 +281,18 @@ function renderCoverage(payload: Payload): void {
   setHtml('history-coverage', `<div class="rail-card"><div class="rail-card__label">Coverage / Data quality</div><h2>${label(payload.coverage.state)}</h2><p>${text(notes.join(' '))}</p></div>`)
 }
 
+function renderMethodNotes(): string {
+  return `<section class="history-method-grid" data-history-method-notes="true"><article class="history-method-card"><div class="history-method-card__label">Metric</div><h2>Viewer-minutes</h2><p>Approximate observed audience volume across the selected period. A stream with more viewers for longer time ranks higher.</p></article><article class="history-method-card"><div class="history-method-card__label">Metric</div><h2>Peak viewers</h2><p>The highest observed viewer value in the selected period. It highlights spikes, but not necessarily sustained strength.</p></article><article class="history-method-card"><div class="history-method-card__label">Quality</div><h2>Coverage</h2><p>Coverage shows whether the selected days had enough observed snapshots. Partial or missing days can make rankings incomplete.</p></article></section>`
+}
+
 function renderError(message: string): void {
   setText('history-state', 'History unavailable')
   setText('history-state-note', message)
   setHtml('history-summary', card('State', 'Error', message))
   setHtml('history-chart', `<div class="history-empty">${text(message)}</div>`)
   setHtml('history-selected', '')
+  setText('history-peaks-note', '')
+  setHtml('history-peaks', '')
   setHtml('history-ranking', '')
   setHtml('history-days', '')
   setHtml('history-coverage', '')
