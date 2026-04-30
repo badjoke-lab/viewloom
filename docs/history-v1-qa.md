@@ -1,6 +1,6 @@
 # Twitch History v1 QA Checklist
 
-Status: implementation-complete QA checklist for Twitch-only History / Trends v1.
+Status: implementation-complete and UI-polished QA checklist for Twitch-only History / Trends v1.
 
 ## Scope
 
@@ -38,6 +38,15 @@ History v1 is considered complete when the checks below pass for the Twitch rout
 - Selected day panel links to Battle Lines with `date=`.
 - Daily cards link to Day Flow and Battle Lines with `date=`.
 
+## Daily trend UI checks
+
+- The main chart is labeled as Daily trend, not Observed days.
+- The chart title changes by metric: Viewer-minutes by day or Peak viewers by day.
+- The chart note shows observed days out of selected days, for example `2 / 30 days observed`.
+- Missing selected days appear as muted slots.
+- Sparse data does not create oversized bars.
+- The chart remains horizontally readable on mobile.
+
 ## Peak Archive Lite checks
 
 - Peak Archive appears below the selected day panel.
@@ -49,6 +58,18 @@ History v1 is considered complete when the checks below pass for the Twitch rout
 - Peak Archive links each day to Battle Lines with `date=`.
 - Clicking a peak day syncs selected day when the matching chart or daily-card button exists.
 - Empty ranges show a useful Peak Archive empty state.
+
+## Mobile UI checks
+
+- 360px, 390px, and 430px widths are usable.
+- Hero action buttons do not become a long vertical stack on normal mobile widths.
+- Period and metric controls remain tappable.
+- Custom date controls remain tappable.
+- Summary cards are compressed enough to reach the chart quickly.
+- Selected day actions remain easy to tap.
+- Top Streamers remains readable without becoming a wide table.
+- Daily Cards and Peak Archive links are tappable.
+- Coverage and Method notes are not visually heavier than the main analysis sections.
 
 ## Data quality checks
 
@@ -84,13 +105,22 @@ Twitch History / Trends v1 is complete when:
 - The page supports Last 7 days, Last 30 days, and valid Custom ranges.
 - Viewer-minutes and Peak viewers both work as metrics.
 - Summary cards, Daily trend, Selected day, Top streamers, Daily cards, Coverage, Method notes, and Peak Archive Lite are present.
+- Daily trend explains observed day coverage and missing days.
 - Day Flow and Battle Lines links carry the selected `date=`.
 - Empty, partial, and coverage states are visible.
+- 360px to 430px mobile widths are usable.
 - Kick is not changed by the Twitch History work.
 
-## Next phase after v1
+## Current status after UI polish
 
-After this checklist is accepted, move to UI adjustment. UI adjustment should focus on layout density, visual hierarchy, mobile readability, and reducing the current script-injection feel of the History page.
+The Twitch History v1 implementation and first UI polish pass are complete. Remaining work should be treated as post-v1 iteration unless a QA failure is found.
+
+## Next possible phases
+
+- Post-v1 visual refinement after browser screenshots.
+- Rising Streamers Lite.
+- Kick History.
+- Sitemap / canonical after final production domain is fixed.
 
 ## Deferred
 
