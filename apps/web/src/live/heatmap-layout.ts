@@ -1,7 +1,9 @@
 const STYLE_ID = 'twitch-heatmap-layout-style'
+const HEATMAP_RENDERER_KEY = 'viewloom.heatmap.renderer'
 
 export function initHeatmapLayout(): void {
   ensureStyles()
+  preferOfficialCanvasRenderer()
 
   const root = document.querySelector<HTMLElement>('#heatmap-layout-root')
   if (!root) return
@@ -10,6 +12,15 @@ export function initHeatmapLayout(): void {
   removeLayoutModeBar()
   moveHeatmapSections(root)
   observeLegendPlacement(root)
+}
+
+function preferOfficialCanvasRenderer(): void {
+  try {
+    window.localStorage.setItem(HEATMAP_RENDERER_KEY, 'canvas')
+  } catch {
+    // localStorage can be unavailable in restrictive browser modes.
+    // The page should still render through the existing fallback path.
+  }
 }
 
 function removeLayoutModeBar(): void {
