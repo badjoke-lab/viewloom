@@ -255,7 +255,7 @@ function renderRanking(payload: Payload): void {
     setHtml('history-ranking', '<div class="history-empty">No streamer ranking is available for this period. This usually means the selected range has no payload-level stream data.</div>')
     return
   }
-  setHtml('history-ranking', `<div class="history-ranking">${sorted.slice(0, limit).map((item, index) => `<article><strong>#${index + 1} ${text(item.displayName)}</strong><span>${compact(item.viewerMinutes)} viewer-minutes</span><span>${format(item.peakViewers)} peak</span><span>${item.changePct == null ? '—' : signed(item.changePct)}</span></article>`).join('')}</div>`)
+  setHtml('history-ranking', `<div class="history-ranking"><div class="history-ranking-head"><span>Streamer</span><span>Viewer-minutes</span><span>Peak viewers</span></div>${sorted.slice(0, limit).map((item, index) => `<article><strong>#${index + 1} ${text(item.displayName)}</strong><span>${compact(item.viewerMinutes)} viewer-minutes</span><span>${format(item.peakViewers)} peak</span></article>`).join('')}</div>`)
 }
 
 function renderDays(payload: Payload): void {
