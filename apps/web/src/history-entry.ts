@@ -149,7 +149,7 @@ async function loadHistory(): Promise<void> {
 function renderLoading(): void {
   setText('history-state', 'Loading history')
   setText('history-state-note', 'Fetching observed Twitch history.')
-  setHtml('history-summary', ['Total observed', 'Peak day', 'Top streamer', 'Biggest rise', 'Coverage'].map((item) => card(item, '—', 'Loading…')).join(''))
+  setHtml('history-summary', ['Viewer-minutes', 'Peak day', 'Top streamer', 'Coverage'].map((item) => card(item, '—', 'Loading…')).join(''))
   setText('history-chart-title', chartTitle())
   setText('history-chart-note', 'Loading daily trend')
   setHtml('history-chart', '<div class="history-empty">Loading daily trend…</div>')
@@ -164,15 +164,15 @@ function renderLoading(): void {
 function renderPayload(payload: Payload): void {
   syncControls()
   const summary = payload.summary
-  setText('history-state', `${label(payload.state)} · ${label(payload.coverage.state)}`)
-  setText('history-state-note', `${payload.period.label} · ${payload.source === 'api' ? 'observed snapshots' : payload.source}`)
-  const biggest = summary?.biggestRise
+  const totalDays = daySpan(state.from, state.to)
+  const observedDays = payload.daily.length
+  setText('history-state', `${label(payload.coverage.state)} coverage`)
+  setText('history-state-note', `${payload.period.label} · ${observedDays} of ${totalDays} days observed`)
   setHtml('history-summary', [
-    card('Total observed', compact(summary?.totalViewerMinutes ?? 0), 'Viewer-minutes across the selected range.'),
+    card('Viewer-minutes', compact(summary?.totalViewerMinutes ?? 0), 'Observed audience volume for the selected range.'),
     card('Peak day', summary?.peakDay ?? '—', `${format(summary?.peakViewers ?? 0)} peak viewers.`),
     card('Top streamer', summary?.topStreamer?.displayName ?? '—', summary?.topStreamer ? `${compact(summary.topStreamer.viewerMinutes)} viewer-minutes.` : 'No ranking yet.'),
-    card('Biggest rise', biggest?.displayName ?? '—', biggest ? `${signed(biggest.changePct)} vs previous period.` : 'Not enough previous data.'),
-    card('Coverage', label(summary?.coverageState ?? 'unknown'), payload.coverage.notes.join(' ')),
+    card('Coverage', label(summary?.coverageState ?? 'unknown'), `${observedDays} of ${totalDays} selected days observed.`),
   ].join(''))
   renderChart(payload)
   renderSelected(payload)
@@ -249,12 +249,13 @@ function renderPeaks(payload: Payload): void {
 
 function renderRanking(payload: Payload): void {
   const sorted = [...payload.topStreamers].sort((a, b) => state.metric === 'viewer_minutes' ? b.viewerMinutes - a.viewerMinutes : b.peakViewers - a.peakViewers)
-  setText('history-ranking-note', sorted.length ? `Top ${Math.min(sorted.length, 12)} by ${state.metric === 'viewer_minutes' ? 'viewer-minutes' : 'peak viewers'}` : '')
+  const limit = 10
+  setText('history-ranking-note', sorted.length ? `Top ${Math.min(sorted.length, limit)} by ${state.metric === 'viewer_minutes' ? 'viewer-minutes' : 'peak viewers'}` : '')
   if (sorted.length === 0) {
     setHtml('history-ranking', '<div class="history-empty">No streamer ranking is available for this period. This usually means the selected range has no payload-level stream data.</div>')
     return
   }
-  setHtml('history-ranking', `<div class="history-ranking">${sorted.slice(0, 12).map((item, index) => `<article><strong>#${index + 1} ${text(item.displayName)}</strong><span>${compact(item.viewerMinutes)} viewer-minutes</span><span>${format(item.peakViewers)} peak</span><span>${item.changePct == null ? '—' : signed(item.changePct)}</span></article>`).join('')}</div>`)
+  setHtml('history-ranking', `<div class="history-ranking">${sorted.slice(0, limit).map((item, index) => `<article><strong>#${index + 1} ${text(item.displayName)}</strong><span>${compact(item.viewerMinutes)} viewer-minutes</span><span>${format(item.peakViewers)} peak</span><span>${item.changePct == null ? '—' : signed(item.changePct)}</span></article>`).join('')}</div>`)
 }
 
 function renderDays(payload: Payload): void {
