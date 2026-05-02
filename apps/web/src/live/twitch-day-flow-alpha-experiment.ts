@@ -7,10 +7,15 @@ const enabled = new URLSearchParams(window.location.search).get('bandFocus') ===
 
 function mapAlpha(value: number): number {
   if (!enabled) return value
-  if (Math.abs(value - 0.72) < 0.01) return 0.96
-  if (Math.abs(value - 0.86) < 0.01) return 0.98
-  if (Math.abs(value - 0.38) < 0.01) return 0.54
-  if (Math.abs(value - 0.18) < 0.01) return 0.42
+
+  // Reverse focus experiment:
+  // - initial unselected top bands should be fully vivid
+  // - after a streamer is selected, the surrounding top bands should fall back
+  //   around the normal default strength instead of becoming muddy
+  if (Math.abs(value - 0.72) < 0.01) return 1
+  if (Math.abs(value - 0.86) < 0.01) return 1
+  if (Math.abs(value - 0.38) < 0.01) return 0.72
+  if (Math.abs(value - 0.18) < 0.01) return 0.44
   return value
 }
 
