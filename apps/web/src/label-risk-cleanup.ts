@@ -20,10 +20,12 @@ const FEATURE_BY_PAGE: Record<string, FeaturePage> = {
   'twitch-day-flow': 'day-flow',
   'twitch-battle-lines': 'battle-lines',
   'twitch-history': 'history',
+  'twitch-status': 'status',
   'kick-heatmap': 'heatmap',
   'kick-day-flow': 'day-flow',
   'kick-battle-lines': 'battle-lines',
   'kick-history': 'history',
+  'kick-status': 'status',
 }
 
 const ROUTE_COPY: Record<FeaturePage, string> = {
@@ -60,12 +62,21 @@ const FORBIDDEN_REPLACEMENTS: Array<[RegExp, string]> = [
 ]
 
 const route = getRouteMeta()
+let scheduled = false
 applyLabelRules()
 
-const observer = new MutationObserver(() => applyLabelRules())
-observer.observe(document.documentElement, {
+const observer = new MutationObserver(() => {
+  if (scheduled) return
+  scheduled = true
+  window.requestAnimationFrame(() => {
+    scheduled = false
+    applyLabelRules()
+  })
+})
+observer.observe(document.body, {
   childList: true,
   subtree: true,
+  characterData: true,
 })
 
 function getRouteMeta(): RouteMeta {
@@ -85,28 +96,29 @@ function applyLabelRules(): void {
 
 function patchHead(): void {
   if (!route.platform || !route.feature) return
-  document.title = getSeoTitle(route.feature, route.platform)
+  setDocumentTitle(getSeoTitle(route.feature, route.platform))
   const meta = document.querySelector<HTMLMetaElement>('meta[name="description"]')
-  if (meta) meta.content = getMetaDescription(route.feature, route.platform)
+  const description = getMetaDescription(route.feature, route.platform)
+  if (meta && meta.content !== description) meta.content = description
 }
 
 function patchHeader(): void {
   document.querySelectorAll<HTMLAnchorElement>('.site-nav .nav-link').forEach((link) => {
     const href = link.getAttribute('href') ?? ''
     if (href === '/twitch/' || href.startsWith('/twitch/')) {
-      link.textContent = getPlatformDataLabel('twitch')
+      setText(link, getPlatformDataLabel('twitch'))
     }
     if (href === '/kick/' || href.startsWith('/kick/')) {
-      link.textContent = getPlatformDataLabel('kick')
+      setText(link, getPlatformDataLabel('kick'))
     }
   })
 
   const headerNote = document.querySelector<HTMLElement>('.header-note')
   if (!headerNote) return
   if (route.platform) {
-    headerNote.textContent = getUnofficialBadge(route.platform)
+    setText(headerNote, getUnofficialBadge(route.platform))
   } else {
-    headerNote.textContent = 'Unofficial data view'
+    setText(headerNote, 'Unofficial data view')
   }
 }
 
@@ -116,13 +128,13 @@ function patchHero(): void {
   const h1 = document.querySelector<HTMLHeadingElement>('.hero h1, .bl-hero h1')
   const copy = document.querySelector<HTMLElement>('.hero .hero-copy, .bl-hero p')
 
-  if (eyebrow) eyebrow.textContent = getHeroEyebrow(route.platform, getFeatureRole(route.feature))
-  if (h1) h1.textContent = getFeatureTitle(route.feature)
-  if (copy) copy.textContent = ROUTE_COPY[route.feature]
+  if (eyebrow) setText(eyebrow, getHeroEyebrow(route.platform, getFeatureRole(route.feature)))
+  if (h1) setText(h1, getFeatureTitle(route.feature))
+  if (copy) setText(copy, ROUTE_COPY[route.feature])
 
   document.querySelectorAll<HTMLElement>('.status-panel__label').forEach((label) => {
-    if (/build state|live snapshot|current state/i.test(label.textContent ?? '')) {
-      label.textContent = getUnofficialBadge(route.platform)
+    if (/build state|live snapshot|current state|unofficial/i.test(label.textContent ?? '')) {
+      setText(label, getUnofficialBadge(route.platform))
     }
   })
 }
@@ -131,7 +143,7 @@ function patchFeatureNav(): void {
   document.querySelectorAll<HTMLAnchorElement>('.site-subnav .subnav-link').forEach((link) => {
     const text = link.textContent?.trim().toLowerCase()
     if (text === 'battle lines') return
-    if (text === 'history & trends') link.textContent = 'History'
+    if (text === 'history & trends') setText(link, 'History')
   })
 }
 
@@ -154,4 +166,12 @@ function patchVisibleText(root: HTMLElement): void {
 
 function applyReplacements(value: string): string {
   return FORBIDDEN_REPLACEMENTS.reduce((text, [pattern, replacement]) => text.replace(pattern, replacement), value)
+}
+
+function setText(node: HTMLElement, value: string): void {
+  if (node.textContent !== value) node.textContent = value
+}
+
+function setDocumentTitle(value: string): void {
+  if (document.title !== value) document.title = value
 }
