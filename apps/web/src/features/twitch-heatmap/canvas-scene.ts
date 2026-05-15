@@ -108,7 +108,9 @@ export function renderCanvasScene(input: {
     moveButton.classList.toggle('is-active', moveMode)
     modeLabel.classList.toggle('is-active', moveMode)
     modeLabel.textContent = moveMode ? 'Pan & pinch' : 'Page scroll'
-    hintLabel.textContent = moveMode ? 'Pan & pinch' : 'Page scroll · Tap tiles'
+    hintLabel.textContent = moveMode
+      ? 'Pan & pinch · Tap tiles'
+      : 'Page scroll · Ctrl/Alt/Meta + wheel to zoom · Drag to pan'
     moveButton.textContent = moveMode ? 'Back to scroll' : 'Control map'
     moveButton.setAttribute('aria-pressed', moveMode ? 'true' : 'false')
   }
@@ -170,6 +172,8 @@ export function renderCanvasScene(input: {
   })
 
   overlayCanvas.addEventListener('pointerdown', (event) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+
     if (event.pointerType !== 'mouse') {
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
       if (moveMode && activePointers.size >= 2) {
@@ -185,6 +189,9 @@ export function renderCanvasScene(input: {
     pointerId = event.pointerId
     pointerDown = true
     dragging = false
+    if (event.pointerType === 'mouse' && !overlayCanvas.hasPointerCapture(event.pointerId)) {
+      overlayCanvas.setPointerCapture(event.pointerId)
+    }
     downX = event.clientX
     downY = event.clientY
     lastX = event.clientX
@@ -254,6 +261,10 @@ export function renderCanvasScene(input: {
 
   overlayCanvas.addEventListener('pointerup', finishPointer)
   overlayCanvas.addEventListener('pointercancel', finishPointer)
+  overlayCanvas.addEventListener('lostpointercapture', () => {
+    if (!pointerDown) return
+    resetPointerState()
+  })
 
   function startGesture(): void {
     const gesture = getGestureState(overlayCanvas, activePointers)
