@@ -666,3 +666,62 @@ a.button {
     font-size: 0.8rem;
   }
 }
+
+/* Heatmap Canvas QA hardening */
+.heatmap-canvas-toolbar {
+  flex-wrap: wrap;
+}
+
+.heatmap-canvas-toolbar > div:first-child {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+
+.heatmap-canvas-toolbar__group {
+  flex: 0 1 auto;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.heatmap-canvas-badge,
+.heatmap-canvas-mode,
+.heatmap-canvas-button {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .heatmap-canvas-scene {
+    min-height: 420px;
+  }
+
+  .heatmap-canvas-toolbar {
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .heatmap-canvas-toolbar > div:first-child,
+  .heatmap-canvas-toolbar__group {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .heatmap-canvas-toolbar__group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .heatmap-canvas-badge,
+  .heatmap-canvas-mode,
+  .heatmap-canvas-button {
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    padding-inline: 8px;
+    font-size: 0.76rem;
+  }
+
+  .heatmap-canvas-viewport {
+    min-height: 360px;
+  }
+}
