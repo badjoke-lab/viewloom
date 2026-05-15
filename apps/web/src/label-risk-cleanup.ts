@@ -31,34 +31,19 @@ const FEATURE_BY_PAGE: Record<string, FeaturePage> = {
 const ROUTE_COPY: Record<FeaturePage, string> = {
   heatmap: 'Read who is big, rising, or active right now through observed live-stream data.',
   'day-flow': 'Read the daily audience landscape as a single terrain.',
-  'battle-lines': 'Compare live audience lines, reversals, and closing gaps.',
+  'battle-lines': 'Read rivalry, reversals, surges, and closing gaps through observed live-stream data.',
   history: 'Review observed days, top streamers, and daily trend changes.',
   status: "Current health, freshness, and coverage for ViewLoom's observations.",
 }
 
-const FORBIDDEN_REPLACEMENTS: Array<[RegExp, string]> = [
+const TEXT_FIXES: Array<[RegExp, string]> = [
   [/Twitch ViewLoom/g, 'Twitch data overview'],
   [/Kick ViewLoom/g, 'Kick data overview'],
-  [/Twitch Heatmap/g, 'Heatmap'],
-  [/Twitch Day Flow/g, 'Day Flow'],
-  [/Twitch Battle Lines/g, 'Battle Lines'],
-  [/Twitch History/g, 'History & Trends'],
-  [/Kick Heatmap/g, 'Heatmap'],
-  [/Kick Day Flow/g, 'Day Flow'],
-  [/Kick Battle Lines/g, 'Battle Lines'],
-  [/Kick History/g, 'History & Trends'],
-  [/TWITCH \/ NOW/g, 'TWITCH DATA · NOW'],
-  [/TWITCH \/ TODAY/g, 'TWITCH DATA · TODAY'],
+  [/Now \/ Today \/ Compare/g, 'Now / Today / Rivalry'],
+  [/Now, Today, and Compare/g, 'Now, Today, and Rivalry'],
   [/TWITCH \/ COMPARE/g, 'TWITCH DATA · RIVALRY'],
-  [/TWITCH \/ TRENDS/g, 'TWITCH DATA · TRENDS'],
-  [/KICK \/ NOW/g, 'KICK DATA · NOW'],
-  [/KICK \/ TODAY/g, 'KICK DATA · TODAY'],
   [/KICK \/ COMPARE/g, 'KICK DATA · RIVALRY'],
-  [/KICK \/ TRENDS/g, 'KICK DATA · TRENDS'],
-  [/ok · real/gi, 'Data: Fresh · Source: Real'],
-  [/partial · api/gi, 'Data: Partial · Source: Real'],
-  [/Observed complete/g, 'Coverage: Observed'],
-  [/Partial coverage/g, 'Coverage: Partial'],
+  [/\bCompare\b/g, 'Rivalry'],
 ]
 
 const route = getRouteMeta()
@@ -73,17 +58,12 @@ const observer = new MutationObserver(() => {
     applyLabelRules()
   })
 })
-observer.observe(document.body, {
-  childList: true,
-  subtree: true,
-  characterData: true,
-})
+observer.observe(document.body, { childList: true, subtree: true, characterData: true })
 
 function getRouteMeta(): RouteMeta {
   const page = document.body.dataset.page ?? ''
   const platform = page.startsWith('kick') ? 'kick' : page.startsWith('twitch') ? 'twitch' : undefined
-  const feature = FEATURE_BY_PAGE[page]
-  return { platform, feature }
+  return { platform, feature: FEATURE_BY_PAGE[page] }
 }
 
 function applyLabelRules(): void {
@@ -105,21 +85,13 @@ function patchHead(): void {
 function patchHeader(): void {
   document.querySelectorAll<HTMLAnchorElement>('.site-nav .nav-link').forEach((link) => {
     const href = link.getAttribute('href') ?? ''
-    if (href === '/twitch/' || href.startsWith('/twitch/')) {
-      setText(link, getPlatformDataLabel('twitch'))
-    }
-    if (href === '/kick/' || href.startsWith('/kick/')) {
-      setText(link, getPlatformDataLabel('kick'))
-    }
+    if (href === '/twitch/' || href.startsWith('/twitch/')) setText(link, getPlatformDataLabel('twitch'))
+    if (href === '/kick/' || href.startsWith('/kick/')) setText(link, getPlatformDataLabel('kick'))
   })
 
   const headerNote = document.querySelector<HTMLElement>('.header-note')
   if (!headerNote) return
-  if (route.platform) {
-    setText(headerNote, getUnofficialBadge(route.platform))
-  } else {
-    setText(headerNote, 'Unofficial data view')
-  }
+  setText(headerNote, route.platform ? getUnofficialBadge(route.platform) : 'Unofficial data view')
 }
 
 function patchHero(): void {
@@ -141,9 +113,7 @@ function patchHero(): void {
 
 function patchFeatureNav(): void {
   document.querySelectorAll<HTMLAnchorElement>('.site-subnav .subnav-link').forEach((link) => {
-    const text = link.textContent?.trim().toLowerCase()
-    if (text === 'battle lines') return
-    if (text === 'history & trends') setText(link, 'History')
+    if (link.textContent?.trim().toLowerCase() === 'history & trends') setText(link, 'History')
   })
 }
 
@@ -159,13 +129,13 @@ function patchVisibleText(root: HTMLElement): void {
   nodes.forEach((node) => {
     const parent = node.parentElement
     if (!parent || ['SCRIPT', 'STYLE', 'TITLE'].includes(parent.tagName)) return
-    const next = applyReplacements(node.nodeValue ?? '')
+    const next = applyTextFixes(node.nodeValue ?? '')
     if (next !== node.nodeValue) node.nodeValue = next
   })
 }
 
-function applyReplacements(value: string): string {
-  return FORBIDDEN_REPLACEMENTS.reduce((text, [pattern, replacement]) => text.replace(pattern, replacement), value)
+function applyTextFixes(value: string): string {
+  return TEXT_FIXES.reduce((text, [pattern, replacement]) => text.replace(pattern, replacement), value)
 }
 
 function setText(node: HTMLElement, value: string): void {
