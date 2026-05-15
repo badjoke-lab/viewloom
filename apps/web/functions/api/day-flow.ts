@@ -153,9 +153,7 @@ function buildPayload(input: {
       if (!id) continue
       const displayName = String(item.displayName ?? item.channelLogin ?? id)
       const stream = ensureStream(streams, id, displayName, item)
-      stream.viewerMinutes += viewers * bucketSize
       stream.peakViewers = Math.max(stream.peakViewers, viewers)
-      stream.observations += 1
       stream.firstSeen ??= bucket
       stream.lastSeen = bucket
       if (stream.previousViewers !== null) {
@@ -170,12 +168,14 @@ function buildPayload(input: {
     }
   }
 
+  finalizeStreamStats(streams, bucketAggs, bucketSize)
+
   const ranked = [...streams.values()].sort((a, b) => b.viewerMinutes - a.viewerMinutes)
   const topStreams = ranked.slice(0, topN)
   const topIds = new Set(topStreams.map((stream) => stream.id))
   const totalViewersByBucket = bucketAggs.map((bucket) => bucket.totalViewers)
   const bands = topStreams.map((stream) => buildBand(stream, bucketAggs, bucketSize, totalViewersByBucket))
-  const others = buildOthersBand(bucketAggs, topIds, totalViewersByBucket)
+  const others = buildOthersBand(bucketAggs, topIds, totalViewersByBucket, bucketSize)
   if (others.totalViewerMinutes > 0 || bands.length > 0) bands.push(others)
 
   const nonZeroBuckets = totalViewersByBucket.filter((value) => value > 0).length
@@ -238,6 +238,19 @@ function buildPayload(input: {
   }
 }
 
+function finalizeStreamStats(streams: Map<string, StreamAgg>, buckets: BucketAgg[], bucketSize: BucketSize): void {
+  for (const stream of streams.values()) {
+    stream.viewerMinutes = 0
+    stream.observations = 0
+    for (const bucket of buckets) {
+      const viewers = bucket.streams.get(stream.id) ?? 0
+      if (viewers <= 0) continue
+      stream.viewerMinutes += viewers * bucketSize
+      stream.observations += 1
+    }
+  }
+}
+
 function buildBand(stream: StreamAgg, buckets: BucketAgg[], bucketSize: BucketSize, totals: number[]) {
   const bucketValues = buckets.map((bucket, index) => {
     const viewers = bucket.streams.get(stream.id) ?? 0
@@ -267,13 +280,13 @@ function buildBand(stream: StreamAgg, buckets: BucketAgg[], bucketSize: BucketSi
   }
 }
 
-function buildOthersBand(buckets: BucketAgg[], topIds: Set<string>, totals: number[]) {
+function buildOthersBand(buckets: BucketAgg[], topIds: Set<string>, totals: number[], bucketSize: BucketSize) {
   let viewerMinutes = 0
   let peakViewers = 0
   const values = buckets.map((bucket, index) => {
     const topTotal = [...bucket.streams.entries()].reduce((sum, [id, viewers]) => topIds.has(id) ? sum + viewers : sum, 0)
     const viewers = Math.max(0, bucket.totalViewers - topTotal)
-    viewerMinutes += viewers
+    viewerMinutes += viewers * bucketSize
     peakViewers = Math.max(peakViewers, viewers)
     return {
       viewers,
@@ -290,7 +303,7 @@ function buildOthersBand(buckets: BucketAgg[], topIds: Set<string>, totals: numb
     isOthers: true,
     totalViewerMinutes: Math.round(viewerMinutes),
     peakViewers: Math.round(peakViewers),
-    avgViewers: buckets.length > 0 ? Math.round(viewerMinutes / buckets.length) : 0,
+    avgViewers: buckets.length > 0 ? Math.round(viewerMinutes / Math.max(1, buckets.length * bucketSize)) : 0,
     peakShare: Math.max(0, ...values.map((bucket) => bucket.share)),
     biggestRiseBucket: null,
     firstSeen: null,
