@@ -190,7 +190,89 @@ Must verify in browser:
 - detail dialog has readable content and a working Close button.
 - page scroll remains usable.
 
-## 7. Next QA order
+## 7. Battle Lines static QA
+
+URL:
+
+- `/twitch/battle-lines/`
+
+Status: static implementation check passed with one owned API limitation, browser interaction QA still required.
+
+Confirmed in source:
+
+- Battle Lines entry page loads:
+  - `battle-lines-status-entry.ts`
+  - `twitch-history-nav.ts`
+  - `label-risk-cleanup.ts`
+  - `lines-unify.ts`
+- `battle-lines-status-entry.ts` owns the Battle Lines app shell and fetches `/api/battle-lines` directly.
+- `/api/battle-lines` is ViewLoom-owned and reads `DB_TWITCH_HOT.minute_snapshots`.
+- Frontend query parameters include:
+  - `top`
+  - `bucket`
+  - `metric`
+- Owned API supports:
+  - `top=3|5|10`
+  - `bucket=1m|5m|10m`
+  - optional `from` / `to`
+- Owned API returns fields used by the frontend:
+  - `lines`
+  - `primaryBattle`
+  - `recommendedBattle`
+  - `secondaryBattles`
+  - `battles`
+  - `events`
+  - `reversals`
+  - `feed`
+  - `state` / `status`
+- Frontend normalizes:
+  - `primaryBattle` / `recommendedBattle`
+  - `secondaryBattles` / `battles`
+  - `reversals` / `events` / `feed`
+  - `missing`, `not_observed`, `offline`, and `observed` point states
+- Chart path generation breaks lines at missing / not_observed points.
+- Missing / not_observed buckets are rendered as background gap bands.
+- Inspector displays selected time, pair, gap, trend, point state labels, and change.
+- Reversal list, secondary battles, and battle feed are rendered from normalized events/pairs.
+- Demo fallback is clearly marked when API fails or returns unusable data.
+
+Known source notes:
+
+- The local Battle Lines header still renders simple `Twitch` / `Kick` nav labels and `${site} / Compare` before `label-risk-cleanup.ts` normalizes visible text. This should be cleaned later when editing the large Battle Lines file safely.
+- The owned API currently accepts `metric` from the frontend but does not echo or transform payload values by metric. The frontend can still render Indexed mode locally by normalizing line values, but API metadata should be improved in a follow-up.
+
+## 8. Battle Lines browser QA still required
+
+Desktop viewport:
+
+- 1440 x 900
+
+Must verify in browser:
+
+- page loads without runtime errors.
+- primary battle is visible.
+- secondary battles are visible and clickable when enough lines exist.
+- clicking chart time updates selected time and Time Inspector.
+- Jump to live returns to the latest point.
+- Latest Reversals buttons switch selected time and pair.
+- gap band is visible when both primary lines have drawable points.
+- missing / not_observed gaps are not connected as fake continuous lines.
+- offline samples are shown as zero rather than missing.
+- demo/error/empty states are clearly labeled.
+
+Mobile viewport:
+
+- 390 x 844
+
+Must verify in browser:
+
+- chart remains visible without horizontal page overflow.
+- controls wrap without clipping.
+- inspector remains reachable below the chart.
+- reversal / secondary battle / feed sections remain readable.
+- tap on chart updates selected time.
+
+## 9. Next QA order
 
 1. Heatmap desktop browser QA.
 2. Heatmap mobile browser QA.
