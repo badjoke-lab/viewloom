@@ -1,5 +1,7 @@
 import type { Env } from '../_db/env'
 
+type MetricMode = 'viewers' | 'indexed'
+
 type SnapshotRow = {
   bucket_minute: string
   collected_at: string
@@ -35,6 +37,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const url = new URL(request.url)
   const top = normalizeTop(url.searchParams.get('top'))
   const bucket = normalizeBucket(url.searchParams.get('bucket'))
+  const metric = normalizeMetric(url.searchParams.get('metric'))
   const minutes = bucket === '1m' ? 1 : bucket === '10m' ? 10 : 5
   const period = buildPeriod(url)
 
@@ -46,7 +49,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       ORDER BY bucket_minute ASC
     `).bind('twitch', period.from, period.to).all<SnapshotRow>()
 
-    const payload = buildPayload(rows.results ?? [], { top, bucket, minutes, period })
+    const payload = buildPayload(rows.results ?? [], { top, bucket, metric, minutes, period })
     return Response.json(payload, { headers: { 'cache-control': 'no-store' } })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Battle Lines API failed.'
@@ -58,6 +61,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       updatedAt: new Date().toISOString(),
       top,
       bucket,
+      metric,
+      valueMode: metric,
+      metricNote: metricNote(metric),
       lines: [],
       primaryBattle: null,
       recommendedBattle: null,
@@ -71,7 +77,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   }
 }
 
-function buildPayload(rows: SnapshotRow[], options: { top: number; bucket: string; minutes: number; period: { from: string; to: string } }) {
+function buildPayload(rows: SnapshotRow[], options: { top: number; bucket: string; metric: MetricMode; minutes: number; period: { from: string; to: string } }) {
   const buckets = buildBuckets(options.period.from, options.period.to, options.minutes)
   const bucketIndex = new Map(buckets.map((bucket, index) => [bucket, index]))
   const map = new Map<string, { name: string; values: number[] }>()
@@ -112,6 +118,9 @@ function buildPayload(rows: SnapshotRow[], options: { top: number; bucket: strin
     generatedAt: new Date().toISOString(),
     top: options.top,
     bucket: options.bucket,
+    metric: options.metric,
+    valueMode: options.metric,
+    metricNote: metricNote(options.metric),
     window: options.period,
     lines,
     primaryBattle,
@@ -124,6 +133,7 @@ function buildPayload(rows: SnapshotRow[], options: { top: number; bucket: strin
     notes: [
       'ViewLoom-owned Battle Lines payload generated from observed minute snapshots.',
       'Missing and not-observed samples are returned as null values and are not connected as real lines.',
+      metricNote(options.metric),
     ],
   }
 }
@@ -225,6 +235,16 @@ function normalizeTop(value: unknown): number {
 
 function normalizeBucket(value: unknown): '1m' | '5m' | '10m' {
   return value === '1m' || value === '10m' ? value : '5m'
+}
+
+function normalizeMetric(value: unknown): MetricMode {
+  return value === 'indexed' ? 'indexed' : 'viewers'
+}
+
+function metricNote(metric: MetricMode): string {
+  return metric === 'indexed'
+    ? 'Metric requested: indexed. API returns raw viewer samples and the frontend normalizes each line for indexed display.'
+    : 'Metric requested: viewers. API returns raw viewer samples.'
 }
 
 function lastObserved(values: number[]): number | null {
