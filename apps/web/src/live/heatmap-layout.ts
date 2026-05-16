@@ -181,7 +181,7 @@ function ensureStyles(): void {
     }
     .heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature {
       min-height: auto;
-      padding: 12px;
+      padding: 10px;
     }
     .heatmap-layout-root[data-layout-mode='wide'] .chart-stage__label {
       margin-bottom: 4px;
@@ -190,12 +190,13 @@ function ensureStyles(): void {
       margin-bottom: 4px;
     }
     .heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature p {
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       max-width: 880px;
       line-height: 1.5;
     }
     .heatmap-layout-root[data-layout-mode='wide'] .chart-placeholder--heatmap {
       min-height: clamp(620px, 74vh, 820px);
+      margin-top: 10px;
     }
     .heatmap-layout-root[data-layout-mode='wide'] .rail-card,
     .heatmap-layout-root[data-layout-mode='wide'] .support-card {
@@ -257,13 +258,14 @@ function ensureStyles(): void {
         width: min(calc(100vw - 24px), 760px);
       }
       .heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature {
-        padding: 10px;
+        padding: 8px;
       }
       .heatmap-layout-root[data-layout-mode='wide'] .chart-stage--feature p {
         display: none;
       }
       .heatmap-layout-root[data-layout-mode='wide'] .chart-placeholder--heatmap {
         min-height: clamp(460px, 70vh, 660px);
+        margin-top: 8px;
       }
     }
   `
