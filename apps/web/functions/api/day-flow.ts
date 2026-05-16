@@ -31,6 +31,7 @@ type Band = {
   avgViewers: number
   peakShare: number
   biggestRiseBucket: string | null
+  biggestRiseValue: number
   firstSeen: string | null
   lastSeen: string | null
   buckets: Array<{
@@ -131,6 +132,10 @@ function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod
   const nonZeroBuckets = totals.filter((value) => value > 0).length
   const source = demoRows > 0 && demoRows >= Math.max(1, rows.length / 2) ? 'demo' : 'api'
   const state = rows.length === 0 ? 'empty' : nonZeroBuckets < Math.max(1, Math.ceil(buckets.length * 0.2)) ? 'partial' : 'ok'
+  const biggestRise = topBands.reduce<Band | null>((best, band) => {
+    if (!band.biggestRiseBucket) return best
+    return !best || band.biggestRiseValue > best.biggestRiseValue ? band : best
+  }, null)
 
   return {
     ok: true,
@@ -153,7 +158,7 @@ function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod
       peakLeader: topBands[0]?.name,
       longestDominance: topBands[0]?.name,
       highestActivity: undefined,
-      biggestRise: undefined,
+      biggestRise: biggestRise?.name,
     },
     buckets,
     totalViewersByBucket: totals,
@@ -171,6 +176,7 @@ function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod
         viewerMinutes: band.totalViewerMinutes,
         peakShare: band.peakShare,
         biggestRiseTime: band.biggestRiseBucket,
+        biggestRiseValue: band.biggestRiseValue,
         firstSeen: band.firstSeen,
         lastSeen: band.lastSeen,
       })),
@@ -186,6 +192,7 @@ function toBand(id: string, stream: { name: string; title: string; url: string; 
   const peakViewers = Math.max(0, ...stream.values)
   const observedIndexes = stream.values.map((value, index) => value > 0 ? index : -1).filter((index) => index >= 0)
   const totalViewerMinutes = stream.values.reduce((sum, value) => sum + value * bucketSize, 0)
+  const rise = biggestRise(stream.values, buckets)
   return {
     streamerId: id,
     name: stream.name,
@@ -196,10 +203,11 @@ function toBand(id: string, stream: { name: string; title: string; url: string; 
     peakViewers,
     avgViewers: observedIndexes.length > 0 ? Math.round(totalViewerMinutes / Math.max(1, observedIndexes.length * bucketSize)) : 0,
     peakShare: Math.max(0, ...stream.values.map((value, index) => totals[index] > 0 ? value / totals[index] : 0)),
-    biggestRiseBucket: null,
+    biggestRiseBucket: rise.bucket,
+    biggestRiseValue: rise.value,
     firstSeen: observedIndexes.length > 0 ? buckets[observedIndexes[0]] : null,
     lastSeen: observedIndexes.length > 0 ? buckets[observedIndexes.at(-1) ?? 0] : null,
-    buckets: stream.values.map((viewers, index) => ({ viewers, share: totals[index] > 0 ? viewers / totals[index] : 0, activity: 0, activityAvailable: false, peak: viewers === peakViewers && viewers > 0, rise: false })),
+    buckets: stream.values.map((viewers, index) => ({ viewers, share: totals[index] > 0 ? viewers / totals[index] : 0, activity: 0, activityAvailable: false, peak: viewers === peakViewers && viewers > 0, rise: rise.index === index })),
   }
 }
 
@@ -210,6 +218,22 @@ function buildOthersBand(streams: Map<string, { values: number[] }>, topIds: Set
   })
   const band = toBand('others', { name: 'Others', title: '', url: '', values }, buckets, totals, bucketSize)
   return { ...band, isOthers: true }
+}
+
+function biggestRise(values: number[], buckets: string[]): { index: number | null; bucket: string | null; value: number } {
+  let bestIndex: number | null = null
+  let bestValue = 0
+  let previous = values[0] ?? 0
+  for (let index = 1; index < values.length; index += 1) {
+    const current = values[index] ?? 0
+    const delta = current - previous
+    if (delta > bestValue) {
+      bestValue = delta
+      bestIndex = index
+    }
+    previous = current
+  }
+  return { index: bestIndex, bucket: bestIndex === null ? null : buckets[bestIndex], value: bestValue }
 }
 
 function buildPeriod(url: URL) {
