@@ -43,7 +43,6 @@ const TEXT_FIXES: Array<[RegExp, string]> = [
   [/Now, Today, and Compare/g, 'Now, Today, and Rivalry'],
   [/TWITCH \/ COMPARE/g, 'TWITCH DATA · RIVALRY'],
   [/KICK \/ COMPARE/g, 'KICK DATA · RIVALRY'],
-  [/\bCompare\b/g, 'Rivalry'],
 ]
 
 const route = getRouteMeta()
