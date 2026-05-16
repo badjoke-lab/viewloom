@@ -47,6 +47,12 @@ Recovery requirement:
 - `/api/battle-lines` must be ViewLoom-owned.
 - The pages must not depend on `https://livefield.pages.dev` for core payloads.
 
+Current status:
+
+- `livefield.pages.dev` repository search: 0 hits confirmed after owned API recovery.
+- `/api/day-flow` is ViewLoom-owned.
+- `/api/battle-lines` is ViewLoom-owned.
+
 ### 4.2 Baseline policy was missing
 
 Before this branch, the repository did not contain a single mandatory document saying that Cloudflare Free must not reduce user-facing quality.
@@ -148,3 +154,19 @@ Any coding agent working on this repository must read these two files before imp
 - `docs/viewloom-free-plan-recovery-audit.md`
 
 A task is invalid if it attempts to reduce the agreed feature quality in order to fit Cloudflare Free.
+
+## 9. CI gate
+
+The repository now has a web check workflow for pull requests and main pushes.
+
+Current gate intent:
+
+- `pnpm typecheck:web`
+- `pnpm build:web`
+
+The typecheck gate includes both app source and Cloudflare Pages Functions.
+
+Current CI smoke status:
+
+- The pnpm cache configuration was removed because this repository does not currently commit `pnpm-lock.yaml`.
+- The Day Flow `highestActivity` placeholder was normalized to `null` for Functions typecheck.
