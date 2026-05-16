@@ -205,6 +205,23 @@
   opacity: 0.55;
 }
 
+.bl-chart svg path[stroke-width="4"] {
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 7px rgba(96, 165, 250, 0.38));
+}
+
+.bl-chart svg path[stroke-width="2"] {
+  stroke-width: 1.5;
+  opacity: 0.18;
+}
+
+.bl-chart svg polygon {
+  opacity: 0.28;
+}
+
 .bl-inspector {
   display: grid;
   grid-template-columns: 1.05fr repeat(5, minmax(0, 1fr));
