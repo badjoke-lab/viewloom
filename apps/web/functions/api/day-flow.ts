@@ -157,13 +157,13 @@ function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod
     summary: {
       peakLeader: topBands[0]?.name,
       longestDominance: topBands[0]?.name,
-      highestActivity: undefined,
+      highestActivity: null,
       biggestRise: biggestRise?.name,
     },
     buckets,
     totalViewersByBucket: totals,
     bands,
-    focusSnapshot: { highestActivity: undefined },
+    focusSnapshot: { highestActivity: null },
     detailPanelSource: {
       defaultStreamerId: topBands[0]?.streamerId ?? null,
       streamers: topBands.map((band) => ({
