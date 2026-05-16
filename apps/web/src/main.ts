@@ -71,21 +71,21 @@ type FeatureMeta = {
 const cards: SiteCard[] = [
   {
     slug: 'twitch',
-    title: 'Twitch ViewLoom',
-    eyebrow: 'Now / Today / Compare',
+    title: 'Twitch data',
+    eyebrow: 'Now / Today / Rivalry',
     description:
-      'Observe Twitch through a dedicated shell focused on Heatmap, Day Flow, and Battle Lines.',
-    cta: 'Open Twitch site',
+      'Observe Twitch data through a dedicated shell focused on Heatmap, Day Flow, and Battle Lines.',
+    cta: 'Open Twitch data',
     accentClass: 'theme-twitch',
     notes: ['Purple-led live field', 'Separate status and coverage', 'Feature-first reading'],
   },
   {
     slug: 'kick',
-    title: 'Kick ViewLoom',
-    eyebrow: 'Now / Today / Compare',
+    title: 'Kick data',
+    eyebrow: 'Now / Today / Rivalry',
     description:
-      'Observe Kick through the same shell structure with a separate accent, status surface, and data path.',
-    cta: 'Open Kick site',
+      'Observe Kick data through the same shell structure with a separate accent, status surface, and data path.',
+    cta: 'Open Kick data',
     accentClass: 'theme-kick',
     notes: ['Green-led live field', 'Parallel observatory layout', 'Provider-separated reading'],
   },
@@ -94,15 +94,15 @@ const cards: SiteCard[] = [
 const siteMeta: Record<SiteKey, SiteMeta> = {
   twitch: {
     key: 'twitch',
-    title: 'Twitch ViewLoom',
-    eyebrow: 'Twitch',
+    title: 'Twitch data',
+    eyebrow: 'Twitch data',
     accentClass: 'theme-twitch',
     basePath: '/twitch',
-    shellStatus: 'Shell ready for real Twitch mounting',
+    shellStatus: 'Shell ready for real Twitch data mounting',
     intro:
-      'A dedicated Twitch observatory that keeps Now, Today, and Compare separate while staying dense and readable.',
+      'A dedicated Twitch data observatory that keeps Now, Today, and Rivalry separate while staying dense and readable.',
     featureLead:
-      'Open the current live field, read the daily landscape, or inspect the strongest current battle.',
+      'Open the current live field, read the daily landscape, or inspect the strongest current rivalry.',
     overviewTitle: 'Overview stage',
     overviewBody:
       'This surface will become the top-page overview stage: strong enough to make the home feel like a product surface, but not a replacement for the feature pages.',
@@ -115,7 +115,7 @@ const siteMeta: Record<SiteKey, SiteMeta> = {
     supportCards: [
       {
         label: 'Overview',
-        title: 'Now / Today / Compare',
+        title: 'Now / Today / Rivalry',
         body: 'Three separate reads of the same live ecosystem, without collapsing into a single all-in-one dashboard.',
       },
       {
@@ -132,13 +132,13 @@ const siteMeta: Record<SiteKey, SiteMeta> = {
   },
   kick: {
     key: 'kick',
-    title: 'Kick ViewLoom',
-    eyebrow: 'Kick',
+    title: 'Kick data',
+    eyebrow: 'Kick data',
     accentClass: 'theme-kick',
     basePath: '/kick',
-    shellStatus: 'Shell ready for real Kick mounting',
+    shellStatus: 'Shell ready for real Kick data mounting',
     intro:
-      'A parallel Kick observatory with the same layout grammar, but its own color identity, status surface, and future collector path.',
+      'A parallel Kick data observatory with the same layout grammar, but its own color identity, status surface, and future collector path.',
     featureLead:
       'Move through Heatmap, Day Flow, and Battle Lines without mixing platform scope or role boundaries.',
     overviewTitle: 'Overview stage',
@@ -260,7 +260,7 @@ const featureMeta: Record<FeatureKey, FeatureMeta> = {
       {
         label: 'Role',
         value: 'Today',
-        body: 'This page reads the daily landscape instead of the current instant or a single battle.',
+        body: 'This page reads the daily landscape instead of the current instant or a single rivalry.',
       },
       {
         label: 'Bucketing',
@@ -288,15 +288,15 @@ const featureMeta: Record<FeatureKey, FeatureMeta> = {
   },
   'battle-lines': {
     key: 'battle-lines',
-    label: 'Compare',
+    label: 'Rivalry',
     title: 'Battle Lines',
     description:
       'Read rivalry, reversal, surge, and pressure through a chart built around recommended and custom battle states.',
     chartTitle: 'Battle stage',
     chartBody:
-      'This main field will become the comparison-first battle chart with recommended primary battle, secondary entries, and custom state control.',
+      'This main field will become the rivalry-first battle chart with recommended primary battle, secondary entries, and custom state control.',
     rightRailTitle: 'Read it through',
-    rightRailItems: ['Primary battle first', 'Reversal-aware comparison', 'Recommended then custom flow'],
+    rightRailItems: ['Primary battle first', 'Reversal-aware rivalry', 'Recommended then custom flow'],
     supportCards: [
       {
         label: 'Main',
@@ -317,7 +317,7 @@ const featureMeta: Record<FeatureKey, FeatureMeta> = {
     summaryCards: [
       {
         label: 'Role',
-        value: 'Compare',
+        value: 'Rivalry',
         body: 'This page reads a live battle instead of the whole field or the whole day.',
       },
       {
@@ -377,11 +377,11 @@ function renderPortal(): string {
             <div class="eyebrow">ViewLoom</div>
             <h1>Choose a live ecosystem, then read it through three fixed views.</h1>
             <p class="hero-copy">
-              ViewLoom separates platforms first, then lets each site read live activity through Now, Today, and Compare.
+              ViewLoom separates platforms first, then lets each site read live activity through Now, Today, and Rivalry.
             </p>
             <div class="hero-actions">
-              <a class="button button--primary" href="/twitch/">Open Twitch</a>
-              <a class="button button--secondary" href="/kick/">Open Kick</a>
+              <a class="button button--primary" href="/twitch/">Open Twitch data</a>
+              <a class="button button--secondary" href="/kick/">Open Kick data</a>
             </div>
           </div>
           <aside class="status-panel status-panel--portal">
@@ -397,7 +397,7 @@ function renderPortal(): string {
               </div>
               <div class="metric-chip">
                 <span class="metric-chip__label">Views</span>
-                <strong>Now / Today / Compare</strong>
+                <strong>Now / Today / Rivalry</strong>
               </div>
             </div>
           </aside>
@@ -485,7 +485,7 @@ function renderSiteHome(kind: SiteKey): string {
             <div class="metric-list">
               <div class="metric-chip">
                 <span class="metric-chip__label">Role split</span>
-                <strong>Now / Today / Compare</strong>
+                <strong>Now / Today / Rivalry</strong>
               </div>
               <div class="metric-chip">
                 <span class="metric-chip__label">Title order</span>
@@ -639,7 +639,7 @@ function renderFeaturePage(kind: Exclude<PageKind, 'portal' | 'twitch' | 'kick'>
             <div class="status-panel__label">Live snapshot</div>
             <div id="heatmap-hero-status-title" class="status-panel__title">Waiting for live heatmap API</div>
             <p id="heatmap-hero-status-body">
-              The hero panel will switch to the latest Twitch snapshot once the heatmap API responds.
+              The hero panel will switch to the latest Twitch data snapshot once the heatmap API responds.
             </p>
           </aside>`
               : `
@@ -707,8 +707,8 @@ function renderHeader(current: PageKind): string {
       <a class="brand" href="/">ViewLoom</a>
       <nav class="site-nav" aria-label="Primary">
         <a class="nav-link ${current === 'portal' ? 'is-current' : ''}" href="/">Portal</a>
-        <a class="nav-link ${currentSite === 'twitch' ? 'is-current' : ''}" href="/twitch/">Twitch</a>
-        <a class="nav-link ${currentSite === 'kick' ? 'is-current' : ''}" href="/kick/">Kick</a>
+        <a class="nav-link ${currentSite === 'twitch' ? 'is-current' : ''}" href="/twitch/">Twitch data</a>
+        <a class="nav-link ${currentSite === 'kick' ? 'is-current' : ''}" href="/kick/">Kick data</a>
       </nav>
       <div class="header-note">Unofficial live observation UI</div>
     </header>
