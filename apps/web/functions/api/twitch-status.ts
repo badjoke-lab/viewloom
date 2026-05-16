@@ -44,7 +44,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     const minutesSinceSuccess = minutesBetween(collector?.last_success_at ?? latest?.collected_at ?? null, generatedAt)
     const observedCount = latest?.stream_count ?? collector?.latest_stream_count ?? 0
     const hasMore = Boolean(latest?.has_more ?? collector?.has_more ?? 0)
-    const sourceMode = minutesSinceSuccess != null && minutesSinceSuccess >= STALE_AFTER_MINUTES ? 'stale' : 'real'
+    const snapshotSourceMode = latest?.source_mode === 'demo' ? 'demo' : 'real'
+    const sourceMode = snapshotSourceMode === 'demo' ? 'demo' : minutesSinceSuccess != null && minutesSinceSuccess >= STALE_AFTER_MINUTES ? 'stale' : 'real'
     const state = deriveState({ collectorStatus: collector?.status ?? null, minutesSinceSuccess, observedCount, hasMore })
 
     return Response.json({
@@ -126,13 +127,21 @@ function deriveState(input: { collectorStatus: string | null; minutesSinceSucces
 }
 
 function buildFeatures(state: string, sourceMode: string, updatedAt: string | null) {
-  const commonState = state === 'fresh' || state === 'stale' || state === 'strong_stale' || state === 'empty' ? state : state === 'partial' ? 'partial' : 'partial'
+  const commonState = mapFeatureState(state, sourceMode)
   return [
     { key: 'heatmap', label: 'Heatmap', role: 'now', apiPath: '/api/twitch-heatmap', state: commonState, source: 'api', lastUpdatedAt: updatedAt, knownGap: 'Activity may be sampled or unavailable.', pagePath: '/twitch/heatmap/' },
-    { key: 'day_flow', label: 'Day Flow', role: 'today', apiPath: '/api/day-flow', state: commonState, source: 'api', lastUpdatedAt: updatedAt, knownGap: 'Share is derived from observed buckets.', pagePath: '/twitch/day-flow/' },
+    { key: 'day_flow', label: 'Day Flow', role: 'today', apiPath: '/api/day-flow', state: commonState, source: 'api', lastUpdatedAt: updatedAt, knownGap: 'Activity is currently unavailable in the owned payload.', pagePath: '/twitch/day-flow/' },
     { key: 'battle_lines', label: 'Battle Lines', role: 'rivalry', apiPath: '/api/battle-lines', state: commonState, source: 'api', lastUpdatedAt: updatedAt, knownGap: 'Events are derived from viewer deltas.', pagePath: '/twitch/battle-lines/' },
     { key: 'history', label: 'History', role: 'trends', apiPath: '/api/history', state: commonState, source: 'api', lastUpdatedAt: updatedAt, knownGap: 'Depends on retained observed snapshots.', pagePath: '/twitch/history/' },
   ]
+}
+
+function mapFeatureState(state: string, sourceMode: string): string {
+  if (sourceMode === 'demo') return 'demo'
+  if (state === 'fresh' || state === 'partial' || state === 'empty' || state === 'stale') return state
+  if (state === 'strong_stale') return 'stale'
+  if (state === 'failing' || state === 'error' || state === 'unconfigured') return 'error'
+  return 'partial'
 }
 
 function sanitizeError(value: string | null | undefined): string | null {
