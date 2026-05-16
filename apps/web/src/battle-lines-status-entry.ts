@@ -9,7 +9,17 @@ type Point = { value: number | null; state: ObservedState; time: string }
 type Line = { id: string; name: string; color: string; points: Point[] }
 type Pair = [string, string]
 type BattleEvent = { time: string; index: number; label: string; pair: Pair }
-type NormalizedPayload = { lines: Line[]; primaryPair?: Pair; secondaryPairs: Pair[]; events: BattleEvent[]; status: DataStatus; sourceText: string }
+type PairQualityDebug = {
+  score?: number
+  popularityScore?: number
+  overlapCount?: number
+  longestRun?: number
+  recentOverlap?: number
+  averageGap?: number
+  reversalCount?: number
+  missingPenalty?: number
+}
+type NormalizedPayload = { lines: Line[]; primaryPair?: Pair; secondaryPairs: Pair[]; events: BattleEvent[]; status: DataStatus; sourceText: string; recommendedQuality?: PairQualityDebug | null }
 type BattleState = {
   metric: Metric
   top: 3 | 5 | 10
@@ -23,6 +33,7 @@ type BattleState = {
   status: DataStatus
   sourceText: string
   statusMessage: string
+  recommendedQuality?: PairQualityDebug | null
 }
 
 const app = document.querySelector<HTMLDivElement>('#app')
@@ -46,6 +57,7 @@ let state: BattleState = {
   status: 'demo',
   sourceText: 'Demo · Partial · Top 5 · Viewers · 5m · Updated fallback',
   statusMessage: 'Using demo fallback until the API returns usable Battle Lines data.',
+  recommendedQuality: null,
 }
 
 app.innerHTML = renderPage()
@@ -59,13 +71,13 @@ async function loadApi(): Promise<void> {
   try {
     const response = await fetch(`/api/battle-lines?top=${state.top}&bucket=${state.bucket}&metric=${state.metric}`, { cache: 'no-store' })
     if (!response.ok) {
-      state = { ...demoState(), status: 'error', sourceText: `Error · HTTP ${response.status} · Demo fallback`, statusMessage: 'The Battle Lines API returned an error. Demo data is clearly marked.' }
+      state = { ...demoState(), status: 'error', sourceText: `Error · HTTP ${response.status} · Demo fallback`, statusMessage: 'The Battle Lines API returned an error. Demo data is clearly marked.', recommendedQuality: null }
       render()
       return
     }
     const normalized = normalizePayload((await response.json()) as unknown)
     if (!normalized || normalized.lines.length < 2) {
-      state = { ...state, lines: [], secondaryPairs: [], events: [], status: 'empty', sourceText: 'Empty · No battle-lines series', statusMessage: 'No qualifying Battle Lines series were returned for this range.' }
+      state = { ...state, lines: [], secondaryPairs: [], events: [], status: 'empty', sourceText: 'Empty · No battle-lines series', statusMessage: 'No qualifying Battle Lines series were returned for this range.', recommendedQuality: null }
       render()
       return
     }
@@ -80,10 +92,11 @@ async function loadApi(): Promise<void> {
       status: normalized.status,
       sourceText: normalized.sourceText,
       statusMessage: statusMessage(normalized.status),
+      recommendedQuality: normalized.recommendedQuality ?? null,
     }
     render()
   } catch {
-    state = { ...demoState(), status: 'error', sourceText: 'Error · API unavailable · Demo fallback', statusMessage: 'The Battle Lines API could not be reached. Demo data is clearly marked.' }
+    state = { ...demoState(), status: 'error', sourceText: 'Error · API unavailable · Demo fallback', statusMessage: 'The Battle Lines API could not be reached. Demo data is clearly marked.', recommendedQuality: null }
     render()
   }
 }
@@ -96,6 +109,7 @@ function demoState(): BattleState {
     selected: Math.min(state.selected, demoLines[0].points.length - 1),
     secondaryPairs: buildSecondaryPairs(demoLines, ['xqc', 'jynxzi']),
     events: fallbackEventsForLines(demoLines, ['xqc', 'jynxzi']),
+    recommendedQuality: null,
   }
 }
 
@@ -115,6 +129,7 @@ function renderPage(): string {
       <section class="bl-section" data-secondary></section>
       <section class="bl-section" data-feed></section>
       <div class="bl-note" data-coverage-note>Partial data · observed channels only.</div>
+      <details class="bl-section bl-debug" data-debug><summary>Debug details</summary><pre data-debug-body>Loading debug details…</pre></details>
     </main>
   </div>`
 }
@@ -150,6 +165,7 @@ function render(): void {
   const pair = getPair()
   if (!pair) {
     renderNoData()
+    renderDebug(null)
     return
   }
   const info = pairInfo(pair, state.selected)
@@ -162,6 +178,7 @@ function render(): void {
   renderChart(pair)
   renderInspector(pair, info)
   renderLists()
+  renderDebug(pair)
 }
 
 function renderStatus(): void {
@@ -309,6 +326,62 @@ function renderLists(): void {
   if (feed) feed.innerHTML = `<h2>Battle Feed</h2>${state.events.length > 0 ? state.events.slice(0, 3).map((event) => `<p>${event.time} ${event.label}</p>`).join('') : '<p>No battle events for this range.</p>'}`
 }
 
+function renderDebug(pair: [Line, Line] | null): void {
+  const body = document.querySelector<HTMLElement>('[data-debug-body]')
+  if (!body) return
+  const currentQuality = pair ? inspectPairQuality(pair[0], pair[1]) : null
+  body.textContent = JSON.stringify({
+    status: state.status,
+    sourceText: state.sourceText,
+    top: state.top,
+    metric: state.metric,
+    bucket: state.bucket,
+    currentPair: pair ? [pair[0].name, pair[1].name] : state.pair,
+    apiRecommendedQuality: state.recommendedQuality ?? null,
+    currentPairQuality: currentQuality,
+    lines: state.lines.map((line) => ({
+      id: line.id,
+      name: line.name,
+      observedPoints: line.points.filter(canDraw).length,
+      missingOrNotObserved: line.points.filter((point) => point.state === 'missing' || point.state === 'not_observed').length,
+      peak: Math.max(...line.points.map((point) => point.value ?? 0), 0),
+      lastDrawableIndex: lastDrawableIndex(line),
+    })),
+  }, null, 2)
+}
+
+function inspectPairQuality(a: Line, b: Line): PairQualityDebug {
+  let overlapCount = 0
+  let currentRun = 0
+  let longestRun = 0
+  let recentOverlap = 0
+  let missingPenalty = 0
+  let gapSum = 0
+  const length = Math.min(a.points.length, b.points.length)
+  const lookbackStart = Math.max(0, length - 6)
+  for (let index = 0; index < length; index += 1) {
+    const av = canDraw(a.points[index]) ? a.points[index].value : null
+    const bv = canDraw(b.points[index]) ? b.points[index].value : null
+    if (av == null || bv == null) {
+      missingPenalty += 1
+      currentRun = 0
+      continue
+    }
+    overlapCount += 1
+    currentRun += 1
+    longestRun = Math.max(longestRun, currentRun)
+    if (index >= lookbackStart) recentOverlap += 1
+    gapSum += Math.abs(av - bv)
+  }
+  return {
+    overlapCount,
+    longestRun,
+    recentOverlap,
+    averageGap: overlapCount > 0 ? Math.round(gapSum / overlapCount) : 0,
+    missingPenalty,
+  }
+}
+
 function normalizePayload(payload: unknown): NormalizedPayload | null {
   if (!record(payload)) return null
   const lines = normalizeLines(payload)
@@ -317,7 +390,21 @@ function normalizePayload(payload: unknown): NormalizedPayload | null {
   const secondaryPairs = normalizePairs(payload.secondaryBattles ?? payload.secondary_battles ?? payload.battles, lines, primaryPair ?? firstPair(lines))
   const events = normalizeEvents(payload.reversals ?? payload.events ?? payload.feed, lines, primaryPair ?? firstPair(lines))
   const status = normalizeStatus(payload.state ?? payload.status)
-  return { lines, primaryPair, secondaryPairs, events, status, sourceText: buildSourceText(payload, status) }
+  return { lines, primaryPair, secondaryPairs, events, status, sourceText: buildSourceText(payload, status), recommendedQuality: normalizeQuality(payload.recommendedQuality ?? payload.recommended_quality) }
+}
+
+function normalizeQuality(raw: unknown): PairQualityDebug | null {
+  if (!record(raw)) return null
+  return {
+    score: numberOrUndefined(raw.score),
+    popularityScore: numberOrUndefined(raw.popularityScore ?? raw.popularity_score),
+    overlapCount: numberOrUndefined(raw.overlapCount ?? raw.overlap_count),
+    longestRun: numberOrUndefined(raw.longestRun ?? raw.longest_run),
+    recentOverlap: numberOrUndefined(raw.recentOverlap ?? raw.recent_overlap),
+    averageGap: numberOrUndefined(raw.averageGap ?? raw.average_gap),
+    reversalCount: numberOrUndefined(raw.reversalCount ?? raw.reversal_count),
+    missingPenalty: numberOrUndefined(raw.missingPenalty ?? raw.missing_penalty),
+  }
 }
 
 function normalizeStatus(raw: unknown): DataStatus {
@@ -509,6 +596,7 @@ function format(value: number): string { return Math.round(value).toLocaleString
 function compact(value: number): string { return Math.abs(value) >= 1000 ? `${Math.round(value / 1000)}k` : String(Math.round(value)) }
 function signed(value: number): string { const rounded = Math.round(value); return `${rounded >= 0 ? '+' : ''}${rounded.toLocaleString('en-US')}` }
 function nice(value: number): number { const safe = Math.max(1, value); const magnitude = 10 ** Math.floor(Math.log10(safe)); return Math.ceil(safe / magnitude) * magnitude }
+function numberOrUndefined(value: unknown): number | undefined { return typeof value === 'number' && Number.isFinite(value) ? value : undefined }
 function time(index: number): string { return state.lines[0]?.points[index]?.time ?? defaultTime(index) }
 function defaultTime(index: number): string { const minute = index * 30; return `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}` }
 function normalizeTimeLabel(raw: unknown, index: number): string { const value = String(raw ?? defaultTime(index)); const match = /(\d{2}:\d{2})/.exec(value); return match?.[1] ?? value }
