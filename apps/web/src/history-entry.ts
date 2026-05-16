@@ -224,7 +224,7 @@ function renderSelected(payload: Payload): void {
     setHtml('history-selected', '<div class="history-empty">Select a day to inspect it.</div>')
     return
   }
-  setHtml('history-selected', `<div><div class="eyebrow">Selected day</div><h2>${day.day}</h2><p>${compact(day.totalViewerMinutes)} viewer-minutes · ${format(day.peakViewers)} peak · ${text(day.peakStreamerName ?? 'unknown peak streamer')} · ${label(day.coverageState)} coverage.</p></div><div class="history-actions"><a class="button button--secondary" href="/twitch/day-flow/?date=${day.day}">Open Day Flow</a><a class="button button--secondary" href="/twitch/battle-lines/?date=${day.day}">Open Battle Lines</a></div>`)
+  setHtml('history-selected', `<div><div class="eyebrow">Selected day</div><h2>${day.day}</h2><p>${compact(day.totalViewerMinutes)} viewer-minutes · ${format(day.peakViewers)} peak · ${text(day.peakStreamerName ?? 'unknown peak streamer')} · ${label(day.coverageState)} coverage.</p></div><div class="history-actions"><a class="button button--secondary" href="/twitch/day-flow/?date=${day.day}">Open Day Flow</a><a class="button button--secondary" href="/twitch/battle-lines/">Open Battle Lines</a></div>`)
 }
 
 function renderPeaks(payload: Payload): void {
@@ -234,7 +234,7 @@ function renderPeaks(payload: Payload): void {
     setHtml('history-peaks', '<div class="history-empty">No peak archive is available for this period.</div>')
     return
   }
-  setHtml('history-peaks', `<div class="history-peak-list">${peaks.map((day, index) => `<article class="history-peak-card ${state.selectedDay === day.day ? 'is-selected' : ''}"><button type="button" data-peak-day="${day.day}"><strong>#${index + 1} ${day.day}</strong><span>${format(day.peakViewers)} peak viewers</span><small>${text(day.peakStreamerName ?? 'unknown peak streamer')}</small></button><div><a href="/twitch/day-flow/?date=${day.day}">Day Flow</a><a href="/twitch/battle-lines/?date=${day.day}">Battle Lines</a></div></article>`).join('')}</div>`)
+  setHtml('history-peaks', `<div class="history-peak-list">${peaks.map((day, index) => `<article class="history-peak-card ${state.selectedDay === day.day ? 'is-selected' : ''}"><button type="button" data-peak-day="${day.day}"><strong>#${index + 1} ${day.day}</strong><span>${format(day.peakViewers)} peak viewers</span><small>${text(day.peakStreamerName ?? 'unknown peak streamer')}</small></button><div><a href="/twitch/day-flow/?date=${day.day}">Day Flow</a><a href="/twitch/battle-lines/">Battle Lines</a></div></article>`).join('')}</div>`)
   document.querySelectorAll<HTMLButtonElement>('[data-peak-day]').forEach((button) => {
     button.addEventListener('click', () => {
       state.selectedDay = button.dataset.peakDay ?? null
@@ -264,7 +264,7 @@ function renderDays(payload: Payload): void {
     setHtml('history-days', '<div class="history-empty">No daily cards are available for this period.</div>')
     return
   }
-  setHtml('history-days', `<div class="history-day-list">${payload.daily.slice().reverse().map((day) => `<article class="history-day ${state.selectedDay === day.day ? 'is-selected' : ''}"><button type="button" data-select-day="${day.day}"><strong>${day.day}</strong><span>${compact(day.totalViewerMinutes)} viewer-minutes</span><span>${format(day.peakViewers)} peak · ${text(day.peakStreamerName ?? 'unknown')}</span><small>${label(day.coverageState)} coverage</small></button><div><a href="/twitch/day-flow/?date=${day.day}">Day Flow</a><a href="/twitch/battle-lines/?date=${day.day}">Battle Lines</a></div></article>`).join('')}</div>`)
+  setHtml('history-days', `<div class="history-day-list">${payload.daily.slice().reverse().map((day) => `<article class="history-day ${state.selectedDay === day.day ? 'is-selected' : ''}"><button type="button" data-select-day="${day.day}"><strong>${day.day}</strong><span>${compact(day.totalViewerMinutes)} viewer-minutes</span><span>${format(day.peakViewers)} peak · ${text(day.peakStreamerName ?? 'unknown')}</span><small>${label(day.coverageState)} coverage</small></button><div><a href="/twitch/day-flow/?date=${day.day}">Day Flow</a><a href="/twitch/battle-lines/">Battle Lines</a></div></article>`).join('')}</div>`)
   document.querySelectorAll<HTMLButtonElement>('[data-select-day]').forEach((button) => {
     button.addEventListener('click', () => {
       state.selectedDay = button.dataset.selectDay ?? null
