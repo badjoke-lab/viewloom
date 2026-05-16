@@ -1,5 +1,9 @@
 import type { Env } from '../_db/env'
 
+type RangeMode = 'today' | 'rolling24h' | 'yesterday' | 'date'
+type MetricMode = 'volume' | 'share'
+type BucketSize = 5 | 10
+
 type SnapshotRow = {
   bucket_minute: string
   collected_at: string
@@ -40,11 +44,12 @@ type Band = {
 }
 
 const TOP_DEFAULT = 20
-const BUCKET_MINUTES = 5
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const url = new URL(request.url)
   const topN = normalizeTop(url.searchParams.get('top'))
+  const bucketSize = normalizeBucket(url.searchParams.get('bucket'))
+  const valueMode = normalizeMetric(url.searchParams.get('metric') ?? url.searchParams.get('mode'))
   const period = buildPeriod(url)
 
   try {
@@ -55,8 +60,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       ORDER BY bucket_minute ASC
     `).bind('twitch', period.windowStart, period.windowEnd).all<SnapshotRow>()
 
-    return Response.json(buildPayload(result.results ?? [], period, topN), {
-      headers: { 'cache-control': period.rangeMode === 'today' ? 'no-store' : 'public, max-age=300' },
+    return Response.json(buildPayload(result.results ?? [], period, topN, bucketSize, valueMode), {
+      headers: { 'cache-control': period.rangeMode === 'today' || period.rangeMode === 'rolling24h' ? 'no-store' : 'public, max-age=300' },
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Day Flow API failed.'
@@ -70,9 +75,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       partialNote: message,
       lastUpdated: new Date().toISOString(),
       selectedDate: period.selectedDate,
-      bucketSize: BUCKET_MINUTES,
+      bucketSize,
       topN,
-      valueMode: 'volume',
+      valueMode,
       rangeMode: period.rangeMode,
       windowStart: period.windowStart,
       windowEnd: period.windowEnd,
@@ -86,8 +91,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   }
 }
 
-function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod>, topN: 10 | 20 | 50) {
-  const buckets = buildBuckets(period.windowStart, period.windowEnd)
+function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod>, topN: 10 | 20 | 50, bucketSize: BucketSize, valueMode: MetricMode) {
+  const buckets = buildBuckets(period.windowStart, period.windowEnd, bucketSize)
   const bucketIndex = new Map(buckets.map((bucket, index) => [bucket, index]))
   const totals = Array<number>(buckets.length).fill(0)
   const streams = new Map<string, { name: string; title: string; url: string; values: number[] }>()
@@ -95,7 +100,7 @@ function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod
   let lastUpdated = rows.at(-1)?.collected_at ?? new Date().toISOString()
 
   for (const row of rows) {
-    const bucket = floorToBucket(row.bucket_minute)
+    const bucket = floorToBucket(row.bucket_minute, bucketSize)
     const index = bucketIndex.get(bucket)
     if (index == null) continue
     if (row.source_mode === 'demo') demoRows += 1
@@ -117,11 +122,11 @@ function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod
   }
 
   const ranked = [...streams.entries()]
-    .map(([id, stream]) => toBand(id, stream, buckets, totals))
+    .map(([id, stream]) => toBand(id, stream, buckets, totals, bucketSize))
     .sort((a, b) => b.totalViewerMinutes - a.totalViewerMinutes)
   const topBands = ranked.slice(0, topN)
   const topIds = new Set(topBands.map((band) => band.streamerId))
-  const others = buildOthersBand(streams, topIds, buckets, totals)
+  const others = buildOthersBand(streams, topIds, buckets, totals, bucketSize)
   const bands = others.totalViewerMinutes > 0 || topBands.length > 0 ? [...topBands, others] : topBands
   const nonZeroBuckets = totals.filter((value) => value > 0).length
   const source = demoRows > 0 && demoRows >= Math.max(1, rows.length / 2) ? 'demo' : 'api'
@@ -133,13 +138,13 @@ function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod
     state,
     status: state === 'empty' ? 'Empty' : state === 'partial' ? 'Partial' : 'Fresh',
     note: 'ViewLoom-owned Day Flow payload generated from observed minute snapshots.',
-    coverageNote: rows.length === 0 ? 'No observed Twitch snapshots exist for this Day Flow window.' : `${nonZeroBuckets} of ${buckets.length} buckets contain observed Twitch snapshots.`,
+    coverageNote: rows.length === 0 ? 'No observed Twitch snapshots exist for this Day Flow window.' : `${nonZeroBuckets} of ${buckets.length} ${bucketSize}m buckets contain observed Twitch snapshots.`,
     partialNote: state === 'partial' ? 'This Day Flow window is based on partial observed snapshots.' : undefined,
     lastUpdated,
     selectedDate: period.selectedDate,
-    bucketSize: BUCKET_MINUTES,
+    bucketSize,
     topN,
-    valueMode: 'volume',
+    valueMode,
     rangeMode: period.rangeMode,
     windowStart: period.windowStart,
     windowEnd: period.windowEnd,
@@ -177,10 +182,10 @@ function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod
   }
 }
 
-function toBand(id: string, stream: { name: string; title: string; url: string; values: number[] }, buckets: string[], totals: number[]): Band {
+function toBand(id: string, stream: { name: string; title: string; url: string; values: number[] }, buckets: string[], totals: number[], bucketSize: BucketSize): Band {
   const peakViewers = Math.max(0, ...stream.values)
   const observedIndexes = stream.values.map((value, index) => value > 0 ? index : -1).filter((index) => index >= 0)
-  const totalViewerMinutes = stream.values.reduce((sum, value) => sum + value * BUCKET_MINUTES, 0)
+  const totalViewerMinutes = stream.values.reduce((sum, value) => sum + value * bucketSize, 0)
   return {
     streamerId: id,
     name: stream.name,
@@ -189,7 +194,7 @@ function toBand(id: string, stream: { name: string; title: string; url: string; 
     isOthers: false,
     totalViewerMinutes: Math.round(totalViewerMinutes),
     peakViewers,
-    avgViewers: observedIndexes.length > 0 ? Math.round(totalViewerMinutes / Math.max(1, observedIndexes.length * BUCKET_MINUTES)) : 0,
+    avgViewers: observedIndexes.length > 0 ? Math.round(totalViewerMinutes / Math.max(1, observedIndexes.length * bucketSize)) : 0,
     peakShare: Math.max(0, ...stream.values.map((value, index) => totals[index] > 0 ? value / totals[index] : 0)),
     biggestRiseBucket: null,
     firstSeen: observedIndexes.length > 0 ? buckets[observedIndexes[0]] : null,
@@ -198,12 +203,13 @@ function toBand(id: string, stream: { name: string; title: string; url: string; 
   }
 }
 
-function buildOthersBand(streams: Map<string, { values: number[] }>, topIds: Set<string>, buckets: string[], totals: number[]): Band {
+function buildOthersBand(streams: Map<string, { values: number[] }>, topIds: Set<string>, buckets: string[], totals: number[], bucketSize: BucketSize): Band {
   const values = buckets.map((_, index) => {
     const topTotal = [...streams.entries()].reduce((sum, [id, stream]) => topIds.has(id) ? sum + (stream.values[index] ?? 0) : sum, 0)
     return Math.max(0, (totals[index] ?? 0) - topTotal)
   })
-  return toBand('others', { name: 'Others', title: '', url: '', values }, buckets, totals)
+  const band = toBand('others', { name: 'Others', title: '', url: '', values }, buckets, totals, bucketSize)
+  return { ...band, isOthers: true }
 }
 
 function buildPeriod(url: URL) {
@@ -226,22 +232,22 @@ function buildPeriod(url: URL) {
   return { rangeMode: 'today' as const, selectedDate: start.toISOString().slice(0, 10), windowStart: start.toISOString(), windowEnd: now.toISOString(), isRolling: false }
 }
 
-function buildBuckets(fromIso: string, toIso: string): string[] {
+function buildBuckets(fromIso: string, toIso: string, bucketSize: BucketSize): string[] {
   const buckets: string[] = []
-  let cursor = Date.parse(floorToBucket(fromIso))
+  let cursor = Date.parse(floorToBucket(fromIso, bucketSize))
   const end = Date.parse(toIso)
-  const step = BUCKET_MINUTES * 60 * 1000
+  const step = bucketSize * 60 * 1000
   while (cursor <= end) {
     buckets.push(new Date(cursor).toISOString())
     cursor += step
   }
-  return buckets.length > 0 ? buckets : [floorToBucket(fromIso)]
+  return buckets.length > 0 ? buckets : [floorToBucket(fromIso, bucketSize)]
 }
 
-function floorToBucket(iso: string): string {
+function floorToBucket(iso: string, bucketSize: BucketSize): string {
   const date = new Date(iso)
   const minutes = date.getUTCMinutes()
-  date.setUTCMinutes(minutes - (minutes % BUCKET_MINUTES), 0, 0)
+  date.setUTCMinutes(minutes - (minutes % bucketSize), 0, 0)
   return date.toISOString()
 }
 
@@ -254,7 +260,7 @@ function readItems(payloadJson: string): Item[] {
   }
 }
 
-function normalizeRange(value: unknown): 'today' | 'rolling24h' | 'yesterday' | 'date' {
+function normalizeRange(value: unknown): RangeMode {
   return value === 'rolling24h' || value === 'yesterday' || value === 'date' ? value : 'today'
 }
 
@@ -262,6 +268,14 @@ function normalizeTop(value: unknown): 10 | 20 | 50 {
   const n = Number(value)
   if (n === 10 || n === 50) return n
   return TOP_DEFAULT
+}
+
+function normalizeBucket(value: unknown): BucketSize {
+  return Number(value) === 10 ? 10 : 5
+}
+
+function normalizeMetric(value: unknown): MetricMode {
+  return value === 'share' ? 'share' : 'volume'
 }
 
 function normalizeDate(value: string | null): string {
