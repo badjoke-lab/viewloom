@@ -32,6 +32,7 @@ Confirmed:
 Remaining note:
 
 - `label-risk-cleanup.ts` still catches known risky legacy phrases as a safety net.
+- Standalone feature entry files may still contain short platform labels like `Twitch` in their own local headers, but visible route labels are normalized by `label-risk-cleanup.ts`.
 
 ## 3. Heatmap static QA
 
@@ -98,7 +99,98 @@ Must verify in browser:
 - chart area remains visible.
 - selected stream detail is reachable below or near the map.
 
-## 5. Next QA order
+## 5. Day Flow static QA
+
+URL:
+
+- `/twitch/day-flow/`
+
+Status: static implementation check passed, browser interaction QA still required.
+
+Confirmed in source:
+
+- Day Flow entry page loads:
+  - `twitch-day-flow-band-focus-experiment.ts`
+  - `twitch-day-flow-alpha-experiment.ts`
+  - `twitch-day-flow-render-polish.ts`
+  - `twitch-day-flow.ts`
+  - `twitch-history-nav.ts`
+  - `label-risk-cleanup.ts`
+  - `dayflow-unify.ts`
+- `twitch-day-flow.ts` owns the Day Flow app shell and fetches `/api/day-flow` directly.
+- `/api/day-flow` is ViewLoom-owned and does not proxy to `livefield.pages.dev`.
+- Frontend query parameters include:
+  - `day`
+  - `rangeMode`
+  - `date`
+  - `top`
+  - `mode`
+  - `metric`
+  - `bucket`
+- Owned API supports:
+  - `today`
+  - `rolling24h`
+  - `yesterday`
+  - `date`
+  - `top=10|20|50`
+  - `bucket=5|10`
+  - `metric=volume|share`
+- Owned API returns fields used by the frontend:
+  - `buckets`
+  - `totalViewersByBucket`
+  - `bands`
+  - `detailPanelSource`
+  - `coverageNote`
+  - `partialNote`
+  - `activity`
+- `Others` is marked with `isOthers: true` by the owned API.
+- `activity.available` is false and the frontend displays `Activity unavailable` honestly.
+- `biggestRiseTime` is returned in `detailPanelSource` and displayed in the detail panel.
+- Mobile CSS exists for:
+  - two-column controls below 640px
+  - hidden desktop rail below 640px
+  - mobile Time Focus card
+  - mobile detail dialog button
+  - 300px mobile canvas height
+
+Known source note:
+
+- The local Day Flow header still renders simple `Twitch` / `Kick` nav labels before `label-risk-cleanup.ts` normalizes visible text. This is not a runtime blocker, but source-level cleanup should be considered later when editing the large Day Flow file safely.
+
+## 6. Day Flow browser QA still required
+
+Desktop viewport:
+
+- 1440 x 900
+
+Must verify in browser:
+
+- page loads without runtime errors.
+- Full / Top Focus switching remains visible and usable.
+- Volume / Share switching remains visible and usable.
+- Top 10 / 20 / 50 switching remains visible and usable.
+- 5m / 10m bucket switching updates API metadata and chart rendering.
+- Others appears in Full context when applicable.
+- Time selection slider updates the chart selection and Time Focus panel.
+- clicking the chart selects a bucket and stream.
+- selected stream detail updates.
+- activity unavailable state is clearly shown.
+- partial/empty states do not look like normal successful data.
+
+Mobile viewport:
+
+- 390 x 844
+
+Must verify in browser:
+
+- controls fit without horizontal overflow.
+- chart remains visible at mobile height.
+- Time Focus mobile card is readable.
+- Open detail button opens the dialog.
+- detail dialog has readable content and a working Close button.
+- page scroll remains usable.
+
+## 7. Next QA order
 
 1. Heatmap desktop browser QA.
 2. Heatmap mobile browser QA.
