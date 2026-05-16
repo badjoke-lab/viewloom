@@ -6,10 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "typecheck": "tsc -p tsconfig.json --noEmit --strictNullChecks false",
+    "typecheck": "tsc -p tsconfig.json --noEmit --strictNullChecks false && tsc -p tsconfig.functions.json --noEmit --strictNullChecks false",
+    "typecheck:app": "tsc -p tsconfig.json --noEmit --strictNullChecks false",
+    "typecheck:functions": "tsc -p tsconfig.functions.json --noEmit --strictNullChecks false",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260510.0",
     "typescript": "^5.9.2",
     "vite": "^7.1.3"
   }
