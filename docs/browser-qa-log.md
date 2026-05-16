@@ -6,15 +6,15 @@ Started: 2026-05-16
 
 ## 1. CI baseline
 
-Latest verified PR-head checks before Heatmap QA:
+Latest verified PR-head checks:
 
-- PR #99 head commit: `03288d88dc39a0d6442c1c53eb8ab61cbb95095d`
+- PR #104 head commit: `70bf2604bd1d58858f107abdc4c1db5a48c9b552`
 - Web checks: success
 - Web build: success
 
-Main merge commit for #99:
+Main merge commit for #104:
 
-- `dd9918a7b482ab0704d096fc1bec3012697457b3`
+- `90b8fc9ca18ca2fccc8d751567e05d3c4c3ad42b`
 
 ## 2. Source label gate
 
@@ -196,7 +196,7 @@ URL:
 
 - `/twitch/battle-lines/`
 
-Status: static implementation check passed with one owned API limitation, browser interaction QA still required.
+Status: static implementation check passed, browser interaction QA still required.
 
 Confirmed in source:
 
@@ -214,6 +214,7 @@ Confirmed in source:
 - Owned API supports:
   - `top=3|5|10`
   - `bucket=1m|5m|10m`
+  - `metric=viewers|indexed` metadata
   - optional `from` / `to`
 - Owned API returns fields used by the frontend:
   - `lines`
@@ -225,6 +226,7 @@ Confirmed in source:
   - `reversals`
   - `feed`
   - `state` / `status`
+  - `metric` / `valueMode` / `metricNote`
 - Frontend normalizes:
   - `primaryBattle` / `recommendedBattle`
   - `secondaryBattles` / `battles`
@@ -236,10 +238,9 @@ Confirmed in source:
 - Reversal list, secondary battles, and battle feed are rendered from normalized events/pairs.
 - Demo fallback is clearly marked when API fails or returns unusable data.
 
-Known source notes:
+Known source note:
 
 - The local Battle Lines header still renders simple `Twitch` / `Kick` nav labels and `${site} / Compare` before `label-risk-cleanup.ts` normalizes visible text. This should be cleaned later when editing the large Battle Lines file safely.
-- The owned API currently accepts `metric` from the frontend but does not echo or transform payload values by metric. The frontend can still render Indexed mode locally by normalizing line values, but API metadata should be improved in a follow-up.
 
 ## 8. Battle Lines browser QA still required
 
@@ -272,7 +273,81 @@ Must verify in browser:
 - reversal / secondary battle / feed sections remain readable.
 - tap on chart updates selected time.
 
-## 9. Next QA order
+## 9. Status static QA
+
+URL:
+
+- `/twitch/status/`
+
+Status: static implementation check passed after #104, browser interaction QA still required.
+
+Confirmed in source:
+
+- Status entry page loads:
+  - `status-page.ts`
+  - `label-risk-cleanup.ts`
+- Status page fetches `/api/twitch-status` directly.
+- `/api/twitch-status` is ViewLoom-owned and reads:
+  - `minute_snapshots`
+  - `collector_status`
+- API returns:
+  - `sourceMode`
+  - `state`
+  - `collector`
+  - `freshness`
+  - `latestSnapshot`
+  - `coverage`
+  - `features`
+  - `limitations`
+  - `notes`
+- API maps demo snapshot source mode to `sourceMode: demo`.
+- API maps stale / strong_stale / failing / unconfigured / error states through feature matrix rules.
+- Feature matrix includes:
+  - Heatmap
+  - Day Flow
+  - Battle Lines
+  - History
+- Status page displays:
+  - summary cards
+  - collector health
+  - latest snapshot / coverage
+  - data pipeline
+  - feature matrix
+  - visible Known limitations
+  - visible Current notes
+  - debug details
+- Known limitations are no longer only hidden in debug JSON.
+
+## 10. Status browser QA still required
+
+Desktop viewport:
+
+- 1440 x 900
+
+Must verify in browser:
+
+- page loads without runtime errors.
+- Current state includes state and sourceMode.
+- demo data is not presented as real.
+- stale / strong_stale is not presented as fresh.
+- failing / unconfigured / error maps to feature-level error.
+- feature matrix rows are readable and link to pages.
+- Known limitations and Current notes are visible without opening debug details.
+- debug details remain available.
+
+Mobile viewport:
+
+- 390 x 844
+
+Must verify in browser:
+
+- summary cards stack without overflow.
+- collector / coverage key-value cards are readable.
+- feature matrix cards remain readable.
+- Known limitations / Current notes remain readable.
+- debug panel does not cause horizontal overflow.
+
+## 11. Next QA order
 
 1. Heatmap desktop browser QA.
 2. Heatmap mobile browser QA.
