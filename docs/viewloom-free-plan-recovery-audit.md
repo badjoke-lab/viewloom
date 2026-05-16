@@ -165,3 +165,8 @@ Current gate intent:
 - `pnpm build:web`
 
 The typecheck gate includes both app source and Cloudflare Pages Functions.
+
+Current CI smoke status:
+
+- The pnpm cache configuration was removed because this repository does not currently commit `pnpm-lock.yaml`.
+- The Day Flow `highestActivity` placeholder was normalized to `null` for Functions typecheck.
