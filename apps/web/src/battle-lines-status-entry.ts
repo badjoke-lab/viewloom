@@ -29,7 +29,8 @@ const app = document.querySelector<HTMLDivElement>('#app')
 if (!app) throw new Error('#app not found')
 
 const site = document.body.dataset.page?.startsWith('kick') ? 'kick' : 'twitch'
-const palette = ['#3b82f6', '#a855f7', '#64748b', '#5eead4', '#94a3b8']
+const platformName = site === 'kick' ? 'Kick' : 'Twitch'
+const palette = ['#45a3ff', '#c061ff', '#64748b', '#5eead4', '#f472b6', '#fbbf24', '#22c55e', '#94a3b8']
 const demoLines = makeDemoLines()
 
 let state: BattleState = {
@@ -99,10 +100,13 @@ function demoState(): BattleState {
 }
 
 function renderPage(): string {
+  const otherSite = site === 'kick' ? 'twitch' : 'kick'
+  const otherLabel = site === 'kick' ? 'Twitch data' : 'Kick data'
   return `<div class="page-shell page-shell--site theme-${site} bl-page">
-    <header class="site-header"><a class="brand" href="/">ViewLoom</a><nav class="site-nav"><a class="nav-link" href="/">Portal</a><a class="nav-link ${site === 'twitch' ? 'is-current' : ''}" href="/twitch/">Twitch</a><a class="nav-link ${site === 'kick' ? 'is-current' : ''}" href="/kick/">Kick</a></nav><div class="header-note">${title(site)} ViewLoom</div></header>
+    <header class="site-header"><a class="brand" href="/">ViewLoom</a><nav class="site-nav"><a class="nav-link" href="/">Portal</a><a class="nav-link ${site === 'twitch' ? 'is-current' : ''}" href="/twitch/">Twitch data</a><a class="nav-link ${site === 'kick' ? 'is-current' : ''}" href="/kick/">Kick data</a></nav><div class="header-note">Unofficial ${platformName} data</div></header>
     <main class="page-main bl-main">
-      <section class="bl-hero"><div><div class="eyebrow">${site} / Compare</div><h1>Battle Lines</h1><p>Compare live audience lines, reversals, and closing gaps.</p></div><button class="bl-icon" type="button">⇧</button></section>
+      <section class="bl-hero"><div><div class="eyebrow">${platformName.toUpperCase()} DATA · RIVALRY</div><h1>Battle Lines</h1><p>Read rivalry, reversals, surges, and closing gaps through observed live-stream data.</p></div><a class="bl-icon" href="/${otherSite}/" aria-label="Open ${otherLabel}">⇧</a></section>
+      <nav class="site-subnav vl-feature-nav" aria-label="Feature navigation"><a class="subnav-link" href="/${site}/heatmap/">Heatmap</a><a class="subnav-link" href="/${site}/day-flow/">Day Flow</a><a class="subnav-link is-current" href="/${site}/battle-lines/">Battle Lines</a><a class="subnav-link" href="/${site}/history/">History</a></nav>
       <section class="bl-controls">${segment('top', ['Top 3', 'Top 5', 'Top 10'], `Top ${state.top}`)}${segment('metric', ['Viewers', 'Indexed'], title(state.metric))}${segment('bucket', ['1m', '5m', '10m'], state.bucket)}<button class="bl-refresh" data-refresh type="button">Refresh</button></section>
       <div class="bl-status" data-status></div>
       <section class="bl-summary" data-summary></section>
@@ -188,11 +192,11 @@ function renderChart(pair: [Line, Line]): void {
   const lines = state.lines.slice(0, state.top)
   const max = state.metric === 'indexed' ? 100 : nice(Math.max(...lines.flatMap((line) => line.points.map((_, index) => renderValue(line, index))), 1))
   const w = 1200
-  const h = 520
-  const left = 70
-  const right = 122
-  const top = 42
-  const bottom = 62
+  const h = 580
+  const left = 74
+  const right = 132
+  const top = 50
+  const bottom = 70
   const plotW = w - left - right
   const plotH = h - top - bottom
   const x = (index: number) => left + (plotW * index) / Math.max(1, lines[0].points.length - 1)
@@ -201,13 +205,40 @@ function renderChart(pair: [Line, Line]): void {
   const band = makeGapBand(pair, x, y)
   const nowX = x(lines[0].points.length - 1)
   const selectedX = x(state.selected)
-  host.innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Battle Lines chart"><rect width="${w}" height="${h}" rx="18" fill="#07101d"/>${missingBands(lines, x, top, h - bottom)}${ticks(max).map((tick) => `<line x1="${left}" x2="${w - right}" y1="${top + plotH - plotH * tick / max}" y2="${top + plotH - plotH * tick / max}" stroke="rgba(148,163,184,.16)"/><text x="${left - 12}" y="${top + plotH - plotH * tick / max + 4}" text-anchor="end" fill="#9fb0ca" font-size="13">${state.metric === 'indexed' ? Math.round(tick) : compact(tick)}</text>`).join('')}${['00:00', '06:00', '12:00', '18:00', '24:00'].map((label, index) => `<text x="${left + plotW * index / 4}" y="${h - 20}" text-anchor="middle" fill="#9fb0ca" font-size="13">${label}</text>`).join('')}${band}${lines.filter((line) => !state.pair.includes(line.id)).map((line) => `<path d="${linePath(line)}" fill="none" stroke="${line.color}" stroke-width="2" opacity=".28"/>`).join('')}<path d="${linePath(pair[0])}" fill="none" stroke="${pair[0].color}" stroke-width="4"/><path d="${linePath(pair[1])}" fill="none" stroke="${pair[1].color}" stroke-width="4"/><line x1="${nowX}" x2="${nowX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,.5)" stroke-dasharray="5 6"/><text x="${nowX + 8}" y="${top + 15}" fill="#cbd5e1" font-size="12">Now</text><line x1="${selectedX}" x2="${selectedX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,.84)"/><rect x="${selectedX - 28}" y="${top - 34}" width="56" height="24" rx="8" fill="rgba(15,23,42,.94)" stroke="rgba(255,255,255,.18)"/><text x="${selectedX}" y="${top - 17}" text-anchor="middle" fill="#eef4ff" font-size="12">${time(state.selected)}</text>${endpoint(pair[0], x, y)}${endpoint(pair[1], x, y)}</svg>`
+  const grid = ticks(max).map((tick) => `<line x1="${left}" x2="${w - right}" y1="${top + plotH - plotH * tick / max}" y2="${top + plotH - plotH * tick / max}" stroke="rgba(148,163,184,.16)"/><text x="${left - 14}" y="${top + plotH - plotH * tick / max + 4}" text-anchor="end" fill="#9fb0ca" font-size="13">${state.metric === 'indexed' ? Math.round(tick) : compact(tick)}</text>`).join('')
+  const axis = ['00:00', '06:00', '12:00', '18:00', '24:00'].map((label, index) => `<text x="${left + plotW * index / 4}" y="${h - 24}" text-anchor="middle" fill="#9fb0ca" font-size="13">${label}</text>`).join('')
+  const backgroundLines = lines.filter((line) => !state.pair.includes(line.id)).map((line) => `<path d="${linePath(line)}" fill="none" stroke="${line.color}" stroke-width="2" opacity=".12"/>`).join('')
+  const primary = drawPrimaryLine(pair[0], linePath(pair[0]), false) + drawPrimaryLine(pair[1], linePath(pair[1]), true)
+  const markers = selectedMarker(pair[0], x, y, state.selected, 0) + selectedMarker(pair[1], x, y, state.selected, 1) + endpoint(pair[0], x, y, 0) + endpoint(pair[1], x, y, 1)
+  host.innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Battle Lines chart"><defs><filter id="blLineGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="${w}" height="${h}" rx="18" fill="#07101d"/>${missingBands(lines, x, top, h - bottom)}${grid}${axis}${band}${backgroundLines}${primary}<line x1="${nowX}" x2="${nowX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,.48)" stroke-dasharray="5 6"/><text x="${nowX + 8}" y="${top + 15}" fill="#cbd5e1" font-size="12">Now</text><line x1="${selectedX}" x2="${selectedX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,.9)" stroke-width="1.6"/><rect x="${selectedX - 34}" y="${top - 38}" width="68" height="26" rx="8" fill="rgba(15,23,42,.96)" stroke="rgba(255,255,255,.22)"/><text x="${selectedX}" y="${top - 20}" text-anchor="middle" fill="#eef4ff" font-size="12">${time(state.selected)}</text>${markers}</svg>`
   host.querySelector('svg')?.addEventListener('click', (event) => {
     const rect = host.getBoundingClientRect()
     const ratio = Math.max(0, Math.min(1, ((event.clientX - rect.left) / rect.width - left / w) / (plotW / w)))
     state = { ...state, mode: 'inspect', selected: Math.round(ratio * (lines[0].points.length - 1)) }
     render()
   })
+}
+
+function drawPrimaryLine(line: Line, path: string, dashed: boolean): string {
+  if (!path) return ''
+  const dash = dashed ? ' stroke-dasharray="11 8"' : ''
+  return `<path d="${path}" fill="none" stroke="rgba(2,6,23,.92)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity=".98"/>` +
+    `<path d="${path}" fill="none" stroke="${line.color}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" filter="url(#blLineGlow)"${dash}/>`
+}
+
+function selectedMarker(line: Line, x: (index: number) => number, y: (line: Line, index: number) => number, index: number, lane: number): string {
+  const point = line.points[index]
+  if (!canDraw(point)) return ''
+  const px = x(index)
+  const py = y(line, index)
+  return `<circle cx="${px}" cy="${py}" r="8" fill="rgba(2,6,23,.96)" stroke="${line.color}" stroke-width="4"/><text x="${px + 12}" y="${py - 10 - lane * 18}" fill="${line.color}" font-size="12" font-weight="700">${line.name}</text>`
+}
+
+function lastDrawableIndex(line: Line): number {
+  for (let index = line.points.length - 1; index >= 0; index -= 1) {
+    if (canDraw(line.points[index])) return index
+  }
+  return -1
 }
 
 function makePath(line: Line, x: (index: number) => number, y: (line: Line, index: number) => number): string {
@@ -226,23 +257,25 @@ function makePath(line: Line, x: (index: number) => number, y: (line: Line, inde
 function makeGapBand(pair: [Line, Line], x: (index: number) => number, y: (line: Line, index: number) => number): string {
   const valid = pair[0].points.map((point, index) => canDraw(point) && canDraw(pair[1].points[index]) ? index : -1).filter((index) => index >= 0)
   if (valid.length < 2) return ''
-  const top = valid.map((index) => `${x(index)},${y(pair[0], index)}`).join(' ')
-  const bottom = valid.map((index) => `${x(index)},${y(pair[1], index)}`).reverse().join(' ')
-  return `<polygon points="${top} ${bottom}" fill="rgba(96,165,250,.12)"/>`
+  const topPoints = valid.map((index) => `${x(index)},${y(pair[0], index)}`).join(' ')
+  const bottomPoints = valid.map((index) => `${x(index)},${y(pair[1], index)}`).reverse().join(' ')
+  return `<polygon points="${topPoints} ${bottomPoints}" fill="rgba(96,165,250,.055)" stroke="rgba(96,165,250,.16)" stroke-width="1"/>`
 }
 
 function missingBands(lines: Line[], x: (index: number) => number, top: number, bottom: number): string {
   const first = lines[0]
   if (!first) return ''
-  return first.points.map((_, index) => lines.some((line) => line.points[index]?.state === 'missing' || line.points[index]?.state === 'not_observed') ? `<rect x="${x(index) - 4}" y="${top}" width="8" height="${bottom - top}" fill="rgba(251,191,36,.08)"/>` : '').join('')
+  return first.points.map((_, index) => lines.some((line) => line.points[index]?.state === 'missing' || line.points[index]?.state === 'not_observed') ? `<rect x="${x(index) - 2.5}" y="${top}" width="5" height="${bottom - top}" fill="rgba(251,191,36,.018)"/>` : '').join('')
 }
 
-function endpoint(line: Line, x: (index: number) => number, y: (line: Line, index: number) => number): string {
-  const index = line.points.length - 1
-  if (!canDraw(line.points[index])) return ''
+function endpoint(line: Line, x: (index: number) => number, y: (line: Line, index: number) => number, lane: number): string {
+  const index = lastDrawableIndex(line)
+  if (index < 0) return ''
   const px = x(index)
   const py = y(line, index)
-  return `<circle cx="${px}" cy="${py}" r="5" fill="${line.color}"/><rect x="${px + 10}" y="${py - 20}" width="96" height="40" rx="8" fill="rgba(15,23,42,.92)" stroke="${line.color}"/><text x="${px + 18}" y="${py - 4}" fill="${line.color}" font-size="12">${line.name}</text><text x="${px + 18}" y="${py + 12}" fill="#eef4ff" font-size="12">${format(line.points[index].value ?? 0)}</text>`
+  const labelX = Math.min(px + 12, 1076)
+  const labelY = Math.max(34, Math.min(py - 28 + lane * 50, 492))
+  return `<circle cx="${px}" cy="${py}" r="7" fill="${line.color}" stroke="rgba(2,6,23,.96)" stroke-width="4"/><rect x="${labelX}" y="${labelY}" width="104" height="44" rx="9" fill="rgba(15,23,42,.95)" stroke="${line.color}" stroke-width="1.5"/><text x="${labelX + 10}" y="${labelY + 17}" fill="${line.color}" font-size="12" font-weight="700">${line.name}</text><text x="${labelX + 10}" y="${labelY + 34}" fill="#eef4ff" font-size="12">${format(line.points[index].value ?? 0)}</text>`
 }
 
 function renderInspector(pair: [Line, Line], info: { gap: number; delta: number; trend: string; leader: Line }): void {
@@ -475,7 +508,7 @@ function title(value: string): string { return value.charAt(0).toUpperCase() + v
 function format(value: number): string { return Math.round(value).toLocaleString('en-US') }
 function compact(value: number): string { return Math.abs(value) >= 1000 ? `${Math.round(value / 1000)}k` : String(Math.round(value)) }
 function signed(value: number): string { const rounded = Math.round(value); return `${rounded >= 0 ? '+' : ''}${rounded.toLocaleString('en-US')}` }
-function nice(value: number): number { const magnitude = 10 ** Math.floor(Math.log10(value)); return Math.ceil(value / magnitude) * magnitude }
+function nice(value: number): number { const safe = Math.max(1, value); const magnitude = 10 ** Math.floor(Math.log10(safe)); return Math.ceil(safe / magnitude) * magnitude }
 function time(index: number): string { return state.lines[0]?.points[index]?.time ?? defaultTime(index) }
 function defaultTime(index: number): string { const minute = index * 30; return `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}` }
 function normalizeTimeLabel(raw: unknown, index: number): string { const value = String(raw ?? defaultTime(index)); const match = /(\d{2}:\d{2})/.exec(value); return match?.[1] ?? value }
