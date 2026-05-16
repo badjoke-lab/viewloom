@@ -200,6 +200,11 @@
   height: 100%;
 }
 
+.bl-chart svg rect[fill="rgba(251,191,36,.08)"] {
+  fill: rgba(251, 191, 36, 0.018);
+  opacity: 0.55;
+}
+
 .bl-inspector {
   display: grid;
   grid-template-columns: 1.05fr repeat(5, minmax(0, 1fr));
