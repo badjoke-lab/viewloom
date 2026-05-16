@@ -45,6 +45,7 @@ type Band = {
 }
 
 const TOP_DEFAULT = 20
+const NO_ACTIVITY: string | null = null
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const url = new URL(request.url)
@@ -157,13 +158,13 @@ function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod
     summary: {
       peakLeader: topBands[0]?.name,
       longestDominance: topBands[0]?.name,
-      highestActivity: null,
+      highestActivity: NO_ACTIVITY,
       biggestRise: biggestRise?.name,
     },
     buckets,
     totalViewersByBucket: totals,
     bands,
-    focusSnapshot: { highestActivity: null },
+    focusSnapshot: { highestActivity: NO_ACTIVITY },
     detailPanelSource: {
       defaultStreamerId: topBands[0]?.streamerId ?? null,
       streamers: topBands.map((band) => ({
