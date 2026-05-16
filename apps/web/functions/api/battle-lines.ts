@@ -33,6 +33,18 @@ type Line = {
 
 type Pair = [string, string]
 
+type PairQuality = {
+  pair: Pair
+  score: number
+  popularityScore: number
+  overlapCount: number
+  longestRun: number
+  recentOverlap: number
+  averageGap: number
+  reversalCount: number
+  missingPenalty: number
+}
+
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const url = new URL(request.url)
   const top = normalizeTop(url.searchParams.get('top'))
@@ -104,7 +116,8 @@ function buildPayload(rows: SnapshotRow[], options: { top: number; bucket: strin
     .sort((a, b) => b.viewerMinutes - a.viewerMinutes)
     .slice(0, options.top)
 
-  const primaryBattle = lines.length >= 2 ? [lines[0].id, lines[1].id] as Pair : null
+  const recommended = chooseRecommendedPair(lines)
+  const primaryBattle = recommended?.pair ?? (lines.length >= 2 ? [lines[0].id, lines[1].id] as Pair : null)
   const secondaryBattles = buildPairs(lines, primaryBattle)
   const events = primaryBattle ? buildEvents(lines, primaryBattle) : []
   const state = rows.length === 0 || lines.length < 2 ? 'empty' : demoRows >= Math.max(1, rows.length / 2) ? 'demo' : 'live'
@@ -125,6 +138,16 @@ function buildPayload(rows: SnapshotRow[], options: { top: number; bucket: strin
     lines,
     primaryBattle,
     recommendedBattle: primaryBattle,
+    recommendedQuality: recommended ? {
+      score: Math.round(recommended.score),
+      popularityScore: Math.round(recommended.popularityScore),
+      overlapCount: recommended.overlapCount,
+      longestRun: recommended.longestRun,
+      recentOverlap: recommended.recentOverlap,
+      averageGap: Math.round(recommended.averageGap),
+      reversalCount: recommended.reversalCount,
+      missingPenalty: Math.round(recommended.missingPenalty),
+    } : null,
     secondaryBattles,
     battles: secondaryBattles,
     events,
@@ -132,6 +155,7 @@ function buildPayload(rows: SnapshotRow[], options: { top: number; bucket: strin
     feed: events,
     notes: [
       'ViewLoom-owned Battle Lines payload generated from observed minute snapshots.',
+      'Recommended Battle keeps viewer-minutes as a popularity gate, then prefers pairs with overlapping and continuous observed samples.',
       'Missing and not-observed samples are returned as null values and are not connected as real lines.',
       metricNote(options.metric),
     ],
@@ -156,15 +180,87 @@ function toLine(id: string, name: string, values: number[], buckets: string[], m
   }
 }
 
+function chooseRecommendedPair(lines: Line[]): PairQuality | null {
+  if (lines.length < 2) return null
+  const candidates: PairQuality[] = []
+  for (let i = 0; i < lines.length; i += 1) {
+    for (let j = i + 1; j < lines.length; j += 1) {
+      candidates.push(scorePair(lines[i], lines[j], lines))
+    }
+  }
+  const readable = candidates.filter((candidate) => candidate.overlapCount >= 3 && candidate.longestRun >= 2)
+  const pool = readable.length > 0 ? readable : candidates.filter((candidate) => candidate.overlapCount >= 1)
+  return (pool.length > 0 ? pool : candidates).sort((a, b) => b.score - a.score)[0] ?? null
+}
+
+function scorePair(a: Line, b: Line, lines: Line[]): PairQuality {
+  const maxViewerMinutes = Math.max(...lines.map((line) => line.viewerMinutes), 1)
+  const popularityScore = ((a.viewerMinutes / maxViewerMinutes) + (b.viewerMinutes / maxViewerMinutes)) * 50
+  let overlapCount = 0
+  let currentRun = 0
+  let longestRun = 0
+  let recentOverlap = 0
+  let reversalCount = 0
+  let previousLeader: string | null = null
+  let gapSum = 0
+  let missingPenalty = 0
+  const lookbackStart = Math.max(0, Math.min(a.points.length, b.points.length) - 6)
+
+  for (let index = 0; index < Math.min(a.points.length, b.points.length); index += 1) {
+    const av = drawableValue(a.points[index])
+    const bv = drawableValue(b.points[index])
+    if (av == null || bv == null) {
+      missingPenalty += 1
+      currentRun = 0
+      continue
+    }
+    overlapCount += 1
+    currentRun += 1
+    longestRun = Math.max(longestRun, currentRun)
+    if (index >= lookbackStart) recentOverlap += 1
+    gapSum += Math.abs(av - bv)
+    const leader = av >= bv ? a.id : b.id
+    if (previousLeader && previousLeader !== leader) reversalCount += 1
+    previousLeader = leader
+  }
+
+  const averageGap = overlapCount > 0 ? gapSum / overlapCount : Number.POSITIVE_INFINITY
+  const averageScale = Math.max((a.peakViewers + b.peakViewers) / 2, 1)
+  const closeGapScore = overlapCount > 0 ? Math.max(0, 45 * (1 - Math.min(1, averageGap / averageScale))) : 0
+  const overlapScore = Math.min(50, overlapCount * 5)
+  const runScore = Math.min(45, longestRun * 9)
+  const recentScore = Math.min(25, recentOverlap * 8)
+  const reversalScore = Math.min(25, reversalCount * 12)
+  const penalty = Math.min(45, missingPenalty * 0.75)
+  const score = popularityScore + overlapScore + runScore + recentScore + closeGapScore + reversalScore - penalty
+
+  return {
+    pair: [a.id, b.id],
+    score,
+    popularityScore,
+    overlapCount,
+    longestRun,
+    recentOverlap,
+    averageGap: Number.isFinite(averageGap) ? averageGap : 0,
+    reversalCount,
+    missingPenalty,
+  }
+}
+
+function drawableValue(point: Point | undefined): number | null {
+  if (!point || point.value === null || point.state === 'missing' || point.state === 'not_observed') return null
+  return point.value
+}
+
 function buildPairs(lines: Line[], primary: Pair | null): Pair[] {
-  const pairs: Pair[] = []
+  const scored: PairQuality[] = []
   for (let i = 0; i < lines.length; i += 1) {
     for (let j = i + 1; j < lines.length; j += 1) {
       const pair: Pair = [lines[i].id, lines[j].id]
-      if (!primary || !samePair(pair, primary)) pairs.push(pair)
+      if (!primary || !samePair(pair, primary)) scored.push(scorePair(lines[i], lines[j], lines))
     }
   }
-  return pairs.slice(0, 6)
+  return scored.sort((a, b) => b.score - a.score).map((item) => item.pair).slice(0, 6)
 }
 
 function buildEvents(lines: Line[], pair: Pair) {
