@@ -6,7 +6,9 @@ const apiUrl = pageName === 'kick-heatmap'
     ? '/api/kick-day-flow'
     : pageName === 'kick-battle-lines'
       ? '/api/kick-battle-lines'
-      : ''
+      : pageName === 'kick-history'
+        ? '/api/kick-history'
+        : ''
 
 if (apiUrl) {
   window.setTimeout(() => {
@@ -21,9 +23,9 @@ async function readState(): Promise<void> {
 
   try {
     const response = await fetch(apiUrl, { cache: 'no-store' })
-    const data = await response.json() as { state?: string; status?: string; coverageNote?: string; note?: string }
-    const state = data.state || data.status || 'unknown'
-    const note = data.coverageNote || data.note || 'Kick API state loaded.'
+    const data = await response.json() as { state?: string; status?: string; coverageNote?: string; note?: string; coverage?: { state?: string; notes?: string[] } }
+    const state = data.state || data.status || data.coverage?.state || 'unknown'
+    const note = data.coverageNote || data.note || data.coverage?.notes?.[0] || 'Kick API state loaded.'
     stripNode.dataset.apiState = state
     textNode.textContent = `API ${state}. ${note}`
   } catch {
