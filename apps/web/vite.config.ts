@@ -18,6 +18,7 @@ export default defineConfig({
         kickHeatmap: 'kick/heatmap/index.html',
         kickDayFlow: 'kick/day-flow/index.html',
         kickBattleLines: 'kick/battle-lines/index.html',
+        kickHistory: 'kick/history/index.html',
       },
     },
   },
