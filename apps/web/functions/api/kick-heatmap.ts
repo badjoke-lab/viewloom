@@ -1,3 +1,13 @@
+import type { Env } from '../_db/env'
+
+type SnapshotRow = {
+  bucket_minute: string
+  collected_at: string
+  total_viewers: number
+  payload_json: string
+  source_mode: string
+}
+
 type NormalizedStream = {
   id: string
   name: string
@@ -21,23 +31,100 @@ type KickHeatmapPayload = {
   notes: string[]
 }
 
-export const onRequestGet: PagesFunction = async () => {
-  const state: KickHeatmapState = 'not_ready'
+const STALE_AFTER_MS = 10 * 60 * 1000
+
+export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
+  try {
+    const result = await env.DB_TWITCH_HOT.prepare(`
+      SELECT bucket_minute, collected_at, total_viewers, payload_json, source_mode
+      FROM minute_snapshots
+      WHERE provider = ?
+      ORDER BY bucket_minute DESC
+      LIMIT 1
+    `).bind('kick').first<SnapshotRow>()
+
+    if (!result) {
+      return jsonPayload('empty', new Date().toISOString(), [], 'No Kick snapshots exist in D1 yet.', ['provider=kick returned no rows.'])
+    }
+
+    const items = normalizePayload(result.payload_json)
+    const updatedAt = result.collected_at || result.bucket_minute || new Date().toISOString()
+    const age = Date.now() - new Date(updatedAt).getTime()
+    const state: KickHeatmapState = items.length === 0 ? 'empty' : age > STALE_AFTER_MS ? 'stale' : 'live'
+    const note = state === 'live'
+      ? `${items.length} normalized Kick streams from latest observed snapshot.`
+      : state === 'stale'
+        ? `${items.length} normalized Kick streams, but latest snapshot is stale.`
+        : 'Latest Kick snapshot exists but has no usable normalized streams.'
+
+    return jsonPayload(state, updatedAt, items, note, [
+      `source_mode=${result.source_mode || 'unknown'}`,
+      `bucket_minute=${result.bucket_minute}`,
+      `total_viewers=${result.total_viewers}`,
+    ])
+  } catch (error) {
+    return jsonPayload('error', new Date().toISOString(), [], 'Kick Heatmap API could not read D1 snapshots.', [error instanceof Error ? error.message : String(error)], 500)
+  }
+}
+
+function jsonPayload(state: KickHeatmapState, updatedAt: string, items: NormalizedStream[], coverageNote: string, notes: string[], status = 200): Response {
   const payload: KickHeatmapPayload = {
     source: 'api',
     platform: 'kick',
     state,
     status: state,
-    updatedAt: new Date().toISOString(),
+    updatedAt,
     valueMode: 'viewers',
-    items: [],
-    coverageNote: 'Kick Heatmap API uses the NormalizedStream contract. Real Kick samples are not connected yet.',
-    notes: [
-      'Provider-specific Kick route.',
-      'Items must be normalized before reaching the renderer.',
-      'Expected item shape: id, name, title, viewers, url, startedAt.',
-    ],
+    items,
+    coverageNote,
+    notes,
   }
+  return Response.json(payload, { status, headers: { 'cache-control': 'no-store' } })
+}
 
-  return Response.json(payload, { headers: { 'cache-control': 'no-store' } })
+function normalizePayload(payloadJson: string): NormalizedStream[] {
+  const parsed = safeJson(payloadJson)
+  const record = asRecord(parsed)
+  const rawItems = Array.isArray(record?.items) ? record.items : Array.isArray(record?.data) ? record.data : []
+  return rawItems.map(normalizeStream).filter((item): item is NormalizedStream => item !== null)
+}
+
+function normalizeStream(raw: unknown): NormalizedStream | null {
+  const record = asRecord(raw)
+  if (!record) return null
+  const channel = asRecord(record.channel)
+  const livestream = asRecord(record.livestream)
+  const slug = str(record.channelLogin ?? record.slug ?? record.username ?? record.user_slug ?? channel?.slug ?? channel?.username ?? channel?.name)
+  const name = str(record.displayName ?? record.name ?? record.username ?? channel?.displayName ?? channel?.name ?? channel?.username ?? slug)
+  const viewers = num(record.viewers ?? record.viewer_count ?? record.viewerCount ?? livestream?.viewer_count)
+  const id = slugify(slug || name)
+  if (!id || viewers <= 0) return null
+  return {
+    id,
+    name: name || id,
+    title: str(record.title ?? record.session_title ?? record.stream_title ?? livestream?.session_title),
+    viewers,
+    url: str(record.url) || `https://kick.com/${id}`,
+    startedAt: str(record.startedAt ?? record.started_at ?? record.start_time ?? livestream?.created_at) || undefined,
+  }
+}
+
+function safeJson(value: string): unknown {
+  try { return JSON.parse(value) } catch { return null }
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null ? value as Record<string, unknown> : null
+}
+
+function str(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function num(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0
+}
+
+function slugify(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9_]+/g, '-').replace(/^-+|-+$/g, '')
 }
