@@ -25,29 +25,30 @@ app.innerHTML = `
             <a class="button button--secondary" href="/kick/heatmap/">Heatmap</a>
             <a class="button button--secondary" href="/kick/day-flow/">Day Flow</a>
             <a class="button button--secondary" href="/kick/battle-lines/">Battle Lines</a>
+            <a class="button button--secondary" href="/kick/history/">History</a>
           </div>
         </div>
         <aside class="status-panel">
           <div class="status-panel__label">Kick data state</div>
-          <div class="status-panel__title">Shell-level</div>
-          <p>Kick routes exist. Provider-specific data recovery and feature-state checks still need dedicated work.</p>
+          <div class="status-panel__title">Provider rows connected</div>
+          <p>Kick Heatmap, Day Flow, Battle Lines, and History now have provider-specific API paths. Browser parity QA is still pending.</p>
         </aside>
       </section>
       <section class="summary-grid">
-        <article class="summary-card"><div class="summary-card__label">Overall</div><div class="summary-card__value">Shell-level</div><p>Kick is present as a provider shell, not yet equal to the recovered Twitch feature pages.</p></article>
-        <article class="summary-card"><div class="summary-card__label">Status source</div><div class="summary-card__value">Separate</div><p>This page does not reuse Twitch freshness or Twitch recovery status.</p></article>
-        <article class="summary-card"><div class="summary-card__label">Debug parity</div><div class="summary-card__value">Pending</div><p>Kick Day Flow and Battle Lines do not yet have the Twitch-side debug helpers.</p></article>
-        <article class="summary-card"><div class="summary-card__label">Next</div><div class="summary-card__value">State strips</div><p>Add visible provider-specific states to Kick feature pages before parity QA.</p></article>
+        <article class="summary-card"><div class="summary-card__label">Heatmap</div><div class="summary-card__value">Connected</div><p>Reads the latest provider='kick' minute snapshot.</p></article>
+        <article class="summary-card"><div class="summary-card__label">Day Flow</div><div class="summary-card__value">Connected</div><p>Builds bucketed daily bands from Kick provider rows.</p></article>
+        <article class="summary-card"><div class="summary-card__label">Battle Lines</div><div class="summary-card__value">Connected</div><p>Builds Kick line series and battle candidates from observed rows.</p></article>
+        <article class="summary-card"><div class="summary-card__label">History</div><div class="summary-card__value">Connected</div><p>Builds Kick History sections from provider='kick' snapshots.</p></article>
       </section>
       <section class="chart-stage">
         <div class="chart-stage__label">Next implementation order</div>
-        <h2>Kick recovery checklist</h2>
+        <h2>Kick parity checklist</h2>
         <ol class="kick-status-list">
-          <li>Keep Kick status provider-specific.</li>
-          <li>Expose this status page from Kick shell surfaces.</li>
-          <li>Add visible state strips to Kick Heatmap, Day Flow, and Battle Lines.</li>
-          <li>Confirm Kick API contracts before adding debug helpers.</li>
-          <li>Then move Kick into browser QA parity.</li>
+          <li>Keep Kick and Twitch data paths separated.</li>
+          <li>Confirm each Kick API contract returns honest empty / partial / stale / live / error states.</li>
+          <li>Confirm Kick pages consume the provider-specific API payloads without falling back to Twitch data.</li>
+          <li>Run browser QA for Heatmap, Day Flow, Battle Lines, and History.</li>
+          <li>Then move to UI polish and deploy verification.</li>
         </ol>
       </section>
     </main>
