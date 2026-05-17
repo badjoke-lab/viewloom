@@ -14,13 +14,12 @@ type Payload = {
   topStreamers: Streamer[]
   coverage: { state: string; notes: string[] }
   notes: string[]
+  error?: { code?: string; message?: string }
 }
 type State = { period: PeriodMode; metric: Metric; from: string; to: string; selectedDay: string | null; payload: Payload | null }
 type ChartSlot = { day: string; data: Day | null }
 
 const platform = {
-  name: 'Kick',
-  key: 'kick',
   theme: 'theme-kick',
   basePath: '/kick',
   apiPath: '/api/kick-history',
@@ -79,6 +78,10 @@ async function loadHistory(): Promise<void> {
     query.set('metric', state.metric)
     const response = await fetch(`${platform.apiPath}?${query.toString()}`, { cache: 'no-store' })
     const payload = await response.json() as Payload
+    if (!response.ok) {
+      renderError(payload.error?.message || payload.coverage?.notes?.[0] || 'Kick History request failed.')
+      return
+    }
     state.payload = payload
     state.selectedDay = state.selectedDay ?? payload.daily[payload.daily.length - 1]?.day ?? null
     renderPayload(payload)
