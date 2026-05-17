@@ -4,6 +4,20 @@ if (page.startsWith('kick') && page !== 'kick-status') {
   installKickStatusLink()
 }
 
+function featureLabel(): string {
+  if (page === 'kick-heatmap') return 'KICK DATA · NOW'
+  if (page === 'kick-day-flow') return 'KICK DATA · TODAY'
+  if (page === 'kick-battle-lines') return 'KICK DATA · RIVALRY'
+  return 'KICK DATA · STATUS'
+}
+
+function featureMessage(): string {
+  if (page === 'kick-heatmap') return 'Kick Heatmap is currently shell-level. Do not read this page as recovered real Kick heatmap data yet.'
+  if (page === 'kick-day-flow') return 'Kick Day Flow is currently shell-level. Twitch Day Flow debug and recovery state do not apply here.'
+  if (page === 'kick-battle-lines') return 'Kick Battle Lines is currently shell-level. Twitch Battle Lines renderer/debug fixes do not apply here yet.'
+  return 'Kick is still in provider-specific recovery. Check status before parity QA.'
+}
+
 function installKickStatusLink(): void {
   const tryInstall = () => {
     const nav = document.querySelector<HTMLElement>('.site-nav')
@@ -20,9 +34,9 @@ function installKickStatusLink(): void {
     if (main && !main.querySelector('[data-kick-status-strip]')) {
       const anchor = main.querySelector('.site-subnav') ?? main.querySelector('.hero')
       const strip = document.createElement('aside')
-      strip.className = 'kick-status-strip'
+      strip.className = `kick-status-strip ${page === 'kick' ? 'kick-status-strip--overview' : 'kick-status-strip--feature'}`
       strip.dataset.kickStatusStrip = 'true'
-      strip.innerHTML = '<strong>KICK DATA · STATUS</strong><span>Kick is still in provider-specific recovery. Check status before parity QA.</span><a href="/kick/status/">Open status</a>'
+      strip.innerHTML = `<strong>${featureLabel()}</strong><span>${featureMessage()}</span><a href="/kick/status/">Open status</a>`
       if (anchor?.nextSibling) anchor.parentNode?.insertBefore(strip, anchor.nextSibling)
       else main.prepend(strip)
     }
@@ -55,11 +69,18 @@ function installStyles(): void {
       background: rgba(5, 46, 22, 0.34);
       color: var(--text);
     }
+    .kick-status-strip--feature {
+      border-color: rgba(251, 191, 36, 0.30);
+      background: linear-gradient(135deg, rgba(5, 46, 22, 0.34), rgba(113, 63, 18, 0.22));
+    }
     .kick-status-strip strong {
       color: rgb(var(--accent-rgb));
       font-size: 0.78rem;
       letter-spacing: 0.08em;
       white-space: nowrap;
+    }
+    .kick-status-strip--feature strong {
+      color: #facc15;
     }
     .kick-status-strip span {
       color: var(--muted);
