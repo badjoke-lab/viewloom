@@ -4,7 +4,7 @@ Status: implementation-complete and UI-polished QA checklist for Twitch-only His
 
 ## Scope
 
-History v1 is Twitch-only. Kick History is intentionally deferred.
+History v1 started as Twitch-only. Kick History has since been added separately as a provider-parity route and is tracked in `docs/kick-parity-qa.md`.
 
 History v1 is considered complete when the checks below pass for the Twitch route and the existing Twitch feature pages remain intact.
 
@@ -21,7 +21,7 @@ History v1 is considered complete when the checks below pass for the Twitch rout
 - `/twitch/heatmap/` shows History through the Twitch history nav helper.
 - `/twitch/day-flow/` shows History through the Twitch history nav helper.
 - `/twitch/battle-lines/` shows History through the Twitch history nav helper.
-- Kick pages remain unchanged.
+- Kick parity checks are tracked separately in `docs/kick-parity-qa.md`.
 
 ## History page checks
 
@@ -35,8 +35,8 @@ History v1 is considered complete when the checks below pass for the Twitch rout
 - Chart bar click updates selected day.
 - Daily card click updates selected day.
 - Selected day panel links to Day Flow with `date=`.
-- Selected day panel links to Battle Lines with `date=`.
-- Daily cards link to Day Flow and Battle Lines with `date=`.
+- Selected day panel links to Battle Lines without date-specific range unless Battle Lines date support is implemented.
+- Daily cards link to Day Flow with `date=` and Battle Lines without a misleading date-specific range.
 
 ## Daily trend UI checks
 
@@ -55,7 +55,7 @@ History v1 is considered complete when the checks below pass for the Twitch rout
 - Peak Archive refreshes after metric changes.
 - Peak Archive lists the highest daily peak viewers in the selected range.
 - Peak Archive links each day to Day Flow with `date=`.
-- Peak Archive links each day to Battle Lines with `date=`.
+- Peak Archive links each day to Battle Lines without a misleading date-specific range.
 - Clicking a peak day syncs selected day when the matching chart or daily-card button exists.
 - Empty ranges show a useful Peak Archive empty state.
 
@@ -84,10 +84,8 @@ History v1 is considered complete when the checks below pass for the Twitch rout
 - `/twitch/heatmap/` still renders.
 - `/twitch/day-flow/` still renders.
 - `/twitch/battle-lines/` still renders.
-- `/kick/` still renders.
-- `/kick/heatmap/` still renders.
-- `/kick/day-flow/` still renders.
-- `/kick/battle-lines/` still renders.
+- `/twitch/history/` still renders.
+- Kick parity checks are covered by `docs/kick-parity-qa.md`.
 
 ## SEO / public checklist
 
@@ -106,10 +104,10 @@ Twitch History / Trends v1 is complete when:
 - Viewer-minutes and Peak viewers both work as metrics.
 - Summary cards, Daily trend, Selected day, Top streamers, Daily cards, Coverage, Method notes, and Peak Archive Lite are present.
 - Daily trend explains observed day coverage and missing days.
-- Day Flow and Battle Lines links carry the selected `date=`.
+- Day Flow links carry the selected `date=`.
+- Battle Lines links do not imply date-specific support until that page supports date-to-range conversion.
 - Empty, partial, and coverage states are visible.
 - 360px to 430px mobile widths are usable.
-- Kick is not changed by the Twitch History work.
 
 ## Current status after UI polish
 
@@ -119,12 +117,11 @@ The Twitch History v1 implementation and first UI polish pass are complete. Rema
 
 - Post-v1 visual refinement after browser screenshots.
 - Rising Streamers Lite.
-- Kick History.
+- Kick History parity QA, tracked in `docs/kick-parity-qa.md`.
 - Sitemap / canonical after final production domain is fixed.
 
 ## Deferred
 
-- Kick History.
 - History sitemap entry.
 - Canonical URL.
 - Weekly / monthly reports.
