@@ -30,15 +30,15 @@ app.innerHTML = `
         </div>
         <aside class="status-panel">
           <div class="status-panel__label">Kick data state</div>
-          <div class="status-panel__title">Provider rows connected</div>
-          <p>Kick Heatmap, Day Flow, Battle Lines, and History now have provider-specific API paths. Browser parity QA is still pending.</p>
+          <div class="status-panel__title">Connected · QA pending</div>
+          <p>Kick Heatmap, Day Flow, Battle Lines, and History have provider-specific API paths. Browser parity QA and deployed API verification are still pending.</p>
         </aside>
       </section>
       <section class="summary-grid">
-        <article class="summary-card"><div class="summary-card__label">Heatmap</div><div class="summary-card__value">Connected</div><p>Reads the latest provider='kick' minute snapshot.</p></article>
-        <article class="summary-card"><div class="summary-card__label">Day Flow</div><div class="summary-card__value">Connected</div><p>Builds bucketed daily bands from Kick provider rows.</p></article>
-        <article class="summary-card"><div class="summary-card__label">Battle Lines</div><div class="summary-card__value">Connected</div><p>Builds Kick line series and battle candidates from observed rows.</p></article>
-        <article class="summary-card"><div class="summary-card__label">History</div><div class="summary-card__value">Connected</div><p>Builds Kick History sections from provider='kick' snapshots.</p></article>
+        <article class="summary-card"><div class="summary-card__label">Heatmap</div><div class="summary-card__value">Connected</div><p>Reads the latest provider='kick' minute snapshot. Browser QA is still pending.</p></article>
+        <article class="summary-card"><div class="summary-card__label">Day Flow</div><div class="summary-card__value">Connected</div><p>Builds bucketed daily bands from Kick provider rows. Browser QA is still pending.</p></article>
+        <article class="summary-card"><div class="summary-card__label">Battle Lines</div><div class="summary-card__value">Connected</div><p>Builds Kick line series and battle candidates from observed rows. Browser QA is still pending.</p></article>
+        <article class="summary-card"><div class="summary-card__label">History</div><div class="summary-card__value">Connected</div><p>Builds Kick History sections from provider='kick' snapshots. Browser QA is still pending.</p></article>
       </section>
       <section class="chart-stage">
         <div class="chart-stage__label">Next implementation order</div>
