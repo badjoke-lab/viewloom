@@ -1,5 +1,11 @@
 const page = document.body.dataset.page || ''
-const endpoint = page === 'kick-day-flow' ? '/api/kick-day-flow' : page === 'kick-battle-lines' ? '/api/kick-battle-lines' : ''
+const endpoint = page === 'kick-day-flow'
+  ? '/api/kick-day-flow'
+  : page === 'kick-battle-lines'
+    ? '/api/kick-battle-lines'
+    : page === 'kick-history'
+      ? '/api/kick-history'
+      : ''
 
 if (endpoint) setTimeout(() => void mount(), 900)
 
