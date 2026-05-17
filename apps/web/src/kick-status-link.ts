@@ -8,14 +8,16 @@ function featureLabel(): string {
   if (page === 'kick-heatmap') return 'KICK DATA · NOW'
   if (page === 'kick-day-flow') return 'KICK DATA · TODAY'
   if (page === 'kick-battle-lines') return 'KICK DATA · RIVALRY'
+  if (page === 'kick-history') return 'KICK DATA · TRENDS'
   return 'KICK DATA · STATUS'
 }
 
 function featureMessage(): string {
-  if (page === 'kick-heatmap') return 'Kick Heatmap is currently shell-level. Do not read this page as recovered real Kick heatmap data yet.'
-  if (page === 'kick-day-flow') return 'Kick Day Flow is currently shell-level. Twitch Day Flow debug and recovery state do not apply here.'
-  if (page === 'kick-battle-lines') return 'Kick Battle Lines is currently shell-level. Twitch Battle Lines renderer/debug fixes do not apply here yet.'
-  return 'Kick is still in provider-specific recovery. Check status before parity QA.'
+  if (page === 'kick-heatmap') return 'Kick Heatmap reads the latest provider-specific Kick snapshot when available.'
+  if (page === 'kick-day-flow') return 'Kick Day Flow reads provider-specific Kick rows and keeps activity availability honest.'
+  if (page === 'kick-battle-lines') return 'Kick Battle Lines reads provider-specific Kick rows while preserving observed, missing, not_observed, and offline states.'
+  if (page === 'kick-history') return 'Kick History reads provider-specific Kick rows and mirrors the Twitch History sections without mixing platforms.'
+  return 'Kick is in provider-specific recovery. Check status before parity QA.'
 }
 
 function installKickStatusLink(): void {
@@ -36,7 +38,7 @@ function installKickStatusLink(): void {
       const strip = document.createElement('aside')
       strip.className = `kick-status-strip ${page === 'kick' ? 'kick-status-strip--overview' : 'kick-status-strip--feature'}`
       strip.dataset.kickStatusStrip = 'true'
-      strip.innerHTML = `<strong>${featureLabel()}</strong><span>${featureMessage()}</span><a href="/kick/status/">Open status</a>`
+      strip.innerHTML = `<strong>${featureLabel()}</strong><span data-kick-api-state="true">${featureMessage()}</span><a href="/kick/status/">Open status</a>`
       if (anchor?.nextSibling) anchor.parentNode?.insertBefore(strip, anchor.nextSibling)
       else main.prepend(strip)
     }
