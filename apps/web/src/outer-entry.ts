@@ -1,6 +1,6 @@
 import './styles.css'
 
-type Page = 'about' | 'support' | 'contact'
+type Page = 'about' | 'support'
 
 type OuterPage = {
   page: Page
@@ -14,6 +14,8 @@ type OuterPage = {
   cards: Array<{ label: string; title: string; body: string }>
   notes: string[]
 }
+
+const contactFormUrl = 'https://forms.gle/REPLACE_VIEWLOOM_CONTACT_FORM'
 
 const pages: Record<Page, OuterPage> = {
   about: {
@@ -44,8 +46,8 @@ const pages: Record<Page, OuterPage> = {
     lead: 'Support helps keep ViewLoom running as a lightweight independent observation project. This page is shared across providers instead of duplicating support pages under Twitch and Kick.',
     primaryLabel: 'Open GitHub',
     primaryHref: 'https://github.com/badjoke-lab/viewloom',
-    secondaryLabel: 'Contact',
-    secondaryHref: '/contact/',
+    secondaryLabel: 'Contact form',
+    secondaryHref: contactFormUrl,
     cards: [
       { label: 'Project', title: 'Independent tool', body: 'ViewLoom is built as a small provider-aware analytics surface, not an official platform dashboard.' },
       { label: 'Support', title: 'Keep the public version usable', body: 'Future support links can cover hosting, data collection, and maintenance costs.' },
@@ -54,27 +56,7 @@ const pages: Record<Page, OuterPage> = {
     notes: [
       'Donation or support links can be added here later.',
       'GitHub is the current technical reference point.',
-      'Contact remains a separate shared route.',
-    ],
-  },
-  contact: {
-    page: 'contact',
-    eyebrow: 'VIEWLOOM · CONTACT',
-    title: 'Contact',
-    lead: 'Use the shared contact route for feedback, bug reports, data-status issues, or provider-specific notes. Contact is intentionally not duplicated under Twitch and Kick.',
-    primaryLabel: 'Open contact form',
-    primaryHref: 'https://forms.gle/REPLACE_VIEWLOOM_CONTACT_FORM',
-    secondaryLabel: 'Open Data Status',
-    secondaryHref: '/twitch/status/',
-    cards: [
-      { label: 'Bugs', title: 'Report broken pages', body: 'Include the URL, device width, and what appeared wrong.' },
-      { label: 'Data', title: 'Report data issues', body: 'Mention whether the issue is Twitch or Kick and which feature page was affected.' },
-      { label: 'General', title: 'Send feedback', body: 'Feature ideas, wording issues, and support questions can use the same shared contact route.' },
-    ],
-    notes: [
-      'Replace the placeholder Google Form URL before public release.',
-      'Provider-specific data problems should also be checked against Data Status.',
-      'Do not create separate /twitch/contact/ or /kick/contact/ routes.',
+      'Contact is a direct Google Form link, not a separate ViewLoom page.',
     ],
   },
 }
@@ -98,7 +80,7 @@ function renderPage(pageData: OuterPage): string {
           <a class="nav-link" href="/kick/">Kick data</a>
           <a class="nav-link ${pageData.page === 'about' ? 'is-current' : ''}" href="/about/">About</a>
           <a class="nav-link ${pageData.page === 'support' ? 'is-current' : ''}" href="/support/">Support</a>
-          <a class="nav-link ${pageData.page === 'contact' ? 'is-current' : ''}" href="/contact/">Contact</a>
+          <a class="nav-link" href="${escapeAttr(contactFormUrl)}">Contact</a>
         </nav>
         <div class="header-note">Unofficial live observation UI</div>
       </header>
@@ -115,8 +97,8 @@ function renderPage(pageData: OuterPage): string {
           </div>
           <aside class="status-panel">
             <div class="status-panel__label">Route rule</div>
-            <div class="status-panel__title">Shared outer page</div>
-            <p>About, Support, and Contact are common ViewLoom pages. Only Data Status is provider-specific.</p>
+            <div class="status-panel__title">Shared outer pages</div>
+            <p>About and Support are common ViewLoom pages. Contact is a direct Google Form link. Only Data Status is provider-specific.</p>
           </aside>
         </section>
         <section class="summary-grid outer-grid">
@@ -125,11 +107,11 @@ function renderPage(pageData: OuterPage): string {
         <section class="chart-stage outer-stage">
           <div class="chart-stage__label">Shared routes</div>
           <h2>No duplicated provider outer pages</h2>
-          <p>Use <code>/about/</code>, <code>/support/</code>, and <code>/contact/</code> once. Provider-specific implementation status belongs to <code>/twitch/status/</code> and <code>/kick/status/</code>.</p>
+          <p>Use <code>/about/</code> and <code>/support/</code> once. Contact is a direct Google Form link. Provider-specific implementation status belongs to <code>/twitch/status/</code> and <code>/kick/status/</code>.</p>
           <div class="hero-actions hero-actions--wrap">
             <a class="button button--secondary" href="/about/">About</a>
             <a class="button button--secondary" href="/support/">Support</a>
-            <a class="button button--secondary" href="/contact/">Contact</a>
+            <a class="button button--secondary" href="${escapeAttr(contactFormUrl)}">Contact form</a>
             <a class="button button--secondary" href="/twitch/status/">Twitch Data Status</a>
             <a class="button button--secondary" href="/kick/status/">Kick Data Status</a>
           </div>
