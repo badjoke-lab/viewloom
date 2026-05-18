@@ -8,6 +8,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         portal: 'index.html',
+        about: 'about/index.html',
+        support: 'support/index.html',
         twitch: 'twitch/index.html',
         twitchHeatmap: 'twitch/heatmap/index.html',
         twitchDayFlow: 'twitch/day-flow/index.html',
