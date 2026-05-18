@@ -41,6 +41,7 @@ if (!app) throw new Error('#app not found')
 
 const site = document.body.dataset.page?.startsWith('kick') ? 'kick' : 'twitch'
 const platformName = site === 'kick' ? 'Kick' : 'Twitch'
+const apiPath = site === 'kick' ? '/api/kick-battle-lines' : '/api/battle-lines'
 const palette = ['#45a3ff', '#c061ff', '#64748b', '#5eead4', '#f472b6', '#fbbf24', '#22c55e', '#94a3b8']
 const demoLines = makeDemoLines()
 
@@ -55,7 +56,7 @@ let state: BattleState = {
   secondaryPairs: buildSecondaryPairs(demoLines, ['xqc', 'jynxzi']),
   events: fallbackEventsForLines(demoLines, ['xqc', 'jynxzi']),
   status: 'demo',
-  sourceText: 'Demo · Partial · Top 5 · Viewers · 5m · Updated fallback',
+  sourceText: `${platformName} demo · Partial · Top 5 · Viewers · 5m · Updated fallback`,
   statusMessage: 'Using demo fallback until the API returns usable Battle Lines data.',
   recommendedQuality: null,
 }
@@ -69,7 +70,7 @@ async function loadApi(): Promise<void> {
   state = { ...state, status: 'loading', statusMessage: 'Loading Battle Lines data…' }
   render()
   try {
-    const response = await fetch(`/api/battle-lines?top=${state.top}&bucket=${state.bucket}&metric=${state.metric}`, { cache: 'no-store' })
+    const response = await fetch(`${apiPath}?top=${state.top}&bucket=${state.bucket}&metric=${state.metric}`, { cache: 'no-store' })
     if (!response.ok) {
       state = { ...demoState(), status: 'error', sourceText: `Error · HTTP ${response.status} · Demo fallback`, statusMessage: 'The Battle Lines API returned an error. Demo data is clearly marked.', recommendedQuality: null }
       render()
@@ -120,7 +121,7 @@ function renderPage(): string {
     <header class="site-header"><a class="brand" href="/">ViewLoom</a><nav class="site-nav"><a class="nav-link" href="/">Portal</a><a class="nav-link ${site === 'twitch' ? 'is-current' : ''}" href="/twitch/">Twitch data</a><a class="nav-link ${site === 'kick' ? 'is-current' : ''}" href="/kick/">Kick data</a></nav><div class="header-note">Unofficial ${platformName} data</div></header>
     <main class="page-main bl-main">
       <section class="bl-hero"><div><div class="eyebrow">${platformName.toUpperCase()} DATA · RIVALRY</div><h1>Battle Lines</h1><p>Read rivalry, reversals, surges, and closing gaps through observed live-stream data.</p></div><a class="bl-icon" href="/${otherSite}/" aria-label="Open ${otherLabel}">⇧</a></section>
-      <nav class="site-subnav vl-feature-nav" aria-label="Feature navigation"><a class="subnav-link" href="/${site}/heatmap/">Heatmap</a><a class="subnav-link" href="/${site}/day-flow/">Day Flow</a><a class="subnav-link is-current" href="/${site}/battle-lines/">Battle Lines</a><a class="subnav-link" href="/${site}/history/">History</a></nav>
+      <nav class="site-subnav vl-feature-nav" aria-label="Feature navigation"><a class="subnav-link" href="/${site}/heatmap/">Heatmap</a><a class="subnav-link" href="/${site}/day-flow/">Day Flow</a><a class="subnav-link is-current" href="/${site}/battle-lines/">Battle Lines</a><a class="subnav-link" href="/${site}/history/">History</a><a class="subnav-link" href="/${site}/status/">Data Status</a></nav>
       <section class="bl-controls">${segment('top', ['Top 3', 'Top 5', 'Top 10'], `Top ${state.top}`)}${segment('metric', ['Viewers', 'Indexed'], title(state.metric))}${segment('bucket', ['1m', '5m', '10m'], state.bucket)}<button class="bl-refresh" data-refresh type="button">Refresh</button></section>
       <div class="bl-status" data-status></div>
       <section class="bl-summary" data-summary></section>

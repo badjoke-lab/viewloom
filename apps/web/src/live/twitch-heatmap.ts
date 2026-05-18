@@ -28,6 +28,79 @@ let selectedStreamLogin: string | null = null
 let refreshTimer: number | null = null
 let visibilityListenerBound = false
 
+type HeatmapProvider = {
+  key: 'twitch' | 'kick'
+  label: string
+  endpoint: string
+  storageLabel: string
+  streamUrl: (login: string) => string
+}
+
+function heatmapProvider(): HeatmapProvider {
+  const isKick = document.body.dataset.page === 'kick-heatmap'
+  return isKick
+    ? { key: 'kick', label: 'Kick', endpoint: '/api/kick-heatmap', storageLabel: 'DB_KICK_HOT / vl_kick_hot', streamUrl: (login) => `https://kick.com/${encodeURIComponent(login)}` }
+    : { key: 'twitch', label: 'Twitch', endpoint: '/api/twitch-heatmap', storageLabel: 'DB_TWITCH_HOT', streamUrl: (login) => `https://www.twitch.tv/${encodeURIComponent(login)}` }
+}
+
+function normalizeHeatmapResponse(raw: unknown, provider: HeatmapProvider): TwitchHeatmapApiResponse {
+  const record = isRecord(raw) ? raw : {}
+  if (isRecord(record.latest) || record.latest === null) return record as TwitchHeatmapApiResponse
+  const items = Array.isArray(record.items) ? record.items.map(normalizeHeatmapItem).filter((item): item is HeatmapItem => item !== null) : []
+  const updatedAt = str(record.updatedAt ?? record.updated_at ?? new Date().toISOString()) || new Date().toISOString()
+  const total = items.reduce((sum, item) => sum + item.viewers, 0)
+  const notes = Array.isArray(record.notes) ? record.notes.map(String) : []
+  const sourceMode = sourceModeFromNotes(notes)
+  return {
+    ok: record.state !== 'error',
+    provider: provider.key,
+    latest: items.length > 0 || record.state !== 'not_ready' ? {
+      provider: provider.key,
+      bucket_minute: bucketMinuteFromNotes(notes) || updatedAt,
+      collected_at: updatedAt,
+      covered_pages: 1,
+      has_more: 0,
+      stream_count: items.length,
+      total_viewers: Number(record.totalViewers ?? total) || total,
+      payload_json: JSON.stringify({ provider: provider.key, bucketMinute: updatedAt, items }),
+      source_mode: sourceMode,
+    } : null,
+    status: {
+      provider: provider.key,
+      status: str(record.status ?? record.state ?? 'unknown') || 'unknown',
+      last_attempt_at: null,
+      last_success_at: updatedAt,
+      last_failure_at: null,
+      last_error: null,
+      latest_bucket_minute: bucketMinuteFromNotes(notes) || updatedAt,
+      latest_collected_at: updatedAt,
+      latest_stream_count: items.length,
+      latest_total_viewers: total,
+      covered_pages: 1,
+      has_more: 0,
+      updated_at: updatedAt,
+    },
+  }
+}
+
+function normalizeHeatmapItem(raw: unknown): HeatmapItem | null {
+  if (!isRecord(raw)) return null
+  const login = str(raw.channelLogin ?? raw.id ?? raw.slug ?? raw.username ?? raw.name)
+  const displayName = str(raw.displayName ?? raw.name ?? raw.username ?? login) || login
+  const viewers = num(raw.viewers ?? raw.viewer_count ?? raw.viewerCount)
+  if (!login || viewers <= 0) return null
+  return { channelLogin: login, displayName, viewers, momentum: num(raw.momentum), activity: num(raw.activity) }
+}
+
+function sourceModeFromNotes(notes: string[]): string {
+  const value = notes.find((note) => note.startsWith('source_mode='))?.split('=')[1]
+  return value || 'unknown'
+}
+function bucketMinuteFromNotes(notes: string[]): string | null { return notes.find((note) => note.startsWith('bucket_minute='))?.split('=')[1] ?? null }
+function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null }
+function str(value: unknown): string { return typeof value === 'string' ? value.trim() : '' }
+function num(value: unknown): number { return typeof value === 'number' && Number.isFinite(value) ? value : typeof value === 'string' && Number.isFinite(Number(value)) ? Number(value) : 0 }
+
 const HEATMAP_CSS = `
 .chart-placeholder--heatmap.heatmap-live-stage {
   min-height: 560px;
@@ -270,6 +343,7 @@ const HEATMAP_CSS = `
 `
 
 export async function hydrateTwitchHeatmap(): Promise<void> {
+  const provider = heatmapProvider()
   ensureStyles()
   ensureLiveSurfaceSlots()
   ensureHeatmapAutoRefresh()
@@ -284,13 +358,13 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
   renderPendingSurfaceState()
 
   try {
-    const response = await fetch('/api/twitch-heatmap')
+    const response = await fetch(provider.endpoint)
     if (!response.ok) throw new Error(`API ${response.status}`)
 
-    const data = (await response.json()) as TwitchHeatmapApiResponse
+    const data = normalizeHeatmapResponse(await response.json(), provider)
     if (!data.latest) {
-      stage.innerHTML = renderEmptyShell('No Twitch snapshots yet.')
-      renderUnavailableSurfaceState('No snapshot yet', 'D1 is connected, but there is no latest snapshot to read yet.')
+      stage.innerHTML = renderEmptyShell(`No ${provider.label} snapshots yet.`)
+      renderUnavailableSurfaceState('No snapshot yet', `${provider.storageLabel} is connected, but there is no latest ${provider.label} snapshot to read yet.`)
       return
     }
 
@@ -298,7 +372,7 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
     const items = [...(payload.items ?? [])].sort((a, b) => b.viewers - a.viewers)
     if (!items.length) {
       stage.innerHTML = renderEmptyShell('Snapshot exists, but payload items are empty.')
-      renderUnavailableSurfaceState('Empty payload', 'The latest snapshot exists, but it contains no live items.')
+      renderUnavailableSurfaceState('Empty payload', `The latest ${provider.label} snapshot exists, but it contains no live items.`)
       return
     }
 
@@ -347,8 +421,8 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
     populateLiveSurface(items, data.latest, data.status)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
-    stage.innerHTML = renderEmptyShell(`Failed to load Twitch heatmap API: ${escapeHtml(message)}`)
-    renderUnavailableSurfaceState('API error', 'The Heatmap page rendered, but the Twitch heatmap API request failed.')
+    stage.innerHTML = renderEmptyShell(`Failed to load ${provider.label} heatmap API: ${escapeHtml(message)}`)
+    renderUnavailableSurfaceState('API error', `The Heatmap page rendered, but the ${provider.label} heatmap API request failed.`)
   }
 }
 
@@ -455,7 +529,7 @@ function populateLiveSurface(
   setText('#heatmap-summary-streams .summary-card__value', String(items.length))
   setText(
     '#heatmap-summary-streams p',
-    `${latest.stream_count.toLocaleString()} observed live streams in the latest Twitch snapshot.`,
+    `${latest.stream_count.toLocaleString()} observed live streams in the latest ${heatmapProvider().label} snapshot.`,
   )
   setText('#heatmap-summary-viewers .summary-card__value', latest.total_viewers.toLocaleString())
   setText(
@@ -523,7 +597,7 @@ function updateSelectedStreamDetail(
 
   const link = document.querySelector<HTMLAnchorElement>('#heatmap-detail-link')
   if (link) {
-    link.href = `https://www.twitch.tv/${encodeURIComponent(item.channelLogin)}`
+    link.href = heatmapProvider().streamUrl(item.channelLogin)
     link.textContent = `Open ${item.displayName}`
   }
 
@@ -535,14 +609,14 @@ function renderLoadingShell(): string {
     <div class="heatmap-live-shell">
       <div class="heatmap-live-toolbar">
         <div>
-          <div class="heatmap-live-toolbar__hint">Preparing Twitch heat field…</div>
+          <div class="heatmap-live-toolbar__hint">Preparing provider heat field…</div>
         </div>
         <div class="heatmap-live-toolbar__actions">
           <span class="heatmap-live-toolbar__zoom">100%</span>
           <button class="heatmap-live-toolbar__button" type="button" disabled>Reset zoom</button>
         </div>
       </div>
-      <div class="heatmap-live-empty">Loading Twitch heatmap snapshot…</div>
+      <div class="heatmap-live-empty">Loading provider heatmap snapshot…</div>
     </div>
   `
 }
@@ -641,9 +715,9 @@ function renderTile(layout: TileLayout, totalViewers: number): string {
 
 function renderPendingSurfaceState(): void {
   setText('#heatmap-status-title', 'Waiting for heatmap API')
-  setText('#heatmap-status-body', 'The rail and support blocks will switch to live Twitch values once the latest snapshot loads.')
+  setText('#heatmap-status-body', 'The rail and support blocks will switch to live provider values once the latest snapshot loads.')
   setText('#heatmap-hero-status-title', 'Waiting for live heatmap API')
-  setText('#heatmap-hero-status-body', 'The hero panel will switch to the latest Twitch snapshot once the heatmap API responds.')
+  setText('#heatmap-hero-status-body', 'The hero panel will switch to the latest provider snapshot once the heatmap API responds.')
   setText('#heatmap-detail-title', 'No stream selected')
   setText('#heatmap-detail-body', 'Select a tile to inspect its current viewers, momentum, activity, and stream link.')
   setText('#heatmap-detail-viewers', '—')
@@ -654,10 +728,10 @@ function renderPendingSurfaceState(): void {
   setText('#heatmap-summary-viewers .summary-card__value', '—')
   setText('#heatmap-summary-momentum .summary-card__value', '—')
   setText('#heatmap-summary-activity .summary-card__value', '—')
-  setText('#heatmap-summary-streams p', 'Waiting for live Twitch snapshot.')
-  setText('#heatmap-summary-viewers p', 'Waiting for live Twitch snapshot.')
-  setText('#heatmap-summary-momentum p', 'Waiting for live Twitch snapshot.')
-  setText('#heatmap-summary-activity p', 'Waiting for live Twitch snapshot.')
+  setText('#heatmap-summary-streams p', 'Waiting for live provider snapshot.')
+  setText('#heatmap-summary-viewers p', 'Waiting for live provider snapshot.')
+  setText('#heatmap-summary-momentum p', 'Waiting for live provider snapshot.')
+  setText('#heatmap-summary-activity p', 'Waiting for live provider snapshot.')
   setHtml('#heatmap-legend-body', 'Area tracks viewers. Tile color tracks momentum. Glow strength reflects activity signal when available.')
   setHtml('#heatmap-support-movers', '<p>Waiting for momentum ranking.</p>')
   setHtml('#heatmap-support-activity', '<p>Waiting for activity ranking.</p>')
@@ -688,22 +762,22 @@ function renderLiveSummaryShell(): string {
     <article id="heatmap-summary-streams" class="summary-card">
       <div class="summary-card__label">Active streams</div>
       <div class="summary-card__value">—</div>
-      <p>Waiting for live Twitch snapshot.</p>
+      <p>Waiting for live provider snapshot.</p>
     </article>
     <article id="heatmap-summary-viewers" class="summary-card">
       <div class="summary-card__label">Total viewers observed</div>
       <div class="summary-card__value">—</div>
-      <p>Waiting for live Twitch snapshot.</p>
+      <p>Waiting for live provider snapshot.</p>
     </article>
     <article id="heatmap-summary-momentum" class="summary-card">
       <div class="summary-card__label">Strongest momentum stream</div>
       <div class="summary-card__value">—</div>
-      <p>Waiting for live Twitch snapshot.</p>
+      <p>Waiting for live provider snapshot.</p>
     </article>
     <article id="heatmap-summary-activity" class="summary-card">
       <div class="summary-card__label">Highest activity stream</div>
       <div class="summary-card__value">—</div>
-      <p>Waiting for live Twitch snapshot.</p>
+      <p>Waiting for live provider snapshot.</p>
     </article>
   `
 }
@@ -738,7 +812,7 @@ function renderLiveRailShell(): string {
     <section class="rail-card rail-card--detail">
       <div class="rail-card__label">Live status</div>
       <h2 id="heatmap-status-title">Waiting for heatmap API</h2>
-      <p id="heatmap-status-body">The rail will switch to live Twitch status once the latest snapshot loads.</p>
+      <p id="heatmap-status-body">The rail will switch to live provider status once the latest snapshot loads.</p>
     </section>
 
     <section class="rail-card rail-card--detail">

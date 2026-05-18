@@ -1,4 +1,7 @@
-const isLinesPage = document.body.dataset.page === 'twitch-battle-lines'
+export {}
+const page = document.body.dataset.page || ''
+const isLinesPage = page === 'twitch-battle-lines' || page === 'kick-battle-lines'
+const provider: 'twitch' | 'kick' = page.startsWith('kick') ? 'kick' : 'twitch'
 
 if (isLinesPage) {
   window.requestAnimationFrame(() => {
@@ -22,7 +25,7 @@ function applyLinesUiUnification(): void {
   hero.querySelector('.bl-icon')?.remove()
 
   if (!main.querySelector('.vl-feature-nav')) {
-    hero.insertAdjacentHTML('afterend', renderFeatureNav())
+    hero.insertAdjacentHTML('afterend', renderFeatureNav(provider))
   }
 
   controls?.classList.add('vl-control-dock', 'bl-controls--unified')
@@ -53,13 +56,14 @@ function ensureLinesUnifyStyles(): void {
   document.head.append(style)
 }
 
-function renderFeatureNav(): string {
+function renderFeatureNav(provider: 'twitch' | 'kick'): string {
   return `
     <nav class="site-subnav vl-feature-nav" aria-label="Feature navigation">
-      <a class="subnav-link" href="/twitch/heatmap/">Heatmap</a>
-      <a class="subnav-link" href="/twitch/day-flow/">Day Flow</a>
-      <a class="subnav-link is-current" href="/twitch/battle-lines/">Battle Lines</a>
-      <a class="subnav-link" href="/twitch/history/">History</a>
+      <a class="subnav-link" href="/${provider}/heatmap/">Heatmap</a>
+      <a class="subnav-link" href="/${provider}/day-flow/">Day Flow</a>
+      <a class="subnav-link is-current" href="/${provider}/battle-lines/">Battle Lines</a>
+      <a class="subnav-link" href="/${provider}/history/">History</a>
+      <a class="subnav-link" href="/${provider}/status/">Data Status</a>
     </nav>
   `
 }

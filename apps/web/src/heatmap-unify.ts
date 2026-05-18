@@ -1,4 +1,7 @@
-const isHeatmapPage = document.body.dataset.page === 'twitch-heatmap'
+export {}
+const page = document.body.dataset.page || ''
+const isHeatmapPage = page === 'twitch-heatmap' || page === 'kick-heatmap'
+const provider: 'twitch' | 'kick' = page.startsWith('kick') ? 'kick' : 'twitch'
 
 if (isHeatmapPage) {
   window.requestAnimationFrame(() => {
@@ -26,8 +29,12 @@ function applyHeatmapUiUnification(): void {
   railCards.forEach((card) => card.classList.add('vl-inspector-card'))
   supportCards.forEach((card) => card.classList.add('vl-section-card'))
 
-  if (subnav && !subnav.querySelector('[href="/twitch/history/"]')) {
-    subnav.insertAdjacentHTML('beforeend', '<a class="subnav-link" href="/twitch/history/">History</a>')
+  if (subnav && !subnav.querySelector(`[href="/${provider}/history/"]`)) {
+    subnav.insertAdjacentHTML('beforeend', `<a class="subnav-link" href="/${provider}/history/">History</a>`)
+  }
+
+  if (subnav && !subnav.querySelector(`[href="/${provider}/status/"]`)) {
+    subnav.insertAdjacentHTML('beforeend', `<a class="subnav-link" href="/${provider}/status/">Data Status</a>`)
   }
 
   if (layoutRoot && !layoutRoot.querySelector('.hm-data-quality-note')) {

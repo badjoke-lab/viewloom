@@ -1,3 +1,4 @@
+export {}
 type DebugPayload = {
   source?: string
   state?: string
@@ -81,7 +82,7 @@ function readRequest(): DebugRequest {
 }
 
 function apiUrl(request: DebugRequest): string {
-  const url = new URL('/api/day-flow', window.location.origin)
+  const url = new URL(document.body.dataset.page === 'kick-day-flow' ? '/api/kick-day-flow' : '/api/day-flow', window.location.origin)
   url.searchParams.set('day', request.day)
   url.searchParams.set('rangeMode', request.rangeMode)
   if (request.date) url.searchParams.set('date', request.date)
@@ -195,16 +196,16 @@ async function refreshDebug(): Promise<void> {
 }
 
 function schedule(): void {
-  window.setTimeout(() => void refreshDebug(), 800)
+  window.setTimeout(function dayFlowDebugInitial(): void { void refreshDebug() }, 800)
   document.addEventListener('change', (event) => {
     const target = event.target
-    if (target instanceof Element && target.closest('#dayflow-controls')) window.setTimeout(() => void refreshDebug(), 600)
+    if (target instanceof Element && target.closest('#dayflow-controls')) window.setTimeout(function dayFlowDebugChange(): void { void refreshDebug() }, 600)
   })
   document.addEventListener('submit', (event) => {
     const target = event.target
-    if (target instanceof Element && target.id === 'dayflow-controls') window.setTimeout(() => void refreshDebug(), 900)
+    if (target instanceof Element && target.id === 'dayflow-controls') window.setTimeout(function dayFlowDebugSubmit(): void { void refreshDebug() }, 900)
   })
-  window.setInterval(() => void refreshDebug(), 60_000)
+  window.setInterval(function dayFlowDebugInterval(): void { void refreshDebug() }, 60_000)
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule)

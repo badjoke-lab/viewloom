@@ -1,3 +1,4 @@
+export {}
 const page = document.body.dataset.page ?? ''
 
 if (page.startsWith('twitch') && page !== 'twitch-status') {
@@ -23,7 +24,7 @@ function featureMessage(): string {
 function installTwitchStatusLink(): void {
   const tryInstall = () => {
     const nav = document.querySelector<HTMLElement>('.site-nav')
-    if (nav && !nav.querySelector('[data-twitch-status-link]')) {
+    if (nav && !nav.querySelector('[data-twitch-status-link]') && !nav.querySelector('[href="/twitch/status/"]')) {
       const link = document.createElement('a')
       link.className = 'nav-link'
       link.href = '/twitch/status/'
@@ -33,7 +34,7 @@ function installTwitchStatusLink(): void {
     }
 
     const subnav = document.querySelector<HTMLElement>('.site-subnav')
-    if (subnav && !subnav.querySelector('[data-twitch-status-subnav-link]')) {
+    if (subnav && !subnav.querySelector('[data-twitch-status-subnav-link]') && !subnav.querySelector('[href="/twitch/status/"]')) {
       const link = document.createElement('a')
       link.className = 'subnav-link'
       link.href = '/twitch/status/'

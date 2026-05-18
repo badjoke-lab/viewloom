@@ -20,7 +20,7 @@ export function normalizeKickStream(raw: RawStreamRecord): NormalizedStream | nu
   const slug = channelSlug(raw)
   const name = displayName(raw, slug)
   const title = asString(raw.title ?? raw.session_title ?? raw.stream_title)
-  const viewers = asNumber(raw.viewers ?? raw.viewer_count ?? raw.viewerCount ?? raw.livestream?.['viewer_count'])
+  const viewers = asNumber(raw.viewers ?? raw.viewer_count ?? raw.viewerCount ?? asRecord(raw.livestream)?.viewer_count)
   const id = slugify(slug || name)
   const url = asString(raw.url) || kickConfig.streamUrl(id)
   const startedAt = asString(raw.startedAt ?? raw.started_at ?? raw.start_time) || undefined

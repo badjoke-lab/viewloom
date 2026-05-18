@@ -124,6 +124,12 @@ const numberFmt = new Intl.NumberFormat('en-US')
 const compactFmt = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 })
 const pctFmt = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 })
 
+
+type ProviderConfig = { key: 'twitch' | 'kick'; label: string; endpoint: string; basePath: string; themeClass: string; storageKey: string }
+const provider: ProviderConfig = document.body.dataset.page === 'kick-day-flow'
+  ? { key: 'kick', label: 'Kick', endpoint: '/api/kick-day-flow', basePath: '/kick', themeClass: 'theme-kick', storageKey: 'viewloom.kick.dayflow.autoUpdate' }
+  : { key: 'twitch', label: 'Twitch', endpoint: '/api/day-flow', basePath: '/twitch', themeClass: 'theme-twitch', storageKey: 'viewloom.twitch.dayflow.autoUpdate' }
+
 const palette = [
   '#7DD3FC', '#A78BFA', '#F0ABFC', '#F9A8D4', '#FDBA74',
   '#BEF264', '#5EEAD4', '#93C5FD', '#C4B5FD', '#FCA5A5',
@@ -182,7 +188,7 @@ function normalizeBucket(value: unknown): BucketSize {
 
 function readInitialState(): ViewState {
   const params = new URL(window.location.href).searchParams
-  const storedAuto = window.localStorage.getItem('viewloom.twitch.dayflow.autoUpdate')
+  const storedAuto = window.localStorage.getItem(provider.storageKey)
   return {
     rangeMode: normalizeRange(params.get('day') ?? params.get('rangeMode')),
     selectedDate: params.get('date') ?? todayIso(),
@@ -285,19 +291,19 @@ function renderHeader(): string {
       <a class="brand" href="/">ViewLoom</a>
       <nav class="site-nav" aria-label="Primary">
         <a class="nav-link" href="/">Portal</a>
-        <a class="nav-link is-current" href="/twitch/">Twitch</a>
-        <a class="nav-link" href="/kick/">Kick</a>
+        <a class="nav-link ${provider.key === 'twitch' ? 'is-current' : ''}" href="/twitch/">Twitch data</a>
+        <a class="nav-link ${provider.key === 'kick' ? 'is-current' : ''}" href="/kick/">Kick data</a>
       </nav>
       <div class="header-note">Unofficial live observation UI</div>
     </header>
   `
 }
 
-function renderHero(statusTitle = 'Waiting for Day Flow API', statusBody = 'The chart will switch to real Twitch day-flow data once the API responds.'): string {
+function renderHero(statusTitle = 'Waiting for Day Flow API', statusBody = `The chart will switch to real ${provider.label} day-flow data once the API responds.`): string {
   return `
     <section class="hero hero--site hero--feature">
       <div>
-        <div class="eyebrow">Twitch / Today</div>
+        <div class="eyebrow">${provider.label} / Today</div>
         <h1>Day Flow</h1>
         <p class="hero-copy">Read the daily audience landscape as a single terrain, with Full context and Top Focus as separate scopes.</p>
       </div>
@@ -313,9 +319,11 @@ function renderHero(statusTitle = 'Waiting for Day Flow API', statusBody = 'The 
 function renderSubnav(): string {
   return `
     <div class="site-subnav" aria-label="Site sections">
-      <a class="subnav-link" href="/twitch/heatmap/">Heatmap</a>
-      <a class="subnav-link is-current" href="/twitch/day-flow/">Day Flow</a>
-      <a class="subnav-link" href="/twitch/battle-lines/">Battle Lines</a>
+      <a class="subnav-link" href="${provider.basePath}/heatmap/">Heatmap</a>
+      <a class="subnav-link is-current" href="${provider.basePath}/day-flow/">Day Flow</a>
+      <a class="subnav-link" href="${provider.basePath}/battle-lines/">Battle Lines</a>
+      <a class="subnav-link" href="${provider.basePath}/history/">History</a>
+      <a class="subnav-link" href="${provider.basePath}/status/">Data Status</a>
     </div>
   `
 }
@@ -373,7 +381,7 @@ function renderFrame(source: DayFlowPayload, model: ViewModel): string {
             <span><strong>Updated</strong> ${isoTimeLabel(source.lastUpdated)} UTC</span>
           </div>
         </div>
-        <div class="df-chart-wrap"><canvas id="dayflow-canvas" class="df-canvas" aria-label="Twitch Day Flow chart"></canvas><div id="dayflow-loading" class="df-loading" hidden>Updating…</div></div>
+        <div class="df-chart-wrap"><canvas id="dayflow-canvas" class="df-canvas" aria-label="${provider.label} Day Flow chart"></canvas><div id="dayflow-loading" class="df-loading" hidden>Updating…</div></div>
         <div class="df-time"><span>Time selection</span><input id="dayflow-time" type="range" min="${model.visibleStart}" max="${model.visibleEnd}" value="${model.selectedIndex}" step="1" /></div>
         <section id="dayflow-focus-mobile" class="rail-card df-mobile-focus"></section>
         <button id="dayflow-open-sheet" type="button" class="button button--secondary df-open-sheet">Open detail</button>
@@ -626,13 +634,13 @@ function readControls(form: HTMLFormElement): void {
     bucketSize: normalizeBucket(data.get('bucket')),
     autoUpdate: data.get('autoUpdate') === 'on',
   }
-  window.localStorage.setItem('viewloom.twitch.dayflow.autoUpdate', String(state.autoUpdate))
+  window.localStorage.setItem(provider.storageKey, String(state.autoUpdate))
 }
 
 async function loadData(quiet = false): Promise<void> {
   const loading = document.querySelector<HTMLElement>('#dayflow-loading')
   if (loading && quiet) loading.hidden = false
-  const url = new URL('/api/day-flow', window.location.origin)
+  const url = new URL(provider.endpoint, window.location.origin)
   url.searchParams.set('day', state.rangeMode)
   url.searchParams.set('rangeMode', state.rangeMode)
   if (state.rangeMode === 'date') url.searchParams.set('date', state.selectedDate)
@@ -654,13 +662,13 @@ async function loadData(quiet = false): Promise<void> {
 
 function renderApp(source?: DayFlowPayload, model?: ViewModel): void {
   app.innerHTML = `
-    <div class="page-shell page-shell--site theme-twitch">
+    <div class="page-shell page-shell--site ${provider.themeClass}">
       ${renderHeader()}
       <main class="page-main">
-        ${renderHero(source ? `${source.status} · ${source.source}` : undefined, source ? `${isoTimeLabel(source.lastUpdated)} UTC · ${source.coverageNote ?? 'Twitch Day Flow data loaded.'}` : undefined)}
+        ${renderHero(source ? `${source.status} · ${source.source}` : undefined, source ? `${isoTimeLabel(source.lastUpdated)} UTC · ${source.coverageNote ?? `${provider.label} Day Flow data loaded.`}` : undefined)}
         ${renderSubnav()}
         ${renderControls()}
-        <section id="dayflow-root">${source && model ? renderFrame(source, model) : `<section class="chart-stage"><h2>Loading Day Flow…</h2><p>Waiting for the Twitch day-flow API.</p></section>`}</section>
+        <section id="dayflow-root">${source && model ? renderFrame(source, model) : `<section class="chart-stage"><h2>Loading Day Flow…</h2><p>Waiting for the ${provider.label} day-flow API.</p></section>`}</section>
       </main>
     </div>
   `
@@ -709,7 +717,7 @@ installStyles()
 renderApp()
 wireRoot()
 void loadData().catch((error) => {
-  app.innerHTML = `<div class="page-shell page-shell--site theme-twitch">${renderHeader()}<main class="page-main">${renderHero('Day Flow API error', error instanceof Error ? error.message : 'Unknown error')}<section class="chart-stage"><h2>Day Flow unavailable</h2><p>Check the API path and deployed functions.</p></section></main></div>`
+  app.innerHTML = `<div class="page-shell page-shell--site ${provider.themeClass}">${renderHeader()}<main class="page-main">${renderHero('Day Flow API error', error instanceof Error ? error.message : 'Unknown error')}<section class="chart-stage"><h2>Day Flow unavailable</h2><p>Check the provider API path and deployed functions.</p></section></main></div>`
 })
 
 window.addEventListener('beforeunload', () => window.clearInterval(autoTimer))

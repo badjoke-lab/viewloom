@@ -7,6 +7,7 @@
     "dev:web": "pnpm --filter @viewloom/web dev",
     "build:web": "pnpm --filter @viewloom/web build",
     "typecheck:web": "pnpm --filter @viewloom/web typecheck",
-    "preview:web": "pnpm --filter @viewloom/web preview"
+    "preview:web": "pnpm --filter @viewloom/web preview",
+    "check": "npm --prefix apps/web run typecheck"
   }
 }
