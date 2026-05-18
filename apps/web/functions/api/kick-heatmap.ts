@@ -34,8 +34,12 @@ type KickHeatmapPayload = {
 const STALE_AFTER_MS = 10 * 60 * 1000
 
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
+  if (!env.DB_KICK_HOT) {
+    return jsonPayload('not_ready', new Date().toISOString(), [], 'Kick storage is not configured. Create D1 `vl_kick_hot` and bind it as `DB_KICK_HOT`.', ['missing_binding=DB_KICK_HOT'], 503)
+  }
+
   try {
-    const result = await env.DB_TWITCH_HOT.prepare(`
+    const result = await env.DB_KICK_HOT.prepare(`
       SELECT bucket_minute, collected_at, total_viewers, payload_json, source_mode
       FROM minute_snapshots
       WHERE provider = ?
@@ -44,7 +48,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     `).bind('kick').first<SnapshotRow>()
 
     if (!result) {
-      return jsonPayload('empty', new Date().toISOString(), [], 'No Kick snapshots exist in D1 yet.', ['provider=kick returned no rows.'])
+      return jsonPayload('empty', new Date().toISOString(), [], 'No Kick snapshots exist in DB_KICK_HOT yet.', ['provider=kick returned no rows in vl_kick_hot.'])
     }
 
     const items = normalizePayload(result.payload_json)
@@ -58,12 +62,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         : 'Latest Kick snapshot exists but has no usable normalized streams.'
 
     return jsonPayload(state, updatedAt, items, note, [
+      'storage=DB_KICK_HOT',
       `source_mode=${result.source_mode || 'unknown'}`,
       `bucket_minute=${result.bucket_minute}`,
       `total_viewers=${result.total_viewers}`,
     ])
   } catch (error) {
-    return jsonPayload('error', new Date().toISOString(), [], 'Kick Heatmap API could not read D1 snapshots.', [error instanceof Error ? error.message : String(error)], 500)
+    return jsonPayload('error', new Date().toISOString(), [], 'Kick Heatmap API could not read DB_KICK_HOT snapshots.', [error instanceof Error ? error.message : String(error)], 500)
   }
 }
 
@@ -122,7 +127,12 @@ function str(value: unknown): string {
 }
 
 function num(value: unknown): number {
-  return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0
+  if (typeof value === 'number' && Number.isFinite(value)) return Math.max(0, Math.round(value))
+  if (typeof value === 'string') {
+    const parsed = Number(value.replace(/,/g, ''))
+    return Number.isFinite(parsed) ? Math.max(0, Math.round(parsed)) : 0
+  }
+  return 0
 }
 
 function slugify(value: string): string {
