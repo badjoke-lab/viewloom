@@ -1,12 +1,12 @@
 # ViewLoom collector-kick
 
-Status: minimal fixture-ingestion worker. Cloudflare D1 must be created and bound before use.
+Status: minimal real-channel polling worker plus fixture fallback. Cloudflare D1 must be created and bound before use.
 
 ## Purpose
 
 `collector-kick` is the provider-specific ingestion path for Kick. It stays separate from Twitch so provider failures, rate limits, and storage issues can be isolated.
 
-This first worker is not the final live Kick API collector. It exists to validate the dedicated Kick D1 path end-to-end:
+This worker validates the dedicated Kick D1 path end-to-end:
 
 ```text
 collector-kick -> DB_KICK_HOT / vl_kick_hot -> /api/kick-* -> Kick pages
@@ -19,6 +19,18 @@ Create a D1 database:
 ```text
 Name: vl_kick_hot
 Binding: DB_KICK_HOT
+```
+
+Configure channel slugs:
+
+```text
+KICK_CHANNEL_SLUGS="channel-one,channel-two"
+```
+
+Optional manual collection token:
+
+```text
+KICK_INGEST_TOKEN="..."
 ```
 
 ## Schema
@@ -37,20 +49,40 @@ db/kick/seed/0001_fixture_snapshot.sql
 
 ## Worker routes
 
-After binding `DB_KICK_HOT`, the minimal worker exposes:
+After binding `DB_KICK_HOT`, the worker exposes:
 
 ```text
 GET  /health
 GET  /status
+POST /collect
 POST /insert-fixture
 ```
 
-`POST /insert-fixture` writes one current-minute fixture snapshot into `minute_snapshots` with:
+`POST /collect` fetches configured Kick channels from:
 
 ```text
-provider = kick
-source_mode = fixture
+https://kick.com/api/v2/channels/{slug}
 ```
+
+and writes one current-minute snapshot to `minute_snapshots`.
+
+`POST /insert-fixture` writes one fixture snapshot for validation.
+
+## Scheduled collection
+
+`wrangler.toml` includes a commented cron block:
+
+```toml
+[triggers]
+crons = ["*/5 * * * *"]
+```
+
+Enable it only after:
+
+- `vl_kick_hot` exists
+- `DB_KICK_HOT` is bound
+- migration is applied
+- `KICK_CHANNEL_SLUGS` is configured
 
 ## Wrangler config
 
@@ -68,10 +100,11 @@ database_id = "REPLACE_WITH_CLOUDFLARE_D1_DATABASE_ID"
 1. Create D1 `vl_kick_hot`.
 2. Bind it as `DB_KICK_HOT` to the Pages project.
 3. Apply `db/kick/migrations/0001_kick_hot_schema.sql`.
-4. Deploy or run `collector-kick`.
-5. Call `POST /insert-fixture`.
-6. Confirm `GET /status` returns at least one row.
-7. Confirm the Pages APIs use the same D1 binding:
+4. Set `KICK_CHANNEL_SLUGS`.
+5. Deploy or run `collector-kick`.
+6. Call `POST /collect`.
+7. Confirm `GET /status` returns at least one row.
+8. Confirm the Pages APIs use the same D1 binding:
 
 ```text
 /api/kick-heatmap
@@ -79,6 +112,14 @@ database_id = "REPLACE_WITH_CLOUDFLARE_D1_DATABASE_ID"
 /api/kick-battle-lines
 /api/kick-history
 ```
+
+If real channel collection fails or configured channels are offline, call:
+
+```text
+POST /insert-fixture
+```
+
+for storage-path validation.
 
 ## Runtime contract
 
@@ -116,6 +157,8 @@ source_mode
 }
 ```
 
-## Remaining after fixture validation
+## Limitations
 
-After the D1 path is verified, replace fixture ingestion with real Kick data collection while keeping this storage contract stable.
+This is a channel-list collector. It does not yet discover global Kick rankings or category directory pages by itself.
+
+The next collector phase should add candidate discovery while keeping this D1 storage contract stable.
