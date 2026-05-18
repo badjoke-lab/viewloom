@@ -97,13 +97,13 @@ function stream(item: Item): { streamerId: string; displayName: string; viewers:
 function rank(values: Array<Omit<Stream, 'avgViewers' | 'rankByViewerMinutes' | 'rankByPeak' | 'changePct'>>): Stream[] {
   const byMinutes = values.sort((a, b) => b.viewerMinutes - a.viewerMinutes).slice(0, 30)
   const peakRank = new Map([...values].sort((a, b) => b.peakViewers - a.peakViewers).map((s, i) => [s.streamerId, i + 1]))
-  return byMinutes.map((s, i) => ({ ...s, viewerMinutes: Math.round(s.viewerMinutes), peakViewers: Math.round(s.peakViewers), avgViewers: s.observedMinutes ? Math.round(s.viewerMinutes / s.observedMinutes) : 0, rankByViewerMinutes: i + 1, rankByPeak: peakRank.get(s.streamerId) ?? i + 1, changePct: null }))
+  return byMinutes.map((s, i) => ({ ...s, viewerMinutes: Math.round(s.viewerMinutes), peakViewers: Math.round(s.peakViewers), avgViewers: s.observedMinutes ? Math.round(s.viewerMinutes / s.observedMinutes) : 0, rankByViewerMinutes: i + 1, rankByPeak: peakRank.get(s.streamerId) ?? i + 1, changePct: null as number | null }))
 }
 
 function summarize(daily: Day[], top: Stream[]) {
   if (!daily.length) return null
   const peakDay = daily.reduce((best, day) => day.peakViewers > best.peakViewers ? day : best, daily[0])
-  return { totalViewerMinutes: daily.reduce((sum, day) => sum + day.totalViewerMinutes, 0), peakViewers: peakDay.peakViewers, peakDay: peakDay.day, topStreamer: top[0] ?? null, biggestRise: null, coverageState: daily.some((day) => day.coverageState !== 'good') ? 'partial' : 'good' }
+  return { totalViewerMinutes: daily.reduce((sum, day) => sum + day.totalViewerMinutes, 0), peakViewers: peakDay.peakViewers, peakDay: peakDay.day, topStreamer: top[0] ?? null, biggestRise: null as null, coverageState: daily.some((day) => day.coverageState !== 'good') ? 'partial' : 'good' }
 }
 
 function coverageFor(period: { from: string; to: string }, daily: Day[]) {

@@ -119,7 +119,7 @@ const siteMeta: Record<SiteKey, SiteMeta> = {
         body: 'Three separate reads of the same live ecosystem, without collapsing into a single all-in-one dashboard.',
       },
       {
-        label: 'Status',
+        label: 'Data Status',
         title: 'Separated from provider copy',
         body: 'Coverage, freshness, and source notes will live in dedicated strips and rails instead of polluting the main chart stage.',
       },
@@ -157,7 +157,7 @@ const siteMeta: Record<SiteKey, SiteMeta> = {
         body: 'Kick keeps the same reading pattern as Twitch while preserving a clearly separate platform scope and mood.',
       },
       {
-        label: 'Status',
+        label: 'Data Status',
         title: 'Own coverage surface',
         body: 'Limitations, freshness, and source notes will be shown as Kick-specific status, not borrowed from Twitch language.',
       },
@@ -355,7 +355,7 @@ app.innerHTML = renderPage(page)
 void initPage(page)
 
 async function initPage(kind: PageKind): Promise<void> {
-  if (kind === 'twitch-heatmap') {
+  if (kind === 'twitch-heatmap' || kind === 'kick-heatmap') {
     initHeatmapLayout()
     await hydrateTwitchHeatmap()
   }
@@ -474,6 +474,8 @@ function renderSiteHome(kind: SiteKey): string {
               <a class="button button--primary" href="${site.basePath}/heatmap/">Heatmap</a>
               <a class="button button--secondary" href="${site.basePath}/day-flow/">Day Flow</a>
               <a class="button button--secondary" href="${site.basePath}/battle-lines/">Battle Lines</a>
+              <a class="button button--secondary" href="${site.basePath}/history/">History</a>
+              <a class="button button--secondary" href="${site.basePath}/status/">Data Status</a>
             </div>
           </div>
           <aside class="status-panel">

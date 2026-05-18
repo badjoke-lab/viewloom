@@ -1,0 +1,133 @@
+import type { Env } from '../_db/env'
+
+type SnapshotRow = {
+  provider: string
+  bucket_minute: string
+  collected_at: string
+  stream_count: number
+  total_viewers: number
+  source_mode: string
+}
+
+type SourceCountRow = { source_mode: string; rows: number }
+
+const STALE_AFTER_MINUTES = 10
+const STRONG_STALE_AFTER_MINUTES = 30
+
+export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
+  try {
+    const latest = await env.DB_KICK_HOT.prepare(`
+      SELECT provider,bucket_minute,collected_at,stream_count,total_viewers,source_mode
+      FROM minute_snapshots
+      WHERE provider = ?
+      ORDER BY bucket_minute DESC
+      LIMIT 1
+    `).bind('kick').first<SnapshotRow>()
+
+    const sourceRows = await env.DB_KICK_HOT.prepare(`
+      SELECT source_mode, COUNT(*) AS rows
+      FROM minute_snapshots
+      WHERE provider = ?
+      GROUP BY source_mode
+      ORDER BY rows DESC
+    `).bind('kick').all<SourceCountRow>()
+
+    const generatedAt = new Date().toISOString()
+    const minutesSinceSuccess = minutesBetween(latest?.collected_at ?? null, generatedAt)
+    const sourceMode = latest?.source_mode ?? 'empty'
+    const state = deriveState(sourceMode, minutesSinceSuccess, latest?.stream_count ?? 0)
+    const authMode = sourceMode === 'authenticated' ? 'authenticated' : sourceMode === 'fixture' ? 'fixture' : 'public-channel-fallback'
+
+    return Response.json({
+      version: 'viewloom-kick-status-v1',
+      platform: 'kick',
+      source: 'api',
+      storage: { binding: 'DB_KICK_HOT', database: 'vl_kick_hot' },
+      sourceMode,
+      authMode,
+      state,
+      generatedAt,
+      collector: {
+        state: latest ? 'snapshot_available' : 'empty',
+        mode: authMode,
+        sourceMode,
+        configuredChannelMechanism: 'KICK_CHANNEL_SLUGS seed list',
+        lastSuccessAt: latest?.collected_at ?? null,
+        writtenStreamCount: latest?.stream_count ?? 0,
+      },
+      freshness: {
+        lastSuccessAt: latest?.collected_at ?? null,
+        minutesSinceSuccess,
+        staleAfterMinutes: STALE_AFTER_MINUTES,
+        strongStaleAfterMinutes: STRONG_STALE_AFTER_MINUTES,
+        isFresh: state === 'fresh' || state === 'partial',
+        isStale: state === 'stale' || state === 'strong_stale',
+      },
+      latestSnapshot: {
+        bucketMinute: latest?.bucket_minute ?? null,
+        collectedAt: latest?.collected_at ?? null,
+        observedCount: latest?.stream_count ?? 0,
+        streamCount: latest?.stream_count ?? 0,
+        totalViewers: latest?.total_viewers ?? 0,
+        sourceMode,
+      },
+      sourceModes: sourceRows.results ?? [],
+      coverage: {
+        state: latest ? (latest.stream_count > 0 ? 'seed-list-observed' : 'empty') : 'missing',
+        observedCount: latest?.stream_count ?? 0,
+        notes: [
+          'Kick reads DB_KICK_HOT / vl_kick_hot only.',
+          'Fixture, public-channel-fallback, empty-public-channel-fallback, and authenticated source modes are surfaced explicitly.',
+        ],
+      },
+      features: buildFeatures(state, sourceMode, latest?.collected_at ?? null),
+      limitations: [
+        'ViewLoom is unofficial and independent.',
+        'Kick activity signals are unavailable in the current DB_KICK_HOT payload; viewer volume and share remain available.',
+        'Directory/global discovery is unavailable; collection is seed-list only while KICK_CHANNEL_SLUGS remains the mechanism.',
+        sourceMode === 'fixture' ? 'Latest rows are fixture rows and must not be interpreted as live production data.' : 'Public-channel fallback rows are sampled from configured channel slugs unless authenticated source_mode is present.',
+      ],
+      notes: latest ? [`latest_source_mode=${sourceMode}`] : ['No latest Kick snapshot was found in DB_KICK_HOT.'],
+    }, { headers: { 'cache-control': 'no-store' } })
+  } catch (error) {
+    return Response.json({
+      version: 'viewloom-kick-status-v1',
+      platform: 'kick',
+      source: 'api',
+      storage: { binding: 'DB_KICK_HOT', database: 'vl_kick_hot' },
+      sourceMode: 'unconfigured',
+      authMode: 'unknown',
+      state: 'unconfigured',
+      generatedAt: new Date().toISOString(),
+      error: { code: 'kick_status_unavailable', message: sanitize(error instanceof Error ? error.message : String(error)) },
+      limitations: ['Required Kick D1 binding or query is unavailable.'],
+      notes: ['Kick status could not read DB_KICK_HOT.'],
+    }, { status: 200, headers: { 'cache-control': 'no-store' } })
+  }
+}
+
+function deriveState(sourceMode: string, minutes: number | null, count: number): string {
+  if (sourceMode === 'fixture') return 'fixture'
+  if (minutes == null) return 'empty'
+  if (minutes >= STRONG_STALE_AFTER_MINUTES) return 'strong_stale'
+  if (minutes >= STALE_AFTER_MINUTES) return 'stale'
+  if (count === 0) return 'empty'
+  return sourceMode === 'authenticated' ? 'fresh' : 'partial'
+}
+
+function buildFeatures(state: string, sourceMode: string, updatedAt: string | null) {
+  const featureState = sourceMode === 'fixture' ? 'fixture' : state === 'strong_stale' ? 'stale' : state
+  return [
+    { key: 'heatmap', label: 'Heatmap', role: 'now', apiPath: '/api/kick-heatmap', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Activity unavailable; source mode is shown in notes.', pagePath: '/kick/heatmap/' },
+    { key: 'day_flow', label: 'Day Flow', role: 'today', apiPath: '/api/kick-day-flow', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Activity unavailable; bands come from observed DB_KICK_HOT snapshots.', pagePath: '/kick/day-flow/' },
+    { key: 'battle_lines', label: 'Battle Lines', role: 'rivalry', apiPath: '/api/kick-battle-lines', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Events are derived from observed viewer deltas.', pagePath: '/kick/battle-lines/' },
+    { key: 'history', label: 'History', role: 'trends', apiPath: '/api/kick-history', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Depends on retained Kick snapshots.', pagePath: '/kick/history/' },
+  ]
+}
+
+function minutesBetween(from: string | null, to: string): number | null {
+  if (!from) return null
+  const ms = Date.parse(to) - Date.parse(from)
+  return Number.isFinite(ms) ? Math.max(0, Math.floor(ms / 60000)) : null
+}
+function sanitize(value: string): string { return value.replace(/Bearer\s+[A-Za-z0-9._-]+/g, 'Bearer [redacted]').slice(0, 220) }

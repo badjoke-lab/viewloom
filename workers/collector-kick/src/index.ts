@@ -2,6 +2,9 @@ type Env = {
   DB_KICK_HOT: D1Database
   KICK_CHANNEL_SLUGS?: string
   KICK_INGEST_TOKEN?: string
+  KICK_CLIENT_ID?: string
+  KICK_CLIENT_SECRET?: string
+  KICK_ACCESS_TOKEN?: string
 }
 
 type StreamItem = {
@@ -24,7 +27,7 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
     if (url.pathname === '/health') return out({ ok: true, provider: 'kick', storage: 'DB_KICK_HOT' })
-    if (url.pathname === '/status') return out({ ok: true, provider: 'kick', rows: await countRows(env), configuredChannels: channelSlugs(env).length })
+    if (url.pathname === '/status') return out(await statusPayload(env))
     if (url.pathname === '/insert-fixture' && request.method === 'POST') return out({ ok: true, result: await writeSnapshot(env, fixture, 'fixture') })
     if (url.pathname === '/collect' && request.method === 'POST') {
       const gate = checkToken(request, env)
@@ -39,15 +42,89 @@ export default {
   },
 }
 
+
+type AuthResult = { mode: 'authenticated'; token: string } | { mode: 'public-channel-fallback'; token: null; reason: string }
+
+async function statusPayload(env: Env) {
+  const latest = await latestSnapshot(env)
+  const slugs = channelSlugs(env)
+  const hasStaticToken = Boolean(env.KICK_ACCESS_TOKEN)
+  const hasClientCredentials = Boolean(env.KICK_CLIENT_ID && env.KICK_CLIENT_SECRET)
+  return {
+    ok: true,
+    provider: 'kick',
+    storage: 'DB_KICK_HOT / vl_kick_hot',
+    rows: await countRows(env),
+    configuredChannels: slugs.length,
+    authMode: hasStaticToken || hasClientCredentials ? 'credential-configured' : 'public-channel-fallback',
+    sourceMode: latest?.source_mode ?? (slugs.length ? 'public-channel-fallback' : 'unconfigured'),
+    lastCollectionResult: latest,
+    writtenStreamCount: latest?.stream_count ?? 0,
+    notes: [
+      hasClientCredentials ? 'KICK_CLIENT_ID and KICK_CLIENT_SECRET are configured for OAuth app access tokens.' : 'KICK_CLIENT_ID/KICK_CLIENT_SECRET are not both configured; using public channel fallback.',
+      'Public fallback uses https://kick.com/api/v2/channels/{slug} and is not described as official authenticated collection.',
+      'KICK_CHANNEL_SLUGS remains the seed-list mechanism until directory/global discovery is implemented.',
+    ],
+  }
+}
+
+async function getAuth(env: Env): Promise<AuthResult> {
+  if (env.KICK_ACCESS_TOKEN) return { mode: 'authenticated', token: env.KICK_ACCESS_TOKEN }
+  if (!env.KICK_CLIENT_ID || !env.KICK_CLIENT_SECRET) return { mode: 'public-channel-fallback', token: null, reason: 'missing_client_credentials' }
+  try {
+    const body = new URLSearchParams({ grant_type: 'client_credentials', client_id: env.KICK_CLIENT_ID, client_secret: env.KICK_CLIENT_SECRET })
+    const response = await fetch('https://id.kick.com/oauth/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json' }, body })
+    if (!response.ok) return { mode: 'public-channel-fallback', token: null, reason: `token_http_${response.status}` }
+    const data = await response.json() as Raw
+    const token = text(data.access_token)
+    return token ? { mode: 'authenticated', token } : { mode: 'public-channel-fallback', token: null, reason: 'token_missing' }
+  } catch (error) {
+    return { mode: 'public-channel-fallback', token: null, reason: error instanceof Error ? error.message : String(error) }
+  }
+}
+
+async function fetchOfficialChannel(slug: string, token: string): Promise<StreamItem | null> {
+  const response = await fetch(`https://api.kick.com/public/v1/channels?slug=${encodeURIComponent(slug)}`, {
+    headers: { accept: 'application/json', authorization: `Bearer ${token}`, 'user-agent': 'ViewLoom collector-kick/0.2' },
+  })
+  if (!response.ok) return null
+  const raw = await response.json() as Raw
+  const data = Array.isArray(raw.data) ? raw.data[0] : raw
+  return record(data) ? normalizeOfficialChannel(data, slug) : null
+}
+
+function normalizeOfficialChannel(raw: Raw, fallbackSlug: string): StreamItem | null {
+  const slug = text(raw.slug ?? raw.channel_slug ?? fallbackSlug) || fallbackSlug
+  const viewers = num(raw.viewer_count ?? raw.viewers)
+  if (viewers <= 0) return null
+  const category = record(raw.category) ? raw.category : null
+  return {
+    slug,
+    displayName: text(raw.username ?? raw.name ?? slug) || slug,
+    title: text(raw.stream_title ?? raw.session_title ?? raw.title ?? category?.name),
+    viewer_count: viewers,
+    url: `https://kick.com/${slug}`,
+  }
+}
+
+async function latestSnapshot(env: Env): Promise<{ bucket_minute: string; collected_at: string; stream_count: number; total_viewers: number; source_mode: string } | null> {
+  return await env.DB_KICK_HOT.prepare('SELECT bucket_minute,collected_at,stream_count,total_viewers,source_mode FROM minute_snapshots WHERE provider = ? ORDER BY bucket_minute DESC LIMIT 1').bind('kick').first()
+}
+
 async function collectKick(env: Env) {
   const slugs = channelSlugs(env)
   if (slugs.length === 0) return await writeSnapshot(env, [], 'unconfigured')
-  const settled = await Promise.allSettled(slugs.map((slug) => fetchChannel(slug)))
+  const auth = await getAuth(env)
+  const settled = await Promise.allSettled(slugs.map((slug) => auth.mode === 'authenticated' ? fetchOfficialChannel(slug, auth.token) : fetchPublicChannel(slug)))
   const streams = settled.flatMap((result) => result.status === 'fulfilled' && result.value ? [result.value] : [])
-  return await writeSnapshot(env, streams, streams.length > 0 ? 'real' : 'empty-real')
+  const sourceMode = streams.length > 0
+    ? auth.mode === 'authenticated' ? 'authenticated' : 'public-channel-fallback'
+    : auth.mode === 'authenticated' ? 'empty-authenticated' : 'empty-public-channel-fallback'
+  const written = await writeSnapshot(env, streams, sourceMode)
+  return { ...written, auth_mode: auth.mode, source_mode: sourceMode, configured_channels: slugs.length, failures: settled.filter((result) => result.status === 'rejected').length }
 }
 
-async function fetchChannel(slug: string): Promise<StreamItem | null> {
+async function fetchPublicChannel(slug: string): Promise<StreamItem | null> {
   const response = await fetch(`https://kick.com/api/v2/channels/${encodeURIComponent(slug)}`, {
     headers: { accept: 'application/json', 'user-agent': 'ViewLoom collector-kick/0.1' },
   })

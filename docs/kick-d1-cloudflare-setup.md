@@ -60,7 +60,18 @@ KICK_CHANNEL_SLUGS="channel-one,channel-two"
 KICK_INGEST_TOKEN="..."
 ```
 
-4. Enable cron only after manual collection works:
+4. Configure official Kick API credentials if authenticated app-token collection is available for the deployment:
+
+```text
+KICK_CLIENT_ID="..."
+KICK_CLIENT_SECRET="..."
+# Optional pre-provisioned bearer token instead of client credentials:
+KICK_ACCESS_TOKEN="..."
+```
+
+The collector uses `POST https://id.kick.com/oauth/token` with `grant_type=client_credentials` and then reads `https://api.kick.com/public/v1/channels?slug={slug}` when credentials work. If credentials are absent or token acquisition fails, it writes honest `public-channel-fallback` / `empty-public-channel-fallback` source modes from `https://kick.com/api/v2/channels/{slug}`.
+
+5. Enable cron only after manual collection works:
 
 ```toml
 [triggers]
@@ -125,4 +136,4 @@ kick | 1+
 
 ## What remains outside Cloudflare setup
 
-The included collector is channel-list polling. It does not yet discover global Kick rankings or categories automatically. Add directory discovery later without changing the D1 row contract.
+The included collector is seed-list polling through `KICK_CHANNEL_SLUGS`. It does not yet discover global Kick rankings or categories automatically. Without valid Kick credentials it uses `source_mode=public-channel-fallback`, not official authenticated collection. Add directory discovery later without changing the D1 row contract.

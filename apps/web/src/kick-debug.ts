@@ -1,3 +1,4 @@
+export {}
 const page = document.body.dataset.page || ''
 const endpoint = page === 'kick-day-flow'
   ? '/api/kick-day-flow'
@@ -7,7 +8,7 @@ const endpoint = page === 'kick-day-flow'
       ? '/api/kick-history'
       : ''
 
-if (endpoint) setTimeout(() => void mount(), 900)
+if (endpoint) setTimeout(function kickDebugMount(): void { void mount() }, 900)
 
 async function mount(): Promise<void> {
   const main = document.querySelector<HTMLElement>('.page-main')

@@ -1,3 +1,4 @@
+export {}
 const page = document.body.dataset.page ?? ''
 
 if (page.startsWith('kick') && page !== 'kick-status') {
@@ -23,7 +24,7 @@ function featureMessage(): string {
 function installKickStatusLink(): void {
   const tryInstall = () => {
     const nav = document.querySelector<HTMLElement>('.site-nav')
-    if (nav && !nav.querySelector('[data-kick-status-link]')) {
+    if (nav && !nav.querySelector('[data-kick-status-link]') && !nav.querySelector('[href="/kick/status/"]')) {
       const link = document.createElement('a')
       link.className = 'nav-link'
       link.href = '/kick/status/'
@@ -33,7 +34,7 @@ function installKickStatusLink(): void {
     }
 
     const subnav = document.querySelector<HTMLElement>('.site-subnav')
-    if (subnav && !subnav.querySelector('[data-kick-status-subnav-link]')) {
+    if (subnav && !subnav.querySelector('[data-kick-status-subnav-link]') && !subnav.querySelector('[href="/kick/status/"]')) {
       const link = document.createElement('a')
       link.className = 'subnav-link'
       link.href = '/kick/status/'

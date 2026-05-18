@@ -1,4 +1,7 @@
-const isDayFlowPage = document.body.dataset.page === 'twitch-day-flow'
+export {}
+const page = document.body.dataset.page || ''
+const isDayFlowPage = page === 'twitch-day-flow' || page === 'kick-day-flow'
+const provider: 'twitch' | 'kick' = page.startsWith('kick') ? 'kick' : 'twitch'
 
 if (isDayFlowPage) {
   window.requestAnimationFrame(() => {
@@ -24,8 +27,11 @@ function applyDayFlowUiUnification(): void {
   railCards.forEach((card) => card.classList.add('vl-inspector-card'))
   supportCards.forEach((card) => card.classList.add('vl-section-card'))
 
-  if (subnav && !subnav.querySelector('[href="/twitch/history/"]')) {
-    subnav.insertAdjacentHTML('beforeend', '<a class="subnav-link" href="/twitch/history/">History</a>')
+  if (subnav && !subnav.querySelector(`[href="/${provider}/history/"]`)) {
+    subnav.insertAdjacentHTML('beforeend', `<a class="subnav-link" href="/${provider}/history/">History</a>`)
+  }
+  if (subnav && !subnav.querySelector(`[href="/${provider}/status/"]`)) {
+    subnav.insertAdjacentHTML('beforeend', `<a class="subnav-link" href="/${provider}/status/">Data Status</a>`)
   }
 }
 

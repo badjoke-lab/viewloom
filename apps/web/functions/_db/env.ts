@@ -5,4 +5,7 @@ export type Env = {
   TWITCH_CLIENT_ID: string
   TWITCH_CLIENT_SECRET: string
   KICK_INGEST_TOKEN?: string
+  KICK_CLIENT_ID?: string
+  KICK_CLIENT_SECRET?: string
+  KICK_ACCESS_TOKEN?: string
 }

@@ -1,3 +1,4 @@
+export {}
 const pageName = document.body.dataset.page || ''
 
 const apiUrl = pageName === 'kick-heatmap'

@@ -1,6 +1,6 @@
 # ViewLoom collector-kick
 
-Status: minimal real-channel polling worker plus fixture fallback. Cloudflare D1 must be created and bound before use.
+Status: credential-aware Kick collector with an honest public-channel fallback plus fixture validation. Cloudflare D1 must be created and bound before use.
 
 ## Purpose
 
@@ -33,6 +33,15 @@ Optional manual collection token:
 KICK_INGEST_TOKEN="..."
 ```
 
+Optional official Kick API credentials for app-token collection:
+
+```text
+KICK_CLIENT_ID="..."
+KICK_CLIENT_SECRET="..."
+# optional pre-provisioned bearer token instead of client credentials
+KICK_ACCESS_TOKEN="..."
+```
+
 ## Schema
 
 Apply:
@@ -58,13 +67,7 @@ POST /collect
 POST /insert-fixture
 ```
 
-`POST /collect` fetches configured Kick channels from:
-
-```text
-https://kick.com/api/v2/channels/{slug}
-```
-
-and writes one current-minute snapshot to `minute_snapshots`.
+`POST /collect` first tries the official Kick OAuth app-token path when `KICK_CLIENT_ID` and `KICK_CLIENT_SECRET` (or `KICK_ACCESS_TOKEN`) are configured. The app-token flow uses `POST https://id.kick.com/oauth/token` with `grant_type=client_credentials`, then reads `https://api.kick.com/public/v1/channels?slug={slug}`. If credentials are absent or token acquisition fails, it falls back to `https://kick.com/api/v2/channels/{slug}` and writes `source_mode=public-channel-fallback` or `empty-public-channel-fallback`. The fallback is not described as official authenticated collection.
 
 `POST /insert-fixture` writes one fixture snapshot for validation.
 

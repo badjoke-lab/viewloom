@@ -176,8 +176,8 @@ function streamer(band: Band) {
   return { streamerId: band.streamerId, name: band.name, title: band.title, url: band.url, peakViewers: band.peakViewers, avgViewers: band.avgViewers, viewerMinutes: band.totalViewerMinutes, peakShare: band.peakShare, biggestRiseTime: band.biggestRiseBucket, biggestRiseValue: band.biggestRiseValue, firstSeen: band.firstSeen, lastSeen: band.lastSeen }
 }
 
-function empty(state: State, noteText: string, coverageNote: string, partialNote: string, lastUpdated: string, range: ReturnType<typeof getRange>, bucketSize: 5 | 10, topN: number, valueMode: Metric, labels: string[]) {
-  return { ok: state !== 'error', source: 'api', platform: 'kick', state, status: state, note: noteText, coverageNote, partialNote, lastUpdated, selectedDate: range.selectedDate, bucketSize, topN, valueMode, rangeMode: range.mode, windowStart: range.start.toISOString(), windowEnd: range.end.toISOString(), isRolling: range.isRolling, buckets: labels, totalViewersByBucket: labels.map(() => 0), bands: [], detailPanelSource: { defaultStreamerId: null, streamers: [] }, activity: { available: false, note: 'Kick activity data is not connected yet.' } }
+function empty(state: State, noteText: string, coverageNote: string, partialNote: string, lastUpdated: string, range: ReturnType<typeof getRange>, bucketSize: 5 | 10, topN: number, valueMode: Metric, labels: string[]): Record<string, unknown> {
+  return { ok: state !== 'error', source: 'api', platform: 'kick', state, status: state, note: noteText, coverageNote, partialNote, lastUpdated, selectedDate: range.selectedDate, bucketSize, topN, valueMode, rangeMode: range.mode, windowStart: range.start.toISOString(), windowEnd: range.end.toISOString(), isRolling: range.isRolling, buckets: labels, totalViewersByBucket: labels.map(() => 0), bands: [] as Band[], detailPanelSource: { defaultStreamerId: null as string | null, streamers: [] as ReturnType<typeof streamer>[] }, activity: { available: false, note: 'Kick activity data is not connected yet.' } }
 }
 
 function getRange(url: URL, now: Date) {
