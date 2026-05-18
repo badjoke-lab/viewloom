@@ -26,7 +26,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const labels = makeBuckets(range.start, range.end, bucketMinutes)
 
   try {
-    const result = await env.DB_TWITCH_HOT.prepare(`
+    const result = await env.DB_KICK_HOT.prepare(`
       SELECT bucket_minute, collected_at, total_viewers, payload_json, source_mode
       FROM minute_snapshots
       WHERE provider = ? AND bucket_minute >= ? AND bucket_minute < ?
@@ -34,7 +34,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       LIMIT ${MAX_ROWS}
     `).bind('kick', range.start.toISOString(), range.end.toISOString()).all<Row>()
     const rows = result.results ?? []
-    if (rows.length === 0) return json(payload('empty', now.toISOString(), topN, bucket, metric, [], [], [], ['provider=kick returned no rows for this range.']))
+    if (rows.length === 0) return json(payload('empty', now.toISOString(), topN, bucket, metric, [], [], [], ['provider=kick returned no DB_KICK_HOT rows for this range.']))
 
     const built = build(rows, labels, bucketMinutes, topN, metric)
     const latest = rows[rows.length - 1]
@@ -42,7 +42,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     const stale = Date.now() - toDate(updatedAt).getTime() > STALE_AFTER_MS
     const state = stateFor(built.lines.length > 0, stale, built.observed, labels.length)
     const notes = [
-      `${rows.length} provider=kick snapshot rows read. ${built.observed}/${labels.length} buckets observed.`,
+      `${rows.length} provider=kick DB_KICK_HOT snapshot rows read. ${built.observed}/${labels.length} buckets observed.`,
       `source_mode=${latest?.source_mode || 'unknown'}`,
       'Activity / heat fusion is not connected for Kick Battle Lines yet.',
       'Missing, not_observed, and offline points are kept separate and should not be drawn as observed values.',
@@ -50,7 +50,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     return json(payload(state, updatedAt, topN, bucket, metric, built.lines, built.battles, built.events, notes))
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    return json(payload('error', now.toISOString(), topN, bucket, metric, [], [], [], ['Kick Battle Lines API could not read D1 snapshots.', message]), 500)
+    return json(payload('error', now.toISOString(), topN, bucket, metric, [], [], [], ['Kick Battle Lines API could not read DB_KICK_HOT snapshots.', message]), 500)
   }
 }
 

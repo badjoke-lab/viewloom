@@ -1,0 +1,29 @@
+name = "viewloom-collector-kick"
+main = "src/index.ts"
+compatibility_date = "2026-05-18"
+
+# Manual collection route:
+#   POST /collect
+# Fixture route:
+#   POST /insert-fixture
+# Health routes:
+#   GET /health
+#   GET /status
+
+# Optional scheduled polling. Enable after Cloudflare D1 binding and channel slugs are configured.
+# [triggers]
+# crons = ["*/5 * * * *"]
+
+# Configure after deploy or in Cloudflare dashboard.
+# KICK_CHANNEL_SLUGS is a comma-separated list, for example:
+# KICK_CHANNEL_SLUGS = "channel-one,channel-two"
+#
+# [vars]
+# KICK_CHANNEL_SLUGS = ""
+
+# Bind this after creating the D1 database in Cloudflare.
+# The database_id must be filled from the Cloudflare dashboard or `wrangler d1 list`.
+# [[d1_databases]]
+# binding = "DB_KICK_HOT"
+# database_name = "vl_kick_hot"
+# database_id = "REPLACE_WITH_CLOUDFLARE_D1_DATABASE_ID"

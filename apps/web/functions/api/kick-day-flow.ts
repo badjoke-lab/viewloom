@@ -36,7 +36,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const bucketLabels = buckets(range.start, range.end, bucketSize)
 
   try {
-    const result = await env.DB_TWITCH_HOT.prepare(`
+    const result = await env.DB_KICK_HOT.prepare(`
       SELECT bucket_minute, collected_at, total_viewers, payload_json, source_mode
       FROM minute_snapshots
       WHERE provider = ? AND bucket_minute >= ? AND bucket_minute < ?
@@ -46,7 +46,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
     const rows = result.results ?? []
     if (rows.length === 0) {
-      return json(empty('empty', 'No Kick snapshots exist in the selected Day Flow window.', 'provider=kick returned no rows for this range.', '', now.toISOString(), range, bucketSize, topN, valueMode, bucketLabels))
+      return json(empty('empty', 'No Kick snapshots exist in the selected Day Flow window.', 'provider=kick returned no rows from DB_KICK_HOT for this range.', '', now.toISOString(), range, bucketSize, topN, valueMode, bucketLabels))
     }
 
     const built = build(rows, bucketLabels, bucketSize, topN)
@@ -63,7 +63,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       state,
       status: state,
       note: note(state, built.bands.length),
-      coverageNote: `${rows.length} provider=kick snapshot rows read. ${built.observed}/${bucketLabels.length} buckets observed. source_mode=${latest?.source_mode || 'unknown'}.`,
+      coverageNote: `${rows.length} provider=kick DB_KICK_HOT snapshot rows read. ${built.observed}/${bucketLabels.length} buckets observed. source_mode=${latest?.source_mode || 'unknown'}.`,
       partialNote,
       lastUpdated,
       selectedDate: range.selectedDate,
@@ -82,7 +82,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    return json(empty('error', 'Kick Day Flow API could not read D1 snapshots.', message, '', now.toISOString(), range, bucketSize, topN, valueMode, bucketLabels), 500)
+    return json(empty('error', 'Kick Day Flow API could not read DB_KICK_HOT snapshots.', message, '', now.toISOString(), range, bucketSize, topN, valueMode, bucketLabels), 500)
   }
 }
 
@@ -196,7 +196,7 @@ function buckets(start: Date, end: Date, bucketSize: 5 | 10): string[] {
 }
 
 function getState(hasBands: boolean, stale: boolean, observed: number, expected: number): State { if (!hasBands) return 'empty'; if (stale) return 'stale'; if (expected > 0 && observed / expected < 0.5) return 'partial'; return 'live' }
-function note(state: State, count: number): string { return state === 'live' ? `${count} Kick Day Flow bands from observed provider rows.` : state === 'partial' ? `${count} Kick Day Flow bands from a sparse observed window.` : state === 'stale' ? `${count} Kick Day Flow bands are available, but the latest snapshot is stale.` : 'Kick provider rows exist, but no usable Day Flow bands were found.' }
+function note(state: State, count: number): string { return state === 'live' ? `${count} Kick Day Flow bands from DB_KICK_HOT rows.` : state === 'partial' ? `${count} Kick Day Flow bands from a sparse observed window.` : state === 'stale' ? `${count} Kick Day Flow bands are available, but the latest snapshot is stale.` : 'Kick DB_KICK_HOT rows exist, but no usable Day Flow bands were found.' }
 function biggestRise(values: number[], labels: string[]) { let index = -1; let value = 0; for (let i = 1; i < values.length; i += 1) { const delta = values[i] - values[i - 1]; if (delta > value) { index = i; value = delta } } return { index, value, bucket: index >= 0 ? labels[index] : null } }
 function json(payload: unknown, status = 200): Response { return Response.json(payload, { status, headers: { 'cache-control': 'no-store' } }) }
 function floor(value: string, bucketSize: 5 | 10): string { return floorDate(parseTime(value), bucketSize).toISOString() }
