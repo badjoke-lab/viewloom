@@ -21,6 +21,7 @@ export default defineConfig({
         kickDayFlow: 'kick/day-flow/index.html',
         kickBattleLines: 'kick/battle-lines/index.html',
         kickHistory: 'kick/history/index.html',
+        kickStatus: 'kick/status/index.html',
       },
     },
   },
