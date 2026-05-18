@@ -17,7 +17,7 @@ function featureMessage(): string {
   if (page === 'kick-day-flow') return 'Kick Day Flow reads provider-specific Kick rows and keeps activity availability honest.'
   if (page === 'kick-battle-lines') return 'Kick Battle Lines reads provider-specific Kick rows while preserving observed, missing, not_observed, and offline states.'
   if (page === 'kick-history') return 'Kick History reads provider-specific Kick rows and mirrors the Twitch History sections without mixing platforms.'
-  return 'Kick is in provider-specific recovery. Check status before parity QA.'
+  return 'Kick is in provider-specific recovery. Check Data Status before parity QA.'
 }
 
 function installKickStatusLink(): void {
@@ -28,8 +28,18 @@ function installKickStatusLink(): void {
       link.className = 'nav-link'
       link.href = '/kick/status/'
       link.dataset.kickStatusLink = 'true'
-      link.textContent = 'Status'
+      link.textContent = 'Data Status'
       nav.appendChild(link)
+    }
+
+    const subnav = document.querySelector<HTMLElement>('.site-subnav')
+    if (subnav && !subnav.querySelector('[data-kick-status-subnav-link]')) {
+      const link = document.createElement('a')
+      link.className = 'subnav-link'
+      link.href = '/kick/status/'
+      link.dataset.kickStatusSubnavLink = 'true'
+      link.textContent = 'Data Status'
+      subnav.appendChild(link)
     }
 
     const main = document.querySelector<HTMLElement>('.page-main')
@@ -38,7 +48,7 @@ function installKickStatusLink(): void {
       const strip = document.createElement('aside')
       strip.className = `kick-status-strip ${page === 'kick' ? 'kick-status-strip--overview' : 'kick-status-strip--feature'}`
       strip.dataset.kickStatusStrip = 'true'
-      strip.innerHTML = `<strong>${featureLabel()}</strong><span data-kick-api-state="true">${featureMessage()}</span><a href="/kick/status/">Open status</a>`
+      strip.innerHTML = `<strong>${featureLabel()}</strong><span data-kick-api-state="true">${featureMessage()}</span><a href="/kick/status/">Open Data Status</a>`
       if (anchor?.nextSibling) anchor.parentNode?.insertBefore(strip, anchor.nextSibling)
       else main.prepend(strip)
     }
