@@ -586,10 +586,10 @@ function renderFeaturePage(kind: Exclude<PageKind, 'portal' | 'twitch' | 'kick'>
   const featureKey = rest.join('-') as FeatureKey
   const site = siteMeta[siteKey]
   const feature = featureMeta[featureKey]
-  const isLiveTwitchHeatmap = site.key === 'twitch' && feature.key === 'heatmap'
+  const isLiveHeatmap = feature.key === 'heatmap'
 
   const featureLayoutSection = `
-    <section class="feature-layout ${isLiveTwitchHeatmap ? 'feature-layout--heatmap' : ''}">
+    <section class="feature-layout ${isLiveHeatmap ? 'feature-layout--heatmap' : ''}">
       <article class="chart-stage chart-stage--feature">
         <div class="chart-stage__label">${feature.label}</div>
         <h2>${feature.chartTitle}</h2>
@@ -620,7 +620,7 @@ function renderFeaturePage(kind: Exclude<PageKind, 'portal' | 'twitch' | 'kick'>
     </section>
   `
 
-  const layoutBody = isLiveTwitchHeatmap
+  const layoutBody = isLiveHeatmap
     ? `<div id="heatmap-layout-root" class="heatmap-layout-root" data-layout-mode="wide">${featureLayoutSection}${supportGridSection}</div>`
     : `${featureLayoutSection}${supportGridSection}`
 
@@ -635,7 +635,7 @@ function renderFeaturePage(kind: Exclude<PageKind, 'portal' | 'twitch' | 'kick'>
             <p class="hero-copy">${feature.description}</p>
           </div>
           ${
-            isLiveTwitchHeatmap
+            isLiveHeatmap
               ? `
           <aside class="status-panel">
             <div class="status-panel__label">Live snapshot</div>
@@ -659,7 +659,7 @@ function renderFeaturePage(kind: Exclude<PageKind, 'portal' | 'twitch' | 'kick'>
           ${renderSiteSubnav(site.key, feature.key)}
         </div>
 
-        ${isLiveTwitchHeatmap ? renderHeatmapViewModeBar() : ''}
+        ${isLiveHeatmap ? renderHeatmapViewModeBar() : ''}
 
         <section class="summary-grid">
           ${feature.summaryCards.map(renderSummaryCard).join('')}

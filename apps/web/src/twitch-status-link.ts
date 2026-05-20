@@ -23,16 +23,6 @@ function featureMessage(): string {
 
 function installTwitchStatusLink(): void {
   const tryInstall = () => {
-    const nav = document.querySelector<HTMLElement>('.site-nav')
-    if (nav && !nav.querySelector('[data-twitch-status-link]') && !nav.querySelector('[href="/twitch/status/"]')) {
-      const link = document.createElement('a')
-      link.className = 'nav-link'
-      link.href = '/twitch/status/'
-      link.dataset.twitchStatusLink = 'true'
-      link.textContent = 'Data Status'
-      nav.appendChild(link)
-    }
-
     const subnav = document.querySelector<HTMLElement>('.site-subnav')
     if (subnav && !subnav.querySelector('[data-twitch-status-subnav-link]') && !subnav.querySelector('[href="/twitch/status/"]')) {
       const link = document.createElement('a')
@@ -49,7 +39,7 @@ function installTwitchStatusLink(): void {
       const strip = document.createElement('aside')
       strip.className = `twitch-status-strip ${page === 'twitch' ? 'twitch-status-strip--overview' : 'twitch-status-strip--feature'}`
       strip.dataset.twitchStatusStrip = 'true'
-      strip.innerHTML = `<strong>${featureLabel()}</strong><span data-twitch-api-state="true">${featureMessage()}</span><a href="/twitch/status/">Open Data Status</a>`
+      strip.innerHTML = `<strong>${featureLabel()}</strong><span data-twitch-api-state="true">${featureMessage()}</span><a href="/twitch/status/">Data Status</a>`
       if (anchor?.nextSibling) anchor.parentNode?.insertBefore(strip, anchor.nextSibling)
       else main.prepend(strip)
     }
