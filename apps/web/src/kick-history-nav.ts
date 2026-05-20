@@ -9,7 +9,9 @@ function addKickHistoryLinks(): void {
     link.className = page === 'kick-history' ? 'subnav-link is-current' : 'subnav-link'
     link.href = href
     link.textContent = 'History'
-    subnav.append(link)
+    const statusLink = subnav.querySelector<HTMLAnchorElement>('[href="/kick/status/"]')
+    if (statusLink) subnav.insertBefore(link, statusLink)
+    else subnav.append(link)
   }
 
   const actions = document.querySelector<HTMLElement>('.hero-actions')

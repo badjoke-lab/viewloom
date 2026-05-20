@@ -8,7 +8,9 @@ function addTwitchHistoryLinks(): void {
     link.className = document.body.dataset.page === 'twitch-history' ? 'subnav-link is-current' : 'subnav-link'
     link.href = href
     link.textContent = 'History'
-    subnav.append(link)
+    const statusLink = subnav.querySelector<HTMLAnchorElement>('[href="/twitch/status/"]')
+    if (statusLink) subnav.insertBefore(link, statusLink)
+    else subnav.append(link)
   }
 
   const actions = document.querySelector<HTMLElement>('.hero-actions')
