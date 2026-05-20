@@ -1,4 +1,5 @@
-const isHistoryPage = document.body.dataset.page === 'twitch-history'
+const page = document.body.dataset.page || ''
+const isHistoryPage = page === 'twitch-history' || page === 'kick-history'
 
 if (isHistoryPage) {
   window.requestAnimationFrame(() => {
@@ -28,7 +29,16 @@ function applyHistoryUiUnification(): void {
   methods?.classList.add('history-methods--unified')
 
   const heroActions = hero?.querySelector<HTMLElement>('.hero-actions')
-  if (main && heroActions && !main.querySelector('.history-feature-nav--unified')) {
+  const existingFeatureNav = main?.querySelector<HTMLElement>('.site-subnav')
+  if (!main || !heroActions) return
+
+  if (existingFeatureNav) {
+    existingFeatureNav.classList.add('vl-feature-nav', 'history-feature-nav--unified')
+    heroActions.remove()
+    return
+  }
+
+  if (!main.querySelector('.history-feature-nav--unified')) {
     const featureNav = document.createElement('nav')
     featureNav.className = 'site-subnav vl-feature-nav history-feature-nav--unified'
     featureNav.setAttribute('aria-label', 'Feature navigation')
