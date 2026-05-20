@@ -23,16 +23,6 @@ function featureMessage(): string {
 
 function installKickStatusLink(): void {
   const tryInstall = () => {
-    const nav = document.querySelector<HTMLElement>('.site-nav')
-    if (nav && !nav.querySelector('[data-kick-status-link]') && !nav.querySelector('[href="/kick/status/"]')) {
-      const link = document.createElement('a')
-      link.className = 'nav-link'
-      link.href = '/kick/status/'
-      link.dataset.kickStatusLink = 'true'
-      link.textContent = 'Data Status'
-      nav.appendChild(link)
-    }
-
     const subnav = document.querySelector<HTMLElement>('.site-subnav')
     if (subnav && !subnav.querySelector('[data-kick-status-subnav-link]') && !subnav.querySelector('[href="/kick/status/"]')) {
       const link = document.createElement('a')
@@ -49,7 +39,7 @@ function installKickStatusLink(): void {
       const strip = document.createElement('aside')
       strip.className = `kick-status-strip ${page === 'kick' ? 'kick-status-strip--overview' : 'kick-status-strip--feature'}`
       strip.dataset.kickStatusStrip = 'true'
-      strip.innerHTML = `<strong>${featureLabel()}</strong><span data-kick-api-state="true">${featureMessage()}</span><a href="/kick/status/">Open Data Status</a>`
+      strip.innerHTML = `<strong>${featureLabel()}</strong><span data-kick-api-state="true">${featureMessage()}</span><a href="/kick/status/">Data Status</a>`
       if (anchor?.nextSibling) anchor.parentNode?.insertBefore(strip, anchor.nextSibling)
       else main.prepend(strip)
     }

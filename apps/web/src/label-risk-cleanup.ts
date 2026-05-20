@@ -84,8 +84,8 @@ function patchHead(): void {
 function patchHeader(): void {
   document.querySelectorAll<HTMLAnchorElement>('.site-nav .nav-link').forEach((link) => {
     const href = link.getAttribute('href') ?? ''
-    if (href === '/twitch/' || href.startsWith('/twitch/')) setText(link, getPlatformDataLabel('twitch'))
-    if (href === '/kick/' || href.startsWith('/kick/')) setText(link, getPlatformDataLabel('kick'))
+    if (href === '/twitch/') setText(link, getPlatformDataLabel('twitch'))
+    if (href === '/kick/') setText(link, getPlatformDataLabel('kick'))
   })
 
   const headerNote = document.querySelector<HTMLElement>('.header-note')
