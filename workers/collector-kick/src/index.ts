@@ -16,6 +16,13 @@ type StreamItem = {
 }
 
 type Raw = Record<string, unknown>
+type SourceAttempt = {
+  sourceMode: 'authenticated' | 'public-channel-fallback' | 'empty-authenticated' | 'empty-public-channel-fallback'
+  streams: StreamItem[]
+  failures: number
+  attemptedFallback: boolean
+  reason?: string
+}
 
 const fixture: StreamItem[] = [
   { slug: 'sample-kick-alpha', displayName: 'sample-kick-alpha', title: 'Fixture stream alpha', viewer_count: 2400, url: 'https://kick.com/sample-kick-alpha' },
@@ -62,6 +69,7 @@ async function statusPayload(env: Env) {
     writtenStreamCount: latest?.stream_count ?? 0,
     notes: [
       hasClientCredentials ? 'KICK_CLIENT_ID and KICK_CLIENT_SECRET are configured for OAuth app access tokens.' : 'KICK_CLIENT_ID/KICK_CLIENT_SECRET are not both configured; using public channel fallback.',
+      'When authenticated channel reads produce no usable viewer rows, collector-kick retries the same slug list through the public channel fallback before writing an empty snapshot.',
       'Public fallback uses https://kick.com/api/v2/channels/{slug} and is not described as official authenticated collection.',
       'KICK_CHANNEL_SLUGS remains the seed-list mechanism until directory/global discovery is implemented.',
     ],
@@ -115,13 +123,65 @@ async function collectKick(env: Env) {
   const slugs = channelSlugs(env)
   if (slugs.length === 0) return await writeSnapshot(env, [], 'unconfigured')
   const auth = await getAuth(env)
-  const settled = await Promise.allSettled(slugs.map((slug) => auth.mode === 'authenticated' ? fetchOfficialChannel(slug, auth.token) : fetchPublicChannel(slug)))
-  const streams = settled.flatMap((result) => result.status === 'fulfilled' && result.value ? [result.value] : [])
-  const sourceMode = streams.length > 0
-    ? auth.mode === 'authenticated' ? 'authenticated' : 'public-channel-fallback'
-    : auth.mode === 'authenticated' ? 'empty-authenticated' : 'empty-public-channel-fallback'
-  const written = await writeSnapshot(env, streams, sourceMode)
-  return { ...written, auth_mode: auth.mode, source_mode: sourceMode, configured_channels: slugs.length, failures: settled.filter((result) => result.status === 'rejected').length }
+  const attempt = await collectStreams(slugs, auth)
+  const written = await writeSnapshot(env, attempt.streams, attempt.sourceMode)
+  return {
+    ...written,
+    auth_mode: auth.mode,
+    source_mode: attempt.sourceMode,
+    configured_channels: slugs.length,
+    failures: attempt.failures,
+    attempted_public_fallback: attempt.attemptedFallback,
+    reason: attempt.reason,
+  }
+}
+
+async function collectStreams(slugs: string[], auth: AuthResult): Promise<SourceAttempt> {
+  if (auth.mode !== 'authenticated') {
+    const fallback = await collectPublicFallback(slugs)
+    return fallback.streams.length > 0
+      ? { ...fallback, sourceMode: 'public-channel-fallback', attemptedFallback: true, reason: auth.reason }
+      : { ...fallback, sourceMode: 'empty-public-channel-fallback', attemptedFallback: true, reason: auth.reason }
+  }
+
+  const official = await collectAuthenticated(slugs, auth.token)
+  if (official.streams.length > 0) return { ...official, sourceMode: 'authenticated', attemptedFallback: false }
+
+  const fallback = await collectPublicFallback(slugs)
+  if (fallback.streams.length > 0) {
+    return {
+      ...fallback,
+      sourceMode: 'public-channel-fallback',
+      attemptedFallback: true,
+      failures: official.failures + fallback.failures,
+      reason: 'authenticated_empty_public_fallback_used',
+    }
+  }
+
+  return {
+    streams: [],
+    sourceMode: 'empty-authenticated',
+    attemptedFallback: true,
+    failures: official.failures + fallback.failures,
+    reason: 'authenticated_and_public_fallback_empty',
+  }
+}
+
+async function collectAuthenticated(slugs: string[], token: string): Promise<Pick<SourceAttempt, 'streams' | 'failures'>> {
+  const settled = await Promise.allSettled(slugs.map((slug) => fetchOfficialChannel(slug, token)))
+  return collectSettled(settled)
+}
+
+async function collectPublicFallback(slugs: string[]): Promise<Pick<SourceAttempt, 'streams' | 'failures'>> {
+  const settled = await Promise.allSettled(slugs.map((slug) => fetchPublicChannel(slug)))
+  return collectSettled(settled)
+}
+
+function collectSettled(settled: PromiseSettledResult<StreamItem | null>[]): Pick<SourceAttempt, 'streams' | 'failures'> {
+  return {
+    streams: settled.flatMap((result) => result.status === 'fulfilled' && result.value ? [result.value] : []),
+    failures: settled.filter((result) => result.status === 'rejected').length,
+  }
 }
 
 async function fetchPublicChannel(slug: string): Promise<StreamItem | null> {
@@ -139,7 +199,8 @@ function normalizeChannel(raw: Raw, fallbackSlug: string): StreamItem | null {
   const viewers = num(live.viewer_count ?? live.viewers ?? raw.viewer_count ?? raw.viewers)
   if (viewers <= 0) return null
   const slug = text(raw.slug ?? raw.channel_slug ?? raw.username ?? fallbackSlug) || fallbackSlug
-  const displayName = text(raw.user?.['username'] ?? raw.username ?? raw.name ?? slug) || slug
+  const user = record(raw.user) ? raw.user : null
+  const displayName = text(user?.username ?? raw.username ?? raw.name ?? slug) || slug
   return {
     slug,
     displayName,
