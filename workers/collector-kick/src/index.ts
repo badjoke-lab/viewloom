@@ -1,3 +1,5 @@
+import { DEFAULT_KICK_SEED_SLUGS } from './kick-seed-slugs'
+
 type Env = {
   DB_KICK_HOT: D1Database
   KICK_CHANNEL_SLUGS?: string
@@ -36,6 +38,9 @@ type LatestSnapshot = {
   source_mode: string
   payload_json: string
 }
+
+const MAX_CHANNEL_SLUGS = 220
+const FETCH_BATCH_SIZE = 40
 
 const fixture: StreamItem[] = [
   { slug: 'sample-kick-alpha', displayName: 'sample-kick-alpha', title: 'Fixture stream alpha', viewer_count: 2400, url: 'https://kick.com/sample-kick-alpha' },
@@ -90,7 +95,7 @@ async function statusPayload(env: Env) {
       hasClientCredentials ? 'KICK_CLIENT_ID and KICK_CLIENT_SECRET are configured for OAuth app access tokens.' : 'KICK_CLIENT_ID/KICK_CLIENT_SECRET are not both configured; using public channel fallback.',
       'When authenticated channel reads produce no usable viewer rows, collector-kick retries the same slug list through the public channel fallback before writing an empty snapshot.',
       'Public fallback uses https://kick.com/api/v2/channels/{slug} and is not described as official authenticated collection.',
-      'KICK_CHANNEL_SLUGS remains the seed-list mechanism until directory/global discovery is implemented.',
+      `Seed list combines ${DEFAULT_KICK_SEED_SLUGS.length} built-in candidates with optional KICK_CHANNEL_SLUGS overrides, capped at ${MAX_CHANNEL_SLUGS} attempts.`,
     ],
   }
 }
@@ -148,6 +153,8 @@ async function collectKick(env: Env) {
     sourceMode: attempt.sourceMode,
     configuredChannels: slugs.length,
     configuredChannelSlugs: slugs,
+    defaultSeedCount: DEFAULT_KICK_SEED_SLUGS.length,
+    maxChannelSlugs: MAX_CHANNEL_SLUGS,
     observedSlugs: attempt.observedSlugs,
     missedSlugs: attempt.missedSlugs,
     failures: attempt.failures,
@@ -160,6 +167,7 @@ async function collectKick(env: Env) {
     auth_mode: auth.mode,
     source_mode: attempt.sourceMode,
     configured_channels: slugs.length,
+    default_seed_count: DEFAULT_KICK_SEED_SLUGS.length,
     observed_slugs: attempt.observedSlugs,
     missed_slugs: attempt.missedSlugs,
     failures: attempt.failures,
@@ -202,31 +210,33 @@ async function collectStreams(slugs: string[], auth: AuthResult): Promise<Source
 }
 
 async function collectAuthenticated(slugs: string[], token: string): Promise<CollectSettled> {
-  const settled = await Promise.allSettled(slugs.map((slug) => fetchOfficialChannel(slug, token)))
-  return collectSettled(slugs, settled)
+  return collectSlugBatch(slugs, (slug) => fetchOfficialChannel(slug, token))
 }
 
 async function collectPublicFallback(slugs: string[]): Promise<CollectSettled> {
-  const settled = await Promise.allSettled(slugs.map((slug) => fetchPublicChannel(slug)))
-  return collectSettled(slugs, settled)
+  return collectSlugBatch(slugs, fetchPublicChannel)
 }
 
-function collectSettled(slugs: string[], settled: PromiseSettledResult<StreamItem | null>[]): CollectSettled {
+async function collectSlugBatch(slugs: string[], fetcher: (slug: string) => Promise<StreamItem | null>): Promise<CollectSettled> {
   const streams: StreamItem[] = []
   const observed = new Set<string>()
   let failures = 0
 
-  settled.forEach((result, index) => {
-    const slug = slugs[index]
-    if (result.status === 'rejected') {
-      failures += 1
-      return
-    }
-    if (result.value) {
-      streams.push(result.value)
-      observed.add(result.value.slug || slug)
-    }
-  })
+  for (let index = 0; index < slugs.length; index += FETCH_BATCH_SIZE) {
+    const batch = slugs.slice(index, index + FETCH_BATCH_SIZE)
+    const settled = await Promise.allSettled(batch.map((slug) => fetcher(slug)))
+    settled.forEach((result, resultIndex) => {
+      const slug = batch[resultIndex]
+      if (result.status === 'rejected') {
+        failures += 1
+        return
+      }
+      if (result.value) {
+        streams.push(result.value)
+        observed.add(result.value.slug || slug)
+      }
+    })
+  }
 
   return {
     streams,
@@ -279,7 +289,17 @@ async function countRows(env: Env): Promise<number> {
 }
 
 function channelSlugs(env: Env): string[] {
-  return (env.KICK_CHANNEL_SLUGS || '').split(',').map((value) => value.trim()).filter(Boolean).slice(0, 50)
+  const envSlugs = (env.KICK_CHANNEL_SLUGS || '').split(',').map((value) => value.trim()).filter(Boolean)
+  const seen = new Set<string>()
+  const merged: string[] = []
+  for (const raw of [...envSlugs, ...DEFAULT_KICK_SEED_SLUGS]) {
+    const slug = raw.trim().toLowerCase()
+    if (!slug || seen.has(slug)) continue
+    seen.add(slug)
+    merged.push(slug)
+    if (merged.length >= MAX_CHANNEL_SLUGS) break
+  }
+  return merged
 }
 
 function checkToken(request: Request, env: Env): { ok: true } | { ok: false; error: string } {
