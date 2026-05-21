@@ -41,9 +41,56 @@ ORDER BY bucket_minute DESC
 LIMIT 10;
 ```
 
+## Verify cron accumulation
+
+After enabling the `collector-kick` cron, confirm that `public-channel-fallback` or `authenticated` rows continue to accumulate and that the latest timestamp advances:
+
+```sql
+SELECT
+  COUNT(*) AS rows,
+  MIN(bucket_minute) AS first_bucket,
+  MAX(bucket_minute) AS latest_bucket,
+  MAX(collected_at) AS latest_collected
+FROM minute_snapshots
+WHERE provider = 'kick'
+AND source_mode IN ('public-channel-fallback', 'authenticated');
+```
+
+Then inspect the most recent buckets:
+
+```sql
+SELECT bucket_minute, stream_count, total_viewers, source_mode, collected_at
+FROM minute_snapshots
+WHERE provider = 'kick'
+ORDER BY bucket_minute DESC
+LIMIT 12;
+```
+
+Healthy seed-list collection usually means:
+
+- `latest_bucket` keeps advancing on the configured cron cadence.
+- `stream_count` is greater than zero in recent rows.
+- `total_viewers` is greater than zero in recent rows.
+- `source_mode` is explicit and not `fixture`.
+
+## Inspect latest observed channels
+
+The latest `payload_json` stores `items` and, for newer collector versions, `collectorMeta`. Use this to see which seed slugs were actually live in the latest snapshot:
+
+```sql
+SELECT bucket_minute, collected_at, stream_count, total_viewers, payload_json
+FROM minute_snapshots
+WHERE provider = 'kick'
+ORDER BY bucket_minute DESC
+LIMIT 1;
+```
+
+The `/api/kick-status` endpoint also surfaces `latestObservedChannels` and collector metadata when present.
+
 ## UI/API checks
 
 - `/api/kick-status` and `/kick/status/` must show `DB_KICK_HOT / vl_kick_hot`, latest `source_mode`, `bucket_minute`, `collected_at`, `stream_count`, and `total_viewers`.
+- `/api/kick-status` and `/kick/status/` should show the latest observed Kick channels when the snapshot payload contains channel items.
 - `/api/kick-heatmap`, `/api/kick-day-flow`, `/api/kick-battle-lines`, and `/api/kick-history` must read Kick rows from `DB_KICK_HOT` only.
 - If the latest rows are `fixture`, UI copy must remain explicit that fixture data is not live production data.
 - If the latest rows are `public-channel-fallback`, UI copy must not call it official authenticated collection.

@@ -7,9 +7,11 @@ type SnapshotRow = {
   stream_count: number
   total_viewers: number
   source_mode: string
+  payload_json: string
 }
 
 type SourceCountRow = { source_mode: string; rows: number }
+type Raw = Record<string, unknown>
 
 const STALE_AFTER_MINUTES = 10
 const STRONG_STALE_AFTER_MINUTES = 30
@@ -17,7 +19,7 @@ const STRONG_STALE_AFTER_MINUTES = 30
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   try {
     const latest = await env.DB_KICK_HOT.prepare(`
-      SELECT provider,bucket_minute,collected_at,stream_count,total_viewers,source_mode
+      SELECT provider,bucket_minute,collected_at,stream_count,total_viewers,source_mode,payload_json
       FROM minute_snapshots
       WHERE provider = ?
       ORDER BY bucket_minute DESC
@@ -35,11 +37,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     const generatedAt = new Date().toISOString()
     const minutesSinceSuccess = minutesBetween(latest?.collected_at ?? null, generatedAt)
     const sourceMode = latest?.source_mode ?? 'empty'
+    const latestPayload = parsePayload(latest?.payload_json)
+    const latestObservedChannels = normalizeChannels(latestPayload?.items)
+    const collectorMeta = normalizeCollectorMeta(latestPayload?.collectorMeta)
     const state = deriveState(sourceMode, minutesSinceSuccess, latest?.stream_count ?? 0)
     const authMode = sourceMode === 'authenticated' ? 'authenticated' : sourceMode === 'fixture' ? 'fixture' : 'public-channel-fallback'
 
     return Response.json({
-      version: 'viewloom-kick-status-v1',
+      version: 'viewloom-kick-status-v2',
       platform: 'kick',
       source: 'api',
       storage: { binding: 'DB_KICK_HOT', database: 'vl_kick_hot' },
@@ -52,8 +57,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         mode: authMode,
         sourceMode,
         configuredChannelMechanism: 'KICK_CHANNEL_SLUGS seed list',
+        configuredChannels: collectorMeta.configuredChannels ?? null,
         lastSuccessAt: latest?.collected_at ?? null,
         writtenStreamCount: latest?.stream_count ?? 0,
+        observedSlugs: collectorMeta.observedSlugs ?? latestObservedChannels.map((channel) => channel.slug).filter(Boolean),
+        missedSlugs: collectorMeta.missedSlugs ?? [],
+        attemptedPublicFallback: collectorMeta.attemptedPublicFallback ?? null,
+        reason: collectorMeta.reason ?? null,
       },
       freshness: {
         lastSuccessAt: latest?.collected_at ?? null,
@@ -71,6 +81,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         totalViewers: latest?.total_viewers ?? 0,
         sourceMode,
       },
+      latestObservedChannels,
+      collectorMeta,
       sourceModes: sourceRows.results ?? [],
       coverage: {
         state: latest ? (latest.stream_count > 0 ? 'seed-list-observed' : 'empty') : 'missing',
@@ -78,6 +90,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         notes: [
           'Kick reads DB_KICK_HOT / vl_kick_hot only.',
           'Fixture, public-channel-fallback, empty-public-channel-fallback, and authenticated source modes are surfaced explicitly.',
+          latestObservedChannels.length > 0 ? `Latest snapshot contains ${latestObservedChannels.length} observed Kick channels.` : 'Latest snapshot contains no observed Kick channels.',
         ],
       },
       features: buildFeatures(state, sourceMode, latest?.collected_at ?? null),
@@ -91,7 +104,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     }, { headers: { 'cache-control': 'no-store' } })
   } catch (error) {
     return Response.json({
-      version: 'viewloom-kick-status-v1',
+      version: 'viewloom-kick-status-v2',
       platform: 'kick',
       source: 'api',
       storage: { binding: 'DB_KICK_HOT', database: 'vl_kick_hot' },
@@ -125,9 +138,39 @@ function buildFeatures(state: string, sourceMode: string, updatedAt: string | nu
   ]
 }
 
+function normalizeChannels(value: unknown): Array<{ slug: string; displayName: string; title: string; viewers: number; url: string }> {
+  if (!Array.isArray(value)) return []
+  return value.map((item) => {
+    const row = object(item)
+    if (!row) return null
+    const slug = str(row.slug)
+    const displayName = str(row.displayName ?? row.name ?? slug)
+    const viewers = num(row.viewer_count ?? row.viewers)
+    if (!slug && !displayName) return null
+    return { slug, displayName: displayName || slug, title: str(row.title), viewers, url: str(row.url) || (slug ? `https://kick.com/${slug}` : '') }
+  }).filter((item): item is { slug: string; displayName: string; title: string; viewers: number; url: string } => item !== null)
+}
+
+function normalizeCollectorMeta(value: unknown): Raw {
+  return object(value) ?? {}
+}
+
+function parsePayload(value: string | undefined): Raw | null {
+  if (!value) return null
+  try {
+    const parsed = JSON.parse(value)
+    return object(parsed)
+  } catch {
+    return null
+  }
+}
+
 function minutesBetween(from: string | null, to: string): number | null {
   if (!from) return null
   const ms = Date.parse(to) - Date.parse(from)
   return Number.isFinite(ms) ? Math.max(0, Math.floor(ms / 60000)) : null
 }
 function sanitize(value: string): string { return value.replace(/Bearer\s+[A-Za-z0-9._-]+/g, 'Bearer [redacted]').slice(0, 220) }
+function object(value: unknown): Raw | null { return typeof value === 'object' && value !== null ? value as Raw : null }
+function str(value: unknown): string { return typeof value === 'string' ? value.trim() : '' }
+function num(value: unknown): number { if (typeof value === 'number' && Number.isFinite(value)) return Math.max(0, Math.round(value)); if (typeof value === 'string') { const parsed = Number(value.replace(/,/g, '')); return Number.isFinite(parsed) ? Math.max(0, Math.round(parsed)) : 0 } return 0 }
