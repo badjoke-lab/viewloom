@@ -16,6 +16,7 @@ type RouteMeta = {
 }
 
 const CONTACT_FORM_URL = 'https://forms.gle/REPLACE_VIEWLOOM_CONTACT_FORM'
+const GITHUB_URL = 'https://github.com/badjoke-lab/viewloom'
 
 const FEATURE_BY_PAGE: Record<string, FeaturePage> = {
   'twitch-heatmap': 'heatmap',
@@ -72,6 +73,7 @@ function applyLabelRules(): void {
   patchHeader()
   patchHero()
   patchFeatureNav()
+  patchSharedFooter()
   patchVisibleText(document.body)
 }
 
@@ -145,6 +147,31 @@ function patchFeatureNav(): void {
   document.querySelectorAll<HTMLAnchorElement>('.site-subnav .subnav-link').forEach((link) => {
     if (link.textContent?.trim().toLowerCase() === 'history & trends') setText(link, 'History')
   })
+}
+
+function patchSharedFooter(): void {
+  if (document.querySelector('.vl-shared-footer')) return
+  const shell = document.querySelector<HTMLElement>('.page-shell')
+  if (!shell) return
+  const footer = document.createElement('footer')
+  footer.className = 'vl-shared-footer'
+  footer.innerHTML = `
+    <a href="/about/">About</a>
+    <a href="/support/">Support</a>
+    <a href="${CONTACT_FORM_URL}" target="_blank" rel="noreferrer">Contact</a>
+    <a href="${GITHUB_URL}" target="_blank" rel="noreferrer">GitHub</a>
+    ${route.platform ? `<a href="/${route.platform}/status/">Data Status</a>` : ''}
+  `
+  shell.append(footer)
+  ensureFooterStyles()
+}
+
+function ensureFooterStyles(): void {
+  if (document.querySelector('#vl-shared-footer-style')) return
+  const style = document.createElement('style')
+  style.id = 'vl-shared-footer-style'
+  style.textContent = `.vl-shared-footer{width:min(calc(100% - 32px),var(--content-width));margin:0 auto;padding:0 0 34px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;color:var(--muted)}.vl-shared-footer a{padding:8px 12px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.035);transition:background-color 160ms ease,color 160ms ease}.vl-shared-footer a:hover{background:rgba(255,255,255,.08);color:var(--text)}`
+  document.head.append(style)
 }
 
 function patchVisibleText(root: HTMLElement): void {
