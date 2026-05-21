@@ -1,3 +1,5 @@
+export {}
+
 const page = document.body.dataset.page
 const provider = page === 'kick' ? 'kick' : page === 'twitch' ? 'twitch' : null
 
