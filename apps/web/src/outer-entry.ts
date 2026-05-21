@@ -22,21 +22,21 @@ const pages: Record<Page, OuterPage> = {
     page: 'about',
     eyebrow: 'VIEWLOOM · ABOUT',
     title: 'About ViewLoom',
-    lead: 'ViewLoom is an unofficial observation interface for live-stream activity. It separates now, today, rivalry, and trends so Twitch and Kick can be read without mixing provider data.',
+    lead: 'ViewLoom is an unofficial observation surface for live-stream activity. It keeps Twitch and Kick separated, then reads each provider through Heatmap, Day Flow, Battle Lines, History, and Data Status.',
     primaryLabel: 'Open Twitch data',
     primaryHref: '/twitch/',
     secondaryLabel: 'Open Kick data',
     secondaryHref: '/kick/',
     cards: [
-      { label: 'Now', title: 'Heatmap', body: 'A current-field view for who is large, rising, or active right now.' },
-      { label: 'Today', title: 'Day Flow', body: 'A day-level view for how attention moves across observed streams.' },
-      { label: 'Rivalry', title: 'Battle Lines', body: 'A comparison view for overlapping stream activity and reversals.' },
-      { label: 'Trends', title: 'History & Trends', body: 'A longer-range archive for daily peaks, viewer-minutes, and coverage quality.' },
+      { label: 'Structure', title: 'Provider-first', body: 'Twitch and Kick are not mixed into one dashboard. Each provider keeps its own feature pages and Data Status.' },
+      { label: 'Views', title: 'Fixed page roles', body: 'Heatmap is now, Day Flow is today, Battle Lines is rivalry, History is trend, and Data Status is freshness and limitations.' },
+      { label: 'Status', title: 'Honest coverage', body: 'Data can be delayed, partial, stale, unavailable, sampled, or limited by each provider collector.' },
+      { label: 'Scope', title: 'Unofficial project', body: 'ViewLoom is independent and is not affiliated with Twitch or Kick.' },
     ],
     notes: [
-      'ViewLoom is not affiliated with Twitch or Kick.',
-      'Data can be delayed, partial, unavailable, or affected by collector status.',
-      'Provider status is separated because Twitch and Kick have different data paths and limitations.',
+      'About is shared across ViewLoom. Provider-specific About pages are intentionally not used.',
+      'Provider collection details belong in Twitch Data Status and Kick Data Status.',
+      'Contact is a direct Google Form link, not an internal ViewLoom contact page.',
     ],
   },
   support: {
@@ -49,14 +49,14 @@ const pages: Record<Page, OuterPage> = {
     secondaryLabel: 'Contact form',
     secondaryHref: contactFormUrl,
     cards: [
-      { label: 'Project', title: 'Independent tool', body: 'ViewLoom is built as a small provider-aware analytics surface, not an official platform dashboard.' },
-      { label: 'Support', title: 'Keep the public version usable', body: 'Future support links can cover hosting, data collection, and maintenance costs.' },
-      { label: 'Roadmap', title: 'Data Status first', body: 'Status and coverage honesty take priority over pretending every signal is complete.' },
+      { label: 'Operations', title: 'Collection and storage', body: 'Support can help cover scheduled collection, D1 storage, deployment checks, and future coverage improvements.' },
+      { label: 'Maintenance', title: 'UI and data quality', body: 'Feature pages need ongoing maintenance as provider data quality, source modes, and coverage change.' },
+      { label: 'Transparency', title: 'Status first', body: 'ViewLoom should surface partial coverage, stale data, fallback mode, and unavailable signals instead of hiding them.' },
     ],
     notes: [
       'Donation or support links can be added here later.',
       'GitHub is the current technical reference point.',
-      'Contact is a direct Google Form link, not a separate ViewLoom page.',
+      'Support is shared across ViewLoom. Provider-specific data quality remains in each provider Data Status page.',
     ],
   },
 }
@@ -76,11 +76,12 @@ function renderPage(pageData: OuterPage): string {
       <header class="site-header">
         <a class="brand" href="/">ViewLoom</a>
         <nav class="site-nav" aria-label="Primary">
+          <a class="nav-link" href="/">Portal</a>
           <a class="nav-link" href="/twitch/">Twitch data</a>
           <a class="nav-link" href="/kick/">Kick data</a>
           <a class="nav-link ${pageData.page === 'about' ? 'is-current' : ''}" href="/about/">About</a>
           <a class="nav-link ${pageData.page === 'support' ? 'is-current' : ''}" href="/support/">Support</a>
-          <a class="nav-link" href="${escapeAttr(contactFormUrl)}">Contact</a>
+          <a class="nav-link" href="${escapeAttr(contactFormUrl)}" target="_blank" rel="noreferrer">Contact</a>
         </nav>
         <div class="header-note">Unofficial live observation UI</div>
       </header>
@@ -91,8 +92,8 @@ function renderPage(pageData: OuterPage): string {
             <h1>${escapeText(pageData.title)}</h1>
             <p class="hero-copy">${escapeText(pageData.lead)}</p>
             <div class="hero-actions">
-              <a class="button button--primary" href="${escapeAttr(pageData.primaryHref)}">${escapeText(pageData.primaryLabel)}</a>
-              <a class="button button--secondary" href="${escapeAttr(pageData.secondaryHref)}">${escapeText(pageData.secondaryLabel)}</a>
+              <a class="button button--primary" href="${escapeAttr(pageData.primaryHref)}" ${externalAttrs(pageData.primaryHref)}>${escapeText(pageData.primaryLabel)}</a>
+              <a class="button button--secondary" href="${escapeAttr(pageData.secondaryHref)}" ${externalAttrs(pageData.secondaryHref)}>${escapeText(pageData.secondaryLabel)}</a>
             </div>
           </div>
           <aside class="status-panel">
@@ -111,7 +112,7 @@ function renderPage(pageData: OuterPage): string {
           <div class="hero-actions hero-actions--wrap">
             <a class="button button--secondary" href="/about/">About</a>
             <a class="button button--secondary" href="/support/">Support</a>
-            <a class="button button--secondary" href="${escapeAttr(contactFormUrl)}">Contact form</a>
+            <a class="button button--secondary" href="${escapeAttr(contactFormUrl)}" target="_blank" rel="noreferrer">Contact form</a>
             <a class="button button--secondary" href="/twitch/status/">Twitch Data Status</a>
             <a class="button button--secondary" href="/kick/status/">Kick Data Status</a>
           </div>
@@ -122,6 +123,10 @@ function renderPage(pageData: OuterPage): string {
       </main>
     </div>
   `
+}
+
+function externalAttrs(href: string): string {
+  return href.startsWith('http') ? 'target="_blank" rel="noreferrer"' : ''
 }
 
 function escapeText(value: string): string {
