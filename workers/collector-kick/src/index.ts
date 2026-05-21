@@ -7,6 +7,7 @@ type Env = {
   KICK_CLIENT_ID?: string
   KICK_CLIENT_SECRET?: string
   KICK_ACCESS_TOKEN?: string
+  KICK_USE_AUTHENTICATED_CHANNEL_READS?: string
 }
 
 type StreamItem = {
@@ -77,6 +78,7 @@ async function statusPayload(env: Env) {
   const attemptSlugs = selectAttemptSlugs(allSlugs)
   const hasStaticToken = Boolean(env.KICK_ACCESS_TOKEN)
   const hasClientCredentials = Boolean(env.KICK_CLIENT_ID && env.KICK_CLIENT_SECRET)
+  const usesAuthenticatedReads = shouldUseAuthenticatedChannelReads(env)
   const latestItems = Array.isArray(latestPayload?.items) ? latestPayload.items.map(streamSummary).filter(Boolean) : []
   const collectorMeta = record(latestPayload?.collectorMeta) ? latestPayload.collectorMeta : {}
   return {
@@ -89,6 +91,7 @@ async function statusPayload(env: Env) {
     configuredChannelSlugs: allSlugs,
     attemptedChannelSlugs: attemptSlugs,
     authMode: hasStaticToken || hasClientCredentials ? 'credential-configured' : 'public-channel-fallback',
+    channelReadMode: usesAuthenticatedReads ? 'authenticated-first' : 'public-fallback-first',
     sourceMode: latest?.source_mode ?? (allSlugs.length ? 'public-channel-fallback' : 'unconfigured'),
     lastCollectionResult: latest,
     writtenStreamCount: latest?.stream_count ?? 0,
@@ -96,7 +99,7 @@ async function statusPayload(env: Env) {
     collectorMeta,
     notes: [
       hasClientCredentials ? 'KICK_CLIENT_ID and KICK_CLIENT_SECRET are configured for OAuth app access tokens.' : 'KICK_CLIENT_ID/KICK_CLIENT_SECRET are not both configured; using public channel fallback.',
-      'When authenticated channel reads produce no usable viewer rows, collector-kick retries the same attempted slug window through the public channel fallback.',
+      usesAuthenticatedReads ? 'Authenticated channel reads are explicitly enabled.' : 'Authenticated channel reads are disabled by default because current authenticated reads did not return usable viewer rows.',
       'Public fallback uses https://kick.com/api/v2/channels/{slug} and is not described as official authenticated collection.',
       `Seed list combines ${DEFAULT_KICK_SEED_SLUGS.length} built-in candidates with optional KICK_CHANNEL_SLUGS overrides, capped at ${MAX_CHANNEL_SLUGS} configured slugs and ${COLLECT_ATTEMPT_SLUGS} attempts per run.`,
     ],
@@ -104,6 +107,7 @@ async function statusPayload(env: Env) {
 }
 
 async function getAuth(env: Env): Promise<AuthResult> {
+  if (!shouldUseAuthenticatedChannelReads(env)) return { mode: 'public-channel-fallback', token: null, reason: 'authenticated_channel_reads_disabled' }
   if (env.KICK_ACCESS_TOKEN) return { mode: 'authenticated', token: env.KICK_ACCESS_TOKEN }
   if (!env.KICK_CLIENT_ID || !env.KICK_CLIENT_SECRET) return { mode: 'public-channel-fallback', token: null, reason: 'missing_client_credentials' }
   try {
@@ -154,6 +158,7 @@ async function collectKick(env: Env) {
   const attempt = await collectStreams(slugs, auth)
   const meta = {
     authMode: auth.mode,
+    channelReadMode: shouldUseAuthenticatedChannelReads(env) ? 'authenticated-first' : 'public-fallback-first',
     sourceMode: attempt.sourceMode,
     configuredChannels: allSlugs.length,
     attemptedChannels: slugs.length,
@@ -176,6 +181,7 @@ async function collectKick(env: Env) {
       stream_count: 0,
       source_mode: attempt.sourceMode,
       auth_mode: auth.mode,
+      channel_read_mode: meta.channelReadMode,
       configured_channels: allSlugs.length,
       attempted_channels: slugs.length,
       default_seed_count: DEFAULT_KICK_SEED_SLUGS.length,
@@ -192,6 +198,7 @@ async function collectKick(env: Env) {
   return {
     ...written,
     auth_mode: auth.mode,
+    channel_read_mode: meta.channelReadMode,
     source_mode: attempt.sourceMode,
     configured_channels: allSlugs.length,
     attempted_channels: slugs.length,
@@ -276,7 +283,7 @@ async function collectSlugBatch(slugs: string[], fetcher: (slug: string) => Prom
 
 async function fetchPublicChannel(slug: string): Promise<StreamItem | null> {
   const response = await fetch(`https://kick.com/api/v2/channels/${encodeURIComponent(slug)}`, {
-    headers: { accept: 'application/json', 'user-agent': 'ViewLoom collector-kick/0.3' },
+    headers: { accept: 'application/json', 'user-agent': 'ViewLoom collector-kick/0.4' },
   })
   if (!response.ok) return null
   const raw = await response.json() as Raw
@@ -332,6 +339,10 @@ function channelSlugs(env: Env): string[] {
 
 function selectAttemptSlugs(slugs: string[]): string[] {
   return slugs.slice(0, COLLECT_ATTEMPT_SLUGS)
+}
+
+function shouldUseAuthenticatedChannelReads(env: Env): boolean {
+  return env.KICK_USE_AUTHENTICATED_CHANNEL_READS === 'true'
 }
 
 function checkToken(request: Request, env: Env): { ok: true } | { ok: false; error: string } {
