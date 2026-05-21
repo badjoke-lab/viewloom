@@ -16,12 +16,25 @@ type StreamItem = {
 }
 
 type Raw = Record<string, unknown>
+type SourceMode = 'authenticated' | 'public-channel-fallback' | 'empty-authenticated' | 'empty-public-channel-fallback'
 type SourceAttempt = {
-  sourceMode: 'authenticated' | 'public-channel-fallback' | 'empty-authenticated' | 'empty-public-channel-fallback'
+  sourceMode: SourceMode
   streams: StreamItem[]
   failures: number
+  observedSlugs: string[]
+  missedSlugs: string[]
   attemptedFallback: boolean
   reason?: string
+}
+
+type CollectSettled = Pick<SourceAttempt, 'streams' | 'failures' | 'observedSlugs' | 'missedSlugs'>
+type LatestSnapshot = {
+  bucket_minute: string
+  collected_at: string
+  stream_count: number
+  total_viewers: number
+  source_mode: string
+  payload_json: string
 }
 
 const fixture: StreamItem[] = [
@@ -35,7 +48,7 @@ export default {
     const url = new URL(request.url)
     if (url.pathname === '/health') return out({ ok: true, provider: 'kick', storage: 'DB_KICK_HOT' })
     if (url.pathname === '/status') return out(await statusPayload(env))
-    if (url.pathname === '/insert-fixture' && request.method === 'POST') return out({ ok: true, result: await writeSnapshot(env, fixture, 'fixture') })
+    if (url.pathname === '/insert-fixture' && request.method === 'POST') return out({ ok: true, result: await writeSnapshot(env, fixture, 'fixture', { reason: 'manual_fixture_insert' }) })
     if (url.pathname === '/collect' && request.method === 'POST') {
       const gate = checkToken(request, env)
       if (!gate.ok) return out({ ok: false, error: gate.error }, 401)
@@ -54,19 +67,25 @@ type AuthResult = { mode: 'authenticated'; token: string } | { mode: 'public-cha
 
 async function statusPayload(env: Env) {
   const latest = await latestSnapshot(env)
+  const latestPayload = safePayload(latest?.payload_json)
   const slugs = channelSlugs(env)
   const hasStaticToken = Boolean(env.KICK_ACCESS_TOKEN)
   const hasClientCredentials = Boolean(env.KICK_CLIENT_ID && env.KICK_CLIENT_SECRET)
+  const latestItems = Array.isArray(latestPayload?.items) ? latestPayload.items.map(streamSummary).filter(Boolean) : []
+  const collectorMeta = record(latestPayload?.collectorMeta) ? latestPayload.collectorMeta : {}
   return {
     ok: true,
     provider: 'kick',
     storage: 'DB_KICK_HOT / vl_kick_hot',
     rows: await countRows(env),
     configuredChannels: slugs.length,
+    configuredChannelSlugs: slugs,
     authMode: hasStaticToken || hasClientCredentials ? 'credential-configured' : 'public-channel-fallback',
     sourceMode: latest?.source_mode ?? (slugs.length ? 'public-channel-fallback' : 'unconfigured'),
     lastCollectionResult: latest,
     writtenStreamCount: latest?.stream_count ?? 0,
+    latestObservedChannels: latestItems,
+    collectorMeta,
     notes: [
       hasClientCredentials ? 'KICK_CLIENT_ID and KICK_CLIENT_SECRET are configured for OAuth app access tokens.' : 'KICK_CLIENT_ID/KICK_CLIENT_SECRET are not both configured; using public channel fallback.',
       'When authenticated channel reads produce no usable viewer rows, collector-kick retries the same slug list through the public channel fallback before writing an empty snapshot.',
@@ -115,21 +134,34 @@ function normalizeOfficialChannel(raw: Raw, fallbackSlug: string): StreamItem | 
   }
 }
 
-async function latestSnapshot(env: Env): Promise<{ bucket_minute: string; collected_at: string; stream_count: number; total_viewers: number; source_mode: string } | null> {
-  return await env.DB_KICK_HOT.prepare('SELECT bucket_minute,collected_at,stream_count,total_viewers,source_mode FROM minute_snapshots WHERE provider = ? ORDER BY bucket_minute DESC LIMIT 1').bind('kick').first()
+async function latestSnapshot(env: Env): Promise<LatestSnapshot | null> {
+  return await env.DB_KICK_HOT.prepare('SELECT bucket_minute,collected_at,stream_count,total_viewers,source_mode,payload_json FROM minute_snapshots WHERE provider = ? ORDER BY bucket_minute DESC LIMIT 1').bind('kick').first()
 }
 
 async function collectKick(env: Env) {
   const slugs = channelSlugs(env)
-  if (slugs.length === 0) return await writeSnapshot(env, [], 'unconfigured')
+  if (slugs.length === 0) return await writeSnapshot(env, [], 'unconfigured', { configuredChannels: 0, observedSlugs: [], missedSlugs: [] })
   const auth = await getAuth(env)
   const attempt = await collectStreams(slugs, auth)
-  const written = await writeSnapshot(env, attempt.streams, attempt.sourceMode)
+  const meta = {
+    authMode: auth.mode,
+    sourceMode: attempt.sourceMode,
+    configuredChannels: slugs.length,
+    configuredChannelSlugs: slugs,
+    observedSlugs: attempt.observedSlugs,
+    missedSlugs: attempt.missedSlugs,
+    failures: attempt.failures,
+    attemptedPublicFallback: attempt.attemptedFallback,
+    reason: attempt.reason,
+  }
+  const written = await writeSnapshot(env, attempt.streams, attempt.sourceMode, meta)
   return {
     ...written,
     auth_mode: auth.mode,
     source_mode: attempt.sourceMode,
     configured_channels: slugs.length,
+    observed_slugs: attempt.observedSlugs,
+    missed_slugs: attempt.missedSlugs,
     failures: attempt.failures,
     attempted_public_fallback: attempt.attemptedFallback,
     reason: attempt.reason,
@@ -163,24 +195,44 @@ async function collectStreams(slugs: string[], auth: AuthResult): Promise<Source
     sourceMode: 'empty-authenticated',
     attemptedFallback: true,
     failures: official.failures + fallback.failures,
+    observedSlugs: [],
+    missedSlugs: fallback.missedSlugs.length > 0 ? fallback.missedSlugs : slugs,
     reason: 'authenticated_and_public_fallback_empty',
   }
 }
 
-async function collectAuthenticated(slugs: string[], token: string): Promise<Pick<SourceAttempt, 'streams' | 'failures'>> {
+async function collectAuthenticated(slugs: string[], token: string): Promise<CollectSettled> {
   const settled = await Promise.allSettled(slugs.map((slug) => fetchOfficialChannel(slug, token)))
-  return collectSettled(settled)
+  return collectSettled(slugs, settled)
 }
 
-async function collectPublicFallback(slugs: string[]): Promise<Pick<SourceAttempt, 'streams' | 'failures'>> {
+async function collectPublicFallback(slugs: string[]): Promise<CollectSettled> {
   const settled = await Promise.allSettled(slugs.map((slug) => fetchPublicChannel(slug)))
-  return collectSettled(settled)
+  return collectSettled(slugs, settled)
 }
 
-function collectSettled(settled: PromiseSettledResult<StreamItem | null>[]): Pick<SourceAttempt, 'streams' | 'failures'> {
+function collectSettled(slugs: string[], settled: PromiseSettledResult<StreamItem | null>[]): CollectSettled {
+  const streams: StreamItem[] = []
+  const observed = new Set<string>()
+  let failures = 0
+
+  settled.forEach((result, index) => {
+    const slug = slugs[index]
+    if (result.status === 'rejected') {
+      failures += 1
+      return
+    }
+    if (result.value) {
+      streams.push(result.value)
+      observed.add(result.value.slug || slug)
+    }
+  })
+
   return {
-    streams: settled.flatMap((result) => result.status === 'fulfilled' && result.value ? [result.value] : []),
-    failures: settled.filter((result) => result.status === 'rejected').length,
+    streams,
+    failures,
+    observedSlugs: streams.map((stream) => stream.slug),
+    missedSlugs: slugs.filter((slug) => !observed.has(slug)),
   }
 }
 
@@ -210,14 +262,14 @@ function normalizeChannel(raw: Raw, fallbackSlug: string): StreamItem | null {
   }
 }
 
-async function writeSnapshot(env: Env, items: StreamItem[], sourceMode: string) {
+async function writeSnapshot(env: Env, items: StreamItem[], sourceMode: string, collectorMeta: Raw = {}) {
   const now = new Date()
   const bucket = floorMinute(now)
   const total = items.reduce((sum, item) => sum + item.viewer_count, 0)
   await env.DB_KICK_HOT.prepare(`
     INSERT OR REPLACE INTO minute_snapshots (provider, bucket_minute, collected_at, total_viewers, stream_count, payload_json, source_mode)
     VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).bind('kick', bucket, now.toISOString(), total, items.length, JSON.stringify({ items }), sourceMode).run()
+  `).bind('kick', bucket, now.toISOString(), total, items.length, JSON.stringify({ items, collectorMeta }), sourceMode).run()
   return { bucket_minute: bucket, total_viewers: total, stream_count: items.length, source_mode: sourceMode }
 }
 
@@ -244,6 +296,27 @@ function floorMinute(date: Date): string {
 
 function record(value: unknown): value is Raw {
   return typeof value === 'object' && value !== null
+}
+
+function streamSummary(value: unknown): Raw | null {
+  if (!record(value)) return null
+  return {
+    slug: text(value.slug),
+    displayName: text(value.displayName),
+    title: text(value.title),
+    viewers: num(value.viewer_count),
+    url: text(value.url),
+  }
+}
+
+function safePayload(payload: string | undefined): Raw | null {
+  if (!payload) return null
+  try {
+    const parsed = JSON.parse(payload)
+    return record(parsed) ? parsed : null
+  } catch {
+    return null
+  }
 }
 
 function text(value: unknown): string {
