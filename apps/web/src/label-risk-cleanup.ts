@@ -15,6 +15,8 @@ type RouteMeta = {
   feature?: FeaturePage
 }
 
+const CONTACT_FORM_URL = 'https://forms.gle/REPLACE_VIEWLOOM_CONTACT_FORM'
+
 const FEATURE_BY_PAGE: Record<string, FeaturePage> = {
   'twitch-heatmap': 'heatmap',
   'twitch-day-flow': 'day-flow',
@@ -88,9 +90,38 @@ function patchHeader(): void {
     if (href === '/kick/') setText(link, getPlatformDataLabel('kick'))
   })
 
+  const nav = document.querySelector<HTMLElement>('.site-nav')
+  if (nav) {
+    ensureHeaderLink(nav, '/about/', 'About')
+    ensureHeaderLink(nav, '/support/', 'Support')
+    ensureHeaderLink(nav, CONTACT_FORM_URL, 'Contact', true)
+  }
+
   const headerNote = document.querySelector<HTMLElement>('.header-note')
   if (!headerNote) return
   setText(headerNote, route.platform ? getUnofficialBadge(route.platform) : 'Unofficial data view')
+}
+
+function ensureHeaderLink(nav: HTMLElement, href: string, label: string, external = false): void {
+  const existing = Array.from(nav.querySelectorAll<HTMLAnchorElement>('a')).find((link) => (link.getAttribute('href') ?? '') === href)
+  if (existing) {
+    setText(existing, label)
+    if (external) {
+      existing.target = '_blank'
+      existing.rel = 'noreferrer'
+    }
+    return
+  }
+
+  const link = document.createElement('a')
+  link.className = 'nav-link'
+  link.href = href
+  link.textContent = label
+  if (external) {
+    link.target = '_blank'
+    link.rel = 'noreferrer'
+  }
+  nav.append(link)
 }
 
 function patchHero(): void {
