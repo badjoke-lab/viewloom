@@ -41,7 +41,8 @@ type LatestSnapshot = {
 }
 
 const MAX_CHANNEL_SLUGS = 220
-const COLLECT_ATTEMPT_SLUGS = 45
+const COLLECT_ATTEMPT_SLUGS = 75
+const PINNED_ATTEMPT_SLUGS = 20
 const FETCH_BATCH_SIZE = 10
 
 const fixture: StreamItem[] = [
@@ -167,6 +168,7 @@ async function collectKick(env: Env) {
     defaultSeedCount: DEFAULT_KICK_SEED_SLUGS.length,
     maxChannelSlugs: MAX_CHANNEL_SLUGS,
     maxAttemptSlugs: COLLECT_ATTEMPT_SLUGS,
+    pinnedAttemptSlugs: PINNED_ATTEMPT_SLUGS,
     observedSlugs: attempt.observedSlugs,
     missedSlugs: attempt.missedSlugs,
     failures: attempt.failures,
@@ -338,7 +340,19 @@ function channelSlugs(env: Env): string[] {
 }
 
 function selectAttemptSlugs(slugs: string[]): string[] {
-  return slugs.slice(0, COLLECT_ATTEMPT_SLUGS)
+  if (slugs.length <= COLLECT_ATTEMPT_SLUGS) return slugs
+  const pinned = slugs.slice(0, PINNED_ATTEMPT_SLUGS)
+  const rotatingPool = slugs.slice(PINNED_ATTEMPT_SLUGS)
+  const rotatingCount = Math.max(0, COLLECT_ATTEMPT_SLUGS - pinned.length)
+  if (rotatingPool.length <= rotatingCount) return [...pinned, ...rotatingPool]
+
+  const fiveMinuteWindow = Math.floor(Date.now() / (5 * 60 * 1000))
+  const start = (fiveMinuteWindow * rotatingCount) % rotatingPool.length
+  const rotated: string[] = []
+  for (let index = 0; index < rotatingCount; index += 1) {
+    rotated.push(rotatingPool[(start + index) % rotatingPool.length])
+  }
+  return [...pinned, ...rotated]
 }
 
 function shouldUseAuthenticatedChannelReads(env: Env): boolean {
