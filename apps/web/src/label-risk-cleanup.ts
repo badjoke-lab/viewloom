@@ -74,6 +74,7 @@ function applyLabelRules(): void {
   patchHero()
   patchFeatureNav()
   patchSharedFooter()
+  ensureMobileShellStyles()
   patchVisibleText(document.body)
 }
 
@@ -171,6 +172,14 @@ function ensureFooterStyles(): void {
   const style = document.createElement('style')
   style.id = 'vl-shared-footer-style'
   style.textContent = `.vl-shared-footer{width:min(calc(100% - 32px),var(--content-width));margin:0 auto;padding:0 0 34px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;color:var(--muted)}.vl-shared-footer a{padding:8px 12px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.035);transition:background-color 160ms ease,color 160ms ease}.vl-shared-footer a:hover{background:rgba(255,255,255,.08);color:var(--text)}`
+  document.head.append(style)
+}
+
+function ensureMobileShellStyles(): void {
+  if (document.querySelector('#vl-mobile-shell-style')) return
+  const style = document.createElement('style')
+  style.id = 'vl-mobile-shell-style'
+  style.textContent = `@media(max-width:760px){.site-header{width:min(calc(100% - 20px),var(--content-width));grid-template-columns:1fr;gap:10px;padding-top:12px}.brand{justify-self:center}.site-nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding:4px 0 8px;scrollbar-width:none}.site-nav::-webkit-scrollbar{display:none}.nav-link{white-space:nowrap;padding:9px 12px}.header-note{justify-self:stretch;text-align:center}.page-main{width:min(calc(100% - 20px),var(--content-width));padding-top:14px}.hero{padding:22px;border-radius:22px}.hero--portal-grid,.hero--site{grid-template-columns:1fr}.hero h1{font-size:clamp(2rem,12vw,3rem);line-height:1}.hero-copy{font-size:.95rem;line-height:1.6}.hero-actions{gap:9px}.button{min-height:42px;padding:0 14px}.site-subnav{overflow-x:auto;flex-wrap:nowrap;justify-content:flex-start;padding:4px 0 8px;scrollbar-width:none}.site-subnav::-webkit-scrollbar{display:none}.subnav-link{white-space:nowrap}.summary-grid,.feature-grid,.support-grid,.steps-grid,.card-grid{grid-template-columns:1fr!important}.feature-layout{grid-template-columns:1fr!important}.rail-stack{grid-template-columns:1fr}.vl-shared-footer{width:min(calc(100% - 20px),var(--content-width));justify-content:flex-start;padding-bottom:24px}.vl-shared-footer a{white-space:nowrap}}`
   document.head.append(style)
 }
 
