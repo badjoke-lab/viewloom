@@ -40,7 +40,8 @@ type LatestSnapshot = {
 }
 
 const MAX_CHANNEL_SLUGS = 220
-const FETCH_BATCH_SIZE = 40
+const COLLECT_ATTEMPT_SLUGS = 45
+const FETCH_BATCH_SIZE = 10
 
 const fixture: StreamItem[] = [
   { slug: 'sample-kick-alpha', displayName: 'sample-kick-alpha', title: 'Fixture stream alpha', viewer_count: 2400, url: 'https://kick.com/sample-kick-alpha' },
@@ -67,13 +68,13 @@ export default {
   },
 }
 
-
 type AuthResult = { mode: 'authenticated'; token: string } | { mode: 'public-channel-fallback'; token: null; reason: string }
 
 async function statusPayload(env: Env) {
   const latest = await latestSnapshot(env)
   const latestPayload = safePayload(latest?.payload_json)
-  const slugs = channelSlugs(env)
+  const allSlugs = channelSlugs(env)
+  const attemptSlugs = selectAttemptSlugs(allSlugs)
   const hasStaticToken = Boolean(env.KICK_ACCESS_TOKEN)
   const hasClientCredentials = Boolean(env.KICK_CLIENT_ID && env.KICK_CLIENT_SECRET)
   const latestItems = Array.isArray(latestPayload?.items) ? latestPayload.items.map(streamSummary).filter(Boolean) : []
@@ -83,19 +84,21 @@ async function statusPayload(env: Env) {
     provider: 'kick',
     storage: 'DB_KICK_HOT / vl_kick_hot',
     rows: await countRows(env),
-    configuredChannels: slugs.length,
-    configuredChannelSlugs: slugs,
+    configuredChannels: allSlugs.length,
+    attemptedChannels: attemptSlugs.length,
+    configuredChannelSlugs: allSlugs,
+    attemptedChannelSlugs: attemptSlugs,
     authMode: hasStaticToken || hasClientCredentials ? 'credential-configured' : 'public-channel-fallback',
-    sourceMode: latest?.source_mode ?? (slugs.length ? 'public-channel-fallback' : 'unconfigured'),
+    sourceMode: latest?.source_mode ?? (allSlugs.length ? 'public-channel-fallback' : 'unconfigured'),
     lastCollectionResult: latest,
     writtenStreamCount: latest?.stream_count ?? 0,
     latestObservedChannels: latestItems,
     collectorMeta,
     notes: [
       hasClientCredentials ? 'KICK_CLIENT_ID and KICK_CLIENT_SECRET are configured for OAuth app access tokens.' : 'KICK_CLIENT_ID/KICK_CLIENT_SECRET are not both configured; using public channel fallback.',
-      'When authenticated channel reads produce no usable viewer rows, collector-kick retries the same slug list through the public channel fallback before writing an empty snapshot.',
+      'When authenticated channel reads produce no usable viewer rows, collector-kick retries the same attempted slug window through the public channel fallback.',
       'Public fallback uses https://kick.com/api/v2/channels/{slug} and is not described as official authenticated collection.',
-      `Seed list combines ${DEFAULT_KICK_SEED_SLUGS.length} built-in candidates with optional KICK_CHANNEL_SLUGS overrides, capped at ${MAX_CHANNEL_SLUGS} attempts.`,
+      `Seed list combines ${DEFAULT_KICK_SEED_SLUGS.length} built-in candidates with optional KICK_CHANNEL_SLUGS overrides, capped at ${MAX_CHANNEL_SLUGS} configured slugs and ${COLLECT_ATTEMPT_SLUGS} attempts per run.`,
     ],
   }
 }
@@ -144,29 +147,54 @@ async function latestSnapshot(env: Env): Promise<LatestSnapshot | null> {
 }
 
 async function collectKick(env: Env) {
-  const slugs = channelSlugs(env)
-  if (slugs.length === 0) return await writeSnapshot(env, [], 'unconfigured', { configuredChannels: 0, observedSlugs: [], missedSlugs: [] })
+  const allSlugs = channelSlugs(env)
+  const slugs = selectAttemptSlugs(allSlugs)
+  if (allSlugs.length === 0) return await writeSnapshot(env, [], 'unconfigured', { configuredChannels: 0, attemptedChannels: 0, observedSlugs: [], missedSlugs: [] })
   const auth = await getAuth(env)
   const attempt = await collectStreams(slugs, auth)
   const meta = {
     authMode: auth.mode,
     sourceMode: attempt.sourceMode,
-    configuredChannels: slugs.length,
-    configuredChannelSlugs: slugs,
+    configuredChannels: allSlugs.length,
+    attemptedChannels: slugs.length,
+    configuredChannelSlugs: allSlugs,
+    attemptedChannelSlugs: slugs,
     defaultSeedCount: DEFAULT_KICK_SEED_SLUGS.length,
     maxChannelSlugs: MAX_CHANNEL_SLUGS,
+    maxAttemptSlugs: COLLECT_ATTEMPT_SLUGS,
     observedSlugs: attempt.observedSlugs,
     missedSlugs: attempt.missedSlugs,
     failures: attempt.failures,
     attemptedPublicFallback: attempt.attemptedFallback,
     reason: attempt.reason,
   }
+
+  if (attempt.streams.length === 0) {
+    return {
+      bucket_minute: null,
+      total_viewers: 0,
+      stream_count: 0,
+      source_mode: attempt.sourceMode,
+      auth_mode: auth.mode,
+      configured_channels: allSlugs.length,
+      attempted_channels: slugs.length,
+      default_seed_count: DEFAULT_KICK_SEED_SLUGS.length,
+      observed_slugs: attempt.observedSlugs,
+      missed_slugs: attempt.missedSlugs,
+      failures: attempt.failures,
+      attempted_public_fallback: attempt.attemptedFallback,
+      reason: `${attempt.reason ?? 'empty'}_not_written`,
+      skipped_write: true,
+    }
+  }
+
   const written = await writeSnapshot(env, attempt.streams, attempt.sourceMode, meta)
   return {
     ...written,
     auth_mode: auth.mode,
     source_mode: attempt.sourceMode,
-    configured_channels: slugs.length,
+    configured_channels: allSlugs.length,
+    attempted_channels: slugs.length,
     default_seed_count: DEFAULT_KICK_SEED_SLUGS.length,
     observed_slugs: attempt.observedSlugs,
     missed_slugs: attempt.missedSlugs,
@@ -248,7 +276,7 @@ async function collectSlugBatch(slugs: string[], fetcher: (slug: string) => Prom
 
 async function fetchPublicChannel(slug: string): Promise<StreamItem | null> {
   const response = await fetch(`https://kick.com/api/v2/channels/${encodeURIComponent(slug)}`, {
-    headers: { accept: 'application/json', 'user-agent': 'ViewLoom collector-kick/0.1' },
+    headers: { accept: 'application/json', 'user-agent': 'ViewLoom collector-kick/0.3' },
   })
   if (!response.ok) return null
   const raw = await response.json() as Raw
@@ -300,6 +328,10 @@ function channelSlugs(env: Env): string[] {
     if (merged.length >= MAX_CHANNEL_SLUGS) break
   }
   return merged
+}
+
+function selectAttemptSlugs(slugs: string[]): string[] {
+  return slugs.slice(0, COLLECT_ATTEMPT_SLUGS)
 }
 
 function checkToken(request: Request, env: Env): { ok: true } | { ok: false; error: string } {
