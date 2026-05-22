@@ -15,7 +15,7 @@ type RouteMeta = {
   feature?: FeaturePage
 }
 
-const CONTACT_FORM_URL = 'https://forms.gle/REPLACE_VIEWLOOM_CONTACT_FORM'
+const CONTACT_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdhreuxEz7w0eSjslTyVLL-axV6IJdTp5RU5VXCM3ApIz35-Q/viewform?usp=dialog'
 const GITHUB_URL = 'https://github.com/badjoke-lab/viewloom'
 
 const FEATURE_BY_PAGE: Record<string, FeaturePage> = {
