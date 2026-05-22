@@ -1,0 +1,57 @@
+# collector-kick scripts
+
+## generate-kick-seed-import-sql.mjs
+
+Generates SQL to import built-in Kick seed slugs into the planned `kick_channels` registry.
+
+This script does **not** execute SQL against D1.
+
+### Generate SQL
+
+```bash
+cd ~/viewloom
+node workers/collector-kick/scripts/generate-kick-seed-import-sql.mjs
+```
+
+Default output:
+
+```text
+workers/collector-kick/generated/kick-seed-import.sql
+```
+
+### Generate with extra slugs
+
+```bash
+node workers/collector-kick/scripts/generate-kick-seed-import-sql.mjs \
+  --extra="slug1,slug2,slug3"
+```
+
+### Generate to a custom path
+
+```bash
+node workers/collector-kick/scripts/generate-kick-seed-import-sql.mjs \
+  --out="/tmp/kick-seed-import.sql"
+```
+
+## Execution guard
+
+Do not run the generated SQL against production until all of these are true:
+
+1. `0001_create_kick_channels.sql` has been reviewed.
+2. The migration has been intentionally applied to `vl_kick_hot`.
+3. The generated SQL has been reviewed.
+4. The operator explicitly decides to import seed rows.
+
+Current Kick status remains:
+
+```text
+coverageMode = seed-list
+```
+
+Do not switch to:
+
+```text
+coverageMode = registry
+```
+
+until the collector actually reads from `kick_channels` and writes a valid production snapshot using registry-selected slugs.
