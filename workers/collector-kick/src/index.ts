@@ -47,6 +47,12 @@ type ChannelTargetSet = {
   registryError: string | null
 }
 type RegistrySlugRow = { slug: string }
+type RegistryFeedback = {
+  applied: boolean
+  observedUpdated: number
+  missedUpdated: number
+  error: string | null
+}
 
 const MAX_CHANNEL_SLUGS = 220
 const COLLECT_ATTEMPT_SLUGS = 75
@@ -172,6 +178,7 @@ async function collectKick(env: Env) {
   if (targetSet.slugs.length === 0) return await writeSnapshot(env, [], 'unconfigured', { configuredChannels: 0, attemptedChannels: 0, observedSlugs: [], missedSlugs: [], coverageMode: targetSet.source })
   const auth = await getAuth(env)
   const attempt = await collectStreams(slugs, auth)
+  const feedback = await applyRegistryFeedback(env, targetSet, attempt, slugs)
   const meta = {
     authMode: auth.mode,
     channelReadMode: shouldUseAuthenticatedChannelReads(env) ? 'authenticated-first' : 'public-fallback-first',
@@ -180,6 +187,7 @@ async function collectKick(env: Env) {
     coverageMode: targetSet.source,
     registryCandidateCount: targetSet.registryCandidateCount,
     registryError: targetSet.registryError,
+    registryFeedback: feedback,
     configuredChannels: targetSet.slugs.length,
     attemptedChannels: slugs.length,
     configuredChannelSlugs: targetSet.slugs,
@@ -207,6 +215,7 @@ async function collectKick(env: Env) {
       coverage_mode: targetSet.source,
       registry_candidate_count: targetSet.registryCandidateCount,
       registry_error: targetSet.registryError,
+      registry_feedback: feedback,
       configured_channels: targetSet.slugs.length,
       attempted_channels: slugs.length,
       default_seed_count: DEFAULT_KICK_SEED_SLUGS.length,
@@ -228,6 +237,7 @@ async function collectKick(env: Env) {
     coverage_mode: targetSet.source,
     registry_candidate_count: targetSet.registryCandidateCount,
     registry_error: targetSet.registryError,
+    registry_feedback: feedback,
     configured_channels: targetSet.slugs.length,
     attempted_channels: slugs.length,
     default_seed_count: DEFAULT_KICK_SEED_SLUGS.length,
@@ -372,6 +382,75 @@ async function registryTargetSlugs(env: Env): Promise<ChannelTargetSet> {
     return { source: 'registry', slugs: [], registryCandidateCount: 0, registryError: 'registry_empty' }
   } catch (error) {
     return { source: 'registry', slugs: [], registryCandidateCount: null, registryError: sanitizeRegistryError(error) }
+  }
+}
+
+async function applyRegistryFeedback(env: Env, targetSet: ChannelTargetSet, attempt: SourceAttempt, attemptedSlugs: string[]): Promise<RegistryFeedback> {
+  if (targetSet.source !== 'registry') return { applied: false, observedUpdated: 0, missedUpdated: 0, error: null }
+  try {
+    const now = new Date().toISOString()
+    let observedUpdated = 0
+    let missedUpdated = 0
+    const observed = new Set(attempt.streams.map((stream) => stream.slug).filter(Boolean))
+
+    for (const stream of attempt.streams) {
+      const slug = stream.slug.trim().toLowerCase()
+      if (!slug) continue
+      await env.DB_KICK_HOT.prepare(`
+        UPDATE kick_channels
+        SET
+          display_name = CASE WHEN ? != '' THEN ? ELSE display_name END,
+          url = CASE WHEN ? != '' THEN ? ELSE url END,
+          last_seen_at = ?,
+          last_live_at = ?,
+          last_checked_at = ?,
+          last_viewer_count = ?,
+          last_title = ?,
+          status = CASE WHEN status IN ('blocked', 'dead') THEN status ELSE 'active' END,
+          success_count = success_count + 1,
+          failure_count = CASE WHEN failure_count > 0 THEN failure_count - 1 ELSE 0 END,
+          priority = CASE WHEN priority < 1200 THEN priority + 25 ELSE priority END,
+          updated_at = ?
+        WHERE slug = ?
+      `).bind(
+        stream.displayName,
+        stream.displayName,
+        stream.url,
+        stream.url,
+        now,
+        now,
+        now,
+        stream.viewer_count,
+        stream.title,
+        now,
+        slug,
+      ).run()
+      observedUpdated += 1
+    }
+
+    for (const rawSlug of attemptedSlugs) {
+      const slug = rawSlug.trim().toLowerCase()
+      if (!slug || observed.has(slug)) continue
+      await env.DB_KICK_HOT.prepare(`
+        UPDATE kick_channels
+        SET
+          last_checked_at = ?,
+          failure_count = failure_count + 1,
+          status = CASE
+            WHEN status IN ('blocked', 'dead') THEN status
+            WHEN failure_count + 1 >= 8 THEN 'cooldown'
+            ELSE status
+          END,
+          priority = CASE WHEN priority > 1 THEN priority - 5 ELSE priority END,
+          updated_at = ?
+        WHERE slug = ?
+      `).bind(now, now, slug).run()
+      missedUpdated += 1
+    }
+
+    return { applied: true, observedUpdated, missedUpdated, error: null }
+  } catch (error) {
+    return { applied: false, observedUpdated: 0, missedUpdated: 0, error: sanitizeRegistryError(error) }
   }
 }
 
