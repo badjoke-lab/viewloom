@@ -39,6 +39,14 @@ type LatestSnapshot = {
   source_mode: string
   payload_json: string
 }
+type TargetSource = 'seed-list' | 'registry'
+type ChannelTargetSet = {
+  source: TargetSource
+  slugs: string[]
+  registryCandidateCount: number | null
+  registryError: string | null
+}
+type RegistrySlugRow = { slug: string }
 
 const MAX_CHANNEL_SLUGS = 220
 const COLLECT_ATTEMPT_SLUGS = 75
@@ -75,8 +83,8 @@ type AuthResult = { mode: 'authenticated'; token: string } | { mode: 'public-cha
 async function statusPayload(env: Env) {
   const latest = await latestSnapshot(env)
   const latestPayload = safePayload(latest?.payload_json)
-  const allSlugs = channelSlugs(env)
-  const attemptSlugs = selectAttemptSlugs(allSlugs)
+  const targetSet = await channelTargetSet(env)
+  const attemptSlugs = selectAttemptSlugs(targetSet.slugs)
   const hasStaticToken = Boolean(env.KICK_ACCESS_TOKEN)
   const hasClientCredentials = Boolean(env.KICK_CLIENT_ID && env.KICK_CLIENT_SECRET)
   const usesAuthenticatedReads = shouldUseAuthenticatedChannelReads(env)
@@ -87,13 +95,17 @@ async function statusPayload(env: Env) {
     provider: 'kick',
     storage: 'DB_KICK_HOT / vl_kick_hot',
     rows: await countRows(env),
-    configuredChannels: allSlugs.length,
+    targetSource: targetSet.source,
+    coverageMode: targetSet.source,
+    registryCandidateCount: targetSet.registryCandidateCount,
+    registryError: targetSet.registryError,
+    configuredChannels: targetSet.slugs.length,
     attemptedChannels: attemptSlugs.length,
-    configuredChannelSlugs: allSlugs,
+    configuredChannelSlugs: targetSet.slugs,
     attemptedChannelSlugs: attemptSlugs,
     authMode: hasStaticToken || hasClientCredentials ? 'credential-configured' : 'public-channel-fallback',
     channelReadMode: usesAuthenticatedReads ? 'authenticated-first' : 'public-fallback-first',
-    sourceMode: latest?.source_mode ?? (allSlugs.length ? 'public-channel-fallback' : 'unconfigured'),
+    sourceMode: latest?.source_mode ?? (targetSet.slugs.length ? 'public-channel-fallback' : 'unconfigured'),
     lastCollectionResult: latest,
     writtenStreamCount: latest?.stream_count ?? 0,
     latestObservedChannels: latestItems,
@@ -102,8 +114,11 @@ async function statusPayload(env: Env) {
       hasClientCredentials ? 'KICK_CLIENT_ID and KICK_CLIENT_SECRET are configured for OAuth app access tokens.' : 'KICK_CLIENT_ID/KICK_CLIENT_SECRET are not both configured; using public channel fallback.',
       usesAuthenticatedReads ? 'Authenticated channel reads are explicitly enabled.' : 'Authenticated channel reads are disabled by default because current authenticated reads did not return usable viewer rows.',
       'Public fallback uses https://kick.com/api/v2/channels/{slug} and is not described as official authenticated collection.',
-      `Seed list combines ${DEFAULT_KICK_SEED_SLUGS.length} built-in candidates with optional KICK_CHANNEL_SLUGS overrides, capped at ${MAX_CHANNEL_SLUGS} configured slugs and ${COLLECT_ATTEMPT_SLUGS} attempts per run.`,
-    ],
+      targetSet.source === 'registry'
+        ? `Registry target selection is active with ${targetSet.registryCandidateCount ?? targetSet.slugs.length} candidate rows and ${COLLECT_ATTEMPT_SLUGS} attempts per run.`
+        : `Seed list combines ${DEFAULT_KICK_SEED_SLUGS.length} built-in candidates with optional KICK_CHANNEL_SLUGS overrides, capped at ${MAX_CHANNEL_SLUGS} configured slugs and ${COLLECT_ATTEMPT_SLUGS} attempts per run.`,
+      targetSet.registryError ? `Registry selection fallback reason: ${targetSet.registryError}` : '',
+    ].filter(Boolean),
   }
 }
 
@@ -152,18 +167,22 @@ async function latestSnapshot(env: Env): Promise<LatestSnapshot | null> {
 }
 
 async function collectKick(env: Env) {
-  const allSlugs = channelSlugs(env)
-  const slugs = selectAttemptSlugs(allSlugs)
-  if (allSlugs.length === 0) return await writeSnapshot(env, [], 'unconfigured', { configuredChannels: 0, attemptedChannels: 0, observedSlugs: [], missedSlugs: [] })
+  const targetSet = await channelTargetSet(env)
+  const slugs = selectAttemptSlugs(targetSet.slugs)
+  if (targetSet.slugs.length === 0) return await writeSnapshot(env, [], 'unconfigured', { configuredChannels: 0, attemptedChannels: 0, observedSlugs: [], missedSlugs: [], coverageMode: targetSet.source })
   const auth = await getAuth(env)
   const attempt = await collectStreams(slugs, auth)
   const meta = {
     authMode: auth.mode,
     channelReadMode: shouldUseAuthenticatedChannelReads(env) ? 'authenticated-first' : 'public-fallback-first',
     sourceMode: attempt.sourceMode,
-    configuredChannels: allSlugs.length,
+    targetSource: targetSet.source,
+    coverageMode: targetSet.source,
+    registryCandidateCount: targetSet.registryCandidateCount,
+    registryError: targetSet.registryError,
+    configuredChannels: targetSet.slugs.length,
     attemptedChannels: slugs.length,
-    configuredChannelSlugs: allSlugs,
+    configuredChannelSlugs: targetSet.slugs,
     attemptedChannelSlugs: slugs,
     defaultSeedCount: DEFAULT_KICK_SEED_SLUGS.length,
     maxChannelSlugs: MAX_CHANNEL_SLUGS,
@@ -184,7 +203,11 @@ async function collectKick(env: Env) {
       source_mode: attempt.sourceMode,
       auth_mode: auth.mode,
       channel_read_mode: meta.channelReadMode,
-      configured_channels: allSlugs.length,
+      target_source: targetSet.source,
+      coverage_mode: targetSet.source,
+      registry_candidate_count: targetSet.registryCandidateCount,
+      registry_error: targetSet.registryError,
+      configured_channels: targetSet.slugs.length,
       attempted_channels: slugs.length,
       default_seed_count: DEFAULT_KICK_SEED_SLUGS.length,
       observed_slugs: attempt.observedSlugs,
@@ -201,8 +224,11 @@ async function collectKick(env: Env) {
     ...written,
     auth_mode: auth.mode,
     channel_read_mode: meta.channelReadMode,
-    source_mode: attempt.sourceMode,
-    configured_channels: allSlugs.length,
+    target_source: targetSet.source,
+    coverage_mode: targetSet.source,
+    registry_candidate_count: targetSet.registryCandidateCount,
+    registry_error: targetSet.registryError,
+    configured_channels: targetSet.slugs.length,
     attempted_channels: slugs.length,
     default_seed_count: DEFAULT_KICK_SEED_SLUGS.length,
     observed_slugs: attempt.observedSlugs,
@@ -325,18 +351,45 @@ async function countRows(env: Env): Promise<number> {
   return Number(row?.count ?? 0)
 }
 
-function channelSlugs(env: Env): string[] {
+async function channelTargetSet(env: Env): Promise<ChannelTargetSet> {
+  const registry = await registryTargetSlugs(env)
+  if (registry.slugs.length > 0) return registry
+  return { source: 'seed-list', slugs: seedListSlugs(env), registryCandidateCount: registry.registryCandidateCount, registryError: registry.registryError }
+}
+
+async function registryTargetSlugs(env: Env): Promise<ChannelTargetSet> {
+  try {
+    const result = await env.DB_KICK_HOT.prepare(`
+      SELECT slug
+      FROM kick_channels
+      WHERE status IN ('active', 'candidate', 'cooldown')
+      ORDER BY priority DESC, last_live_at DESC, last_checked_at ASC, slug ASC
+      LIMIT ?
+    `).bind(MAX_CHANNEL_SLUGS).all<RegistrySlugRow>()
+    const rows = result.results ?? []
+    const slugs = normalizeSlugList(rows.map((row) => row.slug))
+    if (slugs.length > 0) return { source: 'registry', slugs, registryCandidateCount: slugs.length, registryError: null }
+    return { source: 'registry', slugs: [], registryCandidateCount: 0, registryError: 'registry_empty' }
+  } catch (error) {
+    return { source: 'registry', slugs: [], registryCandidateCount: null, registryError: sanitizeRegistryError(error) }
+  }
+}
+
+function seedListSlugs(env: Env): string[] {
   const envSlugs = (env.KICK_CHANNEL_SLUGS || '').split(',').map((value) => value.trim()).filter(Boolean)
+  return normalizeSlugList([...envSlugs, ...DEFAULT_KICK_SEED_SLUGS]).slice(0, MAX_CHANNEL_SLUGS)
+}
+
+function normalizeSlugList(values: string[]): string[] {
   const seen = new Set<string>()
-  const merged: string[] = []
-  for (const raw of [...envSlugs, ...DEFAULT_KICK_SEED_SLUGS]) {
+  const slugs: string[] = []
+  for (const raw of values) {
     const slug = raw.trim().toLowerCase()
     if (!slug || seen.has(slug)) continue
     seen.add(slug)
-    merged.push(slug)
-    if (merged.length >= MAX_CHANNEL_SLUGS) break
+    slugs.push(slug)
   }
-  return merged
+  return slugs
 }
 
 function selectAttemptSlugs(slugs: string[]): string[] {
@@ -394,6 +447,11 @@ function safePayload(payload: string | undefined): Raw | null {
   } catch {
     return null
   }
+}
+
+function sanitizeRegistryError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error)
+  return message.replace(/Bearer\s+[A-Za-z0-9._-]+/g, 'Bearer [redacted]').slice(0, 160)
 }
 
 function text(value: unknown): string {
