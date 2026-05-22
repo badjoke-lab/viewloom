@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -11,10 +11,15 @@ const defaultOutput = resolve(repoRoot, 'workers/collector-kick/generated/kick-s
 
 const args = new Map()
 for (const raw of process.argv.slice(2)) {
+  if (raw === '--check-only') {
+    args.set('--check-only', 'true')
+    continue
+  }
   const [key, ...rest] = raw.split('=')
   args.set(key, rest.join('='))
 }
 
+const checkOnly = args.get('--check-only') === 'true'
 const outputPath = resolve(repoRoot, args.get('--out') || defaultOutput)
 const extraSlugs = splitSlugs(args.get('--extra') || '')
 const now = new Date().toISOString()
@@ -24,10 +29,14 @@ const rawSlugs = [...seedSlugs, ...extraSlugs]
 const { rows, skipped, duplicates } = normalizeRows(rawSlugs, now)
 const sql = renderSql(rows)
 
-writeFileSync(outputPath, sql)
+if (!checkOnly) {
+  mkdirSync(dirname(outputPath), { recursive: true })
+  writeFileSync(outputPath, sql)
+}
 
-console.log(JSON.stringify({
-  ok: true,
+const summary = {
+  ok: skipped.length === 0 && rows.length > 0,
+  mode: checkOnly ? 'check-only' : 'write-sql',
   input: {
     seedFile,
     seedCount: seedSlugs.length,
@@ -35,14 +44,19 @@ console.log(JSON.stringify({
     rawCount: rawSlugs.length,
   },
   output: {
-    outputPath,
+    outputPath: checkOnly ? null : outputPath,
     normalizedCount: rows.length,
     skippedCount: skipped.length,
     duplicateCount: duplicates.length,
+    sqlBytes: Buffer.byteLength(sql, 'utf8'),
   },
   skipped,
   duplicateSample: duplicates.slice(0, 20),
-}, null, 2))
+}
+
+console.log(JSON.stringify(summary, null, 2))
+
+if (!summary.ok) process.exitCode = 1
 
 function parseSeedSlugs(text) {
   const match = text.match(/DEFAULT_KICK_SEED_SLUGS\s*=\s*\[([\s\S]*?)\]/)
