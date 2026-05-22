@@ -6,6 +6,24 @@ Generates SQL to import built-in Kick seed slugs into the planned `kick_channels
 
 This script does **not** execute SQL against D1.
 
+### Check only
+
+Use this before generating SQL. It validates parsing, normalization, duplicate counting, skipped invalid slugs, and SQL byte size without writing a file.
+
+```bash
+cd ~/viewloom
+node workers/collector-kick/scripts/generate-kick-seed-import-sql.mjs --check-only
+```
+
+Expected result:
+
+```text
+ok: true
+mode: check-only
+normalizedCount > 0
+skippedCount = 0
+```
+
 ### Generate SQL
 
 ```bash
@@ -18,6 +36,8 @@ Default output:
 ```text
 workers/collector-kick/generated/kick-seed-import.sql
 ```
+
+The script creates the generated output directory automatically.
 
 ### Generate with extra slugs
 
@@ -32,6 +52,18 @@ node workers/collector-kick/scripts/generate-kick-seed-import-sql.mjs \
 node workers/collector-kick/scripts/generate-kick-seed-import-sql.mjs \
   --out="/tmp/kick-seed-import.sql"
 ```
+
+## Local verification sequence
+
+```bash
+cd ~/viewloom
+node workers/collector-kick/scripts/generate-kick-seed-import-sql.mjs --check-only
+node workers/collector-kick/scripts/generate-kick-seed-import-sql.mjs
+wc -l workers/collector-kick/generated/kick-seed-import.sql
+head -n 20 workers/collector-kick/generated/kick-seed-import.sql
+```
+
+Do not commit generated SQL unless a later PR explicitly requests it.
 
 ## Execution guard
 
