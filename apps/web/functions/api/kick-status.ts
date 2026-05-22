@@ -15,6 +15,7 @@ type Raw = Record<string, unknown>
 
 const STALE_AFTER_MINUTES = 10
 const STRONG_STALE_AFTER_MINUTES = 30
+const COVERAGE_MODE = 'seed-list'
 
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   try {
@@ -50,14 +51,25 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       storage: { binding: 'DB_KICK_HOT', database: 'vl_kick_hot' },
       sourceMode,
       authMode,
+      coverageMode: COVERAGE_MODE,
+      coverageModel: {
+        mode: COVERAGE_MODE,
+        label: 'Seed-list coverage only',
+        isTwitchParity: false,
+        isDirectoryCoverage: false,
+        description: 'Kick currently samples configured and built-in channel slug candidates. It does not yet have Twitch-like live directory discovery.',
+        nextRequiredArchitecture: 'kick_channels registry plus discovery job',
+      },
       state,
       generatedAt,
       collector: {
         state: latest ? 'snapshot_available' : 'empty',
         mode: authMode,
         sourceMode,
-        configuredChannelMechanism: 'KICK_CHANNEL_SLUGS seed list',
+        coverageMode: COVERAGE_MODE,
+        configuredChannelMechanism: 'configured and built-in seed slug list',
         configuredChannels: collectorMeta.configuredChannels ?? null,
+        attemptedChannels: collectorMeta.attemptedChannels ?? null,
         lastSuccessAt: latest?.collected_at ?? null,
         writtenStreamCount: latest?.stream_count ?? 0,
         observedSlugs: collectorMeta.observedSlugs ?? latestObservedChannels.map((channel) => channel.slug).filter(Boolean),
@@ -86,9 +98,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       sourceModes: sourceRows.results ?? [],
       coverage: {
         state: latest ? (latest.stream_count > 0 ? 'seed-list-observed' : 'empty') : 'missing',
+        mode: COVERAGE_MODE,
         observedCount: latest?.stream_count ?? 0,
+        isTwitchParity: false,
         notes: [
           'Kick reads DB_KICK_HOT / vl_kick_hot only.',
+          'Kick coverage is seed-list based and is not Twitch-parity directory coverage.',
           'Fixture, public-channel-fallback, empty-public-channel-fallback, and authenticated source modes are surfaced explicitly.',
           latestObservedChannels.length > 0 ? `Latest snapshot contains ${latestObservedChannels.length} observed Kick channels.` : 'Latest snapshot contains no observed Kick channels.',
         ],
@@ -97,10 +112,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       limitations: [
         'ViewLoom is unofficial and independent.',
         'Kick activity signals are unavailable in the current DB_KICK_HOT payload; viewer volume and share remain available.',
-        'Directory/global discovery is unavailable; collection is seed-list only while KICK_CHANNEL_SLUGS remains the mechanism.',
-        sourceMode === 'fixture' ? 'Latest rows are fixture rows and must not be interpreted as live production data.' : 'Public-channel fallback rows are sampled from configured channel slugs unless authenticated source_mode is present.',
+        'Kick currently uses seed-list coverage only; it does not yet have Twitch-like live directory discovery.',
+        'Kick should not be described as complete, Twitch-parity, globally discovered, or fully representative while collection is seed-list based.',
+        sourceMode === 'fixture' ? 'Latest rows are fixture rows and must not be interpreted as live production data.' : 'Public-channel fallback rows are sampled from configured and built-in channel slug candidates unless authenticated source_mode is present.',
       ],
-      notes: latest ? [`latest_source_mode=${sourceMode}`] : ['No latest Kick snapshot was found in DB_KICK_HOT.'],
+      notes: latest ? [`latest_source_mode=${sourceMode}`, `coverage_mode=${COVERAGE_MODE}`] : ['No latest Kick snapshot was found in DB_KICK_HOT.'],
     }, { headers: { 'cache-control': 'no-store' } })
   } catch (error) {
     return Response.json({
@@ -110,6 +126,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       storage: { binding: 'DB_KICK_HOT', database: 'vl_kick_hot' },
       sourceMode: 'unconfigured',
       authMode: 'unknown',
+      coverageMode: COVERAGE_MODE,
       state: 'unconfigured',
       generatedAt: new Date().toISOString(),
       error: { code: 'kick_status_unavailable', message: sanitize(error instanceof Error ? error.message : String(error)) },
@@ -131,10 +148,10 @@ function deriveState(sourceMode: string, minutes: number | null, count: number):
 function buildFeatures(state: string, sourceMode: string, updatedAt: string | null) {
   const featureState = sourceMode === 'fixture' ? 'fixture' : state === 'strong_stale' ? 'stale' : state
   return [
-    { key: 'heatmap', label: 'Heatmap', role: 'now', apiPath: '/api/kick-heatmap', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Activity unavailable; source mode is shown in notes.', pagePath: '/kick/heatmap/' },
-    { key: 'day_flow', label: 'Day Flow', role: 'today', apiPath: '/api/kick-day-flow', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Activity unavailable; bands come from observed DB_KICK_HOT snapshots.', pagePath: '/kick/day-flow/' },
-    { key: 'battle_lines', label: 'Battle Lines', role: 'rivalry', apiPath: '/api/kick-battle-lines', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Events are derived from observed viewer deltas.', pagePath: '/kick/battle-lines/' },
-    { key: 'history', label: 'History', role: 'trends', apiPath: '/api/kick-history', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Depends on retained Kick snapshots.', pagePath: '/kick/history/' },
+    { key: 'heatmap', label: 'Heatmap', role: 'now', apiPath: '/api/kick-heatmap', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Activity unavailable; source mode and seed-list coverage are shown in notes.', pagePath: '/kick/heatmap/' },
+    { key: 'day_flow', label: 'Day Flow', role: 'today', apiPath: '/api/kick-day-flow', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Activity unavailable; bands come from observed DB_KICK_HOT seed-list snapshots.', pagePath: '/kick/day-flow/' },
+    { key: 'battle_lines', label: 'Battle Lines', role: 'rivalry', apiPath: '/api/kick-battle-lines', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Events are derived from observed viewer deltas; coverage is seed-list based.', pagePath: '/kick/battle-lines/' },
+    { key: 'history', label: 'History', role: 'trends', apiPath: '/api/kick-history', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Depends on retained Kick seed-list snapshots.', pagePath: '/kick/history/' },
   ]
 }
 
