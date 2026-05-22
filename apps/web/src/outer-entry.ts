@@ -15,7 +15,7 @@ type OuterPage = {
   notes: string[]
 }
 
-const contactFormUrl = 'https://forms.gle/REPLACE_VIEWLOOM_CONTACT_FORM'
+const contactFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSdhreuxEz7w0eSjslTyVLL-axV6IJdTp5RU5VXCM3ApIz35-Q/viewform?usp=dialog'
 
 const pages: Record<Page, OuterPage> = {
   about: {
