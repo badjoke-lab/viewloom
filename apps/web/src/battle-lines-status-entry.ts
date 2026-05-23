@@ -87,7 +87,7 @@ async function loadApi(): Promise<void> {
       ...state,
       lines: normalized.lines,
       pair: nextPair,
-      selected: Math.min(state.selected, normalized.lines[0].points.length - 1),
+      selected: nextSelectedIndex(normalized.lines, nextPair),
       secondaryPairs: normalized.secondaryPairs.length > 0 ? normalized.secondaryPairs : buildSecondaryPairs(normalized.lines, nextPair),
       events: normalized.events.length > 0 ? normalized.events : fallbackEventsForLines(normalized.lines, nextPair),
       status: normalized.status,
@@ -100,6 +100,22 @@ async function loadApi(): Promise<void> {
     state = { ...demoState(), status: 'error', sourceText: 'Error · API unavailable · Demo fallback', statusMessage: 'The Battle Lines API could not be reached. Demo data is clearly marked.', recommendedQuality: null }
     render()
   }
+}
+
+function nextSelectedIndex(lines: Line[], pair: Pair): number {
+  const maxIndex = Math.max(0, (lines[0]?.points.length ?? 1) - 1)
+  if (state.mode === 'inspect') return Math.min(state.selected, maxIndex)
+
+  const selectedLines = pair
+    .map((id) => lines.find((line) => line.id === id))
+    .filter((line): line is Line => Boolean(line))
+
+  const latest = Math.max(
+    ...selectedLines.map(lastDrawableIndex),
+    lastDrawableIndex(lines[0]),
+  )
+
+  return clamp(latest >= 0 ? latest : maxIndex, 0, maxIndex)
 }
 
 function demoState(): BattleState {
@@ -226,7 +242,7 @@ function renderChart(pair: [Line, Line]): void {
   const grid = ticks(max).map((tick) => `<line x1="${left}" x2="${w - right}" y1="${top + plotH - plotH * tick / max}" y2="${top + plotH - plotH * tick / max}" stroke="rgba(148,163,184,.16)"/><text x="${left - 14}" y="${top + plotH - plotH * tick / max + 4}" text-anchor="end" fill="#9fb0ca" font-size="13">${state.metric === 'indexed' ? Math.round(tick) : compact(tick)}</text>`).join('')
   const axis = ['00:00', '06:00', '12:00', '18:00', '24:00'].map((label, index) => `<text x="${left + plotW * index / 4}" y="${h - 24}" text-anchor="middle" fill="#9fb0ca" font-size="13">${label}</text>`).join('')
   const backgroundLines = lines.filter((line) => !state.pair.includes(line.id)).map((line) => `<path d="${linePath(line)}" fill="none" stroke="${line.color}" stroke-width="2" opacity=".12"/>`).join('')
-  const primary = drawPrimaryLine(pair[0], linePath(pair[0]), false) + drawPrimaryLine(pair[1], linePath(pair[1]), true)
+  const primary = drawPrimaryLine(pair[0], linePath(pair[0]), false) + drawPrimaryL""e(pair[1], linePath(pair[1]), false)
   const markers = selectedMarker(pair[0], x, y, state.selected, 0) + selectedMarker(pair[1], x, y, state.selected, 1) + endpoint(pair[0], x, y, 0) + endpoint(pair[1], x, y, 1)
   host.innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Battle Lines chart"><defs><filter id="blLineGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="${w}" height="${h}" rx="18" fill="#07101d"/>${missingBands(lines, x, top, h - bottom)}${grid}${axis}${band}${backgroundLines}${primary}<line x1="${nowX}" x2="${nowX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,.48)" stroke-dasharray="5 6"/><text x="${nowX + 8}" y="${top + 15}" fill="#cbd5e1" font-size="12">Now</text><line x1="${selectedX}" x2="${selectedX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,.9)" stroke-width="1.6"/><rect x="${selectedX - 34}" y="${top - 38}" width="68" height="26" rx="8" fill="rgba(15,23,42,.96)" stroke="rgba(255,255,255,.22)"/><text x="${selectedX}" y="${top - 20}" text-anchor="middle" fill="#eef4ff" font-size="12">${time(state.selected)}</text>${markers}</svg>`
   host.querySelector('svg')?.addEventListener('click', (event) => {
@@ -587,7 +603,7 @@ function makeDemoLines(): Line[] {
 function getPair(): [Line, Line] | null { return getPairByIds(state.pair) }
 function pairInfo(pair: [Line, Line], index: number) { const a = renderValue(pair[0], index); const b = renderValue(pair[1], index); const old = Math.abs(renderValue(pair[0], Math.max(0, index - 1)) - renderValue(pair[1], Math.max(0, index - 1))); const gap = Math.abs(a - b); return { gap, delta: gap - old, trend: gap - old <= 0 ? 'Closing' : 'Widening', leader: a >= b ? pair[0] : pair[1] } }
 function renderValue(line: Line, index: number): number { const point = line.points[index]; if (!point || point.value === null || point.state === 'missing' || point.state === 'not_observed') return 0; if (state.metric === 'indexed') return point.value / Math.max(...line.points.map((item) => item.value ?? 0), 1) * 100; return point.value }
-function canDraw(point: Point | undefined): boolean { return Boolean(point && point.value !== null && point.state !== 'missing' && point.state !== 'not_observed') }
+function canDraw(point: Point | undefined): boolean { return Boolean(point && point.value !== null && point.state === 'observed') }
 function pointText(point: Point | undefined): string { if (!point) return 'missing'; if (point.state === 'missing') return 'missing'; if (point.state === 'not_observed') return 'not observed'; if (point.state === 'offline') return 'offline / 0'; return format(point.value ?? 0) }
 function observedLabel(point: Point | undefined): string { if (!point) return 'missing'; return point.state === 'observed' ? 'observed' : point.state.replace('_', ' ') }
 function coverageSummary(): { status: string; short: string; note: string } { const points = state.lines.flatMap((line) => line.points); const gaps = points.filter((point) => point.state === 'missing' || point.state === 'not_observed').length; const offline = points.filter((point) => point.state === 'offline').length; return { status: gaps > 0 ? `Observed gaps ${gaps}` : 'Observed complete', short: gaps > 0 ? `${gaps} gaps` : 'complete', note: `Partial data · observed channels only.${gaps > 0 ? ` ${gaps} missing/not-observed samples are not connected as real lines.` : ''}${offline > 0 ? ` ${offline} offline samples are treated as 0.` : ''}` } }
