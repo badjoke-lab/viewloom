@@ -50,7 +50,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       'Activity / heat fusion is not connected for Kick Battle Lines yet.',
       'Missing, not_observed, and offline points are kept separate and should not be drawn as observed values.',
     ]
-    return json(payload(state, updatedAt, topN, bucket, metric, built.lines, built.battles, built.events, notes))
+    return json(payload(state, updatedAt, topN, bucket, metric, built.lines, built.battles, built.events, notes, str(latestMeta?.targetSource) || 'unknown', str(latestMeta?.coverageMode) || 'unknown'))
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     return json(payload('error', now.toISOString(), topN, bucket, metric, [], [], [], ['Kick Battle Lines API could not read DB_KICK_HOT snapshots.', message]), 500)
@@ -148,9 +148,9 @@ function makeEvents(battles: Battle[], lines: Line[]): unknown[] {
   return battles.slice(0, 3).map((battle) => ({ type: 'recommended_battle', battleId: battle.id, title: `${battle.streamerAName} vs ${battle.streamerBName}`, score: battle.score, overlapCount: battle.overlapCount, reversalCount: battle.reversalCount, lineCount: lines.length }))
 }
 
-function payload(state: State, updatedAt: string, top: number, bucket: Bucket, metric: Metric, lines: Line[], battles: Battle[], events: unknown[], notes: string[]) {
+function payload(state: State, updatedAt: string, top: number, bucket: Bucket, metric: Metric, lines: Line[], battles: Battle[], events: unknown[], notes: string[], targetSource = 'unknown', coverageMode = 'unknown') {
   const primaryBattle = battles[0] ?? null
-  return { source: 'api', platform: 'kick', state, status: state, updatedAt, top, bucket, metric, valueMode: metric, metricNote: metric === 'indexed' ? 'Indexed mode normalizes each line peak to 100.' : 'Viewers mode uses observed viewer counts.', lines, primaryBattle, recommendedBattle: primaryBattle, recommendedQuality: primaryBattle ? { score: primaryBattle.score, overlapCount: primaryBattle.overlapCount, missingPenalty: primaryBattle.missingPenalty } : null, secondaryBattles: battles.slice(1, 4), battles, events, reversals: events.filter((event) => typeof event === 'object'), feed: events, notes, contract: { linePointStates: ['observed', 'missing', 'not_observed', 'offline'], requiredBattleFields: ['id', 'streamerAId', 'streamerBId', 'score', 'overlapCount', 'longestRun', 'reversalCount'], requiredLineFields: ['streamerId', 'name', 'url', 'viewerMinutes', 'peakViewers', 'points'] } }
+  return { source: 'api', platform: 'kick', state, status: state, updatedAt, top, bucket, metric, valueMode: metric, targetSource, coverageMode, metricNote: metric === 'indexed' ? 'Indexed mode normalizes each line peak to 100.' : 'Viewers mode uses observed viewer counts.', lines, primaryBattle, recommendedBattle: primaryBattle, recommendedQuality: primaryBattle ? { score: primaryBattle.score, overlapCount: primaryBattle.overlapCount, missingPenalty: primaryBattle.missingPenalty } : null, secondaryBattles: battles.slice(1, 4), battles, events, reversals: events.filter((event) => typeof event === 'object'), feed: events, notes, contract: { linePointStates: ['observed', 'missing', 'not_observed', 'offline'], requiredBattleFields: ['id', 'streamerAId', 'streamerBId', 'score', 'overlapCount', 'longestRun', 'reversalCount'], requiredLineFields: ['streamerId', 'name', 'url', 'viewerMinutes', 'peakViewers', 'points'] } }
 }
 
 function normalize(payloadJson: string): Stream[] {

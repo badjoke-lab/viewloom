@@ -26,6 +26,8 @@ type KickHeatmapPayload = {
   status: KickHeatmapState
   updatedAt: string
   valueMode: 'viewers'
+  targetSource: string
+  coverageMode: string
   items: NormalizedStream[]
   coverageNote: string
   notes: string[]
@@ -53,6 +55,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
 
     const items = normalizePayload(result.payload_json)
     const meta = collectorMeta(result.payload_json)
+    const targetSource = str(meta?.targetSource) || 'unknown'
+    const coverageMode = str(meta?.coverageMode) || 'unknown'
     const updatedAt = result.collected_at || result.bucket_minute || new Date().toISOString()
     const age = Date.now() - new Date(updatedAt).getTime()
     const state: KickHeatmapState = items.length === 0 ? 'empty' : age > STALE_AFTER_MS ? 'stale' : 'live'
@@ -65,17 +69,17 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     return jsonPayload(state, updatedAt, items, note, [
       'storage=DB_KICK_HOT',
       `source_mode=${result.source_mode || 'unknown'}`,
-      `target_source=${str(meta?.targetSource) || 'unknown'}`,
-      `coverage_mode=${str(meta?.coverageMode) || 'unknown'}`,
+      `target_source=${targetSource}`,
+      `coverage_mode=${coverageMode}`,
       `bucket_minute=${result.bucket_minute}`,
       `total_viewers=${result.total_viewers}`,
-    ])
+    ], 200, targetSource, coverageMode)
   } catch (error) {
     return jsonPayload('error', new Date().toISOString(), [], 'Kick Heatmap API could not read DB_KICK_HOT snapshots.', [error instanceof Error ? error.message : String(error)], 500)
   }
 }
 
-function jsonPayload(state: KickHeatmapState, updatedAt: string, items: NormalizedStream[], coverageNote: string, notes: string[], status = 200): Response {
+function jsonPayload(state: KickHeatmapState, updatedAt: string, items: NormalizedStream[], coverageNote: string, notes: string[], status = 200, targetSource = 'unknown', coverageMode = 'unknown'): Response {
   const payload: KickHeatmapPayload = {
     source: 'api',
     platform: 'kick',
@@ -83,6 +87,8 @@ function jsonPayload(state: KickHeatmapState, updatedAt: string, items: Normaliz
     status: state,
     updatedAt,
     valueMode: 'viewers',
+    targetSource,
+    coverageMode,
     items,
     coverageNote,
     notes,
