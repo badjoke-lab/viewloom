@@ -18,6 +18,8 @@ export type SnapshotWriteInput = {
   sourceMode: string
 }
 
+const TWITCH_BUCKET_MINUTES = 5
+
 export async function writeSnapshot(env: Env, input: SnapshotWriteInput): Promise<{
   streamCount: number
   totalViewers: number
@@ -27,6 +29,7 @@ export async function writeSnapshot(env: Env, input: SnapshotWriteInput): Promis
   const payload = JSON.stringify({
     provider: input.provider,
     bucketMinute: input.bucketMinute,
+    bucketMinutes: TWITCH_BUCKET_MINUTES,
     items: input.items,
   })
 
@@ -198,9 +201,12 @@ export async function readLatestSnapshotItems(env: Env, provider: 'twitch'): Pro
 
 export function floorToBucketMinute(iso: string): string {
   const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) {
-    return new Date().toISOString().replace(/:\d{2}\.\d{3}Z$/, ':00.000Z')
-  }
-  date.setUTCSeconds(0, 0)
-  return date.toISOString().replace(/\.\d{3}Z$/, '.000Z')
+  if (Number.isNaN(date.getTime())) return floorDateToBucketMinute(new Date())
+  return floorDateToBucketMinute(date)
+}
+
+function floorDateToBucketMinute(date: Date): string {
+  const copy = new Date(date)
+  copy.setUTCMinutes(Math.floor(copy.getUTCMinutes() / TWITCH_BUCKET_MINUTES) * TWITCH_BUCKET_MINUTES, 0, 0)
+  return copy.toISOString().replace(/\.\d{3}Z$/, '.000Z')
 }
