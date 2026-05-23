@@ -1,4 +1,5 @@
 import { DEFAULT_KICK_SEED_SLUGS } from './kick-seed-slugs'
+import { collectKickOfficialLivestreams } from './official-livestreams'
 
 type Env = {
   DB_KICK_HOT: D1Database
@@ -19,7 +20,7 @@ type StreamItem = {
 }
 
 type Raw = Record<string, unknown>
-type SourceMode = 'authenticated' | 'public-channel-fallback' | 'empty-authenticated' | 'empty-public-channel-fallback'
+type SourceMode = 'official-livestreams' | 'authenticated' | 'public-channel-fallback' | 'empty-authenticated' | 'empty-public-channel-fallback'
 type SourceAttempt = {
   sourceMode: SourceMode
   streams: StreamItem[]
@@ -80,7 +81,15 @@ export default {
     if (url.pathname === '/collect' && request.method === 'POST') {
       const gate = checkToken(request, env)
       if (!gate.ok) return out({ ok: false, error: gate.error }, 401)
-      return out({ ok: true, result: await collectKick(env) })
+      try {
+        return out({ ok: true, result: await collectKick(env) })
+      } catch (error) {
+        return out({
+          ok: false,
+          error: 'collect_exception',
+          message: error instanceof Error ? error.message : String(error),
+        }, 500)
+      }
     }
     return out({ ok: false, error: 'not_found', routes: ['GET /health', 'GET /status', 'GET /probe-official-livestreams', 'POST /collect', 'POST /insert-fixture'] }, 404)
   },
@@ -238,6 +247,37 @@ async function latestSnapshot(env: Env): Promise<LatestSnapshot | null> {
 }
 
 async function collectKick(env: Env) {
+  const appAuth = await getKickAppToken(env)
+  if (appAuth.mode === 'authenticated') {
+    const official = await collectKickOfficialLivestreams(appAuth.token, OFFICIAL_LIVESTREAM_LIMIT)
+    if (official.streams.length > 0) {
+      const meta = {
+        authMode: appAuth.mode,
+        channelReadMode: 'official-livestreams-first',
+        sourceMode: 'official-livestreams',
+        targetSource: 'official-livestreams',
+        coverageMode: 'official-livestreams',
+        observedSlugs: official.observedSlugs,
+        missedSlugs: [],
+        failures: official.failures,
+        reason: official.reason,
+        officialLivestreamLimit: OFFICIAL_LIVESTREAM_LIMIT,
+      }
+      const written = await writeSnapshot(env, official.streams, 'authenticated', meta)
+      return {
+        ...written,
+        auth_mode: appAuth.mode,
+        channel_read_mode: meta.channelReadMode,
+        target_source: 'official-livestreams',
+        coverage_mode: 'official-livestreams',
+        observed_slugs: official.observedSlugs,
+        missed_slugs: [],
+        failures: official.failures,
+        reason: official.reason,
+      }
+    }
+  }
+
   const targetSet = await channelTargetSet(env)
   const slugs = selectAttemptSlugs(targetSet.slugs)
   if (targetSet.slugs.length === 0) return await writeSnapshot(env, [], 'unconfigured', { configuredChannels: 0, attemptedChannels: 0, observedSlugs: [], missedSlugs: [], coverageMode: targetSet.source })
