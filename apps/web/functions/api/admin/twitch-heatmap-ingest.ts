@@ -18,6 +18,10 @@ type IngestBody = {
   sourceMode?: string
 }
 
+type BucketEnv = Env & { TWITCH_BUCKET_MINUTES?: string }
+
+const DEFAULT_TWITCH_BUCKET_MINUTES = 5
+
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const token = readToken(request)
   if (!token || token !== env.INGEST_TOKEN) {
@@ -42,7 +46,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   const collectedAt = normalizeIso(body.collectedAt) ?? new Date().toISOString()
-  const bucketMinute = normalizeBucketMinute(body.bucketMinute, collectedAt)
+  const bucketMinutes = readBucketMinutes(env as BucketEnv)
+  const bucketMinute = normalizeBucketMinute(body.bucketMinute, collectedAt, bucketMinutes)
   const coveredPages = clampInt(body.coveredPages ?? 1)
   const hasMore = body.hasMore ? 1 : 0
   const totalViewers = items.reduce((sum, item) => sum + item.viewers, 0)
@@ -50,6 +55,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const payload = JSON.stringify({
     provider,
     bucketMinute,
+    bucketMinutes,
     items,
   })
 
@@ -137,6 +143,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     ok: true,
     provider,
     bucketMinute,
+    bucketMinutes,
     collectedAt,
     streamCount: items.length,
     totalViewers,
@@ -171,13 +178,23 @@ function normalizeIso(value?: string): string | null {
   return date.toISOString()
 }
 
-function normalizeBucketMinute(value: string | undefined, fallbackIso: string): string {
+function normalizeBucketMinute(value: string | undefined, fallbackIso: string, bucketMinutes: number): string {
   const date = value ? new Date(value) : new Date(fallbackIso)
   if (Number.isNaN(date.getTime())) {
-    return new Date(fallbackIso).toISOString().replace(/:\d{2}\.\d{3}Z$/, ':00.000Z')
+    return floorToBucket(new Date(fallbackIso), bucketMinutes)
   }
-  date.setUTCSeconds(0, 0)
-  return date.toISOString().replace(/\.\d{3}Z$/, '.000Z')
+  return floorToBucket(date, bucketMinutes)
+}
+
+function floorToBucket(date: Date, bucketMinutes: number): string {
+  const copy = new Date(date)
+  copy.setUTCMinutes(Math.floor(copy.getUTCMinutes() / bucketMinutes) * bucketMinutes, 0, 0)
+  return copy.toISOString().replace(/\.\d{3}Z$/, '.000Z')
+}
+
+function readBucketMinutes(env: BucketEnv): number {
+  const parsed = Number(env.TWITCH_BUCKET_MINUTES)
+  return parsed === 1 ? 1 : DEFAULT_TWITCH_BUCKET_MINUTES
 }
 
 function clampInt(value: unknown): number {
