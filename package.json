@@ -15,6 +15,8 @@
     "kick:live-probe:safe": "node workers/collector-kick/scripts/probe-kick-live-candidates.mjs --concurrency=4 --timeout-ms=10000 --progress-every=25",
     "kick:live-probe:slow": "node workers/collector-kick/scripts/probe-kick-live-candidates.mjs --concurrency=2 --timeout-ms=15000 --progress-every=25",
     "kick:live-probe:aggressive": "node workers/collector-kick/scripts/probe-kick-live-candidates.mjs --concurrency=16 --timeout-ms=2500 --progress-every=25",
+    "kick:live-probe:py": "python3 workers/collector-kick/scripts/probe-kick-live-candidates-python.py --concurrency=8 --timeout=10 --progress-every=25",
+    "kick:live-probe:py-safe": "python3 workers/collector-kick/scripts/probe-kick-live-candidates-python.py --concurrency=4 --timeout=12 --progress-every=25",
     "check": "npm --prefix apps/web run typecheck"
   }
 }
