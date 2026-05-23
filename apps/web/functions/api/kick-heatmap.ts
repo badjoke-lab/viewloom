@@ -14,6 +14,10 @@ type NormalizedStream = {
   title: string
   viewers: number
   momentum: number
+  activity: number
+  activityAvailable: boolean
+  activitySampled: boolean
+  activityUnavailableReason: string
   url: string
   startedAt?: string
 }
@@ -27,6 +31,9 @@ type KickHeatmapPayload = {
   status: KickHeatmapState
   updatedAt: string
   valueMode: 'viewers'
+  activityAvailable: boolean
+  activitySampled: boolean
+  activityUnavailableReason: string
   targetSource: string
   coverageMode: string
   items: NormalizedStream[]
@@ -35,6 +42,7 @@ type KickHeatmapPayload = {
 }
 
 const STALE_AFTER_MS = 10 * 60 * 1000
+const ACTIVITY_UNAVAILABLE_REASON = 'chat_sampling_not_connected'
 
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   if (!env.DB_KICK_HOT) {
@@ -67,9 +75,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     const age = Date.now() - new Date(updatedAt).getTime()
     const state: KickHeatmapState = items.length === 0 ? 'empty' : age > STALE_AFTER_MS ? 'stale' : 'live'
     const note = state === 'live'
-      ? `${items.length} normalized Kick streams from latest observed snapshot.`
+      ? `${items.length} normalized Kick streams from latest observed snapshot. Activity/comment heat is not connected yet.`
       : state === 'stale'
-        ? `${items.length} normalized Kick streams, but latest snapshot is stale.`
+        ? `${items.length} normalized Kick streams, but latest snapshot is stale. Activity/comment heat is not connected yet.`
         : 'Latest Kick snapshot exists but has no usable normalized streams.'
 
     return jsonPayload(state, updatedAt, items, note, [
@@ -80,6 +88,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       `bucket_minute=${latest.bucket_minute}`,
       `previous_bucket_minute=${previous?.bucket_minute || 'none'}`,
       'momentum_source=viewer_delta',
+      'activity_available=false',
+      `activity_unavailable_reason=${ACTIVITY_UNAVAILABLE_REASON}`,
       `total_viewers=${latest.total_viewers}`,
     ], 200, targetSource, coverageMode)
   } catch (error) {
@@ -95,6 +105,9 @@ function jsonPayload(state: KickHeatmapState, updatedAt: string, items: Normaliz
     status: state,
     updatedAt,
     valueMode: 'viewers',
+    activityAvailable: false,
+    activitySampled: false,
+    activityUnavailableReason: ACTIVITY_UNAVAILABLE_REASON,
     targetSource,
     coverageMode,
     items,
@@ -146,6 +159,10 @@ function normalizeStream(raw: unknown, previousViewers: Map<string, number>): No
     title: str(record.title ?? record.session_title ?? record.stream_title ?? livestream?.session_title),
     viewers,
     momentum: momentum(viewers, previous),
+    activity: 0,
+    activityAvailable: false,
+    activitySampled: false,
+    activityUnavailableReason: ACTIVITY_UNAVAILABLE_REASON,
     url: str(record.url) || `https://kick.com/${id}`,
     startedAt: str(record.startedAt ?? record.started_at ?? record.start_time ?? livestream?.created_at) || undefined,
   }
