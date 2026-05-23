@@ -52,6 +52,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     }
 
     const items = normalizePayload(result.payload_json)
+    const meta = collectorMeta(result.payload_json)
     const updatedAt = result.collected_at || result.bucket_minute || new Date().toISOString()
     const age = Date.now() - new Date(updatedAt).getTime()
     const state: KickHeatmapState = items.length === 0 ? 'empty' : age > STALE_AFTER_MS ? 'stale' : 'live'
@@ -64,6 +65,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     return jsonPayload(state, updatedAt, items, note, [
       'storage=DB_KICK_HOT',
       `source_mode=${result.source_mode || 'unknown'}`,
+      `target_source=${str(meta?.targetSource) || 'unknown'}`,
+      `coverage_mode=${str(meta?.coverageMode) || 'unknown'}`,
       `bucket_minute=${result.bucket_minute}`,
       `total_viewers=${result.total_viewers}`,
     ])
@@ -92,6 +95,12 @@ function normalizePayload(payloadJson: string): NormalizedStream[] {
   const record = asRecord(parsed)
   const rawItems = Array.isArray(record?.items) ? record.items : Array.isArray(record?.data) ? record.data : []
   return rawItems.map(normalizeStream).filter((item): item is NormalizedStream => item !== null)
+}
+
+function collectorMeta(payloadJson: string): Record<string, unknown> | null {
+  const parsed = safeJson(payloadJson)
+  const record = asRecord(parsed)
+  return asRecord(record?.collectorMeta)
 }
 
 function normalizeStream(raw: unknown): NormalizedStream | null {
