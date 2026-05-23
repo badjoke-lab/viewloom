@@ -1,0 +1,24 @@
+name = "viewloom-collector-twitch"
+main = "src/index.ts"
+compatibility_date = "2026-05-18"
+
+# Manual collection route:
+#   POST /collect
+# Health routes:
+#   GET /health
+#   GET /status
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+# Required secrets:
+#   wrangler secret put TWITCH_CLIENT_ID
+#   wrangler secret put TWITCH_CLIENT_SECRET
+# Optional manual route token:
+#   wrangler secret put TWITCH_INGEST_TOKEN
+
+# Fill the database_id from `wrangler d1 list` before first deploy.
+[[d1_databases]]
+binding = "DB_TWITCH_HOT"
+database_name = "vl_twitch_hot"
+database_id = "REPLACE_WITH_VL_TWITCH_HOT_DATABASE_ID"
