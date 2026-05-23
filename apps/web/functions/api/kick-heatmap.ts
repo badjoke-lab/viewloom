@@ -13,6 +13,7 @@ type NormalizedStream = {
   name: string
   title: string
   viewers: number
+  momentum: number
   url: string
   startedAt?: string
 }
@@ -46,18 +47,23 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       FROM minute_snapshots
       WHERE provider = ?
       ORDER BY bucket_minute DESC
-      LIMIT 1
-    `).bind('kick').first<SnapshotRow>()
+      LIMIT 2
+    `).bind('kick').all<SnapshotRow>()
 
-    if (!result) {
+    const rows = result.results ?? []
+    const latest = rows[0]
+    const previous = rows[1]
+
+    if (!latest) {
       return jsonPayload('empty', new Date().toISOString(), [], 'No Kick snapshots exist in DB_KICK_HOT yet.', ['provider=kick returned no rows in vl_kick_hot.'])
     }
 
-    const items = normalizePayload(result.payload_json)
-    const meta = collectorMeta(result.payload_json)
+    const previousViewers = previous ? viewerMap(previous.payload_json) : new Map<string, number>()
+    const items = normalizePayload(latest.payload_json, previousViewers)
+    const meta = collectorMeta(latest.payload_json)
     const targetSource = str(meta?.targetSource) || 'unknown'
     const coverageMode = str(meta?.coverageMode) || 'unknown'
-    const updatedAt = result.collected_at || result.bucket_minute || new Date().toISOString()
+    const updatedAt = latest.collected_at || latest.bucket_minute || new Date().toISOString()
     const age = Date.now() - new Date(updatedAt).getTime()
     const state: KickHeatmapState = items.length === 0 ? 'empty' : age > STALE_AFTER_MS ? 'stale' : 'live'
     const note = state === 'live'
@@ -68,11 +74,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
 
     return jsonPayload(state, updatedAt, items, note, [
       'storage=DB_KICK_HOT',
-      `source_mode=${result.source_mode || 'unknown'}`,
+      `source_mode=${latest.source_mode || 'unknown'}`,
       `target_source=${targetSource}`,
       `coverage_mode=${coverageMode}`,
-      `bucket_minute=${result.bucket_minute}`,
-      `total_viewers=${result.total_viewers}`,
+      `bucket_minute=${latest.bucket_minute}`,
+      `previous_bucket_minute=${previous?.bucket_minute || 'none'}`,
+      'momentum_source=viewer_delta',
+      `total_viewers=${latest.total_viewers}`,
     ], 200, targetSource, coverageMode)
   } catch (error) {
     return jsonPayload('error', new Date().toISOString(), [], 'Kick Heatmap API could not read DB_KICK_HOT snapshots.', [error instanceof Error ? error.message : String(error)], 500)
@@ -96,11 +104,23 @@ function jsonPayload(state: KickHeatmapState, updatedAt: string, items: Normaliz
   return Response.json(payload, { status, headers: { 'cache-control': 'no-store' } })
 }
 
-function normalizePayload(payloadJson: string): NormalizedStream[] {
+function normalizePayload(payloadJson: string, previousViewers: Map<string, number>): NormalizedStream[] {
   const parsed = safeJson(payloadJson)
   const record = asRecord(parsed)
   const rawItems = Array.isArray(record?.items) ? record.items : Array.isArray(record?.data) ? record.data : []
-  return rawItems.map(normalizeStream).filter((item): item is NormalizedStream => item !== null)
+  return rawItems.map((item) => normalizeStream(item, previousViewers)).filter((item): item is NormalizedStream => item !== null)
+}
+
+function viewerMap(payloadJson: string): Map<string, number> {
+  const map = new Map<string, number>()
+  const parsed = safeJson(payloadJson)
+  const record = asRecord(parsed)
+  const rawItems = Array.isArray(record?.items) ? record.items : Array.isArray(record?.data) ? record.data : []
+  for (const raw of rawItems) {
+    const stream = normalizeStream(raw, new Map<string, number>())
+    if (stream) map.set(stream.id, stream.viewers)
+  }
+  return map
 }
 
 function collectorMeta(payloadJson: string): Record<string, unknown> | null {
@@ -109,7 +129,7 @@ function collectorMeta(payloadJson: string): Record<string, unknown> | null {
   return asRecord(record?.collectorMeta)
 }
 
-function normalizeStream(raw: unknown): NormalizedStream | null {
+function normalizeStream(raw: unknown, previousViewers: Map<string, number>): NormalizedStream | null {
   const record = asRecord(raw)
   if (!record) return null
   const channel = asRecord(record.channel)
@@ -119,14 +139,22 @@ function normalizeStream(raw: unknown): NormalizedStream | null {
   const viewers = num(record.viewers ?? record.viewer_count ?? record.viewerCount ?? livestream?.viewer_count)
   const id = slugify(slug || name)
   if (!id || viewers <= 0) return null
+  const previous = previousViewers.get(id) ?? 0
   return {
     id,
     name: name || id,
     title: str(record.title ?? record.session_title ?? record.stream_title ?? livestream?.session_title),
     viewers,
+    momentum: momentum(viewers, previous),
     url: str(record.url) || `https://kick.com/${id}`,
     startedAt: str(record.startedAt ?? record.started_at ?? record.start_time ?? livestream?.created_at) || undefined,
   }
+}
+
+function momentum(current: number, previous: number): number {
+  if (previous <= 0 || current <= 0) return 0
+  const raw = (current - previous) / previous
+  return Math.max(-3, Math.min(3, raw))
 }
 
 function safeJson(value: string): unknown {
