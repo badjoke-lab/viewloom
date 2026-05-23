@@ -14,6 +14,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   try {
     const rows = await rowsFor(env, period.from, period.to)
+    const latestMeta = rows.length ? collectorMeta(rows[rows.length - 1].payload_json) : null
+    const targetSource = text(latestMeta?.targetSource) || 'unknown'
+    const coverageMode = text(latestMeta?.coverageMode) || 'unknown'
     const built = build(rows)
     const daily = [...built.days.values()].sort((a, b) => a.day.localeCompare(b.day))
     const topStreamers = rank([...built.streams.values()])
@@ -25,11 +28,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       platform: 'kick',
       period: { ...period, days },
       metric,
+      targetSource,
+      coverageMode,
       summary,
       daily,
       topStreamers,
       coverage,
-      notes: ['storage=DB_KICK_HOT', 'Kick History reads vl_kick_hot via DB_KICK_HOT.'],
+      notes: ['storage=DB_KICK_HOT', 'Kick History reads vl_kick_hot via DB_KICK_HOT.', `target_source=${targetSource}`, `coverage_mode=${coverageMode}`],
     }, { headers: { 'cache-control': 'no-store' } })
   } catch (err) {
     return error(period, metric, 'history_api_error', err instanceof Error ? err.message : String(err), 500)
@@ -83,6 +88,16 @@ function items(json: string): Item[] {
   return []
 }
 
+function collectorMeta(json: string): Item | null {
+  try {
+    const parsed = JSON.parse(json) as unknown
+    if (!record(parsed)) return null
+    return record(parsed.collectorMeta) ? parsed.collectorMeta : null
+  } catch {
+    return null
+  }
+}
+
 function stream(item: Item): { streamerId: string; displayName: string; viewers: number } | null {
   const channel = record(item.channel) ? item.channel : null
   const live = record(item.livestream) ? item.livestream : null
@@ -124,10 +139,11 @@ function getPeriod(url: URL) {
   return { from: day(start), to: day(end), label: days === 7 ? 'Last 7 days' : 'Last 30 days' }
 }
 
-function error(period: { from: string; to: string; label: string }, metric: string, code: string, message: string, status: number) { return Response.json({ source: 'api', state: 'error', platform: 'kick', period: { ...period, days: dayCount(period.from, period.to) }, metric, summary: null, daily: [], topStreamers: [], coverage: { state: 'missing', observedDays: 0, missingDays: 0, partialDays: 0, notes: [message] }, notes: ['storage=DB_KICK_HOT'], error: { code, message } }, { status, headers: { 'cache-control': 'no-store' } }) }
+function error(period: { from: string; to: string; label: string }, metric: string, code: string, message: string, status: number) { return Response.json({ source: 'api', state: 'error', platform: 'kick', period: { ...period, days: dayCount(period.from, period.to) }, metric, targetSource: 'unknown', coverageMode: 'unknown', summary: null, daily: [], topStreamers: [], coverage: { state: 'missing', observedDays: 0, missingDays: 0, partialDays: 0, notes: [message] }, notes: ['storage=DB_KICK_HOT', 'target_source=unknown', 'coverage_mode=unknown'], error: { code, message } }, { status, headers: { 'cache-control': 'no-store' } }) }
 function nextDay(value: string): string { const date = new Date(`${value}T00:00:00.000Z`); date.setUTCDate(date.getUTCDate() + 1); return date.toISOString() }
 function dayCount(from: string, to: string): number { return Math.max(1, Math.round((Date.parse(`${to}T00:00:00.000Z`) - Date.parse(`${from}T00:00:00.000Z`)) / 86400000) + 1) }
 function day(date: Date): string { return date.toISOString().slice(0, 10) }
 function record(value: unknown): value is Item { return typeof value === 'object' && value !== null }
+function text(value: unknown): string { return typeof value === 'string' ? value.trim() : '' }
 function number(value: unknown): number { if (typeof value === 'number' && Number.isFinite(value)) return Math.max(0, Math.round(value)); if (typeof value === 'string') { const parsed = Number(value.replace(/,/g, '')); return Number.isFinite(parsed) ? Math.max(0, Math.round(parsed)) : 0 } return 0 }
 function slug(value: unknown): string { return String(value ?? '').trim().toLowerCase().replace(/[^a-z0-9_\-]/g, '') }

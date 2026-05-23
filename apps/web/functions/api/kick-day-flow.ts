@@ -51,6 +51,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
     const built = build(rows, bucketLabels, bucketSize, topN)
     const latest = rows[rows.length - 1]
+    const meta = latest ? collectorMeta(latest.payload_json) : null
+    const targetSource = str(meta?.targetSource) || 'unknown'
+    const coverageMode = str(meta?.coverageMode) || 'unknown'
     const lastUpdated = latest?.collected_at || latest?.bucket_minute || now.toISOString()
     const stale = Date.now() - parseTime(lastUpdated).getTime() > STALE_AFTER_MS
     const state = getState(built.bands.length > 0, stale, built.observed, bucketLabels.length)
@@ -63,13 +66,15 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       state,
       status: state,
       note: note(state, built.bands.length),
-      coverageNote: `${rows.length} provider=kick DB_KICK_HOT snapshot rows read. ${built.observed}/${bucketLabels.length} buckets observed. source_mode=${latest?.source_mode || 'unknown'}.`,
+      coverageNote: `${rows.length} provider=kick DB_KICK_HOT snapshot rows read. ${built.observed}/${bucketLabels.length} buckets observed. source_mode=${latest?.source_mode || 'unknown'}. target_source=${targetSource}. coverage_mode=${coverageMode}.`,
       partialNote,
       lastUpdated,
       selectedDate: range.selectedDate,
       bucketSize,
       topN,
       valueMode,
+      targetSource,
+      coverageMode,
       rangeMode: range.mode,
       windowStart: range.start.toISOString(),
       windowEnd: range.end.toISOString(),
@@ -79,6 +84,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       bands: built.bands,
       detailPanelSource: { defaultStreamerId: built.streamers[0]?.streamerId ?? null, streamers: built.streamers },
       activity: { available: false, note: 'Kick activity data is not connected yet. Day Flow bands use observed viewer counts only.' },
+      notes: ['storage=DB_KICK_HOT', `target_source=${targetSource}`, `coverage_mode=${coverageMode}`],
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
@@ -159,6 +165,12 @@ function normalize(payloadJson: string): Stream[] {
   return rawItems.map(stream).filter((item): item is Stream => item !== null)
 }
 
+function collectorMeta(payloadJson: string): Record<string, unknown> | null {
+  const parsed = safeJson(payloadJson)
+  const record = object(parsed)
+  return object(record?.collectorMeta)
+}
+
 function stream(raw: unknown): Stream | null {
   const record = object(raw)
   if (!record) return null
@@ -177,7 +189,7 @@ function streamer(band: Band) {
 }
 
 function empty(state: State, noteText: string, coverageNote: string, partialNote: string, lastUpdated: string, range: ReturnType<typeof getRange>, bucketSize: 5 | 10, topN: number, valueMode: Metric, labels: string[]): Record<string, unknown> {
-  return { ok: state !== 'error', source: 'api', platform: 'kick', state, status: state, note: noteText, coverageNote, partialNote, lastUpdated, selectedDate: range.selectedDate, bucketSize, topN, valueMode, rangeMode: range.mode, windowStart: range.start.toISOString(), windowEnd: range.end.toISOString(), isRolling: range.isRolling, buckets: labels, totalViewersByBucket: labels.map(() => 0), bands: [] as Band[], detailPanelSource: { defaultStreamerId: null as string | null, streamers: [] as ReturnType<typeof streamer>[] }, activity: { available: false, note: 'Kick activity data is not connected yet.' } }
+  return { ok: state !== 'error', source: 'api', platform: 'kick', state, status: state, note: noteText, coverageNote, partialNote, lastUpdated, selectedDate: range.selectedDate, bucketSize, topN, valueMode, targetSource: 'unknown', coverageMode: 'unknown', rangeMode: range.mode, windowStart: range.start.toISOString(), windowEnd: range.end.toISOString(), isRolling: range.isRolling, buckets: labels, totalViewersByBucket: labels.map(() => 0), bands: [] as Band[], detailPanelSource: { defaultStreamerId: null as string | null, streamers: [] as ReturnType<typeof streamer>[] }, activity: { available: false, note: 'Kick activity data is not connected yet.' }, notes: ['storage=DB_KICK_HOT', 'target_source=unknown', 'coverage_mode=unknown'] }
 }
 
 function getRange(url: URL, now: Date) {
