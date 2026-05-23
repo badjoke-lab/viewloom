@@ -16,6 +16,7 @@
     "kick:live-probe:node": "node workers/collector-kick/scripts/probe-kick-live-candidates.mjs",
     "kick:live-probe:node-fast": "node workers/collector-kick/scripts/probe-kick-live-candidates.mjs --concurrency=8 --timeout-ms=5000 --progress-every=25",
     "kick:live-probe:node-aggressive": "node workers/collector-kick/scripts/probe-kick-live-candidates.mjs --concurrency=16 --timeout-ms=2500 --progress-every=25",
+    "kick:official-livestreams:probe": "node workers/collector-kick/scripts/probe-kick-official-livestreams.mjs",
     "check": "npm --prefix apps/web run typecheck"
   }
 }
