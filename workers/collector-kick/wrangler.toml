@@ -32,3 +32,8 @@ compatibility_date = "2026-05-18"
 #   wrangler secret put KICK_CLIENT_SECRET
 # Optional pre-provisioned token when managed externally:
 #   wrangler secret put KICK_ACCESS_TOKEN
+
+[[d1_databases]]
+binding = "DB_KICK_HOT"
+database_name = "vl_kick_hot"
+database_id = "ed1e082f-85ac-4dd0-a44e-5d3e200667d5"
