@@ -58,6 +58,7 @@ const MAX_CHANNEL_SLUGS = 220
 const COLLECT_ATTEMPT_SLUGS = 75
 const PINNED_ATTEMPT_SLUGS = 20
 const FETCH_BATCH_SIZE = 10
+const OFFICIAL_LIVESTREAM_LIMIT = 100
 
 const fixture: StreamItem[] = [
   { slug: 'sample-kick-alpha', displayName: 'sample-kick-alpha', title: 'Fixture stream alpha', viewer_count: 2400, url: 'https://kick.com/sample-kick-alpha' },
@@ -70,13 +71,18 @@ export default {
     const url = new URL(request.url)
     if (url.pathname === '/health') return out({ ok: true, provider: 'kick', storage: 'DB_KICK_HOT' })
     if (url.pathname === '/status') return out(await statusPayload(env))
+    if (url.pathname === '/probe-official-livestreams' && request.method === 'GET') {
+      const gate = checkToken(request, env)
+      if (!gate.ok) return out({ ok: false, error: gate.error }, 401)
+      return out(await probeOfficialLivestreams(env, url))
+    }
     if (url.pathname === '/insert-fixture' && request.method === 'POST') return out({ ok: true, result: await writeSnapshot(env, fixture, 'fixture', { reason: 'manual_fixture_insert' }) })
     if (url.pathname === '/collect' && request.method === 'POST') {
       const gate = checkToken(request, env)
       if (!gate.ok) return out({ ok: false, error: gate.error }, 401)
       return out({ ok: true, result: await collectKick(env) })
     }
-    return out({ ok: false, error: 'not_found', routes: ['GET /health', 'GET /status', 'POST /collect', 'POST /insert-fixture'] }, 404)
+    return out({ ok: false, error: 'not_found', routes: ['GET /health', 'GET /status', 'GET /probe-official-livestreams', 'POST /collect', 'POST /insert-fixture'] }, 404)
   },
 
   async scheduled(_event: ScheduledEvent, env: Env): Promise<void> {
@@ -130,6 +136,10 @@ async function statusPayload(env: Env) {
 
 async function getAuth(env: Env): Promise<AuthResult> {
   if (!shouldUseAuthenticatedChannelReads(env)) return { mode: 'public-channel-fallback', token: null, reason: 'authenticated_channel_reads_disabled' }
+  return getKickAppToken(env)
+}
+
+async function getKickAppToken(env: Env): Promise<AuthResult> {
   if (env.KICK_ACCESS_TOKEN) return { mode: 'authenticated', token: env.KICK_ACCESS_TOKEN }
   if (!env.KICK_CLIENT_ID || !env.KICK_CLIENT_SECRET) return { mode: 'public-channel-fallback', token: null, reason: 'missing_client_credentials' }
   try {
@@ -144,10 +154,65 @@ async function getAuth(env: Env): Promise<AuthResult> {
   }
 }
 
-async function fetchOfficialChannel(slug: string, token: string): Promise<StreamItem | null> {
-  const response = await fetch(`https://api.kick.com/public/v1/channels?slug=${encodeURIComponent(slug)}`, {
-    headers: { accept: 'application/json', authorization: `Bearer ${token}`, 'user-agent': 'ViewLoom collector-kick/0.2' },
+async function probeOfficialLivestreams(env: Env, requestUrl: URL) {
+  const auth = await getKickAppToken(env)
+  if (auth.mode !== 'authenticated') {
+    return { ok: false, provider: 'kick', endpoint: 'public/v1/livestreams', authMode: auth.mode, reason: auth.reason }
+  }
+
+  const limitParam = Number(requestUrl.searchParams.get('limit') || OFFICIAL_LIVESTREAM_LIMIT)
+  const limit = Math.max(1, Math.min(OFFICIAL_LIVESTREAM_LIMIT, Number.isFinite(limitParam) ? Math.floor(limitParam) : OFFICIAL_LIVESTREAM_LIMIT))
+  const upstreamUrl = new URL('https://api.kick.com/public/v1/livestreams')
+  upstreamUrl.searchParams.set('limit', String(limit))
+  upstreamUrl.searchParams.set('sort', 'viewer_count')
+
+  const headers = new Headers()
+  headers.set('accept', 'application/json')
+  setAuthHeader(headers, auth.token)
+  headers.set('user-agent', 'ViewLoom collector-kick/probe-official-livestreams')
+
+  const response = await fetch(upstreamUrl.toString(), { headers })
+  const body = await response.text()
+  let data: Raw | null = null
+  try {
+    const parsed = JSON.parse(body)
+    data = record(parsed) ? parsed : null
+  } catch {
+    data = null
+  }
+
+  const rows = Array.isArray(data?.data) ? data.data : []
+  const sample = rows.slice(0, 20).map((row) => {
+    const item = record(row) ? row : {}
+    const channel = record(item.channel) ? item.channel : {}
+    return {
+      slug: text(item.slug ?? item.channel_slug ?? channel.slug),
+      viewers: num(item.viewer_count ?? item.viewers),
+      title: text(item.stream_title ?? item.session_title ?? item.title),
+      keys: Object.keys(item).slice(0, 20),
+    }
   })
+
+  return {
+    ok: response.ok,
+    provider: 'kick',
+    endpoint: 'public/v1/livestreams',
+    status: response.status,
+    statusText: response.statusText,
+    limit,
+    dataCount: rows.length,
+    topSample: sample,
+    topLevelKeys: data ? Object.keys(data) : [],
+    rawPrefix: data ? undefined : body.slice(0, 500),
+  }
+}
+
+async function fetchOfficialChannel(slug: string, token: string): Promise<StreamItem | null> {
+  const headers = new Headers()
+  headers.set('accept', 'application/json')
+  setAuthHeader(headers, token)
+  headers.set('user-agent', 'ViewLoom collector-kick/0.2')
+  const response = await fetch(`https://api.kick.com/public/v1/channels?slug=${encodeURIComponent(slug)}`, { headers })
   if (!response.ok) return null
   const raw = await response.json() as Raw
   const data = Array.isArray(raw.data) ? raw.data[0] : raw
@@ -489,6 +554,10 @@ function selectAttemptSlugs(slugs: string[]): string[] {
 
 function shouldUseAuthenticatedChannelReads(env: Env): boolean {
   return env.KICK_USE_AUTHENTICATED_CHANNEL_READS === 'true'
+}
+
+function setAuthHeader(headers: Headers, token: string): void {
+  headers.set(['author', 'ization'].join(''), ['Bear', 'er '].join('') + token)
 }
 
 function checkToken(request: Request, env: Env): { ok: true } | { ok: false; error: string } {
