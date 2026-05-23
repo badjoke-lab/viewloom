@@ -5,6 +5,9 @@ type Item = Record<string, unknown>
 type Day = { day: string; totalViewerMinutes: number; peakViewers: number; peakStreamerName: string | null; observedStreamCount: number; observedMinutes: number; coverageState: string }
 type Stream = { streamerId: string; displayName: string; viewerMinutes: number; peakViewers: number; avgViewers: number; observedMinutes: number; rankByViewerMinutes: number; rankByPeak: number; changePct: number | null }
 
+const DEFAULT_SAMPLE_MINUTES = 5
+const MAX_SAMPLE_MINUTES = 5
+
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const url = new URL(request.url)
   const metric = url.searchParams.get('metric') === 'peak_viewers' ? 'peak_viewers' : 'viewer_minutes'
@@ -30,11 +33,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       metric,
       targetSource,
       coverageMode,
+      sampleWeightMode: 'observed_interval_capped_5m',
       summary,
       daily,
       topStreamers,
       coverage,
-      notes: ['storage=DB_KICK_HOT', 'Kick History reads vl_kick_hot via DB_KICK_HOT.', `target_source=${targetSource}`, `coverage_mode=${coverageMode}`],
+      notes: ['storage=DB_KICK_HOT', 'Kick History reads vl_kick_hot via DB_KICK_HOT.', `target_source=${targetSource}`, `coverage_mode=${coverageMode}`, 'sample_weight=observed_interval_capped_5m'],
     }, { headers: { 'cache-control': 'no-store' } })
   } catch (err) {
     return error(period, metric, 'history_api_error', err instanceof Error ? err.message : String(err), 500)
@@ -54,27 +58,53 @@ async function rowsFor(env: Env, from: string, to: string): Promise<Row[]> {
 function build(rows: Row[]) {
   const days = new Map<string, Day>()
   const streams = new Map<string, Omit<Stream, 'avgViewers' | 'rankByViewerMinutes' | 'rankByPeak' | 'changePct'>>()
-  for (const row of rows) {
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index]
+    const weightMinutes = sampleWeightMinutes(rows, index)
     const key = row.bucket_minute.slice(0, 10)
     const day = days.get(key) ?? { day: key, totalViewerMinutes: 0, peakViewers: 0, peakStreamerName: null, observedStreamCount: 0, observedMinutes: 0, coverageState: 'partial' }
-    day.totalViewerMinutes += Math.round(row.total_viewers || 0)
+    day.totalViewerMinutes += Math.round(row.total_viewers || 0) * weightMinutes
     day.peakViewers = Math.max(day.peakViewers, Math.round(row.total_viewers || 0))
     day.observedStreamCount = Math.max(day.observedStreamCount, row.stream_count || 0)
-    day.observedMinutes += 1
+    day.observedMinutes += weightMinutes
     day.coverageState = row.source_mode === 'demo' || row.source_mode === 'fixture' ? 'demo' : day.observedMinutes >= 60 ? 'good' : 'partial'
     for (const item of items(row.payload_json)) {
       const parsed = stream(item)
       if (!parsed) continue
       if (!day.peakStreamerName || parsed.viewers > day.peakViewers) day.peakStreamerName = parsed.displayName
       const current = streams.get(parsed.streamerId) ?? { streamerId: parsed.streamerId, displayName: parsed.displayName, viewerMinutes: 0, peakViewers: 0, observedMinutes: 0 }
-      current.viewerMinutes += parsed.viewers
+      current.viewerMinutes += parsed.viewers * weightMinutes
       current.peakViewers = Math.max(current.peakViewers, parsed.viewers)
-      current.observedMinutes += 1
+      current.observedMinutes += weightMinutes
       streams.set(parsed.streamerId, current)
     }
     days.set(key, day)
   }
   return { days, streams }
+}
+
+function sampleWeightMinutes(rows: Row[], index: number): number {
+  const current = rows[index]
+  const next = rows[index + 1]
+  const previous = rows[index - 1]
+  const currentTime = Date.parse(current.bucket_minute)
+  const currentDay = current.bucket_minute.slice(0, 10)
+
+  if (next && next.bucket_minute.slice(0, 10) === currentDay) {
+    return boundedMinutes(Date.parse(next.bucket_minute) - currentTime)
+  }
+
+  if (previous && previous.bucket_minute.slice(0, 10) === currentDay) {
+    return boundedMinutes(currentTime - Date.parse(previous.bucket_minute))
+  }
+
+  return DEFAULT_SAMPLE_MINUTES
+}
+
+function boundedMinutes(ms: number): number {
+  const minutes = Math.round(ms / 60000)
+  if (!Number.isFinite(minutes) || minutes <= 0) return DEFAULT_SAMPLE_MINUTES
+  return Math.max(1, Math.min(MAX_SAMPLE_MINUTES, minutes))
 }
 
 function items(json: string): Item[] {
@@ -139,7 +169,7 @@ function getPeriod(url: URL) {
   return { from: day(start), to: day(end), label: days === 7 ? 'Last 7 days' : 'Last 30 days' }
 }
 
-function error(period: { from: string; to: string; label: string }, metric: string, code: string, message: string, status: number) { return Response.json({ source: 'api', state: 'error', platform: 'kick', period: { ...period, days: dayCount(period.from, period.to) }, metric, targetSource: 'unknown', coverageMode: 'unknown', summary: null, daily: [], topStreamers: [], coverage: { state: 'missing', observedDays: 0, missingDays: 0, partialDays: 0, notes: [message] }, notes: ['storage=DB_KICK_HOT', 'target_source=unknown', 'coverage_mode=unknown'], error: { code, message } }, { status, headers: { 'cache-control': 'no-store' } }) }
+function error(period: { from: string; to: string; label: string }, metric: string, code: string, message: string, status: number) { return Response.json({ source: 'api', state: 'error', platform: 'kick', period: { ...period, days: dayCount(period.from, period.to) }, metric, targetSource: 'unknown', coverageMode: 'unknown', sampleWeightMode: 'observed_interval_capped_5m', summary: null, daily: [], topStreamers: [], coverage: { state: 'missing', observedDays: 0, missingDays: 0, partialDays: 0, notes: [message] }, notes: ['storage=DB_KICK_HOT', 'target_source=unknown', 'coverage_mode=unknown', 'sample_weight=observed_interval_capped_5m'], error: { code, message } }, { status, headers: { 'cache-control': 'no-store' } }) }
 function nextDay(value: string): string { const date = new Date(`${value}T00:00:00.000Z`); date.setUTCDate(date.getUTCDate() + 1); return date.toISOString() }
 function dayCount(from: string, to: string): number { return Math.max(1, Math.round((Date.parse(`${to}T00:00:00.000Z`) - Date.parse(`${from}T00:00:00.000Z`)) / 86400000) + 1) }
 function day(date: Date): string { return date.toISOString().slice(0, 10) }
