@@ -38,12 +38,15 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
     const built = build(rows, labels, bucketMinutes, topN, metric)
     const latest = rows[rows.length - 1]
+    const latestMeta = latest ? collectorMeta(latest.payload_json) : null
     const updatedAt = latest?.collected_at || latest?.bucket_minute || now.toISOString()
     const stale = Date.now() - toDate(updatedAt).getTime() > STALE_AFTER_MS
     const state = stateFor(built.lines.length > 0, stale, built.observed, labels.length)
     const notes = [
       `${rows.length} provider=kick DB_KICK_HOT snapshot rows read. ${built.observed}/${labels.length} buckets observed.`,
       `source_mode=${latest?.source_mode || 'unknown'}`,
+      `target_source=${str(latestMeta?.targetSource) || 'unknown'}`,
+      `coverage_mode=${str(latestMeta?.coverageMode) || 'unknown'}`,
       'Activity / heat fusion is not connected for Kick Battle Lines yet.',
       'Missing, not_observed, and offline points are kept separate and should not be drawn as observed values.',
     ]
@@ -155,6 +158,12 @@ function normalize(payloadJson: string): Stream[] {
   const record = object(parsed)
   const rawItems = Array.isArray(record?.items) ? record.items : Array.isArray(record?.data) ? record.data : []
   return rawItems.map(stream).filter((item): item is Stream => item !== null)
+}
+
+function collectorMeta(payloadJson: string): Record<string, unknown> | null {
+  const parsed = safeJson(payloadJson)
+  const record = object(parsed)
+  return object(record?.collectorMeta)
 }
 
 function stream(raw: unknown): Stream | null {
