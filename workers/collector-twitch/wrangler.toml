@@ -8,8 +8,11 @@ compatibility_date = "2026-05-18"
 #   GET /health
 #   GET /status
 
-[triggers]
-crons = ["*/5 * * * *"]
+# Cron is intentionally disabled during manual verification.
+# Cloudflare returned cron trigger limit error 10072 when this worker was deployed
+# with a schedule. Re-enable this in the cron activation PR after freeing a trigger.
+# [triggers]
+# crons = ["*/5 * * * *"]
 
 # Required secrets:
 #   wrangler secret put TWITCH_CLIENT_ID
@@ -17,8 +20,7 @@ crons = ["*/5 * * * *"]
 # Optional manual route token:
 #   wrangler secret put TWITCH_INGEST_TOKEN
 
-# Fill the database_id from `wrangler d1 list` before first deploy.
 [[d1_databases]]
 binding = "DB_TWITCH_HOT"
 database_name = "vl_twitch_hot"
-database_id = "REPLACE_WITH_VL_TWITCH_HOT_DATABASE_ID"
+database_id = "b77221fe-80a3-4749-bc0e-d3ad54003dcf"
