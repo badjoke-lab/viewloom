@@ -59,7 +59,28 @@ Probes known Kick candidate slugs and generates SQL that boosts currently live c
 
 This script does **not** execute SQL against D1.
 
-### Generate live priority boost SQL
+### Package scripts
+
+Use safe mode when Kick public endpoint errors are high.
+
+```bash
+cd ~/viewloom
+pnpm kick:live-probe:safe
+```
+
+Use fast mode for normal operator checks.
+
+```bash
+pnpm kick:live-probe:fast
+```
+
+Use aggressive mode only when speed matters more than endpoint stability.
+
+```bash
+pnpm kick:live-probe:aggressive
+```
+
+### Generate live priority boost SQL directly
 
 ```bash
 cd ~/viewloom
