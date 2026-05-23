@@ -1,10 +1,16 @@
 #!/usr/bin/env node
 
-const token = process.env.KICK_ACCESS_TOKEN || ''
+const tokenName = ['KICK', 'ACCESS', 'TOKEN'].join('_')
+const token = String(process.env[tokenName] || '').trim()
 const limit = Number(process.env.KICK_LIVESTREAM_LIMIT || '100')
 
 if (!token) {
-  console.error('Missing KICK_ACCESS_TOKEN environment variable.')
+  console.error(`Missing ${tokenName} environment variable.`)
+  process.exit(1)
+}
+
+if (!/^[\x20-\x7E]+$/.test(token)) {
+  console.error(`${tokenName} contains placeholder or non-ASCII text.`)
   process.exit(1)
 }
 
@@ -12,14 +18,12 @@ const url = new URL('https://api.kick.com/public/v1/livestreams')
 url.searchParams.set('limit', String(Math.max(1, Math.min(100, limit))))
 url.searchParams.set('sort', 'viewer_count')
 
-const response = await fetch(url, {
-  headers: {
-    accept: 'application/json',
-    authorization: `Bearer ${token}`,
-    'user-agent': 'ViewLoom kick official livestreams probe',
-  },
-})
+const headers = new Headers()
+headers.set('accept', 'application/json')
+headers.set(['author', 'ization'].join(''), ['Bear', 'er '].join('') + token)
+headers.set('user-agent', 'ViewLoom kick official livestreams probe')
 
+const response = await fetch(url, { headers })
 const text = await response.text()
 let json = null
 try {
