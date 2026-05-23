@@ -53,52 +53,49 @@ node workers/collector-kick/scripts/generate-kick-seed-import-sql.mjs \
   --out="/tmp/kick-seed-import.sql"
 ```
 
-## probe-kick-live-candidates.mjs
+## Kick live candidate probe
 
 Probes known Kick candidate slugs and generates SQL that boosts currently live candidates in `kick_channels`.
 
-This script does **not** execute SQL against D1.
+These scripts do **not** execute SQL against D1.
 
-### Package scripts
+### Standard package scripts
 
-Use safe mode when Kick public endpoint errors are high.
+Use the Python probe as the default operator command. It has produced better local results than the Node fetch probe.
 
 ```bash
 cd ~/viewloom
+pnpm kick:live-probe
+```
+
+Use safe mode when endpoint errors are high.
+
+```bash
 pnpm kick:live-probe:safe
 ```
 
-Use fast mode for normal operator checks.
+Use slow mode when safe mode still has too many errors.
 
 ```bash
-pnpm kick:live-probe:fast
+pnpm kick:live-probe:slow
 ```
 
-Use aggressive mode only when speed matters more than endpoint stability.
+### Node fallback scripts
+
+The Node probe is kept for fallback/comparison.
 
 ```bash
-pnpm kick:live-probe:aggressive
+pnpm kick:live-probe:node
+pnpm kick:live-probe:node-fast
+pnpm kick:live-probe:node-aggressive
 ```
 
-### Generate live priority boost SQL directly
+### Direct Python command
 
 ```bash
-cd ~/viewloom
-node workers/collector-kick/scripts/probe-kick-live-candidates.mjs
-```
-
-Default output:
-
-```text
-workers/collector-kick/generated/kick-live-priority-boost.sql
-```
-
-### Useful options
-
-```bash
-node workers/collector-kick/scripts/probe-kick-live-candidates.mjs \
-  --concurrency=12 \
-  --timeout-ms=3000 \
+python3 workers/collector-kick/scripts/probe-kick-live-candidates-python.py \
+  --concurrency=8 \
+  --timeout=10 \
   --progress-every=25
 ```
 
@@ -107,7 +104,7 @@ node workers/collector-kick/scripts/probe-kick-live-candidates.mjs \
 The optional input file accepts one slug per line. Comma-separated lines use the first column as the slug.
 
 ```bash
-node workers/collector-kick/scripts/probe-kick-live-candidates.mjs \
+python3 workers/collector-kick/scripts/probe-kick-live-candidates-python.py \
   --input="workers/collector-kick/generated/extra-kick-slugs.txt"
 ```
 
