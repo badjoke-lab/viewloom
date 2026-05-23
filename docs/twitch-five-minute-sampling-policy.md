@@ -43,14 +43,39 @@ latest exists: true
 collectorStatus exists: true
 ```
 
-However the same check returned:
+The latest verification after Battle Lines Browser QA showed:
 
 ```text
 state: stale
-bucket_minute: 2026-05-23T12:41:00.000Z
+bucket_minute: 2026-05-23T14:14:00.000Z
+payload_json bucketMinute: 2026-05-23T14:14:00.000Z
+payload_json bucketMinutes: missing
+TWITCH_BUCKET_MINUTES secret: not set
 ```
 
-This means the API shape is correct, but the latest Twitch snapshot was stale at verification time. The next operational check is not a payload-shape change; it is a collector freshness / schedule check.
+This means the production row is stale and still has the old payload shape. The missing secret confirms the issue is not `TWITCH_BUCKET_MINUTES=1`. The likely cause is that the external Twitch collector has not posted a new payload since the 5-minute ingest change, or it is pointed at an old/stale path.
+
+## API diagnostics
+
+`/api/twitch-heatmap` should expose the following diagnostics:
+
+```text
+expectedBucketMinutes
+bucketMinutes
+payloadBucketMinute
+bucketAligned
+ingestFreshnessWarning
+```
+
+Expected warning examples:
+
+```text
+twitch_collector_stale
+latest_bucket_not_5m_aligned
+payload_bucket_minutes_missing_or_not_5
+```
+
+These fields are diagnostic only. They do not repair collection by themselves.
 
 ## Freshness checks
 
@@ -66,6 +91,11 @@ d = json.loads(Path('/tmp/twitch-heatmap.json').read_text())
 print('state:', d.get('state'))
 print('items:', len(d.get('items') or []))
 print('coverageMode:', d.get('coverageMode'))
+print('expectedBucketMinutes:', d.get('expectedBucketMinutes'))
+print('bucketMinutes:', d.get('bucketMinutes'))
+print('payloadBucketMinute:', d.get('payloadBucketMinute'))
+print('bucketAligned:', d.get('bucketAligned'))
+print('ingestFreshnessWarning:', d.get('ingestFreshnessWarning'))
 print('notes:', d.get('notes'))
 print('latest_bucket_minute:', (d.get('latest') or {}).get('bucket_minute'))
 print('latest_collected_at:', (d.get('latest') or {}).get('collected_at'))
