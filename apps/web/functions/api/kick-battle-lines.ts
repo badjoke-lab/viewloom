@@ -14,14 +14,16 @@ type Battle = { id: string; streamerAId: string; streamerBId: string; streamerAN
 const MINUTE = 60 * 1000
 const STALE_AFTER_MS = 10 * MINUTE
 const MAX_ROWS = 1800
+const KICK_SAMPLE_INTERVAL_MINUTES = 5
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const url = new URL(request.url)
   const now = new Date()
   const topN = parseTop(url.searchParams.get('top'))
-  const bucket = parseBucket(url.searchParams.get('bucket'))
+  const requestedBucket = requestedBucketValue(url.searchParams.get('bucket'))
+  const bucket = normalizeKickBucket(requestedBucket)
   const metric: Metric = url.searchParams.get('metric') === 'indexed' ? 'indexed' : 'viewers'
-  const bucketMinutes = bucket === '1m' ? 1 : bucket === '10m' ? 10 : 5
+  const bucketMinutes = bucket === '10m' ? 10 : KICK_SAMPLE_INTERVAL_MINUTES
   const range = makeRange(url, now)
   const labels = makeBuckets(range.start, range.end, bucketMinutes)
 
@@ -34,7 +36,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       LIMIT ${MAX_ROWS}
     `).bind('kick', range.start.toISOString(), range.end.toISOString()).all<Row>()
     const rows = result.results ?? []
-    if (rows.length === 0) return json(payload('empty', now.toISOString(), topN, bucket, metric, [], [], [], ['provider=kick returned no DB_KICK_HOT rows for this range.']))
+    if (rows.length === 0) return json(payload('empty', now.toISOString(), topN, bucket, metric, [], [], [], ['provider=kick returned no DB_KICK_HOT rows for this range.'], 'unknown', 'unknown', requestedBucket))
 
     const built = build(rows, labels, bucketMinutes, topN, metric)
     const latest = rows[rows.length - 1]
@@ -42,18 +44,22 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     const updatedAt = latest?.collected_at || latest?.bucket_minute || now.toISOString()
     const stale = Date.now() - toDate(updatedAt).getTime() > STALE_AFTER_MS
     const state = stateFor(built.lines.length > 0, stale, built.observed, labels.length)
+    const granularityNote = requestedBucket === '1m' ? 'requested_bucket=1m normalized_bucket=5m because Kick snapshots are collected every 5 minutes.' : `requested_bucket=${requestedBucket} normalized_bucket=${bucket}`
     const notes = [
       `${rows.length} provider=kick DB_KICK_HOT snapshot rows read. ${built.observed}/${labels.length} buckets observed.`,
       `source_mode=${latest?.source_mode || 'unknown'}`,
       `target_source=${str(latestMeta?.targetSource) || 'unknown'}`,
       `coverage_mode=${str(latestMeta?.coverageMode) || 'unknown'}`,
+      `sample_interval_minutes=${KICK_SAMPLE_INTERVAL_MINUTES}`,
+      granularityNote,
+      'Kick Battle Lines supports 5m and 10m display buckets while collection is 5m-based.',
       'Activity / heat fusion is not connected for Kick Battle Lines yet.',
       'Missing, not_observed, and offline points are kept separate and should not be drawn as observed values.',
     ]
-    return json(payload(state, updatedAt, topN, bucket, metric, built.lines, built.battles, built.events, notes, str(latestMeta?.targetSource) || 'unknown', str(latestMeta?.coverageMode) || 'unknown'))
+    return json(payload(state, updatedAt, topN, bucket, metric, built.lines, built.battles, built.events, notes, str(latestMeta?.targetSource) || 'unknown', str(latestMeta?.coverageMode) || 'unknown', requestedBucket))
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    return json(payload('error', now.toISOString(), topN, bucket, metric, [], [], [], ['Kick Battle Lines API could not read DB_KICK_HOT snapshots.', message]), 500)
+    return json(payload('error', now.toISOString(), topN, bucket, metric, [], [], [], ['Kick Battle Lines API could not read DB_KICK_HOT snapshots.', message], 'unknown', 'unknown', requestedBucket), 500)
   }
 }
 
@@ -148,9 +154,38 @@ function makeEvents(battles: Battle[], lines: Line[]): unknown[] {
   return battles.slice(0, 3).map((battle) => ({ type: 'recommended_battle', battleId: battle.id, title: `${battle.streamerAName} vs ${battle.streamerBName}`, score: battle.score, overlapCount: battle.overlapCount, reversalCount: battle.reversalCount, lineCount: lines.length }))
 }
 
-function payload(state: State, updatedAt: string, top: number, bucket: Bucket, metric: Metric, lines: Line[], battles: Battle[], events: unknown[], notes: string[], targetSource = 'unknown', coverageMode = 'unknown') {
+function payload(state: State, updatedAt: string, top: number, bucket: Bucket, metric: Metric, lines: Line[], battles: Battle[], events: unknown[], notes: string[], targetSource = 'unknown', coverageMode = 'unknown', requestedBucket: Bucket = bucket) {
   const primaryBattle = battles[0] ?? null
-  return { source: 'api', platform: 'kick', state, status: state, updatedAt, top, bucket, metric, valueMode: metric, targetSource, coverageMode, metricNote: metric === 'indexed' ? 'Indexed mode normalizes each line peak to 100.' : 'Viewers mode uses observed viewer counts.', lines, primaryBattle, recommendedBattle: primaryBattle, recommendedQuality: primaryBattle ? { score: primaryBattle.score, overlapCount: primaryBattle.overlapCount, missingPenalty: primaryBattle.missingPenalty } : null, secondaryBattles: battles.slice(1, 4), battles, events, reversals: events.filter((event) => typeof event === 'object'), feed: events, notes, contract: { linePointStates: ['observed', 'missing', 'not_observed', 'offline'], requiredBattleFields: ['id', 'streamerAId', 'streamerBId', 'score', 'overlapCount', 'longestRun', 'reversalCount'], requiredLineFields: ['streamerId', 'name', 'url', 'viewerMinutes', 'peakViewers', 'points'] } }
+  return {
+    source: 'api',
+    platform: 'kick',
+    state,
+    status: state,
+    updatedAt,
+    top,
+    requestedBucket,
+    bucket,
+    metric,
+    valueMode: metric,
+    sampleIntervalMinutes: KICK_SAMPLE_INTERVAL_MINUTES,
+    availableGranularity: ['5m', '10m'],
+    disabledGranularity: [{ bucket: '1m', reason: 'Kick snapshots are currently collected every 5 minutes.' }],
+    granularityNote: requestedBucket === '1m' ? '1m was requested but Kick Battle Lines uses 5m buckets because Kick snapshots are currently collected every 5 minutes.' : 'Kick Battle Lines uses 5m-based snapshots.',
+    targetSource,
+    coverageMode,
+    metricNote: metric === 'indexed' ? 'Indexed mode normalizes each line peak to 100.' : 'Viewers mode uses observed viewer counts.',
+    lines,
+    primaryBattle,
+    recommendedBattle: primaryBattle,
+    recommendedQuality: primaryBattle ? { score: primaryBattle.score, overlapCount: primaryBattle.overlapCount, missingPenalty: primaryBattle.missingPenalty } : null,
+    secondaryBattles: battles.slice(1, 4),
+    battles,
+    events,
+    reversals: events.filter((event) => typeof event === 'object'),
+    feed: events,
+    notes,
+    contract: { linePointStates: ['observed', 'missing', 'not_observed', 'offline'], requiredBattleFields: ['id', 'streamerAId', 'streamerBId', 'score', 'overlapCount', 'longestRun', 'reversalCount'], requiredLineFields: ['streamerId', 'name', 'url', 'viewerMinutes', 'peakViewers', 'points'] },
+  }
 }
 
 function normalize(payloadJson: string): Stream[] {
@@ -196,7 +231,8 @@ function floor(value: string, bucketMinutes: number): string { return floorDate(
 function floorDate(date: Date, bucketMinutes: number): Date { const copy = new Date(date); copy.setUTCMinutes(Math.floor(copy.getUTCMinutes() / bucketMinutes) * bucketMinutes, 0, 0); return copy }
 function toDate(value: string): Date { return new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : `${value}Z`) }
 function parseTop(value: string | null): number { const parsed = Number(value); return parsed === 3 || parsed === 5 || parsed === 10 ? parsed : 5 }
-function parseBucket(value: string | null): Bucket { return value === '1m' ? '1m' : value === '10m' ? '10m' : '5m' }
+function requestedBucketValue(value: string | null): Bucket { return value === '1m' ? '1m' : value === '10m' ? '10m' : '5m' }
+function normalizeKickBucket(value: Bucket): Bucket { return value === '10m' ? '10m' : '5m' }
 function validDate(value: string | null): string | null { return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null }
 function shift(date: string, days: number): string { const parsed = new Date(`${date}T00:00:00.000Z`); parsed.setUTCDate(parsed.getUTCDate() + days); return parsed.toISOString().slice(0, 10) }
 function safeJson(value: string): unknown { try { return JSON.parse(value) } catch { return null } }
