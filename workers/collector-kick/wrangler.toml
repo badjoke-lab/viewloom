@@ -10,9 +10,9 @@ compatibility_date = "2026-05-18"
 #   GET /health
 #   GET /status
 
-# Optional scheduled polling. Enable after Cloudflare D1 binding and channel slugs are configured.
-# [triggers]
-# crons = ["*/5 * * * *"]
+# Scheduled polling for official Kick livestream snapshots.
+[triggers]
+crons = ["*/5 * * * *"]
 
 # Configure after deploy or in Cloudflare dashboard.
 # KICK_CHANNEL_SLUGS is a comma-separated list, for example:
