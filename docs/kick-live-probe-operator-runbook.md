@@ -1,6 +1,12 @@
 # Kick live probe operator runbook
 
-This runbook describes the short operator flow for boosting currently live Kick candidates after PR-182.
+## Temporary status
+
+This runbook is for temporary Kick beta operation only.
+
+The candidate registry and live probe flow is not Twitch parity, not full Kick coverage, and not the final Kick collector architecture.
+
+Use this runbook only to improve current beta page density while a directory-like Kick collection source is investigated.
 
 ## Purpose
 
@@ -14,7 +20,7 @@ From repo root:
 
 ```bash
 cd ~/viewloom
-pnpm kick:live-probe:fast
+pnpm kick:live-probe
 ```
 
 Default output:
@@ -99,14 +105,12 @@ done
 Recent successful manual verification reached:
 
 ```text
-stream_count = 4
-observed = gaules, amouranth, greekgodx, knut
-kick-heatmap items = 4
-kick-battle-lines lines = 5
+stream_count = 15
+kick-heatmap items = 15
 ```
 
 ## Non-goals
 
 This runbook does not claim Kick has directory coverage or Twitch parity.
 
-It is an operator tool for improving current registry candidate quality.
+It is an operator tool for improving current registry candidate quality during beta testing.
