@@ -382,8 +382,8 @@ function renderPortal(): string {
               ViewLoom separates platforms first, then lets each site read live activity through Heatmap, Day Flow, Battle Lines, and History.
             </p>
             <div class="hero-actions landing-hero__actions">
-              <a class="button button--primary button--twitch" href="/twitch/">Open Twitch data</a>
-              <a class="button button--primary button--kick" href="/kick/">Open Kick data</a>
+              <a class="button button--primary button--twitch landing-main-cta" href="/twitch/"><span class="landing-cta-icon">T</span><span>Open Twitch data</span><span class="landing-cta-arrow">→</span></a>
+              <a class="button button--primary button--kick landing-main-cta" href="/kick/"><span class="landing-cta-icon">K</span><span>Open Kick data</span><span class="landing-cta-arrow">→</span></a>
             </div>
           </div>
           <aside class="status-panel status-panel--portal landing-role-card">
@@ -439,6 +439,8 @@ function renderPortal(): string {
           </div>
           <a class="button button--support" href="/support/">Support</a>
         </section>
+
+        ${renderLandingFooter()}
       </main>
     </div>
   `
@@ -525,6 +527,8 @@ function renderSiteHome(kind: SiteKey): string {
         <section class="support-grid landing-secondary-grid">
           ${renderProviderSecondaryCards(site, providerLabel)}
         </section>
+
+        ${renderLandingFooter('<a href="' + site.basePath + '/status/">Data Status</a>')}
       </main>
     </div>
   `
@@ -599,10 +603,10 @@ function renderProviderSecondaryCards(site: SiteMeta, providerLabel: string): st
     },
     {
       label: 'Support / Contact',
-      title: 'Need help or have questions?',
-      body: 'Get help, report issues, or support the ViewLoom project.',
+      title: 'Support ViewLoom',
+      body: 'Help keep this independent live data view online, maintained, and improving.',
       href: '/support/',
-      cta: 'Support ViewLoom',
+      cta: '♡ Support ViewLoom',
       icon: '♡',
     },
   ]
@@ -798,6 +802,9 @@ function renderHeader(current: PageKind): string {
         <a class="nav-link ${current === 'portal' ? 'is-current' : ''}" href="/">Portal</a>
         <a class="nav-link ${currentSite === 'twitch' ? 'is-current' : ''}" href="/twitch/">Twitch data</a>
         <a class="nav-link ${currentSite === 'kick' ? 'is-current' : ''}" href="/kick/">Kick data</a>
+        <a class="nav-link nav-link--utility" href="/about/">About</a>
+        <a class="nav-link nav-link--support support-link" href="/support/">♡ Support</a>
+        <a class="nav-link nav-link--utility" href="/contact/">Contact</a>
       </nav>
       <div class="header-note">${badge}</div>
     </header>
@@ -808,7 +815,7 @@ function renderLandingFooter(extra = ''): string {
   return `
     <footer class="landing-footer">
       <a href="/about/">About</a>
-      <a class="support-link" href="/support/">Support</a>
+      <a class="support-link" href="/support/">♡ Support</a>
       <a href="/contact/">Contact</a>
       <a href="https://github.com/badjoke-lab/viewloom">GitHub</a>
       ${extra}
