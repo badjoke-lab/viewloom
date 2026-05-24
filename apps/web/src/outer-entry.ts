@@ -18,9 +18,9 @@ const page = pageName === 'support' ? 'support' : 'about'
 document.title = page === 'support' ? 'Support ViewLoom | ViewLoom' : 'About ViewLoom | ViewLoom'
 app.innerHTML = page === 'support' ? renderSupportPage() : renderAboutPage()
 
-function renderOuterHeader(current: Page): string {
+function renderHeader(current: Page): string {
   return `
-    <header class="site-header landing-header outer-header">
+    <header class="site-header landing-header outer-header-v2">
       <a class="brand" href="/">ViewLoom</a>
 
       <nav class="landing-primary-nav" aria-label="Platform navigation">
@@ -57,60 +57,55 @@ function renderOuterHeader(current: Page): string {
 
 function renderAboutPage(): string {
   return `
-    <div class="page-shell outer-page outer-page--portal-tone">
-      ${renderOuterHeader('about')}
-      <main class="page-main outer-main">
-        <section class="landing-hero outer-hero outer-hero--about">
-          <div class="landing-hero__copy">
-            <div class="eyebrow">ViewLoom · About</div>
+    <div class="page-shell outer-page-v2">
+      ${renderHeader('about')}
+
+      <main class="outer-main-v2">
+        <section class="outer-hero-v2">
+          <div>
+            <div class="outer-kicker">ViewLoom · About</div>
             <h1>About ViewLoom</h1>
-            <p class="hero-copy">
+            <p>
               ViewLoom is an unofficial observation surface for live-stream activity. It keeps Twitch and Kick separated, then reads each provider through fixed views.
             </p>
           </div>
-          <aside class="status-panel landing-role-card">
-            <div class="status-panel__label">Outer page role</div>
-            <div class="status-panel__title">Shared context, not provider data</div>
-            <p>About is a common ViewLoom page. Provider-specific freshness, limits, and collection notes belong in each Data Status page.</p>
+
+          <aside class="outer-side-panel-v2">
+            <div class="outer-kicker">Page role</div>
+            <h2>Shared context page</h2>
+            <p>About explains the ViewLoom structure. Provider-specific freshness and limitations stay in each Data Status page.</p>
           </aside>
         </section>
 
-        <section class="outer-card-grid outer-card-grid--about">
+        <section class="outer-grid-v2 outer-grid-v2--four">
           ${[
             ['Platform-first', 'Twitch and Kick stay separated as independent observation surfaces.'],
             ['Fixed views', 'Heatmap is Now, Day Flow is Today, Battle Lines is Rivalry, and History is Trends.'],
-            ['Status honesty', 'Coverage can be delayed, partial, sampled, stale, or unavailable depending on source state.'],
-            ['Shared pages', 'About, Support, Contact, and GitHub are common ViewLoom routes.'],
+            ['Honest status', 'Coverage can be delayed, partial, sampled, stale, or unavailable depending on source state.'],
+            ['Shared routes', 'About, Support, Contact, and GitHub are common ViewLoom routes.'],
           ]
-            .map(
-              ([title, body]) => `
-                <article class="outer-info-card">
-                  <div class="outer-card-label">${escapeText(title)}</div>
-                  <p>${escapeText(body)}</p>
-                </article>
-              `,
-            )
+            .map(([title, body]) => renderInfoCard(title, body))
             .join('')}
         </section>
 
-        <section class="outer-action-panel">
+        <section class="outer-action-v2">
           <div>
-            <div class="outer-card-label">Start reading</div>
+            <div class="outer-kicker">Start reading</div>
             <h2>Choose a provider first.</h2>
-            <p>Use Portal for entry, then open Twitch or Kick for the actual Now / Today / Rivalry / Trends views.</p>
+            <p>Use Portal as the entry point, then open Twitch or Kick for the actual Now / Today / Rivalry / Trends views.</p>
           </div>
-          <div class="outer-action-panel__buttons">
+          <div class="outer-actions-v2">
             <a class="button button--primary button--twitch" href="/twitch/">Open Twitch data</a>
             <a class="button button--primary button--kick" href="/kick/">Open Kick data</a>
           </div>
         </section>
 
-        <section class="outer-note-card">
-          <div class="outer-card-label">Note</div>
+        <section class="outer-note-v2">
+          <div class="outer-kicker">Note</div>
           <p>ViewLoom is independent and is not affiliated with Twitch or Kick. Contact opens a Google Form. Provider implementation details belong to Twitch Data Status and Kick Data Status.</p>
         </section>
 
-        ${renderOuterFooter(true)}
+        ${renderFooter()}
       </main>
     </div>
   `
@@ -118,80 +113,69 @@ function renderAboutPage(): string {
 
 function renderSupportPage(): string {
   return `
-    <div class="page-shell outer-page outer-page--portal-tone">
-      ${renderOuterHeader('support')}
-      <main class="page-main outer-main">
-        <section class="landing-hero outer-hero outer-hero--support">
-          <div class="landing-hero__copy">
-            <div class="eyebrow">ViewLoom · Support</div>
+    <div class="page-shell outer-page-v2">
+      ${renderHeader('support')}
+
+      <main class="outer-main-v2">
+        <section class="outer-hero-v2 outer-hero-v2--support">
+          <div>
+            <div class="outer-kicker">ViewLoom · Support</div>
             <h1>Support ViewLoom</h1>
-            <p class="hero-copy">
-              Support helps keep ViewLoom running as a lightweight independent observation project. It is optional and shared across the whole site.
+            <p>
+              Support helps keep ViewLoom running as a lightweight independent observation project. It is optional, shared across the whole site, and does not unlock a paid gate.
             </p>
-            <div class="hero-actions outer-hero-actions">
-              <a class="button button--primary outer-support-primary" href="${supportPaymentUrl}" target="_blank" rel="noopener noreferrer">♡ Support ViewLoom</a>
+            <div class="outer-actions-v2 outer-actions-v2--hero">
+              <a class="button button--primary outer-support-button" href="${supportPaymentUrl}" target="_blank" rel="noopener noreferrer">♡ Support ViewLoom</a>
               <a class="button button--secondary" href="${githubUrl}" target="_blank" rel="noopener noreferrer">Open GitHub</a>
             </div>
           </div>
-          <aside class="status-panel landing-role-card">
-            <div class="status-panel__label">Support note</div>
-            <div class="status-panel__title">Optional support, no paid gate</div>
-            <p>Support does not unlock a paid mode, subscription, or provider-specific feature. The data views remain open.</p>
+
+          <aside class="outer-side-panel-v2">
+            <div class="outer-kicker">Support note</div>
+            <h2>Optional support</h2>
+            <p>The data views remain open. Support helps with collection, storage, deployment checks, maintenance, and data-quality work.</p>
           </aside>
         </section>
 
-        <section class="outer-card-grid outer-card-grid--support">
+        <section class="outer-grid-v2 outer-grid-v2--three">
           ${[
             ['Operations', 'Collection jobs, storage, deployment checks, and future coverage improvements.'],
-            ['Maintenance', 'UI fixes, feature page updates, source-mode changes, and provider-specific edge cases.'],
+            ['Maintenance', 'UI fixes, feature updates, source-mode changes, and provider-specific edge cases.'],
             ['Transparency', 'Status-first design that shows partial coverage, stale data, and unavailable signals clearly.'],
           ]
-            .map(
-              ([title, body]) => `
-                <article class="outer-info-card">
-                  <div class="outer-card-label">${escapeText(title)}</div>
-                  <p>${escapeText(body)}</p>
-                </article>
-              `,
-            )
+            .map(([title, body]) => renderInfoCard(title, body))
             .join('')}
         </section>
 
-        <section class="outer-action-panel outer-action-panel--support">
-          <div>
-            <div class="outer-card-label">Direct support</div>
-            <h2>Keep ViewLoom online and improving.</h2>
-            <p>The support link opens a public Stripe Payment Link in a new tab. No Stripe API keys are used in the frontend.</p>
-          </div>
-          <div class="outer-action-panel__buttons">
-            <a class="button button--primary outer-support-primary" href="${supportPaymentUrl}" target="_blank" rel="noopener noreferrer">♡ Support ViewLoom</a>
-            <a class="button button--secondary" href="${githubUrl}" target="_blank" rel="noopener noreferrer">Open GitHub</a>
-          </div>
+        <section class="outer-note-v2 outer-note-v2--support">
+          <div class="outer-kicker">Note</div>
+          <p>Support opens a public Stripe Payment Link in a new tab. No Stripe API keys are used in the frontend. GitHub remains the technical reference point.</p>
         </section>
 
-        <section class="outer-note-card">
-          <div class="outer-card-label">Note</div>
-          <p>Support is optional. GitHub remains the technical reference point. Provider-specific data quality remains in each provider Data Status page.</p>
-        </section>
-
-        ${renderOuterFooter(true)}
+        ${renderFooter()}
       </main>
     </div>
   `
 }
 
-function renderOuterFooter(includeDataStatus: boolean): string {
+function renderInfoCard(title: string, body: string): string {
   return `
-    <footer class="landing-footer outer-footer">
+    <article class="outer-info-v2">
+      <div class="outer-kicker">${escapeText(title)}</div>
+      <p>${escapeText(body)}</p>
+    </article>
+  `
+}
+
+function renderFooter(): string {
+  return `
+    <footer class="landing-footer outer-footer-v2">
       <a href="/about/">About</a>
       <a class="support-link" href="/support/">♡ Support</a>
       <a href="${escapeAttr(contactFormUrl)}" target="_blank" rel="noreferrer">Contact</a>
       <a href="${githubUrl}" target="_blank" rel="noreferrer">GitHub</a>
-      ${
-        includeDataStatus
-          ? '<a href="/twitch/status/">Twitch Status</a><a href="/kick/status/">Kick Status</a>'
-          : ''
-      }
+      <a href="/twitch/status/">Twitch Status</a>
+      <a href="/kick/status/">Kick Status</a>
     </footer>
   `
 }
