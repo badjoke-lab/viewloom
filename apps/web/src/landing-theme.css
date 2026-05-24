@@ -1607,3 +1607,185 @@
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
 }
+
+/* Landing v8b header support cleanup */
+
+/* Landing v8b header support cleanup */
+
+/* PC: clean 4-zone header. */
+.landing-header {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center !important;
+  gap: 18px;
+  width: min(calc(100% - 48px), 1360px);
+  margin: 0 auto 34px;
+  padding: 18px 0 0;
+  background: transparent !important;
+}
+
+.landing-header .brand {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+}
+
+.landing-primary-nav {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+}
+
+.landing-utility-nav {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.landing-header .header-note {
+  grid-column: 4;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.landing-mobile-support {
+  display: none;
+}
+
+.landing-primary-nav,
+.landing-utility-nav {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.landing-header .nav-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  line-height: 1 !important;
+  padding: 0 13px !important;
+  border-radius: 999px;
+  box-sizing: border-box;
+}
+
+.landing-header .nav-link.is-current {
+  border: 1px solid rgba(var(--accent-rgb), 0.55);
+  background: rgba(var(--accent-rgb), 0.18);
+}
+
+.landing-header .nav-link--support {
+  border: 1px solid rgba(var(--accent-rgb), 0.42);
+  background: rgba(var(--accent-rgb), 0.16);
+  color: var(--text);
+  font-weight: 850;
+}
+
+/* Mobile:
+   row 1 = brand + badge
+   row 2 = 3 platform tabs
+   row 3 = support CTA only
+   About/Contact stay in footer. */
+@media (max-width: 760px) {
+  .landing-header {
+    width: min(calc(100% - 16px), 520px);
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto;
+    gap: 8px 10px;
+    margin: 0 auto 18px;
+    padding-top: 10px;
+  }
+
+  .landing-header .brand {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 0.98rem;
+  }
+
+  .landing-header .header-note {
+    grid-column: 2;
+    grid-row: 1;
+    max-width: 145px;
+    min-height: 28px;
+    padding: 0 10px;
+    font-size: 0.62rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .landing-primary-nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    width: 100%;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  .landing-primary-nav .nav-link {
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 6px !important;
+    font-size: 0.68rem;
+    border: 1px solid rgba(var(--accent-rgb), 0.12);
+    background: rgba(255, 255, 255, 0.025);
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .landing-primary-nav .nav-link.is-current {
+    border-color: rgba(var(--accent-rgb), 0.55);
+    background: rgba(var(--accent-rgb), 0.20);
+    color: var(--text);
+  }
+
+  .landing-utility-nav {
+    display: none !important;
+  }
+
+  .landing-mobile-support {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--accent-rgb), 0.44);
+    background: rgba(var(--accent-rgb), 0.16);
+    color: var(--text);
+    font-weight: 850;
+    font-size: 0.76rem;
+    box-shadow: 0 12px 36px rgba(var(--accent-rgb), 0.12);
+  }
+}
+
+@media (max-width: 390px) {
+  .landing-primary-nav .nav-link {
+    font-size: 0.62rem;
+    letter-spacing: -0.02em;
+  }
+
+  .landing-header .header-note {
+    max-width: 126px;
+    font-size: 0.58rem;
+  }
+
+  .landing-mobile-support {
+    min-height: 32px;
+    font-size: 0.72rem;
+  }
+}

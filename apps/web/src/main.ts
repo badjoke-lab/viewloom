@@ -798,14 +798,20 @@ function renderHeader(current: PageKind): string {
   return `
     <header class="site-header landing-header">
       <a class="brand" href="/">ViewLoom</a>
-      <nav class="site-nav" aria-label="Primary">
+
+      <nav class="site-nav landing-primary-nav" aria-label="Platform navigation">
         <a class="nav-link ${current === 'portal' ? 'is-current' : ''}" href="/">Portal</a>
         <a class="nav-link ${currentSite === 'twitch' ? 'is-current' : ''}" href="/twitch/">Twitch data</a>
         <a class="nav-link ${currentSite === 'kick' ? 'is-current' : ''}" href="/kick/">Kick data</a>
+      </nav>
+
+      <nav class="landing-utility-nav" aria-label="Site navigation">
         <a class="nav-link nav-link--utility" href="/about/">About</a>
         <a class="nav-link nav-link--support support-link" href="/support/">♡ Support</a>
         <a class="nav-link nav-link--utility" href="/contact/">Contact</a>
       </nav>
+
+      <a class="landing-mobile-support" href="/support/">♡ Support ViewLoom</a>
       <div class="header-note">${badge}</div>
     </header>
   `
