@@ -2072,3 +2072,123 @@
     font-size: 0.54rem;
   }
 }
+
+/* Landing v10 final mobile + portal polish */
+
+/* Mobile top: keep support, but make header less tall */
+@media (max-width: 760px) {
+  .landing-header {
+    gap: 6px 8px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .landing-mobile-support {
+    min-height: 30px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .landing-mobile-menu summary {
+    min-height: 30px !important;
+    min-width: 66px !important;
+    font-size: 0.68rem !important;
+  }
+
+  .landing-primary-nav .nav-link {
+    height: 30px !important;
+    min-height: 30px !important;
+  }
+}
+
+/* Portal: make platform cards feel like real entry cards */
+.landing-page--portal .landing-platform-grid .surface-card {
+  min-height: 0 !important;
+  padding: 22px 20px !important;
+}
+
+.landing-page--portal .landing-platform-grid .surface-card h2 {
+  font-size: clamp(1.8rem, 3vw, 2.35rem) !important;
+}
+
+.landing-page--portal .landing-platform-grid .surface-card .button {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.28), rgba(var(--accent-rgb), 0.14)) !important;
+  border-color: rgba(var(--accent-rgb), 0.5) !important;
+  color: var(--text) !important;
+}
+
+.landing-page--portal .landing-platform-grid .theme-twitch .button {
+  box-shadow: 0 16px 44px rgba(var(--vl-accent-purple), 0.22);
+}
+
+.landing-page--portal .landing-platform-grid .theme-kick .button {
+  box-shadow: 0 16px 44px rgba(var(--vl-accent-green), 0.2);
+}
+
+/* Provider mobile: reduce hero heaviness */
+@media (max-width: 760px) {
+  .landing-page--provider .landing-hero {
+    padding: 18px 16px !important;
+    gap: 12px !important;
+  }
+
+  .landing-page--provider .landing-hero h1 {
+    font-size: clamp(2.05rem, 10.8vw, 2.85rem) !important;
+    line-height: 0.98 !important;
+    letter-spacing: -0.06em !important;
+  }
+
+  .landing-page--provider .landing-hero__actions {
+    margin-top: 14px !important;
+  }
+
+  .landing-page--provider .landing-hero__actions .button {
+    min-height: 38px !important;
+  }
+
+  .landing-page--provider .landing-role-card {
+    padding: 14px !important;
+  }
+
+  .landing-page--provider .landing-role-card .metric-chip {
+    min-height: 46px !important;
+  }
+}
+
+/* Feature rows: improve mobile density */
+@media (max-width: 760px) {
+  .landing-page--provider .landing-feature-card {
+    padding: 14px !important;
+    grid-template-columns: 50px minmax(0, 1fr) 38px !important;
+  }
+
+  .landing-page--provider .landing-feature-card__icon {
+    width: 46px !important;
+    height: 46px !important;
+  }
+
+  .landing-page--provider .landing-feature-card h2 {
+    font-size: 1.14rem !important;
+  }
+
+  .landing-page--provider .landing-feature-card p {
+    font-size: 0.74rem !important;
+  }
+
+  .landing-page--provider .landing-feature-card .feature-card__link {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+  }
+}
+
+/* Footer: keep common links, but reduce bottom bulk */
+@media (max-width: 760px) {
+  .landing-footer {
+    margin-top: 22px !important;
+    margin-bottom: 20px !important;
+    padding-top: 14px !important;
+  }
+
+  .landing-footer a {
+    min-height: 32px !important;
+  }
+}
