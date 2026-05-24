@@ -2719,3 +2719,115 @@
     height: 36px !important;
   }
 }
+
+/* Landing v16 final PC/card polish */
+
+/* Portal feature links: avoid cramped "Heatmap›" look */
+.landing-platform-grid .landing-chip--link {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  text-align: left !important;
+}
+
+.landing-platform-grid .landing-chip--link::after {
+  margin-left: auto !important;
+  flex: 0 0 auto !important;
+}
+
+/* Portal platform cards: make them read as real entry cards */
+@media (min-width: 761px) {
+  .landing-page--portal .landing-platform-grid .surface-card {
+    padding: 30px 28px !important;
+  }
+
+  .landing-page--portal .landing-platform-grid .surface-card h2 {
+    font-size: clamp(2rem, 2.4vw, 2.35rem) !important;
+  }
+
+  .landing-page--portal .landing-platform-grid .surface-card p {
+    min-height: 52px;
+  }
+
+  .landing-page--portal .landing-platform-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .landing-page--portal .landing-chip--link {
+    min-height: 38px !important;
+    padding: 0 14px !important;
+    border-radius: 12px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .landing-page--portal .landing-platform-cta {
+    min-height: 50px !important;
+    margin-top: 16px !important;
+    border-radius: 15px !important;
+  }
+}
+
+/* Provider desktop: reduce top-heavy hero */
+@media (min-width: 761px) {
+  .landing-page--provider .landing-hero {
+    min-height: 440px !important;
+    padding-top: 58px !important;
+    padding-bottom: 58px !important;
+  }
+
+  .landing-page--provider .landing-hero h1 {
+    font-size: clamp(4rem, 5.2vw, 5.6rem) !important;
+    max-width: 14ch !important;
+  }
+
+  .landing-page--provider .landing-role-card {
+    max-width: 390px;
+  }
+}
+
+/* Provider desktop: make secondary cards lighter than the main 4 feature cards */
+@media (min-width: 761px) {
+  .landing-page--provider .landing-secondary-card {
+    min-height: 250px !important;
+    padding: 26px !important;
+  }
+
+  .landing-page--provider .landing-secondary-card .landing-feature-card__icon {
+    width: 58px !important;
+    height: 58px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .landing-page--provider .landing-secondary-card h2 {
+    font-size: 1.4rem !important;
+  }
+
+  .landing-page--provider .landing-secondary-card p {
+    font-size: 0.94rem !important;
+  }
+
+  .landing-page--provider .landing-secondary-card .feature-card__link {
+    min-height: 44px !important;
+    margin-top: 16px !important;
+  }
+}
+
+/* Portal desktop: support strip should stay compact and centered */
+@media (min-width: 761px) {
+  .landing-page--portal .support-strip {
+    max-width: 860px !important;
+  }
+}
+
+/* Mobile: keep Menu model, no extra nav rows */
+@media (max-width: 760px) {
+  .landing-mobile-support {
+    max-width: none !important;
+  }
+
+  .landing-mobile-menu__panel a {
+    text-decoration: none !important;
+  }
+}
