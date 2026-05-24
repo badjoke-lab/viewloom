@@ -453,10 +453,22 @@ function renderPortalCard(card: SiteCard): string {
       <div class="surface-card__eyebrow">${card.eyebrow}</div>
       <h2>${card.title}</h2>
       <p>${card.description}</p>
-      <div class="tag-list">
-        ${card.notes.map((note) => `<span class="tag-pill landing-chip">${note}</span>`).join('')}
+      <div class="tag-list landing-platform-links">
+        ${card.notes
+          .map((note) => {
+            const slug =
+              note === 'Heatmap'
+                ? 'heatmap'
+                : note === 'Day Flow'
+                  ? 'day-flow'
+                  : note === 'Battle Lines'
+                    ? 'battle-lines'
+                    : 'history'
+            return `<a class="tag-pill landing-chip landing-chip--link" href="/${card.slug}/${slug}/">${note}</a>`
+          })
+          .join('')}
       </div>
-      <a class="button button--ghost" href="/${card.slug}/">${card.cta}</a>
+      <a class="button button--ghost landing-platform-cta" href="/${card.slug}/">${card.cta}</a>
     </article>
   `
 }
