@@ -2306,3 +2306,64 @@
     margin-top: 0 !important;
   }
 }
+
+/* Landing v12 provider hero de-duplication */
+
+/* Provider top already has the real feature cards below.
+   Hide duplicated hero feature buttons on Twitch/Kick top pages. */
+@media (max-width: 760px) {
+  .landing-page--provider .landing-hero__actions {
+    display: none !important;
+  }
+
+  .landing-page--provider .landing-hero {
+    padding: 18px 16px 16px !important;
+  }
+
+  .landing-page--provider .landing-hero h1 {
+    font-size: clamp(2.05rem, 10.2vw, 2.75rem) !important;
+    max-width: 12ch !important;
+  }
+
+  .landing-page--provider .landing-hero .hero-copy {
+    margin-top: 12px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .landing-page--provider .landing-role-card {
+    margin-top: 2px !important;
+  }
+}
+
+/* Desktop/tablet: keep hero CTA buttons visible, but less dominant. */
+@media (min-width: 761px) {
+  .landing-page--provider .landing-hero__actions .button {
+    min-height: 42px !important;
+    padding-inline: 18px !important;
+  }
+}
+
+/* Provider feature rows become the primary navigation on mobile. */
+@media (max-width: 760px) {
+  .landing-page--provider .landing-feature-grid {
+    margin-top: 14px !important;
+  }
+
+  .landing-page--provider .landing-feature-card {
+    border-color: rgba(var(--accent-rgb), 0.38) !important;
+  }
+
+  .landing-page--provider .landing-feature-card .feature-card__link {
+    border-color: rgba(var(--accent-rgb), 0.26) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+  }
+}
+
+/* Portal cards: make the feature chips clearly labels, while CTA is the only strong action. */
+.landing-page--portal .landing-platform-grid .tag-list {
+  margin-bottom: 16px !important;
+}
+
+.landing-page--portal .landing-platform-grid .surface-card > .button {
+  margin-top: 12px !important;
+}
