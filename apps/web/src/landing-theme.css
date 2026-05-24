@@ -1379,3 +1379,231 @@
     font-size: 0.62rem;
   }
 }
+
+/* Landing v7 final polish: header vertical alignment, portal cards, CTA quality, provider mobile */
+
+/* 1. Header tab text vertical centering */
+.landing-header .site-nav .nav-link,
+.landing-header .site-nav .nav-link:link,
+.landing-header .site-nav .nav-link:visited {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  height: 38px;
+  min-height: 38px;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  box-sizing: border-box;
+}
+
+@media (max-width: 760px) {
+  .landing-header {
+    align-items: center !important;
+  }
+
+  .landing-header .site-nav {
+    align-items: center !important;
+    overflow: hidden;
+  }
+
+  .landing-header .site-nav .nav-link {
+    height: 32px !important;
+    min-height: 32px !important;
+    line-height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+/* 2. Remove cheap T/K hero letter icons. Keep CTA strong but cleaner. */
+.landing-main-cta .landing-cta-icon {
+  display: none !important;
+}
+
+.landing-main-cta {
+  grid-template-columns: minmax(0, 1fr) auto;
+  justify-content: center;
+  text-align: center;
+}
+
+.landing-main-cta span:not(.landing-cta-arrow) {
+  justify-self: center;
+}
+
+.landing-main-cta .landing-cta-arrow {
+  margin-left: auto;
+}
+
+/* 3. Portal platform cards: make them feel like major entry cards */
+.landing-platform-grid .surface-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 320px;
+  padding: 30px;
+  border-radius: 26px;
+}
+
+.landing-platform-grid .surface-card::before {
+  content: '';
+  width: 68px;
+  height: 68px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  background: rgba(var(--accent-rgb), 0.18);
+  box-shadow: 0 18px 58px rgba(var(--accent-rgb), 0.28);
+}
+
+.landing-platform-grid .theme-twitch::before {
+  content: '▣';
+  color: rgb(var(--vl-accent-purple));
+  font-size: 2rem;
+}
+
+.landing-platform-grid .theme-kick::before {
+  content: 'K';
+  color: rgb(var(--vl-accent-green));
+  font-size: 2rem;
+  font-weight: 900;
+}
+
+.landing-platform-grid .surface-card h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: clamp(2rem, 3vw, 2.45rem);
+  letter-spacing: -0.04em;
+}
+
+.landing-platform-grid .surface-card p {
+  max-width: 620px;
+  font-size: 1rem;
+  line-height: 1.62;
+}
+
+.landing-platform-grid .tag-list {
+  margin-top: 22px;
+}
+
+.landing-platform-grid .surface-card > .button {
+  min-height: 52px;
+  margin-top: 8px;
+  border-radius: 16px;
+  font-weight: 850;
+  background: rgba(var(--accent-rgb), 0.18);
+  border-color: rgba(var(--accent-rgb), 0.42);
+}
+
+.landing-platform-grid .surface-card > .button::after {
+  content: '→';
+  margin-left: auto;
+  font-size: 1.2rem;
+}
+
+/* 4. Provider mobile: lighten hero, make it overview + direct feature list */
+@media (max-width: 760px) {
+  .landing-page--provider .landing-hero {
+    padding: 20px 16px;
+  }
+
+  .landing-page--provider .landing-hero h1 {
+    font-size: clamp(2.25rem, 11.5vw, 3.05rem);
+    line-height: 0.98;
+    max-width: 11ch;
+  }
+
+  .landing-page--provider .landing-hero .hero-copy {
+    max-width: 100%;
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .landing-page--provider .landing-hero__actions {
+    margin-top: 18px;
+    gap: 8px;
+  }
+
+  .landing-page--provider .landing-hero__actions .button {
+    min-height: 40px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+  }
+
+  .landing-page--provider .landing-role-card {
+    margin-top: 4px;
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .landing-page--provider .landing-role-card .status-panel__title {
+    font-size: 1rem;
+  }
+
+  .landing-page--provider .landing-role-card p {
+    font-size: 0.76rem;
+    line-height: 1.48;
+  }
+
+  .landing-page--provider .landing-role-card .metric-chip {
+    min-height: 50px;
+  }
+}
+
+/* 5. Provider support card: make donation/support action visible */
+.landing-page--provider .landing-secondary-card:last-child {
+  border-color: rgba(var(--accent-rgb), 0.62);
+  box-shadow:
+    0 18px 70px rgba(var(--accent-rgb), 0.15),
+    inset 0 0 0 1px rgba(var(--accent-rgb), 0.08);
+}
+
+.landing-page--provider .landing-secondary-card:last-child h2 {
+  color: var(--text);
+}
+
+.landing-page--provider .landing-secondary-card:last-child .feature-card__link {
+  min-height: 46px;
+  border-radius: 14px;
+  font-weight: 900;
+}
+
+/* 6. Mobile Portal: make provider cards more visually like the mock */
+@media (max-width: 760px) {
+  .landing-platform-grid .surface-card {
+    min-height: 0;
+    padding: 20px 18px;
+    border-radius: 20px;
+  }
+
+  .landing-platform-grid .surface-card::before {
+    width: 46px;
+    height: 46px;
+    margin-bottom: 12px;
+    border-radius: 14px;
+    font-size: 1.35rem;
+  }
+
+  .landing-platform-grid .surface-card h2 {
+    font-size: 1.65rem;
+  }
+
+  .landing-platform-grid .surface-card p {
+    font-size: 0.82rem;
+  }
+
+  .landing-platform-grid .surface-card > .button {
+    min-height: 44px;
+  }
+}
+
+/* 7. PC check: keep Provider cards four across on wide screens */
+@media (min-width: 1280px) {
+  .landing-page--provider .landing-feature-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
