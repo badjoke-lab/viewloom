@@ -11,9 +11,13 @@ export function readRequestedLayout(params: URLSearchParams, storageKey: string)
   if (fromUrl === 'split') return 'split'
   if (fromUrl === 'wide' || fromUrl === 'theater') return 'wide'
 
-  const stored = window.localStorage.getItem(storageKey)
-  if (stored === 'split') return 'split'
-  if (stored === 'wide' || stored === 'theater') return 'wide'
+  try {
+    const stored = window.localStorage.getItem(storageKey)
+    if (stored === 'split') return 'split'
+    if (stored === 'wide' || stored === 'theater') return 'wide'
+  } catch {
+    // localStorage can be unavailable; fall back to URL/default behavior.
+  }
   return 'split'
 }
 
@@ -26,5 +30,9 @@ export function effectiveLayout(requested: LayoutMode, width = window.innerWidth
 }
 
 export function writeRequestedLayout(storageKey: string, requested: LayoutMode): void {
-  window.localStorage.setItem(storageKey, requested)
+  try {
+    window.localStorage.setItem(storageKey, requested)
+  } catch {
+    // localStorage can be unavailable; keep URL/state as source of truth.
+  }
 }

@@ -179,6 +179,8 @@ function bind(): void {
         const url = new URL(window.location.href)
         url.searchParams.set('layout', state.requestedLayout)
         window.history.replaceState({}, '', url)
+        syncLayoutUi()
+        return
       }
       refreshButtons()
       render()
@@ -186,12 +188,31 @@ function bind(): void {
     })
   })
   document.querySelector('[data-refresh]')?.addEventListener('click', () => void loadApi())
+  window.addEventListener('resize', syncLayoutUi)
+}
+
+function syncLayoutUi(): void {
+  const controls = document.querySelector<HTMLElement>('.bl-controls')
+  const splitAvailable = isSplitAvailable()
+  const effective = effectiveLayout(state.requestedLayout)
+  if (controls) {
+    controls.dataset.requestedLayout = state.requestedLayout
+    controls.dataset.effectiveLayout = effective
+    controls.dataset.splitAvailable = String(splitAvailable)
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('[data-group="layout"] button[data-layout]').forEach((button) => {
+    const value = button.dataset.layout === 'split' ? 'split' : 'wide'
+    button.classList.toggle('on', value === state.requestedLayout)
+    if (value === 'split') button.disabled = !splitAvailable
+  })
 }
 
 function refreshButtons(): void {
   document.querySelectorAll<HTMLElement>('[data-group="top"] button').forEach((button) => button.classList.toggle('on', button.dataset.value === `Top ${state.top}`))
   document.querySelectorAll<HTMLElement>('[data-group="metric"] button').forEach((button) => button.classList.toggle('on', button.dataset.value === title(state.metric)))
   document.querySelectorAll<HTMLElement>('[data-group="bucket"] button').forEach((button) => button.classList.toggle('on', button.dataset.value === state.bucket))
+  syncLayoutUi()
 }
 
 function render(): void {

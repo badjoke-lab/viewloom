@@ -157,7 +157,10 @@ function ensureStyles(): void {
       min-height: auto;
     }
     .view-mode-bar {
-      display: none !important;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
     }
     .summary-grid {
       display: grid;
