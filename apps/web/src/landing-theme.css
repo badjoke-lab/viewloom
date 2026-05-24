@@ -1,0 +1,51 @@
+/* ViewLoom landing redesign theme tokens. */
+
+:root {
+  --vl-accent-blue: 44, 151, 255;
+  --vl-accent-purple: 144, 90, 255;
+  --vl-accent-green: 34, 211, 120;
+  --vl-content-wide: 1360px;
+}
+
+.page-shell--portal,
+.theme-portal {
+  --accent-rgb: var(--vl-accent-blue);
+}
+
+.page-shell.theme-twitch,
+.theme-twitch {
+  --accent-rgb: var(--vl-accent-purple);
+}
+
+.page-shell.theme-kick,
+.theme-kick {
+  --accent-rgb: var(--vl-accent-green);
+}
+
+.support-link,
+.button--support {
+  border-color: rgba(var(--accent-rgb), 0.38);
+  background: rgba(var(--accent-rgb), 0.12);
+  color: var(--text);
+}
+
+@media (max-width: 1023px) {
+  .feature-grid--top {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .feature-grid--top,
+  .support-grid,
+  .steps-grid,
+  .card-grid--portal {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .page-main {
+    width: min(calc(100% - 20px), var(--content-width));
+  }
+}
