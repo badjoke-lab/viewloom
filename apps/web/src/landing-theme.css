@@ -3235,3 +3235,207 @@ body[data-page="support"] .support-card--clean {
     border-radius: 18px;
   }
 }
+
+/* Landing v20 rebuilt outer pages */
+
+.outer-page.outer-page--portal-tone {
+  --accent-rgb: var(--vl-accent-blue);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--vl-accent-blue), 0.26), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(var(--vl-accent-blue), 0.14), transparent 28%),
+    linear-gradient(180deg, #061426 0%, #050b14 100%) !important;
+}
+
+.outer-main {
+  width: min(calc(100% - 48px), 1360px);
+  margin: 0 auto;
+}
+
+.outer-page .outer-header {
+  margin-bottom: 28px !important;
+}
+
+.outer-hero {
+  min-height: 360px !important;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.55fr) !important;
+  border-color: rgba(var(--vl-accent-blue), 0.3) !important;
+  background:
+    radial-gradient(circle at 76% 18%, rgba(var(--vl-accent-blue), 0.2), transparent 30%),
+    linear-gradient(135deg, rgba(7, 18, 34, 0.98), rgba(5, 12, 24, 0.9)) !important;
+}
+
+.outer-hero h1 {
+  max-width: 12ch;
+  font-size: clamp(4rem, 5.2vw, 5.8rem) !important;
+}
+
+.outer-hero .hero-copy {
+  max-width: 760px;
+}
+
+.outer-card-grid {
+  display: grid;
+  gap: 18px;
+  margin-top: 26px;
+}
+
+.outer-card-grid--about {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.outer-card-grid--support {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.outer-info-card,
+.outer-action-panel,
+.outer-note-card {
+  border: 1px solid rgba(var(--vl-accent-blue), 0.24);
+  background:
+    radial-gradient(circle at 90% 12%, rgba(var(--vl-accent-blue), 0.16), transparent 36%),
+    rgba(8, 18, 34, 0.84);
+  box-shadow: 0 22px 80px rgba(0, 0, 0, 0.2);
+}
+
+.outer-info-card {
+  min-height: 190px;
+  padding: 24px;
+  border-radius: 22px;
+}
+
+.outer-card-label {
+  color: rgb(var(--vl-accent-blue));
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.outer-info-card p,
+.outer-action-panel p,
+.outer-note-card p {
+  margin-top: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.outer-info-card p {
+  font-size: 1rem;
+}
+
+.outer-action-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: center;
+  margin-top: 24px;
+  padding: 28px;
+  border-radius: 24px;
+}
+
+.outer-action-panel h2 {
+  margin-top: 8px;
+  font-size: 1.75rem;
+}
+
+.outer-action-panel__buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.outer-support-primary,
+.outer-action-panel .button--primary {
+  --accent-rgb: var(--vl-accent-blue);
+  border-color: rgba(var(--vl-accent-blue), 0.62) !important;
+  background: linear-gradient(135deg, rgba(var(--vl-accent-blue), 0.92), rgba(var(--vl-accent-blue), 0.5)) !important;
+  color: var(--text) !important;
+  box-shadow: 0 18px 54px rgba(var(--vl-accent-blue), 0.22);
+}
+
+.outer-note-card {
+  margin-top: 14px;
+  padding: 18px 22px;
+  border-radius: 18px;
+}
+
+.outer-footer {
+  margin-top: 48px !important;
+}
+
+@media (max-width: 1080px) {
+  .outer-card-grid--about,
+  .outer-card-grid--support {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .outer-action-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .outer-action-panel__buttons {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .outer-main {
+    width: min(calc(100% - 16px), 520px);
+  }
+
+  .outer-page .outer-header {
+    margin-bottom: 10px !important;
+  }
+
+  .outer-hero {
+    min-height: 0 !important;
+    grid-template-columns: 1fr !important;
+    padding: 20px 18px !important;
+    border-radius: 20px;
+  }
+
+  .outer-hero h1 {
+    max-width: none;
+    font-size: clamp(2.45rem, 11vw, 3.2rem) !important;
+    line-height: 0.98 !important;
+  }
+
+  .outer-card-grid--about,
+  .outer-card-grid--support {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .outer-info-card {
+    min-height: 0;
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .outer-action-panel {
+    margin-top: 14px;
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .outer-action-panel h2 {
+    font-size: 1.25rem;
+  }
+
+  .outer-action-panel__buttons {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .outer-note-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .outer-footer {
+    margin-top: 26px !important;
+  }
+}
