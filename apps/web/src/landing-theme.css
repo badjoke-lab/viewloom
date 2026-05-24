@@ -2192,3 +2192,117 @@
     min-height: 32px !important;
   }
 }
+
+/* Landing v11 mobile header/menu simplification */
+
+/* Landing v11 mobile header/menu simplification */
+
+/* Mobile header is now one row only: ViewLoom / Support / Menu.
+   Platform navigation moves into the collapsible Menu. */
+@media (max-width: 760px) {
+  .landing-header {
+    width: min(calc(100% - 16px), 520px) !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto auto !important;
+    grid-template-rows: auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 auto 10px !important;
+    padding-top: 8px !important;
+  }
+
+  .landing-header .brand {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    font-size: 0.98rem !important;
+    line-height: 1 !important;
+  }
+
+  .landing-header .header-note {
+    display: none !important;
+  }
+
+  .landing-primary-nav {
+    display: none !important;
+  }
+
+  .landing-utility-nav {
+    display: none !important;
+  }
+
+  .landing-mobile-support {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 30px !important;
+    padding: 0 12px !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(var(--accent-rgb), 0.44) !important;
+    background: rgba(var(--accent-rgb), 0.16) !important;
+    color: var(--text) !important;
+    font-size: 0.72rem !important;
+    font-weight: 850 !important;
+    white-space: nowrap !important;
+  }
+
+  .landing-mobile-menu {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    display: block !important;
+    position: relative !important;
+  }
+
+  .landing-mobile-menu summary {
+    min-width: 64px !important;
+    min-height: 30px !important;
+    padding: 0 12px !important;
+    border-radius: 999px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .landing-mobile-menu__panel {
+    right: 0 !important;
+    top: calc(100% + 8px) !important;
+    min-width: 178px !important;
+  }
+}
+
+/* Portal platform chips are labels, not fake link buttons. */
+.landing-chip {
+  justify-content: center !important;
+  padding: 0 12px !important;
+  cursor: default !important;
+  pointer-events: none !important;
+}
+
+.landing-chip::after {
+  content: none !important;
+}
+
+/* Make non-link feature labels visually quieter than actual CTAs. */
+.landing-platform-grid .tag-list .tag-pill,
+.landing-platform-grid .tag-list .landing-chip {
+  min-height: 34px !important;
+  border-radius: 999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 750 !important;
+  background: rgba(var(--accent-rgb), 0.08) !important;
+  border-color: rgba(var(--accent-rgb), 0.22) !important;
+  box-shadow: none !important;
+}
+
+/* Keep actual platform CTA clearly different from the chips. */
+.landing-platform-grid .surface-card > .button {
+  min-height: 46px !important;
+  margin-top: 14px !important;
+  font-weight: 900 !important;
+}
+
+/* Mobile top spacing after simplifying header. */
+@media (max-width: 760px) {
+  .landing-hero {
+    margin-top: 0 !important;
+  }
+}

@@ -816,6 +816,9 @@ function renderHeader(current: PageKind): string {
       <details class="landing-mobile-menu">
         <summary>Menu</summary>
         <nav class="landing-mobile-menu__panel" aria-label="Mobile menu">
+          <a href="/">Portal</a>
+          <a href="/twitch/">Twitch data</a>
+          <a href="/kick/">Kick data</a>
           <a href="/about/">About</a>
           <a href="/support/">♡ Support</a>
           <a href="/contact/">Contact</a>
