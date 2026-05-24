@@ -2,7 +2,44 @@
    Keep this as the only route-specific stylesheet for /twitch/day-flow/ until the renderer is split into modules. */
 
 .df-controls label:nth-of-type(7) {
-  display: none !important;
+  display: grid !important;
+  gap: 6px !important;
+}
+
+.df-layout-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 5px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.df-layout-toggle button {
+  min-height: 34px !important;
+  padding: 0 12px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--muted) !important;
+  cursor: pointer !important;
+  font: inherit !important;
+}
+
+.df-layout-toggle button.is-current {
+  background: rgba(var(--accent-rgb), 0.18) !important;
+  color: var(--text) !important;
+}
+
+.df-layout-toggle button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.46 !important;
+}
+
+.df-controls label:nth-of-type(7) small {
+  color: var(--muted) !important;
+  font-size: 0.78rem !important;
 }
 
 .df-summary {
@@ -53,9 +90,61 @@
   min-height: 0 !important;
 }
 
+.df-layout[data-effective-layout='split'] {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.34fr) !important;
+  gap: 18px !important;
+  align-items: start !important;
+}
+
+.df-layout[data-effective-layout='split'] .df-main {
+  min-width: 0 !important;
+}
+
+.df-layout[data-effective-layout='split'] .df-rail {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 14px !important;
+  margin-top: 0 !important;
+  min-width: 0 !important;
+  align-self: start !important;
+}
+
+.df-layout[data-effective-layout='split'] .df-chart-wrap {
+  min-height: clamp(520px, 64vh, 760px) !important;
+}
+
+.df-layout[data-effective-layout='split'] .df-canvas {
+  height: clamp(520px, 64vh, 760px) !important;
+}
+
+.df-layout[data-effective-layout='split'] .df-open-sheet,
+.df-layout[data-effective-layout='split'] .df-mobile-focus {
+  display: none !important;
+}
+
 .df-open-sheet,
 .df-mobile-focus {
   display: none !important;
+}
+
+@media (max-width: 1199px) {
+  .df-layout[data-effective-layout='split'] {
+    display: block !important;
+  }
+
+  .df-layout[data-effective-layout='split'] .df-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    margin-top: 18px !important;
+  }
+
+  .df-layout[data-effective-layout='split'] .df-chart-wrap {
+    min-height: 500px !important;
+  }
+
+  .df-layout[data-effective-layout='split'] .df-canvas {
+    height: 500px !important;
+  }
 }
 
 @media (max-width: 860px) {
