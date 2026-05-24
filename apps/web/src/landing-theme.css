@@ -886,3 +886,350 @@
     width: 100%;
   }
 }
+
+/* Landing v5 mobile mock alignment */
+
+/* Desktop stays as-is. Mobile gets a dedicated compact landing structure. */
+@media (max-width: 760px) {
+  .landing-page .page-main,
+  .landing-main,
+  .landing-header {
+    width: min(calc(100% - 16px), 520px);
+  }
+
+  .landing-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px 12px;
+    padding-top: 10px;
+    margin-bottom: 14px;
+  }
+
+  .landing-header .brand {
+    font-size: 0.95rem;
+  }
+
+  .landing-header .header-note {
+    justify-self: end;
+    font-size: 0.68rem;
+    min-height: 30px;
+    padding-inline: 12px;
+  }
+
+  .landing-header .site-nav {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    gap: 6px;
+    padding: 3px;
+    border: 1px solid rgba(var(--accent-rgb), 0.18);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .landing-header .site-nav .nav-link {
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 6px;
+    font-size: 0.68rem;
+    border-radius: 999px;
+  }
+
+  .landing-header .nav-link--utility,
+  .landing-header .nav-link--support {
+    display: none !important;
+  }
+
+  .landing-hero {
+    padding: 22px 18px;
+    border-radius: 20px;
+    min-height: 0;
+  }
+
+  .landing-hero::after {
+    display: none;
+  }
+
+  .landing-hero h1 {
+    max-width: none;
+    font-size: clamp(2.55rem, 13.5vw, 3.45rem);
+    line-height: 0.95;
+    letter-spacing: -0.065em;
+  }
+
+  .landing-hero .hero-copy {
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+
+  .landing-hero__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .landing-main-cta {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 13px;
+  }
+
+  .landing-hero--portal,
+  .landing-hero--provider {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .landing-role-card {
+    padding: 18px;
+    border-radius: 18px;
+    min-height: 0;
+  }
+
+  .landing-role-card .status-panel__title {
+    font-size: 1.18rem;
+    line-height: 1.18;
+  }
+
+  .landing-role-card p {
+    font-size: 0.82rem;
+  }
+
+  .landing-role-card .metric-list,
+  .landing-role-card .metric-list--compact {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .landing-role-card .metric-chip {
+    min-height: 58px;
+    padding: 12px;
+  }
+
+  .landing-platform-grid {
+    margin-top: 16px;
+    gap: 14px;
+  }
+
+  .landing-platform-grid .surface-card {
+    padding: 20px 18px;
+    border-radius: 20px;
+  }
+
+  .landing-platform-grid .surface-card h2 {
+    font-size: 1.72rem;
+  }
+
+  .landing-platform-grid .surface-card p {
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+
+  .landing-platform-grid .tag-list {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 16px 0;
+  }
+
+  .landing-chip {
+    min-height: 36px;
+    font-size: 0.74rem;
+    border-radius: 10px;
+  }
+
+  .landing-platform-grid .surface-card .button {
+    width: 100%;
+    min-height: 44px;
+    border-radius: 13px;
+    justify-content: center;
+  }
+
+  .landing-section-title {
+    margin: 22px 0 10px;
+    font-size: 1.28rem;
+  }
+
+  .landing-steps {
+    gap: 12px;
+  }
+
+  .landing-steps .info-card {
+    min-height: 0;
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .landing-steps .info-card h2 {
+    font-size: 1.05rem;
+  }
+
+  .landing-steps .info-card p {
+    font-size: 0.82rem;
+  }
+
+  .support-strip {
+    width: 100%;
+    margin-top: 18px;
+    padding: 18px;
+    border-radius: 18px;
+    gap: 12px;
+  }
+
+  .support-strip h2 {
+    font-size: 1.12rem;
+  }
+
+  .support-strip p {
+    font-size: 0.78rem;
+  }
+
+  .support-strip__button,
+  .support-strip .button--support {
+    width: 100%;
+    min-height: 42px;
+    border-radius: 12px;
+  }
+
+  .landing-footer {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 26px;
+    margin-bottom: 24px;
+    padding-top: 18px;
+  }
+
+  .landing-footer a {
+    min-width: 0;
+    min-height: 34px;
+    font-size: 0.75rem;
+    border-radius: 999px;
+  }
+
+  .landing-footer a:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: 50%;
+  }
+
+  /* Provider mobile: force the four main feature cards into clean horizontal rows. */
+  .landing-page--provider .landing-feature-grid {
+    display: grid;
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .landing-page--provider .landing-feature-card {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr) 42px;
+    grid-template-rows: auto auto auto;
+    align-items: center;
+    gap: 4px 12px;
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .landing-page--provider .landing-feature-card__icon {
+    width: 52px;
+    height: 52px;
+    grid-column: 1;
+    grid-row: 1 / 4;
+    margin: 0;
+    border-radius: 14px;
+    font-size: 1.5rem;
+  }
+
+  .landing-page--provider .landing-feature-card .feature-card__label {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 0.62rem;
+  }
+
+  .landing-page--provider .landing-feature-card h2 {
+    grid-column: 2;
+    grid-row: 2;
+    margin: 0;
+    font-size: 1.28rem;
+  }
+
+  .landing-page--provider .landing-feature-card p {
+    grid-column: 2;
+    grid-row: 3;
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .landing-page--provider .landing-feature-card .feature-card__link {
+    grid-column: 3;
+    grid-row: 1 / 4;
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    padding: 0;
+    font-size: 0;
+    border-radius: 12px;
+  }
+
+  .landing-page--provider .landing-feature-card .feature-card__link::after {
+    content: '›';
+    font-size: 1.7rem;
+    line-height: 1;
+  }
+
+  .landing-page--provider .landing-secondary-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .landing-page--provider .landing-secondary-card {
+    min-height: 0;
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .landing-page--provider .landing-secondary-card .landing-feature-card__icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 12px;
+  }
+
+  .landing-page--provider .landing-secondary-card h2 {
+    font-size: 1.08rem;
+  }
+
+  .landing-page--provider .landing-secondary-card p {
+    font-size: 0.82rem;
+  }
+}
+
+/* Very narrow phones */
+@media (max-width: 390px) {
+  .landing-hero h1 {
+    font-size: clamp(2.28rem, 13vw, 3rem);
+  }
+
+  .landing-header .site-nav .nav-link {
+    font-size: 0.64rem;
+  }
+
+  .landing-page--provider .landing-feature-card {
+    grid-template-columns: 50px minmax(0, 1fr) 36px;
+    gap: 4px 10px;
+  }
+
+  .landing-page--provider .landing-feature-card__icon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .landing-page--provider .landing-feature-card .feature-card__link {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+  }
+}
