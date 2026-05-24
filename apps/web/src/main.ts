@@ -1,4 +1,5 @@
 import './styles.css'
+import './landing-theme.css'
 import { initHeatmapLayout } from './live/heatmap-layout'
 import { hydrateTwitchHeatmap } from './live/twitch-heatmap'
 
