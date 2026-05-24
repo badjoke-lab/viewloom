@@ -799,19 +799,30 @@ function renderHeader(current: PageKind): string {
     <header class="site-header landing-header">
       <a class="brand" href="/">ViewLoom</a>
 
-      <nav class="site-nav landing-primary-nav" aria-label="Platform navigation">
+      <nav class="landing-primary-nav" aria-label="Platform navigation">
         <a class="nav-link ${current === 'portal' ? 'is-current' : ''}" href="/">Portal</a>
         <a class="nav-link ${currentSite === 'twitch' ? 'is-current' : ''}" href="/twitch/">Twitch data</a>
         <a class="nav-link ${currentSite === 'kick' ? 'is-current' : ''}" href="/kick/">Kick data</a>
       </nav>
 
       <nav class="landing-utility-nav" aria-label="Site navigation">
-        <a class="nav-link nav-link--utility" href="/about/">About</a>
+        <a class="nav-link" href="/about/">About</a>
         <a class="nav-link nav-link--support support-link" href="/support/">♡ Support</a>
-        <a class="nav-link nav-link--utility" href="/contact/">Contact</a>
+        <a class="nav-link" href="/contact/">Contact</a>
       </nav>
 
-      <a class="landing-mobile-support" href="/support/">♡ Support ViewLoom</a>
+      <a class="landing-mobile-support" href="/support/">♡ Support</a>
+
+      <details class="landing-mobile-menu">
+        <summary>Menu</summary>
+        <nav class="landing-mobile-menu__panel" aria-label="Mobile menu">
+          <a href="/about/">About</a>
+          <a href="/support/">♡ Support</a>
+          <a href="/contact/">Contact</a>
+          <a href="https://github.com/badjoke-lab/viewloom">GitHub</a>
+        </nav>
+      </details>
+
       <div class="header-note">${badge}</div>
     </header>
   `

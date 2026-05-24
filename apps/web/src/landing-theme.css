@@ -1789,3 +1789,286 @@
     font-size: 0.72rem;
   }
 }
+
+/* Landing v9 header/menu/top cleanup */
+
+/* Landing v9 header/menu/top cleanup */
+
+/* Global landing top spacing */
+.landing-main {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.landing-hero {
+  margin-top: 0 !important;
+}
+
+/* Desktop header: clean, no oval wrapper */
+.landing-header {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center !important;
+  gap: 18px !important;
+  width: min(calc(100% - 48px), 1360px) !important;
+  margin: 0 auto 22px !important;
+  padding: 18px 0 0 !important;
+  background: transparent !important;
+}
+
+.landing-header .brand {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.landing-primary-nav {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+}
+
+.landing-utility-nav {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.landing-header .header-note {
+  grid-column: 4;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.landing-primary-nav,
+.landing-utility-nav {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.landing-header .nav-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  line-height: 1 !important;
+  padding: 0 13px !important;
+  border-radius: 999px !important;
+  box-sizing: border-box !important;
+}
+
+.landing-header .nav-link.is-current {
+  border: 1px solid rgba(var(--accent-rgb), 0.55) !important;
+  background: rgba(var(--accent-rgb), 0.20) !important;
+}
+
+.landing-header .nav-link--support {
+  border: 1px solid rgba(var(--accent-rgb), 0.44) !important;
+  background: rgba(var(--accent-rgb), 0.16) !important;
+  color: var(--text) !important;
+  font-weight: 850 !important;
+}
+
+.landing-mobile-support,
+.landing-mobile-menu {
+  display: none;
+}
+
+/* Mobile header:
+   row 1 = brand + badge
+   row 2 = platform tabs only
+   row 3 = Support + Menu
+ */
+@media (max-width: 760px) {
+  .landing-header {
+    width: min(calc(100% - 16px), 520px) !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-rows: auto auto auto !important;
+    gap: 7px 8px !important;
+    margin: 0 auto 10px !important;
+    padding-top: 8px !important;
+  }
+
+  .landing-header .brand {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 0.98rem;
+  }
+
+  .landing-header .header-note {
+    grid-column: 2;
+    grid-row: 1;
+    max-width: 134px;
+    min-height: 26px;
+    padding: 0 9px;
+    font-size: 0.58rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .landing-primary-nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .landing-primary-nav .nav-link {
+    height: 31px !important;
+    min-height: 31px !important;
+    padding: 0 6px !important;
+    font-size: 0.66rem !important;
+    line-height: 1 !important;
+    border: 1px solid rgba(var(--accent-rgb), 0.14) !important;
+    background: rgba(255, 255, 255, 0.025) !important;
+  }
+
+  .landing-primary-nav .nav-link.is-current {
+    border-color: rgba(var(--accent-rgb), 0.56) !important;
+    background: rgba(var(--accent-rgb), 0.22) !important;
+  }
+
+  .landing-utility-nav {
+    display: none !important;
+  }
+
+  .landing-mobile-support {
+    grid-column: 1;
+    grid-row: 3;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--accent-rgb), 0.44);
+    background: rgba(var(--accent-rgb), 0.16);
+    color: var(--text);
+    font-weight: 850;
+    font-size: 0.74rem;
+  }
+
+  .landing-mobile-menu {
+    grid-column: 2;
+    grid-row: 3;
+    display: block !important;
+    position: relative;
+  }
+
+  .landing-mobile-menu summary {
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 72px;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--accent-rgb), 0.22);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--muted);
+    font-weight: 800;
+    font-size: 0.72rem;
+    cursor: pointer;
+  }
+
+  .landing-mobile-menu summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .landing-mobile-menu__panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    z-index: 40;
+    display: grid;
+    gap: 6px;
+    min-width: 154px;
+    padding: 8px;
+    border-radius: 16px;
+    border: 1px solid rgba(var(--accent-rgb), 0.28);
+    background: rgba(7, 17, 31, 0.98);
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.42);
+  }
+
+  .landing-mobile-menu__panel a {
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+}
+
+/* Remove platform card pseudo icons that were overlapping text on mobile */
+.landing-platform-grid .surface-card::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* Make Portal platform cards cleaner and less broken */
+.landing-platform-grid .surface-card {
+  padding-top: 24px !important;
+}
+
+.landing-platform-grid .surface-card h2 {
+  margin-top: 0 !important;
+}
+
+.landing-platform-grid .tag-list {
+  margin-top: 16px !important;
+}
+
+.landing-chip {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 13px !important;
+}
+
+.landing-chip::after {
+  content: '›';
+  opacity: 0.78;
+  font-size: 1rem;
+}
+
+@media (max-width: 760px) {
+  .landing-platform-grid .surface-card {
+    padding: 20px 18px !important;
+  }
+
+  .landing-platform-grid .tag-list {
+    grid-template-columns: 1fr !important;
+  }
+
+  .landing-hero {
+    margin-bottom: 14px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .landing-primary-nav .nav-link {
+    font-size: 0.6rem !important;
+  }
+
+  .landing-header .header-note {
+    max-width: 120px;
+    font-size: 0.54rem;
+  }
+}
