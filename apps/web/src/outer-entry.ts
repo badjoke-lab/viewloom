@@ -1,4 +1,5 @@
 import './styles.css'
+import './landing-theme.css'
 
 type Page = 'about' | 'support'
 
@@ -72,7 +73,7 @@ app.innerHTML = renderPage(page)
 
 function renderPage(pageData: OuterPage): string {
   return `
-    <div class="page-shell page-shell--site outer-page">
+    <div class="page-shell page-shell--site outer-page outer-page--portal-tone">
       <header class="site-header">
         <a class="brand" href="/">ViewLoom</a>
         <nav class="site-nav" aria-label="Primary">

@@ -3033,3 +3033,205 @@ body[data-page="contact"] .nav-link--support {
     line-height: 0.98 !important;
   }
 }
+
+/* Landing v19 outer pages actual loaded styles */
+
+/* Landing v19 outer pages actual loaded styles
+   Loaded through outer-entry.ts. About / Support are shared outer pages, so force Portal blue. */
+
+body[data-page="about"],
+body[data-page="support"] {
+  --accent-rgb: var(--vl-accent-blue);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--vl-accent-blue), 0.26), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(var(--vl-accent-blue), 0.14), transparent 28%),
+    linear-gradient(180deg, #061426 0%, #050b14 100%) !important;
+}
+
+body[data-page="about"] .outer-page,
+body[data-page="support"] .outer-page,
+.outer-page--portal-tone {
+  --accent-rgb: var(--vl-accent-blue);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--vl-accent-blue), 0.26), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(var(--vl-accent-blue), 0.14), transparent 28%),
+    linear-gradient(180deg, #061426 0%, #050b14 100%) !important;
+}
+
+/* Outer header uses the normal site-header markup, not landing-header. */
+.outer-page .site-header {
+  width: min(calc(100% - 48px), 1360px);
+  margin: 0 auto 34px;
+  padding: 18px 0 0;
+  background: transparent !important;
+}
+
+.outer-page .site-header .nav-link.is-current,
+.outer-page .site-header .nav-link:hover {
+  border-color: rgba(var(--vl-accent-blue), 0.55) !important;
+  background: rgba(var(--vl-accent-blue), 0.18) !important;
+  color: var(--text) !important;
+}
+
+.outer-page .header-note {
+  border-color: rgba(var(--vl-accent-blue), 0.24) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+/* Outer hero: Portal blue, not purple. */
+.outer-page .outer-hero,
+body[data-page="about"] .outer-hero,
+body[data-page="support"] .outer-hero {
+  border-color: rgba(var(--vl-accent-blue), 0.3) !important;
+  background:
+    radial-gradient(circle at 76% 20%, rgba(var(--vl-accent-blue), 0.18), transparent 30%),
+    linear-gradient(135deg, rgba(7, 18, 34, 0.98), rgba(5, 12, 24, 0.9)) !important;
+  box-shadow: 0 28px 90px rgba(var(--vl-accent-blue), 0.10) !important;
+}
+
+.outer-page .eyebrow,
+.outer-page .status-panel__label,
+.outer-page .summary-card__label,
+.outer-page .chart-stage__label,
+.outer-page .rail-card__label,
+.outer-page .support-card__label {
+  color: rgb(var(--vl-accent-blue)) !important;
+}
+
+.outer-page .status-panel,
+.outer-page .summary-card,
+.outer-page .chart-stage,
+.outer-page .rail-card,
+.outer-page .support-card {
+  --accent-rgb: var(--vl-accent-blue);
+  border-color: rgba(var(--vl-accent-blue), 0.24) !important;
+  background:
+    radial-gradient(circle at 92% 12%, rgba(var(--vl-accent-blue), 0.16), transparent 36%),
+    rgba(8, 18, 34, 0.84) !important;
+}
+
+/* About: cards should be cards, not raw text blocks. */
+.outer-page .outer-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin: 24px 0;
+}
+
+.outer-page .outer-grid .summary-card {
+  min-height: 210px;
+  padding: 24px;
+  border-radius: 22px;
+}
+
+.outer-page .outer-grid .summary-card__value {
+  font-size: 1.24rem;
+  line-height: 1.18;
+  color: var(--text);
+  font-weight: 850;
+}
+
+.outer-page .outer-grid .summary-card p {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+/* Shared routes block. */
+.outer-page .outer-stage {
+  margin-top: 22px;
+  padding: 28px;
+  border-radius: 24px;
+}
+
+.outer-page .outer-stage .button--secondary,
+.outer-page .outer-stage .button--primary {
+  border-color: rgba(var(--vl-accent-blue), 0.36) !important;
+}
+
+.outer-page .outer-stage .button--primary,
+body[data-page="support"] .outer-stage--support .button--primary,
+body[data-page="support"] a[href*="buy.stripe.com"] {
+  background: linear-gradient(135deg, rgba(var(--vl-accent-blue), 0.92), rgba(var(--vl-accent-blue), 0.5)) !important;
+  border-color: rgba(var(--vl-accent-blue), 0.62) !important;
+  color: var(--text) !important;
+  box-shadow: 0 18px 54px rgba(var(--vl-accent-blue), 0.22) !important;
+}
+
+/* Notes. */
+.outer-page .outer-notes {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.outer-page .outer-notes .rail-card {
+  padding: 18px 22px;
+  border-radius: 18px;
+}
+
+/* Support page injected cards: override support-payment-link styling if needed. */
+body[data-page="support"] .outer-grid.support-card-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+  margin-top: 24px !important;
+}
+
+body[data-page="support"] .support-card--clean {
+  min-height: 220px !important;
+  padding: 24px !important;
+  border-radius: 22px !important;
+}
+
+/* Footer / nav blue. */
+.outer-page .vl-shared-footer a,
+.outer-page footer a,
+.outer-page .landing-footer a {
+  border-color: rgba(var(--vl-accent-blue), 0.22) !important;
+}
+
+.outer-page .vl-shared-footer .support-link,
+.outer-page .landing-footer .support-link,
+.outer-page a[href="/support/"] {
+  border-color: rgba(var(--vl-accent-blue), 0.44) !important;
+  background: rgba(var(--vl-accent-blue), 0.14) !important;
+  color: var(--text) !important;
+}
+
+/* Mobile outer pages. */
+@media (max-width: 1080px) {
+  .outer-page .outer-grid,
+  body[data-page="support"] .outer-grid.support-card-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .outer-page .site-header {
+    width: min(calc(100% - 16px), 520px);
+    margin-bottom: 14px;
+    padding-top: 10px;
+  }
+
+  .outer-page .outer-hero {
+    padding: 20px 18px !important;
+    border-radius: 20px !important;
+  }
+
+  .outer-page .outer-hero h1 {
+    font-size: clamp(2.35rem, 11vw, 3.2rem) !important;
+    line-height: 0.98 !important;
+  }
+
+  .outer-page .outer-grid .summary-card,
+  body[data-page="support"] .support-card--clean {
+    min-height: 0 !important;
+    padding: 18px !important;
+    border-radius: 18px !important;
+  }
+
+  .outer-page .outer-stage {
+    padding: 20px 18px;
+    border-radius: 18px;
+  }
+}
