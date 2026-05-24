@@ -22,6 +22,8 @@ export function initHeatmapLayout(): void {
     root.dataset.requestedLayout = requestedLayout
     root.dataset.effectiveLayout = current
     root.dataset.splitAvailable = String(splitAvailable)
+    moveHeatmapSections(root, current)
+    moveLegendForLayout(root, current)
   }
 
   const bar = document.querySelector<HTMLElement>('.view-mode-bar')
@@ -45,7 +47,6 @@ export function initHeatmapLayout(): void {
     applyLayout()
     window.addEventListener('resize', applyLayout)
   }
-  moveHeatmapSections(root)
   observeLegendPlacement(root)
 }
 
@@ -67,13 +68,17 @@ function syncButtons(bar: HTMLElement, requestedLayout: 'split' | 'wide'): void 
   })
 }
 
-function moveHeatmapSections(root: HTMLElement): void {
+function moveHeatmapSections(root: HTMLElement, layoutMode: 'split' | 'wide'): void {
   const featureLayout = root.querySelector<HTMLElement>('.feature-layout--heatmap')
   const summaryGrid = document.querySelector<HTMLElement>('.summary-grid')
-  const railStack = featureLayout?.querySelector<HTMLElement>('.rail-stack') ?? null
+  const railStack = root.querySelector<HTMLElement>(':scope > .rail-stack') ?? featureLayout?.querySelector<HTMLElement>('.rail-stack') ?? null
   const supportGrid = root.querySelector<HTMLElement>('.support-grid--feature')
 
-  if (railStack && railStack.parentElement !== root) {
+  if (layoutMode === 'split') {
+    if (featureLayout && railStack && railStack.parentElement !== featureLayout) {
+      featureLayout.append(railStack)
+    }
+  } else if (railStack && railStack.parentElement !== root) {
     if (featureLayout) {
       featureLayout.after(railStack)
     } else {
@@ -82,10 +87,10 @@ function moveHeatmapSections(root: HTMLElement): void {
   }
 
   if (summaryGrid && summaryGrid.parentElement !== root) {
-    if (railStack?.parentElement === root) {
-      railStack.after(summaryGrid)
-    } else if (featureLayout) {
+    if (featureLayout) {
       featureLayout.after(summaryGrid)
+    } else if (railStack?.parentElement === root) {
+      railStack.after(summaryGrid)
     } else {
       root.append(summaryGrid)
     }
@@ -97,21 +102,32 @@ function moveHeatmapSections(root: HTMLElement): void {
 }
 
 function observeLegendPlacement(root: HTMLElement): void {
-  moveLegendBelowSummary(root)
+  moveLegendForLayout(root, root.dataset.layoutMode === 'split' ? 'split' : 'wide')
 
   const observer = new MutationObserver(() => {
-    moveLegendBelowSummary(root)
+    moveLegendForLayout(root, root.dataset.layoutMode === 'split' ? 'split' : 'wide')
   })
   observer.observe(root, { childList: true, subtree: true })
 }
 
-function moveLegendBelowSummary(root: HTMLElement): void {
+function moveLegendForLayout(root: HTMLElement, layoutMode: 'split' | 'wide'): void {
   const summaryGrid = root.querySelector<HTMLElement>('.summary-grid')
   const supportGrid = root.querySelector<HTMLElement>('.support-grid--feature')
+  const featureLayout = root.querySelector<HTMLElement>('.feature-layout--heatmap')
+  const railStack = featureLayout?.querySelector<HTMLElement>('.rail-stack') ?? root.querySelector<HTMLElement>(':scope > .rail-stack')
   const legendBody = root.querySelector<HTMLElement>('#heatmap-legend-body')
   const legendCard = legendBody?.closest<HTMLElement>('.rail-card, .support-card') ?? null
 
   if (!legendCard || !summaryGrid) return
+
+  if (layoutMode === 'split' && railStack) {
+    legendCard.classList.remove('support-card', 'support-card--live')
+    legendCard.classList.add('rail-card', 'rail-card--detail', 'heatmap-legend-card')
+    if (legendCard.parentElement !== railStack) {
+      railStack.append(legendCard)
+    }
+    return
+  }
 
   legendCard.classList.remove('rail-card', 'rail-card--detail')
   legendCard.classList.add('support-card', 'support-card--live', 'heatmap-legend-card')
@@ -206,6 +222,39 @@ function ensureStyles(): void {
     .heatmap-layout-root .rail-stack {
       margin-top: 0;
     }
+    .heatmap-layout-root[data-layout-mode='split'] {
+      width: min(calc(100vw - 40px), 1600px);
+      margin-left: 50%;
+      transform: translateX(-50%);
+    }
+    .heatmap-layout-root[data-layout-mode='split'] .feature-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.34fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .heatmap-layout-root[data-layout-mode='split'] .feature-layout > .chart-stage--feature {
+      min-width: 0;
+      min-height: auto;
+      padding: 12px;
+    }
+    .heatmap-layout-root[data-layout-mode='split'] .feature-layout > .rail-stack {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      min-width: 0;
+      align-self: start;
+    }
+    .heatmap-layout-root[data-layout-mode='split'] .chart-placeholder--heatmap {
+      min-height: clamp(620px, 72vh, 820px);
+    }
+    .heatmap-layout-root[data-layout-mode='split'] .rail-card,
+    .heatmap-layout-root[data-layout-mode='split'] .support-card {
+      min-height: auto;
+    }
+    .heatmap-layout-root[data-layout-mode='split'] .support-grid--feature {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
     .heatmap-layout-root[data-layout-mode='wide'] {
       width: min(calc(100vw - 40px), 1600px);
       margin-left: 50%;
@@ -243,6 +292,18 @@ function ensureStyles(): void {
     .heatmap-layout-root[data-layout-mode='wide'] .rail-card,
     .heatmap-layout-root[data-layout-mode='wide'] .support-card {
       min-height: auto;
+    }
+    @media (max-width: 1199px) {
+      .heatmap-layout-root[data-layout-mode='split'] {
+        width: min(calc(100vw - 32px), 1280px);
+      }
+      .heatmap-layout-root[data-layout-mode='split'] .feature-layout {
+        grid-template-columns: 1fr;
+      }
+      .heatmap-layout-root[data-layout-mode='split'] .feature-layout > .rail-stack,
+      .heatmap-layout-root[data-layout-mode='split'] .support-grid--feature {
+        grid-template-columns: 1fr;
+      }
     }
     @media (max-width: 1080px) {
       .page-shell--site.theme-twitch .hero--feature {
