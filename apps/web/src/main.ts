@@ -439,8 +439,6 @@ function renderPortal(): string {
           </div>
           <a class="button button--support" href="/support/">Support</a>
         </section>
-
-        ${renderLandingFooter()}
       </main>
     </div>
   `
@@ -520,12 +518,6 @@ function renderSiteHome(kind: SiteKey): string {
           </aside>
         </section>
 
-        <section class="provider-status-strip">
-          <strong>${site.eyebrow} · Status</strong>
-          <span>${statusCopy}</span>
-          <a class="button button--ghost" href="${site.basePath}/status/">Data Status</a>
-        </section>
-
         <section class="feature-grid feature-grid--top landing-feature-grid">
           ${renderHomeFeatureCards(site)}
         </section>
@@ -533,8 +525,6 @@ function renderSiteHome(kind: SiteKey): string {
         <section class="support-grid landing-secondary-grid">
           ${renderProviderSecondaryCards(site, providerLabel)}
         </section>
-
-        ${renderLandingFooter('<a href="' + site.basePath + '/status/">Data Status</a>')}
       </main>
     </div>
   `

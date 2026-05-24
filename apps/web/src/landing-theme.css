@@ -414,3 +414,108 @@
     content: none;
   }
 }
+
+/* Final color and duplicate cleanup overrides */
+
+/* Force page-level color ownership.
+   Portal/common = blue, Twitch = purple, Kick = green. */
+.page-shell.landing-page--portal,
+.landing-page--portal {
+  --accent-rgb: var(--vl-accent-blue);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--vl-accent-blue), 0.24), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(var(--vl-accent-blue), 0.12), transparent 28%),
+    linear-gradient(180deg, #061426 0%, #050b14 100%) !important;
+}
+
+.page-shell.landing-page--provider.theme-twitch,
+.landing-page--provider.theme-twitch {
+  --accent-rgb: var(--vl-accent-purple);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--vl-accent-purple), 0.24), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(var(--vl-accent-purple), 0.14), transparent 28%),
+    linear-gradient(180deg, #0b1020 0%, #050b14 100%) !important;
+}
+
+.page-shell.landing-page--provider.theme-kick,
+.landing-page--provider.theme-kick {
+  --accent-rgb: var(--vl-accent-green);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--vl-accent-green), 0.2), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(var(--vl-accent-green), 0.16), transparent 28%),
+    linear-gradient(180deg, #061914 0%, #050b14 100%) !important;
+}
+
+/* Header should be neutral glass, not purple. */
+.landing-header {
+  background: transparent !important;
+}
+
+.landing-header::before,
+.landing-header::after {
+  display: none !important;
+}
+
+/* Portal card accents must not leak purple into the common background. */
+.landing-page--portal .landing-hero {
+  --accent-rgb: var(--vl-accent-blue);
+}
+
+.landing-page--portal .landing-role-card {
+  --accent-rgb: var(--vl-accent-blue);
+}
+
+.landing-page--portal .button--twitch {
+  --accent-rgb: var(--vl-accent-purple);
+}
+
+.landing-page--portal .button--kick {
+  --accent-rgb: var(--vl-accent-green);
+}
+
+/* Kick must stay green everywhere inside provider top. */
+.landing-page--provider.theme-kick .landing-hero,
+.landing-page--provider.theme-kick .landing-role-card,
+.landing-page--provider.theme-kick .landing-feature-card,
+.landing-page--provider.theme-kick .landing-secondary-card,
+.landing-page--provider.theme-kick .support-card,
+.landing-page--provider.theme-kick .feature-card {
+  --accent-rgb: var(--vl-accent-green);
+}
+
+/* Twitch stays purple only on Twitch. */
+.landing-page--provider.theme-twitch .landing-hero,
+.landing-page--provider.theme-twitch .landing-role-card,
+.landing-page--provider.theme-twitch .landing-feature-card,
+.landing-page--provider.theme-twitch .landing-secondary-card,
+.landing-page--provider.theme-twitch .support-card,
+.landing-page--provider.theme-twitch .feature-card {
+  --accent-rgb: var(--vl-accent-purple);
+}
+
+/* Remove visual duplication if old footer/polish scripts append extra rows. */
+.landing-page .landing-footer + .landing-footer,
+.landing-page footer + footer {
+  display: none !important;
+}
+
+/* Keep only one status strip if provider-home-polish creates one. */
+.landing-page--provider .provider-status-strip + .provider-status-strip {
+  display: none !important;
+}
+
+/* Header compactness. */
+.landing-header .site-nav {
+  gap: 10px;
+}
+
+/* If any script duplicates the last Contact link, hide adjacent duplicate. */
+.landing-header .site-nav a[href="/contact/"] + a[href="/contact/"] {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .landing-header .site-nav {
+    gap: 8px;
+  }
+}
