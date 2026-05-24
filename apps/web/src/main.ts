@@ -73,24 +73,25 @@ const cards: SiteCard[] = [
   {
     slug: 'twitch',
     title: 'Twitch data',
-    eyebrow: 'Now / Today / Rivalry',
+    eyebrow: 'Now / Today / Rivalry / Trends',
     description:
-      'Observe Twitch data through a dedicated shell focused on Heatmap, Day Flow, and Battle Lines.',
+      'Observe Twitch data through a dedicated shell focused on Heatmap, Day Flow, Battle Lines, and History.',
     cta: 'Open Twitch data',
     accentClass: 'theme-twitch',
-    notes: ['Purple-led live field', 'Separate status and coverage', 'Feature-first reading'],
+    notes: ['Heatmap', 'Day Flow', 'Battle Lines', 'History'],
   },
   {
     slug: 'kick',
     title: 'Kick data',
-    eyebrow: 'Now / Today / Rivalry',
+    eyebrow: 'Now / Today / Rivalry / Trends',
     description:
-      'Observe Kick data through the same shell structure with a separate accent, status surface, and data path.',
+      'Observe Kick data through the same shell with separate provider-specific status, coverage, and limitations.',
     cta: 'Open Kick data',
     accentClass: 'theme-kick',
-    notes: ['Green-led live field', 'Parallel observatory layout', 'Provider-separated reading'],
+    notes: ['Heatmap', 'Day Flow', 'Battle Lines', 'History'],
   },
 ]
+
 
 const siteMeta: Record<SiteKey, SiteMeta> = {
   twitch: {
@@ -370,26 +371,26 @@ function renderPage(kind: PageKind): string {
 
 function renderPortal(): string {
   return `
-    <div class="page-shell page-shell--portal">
+    <div class="page-shell page-shell--portal landing-page landing-page--portal">
       ${renderHeader('portal')}
-      <main class="page-main">
-        <section class="hero hero--portal hero--portal-grid">
-          <div>
+      <main class="page-main landing-main">
+        <section class="hero hero--portal landing-hero landing-hero--portal">
+          <div class="landing-hero__copy">
             <div class="eyebrow">ViewLoom</div>
-            <h1>Choose a live ecosystem, then read it through three fixed views.</h1>
+            <h1>Choose a live ecosystem, then read it through fixed views.</h1>
             <p class="hero-copy">
-              ViewLoom separates platforms first, then lets each site read live activity through Now, Today, and Rivalry.
+              ViewLoom separates platforms first, then lets each site read live activity through Heatmap, Day Flow, Battle Lines, and History.
             </p>
-            <div class="hero-actions">
-              <a class="button button--primary" href="/twitch/">Open Twitch data</a>
-              <a class="button button--secondary" href="/kick/">Open Kick data</a>
+            <div class="hero-actions landing-hero__actions">
+              <a class="button button--primary button--twitch" href="/twitch/">Open Twitch data</a>
+              <a class="button button--primary button--kick" href="/kick/">Open Kick data</a>
             </div>
           </div>
-          <aside class="status-panel status-panel--portal">
+          <aside class="status-panel status-panel--portal landing-role-card">
             <div class="status-panel__label">Portal role</div>
             <div class="status-panel__title">An entry point, not a mixed dashboard</div>
             <p>
-              The portal should stay light, branded, and selective. Heavy feature reading happens inside each platform site.
+              The portal stays light, branded, and selective. Heavy feature reading happens inside each platform site.
             </p>
             <div class="metric-list metric-list--compact">
               <div class="metric-chip">
@@ -398,17 +399,18 @@ function renderPortal(): string {
               </div>
               <div class="metric-chip">
                 <span class="metric-chip__label">Views</span>
-                <strong>Now / Today / Rivalry</strong>
+                <strong>Now / Today / Rivalry / Trends</strong>
               </div>
             </div>
           </aside>
         </section>
 
-        <section class="card-grid card-grid--portal">
+        <section class="card-grid card-grid--portal landing-platform-grid">
           ${cards.map(renderPortalCard).join('')}
         </section>
 
-        <section class="steps-grid">
+        <h2 class="landing-section-title">How ViewLoom works</h2>
+        <section class="steps-grid landing-steps">
           ${[
             {
               step: '01',
@@ -418,7 +420,7 @@ function renderPortal(): string {
             {
               step: '02',
               title: 'Open a fixed view',
-              body: 'Heatmap, Day Flow, and Battle Lines keep distinct roles instead of collapsing into one page.',
+              body: 'Heatmap, Day Flow, Battle Lines, and History keep distinct roles instead of collapsing into one page.',
             },
             {
               step: '03',
@@ -429,10 +431,21 @@ function renderPortal(): string {
             .map(renderStepCard)
             .join('')}
         </section>
+
+        <section class="support-strip" aria-label="Support ViewLoom">
+          <div>
+            <h2>♡ Support ViewLoom</h2>
+            <p>Help keep this independent live data view online and improving.</p>
+          </div>
+          <a class="button button--support" href="/support/">Support</a>
+        </section>
+
+        ${renderLandingFooter()}
       </main>
     </div>
   `
 }
+
 
 function renderPortalCard(card: SiteCard): string {
   return `
@@ -460,86 +473,163 @@ function renderStepCard(item: { step: string; title: string; body: string }): st
 
 function renderSiteHome(kind: SiteKey): string {
   const site = siteMeta[kind]
+  const isTwitch = kind === 'twitch'
+  const providerLabel = isTwitch ? 'Twitch' : 'Kick'
+  const statusCopy = isTwitch
+    ? 'Coverage, freshness, source mode, and known limitations belong in Twitch Data Status.'
+    : 'Kick is in provider-specific recovery. Check Data Status before parity QA.'
+  const heroTitle = isTwitch
+    ? 'Read Twitch live activity through fixed views.'
+    : 'Observe Kick live activity with clarity.'
+  const heroBody = isTwitch
+    ? 'Observe Twitch live activity through Heatmap, Day Flow, Battle Lines, and History. Separate reads keep each perspective clear and honest.'
+    : 'ViewLoom separates Kick provider data first, then lets you explore live activity through Heatmap, Day Flow, Battle Lines, and History & Trends.'
 
   return `
-    <div class="page-shell page-shell--site ${site.accentClass}">
+    <div class="page-shell page-shell--site landing-page landing-page--provider ${site.accentClass}">
       ${renderHeader(kind)}
-      <main class="page-main">
-        <section class="hero hero--site hero--top">
-          <div>
+      <main class="page-main landing-main">
+        <section class="hero hero--site landing-hero landing-hero--provider">
+          <div class="landing-hero__copy">
             <div class="eyebrow">${site.eyebrow}</div>
-            <h1>${site.title}</h1>
-            <p class="hero-copy">${site.intro}</p>
-            <p class="hero-copy hero-copy--secondary">${site.featureLead}</p>
-            <div class="hero-actions">
-              <a class="button button--primary" href="${site.basePath}/heatmap/">Heatmap</a>
+            <h1>${heroTitle}</h1>
+            <p class="hero-copy">${heroBody}</p>
+            <div class="hero-actions landing-hero__actions">
+              <a class="button button--secondary" href="${site.basePath}/heatmap/">Heatmap</a>
               <a class="button button--secondary" href="${site.basePath}/day-flow/">Day Flow</a>
               <a class="button button--secondary" href="${site.basePath}/battle-lines/">Battle Lines</a>
-              <a class="button button--secondary" href="${site.basePath}/history/">History</a>
-              <a class="button button--secondary" href="${site.basePath}/status/">Data Status</a>
+              <a class="button button--secondary" href="${site.basePath}/history/">History & Trends</a>
             </div>
           </div>
-          <aside class="status-panel">
+          <aside class="status-panel landing-role-card">
             <div class="status-panel__label">Current state</div>
-            <div class="status-panel__title">${site.shellStatus}</div>
+            <div class="status-panel__title">Shell ready for real ${providerLabel} data.</div>
             <p>
-              The top page is being rebuilt into a chart-first home with a real overview stage, dense right rail, and lower support blocks.
+              This top page is rebuilt into a chart-first home with a strong overview stage, dense right rail, and lower support blocks.
             </p>
             <div class="metric-list">
               <div class="metric-chip">
                 <span class="metric-chip__label">Role split</span>
-                <strong>Now / Today / Rivalry</strong>
+                <strong>Now / Today / Rivalry / Trends</strong>
               </div>
               <div class="metric-chip">
-                <span class="metric-chip__label">Title order</span>
-                <strong>Feature-first</strong>
+                <span class="metric-chip__label">${isTwitch ? 'Status' : 'Coverage'}</span>
+                <strong>${isTwitch ? 'Read coverage honestly' : 'Provider-specific reading'}</strong>
               </div>
             </div>
           </aside>
         </section>
 
-        <section class="feature-layout feature-layout--top">
-          <article class="chart-stage chart-stage--overview">
-            <div class="chart-stage__label">Site overview</div>
-            <h2>${site.overviewTitle}</h2>
-            <p>${site.overviewBody}</p>
-            <div class="chart-placeholder chart-placeholder--overview">
-              <div class="chart-placeholder__grid"></div>
-              <div class="chart-placeholder__shape chart-placeholder__shape--1"></div>
-              <div class="chart-placeholder__shape chart-placeholder__shape--2"></div>
-              <div class="chart-placeholder__shape chart-placeholder__shape--3"></div>
-            </div>
-          </article>
-
-          <aside class="rail-stack">
-            <section class="rail-card">
-              <div class="rail-card__label">${site.railTitle}</div>
-              <ul class="rail-list">
-                ${site.railItems.map((item) => `<li>${item}</li>`).join('')}
-              </ul>
-            </section>
-            <section class="rail-card rail-card--status">
-              <div class="rail-card__label">Status surface</div>
-              <p>
-                Coverage, freshness, and source notes will eventually sit here as provider-specific reading instead of placeholder copy.
-              </p>
-            </section>
-          </aside>
+        <section class="provider-status-strip">
+          <strong>${site.eyebrow} · Status</strong>
+          <span>${statusCopy}</span>
+          <a class="button button--ghost" href="${site.basePath}/status/">Data Status</a>
         </section>
 
-        <section class="feature-grid feature-grid--top">
-          ${(['heatmap', 'day-flow', 'battle-lines'] as FeatureKey[])
-            .map((feature) => renderFeatureCard(site, featureMeta[feature]))
-            .join('')}
+        <section class="feature-grid feature-grid--top landing-feature-grid">
+          ${renderHomeFeatureCards(site)}
         </section>
 
-        <section class="support-grid">
-          ${site.supportCards.map(renderSupportCard).join('')}
+        <section class="support-grid landing-secondary-grid">
+          ${renderProviderSecondaryCards(site, providerLabel)}
         </section>
+
+        ${renderLandingFooter('<a href="' + site.basePath + '/status/">Data Status</a>')}
       </main>
     </div>
   `
 }
+
+function renderHomeFeatureCards(site: SiteMeta): string {
+  return [
+    {
+      label: 'Now',
+      title: 'Heatmap',
+      body: 'Read who is big, rising, or active right now through a dense production treemap.',
+      href: `${site.basePath}/heatmap/`,
+      cta: 'Open Heatmap',
+      icon: '▦',
+    },
+    {
+      label: 'Today',
+      title: 'Day Flow',
+      body: 'Read the daily audience landscape as a single terrain, with total volume and share treated as separate views.',
+      href: `${site.basePath}/day-flow/`,
+      cta: 'Open Day Flow',
+      icon: '↗',
+    },
+    {
+      label: 'Rivalry',
+      title: 'Battle Lines',
+      body: 'Read rivalry, reversal, surge, and pressure through a chart built around recommended and custom battle states.',
+      href: `${site.basePath}/battle-lines/`,
+      cta: 'Open Battle Lines',
+      icon: '⚔',
+    },
+    {
+      label: 'Trends',
+      title: 'History & Trends',
+      body: 'Review observed days, top streamers, daily peaks, viewer-minutes, and longer-range changes.',
+      href: `${site.basePath}/history/`,
+      cta: 'Open History & Trends',
+      icon: '↺',
+    },
+  ]
+    .map(
+      (feature) => `
+        <article class="feature-card feature-card--top landing-feature-card">
+          <div class="landing-feature-card__icon">${feature.icon}</div>
+          <div class="feature-card__label">${feature.label}</div>
+          <h2>${feature.title}</h2>
+          <p>${feature.body}</p>
+          <a class="button button--ghost feature-card__link" href="${feature.href}">${feature.cta}</a>
+        </article>
+      `,
+    )
+    .join('')
+}
+
+function renderProviderSecondaryCards(site: SiteMeta, providerLabel: string): string {
+  return [
+    {
+      label: 'Data Status',
+      title: 'Coverage, freshness, and known limitations.',
+      body: 'Check freshness, source mode, coverage quality, and provider-specific limitations before judging the charts.',
+      href: `${site.basePath}/status/`,
+      cta: 'Open Data Status',
+      icon: '✓',
+    },
+    {
+      label: 'About this data',
+      title: `How ViewLoom reads ${providerLabel} provider data.`,
+      body: 'Understand the reading model, scope boundaries, and how each view differs.',
+      href: '/about/',
+      cta: 'About this data',
+      icon: '◇',
+    },
+    {
+      label: 'Support / Contact',
+      title: 'Need help or have questions?',
+      body: 'Get help, report issues, or support the ViewLoom project.',
+      href: '/support/',
+      cta: 'Support ViewLoom',
+      icon: '♡',
+    },
+  ]
+    .map(
+      (card) => `
+        <article class="support-card landing-secondary-card">
+          <div class="landing-feature-card__icon">${card.icon}</div>
+          <div class="support-card__label">${card.label}</div>
+          <h2>${card.title}</h2>
+          <p>${card.body}</p>
+          <a class="button button--ghost feature-card__link" href="${card.href}">${card.cta}</a>
+        </article>
+      `,
+    )
+    .join('')
+}
+
 
 function renderFeatureCard(site: SiteMeta, feature: FeatureMeta): string {
   return `
@@ -704,16 +794,38 @@ function renderSiteSubnav(site: SiteKey, currentFeature?: FeatureKey): string {
 
 function renderHeader(current: PageKind): string {
   const currentSite = current.startsWith('twitch') ? 'twitch' : current.startsWith('kick') ? 'kick' : null
+  const badge =
+    currentSite === 'twitch'
+      ? 'Unofficial Twitch data'
+      : currentSite === 'kick'
+        ? 'Unofficial Kick data'
+        : 'Unofficial data view'
 
   return `
-    <header class="site-header">
+    <header class="site-header landing-header">
       <a class="brand" href="/">ViewLoom</a>
       <nav class="site-nav" aria-label="Primary">
         <a class="nav-link ${current === 'portal' ? 'is-current' : ''}" href="/">Portal</a>
         <a class="nav-link ${currentSite === 'twitch' ? 'is-current' : ''}" href="/twitch/">Twitch data</a>
         <a class="nav-link ${currentSite === 'kick' ? 'is-current' : ''}" href="/kick/">Kick data</a>
+        <a class="nav-link nav-link--secondary" href="/about/">About</a>
+        <a class="nav-link nav-link--secondary support-link" href="/support/">Support</a>
+        <a class="nav-link nav-link--secondary" href="/contact/">Contact</a>
       </nav>
-      <div class="header-note">Unofficial live observation UI</div>
+      <div class="header-note">${badge}</div>
     </header>
   `
 }
+
+function renderLandingFooter(extra = ''): string {
+  return `
+    <footer class="landing-footer">
+      <a href="/about/">About</a>
+      <a class="support-link" href="/support/">Support</a>
+      <a href="/contact/">Contact</a>
+      <a href="https://github.com/badjoke-lab/viewloom">GitHub</a>
+      ${extra}
+    </footer>
+  `
+}
+
