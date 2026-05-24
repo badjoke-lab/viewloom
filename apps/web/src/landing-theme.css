@@ -1233,3 +1233,149 @@
     height: 36px;
   }
 }
+
+/* Landing v6 header rebuild */
+
+/* Desktop header: clean 3-zone layout */
+.landing-header {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px;
+  width: min(calc(100% - 48px), 1360px);
+  margin: 0 auto 34px;
+  padding: 18px 0 0;
+  background: transparent !important;
+}
+
+.landing-header .brand {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.landing-header .site-nav {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.landing-header .header-note {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.landing-header .nav-link {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 0.92rem;
+}
+
+.landing-header .nav-link.is-current {
+  border-color: rgba(var(--accent-rgb), 0.56);
+  background: rgba(var(--accent-rgb), 0.20);
+  color: var(--text);
+}
+
+.landing-header .nav-link--support {
+  border-color: rgba(var(--accent-rgb), 0.42);
+  background: rgba(var(--accent-rgb), 0.16);
+  color: var(--text);
+  font-weight: 800;
+}
+
+/* Mobile header: brand + badge on first row, 3 platform tabs on second row */
+@media (max-width: 760px) {
+  .landing-header {
+    width: min(calc(100% - 16px), 520px);
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    gap: 9px 10px;
+    margin-bottom: 18px;
+    padding-top: 10px;
+  }
+
+  .landing-header .brand {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    font-size: 0.98rem;
+  }
+
+  .landing-header .header-note {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    min-height: 30px;
+    padding: 0 11px;
+    font-size: 0.68rem;
+    max-width: 156px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .landing-header .site-nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: stretch;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    width: 100%;
+    padding: 4px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--accent-rgb), 0.22);
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .landing-header .site-nav .nav-link {
+    min-height: 31px;
+    justify-content: center;
+    padding: 0 5px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    white-space: nowrap;
+  }
+
+  .landing-header .site-nav .nav-link--utility,
+  .landing-header .site-nav .nav-link--support {
+    display: none !important;
+  }
+
+  .landing-header .site-nav .nav-link[href="/"],
+  .landing-header .site-nav .nav-link[href="/twitch/"],
+  .landing-header .site-nav .nav-link[href="/kick/"] {
+    display: inline-flex !important;
+  }
+}
+
+/* Very narrow: keep tabs readable */
+@media (max-width: 390px) {
+  .landing-header .site-nav .nav-link {
+    font-size: 0.62rem;
+    letter-spacing: -0.02em;
+  }
+
+  .landing-header .header-note {
+    max-width: 132px;
+    font-size: 0.62rem;
+  }
+}
