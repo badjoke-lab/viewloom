@@ -2831,3 +2831,32 @@
     text-decoration: none !important;
   }
 }
+
+/* Landing v17 portal desktop CTA width fix */
+
+/* Portal PC: Open Twitch/Kick data should not be full-width. */
+@media (min-width: 761px) {
+  .landing-page--portal .landing-platform-grid .surface-card > .landing-platform-cta,
+  .landing-page--portal .landing-platform-grid .surface-card > .button {
+    width: fit-content !important;
+    min-width: 240px !important;
+    max-width: 320px !important;
+    padding-inline: 20px !important;
+    justify-self: start !important;
+  }
+
+  .landing-page--portal .landing-platform-grid .surface-card > .landing-platform-cta::after,
+  .landing-page--portal .landing-platform-grid .surface-card > .button::after {
+    margin-left: 34px !important;
+  }
+}
+
+/* Portal mobile: keep CTA full-width because it is easier to tap. */
+@media (max-width: 760px) {
+  .landing-page--portal .landing-platform-grid .surface-card > .landing-platform-cta,
+  .landing-page--portal .landing-platform-grid .surface-card > .button {
+    width: 100% !important;
+    max-width: none !important;
+    justify-self: stretch !important;
+  }
+}
