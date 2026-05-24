@@ -1,4 +1,5 @@
 import '../styles.css'
+import { effectiveLayout, isSplitAvailable, readRequestedLayout, writeRequestedLayout, type LayoutMode } from '../layout-mode'
 
 type RangeMode = 'today' | 'rolling24h' | 'yesterday' | 'date'
 type MetricMode = 'volume' | 'share'
@@ -84,6 +85,7 @@ type DayFlowPayload = {
 }
 
 type ViewState = {
+  requestedLayout: LayoutMode
   rangeMode: RangeMode
   selectedDate: string
   topN: TopN
@@ -189,7 +191,9 @@ function normalizeBucket(value: unknown): BucketSize {
 function readInitialState(): ViewState {
   const params = new URL(window.location.href).searchParams
   const storedAuto = window.localStorage.getItem(provider.storageKey)
+  const layoutKey = `viewloom.${provider.key}.dayflow.layout`
   return {
+    requestedLayout: readRequestedLayout(params, layoutKey),
     rangeMode: normalizeRange(params.get('day') ?? params.get('rangeMode')),
     selectedDate: params.get('date') ?? todayIso(),
     topN: normalizeTop(params.get('top')),
@@ -214,7 +218,7 @@ function updateUrl(): void {
   url.searchParams.set('mode', state.metric)
   url.searchParams.set('scope', state.scope)
   url.searchParams.set('bucket', String(state.bucketSize))
-  url.searchParams.set('layout', 'wide')
+  url.searchParams.set('layout', state.requestedLayout)
   window.history.replaceState({}, '', url)
 }
 
@@ -337,7 +341,7 @@ function renderControls(): string {
       <label>Metric<select name="metric"><option value="volume" ${state.metric === 'volume' ? 'selected' : ''}>Volume</option><option value="share" ${state.metric === 'share' ? 'selected' : ''}>Share</option></select></label>
       <label>Scope<select name="scope"><option value="full" ${state.scope === 'full' ? 'selected' : ''}>Full</option><option value="topFocus" ${state.scope === 'topFocus' ? 'selected' : ''}>Top Focus</option></select></label>
       <label>Bucket<select name="bucket"><option value="5" ${state.bucketSize === 5 ? 'selected' : ''}>5m</option><option value="10" ${state.bucketSize === 10 ? 'selected' : ''}>10m</option></select></label>
-      <label>Layout<select name="layout"><option selected>Wide</option><option disabled>Split later</option></select></label>
+      <label>Layout<div class="df-layout-toggle"><button type="button" data-layout-choice="wide" class="${state.requestedLayout === 'wide' ? 'is-current' : ''}">Wide</button><button type="button" data-layout-choice="split" class="${state.requestedLayout === 'split' ? 'is-current' : ''}" ${isSplitAvailable() ? '' : 'disabled'}>Split</button></div><small>Split requires 1200px+</small></label>
       <label class="df-checkbox"><input type="checkbox" name="autoUpdate" ${state.autoUpdate ? 'checked' : ''} /> Auto update</label>
       <button type="submit" class="button button--secondary">Refresh</button>
     </form>
@@ -366,7 +370,7 @@ function renderSummary(source: DayFlowPayload, model: ViewModel): string {
 function renderFrame(source: DayFlowPayload, model: ViewModel): string {
   return `
     ${renderSummary(source, model)}
-    <section class="df-layout">
+    <section class="df-layout" data-requested-layout="${state.requestedLayout}" data-effective-layout="${effectiveLayout(state.requestedLayout)}" data-split-available="${String(isSplitAvailable())}">
       <article class="chart-stage df-main">
         <div class="df-main-head">
           <div>
@@ -688,6 +692,17 @@ function wireRoot(): void {
     void loadData(true)
   })
 
+  app.addEventListener('click', (event) => {
+    const button = (event.target as Element).closest<HTMLButtonElement>('[data-layout-choice]')
+    if (button) {
+      state.requestedLayout = button.dataset.layoutChoice === 'split' ? 'split' : 'wide'
+      writeRequestedLayout(`viewloom.${provider.key}.dayflow.layout`, state.requestedLayout)
+      updateUrl()
+      renderApp(payload ?? undefined, view ?? undefined)
+      return
+    }
+  })
+
   app.addEventListener('change', (event) => {
     const target = event.target
     const form = target instanceof Element ? target.closest<HTMLFormElement>('#dayflow-controls') : null
@@ -720,4 +735,5 @@ void loadData().catch((error) => {
   app.innerHTML = `<div class="page-shell page-shell--site ${provider.themeClass}">${renderHeader()}<main class="page-main">${renderHero('Day Flow API error', error instanceof Error ? error.message : 'Unknown error')}<section class="chart-stage"><h2>Day Flow unavailable</h2><p>Check the provider API path and deployed functions.</p></section></main></div>`
 })
 
+window.addEventListener('resize', () => { if (payload && view) renderApp(payload, view) })
 window.addEventListener('beforeunload', () => window.clearInterval(autoTimer))

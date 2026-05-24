@@ -1,3 +1,5 @@
+import { effectiveLayout, isSplitAvailable, readRequestedLayout, writeRequestedLayout } from '../layout-mode'
+
 const STYLE_ID = 'twitch-heatmap-layout-style'
 const HEATMAP_RENDERER_KEY = 'viewloom.heatmap.renderer'
 
@@ -8,8 +10,41 @@ export function initHeatmapLayout(): void {
   const root = document.querySelector<HTMLElement>('#heatmap-layout-root')
   if (!root) return
 
-  root.dataset.layoutMode = 'wide'
-  removeLayoutModeBar()
+  const provider = document.body.dataset.page?.startsWith('kick') ? 'kick' : 'twitch'
+  const storageKey = `viewloom.${provider}.heatmap.layout`
+  const params = new URL(window.location.href).searchParams
+  let requestedLayout = readRequestedLayout(params, storageKey)
+
+  const applyLayout = () => {
+    const splitAvailable = isSplitAvailable()
+    const current = effectiveLayout(requestedLayout)
+    root.dataset.layoutMode = current
+    root.dataset.requestedLayout = requestedLayout
+    root.dataset.effectiveLayout = current
+    root.dataset.splitAvailable = String(splitAvailable)
+  }
+
+  const bar = document.querySelector<HTMLElement>('.view-mode-bar')
+  if (bar) {
+    bar.innerHTML = `<div class="view-mode-bar__title">Layout</div><div class="view-mode-bar__actions"><button type="button" data-layout="wide">Wide</button><button type="button" data-layout="split">Split</button></div><small class="view-mode-bar__body">Split requires 1200px+</small>`
+    bar.addEventListener('click', (event) => {
+      const button = (event.target as Element).closest<HTMLButtonElement>('[data-layout]')
+      if (!button) return
+      requestedLayout = button.dataset.layout === 'split' ? 'split' : 'wide'
+      writeRequestedLayout(storageKey, requestedLayout)
+      applyLayout()
+      syncButtons(bar, requestedLayout)
+      const url = new URL(window.location.href)
+      url.searchParams.set('layout', requestedLayout)
+      window.history.replaceState({}, '', url)
+    })
+    applyLayout()
+    syncButtons(bar, requestedLayout)
+    window.addEventListener('resize', () => { applyLayout(); syncButtons(bar, requestedLayout) })
+  } else {
+    applyLayout()
+    window.addEventListener('resize', applyLayout)
+  }
   moveHeatmapSections(root)
   observeLegendPlacement(root)
 }
@@ -23,8 +58,13 @@ function preferOfficialCanvasRenderer(): void {
   }
 }
 
-function removeLayoutModeBar(): void {
-  document.querySelector<HTMLElement>('.view-mode-bar')?.remove()
+function syncButtons(bar: HTMLElement, requestedLayout: 'split' | 'wide'): void {
+  const splitAvailable = isSplitAvailable()
+  bar.querySelectorAll<HTMLButtonElement>('[data-layout]').forEach((button) => {
+    const value = button.dataset.layout === 'split' ? 'split' : 'wide'
+    button.classList.toggle('is-current', value === requestedLayout)
+    if (value === 'split') button.disabled = !splitAvailable
+  })
 }
 
 function moveHeatmapSections(root: HTMLElement): void {

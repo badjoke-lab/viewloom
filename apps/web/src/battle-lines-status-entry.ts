@@ -1,6 +1,7 @@
 import './styles.css'
 import './battle-lines.css'
 import './battle-lines-status.css'
+import { effectiveLayout, isSplitAvailable, readRequestedLayout, writeRequestedLayout, type LayoutMode } from './layout-mode'
 
 type Metric = 'viewers' | 'indexed'
 type DataStatus = 'loading' | 'live' | 'partial' | 'stale' | 'empty' | 'error' | 'demo'
@@ -21,6 +22,7 @@ type PairQualityDebug = {
 }
 type NormalizedPayload = { lines: Line[]; primaryPair?: Pair; secondaryPairs: Pair[]; events: BattleEvent[]; status: DataStatus; sourceText: string; recommendedQuality?: PairQualityDebug | null }
 type BattleState = {
+  requestedLayout: LayoutMode
   metric: Metric
   top: 3 | 5 | 10
   bucket: '1m' | '5m' | '10m'
@@ -45,7 +47,11 @@ const apiPath = site === 'kick' ? '/api/kick-battle-lines' : '/api/battle-lines'
 const palette = ['#45a3ff', '#c061ff', '#64748b', '#5eead4', '#f472b6', '#fbbf24', '#22c55e', '#94a3b8']
 const demoLines = makeDemoLines()
 
+const layoutKey = `viewloom.${site}.battle-lines.layout`
+const initialLayout = readRequestedLayout(new URL(window.location.href).searchParams, layoutKey)
+
 let state: BattleState = {
+  requestedLayout: initialLayout,
   metric: 'viewers',
   top: 5,
   bucket: '5m',
@@ -138,7 +144,7 @@ function renderPage(): string {
     <main class="page-main bl-main">
       <section class="bl-hero"><div><div class="eyebrow">${platformName.toUpperCase()} DATA · RIVALRY</div><h1>Battle Lines</h1><p>Read rivalry, reversals, surges, and closing gaps through observed live-stream data.</p></div><a class="bl-icon" href="/${otherSite}/" aria-label="Open ${otherLabel}">⇧</a></section>
       <nav class="site-subnav vl-feature-nav" aria-label="Feature navigation"><a class="subnav-link" href="/${site}/heatmap/">Heatmap</a><a class="subnav-link" href="/${site}/day-flow/">Day Flow</a><a class="subnav-link is-current" href="/${site}/battle-lines/">Battle Lines</a><a class="subnav-link" href="/${site}/history/">History</a><a class="subnav-link" href="/${site}/status/">Data Status</a></nav>
-      <section class="bl-controls">${segment('top', ['Top 3', 'Top 5', 'Top 10'], `Top ${state.top}`)}${segment('metric', ['Viewers', 'Indexed'], title(state.metric))}${segment('bucket', ['1m', '5m', '10m'], state.bucket)}<button class="bl-refresh" data-refresh type="button">Refresh</button></section>
+      <section class="bl-controls" data-requested-layout="${state.requestedLayout}" data-effective-layout="${effectiveLayout(state.requestedLayout)}" data-split-available="${String(isSplitAvailable())}">${segment('top', ['Top 3', 'Top 5', 'Top 10'], `Top ${state.top}`)}${segment('metric', ['Viewers', 'Indexed'], title(state.metric))}${segment('bucket', ['1m', '5m', '10m'], state.bucket)}${layoutSegment()}<button class="bl-refresh" data-refresh type="button">Refresh</button></section>
       <div class="bl-status" data-status></div>
       <section class="bl-summary" data-summary></section>
       <section class="bl-chart-card"><div class="bl-chart-head"><h2>Battle Lines</h2><div data-legend></div></div><div class="bl-chart" data-chart></div><section class="bl-inspector" data-inspector></section></section>
@@ -149,6 +155,10 @@ function renderPage(): string {
       <details class="bl-section bl-debug" data-debug><summary>Debug details</summary><pre data-debug-body>Loading debug details…</pre></details>
     </main>
   </div>`
+}
+
+function layoutSegment(): string {
+  return `<div class="bl-seg" data-group="layout"><button type="button" class="${state.requestedLayout === 'wide' ? 'on' : ''}" data-layout="wide">Wide</button><button type="button" class="${state.requestedLayout === 'split' ? 'on' : ''}" data-layout="split" ${isSplitAvailable() ? '' : 'disabled'}>Split</button><small>Split requires 1200px+</small></div>`
 }
 
 function segment(group: string, values: string[], selected: string): string {
@@ -163,6 +173,13 @@ function bind(): void {
       if (group === 'top') state = { ...state, top: value === 'Top 3' ? 3 : value === 'Top 10' ? 10 : 5 }
       if (group === 'metric') state = { ...state, metric: value === 'Indexed' ? 'indexed' : 'viewers' }
       if (group === 'bucket') state = { ...state, bucket: value === '1m' || value === '10m' ? value : '5m' }
+      if (group === 'layout') {
+        state = { ...state, requestedLayout: button.dataset.layout === 'split' ? 'split' : 'wide' }
+        writeRequestedLayout(layoutKey, state.requestedLayout)
+        const url = new URL(window.location.href)
+        url.searchParams.set('layout', state.requestedLayout)
+        window.history.replaceState({}, '', url)
+      }
       refreshButtons()
       render()
       void loadApi()
