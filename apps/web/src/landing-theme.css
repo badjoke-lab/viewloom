@@ -2860,3 +2860,176 @@
     justify-self: stretch !important;
   }
 }
+
+/* Landing v18 outer pages portal-blue */
+
+/* Landing v18 outer pages portal-blue
+   About / Support are shared ViewLoom outer pages, so they use Portal/common blue,
+   not Twitch purple or Kick green. */
+
+body[data-page="about"],
+body[data-page="support"],
+body[data-page="contact"] {
+  --accent-rgb: var(--vl-accent-blue);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--vl-accent-blue), 0.24), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(var(--vl-accent-blue), 0.12), transparent 28%),
+    linear-gradient(180deg, #061426 0%, #050b14 100%) !important;
+}
+
+body[data-page="about"] .page-shell,
+body[data-page="support"] .page-shell,
+body[data-page="contact"] .page-shell {
+  --accent-rgb: var(--vl-accent-blue);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--vl-accent-blue), 0.24), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(var(--vl-accent-blue), 0.12), transparent 28%),
+    linear-gradient(180deg, #061426 0%, #050b14 100%) !important;
+}
+
+/* Outer page hero: same blue language as Portal */
+body[data-page="about"] .hero,
+body[data-page="support"] .hero,
+body[data-page="contact"] .hero {
+  border-color: rgba(var(--vl-accent-blue), 0.28) !important;
+  background:
+    radial-gradient(circle at 74% 22%, rgba(var(--vl-accent-blue), 0.18), transparent 28%),
+    linear-gradient(135deg, rgba(7, 18, 34, 0.98), rgba(5, 12, 24, 0.9)) !important;
+  box-shadow: 0 28px 90px rgba(var(--vl-accent-blue), 0.10);
+}
+
+body[data-page="about"] .eyebrow,
+body[data-page="support"] .eyebrow,
+body[data-page="contact"] .eyebrow,
+body[data-page="about"] .status-panel__label,
+body[data-page="support"] .status-panel__label,
+body[data-page="contact"] .status-panel__label,
+body[data-page="about"] .support-card__label,
+body[data-page="support"] .support-card__label,
+body[data-page="contact"] .support-card__label {
+  color: rgb(var(--vl-accent-blue)) !important;
+}
+
+/* About currently has raw definition-style text between hero and cards.
+   Treat direct text sections/lists as blue cards so the page stops looking broken. */
+body[data-page="about"] .page-main > dl,
+body[data-page="about"] .page-main > .info-list,
+body[data-page="about"] .page-main > .definition-list {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+  margin: 22px 0 !important;
+  padding: 22px !important;
+  border: 1px solid rgba(var(--vl-accent-blue), 0.22);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 86% 12%, rgba(var(--vl-accent-blue), 0.14), transparent 34%),
+    rgba(8, 18, 34, 0.78);
+}
+
+body[data-page="about"] .page-main > dl dt,
+body[data-page="about"] .page-main > .info-list dt,
+body[data-page="about"] .page-main > .definition-list dt {
+  color: rgb(var(--vl-accent-blue));
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+body[data-page="about"] .page-main > dl dd,
+body[data-page="about"] .page-main > .info-list dd,
+body[data-page="about"] .page-main > .definition-list dd {
+  margin: 4px 0 0 !important;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Fallback: direct paragraphs after About hero should not look like unstyled body text. */
+body[data-page="about"] .page-main > p {
+  max-width: none;
+  margin: 0 0 12px !important;
+  padding: 18px 20px;
+  border: 1px solid rgba(var(--vl-accent-blue), 0.18);
+  border-radius: 18px;
+  background: rgba(8, 18, 34, 0.68);
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* About shared-route / note cards should be blue, not purple. */
+body[data-page="about"] .support-card,
+body[data-page="about"] .info-card,
+body[data-page="about"] .surface-card,
+body[data-page="about"] .rail-card,
+body[data-page="support"] .support-card,
+body[data-page="support"] .info-card,
+body[data-page="support"] .surface-card,
+body[data-page="support"] .rail-card {
+  --accent-rgb: var(--vl-accent-blue);
+  border-color: rgba(var(--vl-accent-blue), 0.22) !important;
+  background:
+    radial-gradient(circle at 92% 12%, rgba(var(--vl-accent-blue), 0.16), transparent 36%),
+    rgba(8, 18, 34, 0.84) !important;
+}
+
+/* Support page CTA: portal-blue button instead of purple product-provider accent. */
+body[data-page="support"] .button--primary,
+body[data-page="support"] a[href*="stripe"],
+body[data-page="support"] a[href*="buy.stripe.com"] {
+  --accent-rgb: var(--vl-accent-blue);
+  border-color: rgba(var(--vl-accent-blue), 0.62) !important;
+  background: linear-gradient(135deg, rgba(var(--vl-accent-blue), 0.92), rgba(var(--vl-accent-blue), 0.48)) !important;
+  color: var(--text) !important;
+  box-shadow: 0 18px 54px rgba(var(--vl-accent-blue), 0.22);
+}
+
+/* Support body: the direct support block should look like a single donation panel. */
+body[data-page="support"] .page-main > .support-card,
+body[data-page="support"] .page-main > .surface-card {
+  border-color: rgba(var(--vl-accent-blue), 0.28) !important;
+}
+
+/* Footer active/support states on outer pages are blue. */
+body[data-page="about"] .landing-footer .support-link,
+body[data-page="support"] .landing-footer .support-link,
+body[data-page="contact"] .landing-footer .support-link,
+body[data-page="about"] .nav-link.is-current,
+body[data-page="support"] .nav-link.is-current,
+body[data-page="contact"] .nav-link.is-current,
+body[data-page="about"] .nav-link--support,
+body[data-page="support"] .nav-link--support,
+body[data-page="contact"] .nav-link--support {
+  border-color: rgba(var(--vl-accent-blue), 0.48) !important;
+  background: rgba(var(--vl-accent-blue), 0.16) !important;
+  color: var(--text) !important;
+}
+
+/* Mobile outer pages */
+@media (max-width: 760px) {
+  body[data-page="about"] .page-main > dl,
+  body[data-page="about"] .page-main > .info-list,
+  body[data-page="about"] .page-main > .definition-list {
+    grid-template-columns: 1fr;
+    padding: 16px !important;
+    border-radius: 18px;
+  }
+
+  body[data-page="about"] .page-main > p {
+    padding: 14px 16px;
+    border-radius: 16px;
+    font-size: 0.82rem;
+  }
+
+  body[data-page="about"] .hero,
+  body[data-page="support"] .hero {
+    padding: 20px 18px !important;
+    border-radius: 20px;
+  }
+
+  body[data-page="about"] .hero h1,
+  body[data-page="support"] .hero h1 {
+    font-size: clamp(2.35rem, 11vw, 3.2rem) !important;
+    line-height: 0.98 !important;
+  }
+}
