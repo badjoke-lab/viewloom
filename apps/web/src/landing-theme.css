@@ -519,3 +519,150 @@
     gap: 8px;
   }
 }
+
+/* Landing v2 cleanup overrides */
+
+/* Page color ownership */
+.page-shell.landing-page--portal {
+  --accent-rgb: var(--vl-accent-blue);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--vl-accent-blue), 0.26), transparent 28%),
+    radial-gradient(circle at 78% 25%, rgba(var(--vl-accent-blue), 0.18), transparent 30%),
+    linear-gradient(180deg, #061426 0%, #050b14 100%) !important;
+}
+
+.page-shell.landing-page--provider.theme-twitch {
+  --accent-rgb: var(--vl-accent-purple);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--vl-accent-purple), 0.26), transparent 28%),
+    radial-gradient(circle at 78% 25%, rgba(var(--vl-accent-purple), 0.18), transparent 30%),
+    linear-gradient(180deg, #0b1020 0%, #050b14 100%) !important;
+}
+
+.page-shell.landing-page--provider.theme-kick {
+  --accent-rgb: var(--vl-accent-green);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--vl-accent-green), 0.24), transparent 28%),
+    radial-gradient(circle at 78% 25%, rgba(var(--vl-accent-green), 0.18), transparent 30%),
+    linear-gradient(180deg, #061914 0%, #050b14 100%) !important;
+}
+
+/* Header: neutral, no purple common wash */
+.landing-header {
+  background: transparent !important;
+}
+
+.landing-header .site-nav {
+  gap: 14px;
+}
+
+.landing-header .header-note {
+  border-color: rgba(var(--accent-rgb), 0.22);
+  background: rgba(255,255,255,0.04);
+}
+
+/* Portal common must be blue except the two provider CTAs/cards. */
+.landing-page--portal .landing-hero,
+.landing-page--portal .landing-role-card,
+.landing-page--portal .support-strip,
+.landing-page--portal .landing-steps .info-card {
+  --accent-rgb: var(--vl-accent-blue);
+}
+
+.landing-page--portal .theme-twitch,
+.landing-page--portal .button--twitch {
+  --accent-rgb: var(--vl-accent-purple);
+}
+
+.landing-page--portal .theme-kick,
+.landing-page--portal .button--kick {
+  --accent-rgb: var(--vl-accent-green);
+}
+
+/* Provider internal accent lock */
+.landing-page--provider.theme-twitch .landing-hero,
+.landing-page--provider.theme-twitch .landing-role-card,
+.landing-page--provider.theme-twitch .landing-feature-card,
+.landing-page--provider.theme-twitch .landing-secondary-card {
+  --accent-rgb: var(--vl-accent-purple);
+}
+
+.landing-page--provider.theme-kick .landing-hero,
+.landing-page--provider.theme-kick .landing-role-card,
+.landing-page--provider.theme-kick .landing-feature-card,
+.landing-page--provider.theme-kick .landing-secondary-card {
+  --accent-rgb: var(--vl-accent-green);
+}
+
+/* Stronger mock-like cards */
+.landing-hero {
+  overflow: hidden;
+  border: 1px solid rgba(var(--accent-rgb), 0.32);
+  box-shadow: 0 30px 100px rgba(var(--accent-rgb), 0.12);
+}
+
+.landing-platform-grid .surface-card,
+.landing-feature-card,
+.landing-secondary-card,
+.landing-steps .info-card {
+  border-color: rgba(var(--accent-rgb), 0.32);
+  background:
+    radial-gradient(circle at 92% 10%, rgba(var(--accent-rgb), 0.18), transparent 36%),
+    rgba(8, 18, 34, 0.88);
+  box-shadow: 0 22px 80px rgba(0,0,0,0.24);
+}
+
+.landing-platform-grid .surface-card {
+  display: grid;
+  align-content: start;
+}
+
+.landing-chip {
+  justify-content: center;
+  border-color: rgba(var(--accent-rgb), 0.28);
+  background: rgba(var(--accent-rgb), 0.10);
+}
+
+.landing-feature-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.landing-feature-card {
+  min-height: 370px;
+}
+
+.landing-feature-card__icon {
+  color: rgb(var(--accent-rgb));
+}
+
+/* No duplicated footer/status rows from old scripts */
+.landing-page footer + footer,
+.landing-page .landing-footer + .landing-footer,
+.landing-page--provider .provider-status-strip + .provider-status-strip {
+  display: none !important;
+}
+
+.landing-footer {
+  margin-bottom: 36px;
+}
+
+@media (max-width: 1279px) {
+  .landing-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .landing-header {
+    grid-template-columns: 1fr auto;
+  }
+
+  .landing-header .site-nav {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .landing-feature-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

@@ -452,7 +452,7 @@ function renderPortalCard(card: SiteCard): string {
       <h2>${card.title}</h2>
       <p>${card.description}</p>
       <div class="tag-list">
-        ${card.notes.map((note) => `<span class="tag-pill">${note}</span>`).join('')}
+        ${card.notes.map((note) => `<span class="tag-pill landing-chip">${note}</span>`).join('')}
       </div>
       <a class="button button--ghost" href="/${card.slug}/">${card.cta}</a>
     </article>
@@ -798,9 +798,6 @@ function renderHeader(current: PageKind): string {
         <a class="nav-link ${current === 'portal' ? 'is-current' : ''}" href="/">Portal</a>
         <a class="nav-link ${currentSite === 'twitch' ? 'is-current' : ''}" href="/twitch/">Twitch data</a>
         <a class="nav-link ${currentSite === 'kick' ? 'is-current' : ''}" href="/kick/">Kick data</a>
-        <a class="nav-link nav-link--secondary" href="/about/">About</a>
-        <a class="nav-link nav-link--secondary support-link" href="/support/">Support</a>
-        <a class="nav-link nav-link--secondary" href="/contact/">Contact</a>
       </nav>
       <div class="header-note">${badge}</div>
     </header>
