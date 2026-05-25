@@ -1,4 +1,5 @@
-export {}
+import { fallbackPolicy, fetchRetentionPolicy, retentionSummary, shouldShowRetentionBoundary, type ProviderRetentionPolicy } from './retention-policy'
+
 const page = document.body.dataset.page || ''
 const isLinesPage = page === 'twitch-battle-lines' || page === 'kick-battle-lines'
 const provider: 'twitch' | 'kick' = page.startsWith('kick') ? 'kick' : 'twitch'
@@ -7,6 +8,7 @@ if (isLinesPage) {
   window.requestAnimationFrame(() => {
     ensureLinesUnifyStyles()
     applyLinesUiUnification()
+    applyLinesRetentionNote()
   })
 }
 
@@ -39,6 +41,35 @@ function applyLinesUiUnification(): void {
   })
 }
 
+function applyLinesRetentionNote(): void {
+  const controls = document.querySelector<HTMLElement>('.bl-controls')
+  const chartCard = document.querySelector<HTMLElement>('.bl-chart-card')
+  const host = controls ?? chartCard
+  if (!host || document.querySelector('#lines-retention-note')) return
+
+  const selectedDate = currentSelectedDate()
+  const note = document.createElement('aside')
+  note.id = 'lines-retention-note'
+  note.className = 'vl-retention-note bl-retention-note'
+  note.textContent = noteText(fallbackPolicy(provider, selectedDate))
+  host.insertAdjacentElement(controls ? 'afterend' : 'beforebegin', note)
+
+  fetchRetentionPolicy(provider, selectedDate).then((policy) => {
+    note.textContent = noteText(policy)
+    note.dataset.boundary = shouldShowRetentionBoundary(policy) ? 'true' : 'false'
+  }).catch(() => {})
+}
+
+function noteText(policy: ProviderRetentionPolicy): string {
+  return shouldShowRetentionBoundary(policy) ? policy.detailUnavailableMessage : retentionSummary(policy)
+}
+
+function currentSelectedDate(): string | null {
+  const params = new URLSearchParams(window.location.search)
+  const explicit = params.get('date') ?? params.get('from')
+  return explicit && /^\d{4}-\d{2}-\d{2}$/.test(explicit) ? explicit : null
+}
+
 function ensureLinesUnifyStyles(): void {
   if (document.querySelector('#lines-unify-styles')) return
   const style = document.createElement('style')
@@ -49,6 +80,7 @@ function ensureLinesUnifyStyles(): void {
 .bl-hero--unified p{margin:16px 0 0;line-height:1.7}.bl-controls--unified{margin-top:18px;padding:12px;border:1px solid var(--border);border-radius:22px;background:rgba(12,21,37,.74)}
 .bl-status--unified,.bl-chart-card--unified,.bl-section--unified,.bl-summary--unified{border-color:var(--border);border-radius:var(--radius-lg);background:var(--card);box-shadow:var(--shadow)}
 .vl-data-quality-note{border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--card);color:var(--muted)}
+.vl-retention-note{margin-top:12px;border:1px solid var(--border);border-radius:18px;background:rgba(12,21,37,.62);color:var(--muted);padding:10px 12px;font-size:.9rem;line-height:1.5}.vl-retention-note[data-boundary="true"]{border-color:rgba(250,204,21,.45);color:#fde68a;background:rgba(120,53,15,.24)}
 @media(max-width:1040px){.bl-hero--unified{grid-template-columns:1fr}}
 @media(max-width:760px){.bl-hero--unified{padding:20px}.bl-controls--unified{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.bl-controls--unified{grid-template-columns:1fr}}
