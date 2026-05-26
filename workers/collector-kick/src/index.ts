@@ -264,8 +264,10 @@ async function collectKick(env: Env) {
         officialLivestreamLimit: OFFICIAL_LIVESTREAM_LIMIT,
       }
       const written = await writeSnapshot(env, official.streams, 'authenticated', meta)
+      const rollupRefresh = await maybeRefreshDailyRollups(env)
       return {
         ...written,
+        rollup_refresh: rollupRefresh,
         auth_mode: appAuth.mode,
         channel_read_mode: meta.channelReadMode,
         target_source: 'official-livestreams',
@@ -334,8 +336,10 @@ async function collectKick(env: Env) {
   }
 
   const written = await writeSnapshot(env, attempt.streams, attempt.sourceMode, meta)
+  const rollupRefresh = await maybeRefreshDailyRollups(env)
   return {
     ...written,
+    rollup_refresh: rollupRefresh,
     auth_mode: auth.mode,
     channel_read_mode: meta.channelReadMode,
     target_source: targetSet.source,
@@ -658,3 +662,176 @@ function num(value: unknown): number {
 function out(payload: unknown, status = 200): Response {
   return Response.json(payload, { status, headers: { 'cache-control': 'no-store' } })
 }
+
+
+type RollupRefreshResult = {
+  refreshed: boolean
+  day?: string
+  error?: string
+}
+
+async function maybeRefreshDailyRollups(env: Env): Promise<RollupRefreshResult> {
+  const now = new Date()
+  if (!shouldRunDailyRollupRefresh(now)) return { refreshed: false }
+
+  const today = dayString(now)
+  const yesterdayDate = new Date(now)
+  yesterdayDate.setUTCDate(now.getUTCDate() - 1)
+  const yesterday = dayString(yesterdayDate)
+
+  try {
+    await refreshDailyRollup(env, today)
+    await refreshDailyRollup(env, yesterday)
+    return { refreshed: true, day: today }
+  } catch (error) {
+    return {
+      refreshed: false,
+      day: today,
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
+}
+
+function shouldRunDailyRollupRefresh(now: Date): boolean {
+  const hour = now.getUTCHours()
+  const minute = now.getUTCMinutes()
+  return (hour === 0 || hour === 12) && minute >= 20 && minute < 25
+}
+
+function dayString(date: Date): string {
+  return date.toISOString().slice(0, 10)
+}
+
+async function refreshDailyRollup(env: Env, day: string): Promise<void> {
+  await env.DB_KICK_HOT.prepare(ROLLUP_SQL).bind('kick', day, 'kick', day).run()
+}
+
+const ROLLUP_SQL = `
+INSERT INTO daily_rollups (
+  provider,
+  day,
+  total_viewer_minutes,
+  peak_viewers,
+  peak_streamer_id,
+  peak_streamer_name,
+  observed_snapshots,
+  observed_stream_count,
+  top_streamers_json,
+  coverage_state,
+  source_mode,
+  updated_at
+)
+WITH daily AS (
+  SELECT
+    provider,
+    substr(bucket_minute, 1, 10) AS day,
+    SUM(total_viewers * 5) AS total_viewer_minutes,
+    MAX(total_viewers) AS peak_viewers,
+    COUNT(*) AS observed_snapshots,
+    MAX(stream_count) AS observed_stream_count,
+    SUM(CASE WHEN source_mode IN ('demo', 'fixture') THEN 1 ELSE 0 END) AS demo_rows
+  FROM minute_snapshots
+  WHERE provider = ? AND substr(bucket_minute, 1, 10) = ?
+  GROUP BY provider, substr(bucket_minute, 1, 10)
+),
+stream_rows AS (
+  SELECT
+    m.provider,
+    substr(m.bucket_minute, 1, 10) AS day,
+    LOWER(REPLACE(COALESCE(
+      json_extract(j.value, '$.channelLogin'),
+      json_extract(j.value, '$.slug'),
+      json_extract(j.value, '$.id'),
+      json_extract(j.value, '$.displayName'),
+      json_extract(j.value, '$.name')
+    ), ' ', '-')) AS streamer_id,
+    COALESCE(
+      json_extract(j.value, '$.displayName'),
+      json_extract(j.value, '$.name'),
+      json_extract(j.value, '$.channelLogin'),
+      json_extract(j.value, '$.slug'),
+      json_extract(j.value, '$.id')
+    ) AS display_name,
+    CAST(COALESCE(
+      json_extract(j.value, '$.viewers'),
+      json_extract(j.value, '$.viewer_count'),
+      json_extract(j.value, '$.viewerCount')
+    ) AS INTEGER) AS viewers
+  FROM minute_snapshots m, json_each(m.payload_json, '$.items') j
+  WHERE m.provider = ? AND substr(m.bucket_minute, 1, 10) = ?
+),
+stream_totals AS (
+  SELECT
+    provider,
+    day,
+    streamer_id,
+    MAX(display_name) AS display_name,
+    SUM(viewers * 5) AS viewer_minutes,
+    MAX(viewers) AS peak_viewers,
+    COUNT(*) * 5 AS observed_minutes
+  FROM stream_rows
+  WHERE streamer_id IS NOT NULL AND streamer_id != '' AND viewers > 0
+  GROUP BY provider, day, streamer_id
+),
+ranked AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY provider, day ORDER BY viewer_minutes DESC, peak_viewers DESC, streamer_id ASC) AS viewer_rank,
+    ROW_NUMBER() OVER (PARTITION BY provider, day ORDER BY peak_viewers DESC, viewer_minutes DESC, streamer_id ASC) AS peak_rank
+  FROM stream_totals
+),
+top_json AS (
+  SELECT
+    provider,
+    day,
+    json_group_array(json_object(
+      'streamerId', streamer_id,
+      'displayName', display_name,
+      'viewerMinutes', viewer_minutes,
+      'peakViewers', peak_viewers,
+      'observedMinutes', observed_minutes,
+      'rankByViewerMinutes', viewer_rank,
+      'rankByPeak', peak_rank
+    )) AS top_streamers_json
+  FROM ranked
+  WHERE viewer_rank <= 30
+  GROUP BY provider, day
+),
+peak AS (
+  SELECT provider, day, streamer_id, display_name
+  FROM ranked
+  WHERE peak_rank = 1
+)
+SELECT
+  d.provider,
+  d.day,
+  d.total_viewer_minutes,
+  d.peak_viewers,
+  p.streamer_id,
+  p.display_name,
+  d.observed_snapshots,
+  d.observed_stream_count,
+  COALESCE(t.top_streamers_json, '[]'),
+  CASE
+    WHEN d.demo_rows > 0 THEN 'demo'
+    WHEN d.observed_snapshots >= 240 THEN 'good'
+    WHEN d.observed_snapshots >= 60 THEN 'partial'
+    ELSE 'poor'
+  END,
+  CASE WHEN d.demo_rows > 0 THEN 'demo' ELSE 'real' END,
+  datetime('now')
+FROM daily d
+LEFT JOIN top_json t ON t.provider = d.provider AND t.day = d.day
+LEFT JOIN peak p ON p.provider = d.provider AND p.day = d.day
+ON CONFLICT(provider, day) DO UPDATE SET
+  total_viewer_minutes = excluded.total_viewer_minutes,
+  peak_viewers = excluded.peak_viewers,
+  peak_streamer_id = excluded.peak_streamer_id,
+  peak_streamer_name = excluded.peak_streamer_name,
+  observed_snapshots = excluded.observed_snapshots,
+  observed_stream_count = excluded.observed_stream_count,
+  top_streamers_json = excluded.top_streamers_json,
+  coverage_state = excluded.coverage_state,
+  source_mode = excluded.source_mode,
+  updated_at = excluded.updated_at
+`
