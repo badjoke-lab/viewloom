@@ -13,7 +13,7 @@ This worker refreshes History rollups separately so `daily_rollups` does not nee
 ```text
 20 0 * * *
 20 12 * * *
-````
+```
 
 It refreshes both today and yesterday for:
 
