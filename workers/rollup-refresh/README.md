@@ -10,12 +10,11 @@ This worker refreshes History rollups separately so `daily_rollups` does not nee
 
 ## Schedule
 
-```text
-20 0 * * *
-20 12 * * *
-```
+This worker has no cron trigger in Free Strong mode.
 
-It refreshes both today and yesterday for:
+Cloudflare Free cron slots are reserved for the 5-minute Twitch and Kick collectors. Automatic rollup refresh is handled by a time gate inside each collector.
+
+Manual `POST /refresh` refreshes both today and yesterday for:
 
 ```text
 vl_twitch_hot

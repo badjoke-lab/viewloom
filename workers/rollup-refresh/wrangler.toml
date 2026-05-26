@@ -2,12 +2,9 @@ name = "viewloom-rollup-refresh"
 main = "src/index.ts"
 compatibility_date = "2026-05-26"
 
-# Daily rollup refresh for Free Strong.
-# Runs twice per day to keep History current without putting rollup reads on the 5-minute collectors.
-# UTC 00:20: finalize yesterday and create early today.
-# UTC 12:20: refresh current day mid-day.
-[triggers]
-crons = ["20 0 * * *", "20 12 * * *"]
+# Manual rollup refresh worker for Free Strong.
+# No cron triggers here: Cloudflare Free cron slots are reserved for the 5-minute collectors.
+# Automatic rollup refresh is gated inside each existing collector.
 
 [[d1_databases]]
 binding = "DB_TWITCH_HOT"
