@@ -607,3 +607,35 @@
     margin-top: 14px;
   }
 }
+
+/* PR-05 Split responsive polish */
+@media (min-width: 1440px) {
+  .bl-page[data-effective-layout='split'] .bl-chart-card {
+    grid-template-columns: minmax(760px, 1fr) minmax(340px, 400px);
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1439px) {
+  .bl-page[data-effective-layout='split'] .bl-chart-card {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+    gap: 14px;
+  }
+
+  .bl-page[data-effective-layout='split'] .bl-chart {
+    min-height: clamp(500px, 60vh, 700px);
+  }
+
+  .bl-page[data-effective-layout='split'] .bl-inspector {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .bl-seg[data-group='layout'] {
+    width: 100%;
+  }
+
+  .bl-seg[data-group='layout'] small {
+    flex-basis: 100%;
+  }
+}

@@ -293,6 +293,21 @@ function ensureStyles(): void {
     .heatmap-layout-root[data-layout-mode='wide'] .support-card {
       min-height: auto;
     }
+    /* PR-05 Split responsive polish */
+    @media (min-width: 1440px) {
+      .heatmap-layout-root[data-layout-mode='split'] .feature-layout {
+        grid-template-columns: minmax(760px, 1fr) minmax(340px, 400px);
+      }
+    }
+    @media (min-width: 1200px) and (max-width: 1439px) {
+      .heatmap-layout-root[data-layout-mode='split'] .feature-layout {
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+        gap: 14px;
+      }
+      .heatmap-layout-root[data-layout-mode='split'] .chart-placeholder--heatmap {
+        min-height: clamp(560px, 66vh, 720px);
+      }
+    }
     @media (max-width: 1199px) {
       .heatmap-layout-root[data-layout-mode='split'] {
         width: min(calc(100vw - 32px), 1280px);
