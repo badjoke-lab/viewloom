@@ -1,0 +1,20 @@
+name = "viewloom-rollup-refresh"
+main = "src/index.ts"
+compatibility_date = "2026-05-26"
+
+# Daily rollup refresh for Free Strong.
+# Runs twice per day to keep History current without putting rollup reads on the 5-minute collectors.
+# UTC 00:20: finalize yesterday and create early today.
+# UTC 12:20: refresh current day mid-day.
+[triggers]
+crons = ["20 0 * * *", "20 12 * * *"]
+
+[[d1_databases]]
+binding = "DB_TWITCH_HOT"
+database_name = "vl_twitch_hot"
+database_id = "b77221fe-80a3-4749-bc0e-d3ad54003dcf"
+
+[[d1_databases]]
+binding = "DB_KICK_HOT"
+database_name = "vl_kick_hot"
+database_id = "ed1e082f-85ac-4dd0-a44e-5d3e200667d5"
