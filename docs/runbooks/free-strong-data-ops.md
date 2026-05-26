@@ -13,7 +13,7 @@ Twitch raw snapshots: 30 days
 Kick raw snapshots: 60 days by default
 Kick 90 days: measurement-gated
 History rollups: 180 days
-````
+```
 
 ## What this runbook covers
 
