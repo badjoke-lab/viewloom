@@ -190,3 +190,44 @@
     margin-top: 12px !important;
   }
 }
+
+/* PR-05 Split responsive polish */
+@media (min-width: 1440px) {
+  .df-layout[data-effective-layout='split'] {
+    grid-template-columns: minmax(760px, 1fr) minmax(340px, 400px) !important;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1439px) {
+  .df-layout[data-effective-layout='split'] {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 340px) !important;
+    gap: 14px !important;
+  }
+
+  .df-layout[data-effective-layout='split'] .df-main {
+    padding: 18px !important;
+  }
+
+  .df-layout[data-effective-layout='split'] .df-chart-wrap {
+    min-height: clamp(500px, 60vh, 700px) !important;
+  }
+
+  .df-layout[data-effective-layout='split'] .df-canvas {
+    height: clamp(500px, 60vh, 700px) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .df-controls label:nth-of-type(7) {
+    grid-column: 1 / -1 !important;
+  }
+
+  .df-layout-toggle {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  .df-layout-toggle button {
+    flex: 1 1 0 !important;
+  }
+}
