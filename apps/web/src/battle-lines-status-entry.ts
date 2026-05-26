@@ -139,7 +139,7 @@ function demoState(): BattleState {
 function renderPage(): string {
   const otherSite = site === 'kick' ? 'twitch' : 'kick'
   const otherLabel = site === 'kick' ? 'Twitch data' : 'Kick data'
-  return `<div class="page-shell page-shell--site theme-${site} bl-page">
+  return `<div class="page-shell page-shell--site theme-${site} bl-page" data-requested-layout="${state.requestedLayout}" data-effective-layout="${effectiveLayout(state.requestedLayout)}" data-split-available="${String(isSplitAvailable())}">
     <header class="site-header"><a class="brand" href="/">ViewLoom</a><nav class="site-nav"><a class="nav-link" href="/">Portal</a><a class="nav-link ${site === 'twitch' ? 'is-current' : ''}" href="/twitch/">Twitch data</a><a class="nav-link ${site === 'kick' ? 'is-current' : ''}" href="/kick/">Kick data</a></nav><div class="header-note">Unofficial ${platformName} data</div></header>
     <main class="page-main bl-main">
       <section class="bl-hero"><div><div class="eyebrow">${platformName.toUpperCase()} DATA · RIVALRY</div><h1>Battle Lines</h1><p>Read rivalry, reversals, surges, and closing gaps through observed live-stream data.</p></div><a class="bl-icon" href="/${otherSite}/" aria-label="Open ${otherLabel}">⇧</a></section>
@@ -193,13 +193,16 @@ function bind(): void {
 
 function syncLayoutUi(): void {
   const controls = document.querySelector<HTMLElement>('.bl-controls')
+  const pageRoot = document.querySelector<HTMLElement>('.bl-page')
   const splitAvailable = isSplitAvailable()
   const effective = effectiveLayout(state.requestedLayout)
-  if (controls) {
-    controls.dataset.requestedLayout = state.requestedLayout
-    controls.dataset.effectiveLayout = effective
-    controls.dataset.splitAvailable = String(splitAvailable)
-  }
+
+  ;[controls, pageRoot].forEach((node) => {
+    if (!node) return
+    node.dataset.requestedLayout = state.requestedLayout
+    node.dataset.effectiveLayout = effective
+    node.dataset.splitAvailable = String(splitAvailable)
+  })
 
   document.querySelectorAll<HTMLButtonElement>('[data-group="layout"] button[data-layout]').forEach((button) => {
     const value = button.dataset.layout === 'split' ? 'split' : 'wide'

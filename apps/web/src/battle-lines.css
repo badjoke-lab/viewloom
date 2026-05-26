@@ -559,3 +559,51 @@
     margin-top: 10px;
   }
 }
+
+/* PR-04 Battle Lines Split layout */
+@media (min-width: 1200px) {
+  .bl-page[data-effective-layout='split'] .bl-chart-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.34fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .bl-page[data-effective-layout='split'] .bl-chart-head {
+    grid-column: 1 / -1;
+  }
+
+  .bl-page[data-effective-layout='split'] .bl-chart {
+    grid-column: 1;
+    min-width: 0;
+    min-height: clamp(520px, 64vh, 760px);
+  }
+
+  .bl-page[data-effective-layout='split'] .bl-inspector {
+    grid-column: 2;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 0;
+    min-width: 0;
+    align-self: stretch;
+  }
+
+  .bl-page[data-effective-layout='split'] .bl-inspector > * {
+    min-width: 0;
+  }
+
+  .bl-page[data-effective-layout='split'] .bl-summary {
+    margin-bottom: 18px;
+  }
+}
+
+@media (max-width: 1199px) {
+  .bl-page[data-effective-layout='split'] .bl-chart-card {
+    display: block;
+  }
+
+  .bl-page[data-effective-layout='split'] .bl-inspector {
+    margin-top: 14px;
+  }
+}
