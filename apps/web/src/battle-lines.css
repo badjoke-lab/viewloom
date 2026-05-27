@@ -639,3 +639,94 @@
     flex-basis: 100%;
   }
 }
+
+/* PR-07 Battle Lines mobile chart polish */
+@media (max-width: 760px) {
+  .bl-chart-card {
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  .bl-chart-head {
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .bl-chart-head h2 {
+    font-size: 1.12rem;
+  }
+
+  [data-legend] {
+    gap: 6px 10px;
+    margin-top: 6px;
+  }
+
+  [data-legend] span {
+    font-size: 0.78rem;
+  }
+
+  .bl-chart {
+    height: clamp(340px, 88vw, 420px);
+    border-radius: 12px;
+  }
+
+  .bl-chart svg path[stroke-width="4"] {
+    stroke-width: 8;
+    filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.42));
+  }
+
+  .bl-chart svg path[stroke-width="2"] {
+    stroke-width: 1.2;
+    opacity: 0.13;
+  }
+
+  .bl-chart svg rect[fill="rgba(251,191,36,.08)"] {
+    opacity: 0.34;
+  }
+
+  .bl-chart  .g text {
+    font-size: 11px;
+    paint-order: stroke;
+    stroke: rgba(7, 16, 29, 0.78);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+  }
+
+  .bl-inspector {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 520px) {
+  .bl-chart-card {
+    padding: 8px;
+  }
+
+  .bl-chart {
+    height: clamp(330px, 92vw, 390px);
+  }
+
+  .bl-chart svg text {
+    font-size: 10px;
+    stroke-width: 3.5px;
+  }
+
+  .bl-inspector {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  .bl-chart-card {
+    padding: 7px;
+  }
+
+  .bl-chart {
+    height: 330px;
+    min-height: 330px;
+  }
+
+  .bl-chart svg text {
+    font-size: 9.5px;
+  }
+}
