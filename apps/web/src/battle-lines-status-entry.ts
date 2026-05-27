@@ -266,12 +266,11 @@ function renderChart(pair: [Line, Line]): void {
   if (!host) return
   const lines = state.lines.slice(0, state.top)
   const max = state.metric === 'indexed' ? 100 : nice(Math.max(...lines.flatMap((line) => line.points.map((_, index) => renderValue(line, index))), 1))
-  const w = 1200
-  const h = 580
-  const left = 74
-  const right = 132
-  const top = 50
-  const bottom = 70
+  const isMobileChart = window.matchMedia('(max-width: 760px)').matches
+  const chartBox = isMobileChart
+    ? { w: 900, h: 920, left: 58, right: 120, top: 44, bottom: 64, labelW: 116, labelH: 46 }
+    : { w: 1200, h: 580, left: 74, right: 132, top: 50, bottom: 70, labelW: 104, labelH: 44 }
+  const { w, h, left, right, top, bottom } = chartBox
   const plotW = w - left - right
   const plotH = h - top - bottom
   const x = (index: number) => left + (plotW * index) / Math.max(1, lines[0].points.length - 1)
@@ -284,7 +283,7 @@ function renderChart(pair: [Line, Line]): void {
   const axis = ['00:00', '06:00', '12:00', '18:00', '24:00'].map((label, index) => `<text x="${left + plotW * index / 4}" y="${h - 24}" text-anchor="middle" fill="#9fb0ca" font-size="13">${label}</text>`).join('')
   const backgroundLines = lines.filter((line) => !state.pair.includes(line.id)).map((line) => `<path d="${linePath(line)}" fill="none" stroke="${line.color}" stroke-width="2" opacity=".12"/>`).join('')
   const primary = drawPrimaryLine(pair[0], linePath(pair[0]), false) + drawPrimaryLine(pair[1], linePath(pair[1]), false)
-  const markers = selectedMarker(pair[0], x, y, state.selected, 0) + selectedMarker(pair[1], x, y, state.selected, 1) + endpoint(pair[0], x, y, 0) + endpoint(pair[1], x, y, 1)
+  const markers = selectedMarker(pair[0], x, y, state.selected, 0) + selectedMarker(pair[1], x, y, state.selected, 1) + endpoint(pair[0], x, y, 0, chartBox) + endpoint(pair[1], x, y, 1, chartBox)
   host.innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Battle Lines chart"><defs><filter id="blLineGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="${w}" height="${h}" rx="18" fill="#07101d"/>${missingBands(lines, x, top, h - bottom)}${grid}${axis}${band}${backgroundLines}${primary}<line x1="${nowX}" x2="${nowX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,.48)" stroke-dasharray="5 6"/><text x="${nowX + 8}" y="${top + 15}" fill="#cbd5e1" font-size="12">Now</text><line x1="${selectedX}" x2="${selectedX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,.9)" stroke-width="1.6"/><rect x="${selectedX - 34}" y="${top - 38}" width="68" height="26" rx="8" fill="rgba(15,23,42,.96)" stroke="rgba(255,255,255,.22)"/><text x="${selectedX}" y="${top - 20}" text-anchor="middle" fill="#eef4ff" font-size="12">${time(state.selected)}</text>${markers}</svg>`
   host.querySelector('svg')?.addEventListener('click', (event) => {
     const rect = host.getBoundingClientRect()
@@ -343,14 +342,20 @@ function missingBands(lines: Line[], x: (index: number) => number, top: number, 
   return first.points.map((_, index) => lines.some((line) => line.points[index]?.state === 'missing' || line.points[index]?.state === 'not_observed') ? `<rect x="${x(index) - 2.5}" y="${top}" width="5" height="${bottom - top}" fill="rgba(251,191,36,.018)"/>` : '').join('')
 }
 
-function endpoint(line: Line, x: (index: number) => number, y: (line: Line, index: number) => number, lane: number): string {
+function endpoint(
+  line: Line,
+  x: (index: number) => number,
+  y: (line: Line, index: number) => number,
+  lane: number,
+  chart: { w: number; h: number; right: number; top: number; bottom: number; labelW: number; labelH: number },
+): string {
   const index = lastDrawableIndex(line)
   if (index < 0) return ''
   const px = x(index)
   const py = y(line, index)
-  const labelX = Math.min(px + 12, 1076)
-  const labelY = Math.max(34, Math.min(py - 28 + lane * 50, 492))
-  return `<circle cx="${px}" cy="${py}" r="7" fill="${line.color}" stroke="rgba(2,6,23,.96)" stroke-width="4"/><rect x="${labelX}" y="${labelY}" width="104" height="44" rx="9" fill="rgba(15,23,42,.95)" stroke="${line.color}" stroke-width="1.5"/><text x="${labelX + 10}" y="${labelY + 17}" fill="${line.color}" font-size="12" font-weight="700">${line.name}</text><text x="${labelX + 10}" y="${labelY + 34}" fill="#eef4ff" font-size="12">${format(line.points[index].value ?? 0)}</text>`
+  const labelX = Math.min(px + 12, chart.w - chart.labelW - 18)
+  const labelY = Math.max(chart.top + 8, Math.min(py - 28 + lane * (chart.labelH + 6), chart.h - chart.bottom - chart.labelH - 8))
+  return `<circle cx="${px}" cy="${py}" r="7" fill="${line.color}" stroke="rgba(2,6,23,.96)" stroke-width="4"/><rect x="${labelX}" y="${labelY}" width="${chart.labelW}" height="${chart.labelH}" rx="9" fill="rgba(15,23,42,.95)" stroke="${line.color}" stroke-width="1.5"/><text x="${labelX + 10}" y="${labelY + 17}" fill="${line.color}" font-size="12" font-weight="700">${line.name}</text><text x="${labelX + 10}" y="${labelY + 34}" fill="#eef4ff" font-size="12">${format(line.points[index].value ?? 0)}</text>`
 }
 
 function renderInspector(pair: [Line, Line], info: { gap: number; delta: number; trend: string; leader: Line }): void {
