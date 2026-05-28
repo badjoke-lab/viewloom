@@ -730,3 +730,33 @@
     font-size: 9.5px;
   }
 }
+
+/* PR-09 Battle Lines mobile focus scale readability */
+@media (max-width: 760px) {
+  .bl-chart svg text {
+    font-size: 20px;
+    font-weight: 750;
+    paint-order: stroke;
+    stroke: rgba(7, 16, 29, 0.88);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+
+  .bl-chart svg text[fill="#9fb0ca"] {
+    fill: #cbd5e1;
+  }
+}
+
+@media (max-width: 520px) {
+  .bl-chart svg text {
+    font-size: 18px;
+    stroke-width: 5px;
+  }
+}
+
+@media (max-width: 380px) {
+  .bl-chart svg text {
+    font-size: 17px;
+    stroke-width: 5.5px;
+  }
+}

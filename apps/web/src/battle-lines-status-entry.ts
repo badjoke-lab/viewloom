@@ -265,10 +265,12 @@ function renderChart(pair: [Line, Line]): void {
   const host = document.querySelector<HTMLElement>('[data-chart]')
   if (!host) return
   const lines = state.lines.slice(0, state.top)
-  const max = state.metric === 'indexed' ? 100 : nice(Math.max(...lines.flatMap((line) => line.points.map((_, index) => renderValue(line, index))), 1))
   const isMobileChart = window.matchMedia('(max-width: 760px)').matches
+  const scaleLines = isMobileChart ? pair : lines
+  const rawMax = Math.max(...scaleLines.flatMap((line) => line.points.map((_, index) => renderValue(line, index))), 1)
+  const max = state.metric === 'indexed' ? 100 : nice(rawMax * (isMobileChart ? 1.14 : 1))
   const chartBox = isMobileChart
-    ? { w: 900, h: 920, left: 58, right: 120, top: 44, bottom: 64, labelW: 116, labelH: 46 }
+    ? { w: 900, h: 920, left: 66, right: 152, top: 54, bottom: 74, labelW: 140, labelH: 60 }
     : { w: 1200, h: 580, left: 74, right: 132, top: 50, bottom: 70, labelW: 104, labelH: 44 }
   const { w, h, left, right, top, bottom } = chartBox
   const plotW = w - left - right
@@ -279,8 +281,17 @@ function renderChart(pair: [Line, Line]): void {
   const band = makeGapBand(pair, x, y)
   const nowX = x(lines[0].points.length - 1)
   const selectedX = x(state.selected)
-  const grid = ticks(max).map((tick) => `<line x1="${left}" x2="${w - right}" y1="${top + plotH - plotH * tick / max}" y2="${top + plotH - plotH * tick / max}" stroke="rgba(148,163,184,.16)"/><text x="${left - 14}" y="${top + plotH - plotH * tick / max + 4}" text-anchor="end" fill="#9fb0ca" font-size="13">${state.metric === 'indexed' ? Math.round(tick) : compact(tick)}</text>`).join('')
-  const axis = ['00:00', '06:00', '12:00', '18:00', '24:00'].map((label, index) => `<text x="${left + plotW * index / 4}" y="${h - 24}" text-anchor="middle" fill="#9fb0ca" font-size="13">${label}</text>`).join('')
+  const allTicks = ticks(max)
+  const tickValues = isMobileChart
+    ? allTicks.filter((_, index, values) => index === 0 || index === values.length - 1 || index === Math.floor((values.length - 1) / 2))
+    : allTicks
+  const gridFontSize = isMobileChart ? 20 : 13
+  const axisFontSize = isMobileChart ? 20 : 13
+  const axisMarks = isMobileChart
+    ? [{ label: '00:00', ratio: 0 }, { label: '12:00', ratio: 0.5 }, { label: '24:00', ratio: 1 }]
+    : ['00:00', '06:00', '12:00', '18:00', '24:00'].map((label, index) => ({ label, ratio: index / 4 }))
+  const grid = tickValues.map((tick) => `<line x1="${left}" x2="${w - right}" y1="${top + plotH - plotH * tick / max}" y2="${top + plotH - plotH * tick / max}" stroke="rgba(148,163,184,.16)"/><text x="${left - 14}" y="${top + plotH - plotH * tick / max + 4}" text-anchor="end" fill="#9fb0ca" font-size="${gridFontSize}" font-weight="${isMobileChart ? 700 : 500}">${state.metric === 'indexed' ? Math.round(tick) : compact(tick)}</text>`).join('')
+  const axis = axisMarks.map((mark) => `<text x="${left + plotW * mark.ratio}" y="${h - 24}" text-anchor="middle" fill="#9fb0ca" font-size="${axisFontSize}" font-weight="${isMobileChart ? 700 : 500}">${mark.label}</text>`).join('')
   const backgroundLines = lines.filter((line) => !state.pair.includes(line.id)).map((line) => `<path d="${linePath(line)}" fill="none" stroke="${line.color}" stroke-width="2" opacity=".12"/>`).join('')
   const primary = drawPrimaryLine(pair[0], linePath(pair[0]), false) + drawPrimaryLine(pair[1], linePath(pair[1]), false)
   const markers = selectedMarker(pair[0], x, y, state.selected, 0) + selectedMarker(pair[1], x, y, state.selected, 1) + endpoint(pair[0], x, y, 0, chartBox) + endpoint(pair[1], x, y, 1, chartBox)
@@ -355,7 +366,10 @@ function endpoint(
   const py = y(line, index)
   const labelX = Math.min(px + 12, chart.w - chart.labelW - 18)
   const labelY = Math.max(chart.top + 8, Math.min(py - 28 + lane * (chart.labelH + 6), chart.h - chart.bottom - chart.labelH - 8))
-  return `<circle cx="${px}" cy="${py}" r="7" fill="${line.color}" stroke="rgba(2,6,23,.96)" stroke-width="4"/><rect x="${labelX}" y="${labelY}" width="${chart.labelW}" height="${chart.labelH}" rx="9" fill="rgba(15,23,42,.95)" stroke="${line.color}" stroke-width="1.5"/><text x="${labelX + 10}" y="${labelY + 17}" fill="${line.color}" font-size="12" font-weight="700">${line.name}</text><text x="${labelX + 10}" y="${labelY + 34}" fill="#eef4ff" font-size="12">${format(line.points[index].value ?? 0)}</text>`
+  const labelFontSize = chart.w < 1000 ? 16 : 12
+  const labelNameY = chart.w < 1000 ? 22 : 17
+  const labelValueY = chart.w < 1000 ? 45 : 34
+  return `<circle cx="${px}" cy="${py}" r="7" fill="${line.color}" stroke="rgba(2,6,23,.96)" stroke-width="4"/><rect x="${labelX}" y="${labelY}" width="${chart.labelW}" height="${chart.labelH}" rx="9" fill="rgba(15,23,42,.95)" stroke="${line.color}" stroke-width="1.5"/><text x="${labelX + 10}" y="${labelY + labelNameY}" fill="${line.color}" font-size="${labelFontSize}" font-weight="800">${line.name}</text><text x="${labelX + 10}" y="${labelY + labelValueY}" fill="#eef4ff" font-size="${labelFontSize}" font-weight="700">${format(line.points[index].value ?? 0)}</text>`
 }
 
 function renderInspector(pair: [Line, Line], info: { gap: number; delta: number; trend: string; leader: Line }): void {
