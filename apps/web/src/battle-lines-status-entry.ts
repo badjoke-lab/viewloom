@@ -270,14 +270,14 @@ function renderChart(pair: [Line, Line]): void {
   const rawMax = Math.max(...scaleLines.flatMap((line) => line.points.map((_, index) => renderValue(line, index))), 1)
   const max = state.metric === 'indexed' ? 100 : nice(rawMax * (isMobileChart ? 1.14 : 1))
   const chartBox = isMobileChart
-    ? { w: 900, h: 920, left: 66, right: 172, top: 54, bottom: 78, labelW: 132, labelH: 56 }
+    ? { w: 900, h: 920, left: 78, right: 222, top: 70, bottom: 96, labelW: 178, labelH: 76 }
     : { w: 1200, h: 580, left: 74, right: 132, top: 50, bottom: 70, labelW: 104, labelH: 44 }
   const { w, h, left, right, top, bottom } = chartBox
   const plotW = w - left - right
   const plotH = h - top - bottom
   const x = (index: number) => left + (plotW * index) / Math.max(1, lines[0].points.length - 1)
   const y = (line: Line, index: number) => top + plotH - (plotH * renderValue(line, index)) / max
-  const linePath = (line: Line) => makePath(line, x, y)
+  const linePath = (line: Line) => makePath(line, x, y, isMobileChart)
   const band = makeGapBand(pair, x, y)
   const nowX = x(lines[0].points.length - 1)
   const selectedX = x(state.selected)
@@ -285,18 +285,18 @@ function renderChart(pair: [Line, Line]): void {
   const tickValues = isMobileChart
     ? allTicks.filter((_, index, values) => index === 0 || index === values.length - 1 || index === Math.floor((values.length - 1) / 2))
     : allTicks
-  const gridFontSize = isMobileChart ? 20 : 13
-  const axisFontSize = isMobileChart ? 20 : 13
+  const gridFontSize = isMobileChart ? 34 : 13
+  const axisFontSize = isMobileChart ? 34 : 13
   const axisMarks = isMobileChart
     ? [{ label: '00:00', ratio: 0 }, { label: '12:00', ratio: 0.5 }, { label: '24:00', ratio: 1 }]
     : ['00:00', '06:00', '12:00', '18:00', '24:00'].map((label, index) => ({ label, ratio: index / 4 }))
   const grid = tickValues.map((tick) => `<line x1="${left}" x2="${w - right}" y1="${top + plotH - plotH * tick / max}" y2="${top + plotH - plotH * tick / max}" stroke="rgba(148,163,184,.16)"/><text x="${left - 14}" y="${top + plotH - plotH * tick / max + 4}" text-anchor="end" fill="#9fb0ca" font-size="${gridFontSize}" font-weight="${isMobileChart ? 700 : 500}">${state.metric === 'indexed' ? Math.round(tick) : compact(tick)}</text>`).join('')
   const axis = axisMarks.map((mark) => `<text x="${left + plotW * mark.ratio}" y="${h - 24}" text-anchor="middle" fill="#9fb0ca" font-size="${axisFontSize}" font-weight="${isMobileChart ? 700 : 500}">${mark.label}</text>`).join('')
-  const backgroundOpacity = isMobileChart ? '.04' : '.12'
+  const backgroundOpacity = isMobileChart ? '.025' : '.12'
   const backgroundLines = lines.filter((line) => !state.pair.includes(line.id)).map((line) => `<path d="${linePath(line)}" fill="none" stroke="${line.color}" stroke-width="2" opacity="${backgroundOpacity}"/>`).join('')
   const primary = drawPrimaryLine(pair[0], linePath(pair[0]), false, isMobileChart) + drawPrimaryLine(pair[1], linePath(pair[1]), false, isMobileChart)
   const markers = selectedMarker(pair[0], x, y, state.selected, 0, isMobileChart) + selectedMarker(pair[1], x, y, state.selected, 1, isMobileChart) + endpoint(pair[0], x, y, 0, chartBox) + endpoint(pair[1], x, y, 1, chartBox)
-  const nowOpacity = isMobileChart ? '.34' : '.48'
+  const nowOpacity = isMobileChart ? '.26' : '.48'
   const nowText = isMobileChart ? '' : `<text x="${nowX + 8}" y="${top + 15}" fill="#cbd5e1" font-size="12">Now</text>`
   host.innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Battle Lines chart"><defs><filter id="blLineGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="${w}" height="${h}" rx="18" fill="#07101d"/>${missingBands(lines, x, top, h - bottom)}${grid}${axis}${band}${backgroundLines}${primary}<line x1="${nowX}" x2="${nowX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,${nowOpacity})" stroke-dasharray="5 6"/>${nowText}<line x1="${selectedX}" x2="${selectedX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,.9)" stroke-width="1.6"/><rect x="${selectedX - 34}" y="${top - 38}" width="68" height="26" rx="8" fill="rgba(15,23,42,.96)" stroke="rgba(255,255,255,.22)"/><text x="${selectedX}" y="${top - 20}" text-anchor="middle" fill="#eef4ff" font-size="12">${time(state.selected)}</text>${markers}</svg>`
   host.querySelector('svg')?.addEventListener('click', (event) => {
@@ -310,9 +310,9 @@ function renderChart(pair: [Line, Line]): void {
 function drawPrimaryLine(line: Line, path: string, dashed: boolean, isMobileChart = false): string {
   if (!path) return ''
   const dash = dashed ? ' stroke-dasharray="11 8"' : ''
-  const shadowWidth = isMobileChart ? 10 : 12
-  const colorWidth = isMobileChart ? 6 : 7
-  const shadowOpacity = isMobileChart ? '.9' : '.98'
+  const shadowWidth = isMobileChart ? 6 : 12
+  const colorWidth = isMobileChart ? 3.8 : 7
+  const shadowOpacity = isMobileChart ? '.72' : '.98'
   return `<path d="${path}" fill="none" stroke="rgba(2,6,23,.92)" stroke-width="${shadowWidth}" stroke-linecap="round" stroke-linejoin="round" opacity="${shadowOpacity}"/>` +
     `<path d="${path}" fill="none" stroke="${line.color}" stroke-width="${colorWidth}" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" filter="url(#blLineGlow)"${dash}/>`
 }
@@ -335,17 +335,33 @@ function lastDrawableIndex(line: Line): number {
   return -1
 }
 
-function makePath(line: Line, x: (index: number) => number, y: (line: Line, index: number) => number): string {
+function makePath(line: Line, x: (index: number) => number, y: (line: Line, index: number) => number, isMobileChart = false): string {
   let drawing = false
   return line.points.map((point, index) => {
     if (!canDraw(point)) {
       drawing = false
       return ''
     }
+
+    const isLast = index === line.points.length - 1
+    const nextPoint = line.points[index + 1]
+    const skipMobilePoint = isMobileChart && index % 2 === 1 && !isLast && canDraw(nextPoint)
+    if (skipMobilePoint) return ''
+
     const command = drawing ? 'L' : 'M'
     drawing = true
-    return `${command}${x(index).toFixed(1)},${y(line, index).toFixed(1)}`
+    const py = isMobileChart ? smoothY(line, index, y) : y(line, index)
+    return `${command}${x(index).toFixed(1)},${py.toFixed(1)}`
   }).filter(Boolean).join(' ')
+}
+
+function smoothY(line: Line, index: number, y: (line: Line, index: number) => number): number {
+  const samples = [index - 1, index, index + 1]
+    .filter((sampleIndex) => sampleIndex >= 0 && sampleIndex < line.points.length && canDraw(line.points[sampleIndex]))
+    .map((sampleIndex) => y(line, sampleIndex))
+
+  if (samples.length === 0) return y(line, index)
+  return samples.reduce((total, value) => total + value, 0) / samples.length
 }
 
 function makeGapBand(pair: [Line, Line], x: (index: number) => number, y: (line: Line, index: number) => number): string {
@@ -377,14 +393,14 @@ function endpoint(
   const labelX = isMobileChart
     ? chart.w - chart.labelW - 20
     : Math.min(px + 12, chart.w - chart.labelW - 18)
-  const mobileTopY = chart.top + 18 + lane * (chart.labelH + 26)
+  const mobileTopY = chart.top + 22 + lane * (chart.labelH + 30)
   const defaultY = py - 28 + lane * (chart.labelH + 6)
   const labelY = isMobileChart
     ? Math.min(mobileTopY, chart.h - chart.bottom - chart.labelH - 8)
     : Math.max(chart.top + 8, Math.min(defaultY, chart.h - chart.bottom - chart.labelH - 8))
-  const labelFontSize = isMobileChart ? 15 : 12
-  const labelNameY = isMobileChart ? 21 : 17
-  const labelValueY = isMobileChart ? 43 : 34
+  const labelFontSize = isMobileChart ? 24 : 12
+  const labelNameY = isMobileChart ? 30 : 17
+  const labelValueY = isMobileChart ? 60 : 34
   return `<circle cx="${px}" cy="${py}" r="7" fill="${line.color}" stroke="rgba(2,6,23,.96)" stroke-width="4"/><rect x="${labelX}" y="${labelY}" width="${chart.labelW}" height="${chart.labelH}" rx="9" fill="rgba(15,23,42,.95)" stroke="${line.color}" stroke-width="1.5"/><text x="${labelX + 10}" y="${labelY + labelNameY}" fill="${line.color}" font-size="${labelFontSize}" font-weight="800">${line.name}</text><text x="${labelX + 10}" y="${labelY + labelValueY}" fill="#eef4ff" font-size="${labelFontSize}" font-weight="700">${format(line.points[index].value ?? 0)}</text>`
 }
 

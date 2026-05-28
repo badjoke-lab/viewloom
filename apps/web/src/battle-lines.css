@@ -790,3 +790,33 @@
     opacity: 0.38;
   }
 }
+
+/* PR-12 Battle Lines mobile visual readability */
+@media (max-width: 760px) {
+  .bl-chart svg text {
+    font-weight: 850;
+    stroke-width: 7px;
+  }
+
+  .bl-chart svg text[fill="#9fb0ca"] {
+    fill: #e2e8f0;
+  }
+
+  .bl-chart svg path[stroke-width="2"] {
+    opacity: 0.025;
+  }
+
+  .bl-chart svg polygon {
+    opacity: 0.08;
+  }
+
+  .bl-chart svg line[stroke-dasharray="5 6"] {
+    opacity: 0.32;
+  }
+}
+
+@media (max-width: 520px) {
+  .bl-chart svg text {
+    stroke-width: 7.5px;
+  }
+}
