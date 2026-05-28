@@ -759,4 +759,17 @@
     font-size: 17px;
     stroke-width: 5.5px;
   }
-}
+}\n\n/* PR-10 Battle Lines mobile endpoint polish */
+@media (max-width: 760px) {
+  .bl-chart svg path[stroke-width="2"] {
+    opacity: 0.08;
+  }
+
+  .bl-chart svg polygon {
+    opacity: 0.18;
+  }
+
+  .bl-chart svg line[stroke-dasharray="5 6"] {
+    opacity: 0.55;
+  }
+}\n

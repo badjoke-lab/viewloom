@@ -294,8 +294,10 @@ function renderChart(pair: [Line, Line]): void {
   const axis = axisMarks.map((mark) => `<text x="${left + plotW * mark.ratio}" y="${h - 24}" text-anchor="middle" fill="#9fb0ca" font-size="${axisFontSize}" font-weight="${isMobileChart ? 700 : 500}">${mark.label}</text>`).join('')
   const backgroundLines = lines.filter((line) => !state.pair.includes(line.id)).map((line) => `<path d="${linePath(line)}" fill="none" stroke="${line.color}" stroke-width="2" opacity=".12"/>`).join('')
   const primary = drawPrimaryLine(pair[0], linePath(pair[0]), false) + drawPrimaryLine(pair[1], linePath(pair[1]), false)
-  const markers = selectedMarker(pair[0], x, y, state.selected, 0) + selectedMarker(pair[1], x, y, state.selected, 1) + endpoint(pair[0], x, y, 0, chartBox) + endpoint(pair[1], x, y, 1, chartBox)
-  host.innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Battle Lines chart"><defs><filter id="blLineGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="${w}" height="${h}" rx="18" fill="#07101d"/>${missingBands(lines, x, top, h - bottom)}${grid}${axis}${band}${backgroundLines}${primary}<line x1="${nowX}" x2="${nowX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,.48)" stroke-dasharray="5 6"/><text x="${nowX + 8}" y="${top + 15}" fill="#cbd5e1" font-size="12">Now</text><line x1="${selectedX}" x2="${selectedX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,.9)" stroke-width="1.6"/><rect x="${selectedX - 34}" y="${top - 38}" width="68" height="26" rx="8" fill="rgba(15,23,42,.96)" stroke="rgba(255,255,255,.22)"/><text x="${selectedX}" y="${top - 20}" text-anchor="middle" fill="#eef4ff" font-size="12">${time(state.selected)}</text>${markers}</svg>`
+  const markers = selectedMarker(pair[0], x, y, state.selected, 0, isMobileChart) + selectedMarker(pair[1], x, y, state.selected, 1, isMobileChart) + endpoint(pair[0], x, y, 0, chartBox) + endpoint(pair[1], x, y, 1, chartBox)
+  const nowOpacity = isMobileChart ? '.34' : '.48'
+  const nowText = isMobileChart ? '' : `<text x="${nowX + 8}" y="${top + 15}" fill="#cbd5e1" font-size="12">Now</text>`
+  host.innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Battle Lines chart"><defs><filter id="blLineGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="${w}" height="${h}" rx="18" fill="#07101d"/>${missingBands(lines, x, top, h - bottom)}${grid}${axis}${band}${backgroundLines}${primary}<line x1="${nowX}" x2="${nowX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,${nowOpacity})" stroke-dasharray="5 6"/>${nowText}<line x1="${selectedX}" x2="${selectedX}" y1="${top}" y2="${h - bottom}" stroke="rgba(255,255,255,.9)" stroke-width="1.6"/><rect x="${selectedX - 34}" y="${top - 38}" width="68" height="26" rx="8" fill="rgba(15,23,42,.96)" stroke="rgba(255,255,255,.22)"/><text x="${selectedX}" y="${top - 20}" text-anchor="middle" fill="#eef4ff" font-size="12">${time(state.selected)}</text>${markers}</svg>`
   host.querySelector('svg')?.addEventListener('click', (event) => {
     const rect = host.getBoundingClientRect()
     const ratio = Math.max(0, Math.min(1, ((event.clientX - rect.left) / rect.width - left / w) / (plotW / w)))
@@ -311,12 +313,15 @@ function drawPrimaryLine(line: Line, path: string, dashed: boolean): string {
     `<path d="${path}" fill="none" stroke="${line.color}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" filter="url(#blLineGlow)"${dash}/>`
 }
 
-function selectedMarker(line: Line, x: (index: number) => number, y: (line: Line, index: number) => number, index: number, lane: number): string {
+function selectedMarker(line: Line, x: (index: number) => number, y: (line: Line, index: number) => number, index: number, lane: number, isMobileChart = false): string {
   const point = line.points[index]
   if (!canDraw(point)) return ''
   const px = x(index)
   const py = y(line, index)
-  return `<circle cx="${px}" cy="${py}" r="8" fill="rgba(2,6,23,.96)" stroke="${line.color}" stroke-width="4"/><text x="${px + 12}" y="${py - 10 - lane * 18}" fill="${line.color}" font-size="12" font-weight="700">${line.name}</text>`
+  const labelX = isMobileChart ? px - 72 : px + 12
+  const labelY = isMobileChart ? py - 18 - lane * 26 : py - 10 - lane * 18
+  const fontSize = isMobileChart ? 16 : 12
+  return `<circle cx="${px}" cy="${py}" r="8" fill="rgba(2,6,23,.96)" stroke="${line.color}" stroke-width="4"/><text x="${labelX}" y="${labelY}" fill="${line.color}" font-size="${fontSize}" font-weight="800">${line.name}</text>`
 }
 
 function lastDrawableIndex(line: Line): number {
@@ -364,11 +369,16 @@ function endpoint(
   if (index < 0) return ''
   const px = x(index)
   const py = y(line, index)
+  const isMobileChart = chart.w < 1000
   const labelX = Math.min(px + 12, chart.w - chart.labelW - 18)
-  const labelY = Math.max(chart.top + 8, Math.min(py - 28 + lane * (chart.labelH + 6), chart.h - chart.bottom - chart.labelH - 8))
-  const labelFontSize = chart.w < 1000 ? 16 : 12
-  const labelNameY = chart.w < 1000 ? 22 : 17
-  const labelValueY = chart.w < 1000 ? 45 : 34
+  const mobileTopY = chart.top + 16 + lane * (chart.labelH + 18)
+  const defaultY = py - 28 + lane * (chart.labelH + 6)
+  const labelY = isMobileChart
+    ? Math.min(mobileTopY, chart.h - chart.bottom - chart.labelH - 8)
+    : Math.max(chart.top + 8, Math.min(defaultY, chart.h - chart.bottom - chart.labelH - 8))
+  const labelFontSize = isMobileChart ? 16 : 12
+  const labelNameY = isMobileChart ? 22 : 17
+  const labelValueY = isMobileChart ? 45 : 34
   return `<circle cx="${px}" cy="${py}" r="7" fill="${line.color}" stroke="rgba(2,6,23,.96)" stroke-width="4"/><rect x="${labelX}" y="${labelY}" width="${chart.labelW}" height="${chart.labelH}" rx="9" fill="rgba(15,23,42,.95)" stroke="${line.color}" stroke-width="1.5"/><text x="${labelX + 10}" y="${labelY + labelNameY}" fill="${line.color}" font-size="${labelFontSize}" font-weight="800">${line.name}</text><text x="${labelX + 10}" y="${labelY + labelValueY}" fill="#eef4ff" font-size="${labelFontSize}" font-weight="700">${format(line.points[index].value ?? 0)}</text>`
 }
 
