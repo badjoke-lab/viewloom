@@ -820,3 +820,16 @@
     stroke-width: 7.5px;
   }
 }
+
+/* PR-13 Battle Lines mobile plot width restore */
+@media (max-width: 760px) {
+  .bl-chart svg text {
+    stroke-width: 6px;
+  }
+}
+
+@media (max-width: 520px) {
+  .bl-chart svg text {
+    stroke-width: 6.5px;
+  }
+}

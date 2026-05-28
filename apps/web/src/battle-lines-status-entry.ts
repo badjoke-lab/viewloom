@@ -270,7 +270,7 @@ function renderChart(pair: [Line, Line]): void {
   const rawMax = Math.max(...scaleLines.flatMap((line) => line.points.map((_, index) => renderValue(line, index))), 1)
   const max = state.metric === 'indexed' ? 100 : nice(rawMax * (isMobileChart ? 1.14 : 1))
   const chartBox = isMobileChart
-    ? { w: 900, h: 920, left: 78, right: 222, top: 70, bottom: 96, labelW: 178, labelH: 76 }
+    ? { w: 900, h: 920, left: 76, right: 96, top: 70, bottom: 96, labelW: 128, labelH: 58 }
     : { w: 1200, h: 580, left: 74, right: 132, top: 50, bottom: 70, labelW: 104, labelH: 44 }
   const { w, h, left, right, top, bottom } = chartBox
   const plotW = w - left - right
@@ -393,14 +393,14 @@ function endpoint(
   const labelX = isMobileChart
     ? chart.w - chart.labelW - 20
     : Math.min(px + 12, chart.w - chart.labelW - 18)
-  const mobileTopY = chart.top + 22 + lane * (chart.labelH + 30)
+  const mobileTopY = chart.top + 18 + lane * (chart.labelH + 18)
   const defaultY = py - 28 + lane * (chart.labelH + 6)
   const labelY = isMobileChart
     ? Math.min(mobileTopY, chart.h - chart.bottom - chart.labelH - 8)
     : Math.max(chart.top + 8, Math.min(defaultY, chart.h - chart.bottom - chart.labelH - 8))
-  const labelFontSize = isMobileChart ? 24 : 12
-  const labelNameY = isMobileChart ? 30 : 17
-  const labelValueY = isMobileChart ? 60 : 34
+  const labelFontSize = isMobileChart ? 18 : 12
+  const labelNameY = isMobileChart ? 23 : 17
+  const labelValueY = isMobileChart ? 46 : 34
   return `<circle cx="${px}" cy="${py}" r="7" fill="${line.color}" stroke="rgba(2,6,23,.96)" stroke-width="4"/><rect x="${labelX}" y="${labelY}" width="${chart.labelW}" height="${chart.labelH}" rx="9" fill="rgba(15,23,42,.95)" stroke="${line.color}" stroke-width="1.5"/><text x="${labelX + 10}" y="${labelY + labelNameY}" fill="${line.color}" font-size="${labelFontSize}" font-weight="800">${line.name}</text><text x="${labelX + 10}" y="${labelY + labelValueY}" fill="#eef4ff" font-size="${labelFontSize}" font-weight="700">${format(line.points[index].value ?? 0)}</text>`
 }
 
