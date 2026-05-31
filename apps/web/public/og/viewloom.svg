@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0f172a"/>
+  <text x="80" y="180" fill="#f8fafc" font-family="Arial, sans-serif" font-size="80" font-weight="700">ViewLoom</text>
+  <text x="80" y="270" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="38">Live-stream data heatmaps, day flow, rivalry charts, and history.</text>
+  <rect x="760" y="110" width="280" height="180" rx="24" fill="#22c55e"/>
+  <rect x="760" y="310" width="160" height="120" rx="20" fill="#38bdf8"/>
+  <rect x="940" y="310" width="160" height="120" rx="20" fill="#f59e0b"/>
+</svg>
