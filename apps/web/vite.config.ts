@@ -1,6 +1,32 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 
-export default defineConfig({
+function googleSiteVerificationPlugin(mode: string): Plugin {
+  const env = loadEnv(mode, process.cwd(), '')
+  const verificationToken = env.VITE_GSC_VERIFICATION_TOKEN?.trim()
+
+  return {
+    name: 'viewloom-google-site-verification',
+    transformIndexHtml(html) {
+      if (!verificationToken) return html
+
+      return html.replace(
+        '    <meta name="viewport" content="width=device-width, initial-scale=1.0" />',
+        `    <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n    <meta name="google-site-verification" content="${escapeHtmlAttribute(verificationToken)}" />`,
+      )
+    },
+  }
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+export default defineConfig(({ mode }) => ({
+  plugins: [googleSiteVerificationPlugin(mode)],
   server: {
     port: 4173,
   },
@@ -25,4 +51,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))

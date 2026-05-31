@@ -21,7 +21,7 @@ if (!app) throw new Error('#app not found')
 const pageName = document.body.dataset.page as Page | undefined
 const page = pageName === 'support' ? 'support' : 'about'
 
-document.title = page === 'support' ? 'Support ViewLoom | ViewLoom' : 'About ViewLoom | ViewLoom'
+document.title = page === 'support' ? 'Support — ViewLoom' : 'About — ViewLoom'
 app.innerHTML = page === 'support' ? renderSupportPage() : renderAboutPage()
 
 function renderHeader(current: Page): string {

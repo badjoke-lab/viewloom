@@ -18,8 +18,8 @@ function applyProviderHomePolish(kind: 'twitch' | 'kick'): void {
 
   if (heroCopy) {
     heroCopy.textContent = isKick
-      ? 'Kick ViewLoom is an unofficial observation view for Kick live activity. Coverage, available signals, and source modes may differ from Twitch.'
-      : 'Twitch ViewLoom is an unofficial observation view for Twitch live activity. Data may be delayed, partial, or unavailable depending on collection status.'
+      ? 'ViewLoom is an unofficial observation view for Kick live activity. Coverage, available signals, and source modes may differ from Twitch.'
+      : 'ViewLoom is an unofficial observation view for Twitch live activity. Data may be delayed, partial, or unavailable depending on collection status.'
   }
 
   if (secondaryCopy) {
