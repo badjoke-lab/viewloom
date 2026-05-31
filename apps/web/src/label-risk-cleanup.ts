@@ -40,8 +40,8 @@ const ROUTE_COPY: Record<FeaturePage, string> = {
 }
 
 const TEXT_FIXES: Array<[RegExp, string]> = [
-  [/Twitch ViewLoom/g, 'Twitch data overview'],
-  [/Kick ViewLoom/g, 'Kick data overview'],
+  [/Twitch\s+ViewLoom/g, 'Twitch data overview'],
+  [/Kick\s+ViewLoom/g, 'Kick data overview'],
   [/Now \/ Today \/ Compare/g, 'Now / Today / Rivalry'],
   [/Now, Today, and Compare/g, 'Now, Today, and Rivalry'],
   [/TWITCH \/ COMPARE/g, 'TWITCH DATA · RIVALRY'],
