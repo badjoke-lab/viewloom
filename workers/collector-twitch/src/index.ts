@@ -110,6 +110,7 @@ async function collectTwitch(env: Env) {
     sourceMode: 'real',
   })
   const rollupRefresh = await maybeRefreshDailyRollups(env)
+  const retentionCleanup = await maybeCleanupRetention(env)
 
   return {
     provider: PROVIDER,
@@ -122,6 +123,7 @@ async function collectTwitch(env: Env) {
     coveredPages,
     hasMore,
     rollupRefresh,
+    retentionCleanup,
   }
 }
 
@@ -654,3 +656,43 @@ ON CONFLICT(provider, day) DO UPDATE SET
   source_mode = excluded.source_mode,
   updated_at = excluded.updated_at
 `
+
+
+type RetentionCleanupResult = {
+  cleaned: boolean
+  error?: string
+}
+
+async function maybeCleanupRetention(env: Env): Promise<RetentionCleanupResult> {
+  if (!shouldRunRetentionCleanup(new Date())) return { cleaned: false }
+
+  try {
+    await cleanupRetention(env)
+    return { cleaned: true }
+  } catch (error) {
+    return {
+      cleaned: false,
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
+}
+
+function shouldRunRetentionCleanup(now: Date): boolean {
+  const hour = now.getUTCHours()
+  const minute = now.getUTCMinutes()
+  return hour === 0 && minute >= 30 && minute < 35
+}
+
+async function cleanupRetention(env: Env): Promise<void> {
+  await env.DB_TWITCH_HOT.prepare(`
+    DELETE FROM minute_snapshots
+    WHERE provider = ?
+      AND unixepoch(bucket_minute) < unixepoch('now', '-30 days')
+  `).bind(PROVIDER).run()
+
+  await env.DB_TWITCH_HOT.prepare(`
+    DELETE FROM daily_rollups
+    WHERE provider = ?
+      AND unixepoch(day || 'T00:00:00Z') < unixepoch('now', '-180 days')
+  `).bind(PROVIDER).run()
+}
