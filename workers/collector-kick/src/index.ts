@@ -265,9 +265,11 @@ async function collectKick(env: Env) {
       }
       const written = await writeSnapshot(env, official.streams, 'authenticated', meta)
       const rollupRefresh = await maybeRefreshDailyRollups(env)
+      const retentionCleanup = await maybeCleanupRetention(env)
       return {
         ...written,
         rollup_refresh: rollupRefresh,
+        retention_cleanup: retentionCleanup,
         auth_mode: appAuth.mode,
         channel_read_mode: meta.channelReadMode,
         target_source: 'official-livestreams',
@@ -337,9 +339,11 @@ async function collectKick(env: Env) {
 
   const written = await writeSnapshot(env, attempt.streams, attempt.sourceMode, meta)
   const rollupRefresh = await maybeRefreshDailyRollups(env)
+  const retentionCleanup = await maybeCleanupRetention(env)
   return {
     ...written,
     rollup_refresh: rollupRefresh,
+    retention_cleanup: retentionCleanup,
     auth_mode: auth.mode,
     channel_read_mode: meta.channelReadMode,
     target_source: targetSet.source,
@@ -835,3 +839,43 @@ ON CONFLICT(provider, day) DO UPDATE SET
   source_mode = excluded.source_mode,
   updated_at = excluded.updated_at
 `
+
+
+type RetentionCleanupResult = {
+  cleaned: boolean
+  error?: string
+}
+
+async function maybeCleanupRetention(env: Env): Promise<RetentionCleanupResult> {
+  if (!shouldRunRetentionCleanup(new Date())) return { cleaned: false }
+
+  try {
+    await cleanupRetention(env)
+    return { cleaned: true }
+  } catch (error) {
+    return {
+      cleaned: false,
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
+}
+
+function shouldRunRetentionCleanup(now: Date): boolean {
+  const hour = now.getUTCHours()
+  const minute = now.getUTCMinutes()
+  return hour === 0 && minute >= 30 && minute < 35
+}
+
+async function cleanupRetention(env: Env): Promise<void> {
+  await env.DB_KICK_HOT.prepare(`
+    DELETE FROM minute_snapshots
+    WHERE provider = ?
+      AND unixepoch(bucket_minute) < unixepoch('now', '-60 days')
+  `).bind('kick').run()
+
+  await env.DB_KICK_HOT.prepare(`
+    DELETE FROM daily_rollups
+    WHERE provider = ?
+      AND unixepoch(day || 'T00:00:00Z') < unixepoch('now', '-180 days')
+  `).bind('kick').run()
+}
