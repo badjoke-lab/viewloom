@@ -15,7 +15,8 @@ declare global {
   }
 }
 
-const measurementId = import.meta.env.VITE_GA4_MEASUREMENT_ID?.trim()
+const DEFAULT_MEASUREMENT_ID = 'G-YHX7HS1VBK'
+const measurementId = import.meta.env.VITE_GA4_MEASUREMENT_ID?.trim() || DEFAULT_MEASUREMENT_ID
 
 if (measurementId) {
   loadGoogleTag(measurementId)
