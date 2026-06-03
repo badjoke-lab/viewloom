@@ -86,6 +86,13 @@ export function renderCanvasScene(input: {
   const overlayContext = overlayCanvas.getContext('2d')
   if (!tilesContext || !overlayContext) return
 
+  const getCameraBounds = () => ({
+    worldWidth: viewportWidth,
+    worldHeight: viewportHeight,
+    viewportWidth,
+    viewportHeight,
+  })
+
   const redraw = (): void => {
     drawTilesLayer(tilesContext, nodes, camera, viewportWidth, viewportHeight, dpr)
     drawSelectionOverlay(overlayContext, selected, camera, viewportWidth, viewportHeight, dpr)
@@ -160,14 +167,14 @@ export function renderCanvasScene(input: {
     event.preventDefault()
     const rect = overlayCanvas.getBoundingClientRect()
     const world = screenToWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top }, camera)
-    camera = zoomCameraAroundPoint(camera, world, camera.zoom * (event.deltaY < 0 ? WHEEL_ZOOM_IN : WHEEL_ZOOM_OUT))
+    camera = zoomCameraAroundPoint(camera, world, camera.zoom * (event.deltaY < 0 ? WHEEL_ZOOM_IN : WHEEL_ZOOM_OUT), getCameraBounds())
     redraw()
   }, { passive: false })
 
   overlayCanvas.addEventListener('dblclick', (event) => {
     const rect = overlayCanvas.getBoundingClientRect()
     const world = screenToWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top }, camera)
-    camera = zoomCameraAroundPoint(camera, world, camera.zoom * (event.shiftKey ? DOUBLE_CLICK_ZOOM_OUT : DOUBLE_CLICK_ZOOM_IN))
+    camera = zoomCameraAroundPoint(camera, world, camera.zoom * (event.shiftKey ? DOUBLE_CLICK_ZOOM_OUT : DOUBLE_CLICK_ZOOM_IN), getCameraBounds())
     redraw()
   })
 
@@ -218,7 +225,7 @@ export function renderCanvasScene(input: {
       viewport.classList.add('is-panning')
     }
     if (!dragging) return
-    camera = panCamera(camera, event.clientX - lastX, event.clientY - lastY)
+    camera = panCamera(camera, event.clientX - lastX, event.clientY - lastY, getCameraBounds())
     lastX = event.clientX
     lastY = event.clientY
     redraw()
@@ -278,7 +285,7 @@ export function renderCanvasScene(input: {
     const gesture = getGestureState(overlayCanvas, activePointers)
     if (!gesture || gestureStartDistance <= 0) return
     const anchor = screenToWorld(gesture.center, camera)
-    camera = zoomCameraAroundPoint(camera, anchor, gestureStartZoom * (gesture.distance / gestureStartDistance))
+    camera = zoomCameraAroundPoint(camera, anchor, gestureStartZoom * (gesture.distance / gestureStartDistance), getCameraBounds())
     redraw()
   }
 }
