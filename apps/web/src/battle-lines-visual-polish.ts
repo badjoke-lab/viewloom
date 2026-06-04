@@ -76,6 +76,13 @@ function applyBattleLinesVisualPolish(): void {
     rect.setAttribute('stroke', index === 0 ? PRIMARY_A : PRIMARY_B)
     rect.setAttribute('stroke-width', '1.2')
     rect.setAttribute('fill', 'rgba(8,16,30,.96)')
+    if (isMobile) {
+      rect.setAttribute('width', '144')
+      rect.setAttribute('height', '66')
+    } else {
+      rect.setAttribute('width', '116')
+      rect.setAttribute('height', '48')
+    }
   })
 
   const labelTexts = Array.from(svg.querySelectorAll<SVGTextElement>('text'))
@@ -84,6 +91,7 @@ function applyBattleLinesVisualPolish(): void {
     if (fill === '#45a3ff' || fill === '#c061ff') {
       text.setAttribute('fill', fill === '#45a3ff' ? PRIMARY_A : PRIMARY_B)
     }
+    tuneChartText(text, isMobile)
   })
 
   if (legend) {
@@ -91,6 +99,44 @@ function applyBattleLinesVisualPolish(): void {
     if (items[0]) items[0].style.setProperty('--c', PRIMARY_A)
     if (items[1]) items[1].style.setProperty('--c', PRIMARY_B)
     if (items[2]) items[2].style.setProperty('--c', CONTEXT)
+  }
+}
+
+function tuneChartText(text: SVGTextElement, isMobile: boolean): void {
+  const value = text.textContent?.trim() ?? ''
+  const fill = text.getAttribute('fill')?.toLowerCase() ?? ''
+  const weight = text.getAttribute('font-weight')
+  const isAxisLabel = /^(0|\d+k)$/.test(value) || /^\d{2}:\d{2}$/.test(value)
+  const isStreamerLabel = fill === PRIMARY_A.toLowerCase() || fill === PRIMARY_B.toLowerCase() || fill === '#f472b6' || fill === '#7dd3fc'
+  const isEndpointValue = weight === '700' && /^\d/.test(value)
+  const isNow = value === 'Now'
+
+  if (isMobile) {
+    if (isStreamerLabel) {
+      text.setAttribute('font-size', '22')
+      text.setAttribute('font-weight', '850')
+    } else if (isEndpointValue) {
+      text.setAttribute('font-size', '21')
+      text.setAttribute('font-weight', '800')
+    } else if (isAxisLabel) {
+      text.setAttribute('font-size', '38')
+      text.setAttribute('font-weight', '800')
+    } else if (isNow) {
+      text.setAttribute('font-size', '16')
+      text.setAttribute('font-weight', '700')
+    }
+    return
+  }
+
+  if (isStreamerLabel || isEndpointValue) {
+    text.setAttribute('font-size', '13.5')
+    text.setAttribute('font-weight', isStreamerLabel ? '850' : '760')
+  } else if (isAxisLabel) {
+    text.setAttribute('font-size', '14')
+    text.setAttribute('font-weight', '620')
+  } else if (isNow) {
+    text.setAttribute('font-size', '13')
+    text.setAttribute('font-weight', '650')
   }
 }
 
