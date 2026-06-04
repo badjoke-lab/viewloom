@@ -4,6 +4,7 @@ type GtagConfig = {
   page_title?: string
   page_location?: string
   page_path?: string
+  send_page_view?: boolean
 }
 
 export type GtagEventParams = Record<string, string | number | boolean | null | undefined>
@@ -38,10 +39,16 @@ function loadGoogleTag(id: string): void {
   script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`
   document.head.append(script)
 
-  window.gtag('js', new Date())
-  window.gtag('config', id, {
+  const pageParams = {
     page_title: document.title,
     page_location: window.location.href,
     page_path: window.location.pathname + window.location.search,
+  }
+
+  window.gtag('js', new Date())
+  window.gtag('config', id, {
+    ...pageParams,
+    send_page_view: false,
   })
+  window.gtag('event', 'page_view', pageParams)
 }
