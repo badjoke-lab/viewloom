@@ -1,5 +1,7 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 
+const GA4_MEASUREMENT_ID = 'G-YHX7HS1VBK'
+
 function googleSiteVerificationPlugin(mode: string): Plugin {
   const env = loadEnv(mode, process.cwd(), '')
   const verificationToken = env.VITE_GSC_VERIFICATION_TOKEN?.trim()
@@ -17,6 +19,22 @@ function googleSiteVerificationPlugin(mode: string): Plugin {
   }
 }
 
+function googleTagPlugin(): Plugin {
+  const tagUrl = `https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`
+
+  return {
+    name: 'viewloom-google-tag',
+    transformIndexHtml(html) {
+      if (html.includes(tagUrl)) return html
+
+      return html.replace(
+        '  </head>',
+        `    <script async src="${tagUrl}"></script>\n    <script>\n      window.dataLayer = window.dataLayer || [];\n      function gtag(){dataLayer.push(arguments);}\n      gtag('js', new Date());\n      gtag('config', '${GA4_MEASUREMENT_ID}');\n    </script>\n  </head>`,
+      )
+    },
+  }
+}
+
 function escapeHtmlAttribute(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -26,7 +44,7 @@ function escapeHtmlAttribute(value: string): string {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [googleSiteVerificationPlugin(mode)],
+  plugins: [googleSiteVerificationPlugin(mode), googleTagPlugin()],
   server: {
     port: 4173,
   },
