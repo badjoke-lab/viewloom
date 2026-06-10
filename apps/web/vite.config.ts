@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 
 const GA4_MEASUREMENT_ID = 'G-YHX7HS1VBK'
+const REDESIGN_TOKENS_HREF = '/src/redesign-tokens.css'
 
 function googleSiteVerificationPlugin(mode: string): Plugin {
   const env = loadEnv(mode, process.cwd(), '')
@@ -35,6 +36,20 @@ function googleTagPlugin(): Plugin {
   }
 }
 
+function redesignTokensPlugin(): Plugin {
+  return {
+    name: 'viewloom-redesign-tokens',
+    transformIndexHtml(html) {
+      if (html.includes(REDESIGN_TOKENS_HREF)) return html
+
+      return html.replace(
+        '  </head>',
+        `    <link rel="stylesheet" href="${REDESIGN_TOKENS_HREF}" />\n  </head>`,
+      )
+    },
+  }
+}
+
 function escapeHtmlAttribute(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -44,7 +59,7 @@ function escapeHtmlAttribute(value: string): string {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [googleSiteVerificationPlugin(mode), googleTagPlugin()],
+  plugins: [googleSiteVerificationPlugin(mode), googleTagPlugin(), redesignTokensPlugin()],
   server: {
     port: 4173,
   },
