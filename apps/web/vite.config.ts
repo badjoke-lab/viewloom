@@ -1,8 +1,6 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 
 const GA4_MEASUREMENT_ID = 'G-YHX7HS1VBK'
-const REDESIGN_TOKENS_HREF = '/src/redesign-tokens.css'
-const SHARED_SHELL_SRC = '/src/shared-shell.ts'
 
 function googleSiteVerificationPlugin(mode: string): Plugin {
   const env = loadEnv(mode, process.cwd(), '')
@@ -37,31 +35,6 @@ function googleTagPlugin(): Plugin {
   }
 }
 
-function redesignAssetsPlugin(): Plugin {
-  return {
-    name: 'viewloom-redesign-assets',
-    transformIndexHtml(html) {
-      let transformed = html
-
-      if (!transformed.includes(REDESIGN_TOKENS_HREF)) {
-        transformed = transformed.replace(
-          '  </head>',
-          `    <link rel="stylesheet" href="${REDESIGN_TOKENS_HREF}" />\n  </head>`,
-        )
-      }
-
-      if (!transformed.includes(SHARED_SHELL_SRC)) {
-        transformed = transformed.replace(
-          '  </body>',
-          `    <script type="module" src="${SHARED_SHELL_SRC}"></script>\n  </body>`,
-        )
-      }
-
-      return transformed
-    },
-  }
-}
-
 function escapeHtmlAttribute(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -71,7 +44,7 @@ function escapeHtmlAttribute(value: string): string {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [googleSiteVerificationPlugin(mode), googleTagPlugin(), redesignAssetsPlugin()],
+  plugins: [googleSiteVerificationPlugin(mode), googleTagPlugin()],
   server: {
     port: 4173,
   },
