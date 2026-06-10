@@ -1,0 +1,58 @@
+.vl-data-state {
+  --vl-state-color: var(--vl-color-flat);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  color: var(--vl-color-text);
+  font-family: var(--vl-font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.vl-data-state::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: var(--vl-state-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--vl-state-color) 16%, transparent);
+}
+
+.vl-data-state__label {
+  white-space: nowrap;
+}
+
+.vl-data-state__meta {
+  color: var(--vl-color-muted);
+  font-family: var(--vl-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.vl-data-state-note {
+  margin: 0;
+  color: var(--vl-color-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.vl-data-state-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 0;
+  border-top: 1px solid var(--vl-color-line);
+  border-bottom: 1px solid var(--vl-color-line);
+}
+
+@media (max-width: 760px) {
+  .vl-data-state-line {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+}
