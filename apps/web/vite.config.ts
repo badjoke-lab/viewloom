@@ -3,7 +3,6 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 const GA4_MEASUREMENT_ID = 'G-YHX7HS1VBK'
 const REDESIGN_TOKENS_HREF = '/src/redesign-tokens.css'
 const SHARED_SHELL_SRC = '/src/mock-shell.ts'
-const SHARED_PAGES_SRC = '/src/mock-pages.ts'
 
 function googleSiteVerificationPlugin(mode: string): Plugin {
   const env = loadEnv(mode, process.cwd(), '')
@@ -45,9 +44,6 @@ function redesignAssetsPlugin(): Plugin {
       }
       if (!transformed.includes(SHARED_SHELL_SRC)) {
         transformed = transformed.replace('  </body>', `    <script type="module" src="${SHARED_SHELL_SRC}"></script>\n  </body>`)
-      }
-      if (!transformed.includes(SHARED_PAGES_SRC)) {
-        transformed = transformed.replace('  </body>', `    <script type="module" src="${SHARED_PAGES_SRC}"></script>\n  </body>`)
       }
       return transformed
     },
