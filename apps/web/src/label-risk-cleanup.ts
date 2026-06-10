@@ -46,6 +46,23 @@ const TEXT_FIXES: Array<[RegExp, string]> = [
   [/Now, Today, and Compare/g, 'Now, Today, and Rivalry'],
   [/TWITCH \/ COMPARE/g, 'TWITCH DATA · RIVALRY'],
   [/KICK \/ COMPARE/g, 'KICK DATA · RIVALRY'],
+  [/Shell ready for real Twitch data(?: mounting)?\.?/gi, 'Current Twitch observation routes are connected.'],
+  [/Shell ready for real Kick data(?: mounting)?\.?/gi, 'Current Kick observation routes are connected.'],
+  [/Feature shell ready/gi, 'Feature view'],
+  [/This route exists on the new ViewLoom structure and is ready to receive the real renderer and provider-backed API path\./gi, 'Use the available controls, chart, and status notes to read the current provider data.'],
+  [/This top page is rebuilt into a chart-first home with a strong overview stage, dense right rail, and lower support blocks\./gi, 'Open the current provider views and inspect data status before relying on a chart.'],
+  [/This surface will become the top-page overview stage[^.]*\./gi, 'This overview keeps provider scope, status, and feature routes separate.'],
+  [/Real Twitch data mounting comes next/gi, 'Current Twitch data routes are available'],
+  [/Kick feature mounting follows Twitch hardening/gi, 'Kick feature routes use provider-specific data'],
+  [/Focus state placeholder/gi, 'Selected stream detail'],
+  [/Selected window placeholder/gi, 'Selected time window'],
+  [/Detail panel placeholder/gi, 'Selected detail'],
+  [/Primary pair placeholder/gi, 'Primary pair'],
+  [/The production rail will show/gi, 'This panel shows'],
+  [/The right rail will keep/gi, 'The detail panel keeps'],
+  [/This main field will become/gi, 'This field presents'],
+  [/The hero panel will switch to the latest Twitch data snapshot once the heatmap API responds\./gi, 'The latest observed snapshot appears after the Heatmap API responds.'],
+  [/Build state/gi, 'Data view'],
 ]
 
 const route = getRouteMeta()
@@ -151,7 +168,7 @@ function patchFeatureNav(): void {
 }
 
 function patchSharedFooter(): void {
-  if (document.querySelector('.vl-shared-footer')) return
+  if (document.querySelector('.vl-shared-footer') || document.querySelector('.vl-footer')) return
   const shell = document.querySelector<HTMLElement>('.page-shell')
   if (!shell) return
   const footer = document.createElement('footer')
