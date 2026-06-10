@@ -1,5 +1,4 @@
 import './styles.css'
-import { applyDataState, getDataStateAttribute, getDataStateLabel, getDataStateNote } from './shared/data-state'
 import { getHeroEyebrow, getUnofficialBadge } from './shared/labels'
 
 const app = document.querySelector<HTMLDivElement>('#app')
@@ -11,7 +10,7 @@ app.innerHTML = `
 <div class="page-shell page-shell--site theme-twitch status-page">
   <header class="site-header"><a class="brand" href="/">ViewLoom</a><nav class="site-nav" aria-label="Primary"><a class="nav-link" href="/">Portal</a><a class="nav-link is-current" href="/twitch/">Twitch data</a><a class="nav-link" href="/kick/">Kick data</a></nav><div class="header-note">Unofficial Twitch data</div></header>
   <main class="page-main status-main">
-    <section class="hero hero--site hero--feature status-hero"><div><div class="eyebrow">${getHeroEyebrow('twitch','status')}</div><h1>Data Status</h1><p class="hero-copy">Current health, freshness, and coverage for ViewLoom's Twitch observations.</p></div><aside class="status-panel"><div class="status-panel__label">${getUnofficialBadge('twitch')}</div><div class="status-panel__title vl-data-state" id="overall-state" data-state="loading">Checking status</div><p id="overall-note">Loading current data state.</p></aside></section>
+    <section class="hero hero--site hero--feature status-hero"><div><div class="eyebrow">${getHeroEyebrow('twitch','status')}</div><h1>Data Status</h1><p class="hero-copy">Current health, freshness, and coverage for ViewLoom's Twitch observations.</p></div><aside class="status-panel"><div class="status-panel__label">${getUnofficialBadge('twitch')}</div><div class="status-panel__title" id="overall-state">Checking status</div><p id="overall-note">Loading current data state.</p></aside></section>
     <nav class="site-subnav vl-feature-nav" aria-label="Feature navigation"><a class="subnav-link" href="/twitch/heatmap/">Heatmap</a><a class="subnav-link" href="/twitch/day-flow/">Day Flow</a><a class="subnav-link" href="/twitch/battle-lines/">Battle Lines</a><a class="subnav-link" href="/twitch/history/">History</a><a class="subnav-link is-current" href="/twitch/status/">Data Status</a></nav>
     <section class="status-toolbar" aria-label="Status actions"><span>Refresh the latest Twitch status response.</span><button class="button button--primary" id="status-refresh" type="button">Refresh</button></section>
     <section class="summary-grid status-summary" id="status-summary"></section>
@@ -27,9 +26,6 @@ refresh?.addEventListener('click', () => void loadStatus())
 void loadStatus()
 
 async function loadStatus(): Promise<void> {
-  applyDataState(document.getElementById('overall-state'), 'loading')
-  setText('overall-state', getDataStateLabel('loading'))
-  setText('overall-note', getDataStateNote('loading'))
   setHtml('status-summary', ['Current state','Last success','Latest snapshot','Coverage','Source'].map((item) => card(item, '—', 'Loading...')).join(''))
   setHtml('status-notes', renderNotes(['Loading limitations and notes.'], []))
   try {
@@ -42,19 +38,17 @@ async function loadStatus(): Promise<void> {
 }
 
 function render(payload: any): void {
-  const state = getDataStateLabel(payload.state)
-  const stateNote = getDataStateNote(payload.state)
-  applyDataState(document.getElementById('overall-state'), payload.state)
+  const state = label(payload.state ?? 'unknown')
   setText('overall-state', `${state} · ${payload.sourceMode ?? 'unknown'}`)
-  setText('overall-note', payload.error?.message ?? stateNote)
+  setText('overall-note', payload.error?.message ?? note(payload.state))
   const freshness = payload.freshness ?? {}
   const latest = payload.latestSnapshot ?? {}
   const coverage = payload.coverage ?? {}
   setHtml('status-summary', [
-    card('Current state', state, stateNote, payload.state),
+    card('Current state', state, note(payload.state)),
     card('Last success', value(freshness.lastSuccessAt), `${value(freshness.minutesSinceSuccess)} minutes since success.`),
     card('Latest snapshot', value(latest.bucketMinute), `${value(latest.observedCount)} observed streams.`),
-    card('Coverage', getDataStateLabel(coverage.state ?? 'loading'), `${value(latest.coveredPages)} pages · has more: ${value(latest.hasMore)}`, coverage.state),
+    card('Coverage', label(coverage.state ?? 'unknown'), `${value(latest.coveredPages)} pages · has more: ${value(latest.hasMore)}`),
     card('Source', value(payload.sourceMode), 'real, stale, or demo state.'),
   ].join(''))
   setHtml('collector-health', kv(payload.collector ?? {}))
@@ -66,7 +60,7 @@ function render(payload: any): void {
 
 function renderFeatures(features: any[]): string {
   if (!features.length) return '<article class="support-card"><h2>No feature rows</h2><p>Status data is unavailable.</p></article>'
-  return features.map((f) => `<article class="support-card" data-state="${getDataStateAttribute(f.state)}"><div class="support-card__label">${text(f.role)}</div><h2>${text(f.label)}</h2><p>${text(getDataStateLabel(f.state))} · ${text(f.source)} · ${text(f.knownGap)}</p><a class="button button--secondary" href="${text(f.pagePath)}">Open</a></article>`).join('')
+  return features.map((f) => `<article class="support-card"><div class="support-card__label">${text(f.role)}</div><h2>${text(f.label)}</h2><p>${text(f.state)} · ${text(f.source)} · ${text(f.knownGap)}</p><a class="button button--secondary" href="${text(f.pagePath)}">Open</a></article>`).join('')
 }
 
 function renderNotes(limitations: unknown[], notes: unknown[]): string {
@@ -79,7 +73,9 @@ function renderNotes(limitations: unknown[], notes: unknown[]): string {
 }
 
 function kv(input: Record<string, unknown>): string { return `<div class="status-kv">${Object.entries(input).map(([k,v]) => `<div><span>${text(k)}</span><strong>${text(v)}</strong></div>`).join('')}</div>` }
-function card(labelText: string, valueText: string, body: string, state?: unknown): string { const stateAttr = state == null ? '' : ` data-state="${getDataStateAttribute(state)}"`; return `<article class="summary-card status-summary-card"${stateAttr}><div class="summary-card__label">${text(labelText)}</div><div class="summary-card__value">${text(valueText)}</div><p>${text(body)}</p></article>` }
+function card(labelText: string, valueText: string, body: string): string { return `<article class="summary-card status-summary-card"><div class="summary-card__label">${text(labelText)}</div><div class="summary-card__value">${text(valueText)}</div><p>${text(body)}</p></article>` }
+function note(s: unknown): string { const v = String(s ?? '').toLowerCase(); if (v === 'fresh') return 'Recent real data is available.'; if (v === 'partial') return 'Data is real, but coverage is limited.'; if (v === 'stale') return 'Real data exists, but collection is delayed.'; if (v === 'empty') return 'The pipeline is working, but no qualifying streams were observed.'; if (v === 'demo') return 'Demo data is shown.'; return 'Current state is being checked.' }
+function label(v: unknown): string { return String(v ?? '—').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()) }
 function value(v: unknown): string { return v == null ? '—' : String(v) }
 function text(v: unknown): string { const n = document.createElement('span'); n.textContent = value(v); return n.innerHTML }
 function setText(id: string, v: string): void { const n = document.getElementById(id); if (n) n.textContent = v }
