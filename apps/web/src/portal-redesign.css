@@ -1,0 +1,290 @@
+.vl-portal-main {
+  width: min(calc(100% - 40px), var(--vl-content-width));
+  margin: 0 auto;
+  padding: 30px 0 70px;
+  font-family: var(--vl-font-sans);
+}
+
+.vl-portal-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+  gap: 40px;
+  align-items: end;
+  padding: 18px 0 24px;
+  border-bottom: 1px solid var(--vl-color-line-strong);
+}
+
+.vl-portal-kicker {
+  margin: 0 0 10px;
+  color: var(--vl-color-portal);
+  font: 700 11px/1.2 var(--vl-font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.vl-portal-head h1 {
+  max-width: 880px;
+  margin: 0;
+  color: var(--vl-color-text);
+  font-size: clamp(34px, 5vw, 68px);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+}
+
+.vl-portal-lede {
+  max-width: 720px;
+  margin: 16px 0 0;
+  color: var(--vl-color-muted);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.vl-portal-principles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--vl-color-line-strong);
+  border-left: 1px solid var(--vl-color-line-strong);
+}
+
+.vl-portal-principles > div {
+  min-height: 82px;
+  padding: 13px 14px;
+  border-right: 1px solid var(--vl-color-line-strong);
+  border-bottom: 1px solid var(--vl-color-line-strong);
+}
+
+.vl-portal-principles small,
+.vl-provider-stat small,
+.vl-observation-row small {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--vl-color-muted);
+  font: 600 9px/1.2 var(--vl-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vl-portal-principles strong {
+  color: var(--vl-color-text);
+  font-size: 14px;
+}
+
+.vl-provider-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 24px;
+  border-top: 1px solid var(--vl-color-line-strong);
+  border-left: 1px solid var(--vl-color-line-strong);
+}
+
+.vl-provider-panel {
+  min-height: 360px;
+  padding: 26px;
+  border-right: 1px solid var(--vl-color-line-strong);
+  border-bottom: 1px solid var(--vl-color-line-strong);
+  background: var(--vl-color-surface);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.vl-provider-panel--twitch {
+  background:
+    linear-gradient(135deg, rgba(144, 90, 255, 0.12), transparent 45%),
+    var(--vl-color-surface);
+}
+
+.vl-provider-panel--kick {
+  background:
+    linear-gradient(135deg, rgba(34, 211, 120, 0.1), transparent 45%),
+    var(--vl-color-surface);
+}
+
+.vl-provider-label {
+  margin-bottom: 12px;
+  font: 700 11px/1.2 var(--vl-font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.vl-provider-panel--twitch .vl-provider-label {
+  color: var(--vl-color-twitch);
+}
+
+.vl-provider-panel--kick .vl-provider-label {
+  color: var(--vl-color-kick);
+}
+
+.vl-provider-panel h2 {
+  margin: 0 0 12px;
+  color: var(--vl-color-text);
+  font-size: clamp(32px, 4vw, 50px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.vl-provider-panel p {
+  max-width: 560px;
+  margin: 0;
+  color: var(--vl-color-muted);
+  line-height: 1.55;
+}
+
+.vl-provider-state {
+  margin-top: 24px;
+  padding-top: 13px;
+  border-top: 1px solid var(--vl-color-line);
+}
+
+.vl-provider-state .vl-data-state {
+  margin-bottom: 6px;
+}
+
+.vl-provider-note {
+  min-height: 39px;
+  font-size: 12px;
+}
+
+.vl-provider-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 18px;
+  border-top: 1px solid var(--vl-color-line);
+}
+
+.vl-provider-stat {
+  min-width: 0;
+  padding: 13px 10px 0 0;
+}
+
+.vl-provider-stat strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--vl-color-text);
+  font: 700 15px/1.25 var(--vl-font-mono);
+}
+
+.vl-provider-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.vl-portal-button {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 13px;
+  border: 1px solid var(--vl-color-line-strong);
+  color: var(--vl-color-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.vl-portal-button--primary {
+  border-color: transparent;
+  background: var(--vl-color-accent);
+  color: #fff;
+}
+
+.vl-provider-panel--twitch .vl-portal-button--primary {
+  background: var(--vl-color-twitch);
+}
+
+.vl-provider-panel--kick .vl-portal-button--primary {
+  background: var(--vl-color-kick);
+  color: #04120a;
+}
+
+.vl-portal-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 34px 0 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--vl-color-line-strong);
+}
+
+.vl-portal-section-head h2 {
+  margin: 0;
+  color: var(--vl-color-text);
+  font-size: 22px;
+}
+
+.vl-portal-section-head span {
+  color: var(--vl-color-muted);
+  font: 600 10px/1.2 var(--vl-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vl-observation-list {
+  border-top: 1px solid var(--vl-color-line-strong);
+}
+
+.vl-observation-row {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: baseline;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--vl-color-line);
+}
+
+.vl-observation-row strong {
+  color: var(--vl-color-text);
+  font-size: 14px;
+}
+
+.vl-observation-row span {
+  color: var(--vl-color-muted);
+  font: 500 11px/1.4 var(--vl-font-mono);
+  text-align: right;
+}
+
+.vl-portal-error {
+  color: var(--vl-color-down);
+}
+
+@media (max-width: 920px) {
+  .vl-portal-head {
+    grid-template-columns: 1fr;
+  }
+
+  .vl-provider-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .vl-portal-main {
+    width: min(calc(100% - 28px), var(--vl-content-width));
+    padding-top: 18px;
+  }
+
+  .vl-portal-head h1 {
+    font-size: 40px;
+  }
+
+  .vl-portal-principles,
+  .vl-provider-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .vl-provider-panel {
+    min-height: 330px;
+    padding: 20px;
+  }
+
+  .vl-observation-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .vl-observation-row span {
+    text-align: left;
+  }
+}
