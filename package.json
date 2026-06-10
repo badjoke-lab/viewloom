@@ -8,7 +8,6 @@
     "build:web": "pnpm --filter @viewloom/web build",
     "typecheck:web": "pnpm --filter @viewloom/web typecheck",
     "preview:web": "pnpm --filter @viewloom/web preview",
-    "check:redesign": "node apps/web/scripts/check-redesign-baseline.mjs",
     "kick:seed-import:check": "node workers/collector-kick/scripts/generate-kick-seed-import-sql.mjs --check-only",
     "kick:seed-import:generate": "node workers/collector-kick/scripts/generate-kick-seed-import-sql.mjs",
     "kick:live-probe": "python3 workers/collector-kick/scripts/probe-kick-live-candidates-python.py --concurrency=8 --timeout=10 --progress-every=25",
