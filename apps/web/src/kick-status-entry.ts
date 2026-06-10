@@ -1,4 +1,5 @@
 import './styles.css'
+import { applyDataState, getDataStateAttribute, getDataStateLabel, getDataStateNote, normalizeDataState } from './shared/data-state'
 import { getHeroEyebrow, getUnofficialBadge } from './shared/labels'
 
 const app = document.querySelector<HTMLDivElement>('#app')
@@ -10,7 +11,7 @@ app.innerHTML = `
 <div class="page-shell page-shell--site theme-kick status-page">
   <header class="site-header"><a class="brand" href="/">ViewLoom</a><nav class="site-nav" aria-label="Primary"><a class="nav-link" href="/">Portal</a><a class="nav-link" href="/twitch/">Twitch data</a><a class="nav-link is-current" href="/kick/">Kick data</a></nav><div class="header-note">Unofficial Kick data</div></header>
   <main class="page-main status-main">
-    <section class="hero hero--site hero--feature status-hero"><div><div class="eyebrow">${getHeroEyebrow('kick','status')}</div><h1>Data Status</h1><p class="hero-copy">Current health, freshness, source mode, and limitations for ViewLoom's Kick observations.</p></div><aside class="status-panel"><div class="status-panel__label">${getUnofficialBadge('kick')}</div><div class="status-panel__title" id="overall-state">Checking status</div><p id="overall-note">Loading current Kick data state.</p></aside></section>
+    <section class="hero hero--site hero--feature status-hero"><div><div class="eyebrow">${getHeroEyebrow('kick','status')}</div><h1>Data Status</h1><p class="hero-copy">Current health, freshness, source mode, and limitations for ViewLoom's Kick observations.</p></div><aside class="status-panel"><div class="status-panel__label">${getUnofficialBadge('kick')}</div><div class="status-panel__title vl-data-state" id="overall-state" data-state="loading">Checking status</div><p id="overall-note">Loading current Kick data state.</p></aside></section>
     <nav class="site-subnav vl-feature-nav" aria-label="Feature navigation"><a class="subnav-link" href="/kick/heatmap/">Heatmap</a><a class="subnav-link" href="/kick/day-flow/">Day Flow</a><a class="subnav-link" href="/kick/battle-lines/">Battle Lines</a><a class="subnav-link" href="/kick/history/">History</a><a class="subnav-link is-current" href="/kick/status/">Data Status</a></nav>
     <section class="status-toolbar" aria-label="Status actions"><span>Refresh the latest Kick status response.</span><button class="button button--primary" id="status-refresh" type="button">Refresh</button></section>
     <section class="summary-grid status-summary" id="status-summary"></section>
@@ -27,6 +28,9 @@ refresh?.addEventListener('click', () => void loadStatus())
 void loadStatus()
 
 async function loadStatus(): Promise<void> {
+  applyDataState(document.getElementById('overall-state'), 'loading')
+  setText('overall-state', getDataStateLabel('loading'))
+  setText('overall-note', getDataStateNote('loading'))
   setHtml('status-summary', ['Current state','Collected at','Latest bucket','Streams','Source mode'].map((item) => card(item, '—', 'Loading...')).join(''))
   setHtml('status-notes', renderNotes(['Loading limitations and notes.'], []))
   try {
@@ -38,13 +42,15 @@ async function loadStatus(): Promise<void> {
 }
 
 function render(payload: any): void {
-  const state = label(payload.state ?? 'unknown')
+  const normalizedState = normalizeKickState(payload.state, payload.sourceMode)
+  const state = getDataStateLabel(normalizedState)
   const latest = payload.latestSnapshot ?? {}
   const freshness = payload.freshness ?? {}
+  applyDataState(document.getElementById('overall-state'), normalizedState)
   setText('overall-state', `${state} · ${payload.sourceMode ?? 'unknown'}`)
-  setText('overall-note', payload.error?.message ?? note(payload.state, payload.sourceMode))
+  setText('overall-note', payload.error?.message ?? kickStateNote(normalizedState, payload.sourceMode))
   setHtml('status-summary', [
-    card('Current state', state, note(payload.state, payload.sourceMode)),
+    card('Current state', state, kickStateNote(normalizedState, payload.sourceMode), normalizedState),
     card('Collected at', value(latest.collectedAt ?? freshness.lastSuccessAt), `${value(freshness.minutesSinceSuccess)} minutes since collection.`),
     card('Latest bucket', value(latest.bucketMinute), 'Most recent Kick bucket_minute in DB_KICK_HOT.'),
     card('Streams / viewers', `${value(latest.streamCount ?? latest.observedCount)} / ${value(latest.totalViewers)}`, 'Latest stream_count and total_viewers when available.'),
@@ -61,7 +67,7 @@ function render(payload: any): void {
 
 function renderFeatures(features: any[]): string {
   if (!features.length) return '<article class="support-card"><h2>No feature rows</h2><p>Status data is unavailable.</p></article>'
-  return features.map((f) => `<article class="support-card"><div class="support-card__label">${text(f.role)}</div><h2>${text(f.label)}</h2><p>${text(f.state)} · ${text(f.source)} · ${text(f.knownGap)}</p><a class="button button--secondary" href="${text(f.pagePath)}">Open</a></article>`).join('')
+  return features.map((f) => `<article class="support-card" data-state="${getDataStateAttribute(f.state)}"><div class="support-card__label">${text(f.role)}</div><h2>${text(f.label)}</h2><p>${text(getDataStateLabel(f.state))} · ${text(f.source)} · ${text(f.knownGap)}</p><a class="button button--secondary" href="${text(f.pagePath)}">Open</a></article>`).join('')
 }
 
 function renderObservedChannels(channels: any[]): string {
@@ -80,19 +86,22 @@ function renderNotes(limitations: unknown[], notes: unknown[]): string {
   return `<article class="support-card status-note-card"><div class="support-card__label">Known limitations</div><h2>Read before using Kick data</h2><ul>${limitationItems.map((item) => `<li>${text(item)}</li>`).join('')}</ul></article><article class="support-card status-note-card"><div class="support-card__label">Current notes</div><h2>Pipeline notes</h2><ul>${noteItems.map((item) => `<li>${text(item)}</li>`).join('')}</ul></article>`
 }
 
-function note(state: unknown, sourceMode?: unknown): string {
+function normalizeKickState(state: unknown, sourceMode?: unknown) {
   const mode = String(sourceMode ?? '').toLowerCase()
-  const v = String(state ?? '').toLowerCase()
-  if (mode === 'fixture' || v === 'fixture') return 'Latest Kick rows are fixture data and must not be interpreted as live production data.'
+  if (mode === 'fixture') return normalizeDataState('demo')
+  return normalizeDataState(state)
+}
+
+function kickStateNote(state: unknown, sourceMode?: unknown): string {
+  const mode = String(sourceMode ?? '').toLowerCase()
+  if (mode === 'fixture') return 'Latest Kick rows are fixture data and must not be interpreted as live production data.'
   if (mode === 'public-channel-fallback') return 'Kick rows come from the public channel fallback and configured seed slugs.'
   if (mode === 'authenticated') return 'Kick rows are marked authenticated.'
-  if (v === 'stale' || v === 'strong_stale') return 'Kick data exists, but collection is delayed.'
-  if (v === 'empty') return 'The Kick D1 path is reachable, but no qualifying streams were observed.'
-  return 'Kick status is being checked.'
+  return getDataStateNote(state)
 }
+
 function kv(input: Record<string, unknown>): string { return `<div class="status-kv">${Object.entries(input).map(([k,v]) => `<div><span>${text(k)}</span><strong>${text(v)}</strong></div>`).join('')}</div>` }
-function card(labelText: string, valueText: string, body: string): string { return `<article class="summary-card status-summary-card"><div class="summary-card__label">${text(labelText)}</div><div class="summary-card__value">${text(valueText)}</div><p>${text(body)}</p></article>` }
-function label(v: unknown): string { return String(v ?? '—').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()) }
+function card(labelText: string, valueText: string, body: string, state?: unknown): string { const stateAttr = state == null ? '' : ` data-state="${getDataStateAttribute(state)}"`; return `<article class="summary-card status-summary-card"${stateAttr}><div class="summary-card__label">${text(labelText)}</div><div class="summary-card__value">${text(valueText)}</div><p>${text(body)}</p></article>` }
 function value(v: unknown): string { return v == null ? '—' : String(v) }
 function formatNumber(v: unknown): string { const n = typeof v === 'number' ? v : Number(v); return Number.isFinite(n) ? Math.round(n).toLocaleString('en-US') : '—' }
 function text(v: unknown): string { const n = document.createElement('span'); n.textContent = value(v); return n.innerHTML }
