@@ -3,7 +3,8 @@ import './shared-shell.css'
 type Provider = 'portal' | 'twitch' | 'kick'
 type CurrentSection = 'portal' | 'twitch' | 'kick' | 'about' | 'support' | 'other'
 
-const CONTACT_URL = '/contact/'
+const CONTACT_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSdhreuxEz7w0eSjslTyVLL-axV6IJdTp5RU5VXCM3ApIz35-Q/viewform?usp=dialog'
 const GITHUB_URL = 'https://github.com/badjoke-lab/viewloom'
 
 const page = document.body.dataset.page ?? ''
@@ -54,7 +55,7 @@ function replaceHeader(root: HTMLElement): void {
       <nav class="vl-utility-nav" aria-label="Site navigation">
         ${navLink('/about/', 'About', currentSection === 'about')}
         ${navLink('/support/', '♡ Support', currentSection === 'support', 'vl-shell-link--support')}
-        ${navLink(CONTACT_URL, 'Contact', false)}
+        ${externalLink(CONTACT_URL, 'Contact', 'vl-shell-link')}
       </nav>
       <details class="vl-mobile-menu">
         <summary>Menu</summary>
@@ -64,8 +65,8 @@ function replaceHeader(root: HTMLElement): void {
           <a href="/kick/">Kick data</a>
           <a href="/about/">About</a>
           <a href="/support/">♡ Support</a>
-          <a href="${CONTACT_URL}">Contact</a>
-          <a href="${GITHUB_URL}" target="_blank" rel="noreferrer">GitHub</a>
+          ${externalLink(CONTACT_URL, 'Contact')}
+          ${externalLink(GITHUB_URL, 'GitHub')}
         </nav>
       </details>
     </div>`
@@ -83,8 +84,8 @@ function replaceFooter(root: HTMLElement): void {
     <nav aria-label="Footer navigation">
       <a href="/about/">About</a>
       <a href="/support/">♡ Support</a>
-      <a href="${CONTACT_URL}">Contact</a>
-      <a href="${GITHUB_URL}" target="_blank" rel="noreferrer">GitHub</a>
+      ${externalLink(CONTACT_URL, 'Contact')}
+      ${externalLink(GITHUB_URL, 'GitHub')}
     </nav>`
 
   if (existingFooter) {
@@ -99,6 +100,11 @@ function replaceFooter(root: HTMLElement): void {
 
 function navLink(href: string, label: string, current: boolean, extraClass = ''): string {
   return `<a class="vl-shell-link ${extraClass}" href="${href}"${current ? ' aria-current="page"' : ''}>${label}</a>`
+}
+
+function externalLink(href: string, label: string, className = ''): string {
+  const classAttr = className ? ` class="${className}"` : ''
+  return `<a${classAttr} href="${href}" target="_blank" rel="noreferrer">${label}</a>`
 }
 
 function detectProvider(pageName: string, pathname: string): Provider {
