@@ -94,6 +94,16 @@ jobs:
           cat home-qa.log
           exit $status
 
+      - name: Verify Content QA contract
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-content-qa.mjs > content-qa.log 2>&1
+          status=$?
+          cat content-qa.log
+          exit $status
+
       - name: Upload source gate log
         if: always()
         uses: actions/upload-artifact@v4
@@ -142,3 +152,10 @@ jobs:
         with:
           name: home-qa-log
           path: apps/web/home-qa.log
+
+      - name: Upload Content QA log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-qa-log
+          path: apps/web/content-qa.log
