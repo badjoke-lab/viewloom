@@ -74,6 +74,16 @@ const connectedFeatureContracts = [
     forbidden: [/<svg viewBox="0 0 1210 560"/, /data-name="Stream [A-Z]"/, />Stream [A-Z]</],
   },
   {
+    path: 'twitch/history/index.html',
+    required: ['/src/live/history-current-shell-entry.ts', 'class="history-stage"', 'data-history-summary', 'data-history-notes'],
+    forbidden: [/<svg viewBox="0 0 1210 560"/, /data-name="Stream [A-Z]"/, />Stream [A-Z]</, /Stream A|Stream B|Stream C/],
+  },
+  {
+    path: 'kick/history/index.html',
+    required: ['/src/live/history-current-shell-entry.ts', 'class="history-stage"', 'data-history-summary', 'data-history-notes'],
+    forbidden: [/<svg viewBox="0 0 1210 560"/, /data-name="Stream [A-Z]"/, />Stream [A-Z]</, /Stream A|Stream B|Stream C/],
+  },
+  {
     path: 'twitch/status/index.html',
     required: ['/src/live/status-current-shell-entry.ts', 'class="status-board"', 'class="metric-ledger"'],
     forbidden: [/>\s*Fresh\s*</, /Shell ready for real data/i],
@@ -224,6 +234,7 @@ const sourceFiles = [
   'src/live/heatmap-current-shell-entry.ts',
   'src/live/day-flow-current-shell-entry.ts',
   'src/live/battle-lines-current-shell-entry.ts',
+  'src/live/history-current-shell-entry.ts',
   'src/live/status-current-shell-entry.ts',
   'src/battle-lines-visual-polish.ts',
   'src/history-unify.ts',
