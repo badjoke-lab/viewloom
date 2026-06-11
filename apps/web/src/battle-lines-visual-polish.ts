@@ -253,3 +253,5 @@ function ensureBattleLinesVisualPolishStyles(): void {
 `
   document.head.append(style)
 }
+
+export {}

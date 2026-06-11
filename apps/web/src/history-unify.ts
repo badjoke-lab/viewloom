@@ -65,3 +65,5 @@ function ensureHistoryUnifyStyles(): void {
 `
   document.head.append(style)
 }
+
+export {}
