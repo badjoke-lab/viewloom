@@ -20,6 +20,7 @@ This page records the intended responsibility split for ViewLoom web CI.
 - `scripts/verify-status-qa.mjs`
 - `scripts/verify-home-qa.mjs`
 - `scripts/verify-content-qa.mjs`
+- `scripts/verify-seo-qa.mjs`
 
 ## Source gate responsibility
 
@@ -45,6 +46,7 @@ Dedicated QA scripts own page-level details:
 - Status owns status board, feature table, and hard-coded freshness checks.
 - Home owns portal/provider home shell checks.
 - Content owns About/Support content, contact, and support policy checks.
+- SEO owns title, description, canonical, Open Graph, and Twitter metadata checks.
 
 ## Artifacts
 
@@ -60,5 +62,6 @@ The artifact should include:
 - `status-qa.log`
 - `home-qa.log`
 - `content-qa.log`
+- `seo-qa.log`
 
 Do not add one artifact per QA page unless a specific debugging need appears. Keeping one artifact prevents the workflow from becoming noisy while preserving all failure logs.
