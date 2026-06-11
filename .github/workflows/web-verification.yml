@@ -19,6 +19,9 @@ on:
 jobs:
   verify-web:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,15 +33,17 @@ jobs:
 
       - name: Enable pnpm
         run: corepack enable
+        working-directory: .
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+        working-directory: .
 
       - name: Verify production source
-        run: pnpm --filter @viewloom/web verify:source
+        run: pnpm verify:source
 
       - name: Typecheck web
-        run: pnpm --filter @viewloom/web typecheck
+        run: pnpm typecheck
 
       - name: Build web
-        run: pnpm --filter @viewloom/web build
+        run: pnpm build
