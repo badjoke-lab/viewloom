@@ -1,0 +1,44 @@
+name: Web verification
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/web-verification.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/web-verification.yml'
+
+jobs:
+  verify-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify production source
+        run: pnpm --filter @viewloom/web verify:source
+
+      - name: Typecheck web
+        run: pnpm --filter @viewloom/web typecheck
+
+      - name: Build web
+        run: pnpm --filter @viewloom/web build
