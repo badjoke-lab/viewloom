@@ -34,9 +34,26 @@ jobs:
           cat source-gate.log
           exit $status
 
+      - name: Verify Heatmap QA contract
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-heatmap-qa.mjs > heatmap-qa.log 2>&1
+          status=$?
+          cat heatmap-qa.log
+          exit $status
+
       - name: Upload source gate log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: source-gate-log
           path: apps/web/source-gate.log
+
+      - name: Upload Heatmap QA log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: heatmap-qa-log
+          path: apps/web/heatmap-qa.log
