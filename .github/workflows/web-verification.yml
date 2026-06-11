@@ -44,6 +44,16 @@ jobs:
           cat heatmap-qa.log
           exit $status
 
+      - name: Verify Day Flow QA contract
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-dayflow-qa.mjs > dayflow-qa.log 2>&1
+          status=$?
+          cat dayflow-qa.log
+          exit $status
+
       - name: Upload source gate log
         if: always()
         uses: actions/upload-artifact@v4
@@ -57,3 +67,10 @@ jobs:
         with:
           name: heatmap-qa-log
           path: apps/web/heatmap-qa.log
+
+      - name: Upload Day Flow QA log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dayflow-qa-log
+          path: apps/web/dayflow-qa.log
