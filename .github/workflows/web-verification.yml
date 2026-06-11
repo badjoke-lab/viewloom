@@ -26,4 +26,17 @@ jobs:
 
       - name: Verify production source
         working-directory: apps/web
-        run: node scripts/verify-production-source.mjs
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-production-source.mjs > source-gate.log 2>&1
+          status=$?
+          cat source-gate.log
+          exit $status
+
+      - name: Upload source gate log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-gate-log
+          path: apps/web/source-gate.log
