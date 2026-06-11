@@ -38,6 +38,10 @@ const forbiddenGlobalPatterns = [
   { label: 'old fake UTC observation timestamp', pattern: /12:40 UTC|12:25 UTC|11:55 UTC/ },
 ]
 
+const forbiddenSourcePatterns = [
+  { path: 'src/mock-site.ts', label: 'legacy static heatmap grid behavior', pattern: /heatmap-grid|data-selected-name|data-selected-viewers|data-selected-momentum/ },
+]
+
 const connectedFeatureContracts = [
   {
     path: 'twitch/heatmap/index.html',
@@ -234,6 +238,12 @@ for (const path of sourceFiles.filter((path) => existsSync(join(root, path)))) {
   for (const { label, pattern } of forbiddenGlobalPatterns.slice(0, 4)) {
     if (pattern.test(source)) failures.push(`${path}: contains forbidden ${label}`)
   }
+}
+
+for (const { path, label, pattern } of forbiddenSourcePatterns) {
+  if (!existsSync(join(root, path))) continue
+  const source = read(path)
+  if (pattern.test(source)) failures.push(`${path}: contains forbidden ${label}`)
 }
 
 if (existsSync(join(root, 'src/mock-cutover.css'))) failures.push('src/mock-cutover.css: must not exist')
