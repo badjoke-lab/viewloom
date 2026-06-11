@@ -135,8 +135,9 @@ const portalFragments = [
 ]
 
 const providerHomeFragments = [
-  'class="overview-grid"',
-  'class="view-card"',
+  'class="data-strip"',
+  'class="provider-overview"',
+  'class="surface surface--dark"',
   'class="signal-list"',
 ]
 
