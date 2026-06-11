@@ -64,6 +64,16 @@ jobs:
           cat battle-lines-qa.log
           exit $status
 
+      - name: Verify History QA contract
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-history-qa.mjs > history-qa.log 2>&1
+          status=$?
+          cat history-qa.log
+          exit $status
+
       - name: Upload source gate log
         if: always()
         uses: actions/upload-artifact@v4
@@ -91,3 +101,10 @@ jobs:
         with:
           name: battle-lines-qa-log
           path: apps/web/battle-lines-qa.log
+
+      - name: Upload History QA log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: history-qa-log
+          path: apps/web/history-qa.log
