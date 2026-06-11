@@ -38,6 +38,49 @@ const forbiddenGlobalPatterns = [
   { label: 'old fake UTC observation timestamp', pattern: /12:40 UTC|12:25 UTC|11:55 UTC/ },
 ]
 
+const connectedFeatureContracts = [
+  {
+    path: 'twitch/heatmap/index.html',
+    required: ['/src/live/heatmap-current-shell-entry.ts', 'data-page="twitch-heatmap"', 'chart-placeholder--heatmap'],
+    forbidden: [/class="heatmap-grid"/, /data-name="Stream [A-Z]"/, />Stream [A-Z]</],
+  },
+  {
+    path: 'kick/heatmap/index.html',
+    required: ['/src/live/heatmap-current-shell-entry.ts', 'data-page="kick-heatmap"', 'chart-placeholder--heatmap'],
+    forbidden: [/class="heatmap-grid"/, /data-name="Stream [A-Z]"/, />Stream [A-Z]</],
+  },
+  {
+    path: 'twitch/day-flow/index.html',
+    required: ['/src/live/day-flow-current-shell-entry.ts', 'class="dayflow-stage"', 'data-dayflow-inspector'],
+    forbidden: [/<svg viewBox="0 0 1210 620"/, /data-name="Stream [A-Z]"/, />Stream [A-Z]</],
+  },
+  {
+    path: 'kick/day-flow/index.html',
+    required: ['/src/live/day-flow-current-shell-entry.ts', 'class="dayflow-stage"', 'data-dayflow-inspector'],
+    forbidden: [/<svg viewBox="0 0 1210 620"/, /data-name="Stream [A-Z]"/, />Stream [A-Z]</],
+  },
+  {
+    path: 'twitch/battle-lines/index.html',
+    required: ['/src/live/battle-lines-current-shell-entry.ts', 'class="battle-stage"', 'data-battle-summary', 'data-battle-feed'],
+    forbidden: [/<svg viewBox="0 0 1210 560"/, /data-name="Stream [A-Z]"/, />Stream [A-Z]</],
+  },
+  {
+    path: 'kick/battle-lines/index.html',
+    required: ['/src/live/battle-lines-current-shell-entry.ts', 'class="battle-stage"', 'data-battle-summary', 'data-battle-feed'],
+    forbidden: [/<svg viewBox="0 0 1210 560"/, /data-name="Stream [A-Z]"/, />Stream [A-Z]</],
+  },
+  {
+    path: 'twitch/status/index.html',
+    required: ['/src/live/status-current-shell-entry.ts', 'class="status-board"', 'class="metric-ledger"'],
+    forbidden: [/>\s*Fresh\s*</, /Shell ready for real data/i],
+  },
+  {
+    path: 'kick/status/index.html',
+    required: ['/src/live/status-current-shell-entry.ts', 'class="status-board"', 'class="metric-ledger"'],
+    forbidden: [/>\s*Fresh\s*</, /Shell ready for real data/i],
+  },
+]
+
 const requiredPageFragments = [
   '<span class="brand-mark">VL</span>',
   'ViewLoom<small>Live data observatory</small>',
@@ -156,10 +199,28 @@ for (const { path, provider } of providerExpectations) {
   if (!source.includes(`data-provider="${provider}"`)) failures.push(`${path}: expected data-provider="${provider}"`)
 }
 
+for (const contract of connectedFeatureContracts) {
+  if (!existsSync(join(root, contract.path))) {
+    failures.push(`${contract.path}: missing connected feature page`)
+    continue
+  }
+  const source = read(contract.path)
+  for (const fragment of contract.required) {
+    if (!source.includes(fragment)) failures.push(`${contract.path}: missing live renderer contract fragment: ${fragment}`)
+  }
+  for (const pattern of contract.forbidden) {
+    if (pattern.test(source)) failures.push(`${contract.path}: contains forbidden static/mock feature body pattern: ${pattern}`)
+  }
+}
+
 const sourceFiles = [
   'vite.config.ts',
   'src/mock-site.css',
   'src/mock-site.ts',
+  'src/live/heatmap-current-shell-entry.ts',
+  'src/live/day-flow-current-shell-entry.ts',
+  'src/live/battle-lines-current-shell-entry.ts',
+  'src/live/status-current-shell-entry.ts',
   'src/battle-lines-visual-polish.ts',
   'src/history-unify.ts',
 ]
@@ -184,4 +245,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom production source verification passed for ${pages.length} public pages.`)
+console.log(`ViewLoom production source verification passed for ${pages.length} public pages and ${connectedFeatureContracts.length} live feature contracts.`)
