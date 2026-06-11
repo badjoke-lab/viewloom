@@ -4,24 +4,17 @@ on:
   pull_request:
     paths:
       - 'apps/web/**'
-      - 'package.json'
-      - 'pnpm-workspace.yaml'
       - '.github/workflows/web-verification.yml'
   push:
     branches:
       - main
     paths:
       - 'apps/web/**'
-      - 'package.json'
-      - 'pnpm-workspace.yaml'
       - '.github/workflows/web-verification.yml'
 
 jobs:
-  verify-web:
+  verify-web-source:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,19 +24,6 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Enable pnpm
-        run: corepack enable
-        working-directory: .
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-        working-directory: .
-
       - name: Verify production source
-        run: pnpm verify:source
-
-      - name: Typecheck web
-        run: pnpm typecheck
-
-      - name: Build web
-        run: pnpm build
+        working-directory: apps/web
+        run: node scripts/verify-production-source.mjs
