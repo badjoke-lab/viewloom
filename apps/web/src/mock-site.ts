@@ -19,37 +19,6 @@
     }));
   });
 
-  const heatmap = document.querySelector<HTMLElement>('.heatmap-grid');
-  if (heatmap) {
-    let scale = 1, x = 0, y = 0, dragging = false, moved = false, sx = 0, sy = 0;
-    const apply = () => heatmap.style.transform = `translate(${x}px,${y}px) scale(${scale})`;
-    document.querySelectorAll('[data-zoom]').forEach(btn => btn.addEventListener('click', () => {
-      const z = btn.getAttribute('data-zoom');
-      if (z === 'in') scale = Math.min(2.5, scale + .2);
-      if (z === 'out') scale = Math.max(1, scale - .2);
-      if (z === 'reset') { scale = 1; x = 0; y = 0; }
-      apply();
-    }));
-    heatmap.parentElement?.addEventListener('pointerdown', e => { dragging = true; moved = false; sx = e.clientX - x; sy = e.clientY - y; });
-    window.addEventListener('pointermove', e => {
-      if (!dragging || scale === 1) return;
-      const nx = e.clientX - sx, ny = e.clientY - sy;
-      if (Math.abs(nx - x) + Math.abs(ny - y) > 3) moved = true;
-      x = nx; y = ny;
-      const lim = 180*(scale-1); x=Math.max(-lim,Math.min(lim,x)); y=Math.max(-lim,Math.min(lim,y)); apply();
-    });
-    window.addEventListener('pointerup', () => dragging = false);
-    document.querySelectorAll<HTMLElement>('.tile').forEach(tile => tile.addEventListener('click', () => {
-      if (moved) return;
-      document.querySelectorAll('.tile').forEach(t => t.classList.remove('selected'));
-      tile.classList.add('selected');
-      const name = tile.dataset.name, viewers = tile.dataset.viewers, momentum = tile.dataset.momentum;
-      document.querySelectorAll<HTMLElement>('[data-selected-name]').forEach(x => x.textContent = name || '—');
-      document.querySelectorAll<HTMLElement>('[data-selected-viewers]').forEach(x => x.textContent = viewers || '—');
-      document.querySelectorAll<HTMLElement>('[data-selected-momentum]').forEach(x => x.textContent = momentum || '—');
-    }));
-  }
-
   document.querySelectorAll('[data-copy]').forEach(btn => btn.addEventListener('click', async () => {
     const text = btn.getAttribute('data-copy') || '';
     try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied'; }
