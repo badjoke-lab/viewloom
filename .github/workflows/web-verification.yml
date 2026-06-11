@@ -4,20 +4,16 @@ on:
   pull_request:
     paths:
       - 'apps/web/**'
-      - 'package.json'
-      - 'pnpm-workspace.yaml'
       - '.github/workflows/web-verification.yml'
   push:
     branches:
       - main
     paths:
       - 'apps/web/**'
-      - 'package.json'
-      - 'pnpm-workspace.yaml'
       - '.github/workflows/web-verification.yml'
 
 jobs:
-  verify-web:
+  verify-web-source:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -28,17 +24,19 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Enable pnpm
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
       - name: Verify production source
-        run: pnpm --filter @viewloom/web verify:source
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-production-source.mjs > source-gate.log 2>&1
+          status=$?
+          cat source-gate.log
+          exit $status
 
-      - name: Typecheck web
-        run: pnpm --filter @viewloom/web typecheck
-
-      - name: Build web
-        run: pnpm --filter @viewloom/web build
+      - name: Upload source gate log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-gate-log
+          path: apps/web/source-gate.log

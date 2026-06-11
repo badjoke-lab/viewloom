@@ -29,7 +29,28 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Typecheck web
-        run: pnpm typecheck:web
+        shell: bash
+        run: |
+          set +e
+          pnpm typecheck:web > web-checks-typecheck.log 2>&1
+          status=$?
+          cat web-checks-typecheck.log
+          exit $status
 
       - name: Build web
-        run: pnpm build:web
+        shell: bash
+        run: |
+          set +e
+          pnpm build:web > web-checks-build.log 2>&1
+          status=$?
+          cat web-checks-build.log
+          exit $status
+
+      - name: Upload web checks logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-checks-logs
+          path: |
+            web-checks-typecheck.log
+            web-checks-build.log
