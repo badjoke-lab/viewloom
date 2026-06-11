@@ -104,58 +104,17 @@ jobs:
           cat content-qa.log
           exit $status
 
-      - name: Upload source gate log
+      - name: Upload web verification logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: source-gate-log
-          path: apps/web/source-gate.log
-
-      - name: Upload Heatmap QA log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: heatmap-qa-log
-          path: apps/web/heatmap-qa.log
-
-      - name: Upload Day Flow QA log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dayflow-qa-log
-          path: apps/web/dayflow-qa.log
-
-      - name: Upload Battle Lines QA log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: battle-lines-qa-log
-          path: apps/web/battle-lines-qa.log
-
-      - name: Upload History QA log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: history-qa-log
-          path: apps/web/history-qa.log
-
-      - name: Upload Status QA log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: status-qa-log
-          path: apps/web/status-qa.log
-
-      - name: Upload Home QA log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: home-qa-log
-          path: apps/web/home-qa.log
-
-      - name: Upload Content QA log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: content-qa-log
-          path: apps/web/content-qa.log
+          name: web-verification-logs
+          path: |
+            apps/web/source-gate.log
+            apps/web/heatmap-qa.log
+            apps/web/dayflow-qa.log
+            apps/web/battle-lines-qa.log
+            apps/web/history-qa.log
+            apps/web/status-qa.log
+            apps/web/home-qa.log
+            apps/web/content-qa.log
