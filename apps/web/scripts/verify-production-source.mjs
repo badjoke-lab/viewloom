@@ -21,7 +21,9 @@ const pages = [
   'kick/status/index.html',
 ]
 
-const featurePages = pages.filter((path) => path.includes('/heatmap/') || path.includes('/day-flow/') || path.includes('/battle-lines/') || path.includes('/history/') || path.includes('/status/'))
+const visualFeaturePages = pages.filter((path) => path.includes('/heatmap/') || path.includes('/day-flow/') || path.includes('/battle-lines/') || path.includes('/history/'))
+const statusFeaturePages = pages.filter((path) => path.includes('/status/'))
+const featurePages = [...visualFeaturePages, ...statusFeaturePages]
 const providerHomePages = ['twitch/index.html', 'kick/index.html']
 const contentPages = ['about/index.html', 'support/index.html']
 
@@ -109,7 +111,6 @@ const requiredPageFragments = [
   'class="mobile-menu mobile-only"',
   'class="page',
   'class="breadcrumb"',
-  'class="page-head"',
   'class="kicker"',
   'class="lede"',
   'class="head-facts"',
@@ -119,11 +120,21 @@ const requiredPageFragments = [
   '/src/analytics.ts',
 ]
 
-const featurePageFragments = [
+const pageHeadFragments = [
+  'class="page-head',
+]
+
+const visualFeaturePageFragments = [
   'class="feature-tabs"',
   'class="data-strip"',
   'class="data-strip__title"',
   'class="data-strip__cell"',
+]
+
+const statusFeaturePageFragments = [
+  'class="feature-tabs"',
+  'class="status-board"',
+  'class="metric-ledger"',
 ]
 
 const portalFragments = [
@@ -192,11 +203,13 @@ for (const path of pages) {
   const source = read(path)
 
   requireFragments(path, source, requiredPageFragments)
+  requireFragments(path, source, pageHeadFragments)
 
   if (path === 'index.html') requireFragments(path, source, portalFragments)
   if (providerHomePages.includes(path)) requireFragments(path, source, providerHomeFragments)
+  if (visualFeaturePages.includes(path)) requireFragments(path, source, visualFeaturePageFragments)
+  if (statusFeaturePages.includes(path)) requireFragments(path, source, statusFeaturePageFragments)
   if (featurePages.includes(path)) {
-    requireFragments(path, source, featurePageFragments)
     for (const tab of featureTabExpectations) {
       if (!source.includes(`>${tab}</a>`)) failures.push(`${path}: missing feature tab ${tab}`)
     }
