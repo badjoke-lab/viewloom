@@ -35,6 +35,18 @@ function googleTagPlugin(): Plugin {
   }
 }
 
+function mockCutoverPlugin(): Plugin {
+  const entry = '    <script type="module" src="/src/mock-cutover.ts"></script>'
+
+  return {
+    name: 'viewloom-mock-exact-cutover',
+    transformIndexHtml(html) {
+      if (html.includes('/src/mock-cutover.ts')) return html
+      return html.replace('  </body>', `${entry}\n  </body>`)
+    },
+  }
+}
+
 function escapeHtmlAttribute(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -44,7 +56,7 @@ function escapeHtmlAttribute(value: string): string {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [googleSiteVerificationPlugin(mode), googleTagPlugin()],
+  plugins: [googleSiteVerificationPlugin(mode), googleTagPlugin(), mockCutoverPlugin()],
   server: {
     port: 4173,
   },
