@@ -1,30 +1,21 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kick Battle Lines — ViewLoom</title>
-    <meta name="description" content="Compare observed Kick streamer rivalry, reversals, viewer gaps, and momentum through ViewLoom Battle Lines." />
-    <link rel="canonical" href="https://vl.badjoke-lab.com/kick/battle-lines/" />
-    <meta property="og:site_name" content="ViewLoom" />
-    <meta property="og:type" content="article" />
-    <meta property="og:url" content="https://vl.badjoke-lab.com/kick/battle-lines/" />
-    <meta property="og:title" content="Kick Battle Lines — ViewLoom" />
-    <meta property="og:description" content="Compare observed Kick streamer rivalry, reversals, viewer gaps, and momentum through ViewLoom Battle Lines." />
-    <meta property="og:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
-    <meta name="twitter:title" content="Kick Battle Lines — ViewLoom" />
-    <meta name="twitter:description" content="Compare observed Kick streamer rivalry, reversals, viewer gaps, and momentum through ViewLoom Battle Lines." />
-  </head>
-  <body data-page="kick-battle-lines">
-    <div id="app"></div>
-    <script type="module" src="/src/battle-lines-status-entry.ts"></script>
-    <script type="module" src="/src/kick-status-link.ts"></script>
-    <script type="module" src="/src/kick-history-nav.ts"></script>
-    <script type="module" src="/src/lines-unify.ts"></script>
-    <script type="module" src="/src/label-risk-cleanup.ts"></script>
-    <script type="module" src="/src/battle-lines-visual-polish.ts"></script>
-    <script type="module" src="/src/analytics.ts"></script>
-  </body>
-</html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Kick Battle Lines — ViewLoom redesign mock</title><link rel="stylesheet" href="/src/mock-site.css"></head><body data-provider="kick"><div class="site-frame"><header class="masthead"><div class="masthead__inner">
+<a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
+<nav class="global-nav"><a href="/">Portal</a><a href="/twitch/">Twitch data</a><a href="/kick/" aria-current="page">Kick data</a><a href="/about/">About</a><a href="/support/">Support</a></nav><div class="status-inline"><span class="dot"></span>Collectors healthy · 5m cadence</div>
+<button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button>
+</div></header><main class="page page--full"><div class="breadcrumb">ViewLoom / Kick data / Battle Lines</div><nav class="feature-tabs"><a class="" href="/kick/heatmap/">Heatmap</a><a class="" href="/kick/day-flow/">Day Flow</a><a class="active" href="/kick/battle-lines/">Battle Lines</a><a class="" href="/kick/history/">History</a><a class="" href="/kick/status/">Status</a></nav>
+<section class="page-head"><div><div class="kicker">KICK DATA · RIVALRY</div><h1>Battle Lines</h1><p class="lede">A focused comparison of the closest observed streams: current gap, reversal points, and how pressure changed through the day.</p></div><div class="head-facts"><div class="fact"><small>Mode</small><strong>Recommended</strong></div><div class="fact"><small>Metric</small><strong>Viewers</strong></div><div class="fact"><small>Primary pair</small><strong>2 streams</strong></div><div class="fact"><small>Context</small><strong>3 lines</strong></div></div></section>
+<div class="data-strip"><div class="data-strip__title">Kick observation</div>
+<div class="data-strip__cell"><small>Updated</small>3m ago</div><div class="data-strip__cell"><small>Observed</small>83 streams</div>
+<div class="data-strip__cell"><small>Coverage</small>Top 100</div><div class="data-strip__cell"><small>Source</small>Real</div></div>
+<div class="toolbar"><span class="toolbar-label">Battle</span><div class="control-group"><button class="active">Recommended</button><button>Custom</button><button>＋ Add rival</button></div><span class="toolbar-label">Metric</span><div class="control-group"><button class="active">Viewers</button><button>Indexed</button></div><span class="toolbar-label">Bucket</span><div class="control-group"><button>1m</button><button class="active">5m</button><button>10m</button></div><button class="button button--quiet">Copy URL</button></div>
+<div class="battle-summary"><div class="competitor"><small class="kicker">Leader</small><strong>LumenArc</strong><span>118.4K · +8.1%</span></div><div class="battle-vs">6.6K GAP<br>2 REVERSALS</div><div class="competitor"><small class="kicker">Challenger</small><strong>northstar</strong><span>111.8K · +12.6%</span></div></div>
+<div class="layout-split"><section class="battle-stage"><svg viewBox="0 0 1220 560"><g class="chart-grid"><line x1="80" y1="30" x2="80" y2="500"/><line x1="200" y1="30" x2="200" y2="500"/><line x1="320" y1="30" x2="320" y2="500"/><line x1="440" y1="30" x2="440" y2="500"/><line x1="560" y1="30" x2="560" y2="500"/><line x1="680" y1="30" x2="680" y2="500"/><line x1="800" y1="30" x2="800" y2="500"/><line x1="920" y1="30" x2="920" y2="500"/><line x1="1040" y1="30" x2="1040" y2="500"/><line x1="80" y1="70" x2="1160" y2="70"/><line x1="80" y1="140" x2="1160" y2="140"/><line x1="80" y1="210" x2="1160" y2="210"/><line x1="80" y1="280" x2="1160" y2="280"/><line x1="80" y1="350" x2="1160" y2="350"/><line x1="80" y1="420" x2="1160" y2="420"/><line x1="80" y1="490" x2="1160" y2="490"/></g>
+<path d="M80 430 C170 390 210 410 300 350 S450 330 520 270 S680 260 740 210 S900 195 980 130 S1080 110 1160 90" fill="none" stroke="#7dd3fc" stroke-width="5"/>
+<path d="M80 360 C170 370 240 340 320 320 S460 250 540 285 S680 230 760 235 S900 170 980 175 S1080 150 1160 140" fill="none" stroke="#f472b6" stroke-width="5"/>
+<path d="M80 470 C250 440 380 430 520 405 S760 385 920 350 S1060 330 1160 315" fill="none" stroke="#8d877b" stroke-width="2" opacity=".65"/>
+<rect x="650" y="190" width="95" height="90" fill="#fbbf24" opacity=".13"/><line x1="702" y1="30" x2="702" y2="500" stroke="#eef4ff" stroke-width="2"/>
+<circle cx="702" cy="236" r="7" fill="#7dd3fc"/><circle cx="702" cy="236" r="3" fill="#eef4ff"/><circle cx="702" cy="236" r="7" fill="#f472b6" opacity=".65"/>
+<text class="chart-axis" x="715" y="52">15:35 reversal</text><text class="chart-axis" x="1060" y="80">LumenArc 118.4K</text><text class="chart-axis" x="1060" y="130">northstar 111.8K</text>
+<text class="chart-axis" x="80" y="535">00:00</text><text class="chart-axis" x="350" y="535">06:00</text><text class="chart-axis" x="620" y="535">12:00</text><text class="chart-axis" x="890" y="535">18:00</text><text class="chart-axis" x="1120" y="535">Now</text></svg></section><aside class="surface inspector"><div class="surface__head"><strong>15:35 UTC</strong><small>Time inspector</small></div><div class="surface__body"><div class="inspector__row"><div><small>LumenArc</small><strong>96.2K</strong></div><span class="up">+3.4K / 15m</span></div><div class="inspector__row"><div><small>northstar</small><strong>96.5K</strong></div><span class="up">+5.1K / 15m</span></div><div class="inspector__row"><div><small>Gap</small><strong>0.3K</strong></div><span>Reversal</span></div><div class="inspector__row"><div><small>Next context line</small><strong>MikaLive</strong></div><span>72.5K</span></div><p><button class="button">Jump to live</button></p></div></aside></div>
+<div class="rule-title"><h2>Battle events</h2><span>Selected pair only</span></div><div class="event-feed"><div class="event"><time>15:35</time><div><strong>northstar passed LumenArc</strong><br><span>Gap moved from −1.8K to +0.3K.</span></div></div><div class="event"><time>14:20</time><div><strong>LumenArc reclaimed the lead</strong><br><span>Largest 15-minute rise of the pair.</span></div></div><div class="event"><time>12:55</time><div><strong>Battle entered close range</strong><br><span>Gap fell below 5% of the leader.</span></div></div></div></main><footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method & limits</a><a href="/support/">Support</a><a href="https://docs.google.com/forms/d/e/1FAIpQLSdhreuxEz7w0eSjslTyVLL-axV6IJdTp5RU5VXCM3ApIz35-Q/viewform?usp=dialog" target="_blank" rel="noreferrer">Contact</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer></div><script type="module" src="/src/mock-site.ts"></script>
+<script type="module" src="/src/analytics.ts"></script></body></html>
