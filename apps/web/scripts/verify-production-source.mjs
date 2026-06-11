@@ -21,6 +21,10 @@ const pages = [
   'kick/status/index.html',
 ]
 
+const featurePages = pages.filter((path) => path.includes('/heatmap/') || path.includes('/day-flow/') || path.includes('/battle-lines/') || path.includes('/history/') || path.includes('/status/'))
+const providerHomePages = ['twitch/index.html', 'kick/index.html']
+const contentPages = ['about/index.html', 'support/index.html']
+
 const forbiddenGlobalPatterns = [
   { label: 'failed cutover runtime', pattern: /mock-cutover/ },
   { label: 'failed cutover plugin', pattern: /mockCutoverPlugin/ },
@@ -37,12 +41,50 @@ const forbiddenGlobalPatterns = [
 const requiredPageFragments = [
   '<span class="brand-mark">VL</span>',
   'ViewLoom<small>Live data observatory</small>',
+  'class="masthead"',
+  'class="masthead__inner"',
+  'class="global-nav"',
   'href="/twitch/">Twitch data</a>',
   'href="/kick/">Kick data</a>',
   'href="/about/"',
   'href="/support/"',
+  'class="status-inline"',
+  'class="mobile-menu mobile-only"',
+  'class="page',
+  'class="breadcrumb"',
+  'class="page-head"',
+  'class="kicker"',
+  'class="lede"',
+  'class="head-facts"',
+  'class="footer"',
   '/src/mock-site.css',
   '/src/mock-site.ts',
+  '/src/analytics.ts',
+]
+
+const featurePageFragments = [
+  'class="feature-tabs"',
+  'class="data-strip"',
+  'class="data-strip__title"',
+  'class="data-strip__cell"',
+]
+
+const portalFragments = [
+  'class="portal-grid"',
+  'portal-panel--twitch',
+  'portal-panel--kick',
+  'class="portal-panel__stats"',
+  'class="signal-list"',
+]
+
+const providerHomeFragments = [
+  'class="overview-grid"',
+  'class="view-card"',
+  'class="signal-list"',
+]
+
+const contentPageFragments = [
+  'class="prose"',
 ]
 
 const providerExpectations = [
@@ -63,10 +105,24 @@ const providerExpectations = [
   { path: 'kick/status/index.html', provider: 'kick' },
 ]
 
+const featureTabExpectations = [
+  'Heatmap',
+  'Day Flow',
+  'Battle Lines',
+  'History',
+  'Status',
+]
+
 const failures = []
 
 function read(path) {
   return readFileSync(join(root, path), 'utf8')
+}
+
+function requireFragments(path, source, fragments) {
+  for (const fragment of fragments) {
+    if (!source.includes(fragment)) failures.push(`${path}: missing required shell fragment: ${fragment}`)
+  }
 }
 
 for (const path of pages) {
@@ -77,9 +133,17 @@ for (const path of pages) {
   if (!existsSync(join(root, path))) continue
   const source = read(path)
 
-  for (const fragment of requiredPageFragments) {
-    if (!source.includes(fragment)) failures.push(`${path}: missing required shell fragment: ${fragment}`)
+  requireFragments(path, source, requiredPageFragments)
+
+  if (path === 'index.html') requireFragments(path, source, portalFragments)
+  if (providerHomePages.includes(path)) requireFragments(path, source, providerHomeFragments)
+  if (featurePages.includes(path)) {
+    requireFragments(path, source, featurePageFragments)
+    for (const tab of featureTabExpectations) {
+      if (!source.includes(`>${tab}</a>`)) failures.push(`${path}: missing feature tab ${tab}`)
+    }
   }
+  if (contentPages.includes(path)) requireFragments(path, source, contentPageFragments)
 
   for (const { label, pattern } of forbiddenGlobalPatterns) {
     if (pattern.test(source)) failures.push(`${path}: contains forbidden ${label}`)
