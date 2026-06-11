@@ -74,6 +74,16 @@ jobs:
           cat history-qa.log
           exit $status
 
+      - name: Verify Status QA contract
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-status-qa.mjs > status-qa.log 2>&1
+          status=$?
+          cat status-qa.log
+          exit $status
+
       - name: Upload source gate log
         if: always()
         uses: actions/upload-artifact@v4
@@ -108,3 +118,10 @@ jobs:
         with:
           name: history-qa-log
           path: apps/web/history-qa.log
+
+      - name: Upload Status QA log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: status-qa-log
+          path: apps/web/status-qa.log
