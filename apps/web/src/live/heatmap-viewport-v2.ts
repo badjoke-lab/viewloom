@@ -14,6 +14,7 @@ type ViewState = {
 const MAX_ZOOM = 4.5
 const DRAG_THRESHOLD = 6
 const DOUBLE_CLICK_ZOOM_FACTOR = 1.6
+const COVER_OVERSCAN = 1.002
 
 export type HeatmapViewportHandle = {
   destroy: () => void
@@ -165,7 +166,7 @@ export function createHeatmapViewport(options: HeatmapViewportOptions): HeatmapV
     const centerX = initial ? getCanvasWidth() / 2 : (viewportWidth / 2 - state.tx) / previousScale
     const centerY = initial ? getCanvasHeight() / 2 : (viewportHeight / 2 - state.ty) / previousScale
 
-    fitScale = Math.min(viewportWidth / getCanvasWidth(), viewportHeight / getCanvasHeight())
+    fitScale = coverScale(viewportWidth, viewportHeight)
 
     const nextScale = getScale()
     state.tx = viewportWidth / 2 - centerX * nextScale
@@ -181,8 +182,9 @@ export function createHeatmapViewport(options: HeatmapViewportOptions): HeatmapV
     const scaledWidth = getCanvasWidth() * scale
     const scaledHeight = getCanvasHeight() * scale
 
-    state.tx = scaledWidth <= viewportWidth ? (viewportWidth - scaledWidth) / 2 : 0
-    state.ty = scaledHeight <= viewportHeight ? (viewportHeight - scaledHeight) / 2 : 0
+    state.tx = (viewportWidth - scaledWidth) / 2
+    state.ty = (viewportHeight - scaledHeight) / 2
+    clampTranslation(scale)
   }
 
   function clampTranslation(scale: number): void {
@@ -191,17 +193,22 @@ export function createHeatmapViewport(options: HeatmapViewportOptions): HeatmapV
     const scaledWidth = getCanvasWidth() * scale
     const scaledHeight = getCanvasHeight() * scale
 
-    if (scaledWidth <= viewportWidth) {
-      state.tx = (viewportWidth - scaledWidth) / 2
-    } else {
-      state.tx = clamp(state.tx, viewportWidth - scaledWidth, 0)
-    }
+    const minX = Math.min(0, viewportWidth - scaledWidth)
+    const maxX = Math.max(0, viewportWidth - scaledWidth)
+    state.tx = scaledWidth <= viewportWidth
+      ? (viewportWidth - scaledWidth) / 2
+      : clamp(state.tx, minX, 0)
 
-    if (scaledHeight <= viewportHeight) {
-      state.ty = (viewportHeight - scaledHeight) / 2
-    } else {
-      state.ty = clamp(state.ty, viewportHeight - scaledHeight, 0)
-    }
+    const minY = Math.min(0, viewportHeight - scaledHeight)
+    const maxY = Math.max(0, viewportHeight - scaledHeight)
+    state.ty = scaledHeight <= viewportHeight
+      ? (viewportHeight - scaledHeight) / 2
+      : clamp(state.ty, minY, 0)
+
+    if (scaledWidth > viewportWidth && state.tx > 0) state.tx = 0
+    if (scaledHeight > viewportHeight && state.ty > 0) state.ty = 0
+    if (scaledWidth <= viewportWidth) state.tx = clamp(state.tx, 0, maxX)
+    if (scaledHeight <= viewportHeight) state.ty = clamp(state.ty, 0, maxY)
   }
 
   function applyTransform(): void {
@@ -212,6 +219,12 @@ export function createHeatmapViewport(options: HeatmapViewportOptions): HeatmapV
 
   function getScale(): number {
     return fitScale * state.zoom
+  }
+
+  function coverScale(viewportWidth: number, viewportHeight: number): number {
+    const widthScale = viewportWidth / getCanvasWidth()
+    const heightScale = viewportHeight / getCanvasHeight()
+    return Math.max(widthScale, heightScale) * COVER_OVERSCAN
   }
 
   function getCanvasWidth(): number {
