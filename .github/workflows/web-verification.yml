@@ -54,6 +54,16 @@ jobs:
           cat dayflow-qa.log
           exit $status
 
+      - name: Verify Battle Lines QA contract
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-battle-lines-qa.mjs > battle-lines-qa.log 2>&1
+          status=$?
+          cat battle-lines-qa.log
+          exit $status
+
       - name: Upload source gate log
         if: always()
         uses: actions/upload-artifact@v4
@@ -74,3 +84,10 @@ jobs:
         with:
           name: dayflow-qa-log
           path: apps/web/dayflow-qa.log
+
+      - name: Upload Battle Lines QA log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: battle-lines-qa-log
+          path: apps/web/battle-lines-qa.log
