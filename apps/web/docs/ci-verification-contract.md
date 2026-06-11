@@ -21,6 +21,31 @@ This page records the intended responsibility split for ViewLoom web CI.
 - `scripts/verify-home-qa.mjs`
 - `scripts/verify-content-qa.mjs`
 
+## Source gate responsibility
+
+`verify-production-source.mjs` is the broad production source gate. It should stay focused on:
+
+- required public pages existing
+- shared shell fragments existing
+- expected `data-provider` values
+- required live entry files connected to feature pages
+- required source files existing
+- dangerous mock/cutover/static-regression fragments not returning
+
+It should not duplicate every page-specific QA rule. Detailed page contracts belong in the dedicated `verify-*-qa.mjs` scripts.
+
+## Page QA responsibility
+
+Dedicated QA scripts own page-level details:
+
+- Heatmap owns viewport/current-shell regression checks.
+- Day Flow owns dayflow controls, stage, and inspector checks.
+- Battle Lines owns summary, feed, and missing/offline point checks.
+- History owns retained history, notes, and demo-row regression checks.
+- Status owns status board, feature table, and hard-coded freshness checks.
+- Home owns portal/provider home shell checks.
+- Content owns About/Support content, contact, and support policy checks.
+
 ## Artifacts
 
 Verification logs should be uploaded as one artifact named `web-verification-logs`.
