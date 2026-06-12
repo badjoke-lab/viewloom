@@ -65,6 +65,10 @@ function renderFeatures(payload: StatusPayload): void {
   const body = document.querySelector<HTMLTableSectionElement>('.metric-ledger tbody')
   if (!body) return
   const features = Array.isArray(payload.features) ? payload.features : []
+  if (features.length === 0) {
+    body.innerHTML = '<tr><td colspan="6">No feature status rows are available yet.</td></tr>'
+    return
+  }
   body.innerHTML = features.map((feature) => `
     <tr>
       <td><a class="text-link" href="${escapeAttr(feature.pagePath ?? '#')}">${escapeHtml(feature.label ?? 'Feature')}</a></td>

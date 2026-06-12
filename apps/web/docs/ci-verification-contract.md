@@ -22,6 +22,7 @@ This page records the intended responsibility split for ViewLoom web CI.
 - `scripts/verify-content-qa.mjs`
 - `scripts/verify-seo-qa.mjs`
 - `scripts/verify-mobile-qa.mjs`
+- `scripts/verify-state-qa.mjs`
 
 ## Source gate responsibility
 
@@ -49,6 +50,7 @@ Dedicated QA scripts own page-level details:
 - Content owns About/Support content, contact, and support policy checks.
 - SEO owns title, description, canonical, Open Graph, and Twitter metadata checks.
 - Mobile owns viewport, mobile menu, responsive CSS, horizontal controls, and mobile layout fallbacks.
+- State owns empty, stale, unavailable, and error-state rendering checks.
 
 ## Artifacts
 
@@ -66,5 +68,6 @@ The artifact should include:
 - `content-qa.log`
 - `seo-qa.log`
 - `mobile-qa.log`
+- `state-qa.log`
 
 Do not add one artifact per QA page unless a specific debugging need appears. Keeping one artifact prevents the workflow from becoming noisy while preserving all failure logs.
