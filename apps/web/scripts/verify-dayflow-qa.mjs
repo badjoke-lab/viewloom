@@ -22,9 +22,10 @@ function forbidPattern(path, source, label, pattern) {
 
 const dayFlowPages = ['twitch/day-flow/index.html', 'kick/day-flow/index.html']
 const entryPath = 'src/live/day-flow-current-shell-entry.ts'
+const cssPath = 'src/mock-site.css'
 const contractPath = 'docs/dayflow-qa-contract.md'
 
-for (const path of [...dayFlowPages, entryPath, contractPath]) requireFile(path)
+for (const path of [...dayFlowPages, entryPath, cssPath, contractPath]) requireFile(path)
 
 for (const path of dayFlowPages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
@@ -50,7 +51,27 @@ if (existsSync(join(root, entryPath))) {
   requireFragment(entryPath, source, 'renderChart(payload)')
   requireFragment(entryPath, source, 'renderInspector(payload)')
   requireFragment(entryPath, source, 'renderError(')
+  requireFragment(entryPath, source, 'selectedBucketIndex')
+  requireFragment(entryPath, source, 'selectedStreamerId')
+  requireFragment(entryPath, source, 'bindChartInteraction(payload')
+  requireFragment(entryPath, source, "chart.addEventListener('click'")
+  requireFragment(entryPath, source, 'data-dayflow-chart')
+  requireFragment(entryPath, source, 'dayflow-cursor')
+  requireFragment(entryPath, source, 'selected-stream')
+  requireFragment(entryPath, source, 'data-dayflow-streamer')
+  requireFragment(entryPath, source, 'bindInspectorInteraction(payload)')
+  requireFragment(entryPath, source, 'selectedMetricValue')
+  requireFragment(entryPath, source, 'formatMetric')
   forbidPattern(entryPath, source, 'app-root rewrite renderer', /document\.querySelector<HTMLElement>\('\#app'\)/)
+  forbidPattern(entryPath, source, 'static-only Day Flow without chart interaction', /stage\.innerHTML = `<svg viewBox="0 0 \$\{width\}/)
+}
+
+if (existsSync(join(root, cssPath))) {
+  const source = read(cssPath)
+  requireFragment(cssPath, source, '.selected-stream')
+  requireFragment(cssPath, source, '.dayflow-cursor line')
+  requireFragment(cssPath, source, '.focus-row strong')
+  requireFragment(cssPath, source, 'text-overflow:ellipsis')
 }
 
 if (existsSync(join(root, contractPath))) {
@@ -65,4 +86,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom Day Flow QA verification passed for ${dayFlowPages.length} Day Flow pages.`)
+console.log(`ViewLoom Day Flow QA verification passed for ${dayFlowPages.length} Day Flow pages with selectable chart state.`)
