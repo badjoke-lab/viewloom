@@ -134,6 +134,16 @@ jobs:
           cat state-qa.log
           exit $status
 
+      - name: Verify Launch Readiness contract
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-launch-readiness.mjs > launch-readiness.log 2>&1
+          status=$?
+          cat launch-readiness.log
+          exit $status
+
       - name: Upload web verification logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -151,3 +161,4 @@ jobs:
             apps/web/seo-qa.log
             apps/web/mobile-qa.log
             apps/web/state-qa.log
+            apps/web/launch-readiness.log
