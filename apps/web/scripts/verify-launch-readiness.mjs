@@ -107,7 +107,7 @@ for (const contract of qaContracts) {
   if (!existsSync(join(root, contract))) failures.push(`${contract}: missing launch QA contract`)
 }
 
-const workflowPath = '../.github/workflows/web-verification.yml'
+const workflowPath = '../../.github/workflows/web-verification.yml'
 const workflowAbs = join(root, workflowPath)
 if (!existsSync(workflowAbs)) {
   failures.push('.github/workflows/web-verification.yml: missing workflow')
