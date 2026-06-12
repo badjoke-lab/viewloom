@@ -15,12 +15,30 @@ type HistoryPayload = {
 
 const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
 const endpoint = provider === 'kick' ? '/api/kick-history' : '/api/history'
+const state = readInitialState()
 
 void hydrateHistory()
 
+function readInitialState(): { period: string; metric: string } {
+  const params = new URLSearchParams(window.location.search)
+  return {
+    period: normalizePeriod(params.get('period')),
+    metric: normalizeMetric(params.get('metric')),
+  }
+}
+
+function writeDeepLinkState(): void {
+  const params = new URLSearchParams(window.location.search)
+  params.set('period', state.period)
+  params.set('metric', state.metric)
+  history.replaceState(null, '', `${window.location.pathname}?${params.toString()}${window.location.hash}`)
+}
+
 async function hydrateHistory(): Promise<void> {
+  writeDeepLinkState()
   try {
-    const response = await fetch(`${endpoint}?period=30d`, { headers: { accept: 'application/json' }, cache: 'no-store' })
+    const url = `${endpoint}?period=${encodeURIComponent(state.period)}&metric=${encodeURIComponent(state.metric)}`
+    const response = await fetch(url, { headers: { accept: 'application/json' }, cache: 'no-store' })
     const payload = await response.json() as HistoryPayload
     if (!response.ok) throw new Error(payload.error?.message ?? `history api returned ${response.status}`)
     render(payload)
@@ -33,13 +51,13 @@ function render(payload: HistoryPayload): void {
   const daily = payload.daily ?? []
   const top = payload.topStreamers ?? []
   setFacts([
-    payload.period?.label ?? 'Last 30 days',
-    label(payload.metric ?? 'viewer_minutes'),
+    payload.period?.label ?? label(state.period),
+    label(payload.metric ?? state.metric),
     label(payload.state ?? 'unknown'),
     `${payload.coverage?.observedDays ?? daily.length} days`,
   ])
   setStrip([
-    payload.period?.label ?? 'Last 30 days',
+    payload.period?.label ?? label(state.period),
     `${top.length} streams`,
     `${daily.length} days`,
     label(payload.source ?? 'api'),
@@ -77,11 +95,11 @@ function renderChart(payload: HistoryPayload, daily: Day[]): void {
   }
   const width = 1210, height = 560, left = 52, right = 28, top = 34, bottom = 44
   const chartW = width - left - right, chartH = height - top - bottom
-  const highest = Math.max(1, ...daily.map((day) => num(day.totalViewerMinutes)))
+  const highest = Math.max(1, ...daily.map((day) => selectedMetricValue(day)))
   const barW = Math.max(8, (chartW / Math.max(1, daily.length)) * 0.58)
   const bars = daily.map((day, index) => {
     const x = left + (index / Math.max(1, daily.length - 1)) * chartW - barW / 2
-    const h = Math.max(2, num(day.totalViewerMinutes) / highest * chartH)
+    const h = Math.max(2, selectedMetricValue(day) / highest * chartH)
     const y = top + chartH - h
     return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}"><title>${escapeHtml(day.day ?? '')}</title></rect>`
   }).join('')
@@ -104,11 +122,14 @@ function renderNotes(payload: HistoryPayload): void {
 }
 
 function renderError(message: string): void {
-  setFacts(['Error', 'Viewer-minutes', 'Unavailable', '—'])
+  setFacts(['Error', label(state.metric), 'Unavailable', '—'])
   const stage = document.querySelector<HTMLElement>('.history-stage')
   if (stage) stage.innerHTML = `<div class="notice">History API unavailable: ${escapeHtml(message)}</div>`
 }
 
+function normalizePeriod(input: string | null): string { return input === '7d' ? '7d' : '30d' }
+function normalizeMetric(input: string | null): string { return input === 'peak_viewers' ? 'peak_viewers' : 'viewer_minutes' }
+function selectedMetricValue(day: Day): number { return state.metric === 'peak_viewers' ? num(day.peakViewers) : num(day.totalViewerMinutes) }
 function grid(width: number, height: number, left: number, right: number, top: number, bottom: number): string {
   return [0, .25, .5, .75, 1].map((ratio) => `<line x1="${left}" x2="${width - right}" y1="${top + ratio * (height - top - bottom)}" y2="${top + ratio * (height - top - bottom)}"/>`).join('')
 }
