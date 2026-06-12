@@ -20,20 +20,39 @@ type BattlePayload = {
 
 const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
 const endpoint = provider === 'kick' ? '/api/kick-battle-lines' : '/api/battle-lines'
-const state = { metric: 'viewers' }
+const state = readInitialState()
 
 wireControls()
+syncControls()
 void hydrateBattleLines()
 
 function wireControls(): void {
   document.querySelectorAll<HTMLButtonElement>('[data-battle-metric]').forEach((button) => {
     button.addEventListener('click', () => {
-      state.metric = button.dataset.battleMetric || 'viewers'
-      document.querySelectorAll<HTMLButtonElement>('[data-battle-metric]').forEach((node) => node.classList.toggle('active', node === button))
+      state.metric = normalizeMetric(button.dataset.battleMetric)
+      syncControls()
+      writeDeepLinkState()
       void hydrateBattleLines()
     })
   })
   document.querySelector<HTMLElement>('[data-battle-refresh]')?.addEventListener('click', () => { void hydrateBattleLines() })
+}
+
+function readInitialState(): { metric: string } {
+  const params = new URLSearchParams(window.location.search)
+  return { metric: normalizeMetric(params.get('metric')) }
+}
+
+function syncControls(): void {
+  document.querySelectorAll<HTMLButtonElement>('[data-battle-metric]').forEach((button) => {
+    button.classList.toggle('active', normalizeMetric(button.dataset.battleMetric) === state.metric)
+  })
+}
+
+function writeDeepLinkState(): void {
+  const params = new URLSearchParams(window.location.search)
+  params.set('metric', state.metric)
+  history.replaceState(null, '', `${window.location.pathname}?${params.toString()}${window.location.hash}`)
 }
 
 async function hydrateBattleLines(): Promise<void> {
@@ -129,6 +148,7 @@ function renderError(message: string): void {
   if (stage) stage.innerHTML = `<div class="notice">Battle Lines API unavailable: ${escapeHtml(message)}</div>`
 }
 
+function normalizeMetric(input: string | null | undefined): string { return input === 'indexed' ? 'indexed' : 'viewers' }
 function normalizePoints(line: BattleLine): BattleLinePoint[] { return Array.isArray(line.points) ? line.points : Array.isArray(line.buckets) ? line.buckets : [] }
 function isObservedPoint(point: BattleLinePoint): boolean { return point.observed !== false && !['missing', 'offline', 'not_observed'].includes(String(point.state ?? '').toLowerCase()) }
 function pointValue(point: BattleLinePoint): number { const value = point.viewers ?? point.value ?? 0; return typeof value === 'number' && Number.isFinite(value) ? value : 0 }
