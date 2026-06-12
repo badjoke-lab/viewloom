@@ -104,6 +104,16 @@ jobs:
           cat content-qa.log
           exit $status
 
+      - name: Verify SEO QA contract
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-seo-qa.mjs > seo-qa.log 2>&1
+          status=$?
+          cat seo-qa.log
+          exit $status
+
       - name: Upload web verification logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -118,3 +128,4 @@ jobs:
             apps/web/status-qa.log
             apps/web/home-qa.log
             apps/web/content-qa.log
+            apps/web/seo-qa.log
