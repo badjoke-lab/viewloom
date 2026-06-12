@@ -52,7 +52,7 @@ for (const path of pages) {
   requireFragment(path, source, 'mobile-menu mobile-only')
   requireFragment(path, source, 'data-mobile-menu')
   requireFragment(path, source, 'aria-label="Open navigation"')
-  requirePattern(path, source, 'page shell', /class="page(\s|--)/)
+  requirePattern(path, source, 'page shell', /class="[^"]*\bpage\b/)
   requireFragment(path, source, 'class="footer"')
 }
 
