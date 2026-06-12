@@ -31,28 +31,57 @@ type DayFlowPayload = {
 
 const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
 const endpoint = provider === 'kick' ? '/api/kick-day-flow' : '/api/day-flow'
-const state = { metric: 'volume', top: 20, bucket: 5 }
+const state = readInitialState()
 
-void hydrateDayFlow()
 wireControls()
+syncControls()
+void hydrateDayFlow()
 
 function wireControls(): void {
   document.querySelectorAll<HTMLButtonElement>('[data-dayflow-metric]').forEach((button) => {
     button.addEventListener('click', () => {
       state.metric = button.dataset.dayflowMetric === 'share' ? 'share' : 'volume'
-      markActive('[data-dayflow-metric]', button)
+      syncControls()
+      writeDeepLinkState()
       void hydrateDayFlow()
     })
   })
   document.querySelectorAll<HTMLButtonElement>('[data-dayflow-top]').forEach((button) => {
     button.addEventListener('click', () => {
       const parsed = Number(button.dataset.dayflowTop)
-      state.top = Number.isFinite(parsed) ? parsed : 20
-      markActive('[data-dayflow-top]', button)
+      state.top = normalizeTop(parsed)
+      syncControls()
+      writeDeepLinkState()
       void hydrateDayFlow()
     })
   })
   document.querySelector<HTMLElement>('[data-dayflow-refresh]')?.addEventListener('click', () => { void hydrateDayFlow() })
+}
+
+function readInitialState(): { metric: string; top: number; bucket: number } {
+  const params = new URLSearchParams(window.location.search)
+  return {
+    metric: params.get('metric') === 'share' ? 'share' : 'volume',
+    top: normalizeTop(Number(params.get('top') ?? 20)),
+    bucket: normalizeBucket(Number(params.get('bucket') ?? 5)),
+  }
+}
+
+function syncControls(): void {
+  document.querySelectorAll<HTMLButtonElement>('[data-dayflow-metric]').forEach((button) => {
+    button.classList.toggle('active', button.dataset.dayflowMetric === state.metric)
+  })
+  document.querySelectorAll<HTMLButtonElement>('[data-dayflow-top]').forEach((button) => {
+    button.classList.toggle('active', Number(button.dataset.dayflowTop) === state.top)
+  })
+}
+
+function writeDeepLinkState(): void {
+  const params = new URLSearchParams(window.location.search)
+  params.set('metric', state.metric)
+  params.set('top', String(state.top))
+  params.set('bucket', String(state.bucket))
+  history.replaceState(null, '', `${window.location.pathname}?${params.toString()}${window.location.hash}`)
 }
 
 async function hydrateDayFlow(): Promise<void> {
@@ -145,15 +174,12 @@ function renderError(message: string): void {
   if (stage) stage.innerHTML = `<div class="notice">Day Flow API unavailable: ${escapeHtml(message)}</div>`
 }
 
-function markActive(selector: string, active: HTMLButtonElement): void {
-  document.querySelectorAll<HTMLButtonElement>(selector).forEach((button) => button.classList.toggle('active', button === active))
-}
-
+function normalizeTop(value: number): number { return [10, 20, 50].includes(value) ? value : 20 }
+function normalizeBucket(value: number): number { return [5, 10].includes(value) ? value : 5 }
 function viewerAt(band: DayFlowBand, index: number): number {
   const value = band.buckets?.[index]?.viewers ?? 0
   return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, value) : 0
 }
-
 function x(index: number, count: number, chartW: number, left: number): number { return left + (count <= 1 ? 0 : (index / (count - 1)) * chartW) }
 function y(value: number, max: number, chartH: number, top: number): number { return top + chartH - (value / max) * chartH }
 function fill(index: number): string { return ['#223d50', '#385d4e', '#80653a', '#744740', '#514a72', '#26547c', '#4f6f52', '#8a5a44'][index % 8] }
