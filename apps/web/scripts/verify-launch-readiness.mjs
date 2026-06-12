@@ -49,6 +49,7 @@ const qaContracts = [
   'docs/mobile-qa-contract.md',
   'docs/state-qa-contract.md',
   'docs/launch-readiness-contract.md',
+  'docs/launch-snapshot-handoff.md',
 ]
 
 const requiredLogs = [
@@ -139,6 +140,16 @@ if (!existsSync(join(root, launchContractPath))) {
   const source = read(launchContractPath)
   for (const fragment of ['Public page inventory', 'Required QA gates', 'Required artifacts', 'Launch posture']) {
     if (!source.includes(fragment)) failures.push(`${launchContractPath}: missing launch contract fragment ${fragment}`)
+  }
+}
+
+const handoffPath = 'docs/launch-snapshot-handoff.md'
+if (!existsSync(join(root, handoffPath))) {
+  failures.push(`${handoffPath}: missing launch snapshot handoff`)
+} else {
+  const source = read(handoffPath)
+  for (const fragment of ['Current baseline', 'Public page inventory', 'Active QA gates', 'Next PR schedule', 'Rules for future work']) {
+    if (!source.includes(fragment)) failures.push(`${handoffPath}: missing handoff fragment ${fragment}`)
   }
 }
 
