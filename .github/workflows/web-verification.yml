@@ -114,6 +114,16 @@ jobs:
           cat seo-qa.log
           exit $status
 
+      - name: Verify Mobile QA contract
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-mobile-qa.mjs > mobile-qa.log 2>&1
+          status=$?
+          cat mobile-qa.log
+          exit $status
+
       - name: Upload web verification logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -129,3 +139,4 @@ jobs:
             apps/web/home-qa.log
             apps/web/content-qa.log
             apps/web/seo-qa.log
+            apps/web/mobile-qa.log
