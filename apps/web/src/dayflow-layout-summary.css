@@ -1,7 +1,7 @@
 .dayflow-layout-shell {
   display: grid;
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .dayflow-layout-shell > * {
@@ -9,7 +9,9 @@
 }
 
 .dayflow-layout-shell.is-split {
+  --dayflow-split-height: clamp(680px, 74vh, 820px);
   grid-template-columns: minmax(0, 1.72fr) minmax(360px, .78fr);
+  grid-template-rows: var(--dayflow-split-height);
 }
 
 .dayflow-layout-shell.is-wide {
@@ -20,45 +22,186 @@
   margin-top: 0;
 }
 
+.dayflow-layout-shell.is-split > section,
 .dayflow-layout-shell.is-split .dayflow-wide-sections {
-  grid-template-columns: minmax(0, 1fr);
-  position: sticky;
-  top: 68px;
-  max-height: calc(100vh - 86px);
-  overflow: auto;
-  scrollbar-width: thin;
+  min-height: 0;
+  height: var(--dayflow-split-height);
+}
+
+.dayflow-layout-shell.is-split > section {
+  display: flex;
 }
 
 .dayflow-layout-shell.is-split .dayflow-stage {
-  height: min(76vh, 820px);
-  min-height: 620px;
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
 }
 
-.dayflow-layout-shell.is-split .time-focus-row {
-  grid-template-columns: 24px minmax(92px, 1fr) 62px 54px;
-  gap: 7px;
-  padding: 10px 6px;
+.dayflow-layout-shell.is-split .dayflow-wide-sections {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(250px, auto) minmax(0, 1fr);
+  gap: 16px;
+  position: sticky;
+  top: 68px;
+  overflow: visible;
 }
 
-.dayflow-layout-shell.is-split .time-focus-row span:nth-of-type(n+5) {
-  display: none;
+/* Split order: Selected streamer first, Time Focus second. */
+.dayflow-layout-shell.is-split .dayflow-wide-sections > .surface:first-child {
+  order: 2;
 }
 
+.dayflow-layout-shell.is-split .dayflow-wide-sections > .surface:last-child {
+  order: 1;
+}
+
+.dayflow-layout-shell.is-split .dayflow-wide-sections > .surface {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.dayflow-layout-shell.is-split .dayflow-wide-sections > .surface .surface__body {
+  min-height: 0;
+}
+
+/* Compact Selected streamer so the full right rail fits beside the chart. */
 .dayflow-layout-shell.is-split .stream-detail-head {
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  margin-bottom: 10px;
 }
 
 .dayflow-layout-shell.is-split .stream-detail-head h2 {
-  font-size: clamp(24px, 2.2vw, 34px);
+  max-width: 100%;
+  margin: 3px 0 5px;
+  font-size: clamp(22px, 2vw, 32px);
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-head p {
+  display: -webkit-box;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .dayflow-layout-shell.is-split .stream-detail-now {
-  margin-top: 12px;
-  text-align: left;
+  margin-top: 0;
+  text-align: right;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-now strong {
+  font-size: 26px;
 }
 
 .dayflow-layout-shell.is-split .stream-detail-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.dayflow-layout-shell.is-split .stream-detail-grid div {
+  padding: 8px 7px;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-grid dt {
+  font-size: 8px;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-grid dd {
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-actions {
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-actions .button {
+  min-height: 32px;
+  padding: 7px 10px;
+  font-size: 11px;
+}
+
+/* Time Focus consumes the remaining height without its own scrollbar. */
+.dayflow-layout-shell.is-split .dayflow-wide-sections > .surface:first-child .surface__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dayflow-layout-shell.is-split .time-focus-head {
+  flex: 0 0 auto;
+  margin-bottom: 8px;
+}
+
+.dayflow-layout-shell.is-split .time-focus-head strong {
+  font-size: 16px;
+}
+
+.dayflow-layout-shell.is-split .time-focus-list {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  min-height: 0;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row {
+  grid-template-columns: 22px minmax(0, 1fr) 62px 46px;
+  grid-template-areas:
+    "rank name viewers share"
+    ". gap delta movement";
+  grid-template-rows: auto auto;
+  gap: 2px 7px;
+  min-height: 0;
+  padding: 7px 6px 8px;
+  align-content: center;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row .rank {
+  grid-area: rank;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row strong {
+  grid-area: name;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row .time-focus-value {
+  grid-area: viewers;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row span:nth-of-type(3) {
+  grid-area: share;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row span:nth-of-type(4) {
+  grid-area: gap;
+  color: var(--muted);
+}
+
+.dayflow-layout-shell.is-split .time-focus-row span:nth-of-type(5) {
+  grid-area: delta;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row span:nth-of-type(6) {
+  grid-area: movement;
+  text-align: right;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row span:nth-of-type(n+4) {
+  font-size: 10px;
 }
 
 .dayflow-summary-overview {
@@ -199,6 +342,10 @@
     grid-template-columns: minmax(0, 1.48fr) minmax(330px, .82fr);
   }
 
+  .dayflow-layout-shell.is-split .stream-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .dayflow-summary-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -209,18 +356,50 @@
   .dayflow-layout-shell.is-split,
   .dayflow-layout-shell.is-wide {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+  }
+
+  .dayflow-layout-shell.is-split > section,
+  .dayflow-layout-shell.is-split .dayflow-wide-sections {
+    height: auto;
   }
 
   .dayflow-layout-shell.is-split .dayflow-wide-sections {
     position: static;
-    max-height: none;
     overflow: visible;
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+  }
+
+  .dayflow-layout-shell.is-split .dayflow-wide-sections > .surface:first-child,
+  .dayflow-layout-shell.is-split .dayflow-wide-sections > .surface:last-child {
+    order: initial;
   }
 
   .dayflow-layout-shell.is-split .dayflow-stage {
     height: 520px;
     min-height: 460px;
+  }
+
+  .dayflow-layout-shell.is-split .dayflow-wide-sections > .surface:first-child .surface__body {
+    display: block;
+    overflow: visible;
+  }
+
+  .dayflow-layout-shell.is-split .time-focus-list {
+    display: block;
+  }
+
+  .dayflow-layout-shell.is-split .time-focus-row {
+    grid-template-columns: 25px minmax(100px, 1fr) 64px 56px;
+    grid-template-areas: none;
+    grid-template-rows: auto;
+    gap: 9px;
+    padding: 11px 8px;
+  }
+
+  .dayflow-layout-shell.is-split .time-focus-row > * {
+    grid-area: auto !important;
   }
 
   [data-dayflow-layout-stack] {
