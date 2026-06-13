@@ -42,7 +42,7 @@ for (const behavior of [
   'data-battle-event-index',
   'state.manualBattle',
   'history.replaceState',
-  "window.setInterval",
+  'window.setInterval',
 ]) assert.ok(ui.includes(behavior), `UI behavior missing: ${behavior}`)
 
 assert.ok(!ui.includes('.filter(isObservedPoint)'), 'UI must not delete timeline gaps')
