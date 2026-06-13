@@ -1,0 +1,63 @@
+.battle-controls{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-end;
+  gap:12px;
+  overflow:visible;
+}
+
+.battle-control{
+  flex:0 0 auto;
+}
+
+.battle-control:first-child{
+  min-width:292px;
+}
+
+.battle-control__row{
+  flex-wrap:nowrap;
+}
+
+.battle-control input[hidden]{
+  display:none !important;
+}
+
+.battle-actions{
+  margin-left:auto;
+  flex:0 0 auto;
+}
+
+.battle-stage:has(> .notice){
+  min-height:0 !important;
+}
+
+.battle-stage:has(> .notice) > .notice{
+  min-height:88px;
+  display:flex;
+  align-items:center;
+}
+
+@media(max-width:1100px){
+  .battle-actions{
+    width:100%;
+    margin-left:0;
+    justify-content:flex-start;
+  }
+}
+
+@media(max-width:760px){
+  .battle-controls{
+    display:flex;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+  }
+
+  .battle-control:first-child{
+    min-width:0;
+  }
+
+  .battle-actions{
+    width:auto;
+    flex-wrap:nowrap;
+  }
+}
