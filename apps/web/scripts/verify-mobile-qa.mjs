@@ -57,29 +57,31 @@ for (const path of pages) {
 }
 
 for (const path of featurePages.filter((path) => existsSync(join(root, path)))) {
-  const source = read(path)
-  requireFragment(path, source, 'class="feature-tabs"')
+  requireFragment(path, read(path), 'class="feature-tabs"')
 }
 
 for (const path of visualPages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
-  requireFragment(path, source, 'class="layout-split"')
+  if (path.includes('/day-flow/')) {
+    requirePattern(path, source, 'Wide-first Day Flow shell', /class="[^"]*\bdayflow-wide-sections\b/)
+    requirePattern(path, source, 'mobile Day Flow breakpoint', /@media\(max-width:760px\)/)
+    requirePattern(path, source, 'touch scrubbing surface', /touch-action:none/)
+  } else {
+    requireFragment(path, source, 'class="layout-split"')
+  }
 }
 
 for (const path of toolbarPages.filter((path) => existsSync(join(root, path)))) {
-  const source = read(path)
-  requireFragment(path, source, 'class="toolbar"')
+  requirePattern(path, read(path), 'toolbar class', /class="[^"]*\btoolbar\b/)
 }
 
 for (const path of ledgerPages.filter((path) => existsSync(join(root, path)))) {
-  const source = read(path)
-  requireFragment(path, source, 'class="metric-ledger')
+  requireFragment(path, read(path), 'class="metric-ledger')
 }
 
 for (const path of ['twitch/heatmap/index.html', 'kick/heatmap/index.html']) {
   if (!existsSync(join(root, path))) continue
-  const source = read(path)
-  requireFragment(path, source, 'class="heatmap-wrap')
+  requireFragment(path, read(path), 'class="heatmap-wrap')
 }
 
 const cssPath = 'src/mock-site.css'
@@ -115,4 +117,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom Mobile QA verification passed for ${pages.length} public pages.`)
+console.log(`ViewLoom Mobile QA verification passed for ${pages.length} public pages, including Wide-first Day Flow.`)
