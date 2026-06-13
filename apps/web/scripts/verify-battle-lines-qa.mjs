@@ -34,8 +34,13 @@ for (const path of battlePages.filter((path) => existsSync(join(root, path)))) {
   requireFragment(path, source, 'data-battle-feed')
   requireFragment(path, source, 'data-battle-metric="viewers"')
   requireFragment(path, source, 'data-battle-refresh')
+  requireFragment(path, source, '<strong>Selection</strong>')
+  requireFragment(path, source, '.battle-legend__item')
+  requireFragment(path, source, '.battle-cursor line')
+  requireFragment(path, source, '.event-item')
   forbidPattern(path, source, 'static legacy Battle Lines SVG', /<svg viewBox="0 0 1210 560"/)
   forbidPattern(path, source, 'static Stream tile labels', /data-name="Stream [A-Z]"|>Stream [A-Z]</)
+  forbidPattern(path, source, 'old primary battle shell heading', /<strong>Primary battle<\/strong>/)
 }
 
 if (existsSync(join(root, entryPath))) {
@@ -49,11 +54,25 @@ if (existsSync(join(root, entryPath))) {
   requireFragment(entryPath, source, 'renderChart(payload)')
   requireFragment(entryPath, source, 'renderFeed(payload)')
   requireFragment(entryPath, source, 'renderError(')
+  requireFragment(entryPath, source, 'selectedLineId')
+  requireFragment(entryPath, source, 'selectedPointIndex')
+  requireFragment(entryPath, source, 'data-battle-chart')
+  requireFragment(entryPath, source, 'data-battle-line')
+  requireFragment(entryPath, source, 'data-battle-legend')
+  requireFragment(entryPath, source, 'bindChartInteraction(payload')
+  requireFragment(entryPath, source, 'bindLegendInteraction(payload)')
+  requireFragment(entryPath, source, 'bindLineInteraction(payload)')
+  requireFragment(entryPath, source, "chart.addEventListener('click'")
+  requireFragment(entryPath, source, 'battle-cursor')
+  requireFragment(entryPath, source, 'Selected stream')
+  requireFragment(entryPath, source, 'Nearest line')
+  requireFragment(entryPath, source, 'dedupeEvents(')
   requireFragment(entryPath, source, 'isObservedPoint')
   requireFragment(entryPath, source, 'missing')
   requireFragment(entryPath, source, 'offline')
   requireFragment(entryPath, source, 'not_observed')
   forbidPattern(entryPath, source, 'app-root rewrite renderer', /document\.querySelector<HTMLElement>\('\#app'\)/)
+  forbidPattern(entryPath, source, 'old concatenated text legend', /<span><i style="background:/)
 }
 
 if (existsSync(join(root, contractPath))) {
@@ -69,4 +88,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom Battle Lines QA verification passed for ${battlePages.length} Battle Lines pages.`)
+console.log(`ViewLoom Battle Lines QA verification passed for ${battlePages.length} selectable Battle Lines pages.`)
