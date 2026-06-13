@@ -91,7 +91,7 @@ function renderChart(payload: BattlePayload): void {
   if (!stage) return
   const lines = visibleLines(payload)
   if (lines.length === 0) {
-    stage.innerHTML = '<div class="notice">No connected Battle Lines can be drawn for this observed window.</div>'
+    stage.innerHTML = '<div class="notice">No primary battle is available for this observed window.</div>'
     return
   }
 
@@ -169,7 +169,7 @@ function renderSummary(payload: BattlePayload): void {
   const lines = visibleLines(payload)
   const selected = currentLine(lines)
   if (!selected) {
-    target.innerHTML = '<p>No selectable stream is available for this observed window.</p>'
+    target.innerHTML = '<p>No primary battle is available for this observed window.</p>'
     return
   }
   const selectedIndex = Math.max(0, state.selectedPointIndex)
@@ -185,7 +185,7 @@ function renderFeed(payload: BattlePayload): void {
   if (!target) return
   const events = dedupeEvents([...(payload.events ?? []), ...(payload.reversals ?? []), ...(payload.feed ?? [])]).slice(0, 6)
   if (events.length === 0) {
-    target.innerHTML = '<p>No distinct reversals or notable deltas were detected in this observed window.</p>'
+    target.innerHTML = '<p>No reversals or notable deltas were detected in this observed window.</p>'
     return
   }
   target.innerHTML = events.map((event) => `<article class="event-item"><strong>${escapeHtml(event.title ?? event.label ?? label(event.type ?? 'event'))}</strong><span>${escapeHtml(time(event.at ?? event.timestamp ?? event.bucket))}</span>${event.summary ? `<p>${escapeHtml(event.summary)}</p>` : ''}</article>`).join('')
