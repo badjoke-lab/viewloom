@@ -23,7 +23,7 @@ jobs:
 
       - name: Verify Cloudflare branch preview
         env:
-          PREVIEW_BASE: https://fix-day-flow-complete.viewloom.pages.dev
+          PREVIEW_BASE: https://ab157069.viewloom.pages.dev
         run: |
           set -o pipefail
           python apps/web/scripts/dayflow-preview-qa.py 2>&1 | tee /tmp/dayflow-preview-qa.log
