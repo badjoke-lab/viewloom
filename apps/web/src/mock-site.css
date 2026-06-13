@@ -140,8 +140,13 @@ h3{font-size:16px;margin-bottom:8px}
 .dayflow-stage svg text,.battle-stage svg text,.history-stage svg text{fill:var(--muted);font-family:var(--mono)}
 .chart-grid line{stroke:rgba(159,176,202,.18);stroke-width:1}
 .chart-axis{font:10px var(--mono);fill:var(--muted)}
+.dayflow-stage polygon{cursor:pointer}.dayflow-stage polygon:hover{filter:brightness(1.18)}
+.dayflow-cursor line{stroke:var(--text);stroke-width:2;stroke-dasharray:6 6;opacity:.78}.dayflow-cursor text{font:700 11px var(--mono);fill:var(--text)}
+.selected-stream{border:1px solid var(--line-strong);background:rgba(255,255,255,.025);padding:12px;margin-bottom:12px;display:grid;gap:6px;font-size:13px;line-height:1.35}.selected-stream strong{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px}
 .focus-table{border-top:1px solid var(--line-strong)}
-.focus-row{display:grid;grid-template-columns:36px 1fr 120px 80px;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);align-items:center;font-size:12px}
+.focus-row{display:grid;grid-template-columns:32px minmax(0,1fr) 96px 64px;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);align-items:center;font-size:12px;cursor:pointer}
+.focus-row:hover,.focus-row.active{background:rgba(255,255,255,.035)}
+.focus-row strong{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar{height:6px;background:#18263b;position:relative}
 .bar i{display:block;height:100%;background:var(--accent)}
 .battle-summary{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line-strong);padding:14px 0;margin-bottom:14px}
@@ -199,7 +204,7 @@ h3{font-size:16px;margin-bottom:8px}
   .feature-directory{grid-template-columns:1fr 1fr}.feature-item{min-height:130px;padding:14px}
   .heatmap-wrap{height:62vh;min-height:430px}.heatmap-grid{grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(10,1fr)}
   .dayflow-stage,.battle-stage,.history-stage{height:430px}
-  .focus-row{grid-template-columns:28px 1fr 76px}.focus-row>:last-child{display:none}
+  .focus-row{grid-template-columns:28px minmax(0,1fr) 76px}.focus-row>:last-child{display:none}
   .battle-summary{grid-template-columns:1fr auto 1fr}.competitor strong{font-size:19px}
   .period-summary{grid-template-columns:1fr 1fr}.period-summary .lead-stat{grid-column:span 2}.period-summary>div{min-height:98px}
   .daily-archive{grid-template-columns:1fr}.status-board{grid-template-columns:1fr 1fr}
