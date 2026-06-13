@@ -22,64 +22,88 @@ function forbidPattern(path, source, label, pattern) {
 
 const battlePages = ['twitch/battle-lines/index.html', 'kick/battle-lines/index.html']
 const entryPath = 'src/live/battle-lines-current-shell-entry.ts'
+const stylePath = 'src/live/battle-lines-wide.css'
 const contractPath = 'docs/battle-lines-qa-contract.md'
 
-for (const path of [...battlePages, entryPath, contractPath]) requireFile(path)
+for (const path of [...battlePages, entryPath, stylePath, contractPath]) requireFile(path)
 
 for (const path of battlePages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
-  requireFragment(path, source, '/src/live/battle-lines-current-shell-entry.ts')
-  requireFragment(path, source, 'class="battle-stage"')
-  requireFragment(path, source, 'data-battle-summary')
-  requireFragment(path, source, 'data-battle-feed')
-  requireFragment(path, source, 'data-battle-metric="viewers"')
-  requireFragment(path, source, 'data-battle-refresh')
-  requireFragment(path, source, '<strong>Selection</strong>')
-  requireFragment(path, source, '.battle-legend__item')
-  requireFragment(path, source, '.battle-cursor line')
-  requireFragment(path, source, '.event-item')
+  for (const fragment of [
+    '/src/live/battle-lines-current-shell-entry.ts',
+    '/src/live/battle-lines-wide.css',
+    'class="battle-stage"',
+    'data-battle-primary',
+    'data-battle-inspector',
+    'data-battle-reversals',
+    'data-battle-secondary',
+    'data-battle-feed',
+    'data-battle-coverage',
+    'data-battle-range="today"',
+    'data-battle-range="yesterday"',
+    'data-battle-date',
+    'data-battle-metric="viewers"',
+    'data-battle-metric="indexed"',
+    'data-battle-top="3"',
+    'data-battle-top="5"',
+    'data-battle-top="10"',
+    'data-battle-bucket="5m"',
+    'data-battle-bucket="10m"',
+    'data-battle-recommended',
+    'data-battle-latest',
+    'data-battle-refresh',
+  ]) requireFragment(path, source, fragment)
+  forbidPattern(path, source, 'obsolete Split layout', /layout-split/)
   forbidPattern(path, source, 'static legacy Battle Lines SVG', /<svg viewBox="0 0 1210 560"/)
   forbidPattern(path, source, 'static Stream tile labels', /data-name="Stream [A-Z]"|>Stream [A-Z]</)
-  forbidPattern(path, source, 'old primary battle shell heading', /<strong>Primary battle<\/strong>/)
 }
 
 if (existsSync(join(root, entryPath))) {
   const source = read(entryPath)
-  requireFragment(entryPath, source, "provider === 'kick' ? '/api/kick-battle-lines' : '/api/battle-lines'")
-  requireFragment(entryPath, source, 'data-battle-metric')
-  requireFragment(entryPath, source, 'data-battle-refresh')
-  requireFragment(entryPath, source, 'cache: \'no-store\'')
-  requireFragment(entryPath, source, 'renderLoading()')
-  requireFragment(entryPath, source, 'renderSummary(payload)')
-  requireFragment(entryPath, source, 'renderChart(payload)')
-  requireFragment(entryPath, source, 'renderFeed(payload)')
-  requireFragment(entryPath, source, 'renderError(')
-  requireFragment(entryPath, source, 'selectedLineId')
-  requireFragment(entryPath, source, 'selectedPointIndex')
-  requireFragment(entryPath, source, 'data-battle-chart')
-  requireFragment(entryPath, source, 'data-battle-line')
-  requireFragment(entryPath, source, 'data-battle-legend')
-  requireFragment(entryPath, source, 'bindChartInteraction(payload')
-  requireFragment(entryPath, source, 'bindLegendInteraction(payload)')
-  requireFragment(entryPath, source, 'bindLineInteraction(payload)')
-  requireFragment(entryPath, source, "chart.addEventListener('click'")
-  requireFragment(entryPath, source, 'battle-cursor')
-  requireFragment(entryPath, source, 'Selected stream')
-  requireFragment(entryPath, source, 'Nearest line')
-  requireFragment(entryPath, source, 'dedupeEvents(')
-  requireFragment(entryPath, source, 'isObservedPoint')
-  requireFragment(entryPath, source, 'missing')
-  requireFragment(entryPath, source, 'offline')
-  requireFragment(entryPath, source, 'not_observed')
+  for (const fragment of [
+    "provider === 'kick' ? '/api/kick-battle-lines' : '/api/battle-lines'",
+    'cache: \'no-store\'',
+    'renderPrimary(payload)',
+    'renderChart(payload)',
+    'renderInspector(payload)',
+    'renderReversals(payload)',
+    'renderSecondary(payload)',
+    'renderFeed(payload)',
+    'renderCoverage(payload)',
+    'selectedBattleId',
+    'selectedLineId',
+    'selectedIndex',
+    'manualBattle',
+    'followLatest',
+    'data-battle-chart',
+    'data-battle-line-select',
+    'data-battle-event-index',
+    'lineSegments(',
+    'gapBand(',
+    'chart.addEventListener(\'pointerdown\'',
+    "event.key === 'ArrowLeft'",
+    "event.key === 'ArrowRight'",
+    "event.key === 'Home'",
+    "event.key === 'End'",
+    'history.replaceState',
+    'window.setInterval',
+    'missing',
+    'offline',
+    'not_observed',
+  ]) requireFragment(entryPath, source, fragment)
+  forbidPattern(entryPath, source, 'per-line point deletion before comparison', /\.filter\(isObservedPoint\)/)
   forbidPattern(entryPath, source, 'app-root rewrite renderer', /document\.querySelector<HTMLElement>\('\#app'\)/)
-  forbidPattern(entryPath, source, 'old concatenated text legend', /<span><i style="background:/)
+  forbidPattern(entryPath, source, 'old selected-stream inspector', /Selected stream|Nearest line/)
+}
+
+if (existsSync(join(root, stylePath))) {
+  const source = read(stylePath)
+  for (const fragment of ['.battle-controls', '.battle-primary', '.battle-chart-wrap', '.battle-gap-band', '.battle-inspector', '.reversal-strip', '.secondary-grid', '.event-feed', '@media(max-width:760px)']) requireFragment(stylePath, source, fragment)
 }
 
 if (existsSync(join(root, contractPath))) {
   const source = read(contractPath)
-  requireFragment(contractPath, source, 'current-shell live entry')
-  requireFragment(contractPath, source, 'static SVG-only Battle Lines chart')
-  requireFragment(contractPath, source, 'not-observed points must not be connected')
+  for (const fragment of ['Wide-first rivalry workspace', 'shared UTC bucket timeline', 'not-observed points must not be connected', 'selected-time cursor', 'Reversal strip', 'Secondary battles']) requireFragment(contractPath, source, fragment)
 }
 
 if (failures.length > 0) {
@@ -88,4 +112,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom Battle Lines QA verification passed for ${battlePages.length} selectable Battle Lines pages.`)
+console.log(`ViewLoom Battle Lines QA verification passed for ${battlePages.length} Wide rivalry workspaces.`)

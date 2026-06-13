@@ -4,34 +4,43 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kick Battle Lines — ViewLoom</title>
-  <meta name="description" content="Compare observed Kick live-stream rivals through ViewLoom Battle Lines." />
+  <meta name="description" content="Inspect Kick audience rivalries, reversals, gaps, and momentum." />
   <link rel="canonical" href="https://vl.badjoke-lab.com/kick/battle-lines/" />
   <meta property="og:site_name" content="ViewLoom" />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://vl.badjoke-lab.com/kick/battle-lines/" />
   <meta property="og:title" content="Kick Battle Lines — ViewLoom" />
-  <meta property="og:description" content="Compare observed Kick live-stream rivals through ViewLoom Battle Lines." />
+  <meta property="og:description" content="Inspect Kick audience rivalries, reversals, gaps, and momentum." />
   <meta property="og:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
   <meta name="twitter:title" content="Kick Battle Lines — ViewLoom" />
-  <meta name="twitter:description" content="Compare observed Kick live-stream rivals through ViewLoom Battle Lines." />
+  <meta name="twitter:description" content="Inspect Kick audience rivalries, reversals, gaps, and momentum." />
   <link rel="stylesheet" href="/src/mock-site.css" />
-  <style>
-    .battle-stage{display:flex;flex-direction:column}.battle-stage svg{flex:1 1 auto;min-height:0}.battle-legend{display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);background:rgba(5,11,20,.92)}.battle-legend__item{display:inline-flex;align-items:center;gap:8px;min-width:0;max-width:260px;padding:7px 10px;border:1px solid var(--line-strong);background:var(--surface);color:var(--muted)}.battle-legend__item:hover,.battle-legend__item.active{color:var(--text);border-color:var(--accent);background:var(--surface-raised)}.battle-legend__item i{width:10px;height:10px;border-radius:50%;flex:0 0 auto}.battle-legend__item span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.battle-line{cursor:pointer;opacity:.72}.battle-line:hover,.battle-line.selected{opacity:1}.battle-cursor line{stroke:var(--text);stroke-width:2;stroke-dasharray:6 6;opacity:.8}.battle-cursor text{font:700 11px var(--mono);fill:var(--text)}[data-battle-summary] h2{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.event-feed{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border-top:0}.event-item{padding:14px;border:1px solid var(--line-strong);background:var(--surface)}.event-item strong{display:block;margin-bottom:6px}.event-item span{display:block;color:var(--muted);font:700 10px var(--mono);margin-bottom:8px}.event-item p{margin:0;color:#c7d2e3;font-size:13px;line-height:1.5}@media(max-width:760px){.battle-legend{flex-wrap:nowrap;overflow-x:auto}.battle-legend__item{flex:0 0 auto;max-width:220px}.event-feed{grid-template-columns:1fr}}
-  </style>
+  <link rel="stylesheet" href="/src/live/battle-lines-wide.css" />
 </head>
-<body data-provider="kick"><div class="site-frame"><header class="masthead"><div class="masthead__inner">
-<a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
-<nav class="global-nav"><a href="/">Portal</a><a href="/twitch/">Twitch data</a><a href="/kick/" aria-current="page">Kick data</a><a href="/about/">About</a><a href="/support/">Support</a></nav><div class="status-inline"><span class="dot"></span>Collector status loading · 5m cadence</div>
-<button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button>
-</div></header><main class="page page--full"><div class="breadcrumb">ViewLoom / Kick data / Battle Lines</div><nav class="feature-tabs"><a href="/kick/heatmap/">Heatmap</a><a href="/kick/day-flow/">Day Flow</a><a class="active" href="/kick/battle-lines/">Battle Lines</a><a href="/kick/history/">History</a><a href="/kick/status/">Status</a></nav>
-<section class="page-head"><div><div class="kicker">KICK DATA · RIVALRY</div><h1>Battle Lines</h1><p class="lede">Compare observed live-stream audience lines without connecting missing, offline, or not-observed points.</p></div><div class="head-facts"><div class="fact"><small>State</small><strong>—</strong></div><div class="fact"><small>Metric</small><strong>Viewers</strong></div><div class="fact"><small>Lines</small><strong>—</strong></div><div class="fact"><small>Updated</small><strong>—</strong></div></div></section>
-<div class="data-strip"><div class="data-strip__title">Kick observation</div><div class="data-strip__cell"><small>Updated</small>—</div><div class="data-strip__cell"><small>Lines</small>—</div><div class="data-strip__cell"><small>Points</small>—</div><div class="data-strip__cell"><small>Source</small>API</div></div>
-<div class="toolbar"><span class="toolbar-label">Metric</span><div class="control-group"><button class="active" data-battle-metric="viewers">Viewers</button><button data-battle-metric="indexed">Indexed</button></div><button class="button button--quiet" data-battle-refresh>Refresh</button></div>
-<div class="layout-split"><section><div class="battle-stage"><div class="notice">Loading Kick Battle Lines…</div></div></section><aside class="surface inspector"><div class="surface__head"><strong>Selection</strong><small>Observed</small></div><div class="surface__body" data-battle-summary><p>Loading selected stream details…</p></div></aside></div>
-<div class="rule-title"><h2>Event feed</h2><span>Distinct observed changes</span></div><div class="event-feed" data-battle-feed><p>Loading Battle Lines events…</p></div>
-</main><footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method & limits</a><a href="/support/">Support</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer></div><script type="module" src="/src/mock-site.ts"></script>
-<script type="module" src="/src/live/battle-lines-current-shell-entry.ts"></script>
-<script type="module" src="/src/analytics.ts"></script></body>
+<body data-provider="kick"><div class="site-frame">
+<header class="masthead"><div class="masthead__inner"><a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a><nav class="global-nav"><a href="/">Portal</a><a href="/twitch/">Twitch data</a><a href="/kick/" aria-current="page">Kick data</a><a href="/about/">About</a><a href="/support/">Support</a></nav><div class="status-inline"><span class="dot"></span>Collector status loading · 5m cadence</div><button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button></div></header>
+<main class="page page--full">
+<div class="breadcrumb">ViewLoom / Kick data / Battle Lines</div>
+<nav class="feature-tabs"><a href="/kick/heatmap/">Heatmap</a><a href="/kick/day-flow/">Day Flow</a><a class="active" href="/kick/battle-lines/">Battle Lines</a><a href="/kick/history/">History</a><a href="/kick/status/">Status</a></nav>
+<section class="page-head"><div><div class="kicker">KICK DATA · RIVALRY RADAR</div><h1>Battle Lines</h1><p class="lede">Find the battles worth watching, then inspect who led, when the gap changed, and where reversals occurred.</p></div><div class="head-facts"><div class="fact"><small>State</small><strong>Loading</strong></div><div class="fact"><small>Coverage</small><strong>—</strong></div><div class="fact"><small>Date</small><strong>—</strong></div><div class="fact"><small>Updated</small><strong>—</strong></div></div></section>
+<section class="battle-controls" aria-label="Battle Lines controls">
+<div class="battle-control"><span>Range</span><div class="battle-control__row"><button type="button" data-battle-range="today">Today</button><button type="button" data-battle-range="yesterday">Yesterday</button><button type="button" data-battle-range="date">Date</button><input type="date" data-battle-date aria-label="Battle Lines date" /></div></div>
+<div class="battle-control"><span>Metric</span><div class="battle-control__row"><button type="button" data-battle-metric="viewers">Viewers</button><button type="button" data-battle-metric="indexed">Indexed</button></div></div>
+<div class="battle-control"><span>Streams</span><div class="battle-control__row"><button type="button" data-battle-top="3">Top 3</button><button type="button" data-battle-top="5">Top 5</button><button type="button" data-battle-top="10">Top 10</button></div></div>
+<div class="battle-control"><span>Bucket</span><div class="battle-control__row"><button type="button" data-battle-bucket="5m">5m</button><button type="button" data-battle-bucket="10m">10m</button></div></div>
+<div class="battle-actions"><button type="button" data-battle-recommended>Back to recommended</button><button type="button" data-battle-latest>Jump to latest</button><button type="button" data-battle-refresh>Refresh</button></div>
+</section>
+<div class="battle-status" data-battle-status aria-live="polite"><strong>Loading</strong><span>Reading observed Kick snapshots…</span></div>
+<section class="battle-primary" data-battle-primary><div class="notice">Selecting the recommended Kick battle…</div></section>
+<section class="battle-stage" data-battle-stage><div class="notice">Loading Kick Battle Lines…</div></section>
+<section class="battle-section"><div class="battle-section__head"><h2>Time Inspector</h2><span>Click, drag, tap, or use arrow keys on the chart</span></div><div class="battle-inspector" data-battle-inspector><p>Waiting for a selected time…</p></div></section>
+<section class="battle-section"><div class="battle-section__head"><h2>Reversal strip</h2><span>Jump directly to a lead change</span></div><div class="reversal-strip" data-battle-reversals><p class="empty-inline">Loading reversals…</p></div></section>
+<section class="battle-section"><div class="battle-section__head"><h2>Secondary battles</h2><span>Other rivalry candidates in this window</span></div><div class="secondary-grid" data-battle-secondary><p class="empty-inline">Loading secondary battles…</p></div></section>
+<section class="battle-section"><div class="battle-section__head"><h2>Battle feed</h2><span>Up to five distinct observed events</span></div><div class="event-feed" data-battle-feed><p class="empty-inline">Loading battle events…</p></div></section>
+<aside class="coverage-note" data-battle-coverage><strong>Coverage & limits</strong><p>Loading observation coverage…</p></aside>
+</main>
+<footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method & limits</a><a href="/support/">Support</a></nav></footer>
+</div><script type="module" src="/src/mock-site.ts"></script><script type="module" src="/src/live/battle-lines-current-shell-entry.ts"></script><script type="module" src="/src/analytics.ts"></script></body>
 </html>

@@ -31,16 +31,18 @@ const contracts = [
   {
     path: 'src/live/battle-lines-current-shell-entry.ts',
     required: [
-      'No primary battle is available for this observed window.',
-      'No reversals or notable deltas were detected in this observed window.',
-      'Battle Lines API unavailable:',
-      'isObservedPoint',
+      'No comparable pair exists in this observed window.',
+      'No connected Battle Lines can be drawn for this observed window.',
+      'No reversal detected in this observed window.',
+      'No distinct battle event was detected in this observed window.',
+      'Battle Lines is unavailable:',
+      'drawable(',
       'missing',
       'offline',
       'not_observed',
       'cache: \'no-store\'',
     ],
-    forbidden: [/Stream A|Stream B|Stream C/, /<svg viewBox="0 0 1210 560"/],
+    forbidden: [/Stream A|Stream B|Stream C/, /<svg viewBox="0 0 1210 560"/, /\.filter\(isObservedPoint\)/],
   },
   {
     path: 'src/live/history-current-shell-entry.ts',
