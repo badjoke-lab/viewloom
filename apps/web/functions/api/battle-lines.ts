@@ -8,6 +8,12 @@ import {
   type BattleSourceItem,
   type BattleSourceRow,
 } from '../_lib/battle-lines-core'
+import {
+  BATTLE_MAX_SNAPSHOT_ROWS,
+  BATTLE_QUERY_TIMEOUT_MS,
+  compactBattleRows,
+  withTimeout,
+} from '../_lib/battle-lines-request'
 
 type SnapshotRow = {
   bucket_minute: string
@@ -19,6 +25,7 @@ type SnapshotRow = {
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const url = new URL(request.url)
   const now = new Date()
+  const startedAt = Date.now()
   const top = normalizeTop(url.searchParams.get('top'))
   const requestedBucket = normalizeRequestedBucket(url.searchParams.get('bucket'))
   const metric = normalizeMetric(url.searchParams.get('metric'))
@@ -34,37 +41,66 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   try {
-    const rows = await env.DB_TWITCH_HOT.prepare(`
-      SELECT bucket_minute, collected_at, payload_json, source_mode
-      FROM minute_snapshots
-      WHERE provider = ? AND bucket_minute >= ? AND bucket_minute < ?
-      ORDER BY bucket_minute ASC
-    `).bind('twitch', period.from, period.to).all<SnapshotRow>()
+    const result = await withTimeout(
+      env.DB_TWITCH_HOT.prepare(`
+        SELECT bucket_minute, collected_at, payload_json, source_mode
+        FROM minute_snapshots
+        WHERE provider = ? AND bucket_minute >= ? AND bucket_minute < ?
+        ORDER BY bucket_minute DESC
+        LIMIT ${BATTLE_MAX_SNAPSHOT_ROWS}
+      `).bind('twitch', period.from, period.to).all<SnapshotRow>(),
+      BATTLE_QUERY_TIMEOUT_MS,
+      `Twitch Battle Lines snapshot query exceeded ${BATTLE_QUERY_TIMEOUT_MS}ms.`,
+    )
 
-    const sourceRows: BattleSourceRow[] = (rows.results ?? []).map((row) => ({
+    const parsedRows: BattleSourceRow[] = [...(result.results ?? [])].reverse().map((row) => ({
       bucketMinute: row.bucket_minute,
       collectedAt: row.collected_at,
       sourceMode: row.source_mode,
       items: readItems(row.payload_json),
     }))
-    const payload = buildBattleLinesPayload(sourceRows, options)
+    const compacted = compactBattleRows(parsedRows, top)
+    const payload = buildBattleLinesPayload(compacted.rows, options)
+    const durationMs = Date.now() - startedAt
+
     return Response.json({
       ...payload,
+      diagnostics: {
+        durationMs,
+        snapshotRows: parsedRows.length,
+        candidateStreams: compacted.candidateCount,
+        retainedItems: compacted.retainedItemCount,
+        maxSnapshotRows: BATTLE_MAX_SNAPSHOT_ROWS,
+      },
       notes: [
         ...payload.notes,
-        `${sourceRows.length} provider=twitch snapshot rows read from DB_TWITCH_HOT.`,
+        `${parsedRows.length} provider=twitch snapshot rows read from DB_TWITCH_HOT.`,
+        `${compacted.candidateCount} candidate streams reduced to the requested Top ${top} before timeline expansion.`,
       ],
-    }, { headers: { 'cache-control': 'no-store' } })
+    }, {
+      headers: {
+        'cache-control': 'no-store',
+        'server-timing': `battle-lines;dur=${durationMs}`,
+      },
+    })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Battle Lines API failed.'
     const payload = buildBattleLinesPayload([], options)
+    const durationMs = Date.now() - startedAt
     return Response.json({
       ...payload,
       state: 'error',
       status: 'error',
+      diagnostics: { durationMs, maxSnapshotRows: BATTLE_MAX_SNAPSHOT_ROWS },
       error: { code: 'battle_lines_api_error', message },
-      notes: [...payload.notes, 'Twitch Battle Lines could not read DB_TWITCH_HOT snapshots.'],
-    }, { status: 500, headers: { 'cache-control': 'no-store' } })
+      notes: [...payload.notes, 'Twitch Battle Lines could not read or process DB_TWITCH_HOT snapshots.'],
+    }, {
+      status: 500,
+      headers: {
+        'cache-control': 'no-store',
+        'server-timing': `battle-lines;dur=${durationMs}`,
+      },
+    })
   }
 }
 
