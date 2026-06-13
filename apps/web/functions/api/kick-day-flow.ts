@@ -2,6 +2,7 @@ import type { Env } from '../_db/env'
 
 type State = 'not_ready' | 'empty' | 'partial' | 'stale' | 'live' | 'error'
 type Metric = 'volume' | 'share'
+type RangeMode = 'today' | 'rolling24h' | 'yesterday' | 'date'
 type Row = { bucket_minute: string; collected_at: string; total_viewers: number; payload_json: string; source_mode: string }
 type Stream = { id: string; name: string; title: string; url: string; viewers: number }
 type Acc = { stream: Stream; sums: number[]; counts: number[]; firstSeen: string | null; lastSeen: string | null }
@@ -46,7 +47,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
     const rows = result.results ?? []
     if (rows.length === 0) {
-      return json(empty('empty', 'No Kick snapshots exist in the selected Day Flow window.', 'provider=kick returned no rows from DB_KICK_HOT for this range.', '', now.toISOString(), range, bucketSize, topN, valueMode, bucketLabels))
+      return json(empty('empty', 'No Kick snapshots exist in the selected Day Flow window.', 'No observed Kick snapshots exist for this Day Flow window.', '', now.toISOString(), range, bucketSize, topN, valueMode, bucketLabels))
     }
 
     const built = build(rows, bucketLabels, bucketSize, topN)
@@ -55,7 +56,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     const targetSource = str(meta?.targetSource) || 'unknown'
     const coverageMode = str(meta?.coverageMode) || 'unknown'
     const lastUpdated = latest?.collected_at || latest?.bucket_minute || now.toISOString()
-    const stale = Date.now() - parseTime(lastUpdated).getTime() > STALE_AFTER_MS
+    const stale = isLiveRange(range.mode) && Date.now() - parseTime(lastUpdated).getTime() > STALE_AFTER_MS
     const state = getState(built.bands.length > 0, stale, built.observed, bucketLabels.length)
     const partialNote = state === 'partial' ? `Only ${built.observed}/${bucketLabels.length} Day Flow buckets have observed Kick samples in this window.` : ''
 
@@ -66,7 +67,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       state,
       status: state,
       note: note(state, built.bands.length),
-      coverageNote: `${rows.length} provider=kick DB_KICK_HOT snapshot rows read. ${built.observed}/${bucketLabels.length} buckets observed. source_mode=${latest?.source_mode || 'unknown'}. target_source=${targetSource}. coverage_mode=${coverageMode}.`,
+      coverageNote: `${built.observed}/${bucketLabels.length} buckets contain observed Kick snapshots.`,
       partialNote,
       lastUpdated,
       selectedDate: range.selectedDate,
@@ -82,13 +83,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       buckets: bucketLabels,
       totalViewersByBucket: built.totals,
       bands: built.bands,
+      summary: summarize(built.bands),
       detailPanelSource: { defaultStreamerId: built.streamers[0]?.streamerId ?? null, streamers: built.streamers },
       activity: { available: false, note: 'Kick activity data is not connected yet. Day Flow bands use observed viewer counts only.' },
       notes: ['storage=DB_KICK_HOT', `target_source=${targetSource}`, `coverage_mode=${coverageMode}`],
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    return json(empty('error', 'Kick Day Flow API could not read DB_KICK_HOT snapshots.', message, '', now.toISOString(), range, bucketSize, topN, valueMode, bucketLabels), 500)
+    return json(empty('error', 'Kick Day Flow API could not read observed snapshots.', message, '', now.toISOString(), range, bucketSize, topN, valueMode, bucketLabels), 500)
   }
 }
 
@@ -158,6 +160,25 @@ function makeOthers(bands: Band[], labels: string[], totals: number[], bucketSiz
   return { ...makeBand({ id: 'others', name: 'Others', title: 'Observed Kick streams outside the selected Top N.', url: '', viewers: 0 }, viewers, labels, totals, bucketSize, null, null), isOthers: true }
 }
 
+function summarize(bands: Band[]): { peakLeader: string | null; longestDominance: string | null; biggestRise: string | null; highestActivity: null } {
+  const topBands = bands.filter((band) => !band.isOthers)
+  const peakLeader = [...topBands].sort((a, b) => b.peakViewers - a.peakViewers)[0]?.name ?? null
+  const biggestRise = [...topBands].sort((a, b) => b.biggestRiseValue - a.biggestRiseValue)[0]?.name ?? null
+  const wins = new Map<string, number>()
+  const bucketCount = Math.max(0, ...topBands.map((band) => band.buckets.length))
+  for (let index = 0; index < bucketCount; index += 1) {
+    const leader = topBands.reduce<Band | null>((best, band) => !best || band.buckets[index]?.viewers > best.buckets[index]?.viewers ? band : best, null)
+    if (leader && leader.buckets[index]?.viewers > 0) wins.set(leader.streamerId, (wins.get(leader.streamerId) ?? 0) + 1)
+  }
+  const longestId = [...wins.entries()].sort((a, b) => b[1] - a[1])[0]?.[0]
+  return {
+    peakLeader,
+    longestDominance: topBands.find((band) => band.streamerId === longestId)?.name ?? null,
+    biggestRise: biggestRise && topBands.some((band) => band.biggestRiseValue > 0) ? biggestRise : null,
+    highestActivity: null,
+  }
+}
+
 function normalize(payloadJson: string): Stream[] {
   const parsed = safeJson(payloadJson)
   const record = object(parsed)
@@ -189,16 +210,18 @@ function streamer(band: Band) {
 }
 
 function empty(state: State, noteText: string, coverageNote: string, partialNote: string, lastUpdated: string, range: ReturnType<typeof getRange>, bucketSize: 5 | 10, topN: number, valueMode: Metric, labels: string[]): Record<string, unknown> {
-  return { ok: state !== 'error', source: 'api', platform: 'kick', state, status: state, note: noteText, coverageNote, partialNote, lastUpdated, selectedDate: range.selectedDate, bucketSize, topN, valueMode, targetSource: 'unknown', coverageMode: 'unknown', rangeMode: range.mode, windowStart: range.start.toISOString(), windowEnd: range.end.toISOString(), isRolling: range.isRolling, buckets: labels, totalViewersByBucket: labels.map(() => 0), bands: [] as Band[], detailPanelSource: { defaultStreamerId: null as string | null, streamers: [] as ReturnType<typeof streamer>[] }, activity: { available: false, note: 'Kick activity data is not connected yet.' }, notes: ['storage=DB_KICK_HOT', 'target_source=unknown', 'coverage_mode=unknown'] }
+  return { ok: state !== 'error', source: 'api', platform: 'kick', state, status: state, note: noteText, coverageNote, partialNote, lastUpdated, selectedDate: range.selectedDate, bucketSize, topN, valueMode, targetSource: 'unknown', coverageMode: 'unknown', rangeMode: range.mode, windowStart: range.start.toISOString(), windowEnd: range.end.toISOString(), isRolling: range.isRolling, buckets: labels, totalViewersByBucket: labels.map(() => 0), bands: [] as Band[], summary: { peakLeader: null, longestDominance: null, biggestRise: null, highestActivity: null }, detailPanelSource: { defaultStreamerId: null as string | null, streamers: [] as ReturnType<typeof streamer>[] }, activity: { available: false, note: 'Kick activity data is not connected yet.' }, notes: ['storage=DB_KICK_HOT', 'target_source=unknown', 'coverage_mode=unknown'] }
 }
 
-function getRange(url: URL, now: Date) {
+function getRange(url: URL, now: Date): { selectedDate: string; mode: RangeMode; start: Date; end: Date; isRolling: boolean } {
   const today = now.toISOString().slice(0, 10)
-  const mode = url.searchParams.get('rangeMode') === 'rolling24h' ? 'rolling24h' : url.searchParams.get('rangeMode') === 'yesterday' || url.searchParams.get('day') === 'yesterday' ? 'yesterday' : 'today'
+  const requested = url.searchParams.get('rangeMode')
+  const mode: RangeMode = requested === 'rolling24h' ? 'rolling24h' : requested === 'yesterday' || url.searchParams.get('day') === 'yesterday' ? 'yesterday' : requested === 'date' ? 'date' : 'today'
   if (mode === 'rolling24h') return { selectedDate: today, mode, start: new Date(now.getTime() - 24 * 60 * MINUTE), end: now, isRolling: true }
-  const selectedDate = validDate(url.searchParams.get('date')) ?? (mode === 'yesterday' ? shift(today, -1) : today)
+  const selectedDate = mode === 'yesterday' ? shift(today, -1) : mode === 'date' ? validDate(url.searchParams.get('date')) ?? today : today
   const start = new Date(`${selectedDate}T00:00:00.000Z`)
-  return { selectedDate, mode, start, end: selectedDate === today ? now : new Date(start.getTime() + 24 * 60 * MINUTE), isRolling: false }
+  const end = mode === 'today' ? now : new Date(start.getTime() + 24 * 60 * MINUTE)
+  return { selectedDate, mode, start, end, isRolling: false }
 }
 
 function buckets(start: Date, end: Date, bucketSize: 5 | 10): string[] {
@@ -208,7 +231,7 @@ function buckets(start: Date, end: Date, bucketSize: 5 | 10): string[] {
 }
 
 function getState(hasBands: boolean, stale: boolean, observed: number, expected: number): State { if (!hasBands) return 'empty'; if (stale) return 'stale'; if (expected > 0 && observed / expected < 0.5) return 'partial'; return 'live' }
-function note(state: State, count: number): string { return state === 'live' ? `${count} Kick Day Flow bands from DB_KICK_HOT rows.` : state === 'partial' ? `${count} Kick Day Flow bands from a sparse observed window.` : state === 'stale' ? `${count} Kick Day Flow bands are available, but the latest snapshot is stale.` : 'Kick DB_KICK_HOT rows exist, but no usable Day Flow bands were found.' }
+function note(state: State, count: number): string { return state === 'live' ? `${count} Kick Day Flow bands from observed snapshots.` : state === 'partial' ? `${count} Kick Day Flow bands from a sparse observed window.` : state === 'stale' ? `${count} Kick Day Flow bands are available, but the latest snapshot is stale.` : 'Observed Kick rows exist, but no usable Day Flow bands were found.' }
 function biggestRise(values: number[], labels: string[]) { let index = -1; let value = 0; for (let i = 1; i < values.length; i += 1) { const delta = values[i] - values[i - 1]; if (delta > value) { index = i; value = delta } } return { index, value, bucket: index >= 0 ? labels[index] : null } }
 function json(payload: unknown, status = 200): Response { return Response.json(payload, { status, headers: { 'cache-control': 'no-store' } }) }
 function floor(value: string, bucketSize: 5 | 10): string { return floorDate(parseTime(value), bucketSize).toISOString() }
@@ -217,6 +240,7 @@ function parseTime(value: string): Date { return new Date(/[zZ]|[+-]\d\d:?\d\d$/
 function top(value: string | null): number { const parsed = Number(value); return parsed === 10 || parsed === 20 || parsed === 50 ? parsed : 20 }
 function validDate(value: string | null): string | null { return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null }
 function shift(date: string, days: number): string { const parsed = new Date(`${date}T00:00:00.000Z`); parsed.setUTCDate(parsed.getUTCDate() + days); return parsed.toISOString().slice(0, 10) }
+function isLiveRange(mode: RangeMode): boolean { return mode === 'today' || mode === 'rolling24h' }
 function min(a: string | null, b: string | null): string | null { if (!a) return b; if (!b) return a; return a < b ? a : b }
 function max(a: string | null, b: string | null): string | null { if (!a) return b; if (!b) return a; return a > b ? a : b }
 function safeJson(value: string): unknown { try { return JSON.parse(value) } catch { return null } }
