@@ -1,227 +1,527 @@
-type BattleLinePoint = { bucket?: string; minute?: string; timestamp?: string; viewers?: number; value?: number; observed?: boolean; state?: string }
-type BattleLine = { id?: string; name?: string; displayName?: string; color?: string; points?: BattleLinePoint[]; buckets?: BattleLinePoint[] }
-type BattleEvent = { label?: string; title?: string; summary?: string; at?: string; timestamp?: string; bucket?: string; type?: string }
-type BattleSummary = { a?: string; b?: string; leader?: string; gap?: number; state?: string; label?: string; title?: string; summary?: string }
-type BattlePayload = {
-  platform?: string
-  state?: string
-  status?: string
-  source?: string
-  updatedAt?: string
-  lastUpdated?: string
-  lines?: BattleLine[]
-  primaryBattle?: BattleSummary
-  recommendedBattle?: BattleSummary
-  secondaryBattles?: BattleSummary[]
-  events?: BattleEvent[]
-  reversals?: BattleEvent[]
-  feed?: BattleEvent[]
-}
-
-type BattleState = { metric: 'viewers' | 'indexed'; selectedLineId: string | null; selectedPointIndex: number }
+type Metric = 'viewers' | 'indexed'
+type RangeMode = 'today' | 'yesterday' | 'date'
+type PointState = 'observed' | 'offline' | 'not_observed' | 'missing'
+type GapTrend = 'closing' | 'widening' | 'steady' | 'unavailable'
+type Point = { bucket: string; time: string; viewers: number | null; value: number | null; state: PointState }
+type Line = { id: string; streamerId?: string; name: string; displayName?: string; title?: string; url?: string; peakViewers: number; latestViewers: number | null; latestValue: number | null; viewerMinutes: number; points: Point[] }
+type Battle = { id: string; pair: [string, string]; streamerAId: string; streamerBId: string; streamerAName: string; streamerBName: string; score: number; overlapCount: number; longestRun: number; reversalCount: number; recentOverlap: number; missingPenalty: number; currentIndex: number | null; currentBucket: string | null; currentLeaderId: string | null; currentLeaderName: string | null; currentGap: number | null; previousGap: number | null; gapTrend: GapTrend; latestReversalAt: string | null }
+type BattleEvent = { id: string; type: 'reversal' | 'rapid_rise' | 'gap_collapse' | 'peak'; battleId: string; pair: [string, string]; time: string; bucket: string; index: number; title: string; summary: string; passer?: string; passed?: string; gapBefore?: number; gapAfter?: number; delta?: number; streamerId?: string }
+type Coverage = { expectedBuckets: number; observedBuckets: number; missingBuckets: number; missingRatio: number }
+type WindowContract = { mode: string; selectedDate: string; from: string; to: string; isLive: boolean }
+type Payload = { platform: string; state: string; status: string; source: string; updatedAt: string; generatedAt: string; top: number; requestedBucket: string; bucket: '5m' | '10m'; metric: Metric; valueMode: Metric; metricNote: string; granularityNote: string; timeline: string[]; coverage: Coverage; window: WindowContract; lines: Line[]; primaryBattle: Battle | null; recommendedBattle: Battle | null; secondaryBattles: Battle[]; battles: Battle[]; events: BattleEvent[]; reversals: BattleEvent[]; feed: BattleEvent[]; error?: { message?: string } }
+type State = { metric: Metric; top: 3 | 5 | 10; bucket: '5m' | '10m'; range: RangeMode; date: string; selectedBattleId: string | null; selectedLineId: string | null; selectedIndex: number; manualBattle: boolean; followLatest: boolean; dragging: boolean }
 
 const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
 const endpoint = provider === 'kick' ? '/api/kick-battle-lines' : '/api/battle-lines'
-const state: BattleState = { metric: 'viewers', selectedLineId: null, selectedPointIndex: -1 }
-let lastPayload: BattlePayload | null = null
+const params = new URLSearchParams(location.search)
+const todayUtc = new Date().toISOString().slice(0, 10)
+const state: State = {
+  metric: params.get('metric') === 'indexed' ? 'indexed' : 'viewers',
+  top: parseTop(params.get('top')),
+  bucket: params.get('bucket') === '10m' ? '10m' : '5m',
+  range: parseRange(params.get('range')),
+  date: validDate(params.get('date')) ?? todayUtc,
+  selectedBattleId: params.get('battle'),
+  selectedLineId: params.get('stream'),
+  selectedIndex: parseIndex(params.get('point')),
+  manualBattle: Boolean(params.get('battle')),
+  followLatest: params.get('point') === null,
+  dragging: false,
+}
+let payload: Payload | null = null
+let requestSerial = 0
+let autoTimer = 0
 
 wireControls()
-void hydrateBattleLines()
+syncControls()
+void hydrate()
+startAutoRefresh()
 
 function wireControls(): void {
-  document.querySelectorAll<HTMLButtonElement>('[data-battle-metric]').forEach((button) => {
-    button.addEventListener('click', () => {
-      state.metric = button.dataset.battleMetric === 'indexed' ? 'indexed' : 'viewers'
-      document.querySelectorAll<HTMLButtonElement>('[data-battle-metric]').forEach((node) => node.classList.toggle('active', node === button))
-      void hydrateBattleLines()
-    })
+  document.querySelectorAll<HTMLButtonElement>('[data-battle-metric]').forEach((button) => button.addEventListener('click', () => {
+    const next = button.dataset.battleMetric === 'indexed' ? 'indexed' : 'viewers'
+    if (next === state.metric) return
+    state.metric = next
+    syncControls()
+    void hydrate({ preserveBattle: true, preserveTime: true })
+  }))
+  document.querySelectorAll<HTMLButtonElement>('[data-battle-top]').forEach((button) => button.addEventListener('click', () => {
+    state.top = parseTop(button.dataset.battleTop ?? null)
+    syncControls()
+    void hydrate({ preserveBattle: true, preserveTime: true })
+  }))
+  document.querySelectorAll<HTMLButtonElement>('[data-battle-bucket]').forEach((button) => button.addEventListener('click', () => {
+    state.bucket = button.dataset.battleBucket === '10m' ? '10m' : '5m'
+    syncControls()
+    void hydrate({ preserveBattle: true, preserveTime: true })
+  }))
+  document.querySelectorAll<HTMLButtonElement>('[data-battle-range]').forEach((button) => button.addEventListener('click', () => {
+    state.range = parseRange(button.dataset.battleRange ?? null)
+    if (state.range === 'date') state.date = validDate(dateInput()?.value ?? null) ?? state.date
+    state.followLatest = true
+    state.selectedIndex = -1
+    state.manualBattle = false
+    state.selectedBattleId = null
+    syncControls()
+    void hydrate()
+  }))
+  dateInput()?.addEventListener('change', () => {
+    const value = validDate(dateInput()?.value ?? null)
+    if (!value) return
+    state.range = 'date'
+    state.date = value
+    state.followLatest = true
+    state.selectedIndex = -1
+    state.manualBattle = false
+    state.selectedBattleId = null
+    syncControls()
+    void hydrate()
   })
-  document.querySelector<HTMLElement>('[data-battle-refresh]')?.addEventListener('click', () => { void hydrateBattleLines() })
+  document.querySelector<HTMLElement>('[data-battle-refresh]')?.addEventListener('click', () => void hydrate({ preserveBattle: true, preserveTime: true }))
+  document.querySelector<HTMLElement>('[data-battle-recommended]')?.addEventListener('click', () => {
+    if (!payload?.primaryBattle) return
+    state.selectedBattleId = payload.primaryBattle.id
+    state.manualBattle = false
+    syncUrl()
+    renderAll()
+  })
+  document.querySelector<HTMLElement>('[data-battle-latest]')?.addEventListener('click', () => {
+    if (!payload) return
+    state.selectedIndex = latestUsefulIndex(payload)
+    state.followLatest = true
+    syncUrl()
+    renderAll()
+  })
 }
 
-async function hydrateBattleLines(): Promise<void> {
-  renderLoading()
+async function hydrate(options: { preserveBattle?: boolean; preserveTime?: boolean } = {}): Promise<void> {
+  const serial = ++requestSerial
+  setBusy(true)
   try {
-    const response = await fetch(`${endpoint}?metric=${encodeURIComponent(state.metric)}`, { headers: { accept: 'application/json' }, cache: 'no-store' })
-    if (!response.ok) throw new Error(`battle lines api returned ${response.status}`)
-    const payload = await response.json() as BattlePayload
-    lastPayload = payload
-    const lines = visibleLines(payload)
-    const maxLen = Math.max(0, ...lines.map((line) => normalizePoints(line).length))
-    if (!state.selectedLineId || !lines.some((line) => lineKey(line) === state.selectedLineId)) state.selectedLineId = lines[0] ? lineKey(lines[0]) : null
-    if (state.selectedPointIndex < 0 || state.selectedPointIndex >= maxLen) state.selectedPointIndex = Math.max(0, maxLen - 1)
-    renderFacts(payload)
-    renderStrip(payload)
-    renderChart(payload)
-    renderSummary(payload)
-    renderFeed(payload)
+    const query = new URLSearchParams({ metric: state.metric, top: String(state.top), bucket: state.bucket, range: state.range })
+    if (state.range === 'date') query.set('date', state.date)
+    const response = await fetch(`${endpoint}?${query}`, { headers: { accept: 'application/json' }, cache: 'no-store' })
+    const next = await response.json() as Payload
+    if (serial !== requestSerial) return
+    if (!response.ok && next.state !== 'error') throw new Error(`Battle Lines API returned ${response.status}`)
+    const previousBattle = options.preserveBattle ? state.selectedBattleId : null
+    const previousBucket = options.preserveTime && payload && state.selectedIndex >= 0 ? payload.timeline[state.selectedIndex] : null
+    payload = next
+    const battles = next.battles ?? []
+    if (previousBattle && battles.some((battle) => battle.id === previousBattle)) {
+      state.selectedBattleId = previousBattle
+    } else if (state.selectedBattleId && battles.some((battle) => battle.id === state.selectedBattleId)) {
+      state.manualBattle = true
+    } else {
+      state.selectedBattleId = next.primaryBattle?.id ?? null
+      state.manualBattle = false
+    }
+    if (previousBucket) state.selectedIndex = nearestTimelineIndex(next.timeline, previousBucket)
+    if (state.followLatest || state.selectedIndex < 0 || state.selectedIndex >= next.timeline.length) state.selectedIndex = latestUsefulIndex(next)
+    if (!state.selectedLineId || !next.lines.some((line) => line.id === state.selectedLineId)) state.selectedLineId = null
+    syncControls()
+    syncUrl()
+    renderAll()
   } catch (error) {
-    renderError(error instanceof Error ? error.message : String(error))
+    if (serial !== requestSerial) return
+    renderFatal(error instanceof Error ? error.message : String(error))
+  } finally {
+    if (serial === requestSerial) setBusy(false)
   }
 }
 
-function renderLoading(): void {
-  const stage = document.querySelector<HTMLElement>('.battle-stage')
-  if (stage) stage.innerHTML = '<div class="notice">Loading Battle Lines from observed snapshots…</div>'
+function renderAll(): void {
+  if (!payload) return
+  renderHeadFacts(payload)
+  renderStatus(payload)
+  renderPrimary(payload)
+  renderChart(payload)
+  renderInspector(payload)
+  renderReversals(payload)
+  renderSecondary(payload)
+  renderFeed(payload)
+  renderCoverage(payload)
 }
 
-function renderFacts(payload: BattlePayload): void {
-  const values = [
-    label(payload.state ?? payload.status ?? 'unknown'),
-    label(state.metric),
-    String(visibleLines(payload).length || '—'),
-    time(payload.updatedAt ?? payload.lastUpdated),
-  ]
+function renderHeadFacts(data: Payload): void {
+  const values = [label(data.state), `${data.coverage.observedBuckets}/${data.coverage.expectedBuckets}`, data.window.selectedDate, formatInstant(data.updatedAt)]
   document.querySelectorAll<HTMLElement>('.head-facts .fact strong').forEach((node, index) => { node.textContent = values[index] ?? '—' })
 }
 
-function renderStrip(payload: BattlePayload): void {
-  const lines = visibleLines(payload)
-  const cells = document.querySelectorAll<HTMLElement>('.data-strip__cell')
-  const points = lines.reduce((sum, line) => sum + normalizePoints(line).length, 0)
-  const values = [time(payload.updatedAt ?? payload.lastUpdated), `${lines.length} lines`, `${points} points`, label(payload.source ?? 'api')]
-  cells.forEach((cell, index) => {
-    const labelNode = cell.querySelector('small')?.outerHTML ?? ''
-    cell.innerHTML = `${labelNode}${escapeHtml(values[index] ?? '—')}`
-  })
+function renderStatus(data: Payload): void {
+  const target = document.querySelector<HTMLElement>('[data-battle-status]')
+  if (!target) return
+  const stateLabel = label(data.state)
+  const details = data.state === 'error'
+    ? data.error?.message ?? 'The API request failed.'
+    : `${data.coverage.observedBuckets}/${data.coverage.expectedBuckets} UTC buckets observed · ${formatInstant(data.updatedAt)} · ${data.bucket} · real API`
+  target.className = `battle-status battle-status--${escapeClass(data.state)}`
+  target.innerHTML = `<strong>${escapeHtml(stateLabel)}</strong><span>${escapeHtml(details)}</span><small>Page API state and collector status are separate signals.</small>`
 }
 
-function renderChart(payload: BattlePayload): void {
-  const stage = document.querySelector<HTMLElement>('.battle-stage')
-  if (!stage) return
-  const lines = visibleLines(payload)
-  if (lines.length === 0) {
-    stage.innerHTML = '<div class="notice">No primary battle is available for this observed window.</div>'
+function renderPrimary(data: Payload): void {
+  const target = document.querySelector<HTMLElement>('[data-battle-primary]')
+  if (!target) return
+  const battle = activeBattle(data)
+  if (!battle) {
+    target.innerHTML = '<div class="notice">No comparable pair exists in this observed window.</div>'
     return
   }
+  const selected = pairSnapshot(data, battle, state.selectedIndex)
+  const recommended = battle.id === data.primaryBattle?.id && !state.manualBattle
+  target.innerHTML = `<div class="battle-primary__identity"><div class="kicker">${recommended ? 'RECOMMENDED BATTLE' : 'SELECTED BATTLE'}</div><h2>${escapeHtml(battle.streamerAName)} <span>vs</span> ${escapeHtml(battle.streamerBName)}</h2><p>${escapeHtml(formatSelectedTime(data))}</p></div><div class="battle-primary__metrics"><div><small>Leader</small><strong>${escapeHtml(selected.leaderName ?? 'Unavailable')}</strong></div><div><small>Gap</small><strong>${escapeHtml(formatMetric(selected.gap))}</strong></div><div><small>Gap trend</small><strong>${escapeHtml(label(selected.trend))}</strong></div><div><small>Latest reversal</small><strong>${escapeHtml(battle.latestReversalAt ? formatClock(battle.latestReversalAt) : 'None')}</strong></div><div><small>Reversals</small><strong>${battle.reversalCount}</strong></div><div><small>Battle score</small><strong>${battle.score.toFixed(1)}</strong></div></div>`
+}
 
+function renderChart(data: Payload): void {
+  const target = document.querySelector<HTMLElement>('[data-battle-stage]')
+  if (!target) return
+  const battle = activeBattle(data)
+  if (!battle || data.lines.length < 2 || data.timeline.length === 0) {
+    target.innerHTML = '<div class="notice">No connected Battle Lines can be drawn for this observed window.</div>'
+    return
+  }
   const width = 1200
-  const height = 560
-  const pad = { top: 56, right: 34, bottom: 44, left: 58 }
+  const height = 600
+  const pad = { top: 38, right: 30, bottom: 58, left: 82 }
   const chartW = width - pad.left - pad.right
   const chartH = height - pad.top - pad.bottom
-  const allValues = lines.flatMap((line) => normalizePoints(line).map((point) => pointValue(point)))
-  const max = Math.max(1, ...allValues)
-  const min = Math.min(0, ...allValues)
-  const maxLen = Math.max(1, ...lines.map((line) => normalizePoints(line).length))
-  const selectedIndex = Math.max(0, Math.min(maxLen - 1, state.selectedPointIndex))
-
-  const pathMarkup = lines.map((line, index) => {
-    const points = normalizePoints(line)
-    const id = lineKey(line)
-    const selected = id === state.selectedLineId
-    const pts = points.map((point, pointIndex) => `${x(pointIndex, maxLen, chartW, pad.left).toFixed(1)},${y(pointValue(point), min, max, chartH, pad.top).toFixed(1)}`).join(' ')
-    const selectedPoint = points[Math.min(selectedIndex, points.length - 1)]
-    const selectedMarker = selectedPoint ? `<circle cx="${x(Math.min(selectedIndex, points.length - 1), maxLen, chartW, pad.left).toFixed(1)}" cy="${y(pointValue(selectedPoint), min, max, chartH, pad.top).toFixed(1)}" r="6" fill="${stroke(index)}" stroke="#eef4ff" stroke-width="2"/>` : ''
-    return `<g data-battle-line="${escapeAttr(id)}" class="battle-line${selected ? ' selected' : ''}"><polyline points="${pts}" fill="none" stroke="${stroke(index)}" stroke-width="${selected ? '6' : '3'}" stroke-linecap="round" stroke-linejoin="round"><title>${escapeHtml(lineLabel(line, index))}</title></polyline>${selectedMarker}</g>`
+  const visible = displayLines(data, battle)
+  const values = visible.flatMap((line) => line.points.map((point) => drawable(point))).filter((value): value is number => value !== null)
+  const yMax = state.metric === 'indexed' ? 100 : niceMaximum(Math.max(1, ...values))
+  const yTicks = state.metric === 'indexed' ? [0, 25, 50, 75, 100] : [0, .25, .5, .75, 1].map((ratio) => yMax * ratio)
+  const xTicks = tickIndexes(data.timeline.length, isMobile() ? 4 : 7)
+  const primaryIds = new Set(battle.pair)
+  const band = gapBand(data, battle, width, height, pad, yMax)
+  const lineMarkup = visible.map((line) => {
+    const primary = primaryIds.has(line.id)
+    const selected = state.selectedLineId === line.id
+    const color = lineColor(data.lines.findIndex((item) => item.id === line.id))
+    const paths = lineSegments(line, data.timeline.length, chartW, chartH, pad, yMax)
+    const widthValue = selected ? 6 : primary ? 4.5 : 2
+    const opacity = primary || selected ? 1 : .32
+    return `<g class="battle-line${primary ? ' battle-line--primary' : ''}${selected ? ' battle-line--selected' : ''}" data-line-id="${escapeAttr(line.id)}" opacity="${opacity}">${paths.map((path) => `<path d="${path}" fill="none" stroke="${color}" stroke-width="${widthValue}" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}</g>`
   }).join('')
-
-  const cursorX = x(selectedIndex, maxLen, chartW, pad.left)
-  const selectedLine = currentLine(lines)
-  const selectedPoint = selectedLine ? normalizePoints(selectedLine)[Math.min(selectedIndex, normalizePoints(selectedLine).length - 1)] : undefined
-  const cursor = `<g class="battle-cursor"><line x1="${cursorX.toFixed(1)}" x2="${cursorX.toFixed(1)}" y1="${pad.top}" y2="${height - pad.bottom}"/><text x="${Math.min(width - 170, cursorX + 8).toFixed(1)}" y="${pad.top + 16}">${escapeHtml(pointTime(selectedPoint))}</text></g>`
-  const legend = lines.map((line, index) => `<button type="button" class="battle-legend__item${lineKey(line) === state.selectedLineId ? ' active' : ''}" data-battle-legend="${escapeAttr(lineKey(line))}" title="${escapeAttr(lineLabel(line, index))}"><i style="background:${stroke(index)}"></i><span>${escapeHtml(lineLabel(line, index))}</span></button>`).join('')
-
-  stage.innerHTML = `<div class="battle-legend" aria-label="Battle Lines streams">${legend}</div><svg data-battle-chart data-point-count="${maxLen}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Battle Lines chart"><g class="chart-grid">${grid(width, height, pad)}</g>${pathMarkup}${cursor}</svg>`
-  bindChartInteraction(payload, { width, pad, chartW, maxLen })
-  bindLegendInteraction(payload)
-  bindLineInteraction(payload)
+  const axes = `${yTicks.map((tick) => { const py = y(tick, yMax, chartH, pad.top); return `<g><line x1="${pad.left}" x2="${width - pad.right}" y1="${py}" y2="${py}"/><text x="${pad.left - 12}" y="${py + 4}" text-anchor="end">${escapeHtml(axisMetric(tick))}</text></g>` }).join('')}${xTicks.map((index) => { const px = x(index, data.timeline.length, chartW, pad.left); return `<g><line x1="${px}" x2="${px}" y1="${pad.top}" y2="${height - pad.bottom}"/><text x="${px}" y="${height - 24}" text-anchor="middle">${escapeHtml(formatClock(data.timeline[index]))}</text></g>` }).join('')}`
+  const selectedIndex = clamp(state.selectedIndex, 0, Math.max(0, data.timeline.length - 1))
+  const cursorX = x(selectedIndex, data.timeline.length, chartW, pad.left)
+  const cursor = `<g class="battle-cursor"><line x1="${cursorX}" x2="${cursorX}" y1="${pad.top}" y2="${height - pad.bottom}"/><text x="${Math.min(width - 150, cursorX + 8)}" y="${pad.top + 17}">${escapeHtml(formatClock(data.timeline[selectedIndex]))}</text></g>`
+  const markers = chartMarkers(data, battle, chartW, chartH, pad, yMax)
+  const endpoints = endpointLabels(data, battle, chartW, chartH, pad, yMax)
+  const legend = visible.map((line) => `<button type="button" class="battle-legend__item${state.selectedLineId === line.id ? ' active' : ''}${primaryIds.has(line.id) ? ' primary' : ''}" data-battle-line-select="${escapeAttr(line.id)}" aria-pressed="${state.selectedLineId === line.id}"><i style="background:${lineColor(data.lines.findIndex((item) => item.id === line.id))}"></i><span>${escapeHtml(line.name)}</span><small>${escapeHtml(formatMetric(lastValue(line)))}</small></button>`).join('')
+  target.innerHTML = `<div class="battle-legend" aria-label="Displayed streams">${legend}</div><div class="battle-chart-wrap"><svg data-battle-chart viewBox="0 0 ${width} ${height}" role="img" tabindex="0" aria-label="Battle Lines ${escapeAttr(state.metric)} chart. Use left and right arrow keys to inspect time."><g class="chart-grid">${axes}</g><g class="battle-gap-band">${band}</g>${lineMarkup}<g class="battle-markers">${markers}</g>${endpoints}${cursor}</svg></div>`
+  bindChart(data, { width, pad, chartW })
+  document.querySelectorAll<HTMLButtonElement>('[data-battle-line-select]').forEach((button) => button.addEventListener('click', () => {
+    const id = button.dataset.battleLineSelect ?? null
+    state.selectedLineId = state.selectedLineId === id ? null : id
+    syncUrl()
+    renderChart(data)
+  }))
 }
 
-function bindChartInteraction(payload: BattlePayload, geometry: { width: number; pad: { left: number; right: number }; chartW: number; maxLen: number }): void {
-  const chart = document.querySelector<SVGSVGElement>('[data-battle-chart]')
-  if (!chart) return
-  chart.addEventListener('click', (event) => {
-    const rect = chart.getBoundingClientRect()
-    const pointerX = ((event.clientX - rect.left) / Math.max(1, rect.width)) * geometry.width
-    const bounded = Math.max(geometry.pad.left, Math.min(geometry.width - geometry.pad.right, pointerX))
-    const ratio = (bounded - geometry.pad.left) / Math.max(1, geometry.chartW)
-    state.selectedPointIndex = Math.max(0, Math.min(geometry.maxLen - 1, Math.round(ratio * (geometry.maxLen - 1))))
-    renderChart(payload)
-    renderSummary(payload)
-  })
-}
-
-function bindLegendInteraction(payload: BattlePayload): void {
-  document.querySelectorAll<HTMLButtonElement>('[data-battle-legend]').forEach((button) => {
-    button.addEventListener('click', () => {
-      state.selectedLineId = button.dataset.battleLegend || null
-      renderChart(payload)
-      renderSummary(payload)
-    })
-  })
-}
-
-function bindLineInteraction(payload: BattlePayload): void {
-  document.querySelectorAll<SVGGElement>('[data-battle-line]').forEach((group) => {
-    group.addEventListener('click', (event) => {
-      event.stopPropagation()
-      state.selectedLineId = group.dataset.battleLine || null
-      renderChart(payload)
-      renderSummary(payload)
-    })
-  })
-}
-
-function renderSummary(payload: BattlePayload): void {
-  const target = document.querySelector<HTMLElement>('[data-battle-summary]')
+function renderInspector(data: Payload): void {
+  const target = document.querySelector<HTMLElement>('[data-battle-inspector]')
   if (!target) return
-  const lines = visibleLines(payload)
-  const selected = currentLine(lines)
-  if (!selected) {
-    target.innerHTML = '<p>No primary battle is available for this observed window.</p>'
+  const battle = activeBattle(data)
+  if (!battle) { target.innerHTML = '<p>No battle selected.</p>'; return }
+  const a = lineById(data, battle.streamerAId)
+  const b = lineById(data, battle.streamerBId)
+  if (!a || !b) { target.innerHTML = '<p>Selected pair is unavailable.</p>'; return }
+  const index = clamp(state.selectedIndex, 0, Math.max(0, data.timeline.length - 1))
+  const ap = a.points[index]
+  const bp = b.points[index]
+  const snapshot = pairSnapshot(data, battle, index)
+  const ranking = data.lines.map((line) => ({ line, point: line.points[index] })).filter((item) => drawable(item.point) !== null).sort((left, right) => (drawable(right.point) ?? 0) - (drawable(left.point) ?? 0)).slice(0, 5)
+  target.innerHTML = `<div class="inspector-head"><div><div class="kicker">TIME INSPECTOR</div><h2>${escapeHtml(formatSelectedTime(data))}</h2></div><span class="mode-pill">${state.followLatest ? 'Following latest' : 'Inspect mode'}</span></div><div class="pair-inspector"><article><small>${escapeHtml(a.name)}</small><strong>${escapeHtml(formatMetric(drawable(ap)))}</strong><span>${escapeHtml(label(ap?.state ?? 'not_observed'))} · ${escapeHtml(formatDelta(a, index))}</span></article><article><small>${escapeHtml(b.name)}</small><strong>${escapeHtml(formatMetric(drawable(bp)))}</strong><span>${escapeHtml(label(bp?.state ?? 'not_observed'))} · ${escapeHtml(formatDelta(b, index))}</span></article><article class="pair-inspector__result"><small>Selected battle</small><strong>${escapeHtml(snapshot.leaderName ?? 'Unavailable')}</strong><span>${escapeHtml(formatMetric(snapshot.gap))} gap · ${escapeHtml(label(snapshot.trend))}</span></article></div><div class="ranking"><div class="ranking__head"><span>Rank</span><span>Stream</span><span>Value</span><span>Δ bucket</span></div>${ranking.length ? ranking.map((item, rank) => `<div class="ranking__row"><span>${rank + 1}</span><strong>${escapeHtml(item.line.name)}</strong><span>${escapeHtml(formatMetric(drawable(item.point)))}</span><span>${escapeHtml(formatDelta(item.line, index))}</span></div>`).join('') : '<p>No observed values at this bucket.</p>'}</div>`
+}
+
+function renderReversals(data: Payload): void {
+  const target = document.querySelector<HTMLElement>('[data-battle-reversals]')
+  if (!target) return
+  const battle = activeBattle(data)
+  const reversals = battle ? data.reversals.filter((event) => event.battleId === battle.id).slice(0, 12) : []
+  if (!reversals.length) {
+    target.innerHTML = '<p class="empty-inline">No reversal detected in this observed window.</p>'
     return
   }
-  const selectedIndex = Math.max(0, state.selectedPointIndex)
-  const point = normalizePoints(selected)[Math.min(selectedIndex, Math.max(0, normalizePoints(selected).length - 1))]
-  const competitors = lines.filter((line) => lineKey(line) !== lineKey(selected)).map((line) => ({ line, point: normalizePoints(line)[Math.min(selectedIndex, Math.max(0, normalizePoints(line).length - 1))] })).filter((item) => item.point)
-  const nearest = competitors.sort((a, b) => Math.abs(pointValue(a.point) - pointValue(point)) - Math.abs(pointValue(b.point) - pointValue(point)))[0]
-  const gap = nearest ? Math.abs(pointValue(point) - pointValue(nearest.point)) : null
-  target.innerHTML = `<div class="kicker">Selected stream</div><h2 title="${escapeAttr(lineLabel(selected, 0))}">${escapeHtml(lineLabel(selected, 0))}</h2><div class="inspector__row"><div><small>Selected time</small><strong>${escapeHtml(pointTime(point))}</strong></div><span>${escapeHtml(formatValue(pointValue(point)))}</span></div><div class="inspector__row"><div><small>Nearest line</small><strong title="${escapeAttr(nearest ? lineLabel(nearest.line, 0) : '—')}">${escapeHtml(nearest ? lineLabel(nearest.line, 0) : '—')}</strong></div><span>${gap === null ? '—' : `${escapeHtml(formatValue(gap))} gap`}</span></div><div class="inspector__row"><div><small>State</small><strong>${escapeHtml(label(payload.state ?? payload.status ?? 'unknown'))}</strong></div><span>${escapeHtml(time(payload.updatedAt ?? payload.lastUpdated))}</span></div>`
+  target.innerHTML = reversals.map((event) => `<button type="button" class="reversal-card" data-battle-event-index="${event.index}"><small>${escapeHtml(formatClock(event.time))}</small><strong>${escapeHtml(event.passer ?? event.title)}</strong><span>${escapeHtml(formatMetric(event.gapBefore ?? null))} → ${escapeHtml(formatMetric(event.gapAfter ?? null))}</span></button>`).join('')
+  bindEventJumps(target)
 }
 
-function renderFeed(payload: BattlePayload): void {
+function renderSecondary(data: Payload): void {
+  const target = document.querySelector<HTMLElement>('[data-battle-secondary]')
+  if (!target) return
+  const current = activeBattle(data)
+  const candidates = data.battles.filter((battle) => battle.id !== current?.id).slice(0, 3)
+  if (!candidates.length) { target.innerHTML = '<p class="empty-inline">No secondary battle has enough overlapping observations.</p>'; return }
+  target.innerHTML = candidates.map((battle) => `<button type="button" class="secondary-card" data-battle-select="${escapeAttr(battle.id)}"><span><small>Battle score ${battle.score.toFixed(1)}</small><strong>${escapeHtml(battle.streamerAName)} <em>vs</em> ${escapeHtml(battle.streamerBName)}</strong></span><span><small>Current gap</small><strong>${escapeHtml(formatMetric(battle.currentGap))}</strong><small>${escapeHtml(label(battle.gapTrend))} · ${battle.reversalCount} reversals</small></span></button>`).join('')
+  target.querySelectorAll<HTMLButtonElement>('[data-battle-select]').forEach((button) => button.addEventListener('click', () => {
+    state.selectedBattleId = button.dataset.battleSelect ?? null
+    state.manualBattle = true
+    state.selectedLineId = null
+    syncUrl()
+    renderAll()
+  }))
+}
+
+function renderFeed(data: Payload): void {
   const target = document.querySelector<HTMLElement>('[data-battle-feed]')
   if (!target) return
-  const events = dedupeEvents([...(payload.events ?? []), ...(payload.reversals ?? []), ...(payload.feed ?? [])]).slice(0, 6)
-  if (events.length === 0) {
-    target.innerHTML = '<p>No reversals or notable deltas were detected in this observed window.</p>'
-    return
+  const battle = activeBattle(data)
+  const events = battle ? dedupeEvents(data.events.filter((event) => event.battleId === battle.id)).slice(0, 5) : []
+  if (!events.length) { target.innerHTML = '<p class="empty-inline">No distinct battle event was detected in this observed window.</p>'; return }
+  target.innerHTML = events.map((event) => `<button type="button" class="event-item" data-battle-event-index="${event.index}"><span>${escapeHtml(formatClock(event.time))} · ${escapeHtml(label(event.type))}</span><strong>${escapeHtml(event.title)}</strong><p>${escapeHtml(event.summary)}</p></button>`).join('')
+  bindEventJumps(target)
+}
+
+function renderCoverage(data: Payload): void {
+  const target = document.querySelector<HTMLElement>('[data-battle-coverage]')
+  if (!target) return
+  const missing = (data.coverage.missingRatio * 100).toFixed(1)
+  const stateText = data.state === 'partial' ? 'Some UTC buckets were not observed.' : data.state === 'stale' ? 'The latest live bucket is delayed.' : data.state === 'empty' ? 'Fewer than two comparable streams were observed.' : data.state === 'demo' ? 'This response contains demo-majority rows.' : data.state === 'error' ? 'The data API failed.' : 'The observed window is current.'
+  target.innerHTML = `<strong>Coverage & limits</strong><p>${escapeHtml(stateText)} ${data.coverage.observedBuckets} of ${data.coverage.expectedBuckets} buckets are present (${missing}% missing). Offline, missing, and not-observed are kept separate. Activity / heat is unavailable and is not scored.</p>`
+}
+
+function bindChart(data: Payload, geometry: { width: number; pad: { left: number; right: number }; chartW: number }): void {
+  const chart = document.querySelector<SVGSVGElement>('[data-battle-chart]')
+  if (!chart) return
+  const selectAt = (clientX: number) => {
+    const rect = chart.getBoundingClientRect()
+    const local = ((clientX - rect.left) / Math.max(1, rect.width)) * geometry.width
+    const bounded = clamp(local, geometry.pad.left, geometry.width - geometry.pad.right)
+    const ratio = (bounded - geometry.pad.left) / Math.max(1, geometry.chartW)
+    state.selectedIndex = clamp(Math.round(ratio * Math.max(0, data.timeline.length - 1)), 0, Math.max(0, data.timeline.length - 1))
+    state.followLatest = state.selectedIndex === latestUsefulIndex(data)
+    syncUrl()
+    renderPrimary(data)
+    renderChart(data)
+    renderInspector(data)
   }
-  target.innerHTML = events.map((event) => `<article class="event-item"><strong>${escapeHtml(event.title ?? event.label ?? label(event.type ?? 'event'))}</strong><span>${escapeHtml(time(event.at ?? event.timestamp ?? event.bucket))}</span>${event.summary ? `<p>${escapeHtml(event.summary)}</p>` : ''}</article>`).join('')
-}
-
-function renderError(message: string): void {
-  const stage = document.querySelector<HTMLElement>('.battle-stage')
-  if (stage) stage.innerHTML = `<div class="notice">Battle Lines API unavailable: ${escapeHtml(message)}</div>`
-}
-
-function visibleLines(payload: BattlePayload): BattleLine[] {
-  return (payload.lines ?? []).slice(0, 5).map((line) => ({ ...line, points: normalizePoints(line).filter(isObservedPoint) })).filter((line) => normalizePoints(line).length > 1)
-}
-function currentLine(lines: BattleLine[]): BattleLine | undefined { return lines.find((line) => lineKey(line) === state.selectedLineId) ?? lines[0] }
-function lineKey(line: BattleLine): string { return line.id ?? line.name ?? line.displayName ?? 'line' }
-function lineLabel(line: BattleLine, index: number): string { return line.displayName ?? line.name ?? `Line ${index + 1}` }
-function normalizePoints(line: BattleLine): BattleLinePoint[] { return Array.isArray(line.points) ? line.points : Array.isArray(line.buckets) ? line.buckets : [] }
-function isObservedPoint(point: BattleLinePoint): boolean { return point.observed !== false && !['missing', 'offline', 'not_observed'].includes(String(point.state ?? '').toLowerCase()) }
-function pointValue(point: BattleLinePoint | undefined): number { const value = point?.viewers ?? point?.value ?? 0; return typeof value === 'number' && Number.isFinite(value) ? value : 0 }
-function pointTime(point: BattleLinePoint | undefined): string { return point?.bucket ?? point?.minute ?? time(point?.timestamp) }
-function dedupeEvents(events: BattleEvent[]): BattleEvent[] {
-  const seen = new Set<string>()
-  return events.filter((event) => {
-    const key = [event.title ?? event.label ?? event.type ?? '', event.at ?? event.timestamp ?? event.bucket ?? '', event.summary ?? ''].join('|').trim()
-    if (!key || seen.has(key)) return false
-    seen.add(key)
-    return true
+  chart.addEventListener('pointerdown', (event) => {
+    state.dragging = true
+    chart.setPointerCapture(event.pointerId)
+    selectAt(event.clientX)
+  })
+  chart.addEventListener('pointermove', (event) => { if (state.dragging) selectAt(event.clientX) })
+  chart.addEventListener('pointerup', (event) => { state.dragging = false; if (chart.hasPointerCapture(event.pointerId)) chart.releasePointerCapture(event.pointerId) })
+  chart.addEventListener('pointercancel', () => { state.dragging = false })
+  chart.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft') moveSelected(data, -1)
+    else if (event.key === 'ArrowRight') moveSelected(data, 1)
+    else if (event.key === 'Home') setSelected(data, 0)
+    else if (event.key === 'End') setSelected(data, latestUsefulIndex(data), true)
+    else return
+    event.preventDefault()
   })
 }
-function x(index: number, count: number, chartW: number, left: number): number { return left + (count <= 1 ? 0 : (index / (count - 1)) * chartW) }
-function y(value: number, min: number, max: number, chartH: number, top: number): number { return top + chartH - ((value - min) / Math.max(1, max - min)) * chartH }
-function grid(width: number, height: number, pad: { top: number; bottom: number; left: number; right: number }): string { return [0, .25, .5, .75, 1].map((ratio) => `<line x1="${pad.left}" x2="${width - pad.right}" y1="${pad.top + ratio * (height - pad.top - pad.bottom)}" y2="${pad.top + ratio * (height - pad.top - pad.bottom)}"/>`).join('') }
-function stroke(index: number): string { return ['#7dd3fc', '#f472b6', '#facc15', '#22d378', '#a78bfa'][index % 5] }
-function formatValue(value: number): string { return state.metric === 'indexed' ? value.toFixed(2) : formatNumber(value) }
-function formatNumber(value: number): string { return Math.abs(value) >= 1000 ? `${(value / 1000).toFixed(1)}K` : String(Math.round(value)) }
-function time(input: unknown): string { if (typeof input !== 'string' || !input) return '—'; const date = new Date(input); return Number.isNaN(date.getTime()) ? input : `${date.toISOString().slice(0, 16).replace('T', ' ')} UTC` }
-function label(input: string): string { return input.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()) }
-function escapeHtml(input: string): string { return input.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') }
-function escapeAttr(input: string): string { return escapeHtml(input).replace(/'/g, '&#39;') }
+
+function bindEventJumps(root: HTMLElement): void {
+  root.querySelectorAll<HTMLButtonElement>('[data-battle-event-index]').forEach((button) => button.addEventListener('click', () => {
+    if (!payload) return
+    setSelected(payload, parseIndex(button.dataset.battleEventIndex ?? null))
+    document.querySelector<HTMLElement>('[data-battle-stage]')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }))
+}
+
+function moveSelected(data: Payload, delta: number): void { setSelected(data, state.selectedIndex + delta) }
+function setSelected(data: Payload, index: number, follow = false): void {
+  state.selectedIndex = clamp(index, 0, Math.max(0, data.timeline.length - 1))
+  state.followLatest = follow || state.selectedIndex === latestUsefulIndex(data)
+  syncUrl()
+  renderAll()
+  document.querySelector<SVGSVGElement>('[data-battle-chart]')?.focus()
+}
+
+function activeBattle(data: Payload): Battle | null {
+  return data.battles.find((battle) => battle.id === state.selectedBattleId) ?? data.primaryBattle ?? null
+}
+
+function pairSnapshot(data: Payload, battle: Battle, index: number): { leaderName: string | null; gap: number | null; trend: GapTrend } {
+  const a = lineById(data, battle.streamerAId)
+  const b = lineById(data, battle.streamerBId)
+  if (!a || !b) return { leaderName: null, gap: null, trend: 'unavailable' }
+  const currentA = drawable(a.points[index])
+  const currentB = drawable(b.points[index])
+  if (currentA === null || currentB === null) return { leaderName: null, gap: null, trend: 'unavailable' }
+  const previousA = drawable(a.points[index - 1])
+  const previousB = drawable(b.points[index - 1])
+  const gap = Math.abs(currentA - currentB)
+  const previousGap = previousA === null || previousB === null ? null : Math.abs(previousA - previousB)
+  return { leaderName: currentA === currentB ? 'Tied' : currentA > currentB ? a.name : b.name, gap, trend: trend(previousGap, gap) }
+}
+
+function displayLines(data: Payload, battle: Battle): Line[] {
+  if (!isMobile()) return data.lines
+  const keep = new Set<string>(battle.pair)
+  if (state.selectedLineId) keep.add(state.selectedLineId)
+  for (const line of data.lines) {
+    if (keep.size >= 4) break
+    keep.add(line.id)
+  }
+  return data.lines.filter((line) => keep.has(line.id))
+}
+
+function lineSegments(line: Line, count: number, chartW: number, chartH: number, pad: { left: number; top: number }, yMax: number): string[] {
+  const segments: string[] = []
+  let current: string[] = []
+  line.points.forEach((point, index) => {
+    const value = drawable(point)
+    if (value === null) {
+      if (current.length > 1) segments.push(`M ${current.join(' L ')}`)
+      current = []
+      return
+    }
+    current.push(`${x(index, count, chartW, pad.left).toFixed(2)} ${y(value, yMax, chartH, pad.top).toFixed(2)}`)
+  })
+  if (current.length > 1) segments.push(`M ${current.join(' L ')}`)
+  return segments
+}
+
+function gapBand(data: Payload, battle: Battle, width: number, height: number, pad: { left: number; right: number; top: number; bottom: number }, yMax: number): string {
+  const a = lineById(data, battle.streamerAId)
+  const b = lineById(data, battle.streamerBId)
+  if (!a || !b) return ''
+  const chartW = width - pad.left - pad.right
+  const chartH = height - pad.top - pad.bottom
+  const polygons: string[] = []
+  let upper: string[] = []
+  let lower: string[] = []
+  const flush = () => {
+    if (upper.length > 1) polygons.push(`<path d="M ${upper.join(' L ')} L ${lower.reverse().join(' L ')} Z"/>`)
+    upper = []
+    lower = []
+  }
+  for (let index = 0; index < data.timeline.length; index += 1) {
+    const av = drawable(a.points[index])
+    const bv = drawable(b.points[index])
+    if (av === null || bv === null) { flush(); continue }
+    const px = x(index, data.timeline.length, chartW, pad.left).toFixed(2)
+    upper.push(`${px} ${y(Math.max(av, bv), yMax, chartH, pad.top).toFixed(2)}`)
+    lower.push(`${px} ${y(Math.min(av, bv), yMax, chartH, pad.top).toFixed(2)}`)
+  }
+  flush()
+  return polygons.join('')
+}
+
+function chartMarkers(data: Payload, battle: Battle, chartW: number, chartH: number, pad: { left: number; top: number }, yMax: number): string {
+  const output: string[] = []
+  const primary = battle.pair.map((id) => lineById(data, id)).filter((line): line is Line => Boolean(line))
+  primary.forEach((line) => {
+    const peakIndex = line.points.reduce((best, point, index) => (drawable(point) ?? -1) > (drawable(line.points[best]) ?? -1) ? index : best, 0)
+    const value = drawable(line.points[peakIndex])
+    if (value !== null) output.push(marker(peakIndex, value, 'Peak', lineColor(data.lines.indexOf(line)), data.timeline.length, chartW, chartH, pad, yMax))
+  })
+  data.reversals.filter((event) => event.battleId === battle.id).slice(0, isMobile() ? 3 : 8).forEach((event) => {
+    const a = lineById(data, battle.streamerAId)
+    const b = lineById(data, battle.streamerBId)
+    const value = Math.max(drawable(a?.points[event.index]) ?? 0, drawable(b?.points[event.index]) ?? 0)
+    output.push(marker(event.index, value, 'Reversal', '#eef4ff', data.timeline.length, chartW, chartH, pad, yMax))
+  })
+  return output.join('')
+}
+
+function marker(index: number, value: number, text: string, color: string, count: number, chartW: number, chartH: number, pad: { left: number; top: number }, yMax: number): string {
+  const px = x(index, count, chartW, pad.left)
+  const py = y(value, yMax, chartH, pad.top)
+  return `<g class="chart-marker"><circle cx="${px}" cy="${py}" r="5" fill="${color}"/><text x="${px + 7}" y="${Math.max(16, py - 8)}">${escapeHtml(text)}</text></g>`
+}
+
+function endpointLabels(data: Payload, battle: Battle, chartW: number, chartH: number, pad: { left: number; top: number }, yMax: number): string {
+  return battle.pair.map((id) => lineById(data, id)).filter((line): line is Line => Boolean(line)).map((line) => {
+    const index = lastObservedIndex(line)
+    if (index < 0) return ''
+    const value = drawable(line.points[index])
+    if (value === null) return ''
+    return `<text class="endpoint-label" x="${Math.min(1160, x(index, data.timeline.length, chartW, pad.left) + 8)}" y="${y(value, yMax, chartH, pad.top) + 4}" fill="${lineColor(data.lines.indexOf(line))}">${escapeHtml(line.name)}</text>`
+  }).join('')
+}
+
+function syncControls(): void {
+  setPressed('[data-battle-metric]', 'battleMetric', state.metric)
+  setPressed('[data-battle-top]', 'battleTop', String(state.top))
+  setPressed('[data-battle-bucket]', 'battleBucket', state.bucket)
+  setPressed('[data-battle-range]', 'battleRange', state.range)
+  const input = dateInput()
+  if (input) { input.value = state.date; input.max = todayUtc }
+  const recommended = document.querySelector<HTMLButtonElement>('[data-battle-recommended]')
+  if (recommended) recommended.disabled = !state.manualBattle
+}
+
+function setPressed(selector: string, key: string, value: string): void {
+  document.querySelectorAll<HTMLButtonElement>(selector).forEach((button) => {
+    const active = button.dataset[key] === value
+    button.classList.toggle('active', active)
+    button.setAttribute('aria-pressed', String(active))
+  })
+}
+
+function syncUrl(): void {
+  const next = new URLSearchParams()
+  if (state.metric !== 'viewers') next.set('metric', state.metric)
+  if (state.top !== 5) next.set('top', String(state.top))
+  if (state.bucket !== '5m') next.set('bucket', state.bucket)
+  if (state.range !== 'today') next.set('range', state.range)
+  if (state.range === 'date') next.set('date', state.date)
+  if (state.manualBattle && state.selectedBattleId) next.set('battle', state.selectedBattleId)
+  if (state.selectedLineId) next.set('stream', state.selectedLineId)
+  if (!state.followLatest && state.selectedIndex >= 0) next.set('point', String(state.selectedIndex))
+  history.replaceState(null, '', `${location.pathname}${next.size ? `?${next}` : ''}`)
+}
+
+function renderFatal(message: string): void {
+  const status = document.querySelector<HTMLElement>('[data-battle-status]')
+  if (status) { status.className = 'battle-status battle-status--error'; status.innerHTML = `<strong>Error</strong><span>${escapeHtml(message)}</span>` }
+  const stage = document.querySelector<HTMLElement>('[data-battle-stage]')
+  if (stage) stage.innerHTML = `<div class="notice">Battle Lines is unavailable: ${escapeHtml(message)}</div>`
+}
+
+function startAutoRefresh(): void {
+  window.clearInterval(autoTimer)
+  autoTimer = window.setInterval(() => {
+    if (state.range === 'today') void hydrate({ preserveBattle: true, preserveTime: !state.followLatest })
+  }, 60_000)
+}
+
+function setBusy(busy: boolean): void {
+  document.querySelectorAll<HTMLButtonElement>('[data-battle-refresh]').forEach((button) => { button.disabled = busy; button.textContent = busy ? 'Loading…' : 'Refresh' })
+}
+
+function latestUsefulIndex(data: Payload): number {
+  for (let index = data.timeline.length - 1; index >= 0; index -= 1) if (data.lines.some((line) => drawable(line.points[index]) !== null)) return index
+  return Math.max(0, data.timeline.length - 1)
+}
+function nearestTimelineIndex(timeline: string[], bucket: string): number {
+  const target = Date.parse(bucket)
+  let best = 0
+  let distance = Number.POSITIVE_INFINITY
+  timeline.forEach((item, index) => { const next = Math.abs(Date.parse(item) - target); if (next < distance) { distance = next; best = index } })
+  return best
+}
+function lineById(data: Payload, id: string): Line | undefined { return data.lines.find((line) => line.id === id) }
+function drawable(point: Point | undefined): number | null { return point?.state === 'observed' && typeof point.value === 'number' && Number.isFinite(point.value) ? point.value : null }
+function lastValue(line: Line): number | null { const index = lastObservedIndex(line); return index >= 0 ? drawable(line.points[index]) : null }
+function lastObservedIndex(line: Line): number { for (let index = line.points.length - 1; index >= 0; index -= 1) if (drawable(line.points[index]) !== null) return index; return -1 }
+function formatDelta(line: Line, index: number): string { const current = drawable(line.points[index]); const previous = drawable(line.points[index - 1]); if (current === null || previous === null) return 'Δ unavailable'; const delta = current - previous; return `${delta >= 0 ? '+' : '−'}${formatMetric(Math.abs(delta))}` }
+function trend(previous: number | null, current: number | null): GapTrend { if (previous === null || current === null) return 'unavailable'; const tolerance = Math.max(1, previous * .02); return current < previous - tolerance ? 'closing' : current > previous + tolerance ? 'widening' : 'steady' }
+function dedupeEvents(events: BattleEvent[]): BattleEvent[] { const seen = new Set<string>(); return events.filter((event) => { if (!event.id || seen.has(event.id)) return false; seen.add(event.id); return true }) }
+function tickIndexes(count: number, desired: number): number[] { if (count <= 1) return [0]; return Array.from(new Set(Array.from({ length: desired }, (_, index) => Math.round((index / (desired - 1)) * (count - 1))))) }
+function x(index: number, count: number, width: number, left: number): number { return left + (count <= 1 ? 0 : index / (count - 1)) * width }
+function y(value: number, max: number, height: number, top: number): number { return top + height - (value / Math.max(1, max)) * height }
+function niceMaximum(value: number): number { const power = 10 ** Math.floor(Math.log10(Math.max(1, value))); const normalized = value / power; const nice = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10; return nice * power }
+function lineColor(index: number): string { return ['#7dd3fc', '#f472b6', '#facc15', '#22d378', '#a78bfa', '#fb923c', '#2dd4bf', '#e879f9', '#94a3b8', '#f87171'][Math.max(0, index) % 10] }
+function formatMetric(value: number | null): string { if (value === null || !Number.isFinite(value)) return '—'; return state.metric === 'indexed' ? `${value.toFixed(value % 1 ? 1 : 0)}` : formatNumber(value) }
+function axisMetric(value: number): string { return state.metric === 'indexed' ? String(Math.round(value)) : formatNumber(value) }
+function formatNumber(value: number): string { const absolute = Math.abs(value); if (absolute >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`; if (absolute >= 1000) return `${(value / 1000).toFixed(1)}K`; return String(Math.round(value)) }
+function formatInstant(value: string): string { const date = new Date(value); return Number.isNaN(date.getTime()) ? '—' : `${date.toISOString().slice(0, 16).replace('T', ' ')} UTC` }
+function formatClock(value: string): string { const date = new Date(value); return Number.isNaN(date.getTime()) ? value : `${date.toISOString().slice(11, 16)} UTC` }
+function formatSelectedTime(data: Payload): string { const value = data.timeline[state.selectedIndex]; return value ? formatInstant(value) : 'No selected bucket' }
+function parseTop(value: string | null): 3 | 5 | 10 { return value === '3' ? 3 : value === '10' ? 10 : 5 }
+function parseRange(value: string | null): RangeMode { return value === 'yesterday' || value === 'date' ? value : 'today' }
+function parseIndex(value: string | null): number { const parsed = Number(value); return Number.isInteger(parsed) && parsed >= 0 ? parsed : -1 }
+function validDate(value: string | null): string | null { if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null; const date = new Date(`${value}T00:00:00.000Z`); return Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value ? null : value }
+function dateInput(): HTMLInputElement | null { return document.querySelector<HTMLInputElement>('[data-battle-date]') }
+function isMobile(): boolean { return window.matchMedia('(max-width: 760px)').matches }
+function label(value: string): string { return value.replace(/_/g, ' ').replace(/\b\w/g, (character) => character.toUpperCase()) }
+function escapeClass(value: string): string { return value.toLowerCase().replace(/[^a-z0-9_-]+/g, '-') }
+function escapeHtml(value: string): string { return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') }
+function escapeAttr(value: string): string { return escapeHtml(value).replace(/'/g, '&#39;') }
+function clamp(value: number, minimum: number, maximum: number): number { return Math.min(maximum, Math.max(minimum, value)) }
