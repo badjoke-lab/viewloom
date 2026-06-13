@@ -209,21 +209,21 @@ function renderEnhancedSummary(payload: DayFlowPayload): void {
     summaryCard('Peak field', formatCompact(peakTotal), formatTime(buckets[peakIndex])),
     summaryCard('Average field', formatCompact(averageTotal), `${observedIndexes.length} observed buckets`),
     summaryCard('Viewer-minutes', formatLarge(viewerMinutes), `${bucketSize}m bucket integration`),
-    summaryCard('Longest lead', longest ? name(longest.band) : '—', longest ? `${formatDuration(longest.count * bucketSize)} · ${formatTimeRange(buckets, longest.start, longest.end)}` : 'No leader run'),
+    summaryCard('Longest lead', longest ? bandName(longest.band) : '—', longest ? `${formatDuration(longest.count * bucketSize)} · ${formatTimeRange(buckets, longest.start, longest.end)}` : 'No leader run'),
     summaryCard('Lead changes', formatInteger(leadChanges), `${leaderStats.uniqueLeaders} unique leaders`),
-    summaryCard('Biggest rise', biggestRise ? name(biggestRise.band) : '—', biggestRise ? `${formatSigned(biggestRise.delta)} · ${formatTime(buckets[biggestRise.index])}` : 'No positive move'),
-    summaryCard('Biggest drop', biggestDrop ? name(biggestDrop.band) : '—', biggestDrop ? `${formatSigned(biggestDrop.delta)} · ${formatTime(buckets[biggestDrop.index])}` : 'No negative move'),
-    summaryCard('Peak global share', peakShare ? name(peakShare.band) : '—', peakShare ? `${formatPercent(peakShare.share)} · ${formatTime(buckets[peakShare.index])}` : 'Unavailable'),
+    summaryCard('Biggest rise', biggestRise ? bandName(biggestRise.band) : '—', biggestRise ? `${formatSigned(biggestRise.delta)} · ${formatTime(buckets[biggestRise.index])}` : 'No positive move'),
+    summaryCard('Biggest drop', biggestDrop ? bandName(biggestDrop.band) : '—', biggestDrop ? `${formatSigned(biggestDrop.delta)} · ${formatTime(buckets[biggestDrop.index])}` : 'No negative move'),
+    summaryCard('Peak global share', peakShare ? bandName(peakShare.band) : '—', peakShare ? `${formatPercent(peakShare.share)} · ${formatTime(buckets[peakShare.index])}` : 'Unavailable'),
   ].join('')
 
   const rankingRows = ranked.map((entry, index) => {
     const width = Math.max(2, Math.min(100, entry.value / maxRankValue * 100))
-    return `<div class="dayflow-summary-rank" title="${escapeHtml(name(entry.band))}"><b>${index + 1}</b><strong>${escapeHtml(name(entry.band))}</strong><span>${formatLarge(entry.value)}</span><span>${formatPercent(entry.value / denominator)}</span><i style="width:${width.toFixed(2)}%"></i></div>`
+    return `<div class="dayflow-summary-rank" title="${escapeHtml(bandName(entry.band))}"><b>${index + 1}</b><strong>${escapeHtml(bandName(entry.band))}</strong><span>${formatLarge(entry.value)}</span><span>${formatPercent(entry.value / denominator)}</span><i style="width:${width.toFixed(2)}%"></i></div>`
   }).join('')
 
   const fieldDirection = peakIndex > observedIndexes[Math.floor(observedIndexes.length / 2)] ? 'The field peaked in the later part of the selected window.' : 'The field peaked in the earlier part of the selected window.'
   const competition = leadChanges === 0 ? 'The same stream held the observed lead throughout the usable window.' : `${leadChanges} lead changes show how often the top position changed hands.`
-  const movement = biggestRise && biggestDrop ? `${name(biggestRise.band)} produced the largest positive bucket move; ${name(biggestDrop.band)} produced the largest negative move.` : 'Bucket-to-bucket movement is limited in this window.'
+  const movement = biggestRise && biggestDrop ? `${bandName(biggestRise.band)} produced the largest positive bucket move; ${bandName(biggestDrop.band)} produced the largest negative move.` : 'Bucket-to-bucket movement is limited in this window.'
 
   summaryWriting = true
   summaryRoot.innerHTML = `<div class="dayflow-summary-overview"><div class="dayflow-summary-stats">${cards}</div><div class="dayflow-summary-bottom"><div class="dayflow-summary-ranking"><div class="dayflow-summary-subhead"><strong>Top by viewer-minutes</strong><span>Current Top ${payload.topN ?? bands.length}</span></div>${rankingRows || '<div class="notice">No ranked viewer-minute data.</div>'}</div><div class="dayflow-summary-reading"><small>Day reading</small><strong>${escapeHtml(fieldDirection)}</strong><p>${escapeHtml(competition)}</p><p>${escapeHtml(movement)}</p></div></div></div>`
@@ -307,14 +307,14 @@ function viewerAt(band: DayFlowBand | null, index: number): number {
 }
 
 function isOthers(band: DayFlowBand): boolean {
-  return band.isOthers === true || bandId(band) === 'others' || name(band).toLowerCase() === 'others'
+  return band.isOthers === true || bandId(band) === 'others' || bandName(band).toLowerCase() === 'others'
 }
 
 function bandId(band: DayFlowBand): string {
   return String(band.streamerId ?? band.name ?? '')
 }
 
-function name(band: DayFlowBand): string {
+function bandName(band: DayFlowBand): string {
   return String(band.name ?? band.streamerId ?? 'Unknown')
 }
 
