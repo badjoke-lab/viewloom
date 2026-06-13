@@ -115,6 +115,14 @@ export type BuildBattlePayloadOptions = {
   sampleIntervalMinutes?: number
 }
 
+type StreamAccumulator = {
+  item: BattleSourceItem
+  values: Array<number | null>
+  present: Set<number>
+  first: number | null
+  last: number | null
+}
+
 const MINUTE = 60 * 1000
 const STALE_AFTER_MS = 15 * MINUTE
 
@@ -190,13 +198,7 @@ export function buildBattleLinesPayload(rows: BattleSourceRow[], options: BuildB
   const timeline = buildTimeline(options.period.from, options.period.to, bucketMinutes)
   const bucketIndex = new Map(timeline.map((value, index) => [value, index]))
   const observedBuckets = new Set<number>()
-  const streams = new Map<string, {
-    item: BattleSourceItem
-    values: Array<number | null>
-    present: Set<number>
-    first: number | null
-    last: number | null
-  }>()
+  const streams = new Map<string, StreamAccumulator>()
   let demoRows = 0
 
   for (const row of rows) {
@@ -214,9 +216,9 @@ export function buildBattleLinesPayload(rows: BattleSourceRow[], options: BuildB
         url: rawItem.url ?? '',
         viewers: safeViewerCount(rawItem.viewers),
       }
-      const entry = streams.get(id) ?? {
+      const entry: StreamAccumulator = streams.get(id) ?? {
         item,
-        values: timeline.map(() => null),
+        values: timeline.map<number | null>(() => null),
         present: new Set<number>(),
         first: null,
         last: null,
@@ -311,13 +313,7 @@ export function buildBattleLinesPayload(rows: BattleSourceRow[], options: BuildB
 }
 
 function makeLine(
-  entry: {
-    item: BattleSourceItem
-    values: Array<number | null>
-    present: Set<number>
-    first: number | null
-    last: number | null
-  },
+  entry: StreamAccumulator,
   timeline: string[],
   observedBuckets: Set<number>,
   bucketMinutes: number,
