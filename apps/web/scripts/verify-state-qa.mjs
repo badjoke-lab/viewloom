@@ -31,9 +31,9 @@ const contracts = [
   {
     path: 'src/live/battle-lines-current-shell-entry.ts',
     required: [
-      'No primary battle is available for this observed window.',
+      'No selectable stream is available for this observed window.',
       'No connected Battle Lines can be drawn for this observed window.',
-      'No reversals or notable deltas were detected in this observed window.',
+      'No distinct reversals or notable deltas were detected in this observed window.',
       'Battle Lines API unavailable:',
       'isObservedPoint',
       'missing',
