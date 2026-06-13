@@ -63,7 +63,9 @@ for (const path of featurePages.filter((path) => existsSync(join(root, path)))) 
 for (const path of visualPages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
   if (path.includes('/day-flow/')) {
-    requirePattern(path, source, 'Wide-first Day Flow shell', /class="[^"]*\bdayflow-wide-sections\b/)
+    requirePattern(path, source, 'Split-default Day Flow shell', /class="[^"]*\bdayflow-layout-shell\b[^\"]*\bis-split\b/)
+    requireFragment(path, source, 'data-dayflow-layout="split"')
+    requireFragment(path, source, 'data-dayflow-layout="wide"')
     requirePattern(path, source, 'mobile Day Flow breakpoint', /@media\(max-width:760px\)/)
     requirePattern(path, source, 'touch scrubbing surface', /touch-action:none/)
   } else {
@@ -101,6 +103,16 @@ if (!existsSync(join(root, cssPath))) {
   requirePattern(cssPath, source, 'footer mobile stack', /\.footer\{padding:16px 14px 28px;display:block\}/)
 }
 
+const dayFlowCssPath = 'src/dayflow-layout-summary.css'
+if (!existsSync(join(root, dayFlowCssPath))) {
+  failures.push(`${dayFlowCssPath}: missing Day Flow layout CSS`)
+} else {
+  const source = read(dayFlowCssPath)
+  requireFragment(dayFlowCssPath, source, '@media (max-width: 1000px)')
+  requirePattern(dayFlowCssPath, source, 'Day Flow Split collapse', /\.dayflow-layout-shell\.is-split[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/)
+  requirePattern(dayFlowCssPath, source, 'hide desktop layout switch on narrow screens', /\[data-dayflow-layout-stack\][\s\S]*display:\s*none/)
+}
+
 const contractPath = 'docs/mobile-qa-contract.md'
 if (!existsSync(join(root, contractPath))) {
   failures.push(`${contractPath}: missing mobile QA contract`)
@@ -117,4 +129,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom Mobile QA verification passed for ${pages.length} public pages, including Wide-first Day Flow.`)
+console.log(`ViewLoom Mobile QA verification passed for ${pages.length} public pages, including desktop Split-default Day Flow with mobile single-column collapse.`)
