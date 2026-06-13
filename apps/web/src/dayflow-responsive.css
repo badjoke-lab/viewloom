@@ -1,3 +1,16 @@
 .dayflow-summary-grid div {
   min-width: 0;
 }
+
+.stream-detail-head > div:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.stream-detail-head h2 {
+  max-width: 100%;
+}
+
+.stream-detail-now {
+  flex: 0 0 auto;
+}
