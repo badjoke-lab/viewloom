@@ -1,0 +1,97 @@
+name: Day Flow preview QA
+
+on:
+  push:
+    branches:
+      - fix/day-flow-complete
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:web
+      - run: pnpm typecheck:web
+      - run: node apps/web/scripts/verify-dayflow-qa.mjs
+      - run: node apps/web/scripts/verify-mobile-qa.mjs
+
+      - name: Wait for Cloudflare branch preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin="https://fix-day-flow-complete.viewloom.pages.dev"
+          for attempt in $(seq 1 30); do
+            html=$(curl -fsSL --max-time 20 "$origin/twitch/day-flow/" || true)
+            if grep -q 'data-dayflow-layout="split"' <<<"$html" && grep -q 'day-flow-layout-summary' <<<"$html"; then
+              echo "Preview is ready on attempt $attempt"
+              exit 0
+            fi
+            echo "Preview not ready yet: attempt $attempt"
+            sleep 10
+          done
+          echo "Preview did not expose the current Day Flow build in time" >&2
+          exit 1
+
+      - name: Verify preview APIs and page contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin="https://fix-day-flow-complete.viewloom.pages.dev"
+          twitch_api="$origin/api/day-flow?metric=volume&top=20&bucket=5&rangeMode=today"
+          kick_api="$origin/api/kick-day-flow?metric=volume&top=20&bucket=5&rangeMode=today"
+
+          curl -fsSL --max-time 30 "$twitch_api" -o twitch-dayflow.json
+          curl -fsSL --max-time 30 "$kick_api" -o kick-dayflow.json
+          curl -fsSL --max-time 30 "$origin/twitch/day-flow/" -o twitch-dayflow.html
+          curl -fsSL --max-time 30 "$origin/kick/day-flow/" -o kick-dayflow.html
+
+          node - <<'NODE'
+          const fs = require('node:fs')
+          for (const file of ['twitch-dayflow.json', 'kick-dayflow.json']) {
+            const payload = JSON.parse(fs.readFileSync(file, 'utf8'))
+            if (!Array.isArray(payload.buckets)) throw new Error(`${file}: buckets missing`)
+            if (!Array.isArray(payload.bands)) throw new Error(`${file}: bands missing`)
+            if (payload.state === 'error' || payload.status === 'Error') throw new Error(`${file}: API returned error state`)
+            console.log(`${file}: ${payload.state ?? payload.status}, ${payload.buckets.length} buckets, ${payload.bands.length} bands`)
+          }
+          for (const file of ['twitch-dayflow.html', 'kick-dayflow.html']) {
+            const html = fs.readFileSync(file, 'utf8')
+            for (const fragment of [
+              'class="dayflow-layout-shell is-split"',
+              'data-dayflow-layout="split"',
+              'data-dayflow-layout="wide"',
+              '/src/live/day-flow-layout-summary.ts',
+              'Field scale · leadership · movement',
+            ]) {
+              if (!html.includes(fragment)) throw new Error(`${file}: missing ${fragment}`)
+            }
+            console.log(`${file}: Split/Wide and expanded summary shell present`)
+          }
+          NODE
+
+      - name: Upload preview evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dayflow-preview-qa
+          path: |
+            twitch-dayflow.json
+            kick-dayflow.json
+            twitch-dayflow.html
+            kick-dayflow.html
+          if-no-files-found: ignore
