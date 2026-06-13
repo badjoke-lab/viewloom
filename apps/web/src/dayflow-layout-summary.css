@@ -1,0 +1,426 @@
+.dayflow-layout-shell {
+  display: grid;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.dayflow-layout-shell > * {
+  min-width: 0;
+}
+
+.dayflow-layout-shell.is-split {
+  --dayflow-split-height: clamp(680px, 74vh, 820px);
+  grid-template-columns: minmax(0, 1.72fr) minmax(360px, .78fr);
+  grid-template-rows: var(--dayflow-split-height);
+}
+
+.dayflow-layout-shell.is-wide {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dayflow-layout-shell .dayflow-wide-sections {
+  margin-top: 0;
+}
+
+.dayflow-layout-shell.is-split > section,
+.dayflow-layout-shell.is-split .dayflow-wide-sections {
+  min-height: 0;
+  height: var(--dayflow-split-height);
+}
+
+.dayflow-layout-shell.is-split > section {
+  display: flex;
+}
+
+.dayflow-layout-shell.is-split .dayflow-stage {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.dayflow-layout-shell.is-split .dayflow-wide-sections {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(250px, auto) minmax(0, 1fr);
+  gap: 16px;
+  position: sticky;
+  top: 68px;
+  overflow: visible;
+}
+
+/* Split order: Selected streamer first, Time Focus second. */
+.dayflow-layout-shell.is-split .dayflow-wide-sections > .surface:first-child {
+  order: 2;
+}
+
+.dayflow-layout-shell.is-split .dayflow-wide-sections > .surface:last-child {
+  order: 1;
+}
+
+.dayflow-layout-shell.is-split .dayflow-wide-sections > .surface {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.dayflow-layout-shell.is-split .dayflow-wide-sections > .surface .surface__body {
+  min-height: 0;
+}
+
+/* Compact Selected streamer so the full right rail fits beside the chart. */
+.dayflow-layout-shell.is-split .stream-detail-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  margin-bottom: 10px;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-head h2 {
+  max-width: 100%;
+  margin: 3px 0 5px;
+  font-size: clamp(22px, 2vw, 32px);
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-head p {
+  display: -webkit-box;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-now {
+  margin-top: 0;
+  text-align: right;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-now strong {
+  font-size: 26px;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.dayflow-layout-shell.is-split .stream-detail-grid div {
+  padding: 8px 7px;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-grid dt {
+  font-size: 8px;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-grid dd {
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-actions {
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.dayflow-layout-shell.is-split .stream-detail-actions .button {
+  min-height: 32px;
+  padding: 7px 10px;
+  font-size: 11px;
+}
+
+/* Time Focus consumes the remaining height without its own scrollbar. */
+.dayflow-layout-shell.is-split .dayflow-wide-sections > .surface:first-child .surface__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dayflow-layout-shell.is-split .time-focus-head {
+  flex: 0 0 auto;
+  margin-bottom: 8px;
+}
+
+.dayflow-layout-shell.is-split .time-focus-head strong {
+  font-size: 16px;
+}
+
+.dayflow-layout-shell.is-split .time-focus-list {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  min-height: 0;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row {
+  grid-template-columns: 22px minmax(0, 1fr) 62px 46px;
+  grid-template-areas:
+    "rank name viewers share"
+    ". gap delta movement";
+  grid-template-rows: auto auto;
+  gap: 2px 7px;
+  min-height: 0;
+  padding: 7px 6px 8px;
+  align-content: center;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row .rank {
+  grid-area: rank;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row strong {
+  grid-area: name;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row .time-focus-value {
+  grid-area: viewers;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row span:nth-of-type(3) {
+  grid-area: share;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row span:nth-of-type(4) {
+  grid-area: gap;
+  color: var(--muted);
+}
+
+.dayflow-layout-shell.is-split .time-focus-row span:nth-of-type(5) {
+  grid-area: delta;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row span:nth-of-type(6) {
+  grid-area: movement;
+  text-align: right;
+}
+
+.dayflow-layout-shell.is-split .time-focus-row span:nth-of-type(n+4) {
+  font-size: 10px;
+}
+
+.dayflow-summary-overview {
+  display: grid;
+  gap: 16px;
+}
+
+.dayflow-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--line-strong);
+  border-left: 1px solid var(--line-strong);
+}
+
+.dayflow-summary-stat {
+  min-width: 0;
+  padding: 14px;
+  border-right: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.dayflow-summary-stat small,
+.dayflow-summary-rank small {
+  display: block;
+  color: var(--muted);
+  font: 700 9px var(--mono);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.dayflow-summary-stat strong {
+  display: block;
+  margin-top: 7px;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dayflow-summary-stat span {
+  display: block;
+  min-height: 16px;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dayflow-summary-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, .72fr);
+  gap: 16px;
+}
+
+.dayflow-summary-ranking,
+.dayflow-summary-reading {
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, .015);
+}
+
+.dayflow-summary-subhead {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.dayflow-summary-subhead strong {
+  font-size: 13px;
+}
+
+.dayflow-summary-subhead span {
+  color: var(--muted);
+  font: 700 9px var(--mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.dayflow-summary-rank {
+  position: relative;
+  display: grid;
+  grid-template-columns: 25px minmax(110px, 1fr) 86px 58px;
+  gap: 9px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.dayflow-summary-rank:last-child {
+  border-bottom: 0;
+}
+
+.dayflow-summary-rank > i {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--accent);
+  opacity: .75;
+}
+
+.dayflow-summary-rank strong {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dayflow-summary-rank span {
+  text-align: right;
+  font: 700 11px var(--mono);
+}
+
+.dayflow-summary-reading {
+  padding: 14px;
+}
+
+.dayflow-summary-reading p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.dayflow-summary-reading strong {
+  display: block;
+  font-size: 15px;
+}
+
+@media (max-width: 1180px) {
+  .dayflow-layout-shell.is-split {
+    grid-template-columns: minmax(0, 1.48fr) minmax(330px, .82fr);
+  }
+
+  .dayflow-layout-shell.is-split .stream-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dayflow-summary-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1000px) {
+  .dayflow-layout-shell,
+  .dayflow-layout-shell.is-split,
+  .dayflow-layout-shell.is-wide {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+  }
+
+  .dayflow-layout-shell.is-split > section,
+  .dayflow-layout-shell.is-split .dayflow-wide-sections {
+    height: auto;
+  }
+
+  .dayflow-layout-shell.is-split .dayflow-wide-sections {
+    position: static;
+    overflow: visible;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+  }
+
+  .dayflow-layout-shell.is-split .dayflow-wide-sections > .surface:first-child,
+  .dayflow-layout-shell.is-split .dayflow-wide-sections > .surface:last-child {
+    order: initial;
+  }
+
+  .dayflow-layout-shell.is-split .dayflow-stage {
+    height: 520px;
+    min-height: 460px;
+  }
+
+  .dayflow-layout-shell.is-split .dayflow-wide-sections > .surface:first-child .surface__body {
+    display: block;
+    overflow: visible;
+  }
+
+  .dayflow-layout-shell.is-split .time-focus-list {
+    display: block;
+  }
+
+  .dayflow-layout-shell.is-split .time-focus-row {
+    grid-template-columns: 25px minmax(100px, 1fr) 64px 56px;
+    grid-template-areas: none;
+    grid-template-rows: auto;
+    gap: 9px;
+    padding: 11px 8px;
+  }
+
+  .dayflow-layout-shell.is-split .time-focus-row > * {
+    grid-area: auto !important;
+  }
+
+  [data-dayflow-layout-stack] {
+    display: none !important;
+  }
+
+  .dayflow-summary-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .dayflow-summary-stats {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .dayflow-summary-rank {
+    grid-template-columns: 22px minmax(90px, 1fr) 72px;
+  }
+
+  .dayflow-summary-rank span:last-of-type {
+    display: none;
+  }
+}

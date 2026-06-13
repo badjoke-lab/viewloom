@@ -1,3 +1,5 @@
+import './dayflow-responsive.css'
+
 (() => {
   const menu = document.querySelector('[data-mobile-menu]');
   if (menu) menu.addEventListener('click', () => {

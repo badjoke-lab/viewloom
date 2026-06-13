@@ -23,8 +23,9 @@ const pages = [
 ]
 
 const featurePages = pages.filter((path) => path.includes('/heatmap/') || path.includes('/day-flow/') || path.includes('/battle-lines/') || path.includes('/history/') || path.includes('/status/'))
-const splitVisualPages = pages.filter((path) => path.includes('/heatmap/') || path.includes('/day-flow/') || path.includes('/history/'))
-const toolbarPages = pages.filter((path) => path.includes('/day-flow/'))
+const splitVisualPages = pages.filter((path) => path.includes('/heatmap/') || path.includes('/history/'))
+const dayFlowPages = pages.filter((path) => path.includes('/day-flow/'))
+const toolbarPages = dayFlowPages
 const battlePages = pages.filter((path) => path.includes('/battle-lines/'))
 const ledgerPages = pages.filter((path) => path.includes('/history/') || path.includes('/status/'))
 
@@ -62,18 +63,24 @@ for (const path of pages) {
 }
 
 for (const path of featurePages.filter((path) => existsSync(join(root, path)))) {
-  const source = read(path)
-  requireFragment(path, source, 'class="feature-tabs"')
+  requireFragment(path, read(path), 'class="feature-tabs"')
 }
 
 for (const path of splitVisualPages.filter((path) => existsSync(join(root, path)))) {
+  requireFragment(path, read(path), 'class="layout-split"')
+}
+
+for (const path of dayFlowPages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
-  requireFragment(path, source, 'class="layout-split"')
+  requirePattern(path, source, 'Split-default Day Flow shell', /class="[^"]*\bdayflow-layout-shell\b[^"]*\bis-split\b/)
+  requireFragment(path, source, 'data-dayflow-layout="split"')
+  requireFragment(path, source, 'data-dayflow-layout="wide"')
+  requirePattern(path, source, 'mobile Day Flow breakpoint', /@media\(max-width:760px\)/)
+  requirePattern(path, source, 'touch scrubbing surface', /touch-action:none/)
 }
 
 for (const path of toolbarPages.filter((path) => existsSync(join(root, path)))) {
-  const source = read(path)
-  requireFragment(path, source, 'class="toolbar"')
+  requirePattern(path, read(path), 'toolbar class', /class="[^"]*\btoolbar\b/)
 }
 
 for (const path of battlePages.filter((path) => existsSync(join(root, path)))) {
@@ -88,14 +95,12 @@ for (const path of battlePages.filter((path) => existsSync(join(root, path)))) {
 }
 
 for (const path of ledgerPages.filter((path) => existsSync(join(root, path)))) {
-  const source = read(path)
-  requireFragment(path, source, 'class="metric-ledger')
+  requireFragment(path, read(path), 'class="metric-ledger')
 }
 
 for (const path of ['twitch/heatmap/index.html', 'kick/heatmap/index.html']) {
   if (!existsSync(join(root, path))) continue
-  const source = read(path)
-  requireFragment(path, source, 'class="heatmap-wrap')
+  requireFragment(path, read(path), 'class="heatmap-wrap')
 }
 
 const cssPath = 'src/mock-site.css'
@@ -113,6 +118,16 @@ if (!existsSync(join(root, cssPath))) {
   requirePattern(cssPath, source, 'feature tabs horizontal scroll padding', /\.feature-tabs,\.provider-tabs\{margin-left:-14px/)
   requirePattern(cssPath, source, 'toolbar horizontal scroll', /\.toolbar\{overflow-x:auto;flex-wrap:nowrap/)
   requirePattern(cssPath, source, 'footer mobile stack', /\.footer\{padding:16px 14px 28px;display:block\}/)
+}
+
+const dayFlowCssPath = 'src/dayflow-layout-summary.css'
+if (!existsSync(join(root, dayFlowCssPath))) {
+  failures.push(`${dayFlowCssPath}: missing Day Flow layout CSS`)
+} else {
+  const source = read(dayFlowCssPath)
+  requireFragment(dayFlowCssPath, source, '@media (max-width: 1000px)')
+  requirePattern(dayFlowCssPath, source, 'Day Flow Split collapse', /\.dayflow-layout-shell\.is-split[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/)
+  requirePattern(dayFlowCssPath, source, 'hide desktop layout switch on narrow screens', /\[data-dayflow-layout-stack\][\s\S]*display:\s*none/)
 }
 
 const battleCssPath = 'src/live/battle-lines-wide.css'
@@ -143,4 +158,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom Mobile QA verification passed for ${pages.length} public pages.`)
+console.log(`ViewLoom Mobile QA verification passed for ${pages.length} public pages, including Split-default Day Flow and Wide Battle Lines.`)
