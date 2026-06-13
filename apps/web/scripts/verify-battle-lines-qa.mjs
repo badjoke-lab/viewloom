@@ -22,16 +22,33 @@ function forbidPattern(path, source, label, pattern) {
 
 const battlePages = ['twitch/battle-lines/index.html', 'kick/battle-lines/index.html']
 const entryPath = 'src/live/battle-lines-current-shell-entry.ts'
+const guardPath = 'src/live/battle-lines-loading-guard.ts'
 const stylePath = 'src/live/battle-lines-wide.css'
+const recoveryStylePath = 'src/live/battle-lines-recovery.css'
+const requestPath = 'functions/_lib/battle-lines-request.ts'
+const twitchApiPath = 'functions/api/battle-lines.ts'
+const kickApiPath = 'functions/api/kick-battle-lines.ts'
 const contractPath = 'docs/battle-lines-qa-contract.md'
 
-for (const path of [...battlePages, entryPath, stylePath, contractPath]) requireFile(path)
+for (const path of [
+  ...battlePages,
+  entryPath,
+  guardPath,
+  stylePath,
+  recoveryStylePath,
+  requestPath,
+  twitchApiPath,
+  kickApiPath,
+  contractPath,
+]) requireFile(path)
 
 for (const path of battlePages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
   for (const fragment of [
     '/src/live/battle-lines-current-shell-entry.ts',
+    '/src/live/battle-lines-loading-guard.ts',
     '/src/live/battle-lines-wide.css',
+    '/src/live/battle-lines-recovery.css',
     'class="battle-stage"',
     'data-battle-primary',
     'data-battle-inspector',
@@ -42,6 +59,7 @@ for (const path of battlePages.filter((path) => existsSync(join(root, path)))) {
     'data-battle-range="today"',
     'data-battle-range="yesterday"',
     'data-battle-date',
+    'hidden disabled',
     'data-battle-metric="viewers"',
     'data-battle-metric="indexed"',
     'data-battle-top="3"',
@@ -96,9 +114,48 @@ if (existsSync(join(root, entryPath))) {
   forbidPattern(entryPath, source, 'old selected-stream inspector', /Selected stream|Nearest line/)
 }
 
+if (existsSync(join(root, guardPath))) {
+  const source = read(guardPath)
+  for (const fragment of [
+    'BATTLE_LINES_TIMEOUT_MS',
+    'AbortController',
+    'renderUnavailableSurface(',
+    'syncDateInputVisibility(',
+    'Use Refresh to retry.',
+  ]) requireFragment(guardPath, source, fragment)
+}
+
+if (existsSync(join(root, requestPath))) {
+  const source = read(requestPath)
+  for (const fragment of [
+    'BATTLE_QUERY_TIMEOUT_MS',
+    'BATTLE_MAX_SNAPSHOT_ROWS',
+    'withTimeout',
+    'compactBattleRows',
+    '.slice(0, Math.max(2, top))',
+  ]) requireFragment(requestPath, source, fragment)
+}
+
+for (const path of [twitchApiPath, kickApiPath].filter((path) => existsSync(join(root, path)))) {
+  const source = read(path)
+  for (const fragment of [
+    'ORDER BY bucket_minute DESC',
+    'LIMIT ${BATTLE_MAX_SNAPSHOT_ROWS}',
+    'withTimeout(',
+    'compactBattleRows(',
+    'diagnostics:',
+    "'server-timing'",
+  ]) requireFragment(path, source, fragment)
+}
+
 if (existsSync(join(root, stylePath))) {
   const source = read(stylePath)
   for (const fragment of ['.battle-controls', '.battle-primary', '.battle-chart-wrap', '.battle-gap-band', '.battle-inspector', '.reversal-strip', '.secondary-grid', '.event-feed', '@media(max-width:760px)']) requireFragment(stylePath, source, fragment)
+}
+
+if (existsSync(join(root, recoveryStylePath))) {
+  const source = read(recoveryStylePath)
+  for (const fragment of ['.battle-control input[hidden]', '.battle-stage:has(> .notice)', '@media(max-width:760px)']) requireFragment(recoveryStylePath, source, fragment)
 }
 
 if (existsSync(join(root, contractPath))) {
@@ -112,4 +169,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom Battle Lines QA verification passed for ${battlePages.length} Wide rivalry workspaces.`)
+console.log(`ViewLoom Battle Lines QA verification passed for ${battlePages.length} responsive rivalry workspaces with bounded loading.`)

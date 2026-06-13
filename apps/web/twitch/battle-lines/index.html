@@ -18,6 +18,7 @@
   <meta name="twitter:description" content="Inspect Twitch audience rivalries, reversals, gaps, and momentum." />
   <link rel="stylesheet" href="/src/mock-site.css" />
   <link rel="stylesheet" href="/src/live/battle-lines-wide.css" />
+  <link rel="stylesheet" href="/src/live/battle-lines-recovery.css" />
 </head>
 <body data-provider="twitch"><div class="site-frame">
 <header class="masthead"><div class="masthead__inner"><a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a><nav class="global-nav"><a href="/">Portal</a><a href="/twitch/" aria-current="page">Twitch data</a><a href="/kick/">Kick data</a><a href="/about/">About</a><a href="/support/">Support</a></nav><div class="status-inline"><span class="dot"></span>Collector status loading · 5m cadence</div><button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button></div></header>
@@ -26,7 +27,7 @@
 <nav class="feature-tabs"><a href="/twitch/heatmap/">Heatmap</a><a href="/twitch/day-flow/">Day Flow</a><a class="active" href="/twitch/battle-lines/">Battle Lines</a><a href="/twitch/history/">History</a><a href="/twitch/status/">Status</a></nav>
 <section class="page-head"><div><div class="kicker">TWITCH DATA · RIVALRY RADAR</div><h1>Battle Lines</h1><p class="lede">Find the battles worth watching, then inspect who led, when the gap changed, and where reversals occurred.</p></div><div class="head-facts"><div class="fact"><small>State</small><strong>Loading</strong></div><div class="fact"><small>Coverage</small><strong>—</strong></div><div class="fact"><small>Date</small><strong>—</strong></div><div class="fact"><small>Updated</small><strong>—</strong></div></div></section>
 <section class="battle-controls" aria-label="Battle Lines controls">
-<div class="battle-control"><span>Range</span><div class="battle-control__row"><button type="button" data-battle-range="today">Today</button><button type="button" data-battle-range="yesterday">Yesterday</button><button type="button" data-battle-range="date">Date</button><input type="date" data-battle-date aria-label="Battle Lines date" /></div></div>
+<div class="battle-control"><span>Range</span><div class="battle-control__row"><button type="button" data-battle-range="today">Today</button><button type="button" data-battle-range="yesterday">Yesterday</button><button type="button" data-battle-range="date">Date</button><input type="date" data-battle-date aria-label="Battle Lines date" hidden disabled /></div></div>
 <div class="battle-control"><span>Metric</span><div class="battle-control__row"><button type="button" data-battle-metric="viewers">Viewers</button><button type="button" data-battle-metric="indexed">Indexed</button></div></div>
 <div class="battle-control"><span>Streams</span><div class="battle-control__row"><button type="button" data-battle-top="3">Top 3</button><button type="button" data-battle-top="5">Top 5</button><button type="button" data-battle-top="10">Top 10</button></div></div>
 <div class="battle-control"><span>Bucket</span><div class="battle-control__row"><button type="button" data-battle-bucket="5m">5m</button><button type="button" data-battle-bucket="10m">10m</button></div></div>
@@ -42,5 +43,5 @@
 <aside class="coverage-note" data-battle-coverage><strong>Coverage & limits</strong><p>Loading observation coverage…</p></aside>
 </main>
 <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method & limits</a><a href="/support/">Support</a></nav></footer>
-</div><script type="module" src="/src/mock-site.ts"></script><script type="module" src="/src/live/battle-lines-current-shell-entry.ts"></script><script type="module" src="/src/analytics.ts"></script></body>
+</div><script type="module" src="/src/mock-site.ts"></script><script type="module" src="/src/live/battle-lines-loading-guard.ts"></script><script type="module" src="/src/live/battle-lines-current-shell-entry.ts"></script><script type="module" src="/src/analytics.ts"></script></body>
 </html>
