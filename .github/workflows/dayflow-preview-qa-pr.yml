@@ -24,7 +24,9 @@ jobs:
       - name: Verify Cloudflare branch preview
         env:
           PREVIEW_BASE: https://fix-day-flow-complete.viewloom.pages.dev
-        run: python apps/web/scripts/dayflow-preview-qa.py
+        run: |
+          set -o pipefail
+          python apps/web/scripts/dayflow-preview-qa.py 2>&1 | tee /tmp/dayflow-preview-qa.log
 
       - name: Upload preview QA evidence
         if: always()
@@ -32,6 +34,7 @@ jobs:
         with:
           name: dayflow-preview-qa
           path: |
+            /tmp/dayflow-preview-qa.log
             /tmp/dayflow-preview-qa.json
             /tmp/twitch-desktop.png
             /tmp/twitch-mobile.png
