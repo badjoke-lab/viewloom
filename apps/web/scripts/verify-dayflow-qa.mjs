@@ -30,14 +30,22 @@ function assertNear(label, actual, expected, epsilon = 0.0001) {
 
 const dayFlowPages = ['twitch/day-flow/index.html', 'kick/day-flow/index.html']
 const entryPath = 'src/live/day-flow-current-shell-entry.ts'
+const layoutSummaryPath = 'src/live/day-flow-layout-summary.ts'
+const layoutSummaryCssPath = 'src/dayflow-layout-summary.css'
 const contractPath = 'docs/dayflow-qa-contract.md'
 
-for (const path of [...dayFlowPages, entryPath, contractPath]) requireFile(path)
+for (const path of [...dayFlowPages, entryPath, layoutSummaryPath, layoutSummaryCssPath, contractPath]) requireFile(path)
 
 for (const path of dayFlowPages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
   for (const fragment of [
     '/src/live/day-flow-current-shell-entry.ts',
+    '/src/live/day-flow-layout-summary.ts',
+    '/src/dayflow-layout-summary.css',
+    'class="dayflow-layout-shell is-split"',
+    'data-dayflow-layout-shell',
+    'data-dayflow-layout="split"',
+    'data-dayflow-layout="wide"',
     'class="dayflow-stage"',
     'data-dayflow-time-focus',
     'data-dayflow-detail',
@@ -59,8 +67,8 @@ for (const path of dayFlowPages.filter((path) => existsSync(join(root, path)))) 
     'data-dayflow-date',
     'data-dayflow-auto',
     'data-dayflow-refresh',
+    'Field scale · leadership · movement',
   ]) requireFragment(path, source, fragment)
-  forbidPattern(path, source, 'split-first Day Flow layout', /class="layout-split"/)
   forbidPattern(path, source, 'static legacy Day Flow SVG', /<svg viewBox="0 0 1210 620"/)
   forbidPattern(path, source, 'static Stream tile labels', /data-name="Stream [A-Z]"|>Stream [A-Z]</)
   forbidPattern(path, source, 'old visible-top share copy', /Share of visible top/i)
@@ -70,10 +78,10 @@ if (existsSync(join(root, entryPath))) {
   const source = read(entryPath)
   for (const fragment of [
     "provider === 'kick' ? '/api/kick-day-flow' : '/api/day-flow'",
-    "rangeMode: state.rangeMode",
-    "metric: state.metric",
-    "top: String(state.top)",
-    "bucket: String(state.bucket)",
+    'rangeMode: state.rangeMode',
+    'metric: state.metric',
+    'top: String(state.top)',
+    'bucket: String(state.bucket)',
     "cache: 'no-store'",
     'bandsForScope(payload)',
     "state.scope === 'full'",
@@ -104,6 +112,40 @@ if (existsSync(join(root, entryPath))) {
   forbidPattern(entryPath, source, 'detail metadata used as bucket values', /detailPanelSource\?\.streamers[^\n]*valueAt/)
 }
 
+if (existsSync(join(root, layoutSummaryPath))) {
+  const source = read(layoutSummaryPath)
+  for (const fragment of [
+    "return 'split'",
+    "url.searchParams.set('layout', requestedLayout)",
+    "saved === 'theater'",
+    "effectiveLayout: LayoutMode = window.innerWidth <= desktopBreakpoint ? 'wide' : requestedLayout",
+    'calculateLeaderStats',
+    'calculateDelta',
+    'calculatePeakShare',
+    'Top by viewer-minutes',
+    'Peak field',
+    'Average field',
+    'Viewer-minutes',
+    'Longest lead',
+    'Lead changes',
+    'Biggest rise',
+    'Biggest drop',
+    'Peak global share',
+  ]) requireFragment(layoutSummaryPath, source, fragment)
+}
+
+if (existsSync(join(root, layoutSummaryCssPath))) {
+  const source = read(layoutSummaryCssPath)
+  for (const fragment of [
+    '.dayflow-layout-shell.is-split',
+    '.dayflow-layout-shell.is-wide',
+    'grid-template-columns: minmax(0, 1.72fr) minmax(360px, .78fr)',
+    '.dayflow-summary-stats',
+    '.dayflow-summary-bottom',
+    '@media (max-width: 1000px)',
+  ]) requireFragment(layoutSummaryCssPath, source, fragment)
+}
+
 if (existsSync(join(root, contractPath))) {
   const source = read(contractPath)
   for (const fragment of [
@@ -112,6 +154,10 @@ if (existsSync(join(root, contractPath))) {
     'Full / Top Focus',
     'Top 10 / 20 / 50',
     'Today / Yesterday / Date / Rolling 24h',
+    'Desktop defaults to Split',
+    'Split / Wide are user-selectable',
+    'field peak and time',
+    'Top 5 viewer-minutes ranking',
     'pointer drag and touch scrubbing',
     'band selection',
     'selected bucket values',
@@ -155,10 +201,25 @@ const requestedTop = 50
 const generated = Array.from({ length: requestedTop }, (_, index) => ({ id: `s${index}` }))
 assertEqual('Top 50 is not silently capped at 12', generated.slice(0, requestedTop).length, 50)
 
+const defaultLayout = (urlValue, savedValue) => {
+  if (urlValue === 'wide' || urlValue === 'theater') return 'wide'
+  if (urlValue === 'split') return 'split'
+  if (savedValue === 'wide' || savedValue === 'theater') return 'wide'
+  if (savedValue === 'split') return 'split'
+  return 'split'
+}
+assertEqual('desktop Day Flow defaults to Split', defaultLayout(null, null), 'split')
+assertEqual('legacy Theater maps to Wide', defaultLayout('theater', null), 'wide')
+
+const leaders = fixture.buckets.map((_, index) => fixture.bands.filter((band) => !band.others).sort((a, b) => b.viewers[index] - a.viewers[index])[0].id)
+assertEqual('summary detects one lead change', leaders.slice(1).filter((leader, index) => leader !== leaders[index]).length, 1)
+const totalViewerMinutes = fixture.buckets.reduce((sum, _, index) => sum + fixture.bands.reduce((bucketTotal, band) => bucketTotal + band.viewers[index], 0) * 5, 0)
+assertEqual('summary integrates viewer-minutes', totalViewerMinutes, 1500)
+
 if (failures.length > 0) {
   console.error('ViewLoom Day Flow QA verification failed:')
   for (const failure of failures) console.error(`- ${failure}`)
   process.exit(1)
 }
 
-console.log(`ViewLoom Day Flow QA verification passed for ${dayFlowPages.length} pages and executable calculation fixtures.`)
+console.log(`ViewLoom Day Flow QA verification passed for ${dayFlowPages.length} pages, Split/Wide layout, expanded summary, and executable calculation fixtures.`)
