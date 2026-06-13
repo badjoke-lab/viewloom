@@ -1,6 +1,8 @@
 const BATTLE_LINES_TIMEOUT_MS = 12_000
 const originalFetch = window.fetch.bind(window)
 
+syncDateInputVisibility()
+
 window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
   const url = typeof input === 'string'
     ? input
@@ -35,4 +37,19 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
     window.clearTimeout(timeoutId)
     upstreamSignal?.removeEventListener('abort', abortFromUpstream)
   }
+}
+
+function syncDateInputVisibility(): void {
+  const dateButton = document.querySelector<HTMLButtonElement>('[data-battle-range="date"]')
+  const dateInput = document.querySelector<HTMLInputElement>('[data-battle-date]')
+  if (!dateButton || !dateInput) return
+
+  const sync = () => {
+    const active = dateButton.classList.contains('active')
+    dateInput.hidden = !active
+    dateInput.disabled = !active
+  }
+
+  sync()
+  new MutationObserver(sync).observe(dateButton, { attributes: true, attributeFilter: ['class', 'aria-pressed'] })
 }
