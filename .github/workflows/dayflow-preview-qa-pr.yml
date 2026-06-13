@@ -1,0 +1,41 @@
+name: Day Flow preview QA
+
+on:
+  pull_request:
+
+jobs:
+  preview-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Playwright
+        run: |
+          pip install playwright==1.52.0
+          python -m playwright install --with-deps chromium
+
+      - name: Verify Cloudflare branch preview
+        env:
+          PREVIEW_BASE: https://fix-day-flow-complete.viewloom.pages.dev
+        run: python apps/web/scripts/dayflow-preview-qa.py
+
+      - name: Upload preview QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dayflow-preview-qa
+          path: |
+            /tmp/dayflow-preview-qa.json
+            /tmp/twitch-desktop.png
+            /tmp/twitch-mobile.png
+            /tmp/kick-desktop.png
+            /tmp/kick-mobile.png
+          if-no-files-found: ignore
+          retention-days: 1
