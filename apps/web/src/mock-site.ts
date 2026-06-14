@@ -1,4 +1,5 @@
 import './dayflow-responsive.css'
+import './features/heatmap-page/layout-mode.css'
 
 (() => {
   const menu = document.querySelector('[data-mobile-menu]');
