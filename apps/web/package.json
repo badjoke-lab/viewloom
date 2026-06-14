@@ -14,6 +14,7 @@
     "verify:heatmap-wide-layout": "node scripts/verify-heatmap-wide-layout.mjs",
     "verify:heatmap-dense-field": "node scripts/verify-heatmap-dense-field.mjs",
     "verify:heatmap-semantic-lod": "node scripts/verify-heatmap-semantic-lod.mjs",
+    "verify:heatmap-camera-controls": "node scripts/verify-heatmap-camera-controls.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit --strictNullChecks false && tsc -p tsconfig.functions.json --noEmit --strictNullChecks false",
     "typecheck:app": "tsc -p tsconfig.json --noEmit --strictNullChecks false",
     "typecheck:functions": "tsc -p tsconfig.functions.json --noEmit --strictNullChecks false",
