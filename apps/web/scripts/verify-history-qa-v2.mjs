@@ -67,16 +67,20 @@ for (const fragment of [
   'completedCurrentStreams',
 ]) requireFragment('functions/_history/builders.ts', builders, fragment)
 
-const usability = read('src/live/history-usability-pass.ts')
+const shim = read('src/live/history-usability-pass.ts')
+requireFragment('src/live/history-usability-pass.ts', shim, "import './history-usability'")
+
+const usability = read('src/live/history-usability.ts')
 for (const fragment of [
   "initialParams.set('limit', '10')",
   'selectLatestCompletedDay(',
   'Today is still in progress.',
   'history-bar--in-progress',
   'Low baseline',
-  'matchingIndex < 9',
+  'index < 9',
   'Show all ${matchingCount} days',
-]) requireFragment('src/live/history-usability-pass.ts', usability, fragment)
+  'observer.disconnect()',
+]) requireFragment('src/live/history-usability.ts', usability, fragment)
 
 const style = read('src/history-page.css')
 for (const fragment of [
