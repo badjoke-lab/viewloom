@@ -22,9 +22,12 @@ function forbidPattern(path, source, label, pattern) {
 
 const battlePages = ['twitch/battle-lines/index.html', 'kick/battle-lines/index.html']
 const entryPath = 'src/live/battle-lines-current-shell-entry.ts'
+const layoutPath = 'src/live/battle-lines-layout.ts'
 const guardPath = 'src/live/battle-lines-loading-guard.ts'
 const stylePath = 'src/live/battle-lines-wide.css'
 const recoveryStylePath = 'src/live/battle-lines-recovery.css'
+const polishStylePath = 'src/live/battle-lines-polish.css'
+const splitStylePath = 'src/live/battle-lines-split.css'
 const requestPath = 'functions/_lib/battle-lines-request.ts'
 const twitchApiPath = 'functions/api/battle-lines.ts'
 const kickApiPath = 'functions/api/kick-battle-lines.ts'
@@ -33,9 +36,12 @@ const contractPath = 'docs/battle-lines-qa-contract.md'
 for (const path of [
   ...battlePages,
   entryPath,
+  layoutPath,
   guardPath,
   stylePath,
   recoveryStylePath,
+  polishStylePath,
+  splitStylePath,
   requestPath,
   twitchApiPath,
   kickApiPath,
@@ -46,9 +52,12 @@ for (const path of battlePages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
   for (const fragment of [
     '/src/live/battle-lines-current-shell-entry.ts',
+    '/src/live/battle-lines-layout.ts',
     '/src/live/battle-lines-loading-guard.ts',
     '/src/live/battle-lines-wide.css',
     '/src/live/battle-lines-recovery.css',
+    '/src/live/battle-lines-polish.css',
+    '/src/live/battle-lines-split.css',
     'class="battle-stage"',
     'data-battle-primary',
     'data-battle-inspector',
@@ -56,6 +65,8 @@ for (const path of battlePages.filter((path) => existsSync(join(root, path)))) {
     'data-battle-secondary',
     'data-battle-feed',
     'data-battle-coverage',
+    'data-battle-layout="wide"',
+    'data-battle-layout="split"',
     'data-battle-range="today"',
     'data-battle-range="yesterday"',
     'data-battle-date',
@@ -71,7 +82,7 @@ for (const path of battlePages.filter((path) => existsSync(join(root, path)))) {
     'data-battle-latest',
     'data-battle-refresh',
   ]) requireFragment(path, source, fragment)
-  forbidPattern(path, source, 'obsolete Split layout', /layout-split/)
+  forbidPattern(path, source, 'obsolete fixed Split layout', /class="layout-split"/)
   forbidPattern(path, source, 'static legacy Battle Lines SVG', /<svg viewBox="0 0 1210 560"/)
   forbidPattern(path, source, 'static Stream tile labels', /data-name="Stream [A-Z]"|>Stream [A-Z]</)
 }
@@ -112,6 +123,28 @@ if (existsSync(join(root, entryPath))) {
   forbidPattern(entryPath, source, 'per-line point deletion before comparison', /\.filter\(isObservedPoint\)/)
   forbidPattern(entryPath, source, 'app-root rewrite renderer', /document\.querySelector<HTMLElement>\('\#app'\)/)
   forbidPattern(entryPath, source, 'old selected-stream inspector', /Selected stream|Nearest line/)
+}
+
+if (existsSync(join(root, layoutPath))) {
+  const source = read(layoutPath)
+  for (const fragment of [
+    "type BattleLayoutMode = 'wide' | 'split'",
+    'SPLIT_MIN_WIDTH = 1180',
+    "if (value === 'split') return 'split'",
+    "if (value === 'theater') return 'wide'",
+    "return 'wide'",
+    'data-battle-layout-shell',
+    'data-battle-split-rail',
+    'effectiveLayout',
+    "requestedLayout = 'wide'",
+    "next.searchParams.set('layout', requestedLayout)",
+    'nativeReplaceState',
+    'Selected stream',
+    'Top at selected time',
+    'Recent battle feed',
+    '.slice(0, 3)',
+  ]) requireFragment(layoutPath, source, fragment)
+  forbidPattern(layoutPath, source, 'layout-triggered API request', /fetch\s*\(/)
 }
 
 if (existsSync(join(root, guardPath))) {
@@ -158,9 +191,19 @@ if (existsSync(join(root, recoveryStylePath))) {
   for (const fragment of ['.battle-control input[hidden]', '.battle-stage:has(> .notice)', '@media(max-width:760px)']) requireFragment(recoveryStylePath, source, fragment)
 }
 
+if (existsSync(join(root, polishStylePath))) {
+  const source = read(polishStylePath)
+  for (const fragment of ['.chart-grid .x-axis-tick text', '.secondary-card.active', '.ranking__row--unavailable']) requireFragment(polishStylePath, source, fragment)
+}
+
+if (existsSync(join(root, splitStylePath))) {
+  const source = read(splitStylePath)
+  for (const fragment of ['.battle-layout-shell.is-split', 'position:sticky', '.battle-split-rail[hidden]', '@media(max-width:1179px)']) requireFragment(splitStylePath, source, fragment)
+}
+
 if (existsSync(join(root, contractPath))) {
   const source = read(contractPath)
-  for (const fragment of ['Wide-first rivalry workspace', 'shared UTC bucket timeline', 'not-observed points must not be connected', 'selected-time cursor', 'Reversal strip', 'Secondary battles']) requireFragment(contractPath, source, fragment)
+  for (const fragment of ['Wide is the default layout', 'Split is an optional desktop layout', 'shared UTC bucket timeline', 'not-observed points must not be connected', 'selected-time cursor', 'Reversal strip', 'Secondary battles']) requireFragment(contractPath, source, fragment)
 }
 
 if (failures.length > 0) {
@@ -169,4 +212,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom Battle Lines QA verification passed for ${battlePages.length} responsive rivalry workspaces with bounded loading.`)
+console.log(`ViewLoom Battle Lines QA verification passed for ${battlePages.length} Wide and Split rivalry workspaces.`)
