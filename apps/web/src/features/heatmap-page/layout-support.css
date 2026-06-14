@@ -1,0 +1,5 @@
+.heatmap-layout .support-grid--feature {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
+}
