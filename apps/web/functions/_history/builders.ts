@@ -24,8 +24,15 @@ export function fromRollups(rows: RollupRow[], previousRows: RollupRow[]): Built
   const rowByDay = new Map([...previousRows, ...rows].map((row) => [row.day, row]))
   const daily = rows.map((row) => {
     const currentStreams = streamsForRollup(row)
-    const previousStreams = streamsForRollup(rowByDay.get(addDays(row.day, -1)))
-    const topStreamers = ranked(currentStreams, previousStreams, 10, DAILY_BASELINE_MINUTES)
+    const previousRow = rowByDay.get(addDays(row.day, -1))
+    const previousStreams = streamsForRollup(previousRow)
+    const topStreamers = ranked(
+      currentStreams,
+      previousStreams,
+      10,
+      DAILY_BASELINE_MINUTES,
+      Boolean(previousRow && num(previousRow.observed_snapshots) > 0),
+    )
     return {
       day: row.day,
       totalViewerMinutes: num(row.total_viewer_minutes),
@@ -42,6 +49,7 @@ export function fromRollups(rows: RollupRow[], previousRows: RollupRow[]): Built
   const today = new Date().toISOString().slice(0, 10)
   const completedRows = rows.filter((row) => row.day < today)
   const completedPreviousRows = previousRows.filter((row) => row.day < today)
+  const comparisonAvailable = completedPreviousRows.some((row) => num(row.observed_snapshots) > 0)
   return {
     daily,
     topStreamers: ranked(
@@ -49,7 +57,9 @@ export function fromRollups(rows: RollupRow[], previousRows: RollupRow[]): Built
       streamsFromRollups(completedPreviousRows),
       50,
       PERIOD_BASELINE_MINUTES,
+      comparisonAvailable,
     ),
+    comparisonAvailable,
   }
 }
 
@@ -70,9 +80,17 @@ export function fromRaw(
     [...current.days.values()].filter((day) => day.day < today),
   )
   const previousStreams = streamsFromRawDays([...previous.days.values()])
+  const comparisonAvailable = previousRows.length > 0 && previous.days.size > 0
   return {
     daily,
-    topStreamers: ranked(completedCurrentStreams, previousStreams, 50, PERIOD_BASELINE_MINUTES),
+    topStreamers: ranked(
+      completedCurrentStreams,
+      previousStreams,
+      50,
+      PERIOD_BASELINE_MINUTES,
+      comparisonAvailable,
+    ),
+    comparisonAvailable,
   }
 }
 
@@ -185,7 +203,13 @@ function emptyRawDay(day: string): RawDay {
 }
 
 function rawDaySummary(day: RawDay, previous?: RawDay): DailySummary {
-  const topStreamers = ranked(day.streams, previous?.streams ?? new Map(), 10, DAILY_BASELINE_MINUTES)
+  const topStreamers = ranked(
+    day.streams,
+    previous?.streams ?? new Map(),
+    10,
+    DAILY_BASELINE_MINUTES,
+    Boolean(previous && previous.observedMinutes > 0),
+  )
   const expected = expectedMinutesForDay(day.day)
   return {
     day: day.day,
