@@ -12,6 +12,7 @@ on:
       - 'apps/web/src/live/history-number-format.ts'
       - 'apps/web/functions/_history/**'
       - 'apps/web/scripts/history-browser-smoke.mjs'
+      - 'apps/web/scripts/history-cloudflare-preview.mjs'
       - 'apps/web/scripts/verify-history-qa-v2.mjs'
       - '.github/workflows/history-browser-gate.yml'
 
@@ -64,6 +65,7 @@ jobs:
           npm install playwright@1.52.0 --no-audit --no-fund
           npx playwright install --with-deps chromium
           cp "$GITHUB_WORKSPACE/apps/web/scripts/history-browser-smoke.mjs" ./history-browser-smoke.mjs
+          cp "$GITHUB_WORKSPACE/apps/web/scripts/history-cloudflare-preview.mjs" ./history-cloudflare-preview.mjs
 
       - name: Run desktop and mobile History browser gate
         env:
@@ -73,6 +75,14 @@ jobs:
           cd /tmp/history-browser
           node history-browser-smoke.mjs 2>&1 | tee /tmp/history-browser.log
 
+      - name: Verify Cloudflare preview with real data
+        env:
+          HISTORY_PREVIEW_URL: https://fix-history-usability-pass.viewloom.pages.dev
+        run: |
+          set -o pipefail
+          cd /tmp/history-browser
+          node history-cloudflare-preview.mjs 2>&1 | tee /tmp/history-cloudflare.log
+
       - name: Upload History visual verification
         if: success()
         uses: actions/upload-artifact@v4
@@ -81,6 +91,8 @@ jobs:
           path: |
             /tmp/history-twitch-desktop.png
             /tmp/history-kick-mobile.png
+            /tmp/history-twitch-cloudflare.png
+            /tmp/history-kick-cloudflare-mobile.png
           if-no-files-found: error
 
       - name: Upload History browser diagnostics
@@ -90,6 +102,7 @@ jobs:
           name: history-browser-diagnostics
           path: |
             /tmp/history-browser.log
+            /tmp/history-cloudflare.log
             /tmp/history-preview.log
           if-no-files-found: warn
 
