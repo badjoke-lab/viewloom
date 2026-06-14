@@ -7,6 +7,7 @@ on:
       - 'apps/web/kick/history/**'
       - 'apps/web/src/history-page.css'
       - 'apps/web/src/history-clarity-hotfix.css'
+      - 'apps/web/src/history-card-visibility.css'
       - 'apps/web/src/live/history-current-shell-entry.ts'
       - 'apps/web/src/live/history-usability-pass.ts'
       - 'apps/web/src/live/history-usability.ts'
@@ -91,7 +92,7 @@ jobs:
 
       - name: Verify Cloudflare preview with real data
         env:
-          HISTORY_PREVIEW_URL: https://fix-history-data-clarity-hotfix.viewloom.pages.dev
+          HISTORY_PREVIEW_URL: https://fix-history-data-clarity-hot.viewloom.pages.dev
         run: |
           set -o pipefail
           cd /tmp/history-browser
