@@ -120,7 +120,7 @@ function setupSummary(): void {
     window.setTimeout(() => applyLayout(true), 0)
   })
 
-  document.querySelector<HTMLInputElement>('[data-dayflow-date]')?.addEventListener('change', scheduleSummaryRefresh)
+  document.querySelector<HTMLInputElement>('[data-dayflow-date]')?.addEventListener('change', () => scheduleSummaryRefresh())
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) scheduleSummaryRefresh(0)
   })

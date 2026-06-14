@@ -10,6 +10,8 @@ type Coverage = { expectedBuckets: number; observedBuckets: number; missingBucke
 type WindowContract = { mode: string; selectedDate: string; from: string; to: string; isLive: boolean }
 type Payload = { platform: string; state: string; status: string; source: string; updatedAt: string; generatedAt: string; top: number; requestedBucket: string; bucket: '5m' | '10m'; metric: Metric; valueMode: Metric; metricNote: string; granularityNote: string; timeline: string[]; coverage: Coverage; window: WindowContract; lines: Line[]; primaryBattle: Battle | null; recommendedBattle: Battle | null; secondaryBattles: Battle[]; battles: Battle[]; events: BattleEvent[]; reversals: BattleEvent[]; feed: BattleEvent[]; error?: { message?: string } }
 type State = { metric: Metric; top: 3 | 5 | 10; bucket: '5m' | '10m'; range: RangeMode; date: string; selectedBattleId: string | null; selectedLineId: string | null; selectedIndex: number; manualBattle: boolean; followLatest: boolean; dragging: boolean }
+type PairSnapshot = { leaderName: string | null; gap: number | null; trend: GapTrend }
+type MarkerCandidate = { index: number; value: number; text: string; color: string; priority: number }
 
 const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
 const endpoint = provider === 'kick' ? '/api/kick-battle-lines' : '/api/battle-lines'
@@ -155,8 +157,9 @@ function renderStatus(data: Payload): void {
   const details = data.state === 'error'
     ? data.error?.message ?? 'The API request failed.'
     : `${data.coverage.observedBuckets}/${data.coverage.expectedBuckets} UTC buckets observed · ${formatInstant(data.updatedAt)} · ${data.bucket} · real API`
+  const collector = collectorHealth()
   target.className = `battle-status battle-status--${escapeClass(data.state)}`
-  target.innerHTML = `<strong>${escapeHtml(stateLabel)}</strong><span>${escapeHtml(details)}</span><small>Page API state and collector status are separate signals.</small>`
+  target.innerHTML = `<strong>${escapeHtml(stateLabel)}</strong><span>${escapeHtml(details)}</span><small><b>Data API: ${escapeHtml(stateLabel)}</b><b>Collector health: ${escapeHtml(collector)}</b></small>`
 }
 
 function renderPrimary(data: Payload): void {
@@ -169,7 +172,7 @@ function renderPrimary(data: Payload): void {
   }
   const selected = pairSnapshot(data, battle, state.selectedIndex)
   const recommended = battle.id === data.primaryBattle?.id && !state.manualBattle
-  target.innerHTML = `<div class="battle-primary__identity"><div class="kicker">${recommended ? 'RECOMMENDED BATTLE' : 'SELECTED BATTLE'}</div><h2>${escapeHtml(battle.streamerAName)} <span>vs</span> ${escapeHtml(battle.streamerBName)}</h2><p>${escapeHtml(formatSelectedTime(data))}</p></div><div class="battle-primary__metrics"><div><small>Leader</small><strong>${escapeHtml(selected.leaderName ?? 'Unavailable')}</strong></div><div><small>Gap</small><strong>${escapeHtml(formatMetric(selected.gap))}</strong></div><div><small>Gap trend</small><strong>${escapeHtml(label(selected.trend))}</strong></div><div><small>Latest reversal</small><strong>${escapeHtml(battle.latestReversalAt ? formatClock(battle.latestReversalAt) : 'None')}</strong></div><div><small>Reversals</small><strong>${battle.reversalCount}</strong></div><div><small>Battle score</small><strong>${battle.score.toFixed(1)}</strong></div></div>`
+  target.innerHTML = `<div class="battle-primary__identity"><div class="kicker">${recommended ? 'RECOMMENDED BATTLE' : 'SELECTED BATTLE'}</div><h2>${escapeHtml(battle.streamerAName)} <span>vs</span> ${escapeHtml(battle.streamerBName)}</h2><p><small>Selected time</small>${escapeHtml(formatSelectedTime(data))}</p></div><div class="battle-primary__metrics"><div><small>Leader at selected time</small><strong>${escapeHtml(selected.leaderName ?? 'Unavailable')}</strong></div><div><small>Gap at selected time</small><strong>${escapeHtml(formatMetric(selected.gap))}</strong></div><div><small>Gap trend</small><strong>${escapeHtml(label(selected.trend))}</strong></div><div><small>Latest reversal</small><strong>${escapeHtml(battle.latestReversalAt ? formatClock(battle.latestReversalAt) : 'None')}</strong></div><div><small>Reversals</small><strong>${battle.reversalCount}</strong></div><div><small>Battle score</small><strong>${battle.score.toFixed(1)}</strong></div></div>`
 }
 
 function renderChart(data: Payload): void {
@@ -180,9 +183,10 @@ function renderChart(data: Payload): void {
     target.innerHTML = '<div class="notice">No connected Battle Lines can be drawn for this observed window.</div>'
     return
   }
+
   const width = 1200
-  const height = 600
-  const pad = { top: 38, right: 30, bottom: 58, left: 82 }
+  const height = 620
+  const pad = { top: 42, right: 38, bottom: 76, left: 86 }
   const chartW = width - pad.left - pad.right
   const chartH = height - pad.top - pad.bottom
   const visible = displayLines(data, battle)
@@ -201,7 +205,15 @@ function renderChart(data: Payload): void {
     const opacity = primary || selected ? 1 : .32
     return `<g class="battle-line${primary ? ' battle-line--primary' : ''}${selected ? ' battle-line--selected' : ''}" data-line-id="${escapeAttr(line.id)}" opacity="${opacity}">${paths.map((path) => `<path d="${path}" fill="none" stroke="${color}" stroke-width="${widthValue}" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}</g>`
   }).join('')
-  const axes = `${yTicks.map((tick) => { const py = y(tick, yMax, chartH, pad.top); return `<g><line x1="${pad.left}" x2="${width - pad.right}" y1="${py}" y2="${py}"/><text x="${pad.left - 12}" y="${py + 4}" text-anchor="end">${escapeHtml(axisMetric(tick))}</text></g>` }).join('')}${xTicks.map((index) => { const px = x(index, data.timeline.length, chartW, pad.left); return `<g><line x1="${px}" x2="${px}" y1="${pad.top}" y2="${height - pad.bottom}"/><text x="${px}" y="${height - 24}" text-anchor="middle">${escapeHtml(formatClock(data.timeline[index]))}</text></g>` }).join('')}`
+  const yAxis = yTicks.map((tick) => {
+    const py = y(tick, yMax, chartH, pad.top)
+    return `<g class="y-axis-tick"><line x1="${pad.left}" x2="${width - pad.right}" y1="${py}" y2="${py}"/><text x="${pad.left - 12}" y="${py + 4}" text-anchor="end">${escapeHtml(axisMetric(tick))}</text></g>`
+  }).join('')
+  const xAxis = xTicks.map((index) => {
+    const px = x(index, data.timeline.length, chartW, pad.left)
+    return `<g class="x-axis-tick"><line x1="${px}" x2="${px}" y1="${pad.top}" y2="${height - pad.bottom}"/><text x="${px}" y="${height - 35}" text-anchor="middle">${escapeHtml(formatClockShort(data.timeline[index]))}</text></g>`
+  }).join('')
+  const axes = `${yAxis}${xAxis}<text class="x-axis-title" x="${width - pad.right}" y="${height - 12}" text-anchor="end">UTC</text>`
   const selectedIndex = clamp(state.selectedIndex, 0, Math.max(0, data.timeline.length - 1))
   const cursorX = x(selectedIndex, data.timeline.length, chartW, pad.left)
   const cursor = `<g class="battle-cursor"><line x1="${cursorX}" x2="${cursorX}" y1="${pad.top}" y2="${height - pad.bottom}"/><text x="${Math.min(width - 150, cursorX + 8)}" y="${pad.top + 17}">${escapeHtml(formatClock(data.timeline[selectedIndex]))}</text></g>`
@@ -210,7 +222,7 @@ function renderChart(data: Payload): void {
   const legend = visible.map((line) => `<button type="button" class="battle-legend__item${state.selectedLineId === line.id ? ' active' : ''}${primaryIds.has(line.id) ? ' primary' : ''}" data-battle-line-select="${escapeAttr(line.id)}" aria-pressed="${state.selectedLineId === line.id}"><i style="background:${lineColor(data.lines.findIndex((item) => item.id === line.id))}"></i><span>${escapeHtml(line.name)}</span><small>${escapeHtml(formatMetric(lastValue(line)))}</small></button>`).join('')
   target.innerHTML = `<div class="battle-legend" aria-label="Displayed streams">${legend}</div><div class="battle-chart-wrap"><svg data-battle-chart viewBox="0 0 ${width} ${height}" role="img" tabindex="0" aria-label="Battle Lines ${escapeAttr(state.metric)} chart. Use left and right arrow keys to inspect time."><g class="chart-grid">${axes}</g><g class="battle-gap-band">${band}</g>${lineMarkup}<g class="battle-markers">${markers}</g>${endpoints}${cursor}</svg></div>`
   bindChart(data, { width, pad, chartW })
-  document.querySelectorAll<HTMLButtonElement>('[data-battle-line-select]').forEach((button) => button.addEventListener('click', () => {
+  target.querySelectorAll<HTMLButtonElement>('[data-battle-line-select]').forEach((button) => button.addEventListener('click', () => {
     const id = button.dataset.battleLineSelect ?? null
     state.selectedLineId = state.selectedLineId === id ? null : id
     syncUrl()
@@ -230,8 +242,22 @@ function renderInspector(data: Payload): void {
   const ap = a.points[index]
   const bp = b.points[index]
   const snapshot = pairSnapshot(data, battle, index)
-  const ranking = data.lines.map((line) => ({ line, point: line.points[index] })).filter((item) => drawable(item.point) !== null).sort((left, right) => (drawable(right.point) ?? 0) - (drawable(left.point) ?? 0)).slice(0, 5)
-  target.innerHTML = `<div class="inspector-head"><div><div class="kicker">TIME INSPECTOR</div><h2>${escapeHtml(formatSelectedTime(data))}</h2></div><span class="mode-pill">${state.followLatest ? 'Following latest' : 'Inspect mode'}</span></div><div class="pair-inspector"><article><small>${escapeHtml(a.name)}</small><strong>${escapeHtml(formatMetric(drawable(ap)))}</strong><span>${escapeHtml(label(ap?.state ?? 'not_observed'))} · ${escapeHtml(formatDelta(a, index))}</span></article><article><small>${escapeHtml(b.name)}</small><strong>${escapeHtml(formatMetric(drawable(bp)))}</strong><span>${escapeHtml(label(bp?.state ?? 'not_observed'))} · ${escapeHtml(formatDelta(b, index))}</span></article><article class="pair-inspector__result"><small>Selected battle</small><strong>${escapeHtml(snapshot.leaderName ?? 'Unavailable')}</strong><span>${escapeHtml(formatMetric(snapshot.gap))} gap · ${escapeHtml(label(snapshot.trend))}</span></article></div><div class="ranking"><div class="ranking__head"><span>Rank</span><span>Stream</span><span>Value</span><span>Δ bucket</span></div>${ranking.length ? ranking.map((item, rank) => `<div class="ranking__row"><span>${rank + 1}</span><strong>${escapeHtml(item.line.name)}</strong><span>${escapeHtml(formatMetric(drawable(item.point)))}</span><span>${escapeHtml(formatDelta(item.line, index))}</span></div>`).join('') : '<p>No observed values at this bucket.</p>'}</div>`
+  const ranked = data.lines
+    .map((line) => ({ line, point: line.points[index], value: drawable(line.points[index]) }))
+    .sort((left, right) => {
+      if (left.value === null && right.value === null) return left.line.name.localeCompare(right.line.name)
+      if (left.value === null) return 1
+      if (right.value === null) return -1
+      return right.value - left.value
+    })
+  let observedRank = 0
+  const rankingRows = ranked.slice(0, 5).map((item) => {
+    const observed = item.value !== null
+    if (observed) observedRank += 1
+    const stateLabel = label(item.point?.state ?? 'not_observed')
+    return `<div class="ranking__row${observed ? '' : ' ranking__row--unavailable'}"><span>${observed ? observedRank : '—'}</span><strong>${escapeHtml(item.line.name)}</strong><span>${observed ? escapeHtml(formatMetric(item.value)) : escapeHtml(stateLabel)}</span><span>${observed ? escapeHtml(formatDelta(item.line, index)) : 'No observed value'}</span></div>`
+  }).join('')
+  target.innerHTML = `<div class="inspector-head"><div><div class="kicker">TIME INSPECTOR</div><h2>${escapeHtml(formatSelectedTime(data))}</h2></div><span class="mode-pill">${state.followLatest ? 'Following latest' : 'Inspect mode'}</span></div><div class="pair-inspector"><article><small>${escapeHtml(a.name)}</small><strong>${escapeHtml(formatMetric(drawable(ap)))}</strong><span>${escapeHtml(label(ap?.state ?? 'not_observed'))} · ${escapeHtml(formatDelta(a, index))}</span></article><article><small>${escapeHtml(b.name)}</small><strong>${escapeHtml(formatMetric(drawable(bp)))}</strong><span>${escapeHtml(label(bp?.state ?? 'not_observed'))} · ${escapeHtml(formatDelta(b, index))}</span></article><article class="pair-inspector__result"><small>Selected battle</small><strong>${escapeHtml(battle.streamerAName)} <em>vs</em> ${escapeHtml(battle.streamerBName)}</strong><span>Leader: ${escapeHtml(snapshot.leaderName ?? 'Unavailable')} · ${escapeHtml(formatMetric(snapshot.gap))} gap · ${escapeHtml(label(snapshot.trend))}</span></article></div><div class="ranking"><div class="ranking__head"><span>Rank</span><span>Stream</span><span>Value / state</span><span>Δ bucket</span></div>${rankingRows || '<p>No streams are available at this bucket.</p>'}</div>`
 }
 
 function renderReversals(data: Payload): void {
@@ -243,7 +269,7 @@ function renderReversals(data: Payload): void {
     target.innerHTML = '<p class="empty-inline">No reversal detected in this observed window.</p>'
     return
   }
-  target.innerHTML = reversals.map((event) => `<button type="button" class="reversal-card" data-battle-event-index="${event.index}"><small>${escapeHtml(formatClock(event.time))}</small><strong>${escapeHtml(event.passer ?? event.title)}</strong><span>${escapeHtml(formatMetric(event.gapBefore ?? null))} → ${escapeHtml(formatMetric(event.gapAfter ?? null))}</span></button>`).join('')
+  target.innerHTML = reversals.map((event) => `<button type="button" class="reversal-card" data-battle-event-index="${event.index}"><small>${escapeHtml(formatClock(event.time))}</small><strong>${escapeHtml(event.title || `${event.passer ?? 'Unknown'} passed ${event.passed ?? 'Unknown'}`)}</strong><span>Gap before ${escapeHtml(formatMetric(event.gapBefore ?? null))}</span><span>Gap after ${escapeHtml(formatMetric(event.gapAfter ?? null))}</span></button>`).join('')
   bindEventJumps(target)
 }
 
@@ -251,12 +277,18 @@ function renderSecondary(data: Payload): void {
   const target = document.querySelector<HTMLElement>('[data-battle-secondary]')
   if (!target) return
   const current = activeBattle(data)
-  const candidates = data.battles.filter((battle) => battle.id !== current?.id).slice(0, 3)
+  const ordered = current && state.manualBattle
+    ? [current, ...data.battles.filter((battle) => battle.id !== current.id && battle.id !== data.primaryBattle?.id)]
+    : data.battles.filter((battle) => battle.id !== current?.id)
+  const candidates = ordered.slice(0, 3)
   if (!candidates.length) { target.innerHTML = '<p class="empty-inline">No secondary battle has enough overlapping observations.</p>'; return }
-  target.innerHTML = candidates.map((battle) => `<button type="button" class="secondary-card" data-battle-select="${escapeAttr(battle.id)}"><span><small>Battle score ${battle.score.toFixed(1)}</small><strong>${escapeHtml(battle.streamerAName)} <em>vs</em> ${escapeHtml(battle.streamerBName)}</strong></span><span><small>Current gap</small><strong>${escapeHtml(formatMetric(battle.currentGap))}</strong><small>${escapeHtml(label(battle.gapTrend))} · ${battle.reversalCount} reversals</small></span></button>`).join('')
+  target.innerHTML = candidates.map((battle) => {
+    const active = battle.id === current?.id
+    return `<button type="button" class="secondary-card${active ? ' active' : ''}" data-battle-select="${escapeAttr(battle.id)}" aria-pressed="${active}"><span><small>${active ? 'Selected battle' : `Battle score ${battle.score.toFixed(1)}`}</small><strong>${escapeHtml(battle.streamerAName)} <em>vs</em> ${escapeHtml(battle.streamerBName)}</strong></span><span><small>Current gap</small><strong>${escapeHtml(formatMetric(battle.currentGap))}</strong><small>${escapeHtml(label(battle.gapTrend))} · ${battle.reversalCount} reversals</small></span></button>`
+  }).join('')
   target.querySelectorAll<HTMLButtonElement>('[data-battle-select]').forEach((button) => button.addEventListener('click', () => {
     state.selectedBattleId = button.dataset.battleSelect ?? null
-    state.manualBattle = true
+    state.manualBattle = state.selectedBattleId !== data.primaryBattle?.id
     state.selectedLineId = null
     syncUrl()
     renderAll()
@@ -277,8 +309,13 @@ function renderCoverage(data: Payload): void {
   const target = document.querySelector<HTMLElement>('[data-battle-coverage]')
   if (!target) return
   const missing = (data.coverage.missingRatio * 100).toFixed(1)
+  const selectedIndex = clamp(state.selectedIndex, 0, Math.max(0, data.timeline.length - 1))
+  const unavailableAtSelection = data.lines.filter((line) => drawable(line.points[selectedIndex]) === null)
+  const unavailableNote = unavailableAtSelection.length
+    ? ` At the selected bucket, ${unavailableAtSelection.map((line) => `${line.name}: ${label(line.points[selectedIndex]?.state ?? 'not_observed')}`).join('; ')}.`
+    : ''
   const stateText = data.state === 'partial' ? 'Some UTC buckets were not observed.' : data.state === 'stale' ? 'The latest live bucket is delayed.' : data.state === 'empty' ? 'Fewer than two comparable streams were observed.' : data.state === 'demo' ? 'This response contains demo-majority rows.' : data.state === 'error' ? 'The data API failed.' : 'The observed window is current.'
-  target.innerHTML = `<strong>Coverage & limits</strong><p>${escapeHtml(stateText)} ${data.coverage.observedBuckets} of ${data.coverage.expectedBuckets} buckets are present (${missing}% missing). Offline, missing, and not-observed are kept separate. Activity / heat is unavailable and is not scored.</p>`
+  target.innerHTML = `<strong>Coverage & limits</strong><p>${escapeHtml(stateText)} ${data.coverage.observedBuckets} of ${data.coverage.expectedBuckets} buckets are present (${missing}% missing). Offline, missing, and not-observed are kept separate.${escapeHtml(unavailableNote)} Activity / heat is unavailable and is not scored.</p>`
 }
 
 function bindChart(data: Payload, geometry: { width: number; pad: { left: number; right: number }; chartW: number }): void {
@@ -295,6 +332,7 @@ function bindChart(data: Payload, geometry: { width: number; pad: { left: number
     renderPrimary(data)
     renderChart(data)
     renderInspector(data)
+    renderCoverage(data)
   }
   chart.addEventListener('pointerdown', (event) => {
     state.dragging = true
@@ -335,7 +373,7 @@ function activeBattle(data: Payload): Battle | null {
   return data.battles.find((battle) => battle.id === state.selectedBattleId) ?? data.primaryBattle ?? null
 }
 
-function pairSnapshot(data: Payload, battle: Battle, index: number): { leaderName: string | null; gap: number | null; trend: GapTrend } {
+function pairSnapshot(data: Payload, battle: Battle, index: number): PairSnapshot {
   const a = lineById(data, battle.streamerAId)
   const b = lineById(data, battle.streamerBId)
   if (!a || !b) return { leaderName: null, gap: null, trend: 'unavailable' }
@@ -403,26 +441,33 @@ function gapBand(data: Payload, battle: Battle, width: number, height: number, p
 }
 
 function chartMarkers(data: Payload, battle: Battle, chartW: number, chartH: number, pad: { left: number; top: number }, yMax: number): string {
-  const output: string[] = []
+  const candidates: MarkerCandidate[] = []
   const primary = battle.pair.map((id) => lineById(data, id)).filter((line): line is Line => Boolean(line))
   primary.forEach((line) => {
     const peakIndex = line.points.reduce((best, point, index) => (drawable(point) ?? -1) > (drawable(line.points[best]) ?? -1) ? index : best, 0)
     const value = drawable(line.points[peakIndex])
-    if (value !== null) output.push(marker(peakIndex, value, 'Peak', lineColor(data.lines.indexOf(line)), data.timeline.length, chartW, chartH, pad, yMax))
+    if (value !== null) candidates.push({ index: peakIndex, value, text: 'Peak', color: lineColor(data.lines.indexOf(line)), priority: 1 })
   })
   data.reversals.filter((event) => event.battleId === battle.id).slice(0, isMobile() ? 3 : 8).forEach((event) => {
     const a = lineById(data, battle.streamerAId)
     const b = lineById(data, battle.streamerBId)
     const value = Math.max(drawable(a?.points[event.index]) ?? 0, drawable(b?.points[event.index]) ?? 0)
-    output.push(marker(event.index, value, 'Reversal', '#eef4ff', data.timeline.length, chartW, chartH, pad, yMax))
+    candidates.push({ index: event.index, value, text: 'Reversal', color: '#eef4ff', priority: 2 })
   })
-  return output.join('')
+  candidates.sort((left, right) => left.index - right.index || right.priority - left.priority)
+  const labeledIndexes: number[] = []
+  return candidates.map((candidate) => {
+    const labelAllowed = !labeledIndexes.some((index) => Math.abs(index - candidate.index) <= 1)
+    if (labelAllowed) labeledIndexes.push(candidate.index)
+    return marker(candidate.index, candidate.value, labelAllowed ? candidate.text : '', candidate.color, data.timeline.length, chartW, chartH, pad, yMax)
+  }).join('')
 }
 
 function marker(index: number, value: number, text: string, color: string, count: number, chartW: number, chartH: number, pad: { left: number; top: number }, yMax: number): string {
   const px = x(index, count, chartW, pad.left)
   const py = y(value, yMax, chartH, pad.top)
-  return `<g class="chart-marker"><circle cx="${px}" cy="${py}" r="5" fill="${color}"/><text x="${px + 7}" y="${Math.max(16, py - 8)}">${escapeHtml(text)}</text></g>`
+  const labelMarkup = text ? `<text x="${px + 7}" y="${Math.max(16, py - 8)}">${escapeHtml(text)}</text>` : ''
+  return `<g class="chart-marker${text ? '' : ' chart-marker--dot-only'}"><circle cx="${px}" cy="${py}" r="5" fill="${color}"/>${labelMarkup}</g>`
 }
 
 function endpointLabels(data: Payload, battle: Battle, chartW: number, chartH: number, pad: { left: number; top: number }, yMax: number): string {
@@ -503,7 +548,7 @@ function lastObservedIndex(line: Line): number { for (let index = line.points.le
 function formatDelta(line: Line, index: number): string { const current = drawable(line.points[index]); const previous = drawable(line.points[index - 1]); if (current === null || previous === null) return 'Δ unavailable'; const delta = current - previous; return `${delta >= 0 ? '+' : '−'}${formatMetric(Math.abs(delta))}` }
 function trend(previous: number | null, current: number | null): GapTrend { if (previous === null || current === null) return 'unavailable'; const tolerance = Math.max(1, previous * .02); return current < previous - tolerance ? 'closing' : current > previous + tolerance ? 'widening' : 'steady' }
 function dedupeEvents(events: BattleEvent[]): BattleEvent[] { const seen = new Set<string>(); return events.filter((event) => { if (!event.id || seen.has(event.id)) return false; seen.add(event.id); return true }) }
-function tickIndexes(count: number, desired: number): number[] { if (count <= 1) return [0]; return Array.from(new Set(Array.from({ length: desired }, (_, index) => Math.round((index / (desired - 1)) * (count - 1))))) }
+function tickIndexes(count: number, desired: number): number[] { if (count <= 1) return [0]; return Array.from(new Set(Array.from({ length: desired }, (_, index) => Math.round((index / Math.max(1, desired - 1)) * (count - 1))))) }
 function x(index: number, count: number, width: number, left: number): number { return left + (count <= 1 ? 0 : index / (count - 1)) * width }
 function y(value: number, max: number, height: number, top: number): number { return top + height - (value / Math.max(1, max)) * height }
 function niceMaximum(value: number): number { const power = 10 ** Math.floor(Math.log10(Math.max(1, value))); const normalized = value / power; const nice = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10; return nice * power }
@@ -513,7 +558,13 @@ function axisMetric(value: number): string { return state.metric === 'indexed' ?
 function formatNumber(value: number): string { const absolute = Math.abs(value); if (absolute >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`; if (absolute >= 1000) return `${(value / 1000).toFixed(1)}K`; return String(Math.round(value)) }
 function formatInstant(value: string): string { const date = new Date(value); return Number.isNaN(date.getTime()) ? '—' : `${date.toISOString().slice(0, 16).replace('T', ' ')} UTC` }
 function formatClock(value: string): string { const date = new Date(value); return Number.isNaN(date.getTime()) ? value : `${date.toISOString().slice(11, 16)} UTC` }
+function formatClockShort(value: string): string { const date = new Date(value); return Number.isNaN(date.getTime()) ? value : date.toISOString().slice(11, 16) }
 function formatSelectedTime(data: Payload): string { const value = data.timeline[state.selectedIndex]; return value ? formatInstant(value) : 'No selected bucket' }
+function collectorHealth(): string {
+  const text = document.querySelector<HTMLElement>('.status-inline')?.textContent?.trim() ?? 'Unknown'
+  const normalized = text.replace(/^Collectors?\s*/i, '').replace(/\s*·\s*5m cadence$/i, '').trim()
+  return normalized || 'Unknown'
+}
 function parseTop(value: string | null): 3 | 5 | 10 { return value === '3' ? 3 : value === '10' ? 10 : 5 }
 function parseRange(value: string | null): RangeMode { return value === 'yesterday' || value === 'date' ? value : 'today' }
 function parseIndex(value: string | null): number { const parsed = Number(value); return Number.isInteger(parsed) && parsed >= 0 ? parsed : -1 }
