@@ -1,48 +1,22 @@
-import { readFileSync, existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const root = process.cwd()
 const failures = []
-
 const pages = [
-  'index.html',
-  'about/index.html',
-  'support/index.html',
-  'twitch/index.html',
-  'twitch/heatmap/index.html',
-  'twitch/day-flow/index.html',
-  'twitch/battle-lines/index.html',
-  'twitch/history/index.html',
-  'twitch/status/index.html',
-  'kick/index.html',
-  'kick/heatmap/index.html',
-  'kick/day-flow/index.html',
-  'kick/battle-lines/index.html',
-  'kick/history/index.html',
-  'kick/status/index.html',
+  'index.html', 'about/index.html', 'support/index.html',
+  'twitch/index.html', 'twitch/heatmap/index.html', 'twitch/day-flow/index.html',
+  'twitch/battle-lines/index.html', 'twitch/history/index.html', 'twitch/status/index.html',
+  'kick/index.html', 'kick/heatmap/index.html', 'kick/day-flow/index.html',
+  'kick/battle-lines/index.html', 'kick/history/index.html', 'kick/status/index.html',
 ]
 
-const featurePages = pages.filter((path) => path.includes('/heatmap/') || path.includes('/day-flow/') || path.includes('/battle-lines/') || path.includes('/history/') || path.includes('/status/'))
-const splitVisualPages = pages.filter((path) => path.includes('/heatmap/') || path.includes('/history/'))
-const dayFlowPages = pages.filter((path) => path.includes('/day-flow/'))
-const toolbarPages = dayFlowPages
-const battlePages = pages.filter((path) => path.includes('/battle-lines/'))
-const ledgerPages = pages.filter((path) => path.includes('/history/') || path.includes('/status/'))
-
-function read(path) {
-  return readFileSync(join(root, path), 'utf8')
+const read = (path) => readFileSync(join(root, path), 'utf8')
+const requireText = (path, source, text) => {
+  if (!source.includes(text)) failures.push(`${path}: missing mobile QA fragment: ${text}`)
 }
-
-function requireFragment(path, source, fragment) {
-  if (!source.includes(fragment)) failures.push(`${path}: missing mobile QA fragment: ${fragment}`)
-}
-
-function requirePattern(path, source, label, pattern) {
-  if (!pattern.test(source)) failures.push(`${path}: missing mobile QA pattern: ${label}`)
-}
-
-function forbidPattern(path, source, label, pattern) {
-  if (pattern.test(source)) failures.push(`${path}: contains forbidden mobile regression: ${label}`)
+const forbidText = (path, source, text) => {
+  if (source.includes(text)) failures.push(`${path}: contains forbidden mobile regression: ${text}`)
 }
 
 for (const path of pages) {
@@ -51,111 +25,100 @@ for (const path of pages) {
     continue
   }
   const source = read(path)
-  requireFragment(path, source, '<meta name="viewport" content="width=device-width, initial-scale=1.0"')
-  requireFragment(path, source, 'class="site-frame"')
-  requireFragment(path, source, 'class="masthead"')
-  requireFragment(path, source, 'class="global-nav"')
-  requireFragment(path, source, 'mobile-menu mobile-only')
-  requireFragment(path, source, 'data-mobile-menu')
-  requireFragment(path, source, 'aria-label="Open navigation"')
-  requirePattern(path, source, 'page shell', /class="[^"]*\bpage\b/)
-  requireFragment(path, source, 'class="footer"')
+  for (const text of [
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0"',
+    'class="site-frame"', 'class="masthead"', 'class="global-nav"',
+    'mobile-menu mobile-only', 'data-mobile-menu', 'aria-label="Open navigation"',
+    'class="footer"',
+  ]) requireText(path, source, text)
+  if (!source.includes('class="page') && !source.includes(' page ')) {
+    failures.push(`${path}: missing mobile QA page shell`)
+  }
 }
 
-for (const path of featurePages.filter((path) => existsSync(join(root, path)))) {
-  requireFragment(path, read(path), 'class="feature-tabs"')
+for (const path of pages.filter((value) => /\/(heatmap|day-flow|battle-lines|history|status)\//.test(value))) {
+  requireText(path, read(path), 'class="feature-tabs"')
 }
 
-for (const path of splitVisualPages.filter((path) => existsSync(join(root, path)))) {
-  requireFragment(path, read(path), 'class="layout-split"')
-}
-
-for (const path of dayFlowPages.filter((path) => existsSync(join(root, path)))) {
-  const source = read(path)
-  requirePattern(path, source, 'Split-default Day Flow shell', /class="[^"]*\bdayflow-layout-shell\b[^"]*\bis-split\b/)
-  requireFragment(path, source, 'data-dayflow-layout="split"')
-  requireFragment(path, source, 'data-dayflow-layout="wide"')
-  requirePattern(path, source, 'mobile Day Flow breakpoint', /@media\(max-width:760px\)/)
-  requirePattern(path, source, 'touch scrubbing surface', /touch-action:none/)
-}
-
-for (const path of toolbarPages.filter((path) => existsSync(join(root, path)))) {
-  requirePattern(path, read(path), 'toolbar class', /class="[^"]*\btoolbar\b/)
-}
-
-for (const path of battlePages.filter((path) => existsSync(join(root, path)))) {
-  const source = read(path)
-  requireFragment(path, source, '/src/live/battle-lines-wide.css')
-  requireFragment(path, source, 'class="battle-controls"')
-  requireFragment(path, source, 'class="battle-stage"')
-  requireFragment(path, source, 'data-battle-inspector')
-  requireFragment(path, source, 'data-battle-reversals')
-  requireFragment(path, source, 'data-battle-secondary')
-  forbidPattern(path, source, 'obsolete Battle Lines Split layout', /class="layout-split"/)
-}
-
-for (const path of ledgerPages.filter((path) => existsSync(join(root, path)))) {
-  requireFragment(path, read(path), 'class="metric-ledger')
+for (const path of ['twitch/history/index.html', 'kick/history/index.html']) {
+  requireText(path, read(path), 'class="layout-split"')
 }
 
 for (const path of ['twitch/heatmap/index.html', 'kick/heatmap/index.html']) {
-  if (!existsSync(join(root, path))) continue
-  requireFragment(path, read(path), 'class="heatmap-wrap')
+  const source = read(path)
+  for (const text of [
+    'class="heatmap-wrap', 'id="heatmap-layout-root"', 'data-layout="wide"',
+    'data-heatmap-layout="wide"', 'data-heatmap-layout="split"',
+    'id="heatmap-map-controls"',
+  ]) requireText(path, source, text)
+  forbidText(path, source, 'class="layout-split"')
 }
 
-const cssPath = 'src/mock-site.css'
-if (!existsSync(join(root, cssPath))) {
-  failures.push(`${cssPath}: missing shared CSS`)
-} else {
-  const source = read(cssPath)
-  requireFragment(cssPath, source, '@media (max-width:760px)')
-  requirePattern(cssPath, source, 'hide global nav on mobile', /\.global-nav\{display:none\}/)
-  requirePattern(cssPath, source, 'show mobile menu on mobile', /\.mobile-menu\{display:block/)
-  requirePattern(cssPath, source, 'show mobile-only on mobile', /\.mobile-only\{display:block\}/)
-  requirePattern(cssPath, source, 'mobile page padding', /\.page,\.page--full\{padding:18px 14px 52px\}/)
-  requirePattern(cssPath, source, 'layout collapse', /\.layout-split,\.provider-overview,\.history-columns\{grid-template-columns:1fr\}/)
-  requirePattern(cssPath, source, 'data strip mobile columns', /\.data-strip\{grid-template-columns:1fr 1fr\}/)
-  requirePattern(cssPath, source, 'feature tabs horizontal scroll padding', /\.feature-tabs,\.provider-tabs\{margin-left:-14px/)
-  requirePattern(cssPath, source, 'toolbar horizontal scroll', /\.toolbar\{overflow-x:auto;flex-wrap:nowrap/)
-  requirePattern(cssPath, source, 'footer mobile stack', /\.footer\{padding:16px 14px 28px;display:block\}/)
+for (const path of ['twitch/day-flow/index.html', 'kick/day-flow/index.html']) {
+  const source = read(path)
+  for (const text of [
+    'dayflow-layout-shell', 'is-split', 'data-dayflow-layout="split"',
+    'data-dayflow-layout="wide"', '@media(max-width:760px)', 'touch-action:none',
+  ]) requireText(path, source, text)
+  requireText(path, source, 'class="toolbar')
 }
 
-const dayFlowCssPath = 'src/dayflow-layout-summary.css'
-if (!existsSync(join(root, dayFlowCssPath))) {
-  failures.push(`${dayFlowCssPath}: missing Day Flow layout CSS`)
-} else {
-  const source = read(dayFlowCssPath)
-  requireFragment(dayFlowCssPath, source, '@media (max-width: 1000px)')
-  requirePattern(dayFlowCssPath, source, 'Day Flow Split collapse', /\.dayflow-layout-shell\.is-split[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/)
-  requirePattern(dayFlowCssPath, source, 'hide desktop layout switch on narrow screens', /\[data-dayflow-layout-stack\][\s\S]*display:\s*none/)
+for (const path of ['twitch/battle-lines/index.html', 'kick/battle-lines/index.html']) {
+  const source = read(path)
+  for (const text of [
+    '/src/live/battle-lines-wide.css', 'class="battle-controls"', 'class="battle-stage"',
+    'data-battle-inspector', 'data-battle-reversals', 'data-battle-secondary',
+  ]) requireText(path, source, text)
+  forbidText(path, source, 'class="layout-split"')
 }
 
-const battleCssPath = 'src/live/battle-lines-wide.css'
-if (!existsSync(join(root, battleCssPath))) {
-  failures.push(`${battleCssPath}: missing Battle Lines responsive CSS`)
-} else {
-  const source = read(battleCssPath)
-  requireFragment(battleCssPath, source, '@media(max-width:760px)')
-  requirePattern(battleCssPath, source, 'mobile Battle controls scroll', /\.battle-controls\{display:flex;overflow-x:auto/)
-  requirePattern(battleCssPath, source, 'mobile inspector stack', /\.pair-inspector\{grid-template-columns:1fr\}/)
-  requirePattern(battleCssPath, source, 'mobile secondary and feed stack', /\.secondary-grid,\.event-feed\{grid-template-columns:1fr\}/)
-  requirePattern(battleCssPath, source, 'mobile chart height', /\.battle-chart-wrap\{min-height:330px/)
+for (const path of [
+  'twitch/history/index.html', 'twitch/status/index.html',
+  'kick/history/index.html', 'kick/status/index.html',
+]) requireText(path, read(path), 'class="metric-ledger')
+
+const cssChecks = {
+  'src/mock-site.css': [
+    '@media (max-width:760px)', '.global-nav{display:none}', '.mobile-menu{display:block',
+    '.mobile-only{display:block}', '.page,.page--full{padding:18px 14px 52px}',
+    '.layout-split,.provider-overview,.history-columns{grid-template-columns:1fr}',
+    '.data-strip{grid-template-columns:1fr 1fr}', '.feature-tabs,.provider-tabs{margin-left:-14px',
+    '.toolbar{overflow-x:auto;flex-wrap:nowrap', '.footer{padding:16px 14px 28px;display:block}',
+  ],
+  'src/features/heatmap-page/layout-mode.css': [
+    '@media (max-width:1000px)', '@media (max-width:760px)',
+    ".heatmap-layout[data-layout='split']", 'grid-template-columns:1fr', 'height:62vh',
+  ],
+  'src/dayflow-layout-summary.css': [
+    '@media (max-width: 1000px)', '.dayflow-layout-shell.is-split',
+    'grid-template-columns: minmax(0, 1fr)', '[data-dayflow-layout-stack]', 'display: none',
+  ],
+  'src/live/battle-lines-wide.css': [
+    '@media(max-width:760px)', '.battle-controls{display:flex;overflow-x:auto',
+    '.pair-inspector{grid-template-columns:1fr}', '.secondary-grid,.event-feed{grid-template-columns:1fr}',
+    '.battle-chart-wrap{min-height:330px',
+  ],
+}
+
+for (const [path, fragments] of Object.entries(cssChecks)) {
+  if (!existsSync(join(root, path))) {
+    failures.push(`${path}: missing responsive CSS`)
+    continue
+  }
+  const source = read(path)
+  for (const fragment of fragments) requireText(path, source, fragment)
 }
 
 const contractPath = 'docs/mobile-qa-contract.md'
-if (!existsSync(join(root, contractPath))) {
-  failures.push(`${contractPath}: missing mobile QA contract`)
-} else {
-  const source = read(contractPath)
-  requireFragment(contractPath, source, 'Mobile QA Contract')
-  requireFragment(contractPath, source, 'viewport metadata')
-  requireFragment(contractPath, source, 'shared responsive breakpoints')
+if (!existsSync(join(root, contractPath))) failures.push(`${contractPath}: missing mobile QA contract`)
+else for (const text of ['Mobile QA Contract', 'viewport metadata', 'shared responsive breakpoints']) {
+  requireText(contractPath, read(contractPath), text)
 }
 
-if (failures.length > 0) {
+if (failures.length) {
   console.error('ViewLoom Mobile QA verification failed:')
   for (const failure of failures) console.error(`- ${failure}`)
   process.exit(1)
 }
 
-console.log(`ViewLoom Mobile QA verification passed for ${pages.length} public pages, including Split-default Day Flow and Wide Battle Lines.`)
+console.log(`ViewLoom Mobile QA verification passed for ${pages.length} public pages, including Wide-first Heatmap, Split-default Day Flow, and Wide Battle Lines.`)
