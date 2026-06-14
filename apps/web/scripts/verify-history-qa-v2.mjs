@@ -71,6 +71,7 @@ const shim = read('src/live/history-usability-pass.ts')
 for (const fragment of [
   "import './history-usability'",
   "import './history-number-format'",
+  "import './history-default-day'",
 ]) requireFragment('src/live/history-usability-pass.ts', shim, fragment)
 
 const usability = read('src/live/history-usability.ts')
@@ -84,6 +85,14 @@ for (const fragment of [
   'Show all ${matchingCount} days',
   'observer.disconnect()',
 ]) requireFragment('src/live/history-usability.ts', usability, fragment)
+
+const defaultDay = read('src/live/history-default-day.ts')
+for (const fragment of [
+  'startedWithExplicitDay',
+  "card.dataset.historyArchiveState === 'complete'",
+  "target.closest('[data-history-period],[data-history-metric],[data-history-apply-range]')",
+  "chartDay.dispatchEvent(new MouseEvent('click', { bubbles: true }))",
+]) requireFragment('src/live/history-default-day.ts', defaultDay, fragment)
 
 const numberFormat = read('src/live/history-number-format.ts')
 for (const fragment of [
