@@ -244,11 +244,11 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     redraw()
   }
 
-  const refreshAction = onRefresh ?? async (): Promise<void> => {
+  const refreshAction = onRefresh ?? (async (): Promise<void> => {
     destroyCanvasScene()
     const module = await import('../../live/twitch-heatmap')
     await module.hydrateTwitchHeatmap()
-  }
+  })
 
   const resizeObserver = new ResizeObserver(scheduleResizeAndRelayout)
   resizeObserver.observe(viewport)
