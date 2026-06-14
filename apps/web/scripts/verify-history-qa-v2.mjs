@@ -68,7 +68,10 @@ for (const fragment of [
 ]) requireFragment('functions/_history/builders.ts', builders, fragment)
 
 const shim = read('src/live/history-usability-pass.ts')
-requireFragment('src/live/history-usability-pass.ts', shim, "import './history-usability'")
+for (const fragment of [
+  "import './history-usability'",
+  "import './history-number-format'",
+]) requireFragment('src/live/history-usability-pass.ts', shim, fragment)
 
 const usability = read('src/live/history-usability.ts')
 for (const fragment of [
@@ -81,6 +84,15 @@ for (const fragment of [
   'Show all ${matchingCount} days',
   'observer.disconnect()',
 ]) requireFragment('src/live/history-usability.ts', usability, fragment)
+
+const numberFormat = read('src/live/history-number-format.ts')
+for (const fragment of [
+  "notation: 'compact'",
+  '[data-history-daily-archive] .day-card > strong',
+  '[data-history-selected-day] .history-selected-top strong',
+  '.history-peak-archive tbody td:nth-child(3)',
+  'node.dataset.historyExactValue = exact',
+]) requireFragment('src/live/history-number-format.ts', numberFormat, fragment)
 
 const style = read('src/history-page.css')
 for (const fragment of [
