@@ -1,0 +1,69 @@
+name: History browser gate
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/twitch/history/**'
+      - 'apps/web/kick/history/**'
+      - 'apps/web/src/history-page.css'
+      - 'apps/web/src/live/history-current-shell-entry.ts'
+      - 'apps/web/scripts/history-browser-smoke.mjs'
+      - '.github/workflows/history-browser-gate.yml'
+
+jobs:
+  history-browser-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install repository dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web
+        run: pnpm build:web
+
+      - name: Start Vite preview
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/history-preview.log 2>&1 &
+          echo $! > /tmp/history-preview.pid
+          for attempt in {1..40}; do
+            if curl --silent --fail http://127.0.0.1:4173/twitch/history/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/history-preview.log
+          exit 1
+
+      - name: Install Playwright in isolated runner directory
+        run: |
+          mkdir -p /tmp/history-browser
+          cd /tmp/history-browser
+          npm init -y > /dev/null
+          npm install playwright@1.52.0 --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          cp "$GITHUB_WORKSPACE/apps/web/scripts/history-browser-smoke.mjs" ./history-browser-smoke.mjs
+
+      - name: Run desktop and mobile History browser gate
+        env:
+          HISTORY_BASE_URL: http://127.0.0.1:4173
+        run: |
+          cd /tmp/history-browser
+          node history-browser-smoke.mjs
+
+      - name: Print preview log on failure
+        if: failure()
+        run: cat /tmp/history-preview.log || true
