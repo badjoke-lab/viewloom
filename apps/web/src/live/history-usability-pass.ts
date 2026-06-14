@@ -120,7 +120,8 @@ function selectLatestCompletedDay(payload: UsabilityPayload): void {
   }
   const selectedDay = new URL(window.location.href).searchParams.get('day')
   if (selectedDay !== targetDay) {
-    document.querySelector<SVGGElement>(`.history-day-column[data-history-day="${cssEscape(targetDay)}"]`)?.click()
+    const target = document.querySelector<SVGGElement>(`.history-day-column[data-history-day="${cssEscape(targetDay)}"]`)
+    target?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
   }
   autoSelectionPending = false
 }
