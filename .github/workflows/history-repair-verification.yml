@@ -1,0 +1,30 @@
+name: History repair verification
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/twitch/history/**'
+      - 'apps/web/kick/history/**'
+      - 'apps/web/src/history-page.css'
+      - 'apps/web/src/live/history-current-shell-entry.ts'
+      - 'apps/web/functions/_history/**'
+      - 'apps/web/functions/api/history.ts'
+      - 'apps/web/functions/api/kick-history.ts'
+      - 'apps/web/scripts/verify-history-qa-v2.mjs'
+      - '.github/workflows/history-repair-verification.yml'
+
+jobs:
+  verify-history-repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify repaired History contract
+        working-directory: apps/web
+        run: node scripts/verify-history-qa-v2.mjs
