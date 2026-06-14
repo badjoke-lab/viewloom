@@ -54,25 +54,66 @@ for (const fragment of [
   "source: allDemo ? 'demo' : 'real'",
   "coverage.state === 'good' ? 'fresh' : 'partial'",
   "comparisonState: 'comparable' | 'new' | 'insufficient'",
+  'comparisonAvailable: boolean',
+  'previousPeriodAvailable = true',
+  "!previousPeriodAvailable",
+  'fillMissingDays(period, built.daily)',
+  "coverageState: 'missing'",
+  'inProgressDates:',
+  'partialDates:',
+  'missingDates:',
   'PERIOD_BASELINE_MINUTES = 360',
   'stream.viewerMinutes * 0.2',
   'summaryScope:',
-  'inProgressDays:',
 ]) requireFragment('functions/_history/model.ts', model, fragment)
 
 const builders = read('functions/_history/builders.ts')
 for (const fragment of [
   'const completedRows = rows.filter((row) => row.day < today)',
+  'comparisonAvailable = completedPreviousRows.some',
+  'comparisonAvailable = previousRows.length > 0',
   'streamsFromRawDays(',
   'completedCurrentStreams',
 ]) requireFragment('functions/_history/builders.ts', builders, fragment)
 
 const shim = read('src/live/history-usability-pass.ts')
 for (const fragment of [
+  "import '../history-clarity-hotfix.css'",
+  "import './history-clarity-hotfix'",
+  "import './history-clarity-compat'",
   "import './history-usability'",
   "import './history-number-format'",
   "import './history-default-day'",
 ]) requireFragment('src/live/history-usability-pass.ts', shim, fragment)
+
+const clarity = read('src/live/history-clarity-hotfix.ts')
+for (const fragment of [
+  'normalizePayload(',
+  'recalculateCoverage(',
+  'enumerateDays(from, to)',
+  "comparisonState: 'insufficient'",
+  "setText(headers[6], 'Vs previous')",
+  "setText(label, 'Tracked streams (max)')",
+  "setText(riseStrong, 'No baseline')",
+  "data-history-clarity-filter=",
+  "filterButton('missing'",
+  "coverageRow('Missing'",
+  'feedback.hidden = true',
+]) requireFragment('src/live/history-clarity-hotfix.ts', clarity, fragment)
+
+const clarityCss = read('src/history-clarity-hotfix.css')
+for (const fragment of [
+  '.history-peak-archive--aligned',
+  'th:nth-child(3)',
+  'text-align:right',
+  '.history-y-label',
+  '.history-bar--missing',
+  '[data-history-clarity-state="missing"]',
+  '.history-coverage-breakdown',
+]) requireFragment('src/history-clarity-hotfix.css', clarityCss, fragment)
+
+const compatibility = read('src/live/history-clarity-compat.ts')
+requireFragment('src/live/history-clarity-compat.ts', compatibility, "setAttribute('data-history-archive-toggle', '')")
 
 const usability = read('src/live/history-usability.ts')
 for (const fragment of [
