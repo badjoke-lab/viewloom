@@ -3,33 +3,125 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>History — ViewLoom</title>
-  <meta name="description" content="Review retained Twitch live-stream history, top streamers, coverage, and trend summaries from ViewLoom observed data." />
+  <title>History & Trends — ViewLoom</title>
+  <meta name="description" content="Review Twitch audience movement, top streamers, daily peaks, and retained observation coverage across ViewLoom history." />
   <link rel="canonical" href="https://vl.badjoke-lab.com/twitch/history/" />
   <meta property="og:site_name" content="ViewLoom" />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://vl.badjoke-lab.com/twitch/history/" />
-  <meta property="og:title" content="History — ViewLoom" />
-  <meta property="og:description" content="Review retained Twitch live-stream history, top streamers, coverage, and trend summaries from ViewLoom observed data." />
+  <meta property="og:title" content="History & Trends — ViewLoom" />
+  <meta property="og:description" content="Review Twitch audience movement, top streamers, daily peaks, and retained observation coverage across ViewLoom history." />
   <meta property="og:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
-  <meta name="twitter:title" content="History — ViewLoom" />
-  <meta name="twitter:description" content="Review retained Twitch live-stream history, top streamers, coverage, and trend summaries from ViewLoom observed data." />
+  <meta name="twitter:title" content="History & Trends — ViewLoom" />
+  <meta name="twitter:description" content="Review Twitch audience movement, top streamers, daily peaks, and retained observation coverage across ViewLoom history." />
   <link rel="stylesheet" href="/src/mock-site.css" />
+  <link rel="stylesheet" href="/src/history-page.css" />
 </head>
-<body data-provider="twitch" data-page="twitch-history"><div class="site-frame"><header class="masthead"><div class="masthead__inner">
-<a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
-<nav class="global-nav"><a href="/">Portal</a><a href="/twitch/" aria-current="page">Twitch data</a><a href="/kick/">Kick data</a><a href="/about/">About</a><a href="/support/">Support</a></nav><div class="status-inline"><span class="dot"></span>Collector status loading · 5m cadence</div>
-<button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button>
-</div></header><main class="page page--full history-main history-page"><div class="breadcrumb">ViewLoom / Twitch data / History</div><nav class="feature-tabs"><a href="/twitch/heatmap/">Heatmap</a><a href="/twitch/day-flow/">Day Flow</a><a href="/twitch/battle-lines/">Battle Lines</a><a class="active" href="/twitch/history/">History</a><a href="/twitch/status/">Status</a></nav>
-<section class="page-head history-hero"><div><div class="kicker">TWITCH DATA · HISTORY</div><h1>History</h1><p class="lede">Retained rollups show what was actually observed. Empty means no retained history for the requested window, not demo data.</p></div><div class="head-facts"><div class="fact"><small>Period</small><strong>—</strong></div><div class="fact"><small>Metric</small><strong>Viewer Minutes</strong></div><div class="fact"><small>State</small><strong>—</strong></div><div class="fact"><small>Observed</small><strong>—</strong></div></div></section>
-<div class="data-strip"><div class="data-strip__title">Twitch history</div><div class="data-strip__cell"><small>Period</small>—</div><div class="data-strip__cell"><small>Streams</small>—</div><div class="data-strip__cell"><small>Days</small>—</div><div class="data-strip__cell"><small>Source</small>API</div></div>
-<section class="status-board history-summary" data-history-summary><div class="fact"><small>Total viewer-minutes</small><strong>—</strong></div><div class="fact"><small>Peak viewers</small><strong>—</strong></div><div class="fact"><small>Peak day</small><strong>—</strong></div><div class="fact"><small>Top streamer</small><strong>—</strong></div></section>
-<div class="layout-split"><section class="history-trend-card"><div class="history-stage"><div class="notice">Loading Twitch history…</div></div></section><aside class="surface inspector history-card"><div class="surface__head"><strong>Coverage</strong><small>Retention window</small></div><div class="surface__body"><p id="history-coverage" data-history-notes>Loading retained history coverage…</p><p><a class="button" href="/twitch/status/">Open data status</a></p></div></aside></div>
-<div class="rule-title"><h2>Top streamers</h2><span>Observed rollup</span></div><table class="metric-ledger history-peak-archive"><thead><tr><th>#</th><th>Streamer</th><th>Viewer-minutes</th><th>Peak viewers</th><th>Change</th></tr></thead><tbody><tr><td colspan="5">Loading retained streamer rollup…</td></tr></tbody></table>
-</main><footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method & limits</a><a href="/support/">Support</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer></div><script type="module" src="/src/mock-site.ts"></script>
-<script type="module" src="/src/history-unify.ts"></script>
+<body data-provider="twitch" data-page="twitch-history">
+<div class="site-frame">
+  <header class="masthead"><div class="masthead__inner">
+    <a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
+    <nav class="global-nav"><a href="/">Portal</a><a href="/twitch/" aria-current="page">Twitch data</a><a href="/kick/">Kick data</a><a href="/about/">About</a><a href="/support/">Support</a></nav>
+    <div class="status-inline"><span class="dot"></span>Collector status loading · 5m cadence</div>
+    <button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button>
+  </div></header>
+
+  <main class="page page--full history-main history-page">
+    <div class="breadcrumb">ViewLoom / Twitch data / History</div>
+    <nav class="feature-tabs"><a href="/twitch/heatmap/">Heatmap</a><a href="/twitch/day-flow/">Day Flow</a><a href="/twitch/battle-lines/">Battle Lines</a><a class="active" href="/twitch/history/">History</a><a href="/twitch/status/">Status</a></nav>
+
+    <section class="page-head history-hero">
+      <div>
+        <div class="kicker">TWITCH DATA · TRENDS</div>
+        <h1>History &amp; Trends</h1>
+        <p class="lede">Review audience movement, daily peaks, top streamers, and coverage across retained Twitch observations.</p>
+        <div class="history-hero-status"><span class="history-state-pill history-state-pill--loading" data-history-state-pill>Loading</span><span data-history-period-label>Last 30 days</span></div>
+      </div>
+      <div class="head-facts">
+        <div class="fact"><small>Period</small><strong>—</strong></div>
+        <div class="fact"><small>Metric</small><strong>Viewer-minutes</strong></div>
+        <div class="fact"><small>State</small><strong>—</strong></div>
+        <div class="fact"><small>Observed</small><strong>—</strong></div>
+      </div>
+    </section>
+
+    <section class="history-controls" aria-label="History controls">
+      <div class="history-control-section">
+        <span class="toolbar-label">Period</span>
+        <div class="control-group">
+          <button type="button" data-history-period="7d" aria-pressed="false">Last 7 days</button>
+          <button type="button" data-history-period="30d" aria-pressed="true">Last 30 days</button>
+          <button type="button" data-history-period="custom" aria-pressed="false">Custom</button>
+        </div>
+      </div>
+      <div class="history-custom-range" data-history-custom-range>
+        <label>From <input type="date" data-history-from /></label>
+        <label>To <input type="date" data-history-to /></label>
+        <button class="button button--paper" type="button" data-history-apply-range>Apply range</button>
+      </div>
+      <div class="history-control-section">
+        <span class="toolbar-label">Metric</span>
+        <div class="control-group">
+          <button type="button" data-history-metric="viewer_minutes" aria-pressed="true">Viewer-minutes</button>
+          <button type="button" data-history-metric="peak_viewers" aria-pressed="false">Peak viewers</button>
+        </div>
+      </div>
+    </section>
+    <p class="history-feedback" data-history-feedback aria-live="polite">Loading retained history…</p>
+
+    <div class="data-strip">
+      <div class="data-strip__title">Twitch history</div>
+      <div class="data-strip__cell"><small>Period</small>—</div>
+      <div class="data-strip__cell"><small>Observed days</small>—</div>
+      <div class="data-strip__cell"><small>Peak viewers</small>—</div>
+      <div class="data-strip__cell"><small>Read path</small>API</div>
+    </div>
+
+    <section class="period-summary history-summary" data-history-summary>
+      <div class="lead-stat"><small>Total observed</small><strong>—</strong><span>viewer-minutes</span></div>
+      <div><small>Peak day</small><strong>—</strong></div>
+      <div><small>Top streamer</small><strong>—</strong></div>
+      <div><small>Biggest rise</small><strong>—</strong></div>
+      <div><small>Coverage quality</small><strong>—</strong></div>
+    </section>
+
+    <div class="history-columns">
+      <section class="surface history-trend-card">
+        <div class="surface__head"><strong>Daily trend</strong><small>Observed rollup</small></div>
+        <div class="history-stage"><div class="notice">Loading Twitch history…</div></div>
+      </section>
+      <aside class="surface inspector history-card history-selected-day" data-history-selected-day>
+        <div class="surface__head"><strong>Selected day</strong><small>Choose a bar</small></div>
+        <div class="surface__body"><p>Select an observed day to inspect it.</p></div>
+      </aside>
+    </div>
+
+    <div class="rule-title"><h2>Top streamers</h2><span>Period ranking</span></div>
+    <section class="history-ranking-toolbar" aria-label="Ranking controls">
+      <div class="history-control-section"><span class="toolbar-label">Sort</span><div class="control-group"><button type="button" data-history-sort="viewer_minutes" aria-pressed="true">Viewer-minutes</button><button type="button" data-history-sort="peak_viewers" aria-pressed="false">Peak viewers</button></div></div>
+      <div class="history-control-section"><span class="toolbar-label">Show</span><div class="control-group"><button type="button" data-history-limit="10" aria-pressed="false">Top 10</button><button type="button" data-history-limit="20" aria-pressed="true">Top 20</button><button type="button" data-history-limit="50" aria-pressed="false">Top 50</button></div></div>
+    </section>
+    <div class="history-table-wrap">
+      <table class="metric-ledger history-peak-archive"><thead><tr><th>#</th><th>Streamer</th><th>Viewer-minutes</th><th>Peak viewers</th><th>Average viewers</th><th>Observed time</th><th>Change</th></tr></thead><tbody><tr><td colspan="7">Loading retained streamer rollup…</td></tr></tbody></table>
+    </div>
+    <div class="history-streamer-cards" data-history-streamer-cards></div>
+
+    <div class="rule-title"><h2>Daily archive</h2><span>Open the day in context</span></div>
+    <section class="daily-archive" data-history-daily-archive><div class="notice">Loading observed days…</div></section>
+
+    <div class="rule-title"><h2>Coverage &amp; data quality</h2><span>Retention window</span></div>
+    <section class="surface history-coverage-detail">
+      <div class="surface__body" id="history-coverage" data-history-notes>Loading retained history coverage…</div>
+      <div class="history-coverage-actions"><a class="button button--paper" href="/twitch/status/">Open data status</a></div>
+    </section>
+  </main>
+
+  <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method &amp; limits</a><a href="/support/">Support</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
+</div>
+<script type="module" src="/src/mock-site.ts"></script>
 <script type="module" src="/src/live/history-current-shell-entry.ts"></script>
-<script type="module" src="/src/analytics.ts"></script></body>
+<script type="module" src="/src/analytics.ts"></script>
+</body>
 </html>
