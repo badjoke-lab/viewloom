@@ -58,6 +58,9 @@ jobs:
       - name: Verify Heatmap dense field
         run: pnpm --filter @viewloom/web verify:heatmap-dense-field
 
+      - name: Verify Heatmap semantic LOD
+        run: pnpm --filter @viewloom/web verify:heatmap-semantic-lod
+
       - name: Upload web checks logs
         if: always()
         uses: actions/upload-artifact@v4
