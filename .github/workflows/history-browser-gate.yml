@@ -7,7 +7,14 @@ on:
       - 'apps/web/kick/history/**'
       - 'apps/web/src/history-page.css'
       - 'apps/web/src/live/history-current-shell-entry.ts'
+      - 'apps/web/src/live/history-usability-pass.ts'
+      - 'apps/web/src/live/history-usability.ts'
+      - 'apps/web/src/live/history-number-format.ts'
+      - 'apps/web/src/live/history-default-day.ts'
+      - 'apps/web/functions/_history/**'
       - 'apps/web/scripts/history-browser-smoke.mjs'
+      - 'apps/web/scripts/history-cloudflare-preview.mjs'
+      - 'apps/web/scripts/verify-history-qa-v2.mjs'
       - '.github/workflows/history-browser-gate.yml'
 
 jobs:
@@ -30,6 +37,10 @@ jobs:
 
       - name: Install repository dependencies
         run: pnpm install --no-frozen-lockfile
+
+      - name: Verify History usability contract
+        working-directory: apps/web
+        run: node scripts/verify-history-qa-v2.mjs
 
       - name: Build web
         run: pnpm build:web
@@ -55,13 +66,52 @@ jobs:
           npm install playwright@1.52.0 --no-audit --no-fund
           npx playwright install --with-deps chromium
           cp "$GITHUB_WORKSPACE/apps/web/scripts/history-browser-smoke.mjs" ./history-browser-smoke.mjs
+          cp "$GITHUB_WORKSPACE/apps/web/scripts/history-cloudflare-preview.mjs" ./history-cloudflare-preview.mjs
 
       - name: Run desktop and mobile History browser gate
         env:
           HISTORY_BASE_URL: http://127.0.0.1:4173
         run: |
+          set -o pipefail
           cd /tmp/history-browser
-          node history-browser-smoke.mjs
+          node history-browser-smoke.mjs 2>&1 | tee /tmp/history-browser.log
+
+      - name: Verify Cloudflare preview with real data
+        env:
+          HISTORY_PREVIEW_URL: https://fix-history-usability-pass.viewloom.pages.dev
+        run: |
+          set -o pipefail
+          cd /tmp/history-browser
+          node history-cloudflare-preview.mjs 2>&1 | tee /tmp/history-cloudflare.log
+
+      - name: Upload History visual verification
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: history-usability-screenshots
+          path: |
+            /tmp/history-twitch-desktop.png
+            /tmp/history-kick-mobile.png
+            /tmp/history-twitch-cloudflare.png
+            /tmp/history-kick-cloudflare-mobile.png
+          if-no-files-found: error
+
+      - name: Upload History browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: history-browser-diagnostics
+          path: |
+            /tmp/history-browser.log
+            /tmp/history-cloudflare.log
+            /tmp/history-preview.log
+            /tmp/history-cloudflare-desktop.html
+            /tmp/history-cloudflare-desktop.txt
+            /tmp/history-cloudflare-desktop.png
+            /tmp/history-cloudflare-mobile.html
+            /tmp/history-cloudflare-mobile.txt
+            /tmp/history-cloudflare-mobile.png
+          if-no-files-found: warn
 
       - name: Print preview log on failure
         if: failure()
