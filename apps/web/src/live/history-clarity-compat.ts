@@ -1,5 +1,7 @@
 type ClarityFilter = 'all' | 'complete' | 'in-progress' | 'partial' | 'missing'
 
+type ClarityCounts = Record<Exclude<ClarityFilter, 'all'>, number> & { all: number }
+
 let filter: ClarityFilter = 'all'
 let expanded = false
 let scheduled = false
@@ -45,6 +47,17 @@ function sync(): void {
 
   root.classList.add('history-card-visibility-active')
   const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-history-day-card]'))
+  const counts: ClarityCounts = { all: cards.length, complete: 0, 'in-progress': 0, partial: 0, missing: 0 }
+  cards.forEach((card) => {
+    const state = card.dataset.historyClarityState as Exclude<ClarityFilter, 'all'> | undefined
+    if (state) counts[state] += 1
+  })
+  setFilterLabel('all', `All (${counts.all})`)
+  setFilterLabel('complete', `Complete (${counts.complete})`)
+  setFilterLabel('in-progress', `In progress (${counts['in-progress']})`)
+  setFilterLabel('partial', `Partial (${counts.partial})`)
+  setFilterLabel('missing', `Missing (${counts.missing})`)
+
   const matching = cards.filter((card) => filter === 'all' || card.dataset.historyClarityState === filter)
   cards.forEach((card) => card.classList.remove('history-card-visible'))
   matching.forEach((card, index) => {
@@ -57,6 +70,16 @@ function sync(): void {
   toggle.hidden = matching.length <= 9
   toggle.setAttribute('aria-expanded', String(expanded))
   toggle.textContent = expanded ? 'Show recent 9' : `Show all ${matching.length} days`
+}
+
+function setFilterLabel(filterName: ClarityFilter, label: string): void {
+  const button = document.querySelector<HTMLButtonElement>(`[data-history-clarity-filter="${filterName}"]`)
+  if (button && button.textContent !== label) button.textContent = label
+  if (button) {
+    const active = filter === filterName
+    button.classList.toggle('active', active)
+    button.setAttribute('aria-pressed', String(active))
+  }
 }
 
 export {}
