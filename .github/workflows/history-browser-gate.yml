@@ -105,6 +105,12 @@ jobs:
             /tmp/history-browser.log
             /tmp/history-cloudflare.log
             /tmp/history-preview.log
+            /tmp/history-cloudflare-desktop.html
+            /tmp/history-cloudflare-desktop.txt
+            /tmp/history-cloudflare-desktop.png
+            /tmp/history-cloudflare-mobile.html
+            /tmp/history-cloudflare-mobile.txt
+            /tmp/history-cloudflare-mobile.png
           if-no-files-found: warn
 
       - name: Print preview log on failure
