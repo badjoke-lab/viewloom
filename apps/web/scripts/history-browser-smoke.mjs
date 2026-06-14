@@ -187,6 +187,7 @@ async function desktopGate(browser) {
   assert((await page.locator('[data-history-selected-day]').textContent())?.includes('#1 '), 'Desktop: selected-day Top 5 is not ranked')
   assert((await page.locator('[data-history-selected-day] a').first().getAttribute('href'))?.includes(`date=${selectedDay}`), 'Desktop: Day Flow link is not date-specific')
   await assertNoPageOverflow(page, 'Desktop')
+  await page.screenshot({ path: '/tmp/history-twitch-desktop.png', fullPage: true })
   await context.close()
 }
 
@@ -221,6 +222,7 @@ async function mobileGate(browser) {
   assert(await page.locator('[data-history-daily-archive] .day-card').count() === 5, 'Mobile: custom range archive count is wrong')
   assert(await visibleArchiveCount(page) === 5, 'Mobile: short custom archive should not hide days')
   await assertNoPageOverflow(page, 'Mobile')
+  await page.screenshot({ path: '/tmp/history-kick-mobile.png', fullPage: true })
   await context.close()
 }
 
