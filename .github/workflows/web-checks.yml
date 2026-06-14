@@ -49,6 +49,9 @@ jobs:
       - name: Verify Heatmap page boundaries
         run: pnpm --filter @viewloom/web verify:heatmap-boundaries
 
+      - name: Verify Heatmap data-state truth
+        run: pnpm --filter @viewloom/web verify:heatmap-data-state
+
       - name: Upload web checks logs
         if: always()
         uses: actions/upload-artifact@v4
