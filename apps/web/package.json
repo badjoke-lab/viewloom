@@ -9,6 +9,7 @@
     "verify:source": "node scripts/verify-production-source.mjs",
     "verify:battle-lines": "node scripts/verify-battle-lines-core.mjs",
     "verify:battle-lines-ui": "node scripts/verify-battle-lines-wide-ui.mjs",
+    "verify:heatmap-boundaries": "node scripts/verify-heatmap-boundaries.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit --strictNullChecks false && tsc -p tsconfig.functions.json --noEmit --strictNullChecks false",
     "typecheck:app": "tsc -p tsconfig.json --noEmit --strictNullChecks false",
     "typecheck:functions": "tsc -p tsconfig.functions.json --noEmit --strictNullChecks false",

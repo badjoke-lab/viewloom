@@ -1,3 +1,3 @@
-import('./twitch-heatmap').then((module) => {
-  void module.hydrateTwitchHeatmap()
+import('../features/heatmap-page/controller').then((module) => {
+  void module.mountHeatmapPage()
 })
