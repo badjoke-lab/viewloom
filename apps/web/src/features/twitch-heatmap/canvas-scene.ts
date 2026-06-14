@@ -15,12 +15,15 @@ import {
 import { buildSceneNodes } from './scene'
 import { drawTilesLayer } from './tiles-layer'
 
-const SCENE_CSS = '.heatmap-canvas-scene{min-height:560px;height:100%}.heatmap-canvas-viewport{position:relative;overflow:hidden;min-height:500px;height:100%;touch-action:pan-y;cursor:grab}.heatmap-canvas-viewport.is-panning{cursor:grabbing}.heatmap-canvas-viewport.is-move-mode{touch-action:none}.heatmap-canvas-layer{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}.heatmap-canvas-viewport.is-move-mode .heatmap-canvas-layer{touch-action:none}@media(max-width:760px){.heatmap-canvas-scene{min-height:430px}.heatmap-canvas-viewport{min-height:430px}}'
+const SCENE_CSS = '.heatmap-canvas-scene{min-height:560px;height:100%;background:#07101d}.heatmap-canvas-viewport{position:relative;overflow:hidden;min-height:500px;height:100%;touch-action:pan-y;cursor:grab;background:#07101d;user-select:none}.heatmap-canvas-viewport.is-panning{cursor:grabbing}.heatmap-canvas-viewport.is-move-mode{touch-action:none}.heatmap-canvas-layer{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}.heatmap-canvas-viewport.is-move-mode .heatmap-canvas-layer{touch-action:none}@media(max-width:760px){.heatmap-canvas-scene{min-height:430px}.heatmap-canvas-viewport{min-height:430px}}'
 const PAN_THRESHOLD = 6
 const WHEEL_ZOOM_IN = 1.14
 const WHEEL_ZOOM_OUT = 1 / WHEEL_ZOOM_IN
 const DOUBLE_CLICK_ZOOM_IN = 1.5
 const DOUBLE_CLICK_ZOOM_OUT = 1 / DOUBLE_CLICK_ZOOM_IN
+const SELECTED_INSET_PX = 1.5
+const SELECTED_STROKE_PX = 2
+const SELECTED_INNER_STROKE_PX = 0.75
 
 type ActivePointer = {
   x: number
@@ -248,9 +251,7 @@ export function renderCanvasScene(input: {
   const finishPointer = (event: PointerEvent): void => {
     const gestureWasActive = gestureActive || activePointers.size > 1
 
-    if (event.pointerType !== 'mouse') {
-      activePointers.delete(event.pointerId)
-    }
+    if (event.pointerType !== 'mouse') activePointers.delete(event.pointerId)
 
     if (gestureWasActive && event.pointerType !== 'mouse') {
       if (overlayCanvas.hasPointerCapture(event.pointerId)) overlayCanvas.releasePointerCapture(event.pointerId)
@@ -340,16 +341,28 @@ function drawSelectionOverlay(
   ctx.setTransform(1, 0, 0, 1, 0, 0)
   ctx.clearRect(0, 0, viewportWidth * dpr, viewportHeight * dpr)
   if (!selected) return
+
+  const inset = SELECTED_INSET_PX / camera.scale
+  const width = Math.max(0, selected.width - inset * 2)
+  const height = Math.max(0, selected.height - inset * 2)
+  if (width <= 0 || height <= 0) return
+
   ctx.save()
   ctx.setTransform(camera.scale * dpr, 0, 0, camera.scale * dpr, camera.tx * dpr, camera.ty * dpr)
-  ctx.fillStyle = 'rgba(255,255,255,0.08)'
-  ctx.fillRect(selected.x + 2 / camera.scale, selected.y + 2 / camera.scale, selected.width - 4 / camera.scale, selected.height - 4 / camera.scale)
-  ctx.strokeStyle = 'rgba(255,255,255,0.98)'
-  ctx.lineWidth = Math.max(3 / camera.scale, 3)
-  ctx.strokeRect(selected.x + 1 / camera.scale, selected.y + 1 / camera.scale, selected.width - 2 / camera.scale, selected.height - 2 / camera.scale)
-  ctx.strokeStyle = 'rgba(255,255,255,0.42)'
-  ctx.lineWidth = Math.max(7 / camera.scale, 5)
-  ctx.strokeRect(selected.x - 2 / camera.scale, selected.y - 2 / camera.scale, selected.width + 4 / camera.scale, selected.height + 4 / camera.scale)
+  ctx.fillStyle = 'rgba(144,90,255,0.075)'
+  ctx.fillRect(selected.x + inset, selected.y + inset, width, height)
+  ctx.strokeStyle = 'rgba(174,125,255,0.98)'
+  ctx.lineWidth = SELECTED_STROKE_PX / camera.scale
+  ctx.strokeRect(selected.x + inset, selected.y + inset, width, height)
+
+  const innerInset = inset + 2 / camera.scale
+  const innerWidth = Math.max(0, selected.width - innerInset * 2)
+  const innerHeight = Math.max(0, selected.height - innerInset * 2)
+  if (innerWidth > 0 && innerHeight > 0) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.24)'
+    ctx.lineWidth = SELECTED_INNER_STROKE_PX / camera.scale
+    ctx.strokeRect(selected.x + innerInset, selected.y + innerInset, innerWidth, innerHeight)
+  }
   ctx.restore()
 }
 
