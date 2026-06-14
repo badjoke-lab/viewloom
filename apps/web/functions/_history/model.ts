@@ -2,42 +2,10 @@ export type SnapshotRow = { bucket_minute: string; total_viewers: number; stream
 export type RollupRow = { day: string; total_viewer_minutes: number; peak_viewers: number; peak_streamer_name: string | null; observed_snapshots: number; observed_stream_count: number; top_streamers_json: string; coverage_state: string }
 export type Period = { from: string; to: string; label: string }
 export type StreamAgg = { id: string; displayName: string; viewerMinutes: number; peakViewers: number; observedMinutes: number }
-export type RankedStream = {
-  streamerId: string
-  displayName: string
-  viewerMinutes: number
-  peakViewers: number
-  avgViewers: number
-  observedMinutes: number
-  rankByViewerMinutes: number
-  rankByPeak: number
-  changePct: number | null
-  changeAbs: number | null
-  comparisonState: 'comparable' | 'new' | 'insufficient'
-}
+export type RankedStream = { streamerId: string; displayName: string; viewerMinutes: number; peakViewers: number; avgViewers: number; observedMinutes: number; rankByViewerMinutes: number; rankByPeak: number; changePct: number | null; changeAbs: number | null; comparisonState: 'comparable' | 'new' | 'insufficient' }
 export type Rise = { streamerId: string; displayName: string; changePct: number; changeAbs: number }
-export type DailySummary = {
-  day: string
-  totalViewerMinutes: number
-  peakViewers: number
-  peakStreamerName: string | null
-  observedStreamCount: number
-  observedMinutes: number
-  coverageState: string
-  topStreamers: RankedStream[]
-  biggestRise: Rise | null
-}
-export type RawDay = {
-  day: string
-  totalViewerMinutes: number
-  peakViewers: number
-  peakStreamerName: string | null
-  peakStreamerViewers: number
-  observedStreamCount: number
-  observedMinutes: number
-  sawDemo: boolean
-  streams: Map<string, StreamAgg>
-}
+export type DailySummary = { day: string; totalViewerMinutes: number; peakViewers: number; peakStreamerName: string | null; observedStreamCount: number; observedMinutes: number; coverageState: string; topStreamers: RankedStream[]; biggestRise: Rise | null }
+export type RawDay = { day: string; totalViewerMinutes: number; peakViewers: number; peakStreamerName: string | null; peakStreamerViewers: number; observedStreamCount: number; observedMinutes: number; sawDemo: boolean; streams: Map<string, StreamAgg> }
 export type BuiltHistory = { daily: DailySummary[]; topStreamers: RankedStream[] }
 
 export const DEFAULT_SAMPLE_MINUTES = 5
@@ -54,26 +22,12 @@ export function ranked(streams: Map<string, StreamAgg>, previous: Map<string, St
     const comparisonState: RankedStream['comparisonState'] = !prev ? 'new' : prev.observedMinutes < baselineMinutes ? 'insufficient' : 'comparable'
     const changeAbs = prev ? Math.round(stream.viewerMinutes - prev.viewerMinutes) : Math.round(stream.viewerMinutes)
     const changePct = comparisonState === 'comparable' && prev && prev.viewerMinutes > 0 ? (stream.viewerMinutes - prev.viewerMinutes) / prev.viewerMinutes : null
-    return {
-      streamerId: stream.id,
-      displayName: stream.displayName,
-      viewerMinutes: Math.round(stream.viewerMinutes),
-      peakViewers: Math.round(stream.peakViewers),
-      avgViewers: stream.observedMinutes ? Math.round(stream.viewerMinutes / stream.observedMinutes) : 0,
-      observedMinutes: Math.round(stream.observedMinutes),
-      rankByViewerMinutes: index + 1,
-      rankByPeak: peakRank.get(stream.id) ?? index + 1,
-      changePct,
-      changeAbs,
-      comparisonState,
-    }
+    return { streamerId: stream.id, displayName: stream.displayName, viewerMinutes: Math.round(stream.viewerMinutes), peakViewers: Math.round(stream.peakViewers), avgViewers: stream.observedMinutes ? Math.round(stream.viewerMinutes / stream.observedMinutes) : 0, observedMinutes: Math.round(stream.observedMinutes), rankByViewerMinutes: index + 1, rankByPeak: peakRank.get(stream.id) ?? index + 1, changePct, changeAbs, comparisonState }
   })
 }
 
 export function biggestRise(streams: RankedStream[]): Rise | null {
-  const candidate = streams
-    .filter((stream) => stream.comparisonState === 'comparable' && typeof stream.changePct === 'number' && stream.changePct > 0)
-    .sort((a, b) => (b.changePct ?? 0) - (a.changePct ?? 0))[0]
+  const candidate = streams.filter((stream) => stream.comparisonState === 'comparable' && typeof stream.changePct === 'number' && stream.changePct > 0).sort((a, b) => (b.changePct ?? 0) - (a.changePct ?? 0))[0]
   if (!candidate || candidate.changePct == null) return null
   return { streamerId: candidate.streamerId, displayName: candidate.displayName, changePct: candidate.changePct, changeAbs: candidate.changeAbs ?? 0 }
 }
@@ -83,8 +37,8 @@ export function buildPayload(provider: 'twitch' | 'kick', period: Period, metric
   const summary = summaryFor(built.daily, built.topStreamers)
   const allDemo = built.daily.length > 0 && built.daily.every((day) => day.coverageState === 'demo')
   return {
-    source: 'api',
-    state: built.daily.length === 0 ? 'empty' : allDemo ? 'demo' : coverage.state === 'good' ? 'ok' : 'partial',
+    source: allDemo ? 'demo' : 'real',
+    state: built.daily.length === 0 ? 'empty' : allDemo ? 'demo' : coverage.state === 'good' ? 'fresh' : 'partial',
     platform: provider,
     period: { ...period, days: dayCount(period.from, period.to) },
     metric,
@@ -93,7 +47,6 @@ export function buildPayload(provider: 'twitch' | 'kick', period: Period, metric
     daily: built.daily,
     topStreamers: built.topStreamers,
     coverage,
-    readPath,
     notes: [`${provider === 'twitch' ? 'Twitch' : 'Kick'} History read_path=${readPath}.`, 'Twitch and Kick history are intentionally not mixed in v1.'],
   }
 }
@@ -102,15 +55,7 @@ export function summaryFor(daily: DailySummary[], top: RankedStream[]) {
   if (!daily.length) return null
   const peakDay = daily.reduce((best, day) => day.totalViewerMinutes > best.totalViewerMinutes ? day : best, daily[0])
   const peakViewerDay = daily.reduce((best, day) => day.peakViewers > best.peakViewers ? day : best, daily[0])
-  return {
-    totalViewerMinutes: daily.reduce((sum, day) => sum + day.totalViewerMinutes, 0),
-    peakViewers: peakViewerDay.peakViewers,
-    peakDay: peakDay.day,
-    peakDayViewerMinutes: peakDay.totalViewerMinutes,
-    topStreamer: top[0] ?? null,
-    biggestRise: biggestRise(top),
-    coverageState: daily.some((day) => day.coverageState !== 'good') ? 'partial' : 'good',
-  }
+  return { totalViewerMinutes: daily.reduce((sum, day) => sum + day.totalViewerMinutes, 0), peakViewers: peakViewerDay.peakViewers, peakDay: peakDay.day, peakDayViewerMinutes: peakDay.totalViewerMinutes, topStreamer: top[0] ?? null, biggestRise: biggestRise(top), coverageState: daily.some((day) => day.coverageState !== 'good') ? 'partial' : 'good' }
 }
 
 export function coverageFor(provider: 'twitch' | 'kick', period: Period, daily: DailySummary[]) {
@@ -125,19 +70,7 @@ export function coverageFor(provider: 'twitch' | 'kick', period: Period, daily: 
   const affectedDays = [...new Set([...partial, ...missing, ...demo])]
   const state = daily.length === 0 ? 'missing' : demo.length === daily.length ? 'demo' : missing.length || partial.length || demo.length ? 'partial' : 'good'
   const platform = provider === 'twitch' ? 'Twitch' : 'Kick'
-  return {
-    state,
-    observedDays: daily.length,
-    missingDays: missing.length,
-    partialDays: partial.length + demo.length,
-    observedMinutes,
-    expectedMinutes,
-    affectedDays,
-    notes: [
-      `${daily.length} of ${totalDays} requested days have observed ${platform} history data.`,
-      `${partial.length} partial day${partial.length === 1 ? '' : 's'} and ${missing.length} missing day${missing.length === 1 ? '' : 's'} were detected.`,
-    ],
-  }
+  return { state, observedDays: daily.length, missingDays: missing.length, partialDays: partial.length + demo.length, observedMinutes, expectedMinutes, affectedDays, notes: [`${daily.length} of ${totalDays} requested days have observed ${platform} history data.`, `${partial.length} partial day${partial.length === 1 ? '' : 's'} and ${missing.length} missing day${missing.length === 1 ? '' : 's'} were detected.`] }
 }
 
 export function expectedMinutesForDay(day: string): number {
@@ -169,58 +102,22 @@ export function previousPeriod(from: string, to: string): Period {
 }
 
 export function errorResponse(provider: 'twitch' | 'kick', period: Period, metric: string, code: string, message: string, status: number, extra: Record<string, unknown> = {}) {
-  return Response.json({
-    source: 'api',
-    state: 'error',
-    platform: provider,
-    period: { ...period, days: dayCount(period.from, period.to) },
-    metric,
-    ...extra,
-    summary: null,
-    daily: [],
-    topStreamers: [],
-    coverage: { state: 'missing', observedDays: 0, missingDays: dayCount(period.from, period.to), partialDays: 0, observedMinutes: 0, expectedMinutes: 0, affectedDays: enumerateDays(period.from, period.to), notes: [message] },
-    notes: [],
-    error: { code, message },
-  }, { status, headers: { 'cache-control': 'no-store' } })
+  return Response.json({ source: 'real', state: 'error', platform: provider, period: { ...period, days: dayCount(period.from, period.to) }, metric, ...extra, summary: null, daily: [], topStreamers: [], coverage: { state: 'missing', observedDays: 0, missingDays: dayCount(period.from, period.to), partialDays: 0, observedMinutes: 0, expectedMinutes: 0, affectedDays: enumerateDays(period.from, period.to), notes: [message] }, notes: [], error: { code, message } }, { status, headers: { 'cache-control': 'no-store' } })
 }
 
 export function enumerateDays(from: string, to: string): string[] {
   const days: string[] = []
   const cursor = new Date(`${from}T00:00:00.000Z`)
   const end = Date.parse(`${to}T00:00:00.000Z`)
-  while (cursor.getTime() <= end) {
-    days.push(dayString(cursor))
-    cursor.setUTCDate(cursor.getUTCDate() + 1)
-  }
+  while (cursor.getTime() <= end) { days.push(dayString(cursor)); cursor.setUTCDate(cursor.getUTCDate() + 1) }
   return days
 }
 
-export function addDays(day: string, amount: number): string {
-  const date = new Date(`${day}T00:00:00.000Z`)
-  date.setUTCDate(date.getUTCDate() + amount)
-  return dayString(date)
-}
-
-export function nextDayIso(day: string): string {
-  const date = new Date(`${day}T00:00:00.000Z`)
-  date.setUTCDate(date.getUTCDate() + 1)
-  return date.toISOString()
-}
-
-export function dayCount(from: string, to: string): number {
-  return Math.max(1, Math.round((Date.parse(`${to}T00:00:00.000Z`) - Date.parse(`${from}T00:00:00.000Z`)) / 86400000) + 1)
-}
-
+export function addDays(day: string, amount: number): string { const date = new Date(`${day}T00:00:00.000Z`); date.setUTCDate(date.getUTCDate() + amount); return dayString(date) }
+export function nextDayIso(day: string): string { const date = new Date(`${day}T00:00:00.000Z`); date.setUTCDate(date.getUTCDate() + 1); return date.toISOString() }
+export function dayCount(from: string, to: string): number { return Math.max(1, Math.round((Date.parse(`${to}T00:00:00.000Z`) - Date.parse(`${from}T00:00:00.000Z`)) / 86400000) + 1) }
 export function dayString(date: Date): string { return date.toISOString().slice(0, 10) }
 export function isDay(value: string): boolean { return /^\d{4}-\d{2}-\d{2}$/.test(value) }
 export function record(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null }
-export function num(value: unknown): number {
-  if (typeof value === 'number' && Number.isFinite(value)) return Math.max(0, value)
-  if (typeof value === 'string') {
-    const parsed = Number(value.replace(/,/g, ''))
-    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0
-  }
-  return 0
-}
+export function num(value: unknown): number { if (typeof value === 'number' && Number.isFinite(value)) return Math.max(0, value); if (typeof value === 'string') { const parsed = Number(value.replace(/,/g, '')); return Number.isFinite(parsed) ? Math.max(0, parsed) : 0 } return 0 }
 export function slug(value: unknown): string { return String(value ?? '').trim().toLowerCase().replace(/[^a-z0-9_\-]/g, '') }
