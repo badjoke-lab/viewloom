@@ -1,7 +1,7 @@
-import { legacyHeatmapPageAdapter } from './legacy-adapter'
+import { heatmapDataStateAdapter } from './data-state-adapter'
 import { createHeatmapPageRuntime } from './runtime'
 
-const runtime = createHeatmapPageRuntime(legacyHeatmapPageAdapter)
+const runtime = createHeatmapPageRuntime(heatmapDataStateAdapter)
 
 export function mountHeatmapPage(): Promise<void> {
   return runtime.mount()
