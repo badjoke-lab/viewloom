@@ -2,13 +2,14 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
 const root = new URL('../', import.meta.url)
-const [ui, guard, twitch, kick, css, recoveryCss] = await Promise.all([
+const [ui, guard, twitch, kick, css, recoveryCss, polishCss] = await Promise.all([
   readFile(new URL('src/live/battle-lines-current-shell-entry.ts', root), 'utf8'),
   readFile(new URL('src/live/battle-lines-loading-guard.ts', root), 'utf8'),
   readFile(new URL('twitch/battle-lines/index.html', root), 'utf8'),
   readFile(new URL('kick/battle-lines/index.html', root), 'utf8'),
   readFile(new URL('src/live/battle-lines-wide.css', root), 'utf8'),
   readFile(new URL('src/live/battle-lines-recovery.css', root), 'utf8'),
+  readFile(new URL('src/live/battle-lines-polish.css', root), 'utf8'),
 ])
 
 for (const [name, html] of [['twitch', twitch], ['kick', kick]]) {
@@ -16,6 +17,7 @@ for (const [name, html] of [['twitch', twitch], ['kick', kick]]) {
   for (const hook of [
     '/src/live/battle-lines-loading-guard.ts',
     '/src/live/battle-lines-recovery.css',
+    '/src/live/battle-lines-polish.css',
     'data-battle-range="today"',
     'data-battle-range="yesterday"',
     'data-battle-date',
@@ -48,7 +50,18 @@ for (const behavior of [
   'state.manualBattle',
   'history.replaceState',
   'window.setInterval',
-]) assert.ok(ui.includes(behavior), `UI behavior missing: ${behavior}`)
+  'x-axis-tick',
+  'x-axis-title',
+  'Selected time',
+  'Leader at selected time',
+  'Selected battle',
+  'Gap before',
+  'Gap after',
+  'ranking__row--unavailable',
+  'Collector health:',
+  'chart-marker--dot-only',
+  'secondary-card${active',
+]) assert.ok(ui.includes(behavior), `Wide polish behavior missing: ${behavior}`)
 
 for (const behavior of [
   'BATTLE_LINES_TIMEOUT_MS',
@@ -64,5 +77,8 @@ assert.ok(css.includes('.battle-gap-band'), 'Gap band styling is required')
 assert.ok(css.includes('.battle-chart-wrap'), 'Wide chart styling is required')
 assert.ok(recoveryCss.includes('.battle-stage:has(> .notice)'), 'Loading stage must collapse instead of reserving an empty chart')
 assert.ok(recoveryCss.includes('.battle-control input[hidden]'), 'Inactive date input must stay hidden')
+assert.ok(polishCss.includes('.chart-grid .x-axis-tick text'), 'Readable X-axis labels are required')
+assert.ok(polishCss.includes('.secondary-card.active'), 'Selected Secondary battle must be visibly active')
+assert.ok(polishCss.includes('.ranking__row--unavailable'), 'Unavailable ranking rows must remain visible')
 
-console.log('Battle Lines Wide UI and loading recovery contract passed.')
+console.log('Battle Lines Wide final polish contract passed.')
