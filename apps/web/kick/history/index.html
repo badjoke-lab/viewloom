@@ -87,10 +87,20 @@
       <div><small>Coverage quality</small><strong>—</strong></div>
     </section>
 
+    <section class="history-coverage-summary" data-history-coverage-summary aria-live="polite">
+      <div><strong>Loading period coverage…</strong><span>Completed-day scope will appear here.</span></div>
+    </section>
+
     <div class="layout-split" data-history-columns>
       <section class="surface history-trend-card">
         <div class="surface__head"><strong>Daily trend</strong><small>Observed rollup</small></div>
         <div class="history-stage"><div class="notice">Loading Kick history…</div></div>
+        <div class="history-chart-legend" data-history-chart-legend aria-label="Coverage legend">
+          <span><i class="history-legend-swatch history-legend-swatch--good"></i>Complete</span>
+          <span><i class="history-legend-swatch history-legend-swatch--partial"></i>Partial</span>
+          <span><i class="history-legend-swatch history-legend-swatch--progress"></i>In progress</span>
+          <span><i class="history-legend-swatch history-legend-swatch--missing"></i>Missing</span>
+        </div>
       </section>
       <aside class="surface inspector history-card history-selected-day" data-history-selected-day>
         <div class="surface__head"><strong>Selected day</strong><small>Choose a bar</small></div>
@@ -98,17 +108,25 @@
       </aside>
     </div>
 
-    <div class="rule-title"><h2>Top streamers</h2><span>Period ranking</span></div>
+    <div class="rule-title"><h2>Top streamers</h2><span>Completed-day ranking</span></div>
     <section class="history-ranking-toolbar" aria-label="Ranking controls">
       <div class="history-control-section"><span class="toolbar-label">Sort</span><div class="control-group"><button type="button" data-history-sort="viewer_minutes" aria-pressed="true">Viewer-minutes</button><button type="button" data-history-sort="peak_viewers" aria-pressed="false">Peak viewers</button></div></div>
-      <div class="history-control-section"><span class="toolbar-label">Show</span><div class="control-group"><button type="button" data-history-limit="10" aria-pressed="false">Top 10</button><button type="button" data-history-limit="20" aria-pressed="true">Top 20</button><button type="button" data-history-limit="50" aria-pressed="false">Top 50</button></div></div>
+      <div class="history-control-section"><span class="toolbar-label">Show</span><div class="control-group"><button type="button" data-history-limit="10" aria-pressed="true">Top 10</button><button type="button" data-history-limit="20" aria-pressed="false">Top 20</button><button type="button" data-history-limit="50" aria-pressed="false">Top 50</button></div></div>
     </section>
     <div class="history-table-wrap">
-      <table class="metric-ledger history-peak-archive"><thead><tr><th>#</th><th>Streamer</th><th>Viewer-minutes</th><th>Peak viewers</th><th>Average viewers</th><th>Observed time</th><th>Change</th></tr></thead><tbody><tr><td colspan="7">Loading retained streamer rollup…</td></tr></tbody></table>
+      <table class="metric-ledger history-peak-archive"><thead><tr><th>#</th><th>Streamer</th><th>Viewer-minutes</th><th>Peak viewers</th><th>Average viewers</th><th>Observed time</th><th>Change</th></tr></thead><tbody><tr><td colspan="7">Loading completed-day streamer rollup…</td></tr></tbody></table>
     </div>
     <div class="history-streamer-cards" data-history-streamer-cards></div>
 
-    <div class="rule-title"><h2>Daily archive</h2><span>Open the day in context</span></div>
+    <div class="rule-title"><h2>Daily archive</h2><span>Recent days first</span></div>
+    <section class="history-archive-toolbar" data-history-archive-toolbar aria-label="Daily archive controls">
+      <div class="control-group">
+        <button type="button" data-history-archive-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-history-archive-filter="complete" aria-pressed="false">Complete</button>
+        <button type="button" data-history-archive-filter="attention" aria-pressed="false">Needs attention</button>
+      </div>
+      <div class="history-archive-toolbar__right"><span data-history-archive-status>Loading days…</span><button class="button button--paper" type="button" data-history-archive-toggle aria-expanded="false">Show all days</button></div>
+    </section>
     <section class="daily-archive" data-history-daily-archive><div class="notice">Loading observed days…</div></section>
 
     <div class="rule-title"><h2>Coverage &amp; data quality</h2><span>Retention window</span></div>
@@ -121,6 +139,7 @@
   <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method &amp; limits</a><a href="/support/">Support</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
 </div>
 <script type="module" src="/src/mock-site.ts"></script>
+<script type="module" src="/src/live/history-usability-pass.ts"></script>
 <script type="module" src="/src/live/history-current-shell-entry.ts"></script>
 <script type="module" src="/src/analytics.ts"></script>
 </body>
