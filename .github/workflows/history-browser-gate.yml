@@ -72,6 +72,16 @@ jobs:
           cd /tmp/history-browser
           node history-browser-smoke.mjs 2>&1 | tee /tmp/history-browser.log
 
+      - name: Upload History visual verification
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: history-usability-screenshots
+          path: |
+            /tmp/history-twitch-desktop.png
+            /tmp/history-kick-mobile.png
+          if-no-files-found: error
+
       - name: Upload History browser diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
