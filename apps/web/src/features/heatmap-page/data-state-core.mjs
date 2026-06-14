@@ -25,11 +25,12 @@ export function normalizeHeatmapDataTruth(raw, providerKey, nowMs = Date.now()) 
   const latest = asRecord(root.latest)
   const status = asRecord(root.status)
   const payload = latest ? parsePayload(latest.payload_json) : root
+  const hasItemArray = Array.isArray(payload.items) || Array.isArray(root.items)
   const items = Array.isArray(payload.items) ? payload.items : Array.isArray(root.items) ? root.items : []
   const notes = [...(Array.isArray(root.notes) ? root.notes.map(String) : []), ...(Array.isArray(payload.notes) ? payload.notes.map(String) : [])]
   const noteSource = notes.find((note) => note.startsWith('source_mode='))?.split('=')[1]
 
-  const observedRecords = firstFinite(items.length, latest?.stream_count, root.observedCount, root.streamCount, status?.latest_stream_count)
+  const observedRecords = hasItemArray ? items.length : firstFinite(latest?.stream_count, root.observedCount, root.streamCount, status?.latest_stream_count)
   const configuredLimit = firstFinite(root.topLimit, root.limit, payload.topLimit, payload.limit, provider.limit)
   const hasMore = firstBoolean(latest?.has_more, root.hasMore, root.has_more, payload.hasMore, payload.has_more, status?.has_more)
   const coveredPages = firstNullableFinite(latest?.covered_pages, root.coveredPages, root.covered_pages, payload.coveredPages, payload.covered_pages, status?.covered_pages)
@@ -45,17 +46,18 @@ export function normalizeHeatmapDataTruth(raw, providerKey, nowMs = Date.now()) 
   const isStale = sourceMode === 'stale' || explicitState === 'stale' || (snapshotAgeMinutes !== null && snapshotAgeMinutes >= staleAfterMinutes)
   const isStrongStale = snapshotAgeMinutes !== null && snapshotAgeMinutes >= strongStaleAfterMinutes
   const activityData = summarizeActivity(items)
-  const snapshotExists = Boolean(latest) || Array.isArray(root.items) || Array.isArray(payload.items) || Boolean(updatedAt)
+  const snapshotExists = Boolean(latest) || hasItemArray || Boolean(updatedAt)
   const collectorFailure = ['failing', 'failed', 'error', 'unconfigured'].includes(firstString(status?.status, root.collectorState, root.collector_state).toLowerCase())
   const coverageIsPartial = hasMore === true || ['partial', 'poor', 'missing'].includes(coverageHint)
   const activityIsPartial = ['unavailable', 'not_sampled'].includes(activityData.summary.state)
+  const sourceIsUncertain = sourceMode === 'unknown'
 
   let state
   if ((root.ok === false || explicitState === 'error') && !snapshotExists) state = 'error'
   else if (sourceMode === 'demo' || explicitState === 'demo') state = 'demo'
   else if (snapshotExists && observedRecords === 0) state = 'empty'
   else if (isStale) state = 'stale'
-  else if (explicitState === 'partial' || collectorFailure || coverageIsPartial || activityIsPartial) state = 'partial'
+  else if (explicitState === 'partial' || collectorFailure || coverageIsPartial || activityIsPartial || sourceIsUncertain) state = 'partial'
   else state = snapshotExists ? 'fresh' : explicitState === 'loading' ? 'loading' : 'error'
 
   const reasons = []
@@ -63,6 +65,7 @@ export function normalizeHeatmapDataTruth(raw, providerKey, nowMs = Date.now()) 
   if (activityData.summary.state === 'unavailable') reasons.push('Activity signal is unavailable for the current observed field.')
   if (activityData.summary.state === 'not_sampled') reasons.push('Activity was not sampled in the current window.')
   if (collectorFailure) reasons.push('Collector health is degraded.')
+  if (sourceIsUncertain) reasons.push('Snapshot source mode is unknown.')
   if (isStale) reasons.push('The latest successful snapshot is delayed.')
 
   return {
