@@ -68,8 +68,19 @@ jobs:
         env:
           HISTORY_BASE_URL: http://127.0.0.1:4173
         run: |
+          set -o pipefail
           cd /tmp/history-browser
-          node history-browser-smoke.mjs
+          node history-browser-smoke.mjs 2>&1 | tee /tmp/history-browser.log
+
+      - name: Upload History browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: history-browser-diagnostics
+          path: |
+            /tmp/history-browser.log
+            /tmp/history-preview.log
+          if-no-files-found: warn
 
       - name: Print preview log on failure
         if: failure()
