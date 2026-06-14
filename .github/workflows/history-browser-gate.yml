@@ -10,6 +10,7 @@ on:
       - 'apps/web/src/live/history-usability-pass.ts'
       - 'apps/web/src/live/history-usability.ts'
       - 'apps/web/src/live/history-number-format.ts'
+      - 'apps/web/src/live/history-default-day.ts'
       - 'apps/web/functions/_history/**'
       - 'apps/web/scripts/history-browser-smoke.mjs'
       - 'apps/web/scripts/history-cloudflare-preview.mjs'
