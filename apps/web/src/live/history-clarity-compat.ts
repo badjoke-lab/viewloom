@@ -42,18 +42,15 @@ function sync(): void {
   if (!root || !toggle) return
   if (!toggle.hasAttribute('data-history-archive-toggle')) toggle.setAttribute('data-history-archive-toggle', '')
 
-  root.dataset.historyClarityFilter = filter
-  root.dataset.historyClarityExpanded = String(expanded)
+  root.classList.add('history-card-visibility-active')
   const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-history-day-card]'))
   const matching = cards.filter((card) => filter === 'all' || card.dataset.historyClarityState === filter)
+  cards.forEach((card) => card.classList.remove('history-card-visible'))
   matching.forEach((card, index) => {
-    card.dataset.historyClarityVisible = String(expanded || index < 9)
-  })
-  cards.filter((card) => !matching.includes(card)).forEach((card) => {
-    card.dataset.historyClarityVisible = 'false'
+    if (expanded || index < 9) card.classList.add('history-card-visible')
   })
 
-  const visible = matching.filter((card) => card.dataset.historyClarityVisible === 'true').length
+  const visible = matching.filter((card) => card.classList.contains('history-card-visible')).length
   const status = document.querySelector<HTMLElement>('[data-history-archive-status]')
   if (status) status.textContent = `${visible} of ${matching.length} matching days shown`
   toggle.hidden = matching.length <= 9
