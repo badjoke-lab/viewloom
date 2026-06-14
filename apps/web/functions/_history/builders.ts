@@ -38,20 +38,42 @@ export function fromRollups(rows: RollupRow[], previousRows: RollupRow[]): Built
       biggestRise: biggestRise(topStreamers),
     } satisfies DailySummary
   })
+
+  const today = new Date().toISOString().slice(0, 10)
+  const completedRows = rows.filter((row) => row.day < today)
+  const completedPreviousRows = previousRows.filter((row) => row.day < today)
   return {
     daily,
-    topStreamers: ranked(streamsFromRollups(rows), streamsFromRollups(previousRows), 50, PERIOD_BASELINE_MINUTES),
+    topStreamers: ranked(
+      streamsFromRollups(completedRows),
+      streamsFromRollups(completedPreviousRows),
+      50,
+      PERIOD_BASELINE_MINUTES,
+    ),
   }
 }
 
-export function fromRaw(rows: SnapshotRow[], previousRows: SnapshotRow[], parseStream: (item: Record<string, unknown>) => ParsedStream | null, demoModes: string[]): BuiltHistory {
+export function fromRaw(
+  rows: SnapshotRow[],
+  previousRows: SnapshotRow[],
+  parseStream: (item: Record<string, unknown>) => ParsedStream | null,
+  demoModes: string[],
+): BuiltHistory {
   const current = buildRaw(rows, parseStream, demoModes)
   const previous = buildRaw(previousRows, parseStream, demoModes)
   const allDays = new Map([...previous.days, ...current.days])
   const daily = [...current.days.values()]
     .sort((a, b) => a.day.localeCompare(b.day))
     .map((day) => rawDaySummary(day, allDays.get(addDays(day.day, -1))))
-  return { daily, topStreamers: ranked(current.streams, previous.streams, 50, PERIOD_BASELINE_MINUTES) }
+  const today = new Date().toISOString().slice(0, 10)
+  const completedCurrentStreams = streamsFromRawDays(
+    [...current.days.values()].filter((day) => day.day < today),
+  )
+  const previousStreams = streamsFromRawDays([...previous.days.values()])
+  return {
+    daily,
+    topStreamers: ranked(completedCurrentStreams, previousStreams, 50, PERIOD_BASELINE_MINUTES),
+  }
 }
 
 function streamsForRollup(row?: RollupRow): Map<string, StreamAgg> {
@@ -77,7 +99,13 @@ function streamsFromRollups(rows: RollupRow[]): Map<string, StreamAgg> {
     for (const raw of jsonArray(row.top_streamers_json)) {
       const id = slug(raw.streamerId ?? raw.channelLogin ?? raw.displayName)
       if (!id) continue
-      const current = map.get(id) ?? { id, displayName: String(raw.displayName ?? raw.channelLogin ?? id), viewerMinutes: 0, peakViewers: 0, observedMinutes: 0 }
+      const current = map.get(id) ?? {
+        id,
+        displayName: String(raw.displayName ?? raw.channelLogin ?? id),
+        viewerMinutes: 0,
+        peakViewers: 0,
+        observedMinutes: 0,
+      }
       current.displayName = String(raw.displayName ?? raw.channelLogin ?? current.displayName)
       current.viewerMinutes += num(raw.viewerMinutes)
       current.peakViewers = Math.max(current.peakViewers, num(raw.peakViewers))
@@ -88,7 +116,32 @@ function streamsFromRollups(rows: RollupRow[]): Map<string, StreamAgg> {
   return map
 }
 
-function buildRaw(rows: SnapshotRow[], parseStream: (item: Record<string, unknown>) => ParsedStream | null, demoModes: string[]) {
+function streamsFromRawDays(days: RawDay[]): Map<string, StreamAgg> {
+  const map = new Map<string, StreamAgg>()
+  for (const day of days) {
+    for (const stream of day.streams.values()) {
+      const current = map.get(stream.id) ?? {
+        id: stream.id,
+        displayName: stream.displayName,
+        viewerMinutes: 0,
+        peakViewers: 0,
+        observedMinutes: 0,
+      }
+      current.displayName = stream.displayName || current.displayName
+      current.viewerMinutes += stream.viewerMinutes
+      current.peakViewers = Math.max(current.peakViewers, stream.peakViewers)
+      current.observedMinutes += stream.observedMinutes
+      map.set(stream.id, current)
+    }
+  }
+  return map
+}
+
+function buildRaw(
+  rows: SnapshotRow[],
+  parseStream: (item: Record<string, unknown>) => ParsedStream | null,
+  demoModes: string[],
+) {
   const days = new Map<string, RawDay>()
   const streams = new Map<string, StreamAgg>()
   for (let index = 0; index < rows.length; index += 1) {
@@ -118,7 +171,17 @@ function buildRaw(rows: SnapshotRow[], parseStream: (item: Record<string, unknow
 }
 
 function emptyRawDay(day: string): RawDay {
-  return { day, totalViewerMinutes: 0, peakViewers: 0, peakStreamerName: null, peakStreamerViewers: 0, observedStreamCount: 0, observedMinutes: 0, sawDemo: false, streams: new Map() }
+  return {
+    day,
+    totalViewerMinutes: 0,
+    peakViewers: 0,
+    peakStreamerName: null,
+    peakStreamerViewers: 0,
+    observedStreamCount: 0,
+    observedMinutes: 0,
+    sawDemo: false,
+    streams: new Map(),
+  }
 }
 
 function rawDaySummary(day: RawDay, previous?: RawDay): DailySummary {
@@ -131,14 +194,26 @@ function rawDaySummary(day: RawDay, previous?: RawDay): DailySummary {
     peakStreamerName: day.peakStreamerName,
     observedStreamCount: Math.round(day.observedStreamCount),
     observedMinutes: Math.round(day.observedMinutes),
-    coverageState: day.sawDemo ? 'demo' : expected <= 0 ? 'missing' : day.observedMinutes >= expected * 0.8 ? 'good' : 'partial',
+    coverageState: day.sawDemo
+      ? 'demo'
+      : expected <= 0
+        ? 'missing'
+        : day.observedMinutes >= expected * 0.8
+          ? 'good'
+          : 'partial',
     topStreamers,
     biggestRise: biggestRise(topStreamers),
   }
 }
 
 function accumulate(map: Map<string, StreamAgg>, stream: ParsedStream, weightMinutes: number): void {
-  const current = map.get(stream.id) ?? { id: stream.id, displayName: stream.displayName, viewerMinutes: 0, peakViewers: 0, observedMinutes: 0 }
+  const current = map.get(stream.id) ?? {
+    id: stream.id,
+    displayName: stream.displayName,
+    viewerMinutes: 0,
+    peakViewers: 0,
+    observedMinutes: 0,
+  }
   current.displayName = stream.displayName || current.displayName
   current.viewerMinutes += stream.viewers * weightMinutes
   current.peakViewers = Math.max(current.peakViewers, stream.viewers)
@@ -152,8 +227,12 @@ function sampleWeightMinutes(rows: SnapshotRow[], index: number): number {
   const previous = rows[index - 1]
   const currentTime = Date.parse(current.bucket_minute)
   const currentDay = current.bucket_minute.slice(0, 10)
-  if (next && next.bucket_minute.slice(0, 10) === currentDay) return boundedMinutes(Date.parse(next.bucket_minute) - currentTime)
-  if (previous && previous.bucket_minute.slice(0, 10) === currentDay) return boundedMinutes(currentTime - Date.parse(previous.bucket_minute))
+  if (next && next.bucket_minute.slice(0, 10) === currentDay) {
+    return boundedMinutes(Date.parse(next.bucket_minute) - currentTime)
+  }
+  if (previous && previous.bucket_minute.slice(0, 10) === currentDay) {
+    return boundedMinutes(currentTime - Date.parse(previous.bucket_minute))
+  }
   return DEFAULT_SAMPLE_MINUTES
 }
 
