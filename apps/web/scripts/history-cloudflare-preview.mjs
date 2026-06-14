@@ -9,12 +9,12 @@ function assert(condition, message) {
 
 async function waitForLatestPreview(page, path, mode) {
   let lastReason = 'preview did not load'
-  for (let attempt = 1; attempt <= 24; attempt += 1) {
+  for (let attempt = 1; attempt <= 18; attempt += 1) {
     try {
-      await page.goto(`${baseUrl}${path}?qa=${Date.now()}`, { waitUntil: 'networkidle', timeout: 30000 })
-      await page.waitForSelector('.history-day-column', { timeout: 15000 })
-      await page.waitForSelector('[data-history-daily-archive] .day-card', { timeout: 15000 })
-      await page.waitForFunction(() => document.querySelector('[data-history-coverage-summary]')?.textContent?.trim().length > 0)
+      await page.goto(`${baseUrl}${path}?qa=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 15000 })
+      await page.waitForSelector('.history-day-column', { timeout: 10000 })
+      await page.waitForSelector('[data-history-daily-archive] .day-card', { timeout: 10000 })
+      await page.waitForFunction(() => document.querySelector('[data-history-coverage-summary]')?.textContent?.trim().length > 0, null, { timeout: 10000 })
 
       const compactArchiveValue = (await page.locator('[data-history-daily-archive] .day-card').first().locator(':scope > strong').textContent())?.trim() ?? ''
       const coverageText = (await page.locator('[data-history-coverage-summary]').textContent()) ?? ''
@@ -30,6 +30,7 @@ async function waitForLatestPreview(page, path, mode) {
     } catch (error) {
       lastReason = error instanceof Error ? error.message : String(error)
     }
+    console.log(`Cloudflare preview attempt ${attempt}/18 pending: ${lastReason}`)
     await page.waitForTimeout(10000)
   }
   throw new Error(`Cloudflare preview did not reach the latest History usability build: ${lastReason}`)
