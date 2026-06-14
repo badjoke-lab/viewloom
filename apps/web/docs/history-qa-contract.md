@@ -23,7 +23,7 @@ This page records the production contract for the Twitch and Kick History & Tren
 - `/api/history` and `/api/kick-history` accept `period=7d`, `period=30d`, or a valid `from` / `to` range up to 90 days.
 - Both APIs accept `metric=viewer_minutes|peak_viewers`.
 - Both APIs compare the selected range with the immediately preceding equal-length range.
-- Invalid custom ranges return HTTP 400.
+- invalid custom ranges return HTTP 400.
 - A zero or insufficient previous baseline is returned as `new` or `insufficient`, not an unbounded percentage.
 - Summary includes Total observed, Peak day by viewer-minutes, Top streamer, Biggest rise when comparable, and Coverage quality.
 - Daily payloads include top streamers and the information required by Selected day and Daily archive.
