@@ -15,12 +15,15 @@ This page records the production contract for the Twitch and Kick History & Tren
 - Coverage exposes observed, partial, and missing day counts, observed minutes, affected dates, and an impact note.
 - Empty retained rollups render as an honest empty state, never demo data.
 - Mobile replaces the wide ranking table with streamer cards and keeps the controls and daily archive usable.
+- Public state labels are Fresh / Partial / Empty / Demo / Error.
+- Public source labels are Real / Demo.
 
 ## Required API behavior
 
 - `/api/history` and `/api/kick-history` accept `period=7d`, `period=30d`, or a valid `from` / `to` range up to 90 days.
 - Both APIs accept `metric=viewer_minutes|peak_viewers`.
 - Both APIs compare the selected range with the immediately preceding equal-length range.
+- Invalid custom ranges return HTTP 400.
 - A zero or insufficient previous baseline is returned as `new` or `insufficient`, not an unbounded percentage.
 - Summary includes Total observed, Peak day by viewer-minutes, Top streamer, Biggest rise when comparable, and Coverage quality.
 - Daily payloads include top streamers and the information required by Selected day and Daily archive.
