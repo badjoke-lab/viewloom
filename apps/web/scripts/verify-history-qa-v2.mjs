@@ -4,26 +4,91 @@ import { join } from 'node:path'
 const root = process.cwd()
 const failures = []
 const read = (path) => readFileSync(join(root, path), 'utf8')
-const requireFragment = (path, source, fragment) => { if (!source.includes(fragment)) failures.push(`${path}: missing ${fragment}`) }
+const requireFragment = (path, source, fragment) => {
+  if (!source.includes(fragment)) failures.push(`${path}: missing ${fragment}`)
+}
 
 const pages = ['twitch/history/index.html', 'kick/history/index.html']
 for (const path of pages) {
-  if (!existsSync(join(root, path))) { failures.push(`${path}: missing`); continue }
+  if (!existsSync(join(root, path))) {
+    failures.push(`${path}: missing`)
+    continue
+  }
   const source = read(path)
-  const title = path.startsWith('twitch/') ? 'History & Trends for Twitch live streams | ViewLoom' : 'History & Trends for Kick live streams | ViewLoom'
-  for (const fragment of [`<title>${title}</title>`, '<small>Source</small>', 'data-history-period="7d"', 'data-history-period="30d"', 'data-history-period="custom"', 'data-history-metric="viewer_minutes"', 'data-history-metric="peak_viewers"', 'data-history-selected-day', 'data-history-daily-archive', 'data-history-columns']) requireFragment(path, source, fragment)
+  const title = path.startsWith('twitch/')
+    ? 'History & Trends for Twitch live streams | ViewLoom'
+    : 'History & Trends for Kick live streams | ViewLoom'
+  for (const fragment of [
+    `<title>${title}</title>`,
+    '<small>Source</small>',
+    '/src/live/history-usability-pass.ts',
+    'data-history-period="7d"',
+    'data-history-period="30d"',
+    'data-history-period="custom"',
+    'data-history-metric="viewer_minutes"',
+    'data-history-metric="peak_viewers"',
+    'data-history-selected-day',
+    'data-history-daily-archive',
+    'data-history-columns',
+    'data-history-coverage-summary',
+    'data-history-chart-legend',
+    'data-history-archive-toolbar',
+    'data-history-archive-toggle',
+    'data-history-limit="10" aria-pressed="true"',
+    'Completed-day ranking',
+  ]) requireFragment(path, source, fragment)
 }
 
 for (const path of ['functions/api/history.ts', 'functions/api/kick-history.ts']) {
   const source = read(path)
-  for (const fragment of ['validateRequestedRange(', 'isCalendarDay(', "'invalid_range'", 'History custom range is limited to 90 days in v1.']) requireFragment(path, source, fragment)
+  for (const fragment of [
+    'validateRequestedRange(',
+    'isCalendarDay(',
+    "'invalid_range'",
+    'History custom range is limited to 90 days in v1.',
+  ]) requireFragment(path, source, fragment)
 }
 
 const model = read('functions/_history/model.ts')
-for (const fragment of ["source: allDemo ? 'demo' : 'real'", "coverage.state === 'good' ? 'fresh' : 'partial'", "comparisonState: 'comparable' | 'new' | 'insufficient'"]) requireFragment('functions/_history/model.ts', model, fragment)
+for (const fragment of [
+  "source: allDemo ? 'demo' : 'real'",
+  "coverage.state === 'good' ? 'fresh' : 'partial'",
+  "comparisonState: 'comparable' | 'new' | 'insufficient'",
+  'PERIOD_BASELINE_MINUTES = 360',
+  'stream.viewerMinutes * 0.2',
+  'summaryScope:',
+  'inProgressDays:',
+]) requireFragment('functions/_history/model.ts', model, fragment)
+
+const builders = read('functions/_history/builders.ts')
+for (const fragment of [
+  'const completedRows = rows.filter((row) => row.day < today)',
+  'streamsFromRawDays(',
+  'completedCurrentStreams',
+]) requireFragment('functions/_history/builders.ts', builders, fragment)
+
+const usability = read('src/live/history-usability-pass.ts')
+for (const fragment of [
+  "initialParams.set('limit', '10')",
+  'selectLatestCompletedDay(',
+  'Today is still in progress.',
+  'history-bar--in-progress',
+  'Low baseline',
+  'matchingIndex < 9',
+  'Show all ${matchingCount} days',
+]) requireFragment('src/live/history-usability-pass.ts', usability, fragment)
 
 const style = read('src/history-page.css')
-for (const fragment of ['[data-history-columns]{grid-template-columns:1fr}', '.history-stage{position:relative', '.history-stage svg{display:block;width:100%', '.history-day-column.is-selected']) requireFragment('src/history-page.css', style, fragment)
+for (const fragment of [
+  '[data-history-columns]{grid-template-columns:1fr}',
+  '.history-stage{position:relative',
+  '.history-stage svg{display:block;width:100%',
+  '.history-day-column.is-selected',
+  '.history-bar--in-progress',
+  '.history-coverage-summary',
+  '.history-chart-legend',
+  '.day-card[hidden]',
+]) requireFragment('src/history-page.css', style, fragment)
 
 if (failures.length) {
   console.error('History repair QA failed:')
