@@ -183,6 +183,7 @@ async function desktopGate(browser) {
   const selectedDay = await firstBar.getAttribute('data-history-day')
   await firstBar.click()
   await page.waitForFunction((day) => new URL(location.href).searchParams.get('day') === day, selectedDay)
+  await page.waitForFunction(() => document.querySelector('.history-selected-top li span')?.textContent?.startsWith('#1 '))
   assert((await page.locator('[data-history-selected-day]').textContent())?.includes('#1 '), 'Desktop: selected-day Top 5 is not ranked')
   assert((await page.locator('[data-history-selected-day] a').first().getAttribute('href'))?.includes(`date=${selectedDay}`), 'Desktop: Day Flow link is not date-specific')
   await assertNoPageOverflow(page, 'Desktop')
