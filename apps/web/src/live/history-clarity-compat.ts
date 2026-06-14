@@ -17,13 +17,13 @@ function handleClick(event: MouseEvent): void {
     if (next) {
       filter = next
       expanded = false
-      schedule()
+      sync()
     }
     return
   }
   if (target?.closest('[data-history-clarity-toggle],[data-history-archive-toggle]')) {
     expanded = !expanded
-    schedule()
+    sync()
   }
 }
 
@@ -39,6 +39,7 @@ function schedule(): void {
 function sync(): void {
   const root = document.querySelector<HTMLElement>('[data-history-daily-archive]')
   const toggle = document.querySelector<HTMLButtonElement>('[data-history-clarity-toggle]')
+    ?? document.querySelector<HTMLButtonElement>('[data-history-archive-toggle]')
   if (!root || !toggle) return
   if (!toggle.hasAttribute('data-history-archive-toggle')) toggle.setAttribute('data-history-archive-toggle', '')
 
