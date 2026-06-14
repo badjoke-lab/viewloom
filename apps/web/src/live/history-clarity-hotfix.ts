@@ -123,11 +123,11 @@ function normalizePayload(payload: ClarityPayload): ClarityPayload {
     && !normalized.summary?.biggestRise
   if (explicitNoBaseline || inferredNoBaseline) {
     normalized.comparison = { previousPeriodAvailable: false }
-    normalized.topStreamers = top.map((streamer) => ({
+    normalized.topStreamers = top.map((streamer): ClarityStreamer => ({
       ...streamer,
       comparisonState: 'insufficient',
-      changePct: null,
-      changeAbs: null,
+      changePct: undefined,
+      changeAbs: undefined,
     }))
   }
 
@@ -305,10 +305,10 @@ function coverageRow(label: string, days: string[], state: string): string {
 
 function archiveCounts(): Record<ArchiveFilter, number> & { all: number } {
   const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-history-day-card]'))
-  const counts = { all: cards.length, complete: 0, 'in-progress': 0, partial: 0, missing: 0 }
+  const counts: Record<ArchiveFilter, number> & { all: number } = { all: cards.length, complete: 0, 'in-progress': 0, partial: 0, missing: 0 }
   cards.forEach((card) => {
-    const state = card.dataset.historyClarityState as ArchiveFilter | undefined
-    if (state && state !== 'all') counts[state] += 1
+    const state = card.dataset.historyClarityState as Exclude<ArchiveFilter, 'all'> | undefined
+    if (state) counts[state] += 1
   })
   return counts
 }
