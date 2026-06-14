@@ -84,6 +84,7 @@ function setupLayout(): void {
 function readInitialLayout(): BattleLayoutMode {
   const value = new URLSearchParams(window.location.search).get('layout')
   if (value === 'split') return 'split'
+  if (value === 'theater') return 'wide'
   return 'wide'
 }
 
