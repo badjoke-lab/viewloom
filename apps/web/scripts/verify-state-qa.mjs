@@ -50,10 +50,16 @@ const contracts = [
       'No retained history rollup is available yet.',
       'No retained streamer rollup is available yet.',
       'History API unavailable:',
-      'period=30d',
+      'buildRequestUrl()',
+      "params.set('period', pageState.periodMode === '7d' ? '7d' : '30d')",
+      "params.set('metric', pageState.metric)",
       'cache: \'no-store\'',
     ],
-    forbidden: [/Stream A|Stream B|Stream C/, /<svg viewBox="0 0 1210 560"/],
+    forbidden: [
+      /Stream A|Stream B|Stream C/,
+      /<svg viewBox="0 0 1210 560"/,
+      /fetch\(`\$\{endpoint\}\?period=30d/,
+    ],
   },
   {
     path: 'src/live/status-current-shell-entry.ts',

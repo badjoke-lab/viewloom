@@ -1,10 +1,33 @@
-# History QA Contract
+# History & Trends QA Contract
 
-This page records the current production contract for the History view.
+This page records the production contract for the Twitch and Kick History & Trends views.
 
-- Twitch and Kick History pages must use the current-shell live entry.
-- The live entry must choose `/api/history` for Twitch and `/api/kick-history` for Kick.
-- The public pages must keep `.history-stage`, `[data-history-summary]`, `[data-history-notes]`, and `.metric-ledger` live slots.
-- The live renderer must fetch JSON with `cache: 'no-store'` and render summary, chart, table, notes, empty, and error states.
-- Empty retained rollups must be shown as empty/coverage states, not demo data.
-- A future change that restores static SVG-only History charts or `Stream A` demo rows is a regression.
+## Required public behavior
+
+- Twitch and Kick History pages use the current-shell live entry and their provider-specific History API.
+- The page exposes working Last 7 days, Last 30 days, and Custom range controls.
+- Viewer-minutes and Peak viewers change the requested metric and the chart values.
+- History state is reflected in the URL so reload and sharing preserve the selected period, metric, ranking sort, ranking limit, and selected day.
+- The chart includes numeric Y-axis labels, date labels, day selection, keyboard selection, and pointer tooltips.
+- Selecting a day updates the Selected day panel and highlights the matching Daily archive card.
+- Selected day and Daily archive links open Day Flow and Battle Lines with the selected date.
+- Top streamers support Viewer-minutes / Peak viewers sorting and Top 10 / 20 / 50 limits.
+- Coverage exposes observed, partial, and missing day counts, observed minutes, affected dates, and an impact note.
+- Empty retained rollups render as an honest empty state, never demo data.
+- Mobile replaces the wide ranking table with streamer cards and keeps the controls and daily archive usable.
+- Public state labels are Fresh / Partial / Empty / Demo / Error.
+- Public source labels are Real / Demo.
+
+## Required API behavior
+
+- `/api/history` and `/api/kick-history` accept `period=7d`, `period=30d`, or a valid `from` / `to` range up to 90 days.
+- Both APIs accept `metric=viewer_minutes|peak_viewers`.
+- Both APIs compare the selected range with the immediately preceding equal-length range.
+- invalid custom ranges return HTTP 400.
+- A zero or insufficient previous baseline is returned as `new` or `insufficient`, not an unbounded percentage.
+- Summary includes Total observed, Peak day by viewer-minutes, Top streamer, Biggest rise when comparable, and Coverage quality.
+- Daily payloads include top streamers and the information required by Selected day and Daily archive.
+- Raw snapshot fallback applies observed-interval weighting capped at five minutes.
+- Twitch and Kick history remain separate.
+
+A future change that restores a fixed `period=30d` fetch, static SVG-only History charts, unexplained percentage explosions, or `Stream A` demo rows is a regression.
