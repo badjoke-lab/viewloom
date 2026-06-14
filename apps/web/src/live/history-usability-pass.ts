@@ -1,3 +1,4 @@
+import '../history-clarity-hotfix.css'
 import './history-clarity-hotfix'
 import './history-usability'
 import './history-number-format'
