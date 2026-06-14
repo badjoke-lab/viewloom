@@ -6,6 +6,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const url = new URL(request.url)
   const metric = url.searchParams.get('metric') === 'peak_viewers' ? 'peak_viewers' : 'viewer_minutes'
   const period = getPeriod(url)
+  const rangeError = validateRequestedRange(url)
+  if (rangeError) return errorResponse('twitch', period, metric, 'invalid_range', rangeError, 400)
   if (dayCount(period.from, period.to) > 90) return errorResponse('twitch', period, metric, 'range_too_large', 'History custom range is limited to 90 days in v1.', 400)
 
   try {
@@ -42,4 +44,21 @@ function parseTwitchStream(item: Record<string, unknown>): ParsedStream | null {
   const viewers = num(item.viewers)
   if (!id || viewers <= 0) return null
   return { id, displayName: String(item.displayName ?? item.channelLogin ?? id), viewers }
+}
+
+function validateRequestedRange(url: URL): string | null {
+  const from = url.searchParams.get('from')
+  const to = url.searchParams.get('to')
+  if (!from && !to) return null
+  if (!from || !to) return 'Both from and to are required for a custom History range.'
+  if (!isCalendarDay(from) || !isCalendarDay(to)) return 'History range dates must use valid YYYY-MM-DD calendar dates.'
+  if (from > to) return 'History range start must be on or before the end date.'
+  if (to > new Date().toISOString().slice(0, 10)) return 'History range cannot include future dates.'
+  return null
+}
+
+function isCalendarDay(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const parsed = new Date(`${value}T00:00:00.000Z`)
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
 }
