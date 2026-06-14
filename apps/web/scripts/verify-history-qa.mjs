@@ -31,9 +31,13 @@ for (const path of [...historyPages, entryPath, stylePath, contractPath, ...apiP
 
 for (const path of historyPages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
+  const title = path.startsWith('twitch/')
+    ? 'History & Trends for Twitch live streams | ViewLoom'
+    : 'History & Trends for Kick live streams | ViewLoom'
   for (const fragment of [
     '/src/live/history-current-shell-entry.ts',
     '/src/history-page.css',
+    `<title>${title}</title>`,
     'History &amp; Trends',
     'data-history-period="7d"',
     'data-history-period="30d"',
@@ -43,10 +47,13 @@ for (const path of historyPages.filter((path) => existsSync(join(root, path)))) 
     'data-history-selected-day',
     'data-history-daily-archive',
     'data-history-notes',
+    'data-history-columns',
+    '<small>Source</small>',
     'class="metric-ledger',
   ]) requireFragment(path, source, fragment)
   forbidPattern(path, source, 'static legacy History SVG', /<svg viewBox="0 0 1210 560"/)
   forbidPattern(path, source, 'static Stream demo rows', /Stream A|Stream B|Stream C/)
+  forbidPattern(path, source, 'internal read path label', /<small>Read path<\/small>/)
 }
 
 if (existsSync(join(root, entryPath))) {
@@ -78,6 +85,9 @@ for (const path of apiPaths.filter((path) => existsSync(join(root, path)))) {
     'fromRollups(',
     'fromRaw(',
     'buildPayload(',
+    'validateRequestedRange(',
+    'isCalendarDay(',
+    "'invalid_range'",
     'History custom range is limited to 90 days in v1.',
   ]) requireFragment(path, source, fragment)
 }
@@ -91,6 +101,8 @@ if (existsSync(join(root, sharedPaths[0]))) {
     'affectedDays',
     'expectedMinutesForDay(',
     'previousPeriod(',
+    "source: allDemo ? 'demo' : 'real'",
+    "coverage.state === 'good' ? 'fresh' : 'partial'",
   ]) requireFragment(sharedPaths[0], source, fragment)
 }
 
@@ -107,17 +119,27 @@ if (existsSync(join(root, sharedPaths[1]))) {
 
 if (existsSync(join(root, stylePath))) {
   const source = read(stylePath)
-  requireFragment(stylePath, source, '.history-streamer-cards')
-  requireFragment(stylePath, source, '@media(max-width:760px)')
-  requireFragment(stylePath, source, '.history-day-column.is-selected')
+  for (const fragment of [
+    '.history-streamer-cards',
+    '@media(max-width:760px)',
+    '.history-day-column.is-selected',
+    '[data-history-columns]{grid-template-columns:1fr}',
+    '.history-stage{position:relative',
+    '.history-stage svg{display:block;width:100%',
+  ]) requireFragment(stylePath, source, fragment)
 }
 
 if (existsSync(join(root, contractPath))) {
   const source = read(contractPath)
-  requireFragment(contractPath, source, 'Last 7 days, Last 30 days, and Custom range')
-  requireFragment(contractPath, source, 'Selected day')
-  requireFragment(contractPath, source, 'Daily archive')
-  requireFragment(contractPath, source, 'fixed `period=30d` fetch')
+  for (const fragment of [
+    'Last 7 days, Last 30 days, and Custom range',
+    'Selected day',
+    'Daily archive',
+    'fixed `period=30d` fetch',
+    'invalid custom ranges return HTTP 400',
+    'Fresh / Partial / Empty / Demo / Error',
+    'Real / Demo',
+  ]) requireFragment(contractPath, source, fragment)
 }
 
 if (failures.length > 0) {
