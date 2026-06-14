@@ -10,7 +10,7 @@ const paths = {
   contracts: 'src/features/heatmap-page/contracts.ts',
   runtime: 'src/features/heatmap-page/runtime.ts',
   controller: 'src/features/heatmap-page/controller.ts',
-  adapter: 'src/features/heatmap-page/legacy-adapter.ts',
+  adapter: 'src/features/heatmap-page/data-truth-adapter.ts',
 }
 
 function read(path) {
@@ -29,9 +29,9 @@ for (const path of Object.values(paths)) requireFile(path)
 
 if (!failures.length) {
   const entry = read(paths.entry)
-  requireFragment(paths.entry, entry, "../features/heatmap-page/controller")
+  requireFragment(paths.entry, entry, '../features/heatmap-page/controller')
   requireFragment(paths.entry, entry, 'mountHeatmapPage')
-  if (entry.includes("./twitch-heatmap")) failures.push(`${paths.entry}: direct monolith import returned`)
+  if (entry.includes('./twitch-heatmap')) failures.push(`${paths.entry}: direct monolith import returned`)
 
   const contracts = read(paths.contracts)
   for (const fragment of ["'fetch'", "'state'", "'layout'", "'renderer'", "'inspector'", "'status'", 'HeatmapPageAdapter', 'HeatmapPageRuntime']) {
@@ -39,18 +39,19 @@ if (!failures.length) {
   }
 
   const runtime = read(paths.runtime)
-  for (const fragment of ['createHeatmapPageRuntime', 'queuedRefresh', "state = 'mounting'", "state = 'refreshing'", "state = 'failed'", "state = 'destroyed'"]) {
+  for (const fragment of ['createHeatmapPageRuntime', 'queuedRefresh', 'destroyRequested', "'mounting'", "'refreshing'", "'mounted'", "'failed'", "'destroyed'"]) {
     requireFragment(paths.runtime, runtime, fragment)
   }
 
   const controller = read(paths.controller)
-  for (const fragment of ['mountHeatmapPage', 'refreshHeatmapPage', 'destroyHeatmapPage', 'getHeatmapPageLifecycle']) {
+  for (const fragment of ['data-truth-adapter', 'mountHeatmapPage', 'refreshHeatmapPage', 'destroyHeatmapPage', 'getHeatmapPageLifecycle']) {
     requireFragment(paths.controller, controller, fragment)
   }
 
   const adapter = read(paths.adapter)
-  requireFragment(paths.adapter, adapter, "../../live/twitch-heatmap")
-  requireFragment(paths.adapter, adapter, "boundaries: ['fetch', 'state', 'layout', 'renderer', 'inspector', 'status']")
+  for (const fragment of ['../../live/twitch-heatmap', 'installHeatmapResponseObserver', "boundaries: ['fetch', 'state', 'layout', 'renderer', 'inspector', 'status']"]) {
+    requireFragment(paths.adapter, adapter, fragment)
+  }
 }
 
 if (failures.length) {

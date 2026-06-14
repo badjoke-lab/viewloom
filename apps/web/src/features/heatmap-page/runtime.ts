@@ -11,6 +11,7 @@ export function createHeatmapPageRuntime(adapter: HeatmapPageAdapter): HeatmapPa
   let lastError: Error | null = null
   let activeRun: Promise<void> | null = null
   let queuedRefresh = false
+  let destroyRequested = false
 
   const snapshot = (): HeatmapPageLifecycleSnapshot => ({
     state,
@@ -19,7 +20,7 @@ export function createHeatmapPageRuntime(adapter: HeatmapPageAdapter): HeatmapPa
   })
 
   const run = (kind: 'mount' | 'refresh'): Promise<void> => {
-    if (state === 'destroyed') return Promise.resolve()
+    if (destroyRequested || state === 'destroyed') return Promise.resolve()
 
     if (activeRun) {
       queuedRefresh = true
@@ -37,16 +38,27 @@ export function createHeatmapPageRuntime(adapter: HeatmapPageAdapter): HeatmapPa
         try {
           if (nextKind === 'mount') await adapter.mount()
           else await adapter.refresh()
+
+          if (destroyRequested) {
+            state = 'destroyed'
+            break
+          }
+
           generation += 1
           state = 'mounted'
         } catch (error) {
+          if (destroyRequested) {
+            state = 'destroyed'
+            break
+          }
+
           lastError = error instanceof Error ? error : new Error(String(error))
           state = 'failed'
           throw lastError
         }
 
         nextKind = 'refresh'
-      } while (queuedRefresh && state !== 'destroyed')
+      } while (queuedRefresh && !destroyRequested)
     })().finally(() => {
       activeRun = null
     })
@@ -58,7 +70,8 @@ export function createHeatmapPageRuntime(adapter: HeatmapPageAdapter): HeatmapPa
     mount: () => run('mount'),
     refresh: () => run('refresh'),
     destroy: () => {
-      if (state === 'destroyed') return
+      if (destroyRequested) return
+      destroyRequested = true
       adapter.destroy()
       queuedRefresh = false
       state = 'destroyed'
