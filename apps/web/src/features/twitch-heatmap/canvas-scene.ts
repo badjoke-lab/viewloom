@@ -15,7 +15,7 @@ import {
 import { buildSceneNodes } from './scene'
 import { drawTilesLayer } from './tiles-layer'
 
-const SCENE_CSS = '.heatmap-canvas-scene{display:grid;grid-template-rows:auto 1fr;min-height:560px;height:100%}.heatmap-canvas-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01))}.heatmap-canvas-toolbar__group{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.heatmap-canvas-badge,.heatmap-canvas-mode{display:inline-flex;align-items:center;min-height:32px;padding:0 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);font-size:.82rem;color:var(--muted)}.heatmap-canvas-mode.is-active{background:rgba(var(--accent-rgb),.14);border-color:rgba(var(--accent-rgb),.28);color:var(--text)}.heatmap-canvas-button{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer}.heatmap-canvas-button.is-active{background:rgba(var(--accent-rgb),.18);border-color:rgba(var(--accent-rgb),.28);color:var(--text)}.heatmap-canvas-viewport{position:relative;overflow:hidden;min-height:500px;touch-action:pan-y;cursor:grab}.heatmap-canvas-viewport.is-panning{cursor:grabbing}.heatmap-canvas-viewport.is-move-mode{touch-action:none}.heatmap-canvas-layer{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}.heatmap-canvas-viewport.is-move-mode .heatmap-canvas-layer{touch-action:none}@media(max-width:760px){.heatmap-canvas-scene{min-height:440px}.heatmap-canvas-toolbar{display:grid;grid-template-columns:1fr;align-items:start;padding:12px;gap:10px}.heatmap-canvas-toolbar__group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}.heatmap-canvas-badge,.heatmap-canvas-mode,.heatmap-canvas-button{width:100%;min-width:0;min-height:36px;padding:0 8px;font-size:.78rem;text-align:center;white-space:normal}.heatmap-canvas-viewport{min-height:360px}}'
+const SCENE_CSS = '.heatmap-canvas-scene{min-height:560px;height:100%}.heatmap-canvas-viewport{position:relative;overflow:hidden;min-height:500px;height:100%;touch-action:pan-y;cursor:grab}.heatmap-canvas-viewport.is-panning{cursor:grabbing}.heatmap-canvas-viewport.is-move-mode{touch-action:none}.heatmap-canvas-layer{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}.heatmap-canvas-viewport.is-move-mode .heatmap-canvas-layer{touch-action:none}@media(max-width:760px){.heatmap-canvas-scene{min-height:430px}.heatmap-canvas-viewport{min-height:430px}}'
 const PAN_THRESHOLD = 6
 const WHEEL_ZOOM_IN = 1.14
 const WHEEL_ZOOM_OUT = 1 / WHEEL_ZOOM_IN
@@ -46,15 +46,29 @@ export function renderCanvasScene(input: {
   ensureCanvasStyles()
   const { stage, items, latest, onSelect } = input
   let selectedStreamLogin = input.selectedStreamLogin
+  const controlsHost = ensureMapControlsHost(stage)
 
-  stage.innerHTML = `<div class="heatmap-canvas-scene"><div class="heatmap-canvas-toolbar"><div><div id="heatmap-canvas-hint" class="heatmap-live-toolbar__hint">Page scroll · Tap tiles</div><div class="heatmap-live-toolbar__stats"><span>${latest.total_viewers.toLocaleString()} viewers</span><span>${items.length} streams</span><span>${formatIso(latest.collected_at)}</span></div></div><div class="heatmap-canvas-toolbar__group"><span id="heatmap-canvas-mode" class="heatmap-canvas-mode">Page scroll</span><span id="heatmap-canvas-zoom" class="heatmap-canvas-badge">100%</span><button id="heatmap-canvas-move" class="heatmap-canvas-button" type="button" aria-pressed="false">Control map</button><button id="heatmap-canvas-reset" class="heatmap-canvas-button" type="button">Reset zoom</button></div></div><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer"></canvas></div></div>`
+  controlsHost.innerHTML = `
+    <span id="heatmap-canvas-hint" class="heatmap-map-controls__hint">Page scroll · Tap tiles</span>
+    <div class="heatmap-map-controls__stats">
+      <span>${latest.total_viewers.toLocaleString()} viewers</span>
+      <span>${items.length} streams</span>
+      <span>${formatIso(latest.collected_at)}</span>
+    </div>
+    <span id="heatmap-canvas-mode" class="heatmap-map-control">Page scroll</span>
+    <span id="heatmap-canvas-zoom" class="heatmap-map-control">100%</span>
+    <button id="heatmap-canvas-move" class="heatmap-map-control" type="button" aria-pressed="false">Control map</button>
+    <button id="heatmap-canvas-reset" class="heatmap-map-control" type="button">Reset zoom</button>
+  `
+
+  stage.innerHTML = `<div class="heatmap-canvas-scene"><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer"></canvas></div></div>`
 
   const viewport = stage.querySelector<HTMLElement>('#heatmap-canvas-viewport')
-  const hintLabel = stage.querySelector<HTMLElement>('#heatmap-canvas-hint')
-  const modeLabel = stage.querySelector<HTMLElement>('#heatmap-canvas-mode')
-  const zoomLabel = stage.querySelector<HTMLElement>('#heatmap-canvas-zoom')
-  const moveButton = stage.querySelector<HTMLButtonElement>('#heatmap-canvas-move')
-  const resetButton = stage.querySelector<HTMLButtonElement>('#heatmap-canvas-reset')
+  const hintLabel = controlsHost.querySelector<HTMLElement>('#heatmap-canvas-hint')
+  const modeLabel = controlsHost.querySelector<HTMLElement>('#heatmap-canvas-mode')
+  const zoomLabel = controlsHost.querySelector<HTMLElement>('#heatmap-canvas-zoom')
+  const moveButton = controlsHost.querySelector<HTMLButtonElement>('#heatmap-canvas-move')
+  const resetButton = controlsHost.querySelector<HTMLButtonElement>('#heatmap-canvas-reset')
   const tilesCanvas = stage.querySelector<HTMLCanvasElement>('#heatmap-canvas-tiles')
   const overlayCanvas = stage.querySelector<HTMLCanvasElement>('#heatmap-canvas-overlay')
   if (!viewport || !hintLabel || !modeLabel || !zoomLabel || !moveButton || !resetButton || !tilesCanvas || !overlayCanvas) return
@@ -288,6 +302,17 @@ export function renderCanvasScene(input: {
     camera = zoomCameraAroundPoint(camera, anchor, gestureStartZoom * (gesture.distance / gestureStartDistance), getCameraBounds())
     redraw()
   }
+}
+
+function ensureMapControlsHost(stage: HTMLElement): HTMLElement {
+  const existing = document.querySelector<HTMLElement>('#heatmap-map-controls')
+  if (existing) return existing
+
+  const host = document.createElement('div')
+  host.id = 'heatmap-map-controls'
+  host.className = 'heatmap-map-controls'
+  stage.before(host)
+  return host
 }
 
 function getGestureState(canvas: HTMLCanvasElement, points: Map<number, ActivePointer>): { center: { x: number; y: number }; distance: number } | null {

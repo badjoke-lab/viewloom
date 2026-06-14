@@ -18,7 +18,7 @@
   <meta name="twitter:description" content="Read the current Kick live-stream landscape through an unofficial ViewLoom heatmap based on observed live data." />
   <link rel="stylesheet" href="/src/mock-site.css" />
 </head>
-<body data-provider="kick" data-page="kick-heatmap">
+<body data-provider="kick" data-page="kick-heatmap" data-heatmap-layout="wide">
   <div class="site-frame">
     <header class="masthead">
       <div class="masthead__inner">
@@ -28,19 +28,33 @@
         <button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button>
       </div>
     </header>
-    <main class="page page--full">
+    <main class="page page--full page--heatmap">
       <div class="breadcrumb">ViewLoom / Kick data / Heatmap</div>
       <nav class="feature-tabs"><a class="active" href="/kick/heatmap/">Heatmap</a><a href="/kick/day-flow/">Day Flow</a><a href="/kick/battle-lines/">Battle Lines</a><a href="/kick/history/">History</a><a href="/kick/status/">Status</a></nav>
-      <section class="page-head">
+      <section class="page-head page-head--heatmap">
         <div><div class="kicker">KICK DATA · NOW</div><h1>Heatmap</h1><p class="lede">Current viewer scale is area. Momentum is color. Select a tile to inspect one live stream without leaving the field.</p></div>
-        <div class="head-facts"><div class="fact"><small>Observed</small><strong>—</strong></div><div class="fact"><small>View</small><strong>Live field</strong></div><div class="fact"><small>Cadence</small><strong>5 minutes</strong></div><div class="fact"><small>State</small><strong>—</strong></div></div>
+        <div class="head-facts"><div class="fact"><small>Observed</small><strong>—</strong></div><div class="fact"><small>View</small><strong>Wide</strong></div><div class="fact"><small>Cadence</small><strong>5 minutes</strong></div><div class="fact"><small>State</small><strong>—</strong></div></div>
       </section>
       <div class="data-strip"><div class="data-strip__title">Kick observation</div><div class="data-strip__cell"><small>Updated</small>—</div><div class="data-strip__cell"><small>Observed</small>— streams</div><div class="data-strip__cell"><small>Coverage</small>Top 100</div><div class="data-strip__cell"><small>Source</small>API</div></div>
-      <div class="layout-split">
+      <section class="heatmap-control-dock surface" aria-label="Heatmap controls">
+        <div class="heatmap-control-dock__group">
+          <span class="heatmap-control-dock__label">View</span>
+          <div class="control-group" data-heatmap-layout-controls role="group" aria-label="Heatmap layout">
+            <button class="active" type="button" data-heatmap-layout="wide" aria-pressed="true">Wide</button>
+            <button type="button" data-heatmap-layout="split" aria-pressed="false">Split</button>
+          </div>
+          <span class="heatmap-control-dock__copy">Wide keeps the field large. Split pairs the field with the inspector.</span>
+        </div>
+        <div class="heatmap-control-dock__group heatmap-control-dock__map">
+          <span class="heatmap-control-dock__label">Map</span>
+          <div id="heatmap-map-controls" class="heatmap-map-controls"><span class="heatmap-map-controls__hint">Preparing map controls…</span></div>
+        </div>
+      </section>
+      <div id="heatmap-layout-root" class="heatmap-layout" data-layout="wide">
         <section class="heatmap-wrap chart-placeholder--heatmap" aria-label="Heatmap"><div class="heatmap-live-empty">Loading Kick heatmap…</div></section>
-        <aside id="heatmap-layout-root" class="surface inspector"><div class="rail-stack"><section class="rail-card rail-card--detail"><div class="rail-card__label">Selected stream</div><h2 id="heatmap-detail-title">No stream selected</h2><p id="heatmap-detail-body">Select a tile to inspect its current viewers, momentum, activity, and stream link.</p><div class="heatmap-live-detail-grid"><div class="heatmap-live-detail-stat"><span class="heatmap-live-detail-stat__label">Viewers</span><span id="heatmap-detail-viewers" class="heatmap-live-detail-stat__value">—</span></div><div class="heatmap-live-detail-stat"><span class="heatmap-live-detail-stat__label">Share</span><span id="heatmap-detail-share" class="heatmap-live-detail-stat__value">—</span></div><div class="heatmap-live-detail-stat"><span class="heatmap-live-detail-stat__label">Momentum</span><span id="heatmap-detail-momentum" class="heatmap-live-detail-stat__value">—</span></div><div class="heatmap-live-detail-stat"><span class="heatmap-live-detail-stat__label">Activity</span><span id="heatmap-detail-activity" class="heatmap-live-detail-stat__value">—</span></div></div><a id="heatmap-detail-link" class="heatmap-live-link" target="_blank" rel="noreferrer">Open stream</a></section></div></aside>
+        <aside id="heatmap-inspector" class="surface inspector heatmap-inspector"><div class="rail-stack"><section class="rail-card rail-card--detail"><div class="rail-card__label">Selected stream</div><h2 id="heatmap-detail-title">No stream selected</h2><p id="heatmap-detail-body">Select a tile to inspect its current viewers, momentum, activity, and stream link.</p><div class="heatmap-live-detail-grid"><div class="heatmap-live-detail-stat"><span class="heatmap-live-detail-stat__label">Viewers</span><span id="heatmap-detail-viewers" class="heatmap-live-detail-stat__value">—</span></div><div class="heatmap-live-detail-stat"><span class="heatmap-live-detail-stat__label">Share</span><span id="heatmap-detail-share" class="heatmap-live-detail-stat__value">—</span></div><div class="heatmap-live-detail-stat"><span class="heatmap-live-detail-stat__label">Momentum</span><span id="heatmap-detail-momentum" class="heatmap-live-detail-stat__value">—</span></div><div class="heatmap-live-detail-stat"><span class="heatmap-live-detail-stat__label">Activity</span><span id="heatmap-detail-activity" class="heatmap-live-detail-stat__value">—</span></div></div><a id="heatmap-detail-link" class="heatmap-live-link" target="_blank" rel="noreferrer">Open stream</a></section></div></aside>
+        <div class="support-grid support-grid--feature"></div>
       </div>
-      <div class="support-grid support-grid--feature"></div>
     </main>
     <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method & limits</a><a href="/support/">Support</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
   </div>

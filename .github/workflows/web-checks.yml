@@ -52,6 +52,9 @@ jobs:
       - name: Verify Heatmap data-state truth
         run: pnpm --filter @viewloom/web verify:heatmap-data-state
 
+      - name: Verify Heatmap Wide-first layout
+        run: pnpm --filter @viewloom/web verify:heatmap-wide-layout
+
       - name: Upload web checks logs
         if: always()
         uses: actions/upload-artifact@v4
