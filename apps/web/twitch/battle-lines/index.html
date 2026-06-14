@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="/src/live/battle-lines-wide.css" />
   <link rel="stylesheet" href="/src/live/battle-lines-recovery.css" />
   <link rel="stylesheet" href="/src/live/battle-lines-polish.css" />
+  <link rel="stylesheet" href="/src/live/battle-lines-split.css" />
 </head>
 <body data-provider="twitch"><div class="site-frame">
 <header class="masthead"><div class="masthead__inner"><a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a><nav class="global-nav"><a href="/">Portal</a><a href="/twitch/" aria-current="page">Twitch data</a><a href="/kick/">Kick data</a><a href="/about/">About</a><a href="/support/">Support</a></nav><div class="status-inline"><span class="dot"></span>Collector status loading · 5m cadence</div><button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button></div></header>
@@ -32,6 +33,7 @@
 <div class="battle-control"><span>Metric</span><div class="battle-control__row"><button type="button" data-battle-metric="viewers">Viewers</button><button type="button" data-battle-metric="indexed">Indexed</button></div></div>
 <div class="battle-control"><span>Streams</span><div class="battle-control__row"><button type="button" data-battle-top="3">Top 3</button><button type="button" data-battle-top="5">Top 5</button><button type="button" data-battle-top="10">Top 10</button></div></div>
 <div class="battle-control"><span>Bucket</span><div class="battle-control__row"><button type="button" data-battle-bucket="5m">5m</button><button type="button" data-battle-bucket="10m">10m</button></div></div>
+<div class="battle-control battle-layout-control"><span>Layout</span><div class="battle-control__row"><button type="button" data-battle-layout="wide">Wide</button><button type="button" data-battle-layout="split">Split</button></div></div>
 <div class="battle-actions"><button type="button" data-battle-recommended>Back to recommended</button><button type="button" data-battle-latest>Jump to latest</button><button type="button" data-battle-refresh>Refresh</button></div>
 </section>
 <div class="battle-status" data-battle-status aria-live="polite"><strong>Loading</strong><span>Reading observed Twitch snapshots…</span></div>
@@ -44,5 +46,5 @@
 <aside class="coverage-note" data-battle-coverage><strong>Coverage & limits</strong><p>Loading observation coverage…</p></aside>
 </main>
 <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method & limits</a><a href="/support/">Support</a></nav></footer>
-</div><script type="module" src="/src/mock-site.ts"></script><script type="module" src="/src/live/battle-lines-loading-guard.ts"></script><script type="module" src="/src/live/battle-lines-current-shell-entry.ts"></script><script type="module" src="/src/analytics.ts"></script></body>
+</div><script type="module" src="/src/mock-site.ts"></script><script type="module" src="/src/live/battle-lines-layout.ts"></script><script type="module" src="/src/live/battle-lines-loading-guard.ts"></script><script type="module" src="/src/live/battle-lines-current-shell-entry.ts"></script><script type="module" src="/src/analytics.ts"></script></body>
 </html>
