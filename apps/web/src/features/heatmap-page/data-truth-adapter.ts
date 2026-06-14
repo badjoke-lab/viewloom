@@ -1,3 +1,4 @@
+import './layout-support.css'
 import type { HeatmapPageAdapter } from './contracts'
 import { createHeatmapLoadingTruth, type HeatmapProviderKey } from './data-state-core.mjs'
 import { installHeatmapDataTruthDom, renderHeatmapDataTruth } from './data-state-dom'
