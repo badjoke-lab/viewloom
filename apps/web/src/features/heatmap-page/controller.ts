@@ -1,7 +1,7 @@
-import { heatmapDataStateAdapter } from './data-state-adapter'
+import { heatmapDataTruthAdapter } from './data-truth-adapter'
 import { createHeatmapPageRuntime } from './runtime'
 
-const runtime = createHeatmapPageRuntime(heatmapDataStateAdapter)
+const runtime = createHeatmapPageRuntime(heatmapDataTruthAdapter)
 
 export function mountHeatmapPage(): Promise<void> {
   return runtime.mount()
