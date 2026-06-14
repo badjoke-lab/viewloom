@@ -60,7 +60,11 @@ export type RawDay = {
   streams: Map<string, StreamAgg>
 }
 
-export type BuiltHistory = { daily: DailySummary[]; topStreamers: RankedStream[] }
+export type BuiltHistory = {
+  daily: DailySummary[]
+  topStreamers: RankedStream[]
+  comparisonAvailable: boolean
+}
 
 export const DEFAULT_SAMPLE_MINUTES = 5
 export const MAX_SAMPLE_MINUTES = 5
@@ -72,6 +76,7 @@ export function ranked(
   previous: Map<string, StreamAgg>,
   limit: number,
   baselineMinutes: number,
+  previousPeriodAvailable = true,
 ): RankedStream[] {
   const values = [...streams.values()]
   const byMinutes = [...values].sort((a, b) => b.viewerMinutes - a.viewerMinutes).slice(0, limit)
@@ -86,14 +91,18 @@ export function ranked(
     const minimumViewerMinutes = baselineMinutes >= PERIOD_BASELINE_MINUTES
       ? Math.max(100_000, stream.viewerMinutes * 0.2)
       : Math.max(10_000, stream.viewerMinutes * 0.1)
-    const comparisonState: RankedStream['comparisonState'] = !prev
-      ? 'new'
-      : prev.observedMinutes < baselineMinutes || prev.viewerMinutes < minimumViewerMinutes
-        ? 'insufficient'
-        : 'comparable'
+    const comparisonState: RankedStream['comparisonState'] = !previousPeriodAvailable
+      ? 'insufficient'
+      : !prev
+        ? 'new'
+        : prev.observedMinutes < baselineMinutes || prev.viewerMinutes < minimumViewerMinutes
+          ? 'insufficient'
+          : 'comparable'
     const changeAbs = prev
       ? Math.round(stream.viewerMinutes - prev.viewerMinutes)
-      : Math.round(stream.viewerMinutes)
+      : previousPeriodAvailable
+        ? Math.round(stream.viewerMinutes)
+        : null
     const changePct = comparisonState === 'comparable' && prev && prev.viewerMinutes > 0
       ? (stream.viewerMinutes - prev.viewerMinutes) / prev.viewerMinutes
       : null
@@ -135,18 +144,23 @@ export function buildPayload(
   built: BuiltHistory,
   extra: Record<string, unknown> = {},
 ) {
-  const coverage = coverageFor(provider, period, built.daily)
-  const summary = summaryFor(built.daily, built.topStreamers)
-  const allDemo = built.daily.length > 0 && built.daily.every((day) => day.coverageState === 'demo')
+  const daily = fillMissingDays(period, built.daily)
+  const coverage = coverageFor(provider, period, daily)
+  const summary = summaryFor(daily, built.topStreamers)
+  const observed = daily.filter((day) => day.coverageState !== 'missing')
+  const allDemo = observed.length > 0 && observed.every((day) => day.coverageState === 'demo')
   return {
     source: allDemo ? 'demo' : 'real',
-    state: built.daily.length === 0 ? 'empty' : allDemo ? 'demo' : coverage.state === 'good' ? 'fresh' : 'partial',
+    state: observed.length === 0 ? 'empty' : allDemo ? 'demo' : coverage.state === 'good' ? 'fresh' : 'partial',
     platform: provider,
     period: { ...period, days: dayCount(period.from, period.to) },
     metric,
     ...extra,
+    comparison: {
+      previousPeriodAvailable: built.comparisonAvailable,
+    },
     summary,
-    daily: built.daily,
+    daily,
     topStreamers: built.topStreamers,
     coverage,
     notes: [
@@ -157,11 +171,12 @@ export function buildPayload(
 }
 
 export function summaryFor(daily: DailySummary[], top: RankedStream[]) {
-  if (!daily.length) return null
+  const observedDaily = daily.filter((day) => day.coverageState !== 'missing')
+  if (!observedDaily.length) return null
   const today = dayString(new Date())
-  const completedGood = daily.filter((day) => day.day < today && day.coverageState === 'good')
-  const historical = daily.filter((day) => day.day < today)
-  const summaryDays = completedGood.length ? completedGood : historical.length ? historical : daily
+  const completedGood = observedDaily.filter((day) => day.day < today && day.coverageState === 'good')
+  const historical = observedDaily.filter((day) => day.day < today)
+  const summaryDays = completedGood.length ? completedGood : historical.length ? historical : observedDaily
   const peakDay = summaryDays.reduce(
     (best, day) => day.totalViewerMinutes > best.totalViewerMinutes ? day : best,
     summaryDays[0],
@@ -178,47 +193,67 @@ export function summaryFor(daily: DailySummary[], top: RankedStream[]) {
     topStreamer: top[0] ?? null,
     biggestRise: biggestRise(top),
     coverageState: daily.some((day) => day.coverageState !== 'good' || day.day === today) ? 'partial' : 'good',
-    summaryScope: summaryDays.length === daily.length ? 'all_observed_days' : 'completed_days',
+    summaryScope: summaryDays.length === observedDaily.length ? 'all_observed_days' : 'completed_days',
   }
 }
 
 export function coverageFor(provider: 'twitch' | 'kick', period: Period, daily: DailySummary[]) {
   const totalDays = dayCount(period.from, period.to)
   const today = dayString(new Date())
-  const dailyMap = new Map(daily.map((day) => [day.day, day]))
   const requestedDays = enumerateDays(period.from, period.to)
-  const missing = requestedDays.filter((day) => !dailyMap.has(day))
-  const inProgress = daily.filter((day) => day.day === today).map((day) => day.day)
+  const dailyMap = new Map(daily.map((day) => [day.day, day]))
+  const missing = requestedDays.filter((day) => dailyMap.get(day)?.coverageState === 'missing' || !dailyMap.has(day))
+  const inProgress = daily.filter((day) => day.day === today && day.coverageState !== 'missing').map((day) => day.day)
   const partial = daily
-    .filter((day) => day.day !== today && day.coverageState !== 'good' && day.coverageState !== 'demo')
+    .filter((day) => day.day !== today && day.coverageState !== 'good' && day.coverageState !== 'demo' && day.coverageState !== 'missing')
     .map((day) => day.day)
   const demo = daily.filter((day) => day.coverageState === 'demo').map((day) => day.day)
+  const observedDays = daily.filter((day) => day.coverageState !== 'missing').length
   const observedMinutes = daily.reduce((sum, day) => sum + day.observedMinutes, 0)
   const expectedMinutes = requestedDays.reduce((sum, day) => sum + expectedMinutesForDay(day), 0)
   const affectedDays = [...new Set([...inProgress, ...partial, ...missing, ...demo])]
-  const state = daily.length === 0
+  const state = observedDays === 0
     ? 'missing'
-    : demo.length === daily.length
+    : demo.length === observedDays
       ? 'demo'
       : inProgress.length || missing.length || partial.length || demo.length
         ? 'partial'
         : 'good'
   const platform = provider === 'twitch' ? 'Twitch' : 'Kick'
   const notes = [
-    `${daily.length} of ${totalDays} requested days have observed ${platform} history data.`,
+    `${observedDays} of ${totalDays} requested days have observed ${platform} history data.`,
     `${inProgress.length} in-progress day, ${partial.length} partial day${partial.length === 1 ? '' : 's'}, and ${missing.length} missing day${missing.length === 1 ? '' : 's'} were detected.`,
   ]
   return {
     state,
-    observedDays: daily.length,
+    observedDays,
     missingDays: missing.length,
     partialDays: partial.length + demo.length,
     inProgressDays: inProgress.length,
     observedMinutes,
     expectedMinutes,
     affectedDays,
+    inProgressDates: inProgress,
+    partialDates: partial,
+    missingDates: missing,
+    demoDates: demo,
     notes,
   }
+}
+
+export function fillMissingDays(period: Period, daily: DailySummary[]): DailySummary[] {
+  const byDay = new Map(daily.map((day) => [day.day, day]))
+  return enumerateDays(period.from, period.to).map((day) => byDay.get(day) ?? {
+    day,
+    totalViewerMinutes: 0,
+    peakViewers: 0,
+    peakStreamerName: null,
+    observedStreamCount: 0,
+    observedMinutes: 0,
+    coverageState: 'missing',
+    topStreamers: [],
+    biggestRise: null,
+  })
 }
 
 export function expectedMinutesForDay(day: string): number {
@@ -258,6 +293,7 @@ export function errorResponse(
   status: number,
   extra: Record<string, unknown> = {},
 ) {
+  const missingDates = enumerateDays(period.from, period.to)
   return Response.json({
     source: 'real',
     state: 'error',
@@ -268,15 +304,20 @@ export function errorResponse(
     summary: null,
     daily: [],
     topStreamers: [],
+    comparison: { previousPeriodAvailable: false },
     coverage: {
       state: 'missing',
       observedDays: 0,
-      missingDays: dayCount(period.from, period.to),
+      missingDays: missingDates.length,
       partialDays: 0,
       inProgressDays: 0,
       observedMinutes: 0,
       expectedMinutes: 0,
-      affectedDays: enumerateDays(period.from, period.to),
+      affectedDays: missingDates,
+      inProgressDates: [],
+      partialDates: [],
+      missingDates,
+      demoDates: [],
       notes: [message],
     },
     notes: [],
