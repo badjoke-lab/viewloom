@@ -22,7 +22,7 @@ import {
 import { buildSceneNodes } from './scene'
 import { drawTilesLayer } from './tiles-layer'
 
-const SCENE_CSS = '.heatmap-canvas-scene{min-height:560px;height:100%;background:#07101d}.heatmap-canvas-viewport{position:relative;overflow:hidden;min-height:500px;height:100%;touch-action:pan-y;cursor:grab;background:#07101d;user-select:none}.heatmap-canvas-viewport.is-panning{cursor:grabbing}.heatmap-canvas-viewport.is-move-mode{touch-action:none}.heatmap-canvas-layer{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}.heatmap-canvas-layer--tiles{pointer-events:none}.heatmap-canvas-viewport.is-move-mode .heatmap-canvas-layer{touch-action:none}@media(max-width:760px){.heatmap-canvas-scene{min-height:430px}.heatmap-canvas-viewport{min-height:430px}}'
+const SCENE_CSS = '.heatmap-canvas-scene{min-height:560px;height:100%;background:#07101d}.heatmap-canvas-viewport{position:relative;overflow:hidden;min-height:500px;height:100%;touch-action:pan-y;cursor:grab;background:#07101d;user-select:none}.heatmap-canvas-viewport.is-panning{cursor:grabbing}.heatmap-canvas-viewport.is-move-mode{touch-action:none}.heatmap-canvas-layer{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}.heatmap-canvas-layer--tiles{pointer-events:none}.heatmap-canvas-viewport.is-move-mode .heatmap-canvas-layer{touch-action:none}.heatmap-map-control--icon{min-width:34px;padding:0;font-size:18px;line-height:1}.heatmap-map-control--zoom{min-width:64px;font-variant-numeric:tabular-nums}.heatmap-map-control--touch{display:none}button.heatmap-map-control[aria-busy=true]{cursor:progress;opacity:.72}@media(max-width:760px){.heatmap-canvas-scene{min-height:430px}.heatmap-canvas-viewport{min-height:430px}.heatmap-map-control--touch{display:inline-flex}}'
 const PAN_THRESHOLD = 6
 const CONTROL_ZOOM_STEP = 1.25
 const WHEEL_ZOOM_IN = 1.14
@@ -244,6 +244,12 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     redraw()
   }
 
+  const refreshAction = onRefresh ?? async (): Promise<void> => {
+    destroyCanvasScene()
+    const module = await import('../../live/twitch-heatmap')
+    await module.hydrateTwitchHeatmap()
+  }
+
   const resizeObserver = new ResizeObserver(scheduleResizeAndRelayout)
   resizeObserver.observe(viewport)
 
@@ -266,14 +272,14 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     redraw()
   })
   refreshButton.addEventListener('click', async () => {
-    if (refreshing || !onRefresh) return
+    if (refreshing) return
     refreshing = true
     refreshButton.disabled = true
     refreshButton.textContent = 'Refreshing…'
     refreshButton.setAttribute('aria-busy', 'true')
     cameraMemory.set(sceneKey, captureCameraView(camera, getCameraBounds()))
     try {
-      await onRefresh()
+      await refreshAction()
     } finally {
       refreshing = false
       if (refreshButton.isConnected) {
