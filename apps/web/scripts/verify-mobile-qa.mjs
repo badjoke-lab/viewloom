@@ -4,7 +4,7 @@ import { join } from 'node:path'
 const root = process.cwd()
 const failures = []
 const pages = [
-  'index.html', 'about/index.html', 'support/index.html',
+  'index.html', 'about/index.html', 'support/index.html', 'changelog/index.html',
   'twitch/index.html', 'twitch/heatmap/index.html', 'twitch/day-flow/index.html',
   'twitch/battle-lines/index.html', 'twitch/history/index.html', 'twitch/status/index.html',
   'kick/index.html', 'kick/heatmap/index.html', 'kick/day-flow/index.html',
