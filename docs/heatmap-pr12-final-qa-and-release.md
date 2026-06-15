@@ -14,12 +14,17 @@ The following obsolete Heatmap modules are removed:
 
 - `src/live/heatmap-viewport.ts`
 - `src/live/heatmap-viewport-v2.ts`
-- `src/live/heatmap-layout.ts`
 - `src/live/heatmap-live-shell.ts`
 - `src/live/heatmap-treemap.ts`
 - `src/live/heatmap-inspector.ts`
 
-The production verifier fails if these files return or if the live Heatmap runtime reintroduces the old DOM viewport, tile renderer, or CSS-transform camera.
+The production verifier checks that these files stay absent and that the live Heatmap runtime does not restore the old DOM viewport, tile renderer, or CSS-transform camera.
+
+## Compatibility entry
+
+`src/live/heatmap-layout.ts` remains as a no-op compatibility entry because the older single-page source in `src/main.ts` still imports `initHeatmapLayout`.
+
+The compatibility file does not read storage, move DOM sections, select a renderer, or control the public Heatmap routes. Public Twitch and Kick routes install layout behavior through `features/heatmap-page/layout-mode.ts`. Automated verification checks that the old layout implementation is not present in the compatibility file.
 
 ## Public page cleanup
 
