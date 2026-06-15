@@ -1,10 +1,17 @@
 import { formatIso } from './format'
 import { pickSceneNode } from './hit-test'
 import {
+  MAX_CAMERA_ZOOM,
+  MIN_CAMERA_ZOOM,
+  captureCameraView,
+  clampCameraToWorld,
   createFitCamera,
   panCamera,
+  resetCameraToBaseScale,
+  restoreCameraView,
   screenToWorld,
-  zoomCameraAroundPoint,
+  zoomCameraAroundScreenPoint,
+  type CameraViewSnapshot,
 } from './interactions/camera'
 import {
   type CameraState,
@@ -15,8 +22,9 @@ import {
 import { buildSceneNodes } from './scene'
 import { drawTilesLayer } from './tiles-layer'
 
-const SCENE_CSS = '.heatmap-canvas-scene{min-height:560px;height:100%;background:#07101d}.heatmap-canvas-viewport{position:relative;overflow:hidden;min-height:500px;height:100%;touch-action:pan-y;cursor:grab;background:#07101d;user-select:none}.heatmap-canvas-viewport.is-panning{cursor:grabbing}.heatmap-canvas-viewport.is-move-mode{touch-action:none}.heatmap-canvas-layer{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}.heatmap-canvas-viewport.is-move-mode .heatmap-canvas-layer{touch-action:none}@media(max-width:760px){.heatmap-canvas-scene{min-height:430px}.heatmap-canvas-viewport{min-height:430px}}'
+const SCENE_CSS = '.heatmap-canvas-scene{min-height:560px;height:100%;background:#07101d}.heatmap-canvas-viewport{position:relative;overflow:hidden;min-height:500px;height:100%;touch-action:pan-y;cursor:grab;background:#07101d;user-select:none}.heatmap-canvas-viewport.is-panning{cursor:grabbing}.heatmap-canvas-viewport.is-move-mode{touch-action:none}.heatmap-canvas-layer{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}.heatmap-canvas-layer--tiles{pointer-events:none}.heatmap-canvas-viewport.is-move-mode .heatmap-canvas-layer{touch-action:none}.heatmap-map-control--icon{min-width:34px;padding:0;font-size:18px;line-height:1}.heatmap-map-control--zoom{min-width:64px;font-variant-numeric:tabular-nums}.heatmap-map-control--touch{display:none}button.heatmap-map-control[aria-busy=true]{cursor:progress;opacity:.72}@media(max-width:760px){.heatmap-canvas-scene{min-height:430px}.heatmap-canvas-viewport{min-height:430px}.heatmap-map-control--touch{display:inline-flex}}'
 const PAN_THRESHOLD = 6
+const CONTROL_ZOOM_STEP = 1.25
 const WHEEL_ZOOM_IN = 1.14
 const WHEEL_ZOOM_OUT = 1 / WHEEL_ZOOM_IN
 const DOUBLE_CLICK_ZOOM_IN = 1.5
@@ -24,11 +32,25 @@ const DOUBLE_CLICK_ZOOM_OUT = 1 / DOUBLE_CLICK_ZOOM_IN
 const SELECTED_INSET_PX = 1.5
 const SELECTED_STROKE_PX = 2
 const SELECTED_INNER_STROKE_PX = 0.75
+const EPSILON = 0.001
 
 type ActivePointer = {
   x: number
   y: number
 }
+
+type CanvasSceneInput = {
+  stage: HTMLElement
+  items: HeatmapItem[]
+  latest: NonNullable<TwitchHeatmapApiResponse['latest']>
+  selectedStreamLogin: string | null
+  sceneKey?: string
+  onSelect: (item: HeatmapItem) => void
+  onRefresh?: () => void | Promise<void>
+}
+
+const cameraMemory = new Map<string, CameraViewSnapshot>()
+let activeSceneDestroy: (() => void) | null = null
 
 export function shouldUseCanvasRenderer(): boolean {
   const params = new URLSearchParams(window.location.search)
@@ -39,54 +61,65 @@ export function shouldUseCanvasRenderer(): boolean {
   return true
 }
 
-export function renderCanvasScene(input: {
-  stage: HTMLElement
-  items: HeatmapItem[]
-  latest: NonNullable<TwitchHeatmapApiResponse['latest']>
-  selectedStreamLogin: string | null
-  onSelect: (item: HeatmapItem) => void
-}): void {
+export function destroyCanvasScene(): void {
+  const destroy = activeSceneDestroy
+  activeSceneDestroy = null
+  destroy?.()
+}
+
+export function renderCanvasScene(input: CanvasSceneInput): void {
+  destroyCanvasScene()
   ensureCanvasStyles()
-  const { stage, items, latest, onSelect } = input
+
+  const { stage, items, latest, onSelect, onRefresh } = input
+  const sceneKey = input.sceneKey ?? document.body.dataset.page ?? 'heatmap'
   let selectedStreamLogin = input.selectedStreamLogin
   const controlsHost = ensureMapControlsHost(stage)
 
   controlsHost.innerHTML = `
-    <span id="heatmap-canvas-hint" class="heatmap-map-controls__hint">Page scroll · Tap tiles</span>
+    <span id="heatmap-canvas-hint" class="heatmap-map-controls__hint">Drag to pan · Ctrl/Alt/⌘ + wheel to zoom · select a tile to inspect</span>
     <div class="heatmap-map-controls__stats">
       <span>${latest.total_viewers.toLocaleString()} viewers</span>
       <span>${items.length} streams</span>
       <span>${formatIso(latest.collected_at)}</span>
     </div>
-    <span id="heatmap-canvas-mode" class="heatmap-map-control">Page scroll</span>
-    <span id="heatmap-canvas-zoom" class="heatmap-map-control">100%</span>
-    <button id="heatmap-canvas-move" class="heatmap-map-control" type="button" aria-pressed="false">Control map</button>
-    <button id="heatmap-canvas-reset" class="heatmap-map-control" type="button">Reset zoom</button>
+    <button id="heatmap-canvas-zoom-out" class="heatmap-map-control heatmap-map-control--icon" type="button" aria-label="Zoom out">−</button>
+    <button id="heatmap-canvas-zoom-base" class="heatmap-map-control heatmap-map-control--zoom" type="button" aria-label="Return map to 100 percent">100%</button>
+    <button id="heatmap-canvas-zoom-in" class="heatmap-map-control heatmap-map-control--icon" type="button" aria-label="Zoom in">+</button>
+    <button id="heatmap-canvas-reset" class="heatmap-map-control" type="button">Reset view</button>
+    <button id="heatmap-canvas-refresh" class="heatmap-map-control" type="button" title="Load the latest stored snapshot">Refresh</button>
+    <button id="heatmap-canvas-move" class="heatmap-map-control heatmap-map-control--touch" type="button" aria-pressed="false">Move map</button>
   `
 
-  stage.innerHTML = `<div class="heatmap-canvas-scene"><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer"></canvas></div></div>`
+  stage.innerHTML = `<div class="heatmap-canvas-scene"><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport" aria-label="Interactive stream heatmap"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer heatmap-canvas-layer--tiles"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer"></canvas></div></div>`
 
   const viewport = stage.querySelector<HTMLElement>('#heatmap-canvas-viewport')
   const hintLabel = controlsHost.querySelector<HTMLElement>('#heatmap-canvas-hint')
-  const modeLabel = controlsHost.querySelector<HTMLElement>('#heatmap-canvas-mode')
-  const zoomLabel = controlsHost.querySelector<HTMLElement>('#heatmap-canvas-zoom')
-  const moveButton = controlsHost.querySelector<HTMLButtonElement>('#heatmap-canvas-move')
+  const zoomOutButton = controlsHost.querySelector<HTMLButtonElement>('#heatmap-canvas-zoom-out')
+  const zoomBaseButton = controlsHost.querySelector<HTMLButtonElement>('#heatmap-canvas-zoom-base')
+  const zoomInButton = controlsHost.querySelector<HTMLButtonElement>('#heatmap-canvas-zoom-in')
   const resetButton = controlsHost.querySelector<HTMLButtonElement>('#heatmap-canvas-reset')
+  const refreshButton = controlsHost.querySelector<HTMLButtonElement>('#heatmap-canvas-refresh')
+  const moveButton = controlsHost.querySelector<HTMLButtonElement>('#heatmap-canvas-move')
   const tilesCanvas = stage.querySelector<HTMLCanvasElement>('#heatmap-canvas-tiles')
   const overlayCanvas = stage.querySelector<HTMLCanvasElement>('#heatmap-canvas-overlay')
-  if (!viewport || !hintLabel || !modeLabel || !zoomLabel || !moveButton || !resetButton || !tilesCanvas || !overlayCanvas) return
+  if (!viewport || !hintLabel || !zoomOutButton || !zoomBaseButton || !zoomInButton || !resetButton || !refreshButton || !moveButton || !tilesCanvas || !overlayCanvas) return
 
   let viewportWidth = Math.max(1, viewport.clientWidth)
   let viewportHeight = Math.max(360, viewport.clientHeight)
-  const dpr = Math.min(window.devicePixelRatio || 1, 2)
-  let nodes = buildSceneNodes(items, viewportWidth, viewportHeight)
+  let worldWidth = viewportWidth
+  let worldHeight = viewportHeight
+  let dpr = currentDpr()
+  let nodes = buildSceneNodes(items, worldWidth, worldHeight)
   let selected = nodes.find((node) => node.channelLogin === selectedStreamLogin) ?? nodes[0] ?? null
-  let camera = createFitCamera(viewportWidth, viewportHeight, viewportWidth, viewportHeight, 0)
+  if (selected && !selectedStreamLogin) selectedStreamLogin = selected.channelLogin
+  let camera = restoreCameraView(cameraMemory.get(sceneKey), getCameraBounds(), 0)
   let resizeFrame = 0
   let pointerId: number | null = null
   let pointerDown = false
   let dragging = false
   let moveMode = false
+  let refreshing = false
   let downX = 0
   let downY = 0
   let lastX = 0
@@ -94,6 +127,7 @@ export function renderCanvasScene(input: {
   let gestureActive = false
   let gestureStartDistance = 0
   let gestureStartZoom = 1
+  let destroyed = false
   const activePointers = new Map<number, ActivePointer>()
 
   syncCanvasSize(tilesCanvas, viewportWidth, viewportHeight, dpr)
@@ -103,43 +137,85 @@ export function renderCanvasScene(input: {
   const overlayContext = overlayCanvas.getContext('2d')
   if (!tilesContext || !overlayContext) return
 
-  const getCameraBounds = () => ({
-    worldWidth: viewportWidth,
-    worldHeight: viewportHeight,
-    viewportWidth,
-    viewportHeight,
-  })
+  function getCameraBounds() {
+    return {
+      worldWidth,
+      worldHeight,
+      viewportWidth,
+      viewportHeight,
+    }
+  }
 
   const redraw = (): void => {
-    drawTilesLayer(tilesContext, nodes, camera, viewportWidth, viewportHeight, dpr)
+    camera = clampCameraToWorld(camera, getCameraBounds())
+    drawTilesLayer(
+      tilesContext,
+      nodes,
+      camera,
+      viewportWidth,
+      viewportHeight,
+      dpr,
+      selectedStreamLogin,
+    )
     drawSelectionOverlay(overlayContext, selected, camera, viewportWidth, viewportHeight, dpr)
-    zoomLabel.textContent = `${Math.round(camera.zoom * 100)}%`
+    updateCameraControls()
+  }
+
+  const updateCameraControls = (): void => {
+    const percent = Math.round(camera.zoom * 100)
+    zoomBaseButton.textContent = `${percent}%`
+    zoomBaseButton.setAttribute('aria-label', percent === 100 ? 'Map is at 100 percent' : `Return map from ${percent} percent to 100 percent`)
+    zoomOutButton.disabled = camera.zoom <= MIN_CAMERA_ZOOM + EPSILON
+    zoomBaseButton.disabled = Math.abs(camera.zoom - 1) <= EPSILON
+    zoomInButton.disabled = camera.zoom >= MAX_CAMERA_ZOOM - EPSILON
+    viewport.dataset.zoom = String(camera.zoom)
   }
 
   const resizeAndRelayout = (): void => {
-    viewportWidth = Math.max(1, viewport.clientWidth)
-    viewportHeight = Math.max(360, viewport.clientHeight)
+    if (destroyed || !viewport.isConnected) return
+    const nextViewportWidth = Math.max(1, viewport.clientWidth)
+    const nextViewportHeight = Math.max(360, viewport.clientHeight)
+    const nextDpr = currentDpr()
+    if (
+      Math.abs(nextViewportWidth - viewportWidth) < 1
+      && Math.abs(nextViewportHeight - viewportHeight) < 1
+      && nextDpr === dpr
+    ) return
+
+    const preserved = captureCameraView(camera, getCameraBounds())
+    viewportWidth = nextViewportWidth
+    viewportHeight = nextViewportHeight
+    worldWidth = nextViewportWidth
+    worldHeight = nextViewportHeight
+    dpr = nextDpr
     syncCanvasSize(tilesCanvas, viewportWidth, viewportHeight, dpr)
     syncCanvasSize(overlayCanvas, viewportWidth, viewportHeight, dpr)
-    nodes = buildSceneNodes(items, viewportWidth, viewportHeight)
+    nodes = buildSceneNodes(items, worldWidth, worldHeight)
     selected = nodes.find((node) => node.channelLogin === selectedStreamLogin) ?? nodes[0] ?? null
-    camera = createFitCamera(viewportWidth, viewportHeight, viewportWidth, viewportHeight, 0)
+    if (selected && !selectedStreamLogin) selectedStreamLogin = selected.channelLogin
+    camera = restoreCameraView(preserved, getCameraBounds(), 0)
     redraw()
+  }
+
+  const scheduleResizeAndRelayout = (): void => {
+    window.cancelAnimationFrame(resizeFrame)
+    resizeFrame = window.requestAnimationFrame(resizeAndRelayout)
   }
 
   const updateMoveMode = (): void => {
     viewport.classList.toggle('is-move-mode', moveMode)
     moveButton.classList.toggle('is-active', moveMode)
-    modeLabel.classList.toggle('is-active', moveMode)
-    modeLabel.textContent = moveMode ? 'Pan & pinch' : 'Page scroll'
     hintLabel.textContent = moveMode
-      ? 'Pan & pinch · Tap tiles'
-      : 'Page scroll · Ctrl/Alt/Meta + wheel to zoom · Drag to pan'
-    moveButton.textContent = moveMode ? 'Back to scroll' : 'Control map'
+      ? 'Move map enabled · drag to pan · pinch to zoom · tap a tile to inspect'
+      : 'Drag to pan · Ctrl/Alt/⌘ + wheel to zoom · select a tile to inspect'
+    moveButton.textContent = moveMode ? 'Done' : 'Move map'
     moveButton.setAttribute('aria-pressed', moveMode ? 'true' : 'false')
   }
 
   const resetPointerState = (): void => {
+    if (pointerId !== null && overlayCanvas.hasPointerCapture(pointerId)) {
+      overlayCanvas.releasePointerCapture(pointerId)
+    }
     pointerId = null
     pointerDown = false
     dragging = false
@@ -158,40 +234,89 @@ export function renderCanvasScene(input: {
     onSelect(node)
   }
 
-  redraw()
-  updateMoveMode()
+  const zoomAtViewportCenter = (nextZoom: number): void => {
+    camera = zoomCameraAroundScreenPoint(
+      camera,
+      { x: viewportWidth / 2, y: viewportHeight / 2 },
+      nextZoom,
+      getCameraBounds(),
+    )
+    redraw()
+  }
 
-  const resizeObserver = new ResizeObserver(() => {
-    window.cancelAnimationFrame(resizeFrame)
-    resizeFrame = window.requestAnimationFrame(resizeAndRelayout)
+  const refreshAction = onRefresh ?? (async (): Promise<void> => {
+    destroyCanvasScene()
+    const module = await import('../../live/twitch-heatmap')
+    await module.hydrateTwitchHeatmap()
   })
+
+  const resizeObserver = new ResizeObserver(scheduleResizeAndRelayout)
   resizeObserver.observe(viewport)
 
+  const onLayoutChange = (): void => {
+    window.requestAnimationFrame(scheduleResizeAndRelayout)
+  }
+  const onWindowBlur = (): void => resetPointerState()
+  window.addEventListener('viewloom:heatmap-layout-change', onLayoutChange)
+  window.addEventListener('blur', onWindowBlur)
+
+  zoomOutButton.addEventListener('click', () => zoomAtViewportCenter(camera.zoom / CONTROL_ZOOM_STEP))
+  zoomBaseButton.addEventListener('click', () => {
+    camera = resetCameraToBaseScale(camera, getCameraBounds())
+    redraw()
+  })
+  zoomInButton.addEventListener('click', () => zoomAtViewportCenter(camera.zoom * CONTROL_ZOOM_STEP))
+  resetButton.addEventListener('click', () => {
+    camera = createFitCamera(viewportWidth, viewportHeight, worldWidth, worldHeight, 0)
+    resetPointerState()
+    redraw()
+  })
+  refreshButton.addEventListener('click', async () => {
+    if (refreshing) return
+    refreshing = true
+    refreshButton.disabled = true
+    refreshButton.textContent = 'Refreshing…'
+    refreshButton.setAttribute('aria-busy', 'true')
+    cameraMemory.set(sceneKey, captureCameraView(camera, getCameraBounds()))
+    try {
+      await refreshAction()
+    } finally {
+      refreshing = false
+      if (refreshButton.isConnected) {
+        refreshButton.disabled = false
+        refreshButton.textContent = 'Refresh'
+        refreshButton.removeAttribute('aria-busy')
+      }
+    }
+  })
   moveButton.addEventListener('click', () => {
     moveMode = !moveMode
     resetPointerState()
     updateMoveMode()
   })
 
-  resetButton.addEventListener('click', () => {
-    camera = createFitCamera(viewportWidth, viewportHeight, viewportWidth, viewportHeight, 0)
-    resetPointerState()
-    redraw()
-  })
-
   overlayCanvas.addEventListener('wheel', (event) => {
     if (!event.ctrlKey && !event.altKey && !event.metaKey) return
     event.preventDefault()
     const rect = overlayCanvas.getBoundingClientRect()
-    const world = screenToWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top }, camera)
-    camera = zoomCameraAroundPoint(camera, world, camera.zoom * (event.deltaY < 0 ? WHEEL_ZOOM_IN : WHEEL_ZOOM_OUT), getCameraBounds())
+    camera = zoomCameraAroundScreenPoint(
+      camera,
+      { x: event.clientX - rect.left, y: event.clientY - rect.top },
+      camera.zoom * (event.deltaY < 0 ? WHEEL_ZOOM_IN : WHEEL_ZOOM_OUT),
+      getCameraBounds(),
+    )
     redraw()
   }, { passive: false })
 
   overlayCanvas.addEventListener('dblclick', (event) => {
+    event.preventDefault()
     const rect = overlayCanvas.getBoundingClientRect()
-    const world = screenToWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top }, camera)
-    camera = zoomCameraAroundPoint(camera, world, camera.zoom * (event.shiftKey ? DOUBLE_CLICK_ZOOM_OUT : DOUBLE_CLICK_ZOOM_IN), getCameraBounds())
+    camera = zoomCameraAroundScreenPoint(
+      camera,
+      { x: event.clientX - rect.left, y: event.clientY - rect.top },
+      camera.zoom * (event.shiftKey ? DOUBLE_CLICK_ZOOM_OUT : DOUBLE_CLICK_ZOOM_IN),
+      getCameraBounds(),
+    )
     redraw()
   })
 
@@ -205,7 +330,9 @@ export function renderCanvasScene(input: {
         pointerDown = false
         dragging = false
         viewport.classList.add('is-panning')
-        if (!overlayCanvas.hasPointerCapture(event.pointerId)) overlayCanvas.setPointerCapture(event.pointerId)
+        for (const activeId of activePointers.keys()) {
+          if (!overlayCanvas.hasPointerCapture(activeId)) overlayCanvas.setPointerCapture(activeId)
+        }
         return
       }
     }
@@ -213,9 +340,6 @@ export function renderCanvasScene(input: {
     pointerId = event.pointerId
     pointerDown = true
     dragging = false
-    if (event.pointerType === 'mouse' && !overlayCanvas.hasPointerCapture(event.pointerId)) {
-      overlayCanvas.setPointerCapture(event.pointerId)
-    }
     downX = event.clientX
     downY = event.clientY
     lastX = event.clientX
@@ -238,19 +362,24 @@ export function renderCanvasScene(input: {
     const dy = event.clientY - downY
     if (!dragging && Math.hypot(dx, dy) >= PAN_THRESHOLD) {
       dragging = true
-      overlayCanvas.setPointerCapture(event.pointerId)
+      if (!overlayCanvas.hasPointerCapture(event.pointerId)) overlayCanvas.setPointerCapture(event.pointerId)
       viewport.classList.add('is-panning')
     }
     if (!dragging) return
-    camera = panCamera(camera, event.clientX - lastX, event.clientY - lastY, getCameraBounds())
+
+    camera = panCamera(
+      camera,
+      event.clientX - lastX,
+      event.clientY - lastY,
+      getCameraBounds(),
+    )
     lastX = event.clientX
     lastY = event.clientY
     redraw()
   })
 
-  const finishPointer = (event: PointerEvent): void => {
+  const finishPointer = (event: PointerEvent, canceled: boolean): void => {
     const gestureWasActive = gestureActive || activePointers.size > 1
-
     if (event.pointerType !== 'mouse') activePointers.delete(event.pointerId)
 
     if (gestureWasActive && event.pointerType !== 'mouse') {
@@ -268,23 +397,25 @@ export function renderCanvasScene(input: {
     }
 
     if (pointerId !== event.pointerId) return
-    if (!dragging) {
+    if (!canceled && !dragging) {
       const rect = overlayCanvas.getBoundingClientRect()
-      const world = screenToWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top }, camera)
+      const world = screenToWorld(
+        { x: event.clientX - rect.left, y: event.clientY - rect.top },
+        camera,
+      )
       selectNode(pickSceneNode(world, nodes))
-    } else if (overlayCanvas.hasPointerCapture(event.pointerId)) {
-      overlayCanvas.releasePointerCapture(event.pointerId)
     }
+    if (overlayCanvas.hasPointerCapture(event.pointerId)) overlayCanvas.releasePointerCapture(event.pointerId)
     pointerId = null
     pointerDown = false
     dragging = false
     viewport.classList.remove('is-panning')
   }
 
-  overlayCanvas.addEventListener('pointerup', finishPointer)
-  overlayCanvas.addEventListener('pointercancel', finishPointer)
+  overlayCanvas.addEventListener('pointerup', (event) => finishPointer(event, false))
+  overlayCanvas.addEventListener('pointercancel', (event) => finishPointer(event, true))
   overlayCanvas.addEventListener('lostpointercapture', () => {
-    if (!pointerDown) return
+    if (!pointerDown && !gestureActive) return
     resetPointerState()
   })
 
@@ -299,9 +430,27 @@ export function renderCanvasScene(input: {
   function applyGesture(): void {
     const gesture = getGestureState(overlayCanvas, activePointers)
     if (!gesture || gestureStartDistance <= 0) return
-    const anchor = screenToWorld(gesture.center, camera)
-    camera = zoomCameraAroundPoint(camera, anchor, gestureStartZoom * (gesture.distance / gestureStartDistance), getCameraBounds())
+    camera = zoomCameraAroundScreenPoint(
+      camera,
+      gesture.center,
+      gestureStartZoom * (gesture.distance / gestureStartDistance),
+      getCameraBounds(),
+    )
     redraw()
+  }
+
+  redraw()
+  updateMoveMode()
+
+  activeSceneDestroy = () => {
+    if (destroyed) return
+    destroyed = true
+    cameraMemory.set(sceneKey, captureCameraView(camera, getCameraBounds()))
+    window.cancelAnimationFrame(resizeFrame)
+    resizeObserver.disconnect()
+    window.removeEventListener('viewloom:heatmap-layout-change', onLayoutChange)
+    window.removeEventListener('blur', onWindowBlur)
+    resetPointerState()
   }
 }
 
@@ -371,6 +520,10 @@ function syncCanvasSize(canvas: HTMLCanvasElement, width: number, height: number
   canvas.height = Math.round(height * dpr)
   canvas.style.width = `${width}px`
   canvas.style.height = `${height}px`
+}
+
+function currentDpr(): number {
+  return Math.min(window.devicePixelRatio || 1, 2)
 }
 
 function ensureCanvasStyles(): void {
