@@ -8,6 +8,7 @@ import { resolveHeatmapLod } from '../src/features/twitch-heatmap/lod-core.mjs'
 const root = fileURLToPath(new URL('../', import.meta.url))
 const read = (relativePath) => readFileSync(fileURLToPath(new URL(relativePath, import.meta.url)), 'utf8')
 const productionSource = read('../src/live/twitch-heatmap.ts')
+const compatibilityLayout = read('../src/live/heatmap-layout.ts')
 const twitchPage = read('../twitch/heatmap/index.html')
 const kickPage = read('../kick/heatmap/index.html')
 
@@ -18,7 +19,13 @@ for (const fragment of ['shouldUseCanvasRenderer','createHeatmapViewport','rende
   assert.ok(!productionSource.includes(fragment), `legacy production fragment: ${fragment}`)
 }
 
-for (const path of ['src/live/heatmap-viewport.ts','src/live/heatmap-viewport-v2.ts','src/live/heatmap-layout.ts','src/live/heatmap-live-shell.ts','src/live/heatmap-treemap.ts','src/live/heatmap-inspector.ts']) {
+assert.ok(compatibilityLayout.includes('export function initHeatmapLayout'))
+assert.ok(compatibilityLayout.includes('Compatibility entry'))
+for (const fragment of ['localStorage','HEATMAP_RENDERER_KEY','preferOfficialCanvasRenderer','moveHeatmapSections','moveLegendForLayout','data-layout-mode']) {
+  assert.ok(!compatibilityLayout.includes(fragment), `legacy compatibility-layout fragment: ${fragment}`)
+}
+
+for (const path of ['src/live/heatmap-viewport.ts','src/live/heatmap-viewport-v2.ts','src/live/heatmap-live-shell.ts','src/live/heatmap-treemap.ts','src/live/heatmap-inspector.ts']) {
   assert.equal(existsSync(`${root}/${path}`), false, `legacy file present: ${path}`)
 }
 
