@@ -193,7 +193,7 @@ function renderRefreshState(): void {
       ? `Next stored-snapshot check in ${seconds}s`
       : 'Waiting for the next visible-tab snapshot check'
   } else {
-    copy.textContent = 'Automatic stored-snapshot refresh is on · 60s cadence'
+    copy.textContent = 'Automatic stored-snapshot refresh is on · 60s cadence · manual Refresh remains available'
   }
 }
 
