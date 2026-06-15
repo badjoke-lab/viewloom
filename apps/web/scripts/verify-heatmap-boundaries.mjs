@@ -34,7 +34,7 @@ if (!failures.length) {
   if (entry.includes('./twitch-heatmap')) failures.push(`${paths.entry}: direct monolith import returned`)
 
   const contracts = read(paths.contracts)
-  for (const fragment of ["'fetch'", "'state'", "'layout'", "'renderer'", "'inspector'", "'status'", 'HeatmapPageAdapter', 'HeatmapPageRuntime']) {
+  for (const fragment of ["'fetch'", "'state'", "'layout'", "'renderer'", "'inspector'", "'summary'", "'status'", 'HeatmapPageAdapter', 'HeatmapPageRuntime']) {
     requireFragment(paths.contracts, contracts, fragment)
   }
 
@@ -49,7 +49,7 @@ if (!failures.length) {
   }
 
   const adapter = read(paths.adapter)
-  for (const fragment of ['../../live/twitch-heatmap', 'installHeatmapResponseObserver', "boundaries: ['fetch', 'state', 'layout', 'renderer', 'inspector', 'status']"]) {
+  for (const fragment of ['../../live/twitch-heatmap', 'installHeatmapResponseObserver', "boundaries: ['fetch', 'state', 'layout', 'renderer', 'inspector', 'summary', 'status']"]) {
     requireFragment(paths.adapter, adapter, fragment)
   }
 }
