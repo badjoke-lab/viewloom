@@ -1,0 +1,23 @@
+{
+  "version": "viewloom-changelog-v1",
+  "entries": [
+    {
+      "id": "viewloom-design-refresh",
+      "date": "2026-06",
+      "datePrecision": "month",
+      "title": "ViewLoom design refresh"
+    },
+    {
+      "id": "livefield-becomes-viewloom",
+      "date": "2026-05",
+      "datePrecision": "month",
+      "title": "Livefield becomes ViewLoom"
+    },
+    {
+      "id": "livefield-begins",
+      "date": "2026-04",
+      "datePrecision": "month",
+      "title": "Livefield begins"
+    }
+  ]
+}
