@@ -58,8 +58,8 @@ const read = (relativePath) => readFileSync(fileURLToPath(new URL(relativePath, 
 const sceneSource = read('../src/features/twitch-heatmap/canvas-scene.ts')
 const splitSource = read('../src/features/twitch-heatmap/split-viewport.ts')
 const splitCss = read('../src/features/twitch-heatmap/split-layout.css')
-const twitchHtml = read('../../twitch/heatmap/index.html')
-const kickHtml = read('../../kick/heatmap/index.html')
+const twitchHtml = read('../twitch/heatmap/index.html')
+const kickHtml = read('../kick/heatmap/index.html')
 
 for (const fragment of [
   'measureWideReferenceWidth(layoutRoot, viewportWidth)',
@@ -79,7 +79,7 @@ for (const fragment of [
   'heatmap-fade-right',
   'heatmap-position-rail',
   'heatmap-position-thumb',
-  "role=\"scrollbar\"",
+  'role="scrollbar"',
   'setCameraWorldCenter',
   'cursor:grab',
   'cursor:grabbing',
