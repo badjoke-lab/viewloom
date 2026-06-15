@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changelog — ViewLoom</title>
+  <meta name="description" content="ViewLoom product milestones, beginning with Livefield and the transition to the current ViewLoom design." />
+  <link rel="canonical" href="https://vl.badjoke-lab.com/changelog/" />
+  <meta property="og:site_name" content="ViewLoom" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://vl.badjoke-lab.com/changelog/" />
+  <meta property="og:title" content="Changelog — ViewLoom" />
+  <meta property="og:description" content="ViewLoom product milestones, beginning with Livefield and the transition to the current ViewLoom design." />
+  <meta property="og:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Changelog — ViewLoom" />
+  <meta name="twitter:description" content="ViewLoom product milestones, beginning with Livefield and the transition to the current ViewLoom design." />
+  <meta name="twitter:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
+  <link rel="stylesheet" href="/src/mock-site.css" />
+  <link rel="stylesheet" href="/src/changelog-page.css" />
+</head>
+<body data-provider="portal" data-changelog-state="loading">
+  <div class="site-frame">
+    <header class="masthead"><div class="masthead__inner">
+      <a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
+      <nav class="global-nav"><a href="/">Portal</a><a href="/twitch/">Twitch data</a><a href="/kick/">Kick data</a><a href="/changelog/" aria-current="page">Changelog</a><a href="/about/">About</a><a href="/support/">Support</a></nav>
+      <div class="status-inline"><span class="dot"></span>Public milestone record</div>
+      <button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button>
+    </div></header>
+
+    <main class="page changelog-page">
+      <div class="breadcrumb">ViewLoom / Changelog</div>
+      <section class="page-head">
+        <div>
+          <div class="kicker">PRODUCT HISTORY</div>
+          <h1>Changelog</h1>
+          <p class="lede">A restrained record of reviewed ViewLoom milestones. The initial public history stays broad while detailed changes are reviewed separately.</p>
+        </div>
+        <div class="head-facts">
+          <div class="fact"><small>Initial entries</small><strong>3</strong></div>
+          <div class="fact"><small>First record</small><strong>2026-04</strong></div>
+          <div class="fact"><small>Date precision</small><strong>Month</strong></div>
+          <div class="fact"><small>Data source</small><strong>Public JSON</strong></div>
+        </div>
+      </section>
+
+      <section class="surface surface--dark changelog-surface" aria-labelledby="changelog-timeline-title">
+        <div class="surface__head">
+          <strong id="changelog-timeline-title">Milestones</strong>
+          <a class="text-link" href="/data/changelog.json">Open JSON</a>
+        </div>
+        <div class="changelog-timeline" id="changelog-timeline" aria-live="polite" aria-busy="true">
+          <p class="changelog-state" id="changelog-state">Loading reviewed milestones…</p>
+        </div>
+      </section>
+
+      <aside class="coverage-note changelog-note">
+        <strong>Publication rule</strong>
+        <span>Only reviewed milestones appear here. Detailed repair history, PR numbers, and unapproved drafts remain outside the public Changelog.</span>
+      </aside>
+    </main>
+
+    <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/changelog/">Changelog</a><a href="/about/">Method & limits</a><a href="/support/">Support</a><a href="https://docs.google.com/forms/d/e/1FAIpQLSdhreuxEz7w0eSjslTyVLL-axV6IJdTp5RU5VXCM3ApIz35-Q/viewform?usp=dialog" target="_blank" rel="noreferrer">Contact</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
+  </div>
+  <script type="module" src="/src/mock-site.ts"></script>
+  <script type="module" src="/src/changelog-page.ts"></script>
+  <script type="module" src="/src/analytics.ts"></script>
+</body>
+</html>
