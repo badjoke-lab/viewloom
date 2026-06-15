@@ -1,0 +1,31 @@
+.heatmap-selected-inspector{min-width:0}
+.heatmap-selected-inspector__card{padding:20px}
+.heatmap-selected-inspector__head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start}
+.heatmap-selected-inspector__identity{min-width:0}
+.heatmap-selected-inspector__eyebrow{display:flex;align-items:center;gap:8px;color:var(--muted);font:700 11px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.heatmap-selected-inspector__live{display:inline-flex;align-items:center;min-height:22px;padding:0 8px;border:1px solid rgba(74,222,128,.28);border-radius:999px;background:rgba(74,222,128,.1);color:#8ff0b5;font:700 10px var(--mono)}
+.heatmap-selected-inspector h2{margin:8px 0 4px;overflow-wrap:anywhere;font-size:clamp(22px,2.2vw,32px);line-height:1.08}
+.heatmap-selected-inspector__login{color:var(--muted);font:600 12px var(--mono);overflow-wrap:anywhere}
+.heatmap-selected-inspector__title{margin:10px 0 0;color:var(--text-soft);font-size:13px;line-height:1.45;overflow-wrap:anywhere}
+.heatmap-selected-inspector__snapshot{color:var(--muted);font:600 11px var(--mono);text-align:right;white-space:nowrap}
+.heatmap-selected-inspector__metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:18px}
+.heatmap-selected-inspector__metric,.heatmap-selected-inspector__observation{min-width:0;padding:12px;border:1px solid rgba(255,255,255,.07);border-radius:10px;background:rgba(255,255,255,.035)}
+.heatmap-selected-inspector__metric small,.heatmap-selected-inspector__observation small{display:block;margin-bottom:6px;color:var(--muted);font:700 10px var(--mono);letter-spacing:.07em;text-transform:uppercase}
+.heatmap-selected-inspector__metric strong,.heatmap-selected-inspector__observation strong{display:block;overflow-wrap:anywhere;font-size:16px;line-height:1.2}
+.heatmap-selected-inspector__metric span,.heatmap-selected-inspector__observation span{display:block;margin-top:5px;color:var(--muted);font-size:11px;line-height:1.35}
+.heatmap-selected-inspector__observations{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:9px}
+.heatmap-selected-inspector__context-note{margin:10px 0 0;color:var(--muted);font-size:11px;line-height:1.45}
+.heatmap-selected-inspector__actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.heatmap-selected-inspector__actions a{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 13px;border:1px solid var(--line-strong);border-radius:7px;background:var(--surface-raised);color:var(--text);font-size:12px;font-weight:700}
+.heatmap-selected-inspector__actions a:hover{background:rgba(255,255,255,.08)}
+.heatmap-selected-inspector__unavailable{color:var(--muted)}
+.heatmap-layout[data-layout="split"] .heatmap-selected-inspector__card{padding:16px}
+.heatmap-layout[data-layout="split"] .heatmap-selected-inspector__head{grid-template-columns:1fr}
+.heatmap-layout[data-layout="split"] .heatmap-selected-inspector__snapshot{text-align:left}
+.heatmap-layout[data-layout="split"] .heatmap-selected-inspector__metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+.heatmap-layout[data-layout="split"] .heatmap-selected-inspector__metrics .heatmap-selected-inspector__metric:first-child{grid-column:1/-1}
+.heatmap-layout[data-layout="split"] .heatmap-selected-inspector__observations{grid-template-columns:repeat(2,minmax(0,1fr))}
+.heatmap-layout[data-layout="split"] .heatmap-selected-inspector__actions{display:grid;grid-template-columns:1fr}
+.heatmap-layout[data-layout="split"] .heatmap-selected-inspector__actions a{width:100%}
+@media(max-width:1000px){.heatmap-selected-inspector__metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.heatmap-selected-inspector__observations{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.heatmap-selected-inspector__card{padding:15px}.heatmap-selected-inspector__head{grid-template-columns:1fr}.heatmap-selected-inspector__snapshot{text-align:left}.heatmap-selected-inspector__metrics,.heatmap-selected-inspector__observations{grid-template-columns:repeat(2,minmax(0,1fr))}.heatmap-selected-inspector__metrics .heatmap-selected-inspector__metric:first-child{grid-column:1/-1}.heatmap-selected-inspector__actions{display:grid;grid-template-columns:1fr}.heatmap-selected-inspector__actions a{width:100%}}
