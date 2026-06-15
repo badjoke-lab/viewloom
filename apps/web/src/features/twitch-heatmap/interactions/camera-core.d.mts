@@ -20,6 +20,13 @@ export type CameraViewportWorldRect = {
   height: number
 }
 
+export type WorldRect = {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export const MIN_CAMERA_ZOOM: 1
 export const MAX_CAMERA_ZOOM: 12
 
@@ -29,6 +36,11 @@ export function createFitCamera(
   worldWidth: number,
   worldHeight: number,
   padding?: number,
+): CameraState
+
+export function createReferenceCamera(
+  bounds: CameraBounds,
+  baseScale?: number,
 ): CameraState
 
 export function worldToScreen(point: WorldPoint, camera: CameraState): WorldPoint
@@ -69,6 +81,31 @@ export function restoreCameraView(
   snapshot: CameraViewSnapshot | null | undefined,
   bounds: CameraBounds,
   padding?: number,
+): CameraState
+
+export function restoreReferenceCameraView(
+  snapshot: CameraViewSnapshot | null | undefined,
+  bounds: CameraBounds,
+  baseScale?: number,
+): CameraState
+
+export function setCameraWorldCenter(
+  camera: CameraState,
+  worldCenter: WorldPoint,
+  bounds: CameraBounds,
+): CameraState
+
+export function setCameraNormalizedCenter(
+  camera: CameraState,
+  center: WorldPoint,
+  bounds: CameraBounds,
+): CameraState
+
+export function revealWorldRectMinimally(
+  camera: CameraState,
+  rect: WorldRect,
+  bounds: CameraBounds,
+  marginPx?: number,
 ): CameraState
 
 export function clampCameraToWorld(
