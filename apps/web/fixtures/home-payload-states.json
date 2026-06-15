@@ -1,0 +1,88 @@
+{
+  "version": "viewloom-home-state-fixtures-v1",
+  "derivationFixtures": [
+    {
+      "name": "fresh twitch real snapshot",
+      "input": {
+        "platform": "twitch",
+        "sourceMode": "real",
+        "minutesSinceUpdate": 1,
+        "staleAfterMinutes": 3,
+        "observedStreams": 300,
+        "hasMore": false
+      },
+      "expected": "fresh"
+    },
+    {
+      "name": "partial twitch observed window",
+      "input": {
+        "platform": "twitch",
+        "sourceMode": "real",
+        "minutesSinceUpdate": 1,
+        "staleAfterMinutes": 3,
+        "observedStreams": 300,
+        "hasMore": true
+      },
+      "expected": "partial"
+    },
+    {
+      "name": "partial kick candidate coverage",
+      "input": {
+        "platform": "kick",
+        "sourceMode": "public-channel-fallback",
+        "minutesSinceUpdate": 1,
+        "staleAfterMinutes": 10,
+        "observedStreams": 100,
+        "hasMore": false
+      },
+      "expected": "partial"
+    },
+    {
+      "name": "stale real snapshot",
+      "input": {
+        "platform": "twitch",
+        "sourceMode": "real",
+        "minutesSinceUpdate": 4,
+        "staleAfterMinutes": 3,
+        "observedStreams": 300,
+        "hasMore": false
+      },
+      "expected": "stale"
+    },
+    {
+      "name": "empty real observation",
+      "input": {
+        "platform": "twitch",
+        "sourceMode": "real",
+        "minutesSinceUpdate": 1,
+        "staleAfterMinutes": 3,
+        "observedStreams": 0,
+        "hasMore": false
+      },
+      "expected": "empty"
+    },
+    {
+      "name": "demo fixture source",
+      "input": {
+        "platform": "kick",
+        "sourceMode": "fixture",
+        "minutesSinceUpdate": 1,
+        "staleAfterMinutes": 10,
+        "observedStreams": 5,
+        "hasMore": false
+      },
+      "expected": "demo"
+    }
+  ],
+  "errorFixture": {
+    "state": "error",
+    "source": "real",
+    "sourceMode": "unavailable",
+    "error": {
+      "code": "home_payload_unavailable"
+    },
+    "notes": [
+      "No demo fallback was substituted for the failed real Home payload."
+    ]
+  }
+}

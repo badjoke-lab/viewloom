@@ -69,6 +69,22 @@ Allowed provider-home states are:
 - Provider source, coverage, top limit, activity availability, unavailable signals, route links, and partial-state reasons remain provider-specific.
 - Twitch and Kick values are never combined on either provider home.
 
+## Home payload contract
+
+- `/api/twitch-home` reads `DB_TWITCH_HOT` only.
+- `/api/kick-home` reads `DB_KICK_HOT` only.
+- Both endpoints return `viewloom-home-v1`.
+- The browser receives a lightweight summary rather than raw minute snapshots.
+- Current movement is derived from the latest two snapshots.
+- Today peak is read from the current UTC day.
+- Recent Trends use retained daily rollups and prefer completed days.
+- Missing activity and reversal data are marked `unavailable`, not zero.
+- API failures return `state: error` and do not substitute fixtures.
+- Responses use `cache-control: no-store`.
+
+The detailed schema is fixed in `docs/home-payload-contract.md`.
+State examples are fixed in `fixtures/home-payload-states.json`.
+
 ## Navigation
 
 Provider home pages must link to:
