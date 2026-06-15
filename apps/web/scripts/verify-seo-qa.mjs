@@ -9,6 +9,7 @@ const pages = [
   { path: 'index.html', url: `${origin}/`, type: 'website' },
   { path: 'about/index.html', url: `${origin}/about/`, type: 'article' },
   { path: 'support/index.html', url: `${origin}/support/`, type: 'article' },
+  { path: 'changelog/index.html', url: `${origin}/changelog/`, type: 'article' },
   { path: 'twitch/index.html', url: `${origin}/twitch/`, type: 'website' },
   { path: 'twitch/heatmap/index.html', url: `${origin}/twitch/heatmap/`, type: 'article' },
   { path: 'twitch/day-flow/index.html', url: `${origin}/twitch/day-flow/`, type: 'article' },
