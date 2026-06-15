@@ -113,10 +113,11 @@ function formatDate(value: string, precision: DatePrecision): string {
   const date = new Date(precision === 'month' ? `${value}-01T00:00:00.000Z` : `${value}T00:00:00.000Z`)
   if (Number.isNaN(date.getTime())) return value
 
-  return new Intl.DateTimeFormat('en-US', {
+  const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: 'long',
-    ...(precision === 'day' ? { day: 'numeric' } : {}),
     timeZone: 'UTC',
-  }).format(date)
+  }
+  if (precision === 'day') options.day = 'numeric'
+  return new Intl.DateTimeFormat('en-US', options).format(date)
 }
