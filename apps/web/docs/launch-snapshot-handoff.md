@@ -1,20 +1,23 @@
 # ViewLoom Launch Snapshot / Handoff
 
-This document freezes the current launch-preparation state after the readiness gate was added.
+This document freezes the current launch-preparation state after the Platform Home repair and Changelog foundation.
 
 ## Current baseline
 
-- Latest merged PR: #308 `Add readiness gate`
-- Latest main merge commit: `2c13197bab62ae3678eed0db48879e3da0eb7fec`
-- Web verification, Web build, and Web checks were green before #308 was merged.
+- Latest merged PR: #340 `Add Changelog foundation`
+- Latest main merge commit: `d2405906490c6573b1d837ea3bf91e7b929d0ca9`
+- Platform Home PRs 1-4 are complete.
+- Changelog foundation is complete; the public page UI is the current work item.
+- Web verification, Web build, and Web checks were green before #340 was merged.
 
 ## Public page inventory
 
-The public web surface currently consists of 15 pages:
+The public web surface consists of 16 pages after the Changelog page is added:
 
 - `/`
 - `/about/`
 - `/support/`
+- `/changelog/`
 - `/twitch/`
 - `/twitch/heatmap/`
 - `/twitch/day-flow/`
@@ -37,8 +40,10 @@ The live-connected feature pages are intentionally separated by renderer entry:
 - Battle Lines: `/src/live/battle-lines-current-shell-entry.ts`
 - History: `/src/live/history-current-shell-entry.ts`
 - Status: `/src/live/status-current-shell-entry.ts`
+- Provider Home: `/src/provider-home.ts`
+- Changelog: `/src/changelog-page.ts` reading `/data/changelog.json`
 
-No feature page should return to static SVG-only mocks, `Stream A` demo rows, fake live numbers, or hard-coded freshness.
+No feature page should return to static SVG-only mocks, `Stream A` demo rows, fake live numbers, or hard-coded freshness. The Changelog must not publish unreviewed detailed history.
 
 ## Active QA gates
 
@@ -51,6 +56,7 @@ No feature page should return to static SVG-only mocks, `Stream A` demo rows, fa
 - `scripts/verify-history-qa.mjs`
 - `scripts/verify-status-qa.mjs`
 - `scripts/verify-home-qa.mjs`
+- `scripts/verify-changelog-qa.mjs`
 - `scripts/verify-content-qa.mjs`
 - `scripts/verify-seo-qa.mjs`
 - `scripts/verify-mobile-qa.mjs`
@@ -70,6 +76,7 @@ It should contain:
 - `history-qa.log`
 - `status-qa.log`
 - `home-qa.log`
+- `changelog-qa.log`
 - `content-qa.log`
 - `seo-qa.log`
 - `mobile-qa.log`
@@ -80,18 +87,20 @@ It should contain:
 
 Do not mix these into one PR.
 
-1. PR-27 Deep Link
-2. PR-28 Copyable Reports
-3. PR-29 History additional rankings
-4. PR-30 Compare Periods
-5. PR-31 Watchlist Lite
-6. PR-32 Channel Index
-7. PR-33 Channel Pages
-8. PR-34 Search
-9. PR-35 Export
-10. PR-36 Page-local Alerts
-11. Data Lane
-12. Kick coverage refinement
+1. Changelog page UI
+2. Changelog content review, approved backfill, and Provider Home connection
+3. Deep Link
+4. Copyable Reports
+5. History additional rankings
+6. Compare Periods
+7. Watchlist Lite
+8. Channel Index
+9. Channel Pages
+10. Search
+11. Export
+12. Page-local Alerts
+13. Data Lane
+14. Kick coverage refinement
 
 ## Rules for future work
 
@@ -100,4 +109,5 @@ Do not mix these into one PR.
 - Web verification, Web build, and Web checks must pass before merge.
 - Empty, unavailable, and error states must be explicit.
 - Twitch and Kick must remain separated unless a page explicitly explains both providers.
+- Changelog detail remains private until reviewed and approved.
 - Cloudflare Free operation remains the constraint.
