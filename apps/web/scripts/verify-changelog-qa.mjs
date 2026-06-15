@@ -5,10 +5,21 @@ const root = process.cwd()
 const sourcePath = 'data/changelog.json'
 const publicPath = 'public/data/changelog.json'
 const contractPath = 'docs/changelog-qa-contract.md'
+const pagePath = 'changelog/index.html'
+const clientPath = 'src/changelog-page.ts'
+const stylePath = 'src/changelog-page.css'
 const failures = []
 
-for (const path of [sourcePath, publicPath, contractPath, 'scripts/build-changelog.mjs']) {
-  if (!existsSync(join(root, path))) failures.push(`${path}: missing required Changelog foundation file`)
+for (const path of [
+  sourcePath,
+  publicPath,
+  contractPath,
+  'scripts/build-changelog.mjs',
+  pagePath,
+  clientPath,
+  stylePath,
+]) {
+  if (!existsSync(join(root, path))) failures.push(`${path}: missing required Changelog file`)
 }
 
 const source = readJson(sourcePath)
@@ -19,6 +30,9 @@ if (source && published && JSON.stringify(source) !== JSON.stringify(published))
 }
 
 if (source) verifyPayload(source)
+verifyPage()
+verifyClient()
+verifyStyles()
 
 if (existsSync(join(root, contractPath))) {
   const contract = readFileSync(join(root, contractPath), 'utf8')
@@ -30,6 +44,8 @@ if (existsSync(join(root, contractPath))) {
     'Livefield begins',
     'Livefield becomes ViewLoom',
     'ViewLoom design refresh',
+    '/changelog/',
+    'Loading, empty, and error states',
     'The detailed review canvas is not public data',
   ]) {
     if (!contract.includes(fragment)) failures.push(`${contractPath}: missing required contract fragment: ${fragment}`)
@@ -42,7 +58,7 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log('ViewLoom Changelog QA verification passed for the canonical three-entry foundation.')
+console.log('ViewLoom Changelog QA verification passed for the canonical three-entry data and public page UI.')
 
 function readJson(path) {
   if (!existsSync(join(root, path))) return null
@@ -113,6 +129,62 @@ function verifyPayload(payload) {
 
   for (const id of expected.keys()) {
     if (!ids.has(id)) failures.push(`${sourcePath}: missing required initial entry ${id}`)
+  }
+}
+
+function verifyPage() {
+  if (!existsSync(join(root, pagePath))) return
+  const page = readFileSync(join(root, pagePath), 'utf8')
+  for (const fragment of [
+    '<title>Changelog — ViewLoom</title>',
+    '<link rel="canonical" href="https://vl.badjoke-lab.com/changelog/"',
+    'data-changelog-state="loading"',
+    'class="site-frame"',
+    'class="masthead"',
+    'class="global-nav"',
+    'href="/changelog/" aria-current="page"',
+    'class="page changelog-page"',
+    'id="changelog-timeline"',
+    'aria-live="polite"',
+    'href="/data/changelog.json"',
+    '/src/changelog-page.css',
+    '/src/changelog-page.ts',
+    '/src/analytics.ts',
+  ]) {
+    if (!page.includes(fragment)) failures.push(`${pagePath}: missing required page fragment: ${fragment}`)
+  }
+  for (const title of ['Livefield begins', 'Livefield becomes ViewLoom', 'ViewLoom design refresh']) {
+    if (page.includes(title)) failures.push(`${pagePath}: milestone ${title} must come from public JSON, not hard-coded page markup`)
+  }
+}
+
+function verifyClient() {
+  if (!existsSync(join(root, clientPath))) return
+  const client = readFileSync(join(root, clientPath), 'utf8')
+  for (const fragment of [
+    "fetch('/data/changelog.json'",
+    "version: 'viewloom-changelog-v1'",
+    'renderEntries',
+    'createEntry',
+    "setState('loading')",
+    "setState('empty')",
+    "setState('error')",
+    "setState('ready')",
+    "retry.textContent = 'Retry'",
+    "time.dateTime = entry.date",
+    'title.textContent = entry.title',
+  ]) {
+    if (!client.includes(fragment)) failures.push(`${clientPath}: missing required client fragment: ${fragment}`)
+  }
+  if (/entry\.(?:summary|details|pullRequests|commit)/.test(client)) failures.push(`${clientPath}: initial page must render only reviewed date and title fields`)
+  if (/innerHTML\s*=/.test(client)) failures.push(`${clientPath}: Changelog entries must use DOM text assignment rather than innerHTML`)
+}
+
+function verifyStyles() {
+  if (!existsSync(join(root, stylePath))) return
+  const styles = readFileSync(join(root, stylePath), 'utf8')
+  for (const fragment of ['.changelog-timeline', '.changelog-entry', '.changelog-state--error', '@media(max-width:760px)', '@media(max-width:520px)']) {
+    if (!styles.includes(fragment)) failures.push(`${stylePath}: missing required responsive style fragment: ${fragment}`)
   }
 }
 
