@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "changelog:build": "node scripts/build-changelog.mjs",
+    "prebuild": "npm run changelog:build",
     "build": "vite build",
+    "verify:changelog": "node scripts/verify-changelog-qa.mjs",
     "verify:source": "node scripts/verify-production-source.mjs",
     "verify:battle-lines": "node scripts/verify-battle-lines-core.mjs",
     "verify:battle-lines-ui": "node scripts/verify-battle-lines-wide-ui.mjs",
