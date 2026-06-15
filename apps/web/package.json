@@ -16,6 +16,7 @@
     "verify:heatmap-semantic-lod": "node scripts/verify-heatmap-semantic-lod.mjs",
     "verify:heatmap-camera-controls": "node scripts/verify-heatmap-camera-controls.mjs",
     "verify:heatmap-split-viewport": "node scripts/verify-heatmap-split-viewport.mjs",
+    "verify:heatmap-selected-inspector": "node scripts/verify-heatmap-selected-inspector.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit --strictNullChecks false && tsc -p tsconfig.functions.json --noEmit --strictNullChecks false",
     "typecheck:app": "tsc -p tsconfig.json --noEmit --strictNullChecks false",
     "typecheck:functions": "tsc -p tsconfig.functions.json --noEmit --strictNullChecks false",

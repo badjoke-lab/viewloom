@@ -27,6 +27,12 @@ export type TwitchHeatmapApiResponse = {
     has_more: number
     updated_at: string
   } | null
+  items?: HeatmapItem[]
+  bucketMinutes?: number | null
+  expectedBucketMinutes?: number | null
+  activityAvailable?: boolean
+  activitySampled?: boolean
+  activityUnavailableReason?: string
 }
 
 export type HeatmapItem = {
@@ -35,6 +41,12 @@ export type HeatmapItem = {
   viewers: number
   momentum: number
   activity: number
+  title?: string
+  url?: string
+  startedAt?: string
+  activityAvailable?: boolean
+  activitySampled?: boolean
+  activityUnavailableReason?: string
 }
 
 export type TwitchHeatmapPayload = {

@@ -4,10 +4,12 @@ import { createHeatmapLoadingTruth, type HeatmapProviderKey } from './data-state
 import { installHeatmapDataTruthDom, renderHeatmapDataTruth } from './data-state-dom'
 import { installHeatmapResponseObserver } from './data-state-source'
 import { installHeatmapLayoutMode } from './layout-mode'
+import { installHeatmapSelectedInspector } from './selected-inspector-controller'
 
 let stopDom: (() => void) | null = null
 let stopSource: (() => void) | null = null
 let stopLayout: (() => void) | null = null
+let stopInspector: (() => void) | null = null
 
 function providerKey(): HeatmapProviderKey {
   return document.body.dataset.page === 'kick-heatmap' ? 'kick' : 'twitch'
@@ -17,6 +19,7 @@ async function hydrateHeatmap(): Promise<void> {
   const provider = providerKey()
   if (!stopLayout) stopLayout = installHeatmapLayoutMode()
   if (!stopDom) stopDom = installHeatmapDataTruthDom()
+  if (!stopInspector) stopInspector = installHeatmapSelectedInspector(provider)
   if (!stopSource) stopSource = installHeatmapResponseObserver(provider)
   renderHeatmapDataTruth(createHeatmapLoadingTruth(provider))
   const module = await import('../../live/twitch-heatmap')
@@ -31,6 +34,8 @@ export const heatmapDataTruthAdapter: HeatmapPageAdapter = {
   destroy: () => {
     stopSource?.()
     stopSource = null
+    stopInspector?.()
+    stopInspector = null
     stopDom?.()
     stopDom = null
     stopLayout?.()

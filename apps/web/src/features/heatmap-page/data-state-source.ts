@@ -15,6 +15,11 @@ export function installHeatmapResponseObserver(provider: HeatmapProviderKey): ()
   baseFetch = window.fetch.bind(window)
   observedFetch = (async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const isHeatmap = requestPath(input) === endpoint
+    if (isHeatmap) {
+      window.dispatchEvent(new CustomEvent('viewloom:heatmap-request-start', {
+        detail: { provider },
+      }))
+    }
     try {
       const response = await baseFetch!(input, init)
       if (isHeatmap) readTruth(response.clone(), provider)
@@ -33,7 +38,12 @@ export function installHeatmapResponseObserver(provider: HeatmapProviderKey): ()
 
 function readTruth(response: Response, provider: HeatmapProviderKey): void {
   void response.json()
-    .then((raw) => normalizeHeatmapDataTruth(raw, provider))
+    .then((raw) => {
+      window.dispatchEvent(new CustomEvent('viewloom:heatmap-response', {
+        detail: { provider, raw },
+      }))
+      return normalizeHeatmapDataTruth(raw, provider)
+    })
     .then((truth) => window.setTimeout(() => renderHeatmapDataTruth(truth), 0))
     .catch((error) => {
       const message = error instanceof Error ? error.message : 'Heatmap response could not be read.'

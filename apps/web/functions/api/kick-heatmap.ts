@@ -31,6 +31,8 @@ type KickHeatmapPayload = {
   status: KickHeatmapState
   updatedAt: string
   valueMode: 'viewers'
+  expectedBucketMinutes: number
+  bucketMinutes: number
   activityAvailable: boolean
   activitySampled: boolean
   activityUnavailableReason: string
@@ -42,6 +44,7 @@ type KickHeatmapPayload = {
 }
 
 const STALE_AFTER_MS = 10 * 60 * 1000
+const EXPECTED_BUCKET_MINUTES = 5
 const ACTIVITY_UNAVAILABLE_REASON = 'chat_sampling_not_connected'
 
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
@@ -87,6 +90,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       `coverage_mode=${coverageMode}`,
       `bucket_minute=${latest.bucket_minute}`,
       `previous_bucket_minute=${previous?.bucket_minute || 'none'}`,
+      `bucket_minutes=${EXPECTED_BUCKET_MINUTES}`,
+      `expected_bucket_minutes=${EXPECTED_BUCKET_MINUTES}`,
       'momentum_source=viewer_delta',
       'activity_available=false',
       `activity_unavailable_reason=${ACTIVITY_UNAVAILABLE_REASON}`,
@@ -105,6 +110,8 @@ function jsonPayload(state: KickHeatmapState, updatedAt: string, items: Normaliz
     status: state,
     updatedAt,
     valueMode: 'viewers',
+    expectedBucketMinutes: EXPECTED_BUCKET_MINUTES,
+    bucketMinutes: EXPECTED_BUCKET_MINUTES,
     activityAvailable: false,
     activitySampled: false,
     activityUnavailableReason: ACTIVITY_UNAVAILABLE_REASON,
