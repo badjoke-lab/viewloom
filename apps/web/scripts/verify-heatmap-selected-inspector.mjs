@@ -76,7 +76,7 @@ for (const fragment of [
   'peakViewers',
   'peakAt',
   "provider = url.searchParams.get('provider')",
-  "stream = requestedStream",
+  'stream: requestedStream',
 ]) assert.ok(endpoint.includes(fragment), `missing stream-context fragment: ${fragment}`)
 
 console.log('Heatmap selected-inspector verification passed.')
