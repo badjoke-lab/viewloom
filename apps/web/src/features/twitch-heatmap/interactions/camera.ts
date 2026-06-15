@@ -2,6 +2,7 @@ export type {
   CameraBounds,
   CameraViewSnapshot,
   CameraViewportWorldRect,
+  WorldRect,
 } from './camera-core.mjs'
 
 export {
@@ -10,11 +11,16 @@ export {
   captureCameraView,
   clampCameraToWorld,
   createFitCamera,
+  createReferenceCamera,
   getCameraViewportWorldRect,
   panCamera,
   resetCameraToBaseScale,
   restoreCameraView,
+  restoreReferenceCameraView,
+  revealWorldRectMinimally,
   screenToWorld,
+  setCameraNormalizedCenter,
+  setCameraWorldCenter,
   worldToScreen,
   zoomCameraAroundPoint,
   zoomCameraAroundScreenPoint,

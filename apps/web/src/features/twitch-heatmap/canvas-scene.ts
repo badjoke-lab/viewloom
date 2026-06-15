@@ -5,14 +5,23 @@ import {
   MIN_CAMERA_ZOOM,
   captureCameraView,
   clampCameraToWorld,
-  createFitCamera,
+  createReferenceCamera,
   panCamera,
   resetCameraToBaseScale,
-  restoreCameraView,
+  restoreReferenceCameraView,
+  revealWorldRectMinimally,
   screenToWorld,
   zoomCameraAroundScreenPoint,
   type CameraViewSnapshot,
 } from './interactions/camera'
+import {
+  SPLIT_VIEWPORT_MARKUP,
+  createSplitViewportController,
+  ensureSplitViewportStyles,
+  measureWideReferenceWidth,
+  readHeatmapLayoutMode,
+  type HeatmapLayoutMode,
+} from './split-viewport'
 import {
   type CameraState,
   type HeatmapItem,
@@ -32,13 +41,10 @@ const DOUBLE_CLICK_ZOOM_OUT = 1 / DOUBLE_CLICK_ZOOM_IN
 const SELECTED_INSET_PX = 1.5
 const SELECTED_STROKE_PX = 2
 const SELECTED_INNER_STROKE_PX = 0.75
+const REFERENCE_BASE_SCALE = 1
 const EPSILON = 0.001
 
-type ActivePointer = {
-  x: number
-  y: number
-}
-
+type ActivePointer = { x: number; y: number }
 type CanvasSceneInput = {
   stage: HTMLElement
   items: HeatmapItem[]
@@ -56,9 +62,7 @@ export function shouldUseCanvasRenderer(): boolean {
   const params = new URLSearchParams(window.location.search)
   const query = params.get('heatmapRenderer')
   const saved = window.localStorage.getItem('viewloom.heatmap.renderer')
-  if (query === 'dom' || query === 'legacy') return false
-  if (saved === 'dom' || saved === 'legacy') return false
-  return true
+  return query !== 'dom' && query !== 'legacy' && saved !== 'dom' && saved !== 'legacy'
 }
 
 export function destroyCanvasScene(): void {
@@ -70,9 +74,12 @@ export function destroyCanvasScene(): void {
 export function renderCanvasScene(input: CanvasSceneInput): void {
   destroyCanvasScene()
   ensureCanvasStyles()
+  ensureSplitViewportStyles()
 
   const { stage, items, latest, onSelect, onRefresh } = input
   const sceneKey = input.sceneKey ?? document.body.dataset.page ?? 'heatmap'
+  const layoutRoot = stage.closest<HTMLElement>('#heatmap-layout-root')
+  let layoutMode: HeatmapLayoutMode = readHeatmapLayoutMode(layoutRoot)
   let selectedStreamLogin = input.selectedStreamLogin
   const controlsHost = ensureMapControlsHost(stage)
 
@@ -91,7 +98,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     <button id="heatmap-canvas-move" class="heatmap-map-control heatmap-map-control--touch" type="button" aria-pressed="false">Move map</button>
   `
 
-  stage.innerHTML = `<div class="heatmap-canvas-scene"><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport" aria-label="Interactive stream heatmap"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer heatmap-canvas-layer--tiles"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer"></canvas></div></div>`
+  stage.innerHTML = `<div class="heatmap-canvas-scene"><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport" aria-label="Interactive stream heatmap"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer heatmap-canvas-layer--tiles"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer heatmap-canvas-layer--overlay"></canvas>${SPLIT_VIEWPORT_MARKUP}</div></div>`
 
   const viewport = stage.querySelector<HTMLElement>('#heatmap-canvas-viewport')
   const hintLabel = controlsHost.querySelector<HTMLElement>('#heatmap-canvas-hint')
@@ -107,13 +114,15 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
 
   let viewportWidth = Math.max(1, viewport.clientWidth)
   let viewportHeight = Math.max(360, viewport.clientHeight)
-  let worldWidth = viewportWidth
+  let worldWidth = measureWideReferenceWidth(layoutRoot, viewportWidth)
   let worldHeight = viewportHeight
   let dpr = currentDpr()
   let nodes = buildSceneNodes(items, worldWidth, worldHeight)
   let selected = nodes.find((node) => node.channelLogin === selectedStreamLogin) ?? nodes[0] ?? null
   if (selected && !selectedStreamLogin) selectedStreamLogin = selected.channelLogin
-  let camera = restoreCameraView(cameraMemory.get(sceneKey), getCameraBounds(), 0)
+  let camera = cameraMemory.has(sceneKey)
+    ? restoreReferenceCameraView(cameraMemory.get(sceneKey), getCameraBounds(), REFERENCE_BASE_SCALE)
+    : createReferenceCamera(getCameraBounds(), REFERENCE_BASE_SCALE)
   let resizeFrame = 0
   let pointerId: number | null = null
   let pointerDown = false
@@ -127,39 +136,39 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
   let gestureActive = false
   let gestureStartDistance = 0
   let gestureStartZoom = 1
+  let pendingLayoutSnapshot: CameraViewSnapshot | null = null
+  let pendingSelectedReveal = false
   let destroyed = false
   const activePointers = new Map<number, ActivePointer>()
 
   syncCanvasSize(tilesCanvas, viewportWidth, viewportHeight, dpr)
   syncCanvasSize(overlayCanvas, viewportWidth, viewportHeight, dpr)
-
   const tilesContext = tilesCanvas.getContext('2d')
   const overlayContext = overlayCanvas.getContext('2d')
   if (!tilesContext || !overlayContext) return
 
   function getCameraBounds() {
-    return {
-      worldWidth,
-      worldHeight,
-      viewportWidth,
-      viewportHeight,
-    }
+    return { worldWidth, worldHeight, viewportWidth, viewportHeight }
   }
+
+  let splitController: ReturnType<typeof createSplitViewportController>
 
   const redraw = (): void => {
     camera = clampCameraToWorld(camera, getCameraBounds())
-    drawTilesLayer(
-      tilesContext,
-      nodes,
-      camera,
-      viewportWidth,
-      viewportHeight,
-      dpr,
-      selectedStreamLogin,
-    )
+    drawTilesLayer(tilesContext, nodes, camera, viewportWidth, viewportHeight, dpr, selectedStreamLogin)
     drawSelectionOverlay(overlayContext, selected, camera, viewportWidth, viewportHeight, dpr)
     updateCameraControls()
+    splitController?.update()
   }
+
+  splitController = createSplitViewportController({
+    stage,
+    getCamera: () => camera,
+    setCamera: (next) => { camera = next },
+    getBounds: getCameraBounds,
+    getLayoutMode: () => layoutMode,
+    redraw,
+  })
 
   const updateCameraControls = (): void => {
     const percent = Math.round(camera.zoom * 100)
@@ -169,31 +178,41 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     zoomBaseButton.disabled = Math.abs(camera.zoom - 1) <= EPSILON
     zoomInButton.disabled = camera.zoom >= MAX_CAMERA_ZOOM - EPSILON
     viewport.dataset.zoom = String(camera.zoom)
+    viewport.dataset.layout = layoutMode
+    viewport.dataset.worldWidth = String(Math.round(worldWidth))
+    viewport.dataset.viewportWidth = String(Math.round(viewportWidth))
   }
 
   const resizeAndRelayout = (): void => {
     if (destroyed || !viewport.isConnected) return
+    const preserved = pendingLayoutSnapshot ?? captureCameraView(camera, getCameraBounds())
     const nextViewportWidth = Math.max(1, viewport.clientWidth)
     const nextViewportHeight = Math.max(360, viewport.clientHeight)
+    const nextWorldWidth = measureWideReferenceWidth(layoutRoot, nextViewportWidth)
+    const nextWorldHeight = nextViewportHeight
     const nextDpr = currentDpr()
-    if (
-      Math.abs(nextViewportWidth - viewportWidth) < 1
-      && Math.abs(nextViewportHeight - viewportHeight) < 1
-      && nextDpr === dpr
-    ) return
+    const viewportChanged = Math.abs(nextViewportWidth - viewportWidth) >= 1 || Math.abs(nextViewportHeight - viewportHeight) >= 1
+    const worldChanged = Math.abs(nextWorldWidth - worldWidth) >= 1 || Math.abs(nextWorldHeight - worldHeight) >= 1
+    if (!viewportChanged && !worldChanged && nextDpr === dpr && !pendingLayoutSnapshot) return
 
-    const preserved = captureCameraView(camera, getCameraBounds())
     viewportWidth = nextViewportWidth
     viewportHeight = nextViewportHeight
-    worldWidth = nextViewportWidth
-    worldHeight = nextViewportHeight
     dpr = nextDpr
+    if (worldChanged) {
+      worldWidth = nextWorldWidth
+      worldHeight = nextWorldHeight
+      nodes = buildSceneNodes(items, worldWidth, worldHeight)
+      selected = nodes.find((node) => node.channelLogin === selectedStreamLogin) ?? nodes[0] ?? null
+      if (selected && !selectedStreamLogin) selectedStreamLogin = selected.channelLogin
+    }
     syncCanvasSize(tilesCanvas, viewportWidth, viewportHeight, dpr)
     syncCanvasSize(overlayCanvas, viewportWidth, viewportHeight, dpr)
-    nodes = buildSceneNodes(items, worldWidth, worldHeight)
-    selected = nodes.find((node) => node.channelLogin === selectedStreamLogin) ?? nodes[0] ?? null
-    if (selected && !selectedStreamLogin) selectedStreamLogin = selected.channelLogin
-    camera = restoreCameraView(preserved, getCameraBounds(), 0)
+    camera = restoreReferenceCameraView(preserved, getCameraBounds(), REFERENCE_BASE_SCALE)
+    if (pendingSelectedReveal && layoutMode === 'split' && selected) {
+      camera = revealWorldRectMinimally(camera, selected, getCameraBounds(), 18)
+    }
+    pendingLayoutSnapshot = null
+    pendingSelectedReveal = false
     redraw()
   }
 
@@ -213,9 +232,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
   }
 
   const resetPointerState = (): void => {
-    if (pointerId !== null && overlayCanvas.hasPointerCapture(pointerId)) {
-      overlayCanvas.releasePointerCapture(pointerId)
-    }
+    if (pointerId !== null && overlayCanvas.hasPointerCapture(pointerId)) overlayCanvas.releasePointerCapture(pointerId)
     pointerId = null
     pointerDown = false
     dragging = false
@@ -235,12 +252,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
   }
 
   const zoomAtViewportCenter = (nextZoom: number): void => {
-    camera = zoomCameraAroundScreenPoint(
-      camera,
-      { x: viewportWidth / 2, y: viewportHeight / 2 },
-      nextZoom,
-      getCameraBounds(),
-    )
+    camera = zoomCameraAroundScreenPoint(camera, { x: viewportWidth / 2, y: viewportHeight / 2 }, nextZoom, getCameraBounds())
     redraw()
   }
 
@@ -252,11 +264,19 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
 
   const resizeObserver = new ResizeObserver(scheduleResizeAndRelayout)
   resizeObserver.observe(viewport)
+  if (layoutRoot) resizeObserver.observe(layoutRoot)
 
-  const onLayoutChange = (): void => {
+  const onLayoutChange = (event: Event): void => {
+    pendingLayoutSnapshot = captureCameraView(camera, getCameraBounds())
+    pendingSelectedReveal = true
+    const detail = (event as CustomEvent<{ mode?: HeatmapLayoutMode }>).detail
+    layoutMode = detail?.mode === 'split' ? 'split' : readHeatmapLayoutMode(layoutRoot)
     window.requestAnimationFrame(scheduleResizeAndRelayout)
   }
-  const onWindowBlur = (): void => resetPointerState()
+  const onWindowBlur = (): void => {
+    resetPointerState()
+    splitController.cancel()
+  }
   window.addEventListener('viewloom:heatmap-layout-change', onLayoutChange)
   window.addEventListener('blur', onWindowBlur)
 
@@ -267,7 +287,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
   })
   zoomInButton.addEventListener('click', () => zoomAtViewportCenter(camera.zoom * CONTROL_ZOOM_STEP))
   resetButton.addEventListener('click', () => {
-    camera = createFitCamera(viewportWidth, viewportHeight, worldWidth, worldHeight, 0)
+    camera = createReferenceCamera(getCameraBounds(), REFERENCE_BASE_SCALE)
     resetPointerState()
     redraw()
   })
@@ -278,9 +298,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     refreshButton.textContent = 'Refreshing…'
     refreshButton.setAttribute('aria-busy', 'true')
     cameraMemory.set(sceneKey, captureCameraView(camera, getCameraBounds()))
-    try {
-      await refreshAction()
-    } finally {
+    try { await refreshAction() } finally {
       refreshing = false
       if (refreshButton.isConnected) {
         refreshButton.disabled = false
@@ -299,30 +317,19 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     if (!event.ctrlKey && !event.altKey && !event.metaKey) return
     event.preventDefault()
     const rect = overlayCanvas.getBoundingClientRect()
-    camera = zoomCameraAroundScreenPoint(
-      camera,
-      { x: event.clientX - rect.left, y: event.clientY - rect.top },
-      camera.zoom * (event.deltaY < 0 ? WHEEL_ZOOM_IN : WHEEL_ZOOM_OUT),
-      getCameraBounds(),
-    )
+    camera = zoomCameraAroundScreenPoint(camera, { x: event.clientX - rect.left, y: event.clientY - rect.top }, camera.zoom * (event.deltaY < 0 ? WHEEL_ZOOM_IN : WHEEL_ZOOM_OUT), getCameraBounds())
     redraw()
   }, { passive: false })
 
   overlayCanvas.addEventListener('dblclick', (event) => {
     event.preventDefault()
     const rect = overlayCanvas.getBoundingClientRect()
-    camera = zoomCameraAroundScreenPoint(
-      camera,
-      { x: event.clientX - rect.left, y: event.clientY - rect.top },
-      camera.zoom * (event.shiftKey ? DOUBLE_CLICK_ZOOM_OUT : DOUBLE_CLICK_ZOOM_IN),
-      getCameraBounds(),
-    )
+    camera = zoomCameraAroundScreenPoint(camera, { x: event.clientX - rect.left, y: event.clientY - rect.top }, camera.zoom * (event.shiftKey ? DOUBLE_CLICK_ZOOM_OUT : DOUBLE_CLICK_ZOOM_IN), getCameraBounds())
     redraw()
   })
 
   overlayCanvas.addEventListener('pointerdown', (event) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return
-
     if (event.pointerType !== 'mouse') {
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
       if (moveMode && activePointers.size >= 2) {
@@ -336,7 +343,6 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
         return
       }
     }
-
     pointerId = event.pointerId
     pointerDown = true
     dragging = false
@@ -355,7 +361,6 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
         return
       }
     }
-
     if (!pointerDown || pointerId !== event.pointerId) return
     if (event.pointerType !== 'mouse' && !moveMode) return
     const dx = event.clientX - downX
@@ -366,13 +371,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
       viewport.classList.add('is-panning')
     }
     if (!dragging) return
-
-    camera = panCamera(
-      camera,
-      event.clientX - lastX,
-      event.clientY - lastY,
-      getCameraBounds(),
-    )
+    camera = panCamera(camera, event.clientX - lastX, event.clientY - lastY, getCameraBounds())
     lastX = event.clientX
     lastY = event.clientY
     redraw()
@@ -381,7 +380,6 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
   const finishPointer = (event: PointerEvent, canceled: boolean): void => {
     const gestureWasActive = gestureActive || activePointers.size > 1
     if (event.pointerType !== 'mouse') activePointers.delete(event.pointerId)
-
     if (gestureWasActive && event.pointerType !== 'mouse') {
       if (overlayCanvas.hasPointerCapture(event.pointerId)) overlayCanvas.releasePointerCapture(event.pointerId)
       pointerId = null
@@ -395,15 +393,10 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
       }
       return
     }
-
     if (pointerId !== event.pointerId) return
     if (!canceled && !dragging) {
       const rect = overlayCanvas.getBoundingClientRect()
-      const world = screenToWorld(
-        { x: event.clientX - rect.left, y: event.clientY - rect.top },
-        camera,
-      )
-      selectNode(pickSceneNode(world, nodes))
+      selectNode(pickSceneNode(screenToWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top }, camera), nodes))
     }
     if (overlayCanvas.hasPointerCapture(event.pointerId)) overlayCanvas.releasePointerCapture(event.pointerId)
     pointerId = null
@@ -415,8 +408,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
   overlayCanvas.addEventListener('pointerup', (event) => finishPointer(event, false))
   overlayCanvas.addEventListener('pointercancel', (event) => finishPointer(event, true))
   overlayCanvas.addEventListener('lostpointercapture', () => {
-    if (!pointerDown && !gestureActive) return
-    resetPointerState()
+    if (pointerDown || gestureActive) resetPointerState()
   })
 
   function startGesture(): void {
@@ -430,12 +422,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
   function applyGesture(): void {
     const gesture = getGestureState(overlayCanvas, activePointers)
     if (!gesture || gestureStartDistance <= 0) return
-    camera = zoomCameraAroundScreenPoint(
-      camera,
-      gesture.center,
-      gestureStartZoom * (gesture.distance / gestureStartDistance),
-      getCameraBounds(),
-    )
+    camera = zoomCameraAroundScreenPoint(camera, gesture.center, gestureStartZoom * (gesture.distance / gestureStartDistance), getCameraBounds())
     redraw()
   }
 
@@ -448,6 +435,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     cameraMemory.set(sceneKey, captureCameraView(camera, getCameraBounds()))
     window.cancelAnimationFrame(resizeFrame)
     resizeObserver.disconnect()
+    splitController.destroy()
     window.removeEventListener('viewloom:heatmap-layout-change', onLayoutChange)
     window.removeEventListener('blur', onWindowBlur)
     resetPointerState()
@@ -457,7 +445,6 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
 function ensureMapControlsHost(stage: HTMLElement): HTMLElement {
   const existing = document.querySelector<HTMLElement>('#heatmap-map-controls')
   if (existing) return existing
-
   const host = document.createElement('div')
   host.id = 'heatmap-map-controls'
   host.className = 'heatmap-map-controls'
@@ -468,34 +455,22 @@ function ensureMapControlsHost(stage: HTMLElement): HTMLElement {
 function getGestureState(canvas: HTMLCanvasElement, points: Map<number, ActivePointer>): { center: { x: number; y: number }; distance: number } | null {
   const active = Array.from(points.values()).slice(0, 2)
   if (active.length < 2) return null
-
   const [first, second] = active
   const rect = canvas.getBoundingClientRect()
-  const center = {
-    x: (first.x + second.x) / 2 - rect.left,
-    y: (first.y + second.y) / 2 - rect.top,
+  return {
+    center: { x: (first.x + second.x) / 2 - rect.left, y: (first.y + second.y) / 2 - rect.top },
+    distance: Math.hypot(second.x - first.x, second.y - first.y),
   }
-  const distance = Math.hypot(second.x - first.x, second.y - first.y)
-  return { center, distance }
 }
 
-function drawSelectionOverlay(
-  ctx: CanvasRenderingContext2D,
-  selected: HeatmapSceneNode | null,
-  camera: CameraState,
-  viewportWidth: number,
-  viewportHeight: number,
-  dpr: number,
-): void {
+function drawSelectionOverlay(ctx: CanvasRenderingContext2D, selected: HeatmapSceneNode | null, camera: CameraState, viewportWidth: number, viewportHeight: number, dpr: number): void {
   ctx.setTransform(1, 0, 0, 1, 0, 0)
   ctx.clearRect(0, 0, viewportWidth * dpr, viewportHeight * dpr)
   if (!selected) return
-
   const inset = SELECTED_INSET_PX / camera.scale
   const width = Math.max(0, selected.width - inset * 2)
   const height = Math.max(0, selected.height - inset * 2)
   if (width <= 0 || height <= 0) return
-
   ctx.save()
   ctx.setTransform(camera.scale * dpr, 0, 0, camera.scale * dpr, camera.tx * dpr, camera.ty * dpr)
   ctx.fillStyle = 'rgba(144,90,255,0.075)'
@@ -503,7 +478,6 @@ function drawSelectionOverlay(
   ctx.strokeStyle = 'rgba(174,125,255,0.98)'
   ctx.lineWidth = SELECTED_STROKE_PX / camera.scale
   ctx.strokeRect(selected.x + inset, selected.y + inset, width, height)
-
   const innerInset = inset + 2 / camera.scale
   const innerWidth = Math.max(0, selected.width - innerInset * 2)
   const innerHeight = Math.max(0, selected.height - innerInset * 2)
@@ -522,10 +496,7 @@ function syncCanvasSize(canvas: HTMLCanvasElement, width: number, height: number
   canvas.style.height = `${height}px`
 }
 
-function currentDpr(): number {
-  return Math.min(window.devicePixelRatio || 1, 2)
-}
-
+function currentDpr(): number { return Math.min(window.devicePixelRatio || 1, 2) }
 function ensureCanvasStyles(): void {
   if (document.getElementById('twitch-heatmap-canvas-style')) return
   const style = document.createElement('style')

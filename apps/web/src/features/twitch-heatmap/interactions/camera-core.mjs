@@ -17,9 +17,6 @@ export function createFitCamera(
   const safePadding = Math.max(0, finite(padding))
   const availableWidth = Math.max(1, safeViewportWidth - safePadding * 2)
   const availableHeight = Math.max(1, safeViewportHeight - safePadding * 2)
-
-  // Use cover scale rather than contain scale so camera movement can never reveal
-  // empty space between the map world and viewport edge.
   const baseScale = Math.max(
     availableWidth / safeWorldWidth,
     availableHeight / safeWorldHeight,
@@ -41,10 +38,24 @@ export function createFitCamera(
   })
 }
 
+export function createReferenceCamera(bounds, baseScale = 1) {
+  const safeBounds = normalizeBounds(bounds)
+  const safeBaseScale = positive(baseScale, 1)
+  return clampCameraToWorld({
+    zoom: 1,
+    baseScale: safeBaseScale,
+    scale: safeBaseScale,
+    tx: 0,
+    ty: 0,
+    viewportWidth: safeBounds.viewportWidth,
+    viewportHeight: safeBounds.viewportHeight,
+  }, safeBounds)
+}
+
 export function worldToScreen(point, camera) {
   return {
-    x: finite(point?.x) * camera.scale + camera.tx,
-    y: finite(point?.y) * camera.scale + camera.ty,
+    x: finite(point?.x) * camera.scale + finite(camera?.tx),
+    y: finite(point?.y) * camera.scale + finite(camera?.ty),
   }
 }
 
@@ -59,8 +70,8 @@ export function screenToWorld(point, camera) {
 export function panCamera(camera, deltaX, deltaY, bounds) {
   const next = {
     ...camera,
-    tx: camera.tx + finite(deltaX),
-    ty: camera.ty + finite(deltaY),
+    tx: finite(camera?.tx) + finite(deltaX),
+    ty: finite(camera?.ty) + finite(deltaY),
   }
   return bounds ? clampCameraToWorld(next, bounds) : next
 }
@@ -123,45 +134,78 @@ export function restoreCameraView(snapshot, bounds, padding = 0) {
     safeBounds.worldHeight,
     padding,
   )
-  if (!snapshot) return fitted
+  return restoreFromBase(snapshot, safeBounds, fitted)
+}
 
-  const zoom = clamp(
-    finite(snapshot.zoom),
-    getMinCameraZoom(fitted, safeBounds),
-    MAX_CAMERA_ZOOM,
-  )
-  const scale = fitted.baseScale * zoom
-  const worldCenter = {
-    x: clamp(finite(snapshot.centerX), 0, 1) * safeBounds.worldWidth,
-    y: clamp(finite(snapshot.centerY), 0, 1) * safeBounds.worldHeight,
+export function restoreReferenceCameraView(snapshot, bounds, baseScale = 1) {
+  const safeBounds = normalizeBounds(bounds)
+  const reference = createReferenceCamera(safeBounds, baseScale)
+  return restoreFromBase(snapshot, safeBounds, reference)
+}
+
+export function setCameraWorldCenter(camera, worldCenter, bounds) {
+  const safeBounds = normalizeBounds(bounds)
+  const centerX = clamp(finite(worldCenter?.x), 0, safeBounds.worldWidth)
+  const centerY = clamp(finite(worldCenter?.y), 0, safeBounds.worldHeight)
+  return clampCameraToWorld({
+    ...camera,
+    tx: safeBounds.viewportWidth / 2 - centerX * camera.scale,
+    ty: safeBounds.viewportHeight / 2 - centerY * camera.scale,
+  }, safeBounds)
+}
+
+export function setCameraNormalizedCenter(camera, center, bounds) {
+  const safeBounds = normalizeBounds(bounds)
+  return setCameraWorldCenter(camera, {
+    x: clamp(finite(center?.x), 0, 1) * safeBounds.worldWidth,
+    y: clamp(finite(center?.y), 0, 1) * safeBounds.worldHeight,
+  }, safeBounds)
+}
+
+export function revealWorldRectMinimally(camera, rect, bounds, marginPx = 12) {
+  const safeBounds = normalizeBounds(bounds)
+  const safeMargin = Math.max(0, finite(marginPx))
+  const left = finite(rect?.x) * camera.scale + camera.tx
+  const top = finite(rect?.y) * camera.scale + camera.ty
+  const right = (finite(rect?.x) + positive(rect?.width, 0)) * camera.scale + camera.tx
+  const bottom = (finite(rect?.y) + positive(rect?.height, 0)) * camera.scale + camera.ty
+  let deltaX = 0
+  let deltaY = 0
+
+  if (right <= safeMargin) deltaX = safeMargin - right
+  else if (left >= safeBounds.viewportWidth - safeMargin) {
+    deltaX = safeBounds.viewportWidth - safeMargin - left
   }
 
-  return clampCameraToWorld({
-    ...fitted,
-    zoom,
-    scale,
-    tx: safeBounds.viewportWidth / 2 - worldCenter.x * scale,
-    ty: safeBounds.viewportHeight / 2 - worldCenter.y * scale,
-  }, safeBounds)
+  if (bottom <= safeMargin) deltaY = safeMargin - bottom
+  else if (top >= safeBounds.viewportHeight - safeMargin) {
+    deltaY = safeBounds.viewportHeight - safeMargin - top
+  }
+
+  return deltaX || deltaY
+    ? panCamera(camera, deltaX, deltaY, safeBounds)
+    : clampCameraToWorld(camera, safeBounds)
 }
 
 export function clampCameraToWorld(camera, bounds) {
   const safeBounds = normalizeBounds(bounds)
-  const minZoom = getMinCameraZoom(camera, safeBounds)
-  const zoom = clamp(camera.zoom, minZoom, MAX_CAMERA_ZOOM)
-  const scale = Math.max(0.000001, camera.baseScale * zoom)
+  const safeBaseScale = positive(camera?.baseScale, 1)
+  const minZoom = getMinCameraZoom({ ...camera, baseScale: safeBaseScale }, safeBounds)
+  const zoom = clamp(positive(camera?.zoom, 1), minZoom, MAX_CAMERA_ZOOM)
+  const scale = Math.max(0.000001, safeBaseScale * zoom)
   const scaledWidth = safeBounds.worldWidth * scale
   const scaledHeight = safeBounds.worldHeight * scale
 
   const tx = scaledWidth <= safeBounds.viewportWidth
     ? (safeBounds.viewportWidth - scaledWidth) / 2
-    : clamp(camera.tx, safeBounds.viewportWidth - scaledWidth, 0)
+    : clamp(finite(camera?.tx), safeBounds.viewportWidth - scaledWidth, 0)
   const ty = scaledHeight <= safeBounds.viewportHeight
     ? (safeBounds.viewportHeight - scaledHeight) / 2
-    : clamp(camera.ty, safeBounds.viewportHeight - scaledHeight, 0)
+    : clamp(finite(camera?.ty), safeBounds.viewportHeight - scaledHeight, 0)
 
   return {
     ...camera,
+    baseScale: safeBaseScale,
     zoom,
     scale,
     tx,
@@ -184,6 +228,29 @@ export function getCameraViewportWorldRect(camera, bounds) {
     width: Math.max(0, Math.min(safeBounds.worldWidth, bottomRight.x) - Math.max(0, topLeft.x)),
     height: Math.max(0, Math.min(safeBounds.worldHeight, bottomRight.y) - Math.max(0, topLeft.y)),
   }
+}
+
+function restoreFromBase(snapshot, safeBounds, baseCamera) {
+  if (!snapshot) return baseCamera
+
+  const zoom = clamp(
+    positive(snapshot.zoom, 1),
+    getMinCameraZoom(baseCamera, safeBounds),
+    MAX_CAMERA_ZOOM,
+  )
+  const scale = baseCamera.baseScale * zoom
+  const worldCenter = {
+    x: clamp(finite(snapshot.centerX), 0, 1) * safeBounds.worldWidth,
+    y: clamp(finite(snapshot.centerY), 0, 1) * safeBounds.worldHeight,
+  }
+
+  return clampCameraToWorld({
+    ...baseCamera,
+    zoom,
+    scale,
+    tx: safeBounds.viewportWidth / 2 - worldCenter.x * scale,
+    ty: safeBounds.viewportHeight / 2 - worldCenter.y * scale,
+  }, safeBounds)
 }
 
 function getMinCameraZoom(camera, bounds) {

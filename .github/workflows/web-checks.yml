@@ -64,6 +64,9 @@ jobs:
       - name: Verify Heatmap camera controls
         run: pnpm --filter @viewloom/web verify:heatmap-camera-controls
 
+      - name: Verify Heatmap Split viewport
+        run: pnpm --filter @viewloom/web verify:heatmap-split-viewport
+
       - name: Upload web checks logs
         if: always()
         uses: actions/upload-artifact@v4
