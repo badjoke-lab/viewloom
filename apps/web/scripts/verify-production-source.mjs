@@ -75,6 +75,8 @@ const requiredSourceFiles = [
   'src/mock-site.css',
   'src/mock-site.ts',
   'src/live/heatmap-current-shell-entry.ts',
+  'src/live/twitch-heatmap.ts',
+  'src/features/twitch-heatmap/canvas-scene.ts',
   'src/live/day-flow-current-shell-entry.ts',
   'src/live/battle-lines-current-shell-entry.ts',
   'src/live/history-current-shell-entry.ts',
@@ -97,6 +99,19 @@ const forbiddenGlobalPatterns = [
 
 const forbiddenSourcePatterns = [
   { path: 'src/mock-site.ts', label: 'legacy static heatmap behavior', pattern: /data-selected-name|data-selected-viewers|data-selected-momentum/ },
+  { path: 'src/live/twitch-heatmap.ts', label: 'legacy renderer switch', pattern: /shouldUseCanvasRenderer/ },
+  { path: 'src/live/twitch-heatmap.ts', label: 'legacy DOM viewport', pattern: /createHeatmapViewport|heatmap-viewport-v2/ },
+  { path: 'src/live/twitch-heatmap.ts', label: 'legacy DOM tile renderer', pattern: /renderHeatmapShell|renderTile\(/ },
+  { path: 'src/live/twitch-heatmap.ts', label: 'legacy CSS transform renderer', pattern: /translate3d\(/ },
+]
+
+const removedHeatmapFiles = [
+  'src/live/heatmap-viewport.ts',
+  'src/live/heatmap-viewport-v2.ts',
+  'src/live/heatmap-layout.ts',
+  'src/live/heatmap-live-shell.ts',
+  'src/live/heatmap-treemap.ts',
+  'src/live/heatmap-inspector.ts',
 ]
 
 function read(path) {
@@ -150,6 +165,10 @@ for (const { path, label, pattern } of forbiddenSourcePatterns) {
   if (!existsSync(join(root, path))) continue
   const source = read(path)
   if (pattern.test(source)) failures.push(`${path}: contains forbidden ${label}`)
+}
+
+for (const path of removedHeatmapFiles) {
+  if (existsSync(join(root, path))) failures.push(`${path}: legacy Heatmap file must not exist in production source`)
 }
 
 if (existsSync(join(root, 'src/mock-cutover.css'))) failures.push('src/mock-cutover.css: must not exist')
