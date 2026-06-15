@@ -26,9 +26,11 @@ const providerPages = [
   { path: 'kick/index.html', provider: 'kick', coverage: 'Top 100', basePath: '/kick/' },
 ]
 const requiredFeatureSlugs = ['heatmap', 'day-flow', 'battle-lines', 'history', 'status']
+const analysisFeatureLabels = ['Heatmap', 'Day Flow', 'Battle Lines', 'History']
 const contractPath = 'docs/home-qa-contract.md'
+const planPath = 'docs/platform-home-repair-plan.md'
 
-for (const path of [portalPath, ...providerPages.map((page) => page.path), contractPath]) requireFile(path)
+for (const path of [portalPath, ...providerPages.map((page) => page.path), contractPath, planPath]) requireFile(path)
 
 if (existsSync(join(root, portalPath))) {
   const source = read(portalPath)
@@ -59,7 +61,7 @@ for (const { path, provider, coverage, basePath } of providerPages.filter((page)
   for (const slug of requiredFeatureSlugs) {
     requireFragment(path, source, `href="${basePath}${slug}/"`)
   }
-  for (const label of ['Heatmap', 'Day Flow', 'Battle Lines', 'History', 'Status']) {
+  for (const label of analysisFeatureLabels) {
     requireFragment(path, source, `<h3>${label}</h3>`)
   }
   forbidPattern(path, source, 'old overview card grid', /overview-grid|view-card/)
@@ -68,9 +70,38 @@ for (const { path, provider, coverage, basePath } of providerPages.filter((page)
 
 if (existsSync(join(root, contractPath))) {
   const source = read(contractPath)
-  requireFragment(contractPath, source, 'Portal and Provider Home QA Contract')
-  requireFragment(contractPath, source, 'combined Twitch/Kick totals')
-  requireFragment(contractPath, source, 'Heatmap, Day Flow, Battle Lines, History, and Status')
+  for (const fragment of [
+    'Portal and Provider Home QA Contract',
+    'Exactly four analysis feature cards',
+    'Status is not a fifth analysis feature card',
+    'All totals must be labeled as observed values',
+    'loading',
+    'fresh',
+    'partial',
+    'stale',
+    'empty',
+    'demo',
+    'error',
+    'Twitch and Kick values are never combined',
+    'docs/platform-home-repair-plan.md',
+  ]) requireFragment(contractPath, source, fragment)
+}
+
+if (existsSync(join(root, planPath))) {
+  const source = read(planPath)
+  for (const fragment of [
+    'Platform Home Repair Plan',
+    'Home PR 1 — Contract and QA',
+    'Home PR 2 — Real home payloads',
+    'Home PR 3 — Shared provider-home UI',
+    'Home PR 4 — Provider differences, mobile, and final QA',
+    '/api/twitch-home',
+    '/api/kick-home',
+    'Fixed schedule after Platform Home',
+    'Changelog foundation',
+    'Deep Link',
+    'Merge reporting rule',
+  ]) requireFragment(planPath, source, fragment)
 }
 
 if (failures.length > 0) {
@@ -79,4 +110,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log('ViewLoom Home QA verification passed for portal and provider home pages, including provider feature links.')
+console.log('ViewLoom Home QA verification passed for portal/provider links and the fixed platform-home repair contract.')
