@@ -16,7 +16,7 @@ for (const [name, source] of [['Twitch', twitch], ['Kick', kick]]) {
   assert.match(source, /data-heatmap-layout="wide"/, `${name} page must start Wide`)
   assert.match(source, /data-heatmap-layout-controls/, `${name} page must expose layout controls`)
   assert.match(source, /data-heatmap-layout="wide"[^>]*aria-pressed="true"/, `${name} Wide control must be active`)
-  assert.match(source, /data-heatmap-layout="split"[^>]*aria-pressed="false"/, `${name} Split control must be available`)
+  assert.match(source, /data-heatmap-layout="split"[^>]*aria-pressed="false"/, `${name} Split control must be available on desktop`)
   assert.match(source, /id="heatmap-map-controls"/, `${name} page must expose the external map-control host`)
   assert.match(source, /id="heatmap-layout-root"[^>]*data-layout="wide"/, `${name} layout root must start Wide`)
   assert.match(source, /id="heatmap-inspector"/, `${name} page must preserve the inspector`)
@@ -26,10 +26,11 @@ for (const [name, source] of [['Twitch', twitch], ['Kick', kick]]) {
 
 assert.match(layout, /type HeatmapLayoutMode = 'wide' \| 'split'/)
 assert.match(layout, /viewloom\.heatmap\.layout/)
-assert.match(layout, /url\.searchParams\.set\(QUERY_KEY, next\)/)
+assert.match(layout, /url\.searchParams\.set\(QUERY_KEY, resolved\)/)
 assert.match(layout, /value === 'wide' \|\| value === 'theater'/)
 assert.match(layout, /return 'wide'/)
 assert.match(layout, /viewloom:heatmap-layout-change/)
+assert.match(layout, /MOBILE_WIDE_QUERY/)
 
 assert.match(layoutCss, /\.heatmap-layout\[data-layout='wide'\]/)
 assert.match(layoutCss, /\.heatmap-layout\[data-layout='split'\]/)

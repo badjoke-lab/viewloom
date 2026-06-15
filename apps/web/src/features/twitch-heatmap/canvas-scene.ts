@@ -15,6 +15,11 @@ import {
   type CameraViewSnapshot,
 } from './interactions/camera'
 import {
+  describeHeatmapNode,
+  findDirectionalNodeIndex,
+  type HeatmapNavigationDirection,
+} from './interactions/keyboard-navigation-core.mjs'
+import {
   SPLIT_VIEWPORT_MARKUP,
   createSplitViewportController,
   ensureSplitViewportStyles,
@@ -31,7 +36,7 @@ import {
 import { buildSceneNodes } from './scene'
 import { drawTilesLayer } from './tiles-layer'
 
-const SCENE_CSS = '.heatmap-canvas-scene{min-height:560px;height:100%;background:#07101d}.heatmap-canvas-viewport{position:relative;overflow:hidden;min-height:500px;height:100%;touch-action:pan-y;cursor:grab;background:#07101d;user-select:none}.heatmap-canvas-viewport.is-panning{cursor:grabbing}.heatmap-canvas-viewport.is-move-mode{touch-action:none}.heatmap-canvas-layer{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}.heatmap-canvas-layer--tiles{pointer-events:none}.heatmap-canvas-viewport.is-move-mode .heatmap-canvas-layer{touch-action:none}.heatmap-map-control--icon{min-width:34px;padding:0;font-size:18px;line-height:1}.heatmap-map-control--zoom{min-width:64px;font-variant-numeric:tabular-nums}.heatmap-map-control--touch{display:none}button.heatmap-map-control[aria-busy=true]{cursor:progress;opacity:.72}@media(max-width:760px){.heatmap-canvas-scene{min-height:430px}.heatmap-canvas-viewport{min-height:430px}.heatmap-map-control--touch{display:inline-flex}}'
+const SCENE_CSS = '.heatmap-canvas-scene{min-height:560px;height:100%;background:#07101d}.heatmap-canvas-viewport{position:relative;overflow:hidden;min-height:500px;height:100%;touch-action:pan-y;cursor:grab;background:#07101d;user-select:none;outline:none}.heatmap-canvas-viewport:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 72%,white);outline-offset:3px}.heatmap-canvas-viewport.is-panning{cursor:grabbing}.heatmap-canvas-viewport.is-move-mode{touch-action:none}.heatmap-canvas-layer{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}.heatmap-canvas-layer--tiles{pointer-events:none}.heatmap-canvas-viewport.is-move-mode .heatmap-canvas-layer{touch-action:none}.heatmap-canvas-sr{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}.heatmap-map-control--icon{min-width:34px;padding:0;font-size:18px;line-height:1}.heatmap-map-control--zoom{min-width:64px;font-variant-numeric:tabular-nums}.heatmap-map-control--touch{display:none}button.heatmap-map-control[aria-busy=true]{cursor:progress;opacity:.72}.heatmap-map-control:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 72%,white);outline-offset:2px}@media(max-width:760px){.heatmap-canvas-scene{min-height:430px}.heatmap-canvas-viewport{min-height:430px}.heatmap-map-control--touch{display:inline-flex}}'
 const PAN_THRESHOLD = 6
 const CONTROL_ZOOM_STEP = 1.25
 const WHEEL_ZOOM_IN = 1.14
@@ -45,6 +50,7 @@ const REFERENCE_BASE_SCALE = 1
 const EPSILON = 0.001
 
 type ActivePointer = { x: number; y: number }
+type SelectionSource = 'pointer' | 'touch' | 'keyboard'
 type CanvasSceneInput = {
   stage: HTMLElement
   items: HeatmapItem[]
@@ -84,7 +90,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
   const controlsHost = ensureMapControlsHost(stage)
 
   controlsHost.innerHTML = `
-    <span id="heatmap-canvas-hint" class="heatmap-map-controls__hint">Drag to pan · Ctrl/Alt/⌘ + wheel to zoom · select a tile to inspect</span>
+    <span id="heatmap-canvas-hint" class="heatmap-map-controls__hint">Drag to pan · Ctrl/Alt/⌘ + wheel to zoom · arrow keys navigate</span>
     <div class="heatmap-map-controls__stats">
       <span>${latest.total_viewers.toLocaleString()} viewers</span>
       <span>${items.length} streams</span>
@@ -98,9 +104,10 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     <button id="heatmap-canvas-move" class="heatmap-map-control heatmap-map-control--touch" type="button" aria-pressed="false">Move map</button>
   `
 
-  stage.innerHTML = `<div class="heatmap-canvas-scene"><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport" aria-label="Interactive stream heatmap"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer heatmap-canvas-layer--tiles"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer heatmap-canvas-layer--overlay"></canvas>${SPLIT_VIEWPORT_MARKUP}</div></div>`
+  stage.innerHTML = `<div class="heatmap-canvas-scene"><div id="heatmap-canvas-viewport" class="heatmap-canvas-viewport" tabindex="0" role="group" aria-roledescription="interactive heatmap" aria-label="Interactive stream heatmap" aria-describedby="heatmap-canvas-instructions heatmap-canvas-status" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End Enter Space + - 0"><canvas id="heatmap-canvas-tiles" class="heatmap-canvas-layer heatmap-canvas-layer--tiles"></canvas><canvas id="heatmap-canvas-overlay" class="heatmap-canvas-layer heatmap-canvas-layer--overlay"></canvas>${SPLIT_VIEWPORT_MARKUP}<p id="heatmap-canvas-instructions" class="heatmap-canvas-sr">Use arrow keys to move between stream tiles. Press Enter or Space to inspect the selected stream. Press plus or minus to zoom and zero to reset the map.</p><p id="heatmap-canvas-status" class="heatmap-canvas-sr" aria-live="polite" aria-atomic="true"></p></div></div>`
 
   const viewport = stage.querySelector<HTMLElement>('#heatmap-canvas-viewport')
+  const statusLive = stage.querySelector<HTMLElement>('#heatmap-canvas-status')
   const hintLabel = controlsHost.querySelector<HTMLElement>('#heatmap-canvas-hint')
   const zoomOutButton = controlsHost.querySelector<HTMLButtonElement>('#heatmap-canvas-zoom-out')
   const zoomBaseButton = controlsHost.querySelector<HTMLButtonElement>('#heatmap-canvas-zoom-base')
@@ -110,7 +117,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
   const moveButton = controlsHost.querySelector<HTMLButtonElement>('#heatmap-canvas-move')
   const tilesCanvas = stage.querySelector<HTMLCanvasElement>('#heatmap-canvas-tiles')
   const overlayCanvas = stage.querySelector<HTMLCanvasElement>('#heatmap-canvas-overlay')
-  if (!viewport || !hintLabel || !zoomOutButton || !zoomBaseButton || !zoomInButton || !resetButton || !refreshButton || !moveButton || !tilesCanvas || !overlayCanvas) return
+  if (!viewport || !statusLive || !hintLabel || !zoomOutButton || !zoomBaseButton || !zoomInButton || !resetButton || !refreshButton || !moveButton || !tilesCanvas || !overlayCanvas) return
 
   let viewportWidth = Math.max(1, viewport.clientWidth)
   let viewportHeight = Math.max(360, viewport.clientHeight)
@@ -120,6 +127,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
   let nodes = buildSceneNodes(items, worldWidth, worldHeight)
   let selected = nodes.find((node) => node.channelLogin === selectedStreamLogin) ?? nodes[0] ?? null
   if (selected && !selectedStreamLogin) selectedStreamLogin = selected.channelLogin
+  let keyboardIndex = selected ? Math.max(0, nodes.indexOf(selected)) : 0
   let camera = cameraMemory.has(sceneKey)
     ? restoreReferenceCameraView(cameraMemory.get(sceneKey), getCameraBounds(), REFERENCE_BASE_SCALE)
     : createReferenceCamera(getCameraBounds(), REFERENCE_BASE_SCALE)
@@ -183,6 +191,21 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     viewport.dataset.viewportWidth = String(Math.round(viewportWidth))
   }
 
+  const announceSelection = (): void => {
+    statusLive.textContent = describeHeatmapNode(nodes[keyboardIndex] ?? selected, keyboardIndex, nodes.length)
+  }
+
+  const openSelectedInspector = (source: SelectionSource): void => {
+    if (!selected) return
+    window.dispatchEvent(new CustomEvent('viewloom:heatmap-selection-change', {
+      detail: {
+        login: selected.channelLogin,
+        source,
+        trigger: viewport,
+      },
+    }))
+  }
+
   const resizeAndRelayout = (): void => {
     if (destroyed || !viewport.isConnected) return
     const preserved = pendingLayoutSnapshot ?? captureCameraView(camera, getCameraBounds())
@@ -204,6 +227,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
       nodes = buildSceneNodes(items, worldWidth, worldHeight)
       selected = nodes.find((node) => node.channelLogin === selectedStreamLogin) ?? nodes[0] ?? null
       if (selected && !selectedStreamLogin) selectedStreamLogin = selected.channelLogin
+      keyboardIndex = selected ? Math.max(0, nodes.indexOf(selected)) : 0
     }
     syncCanvasSize(tilesCanvas, viewportWidth, viewportHeight, dpr)
     syncCanvasSize(overlayCanvas, viewportWidth, viewportHeight, dpr)
@@ -226,7 +250,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     moveButton.classList.toggle('is-active', moveMode)
     hintLabel.textContent = moveMode
       ? 'Move map enabled · drag to pan · pinch to zoom · tap a tile to inspect'
-      : 'Drag to pan · Ctrl/Alt/⌘ + wheel to zoom · select a tile to inspect'
+      : 'Drag to pan · Ctrl/Alt/⌘ + wheel to zoom · arrow keys navigate'
     moveButton.textContent = moveMode ? 'Done' : 'Move map'
     moveButton.setAttribute('aria-pressed', moveMode ? 'true' : 'false')
   }
@@ -243,16 +267,33 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     viewport.classList.remove('is-panning')
   }
 
-  const selectNode = (node: HeatmapSceneNode | null): void => {
+  const selectNode = (node: HeatmapSceneNode | null, source: SelectionSource, openInspector: boolean): void => {
     if (!node) return
     selected = node
     selectedStreamLogin = node.channelLogin
+    keyboardIndex = Math.max(0, nodes.indexOf(node))
+    camera = revealWorldRectMinimally(camera, node, getCameraBounds(), 18)
     redraw()
     onSelect(node)
+    announceSelection()
+    if (openInspector) openSelectedInspector(source)
+  }
+
+  const moveKeyboardSelection = (direction: HeatmapNavigationDirection): void => {
+    const nextIndex = findDirectionalNodeIndex(nodes, keyboardIndex, direction)
+    if (nextIndex < 0 || nextIndex === keyboardIndex) return
+    const node = nodes[nextIndex]
+    if (node) selectNode(node, 'keyboard', false)
   }
 
   const zoomAtViewportCenter = (nextZoom: number): void => {
     camera = zoomCameraAroundScreenPoint(camera, { x: viewportWidth / 2, y: viewportHeight / 2 }, nextZoom, getCameraBounds())
+    redraw()
+  }
+
+  const resetView = (): void => {
+    camera = createReferenceCamera(getCameraBounds(), REFERENCE_BASE_SCALE)
+    resetPointerState()
     redraw()
   }
 
@@ -286,11 +327,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     redraw()
   })
   zoomInButton.addEventListener('click', () => zoomAtViewportCenter(camera.zoom * CONTROL_ZOOM_STEP))
-  resetButton.addEventListener('click', () => {
-    camera = createReferenceCamera(getCameraBounds(), REFERENCE_BASE_SCALE)
-    resetPointerState()
-    redraw()
-  })
+  resetButton.addEventListener('click', resetView)
   refreshButton.addEventListener('click', async () => {
     if (refreshing) return
     refreshing = true
@@ -313,6 +350,45 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     updateMoveMode()
   })
 
+  viewport.addEventListener('focus', announceSelection)
+  viewport.addEventListener('keydown', (event) => {
+    const direction = keyDirection(event.key)
+    if (direction) {
+      event.preventDefault()
+      moveKeyboardSelection(direction)
+      return
+    }
+    if (event.key === 'Home') {
+      event.preventDefault()
+      if (nodes[0]) selectNode(nodes[0], 'keyboard', false)
+      return
+    }
+    if (event.key === 'End') {
+      event.preventDefault()
+      if (nodes.at(-1)) selectNode(nodes.at(-1)!, 'keyboard', false)
+      return
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      openSelectedInspector('keyboard')
+      return
+    }
+    if (event.key === '+' || event.key === '=' || event.key === 'Add') {
+      event.preventDefault()
+      zoomAtViewportCenter(camera.zoom * CONTROL_ZOOM_STEP)
+      return
+    }
+    if (event.key === '-' || event.key === '_' || event.key === 'Subtract') {
+      event.preventDefault()
+      zoomAtViewportCenter(camera.zoom / CONTROL_ZOOM_STEP)
+      return
+    }
+    if (event.key === '0') {
+      event.preventDefault()
+      resetView()
+    }
+  })
+
   overlayCanvas.addEventListener('wheel', (event) => {
     if (!event.ctrlKey && !event.altKey && !event.metaKey) return
     event.preventDefault()
@@ -330,6 +406,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
 
   overlayCanvas.addEventListener('pointerdown', (event) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return
+    viewport.focus({ preventScroll: true })
     if (event.pointerType !== 'mouse') {
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
       if (moveMode && activePointers.size >= 2) {
@@ -396,7 +473,8 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
     if (pointerId !== event.pointerId) return
     if (!canceled && !dragging) {
       const rect = overlayCanvas.getBoundingClientRect()
-      selectNode(pickSceneNode(screenToWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top }, camera), nodes))
+      const node = pickSceneNode(screenToWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top }, camera), nodes)
+      selectNode(node, event.pointerType === 'mouse' ? 'pointer' : 'touch', true)
     }
     if (overlayCanvas.hasPointerCapture(event.pointerId)) overlayCanvas.releasePointerCapture(event.pointerId)
     pointerId = null
@@ -428,6 +506,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
 
   redraw()
   updateMoveMode()
+  announceSelection()
 
   activeSceneDestroy = () => {
     if (destroyed) return
@@ -450,6 +529,14 @@ function ensureMapControlsHost(stage: HTMLElement): HTMLElement {
   host.className = 'heatmap-map-controls'
   stage.before(host)
   return host
+}
+
+function keyDirection(key: string): HeatmapNavigationDirection | null {
+  if (key === 'ArrowLeft') return 'left'
+  if (key === 'ArrowRight') return 'right'
+  if (key === 'ArrowUp') return 'up'
+  if (key === 'ArrowDown') return 'down'
+  return null
 }
 
 function getGestureState(canvas: HTMLCanvasElement, points: Map<number, ActivePointer>): { center: { x: number; y: number }; distance: number } | null {

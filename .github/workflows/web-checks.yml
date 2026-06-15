@@ -73,6 +73,9 @@ jobs:
       - name: Verify Heatmap summary and legend
         run: pnpm --filter @viewloom/web verify:heatmap-summary-legend
 
+      - name: Verify Heatmap mobile and accessibility
+        run: pnpm --filter @viewloom/web verify:heatmap-mobile-accessibility
+
       - name: Upload web checks logs
         if: always()
         uses: actions/upload-artifact@v4
