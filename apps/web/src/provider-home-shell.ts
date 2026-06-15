@@ -19,7 +19,7 @@ export function mountProviderHome(platform: Platform): void {
   root.innerHTML = `<div class="site-frame">
   <header class="masthead"><div class="masthead__inner">
     <a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
-    <nav class="global-nav"><a href="/">Portal</a><a href="/twitch/" ${platform === 'twitch' ? 'aria-current="page"' : ''}>Twitch data</a><a href="/kick/" ${platform === 'kick' ? 'aria-current="page"' : ''}>Kick data</a><a href="/about/">About</a><a href="/support/">Support</a></nav>
+    <nav class="global-nav"><a href="/">Portal</a><a href="/twitch/" ${platform === 'twitch' ? 'aria-current="page"' : ''}>Twitch data</a><a href="/kick/" ${platform === 'kick' ? 'aria-current="page"' : ''}>Kick data</a><a href="/changelog/">Changelog</a><a href="/about/">About</a><a href="/support/">Support</a></nav>
     <div class="status-inline"><span class="dot"></span>Loading ${name} Home data</div>
     <button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button>
   </div></header>
@@ -40,6 +40,6 @@ export function mountProviderHome(platform: Platform): void {
     </div></section>
     <section><div class="rule-title"><h2>Recent Trends</h2><span>Completed retained days</span></div><div class="surface surface--dark"><div class="surface__head"><strong>History briefing</strong><a class="text-link" href="${base}history/">Open History</a></div><div class="surface__body home-recent-grid"><div class="home-recent-stats"><div class="home-recent-stat"><small>Latest completed day</small><strong id="home-recent-day">Loading…</strong></div><div class="home-recent-stat"><small>Top streamer</small><strong id="home-recent-top">Loading…</strong><span id="home-recent-top-value"></span></div><div class="home-recent-stat"><small>Biggest rise</small><strong id="home-recent-rise">Loading…</strong><span id="home-recent-rise-value"></span></div><div class="home-recent-stat"><small>Coverage quality</small><strong id="home-recent-coverage">Loading…</strong></div></div><div class="home-trend" aria-label="Recent completed daily peak viewers"><p class="home-trend-empty" id="home-trend-empty">Loading retained trend…</p>${trendBars}</div></div></div></section>
   </main>
-  <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method & limits</a><a href="/support/">Support</a><a href="https://docs.google.com/forms/d/e/1FAIpQLSdhreuxEz7w0eSjslTyVLL-axV6IJdTp5RU5VXCM3ApIz35-Q/viewform?usp=dialog" target="_blank" rel="noreferrer">Contact</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
+  <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/changelog/">Changelog</a><a href="/about/">Method & limits</a><a href="/support/">Support</a><a href="https://docs.google.com/forms/d/e/1FAIpQLSdhreuxEz7w0eSjslTyVLL-axV6IJdTp5RU5VXCM3ApIz35-Q/viewform?usp=dialog" target="_blank" rel="noreferrer">Contact</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
   </div>`
 }

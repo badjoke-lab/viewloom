@@ -8,6 +8,7 @@ const pages = [
   'index.html',
   'about/index.html',
   'support/index.html',
+  'changelog/index.html',
   'twitch/index.html',
   'twitch/heatmap/index.html',
   'twitch/day-flow/index.html',
@@ -26,6 +27,7 @@ const providerExpectations = [
   { path: 'index.html', provider: 'portal' },
   { path: 'about/index.html', provider: 'portal' },
   { path: 'support/index.html', provider: 'portal' },
+  { path: 'changelog/index.html', provider: 'portal' },
   { path: 'twitch/index.html', provider: 'twitch' },
   { path: 'twitch/heatmap/index.html', provider: 'twitch' },
   { path: 'twitch/day-flow/index.html', provider: 'twitch' },
@@ -41,6 +43,7 @@ const providerExpectations = [
 ]
 
 const liveEntryContracts = [
+  { path: 'changelog/index.html', entry: '/src/changelog-page.ts' },
   { path: 'twitch/heatmap/index.html', entry: '/src/live/heatmap-current-shell-entry.ts' },
   { path: 'kick/heatmap/index.html', entry: '/src/live/heatmap-current-shell-entry.ts' },
   { path: 'twitch/day-flow/index.html', entry: '/src/live/day-flow-current-shell-entry.ts' },
@@ -74,6 +77,8 @@ const requiredSourceFiles = [
   'vite.config.ts',
   'src/mock-site.css',
   'src/mock-site.ts',
+  'src/changelog-page.ts',
+  'src/changelog-page.css',
   'src/live/heatmap-current-shell-entry.ts',
   'src/live/twitch-heatmap.ts',
   'src/live/heatmap-layout.ts',

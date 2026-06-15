@@ -1,6 +1,6 @@
 # ViewLoom Changelog QA Contract
 
-Status: foundation
+Status: foundation and page UI
 
 The Changelog records shipped ViewLoom milestones separately from Twitch and Kick observation data.
 
@@ -57,6 +57,23 @@ The payload version is `viewloom-changelog-v1`.
 
 `datePrecision` may later be `day` when a reviewed `YYYY-MM-DD` date is available.
 
+## Public page
+
+The public page is `/changelog/`.
+
+It reads `/data/changelog.json` and renders only the reviewed date and title for each entry. The three milestone titles are not duplicated in the page HTML or client source.
+
+The page includes:
+
+- complete title, description, canonical, Open Graph, and Twitter metadata
+- a direct link to the public JSON
+- loading, empty, and error states
+- a retry action after a load failure
+- responsive timeline presentation
+- navigation and footer links back into the wider ViewLoom site
+
+Loading, empty, and error states must not replace unavailable data with invented milestone entries.
+
 ## QA rules
 
 - JSON must parse successfully.
@@ -68,7 +85,9 @@ The payload version is `viewloom-changelog-v1`.
 - The canonical and public files must match.
 - The initial public file must contain exactly the three approved milestone entries.
 - Draft, planned, TODO, lorem, fake, or placeholder entries are forbidden.
-- Unreviewed detailed descriptions are forbidden during this foundation stage.
+- Unreviewed detailed descriptions are forbidden during this stage.
+- The page must fetch the public JSON and render entries with safe DOM text assignment.
+- The page must not read PRs, commits, provider APIs, or Git history.
 
 ## Review canvas separation
 
@@ -79,12 +98,12 @@ It will be written separately in the conversation with proposed dates, headings,
 ## Implementation stages
 
 ```text
-1. Foundation
+1. Foundation — complete
    canonical JSON, public JSON, build script, QA, CI
 
-2. Page UI
+2. Page UI — current
    /changelog/ reads the approved public JSON
 
-3. Content review and connection
+3. Content review and connection — pending
    approved review-canvas entries only; Provider Home updates later read the same source
 ```

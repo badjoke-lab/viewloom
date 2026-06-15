@@ -2,6 +2,8 @@ import './dayflow-responsive.css'
 import './features/heatmap-page/layout-mode.css'
 
 (() => {
+  ensureChangelogLinks()
+
   const menu = document.querySelector('[data-mobile-menu]');
   if (menu) menu.addEventListener('click', () => {
     const nav = document.querySelector<HTMLElement>('.global-nav');
@@ -41,7 +43,7 @@ type StatusPayload = {
 }
 
 const activeProvider = document.body.dataset.provider === 'kick' ? 'kick' : document.body.dataset.provider === 'twitch' ? 'twitch' : null
-void hydrateLiveStatus()
+if (!document.body.hasAttribute('data-changelog-state')) void hydrateLiveStatus()
 
 async function hydrateLiveStatus(): Promise<void> {
   const providers: Array<'twitch' | 'kick'> = activeProvider ? [activeProvider] : ['twitch', 'kick']
@@ -92,6 +94,26 @@ function updateProviderCopy(key: 'twitch' | 'kick', payload: StatusPayload | nul
       signal.insertAdjacentHTML('beforeend', `<div class="signal"><time>${escapeText(name)}</time><strong>${escapeText(name)} collector state: ${escapeText(payload?.state ? labelText(payload.state) : 'Unavailable')}.</strong><span>${escapeText(observed)} observed streams</span></div>`)
     }
   }
+}
+
+function ensureChangelogLinks(): void {
+  document.querySelectorAll<HTMLElement>('.global-nav').forEach((nav) => {
+    if (nav.querySelector('a[href="/changelog/"]')) return
+    const link = document.createElement('a')
+    link.href = '/changelog/'
+    link.textContent = 'Changelog'
+    if (window.location.pathname.startsWith('/changelog/')) link.setAttribute('aria-current', 'page')
+    const before = nav.querySelector('a[href="/about/"]')
+    nav.insertBefore(link, before)
+  })
+
+  document.querySelectorAll<HTMLElement>('.footer nav').forEach((nav) => {
+    if (nav.querySelector('a[href="/changelog/"]')) return
+    const link = document.createElement('a')
+    link.href = '/changelog/'
+    link.textContent = 'Changelog'
+    nav.insertBefore(link, nav.firstElementChild)
+  })
 }
 
 function setStatAfterLabel(root: ParentNode, label: string, value: string): void {
