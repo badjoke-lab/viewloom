@@ -1,0 +1,1 @@
+.heatmap-layout[data-layout="split"] .heatmap-wrap{height:min(74vh,860px);min-height:600px}@media(max-width:760px){.heatmap-layout[data-layout="split"] .heatmap-wrap{height:62vh;min-height:430px}}
