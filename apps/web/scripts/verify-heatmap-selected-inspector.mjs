@@ -32,12 +32,14 @@ assert.deepEqual(buildInspectorLinks('twitch', 'some_name'), {
 })
 
 const read = (relativePath) => readFileSync(fileURLToPath(new URL(relativePath, import.meta.url)), 'utf8')
-const inspector = read('../src/features/twitch-heatmap/selected-inspector.ts')
+const boundary = read('../src/features/twitch-heatmap/selected-inspector.ts')
+const inspector = read('../src/features/twitch-heatmap/selected-inspector-impl.ts')
 const controller = read('../src/features/heatmap-page/selected-inspector-controller.ts')
 const adapter = read('../src/features/heatmap-page/data-truth-adapter.ts')
 const source = read('../src/features/heatmap-page/data-state-source.ts')
 const endpoint = read('../functions/api/heatmap-stream-context.ts')
 
+assert.ok(boundary.includes("export * from './selected-inspector-impl'"))
 for (const fragment of [
   'Observed rank',
   'Observed share',
@@ -53,6 +55,9 @@ for (const fragment of [
   'Intl.DateTimeFormat().resolvedOptions().timeZone',
   'activityPresentation',
   'momentumDirection',
+  'data-heatmap-legacy-selection-bridge',
+  'heatmap-inspector-link',
+  'heatmap-detail-link',
 ]) assert.ok(inspector.includes(fragment), `missing inspector fragment: ${fragment}`)
 
 for (const fragment of [
