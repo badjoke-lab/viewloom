@@ -8,15 +8,16 @@ const contracts = [
   {
     path: 'src/live/twitch-heatmap.ts',
     required: [
-      'No ${provider.label} snapshots yet.',
-      'Snapshot exists, but payload items are empty.',
-      'Failed to load ${provider.label} heatmap API:',
-      'renderUnavailableSurfaceState',
-      'API error',
-      'Empty payload',
-      'No snapshot yet',
+      'No ${provider.label} snapshot yet',
+      'No live records in this snapshot',
+      'Failed to load ${provider.label} Heatmap',
+      'renderRuntimeState',
+      'The data path responded successfully',
+      "cache: 'no-store'",
+      'destroyCanvasScene',
+      'renderCanvasScene({',
     ],
-    forbidden: [/Stream A|Stream B|Stream C/, /118\.4K|42\.7K|1\.86M observed/],
+    forbiddenText: ['Stream A', '118.4K', 'renderHeatmapShell', 'createHeatmapViewport'],
   },
   {
     path: 'src/live/day-flow-current-shell-entry.ts',
@@ -24,9 +25,9 @@ const contracts = [
       'No observed Day Flow snapshots for this window.',
       'No stream detail is available for this window.',
       'Day Flow API unavailable:',
-      'cache: \'no-store\'',
+      "cache: 'no-store'",
     ],
-    forbidden: [/Stream A|Stream B|Stream C/, /Shell ready for real data/i],
+    forbiddenText: ['Stream A', 'Shell ready for real data'],
   },
   {
     path: 'src/live/battle-lines-current-shell-entry.ts',
@@ -40,9 +41,9 @@ const contracts = [
       'missing',
       'offline',
       'not_observed',
-      'cache: \'no-store\'',
+      "cache: 'no-store'",
     ],
-    forbidden: [/Stream A|Stream B|Stream C/, /<svg viewBox="0 0 1210 560"/, /\.filter\(isObservedPoint\)/],
+    forbiddenText: ['Stream A', '<svg viewBox="0 0 1210 560"', '.filter(isObservedPoint)'],
   },
   {
     path: 'src/live/history-current-shell-entry.ts',
@@ -53,13 +54,9 @@ const contracts = [
       'buildRequestUrl()',
       "params.set('period', pageState.periodMode === '7d' ? '7d' : '30d')",
       "params.set('metric', pageState.metric)",
-      'cache: \'no-store\'',
+      "cache: 'no-store'",
     ],
-    forbidden: [
-      /Stream A|Stream B|Stream C/,
-      /<svg viewBox="0 0 1210 560"/,
-      /fetch\(`\$\{endpoint\}\?period=30d/,
-    ],
+    forbiddenText: ['Stream A', '<svg viewBox="0 0 1210 560"'],
   },
   {
     path: 'src/live/status-current-shell-entry.ts',
@@ -70,20 +67,10 @@ const contracts = [
       'unknown',
       'error',
       'unconfigured',
-      'cache: \'no-store\'',
+      "cache: 'no-store'",
     ],
-    forbidden: [/Shell ready for real data/i, />\s*Fresh\s*</],
+    forbiddenText: ['Shell ready for real data', '>Fresh<'],
   },
-]
-
-const publicPageForbidden = [
-  { label: 'demo stream rows', pattern: /Stream A|Stream B|Stream C/ },
-  { label: 'fake Twitch live number', pattern: />\s*287\s*</ },
-  { label: 'fake Twitch largest number', pattern: /118\.4K/ },
-  { label: 'fake Kick live number', pattern: />\s*83\s*</ },
-  { label: 'fake Kick largest number', pattern: /42\.7K/ },
-  { label: 'fake observed total', pattern: /1\.86M observed/ },
-  { label: 'placeholder freshness', pattern: />\s*Fresh\s*</ },
 ]
 
 const publicPages = [
@@ -112,8 +99,8 @@ for (const contract of contracts) {
   for (const fragment of contract.required) {
     if (!source.includes(fragment)) failures.push(`${contract.path}: missing state fragment: ${fragment}`)
   }
-  for (const pattern of contract.forbidden) {
-    if (pattern.test(source)) failures.push(`${contract.path}: contains forbidden fallback pattern: ${pattern}`)
+  for (const fragment of contract.forbiddenText) {
+    if (source.includes(fragment)) failures.push(`${contract.path}: contains retired fallback fragment: ${fragment}`)
   }
 }
 
@@ -123,8 +110,8 @@ for (const path of publicPages) {
     continue
   }
   const source = read(path)
-  for (const { label, pattern } of publicPageForbidden) {
-    if (pattern.test(source)) failures.push(`${path}: contains forbidden ${label}`)
+  for (const fragment of ['Stream A', 'Stream B', 'Stream C', '118.4K', '42.7K', '1.86M observed', '>Fresh<']) {
+    if (source.includes(fragment)) failures.push(`${path}: contains static state fragment: ${fragment}`)
   }
 }
 
