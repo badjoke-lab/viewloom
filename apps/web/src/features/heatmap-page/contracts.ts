@@ -4,6 +4,7 @@ export type HeatmapPageBoundary =
   | 'layout'
   | 'renderer'
   | 'inspector'
+  | 'summary'
   | 'status'
 
 export type HeatmapPageLifecycleState =

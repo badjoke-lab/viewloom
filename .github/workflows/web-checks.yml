@@ -70,6 +70,9 @@ jobs:
       - name: Verify Heatmap selected inspector
         run: pnpm --filter @viewloom/web verify:heatmap-selected-inspector
 
+      - name: Verify Heatmap summary and legend
+        run: pnpm --filter @viewloom/web verify:heatmap-summary-legend
+
       - name: Upload web checks logs
         if: always()
         uses: actions/upload-artifact@v4

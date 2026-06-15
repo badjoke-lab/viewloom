@@ -27,6 +27,9 @@ export function installHeatmapResponseObserver(provider: HeatmapProviderKey): ()
     } catch (error) {
       if (isHeatmap) {
         const message = error instanceof Error ? error.message : 'Heatmap request failed.'
+        window.dispatchEvent(new CustomEvent('viewloom:heatmap-response-error', {
+          detail: { provider, message },
+        }))
         window.setTimeout(() => renderHeatmapDataTruth(createHeatmapErrorTruth(provider, message)), 0)
       }
       throw error
@@ -47,6 +50,9 @@ function readTruth(response: Response, provider: HeatmapProviderKey): void {
     .then((truth) => window.setTimeout(() => renderHeatmapDataTruth(truth), 0))
     .catch((error) => {
       const message = error instanceof Error ? error.message : 'Heatmap response could not be read.'
+      window.dispatchEvent(new CustomEvent('viewloom:heatmap-response-error', {
+        detail: { provider, message },
+      }))
       window.setTimeout(() => renderHeatmapDataTruth(createHeatmapErrorTruth(provider, message)), 0)
     })
 }
