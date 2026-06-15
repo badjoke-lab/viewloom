@@ -43,7 +43,7 @@ type StatusPayload = {
 }
 
 const activeProvider = document.body.dataset.provider === 'kick' ? 'kick' : document.body.dataset.provider === 'twitch' ? 'twitch' : null
-void hydrateLiveStatus()
+if (!document.body.hasAttribute('data-changelog-state')) void hydrateLiveStatus()
 
 async function hydrateLiveStatus(): Promise<void> {
   const providers: Array<'twitch' | 'kick'> = activeProvider ? [activeProvider] : ['twitch', 'kick']
