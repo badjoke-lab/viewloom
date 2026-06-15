@@ -9,6 +9,7 @@ The production web surface must keep these public pages:
 - `/`
 - `/about/`
 - `/support/`
+- `/changelog/`
 - `/twitch/`
 - `/twitch/heatmap/`
 - `/twitch/day-flow/`
@@ -33,6 +34,7 @@ The launch surface must keep these verification scripts wired into `Web verifica
 - History QA
 - Status QA
 - Home QA
+- Changelog QA
 - Content QA
 - SEO QA
 - Mobile QA
@@ -41,7 +43,7 @@ The launch surface must keep these verification scripts wired into `Web verifica
 
 ## Required artifacts
 
-`Web verification` must upload one artifact named `web-verification-logs` containing every QA log, including `launch-readiness.log`.
+`Web verification` must upload one artifact named `web-verification-logs` containing every QA log, including `changelog-qa.log` and `launch-readiness.log`.
 
 ## Launch posture
 
@@ -52,5 +54,6 @@ ViewLoom can proceed to public launch only when:
 - every QA contract has a matching verifier script
 - the Web verification artifact contains all verifier logs
 - public pages do not contain demo stream rows, static SVG fallback charts, or fake freshness values
+- the Changelog page renders reviewed public JSON rather than unapproved internal history
 
 This contract is intentionally boring. Its job is to prevent the final launch surface from silently losing one of the gates added during cleanup.
