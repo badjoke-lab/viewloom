@@ -94,6 +94,16 @@ jobs:
           cat home-qa.log
           exit $status
 
+      - name: Verify Changelog QA contract
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-changelog-qa.mjs > changelog-qa.log 2>&1
+          status=$?
+          cat changelog-qa.log
+          exit $status
+
       - name: Verify Content QA contract
         working-directory: apps/web
         shell: bash
@@ -157,6 +167,7 @@ jobs:
             apps/web/history-qa.log
             apps/web/status-qa.log
             apps/web/home-qa.log
+            apps/web/changelog-qa.log
             apps/web/content-qa.log
             apps/web/seo-qa.log
             apps/web/mobile-qa.log
