@@ -19,6 +19,7 @@
     "verify:heatmap-selected-inspector": "node scripts/verify-heatmap-selected-inspector.mjs",
     "verify:heatmap-summary-legend": "node scripts/verify-heatmap-summary-legend.mjs",
     "verify:heatmap-mobile-accessibility": "node scripts/verify-heatmap-mobile-accessibility.mjs",
+    "verify:heatmap-release": "node scripts/verify-heatmap-final-cutover.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit --strictNullChecks false && tsc -p tsconfig.functions.json --noEmit --strictNullChecks false",
     "typecheck:app": "tsc -p tsconfig.json --noEmit --strictNullChecks false",
     "typecheck:functions": "tsc -p tsconfig.functions.json --noEmit --strictNullChecks false",
