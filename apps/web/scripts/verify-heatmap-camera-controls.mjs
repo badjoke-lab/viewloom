@@ -100,7 +100,7 @@ for (const fragment of [
   'heatmap-canvas-refresh',
   'Load the latest stored snapshot',
   'captureCameraView',
-  'restoreCameraView',
+  'restoreReferenceCameraView',
   'viewloom:heatmap-layout-change',
   'if (!event.ctrlKey && !event.altKey && !event.metaKey) return',
   'Math.hypot(dx, dy) >= PAN_THRESHOLD',
@@ -109,7 +109,8 @@ for (const fragment of [
 ]) assert.ok(sceneSource.includes(fragment), `missing camera-control fragment: ${fragment}`)
 
 assert.ok(!sceneSource.includes("event.pointerType === 'mouse' && !overlayCanvas.hasPointerCapture"))
-assert.ok(coreSource.includes('Use cover scale rather than contain scale'))
+assert.ok(coreSource.includes('availableWidth / safeWorldWidth'))
+assert.ok(coreSource.includes('availableHeight / safeWorldHeight'))
 assert.ok(coreSource.includes('scaledWidth <= safeBounds.viewportWidth'))
 assert.ok(coreSource.includes('scaledHeight <= safeBounds.viewportHeight'))
 
