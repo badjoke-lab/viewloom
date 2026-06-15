@@ -54,6 +54,7 @@ export default defineConfig(({ mode }) => ({
         portal: 'index.html',
         about: 'about/index.html',
         support: 'support/index.html',
+        changelog: 'changelog/index.html',
         twitch: 'twitch/index.html',
         twitchHeatmap: 'twitch/heatmap/index.html',
         twitchDayFlow: 'twitch/day-flow/index.html',
