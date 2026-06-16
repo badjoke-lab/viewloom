@@ -1,46 +1,134 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts</title>
-    <meta name="description" content="ViewLoom is an unofficial live-stream observation tool for reading Twitch and Kick data through heatmaps, daily audience flow, rivalry charts, history, and data status." />
-    <link rel="canonical" href="https://vl.badjoke-lab.com/" />
-    <meta property="og:site_name" content="ViewLoom" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://vl.badjoke-lab.com/" />
-    <meta property="og:title" content="ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts" />
-    <meta property="og:description" content="ViewLoom is an unofficial live-stream observation tool for reading Twitch and Kick data through heatmaps, daily audience flow, rivalry charts, history, and data status." />
-    <meta property="og:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
-    <meta name="twitter:title" content="ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts" />
-    <meta name="twitter:description" content="ViewLoom is an unofficial live-stream observation tool for reading Twitch and Kick data through heatmaps, daily audience flow, rivalry charts, history, and data status." />
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YHX7HS1VBK"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-YHX7HS1VBK');
-    </script>
-    <script type="application/ld+json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts</title>
+  <meta name="description" content="ViewLoom is an unofficial live-stream observation tool for reading Twitch and Kick data through heatmaps, daily audience flow, rivalry charts, history, and data status." />
+  <link rel="canonical" href="https://vl.badjoke-lab.com/" />
+  <meta property="og:site_name" content="ViewLoom" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://vl.badjoke-lab.com/" />
+  <meta property="og:title" content="ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts" />
+  <meta property="og:description" content="ViewLoom is an unofficial live-stream observation tool for reading Twitch and Kick data through heatmaps, daily audience flow, rivalry charts, history, and data status." />
+  <meta property="og:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
+  <meta name="twitter:title" content="ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts" />
+  <meta name="twitter:description" content="ViewLoom is an unofficial live-stream observation tool for reading Twitch and Kick data through heatmaps, daily audience flow, rivalry charts, history, and data status." />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YHX7HS1VBK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-YHX7HS1VBK');
+  </script>
+  <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebSite","name":"ViewLoom","url":"https://vl.badjoke-lab.com/","description":"ViewLoom is an unofficial live-stream observation tool for reading Twitch and Kick data through heatmaps, daily audience flow, rivalry charts, history, and data status.","isAccessibleForFree":true,"publisher":{"@type":"Organization","name":"ViewLoom","url":"https://vl.badjoke-lab.com/"}}
-    </script>
-    <link rel="stylesheet" href="/src/mock-site.css" />
-  </head>
-<body data-provider="portal"><div class="site-frame"><header class="masthead"><div class="masthead__inner">
-<a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
-<nav class="global-nav"><a href="/" aria-current="page">Portal</a><a href="/twitch/">Twitch data</a><a href="/kick/">Kick data</a><a href="/changelog/">Changelog</a><a href="/about/">About</a><a href="/support/">Support</a></nav><div class="status-inline"><span class="dot"></span>Collector status loading · 5m cadence</div>
-<button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button>
-</div></header><main class="page">
-<div class="breadcrumb">ViewLoom / Portal</div>
-<section class="page-head"><div><div class="kicker">Live-stream data, separated by platform</div><h1>Observe the field.<br>Then follow the movement.</h1><p class="lede">A restrained observation interface for Twitch and Kick. No mixed totals, no simulated completeness, no marketing dashboard.</p></div><div class="head-facts"><div class="fact"><small>Cadence</small><strong>5 minutes</strong></div><div class="fact"><small>History</small><strong>180 days</strong></div><div class="fact"><small>Twitch set</small><strong>Top 300</strong></div><div class="fact"><small>Kick set</small><strong>Top 100</strong></div></div></section>
-<div class="portal-grid">
-<section class="portal-panel portal-panel--twitch"><div><div class="kicker">Twitch data</div><h2>Twitch</h2><p>Read the current field, the shape of a day, live rivalries, and observed history from the Twitch collector.</p></div><div><div class="portal-panel__stats"><div><small>Live now</small><strong>—</strong></div><div><small>Largest</small><strong>—</strong></div><div><small>Updated</small><strong>—</strong></div></div><p><a class="button" href="/twitch/">Open Twitch data</a></p></div></section>
-<section class="portal-panel portal-panel--kick"><div><div class="kicker">Kick data</div><h2>Kick</h2><p>The same reading grammar, a separate collector, and provider-specific coverage notes.</p></div><div><div class="portal-panel__stats"><div><small>Live now</small><strong>—</strong></div><div><small>Largest</small><strong>—</strong></div><div><small>Updated</small><strong>—</strong></div></div><p><a class="button" href="/kick/">Open Kick data</a></p></div></section>
-</div>
-<div class="rule-title"><h2>Current observations</h2><span>Across both independent data views</span></div>
-<div class="signal-list"><div class="signal"><time>—</time><strong>Twitch collector status loads from the live API when available.</strong><span>— observed streams</span></div><div class="signal"><time>—</time><strong>Kick collector status loads from the live API when available.</strong><span>— observed streams</span></div><div class="signal"><time>—</time><strong>No combined platform totals are shown.</strong><span>Status</span></div></div>
-</main><footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/changelog/">Changelog</a><a href="/about/">Method & limits</a><a href="/support/">Support</a><a href="https://docs.google.com/forms/d/e/1FAIpQLSdhreuxEz7w0eSjslTyVLL-axV6IJdTp5RU5VXCM3ApIz35-Q/viewform?usp=dialog" target="_blank" rel="noreferrer">Contact</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer></div><script type="module" src="/src/mock-site.ts"></script>
-<script type="module" src="/src/analytics.ts"></script></body>
+  </script>
+  <link rel="stylesheet" href="/src/mock-site.css" />
+  <link rel="stylesheet" href="/src/portal-page.css" />
+</head>
+<body data-provider="portal" data-portal-home data-portal-state="loading">
+  <div class="site-frame">
+    <header class="masthead">
+      <div class="masthead__inner">
+        <a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
+        <nav class="global-nav" id="portal-nav" aria-label="Global navigation"><a href="/" aria-current="page">Portal</a><a href="/twitch/">Twitch data</a><a href="/kick/">Kick data</a><a href="/changelog/">Changelog</a><a href="/about/">About</a><a href="/support/">Support</a></nav>
+        <div class="portal-health" aria-label="Provider collector status" aria-live="polite">
+          <span class="portal-health__pill portal-health__pill--twitch" id="portal-health-twitch" data-state="loading"><i aria-hidden="true"></i><span>Twitch: Loading</span></span>
+          <span class="portal-health__pill portal-health__pill--kick" id="portal-health-kick" data-state="loading"><i aria-hidden="true"></i><span>Kick: Loading</span></span>
+          <span class="portal-health__cadence">5m cadence</span>
+        </div>
+        <button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation" aria-controls="portal-nav" aria-expanded="false">Menu</button>
+      </div>
+    </header>
+
+    <main class="page portal-page">
+      <div class="breadcrumb">ViewLoom / Portal</div>
+
+      <section class="page-head portal-hero">
+        <div>
+          <div class="kicker">Live-stream data, separated by platform</div>
+          <h1>Observe the field.<br />Then follow the movement.</h1>
+          <p class="lede">Observe current live-stream scale, follow audience movement through the day, compare rival streams, and review retained trends. Twitch and Kick stay separate across every metric.</p>
+        </div>
+        <div class="portal-facts" aria-label="ViewLoom operating model">
+          <div class="portal-fact"><span class="portal-fact__icon" aria-hidden="true">◷</span><span><small>Collection cadence</small><strong>5 minutes</strong></span></div>
+          <div class="portal-fact"><span class="portal-fact__icon" aria-hidden="true">▣</span><span><small>Rollup retention</small><strong>Up to 180 days</strong></span></div>
+          <div class="portal-fact"><span class="portal-fact__icon" aria-hidden="true">◇</span><span><small>Observed platforms</small><strong>Twitch / Kick</strong></span></div>
+          <div class="portal-fact"><span class="portal-fact__icon" aria-hidden="true">◎</span><span><small>Data model</small><strong>Platform-separated</strong></span></div>
+        </div>
+      </section>
+
+      <section class="portal-provider-grid" aria-label="Choose an observed platform">
+        <article class="portal-provider-card portal-provider-card--twitch" data-portal-provider="twitch" data-state="loading">
+          <div class="portal-provider-card__head">
+            <div class="kicker">Twitch data</div>
+            <h2>Twitch</h2>
+            <p>Helix-backed observation of the configured Top 300 window.</p>
+          </div>
+          <div class="portal-provider-stats" aria-live="polite">
+            <div><small>Status</small><strong id="portal-twitch-status">Loading</strong></div>
+            <div><small>Updated</small><strong id="portal-twitch-updated">Loading…</strong></div>
+            <div><small>Observed streams</small><strong id="portal-twitch-observed">Loading…</strong></div>
+            <div><small>Observed viewers</small><strong id="portal-twitch-viewers">Loading…</strong></div>
+            <div><small>Largest observed</small><strong id="portal-twitch-largest">Loading…</strong></div>
+          </div>
+          <p class="portal-provider-note" id="portal-twitch-note">Top 300 observed window. More live streams may exist beyond it.</p>
+          <div class="portal-provider-card__actions"><a class="button" href="/twitch/">Open Twitch data <span aria-hidden="true">↗</span></a><a class="portal-status-link" href="/twitch/status/">Status</a></div>
+        </article>
+
+        <article class="portal-provider-card portal-provider-card--kick" data-portal-provider="kick" data-state="loading">
+          <div class="portal-provider-card__head">
+            <div class="kicker">Kick data</div>
+            <h2>Kick</h2>
+            <p>Candidate-based observation from the configured registry or seed list.</p>
+          </div>
+          <div class="portal-provider-stats" aria-live="polite">
+            <div><small>Status</small><strong id="portal-kick-status">Loading</strong></div>
+            <div><small>Updated</small><strong id="portal-kick-updated">Loading…</strong></div>
+            <div><small>Observed candidates</small><strong id="portal-kick-observed">Loading…</strong></div>
+            <div><small>Observed viewers</small><strong id="portal-kick-viewers">Loading…</strong></div>
+            <div><small>Largest observed</small><strong id="portal-kick-largest">Loading…</strong></div>
+          </div>
+          <p class="portal-provider-note" id="portal-kick-note">Top 100 observed candidates. Not provider-wide directory coverage.</p>
+          <div class="portal-provider-card__actions"><a class="button" href="/kick/">Open Kick data <span aria-hidden="true">↗</span></a><a class="portal-status-link" href="/kick/status/">Status</a></div>
+        </article>
+      </section>
+
+      <section class="portal-views" aria-labelledby="portal-views-title">
+        <div class="portal-section-head"><div><h2 id="portal-views-title">Choose a view</h2><p>Choose by analysis mode, then open the Twitch or Kick version.</p></div></div>
+        <div class="portal-view-grid">
+          <article class="portal-view-card portal-view-card--heatmap">
+            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">▦</span><div><h3>Heatmap</h3><p>See the current observed field: who is largest, rising, or active now.</p></div></div>
+            <div class="portal-view-card__links"><a href="/twitch/heatmap/">Twitch Heatmap <span aria-hidden="true">→</span></a><a href="/kick/heatmap/">Kick Heatmap <span aria-hidden="true">→</span></a></div>
+          </article>
+          <article class="portal-view-card portal-view-card--dayflow">
+            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">∿</span><div><h3>Day Flow</h3><p>Read how observed audiences moved through the UTC day.</p></div></div>
+            <div class="portal-view-card__links"><a href="/twitch/day-flow/">Twitch Day Flow <span aria-hidden="true">→</span></a><a href="/kick/day-flow/">Kick Day Flow <span aria-hidden="true">→</span></a></div>
+          </article>
+          <article class="portal-view-card portal-view-card--battle">
+            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">×</span><div><h3>Battle Lines</h3><p>Compare live gaps, movement, and rival streams.</p></div></div>
+            <div class="portal-view-card__links"><a href="/twitch/battle-lines/">Twitch Battle Lines <span aria-hidden="true">→</span></a><a href="/kick/battle-lines/">Kick Battle Lines <span aria-hidden="true">→</span></a></div>
+          </article>
+          <article class="portal-view-card portal-view-card--history">
+            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">▤</span><div><h3>History</h3><p>Review retained daily rollups, peaks, rankings, and trends.</p></div></div>
+            <div class="portal-view-card__links"><a href="/twitch/history/">Twitch History <span aria-hidden="true">→</span></a><a href="/kick/history/">Kick History <span aria-hidden="true">→</span></a></div>
+          </article>
+        </div>
+      </section>
+
+      <aside class="portal-boundaries">
+        <div class="portal-boundaries__icon" aria-hidden="true">◇</div>
+        <div><h2>Data boundaries</h2><p>Twitch and Kick use separate collectors, coverage models, routes, and retained data. No combined audience totals or cross-platform rankings are shown. Kick candidate coverage is not provider-wide directory coverage.</p></div>
+      </aside>
+    </main>
+
+    <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/changelog/">Changelog</a><a href="/about/">Method & limits</a><a href="/support/">Support</a><a href="https://docs.google.com/forms/d/e/1FAIpQLSdhreuxEz7w0eSjslTyVLL-axV6IJdTp5RU5VXCM3ApIz35-Q/viewform?usp=dialog" target="_blank" rel="noreferrer">Contact</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
+  </div>
+  <script type="module" src="/src/mock-site.ts"></script>
+  <script type="module" src="/src/portal-page.ts"></script>
+  <script type="module" src="/src/analytics.ts"></script>
+</body>
 </html>
