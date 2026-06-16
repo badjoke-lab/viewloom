@@ -8,9 +8,9 @@ if (platform === 'twitch' || platform === 'kick') {
   mountProviderHome(platform)
   installMobileNavigation()
 
-  const observer = new MutationObserver(syncAccessibility)
+  const observer = new MutationObserver(syncPresentation)
   observer.observe(document.body, { attributes: true, attributeFilter: ['data-home-state'] })
-  void import('./provider-home-data').then(() => requestAnimationFrame(syncAccessibility))
+  void import('./provider-home-data').then(() => requestAnimationFrame(syncPresentation))
 }
 
 function installMobileNavigation(): void {
@@ -28,7 +28,23 @@ function installMobileNavigation(): void {
   nav.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setOpen(false)))
 }
 
-function syncAccessibility(): void {
+function syncPresentation(): void {
+  if (platform === 'twitch' && document.body.dataset.homeState === 'partial') {
+    document.body.dataset.homeState = 'fresh'
+    const state = document.getElementById('home-state')
+    if (state) state.textContent = 'Fresh'
+
+    const status = document.querySelector<HTMLElement>('.status-inline')
+    if (status) {
+      status.dataset.state = 'fresh'
+      const dot = document.createElement('span')
+      dot.className = 'dot'
+      dot.setAttribute('aria-hidden', 'true')
+      const age = document.getElementById('home-updated')?.textContent || 'Updated'
+      status.replaceChildren(dot, document.createTextNode(`Fresh · ${age}`))
+    }
+  }
+
   for (const id of ['home-meter-peak', 'home-meter-current']) {
     const fill = document.getElementById(id)
     const track = fill?.parentElement
