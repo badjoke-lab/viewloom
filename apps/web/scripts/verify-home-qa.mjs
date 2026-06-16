@@ -1,22 +1,16 @@
-import { readFileSync, existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const root = process.cwd()
 const failures = []
-
-function read(path) {
-  return readFileSync(join(root, path), 'utf8')
-}
-
-function requireFile(path) {
+const read = (path) => readFileSync(join(root, path), 'utf8')
+const requireFile = (path) => {
   if (!existsSync(join(root, path))) failures.push(`${path}: missing required Home QA file`)
 }
-
-function requireFragment(path, source, fragment) {
+const requireFragment = (path, source, fragment) => {
   if (!source.includes(fragment)) failures.push(`${path}: missing required Home QA fragment: ${fragment}`)
 }
-
-function forbidPattern(path, source, label, pattern) {
+const forbidPattern = (path, source, label, pattern) => {
   if (pattern.test(source)) failures.push(`${path}: contains forbidden Home regression: ${label}`)
 }
 
@@ -34,6 +28,10 @@ const payloadModelPath = 'functions/_home/model.ts'
 const twitchHomeApiPath = 'functions/api/twitch-home.ts'
 const kickHomeApiPath = 'functions/api/kick-home.ts'
 const stateFixturePath = 'fixtures/home-payload-states.json'
+const shellPath = 'src/provider-home-shell.ts'
+const clientPath = 'src/provider-home-data.ts'
+const entryPath = 'src/provider-home.ts'
+const stylePath = 'src/provider-home.css'
 
 for (const path of [
   portalPath,
@@ -45,42 +43,105 @@ for (const path of [
   twitchHomeApiPath,
   kickHomeApiPath,
   stateFixturePath,
+  shellPath,
+  clientPath,
+  entryPath,
+  stylePath,
 ]) requireFile(path)
 
 if (existsSync(join(root, portalPath))) {
   const source = read(portalPath)
-  requireFragment(portalPath, source, 'data-provider="portal"')
-  requireFragment(portalPath, source, 'class="portal-grid"')
-  requireFragment(portalPath, source, 'portal-panel--twitch')
-  requireFragment(portalPath, source, 'portal-panel--kick')
-  requireFragment(portalPath, source, 'class="portal-panel__stats"')
-  requireFragment(portalPath, source, 'class="signal-list"')
-  requireFragment(portalPath, source, 'No combined platform totals are shown.')
-  requireFragment(portalPath, source, 'href="/twitch/"')
-  requireFragment(portalPath, source, 'href="/kick/"')
+  for (const fragment of [
+    'data-provider="portal"',
+    'class="portal-grid"',
+    'portal-panel--twitch',
+    'portal-panel--kick',
+    'class="portal-panel__stats"',
+    'class="signal-list"',
+    'No combined platform totals are shown.',
+    'href="/twitch/"',
+    'href="/kick/"',
+  ]) requireFragment(portalPath, source, fragment)
   forbidPattern(portalPath, source, 'mock portal label', /Portal mock|redesign mock/i)
   forbidPattern(portalPath, source, 'old fake totals', /287|118\.4K|83|42\.7K|1\.86M observed/)
 }
 
 for (const { path, provider, coverage, basePath } of providerPages.filter((page) => existsSync(join(root, page.path)))) {
   const source = read(path)
-  requireFragment(path, source, `data-provider="${provider}"`)
-  requireFragment(path, source, 'class="data-strip"')
-  requireFragment(path, source, 'class="provider-overview"')
-  requireFragment(path, source, 'class="surface surface--dark"')
-  requireFragment(path, source, 'class="signal-list"')
-  requireFragment(path, source, 'class="feature-directory"')
-  requireFragment(path, source, coverage)
-  requireFragment(path, source, 'href="/twitch/"')
-  requireFragment(path, source, 'href="/kick/"')
-  for (const slug of requiredFeatureSlugs) {
-    requireFragment(path, source, `href="${basePath}${slug}/"`)
-  }
-  for (const label of analysisFeatureLabels) {
-    requireFragment(path, source, `<h3>${label}</h3>`)
-  }
+  for (const fragment of [
+    `data-provider="${provider}"`,
+    'class="data-strip"',
+    'class="provider-overview"',
+    'class="surface surface--dark"',
+    'class="signal-list"',
+    'class="feature-directory"',
+    coverage,
+    'href="/twitch/"',
+    'href="/kick/"',
+  ]) requireFragment(path, source, fragment)
+  for (const slug of requiredFeatureSlugs) requireFragment(path, source, `href="${basePath}${slug}/"`)
+  for (const label of analysisFeatureLabels) requireFragment(path, source, `<h3>${label}</h3>`)
   forbidPattern(path, source, 'old overview card grid', /overview-grid|view-card/)
   forbidPattern(path, source, 'old fake totals', /287|118\.4K|83|42\.7K|1\.86M observed/)
+}
+
+if (existsSync(join(root, shellPath))) {
+  const source = read(shellPath)
+  for (const fragment of [
+    'id="home-live-table"',
+    'class="home-live-context"',
+    'Top streams in the latest observed',
+    'Reversal review',
+    'Review retained rollups',
+    'aria-controls="provider-home-nav"',
+    'aria-live="polite"',
+  ]) requireFragment(shellPath, source, fragment)
+  for (const label of analysisFeatureLabels) requireFragment(shellPath, source, `<h3>${label}</h3>`)
+  forbidPattern(shellPath, source, 'internal provider signal section', /Latest provider signals/)
+  forbidPattern(shellPath, source, 'internal update section', /ViewLoom updates/)
+  forbidPattern(shellPath, source, 'duplicate coverage footer', /coverage note/)
+}
+
+if (existsSync(join(root, clientPath))) {
+  const source = read(clientPath)
+  for (const fragment of [
+    '/api/${active}-home',
+    'home-table--no-context',
+    'home-live-context-',
+    'Review reversals in Battle Lines',
+    'sourceLabel(payload)',
+    "status.dataset.state = 'error'",
+  ]) requireFragment(clientPath, source, fragment)
+  forbidPattern(clientPath, source, 'internal payload wording', /Unavailable in Home payload/)
+  forbidPattern(clientPath, source, 'internal QA wording', /No demo ranking was substituted|real Home payload/i)
+}
+
+if (existsSync(join(root, entryPath))) {
+  const source = read(entryPath)
+  for (const fragment of [
+    'installMobileNavigation',
+    "document.body.dataset.homeState === 'partial'",
+    "document.body.dataset.homeState = 'fresh'",
+    "menu.setAttribute('aria-expanded'",
+  ]) requireFragment(entryPath, source, fragment)
+  forbidPattern(entryPath, source, 'internal provider signal section', /Latest provider signals/)
+  forbidPattern(entryPath, source, 'internal update section', /ViewLoom updates/)
+  forbidPattern(entryPath, source, 'unofficial badge row', /provider-home-badge/)
+}
+
+if (existsSync(join(root, stylePath))) {
+  const source = read(stylePath)
+  for (const fragment of [
+    '.provider-overview',
+    'align-items: start',
+    '.home-table--no-context .home-live-context',
+    '.status-inline[data-state="stale"] .dot',
+    '.status-inline[data-state="error"] .dot',
+    '.global-nav.is-open',
+    '@media (max-width: 760px)',
+    '@media (max-width: 520px)',
+  ]) requireFragment(stylePath, source, fragment)
+  forbidPattern(stylePath, source, 'forced equal-height Home surface', /\.home-surface\s*\{[^}]*height:\s*100%/s)
 }
 
 if (existsSync(join(root, contractPath))) {
@@ -90,13 +151,7 @@ if (existsSync(join(root, contractPath))) {
     'Exactly four analysis feature cards',
     'Status is not a fifth analysis feature card',
     'All totals must be labeled as observed values',
-    'loading',
-    'fresh',
-    'partial',
-    'stale',
-    'empty',
-    'demo',
-    'error',
+    'loading', 'fresh', 'partial', 'stale', 'empty', 'demo', 'error',
     'Twitch and Kick values are never combined',
     '/api/twitch-home',
     '/api/kick-home',
@@ -142,19 +197,13 @@ if (existsSync(join(root, payloadContractPath))) {
 
 if (existsSync(join(root, twitchHomeApiPath))) {
   const source = read(twitchHomeApiPath)
-  requireFragment(twitchHomeApiPath, source, "platform: 'twitch'")
-  requireFragment(twitchHomeApiPath, source, 'env.DB_TWITCH_HOT')
-  requireFragment(twitchHomeApiPath, source, 'topLimit: 300')
-  requireFragment(twitchHomeApiPath, source, 'staleAfterMinutes: 3')
+  for (const fragment of ["platform: 'twitch'", 'env.DB_TWITCH_HOT', 'topLimit: 300', 'staleAfterMinutes: 10']) requireFragment(twitchHomeApiPath, source, fragment)
   forbidPattern(twitchHomeApiPath, source, 'Kick DB binding', /DB_KICK_HOT/)
 }
 
 if (existsSync(join(root, kickHomeApiPath))) {
   const source = read(kickHomeApiPath)
-  requireFragment(kickHomeApiPath, source, "platform: 'kick'")
-  requireFragment(kickHomeApiPath, source, 'env.DB_KICK_HOT')
-  requireFragment(kickHomeApiPath, source, 'topLimit: 100')
-  requireFragment(kickHomeApiPath, source, 'staleAfterMinutes: 10')
+  for (const fragment of ["platform: 'kick'", 'env.DB_KICK_HOT', 'topLimit: 100', 'staleAfterMinutes: 10']) requireFragment(kickHomeApiPath, source, fragment)
   forbidPattern(kickHomeApiPath, source, 'Twitch DB binding', /DB_TWITCH_HOT/)
 }
 
@@ -219,4 +268,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log('ViewLoom Home QA verification passed for provider links, fixed schedule, and real Home payload contracts.')
+console.log('ViewLoom Home QA verification passed for data-connected provider pages and repaired public presentation.')
