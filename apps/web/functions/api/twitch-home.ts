@@ -5,5 +5,5 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => buildProvider
   platform: 'twitch',
   db: env.DB_TWITCH_HOT,
   topLimit: 300,
-  staleAfterMinutes: 3,
+  staleAfterMinutes: 10,
 })
