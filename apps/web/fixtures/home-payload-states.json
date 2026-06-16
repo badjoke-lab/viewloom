@@ -7,7 +7,7 @@
         "platform": "twitch",
         "sourceMode": "real",
         "minutesSinceUpdate": 1,
-        "staleAfterMinutes": 3,
+        "staleAfterMinutes": 10,
         "observedStreams": 300,
         "hasMore": false
       },
@@ -18,8 +18,8 @@
       "input": {
         "platform": "twitch",
         "sourceMode": "real",
-        "minutesSinceUpdate": 1,
-        "staleAfterMinutes": 3,
+        "minutesSinceUpdate": 4,
+        "staleAfterMinutes": 10,
         "observedStreams": 300,
         "hasMore": true
       },
@@ -42,8 +42,8 @@
       "input": {
         "platform": "twitch",
         "sourceMode": "real",
-        "minutesSinceUpdate": 4,
-        "staleAfterMinutes": 3,
+        "minutesSinceUpdate": 11,
+        "staleAfterMinutes": 10,
         "observedStreams": 300,
         "hasMore": false
       },
@@ -55,7 +55,7 @@
         "platform": "twitch",
         "sourceMode": "real",
         "minutesSinceUpdate": 1,
-        "staleAfterMinutes": 3,
+        "staleAfterMinutes": 10,
         "observedStreams": 0,
         "hasMore": false
       },

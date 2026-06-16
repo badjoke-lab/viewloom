@@ -27,17 +27,16 @@ The completed provider-home implementation must contain:
 
 1. Compact provider hero
 2. Current observed KPI group
-3. Clickable provider data-status strip
+3. Clickable provider data-status strip with the single provider coverage note
 4. Exactly four analysis feature cards: Heatmap, Day Flow, Battle Lines, and History
 5. Live Now
 6. Current signals
 7. Today
 8. Recent Trends
-9. Latest provider signals
-10. ViewLoom updates
-11. Provider-specific coverage note
 
 Status must remain linked from the provider home, but Status is not a fifth analysis feature card.
+
+Provider limitations must not be repeated in separate bottom sections. Internal release notes, implementation summaries, QA notes, and temporary ViewLoom updates do not belong on the provider home. Reviewed product milestones belong on `/changelog/`.
 
 ## Data truth
 
@@ -47,10 +46,12 @@ Status must remain linked from the provider home, but Status is not a fifth anal
 - Static fake counts, `Stream A` rows, hard-coded freshness, and silently substituted fixtures are regressions.
 - `empty` means a healthy real observation with no qualifying data and must not be displayed as demo.
 - `stale` keeps the last normal data and explains its age.
-- `partial` names the provider coverage limitation.
+- `partial` is reserved for an actual source or collection limitation. The configured Twitch Top 300 boundary is expected coverage and must not be presented as a collector-health failure.
 - `demo` is visibly labeled.
 - `error` does not silently replace real values with demo values.
-- Unsupported provider signals are omitted or shown as `Unavailable`; they are not displayed as zero.
+- Unsupported provider signals are omitted or linked to their full analysis page; internal phrases such as `Unavailable in Home payload` are forbidden.
+- A five-minute collector must not be marked stale after only four minutes. Twitch and Kick Home use a ten-minute stale threshold.
+- If every current stream lacks title/category context, the Context column is hidden and the limitation is explained once below the table.
 
 Allowed provider-home states are:
 
@@ -66,8 +67,9 @@ Allowed provider-home states are:
 
 - Twitch and Kick home pages keep `data-provider="twitch"` and `data-provider="kick"` respectively.
 - Both pages use the same structural component contract.
-- Provider source, coverage, top limit, activity availability, unavailable signals, route links, and partial-state reasons remain provider-specific.
+- Provider source, coverage, top limit, activity availability, unavailable signals, and route links remain provider-specific.
 - Twitch and Kick values are never combined on either provider home.
+- Twitch source is presented as Helix-backed observation. Kick source is presented as authenticated or candidate-feed observation.
 
 ## Home payload contract
 
@@ -102,8 +104,9 @@ The first four are analysis cards. Status is reached through the status/header s
 - Mobile keeps the same information hierarchy but reduces ranking rows, chart labels, and secondary detail.
 - The completed mobile page must not be a wide desktop dashboard merely stacked unchanged.
 - Horizontal data tables must not be required to understand the provider-home summary.
+- Mobile navigation exposes and updates `aria-expanded` correctly.
 
 ## Implementation source of truth
 
 The fixed implementation sequence and payload direction are recorded in `docs/platform-home-repair-plan.md`.
-A future change that restores old overview cards, fake live counts, mock portal labels, decorative placeholder charts, or Status as a fifth analysis feature card is a regression.
+A future change that restores old overview cards, fake live counts, mock portal labels, decorative placeholder charts, duplicated coverage sections, internal release notes, or Status as a fifth analysis feature card is a regression.
