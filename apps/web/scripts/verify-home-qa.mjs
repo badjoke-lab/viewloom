@@ -16,6 +16,7 @@ const forbid = (path, source, label, pattern) => {
 
 const files = [
   'index.html', 'twitch/index.html', 'kick/index.html',
+  'src/portal-page.ts', 'src/portal-page.css',
   'src/provider-home.ts', 'src/provider-home-shell.ts', 'src/provider-home-data.ts', 'src/provider-home.css',
   'functions/_home/model.ts', 'functions/api/twitch-home.ts', 'functions/api/kick-home.ts',
   'fixtures/home-payload-states.json', 'docs/home-qa-contract.md', 'docs/home-payload-contract.md', 'docs/platform-home-repair-plan.md',
@@ -24,8 +25,51 @@ files.forEach(needFile)
 
 if (existsSync(join(root, 'index.html'))) {
   const source = read('index.html')
-  for (const fragment of ['data-provider="portal"', 'class="portal-grid"', 'portal-panel--twitch', 'portal-panel--kick', 'No combined platform totals are shown.', 'href="/twitch/"', 'href="/kick/"']) need('index.html', source, fragment)
+  for (const fragment of [
+    'data-provider="portal"',
+    'data-portal-home',
+    'class="portal-provider-grid"',
+    'portal-provider-card--twitch',
+    'portal-provider-card--kick',
+    'class="portal-view-grid"',
+    'class="portal-boundaries"',
+    'Twitch and Kick stay separate across every metric.',
+    'href="/twitch/"',
+    'href="/kick/"',
+    '/src/portal-page.ts',
+  ]) need('index.html', source, fragment)
+  forbid('index.html', source, 'old portal panel layout', /class="portal-grid"|portal-panel--twitch|portal-panel--kick/)
   forbid('index.html', source, 'old fake totals', /118\.4K|42\.7K|1\.86M observed/)
+}
+
+if (existsSync(join(root, 'src/portal-page.ts'))) {
+  const source = read('src/portal-page.ts')
+  for (const fragment of [
+    "void loadProvider('twitch')",
+    "void loadProvider('kick')",
+    'fetch(`/api/${platform}-home`',
+    "version: 'viewloom-home-v1'",
+    'validatePayload(payload, platform)',
+    'renderProviderError',
+    'presentationState(payload)',
+    'Top 300 observed window',
+    'Top 100 observed candidates',
+  ]) need('src/portal-page.ts', source, fragment)
+  forbid('src/portal-page.ts', source, 'combined platform arithmetic', /twitch[^\n]*(?:\+|sum)[^\n]*kick|kick[^\n]*(?:\+|sum)[^\n]*twitch/i)
+  forbid('src/portal-page.ts', source, 'demo substitution', /fixture|fake count|Stream A/i)
+}
+
+if (existsSync(join(root, 'src/portal-page.css'))) {
+  const source = read('src/portal-page.css')
+  for (const fragment of [
+    '.portal-provider-grid',
+    '.portal-provider-card--twitch',
+    '.portal-provider-card--kick',
+    '.portal-view-grid',
+    '.portal-boundaries',
+    '@media (max-width: 760px)',
+    '@media (max-width: 520px)',
+  ]) need('src/portal-page.css', source, fragment)
 }
 
 for (const provider of ['twitch', 'kick']) {
@@ -154,7 +198,8 @@ if (existsSync(join(root, 'docs/home-qa-contract.md'))) {
   const source = read('docs/home-qa-contract.md')
   for (const fragment of [
     'Portal and Provider Home QA Contract',
-    'Exactly four analysis feature cards',
+    'Two provider briefing cards',
+    'Exactly four analysis view cards',
     'Status is not a fifth analysis feature card',
     'All totals must be labeled as observed values',
     'Twitch and Kick values are never combined',
@@ -191,4 +236,4 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log('ViewLoom Home QA verification passed for data-connected provider pages and repaired public presentation.')
+console.log('ViewLoom Home QA verification passed for the Portal briefing and data-connected provider pages.')
