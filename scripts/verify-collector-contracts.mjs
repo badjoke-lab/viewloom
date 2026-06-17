@@ -1,0 +1,134 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+const root = process.cwd()
+const failures = []
+
+function read(path) {
+  const absolute = resolve(root, path)
+  if (!existsSync(absolute)) {
+    failures.push(`${path}: required file is missing`)
+    return ''
+  }
+  return readFileSync(absolute, 'utf8')
+}
+
+function need(path, source, fragment, label = fragment) {
+  if (!source.includes(fragment)) failures.push(`${path}: missing ${label}`)
+}
+
+function needPattern(path, source, pattern, label) {
+  if (!pattern.test(source)) failures.push(`${path}: missing ${label}`)
+}
+
+function numberFrom(path, source, pattern, label) {
+  const match = source.match(pattern)
+  if (!match) {
+    failures.push(`${path}: could not read ${label}`)
+    return null
+  }
+  const value = Number(match[1])
+  if (!Number.isFinite(value)) {
+    failures.push(`${path}: invalid ${label}`)
+    return null
+  }
+  return value
+}
+
+function providerBlock(path, source, provider) {
+  const match = source.match(new RegExp(`${provider}:\\s*\\{([\\s\\S]*?)\\n\\s*\\},`))
+  if (!match) failures.push(`${path}: missing ${provider} runtime block`)
+  return match?.[1] ?? ''
+}
+
+function forbidAssignedSecret(path, source, names) {
+  const activeLines = source
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+
+  for (const name of names) {
+    const pattern = new RegExp(`^${name}\\s*=`)
+    if (activeLines.some((line) => pattern.test(line))) {
+      failures.push(`${path}: ${name} must be configured as a secret, not committed in wrangler.toml`)
+    }
+  }
+}
+
+const twitchWranglerPath = 'workers/collector-twitch/wrangler.toml'
+const kickWranglerPath = 'workers/collector-kick/wrangler.toml'
+const twitchWorkerPath = 'workers/collector-twitch/src/index.ts'
+const kickWorkerPath = 'workers/collector-kick/src/index.ts'
+const runtimePath = 'apps/web/functions/_provider-runtime.ts'
+
+const twitchWrangler = read(twitchWranglerPath)
+const kickWrangler = read(kickWranglerPath)
+const twitchWorker = read(twitchWorkerPath)
+const kickWorker = read(kickWorkerPath)
+const runtime = read(runtimePath)
+
+need(twitchWranglerPath, twitchWrangler, 'crons = ["*/5 * * * *"]', '5-minute cron')
+need(twitchWranglerPath, twitchWrangler, 'binding = "DB_TWITCH_HOT"', 'DB_TWITCH_HOT binding')
+need(twitchWranglerPath, twitchWrangler, 'database_name = "vl_twitch_hot"', 'vl_twitch_hot database')
+forbidAssignedSecret(twitchWranglerPath, twitchWrangler, [
+  'TWITCH_CLIENT_ID',
+  'TWITCH_CLIENT_SECRET',
+  'TWITCH_INGEST_TOKEN',
+])
+
+need(kickWranglerPath, kickWrangler, 'crons = ["*/5 * * * *"]', '5-minute cron')
+need(kickWranglerPath, kickWrangler, 'binding = "DB_KICK_HOT"', 'DB_KICK_HOT binding')
+need(kickWranglerPath, kickWrangler, 'database_name = "vl_kick_hot"', 'vl_kick_hot database')
+forbidAssignedSecret(kickWranglerPath, kickWrangler, [
+  'KICK_CLIENT_ID',
+  'KICK_CLIENT_SECRET',
+  'KICK_ACCESS_TOKEN',
+  'KICK_INGEST_TOKEN',
+])
+
+const twitchPageSize = numberFrom(twitchWorkerPath, twitchWorker, /const PAGE_SIZE = (\d+)/, 'Twitch page size')
+const twitchMaxPages = numberFrom(twitchWorkerPath, twitchWorker, /const MAX_PAGES = (\d+)/, 'Twitch maximum pages')
+const twitchBucketMinutes = numberFrom(twitchWorkerPath, twitchWorker, /const TWITCH_BUCKET_MINUTES = (\d+)/, 'Twitch bucket minutes')
+need(twitchWorkerPath, twitchWorker, "sourceMode: 'real'", 'explicit Twitch real source mode')
+need(twitchWorkerPath, twitchWorker, "unixepoch('now', '-30 days')", '30-day Twitch raw retention')
+need(twitchWorkerPath, twitchWorker, "unixepoch('now', '-180 days')", '180-day Twitch rollup retention')
+
+const kickOfficialLimit = numberFrom(kickWorkerPath, kickWorker, /const OFFICIAL_LIVESTREAM_LIMIT = (\d+)/, 'Kick official livestream limit')
+need(kickWorkerPath, kickWorker, "'official-livestreams'", 'official-livestreams source mode')
+need(kickWorkerPath, kickWorker, "type TargetSource = 'seed-list' | 'registry'", 'Kick seed-list and registry target modes')
+need(kickWorkerPath, kickWorker, "unixepoch('now', '-60 days')", '60-day Kick raw retention')
+need(kickWorkerPath, kickWorker, "unixepoch('now', '-180 days')", '180-day Kick rollup retention')
+
+const twitchRuntime = providerBlock(runtimePath, runtime, 'twitch')
+const kickRuntime = providerBlock(runtimePath, runtime, 'kick')
+needPattern(runtimePath, twitchRuntime, /collectionCadenceMinutes:\s*5\b/, 'Twitch 5-minute runtime cadence')
+needPattern(runtimePath, twitchRuntime, /collectionCadenceSeconds:\s*300\b/, 'Twitch 300-second runtime cadence')
+needPattern(runtimePath, twitchRuntime, /topLimit:\s*300\b/, 'Twitch Top 300 runtime limit')
+needPattern(runtimePath, twitchRuntime, /rawRetentionDays:\s*30\b/, 'Twitch 30-day raw retention')
+needPattern(runtimePath, twitchRuntime, /rollupRetentionDays:\s*180\b/, 'Twitch 180-day rollup retention')
+needPattern(runtimePath, kickRuntime, /collectionCadenceMinutes:\s*5\b/, 'Kick 5-minute runtime cadence')
+needPattern(runtimePath, kickRuntime, /collectionCadenceSeconds:\s*300\b/, 'Kick 300-second runtime cadence')
+needPattern(runtimePath, kickRuntime, /topLimit:\s*100\b/, 'Kick Top 100 runtime limit')
+needPattern(runtimePath, kickRuntime, /rawRetentionDays:\s*60\b/, 'Kick 60-day raw retention')
+needPattern(runtimePath, kickRuntime, /rollupRetentionDays:\s*180\b/, 'Kick 180-day rollup retention')
+
+if (twitchPageSize !== null && twitchMaxPages !== null && twitchPageSize * twitchMaxPages !== 300) {
+  failures.push(`${twitchWorkerPath}: PAGE_SIZE × MAX_PAGES must equal the public Twitch Top 300 window`)
+}
+if (twitchBucketMinutes !== null && twitchBucketMinutes !== 5) {
+  failures.push(`${twitchWorkerPath}: Twitch bucket size must remain 5 minutes`)
+}
+if (kickOfficialLimit !== null && kickOfficialLimit !== 100) {
+  failures.push(`${kickWorkerPath}: Kick official livestream limit must match the public Top 100 window`)
+}
+
+if (failures.length > 0) {
+  console.error('ViewLoom collector contract verification failed:')
+  for (const failure of failures) console.error(`- ${failure}`)
+  process.exit(1)
+}
+
+console.log('ViewLoom collector contract verification passed.')
+console.log('- Twitch: 5m cadence, Top 300, raw 30d, rollup 180d')
+console.log('- Kick: 5m cadence, Top 100, raw 60d, rollup 180d')
+console.log('- D1 bindings and secret placement contracts are intact')
