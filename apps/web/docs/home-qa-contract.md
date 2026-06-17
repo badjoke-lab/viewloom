@@ -11,11 +11,21 @@ A completed portal must contain:
 1. A compact ViewLoom hero and operating-model facts
 2. Two provider briefing cards, one for Twitch and one for Kick
 3. Provider-specific status, update age, observed stream count, observed viewer count, largest observed stream, and coverage note
-4. Exactly four analysis view cards: Heatmap, Day Flow, Battle Lines, and History
-5. A short data-boundaries explanation
-6. Separate links to `/twitch/` and `/kick/`
+4. A contextual Heatmap route when current provider observations are available
+5. Exactly four analysis view cards: Heatmap, Day Flow, Battle Lines, and History
+6. A short platform-separation explanation
+7. Separate links to `/twitch/` and `/kick/`
+
+The portal must answer two questions quickly:
+
+- Which provider data should I open?
+- Which analysis view answers my current question?
+
+Analysis view descriptions must explain the user-facing question answered by each page rather than repeat internal implementation language. View-card actions use the compact labels `Open Twitch` and `Open Kick` because the card heading already identifies the analysis feature.
 
 The portal must fetch `/api/twitch-home` and `/api/kick-home` independently. It must never add, average, rank, or otherwise combine Twitch and Kick values into a cross-platform total.
+
+The header health pills may show provider state and update age, but update age is omitted when it cannot be derived safely. A provider card may recommend Heatmap only when current non-demo observations are available. Empty, demo, and error states must not display a misleading current-field recommendation.
 
 The portal must not contain:
 
@@ -89,6 +99,7 @@ Allowed provider-home states are:
 - Provider source, coverage, top limit, activity availability, unavailable signals, and route links remain provider-specific.
 - Twitch and Kick values are never combined on either provider home or the portal.
 - Twitch source is presented as Helix-backed observation. Kick source is presented as authenticated or candidate-feed observation.
+- The portal separation notice uses the heading `Platforms stay separate` and explains that collectors, coverage models, routes, retained data, and rankings remain provider-specific.
 
 ## Home payload contract
 
@@ -127,6 +138,7 @@ The portal must expose separate routes for both providers for each of the four a
 - Horizontal data tables must not be required to understand the provider-home or portal summary.
 - Mobile navigation exposes and updates `aria-expanded` correctly.
 - Provider briefing cards and analysis cards collapse without hiding their primary action.
+- Header health pills may be hidden at narrow widths; full provider state and update age remain visible inside each provider card.
 
 ## Implementation source of truth
 
