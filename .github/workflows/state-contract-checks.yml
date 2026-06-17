@@ -1,0 +1,44 @@
+name: State contract checks
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/functions/_state-contract.ts'
+      - 'apps/web/functions/api/twitch-status.ts'
+      - 'apps/web/functions/api/kick-status.ts'
+      - 'apps/web/scripts/verify-api-state-contract.mjs'
+      - 'apps/web/docs/state-qa-contract.md'
+      - '.github/workflows/state-contract-checks.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/functions/_state-contract.ts'
+      - 'apps/web/functions/api/twitch-status.ts'
+      - 'apps/web/functions/api/kick-status.ts'
+      - 'apps/web/scripts/verify-api-state-contract.mjs'
+      - 'apps/web/docs/state-qa-contract.md'
+      - '.github/workflows/state-contract-checks.yml'
+
+jobs:
+  state-contract-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Typecheck web functions
+        run: pnpm --filter @viewloom/web typecheck:functions
+      - name: Verify API state contract
+        working-directory: apps/web
+        run: node scripts/verify-api-state-contract.mjs
