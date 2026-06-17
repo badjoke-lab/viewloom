@@ -42,10 +42,39 @@ assert(battleSource.includes("params.get('point')"), 'Legacy Battle Lines point 
 assert(daySource.includes('window.history.replaceState'), 'Day Flow URL synchronization is missing.')
 assert(battleSource.includes('history.replaceState'), 'Battle Lines URL synchronization is missing.')
 
+const copyPath = 'src/navigation/copy-current-view.ts'
+const copySource = read(copyPath)
+const analyticsSource = read('src/analytics.ts')
+for (const fragment of [
+  "import { buildDeepLink } from './deep-link-contract'",
+  "import { VIEWLOOM_ORIGIN } from './url-contract'",
+  "feature: 'dayFlow'",
+  "feature: 'battleLines'",
+  "feature: 'history'",
+  "freezeSelectedInstant(params, 'rangeMode')",
+  "freezeSelectedInstant(params, 'range')",
+  "freezeRelativeDay(params, 'rangeMode', now)",
+  "freezeRelativeDay(params, 'range', now)",
+  "params.delete('point')",
+  "params.set('auto', 'off')",
+  'normalizeHistoryParams(',
+  "output.set('period', source.get('period') === '7d' ? '7d' : '30d')",
+  "output.set('metric', source.get('metric') === 'peak_viewers' ? 'peak_viewers' : 'viewer_minutes')",
+  "button.textContent = 'Copy current view'",
+  'navigator.clipboard?.writeText',
+  "document.execCommand('copy')",
+  "document.querySelector<HTMLElement>('.dayflow-toolbar')",
+  "document.querySelector<HTMLElement>('.battle-actions')",
+  "document.querySelector<HTMLElement>('.history-controls')",
+]) assert(copySource.includes(fragment), `${copyPath}: missing ${fragment}`)
+assert(analyticsSource.startsWith("import './navigation/copy-current-view'"), 'Analytics entry must mount Copy current view controls after feature runtimes.')
+assert(!/\/twitch\/.*\/kick\/|\/kick\/.*\/twitch\//.test(copySource), 'Copy current view must not combine provider routes.')
+assert(!copySource.includes('window.location.origin'), 'Generated share links must use the canonical production origin.')
+
 if (failures.length) {
   console.error('ViewLoom deep-link contract verification failed:')
   for (const failure of failures) console.error(`- ${failure}`)
   process.exit(1)
 }
 
-console.log('ViewLoom deep-link contract verification passed.')
+console.log('ViewLoom deep-link and Copy current view contract verification passed.')
