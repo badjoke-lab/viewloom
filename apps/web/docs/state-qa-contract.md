@@ -14,6 +14,23 @@ Covered live entries:
 - History
 - Status
 
+## Canonical public states
+
+Feature availability exposed through Home and Status uses exactly these public states:
+
+- `fresh`
+- `partial`
+- `stale`
+- `empty`
+- `demo`
+- `error`
+
+Status may additionally use `strong_stale`, `failing`, `unconfigured`, and `not_ready` for collector and infrastructure diagnosis. These Status-only states must be normalized before they are copied into feature rows.
+
+Raw endpoint states such as `live`, `ok`, `good`, `poor`, and `fixture` remain implementation or source states. They normalize to the public states above. In particular, `fixture` is a source mode and must be shown publicly as `demo`.
+
+Unknown or unsupported states normalize to `error`; they must not silently appear as healthy or partial data.
+
 ## Required behavior
 
 - Empty datasets must render explicit empty-state copy.
