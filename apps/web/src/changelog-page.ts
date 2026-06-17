@@ -5,10 +5,11 @@ type ChangelogEntry = {
   date: string
   datePrecision: DatePrecision
   title: string
+  summary: string
 }
 
 type ChangelogPayload = {
-  version: 'viewloom-changelog-v1'
+  version: 'viewloom-changelog-v2'
   entries: ChangelogEntry[]
 }
 
@@ -31,7 +32,7 @@ async function loadChangelog(): Promise<void> {
 }
 
 function validatePayload(payload: ChangelogPayload): void {
-  if (payload?.version !== 'viewloom-changelog-v1') throw new Error('Unexpected Changelog data version.')
+  if (payload?.version !== 'viewloom-changelog-v2') throw new Error('Unexpected Changelog data version.')
   if (!Array.isArray(payload.entries)) throw new Error('Changelog entries are unavailable.')
 }
 
@@ -71,9 +72,13 @@ function createEntry(entry: ChangelogEntry): HTMLElement {
   const title = document.createElement('h2')
   title.textContent = entry.title
 
+  const summary = document.createElement('p')
+  summary.className = 'changelog-entry__summary'
+  summary.textContent = entry.summary
+
   const copy = document.createElement('div')
   copy.className = 'changelog-entry__copy'
-  copy.append(time, title)
+  copy.append(time, title, summary)
 
   article.append(marker, copy)
   return article
