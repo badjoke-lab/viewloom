@@ -1,0 +1,37 @@
+name: Kick coverage checks
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/functions/_kick-coverage.ts'
+      - 'apps/web/functions/_home/kick.ts'
+      - 'apps/web/functions/api/kick-home.ts'
+      - 'apps/web/functions/api/kick-status.ts'
+      - 'apps/web/scripts/verify-kick-coverage-contract.mjs'
+      - '.github/workflows/kick-coverage-checks.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/_kick-coverage.ts'
+      - 'apps/web/functions/_home/kick.ts'
+      - 'apps/web/functions/api/kick-home.ts'
+      - 'apps/web/functions/api/kick-status.ts'
+      - 'apps/web/scripts/verify-kick-coverage-contract.mjs'
+      - '.github/workflows/kick-coverage-checks.yml'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm --filter @viewloom/web typecheck:functions
+      - run: node scripts/verify-kick-coverage-contract.mjs
+        working-directory: apps/web
