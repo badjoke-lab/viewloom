@@ -33,13 +33,19 @@ if (existsSync(join(root, 'index.html'))) {
     'portal-provider-card--kick',
     'class="portal-view-grid"',
     'class="portal-boundaries"',
-    'Twitch and Kick stay separate across every metric.',
+    'See who is largest now',
+    'id="portal-twitch-next"',
+    'id="portal-kick-next"',
+    'Open Twitch',
+    'Open Kick',
+    'Platforms stay separate',
     'href="/twitch/"',
     'href="/kick/"',
     '/src/portal-page.ts',
   ]) need('index.html', source, fragment)
   forbid('index.html', source, 'old portal panel layout', /class="portal-grid"|portal-panel--twitch|portal-panel--kick/)
   forbid('index.html', source, 'old fake totals', /118\.4K|42\.7K|1\.86M observed/)
+  forbid('index.html', source, 'repetitive feature CTA labels', />Twitch (?:Heatmap|Day Flow|Battle Lines|History)|>Kick (?:Heatmap|Day Flow|Battle Lines|History)/)
 }
 
 if (existsSync(join(root, 'src/portal-page.ts'))) {
@@ -54,6 +60,10 @@ if (existsSync(join(root, 'src/portal-page.ts'))) {
     'presentationState(payload)',
     'Top 300 observed window',
     'Top 100 observed candidates',
+    'renderProviderNext',
+    'shortAge',
+    'Explore the current field in Heatmap',
+    "state === 'error' || state === 'demo' || state === 'empty'",
   ]) need('src/portal-page.ts', source, fragment)
   forbid('src/portal-page.ts', source, 'combined platform arithmetic', /twitch[^\n]*(?:\+|sum)[^\n]*kick|kick[^\n]*(?:\+|sum)[^\n]*twitch/i)
   forbid('src/portal-page.ts', source, 'demo substitution', /fixture|fake count|Stream A/i)
@@ -65,6 +75,8 @@ if (existsSync(join(root, 'src/portal-page.css'))) {
     '.portal-provider-grid',
     '.portal-provider-card--twitch',
     '.portal-provider-card--kick',
+    '.portal-provider-next',
+    '.portal-provider-next[hidden]',
     '.portal-view-grid',
     '.portal-boundaries',
     '@media (max-width: 760px)',
@@ -203,6 +215,9 @@ if (existsSync(join(root, 'docs/home-qa-contract.md'))) {
     'Status is not a fifth analysis feature card',
     'All totals must be labeled as observed values',
     'Twitch and Kick values are never combined',
+    'Which analysis view answers my current question?',
+    '`Open Twitch` and `Open Kick`',
+    'Platforms stay separate',
     'ten-minute stale threshold',
     'Internal release notes',
     'Reviewed product milestones belong on `/changelog/`',

@@ -36,8 +36,8 @@
         <a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
         <nav class="global-nav" id="portal-nav" aria-label="Global navigation"><a href="/" aria-current="page">Portal</a><a href="/twitch/">Twitch data</a><a href="/kick/">Kick data</a><a href="/changelog/">Changelog</a><a href="/about/">About</a><a href="/support/">Support</a></nav>
         <div class="portal-health" aria-label="Provider collector status" aria-live="polite">
-          <span class="portal-health__pill portal-health__pill--twitch" id="portal-health-twitch" data-state="loading"><i aria-hidden="true"></i><span>Twitch: Loading</span></span>
-          <span class="portal-health__pill portal-health__pill--kick" id="portal-health-kick" data-state="loading"><i aria-hidden="true"></i><span>Kick: Loading</span></span>
+          <span class="portal-health__pill portal-health__pill--twitch" id="portal-health-twitch" data-state="loading"><i aria-hidden="true"></i><span>Twitch · Loading</span></span>
+          <span class="portal-health__pill portal-health__pill--kick" id="portal-health-kick" data-state="loading"><i aria-hidden="true"></i><span>Kick · Loading</span></span>
           <span class="portal-health__cadence">5m cadence</span>
         </div>
         <button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation" aria-controls="portal-nav" aria-expanded="false">Menu</button>
@@ -51,7 +51,7 @@
         <div>
           <div class="kicker">Live-stream data, separated by platform</div>
           <h1>Observe the field.<br />Then follow the movement.</h1>
-          <p class="lede">Observe current live-stream scale, follow audience movement through the day, compare rival streams, and review retained trends. Twitch and Kick stay separate across every metric.</p>
+          <p class="lede">See who is largest now, follow audience movement through the day, compare rival streams, and review retained trends. Twitch and Kick observations always remain separate.</p>
         </div>
         <div class="portal-facts" aria-label="ViewLoom operating model">
           <div class="portal-fact"><span class="portal-fact__icon" aria-hidden="true">◷</span><span><small>Collection cadence</small><strong>5 minutes</strong></span></div>
@@ -73,8 +73,9 @@
             <div><small>Updated</small><strong id="portal-twitch-updated">Loading…</strong></div>
             <div><small>Observed streams</small><strong id="portal-twitch-observed">Loading…</strong></div>
             <div><small>Observed viewers</small><strong id="portal-twitch-viewers">Loading…</strong></div>
-            <div><small>Largest observed</small><strong id="portal-twitch-largest">Loading…</strong></div>
+            <div><small>Largest observed now</small><strong id="portal-twitch-largest">Loading…</strong></div>
           </div>
+          <a class="portal-provider-next" id="portal-twitch-next" href="/twitch/heatmap/">Explore the current field in Heatmap <span aria-hidden="true">→</span></a>
           <p class="portal-provider-note" id="portal-twitch-note">Top 300 observed window. More live streams may exist beyond it.</p>
           <div class="portal-provider-card__actions"><a class="button" href="/twitch/">Open Twitch data <span aria-hidden="true">↗</span></a><a class="portal-status-link" href="/twitch/status/">Status</a></div>
         </article>
@@ -90,38 +91,39 @@
             <div><small>Updated</small><strong id="portal-kick-updated">Loading…</strong></div>
             <div><small>Observed candidates</small><strong id="portal-kick-observed">Loading…</strong></div>
             <div><small>Observed viewers</small><strong id="portal-kick-viewers">Loading…</strong></div>
-            <div><small>Largest observed</small><strong id="portal-kick-largest">Loading…</strong></div>
+            <div><small>Largest observed now</small><strong id="portal-kick-largest">Loading…</strong></div>
           </div>
+          <a class="portal-provider-next" id="portal-kick-next" href="/kick/heatmap/">Explore the current field in Heatmap <span aria-hidden="true">→</span></a>
           <p class="portal-provider-note" id="portal-kick-note">Top 100 observed candidates. Not provider-wide directory coverage.</p>
           <div class="portal-provider-card__actions"><a class="button" href="/kick/">Open Kick data <span aria-hidden="true">↗</span></a><a class="portal-status-link" href="/kick/status/">Status</a></div>
         </article>
       </section>
 
       <section class="portal-views" aria-labelledby="portal-views-title">
-        <div class="portal-section-head"><div><h2 id="portal-views-title">Choose a view</h2><p>Choose by analysis mode, then open the Twitch or Kick version.</p></div></div>
+        <div class="portal-section-head"><div><h2 id="portal-views-title">Choose a view</h2><p>Start with the question you want answered, then open the Twitch or Kick version.</p></div></div>
         <div class="portal-view-grid">
           <article class="portal-view-card portal-view-card--heatmap">
-            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">▦</span><div><h3>Heatmap</h3><p>See the current observed field: who is largest, rising, or active now.</p></div></div>
-            <div class="portal-view-card__links"><a href="/twitch/heatmap/">Twitch Heatmap <span aria-hidden="true">→</span></a><a href="/kick/heatmap/">Kick Heatmap <span aria-hidden="true">→</span></a></div>
+            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">▦</span><div><h3>Heatmap</h3><p>Who is largest, rising, or active right now.</p></div></div>
+            <div class="portal-view-card__links"><a href="/twitch/heatmap/">Open Twitch <span aria-hidden="true">→</span></a><a href="/kick/heatmap/">Open Kick <span aria-hidden="true">→</span></a></div>
           </article>
           <article class="portal-view-card portal-view-card--dayflow">
-            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">∿</span><div><h3>Day Flow</h3><p>Read how observed audiences moved through the UTC day.</p></div></div>
-            <div class="portal-view-card__links"><a href="/twitch/day-flow/">Twitch Day Flow <span aria-hidden="true">→</span></a><a href="/kick/day-flow/">Kick Day Flow <span aria-hidden="true">→</span></a></div>
+            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">∿</span><div><h3>Day Flow</h3><p>How observed audiences moved through the UTC day.</p></div></div>
+            <div class="portal-view-card__links"><a href="/twitch/day-flow/">Open Twitch <span aria-hidden="true">→</span></a><a href="/kick/day-flow/">Open Kick <span aria-hidden="true">→</span></a></div>
           </article>
           <article class="portal-view-card portal-view-card--battle">
-            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">×</span><div><h3>Battle Lines</h3><p>Compare live gaps, movement, and rival streams.</p></div></div>
-            <div class="portal-view-card__links"><a href="/twitch/battle-lines/">Twitch Battle Lines <span aria-hidden="true">→</span></a><a href="/kick/battle-lines/">Kick Battle Lines <span aria-hidden="true">→</span></a></div>
+            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">×</span><div><h3>Battle Lines</h3><p>Where rival streams closed gaps, surged, or changed order.</p></div></div>
+            <div class="portal-view-card__links"><a href="/twitch/battle-lines/">Open Twitch <span aria-hidden="true">→</span></a><a href="/kick/battle-lines/">Open Kick <span aria-hidden="true">→</span></a></div>
           </article>
           <article class="portal-view-card portal-view-card--history">
-            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">▤</span><div><h3>History</h3><p>Review retained daily rollups, peaks, rankings, and trends.</p></div></div>
-            <div class="portal-view-card__links"><a href="/twitch/history/">Twitch History <span aria-hidden="true">→</span></a><a href="/kick/history/">Kick History <span aria-hidden="true">→</span></a></div>
+            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">▤</span><div><h3>History</h3><p>How peaks, rankings, and audience volume changed over time.</p></div></div>
+            <div class="portal-view-card__links"><a href="/twitch/history/">Open Twitch <span aria-hidden="true">→</span></a><a href="/kick/history/">Open Kick <span aria-hidden="true">→</span></a></div>
           </article>
         </div>
       </section>
 
       <aside class="portal-boundaries">
         <div class="portal-boundaries__icon" aria-hidden="true">◇</div>
-        <div><h2>Data boundaries</h2><p>Twitch and Kick use separate collectors, coverage models, routes, and retained data. No combined audience totals or cross-platform rankings are shown. Kick candidate coverage is not provider-wide directory coverage.</p></div>
+        <div><div class="kicker">Platform separation policy</div><h2>Platforms stay separate</h2><p>Twitch and Kick use separate collectors, coverage models, routes, retained data, and rankings. No combined audience totals or cross-platform rankings are shown. Kick candidate coverage is not provider-wide directory coverage.</p></div>
       </aside>
     </main>
 

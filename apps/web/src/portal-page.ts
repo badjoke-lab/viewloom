@@ -68,7 +68,8 @@ function renderProvider(payload: HomePayload): void {
         : 'Unavailable',
   )
   setText(`portal-${platform}-note`, coverageNote(payload))
-  renderHeaderPill(platform, visibleState)
+  renderProviderNext(platform, visibleState, payload.now.largestStream !== null)
+  renderHeaderPill(platform, visibleState, payload.updatedAt)
 }
 
 function renderProviderError(platform: Platform, message: string): void {
@@ -81,7 +82,8 @@ function renderProviderError(platform: Platform, message: string): void {
   setText(`portal-${platform}-viewers`, 'Unavailable')
   setText(`portal-${platform}-largest`, 'Unavailable')
   setText(`portal-${platform}-note`, `${platformLabel(platform)} data could not be loaded. ${message}`)
-  renderHeaderPill(platform, 'error')
+  renderProviderNext(platform, 'error', false)
+  renderHeaderPill(platform, 'error', null)
 }
 
 function presentationState(payload: HomePayload): HomeState {
@@ -95,12 +97,31 @@ function coverageNote(payload: HomePayload): string {
   return payload.coverage.note || 'Top 100 observed candidates. Not provider-wide directory coverage.'
 }
 
-function renderHeaderPill(platform: Platform, state: HomeState): void {
+function renderProviderNext(platform: Platform, state: HomeState, hasLargest: boolean): void {
+  const link = document.getElementById(`portal-${platform}-next`) as HTMLAnchorElement | null
+  if (!link) return
+
+  if (state === 'error' || state === 'demo' || state === 'empty' || !hasLargest) {
+    link.hidden = true
+    return
+  }
+
+  link.hidden = false
+  link.href = `/${platform}/heatmap/`
+  link.innerHTML = 'Explore the current field in Heatmap <span aria-hidden="true">→</span>'
+}
+
+function renderHeaderPill(platform: Platform, state: HomeState, updatedAt: string | null): void {
   const pill = document.getElementById(`portal-health-${platform}`)
   if (!pill) return
   pill.dataset.state = state
   const label = pill.querySelector('span')
-  if (label) label.textContent = `${platformLabel(platform)}: ${stateLabel(state)}`
+  if (!label) return
+
+  const age = updatedAt ? shortAge(updatedAt) : null
+  label.textContent = age
+    ? `${platformLabel(platform)} · ${stateLabel(state)} · ${age}`
+    : `${platformLabel(platform)} · ${stateLabel(state)}`
 }
 
 function stateLabel(state: HomeState): string {
@@ -143,4 +164,15 @@ function ago(value: string): string {
   const hours = Math.floor(minutes / 60)
   if (hours < 24) return `${hours}h ago`
   return `${Math.floor(hours / 24)}d ago`
+}
+
+function shortAge(value: string): string | null {
+  const milliseconds = Date.now() - Date.parse(value)
+  if (!Number.isFinite(milliseconds)) return null
+  const minutes = Math.max(0, Math.floor(milliseconds / 60000))
+  if (minutes < 1) return 'now'
+  if (minutes < 60) return `${minutes}m`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h`
+  return `${Math.floor(hours / 24)}d`
 }
