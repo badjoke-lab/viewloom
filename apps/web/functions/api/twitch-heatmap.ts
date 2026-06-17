@@ -1,4 +1,5 @@
 import type { Env } from '../_db/env'
+import { providerRuntime } from '../_provider-runtime'
 
 type SnapshotRow = {
   provider: string
@@ -48,8 +49,7 @@ type PayloadMeta = {
   payloadBucketMinute: string | null
 }
 
-const STALE_AFTER_MS = 10 * 60 * 1000
-const EXPECTED_BUCKET_MINUTES = 5
+const runtime = providerRuntime('twitch')
 const ACTIVITY_UNAVAILABLE_REASON = 'chat_sampling_not_connected'
 
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
@@ -102,13 +102,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     const meta = latest ? payloadMeta(latest.payload_json) : { bucketMinutes: null, payloadBucketMinute: null }
     const items = latest ? normalizeItems(latest.payload_json) : []
     const updatedAt = latest?.collected_at || latest?.bucket_minute || status?.latest_collected_at || status?.latest_bucket_minute || new Date().toISOString()
-    const stale = Date.now() - new Date(updatedAt).getTime() > STALE_AFTER_MS
+    const stale = Date.now() - new Date(updatedAt).getTime() > runtime.staleAfterMinutes * 60 * 1000
     const state: State = !latest ? 'empty' : items.length === 0 ? 'empty' : stale ? 'stale' : 'live'
     const hasMore = Boolean(latest?.has_more ?? status?.has_more)
     const coveredPages = latest?.covered_pages ?? status?.covered_pages ?? 0
     const streamCount = latest?.stream_count ?? status?.latest_stream_count ?? items.length
     const totalViewers = latest?.total_viewers ?? status?.latest_total_viewers ?? items.reduce((sum, item) => sum + item.viewers, 0)
-    const bucketAligned = latest ? isAligned(latest.bucket_minute, EXPECTED_BUCKET_MINUTES) : false
+    const bucketAligned = latest ? isAligned(latest.bucket_minute, runtime.collectionCadenceMinutes) : false
     const ingestFreshnessWarning = warnings(state, latest, meta, bucketAligned)
 
     return Response.json({
@@ -122,7 +122,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       valueMode: 'viewers',
       targetSource: 'twitch-helix-streams',
       coverageMode: hasMore ? 'partial-top-pages' : 'observed-top-pages',
-      expectedBucketMinutes: EXPECTED_BUCKET_MINUTES,
+      expectedBucketMinutes: runtime.collectionCadenceMinutes,
       bucketMinutes: meta.bucketMinutes,
       payloadBucketMinute: meta.payloadBucketMinute,
       bucketAligned,
@@ -140,13 +140,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         `bucket_minute=${latest?.bucket_minute || 'none'}`,
         `payload_bucket_minute=${meta.payloadBucketMinute || 'none'}`,
         `bucket_minutes=${meta.bucketMinutes ?? 'unknown'}`,
-        `expected_bucket_minutes=${EXPECTED_BUCKET_MINUTES}`,
+        `expected_bucket_minutes=${runtime.collectionCadenceMinutes}`,
         `bucket_aligned=${bucketAligned}`,
         ...ingestFreshnessWarning.map((item) => `warning=${item}`),
         `covered_pages=${coveredPages}`,
         `has_more=${hasMore ? 1 : 0}`,
         `stream_count=${streamCount}`,
         `total_viewers=${totalViewers}`,
+        `top_limit=${runtime.topLimit}`,
         'target_source=twitch-helix-streams',
         `coverage_mode=${hasMore ? 'partial-top-pages' : 'observed-top-pages'}`,
         'activity_available=false',
@@ -154,7 +155,6 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       ],
       latest,
       collectorStatus: status,
-      // Backward-compatible alias for older callers.
       statusRecord: status,
     }, { headers: { 'cache-control': 'no-store' } })
   } catch (error) {
@@ -169,7 +169,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       valueMode: 'viewers',
       targetSource: 'twitch-helix-streams',
       coverageMode: 'unknown',
-      expectedBucketMinutes: EXPECTED_BUCKET_MINUTES,
+      expectedBucketMinutes: runtime.collectionCadenceMinutes,
       bucketMinutes: null,
       payloadBucketMinute: null,
       bucketAligned: false,
@@ -207,8 +207,8 @@ function warnings(state: State, latest: SnapshotRow | null, meta: PayloadMeta, b
   const result: string[] = []
   if (!latest) return ['no_twitch_snapshot']
   if (state === 'stale') result.push('twitch_collector_stale')
-  if (!bucketAligned) result.push('latest_bucket_not_5m_aligned')
-  if (meta.bucketMinutes !== EXPECTED_BUCKET_MINUTES) result.push('payload_bucket_minutes_missing_or_not_5')
+  if (!bucketAligned) result.push(`latest_bucket_not_${runtime.collectionCadenceMinutes}m_aligned`)
+  if (meta.bucketMinutes !== runtime.collectionCadenceMinutes) result.push(`payload_bucket_minutes_missing_or_not_${runtime.collectionCadenceMinutes}`)
   if (meta.payloadBucketMinute && latest.bucket_minute !== meta.payloadBucketMinute) result.push('row_and_payload_bucket_mismatch')
   return result
 }
