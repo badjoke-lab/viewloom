@@ -21,6 +21,6 @@ export const PROVIDER_RUNTIME = {
   },
 } as const
 
-export function providerRuntime(provider: ViewLoomProvider) {
+export function providerRuntime<P extends ViewLoomProvider>(provider: P): (typeof PROVIDER_RUNTIME)[P] {
   return PROVIDER_RUNTIME[provider]
 }
