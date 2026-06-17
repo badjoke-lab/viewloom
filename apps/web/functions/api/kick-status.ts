@@ -12,10 +12,11 @@ type SnapshotRow = {
 
 type SourceCountRow = { source_mode: string; rows: number }
 type Raw = Record<string, unknown>
+type CoverageMode = 'official-livestreams' | 'registry' | 'seed-list'
 
 const STALE_AFTER_MINUTES = 10
 const STRONG_STALE_AFTER_MINUTES = 30
-const DEFAULT_COVERAGE_MODE = 'seed-list'
+const DEFAULT_COVERAGE_MODE: CoverageMode = 'seed-list'
 
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   try {
@@ -46,6 +47,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     const registryFeedback = normalizeRegistryFeedback(collectorMeta.registryFeedback)
     const state = deriveState(sourceMode, minutesSinceSuccess, latest?.stream_count ?? 0)
     const authMode = sourceMode === 'authenticated' ? 'authenticated' : sourceMode === 'fixture' ? 'fixture' : 'public-channel-fallback'
+    const coverage = coverageDescription(runtimeCoverageMode)
 
     return Response.json({
       version: 'viewloom-kick-status-v3',
@@ -61,13 +63,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       registryFeedback,
       coverageModel: {
         mode: runtimeCoverageMode,
-        label: runtimeCoverageMode === 'registry' ? 'Registry-backed candidate coverage' : 'Seed-list coverage only',
+        label: coverage.label,
         isTwitchParity: false,
-        isDirectoryCoverage: false,
-        description: runtimeCoverageMode === 'registry'
-          ? 'Kick is selecting attempted channel slugs from kick_channels registry rows. This is still not Twitch-like live directory discovery.'
-          : 'Kick currently samples configured and built-in channel slug candidates. It does not yet have Twitch-like live directory discovery.',
-        nextRequiredArchitecture: runtimeCoverageMode === 'registry' ? 'candidate expansion plus discovery job' : 'kick_channels registry plus discovery job',
+        isDirectoryCoverage: runtimeCoverageMode === 'official-livestreams',
+        description: coverage.description,
+        nextRequiredArchitecture: coverage.nextRequiredArchitecture,
       },
       state,
       generatedAt,
@@ -77,7 +77,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         sourceMode,
         coverageMode: runtimeCoverageMode,
         targetSource,
-        configuredChannelMechanism: runtimeCoverageMode === 'registry' ? 'kick_channels registry target selection' : 'configured and built-in seed slug list',
+        configuredChannelMechanism: coverage.configuredChannelMechanism,
         configuredChannels: collectorMeta.configuredChannels ?? null,
         attemptedChannels: collectorMeta.attemptedChannels ?? null,
         registryCandidateCount: nullableNumber(collectorMeta.registryCandidateCount),
@@ -118,9 +118,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         isTwitchParity: false,
         notes: [
           'Kick reads DB_KICK_HOT / vl_kick_hot only.',
-          runtimeCoverageMode === 'registry'
-            ? 'Kick is registry-backed candidate coverage, not Twitch-parity directory coverage.'
-            : 'Kick coverage is seed-list based and is not Twitch-parity directory coverage.',
+          coverage.publicNote,
           'Fixture, public-channel-fallback, empty-public-channel-fallback, and authenticated source modes are surfaced explicitly.',
           registryFeedback.applied ? `Registry feedback updated ${registryFeedback.observedUpdated} observed and ${registryFeedback.missedUpdated} missed candidates.` : 'Registry feedback was not applied for the latest snapshot.',
           latestObservedChannels.length > 0 ? `Latest snapshot contains ${latestObservedChannels.length} observed Kick channels.` : 'Latest snapshot contains no observed Kick channels.',
@@ -130,11 +128,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       limitations: [
         'ViewLoom is unofficial and independent.',
         'Kick activity signals are unavailable in the current DB_KICK_HOT payload; viewer volume and share remain available.',
-        runtimeCoverageMode === 'registry'
-          ? 'Kick currently uses registry-backed candidate coverage; it still does not have Twitch-like live directory discovery.'
-          : 'Kick currently uses seed-list coverage only; it does not yet have Twitch-like live directory discovery.',
-        'Kick should not be described as complete, Twitch-parity, globally discovered, or fully representative while collection is seed-list or registry-candidate based.',
-        sourceMode === 'fixture' ? 'Latest rows are fixture rows and must not be interpreted as live production data.' : 'Public-channel fallback rows are sampled from configured, built-in, or registry-selected channel slug candidates unless authenticated source_mode is present.',
+        coverage.limitation,
+        sourceMode === 'fixture' ? 'Latest rows are fixture rows and must not be interpreted as live production data.' : coverage.sourceLimitation,
       ],
       notes: latest ? [`latest_source_mode=${sourceMode}`, `coverage_mode=${runtimeCoverageMode}`, `target_source=${targetSource}`] : ['No latest Kick snapshot was found in DB_KICK_HOT.'],
     }, { headers: { 'cache-control': 'no-store' } })
@@ -169,10 +164,44 @@ function buildFeatures(state: string, sourceMode: string, updatedAt: string | nu
   const featureState = sourceMode === 'fixture' ? 'fixture' : state === 'strong_stale' ? 'stale' : state
   return [
     { key: 'heatmap', label: 'Heatmap', role: 'now', apiPath: '/api/kick-heatmap', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Activity unavailable; source mode and candidate coverage are shown in notes.', pagePath: '/kick/heatmap/' },
-    { key: 'day_flow', label: 'Day Flow', role: 'today', apiPath: '/api/kick-day-flow', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Activity unavailable; bands come from observed DB_KICK_HOT candidate snapshots.', pagePath: '/kick/day-flow/' },
-    { key: 'battle_lines', label: 'Battle Lines', role: 'rivalry', apiPath: '/api/kick-battle-lines', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Events are derived from observed viewer deltas; coverage is candidate based.', pagePath: '/kick/battle-lines/' },
-    { key: 'history', label: 'History', role: 'trends', apiPath: '/api/kick-history', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Depends on retained Kick candidate snapshots.', pagePath: '/kick/history/' },
+    { key: 'day_flow', label: 'Day Flow', role: 'today', apiPath: '/api/kick-day-flow', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Activity unavailable; bands come from observed DB_KICK_HOT snapshots.', pagePath: '/kick/day-flow/' },
+    { key: 'battle_lines', label: 'Battle Lines', role: 'rivalry', apiPath: '/api/kick-battle-lines', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Events are derived from observed viewer deltas; coverage mode is shown explicitly.', pagePath: '/kick/battle-lines/' },
+    { key: 'history', label: 'History', role: 'trends', apiPath: '/api/kick-history', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Depends on retained Kick observations.', pagePath: '/kick/history/' },
   ]
+}
+
+function coverageDescription(mode: CoverageMode) {
+  if (mode === 'official-livestreams') {
+    return {
+      label: 'Official livestream endpoint coverage',
+      description: 'Kick observations were collected from the authenticated official livestreams endpoint with the configured per-run limit. This remains a bounded observed window, not a claim of complete platform coverage.',
+      nextRequiredArchitecture: 'pagination and coverage diagnostics beyond the current official endpoint limit',
+      configuredChannelMechanism: 'authenticated official livestreams endpoint',
+      publicNote: 'Kick used the authenticated official livestreams endpoint for this snapshot. The observed window is still bounded by the configured endpoint limit.',
+      limitation: 'Official livestream endpoint observations are bounded by the configured per-run limit and must not be described as complete provider-wide coverage.',
+      sourceLimitation: 'Authenticated official-livestream rows come from the bounded official endpoint response for the collection run.',
+    }
+  }
+  if (mode === 'registry') {
+    return {
+      label: 'Registry-backed candidate coverage',
+      description: 'Kick is selecting attempted channel slugs from kick_channels registry rows. This is not Twitch-like live directory discovery.',
+      nextRequiredArchitecture: 'candidate expansion plus discovery job',
+      configuredChannelMechanism: 'kick_channels registry target selection',
+      publicNote: 'Kick is using registry-backed candidate coverage, not provider-wide directory coverage.',
+      limitation: 'Kick currently uses registry-backed candidate coverage; it does not have provider-wide live directory discovery.',
+      sourceLimitation: 'Registry candidate rows are sampled from the configured candidate registry and may omit live channels outside that set.',
+    }
+  }
+  return {
+    label: 'Seed-list coverage only',
+    description: 'Kick samples configured and built-in channel slug candidates. It does not have provider-wide live directory discovery.',
+    nextRequiredArchitecture: 'kick_channels registry plus discovery job',
+    configuredChannelMechanism: 'configured and built-in seed slug list',
+    publicNote: 'Kick coverage is seed-list based and is not provider-wide directory coverage.',
+    limitation: 'Kick currently uses seed-list coverage only; it does not have provider-wide live directory discovery.',
+    sourceLimitation: 'Seed-list and public-channel fallback rows are sampled from configured or built-in channel slug candidates.',
+  }
 }
 
 function normalizeChannels(value: unknown): Array<{ slug: string; displayName: string; title: string; viewers: number; url: string }> {
@@ -202,9 +231,12 @@ function normalizeRegistryFeedback(value: unknown): { applied: boolean; observed
   }
 }
 
-function coverageModeFromMeta(meta: Raw): string {
+function coverageModeFromMeta(meta: Raw): CoverageMode {
   const mode = str(meta.coverageMode)
-  if (mode === 'registry') return 'registry'
+  const target = str(meta.targetSource)
+  const source = str(meta.sourceMode)
+  if (mode === 'official-livestreams' || target === 'official-livestreams' || source === 'official-livestreams') return 'official-livestreams'
+  if (mode === 'registry' || target === 'registry') return 'registry'
   return DEFAULT_COVERAGE_MODE
 }
 
