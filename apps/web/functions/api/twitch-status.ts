@@ -1,5 +1,6 @@
 import type { Env } from '../_db/env'
 import { providerRuntime } from '../_provider-runtime'
+import { normalizeFeatureState } from '../_state-contract'
 
 type SnapshotRow = {
   provider: string
@@ -127,21 +128,13 @@ function deriveState(input: { collectorStatus: string | null; minutesSinceSucces
 }
 
 function buildFeatures(state: string, sourceMode: string, updatedAt: string | null) {
-  const commonState = mapFeatureState(state, sourceMode)
+  const commonState = normalizeFeatureState(state, sourceMode)
   return [
     { key: 'heatmap', label: 'Heatmap', role: 'now', apiPath: '/api/twitch-heatmap', state: commonState, source: 'api', lastUpdatedAt: updatedAt, knownGap: 'Activity may be sampled or unavailable.', pagePath: '/twitch/heatmap/' },
     { key: 'day_flow', label: 'Day Flow', role: 'today', apiPath: '/api/day-flow', state: commonState, source: 'api', lastUpdatedAt: updatedAt, knownGap: 'Activity is currently unavailable in the owned payload.', pagePath: '/twitch/day-flow/' },
     { key: 'battle_lines', label: 'Battle Lines', role: 'rivalry', apiPath: '/api/battle-lines', state: commonState, source: 'api', lastUpdatedAt: updatedAt, knownGap: 'Events are derived from viewer deltas.', pagePath: '/twitch/battle-lines/' },
     { key: 'history', label: 'History', role: 'trends', apiPath: '/api/history', state: commonState, source: 'api', lastUpdatedAt: updatedAt, knownGap: 'Depends on retained observed snapshots.', pagePath: '/twitch/history/' },
   ]
-}
-
-function mapFeatureState(state: string, sourceMode: string): string {
-  if (sourceMode === 'demo') return 'demo'
-  if (state === 'fresh' || state === 'partial' || state === 'empty' || state === 'stale') return state
-  if (state === 'strong_stale') return 'stale'
-  if (state === 'failing' || state === 'error' || state === 'unconfigured') return 'error'
-  return 'partial'
 }
 
 function sanitizeError(value: string | null | undefined): string | null {
