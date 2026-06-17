@@ -2,11 +2,30 @@
 
 This page records the production contract for the portal and provider home pages.
 
-## Portal
+## Portal role
 
-- The portal keeps the current dark shell, `data-provider="portal"`, `.portal-grid`, separate Twitch/Kick panels, and `.signal-list`.
-- The portal must not show combined Twitch/Kick totals as if they are one provider.
-- Portal links must continue to open `/twitch/` and `/kick/` as separate observation sites.
+The portal is the lightweight ViewLoom entrance. It explains the observation model, shows separate Twitch and Kick briefing cards, and routes users into the appropriate provider site and analysis view.
+
+A completed portal must contain:
+
+1. A compact ViewLoom hero and operating-model facts
+2. Two provider briefing cards, one for Twitch and one for Kick
+3. Provider-specific status, update age, observed stream count, observed viewer count, largest observed stream, and coverage note
+4. Exactly four analysis view cards: Heatmap, Day Flow, Battle Lines, and History
+5. A short data-boundaries explanation
+6. Separate links to `/twitch/` and `/kick/`
+
+The portal must fetch `/api/twitch-home` and `/api/kick-home` independently. It must never add, average, rank, or otherwise combine Twitch and Kick values into a cross-platform total.
+
+The portal must not contain:
+
+- fake live counts or static provider totals
+- a fifth Status analysis card
+- duplicate provider-home sections
+- heavy charts or raw minute snapshots
+- internal QA notes, implementation notes, or release notes
+
+Status remains available from each provider card and provider site.
 
 ## Provider-home role
 
@@ -68,7 +87,7 @@ Allowed provider-home states are:
 - Twitch and Kick home pages keep `data-provider="twitch"` and `data-provider="kick"` respectively.
 - Both pages use the same structural component contract.
 - Provider source, coverage, top limit, activity availability, unavailable signals, and route links remain provider-specific.
-- Twitch and Kick values are never combined on either provider home.
+- Twitch and Kick values are never combined on either provider home or the portal.
 - Twitch source is presented as Helix-backed observation. Kick source is presented as authenticated or candidate-feed observation.
 
 ## Home payload contract
@@ -99,14 +118,17 @@ Provider home pages must link to:
 
 The first four are analysis cards. Status is reached through the status/header surface rather than a fifth analysis card.
 
+The portal must expose separate routes for both providers for each of the four analysis views. It must not imply that the resulting values are directly comparable across providers.
+
 ## Mobile
 
 - Mobile keeps the same information hierarchy but reduces ranking rows, chart labels, and secondary detail.
 - The completed mobile page must not be a wide desktop dashboard merely stacked unchanged.
-- Horizontal data tables must not be required to understand the provider-home summary.
+- Horizontal data tables must not be required to understand the provider-home or portal summary.
 - Mobile navigation exposes and updates `aria-expanded` correctly.
+- Provider briefing cards and analysis cards collapse without hiding their primary action.
 
 ## Implementation source of truth
 
 The fixed implementation sequence and payload direction are recorded in `docs/platform-home-repair-plan.md`.
-A future change that restores old overview cards, fake live counts, mock portal labels, decorative placeholder charts, duplicated coverage sections, internal release notes, or Status as a fifth analysis feature card is a regression.
+A future change that restores old overview cards, fake live counts, mock portal labels, decorative placeholder charts, duplicated coverage sections, internal release notes, Status as a fifth analysis feature card, or combined Twitch/Kick totals is a regression.
