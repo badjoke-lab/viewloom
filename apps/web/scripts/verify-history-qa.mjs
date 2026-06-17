@@ -22,12 +22,13 @@ function forbidPattern(path, source, label, pattern) {
 
 const historyPages = ['twitch/history/index.html', 'kick/history/index.html']
 const entryPath = 'src/live/history-current-shell-entry.ts'
+const dayLinkBridgePath = 'src/navigation/history-day-link-bridge.ts'
 const stylePath = 'src/history-page.css'
 const contractPath = 'docs/history-qa-contract.md'
 const apiPaths = ['functions/api/history.ts', 'functions/api/kick-history.ts']
 const sharedPaths = ['functions/_history/model.ts', 'functions/_history/builders.ts']
 
-for (const path of [...historyPages, entryPath, stylePath, contractPath, ...apiPaths, ...sharedPaths]) requireFile(path)
+for (const path of [...historyPages, entryPath, dayLinkBridgePath, stylePath, contractPath, ...apiPaths, ...sharedPaths]) requireFile(path)
 
 for (const path of historyPages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
@@ -36,6 +37,7 @@ for (const path of historyPages.filter((path) => existsSync(join(root, path)))) 
     : 'History & Trends for Kick live streams | ViewLoom'
   for (const fragment of [
     '/src/live/history-current-shell-entry.ts',
+    '/src/navigation/history-day-link-bridge.ts',
     '/src/history-page.css',
     `<title>${title}</title>`,
     'History &amp; Trends',
@@ -62,6 +64,8 @@ if (existsSync(join(root, entryPath))) {
     "provider === 'kick' ? '/api/kick-history' : '/api/history'",
     'new AbortController()',
     'new URLSearchParams(window.location.search)',
+    "params.get('day')",
+    "params.set('day', pageState.selectedDay)",
     'data-history-period',
     'data-history-metric',
     'renderSummary(payload',
@@ -76,6 +80,19 @@ if (existsSync(join(root, entryPath))) {
   ]) requireFragment(entryPath, source, fragment)
   forbidPattern(entryPath, source, 'fixed 30-day-only fetch', /fetch\(`\$\{endpoint\}\?period=30d/)
   forbidPattern(entryPath, source, 'app-root rewrite renderer', /document\.querySelector<HTMLElement>\('\#app'\)/)
+}
+
+if (existsSync(join(root, dayLinkBridgePath))) {
+  const source = read(dayLinkBridgePath)
+  for (const fragment of [
+    'historyDayLinks(',
+    'rangeMode=date&date=',
+    'range=date&date=',
+    'rewriteHistoryDayLinks(',
+    'new MutationObserver(',
+    "document.body.dataset.provider === 'kick'",
+  ]) requireFragment(dayLinkBridgePath, source, fragment)
+  forbidPattern(dayLinkBridgePath, source, 'cross-provider combined History link', /\/twitch\/.*\/kick\/|\/kick\/.*\/twitch\//)
 }
 
 for (const path of apiPaths.filter((path) => existsSync(join(root, path)))) {
