@@ -27,8 +27,10 @@ type StatusRow = {
   updated_at: string
 }
 
-const STALE_AFTER_MINUTES = 3
-const STRONG_STALE_AFTER_MINUTES = 10
+const COLLECTION_CADENCE_SECONDS = 5 * 60
+const TOP_LIMIT = 300
+const STALE_AFTER_MINUTES = 10
+const STRONG_STALE_AFTER_MINUTES = 30
 
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   try {
@@ -57,7 +59,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       generatedAt,
       collector: {
         state: collector?.status ?? 'unconfigured',
-        runCadenceSeconds: 60,
+        runCadenceSeconds: COLLECTION_CADENCE_SECONDS,
         lastAttemptAt: collector?.last_attempt_at ?? null,
         lastSuccessAt: collector?.last_success_at ?? latest?.collected_at ?? null,
         lastFailureAt: collector?.last_failure_at ?? null,
@@ -78,14 +80,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         observedCount,
         coveredPages: latest?.covered_pages ?? collector?.covered_pages ?? null,
         hasMore,
-        topLimit: 50,
+        topLimit: TOP_LIMIT,
       },
       coverage: {
         state: hasMore ? 'partial' : observedCount > 0 ? 'good' : 'missing',
         observedCount,
         coveredPages: latest?.covered_pages ?? collector?.covered_pages ?? null,
         hasMore,
-        notes: hasMore ? ['More streams may exist beyond the current collection window.'] : [],
+        notes: hasMore ? ['More streams may exist beyond the current Top 300 observation window.'] : [],
       },
       features: buildFeatures(state, sourceMode, collector?.last_success_at ?? latest?.collected_at ?? null),
       limitations: [
