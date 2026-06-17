@@ -184,6 +184,38 @@
   color: var(--error);
 }
 
+.portal-provider-next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 11px 12px;
+  border: 1px solid var(--line-strong);
+  background: rgba(255,255,255,.025);
+  color: #d9e4f5;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.portal-provider-card--twitch .portal-provider-next {
+  border-color: rgba(144,90,255,.38);
+  background: rgba(144,90,255,.07);
+}
+
+.portal-provider-card--kick .portal-provider-next {
+  border-color: rgba(34,211,120,.38);
+  background: rgba(34,211,120,.06);
+}
+
+.portal-provider-next:hover {
+  filter: brightness(1.15);
+}
+
+.portal-provider-next[hidden] {
+  display: none;
+}
+
 .portal-provider-note {
   margin: 13px 0 18px;
   color: var(--muted);
@@ -252,7 +284,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-height: 210px;
+  min-height: 194px;
   padding: 18px;
   border: 1px solid var(--line-strong);
   background: var(--surface);
@@ -287,9 +319,9 @@
 
 .portal-view-card p {
   margin-bottom: 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
+  color: #b7c6db;
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .portal-view-card__links {
@@ -329,8 +361,8 @@
   gap: 16px;
   align-items: center;
   padding: 18px 20px;
-  border: 1px solid var(--line-strong);
-  background: rgba(11,22,38,.75);
+  border: 1px solid rgba(44,151,255,.38);
+  background: rgba(11,22,38,.82);
 }
 
 .portal-boundaries__icon {
@@ -343,14 +375,19 @@
   font-size: 24px;
 }
 
+.portal-boundaries .kicker {
+  margin-bottom: 5px;
+  color: var(--portal);
+}
+
 .portal-boundaries h2 {
   margin-bottom: 5px;
-  font-size: 20px;
+  font-size: 22px;
 }
 
 .portal-boundaries p {
   margin-bottom: 0;
-  color: var(--muted);
+  color: #b7c6db;
   font-size: 12px;
   line-height: 1.55;
 }
@@ -394,5 +431,6 @@
   .portal-fact { min-height: 72px; }
   .portal-provider-stats { grid-template-columns: 1fr; }
   .portal-provider-stats > div:last-child { grid-column: auto; }
+  .portal-provider-next { width: 100%; }
   .portal-view-card__links { grid-template-columns: 1fr; }
 }
