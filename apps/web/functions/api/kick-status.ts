@@ -1,5 +1,6 @@
 import type { Env } from '../_db/env'
 import { providerRuntime } from '../_provider-runtime'
+import { normalizeFeatureState } from '../_state-contract'
 
 type SnapshotRow = {
   provider: string
@@ -155,7 +156,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
 }
 
 function deriveState(sourceMode: string, minutes: number | null, count: number): string {
-  if (sourceMode === 'fixture') return 'fixture'
+  if (sourceMode === 'fixture') return 'demo'
   if (minutes == null) return 'empty'
   if (minutes >= runtime.strongStaleAfterMinutes) return 'strong_stale'
   if (minutes >= runtime.staleAfterMinutes) return 'stale'
@@ -164,7 +165,7 @@ function deriveState(sourceMode: string, minutes: number | null, count: number):
 }
 
 function buildFeatures(state: string, sourceMode: string, updatedAt: string | null) {
-  const featureState = sourceMode === 'fixture' ? 'fixture' : state === 'strong_stale' ? 'stale' : state
+  const featureState = normalizeFeatureState(state, sourceMode)
   return [
     { key: 'heatmap', label: 'Heatmap', role: 'now', apiPath: '/api/kick-heatmap', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Activity unavailable; source mode and candidate coverage are shown in notes.', pagePath: '/kick/heatmap/' },
     { key: 'day_flow', label: 'Day Flow', role: 'today', apiPath: '/api/kick-day-flow', state: featureState, source: sourceMode, lastUpdatedAt: updatedAt, knownGap: 'Activity unavailable; bands come from observed DB_KICK_HOT snapshots.', pagePath: '/kick/day-flow/' },
