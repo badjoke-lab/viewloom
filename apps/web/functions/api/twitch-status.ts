@@ -146,8 +146,5 @@ function mapFeatureState(state: string, sourceMode: string): string {
 
 function sanitizeError(value: string | null | undefined): string | null {
   if (!value) return null
-  const marker = 'Bearer '
-  const index = value.indexOf(marker)
-  const safe = index >= 0 ? `${value.slice(0, index)}${marker}[redacted]` : value
-  return safe.slice(0, 220)
+  return value.replace(/Bearer\s+[A-Za-z0-9._-]+/g, 'Bearer [redacted]').slice(0, 220)
 }
