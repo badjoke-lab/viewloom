@@ -1,3 +1,5 @@
+import './navigation/copy-current-view'
+
 export type GtagEventParams = Record<string, string | number | boolean | null | undefined>
 
 declare global {
