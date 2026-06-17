@@ -1,4 +1,5 @@
 import type { Env } from '../_db/env'
+import { providerRuntime } from '../_provider-runtime'
 
 type SnapshotRow = {
   provider: string
@@ -14,8 +15,7 @@ type SourceCountRow = { source_mode: string; rows: number }
 type Raw = Record<string, unknown>
 type CoverageMode = 'official-livestreams' | 'registry' | 'seed-list'
 
-const STALE_AFTER_MINUTES = 10
-const STRONG_STALE_AFTER_MINUTES = 30
+const runtime = providerRuntime('kick')
 const DEFAULT_COVERAGE_MODE: CoverageMode = 'seed-list'
 
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
@@ -77,6 +77,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         sourceMode,
         coverageMode: runtimeCoverageMode,
         targetSource,
+        runCadenceSeconds: runtime.collectionCadenceSeconds,
         configuredChannelMechanism: coverage.configuredChannelMechanism,
         configuredChannels: collectorMeta.configuredChannels ?? null,
         attemptedChannels: collectorMeta.attemptedChannels ?? null,
@@ -93,8 +94,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       freshness: {
         lastSuccessAt: latest?.collected_at ?? null,
         minutesSinceSuccess,
-        staleAfterMinutes: STALE_AFTER_MINUTES,
-        strongStaleAfterMinutes: STRONG_STALE_AFTER_MINUTES,
+        staleAfterMinutes: runtime.staleAfterMinutes,
+        strongStaleAfterMinutes: runtime.strongStaleAfterMinutes,
         isFresh: state === 'fresh' || state === 'partial',
         isStale: state === 'stale' || state === 'strong_stale',
       },
@@ -107,6 +108,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         sourceMode,
         coverageMode: runtimeCoverageMode,
         targetSource,
+        topLimit: runtime.topLimit,
       },
       latestObservedChannels,
       collectorMeta,
@@ -115,6 +117,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         state: latest ? (latest.stream_count > 0 ? `${runtimeCoverageMode}-observed` : 'empty') : 'missing',
         mode: runtimeCoverageMode,
         observedCount: latest?.stream_count ?? 0,
+        topLimit: runtime.topLimit,
         isTwitchParity: false,
         notes: [
           'Kick reads DB_KICK_HOT / vl_kick_hot only.',
@@ -154,8 +157,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
 function deriveState(sourceMode: string, minutes: number | null, count: number): string {
   if (sourceMode === 'fixture') return 'fixture'
   if (minutes == null) return 'empty'
-  if (minutes >= STRONG_STALE_AFTER_MINUTES) return 'strong_stale'
-  if (minutes >= STALE_AFTER_MINUTES) return 'stale'
+  if (minutes >= runtime.strongStaleAfterMinutes) return 'strong_stale'
+  if (minutes >= runtime.staleAfterMinutes) return 'stale'
   if (count === 0) return 'empty'
   return sourceMode === 'authenticated' ? 'fresh' : 'partial'
 }
