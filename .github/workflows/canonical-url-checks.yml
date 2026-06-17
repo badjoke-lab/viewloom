@@ -1,0 +1,40 @@
+name: Canonical URL checks
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/**/*.html'
+      - 'apps/web/src/navigation/url-contract.ts'
+      - 'apps/web/scripts/verify-canonical-url-contract.mjs'
+      - 'apps/web/docs/canonical-url-contract.md'
+      - '.github/workflows/canonical-url-checks.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/**/*.html'
+      - 'apps/web/src/navigation/url-contract.ts'
+      - 'apps/web/scripts/verify-canonical-url-contract.mjs'
+      - 'apps/web/docs/canonical-url-contract.md'
+      - '.github/workflows/canonical-url-checks.yml'
+
+jobs:
+  canonical-url-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Verify canonical URL contract
+        working-directory: apps/web
+        run: node scripts/verify-canonical-url-contract.mjs
