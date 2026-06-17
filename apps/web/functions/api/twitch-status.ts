@@ -1,4 +1,5 @@
 import type { Env } from '../_db/env'
+import { providerRuntime } from '../_provider-runtime'
 
 type SnapshotRow = {
   provider: string
@@ -27,10 +28,7 @@ type StatusRow = {
   updated_at: string
 }
 
-const COLLECTION_CADENCE_SECONDS = 5 * 60
-const TOP_LIMIT = 300
-const STALE_AFTER_MINUTES = 10
-const STRONG_STALE_AFTER_MINUTES = 30
+const runtime = providerRuntime('twitch')
 
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   try {
@@ -47,7 +45,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     const observedCount = latest?.stream_count ?? collector?.latest_stream_count ?? 0
     const hasMore = Boolean(latest?.has_more ?? collector?.has_more ?? 0)
     const snapshotSourceMode = latest?.source_mode === 'demo' ? 'demo' : 'real'
-    const sourceMode = snapshotSourceMode === 'demo' ? 'demo' : minutesSinceSuccess != null && minutesSinceSuccess >= STALE_AFTER_MINUTES ? 'stale' : 'real'
+    const sourceMode = snapshotSourceMode === 'demo' ? 'demo' : minutesSinceSuccess != null && minutesSinceSuccess >= runtime.staleAfterMinutes ? 'stale' : 'real'
     const state = deriveState({ collectorStatus: collector?.status ?? null, minutesSinceSuccess, observedCount, hasMore })
 
     return Response.json({
@@ -59,7 +57,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       generatedAt,
       collector: {
         state: collector?.status ?? 'unconfigured',
-        runCadenceSeconds: COLLECTION_CADENCE_SECONDS,
+        runCadenceSeconds: runtime.collectionCadenceSeconds,
         lastAttemptAt: collector?.last_attempt_at ?? null,
         lastSuccessAt: collector?.last_success_at ?? latest?.collected_at ?? null,
         lastFailureAt: collector?.last_failure_at ?? null,
@@ -69,8 +67,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       freshness: {
         lastSuccessAt: collector?.last_success_at ?? latest?.collected_at ?? null,
         minutesSinceSuccess,
-        staleAfterMinutes: STALE_AFTER_MINUTES,
-        strongStaleAfterMinutes: STRONG_STALE_AFTER_MINUTES,
+        staleAfterMinutes: runtime.staleAfterMinutes,
+        strongStaleAfterMinutes: runtime.strongStaleAfterMinutes,
         isFresh: state === 'fresh' || state === 'partial',
         isStale: state === 'stale' || state === 'strong_stale',
         isStrongStale: state === 'strong_stale',
@@ -80,14 +78,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         observedCount,
         coveredPages: latest?.covered_pages ?? collector?.covered_pages ?? null,
         hasMore,
-        topLimit: TOP_LIMIT,
+        topLimit: runtime.topLimit,
       },
       coverage: {
         state: hasMore ? 'partial' : observedCount > 0 ? 'good' : 'missing',
         observedCount,
         coveredPages: latest?.covered_pages ?? collector?.covered_pages ?? null,
         hasMore,
-        notes: hasMore ? ['More streams may exist beyond the current Top 300 observation window.'] : [],
+        notes: hasMore ? [`More streams may exist beyond the current Top ${runtime.topLimit} observation window.`] : [],
       },
       features: buildFeatures(state, sourceMode, collector?.last_success_at ?? latest?.collected_at ?? null),
       limitations: [
@@ -121,8 +119,8 @@ function deriveState(input: { collectorStatus: string | null; minutesSinceSucces
   const collector = String(input.collectorStatus ?? '').toLowerCase()
   if (collector === 'failing' || collector === 'error') return 'failing'
   if (input.minutesSinceSuccess == null) return 'empty'
-  if (input.minutesSinceSuccess >= STRONG_STALE_AFTER_MINUTES) return 'strong_stale'
-  if (input.minutesSinceSuccess >= STALE_AFTER_MINUTES) return 'stale'
+  if (input.minutesSinceSuccess >= runtime.strongStaleAfterMinutes) return 'strong_stale'
+  if (input.minutesSinceSuccess >= runtime.staleAfterMinutes) return 'stale'
   if (input.hasMore) return 'partial'
   if (input.observedCount === 0) return 'empty'
   return 'fresh'
