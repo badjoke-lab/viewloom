@@ -1,0 +1,45 @@
+type Provider = 'twitch' | 'kick'
+
+export function historyDayLinks(provider: Provider, day: string): { dayFlow: string; battleLines: string } | null {
+  if (!validDay(day)) return null
+  const encoded = encodeURIComponent(day)
+  return {
+    dayFlow: `/${provider}/day-flow/?rangeMode=date&date=${encoded}`,
+    battleLines: `/${provider}/battle-lines/?range=date&date=${encoded}`,
+  }
+}
+
+export function rewriteHistoryDayLinks(root: ParentNode = document): number {
+  const provider: Provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
+  let changed = 0
+  root.querySelectorAll<HTMLAnchorElement>(`a[href^="/${provider}/day-flow/?date="], a[href^="/${provider}/battle-lines/?date="]`).forEach((anchor) => {
+    const url = new URL(anchor.href, location.origin)
+    const day = url.searchParams.get('date')
+    const links = day ? historyDayLinks(provider, day) : null
+    if (!links) return
+    const next = url.pathname.includes('/day-flow/') ? links.dayFlow : links.battleLines
+    if (anchor.getAttribute('href') !== next) {
+      anchor.setAttribute('href', next)
+      changed += 1
+    }
+  })
+  return changed
+}
+
+function validDay(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const date = new Date(`${value}T00:00:00.000Z`)
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
+}
+
+if (typeof document !== 'undefined') {
+  rewriteHistoryDayLinks()
+  const observer = new MutationObserver((records) => {
+    for (const record of records) {
+      for (const node of record.addedNodes) {
+        if (node instanceof Element) rewriteHistoryDayLinks(node)
+      }
+    }
+  })
+  observer.observe(document.body, { childList: true, subtree: true })
+}
