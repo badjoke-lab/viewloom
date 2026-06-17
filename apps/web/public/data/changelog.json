@@ -1,23 +1,33 @@
 {
-  "version": "viewloom-changelog-v1",
+  "version": "viewloom-changelog-v2",
   "entries": [
+    {
+      "id": "shareable-analysis-views",
+      "date": "2026-06-18",
+      "datePrecision": "day",
+      "title": "Shareable analysis views",
+      "summary": "Added canonical page URLs, stable dated links between History, Day Flow, and Battle Lines, and Copy current view controls for the separate Twitch and Kick data views."
+    },
     {
       "id": "viewloom-design-refresh",
       "date": "2026-06",
       "datePrecision": "month",
-      "title": "ViewLoom design refresh"
+      "title": "ViewLoom design refresh",
+      "summary": "Reworked the Portal and provider homes and rebuilt the core analysis pages around clearer controls, visible coverage states, and responsive layouts."
     },
     {
       "id": "livefield-becomes-viewloom",
       "date": "2026-05",
       "datePrecision": "month",
-      "title": "Livefield becomes ViewLoom"
+      "title": "Livefield becomes ViewLoom",
+      "summary": "Renamed the project to ViewLoom and established separate Twitch data and Kick data routes under one independent observation portal."
     },
     {
       "id": "livefield-begins",
       "date": "2026-04",
       "datePrecision": "month",
-      "title": "Livefield begins"
+      "title": "Livefield begins",
+      "summary": "Started the live-stream observation project with Heatmap, Day Flow, and Battle Lines as distinct Now, Today, and Rivalry views."
     }
   ]
 }

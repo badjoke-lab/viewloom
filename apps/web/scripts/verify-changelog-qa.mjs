@@ -10,15 +10,7 @@ const clientPath = 'src/changelog-page.ts'
 const stylePath = 'src/changelog-page.css'
 const failures = []
 
-for (const path of [
-  sourcePath,
-  publicPath,
-  contractPath,
-  'scripts/build-changelog.mjs',
-  pagePath,
-  clientPath,
-  stylePath,
-]) {
+for (const path of [sourcePath, publicPath, contractPath, 'scripts/build-changelog.mjs', pagePath, clientPath, stylePath]) {
   if (!existsSync(join(root, path))) failures.push(`${path}: missing required Changelog file`)
 }
 
@@ -33,24 +25,7 @@ if (source) verifyPayload(source)
 verifyPage()
 verifyClient()
 verifyStyles()
-
-if (existsSync(join(root, contractPath))) {
-  const contract = readFileSync(join(root, contractPath), 'utf8')
-  for (const fragment of [
-    'ViewLoom Changelog QA Contract',
-    'viewloom-changelog-v1',
-    'data/changelog.json',
-    'public/data/changelog.json',
-    'Livefield begins',
-    'Livefield becomes ViewLoom',
-    'ViewLoom design refresh',
-    '/changelog/',
-    'Loading, empty, and error states',
-    'The detailed review canvas is not public data',
-  ]) {
-    if (!contract.includes(fragment)) failures.push(`${contractPath}: missing required contract fragment: ${fragment}`)
-  }
-}
+verifyContract()
 
 if (failures.length > 0) {
   console.error('ViewLoom Changelog QA verification failed:')
@@ -58,7 +33,7 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log('ViewLoom Changelog QA verification passed for the canonical three-entry data and public page UI.')
+console.log('ViewLoom Changelog QA verification passed for four reviewed v2 milestones.')
 
 function readJson(path) {
   if (!existsSync(join(root, path))) return null
@@ -75,19 +50,20 @@ function verifyPayload(payload) {
     failures.push(`${sourcePath}: root must be an object`)
     return
   }
-  if (payload.version !== 'viewloom-changelog-v1') failures.push(`${sourcePath}: version must be viewloom-changelog-v1`)
+  if (payload.version !== 'viewloom-changelog-v2') failures.push(`${sourcePath}: version must be viewloom-changelog-v2`)
   if (!Array.isArray(payload.entries)) {
     failures.push(`${sourcePath}: entries must be an array`)
     return
   }
 
   const expected = new Map([
+    ['shareable-analysis-views', ['2026-06-18', 'Shareable analysis views']],
     ['viewloom-design-refresh', ['2026-06', 'ViewLoom design refresh']],
     ['livefield-becomes-viewloom', ['2026-05', 'Livefield becomes ViewLoom']],
     ['livefield-begins', ['2026-04', 'Livefield begins']],
   ])
 
-  if (payload.entries.length !== expected.size) failures.push(`${sourcePath}: initial public Changelog must contain exactly three entries`)
+  if (payload.entries.length !== expected.size) failures.push(`${sourcePath}: public Changelog must contain the four reviewed entries`)
 
   const ids = new Set()
   let previousDate = null
@@ -100,16 +76,15 @@ function verifyPayload(payload) {
     }
 
     const keys = Object.keys(entry).sort()
-    const expectedKeys = ['date', 'datePrecision', 'id', 'title']
-    if (JSON.stringify(keys) !== JSON.stringify(expectedKeys)) {
-      failures.push(`${label} must contain only id, date, datePrecision, and title during the initial review stage`)
-    }
+    const expectedKeys = ['date', 'datePrecision', 'id', 'summary', 'title']
+    if (JSON.stringify(keys) !== JSON.stringify(expectedKeys)) failures.push(`${label} must contain only id, date, datePrecision, title, and summary`)
 
     if (typeof entry.id !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry.id)) failures.push(`${label}: id must be a lowercase slug`)
     else if (ids.has(entry.id)) failures.push(`${label}: duplicate id ${entry.id}`)
     else ids.add(entry.id)
 
     if (typeof entry.title !== 'string' || entry.title.trim().length === 0) failures.push(`${label}: title must not be empty`)
+    if (typeof entry.summary !== 'string' || entry.summary.trim().length < 20) failures.push(`${label}: summary must be a reviewed explanatory sentence`)
     if (entry.datePrecision !== 'month' && entry.datePrecision !== 'day') failures.push(`${label}: datePrecision must be month or day`)
     if (!validDate(entry.date, entry.datePrecision)) failures.push(`${label}: date does not match datePrecision`)
 
@@ -117,19 +92,18 @@ function verifyPayload(payload) {
     previousDate = entry.date
 
     const expectedEntry = expected.get(entry.id)
-    if (!expectedEntry) failures.push(`${label}: unexpected initial public entry ${entry.id}`)
+    if (!expectedEntry) failures.push(`${label}: unexpected public entry ${entry.id}`)
     else {
       if (entry.date !== expectedEntry[0]) failures.push(`${label}: expected date ${expectedEntry[0]}`)
       if (entry.title !== expectedEntry[1]) failures.push(`${label}: expected title ${expectedEntry[1]}`)
     }
 
-    const serialized = JSON.stringify(entry).toLowerCase()
-    if (/\b(?:draft|planned|todo|lorem|fake)\b/.test(serialized)) failures.push(`${label}: contains forbidden draft or placeholder language`)
+    const serialized = JSON.stringify(entry)
+    if (/\b(?:draft|planned|todo|lorem|fake|placeholder)\b/i.test(serialized)) failures.push(`${label}: contains forbidden draft or placeholder language`)
+    if (/\bPR\s*#?\d+\b|\b[0-9a-f]{40}\b|\b(?:feature|fix|refactor)\/[a-z0-9._-]+\b/i.test(serialized)) failures.push(`${label}: contains internal implementation identifiers`)
   }
 
-  for (const id of expected.keys()) {
-    if (!ids.has(id)) failures.push(`${sourcePath}: missing required initial entry ${id}`)
-  }
+  for (const id of expected.keys()) if (!ids.has(id)) failures.push(`${sourcePath}: missing reviewed entry ${id}`)
 }
 
 function verifyPage() {
@@ -150,10 +124,9 @@ function verifyPage() {
     '/src/changelog-page.css',
     '/src/changelog-page.ts',
     '/src/analytics.ts',
-  ]) {
-    if (!page.includes(fragment)) failures.push(`${pagePath}: missing required page fragment: ${fragment}`)
-  }
-  for (const title of ['Livefield begins', 'Livefield becomes ViewLoom', 'ViewLoom design refresh']) {
+  ]) if (!page.includes(fragment)) failures.push(`${pagePath}: missing required page fragment: ${fragment}`)
+
+  for (const title of ['Shareable analysis views', 'Livefield begins', 'Livefield becomes ViewLoom', 'ViewLoom design refresh']) {
     if (page.includes(title)) failures.push(`${pagePath}: milestone ${title} must come from public JSON, not hard-coded page markup`)
   }
 }
@@ -163,7 +136,7 @@ function verifyClient() {
   const client = readFileSync(join(root, clientPath), 'utf8')
   for (const fragment of [
     "fetch('/data/changelog.json'",
-    "version: 'viewloom-changelog-v1'",
+    "version: 'viewloom-changelog-v2'",
     'renderEntries',
     'createEntry',
     "setState('loading')",
@@ -171,21 +144,41 @@ function verifyClient() {
     "setState('error')",
     "setState('ready')",
     "retry.textContent = 'Retry'",
-    "time.dateTime = entry.date",
+    'time.dateTime = entry.date',
     'title.textContent = entry.title',
-  ]) {
-    if (!client.includes(fragment)) failures.push(`${clientPath}: missing required client fragment: ${fragment}`)
-  }
-  if (/entry\.(?:summary|details|pullRequests|commit)/.test(client)) failures.push(`${clientPath}: initial page must render only reviewed date and title fields`)
+    'summary.textContent = entry.summary',
+    "summary.className = 'changelog-entry__summary'",
+  ]) if (!client.includes(fragment)) failures.push(`${clientPath}: missing required client fragment: ${fragment}`)
+
+  if (/entry\.(?:details|pullRequests|commit)/.test(client)) failures.push(`${clientPath}: page must not render internal implementation fields`)
   if (/innerHTML\s*=/.test(client)) failures.push(`${clientPath}: Changelog entries must use DOM text assignment rather than innerHTML`)
 }
 
 function verifyStyles() {
   if (!existsSync(join(root, stylePath))) return
   const styles = readFileSync(join(root, stylePath), 'utf8')
-  for (const fragment of ['.changelog-timeline', '.changelog-entry', '.changelog-state--error', '@media(max-width:760px)', '@media(max-width:520px)']) {
+  for (const fragment of ['.changelog-timeline', '.changelog-entry', '.changelog-entry__summary', '.changelog-state--error', '@media(max-width:760px)', '@media(max-width:520px)']) {
     if (!styles.includes(fragment)) failures.push(`${stylePath}: missing required responsive style fragment: ${fragment}`)
   }
+}
+
+function verifyContract() {
+  if (!existsSync(join(root, contractPath))) return
+  const contract = readFileSync(join(root, contractPath), 'utf8')
+  for (const fragment of [
+    'ViewLoom Changelog QA Contract',
+    'viewloom-changelog-v2',
+    'data/changelog.json',
+    'public/data/changelog.json',
+    'Shareable analysis views',
+    'Livefield begins',
+    'Livefield becomes ViewLoom',
+    'ViewLoom design refresh',
+    'summary',
+    '/changelog/',
+    'Loading, empty, and error states',
+    'The detailed review canvas is not public data',
+  ]) if (!contract.includes(fragment)) failures.push(`${contractPath}: missing required contract fragment: ${fragment}`)
 }
 
 function validDate(value, precision) {
