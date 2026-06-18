@@ -41,13 +41,21 @@ export function parsePayload(value) {
 
 export function normalizeSourceMode(value) {
   const key = String(value || '').trim().toLowerCase().replaceAll(' ', '_')
-  if (key === 'demo') return 'demo'
+  if (key === 'demo' || key === 'fixture') return 'demo'
   if (key === 'stale' || key === 'stale_real') return 'stale'
-  if (key === 'real' || key === 'api' || key === 'authenticated') return 'real'
+  if (key === 'authenticated' || key === 'official-livestreams') return 'official-livestreams'
+  if (key === 'registry') return 'registry'
+  if (key === 'seed-list') return 'seed-list'
+  if (key === 'public-channel-fallback') return 'public-channel-fallback'
+  if (key === 'real' || key === 'api') return 'real'
   return 'unknown'
 }
 
 export function sourceLabel(mode) {
+  if (mode === 'official-livestreams') return 'Official endpoint'
+  if (mode === 'registry') return 'Registry candidates'
+  if (mode === 'seed-list') return 'Seed list'
+  if (mode === 'public-channel-fallback') return 'Candidate fallback'
   return mode === 'real' ? 'Real' : mode === 'stale' ? 'Stale real' : mode === 'demo' ? 'Demo' : 'Unknown'
 }
 

@@ -1,0 +1,43 @@
+name: Kick coverage UI checks
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/src/provider-coverage.ts'
+      - 'apps/web/src/kick-coverage-ui.ts'
+      - 'apps/web/src/provider-home-bootstrap.ts'
+      - 'apps/web/src/mock-site.ts'
+      - 'apps/web/src/features/heatmap-page/data-state-utils.mjs'
+      - 'apps/web/kick/index.html'
+      - 'apps/web/docs/kick-coverage-ui-contract.md'
+      - 'apps/web/scripts/verify-kick-coverage-ui.mjs'
+      - '.github/workflows/kick-coverage-ui-checks.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/src/provider-coverage.ts'
+      - 'apps/web/src/kick-coverage-ui.ts'
+      - 'apps/web/src/provider-home-bootstrap.ts'
+      - 'apps/web/src/mock-site.ts'
+      - 'apps/web/src/features/heatmap-page/data-state-utils.mjs'
+      - 'apps/web/kick/index.html'
+      - 'apps/web/docs/kick-coverage-ui-contract.md'
+      - 'apps/web/scripts/verify-kick-coverage-ui.mjs'
+      - '.github/workflows/kick-coverage-ui-checks.yml'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm --filter @viewloom/web typecheck:app
+      - run: node scripts/verify-kick-coverage-ui.mjs
+        working-directory: apps/web
