@@ -9,22 +9,25 @@ const middlewarePath = 'functions/_middleware.ts'
 const helperPath = 'functions/_kick-feature-coverage.ts'
 const middleware = read(middlewarePath)
 const helper = read(helperPath)
+const kickRoutes = routeSet(middleware, 'KICK_FEATURE_ROUTES')
+const historyRoutes = routeSet(middleware, 'HISTORY_ROUTES')
 
 for (const route of [
   '/api/kick-heatmap',
   '/api/kick-day-flow',
   '/api/kick-battle-lines',
 ]) {
-  assert(middleware.includes(`'${route}'`), `${middlewarePath}: missing ${route}`)
+  assert(kickRoutes.includes(`'${route}'`), `${middlewarePath}: missing ${route}`)
 }
 
-assert(!middleware.includes("'/api/kick-history'"), `${middlewarePath}: History must remain route-level to avoid double enrichment.`)
+assert(!kickRoutes.includes("'/api/kick-history'"), `${middlewarePath}: Kick History must not receive root coverage enrichment.`)
+assert(historyRoutes.includes("'/api/kick-history'"), `${middlewarePath}: Kick History must receive shared daily-stat enrichment.`)
 assert(middleware.includes('const response = await next()'), `${middlewarePath}: feature handler must run before enrichment.`)
 assert(middleware.includes('KICK_FEATURE_ROUTES.has(pathname)'), `${middlewarePath}: Kick route isolation is missing.`)
-assert(middleware.includes('enrichKickFeatureResponse(env, response)'), `${middlewarePath}: shared coverage enrichment is not applied.`)
+assert(middleware.includes('enrichKickFeatureResponse(env, historyResponse)'), `${middlewarePath}: shared coverage enrichment is not applied after History enrichment.`)
 assert(middleware.includes("pathname.replace(/\\/$/, '')"), `${middlewarePath}: trailing-slash normalization is missing.`)
 assert(middleware.includes('TWITCH_FEATURE_ROUTES.has(pathname)'), `${middlewarePath}: Twitch routes must use a separate route set.`)
-assert(middleware.includes('enrichTwitchFeatureResponse(env, response)'), `${middlewarePath}: Twitch routes must use a separate helper.`)
+assert(middleware.includes('enrichTwitchFeatureResponse(env, historyResponse)'), `${middlewarePath}: Twitch routes must use a separate helper.`)
 
 for (const fragment of [
   'async function latestKickSnapshot(env: Env)',
@@ -54,6 +57,10 @@ if (failures.length) {
 
 console.log('Kick feature coverage middleware verification passed.')
 console.log('- Heatmap, Day Flow, and Battle Lines are enriched after their existing handlers')
-console.log('- History remains route-level and is not double-enriched')
+console.log('- Kick History coverage remains route-level while daily stats use the shared middleware')
 console.log('- missing Kick storage falls back to response metadata')
 console.log('- Twitch routes use a separate route set and helper')
+
+function routeSet(source, name) {
+  return source.match(new RegExp(`const ${name} = new Set\\(\\[([\\s\\S]*?)\\]\\)`))?.[1] ?? ''
+}
