@@ -2,73 +2,68 @@
 
 Audit scope: Twitch Heatmap, Day Flow, Battle Lines, and History public API responses.
 
-## Result
+## C5 result
 
-All four APIs remain isolated to Twitch storage and do not mix Kick observations. However, none of the four APIs currently exposes the complete structured provider-observation coverage contract used by Kick.
+All four APIs remain isolated to Twitch storage and now receive the same structured provider-observation coverage contract after their existing handlers finish.
 
-| Feature | Public route | Provider/platform | targetSource | sourceMode | coverageMode | existing coverage meaning | coverageModel | explicit non-provider-wide |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Heatmap | `/api/twitch-heatmap` | yes | yes | no top-level field | yes | prose note only | no | no |
-| Day Flow | `/api/day-flow` | no | no | no | no | prose note only | no | no |
-| Battle Lines | `/api/battle-lines` | platform only | no | no | no | observed timeline buckets | no | no |
-| History | `/api/history` | platform only | no | no | no | requested-day completeness | no | no |
+| Feature | Public route | targetSource | sourceMode | coverageMode | existing coverage meaning | coverageModel | explicit non-provider-wide |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Heatmap | `/api/twitch-heatmap` | `twitch-helix-streams` | yes | preserved | prose note only | yes | yes |
+| Day Flow | `/api/day-flow` | `twitch-helix-streams` | yes | added | bucket completeness remains in existing fields | yes | yes |
+| Battle Lines | `/api/battle-lines` | `twitch-helix-streams` | yes | added | observed timeline buckets | yes | yes |
+| History | `/api/history` | `twitch-helix-streams` | yes | added | requested-day completeness | yes | yes |
 
-## Response-path findings
+## Shared provider-observation contract
 
-### Heatmap
-
-- Success, empty, stale, and error responses carry `targetSource` and `coverageMode`.
-- The collector `source_mode` is only available inside the raw latest row and diagnostic notes.
-- There is no top-level `sourceMode`, `coverage`, or `coverageModel` contract.
-- No response explicitly states that Top 300 is bounded and not provider-wide.
-
-### Day Flow
-
-- Success, partial, empty, demo-dominant, and error responses do not identify provider, target source, source mode, or configured Top 300 observation scope.
-- `coverageNote` describes bucket completeness, not provider observation coverage.
-- Existing response fields must remain compatible with the current renderer.
-
-### Battle Lines
-
-- Success and error responses inherit one shared payload builder.
-- Existing `coverage` describes timeline bucket completeness and must not be replaced.
-- `source` remains `api` even when the payload state is `demo`; `sourceMode` is not surfaced.
-- No structured provider observation coverage is present.
-
-### History
-
-- Success, empty, demo, validation-error, oversized-range, and internal-error paths use the shared History model.
-- Existing `coverage` describes requested-day completeness and must not be replaced.
-- `source` is `real` or `demo`, but target source, source mode, Top 300, cadence, and bounded/provider-wide truth are absent.
-- Error responses currently retain `source: real`; C5 should add coverage truth without changing existing History state behavior.
-
-## C5 implementation requirements
-
-Add a shared Twitch coverage helper and append a separate `coverageModel` to every response path.
-
-Required fields:
+Every enriched response includes:
 
 ```text
+provider = twitch
+platform = twitch
 coverageMode
-targetSource
+targetSource = twitch-helix-streams
 sourceMode
-coverageModel.mode
+coverageModel.mode = helix | fixture | unknown
 coverageModel.targetSource
 coverageModel.sourceMode
+coverageModel.authMode
 coverageModel.label
 coverageModel.isDirectoryCoverage
 coverageModel.isProviderWide = false
 coverageModel.isBounded = true
 coverageModel.description
 coverageModel.limitation
+coverageModel.sourceLimitation
 coverageModel.topLimit = 300
 coverageModel.collectionCadenceSeconds = 300
 ```
 
-Compatibility rules:
+## Source-mode rules
 
-- Do not replace Battle Lines timeline `coverage`.
-- Do not replace History day-completeness `coverage`.
-- Do not alter chart, ranking, state, or fallback behavior in the coverage adoption PR.
-- Do not read `DB_KICK_HOT` or include Kick totals.
-- Apply enrichment to success, empty, demo, validation error, range error, and internal error responses.
+- `real`, `api`, `authenticated`, Helix target values, and observed/partial top-page modes normalize to `coverageModel.mode = helix`.
+- `demo` and `fixture` normalize to `coverageModel.mode = fixture`.
+- Missing or unconfirmed source information normalizes to `coverageModel.mode = unknown`.
+- The raw public `sourceMode` remains separate from the normalized coverage mode.
+
+## Response-path coverage
+
+The root Functions middleware enriches all JSON responses from:
+
+```text
+/api/twitch-heatmap
+/api/day-flow
+/api/battle-lines
+/api/history
+```
+
+This includes success, empty, partial, stale, demo, validation-error, range-error, and internal-error responses. Non-JSON responses pass through unchanged. Enrichment failure returns the original response.
+
+## Compatibility rules
+
+- Battle Lines timeline `coverage` is preserved unchanged.
+- History day-completeness `coverage` is preserved unchanged.
+- Heatmap legacy `coverageMode` is preserved when already present.
+- Chart, ranking, state, source, and fallback behavior remain owned by the original feature handler.
+- The middleware does not read `DB_KICK_HOT` or include Kick totals.
+- Kick feature routes continue through the separate Kick enrichment helper.
+- `/api/kick-history` remains route-level and is not double-enriched.
