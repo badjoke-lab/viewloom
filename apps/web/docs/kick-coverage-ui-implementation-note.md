@@ -1,1 +1,0 @@
-Implementation note: the coverage UI synchronizer observes only the existing Kick page request, clones the response for presentation metadata, and does not issue an additional API request.
