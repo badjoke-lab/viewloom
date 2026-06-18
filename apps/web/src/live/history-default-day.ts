@@ -1,3 +1,5 @@
+import './history-additional-rankings'
+
 const startedWithExplicitDay = new URLSearchParams(location.search).has('day')
 let pending = !startedWithExplicitDay
 let scheduled = false
