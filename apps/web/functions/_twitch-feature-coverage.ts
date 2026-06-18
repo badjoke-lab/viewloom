@@ -84,10 +84,20 @@ function resolveSourceMode(payload: JsonRecord, latestSourceMode: string | null 
   const state = text(payload.state).toLowerCase()
   const source = text(payload.source).toLowerCase()
   if (state === 'demo' || source === 'demo' || source === 'fixture') return 'demo'
+  const payloadLatest = object(payload.latest)
+  const embedded = text(payloadLatest?.source_mode ?? payloadLatest?.sourceMode)
+  if (embedded) return embedded
+  if (source === 'real') return 'real'
   const latest = text(latestSourceMode)
   if (latest) return latest
-  if (source === 'real' || source === 'api') return 'real'
+  if (source === 'api') return 'real'
   return 'unknown'
+}
+
+function object(value: unknown): JsonRecord | null {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as JsonRecord
+    : null
 }
 
 function text(value: unknown): string {
