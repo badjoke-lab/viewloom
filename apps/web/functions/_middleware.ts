@@ -5,7 +5,6 @@ import { enrichTwitchFeatureResponse } from './_twitch-feature-coverage'
 
 const HISTORY_ROUTES = new Set([
   '/api/history',
-  '/api/kick-history',
 ])
 
 const KICK_FEATURE_ROUTES = new Set([
@@ -24,10 +23,13 @@ const TWITCH_FEATURE_ROUTES = new Set([
 export const onRequest: PagesFunction<Env> = async ({ request, next, env }) => {
   const response = await next()
   const pathname = new URL(request.url).pathname.replace(/\/$/, '')
-  const historyResponse = HISTORY_ROUTES.has(pathname)
-    ? await enrichHistoryStreamerDailyStats(response)
-    : response
-  if (KICK_FEATURE_ROUTES.has(pathname)) return enrichKickFeatureResponse(env, historyResponse)
-  if (TWITCH_FEATURE_ROUTES.has(pathname)) return enrichTwitchFeatureResponse(env, historyResponse)
-  return historyResponse
+  if (KICK_FEATURE_ROUTES.has(pathname)) return enrichKickFeatureResponse(env, response)
+  if (TWITCH_FEATURE_ROUTES.has(pathname)) {
+    const coveredResponse = await enrichTwitchFeatureResponse(env, response)
+    return HISTORY_ROUTES.has(pathname)
+      ? enrichHistoryStreamerDailyStats(coveredResponse)
+      : coveredResponse
+  }
+  if (pathname.endsWith('/kick-history')) return enrichHistoryStreamerDailyStats(response)
+  return response
 }
