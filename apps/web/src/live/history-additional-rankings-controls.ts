@@ -42,6 +42,11 @@ export function installRankingControls(onChange: () => void): void {
   document.querySelectorAll<HTMLButtonElement>('[data-history-limit]').forEach((button) => {
     button.addEventListener('click', () => requestAnimationFrame(onChange))
   })
+
+  document.addEventListener('click', (event) => preserveSortAfterDaySelection(event))
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') preserveSortAfterDaySelection(event)
+  })
   syncRankingButtons()
 }
 
@@ -58,4 +63,12 @@ export function activeRankingLimit(): number {
   const active = document.querySelector<HTMLButtonElement>('[data-history-limit][aria-pressed="true"]')
   const value = Number(active?.dataset.historyLimit ?? new URL(location.href).searchParams.get('limit'))
   return value === 20 || value === 50 ? value : 10
+}
+
+function preserveSortAfterDaySelection(event: Event): void {
+  const target = event.target instanceof Element ? event.target : null
+  if (!target || target.closest('a')) return
+  if (!target.closest('.history-day-column,[data-history-day-card]')) return
+  const sort = rankingSort()
+  queueMicrotask(() => setRankingSort(sort))
 }
