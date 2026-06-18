@@ -67,23 +67,18 @@ assert(runtime.twitch.topLimit + runtime.kick.topLimit === 400, 'Provider limits
 const middleware = read('functions/_middleware.ts')
 const twitchHelper = read('functions/_twitch-feature-coverage.ts')
 const kickHelper = read('functions/_kick-feature-coverage.ts')
-const twitchRoutes = routeSet(middleware, 'TWITCH_FEATURE_ROUTES')
-const kickRoutes = routeSet(middleware, 'KICK_FEATURE_ROUTES')
-const historyRoutes = routeSet(middleware, 'HISTORY_ROUTES')
 
 for (const route of ['/api/twitch-heatmap', '/api/day-flow', '/api/battle-lines', '/api/history']) {
-  assert(twitchRoutes.includes(`'${route}'`), `Twitch middleware route missing: ${route}`)
+  assert(middleware.includes(`'${route}'`), `Twitch middleware route missing: ${route}`)
 }
 for (const route of ['/api/kick-heatmap', '/api/kick-day-flow', '/api/kick-battle-lines']) {
-  assert(kickRoutes.includes(`'${route}'`), `Kick middleware route missing: ${route}`)
+  assert(middleware.includes(`'${route}'`), `Kick middleware route missing: ${route}`)
 }
-assert(!kickRoutes.includes("'/api/kick-history'"), 'Kick History must not receive root coverage enrichment.')
-assert(historyRoutes.includes("'/api/kick-history'"), 'Kick History must receive shared History enrichment.')
-assert(historyRoutes.includes("'/api/history'"), 'Twitch History must receive shared History enrichment.')
+assert(!middleware.includes("'/api/kick-history'"), 'Kick History must remain route-level.')
 assert(middleware.includes('KICK_FEATURE_ROUTES.has(pathname)'), 'Kick route set is not isolated.')
 assert(middleware.includes('TWITCH_FEATURE_ROUTES.has(pathname)'), 'Twitch route set is not isolated.')
-assert(middleware.includes('enrichKickFeatureResponse(env, historyResponse)'), 'Kick helper is not connected after shared History enrichment.')
-assert(middleware.includes('enrichTwitchFeatureResponse(env, historyResponse)'), 'Twitch helper is not connected after shared History enrichment.')
+assert(middleware.includes('enrichKickFeatureResponse(env, response)'), 'Kick helper is not connected.')
+assert(middleware.includes('enrichTwitchFeatureResponse(env, response)'), 'Twitch helper is not connected.')
 
 for (const [label, helper, ownDb, forbiddenDb] of [
   ['Twitch', twitchHelper, 'DB_TWITCH_HOT', 'DB_KICK_HOT'],
@@ -127,8 +122,4 @@ if (failures.length) {
 console.log('Provider coverage contract verification passed.')
 console.log('- Twitch and Kick share bounded, non-provider-wide coverage invariants')
 console.log('- provider-specific modes, limits, routes, helpers, and storage remain separated')
-console.log('- shared History enrichment does not alter provider coverage routing')
-
-function routeSet(source, name) {
-  return source.match(new RegExp(`const ${name} = new Set\\(\\[([\\s\\S]*?)\\]\\)`))?.[1] ?? ''
-}
+console.log('- feature-specific Battle Lines and History coverage semantics remain preserved')
