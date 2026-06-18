@@ -21,10 +21,10 @@ function install(endpoint: string): void {
   window.fetch = (async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const response = await originalFetch(input, init)
     if (requestPath(input) === endpoint) {
-      void response.clone().json().then((raw) => {
+      void response.clone().json().then((raw: unknown): void => {
         payload = isRecord(raw) ? raw as ProviderCoveragePayload : null
         queueApply()
-      }).catch(() => undefined)
+      }).catch((): void => undefined)
     }
     return response
   }) as typeof window.fetch
