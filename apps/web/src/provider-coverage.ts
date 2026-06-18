@@ -33,6 +33,13 @@ export function providerCoverageSummary(payload: ProviderCoveragePayload, provid
   return `${providerCoverageSource(payload, provider)} · Top ${providerCoverageLimit(payload, provider).toLocaleString('en-US')} observed`
 }
 
+export function providerCoverageNote(payload: ProviderCoveragePayload): string {
+  const model = asRecord(payload.coverageModel)
+  const coverage = asRecord(payload.coverage)
+  const value = model?.description ?? model?.limitation ?? coverage?.note
+  return typeof value === 'string' && value.trim() ? value.trim() : 'Coverage is limited to the configured observed window.'
+}
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === 'object' && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : null
 }
