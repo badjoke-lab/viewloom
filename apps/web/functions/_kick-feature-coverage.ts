@@ -13,10 +13,7 @@ export async function enrichKickFeatureResponse(env: Env, response: Response): P
 
   try {
     const payload = await response.clone().json<JsonRecord>()
-    const latest = await env.DB_KICK_HOT.prepare(
-      'SELECT payload_json,source_mode FROM minute_snapshots WHERE provider = ? ORDER BY bucket_minute DESC LIMIT 1'
-    ).bind('kick').first<LatestSnapshotRow>()
-
+    const latest = await latestKickSnapshot(env)
     const coverage = latest
       ? kickCoverageFromPayload(latest.payload_json, latest.source_mode)
       : kickCoverageFromMeta({
@@ -74,6 +71,18 @@ export async function enrichKickFeatureResponse(env: Env, response: Response): P
     })
   } catch {
     return response
+  }
+}
+
+async function latestKickSnapshot(env: Env): Promise<LatestSnapshotRow | null> {
+  const database = (env as Partial<Env>).DB_KICK_HOT
+  if (!database) return null
+  try {
+    return await database.prepare(
+      'SELECT payload_json,source_mode FROM minute_snapshots WHERE provider = ? ORDER BY bucket_minute DESC LIMIT 1'
+    ).bind('kick').first<LatestSnapshotRow>()
+  } catch {
+    return null
   }
 }
 
