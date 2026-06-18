@@ -29,6 +29,10 @@ export function providerCoverageLimit(payload: ProviderCoveragePayload, provider
   return Number.isInteger(value) && value > 0 ? value : provider === 'kick' ? 100 : 300
 }
 
+export function providerCoverageSummary(payload: ProviderCoveragePayload, provider: ProviderKey): string {
+  return `${providerCoverageSource(payload, provider)} · Top ${providerCoverageLimit(payload, provider).toLocaleString('en-US')} observed`
+}
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === 'object' && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : null
 }
