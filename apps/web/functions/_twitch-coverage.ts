@@ -19,7 +19,10 @@ type Raw = Record<string, unknown>
 
 export function twitchCoverageFromMeta(meta: Raw | null | undefined, sourceMode = 'unknown'): TwitchCoverageContract {
   const row = meta ?? {}
-  const resolvedSourceMode = text(sourceMode) || text(row.sourceMode) || 'unknown'
+  const requestedSourceMode = text(sourceMode)
+  const resolvedSourceMode = requestedSourceMode && requestedSourceMode !== 'unknown'
+    ? requestedSourceMode
+    : text(row.sourceMode) || requestedSourceMode || 'unknown'
   const mode = normalizeTwitchCoverageMode(
     row.coverageMode,
     row.targetSource,
