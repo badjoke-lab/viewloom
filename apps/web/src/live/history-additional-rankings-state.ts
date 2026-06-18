@@ -36,6 +36,7 @@ export function installRankingPayloadCapture(onChange: () => void): void {
         currentPayload = await response.clone().json() as RankingPayload
         currentSort = parseRankingSort(new URL(location.href).searchParams.get('sort')) ?? currentSort
         onChange()
+        window.setTimeout(() => setRankingSort(currentSort), 0)
       } catch {
         currentPayload = null
       }
