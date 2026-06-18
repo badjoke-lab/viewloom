@@ -1,6 +1,11 @@
 import type { Env } from './_db/env'
+import { enrichHistoryStreamerDailyStats } from './_history-streamer-daily-stats'
 import { enrichKickFeatureResponse } from './_kick-feature-coverage'
 import { enrichTwitchFeatureResponse } from './_twitch-feature-coverage'
+
+const HISTORY_ROUTES = new Set([
+  '/api/history',
+])
 
 const KICK_FEATURE_ROUTES = new Set([
   '/api/kick-heatmap',
@@ -19,6 +24,12 @@ export const onRequest: PagesFunction<Env> = async ({ request, next, env }) => {
   const response = await next()
   const pathname = new URL(request.url).pathname.replace(/\/$/, '')
   if (KICK_FEATURE_ROUTES.has(pathname)) return enrichKickFeatureResponse(env, response)
-  if (TWITCH_FEATURE_ROUTES.has(pathname)) return enrichTwitchFeatureResponse(env, response)
+  if (TWITCH_FEATURE_ROUTES.has(pathname)) {
+    const coveredResponse = await enrichTwitchFeatureResponse(env, response)
+    return HISTORY_ROUTES.has(pathname)
+      ? enrichHistoryStreamerDailyStats(coveredResponse)
+      : coveredResponse
+  }
+  if (pathname.endsWith('/kick-history')) return enrichHistoryStreamerDailyStats(response)
   return response
 }
