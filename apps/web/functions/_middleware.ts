@@ -1,4 +1,5 @@
 import type { Env } from './_db/env'
+import { enrichHistoryAdditionalRankings } from './_history-additional-rankings'
 import { enrichHistoryStreamerDailyStats } from './_history-streamer-daily-stats'
 import { enrichKickFeatureResponse } from './_kick-feature-coverage'
 import { enrichTwitchFeatureResponse } from './_twitch-feature-coverage'
@@ -27,9 +28,14 @@ export const onRequest: PagesFunction<Env> = async ({ request, next, env }) => {
   if (TWITCH_FEATURE_ROUTES.has(pathname)) {
     const coveredResponse = await enrichTwitchFeatureResponse(env, response)
     return HISTORY_ROUTES.has(pathname)
-      ? enrichHistoryStreamerDailyStats(coveredResponse)
+      ? enrichHistoryResponse(coveredResponse)
       : coveredResponse
   }
-  if (pathname.endsWith('/kick-history')) return enrichHistoryStreamerDailyStats(response)
+  if (pathname.endsWith('/kick-history')) return enrichHistoryResponse(response)
   return response
+}
+
+async function enrichHistoryResponse(response: Response): Promise<Response> {
+  const dailyResponse = await enrichHistoryStreamerDailyStats(response)
+  return enrichHistoryAdditionalRankings(dailyResponse)
 }
