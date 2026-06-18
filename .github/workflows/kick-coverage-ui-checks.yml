@@ -10,6 +10,7 @@ on:
       - 'apps/web/src/mock-site.ts'
       - 'apps/web/src/features/heatmap-page/data-state-utils.mjs'
       - 'apps/web/kick/index.html'
+      - 'apps/web/docs/kick-coverage-ui-contract.md'
       - 'apps/web/scripts/verify-kick-coverage-ui.mjs'
       - '.github/workflows/kick-coverage-ui-checks.yml'
   push:
@@ -21,6 +22,7 @@ on:
       - 'apps/web/src/mock-site.ts'
       - 'apps/web/src/features/heatmap-page/data-state-utils.mjs'
       - 'apps/web/kick/index.html'
+      - 'apps/web/docs/kick-coverage-ui-contract.md'
       - 'apps/web/scripts/verify-kick-coverage-ui.mjs'
       - '.github/workflows/kick-coverage-ui-checks.yml'
 
