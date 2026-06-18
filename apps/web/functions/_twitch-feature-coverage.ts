@@ -14,10 +14,56 @@ export async function enrichTwitchFeatureResponse(env: Env, response: Response):
 }
 
 async function enrichJsonResponse(env: Env, response: Response): Promise<Response> {
-  void env
-  void runtime
-  void twitchCoverageFromMeta
-  return response
+  try {
+    const payload = await response.clone().json<JsonRecord>()
+    const latest = await latestTwitchSnapshot(env)
+    const sourceMode = resolveSourceMode(payload, latest?.source_mode)
+    const coverage = twitchCoverageFromMeta({
+      coverageMode: payload.coverageMode,
+      targetSource: payload.targetSource,
+      sourceMode: payload.sourceMode,
+    }, sourceMode)
+    const currentNotes = Array.isArray(payload.notes)
+      ? payload.notes.filter((item): item is string => typeof item === 'string')
+      : []
+    const notes = currentNotes.includes(coverage.publicNote)
+      ? currentNotes
+      : [...currentNotes, coverage.publicNote]
+    const enriched = {
+      ...payload,
+      provider: text(payload.provider) || 'twitch',
+      platform: text(payload.platform) || 'twitch',
+      coverageMode: text(payload.coverageMode) || coverage.mode,
+      targetSource: text(payload.targetSource) || coverage.targetSource,
+      sourceMode: coverage.sourceMode,
+      coverageModel: {
+        mode: coverage.mode,
+        targetSource: coverage.targetSource,
+        sourceMode: coverage.sourceMode,
+        authMode: coverage.authMode,
+        label: coverage.label,
+        isDirectoryCoverage: coverage.isDirectoryCoverage,
+        isProviderWide: coverage.isProviderWide,
+        isBounded: coverage.isBounded,
+        description: coverage.description,
+        limitation: coverage.limitation,
+        sourceLimitation: coverage.sourceLimitation,
+        topLimit: runtime.topLimit,
+        collectionCadenceSeconds: runtime.collectionCadenceSeconds,
+      },
+      notes,
+    }
+    const headers = new Headers(response.headers)
+    headers.delete('content-length')
+    headers.set('cache-control', 'no-store')
+    return Response.json(enriched, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    })
+  } catch {
+    return response
+  }
 }
 
 async function latestTwitchSnapshot(env: Env): Promise<LatestSnapshotRow | null> {
