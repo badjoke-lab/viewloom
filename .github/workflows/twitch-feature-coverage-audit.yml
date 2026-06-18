@@ -1,9 +1,13 @@
-name: Twitch feature coverage audit
+name: Twitch feature coverage checks
 
 on:
   workflow_dispatch:
   pull_request:
     paths:
+      - 'apps/web/functions/_provider-runtime.ts'
+      - 'apps/web/functions/_twitch-coverage.ts'
+      - 'apps/web/functions/_twitch-feature-coverage.ts'
+      - 'apps/web/functions/_middleware.ts'
       - 'apps/web/functions/api/twitch-heatmap.ts'
       - 'apps/web/functions/api/day-flow.ts'
       - 'apps/web/functions/api/battle-lines.ts'
@@ -16,6 +20,10 @@ on:
   push:
     branches: [main]
     paths:
+      - 'apps/web/functions/_provider-runtime.ts'
+      - 'apps/web/functions/_twitch-coverage.ts'
+      - 'apps/web/functions/_twitch-feature-coverage.ts'
+      - 'apps/web/functions/_middleware.ts'
       - 'apps/web/functions/api/twitch-heatmap.ts'
       - 'apps/web/functions/api/day-flow.ts'
       - 'apps/web/functions/api/battle-lines.ts'
