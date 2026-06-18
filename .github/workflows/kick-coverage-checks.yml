@@ -11,8 +11,10 @@ on:
       - 'apps/web/functions/api/kick-home.ts'
       - 'apps/web/functions/api/kick-status.ts'
       - 'apps/web/functions/api/kick-history.ts'
+      - 'apps/web/docs/kick-feature-coverage-contract.md'
       - 'apps/web/scripts/verify-kick-coverage-contract-v2.mjs'
       - 'apps/web/scripts/verify-kick-feature-coverage.mjs'
+      - 'apps/web/scripts/verify-kick-feature-coverage-doc.mjs'
       - '.github/workflows/kick-coverage-checks.yml'
   push:
     branches: [main]
@@ -24,8 +26,10 @@ on:
       - 'apps/web/functions/api/kick-home.ts'
       - 'apps/web/functions/api/kick-status.ts'
       - 'apps/web/functions/api/kick-history.ts'
+      - 'apps/web/docs/kick-feature-coverage-contract.md'
       - 'apps/web/scripts/verify-kick-coverage-contract-v2.mjs'
       - 'apps/web/scripts/verify-kick-feature-coverage.mjs'
+      - 'apps/web/scripts/verify-kick-feature-coverage-doc.mjs'
       - '.github/workflows/kick-coverage-checks.yml'
 
 jobs:
@@ -44,4 +48,6 @@ jobs:
       - run: node scripts/verify-kick-coverage-contract-v2.mjs
         working-directory: apps/web
       - run: node scripts/verify-kick-feature-coverage.mjs
+        working-directory: apps/web
+      - run: node scripts/verify-kick-feature-coverage-doc.mjs
         working-directory: apps/web
