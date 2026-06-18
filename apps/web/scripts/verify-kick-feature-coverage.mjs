@@ -20,9 +20,11 @@ for (const route of [
 
 assert(!middleware.includes("'/api/kick-history'"), `${middlewarePath}: History must remain route-level to avoid double enrichment.`)
 assert(middleware.includes('const response = await next()'), `${middlewarePath}: feature handler must run before enrichment.`)
+assert(middleware.includes('KICK_FEATURE_ROUTES.has(pathname)'), `${middlewarePath}: Kick route isolation is missing.`)
 assert(middleware.includes('enrichKickFeatureResponse(env, response)'), `${middlewarePath}: shared coverage enrichment is not applied.`)
 assert(middleware.includes("pathname.replace(/\\/$/, '')"), `${middlewarePath}: trailing-slash normalization is missing.`)
-assert(!middleware.includes('/api/twitch-'), `${middlewarePath}: Twitch routes must not be intercepted.`)
+assert(middleware.includes('TWITCH_FEATURE_ROUTES.has(pathname)'), `${middlewarePath}: Twitch routes must use a separate route set.`)
+assert(middleware.includes('enrichTwitchFeatureResponse(env, response)'), `${middlewarePath}: Twitch routes must use a separate helper.`)
 
 for (const fragment of [
   'async function latestKickSnapshot(env: Env)',
@@ -40,6 +42,7 @@ for (const fragment of [
 ]) assert(helper.includes(fragment), `${helperPath}: missing ${fragment}`)
 
 assert(!helper.includes('DB_TWITCH'), `${helperPath}: Twitch storage reference is forbidden.`)
+assert(!helper.includes('enrichTwitchFeatureResponse'), `${helperPath}: Twitch enrichment must remain in its own helper.`)
 assert(!helper.includes('isProviderWide: true'), `${helperPath}: provider-wide coverage must never be asserted.`)
 assert(!helper.includes('isBounded: false'), `${helperPath}: unbounded coverage must never be asserted.`)
 
@@ -53,4 +56,4 @@ console.log('Kick feature coverage middleware verification passed.')
 console.log('- Heatmap, Day Flow, and Battle Lines are enriched after their existing handlers')
 console.log('- History remains route-level and is not double-enriched')
 console.log('- missing Kick storage falls back to response metadata')
-console.log('- Twitch routes remain untouched')
+console.log('- Twitch routes use a separate route set and helper')
