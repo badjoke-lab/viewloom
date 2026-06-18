@@ -1,4 +1,5 @@
 import type { Env } from '../_db/env'
+import { enrichKickFeatureResponse } from '../_kick-feature-coverage'
 import { fromRaw, fromRollups, type ParsedStream } from '../_history/builders'
 import { buildPayload, dayCount, errorResponse, getPeriod, nextDayIso, num, previousPeriod, record, slug, type RollupRow, type SnapshotRow } from '../_history/model'
 
@@ -9,21 +10,23 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const metric = url.searchParams.get('metric') === 'peak_viewers' ? 'peak_viewers' : 'viewer_minutes'
   const period = getPeriod(url)
   const rangeError = validateRequestedRange(url)
-  if (rangeError) return errorResponse('kick', period, metric, 'invalid_range', rangeError, 400, { ...kickMeta, sampleWeightMode: 'observed_interval_capped_5m' })
-  if (dayCount(period.from, period.to) > 90) return errorResponse('kick', period, metric, 'range_too_large', 'History custom range is limited to 90 days in v1.', 400, { ...kickMeta, sampleWeightMode: 'observed_interval_capped_5m' })
+  if (rangeError) return enrichKickFeatureResponse(env, errorResponse('kick', period, metric, 'invalid_range', rangeError, 400, { ...kickMeta, sampleWeightMode: 'observed_interval_capped_5m' }))
+  if (dayCount(period.from, period.to) > 90) return enrichKickFeatureResponse(env, errorResponse('kick', period, metric, 'range_too_large', 'History custom range is limited to 90 days in v1.', 400, { ...kickMeta, sampleWeightMode: 'observed_interval_capped_5m' }))
 
   try {
     const previous = previousPeriod(period.from, period.to)
     const rollups = await tryRollups(env, period.from, period.to)
     if (rollups.length > 0) {
       const previousRollups = await tryRollups(env, previous.from, previous.to)
-      return Response.json(buildPayload('kick', period, metric, 'daily_rollups', fromRollups(rollups, previousRollups), { ...kickMeta, sampleWeightMode: 'daily_rollups_5m' }), { headers: { 'cache-control': 'no-store' } })
+      const response = Response.json(buildPayload('kick', period, metric, 'daily_rollups', fromRollups(rollups, previousRollups), { ...kickMeta, sampleWeightMode: 'daily_rollups_5m' }), { headers: { 'cache-control': 'no-store' } })
+      return enrichKickFeatureResponse(env, response)
     }
     const rows = await fetchRows(env, period.from, period.to)
     const previousRows = await fetchRows(env, previous.from, previous.to)
-    return Response.json(buildPayload('kick', period, metric, 'minute_snapshots', fromRaw(rows, previousRows, parseKickStream, ['demo', 'fixture']), { ...kickMeta, sampleWeightMode: 'observed_interval_capped_5m' }), { headers: { 'cache-control': 'no-store' } })
+    const response = Response.json(buildPayload('kick', period, metric, 'minute_snapshots', fromRaw(rows, previousRows, parseKickStream, ['demo', 'fixture']), { ...kickMeta, sampleWeightMode: 'observed_interval_capped_5m' }), { headers: { 'cache-control': 'no-store' } })
+    return enrichKickFeatureResponse(env, response)
   } catch (error) {
-    return errorResponse('kick', period, metric, 'history_api_error', error instanceof Error ? error.message : 'History API failed.', 500, { ...kickMeta, sampleWeightMode: 'observed_interval_capped_5m' })
+    return enrichKickFeatureResponse(env, errorResponse('kick', period, metric, 'history_api_error', error instanceof Error ? error.message : 'History API failed.', 500, { ...kickMeta, sampleWeightMode: 'observed_interval_capped_5m' }))
   }
 }
 
