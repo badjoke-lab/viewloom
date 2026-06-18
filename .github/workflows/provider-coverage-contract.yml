@@ -1,0 +1,43 @@
+name: Provider coverage contract
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/functions/_provider-runtime.ts'
+      - 'apps/web/functions/_twitch-coverage.ts'
+      - 'apps/web/functions/_kick-coverage.ts'
+      - 'apps/web/functions/_twitch-feature-coverage.ts'
+      - 'apps/web/functions/_kick-feature-coverage.ts'
+      - 'apps/web/functions/_middleware.ts'
+      - 'apps/web/docs/provider-observation-coverage-contract.md'
+      - 'apps/web/scripts/verify-provider-coverage-contract.mjs'
+      - '.github/workflows/provider-coverage-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/_provider-runtime.ts'
+      - 'apps/web/functions/_twitch-coverage.ts'
+      - 'apps/web/functions/_kick-coverage.ts'
+      - 'apps/web/functions/_twitch-feature-coverage.ts'
+      - 'apps/web/functions/_kick-feature-coverage.ts'
+      - 'apps/web/functions/_middleware.ts'
+      - 'apps/web/docs/provider-observation-coverage-contract.md'
+      - 'apps/web/scripts/verify-provider-coverage-contract.mjs'
+      - '.github/workflows/provider-coverage-contract.yml'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm --filter @viewloom/web typecheck:functions
+      - run: node scripts/verify-provider-coverage-contract.mjs
+        working-directory: apps/web
