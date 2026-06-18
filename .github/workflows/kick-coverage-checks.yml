@@ -8,7 +8,7 @@ on:
       - 'apps/web/functions/_home/kick.ts'
       - 'apps/web/functions/api/kick-home.ts'
       - 'apps/web/functions/api/kick-status.ts'
-      - 'apps/web/scripts/verify-kick-coverage-contract.mjs'
+      - 'apps/web/scripts/verify-kick-coverage-contract-v2.mjs'
       - '.github/workflows/kick-coverage-checks.yml'
   push:
     branches: [main]
@@ -17,7 +17,7 @@ on:
       - 'apps/web/functions/_home/kick.ts'
       - 'apps/web/functions/api/kick-home.ts'
       - 'apps/web/functions/api/kick-status.ts'
-      - 'apps/web/scripts/verify-kick-coverage-contract.mjs'
+      - 'apps/web/scripts/verify-kick-coverage-contract-v2.mjs'
       - '.github/workflows/kick-coverage-checks.yml'
 
 jobs:
@@ -33,5 +33,5 @@ jobs:
           node-version: 22
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm --filter @viewloom/web typecheck:functions
-      - run: node scripts/verify-kick-coverage-contract.mjs
+      - run: node scripts/verify-kick-coverage-contract-v2.mjs
         working-directory: apps/web
