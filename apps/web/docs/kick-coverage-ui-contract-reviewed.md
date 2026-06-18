@@ -1,0 +1,1 @@
+The canonical Kick coverage UI contract is `kick-coverage-ui-contract.md`. This marker exists only to keep the reviewed scope explicit in the implementation branch.
