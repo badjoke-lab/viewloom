@@ -65,6 +65,9 @@ const concurrencyWorkflows = [
   '.github/workflows/channel-profile-browser.yml',
   '.github/workflows/data-status-page.yml',
   '.github/workflows/data-status-browser.yml',
+  '.github/workflows/platform-naming.yml',
+  '.github/workflows/history-calendar-heat.yml',
+  '.github/workflows/history-calendar-browser.yml',
 ]
 
 for (const path of concurrencyWorkflows) {
