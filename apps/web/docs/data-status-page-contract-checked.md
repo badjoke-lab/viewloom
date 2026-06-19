@@ -1,1 +1,0 @@
-Data Status contract source exists at docs/data-status-page-contract.md.
