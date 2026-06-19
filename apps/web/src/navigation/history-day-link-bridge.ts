@@ -2,8 +2,8 @@ type Provider = 'twitch' | 'kick'
 
 export function historyDayLinks(provider: Provider, day: string, time?: string | null): { dayFlow: string; battleLines: string } | null {
   if (!validDay(day)) return null
-  const dayFlow = new URLSearchParams({ rangeMode: 'date', date: day })
-  const battleLines = new URLSearchParams({ range: 'date', date: day })
+  const dayFlow = new URLSearchParams({ date: day, rangeMode: 'date' })
+  const battleLines = new URLSearchParams({ date: day, range: 'date' })
   const timestamp = exactTimestampForDay(time, day)
   if (timestamp) {
     dayFlow.set('time', timestamp)
