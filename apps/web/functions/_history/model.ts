@@ -62,8 +62,24 @@ export type RawDay = {
 
 export type BuiltHistory = {
   daily: DailySummary[]
+  previousDaily: DailySummary[]
   topStreamers: RankedStream[]
   comparisonAvailable: boolean
+}
+
+export type PeriodComparisonState = 'comparable' | 'partial' | 'unavailable'
+
+export type PeriodComparisonSide = {
+  requestedFrom: string
+  requestedTo: string
+  from: string | null
+  to: string | null
+  selectedDays: number
+  totalViewerMinutes: number
+  peakViewers: number
+  averageViewers: number
+  observedMinutes: number
+  coverageState: string
 }
 
 export const DEFAULT_SAMPLE_MINUTES = 5
@@ -147,6 +163,7 @@ export function buildPayload(
   const daily = fillMissingDays(period, built.daily)
   const coverage = coverageFor(provider, period, daily)
   const summary = summaryFor(daily, built.topStreamers)
+  const periodComparison = periodComparisonFor(provider, period, daily, built.previousDaily, built.comparisonAvailable)
   const observed = daily.filter((day) => day.coverageState !== 'missing')
   const allDemo = observed.length > 0 && observed.every((day) => day.coverageState === 'demo')
   return {
@@ -158,7 +175,9 @@ export function buildPayload(
     ...extra,
     comparison: {
       previousPeriodAvailable: built.comparisonAvailable,
+      period: periodComparison,
     },
+    periodComparison,
     summary,
     daily,
     topStreamers: built.topStreamers,
@@ -170,13 +189,20 @@ export function buildPayload(
   }
 }
 
-export function summaryFor(daily: DailySummary[], top: RankedStream[]) {
+export function summaryDaysFor(daily: DailySummary[]): DailySummary[] {
   const observedDaily = daily.filter((day) => day.coverageState !== 'missing')
-  if (!observedDaily.length) return null
+  if (!observedDaily.length) return []
   const today = dayString(new Date())
   const completedGood = observedDaily.filter((day) => day.day < today && day.coverageState === 'good')
   const historical = observedDaily.filter((day) => day.day < today)
-  const summaryDays = completedGood.length ? completedGood : historical.length ? historical : observedDaily
+  return completedGood.length ? completedGood : historical.length ? historical : observedDaily
+}
+
+export function summaryFor(daily: DailySummary[], top: RankedStream[]) {
+  const observedDaily = daily.filter((day) => day.coverageState !== 'missing')
+  const summaryDays = summaryDaysFor(daily)
+  if (!summaryDays.length) return null
+  const today = dayString(new Date())
   const peakDay = summaryDays.reduce(
     (best, day) => day.totalViewerMinutes > best.totalViewerMinutes ? day : best,
     summaryDays[0],
@@ -185,15 +211,98 @@ export function summaryFor(daily: DailySummary[], top: RankedStream[]) {
     (best, day) => day.peakViewers > best.peakViewers ? day : best,
     summaryDays[0],
   )
+  const totalViewerMinutes = summaryDays.reduce((sum, day) => sum + day.totalViewerMinutes, 0)
+  const observedMinutes = summaryDays.reduce((sum, day) => sum + day.observedMinutes, 0)
   return {
-    totalViewerMinutes: summaryDays.reduce((sum, day) => sum + day.totalViewerMinutes, 0),
+    totalViewerMinutes,
     peakViewers: peakViewerDay.peakViewers,
     peakDay: peakDay.day,
     peakDayViewerMinutes: peakDay.totalViewerMinutes,
     topStreamer: top[0] ?? null,
     biggestRise: biggestRise(top),
+    averageViewers: observedMinutes > 0 ? Math.round(totalViewerMinutes / observedMinutes) : 0,
+    observedMinutes,
+    summaryDayCount: summaryDays.length,
+    summaryFrom: summaryDays[0]?.day ?? null,
+    summaryTo: summaryDays.at(-1)?.day ?? null,
     coverageState: daily.some((day) => day.coverageState !== 'good' || day.day === today) ? 'partial' : 'good',
     summaryScope: summaryDays.length === observedDaily.length ? 'all_observed_days' : 'completed_days',
+  }
+}
+
+export function periodComparisonFor(
+  provider: 'twitch' | 'kick',
+  period: Period,
+  currentDaily: DailySummary[],
+  previousDaily: DailySummary[],
+  previousPeriodAvailable = true,
+) {
+  const previousRequestedPeriod = previousPeriod(period.from, period.to)
+  const currentSelected = summaryDaysFor(currentDaily)
+  const previousFilled = fillMissingDays(previousRequestedPeriod, previousDaily)
+  const previousCandidates = summaryDaysFor(previousFilled)
+  const previousSelected = currentSelected.length > 0 ? previousCandidates.slice(-currentSelected.length) : []
+  const current = comparisonSide(period, currentSelected)
+  const previous = comparisonSide(previousRequestedPeriod, previousSelected)
+  const alignedDayCount = current.selectedDays > 0 && current.selectedDays === previous.selectedDays
+  const completeCoverage = current.coverageState === 'good' && previous.coverageState === 'good'
+  const state: PeriodComparisonState = !previousPeriodAvailable || current.selectedDays === 0 || previous.selectedDays === 0
+    ? 'unavailable'
+    : alignedDayCount && completeCoverage
+      ? 'comparable'
+      : 'partial'
+  const reason = state === 'comparable'
+    ? 'Equal completed-day scopes with complete coverage.'
+    : !previousPeriodAvailable || previous.selectedDays === 0
+      ? 'The immediately preceding period does not have enough retained observations.'
+      : !alignedDayCount
+        ? `Current and previous scopes contain ${current.selectedDays} and ${previous.selectedDays} selected days.`
+        : 'One or both selected scopes use partial or demo coverage; percentage changes are withheld.'
+
+  return {
+    state,
+    scope: 'completed_observed_days',
+    provider,
+    providerSeparated: true,
+    inProgressDayExcluded: true,
+    alignedDayCount,
+    reason,
+    current,
+    previous,
+    changes: state === 'comparable'
+      ? {
+          totalViewerMinutes: comparisonChange(current.totalViewerMinutes, previous.totalViewerMinutes),
+          peakViewers: comparisonChange(current.peakViewers, previous.peakViewers),
+          averageViewers: comparisonChange(current.averageViewers, previous.averageViewers),
+        }
+      : null,
+  }
+}
+
+function comparisonSide(requestedPeriod: Period, selectedDays: DailySummary[]): PeriodComparisonSide {
+  const totalViewerMinutes = selectedDays.reduce((sum, day) => sum + day.totalViewerMinutes, 0)
+  const observedMinutes = selectedDays.reduce((sum, day) => sum + day.observedMinutes, 0)
+  const peakViewers = selectedDays.reduce((peak, day) => Math.max(peak, day.peakViewers), 0)
+  const allGood = selectedDays.length > 0 && selectedDays.every((day) => day.coverageState === 'good')
+  const allDemo = selectedDays.length > 0 && selectedDays.every((day) => day.coverageState === 'demo')
+  return {
+    requestedFrom: requestedPeriod.from,
+    requestedTo: requestedPeriod.to,
+    from: selectedDays[0]?.day ?? null,
+    to: selectedDays.at(-1)?.day ?? null,
+    selectedDays: selectedDays.length,
+    totalViewerMinutes: Math.round(totalViewerMinutes),
+    peakViewers: Math.round(peakViewers),
+    averageViewers: observedMinutes > 0 ? Math.round(totalViewerMinutes / observedMinutes) : 0,
+    observedMinutes: Math.round(observedMinutes),
+    coverageState: allGood ? 'good' : allDemo ? 'demo' : selectedDays.length ? 'partial' : 'missing',
+  }
+}
+
+function comparisonChange(current: number, previous: number) {
+  return {
+    absolute: Math.round(current - previous),
+    pct: previous > 0 ? (current - previous) / previous : null,
   }
 }
 
@@ -304,7 +413,8 @@ export function errorResponse(
     summary: null,
     daily: [],
     topStreamers: [],
-    comparison: { previousPeriodAvailable: false },
+    periodComparison: null,
+    comparison: { previousPeriodAvailable: false, period: null },
     coverage: {
       state: 'missing',
       observedDays: 0,
