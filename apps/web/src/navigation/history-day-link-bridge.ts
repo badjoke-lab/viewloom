@@ -1,11 +1,17 @@
 type Provider = 'twitch' | 'kick'
 
-export function historyDayLinks(provider: Provider, day: string): { dayFlow: string; battleLines: string } | null {
+export function historyDayLinks(provider: Provider, day: string, time?: string | null): { dayFlow: string; battleLines: string } | null {
   if (!validDay(day)) return null
-  const encoded = encodeURIComponent(day)
+  const dayFlow = new URLSearchParams({ rangeMode: 'date', date: day })
+  const battleLines = new URLSearchParams({ range: 'date', date: day })
+  const timestamp = exactTimestampForDay(time, day)
+  if (timestamp) {
+    dayFlow.set('time', timestamp)
+    battleLines.set('time', timestamp)
+  }
   return {
-    dayFlow: `/${provider}/day-flow/?rangeMode=date&date=${encoded}`,
-    battleLines: `/${provider}/battle-lines/?range=date&date=${encoded}`,
+    dayFlow: `/${provider}/day-flow/?${dayFlow.toString()}`,
+    battleLines: `/${provider}/battle-lines/?${battleLines.toString()}`,
   }
 }
 
@@ -15,7 +21,8 @@ export function rewriteHistoryDayLinks(root: ParentNode = document): number {
   root.querySelectorAll<HTMLAnchorElement>(`a[href^="/${provider}/day-flow/?date="], a[href^="/${provider}/battle-lines/?date="]`).forEach((anchor) => {
     const url = new URL(anchor.href, location.origin)
     const day = url.searchParams.get('date')
-    const links = day ? historyDayLinks(provider, day) : null
+    const time = url.searchParams.get('time')
+    const links = day ? historyDayLinks(provider, day, time) : null
     if (!links) return
     const next = url.pathname.includes('/day-flow/') ? links.dayFlow : links.battleLines
     if (anchor.getAttribute('href') !== next) {
@@ -24,6 +31,14 @@ export function rewriteHistoryDayLinks(root: ParentNode = document): number {
     }
   })
   return changed
+}
+
+function exactTimestampForDay(value: string | null | undefined, day: string): string | null {
+  if (!value) return null
+  const parsed = new Date(value)
+  if (!Number.isFinite(parsed.getTime())) return null
+  const iso = parsed.toISOString()
+  return iso.slice(0, 10) === day ? iso : null
 }
 
 function validDay(value: string): boolean {
