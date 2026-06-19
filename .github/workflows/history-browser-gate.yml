@@ -1,6 +1,12 @@
 name: History browser gate
 
 on:
+  workflow_dispatch:
+    inputs:
+      preview_url:
+        description: Optional completed-candidate Cloudflare Preview URL
+        required: false
+        type: string
   pull_request:
     paths:
       - 'apps/web/twitch/history/**'
@@ -21,6 +27,10 @@ on:
       - 'apps/web/scripts/history-cloudflare-preview.mjs'
       - 'apps/web/scripts/verify-history-qa-v2.mjs'
       - '.github/workflows/history-browser-gate.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   history-browser-gate:
@@ -90,23 +100,32 @@ jobs:
           cd /tmp/history-browser
           node history-clarity-smoke.mjs 2>&1 | tee /tmp/history-clarity.log
 
-      - name: Verify Cloudflare preview with real data
+      - name: Verify supplied Cloudflare Preview with real data
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.preview_url != '' }}
         env:
-          HISTORY_PREVIEW_URL: https://fix-history-data-clarity-hot.viewloom.pages.dev
+          HISTORY_PREVIEW_URL: ${{ inputs.preview_url }}
         run: |
           set -o pipefail
           cd /tmp/history-browser
           node history-cloudflare-preview.mjs 2>&1 | tee /tmp/history-cloudflare.log
 
-      - name: Upload History visual verification
+      - name: Upload local History visual verification
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: history-data-clarity-screenshots
+          name: history-local-verification-screenshots
           path: |
             /tmp/history-twitch-desktop.png
             /tmp/history-kick-mobile.png
             /tmp/history-clarity-desktop.png
+          if-no-files-found: error
+
+      - name: Upload Cloudflare Preview verification
+        if: ${{ success() && github.event_name == 'workflow_dispatch' && inputs.preview_url != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: history-cloudflare-preview-screenshots
+          path: |
             /tmp/history-twitch-cloudflare.png
             /tmp/history-kick-cloudflare-mobile.png
           if-no-files-found: error
