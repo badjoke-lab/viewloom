@@ -63,6 +63,8 @@ const concurrencyWorkflows = [
   '.github/workflows/history-period-comparison-browser.yml',
   '.github/workflows/channel-profile.yml',
   '.github/workflows/channel-profile-browser.yml',
+  '.github/workflows/data-status-page.yml',
+  '.github/workflows/data-status-browser.yml',
 ]
 
 for (const path of concurrencyWorkflows) {
