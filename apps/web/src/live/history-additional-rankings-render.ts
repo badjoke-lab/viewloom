@@ -1,4 +1,7 @@
+import { channelProfileHref, type ChannelProfileProvider } from '../navigation/channel-profile-link'
 import type { RankingSort, RankingStreamer } from './history-additional-rankings-state'
+
+const provider: ChannelProfileProvider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
 
 export function renderAdditionalRanking(rows: RankingStreamer[], sort: RankingSort, limit: number): void {
   const body = document.querySelector<HTMLTableSectionElement>('.metric-ledger tbody')
@@ -22,7 +25,7 @@ export function renderAdditionalRanking(rows: RankingStreamer[], sort: RankingSo
 function rowHtml(streamer: RankingStreamer, index: number): string {
   return `<tr>
     <td class="rank">${index + 1}</td>
-    <td><strong>${escapeHtml(streamer.displayName ?? '—')}</strong></td>
+    <td>${streamerName(streamer)}</td>
     <td class="num">${formatNumber(streamer.viewerMinutes)}</td>
     <td class="num">${formatNumber(streamer.peakViewers)}</td>
     <td class="num">${formatNumber(streamer.avgViewers)}</td>
@@ -33,7 +36,7 @@ function rowHtml(streamer: RankingStreamer, index: number): string {
 
 function cardHtml(streamer: RankingStreamer, index: number): string {
   return `<article class="history-streamer-card">
-    <div class="history-streamer-card__head"><span class="rank">#${index + 1}</span><strong>${escapeHtml(streamer.displayName ?? '—')}</strong></div>
+    <div class="history-streamer-card__head"><span class="rank">#${index + 1}</span>${streamerName(streamer)}</div>
     <dl>
       <div><dt>Viewer-minutes</dt><dd>${formatNumber(streamer.viewerMinutes)}</dd></div>
       <div><dt>Peak viewers</dt><dd>${formatNumber(streamer.peakViewers)}</dd></div>
@@ -42,6 +45,15 @@ function cardHtml(streamer: RankingStreamer, index: number): string {
       <div><dt>Change</dt><dd class="${changeClass(streamer)}">${escapeHtml(formatChange(streamer))}</dd></div>
     </dl>
   </article>`
+}
+
+function streamerName(streamer: RankingStreamer): string {
+  const name = streamer.displayName ?? streamer.streamerId ?? '—'
+  const period = new URL(location.href).searchParams.get('period') === '7d' ? '7d' : '30d'
+  const href = channelProfileHref(provider, streamer.streamerId, name, period)
+  return href
+    ? `<a class="history-streamer-profile-link" href="${escapeHtml(href)}"><strong>${escapeHtml(name)}</strong></a>`
+    : `<strong>${escapeHtml(name)}</strong>`
 }
 
 function formatNumber(value: unknown): string { return Math.round(number(value)).toLocaleString('en-US') }

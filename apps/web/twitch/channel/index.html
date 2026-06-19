@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Twitch channel history | ViewLoom</title>
+  <meta name="description" content="Review a Twitch channel's retained ViewLoom ranking footprint, daily Top 10 appearances, and rivalry candidates." />
+  <link rel="canonical" href="https://vl.badjoke-lab.com/twitch/channel/" />
+  <meta property="og:site_name" content="ViewLoom" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://vl.badjoke-lab.com/twitch/channel/" />
+  <meta property="og:title" content="Twitch channel history | ViewLoom" />
+  <meta property="og:description" content="Review a retained Twitch channel ranking footprint in ViewLoom." />
+  <meta property="og:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="/src/mock-site.css" />
+  <link rel="stylesheet" href="/src/history-page.css" />
+</head>
+<body data-provider="twitch" data-page="twitch-channel">
+<div class="site-frame">
+  <header class="masthead"><div class="masthead__inner">
+    <a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
+    <nav class="global-nav"><a href="/">Portal</a><a href="/twitch/" aria-current="page">Twitch data</a><a href="/kick/">Kick data</a><a href="/about/">About</a><a href="/support/">Support</a></nav>
+    <div class="status-inline"><span class="dot"></span>Collector status loading · 5m cadence</div>
+    <button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button>
+  </div></header>
+
+  <main class="page page--full channel-profile-page">
+    <div class="breadcrumb">ViewLoom / Twitch data / History / Channel</div>
+    <nav class="feature-tabs"><a href="/twitch/heatmap/">Heatmap</a><a href="/twitch/day-flow/">Day Flow</a><a href="/twitch/battle-lines/">Battle Lines</a><a class="active" href="/twitch/history/">History</a><a href="/twitch/status/">Status</a></nav>
+
+    <section class="page-head channel-profile-hero">
+      <div class="channel-profile-title">
+        <div class="kicker">TWITCH DATA · CHANNEL FOOTPRINT</div>
+        <h1 data-channel-name>Loading channel…</h1>
+        <p class="lede" data-channel-provider>Twitch retained ranking footprint</p>
+        <div class="channel-profile-title__meta">
+          <span class="history-state-pill history-state-pill--loading" data-channel-state>Loading</span>
+          <span data-channel-period-label>Last 30 days</span>
+          <a data-channel-external href="https://www.twitch.tv/" rel="noopener noreferrer">Open on Twitch</a>
+        </div>
+      </div>
+      <div class="head-facts">
+        <div class="fact"><small>Scope</small><strong>Retained ranking footprint</strong></div>
+        <div class="fact"><small>Provider</small><strong>Twitch only</strong></div>
+        <div class="fact"><small>Daily detail</small><strong>Top 10 rows</strong></div>
+        <div class="fact"><small>Session history</small><strong>Unavailable</strong></div>
+      </div>
+    </section>
+
+    <section class="channel-profile-controls" aria-label="Channel history controls">
+      <div class="history-control-section"><span class="toolbar-label">Period</span><div class="control-group"><button type="button" data-channel-period="7d" aria-pressed="false">Last 7 days</button><button type="button" data-channel-period="30d" aria-pressed="true">Last 30 days</button></div></div>
+      <a class="button button--paper" href="/twitch/history/">Back to History</a>
+    </section>
+    <p class="channel-profile-feedback" data-channel-feedback aria-live="polite">Loading retained ranking footprint…</p>
+
+    <section class="channel-profile-summary" data-channel-summary><div class="notice">Loading channel summary…</div></section>
+
+    <div class="rule-title"><h2>Daily footprint</h2><span>Retained daily Top 10 only</span></div>
+    <section class="surface channel-profile-surface" data-channel-trend><div class="notice">Loading daily footprint…</div></section>
+
+    <div class="rule-title"><h2>Recent retained days</h2><span>Days where this channel appears in daily Top 10</span></div>
+    <section class="channel-day-grid" data-channel-days><div class="notice">Loading retained days…</div></section>
+
+    <div class="rule-title"><h2>Rivalry candidates</h2><span>Day-level aggregate pairs</span></div>
+    <section class="channel-rival-grid" data-channel-rivals><div class="notice">Loading rivalry candidates…</div></section>
+
+    <div class="rule-title"><h2>Scope &amp; limits</h2><span>What this page can prove</span></div>
+    <section class="surface channel-profile-surface channel-profile-scope" data-channel-scope>
+      <p>Loading scope notes…</p>
+    </section>
+  </main>
+
+  <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method &amp; limits</a><a href="/support/">Support</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
+</div>
+<script type="module" src="/src/mock-site.ts"></script>
+<script type="module" src="/src/live/channel-profile.ts"></script>
+<script type="module" src="/src/analytics.ts"></script>
+</body>
+</html>
