@@ -1,5 +1,6 @@
 import type { Env } from './_db/env'
 import { enrichHistoryAdditionalRankings } from './_history-additional-rankings'
+import { enrichHistoryBattleArchive } from './_history-battle-archive'
 import { enrichHistoryPeakArchive } from './_history-peak-archive'
 import { enrichHistoryStreamerDailyStats } from './_history-streamer-daily-stats'
 import { enrichKickFeatureResponse } from './_kick-feature-coverage'
@@ -15,16 +16,17 @@ export const onRequest: PagesFunction<Env> = async ({ request, next, env }) => {
   if (KICK_FEATURE_ROUTES.has(pathname)) return enrichKickFeatureResponse(env, response)
   if (TWITCH_FEATURE_ROUTES.has(pathname)) {
     const coveredResponse = await enrichTwitchFeatureResponse(env, response)
-    return HISTORY_ROUTES.has(pathname) ? enrichHistoryResponse(coveredResponse) : coveredResponse
+    return HISTORY_ROUTES.has(pathname) ? enrichHistoryResponse(env, 'twitch', coveredResponse) : coveredResponse
   }
-  if (pathname.endsWith('/kick-history')) return enrichHistoryResponse(response)
+  if (pathname.endsWith('/kick-history')) return enrichHistoryResponse(env, 'kick', response)
   return response
 }
 
-async function enrichHistoryResponse(response: Response): Promise<Response> {
+async function enrichHistoryResponse(env: Env, provider: 'twitch' | 'kick', response: Response): Promise<Response> {
   const dailyResponse = await enrichHistoryStreamerDailyStats(response)
   const rankedResponse = await enrichHistoryRankings(dailyResponse)
-  return enrichHistoryPeakArchive(rankedResponse)
+  const peakResponse = await enrichHistoryPeakArchive(rankedResponse)
+  return enrichHistoryBattleArchive(env, provider, peakResponse)
 }
 
 async function enrichHistoryRankings(dailyResponse: Response): Promise<Response> {
