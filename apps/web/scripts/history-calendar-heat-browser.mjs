@@ -1,8 +1,13 @@
+import { mkdirSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { chromium } from 'playwright'
 import { historyPayload } from './history-battle-archive-fixture.mjs'
 
 const base = process.env.HISTORY_CALENDAR_BASE_URL ?? 'http://127.0.0.1:4173'
+const screenshotDir = resolve(process.env.HISTORY_CALENDAR_SCREENSHOT_DIR ?? 'artifacts/history-calendar')
 const assert = (value, message) => { if (!value) throw new Error(message) }
+
+mkdirSync(screenshotDir, { recursive: true })
 
 async function check(browser, provider, viewport) {
   const calls = { twitch: 0, kick: 0 }
@@ -47,7 +52,7 @@ async function check(browser, provider, viewport) {
 
   const width = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth])
   assert(width[0] <= width[1] + 1, `${provider} calendar introduced horizontal page overflow.`)
-  await page.screenshot({ path: `/tmp/history-calendar-${provider}.png`, fullPage: true })
+  await page.screenshot({ path: resolve(screenshotDir, `history-calendar-${provider}.png`), fullPage: true })
   await context.close()
 }
 
