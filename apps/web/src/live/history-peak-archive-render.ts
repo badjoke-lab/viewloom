@@ -16,8 +16,8 @@ export function renderPeakArchive(entries: PeakArchiveEntry[]): void {
     return
   }
 
-  const exactCount = entries.filter((entry) => Boolean(entry.timestamp)).length
-  summary.textContent = `${entries.length} completed daily peaks · ${exactCount} exact timestamps`
+  const exactCount = entries.filter((entry) => validTimestamp(entry.timestamp, entry.day ?? '')).length
+  summary.textContent = `${entries.length} completed daily peaks · ${exactCount} exact timestamp${exactCount === 1 ? '' : 's'}`
   const visible = expanded ? entries : entries.slice(0, 10)
   list.innerHTML = visible.map((entry) => peakCard(entry)).join('')
   toggle.hidden = entries.length <= 10
@@ -64,8 +64,7 @@ function ensureMount(): HTMLElement {
   const mount = block.querySelector<HTMLElement>('[data-history-peak-archive]')!
   mount.querySelector<HTMLButtonElement>('[data-history-peak-toggle]')?.addEventListener('click', () => {
     expanded = !expanded
-    const event = new CustomEvent('viewloom:peak-archive-toggle')
-    window.dispatchEvent(event)
+    window.dispatchEvent(new CustomEvent('viewloom:peak-archive-toggle'))
   })
   return mount
 }
@@ -73,9 +72,10 @@ function ensureMount(): HTMLElement {
 function peakCard(entry: PeakArchiveEntry): string {
   const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
   const day = validDay(entry.day) ? entry.day : ''
+  const exact = validTimestamp(entry.timestamp, day)
   const params = new URLSearchParams()
   if (day) params.set('date', day)
-  if (validTimestamp(entry.timestamp, day)) params.set('time', new Date(entry.timestamp!).toISOString())
+  if (exact) params.set('time', new Date(entry.timestamp!).toISOString())
   const query = params.toString()
   const suffix = query ? `?${query}` : ''
   const coverage = safeClass(entry.coverageState ?? 'partial')
@@ -91,7 +91,7 @@ function peakCard(entry: PeakArchiveEntry): string {
       <dl>
         <div><dt>Streamer</dt><dd>${escapeHtml(entry.streamer ?? 'Unavailable')}</dd></div>
         <div><dt>Category</dt><dd>${escapeHtml(entry.category ?? 'Unavailable')}</dd></div>
-        <div><dt>Precision</dt><dd>${entry.timestamp ? 'Observed minute' : 'Day only'}</dd></div>
+        <div><dt>Precision</dt><dd>${exact ? 'Observed minute' : 'Day only'}</dd></div>
       </dl>
       <div class="history-peak-event__actions">
         <a href="/${provider}/day-flow/${suffix}">Day Flow</a>
