@@ -1,6 +1,7 @@
 export type RankingSort = 'viewer_minutes' | 'peak_viewers' | 'avg_viewers' | 'observed_minutes' | 'rising'
 
 export type RankingStreamer = {
+  streamerId?: string
   displayName?: string
   viewerMinutes?: number
   peakViewers?: number
