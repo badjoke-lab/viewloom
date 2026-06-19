@@ -23,6 +23,10 @@ export const onRequest: PagesFunction<Env> = async ({ request, next, env }) => {
 
 async function enrichHistoryResponse(response: Response): Promise<Response> {
   const dailyResponse = await enrichHistoryStreamerDailyStats(response)
-  const rankedResponse = await enrichHistoryAdditionalRankings(dailyResponse)
+  const rankedResponse = await enrichHistoryRankings(dailyResponse)
   return enrichHistoryPeakArchive(rankedResponse)
+}
+
+async function enrichHistoryRankings(dailyResponse: Response): Promise<Response> {
+  return enrichHistoryAdditionalRankings(dailyResponse)
 }
