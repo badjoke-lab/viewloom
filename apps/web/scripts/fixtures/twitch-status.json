@@ -1,0 +1,20 @@
+{
+  "version": "viewloom-status-v1",
+  "platform": "twitch",
+  "source": "api",
+  "storage": { "binding": "DB_TWITCH_HOT", "database": "vl_twitch_hot" },
+  "sourceMode": "real",
+  "state": "fresh",
+  "generatedAt": "2026-06-19T12:55:00.000Z",
+  "collector": { "state": "idle", "runCadenceSeconds": 300, "lastAttemptAt": "2026-06-19T12:55:00.000Z", "lastSuccessAt": "2026-06-19T12:55:00.000Z", "lastFailureAt": null, "lastErrorMessage": null },
+  "freshness": { "lastSuccessAt": "2026-06-19T12:55:00.000Z", "minutesSinceSuccess": 0, "staleAfterMinutes": 15, "strongStaleAfterMinutes": 30 },
+  "latestSnapshot": { "bucketMinute": "2026-06-19T12:55:00.000Z", "observedCount": 300, "totalViewers": 900000, "coveredPages": 3, "hasMore": true, "topLimit": 300 },
+  "coverage": { "state": "partial", "observedCount": 300, "hasMore": true, "notes": ["More Twitch streams may exist beyond the observed Top 300 window."] },
+  "features": [
+    { "label": "Heatmap", "role": "now", "state": "fresh", "source": "api", "lastUpdatedAt": "2026-06-19T12:55:00.000Z", "knownGap": "Activity may be unavailable.", "pagePath": "/twitch/heatmap/" },
+    { "label": "Day Flow", "role": "today", "state": "fresh", "source": "api", "lastUpdatedAt": "2026-06-19T12:55:00.000Z", "knownGap": "Observed data only.", "pagePath": "/twitch/day-flow/" },
+    { "label": "Battle Lines", "role": "rivalry", "state": "fresh", "source": "api", "lastUpdatedAt": "2026-06-19T12:55:00.000Z", "knownGap": "Observed data only.", "pagePath": "/twitch/battle-lines/" },
+    { "label": "History", "role": "trends", "state": "fresh", "source": "api", "lastUpdatedAt": "2026-06-19T12:55:00.000Z", "knownGap": "Observed data only.", "pagePath": "/twitch/history/" }
+  ],
+  "limitations": ["Viewer counts and activity signals may be sampled.", "ViewLoom is unofficial and independent."]
+}

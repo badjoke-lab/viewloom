@@ -1,3 +1,5 @@
+import './status-page-enhancer'
+
 type StatusFeature = {
   label?: string
   role?: string
@@ -31,6 +33,7 @@ async function hydrateStatus(): Promise<void> {
     const response = await fetch(endpoint, { headers: { accept: 'application/json' }, cache: 'no-store' })
     if (!response.ok) throw new Error(`status api returned ${response.status}`)
     const payload = await response.json() as StatusPayload
+    window.dispatchEvent(new CustomEvent('viewloom:status', { detail: payload }))
     renderFacts(payload)
     renderBoard(payload)
     renderFeatures(payload)
