@@ -9,7 +9,7 @@ Canonical page routes:
 /kick/channel/?id=<streamer-id>
 ```
 
-The page reuses the existing provider History endpoint for the selected 7-day or 30-day period. It does not introduce a new database query, binding, collector, cron, retention rule, or browser request beyond that single History request.
+The page reuses the existing provider History endpoint for the selected 7-day or 30-day period. It does not introduce a new database query, binding, collector, cron, retention rule, or additional browser request beyond that single History request.
 
 The visible scope is a **retained ranking footprint**:
 
