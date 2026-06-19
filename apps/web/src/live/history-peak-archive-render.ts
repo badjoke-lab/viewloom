@@ -29,9 +29,13 @@ export function renderPeakArchive(entries: PeakArchiveEntry[]): void {
       if ((event.target as HTMLElement | null)?.closest('a')) return
       const day = card.dataset.historyPeakDay
       if (!day) return
-      const target = document.querySelector<HTMLElement>(`[data-history-day-card="${cssEscape(day)}"]`)
-        ?? document.querySelector<HTMLElement>(`.history-day-column[data-history-day="${cssEscape(day)}"]`)
-      target?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      const dayCard = document.querySelector<HTMLElement>(`[data-history-day-card="${cssEscape(day)}"]`)
+      if (dayCard) {
+        dayCard.click()
+        return
+      }
+      const chartDay = document.querySelector<SVGGElement>(`.history-day-column[data-history-day="${cssEscape(day)}"]`)
+      chartDay?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
     }
     card.addEventListener('click', choose)
     card.addEventListener('keydown', (event) => {
