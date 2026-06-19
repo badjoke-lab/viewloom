@@ -43,8 +43,9 @@ assert(comparable.current.selectedDays === 6, 'Current in-progress day must be e
 assert(comparable.previous.selectedDays === 6, 'Previous scope must be trimmed to the current completed-day count.')
 assert(comparable.previous.from === model.addDays(previousFrom, 1) && comparable.previous.to === previousTo, 'Previous aligned dates are wrong.')
 assert(comparable.current.totalViewerMinutes === 13500, 'Current total viewer-minutes are wrong.')
-assert(comparable.previous.totalViewerMinutes === 6750, 'Previous aligned total viewer-minutes are wrong.')
-assert(comparable.changes.totalViewerMinutes.pct === 1, 'Viewer-minute percentage change is wrong.')
+assert(comparable.previous.totalViewerMinutes === 7000, 'Previous aligned total viewer-minutes are wrong.')
+const expectedViewerMinutesPct = (13500 - 7000) / 7000
+assert(Math.abs(comparable.changes.totalViewerMinutes.pct - expectedViewerMinutesPct) < 1e-9, 'Viewer-minute percentage change is wrong.')
 assert(comparable.providerSeparated === true && comparable.inProgressDayExcluded === true, 'Comparison truth metadata is missing.')
 
 const partial = model.periodComparisonFor('kick', period, currentDaily, previousDaily.slice(0, 3), true)
@@ -81,6 +82,33 @@ assert(kickRoute.includes('previousPeriod(period.from, period.to)'), 'Kick Histo
 assert(twitchRoute.includes('DB_TWITCH_HOT') && !twitchRoute.includes('DB_KICK_HOT'), 'Twitch comparison storage separation failed.')
 assert(kickRoute.includes('DB_KICK_HOT') && !kickRoute.includes('DB_TWITCH_HOT'), 'Kick comparison storage separation failed.')
 
+const state = read('src/live/history-period-comparison-state.ts')
+const renderer = read('src/live/history-period-comparison-render.ts')
+const entry = read('src/live/history-period-comparison.ts')
+const loader = read('src/live/history-battle-archive.ts')
+const css = read('src/history-period-comparison.css')
+for (const fragment of [
+  'periodComparisonFromPayload(',
+  'payload.periodComparison',
+  'payload.comparison?.period',
+  "url.pathname === '/api/history' || url.pathname === '/api/kick-history'",
+]) assert(state.includes(fragment), `Period comparison state missing ${fragment}`)
+for (const fragment of [
+  'Previous period comparison',
+  'Completed observed scope',
+  'Current period vs immediately preceding period',
+  'Viewer-minutes',
+  'Peak viewers',
+  'Average observed viewers',
+  'Observed time',
+  'Percentages withheld.',
+  'Equal completed-day scopes with complete coverage.',
+]) assert(renderer.includes(fragment), `Period comparison renderer missing ${fragment}`)
+assert(entry.includes("import '../history-period-comparison.css'"), 'Period comparison CSS is not loaded.')
+assert(entry.includes('installPeriodComparisonPayloadCapture(schedule)'), 'Period comparison payload capture is not wired.')
+assert(loader.includes("import './history-period-comparison'"), 'Period comparison must load before the History fetch.')
+assert(css.includes('.history-comparison-grid') && css.includes('@media(max-width:760px)'), 'Period comparison responsive styles are missing.')
+
 const doc = read('docs/history-period-comparison-contract.md')
 for (const fragment of [
   'immediately preceding period',
@@ -101,4 +129,5 @@ console.log('History period comparison verification passed.')
 console.log('- current in-progress day is excluded')
 console.log('- previous scope aligns to the selected completed-day count')
 console.log('- partial or unavailable scopes withhold percentage changes')
+console.log('- responsive UI and pre-fetch payload capture are wired')
 console.log('- Twitch and Kick remain provider-separated')
