@@ -91,7 +91,7 @@ for (const fragment of [
   "import { enrichHistoryPeakArchive } from './_history-peak-archive'",
   'const dailyResponse = await enrichHistoryStreamerDailyStats(response)',
   'const rankedResponse = await enrichHistoryRankings(dailyResponse)',
-  'return enrichHistoryPeakArchive(rankedResponse)',
+  'const peakResponse = await enrichHistoryPeakArchive(rankedResponse)',
   "pathname.endsWith('/kick-history')",
 ]) assert(middleware.includes(fragment), `${middlewarePath}: missing ${fragment}`)
 assert(middleware.indexOf('enrichHistoryStreamerDailyStats(response)') < middleware.indexOf('enrichHistoryRankings(dailyResponse)'), 'Daily stats must run before rankings.')
