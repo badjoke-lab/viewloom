@@ -59,6 +59,8 @@ const concurrencyWorkflows = [
   '.github/workflows/history-peak-browser.yml',
   '.github/workflows/history-battle-archive.yml',
   '.github/workflows/history-battle-browser.yml',
+  '.github/workflows/history-period-comparison.yml',
+  '.github/workflows/history-period-comparison-browser.yml',
 ]
 
 for (const path of concurrencyWorkflows) {
