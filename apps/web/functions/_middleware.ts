@@ -1,5 +1,6 @@
 import type { Env } from './_db/env'
 import { enrichHistoryAdditionalRankings } from './_history-additional-rankings'
+import { enrichHistoryBattleArchive } from './_history-battle-archive'
 import { enrichHistoryPeakArchive } from './_history-peak-archive'
 import { enrichHistoryStreamerDailyStats } from './_history-streamer-daily-stats'
 import { enrichKickFeatureResponse } from './_kick-feature-coverage'
@@ -24,7 +25,8 @@ export const onRequest: PagesFunction<Env> = async ({ request, next, env }) => {
 async function enrichHistoryResponse(response: Response): Promise<Response> {
   const dailyResponse = await enrichHistoryStreamerDailyStats(response)
   const rankedResponse = await enrichHistoryRankings(dailyResponse)
-  return enrichHistoryPeakArchive(rankedResponse)
+  const peakResponse = await enrichHistoryPeakArchive(rankedResponse)
+  return enrichHistoryBattleArchive(peakResponse)
 }
 
 async function enrichHistoryRankings(dailyResponse: Response): Promise<Response> {
