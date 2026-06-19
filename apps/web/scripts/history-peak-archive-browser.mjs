@@ -44,7 +44,7 @@ async function desktopGate(browser) {
   assert(await cards.count() === 10, 'Desktop: Peak Archive must default to Top 10.')
   const summary = await page.locator('[data-history-peak-summary]').textContent()
   assert(summary?.includes('12 completed daily peaks'), 'Desktop: peak summary count is wrong.')
-  assert(summary?.includes('1 exact timestamps'), 'Desktop: exact timestamp count is wrong.')
+  assert(summary?.includes('1 exact timestamp'), 'Desktop: exact timestamp count is wrong.')
   const firstText = await cards.first().textContent()
   assert(firstText?.includes('99,000'), 'Desktop: highest peak is not first.')
   assert(firstText?.includes('Observed minute'), 'Desktop: exact timestamp precision is missing.')
