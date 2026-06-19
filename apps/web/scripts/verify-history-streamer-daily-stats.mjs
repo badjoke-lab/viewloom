@@ -96,15 +96,17 @@ for (const fragment of [
   'providerSeparated: true',
   "source: 'daily.topStreamers'",
   'streamerDailyStats,',
-  'headers.delete(\'content-length\')',
+  "headers.delete('content-length')",
 ]) assert(helperSource.includes(fragment), `${helperPath}: missing ${fragment}`)
 
 assert(middleware.includes("import { enrichHistoryStreamerDailyStats } from './_history-streamer-daily-stats'"), `${middlewarePath}: History stats helper import is missing.`)
 assert(middleware.includes("'/api/history'"), `${middlewarePath}: Twitch History route is missing.`)
 assert(middleware.includes("pathname.endsWith('/kick-history')"), `${middlewarePath}: Kick History stats route is missing.`)
-assert(middleware.includes('enrichTwitchFeatureResponse(env, response)'), `${middlewarePath}: Twitch coverage must run before History stats.`)
-assert(middleware.includes('enrichHistoryStreamerDailyStats(coveredResponse)'), `${middlewarePath}: Twitch History stats enrichment is missing.`)
-assert(middleware.includes('enrichHistoryStreamerDailyStats(response)'), `${middlewarePath}: Kick History stats enrichment is missing.`)
+assert(middleware.includes('enrichTwitchFeatureResponse(env, response)'), `${middlewarePath}: Twitch coverage must run before History enrichment.`)
+assert(middleware.includes('enrichHistoryResponse(coveredResponse)'), `${middlewarePath}: Twitch History enrichment composition is missing.`)
+assert(middleware.includes('enrichHistoryResponse(response)'), `${middlewarePath}: Kick History enrichment composition is missing.`)
+assert(middleware.includes('const dailyResponse = await enrichHistoryStreamerDailyStats(response)'), `${middlewarePath}: Daily stats must run inside the History composition.`)
+assert(middleware.includes('return enrichHistoryAdditionalRankings(dailyResponse)'), `${middlewarePath}: Additional rankings must run after daily stats.`)
 assert(!middleware.includes("'/api/kick-history'"), `${middlewarePath}: Kick History must not enter the root coverage route set.`)
 
 const twitchRoute = read('functions/api/history.ts')

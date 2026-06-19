@@ -1,0 +1,55 @@
+name: History additional rankings
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/functions/_history-additional-rankings.ts'
+      - 'apps/web/functions/_history-streamer-daily-stats.ts'
+      - 'apps/web/functions/_middleware.ts'
+      - 'apps/web/functions/api/history.ts'
+      - 'apps/web/functions/api/kick-history.ts'
+      - 'apps/web/src/live/history-additional-rankings*.ts'
+      - 'apps/web/src/live/history-default-day.ts'
+      - 'apps/web/src/navigation/copy-current-view*.ts'
+      - 'apps/web/docs/history-additional-rankings-contract.md'
+      - 'apps/web/scripts/verify-history-additional-rankings.mjs'
+      - 'apps/web/scripts/verify-history-streamer-daily-stats.mjs'
+      - 'apps/web/scripts/verify-deep-link-contract*.mjs'
+      - '.github/workflows/history-additional-rankings.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/_history-additional-rankings.ts'
+      - 'apps/web/functions/_history-streamer-daily-stats.ts'
+      - 'apps/web/functions/_middleware.ts'
+      - 'apps/web/functions/api/history.ts'
+      - 'apps/web/functions/api/kick-history.ts'
+      - 'apps/web/src/live/history-additional-rankings*.ts'
+      - 'apps/web/src/live/history-default-day.ts'
+      - 'apps/web/src/navigation/copy-current-view*.ts'
+      - 'apps/web/docs/history-additional-rankings-contract.md'
+      - 'apps/web/scripts/verify-history-additional-rankings.mjs'
+      - 'apps/web/scripts/verify-history-streamer-daily-stats.mjs'
+      - 'apps/web/scripts/verify-deep-link-contract*.mjs'
+      - '.github/workflows/history-additional-rankings.yml'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm --filter @viewloom/web typecheck
+      - run: node scripts/verify-history-streamer-daily-stats.mjs
+        working-directory: apps/web
+      - run: node scripts/verify-history-additional-rankings.mjs
+        working-directory: apps/web
+      - run: node scripts/verify-deep-link-contract.mjs
+        working-directory: apps/web
