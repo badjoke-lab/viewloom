@@ -22,29 +22,8 @@ export type ParsedStream = { id: string; displayName: string; viewers: number }
 
 export function fromRollups(rows: RollupRow[], previousRows: RollupRow[]): BuiltHistory {
   const rowByDay = new Map([...previousRows, ...rows].map((row) => [row.day, row]))
-  const daily = rows.map((row) => {
-    const currentStreams = streamsForRollup(row)
-    const previousRow = rowByDay.get(addDays(row.day, -1))
-    const previousStreams = streamsForRollup(previousRow)
-    const topStreamers = ranked(
-      currentStreams,
-      previousStreams,
-      10,
-      DAILY_BASELINE_MINUTES,
-      Boolean(previousRow && num(previousRow.observed_snapshots) > 0),
-    )
-    return {
-      day: row.day,
-      totalViewerMinutes: num(row.total_viewer_minutes),
-      peakViewers: num(row.peak_viewers),
-      peakStreamerName: row.peak_streamer_name,
-      observedStreamCount: num(row.observed_stream_count),
-      observedMinutes: num(row.observed_snapshots) * DEFAULT_SAMPLE_MINUTES,
-      coverageState: row.coverage_state || 'partial',
-      topStreamers,
-      biggestRise: biggestRise(topStreamers),
-    } satisfies DailySummary
-  })
+  const daily = rows.map((row) => rollupDaySummary(row, rowByDay))
+  const previousDaily = previousRows.map((row) => rollupDaySummary(row, rowByDay))
 
   const today = new Date().toISOString().slice(0, 10)
   const completedRows = rows.filter((row) => row.day < today)
@@ -52,6 +31,7 @@ export function fromRollups(rows: RollupRow[], previousRows: RollupRow[]): Built
   const comparisonAvailable = completedPreviousRows.some((row) => num(row.observed_snapshots) > 0)
   return {
     daily,
+    previousDaily,
     topStreamers: ranked(
       streamsFromRollups(completedRows),
       streamsFromRollups(completedPreviousRows),
@@ -75,6 +55,9 @@ export function fromRaw(
   const daily = [...current.days.values()]
     .sort((a, b) => a.day.localeCompare(b.day))
     .map((day) => rawDaySummary(day, allDays.get(addDays(day.day, -1))))
+  const previousDaily = [...previous.days.values()]
+    .sort((a, b) => a.day.localeCompare(b.day))
+    .map((day) => rawDaySummary(day, allDays.get(addDays(day.day, -1))))
   const today = new Date().toISOString().slice(0, 10)
   const completedCurrentStreams = streamsFromRawDays(
     [...current.days.values()].filter((day) => day.day < today),
@@ -83,6 +66,7 @@ export function fromRaw(
   const comparisonAvailable = previousRows.length > 0 && previous.days.size > 0
   return {
     daily,
+    previousDaily,
     topStreamers: ranked(
       completedCurrentStreams,
       previousStreams,
@@ -91,6 +75,30 @@ export function fromRaw(
       comparisonAvailable,
     ),
     comparisonAvailable,
+  }
+}
+
+function rollupDaySummary(row: RollupRow, rowByDay: Map<string, RollupRow>): DailySummary {
+  const currentStreams = streamsForRollup(row)
+  const previousRow = rowByDay.get(addDays(row.day, -1))
+  const previousStreams = streamsForRollup(previousRow)
+  const topStreamers = ranked(
+    currentStreams,
+    previousStreams,
+    10,
+    DAILY_BASELINE_MINUTES,
+    Boolean(previousRow && num(previousRow.observed_snapshots) > 0),
+  )
+  return {
+    day: row.day,
+    totalViewerMinutes: num(row.total_viewer_minutes),
+    peakViewers: num(row.peak_viewers),
+    peakStreamerName: row.peak_streamer_name,
+    observedStreamCount: num(row.observed_stream_count),
+    observedMinutes: num(row.observed_snapshots) * DEFAULT_SAMPLE_MINUTES,
+    coverageState: row.coverage_state || 'partial',
+    topStreamers,
+    biggestRise: biggestRise(topStreamers),
   }
 }
 
