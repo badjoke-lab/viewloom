@@ -1,4 +1,5 @@
 import '../history-battle-archive.css'
+import './history-period-comparison'
 import { renderBattleArchive } from './history-battle-archive-render'
 import {
   battleArchiveEntries,
