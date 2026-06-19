@@ -24,19 +24,32 @@ jobs:
             curl --silent --fail http://127.0.0.1:4173/twitch/history/ > /dev/null && exit 0
             sleep 1
           done
+          cat /tmp/peak-preview.log
           exit 1
       - run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
         working-directory: apps/web
       - run: npx playwright install --with-deps chromium
         working-directory: apps/web
-      - run: node scripts/history-peak-archive-browser.mjs
+      - name: Run Peak Archive browser gate
         working-directory: apps/web
         env:
           HISTORY_BASE_URL: http://127.0.0.1:4173
+        run: |
+          set -o pipefail
+          node scripts/history-peak-archive-browser.mjs 2>&1 | tee /tmp/history-peak-browser.log
       - uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: history-peak-browser-screenshots
           path: |
             /tmp/history-peak-twitch-desktop.png
             /tmp/history-peak-kick-mobile.png
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: history-peak-browser-diagnostics
+          path: |
+            /tmp/history-peak-browser.log
+            /tmp/peak-preview.log
+          if-no-files-found: warn
