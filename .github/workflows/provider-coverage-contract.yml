@@ -26,6 +26,10 @@ on:
       - 'apps/web/scripts/verify-provider-coverage-contract.mjs'
       - '.github/workflows/provider-coverage-contract.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
