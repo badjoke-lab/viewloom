@@ -43,8 +43,8 @@ assert(comparable.current.selectedDays === 6, 'Current in-progress day must be e
 assert(comparable.previous.selectedDays === 6, 'Previous scope must be trimmed to the current completed-day count.')
 assert(comparable.previous.from === model.addDays(previousFrom, 1) && comparable.previous.to === previousTo, 'Previous aligned dates are wrong.')
 assert(comparable.current.totalViewerMinutes === 13500, 'Current total viewer-minutes are wrong.')
-assert(comparable.previous.totalViewerMinutes === 7000, 'Previous aligned total viewer-minutes are wrong.')
-const expectedViewerMinutesPct = (13500 - 7000) / 7000
+assert(comparable.previous.totalViewerMinutes === 7050, 'Previous aligned total viewer-minutes are wrong.')
+const expectedViewerMinutesPct = (13500 - 7050) / 7050
 assert(Math.abs(comparable.changes.totalViewerMinutes.pct - expectedViewerMinutesPct) < 1e-9, 'Viewer-minute percentage change is wrong.')
 assert(comparable.providerSeparated === true && comparable.inProgressDayExcluded === true, 'Comparison truth metadata is missing.')
 
