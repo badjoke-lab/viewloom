@@ -59,7 +59,7 @@ export function historyCalendarCells(payload: HistoryCalendarPayload): HistoryCa
   if (!from || !to || from > to) return []
 
   const metric = historyCalendarMetric(payload)
-  return utcDays(from, to, 186).map((day) => {
+  return utcDays(from, to, 186).map((day): HistoryCalendarCell => {
     const source = supplied.get(day)
     if (!source) return { day, value: null, coverageState: 'missing', observed: false }
     return {
