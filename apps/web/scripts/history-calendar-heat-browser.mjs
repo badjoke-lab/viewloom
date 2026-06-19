@@ -28,13 +28,24 @@ async function check(browser, provider, viewport) {
   const page = await context.newPage()
   await page.goto(`${base}/${provider}/history/?period=30d&metric=viewer_minutes`, { waitUntil: 'domcontentloaded' })
   await page.waitForFunction(() => document.querySelectorAll('[data-history-calendar-day]').length === 13)
+  await page.screenshot({ path: resolve(screenshotDir, `history-calendar-${provider}.png`), fullPage: true })
+
+  const cells = await page.locator('[data-history-calendar-day]').evaluateAll((nodes) => nodes.map((node) => ({
+    day: node.getAttribute('data-history-calendar-day'),
+    disabled: node.hasAttribute('disabled'),
+    coverage: node.getAttribute('data-calendar-coverage'),
+    level: node.getAttribute('data-calendar-level'),
+  })))
+  const observedCount = cells.filter((cell) => !cell.disabled).length
+  const missingCount = cells.filter((cell) => cell.disabled).length
+  console.log(`${provider} calendar cells: ${JSON.stringify(cells)}`)
 
   const other = provider === 'twitch' ? 'kick' : 'twitch'
   assert(calls[provider] > 0, `${provider} History endpoint was not requested.`)
   assert(calls[other] === 0, `${provider} History calendar crossed provider endpoints.`)
   assert(await page.locator('.history-calendar__weekdays span').count() === 7, `${provider} weekday header is incomplete.`)
-  assert(await page.locator('[data-history-calendar-day]:not([disabled])').count() === 12, `${provider} observed calendar cells are incomplete.`)
-  assert(await page.locator('[data-history-calendar-day][disabled]').count() === 1, `${provider} missing day is not explicit.`)
+  assert(observedCount === 12, `${provider} observed calendar cells are incomplete: expected 12, received ${observedCount}.`)
+  assert(missingCount === 1, `${provider} missing day is not explicit: expected 1, received ${missingCount}.`)
   assert(await page.locator('.history-calendar__cell--partial').count() >= 1, `${provider} partial coverage is not visible.`)
   assert(await page.locator('[data-calendar-level="4"]').count() >= 1, `${provider} relative intensity is missing.`)
   assert((await page.locator('[data-history-calendar-summary]').textContent())?.includes('12 observed'), `${provider} calendar summary is incorrect.`)
