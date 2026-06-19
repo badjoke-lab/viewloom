@@ -1,3 +1,4 @@
+import '../channel-profile-link.css'
 import { activeRankingLimit, installRankingControls, syncRankingButtons } from './history-additional-rankings-controls'
 import { renderAdditionalRanking } from './history-additional-rankings-render'
 import { installRankingPayloadCapture, rankingPayload, rankingRows, rankingSort } from './history-additional-rankings-state'
