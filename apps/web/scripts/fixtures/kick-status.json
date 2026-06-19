@@ -1,0 +1,22 @@
+{
+  "version": "viewloom-kick-status-v3",
+  "platform": "kick",
+  "source": "api",
+  "storage": { "binding": "DB_KICK_HOT", "database": "vl_kick_hot" },
+  "sourceMode": "authenticated",
+  "authMode": "authenticated",
+  "coverageMode": "official-livestreams",
+  "state": "partial",
+  "generatedAt": "2026-06-19T12:55:00.000Z",
+  "collector": { "state": "snapshot_available", "runCadenceSeconds": 300, "lastSuccessAt": "2026-06-19T12:55:00.000Z", "reason": null },
+  "freshness": { "lastSuccessAt": "2026-06-19T12:55:00.000Z", "minutesSinceSuccess": 0, "staleAfterMinutes": 15, "strongStaleAfterMinutes": 30 },
+  "latestSnapshot": { "bucketMinute": "2026-06-19T12:55:00.000Z", "collectedAt": "2026-06-19T12:55:00.000Z", "observedCount": 72, "streamCount": 72, "totalViewers": 250000, "sourceMode": "authenticated", "coverageMode": "official-livestreams", "topLimit": 100 },
+  "coverage": { "state": "official-livestreams-observed", "mode": "official-livestreams", "observedCount": 72, "notes": ["Kick coverage is bounded by the authenticated endpoint limit."] },
+  "features": [
+    { "label": "Heatmap", "role": "now", "state": "partial", "source": "authenticated", "lastUpdatedAt": "2026-06-19T12:55:00.000Z", "knownGap": "Activity unavailable.", "pagePath": "/kick/heatmap/" },
+    { "label": "Day Flow", "role": "today", "state": "partial", "source": "authenticated", "lastUpdatedAt": "2026-06-19T12:55:00.000Z", "knownGap": "Observed data only.", "pagePath": "/kick/day-flow/" },
+    { "label": "Battle Lines", "role": "rivalry", "state": "partial", "source": "authenticated", "lastUpdatedAt": "2026-06-19T12:55:00.000Z", "knownGap": "Observed data only.", "pagePath": "/kick/battle-lines/" },
+    { "label": "History", "role": "trends", "state": "partial", "source": "authenticated", "lastUpdatedAt": "2026-06-19T12:55:00.000Z", "knownGap": "Observed data only.", "pagePath": "/kick/history/" }
+  ],
+  "limitations": ["Kick activity signals are unavailable.", "Official endpoint coverage is bounded and is not complete provider-wide coverage."]
+}
