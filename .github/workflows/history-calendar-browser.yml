@@ -47,7 +47,9 @@ jobs:
         env:
           HISTORY_CALENDAR_BASE_URL: http://127.0.0.1:4173
           HISTORY_CALENDAR_SCREENSHOT_DIR: artifacts/history-calendar
-        run: node scripts/history-calendar-heat-browser.mjs 2>&1 | tee /tmp/history-calendar-browser.log
+        run: |
+          set -o pipefail
+          node scripts/history-calendar-heat-browser.mjs 2>&1 | tee /tmp/history-calendar-browser.log
       - name: List History calendar screenshots
         run: ls -lh apps/web/artifacts/history-calendar
       - uses: actions/upload-artifact@v4
