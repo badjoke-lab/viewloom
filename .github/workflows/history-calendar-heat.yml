@@ -29,8 +29,17 @@ jobs:
         with:
           node-version: 22
       - run: pnpm install --no-frozen-lockfile
-      - run: pnpm --filter @viewloom/web typecheck
+      - name: Typecheck History calendar
+        run: |
+          set -o pipefail
+          pnpm --filter @viewloom/web typecheck 2>&1 | tee /tmp/history-calendar-typecheck.log
       - name: Verify History calendar contract
         working-directory: apps/web
         run: node scripts/verify-history-calendar-heat.mjs
       - run: pnpm build:web
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: history-calendar-typecheck-diagnostics
+          path: /tmp/history-calendar-typecheck.log
+          if-no-files-found: warn
