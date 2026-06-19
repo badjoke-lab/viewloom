@@ -48,11 +48,13 @@ jobs:
           HISTORY_CALENDAR_BASE_URL: http://127.0.0.1:4173
           HISTORY_CALENDAR_SCREENSHOT_DIR: artifacts/history-calendar
         run: node scripts/history-calendar-heat-browser.mjs 2>&1 | tee /tmp/history-calendar-browser.log
+      - name: List History calendar screenshots
+        run: ls -lh apps/web/artifacts/history-calendar
       - uses: actions/upload-artifact@v4
         if: success()
         with:
           name: history-calendar-screenshots
-          path: apps/web/artifacts/history-calendar/*.png
+          path: apps/web/artifacts/history-calendar/
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -61,4 +63,5 @@ jobs:
           path: |
             /tmp/history-calendar-browser.log
             /tmp/history-calendar-preview.log
+            apps/web/artifacts/history-calendar/
           if-no-files-found: warn
