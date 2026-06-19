@@ -4,16 +4,14 @@ import {
   installPeakArchivePayloadCapture,
   peakArchiveEntries,
   peakArchivePayload,
-  type PeakArchiveEntry,
 } from './history-peak-archive-state'
 
 let scheduled = false
-let currentEntries: PeakArchiveEntry[] = []
 
 function render(): void {
   const payload = peakArchivePayload()
-  if (payload) currentEntries = peakArchiveEntries(payload)
-  renderPeakArchive(currentEntries)
+  if (!payload) return
+  renderPeakArchive(peakArchiveEntries(payload))
 }
 
 function schedule(): void {
@@ -27,4 +25,3 @@ function schedule(): void {
 
 installPeakArchivePayloadCapture(schedule)
 window.addEventListener('viewloom:peak-archive-toggle', schedule)
-schedule()
