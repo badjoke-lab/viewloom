@@ -1,0 +1,37 @@
+name: Development policy
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'README.md'
+      - 'docs/operations/development-and-deployment-policy.md'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/pull_request_template.md'
+      - '.github/workflows/**'
+  push:
+    branches: [main]
+    paths:
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'README.md'
+      - 'docs/operations/development-and-deployment-policy.md'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/pull_request_template.md'
+      - '.github/workflows/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/verify-development-policy.mjs

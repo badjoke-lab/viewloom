@@ -22,6 +22,12 @@ The old `livefield` repository remains a reference, comparison, and data-rescue 
 3. Rebuild Twitch first, then mirror the architecture for Kick.
 4. Apply the new ViewLoom visual system on top of the rebuilt foundation.
 
+## Development operations
+
+Before changing this repository, read the canonical [development and deployment policy](docs/operations/development-and-deployment-policy.md).
+
+Ordinary work uses `work-*` branches without intentional Cloudflare Preview deployments. Completed candidates use full final verification, and `preview-*` is reserved for deliberate Cloudflare runtime validation. A merged change is not reported as deployed until production deployment and smoke checks are verified.
+
 ## Planned top-level structure
 
 - `docs/` source-of-truth specs and migration docs

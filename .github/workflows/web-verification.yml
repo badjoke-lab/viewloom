@@ -12,6 +12,10 @@ on:
       - 'apps/web/**'
       - '.github/workflows/web-verification.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify-web-source:
     runs-on: ubuntu-latest
