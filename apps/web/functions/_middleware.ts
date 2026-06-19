@@ -1,25 +1,13 @@
 import type { Env } from './_db/env'
 import { enrichHistoryAdditionalRankings } from './_history-additional-rankings'
+import { enrichHistoryPeakArchive } from './_history-peak-archive'
 import { enrichHistoryStreamerDailyStats } from './_history-streamer-daily-stats'
 import { enrichKickFeatureResponse } from './_kick-feature-coverage'
 import { enrichTwitchFeatureResponse } from './_twitch-feature-coverage'
 
-const HISTORY_ROUTES = new Set([
-  '/api/history',
-])
-
-const KICK_FEATURE_ROUTES = new Set([
-  '/api/kick-heatmap',
-  '/api/kick-day-flow',
-  '/api/kick-battle-lines',
-])
-
-const TWITCH_FEATURE_ROUTES = new Set([
-  '/api/twitch-heatmap',
-  '/api/day-flow',
-  '/api/battle-lines',
-  '/api/history',
-])
+const HISTORY_ROUTES = new Set(['/api/history'])
+const KICK_FEATURE_ROUTES = new Set(['/api/kick-heatmap', '/api/kick-day-flow', '/api/kick-battle-lines'])
+const TWITCH_FEATURE_ROUTES = new Set(['/api/twitch-heatmap', '/api/day-flow', '/api/battle-lines', '/api/history'])
 
 export const onRequest: PagesFunction<Env> = async ({ request, next, env }) => {
   const response = await next()
@@ -27,9 +15,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, next, env }) => {
   if (KICK_FEATURE_ROUTES.has(pathname)) return enrichKickFeatureResponse(env, response)
   if (TWITCH_FEATURE_ROUTES.has(pathname)) {
     const coveredResponse = await enrichTwitchFeatureResponse(env, response)
-    return HISTORY_ROUTES.has(pathname)
-      ? enrichHistoryResponse(coveredResponse)
-      : coveredResponse
+    return HISTORY_ROUTES.has(pathname) ? enrichHistoryResponse(coveredResponse) : coveredResponse
   }
   if (pathname.endsWith('/kick-history')) return enrichHistoryResponse(response)
   return response
@@ -37,5 +23,10 @@ export const onRequest: PagesFunction<Env> = async ({ request, next, env }) => {
 
 async function enrichHistoryResponse(response: Response): Promise<Response> {
   const dailyResponse = await enrichHistoryStreamerDailyStats(response)
+  const rankedResponse = await enrichHistoryRankings(dailyResponse)
+  return enrichHistoryPeakArchive(rankedResponse)
+}
+
+async function enrichHistoryRankings(dailyResponse: Response): Promise<Response> {
   return enrichHistoryAdditionalRankings(dailyResponse)
 }
