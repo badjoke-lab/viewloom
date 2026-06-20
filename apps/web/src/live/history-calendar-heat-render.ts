@@ -46,6 +46,13 @@ export function renderHistoryCalendar(payload: HistoryCalendarPayload): void {
   grid.querySelectorAll<HTMLButtonElement>('[data-history-calendar-day]').forEach((button) => {
     const cell = cells.find((item) => item.day === button.dataset.historyCalendarDay)
     if (!cell) return
+    if (!cell.observed) {
+      button.setAttribute('aria-disabled', 'true')
+      button.tabIndex = -1
+      button.addEventListener('pointerdown', preventMissingDayInteraction)
+      button.addEventListener('click', preventMissingDayInteraction)
+      return
+    }
     button.addEventListener('pointerenter', () => renderDetail(cell, metric))
     button.addEventListener('focus', () => renderDetail(cell, metric))
     button.addEventListener('click', () => chooseDay(cell))
@@ -101,7 +108,8 @@ function calendarCell(cell: HistoryCalendarCell, index: number, maxValue: number
     ? new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' }).format(date)
     : ''
   const label = calendarAria(cell, metric)
-  return `<button class="history-calendar__cell history-calendar__cell--level-${level} history-calendar__cell--${coverage}${selected ? ' is-selected' : ''}" type="button" role="gridcell" data-history-calendar-day="${cell.day}" data-calendar-level="${level}" data-calendar-coverage="${coverage}" aria-label="${escapeHtml(label)}" aria-selected="${selected}" ${cell.observed ? '' : 'disabled'}>
+  const interaction = cell.observed ? 'aria-disabled="false"' : 'aria-disabled="true" tabindex="-1" disabled'
+  return `<button class="history-calendar__cell history-calendar__cell--level-${level} history-calendar__cell--${coverage}${selected ? ' is-selected' : ''}" type="button" role="gridcell" data-history-calendar-day="${cell.day}" data-calendar-level="${level}" data-calendar-coverage="${coverage}" aria-label="${escapeHtml(label)}" aria-selected="${selected}" ${interaction}>
     <span class="history-calendar__month">${escapeHtml(month)}</span>
     <strong>${date.getUTCDate()}</strong>
     <small>${cell.observed ? compact(cell.value) : 'Missing'}</small>
@@ -115,6 +123,11 @@ function chooseDay(cell: HistoryCalendarCell): void {
   if (chartDay) chartDay.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
   else document.querySelector<HTMLElement>(`[data-history-day-card="${selector}"]`)?.click()
   requestAnimationFrame(syncHistoryCalendarSelection)
+}
+
+function preventMissingDayInteraction(event: Event): void {
+  event.preventDefault()
+  event.stopImmediatePropagation()
 }
 
 function renderDetail(cell: HistoryCalendarCell | null, metric: HistoryCalendarMetric): void {
