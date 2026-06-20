@@ -9,31 +9,13 @@ const assert = (value, message) => { if (!value) throw new Error(message) }
 
 mkdirSync(screenshotDir, { recursive: true })
 
-async function calendarSnapshot(page) {
-  return page.evaluate(() => {
-    const cells = Array.from(document.querySelectorAll('[data-history-calendar-day]')).map((node) => ({
-      day: node.getAttribute('data-history-calendar-day'),
-      coverage: node.getAttribute('data-calendar-coverage'),
-      level: node.getAttribute('data-calendar-level'),
-    }))
-    return {
-      url: location.href,
-      cells,
-      summaries: Array.from(document.querySelectorAll('[data-history-calendar-summary]')).map((node) => node.textContent ?? ''),
-      metric: document.querySelector('[data-history-calendar-metric]')?.textContent ?? '',
-    }
-  })
-}
-
 async function check(browser, provider, viewport) {
   const calls = { twitch: 0, kick: 0 }
-  const requests = []
   const context = await browser.newContext({ viewport, isMobile: viewport.width < 500 })
 
   const fulfill = async (route, requestedProvider) => {
     calls[requestedProvider] += 1
     const requestUrl = new URL(route.request().url())
-    requests.push(`${requestUrl.pathname}${requestUrl.search}`)
     const payload = historyPayload(requestedProvider)
     payload.metric = requestUrl.searchParams.get('metric') === 'peak_viewers' ? 'peak_viewers' : 'viewer_minutes'
     payload.period = { ...payload.period, to: '2026-06-18', days: 13, label: 'Fixture calendar range' }
@@ -45,37 +27,39 @@ async function check(browser, provider, viewport) {
 
   const page = await context.newPage()
   await page.goto(`${base}/${provider}/history/?period=30d&metric=viewer_minutes`, { waitUntil: 'domcontentloaded' })
-  await page.waitForFunction(() => document.querySelectorAll('[data-history-calendar-day]').length > 0)
+  await page.waitForFunction(() => {
+    const cells = Array.from(document.querySelectorAll('[data-history-calendar-day]'))
+    const observed = cells.filter((cell) => cell.getAttribute('data-calendar-coverage') !== 'missing').length
+    const missing = cells.filter((cell) => cell.getAttribute('data-calendar-coverage') === 'missing').length
+    const summaries = Array.from(document.querySelectorAll('[data-history-calendar-summary]'))
+      .map((node) => node.textContent ?? '')
+    return cells.length === 13
+      && observed === 12
+      && missing === 1
+      && summaries.length === 1
+      && summaries[0].includes('12 observed')
+      && summaries[0].includes('1 missing')
+  })
 
-  const transitions = []
-  let previous = ''
-  let snapshot = await calendarSnapshot(page)
-  for (let index = 0; index < 25; index += 1) {
-    snapshot = await calendarSnapshot(page)
-    const observed = snapshot.cells.filter((cell) => cell.coverage !== 'missing').length
-    const missing = snapshot.cells.filter((cell) => cell.coverage === 'missing').length
-    const signature = JSON.stringify({
-      url: snapshot.url,
-      cellCount: snapshot.cells.length,
-      observed,
-      missing,
-      summaries: snapshot.summaries,
-      metric: snapshot.metric,
-    })
-    if (signature !== previous) transitions.push({ index, signature })
-    previous = signature
-    await page.waitForTimeout(100)
-  }
-
-  console.log(`${provider} History requests: ${JSON.stringify(requests)}`)
-  console.log(`${provider} calendar transitions: ${JSON.stringify(transitions)}`)
-  console.log(`${provider} final calendar cells: ${JSON.stringify(snapshot.cells)}`)
-  console.log(`${provider} final calendar summaries: ${JSON.stringify(snapshot.summaries)}`)
-
+  const snapshot = await page.evaluate(() => {
+    const cells = Array.from(document.querySelectorAll('[data-history-calendar-day]')).map((node) => ({
+      day: node.getAttribute('data-history-calendar-day'),
+      coverage: node.getAttribute('data-calendar-coverage'),
+      level: node.getAttribute('data-calendar-level'),
+    }))
+    return {
+      cells,
+      summaries: Array.from(document.querySelectorAll('[data-history-calendar-summary]')).map((node) => node.textContent ?? ''),
+      metric: document.querySelector('[data-history-calendar-metric]')?.textContent ?? '',
+    }
+  })
   const cells = snapshot.cells
   const observedCount = cells.filter((cell) => cell.coverage !== 'missing').length
   const missingCount = cells.filter((cell) => cell.coverage === 'missing').length
   const other = provider === 'twitch' ? 'kick' : 'twitch'
+
+  console.log(`${provider} calendar cells: ${JSON.stringify(cells)}`)
+  console.log(`${provider} calendar summaries: ${JSON.stringify(snapshot.summaries)}`)
 
   assert(calls[provider] > 0, `${provider} History endpoint was not requested.`)
   assert(calls[other] === 0, `${provider} History calendar crossed provider endpoints.`)
