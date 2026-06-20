@@ -10,6 +10,7 @@ const forbidPattern = (path, source, label, pattern) => { if (pattern.test(sourc
 
 const contractPath = 'docs/history-report-text-contract.md'
 const statePath = 'src/live/history-report-text-state.ts'
+const socialPath = 'src/live/history-report-social.ts'
 const renderPath = 'src/live/history-report-text-render.ts'
 const entryPath = 'src/live/history-report-text.ts'
 const stylePath = 'src/history-report-text.css'
@@ -21,6 +22,7 @@ const browserWorkflowPath = '../../.github/workflows/history-report-browser.yml'
 for (const path of [
   contractPath,
   statePath,
+  socialPath,
   renderPath,
   entryPath,
   stylePath,
@@ -36,7 +38,9 @@ if (existsSync(join(root, contractPath))) {
     'reuse the current History response',
     'not provider-wide totals',
     'coverageState: missing',
-    'Copying must not make another API request',
+    'compact short-post mode',
+    '280 Unicode code points',
+    'Copying or switching text mode must not make another API request',
     'Twitch/Kick combined totals',
   ]) requireFragment(contractPath, source, fragment)
 }
@@ -54,12 +58,33 @@ if (existsSync(join(root, statePath))) {
   forbidPattern(statePath, source, 'combined-provider calculation', /twitch\s*\+\s*kick|kick\s*\+\s*twitch/i)
 }
 
+if (existsSync(join(root, socialPath))) {
+  const source = read(socialPath)
+  for (const fragment of [
+    'const MAX_POST_LENGTH = 280',
+    'historyShortPostText',
+    'historyShortPostLength',
+    "['period', 'from', 'to', 'metric']",
+    'not provider-wide.',
+    'Required short-post fields exceed the length contract.',
+  ]) requireFragment(socialPath, source, fragment)
+  for (const forbidden of ['day', 'sort', 'limit']) {
+    forbidPattern(socialPath, source, `retained ${forbidden} share parameter`, new RegExp(`\\[.*['\"]${forbidden}['\"]`))
+  }
+  forbidPattern(socialPath, source, 'new API request', /\bfetch\s*\(/)
+  forbidPattern(socialPath, source, 'combined-provider calculation', /twitch\s*\+\s*kick|kick\s*\+\s*twitch/i)
+}
+
 if (existsSync(join(root, renderPath))) {
   const source = read(renderPath)
   for (const fragment of [
     'data-history-report',
     'data-history-report-preview',
     'data-history-report-copy',
+    'data-history-report-mode',
+    'data-history-report-count',
+    'historyShortPostText',
+    'historyShortPostLength',
     'navigator.clipboard?.writeText',
     'selectPreview(preview)',
     'Current provider view',
