@@ -47,7 +47,8 @@ async function check(browser, provider, viewport) {
   assert(missingCount === 1, `${provider} missing day is not explicit: expected 1, received ${missingCount}.`)
   assert(await page.locator('.history-calendar__cell--partial').count() >= 1, `${provider} partial coverage is not visible.`)
   assert(await page.locator('[data-calendar-level="4"]').count() >= 1, `${provider} relative intensity is missing.`)
-  assert((await page.locator('[data-history-calendar-summary]').textContent())?.includes('12 observed'), `${provider} calendar summary is incorrect.`)
+  await page.waitForFunction((expected) => document.querySelector('[data-history-calendar-summary]')?.textContent?.includes(expected), `${observedCount} observed`)
+  assert((await page.locator('[data-history-calendar-summary]').textContent())?.includes(`${observedCount} observed`), `${provider} calendar summary is incorrect.`)
   assert((await page.locator('[data-history-calendar-metric]').textContent()) === 'Viewer-minutes', `${provider} initial metric label is incorrect.`)
 
   const observedCell = page.locator('[data-history-calendar-day]:not([data-calendar-coverage="missing"])').first()
