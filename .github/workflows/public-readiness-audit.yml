@@ -1,0 +1,46 @@
+name: Public Readiness Audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/public-readiness-audit.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm build:web
+      - name: Audit built public pages
+        working-directory: apps/web
+        run: |
+          set -o pipefail
+          node scripts/public-readiness-audit.mjs 2>&1 | tee /tmp/public-readiness-audit.log
+      - name: Publish audit summary
+        if: always()
+        run: |
+          if [ -f apps/web/artifacts/public-readiness/report.md ]; then
+            cat apps/web/artifacts/public-readiness/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-readiness-audit
+          path: |
+            apps/web/artifacts/public-readiness/
+            /tmp/public-readiness-audit.log
+          if-no-files-found: warn
