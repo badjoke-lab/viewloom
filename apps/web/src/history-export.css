@@ -1,0 +1,8 @@
+.history-export-block{margin-top:22px}
+.history-export{overflow:hidden}
+.history-export__body{display:grid;gap:14px}
+.history-export__body>p{margin:0;color:var(--muted);line-height:1.6}
+.history-export__actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.history-export__body>[data-history-export-status]{color:var(--muted);font-size:.8rem}
+.history-export__actions button:disabled{cursor:wait;opacity:.65}
+@media(max-width:760px){.history-export__body{gap:12px}.history-export__actions{align-items:stretch;flex-direction:column}.history-export__actions button{width:100%}}
