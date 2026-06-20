@@ -2,9 +2,19 @@ name: Public Readiness Audit
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '23 2 * * 1'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/**'
+      - 'package.json'
+      - '.github/workflows/public-readiness-audit.yml'
   pull_request:
     paths:
       - 'apps/web/**'
+      - 'package.json'
       - '.github/workflows/public-readiness-audit.yml'
 
 concurrency:
@@ -17,19 +27,22 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 10.17.1
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: pnpm install --no-frozen-lockfile
-      - run: pnpm build:web
+      - run: pn`m build:web
       - name: Audit built public pages
         working-directory: apps/web
         run: |
           set -o pipefail
           node scripts/public-readiness-audit.mjs 2>&1 | tee /tmp/public-readiness-audit.log
+      - name: Verify linked changelog data
+        working-directory: apps/web
+        run: test -f dist/data/changelog.json
       - name: Publish audit summary
         if: always()
         run: |
