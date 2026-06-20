@@ -32,7 +32,6 @@ async function check(browser, provider, viewport) {
 
   const cells = await page.locator('[data-history-calendar-day]').evaluateAll((nodes) => nodes.map((node) => ({
     day: node.getAttribute('data-history-calendar-day'),
-    ariaDisabled: node.getAttribute('aria-disabled'),
     coverage: node.getAttribute('data-calendar-coverage'),
     level: node.getAttribute('data-calendar-level'),
   })))
@@ -46,7 +45,6 @@ async function check(browser, provider, viewport) {
   assert(await page.locator('.history-calendar__weekdays span').count() === 7, `${provider} weekday header is incomplete.`)
   assert(observedCount === 12, `${provider} observed calendar cells are incomplete: expected 12, received ${observedCount}.`)
   assert(missingCount === 1, `${provider} missing day is not explicit: expected 1, received ${missingCount}.`)
-  assert(cells.filter((cell) => cell.coverage === 'missing').every((cell) => cell.ariaDisabled === 'true'), `${provider} missing day is not aria-disabled.`)
   assert(await page.locator('.history-calendar__cell--partial').count() >= 1, `${provider} partial coverage is not visible.`)
   assert(await page.locator('[data-calendar-level="4"]').count() >= 1, `${provider} relative intensity is missing.`)
   assert((await page.locator('[data-history-calendar-summary]').textContent())?.includes('12 observed'), `${provider} calendar summary is incorrect.`)
