@@ -36,9 +36,10 @@ export function historyShortPostText(
 
   const state = normalize(payload.state)
   const source = normalize(payload.source)
+  const metric = payload.metric === 'peak_viewers' ? 'Peak viewers' : 'Viewer-minutes'
   const start = [
     `ViewLoom | ${provider === 'kick' ? 'Kick' : 'Twitch'} History snapshot`,
-    `${periodLabel(payload)} UTC`,
+    `${periodLabel(payload)} UTC · ${metric}`,
   ]
   const end = [
     `Coverage: ${coverage.observedDays}/${coverage.totalDays} days observed${coverage.attentionDays ? ` · ${coverage.attentionDays} partial` : ''}`,
