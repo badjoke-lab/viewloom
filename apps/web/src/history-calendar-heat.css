@@ -1,0 +1,38 @@
+.history-calendar-block{margin-top:22px}
+.history-calendar{overflow:hidden}
+.history-calendar__meta{display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line);font-size:.8rem}
+.history-calendar__meta>span{display:flex;align-items:center;gap:7px}
+.history-calendar__intensity i{display:block;width:14px;height:14px;border:1px solid var(--line-strong);border-radius:2px}
+.history-calendar__intensity i[data-level="0"]{background:rgba(255,255,255,.025)}
+.history-calendar__intensity i[data-level="1"]{background:color-mix(in srgb,var(--accent) 18%,var(--surface))}
+.history-calendar__intensity i[data-level="2"]{background:color-mix(in srgb,var(--accent) 36%,var(--surface))}
+.history-calendar__intensity i[data-level="3"]{background:color-mix(in srgb,var(--accent) 58%,var(--surface))}
+.history-calendar__intensity i[data-level="4"]{background:color-mix(in srgb,var(--accent) 82%,var(--surface))}
+.history-calendar__intensity b{margin-left:3px;font-weight:650}
+.history-calendar__coverage-key i{display:block;width:14px;height:14px;border:2px dashed var(--warning);border-radius:2px}
+.history-calendar__scroll{padding:16px;overflow-x:auto}
+.history-calendar__weekdays,.history-calendar__grid{display:grid;grid-template-columns:repeat(7,minmax(42px,1fr));gap:7px;min-width:336px}
+.history-calendar__weekdays{margin-bottom:7px;color:var(--muted);font:700 .68rem var(--mono);letter-spacing:.06em;text-align:center;text-transform:uppercase}
+.history-calendar__grid{align-items:stretch}
+.history-calendar__blank{aspect-ratio:1;min-height:42px}
+.history-calendar__cell{position:relative;display:grid;grid-template-rows:1fr auto auto;align-items:start;min-height:64px;aspect-ratio:1;border:1px solid var(--line-strong);border-radius:4px;padding:6px;background:var(--surface);color:var(--text);text-align:left;cursor:pointer;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease}
+.history-calendar__cell:hover,.history-calendar__cell:focus-visible{transform:translateY(-1px);border-color:var(--text);outline:none}
+.history-calendar__cell.is-selected{box-shadow:0 0 0 2px var(--text) inset;border-color:var(--text)}
+.history-calendar__cell:disabled,.history-calendar__cell[aria-disabled="true"]{cursor:not-allowed;opacity:.46;transform:none}
+.history-calendar__cell[aria-disabled="true"]:hover{border-color:var(--line-strong)}
+.history-calendar__cell--level-0{background:rgba(255,255,255,.025)}
+.history-calendar__cell--level-1{background:color-mix(in srgb,var(--accent) 18%,var(--surface))}
+.history-calendar__cell--level-2{background:color-mix(in srgb,var(--accent) 36%,var(--surface))}
+.history-calendar__cell--level-3{background:color-mix(in srgb,var(--accent) 58%,var(--surface))}
+.history-calendar__cell--level-4{background:color-mix(in srgb,var(--accent) 82%,var(--surface))}
+.history-calendar__cell--partial,.history-calendar__cell--poor,.history-calendar__cell--stale,.history-calendar__cell--in-progress,.history-calendar__cell--progress{border-style:dashed;border-width:2px}
+.history-calendar__cell--missing{background:repeating-linear-gradient(135deg,transparent 0 6px,rgba(255,255,255,.04) 6px 12px);border-style:dotted}
+.history-calendar__month{min-height:1em;color:var(--muted);font:700 .62rem var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.history-calendar__cell strong{font:760 1.05rem/1 var(--sans)}
+.history-calendar__cell small{align-self:end;overflow:hidden;color:var(--muted);font:700 .62rem var(--mono);text-overflow:ellipsis;white-space:nowrap}
+.history-calendar__detail{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--line);min-height:52px}
+.history-calendar__detail time{font-weight:700}
+.history-calendar__detail>strong{font-size:1.15rem}
+.history-calendar__detail>span:not(.history-badge){color:var(--muted);font-size:.8rem}
+.history-calendar__empty{grid-column:1/-1}
+@media(max-width:760px){.history-calendar__meta{padding:10px 12px;gap:9px 14px}.history-calendar__intensity b{display:none}.history-calendar__scroll{padding:12px}.history-calendar__weekdays,.history-calendar__grid{grid-template-columns:repeat(7,minmax(38px,1fr));gap:5px;min-width:296px}.history-calendar__cell{min-height:54px;padding:5px}.history-calendar__cell small{font-size:.56rem}.history-calendar__detail{padding:10px 12px}}

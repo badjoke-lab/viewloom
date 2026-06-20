@@ -1,6 +1,7 @@
 import './history-additional-rankings'
 import './history-peak-archive'
 import './history-battle-archive'
+import './history-calendar-heat'
 
 const startedWithExplicitDay = new URLSearchParams(location.search).has('day')
 let pending = !startedWithExplicitDay
