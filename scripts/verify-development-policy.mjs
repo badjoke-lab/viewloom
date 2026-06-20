@@ -68,6 +68,8 @@ const concurrencyWorkflows = [
   '.github/workflows/platform-naming.yml',
   '.github/workflows/history-calendar-heat.yml',
   '.github/workflows/history-calendar-browser.yml',
+  '.github/workflows/history-report-text.yml',
+  '.github/workflows/history-report-browser.yml',
 ]
 
 for (const path of concurrencyWorkflows) {
