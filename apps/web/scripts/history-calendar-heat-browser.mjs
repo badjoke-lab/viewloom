@@ -27,17 +27,36 @@ async function check(browser, provider, viewport) {
 
   const page = await context.newPage()
   await page.goto(`${base}/${provider}/history/?period=30d&metric=viewer_minutes`, { waitUntil: 'domcontentloaded' })
-  await page.waitForFunction(() => document.querySelectorAll('[data-history-calendar-day]').length === 13)
-  await page.screenshot({ path: resolve(screenshotDir, `history-calendar-${provider}.png`), fullPage: true })
+  await page.waitForFunction(() => {
+    const cells = Array.from(document.querySelectorAll('[data-history-calendar-day]'))
+    const observed = cells.filter((cell) => cell.getAttribute('data-calendar-coverage') !== 'missing').length
+    const missing = cells.filter((cell) => cell.getAttribute('data-calendar-coverage') === 'missing').length
+    const summaries = Array.from(document.querySelectorAll('[data-history-calendar-summary]'))
+      .map((node) => node.textContent ?? '')
+    return cells.length === 13
+      && observed === 12
+      && missing === 1
+      && summaries.length === 1
+      && summaries[0].includes('12 observed')
+      && summaries[0].includes('1 missing')
+  })
 
-  const cells = await page.locator('[data-history-calendar-day]').evaluateAll((nodes) => nodes.map((node) => ({
-    day: node.getAttribute('data-history-calendar-day'),
-    coverage: node.getAttribute('data-calendar-coverage'),
-    level: node.getAttribute('data-calendar-level'),
-  })))
+  const snapshot = await page.evaluate(() => {
+    const cells = Array.from(document.querySelectorAll('[data-history-calendar-day]')).map((node) => ({
+      day: node.getAttribute('data-history-calendar-day'),
+      coverage: node.getAttribute('data-calendar-coverage'),
+      level: node.getAttribute('data-calendar-level'),
+    }))
+    return {
+      cells,
+      summaries: Array.from(document.querySelectorAll('[data-history-calendar-summary]')).map((node) => node.textContent ?? ''),
+    }
+  })
+  const cells = snapshot.cells
   const observedCount = cells.filter((cell) => cell.coverage !== 'missing').length
   const missingCount = cells.filter((cell) => cell.coverage === 'missing').length
   console.log(`${provider} calendar cells: ${JSON.stringify(cells)}`)
+  console.log(`${provider} calendar summaries: ${JSON.stringify(snapshot.summaries)}`)
 
   const other = provider === 'twitch' ? 'kick' : 'twitch'
   assert(calls[provider] > 0, `${provider} History endpoint was not requested.`)
@@ -47,11 +66,10 @@ async function check(browser, provider, viewport) {
   assert(missingCount === 1, `${provider} missing day is not explicit: expected 1, received ${missingCount}.`)
   assert(await page.locator('.history-calendar__cell--partial').count() >= 1, `${provider} partial coverage is not visible.`)
   assert(await page.locator('[data-calendar-level="4"]').count() >= 1, `${provider} relative intensity is missing.`)
-  const calendarSummaries = await page.locator('[data-history-calendar-summary]').allTextContents()
-  console.log(`${provider} calendar summaries: ${JSON.stringify(calendarSummaries)}`)
-  assert(calendarSummaries.length === 1, `${provider} calendar summary mount count is incorrect: expected 1, received ${calendarSummaries.length}.`)
-  assert(calendarSummaries.some((text) => text.includes(`${observedCount} observed`)), `${provider} calendar summary is incorrect.`)
+  assert(snapshot.summaries.length === 1, `${provider} calendar summary mount count is incorrect: expected 1, received ${snapshot.summaries.length}.`)
+  assert(snapshot.summaries[0].includes(`${observedCount} observed`), `${provider} calendar summary is incorrect.`)
   assert((await page.locator('[data-history-calendar-metric]').textContent()) === 'Viewer-minutes', `${provider} initial metric label is incorrect.`)
+  await page.screenshot({ path: resolve(screenshotDir, `history-calendar-${provider}.png`), fullPage: true })
 
   const observedCell = page.locator('[data-history-calendar-day]:not([data-calendar-coverage="missing"])').first()
   const firstDay = await observedCell.getAttribute('data-history-calendar-day')
