@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.17.1",
   "scripts": {
     "dev:web": "pnpm --filter @viewloom/web dev",
-    "build:web": "pnpm --filter @viewloom/web build",
+    "build:web": "pnpm --filter @viewloom/web build && cd apps/web && node scripts/normalize-built-head.mjs",
     "typecheck:web": "pnpm --filter @viewloom/web typecheck",
     "preview:web": "pnpm --filter @viewloom/web preview",
     "typecheck:collectors": "tsc -p workers/tsconfig.json",
