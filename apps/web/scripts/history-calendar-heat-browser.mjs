@@ -47,9 +47,10 @@ async function check(browser, provider, viewport) {
   assert(missingCount === 1, `${provider} missing day is not explicit: expected 1, received ${missingCount}.`)
   assert(await page.locator('.history-calendar__cell--partial').count() >= 1, `${provider} partial coverage is not visible.`)
   assert(await page.locator('[data-calendar-level="4"]').count() >= 1, `${provider} relative intensity is missing.`)
-  const calendarSummary = page.locator('.history-calendar .surface__head small').first()
-  await calendarSummary.waitFor({ state: 'visible' })
-  assert((await calendarSummary.textContent())?.includes(`${observedCount} observed`), `${provider} calendar summary is incorrect.`)
+  const calendarSummaries = await page.locator('[data-history-calendar-summary]').allTextContents()
+  console.log(`${provider} calendar summaries: ${JSON.stringify(calendarSummaries)}`)
+  assert(calendarSummaries.length === 1, `${provider} calendar summary mount count is incorrect: expected 1, received ${calendarSummaries.length}.`)
+  assert(calendarSummaries.some((text) => text.includes(`${observedCount} observed`)), `${provider} calendar summary is incorrect.`)
   assert((await page.locator('[data-history-calendar-metric]').textContent()) === 'Viewer-minutes', `${provider} initial metric label is incorrect.`)
 
   const observedCell = page.locator('[data-history-calendar-day]:not([data-calendar-coverage="missing"])').first()
