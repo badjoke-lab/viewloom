@@ -27,14 +27,14 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 10.17.1
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: pnpm install --no-frozen-lockfile
-      - run: pn`m build:web
+      - run: pnpm build:web
       - name: Audit built public pages
         working-directory: apps/web
         run: |
