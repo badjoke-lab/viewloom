@@ -28,6 +28,15 @@ for (const path of htmlFiles(dist)) {
     html = injectBeforeHeadClose(html, '<meta name="robots" content="noindex,follow" />')
   }
 
+  if (/data-provider-home(?:\s|>)/.test(html) && !/<h1\b/i.test(html)) {
+    const provider = html.match(/data-provider=["'](twitch|kick)["']/i)?.[1] ?? 'provider'
+    const name = provider === 'twitch' ? 'Twitch' : provider === 'kick' ? 'Kick' : 'Provider'
+    html = html.replace(
+      /(<div\s+id=["']provider-home-root["'][^>]*>)/i,
+      `$1<noscript><main><h1>${name} data</h1><p>JavaScript is required to load the current observed ${name} dashboard.</p></main></noscript>`,
+    )
+  }
+
   if (html !== original) {
     writeFileSync(path, html)
     normalized += 1
