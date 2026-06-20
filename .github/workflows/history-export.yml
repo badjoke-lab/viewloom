@@ -1,0 +1,45 @@
+name: History Export
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/docs/history-export-contract.md'
+      - 'apps/web/src/history-export.css'
+      - 'apps/web/src/live/history-export*.ts'
+      - 'apps/web/src/live/history-report-text.ts'
+      - 'apps/web/scripts/verify-history-export.mjs'
+      - 'apps/web/scripts/history-export-browser.mjs'
+      - '.github/workflows/history-export*.yml'
+      - 'scripts/verify-development-policy.mjs'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - name: Typecheck History export
+        run: |
+          set -o pipefail
+          pnpm --filter @viewloom/web typecheck 2>&1 | tee /tmp/history-export-typecheck.log
+      - name: Verify History export contract
+        working-directory: apps/web
+        run: node scripts/verify-history-export.mjs
+      - run: pnpm build:web
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: history-export-typecheck-diagnostics
+          path: /tmp/history-export-typecheck.log
+          if-no-files-found: warn

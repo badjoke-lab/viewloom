@@ -1,0 +1,50 @@
+name: History Export Browser
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/docs/history-export-contract.md'
+      - 'apps/web/src/history-export.css'
+      - 'apps/web/src/live/history-export*.ts'
+      - 'apps/web/src/live/history-report-text.ts'
+      - 'apps/web/scripts/history-export-browser.mjs'
+      - 'apps/web/scripts/history-battle-archive-fixture.mjs'
+      - '.github/workflows/history-export-browser.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm build:web
+      - run: pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/history-export-preview.log 2>&1 &
+      - run: sleep 3
+      - run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+        working-directory: apps/web
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - name: Run History export browser gate
+        working-directory: apps/web
+        env:
+          HISTORY_EXPORT_BASE_URL: http://127.0.0.1:4173
+          HISTORY_EXPORT_ARTIFACT_DIR: artifacts/history-export
+        run: node scripts/history-export-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: history-export-artifacts
+          path: apps/web/artifacts/history-export/
+          if-no-files-found: warn
