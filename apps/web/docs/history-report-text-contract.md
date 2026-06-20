@@ -21,16 +21,30 @@ It must:
 - state that the figures are observed ViewLoom data and are not provider-wide totals;
 - keep Twitch and Kick text, endpoints, names, and links separate;
 - support keyboard, touch, and clipboard fallback behavior;
-- render a readable preview before copying.
+- render a readable preview before copying;
+- provide both a full report and a compact short-post mode.
+
+## Short-post mode
+
+Short-post mode must:
+
+- use the same provider-specific History payload as the full report;
+- include the period, observed-day coverage, and provider limitation;
+- include top streamer, peak, and biggest rise only when available;
+- retain only `period`, `from`, `to`, and `metric` query parameters in its share URL;
+- omit selected-day, ranking-sort, and ranking-limit state;
+- remain at or below 280 Unicode code points;
+- switch and copy without another History API request.
 
 ## Truth rules
 
 - A daily row with `coverageState: missing` is not an observed day.
 - A date absent from the returned daily rows is missing when it lies inside the returned UTC period.
 - Missing or unavailable values are omitted or described as unavailable; they are never inferred as zero.
-- Partial, poor, demo, and in-progress coverage remains visible in the copied text.
-- The copied link reflects the current provider-specific History view.
-- Copying must not make another API request.
+- Partial, poor, demo, and in-progress coverage remains visible in copied text.
+- The full report link reflects the current provider-specific History view.
+- The short-post link reflects the current period and metric without unrelated UI state.
+- Copying or switching text mode must not make another API request.
 
 ## Non-goals
 
