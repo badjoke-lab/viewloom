@@ -18,7 +18,8 @@
 .history-calendar__cell{position:relative;display:grid;grid-template-rows:1fr auto auto;align-items:start;min-height:64px;aspect-ratio:1;border:1px solid var(--line-strong);border-radius:4px;padding:6px;background:var(--surface);color:var(--text);text-align:left;cursor:pointer;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease}
 .history-calendar__cell:hover,.history-calendar__cell:focus-visible{transform:translateY(-1px);border-color:var(--text);outline:none}
 .history-calendar__cell.is-selected{box-shadow:0 0 0 2px var(--text) inset;border-color:var(--text)}
-.history-calendar__cell:disabled{cursor:not-allowed;opacity:.46;transform:none}
+.history-calendar__cell:disabled,.history-calendar__cell[aria-disabled="true"]{cursor:not-allowed;opacity:.46;transform:none}
+.history-calendar__cell[aria-disabled="true"]:hover{border-color:var(--line-strong)}
 .history-calendar__cell--level-0{background:rgba(255,255,255,.025)}
 .history-calendar__cell--level-1{background:color-mix(in srgb,var(--accent) 18%,var(--surface))}
 .history-calendar__cell--level-2{background:color-mix(in srgb,var(--accent) 36%,var(--surface))}
