@@ -7,6 +7,7 @@ on:
       - 'apps/web/docs/history-report-text-contract.md'
       - 'apps/web/src/history-report-text.css'
       - 'apps/web/src/live/history-report-text*.ts'
+      - 'apps/web/src/live/history-report-social.ts'
       - 'apps/web/src/live/history-default-day.ts'
       - 'apps/web/scripts/verify-history-report-text.mjs'
       - 'apps/web/scripts/history-report-text-browser.mjs'
