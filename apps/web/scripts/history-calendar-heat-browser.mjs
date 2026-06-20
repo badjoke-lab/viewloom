@@ -32,12 +32,12 @@ async function check(browser, provider, viewport) {
 
   const cells = await page.locator('[data-history-calendar-day]').evaluateAll((nodes) => nodes.map((node) => ({
     day: node.getAttribute('data-history-calendar-day'),
-    disabled: node.hasAttribute('disabled'),
+    ariaDisabled: node.getAttribute('aria-disabled'),
     coverage: node.getAttribute('data-calendar-coverage'),
     level: node.getAttribute('data-calendar-level'),
   })))
-  const observedCount = cells.filter((cell) => !cell.disabled).length
-  const missingCount = cells.filter((cell) => cell.disabled).length
+  const observedCount = cells.filter((cell) => cell.coverage !== 'missing').length
+  const missingCount = cells.filter((cell) => cell.coverage === 'missing').length
   console.log(`${provider} calendar cells: ${JSON.stringify(cells)}`)
 
   const other = provider === 'twitch' ? 'kick' : 'twitch'
@@ -46,15 +46,22 @@ async function check(browser, provider, viewport) {
   assert(await page.locator('.history-calendar__weekdays span').count() === 7, `${provider} weekday header is incomplete.`)
   assert(observedCount === 12, `${provider} observed calendar cells are incomplete: expected 12, received ${observedCount}.`)
   assert(missingCount === 1, `${provider} missing day is not explicit: expected 1, received ${missingCount}.`)
+  assert(cells.filter((cell) => cell.coverage === 'missing').every((cell) => cell.ariaDisabled === 'true'), `${provider} missing day is not aria-disabled.`)
   assert(await page.locator('.history-calendar__cell--partial').count() >= 1, `${provider} partial coverage is not visible.`)
   assert(await page.locator('[data-calendar-level="4"]').count() >= 1, `${provider} relative intensity is missing.`)
   assert((await page.locator('[data-history-calendar-summary]').textContent())?.includes('12 observed'), `${provider} calendar summary is incorrect.`)
   assert((await page.locator('[data-history-calendar-metric]').textContent()) === 'Viewer-minutes', `${provider} initial metric label is incorrect.`)
 
-  const firstDay = await page.locator('[data-history-calendar-day]:not([disabled])').first().getAttribute('data-history-calendar-day')
-  await page.locator('[data-history-calendar-day]:not([disabled])').first().click()
+  const observedCell = page.locator('[data-history-calendar-day]:not([data-calendar-coverage="missing"])').first()
+  const firstDay = await observedCell.getAttribute('data-history-calendar-day')
+  await observedCell.click()
   await page.waitForFunction((day) => new URL(location.href).searchParams.get('day') === day, firstDay)
   assert(await page.locator('[data-history-calendar-day].is-selected').count() === 1, `${provider} calendar selection is not synchronized.`)
+
+  const selectedBeforeMissingClick = new URL(page.url()).searchParams.get('day')
+  await page.locator('[data-calendar-coverage="missing"]').click({ force: true })
+  await page.waitForTimeout(50)
+  assert(new URL(page.url()).searchParams.get('day') === selectedBeforeMissingClick, `${provider} missing day changed the selected date.`)
 
   await page.locator('[data-history-metric="peak_viewers"]').click()
   await page.waitForFunction(() => document.querySelector('[data-history-calendar-metric]')?.textContent === 'Peak viewers')
