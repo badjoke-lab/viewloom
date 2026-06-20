@@ -136,13 +136,13 @@ function drawCard(context: CanvasRenderingContext2D, model: CardModel): void {
 
   context.fillStyle = '#aeb8ca'
   context.font = '700 18px ui-monospace, monospace'
-  context.fillText(model.dataLabel, 70, 548)
-  context.fillText('Observed ViewLoom data · not provider-wide · independent and unofficial', 70, 582)
+  context.fillText(model.dataLabel, 70, 538)
+  context.fillText('Observed ViewLoom data · not provider-wide · independent and unofficial', 70, 570)
 
   context.textAlign = 'right'
   context.fillStyle = '#f5f7fb'
   context.font = '700 18px ui-monospace, monospace'
-  context.fillText(model.linkLabel, 1130, 582)
+  context.fillText(model.linkLabel, 1130, 606)
   context.textAlign = 'left'
 }
 
