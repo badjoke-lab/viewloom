@@ -62,11 +62,18 @@ export function historyCalendarCells(payload: HistoryCalendarPayload): HistoryCa
   return utcDays(from, to, 186).map((day): HistoryCalendarCell => {
     const source = supplied.get(day)
     if (!source) return { day, value: null, coverageState: 'missing', observed: false }
+
+    const coverageState = normalizeCoverage(source.coverageState)
+    const observed = coverageState !== 'missing'
     return {
       day,
-      value: metric === 'peak_viewers' ? finite(source.peakViewers) : finite(source.totalViewerMinutes),
-      coverageState: normalizeCoverage(source.coverageState),
-      observed: true,
+      value: observed
+        ? metric === 'peak_viewers'
+          ? finite(source.peakViewers)
+          : finite(source.totalViewerMinutes)
+        : null,
+      coverageState,
+      observed,
     }
   })
 }
