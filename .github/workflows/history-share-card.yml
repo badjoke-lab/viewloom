@@ -1,0 +1,45 @@
+name: History Share Card
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/docs/history-share-card-contract.md'
+      - 'apps/web/src/history-share-card.css'
+      - 'apps/web/src/live/history-share-card.ts'
+      - 'apps/web/src/live/history-report-text.ts'
+      - 'apps/web/scripts/verify-history-share-card.mjs'
+      - 'apps/web/scripts/history-share-card-browser.mjs'
+      - '.github/workflows/history-share-card*.yml'
+      - 'scripts/verify-development-policy.mjs'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - name: Typecheck History share card
+        run: |
+          set -o pipefail
+          pnpm --filter @viewloom/web typecheck 2>&1 | tee /tmp/history-share-card-typecheck.log
+      - name: Verify History share-card contract
+        working-directory: apps/web
+        run: node scripts/verify-history-share-card.mjs
+      - run: pnpm build:web
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: history-share-card-typecheck-diagnostics
+          path: /tmp/history-share-card-typecheck.log
+          if-no-files-found: warn
