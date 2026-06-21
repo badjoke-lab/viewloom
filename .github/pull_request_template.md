@@ -23,7 +23,7 @@
 
 ## Development policy
 
-- [ ] I read `docs/operations/development-and-deployment-policy.md`.
+- [ ] I read `docs/operations/development-and-deployment-policy.md` and `docs/operations/development-policy-addendum.md`.
 - [ ] I read `docs/operations/documentation-governance.md` and `docs/README.md`.
 - [ ] The current roadmap and schedule place this work next, or this PR updates them first.
 - [ ] I read the affected permanent specification, implementation plan, and active working note.
