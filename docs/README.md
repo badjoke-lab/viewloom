@@ -9,12 +9,15 @@ This file defines which repository documents govern current ViewLoom work. Older
 Before changing ViewLoom, read these documents in order:
 
 1. [`operations/development-and-deployment-policy.md`](operations/development-and-deployment-policy.md)
-2. [`operations/documentation-governance.md`](operations/documentation-governance.md)
-3. [`product/current-roadmap.md`](product/current-roadmap.md)
-4. [`product/current-schedule.md`](product/current-schedule.md)
-5. the affected feature specification under `product/`
-6. the affected implementation plan under `product/`
-7. any active note under `work-in-progress/`
+2. [`operations/development-policy-addendum.md`](operations/development-policy-addendum.md)
+3. [`operations/documentation-governance.md`](operations/documentation-governance.md)
+4. [`product/current-roadmap.md`](product/current-roadmap.md)
+5. [`product/current-schedule.md`](product/current-schedule.md)
+6. the affected feature specification under `product/`
+7. the affected implementation plan under `product/`
+8. any active note under `work-in-progress/`
+
+The addendum contains the later verified Cloudflare state and documentation-first rules until those changes are consolidated into the main policy.
 
 ## Current canonical product documents
 
@@ -43,13 +46,14 @@ A completed temporary note must not remain as a second source of truth.
 When documents conflict, use this order:
 
 1. development and deployment policy;
-2. documentation governance and this index;
-3. current roadmap;
-4. current schedule;
-5. permanent feature specification;
-6. current implementation plan;
-7. active working note;
-8. older or historical documents.
+2. later verified development-policy addendum;
+3. documentation governance and this index;
+4. current roadmap;
+5. current schedule;
+6. permanent feature specification;
+7. current implementation plan;
+8. active working note;
+9. older or historical documents.
 
 The lower document may add detail, but it may not silently contradict the higher document.
 
