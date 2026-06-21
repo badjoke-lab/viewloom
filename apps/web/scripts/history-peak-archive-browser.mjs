@@ -13,7 +13,7 @@ async function installRoutes(context) {
 }
 
 async function waitForArchive(page) {
-  await page.waitForSelector('[data-history-peak-archive]')
+  await page.waitForSelector('[data-history-peak-archive]', { state: 'attached' })
   await page.waitForFunction(() => document.querySelectorAll('[data-history-peak-day]').length > 0)
 }
 
