@@ -43,6 +43,25 @@ jobs:
       - name: Verify linked changelog data
         working-directory: apps/web
         run: test -f dist/data/changelog.json
+      - name: Verify explicit not-found page
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          test -f dist/404.html
+          grep -q 'data-viewloom-not-found="v1"' dist/404.html
+          grep -q 'name="robots" content="noindex,follow"' dist/404.html
+          grep -q '<title>Page not found | ViewLoom</title>' dist/404.html
+      - name: Verify deployment metadata
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          test -f dist/deployment.json
+          jq -e '
+            .schema == "viewloom-deployment-v1" and
+            .environment == "local" and
+            .branch == null and
+            .commit_sha == null
+          ' dist/deployment.json > /dev/null
       - name: Publish audit summary
         if: always()
         run: |
