@@ -43,6 +43,7 @@ for (const path of htmlFiles(dist)) {
   }
 }
 
+writeDeploymentMetadata()
 console.log(`Normalized built head metadata in ${normalized} HTML file(s).`)
 
 function htmlFiles(directory) {
@@ -62,6 +63,24 @@ function injectBeforeHeadClose(html, markup) {
 
 function googleTagMarkup() {
   return `<script async src="${tagUrl}"></script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('js', new Date());\n  gtag('config', '${measurementId}');\n</script>`
+}
+
+function writeDeploymentMetadata() {
+  const branch = process.env.CF_PAGES_BRANCH?.trim() || null
+  const commitSha = process.env.CF_PAGES_COMMIT_SHA?.trim() || null
+  const pagesUrl = process.env.CF_PAGES_URL?.trim() || null
+  const environment = process.env.CF_PAGES === '1'
+    ? branch === 'main' ? 'production' : 'preview'
+    : 'local'
+  const payload = {
+    schema: 'viewloom-deployment-v1',
+    generated_at: new Date().toISOString(),
+    environment,
+    branch,
+    commit_sha: commitSha,
+    pages_url: pagesUrl,
+  }
+  writeFileSync(join(dist, 'deployment.json'), `${JSON.stringify(payload, null, 2)}\n`)
 }
 
 function escapeHtmlAttribute(value) {
