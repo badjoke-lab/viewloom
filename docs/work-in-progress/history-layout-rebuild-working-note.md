@@ -265,8 +265,8 @@ Track answers here, then move stable decisions into the permanent spec.
 
 | Step | State | PR | Decisions / defects resolved |
 |---|---|---|---|
-| H0 docs and baseline | active | — | canonical reset and baseline inventory |
-| H1 view shell/state | queued | — | — |
+| H0 docs and baseline | completed | #388 | canonical docs reset, baseline inventory, temporary-note lifecycle, documentation-first CI enforcement |
+| H1 view shell/state | next | — | — |
 | H2 Overview | queued | — | — |
 | H3 Archives | queued | — | — |
 | H4 Report & Export | queued | — | — |
