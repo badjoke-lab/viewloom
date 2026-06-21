@@ -5,6 +5,7 @@
 Before changing the repository, read:
 
 - `docs/operations/development-and-deployment-policy.md`;
+- `docs/operations/development-policy-addendum.md`;
 - `docs/operations/documentation-governance.md`;
 - `docs/README.md`;
 - `docs/product/current-roadmap.md`;
@@ -26,7 +27,7 @@ canonical docs
   -> full required CI, browser gates, and artifact review
   -> optional preview-* branch when Cloudflare runtime validation is necessary
   -> merge to main
-  -> exact production deployment verification
+  -> production deployment verification
   -> production smoke and visual acceptance
   -> permanent documentation finalization
   -> delete completed temporary working notes
