@@ -164,6 +164,8 @@ const concurrencyWorkflows = [
   '.github/workflows/history-calendar-browser.yml',
   '.github/workflows/history-report-text.yml',
   '.github/workflows/history-report-browser.yml',
+  '.github/workflows/history-view-shell.yml',
+  '.github/workflows/history-view-shell-browser.yml',
 ]
 
 for (const path of concurrencyWorkflows) {
