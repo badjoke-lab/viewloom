@@ -80,6 +80,12 @@ function fixture(url, platform) {
   }
 }
 
+async function openArchive(page, archive) {
+  await page.locator('[data-history-view="archives"]').click()
+  await page.locator(`[data-history-archive-view="${archive}"]`).click()
+  await page.waitForFunction((expected) => document.querySelector('.history-page')?.getAttribute('data-history-archive-view') === expected, archive)
+}
+
 const browser = await chromium.launch({ headless: true })
 try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
@@ -116,6 +122,7 @@ try {
   assert((await page.locator('[data-history-daily-archive]').textContent())?.includes('Tracked streams (max)'), 'Archive label is unclear')
   assert(await page.locator('[data-history-feedback]').isHidden(), 'Duplicate coverage feedback remains visible')
 
+  await openArchive(page, 'daily')
   const missingFilter = page.locator('[data-history-clarity-filter="missing"]')
   assert((await missingFilter.textContent())?.trim() === 'Missing (4)', 'Missing filter count is wrong')
   await missingFilter.click()
