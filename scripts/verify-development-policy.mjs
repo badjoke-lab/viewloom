@@ -79,7 +79,7 @@ if (failures.length === 0) {
   const schedule = read('docs/product/current-schedule.md')
   for (const fragment of [
     'Phase 1B — History information architecture and layout rebuild',
-    'H7 Preview, production acceptance, and document cleanup',
+    'H6/H7: final QA, Preview, production acceptance',
     'temporary working note deletion',
   ]) assert(schedule.includes(fragment), `current-schedule.md: missing ${fragment}`)
 
