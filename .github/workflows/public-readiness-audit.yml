@@ -2,9 +2,19 @@ name: Public Readiness Audit
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '23 2 * * 1'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/**'
+      - 'package.json'
+      - '.github/workflows/public-readiness-audit.yml'
   pull_request:
     paths:
       - 'apps/web/**'
+      - 'package.json'
       - '.github/workflows/public-readiness-audit.yml'
 
 concurrency:
@@ -30,6 +40,9 @@ jobs:
         run: |
           set -o pipefail
           node scripts/public-readiness-audit.mjs 2>&1 | tee /tmp/public-readiness-audit.log
+      - name: Verify linked changelog data
+        working-directory: apps/web
+        run: test -f dist/data/changelog.json
       - name: Publish audit summary
         if: always()
         run: |
