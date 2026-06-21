@@ -1,0 +1,60 @@
+name: Cloudflare Preview Smoke
+
+on:
+  push:
+    branches:
+      - preview-cloudflare-cutover-20260621
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-preview-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PREVIEW_ORIGIN: https://preview-cloudflare-cutover-2.viewloom.pages.dev
+    steps:
+      - name: Wait for matching preview deployment
+        run: |
+          set -euo pipefail
+          for attempt in {1..30}; do
+            body="$(curl --silent --show-error --fail --max-time 20 "$PREVIEW_ORIGIN/cloudflare-preview-probe.json" || true)"
+            if echo "$body" | grep -q '2026-06-21T18:53:00+09:00'; then
+              echo "$body"
+              exit 0
+            fi
+            echo "Preview not ready yet (attempt $attempt/30)."
+            sleep 10
+          done
+          exit 1
+      - name: Verify Twitch status API
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$PREVIEW_ORIGIN/api/twitch-status" -o /tmp/twitch-status.json
+          jq -e 'type == "object"' /tmp/twitch-status.json > /dev/null
+          cat /tmp/twitch-status.json
+      - name: Verify Kick status API
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$PREVIEW_ORIGIN/api/kick-status" -o /tmp/kick-status.json
+          jq -e 'type == "object"' /tmp/kick-status.json > /dev/null
+          cat /tmp/kick-status.json
+      - name: Verify History pages
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$PREVIEW_ORIGIN/twitch/history/" | grep -q '<title>Twitch history'
+          curl --silent --show-error --fail --max-time 30 "$PREVIEW_ORIGIN/kick/history/" | grep -q '<title>Kick history'
+      - name: Record smoke result
+        run: |
+          {
+            echo '## Cloudflare Preview Smoke'
+            echo
+            echo '- Matching preview probe: passed'
+            echo '- Twitch status API: passed'
+            echo '- Kick status API: passed'
+            echo '- Twitch History HTML: passed'
+            echo '- Kick History HTML: passed'
+          } >> "$GITHUB_STEP_SUMMARY"
