@@ -1,1 +1,0 @@
-Production smoke is automated through GitHub Actions and validates the deployed main SHA, provider routes, separate Twitch and Kick D1 bindings, collector freshness, explicit not-found behavior, and absence of Preview-only probe data from production.
