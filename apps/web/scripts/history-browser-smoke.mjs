@@ -139,6 +139,17 @@ async function visibleArchiveCount(page) {
   return page.locator('[data-history-day-card]:visible').count()
 }
 
+async function openView(page, view) {
+  await page.locator(`[data-history-view="${view}"]`).click()
+  await page.waitForFunction((expected) => document.querySelector('.history-page')?.getAttribute('data-history-view') === expected, view)
+}
+
+async function openArchive(page, archive) {
+  await openView(page, 'archives')
+  await page.locator(`[data-history-archive-view="${archive}"]`).click()
+  await page.waitForFunction((expected) => document.querySelector('.history-page')?.getAttribute('data-history-archive-view') === expected, archive)
+}
+
 async function desktopGate(browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
   await installApiRoutes(context)
@@ -162,10 +173,11 @@ async function desktopGate(browser) {
   assert(await page.locator('.metric-ledger tbody tr').count() === 10, 'Desktop: Top 10 is not the default ranking limit')
   assert((await page.locator('.metric-ledger tbody tr').first().locator('td').last().textContent())?.trim() === 'Low baseline', 'Desktop: low comparison baseline is not labeled')
   assert(await page.locator('[data-history-daily-archive] .day-card').count() === 30, 'Desktop: archive did not render all retained cards')
-  assert(await visibleArchiveCount(page) === 9, 'Desktop: archive did not collapse to the recent nine days')
   const summaryText = (await page.locator('[data-history-summary] .lead-stat strong').textContent())?.trim() ?? ''
   assert(/[KMBT]$/.test(summaryText), `Desktop: headline total is not compact (${summaryText})`)
 
+  await openArchive(page, 'daily')
+  assert(await visibleArchiveCount(page) === 9, 'Desktop: archive did not collapse to the recent nine days')
   await page.locator('[data-history-archive-toggle]').click()
   assert(await visibleArchiveCount(page) === 30, 'Desktop: Show all days did not expand the archive')
 
@@ -179,6 +191,7 @@ async function desktopGate(browser) {
   await page.waitForFunction(() => new URL(location.href).searchParams.get('period') === '7d')
   await page.waitForFunction((day) => new URL(location.href).searchParams.get('day') === day, latestCompletedDay)
 
+  await openView(page, 'overview')
   const firstBar = page.locator('.history-day-column').first()
   const selectedDay = await firstBar.getAttribute('data-history-day')
   await firstBar.click()
@@ -203,8 +216,9 @@ async function mobileGate(browser) {
   assert(tableDisplay === 'none', 'Mobile: ranking table is still visible')
   assert(cardsDisplay !== 'none', 'Mobile: streamer cards are hidden')
   assert(await page.locator('.history-streamer-card').count() === 10, 'Mobile: expected Top 10 streamer cards')
-  assert(await visibleArchiveCount(page) === 9, 'Mobile: archive did not collapse to nine days')
 
+  await openArchive(page, 'daily')
+  assert(await visibleArchiveCount(page) === 9, 'Mobile: archive did not collapse to nine days')
   await page.locator('[data-history-period="custom"]').click()
   await page.locator('[data-history-from]').fill('2026-06-10')
   await page.locator('[data-history-to]').fill('2026-06-05')
