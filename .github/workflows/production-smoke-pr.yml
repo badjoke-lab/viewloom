@@ -1,0 +1,41 @@
+name: Production Smoke Contract
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/404.html'
+      - 'apps/web/public/.well-known/viewloom-production-smoke.txt'
+      - 'apps/web/scripts/normalize-built-head.mjs'
+      - 'apps/web/docs/not-found-and-deployment-contract.md'
+      - '.github/workflows/production-smoke*.yml'
+      - '.github/workflows/public-readiness-audit.yml'
+
+jobs:
+  verify-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm build:web
+      - name: Verify local build contract
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          test -f dist/404.html
+          grep -q 'data-viewloom-not-found="v1"' dist/404.html
+          test -f dist/deployment.json
+          jq -e '.schema == "viewloom-deployment-v1" and .environment == "local"' dist/deployment.json > /dev/null
+          test -f dist/.well-known/viewloom-production-smoke.txt
+      - name: Verify production smoke workflow contract
+        run: |
+          set -euo pipefail
+          grep -q 'Wait for the matching production deployment' .github/workflows/production-smoke.yml
+          grep -q 'Verify Twitch production status' .github/workflows/production-smoke.yml
+          grep -q 'Verify Kick production status' .github/workflows/production-smoke.yml
+          grep -q 'Verify explicit not-found behavior' .github/workflows/production-smoke.yml
