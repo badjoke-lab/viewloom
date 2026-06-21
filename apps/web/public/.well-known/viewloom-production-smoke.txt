@@ -1,1 +1,0 @@
-ViewLoom production smoke is verified by GitHub Actions against deployment.json, provider routes, status APIs, D1 bindings, collector freshness, and explicit 404 behavior.
