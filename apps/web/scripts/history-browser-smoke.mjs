@@ -140,13 +140,13 @@ async function visibleArchiveCount(page) {
 }
 
 async function openView(page, view) {
-  await page.locator(`[data-history-view="${view}"]`).click()
+  await page.locator(`button[data-history-view="${view}"]`).click()
   await page.waitForFunction((expected) => document.querySelector('.history-page')?.getAttribute('data-history-view') === expected, view)
 }
 
 async function openArchive(page, archive) {
   await openView(page, 'archives')
-  await page.locator(`[data-history-archive-view="${archive}"]`).click()
+  await page.locator(`button[data-history-archive-view="${archive}"]`).click()
   await page.waitForFunction((expected) => document.querySelector('.history-page')?.getAttribute('data-history-archive-view') === expected, archive)
 }
 
