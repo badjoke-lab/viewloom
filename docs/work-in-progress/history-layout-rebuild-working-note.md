@@ -4,112 +4,88 @@ Status: active temporary note
 Created: 2026-06-21
 Delete when: History layout rebuild is production-verified and stable decisions have been transferred to permanent specifications.
 
-> This file is not a permanent specification. It exists to prevent layout defects, decisions, open questions, and PR sequencing from being lost during the rebuild. It must be deleted in H7 completion work.
+> This is execution memory for H1-H7, not a permanent specification. Delete it in the H7 completion PR.
 
-## 1. Baseline reviewed
+## 1. Baseline
 
 Production screenshots reviewed on 2026-06-21:
 
-- Twitch History full-page desktop capture;
-- Kick History full-page desktop capture.
+- Twitch History full-page desktop;
+- Kick History full-page desktop.
 
-Observed production state:
+Baseline conclusion:
 
 - individual History functions work;
-- Twitch and Kick share the same structural problems;
-- the page is visually an implementation-order stack rather than a finished analysis product;
-- the page is too long and too dense for normal public use;
-- current layout is not accepted as final public quality.
+- Twitch and Kick share the same layout defects;
+- the page is an implementation-order stack rather than a coherent analysis product;
+- the current layout is too long and dense;
+- it is not accepted as final public quality.
 
 ## 2. Problem inventory
 
-### P1 — page purpose is split
+### P1 — mixed page purposes
 
-The same uninterrupted page mixes:
+Analysis, archive browsing, report/social output, export, and methodology are presented as one uninterrupted task.
 
-- analysis dashboard;
-- retained archive browsing;
-- report/social output generation;
-- data export;
-- detailed methodology.
+### P2 — equal visual weight
 
-A visitor cannot tell which task is primary.
+Comparison, chart, calendar, report, share card, export, peaks, battles, rankings, daily archive, and coverage appear as similarly important full-width sections.
 
-### P2 — all modules have equal visual weight
+### P3 — excessive length
 
-The following appear as similarly weighted full-width sections:
-
-- period comparison;
-- main chart;
-- calendar heat;
-- report text;
-- share card;
-- export;
-- peak archive;
-- battle archive;
-- top streamers;
-- daily archive;
-- coverage/data quality.
-
-Primary analysis and secondary tools are not visually separated.
-
-### P3 — excessive page length
-
-Peak, Battle, and Daily archives are all expanded in one page. Report and share tools also consume permanent vertical space. The amount of scrolling is not justified by the amount of unique information.
+Daily, Peaks, and Battles are simultaneously expanded, while report and share tools occupy permanent vertical space.
 
 ### P4 — Top streamers appears too late
 
-Top streamers is a primary History answer but appears after large archive sections. It must move into Overview after the primary chart/calendar flow.
+Top streamers is a primary History answer and must move into Overview before archive-heavy content.
 
 ### P5 — report tools interrupt analysis
 
-Report text, share card, and export are separate large sections. They belong to one secondary `Report & Export` task area.
+Full report, Short post, Share card, CSV, and JSON belong to one secondary task area.
 
 ### P6 — repeated information
 
-Period, top streamer, peak, observed days, coverage, and deltas repeat across summary, comparison, inspector, report, share card, and archive cards. Repetition increases page length without increasing understanding.
+Period, peak, top streamer, observed days, coverage, and deltas repeat across multiple modules.
 
-### P7 — previous-period comparison dominates
+### P7 — comparison dominates
 
-Large pale comparison cards appear before the chart and visually outweigh it. Comparison must become a compact delta strip or compact secondary card row.
+Previous-period comparison visually outweighs the main chart and must become compact.
 
-### P8 — valid data looks disabled or unfinished
+### P8 — valid data looks disabled
 
-Pale gray cards in comparison and battle archive resemble placeholders, disabled controls, or loading skeletons. Valid data must use the shared dark surface system.
+Pale archive/comparison cards resemble placeholders or disabled controls. Valid data must use the dark surface system.
 
 ### P9 — typography is too small and dense
 
-Archive metadata, buttons, chart inspector labels, coverage notes, and card details require excessive zoom or concentration. Readability must be improved by reducing simultaneous content before increasing font size.
+Archive metadata, controls, inspector labels, and coverage copy require excessive concentration or zoom.
 
 ### P10 — archive importance is flat
 
-Peak and Battle entries look equally important. Featured events and meaningful event types are not distinguished.
+Peak and Battle entries lack featured-event hierarchy and meaningful event-type distinction.
 
-### P11 — calendar semantics are too subtle
+### P11 — calendar semantics are weak
 
-Intensity metric, missing versus real low value, partial/attention state, selected day, and legend meaning are too easy to miss.
+Metric intensity, missing versus low value, partial state, selection, and legend require clearer treatment.
 
 ### P12 — coverage arrives too late
 
-Detailed methodology may remain low on the page, but a concise coverage state must appear near the summary because it changes how every value should be interpreted.
+Concise coverage must appear near the period summary, while methodology can remain secondary.
 
 ### P13 — section hierarchy is weak
 
-Repeated small heading + rule + card patterns make it difficult to know where the visitor is during a long scroll.
+Repeated small headings and similar cards make long-scroll orientation difficult.
 
-### P14 — wide desktop space is underused
+### P14 — desktop width is underused
 
-The page behaves like a long narrow document rather than a desktop analysis workspace. The chart and inspector should use a deliberate wide layout.
+The page behaves like a narrow document rather than a wide analysis workspace.
 
-### P15 — current mobile risk
+### P15 — mobile cannot be a final compression pass
 
-The same always-expanded structure will create even more severe mobile scrolling, dense controls, and unreadable archive cards. Mobile cannot be treated as a final CSS compression step.
+Always-expanded modules create severe mobile scrolling and control-density risks.
 
 ## 3. Locked direction
 
-The following decisions are approved unless implementation proves a documented blocker.
-
-### D1 — top-level views
+### D1 — top-level task views
 
 ```text
 Overview
@@ -117,9 +93,9 @@ Archives
 Report & Export
 ```
 
-### D2 — default view
+### D2 — default
 
-Overview is the default entry and contains no fully expanded Peak, Battle, or Daily archive grid and no permanently expanded share card.
+Overview is the default and contains no fully expanded archives or permanently expanded share preview.
 
 ### D3 — archive subviews
 
@@ -129,39 +105,97 @@ Peaks
 Battles
 ```
 
-One subview is active at a time.
+One archive subview is visible at a time.
 
-### D4 — Top streamers placement
+### D4 — Top streamers
 
-Top streamers moves into Overview before archive-heavy content.
+Top streamers moves into Overview after the primary chart/calendar flow.
 
-### D5 — comparison treatment
+### D5 — comparison
 
-Previous-period comparison becomes a compact delta strip/card row subordinate to the main chart.
+Previous-period comparison becomes a compact secondary strip/card row.
 
-### D6 — report grouping
+### D6 — publishing tools
 
-Full report, Short post, Share card, CSV, and JSON become one secondary tool area.
+Full report, Short post, Share card, CSV, and JSON form one `Report & Export` area.
 
-### D7 — dark card system
+### D7 — surfaces
 
-Valid data uses dark ViewLoom surfaces. Light gray may not be the default valid-data card treatment.
+Valid data uses dark ViewLoom surfaces. Light gray is not the default valid-data card treatment.
 
-### D8 — bounded initial rendering
+### D8 — bounded archives
 
-Archives use an initial item limit plus load-more or pagination. No archive type may render its entire retained result set by default.
+Archives use bounded initial rendering with load-more or pagination.
 
-### D9 — data contracts stay stable
+### D9 — data boundary
 
-The rebuild must not require new D1 schema, collector fields, cron, provider mixing, or new metrics.
+The rebuild adds no D1 schema, collector fields, cron, new metrics, or provider mixing.
 
 ### D10 — temporary note lifecycle
 
-This note is updated during H1–H6 and deleted during H7 after final behavior is transferred to permanent docs.
+Update this note during H1-H6. Delete it in H7 after permanent docs are finalized.
 
-## 4. Target desktop layout notes
+## 4. H1 decisions — task view shell
 
-### Overview
+PR: #390
+State: active
+Branch: `work-history-view-shell`
+
+Resolved decisions:
+
+- canonical Overview URL omits `view=overview`;
+- Archives serializes `view=archives&archive=daily|peaks|battles`;
+- Report & Export serializes `view=report`;
+- invalid view/archive values normalize without deleting valid analysis parameters;
+- period, metric, custom dates, selected day, ranking sort, and limit persist across task views;
+- selected day persists when moving between Overview, Archives, and Report;
+- the most recent archive subview is remembered during the current page session;
+- user task navigation uses `pushState`;
+- Back/Forward restores the task view and archive subview;
+- the existing data shell may continue using `replaceState` without dropping task state;
+- task switching does not issue another History API request;
+- existing modules are moved into provisional panels rather than rewritten;
+- Twitch and Kick retain separate routes and endpoints;
+- top-level and archive tabs use accessible tab semantics and keyboard activation;
+- H1 styling is provisional; H2-H5 own final hierarchy and visual polish.
+
+Provisional placement established in H1:
+
+```text
+Overview
+  summary / coverage
+  previous-period comparison
+  chart / selected-day inspector
+  calendar
+  Top streamers
+  detailed coverage
+
+Archives
+  Daily
+  Peaks
+  Battles
+
+Report & Export
+  Full report / Short post
+  Share card
+  CSV / JSON
+```
+
+H1 QA requirements:
+
+- dedicated contract gate;
+- Twitch desktop and Kick mobile browser gate;
+- clean Overview URL;
+- direct archive/report state;
+- invalid-state normalization;
+- Back/Forward restoration;
+- no extra fetch on view switching;
+- task state survives metric refresh;
+- no provider crossing;
+- no horizontal page overflow;
+- existing Daily, Peak, Battle, Report, Share, and Export browser gates remain valid.
+
+## 5. Target desktop layout for H2-H5
 
 ```text
 History header                         provider / state
@@ -175,50 +209,28 @@ Top streamers                         Key changes / movement
 Coverage summary                      Method/details link
 ```
 
-Design intent:
+Starting constraints:
 
-- content max width approximately 1360–1440px;
-- chart receives 65–75% of chart row width;
-- inspector receives 25–35%;
-- summary/coverage visible before archive/report tasks;
-- section spacing is visibly larger than card spacing.
+- content max width: approximately 1360–1440px;
+- chart row: approximately 65–75% chart and 25–35% inspector;
+- coverage visible before archive/report tasks;
+- major-section spacing visibly exceeds card spacing.
 
-### Archives
+## 6. Target mobile layout
 
-```text
-Archives tabs: Daily | Peaks | Battles
-Featured item where meaningful
-Bounded list/grid
-Load more or pagination
-```
-
-### Report & Export
-
-```text
-Report mode: Full | Short
-Copy action
-Generate/reveal share preview
-Download PNG | CSV | JSON
-Coverage and limitation note
-```
-
-## 5. Target mobile layout notes
-
-- view tabs remain reachable and horizontally safe;
-- period and metric controls wrap in a deliberate order;
-- KPI cards use 1–2 columns depending on width;
+- task tabs remain horizontally reachable;
+- period and metric controls wrap deliberately;
 - chart appears before selected-day detail;
 - calendar remains legible and selectable;
-- Top streamers rows/cards are readable without horizontal page overflow;
-- archive subview navigation is touch-friendly;
-- archive item count remains bounded;
+- Top streamers remains readable without page overflow;
+- archive result count remains bounded;
 - report/share/export actions stack cleanly;
 - no always-open share preview near the top;
-- button text remains at least 14px and tap targets remain usable.
+- normal controls remain at least 14px with usable touch targets.
 
-## 6. Typography and spacing reminders
+## 7. Typography and state reminders
 
-Target starting values, subject to visual QA:
+Starting typography:
 
 ```text
 section title: 20–24px
@@ -226,47 +238,37 @@ primary value: 20–28px
 body: 14–16px
 button: >=14px
 card label: 12–13px
-card gap: 12–16px
-section internal gap: 20–24px
-major section gap: 48–64px
 ```
 
-Do not solve density by only reducing text size.
-
-## 7. State-treatment reminders
+State treatment:
 
 ```text
-selected: provider accent border / controlled accent background
-partial: amber semantic treatment
-missing: neutral or hatched, never observed zero
-stale: explicit stale label and timestamp/freshness context
-error: red semantic treatment with recovery information
+selected: provider accent
+partial: amber semantics
+missing: neutral/hatched; never observed zero
+stale: explicit stale label
+error: red semantics with recovery information
 empty: explicit no-observed-data message
-demo: unmistakably labeled demo
+demo: unmistakably labeled
 ```
 
-State meaning must not rely on color alone.
+Meaning must not rely on color alone.
 
-## 8. Open questions to resolve during H1/H2
+## 8. Remaining questions for H2/H3
 
-Track answers here, then move stable decisions into the permanent spec.
+- exact initial item count for Daily, Peaks, and Battles on desktop/mobile;
+- pagination versus load-more for Daily;
+- which current rising/change fields are strong enough for `Key changes`;
+- which comparison fields remain after duplicate removal;
+- disclosure panel versus anchored section for full methodology;
+- final keyboard/screen-reader wording for calendar cells.
 
-- Should `view=overview` remain in the URL or be omitted from the canonical default URL?
-- Does selected day persist when moving to Archives and Report, or only when returning to Overview?
-- Should Archives remember the last active subview per URL only or also per session?
-- What is the exact initial item count for Daily, Peaks, and Battles on desktop/mobile?
-- Is pagination preferable to load-more for Daily archive?
-- Which existing change/rising data is strong enough for a compact `Key changes` panel?
-- Which comparison fields remain useful after duplicates are removed?
-- Should full coverage methodology use a disclosure panel or a dedicated anchor section?
-- How should calendar cells expose metric and coverage to keyboard/screen-reader users?
+## 9. PR progress
 
-## 9. PR progress table
-
-| Step | State | PR | Decisions / defects resolved |
+| Step | State | PR | Result |
 |---|---|---|---|
-| H0 docs and baseline | completed | #388 | canonical docs reset, baseline inventory, temporary-note lifecycle, documentation-first CI enforcement |
-| H1 view shell/state | next | — | — |
+| H0 docs and baseline | completed | #388 | canonical reset, baseline inventory, temporary-note lifecycle, documentation-first CI |
+| H1 view shell/state | active | #390 | URL/task state, provisional module placement, browser history, accessible tabs |
 | H2 Overview | queued | — | — |
 | H3 Archives | queued | — | — |
 | H4 Report & Export | queued | — | — |
@@ -274,58 +276,37 @@ Track answers here, then move stable decisions into the permanent spec.
 | H6 candidate QA | queued | — | — |
 | H7 Preview/production/docs cleanup | queued | — | delete this file |
 
-Update this table in each History rebuild PR.
+Update this table in every History rebuild PR.
 
 ## 10. Full-page visual review checklist
 
-### Above the fold
-
-- Can the visitor identify provider, period, metric, data state, and primary trend?
-- Is the main chart more prominent than comparison and export tools?
-- Is coverage visible without reading the bottom methodology section?
-
-### Scroll hierarchy
-
-- Are Overview, Archives, and Report tasks clearly separated?
-- Does each view have one obvious purpose?
-- Are section titles and spacing sufficient to maintain orientation?
-
-### Cards
-
-- Do valid cards look active and complete?
+- Can the visitor identify provider, period, metric, state, and primary trend above the fold?
+- Is the chart more prominent than comparison and publishing tools?
+- Is concise coverage visible near the summary?
+- Does each task view have one obvious purpose?
+- Are valid cards visually active and complete?
 - Are key values larger than metadata?
-- Are featured archive entries visibly important?
-
-### Archives
-
 - Is only one archive type expanded?
-- Is the initial result count bounded?
-- Are Day Flow/Battle Lines links clear and provider-safe?
-
-### Report tools
-
+- Are archive results bounded?
+- Are provider-safe Day Flow/Battle Lines links clear?
 - Are copy/download actions grouped?
 - Is share preview on demand?
 - Are missing values preserved honestly?
-
-### Responsive
-
-- No horizontal page overflow?
-- Controls usable at 390px width?
-- Text readable at normal zoom?
-- Keyboard focus visible?
-- Long provider/channel/title text wraps safely?
+- Is there no horizontal overflow at 390px?
+- Is text readable at normal zoom?
+- Is keyboard focus visible?
+- Does long text wrap safely?
 
 ## 11. Deletion checklist
 
 Delete this note only when all are true:
 
-- H1–H6 implementation and QA are complete;
+- H1-H6 implementation and QA are complete;
 - H7 Preview and production acceptance pass;
 - final URL/view behavior is in `history-and-trends-spec.md`;
-- final component/layout behavior is in `history-and-trends-spec.md`;
-- final PR sequence/status is reflected in roadmap and schedule;
-- unresolved questions are either resolved into permanent docs or explicitly deferred in the roadmap;
+- final component/layout behavior is in the permanent specification;
+- roadmap and schedule reflect final phase status;
+- unresolved questions are resolved or formally deferred;
 - `docs/README.md` no longer links this file.
 
-The deletion must occur in the same completion PR that finalizes the permanent documentation.
+Delete it in the same completion PR that finalizes permanent documentation.
