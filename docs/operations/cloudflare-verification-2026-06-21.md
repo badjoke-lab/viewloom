@@ -2,7 +2,7 @@
 
 ## Scope
 
-This record covers the manual Cloudflare Pages configuration review and the live Preview runtime verification performed before the production cutover.
+This record covers the manual Cloudflare Pages configuration review, Preview runtime verification, production cutover, and final production verification.
 
 ## Cloudflare Pages project
 
@@ -74,7 +74,7 @@ observed streams: 300
 coverage: partial, bounded to the current top-300 observation window
 ```
 
-The bounded coverage statement remains visible and no provider-wide claim is made.
+The bounded coverage statement remained visible and no provider-wide claim was made.
 
 ### Kick
 
@@ -90,7 +90,37 @@ freshness: fresh
 configured observation limit: 100
 ```
 
-The response explicitly preserves the bounded endpoint limitation and does not claim complete provider-wide coverage.
+The response preserved the bounded endpoint limitation and did not claim complete provider-wide coverage.
+
+## Production deployment verification
+
+The final production deployment identity was manually confirmed from `/deployment.json`:
+
+```text
+schema: viewloom-deployment-v1
+generated_at: 2026-06-21T12:51:59.722Z
+environment: production
+branch: main
+commit_sha: afb3def7d1f8fde57497d0d3dd3fa5930e404e6b
+pages_url: https://0a5bc0c3.viewloom.pages.dev
+custom_domain: https://vl.badjoke-lab.com
+```
+
+The deployed commit matches PR #386, which added the explicit 404 page and permanent production-smoke contract.
+
+## Production route verification
+
+Manual production screenshots confirmed:
+
+- Portal rendered fresh Twitch and Kick status;
+- `/api/twitch-status` resolved the Twitch D1 binding and fresh collector data;
+- `/api/kick-status` resolved the Kick D1 binding and fresh collector data;
+- Twitch History rendered the current production History interface;
+- Kick History rendered the current production History interface;
+- `/cloudflare-preview-probe.json` did not expose Preview probe JSON;
+- the missing probe route returned the dedicated ViewLoom `Page not found.` screen instead of the Portal.
+
+This confirms that the previous soft-404 behavior was corrected.
 
 ## Verified state
 
@@ -103,8 +133,13 @@ Twitch D1 binding: passed
 Kick D1 binding: passed
 Twitch collector freshness: passed
 Kick collector freshness: passed
-Production deployment: pending this record's merge to main
-Production smoke checks: pending deployment completion
+Production deployment: passed
+Production deployment SHA match: passed
+Production Portal/API/History smoke: passed
+Explicit production 404: passed
+Preview probe absent from production: passed
+Permanent production-smoke contract: merged
+Cloudflare cutover: complete
 ```
 
 ## Non-changes
