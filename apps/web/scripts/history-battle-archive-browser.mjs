@@ -10,8 +10,14 @@ async function installRoutes(context) {
 }
 
 async function waitForArchive(page) {
-  await page.waitForSelector('[data-history-battle-archive]')
+  await page.waitForSelector('[data-history-battle-archive]', { state: 'attached' })
   await page.waitForFunction(() => document.querySelectorAll('[data-history-battle-day]').length > 0)
+}
+
+async function openBattleArchive(page) {
+  await page.locator('button[data-history-view="archives"]').click()
+  await page.locator('button[data-history-archive-view="battles"]').click()
+  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-archive-view') === 'battles')
 }
 
 async function assertNoOverflow(page, label) {
@@ -25,6 +31,7 @@ async function desktopGate(browser) {
   const page = await context.newPage()
   await page.goto(`${baseUrl}/twitch/history/`, { waitUntil: 'networkidle' })
   await waitForArchive(page)
+  await openBattleArchive(page)
 
   const cards = page.locator('[data-history-battle-day]')
   assert(await cards.count() === 10, 'Desktop: Battle Archive must default to Top 10.')
@@ -60,6 +67,7 @@ async function mobileGate(browser) {
   const page = await context.newPage()
   await page.goto(`${baseUrl}/kick/history/`, { waitUntil: 'networkidle' })
   await waitForArchive(page)
+  await openBattleArchive(page)
 
   const cards = page.locator('[data-history-battle-day]')
   assert(await cards.count() === 10, 'Mobile: Battle Archive must default to Top 10.')

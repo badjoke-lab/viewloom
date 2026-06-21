@@ -9,6 +9,11 @@ const assert = (value, message) => { if (!value) throw new Error(message) }
 
 mkdirSync(screenshotDir, { recursive: true })
 
+async function openReport(page) {
+  await page.locator('button[data-history-view="report"]').click()
+  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'report')
+}
+
 async function check(browser, provider, viewport) {
   const calls = { twitch: 0, kick: 0 }
   const context = await browser.newContext({ viewport, isMobile: viewport.width < 500 })
@@ -16,9 +21,7 @@ async function check(browser, provider, viewport) {
     window.__viewloomCopiedText = ''
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
-      value: {
-        writeText: async (text) => { window.__viewloomCopiedText = String(text) },
-      },
+      value: { writeText: async (text) => { window.__viewloomCopiedText = String(text) } },
     })
   })
 
@@ -41,6 +44,7 @@ async function check(browser, provider, viewport) {
     const preview = document.querySelector('[data-history-report-preview]')
     return button && !button.hasAttribute('disabled') && preview?.textContent?.includes('Observed days: 12 of 13')
   })
+  await openReport(page)
 
   const fullPreview = await page.locator('[data-history-report-preview]').textContent()
   const providerLabel = provider === 'twitch' ? 'Twitch' : 'Kick'
@@ -70,9 +74,7 @@ async function check(browser, provider, viewport) {
   assert(shortUrl.pathname === `/${provider}/history/`, `${provider} short-post path is incorrect.`)
   assert(shortUrl.searchParams.get('period') === '30d', `${provider} short-post period is missing.`)
   assert(shortUrl.searchParams.get('metric') === 'viewer_minutes', `${provider} short-post metric query is missing.`)
-  for (const parameter of ['day', 'sort', 'limit']) {
-    assert(!shortUrl.searchParams.has(parameter), `${provider} short-post URL retained ${parameter}.`)
-  }
+  for (const parameter of ['day', 'sort', 'limit']) assert(!shortUrl.searchParams.has(parameter), `${provider} short-post URL retained ${parameter}.`)
 
   const callsBeforeCopy = calls[provider]
   await page.locator('[data-history-report-copy]').click()

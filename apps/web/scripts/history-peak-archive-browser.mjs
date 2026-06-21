@@ -8,28 +8,23 @@ function assert(condition, message) {
 }
 
 async function installRoutes(context) {
-  await context.route('**/api/history?**', (route) => route.fulfill({
-    status: 200,
-    contentType: 'application/json',
-    body: JSON.stringify(historyPayload('twitch', true)),
-  }))
-  await context.route('**/api/kick-history?**', (route) => route.fulfill({
-    status: 200,
-    contentType: 'application/json',
-    body: JSON.stringify(historyPayload('kick', false)),
-  }))
+  await context.route('**/api/history?**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(historyPayload('twitch', true)) }))
+  await context.route('**/api/kick-history?**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(historyPayload('kick', false)) }))
 }
 
 async function waitForArchive(page) {
-  await page.waitForSelector('[data-history-peak-archive]')
+  await page.waitForSelector('[data-history-peak-archive]', { state: 'attached' })
   await page.waitForFunction(() => document.querySelectorAll('[data-history-peak-day]').length > 0)
 }
 
+async function openPeakArchive(page) {
+  await page.locator('button[data-history-view="archives"]').click()
+  await page.locator('button[data-history-archive-view="peaks"]').click()
+  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-archive-view') === 'peaks')
+}
+
 async function assertNoOverflow(page, label) {
-  const dimensions = await page.evaluate(() => ({
-    scrollWidth: document.documentElement.scrollWidth,
-    innerWidth: window.innerWidth,
-  }))
+  const dimensions = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth }))
   assert(dimensions.scrollWidth <= dimensions.innerWidth + 1, `${label}: horizontal overflow (${dimensions.scrollWidth} > ${dimensions.innerWidth})`)
 }
 
@@ -39,6 +34,7 @@ async function desktopGate(browser) {
   const page = await context.newPage()
   await page.goto(`${baseUrl}/twitch/history/`, { waitUntil: 'networkidle' })
   await waitForArchive(page)
+  await openPeakArchive(page)
 
   const cards = page.locator('[data-history-peak-day]')
   assert(await cards.count() === 10, 'Desktop: Peak Archive must default to Top 10.')
@@ -74,6 +70,7 @@ async function mobileGate(browser) {
   const page = await context.newPage()
   await page.goto(`${baseUrl}/kick/history/`, { waitUntil: 'networkidle' })
   await waitForArchive(page)
+  await openPeakArchive(page)
 
   const cards = page.locator('[data-history-peak-day]')
   assert(await cards.count() === 10, 'Mobile: fallback Peak Archive must default to Top 10.')
