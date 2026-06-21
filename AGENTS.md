@@ -3,12 +3,13 @@
 Before changing this repository, read these files in order:
 
 1. `docs/operations/development-and-deployment-policy.md`
-2. `docs/operations/documentation-governance.md`
-3. `docs/README.md`
-4. `docs/product/current-roadmap.md`
-5. `docs/product/current-schedule.md`
-6. the affected permanent specification and implementation plan
-7. any active note under `docs/work-in-progress/`
+2. `docs/operations/development-policy-addendum.md`
+3. `docs/operations/documentation-governance.md`
+4. `docs/README.md`
+5. `docs/product/current-roadmap.md`
+6. `docs/product/current-schedule.md`
+7. the affected permanent specification and implementation plan
+8. any active note under `docs/work-in-progress/`
 
 Non-negotiable rules:
 
@@ -26,4 +27,4 @@ Non-negotiable rules:
 12. Update active working notes as decisions change.
 13. At milestone completion, transfer stable decisions to permanent docs and delete the completed temporary note.
 
-The policy, documentation index, roadmap, schedule, permanent specification, implementation plan, and active working note are the execution context. This file is only the mandatory entry point.
+The policy, current addendum, documentation index, roadmap, schedule, permanent specification, implementation plan, and active working note are the execution context. This file is only the mandatory entry point.
