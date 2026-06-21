@@ -1,1 +1,0 @@
-Temporary marker for the documentation reset branch. This file will be removed before merge after the canonical policy and verification script are updated.
