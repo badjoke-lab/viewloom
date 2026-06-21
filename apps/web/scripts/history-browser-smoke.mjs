@@ -123,7 +123,6 @@ async function installApiRoutes(context) {
 }
 
 async function waitForHistory(page, expectedBars) {
-  await page.waitForSelector('.history-day-column')
   await page.waitForFunction((count) => document.querySelectorAll('.history-day-column').length === count, expectedBars)
 }
 
