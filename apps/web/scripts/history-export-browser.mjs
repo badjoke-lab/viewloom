@@ -9,6 +9,11 @@ const assert = (value, message) => { if (!value) throw new Error(message) }
 
 mkdirSync(artifactDir, { recursive: true })
 
+async function openReport(page) {
+  await page.locator('button[data-history-view="report"]').click()
+  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'report')
+}
+
 async function check(browser, provider, viewport) {
   const calls = { twitch: 0, kick: 0 }
   const context = await browser.newContext({ viewport, isMobile: viewport.width < 500, acceptDownloads: true })
@@ -36,6 +41,7 @@ async function check(browser, provider, viewport) {
       && csv && !csv.hasAttribute('disabled')
       && json && !json.hasAttribute('disabled')
   })
+  await openReport(page)
 
   const exportState = await page.locator('[data-history-export]').evaluate((node) => ({
     provider: node.getAttribute('data-export-provider'),
