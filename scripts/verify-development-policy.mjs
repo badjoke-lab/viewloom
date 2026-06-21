@@ -10,12 +10,20 @@ const requiredFiles = [
   'AGENTS.md',
   'CONTRIBUTING.md',
   'README.md',
+  'docs/README.md',
   'docs/operations/development-and-deployment-policy.md',
+  'docs/operations/development-policy-addendum.md',
+  'docs/operations/documentation-governance.md',
+  'docs/product/current-roadmap.md',
+  'docs/product/current-schedule.md',
+  'docs/product/history-and-trends-spec.md',
+  'docs/product/history-layout-rebuild-plan.md',
+  'docs/work-in-progress/history-layout-rebuild-working-note.md',
   '.github/pull_request_template.md',
   '.github/workflows/development-policy.yml',
 ]
 
-for (const path of requiredFiles) assert(existsSync(join(root, path)), `Missing required policy file: ${path}`)
+for (const path of requiredFiles) assert(existsSync(join(root, path)), `Missing required policy/document file: ${path}`)
 
 if (failures.length === 0) {
   const policyPath = 'docs/operations/development-and-deployment-policy.md'
@@ -26,21 +34,107 @@ if (failures.length === 0) {
     '`preview-*`',
     '`main` is the production branch',
     'cancel-in-progress: true',
-    'Last verified: pending',
     'Do not collapse these into one claim',
     'Twitch and Kick remain separate',
   ]) assert(policy.includes(fragment), `${policyPath}: missing required policy fragment: ${fragment}`)
 
-  for (const entryPath of ['AGENTS.md', 'CONTRIBUTING.md', 'README.md']) {
-    assert(read(entryPath).includes('docs/operations/development-and-deployment-policy.md'), `${entryPath}: canonical policy link is missing.`)
+  const addendumPath = 'docs/operations/development-policy-addendum.md'
+  const addendum = read(addendumPath)
+  for (const fragment of [
+    'Status: source of truth for documentation-first execution',
+    'Last verified: 2026-06-21',
+    'Preview custom include preview-*',
+    'Production deployment identity and smoke: verified',
+    'Active working note, if any:',
+  ]) assert(addendum.includes(fragment), `${addendumPath}: missing required addendum fragment: ${fragment}`)
+
+  const indexPath = 'docs/README.md'
+  const index = read(indexPath)
+  for (const path of [
+    'operations/development-and-deployment-policy.md',
+    'operations/development-policy-addendum.md',
+    'operations/documentation-governance.md',
+    'product/current-roadmap.md',
+    'product/current-schedule.md',
+    'product/history-and-trends-spec.md',
+    'product/history-layout-rebuild-plan.md',
+    'work-in-progress/history-layout-rebuild-working-note.md',
+  ]) assert(index.includes(path), `${indexPath}: missing canonical document link: ${path}`)
+
+  const governance = read('docs/operations/documentation-governance.md')
+  for (const fragment of [
+    'Implementation must not begin from chat memory',
+    'Temporary-note lifecycle',
+    'delete the temporary note',
+    'Roadmap phase:',
+  ]) assert(governance.includes(fragment), `documentation-governance.md: missing ${fragment}`)
+
+  const roadmap = read('docs/product/current-roadmap.md')
+  for (const fragment of [
+    'History information architecture and layout rebuild',
+    'Channel / Streamer v1 completion',
+    'data-capability audit',
+  ]) assert(roadmap.includes(fragment), `current-roadmap.md: missing ${fragment}`)
+
+  const schedule = read('docs/product/current-schedule.md')
+  for (const fragment of [
+    'Phase 1B — History information architecture and layout rebuild',
+    'H6/H7: final QA, Preview, production acceptance',
+    'temporary working note deletion',
+  ]) assert(schedule.includes(fragment), `current-schedule.md: missing ${fragment}`)
+
+  const historySpec = read('docs/product/history-and-trends-spec.md')
+  for (const fragment of [
+    'Overview',
+    'Archives',
+    'Report & Export',
+    'At completion, stable implementation decisions are transferred here and the temporary working note is deleted.',
+  ]) assert(historySpec.includes(fragment), `history-and-trends-spec.md: missing ${fragment}`)
+
+  const historyPlan = read('docs/product/history-layout-rebuild-plan.md')
+  for (const fragment of [
+    'H1 — History view-state and shell contract',
+    'H7 — Cloudflare Preview, production acceptance, and document cleanup',
+    'delete `docs/work-in-progress/history-layout-rebuild-working-note.md`',
+  ]) assert(historyPlan.includes(fragment), `history-layout-rebuild-plan.md: missing ${fragment}`)
+
+  const workingNote = read('docs/work-in-progress/history-layout-rebuild-working-note.md')
+  for (const fragment of [
+    'Status: active temporary note',
+    'Delete when:',
+    'Problem inventory',
+    'Deletion checklist',
+  ]) assert(workingNote.includes(fragment), `history-layout-rebuild-working-note.md: missing ${fragment}`)
+
+  for (const entryPath of ['AGENTS.md', 'CONTRIBUTING.md']) {
+    const entry = read(entryPath)
+    for (const path of [
+      'docs/operations/development-and-deployment-policy.md',
+      'docs/operations/development-policy-addendum.md',
+      'docs/operations/documentation-governance.md',
+      'docs/README.md',
+      'docs/product/current-roadmap.md',
+      'docs/product/current-schedule.md',
+    ]) assert(entry.includes(path), `${entryPath}: canonical document link is missing: ${path}`)
   }
+
+  const readme = read('README.md')
+  for (const path of [
+    'docs/README.md',
+    'docs/product/current-roadmap.md',
+    'docs/product/current-schedule.md',
+  ]) assert(readme.includes(path), `README.md: canonical document link is missing: ${path}`)
 
   const template = read('.github/pull_request_template.md')
   for (const fragment of [
+    '## Governing documents',
+    'Roadmap phase:',
+    'Schedule window:',
+    'Active working note, if any:',
     'Unnecessary Cloudflare Preview deployments were not requested',
     'Full required checks were run on the latest completed candidate HEAD',
-    'Production deployment was verified separately',
-    'Twitch and Kick storage, rankings, totals, and coverage claims remain separated',
+    'Required manual visual acceptance passed',
+    'Completed temporary working notes were deleted and unlinked',
   ]) assert(template.includes(fragment), `.github/pull_request_template.md: missing ${fragment}`)
 }
 
@@ -87,6 +181,6 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log('ViewLoom development and deployment policy verification passed.')
-console.log(`- ${requiredFiles.length} policy entry/source files present`)
+console.log('ViewLoom development, documentation, and deployment policy verification passed.')
+console.log(`- ${requiredFiles.length} policy/document files present`)
 console.log(`- ${concurrencyWorkflows.length} active workflows cancel obsolete runs`)
