@@ -162,7 +162,7 @@ function auditAsset(scope, source) {
 }
 
 function auditLocalLink(scope, href) {
-  if (!href.startsWith('/') || href.startsWith('//') || href.startsWith('/api/') || href.startsWith('/assets/') || href.startsWith('/src/')) return
+  if (!href.startsWith('/') || href.startsWith('//') || href.startsWith('/api/') || href.startsWith('/assets/') || href.startsWith('/src/') || href.startsWith('/data/')) return
   const route = normalizeRoute(stripQuery(href))
   if (knownRoutes.has(route)) return
   const candidate = route === '/' ? join(dist, 'index.html') : join(dist, route.replace(/^\//, ''), 'index.html')
