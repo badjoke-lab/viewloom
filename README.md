@@ -1,47 +1,79 @@
 # ViewLoom
 
-ViewLoom is the rebuild line for the streaming observatory previously developed as Livefield.
+ViewLoom is an independent, unofficial observatory for retained Twitch and Kick live-stream data.
 
 ## Core roles
 
 - Heatmap = Now
-- Day Flow = Today
-- Battle Lines = Compare
+- Day Flow = Today / selected UTC day
+- Battle Lines = Rivalry
+- History = Trends across retained days
 
-These three roles stay fixed across Twitch and Kick.
+Twitch and Kick remain separated across routes, APIs, storage, rankings, exports, and coverage claims. ViewLoom does not publish combined provider totals.
 
-## Current direction
+## Current production state
 
-This repository is the main rebuild line.
-The old `livefield` repository remains a reference, comparison, and data-rescue source, but new foundation work moves here.
+ViewLoom Core v1 is deployed on Cloudflare Pages with:
 
-## First priorities
+- separate Twitch and Kick D1 bindings;
+- provider-specific Pages Functions;
+- fresh bounded collector data;
+- production deployment identity and smoke checks;
+- explicit not-found behavior;
+- production Heatmap, Day Flow, Battle Lines, History, Channel, and Status routes.
 
-1. Establish the new source-of-truth docs.
-2. Rebuild the data/DB foundation for Paid and Free operation.
-3. Rebuild Twitch first, then mirror the architecture for Kick.
-4. Apply the new ViewLoom visual system on top of the rebuilt foundation.
+## Current priority
+
+History & Trends is functionally extensive but its information architecture and visual layout are not accepted as final public quality.
+
+The next milestone is the History layout rebuild:
+
+```text
+Overview
+Archives
+Report & Export
+```
+
+Channel / Streamer v1 expansion follows only after History production acceptance.
+
+## Documentation and execution
+
+Before changing this repository, read the canonical documentation index:
+
+- [`docs/README.md`](docs/README.md)
+- [`docs/operations/development-and-deployment-policy.md`](docs/operations/development-and-deployment-policy.md)
+- [`docs/product/current-roadmap.md`](docs/product/current-roadmap.md)
+- [`docs/product/current-schedule.md`](docs/product/current-schedule.md)
+
+Feature work must also read the affected permanent specification, implementation plan, and any active note under `docs/work-in-progress/`.
+
+Implementation does not begin from chat memory, an old PR, or screenshots alone. Governing repository documents are updated first when scope or behavior changes.
 
 ## Development operations
 
-Before changing this repository, read the canonical [development and deployment policy](docs/operations/development-and-deployment-policy.md).
+- normal work uses `work-*` branches;
+- `preview-*` is reserved for deliberate Cloudflare runtime validation;
+- completed candidates run the full required CI/browser gates;
+- merge status is not production status;
+- production completion requires exact deployment identity and smoke verification;
+- provider separation and honest bounded coverage are mandatory.
 
-Ordinary work uses `work-*` branches without intentional Cloudflare Preview deployments. Completed candidates use full final verification, and `preview-*` is reserved for deliberate Cloudflare runtime validation. A merged change is not reported as deployed until production deployment and smoke checks are verified.
+## Repository structure
 
-## Planned top-level structure
+- `docs/` — canonical product, implementation, operations, and temporary working documents
+- `apps/web/` — public pages, shared UI, Pages Functions, and browser/contract checks
+- `workers/` — provider collectors and retention operations
+- `packages/` — shared contracts and helpers where applicable
 
-- `docs/` source-of-truth specs and migration docs
-- `apps/web/` site shell and page apps
-- `workers/collector/` collection and retention pipeline
-- `packages/` shared types, helpers, contracts
+## Immediate execution order
 
-## Immediate rebuild order
-
-1. Docs and operational rules
-2. DB split and retention model
-3. Portal + Twitch shell
-4. Twitch Heatmap
-5. Twitch Day Flow
-6. Twitch Battle Lines
-7. Kick mirror
-8. UI polish and brand rollout
+1. documentation reset and History baseline;
+2. History view-state and shell contract;
+3. History Overview rebuild;
+4. History Archives rebuild;
+5. History Report & Export consolidation;
+6. visual/responsive pass and complete candidate QA;
+7. Cloudflare Preview and production acceptance;
+8. delete the temporary History working note after permanent docs are finalized;
+9. Channel / Streamer v1 completion;
+10. next-feature data-capability audit.
