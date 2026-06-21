@@ -1,0 +1,133 @@
+name: Production Smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * *'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/**'
+      - 'package.json'
+      - '.github/workflows/production-smoke.yml'
+
+concurrency:
+  group: production-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ORIGIN: https://vl.badjoke-lab.com
+      ARTIFACT_DIR: artifacts/production-smoke
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare artifact directory
+        run: mkdir -p "$ARTIFACT_DIR"
+      - name: Wait for the matching production deployment
+        run: |
+          set -euo pipefail
+          expected="$GITHUB_SHA"
+          for attempt in {1..60}; do
+            if curl --silent --show-error --fail --max-time 20 "$ORIGIN/deployment.json?attempt=$attempt" -o "$ARTIFACT_DIR/deployment.json"; then
+              deployed="$(jq -r '.commit_sha // empty' "$ARTIFACT_DIR/deployment.json")"
+              environment="$(jq -r '.environment // empty' "$ARTIFACT_DIR/deployment.json")"
+              branch="$(jq -r '.branch // empty' "$ARTIFACT_DIR/deployment.json")"
+              if [ "$deployed" = "$expected" ] && [ "$environment" = "production" ] && [ "$branch" = "main" ]; then
+                cat "$ARTIFACT_DIR/deployment.json"
+                exit 0
+              fi
+              echo "Production is not on $expected yet (found $deployed, attempt $attempt/60)."
+            else
+              echo "deployment.json is not available yet (attempt $attempt/60)."
+            fi
+            sleep 10
+          done
+          exit 1
+      - name: Verify production pages
+        run: |
+          set -euo pipefail
+          routes=(
+            '/'
+            '/twitch/'
+            '/kick/'
+            '/twitch/heatmap/'
+            '/kick/heatmap/'
+            '/twitch/day-flow/'
+            '/kick/day-flow/'
+            '/twitch/battle-lines/'
+            '/kick/battle-lines/'
+            '/twitch/history/'
+            '/kick/history/'
+            '/twitch/status/'
+            '/kick/status/'
+          )
+          for route in "${routes[@]}"; do
+            name="$(echo "$route" | tr '/' '-' | sed 's/^-//;s/-$//')"
+            [ -n "$name" ] || name='portal'
+            code="$(curl --silent --show-error --location --max-time 30 --output "$ARTIFACT_DIR/$name.html" --write-out '%{http_code}' "$ORIGIN$route")"
+            test "$code" = '200'
+            grep -qi 'ViewLoom' "$ARTIFACT_DIR/$name.html"
+          done
+          grep -q '<title>Twitch history' "$ARTIFACT_DIR/twitch-history.html"
+          grep -q '<title>Kick history' "$ARTIFACT_DIR/kick-history.html"
+          grep -q 'googletagmanager.com/gtag/js?id=G-YHX7HS1VBK' "$ARTIFACT_DIR/portal.html"
+      - name: Verify Twitch production status
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/twitch-status" -o "$ARTIFACT_DIR/twitch-status.json"
+          jq -e '
+            .platform == "twitch" and
+            .storage.binding == "DB_TWITCH_HOT" and
+            .storage.database == "vl_twitch_hot" and
+            .sourceMode == "real" and
+            .collector.state == "ok" and
+            .freshness.isStale == false
+          ' "$ARTIFACT_DIR/twitch-status.json" > /dev/null
+      - name: Verify Kick production status
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/kick-status" -o "$ARTIFACT_DIR/kick-status.json"
+          jq -e '
+            .platform == "kick" and
+            .storage.binding == "DB_KICK_HOT" and
+            .storage.database == "vl_kick_hot" and
+            .collector.state == "ok" and
+            .freshness.isStale == false
+          ' "$ARTIFACT_DIR/kick-status.json" > /dev/null
+      - name: Verify explicit not-found behavior
+        run: |
+          set -euo pipefail
+          path="/production-smoke-not-found-$GITHUB_SHA"
+          code="$(curl --silent --show-error --max-time 30 --output "$ARTIFACT_DIR/not-found.html" --write-out '%{http_code}' "$ORIGIN$path")"
+          test "$code" = '404'
+          grep -q 'data-viewloom-not-found="v1"' "$ARTIFACT_DIR/not-found.html"
+          probe_code="$(curl --silent --show-error --max-time 30 --output "$ARTIFACT_DIR/preview-probe-response.html" --write-out '%{http_code}' "$ORIGIN/cloudflare-preview-probe.json")"
+          test "$probe_code" = '404'
+          grep -q 'data-viewloom-not-found="v1"' "$ARTIFACT_DIR/preview-probe-response.html"
+      - name: Publish production summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom Production Smoke'
+            echo
+            echo "- Expected main SHA: \`$GITHUB_SHA\`"
+            if [ -f "$ARTIFACT_DIR/deployment.json" ]; then
+              echo "- Deployed SHA: \`$(jq -r '.commit_sha // "unavailable"' "$ARTIFACT_DIR/deployment.json")\`"
+            fi
+            echo '- Portal and provider routes: checked'
+            echo '- Twitch and Kick status APIs: checked'
+            echo '- Separate D1 bindings: checked'
+            echo '- Collector freshness: checked'
+            echo '- Explicit 404 behavior: checked'
+            echo '- Preview probe absent from production: checked'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: production-smoke-artifacts
+          path: artifacts/production-smoke/
+          if-no-files-found: warn
