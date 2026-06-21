@@ -81,8 +81,8 @@ function fixture(url, platform) {
 }
 
 async function openArchive(page, archive) {
-  await page.locator('[data-history-view="archives"]').click()
-  await page.locator(`[data-history-archive-view="${archive}"]`).click()
+  await page.locator('button[data-history-view="archives"]').click()
+  await page.locator(`button[data-history-archive-view="${archive}"]`).click()
   await page.waitForFunction((expected) => document.querySelector('.history-page')?.getAttribute('data-history-archive-view') === expected, archive)
 }
 
