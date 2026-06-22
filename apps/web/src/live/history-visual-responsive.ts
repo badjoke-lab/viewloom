@@ -31,11 +31,15 @@ function syncVisualContract(): void {
 
 function setFocusPaint(target: HTMLElement, active: boolean): void {
   if (active) {
-    target.style.setProperty('outline', '3px solid #c4b5fd', 'important')
+    target.style.setProperty('outline-style', 'solid', 'important')
+    target.style.setProperty('outline-width', '3px', 'important')
+    target.style.setProperty('outline-color', '#c4b5fd', 'important')
     target.style.setProperty('outline-offset', '3px', 'important')
     return
   }
-  target.style.removeProperty('outline')
+  target.style.removeProperty('outline-style')
+  target.style.removeProperty('outline-width')
+  target.style.removeProperty('outline-color')
   target.style.removeProperty('outline-offset')
 }
 
