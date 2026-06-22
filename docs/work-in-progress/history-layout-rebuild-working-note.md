@@ -199,12 +199,12 @@ H1 QA result:
 
 ## 5. H2 decisions — Overview rebuild
 
-State: active
+State: completed candidate
 Branch: `work-history-overview`
 Base: `ced6471f9d754919df80c5c47de9ed298658c79a`
-PR: not opened yet
+PR: #391
 
-Implementation already present on the active branch:
+Implemented decisions:
 
 - Overview-specific stylesheet and enhancement module;
 - desktop content width increased to 1440px;
@@ -219,22 +219,24 @@ Implementation already present on the active branch:
 - provider-specific API capture without an additional History request;
 - unsupported comparison changes shown as `Withheld`, never invented as zero;
 - Twitch desktop and Kick mobile browser-gate coverage;
-- dedicated contract and browser workflows.
+- dedicated contract and browser workflows;
+- duplicate Overview verifier removed and the canonical verifier aligned with the actual browser readiness state.
 
-Current H2 verification state:
+H2 QA result on PR #391 candidate:
 
-- duplicate Overview verifier removed;
-- canonical verifier aligned with the actual `historyOverviewInsightsReady` browser state;
-- PR CI not yet run;
+- all 21 pull-request workflows passed;
+- History Overview contract passed;
+- History Overview Browser passed;
+- existing History shell, chart, comparison, Peak, Battle, Channel, Status, build, verification, and readiness workflows passed;
+- Twitch desktop screenshot reviewed: chart is dominant, selected-day inspector is secondary, comparison is reduced, Top streamers and Key changes are paired, detailed coverage is last;
+- Kick mobile screenshot reviewed: deliberate single-column reading order, task controls remain reachable, no page-level horizontal overflow, unsupported comparisons remain explicitly withheld;
 - Cloudflare Preview and production verification remain intentionally deferred to H7.
 
-H2 completion still requires:
+H2 merge condition:
 
-- latest-HEAD typecheck, verifier, and build through PR CI;
-- latest-HEAD Twitch desktop and Kick mobile browser gate;
-- screenshot artifact review;
-- temporary-note reconciliation after final visual decisions;
-- H2 PR merge only after all required checks pass.
+- merge PR #391 by squash only while its latest HEAD remains fully green;
+- after merge, H3 Archives becomes active;
+- no Preview or production claim is made at H2.
 
 ## 6. Target desktop layout for H2-H5
 
@@ -295,12 +297,12 @@ demo: unmistakably labeled
 
 Meaning must not rely on color alone.
 
-## 9. Remaining questions for H2/H3
+## 9. Remaining questions for H3
 
 - exact initial item count for Daily, Peaks, and Battles on desktop/mobile;
 - pagination versus load-more for Daily;
-- which current rising/change fields are strong enough for `Key changes`;
-- which comparison fields remain after duplicate removal;
+- featured Peak hierarchy;
+- Battle event-type treatment using only current evidence;
 - disclosure panel versus anchored section for full methodology;
 - final keyboard/screen-reader wording for calendar cells.
 
@@ -310,7 +312,7 @@ Meaning must not rely on color alone.
 |---|---|---|---|
 | H0 docs and baseline | completed | #388 | canonical reset, baseline inventory, temporary-note lifecycle, documentation-first CI |
 | H1 view shell/state | completed | #390 | URL/task state, provisional module placement, browser history, accessible tabs; 26/26 workflows passed |
-| H2 Overview | active | — | Overview layout/module/gates implemented on `work-history-overview`; PR and latest-HEAD CI pending |
+| H2 Overview | completed candidate | #391 | Overview layout/module/gates implemented; 21/21 workflows passed; Twitch desktop and Kick mobile artifacts reviewed; merge pending |
 | H3 Archives | queued | — | — |
 | H4 Report & Export | queued | — | — |
 | H5 visual/responsive | queued | — | — |
