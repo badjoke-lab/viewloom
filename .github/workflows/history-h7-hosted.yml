@@ -16,7 +16,7 @@ concurrency:
 jobs:
   hosted-preview:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 12
     env:
       HISTORY_H7_PREVIEW_URL: https://work-history-h7.viewloom.pages.dev
     steps:
@@ -28,10 +28,11 @@ jobs:
         with:
           node-version: 22
       - run: pnpm install --no-frozen-lockfile
-      - name: Wait for Cloudflare branch Preview
+      - name: Diagnose and wait for Cloudflare branch Preview
         run: |
-          for attempt in {1..60}; do
-            status="$(curl --silent --show-error --output /tmp/history-h7-api.json --write-out '%{http_code}' --max-time 20 "$HISTORY_H7_PREVIEW_URL/api/history?period=30d&metric=viewer_minutes&qa=$GITHUB_SHA" || true)"
+          getent ahosts work-history-h7.viewloom.pages.dev | tee /tmp/history-h7-dns.txt || true
+          for attempt in {1..6}; do
+            status="$(curl --silent --show-error --output /tmp/history-h7-api.json --write-out '%{http_code}' --max-time 20 "$HISTORY_H7_PREVIEW_URL/api/history?period=30d&metric=viewer_minutes&qa=$GITHUB_SHA" 2>> /tmp/history-h7-curl.log || true)"
             if [ "$status" = "200" ]; then
               echo "Preview API is available at $HISTORY_H7_PREVIEW_URL"
               cat /tmp/history-h7-api.json | head -c 1000
@@ -41,6 +42,8 @@ jobs:
             sleep 10
           done
           echo "Cloudflare branch Preview did not become available."
+          cat /tmp/history-h7-dns.txt || true
+          cat /tmp/history-h7-curl.log || true
           cat /tmp/history-h7-api.json || true
           exit 1
       - run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
@@ -60,4 +63,6 @@ jobs:
           path: |
             apps/web/artifacts/history-h7-hosted/
             /tmp/history-h7-api.json
+            /tmp/history-h7-dns.txt
+            /tmp/history-h7-curl.log
           if-no-files-found: warn
