@@ -31,25 +31,33 @@ export async function assertShared(page, label, viewport, minimumFont) {
   assert(values.state && values.state !== 'unknown', `${label}: visual state missing.`)
   assert(values.scrollWidth <= values.innerWidth + 1 && values.bodyWidth <= values.innerWidth + 1, `${label}: horizontal overflow.`)
 
-  const tab = page.locator('button[data-history-view]').first()
+  const tab = page.locator('button[data-history-view].active')
+  assert(await tab.count() === 1, `${label}: active task tab missing.`)
   const metrics = await tab.evaluate((node) => ({
     height: node.getBoundingClientRect().height,
     font: parseFloat(getComputedStyle(node).fontSize),
+    tabIndex: node.tabIndex,
   }))
   assert(metrics.height >= 40 && metrics.font >= minimumFont, `${label}: task control is too small.`)
+  assert(metrics.tabIndex === 0, `${label}: active task tab is not in the keyboard order.`)
 
-  await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur())
-  let reached = false
-  for (let index = 0; index < 80; index += 1) {
-    await page.keyboard.press('Tab')
-    reached = await tab.evaluate((node) => document.activeElement === node)
-    if (reached) break
-  }
-  assert(reached, `${label}: task tab was not reachable by keyboard.`)
+  await tab.evaluate((node) => {
+    const sentinel = document.createElement('button')
+    sentinel.id = 'history-h5-focus-sentinel'
+    sentinel.tabIndex = 0
+    sentinel.setAttribute('aria-hidden', 'true')
+    sentinel.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;'
+    node.before(sentinel)
+    sentinel.focus()
+  })
+  await page.keyboard.press('Tab')
   const focus = await tab.evaluate((node) => ({
+    reached: document.activeElement === node,
     visible: node.matches(':focus-visible'),
     outline: parseFloat(getComputedStyle(node).outlineWidth),
   }))
+  await page.locator('#history-h5-focus-sentinel').evaluate((node) => node.remove())
+  assert(focus.reached, `${label}: active task tab was not reachable by keyboard.`)
   assert(focus.visible && focus.outline >= 2, `${label}: keyboard focus ring is not visible.`)
 
   const symbol = await page.locator('.history-state-pill').evaluate((node) => getComputedStyle(node, '::before').content)
