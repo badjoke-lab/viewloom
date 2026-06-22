@@ -41,7 +41,7 @@ if (existsSync(join(root, files.style))) {
 
 if (existsSync(join(root, files.module))) {
   const source = read(files.module)
-  for (const fragment of ['Latest matching day', 'Observed day', 'is-featured', 'historyDailyHierarchyReady', 'data-history-archive-filter']) need(files.module, source, fragment)
+  for (const fragment of ['Latest matching day', 'Observed day', 'is-featured', 'historyDailyHierarchyReady', 'data-history-clarity-filter']) need(files.module, source, fragment)
 }
 
 if (existsSync(join(root, files.entry))) {
