@@ -12,6 +12,7 @@ on:
       - 'apps/web/src/history-share-card.css'
       - 'apps/web/src/history-export.css'
       - 'apps/web/scripts/history-report-export-h4-browser.mjs'
+      - 'apps/web/scripts/history-export-browser.mjs'
       - 'apps/web/scripts/history-battle-archive-fixture.mjs'
       - '.github/workflows/history-report-export-h4-browser.yml'
 
@@ -22,7 +23,7 @@ concurrency:
 jobs:
   browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 22
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -51,6 +52,12 @@ jobs:
           HISTORY_REPORT_EXPORT_BASE_URL: http://127.0.0.1:4173
           HISTORY_REPORT_EXPORT_ARTIFACT_DIR: artifacts/history-report-export-h4
         run: node scripts/history-report-export-h4-browser.mjs
+      - name: Re-run strict History CSV and JSON export gate in the unified workspace
+        working-directory: apps/web
+        env:
+          HISTORY_EXPORT_BASE_URL: http://127.0.0.1:4173
+          HISTORY_EXPORT_ARTIFACT_DIR: artifacts/history-report-export-h4/export-contract
+        run: node scripts/history-export-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
