@@ -19,7 +19,7 @@ export function renderPeakArchive(entries: PeakArchiveEntry[]): void {
   const exactCount = entries.filter((entry) => validTimestamp(entry.timestamp, entry.day ?? '')).length
   summary.textContent = `${entries.length} completed daily peaks · ${exactCount} exact timestamp${exactCount === 1 ? '' : 's'}`
   const visible = expanded ? entries : entries.slice(0, 10)
-  list.innerHTML = visible.map((entry) => peakCard(entry)).join('')
+  list.innerHTML = visible.map((entry, index) => peakCard(entry, index)).join('')
   toggle.hidden = entries.length <= 10
   toggle.textContent = expanded ? 'Show top 10' : `Show all ${entries.length}`
   toggle.setAttribute('aria-expanded', String(expanded))
@@ -72,7 +72,7 @@ function ensureMount(): HTMLElement {
   return mount
 }
 
-function peakCard(entry: PeakArchiveEntry): string {
+function peakCard(entry: PeakArchiveEntry, index: number): string {
   const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
   const day = validDay(entry.day) ? entry.day : ''
   const exact = validTimestamp(entry.timestamp, day)
@@ -82,8 +82,10 @@ function peakCard(entry: PeakArchiveEntry): string {
   const query = params.toString()
   const suffix = query ? `?${query}` : ''
   const coverage = safeClass(entry.coverageState ?? 'partial')
+  const featured = index === 0
   return `
-    <article class="history-peak-event" data-history-peak-day="${escapeHtml(day)}" tabindex="0">
+    <article class="history-peak-event${featured ? ' is-featured' : ''}" data-history-peak-day="${escapeHtml(day)}"${featured ? ' data-history-peak-featured="true"' : ''} tabindex="0">
+      <span class="history-archive-event-type">${featured ? 'Highest peak' : 'Observed peak'}</span>
       <div class="history-peak-event__head">
         <span class="rank">#${Number(entry.rank) || '—'}</span>
         <time>${escapeHtml(formatTimestamp(entry.timestamp, day))}</time>
