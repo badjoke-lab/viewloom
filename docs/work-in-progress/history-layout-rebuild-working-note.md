@@ -2,11 +2,13 @@
 
 Status: active temporary note
 Created: 2026-06-21
-Delete in H7 after production verification and permanent-spec transfer.
+Delete when: H7 production verification and permanent-spec transfer are complete.
 
 ## Baseline
 
 Production screenshots reviewed for Twitch and Kick History on 2026-06-21.
+
+## Problem inventory
 
 Confirmed defects before rebuild:
 
@@ -184,3 +186,7 @@ H7:
 - no horizontal overflow at 390px;
 - normal zoom is sufficient;
 - focus is visible and long text wraps.
+
+## Deletion checklist
+
+Delete this temporary note only after H1-H6 are complete, H7 Preview and production acceptance pass, stable decisions are transferred to permanent documentation, roadmap and schedule are updated, and the docs index no longer links this file.
