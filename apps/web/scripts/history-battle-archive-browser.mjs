@@ -54,7 +54,9 @@ async function desktopGate(browser) {
   await page.waitForFunction(() => document.querySelectorAll('[data-history-battle-day]').length === 12)
   assert((await page.locator('[data-history-battle-toggle]').textContent())?.includes('Show top 10'), 'Desktop: expanded toggle label is wrong.')
 
-  await page.locator('[data-history-battle-day]').first().click({ position: { x: 8, y: 8 } })
+  const expandedFirst = page.locator('[data-history-battle-day]').first()
+  await expandedFirst.focus()
+  await page.keyboard.press('Enter')
   await page.waitForFunction((day) => new URL(location.href).searchParams.get('day') === day, firstDay)
   await assertNoOverflow(page, 'Desktop')
   await page.screenshot({ path: '/tmp/history-battle-twitch-desktop.png', fullPage: true })
