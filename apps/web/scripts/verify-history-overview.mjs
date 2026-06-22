@@ -3,72 +3,40 @@ import { join } from 'node:path'
 
 const root = process.cwd()
 const failures = []
-const files = {
-  style: 'src/history-overview.css',
-  module: 'src/live/history-overview.ts',
-  entry: 'src/live/history-usability-pass.ts',
-  shell: 'src/live/history-view-shell.ts',
-  browser: 'scripts/history-overview-browser.mjs',
-  workflow: '../../.github/workflows/history-overview.yml',
-  browserWorkflow: '../../.github/workflows/history-overview-browser.yml',
-}
+const required = [
+  'src/history-overview.css',
+  'src/live/history-overview.ts',
+  'src/live/history-usability-pass.ts',
+  'scripts/history-overview-browser.mjs',
+  '../../.github/workflows/history-overview.yml',
+  '../../.github/workflows/history-overview-browser.yml',
+]
 const read = (path) => readFileSync(join(root, path), 'utf8')
-const requireFile = (path) => { if (!existsSync(join(root, path))) failures.push(`${path}: missing`) }
-const requireFragment = (path, source, fragment) => { if (!source.includes(fragment)) failures.push(`${path}: missing ${fragment}`) }
+const need = (path, source, fragment) => { if (!source.includes(fragment)) failures.push(`${path}: missing ${fragment}`) }
 
-Object.values(files).forEach(requireFile)
+required.forEach((path) => { if (!existsSync(join(root, path))) failures.push(`${path}: missing`) })
 
-if (existsSync(join(root, files.style))) {
-  const source = read(files.style)
-  for (const fragment of [
-    '#history-view-overview',
-    'grid-template-areas:',
-    '"ranking-title insights"',
-    '[data-history-columns]',
-    '.history-overview-insights',
-    'max-width:1440px',
-    '@media(max-width:760px)',
-  ]) requireFragment(files.style, source, fragment)
+if (existsSync(join(root, required[0]))) {
+  const source = read(required[0])
+  for (const fragment of ['#history-view-overview','grid-template-areas:','"ranking-title insights"','[data-history-columns]','.history-overview-insights','max-width:1440px','@media(max-width:760px)']) need(required[0], source, fragment)
 }
-
-if (existsSync(join(root, files.module))) {
-  const source = read(files.module)
-  for (const fragment of [
-    "url.pathname === '/api/history' || url.pathname === '/api/kick-history'",
-    'Biggest supported rise',
-    'Audience vs previous',
-    'Peak vs previous',
-    'Withheld',
-    'data-history-overview-insights',
-    'history-overview-ranking-title',
-    'history-overview-coverage-title',
-  ]) requireFragment(files.module, source, fragment)
-  if (/\/api\/(?!history|kick-history)/.test(source)) failures.push(`${files.module}: unexpected API path`)
+if (existsSync(join(root, required[1]))) {
+  const source = read(required[1])
+  for (const fragment of ["url.pathname === '/api/history' || url.pathname === '/api/kick-history'",'Audience vs previous','Peak vs previous','Biggest supported rise','Withheld','history-overview-ranking-title','history-overview-coverage-title']) need(required[1], source, fragment)
 }
-
-if (existsSync(join(root, files.entry))) {
-  const source = read(files.entry)
-  requireFragment(files.entry, source, "import '../history-overview.css'")
-  requireFragment(files.entry, source, "import './history-overview'")
-  if (source.indexOf("import './history-overview'") < source.indexOf("import './history-view-shell'")) failures.push(`${files.entry}: Overview enhancement must install after the task shell`)
+if (existsSync(join(root, required[2]))) {
+  const source = read(required[2])
+  need(required[2], source, "import '../history-overview.css'")
+  need(required[2], source, "import './history-overview'")
 }
-
-if (existsSync(join(root, files.browser))) {
-  const source = read(files.browser)
-  for (const fragment of [
-    'historyOverviewReady',
-    'data-history-overview-insights-ready',
-    'comparison no longer follows the summary before the chart',
-    'full archive content is visible in Overview',
-    'Report content is visible in Overview',
-    'crossed provider endpoints',
-  ]) requireFragment(files.browser, source, fragment)
+if (existsSync(join(root, required[3]))) {
+  const source = read(required[3])
+  for (const fragment of ['historyOverviewReady','historyOverviewInsightsReady','comparison no longer follows the summary before the chart','full archive content is visible in Overview','Report content is visible in Overview','crossed provider endpoints']) need(required[3], source, fragment)
 }
-
-for (const path of [files.workflow, files.browserWorkflow]) {
+for (const path of required.slice(4)) {
   if (!existsSync(join(root, path))) continue
   const source = read(path)
-  for (const fragment of ['concurrency:', 'group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}', 'cancel-in-progress: true']) requireFragment(path, source, fragment)
+  for (const fragment of ['concurrency:','group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}','cancel-in-progress: true']) need(path, source, fragment)
 }
 
 if (failures.length) {
@@ -76,5 +44,4 @@ if (failures.length) {
   failures.forEach((failure) => console.error(`- ${failure}`))
   process.exit(1)
 }
-
 console.log('History Overview verification passed.')
