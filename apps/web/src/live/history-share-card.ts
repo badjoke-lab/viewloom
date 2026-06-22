@@ -11,16 +11,11 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
   const provider: HistoryReportProvider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
   const mount = ensureMount()
   const canvas = mount.querySelector<HTMLCanvasElement>('[data-history-share-card]')
+  const preview = mount.querySelector<HTMLElement>('[data-history-share-preview]')
+  const toggle = mount.querySelector<HTMLButtonElement>('[data-history-share-toggle]')
   const button = mount.querySelector<HTMLButtonElement>('[data-history-share-download]')
   const status = mount.querySelector<HTMLElement>('[data-history-share-status]')
-  if (!canvas || !button || !status) return
-
-  const context = canvas.getContext('2d')
-  if (!context) {
-    button.disabled = true
-    status.textContent = 'Share-card preview is unavailable in this browser.'
-    return
-  }
+  if (!canvas || !preview || !toggle || !button || !status) return
 
   const coverage = historyReportCoverage(payload)
   const metric = payload.metric === 'peak_viewers' ? 'peak_viewers' : 'viewer_minutes'
@@ -29,19 +24,7 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
   const state = normalize(payload.state || payload.coverage?.state || summary?.coverageState)
   const source = normalize(payload.source)
   const period = periodParts(payload)
-
-  canvas.width = CARD_WIDTH
-  canvas.height = CARD_HEIGHT
-  canvas.dataset.shareProvider = provider
-  canvas.dataset.shareMetric = metric
-  canvas.dataset.shareObserved = String(coverage.observedDays)
-  canvas.dataset.shareTotal = String(coverage.totalDays)
-  canvas.dataset.shareMissing = String(coverage.missingDays)
-  canvas.dataset.shareAttention = String(coverage.attentionDays)
-  canvas.dataset.shareWidth = String(CARD_WIDTH)
-  canvas.dataset.shareHeight = String(CARD_HEIGHT)
-
-  drawCard(context, {
+  const model: CardModel = {
     provider,
     metric,
     periodLabel: period.label,
@@ -59,14 +42,50 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
     attentionDays: coverage.attentionDays,
     dataLabel: source === 'demo' || state === 'demo' ? 'DEMO DATA' : `${humanLabel(state || 'observed')} DATA`,
     linkLabel: `vl.badjoke-lab.com/${provider}/history/`,
-  })
+  }
 
+  canvas.width = CARD_WIDTH
+  canvas.height = CARD_HEIGHT
+  canvas.dataset.shareProvider = provider
+  canvas.dataset.shareMetric = metric
+  canvas.dataset.shareObserved = String(coverage.observedDays)
+  canvas.dataset.shareTotal = String(coverage.totalDays)
+  canvas.dataset.shareMissing = String(coverage.missingDays)
+  canvas.dataset.shareAttention = String(coverage.attentionDays)
+  canvas.dataset.shareWidth = String(CARD_WIDTH)
+  canvas.dataset.shareHeight = String(CARD_HEIGHT)
+
+  const draw = (): boolean => {
+    const context = canvas.getContext('2d')
+    if (!context) {
+      button.disabled = true
+      toggle.disabled = true
+      status.textContent = 'Share-card preview is unavailable in this browser.'
+      return false
+    }
+    context.clearRect(0, 0, CARD_WIDTH, CARD_HEIGHT)
+    drawCard(context, model)
+    canvas.dataset.shareRendered = 'true'
+    return true
+  }
+
+  const setOpen = (open: boolean): void => {
+    mount.dataset.historyShareOpen = String(open)
+    preview.hidden = !open
+    toggle.setAttribute('aria-expanded', String(open))
+    toggle.textContent = open ? 'Hide share card' : 'Preview share card'
+    if (open && draw()) status.textContent = 'Share card ready.'
+    else if (!open) status.textContent = 'Share card available on demand.'
+  }
+
+  toggle.disabled = false
+  toggle.onclick = () => setOpen(mount.dataset.historyShareOpen !== 'true')
   button.disabled = false
-  status.textContent = 'Share card ready.'
   button.onclick = async () => {
     button.disabled = true
     status.textContent = 'Preparing PNG…'
     try {
+      if (!draw()) return
       const blob = await canvasBlob(canvas)
       const url = URL.createObjectURL(blob)
       const anchor = document.createElement('a')
@@ -83,6 +102,8 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
       button.disabled = false
     }
   }
+
+  setOpen(mount.dataset.historyShareOpen === 'true')
 }
 
 type CardModel = {
@@ -231,15 +252,16 @@ function ensureMount(): HTMLElement {
   block.className = 'history-share-block'
   block.innerHTML = `
     <div class="rule-title"><h2>Share card</h2><span>1200 × 630 PNG</span></div>
-    <section class="surface history-share" data-history-share>
+    <section class="surface history-share" data-history-share data-history-share-open="false">
       <div class="surface__head"><strong>Download history snapshot</strong><small>Generated in this browser</small></div>
       <div class="surface__body history-share__body">
         <p>The card keeps the current provider, period, metric, and coverage limits. No additional data request is made.</p>
-        <div class="history-share__preview"><canvas width="1200" height="630" data-history-share-card aria-label="History share-card preview"></canvas></div>
         <div class="history-share__actions">
+          <button class="button" type="button" data-history-share-toggle aria-expanded="false" aria-controls="history-share-preview-fallback">Preview share card</button>
           <button class="button button--paper" type="button" data-history-share-download disabled>Download PNG</button>
-          <span data-history-share-status aria-live="polite">Waiting for retained History data…</span>
+          <span data-history-share-status aria-live="polite">Share card available on demand.</span>
         </div>
+        <div id="history-share-preview-fallback" class="history-share__preview" data-history-share-preview hidden><canvas width="1200" height="630" data-history-share-card aria-label="History share-card preview"></canvas></div>
       </div>
     </section>`
 
