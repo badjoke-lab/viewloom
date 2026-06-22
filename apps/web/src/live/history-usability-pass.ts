@@ -1,4 +1,4 @@
-// History layers load from compatibility fixes through the final H5 visual/responsive overrides.
+// Complete H1-H5 History candidate: compatibility fixes, task views, archives, and final visual overrides.
 import '../history-clarity-hotfix.css'
 import '../history-card-visibility.css'
 import '../history-view-shell.css'
