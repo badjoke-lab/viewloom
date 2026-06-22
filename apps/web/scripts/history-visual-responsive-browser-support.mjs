@@ -37,9 +37,15 @@ export async function assertShared(page, label, viewport, minimumFont) {
     font: parseFloat(getComputedStyle(node).fontSize),
   }))
   assert(metrics.height >= 40 && metrics.font >= minimumFont, `${label}: task control is too small.`)
+
+  await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur())
+  await page.keyboard.press('Tab')
   await tab.focus()
-  const outline = await tab.evaluate((node) => parseFloat(getComputedStyle(node).outlineWidth))
-  assert(outline >= 2, `${label}: focus ring is not visible.`)
+  const focus = await tab.evaluate((node) => ({
+    visible: node.matches(':focus-visible'),
+    outline: parseFloat(getComputedStyle(node).outlineWidth),
+  }))
+  assert(focus.visible && focus.outline >= 2, `${label}: keyboard focus ring is not visible.`)
 
   const symbol = await page.locator('.history-state-pill').evaluate((node) => getComputedStyle(node, '::before').content)
   assert(symbol && !['none', 'normal', '""'].includes(symbol), `${label}: state symbol missing.`)
