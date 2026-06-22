@@ -108,12 +108,13 @@ Implemented:
 - provider-safe Day Flow and Battle Lines links;
 - responsive featured cards and mobile single-column layout;
 - archive switching without another History API request;
-- dedicated contract and browser workflows.
+- dedicated contract and browser workflows;
+- Top streamers profile links recover deterministically if the legacy shell redraws the ranking after the enhancement pass.
 
 Verification:
 
-- all 23 latest-HEAD workflows passed;
-- one Channel Profile Browser attempt timed out, then passed unchanged on failed-job rerun and was non-reproducible;
+- all 24 latest-HEAD workflows passed in one run;
+- Channel Profile Browser passed without rerun after the ranking overwrite-recovery fix;
 - Twitch desktop Battle artifact reviewed: featured hierarchy, dark grid, bounded results, readable non-inference copy;
 - Kick mobile Daily artifact reviewed: featured latest day, reachable filters/actions, no horizontal overflow;
 - Cloudflare Preview and production verification remain deferred to H7.
@@ -167,7 +168,7 @@ H7:
 | H0 docs/baseline | completed | #388 | canonical reset and baseline |
 | H1 shell/state | completed | #390 | 26/26 workflows passed |
 | H2 Overview | completed | #391 | 21/21 workflows passed; artifacts reviewed |
-| H3 Archives | completed candidate | #392 | 23/23 latest-HEAD workflows passed; artifacts reviewed; merge pending |
+| H3 Archives | completed candidate | #392 | 24/24 latest-HEAD workflows passed in one run; artifacts reviewed; merge pending |
 | H4 Report & Export | queued | — | — |
 | H5 visual/responsive | queued | — | — |
 | H6 candidate QA | queued | — | — |
