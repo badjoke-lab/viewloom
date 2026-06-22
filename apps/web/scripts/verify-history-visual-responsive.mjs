@@ -9,6 +9,7 @@ const files = {
   module: 'src/live/history-visual-responsive.ts',
   entry: 'src/live/history-usability-pass.ts',
   browser: 'scripts/history-visual-responsive-browser.mjs',
+  browserSupport: 'scripts/history-visual-responsive-browser-support.mjs',
   workflow: '../../.github/workflows/history-visual-responsive.yml',
   browserWorkflow: '../../.github/workflows/history-visual-responsive-browser.yml',
 }
@@ -54,7 +55,7 @@ if (existsSync(join(root, files.style))) {
 if (existsSync(join(root, files.module))) {
   const source = read(files.module)
   for (const fragment of [
-    'data-history-state-pill',
+    "document.querySelector<HTMLElement>('.history-state-pill')",
     "window.matchMedia('(max-width: 760px)')",
     "window.matchMedia('(max-width: 1180px)')",
     'page.dataset.historyVisualState',
@@ -81,11 +82,20 @@ if (existsSync(join(root, files.browser))) {
     'Kick desktop Archives',
     'Twitch tablet Report',
     'Kick mobile cross-view',
-    'horizontal overflow',
     'focus ring',
     'reduced motion',
-    'History API was fetched again',
   ]) need(files.browser, source, fragment)
+}
+
+if (existsSync(join(root, files.browserSupport))) {
+  const source = read(files.browserSupport)
+  for (const fragment of [
+    'horizontal overflow',
+    'state symbol missing',
+    'History API was fetched again',
+    'provider endpoint crossing',
+    "document.querySelector('.history-state-pill')",
+  ]) need(files.browserSupport, source, fragment)
 }
 
 for (const path of [files.workflow, files.browserWorkflow]) {
