@@ -1,3 +1,4 @@
+// History layers load from compatibility fixes through the final H5 visual/responsive overrides.
 import '../history-clarity-hotfix.css'
 import '../history-card-visibility.css'
 import '../history-view-shell.css'
