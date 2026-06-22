@@ -138,8 +138,9 @@ Update this note during H1-H6. Delete it in H7 after permanent docs are finalize
 ## 4. H1 decisions — task view shell
 
 PR: #390
-State: active
+State: completed
 Branch: `work-history-view-shell`
+Merge: `ced6471f9d754919df80c5c47de9ed298658c79a`
 
 Resolved decisions:
 
@@ -181,21 +182,61 @@ Report & Export
   CSV / JSON
 ```
 
-H1 QA requirements:
+H1 QA result:
 
-- dedicated contract gate;
-- Twitch desktop and Kick mobile browser gate;
-- clean Overview URL;
-- direct archive/report state;
-- invalid-state normalization;
-- Back/Forward restoration;
-- no extra fetch on view switching;
+- dedicated contract gate passed;
+- Twitch desktop and Kick mobile browser gate passed;
+- clean Overview URL verified;
+- direct archive/report state verified;
+- invalid-state normalization verified;
+- Back/Forward restoration verified;
+- no extra fetch on view switching verified;
 - task state survives metric refresh;
 - no provider crossing;
 - no horizontal page overflow;
-- existing Daily, Peak, Battle, Report, Share, and Export browser gates remain valid.
+- existing Daily, Peak, Battle, Report, Share, and Export browser gates remained valid;
+- all 26 pull-request workflows passed before squash merge.
 
-## 5. Target desktop layout for H2-H5
+## 5. H2 decisions — Overview rebuild
+
+State: active
+Branch: `work-history-overview`
+Base: `ced6471f9d754919df80c5c47de9ed298658c79a`
+PR: not opened yet
+
+Implementation already present on the active branch:
+
+- Overview-specific stylesheet and enhancement module;
+- desktop content width increased to 1440px;
+- compact History hero and control area;
+- KPI summary row with the lead metric visually dominant;
+- chart and selected-day inspector arranged as an approximately 73/27 desktop pair;
+- previous-period comparison reduced to a secondary compact block;
+- calendar placed after chart and comparison;
+- Top streamers paired with a new `Key changes` analysis surface;
+- detailed coverage moved below the primary analysis flow;
+- responsive one-column order for tablet/mobile;
+- provider-specific API capture without an additional History request;
+- unsupported comparison changes shown as `Withheld`, never invented as zero;
+- Twitch desktop and Kick mobile browser-gate coverage;
+- dedicated contract and browser workflows.
+
+Current H2 verification state:
+
+- duplicate Overview verifier removed;
+- canonical verifier aligned with the actual `historyOverviewInsightsReady` browser state;
+- PR CI not yet run;
+- Cloudflare Preview and production verification remain intentionally deferred to H7.
+
+H2 completion still requires:
+
+- latest-HEAD typecheck, verifier, and build through PR CI;
+- latest-HEAD Twitch desktop and Kick mobile browser gate;
+- screenshot artifact review;
+- temporary-note reconciliation after final visual decisions;
+- H2 PR merge only after all required checks pass.
+
+## 6. Target desktop layout for H2-H5
 
 ```text
 History header                         provider / state
@@ -216,7 +257,7 @@ Starting constraints:
 - coverage visible before archive/report tasks;
 - major-section spacing visibly exceeds card spacing.
 
-## 6. Target mobile layout
+## 7. Target mobile layout
 
 - task tabs remain horizontally reachable;
 - period and metric controls wrap deliberately;
@@ -228,7 +269,7 @@ Starting constraints:
 - no always-open share preview near the top;
 - normal controls remain at least 14px with usable touch targets.
 
-## 7. Typography and state reminders
+## 8. Typography and state reminders
 
 Starting typography:
 
@@ -254,7 +295,7 @@ demo: unmistakably labeled
 
 Meaning must not rely on color alone.
 
-## 8. Remaining questions for H2/H3
+## 9. Remaining questions for H2/H3
 
 - exact initial item count for Daily, Peaks, and Battles on desktop/mobile;
 - pagination versus load-more for Daily;
@@ -263,13 +304,13 @@ Meaning must not rely on color alone.
 - disclosure panel versus anchored section for full methodology;
 - final keyboard/screen-reader wording for calendar cells.
 
-## 9. PR progress
+## 10. PR progress
 
 | Step | State | PR | Result |
 |---|---|---|---|
 | H0 docs and baseline | completed | #388 | canonical reset, baseline inventory, temporary-note lifecycle, documentation-first CI |
-| H1 view shell/state | active | #390 | URL/task state, provisional module placement, browser history, accessible tabs |
-| H2 Overview | queued | — | — |
+| H1 view shell/state | completed | #390 | URL/task state, provisional module placement, browser history, accessible tabs; 26/26 workflows passed |
+| H2 Overview | active | — | Overview layout/module/gates implemented on `work-history-overview`; PR and latest-HEAD CI pending |
 | H3 Archives | queued | — | — |
 | H4 Report & Export | queued | — | — |
 | H5 visual/responsive | queued | — | — |
@@ -278,7 +319,7 @@ Meaning must not rely on color alone.
 
 Update this table in every History rebuild PR.
 
-## 10. Full-page visual review checklist
+## 11. Full-page visual review checklist
 
 - Can the visitor identify provider, period, metric, state, and primary trend above the fold?
 - Is the chart more prominent than comparison and publishing tools?
@@ -297,7 +338,7 @@ Update this table in every History rebuild PR.
 - Is keyboard focus visible?
 - Does long text wrap safely?
 
-## 11. Deletion checklist
+## 12. Deletion checklist
 
 Delete this note only when all are true:
 
