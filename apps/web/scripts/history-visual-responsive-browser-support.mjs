@@ -39,8 +39,13 @@ export async function assertShared(page, label, viewport, minimumFont) {
   assert(metrics.height >= 40 && metrics.font >= minimumFont, `${label}: task control is too small.`)
 
   await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur())
-  await page.keyboard.press('Tab')
-  await tab.focus()
+  let reached = false
+  for (let index = 0; index < 80; index += 1) {
+    await page.keyboard.press('Tab')
+    reached = await tab.evaluate((node) => document.activeElement === node)
+    if (reached) break
+  }
+  assert(reached, `${label}: task tab was not reachable by keyboard.`)
   const focus = await tab.evaluate((node) => ({
     visible: node.matches(':focus-visible'),
     outline: parseFloat(getComputedStyle(node).outlineWidth),
