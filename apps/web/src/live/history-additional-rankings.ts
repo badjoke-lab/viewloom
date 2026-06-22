@@ -21,5 +21,21 @@ function schedule(): void {
   })
 }
 
+function installRankingOverwriteRecovery(): void {
+  const tableBody = document.querySelector<HTMLTableSectionElement>('.metric-ledger tbody')
+  const cards = document.querySelector<HTMLElement>('[data-history-streamer-cards]')
+  if (!tableBody || !cards) return
+
+  const observer = new MutationObserver(() => {
+    if (!rankingPayload()) return
+    const tableHasProfileLink = Boolean(tableBody.querySelector('.history-streamer-profile-link'))
+    const cardsHaveProfileLink = Boolean(cards.querySelector('.history-streamer-profile-link'))
+    if (!tableHasProfileLink || !cardsHaveProfileLink) schedule()
+  })
+  observer.observe(tableBody, { childList: true, subtree: true })
+  observer.observe(cards, { childList: true, subtree: true })
+}
+
 installRankingControls(schedule)
 installRankingPayloadCapture(schedule)
+installRankingOverwriteRecovery()
