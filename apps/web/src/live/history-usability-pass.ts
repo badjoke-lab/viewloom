@@ -9,5 +9,7 @@ import './history-number-format'
 import './history-view-shell'
 import './history-overview'
 import './history-default-day'
+import '../history-archives.css'
+import './history-archives'
 
 export {}
