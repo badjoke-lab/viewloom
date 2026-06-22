@@ -33,13 +33,16 @@ export async function assertShared(page, label, viewport, minimumFont) {
 
   const tab = page.locator('button[data-history-view].active')
   assert(await tab.count() === 1, `${label}: active task tab missing.`)
+  await page.waitForFunction(() => document.querySelector('button[data-history-view].active')?.dataset.historyFocusBound === 'true')
   const metrics = await tab.evaluate((node) => ({
     height: node.getBoundingClientRect().height,
     font: parseFloat(getComputedStyle(node).fontSize),
     tabIndex: node.tabIndex,
+    focusBound: node.dataset.historyFocusBound,
   }))
   assert(metrics.height >= 40 && metrics.font >= minimumFont, `${label}: task control is too small.`)
   assert(metrics.tabIndex === 0, `${label}: active task tab is not in the keyboard order.`)
+  assert(metrics.focusBound === 'true', `${label}: active task tab focus contract is not bound.`)
 
   await tab.evaluate((node) => {
     const sentinel = document.createElement('button')
@@ -55,6 +58,8 @@ export async function assertShared(page, label, viewport, minimumFont) {
     const style = getComputedStyle(node)
     return {
       reached: document.activeElement === node,
+      inlineOutline: node.style.getPropertyValue('outline'),
+      inlinePriority: node.style.getPropertyPriority('outline'),
       outline: parseFloat(style.outlineWidth) || 0,
       boxShadow: style.boxShadow,
     }
@@ -62,7 +67,7 @@ export async function assertShared(page, label, viewport, minimumFont) {
   await page.locator('#history-h5-focus-sentinel').evaluate((node) => node.remove())
   assert(focus.reached, `${label}: active task tab was not reachable by keyboard.`)
   const hasFocusPaint = focus.outline >= 2 || /0px 0px 0px (?:2|3|4|5)px/.test(focus.boxShadow)
-  assert(hasFocusPaint, `${label}: keyboard focus ring is not visible (outline ${focus.outline}px; shadow ${focus.boxShadow}).`)
+  assert(hasFocusPaint, `${label}: keyboard focus ring is not visible (inline ${focus.inlineOutline} ${focus.inlinePriority}; outline ${focus.outline}px; shadow ${focus.boxShadow}).`)
 
   const symbol = await page.locator('.history-state-pill').evaluate((node) => getComputedStyle(node, '::before').content)
   assert(symbol && !['none', 'normal', '""'].includes(symbol), `${label}: state symbol missing.`)
