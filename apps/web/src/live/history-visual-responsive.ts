@@ -35,12 +35,14 @@ function setFocusPaint(target: HTMLElement, active: boolean): void {
     target.style.setProperty('outline-width', '3px', 'important')
     target.style.setProperty('outline-color', '#c4b5fd', 'important')
     target.style.setProperty('outline-offset', '3px', 'important')
+    target.style.setProperty('box-shadow', '0 0 0 3px #c4b5fd, inset 0 -3px 0 #905aff', 'important')
     return
   }
   target.style.removeProperty('outline-style')
   target.style.removeProperty('outline-width')
   target.style.removeProperty('outline-color')
   target.style.removeProperty('outline-offset')
+  target.style.removeProperty('box-shadow')
 }
 
 function bindFocusTarget(target: HTMLElement): void {
