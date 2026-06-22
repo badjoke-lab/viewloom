@@ -104,39 +104,42 @@ All 23 latest-HEAD workflows passed. The integrated H4 gate and strict CSV/JSON 
 ## H5 — visual and responsive pass
 
 ```text
-State:  active
-Branch: work-history-visual-responsive
-Base:   afd8f135f5a741bd44108c3f9a8b6f91afc8e50a
+PR:     #394
+State:  completed
+Merge:  c0df355df732cde1775452c90431da32b8837aeb
 ```
 
-Audit findings to resolve:
+Completed:
 
-- History has no final cross-view visual layer after the H2-H4 feature styles;
-- many auxiliary labels remain at 8-11px and require normal-zoom readability review;
-- several focus states rely on border-color changes without a consistent visible outline;
-- partial, missing, stale, and error surfaces need text/icon/pattern support rather than color alone;
-- spacing and section-title rhythm differ between Overview, Archives, and Report & Export;
-- mobile chart uses an intentional inner horizontal canvas width, but page-level overflow must remain impossible;
-- reduced-motion behavior is not yet enforced across History transitions.
+- one final cross-view visual layer after the H2-H4 feature styles;
+- consistent hierarchy, spacing, normal-zoom typography, and long-text wrapping;
+- keyboard focus treatment and non-color state symbols;
+- desktop, tablet, and 390px mobile reconciliation without page-level overflow;
+- reduced-motion handling;
+- static H5 contract verification and a four-viewport browser gate.
 
-H5 implementation direction:
+All latest-HEAD History and shared web regressions passed. Twitch desktop Overview, Kick desktop Archives, Twitch tablet Report & Export, and Kick mobile cross-view artifacts were reviewed.
 
-- add one final History visual/responsive stylesheet loaded after H2-H4 styles;
-- normalize section typography and spacing without changing data or task order;
-- add consistent keyboard focus rings and touch-target minimums;
-- strengthen state distinctions without inventing data;
-- reconcile desktop, tablet, and 390px mobile layouts;
-- add reduced-motion handling and long-text wrapping;
-- add a dedicated four-viewport browser gate and screenshot artifacts.
+## H6 — complete candidate QA
 
-## H6-H7 reminders
+```text
+PR:     #395
+State:  completed
+Branch: work-history-candidate-qa
+Base:   c0df355df732cde1775452c90431da32b8837aeb
+```
 
-H6:
+Completed:
 
-- run latest-complete-candidate typecheck/build and all History regression/browser gates for Twitch/Kick desktop/mobile;
-- review full-page screenshot artifacts.
+- latest candidate typecheck and production build;
+- all History shell, Overview, Archives, Peak, Battle, comparison, integrated, and H5 browser regressions;
+- shared Data Status and Channel Profile regressions;
+- full-page artifact review across Twitch/Kick desktop, tablet, and mobile;
+- final acceptance review for hierarchy, state honesty, readability, focus, wrapping, bounded archives, and 390px overflow.
 
-H7:
+The candidate had no failed History or shared web workflow. H6 changed no History API, D1 schema, collector, cron, retention, metric, route, provider separation, export schema, binding, Preview, or production behavior.
+
+## H7 reminder
 
 - create a preview branch from the verified candidate;
 - verify Pages Functions, bindings, real retained Twitch/Kick data, and responsive layout;
@@ -155,8 +158,8 @@ H7:
 | H2 Overview | completed | #391 | 21/21 workflows passed; artifacts reviewed |
 | H3 Archives | completed | #392 | 24/24 workflows passed; artifacts reviewed; merged |
 | H4 Report & Export | completed | #393 | 23/23 workflows passed; strict export gate and artifacts reviewed; merged |
-| H5 visual/responsive | active | — | cross-view audit complete; implementation active |
-| H6 candidate QA | queued | — | — |
+| H5 visual/responsive | completed | #394 | all latest-HEAD regressions passed; four-viewport artifacts reviewed; merged |
+| H6 candidate QA | completed | #395 | no failed candidate workflow; full-page artifacts reviewed |
 | H7 Preview/production/docs cleanup | queued | — | delete this file |
 
 ## Full-page acceptance checklist
