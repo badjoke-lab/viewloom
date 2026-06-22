@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - 'apps/web/src/history-visual-responsive.css'
+      - 'apps/web/src/history-focus-fallback.css'
       - 'apps/web/src/live/history-visual-responsive.ts'
       - 'apps/web/src/live/history-usability-pass.ts'
       - 'apps/web/scripts/history-visual-responsive-browser.mjs'
