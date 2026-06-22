@@ -1,3 +1,4 @@
+// H6 candidate entry: completed task views and final visual layers load in this order.
 import '../history-clarity-hotfix.css'
 import '../history-card-visibility.css'
 import '../history-view-shell.css'
