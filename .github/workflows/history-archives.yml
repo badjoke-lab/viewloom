@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - 'apps/web/docs/history-archives-h3-contract.md'
       - 'apps/web/src/history-archives.css'
       - 'apps/web/src/live/history-archives.ts'
       - 'apps/web/src/live/history-usability-pass.ts'
