@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { chromium } from 'playwright'
 import { historyPayload } from './history-battle-archive-fixture.mjs'
@@ -116,6 +116,10 @@ try {
   await desktopGate(browser)
   await mobileGate(browser)
   console.log('History Archives browser gate passed.')
+} catch (error) {
+  const text = error instanceof Error ? `${error.stack ?? error.message}\n` : `${String(error)}\n`
+  writeFileSync(resolve(out, 'failure.txt'), text)
+  throw error
 } finally {
   await browser.close()
 }
