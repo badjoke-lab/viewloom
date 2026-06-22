@@ -18,7 +18,7 @@ export function renderBattleArchive(entries: BattleArchiveEntry[]): void {
 
   summary.textContent = `${entries.length} completed-day matchups · exact event times unavailable`
   const visible = expanded ? entries : entries.slice(0, 10)
-  list.innerHTML = visible.map(battleCard).join('')
+  list.innerHTML = visible.map((entry, index) => battleCard(entry, index)).join('')
   toggle.hidden = entries.length <= 10
   toggle.textContent = expanded ? 'Show top 10' : `Show all ${entries.length}`
   toggle.setAttribute('aria-expanded', String(expanded))
@@ -74,7 +74,7 @@ function ensureMount(): HTMLElement {
   return mount
 }
 
-function battleCard(entry: BattleArchiveEntry): string {
+function battleCard(entry: BattleArchiveEntry, index: number): string {
   const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
   const day = validDay(entry.day) ? entry.day : ''
   const pair = validPair(entry)
@@ -88,8 +88,11 @@ function battleCard(entry: BattleArchiveEntry): string {
   const query = params.toString()
   const href = `/${provider}/battle-lines/${query ? `?${query}` : ''}`
   const coverage = safeClass(entry.coverageState ?? 'partial')
+  const featured = index === 0
+  const type = featured ? 'Closest daily matchup' : matchupType(entry.closeness)
   return `
-    <article class="history-battle-card" data-history-battle-day="${escapeHtml(day)}" tabindex="0">
+    <article class="history-battle-card${featured ? ' is-featured' : ''}" data-history-battle-day="${escapeHtml(day)}" data-history-battle-type="${escapeHtml(safeClass(type))}"${featured ? ' data-history-battle-featured="true"' : ''} tabindex="0">
+      <span class="history-archive-event-type">${escapeHtml(type)}</span>
       <div class="history-battle-card__head">
         <span class="rank">#${Number(entry.rank) || '—'}</span>
         <time>${escapeHtml(formatDate(day))}</time>
@@ -106,6 +109,13 @@ function battleCard(entry: BattleArchiveEntry): string {
       <p class="history-battle-card__note">No reversal or exact event time inferred.</p>
       <div class="history-battle-card__actions"><a href="${escapeHtml(href)}">Open Battle Lines</a></div>
     </article>`
+}
+
+function matchupType(value: unknown): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 'Daily matchup'
+  if (value >= 0.9) return 'Very close day'
+  if (value >= 0.75) return 'Close day'
+  return 'Competitive day'
 }
 
 function validPair(entry: BattleArchiveEntry): [string, string] | null {
