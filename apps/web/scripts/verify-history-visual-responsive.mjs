@@ -6,6 +6,7 @@ const failures = []
 const files = {
   contract: 'docs/history-visual-responsive-h5-contract.md',
   style: 'src/history-visual-responsive.css',
+  focusFallback: 'src/history-focus-fallback.css',
   module: 'src/live/history-visual-responsive.ts',
   entry: 'src/live/history-usability-pass.ts',
   browser: 'scripts/history-visual-responsive-browser.mjs',
@@ -52,6 +53,16 @@ if (existsSync(join(root, files.style))) {
   if (/background\s*:\s*(?:#fff(?:fff)?|white)\b/i.test(source)) failures.push(`${files.style}: valid-data white surface introduced`)
 }
 
+if (existsSync(join(root, files.focusFallback))) {
+  const source = read(files.focusFallback)
+  for (const fragment of [
+    '.history-view-tabs button:focus',
+    '.history-archive-view-tabs button:focus',
+    '.history-report__mode button:focus',
+    'outline:3px solid color-mix(in srgb,var(--accent) 78%,#fff)!important',
+  ]) need(files.focusFallback, source, fragment)
+}
+
 if (existsSync(join(root, files.module))) {
   const source = read(files.module)
   for (const fragment of [
@@ -69,10 +80,13 @@ if (existsSync(join(root, files.module))) {
 if (existsSync(join(root, files.entry))) {
   const source = read(files.entry)
   need(files.entry, source, "import '../history-visual-responsive.css'")
+  need(files.entry, source, "import '../history-focus-fallback.css'")
   need(files.entry, source, "import './history-visual-responsive'")
   const styleIndex = source.indexOf("import '../history-visual-responsive.css'")
+  const fallbackIndex = source.indexOf("import '../history-focus-fallback.css'")
   const archiveIndex = source.indexOf("import '../history-archives.css'")
   if (styleIndex < archiveIndex) failures.push(`${files.entry}: final visual layer must load after archive styles`)
+  if (fallbackIndex < styleIndex) failures.push(`${files.entry}: focus fallback must load after the final visual layer`)
 }
 
 if (existsSync(join(root, files.browser))) {
@@ -105,6 +119,7 @@ for (const path of [files.workflow, files.browserWorkflow]) {
     'concurrency:',
     'group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}',
     'cancel-in-progress: true',
+    "apps/web/src/history-focus-fallback.css",
   ]) need(path, source, fragment)
 }
 
