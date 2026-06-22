@@ -33,8 +33,10 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
       button.setAttribute('aria-pressed', String(active))
     })
     preview.textContent = texts[mode]
-    copyButton.textContent = mode === 'post' ? 'Copy short post' : 'Copy report text'
-    count.textContent = mode === 'post' ? `${historyShortPostLength(texts.post)} / 280 characters` : `${texts.report.split('\n').length} lines`
+    copyButton.textContent = mode === 'post' ? 'Copy short post' : 'Copy report'
+    count.textContent = mode === 'post'
+      ? `${historyShortPostLength(texts.post)} / 280 characters`
+      : `${texts.report.split('\n').length} lines`
     status.textContent = mode === 'post' ? 'Short post ready.' : 'Full report ready.'
   }
 
@@ -74,20 +76,34 @@ function ensureMount(): HTMLElement {
   const block = document.createElement('div')
   block.className = 'history-report-block'
   block.innerHTML = `
-    <div class="rule-title"><h2>Report text</h2><span>Current provider view</span></div>
-    <section class="surface history-report" data-history-report data-history-report-active-mode="report">
-      <div class="surface__head"><strong>Copy period summary</strong><small>Observed data only</small></div>
+    <div class="rule-title"><h2>Report &amp; Export</h2><span>Current provider view</span></div>
+    <section class="surface history-report history-publish-workspace" data-history-report data-history-share data-history-export data-history-report-active-mode="report" data-history-share-open="false">
+      <div class="surface__head"><strong>Prepare the current period view</strong><small>Observed data only</small></div>
       <div class="surface__body history-report__body">
-        <p>Use the full report for notes, or switch to a compact post that keeps the coverage limit.</p>
+        <div class="history-publish-intro">
+          <p>Copy a full report or compact post, preview a share card only when needed, or download the retained daily data.</p>
+          <span>All outputs reuse the current provider response.</span>
+        </div>
         <div class="history-report__mode" role="group" aria-label="Report text format">
           <button type="button" class="active" data-history-report-mode="report" aria-pressed="true">Full report</button>
           <button type="button" data-history-report-mode="post" aria-pressed="false">Short post</button>
           <span data-history-report-count>Loading…</span>
         </div>
         <pre class="history-report__preview" data-history-report-preview tabindex="0">Loading report text…</pre>
-        <div class="history-report__actions">
-          <button class="button button--paper" type="button" data-history-report-copy disabled>Copy report text</button>
-          <span data-history-report-status aria-live="polite">Waiting for retained History data…</span>
+        <div class="history-publish-actions" aria-label="Report and export actions">
+          <button class="button button--paper" type="button" data-history-report-copy disabled>Copy report</button>
+          <button class="button" type="button" data-history-share-toggle aria-expanded="false" aria-controls="history-share-preview">Preview share card</button>
+          <button class="button" type="button" data-history-share-download disabled>Download PNG</button>
+          <button class="button" type="button" data-history-export-csv disabled>Download CSV</button>
+          <button class="button" type="button" data-history-export-json disabled>Download JSON</button>
+        </div>
+        <div class="history-publish-statuses" aria-live="polite">
+          <span data-history-report-status>Waiting for retained History data…</span>
+          <span data-history-share-status>Share card available on demand.</span>
+          <span data-history-export-status>Waiting for retained History data…</span>
+        </div>
+        <div id="history-share-preview" class="history-share__preview" data-history-share-preview hidden>
+          <canvas width="1200" height="630" data-history-share-card aria-label="History share-card preview"></canvas>
         </div>
       </div>
     </section>`

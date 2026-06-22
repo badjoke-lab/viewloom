@@ -1,0 +1,68 @@
+name: History Report Export H4 Browser
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/src/live/history-report-text.ts'
+      - 'apps/web/src/live/history-report-text-render.ts'
+      - 'apps/web/src/live/history-share-card.ts'
+      - 'apps/web/src/live/history-export.ts'
+      - 'apps/web/src/history-report-text.css'
+      - 'apps/web/src/history-share-card.css'
+      - 'apps/web/src/history-export.css'
+      - 'apps/web/scripts/history-report-export-h4-browser.mjs'
+      - 'apps/web/scripts/history-export-browser.mjs'
+      - 'apps/web/scripts/history-battle-archive-fixture.mjs'
+      - '.github/workflows/history-report-export-h4-browser.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm build:web
+      - run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/history-report-export-h4-preview.log 2>&1 &
+          for attempt in {1..40}; do
+            curl --silent --fail http://127.0.0.1:4173/twitch/history/ > /dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/history-report-export-h4-preview.log
+          exit 1
+      - run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+        working-directory: apps/web
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - name: Run History Report and Export H4 browser gate
+        working-directory: apps/web
+        env:
+          HISTORY_REPORT_EXPORT_BASE_URL: http://127.0.0.1:4173
+          HISTORY_REPORT_EXPORT_ARTIFACT_DIR: artifacts/history-report-export-h4
+        run: node scripts/history-report-export-h4-browser.mjs
+      - name: Re-run strict History CSV and JSON export gate in the unified workspace
+        working-directory: apps/web
+        env:
+          HISTORY_EXPORT_BASE_URL: http://127.0.0.1:4173
+          HISTORY_EXPORT_ARTIFACT_DIR: artifacts/history-report-export-h4/export-contract
+        run: node scripts/history-export-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: history-report-export-h4-artifacts
+          path: |
+            apps/web/artifacts/history-report-export-h4/
+            /tmp/history-report-export-h4-preview.log
+          if-no-files-found: warn

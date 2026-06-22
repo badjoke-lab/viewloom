@@ -34,23 +34,36 @@ async function check(browser, provider, viewport) {
   await page.goto(`${base}/${provider}/history/?period=30d&metric=viewer_minutes`, { waitUntil: 'domcontentloaded' })
   await page.waitForFunction(() => {
     const canvas = document.querySelector('[data-history-share-card]')
-    const status = document.querySelector('[data-history-share-status]')
+    const button = document.querySelector('[data-history-share-download]')
     return canvas?.getAttribute('data-share-total') === '13'
       && canvas?.getAttribute('data-share-observed') === '12'
-      && status?.textContent === 'Share card ready.'
+      && button && !button.hasAttribute('disabled')
   })
   await openReport(page)
 
-  const canvasState = await page.locator('[data-history-share-card]').evaluate((canvas) => ({
-    width: canvas.width,
-    height: canvas.height,
-    provider: canvas.getAttribute('data-share-provider'),
-    metric: canvas.getAttribute('data-share-metric'),
-    observed: canvas.getAttribute('data-share-observed'),
-    total: canvas.getAttribute('data-share-total'),
-    missing: canvas.getAttribute('data-share-missing'),
-    attention: canvas.getAttribute('data-share-attention'),
-    dataUrlLength: canvas.toDataURL('image/png').length,
+  const preview = page.locator('[data-history-share-preview]')
+  const canvas = page.locator('[data-history-share-card]')
+  assert(await preview.isHidden(), `${provider} share-card preview is open by default.`)
+  assert(await canvas.getAttribute('data-share-rendered') !== 'true', `${provider} share card was drawn before the user requested it.`)
+  assert((await page.locator('[data-history-share-status]').textContent()) === 'Share card available on demand.', `${provider} initial on-demand status is incorrect.`)
+
+  const callsBeforePreview = calls[provider]
+  await page.locator('[data-history-share-toggle]').click()
+  await page.waitForFunction(() => document.querySelector('[data-history-share-card]')?.getAttribute('data-share-rendered') === 'true')
+  assert(await preview.isVisible(), `${provider} share-card preview did not open.`)
+  assert((await page.locator('[data-history-share-toggle]').getAttribute('aria-expanded')) === 'true', `${provider} share-card disclosure state is incorrect.`)
+  assert(calls[provider] === callsBeforePreview, `${provider} opening the share-card preview caused another History request.`)
+
+  const canvasState = await canvas.evaluate((node) => ({
+    width: node.width,
+    height: node.height,
+    provider: node.getAttribute('data-share-provider'),
+    metric: node.getAttribute('data-share-metric'),
+    observed: node.getAttribute('data-share-observed'),
+    total: node.getAttribute('data-share-total'),
+    missing: node.getAttribute('data-share-missing'),
+    attention: node.getAttribute('data-share-attention'),
+    dataUrlLength: node.toDataURL('image/png').length,
   }))
 
   assert(canvasState.width === 1200, `${provider} share card width is incorrect.`)
@@ -82,10 +95,14 @@ async function check(browser, provider, viewport) {
   assert(calls[provider] === callsBeforeDownload, `${provider} PNG download caused another History request.`)
   assert(calls[other] === 0, `${provider} PNG download crossed provider endpoints.`)
 
+  await page.locator('[data-history-share-toggle]').click()
+  assert(await preview.isHidden(), `${provider} share-card preview did not close.`)
+
   await page.locator('[data-history-metric="peak_viewers"]').click()
   await page.waitForFunction(() => document.querySelector('[data-history-share-card]')?.getAttribute('data-share-metric') === 'peak_viewers')
   assert(calls[provider] >= 2, `${provider} metric refresh did not reuse the provider History endpoint.`)
   assert(calls[other] === 0, `${provider} metric refresh crossed provider endpoints.`)
+  assert(await preview.isHidden(), `${provider} hidden share-card preview reopened after metric refresh.`)
 
   const width = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth])
   assert(width[0] <= width[1] + 1, `${provider} share card introduced horizontal page overflow.`)
