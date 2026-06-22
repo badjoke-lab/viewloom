@@ -15,7 +15,7 @@ export async function installRoutes(context, calls) {
 
 export async function waitForVisual(page) {
   await page.waitForFunction(() => document.querySelector('.history-page')?.dataset.historyVisualReady === 'true')
-  await page.waitForFunction(() => document.querySelector('[data-history-state-pill]')?.textContent?.trim())
+  await page.waitForFunction(() => document.querySelector('.history-state-pill')?.textContent?.trim())
 }
 
 export async function assertShared(page, label, viewport, minimumFont) {
@@ -41,7 +41,7 @@ export async function assertShared(page, label, viewport, minimumFont) {
   const outline = await tab.evaluate((node) => parseFloat(getComputedStyle(node).outlineWidth))
   assert(outline >= 2, `${label}: focus ring is not visible.`)
 
-  const symbol = await page.locator('[data-history-state-pill]').evaluate((node) => getComputedStyle(node, '::before').content)
+  const symbol = await page.locator('.history-state-pill').evaluate((node) => getComputedStyle(node, '::before').content)
   assert(symbol && !['none', 'normal', '""'].includes(symbol), `${label}: state symbol missing.`)
   const background = await page.locator('.surface:visible').first().evaluate((node) => getComputedStyle(node).backgroundColor)
   assert(!/^rgba?\(255,\s*255,\s*255/.test(background), `${label}: valid surface is white.`)
