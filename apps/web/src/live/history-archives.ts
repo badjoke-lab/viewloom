@@ -4,7 +4,7 @@ let applying = false
 const observer = new MutationObserver(schedule)
 observer.observe(document.documentElement, { childList: true, subtree: true })
 document.addEventListener('click', (event) => {
-  if ((event.target as HTMLElement | null)?.closest('[data-history-archive-filter],[data-history-archive-toggle]')) scheduleAfterInteraction()
+  if ((event.target as HTMLElement | null)?.closest('[data-history-clarity-filter],[data-history-archive-toggle]')) scheduleAfterInteraction()
 })
 window.addEventListener('viewloom:peak-archive-toggle', scheduleAfterInteraction)
 window.addEventListener('viewloom:battle-archive-toggle', scheduleAfterInteraction)
