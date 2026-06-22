@@ -4,6 +4,7 @@ import { join } from 'node:path'
 const root = process.cwd()
 const failures = []
 const files = {
+  contract: 'docs/history-archives-h3-contract.md',
   style: 'src/history-archives.css',
   module: 'src/live/history-archives.ts',
   entry: 'src/live/history-usability-pass.ts',
@@ -17,6 +18,11 @@ const read = (path) => readFileSync(join(root, path), 'utf8')
 const need = (path, source, fragment) => { if (!source.includes(fragment)) failures.push(`${path}: missing ${fragment}`) }
 
 Object.values(files).forEach((path) => { if (!existsSync(join(root, path))) failures.push(`${path}: missing`) })
+
+if (existsSync(join(root, files.contract))) {
+  const source = read(files.contract)
+  for (const fragment of ['Latest matching day', 'Highest peak', 'Closest daily matchup', 'No reversal or exact event time is inferred', 'Archive switching does not issue another History API request']) need(files.contract, source, fragment)
+}
 
 if (existsSync(join(root, files.style))) {
   const source = read(files.style)
@@ -42,6 +48,7 @@ if (existsSync(join(root, files.entry))) {
   const source = read(files.entry)
   need(files.entry, source, "import '../history-archives.css'")
   need(files.entry, source, "import './history-archives'")
+  if (source.indexOf("import '../history-archives.css'") < source.indexOf("import './history-default-day'")) failures.push(`${files.entry}: archive overrides must load after legacy archive modules`)
 }
 
 if (existsSync(join(root, files.peak))) {
