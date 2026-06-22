@@ -125,8 +125,7 @@ All latest-HEAD History and shared web regressions passed. Twitch desktop Overvi
 ```text
 PR:     #395
 State:  completed
-Branch: work-history-candidate-qa
-Base:   c0df355df732cde1775452c90431da32b8837aeb
+Merge:  7912f8328ff6c163ef9e4296ebbdbcf8f9fde8d8
 ```
 
 Completed:
@@ -139,15 +138,25 @@ Completed:
 
 The candidate had no failed History or shared web workflow. H6 changed no History API, D1 schema, collector, cron, retention, metric, route, provider separation, export schema, binding, Preview, or production behavior.
 
-## H7 reminder
+## H7 — Preview, production, and documentation acceptance
 
-- create a preview branch from the verified candidate;
-- verify Pages Functions, bindings, real retained Twitch/Kick data, and responsive layout;
-- merge final candidate and confirm deployed SHA;
-- run production smoke and visual acceptance;
-- transfer stable decisions to permanent docs;
-- update roadmap/schedule;
-- delete this temporary note and remove its docs-index link.
+```text
+State:  active
+Branch: work-history-h7
+Base:   7912f8328ff6c163ef9e4296ebbdbcf8f9fde8d8
+PR:     pending
+```
+
+Active work:
+
+- open the hosted-preview acceptance PR;
+- obtain the Cloudflare Pages Preview URL;
+- verify Pages Functions and real retained Twitch/Kick History data;
+- run desktop and 390px mobile hosted checks;
+- merge the accepted candidate and confirm the deployed revision;
+- run public-site smoke and visual acceptance;
+- transfer stable decisions to permanent docs and update the roadmap;
+- delete this temporary note and remove its docs-index link only after public acceptance.
 
 ## Progress
 
@@ -159,8 +168,8 @@ The candidate had no failed History or shared web workflow. H6 changed no Histor
 | H3 Archives | completed | #392 | 24/24 workflows passed; artifacts reviewed; merged |
 | H4 Report & Export | completed | #393 | 23/23 workflows passed; strict export gate and artifacts reviewed; merged |
 | H5 visual/responsive | completed | #394 | all latest-HEAD regressions passed; four-viewport artifacts reviewed; merged |
-| H6 candidate QA | completed | #395 | no failed candidate workflow; full-page artifacts reviewed |
-| H7 Preview/production/docs cleanup | queued | — | delete this file |
+| H6 candidate QA | completed | #395 | all 24 workflows passed; full-page artifacts reviewed; merged |
+| H7 Preview/production/docs cleanup | active | pending | hosted acceptance in progress |
 
 ## Full-page acceptance checklist
 
