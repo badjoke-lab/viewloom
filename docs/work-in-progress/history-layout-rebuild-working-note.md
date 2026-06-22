@@ -51,17 +51,7 @@ State:  completed
 Merge:  ced6471f9d754919df80c5c47de9ed298658c79a
 ```
 
-Completed:
-
-- Overview / Archives / Report & Export URL state;
-- Daily / Peaks / Battles archive state;
-- period, metric, custom dates, selected day, sort, and limit preservation;
-- pushState navigation and Back/Forward restoration;
-- invalid-state normalization;
-- no additional History request on task switching;
-- separate Twitch/Kick routes and endpoints;
-- accessible tabs and mobile-safe navigation;
-- all 26 pull-request workflows passed.
+Completed URL/view state, accessible task and archive tabs, Back/Forward restoration, provider separation, and no-fetch view switching. All 26 workflows passed.
 
 ## H2 — Overview rebuild
 
@@ -71,80 +61,75 @@ State:  completed
 Merge:  6fdff2d45d7a0ce6ef90315e01b4b9b06ff9f939
 ```
 
-Completed:
-
-- 1440px analysis workspace;
-- compact hero and controls;
-- dominant KPI and chart presentation;
-- approximately 73/27 chart/inspector desktop pair;
-- compact previous-period comparison;
-- calendar after the primary chart flow;
-- Top streamers paired with Key changes;
-- detailed coverage moved after primary analysis;
-- unsupported comparison values shown as Withheld, never invented as zero;
-- responsive one-column mobile order;
-- no extra History request and no provider crossing;
-- all 21 pull-request workflows passed;
-- Twitch desktop and Kick mobile artifacts reviewed.
+Completed chart-first Overview, 1440px workspace, KPI hierarchy, compact comparison, calendar/ranking order, Key changes, and responsive single-column behavior. All 21 workflows passed; Twitch desktop and Kick mobile artifacts were reviewed.
 
 ## H3 — Archives rebuild
 
 ```text
 PR:     #392
-State:  completed candidate
-Branch: work-history-archives
-Base:   6fdff2d45d7a0ce6ef90315e01b4b9b06ff9f939
+State:  completed
+Merge:  35b6896c2582a04ccae0b162dc6f15629c7b5084
 ```
 
-Implemented:
+Completed:
 
-- shared dark archive surface system;
-- Daily bounded to nine matching days;
-- first visible Daily result labelled Latest matching day and updated after existing filters;
-- Peaks bounded to Top 10 with Highest peak featured;
-- Battles bounded to Top 10 with Closest daily matchup featured;
-- secondary Battle labels derived only from closeness: Very close day, Close day, Competitive day, or Daily matchup;
-- explicit statement that day-level aggregates do not prove reversals or exact event times;
-- provider-safe Day Flow and Battle Lines links;
-- responsive featured cards and mobile single-column layout;
-- archive switching without another History API request;
-- dedicated contract and browser workflows;
-- Top streamers profile links recover deterministically if the legacy shell redraws the ranking after the enhancement pass.
+- dark shared Daily / Peaks / Battles system;
+- Daily bounded to nine matching days with filter-following featured state;
+- Peak and Battle Top 10 limits with featured hierarchy;
+- closeness-only Battle labels and explicit non-inference language;
+- provider-safe links and mobile single-column layouts;
+- archive switching without another History request;
+- deterministic restoration of Top streamers profile links after legacy redraws.
 
-Verification:
+All 24 latest-HEAD workflows passed in one run. Twitch desktop Battle and Kick mobile Daily artifacts were reviewed.
 
-- all 24 latest-HEAD workflows passed in one run;
-- Channel Profile Browser passed without rerun after the ranking overwrite-recovery fix;
-- Twitch desktop Battle artifact reviewed: featured hierarchy, dark grid, bounded results, readable non-inference copy;
-- Kick mobile Daily artifact reviewed: featured latest day, reachable filters/actions, no horizontal overflow;
-- Cloudflare Preview and production verification remain deferred to H7.
+## H4 — Report & Export consolidation
 
-Merge rule:
+```text
+PR:     #393
+State:  completed
+Merge:  afd8f135f5a741bd44108c3f9a8b6f91afc8e50a
+```
 
-- squash merge #392 only while latest HEAD is green;
-- H4 becomes active after merge.
+Resolved decisions:
 
-## H4 — Report & Export
+- Full report / Short post use one segmented mode switch;
+- Share card is hidden and undrawn until explicit preview or PNG download;
+- final action order is Copy / Preview share card / Download PNG / Download CSV / Download JSON;
+- text, PNG, CSV, and JSON status messages remain inside one workspace;
+- existing text, filenames, missing-value handling, spreadsheet safety, JSON schema, provider separation, and no-extra-fetch behavior are unchanged.
 
-Queued. Required direction:
+All 23 latest-HEAD workflows passed. The integrated H4 gate and strict CSV/JSON export gate passed in the unified workspace. Twitch desktop and Kick mobile artifacts were reviewed.
 
-- consolidate Full report / Short post into one mode surface;
-- make Share card preview on demand;
-- combine Copy / PNG / CSV / JSON into one action area;
-- preserve existing output data, filenames, null handling, provider separation, and no-extra-fetch behavior;
-- make actions usable on mobile.
+## H5 — visual and responsive pass
 
-Open choices to resolve in H4:
+```text
+State:  active
+Branch: work-history-visual-responsive
+Base:   afd8f135f5a741bd44108c3f9a8b6f91afc8e50a
+```
 
-- tabs versus segmented mode switch;
-- exact share-preview disclosure behavior;
-- final action order.
+Audit findings to resolve:
 
-## H5-H7 reminders
+- History has no final cross-view visual layer after the H2-H4 feature styles;
+- many auxiliary labels remain at 8-11px and require normal-zoom readability review;
+- several focus states rely on border-color changes without a consistent visible outline;
+- partial, missing, stale, and error surfaces need text/icon/pattern support rather than color alone;
+- spacing and section-title rhythm differ between Overview, Archives, and Report & Export;
+- mobile chart uses an intentional inner horizontal canvas width, but page-level overflow must remain impossible;
+- reduced-motion behavior is not yet enforced across History transitions.
 
-H5:
+H5 implementation direction:
 
-- reconcile typography, spacing, state colors, focus, contrast, reduced motion, tablet/mobile, and remaining placeholder-like surfaces.
+- add one final History visual/responsive stylesheet loaded after H2-H4 styles;
+- normalize section typography and spacing without changing data or task order;
+- add consistent keyboard focus rings and touch-target minimums;
+- strengthen state distinctions without inventing data;
+- reconcile desktop, tablet, and 390px mobile layouts;
+- add reduced-motion handling and long-text wrapping;
+- add a dedicated four-viewport browser gate and screenshot artifacts.
+
+## H6-H7 reminders
 
 H6:
 
@@ -153,7 +138,7 @@ H6:
 
 H7:
 
-- create preview branch from verified candidate;
+- create a preview branch from the verified candidate;
 - verify Pages Functions, bindings, real retained Twitch/Kick data, and responsive layout;
 - merge final candidate and confirm deployed SHA;
 - run production smoke and visual acceptance;
@@ -168,9 +153,9 @@ H7:
 | H0 docs/baseline | completed | #388 | canonical reset and baseline |
 | H1 shell/state | completed | #390 | 26/26 workflows passed |
 | H2 Overview | completed | #391 | 21/21 workflows passed; artifacts reviewed |
-| H3 Archives | completed candidate | #392 | 24/24 latest-HEAD workflows passed in one run; artifacts reviewed; merge pending |
-| H4 Report & Export | queued | — | — |
-| H5 visual/responsive | queued | — | — |
+| H3 Archives | completed | #392 | 24/24 workflows passed; artifacts reviewed; merged |
+| H4 Report & Export | completed | #393 | 23/23 workflows passed; strict export gate and artifacts reviewed; merged |
+| H5 visual/responsive | active | — | cross-view audit complete; implementation active |
 | H6 candidate QA | queued | — | — |
 | H7 Preview/production/docs cleanup | queued | — | delete this file |
 
@@ -184,9 +169,10 @@ H7:
 - one archive type is expanded and results are bounded;
 - provider-safe links and publishing actions are clear;
 - missing values remain honest;
-- no horizontal overflow at 390px;
+- no page-level horizontal overflow at 390px;
 - normal zoom is sufficient;
-- focus is visible and long text wraps.
+- focus is visible and long text wraps;
+- reduced-motion users do not receive unnecessary transitions.
 
 ## Deletion checklist
 
