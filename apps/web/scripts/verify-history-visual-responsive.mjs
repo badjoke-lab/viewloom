@@ -56,10 +56,10 @@ if (existsSync(join(root, files.style))) {
 if (existsSync(join(root, files.focusFallback))) {
   const source = read(files.focusFallback)
   for (const fragment of [
-    '.history-view-tabs button:focus',
-    '.history-archive-view-tabs button:focus',
-    '.history-report__mode button:focus',
-    'outline:3px solid color-mix(in srgb,var(--accent) 78%,#fff)!important',
+    'button[data-history-view]:focus',
+    'button[data-history-archive-view]:focus',
+    'button[data-history-report-mode]:focus',
+    'outline:3px solid #c4b5fd!important',
   ]) need(files.focusFallback, source, fragment)
 }
 
