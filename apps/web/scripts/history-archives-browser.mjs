@@ -57,7 +57,7 @@ async function desktopGate(browser) {
   assert((await visibleDays.first().locator('[data-history-day-type]').textContent())?.trim() === 'Latest matching day', 'Desktop: Daily featured label is wrong.')
   await assertDarkSurface(visibleDays.first(), 'Desktop Daily')
 
-  await page.locator('[data-history-archive-filter="complete"]').click()
+  await page.locator('[data-history-clarity-filter="complete"]').click()
   await page.waitForFunction(() => document.querySelectorAll('[data-history-day-card].is-featured:not([hidden])').length === 1)
   assert((await page.locator('[data-history-day-card].is-featured:not([hidden]) [data-history-day-type]').textContent())?.trim() === 'Latest matching day', 'Desktop: Daily featured hierarchy did not follow the active filter.')
 
