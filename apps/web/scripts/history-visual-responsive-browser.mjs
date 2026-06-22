@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { chromium } from 'playwright'
 import { assert, assertNoRefetch, assertShared, installRoutes, waitForVisual } from './history-visual-responsive-browser-support.mjs'
@@ -16,17 +16,27 @@ async function run(browser, test) {
   })
   await installRoutes(context, calls)
   const page = await context.newPage()
-  await page.goto(`${base}/${test.provider}/history/${test.query}`, { waitUntil: 'domcontentloaded' })
-  await waitForVisual(page)
-  assert(calls[test.provider] > 0, `${test.label}: provider endpoint not requested.`)
-  await test.wait(page)
-  await assertShared(page, test.label, test.viewport, test.viewport === 'mobile' ? 14 : 13)
-  const before = calls[test.provider]
-  await test.interact(page)
-  assertNoRefetch(calls, test.provider, before, test.label)
-  await assertShared(page, test.label, test.viewport, test.viewport === 'mobile' ? 14 : 13)
-  await page.screenshot({ path: resolve(out, test.file), fullPage: true })
-  await context.close()
+  try {
+    await page.goto(`${base}/${test.provider}/history/${test.query}`, { waitUntil: 'domcontentloaded' })
+    await waitForVisual(page)
+    assert(calls[test.provider] > 0, `${test.label}: provider endpoint not requested.`)
+    await test.wait(page)
+    await assertShared(page, test.label, test.viewport, test.viewport === 'mobile' ? 14 : 13)
+    const before = calls[test.provider]
+    await test.interact(page)
+    assertNoRefetch(calls, test.provider, before, test.label)
+    await assertShared(page, test.label, test.viewport, test.viewport === 'mobile' ? 14 : 13)
+    await page.screenshot({ path: resolve(out, test.file), fullPage: true })
+  } catch (error) {
+    const message = error instanceof Error ? `${error.name}: ${error.message}\n${error.stack ?? ''}` : String(error)
+    const slug = test.label.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    writeFileSync(resolve(out, `failure-${slug}.txt`), message)
+    await page.screenshot({ path: resolve(out, `failure-${slug}.png`), fullPage: true }).catch(() => undefined)
+    console.error(`[H5:${test.label}] ${message}`)
+    throw error
+  } finally {
+    await context.close()
+  }
 }
 
 const tests = [
