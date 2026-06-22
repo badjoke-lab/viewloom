@@ -1,0 +1,63 @@
+name: History H7 Hosted Preview
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/docs/history-h7-acceptance.md'
+      - 'apps/web/scripts/history-h7-hosted-browser.mjs'
+      - 'docs/work-in-progress/history-layout-rebuild-working-note.md'
+      - '.github/workflows/history-h7-hosted.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hosted-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      HISTORY_H7_PREVIEW_URL: https://work-history-h7.viewloom.pages.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - name: Wait for Cloudflare branch Preview
+        run: |
+          for attempt in {1..60}; do
+            status="$(curl --silent --show-error --output /tmp/history-h7-api.json --write-out '%{http_code}' --max-time 20 "$HISTORY_H7_PREVIEW_URL/api/history?period=30d&metric=viewer_minutes&qa=$GITHUB_SHA" || true)"
+            if [ "$status" = "200" ]; then
+              echo "Preview API is available at $HISTORY_H7_PREVIEW_URL"
+              cat /tmp/history-h7-api.json | head -c 1000
+              exit 0
+            fi
+            echo "Preview attempt $attempt returned HTTP $status"
+            sleep 10
+          done
+          echo "Cloudflare branch Preview did not become available."
+          cat /tmp/history-h7-api.json || true
+          exit 1
+      - run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+        working-directory: apps/web
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - name: Verify hosted Twitch and Kick History
+        working-directory: apps/web
+        env:
+          HISTORY_H7_PREVIEW_URL: https://work-history-h7.viewloom.pages.dev
+          HISTORY_H7_ARTIFACT_DIR: artifacts/history-h7-hosted
+        run: node scripts/history-h7-hosted-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: history-h7-hosted-artifacts
+          path: |
+            apps/web/artifacts/history-h7-hosted/
+            /tmp/history-h7-api.json
+          if-no-files-found: warn
