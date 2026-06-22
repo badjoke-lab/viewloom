@@ -8,6 +8,7 @@ const focusTargetSelector = [
   'button[data-history-archive-view]',
   'button[data-history-report-mode]',
 ].join(',')
+const boundFocusTargets = new WeakSet<HTMLElement>()
 
 function normalizedState(): string {
   if (!statePill) return 'unknown'
@@ -28,8 +29,7 @@ function syncVisualContract(): void {
   page.dataset.historyVisualReady = 'true'
 }
 
-function setFocusPaint(target: EventTarget | null, active: boolean): void {
-  if (!(target instanceof HTMLElement) || !target.matches(focusTargetSelector)) return
+function setFocusPaint(target: HTMLElement, active: boolean): void {
   if (active) {
     target.style.setProperty('outline', '3px solid #c4b5fd', 'important')
     target.style.setProperty('outline-offset', '3px', 'important')
@@ -39,11 +39,34 @@ function setFocusPaint(target: EventTarget | null, active: boolean): void {
   target.style.removeProperty('outline-offset')
 }
 
+function bindFocusTarget(target: HTMLElement): void {
+  if (!target.matches(focusTargetSelector) || boundFocusTargets.has(target)) return
+  target.addEventListener('focus', () => setFocusPaint(target, true))
+  target.addEventListener('blur', () => setFocusPaint(target, false))
+  target.dataset.historyFocusBound = 'true'
+  boundFocusTargets.add(target)
+}
+
+function bindFocusTargets(root: ParentNode = document): void {
+  root.querySelectorAll<HTMLElement>(focusTargetSelector).forEach(bindFocusTarget)
+}
+
 syncVisualContract()
+bindFocusTargets()
 mobile.addEventListener('change', syncVisualContract)
 tablet.addEventListener('change', syncVisualContract)
-document.addEventListener('focusin', (event) => setFocusPaint(event.target, true))
-document.addEventListener('focusout', (event) => setFocusPaint(event.target, false))
+
+if (document.body) {
+  new MutationObserver((records) => {
+    records.forEach((record) => {
+      record.addedNodes.forEach((node) => {
+        if (!(node instanceof HTMLElement)) return
+        bindFocusTarget(node)
+        bindFocusTargets(node)
+      })
+    })
+  }).observe(document.body, { childList: true, subtree: true })
+}
 
 if (statePill) {
   new MutationObserver(syncVisualContract).observe(statePill, {
