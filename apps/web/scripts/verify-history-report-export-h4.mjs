@@ -99,6 +99,16 @@ for (const path of [files.workflow, files.browserWorkflow]) {
   for (const fragment of ['concurrency:', 'group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}', 'cancel-in-progress: true']) need(path, source, fragment)
 }
 
+if (existsSync(join(root, files.browserWorkflow))) {
+  const source = read(files.browserWorkflow)
+  for (const fragment of [
+    'node scripts/history-report-export-h4-browser.mjs',
+    'node scripts/history-export-browser.mjs',
+    'HISTORY_EXPORT_BASE_URL',
+    'artifacts/history-report-export-h4/export-contract',
+  ]) need(files.browserWorkflow, source, fragment)
+}
+
 if (failures.length) {
   console.error('History Report & Export H4 verification failed:')
   failures.forEach((failure) => console.error(`- ${failure}`))
