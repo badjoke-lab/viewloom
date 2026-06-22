@@ -1,0 +1,14 @@
+.history-page .history-view-tabs button:focus,
+.history-page .history-archive-view-tabs button:focus,
+.history-page .history-report__mode button:focus{
+  outline:3px solid var(--history-focus)!important;
+  outline-offset:3px!important;
+}
+
+.history-page .day-card:focus,
+.history-page .history-peak-event:focus,
+.history-page .history-battle-card:focus,
+.history-page .history-streamer-card:focus{
+  outline:3px solid var(--history-focus)!important;
+  outline-offset:3px!important;
+}
