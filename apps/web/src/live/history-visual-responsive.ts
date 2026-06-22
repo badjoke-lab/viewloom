@@ -1,5 +1,5 @@
 const page = document.querySelector<HTMLElement>('.history-page')
-const statePill = document.querySelector<HTMLElement>('[data-history-state-pill]')
+const statePill = document.querySelector<HTMLElement>('.history-state-pill')
 
 const mobile = window.matchMedia('(max-width: 760px)')
 const tablet = window.matchMedia('(max-width: 1180px)')
