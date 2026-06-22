@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - 'apps/web/docs/history-h7-acceptance.md'
+      - 'apps/web/public/history-h7-candidate.json'
       - 'apps/web/scripts/history-h7-hosted-browser.mjs'
       - 'apps/web/src/live/history-usability-pass.ts'
       - 'docs/work-in-progress/history-layout-rebuild-working-note.md'
@@ -12,7 +13,6 @@ on:
 
 permissions:
   contents: read
-  deployments: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -23,9 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      HISTORY_H7_PREVIEW_URL: https://work-history-h7.viewloom.pages.dev
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      HISTORY_H7_PREVIEW_URL: https://fix-history-usability-pass.viewloom.pages.dev
+      HISTORY_H7_PRODUCTION_URL: https://vl.badjoke-lab.com
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -36,42 +35,23 @@ jobs:
           node-version: 22
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm build:web
-      - name: Check Cloudflare deployment credentials
+      - name: Wait for known Cloudflare Preview branch
         run: |
-          missing=0
-          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "Missing GitHub secret: CLOUDFLARE_API_TOKEN"
-            missing=1
-          fi
-          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
-            echo "Missing GitHub secret: CLOUDFLARE_ACCOUNT_ID"
-            missing=1
-          fi
-          test "$missing" -eq 0
-      - name: Deploy H7 branch Preview
-        working-directory: apps/web
-        run: |
-          pnpm dlx wrangler@4 pages deploy dist \
-            --project-name=viewloom \
-            --branch=work-history-h7 | tee /tmp/history-h7-deploy.log
-      - name: Diagnose and wait for Cloudflare branch Preview
-        run: |
-          getent ahosts work-history-h7.viewloom.pages.dev | tee /tmp/history-h7-dns.txt || true
-          for attempt in {1..12}; do
-            status="$(curl --silent --show-error --output /tmp/history-h7-api.json --write-out '%{http_code}' --max-time 20 "$HISTORY_H7_PREVIEW_URL/api/history?period=30d&metric=viewer_minutes&qa=$GITHUB_SHA" 2>> /tmp/history-h7-curl.log || true)"
-            if [ "$status" = "200" ]; then
-              echo "Preview API is available at $HISTORY_H7_PREVIEW_URL"
-              cat /tmp/history-h7-api.json | head -c 1000
+          getent ahosts fix-history-usability-pass.viewloom.pages.dev | tee /tmp/history-h7-dns.txt || true
+          for attempt in {1..18}; do
+            status="$(curl --silent --show-error --output /tmp/history-h7-marker.json --write-out '%{http_code}' --max-time 20 "$HISTORY_H7_PREVIEW_URL/history-h7-candidate.json?qa=$GITHUB_SHA" 2>> /tmp/history-h7-curl.log || true)"
+            if [ "$status" = "200" ] && grep -q 'history-h7-pr-396' /tmp/history-h7-marker.json; then
+              echo "H7 Preview marker is available at $HISTORY_H7_PREVIEW_URL"
+              cat /tmp/history-h7-marker.json
               exit 0
             fi
-            echo "Preview attempt $attempt returned HTTP $status"
+            echo "Preview attempt $attempt returned HTTP $status or an older marker"
             sleep 10
           done
-          echo "Cloudflare branch Preview did not become available."
-          cat /tmp/history-h7-deploy.log || true
+          echo "Known Cloudflare Preview branch did not publish the H7 marker."
           cat /tmp/history-h7-dns.txt || true
           cat /tmp/history-h7-curl.log || true
-          cat /tmp/history-h7-api.json || true
+          cat /tmp/history-h7-marker.json || true
           exit 1
       - run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
         working-directory: apps/web
@@ -80,7 +60,8 @@ jobs:
       - name: Verify hosted Twitch and Kick History
         working-directory: apps/web
         env:
-          HISTORY_H7_PREVIEW_URL: https://work-history-h7.viewloom.pages.dev
+          HISTORY_H7_PREVIEW_URL: https://fix-history-usability-pass.viewloom.pages.dev
+          HISTORY_H7_PRODUCTION_URL: https://vl.badjoke-lab.com
           HISTORY_H7_ARTIFACT_DIR: artifacts/history-h7-hosted
         run: node scripts/history-h7-hosted-browser.mjs
       - uses: actions/upload-artifact@v4
@@ -89,8 +70,7 @@ jobs:
           name: history-h7-hosted-artifacts
           path: |
             apps/web/artifacts/history-h7-hosted/
-            /tmp/history-h7-deploy.log
-            /tmp/history-h7-api.json
+            /tmp/history-h7-marker.json
             /tmp/history-h7-dns.txt
             /tmp/history-h7-curl.log
           if-no-files-found: warn
