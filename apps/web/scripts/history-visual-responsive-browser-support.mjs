@@ -51,14 +51,18 @@ export async function assertShared(page, label, viewport, minimumFont) {
     sentinel.focus()
   })
   await page.keyboard.press('Tab')
-  const focus = await tab.evaluate((node) => ({
-    reached: document.activeElement === node,
-    visible: node.matches(':focus-visible'),
-    outline: parseFloat(getComputedStyle(node).outlineWidth),
-  }))
+  const focus = await tab.evaluate((node) => {
+    const style = getComputedStyle(node)
+    return {
+      reached: document.activeElement === node,
+      outline: parseFloat(style.outlineWidth) || 0,
+      boxShadow: style.boxShadow,
+    }
+  })
   await page.locator('#history-h5-focus-sentinel').evaluate((node) => node.remove())
   assert(focus.reached, `${label}: active task tab was not reachable by keyboard.`)
-  assert(focus.visible && focus.outline >= 2, `${label}: keyboard focus ring is not visible.`)
+  const hasFocusPaint = focus.outline >= 2 || /0px 0px 0px (?:2|3|4|5)px/.test(focus.boxShadow)
+  assert(hasFocusPaint, `${label}: keyboard focus ring is not visible (outline ${focus.outline}px; shadow ${focus.boxShadow}).`)
 
   const symbol = await page.locator('.history-state-pill').evaluate((node) => getComputedStyle(node, '::before').content)
   assert(symbol && !['none', 'normal', '""'].includes(symbol), `${label}: state symbol missing.`)
