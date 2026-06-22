@@ -1,0 +1,123 @@
+.history-main{max-width:1440px}
+.history-page .history-hero{grid-template-columns:minmax(0,1fr) minmax(460px,.82fr);gap:24px;align-items:center;padding:6px 0 14px;margin-bottom:12px}
+.history-page .history-hero h1{font-size:clamp(34px,4vw,52px);margin-bottom:8px}
+.history-page .history-hero .lede{max-width:720px;font-size:15px;line-height:1.45}
+.history-page .history-hero-status{margin-top:10px}
+.history-page .head-facts{grid-template-columns:repeat(4,minmax(0,1fr))}
+.history-page .fact{padding:9px 10px}
+.history-page .fact strong{font-size:14px}
+.history-page .history-controls{justify-content:space-between;margin-bottom:6px;padding:9px 12px}
+.history-page .history-feedback{min-height:18px;margin-bottom:8px;font-size:11px}
+
+#history-view-overview{display:grid;grid-template-columns:minmax(0,2.45fr) minmax(280px,.8fr);grid-template-areas:"context context" "summary summary" "coverage-summary coverage-summary" "primary primary" "comparison comparison" "calendar calendar" "ranking-title insights" "ranking-toolbar insights" "ranking-table insights" "ranking-cards insights" "coverage-title coverage-title" "coverage-detail coverage-detail";gap:10px 18px;min-width:0}
+#history-view-overview>.data-strip{grid-area:context;display:none}
+#history-view-overview>[data-history-summary]{grid-area:summary}
+#history-view-overview>[data-history-coverage-summary]{grid-area:coverage-summary}
+#history-view-overview>[data-history-columns]{grid-area:primary}
+#history-view-overview>.history-period-comparison-block{grid-area:comparison}
+#history-view-overview>.history-calendar-block{grid-area:calendar}
+#history-view-overview>.history-overview-ranking-title{grid-area:ranking-title}
+#history-view-overview>.history-ranking-toolbar{grid-area:ranking-toolbar}
+#history-view-overview>.history-table-wrap{grid-area:ranking-table}
+#history-view-overview>[data-history-streamer-cards]{grid-area:ranking-cards}
+#history-view-overview>.history-overview-insights{grid-area:insights}
+#history-view-overview>.history-overview-coverage-title{grid-area:coverage-title}
+#history-view-overview>.history-coverage-detail{grid-area:coverage-detail}
+
+#history-view-overview>.history-summary{display:grid;grid-template-columns:minmax(240px,1.35fr) repeat(4,minmax(0,1fr));margin:0;border:0;background:transparent}
+#history-view-overview>.history-summary>div{min-width:0;min-height:104px;padding:14px;border:1px solid var(--line-strong);border-left:0;background:var(--surface)}
+#history-view-overview>.history-summary>div:first-child{border-left:3px solid var(--accent);background:var(--surface-raised)}
+#history-view-overview>.history-summary small{display:block;margin-bottom:8px;color:var(--muted);font:700 10px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+#history-view-overview>.history-summary strong{display:block;overflow-wrap:anywhere;font-size:20px;line-height:1.1}
+#history-view-overview>.history-summary .lead-stat strong{font-size:clamp(28px,3vw,38px)}
+#history-view-overview>.history-coverage-summary{margin:0;padding:10px 13px}
+
+#history-view-overview>[data-history-columns]{grid-template-columns:minmax(0,2.75fr) minmax(290px,1fr);gap:18px;align-items:start;margin-top:14px}
+#history-view-overview .history-stage{height:min(58vh,560px);min-height:490px}
+#history-view-overview .history-selected-day{top:126px}
+
+#history-view-overview>.history-period-comparison-block{margin-top:14px}
+#history-view-overview>.history-period-comparison-block>.rule-title,#history-view-overview>.history-calendar-block>.rule-title,#history-view-overview>.history-overview-ranking-title,#history-view-overview>.history-overview-coverage-title{margin:0 0 10px;padding-top:10px}
+#history-view-overview>.history-period-comparison-block>.rule-title h2,#history-view-overview>.history-calendar-block>.rule-title h2,#history-view-overview>.history-overview-ranking-title h2,#history-view-overview>.history-overview-coverage-title h2{font-size:21px}
+#history-view-overview .history-period-comparison{padding:0;background:var(--surface)}
+#history-view-overview .history-period-comparison .surface__head{padding:10px 13px}
+#history-view-overview .history-period-comparison__body{gap:10px;padding:10px 13px 12px}
+#history-view-overview .history-comparison-scopes{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px}
+#history-view-overview .history-comparison-scope{padding:8px 10px;border-color:var(--line);background:var(--surface-raised)}
+#history-view-overview .history-comparison-scope strong{font-size:13px}
+#history-view-overview .history-comparison-scope span{font-size:11px}
+#history-view-overview .history-comparison-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+#history-view-overview .history-comparison-metric{padding:10px;border-color:var(--line);background:var(--surface-raised)}
+#history-view-overview .history-comparison-metric__values{gap:8px;margin-top:7px}
+#history-view-overview .history-comparison-metric__values strong{font-size:13px}
+#history-view-overview .history-comparison-change{margin-top:8px;padding-top:7px;font-size:12px}
+#history-view-overview .history-comparison-note{font-size:11px;line-height:1.45}
+#history-view-overview .history-comparison-status--comparable{color:var(--up);background:rgba(74,222,128,.1)}
+#history-view-overview .history-comparison-status--partial{color:var(--warning);background:rgba(251,191,36,.1)}
+#history-view-overview .history-comparison-status--loading,#history-view-overview .history-comparison-status--unavailable{color:var(--muted);background:rgba(159,176,202,.08)}
+#history-view-overview .history-comparison-change.is-positive{color:var(--up)}
+#history-view-overview .history-comparison-change.is-negative{color:var(--down)}
+#history-view-overview .history-comparison-change.is-neutral{color:var(--muted)}
+
+#history-view-overview>.history-calendar-block{margin-top:14px}
+#history-view-overview .history-calendar__meta{background:var(--surface-raised)}
+#history-view-overview .history-calendar__intensity,#history-view-overview .history-calendar__coverage-key{padding:5px 8px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+#history-view-overview>.history-overview-ranking-title{margin-top:14px}
+#history-view-overview>.history-ranking-toolbar{margin:0;padding:10px 12px}
+#history-view-overview>.history-table-wrap{align-self:start}
+#history-view-overview>.history-overview-insights{position:sticky;top:126px;align-self:start;margin-top:14px;min-width:0;border-top:3px solid var(--accent)}
+.history-overview-insights__body{display:grid;gap:0;padding:0}
+.history-overview-insight{display:grid;gap:5px;padding:13px 14px;border-bottom:1px solid var(--line)}
+.history-overview-insight:last-child{border-bottom:0}
+.history-overview-insight small{color:var(--muted);font:700 10px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.history-overview-insight strong{font-size:19px;line-height:1.1;overflow-wrap:anywhere}
+.history-overview-insight span{color:var(--muted);font-size:12px;line-height:1.45}
+.history-overview-insight strong.is-positive{color:var(--up)}
+.history-overview-insight strong.is-negative{color:var(--down)}
+.history-overview-insight strong.is-neutral{color:var(--text)}
+.history-overview-insights__note{margin:0;padding:10px 14px;border-top:1px solid var(--line);color:var(--muted);font-size:11px;line-height:1.45}
+#history-view-overview>.history-overview-coverage-title{margin-top:14px}
+#history-view-overview>.history-coverage-detail{margin-bottom:0}
+
+@media(max-width:1180px){
+  .history-page .history-hero{grid-template-columns:1fr}
+  .history-page .head-facts{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #history-view-overview{grid-template-columns:1fr;grid-template-areas:"context" "summary" "coverage-summary" "primary" "comparison" "calendar" "ranking-title" "ranking-toolbar" "ranking-table" "ranking-cards" "insights" "coverage-title" "coverage-detail"}
+  #history-view-overview>.history-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #history-view-overview>.history-summary .lead-stat{grid-column:1/-1}
+  #history-view-overview>.history-summary>div:nth-child(2){border-left:1px solid var(--line-strong)}
+  #history-view-overview>[data-history-columns]{grid-template-columns:1fr}
+  #history-view-overview .history-selected-day{position:static}
+  #history-view-overview>.history-overview-insights{position:static;margin-top:4px}
+}
+
+@media(max-width:760px){
+  .history-main{padding-left:12px;padding-right:12px}
+  .history-page .history-hero{gap:14px;padding-top:2px}
+  .history-page .history-hero h1{font-size:36px}
+  .history-page .history-hero .lede{font-size:14px}
+  .history-page .head-facts{grid-template-columns:1fr 1fr}
+  .history-page .history-controls{display:grid;gap:10px;padding:10px}
+  #history-view-overview{gap:8px}
+  #history-view-overview>.history-summary{grid-template-columns:1fr 1fr}
+  #history-view-overview>.history-summary>div{min-height:96px;padding:12px}
+  #history-view-overview>.history-summary>div:nth-child(2){border-left:1px solid var(--line-strong)}
+  #history-view-overview>.history-summary strong{font-size:17px}
+  #history-view-overview>.history-summary .lead-stat strong{font-size:30px}
+  #history-view-overview .history-stage{height:430px;min-height:430px}
+  #history-view-overview .history-comparison-grid{grid-template-columns:1fr 1fr}
+  #history-view-overview .history-comparison-scopes{grid-template-columns:1fr}
+  #history-view-overview .history-comparison-vs{text-align:center}
+  #history-view-overview .history-comparison-metric__values{grid-template-columns:1fr 1fr}
+  #history-view-overview .history-calendar__meta{align-items:flex-start}
+  #history-view-overview .history-calendar__intensity,#history-view-overview .history-calendar__coverage-key{width:100%;justify-content:flex-start}
+  .history-overview-insight strong{font-size:18px}
+}
+
+@media(max-width:460px){
+  #history-view-overview>.history-summary{grid-template-columns:1fr}
+  #history-view-overview>.history-summary .lead-stat{grid-column:auto}
+  #history-view-overview>.history-summary>div{border-left:1px solid var(--line-strong)}
+  #history-view-overview>.history-summary>div:first-child{border-left:3px solid var(--accent)}
+  #history-view-overview .history-comparison-grid{grid-template-columns:1fr}
+}
