@@ -12,6 +12,7 @@ import './history-default-day'
 import '../history-archives.css'
 import './history-archives'
 import '../history-visual-responsive.css'
+import '../history-focus-fallback.css'
 import './history-visual-responsive'
 
 export {}
