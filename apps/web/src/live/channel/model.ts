@@ -2,6 +2,7 @@ export type ChannelProvider = 'twitch' | 'kick'
 export type ChannelPeriod = '7d' | '30d'
 export type ChannelView = 'overview' | 'days' | 'report'
 
+// Channel task and selected-day state reuse one loaded provider History payload.
 export type ChannelState = {
   provider: ChannelProvider
   channelId: string

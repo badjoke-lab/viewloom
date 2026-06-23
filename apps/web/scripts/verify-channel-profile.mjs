@@ -6,8 +6,7 @@ const failures = []
 const read = (path) => readFileSync(join(process.cwd(), path), 'utf8')
 const assert = (condition, message) => { if (!condition) failures.push(message) }
 
-const helperPath = 'src/navigation/channel-profile-link.ts'
-const helperSource = read(helperPath)
+const helperSource = read('src/navigation/channel-profile-link.ts')
 const compiled = ts.transpileModule(helperSource, {
   compilerOptions: { module: ts.ModuleKind.ES2022, target: ts.ScriptTarget.ES2022 },
 }).outputText
@@ -21,14 +20,18 @@ const profile = read('src/live/channel-profile.ts')
 for (const fragment of [
   "provider === 'kick' ? '/api/kick-history' : '/api/history'",
   "document.querySelectorAll<HTMLButtonElement>('[data-channel-view]')",
-  "document.querySelectorAll<HTMLElement>('[data-channel-view-panel]')",
+  "event.target.closest<HTMLElement>('[data-channel-select-day]')",
   'panel.hidden = panel.dataset.channelViewPanel !== state.view',
   'navigator.clipboard.writeText(location.href)',
-  'setEvidence(',
-  'retained daily Top 10 appearances',
+  'renderSelectedDay(daily)',
+  'renderRecentDays(appearances)',
+  '.filter(involvesStreamer).slice(0, 3)',
+  "const stateClass = missing ? 'missing' : retained ? 'observed' : 'absent'",
+  'channel-trend-column--partial',
   'Not in retained daily Top 10',
   'not confirmed offline',
   'Session start/end history is not available',
+  'Daily aggregate candidate · exact reversal time unavailable',
   '/day-flow/?date=',
   '/battle-lines/?battle=',
   "return '—'",
@@ -62,6 +65,8 @@ for (const [label, source, provider] of [
     'data-channel-copy-feedback',
     'data-channel-summary',
     'data-channel-trend',
+    'data-channel-selected-day',
+    'data-channel-recent-days',
     'data-channel-days',
     'data-channel-rivals',
     'data-channel-scope',
@@ -81,22 +86,25 @@ assert(vite.includes("kickChannel: 'kick/channel/index.html'"), 'Kick channel pa
 const rankingState = read('src/live/history-additional-rankings-state.ts')
 const rankingRenderer = read('src/live/history-additional-rankings-render.ts')
 assert(rankingState.includes('streamerId?: string'), 'History ranking state does not preserve streamerId.')
-for (const fragment of [
-  'channelProfileHref',
-  'streamer.streamerId',
-  'history-streamer-profile-link',
-]) assert(rankingRenderer.includes(fragment), `History ranking profile link missing: ${fragment}`)
+for (const fragment of ['channelProfileHref', 'streamer.streamerId', 'history-streamer-profile-link']) {
+  assert(rankingRenderer.includes(fragment), `History ranking profile link missing: ${fragment}`)
+}
 
 const css = read('src/channel-profile.css')
 for (const fragment of [
   '.channel-profile-summary',
-  '.channel-trend-bars',
+  '.channel-overview-grid',
+  '.channel-selected-day',
+  '.channel-recent-day',
+  '.channel-trend-column--missing',
+  '.channel-trend-column--partial',
   '.channel-day-grid',
   '.channel-rival-grid',
   '.channel-evidence-facts',
   '.channel-task-tabs',
   '.channel-task-panel[hidden]',
   '.channel-report-foundation',
+  '@media(max-width:900px)',
   '@media(max-width:760px)',
   '@media(max-width:420px)',
 ]) assert(css.includes(fragment), `Channel profile responsive CSS missing: ${fragment}`)
@@ -121,9 +129,9 @@ if (failures.length) {
 
 console.log('Channel profile verification passed.')
 console.log('- Twitch and Kick routes remain provider-separated')
-console.log('- query-based Channel identities are noindex,follow')
-console.log('- Overview, Retained Days, and Report & Export task shells are present')
-console.log('- task switching and URL copy reuse the loaded response')
-console.log('- source/state, observed scope, and retained appearances are exposed')
+console.log('- Overview exposes selectable retained, absent, missing, and partial day states')
+console.log('- selected-day interpretation and the three-item recent preview are present')
+console.log('- rivalry preview is bounded to three daily aggregate candidates')
+console.log('- task switching and day selection reuse the loaded response')
 console.log('- missing daily Top 10 rows are not labelled offline')
 console.log('- desktop and mobile layout contracts are present')
