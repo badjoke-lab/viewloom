@@ -30,7 +30,7 @@ jobs:
         working-directory: apps/web
       - run: npx playwright install --with-deps chromium
         working-directory: apps/web
-      - run: node scripts/channel-overview-browser.mjs
+      - run: node scripts/channel-overview-browser.mjs 2>&1 | tee /tmp/channel-overview-browser.log
         working-directory: apps/web
         env:
           CHANNEL_BASE_URL: http://127.0.0.1:4173
@@ -41,5 +41,6 @@ jobs:
           path: |
             /tmp/channel-overview-twitch-desktop.png
             /tmp/channel-overview-kick-mobile.png
+            /tmp/channel-overview-browser.log
             /tmp/channel-overview-preview.log
           if-no-files-found: warn
