@@ -34,9 +34,13 @@ The addendum contains the later verified Cloudflare state and documentation-firs
 
 ## Active temporary working notes
 
+- [`work-in-progress/channel-v1-audit.md`](work-in-progress/channel-v1-audit.md) — active Channel / Streamer C0 audit of the current retained-ranking footprint, data limits, existing gates, and C1 decisions
+
 There is no active History rebuild working note. The History H1–H7 milestone completed production acceptance on 2026-06-23, and its temporary note was retired after stable decisions were transferred into permanent documentation.
 
-A future file in `work-in-progress/` is deliberately temporary. It may contain screenshots, defects, unresolved decisions, PR slicing notes, and implementation reminders that do not belong in a permanent specification.
+The Channel audit note is temporary. It governs the current C0/C1 preparation window and must be retired after Channel v1 production acceptance transfers stable decisions into permanent Channel documentation.
+
+A file in `work-in-progress/` may contain screenshots, defects, unresolved decisions, PR slicing notes, and implementation reminders that do not belong in a permanent specification.
 
 When the associated work is complete:
 
