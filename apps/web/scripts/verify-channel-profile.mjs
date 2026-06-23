@@ -20,6 +20,11 @@ assert(helper.channelProfileHref('twitch', '', 'Invalid') === null, 'Empty strea
 const profile = read('src/live/channel-profile.ts')
 for (const fragment of [
   "provider === 'kick' ? '/api/kick-history' : '/api/history'",
+  "document.querySelectorAll<HTMLButtonElement>('[data-channel-view]')",
+  "document.querySelectorAll<HTMLElement>('[data-channel-view-panel]')",
+  'panel.hidden = panel.dataset.channelViewPanel !== state.view',
+  'navigator.clipboard.writeText(location.href)',
+  'setEvidence(',
   'retained daily Top 10 appearances',
   'Not in retained daily Top 10',
   'not confirmed offline',
@@ -37,11 +42,24 @@ for (const [label, source, provider] of [
   ['Kick', kickPage, 'kick'],
 ]) {
   for (const fragment of [
+    '<meta name="robots" content="noindex,follow" />',
     `data-provider="${provider}"`,
     'data-channel-name',
     'data-channel-state',
     'data-channel-period="7d"',
     'data-channel-period="30d"',
+    'data-channel-period-fact',
+    'data-channel-source',
+    'data-channel-observed',
+    'data-channel-appearances',
+    'data-channel-view="overview"',
+    'data-channel-view="days"',
+    'data-channel-view="report"',
+    'data-channel-view-panel="overview"',
+    'data-channel-view-panel="days"',
+    'data-channel-view-panel="report"',
+    'data-channel-copy-url',
+    'data-channel-copy-feedback',
     'data-channel-summary',
     'data-channel-trend',
     'data-channel-days',
@@ -75,6 +93,10 @@ for (const fragment of [
   '.channel-trend-bars',
   '.channel-day-grid',
   '.channel-rival-grid',
+  '.channel-evidence-facts',
+  '.channel-task-tabs',
+  '.channel-task-panel[hidden]',
+  '.channel-report-foundation',
   '@media(max-width:760px)',
   '@media(max-width:420px)',
 ]) assert(css.includes(fragment), `Channel profile responsive CSS missing: ${fragment}`)
@@ -99,7 +121,9 @@ if (failures.length) {
 
 console.log('Channel profile verification passed.')
 console.log('- Twitch and Kick routes remain provider-separated')
-console.log('- History ranking links preserve provider, streamer id, name, and period')
-console.log('- the page exposes only a retained ranking footprint')
+console.log('- query-based Channel identities are noindex,follow')
+console.log('- Overview, Retained Days, and Report & Export task shells are present')
+console.log('- task switching and URL copy reuse the loaded response')
+console.log('- source/state, observed scope, and retained appearances are exposed')
 console.log('- missing daily Top 10 rows are not labelled offline')
 console.log('- desktop and mobile layout contracts are present')
