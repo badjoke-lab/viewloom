@@ -6,3 +6,7 @@
   outline-color: var(--accent) !important;
   outline-offset: 2px !important;
 }
+
+.channel-task-tabs button:focus {
+  box-shadow: 0 0 0 3px var(--accent), inset 0 -3px 0 transparent !important;
+}
