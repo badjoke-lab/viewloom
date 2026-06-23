@@ -57,6 +57,12 @@ export async function installRoutes(context, calls, overrides = {}) {
 
 export async function waitReady(page) {
   await page.waitForFunction(() => document.querySelector('[data-channel-state]')?.textContent !== 'Loading')
+  await page.waitForFunction(() => {
+    const node = document.querySelector('.channel-task-tabs')
+    if (!(node instanceof HTMLElement)) return false
+    const values = getComputedStyle(node).backgroundColor.match(/[\d.]+/g)?.slice(0, 3).map(Number) ?? []
+    return values.length === 3 && Math.max(...values) < 90
+  })
 }
 
 export async function noOverflow(page, label) {
