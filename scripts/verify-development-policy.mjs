@@ -151,7 +151,7 @@ if (failures.length === 0) {
     '```text\n6\n```',
     'noindex,follow',
     'Not confirmed offline',
-    'preview-channel-v1',
+    'deliberate `preview-*` branch',
   ]) assert(channelSpec.includes(fragment), `${channelSpecPath}: missing ${fragment}`)
 
   const channelPlan = read(channelPlanPath)
