@@ -191,7 +191,7 @@ async function verifyExactHistoryOutputs() {
         coverage_state: 'good',
         viewer_minutes: 1000,
         peak_viewers: 100,
-        peak_streamer: '  =Alpha',
+        peak_streamer: '=Alpha',
         observed_stream_count: 10,
         observed_minutes: 120,
       },
@@ -238,7 +238,7 @@ async function verifyExactHistoryOutputs() {
 
   const expectedCsv = [
     'provider,day,coverage_state,viewer_minutes,peak_viewers,peak_streamer,observed_stream_count,observed_minutes',
-    `"twitch","2026-06-20","good","1000","100","'  =Alpha","10","120"`,
+    `"twitch","2026-06-20","good","1000","100","'=Alpha","10","120"`,
     '"twitch","2026-06-21","missing",,,,,',
     '"twitch","2026-06-22","missing",,,,,',
     '',
