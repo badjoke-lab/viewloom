@@ -104,8 +104,8 @@ function reconcileState(previous: ChannelState): void {
 function syncStateToDom(): void {
   document.body.dataset.channelView = state.view
   document.body.dataset.channelPeriod = state.period
-  if (state.selectedDay) document.body.dataset.channelSelectedDay = state.selectedDay
-  else delete document.body.dataset.channelSelectedDay
+  if (state.selectedDay) document.body.dataset.channelSelectedDate = state.selectedDay
+  else delete document.body.dataset.channelSelectedDate
 
   document.querySelectorAll<HTMLButtonElement>('[data-channel-period]').forEach((button) => {
     const active = button.dataset.channelPeriod === state.period
