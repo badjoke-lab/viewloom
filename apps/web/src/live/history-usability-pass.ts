@@ -1,4 +1,4 @@
-// H7 acceptance candidate: completed History layers load in this verified order.
+// Accepted History entry: compatibility, task views, archives, and final visual layers load in this order.
 import '../history-clarity-hotfix.css'
 import '../history-card-visibility.css'
 import '../history-view-shell.css'
