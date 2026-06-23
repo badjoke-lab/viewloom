@@ -33,15 +33,15 @@ try {
   let focused = false
   for (let attempt = 0; attempt < 30; attempt += 1) {
     await page.keyboard.press('Tab')
-    focused = await page.evaluate(() => document.activeElement?.matches('.channel-task-tabs [data-channel-view="overview"]') ?? false)
+    focused = await page.evaluate(() => document.activeElement?.matches('.channel-task-tabs [data-channel-view="days"]') ?? false)
     if (focused) break
   }
-  assert(focused, 'kick 360: keyboard navigation did not reach the Overview task.')
+  assert(focused, 'kick 360: keyboard navigation did not reach the Retained Days task.')
 
-  const overviewButton = page.locator('.channel-task-tabs [data-channel-view="overview"]')
-  const focus = await overviewButton.evaluate((node) => {
+  const daysButton = page.locator('.channel-task-tabs [data-channel-view="days"]')
+  const focus = await daysButton.evaluate((node) => {
     const style = getComputedStyle(node)
-    return { width: style.outlineWidth, style: style.outlineStyle }
+    return { outlineWidth: style.outlineWidth, outlineStyle: style.outlineStyle, boxShadow: style.boxShadow }
   })
   const transition = await page.locator('.channel-trend-bar').first().evaluate((node) => getComputedStyle(node).transitionDuration)
   const durationMs = transition.trim().endsWith('ms') ? parseFloat(transition) : parseFloat(transition) * 1000
@@ -51,7 +51,7 @@ try {
   await appendFile('/tmp/channel-candidate-preview.log', `\nC5A_DIAGNOSTICS ${JSON.stringify(diagnostics)}\n`)
   await page.screenshot({ path: '/tmp/channel-candidate-kick-overview-360.png', fullPage: true })
 
-  assert(focus.style !== 'none' && parseFloat(focus.width) >= 3, `kick 360: visible focus is missing (${JSON.stringify(focus)}).`)
+  assert(focus.boxShadow !== 'none' && focus.boxShadow.includes('3px'), `kick 360: visible task focus ring is missing (${JSON.stringify(focus)}).`)
   assert(durationMs <= 0.011, `kick 360: reduced motion transition is ${transition} (${durationMs}ms).`)
   assert(calls.kick === 1 && calls.twitch === 0, `kick 360 overview: provider request count is wrong (${JSON.stringify(calls)}).`)
   assert(viewport.scrollWidth <= viewport.innerWidth + 1, `kick 360: horizontal overflow (${viewport.scrollWidth} > ${viewport.innerWidth}).`)
