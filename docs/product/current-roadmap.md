@@ -23,37 +23,51 @@ Current feature state:
 | Area | State | Roadmap meaning |
 |---|---|---|
 | Portal and provider homes | production-ready core | maintain and audit |
-| Heatmap | production core complete | polish only when a verified defect exists |
-| Day Flow | production core complete | polish only when a verified defect exists |
-| Battle Lines | production core complete | polish only when a verified defect exists |
-| History & Trends | layout rebuild and production acceptance complete | maintain accepted contracts |
+| Heatmap | production core complete | polish only for verified defects |
+| Day Flow | production core complete | polish only for verified defects |
+| Battle Lines | production core complete | polish only for verified defects |
+| History & Trends | functional/layout rebuild and production acceptance complete | maintain accepted behavior; visual revision pending separate instructions |
 | Data Status | production core complete | maintain |
-| Channel / Streamer | minimal retained-footprint page | next major product phase |
-| Session / Category / Watchlist / Alerts | not approved for implementation | data-capability audit required first |
+| Channel / Streamer | v1 implementation and production acceptance complete | maintain accepted retained-footprint contract |
+| Report/export shared layer | not yet consolidated | next executable phase, non-visual first |
+| Session / Category / Watchlist / Alerts | not approved | data-capability audit required first |
 
-History production acceptance record:
+Permanent acceptance records:
 
 ```text
+History:
 docs/operations/history-production-acceptance-2026-06-23.md
-accepted production SHA: 3cde59cceb09a0c60f48794d6391cf5c356a1b31
+accepted SHA: 3cde59cceb09a0c60f48794d6391cf5c356a1b31
+
+Channel:
+docs/operations/channel-production-acceptance-2026-06-23.md
+accepted SHA: efc14295f0a372b96afac740d6a01571f7582210
+closure PR: #408
 ```
 
 ## 2. Immediate priority
 
-The History H1–H7 milestone is closed. The next major product milestone is:
+Channel C0–C5B is closed. The next executable milestone is:
 
-> Complete Channel / Streamer v1 from the current retained-ranking footprint without claiming complete session history.
+> Audit and consolidate stable Report & Export primitives without changing History or Channel semantics, layout, or CSS.
 
-The Channel phase must preserve the same honesty rules established by History:
+The first work in this phase is deliberately non-visual:
 
-- one provider at a time;
-- retained observations are not provider-wide totals;
-- absence from retained Top 10 does not prove that a channel was offline;
-- exact session starts, ends, and uninterrupted duration are not inferred without sufficient retained data;
-- missing, partial, stale, empty, demo, and error states remain distinct;
-- Twitch and Kick routes, APIs, links, exports, and claims remain separated.
+- provider labels;
+- period and coverage labels;
+- filename generation and sanitization;
+- CSV escaping;
+- JSON missing-value policy;
+- clipboard and download result handling;
+- shared type and test contracts.
 
-Before Channel implementation begins, its permanent specification and implementation plan must be reviewed against the current repository and data contract.
+History UI appearance work is pending because screenshots and detailed instructions are not currently available. Until those arrive:
+
+- do not redesign History;
+- do not alter History DOM structure or CSS for consolidation convenience;
+- do not make speculative visual fixes;
+- stop any shared-layer change that would alter accepted History rendering;
+- continue with pure helpers, contracts, tests, and data-capability work that does not affect the visible UI.
 
 ## 3. Ordered roadmap
 
@@ -65,17 +79,17 @@ Includes:
 
 - Cloudflare production cutover;
 - separate Twitch/Kick D1 bindings;
-- collector and data-status visibility;
+- collector and Data Status visibility;
 - exact deployment identity;
 - explicit 404 behavior;
 - permanent Production Smoke;
-- accepted Heatmap, Day Flow, Battle Lines, History, and Status cores.
+- accepted Heatmap, Day Flow, Battle Lines, History, Status, and Channel cores.
 
 Maintenance rule:
 
 - P0 production failures interrupt all planned work;
-- P1 defects interrupt the active phase when they block its completion criteria;
-- P2 polish is grouped and must not silently replace the active roadmap phase.
+- P1 defects interrupt the active phase when they block acceptance;
+- P2 polish is grouped and must not silently replace the active phase.
 
 ### Phase 1B / 1C — History rebuild and acceptance
 
@@ -94,26 +108,27 @@ Report & Export
 
 Completion evidence:
 
-- H1–H7 PR sequence completed;
-- latest candidate workflow matrix passed;
-- deliberate `preview-history-h7` runtime validation passed with separate Preview D1 bindings;
-- Twitch desktop and Kick 390px full-page artifacts were reviewed;
-- production deployed exact main SHA `3cde59cceb09a0c60f48794d6391cf5c356a1b31`;
+- H1–H7 sequence completed;
+- complete repository/browser candidate matrix passed;
+- deliberate `preview-history-h7` validation passed with separate Preview D1 bindings;
+- Twitch desktop and Kick 390px artifacts were reviewed;
+- exact production SHA was verified;
 - production browser acceptance passed;
-- stable decisions were transferred to permanent docs;
-- the temporary History working note was retired.
+- permanent documentation replaced the temporary working note.
 
-No further History density expansion is scheduled. Future History changes are maintenance or separately approved feature work.
+Pending separate item:
+
+```text
+History UI appearance revision
+State: pending screenshots and explicit instructions
+Priority: resume when inputs become available
+```
+
+The pending visual revision does not reopen H1–H7 functional acceptance and must receive its own audit, specification, PR sequence, Preview validation, and production acceptance.
 
 ### Phase 2 — remaining production P0/P1 repairs
 
 State: conditional maintenance phase.
-
-Purpose:
-
-- repair only verified defects found in production or current acceptance gates;
-- keep unrelated P2 visual work grouped;
-- skip this phase when no material defect remains.
 
 Entry rule:
 
@@ -123,59 +138,85 @@ Exit rule:
 
 - the defect is covered by a permanent contract or browser gate and production smoke is green.
 
-### Phase 3 — Channel / Streamer v1 completion
+### Phase 3 — Channel / Streamer v1
 
-State: next.
+State: completed on 2026-06-23 through PR #408.
 
-Purpose:
+Accepted task structure:
 
-- turn the existing retained-ranking footprint into a useful provider-specific Channel page;
-- provide a coherent retained-history view without inventing sessions or complete platform coverage.
+```text
+Overview
+Retained Days
+Report & Export
+```
 
-Target scope:
+Completion evidence:
 
-- Twitch and Kick provider-specific Channel routes;
-- 7-day and 30-day retained views;
-- retained appearances and trend summary;
-- peak and viewer-minute facts supported by current data;
-- rivalry candidates derived from retained observations;
-- provider-safe links back to History, Day Flow, and Battle Lines;
-- copyable summary;
-- CSV and JSON export;
-- honest coverage and absence language;
-- desktop, tablet, mobile, keyboard, Preview, and production acceptance.
+- C0 audit through PR #398;
+- C1 specification through PR #399;
+- C2 state and task shell through PRs #400–#401;
+- C3 Overview through PR #402;
+- C4 retained days, rivalry, report, and export through PRs #403–#405;
+- C5A candidate visual/responsive/accessibility acceptance through PR #406;
+- deliberate `preview-channel-v1` real-data acceptance through PR #407;
+- exact production SHA `efc14295f0a372b96afac740d6a01571f7582210` verified;
+- public Twitch desktop and Kick 390px acceptance passed;
+- permanent acceptance evidence recorded;
+- temporary C0/C5B notes and workflows retired in PR #408.
 
-Required preparation:
+Accepted product boundary:
 
-1. audit the current Channel implementation and API payload;
-2. confirm retained fields and unsupported claims;
-3. update or create the permanent Channel specification;
-4. create a PR-sliced implementation plan;
-5. create a temporary working note only when unresolved implementation decisions require one.
+- one provider at a time;
+- one History request per period load;
+- retained daily Top 10 footprint, not provider-wide analytics;
+- absence does not prove offline status;
+- no exact session reconstruction;
+- provider-specific copy, CSV, JSON, links, and filenames;
+- no D1, collector, cron, or retention change.
 
-Non-goals unless the data audit changes the roadmap:
+### Phase 4 — Report & Export shared-layer consolidation
 
-- exact stream-session timelines;
-- full-provider ranking claims;
-- cross-platform channel totals;
-- login or cloud-saved profiles;
-- alerts;
-- AI interpretation.
-
-### Phase 4 — report and export component consolidation
-
-State: queued after Channel.
+State: active after Channel closure.
 
 Purpose:
 
-- reuse stable report, copy, share-card, and export primitives across History and Channel;
-- standardize provider labels, filenames, period language, coverage language, status messages, and mobile actions;
+- reuse stable output primitives across History and Channel;
 - remove duplication without changing data semantics;
-- avoid adding new output modes until existing outputs share one tested contract.
+- preserve provider separation, evidence limits, and missing-value behavior;
+- establish one tested contract before any new output mode is added.
+
+Execution order:
+
+1. audit current History and Channel report/export implementations;
+2. freeze shared contracts and migration boundaries;
+3. add pure shared helpers and tests;
+4. migrate History only when no DOM/CSS/visible change is required;
+5. migrate Channel under the same condition;
+6. run cross-page provider, output, and browser regressions;
+7. stop and defer any visual or structural migration that conflicts with pending History UI work.
+
+Initial shared candidates:
+
+- provider and period labels;
+- coverage/source/state wording helpers;
+- filename construction and sanitization;
+- CSV escaping and blank missing values;
+- JSON `null` policy;
+- clipboard and download status result types;
+- deterministic export metadata.
+
+Explicit non-goals in the first consolidation window:
+
+- History visual redesign;
+- Channel visual redesign;
+- new report modes;
+- PNG/share-card generation;
+- data API or schema changes;
+- collector, cron, or retention changes.
 
 ### Phase 5 — next-feature data-capability audit
 
-State: blocked by Phases 3–4.
+State: queued after the safe Phase 4 foundation.
 
 Candidates:
 
@@ -197,7 +238,7 @@ The audit must determine:
 - Cloudflare Free-plan cost;
 - whether an honest MVP can be produced without invented precision.
 
-No candidate moves directly from an idea to implementation.
+No candidate moves directly from idea to implementation.
 
 ### Phase 6 — one approved major expansion
 
@@ -211,11 +252,11 @@ Tentative priority when technically honest and affordable:
 2. Category / Game trends;
 3. login-free local Watchlist.
 
-## 4. Work that is not currently scheduled
+## 4. Work not currently scheduled for immediate implementation
 
 The following must not be inserted ahead of the active roadmap without updating this document:
 
-- additional History sections that increase page density;
+- speculative History visual fixes without screenshots/instructions;
 - cross-platform combined totals or rankings;
 - login or cloud user accounts;
 - alerts or notifications;
@@ -233,7 +274,8 @@ Update this file when:
 - production acceptance changes the next executable phase;
 - a new blocker changes priority;
 - a feature is removed, deferred, or approved after data audit;
-- a production defect becomes roadmap-level work rather than ordinary maintenance.
+- a production defect becomes roadmap-level work rather than maintenance;
+- the pending History UI revision receives enough evidence to begin.
 
 Every implementation PR must state:
 

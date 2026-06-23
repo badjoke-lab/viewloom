@@ -6,10 +6,16 @@ const failures = []
 const read = (path) => readFileSync(join(root, path), 'utf8')
 const assert = (condition, message) => { if (!condition) failures.push(message) }
 
-const completedHistoryWorkingNote = 'docs/work-in-progress/history-layout-rebuild-working-note.md'
-const activeChannelAudit = 'docs/work-in-progress/channel-v1-audit.md'
+const retiredNotes = [
+  'docs/work-in-progress/history-layout-rebuild-working-note.md',
+  'docs/work-in-progress/channel-v1-audit.md',
+]
+
+const historyAcceptancePath = 'docs/operations/history-production-acceptance-2026-06-23.md'
+const channelAcceptancePath = 'docs/operations/channel-production-acceptance-2026-06-23.md'
 const channelSpecPath = 'docs/product/channel-and-streamer-spec.md'
 const channelPlanPath = 'docs/product/channel-v1-implementation-plan.md'
+
 const requiredFiles = [
   'AGENTS.md',
   'CONTRIBUTING.md',
@@ -18,20 +24,25 @@ const requiredFiles = [
   'docs/operations/development-and-deployment-policy.md',
   'docs/operations/development-policy-addendum.md',
   'docs/operations/documentation-governance.md',
-  'docs/operations/history-production-acceptance-2026-06-23.md',
+  historyAcceptancePath,
+  channelAcceptancePath,
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/history-and-trends-spec.md',
   'docs/product/history-layout-rebuild-plan.md',
   channelSpecPath,
   channelPlanPath,
-  activeChannelAudit,
   '.github/pull_request_template.md',
   '.github/workflows/development-policy.yml',
 ]
 
-for (const path of requiredFiles) assert(existsSync(join(root, path)), `Missing required policy/document file: ${path}`)
-assert(!existsSync(join(root, completedHistoryWorkingNote)), `Completed History working note must remain deleted: ${completedHistoryWorkingNote}`)
+for (const path of requiredFiles) {
+  assert(existsSync(join(root, path)), `Missing required policy/document file: ${path}`)
+}
+
+for (const path of retiredNotes) {
+  assert(!existsSync(join(root, path)), `Completed temporary note must remain deleted: ${path}`)
+}
 
 if (failures.length === 0) {
   const policyPath = 'docs/operations/development-and-deployment-policy.md'
@@ -63,17 +74,21 @@ if (failures.length === 0) {
     'operations/development-policy-addendum.md',
     'operations/documentation-governance.md',
     'operations/history-production-acceptance-2026-06-23.md',
+    'operations/channel-production-acceptance-2026-06-23.md',
     'product/current-roadmap.md',
     'product/current-schedule.md',
     'product/history-and-trends-spec.md',
     'product/history-layout-rebuild-plan.md',
     'product/channel-and-streamer-spec.md',
     'product/channel-v1-implementation-plan.md',
-    'work-in-progress/channel-v1-audit.md',
   ]) assert(index.includes(path), `${indexPath}: missing canonical document link: ${path}`)
-  assert(!index.includes(completedHistoryWorkingNote.replace('docs/', '')), `${indexPath}: completed History working note is still linked.`)
-  assert(index.includes('There is no active History rebuild working note.'), `${indexPath}: completed History working-note state is not recorded.`)
-  assert(index.includes('The Channel audit note is temporary.'), `${indexPath}: active Channel audit lifecycle is not recorded.`)
+
+  for (const retired of retiredNotes) {
+    assert(!index.includes(retired.replace('docs/', '')), `${indexPath}: retired temporary note is still linked: ${retired}`)
+  }
+
+  assert(index.includes('There is no active History rebuild or Channel v1 working note.'), `${indexPath}: completed working-note state is not recorded.`)
+  assert(index.includes('pending History UI appearance revision'), `${indexPath}: pending History UI state is not recorded.`)
 
   const governance = read('docs/operations/documentation-governance.md')
   for (const fragment of [
@@ -85,19 +100,23 @@ if (failures.length === 0) {
 
   const roadmap = read('docs/product/current-roadmap.md')
   for (const fragment of [
-    'History & Trends | layout rebuild and production acceptance complete',
-    'Phase 3 — Channel / Streamer v1 completion',
+    'History & Trends | functional/layout rebuild and production acceptance complete',
+    'Channel / Streamer | v1 implementation and production acceptance complete',
+    'Phase 4 — Report & Export shared-layer consolidation',
     'Phase 5 — next-feature data-capability audit',
-    '3cde59cceb09a0c60f48794d6391cf5c356a1b31',
+    'efc14295f0a372b96afac740d6a01571f7582210',
+    'History UI appearance work is pending',
   ]) assert(roadmap.includes(fragment), `current-roadmap.md: missing ${fragment}`)
 
   const schedule = read('docs/product/current-schedule.md')
   for (const fragment of [
-    'History production acceptance H7     complete',
-    'Channel C0 audit                      complete through PR #398',
-    'C1 — permanent specification and implementation plan',
-    'C2A — Channel state, URL, popstate, and one-request foundation',
-    'work-channel-c2-state',
+    'Channel C5B production acceptance         complete',
+    'Channel temporary files and notes         complete through PR #408',
+    'History UI appearance revision            pending screenshots and instructions',
+    'Phase 4 — Report & Export shared-layer consolidation',
+    'R0 — shared Report & Export audit',
+    'work-report-export-r0-audit',
+    'Do not begin the next PR before this report is issued.',
   ]) assert(schedule.includes(fragment), `current-schedule.md: missing ${fragment}`)
 
   const historySpec = read('docs/product/history-and-trends-spec.md')
@@ -118,32 +137,18 @@ if (failures.length === 0) {
     'This plan is complete and is retained as the implementation record.',
   ]) assert(historyPlan.includes(fragment), `history-layout-rebuild-plan.md: missing ${fragment}`)
 
-  const acceptancePath = 'docs/operations/history-production-acceptance-2026-06-23.md'
-  const acceptance = read(acceptancePath)
+  const historyAcceptance = read(historyAcceptancePath)
   for (const fragment of [
     'Status: completed permanent record',
     '3cde59cceb09a0c60f48794d6391cf5c356a1b31',
     '27998433929',
     '27999024838',
     '7810348478',
-  ]) assert(acceptance.includes(fragment), `${acceptancePath}: missing ${fragment}`)
-
-  const channelAudit = read(activeChannelAudit)
-  for (const fragment of [
-    'Status: active temporary note',
-    'retained daily Top 10 ranking footprint',
-    'Not confirmed offline',
-    'What the current data cannot prove',
-    'C1 specification',
-    'no Channel runtime behavior changes',
-    '28004912659',
-    '7812384078',
-    'C0 state: completed in PR #398',
-  ]) assert(channelAudit.includes(fragment), `${activeChannelAudit}: missing ${fragment}`)
+  ]) assert(historyAcceptance.includes(fragment), `${historyAcceptancePath}: missing ${fragment}`)
 
   const channelSpec = read(channelSpecPath)
   for (const fragment of [
-    'Status: permanent product specification',
+    'Status: accepted production product specification',
     'Overview',
     'Retained Days',
     'Report & Export',
@@ -151,18 +156,27 @@ if (failures.length === 0) {
     '```text\n6\n```',
     'noindex,follow',
     'Not confirmed offline',
-    'deliberate `preview-*` branch',
+    'accepted production SHA: efc14295f0a372b96afac740d6a01571f7582210',
   ]) assert(channelSpec.includes(fragment), `${channelSpecPath}: missing ${fragment}`)
 
   const channelPlan = read(channelPlanPath)
   for (const fragment of [
-    'Status: active implementation plan',
-    'C2A — module and state foundation',
-    'C5B — Cloudflare Preview, production acceptance, and documentation closure',
-    'work-channel-c2-state',
+    'Status: completed implementation plan and permanent milestone record',
+    'C2A — state, URL, payload, and one-request foundation',
+    'C5B — Preview, production acceptance, and closure',
     'preview-channel-v1',
-    '10–15 focused workdays',
+    'This plan is complete and retained as the implementation record.',
   ]) assert(channelPlan.includes(fragment), `${channelPlanPath}: missing ${fragment}`)
+
+  const channelAcceptance = read(channelAcceptancePath)
+  for (const fragment of [
+    'Status: completed permanent record',
+    'efc14295f0a372b96afac740d6a01571f7582210',
+    '28027105615',
+    '7821161692',
+    '28028685856',
+    '7821826483',
+  ]) assert(channelAcceptance.includes(fragment), `${channelAcceptancePath}: missing ${fragment}`)
 
   for (const entryPath of ['AGENTS.md', 'CONTRIBUTING.md']) {
     const entry = read(entryPath)
@@ -243,7 +257,7 @@ if (failures.length) {
 
 console.log('ViewLoom development, documentation, and deployment policy verification passed.')
 console.log(`- ${requiredFiles.length} policy/document files present`)
-console.log('- completed History working note remains retired')
-console.log('- permanent Channel v1 specification and implementation plan are governed')
-console.log('- completed Channel C0 audit remains active as the implementation note')
+console.log('- completed History and Channel working notes remain retired')
+console.log('- permanent History and Channel acceptance records are governed')
+console.log('- Phase 4 shared Report & Export audit is the next scheduled work')
 console.log(`- ${concurrencyWorkflows.length} active workflows cancel obsolete runs`)
