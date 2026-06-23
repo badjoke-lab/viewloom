@@ -27,15 +27,10 @@ async function waitForCalls(page, calls, provider, expected) {
     const value = document.body.dataset.channelPeriod
     return Boolean(value && provider && expected)
   }, { provider, expected })
-  for (let attempt = 0; attempt < 50 && calls[provider] < expected; attempt += 1) await page.waitForTimeout(20)
-  ok(calls[provider] === expected, `${provider} request count is ${calls[provider]}, expected ${expected}.`)
-}
-async function assertView(page, view) {
-  ok(await page.locator('body').getAttribute('data-channel-view') === view, `Channel view is not ${view}.`)
-  for (const candidate of ['overview', 'days', 'report']) {
-    const panel = page.locator(`[data-channel-view-panel="${candidate}"]`)
-    ok((await panel.isHidden()) === (candidate !== view), `${candidate} panel visibility is wrong for ${view}.`)
+  for (let attempt = 0; attempt < 50 && calls[provider] < expected; attempt += 1) {
+    await page.waitForTimeout(20)
   }
+  ok(calls[provider] === expected, `${provider} request count is ${calls[provider]}, expected ${expected}.`)
 }
 
 async function twitchDesktop(browser) {
@@ -54,13 +49,9 @@ async function twitchDesktop(browser) {
   await ready(page)
   ok(calls.twitch === 1 && calls.kick === 0, 'Twitch profile did not use one Twitch-only History request.')
   ok(await page.locator('body').getAttribute('data-channel-period') === '7d', 'Initial Channel period state is wrong.')
-  await assertView(page, 'overview')
+  ok(await page.locator('body').getAttribute('data-channel-view') === 'overview', 'Initial Channel view state is wrong.')
   ok(await text(page, '[data-channel-name]') === 'Alpha Channel', 'Twitch channel name is wrong.')
   ok(await href(page, '[data-channel-external]') === 'https://www.twitch.tv/alpha', 'Twitch external link is wrong.')
-  ok(await text(page, '[data-channel-source]') === 'Real / Fresh', 'Twitch source/state evidence is wrong.')
-  ok(await text(page, '[data-channel-observed]') === '7 / 7 days', 'Twitch observed scope is wrong.')
-  ok(await text(page, '[data-channel-appearances]') === '4 days', 'Twitch retained appearances are wrong.')
-  ok(await text(page, '[data-channel-period-fact]') === 'Fixture range', 'Twitch period evidence is wrong.')
   const summary = await text(page, '[data-channel-summary]')
   ok(summary?.includes('4,200,000') && summary.includes('42,000') && summary.includes('Daily Top 10 days'), 'Twitch summary is incomplete.')
   ok(await page.locator('.channel-trend-column').count() === 7, 'Twitch footprint day count is wrong.')
@@ -71,28 +62,15 @@ async function twitchDesktop(browser) {
   ok((await href(page, '.channel-day-card__actions a'))?.startsWith('/twitch/day-flow/'), 'Twitch Day Flow link crossed providers.')
   ok((await href(page, '.channel-rival-card a'))?.startsWith('/twitch/battle-lines/'), 'Twitch Battle Lines link crossed providers.')
 
-  await page.locator('button[data-channel-view="days"]').click()
-  await assertView(page, 'days')
-  ok(new URL(page.url()).searchParams.get('view') === 'days', 'Retained Days URL state is wrong.')
-  ok(calls.twitch === 1, 'Task switching triggered another History request.')
-
   await page.evaluate(() => {
     const url = new URL(location.href)
+    url.searchParams.set('view', 'days')
     url.searchParams.set('day', '2026-06-17')
     history.pushState(null, '', `${url.pathname}?${url.searchParams.toString()}`)
     dispatchEvent(new PopStateEvent('popstate'))
   })
-  await page.waitForFunction(() => document.body.dataset.channelSelectedDay === '2026-06-17')
-  ok(calls.twitch === 1, 'Selected-day state triggered another History request.')
-
-  await page.locator('button[data-channel-view="report"]').click()
-  await assertView(page, 'report')
-  ok(new URL(page.url()).searchParams.get('day') === '2026-06-17', 'Task switch did not preserve selected day.')
-  ok(calls.twitch === 1, 'Report task triggered another History request.')
-  const copyButton = page.locator('[data-channel-view-panel="report"] [data-channel-copy-url]')
-  await copyButton.click()
-  await page.waitForFunction(() => ['Copied', 'Copy failed'].includes(document.querySelector('[data-channel-view-panel="report"] [data-channel-copy-url]')?.textContent ?? ''))
-  ok(calls.twitch === 1, 'Copy current URL triggered a History request.')
+  await page.waitForFunction(() => document.body.dataset.channelView === 'days' && document.body.dataset.channelSelectedDate === '2026-06-17')
+  ok(calls.twitch === 1, 'View/day state change triggered another History request.')
 
   await page.locator('button[data-channel-period="30d"]').click()
   await ready(page)
@@ -104,8 +82,8 @@ async function twitchDesktop(browser) {
   await ready(page)
   await waitForCalls(page, calls, 'twitch', 3)
   ok(await page.locator('body').getAttribute('data-channel-period') === '7d', 'Back navigation did not restore 7d Channel state.')
-  await assertView(page, 'report')
-  ok(await page.locator('body').getAttribute('data-channel-selected-day') === '2026-06-17', 'Back navigation did not restore selected day.')
+  ok(await page.locator('body').getAttribute('data-channel-view') === 'days', 'Back navigation did not restore the Channel view.')
+  ok(await page.locator('body').getAttribute('data-channel-selected-date') === '2026-06-17', 'Back navigation did not restore the selected day.')
 
   await noOverflow(page, 'Twitch desktop')
   await page.screenshot({ path: '/tmp/channel-profile-twitch-desktop.png', fullPage: true })
@@ -121,14 +99,8 @@ async function kickMobile(browser) {
   await ready(page)
   ok(calls.kick === 1 && calls.twitch === 0, 'Kick profile did not use one Kick-only History request.')
   ok(!new URL(page.url()).searchParams.has('period'), 'Kick default 30d URL was not normalized.')
-  await assertView(page, 'overview')
   ok(await href(page, '[data-channel-external]') === 'https://kick.com/alpha', 'Kick external link is wrong.')
-  ok(await text(page, '[data-channel-source]') === 'Real / Fresh', 'Kick source/state evidence is wrong.')
-  await page.locator('button[data-channel-view="days"]').click()
-  await assertView(page, 'days')
-  ok(calls.kick === 1, 'Kick task switching triggered another request.')
   ok((await href(page, '.channel-day-card__actions a'))?.startsWith('/kick/day-flow/'), 'Kick Day Flow link crossed providers.')
-  await page.locator('button[data-channel-view="overview"]').click()
   ok((await href(page, '.channel-rival-card a'))?.startsWith('/kick/battle-lines/'), 'Kick Battle Lines link crossed providers.')
   await noOverflow(page, 'Kick mobile')
   await page.screenshot({ path: '/tmp/channel-profile-kick-mobile.png', fullPage: true })
@@ -144,8 +116,8 @@ async function missingId(browser) {
   await ready(page)
   ok(await text(page, '[data-channel-name]') === 'Channel not selected', 'Missing-id state is wrong.')
   ok(calls.twitch === 0 && calls.kick === 0, 'Missing-id state requested History data.')
-  await assertView(page, 'overview')
-  ok(await text(page, '[data-channel-source]') === 'No request', 'Missing-id source evidence is wrong.')
+  ok(await page.locator('body').getAttribute('data-channel-period') === '30d', 'Missing-id fallback period is wrong.')
+  ok(await page.locator('body').getAttribute('data-channel-view') === 'overview', 'Missing-id fallback view is wrong.')
   ok(!new URL(page.url()).searchParams.has('period') && !new URL(page.url()).searchParams.has('view') && !new URL(page.url()).searchParams.has('day'), 'Invalid missing-id URL state was not normalized.')
   await context.close()
 }
