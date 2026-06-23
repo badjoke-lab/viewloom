@@ -3,6 +3,7 @@
 Status: completed permanent record
 Accepted on: 2026-06-23
 Roadmap phase: Phase 3 — Channel / Streamer v1
+Closure PR: #408
 
 ## Accepted production revision
 
@@ -124,6 +125,6 @@ No Channel-specific API, D1 migration, collector change, cron change, retention 
 
 ## Closure
 
-The production acceptance closes Channel C0–C5B. The temporary Channel audit note, hosted acceptance note, candidate marker, hosted browser script, Preview workflow, and production workflow are removed in the closure PR after their stable evidence is transferred here.
+PR #408 transfers stable C0–C5B evidence into permanent documentation and removes the temporary Channel audit note, hosted acceptance note, candidate marker, hosted browser script, Preview workflow, and production workflow.
 
 History UI appearance work is pending separate screenshots and instructions. This acceptance does not change History runtime behavior or appearance.
