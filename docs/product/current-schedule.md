@@ -3,14 +3,14 @@
 Status: source of truth
 Last updated: 2026-06-24
 
-## 1. Rules
+## 1. Operating rules
 
 - P0 production failures interrupt all planned work.
 - P1 defects interrupt the active phase when they block acceptance.
 - P2 polish is grouped unless it belongs to the active milestone.
-- Runtime completion requires repository checks, browser checks, required Preview validation, exact production deployment identity, and public verification.
-- `work-*` branches are ordinary implementation branches; hosted validation uses an approved `preview-*` branch.
-- After every merge, report the merge, changed behavior, verification result, full schedule, current position, and next executable step before continuing.
+- `work-*` branches are implementation branches; hosted validation uses approved `preview-*` branches only.
+- Output-compatible, non-visual internal changes do not require Preview unless an accepted serialized or visible contract changes.
+- After every merge, report the PR, merge SHA, changed and unchanged behavior, verification, full schedule, current position, next work, and proceed judgment before starting another PR.
 
 ## 2. Current position
 
@@ -21,12 +21,11 @@ Day Flow                                 complete
 Battle Lines                             complete
 History H1-H7                            complete
 History production acceptance            complete
-Channel C0-C5A                           complete
-Channel C5B Preview acceptance            complete
-Channel C5B production acceptance         complete
-Channel temporary files and notes         complete through PR #408
+Channel C0-C5B                           complete
+Channel production acceptance            complete
 Report/export R0 boundary audit           complete through PR #409
-Report/export R1 shared primitives        active in work-report-export-r1-shared-output
+Report/export R1 shared primitives        complete through PR #410
+Report/export R2 History adoption         active in PR #411
 History UI appearance revision            pending screenshots and instructions
 ```
 
@@ -41,20 +40,35 @@ Current active phase:
 
 ```text
 Phase 4 — Report & Export shared-layer consolidation
-R1 — neutral shared output primitives
-branch: work-report-export-r1-shared-output
-PR: #410
+R2 — conditional History internal adoption
+branch: work-report-export-r2-history-adoption
+PR: #411
 ```
 
-Governing Phase 4 documents:
+Governing documents:
 
 ```text
 docs/product/report-export-consolidation-plan.md
 docs/work-in-progress/report-export-r0-audit.md
 apps/web/docs/shared-output-r1-contract.md
+apps/web/docs/history-output-r2-contract.md
 ```
 
-## 3. Completed History record
+## 3. Completed core phases
+
+### Production and accepted visualizations
+
+Completed:
+
+- Cloudflare production baseline and exact deployment identity;
+- separate Twitch and Kick D1 bindings;
+- permanent Production Smoke;
+- Heatmap;
+- Day Flow;
+- Battle Lines;
+- Data Status.
+
+### History
 
 Permanent records:
 
@@ -67,19 +81,19 @@ docs/operations/history-production-acceptance-2026-06-23.md
 Accepted result:
 
 - Overview / Archives / Report & Export;
-- provider-specific Twitch and Kick History;
-- Preview verification with separate D1 bindings;
-- exact production SHA acceptance;
-- temporary-note retirement.
+- separate Twitch and Kick paths;
+- Preview acceptance with separate D1 bindings;
+- exact production SHA verification;
+- production browser acceptance.
 
-History UI appearance work is pending because screenshots and detailed instructions are unavailable. Until they arrive:
+History UI appearance revision remains pending. Until screenshots and explicit instructions exist:
 
 - do not redesign History;
-- do not change History CSS or DOM speculatively;
-- do not use shared-layer work to alter History appearance;
-- preserve current production behavior and browser gates.
+- do not alter History DOM, CSS, button order, labels, or layout;
+- do not use shared-layer work to make speculative UI changes;
+- preserve the accepted browser gates.
 
-## 4. Completed Channel record
+### Channel
 
 Permanent records:
 
@@ -92,32 +106,12 @@ docs/operations/channel-production-acceptance-2026-06-23.md
 Completed sequence:
 
 ```text
-C0   PR #398   audit
-C1   PR #399   permanent specification and plan
-C2A  PR #400   state, URL, payload, one-request foundation
-C2B  PR #401   task shell and evidence header
-C3   PR #402   Overview and selected-day interpretation
-C4A  PR #403-404  bounded Retained Days and rivalry order
-C4B  PR #405   Report & Export
-C5A  PR #406   visual, responsive, accessibility, candidate QA
-C5B  PR #407-408  Preview, production, and document closure
-```
-
-Preview evidence:
-
-```text
-branch: preview-channel-v1
-candidate SHA: 7feff50bb7233f029e775f764af03bf0c683e941
-run: 28027105615
-artifact: 7821161692
-```
-
-Production evidence:
-
-```text
-accepted SHA: efc14295f0a372b96afac740d6a01571f7582210
-run: 28028685856
-artifact: 7821826483
+C0   PR #398       audit
+C1   PR #399       permanent specification and plan
+C2   PR #400-401   state, URL, payload, one-request task shell
+C3   PR #402       Overview
+C4   PR #403-405   retained days, rivalry, report and export
+C5   PR #406-408   candidate QA, Preview, production, closure
 ```
 
 Accepted result:
@@ -125,41 +119,24 @@ Accepted result:
 - Overview / Retained Days / Report & Export;
 - one provider History request per period load;
 - real Twitch and Kick data;
-- Twitch desktop and Kick 390px acceptance;
 - provider-specific copy, CSV, JSON, links, and filenames;
-- six-card initial archive bound;
-- no page-level horizontal overflow;
 - no D1, collector, cron, retention, or cross-provider change.
 
-## 5. Active Phase 4 window
+## 4. Phase 4 execution window
 
-### R0 — shared Report & Export audit
+### R0 — implementation and boundary audit
 
 State: completed through PR #409.
 
-Branch and merge:
-
 ```text
 branch: work-report-export-r0-audit
-PR: #409
 merge: 46cea2eceff85b4f5a359446d102d7bc6afe3487
 ```
 
-Completed deliverables:
-
-- current History and Channel implementation inventory;
-- data-flow and request-ownership comparison;
-- duplication matrix;
-- safe shared-layer boundary;
-- intentional-difference and risk register;
-- preservation-test matrix;
-- permanent R1–R4 implementation plan;
-- temporary audit note registered in the documentation index.
-
-Accepted R0 boundary:
+Fixed boundary:
 
 ```text
-safe to share:
+shared:
 provider type/display name
 filename sanitization/composition
 CSV syntax escaping
@@ -181,15 +158,13 @@ DOM/CSS/status copy
 
 ### R1 — neutral shared output primitives
 
-State: active in PR #410.
-
-Branch:
+State: completed through PR #410.
 
 ```text
-work-report-export-r1-shared-output
+merge: 6b90c277460a674e355a7676444ddf10ff296325
 ```
 
-Implemented scope:
+Implemented:
 
 ```text
 apps/web/src/shared/output/provider.ts
@@ -201,7 +176,7 @@ apps/web/src/shared/output/download.ts
 apps/web/src/shared/output/result.ts
 ```
 
-Contract and verification:
+Permanent contracts and gate:
 
 ```text
 apps/web/docs/shared-output-r1-contract.md
@@ -209,56 +184,100 @@ apps/web/scripts/verify-shared-output-r1.mjs
 .github/workflows/shared-output-r1.yml
 ```
 
-R1 contract:
-
-- providers remain exactly Twitch and Kick;
-- filename helpers preserve Unicode letters/numbers and remove unsafe path/control characters;
-- CSV supports explicit `minimal` and `always` quote modes;
-- spreadsheet formula safety is opt-in and matches accepted History behavior;
-- finite numeric strings are not coerced;
-- clipboard and download helpers return neutral result objects and own no visible message;
-- shared modules import no History or Channel code;
-- History and Channel are not migrated in R1.
-
-R1 completion criteria:
-
-- dedicated typecheck and executable contract workflow succeeds;
-- existing Web build/check and affected History/Channel gates succeed;
-- no feature output byte, schema, filename, report text, DOM, CSS, request, API, D1, collector, cron, or retention change;
-- latest PR head is mergeable with no unresolved review thread.
+R1 changed no History or Channel runtime output.
 
 ### R2 — conditional History internal adoption
 
-State: conditional after R1.
+State: active in PR #411.
 
-Branch:
+Adopted only where exact compatibility is proven:
 
 ```text
-work-report-export-r2-history-adoption
+finiteNumberOrNull
+CSV cell syntax with:
+  quote: always
+  spreadsheetSafety: apostrophe
+filename composition with existing History segment order
 ```
 
-Proceed only when exact preservation tests exist and adoption creates no History DOM/CSS, visible string, action-order, report, CSV, JSON, filename, or PNG change. Defer any unsafe helper rather than broadening the PR.
+Files changed in the feature layer:
+
+```text
+apps/web/src/live/history-export-model.ts
+apps/web/src/live/history-export-serialize.ts
+apps/web/src/live/history-export.ts
+```
+
+Exact preservation contract:
+
+```text
+apps/web/docs/history-output-r2-contract.md
+apps/web/scripts/verify-history-output-r2.mjs
+```
+
+Required exact preservation:
+
+- schema `viewloom-history-export-v1`;
+- CSV header order and CRLF line endings;
+- blank null cells;
+- always-quoted non-null cells;
+- apostrophe spreadsheet protection;
+- JSON indentation and trailing newline;
+- Twitch/Kick filenames;
+- report and short-post text;
+- current temporary anchor behavior and 1000 ms revoke timing;
+- current visible-preview clipboard fallback;
+- no additional History request;
+- no DOM, CSS, label, status, action-order, or PNG change.
+
+Explicitly deferred in R2:
+
+```text
+provider display helper
+clipboard transport
+text download transport
+```
+
+Reason:
+
+- provider labels live in feature-owned report prose;
+- shared clipboard fallback differs from accepted History preview-selection UX;
+- shared download anchor visibility and default revoke timing differ from accepted History behavior.
+
+R2 completion criteria:
+
+- Shared Output Contracts workflow succeeds;
+- History Export and H4 terminal/browser gates succeed;
+- existing History archive/browser gates succeed;
+- Web build/check/policy gates succeed;
+- final diff contains no CSS, HTML template, API, D1, collector, cron, retention, or PNG change;
+- PR is mergeable with no unresolved review thread.
 
 ### R3 — Channel internal adoption
 
-State: queued after the shared foundation.
-
-Branch:
+State: queued after R2 merge report.
 
 ```text
-work-report-export-r3-channel-adoption
+branch: work-report-export-r3-channel-adoption
 ```
 
-Preserve Channel context, report text, CSV rows, `viewloom-channel-v1`, visible feedback, DOM/CSS, provider separation, and one-request behavior. Spreadsheet-safety policy must be explicit before changing Channel CSV bytes.
+Requirements:
+
+- exact Channel report and short-post text;
+- exact CSV header and row semantics;
+- exact blank missing numeric cells;
+- exact `viewloom-channel-v1` JSON;
+- exact filenames;
+- one History request per loaded period;
+- no DOM/CSS/status change;
+- explicit decision not to add spreadsheet formula protection unless treated as a deliberate output-contract change.
 
 ### R4 — cross-page acceptance and closure
 
 State: queued.
 
-Branch:
-
 ```text
-work-report-export-r4-acceptance
+branch: work-report-export-r4-acceptance
 ```
 
 Required result:
@@ -267,26 +286,30 @@ Required result:
 - exact filenames, schemas, headers, and missing values preserved;
 - no additional network request;
 - no visible layout change;
-- affected History and Channel workflow matrix green;
+- affected History and Channel matrices green;
 - permanent plan finalized;
 - temporary R0 note deleted and unlinked;
 - roadmap advances to Phase 5.
 
-Preview rule:
-
-- no Preview for output-compatible internal changes;
-- Preview and production acceptance become mandatory if any accepted visible or serialized contract changes.
-
-## 6. Later phases
+## 5. Later phases
 
 ```text
 Phase 5  next-feature data-capability audit
 Phase 6  one approved major expansion
 ```
 
-Candidates for Phase 5 include Session feasibility, Category/Game, Language, Event layer, local Watchlist, and Alerts. No candidate proceeds directly to implementation.
+Phase 5 candidates:
 
-## 7. Merge report format
+- Session feasibility;
+- Category / Game trends;
+- Language trends;
+- Event layer;
+- local Watchlist;
+- Alerts.
+
+No candidate proceeds directly from an idea to implementation.
+
+## 6. Merge report requirement
 
 After every merge, report:
 
@@ -300,4 +323,4 @@ next PR and completion criteria
 proceed / conditional / stop decision
 ```
 
-Do not begin the next PR before this report is issued.
+Do not begin the next PR before that report is issued.

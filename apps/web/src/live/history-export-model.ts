@@ -3,6 +3,7 @@ import {
   type HistoryReportPayload,
   type HistoryReportProvider,
 } from './history-report-text-state'
+import { finiteNumberOrNull } from '../shared/output/values.js'
 
 type ExportDayInput = {
   day?: string
@@ -103,9 +104,9 @@ export function historyExportModel(
     top_streamers: topStreamers.slice(0, 100).map((streamer) => ({
       streamer_id: cleanOrNull(streamer.streamerId),
       display_name: cleanOrNull(streamer.displayName),
-      viewer_minutes: finiteOrNull(streamer.viewerMinutes),
-      peak_viewers: finiteOrNull(streamer.peakViewers),
-      observed_minutes: finiteOrNull(streamer.observedMinutes),
+      viewer_minutes: finiteNumberOrNull(streamer.viewerMinutes),
+      peak_viewers: finiteNumberOrNull(streamer.peakViewers),
+      observed_minutes: finiteNumberOrNull(streamer.observedMinutes),
     })),
     limitation: 'Observed ViewLoom data; not a provider-wide total.',
   }
@@ -122,11 +123,11 @@ function normalizeDay(
     provider,
     day,
     coverage_state: observed ? coverage : 'missing',
-    viewer_minutes: observed ? finiteOrNull(source?.totalViewerMinutes) : null,
-    peak_viewers: observed ? finiteOrNull(source?.peakViewers) : null,
+    viewer_minutes: observed ? finiteNumberOrNull(source?.totalViewerMinutes) : null,
+    peak_viewers: observed ? finiteNumberOrNull(source?.peakViewers) : null,
     peak_streamer: observed ? cleanOrNull(source?.peakStreamerName) : null,
-    observed_stream_count: observed ? finiteOrNull(source?.observedStreamCount) : null,
-    observed_minutes: observed ? finiteOrNull(source?.observedMinutes) : null,
+    observed_stream_count: observed ? finiteNumberOrNull(source?.observedStreamCount) : null,
+    observed_minutes: observed ? finiteNumberOrNull(source?.observedMinutes) : null,
   }
 }
 
@@ -162,10 +163,6 @@ function clean(value: unknown): string {
 
 function cleanOrNull(value: unknown): string | null {
   return clean(value) || null
-}
-
-function finiteOrNull(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
 function validDay(value: unknown): value is string {

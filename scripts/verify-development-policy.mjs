@@ -15,6 +15,9 @@ const historyAcceptancePath = 'docs/operations/history-production-acceptance-202
 const channelAcceptancePath = 'docs/operations/channel-production-acceptance-2026-06-23.md'
 const channelSpecPath = 'docs/product/channel-and-streamer-spec.md'
 const channelPlanPath = 'docs/product/channel-v1-implementation-plan.md'
+const outputPlanPath = 'docs/product/report-export-consolidation-plan.md'
+const sharedOutputContractPath = 'apps/web/docs/shared-output-r1-contract.md'
+const historyOutputContractPath = 'apps/web/docs/history-output-r2-contract.md'
 
 const requiredFiles = [
   'AGENTS.md',
@@ -32,6 +35,9 @@ const requiredFiles = [
   'docs/product/history-layout-rebuild-plan.md',
   channelSpecPath,
   channelPlanPath,
+  outputPlanPath,
+  sharedOutputContractPath,
+  historyOutputContractPath,
   '.github/pull_request_template.md',
   '.github/workflows/development-policy.yml',
 ]
@@ -81,6 +87,7 @@ if (failures.length === 0) {
     'product/history-layout-rebuild-plan.md',
     'product/channel-and-streamer-spec.md',
     'product/channel-v1-implementation-plan.md',
+    'product/report-export-consolidation-plan.md',
   ]) assert(index.includes(path), `${indexPath}: missing canonical document link: ${path}`)
 
   for (const retired of retiredNotes) {
@@ -89,6 +96,7 @@ if (failures.length === 0) {
 
   assert(index.includes('There is no active History rebuild or Channel v1 working note.'), `${indexPath}: completed working-note state is not recorded.`)
   assert(index.includes('pending History UI appearance revision'), `${indexPath}: pending History UI state is not recorded.`)
+  assert(index.includes('work-in-progress/report-export-r0-audit.md'), `${indexPath}: active Phase 4 audit note is not linked.`)
 
   const governance = read('docs/operations/documentation-governance.md')
   for (const fragment of [
@@ -100,24 +108,58 @@ if (failures.length === 0) {
 
   const roadmap = read('docs/product/current-roadmap.md')
   for (const fragment of [
-    'History & Trends | functional/layout rebuild and production acceptance complete',
-    'Channel / Streamer | v1 implementation and production acceptance complete',
+    'History & Trends | functional and production acceptance complete',
+    'Channel / Streamer | v1 and production acceptance complete',
+    'Report/export shared layer | R0 and R1 complete; R2 active',
     'Phase 4 — Report & Export shared-layer consolidation',
     'Phase 5 — next-feature data-capability audit',
     'efc14295f0a372b96afac740d6a01571f7582210',
-    'History UI appearance work is pending',
+    'History UI appearance work remains pending',
+    'work-report-export-r2-history-adoption',
   ]) assert(roadmap.includes(fragment), `current-roadmap.md: missing ${fragment}`)
 
   const schedule = read('docs/product/current-schedule.md')
   for (const fragment of [
-    'Channel C5B production acceptance         complete',
-    'Channel temporary files and notes         complete through PR #408',
+    'Channel production acceptance            complete',
+    'Report/export R0 boundary audit           complete through PR #409',
+    'Report/export R1 shared primitives        complete through PR #410',
+    'Report/export R2 History adoption         active in PR #411',
     'History UI appearance revision            pending screenshots and instructions',
     'Phase 4 — Report & Export shared-layer consolidation',
-    'R0 — shared Report & Export audit',
+    'R0 — implementation and boundary audit',
     'work-report-export-r0-audit',
-    'Do not begin the next PR before this report is issued.',
+    'Do not begin the next PR before that report is issued.',
   ]) assert(schedule.includes(fragment), `current-schedule.md: missing ${fragment}`)
+
+  const outputPlan = read(outputPlanPath)
+  for (const fragment of [
+    'Status: active implementation plan — R2 active',
+    'R1 contract:',
+    'R2 contract:',
+    'State: completed through PR #410.',
+    'State: active in PR #411.',
+    'finiteNumberOrNull',
+    "spreadsheetSafety: apostrophe",
+    '1000 ms revoke delay',
+    'work-report-export-r3-channel-adoption',
+  ]) assert(outputPlan.includes(fragment), `${outputPlanPath}: missing ${fragment}`)
+
+  const sharedOutputContract = read(sharedOutputContractPath)
+  for (const fragment of [
+    'Status: active Phase 4 R1 contract',
+    'spreadsheet formula protection is opt-in',
+    'numeric strings are not coerced',
+    'the helper returns a neutral operation result',
+  ]) assert(sharedOutputContract.includes(fragment), `${sharedOutputContractPath}: missing ${fragment}`)
+
+  const historyOutputContract = read(historyOutputContractPath)
+  for (const fragment of [
+    'Status: active Phase 4 R2 contract',
+    'viewloom-history-export-v1',
+    'CSV CRLF line endings',
+    '1000 ms object-URL revoke delay',
+    'report copy fallback behavior',
+  ]) assert(historyOutputContract.includes(fragment), `${historyOutputContractPath}: missing ${fragment}`)
 
   const historySpec = read('docs/product/history-and-trends-spec.md')
   for (const fragment of [
@@ -227,6 +269,11 @@ const concurrencyWorkflows = [
   '.github/workflows/history-battle-browser.yml',
   '.github/workflows/history-period-comparison.yml',
   '.github/workflows/history-period-comparison-browser.yml',
+  '.github/workflows/history-export.yml',
+  '.github/workflows/history-export-browser.yml',
+  '.github/workflows/history-report-export-h4.yml',
+  '.github/workflows/history-report-export-h4-browser.yml',
+  '.github/workflows/shared-output-r1.yml',
   '.github/workflows/channel-profile.yml',
   '.github/workflows/channel-profile-browser.yml',
   '.github/workflows/data-status-page.yml',
@@ -259,5 +306,5 @@ console.log('ViewLoom development, documentation, and deployment policy verifica
 console.log(`- ${requiredFiles.length} policy/document files present`)
 console.log('- completed History and Channel working notes remain retired')
 console.log('- permanent History and Channel acceptance records are governed')
-console.log('- Phase 4 shared Report & Export audit is the next scheduled work')
+console.log('- Phase 4 R0 and R1 are complete; History R2 is the active scheduled work')
 console.log(`- ${concurrencyWorkflows.length} active workflows cancel obsolete runs`)

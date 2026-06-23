@@ -1,6 +1,7 @@
 import type { HistoryReportPayload, HistoryReportProvider } from './history-report-text-state'
 import { historyExportModel } from './history-export-model'
 import { historyExportCsv, historyExportJson } from './history-export-serialize'
+import { buildOutputFilename } from '../shared/output/filename.js'
 
 export function renderHistoryExport(payload: HistoryReportPayload): void {
   const provider: HistoryReportProvider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
@@ -23,18 +24,27 @@ export function renderHistoryExport(payload: HistoryReportPayload): void {
   jsonButton.disabled = false
   csvButton.onclick = () => downloadText(
     historyExportCsv(model),
-    `viewloom-${provider}-history-${model.period.from}-${model.period.to}.csv`,
+    historyExportFilename(provider, model.period.from, model.period.to, 'csv'),
     'text/csv;charset=utf-8',
     status,
     'CSV downloaded.',
   )
   jsonButton.onclick = () => downloadText(
     historyExportJson(model),
-    `viewloom-${provider}-history-${model.period.from}-${model.period.to}.json`,
+    historyExportFilename(provider, model.period.from, model.period.to, 'json'),
     'application/json;charset=utf-8',
     status,
     'JSON downloaded.',
   )
+}
+
+export function historyExportFilename(
+  provider: HistoryReportProvider,
+  from: string,
+  to: string,
+  extension: 'csv' | 'json',
+): string {
+  return buildOutputFilename(['viewloom', provider, 'history', from, to], extension)
 }
 
 function ensureMount(): HTMLElement {

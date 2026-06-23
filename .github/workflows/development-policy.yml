@@ -7,7 +7,8 @@ on:
       - 'AGENTS.md'
       - 'CONTRIBUTING.md'
       - 'README.md'
-      - 'docs/operations/development-and-deployment-policy.md'
+      - 'docs/**'
+      - 'apps/web/docs/**'
       - 'scripts/verify-development-policy.mjs'
       - '.github/pull_request_template.md'
       - '.github/workflows/**'
@@ -17,7 +18,8 @@ on:
       - 'AGENTS.md'
       - 'CONTRIBUTING.md'
       - 'README.md'
-      - 'docs/operations/development-and-deployment-policy.md'
+      - 'docs/**'
+      - 'apps/web/docs/**'
       - 'scripts/verify-development-policy.mjs'
       - '.github/pull_request_template.md'
       - '.github/workflows/**'
@@ -34,4 +36,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node scripts/verify-development-policy.mjs
+      - name: Verify development policy
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-development-policy.mjs > development-policy.log 2>&1
+          status=$?
+          cat development-policy.log
+          exit $status
+      - name: Upload development policy diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: development-policy-diagnostics
+          path: development-policy.log
