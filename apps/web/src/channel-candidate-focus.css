@@ -1,0 +1,8 @@
+.channel-profile-page a:focus,
+.channel-profile-page button:focus,
+.channel-report-preview:focus {
+  outline-width: 3px !important;
+  outline-style: solid !important;
+  outline-color: var(--accent) !important;
+  outline-offset: 2px !important;
+}
