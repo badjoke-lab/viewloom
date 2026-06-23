@@ -7,6 +7,7 @@ const read = (path) => readFileSync(join(root, path), 'utf8')
 const assert = (condition, message) => { if (!condition) failures.push(message) }
 
 const completedHistoryWorkingNote = 'docs/work-in-progress/history-layout-rebuild-working-note.md'
+const activeChannelAudit = 'docs/work-in-progress/channel-v1-audit.md'
 const requiredFiles = [
   'AGENTS.md',
   'CONTRIBUTING.md',
@@ -20,6 +21,7 @@ const requiredFiles = [
   'docs/product/current-schedule.md',
   'docs/product/history-and-trends-spec.md',
   'docs/product/history-layout-rebuild-plan.md',
+  activeChannelAudit,
   '.github/pull_request_template.md',
   '.github/workflows/development-policy.yml',
 ]
@@ -61,9 +63,11 @@ if (failures.length === 0) {
     'product/current-schedule.md',
     'product/history-and-trends-spec.md',
     'product/history-layout-rebuild-plan.md',
+    'work-in-progress/channel-v1-audit.md',
   ]) assert(index.includes(path), `${indexPath}: missing canonical document link: ${path}`)
   assert(!index.includes(completedHistoryWorkingNote.replace('docs/', '')), `${indexPath}: completed History working note is still linked.`)
   assert(index.includes('There is no active History rebuild working note.'), `${indexPath}: completed History working-note state is not recorded.`)
+  assert(index.includes('The Channel audit note is temporary.'), `${indexPath}: active Channel audit lifecycle is not recorded.`)
 
   const governance = read('docs/operations/documentation-governance.md')
   for (const fragment of [
@@ -85,8 +89,8 @@ if (failures.length === 0) {
   for (const fragment of [
     'History production acceptance H7     complete',
     'Phase 3 preparation — Channel / Streamer v1 audit and specification reset',
-    'H7 — Preview, production, and document closure',
-    'temporary working-note retirement',
+    'C0 — current implementation and data audit',
+    'C1 — Channel permanent specification and implementation plan',
   ]) assert(schedule.includes(fragment), `current-schedule.md: missing ${fragment}`)
 
   const historySpec = read('docs/product/history-and-trends-spec.md')
@@ -116,6 +120,16 @@ if (failures.length === 0) {
     '27999024838',
     '7810348478',
   ]) assert(acceptance.includes(fragment), `${acceptancePath}: missing ${fragment}`)
+
+  const channelAudit = read(activeChannelAudit)
+  for (const fragment of [
+    'Status: active temporary note',
+    'retained daily Top 10 ranking footprint',
+    'Not confirmed offline',
+    'What the current data cannot prove',
+    'C1 specification',
+    'no Channel runtime behavior changes',
+  ]) assert(channelAudit.includes(fragment), `${activeChannelAudit}: missing ${fragment}`)
 
   for (const entryPath of ['AGENTS.md', 'CONTRIBUTING.md']) {
     const entry = read(entryPath)
@@ -197,4 +211,5 @@ if (failures.length) {
 console.log('ViewLoom development, documentation, and deployment policy verification passed.')
 console.log(`- ${requiredFiles.length} policy/document files present`)
 console.log('- completed History working note remains retired')
+console.log('- active Channel v1 audit note is indexed and governed')
 console.log(`- ${concurrencyWorkflows.length} active workflows cancel obsolete runs`)
