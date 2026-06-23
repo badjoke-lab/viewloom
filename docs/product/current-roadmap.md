@@ -42,6 +42,7 @@ accepted SHA: 3cde59cceb09a0c60f48794d6391cf5c356a1b31
 Channel:
 docs/operations/channel-production-acceptance-2026-06-23.md
 accepted SHA: efc14295f0a372b96afac740d6a01571f7582210
+closure PR: #408
 ```
 
 ## 2. Immediate priority
@@ -139,7 +140,7 @@ Exit rule:
 
 ### Phase 3 — Channel / Streamer v1
 
-State: completed on 2026-06-23.
+State: completed on 2026-06-23 through PR #408.
 
 Accepted task structure:
 
@@ -161,7 +162,7 @@ Completion evidence:
 - exact production SHA `efc14295f0a372b96afac740d6a01571f7582210` verified;
 - public Twitch desktop and Kick 390px acceptance passed;
 - permanent acceptance evidence recorded;
-- temporary C0/C5B notes and workflows retired.
+- temporary C0/C5B notes and workflows retired in PR #408.
 
 Accepted product boundary:
 
