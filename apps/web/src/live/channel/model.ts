@@ -44,6 +44,12 @@ export type ChannelHistoryPayload = {
   topStreamers?: ChannelStreamer[]
   daily?: ChannelDay[]
   battleArchive?: ChannelBattleEntry[]
-  coverage?: { notes?: string[] }
+  coverage?: {
+    notes?: string[]
+    observedDays?: number
+    missingDays?: number
+    partialDays?: number
+    inProgressDays?: number
+  }
   error?: { message?: string }
 }

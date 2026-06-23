@@ -6,6 +6,7 @@ import type {
   ChannelProvider,
   ChannelState,
   ChannelStreamer,
+  ChannelView,
 } from './channel/model'
 import {
   channelStateUrl,
@@ -41,6 +42,18 @@ function bindControls(): void {
       if ((next !== '7d' && next !== '30d') || next === state.period) return
       transition({ ...state, period: next, selectedDay: undefined }, 'push')
     })
+  })
+
+  document.querySelectorAll<HTMLButtonElement>('[data-channel-view]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const next = button.dataset.channelView
+      if (!isChannelView(next) || next === state.view) return
+      transition({ ...state, view: next }, 'push')
+    })
+  })
+
+  document.querySelectorAll<HTMLButtonElement>('[data-channel-copy-url]').forEach((button) => {
+    button.addEventListener('click', () => { void copyCurrentUrl(button) })
   })
 }
 
@@ -88,11 +101,23 @@ function syncStateToDom(): void {
     button.classList.toggle('active', active)
     button.setAttribute('aria-pressed', String(active))
   })
+
+  document.querySelectorAll<HTMLButtonElement>('[data-channel-view]').forEach((button) => {
+    const active = button.dataset.channelView === state.view
+    button.classList.toggle('active', active)
+    button.setAttribute('aria-pressed', String(active))
+    button.setAttribute('aria-current', active ? 'page' : 'false')
+  })
+
+  document.querySelectorAll<HTMLElement>('[data-channel-view-panel]').forEach((panel) => {
+    panel.hidden = panel.dataset.channelViewPanel !== state.view
+  })
 }
 
 async function load(): Promise<void> {
   setStatus('Loading', 'loading')
   setText('[data-channel-feedback]', 'Loading retained ranking footprint…')
+  setEvidence('Loading', 'Loading', 'Loading', labelForPeriod())
   if (!state.channelId) return renderMissingId()
 
   controller?.abort()
@@ -129,6 +154,9 @@ function render(payload: ChannelHistoryPayload): void {
     ?? state.requestedName
   ) || state.channelId
   const battles = (payload.battleArchive ?? []).filter(involvesStreamer).slice(0, 5)
+  const requestedDays = payload.period?.days ?? daily.length
+  const observedDays = payload.coverage?.observedDays ?? daily.filter(({ day }) => day.coverageState !== 'missing').length
+  const sourceState = `${humanLabel(payload.source ?? 'unknown')} / ${humanLabel(payload.state ?? 'unknown')}`
 
   document.title = `${displayName} ${providerName} history | ViewLoom`
   setText('[data-channel-name]', displayName)
@@ -136,12 +164,13 @@ function render(payload: ChannelHistoryPayload): void {
   setText('[data-channel-period-label]', payload.period?.label ?? labelForPeriod())
   setStatus(payload.state ?? 'unknown', payload.state ?? 'unknown')
   setText('[data-channel-feedback]', payload.coverage?.notes?.[0] ?? `${appearances.length} retained daily Top 10 appearances in this period.`)
+  setEvidence(sourceState, `${observedDays} / ${requestedDays} days`, `${appearances.length} days`, payload.period?.label ?? labelForPeriod())
   setExternalLink(displayName)
-  renderSummary(periodRow, appearances.length, payload.period?.days)
+  renderSummary(periodRow, appearances.length, requestedDays)
   renderTrend(daily)
   renderDays(appearances)
   renderRivals(battles)
-  renderScope(payload.period?.days, appearances.length)
+  renderScope(requestedDays, appearances.length)
 }
 
 function normalizeSelectedDay(payload: ChannelHistoryPayload): void {
@@ -230,7 +259,7 @@ function renderScope(requestedDays: number | undefined, appearances: number): vo
   setHtml('[data-channel-scope]', `
     <p><strong>Scope:</strong> ${appearances} retained daily Top 10 appearances across ${requestedDays ?? 0} requested days.</p>
     <p>Days without a matching row are not confirmed offline. They only mean the streamer was not present in the retained daily Top 10 payload.</p>
-    <p>Session start/end history is not available in this initial page.</p>
+    <p>Session start/end history is not available from this retained footprint.</p>
     <p><a href="/${provider}/history/?period=${state.period}">Back to ${providerName} History</a></p>`)
 }
 
@@ -238,6 +267,7 @@ function renderMissingId(): void {
   setStatus('Missing channel', 'empty')
   setText('[data-channel-feedback]', 'Open this page from a History streamer ranking or provide an id query parameter.')
   setText('[data-channel-name]', 'Channel not selected')
+  setEvidence('No request', `0 / ${state.period === '7d' ? 7 : 30} days`, '0 days', labelForPeriod())
   setHtml('[data-channel-summary]', '<div class="notice">No channel identifier was provided.</div>')
   setHtml('[data-channel-trend]', '<div class="notice">No retained footprint can be loaded.</div>')
   setHtml('[data-channel-days]', '<div class="notice">No retained days are available.</div>')
@@ -247,10 +277,31 @@ function renderMissingId(): void {
 function renderError(message: string): void {
   setStatus('Error', 'error')
   setText('[data-channel-feedback]', message)
+  setEvidence('Request error', 'Unavailable', 'Unavailable', labelForPeriod())
   setHtml('[data-channel-summary]', '<div class="notice">Channel history could not be loaded.</div>')
   setHtml('[data-channel-trend]', '<div class="notice">No retained daily footprint is available.</div>')
   setHtml('[data-channel-days]', '<div class="notice">No retained days are available.</div>')
   setHtml('[data-channel-rivals]', '<div class="notice">No rivalry candidates are available.</div>')
+}
+
+async function copyCurrentUrl(button: HTMLButtonElement): Promise<void> {
+  const original = button.textContent ?? 'Copy current URL'
+  try {
+    await navigator.clipboard.writeText(location.href)
+    button.textContent = 'Copied'
+    setTextAll('[data-channel-copy-feedback]', 'Current Channel URL copied.')
+  } catch {
+    button.textContent = 'Copy failed'
+    setTextAll('[data-channel-copy-feedback]', 'Copy was unavailable. Use the browser address bar.')
+  }
+  window.setTimeout(() => { button.textContent = original }, 1400)
+}
+
+function setEvidence(sourceState: string, observed: string, appearances: string, period: string): void {
+  setText('[data-channel-source]', sourceState)
+  setText('[data-channel-observed]', observed)
+  setText('[data-channel-appearances]', appearances)
+  setText('[data-channel-period-fact]', period)
 }
 
 function findStreamer(rows: ChannelStreamer[]): ChannelStreamer | undefined {
@@ -280,8 +331,10 @@ function setStatus(label: string, value: string): void {
 }
 
 function setText(selector: string, value: string): void { document.querySelector<HTMLElement>(selector)?.replaceChildren(value) }
+function setTextAll(selector: string, value: string): void { document.querySelectorAll<HTMLElement>(selector).forEach((node) => node.replaceChildren(value)) }
 function setHtml(selector: string, value: string): void { const node = document.querySelector<HTMLElement>(selector); if (node) node.innerHTML = value }
 function labelForPeriod(): string { return state.period === '7d' ? 'Last 7 days' : 'Last 30 days' }
+function isChannelView(value: unknown): value is ChannelView { return value === 'overview' || value === 'days' || value === 'report' }
 function numeric(value: unknown): number { return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, value) : 0 }
 function finiteNumber(value: unknown): value is number { return typeof value === 'number' && Number.isFinite(value) }
 function formatNumber(value: unknown): string { return finiteNumber(value) ? Math.round(Math.max(0, value)).toLocaleString('en-US') : '—' }
