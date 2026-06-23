@@ -1,0 +1,333 @@
+.channel-profile-page {
+  --channel-surface: var(--surface);
+  --channel-raised: var(--surface-raised);
+  --channel-soft: var(--surface-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.channel-profile-page .rule-title {
+  margin: 24px 0 12px;
+}
+
+.channel-profile-page .rule-title h2 {
+  margin-bottom: 0;
+}
+
+.channel-profile-title,
+.channel-selected-day,
+.channel-recent-days,
+.channel-report-main,
+.channel-report-actions {
+  min-width: 0;
+}
+
+.channel-profile-title h1 {
+  max-width: 100%;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(40px, 5vw, 66px);
+}
+
+.channel-profile-title__meta {
+  gap: 9px 12px;
+}
+
+.channel-profile-title__meta a {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid currentColor;
+}
+
+.channel-evidence-facts {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.channel-profile-controls,
+.channel-day-controls {
+  border-color: var(--line-strong);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 6%, transparent), transparent 40%), var(--channel-surface);
+}
+
+.channel-profile-feedback,
+.channel-day-controls p,
+.channel-copy-feedback {
+  color: var(--muted);
+}
+
+.channel-task-tabs {
+  gap: 6px;
+  border-color: var(--line-strong);
+  background: var(--channel-surface);
+}
+
+.channel-task-tabs button {
+  min-height: 48px;
+  color: var(--muted);
+}
+
+.channel-task-tabs button:hover {
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text);
+}
+
+.channel-task-tabs button.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--text);
+  box-shadow: inset 0 -3px 0 var(--accent);
+}
+
+.channel-profile-page a:focus-visible,
+.channel-profile-page button:focus-visible,
+.channel-report-preview:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.channel-profile-summary {
+  gap: 10px;
+}
+
+.channel-profile-summary > div {
+  min-height: 112px;
+  border-color: var(--line-strong);
+  background: var(--channel-surface);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.channel-profile-summary small,
+.channel-profile-summary span {
+  color: var(--muted);
+}
+
+.channel-profile-summary strong {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.channel-summary-card--primary {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--line-strong)) !important;
+  border-top: 3px solid var(--accent) !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent 58%), var(--channel-raised) !important;
+}
+
+.channel-summary-card--primary strong {
+  font-size: 1.62rem;
+}
+
+.channel-profile-surface,
+.channel-profile-scope,
+.channel-day-card,
+.channel-rival-card {
+  border-color: var(--line-strong);
+  background: var(--channel-surface);
+}
+
+.channel-trend-legend span,
+.channel-profile-scope strong,
+.channel-profile-scope a {
+  color: var(--text);
+}
+
+.channel-trend-legend small,
+.channel-profile-scope,
+.channel-rival-card > small,
+.channel-rival-card > div:first-child small {
+  color: var(--muted);
+}
+
+.channel-trend-bars {
+  border: 1px solid var(--line);
+  border-bottom-color: var(--line-strong);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent), #07101d;
+  scrollbar-color: var(--accent) var(--bg-deep);
+}
+
+.channel-trend-bar {
+  background: var(--accent);
+  opacity: 0.68;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: opacity 0.12s ease, filter 0.12s ease;
+}
+
+.channel-trend-column:hover .channel-trend-bar,
+.channel-trend-column:focus-visible .channel-trend-bar {
+  opacity: 0.94;
+  filter: brightness(1.12);
+}
+
+.channel-trend-column--absent .channel-trend-bar {
+  background: repeating-linear-gradient(135deg, rgba(159, 176, 202, 0.28), rgba(159, 176, 202, 0.28) 3px, transparent 3px, transparent 7px);
+  box-shadow: none;
+}
+
+.channel-trend-column--missing .channel-trend-bar {
+  background: repeating-linear-gradient(90deg, rgba(251, 113, 133, 0.3), rgba(251, 113, 133, 0.3) 2px, transparent 2px, transparent 6px);
+  box-shadow: none;
+}
+
+.channel-trend-column--partial .channel-trend-bar {
+  box-shadow: inset 0 0 0 2px var(--warning);
+}
+
+.channel-trend-column.is-selected {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.channel-trend-column--partial .channel-trend-state-mark {
+  color: var(--warning);
+}
+
+.channel-selected-day__facts div,
+.channel-day-card dl > div,
+.channel-rival-card dl > div {
+  border-color: var(--line);
+  background: var(--channel-raised);
+}
+
+.channel-selected-day__facts dt,
+.channel-day-card dt,
+.channel-rival-card dt {
+  color: var(--muted);
+  font-family: var(--mono);
+  letter-spacing: 0.055em;
+}
+
+.channel-selected-day__facts dd,
+.channel-day-card dd,
+.channel-rival-card dd {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.channel-selected-day__absence {
+  border-color: var(--line-strong);
+  background: rgba(159, 176, 202, 0.045);
+}
+
+.channel-selected-day__absence p {
+  color: var(--muted);
+}
+
+.channel-selected-day__actions,
+.channel-day-card__actions {
+  gap: 9px;
+  border-top-color: var(--line);
+}
+
+.channel-selected-day__actions a,
+.channel-day-card__actions a,
+.channel-rival-card > a {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 11px;
+  border: 1px solid var(--line-strong);
+  background: var(--channel-raised);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.channel-selected-day__actions a:hover,
+.channel-day-card__actions a:hover,
+.channel-rival-card > a:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+}
+
+.channel-recent-day {
+  min-height: 58px;
+  border-color: var(--line);
+  background: var(--channel-raised);
+}
+
+.channel-recent-day:hover {
+  border-color: var(--line-strong);
+  background: var(--channel-soft);
+}
+
+.channel-recent-day small {
+  color: var(--muted);
+}
+
+.channel-recent-day > strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.channel-recent-day.is-selected {
+  border-color: var(--accent);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.channel-day-card,
+.channel-rival-card {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.022);
+}
+
+.channel-day-card:hover,
+.channel-rival-card:hover {
+  background: var(--channel-raised);
+}
+
+.channel-day-card__head time,
+.channel-rival-card > div:first-child strong {
+  color: var(--text);
+  font-weight: 750;
+}
+
+.channel-profile-scope {
+  padding: 15px 17px;
+}
+
+.channel-report-main,
+.channel-report-actions {
+  border-color: var(--line-strong);
+  background: var(--channel-surface);
+}
+
+.channel-report-modes button {
+  border-color: var(--line-strong);
+  background: var(--channel-raised);
+  color: var(--muted);
+}
+
+.channel-report-modes button:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.channel-report-modes button.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 13%, var(--channel-raised));
+  color: var(--text);
+  box-shadow: inset 0 -3px 0 var(--accent);
+}
+
+.channel-report-preview {
+  border-color: var(--line-strong);
+  background: #050b14;
+  color: var(--text);
+  scrollbar-color: var(--accent) var(--bg-deep);
+}
+
+.channel-report-feedback,
+.channel-report-limit {
+  color: var(--muted);
+}
+
+.channel-report-feedback[data-state="success"] {
+  color: var(--up);
+}
+
+.channel-report-feedback[data-state="error"] {
+  color: var(--error);
+}

@@ -1,0 +1,216 @@
+@media (max-width: 1050px) {
+  .channel-profile-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .channel-day-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .channel-overview-grid,
+  .channel-report-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .channel-selected-day__facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .channel-report-preview {
+    max-height: 520px;
+  }
+}
+
+@media (max-width: 760px) {
+  .masthead {
+    position: static;
+  }
+
+  .channel-profile-page {
+    gap: 16px;
+  }
+
+  .channel-profile-page .rule-title {
+    align-items: flex-start;
+    margin-top: 20px;
+  }
+
+  .channel-profile-page .rule-title h2 {
+    font-size: 1.55rem;
+  }
+
+  .channel-profile-page .rule-title span {
+    max-width: 44%;
+    text-align: right;
+    font-size: 0.54rem;
+    line-height: 1.35;
+  }
+
+  .channel-profile-title h1 {
+    font-size: clamp(32px, 9vw, 42px);
+    line-height: 0.98;
+  }
+
+  .channel-evidence-facts {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .channel-evidence-facts .fact {
+    min-width: 0;
+    padding: 10px 11px;
+  }
+
+  .channel-evidence-facts .fact strong {
+    overflow-wrap: anywhere;
+    font-size: 0.94rem;
+  }
+
+  .channel-profile-controls {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 11px;
+  }
+
+  .channel-profile-actions {
+    width: 100%;
+  }
+
+  .channel-profile-actions .button {
+    flex: 1 1 150px;
+    min-height: 48px;
+  }
+
+  .channel-task-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .channel-task-tabs button {
+    min-height: 52px;
+    padding: 7px 5px;
+    font-size: 0.72rem;
+  }
+
+  .channel-profile-summary {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .channel-profile-summary > div {
+    min-height: 96px;
+    padding: 12px;
+  }
+
+  .channel-profile-summary .channel-summary-card--primary {
+    grid-column: 1 / -1;
+    min-height: 104px;
+  }
+
+  .channel-profile-summary > div:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .channel-profile-surface {
+    padding: 13px;
+  }
+
+  .channel-trend-legend {
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .channel-trend-legend small {
+    text-align: left;
+  }
+
+  .channel-trend-bars {
+    min-height: 220px;
+    grid-auto-columns: minmax(22px, 1fr);
+  }
+
+  .channel-trend-column {
+    grid-template-rows: minmax(153px, 1fr) auto;
+    min-width: 22px;
+    height: 201px;
+  }
+
+  .channel-day-grid,
+  .channel-rival-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .channel-selected-day__facts,
+  .channel-day-card dl,
+  .channel-rival-card dl {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .channel-selected-day__facts > div:last-child:nth-child(odd),
+  .channel-day-card dl > div:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .channel-selected-day__actions a,
+  .channel-day-card__actions a {
+    flex: 1 1 130px;
+    min-height: 48px;
+  }
+
+  .channel-day-controls {
+    margin-top: 0;
+    padding: 11px;
+  }
+
+  .channel-report-main,
+  .channel-report-actions {
+    padding: 12px;
+  }
+
+  .channel-report-preview {
+    min-height: 300px;
+    max-height: 500px;
+    overflow: auto;
+  }
+
+  .channel-report-modes button,
+  .channel-report-actions button {
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 380px) {
+  .channel-profile-actions {
+    flex-direction: column;
+  }
+
+  .channel-profile-actions .button {
+    width: 100%;
+    flex-basis: auto;
+  }
+
+  .channel-task-tabs button {
+    font-size: 0.66rem;
+  }
+
+  .channel-selected-day__actions {
+    flex-direction: column;
+  }
+
+  .channel-selected-day__actions a {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .channel-profile-page *,
+  .channel-profile-page *::before,
+  .channel-profile-page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

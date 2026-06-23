@@ -1,0 +1,24 @@
+.channel-profile-page a:focus,
+.channel-profile-page button:focus,
+.channel-report-preview:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (min-width: 381px) and (max-width: 760px) {
+  .channel-profile-actions {
+    flex-direction: row;
+  }
+
+  .channel-profile-actions .button {
+    flex: 1 1 140px;
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 380px) {
+  .channel-selected-day__actions a {
+    flex: 0 0 auto;
+    min-height: 48px;
+  }
+}
