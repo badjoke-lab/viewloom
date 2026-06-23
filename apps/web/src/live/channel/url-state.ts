@@ -34,6 +34,7 @@ export function channelStateUrl(currentUrl: URL, state: ChannelState): string {
   if (state.requestedName) url.searchParams.set('name', state.requestedName)
   else url.searchParams.delete('name')
 
+  // The default 30-day Overview remains the clean canonical Channel state.
   if (state.period === '7d') url.searchParams.set('period', '7d')
   else url.searchParams.delete('period')
 
