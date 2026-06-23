@@ -41,6 +41,8 @@ jobs:
           path: |
             /tmp/channel-overview-twitch-desktop.png
             /tmp/channel-overview-kick-mobile.png
+            /tmp/channel-c4a-twitch-desktop.png
+            /tmp/channel-c4a-kick-mobile.png
             /tmp/channel-overview-browser.log
             /tmp/channel-overview-preview.log
           if-no-files-found: warn
