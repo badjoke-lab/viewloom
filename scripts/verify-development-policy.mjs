@@ -111,6 +111,7 @@ if (failures.length === 0) {
   const schedule = read('docs/product/current-schedule.md')
   for (const fragment of [
     'Channel C5B production acceptance         complete',
+    'Channel temporary files and notes         complete through PR #408',
     'History UI appearance revision            pending screenshots and instructions',
     'Phase 4 — Report & Export shared-layer consolidation',
     'R0 — shared Report & Export audit',
