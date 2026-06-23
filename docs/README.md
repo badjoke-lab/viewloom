@@ -31,7 +31,7 @@ Before changing ViewLoom, read:
 - [`operations/cloudflare-verification-2026-06-21.md`](operations/cloudflare-verification-2026-06-21.md) — Cloudflare production and Preview configuration verification
 - [`operations/production-smoke-runbook.md`](operations/production-smoke-runbook.md) — permanent production smoke contract
 - [`operations/history-production-acceptance-2026-06-23.md`](operations/history-production-acceptance-2026-06-23.md) — completed Twitch/Kick History acceptance
-- [`operations/channel-production-acceptance-2026-06-23.md`](operations/channel-production-acceptance-2026-06-23.md) — completed Twitch/Kick Channel acceptance
+- [`operations/channel-production-acceptance-2026-06-23.md`](operations/channel-production-acceptance-2026-06-23.md) — completed Twitch/Kick Channel acceptance and PR #408 closure evidence
 
 ## Active temporary working notes
 
