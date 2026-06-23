@@ -23,14 +23,20 @@ The addendum contains the later verified Cloudflare state and documentation-firs
 
 - [`product/current-roadmap.md`](product/current-roadmap.md) — current product state and ordered roadmap
 - [`product/current-schedule.md`](product/current-schedule.md) — execution windows, entry criteria, and completion criteria
-- [`product/history-and-trends-spec.md`](product/history-and-trends-spec.md) — permanent History & Trends product specification
-- [`product/history-layout-rebuild-plan.md`](product/history-layout-rebuild-plan.md) — current History layout implementation plan
+- [`product/history-and-trends-spec.md`](product/history-and-trends-spec.md) — accepted History & Trends product specification
+- [`product/history-layout-rebuild-plan.md`](product/history-layout-rebuild-plan.md) — completed History rebuild implementation record
+
+## Permanent acceptance records
+
+- [`operations/cloudflare-verification-2026-06-21.md`](operations/cloudflare-verification-2026-06-21.md) — Cloudflare production and Preview configuration verification
+- [`operations/production-smoke-runbook.md`](operations/production-smoke-runbook.md) — permanent production smoke contract
+- [`operations/history-production-acceptance-2026-06-23.md`](operations/history-production-acceptance-2026-06-23.md) — completed Twitch/Kick History Preview and production acceptance
 
 ## Active temporary working notes
 
-- [`work-in-progress/history-layout-rebuild-working-note.md`](work-in-progress/history-layout-rebuild-working-note.md)
+There is no active History rebuild working note. The History H1–H7 milestone completed production acceptance on 2026-06-23, and its temporary note was retired after stable decisions were transferred into permanent documentation.
 
-A file in `work-in-progress/` is deliberately temporary. It may contain screenshots, defects, unresolved decisions, PR slicing notes, and implementation reminders that do not belong in a permanent specification.
+A future file in `work-in-progress/` is deliberately temporary. It may contain screenshots, defects, unresolved decisions, PR slicing notes, and implementation reminders that do not belong in a permanent specification.
 
 When the associated work is complete:
 
