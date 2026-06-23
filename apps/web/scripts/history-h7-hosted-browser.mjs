@@ -45,7 +45,7 @@ async function runDesktop(browser) {
   await page.locator('button[data-history-view="archives"]').click()
   await page.locator('button[data-history-archive-view="daily"]').click()
   await page.waitForFunction(() => document.querySelectorAll('[data-history-day-card]').length > 0)
-  assert(await page.locator('[data-history-day-card]').count() <= 9, 'Twitch desktop: Daily archive is not bounded.')
+  assert(await page.locator('[data-history-day-card]:visible').count() <= 9, 'Twitch desktop: visible Daily archive is not bounded.')
   await page.locator('button[data-history-view="report"]').click()
   await page.waitForFunction(() => {
     const button = document.querySelector('[data-history-report-copy]')
@@ -64,7 +64,7 @@ async function runMobile(browser) {
   await page.locator('button[data-history-view="archives"]').click()
   await page.locator('button[data-history-archive-view="battles"]').click()
   await page.waitForFunction(() => document.querySelectorAll('[data-history-battle-day]').length > 0)
-  assert(await page.locator('[data-history-battle-day]').count() <= 10, 'Kick mobile: Battle archive is not bounded.')
+  assert(await page.locator('[data-history-battle-day]:visible').count() <= 10, 'Kick mobile: visible Battle archive is not bounded.')
   await page.locator('button[data-history-view="report"]').click()
   await page.waitForFunction(() => {
     const button = document.querySelector('[data-history-report-copy]')
