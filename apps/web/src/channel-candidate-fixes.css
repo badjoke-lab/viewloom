@@ -8,3 +8,10 @@
     min-height: 48px;
   }
 }
+
+@media (max-width: 380px) {
+  .channel-selected-day__actions a {
+    flex: 0 0 auto;
+    min-height: 48px;
+  }
+}
