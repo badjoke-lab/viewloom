@@ -45,6 +45,7 @@ async function desktopGate(browser) {
   assert(firstText?.includes('No reversal or exact event time inferred.'), 'Desktop: non-inference statement is missing.')
 
   const firstDay = await cards.first().getAttribute('data-history-battle-day')
+  assert(firstDay, 'Desktop: first Battle card day is missing.')
   const href = await cards.first().locator('a').getAttribute('href')
   assert(href?.startsWith('/twitch/battle-lines/?'), 'Desktop: Twitch Battle Lines link is wrong.')
   assert(href?.includes('battle=alpha-0%3Abeta-0'), 'Desktop: selected battle pair is missing from the link.')
@@ -54,10 +55,18 @@ async function desktopGate(browser) {
   await page.waitForFunction(() => document.querySelectorAll('[data-history-battle-day]').length === 12)
   assert((await page.locator('[data-history-battle-toggle]').textContent())?.includes('Show top 10'), 'Desktop: expanded toggle label is wrong.')
 
+  await page.evaluate((day) => {
+    const chartDay = document.querySelector(`.history-day-column[data-history-day="${day}"]`)
+    if (!chartDay) throw new Error(`Desktop: chart target for ${day} is missing.`)
+    document.documentElement.dataset.historyBattleKeyboardTargeted = 'false'
+    chartDay.addEventListener('click', () => {
+      document.documentElement.dataset.historyBattleKeyboardTargeted = 'true'
+    }, { once: true })
+  }, firstDay)
   const expandedFirst = page.locator('[data-history-battle-day]').first()
   await expandedFirst.focus()
   await page.keyboard.press('Enter')
-  await page.waitForFunction((day) => new URL(location.href).searchParams.get('day') === day, firstDay)
+  await page.waitForFunction(() => document.documentElement.dataset.historyBattleKeyboardTargeted === 'true')
   await assertNoOverflow(page, 'Desktop')
   await page.screenshot({ path: '/tmp/history-battle-twitch-desktop.png', fullPage: true })
   await context.close()
