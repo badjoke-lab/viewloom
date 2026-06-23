@@ -3,17 +3,17 @@
 Status: source of truth
 Last updated: 2026-06-23
 
-This schedule reflects the verified repository and production state. Earlier windows that treated the History rebuild as future work are historical and no longer control execution.
+This schedule reflects the verified repository and production state. Earlier windows that treated History or the Channel audit as future work are historical and no longer control execution.
 
 ## 1. Scheduling rules
 
 - Phase order matters more than calendar dates.
 - P0 production failures interrupt the schedule immediately.
-- P1 defects interrupt the active phase when they block its acceptance criteria.
+- P1 defects interrupt the active phase when they block acceptance.
 - P2 polish is grouped unless it belongs to the active milestone.
-- A phase is complete only when repository checks, required browser checks, Preview requirements, and production verification are complete.
-- GitHub merge status alone does not complete a phase.
-- Each implementation PR must cite the roadmap phase, permanent specification, implementation plan, and active working note when one exists.
+- GitHub merge status alone does not complete a runtime phase.
+- Runtime completion requires repository checks, browser checks, required Preview validation, exact production deployment identity, and public verification.
+- Every implementation PR cites the roadmap phase, permanent specification, implementation plan, and active working note.
 - `work-*` branches are ordinary implementation branches and do not receive Cloudflare Preview deployments.
 - deliberate hosted validation uses an approved `preview-*` branch.
 
@@ -29,6 +29,8 @@ History layout rebuild H1–H6         complete
 History Preview acceptance H7        complete
 History production acceptance H7     complete
 History temporary-note lifecycle     complete
+Channel C0 audit                      complete through PR #398
+Channel C1 specification             active in work-channel-c1
 ```
 
 Accepted History production SHA:
@@ -37,254 +39,282 @@ Accepted History production SHA:
 3cde59cceb09a0c60f48794d6391cf5c356a1b31
 ```
 
+Current main before the C1 documentation PR:
+
+```text
+e7929a48a736a60f8439f4747a0b18118181358b
+```
+
 Current active phase:
 
 ```text
-Phase 3 preparation — Channel / Streamer v1 audit and specification reset
+Phase 3 — Channel / Streamer v1
+C1 — permanent specification and implementation plan
+```
+
+Next executable runtime step after C1 merge:
+
+```text
+C2A — Channel state, URL, popstate, and one-request foundation
+branch: work-channel-c2-state
 ```
 
 ## 3. Completed History execution record
 
-### H0 — documentation and baseline
+### H0–H7
 
 State: completed.
 
-Delivered:
-
-- canonical documentation index;
-- current roadmap and schedule;
-- permanent History specification;
-- History layout implementation plan;
-- temporary working note and deletion rule;
-- production screenshot baseline and defect inventory.
-
-### H1 — layout contract and navigation state
-
-State: completed through PR #390.
-
-Delivered:
-
-- Overview / Archives / Report & Export view contract;
-- URL and deep-link state;
-- accessible task tabs;
-- Back and Forward restoration;
-- provider, period, metric, custom-date, and selected-day preservation;
-- no additional History request when switching tasks.
-
-### H2 — Overview rebuild
-
-State: completed through PR #391.
-
-Delivered:
-
-- compact header and control hierarchy;
-- KPI and coverage summary;
-- chart-first primary analysis;
-- selected-day inspector;
-- compact previous-period comparison;
-- calendar and Top streamers in the primary flow;
-- responsive desktop/mobile order.
-
-### H3 — Archives rebuild
-
-State: completed through PR #392.
-
-Delivered:
-
-- Daily / Peaks / Battles subviews;
-- one visible archive type at a time;
-- bounded initial results;
-- featured and typed archive entries;
-- provider-safe links;
-- desktop/mobile/keyboard archive access.
-
-### H4 — Report & Export consolidation
-
-State: completed through PR #393.
-
-Delivered:
-
-- Full report and Short post mode switch;
-- on-demand share-card preview;
-- one action group for copy, PNG, CSV, and JSON;
-- loaded-payload reuse;
-- preserved missing-value, provider, filename, and export contracts;
-- responsive action layout.
-
-### H5 — visual-system and responsive pass
-
-State: completed through PR #394.
-
-Delivered:
-
-- shared dark surface hierarchy;
-- readable typography and spacing;
-- visible focus and non-color state symbols;
-- reduced-motion behavior;
-- desktop, tablet, and 390px mobile layouts;
-- no page-level horizontal overflow.
-
-### H6 — complete candidate QA
-
-State: completed through PR #395.
-
-Delivered:
-
-- complete latest-HEAD History and shared-web workflow matrix;
-- Twitch/Kick desktop, tablet, and mobile artifacts;
-- shell, Overview, Archives, Peak, Battle, comparison, export, Status, and Channel regressions;
-- full-page visual review.
-
-### H7 — Preview, production, and document closure
-
-State: completed through PR #396 and the production acceptance gate.
-
-Delivered:
-
-- deliberate `preview-history-h7` deployment;
-- separate Preview Twitch/Kick D1 binding verification;
-- real retained-data API verification;
-- Twitch desktop and Kick 390px hosted browser acceptance;
-- exact production deployment identity verification;
-- public marker absence and explicit 404 verification;
-- production desktop/mobile browser acceptance;
-- permanent acceptance record;
-- roadmap and schedule transition;
-- temporary working-note retirement.
-
-Permanent record:
+Permanent records:
 
 ```text
+docs/product/history-and-trends-spec.md
+docs/product/history-layout-rebuild-plan.md
 docs/operations/history-production-acceptance-2026-06-23.md
 ```
 
-## 4. Next execution window — Channel / Streamer v1 preparation
+Accepted result:
 
-Target: begin after this documentation cleanup merges.
+- Overview / Archives / Report & Export task model;
+- provider-specific Twitch and Kick History;
+- complete candidate matrix;
+- deliberate Cloudflare Preview verification;
+- exact production SHA acceptance;
+- temporary-note retirement.
+
+## 4. Channel execution window
+
+Permanent governing documents:
+
+```text
+docs/product/channel-and-streamer-spec.md
+docs/product/channel-v1-implementation-plan.md
+```
+
+Active temporary evidence and implementation note:
+
+```text
+docs/work-in-progress/channel-v1-audit.md
+```
 
 ### C0 — current implementation and data audit
 
-Target duration: 1–2 workdays.
+State: completed through PR #398.
 
-Deliverables:
+Merge SHA:
 
-- identify current Twitch/Kick Channel routes, APIs, entry files, state, styles, and browser gates;
-- document retained fields actually available for 7-day and 30-day use;
-- identify claims that cannot be made from retained Top 10 appearances;
-- inventory current provider-safe links and export code;
-- capture desktop/mobile production baseline;
-- list P0/P1 defects separately from planned expansion.
+```text
+e7929a48a736a60f8439f4747a0b18118181358b
+```
 
-Completion criteria:
+Production baseline evidence:
 
-- current behavior and data limits are written down;
-- unsupported exact-session claims are explicitly excluded;
-- provider separation and Free-plan constraints are confirmed;
-- no implementation begins from an old plan alone.
+```text
+workflow run: 28004912659
+artifact id:  7812384078
+```
+
+Completed criteria:
+
+- current Twitch/Kick routes, files, API path, payload fields, styles, and gates recorded;
+- supported and unsupported retained-observation claims fixed;
+- provider separation and absence/session honesty rules fixed;
+- real Twitch desktop and Kick 390px production baselines captured;
+- primary mobile defect identified: 17 retained Kick days expanded by default;
+- no Channel runtime behavior changed.
 
 ### C1 — Channel permanent specification and implementation plan
 
-Target duration: 1 workday.
+State: active; completes when the C1 documentation PR merges green.
+
+Branch:
+
+```text
+work-channel-c1
+```
 
 Deliverables:
 
 - permanent Channel / Streamer v1 specification;
-- state, URL, period, coverage, and export contracts;
-- PR-sliced implementation plan;
-- browser and production acceptance matrix;
-- temporary working note only when unresolved decisions require one.
+- accepted `Overview / Retained Days / Report & Export` task structure;
+- URL, period, selected-day, state, provider, and request contracts;
+- retained-day default bound of six;
+- deterministic rivalry ordering;
+- copy, CSV, and JSON contracts;
+- `noindex,follow` rule for query-based dynamic identities;
+- responsive, accessibility, Preview, production, and cleanup acceptance matrix;
+- seven-step implementation/acceptance PR plan.
 
 Completion criteria:
 
 - scope and non-goals are fixed;
 - retained observation language is explicit;
-- roadmap and plan agree on the first implementation PR.
+- first runtime branch and completion tests are unambiguous;
+- docs index and policy verifier require the permanent documents;
+- full documentation-triggered workflow matrix is green.
 
-### C2 — Channel shell and period state
+### C2A — module and state foundation
 
-Target duration: 1–2 workdays.
+State: queued immediately after C1.
 
-Provisional scope:
+Target: 1–2 focused workdays.
 
-- provider-specific route and page state;
-- 7-day / 30-day period controls;
-- clean URL and Back/Forward behavior;
-- shared loading, partial, stale, empty, error, and demo states;
-- no invented session timeline.
+Branch:
 
-Entry criteria:
+```text
+work-channel-c2-state
+```
 
-- C0 and C1 merged;
-- current build and production smoke green.
+Scope:
 
-### C3 — retained trend and appearances
-
-Target duration: 2–3 workdays.
-
-Provisional scope:
-
-- retained appearance summary;
-- viewer-minute and peak facts supported by current payload;
-- trend and comparison language constrained by coverage;
-- links back to History and relevant daily/rivalry views.
-
-### C4 — rivalry, copy, and export
-
-Target duration: 1–2 workdays.
-
-Provisional scope:
-
-- retained rivalry candidates;
-- copyable provider-specific summary;
-- CSV / JSON export;
-- consistent filenames and null/blank behavior;
-- no cross-provider request or output.
-
-### C5 — visual, browser, Preview, and production acceptance
-
-Target duration: 1–2 workdays.
+- add focused Channel model/state/URL/payload modules;
+- parse provider, id, name, period, view, and selected day;
+- default period to 30d;
+- normalize Overview to the clean URL;
+- add Back/Forward restoration;
+- preserve missing-id no-request behavior;
+- make task/day state reuse the loaded payload;
+- make period changes perform exactly one provider History request;
+- avoid visible redesign in this state-foundation PR.
 
 Completion criteria:
 
-- full latest-HEAD matrix green;
-- desktop/tablet/mobile and keyboard acceptance;
-- deliberate `preview-*` verification where required;
-- exact production SHA and public smoke verification;
-- stable decisions transferred to permanent docs;
-- temporary note removed when used.
+- direct links and invalid-state fallback pass;
+- Back/Forward passes;
+- task/day changes do not fetch;
+- period changes fetch once;
+- Twitch/Kick remain separated;
+- existing Channel browser contract remains green.
+
+### C2B — task shell and evidence header
+
+State: queued.
+
+Target: 1–2 focused workdays.
+
+Scope:
+
+- add Overview / Retained Days / Report & Export navigation;
+- show one task at a time;
+- expose provider, period, source/state, observed scope, retained appearances, and session limitation near the top;
+- add Copy current URL;
+- add keyboard/focus contract;
+- add `noindex,follow` metadata;
+- keep all existing data reachable.
+
+### C3 — Overview and selected-day interpretation
+
+State: queued.
+
+Target: 2–3 focused workdays.
+
+Scope:
+
+- primary Viewer-minutes / Peak viewers hierarchy;
+- supporting Average viewers / Observed time / retained-day count;
+- readable 7-day and 30-day retained trend;
+- retained / absent / missing / partial distinction;
+- selected-day interpretation and provider-safe links;
+- maximum three recent-day and three rivalry previews;
+- compact empty-rivalry state.
+
+### C4A — bounded Retained Days and rivalry
+
+State: queued.
+
+Target: 1–2 focused workdays.
+
+Scope:
+
+- move the complete daily archive into Retained Days;
+- default to six visible entries;
+- add Show all / Show recent and counts;
+- preserve newest-first order;
+- synchronize selected day;
+- prevent nested-link double activation;
+- sort rivalry candidates by score, day, gap, and stable id;
+- preserve daily-aggregate evidence language.
+
+### C4B — Report & Export
+
+State: queued.
+
+Target: 1–2 focused workdays.
+
+Scope:
+
+- Full summary / Short post;
+- Copy summary;
+- provider-specific CSV and JSON;
+- loaded-payload reuse;
+- blank CSV / null JSON missing values;
+- provider/channel/period filenames;
+- no PNG in Channel v1.
+
+### C5A — visual, responsive, accessibility, and candidate QA
+
+State: queued.
+
+Target: 2 focused workdays.
+
+Scope:
+
+- accepted ViewLoom dark surface hierarchy;
+- primary/supporting fact hierarchy;
+- desktop, tablet, 390px, and 360px reconciliation;
+- mobile touch sizes and long-text wrapping;
+- keyboard, focus, non-color states, and reduced motion;
+- complete latest-HEAD Channel and affected shared workflow matrix;
+- Twitch/Kick desktop/mobile full-page artifact review.
+
+### C5B — Preview, production, and documentation closure
+
+State: queued.
+
+Target: 1–2 focused workdays.
+
+Preview branch:
+
+```text
+preview-channel-v1
+```
+
+Completion criteria:
+
+- separate Preview Twitch/Kick bindings verified with real retained data;
+- provider-specific desktop/mobile browser acceptance passes;
+- exact main deployment SHA verified through `/deployment.json`;
+- public Twitch/Kick Channel smoke and browser checks pass;
+- permanent acceptance evidence records run and artifact ids;
+- roadmap and schedule advance;
+- milestone-only acceptance files are deleted;
+- the Channel temporary audit note is deleted and unlinked.
 
 ## 5. Work after Channel
 
 ### Report/export component consolidation
 
-Target duration: 3–4 workdays after Channel production acceptance.
+State: blocked by Channel production acceptance.
 
 Scope:
 
-- reuse accepted History and Channel report/share/export primitives;
-- standardize labels, filenames, coverage copy, status text, and responsive actions;
-- remove duplication without changing data contracts.
+- reuse accepted History and Channel output primitives;
+- standardize labels, filenames, coverage copy, status messages, and responsive actions;
+- remove duplication without changing data semantics.
 
 ### Next-feature data-capability audit
 
-Target duration: 2–4 workdays after component consolidation.
+State: blocked by component consolidation.
 
-Scope:
+Candidates:
 
 - Session feasibility;
 - Category/Game and Language retention;
-- Event-layer inputs;
-- Watchlist/Alerts data and cost;
-- Free-plan compatibility;
-- one recommended next major feature.
-
-### One approved expansion
-
-Begin only after the audit updates the roadmap and permanent specifications.
+- Event layer;
+- Watchlist and Alerts;
+- one honest Free-plan-compatible expansion.
 
 ## 6. Status update format
-
-When updating this schedule, use:
 
 ```text
 Phase:
@@ -296,4 +326,4 @@ Blockers:
 Next executable step:
 ```
 
-Do not mark a phase complete because implementation exists on a branch. Completion requires all listed repository, hosted, and production criteria.
+Do not mark a runtime phase complete merely because implementation exists on a branch.

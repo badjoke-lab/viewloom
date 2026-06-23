@@ -8,6 +8,8 @@ const assert = (condition, message) => { if (!condition) failures.push(message) 
 
 const completedHistoryWorkingNote = 'docs/work-in-progress/history-layout-rebuild-working-note.md'
 const activeChannelAudit = 'docs/work-in-progress/channel-v1-audit.md'
+const channelSpecPath = 'docs/product/channel-and-streamer-spec.md'
+const channelPlanPath = 'docs/product/channel-v1-implementation-plan.md'
 const requiredFiles = [
   'AGENTS.md',
   'CONTRIBUTING.md',
@@ -21,6 +23,8 @@ const requiredFiles = [
   'docs/product/current-schedule.md',
   'docs/product/history-and-trends-spec.md',
   'docs/product/history-layout-rebuild-plan.md',
+  channelSpecPath,
+  channelPlanPath,
   activeChannelAudit,
   '.github/pull_request_template.md',
   '.github/workflows/development-policy.yml',
@@ -63,6 +67,8 @@ if (failures.length === 0) {
     'product/current-schedule.md',
     'product/history-and-trends-spec.md',
     'product/history-layout-rebuild-plan.md',
+    'product/channel-and-streamer-spec.md',
+    'product/channel-v1-implementation-plan.md',
     'work-in-progress/channel-v1-audit.md',
   ]) assert(index.includes(path), `${indexPath}: missing canonical document link: ${path}`)
   assert(!index.includes(completedHistoryWorkingNote.replace('docs/', '')), `${indexPath}: completed History working note is still linked.`)
@@ -88,9 +94,10 @@ if (failures.length === 0) {
   const schedule = read('docs/product/current-schedule.md')
   for (const fragment of [
     'History production acceptance H7     complete',
-    'Phase 3 preparation — Channel / Streamer v1 audit and specification reset',
-    'C0 — current implementation and data audit',
-    'C1 — Channel permanent specification and implementation plan',
+    'Channel C0 audit                      complete through PR #398',
+    'C1 — permanent specification and implementation plan',
+    'C2A — Channel state, URL, popstate, and one-request foundation',
+    'work-channel-c2-state',
   ]) assert(schedule.includes(fragment), `current-schedule.md: missing ${fragment}`)
 
   const historySpec = read('docs/product/history-and-trends-spec.md')
@@ -133,6 +140,29 @@ if (failures.length === 0) {
     '7812384078',
     'C0 state: completed in PR #398',
   ]) assert(channelAudit.includes(fragment), `${activeChannelAudit}: missing ${fragment}`)
+
+  const channelSpec = read(channelSpecPath)
+  for (const fragment of [
+    'Status: permanent product specification',
+    'Overview',
+    'Retained Days',
+    'Report & Export',
+    'Default visible count:',
+    '```text\n6\n```',
+    'noindex,follow',
+    'Not confirmed offline',
+    'deliberate `preview-*` branch',
+  ]) assert(channelSpec.includes(fragment), `${channelSpecPath}: missing ${fragment}`)
+
+  const channelPlan = read(channelPlanPath)
+  for (const fragment of [
+    'Status: active implementation plan',
+    'C2A — module and state foundation',
+    'C5B — Cloudflare Preview, production acceptance, and documentation closure',
+    'work-channel-c2-state',
+    'preview-channel-v1',
+    '10–15 focused workdays',
+  ]) assert(channelPlan.includes(fragment), `${channelPlanPath}: missing ${fragment}`)
 
   for (const entryPath of ['AGENTS.md', 'CONTRIBUTING.md']) {
     const entry = read(entryPath)
@@ -214,5 +244,6 @@ if (failures.length) {
 console.log('ViewLoom development, documentation, and deployment policy verification passed.')
 console.log(`- ${requiredFiles.length} policy/document files present`)
 console.log('- completed History working note remains retired')
-console.log('- completed Channel C0 audit is indexed and retained for C1')
+console.log('- permanent Channel v1 specification and implementation plan are governed')
+console.log('- completed Channel C0 audit remains active as the implementation note')
 console.log(`- ${concurrencyWorkflows.length} active workflows cancel obsolete runs`)
