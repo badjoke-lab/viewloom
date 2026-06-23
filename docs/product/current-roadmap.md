@@ -1,7 +1,7 @@
 # ViewLoom current roadmap
 
 Status: source of truth
-Last updated: 2026-06-23
+Last updated: 2026-06-24
 
 ## 1. Current product state
 
@@ -29,7 +29,7 @@ Current feature state:
 | History & Trends | functional/layout rebuild and production acceptance complete | maintain accepted behavior; visual revision pending separate instructions |
 | Data Status | production core complete | maintain |
 | Channel / Streamer | v1 implementation and production acceptance complete | maintain accepted retained-footprint contract |
-| Report/export shared layer | not yet consolidated | next executable phase, non-visual first |
+| Report/export shared layer | R0 boundary audit active | consolidate neutral internals only |
 | Session / Category / Watchlist / Alerts | not approved | data-capability audit required first |
 
 Permanent acceptance records:
@@ -47,27 +47,48 @@ closure PR: #408
 
 ## 2. Immediate priority
 
-Channel C0–C5B is closed. The next executable milestone is:
+Phase 4 R0 is active:
 
-> Audit and consolidate stable Report & Export primitives without changing History or Channel semantics, layout, or CSS.
+> Audit the current History and Channel Report & Export implementations, freeze the safe shared boundary, and produce a PR-sliced internal consolidation plan without changing runtime output or UI.
 
-The first work in this phase is deliberately non-visual:
+Governing documents:
 
-- provider labels;
-- period and coverage labels;
-- filename generation and sanitization;
-- CSV escaping;
-- JSON missing-value policy;
-- clipboard and download result handling;
-- shared type and test contracts.
+```text
+docs/product/report-export-consolidation-plan.md
+docs/work-in-progress/report-export-r0-audit.md
+```
+
+R0 has fixed the safe shared boundary.
+
+Safe neutral candidates:
+
+- provider type and provider display name;
+- filename-segment sanitization;
+- filename composition from feature-owned segments;
+- CSV syntax escaping;
+- finite number to blank string;
+- finite number to `null`;
+- clipboard transport with fallback;
+- text-file Blob download transport;
+- internal success/failure result type.
+
+The following remain feature-owned:
+
+- report and short-post prose;
+- CSV headers and row models;
+- JSON schemas and builders;
+- coverage, source/state, and limitation wording;
+- History PNG/share-card model and canvas rendering;
+- payload capture and request lifecycle;
+- DOM selectors, HTML templates, CSS, action order, and visible status copy.
 
 History UI appearance work is pending because screenshots and detailed instructions are not currently available. Until those arrive:
 
 - do not redesign History;
 - do not alter History DOM structure or CSS for consolidation convenience;
 - do not make speculative visual fixes;
-- stop any shared-layer change that would alter accepted History rendering;
-- continue with pure helpers, contracts, tests, and data-capability work that does not affect the visible UI.
+- stop or defer any shared-layer adoption that would alter accepted History rendering or serialized output;
+- continue only with neutral helpers, contracts, and tests that do not affect the visible UI.
 
 ## 3. Ordered roadmap
 
@@ -176,47 +197,127 @@ Accepted product boundary:
 
 ### Phase 4 — Report & Export shared-layer consolidation
 
-State: active after Channel closure.
+State: R0 active.
+
+Permanent plan:
+
+```text
+docs/product/report-export-consolidation-plan.md
+```
+
+Temporary audit:
+
+```text
+docs/work-in-progress/report-export-r0-audit.md
+```
 
 Purpose:
 
-- reuse stable output primitives across History and Channel;
-- remove duplication without changing data semantics;
-- preserve provider separation, evidence limits, and missing-value behavior;
-- establish one tested contract before any new output mode is added.
+- remove duplicated neutral output infrastructure without changing product semantics;
+- preserve provider separation, evidence limits, filenames, schemas, headers, missing-value behavior, request counts, and accepted UI;
+- establish one tested primitive layer before either feature adopts it.
 
-Execution order:
+#### R0 — implementation and boundary audit
 
-1. audit current History and Channel report/export implementations;
-2. freeze shared contracts and migration boundaries;
-3. add pure shared helpers and tests;
-4. migrate History only when no DOM/CSS/visible change is required;
-5. migrate Channel under the same condition;
-6. run cross-page provider, output, and browser regressions;
-7. stop and defer any visual or structural migration that conflicts with pending History UI work.
+State: active.
 
-Initial shared candidates:
+Branch:
 
-- provider and period labels;
-- coverage/source/state wording helpers;
-- filename construction and sanitization;
-- CSV escaping and blank missing values;
-- JSON `null` policy;
-- clipboard and download status result types;
-- deterministic export metadata.
+```text
+work-report-export-r0-audit
+```
 
-Explicit non-goals in the first consolidation window:
+Deliverables:
 
-- History visual redesign;
-- Channel visual redesign;
-- new report modes;
-- PNG/share-card generation;
-- data API or schema changes;
-- collector, cron, or retention changes.
+- current implementation and gate inventory;
+- data-flow comparison;
+- safe/shared versus feature-owned matrix;
+- spreadsheet-safety and filename risk register;
+- preservation-test matrix;
+- R1–R4 implementation plan.
+
+Exit rule:
+
+- documentation-only diff;
+- no runtime, output-byte, DOM, CSS, or visible change;
+- R1 branch and contracts are explicit.
+
+#### R1 — neutral shared output primitives
+
+State: queued after R0.
+
+Branch:
+
+```text
+work-report-export-r1-shared-output
+```
+
+Scope:
+
+- add neutral provider, filename, CSV, finite-value, clipboard, download, and result primitives;
+- add direct contract tests;
+- do not import or migrate History or Channel code;
+- do not change feature output.
+
+#### R2 — conditional History internal adoption
+
+State: conditional after R1.
+
+Branch:
+
+```text
+work-report-export-r2-history-adoption
+```
+
+Proceed only when exact preservation tests exist and adoption requires no History DOM, CSS, visible string, action-order, report, CSV, JSON, filename, or PNG change. Unsafe adoption is deferred.
+
+#### R3 — Channel internal adoption
+
+State: queued after the safe shared foundation.
+
+Branch:
+
+```text
+work-report-export-r3-channel-adoption
+```
+
+Adopt only tested neutral helpers while preserving Channel context, report text, CSV rows, JSON schema, feedback, DOM/CSS, provider separation, and one-request behavior. Spreadsheet-safety policy must be explicit before any Channel CSV byte change.
+
+#### R4 — cross-page regression and documentation closure
+
+State: queued.
+
+Branch:
+
+```text
+work-report-export-r4-acceptance
+```
+
+Completion:
+
+- exact provider separation, filenames, schemas, headers, missing values, and request counts are preserved;
+- no visible layout change;
+- affected History and Channel matrices are green;
+- permanent plan is finalized;
+- temporary R0 note is deleted and unlinked;
+- roadmap advances to Phase 5.
+
+Preview rule:
+
+- no Preview is required for output-compatible internal consolidation;
+- Preview and production acceptance become mandatory if an accepted visible or serialized contract changes.
+
+Explicit Phase 4 non-goals:
+
+- History or Channel visual redesign;
+- new report modes or export formats;
+- Channel PNG/share cards;
+- shared report prose or JSON schemas;
+- API, D1, binding, collector, cron, or retention changes.
 
 ### Phase 5 — next-feature data-capability audit
 
-State: queued after the safe Phase 4 foundation.
+State: queued after Phase 4 closure.
 
 Candidates:
 
@@ -238,7 +339,7 @@ The audit must determine:
 - Cloudflare Free-plan cost;
 - whether an honest MVP can be produced without invented precision.
 
-No candidate moves directly from idea to implementation.
+No candidate moves directly from an idea to implementation.
 
 ### Phase 6 — one approved major expansion
 
