@@ -1,0 +1,72 @@
+name: Channel C5B Hosted Preview
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/docs/channel-c5b-acceptance.md'
+      - 'apps/web/public/channel-c5b-candidate.json'
+      - 'apps/web/scripts/channel-c5b-hosted-browser.mjs'
+      - '.github/workflows/channel-c5b-hosted.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hosted-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    env:
+      CHANNEL_C5B_PREVIEW_URL: https://preview-channel-v1.viewloom.pages.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm build:web
+      - name: Wait for configured Cloudflare Preview branch
+        run: |
+          getent ahosts preview-channel-v1.viewloom.pages.dev | tee /tmp/channel-c5b-dns.txt || true
+          for attempt in {1..24}; do
+            status="$(curl --silent --show-error --output /tmp/channel-c5b-marker.json --write-out '%{http_code}' --max-time 20 "$CHANNEL_C5B_PREVIEW_URL/channel-c5b-candidate.json?qa=$GITHUB_SHA" 2>> /tmp/channel-c5b-curl.log || true)"
+            if [ "$status" = "200" ] && grep -q 'c5b-hosted-1' /tmp/channel-c5b-marker.json; then
+              echo "Channel C5B Preview marker is available at $CHANNEL_C5B_PREVIEW_URL"
+              cat /tmp/channel-c5b-marker.json
+              exit 0
+            fi
+            echo "Preview attempt $attempt returned HTTP $status or an older marker"
+            sleep 10
+          done
+          echo "Configured Cloudflare Preview branch did not publish the Channel C5B marker."
+          cat /tmp/channel-c5b-dns.txt || true
+          cat /tmp/channel-c5b-curl.log || true
+          cat /tmp/channel-c5b-marker.json || true
+          exit 1
+      - run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+        working-directory: apps/web
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - name: Verify hosted Twitch and Kick Channel with Preview bindings
+        working-directory: apps/web
+        env:
+          CHANNEL_C5B_PREVIEW_URL: https://preview-channel-v1.viewloom.pages.dev
+          CHANNEL_C5B_ARTIFACT_DIR: artifacts/channel-c5b-hosted
+        run: node scripts/channel-c5b-hosted-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: channel-c5b-hosted-artifacts
+          path: |
+            apps/web/artifacts/channel-c5b-hosted/
+            /tmp/channel-c5b-marker.json
+            /tmp/channel-c5b-dns.txt
+            /tmp/channel-c5b-curl.log
+          if-no-files-found: warn
