@@ -1,7 +1,7 @@
 # ViewLoom current execution schedule
 
 Status: source of truth
-Last updated: 2026-06-23
+Last updated: 2026-06-24
 
 ## 1. Rules
 
@@ -26,7 +26,7 @@ Channel C5B Preview acceptance            complete
 Channel C5B production acceptance         complete
 Channel temporary files and notes         complete through PR #408
 History UI appearance revision            pending screenshots and instructions
-Report/export shared-layer audit          next
+Report/export shared-layer audit          active in work-report-export-r0-audit
 ```
 
 Accepted production revisions:
@@ -42,6 +42,13 @@ Current active phase:
 Phase 4 — Report & Export shared-layer consolidation
 R0 — current implementation and boundary audit
 branch: work-report-export-r0-audit
+```
+
+Governing Phase 4 documents:
+
+```text
+docs/product/report-export-consolidation-plan.md
+docs/work-in-progress/report-export-r0-audit.md
 ```
 
 ## 3. Completed History record
@@ -125,7 +132,7 @@ Accepted result:
 
 ### R0 — shared Report & Export audit
 
-State: next.
+State: active.
 
 Branch:
 
@@ -133,60 +140,126 @@ Branch:
 work-report-export-r0-audit
 ```
 
-Scope:
+Deliverables:
 
-- inventory History and Channel report/export code and tests;
-- compare provider, period, source/state, coverage, filename, CSV, JSON, clipboard, and download behavior;
-- identify pure helpers that can be shared without visible changes;
-- identify DOM/CSS or History-specific logic that must remain separate;
-- create a PR-sliced migration plan before runtime changes.
+- current History and Channel implementation inventory;
+- data-flow and request-ownership comparison;
+- duplication matrix;
+- safe shared-layer boundary;
+- intentional-difference and risk register;
+- preservation-test matrix;
+- permanent R1–R4 implementation plan;
+- active temporary audit note registered in the documentation index.
+
+Accepted R0 boundary:
+
+```text
+safe to share:
+provider type/display name
+filename sanitization/composition
+CSV syntax escaping
+finite number -> blank/null
+clipboard transport
+text-file download transport
+internal operation result type
+
+feature-owned:
+report prose
+short-post prose
+CSV schemas and row models
+JSON schemas/builders
+coverage and limitation wording
+History PNG/share card
+payload capture
+DOM/CSS/status copy
+```
 
 Completion criteria:
 
 - shared and feature-specific boundaries are explicit;
-- no runtime or visual change;
+- History spreadsheet-safety and Channel CSV differences are recorded;
+- filename semantics remain feature-owned;
+- no runtime, serialized-output, DOM, CSS, or visual change;
 - no History UI change;
-- next implementation branch is unambiguous.
+- R1 branch and signatures are unambiguous;
+- documentation and policy/build checks pass.
 
-### R1 — pure shared contracts and helpers
+### R1 — neutral shared output primitives
 
 State: queued after R0.
 
-Candidate scope:
+Branch:
 
-- provider, period, source/state, and coverage labels;
-- filename construction and sanitization;
-- CSV escaping;
-- JSON missing-value policy;
-- clipboard and download result types;
-- deterministic export metadata;
-- unit and static tests.
+```text
+work-report-export-r1-shared-output
+```
 
-No DOM, CSS, API, D1, collector, cron, retention, or new output-mode change.
+Scope:
 
-### R2 — safe History adoption
+- neutral provider type and display label;
+- filename-segment sanitization and composition;
+- CSV syntax helpers with explicit spreadsheet-safety policy;
+- finite number to blank/null helpers;
+- clipboard API and fallback transport;
+- Blob/object-URL text download transport;
+- internal operation result type;
+- direct static/unit-style contract tests.
 
-State: conditional.
+Rules:
 
-Proceed only when adoption creates no visible History UI or DOM/CSS change. Otherwise defer until the History UI revision is specified.
+- no History or Channel imports in the shared layer;
+- no feature adoption in R1;
+- no DOM, CSS, API, D1, collector, cron, retention, report text, schema, or output-byte change.
 
-### R3 — safe Channel adoption
+### R2 — conditional History internal adoption
+
+State: conditional after R1.
+
+Branch:
+
+```text
+work-report-export-r2-history-adoption
+```
+
+Proceed only when exact preservation tests exist and adoption creates no History DOM/CSS, visible string, action-order, report, CSV, JSON, filename, or PNG change. Defer any unsafe helper rather than broadening the PR.
+
+### R3 — Channel internal adoption
 
 State: queued after the shared foundation.
 
-Preserve provider/source/state/missing semantics and accepted visible output.
+Branch:
+
+```text
+work-report-export-r3-channel-adoption
+```
+
+Preserve Channel context, report text, CSV rows, `viewloom-channel-v1`, visible feedback, DOM/CSS, provider separation, and one-request behavior. Spreadsheet-safety policy must be explicit before changing Channel CSV bytes.
 
 ### R4 — cross-page acceptance and closure
 
 State: queued.
 
+Branch:
+
+```text
+work-report-export-r4-acceptance
+```
+
 Required result:
 
 - provider separation preserved;
-- filenames and missing values preserved;
+- exact filenames, schemas, headers, and missing values preserved;
 - no additional network request;
-- affected workflow matrix green;
+- no visible layout change;
+- affected History and Channel workflow matrix green;
+- permanent plan finalized;
+- temporary R0 note deleted and unlinked;
 - roadmap advances to Phase 5.
+
+Preview rule:
+
+- no Preview for output-compatible internal changes;
+- Preview and production acceptance become mandatory if any accepted visible or serialized contract changes.
 
 ## 6. Later phases
 
