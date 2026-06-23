@@ -129,6 +129,7 @@ Accepted result:
 State: completed through PR #409.
 
 ```text
+branch: work-report-export-r0-audit
 merge: 46cea2eceff85b4f5a359446d102d7bc6afe3487
 ```
 
