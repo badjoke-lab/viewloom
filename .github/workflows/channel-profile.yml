@@ -23,6 +23,8 @@ jobs:
       - run: pnpm --filter @viewloom/web typecheck
       - run: node scripts/verify-channel-profile.mjs
         working-directory: apps/web
+      - run: node scripts/verify-channel-state.mjs
+        working-directory: apps/web
       - run: node scripts/verify-history-additional-rankings.mjs
         working-directory: apps/web
       - run: node scripts/verify-deep-link-contract.mjs
