@@ -29,7 +29,7 @@ Current feature state:
 | History & Trends | functional/layout rebuild and production acceptance complete | maintain accepted behavior; visual revision pending separate instructions |
 | Data Status | production core complete | maintain |
 | Channel / Streamer | v1 implementation and production acceptance complete | maintain accepted retained-footprint contract |
-| Report/export shared layer | R0 boundary audit active | consolidate neutral internals only |
+| Report/export shared layer | R0 complete; R1 active | build neutral internals before feature adoption |
 | Session / Category / Watchlist / Alerts | not approved | data-capability audit required first |
 
 Permanent acceptance records:
@@ -47,30 +47,32 @@ closure PR: #408
 
 ## 2. Immediate priority
 
-Phase 4 R0 is active:
+Phase 4 R1 is active:
 
-> Audit the current History and Channel Report & Export implementations, freeze the safe shared boundary, and produce a PR-sliced internal consolidation plan without changing runtime output or UI.
+> Add and verify a neutral shared output layer without importing, migrating, or changing History or Channel.
 
 Governing documents:
 
 ```text
 docs/product/report-export-consolidation-plan.md
 docs/work-in-progress/report-export-r0-audit.md
+apps/web/docs/shared-output-r1-contract.md
 ```
 
-R0 has fixed the safe shared boundary.
+R0 completed through PR #409 and fixed the safe shared boundary.
 
-Safe neutral candidates:
+R1 adds only:
 
-- provider type and provider display name;
+- provider type and display name;
 - filename-segment sanitization;
 - filename composition from feature-owned segments;
-- CSV syntax escaping;
+- CSV syntax helpers with explicit quote and spreadsheet-safety modes;
 - finite number to blank string;
 - finite number to `null`;
-- clipboard transport with fallback;
+- clipboard transport with optional fallback;
 - text-file Blob download transport;
-- internal success/failure result type.
+- internal success/failure result type;
+- direct executable contract verification.
 
 The following remain feature-owned:
 
@@ -197,7 +199,7 @@ Accepted product boundary:
 
 ### Phase 4 — Report & Export shared-layer consolidation
 
-State: R0 active.
+State: R1 active.
 
 Permanent plan:
 
@@ -205,7 +207,7 @@ Permanent plan:
 docs/product/report-export-consolidation-plan.md
 ```
 
-Temporary audit:
+Temporary audit retained through R4:
 
 ```text
 docs/work-in-progress/report-export-r0-audit.md
@@ -219,15 +221,17 @@ Purpose:
 
 #### R0 — implementation and boundary audit
 
-State: active.
+State: completed through PR #409.
 
-Branch:
+Branch and merge:
 
 ```text
-work-report-export-r0-audit
+branch: work-report-export-r0-audit
+PR: #409
+merge: 46cea2eceff85b4f5a359446d102d7bc6afe3487
 ```
 
-Deliverables:
+Completed deliverables:
 
 - current implementation and gate inventory;
 - data-flow comparison;
@@ -236,15 +240,9 @@ Deliverables:
 - preservation-test matrix;
 - R1–R4 implementation plan.
 
-Exit rule:
-
-- documentation-only diff;
-- no runtime, output-byte, DOM, CSS, or visible change;
-- R1 branch and contracts are explicit.
-
 #### R1 — neutral shared output primitives
 
-State: queued after R0.
+State: active in PR #410.
 
 Branch:
 
@@ -252,12 +250,34 @@ Branch:
 work-report-export-r1-shared-output
 ```
 
-Scope:
+Implementation:
 
-- add neutral provider, filename, CSV, finite-value, clipboard, download, and result primitives;
-- add direct contract tests;
-- do not import or migrate History or Channel code;
-- do not change feature output.
+```text
+apps/web/src/shared/output/provider.ts
+apps/web/src/shared/output/filename.ts
+apps/web/src/shared/output/csv.ts
+apps/web/src/shared/output/values.ts
+apps/web/src/shared/output/clipboard.ts
+apps/web/src/shared/output/download.ts
+apps/web/src/shared/output/result.ts
+```
+
+Contract and gate:
+
+```text
+apps/web/docs/shared-output-r1-contract.md
+apps/web/scripts/verify-shared-output-r1.mjs
+.github/workflows/shared-output-r1.yml
+```
+
+R1 rules:
+
+- shared modules may depend only on primitive TypeScript/browser APIs;
+- shared modules must not import History, Channel, API, collector, D1, or CSS modules;
+- History and Channel are not migrated in R1;
+- no output byte, filename, schema, report text, DOM, CSS, visible status, or request behavior changes;
+- CSV spreadsheet safety remains explicit and opt-in so Channel bytes cannot change silently;
+- dedicated typecheck and executable runtime contract must pass.
 
 #### R2 — conditional History internal adoption
 
