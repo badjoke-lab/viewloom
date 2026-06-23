@@ -1,0 +1,69 @@
+name: Channel C0 Production Audit
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/channel-c0-production-audit.yml'
+      - 'apps/web/scripts/channel-c0-production-browser.mjs'
+      - 'docs/work-in-progress/channel-v1-audit.md'
+      - 'docs/README.md'
+      - 'scripts/verify-development-policy.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  production-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ORIGIN: https://vl.badjoke-lab.com
+      EXPECTED_PRODUCTION_SHA: fcc30aec4b67055505762a07688b5e36a58802d4
+      CHANNEL_C0_ARTIFACT_DIR: artifacts/channel-c0-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - name: Wait for current main deployment
+        run: |
+          set -euo pipefail
+          mkdir -p apps/web/$CHANNEL_C0_ARTIFACT_DIR
+          for attempt in {1..60}; do
+            if curl --silent --show-error --fail --max-time 20 "$ORIGIN/deployment.json?attempt=$attempt" -o apps/web/$CHANNEL_C0_ARTIFACT_DIR/deployment.json; then
+              deployed="$(jq -r '.commit_sha // empty' apps/web/$CHANNEL_C0_ARTIFACT_DIR/deployment.json)"
+              environment="$(jq -r '.environment // empty' apps/web/$CHANNEL_C0_ARTIFACT_DIR/deployment.json)"
+              branch="$(jq -r '.branch // empty' apps/web/$CHANNEL_C0_ARTIFACT_DIR/deployment.json)"
+              if [ "$deployed" = "$EXPECTED_PRODUCTION_SHA" ] && [ "$environment" = "production" ] && [ "$branch" = "main" ]; then
+                cat apps/web/$CHANNEL_C0_ARTIFACT_DIR/deployment.json
+                exit 0
+              fi
+              echo "Production found $deployed, waiting for $EXPECTED_PRODUCTION_SHA ($attempt/60)."
+            fi
+            sleep 10
+          done
+          exit 1
+      - run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+        working-directory: apps/web
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - name: Capture real Channel production baseline
+        working-directory: apps/web
+        env:
+          CHANNEL_C0_ORIGIN: https://vl.badjoke-lab.com
+          CHANNEL_C0_ARTIFACT_DIR: artifacts/channel-c0-production
+        run: node scripts/channel-c0-production-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: channel-c0-production-artifacts
+          path: apps/web/artifacts/channel-c0-production/
+          if-no-files-found: warn
