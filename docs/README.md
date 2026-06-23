@@ -25,6 +25,8 @@ The addendum contains the later verified Cloudflare state and documentation-firs
 - [`product/current-schedule.md`](product/current-schedule.md) — execution windows, entry criteria, and completion criteria
 - [`product/history-and-trends-spec.md`](product/history-and-trends-spec.md) — accepted History & Trends product specification
 - [`product/history-layout-rebuild-plan.md`](product/history-layout-rebuild-plan.md) — completed History rebuild implementation record
+- [`product/channel-and-streamer-spec.md`](product/channel-and-streamer-spec.md) — permanent Channel / Streamer v1 product specification
+- [`product/channel-v1-implementation-plan.md`](product/channel-v1-implementation-plan.md) — active PR-sliced Channel v1 implementation plan
 
 ## Permanent acceptance records
 
@@ -34,11 +36,11 @@ The addendum contains the later verified Cloudflare state and documentation-firs
 
 ## Active temporary working notes
 
-- [`work-in-progress/channel-v1-audit.md`](work-in-progress/channel-v1-audit.md) — active Channel / Streamer C0 audit of the current retained-ranking footprint, data limits, existing gates, and C1 decisions
+- [`work-in-progress/channel-v1-audit.md`](work-in-progress/channel-v1-audit.md) — completed C0 evidence and active implementation note for Channel / Streamer v1
 
 There is no active History rebuild working note. The History H1–H7 milestone completed production acceptance on 2026-06-23, and its temporary note was retired after stable decisions were transferred into permanent documentation.
 
-The Channel audit note is temporary. It governs the current C0/C1 preparation window and must be retired after Channel v1 production acceptance transfers stable decisions into permanent Channel documentation.
+The Channel audit note is temporary. C0 is complete, but the note remains active through C2–C5 because it contains the production baseline, unresolved implementation findings, and deletion checklist. It must be retired after Channel v1 production acceptance transfers final evidence into permanent Channel documentation.
 
 A file in `work-in-progress/` may contain screenshots, defects, unresolved decisions, PR slicing notes, and implementation reminders that do not belong in a permanent specification.
 
