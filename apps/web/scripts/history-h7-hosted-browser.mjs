@@ -41,7 +41,7 @@ async function runDesktop(browser) {
   const page = await context.newPage()
   await page.goto(`${base}/twitch/history/?period=30d&qa=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 30000 })
   await waitForVisual(page)
-  assert(await page.locator('.history-streamer-card').count() > 0, 'Twitch desktop: Top streamers missing.')
+  assert(await page.locator('.metric-ledger tbody tr').count() > 0, 'Twitch desktop: Top streamers table is missing.')
   await page.locator('button[data-history-view="archives"]').click()
   await page.locator('button[data-history-archive-view="daily"]').click()
   await page.waitForFunction(() => document.querySelectorAll('[data-history-day-card]').length > 0)
