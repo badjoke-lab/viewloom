@@ -39,6 +39,10 @@ try {
   assert(focused, 'kick 360: keyboard navigation did not reach the Retained Days task.')
 
   const daysButton = page.locator('.channel-task-tabs [data-channel-view="days"]')
+  await page.waitForFunction(() => {
+    const node = document.querySelector('.channel-task-tabs [data-channel-view="days"]')
+    return node instanceof HTMLElement && getComputedStyle(node).boxShadow.includes('3px')
+  })
   const focus = await daysButton.evaluate((node) => {
     const style = getComputedStyle(node)
     return { outlineWidth: style.outlineWidth, outlineStyle: style.outlineStyle, boxShadow: style.boxShadow }
