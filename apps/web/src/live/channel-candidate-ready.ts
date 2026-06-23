@@ -1,3 +1,3 @@
-queueMicrotask(() => {
-  document.body.dataset.channelCandidateReady = 'true'
-})
+import './channel-candidate'
+
+document.body.dataset.channelCandidateReady = 'true'
