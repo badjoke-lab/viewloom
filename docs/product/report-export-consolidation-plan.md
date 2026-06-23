@@ -1,10 +1,11 @@
 # ViewLoom Report & Export shared-layer consolidation plan
 
-Status: active implementation plan
-Version: 1.0
+Status: active implementation plan — R1 active
+Version: 1.1
 Last updated: 2026-06-24
 Roadmap phase: Phase 4 — Report & Export shared-layer consolidation
 Current audit: `../work-in-progress/report-export-r0-audit.md`
+R1 contract: `../../apps/web/docs/shared-output-r1-contract.md`
 History specification: `history-and-trends-spec.md`
 Channel specification: `channel-and-streamer-spec.md`
 
@@ -64,7 +65,9 @@ CSS or responsive layout
 feature-visible status messages
 ```
 
-## 4. Provisional module shape
+## 4. Shared module shape
+
+R1 implements:
 
 ```text
 apps/web/src/shared/output/
@@ -77,70 +80,165 @@ apps/web/src/shared/output/
   result.ts
 ```
 
-R1 may combine very small modules when that improves maintainability, but the dependency rule is fixed:
+Dependency rule:
 
 ```text
 shared/output may depend only on primitive TypeScript/browser APIs
 shared/output must not import History or Channel modules
+History and Channel do not import shared/output until separate adoption PRs
 ```
 
-## 5. PR sequence
+R1 contract and executable gate:
+
+```text
+apps/web/docs/shared-output-r1-contract.md
+apps/web/scripts/verify-shared-output-r1.mjs
+.github/workflows/shared-output-r1.yml
+```
+
+## 5. R1 stable signatures and behavior
+
+### Provider
+
+```ts
+type OutputProvider = 'twitch' | 'kick'
+isOutputProvider(value)
+providerDisplayName(provider)
+```
+
+Provider values are not coerced. Labels remain exactly `Twitch` and `Kick`.
+
+### Filename
+
+```ts
+sanitizeFilenameSegment(value, fallback?)
+buildOutputFilename(parts, extension)
+```
+
+- Unicode is normalized with NFKC;
+- Unicode letters and numbers remain usable;
+- unsafe path/control characters are removed through hyphen normalization;
+- feature code owns segment selection and order;
+- R1 does not change any accepted feature filename.
+
+### CSV
+
+```ts
+csvCell(value, options?)
+csvRow(values, options?)
+spreadsheetSafeText(value)
+```
+
+Options distinguish:
+
+```text
+quote: minimal | always
+spreadsheetSafety: none | apostrophe
+```
+
+This allows exact future representation of both existing contracts:
+
+- Channel: minimal syntax quoting, no implicit formula-policy change;
+- History: always-quoted data cells with apostrophe formula safety.
+
+R1 does not migrate either serializer or change output bytes.
+
+### Numeric values
+
+```ts
+finiteNumberOrBlank(value)
+finiteNumberOrNull(value)
+```
+
+Only finite JavaScript numbers are accepted. Numeric strings are not coerced.
+
+### Clipboard
+
+```ts
+writeTextToClipboard(text, runtime?)
+```
+
+- prefers an injected/browser Clipboard API;
+- supports an injected textarea/`execCommand('copy')` fallback when the API is absent;
+- API rejection returns a neutral failure rather than selecting feature-visible fallback behavior;
+- the helper owns no UI message.
+
+### Download
+
+```ts
+downloadTextFile(request, runtime?)
+```
+
+- uses Blob/object URL/temporary anchor transport;
+- requires non-empty filename and MIME type;
+- removes the temporary anchor;
+- revokes object URLs on the requested delay or immediately after failure;
+- the helper owns no UI message.
+
+### Result
+
+```ts
+type OutputOperationResult =
+  | { ok: true }
+  | { ok: false; code: OutputOperationFailureCode; error?: unknown }
+```
+
+Visible wording remains feature-owned.
+
+## 6. PR sequence
 
 ### R0 — current implementation and boundary audit
 
-Branch:
+State: completed through PR #409.
 
 ```text
-work-report-export-r0-audit
+branch: work-report-export-r0-audit
+merge: 46cea2eceff85b4f5a359446d102d7bc6afe3487
 ```
 
-Scope:
+Completed:
 
-- inventory History and Channel output code and gates;
-- compare provider, period, source/state, coverage, filename, CSV, JSON, clipboard, download, PNG, feedback, DOM, and request behavior;
-- identify safe neutral primitives;
-- document intentional differences and migration risks;
-- fix the R1–R4 sequence.
-
-Completion:
-
-- no runtime change;
-- no visible change;
-- shared and feature-owned boundaries are explicit;
-- R1 branch and acceptance criteria are unambiguous.
+- inventoried History and Channel output code and gates;
+- compared provider, period, source/state, coverage, filename, CSV, JSON, clipboard, download, PNG, feedback, DOM, and request behavior;
+- fixed the neutral shared boundary;
+- documented spreadsheet-safety, filename, and UI risks;
+- fixed the R1–R4 sequence.
 
 ### R1 — neutral shared output primitives
 
-Branch:
+State: active in PR #410.
 
 ```text
-work-report-export-r1-shared-output
+branch: work-report-export-r1-shared-output
 ```
 
-Scope:
+Implemented scope:
 
-- add the approved neutral modules;
-- add direct contract verification for each export;
-- cover Unicode and unsafe filename input;
-- cover CSV commas, quotes, CR, LF, and explicit spreadsheet-safety options;
-- cover finite/missing/invalid numeric values;
-- cover clipboard API and fallback paths;
-- cover object URL download lifecycle;
-- do not import or migrate History/Channel code.
+- approved neutral modules;
+- direct contract verification for every helper group;
+- Unicode and unsafe filename cases;
+- CSV commas, quotes, CR, LF, minimal/always quote modes, and explicit spreadsheet safety;
+- finite/missing/invalid numeric values;
+- clipboard API, API rejection, fallback, cleanup, and unavailable paths;
+- object URL creation, scheduled revocation, failure revocation, and temporary-anchor cleanup;
+- dedicated typecheck and executable contract workflow;
+- no History or Channel import or migration.
 
 Completion:
 
 - shared helpers have stable signatures;
+- dedicated R1 workflow succeeds;
+- repository build/check and affected regression gates succeed;
 - no feature output bytes or visible behavior change;
 - no feature model or UI dependency in the shared layer;
-- repository build/check/policy gates pass.
+- latest PR head is mergeable with no unresolved review thread.
 
 ### R2 — conditional History internal adoption
 
-Branch:
+State: conditional after R1.
 
 ```text
-work-report-export-r2-history-adoption
+branch: work-report-export-r2-history-adoption
 ```
 
 Entry conditions:
@@ -171,10 +269,10 @@ Completion:
 
 ### R3 — Channel internal adoption
 
-Branch:
+State: queued after the shared foundation.
 
 ```text
-work-report-export-r3-channel-adoption
+branch: work-report-export-r3-channel-adoption
 ```
 
 Entry conditions:
@@ -201,10 +299,10 @@ Completion:
 
 ### R4 — cross-page regression and documentation closure
 
-Branch:
+State: queued.
 
 ```text
-work-report-export-r4-acceptance
+branch: work-report-export-r4-acceptance
 ```
 
 Scope:
@@ -228,7 +326,7 @@ Completion:
 - temporary note is removed;
 - next data-capability audit step is explicit.
 
-## 6. Required preservation matrix
+## 7. Required preservation matrix
 
 | Contract | History | Channel |
 |---|---:|---:|
@@ -246,7 +344,7 @@ Completion:
 | PNG/share card | required | not applicable |
 | DOM/CSS/layout unchanged | required | required |
 
-## 7. Explicit non-goals
+## 8. Explicit non-goals
 
 Phase 4 does not include:
 
@@ -262,27 +360,18 @@ Phase 4 does not include:
 - API or storage changes;
 - collector, cron, or retention changes.
 
-## 8. Estimated execution
+## 9. Estimated execution
 
 | Step | Estimated work |
 |---|---:|
-| R0 audit and plan | 1 focused workday |
-| R1 shared primitives | 1–2 focused workdays |
+| R0 audit and plan | complete |
+| R1 shared primitives | active |
 | R2 conditional History adoption | 1 focused workday or defer |
 | R3 Channel adoption | 1 focused workday |
 | R4 regression and closure | 1 focused workday |
 
-Expected total:
+## 10. Current next step
 
-```text
-4–6 focused workdays
-```
+Complete and merge PR #410 only after the latest head passes the dedicated R1 contract and the existing affected regression matrix.
 
-## 9. Current next step
-
-After R0 merges:
-
-```text
-R1 — neutral shared output primitives
-branch: work-report-export-r1-shared-output
-```
+After the required post-merge report, evaluate R2 entry conditions before creating `work-report-export-r2-history-adoption`.
