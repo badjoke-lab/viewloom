@@ -1,0 +1,106 @@
+.channel-report-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: 16px;
+}
+
+.channel-report-main,
+.channel-report-actions {
+  min-width: 0;
+  border: 1px solid rgba(20, 34, 52, 0.14);
+  background: rgba(255, 255, 255, 0.56);
+  padding: 16px;
+}
+
+.channel-report-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.channel-report-modes button {
+  min-height: 44px;
+  border: 1px solid rgba(20, 34, 52, 0.18);
+  background: transparent;
+  padding: 0 14px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.channel-report-modes button.active {
+  border-color: currentColor;
+  background: rgba(255, 255, 255, 0.8);
+  font-weight: 700;
+}
+
+.channel-report-preview {
+  min-height: 340px;
+  max-height: 620px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid rgba(20, 34, 52, 0.12);
+  background: rgba(12, 20, 32, 0.96);
+  color: #edf3f7;
+  font: 500 0.86rem/1.65 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.channel-report-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.channel-report-actions h3 {
+  margin: 0 0 4px;
+}
+
+.channel-report-actions button {
+  min-height: 48px;
+}
+
+.channel-report-feedback,
+.channel-report-limit {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.channel-report-feedback {
+  font-size: 0.88rem;
+}
+
+.channel-report-feedback[data-state="success"],
+.channel-report-feedback[data-state="error"] {
+  font-weight: 700;
+}
+
+.channel-report-limit {
+  color: var(--muted, #68717b);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+  .channel-report-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .channel-report-main,
+  .channel-report-actions {
+    padding: 12px;
+  }
+
+  .channel-report-preview {
+    min-height: 300px;
+    max-height: none;
+  }
+
+  .channel-report-modes button {
+    flex: 1 1 140px;
+    min-height: 48px;
+  }
+}
