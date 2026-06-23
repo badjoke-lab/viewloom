@@ -46,7 +46,7 @@ async function run(browser, provider, viewport, screenshot) {
   assert(initialPanel?.includes('Latest retained day') && initialPanel.includes('Jun 17, 2026'), `${provider}: latest retained-day fallback is wrong.`)
 
   await page.locator('[data-channel-select-day="2026-06-18"]').first().click()
-  await page.waitForFunction(() => document.body.dataset.channelSelectedDay === '2026-06-18')
+  await page.waitForFunction(() => document.body.dataset.channelSelectedDate === '2026-06-18')
   const absentPanel = await page.locator('[data-channel-selected-day]').textContent()
   assert(absentPanel?.includes('Not in retained daily Top 10'), `${provider}: absent day label is missing.`)
   assert(absentPanel?.includes('does not confirm that the channel was offline'), `${provider}: offline limitation is missing.`)
@@ -54,7 +54,7 @@ async function run(browser, provider, viewport, screenshot) {
   assert(calls[provider] === 1, `${provider}: absent day selection refetched.`)
 
   await page.locator('[data-channel-select-day="2026-06-15"]').first().click()
-  await page.waitForFunction(() => document.body.dataset.channelSelectedDay === '2026-06-15')
+  await page.waitForFunction(() => document.body.dataset.channelSelectedDate === '2026-06-15')
   const partialPanel = await page.locator('[data-channel-selected-day]').textContent()
   assert(partialPanel?.includes('Partial') && partialPanel.includes('575,000'), `${provider}: partial retained day is wrong.`)
   assert(calls[provider] === 1, `${provider}: partial day selection refetched.`)
