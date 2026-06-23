@@ -25,6 +25,7 @@ Before changing ViewLoom, read:
 - [`product/history-layout-rebuild-plan.md`](product/history-layout-rebuild-plan.md) — completed History rebuild record
 - [`product/channel-and-streamer-spec.md`](product/channel-and-streamer-spec.md) — accepted Channel / Streamer v1 specification
 - [`product/channel-v1-implementation-plan.md`](product/channel-v1-implementation-plan.md) — completed Channel v1 implementation record
+- [`product/report-export-consolidation-plan.md`](product/report-export-consolidation-plan.md) — active Phase 4 PR-sliced consolidation plan
 
 ## Permanent acceptance records
 
@@ -39,9 +40,13 @@ There is no active History rebuild or Channel v1 working note.
 
 History H1–H7 and Channel C0–C5B completed production acceptance on 2026-06-23. Their temporary notes were retired after stable behavior, architecture, and evidence moved into permanent documentation.
 
-The pending History UI appearance revision does not yet have a working note because screenshots and detailed instructions are not available. When those inputs arrive, begin with a new audit and a dedicated temporary note rather than reviving an old completed note.
+Active Phase 4 note:
 
-A future Phase 4 Report & Export audit may create a temporary note only when unresolved implementation decisions require one.
+- [`work-in-progress/report-export-r0-audit.md`](work-in-progress/report-export-r0-audit.md) — current History/Channel output implementation audit, shared-boundary decisions, risks, and R1–R4 migration requirements
+
+The Report & Export note is temporary. Delete it in R4 after final shared-boundary decisions and acceptance evidence have moved into the permanent consolidation plan and operating documents.
+
+The pending History UI appearance revision does not yet have a working note because screenshots and detailed instructions are not available. When those inputs arrive, begin with a new audit and a dedicated temporary note rather than reviving an old completed note.
 
 ## Temporary-note lifecycle
 
