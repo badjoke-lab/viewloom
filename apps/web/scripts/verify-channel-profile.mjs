@@ -26,7 +26,7 @@ for (const fragment of [
   'renderSelectedDay(daily)',
   'renderRecentDays(appearances)',
   '.filter(involvesStreamer).slice(0, 3)',
-  'channel-trend-column--missing',
+  "const stateClass = missing ? 'missing' : retained ? 'observed' : 'absent'",
   'channel-trend-column--partial',
   'Not in retained daily Top 10',
   'not confirmed offline',
