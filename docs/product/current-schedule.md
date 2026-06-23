@@ -24,9 +24,9 @@ History production acceptance            complete
 Channel C0-C5A                           complete
 Channel C5B Preview acceptance            complete
 Channel C5B production acceptance         complete
-Channel temporary files and notes         complete after PR #408
+Channel temporary files and notes         closing in PR #408
 History UI appearance revision            pending screenshots and instructions
-Report/export shared-layer audit          next
+Report/export shared-layer audit          next after PR #408
 ```
 
 Accepted production revisions:
@@ -36,7 +36,7 @@ History: 3cde59cceb09a0c60f48794d6391cf5c356a1b31
 Channel: efc14295f0a372b96afac740d6a01571f7582210
 ```
 
-Current active phase after this closure merge:
+Current active phase after PR #408 merges:
 
 ```text
 Phase 4 — Report & Export shared-layer consolidation
@@ -125,7 +125,7 @@ Accepted result:
 
 ### R0 — shared Report & Export audit
 
-State: next.
+State: next after PR #408.
 
 Branch:
 
