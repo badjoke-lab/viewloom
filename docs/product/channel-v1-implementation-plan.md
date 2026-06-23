@@ -7,6 +7,7 @@ Roadmap phase: Phase 3 — Channel / Streamer v1 completed
 Permanent specification: `channel-and-streamer-spec.md`
 Production acceptance: `../operations/channel-production-acceptance-2026-06-23.md`
 Accepted production SHA: `efc14295f0a372b96afac740d6a01571f7582210`
+Closure PR: #408
 
 ## 1. Goal
 
