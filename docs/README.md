@@ -2,53 +2,56 @@
 
 Status: source-of-truth map
 
-This file defines which repository documents govern current ViewLoom work. Older design notes, imported plans, PR descriptions, screenshots, and completed working notes may remain useful as history, but they do not override the documents listed here.
+This file defines which repository documents govern current ViewLoom work. Older design notes, screenshots, imported plans, and completed working notes may remain useful as history, but they do not override the documents listed here.
 
 ## Required reading order
 
-Before changing ViewLoom, read these documents in order:
+Before changing ViewLoom, read:
 
 1. [`operations/development-and-deployment-policy.md`](operations/development-and-deployment-policy.md)
 2. [`operations/development-policy-addendum.md`](operations/development-policy-addendum.md)
 3. [`operations/documentation-governance.md`](operations/documentation-governance.md)
 4. [`product/current-roadmap.md`](product/current-roadmap.md)
 5. [`product/current-schedule.md`](product/current-schedule.md)
-6. the affected feature specification under `product/`
-7. the affected implementation plan under `product/`
-8. any active note under `work-in-progress/`
-
-The addendum contains the later verified Cloudflare state and documentation-first rules until those changes are consolidated into the main policy.
+6. the affected permanent product specification
+7. the affected implementation plan or completed implementation record
+8. any active temporary note under `work-in-progress/`
 
 ## Current canonical product documents
 
 - [`product/current-roadmap.md`](product/current-roadmap.md) — current product state and ordered roadmap
-- [`product/current-schedule.md`](product/current-schedule.md) — execution windows, entry criteria, and completion criteria
-- [`product/history-and-trends-spec.md`](product/history-and-trends-spec.md) — accepted History & Trends product specification
-- [`product/history-layout-rebuild-plan.md`](product/history-layout-rebuild-plan.md) — completed History rebuild implementation record
-- [`product/channel-and-streamer-spec.md`](product/channel-and-streamer-spec.md) — permanent Channel / Streamer v1 product specification
-- [`product/channel-v1-implementation-plan.md`](product/channel-v1-implementation-plan.md) — active PR-sliced Channel v1 implementation plan
+- [`product/current-schedule.md`](product/current-schedule.md) — current execution position and next work
+- [`product/history-and-trends-spec.md`](product/history-and-trends-spec.md) — accepted History product specification
+- [`product/history-layout-rebuild-plan.md`](product/history-layout-rebuild-plan.md) — completed History rebuild record
+- [`product/channel-and-streamer-spec.md`](product/channel-and-streamer-spec.md) — accepted Channel / Streamer v1 specification
+- [`product/channel-v1-implementation-plan.md`](product/channel-v1-implementation-plan.md) — completed Channel v1 implementation record
 
 ## Permanent acceptance records
 
 - [`operations/cloudflare-verification-2026-06-21.md`](operations/cloudflare-verification-2026-06-21.md) — Cloudflare production and Preview configuration verification
 - [`operations/production-smoke-runbook.md`](operations/production-smoke-runbook.md) — permanent production smoke contract
-- [`operations/history-production-acceptance-2026-06-23.md`](operations/history-production-acceptance-2026-06-23.md) — completed Twitch/Kick History Preview and production acceptance
+- [`operations/history-production-acceptance-2026-06-23.md`](operations/history-production-acceptance-2026-06-23.md) — completed Twitch/Kick History acceptance
+- [`operations/channel-production-acceptance-2026-06-23.md`](operations/channel-production-acceptance-2026-06-23.md) — completed Twitch/Kick Channel acceptance
 
 ## Active temporary working notes
 
-- [`work-in-progress/channel-v1-audit.md`](work-in-progress/channel-v1-audit.md) — completed C0 evidence and active implementation note for Channel / Streamer v1
+There is no active History rebuild or Channel v1 working note.
 
-There is no active History rebuild working note. The History H1–H7 milestone completed production acceptance on 2026-06-23, and its temporary note was retired after stable decisions were transferred into permanent documentation.
+History H1–H7 and Channel C0–C5B completed production acceptance on 2026-06-23. Their temporary notes were retired after stable behavior, architecture, and evidence moved into permanent documentation.
 
-The Channel audit note is temporary. C0 is complete, but the note remains active through C2–C5 because it contains the production baseline, unresolved implementation findings, and deletion checklist. It must be retired after Channel v1 production acceptance transfers final evidence into permanent Channel documentation.
+The pending History UI appearance revision does not yet have a working note because screenshots and detailed instructions are not available. When those inputs arrive, begin with a new audit and a dedicated temporary note rather than reviving an old completed note.
 
-A file in `work-in-progress/` may contain screenshots, defects, unresolved decisions, PR slicing notes, and implementation reminders that do not belong in a permanent specification.
+A future Phase 4 Report & Export audit may create a temporary note only when unresolved implementation decisions require one.
 
-When the associated work is complete:
+## Temporary-note lifecycle
 
-1. transfer stable behavior, acceptance criteria, and architectural decisions into the permanent specification or operating documentation;
-2. update the roadmap and schedule to reflect the completed state;
-3. delete the temporary working note in the completion PR;
+A file under `work-in-progress/` may contain defects, screenshots, unresolved decisions, PR slicing, and implementation reminders that do not belong in a permanent specification.
+
+When associated work completes:
+
+1. transfer stable behavior, acceptance criteria, and architectural decisions into permanent documentation;
+2. update the roadmap and schedule;
+3. delete the temporary note in the completion PR;
 4. remove its link from this index.
 
 A completed temporary note must not remain as a second source of truth.
@@ -58,23 +61,23 @@ A completed temporary note must not remain as a second source of truth.
 When documents conflict, use this order:
 
 1. development and deployment policy;
-2. later verified development-policy addendum;
+2. later verified policy addendum;
 3. documentation governance and this index;
 4. current roadmap;
 5. current schedule;
 6. permanent feature specification;
-7. current implementation plan;
+7. current implementation plan or completed implementation record;
 8. active working note;
 9. older or historical documents.
 
-The lower document may add detail, but it may not silently contradict the higher document.
-
 ## Documentation-first execution rule
 
-Implementation must not begin from chat memory, screenshots, or an old PR alone. Before each work branch:
+Implementation must not begin from chat memory, screenshots, or an old PR alone.
 
-- identify the governing documents from this index;
-- confirm that the roadmap and schedule still place the work next;
-- update the specification or active working note when the required behavior changed;
-- reference the governing files in the PR description;
-- update or retire the documents when the implementation completes.
+Before each work branch:
+
+- identify governing documents from this index;
+- confirm that roadmap and schedule still place the work next;
+- update the specification or active note when required behavior changed;
+- reference governing files in the PR description;
+- update or retire documents when implementation completes.
