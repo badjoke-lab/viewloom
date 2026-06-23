@@ -1,10 +1,10 @@
+import { appendFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
 import {
   assert,
   baseUrl,
   installRoutes,
   longNamePayload,
-  noOverflow,
   waitReady,
 } from './channel-candidate-fixture.mjs'
 
@@ -45,13 +45,16 @@ try {
   })
   const transition = await page.locator('.channel-trend-bar').first().evaluate((node) => getComputedStyle(node).transitionDuration)
   const durationMs = transition.trim().endsWith('ms') ? parseFloat(transition) : parseFloat(transition) * 1000
-  console.log(JSON.stringify({ focus, transition, durationMs }))
+  const viewport = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, innerWidth }))
+  const diagnostics = { focus, transition, durationMs, calls, viewport }
+  console.log(JSON.stringify(diagnostics))
+  await appendFile('/tmp/channel-candidate-preview.log', `\nC5A_DIAGNOSTICS ${JSON.stringify(diagnostics)}\n`)
   await page.screenshot({ path: '/tmp/channel-candidate-kick-overview-360.png', fullPage: true })
 
   assert(focus.style !== 'none' && parseFloat(focus.width) >= 3, `kick 360: visible focus is missing (${JSON.stringify(focus)}).`)
   assert(durationMs <= 0.011, `kick 360: reduced motion transition is ${transition} (${durationMs}ms).`)
-  assert(calls.kick === 1 && calls.twitch === 0, 'kick 360 overview: provider request count is wrong.')
-  await noOverflow(page, 'kick overview 360px')
+  assert(calls.kick === 1 && calls.twitch === 0, `kick 360 overview: provider request count is wrong (${JSON.stringify(calls)}).`)
+  assert(viewport.scrollWidth <= viewport.innerWidth + 1, `kick 360: horizontal overflow (${viewport.scrollWidth} > ${viewport.innerWidth}).`)
   await context.close()
   console.log('Channel C5A narrow accessibility gate passed.')
 } finally {
