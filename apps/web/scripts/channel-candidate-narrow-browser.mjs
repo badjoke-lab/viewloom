@@ -44,11 +44,12 @@ try {
     return { width: style.outlineWidth, style: style.outlineStyle }
   })
   const transition = await page.locator('.channel-trend-bar').first().evaluate((node) => getComputedStyle(node).transitionDuration)
-  console.log(JSON.stringify({ focus, transition }))
+  const durationMs = transition.trim().endsWith('ms') ? parseFloat(transition) : parseFloat(transition) * 1000
+  console.log(JSON.stringify({ focus, transition, durationMs }))
   await page.screenshot({ path: '/tmp/channel-candidate-kick-overview-360.png', fullPage: true })
 
   assert(focus.style !== 'none' && parseFloat(focus.width) >= 3, `kick 360: visible focus is missing (${JSON.stringify(focus)}).`)
-  assert(parseFloat(transition) <= 0.001, `kick 360: reduced motion transition is ${transition}.`)
+  assert(durationMs <= 0.011, `kick 360: reduced motion transition is ${transition} (${durationMs}ms).`)
   assert(calls.kick === 1 && calls.twitch === 0, 'kick 360 overview: provider request count is wrong.')
   await noOverflow(page, 'kick overview 360px')
   await context.close()
