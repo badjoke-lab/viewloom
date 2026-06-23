@@ -1,256 +1,272 @@
-# History layout rebuild implementation plan
+# History layout rebuild implementation record
 
-Status: active implementation plan
-Roadmap phase: Phase 1B / Phase 1C
+Status: completed implementation plan and permanent milestone record
+Roadmap phase: Phase 1B / Phase 1C — completed
 Permanent specification: `history-and-trends-spec.md`
-Temporary execution note: `../work-in-progress/history-layout-rebuild-working-note.md`
+Production acceptance: `../operations/history-production-acceptance-2026-06-23.md`
+Completed: 2026-06-23
 
-## 1. Goal
+## 1. Goal and result
 
-Reorganize the existing working History functions into a public-quality analysis experience without changing provider data boundaries or inventing new data capabilities.
+The History rebuild reorganized the existing Twitch and Kick History functions into a public-quality analysis experience without changing provider data boundaries or inventing new data capabilities.
 
-The work is a layout and information-architecture rebuild, not a new History data project.
+The accepted task structure is:
 
-## 2. Invariants
+```text
+Overview
+Archives
+  Daily
+  Peaks
+  Battles
+Report & Export
+```
 
-Every PR in this plan must preserve:
+The work completed through H1–H7 and is deployed in production.
+
+Accepted production SHA:
+
+```text
+3cde59cceb09a0c60f48794d6391cf5c356a1b31
+```
+
+## 2. Preserved invariants
+
+The completed rebuild preserves:
 
 - separate Twitch and Kick routes, APIs, D1 bindings, outputs, and claims;
-- current period and metric support;
-- supported custom-date behavior;
+- current 7-day, 30-day, and supported custom-period behavior;
+- Viewer-minutes and Peak viewers metrics;
 - selected-day synchronization;
-- previous-period data semantics;
+- previous-period semantics and comparability limits;
 - calendar coverage semantics;
 - report, short-post, share-card, CSV, and JSON output contracts;
 - Peak, Battle, Top streamer, and Daily archive data contracts;
-- loading, real, demo, partial, stale, empty, missing, and error distinctions;
+- loading, real, partial, stale, empty, missing, demo, and error distinctions;
 - provider-safe Day Flow, Battle Lines, and Channel links;
-- no extra API request for copy/download actions;
-- no Cloudflare Preview during ordinary `work-*` implementation.
+- loaded-payload reuse for copy, share, and downloads;
+- ordinary implementation on `work-*` branches and deliberate hosted acceptance on `preview-*` branches.
 
-## 3. Planned PR sequence
+No H1–H7 step changed D1 schema, collectors, cron schedules, retention, metrics, provider separation, or export schemas.
+
+## 3. Completed sequence
 
 ### H0 — documentation and baseline
 
-Purpose:
+State: completed.
 
-- merge the canonical roadmap, schedule, specification, plan, and temporary note;
-- capture the current production layout defects;
-- freeze the layout completion criteria before implementation.
+Result:
 
-No UI implementation belongs in H0.
-
-Completion:
-
-- canonical documents are linked from `docs/README.md`;
-- repository entry points require documentation-first execution;
-- active temporary note is present and clearly deletable.
+- canonical roadmap and schedule established;
+- permanent History specification and implementation plan established;
+- temporary working-note lifecycle established;
+- production desktop/mobile defects documented before implementation;
+- implementation did not begin before the governing documents merged.
 
 ### H1 — History view-state and shell contract
 
-Purpose:
+PR: #390
+Merge: `ced6471f9d754919df80c5c47de9ed298658c79a`
+State: completed.
 
-- introduce Overview / Archives / Report & Export state;
-- preserve provider, period, metric, custom dates, and selected day;
-- create a responsive shell without removing current functions.
+Result:
 
-Expected work:
-
-- define History top-level view type and defaults;
-- parse and serialize `view` and `archive` URL state;
-- add accessible top-level tabs;
-- place existing modules into provisional view containers;
-- add contract tests for deep-link and invalid-state fallback;
-- add desktop/mobile browser checks for view switching and back/forward.
-
-Completion:
-
-- all existing History functions remain reachable;
-- no provider crossing;
-- direct URLs restore the intended view;
-- no duplicate API fetch is introduced solely by switching views.
+- Overview / Archives / Report & Export state introduced;
+- Daily / Peaks / Battles archive state introduced;
+- valid provider, period, metric, custom dates, and selected day preserved;
+- direct URLs and invalid-state fallback covered;
+- Back and Forward restoration covered;
+- switching task or archive does not refetch History;
+- all existing functions remained reachable.
 
 ### H2 — Overview rebuild
 
-Purpose:
+PR: #391
+Merge: `6fdff2d45d7a0ce6ef90315e01b4b9b06ff9f939`
+State: completed.
 
-- make Overview answer the period-level question without exposing archives and publishing tools in the initial flow.
+Result:
 
-Expected work:
-
-- compact header and control toolbar;
-- KPI/coverage summary row;
-- main chart as dominant visual;
-- selected-day inspector beside/below the chart;
-- compact previous-period delta strip;
-- calendar heat placement and legend improvement;
-- move Top streamers before archives;
-- supported key-change summary where existing data already provides it.
-
-Completion:
-
-- first desktop viewport shows header/controls, summary, and the start or majority of the main chart;
-- Top streamers follows the primary chart/calendar flow;
-- comparison no longer dominates the chart;
-- Overview contains no full archive grids and no permanently expanded share card.
+- compact header and control hierarchy;
+- KPI and coverage summary;
+- chart-first Overview;
+- selected-day interpretation;
+- compact previous-period comparison;
+- calendar and Top streamers in the primary analysis flow;
+- responsive desktop and mobile ordering;
+- no archive or permanently expanded share-card content in Overview.
 
 ### H3 — Archives rebuild
 
-Purpose:
+PR: #392
+Merge: `35b6896c2582a04ccae0b162dc6f15629c7b5084`
+State: completed.
 
-- stop Daily, Peaks, and Battles from expanding simultaneously.
+Result:
 
-Expected work:
-
-- Archives subview state: `daily`, `peaks`, `battles`;
-- bounded initial rows/cards;
-- load-more or pagination;
-- featured peak treatment;
-- featured/typed battle treatment;
-- dark shared card/list styling;
+- one archive subview visible at a time;
+- Daily bounded to nine visible entries by default;
+- Peaks and Battles bounded to ten visible entries by default;
+- featured and supporting entry hierarchy;
+- shared dark archive surfaces;
 - provider-safe deep links;
-- keyboard and mobile archive navigation.
-
-Completion:
-
-- one archive subview is active at a time;
-- valid archive data never looks disabled or loading;
-- item importance is visible;
-- no unbounded initial archive render.
+- Battle evidence language restricted to retained daily aggregates;
+- desktop, mobile, and keyboard archive navigation verified.
 
 ### H4 — Report & Export consolidation
 
-Purpose:
+PR: #393
+Merge: `afd8f135f5a741bd44108c3f9a8b6f91afc8e50a`
+State: completed.
 
-- consolidate report text, short post, share card, CSV, and JSON into one secondary tool area.
+Result:
 
-Expected work:
-
-- report mode switch within one panel;
-- on-demand share preview;
-- one action bar for copy/PNG/CSV/JSON;
-- existing status and limitation language retained;
-- existing filenames and output contracts retained or deliberately standardized;
-- mobile action layout.
-
-Completion:
-
-- publishing tools no longer interrupt Overview;
-- outputs are generated from the loaded payload;
-- existing browser file-content checks continue to pass;
-- missing values remain blank/null rather than zero.
+- Full report and Short post unified under one mode control;
+- share-card preview made on demand;
+- Copy, PNG, CSV, and JSON actions consolidated;
+- status and limitation language kept in one workspace;
+- outputs reuse the loaded provider response;
+- missing CSV values remain blank and missing JSON values remain null;
+- desktop and mobile actions verified.
 
 ### H5 — visual system and responsive pass
 
-Purpose:
+PR: #394
+Merge: `c0df355df732cde1775452c90431da32b8837aeb`
+State: completed.
 
-- make the restructured page visually coherent and readable.
+Result:
 
-Expected work:
-
-- section typography scale;
-- primary/secondary card hierarchy;
-- provider accent discipline;
-- partial/missing/stale/error treatment;
-- spacing system;
-- desktop max width and chart/inspector proportions;
-- tablet and mobile layouts;
-- focus, contrast, and reduced-motion review.
-
-Completion:
-
-- no horizontal page overflow at supported widths;
-- normal browser zoom is sufficient for labels and values;
-- section hierarchy is visible during full-page scroll;
-- light placeholder-like cards are removed from valid-data views.
+- final cross-view visual layer introduced;
+- shared dark card and section hierarchy;
+- readable typography and spacing;
+- visible keyboard focus;
+- non-color state symbols;
+- long-text wrapping;
+- reduced-motion handling;
+- desktop, tablet, and 390px mobile reconciliation;
+- no page-level horizontal overflow.
 
 ### H6 — complete candidate QA
 
-Purpose:
+PR: #395
+Merge: `7912f8328ff6c163ef9e4296ebbdbcf8f9fde8d8`
+State: completed.
 
-- verify the latest complete candidate, not intermediate commits.
+Result:
 
-Required checks:
-
-- web typecheck and build;
-- History state and URL contract;
-- current calendar, comparison, report, share, export, peak, battle, ranking, and daily archive regressions;
-- provider naming and separation;
-- Twitch desktop browser gate;
-- Kick desktop browser gate;
-- Twitch mobile browser gate;
-- Kick mobile browser gate;
-- keyboard tab/subview navigation;
-- screenshot artifacts for full-page visual review.
-
-Completion:
-
-- all required latest-HEAD checks pass;
-- artifact review finds no clipping, unreadable text, placeholder-looking data cards, or accidental always-expanded section.
+- complete latest-HEAD History and shared-web workflow matrix passed;
+- shell, Overview, Archives, Peak, Battle, comparison, report, share, and export regressions passed;
+- Data Status and Channel Profile shared regressions passed;
+- Twitch/Kick desktop, tablet, and mobile full-page artifacts reviewed;
+- Battle keyboard gate stabilized around the supported chart-activation path.
 
 ### H7 — Cloudflare Preview, production acceptance, and document cleanup
 
-Purpose:
+PR: #396
+Production merge: `3cde59cceb09a0c60f48794d6391cf5c356a1b31`
+State: completed.
 
-- verify the complete candidate with real Cloudflare runtime and retained data;
-- close the temporary documentation lifecycle.
+Result:
 
-Expected sequence:
+1. `preview-history-h7` deployed through the configured `preview-*` rule;
+2. Preview Pages Functions and separate Twitch/Kick D1 bindings were verified;
+3. Preview History APIs returned real retained observations;
+4. Twitch desktop and Kick 390px hosted browser acceptance passed;
+5. the final candidate merged to `main`;
+6. `/deployment.json` reported production, main, and the exact accepted SHA;
+7. the temporary H7 marker returned the explicit production 404 page;
+8. public Twitch/Kick History browser acceptance passed;
+9. production artifacts were reviewed;
+10. stable decisions moved into permanent documentation;
+11. the temporary working note and milestone-specific acceptance files were retired.
 
-1. create a `preview-*` branch from the complete verified candidate;
-2. verify Pages Functions, D1 bindings, real Twitch/Kick rendering, and responsive layout;
-3. return to the work branch for any material repair;
-4. merge the final candidate to `main`;
-5. confirm exact production deployment SHA through `deployment.json`;
-6. run Production Smoke and manual visual acceptance;
-7. transfer stable decisions and final component behavior into `history-and-trends-spec.md`;
-8. update roadmap and schedule;
-9. delete `docs/work-in-progress/history-layout-rebuild-working-note.md`;
-10. remove the temporary-note link from `docs/README.md`.
-
-Completion:
-
-- production Twitch and Kick History are visually accepted;
-- expected main SHA is deployed;
-- production smoke is green;
-- temporary note is deleted;
-- permanent docs describe the final implementation;
-- Channel / Streamer v1 becomes the active roadmap phase.
-
-## 4. Implementation boundaries
-
-Do not combine this work with:
-
-- D1 schema changes;
-- collector or cron changes;
-- new History metrics;
-- new archive event types;
-- Session reconstruction;
-- Category/Language trends;
-- login, Watchlist, Alerts, or AI text generation;
-- unrelated Heatmap, Day Flow, or Battle Lines redesign.
-
-A required exception must update the roadmap/specification before implementation.
-
-## 5. PR requirements
-
-Each History rebuild PR must include:
+Preview evidence:
 
 ```text
-Roadmap phase:
-Specification sections:
-Plan step:
-Temporary-note decisions addressed:
-Providers affected:
-Data/API/DB/collector changes:
-Targeted checks:
-Final checks:
-Preview required:
-Production verification pending:
+workflow run: 27998433929
 ```
 
-The PR must update the temporary working note when it resolves, changes, or discovers a layout decision.
+Production evidence:
 
-## 6. Rollback principle
+```text
+workflow run: 27999024838
+artifact id: 7810348478
+```
 
-The rebuild must remain reversible by logical PR. Do not delete working modules merely because they are moved into a new view. Remove old wrappers/styles only after the replacement is covered by current contracts and browser gates.
+## 4. Accepted browser and artifact matrix
+
+Repository candidate:
+
+- Twitch desktop Overview;
+- Twitch desktop Archives;
+- Twitch desktop Report & Export;
+- Kick desktop Overview and Archives;
+- Twitch tablet Report & Export with reduced motion;
+- Twitch and Kick mobile task switching and archives;
+- keyboard task, archive, focus, calendar, and battle activation;
+- shared Status and Channel links.
+
+Hosted Preview:
+
+- real Twitch History API;
+- real Kick History API;
+- Twitch desktop task/archive/report flow;
+- Kick 390px task/archive/report flow;
+- visible archive bounds;
+- touch target and overflow checks;
+- full-page screenshot review.
+
+Production:
+
+- exact deployment identity;
+- public History routes;
+- public marker absence and explicit 404 behavior;
+- real retained-data APIs;
+- Twitch desktop full-page acceptance;
+- Kick 390px full-page acceptance.
+
+## 5. Stable implementation decisions
+
+- Overview remains the canonical default URL.
+- View and archive state live in URL-compatible state and support Back/Forward.
+- Task switching is client-side over one loaded History payload.
+- Top streamers belongs in Overview.
+- Previous-period comparison remains secondary to the chart.
+- Daily, Peaks, and Battles are separated and bounded.
+- Daily cards may remain in the DOM while hidden by accepted visibility controls; the default visible set remains bounded.
+- Battle archive keyboard activation targets the matching chart day and does not depend on a URL change when the same day is already selected.
+- Report and export tools remain one secondary workspace.
+- Share-card drawing remains on demand.
+- output formats preserve provider, period, coverage, source, and missing-value semantics.
+- visual focus, state, and selected treatment do not rely on color alone.
+- mobile is an ordered one-column product layout, not a scaled desktop page.
+
+## 6. Boundaries for future changes
+
+Future History changes must not be added to this completed milestone unless they are verified defects in accepted behavior.
+
+Separate roadmap/specification work is required for:
+
+- new metrics;
+- new archive types;
+- D1 or collector changes;
+- session reconstruction;
+- category or language trends;
+- cross-platform comparison;
+- login, Watchlist, Alerts, or AI interpretation;
+- additional report modes;
+- density-increasing sections.
+
+## 7. Rollback and maintenance principle
+
+The rebuild remains logically traceable through PRs #390–#396. Permanent regression gates cover the accepted task shell, Overview, Archives, Peak, Battle, comparison, visual/responsive behavior, and shared links.
+
+Maintenance changes must:
+
+- reproduce the defect;
+- preserve provider and data honesty invariants;
+- add or update the narrowest permanent gate;
+- pass the complete affected workflow matrix;
+- use deliberate Preview and production acceptance when runtime behavior changes.
+
+This plan is complete and is retained as the implementation record. It is not an active queue for additional History features.

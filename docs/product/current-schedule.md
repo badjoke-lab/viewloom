@@ -1,9 +1,9 @@
 # ViewLoom current execution schedule
 
 Status: source of truth
-Schedule reset: 2026-06-21
+Last updated: 2026-06-23
 
-This schedule replaces earlier rebuild plans that assumed Cloudflare setup, Twitch/Kick mirroring, History creation, or basic page availability were still future work.
+This schedule reflects the verified repository and production state. Earlier windows that treated the History rebuild as future work are historical and no longer control execution.
 
 ## 1. Scheduling rules
 
@@ -11,9 +11,11 @@ This schedule replaces earlier rebuild plans that assumed Cloudflare setup, Twit
 - P0 production failures interrupt the schedule immediately.
 - P1 defects interrupt the active phase when they block its acceptance criteria.
 - P2 polish is grouped unless it belongs to the active milestone.
-- A phase is complete only when repository checks, required browser checks, and required production verification are complete.
+- A phase is complete only when repository checks, required browser checks, Preview requirements, and production verification are complete.
 - GitHub merge status alone does not complete a phase.
 - Each implementation PR must cite the roadmap phase, permanent specification, implementation plan, and active working note when one exists.
+- `work-*` branches are ordinary implementation branches and do not receive Cloudflare Preview deployments.
+- deliberate hosted validation uses an approved `preview-*` branch.
 
 ## 2. Current position
 
@@ -23,188 +25,264 @@ Twitch/Kick D1 binding verification  complete
 Collector freshness verification     complete
 Core v1 production deployment        complete
 History functional expansion         complete
-History public layout acceptance     not complete
+History layout rebuild H1–H6         complete
+History Preview acceptance H7        complete
+History production acceptance H7     complete
+History temporary-note lifecycle     complete
+```
+
+Accepted History production SHA:
+
+```text
+3cde59cceb09a0c60f48794d6391cf5c356a1b31
 ```
 
 Current active phase:
 
 ```text
-Phase 1B — History information architecture and layout rebuild
+Phase 3 preparation — Channel / Streamer v1 audit and specification reset
 ```
 
-## 3. Planned execution windows
+## 3. Completed History execution record
 
-The dates below are planning windows, not permission to skip completion criteria.
+### H0 — documentation and baseline
 
-### 2026-06-22 to 2026-06-23 — documentation reset and History baseline
+State: completed.
 
-Deliverables:
+Delivered:
 
 - canonical documentation index;
 - current roadmap and schedule;
-- permanent History specification update;
+- permanent History specification;
 - History layout implementation plan;
-- temporary History working note;
-- repository entry-point updates;
-- current desktop/mobile screenshot baseline and defect inventory.
+- temporary working note and deletion rule;
+- production screenshot baseline and defect inventory.
 
-Completion criteria:
+### H1 — layout contract and navigation state
 
-- all governing files are linked from `docs/README.md`;
-- README, AGENTS, CONTRIBUTING, and operating policy require document-first execution;
-- temporary-note deletion rule is explicit;
-- no History implementation begins before this phase merges.
+State: completed through PR #390.
 
-### 2026-06-24 to 2026-06-25 — H1: layout contract and navigation state
-
-Deliverables:
+Delivered:
 
 - Overview / Archives / Report & Export view contract;
-- URL and deep-link behavior;
-- responsive layout skeleton;
-- no loss of existing data state, selected day, metric, period, or provider separation.
+- URL and deep-link state;
+- accessible task tabs;
+- Back and Forward restoration;
+- provider, period, metric, custom-date, and selected-day preservation;
+- no additional History request when switching tasks.
 
-Completion criteria:
+### H2 — Overview rebuild
 
-- state contract and browser gate are present;
-- all existing History modules still render through the new shell or remain reachable;
-- Twitch and Kick use the same structure with provider-specific accents only.
+State: completed through PR #391.
 
-### 2026-06-26 to 2026-06-28 — H2: Overview rebuild
+Delivered:
+
+- compact header and control hierarchy;
+- KPI and coverage summary;
+- chart-first primary analysis;
+- selected-day inspector;
+- compact previous-period comparison;
+- calendar and Top streamers in the primary flow;
+- responsive desktop/mobile order.
+
+### H3 — Archives rebuild
+
+State: completed through PR #392.
+
+Delivered:
+
+- Daily / Peaks / Battles subviews;
+- one visible archive type at a time;
+- bounded initial results;
+- featured and typed archive entries;
+- provider-safe links;
+- desktop/mobile/keyboard archive access.
+
+### H4 — Report & Export consolidation
+
+State: completed through PR #393.
+
+Delivered:
+
+- Full report and Short post mode switch;
+- on-demand share-card preview;
+- one action group for copy, PNG, CSV, and JSON;
+- loaded-payload reuse;
+- preserved missing-value, provider, filename, and export contracts;
+- responsive action layout.
+
+### H5 — visual-system and responsive pass
+
+State: completed through PR #394.
+
+Delivered:
+
+- shared dark surface hierarchy;
+- readable typography and spacing;
+- visible focus and non-color state symbols;
+- reduced-motion behavior;
+- desktop, tablet, and 390px mobile layouts;
+- no page-level horizontal overflow.
+
+### H6 — complete candidate QA
+
+State: completed through PR #395.
+
+Delivered:
+
+- complete latest-HEAD History and shared-web workflow matrix;
+- Twitch/Kick desktop, tablet, and mobile artifacts;
+- shell, Overview, Archives, Peak, Battle, comparison, export, Status, and Channel regressions;
+- full-page visual review.
+
+### H7 — Preview, production, and document closure
+
+State: completed through PR #396 and the production acceptance gate.
+
+Delivered:
+
+- deliberate `preview-history-h7` deployment;
+- separate Preview Twitch/Kick D1 binding verification;
+- real retained-data API verification;
+- Twitch desktop and Kick 390px hosted browser acceptance;
+- exact production deployment identity verification;
+- public marker absence and explicit 404 verification;
+- production desktop/mobile browser acceptance;
+- permanent acceptance record;
+- roadmap and schedule transition;
+- temporary working-note retirement.
+
+Permanent record:
+
+```text
+docs/operations/history-production-acceptance-2026-06-23.md
+```
+
+## 4. Next execution window — Channel / Streamer v1 preparation
+
+Target: begin after this documentation cleanup merges.
+
+### C0 — current implementation and data audit
+
+Target duration: 1–2 workdays.
 
 Deliverables:
 
-- compact header and sticky controls;
-- summary KPI row with coverage visible above the fold;
-- primary chart with selected-day inspector;
-- compact previous-period delta strip;
-- calendar heat;
-- Top streamers moved into the primary analysis flow;
-- key changes / notable movement summary where supported by existing data.
+- identify current Twitch/Kick Channel routes, APIs, entry files, state, styles, and browser gates;
+- document retained fields actually available for 7-day and 30-day use;
+- identify claims that cannot be made from retained Top 10 appearances;
+- inventory current provider-safe links and export code;
+- capture desktop/mobile production baseline;
+- list P0/P1 defects separately from planned expansion.
 
 Completion criteria:
 
-- the first screen explains the selected period without scrolling through report or archive tools;
-- main chart is the dominant visual element;
-- normal desktop text is readable without zoom;
-- mobile preserves order and controls without horizontal overflow.
+- current behavior and data limits are written down;
+- unsupported exact-session claims are explicitly excluded;
+- provider separation and Free-plan constraints are confirmed;
+- no implementation begins from an old plan alone.
 
-### 2026-06-29 to 2026-07-01 — H3: Archives rebuild
+### C1 — Channel permanent specification and implementation plan
+
+Target duration: 1 workday.
 
 Deliverables:
 
-- Archives view with Daily / Peaks / Battles subviews;
-- bounded initial item counts;
-- load-more or explicit pagination;
-- featured peak and featured battle treatment;
-- provider-safe Day Flow and Battle Lines links.
+- permanent Channel / Streamer v1 specification;
+- state, URL, period, coverage, and export contracts;
+- PR-sliced implementation plan;
+- browser and production acceptance matrix;
+- temporary working note only when unresolved decisions require one.
 
 Completion criteria:
 
-- Peak, Battle, and Daily archives are not fully expanded at once;
-- archive cards use the shared dark system rather than unfinished-looking light blocks;
-- important events are visually ranked;
-- keyboard and mobile access are verified.
+- scope and non-goals are fixed;
+- retained observation language is explicit;
+- roadmap and plan agree on the first implementation PR.
 
-### 2026-07-02 to 2026-07-03 — H4: Report & Export consolidation
+### C2 — Channel shell and period state
 
-Deliverables:
+Target duration: 1–2 workdays.
 
-- Full report and Short post in one tool group;
-- Share card preview generated on demand;
-- CSV and JSON downloads in one action area;
-- consistent provider, period, filename, and coverage wording.
+Provisional scope:
 
-Completion criteria:
+- provider-specific route and page state;
+- 7-day / 30-day period controls;
+- clean URL and Back/Forward behavior;
+- shared loading, partial, stale, empty, error, and demo states;
+- no invented session timeline.
 
-- report tools do not interrupt Overview analysis;
-- outputs continue to use the already loaded History payload;
-- no extra provider crossing or API request is introduced;
-- download and copy behavior works on desktop and mobile.
+Entry criteria:
 
-### 2026-07-04 to 2026-07-05 — H5: visual-system and responsive pass
+- C0 and C1 merged;
+- current build and production smoke green.
 
-Deliverables:
+### C3 — retained trend and appearances
 
-- typography scale;
-- card hierarchy;
-- spacing hierarchy;
-- selected / partial / missing / stale / error treatments;
-- desktop, tablet, and mobile final layouts;
-- contrast and keyboard focus review.
+Target duration: 2–3 workdays.
 
-Completion criteria:
+Provisional scope:
 
-- no section appears disabled merely because of a light placeholder-like background;
-- primary and secondary actions are visually distinct;
-- no horizontal overflow at supported mobile widths;
-- section hierarchy remains understandable during a full-page scroll.
+- retained appearance summary;
+- viewer-minute and peak facts supported by current payload;
+- trend and comparison language constrained by coverage;
+- links back to History and relevant daily/rivalry views.
 
-### 2026-07-06 to 2026-07-07 — H6/H7: final QA, Preview, production acceptance
+### C4 — rivalry, copy, and export
 
-Deliverables:
+Target duration: 1–2 workdays.
 
-- complete History contract and browser gates;
-- deliberate `preview-*` validation against real D1 data;
-- Twitch and Kick desktop/mobile visual acceptance;
-- production deployment identity and smoke verification;
-- permanent specification finalization;
-- temporary working note deletion.
+Provisional scope:
 
-Completion criteria:
-
-- latest candidate CI is fully green;
-- Preview runtime and D1 bindings are verified where required;
-- production deploys the expected main SHA;
-- Twitch and Kick History pass manual visual acceptance;
-- `docs/work-in-progress/history-layout-rebuild-working-note.md` is deleted;
-- stable decisions are transferred into permanent specifications;
-- roadmap and schedule move History to complete and Channel to active.
-
-## 4. Work after History
-
-### 2026-07-08 to 2026-07-14 — Channel / Streamer v1
-
-Target duration: 5–7 workdays.
-
-Scope:
-
-- period views;
-- retained channel trend and appearances;
-- peaks and rivalry candidates;
-- provider-safe deep links;
-- copy summary;
+- retained rivalry candidates;
+- copyable provider-specific summary;
 - CSV / JSON export;
-- desktop/mobile acceptance.
+- consistent filenames and null/blank behavior;
+- no cross-provider request or output.
 
-### 2026-07-15 to 2026-07-18 — report component consolidation
+### C5 — visual, browser, Preview, and production acceptance
 
-Target duration: 3–4 workdays.
+Target duration: 1–2 workdays.
+
+Completion criteria:
+
+- full latest-HEAD matrix green;
+- desktop/tablet/mobile and keyboard acceptance;
+- deliberate `preview-*` verification where required;
+- exact production SHA and public smoke verification;
+- stable decisions transferred to permanent docs;
+- temporary note removed when used.
+
+## 5. Work after Channel
+
+### Report/export component consolidation
+
+Target duration: 3–4 workdays after Channel production acceptance.
 
 Scope:
 
-- reuse stable report/share/export components across History and Channel;
-- standardize labels, coverage copy, filenames, and responsive behavior;
+- reuse accepted History and Channel report/share/export primitives;
+- standardize labels, filenames, coverage copy, status text, and responsive actions;
 - remove duplication without changing data contracts.
 
-### 2026-07-19 to 2026-07-22 — next-feature data-capability audit
+### Next-feature data-capability audit
 
-Target duration: 2–4 workdays.
+Target duration: 2–4 workdays after component consolidation.
 
 Scope:
 
 - Session feasibility;
 - Category/Game and Language retention;
-- Event layer inputs;
-- Watchlist/Alerts cost and data requirements;
+- Event-layer inputs;
+- Watchlist/Alerts data and cost;
 - Free-plan compatibility;
-- one recommended next feature.
+- one recommended next major feature.
 
-### 2026-07-23 onward — one approved expansion
+### One approved expansion
 
 Begin only after the audit updates the roadmap and permanent specifications.
 
-## 5. Status update format
+## 6. Status update format
 
 When updating this schedule, use:
 
@@ -218,4 +296,4 @@ Blockers:
 Next executable step:
 ```
 
-Do not mark a phase complete because implementation exists on a branch. Completion requires all criteria listed above.
+Do not mark a phase complete because implementation exists on a branch. Completion requires all listed repository, hosted, and production criteria.

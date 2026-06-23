@@ -6,6 +6,7 @@ const failures = []
 const read = (path) => readFileSync(join(root, path), 'utf8')
 const assert = (condition, message) => { if (!condition) failures.push(message) }
 
+const completedHistoryWorkingNote = 'docs/work-in-progress/history-layout-rebuild-working-note.md'
 const requiredFiles = [
   'AGENTS.md',
   'CONTRIBUTING.md',
@@ -14,16 +15,17 @@ const requiredFiles = [
   'docs/operations/development-and-deployment-policy.md',
   'docs/operations/development-policy-addendum.md',
   'docs/operations/documentation-governance.md',
+  'docs/operations/history-production-acceptance-2026-06-23.md',
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/history-and-trends-spec.md',
   'docs/product/history-layout-rebuild-plan.md',
-  'docs/work-in-progress/history-layout-rebuild-working-note.md',
   '.github/pull_request_template.md',
   '.github/workflows/development-policy.yml',
 ]
 
 for (const path of requiredFiles) assert(existsSync(join(root, path)), `Missing required policy/document file: ${path}`)
+assert(!existsSync(join(root, completedHistoryWorkingNote)), `Completed History working note must remain deleted: ${completedHistoryWorkingNote}`)
 
 if (failures.length === 0) {
   const policyPath = 'docs/operations/development-and-deployment-policy.md'
@@ -54,12 +56,14 @@ if (failures.length === 0) {
     'operations/development-and-deployment-policy.md',
     'operations/development-policy-addendum.md',
     'operations/documentation-governance.md',
+    'operations/history-production-acceptance-2026-06-23.md',
     'product/current-roadmap.md',
     'product/current-schedule.md',
     'product/history-and-trends-spec.md',
     'product/history-layout-rebuild-plan.md',
-    'work-in-progress/history-layout-rebuild-working-note.md',
   ]) assert(index.includes(path), `${indexPath}: missing canonical document link: ${path}`)
+  assert(!index.includes(completedHistoryWorkingNote.replace('docs/', '')), `${indexPath}: completed History working note is still linked.`)
+  assert(index.includes('There is no active History rebuild working note.'), `${indexPath}: completed History working-note state is not recorded.`)
 
   const governance = read('docs/operations/documentation-governance.md')
   for (const fragment of [
@@ -71,40 +75,47 @@ if (failures.length === 0) {
 
   const roadmap = read('docs/product/current-roadmap.md')
   for (const fragment of [
-    'History information architecture and layout rebuild',
-    'Channel / Streamer v1 completion',
-    'data-capability audit',
+    'History & Trends | layout rebuild and production acceptance complete',
+    'Phase 3 — Channel / Streamer v1 completion',
+    'Phase 5 — next-feature data-capability audit',
+    '3cde59cceb09a0c60f48794d6391cf5c356a1b31',
   ]) assert(roadmap.includes(fragment), `current-roadmap.md: missing ${fragment}`)
 
   const schedule = read('docs/product/current-schedule.md')
   for (const fragment of [
-    'Phase 1B — History information architecture and layout rebuild',
-    'H6/H7: final QA, Preview, production acceptance',
-    'temporary working note deletion',
+    'History production acceptance H7     complete',
+    'Phase 3 preparation — Channel / Streamer v1 audit and specification reset',
+    'H7 — Preview, production, and document closure',
+    'temporary working-note retirement',
   ]) assert(schedule.includes(fragment), `current-schedule.md: missing ${fragment}`)
 
   const historySpec = read('docs/product/history-and-trends-spec.md')
   for (const fragment of [
+    'Status: accepted production product specification',
     'Overview',
     'Archives',
     'Report & Export',
-    'At completion, stable implementation decisions are transferred here and the temporary working note is deleted.',
+    'Accepted implementation record',
+    '3cde59cceb09a0c60f48794d6391cf5c356a1b31',
   ]) assert(historySpec.includes(fragment), `history-and-trends-spec.md: missing ${fragment}`)
 
   const historyPlan = read('docs/product/history-layout-rebuild-plan.md')
   for (const fragment of [
+    'Status: completed implementation plan and permanent milestone record',
     'H1 — History view-state and shell contract',
     'H7 — Cloudflare Preview, production acceptance, and document cleanup',
-    'delete `docs/work-in-progress/history-layout-rebuild-working-note.md`',
+    'This plan is complete and is retained as the implementation record.',
   ]) assert(historyPlan.includes(fragment), `history-layout-rebuild-plan.md: missing ${fragment}`)
 
-  const workingNote = read('docs/work-in-progress/history-layout-rebuild-working-note.md')
+  const acceptancePath = 'docs/operations/history-production-acceptance-2026-06-23.md'
+  const acceptance = read(acceptancePath)
   for (const fragment of [
-    'Status: active temporary note',
-    'Delete when:',
-    'Problem inventory',
-    'Deletion checklist',
-  ]) assert(workingNote.includes(fragment), `history-layout-rebuild-working-note.md: missing ${fragment}`)
+    'Status: completed permanent record',
+    '3cde59cceb09a0c60f48794d6391cf5c356a1b31',
+    '27998433929',
+    '27999024838',
+    '7810348478',
+  ]) assert(acceptance.includes(fragment), `${acceptancePath}: missing ${fragment}`)
 
   for (const entryPath of ['AGENTS.md', 'CONTRIBUTING.md']) {
     const entry = read(entryPath)
@@ -185,4 +196,5 @@ if (failures.length) {
 
 console.log('ViewLoom development, documentation, and deployment policy verification passed.')
 console.log(`- ${requiredFiles.length} policy/document files present`)
+console.log('- completed History working note remains retired')
 console.log(`- ${concurrencyWorkflows.length} active workflows cancel obsolete runs`)
