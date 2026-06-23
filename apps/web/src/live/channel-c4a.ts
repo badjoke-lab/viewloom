@@ -115,8 +115,8 @@ function compareBattles(leftValue: unknown, rightValue: unknown): number {
   const left = battleEntry(leftValue)
   const right = battleEntry(rightValue)
   return descendingNumber(left.score, right.score)
-    || ascendingNumber(absNumber(left.viewerMinutesGap), absNumber(right.viewerMinutesGap))
     || descendingText(left.day, right.day)
+    || ascendingNumber(absNumber(left.viewerMinutesGap), absNumber(right.viewerMinutesGap))
     || ascendingText(pairKey(left), pairKey(right))
     || ascendingText(displayKey(left), displayKey(right))
 }
