@@ -152,7 +152,7 @@ async function runC4a(browser, provider, viewport, screenshot) {
   await page.locator('[data-channel-view="overview"]').click()
   await page.waitForFunction(() => document.body.dataset.channelView === 'overview')
   const rivals = await page.locator('.channel-rival-card strong').allTextContents()
-  assert(JSON.stringify(rivals) === JSON.stringify(['Delta', 'Echo', 'Gamma']), `${provider}: rivalry ordering is not deterministic (${rivals.join(', ')}).`)
+  assert(JSON.stringify(rivals) === JSON.stringify(['Delta', 'Echo', 'Beta']), `${provider}: rivalry ordering must prioritize recency before gap (${rivals.join(', ')}).`)
   assert(calls[provider] === 1, `${provider}: task switch refetched History data.`)
 
   await noOverflow(page, `${provider} C4A ${viewport.width}px`)
