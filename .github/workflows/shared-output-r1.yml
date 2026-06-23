@@ -1,4 +1,4 @@
-name: Shared Output R1
+name: Shared Output Contracts
 
 on:
   pull_request:
@@ -32,9 +32,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Typecheck shared output modules
+      - name: Typecheck output modules and adoption
         run: pnpm --filter @viewloom/web typecheck:app
 
       - name: Verify shared output R1 contract
         working-directory: apps/web
         run: node scripts/verify-shared-output-r1.mjs
+
+      - name: Verify exact History R2 outputs
+        working-directory: apps/web
+        run: node scripts/verify-history-output-r2.mjs
