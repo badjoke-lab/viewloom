@@ -129,6 +129,9 @@ if (failures.length === 0) {
     'What the current data cannot prove',
     'C1 specification',
     'no Channel runtime behavior changes',
+    '28004912659',
+    '7812384078',
+    'C0 state: completed in PR #398',
   ]) assert(channelAudit.includes(fragment), `${activeChannelAudit}: missing ${fragment}`)
 
   for (const entryPath of ['AGENTS.md', 'CONTRIBUTING.md']) {
@@ -211,5 +214,5 @@ if (failures.length) {
 console.log('ViewLoom development, documentation, and deployment policy verification passed.')
 console.log(`- ${requiredFiles.length} policy/document files present`)
 console.log('- completed History working note remains retired')
-console.log('- active Channel v1 audit note is indexed and governed')
+console.log('- completed Channel C0 audit is indexed and retained for C1')
 console.log(`- ${concurrencyWorkflows.length} active workflows cancel obsolete runs`)
