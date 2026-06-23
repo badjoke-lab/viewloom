@@ -25,8 +25,9 @@ Channel C0-C5A                           complete
 Channel C5B Preview acceptance            complete
 Channel C5B production acceptance         complete
 Channel temporary files and notes         complete through PR #408
+Report/export R0 boundary audit           complete through PR #409
+Report/export R1 shared primitives        active in work-report-export-r1-shared-output
 History UI appearance revision            pending screenshots and instructions
-Report/export shared-layer audit          active in work-report-export-r0-audit
 ```
 
 Accepted production revisions:
@@ -40,8 +41,9 @@ Current active phase:
 
 ```text
 Phase 4 — Report & Export shared-layer consolidation
-R0 — current implementation and boundary audit
-branch: work-report-export-r0-audit
+R1 — neutral shared output primitives
+branch: work-report-export-r1-shared-output
+PR: #410
 ```
 
 Governing Phase 4 documents:
@@ -49,6 +51,7 @@ Governing Phase 4 documents:
 ```text
 docs/product/report-export-consolidation-plan.md
 docs/work-in-progress/report-export-r0-audit.md
+apps/web/docs/shared-output-r1-contract.md
 ```
 
 ## 3. Completed History record
@@ -132,15 +135,17 @@ Accepted result:
 
 ### R0 — shared Report & Export audit
 
-State: active.
+State: completed through PR #409.
 
-Branch:
+Branch and merge:
 
 ```text
-work-report-export-r0-audit
+branch: work-report-export-r0-audit
+PR: #409
+merge: 46cea2eceff85b4f5a359446d102d7bc6afe3487
 ```
 
-Deliverables:
+Completed deliverables:
 
 - current History and Channel implementation inventory;
 - data-flow and request-ownership comparison;
@@ -149,7 +154,7 @@ Deliverables:
 - intentional-difference and risk register;
 - preservation-test matrix;
 - permanent R1–R4 implementation plan;
-- active temporary audit note registered in the documentation index.
+- temporary audit note registered in the documentation index.
 
 Accepted R0 boundary:
 
@@ -174,19 +179,9 @@ payload capture
 DOM/CSS/status copy
 ```
 
-Completion criteria:
-
-- shared and feature-specific boundaries are explicit;
-- History spreadsheet-safety and Channel CSV differences are recorded;
-- filename semantics remain feature-owned;
-- no runtime, serialized-output, DOM, CSS, or visual change;
-- no History UI change;
-- R1 branch and signatures are unambiguous;
-- documentation and policy/build checks pass.
-
 ### R1 — neutral shared output primitives
 
-State: queued after R0.
+State: active in PR #410.
 
 Branch:
 
@@ -194,22 +189,43 @@ Branch:
 work-report-export-r1-shared-output
 ```
 
-Scope:
+Implemented scope:
 
-- neutral provider type and display label;
-- filename-segment sanitization and composition;
-- CSV syntax helpers with explicit spreadsheet-safety policy;
-- finite number to blank/null helpers;
-- clipboard API and fallback transport;
-- Blob/object-URL text download transport;
-- internal operation result type;
-- direct static/unit-style contract tests.
+```text
+apps/web/src/shared/output/provider.ts
+apps/web/src/shared/output/filename.ts
+apps/web/src/shared/output/csv.ts
+apps/web/src/shared/output/values.ts
+apps/web/src/shared/output/clipboard.ts
+apps/web/src/shared/output/download.ts
+apps/web/src/shared/output/result.ts
+```
 
-Rules:
+Contract and verification:
 
-- no History or Channel imports in the shared layer;
-- no feature adoption in R1;
-- no DOM, CSS, API, D1, collector, cron, retention, report text, schema, or output-byte change.
+```text
+apps/web/docs/shared-output-r1-contract.md
+apps/web/scripts/verify-shared-output-r1.mjs
+.github/workflows/shared-output-r1.yml
+```
+
+R1 contract:
+
+- providers remain exactly Twitch and Kick;
+- filename helpers preserve Unicode letters/numbers and remove unsafe path/control characters;
+- CSV supports explicit `minimal` and `always` quote modes;
+- spreadsheet formula safety is opt-in and matches accepted History behavior;
+- finite numeric strings are not coerced;
+- clipboard and download helpers return neutral result objects and own no visible message;
+- shared modules import no History or Channel code;
+- History and Channel are not migrated in R1.
+
+R1 completion criteria:
+
+- dedicated typecheck and executable contract workflow succeeds;
+- existing Web build/check and affected History/Channel gates succeed;
+- no feature output byte, schema, filename, report text, DOM, CSS, request, API, D1, collector, cron, or retention change;
+- latest PR head is mergeable with no unresolved review thread.
 
 ### R2 — conditional History internal adoption
 
