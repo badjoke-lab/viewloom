@@ -23,8 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      HISTORY_H7_PREVIEW_URL: https://fix-history-usability-pass.viewloom.pages.dev
-      HISTORY_H7_PRODUCTION_URL: https://vl.badjoke-lab.com
+      HISTORY_H7_PREVIEW_URL: https://preview-history-h7.viewloom.pages.dev
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -35,12 +34,12 @@ jobs:
           node-version: 22
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm build:web
-      - name: Wait for known Cloudflare Preview branch
+      - name: Wait for configured Cloudflare Preview branch
         run: |
-          getent ahosts fix-history-usability-pass.viewloom.pages.dev | tee /tmp/history-h7-dns.txt || true
+          getent ahosts preview-history-h7.viewloom.pages.dev | tee /tmp/history-h7-dns.txt || true
           for attempt in {1..18}; do
             status="$(curl --silent --show-error --output /tmp/history-h7-marker.json --write-out '%{http_code}' --max-time 20 "$HISTORY_H7_PREVIEW_URL/history-h7-candidate.json?qa=$GITHUB_SHA" 2>> /tmp/history-h7-curl.log || true)"
-            if [ "$status" = "200" ] && grep -q 'history-h7-pr-396' /tmp/history-h7-marker.json; then
+            if [ "$status" = "200" ] && grep -q '2026-06-23-h7-2' /tmp/history-h7-marker.json; then
               echo "H7 Preview marker is available at $HISTORY_H7_PREVIEW_URL"
               cat /tmp/history-h7-marker.json
               exit 0
@@ -48,7 +47,7 @@ jobs:
             echo "Preview attempt $attempt returned HTTP $status or an older marker"
             sleep 10
           done
-          echo "Known Cloudflare Preview branch did not publish the H7 marker."
+          echo "Configured Cloudflare Preview branch did not publish the H7 marker."
           cat /tmp/history-h7-dns.txt || true
           cat /tmp/history-h7-curl.log || true
           cat /tmp/history-h7-marker.json || true
@@ -57,11 +56,10 @@ jobs:
         working-directory: apps/web
       - run: npx playwright install --with-deps chromium
         working-directory: apps/web
-      - name: Verify hosted Twitch and Kick History
+      - name: Verify hosted Twitch and Kick History with Preview bindings
         working-directory: apps/web
         env:
-          HISTORY_H7_PREVIEW_URL: https://fix-history-usability-pass.viewloom.pages.dev
-          HISTORY_H7_PRODUCTION_URL: https://vl.badjoke-lab.com
+          HISTORY_H7_PREVIEW_URL: https://preview-history-h7.viewloom.pages.dev
           HISTORY_H7_ARTIFACT_DIR: artifacts/history-h7-hosted
         run: node scripts/history-h7-hosted-browser.mjs
       - uses: actions/upload-artifact@v4
