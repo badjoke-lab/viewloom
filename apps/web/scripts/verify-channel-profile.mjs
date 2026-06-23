@@ -66,7 +66,7 @@ for (const [label, source, provider] of [
     'data-channel-rivals',
     'data-channel-scope',
     '/src/live/channel-profile.ts',
-    'Retained ranking footprint',
+    'retained ranking footprint',
     'Session history',
     'Unavailable',
   ]) assert(source.includes(fragment), `${label} channel page missing: ${fragment}`)
