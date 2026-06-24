@@ -25,11 +25,13 @@ try {
   check(await page.locator('[data-watchlist-empty]').isVisible(), 'Kick empty state is not visible.')
   check(calls.api.length === 0, `Kick empty Watchlist issued API requests: ${JSON.stringify(calls.api)}`)
 
-  const menu = page.getByRole('button', { name: 'Open navigation' })
+  const menu = page.locator('[data-mobile-menu]')
   await menu.click()
   check(await page.locator('.global-nav').evaluate((node) => getComputedStyle(node).display !== 'none'), 'Mobile global navigation did not open.')
   check(await menu.getAttribute('aria-expanded') === 'true', 'Mobile menu did not expose expanded state.')
+  check(await menu.getAttribute('aria-label') === 'Close navigation', 'Mobile menu label did not switch to close state.')
   await menu.click()
+  check(await menu.getAttribute('aria-expanded') === 'false', 'Mobile menu did not close.')
 
   const input = page.getByLabel('Kick channel id or Kick URL')
   await input.fill('https://kick.com/Kick_One/')
