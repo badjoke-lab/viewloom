@@ -7,6 +7,7 @@ on:
       - 'apps/web/twitch/watchlist/**'
       - 'apps/web/kick/watchlist/**'
       - 'apps/web/src/live/watchlist-page.ts'
+      - 'apps/web/src/live/watchlist-move-focus.ts'
       - 'apps/web/src/watchlist-page.css'
       - 'apps/web/src/provider-home.ts'
       - 'apps/web/src/provider-home-shell.ts'
@@ -26,6 +27,7 @@ on:
       - 'apps/web/twitch/watchlist/**'
       - 'apps/web/kick/watchlist/**'
       - 'apps/web/src/live/watchlist-page.ts'
+      - 'apps/web/src/live/watchlist-move-focus.ts'
       - 'apps/web/src/watchlist-page.css'
       - 'apps/web/src/provider-home.ts'
       - 'apps/web/src/provider-home-shell.ts'
@@ -90,12 +92,18 @@ jobs:
         working-directory: apps/web
         env:
           WATCHLIST_BASE_URL: http://127.0.0.1:4173
-        run: node scripts/watchlist-shell-browser-core.mjs
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/watchlist-shell-browser-core.mjs 2>&1 | tee -a /tmp/watchlist-shell-preview.log
       - name: Verify narrow responsive shell
         working-directory: apps/web
         env:
           WATCHLIST_BASE_URL: http://127.0.0.1:4173
-        run: node scripts/watchlist-shell-browser-narrow.mjs
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/watchlist-shell-browser-narrow.mjs 2>&1 | tee -a /tmp/watchlist-shell-preview.log
       - name: Upload Watchlist page artifacts
         if: always()
         uses: actions/upload-artifact@v4
