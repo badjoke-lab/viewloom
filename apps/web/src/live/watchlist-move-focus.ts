@@ -5,7 +5,7 @@ document.addEventListener('click', (event) => {
   const channelId = button?.dataset.channelId
   if (!button || button.disabled || !channelId) return
 
-  queueMicrotask(() => {
+  requestAnimationFrame(() => {
     const escaped = window.CSS?.escape
       ? window.CSS.escape(channelId)
       : channelId.replace(/[^a-z0-9_-]/gi, '\\$&')
