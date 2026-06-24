@@ -141,7 +141,7 @@ if (failures.length === 0) {
     '### Phase 6 — Local Watchlist v1',
     'W0 complete through PR #415',
     'W1 next, runtime not started',
-    'viewloom.watchlist.twitch.v1',
+    'maximum 50 entries per provider',
     'empty list = 0 feature-data requests',
     'nonempty load = 1 Heatmap + 1 History request',
     'W1   local model, storage, and URL state',
@@ -222,7 +222,7 @@ if (failures.length === 0) {
     'Saved in Watchlist',
     '<meta name="robots" content="noindex,follow">',
     'no per-channel request loop',
-    'Watchlist is not a sixth primary visualization',
+    'Watchlist is a secondary utility surface, not a sixth primary visualization',
   ])
 
   requireFragments(watchlistPlanPath, [
@@ -239,7 +239,7 @@ if (failures.length === 0) {
     'preview-watchlist-v1',
     'work-watchlist-w5-production',
     'No public Watchlist route is added in W1.',
-    'zero entries -> zero Heatmap and zero History requests',
+    'empty list -> zero Heatmap and zero History requests',
     'nonempty initial load -> one Heatmap plus one History request',
     'After each PR merge:',
   ])
