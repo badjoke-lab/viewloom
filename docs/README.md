@@ -25,7 +25,7 @@ Before changing ViewLoom, read:
 - [`product/history-layout-rebuild-plan.md`](product/history-layout-rebuild-plan.md) — completed History rebuild record
 - [`product/channel-and-streamer-spec.md`](product/channel-and-streamer-spec.md) — accepted Channel / Streamer v1 specification
 - [`product/channel-v1-implementation-plan.md`](product/channel-v1-implementation-plan.md) — completed Channel v1 implementation record
-- [`product/report-export-consolidation-plan.md`](product/report-export-consolidation-plan.md) — active Phase 4 PR-sliced consolidation plan
+- [`product/report-export-consolidation-plan.md`](product/report-export-consolidation-plan.md) — completed Phase 4 consolidation record
 
 ## Permanent acceptance records
 
@@ -33,20 +33,17 @@ Before changing ViewLoom, read:
 - [`operations/production-smoke-runbook.md`](operations/production-smoke-runbook.md) — permanent production smoke contract
 - [`operations/history-production-acceptance-2026-06-23.md`](operations/history-production-acceptance-2026-06-23.md) — completed Twitch/Kick History acceptance
 - [`operations/channel-production-acceptance-2026-06-23.md`](operations/channel-production-acceptance-2026-06-23.md) — completed Twitch/Kick Channel acceptance and PR #408 closure evidence
+- [`operations/report-export-consolidation-acceptance-2026-06-24.md`](operations/report-export-consolidation-acceptance-2026-06-24.md) — completed R0–R4 shared-output consolidation acceptance
 
 ## Active temporary working notes
 
-There is no active History rebuild or Channel v1 working note.
+There is no active History rebuild, Channel v1, or Report & Export consolidation working note.
 
-History H1–H7 and Channel C0–C5B completed production acceptance on 2026-06-23. Their temporary notes were retired after stable behavior, architecture, and evidence moved into permanent documentation.
-
-Active Phase 4 note:
-
-- [`work-in-progress/report-export-r0-audit.md`](work-in-progress/report-export-r0-audit.md) — current History/Channel output implementation audit, shared-boundary decisions, risks, and R1–R4 migration requirements
-
-The Report & Export note is temporary. Delete it in R4 after final shared-boundary decisions and acceptance evidence have moved into the permanent consolidation plan and operating documents.
+History H1–H7, Channel C0–C5B, and Report & Export R0–R4 have transferred stable behavior, architecture, and acceptance evidence into permanent documentation. Their temporary notes are retired.
 
 The pending History UI appearance revision does not yet have a working note because screenshots and detailed instructions are not available. When those inputs arrive, begin with a new audit and a dedicated temporary note rather than reviving an old completed note.
+
+Phase 5 data-capability audit has not started. When explicitly started, create a dedicated temporary audit note before implementation or feature approval.
 
 ## Temporary-note lifecycle
 
