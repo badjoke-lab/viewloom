@@ -22,7 +22,8 @@ export async function installNetworkGuards(context, calls) {
 }
 
 export async function waitReady(page) {
-  await page.waitForFunction(() => document.body.dataset.watchlistState === 'ready')
+  await page.waitForFunction(() => document.body.dataset.watchlistState === 'ready'
+    && document.body.dataset.watchlistFocusReady === 'true')
 }
 
 export function watchlistDocument(provider, entries) {
