@@ -8,7 +8,7 @@ Delete when: W5 production acceptance and documentation closure are complete.
 
 ## 1. W0 record
 
-Initial W0 status: active W0 specification work
+Previous policy marker: Status: active W0 specification work
 Branch: `work-watchlist-w0`
 Closure PR: #415
 
