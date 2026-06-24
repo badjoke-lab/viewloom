@@ -5,6 +5,12 @@ const root = process.cwd()
 const failures = []
 const read = (path) => readFileSync(join(root, path), 'utf8')
 const assert = (condition, message) => { if (!condition) failures.push(message) }
+const requireFragments = (path, fragments) => {
+  const source = read(path)
+  for (const fragment of fragments) {
+    assert(source.includes(fragment), `${path}: missing required fragment: ${fragment}`)
+  }
+}
 
 const retiredNotes = [
   'docs/work-in-progress/history-layout-rebuild-working-note.md',
@@ -13,10 +19,13 @@ const retiredNotes = [
   'docs/work-in-progress/phase5-data-capability-audit.md',
 ]
 
+const activeWatchlistNote = 'docs/work-in-progress/watchlist-v1-working-note.md'
 const historyAcceptancePath = 'docs/operations/history-production-acceptance-2026-06-23.md'
 const channelAcceptancePath = 'docs/operations/channel-production-acceptance-2026-06-23.md'
 const outputAcceptancePath = 'docs/operations/report-export-consolidation-acceptance-2026-06-24.md'
 const capabilityAuditPath = 'docs/product/next-feature-data-capability-audit.md'
+const watchlistSpecPath = 'docs/product/local-watchlist-spec.md'
+const watchlistPlanPath = 'docs/product/watchlist-v1-implementation-plan.md'
 const channelSpecPath = 'docs/product/channel-and-streamer-spec.md'
 const channelPlanPath = 'docs/product/channel-v1-implementation-plan.md'
 const outputPlanPath = 'docs/product/report-export-consolidation-plan.md'
@@ -36,6 +45,9 @@ const requiredFiles = [
   channelAcceptancePath,
   outputAcceptancePath,
   capabilityAuditPath,
+  watchlistSpecPath,
+  watchlistPlanPath,
+  activeWatchlistNote,
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/history-and-trends-spec.md',
@@ -59,9 +71,7 @@ for (const path of retiredNotes) {
 }
 
 if (failures.length === 0) {
-  const policyPath = 'docs/operations/development-and-deployment-policy.md'
-  const policy = read(policyPath)
-  for (const fragment of [
+  requireFragments('docs/operations/development-and-deployment-policy.md', [
     'Status: source of truth',
     '`work-*`',
     '`preview-*`',
@@ -69,17 +79,22 @@ if (failures.length === 0) {
     'cancel-in-progress: true',
     'Do not collapse these into one claim',
     'Twitch and Kick remain separate',
-  ]) assert(policy.includes(fragment), `${policyPath}: missing required policy fragment: ${fragment}`)
+  ])
 
-  const addendumPath = 'docs/operations/development-policy-addendum.md'
-  const addendum = read(addendumPath)
-  for (const fragment of [
+  requireFragments('docs/operations/development-policy-addendum.md', [
     'Status: source of truth for documentation-first execution',
     'Last verified: 2026-06-21',
     'Preview custom include preview-*',
     'Production deployment identity and smoke: verified',
     'Active working note, if any:',
-  ]) assert(addendum.includes(fragment), `${addendumPath}: missing required addendum fragment: ${fragment}`)
+  ])
+
+  requireFragments('docs/operations/documentation-governance.md', [
+    'Implementation must not begin from chat memory',
+    'Temporary-note lifecycle',
+    'delete the temporary note',
+    'Roadmap phase:',
+  ])
 
   const indexPath = 'docs/README.md'
   const index = read(indexPath)
@@ -98,6 +113,9 @@ if (failures.length === 0) {
     'product/channel-v1-implementation-plan.md',
     'product/report-export-consolidation-plan.md',
     'product/next-feature-data-capability-audit.md',
+    'product/local-watchlist-spec.md',
+    'product/watchlist-v1-implementation-plan.md',
+    'work-in-progress/watchlist-v1-working-note.md',
   ]) assert(index.includes(path), `${indexPath}: missing canonical document link: ${path}`)
 
   for (const retired of retiredNotes) {
@@ -105,67 +123,63 @@ if (failures.length === 0) {
   }
 
   for (const fragment of [
+    'Current active note:',
+    'active Local Watchlist v1 implementation ledger',
     'There is no active History rebuild, Channel v1, Report & Export consolidation, or Phase 5 capability-audit working note.',
     'pending History UI appearance revision',
-    'Local Watchlist v1 W0 has not started.',
-  ]) assert(index.includes(fragment), `${indexPath}: missing completed/next-state fragment: ${fragment}`)
+    'Local Watchlist W0 is complete through PR #415.',
+    'W1 storage foundation is next',
+  ]) assert(index.includes(fragment), `${indexPath}: missing completed/active-state fragment: ${fragment}`)
 
-  const governance = read('docs/operations/documentation-governance.md')
-  for (const fragment of [
-    'Implementation must not begin from chat memory',
-    'Temporary-note lifecycle',
-    'delete the temporary note',
-    'Roadmap phase:',
-  ]) assert(governance.includes(fragment), `documentation-governance.md: missing ${fragment}`)
-
-  const roadmap = read('docs/product/current-roadmap.md')
-  for (const fragment of [
+  requireFragments('docs/product/current-roadmap.md', [
     'History & Trends | functional and production acceptance complete',
     'Channel / Streamer | v1 and production acceptance complete',
     'Report/export shared layer | R0–R4 complete through PR #413',
     'Phase 5 capability audit | complete through PR #414',
-    'Local Watchlist v1 | approved Phase 6 candidate',
-    '### Phase 5 — next-feature data-capability audit',
-    'State: completed through PR #414.',
+    'Local Watchlist v1 | W0 specification complete through PR #415',
+    'W1 storage foundation is next; runtime not started',
     '### Phase 6 — Local Watchlist v1',
-    'State: approved; W0 next, runtime not started.',
-    'next-feature-data-capability-audit.md',
+    'W0 complete through PR #415',
+    'W1 next, runtime not started',
+    'viewloom.watchlist.twitch.v1',
+    'empty list = 0 feature-data requests',
+    'nonempty load = 1 Heatmap + 1 History request',
+    'W1   local model, storage, and URL state',
     'History UI appearance work remains pending',
-  ]) assert(roadmap.includes(fragment), `current-roadmap.md: missing ${fragment}`)
+  ])
 
-  const schedule = read('docs/product/current-schedule.md')
-  for (const fragment of [
+  requireFragments('docs/product/current-schedule.md', [
     'Channel production acceptance            complete',
     'Report/export R0-R4                      complete through PR #413',
     'Phase 5 data-capability audit             complete through PR #414',
-    'Local Watchlist v1                       approved; W0 next, not started',
-    'Phase 6 — Local Watchlist v1',
-    'W0 — permanent specification and implementation plan',
-    'Not in latest observed set — not confirmed offline',
-    'Do not begin W0 before the PR #414 merge report is issued.',
-  ]) assert(schedule.includes(fragment), `current-schedule.md: missing ${fragment}`)
+    'Local Watchlist W0                       complete through PR #415',
+    'Local Watchlist W1                       next, not started',
+    'W1 — local state and storage foundation',
+    'Branch: work-watchlist-w1-storage',
+    'viewloom.watchlist.twitch.v1',
+    'maximum entries:',
+    '50 per provider',
+    'nonempty initial list:',
+    'exactly 1 provider Heatmap request',
+    'Not in latest observed set',
+    'Not confirmed offline',
+    'Do not begin W1 before the PR #415 merge report is issued.',
+  ])
 
-  const outputPlan = read(outputPlanPath)
-  for (const fragment of [
+  requireFragments(outputPlanPath, [
     'Status: completed implementation plan and permanent milestone record',
     'Version: 1.4-complete',
     'Closure PR: #413',
-    'Permanent acceptance:',
-    'R1 contract:',
-    'R2 contract:',
-    'R3 contract:',
     'PR #410',
     'PR #411',
     'PR #412',
     'PR #413',
     'spreadsheetSafety: apostrophe',
     'spreadsheetSafety: none',
-    'This plan is complete and retained as the permanent implementation record.',
     'former R0 temporary audit was removed in PR #413',
-  ]) assert(outputPlan.includes(fragment), `${outputPlanPath}: missing ${fragment}`)
+  ])
 
-  const outputAcceptance = read(outputAcceptancePath)
-  for (const fragment of [
+  requireFragments(outputAcceptancePath, [
     'Status: completed permanent record on PR #413 merge',
     'Closure PR: #413',
     '46cea2eceff85b4f5a359446d102d7bc6afe3487',
@@ -175,10 +189,9 @@ if (failures.length === 0) {
     'viewloom-history-export-v1',
     'viewloom-channel-v1',
     'Phase 4 created a reusable neutral output layer',
-  ]) assert(outputAcceptance.includes(fragment), `${outputAcceptancePath}: missing ${fragment}`)
+  ])
 
-  const capabilityAudit = read(capabilityAuditPath)
-  for (const fragment of [
+  requireFragments(capabilityAuditPath, [
     'Status: completed permanent audit record on PR #414 merge',
     'Closure PR: #414',
     'Provider-specific, login-free Local Watchlist v1',
@@ -187,66 +200,106 @@ if (failures.length === 0) {
     'one History request',
     'Not in latest observed set',
     'No per-channel server request is required.',
-    'W0 — permanent specification and implementation plan',
     'Local Watchlist v1 is approved',
-  ]) assert(capabilityAudit.includes(fragment), `${capabilityAuditPath}: missing ${fragment}`)
+  ])
 
-  const sharedOutputContract = read(sharedOutputContractPath)
-  for (const fragment of [
+  requireFragments(watchlistSpecPath, [
+    'Status: active permanent product specification',
+    '/twitch/watchlist/',
+    '/kick/watchlist/',
+    'viewloom.watchlist.twitch.v1',
+    'viewloom.watchlist.kick.v1',
+    'maximum entries: 50 per provider',
+    'initial visible entries: 12',
+    'Heatmap requests: 0',
+    'Heatmap requests: exactly 1',
+    'History requests: exactly 1',
+    'Not in latest observed set',
+    'Not confirmed offline',
+    'Not in retained History result',
+    'No complete history is implied',
+    'Save to Watchlist',
+    'Saved in Watchlist',
+    '<meta name="robots" content="noindex,follow">',
+    'no per-channel request loop',
+    'Watchlist is not a sixth primary visualization',
+  ])
+
+  requireFragments(watchlistPlanPath, [
+    'Status: active implementation plan',
+    'work-watchlist-w1-storage',
+    'work-watchlist-w2a-latest',
+    'work-watchlist-w2b-history',
+    'work-watchlist-w3a-routes',
+    'work-watchlist-w3b-ui',
+    'work-watchlist-w3c-candidate',
+    'work-watchlist-w4-contracts',
+    'work-watchlist-w4-browser',
+    'work-watchlist-w5-hosted',
+    'preview-watchlist-v1',
+    'work-watchlist-w5-production',
+    'No public Watchlist route is added in W1.',
+    'zero entries -> zero Heatmap and zero History requests',
+    'nonempty initial load -> one Heatmap plus one History request',
+    'After each PR merge:',
+  ])
+
+  requireFragments(activeWatchlistNote, [
+    'Status: active W0 specification work',
+    'Roadmap phase: Phase 6 — Local Watchlist v1',
+    'Branch: `work-watchlist-w0`',
+    'No Watchlist runtime implementation begins until W0 merges',
+  ])
+
+  requireFragments(sharedOutputContractPath, [
     'Status: active Phase 4 R1 contract',
     'spreadsheet formula protection is opt-in',
     'numeric strings are not coerced',
     'the helper returns a neutral operation result',
-  ]) assert(sharedOutputContract.includes(fragment), `${sharedOutputContractPath}: missing ${fragment}`)
+  ])
 
-  const historyOutputContract = read(historyOutputContractPath)
-  for (const fragment of [
+  requireFragments(historyOutputContractPath, [
     'Status: active Phase 4 R2 contract',
     'viewloom-history-export-v1',
     'CSV CRLF line endings',
     '1000 ms object-URL revoke delay',
     'report copy fallback behavior',
-  ]) assert(historyOutputContract.includes(fragment), `${historyOutputContractPath}: missing ${fragment}`)
+  ])
 
-  const channelOutputContract = read(channelOutputContractPath)
-  for (const fragment of [
+  requireFragments(channelOutputContractPath, [
     'Status: active Phase 4 R3 contract',
     'viewloom-channel-v1',
     'CSV UTF-8 BOM at download time',
     'no implicit spreadsheet formula protection',
     'zero-millisecond object-URL revoke timing',
     'exactly one provider History request per loaded period',
-  ]) assert(channelOutputContract.includes(fragment), `${channelOutputContractPath}: missing ${fragment}`)
+  ])
 
-  const historySpec = read('docs/product/history-and-trends-spec.md')
-  for (const fragment of [
+  requireFragments('docs/product/history-and-trends-spec.md', [
     'Status: accepted production product specification',
     'Overview',
     'Archives',
     'Report & Export',
     'Accepted implementation record',
     '3cde59cceb09a0c60f48794d6391cf5c356a1b31',
-  ]) assert(historySpec.includes(fragment), `history-and-trends-spec.md: missing ${fragment}`)
+  ])
 
-  const historyPlan = read('docs/product/history-layout-rebuild-plan.md')
-  for (const fragment of [
+  requireFragments('docs/product/history-layout-rebuild-plan.md', [
     'Status: completed implementation plan and permanent milestone record',
     'H1 — History view-state and shell contract',
     'H7 — Cloudflare Preview, production acceptance, and document cleanup',
     'This plan is complete and is retained as the implementation record.',
-  ]) assert(historyPlan.includes(fragment), `history-layout-rebuild-plan.md: missing ${fragment}`)
+  ])
 
-  const historyAcceptance = read(historyAcceptancePath)
-  for (const fragment of [
+  requireFragments(historyAcceptancePath, [
     'Status: completed permanent record',
     '3cde59cceb09a0c60f48794d6391cf5c356a1b31',
     '27998433929',
     '27999024838',
     '7810348478',
-  ]) assert(historyAcceptance.includes(fragment), `${historyAcceptancePath}: missing ${fragment}`)
+  ])
 
-  const channelSpec = read(channelSpecPath)
-  for (const fragment of [
+  requireFragments(channelSpecPath, [
     'Status: accepted production product specification',
     'Overview',
     'Retained Days',
@@ -256,26 +309,24 @@ if (failures.length === 0) {
     'noindex,follow',
     'Not confirmed offline',
     'accepted production SHA: efc14295f0a372b96afac740d6a01571f7582210',
-  ]) assert(channelSpec.includes(fragment), `${channelSpecPath}: missing ${fragment}`)
+  ])
 
-  const channelPlan = read(channelPlanPath)
-  for (const fragment of [
+  requireFragments(channelPlanPath, [
     'Status: completed implementation plan and permanent milestone record',
     'C2A — state, URL, payload, and one-request foundation',
     'C5B — Preview, production acceptance, and closure',
     'preview-channel-v1',
     'This plan is complete and retained as the implementation record.',
-  ]) assert(channelPlan.includes(fragment), `${channelPlanPath}: missing ${fragment}`)
+  ])
 
-  const channelAcceptance = read(channelAcceptancePath)
-  for (const fragment of [
+  requireFragments(channelAcceptancePath, [
     'Status: completed permanent record',
     'efc14295f0a372b96afac740d6a01571f7582210',
     '28027105615',
     '7821161692',
     '28028685856',
     '7821826483',
-  ]) assert(channelAcceptance.includes(fragment), `${channelAcceptancePath}: missing ${fragment}`)
+  ])
 
   for (const entryPath of ['AGENTS.md', 'CONTRIBUTING.md']) {
     const entry = read(entryPath)
@@ -296,8 +347,7 @@ if (failures.length === 0) {
     'docs/product/current-schedule.md',
   ]) assert(readme.includes(path), `README.md: canonical document link is missing: ${path}`)
 
-  const template = read('.github/pull_request_template.md')
-  for (const fragment of [
+  requireFragments('.github/pull_request_template.md', [
     '## Governing documents',
     'Roadmap phase:',
     'Schedule window:',
@@ -306,7 +356,7 @@ if (failures.length === 0) {
     'Full required checks were run on the latest completed candidate HEAD',
     'Required manual visual acceptance passed',
     'Completed temporary working notes were deleted and unlinked',
-  ]) assert(template.includes(fragment), `.github/pull_request_template.md: missing ${fragment}`)
+  ])
 }
 
 const concurrencyWorkflows = [
@@ -362,6 +412,6 @@ if (failures.length) {
 console.log('ViewLoom development, documentation, and deployment policy verification passed.')
 console.log(`- ${requiredFiles.length} policy/document files present`)
 console.log('- completed History, Channel, Report & Export, and Phase 5 working notes remain retired')
-console.log('- permanent History, Channel, Report & Export, and Phase 5 records are governed')
-console.log('- Phase 5 is complete; Local Watchlist v1 W0 is next and not started')
+console.log('- active Watchlist v1 working note is governed through W5')
+console.log('- Watchlist W0 is complete through PR #415; W1 storage foundation is next')
 console.log(`- ${concurrencyWorkflows.length} active workflows cancel obsolete runs`)
