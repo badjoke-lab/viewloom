@@ -230,10 +230,12 @@ function hasObservedDay(rawDaily: readonly unknown[]): boolean {
 }
 
 function countRawDailyStreamers(rawDaily: readonly unknown[]): number {
-  return rawDaily.reduce((sum, raw) => {
+  let count = 0
+  for (const raw of rawDaily) {
     const record = asRecord(raw)
-    return sum + (Array.isArray(record?.topStreamers) ? record.topStreamers.length : 0)
-  }, 0)
+    if (Array.isArray(record?.topStreamers)) count += record.topStreamers.length
+  }
+  return count
 }
 
 function coverageNotes(
