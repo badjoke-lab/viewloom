@@ -52,7 +52,8 @@ try {
   await page.locator('[data-watchlist-entry="beta_channel"] [data-watchlist-action="move-down"]').click()
   stored = await readStoredDocument(page, 'twitch')
   check(stored.entries.map((entry) => entry.channelId).join('|') === 'alpha_channel|beta_channel', 'Move down did not persist the Twitch order.')
-  check(await page.locator('[data-watchlist-entry="beta_channel"] [data-watchlist-action="move-down"]').evaluate((node) => node === document.activeElement), 'Focus was not preserved on the moved entry control.')
+  await page.waitForFunction(() => document.activeElement?.matches('[data-watchlist-entry="beta_channel"] h2') ?? false)
+  check(await page.locator('[data-watchlist-entry="beta_channel"] h2').evaluate((node) => node === document.activeElement), 'Focus did not move to the reordered entry heading.')
 
   await page.getByRole('button', { name: 'Last 7 days' }).click()
   check(new URL(page.url()).searchParams.get('period') === '7d', '7d period was not serialized.')
@@ -93,7 +94,7 @@ try {
   page.once('dialog', (dialog) => dialog.accept())
   await page.getByRole('button', { name: 'Clear Watchlist' }).click()
   await page.locator('[data-watchlist-empty]').waitFor({ state: 'visible' })
-  check(localStorageValue(await readStoredDocument(page, 'twitch')) === null, 'Clear Watchlist did not remove the Twitch key.')
+  check(await readStoredDocument(page, 'twitch') === null, 'Clear Watchlist did not remove the Twitch key.')
 
   await page.evaluate(() => localStorage.setItem('viewloom.watchlist.twitch.v1', '{broken'))
   await page.reload({ waitUntil: 'domcontentloaded' })
@@ -120,8 +121,4 @@ try {
   console.log('Watchlist W3A desktop storage shell gate passed.')
 } finally {
   await browser.close()
-}
-
-function localStorageValue(value) {
-  return value
 }
