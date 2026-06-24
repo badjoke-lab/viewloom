@@ -35,22 +35,6 @@ function googleTagPlugin(): Plugin {
   }
 }
 
-function watchlistFocusPlugin(): Plugin {
-  const script = '<script type="module" src="/src/live/watchlist-move-focus.ts"></script>'
-  return {
-    name: 'viewloom-watchlist-focus',
-    transformIndexHtml(html) {
-      if (!html.includes('data-page="twitch-watchlist"')
-        && !html.includes('data-page="kick-watchlist"')) return html
-      if (html.includes(script)) return html
-      return html.replace(
-        '<script type="module" src="/src/analytics.ts"></script>',
-        `${script}\n<script type="module" src="/src/analytics.ts"></script>`,
-      )
-    },
-  }
-}
-
 function escapeHtmlAttribute(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -60,11 +44,7 @@ function escapeHtmlAttribute(value: string): string {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [
-    googleSiteVerificationPlugin(mode),
-    googleTagPlugin(),
-    watchlistFocusPlugin(),
-  ],
+  plugins: [googleSiteVerificationPlugin(mode), googleTagPlugin()],
   server: {
     port: 4173,
   },
