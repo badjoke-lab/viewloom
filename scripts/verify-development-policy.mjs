@@ -9,10 +9,12 @@ const assert = (condition, message) => { if (!condition) failures.push(message) 
 const retiredNotes = [
   'docs/work-in-progress/history-layout-rebuild-working-note.md',
   'docs/work-in-progress/channel-v1-audit.md',
+  'docs/work-in-progress/report-export-r0-audit.md',
 ]
 
 const historyAcceptancePath = 'docs/operations/history-production-acceptance-2026-06-23.md'
 const channelAcceptancePath = 'docs/operations/channel-production-acceptance-2026-06-23.md'
+const outputAcceptancePath = 'docs/operations/report-export-consolidation-acceptance-2026-06-24.md'
 const channelSpecPath = 'docs/product/channel-and-streamer-spec.md'
 const channelPlanPath = 'docs/product/channel-v1-implementation-plan.md'
 const outputPlanPath = 'docs/product/report-export-consolidation-plan.md'
@@ -30,6 +32,7 @@ const requiredFiles = [
   'docs/operations/documentation-governance.md',
   historyAcceptancePath,
   channelAcceptancePath,
+  outputAcceptancePath,
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/history-and-trends-spec.md',
@@ -83,6 +86,7 @@ if (failures.length === 0) {
     'operations/documentation-governance.md',
     'operations/history-production-acceptance-2026-06-23.md',
     'operations/channel-production-acceptance-2026-06-23.md',
+    'operations/report-export-consolidation-acceptance-2026-06-24.md',
     'product/current-roadmap.md',
     'product/current-schedule.md',
     'product/history-and-trends-spec.md',
@@ -96,9 +100,11 @@ if (failures.length === 0) {
     assert(!index.includes(retired.replace('docs/', '')), `${indexPath}: retired temporary note is still linked: ${retired}`)
   }
 
-  assert(index.includes('There is no active History rebuild or Channel v1 working note.'), `${indexPath}: completed working-note state is not recorded.`)
-  assert(index.includes('pending History UI appearance revision'), `${indexPath}: pending History UI state is not recorded.`)
-  assert(index.includes('work-in-progress/report-export-r0-audit.md'), `${indexPath}: active Phase 4 audit note is not linked.`)
+  for (const fragment of [
+    'There is no active History rebuild, Channel v1, or Report & Export consolidation working note.',
+    'pending History UI appearance revision',
+    'Phase 5 data-capability audit has not started',
+  ]) assert(index.includes(fragment), `${indexPath}: missing completed/next-state fragment: ${fragment}`)
 
   const governance = read('docs/operations/documentation-governance.md')
   for (const fragment of [
@@ -112,12 +118,13 @@ if (failures.length === 0) {
   for (const fragment of [
     'History & Trends | functional and production acceptance complete',
     'Channel / Streamer | v1 and production acceptance complete',
-    'Report/export shared layer | R0–R2 complete; R3 active',
+    'Report/export shared layer | R0–R4 complete through PR #413',
     'Phase 4 — Report & Export shared-layer consolidation',
+    'State: completed through PR #413.',
     'Phase 5 — next-feature data-capability audit',
-    'efc14295f0a372b96afac740d6a01571f7582210',
+    'State: next, not started.',
+    'report-export-consolidation-acceptance-2026-06-24.md',
     'History UI appearance work remains pending',
-    'work-report-export-r3-channel-adoption',
   ]) assert(roadmap.includes(fragment), `current-roadmap.md: missing ${fragment}`)
 
   const schedule = read('docs/product/current-schedule.md')
@@ -126,30 +133,46 @@ if (failures.length === 0) {
     'Report/export R0 boundary audit           complete through PR #409',
     'Report/export R1 shared primitives        complete through PR #410',
     'Report/export R2 History adoption         complete through PR #411',
-    'Report/export R3 Channel adoption         active in PR #412',
-    'History UI appearance revision            pending screenshots and instructions',
-    'Phase 4 — Report & Export shared-layer consolidation',
-    'R0 — implementation and boundary audit',
-    'work-report-export-r0-audit',
-    'work-report-export-r3-channel-adoption',
+    'Report/export R3 Channel adoption         complete through PR #412',
+    'Report/export R4 closure                  complete through PR #413',
+    'Phase 5 data-capability audit              next, not started',
+    'Current active implementation phase:',
+    'Required first step: create a dedicated audit note before implementation',
+    'work-report-export-r4-acceptance',
     'Do not begin the next PR before that report is issued.',
   ]) assert(schedule.includes(fragment), `current-schedule.md: missing ${fragment}`)
 
   const outputPlan = read(outputPlanPath)
   for (const fragment of [
-    'Status: active implementation plan — R3 active',
+    'Status: completed implementation plan and permanent milestone record',
+    'Version: 1.4-complete',
+    'Closure PR: #413',
+    'Permanent acceptance:',
     'R1 contract:',
     'R2 contract:',
     'R3 contract:',
-    'State: completed through PR #410.',
-    'State: completed through PR #411.',
-    'State: active in PR #412.',
-    'finiteNumberOrBlank',
-    'finiteNumberOrNull',
+    'PR #410',
+    'PR #411',
+    'PR #412',
+    'PR #413',
+    'spreadsheetSafety: apostrophe',
     'spreadsheetSafety: none',
-    'zero-millisecond revoke timing',
-    'work-report-export-r4-acceptance',
+    'This plan is complete and retained as the permanent implementation record.',
+    'former R0 temporary audit was removed in PR #413',
   ]) assert(outputPlan.includes(fragment), `${outputPlanPath}: missing ${fragment}`)
+
+  const outputAcceptance = read(outputAcceptancePath)
+  for (const fragment of [
+    'Status: completed permanent record on PR #413 merge',
+    'Closure PR: #413',
+    '46cea2eceff85b4f5a359446d102d7bc6afe3487',
+    '6b90c277460a674e355a7676444ddf10ff296325',
+    '9bd7df7620c87c48e5c2d2834cfdce712ad71e3e',
+    '83a46d286c90a9be503d7110b71b382f0394288e',
+    'viewloom-history-export-v1',
+    'viewloom-channel-v1',
+    'Phase 4 created a reusable neutral output layer',
+  ]) assert(outputAcceptance.includes(fragment), `${outputAcceptancePath}: missing ${fragment}`)
 
   const sharedOutputContract = read(sharedOutputContractPath)
   for (const fragment of [
@@ -321,7 +344,7 @@ if (failures.length) {
 
 console.log('ViewLoom development, documentation, and deployment policy verification passed.')
 console.log(`- ${requiredFiles.length} policy/document files present`)
-console.log('- completed History and Channel working notes remain retired')
-console.log('- permanent History and Channel acceptance records are governed')
-console.log('- Phase 4 R0-R2 are complete; Channel R3 is the active scheduled work')
+console.log('- completed History, Channel, and Report & Export working notes remain retired')
+console.log('- permanent History, Channel, and Report & Export acceptance records are governed')
+console.log('- Phase 4 R0-R4 are complete; Phase 5 data-capability audit is next and not started')
 console.log(`- ${concurrencyWorkflows.length} active workflows cancel obsolete runs`)
