@@ -6,7 +6,6 @@ import {
   clearWatchlistDocument,
   copyWatchlistDocument,
   createWatchlistDocument,
-  currentIsoTimestamp,
   moveWatchlistEntry,
   normalizeIsoTimestamp,
   normalizeStoredChannelId,
@@ -124,11 +123,18 @@ export function parseWatchlistDocument(
     return { ok: false, code: 'storage-corrupted' }
   }
 
-  if (!isRecord(parsed)
-    || parsed.schema !== WATCHLIST_SCHEMA
+  if (!isRecord(parsed)) {
+    return { ok: false, code: 'storage-corrupted' }
+  }
+
+  const updatedAt = typeof parsed.updatedAt === 'string'
+    ? normalizeIsoTimestamp(parsed.updatedAt)
+    : ''
+
+  if (parsed.schema !== WATCHLIST_SCHEMA
     || parsed.provider !== provider
     || parsed.revision !== WATCHLIST_REVISION
-    || !normalizeIsoTimestamp(parsed.updatedAt)
+    || !updatedAt
     || !Array.isArray(parsed.entries)) {
     return { ok: false, code: 'storage-corrupted' }
   }
@@ -142,22 +148,31 @@ export function parseWatchlistDocument(
       repaired = true
       continue
     }
-    if (!isRecord(candidate)
-      || typeof candidate.channelId !== 'string'
-      || typeof candidate.displayName !== 'string'
-      || !normalizeIsoTimestamp(candidate.addedAt)) {
+    if (!isRecord(candidate)) {
       repaired = true
       continue
     }
 
-    const channelId = normalizeStoredChannelId(candidate.channelId)
+    const candidateChannelId = candidate.channelId
+    const candidateDisplayName = candidate.displayName
+    const candidateAddedAt = candidate.addedAt
+
+    if (typeof candidateChannelId !== 'string'
+      || typeof candidateDisplayName !== 'string'
+      || typeof candidateAddedAt !== 'string'
+      || !normalizeIsoTimestamp(candidateAddedAt)) {
+      repaired = true
+      continue
+    }
+
+    const channelId = normalizeStoredChannelId(candidateChannelId)
     if (!channelId || seen.has(channelId)) {
       repaired = true
       continue
     }
 
-    const displayName = normalizeWatchlistDisplayName(candidate.displayName, channelId)
-    if (channelId !== candidate.channelId || displayName !== candidate.displayName) {
+    const displayName = normalizeWatchlistDisplayName(candidateDisplayName, channelId)
+    if (channelId !== candidateChannelId || displayName !== candidateDisplayName) {
       repaired = true
     }
 
@@ -165,7 +180,7 @@ export function parseWatchlistDocument(
     entries.push({
       channelId,
       displayName,
-      addedAt: candidate.addedAt,
+      addedAt: candidateAddedAt,
     })
   }
 
@@ -176,7 +191,7 @@ export function parseWatchlistDocument(
       schema: WATCHLIST_SCHEMA,
       provider,
       revision: WATCHLIST_REVISION,
-      updatedAt: parsed.updatedAt,
+      updatedAt,
       entries,
     },
   }
