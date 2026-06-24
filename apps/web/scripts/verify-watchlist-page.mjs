@@ -7,7 +7,9 @@ const read = (path) => readFileSync(resolve(root, path), 'utf8')
 const twitch = read('twitch/watchlist/index.html')
 const kick = read('kick/watchlist/index.html')
 const controller = read('src/live/watchlist-page.ts')
+const focusHelper = read('src/live/watchlist-move-focus.ts')
 const styles = read('src/watchlist-page.css')
+const touchStyles = read('src/watchlist-touch.css')
 const homeShell = read('src/provider-home-shell.ts')
 const homeStyles = read('src/provider-watchlist-link.css')
 const vite = read('vite.config.ts')
@@ -15,6 +17,7 @@ const vite = read('vite.config.ts')
 verifyRoute(twitch, 'twitch', 'Twitch')
 verifyRoute(kick, 'kick', 'Kick')
 verifyController()
+verifyFocusHelper()
 verifyProviderHome()
 verifyBuildInputs()
 verifyStyles()
@@ -52,6 +55,7 @@ function verifyRoute(source, provider, name) {
     'Reset local Watchlist',
     'No complete history is implied.',
     '/src/live/watchlist-page.ts',
+    '/src/live/watchlist-move-focus.ts',
     '/src/analytics.ts',
   ]) assert.ok(source.includes(fragment), `${provider} route missing: ${fragment}`)
 
@@ -104,6 +108,17 @@ function verifyController() {
   assert.equal(controller.includes('gtag('), false, 'W3A controller must not send saved ids to analytics.')
 }
 
+function verifyFocusHelper() {
+  for (const fragment of [
+    "import '../watchlist-touch.css'",
+    'MutationObserver',
+    'data-watchlist-action="move-up"',
+    'data-watchlist-action="move-down"',
+    'requestAnimationFrame',
+    "document.body.dataset.watchlistFocusReady = 'true'",
+  ]) assert.ok(focusHelper.includes(fragment), `Watchlist focus helper missing: ${fragment}`)
+}
+
 function verifyProviderHome() {
   const featurePosition = homeShell.indexOf('<section class="feature-directory"')
   const utilityPosition = homeShell.indexOf('<section class="provider-utility"')
@@ -124,6 +139,7 @@ function verifyProviderHome() {
 function verifyBuildInputs() {
   assert.ok(vite.includes("twitchWatchlist: 'twitch/watchlist/index.html'"), 'Twitch Watchlist build input is missing.')
   assert.ok(vite.includes("kickWatchlist: 'kick/watchlist/index.html'"), 'Kick Watchlist build input is missing.')
+  assert.equal(vite.includes('watchlistFocusPlugin'), false, 'Watchlist focus must use the explicit route script entry.')
 }
 
 function verifyStyles() {
@@ -140,4 +156,7 @@ function verifyStyles() {
     'overflow-wrap: anywhere',
     'min-height: 48px',
   ]) assert.ok(styles.includes(fragment), `Watchlist styles missing: ${fragment}`)
+
+  assert.ok(touchStyles.includes('.watchlist-add-row .button'), 'Watchlist mobile add target selector is missing.')
+  assert.ok(touchStyles.includes('min-height: 44px'), 'Watchlist mobile add target is below 44px.')
 }
