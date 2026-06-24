@@ -31,10 +31,10 @@ Current feature state:
 | Channel / Streamer | v1 and production acceptance complete | preserve retained-footprint contract |
 | Report/export shared layer | R0–R4 complete through PR #413 | maintain exact contracts |
 | Phase 5 capability audit | complete through PR #414 | permanent decision recorded |
-| Local Watchlist v1 | approved Phase 6 candidate | W0 specification is next; runtime not started |
+| Local Watchlist v1 | W0 specification complete through PR #415 | W1 storage foundation is next; runtime not started |
 | Session / Category / Language / Event / Alerts | not approved for immediate implementation | data or infrastructure expansion required |
 
-Permanent acceptance and audit records:
+Permanent acceptance, audit, and specification records:
 
 ```text
 History:
@@ -53,39 +53,33 @@ closure PR: #413
 Next-feature capability audit:
 docs/product/next-feature-data-capability-audit.md
 closure PR: #414
+
+Local Watchlist v1:
+docs/product/local-watchlist-spec.md
+docs/product/watchlist-v1-implementation-plan.md
+W0 PR: #415
 ```
 
 ## 2. Immediate priority
 
-Phase 5 is complete. The next approved work window is:
+W0 is complete. The next approved work window is:
 
 ```text
 Phase 6 — Local Watchlist v1
-W0 — permanent specification and implementation plan
+W1 — local state and storage foundation
+Branch: work-watchlist-w1-storage
 State: next, not started
 ```
 
-W0 is documentation only. Runtime implementation must not begin until W0 freezes:
+W1 adds only the neutral local model, provider-separated storage layer, id/URL normalization, list operations, period URL-state helper, and executable gates.
 
-- provider-specific routes;
-- versioned localStorage schema and migration behavior;
-- saved-entry limit;
-- latest and retained evidence states;
-- exact absence and limitation language;
-- request-count contract;
-- responsive, accessibility, and SEO rules;
-- W1–W5 implementation and acceptance slicing.
+W1 must not add:
 
-Approved Watchlist v1 boundary:
-
-- provider-specific, login-free, localStorage-only saved ids;
-- latest evidence from one provider Heatmap request;
-- retained evidence from one provider History request;
-- all saved ids matched locally;
-- no per-channel request pattern;
-- no live/offline guarantee;
-- no exact sessions, alerts, login, cloud sync, or cross-provider identity;
-- no new D1, collector, cron, or retention requirement.
+- public Watchlist routes or HTML;
+- Watchlist CSS or final visual design;
+- Heatmap or History requests;
+- Channel or provider Home entry points;
+- API, D1, binding, collector, cron, or retention changes.
 
 History UI appearance work remains pending because screenshots and detailed instructions are unavailable. Until those arrive:
 
@@ -99,15 +93,7 @@ History UI appearance work remains pending because screenshots and detailed inst
 
 State: completed; permanent maintenance responsibility.
 
-Includes:
-
-- Cloudflare production cutover;
-- separate Twitch/Kick D1 bindings;
-- collector and Data Status visibility;
-- exact deployment identity;
-- explicit 404 behavior;
-- permanent Production Smoke;
-- accepted Heatmap, Day Flow, Battle Lines, History, Status, and Channel cores.
+Includes Cloudflare production cutover, separate provider D1 bindings, exact deployment identity, explicit 404 behavior, permanent Production Smoke, and accepted Heatmap, Day Flow, Battle Lines, History, Status, and Channel cores.
 
 Maintenance rule:
 
@@ -137,8 +123,6 @@ History UI appearance revision
 State: pending screenshots and explicit instructions
 ```
 
-The pending visual revision requires its own audit, specification, PR sequence, Preview validation, and production acceptance.
-
 ### Phase 2 — production P0/P1 repair window
 
 State: conditional maintenance phase.
@@ -149,39 +133,19 @@ Enter only for a reproducible production defect, failed permanent gate, or expli
 
 State: completed on 2026-06-23 through PR #408.
 
-Accepted structure:
-
-```text
-Overview
-Retained Days
-Report & Export
-```
-
-Accepted boundary:
+Accepted boundary remains:
 
 - one provider at a time;
 - one History request per period load;
 - retained daily Top 10 footprint, not provider-wide analytics;
 - absence does not prove offline status;
 - no exact session reconstruction;
-- provider-specific copy, CSV, JSON, links, and filenames;
+- provider-specific links, copy, and exports;
 - no D1, collector, cron, or retention change.
 
 ### Phase 4 — Report & Export shared-layer consolidation
 
 State: completed through PR #413.
-
-Permanent records:
-
-```text
-docs/product/report-export-consolidation-plan.md
-docs/operations/report-export-consolidation-acceptance-2026-06-24.md
-apps/web/docs/shared-output-r1-contract.md
-apps/web/docs/history-output-r2-contract.md
-apps/web/docs/channel-output-r3-contract.md
-```
-
-Completed sequence:
 
 ```text
 R0  PR #409  boundary audit
@@ -201,71 +165,99 @@ Permanent record:
 docs/product/next-feature-data-capability-audit.md
 ```
 
-Confirmed current data boundary:
+Confirmed boundary:
 
 - five-minute bounded snapshots;
-- Twitch up to Top 300 and 30-day raw retention;
-- Kick up to Top 100 official rows when available, candidate fallback, and 60-day raw retention;
+- Twitch up to Top 300 with 30-day raw retention;
+- Kick up to Top 100 official rows when available with candidate fallback and 60-day raw retention;
 - 180-day daily rollups with Top 30 per-stream facts;
-- no retained category, language, session id, exact start/end, or authoritative offline state;
-- no activity/chat heat.
+- no retained category, language, session id, exact start/end, authoritative offline state, or activity/chat heat.
 
 Candidate decisions:
 
 ```text
 Local Watchlist v1: approved
 Observed Runs research: deferred
-Category / Game trends: deferred pending new collection and rollups
-Event Layer: deferred pending source/storage decision
+Category / Game trends: deferred
+Event Layer: deferred
 Language trends: not approved
 Alerts: not approved
 ```
 
 ### Phase 6 — Local Watchlist v1
 
-State: approved; W0 next, runtime not started.
+State:
 
-Permanent audit authority:
+```text
+W0 complete through PR #415
+W1 next, runtime not started
+```
+
+Permanent authorities:
 
 ```text
 docs/product/next-feature-data-capability-audit.md
+docs/product/local-watchlist-spec.md
+docs/product/watchlist-v1-implementation-plan.md
 ```
 
-Fixed high-level result:
+Fixed product contract:
 
 ```text
 /twitch/watchlist/
 /kick/watchlist/
-provider-separated localStorage
-one Heatmap + one History request per provider load
-no N-per-channel requests
-no live/offline guarantee
+provider-separated browser localStorage
+maximum 50 entries per provider
+12 entries initially visible
+empty list = 0 feature-data requests
+nonempty load = 1 Heatmap + 1 History request
+period change = 1 History request
+explicit refresh = 1 Heatmap + 1 History request
+no per-channel request loop
+no authoritative live/offline claim
 no alerts, login, sync, exact sessions, or cross-provider identity
 ```
 
-Required PR sequence:
+Approved entry points:
 
 ```text
-W0  permanent specification and implementation plan
-W1  local state and storage foundation
-W2  provider data adapters and evidence states
-W3  responsive Watchlist UI and approved entry points
-W4  candidate QA
-W5  Cloudflare Preview, production acceptance, and document cleanup
+Watchlist add form
+additive Channel save action
+secondary provider Home utility link
 ```
 
-Because Watchlist adds visible public routes, W5 requires deliberate Preview and exact production acceptance.
+Watchlist is not a primary feature tab.
+
+Implementation sequence:
+
+```text
+W0   specification and plan                         complete through PR #415
+W1   local model, storage, and URL state            next
+W2A  latest Heatmap adapter and request foundation queued
+W2B  History adapter and combined evidence         queued
+W3A  provider routes and storage-first shell        queued
+W3B  evidence cards and approved entry points       queued
+W3C  responsive/accessibility candidate pass        queued
+W4A  executable contract closure                    queued
+W4B  complete local browser candidate QA            queued
+W5A  hosted preview-watchlist-v1 acceptance         queued
+W5B  production acceptance and document cleanup     queued
+```
+
+W5 requires deliberate Preview and exact production acceptance because Watchlist adds visible public routes.
 
 ## 4. Work not scheduled for immediate implementation
 
 - speculative History visual fixes without screenshots and instructions;
-- Watchlist runtime before W0 specification approval;
+- public Watchlist routes before W3A;
+- Watchlist data fetching before W2A/W2B;
+- Watchlist visual implementation before storage and adapters are complete;
 - exact Session page or complete session history;
 - on-demand multi-day raw JSON scans for session reconstruction;
-- Category/Game trends before both collectors retain verified category fields and new rollups exist;
-- Language trends without a verified provider source and accuracy policy;
-- Event Layer without an approved event source and storage model;
-- Alerts without persistent subscriptions, background evaluation, and delivery infrastructure;
+- Category/Game trends before verified new collection and rollups;
+- Language trends without a verified source and accuracy policy;
+- Event Layer without an approved source and storage model;
+- Alerts without persistent subscriptions and delivery infrastructure;
 - cross-platform combined totals or rankings;
 - login or cloud user accounts;
 - AI-generated interpretation;
