@@ -30,9 +30,11 @@ Current feature state:
 | Data Status | production core complete | maintain |
 | Channel / Streamer | v1 and production acceptance complete | preserve retained-footprint contract |
 | Report/export shared layer | R0–R4 complete through PR #413 | maintain exact contracts |
-| Next-feature expansion | not approved | Phase 5 audit required first |
+| Phase 5 capability audit | complete through PR #414 | permanent decision recorded |
+| Local Watchlist v1 | approved Phase 6 candidate | W0 specification is next; runtime not started |
+| Session / Category / Language / Event / Alerts | not approved for immediate implementation | data or infrastructure expansion required |
 
-Permanent acceptance records:
+Permanent acceptance and audit records:
 
 ```text
 History:
@@ -47,28 +49,43 @@ closure PR: #408
 Report & Export consolidation:
 docs/operations/report-export-consolidation-acceptance-2026-06-24.md
 closure PR: #413
+
+Next-feature capability audit:
+docs/product/next-feature-data-capability-audit.md
+closure PR: #414
 ```
 
 ## 2. Immediate priority
 
-Phase 4 is complete. The next approved work window is:
+Phase 5 is complete. The next approved work window is:
 
 ```text
-Phase 5 — next-feature data-capability audit
+Phase 6 — Local Watchlist v1
+W0 — permanent specification and implementation plan
 State: next, not started
 ```
 
-Phase 5 must begin with a dedicated audit note and must not start implementation directly.
+W0 is documentation only. Runtime implementation must not begin until W0 freezes:
 
-The audit must answer:
+- provider-specific routes;
+- versioned localStorage schema and migration behavior;
+- saved-entry limit;
+- latest and retained evidence states;
+- exact absence and limitation language;
+- request-count contract;
+- responsive, accessibility, and SEO rules;
+- W1–W5 implementation and acceptance slicing.
 
-- what retained fields actually exist;
-- available time resolution and retention;
-- Twitch/Kick parity and provider-specific gaps;
-- required D1 migrations or new storage;
-- collector, cron, and Cloudflare Free cost;
-- whether an honest MVP can be built without unsupported claims;
-- which single expansion, if any, should proceed to Phase 6.
+Approved Watchlist v1 boundary:
+
+- provider-specific, login-free, localStorage-only saved ids;
+- latest evidence from one provider Heatmap request;
+- retained evidence from one provider History request;
+- all saved ids matched locally;
+- no per-channel request pattern;
+- no live/offline guarantee;
+- no exact sessions, alerts, login, cloud sync, or cross-provider identity;
+- no new D1, collector, cron, or retention requirement.
 
 History UI appearance work remains pending because screenshots and detailed instructions are unavailable. Until those arrive:
 
@@ -174,61 +191,84 @@ R3  PR #412  exact-compatible Channel adoption
 R4  PR #413  regression and documentation closure
 ```
 
-Accepted result:
-
-- neutral provider, filename, CSV, finite-value, clipboard, download, and result primitives;
-- exact History and Channel golden output contracts;
-- intentional History/Channel differences preserved;
-- provider separation and request counts preserved;
-- no visible layout, API, D1, collector, cron, or retention change;
-- temporary R0 audit retired.
-
 ### Phase 5 — next-feature data-capability audit
 
-State: next, not started.
+State: completed through PR #414.
 
-Candidates to audit:
+Permanent record:
 
-1. minimal Session page;
-2. Category / Game trends;
-3. Language trends;
-4. Event layer;
-5. login-free local Watchlist;
-6. Alerts.
+```text
+docs/product/next-feature-data-capability-audit.md
+```
 
-No candidate proceeds directly from an idea to implementation.
+Confirmed current data boundary:
 
-Phase 5 output must include:
+- five-minute bounded snapshots;
+- Twitch up to Top 300 and 30-day raw retention;
+- Kick up to Top 100 official rows when available, candidate fallback, and 60-day raw retention;
+- 180-day daily rollups with Top 30 per-stream facts;
+- no retained category, language, session id, exact start/end, or authoritative offline state;
+- no activity/chat heat.
 
-- current data-path inventory;
-- provider-by-provider capability matrix;
-- unsupported claims and hard blockers;
-- storage and collection cost;
-- migration and retention implications;
-- ranked recommendation;
-- one approved Phase 6 candidate or an explicit no-go result.
+Candidate decisions:
 
-### Phase 6 — one approved major expansion
+```text
+Local Watchlist v1: approved
+Observed Runs research: deferred
+Category / Game trends: deferred pending new collection and rollups
+Event Layer: deferred pending source/storage decision
+Language trends: not approved
+Alerts: not approved
+```
 
-State: future.
+### Phase 6 — Local Watchlist v1
 
-Tentative priority only when Phase 5 proves technical honesty and affordability:
+State: approved; W0 next, runtime not started.
 
-1. minimal Session page;
-2. Category / Game trends;
-3. login-free local Watchlist.
+Permanent audit authority:
+
+```text
+docs/product/next-feature-data-capability-audit.md
+```
+
+Fixed high-level result:
+
+```text
+/twitch/watchlist/
+/kick/watchlist/
+provider-separated localStorage
+one Heatmap + one History request per provider load
+no N-per-channel requests
+no live/offline guarantee
+no alerts, login, sync, exact sessions, or cross-provider identity
+```
+
+Required PR sequence:
+
+```text
+W0  permanent specification and implementation plan
+W1  local state and storage foundation
+W2  provider data adapters and evidence states
+W3  responsive Watchlist UI and approved entry points
+W4  candidate QA
+W5  Cloudflare Preview, production acceptance, and document cleanup
+```
+
+Because Watchlist adds visible public routes, W5 requires deliberate Preview and exact production acceptance.
 
 ## 4. Work not scheduled for immediate implementation
 
 - speculative History visual fixes without screenshots and instructions;
-- direct implementation of a Phase 5 candidate before audit approval;
+- Watchlist runtime before W0 specification approval;
+- exact Session page or complete session history;
+- on-demand multi-day raw JSON scans for session reconstruction;
+- Category/Game trends before both collectors retain verified category fields and new rollups exist;
+- Language trends without a verified provider source and accuracy policy;
+- Event Layer without an approved event source and storage model;
+- Alerts without persistent subscriptions, background evaluation, and delivery infrastructure;
 - cross-platform combined totals or rankings;
 - login or cloud user accounts;
-- alerts or notifications;
 - AI-generated interpretation;
-- full-provider coverage claims;
-- exact session history without a validated model;
-- unrelated redesigns of accepted core pages;
 - multiple major expansions in parallel.
 
 ## 5. Roadmap update rule

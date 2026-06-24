@@ -10,11 +10,13 @@ const retiredNotes = [
   'docs/work-in-progress/history-layout-rebuild-working-note.md',
   'docs/work-in-progress/channel-v1-audit.md',
   'docs/work-in-progress/report-export-r0-audit.md',
+  'docs/work-in-progress/phase5-data-capability-audit.md',
 ]
 
 const historyAcceptancePath = 'docs/operations/history-production-acceptance-2026-06-23.md'
 const channelAcceptancePath = 'docs/operations/channel-production-acceptance-2026-06-23.md'
 const outputAcceptancePath = 'docs/operations/report-export-consolidation-acceptance-2026-06-24.md'
+const capabilityAuditPath = 'docs/product/next-feature-data-capability-audit.md'
 const channelSpecPath = 'docs/product/channel-and-streamer-spec.md'
 const channelPlanPath = 'docs/product/channel-v1-implementation-plan.md'
 const outputPlanPath = 'docs/product/report-export-consolidation-plan.md'
@@ -33,6 +35,7 @@ const requiredFiles = [
   historyAcceptancePath,
   channelAcceptancePath,
   outputAcceptancePath,
+  capabilityAuditPath,
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/history-and-trends-spec.md',
@@ -94,6 +97,7 @@ if (failures.length === 0) {
     'product/channel-and-streamer-spec.md',
     'product/channel-v1-implementation-plan.md',
     'product/report-export-consolidation-plan.md',
+    'product/next-feature-data-capability-audit.md',
   ]) assert(index.includes(path), `${indexPath}: missing canonical document link: ${path}`)
 
   for (const retired of retiredNotes) {
@@ -101,9 +105,9 @@ if (failures.length === 0) {
   }
 
   for (const fragment of [
-    'There is no active History rebuild, Channel v1, or Report & Export consolidation working note.',
+    'There is no active History rebuild, Channel v1, Report & Export consolidation, or Phase 5 capability-audit working note.',
     'pending History UI appearance revision',
-    'Phase 5 data-capability audit has not started',
+    'Local Watchlist v1 W0 has not started.',
   ]) assert(index.includes(fragment), `${indexPath}: missing completed/next-state fragment: ${fragment}`)
 
   const governance = read('docs/operations/documentation-governance.md')
@@ -119,27 +123,26 @@ if (failures.length === 0) {
     'History & Trends | functional and production acceptance complete',
     'Channel / Streamer | v1 and production acceptance complete',
     'Report/export shared layer | R0–R4 complete through PR #413',
-    'Phase 4 — Report & Export shared-layer consolidation',
-    'State: completed through PR #413.',
-    'Phase 5 — next-feature data-capability audit',
-    'State: next, not started.',
-    'report-export-consolidation-acceptance-2026-06-24.md',
+    'Phase 5 capability audit | complete through PR #414',
+    'Local Watchlist v1 | approved Phase 6 candidate',
+    '### Phase 5 — next-feature data-capability audit',
+    'State: completed through PR #414.',
+    '### Phase 6 — Local Watchlist v1',
+    'State: approved; W0 next, runtime not started.',
+    'next-feature-data-capability-audit.md',
     'History UI appearance work remains pending',
   ]) assert(roadmap.includes(fragment), `current-roadmap.md: missing ${fragment}`)
 
   const schedule = read('docs/product/current-schedule.md')
   for (const fragment of [
     'Channel production acceptance            complete',
-    'Report/export R0 boundary audit           complete through PR #409',
-    'Report/export R1 shared primitives        complete through PR #410',
-    'Report/export R2 History adoption         complete through PR #411',
-    'Report/export R3 Channel adoption         complete through PR #412',
-    'Report/export R4 closure                  complete through PR #413',
-    'Phase 5 data-capability audit              next, not started',
-    'Current active implementation phase:',
-    'Required first step: create a dedicated audit note before implementation',
-    'work-report-export-r4-acceptance',
-    'Do not begin the next PR before that report is issued.',
+    'Report/export R0-R4                      complete through PR #413',
+    'Phase 5 data-capability audit             complete through PR #414',
+    'Local Watchlist v1                       approved; W0 next, not started',
+    'Phase 6 — Local Watchlist v1',
+    'W0 — permanent specification and implementation plan',
+    'Not in latest observed set — not confirmed offline',
+    'Do not begin W0 before the PR #414 merge report is issued.',
   ]) assert(schedule.includes(fragment), `current-schedule.md: missing ${fragment}`)
 
   const outputPlan = read(outputPlanPath)
@@ -173,6 +176,20 @@ if (failures.length === 0) {
     'viewloom-channel-v1',
     'Phase 4 created a reusable neutral output layer',
   ]) assert(outputAcceptance.includes(fragment), `${outputAcceptancePath}: missing ${fragment}`)
+
+  const capabilityAudit = read(capabilityAuditPath)
+  for (const fragment of [
+    'Status: completed permanent audit record on PR #414 merge',
+    'Closure PR: #414',
+    'Provider-specific, login-free Local Watchlist v1',
+    'Session page as an exact session-history product',
+    'one latest Heatmap request',
+    'one History request',
+    'Not in latest observed set',
+    'No per-channel server request is required.',
+    'W0 — permanent specification and implementation plan',
+    'Local Watchlist v1 is approved',
+  ]) assert(capabilityAudit.includes(fragment), `${capabilityAuditPath}: missing ${fragment}`)
 
   const sharedOutputContract = read(sharedOutputContractPath)
   for (const fragment of [
@@ -344,7 +361,7 @@ if (failures.length) {
 
 console.log('ViewLoom development, documentation, and deployment policy verification passed.')
 console.log(`- ${requiredFiles.length} policy/document files present`)
-console.log('- completed History, Channel, and Report & Export working notes remain retired')
-console.log('- permanent History, Channel, and Report & Export acceptance records are governed')
-console.log('- Phase 4 R0-R4 are complete; Phase 5 data-capability audit is next and not started')
+console.log('- completed History, Channel, Report & Export, and Phase 5 working notes remain retired')
+console.log('- permanent History, Channel, Report & Export, and Phase 5 records are governed')
+console.log('- Phase 5 is complete; Local Watchlist v1 W0 is next and not started')
 console.log(`- ${concurrencyWorkflows.length} active workflows cancel obsolete runs`)
