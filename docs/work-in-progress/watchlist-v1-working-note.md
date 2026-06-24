@@ -3,32 +3,26 @@
 Status: active implementation ledger
 Created: 2026-06-24
 Roadmap phase: Phase 6 — Local Watchlist v1
-Current branch: `work-watchlist-w1-storage`
+Current branch: `work-watchlist-w2a-latest`
 Delete when: W5 production acceptance and documentation closure are complete.
 
 ## 1. W0 record
 
-Previous policy marker: Status: active W0 specification work
-Branch: `work-watchlist-w0`
-Closure PR: #415
+```text
+branch: work-watchlist-w0
+PR: #415
+```
 
-W0 created the permanent specification and implementation plan and fixed provider-separated routes, local storage, request counts, evidence language, approved entry points, and W1–W5 slicing.
+W0 created the permanent product specification and implementation plan and fixed provider-separated routes, local storage, request counts, evidence language, approved entry points, and W1–W5 slicing.
 
 ## 2. W1 record
 
-Branch:
-
 ```text
-work-watchlist-w1-storage
+branch: work-watchlist-w1-storage
+PR: #416 Add Local Watchlist storage foundation
 ```
 
-PR:
-
-```text
-#416 Add Local Watchlist storage foundation
-```
-
-Files added:
+W1 added:
 
 ```text
 apps/web/src/live/watchlist/model.ts
@@ -38,50 +32,77 @@ apps/web/scripts/verify-watchlist-storage.mjs
 .github/workflows/watchlist-storage.yml
 ```
 
+W1 fixed exact provider keys, versioned local documents, id/URL normalization, immutable list operations, duplicate and 50-entry behavior, recoverable storage states, provider-isolated clear/reset and storage-event parsing, and clean period URL state without saved ids.
+
+## 3. W2A record
+
+Branch and PR:
+
+```text
+work-watchlist-w2a-latest
+#417 Add Watchlist latest observation foundation
+```
+
+Files added:
+
+```text
+apps/web/src/live/watchlist/latest-model.ts
+apps/web/src/live/watchlist/latest-adapter.ts
+apps/web/src/live/watchlist/latest-controller.ts
+apps/web/docs/watchlist-latest-w2a-contract.md
+apps/web/scripts/verify-watchlist-latest.mjs
+apps/web/scripts/watchlist-latest-adapter-cases.mjs
+apps/web/scripts/watchlist-latest-controller-cases.mjs
+.github/workflows/watchlist-latest.yml
+```
+
 Implemented:
 
-- exact provider keys `viewloom.watchlist.twitch.v1` and `viewloom.watchlist.kick.v1`;
-- versioned `viewloom-watchlist-v1` documents with revision 1;
-- maximum 50 entries and initial-visible constant 12;
-- plain id and same-provider URL normalization;
-- invalid host, path, id, and cross-provider URL rejection;
-- display-name cleanup and 100-code-point cap;
-- immutable add, remove, move, and clear operations;
-- duplicate preservation and top insertion;
-- injected storage read, write, remove, and storage-event contracts;
-- missing, empty, ready, repaired, corrupted, unavailable, and write-error handling;
-- repair of normalized, invalid, duplicate, and excess entries;
-- preservation of corrupted raw values;
-- rollback to the last persisted document on normal write failure;
-- confirmed provider-specific clear/reset;
-- `period=7d|30d` parsing and clean URL serialization;
-- removal of ids, names, filters, saved state, order, and expansion state from URLs.
+- schema `viewloom-watchlist-latest-v1`;
+- provider states `live`, `partial`, `stale`, `empty`, and `error`;
+- freshness `fresh`, `stale`, and `unavailable`;
+- per-entry states `present_fresh`, `present_stale`, `absent_usable`, and `latest_unavailable`;
+- exact provider endpoints `/api/twitch-heatmap` and `/api/kick-heatmap`;
+- direct Twitch and Kick `items[]` payload normalization;
+- Twitch nested `latest.payload_json` compatibility fallback;
+- one normalized `ReadonlyMap` id index per response;
+- preservation of provider source, target source, raw state, update time, coverage, id, display name, viewers, title, momentum, URL, and start timestamp when supplied;
+- missing numeric values remain `null` rather than zero;
+- invalid ids are ignored and duplicate response ids keep the first occurrence;
+- zero request for an empty valid-entry list;
+- exactly one provider Heatmap request for one through fifty entries;
+- cached snapshot reuse for repeated load and task-local list changes;
+- one new provider request for explicit refresh;
+- in-flight deduplication for concurrent load/refresh;
+- neutral request, HTTP, JSON, provider-mismatch, and unreadable-payload failure states;
+- no global fetch, DOM, browser-storage, History, API implementation, or CSS dependency.
 
 Verification:
 
 - application typecheck passed;
-- actual TypeScript sources were transpiled and imported by the W1 verifier;
-- normalization, 50-entry cap, duplicate, movement, removal, clear, reset, repair, corruption, read/write failure, provider isolation, storage events, and URL state passed;
-- source scans confirmed no direct fetch, browser-storage global, DOM, API-path, or CSS dependency;
-- dedicated `Watchlist Storage` workflow passed;
-- existing repository regression checks passed on the accepted W1 candidate.
+- actual W1/W2A TypeScript sources were transpiled and imported;
+- direct, nested, fresh, partial, stale, empty, invalid, duplicate, missing-number, and mismatch payload cases passed;
+- all four latest evidence states passed;
+- zero, one, and fifty-entry request counts passed;
+- cache reuse, explicit refresh, in-flight deduplication, endpoint separation, HTTP failure, JSON failure, and request failure passed;
+- dedicated `Watchlist Latest` workflow passed.
 
 Not changed:
 
-- public Watchlist routes or UI;
-- HTML or CSS;
-- Heatmap or History adapters;
-- any production data request;
+- public Watchlist routes, HTML, CSS, or visible UI;
+- History adapters, retained evidence, or combined evidence;
 - Channel or provider Home integration;
+- existing Heatmap API response contracts;
+- per-channel requests or polling;
 - API, D1, bindings, collectors, cron, or retention.
 
-## 3. Current position
+## 4. Current position
 
 ```text
 W0  specification and plan       complete PR #415
-W1  storage foundation           completion candidate PR #416
-W2A latest adapter               next, not started
-W2B History adapter              queued
+W1  storage foundation           complete PR #416
+W2A latest adapter               completion candidate PR #417
+W2B History adapter              next, not started
 W3A routes and shell             queued
 W3B evidence UI/entry points     queued
 W3C candidate polish             queued
@@ -91,32 +112,31 @@ W5A hosted Preview               queued
 W5B production closure           queued
 ```
 
-## 4. W2A handoff
+## 5. W2B handoff
 
 Planned branch:
 
 ```text
-work-watchlist-w2a-latest
+work-watchlist-w2b-history
 ```
 
-W2A may add only:
+W2B may add only:
 
-- neutral latest-observation types;
-- Twitch and Kick Heatmap adapters;
-- normalized id indexes;
-- source, state, freshness, update time, coverage, viewers, title, and existing momentum mapping;
-- zero-request empty-list behavior;
-- exactly-one-provider-Heatmap-request nonempty behavior;
-- request injection, in-flight deduplication, and executable tests.
+- neutral retained-History types;
+- Twitch and Kick History adapters for 7d and 30d viewer-minutes payloads;
+- `topStreamers[]` and retained daily streamer-row indexes;
+- retained summary and most-recent retained appearance derivation;
+- states `present_retained`, `absent_usable`, `history_partial`, and `history_unavailable`;
+- combined storage/latest/retained evidence without collapsing axes;
+- exact initial-load, period-change, explicit refresh, cache, Back/Forward, and failure-isolation request tests.
 
-W2A must not add:
+W2B must not add:
 
 - public routes, HTML, CSS, or visible Watchlist UI;
-- History adapter or retained evidence;
 - Channel or Home integration;
 - per-channel requests or polling;
-- API schema, D1, binding, collector, cron, retention, or production route changes.
+- API schema, D1, binding, collector, cron, retention, or production-route changes.
 
-## 5. Stop rule
+## 6. Stop rule
 
 After every merge, issue the full merge report and stop. Do not create the next branch until the user explicitly instructs continuation.
