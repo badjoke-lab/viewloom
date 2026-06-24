@@ -1,3 +1,5 @@
+import '../watchlist-touch.css'
+
 let pendingChannelId = ''
 
 const list = document.querySelector<HTMLElement>('[data-watchlist-list]')
