@@ -1,74 +1,62 @@
 # ViewLoom Report & Export shared-layer consolidation plan
 
-Status: active implementation plan — R3 active
-Version: 1.3
+Status: completed implementation plan and permanent milestone record
+Version: 1.4-complete
 Last updated: 2026-06-24
-Roadmap phase: Phase 4 — Report & Export shared-layer consolidation
-Current audit: `../work-in-progress/report-export-r0-audit.md`
+Roadmap phase: Phase 4 — Report & Export shared-layer consolidation completed
+Closure PR: #413
+Permanent acceptance: `../operations/report-export-consolidation-acceptance-2026-06-24.md`
 R1 contract: `../../apps/web/docs/shared-output-r1-contract.md`
 R2 contract: `../../apps/web/docs/history-output-r2-contract.md`
 R3 contract: `../../apps/web/docs/channel-output-r3-contract.md`
-History specification: `history-and-trends-spec.md`
-Channel specification: `channel-and-streamer-spec.md`
 
-## 1. Goal
+## 1. Goal and result
 
-Reduce duplicated report/export infrastructure across History and Channel without changing accepted feature semantics, visible layouts, serialized schemas, provider separation, request counts, or failure feedback.
+Phase 4 reduced duplicated report/export infrastructure across History and Channel without changing accepted feature semantics, visible layouts, serialized schemas, provider separation, request counts, or failure feedback.
 
-This phase is an internal consolidation, not a new reporting feature.
+The result is a neutral shared output layer plus exact feature-preservation contracts. This was an internal consolidation, not a new reporting feature.
 
-## 2. Governing constraints
+## 2. Accepted shared boundary
 
-Every PR must preserve:
-
-- separate Twitch and Kick data, routes, labels, filenames, and claims;
-- History schema `viewloom-history-export-v1`;
-- Channel schema `viewloom-channel-v1`;
-- existing CSV headers and row meaning;
-- History spreadsheet-safety behavior;
-- Channel minimal quoting with no implicit spreadsheet formula protection;
-- Channel blank missing CSV numeric cells;
-- JSON `null` missing values;
-- existing report and short-post text;
-- History share-card and PNG behavior;
-- one existing provider History response per loaded period;
-- no new API, D1, binding, collector, cron, or retention work;
-- no History or Channel DOM/CSS/layout change.
-
-History UI appearance work remains a separate pending phase. Shared-layer work must not pre-empt or reshape it.
-
-## 3. Approved shared boundary
-
-The shared layer may own only:
+The shared layer owns only:
 
 ```text
-provider type and display name
+provider primitive
 filename-segment sanitization
 filename composition
 CSV syntax escaping
 finite number -> blank
 finite number -> null
-clipboard transport with fallback
-text-file Blob download transport
+clipboard transport with neutral result
+text-file Blob download transport with neutral result
 operation success/failure result type
 ```
 
-The shared layer must not own:
+The shared layer does not own:
 
 ```text
 History or Channel models
 API endpoints or payload capture
-report/short-post templates
+report or short-post templates
 CSV headers or row builders
 JSON schemas or object builders
-coverage/limitation wording
+coverage or limitation wording
 History share-card canvas logic
 DOM selectors or HTML templates
 CSS or responsive layout
 feature-visible status messages
 ```
 
-## 4. Shared module layer
+Dependency direction:
+
+```text
+shared/output may depend only on primitive TypeScript and browser APIs
+History may import shared/output
+Channel may import shared/output
+shared/output must not import History or Channel
+```
+
+## 3. Shared module layer
 
 Implemented in R1:
 
@@ -83,29 +71,23 @@ apps/web/src/shared/output/
   result.ts
 ```
 
-Dependency rule:
-
-```text
-shared/output may depend only on primitive TypeScript/browser APIs
-shared/output must not import History or Channel modules
-feature adoption occurs only in dedicated preservation PRs
-```
-
-Contracts and workflow:
+Permanent contracts and gates:
 
 ```text
 apps/web/docs/shared-output-r1-contract.md
-apps/web/scripts/verify-shared-output-r1.mjs
 apps/web/docs/history-output-r2-contract.md
-apps/web/scripts/verify-history-output-r2.mjs
 apps/web/docs/channel-output-r3-contract.md
+
+apps/web/scripts/verify-shared-output-r1.mjs
+apps/web/scripts/verify-history-output-r2.mjs
 apps/web/scripts/verify-channel-output-r3.mjs
+
 .github/workflows/shared-output-r1.yml
 ```
 
-The workflow name is `Shared Output Contracts` and executes the neutral R1 contract plus exact History R2 and Channel R3 preservation contracts.
+The workflow name is `Shared Output Contracts` and executes app typechecking plus R1, exact History R2, and exact Channel R3 verification.
 
-## 5. Stable helper behavior
+## 4. Stable helper behavior
 
 ### Provider
 
@@ -124,10 +106,7 @@ sanitizeFilenameSegment(value, fallback?)
 buildOutputFilename(parts, extension)
 ```
 
-- Unicode NFKC normalization;
-- Unicode letters and numbers retained;
-- unsafe path/control characters removed;
-- feature code owns segment selection and order.
+Unicode NFKC normalization and unsafe path/control-character removal are shared. Each feature retains segment selection and order.
 
 ### CSV
 
@@ -137,17 +116,12 @@ csvRow(values, options?)
 spreadsheetSafeText(value)
 ```
 
-Options:
+Accepted feature policies remain intentionally different:
 
 ```text
-quote: minimal | always
-spreadsheetSafety: none | apostrophe
+History: quote always, apostrophe spreadsheet safety
+Channel: quote minimal, spreadsheet safety none
 ```
-
-Accepted feature policies remain separate:
-
-- Channel: `quote: minimal`, `spreadsheetSafety: none`;
-- History: `quote: always`, `spreadsheetSafety: apostrophe`.
 
 ### Numeric values
 
@@ -158,29 +132,16 @@ finiteNumberOrNull(value)
 
 Only finite JavaScript numbers are accepted. Numeric strings are not coerced.
 
-### Clipboard
+### Clipboard and download
 
-```ts
-writeTextToClipboard(text, runtime?)
-```
+The neutral helpers own transport and neutral results only. Features retain fallback UX, exception semantics, timing, and visible feedback when exact behavior differs.
 
-The helper owns transport and neutral results only. Feature-visible fallback and messages remain feature-owned.
-
-### Download
-
-```ts
-downloadTextFile(request, runtime?)
-```
-
-The helper owns Blob/object URL/temporary-anchor transport and neutral results only. Feature-specific exception behavior, anchor behavior, revoke timing, and messages may remain feature-owned.
-
-## 6. PR sequence
+## 5. Completed PR sequence
 
 ### R0 — current implementation and boundary audit
 
-State: completed through PR #409.
-
 ```text
+PR #409
 branch: work-report-export-r0-audit
 merge: 46cea2eceff85b4f5a359446d102d7bc6afe3487
 ```
@@ -189,34 +150,26 @@ Completed:
 
 - inventoried History and Channel output code and gates;
 - compared filenames, CSV, JSON, clipboard, download, PNG, feedback, DOM, and request behavior;
-- fixed the neutral shared boundary;
-- documented spreadsheet-safety, filename, and UI risks;
-- fixed the R1–R4 sequence.
+- fixed the neutral shared boundary and the R1–R4 sequence.
 
 ### R1 — neutral shared output primitives
 
-State: completed through PR #410.
-
 ```text
+PR #410
 branch: work-report-export-r1-shared-output
 merge: 6b90c277460a674e355a7676444ddf10ff296325
 ```
 
 Completed:
 
-- neutral provider, filename, CSV, finite-value, clipboard, download, and result modules;
-- direct executable contracts;
-- Unicode and unsafe filename coverage;
-- minimal/always CSV quoting and explicit spreadsheet safety;
-- finite/missing/invalid numeric coverage;
-- clipboard and object URL lifecycle coverage;
-- no History or Channel import or migration.
+- created neutral provider, filename, CSV, finite-value, clipboard, download, and result modules;
+- added direct executable contracts;
+- changed no History or Channel runtime output.
 
 ### R2 — conditional History internal adoption
 
-State: completed through PR #411.
-
 ```text
+PR #411
 branch: work-report-export-r2-history-adoption
 merge: 9bd7df7620c87c48e5c2d2834cfdce712ad71e3e
 ```
@@ -225,156 +178,104 @@ Adopted:
 
 ```text
 finiteNumberOrNull
-CSV cell syntax:
-  quote: always
-  spreadsheetSafety: apostrophe
-History filename composition
+CSV quote: always
+CSV spreadsheetSafety: apostrophe
+History-owned filename composition
 ```
 
-Exact preservation gate covers:
+Preserved:
 
-- complete `viewloom-history-export-v1` model;
-- complete CSV bytes, CRLF endings, blank null cells, quoting, and formula safety;
-- complete JSON indentation and trailing newline;
-- complete Twitch and Kick report text;
-- exact Twitch and Kick filenames;
-- current feature-owned clipboard fallback;
-- current temporary download anchor and 1000 ms revoke timing.
+- `viewloom-history-export-v1`;
+- complete CSV, JSON, report, short-post, and filename output;
+- visible-preview clipboard fallback;
+- current temporary anchor and 1000 ms revoke timing;
+- PNG/share-card behavior;
+- one provider History response;
+- History DOM, CSS, action order, labels, and visible status.
 
-Deferred in R2:
-
-```text
-provider display helper
-clipboard transport
-text download transport
-```
+Provider display, clipboard transport, and text-download transport remained feature-owned.
 
 ### R3 — conditional Channel internal adoption
 
-State: active in PR #412.
-
 ```text
+PR #412
 branch: work-report-export-r3-channel-adoption
+merge: 83a46d286c90a9be503d7110b71b382f0394288e
 ```
 
-Adopted implementation:
+Adopted:
 
 ```text
-apps/web/src/live/channel-report.ts
-  csvNumber -> finiteNumberOrBlank
-  nullableNumber -> finiteNumberOrNull
-  local csvCell -> shared csvCell
-  quote: minimal
-  spreadsheetSafety: none
-  literal filename interpolation -> buildOutputFilename
-  feature-owned segment order remains unchanged
+finiteNumberOrBlank
+finiteNumberOrNull
+CSV quote: minimal
+CSV spreadsheetSafety: none
+Channel-owned filename composition
 ```
 
-Exact preservation gate covers:
+Preserved:
 
-- complete Full summary text;
-- complete Short post text;
-- complete CSV bytes before BOM insertion;
-- CRLF endings and blank missing numeric cells;
-- minimal syntax quoting;
-- explicit absence of spreadsheet formula protection;
-- complete `viewloom-channel-v1` JSON object;
-- JSON `null` missing numeric values;
-- exact Twitch and Kick filenames;
-- current feature-owned clipboard fallback;
-- current hidden temporary download anchor and zero-millisecond revoke timing.
+- complete Full summary and Short post text;
+- `viewloom-channel-v1`;
+- complete CSV and JSON output;
+- explicit absence of formula protection;
+- provider-specific filenames;
+- clipboard API and textarea fallback;
+- hidden temporary anchor and zero-millisecond revoke timing;
+- one provider History request per period;
+- Channel DOM, CSS, task order, labels, and visible feedback.
 
-Deferred in R3:
-
-```text
-provider display helper
-clipboard transport
-text download transport
-```
-
-Reasons:
-
-- provider display remains embedded in feature-owned report prose;
-- current Channel clipboard and download helpers throw on transport failure and preserve caller-visible error messages;
-- shared helpers return neutral result objects, so replacing those paths would change failure semantics or require additional adaptation beyond the pure-helper scope.
-
-R3 stop rule:
-
-- do not add spreadsheet formula protection to Channel CSV;
-- do not change Channel UI or output to fit a shared helper;
-- defer any helper whose adoption requires DOM, CSS, task-order, label, feedback, report, schema, filename, request, or provider change.
-
-R3 completion:
-
-- exact Channel preservation workflow succeeds;
-- Channel Report Browser succeeds for Twitch desktop and Kick mobile;
-- Channel Candidate Acceptance succeeds;
-- one provider History request remains;
-- no DOM/CSS/layout or visible feedback difference;
-- complete affected History, Channel, Web, naming, policy, and Status matrix succeeds;
-- final diff is limited to approved output internals, contracts, workflow, gates, and source-of-truth documents.
+Provider display, clipboard transport, and text-download transport remained feature-owned.
 
 ### R4 — cross-page regression and documentation closure
 
-State: queued after the PR #412 merge report.
-
 ```text
+PR #413
 branch: work-report-export-r4-acceptance
 ```
 
-Scope:
+Completion requirements:
 
-- run complete affected History and Channel gates;
-- verify exact filenames, schemas, headers, missing-value policy, provider separation, report text, failure semantics, and request counts;
+- rerun complete affected History and Channel gates;
+- verify provider separation, filenames, schemas, CSV policies, JSON missing values, report text, fallback behavior, and request counts;
 - verify no visible layout change;
-- mark this plan completed;
-- update roadmap and schedule to Phase 5;
-- delete the temporary R0 audit note and unlink it.
+- finalize the permanent acceptance record;
+- delete and unlink the temporary R0 audit note;
+- advance roadmap and schedule to Phase 5.
 
-Preview rule:
-
-- no Cloudflare Preview is required for output-compatible internal consolidation;
-- Preview and production acceptance become required if an accepted visible or serialized contract changes.
-
-## 7. Preservation matrix
+## 6. Preservation matrix
 
 | Contract | History | Channel |
 |---|---:|---:|
-| provider separation | required | required |
-| no extra History request | required | required |
-| exact report text | required | required |
-| exact short-post text | required | required |
-| exact CSV header | required | required |
-| exact CSV row meaning | required | required |
-| exact filename | required | required |
-| blank missing CSV numerics | contract-specific | required |
-| spreadsheet formula safety | apostrophe required | none; no silent change |
+| provider separation | preserved | preserved |
+| no extra History request | preserved | preserved |
+| exact report text | preserved | preserved |
+| exact short-post text | preserved | preserved |
+| exact CSV header and row meaning | preserved | preserved |
+| exact filename | preserved | preserved |
+| spreadsheet policy | apostrophe required | none; unchanged |
 | JSON schema | `viewloom-history-export-v1` | `viewloom-channel-v1` |
-| JSON missing numerics | current contract | `null` |
-| PNG/share card | required | not applicable |
-| DOM/CSS/layout unchanged | required | required |
-| failure feedback unchanged | required | required |
+| JSON missing numerics | preserved | `null` |
+| PNG/share card | preserved | not applicable |
+| DOM/CSS/layout | unchanged | unchanged |
+| failure feedback | unchanged | unchanged |
 
-## 8. Explicit non-goals
+## 7. Explicit non-goals
 
-Phase 4 does not include:
+Phase 4 did not include:
 
 - new report modes or export formats;
 - Channel PNG/share cards;
 - cross-platform combined output;
-- provider-wide claims;
 - shared report prose or JSON schemas;
 - History or Channel visual redesign;
 - API or storage changes;
 - collector, cron, or retention changes.
 
-## 9. Current next step
+## 8. Completion result
 
-Complete and merge PR #412 only after:
+This plan is complete and retained as the permanent implementation record.
 
-- the latest head passes `Shared Output Contracts`;
-- Channel Report Browser and Channel Candidate Acceptance pass;
-- the broader History, Channel, Web, naming, policy, and Status regression matrix passes;
-- the final diff contains no UI, API, database, collector, cron, or retention change.
+The former R0 temporary audit was removed in PR #413 after all stable decisions and evidence moved into this plan, the R1–R3 contracts, and the permanent acceptance record.
 
-After the required PR #412 merge report, begin R4 only from the new `main`.
+History UI appearance work remains a separate pending item and requires screenshots, explicit instructions, a new audit, and its own acceptance sequence.
