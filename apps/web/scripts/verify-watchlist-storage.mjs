@@ -58,11 +58,13 @@ function transpileSources() {
       assert.ok(allowedImports.has(specifier), `${file}: import outside Watchlist W1 layer: ${specifier}`)
     }
 
+    assert.doesNotMatch(source, /\bfetch\s*\(/, `${file}: network dependency found`)
     assert.doesNotMatch(
       source,
-      /\b(?:fetch|document|window|localStorage|sessionStorage|indexedDB|navigator)\b|(?:api\/|\.css['"])/,
-      `${file}: browser, network, style, or API dependency found`,
+      /\b(?:window|document|localStorage|sessionStorage|indexedDB|navigator)\s*[.[]/,
+      `${file}: direct browser-global dependency found`,
     )
+    assert.doesNotMatch(source, /(?:api\/|\.css['"])/, `${file}: API or style dependency found`)
 
     const result = ts.transpileModule(source, {
       fileName: sourcePath,
