@@ -75,6 +75,14 @@ export function mountProviderHome(platform: Platform): void {
         ${featureCards.map(([num, title, copy, slug, id, fallback]) => `<a class="feature-item" href="${base}${slug}/"><span class="num">${num}</span><h3>${title}</h3><p>${copy}</p><div class="feature-item__fact" id="${id}">${fallback}</div></a>`).join('')}
       </section>
 
+      <section class="provider-utility" aria-label="${name} browser utilities">
+        <a class="provider-utility__item" href="${base}watchlist/">
+          <span class="provider-utility__mark">LOCAL · BROWSER</span>
+          <div><h2>Local Watchlist</h2><p>Saved channels in this browser. Keep ${name} ids separate and reopen provider-safe ViewLoom pages.</p></div>
+          <strong>Open Local Watchlist →</strong>
+        </a>
+      </section>
+
       <div class="provider-overview">
         <section class="home-section">
           <div class="rule-title"><h2>Live Now</h2><span>Latest observed snapshot</span></div>
