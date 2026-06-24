@@ -29,8 +29,8 @@ Current feature state:
 | History & Trends | functional and production acceptance complete | preserve; visual revision pending separate instructions |
 | Data Status | production core complete | maintain |
 | Channel / Streamer | v1 and production acceptance complete | preserve retained-footprint contract |
-| Report/export shared layer | R0–R2 complete; R3 active | adopt only exact-compatible neutral helpers |
-| Session / Category / Watchlist / Alerts | not approved | data-capability audit required first |
+| Report/export shared layer | R0–R4 complete through PR #413 | maintain exact contracts |
+| Next-feature expansion | not approved | Phase 5 audit required first |
 
 Permanent acceptance records:
 
@@ -43,47 +43,38 @@ Channel:
 docs/operations/channel-production-acceptance-2026-06-23.md
 accepted SHA: efc14295f0a372b96afac740d6a01571f7582210
 closure PR: #408
+
+Report & Export consolidation:
+docs/operations/report-export-consolidation-acceptance-2026-06-24.md
+closure PR: #413
 ```
 
 ## 2. Immediate priority
 
-Phase 4 R3 is active:
-
-> Replace only Channel output helpers whose accepted behavior can be proven exact, and defer every helper that would alter Channel output, request count, UI, or failure feedback.
-
-Governing documents:
+Phase 4 is complete. The next approved work window is:
 
 ```text
-docs/product/report-export-consolidation-plan.md
-docs/work-in-progress/report-export-r0-audit.md
-apps/web/docs/shared-output-r1-contract.md
-apps/web/docs/history-output-r2-contract.md
-apps/web/docs/channel-output-r3-contract.md
+Phase 5 — next-feature data-capability audit
+State: next, not started
 ```
 
-R3 safe adoption:
+Phase 5 must begin with a dedicated audit note and must not start implementation directly.
 
-- finite number to blank CSV cell;
-- finite number to JSON `null`;
-- minimal CSV syntax quoting with spreadsheet safety explicitly disabled;
-- filename composition using the existing feature-owned segment order.
+The audit must answer:
 
-R3 deferred adoption:
-
-- provider display helper;
-- clipboard transport;
-- text-file download transport;
-- report and short-post prose;
-- JSON schema and object meaning;
-- payload capture and request lifecycle;
-- DOM, CSS, task order, labels, and visible feedback.
+- what retained fields actually exist;
+- available time resolution and retention;
+- Twitch/Kick parity and provider-specific gaps;
+- required D1 migrations or new storage;
+- collector, cron, and Cloudflare Free cost;
+- whether an honest MVP can be built without unsupported claims;
+- which single expansion, if any, should proceed to Phase 6.
 
 History UI appearance work remains pending because screenshots and detailed instructions are unavailable. Until those arrive:
 
 - do not redesign History;
-- do not alter History DOM or CSS for consolidation convenience;
-- do not make speculative visual fixes;
-- stop or defer any adoption that changes accepted rendering or serialized output.
+- do not alter History DOM or CSS speculatively;
+- begin with a separate audit when the required visual evidence arrives.
 
 ## 3. Ordered roadmap
 
@@ -122,15 +113,6 @@ Archives
 Report & Export
 ```
 
-Completion evidence:
-
-- H1–H7 completed;
-- repository and browser candidate matrix passed;
-- `preview-history-h7` passed with separate Preview D1 bindings;
-- Twitch desktop and Kick 390px artifacts reviewed;
-- exact production SHA verified;
-- production browser acceptance passed.
-
 Pending separate item:
 
 ```text
@@ -138,7 +120,7 @@ History UI appearance revision
 State: pending screenshots and explicit instructions
 ```
 
-The pending visual revision does not reopen functional acceptance and requires its own audit, specification, PR sequence, Preview validation, and production acceptance.
+The pending visual revision requires its own audit, specification, PR sequence, Preview validation, and production acceptance.
 
 ### Phase 2 — production P0/P1 repair window
 
@@ -158,14 +140,6 @@ Retained Days
 Report & Export
 ```
 
-Completion evidence:
-
-- C0 through C5B completed in PRs #398–#408;
-- deliberate `preview-channel-v1` real-data acceptance passed;
-- exact production SHA verified;
-- Twitch desktop and Kick 390px public acceptance passed;
-- temporary implementation notes retired.
-
 Accepted boundary:
 
 - one provider at a time;
@@ -178,161 +152,67 @@ Accepted boundary:
 
 ### Phase 4 — Report & Export shared-layer consolidation
 
-State: R3 active.
+State: completed through PR #413.
 
-Permanent plan:
+Permanent records:
 
 ```text
 docs/product/report-export-consolidation-plan.md
+docs/operations/report-export-consolidation-acceptance-2026-06-24.md
+apps/web/docs/shared-output-r1-contract.md
+apps/web/docs/history-output-r2-contract.md
+apps/web/docs/channel-output-r3-contract.md
 ```
 
-Temporary audit retained until R4:
+Completed sequence:
 
 ```text
-docs/work-in-progress/report-export-r0-audit.md
+R0  PR #409  boundary audit
+R1  PR #410  neutral shared primitives
+R2  PR #411  exact-compatible History adoption
+R3  PR #412  exact-compatible Channel adoption
+R4  PR #413  regression and documentation closure
 ```
 
-Purpose:
+Accepted result:
 
-- remove duplicated neutral infrastructure without changing product semantics;
-- preserve provider separation, filenames, schemas, headers, missing values, request counts, and UI;
-- keep report prose, data models, and visible behavior feature-owned.
-
-#### R0 — implementation and boundary audit
-
-State: completed through PR #409.
-
-```text
-merge: 46cea2eceff85b4f5a359446d102d7bc6afe3487
-```
-
-#### R1 — neutral shared output primitives
-
-State: completed through PR #410.
-
-```text
-merge: 6b90c277460a674e355a7676444ddf10ff296325
-```
-
-Added neutral provider, filename, CSV, finite-value, clipboard, download, and result primitives with direct executable contracts. R1 changed no feature output.
-
-#### R2 — conditional History internal adoption
-
-State: completed through PR #411.
-
-```text
-merge: 9bd7df7620c87c48e5c2d2834cfdce712ad71e3e
-```
-
-Adopted:
-
-```text
-finiteNumberOrNull
-CSV quote: always
-CSV spreadsheetSafety: apostrophe
-History filename composition
-```
-
-Exact golden verification covers the complete History model, CSV, JSON, report text, provider filenames, clipboard fallback, download timing, and request behavior.
-
-Deferred:
-
-```text
-provider display helper
-clipboard transport
-text download transport
-```
-
-#### R3 — conditional Channel internal adoption
-
-State: active in PR #412.
-
-```text
-branch: work-report-export-r3-channel-adoption
-```
-
-Adopted:
-
-```text
-finiteNumberOrBlank
-finiteNumberOrNull
-CSV quote: minimal
-CSV spreadsheetSafety: none
-Channel filename composition
-```
-
-Exact golden verification covers:
-
-- complete Full summary text;
-- complete Short post text;
-- complete CSV bytes and CRLF endings;
-- BOM-at-download and blank missing numeric policy;
-- explicit absence of formula protection;
-- complete `viewloom-channel-v1` JSON;
-- exact Twitch and Kick filenames;
-- feature-owned clipboard and download failure semantics;
-- one provider History request per period;
-- provider separation.
-
-Deferred because exact feature behavior differs:
-
-```text
-provider display helper
-clipboard transport
-text download transport
-```
-
-Completion requirements:
-
-- exact Channel preservation workflow succeeds;
-- Channel Report Browser succeeds for Twitch desktop and Kick mobile;
-- Channel Candidate Acceptance succeeds;
-- one-request and provider-separation contracts remain intact;
-- no DOM, CSS, visible string, task order, report prose, JSON schema, API, D1, collector, cron, or retention difference;
-- complete affected regression matrix succeeds.
-
-#### R4 — cross-page regression and documentation closure
-
-State: queued after the PR #412 merge report.
-
-```text
-branch: work-report-export-r4-acceptance
-```
-
-Completion:
-
-- exact provider separation, filenames, schemas, headers, missing values, report text, and request counts preserved;
-- no visible layout change;
-- affected History and Channel matrices green;
-- permanent consolidation plan finalized;
-- temporary R0 note deleted and unlinked;
-- roadmap advances to Phase 5.
-
-Preview rule:
-
-- no Preview for output-compatible internal consolidation;
-- Preview and production acceptance become mandatory if an accepted visible or serialized contract changes.
+- neutral provider, filename, CSV, finite-value, clipboard, download, and result primitives;
+- exact History and Channel golden output contracts;
+- intentional History/Channel differences preserved;
+- provider separation and request counts preserved;
+- no visible layout, API, D1, collector, cron, or retention change;
+- temporary R0 audit retired.
 
 ### Phase 5 — next-feature data-capability audit
 
-State: queued after Phase 4 closure.
+State: next, not started.
 
-Candidates:
+Candidates to audit:
 
-- Session page;
-- Category / Game trends;
-- Language trends;
-- Event layer;
-- local Watchlist;
-- Alerts.
+1. minimal Session page;
+2. Category / Game trends;
+3. Language trends;
+4. Event layer;
+5. login-free local Watchlist;
+6. Alerts.
 
-The audit must determine retained fields, time resolution, provider parity, retention, migrations, cron/collector cost, and whether an honest MVP is possible.
+No candidate proceeds directly from an idea to implementation.
+
+Phase 5 output must include:
+
+- current data-path inventory;
+- provider-by-provider capability matrix;
+- unsupported claims and hard blockers;
+- storage and collection cost;
+- migration and retention implications;
+- ranked recommendation;
+- one approved Phase 6 candidate or an explicit no-go result.
 
 ### Phase 6 — one approved major expansion
 
 State: future.
 
-Tentative priority when technically honest and affordable:
+Tentative priority only when Phase 5 proves technical honesty and affordability:
 
 1. minimal Session page;
 2. Category / Game trends;
@@ -341,6 +221,7 @@ Tentative priority when technically honest and affordable:
 ## 4. Work not scheduled for immediate implementation
 
 - speculative History visual fixes without screenshots and instructions;
+- direct implementation of a Phase 5 candidate before audit approval;
 - cross-platform combined totals or rankings;
 - login or cloud user accounts;
 - alerts or notifications;
