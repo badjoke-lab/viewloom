@@ -29,7 +29,7 @@ Current feature state:
 | History & Trends | functional and production acceptance complete | preserve; visual revision pending separate instructions |
 | Data Status | production core complete | maintain |
 | Channel / Streamer | v1 and production acceptance complete | preserve retained-footprint contract |
-| Report/export shared layer | R0 and R1 complete; R2 active | adopt only exact-compatible neutral helpers |
+| Report/export shared layer | R0–R2 complete; R3 active | adopt only exact-compatible neutral helpers |
 | Session / Category / Watchlist / Alerts | not approved | data-capability audit required first |
 
 Permanent acceptance records:
@@ -47,9 +47,9 @@ closure PR: #408
 
 ## 2. Immediate priority
 
-Phase 4 R2 is active:
+Phase 4 R3 is active:
 
-> Replace only History output helpers whose accepted behavior can be proven exact, and defer every helper that would alter History output, UI, or fallback behavior.
+> Replace only Channel output helpers whose accepted behavior can be proven exact, and defer every helper that would alter Channel output, request count, UI, or failure feedback.
 
 Governing documents:
 
@@ -58,24 +58,25 @@ docs/product/report-export-consolidation-plan.md
 docs/work-in-progress/report-export-r0-audit.md
 apps/web/docs/shared-output-r1-contract.md
 apps/web/docs/history-output-r2-contract.md
+apps/web/docs/channel-output-r3-contract.md
 ```
 
-R2 safe adoption:
+R3 safe adoption:
 
-- finite number to `null` inside the export model;
-- CSV syntax using explicit History options;
+- finite number to blank CSV cell;
+- finite number to JSON `null`;
+- minimal CSV syntax quoting with spreadsheet safety explicitly disabled;
 - filename composition using the existing feature-owned segment order.
 
-R2 deferred adoption:
+R3 deferred adoption:
 
 - provider display helper;
 - clipboard transport;
 - text-file download transport;
-- report/short-post builders;
-- JSON builder;
-- PNG/share card;
-- payload capture;
-- DOM, CSS, action order, labels, and visible status.
+- report and short-post prose;
+- JSON schema and object meaning;
+- payload capture and request lifecycle;
+- DOM, CSS, task order, labels, and visible feedback.
 
 History UI appearance work remains pending because screenshots and detailed instructions are unavailable. Until those arrive:
 
@@ -177,7 +178,7 @@ Accepted boundary:
 
 ### Phase 4 — Report & Export shared-layer consolidation
 
-State: R2 active.
+State: R3 active.
 
 Permanent plan:
 
@@ -217,10 +218,10 @@ Added neutral provider, filename, CSV, finite-value, clipboard, download, and re
 
 #### R2 — conditional History internal adoption
 
-State: active in PR #411.
+State: completed through PR #411.
 
 ```text
-branch: work-report-export-r2-history-adoption
+merge: 9bd7df7620c87c48e5c2d2834cfdce712ad71e3e
 ```
 
 Adopted:
@@ -232,15 +233,46 @@ CSV spreadsheetSafety: apostrophe
 History filename composition
 ```
 
+Exact golden verification covers the complete History model, CSV, JSON, report text, provider filenames, clipboard fallback, download timing, and request behavior.
+
+Deferred:
+
+```text
+provider display helper
+clipboard transport
+text download transport
+```
+
+#### R3 — conditional Channel internal adoption
+
+State: active in PR #412.
+
+```text
+branch: work-report-export-r3-channel-adoption
+```
+
+Adopted:
+
+```text
+finiteNumberOrBlank
+finiteNumberOrNull
+CSV quote: minimal
+CSV spreadsheetSafety: none
+Channel filename composition
+```
+
 Exact golden verification covers:
 
-- `viewloom-history-export-v1` model;
+- complete Full summary text;
+- complete Short post text;
 - complete CSV bytes and CRLF endings;
-- complete JSON serialization;
-- complete report text for Twitch and Kick;
-- provider-specific filenames;
-- deferred clipboard/download behavior;
-- existing History browser contracts.
+- BOM-at-download and blank missing numeric policy;
+- explicit absence of formula protection;
+- complete `viewloom-channel-v1` JSON;
+- exact Twitch and Kick filenames;
+- feature-owned clipboard and download failure semantics;
+- one provider History request per period;
+- provider separation.
 
 Deferred because exact feature behavior differs:
 
@@ -252,34 +284,16 @@ text download transport
 
 Completion requirements:
 
-- exact output contract succeeds;
-- History Export and H4 gates succeed;
-- no extra History request;
-- no DOM, CSS, visible string, action-order, report, JSON, filename, or PNG difference;
-- Twitch and Kick browser gates pass.
-
-#### R3 — Channel internal adoption
-
-State: queued after the R2 merge report.
-
-```text
-branch: work-report-export-r3-channel-adoption
-```
-
-Channel adoption must preserve:
-
-- report and short-post wording;
-- CSV headers, rows, and blank missing values;
-- `viewloom-channel-v1`;
-- provider-specific filenames;
-- visible feedback and DOM/CSS;
-- one History request per period.
-
-Spreadsheet formula safety must not be added silently because that would change Channel CSV bytes.
+- exact Channel preservation workflow succeeds;
+- Channel Report Browser succeeds for Twitch desktop and Kick mobile;
+- Channel Candidate Acceptance succeeds;
+- one-request and provider-separation contracts remain intact;
+- no DOM, CSS, visible string, task order, report prose, JSON schema, API, D1, collector, cron, or retention difference;
+- complete affected regression matrix succeeds.
 
 #### R4 — cross-page regression and documentation closure
 
-State: queued.
+State: queued after the PR #412 merge report.
 
 ```text
 branch: work-report-export-r4-acceptance
@@ -287,11 +301,10 @@ branch: work-report-export-r4-acceptance
 
 Completion:
 
-- exact provider separation, filenames, schemas, headers, and missing values preserved;
-- no additional network request;
+- exact provider separation, filenames, schemas, headers, missing values, report text, and request counts preserved;
 - no visible layout change;
 - affected History and Channel matrices green;
-- permanent plan finalized;
+- permanent consolidation plan finalized;
 - temporary R0 note deleted and unlinked;
 - roadmap advances to Phase 5.
 
