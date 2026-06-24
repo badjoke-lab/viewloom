@@ -55,18 +55,15 @@ async function desktopGate(browser) {
   await page.waitForFunction(() => document.querySelectorAll('[data-history-battle-day]').length === 12)
   assert((await page.locator('[data-history-battle-toggle]').textContent())?.includes('Show top 10'), 'Desktop: expanded toggle label is wrong.')
 
-  await page.evaluate((day) => {
-    const chartDay = document.querySelector(`.history-day-column[data-history-day="${day}"]`)
-    if (!chartDay) throw new Error(`Desktop: chart target for ${day} is missing.`)
-    document.documentElement.dataset.historyBattleKeyboardTargeted = 'false'
-    chartDay.addEventListener('click', () => {
-      document.documentElement.dataset.historyBattleKeyboardTargeted = 'true'
-    }, { once: true })
-  }, firstDay)
   const expandedFirst = page.locator('[data-history-battle-day]').first()
-  await expandedFirst.focus()
-  await page.keyboard.press('Enter')
-  await page.waitForFunction(() => document.documentElement.dataset.historyBattleKeyboardTargeted === 'true')
+  await expandedFirst.press('Enter')
+  await page.waitForFunction((day) => {
+    const selectedChartDay = document.querySelector(`.history-day-column[data-history-day="${day}"]`)
+    const selectedArchiveDay = document.querySelector(`[data-history-day-card="${day}"]`)
+    return new URL(location.href).searchParams.get('day') === day
+      && selectedChartDay?.classList.contains('is-selected')
+      && selectedArchiveDay?.classList.contains('is-selected')
+  }, firstDay)
   await assertNoOverflow(page, 'Desktop')
   await page.screenshot({ path: '/tmp/history-battle-twitch-desktop.png', fullPage: true })
   await context.close()
