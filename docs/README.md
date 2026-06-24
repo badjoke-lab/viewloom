@@ -26,6 +26,7 @@ Before changing ViewLoom, read:
 - [`product/channel-and-streamer-spec.md`](product/channel-and-streamer-spec.md) — accepted Channel / Streamer v1 specification
 - [`product/channel-v1-implementation-plan.md`](product/channel-v1-implementation-plan.md) — completed Channel v1 implementation record
 - [`product/report-export-consolidation-plan.md`](product/report-export-consolidation-plan.md) — completed Phase 4 consolidation record
+- [`product/next-feature-data-capability-audit.md`](product/next-feature-data-capability-audit.md) — completed Phase 5 capability audit and Local Watchlist v1 approval boundary
 
 ## Permanent acceptance records
 
@@ -37,13 +38,13 @@ Before changing ViewLoom, read:
 
 ## Active temporary working notes
 
-There is no active History rebuild, Channel v1, or Report & Export consolidation working note.
+There is no active History rebuild, Channel v1, Report & Export consolidation, or Phase 5 capability-audit working note.
 
-History H1–H7, Channel C0–C5B, and Report & Export R0–R4 have transferred stable behavior, architecture, and acceptance evidence into permanent documentation. Their temporary notes are retired.
+History H1–H7, Channel C0–C5B, Report & Export R0–R4, and Phase 5 have transferred stable behavior, architecture, decisions, and acceptance evidence into permanent documentation. Their temporary notes are retired.
 
-The pending History UI appearance revision does not yet have a working note because screenshots and detailed instructions are not available. When those inputs arrive, begin with a new audit and a dedicated temporary note rather than reviving an old completed note.
+The pending History UI appearance revision does not yet have a working note because screenshots and detailed instructions are unavailable. When those inputs arrive, begin with a new audit and a dedicated temporary note rather than reviving an old completed note.
 
-Phase 5 data-capability audit has not started. When explicitly started, create a dedicated temporary audit note before implementation or feature approval.
+Local Watchlist v1 W0 has not started. W0 must create its own temporary working note and permanent specification/implementation plan before runtime work begins.
 
 ## Temporary-note lifecycle
 
