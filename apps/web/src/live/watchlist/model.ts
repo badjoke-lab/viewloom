@@ -163,7 +163,7 @@ export function addWatchlistEntry(
   now: Date | number | string = new Date(),
 ): WatchlistMutationResult {
   const normalized = normalizeWatchlistChannelInput(input, document.provider)
-  if (!normalized.ok) {
+  if (normalized.ok === false) {
     return { ok: false, code: normalized.code, document, changed: false }
   }
   if (document.entries.some((entry) => entry.channelId === normalized.channelId)) {
