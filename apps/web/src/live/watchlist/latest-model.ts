@@ -103,7 +103,7 @@ export function latestEvidenceForEntries(
   snapshot: WatchlistLatestSnapshot,
   entries: readonly WatchlistEntry[],
 ): WatchlistLatestEvidence[] {
-  return validEntryIds(entries).map((channelId) => {
+  return validEntryIds(entries).map((channelId): WatchlistLatestEvidence => {
     const item = snapshot.itemsById.get(channelId) ?? null
 
     if (!latestSnapshotIsUsable(snapshot)) {
@@ -123,7 +123,7 @@ export function latestEvidenceForEntries(
 export function unavailableLatestEvidence(
   entries: readonly WatchlistEntry[],
 ): WatchlistLatestEvidence[] {
-  return validEntryIds(entries).map((channelId) => ({
+  return validEntryIds(entries).map((channelId): WatchlistLatestEvidence => ({
     channelId,
     state: 'latest_unavailable',
     item: null,
