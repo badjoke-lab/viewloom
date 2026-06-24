@@ -49,9 +49,26 @@ jobs:
           cat history-output-r2.log
           exit $status
 
+      - name: Verify exact Channel R3 outputs
+        shell: bash
+        working-directory: apps/web
+        run: |
+          set +e
+          node scripts/verify-channel-output-r3.mjs > channel-output-r3.log 2>&1
+          status=$?
+          cat channel-output-r3.log
+          exit $status
+
       - name: Upload History R2 diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: history-output-r2-diagnostics
           path: apps/web/history-output-r2.log
+
+      - name: Upload Channel R3 diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: channel-output-r3-diagnostics
+          path: apps/web/channel-output-r3.log

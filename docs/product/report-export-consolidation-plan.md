@@ -1,18 +1,19 @@
 # ViewLoom Report & Export shared-layer consolidation plan
 
-Status: active implementation plan — R2 active
-Version: 1.2
+Status: active implementation plan — R3 active
+Version: 1.3
 Last updated: 2026-06-24
 Roadmap phase: Phase 4 — Report & Export shared-layer consolidation
 Current audit: `../work-in-progress/report-export-r0-audit.md`
 R1 contract: `../../apps/web/docs/shared-output-r1-contract.md`
 R2 contract: `../../apps/web/docs/history-output-r2-contract.md`
+R3 contract: `../../apps/web/docs/channel-output-r3-contract.md`
 History specification: `history-and-trends-spec.md`
 Channel specification: `channel-and-streamer-spec.md`
 
 ## 1. Goal
 
-Reduce duplicated report/export infrastructure across History and Channel without changing accepted feature semantics, visible layouts, serialized schemas, provider separation, or network behavior.
+Reduce duplicated report/export infrastructure across History and Channel without changing accepted feature semantics, visible layouts, serialized schemas, provider separation, request counts, or failure feedback.
 
 This phase is an internal consolidation, not a new reporting feature.
 
@@ -25,6 +26,7 @@ Every PR must preserve:
 - Channel schema `viewloom-channel-v1`;
 - existing CSV headers and row meaning;
 - History spreadsheet-safety behavior;
+- Channel minimal quoting with no implicit spreadsheet formula protection;
 - Channel blank missing CSV numeric cells;
 - JSON `null` missing values;
 - existing report and short-post text;
@@ -96,10 +98,12 @@ apps/web/docs/shared-output-r1-contract.md
 apps/web/scripts/verify-shared-output-r1.mjs
 apps/web/docs/history-output-r2-contract.md
 apps/web/scripts/verify-history-output-r2.mjs
+apps/web/docs/channel-output-r3-contract.md
+apps/web/scripts/verify-channel-output-r3.mjs
 .github/workflows/shared-output-r1.yml
 ```
 
-The workflow name is now `Shared Output Contracts` and executes both the neutral R1 contract and the exact History R2 preservation contract.
+The workflow name is `Shared Output Contracts` and executes the neutral R1 contract plus exact History R2 and Channel R3 preservation contracts.
 
 ## 5. Stable helper behavior
 
@@ -140,10 +144,10 @@ quote: minimal | always
 spreadsheetSafety: none | apostrophe
 ```
 
-This represents both accepted contracts without forcing them together:
+Accepted feature policies remain separate:
 
-- Channel: minimal syntax quoting and no implicit formula-policy change;
-- History: always-quoted non-null cells and apostrophe formula safety.
+- Channel: `quote: minimal`, `spreadsheetSafety: none`;
+- History: `quote: always`, `spreadsheetSafety: apostrophe`.
 
 ### Numeric values
 
@@ -168,7 +172,7 @@ The helper owns transport and neutral results only. Feature-visible fallback and
 downloadTextFile(request, runtime?)
 ```
 
-The helper owns Blob/object URL/temporary-anchor transport and neutral results only. Feature-specific anchor behavior, revoke timing, and messages may remain feature-owned.
+The helper owns Blob/object URL/temporary-anchor transport and neutral results only. Feature-specific exception behavior, anchor behavior, revoke timing, and messages may remain feature-owned.
 
 ## 6. PR sequence
 
@@ -210,34 +214,21 @@ Completed:
 
 ### R2 — conditional History internal adoption
 
-State: active in PR #411.
+State: completed through PR #411.
 
 ```text
 branch: work-report-export-r2-history-adoption
+merge: 9bd7df7620c87c48e5c2d2834cfdce712ad71e3e
 ```
 
-Entry conditions are satisfied for three helpers only:
+Adopted:
 
 ```text
 finiteNumberOrNull
-CSV cell syntax
-filename composition
-```
-
-Adopted implementation:
-
-```text
-apps/web/src/live/history-export-model.ts
-  finiteOrNull -> finiteNumberOrNull
-
-apps/web/src/live/history-export-serialize.ts
-  local CSV helper -> shared csvCell
+CSV cell syntax:
   quote: always
   spreadsheetSafety: apostrophe
-
-apps/web/src/live/history-export.ts
-  literal filename interpolation -> buildOutputFilename
-  feature-owned segment order remains unchanged
+History filename composition
 ```
 
 Exact preservation gate covers:
@@ -258,64 +249,74 @@ clipboard transport
 text download transport
 ```
 
-Reasons:
+### R3 — conditional Channel internal adoption
 
-- provider display is embedded in feature-owned report prose;
-- shared clipboard fallback uses an internal textarea while accepted History selects the visible report preview;
-- shared download transport sets a hidden temporary anchor and defaults to caller-selected timing, while accepted History retains its current anchor behavior and 1000 ms revoke delay.
-
-R2 stop rule:
-
-- do not adopt a deferred helper merely to increase reuse;
-- do not change History UI or output to fit the shared helper;
-- defer any helper whose adoption requires a DOM, CSS, label, status, report, schema, filename, PNG, or request change.
-
-R2 completion:
-
-- exact History preservation workflow succeeds;
-- History Export and H4 terminal/browser gates succeed;
-- no extra History request;
-- no DOM/CSS/layout difference;
-- Twitch and Kick browser gates pass;
-- final diff is limited to approved output internals, contracts, workflow, and source-of-truth documents.
-
-### R3 — Channel internal adoption
-
-State: queued after the R2 merge report.
+State: active in PR #412.
 
 ```text
 branch: work-report-export-r3-channel-adoption
 ```
 
-Entry conditions:
-
-- R1 helpers are stable;
-- exact Channel preservation tests cover filenames, headers, blank/null values, report text, JSON, and request counts;
-- Channel spreadsheet-safety policy remains explicit.
-
-Planned safe candidates:
+Adopted implementation:
 
 ```text
-finiteNumberOrBlank
-finiteNumberOrNull
-minimal CSV syntax quoting
-filename composition
-clipboard API path only when visible fallback is preserved
-text download only when temporary-anchor and revoke behavior are preserved
+apps/web/src/live/channel-report.ts
+  csvNumber -> finiteNumberOrBlank
+  nullableNumber -> finiteNumberOrNull
+  local csvCell -> shared csvCell
+  quote: minimal
+  spreadsheetSafety: none
+  literal filename interpolation -> buildOutputFilename
+  feature-owned segment order remains unchanged
 ```
 
-Channel formula protection must not be added silently because it changes accepted CSV bytes.
+Exact preservation gate covers:
 
-Completion:
+- complete Full summary text;
+- complete Short post text;
+- complete CSV bytes before BOM insertion;
+- CRLF endings and blank missing numeric cells;
+- minimal syntax quoting;
+- explicit absence of spreadsheet formula protection;
+- complete `viewloom-channel-v1` JSON object;
+- JSON `null` missing numeric values;
+- exact Twitch and Kick filenames;
+- current feature-owned clipboard fallback;
+- current hidden temporary download anchor and zero-millisecond revoke timing.
 
-- exact Channel output compatibility passes;
+Deferred in R3:
+
+```text
+provider display helper
+clipboard transport
+text download transport
+```
+
+Reasons:
+
+- provider display remains embedded in feature-owned report prose;
+- current Channel clipboard and download helpers throw on transport failure and preserve caller-visible error messages;
+- shared helpers return neutral result objects, so replacing those paths would change failure semantics or require additional adaptation beyond the pure-helper scope.
+
+R3 stop rule:
+
+- do not add spreadsheet formula protection to Channel CSV;
+- do not change Channel UI or output to fit a shared helper;
+- defer any helper whose adoption requires DOM, CSS, task-order, label, feedback, report, schema, filename, request, or provider change.
+
+R3 completion:
+
+- exact Channel preservation workflow succeeds;
+- Channel Report Browser succeeds for Twitch desktop and Kick mobile;
+- Channel Candidate Acceptance succeeds;
 - one provider History request remains;
-- no DOM/CSS/layout or visible status difference;
-- Twitch and Kick browser gates pass.
+- no DOM/CSS/layout or visible feedback difference;
+- complete affected History, Channel, Web, naming, policy, and Status matrix succeeds;
+- final diff is limited to approved output internals, contracts, workflow, gates, and source-of-truth documents.
 
 ### R4 — cross-page regression and documentation closure
 
-State: queued.
+State: queued after the PR #412 merge report.
 
 ```text
 branch: work-report-export-r4-acceptance
@@ -324,7 +325,7 @@ branch: work-report-export-r4-acceptance
 Scope:
 
 - run complete affected History and Channel gates;
-- verify exact filenames, schemas, headers, missing-value policy, provider separation, and request counts;
+- verify exact filenames, schemas, headers, missing-value policy, provider separation, report text, failure semantics, and request counts;
 - verify no visible layout change;
 - mark this plan completed;
 - update roadmap and schedule to Phase 5;
@@ -347,11 +348,12 @@ Preview rule:
 | exact CSV row meaning | required | required |
 | exact filename | required | required |
 | blank missing CSV numerics | contract-specific | required |
-| spreadsheet formula safety | required | no silent change |
+| spreadsheet formula safety | apostrophe required | none; no silent change |
 | JSON schema | `viewloom-history-export-v1` | `viewloom-channel-v1` |
 | JSON missing numerics | current contract | `null` |
 | PNG/share card | required | not applicable |
 | DOM/CSS/layout unchanged | required | required |
+| failure feedback unchanged | required | required |
 
 ## 8. Explicit non-goals
 
@@ -368,11 +370,11 @@ Phase 4 does not include:
 
 ## 9. Current next step
 
-Complete and merge PR #411 only after:
+Complete and merge PR #412 only after:
 
 - the latest head passes `Shared Output Contracts`;
-- History Export and H4 terminal/browser workflows pass;
-- the broader History/Channel regression matrix passes;
-- the final diff contains no UI, API, database, collector, cron, retention, or PNG change.
+- Channel Report Browser and Channel Candidate Acceptance pass;
+- the broader History, Channel, Web, naming, policy, and Status regression matrix passes;
+- the final diff contains no UI, API, database, collector, cron, or retention change.
 
-After the required PR #411 merge report, begin R3 only from the new `main`.
+After the required PR #412 merge report, begin R4 only from the new `main`.
