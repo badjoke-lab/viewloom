@@ -70,7 +70,7 @@ export interface WatchlistHistorySnapshot {
   missingDays: number | null
   partialDays: number | null
   inProgressDays: number | null
-  topById: ReadonlyMap<string, WatchlistRetainedItem>
+  retainedById: ReadonlyMap<string, WatchlistRetainedItem>
   dailyAppearancesById: ReadonlyMap<string, readonly WatchlistHistoryDailyAppearance[]>
   itemCount: number
   errorCode: WatchlistHistoryErrorCode
@@ -116,7 +116,7 @@ export function createUnavailableHistorySnapshot(
     missingDays: null,
     partialDays: null,
     inProgressDays: null,
-    topById: new Map<string, WatchlistRetainedItem>(),
+    retainedById: new Map<string, WatchlistRetainedItem>(),
     dailyAppearancesById: new Map<string, readonly WatchlistHistoryDailyAppearance[]>(),
     itemCount: 0,
     errorCode,
@@ -129,7 +129,7 @@ export function retainedEvidenceForEntries(
   entries: readonly WatchlistEntry[],
 ): WatchlistRetainedEvidence[] {
   return validHistoryEntryIds(entries).map((channelId): WatchlistRetainedEvidence => {
-    const item = snapshot.topById.get(channelId) ?? null
+    const item = snapshot.retainedById.get(channelId) ?? null
 
     if (snapshot.state === 'partial') {
       return { channelId, state: 'history_partial', item }
