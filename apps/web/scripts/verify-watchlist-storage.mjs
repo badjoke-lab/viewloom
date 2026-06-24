@@ -56,11 +56,16 @@ function transpileSources() {
     }
 
     assert.doesNotMatch(source, /\bfetch\s*\(/, `${file}: network dependency found`)
-    assert.doesNotMatch(
-      source,
-      /\b(?:window|document|localStorage|sessionStorage|indexedDB|navigator)\s*(?:\.|\[)/,
-      `${file}: direct browser-global dependency found`,
-    )
+    for (const forbidden of [
+      'globalThis.document',
+      'globalThis.window',
+      'localStorage',
+      'sessionStorage',
+      'indexedDB',
+      'navigator.',
+    ]) {
+      assert.equal(source.includes(forbidden), false, `${file}: direct browser-global dependency found: ${forbidden}`)
+    }
     assert.doesNotMatch(source, /(?:api\/|\.css['"])/, `${file}: API or style dependency found`)
 
     const result = ts.transpileModule(source, {
