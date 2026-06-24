@@ -6,11 +6,14 @@ import type {
   ChannelProvider,
   ChannelStreamer,
 } from './channel/model'
+import { csvCell } from '../shared/output/csv.js'
+import { buildOutputFilename } from '../shared/output/filename.js'
+import { finiteNumberOrBlank, finiteNumberOrNull } from '../shared/output/values.js'
 
 type ReportMode = 'full' | 'short'
 type DailyEntry = { day: ChannelDay; streamer?: ChannelStreamer }
 
-type ReportContext = {
+export type ReportContext = {
   provider: ChannelProvider
   providerName: string
   channelId: string
@@ -37,6 +40,10 @@ const limitations = [
   'Absence from a retained daily Top 10 is not confirmation that the channel was offline.',
   'Exact session start/end history is not available from this retained footprint.',
 ]
+const CHANNEL_CSV_CELL_OPTIONS = {
+  quote: 'minimal',
+  spreadsheetSafety: 'none',
+} as const
 
 let payload: ChannelHistoryPayload | null = null
 let mode: ReportMode = 'full'
@@ -156,7 +163,7 @@ function downloadJson(): void {
   }
 }
 
-function buildContext(history: ChannelHistoryPayload): ReportContext {
+export function buildContext(history: ChannelHistoryPayload): ReportContext {
   const url = new URL(location.href)
   const channelId = normalizeId(url.searchParams.get('id') ?? '')
   const period = url.searchParams.get('period') === '7d' ? '7d' : '30d'
@@ -194,7 +201,7 @@ function buildContext(history: ChannelHistoryPayload): ReportContext {
   }
 }
 
-function fullSummary(context: ReportContext): string {
+export function fullSummary(context: ReportContext): string {
   const newest = context.retained[0]
   const rivalLines = context.rivals.length
     ? context.rivals.map((entry) => `- ${text(entry.day) || 'Unknown day'} · ${rivalLabel(entry, context.channelId)} · score ${numberOrDash(entry.score)} · viewer-minute gap ${numberOrDash(entry.viewerMinutesGap)}`).join('\n')
@@ -223,13 +230,13 @@ function fullSummary(context: ReportContext): string {
   ].join('\n')
 }
 
-function shortPost(context: ReportContext): string {
+export function shortPost(context: ReportContext): string {
   const viewerMinutes = numberOrDash(context.summary?.viewerMinutes)
   const peak = numberOrDash(context.summary?.peakViewers)
   return `ViewLoom · ${context.providerName} retained footprint for ${context.displayName} (${context.periodLabel}): ${context.retained.length} retained daily Top 10 appearances, ${viewerMinutes} viewer-minutes, retained peak ${peak} viewers. Data: ${context.source}/${context.state}. Retained data only; absence does not confirm offline. ${context.pageUrl}`
 }
 
-function csvOutput(context: ReportContext): string {
+export function csvOutput(context: ReportContext): string {
   const header = [
     'provider',
     'channel_id',
@@ -252,16 +259,16 @@ function csvOutput(context: ReportContext): string {
     text(day.day),
     String(Boolean(streamer)),
     day.coverageState ?? '',
-    csvNumber(streamer?.viewerMinutes),
-    csvNumber(streamer?.peakViewers),
-    csvNumber(streamer?.avgViewers),
-    csvNumber(streamer?.observedMinutes),
-    csvNumber(streamer?.rankByViewerMinutes),
+    finiteNumberOrBlank(streamer?.viewerMinutes),
+    finiteNumberOrBlank(streamer?.peakViewers),
+    finiteNumberOrBlank(streamer?.avgViewers),
+    finiteNumberOrBlank(streamer?.observedMinutes),
+    finiteNumberOrBlank(streamer?.rankByViewerMinutes),
   ])
-  return [header, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n') + '\r\n'
+  return [header, ...rows].map((row) => row.map((value) => csvCell(value, CHANNEL_CSV_CELL_OPTIONS)).join(',')).join('\r\n') + '\r\n'
 }
 
-function jsonOutput(context: ReportContext): Record<string, unknown> {
+export function jsonOutput(context: ReportContext): Record<string, unknown> {
   const newest = context.retained[0]
   return {
     schema: 'viewloom-channel-v1',
@@ -280,10 +287,10 @@ function jsonOutput(context: ReportContext): Record<string, unknown> {
     state: context.state,
     coverage: context.coverage ?? null,
     summary: {
-      viewer_minutes: nullableNumber(context.summary?.viewerMinutes),
-      peak_viewers: nullableNumber(context.summary?.peakViewers),
-      avg_viewers: nullableNumber(context.summary?.avgViewers),
-      observed_minutes: nullableNumber(context.summary?.observedMinutes),
+      viewer_minutes: finiteNumberOrNull(context.summary?.viewerMinutes),
+      peak_viewers: finiteNumberOrNull(context.summary?.peakViewers),
+      avg_viewers: finiteNumberOrNull(context.summary?.avgViewers),
+      observed_minutes: finiteNumberOrNull(context.summary?.observedMinutes),
       retained_top10_days: context.retained.length,
       observed_days: context.observedDays,
       requested_days: context.requestedDays,
@@ -293,18 +300,18 @@ function jsonOutput(context: ReportContext): Record<string, unknown> {
       day: text(day.day) || null,
       retained_top10: Boolean(streamer),
       coverage_state: day.coverageState ?? null,
-      viewer_minutes: nullableNumber(streamer?.viewerMinutes),
-      peak_viewers: nullableNumber(streamer?.peakViewers),
-      avg_viewers: nullableNumber(streamer?.avgViewers),
-      observed_minutes: nullableNumber(streamer?.observedMinutes),
-      rank_by_viewer_minutes: nullableNumber(streamer?.rankByViewerMinutes),
+      viewer_minutes: finiteNumberOrNull(streamer?.viewerMinutes),
+      peak_viewers: finiteNumberOrNull(streamer?.peakViewers),
+      avg_viewers: finiteNumberOrNull(streamer?.avgViewers),
+      observed_minutes: finiteNumberOrNull(streamer?.observedMinutes),
+      rank_by_viewer_minutes: finiteNumberOrNull(streamer?.rankByViewerMinutes),
     })),
     rivalry_candidates: context.rivals.map((entry) => ({
       day: text(entry.day) || null,
       opponent_id: opponentId(entry, context.channelId) || null,
       opponent_name: opponentName(entry, context.channelId) || null,
-      score: nullableNumber(entry.score),
-      viewer_minutes_gap: nullableNumber(entry.viewerMinutesGap),
+      score: finiteNumberOrNull(entry.score),
+      viewer_minutes_gap: finiteNumberOrNull(entry.viewerMinutesGap),
     })),
     limitations,
   }
@@ -341,8 +348,11 @@ function findStreamer(rows: ChannelStreamer[], channelId: string): ChannelStream
   return rows.find((row) => normalized(row.streamerId) === channelId)
 }
 
-function filename(context: ReportContext, extension: 'csv' | 'json'): string {
-  return `viewloom-${context.provider}-channel-${context.channelId || 'unselected'}-${context.period}.${extension}`
+export function filename(context: ReportContext, extension: 'csv' | 'json'): string {
+  return buildOutputFilename(
+    ['viewloom', context.provider, 'channel', context.channelId || 'unselected', context.period],
+    extension,
+  )
 }
 
 function downloadFile(name: string, content: string, type: string): void {
@@ -408,14 +418,6 @@ function number(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback
 }
 
-function nullableNumber(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null
-}
-
-function csvNumber(value: unknown): string {
-  return typeof value === 'number' && Number.isFinite(value) ? String(value) : ''
-}
-
 function numberOrDash(value: unknown): string {
   return typeof value === 'number' && Number.isFinite(value) ? new Intl.NumberFormat('en-US').format(value) : '—'
 }
@@ -425,9 +427,4 @@ function durationOrDash(value: unknown): string {
   const hours = Math.floor(value / 60)
   const minutes = Math.round(value % 60)
   return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
-}
-
-function csvCell(value: unknown): string {
-  const result = String(value ?? '')
-  return /[",\r\n]/.test(result) ? `"${result.replace(/"/g, '""')}"` : result
 }
