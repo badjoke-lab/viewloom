@@ -31,7 +31,7 @@ Current feature state:
 | Channel / Streamer | v1 and production acceptance complete | preserve retained-footprint contract |
 | Report/export shared layer | R0–R4 complete through PR #413 | maintain exact contracts |
 | Phase 5 capability audit | complete through PR #414 | permanent decision recorded |
-| Local Watchlist v1 | W0 specification complete through PR #415 | W1 storage foundation is next; runtime not started |
+| Local Watchlist v1 | W0 complete through PR #415; W1 completion candidate in PR #416 | W2A latest adapter is next after merge report |
 | Session / Category / Language / Event / Alerts | not approved for immediate implementation | data or infrastructure expansion required |
 
 Permanent acceptance, audit, and specification records:
@@ -58,28 +58,36 @@ Local Watchlist v1:
 docs/product/local-watchlist-spec.md
 docs/product/watchlist-v1-implementation-plan.md
 W0 PR: #415
+W1 PR: #416
 ```
 
 ## 2. Immediate priority
 
-W0 is complete. The next approved work window is:
+After PR #416 merges and its full report is issued, the next approved work window is:
 
 ```text
 Phase 6 — Local Watchlist v1
-W1 — local state and storage foundation
-Branch: work-watchlist-w1-storage
+W2A — latest Heatmap adapter and request foundation
+Branch: work-watchlist-w2a-latest
 State: next, not started
 ```
 
-W1 adds only the neutral local model, provider-separated storage layer, id/URL normalization, list operations, period URL-state helper, and executable gates.
+W2A may add only:
 
-W1 must not add:
+- a neutral latest-observation evidence model;
+- Twitch and Kick Heatmap payload adapters;
+- normalized provider-specific id indexes;
+- empty-list zero-request behavior;
+- nonempty exactly-one-Heatmap-request behavior;
+- injected request seams and executable request-count tests.
 
-- public Watchlist routes or HTML;
-- Watchlist CSS or final visual design;
-- Heatmap or History requests;
+W2A must not add:
+
+- public Watchlist routes, HTML, or CSS;
+- History adapters or combined evidence;
 - Channel or provider Home entry points;
-- API, D1, binding, collector, cron, or retention changes.
+- per-channel request loops;
+- API schema, D1, binding, collector, cron, or retention changes.
 
 History UI appearance work remains pending because screenshots and detailed instructions are unavailable. Until those arrive:
 
@@ -186,11 +194,13 @@ Alerts: not approved
 
 ### Phase 6 — Local Watchlist v1
 
-State:
+Current state:
 
 ```text
 W0 complete through PR #415
-W1 next, runtime not started
+W1 completion candidate in PR #416
+W2A next after merge report
+public Watchlist runtime not started
 ```
 
 Permanent authorities:
@@ -218,7 +228,29 @@ no authoritative live/offline claim
 no alerts, login, sync, exact sessions, or cross-provider identity
 ```
 
-Approved entry points:
+W1 foundation added:
+
+```text
+apps/web/src/live/watchlist/model.ts
+apps/web/src/live/watchlist/storage.ts
+apps/web/src/live/watchlist/url-state.ts
+apps/web/scripts/verify-watchlist-storage.mjs
+.github/workflows/watchlist-storage.yml
+```
+
+W1 accepted contract:
+
+- exact versioned provider keys;
+- deterministic id and provider-URL normalization;
+- invalid and cross-provider URL rejection;
+- immutable add, remove, move, and clear operations;
+- duplicate preservation and 50-entry cap;
+- missing, corrupted, unavailable, repaired, and write-error storage states;
+- provider-isolated clear/reset and storage-event parsing;
+- clean `period=7d|30d` URL state without saved ids;
+- no direct browser-global, DOM, fetch, API, or style dependency in the foundation layer.
+
+Approved entry points remain queued for W3B:
 
 ```text
 Watchlist add form
@@ -232,8 +264,8 @@ Implementation sequence:
 
 ```text
 W0   specification and plan                         complete through PR #415
-W1   local model, storage, and URL state            next
-W2A  latest Heatmap adapter and request foundation queued
+W1   local model, storage, and URL state            completion candidate PR #416
+W2A  latest Heatmap adapter and request foundation next
 W2B  History adapter and combined evidence         queued
 W3A  provider routes and storage-first shell        queued
 W3B  evidence cards and approved entry points       queued
@@ -250,8 +282,9 @@ W5 requires deliberate Preview and exact production acceptance because Watchlist
 
 - speculative History visual fixes without screenshots and instructions;
 - public Watchlist routes before W3A;
-- Watchlist data fetching before W2A/W2B;
+- Watchlist History fetching before W2B;
 - Watchlist visual implementation before storage and adapters are complete;
+- Channel/Home Watchlist entry points before W3B;
 - exact Session page or complete session history;
 - on-demand multi-day raw JSON scans for session reconstruction;
 - Category/Game trends before verified new collection and rollups;
