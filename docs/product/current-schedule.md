@@ -26,8 +26,10 @@ Channel production acceptance            complete
 Report/export R0 boundary audit           complete through PR #409
 Report/export R1 shared primitives        complete through PR #410
 Report/export R2 History adoption         complete through PR #411
-Report/export R3 Channel adoption         active in PR #412
+Report/export R3 Channel adoption         complete through PR #412
+Report/export R4 closure                  complete through PR #413
 History UI appearance revision            pending screenshots and instructions
+Phase 5 data-capability audit              next, not started
 ```
 
 Accepted production revisions:
@@ -37,20 +39,26 @@ History: 3cde59cceb09a0c60f48794d6391cf5c356a1b31
 Channel: efc14295f0a372b96afac740d6a01571f7582210
 ```
 
-Current active phase:
+Current active implementation phase:
 
 ```text
-Phase 4 — Report & Export shared-layer consolidation
-R3 — conditional Channel internal adoption
-branch: work-report-export-r3-channel-adoption
-PR: #412
+none
 ```
 
-Governing documents:
+Next approved work window:
 
 ```text
+Phase 5 — next-feature data-capability audit
+State: next, not started
+Required first step: create a dedicated audit note before implementation
+```
+
+Governing permanent records:
+
+```text
+docs/product/current-roadmap.md
 docs/product/report-export-consolidation-plan.md
-docs/work-in-progress/report-export-r0-audit.md
+docs/operations/report-export-consolidation-acceptance-2026-06-24.md
 apps/web/docs/shared-output-r1-contract.md
 apps/web/docs/history-output-r2-contract.md
 apps/web/docs/channel-output-r3-contract.md
@@ -84,16 +92,15 @@ Accepted result:
 
 - Overview / Archives / Report & Export;
 - separate Twitch and Kick paths;
-- Preview acceptance with separate D1 bindings;
+- Preview and production acceptance;
 - exact production SHA verification;
-- production browser acceptance.
+- permanent browser gates.
 
 History UI appearance revision remains pending. Until screenshots and explicit instructions exist:
 
 - do not redesign History;
 - do not alter History DOM, CSS, button order, labels, or layout;
-- do not use shared-layer work to make speculative UI changes;
-- preserve the accepted browser gates.
+- begin a new audit only after the missing visual evidence arrives.
 
 ### Channel
 
@@ -124,215 +131,109 @@ Accepted result:
 - provider-specific copy, CSV, JSON, links, and filenames;
 - no D1, collector, cron, retention, or cross-provider change.
 
-## 4. Phase 4 execution window
+## 4. Phase 4 completion record
 
-### R0 — implementation and boundary audit
-
-State: completed through PR #409.
+Phase 4 completed in this order:
 
 ```text
-branch: work-report-export-r0-audit
-merge: 46cea2eceff85b4f5a359446d102d7bc6afe3487
+R0  PR #409
+    merge: 46cea2eceff85b4f5a359446d102d7bc6afe3487
+
+R1  PR #410
+    merge: 6b90c277460a674e355a7676444ddf10ff296325
+
+R2  PR #411
+    merge: 9bd7df7620c87c48e5c2d2834cfdce712ad71e3e
+
+R3  PR #412
+    merge: 83a46d286c90a9be503d7110b71b382f0394288e
+
+R4  PR #413
+    closure branch: work-report-export-r4-acceptance
 ```
 
-Fixed boundary:
+Accepted shared boundary:
 
 ```text
 shared:
-provider type/display name
-filename sanitization/composition
+provider primitive
+filename sanitization and composition
 CSV syntax escaping
 finite number -> blank/null
-clipboard transport
-text-file download transport
-internal operation result type
+neutral clipboard transport
+neutral text-file download transport
+operation result type
 
 feature-owned:
-report prose
-short-post prose
+report and short-post prose
 CSV schemas and row models
-JSON schemas/builders
+JSON schemas and builders
 coverage and limitation wording
 History PNG/share card
-payload capture
-DOM/CSS/status copy
+payload capture and request lifecycle
+DOM/CSS/visible feedback
 ```
 
-### R1 — neutral shared output primitives
-
-State: completed through PR #410.
+History policy remains:
 
 ```text
-branch: work-report-export-r1-shared-output
-merge: 6b90c277460a674e355a7676444ddf10ff296325
-```
-
-Implemented:
-
-```text
-apps/web/src/shared/output/provider.ts
-apps/web/src/shared/output/filename.ts
-apps/web/src/shared/output/csv.ts
-apps/web/src/shared/output/values.ts
-apps/web/src/shared/output/clipboard.ts
-apps/web/src/shared/output/download.ts
-apps/web/src/shared/output/result.ts
-```
-
-Permanent contract and gate:
-
-```text
-apps/web/docs/shared-output-r1-contract.md
-apps/web/scripts/verify-shared-output-r1.mjs
-.github/workflows/shared-output-r1.yml
-```
-
-R1 changed no History or Channel runtime output.
-
-### R2 — conditional History internal adoption
-
-State: completed through PR #411.
-
-```text
-branch: work-report-export-r2-history-adoption
-merge: 9bd7df7620c87c48e5c2d2834cfdce712ad71e3e
-```
-
-Adopted:
-
-```text
-finiteNumberOrNull
 CSV quote: always
-CSV spreadsheetSafety: apostrophe
-History filename composition
+spreadsheetSafety: apostrophe
 ```
 
-Exact preservation contract:
+Channel policy remains:
 
 ```text
-apps/web/docs/history-output-r2-contract.md
-apps/web/scripts/verify-history-output-r2.mjs
+CSV quote: minimal
+spreadsheetSafety: none
+blank missing numeric cells
 ```
 
-Preserved:
+R4 closure result:
 
-- schema `viewloom-history-export-v1`;
-- complete CSV and JSON output;
-- Twitch/Kick report text and filenames;
-- visible-preview clipboard fallback;
-- temporary anchor and 1000 ms revoke timing;
-- one existing provider History request;
-- History DOM, CSS, labels, status, action order, and PNG.
+- exact R1, History R2, and Channel R3 contracts retained;
+- provider separation and request counts retained;
+- complete History and Channel regression matrices required on the closure candidate;
+- no runtime, UI, serialized-output, API, D1, collector, cron, or retention change;
+- permanent plan and acceptance record finalized;
+- temporary R0 audit note retired.
 
-Deferred:
+## 5. Phase 5 next work
+
+State: next, not started.
+
+Phase 5 is an audit, not an implementation phase.
+
+First branch requirements:
 
 ```text
-provider display helper
-clipboard transport
-text download transport
+create a dedicated work branch
+create a temporary data-capability audit note
+inspect current real data paths before proposing features
+make no schema, collector, cron, or UI changes during the initial audit
 ```
 
-### R3 — conditional Channel internal adoption
+Audit candidates:
 
-State: active in PR #412.
+1. minimal Session page;
+2. Category / Game trends;
+3. Language trends;
+4. Event layer;
+5. login-free local Watchlist;
+6. Alerts.
 
-Adopted only where exact compatibility is proven:
+Required audit outputs:
 
-```text
-finiteNumberOrBlank
-finiteNumberOrNull
-CSV cell syntax with:
-  quote: minimal
-  spreadsheetSafety: none
-filename composition with existing Channel segment order
-```
+- retained field inventory;
+- Twitch/Kick capability matrix;
+- time resolution and retention limits;
+- migration, storage, collector, and cron implications;
+- Cloudflare Free cost and operational risk;
+- unsupported claims and blockers;
+- ranked recommendation;
+- one Phase 6 candidate or an explicit no-go conclusion.
 
-Feature implementation:
-
-```text
-apps/web/src/live/channel-report.ts
-```
-
-Exact preservation contract:
-
-```text
-apps/web/docs/channel-output-r3-contract.md
-apps/web/scripts/verify-channel-output-r3.mjs
-```
-
-Required exact preservation:
-
-- complete Full summary text;
-- complete Short post text;
-- CSV header, requested-day rows, CRLF, BOM-at-download, blank missing numeric cells, and minimal quoting;
-- no implicit spreadsheet formula protection;
-- complete `viewloom-channel-v1` JSON and `null` missing numerics;
-- Twitch/Kick provider-specific filenames;
-- one provider History request per period load;
-- no request for missing id;
-- current clipboard API and textarea fallback;
-- current hidden download anchor and zero-millisecond revoke timing;
-- no DOM, CSS, task order, labels, visible feedback, API, D1, collector, cron, or retention change.
-
-Explicitly deferred in R3:
-
-```text
-provider display helper
-clipboard transport
-text download transport
-```
-
-Reason:
-
-- provider labels remain embedded in feature-owned report prose;
-- current Channel clipboard and download failure paths throw and preserve caller-visible error messages;
-- shared transport helpers return neutral result objects and cannot replace those paths without changing failure semantics.
-
-R3 completion criteria:
-
-- Shared Output Contracts workflow succeeds;
-- Channel Report Browser succeeds for Twitch desktop and Kick mobile;
-- Channel Candidate Acceptance succeeds;
-- one-request and provider-separation contracts remain intact;
-- complete Web, policy, History, Channel, naming, and Status regression matrix succeeds;
-- final diff contains no Channel CSS, HTML template, API, D1, collector, cron, or retention change;
-- PR is mergeable with no unresolved review thread.
-
-### R4 — cross-page acceptance and documentation closure
-
-State: queued after the PR #412 merge report.
-
-```text
-branch: work-report-export-r4-acceptance
-```
-
-Required result:
-
-- provider separation preserved;
-- exact History and Channel filenames, schemas, headers, missing values, report text, and request counts preserved;
-- no visible layout change;
-- complete affected regression matrix green;
-- permanent consolidation plan marked completed;
-- temporary R0 audit note deleted and unlinked;
-- roadmap advances to Phase 5.
-
-## 5. Later phases
-
-```text
-Phase 5  next-feature data-capability audit
-Phase 6  one approved major expansion
-```
-
-Phase 5 candidates:
-
-- Session feasibility;
-- Category / Game trends;
-- Language trends;
-- Event layer;
-- local Watchlist;
-- Alerts.
-
-No candidate proceeds directly from an idea to implementation.
+No candidate proceeds directly to implementation.
 
 ## 6. Merge report requirement
 
