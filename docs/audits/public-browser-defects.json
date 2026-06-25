@@ -1,15 +1,19 @@
 {
   "schema": "viewloom-public-browser-defect-ledger-v1",
   "phase": "P8B",
-  "status": "completion_candidate",
+  "status": "complete",
   "audit_date": "2026-06-26",
   "production_origin": "https://vl.badjoke-lab.com",
   "candidate_branch": "work-public-browser-audit",
-  "candidate_head": "2589ee4259f12700cb303875eb1f9a9d913bfbb1",
+  "verified_evidence_head": "75bc7f22e015edfe004158746796081a3719219b",
   "evidence": {
     "workflow": "Public Browser Audit",
-    "latest_verified_run": "pending latest-head rerun",
+    "latest_verified_run": 28203107250,
     "artifact": "public-browser-audit-p8b",
+    "artifact_id": 7892012367,
+    "artifact_size_bytes": 30608845,
+    "artifact_digest": "sha256:793d2c70f24d0a1056767d1c59056b2b2884b03c25177d70c65ab506d18a268b",
+    "artifact_expires_at": "2026-09-23T21:58:28Z",
     "runtime_schema": "viewloom-public-browser-audit-v1",
     "matrix": {
       "owned_routes": 21,
@@ -33,6 +37,7 @@
       "day_controls_min": 7
     },
     "history_task_switch_refetches": 0,
+    "history_real_back_forward_restored": true,
     "note": "Aborted Google Analytics requests in headless Chromium are external telemetry noise, not ViewLoom route failures."
   },
   "counts": {
