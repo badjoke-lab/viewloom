@@ -1,43 +1,49 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 1.1
+Version: 1.2
 Created: 2026-06-25
 Last updated: 2026-06-26
 Current phase: Phase 8 — public surface inventory and browser defect audit
-Completed window: P8A through PR #427
-Exact next window: P8B
-Exact next branch: `work-public-browser-audit`
+Current window: P8B
+Current branch: `work-public-browser-audit`
+Completed predecessor: P8A through PR #427
+Exact next branch after P8B: `work-history-ui-h0-baseline`
+Exception: a newly proven P0 may interrupt
 
 ## 1. Purpose
 
-This document records the approved execution program after Local Watchlist v1 and provides a stable comparison point between:
+This document owns the complete approved execution program after Local Watchlist v1. It is the stable comparison point between planned phases, actual branches and PRs, required deliverables, available evidence, and remaining work.
 
-- the planned phase and branch;
-- the branch and PR that actually exist;
-- the required deliverables;
-- the acceptance evidence already present;
-- the work still missing before the next phase may begin.
+Authority split:
 
-`current-roadmap.md` owns product priority. `current-schedule.md` owns exact current state and the next branch. This file owns the complete Phase 7–15 program. Feature-specific plans add detail without overriding it.
+```text
+current-roadmap.md                 product priority
+current-schedule.md                exact active state and next branch
+post-watchlist-program-plan.md     complete Phase 7–15 program
+feature specifications             stable product contracts
+implementation plans               feature-specific branch sequence and gates
+working notes                      unstable execution memory
+P8A/P8B audit records              route ownership, evidence, and defect baseline
+```
 
 ## 2. Repository comparison rule
 
-Before each branch begins:
+Before each branch:
 
 1. read `docs/README.md` in the required order;
-2. confirm roadmap, schedule, this program, affected specification, affected plan, working note, and audit records agree;
-3. confirm the expected predecessor PR is merged;
+2. confirm roadmap, schedule, this program, affected specification, plan, working note, and audit records agree;
+3. confirm the predecessor PR is merged and its full merge report was issued;
 4. confirm explicit continuation exists;
-5. confirm the branch named by the schedule does not already conflict with repository state;
-6. compare required deliverables with repository files, workflows, artifacts, and production identity;
+5. confirm the scheduled branch does not conflict with repository state;
+6. compare required deliverables with files, workflows, artifacts, and production identity;
 7. record missing work before implementation;
-8. update documentation first when the repository has advanced beyond documented state.
+8. update documentation first when repository state has advanced.
 
 After each merge:
 
 1. issue the full merge report;
-2. mark the completed branch and PR in roadmap, schedule, this program, affected plan, and working note;
+2. mark the completed branch and PR in all governing documents;
 3. name the exact next branch;
 4. stop;
 5. do not create the next branch until explicit continuation.
@@ -48,9 +54,9 @@ After each merge:
 |---|---|---|---|---|
 | 7 | P7A | complete PR #426 | `work-history-ui-repair-governance` | post-Watchlist authorities and History P1 program locked |
 | 8 | P8A | complete PR #427 | `work-public-surface-inventory` | machine-readable public-surface inventory complete |
-| 8 | P8B | exact next | `work-public-browser-audit` | browser evidence and ordered defect ledger complete |
+| 8 | P8B | active | `work-public-browser-audit` | browser evidence and ordered defect ledger complete |
 | 9 | P9H0–P9H7 | queued | `history-ui-repair-plan.md` | History P1 repair accepted in production |
-| 9 | narrow non-History repairs | conditional | branch named from P8B defect ledger | each approved P0/P1 accepted |
+| 9 | narrow non-History repairs | conditional | named from P8B defect ledger | each approved P0/P1 accepted |
 | 10 | U10A–U10E | queued | cross-site UI consolidation | shared visual/interaction system accepted |
 | 11 | O11A–O11D | queued | operations and maintenance lock | acceptance, monitoring, runbooks, cadence fixed |
 | 12 | R12A–R12C | queued | release readiness | Support/legal/Stripe package complete |
@@ -58,52 +64,30 @@ After each merge:
 | 14 | N14A–N14B | queued | next-feature audit | zero or one candidate approved |
 | 15 | feature-specific | not approved | new specification required | separately approved feature accepted |
 
-## 4. Phase 7 — completed source reset
+## 4. Completed Phase 7 — source reset
 
-### P7A — governance and repair-program lock
+P7A completed through PR #426.
 
-```text
-branch: work-history-ui-repair-governance
-PR: #426
-state: complete
-```
-
-Completed deliverables:
-
-- corrected stale post-Watchlist root and canonical documents;
-- approved the known History UI problems as P1 defects;
+- corrected stale post-Watchlist authorities;
+- approved known History problems as P1 defects;
 - removed the incorrect screenshot blocker;
-- added `history-ui-repair-spec.md`;
-- added `history-ui-repair-plan.md`;
-- added the active History repair working note;
+- added the History repair specification, plan, and working note;
 - updated policy verification;
-- identified P8A as the exact next branch.
+- locked P8A as the next branch.
 
 ## 5. Phase 8 — public-surface audit
 
 Phase 8 records what exists before repair. It does not mix audit and product repair.
 
-### P8A — completed public surface inventory
+### P8A — completed static inventory
 
 ```text
 branch: work-public-surface-inventory
 PR: #427
 state: complete
-exact next branch: work-public-browser-audit
 ```
 
-Completed deliverables:
-
-- canonical route inventory covering Portal, provider homes, Heatmap, Day Flow, Battle Lines, History, Channel, Watchlist, Status, About, Support, policy gaps, and 404;
-- provider, route, title, canonical, robots, API, controls, states, owners, workflows, Preview, production, and gap evidence;
-- separate route records and reusable profiles;
-- explicit missing-surface and missing-acceptance ledger;
-- human-readable inventory report;
-- machine-readable manifest;
-- validation script and CI workflow;
-- no runtime UI, API, D1, collector, cron, retention, binding, or Preview change.
-
-Inventory totals:
+P8A produced:
 
 ```text
 20 Vite HTML inputs
@@ -116,80 +100,56 @@ Inventory totals:
 13 Production Smoke page routes
 ```
 
-Stable P8A gaps:
+It recorded owners, provider bindings, controls, states, metadata, existing gates, and missing coverage. It also recorded five absent repository-owned routes: Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure.
 
-- both Watchlist routes are omitted from Public Readiness;
-- About, Support, Changelog, Channel, and Watchlist are omitted from the general Production Smoke page list;
-- no single permanent browser matrix covers all major routes at 1440, 820, 390, and 360 pixels across required states;
-- History remains an approved P1 surface despite broad legacy coverage;
-- repository-owned Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent.
-
-### P8B — public browser defect audit
+### P8B — active public browser defect audit
 
 ```text
 branch: work-public-browser-audit
-state: exact next after explicit continuation
+state: active
+exact next branch: work-history-ui-h0-baseline
 ```
 
-Required viewports:
+Required owned-route matrix:
 
 ```text
-1440px
-820px
-390px
-360px
+21 routes × 1440 / 820 / 390 / 360
+84 production browser scenarios
 ```
 
-Required states where applicable:
+Additional required evidence:
 
 ```text
-real/fresh
-partial
-stale
-empty
-missing
-demo
-error
-loading
-storage unavailable
-long content
+5 missing policy/disclosure probes
+10 deterministic History state and interaction scenarios
+real/fresh, partial, stale, empty, missing, demo, error, loading, in-progress
+storage unavailable and long-content evidence where applicable
 ```
 
-Required interaction checks:
+Required checks:
 
-- period and metric changes;
-- Back, Forward, and direct links;
-- chart scale, units, ticks, tooltip/day detail, and selected-day synchronization;
-- filters, sorting, task and archive navigation;
-- copy, share, PNG, CSV, JSON, and deep links;
-- keyboard, focus, touch targets, reduced motion, contrast, long text, and overflow;
-- Twitch/Kick separation;
-- Home, Channel, Watchlist, Status, support, policy, and error entry points.
+- status, title, canonical, robots, H1, entry rendering, and recovery links;
+- horizontal overflow, focus entry, accessible names, and mobile target sizes;
+- period and metric changes, Back/Forward, direct links, task/archive navigation;
+- chart scale, units, ticks, day detail, and selected-day synchronization;
+- copy, share, PNG, CSV, JSON, and deep links where supported;
+- provider-specific API calls and provider-crossing detection;
+- honest data-state language.
 
-Defect classification:
+Defect classes:
 
 ```text
 P0  production outage, materially wrong data, provider/privacy failure
 P1  primary feature unusable, misleading, or materially incomplete
-P2  clarity, consistency, polish, or secondary interaction defect
+P2  clarity, consistency, polish, automation, or secondary interaction defect
 P3  deferred improvement or feature request
 ```
 
-Completion criteria:
-
-- exact browser evidence exists for all major route/viewport combinations;
-- every P0/P1 has exact reproduction evidence;
-- affected route, state, viewport, owner, file, existing gate, and missing assertion are recorded;
-- provider separation and bounded claims remain exact;
-- the repair queue is ordered;
-- History defects remain P1 without another approval gate;
-- P9H0 is next unless a newly discovered P0 interrupts.
+P8B completion requires machine-readable runtime evidence, screenshots, a committed defect ledger, a human-readable report, an ordered Phase 9 queue, latest-head CI, and no mixed product repair.
 
 ## 6. Phase 9 — P0/P1 repair
 
-History is the central approved repair track. Non-History P0/P1 defects discovered in P8B receive narrow branches without displacing History for P2 polish or new features.
-
-### History sequence
+History is the central approved repair track. Non-History P0/P1 defects discovered in P8B receive narrow branches. P2 work does not displace History unless it blocks P1 acceptance.
 
 ```text
 P9H0 work-history-ui-h0-baseline
@@ -202,169 +162,124 @@ P9H6 work-history-ui-h6-candidate
 P9H7 work-history-ui-h7-acceptance
 ```
 
-#### P9H0 — exact baseline and failing gates
+### P9H0 — baseline and failing permanent gates
 
 - reproduce Twitch and Kick failures with real and deterministic data;
 - trace metric, URL, request/cache, renderer, summary, selected day, ranking, archives, report, share, and exports;
 - identify authoritative modules and compatibility layers;
-- add failing acceptance assertions before product repair;
-- freeze 1440, 820, 390, 360, partial, empty, stale, demo, and error artifacts.
+- add failing assertions before product repair;
+- freeze required viewport and state artifacts.
 
-#### P9H1 — metric execution
+### P9H1 — metric execution
 
-- repair Viewer-minutes and Peak viewers end to end;
-- synchronize URL, request/cache, chart, scale, unit, summary, selected day, comparison, rankings, archives, report, share, and exports;
-- preserve one provider request per uncached period/metric state;
-- prove rendered values or units change, not only button styling.
+- synchronize Viewer-minutes and Peak viewers across URL, request/cache, chart, summary, selected day, comparison, rankings, archives, report, share, and exports;
+- preserve one provider request per uncached provider/period/metric state;
+- prove rendered meaning changes, not only selected styling.
 
-#### P9H2 — chart interpretability
+### P9H2 — chart interpretation
 
-- add readable UTC date ticks and numeric scale;
-- expose metric and unit;
-- provide exact detail plus compact formatting;
-- implement pointer, keyboard, and touch day inspection;
-- preserve selected-day state;
-- distinguish complete, partial, in-progress, and missing data;
-- add accessible description and non-color-only legend.
+- readable UTC date ticks and numeric scale;
+- visible metric and unit;
+- pointer, keyboard, and touch day inspection;
+- selected-day synchronization;
+- complete, partial, in-progress, and missing distinctions;
+- accessible description and non-color-only legend.
 
-#### P9H3 — Overview information architecture
+### P9H3 — Overview hierarchy
 
-- replace placeholder summary with metric-aware high-value facts;
-- make selected-day analysis useful;
-- order comparison, calendar, rankings, and coverage coherently;
-- remove duplicated and disconnected facts;
-- keep chart dominant without making supporting analysis thin.
+- metric-aware high-value summary;
+- useful selected-day analysis;
+- coherent comparison, calendar, ranking, and coverage order;
+- remove duplicate and placeholder facts.
 
-#### P9H4 — Archives and Report & Export
+### P9H4 — Archives and Report & Export
 
-- keep one visible top-level task and one archive subview;
-- repair Daily, Peaks, and Battles hierarchy;
-- connect provider, period, metric, selected scope, state, source, and limitations to output surfaces;
-- remove oversized sparse regions or replace them with compact explicit states;
+- one visible top-level task and one archive subview;
+- repair Daily, Peaks, Battles, and publishing workspace hierarchy;
+- connect outputs to provider, period, metric, scope, source, state, and limitations;
+- remove oversized sparse regions;
 - preserve output schemas unless separately approved.
 
-#### P9H5 — responsive and accessibility
+### P9H5 — responsive and accessibility
 
 - reconcile 1440, 820, 390, and 360px layouts;
-- keep controls, axes, units, chart, and selected-day flow readable;
-- verify touch and keyboard day inspection;
-- enforce visible focus, 44px general targets, 48px important mobile targets, wrapping, reduced motion, contrast, forced colors, and no page overflow.
+- touch and keyboard day inspection;
+- visible focus, target sizes, wrapping, reduced motion, contrast, forced colors, and no overflow.
 
-#### P9H6 — local candidate QA
+### P9H6 — complete local candidate
 
-- run all History and shared-web workflows on the latest candidate;
-- verify both metrics, all periods, Back/Forward, direct links, tasks, archives, selected day, comparison, calendar, ranking, report, share, PNG, CSV, and JSON;
-- verify Twitch/Kick separation and all data states;
-- generate desktop/tablet/mobile artifacts;
-- permanently reject visual-only metric switching and charts without readable scale or units.
+- all History and shared-web workflows on latest head;
+- metrics, periods, Back/Forward, direct links, tasks, archives, selected day, comparison, calendar, rankings, report, share, PNG, CSV, and JSON;
+- provider separation and all required states;
+- desktop/tablet/mobile artifacts;
+- permanent rejection of visual-only metric switching and chart-without-scale regressions.
 
-#### P9H7 — hosted and production acceptance
+### P9H7 — hosted and production acceptance
 
-- create one deliberate `preview-*` branch from the accepted local candidate;
+- one deliberate `preview-*` branch from the accepted local candidate;
 - verify Pages Functions, bindings, real retained data, metrics, responsive behavior, and outputs;
 - merge only the accepted candidate;
 - verify exact production SHA through `/deployment.json`;
-- run public Twitch and Kick History acceptance;
-- create permanent acceptance record;
-- finalize specifications and plans;
-- delete the History repair working note.
+- public Twitch and Kick acceptance;
+- permanent acceptance record and working-note deletion.
 
 ## 7. Phase 10 — cross-site UI and interaction consolidation
 
+```text
+U10A design tokens and component audit
+U10B data-visualization grammar
+U10C responsive system
+U10D accessibility consolidation
+U10E cross-site candidate and production acceptance
+```
+
 Begin only after Phase 9 P0/P1 acceptance.
-
-### U10A — design tokens and component audit
-
-- typography, spacing, surfaces, borders, radii, buttons, segmented controls, status pills, focus, loading, empty, partial, and error patterns;
-- document intentional provider accents versus accidental drift.
-
-### U10B — data-visualization grammar
-
-- axis, tick, unit, legend, tooltip, hover, selection, missing, partial, stale, and timezone conventions;
-- shared rules only where data meaning is compatible.
-
-### U10C — responsive system
-
-- shared breakpoints and layout behavior for 1440, 820, 390, and 360px;
-- remove duplicated compatibility layers only after regression coverage exists.
-
-### U10D — accessibility consolidation
-
-- keyboard operation, focus retention, touch targets, reduced motion, forced colors, contrast, wrapping, and non-color-only states.
-
-### U10E — cross-site candidate acceptance
-
-- route matrix regression;
-- full-page comparison artifacts;
-- deliberate Preview only if shared runtime behavior requires hosted validation;
-- exact production acceptance.
 
 ## 8. Phase 11 — operations and maintenance lock
 
-### O11A — unified acceptance matrix
-
-Record feature, provider, contract workflow, browser workflow, Preview workflow, production acceptance, accepted SHA, last success, and artifact ownership.
-
-### O11B — collector and capacity monitoring
-
-Track collector success, snapshot age, rollup updates, raw retention, rollup retention, D1 usage, API timeout, partial rate, and empty rate. Prefer existing Status APIs and GitHub Actions over unnecessary cron jobs.
-
-### O11C — failure runbooks
-
-Separate collector, D1, Pages deployment, provider API, stale data, partial data, real empty, and frontend regression failures. Record detection, confirmation, recovery, rerun, acceptance, and user-facing state.
-
-### O11D — maintenance cadence
-
 ```text
-weekly:    production smoke, freshness, public-route checks
-monthly:   dependency, D1 usage, workflow/artifact, external-link audit
-quarterly: retention, provider API contract, permanent-spec review
+O11A unified acceptance matrix
+O11B collector freshness and capacity monitoring
+O11C failure runbooks
+O11D weekly/monthly/quarterly maintenance cadence
 ```
+
+Prefer existing Status APIs and GitHub Actions over unnecessary cron work.
 
 ## 9. Phase 12 — Support, legal, Stripe, and release readiness
 
-### R12A — legal and policy surfaces
-
-Audit or complete Support, Contact, Terms, Privacy, refund policy, commercial disclosure, About/Method, canonical metadata, and footer links.
-
-### R12B — Stripe readiness
-
-Record repository-visible requirements and separately verify external Stripe registration, Payment Link, support wording, success/cancel paths, refund path, and mobile payment flow.
-
-### R12C — launch package
-
-Prepare current desktop/mobile images, short and long descriptions, feature list, data limitations, collector-status explanation, GitHub link, Support link, and FAQ.
+```text
+R12A Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, About, footer audit
+R12B Stripe registration, Payment Link, wording, refund, and mobile-flow verification
+R12C launch images, descriptions, limitations, status explanation, links, and FAQ
+```
 
 ## 10. Phase 13 — external launch and feedback
 
-### L13A — staged publication
+```text
+L13A staged publication
+L13B channel/date/views/clicks/responses evidence ledger
+L13C bug/copy/UX/data-capability/feature-request classification
+```
 
-Publish incrementally through approved channels rather than simultaneously.
+P0/P1 may interrupt. Feature requests do not automatically change the roadmap.
 
-### L13B — evidence ledger
+## 11. Phase 14 — next-feature capability audit
 
-Record channel, date, views, clicks, responses, misunderstood functions, defects, and requests.
-
-### L13C — triage
-
-Classify feedback as bug, copy problem, UX problem, data-capability request, or new-feature request. P0/P1 may interrupt. Requests do not automatically change the roadmap.
-
-## 11. Phase 14 — next-feature data-capability audit
-
-### N14A — candidate audit
-
-Evaluate one candidate at a time for provider source parity, D1 growth, collector changes, rollups, Cloudflare Free limits, data honesty, user value, overlap, and maintenance cost.
-
-### N14B — decision
-
-Approve zero or one candidate. Deferral remains valid.
+Evaluate one candidate at a time for provider source parity, D1 growth, collector changes, rollups, Cloudflare Free limits, data honesty, value, overlap, and maintenance cost. Approve zero or one candidate.
 
 ## 12. Phase 15 — separately approved feature
 
-Phase 15 has no approved implementation branch.
+Phase 15 has no approved implementation branch. It begins only after Phase 14 approves one candidate, a permanent specification and branch sequence exist, and the user explicitly authorizes implementation.
 
-It begins only when Phase 14 approves one candidate, a permanent specification and branch sequence exist, and the user explicitly authorizes implementation.
+## 13. Interrupt and scope rules
 
-## 13. Current stop rule
+- P0 interrupts immediately.
+- P1 may reorder Phase 9 when it blocks acceptance.
+- P2 waits for the relevant quality phase unless it blocks P1 acceptance.
+- P3 remains deferred.
+- new APIs, D1 schemas, collector fields, cron, retention, bindings, exact-session claims, provider totals, login, alerts, or AI interpretation require specification and roadmap approval.
 
-P8A is complete through PR #427. After the merge report, stop. Do not create `work-public-browser-audit` until explicit continuation.
+## 14. Current stop rule
+
+P8B is active. After its completion PR merges, issue the full merge report and stop. Do not create `work-history-ui-h0-baseline` until explicit continuation.
