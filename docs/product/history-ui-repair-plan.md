@@ -1,17 +1,18 @@
 # ViewLoom History UI repair implementation plan
 
 Status: active implementation subplan
-Version: 1.1
+Version: 1.2
 Created: 2026-06-25
-Last updated: 2026-06-25
+Last updated: 2026-06-26
 Roadmap phase: Phase 7–9 — source reset, public audit, and P0/P1 repair
-Current window: Phase 8 P8A
-Current branch: `work-public-surface-inventory`
-Completed predecessor: P7A through PR #426
+Completed window: Phase 8 P8A through PR #427
+Exact next window: Phase 8 P8B
+Exact next branch: `work-public-browser-audit`
 Permanent specification: `history-and-trends-spec.md`
 Active repair specification: `history-ui-repair-spec.md`
 Program authority: `post-watchlist-program-plan.md`
 Active working note: `../work-in-progress/history-ui-repair-working-note.md`
+P8A inventory: `../audits/public-surface-inventory.json`
 
 ## 1. Objective
 
@@ -37,7 +38,7 @@ The repair preserves:
 - existing 7-day, 30-day, and supported custom-period behavior;
 - the two supported primary metrics: `viewer_minutes` and `peak_viewers`;
 - selected-day, previous-period, calendar, ranking, archive, report, share-card, CSV, and JSON contracts;
-- loading, real, partial, stale, empty, missing, demo, and error distinctions;
+- loading, real, partial, stale, empty, missing, demo, error, and in-progress distinctions;
 - bounded, non-provider-wide coverage language;
 - provider-safe Day Flow, Battle Lines, and Channel links;
 - loaded-payload reuse for task switching and outputs.
@@ -193,8 +194,8 @@ Requirements:
 
 ```text
 P7A  work-history-ui-repair-governance   complete PR #426
-P8A  work-public-surface-inventory       active
-P8B  work-public-browser-audit           exact next after P8A merge report
+P8A  work-public-surface-inventory       complete PR #427
+P8B  work-public-browser-audit           exact next after explicit continuation
 P9H0 work-history-ui-h0-baseline         queued
 P9H1 work-history-ui-h1-metric           queued
 P9H2 work-history-ui-h2-chart            queued
@@ -205,7 +206,7 @@ P9H6 work-history-ui-h6-candidate        queued
 P9H7 work-history-ui-h7-acceptance       queued
 ```
 
-Only P8A exists as the active branch. Later branches must not be created before the preceding merge report and explicit continuation.
+No later branch may be created before the preceding merge report and explicit continuation.
 
 ## 10. P7A — completed governance reset
 
@@ -220,51 +221,60 @@ PR #426 completed:
 
 No runtime UI, API, D1, collector, cron, retention, binding, or output-schema change occurred.
 
-## 11. P8A — public surface inventory
+## 11. P8A — completed public surface inventory
 
-Current branch:
+PR #427 completed:
 
-```text
-work-public-surface-inventory
-```
+- both History routes and their API/binding owners;
+- period, custom range, metric, task, archive, selected-day, sort, and limit controls;
+- Overview, Archives, Report & Export, Daily, Peaks, and Battles;
+- chart, selected day, comparison, calendar, rankings, coverage, report, short post, share, PNG, CSV, and JSON ownership;
+- contract, browser, Preview, and production evidence;
+- explicit missing assertions and continued P1 assessment.
 
-History inventory must record:
-
-- provider routes and metadata;
-- API and supported query state;
-- Overview, Archives, and Report & Export;
-- Daily, Peaks, and Battles;
-- period and metric controls;
-- chart and selected-day ownership;
-- previous-period comparison;
-- calendar heat;
-- rankings and coverage;
-- report, short post, share card, PNG, CSV, and JSON;
-- existing contract, browser, Preview, and production gates;
-- missing state and interaction coverage.
-
-P8A records current repository evidence. It does not claim an interaction works merely because a page builds or an old workflow exists.
+P8A confirmed that repository presence and legacy workflows do not prove current public usability. It made no runtime repair.
 
 ## 12. P8B — browser defect audit
 
-P8B captures 1440, 820, 390, and 360px evidence for real/fresh, partial, stale, empty, missing, demo, error, and loading states where applicable.
-
-History evidence includes:
+Exact next branch:
 
 ```text
-Twitch Overview
-Kick Overview
-tablet task/control wrapping
-mobile Overview and selected-day flow
-narrow chart/control behavior
-Viewer-minutes before/after
-Peak viewers before/after
+work-public-browser-audit
+```
+
+P8B captures:
+
+```text
+1440px Twitch Overview
+1440px Kick Overview
+820px task and control wrapping
+390px Overview and selected-day flow
+360px narrow chart and control behavior
+Viewer-minutes before and after
+Peak viewers before and after
+partial data
+empty data
+stale data
+missing data
+demo data
+API error
+loading state
 Archives Daily / Peaks / Battles
 Report & Export
 Back / Forward and direct links
 ```
 
-Known History defects remain P1. P8B adds exact reproduction and affected owner/file/workflow evidence.
+P8B must record for each defect:
+
+- route and provider;
+- viewport and data state;
+- exact reproduction;
+- owner module and affected file;
+- current workflow coverage;
+- missing assertion;
+- P0, P1, P2, or P3 classification.
+
+Known History defects remain P1. P8B does not re-approve them.
 
 ## 13. P9H0 — exact baseline and failing gates
 
@@ -358,8 +368,8 @@ After each PR merge:
 
 1. issue the full merge report;
 2. update roadmap, schedule, program plan, this plan, and the working note;
-3. state the exact next branch;
+3. name the exact next branch;
 4. stop;
 5. do not create the next branch until explicit continuation.
 
-Stop and update the repair specification before adding a new metric, archive type, output schema, API route, D1 or collector change, session reconstruction, cross-provider comparison, login, alerts, AI interpretation, or any capability outside the existing retained History response.
+Stop and update the permanent specification before adding another metric, archive type, API route, output schema, D1/collector change, session reconstruction, cross-provider comparison, login, alerts, AI interpretation, or any capability outside the existing retained History response.
