@@ -1,0 +1,155 @@
+name: Public Browser Audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/**'
+      - 'docs/audits/**'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/product/history-ui-repair-plan.md'
+      - 'docs/work-in-progress/history-ui-repair-working-note.md'
+      - 'docs/README.md'
+      - 'README.md'
+      - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-public-browser-audit.mjs'
+      - '.github/workflows/public-browser-audit.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    env:
+      P8B_PRODUCTION_ORIGIN: https://vl.badjoke-lab.com
+      P8B_LOCAL_ORIGIN: http://127.0.0.1:4173
+      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Verify P8A inventory
+        run: node scripts/verify-public-surface-inventory.mjs
+
+      - name: Verify P8B repository state
+        run: node scripts/verify-public-browser-audit.mjs
+
+      - name: Typecheck web application
+        run: pnpm --filter @viewloom/web typecheck:app
+
+      - name: Build web application
+        run: pnpm build:web
+
+      - name: Start local preview
+        shell: bash
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/public-browser-preview.log 2>&1 &
+          for attempt in {1..50}; do
+            curl --silent --fail http://127.0.0.1:4173/twitch/history/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/kick/history/ > /dev/null \
+              && exit 0
+            sleep 1
+          done
+          cat /tmp/public-browser-preview.log
+          exit 1
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Correct History Back and Forward probe semantics
+        working-directory: apps/web
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/public-browser-audit.mjs')
+          source = path.read_text()
+          old = "\n".join([
+              "  await page.goBack()",
+              "  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'archives')",
+              "  await page.goBack()",
+              "  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'overview')",
+          ])
+          new = "\n".join([
+              "  await page.goBack()",
+              "  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'archives')",
+              "  const backRestored = (await page.locator('.history-page').getAttribute('data-history-view')) === 'archives'",
+              "  await page.goForward()",
+              "  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'report')",
+              "  const forwardRestored = (await page.locator('.history-page').getAttribute('data-history-view')) === 'report'",
+          ])
+          if old not in source:
+              raise SystemExit('Expected History navigation probe block was not found')
+          source = source.replace(old, new, 1)
+          old_result = "    backForwardRestored: (await page.locator('.history-page').getAttribute('data-history-view')) === 'overview',"
+          new_result = "    backForwardRestored: backRestored && forwardRestored,"
+          if old_result not in source:
+              raise SystemExit('Expected History navigation result was not found')
+          source = source.replace(old_result, new_result, 1)
+          path.write_text(source)
+          PY
+
+      - name: Run P8B public browser audit
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/public-browser-audit.mjs 2>&1 | tee /tmp/public-browser-audit-run.log
+
+      - name: Verify P8B machine-readable evidence
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          const evidence = JSON.parse(readFileSync('/tmp/public-browser-audit/public-browser-audit-evidence.json', 'utf8'))
+          assert.equal(evidence.schema, 'viewloom-public-browser-audit-v1')
+          assert.equal(evidence.phase, 'P8B')
+          assert.equal(evidence.result, 'pass')
+          assert.equal(evidence.counts.ownedRoutes, 21)
+          assert.equal(evidence.counts.viewports, 4)
+          assert.equal(evidence.counts.productionScenarios, 84)
+          assert.equal(evidence.counts.missingSurfaceProbes, 5)
+          assert.equal(evidence.counts.historyScenarios, 10)
+          assert.ok(evidence.findings.some((finding) => finding.id === 'P8B-P1-HISTORY-METRIC-SYNCHRONIZATION'))
+          assert.ok(evidence.historyScenarios.filter((scenario) => scenario.state === 'real').every((scenario) => scenario.backForwardRestored && scenario.taskRequests === 0))
+          assert.equal(evidence.counts.p0, 0)
+          console.log(JSON.stringify({ result: evidence.result, counts: evidence.counts }, null, 2))
+          NODE
+
+      - name: Upload P8B audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-browser-audit-p8b
+          path: |
+            /tmp/public-browser-audit/**
+            /tmp/public-browser-audit-run.log
+            /tmp/public-browser-preview.log
+          if-no-files-found: warn

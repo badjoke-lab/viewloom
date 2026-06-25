@@ -1,0 +1,271 @@
+{
+  "schema": "viewloom-public-browser-defect-ledger-v1",
+  "phase": "P8B",
+  "status": "complete",
+  "audit_date": "2026-06-26",
+  "production_origin": "https://vl.badjoke-lab.com",
+  "candidate_branch": "work-public-browser-audit",
+  "verified_evidence_head": "75bc7f22e015edfe004158746796081a3719219b",
+  "evidence": {
+    "workflow": "Public Browser Audit",
+    "latest_verified_run": 28203107250,
+    "artifact": "public-browser-audit-p8b",
+    "artifact_id": 7892012367,
+    "artifact_size_bytes": 30608845,
+    "artifact_digest": "sha256:793d2c70f24d0a1056767d1c59056b2b2884b03c25177d70c65ab506d18a268b",
+    "artifact_expires_at": "2026-09-23T21:58:28Z",
+    "runtime_schema": "viewloom-public-browser-audit-v1",
+    "matrix": {
+      "owned_routes": 21,
+      "viewports": [1440, 820, 390, 360],
+      "production_scenarios": 84,
+      "missing_surface_probes": 5,
+      "history_scenarios": 10
+    }
+  },
+  "verified_invariants": {
+    "p0_count": 0,
+    "provider_crossing_scenarios": 0,
+    "horizontal_overflow_scenarios": 0,
+    "owned_route_statuses": {
+      "200": 80,
+      "404_expected_not_found": 4
+    },
+    "history_chart_scale_contract": {
+      "y_labels_min": 6,
+      "x_labels_min": 7,
+      "day_controls_min": 7
+    },
+    "history_task_switch_refetches": 0,
+    "history_real_back_forward_restored": true,
+    "note": "Aborted Google Analytics requests in headless Chromium are external telemetry noise, not ViewLoom route failures."
+  },
+  "counts": {
+    "p0": 0,
+    "p1": 3,
+    "p2": 5,
+    "p3": 0,
+    "total": 8
+  },
+  "defects": [
+    {
+      "id": "P8B-P1-HISTORY-METRIC-SYNCHRONIZATION",
+      "severity": "P1",
+      "title": "History metric switching does not update every metric-dependent surface",
+      "routes": ["/twitch/history/", "/kick/history/"],
+      "providers": ["twitch", "kick"],
+      "viewports": ["desktop-1440", "mobile-390"],
+      "states": ["real"],
+      "reproduction": [
+        "Open History with Viewer-minutes.",
+        "Switch to Peak viewers.",
+        "Confirm URL, selected control, chart caption, and chart aria label change.",
+        "Confirm period summary and selected-day facts remain byte-for-byte unchanged."
+      ],
+      "evidence": ["history-twitch-real-desktop-1440.png", "history-kick-real-mobile-390.png"],
+      "owner": ["apps/web/src/live/history-current-shell-entry.ts", "apps/web/src/live/history-overview.ts"],
+      "existing_gates": ["History browser workflows", "History production acceptance"],
+      "missing_assertion": "No permanent gate requires chart, summary, selected day, ranking meaning, archives, and outputs to change together when the primary metric changes.",
+      "next": ["P9H0", "P9H1"]
+    },
+    {
+      "id": "P8B-P1-HISTORY-KEYBOARD-ENTRY",
+      "severity": "P1",
+      "title": "History does not provide a reliable first keyboard-focus entry in production",
+      "routes": ["/twitch/history/", "/kick/history/"],
+      "providers": ["twitch", "kick"],
+      "viewports": ["desktop-1440", "tablet-820", "mobile-390", "mobile-360"],
+      "states": ["production current state"],
+      "reproduction": [
+        "Open either production History route.",
+        "Press Tab once.",
+        "The active element remains body/document instead of moving to a visible actionable element."
+      ],
+      "evidence": [
+        "twitch-history--desktop-1440.png",
+        "twitch-history--tablet-820.png",
+        "twitch-history--mobile-390.png",
+        "twitch-history--mobile-360.png",
+        "kick-history--desktop-1440.png",
+        "kick-history--tablet-820.png",
+        "kick-history--mobile-390.png",
+        "kick-history--mobile-360.png"
+      ],
+      "owner": [
+        "apps/web/twitch/history/index.html",
+        "apps/web/kick/history/index.html",
+        "apps/web/src/live/history-view-shell.ts",
+        "apps/web/src/history-focus-fallback.css"
+      ],
+      "existing_gates": ["History Visual Responsive", "fragmented page-specific accessibility checks"],
+      "missing_assertion": "No consolidated History gate rejects a page whose first Tab does not enter an actionable, visibly focused control.",
+      "next": ["P9H0", "P9H5"]
+    },
+    {
+      "id": "P8B-P1-HISTORY-TASK-HIERARCHY",
+      "severity": "P1",
+      "title": "History does not yet present one coherent task hierarchy across desktop and mobile",
+      "routes": ["/twitch/history/", "/kick/history/"],
+      "providers": ["twitch", "kick"],
+      "viewports": ["desktop-1440", "mobile-390", "mobile-360"],
+      "states": ["production real/partial"],
+      "reproduction": [
+        "Open a production History Overview.",
+        "On desktop, inspect the full-page order and the separation between chart, selected day, comparison, calendar, ranking, changes, and coverage.",
+        "On mobile, inspect the full-page stack; desktop sections become a very long sequence and primary analysis tasks are not prioritized into a compact mobile flow."
+      ],
+      "evidence": [
+        "twitch-history--desktop-1440.png",
+        "twitch-history--mobile-390.png",
+        "twitch-history--mobile-360.png",
+        "kick-history--mobile-390.png",
+        "kick-history--mobile-360.png"
+      ],
+      "owner": [
+        "apps/web/src/live/history-view-shell.ts",
+        "apps/web/src/live/history-overview.ts",
+        "apps/web/src/history-view-shell.css",
+        "apps/web/src/history-overview.css",
+        "apps/web/src/history-visual-responsive.css"
+      ],
+      "existing_gates": ["History Overview", "History Visual Responsive"],
+      "missing_assertion": "Existing checks prove element presence and no horizontal overflow, but do not reject an excessively long or weakly prioritized task flow.",
+      "next": ["P9H0", "P9H3", "P9H5"]
+    },
+    {
+      "id": "P8B-P2-SMALL-INTERACTIVE-TARGETS",
+      "severity": "P2",
+      "title": "Visible mobile controls are below the 44px audit target",
+      "routes": ["multiple owned public routes"],
+      "providers": ["portal", "twitch", "kick"],
+      "viewports": ["mobile-390", "mobile-360"],
+      "states": ["production current state"],
+      "reproduction": [
+        "Open the required mobile matrix.",
+        "Measure visible buttons and button-styled links.",
+        "Controls including the mobile menu, feature controls, zoom controls, and action links are commonly 34–42px high."
+      ],
+      "owner": ["shared and route-specific responsive styles"],
+      "existing_gates": ["fragmented feature browser checks"],
+      "missing_assertion": "No all-route mobile target-size gate exists.",
+      "next": ["Phase 10"]
+    },
+    {
+      "id": "P8B-P2-WATCHLIST-PUBLIC-READINESS-OMISSION",
+      "severity": "P2",
+      "title": "Both Watchlist routes are omitted from general Public Readiness",
+      "routes": ["/twitch/watchlist/", "/kick/watchlist/"],
+      "providers": ["twitch", "kick"],
+      "viewports": ["configuration audit"],
+      "states": ["built routes"],
+      "reproduction": ["Compare P8A owned routes with apps/web/scripts/public-readiness-audit.mjs."],
+      "owner": ["apps/web/scripts/public-readiness-audit.mjs"],
+      "existing_gates": ["Watchlist dedicated acceptance"],
+      "missing_assertion": "General Public Readiness does not enumerate both Watchlist routes.",
+      "next": ["Phase 10 or narrow maintenance after P9H0 entry"]
+    },
+    {
+      "id": "P8B-P2-PRODUCTION-SMOKE-OMISSIONS",
+      "severity": "P2",
+      "title": "General Production Smoke omits owned public route groups",
+      "routes": [
+        "/about/",
+        "/support/",
+        "/changelog/",
+        "/twitch/channel/",
+        "/kick/channel/",
+        "/twitch/watchlist/",
+        "/kick/watchlist/"
+      ],
+      "providers": ["portal", "twitch", "kick"],
+      "viewports": ["workflow configuration"],
+      "states": ["production"],
+      "reproduction": ["Compare the P8A route inventory with .github/workflows/production-smoke.yml."],
+      "owner": [".github/workflows/production-smoke.yml"],
+      "existing_gates": ["Channel dedicated acceptance", "Watchlist dedicated acceptance"],
+      "missing_assertion": "General smoke does not exercise every owned route group.",
+      "next": ["Phase 11"]
+    },
+    {
+      "id": "P8B-P2-RELEASE-POLICY-SURFACES-MISSING",
+      "severity": "P2",
+      "title": "Required repository-owned release-policy routes are absent",
+      "routes": ["/contact/", "/terms/", "/privacy/", "/refund-policy/", "/commercial-disclosure/"],
+      "providers": ["portal"],
+      "viewports": ["desktop-1440 probe"],
+      "states": ["missing/404"],
+      "reproduction": ["Open each route in production.", "Each returns the owned 404 page."],
+      "evidence": [
+        "missing-contact.png",
+        "missing-terms.png",
+        "missing-privacy.png",
+        "missing-refund-policy.png",
+        "missing-commercial-disclosure.png"
+      ],
+      "owner": ["Phase 12 release-readiness program"],
+      "existing_gates": ["none that can pass release readiness"],
+      "missing_assertion": "Release readiness cannot pass without dedicated policy and disclosure surfaces.",
+      "next": ["R12A; do not interrupt P9H0 unless external compliance requires it"]
+    },
+    {
+      "id": "P8B-P2-UNLABELED-CONTROLS",
+      "severity": "P2",
+      "title": "Day Flow exposes a visible date input without an accessible name",
+      "routes": ["/twitch/day-flow/", "/kick/day-flow/"],
+      "providers": ["twitch", "kick"],
+      "viewports": ["desktop-1440", "tablet-820", "mobile-390", "mobile-360"],
+      "states": ["production current state"],
+      "reproduction": [
+        "Open Day Flow at each required width.",
+        "Inspect the visible date input.",
+        "The input has no aria-label, title, text content, name, or placeholder exposed by the audit."
+      ],
+      "owner": ["Day Flow route controls and shared control styles"],
+      "existing_gates": ["Day Flow feature-specific checks"],
+      "missing_assertion": "No consolidated public-route accessible-name audit exists.",
+      "next": ["Phase 10 or narrow repair if it blocks P1 acceptance"]
+    }
+  ],
+  "ordered_phase_9_queue": [
+    {
+      "order": 1,
+      "branch": "work-history-ui-h0-baseline",
+      "purpose": "Reproduce all History P1 defects, trace owners, and commit failing permanent gates."
+    },
+    {
+      "order": 2,
+      "branch": "work-history-ui-h1-metric",
+      "purpose": "Synchronize Viewer-minutes and Peak viewers across every metric-dependent surface."
+    },
+    {
+      "order": 3,
+      "branch": "work-history-ui-h2-chart",
+      "purpose": "Lock chart scale, units, ticks, day controls, and accessible interpretation even though the P8B deterministic fixture currently satisfies the basic count contract."
+    },
+    {
+      "order": 4,
+      "branch": "work-history-ui-h3-overview",
+      "purpose": "Repair summary, selected-day, and Overview task hierarchy."
+    },
+    {
+      "order": 5,
+      "branch": "work-history-ui-h4-tasks",
+      "purpose": "Repair Archives and Report & Export task content while preserving the verified no-refetch and Back/Forward contracts."
+    },
+    {
+      "order": 6,
+      "branch": "work-history-ui-h5-responsive",
+      "purpose": "Repair keyboard entry, mobile task hierarchy, responsive density, and accessibility."
+    },
+    {
+      "order": 7,
+      "branch": "work-history-ui-h6-candidate",
+      "purpose": "Run complete local candidate and regression lock."
+    },
+    {
+      "order": 8,
+      "branch": "work-history-ui-h7-acceptance",
+      "purpose": "Run deliberate Preview and exact production acceptance."
+    }
+  ]
+}

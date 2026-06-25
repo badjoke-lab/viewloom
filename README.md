@@ -15,52 +15,70 @@ Twitch and Kick remain separated across routes, APIs, storage, D1 bindings, rank
 
 ## Current production state
 
-ViewLoom Core v1 is deployed on Cloudflare Pages with:
-
-- separate Twitch and Kick D1 bindings;
-- provider-specific Pages Functions;
-- bounded collector and retained-history data;
-- production deployment identity and smoke checks;
-- explicit not-found behavior;
-- production Heatmap, Day Flow, Battle Lines, History, Channel, Watchlist, and Status routes.
+ViewLoom Core v1 is deployed on Cloudflare Pages with separate provider bindings, provider-specific Functions, bounded collector/history data, deployment identity, production smoke, explicit 404 behavior, and public Heatmap, Day Flow, Battle Lines, History, Channel, Watchlist, and Status routes.
 
 Local Watchlist v1 completed through PR #425 with local, hosted Preview, and production acceptance.
 
 ## Current priority
 
-The active program is public-surface audit and P0/P1 repair, not a new major feature.
+The active program is public-surface audit and P0/P1 repair, not a new feature expansion.
 
 ```text
-Phase 7  source-of-truth reset and repair-program lock    complete PR #426
-Phase 8  all-public-surface inventory and browser audit   P8A complete PR #427
-Phase 9  P0/P1 repair; History UI is the central track    queued
+Phase 7  source-of-truth reset                            complete PR #426
+Phase 8  public inventory and browser defect audit        P8B active
+Phase 9  P0/P1 repair; History is the central track       queued
 ```
 
-Exact next branch after the P8A merge report and explicit continuation:
+Current branch:
 
 ```text
 work-public-browser-audit
 ```
 
-The completed P8A inventory is under `docs/audits/`. It owns 20 Vite HTML inputs plus the explicit 404 page, records separate Twitch and Kick bindings, and lists missing browser/state coverage without treating an existing build or legacy workflow as proof of usability.
+Exact next branch after P8B completion, merge reporting, and explicit continuation:
+
+```text
+work-history-ui-h0-baseline
+```
+
+A newly proven P0 may interrupt.
+
+## Active P8B audit
+
+P8B uses the completed P8A inventory as its route, provider-binding, owner, state, and existing-gate baseline.
+
+```text
+21 owned routes
+4 required widths: 1440 / 820 / 390 / 360
+84 production browser scenarios
+5 missing policy/disclosure probes
+10 deterministic History scenarios
+```
+
+P8B records exact browser evidence and classifies defects. It does not repair public UI or change APIs, D1, bindings, collectors, cron, retention, output schemas, or Cloudflare Preview state.
+
+Active files:
+
+- [`docs/audits/P8B_SCOPE.md`](docs/audits/P8B_SCOPE.md)
+- [`apps/web/scripts/public-browser-audit.mjs`](apps/web/scripts/public-browser-audit.mjs)
+- [`scripts/verify-public-browser-audit.mjs`](scripts/verify-public-browser-audit.mjs)
+- [`.github/workflows/public-browser-audit.yml`](.github/workflows/public-browser-audit.yml)
 
 ## Approved History repair
 
 The current History production baseline remains deployed, but these are approved P1 defects:
 
 - Viewer-minutes and Peak viewers do not produce a sufficiently observable, trustworthy change across the page;
-- the main chart lacks readable scale, date ticks, units, and interaction cues;
-- chart-side information is too thin or placeholder-like;
-- lower-page regions are sparse or unclear in purpose;
-- desktop, tablet, and mobile do not form one coherent analysis workflow.
+- chart interpretation is not yet permanently protected by complete scale, date, unit, and interaction gates;
+- selected-day and supporting information are too thin or disconnected;
+- lower-page regions are sparse, duplicated, or unclear;
+- desktop, tablet, and mobile do not yet prove one coherent analysis workflow.
 
-Additional reference screenshots may refine styling later. They are not a blocker for functional, chart, information-architecture, responsive, or accessibility repair.
-
-The repair preserves the two existing primary metrics and does not authorize new History APIs, D1 schemas, collectors, cron changes, retention changes, bindings, exact sessions, cross-provider totals, login, alerts, or AI summaries.
+The repair preserves the two existing metrics and does not authorize new History APIs, D1 schemas, collectors, cron, retention, bindings, exact sessions, provider totals, login, alerts, or AI summaries.
 
 ## Canonical documentation
 
-Before changing this repository, read in order:
+Read in order:
 
 - [`docs/operations/development-and-deployment-policy.md`](docs/operations/development-and-deployment-policy.md)
 - [`docs/operations/development-policy-addendum.md`](docs/operations/development-policy-addendum.md)
@@ -70,53 +88,52 @@ Before changing this repository, read in order:
 - [`docs/product/current-schedule.md`](docs/product/current-schedule.md)
 - [`docs/product/post-watchlist-program-plan.md`](docs/product/post-watchlist-program-plan.md)
 
-For the History repair program also read:
+For History:
 
-- [`docs/product/history-and-trends-spec.md`](docs/product/history-and-trends-spec.md) — accepted baseline
-- [`docs/product/history-ui-repair-spec.md`](docs/product/history-ui-repair-spec.md) — active repair target
-- [`docs/product/history-ui-repair-plan.md`](docs/product/history-ui-repair-plan.md) — Phase 7–9 subplan
-- [`docs/work-in-progress/history-ui-repair-working-note.md`](docs/work-in-progress/history-ui-repair-working-note.md) — active execution memory
+- [`docs/product/history-and-trends-spec.md`](docs/product/history-and-trends-spec.md)
+- [`docs/product/history-ui-repair-spec.md`](docs/product/history-ui-repair-spec.md)
+- [`docs/product/history-ui-repair-plan.md`](docs/product/history-ui-repair-plan.md)
+- [`docs/work-in-progress/history-ui-repair-working-note.md`](docs/work-in-progress/history-ui-repair-working-note.md)
 
-For Phase 8 browser work also read:
+For P8B:
 
-- [`docs/audits/README.md`](docs/audits/README.md)
+- [`docs/audits/P8B_SCOPE.md`](docs/audits/P8B_SCOPE.md)
 - [`docs/audits/public-surface-inventory.json`](docs/audits/public-surface-inventory.json)
 - [`docs/audits/public-surface-inventory.md`](docs/audits/public-surface-inventory.md)
 - [`docs/audits/public-surface-gaps.json`](docs/audits/public-surface-gaps.json)
 
-Implementation does not begin from chat memory, an old PR, or screenshots alone. Repository authorities are updated first when scope, priority, or behavior changes.
+Implementation does not begin from chat memory, an old PR, or screenshots alone.
 
 ## Development operations
 
 - normal work uses `work-*` branches;
 - `preview-*` is reserved for deliberate Cloudflare runtime validation of a completed candidate;
-- only the latest candidate head is authoritative;
+- only latest-head evidence counts;
 - merge status is not production status;
-- production completion requires exact deployment identity and public smoke verification;
-- provider separation and honest bounded coverage are mandatory;
-- after every merge, issue the full merge report and stop before creating the next branch.
+- provider separation and bounded coverage are mandatory;
+- after each merge, issue the full merge report and stop before creating the next branch.
 
 ## Repository structure
 
-- `docs/` — canonical product, program, operations, audit, and temporary working documents
-- `apps/web/` — public pages, shared UI, Pages Functions, and browser/contract checks
+- `docs/` — canonical product, program, operations, audit, and temporary documents
+- `apps/web/` — public pages, shared UI, Functions, and browser/contract checks
 - `workers/` — provider collectors and retention operations
-- `packages/` — shared contracts and helpers where applicable
+- `packages/` — shared contracts and helpers
 
 ## Immediate execution order
 
 ```text
 P7A  governance and schedule reset                         complete PR #426
 P8A  public route and acceptance inventory                 complete PR #427
-P8B  desktop/tablet/mobile browser defect audit            exact next
-P9H0 exact History reproduction and failing gates          queued
+P8B  all-public browser defect audit                       active
+P9H0 exact History reproduction and failing gates          exact next
 P9H1 metric execution repair                               queued
 P9H2 chart scale, axes, units, and day interaction          queued
 P9H3 Overview information hierarchy                        queued
-P9H4 Archives and Report & Export task repair               queued
+P9H4 Archives and Report & Export repair                    queued
 P9H5 responsive and accessibility repair                    queued
 P9H6 complete local candidate QA                            queued
-P9H7 deliberate Preview and exact production acceptance    queued
+P9H7 deliberate Preview and production acceptance          queued
 ```
 
-Phase 10–15 are governed by `post-watchlist-program-plan.md`. No next major feature is approved. Category/Game, Observed Runs, Event, Language, and Alerts require a later data-capability audit and explicit approval.
+Phase 10–15 are governed by `post-watchlist-program-plan.md`. No next major feature is approved.
