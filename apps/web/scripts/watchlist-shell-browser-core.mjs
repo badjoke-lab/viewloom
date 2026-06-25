@@ -172,7 +172,9 @@ try {
   await page.waitForFunction(() => document.querySelector('[data-channel-state]')?.textContent !== 'Loading')
   const channelRequestsBeforeSave = calls.api.length
   await page.getByRole('button', { name: 'Save to Watchlist' }).click()
-  await page.getByRole('link', { name: /Saved in Watchlist/ }).waitFor()
+  const savedLink = page.locator('[data-channel-watchlist-action] a')
+  await savedLink.waitFor()
+  check((await savedLink.innerText()) === 'Saved in Watchlist', 'Channel save did not become the management link.')
   check(calls.api.length === channelRequestsBeforeSave, 'Channel save made a feature-data request.')
   check((await readStoredDocument(page, 'twitch')).entries[0].channelId === 'alpha', 'Channel save did not write the Twitch Watchlist key.')
   check((await page.locator('[data-channel-watchlist-feedback]').innerText()).includes('No data request was made.'), 'Channel save feedback does not state the no-request contract.')
