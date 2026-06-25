@@ -1,12 +1,11 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map
+Last updated: 2026-06-26
 
-This file defines which repository documents govern current ViewLoom work. Older design notes, screenshots, imported plans, completed milestone records, and chat memory do not override the documents listed here.
+This file defines which repository documents govern current ViewLoom work. Chat memory, screenshots, old PRs, imported plans, and completed milestone notes do not override this index.
 
 ## Required reading order
-
-Before changing ViewLoom, read:
 
 1. [`operations/development-and-deployment-policy.md`](operations/development-and-deployment-policy.md)
 2. [`operations/development-policy-addendum.md`](operations/development-policy-addendum.md)
@@ -14,55 +13,71 @@ Before changing ViewLoom, read:
 4. [`product/current-roadmap.md`](product/current-roadmap.md)
 5. [`product/current-schedule.md`](product/current-schedule.md)
 6. [`product/post-watchlist-program-plan.md`](product/post-watchlist-program-plan.md)
-7. the affected permanent baseline specification
-8. any active repair or feature specification
-9. the affected implementation or repair plan
-10. any active temporary note under `work-in-progress/`
-11. the relevant audit records under `audits/`
+7. affected permanent baseline specification
+8. active repair or feature specification
+9. affected implementation plan
+10. active note under `work-in-progress/`
+11. relevant audit records under `audits/`
 
-## Current canonical program and product documents
+## Canonical program and product documents
 
 - [`product/current-roadmap.md`](product/current-roadmap.md) — product priority and ordered roadmap
-- [`product/current-schedule.md`](product/current-schedule.md) — exact current state, next branch, entry criteria, and completion criteria
-- [`product/post-watchlist-program-plan.md`](product/post-watchlist-program-plan.md) — complete approved Phase 7–15 execution program and repository-comparison rule
-- [`product/history-and-trends-spec.md`](product/history-and-trends-spec.md) — accepted History production baseline specification
-- [`product/history-layout-rebuild-plan.md`](product/history-layout-rebuild-plan.md) — completed H1–H7 History baseline implementation record
-- [`product/history-ui-repair-spec.md`](product/history-ui-repair-spec.md) — approved active History UI repair target
-- [`product/history-ui-repair-plan.md`](product/history-ui-repair-plan.md) — active Phase 7–9 History repair subplan
-- [`product/channel-and-streamer-spec.md`](product/channel-and-streamer-spec.md) — accepted Channel / Streamer v1 specification
-- [`product/channel-v1-implementation-plan.md`](product/channel-v1-implementation-plan.md) — completed Channel v1 implementation record
-- [`product/report-export-consolidation-plan.md`](product/report-export-consolidation-plan.md) — completed Phase 4 consolidation record
-- [`product/next-feature-data-capability-audit.md`](product/next-feature-data-capability-audit.md) — completed Phase 5 audit; not an implementation authorization for deferred features
-- [`product/local-watchlist-spec.md`](product/local-watchlist-spec.md) — accepted permanent Local Watchlist v1 contract
-- [`product/watchlist-v1-implementation-plan.md`](product/watchlist-v1-implementation-plan.md) — completed W0–W5 implementation record
-- [`../apps/web/docs/watchlist-latest-w2a-contract.md`](../apps/web/docs/watchlist-latest-w2a-contract.md) — accepted latest-observation contract
-- [`../apps/web/docs/watchlist-history-w2b-contract.md`](../apps/web/docs/watchlist-history-w2b-contract.md) — accepted retained-History contract
+- [`product/current-schedule.md`](product/current-schedule.md) — exact active window, branch, completion criteria, and next branch
+- [`product/post-watchlist-program-plan.md`](product/post-watchlist-program-plan.md) — complete Phase 7–15 program
+- [`product/history-and-trends-spec.md`](product/history-and-trends-spec.md) — accepted History baseline
+- [`product/history-layout-rebuild-plan.md`](product/history-layout-rebuild-plan.md) — completed H1–H7 baseline record
+- [`product/history-ui-repair-spec.md`](product/history-ui-repair-spec.md) — approved active repair target
+- [`product/history-ui-repair-plan.md`](product/history-ui-repair-plan.md) — active Phase 7–9 subplan
+- [`product/channel-and-streamer-spec.md`](product/channel-and-streamer-spec.md) — accepted Channel v1 contract
+- [`product/channel-v1-implementation-plan.md`](product/channel-v1-implementation-plan.md) — completed Channel v1 record
+- [`product/report-export-consolidation-plan.md`](product/report-export-consolidation-plan.md) — completed shared-output record
+- [`product/next-feature-data-capability-audit.md`](product/next-feature-data-capability-audit.md) — completed Phase 5 audit, not feature authorization
+- [`product/local-watchlist-spec.md`](product/local-watchlist-spec.md) — accepted Watchlist v1 contract
+- [`product/watchlist-v1-implementation-plan.md`](product/watchlist-v1-implementation-plan.md) — completed W0–W5 record
+- [`../apps/web/docs/watchlist-latest-w2a-contract.md`](../apps/web/docs/watchlist-latest-w2a-contract.md)
+- [`../apps/web/docs/watchlist-history-w2b-contract.md`](../apps/web/docs/watchlist-history-w2b-contract.md)
 
-## Completed Phase 8 P8A audit records
+## Phase 8 audit records
 
-- [`audits/P8A_SCOPE.md`](audits/P8A_SCOPE.md) — P8A no-repair boundary and handoff
-- [`audits/README.md`](audits/README.md) — public-surface inventory package index
-- [`audits/public-surface-inventory.json`](audits/public-surface-inventory.json) — canonical machine-readable inventory manifest
-- [`audits/public-surface-inventory.md`](audits/public-surface-inventory.md) — human-readable findings and P8B handoff
-- [`audits/public-surface-gaps.json`](audits/public-surface-gaps.json) — missing surfaces and acceptance gaps
-- `audits/public-surface-routes-*.json` — Portal, Twitch, and Kick route records
-- `audits/public-surface-profiles-*.json` — shared owner, control, state, gate, assessment, and gap profiles
+Completed P8A baseline:
 
-These records remain authoritative input to P8B. P8B adds browser evidence and classifications; it must not silently rewrite the static inventory without updating the package and verifier.
+- [`audits/P8A_SCOPE.md`](audits/P8A_SCOPE.md)
+- [`audits/public-surface-inventory.json`](audits/public-surface-inventory.json)
+- [`audits/public-surface-inventory.md`](audits/public-surface-inventory.md)
+- [`audits/public-surface-gaps.json`](audits/public-surface-gaps.json)
+- `audits/public-surface-routes-*.json`
+- `audits/public-surface-profiles-*.json`
 
-## Active temporary working note
+Active P8B package:
 
-- [`work-in-progress/history-ui-repair-working-note.md`](work-in-progress/history-ui-repair-working-note.md) — active defect, ownership, branch-progress, and visual-QA memory for the History repair program
+- [`audits/P8B_SCOPE.md`](audits/P8B_SCOPE.md) — active browser-audit boundary and completion criteria
+- [`../apps/web/scripts/public-browser-audit.mjs`](../apps/web/scripts/public-browser-audit.mjs) — browser evidence generator
+- [`../scripts/verify-public-browser-audit.mjs`](../scripts/verify-public-browser-audit.mjs) — repository verifier
+- [`../.github/workflows/public-browser-audit.yml`](../.github/workflows/public-browser-audit.yml) — latest-head browser workflow
 
-This note must be updated when an audit or repair branch discovers or resolves a material History decision. It is deleted in P9H7 after stable decisions and evidence move into permanent documentation.
+Required before P8B completion:
 
-There is no active Local Watchlist, old History rebuild, Channel v1, Report & Export consolidation, or Phase 5 capability-audit working note.
+```text
+audits/public-browser-defects.json
+audits/public-browser-audit.md
+GitHub Actions artifact public-browser-audit-p8b
+```
+
+P8B adds browser evidence and defect classifications. It may not silently rewrite the P8A inventory or mix product repair into the audit.
+
+## Active temporary note
+
+- [`work-in-progress/history-ui-repair-working-note.md`](work-in-progress/history-ui-repair-working-note.md) — active History defects, source hypotheses, ownership, evidence, and branch progress
+
+Delete this note in P9H7 after stable decisions and evidence move into permanent documentation.
+
+There is no active Local Watchlist, old History rebuild, Channel v1, Report & Export, or Phase 5 working note.
 
 ## Permanent acceptance records
 
 - [`operations/cloudflare-verification-2026-06-21.md`](operations/cloudflare-verification-2026-06-21.md)
 - [`operations/production-smoke-runbook.md`](operations/production-smoke-runbook.md)
-- [`operations/history-production-acceptance-2026-06-23.md`](operations/history-production-acceptance-2026-06-23.md) — accepted History baseline, not completion of the active repair
+- [`operations/history-production-acceptance-2026-06-23.md`](operations/history-production-acceptance-2026-06-23.md) — accepted baseline, not active repair completion
 - [`operations/channel-production-acceptance-2026-06-23.md`](operations/channel-production-acceptance-2026-06-23.md)
 - [`operations/report-export-consolidation-acceptance-2026-06-24.md`](operations/report-export-consolidation-acceptance-2026-06-24.md)
 - [`operations/watchlist-production-acceptance-2026-06-25.md`](operations/watchlist-production-acceptance-2026-06-25.md)
@@ -71,11 +86,12 @@ There is no active Local Watchlist, old History rebuild, Channel v1, Report & Ex
 
 ```text
 Phase 6  Local Watchlist v1                               complete through PR #425
-Phase 7  source-of-truth reset and repair-program lock    complete through PR #426
-Phase 8  public surface inventory and browser audit       P8A complete through PR #427
+Phase 7  source-of-truth reset                            complete through PR #426
+Phase 8  public inventory and browser audit               active
 P8A      work-public-surface-inventory                     complete PR #427
-P8B      work-public-browser-audit                         exact next branch
-Phase 9  P0/P1 repair; History UI central track           approved and queued
+P8B      work-public-browser-audit                         active
+P9H0     work-history-ui-h0-baseline                       exact next after P8B
+Phase 9  P0/P1 repair; History central track              queued
 Phase 10 cross-site UI consolidation                      queued
 Phase 11 operations and maintenance lock                  queued
 Phase 12 Support/legal/Stripe/release readiness           queued
@@ -84,96 +100,60 @@ Phase 14 next-feature capability audit                    queued
 Phase 15 next major feature                               not approved
 ```
 
-Exact next branch after the P8A merge report and explicit continuation:
+P8B exact next branch after completion:
 
 ```text
-work-public-browser-audit
+work-history-ui-h0-baseline
 ```
 
-Do not create it before explicit continuation.
+A newly proven P0 may interrupt. Do not create P9H0 before the P8B merge report and explicit continuation.
 
-## P8A stable findings
+## P8B scope summary
 
 ```text
-20 Vite HTML inputs
-1 explicit 404 page
-21 owned inventory entries
-16 indexable routes
-4 explicit noindex utility routes
-16 sitemap routes
-18 Public Readiness configured pages
-13 Production Smoke page routes
+21 owned routes
+4 required widths: 1440 / 820 / 390 / 360
+84 production route scenarios
+5 missing-surface probes
+10 deterministic History scenarios
 ```
 
-P8A also records:
-
-- both Watchlist routes are omitted from Public Readiness;
-- About, Support, Changelog, Channel, and Watchlist routes are omitted from the general Production Smoke page list;
-- no single permanent 1440/820/390/360 browser matrix covers every major public route and required state;
-- History remains an approved P1 surface despite broad legacy workflow coverage;
-- repository-owned Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent.
-
-## Approved History repair classification
-
-The following are P1 defects:
-
-- metric controls do not produce a sufficiently observable, trustworthy page-wide change;
-- the main chart lacks readable scale, ticks, units, and interaction cues;
-- chart-side information is too thin or placeholder-like;
-- lower-page regions are sparse or unclear in purpose;
-- desktop and mobile do not yet form one coherent analysis workflow.
-
-Additional screenshots may refine styling but are not required before functional and information-architecture repair begins.
+Known History defects remain P1. P8B captures exact reproduction, ownership, existing gates, and missing assertions; it does not repair them.
 
 ## Repository-comparison rule
 
 Before a branch changes code or public behavior:
 
-- compare `current-schedule.md` with the branch and PR that actually exist;
-- compare the active plan's required deliverables with repository files and workflows;
+- compare `current-schedule.md` with actual branches and PRs;
+- compare plan deliverables with files, workflows, artifacts, and production identity;
 - record missing work before implementation;
-- update the schedule first when the repository has advanced beyond its documented state;
-- keep the exact next branch visible in the schedule, program plan, affected plan, and working note.
+- update documents first when state has advanced;
+- keep the exact next branch visible in schedule, program plan, affected plan, and working note.
 
 ## Temporary-note lifecycle
 
-When associated work completes:
+At milestone completion:
 
-1. transfer stable behavior and decisions into permanent specifications or operations records;
-2. update roadmap, schedule, and the program plan;
-3. resolve or explicitly defer remaining questions;
-4. delete the temporary note in the completion PR;
-5. remove its link from this index.
-
-A completed temporary note must not remain as a competing source of truth.
+1. transfer stable behavior and decisions into permanent documents;
+2. update roadmap, schedule, and program plan;
+3. resolve or defer remaining questions;
+4. delete completed temporary notes;
+5. unlink them from this index.
 
 ## Document precedence
 
-1. development and deployment policy
-2. later verified policy addendum
-3. this documentation index and documentation governance
-4. current roadmap
-5. current schedule
-6. post-Watchlist program plan
-7. active permanent repair specification
-8. accepted baseline feature specification
-9. affected implementation or repair plan
-10. active temporary note
-11. active audit records
-12. completed milestone records and older files
+1. development/deployment policy and later verified addendum
+2. this index and documentation governance
+3. current roadmap
+4. current schedule
+5. post-Watchlist program plan
+6. active repair specification
+7. accepted baseline specification
+8. affected implementation plan
+9. active working note
+10. active audit records
+11. completed milestone records
 
-A lower-level document may add detail but may not contradict a higher-level authority.
+## Documentation-first execution
 
-## Documentation-first execution rule
-
-Implementation must not begin from chat memory, screenshots, or an old PR alone.
-
-Before each work branch:
-
-- read the current authorities in the required order;
-- confirm the roadmap and schedule still place the work next;
-- confirm the active branch name and completion criteria;
-- compare planned deliverables with repository state;
-- update the active note when findings or decisions change;
-- reference the governing files in the PR description;
-- update or retire documents when implementation completes.
+Implementation must not begin from chat memory, screenshots, or an old PR alone. Every work branch confirms the scheduled branch, completion criteria, repository gaps, governing documents, and scope boundaries before changing code.
