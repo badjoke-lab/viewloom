@@ -1,7 +1,7 @@
 # ViewLoom current roadmap
 
 Status: source of truth
-Last updated: 2026-06-24
+Last updated: 2026-06-25
 
 ## 1. Current product state
 
@@ -31,7 +31,7 @@ Current feature state:
 | Channel / Streamer | v1 and production acceptance complete | preserve retained-footprint contract |
 | Report/export shared layer | R0–R4 complete through PR #413 | maintain exact contracts |
 | Phase 5 capability audit | complete through PR #414 | permanent decision recorded |
-| Local Watchlist v1 | W0 complete PR #415; W1 complete PR #416; W2A complete PR #417; W2B completion candidate PR #418 | W3A provider routes are next after merge report |
+| Local Watchlist v1 | W0 complete PR #415; W1 complete PR #416; W2A complete PR #417; W2B complete PR #418; W3A completion candidate PR #419 | W3B evidence UI is next after merge report |
 | Session / Category / Language / Event / Alerts | not approved for immediate implementation | data or infrastructure expansion required |
 
 Permanent records:
@@ -63,36 +63,38 @@ Local Watchlist v1:
   W1 PR: #416
   W2A PR: #417
   W2B PR: #418
+  W3A PR: #419
 ```
 
 ## 2. Immediate priority
 
-After PR #418 merges and its full report is issued, the next approved work window is:
+After PR #419 merges and its full report is issued, the next approved work window is:
 
 ```text
 Phase 6 — Local Watchlist v1
-W3A — provider routes and storage-first shell
-Branch: work-watchlist-w3a-routes
+W3B — evidence cards and approved entry points
+Branch: work-watchlist-w3b-ui
 State: next, not started
 ```
 
-W3A may add only:
+W3B may add only:
 
-- `/twitch/watchlist/` and `/kick/watchlist/` provider routes;
-- provider metadata, canonical URL, and `noindex,follow`;
-- existing masthead, provider breadcrumb, and unchanged primary feature tabs;
-- Watchlist hero, local-only storage explanation, provider/storage/source facts, add form, period controls, feedback regions, empty state, scope, privacy, and limitations;
-- W1 storage and URL-state connection;
-- the provider Home secondary utility link allowed by the implementation plan;
-- static and local responsive browser shell gates.
+- connect the existing W2 combined latest/History controller to both provider Watchlist routes;
+- render independent latest and retained evidence in each saved-channel card;
+- implement loading, present, stale, partial, absent, empty, error, and retry states using the permanent exact wording;
+- add explicit combined refresh and source-specific retry behavior;
+- add provider-safe card links;
+- add the approved additive `Save to Watchlist` / `Saved in Watchlist` control to Twitch and Kick Channel pages;
+- add browser verification for exact request counts, failure isolation, and Channel save behavior.
 
-W3A must not add:
+W3B must not add:
 
 - Watchlist as a primary feature tab;
-- Channel save actions or evidence-card completion;
-- saved ids in static HTML;
-- per-channel requests or polling;
-- API schema, D1, binding, collector, cron, or retention changes;
+- authoritative live/offline claims;
+- complete-history or exact-session claims;
+- per-channel data requests or polling;
+- new API schemas or endpoint meaning;
+- D1, binding, collector, cron, retention, or rollup changes;
 - speculative History UI changes.
 
 History UI appearance work remains pending because screenshots and detailed instructions are unavailable. Until those arrive:
@@ -190,9 +192,11 @@ Current state:
 W0 complete through PR #415
 W1 complete through PR #416
 W2A complete through PR #417
-W2B completion candidate in PR #418
-W3A next after merge report
-public Watchlist routes and visible UI not started
+W2B complete through PR #418
+W3A completion candidate in PR #419
+W3B next after merge report
+provider Watchlist routes and storage-first UI implemented locally
+feature evidence connection and Channel save action not started
 ```
 
 Permanent authorities:
@@ -297,6 +301,37 @@ Accepted W2B behavior:
 - latest and History failures remain isolated;
 - no route, UI, API implementation, per-channel request, polling, or History visual change.
 
+### W3A provider routes and storage-first shell
+
+```text
+apps/web/twitch/watchlist/index.html
+apps/web/kick/watchlist/index.html
+apps/web/src/live/watchlist-page.ts
+apps/web/src/live/watchlist-move-focus.ts
+apps/web/src/watchlist-page.css
+apps/web/src/watchlist-touch.css
+apps/web/src/provider-watchlist-link.css
+apps/web/scripts/verify-watchlist-page.mjs
+apps/web/scripts/watchlist-shell-browser-core.mjs
+apps/web/scripts/watchlist-shell-browser-narrow.mjs
+.github/workflows/watchlist-page.yml
+```
+
+W3A completion-candidate behavior:
+
+- provider-specific canonical routes with `noindex,follow`;
+- unchanged core feature tabs and no Watchlist primary tab;
+- saved ids never embedded in route HTML, metadata, or URL state;
+- browser-local provider-separated storage shell;
+- add, remove, move, clear, reset, filter, show-all/show-recent, repair, and cross-tab update behavior;
+- 7d/30d URL state with Back/Forward restoration;
+- storage, latest, and History feedback regions kept separate;
+- feature-data requests deliberately disabled until W3B;
+- empty and populated W3A shells make zero feature-data requests;
+- provider Home secondary utility link follows the core feature directory;
+- keyboard focus and 360px responsive browser checks pass;
+- no API, D1, binding, collector, cron, retention, or History visual change.
+
 Approved entry points:
 
 ```text
@@ -312,9 +347,9 @@ Implementation sequence:
 W0   specification and plan                         complete PR #415
 W1   local model, storage, and URL state            complete PR #416
 W2A  latest Heatmap adapter and request foundation complete PR #417
-W2B  History adapter and combined evidence         completion candidate PR #418
-W3A  provider routes and storage-first shell       next
-W3B  evidence cards and approved entry points      queued
+W2B  History adapter and combined evidence         complete PR #418
+W3A  provider routes and storage-first shell       completion candidate PR #419
+W3B  evidence cards and approved entry points      next
 W3C  responsive/accessibility candidate pass       queued
 W4A  executable contract closure                   queued
 W4B  complete local browser candidate QA           queued
@@ -322,7 +357,7 @@ W5A  hosted preview-watchlist-v1 acceptance        queued
 W5B  production acceptance and document cleanup    queued
 ```
 
-W3A introduces visible routes and requires responsive local browser validation. Deliberate hosted `preview-watchlist-v1` acceptance remains scheduled for W5A unless a verified blocker requires an earlier Preview.
+W3A introduces visible routes and has passed responsive local browser validation. Deliberate hosted `preview-watchlist-v1` acceptance remains scheduled for W5A unless a verified blocker requires an earlier Preview.
 
 ## 5. Work not scheduled for immediate implementation
 
