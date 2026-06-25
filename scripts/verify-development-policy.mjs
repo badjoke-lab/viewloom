@@ -104,16 +104,10 @@ for (const path of retiredNotes) assert(!existsSync(join(root, path)), `Retired 
 
 if (failures.length === 0) {
   requireFragments('docs/operations/development-and-deployment-policy.md', [
-    'Status: source of truth',
-    '`work-*`',
-    '`preview-*`',
-    '`main` is the production branch',
-    'Twitch and Kick remain separate',
+    'Status: source of truth', '`work-*`', '`preview-*`', '`main` is the production branch', 'Twitch and Kick remain separate',
   ])
   requireFragments('docs/operations/documentation-governance.md', [
-    'Implementation must not begin from chat memory',
-    'Temporary-note lifecycle',
-    'delete the temporary note',
+    'Implementation must not begin from chat memory', 'Temporary-note lifecycle', 'delete the temporary note',
   ])
 
   const index = read('docs/README.md')
@@ -143,7 +137,6 @@ if (failures.length === 0) {
     'work-watchlist-w5-hosted',
     'preview-watchlist-v1',
     'viewloom-watchlist-hosted-preview-acceptance-v1',
-    '28162895177',
   ])
   requireFragments('docs/product/current-schedule.md', [
     'Local Watchlist W4B                      complete through PR #423',
@@ -175,97 +168,62 @@ if (failures.length === 0) {
   ])
 
   requireFragments('docs/product/local-watchlist-spec.md', [
-    '/twitch/watchlist/',
-    '/kick/watchlist/',
-    'viewloom.watchlist.twitch.v1',
-    'viewloom.watchlist.kick.v1',
-    'maximum entries: 50 per provider',
-    'initial visible entries: 12',
-    'Not confirmed offline',
-    'No complete history is implied',
-    'no per-channel request loop',
+    '/twitch/watchlist/', '/kick/watchlist/', 'viewloom.watchlist.twitch.v1', 'viewloom.watchlist.kick.v1',
+    'maximum entries: 50 per provider', 'initial visible entries: 12', 'Not confirmed offline',
+    'No complete history is implied', 'no per-channel request loop',
   ])
   requireFragments('docs/product/watchlist-v1-implementation-plan.md', [
     'Version: 1.5',
     'work-watchlist-w4-browser            complete PR #423',
     'work-watchlist-w5-hosted             completion candidate PR #424',
     'work-watchlist-w5-production         next after PR #424 merge report',
-    'W3A completion criteria',
-    'W3B completion criteria',
-    'W4A completion criteria',
-    'W4B completion criteria',
-    'W5A completion criteria',
+    'W3A completion criteria', 'W3B completion criteria', 'W4A completion criteria',
+    'W4B completion criteria', 'W5A completion criteria',
     'viewloom-watchlist-local-browser-acceptance-v1',
     'viewloom-watchlist-hosted-preview-acceptance-v1',
     '28162895177',
   ])
 
   requireFragments('apps/web/docs/watchlist-latest-w2a-contract.md', [
-    'viewloom-watchlist-latest-v1',
-    'zero valid saved entries -> zero requests',
+    'viewloom-watchlist-latest-v1', 'zero valid saved entries -> zero requests',
     'one through fifty saved entries -> exactly one provider request',
   ])
   requireFragments('apps/web/docs/watchlist-history-w2b-contract.md', [
-    'viewloom-watchlist-history-v1',
-    'present_retained',
-    'history_partial',
-    'period restore from page memory',
-    'A latest failure must not remove retained evidence.',
+    'viewloom-watchlist-history-v1', 'present_retained', 'history_partial',
+    'period restore from page memory', 'A latest failure must not remove retained evidence.',
   ])
 
   requireFragments('apps/web/src/live/watchlist-page.ts', [
-    'createWatchlistCombinedController',
-    'dataController.initialLoad',
-    'dataController.changePeriod',
-    'dataController.refresh',
-    'dataController.retryLatest',
-    'dataController.retryHistory',
-    'dataController.taskLocal',
-    'In latest observed set',
-    'Not confirmed offline',
-    'No complete history is implied',
-    'Retained History unavailable',
-    'Open Channel',
-    'Open History',
-    'Open Heatmap',
+    'createWatchlistCombinedController', 'dataController.initialLoad', 'dataController.changePeriod',
+    'dataController.refresh', 'dataController.retryLatest', 'dataController.retryHistory', 'dataController.taskLocal',
+    'In latest observed set', 'Not confirmed offline', 'No complete history is implied',
+    'Retained History unavailable', 'Open Channel', 'Open History', 'Open Heatmap',
   ])
   const pageSource = read('apps/web/src/live/watchlist-page.ts')
   assert((pageSource.match(/\bfetch\s*\(/g) ?? []).length === 1, 'Watchlist page must expose exactly one generic request seam')
   for (const forbidden of ['setInterval(', 'serviceWorker', 'gtag(']) assert(!pageSource.includes(forbidden), `Watchlist page contains forbidden behavior: ${forbidden}`)
 
   requireFragments('apps/web/src/live/channel-watchlist.ts', [
-    'Save to Watchlist',
-    'Saved in Watchlist',
-    'No data request was made.',
-    'addStoredWatchlistEntry',
-    'readWatchlistStorageEvent',
+    'Save to Watchlist', 'Saved in Watchlist', 'No data request was made.',
+    'addStoredWatchlistEntry', 'readWatchlistStorageEvent',
   ])
   const channelAction = read('apps/web/src/live/channel-watchlist.ts')
   for (const forbidden of ['fetch(', 'removeStoredWatchlistEntry', 'setInterval(', 'serviceWorker', 'gtag(']) assert(!channelAction.includes(forbidden), `Channel Watchlist action contains forbidden behavior: ${forbidden}`)
 
   requireFragments('apps/web/scripts/verify-watchlist-contracts.mjs', [
     'Watchlist W4A executable contract closure verification passed.',
-    'verifyNoServerExpansion()',
-    'verifyRuntimePrivacy()',
-    'verifyCandidateLayer()',
+    'verifyNoServerExpansion()', 'verifyRuntimePrivacy()', 'verifyCandidateLayer()', 'verifyHostedAcceptanceLayer()',
   ])
   requireFragments('apps/web/scripts/watchlist-browser-acceptance.mjs', [
     'viewloom-watchlist-local-browser-acceptance-v1',
-    'verifyTwitchIntegratedDesktop',
-    'verifyKickTabletAndChannel',
-    'verifyKickMobile',
-    'verifyStorageUnavailable',
+    'verifyTwitchIntegratedDesktop', 'verifyKickTabletAndChannel', 'verifyKickMobile', 'verifyStorageUnavailable',
   ])
   requireFragments('apps/web/scripts/watchlist-cloudflare-preview.mjs', [
     'viewloom-watchlist-hosted-preview-acceptance-v1',
     'preview-watchlist-v1',
     'c75b4549bb50d7eb54c0135874dba63db0b7cc69',
-    'DB_TWITCH_HOT',
-    'DB_KICK_HOT',
-    'twitch-desktop-hosted',
-    'kick-mobile-hosted',
-    'kick-channel-save-hosted',
-    'additionalRequestsOnSave',
+    'DB_TWITCH_HOT', 'DB_KICK_HOT',
+    'verifyWatchlist', 'verifyChannelSave', 'additionalRequestsOnSave',
   ])
   requireFragments('.github/workflows/watchlist-hosted-preview.yml', [
     'name: Watchlist Hosted Preview',
@@ -287,10 +245,7 @@ if (failures.length === 0) {
     ]) assert(source.includes(path), `${entryPath}: canonical link missing: ${path}`)
   }
   requireFragments('.github/pull_request_template.md', [
-    '## Governing documents',
-    'Roadmap phase:',
-    'Schedule window:',
-    'Active working note, if any:',
+    '## Governing documents', 'Roadmap phase:', 'Schedule window:', 'Active working note, if any:',
     'Unnecessary Cloudflare Preview deployments were not requested',
   ])
 }
