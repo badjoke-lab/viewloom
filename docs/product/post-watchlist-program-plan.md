@@ -1,12 +1,13 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 1.0
+Version: 1.1
 Created: 2026-06-25
+Last updated: 2026-06-26
 Current phase: Phase 8 — public surface inventory and browser defect audit
-Current window: P8A
-Current branch: `work-public-surface-inventory`
-Completed predecessor: Phase 7 P7A through PR #426
+Completed window: P8A through PR #427
+Exact next window: P8B
+Exact next branch: `work-public-browser-audit`
 
 ## 1. Purpose
 
@@ -18,24 +19,25 @@ This document records the approved execution program after Local Watchlist v1 an
 - the acceptance evidence already present;
 - the work still missing before the next phase may begin.
 
-`current-roadmap.md` owns product priority. `current-schedule.md` owns the exact active window and next branch. This file owns the complete Phase 7–15 program. Feature-specific plans, such as `history-ui-repair-plan.md`, add detail without overriding this program.
+`current-roadmap.md` owns product priority. `current-schedule.md` owns exact current state and the next branch. This file owns the complete Phase 7–15 program. Feature-specific plans add detail without overriding it.
 
 ## 2. Repository comparison rule
 
 Before each branch begins:
 
 1. read `docs/README.md` in the required order;
-2. confirm `current-roadmap.md`, `current-schedule.md`, this program, the affected specification, and the active working note agree;
+2. confirm roadmap, schedule, this program, affected specification, affected plan, working note, and audit records agree;
 3. confirm the expected predecessor PR is merged;
-4. confirm the active branch is the branch named in `current-schedule.md`;
-5. compare required deliverables with repository files, workflows, artifacts, and production identity;
-6. record missing work before implementation;
-7. update schedule state before product changes when the repository has advanced beyond the documented state.
+4. confirm explicit continuation exists;
+5. confirm the branch named by the schedule does not already conflict with repository state;
+6. compare required deliverables with repository files, workflows, artifacts, and production identity;
+7. record missing work before implementation;
+8. update documentation first when the repository has advanced beyond documented state.
 
 After each merge:
 
 1. issue the full merge report;
-2. mark the completed branch and PR in the roadmap, schedule, program plan, affected plan, and working note;
+2. mark the completed branch and PR in roadmap, schedule, this program, affected plan, and working note;
 3. name the exact next branch;
 4. stop;
 5. do not create the next branch until explicit continuation.
@@ -45,8 +47,8 @@ After each merge:
 | Phase | Window | State | Branch / authority | Exit condition |
 |---|---|---|---|---|
 | 7 | P7A | complete PR #426 | `work-history-ui-repair-governance` | post-Watchlist authorities and History P1 program locked |
-| 8 | P8A | active | `work-public-surface-inventory` | machine-readable public-surface inventory complete |
-| 8 | P8B | next | `work-public-browser-audit` | browser evidence and ordered defect ledger complete |
+| 8 | P8A | complete PR #427 | `work-public-surface-inventory` | machine-readable public-surface inventory complete |
+| 8 | P8B | exact next | `work-public-browser-audit` | browser evidence and ordered defect ledger complete |
 | 9 | P9H0–P9H7 | queued | `history-ui-repair-plan.md` | History P1 repair accepted in production |
 | 9 | narrow non-History repairs | conditional | branch named from P8B defect ledger | each approved P0/P1 accepted |
 | 10 | U10A–U10E | queued | cross-site UI consolidation | shared visual/interaction system accepted |
@@ -56,7 +58,7 @@ After each merge:
 | 14 | N14A–N14B | queued | next-feature audit | zero or one candidate approved |
 | 15 | feature-specific | not approved | new specification required | separately approved feature accepted |
 
-## 4. Phase 7 — source-of-truth reset
+## 4. Phase 7 — completed source reset
 
 ### P7A — governance and repair-program lock
 
@@ -81,39 +83,52 @@ Completed deliverables:
 
 Phase 8 records what exists before repair. It does not mix audit and product repair.
 
-### P8A — public surface inventory
+### P8A — completed public surface inventory
 
 ```text
 branch: work-public-surface-inventory
-state: active
+PR: #427
+state: complete
 exact next branch: work-public-browser-audit
 ```
 
-Required deliverables:
+Completed deliverables:
 
-- canonical route inventory covering Portal, provider homes, Heatmap, Day Flow, Battle Lines, History, Channel, Watchlist, Status, About, Support/policy surfaces, and 404;
-- provider, route, title, canonical, robots, entry point, API, control, state, owner, workflow, Preview, production, and gap fields;
-- separate route and reusable profile records;
+- canonical route inventory covering Portal, provider homes, Heatmap, Day Flow, Battle Lines, History, Channel, Watchlist, Status, About, Support, policy gaps, and 404;
+- provider, route, title, canonical, robots, API, controls, states, owners, workflows, Preview, production, and gap evidence;
+- separate route records and reusable profiles;
 - explicit missing-surface and missing-acceptance ledger;
 - human-readable inventory report;
 - machine-readable manifest;
 - validation script and CI workflow;
 - no runtime UI, API, D1, collector, cron, retention, binding, or Preview change.
 
-Completion criteria:
+Inventory totals:
 
-- every public route has an owner and acceptance status;
-- metadata, APIs, controls, states, and entry points are explicit;
-- History contains Overview, Archives, Report & Export, periods, metrics, chart, selected day, comparison, calendar, rankings, coverage, and outputs;
-- missing browser/state coverage is explicit rather than inferred;
-- inventory validation passes on the latest branch head;
-- P8B is named as the exact next branch.
+```text
+20 Vite HTML inputs
+1 explicit 404 page
+21 owned inventory entries
+16 indexable routes
+4 noindex utility routes
+16 sitemap routes
+18 Public Readiness configured pages
+13 Production Smoke page routes
+```
+
+Stable P8A gaps:
+
+- both Watchlist routes are omitted from Public Readiness;
+- About, Support, Changelog, Channel, and Watchlist are omitted from the general Production Smoke page list;
+- no single permanent browser matrix covers all major routes at 1440, 820, 390, and 360 pixels across required states;
+- History remains an approved P1 surface despite broad legacy coverage;
+- repository-owned Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent.
 
 ### P8B — public browser defect audit
 
 ```text
 branch: work-public-browser-audit
-state: next after P8A merge report
+state: exact next after explicit continuation
 ```
 
 Required viewports:
@@ -136,6 +151,8 @@ missing
 demo
 error
 loading
+storage unavailable
+long content
 ```
 
 Required interaction checks:
@@ -145,9 +162,9 @@ Required interaction checks:
 - chart scale, units, ticks, tooltip/day detail, and selected-day synchronization;
 - filters, sorting, task and archive navigation;
 - copy, share, PNG, CSV, JSON, and deep links;
-- keyboard, focus, touch targets, reduced motion, long text, and overflow;
+- keyboard, focus, touch targets, reduced motion, contrast, long text, and overflow;
 - Twitch/Kick separation;
-- Home, Channel, Watchlist, Status, support, and error entry points.
+- Home, Channel, Watchlist, Status, support, policy, and error entry points.
 
 Defect classification:
 
@@ -160,8 +177,10 @@ P3  deferred improvement or feature request
 
 Completion criteria:
 
+- exact browser evidence exists for all major route/viewport combinations;
 - every P0/P1 has exact reproduction evidence;
-- affected routes, states, owners, files, and workflows are identified;
+- affected route, state, viewport, owner, file, existing gate, and missing assertion are recorded;
+- provider separation and bounded claims remain exact;
 - the repair queue is ordered;
 - History defects remain P1 without another approval gate;
 - P9H0 is next unless a newly discovered P0 interrupts.
@@ -257,7 +276,7 @@ Begin only after Phase 9 P0/P1 acceptance.
 ### U10A — design tokens and component audit
 
 - typography, spacing, surfaces, borders, radii, buttons, segmented controls, status pills, focus, loading, empty, partial, and error patterns;
-- document differences that are intentional provider accents versus accidental drift.
+- document intentional provider accents versus accidental drift.
 
 ### U10B — data-visualization grammar
 
@@ -330,49 +349,22 @@ Record channel, date, views, clicks, responses, misunderstood functions, defects
 
 Classify feedback as bug, copy problem, UX problem, data-capability request, or new-feature request. P0/P1 may interrupt. Requests do not automatically change the roadmap.
 
-## 11. Phase 14 — next-feature capability audit
+## 11. Phase 14 — next-feature data-capability audit
 
 ### N14A — candidate audit
 
-Evaluate Category/Game Trends, Observed Runs, Event Layer, Language Trends, and Alerts against provider source parity, collector requirements, D1 growth, rollups, Cloudflare Free limits, data honesty, user value, overlap, and maintenance cost.
+Evaluate one candidate at a time for provider source parity, D1 growth, collector changes, rollups, Cloudflare Free limits, data honesty, user value, overlap, and maintenance cost.
 
-### N14B — single decision
+### N14B — decision
 
-Approve zero or one candidate. Record reasons, required data changes, storage budget, non-goals, and entry criteria. Do not approve multiple major features in parallel.
+Approve zero or one candidate. Deferral remains valid.
 
 ## 12. Phase 15 — separately approved feature
 
 Phase 15 has no approved implementation branch.
 
-A candidate begins only after:
+It begins only when Phase 14 approves one candidate, a permanent specification and branch sequence exist, and the user explicitly authorizes implementation.
 
-- Phase 14 approves it;
-- a permanent feature specification exists;
-- collection and storage changes are budgeted and approved;
-- a branch/PR sequence is added to the roadmap and schedule;
-- the user explicitly authorizes implementation.
+## 13. Current stop rule
 
-Category/Game Trends is a possible candidate, not a current authorization.
-
-## 13. Interrupt and scope rules
-
-- P0 interrupts immediately.
-- P1 may reorder the active repair phase when it blocks acceptance.
-- P2 waits for the relevant quality phase unless it blocks P1 acceptance.
-- P3 remains deferred.
-- a new API, D1 schema, collector field, cron, retention rule, binding, exact-session claim, cross-provider total, login, alert, or AI interpretation requires specification and roadmap approval before implementation.
-
-## 14. Program completion rule
-
-The program is not considered complete merely because code exists. Every scheduled phase requires:
-
-- repository documents showing the actual current state;
-- exact branch and predecessor PR;
-- machine-readable validation where practical;
-- browser and state evidence where applicable;
-- latest-head CI;
-- deliberate Preview only where required;
-- exact production identity for public completion;
-- permanent evidence transfer;
-- temporary-note cleanup;
-- full merge report and explicit continuation before the next branch.
+P8A is complete through PR #427. After the merge report, stop. Do not create `work-public-browser-audit` until explicit continuation.
