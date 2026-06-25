@@ -71,7 +71,7 @@ Exception: a newly proven P0 may interrupt
 
 P8B is an audit branch. It captures exact browser evidence, classifies defects, and produces the ordered Phase 9 queue. It does not repair product UI or alter data/runtime contracts.
 
-## 4. Approved History P1 defects
+## 4. Known History defects remain P1
 
 The following remain approved without another product gate:
 
