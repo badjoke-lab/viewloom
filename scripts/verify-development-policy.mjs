@@ -119,7 +119,7 @@ requireFragments('docs/product/local-watchlist-spec.md', [
   'per-channel requests', 'production acceptance run: 28166806560',
 ])
 requireFragments('docs/product/watchlist-v1-implementation-plan.md', [
-  'Status: completed implementation record', 'Version: 2.0',
+  'Status: completed implementation record', 'Version: 2.1',
   'work-watchlist-w5-hosted             complete PR #424',
   'work-watchlist-w5-production         completion PR #425',
   'viewloom-watchlist-production-acceptance-v1', '28166806560',
