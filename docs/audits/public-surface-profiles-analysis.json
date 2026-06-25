@@ -1,0 +1,53 @@
+{
+  "schema": "viewloom-public-surface-profiles-v1",
+  "version": 1,
+  "group": "analysis",
+  "gates": {
+    "common_repository": [".github/workflows/web-build.yml", ".github/workflows/web-verification.yml", ".github/workflows/platform-naming.yml"],
+    "public_readiness": [".github/workflows/public-readiness-audit.yml", "apps/web/scripts/public-readiness-audit.mjs"],
+    "production_smoke": [".github/workflows/production-smoke.yml"],
+    "heatmap_contract": ["apps/web/scripts/verify-heatmap-qa.mjs", "apps/web/scripts/verify-heatmap-boundaries.mjs", "apps/web/scripts/verify-heatmap-data-state.mjs", "apps/web/scripts/verify-heatmap-wide-layout.mjs", "apps/web/scripts/verify-heatmap-mobile-accessibility.mjs", "apps/web/scripts/verify-heatmap-final-cutover.mjs"],
+    "dayflow_contract": ["apps/web/scripts/verify-dayflow-qa.mjs"],
+    "battle_contract": ["apps/web/scripts/verify-battle-lines-qa.mjs"],
+    "status_contract": [".github/workflows/data-status-page.yml", "apps/web/scripts/verify-status-qa.mjs"],
+    "status_browser": [".github/workflows/data-status-browser.yml"]
+  },
+  "profiles": {
+    "heatmap": {
+      "owner": ["apps/web/src/live/heatmap-current-shell-entry.ts", "apps/web/src/features/heatmap-page/controller.ts", "apps/web/src/live/twitch-heatmap.ts"],
+      "data": ["provider Heatmap Pages Function"],
+      "controls": ["Wide/Split", "map controls", "tile selection", "inspector", "auto refresh"],
+      "states": ["loading", "live", "partial", "stale", "empty", "not_ready", "demo", "error"],
+      "gates": ["common_repository", "public_readiness", "heatmap_contract", "production_smoke"],
+      "assessment": "partial",
+      "gaps": ["fragmented checks; no one all-state/all-viewport browser gate", "no route-specific Preview gate"]
+    },
+    "day_flow": {
+      "owner": ["apps/web/src/live/day-flow-current-shell-entry.ts", "apps/web/src/live/day-flow-layout-summary.ts"],
+      "data": ["provider Day Flow Pages Function"],
+      "controls": ["range", "date", "bucket", "top", "Volume/Share", "scope", "layout", "auto", "refresh", "chart selection"],
+      "states": ["loading", "live", "partial", "stale", "empty", "not_ready", "error"],
+      "gates": ["common_repository", "public_readiness", "dayflow_contract", "production_smoke"],
+      "assessment": "partial",
+      "gaps": ["no consolidated 1440/820/390/360 state gate", "no route-specific Preview gate"]
+    },
+    "battle_lines": {
+      "owner": ["apps/web/src/live/battle-lines-current-shell-entry.ts", "apps/web/src/live/battle-lines-layout.ts", "apps/web/src/navigation/battle-lines-deep-link-bridge.ts"],
+      "data": ["provider Battle Lines Pages Function"],
+      "controls": ["range", "metric", "top", "bucket", "layout", "recommended", "latest", "refresh", "chart/reversal/battle selection"],
+      "states": ["loading", "live", "partial", "stale", "empty", "not_ready", "error", "observed", "offline", "not_observed", "missing"],
+      "gates": ["common_repository", "public_readiness", "battle_contract", "production_smoke"],
+      "assessment": "partial",
+      "gaps": ["no complete route state/viewport matrix", "no route-specific Preview gate"]
+    },
+    "status": {
+      "owner": ["apps/web/src/live/status-current-shell-entry.ts", "apps/web/src/live/status-page-enhancer.ts"],
+      "data": ["provider Status Pages Function"],
+      "controls": ["feature status links"],
+      "states": ["loading", "fresh", "partial", "stale", "empty", "unconfigured", "error"],
+      "gates": ["common_repository", "public_readiness", "status_contract", "status_browser", "production_smoke"],
+      "assessment": "partial",
+      "gaps": ["production checks API/binding/freshness, not all UI states", "no route-specific Preview gate"]
+    }
+  }
+}
