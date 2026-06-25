@@ -1,7 +1,7 @@
 # ViewLoom current roadmap
 
 Status: source of truth
-Last updated: 2026-06-25
+Last updated: 2026-06-26
 
 ## 1. Current product state
 
@@ -20,15 +20,15 @@ Verified production foundations:
 
 | Area | State | Roadmap meaning |
 |---|---|---|
-| Portal and provider homes | production core | Phase 8 inventory/audit, then verified defects only |
-| Heatmap | production core | Phase 8 inventory/audit, then verified defects only |
-| Day Flow | production core | Phase 8 inventory/audit, then verified defects only |
-| Battle Lines | production core | Phase 8 inventory/audit, then verified defects only |
-| History & Trends | production baseline accepted; public-quality P1 repair approved | Phase 9 central repair track |
-| Data Status | production core | Phase 8 inventory/audit, then verified defects only |
-| Channel / Streamer | v1 and production acceptance complete | preserve retained-footprint contract |
+| Portal and provider homes | production core; P8A inventoried | P8B browser audit, then verified defects only |
+| Heatmap | production core; P8A inventoried | P8B browser audit, then verified defects only |
+| Day Flow | production core; P8A inventoried | P8B browser audit, then verified defects only |
+| Battle Lines | production core; P8A inventoried | P8B browser audit, then verified defects only |
+| History & Trends | production baseline accepted; public-quality P1 repair approved | P8B reproduction, then Phase 9 central repair track |
+| Data Status | production core; P8A inventoried | P8B browser audit, then verified defects only |
+| Channel / Streamer | v1 and production acceptance complete; P8A inventoried | preserve retained-footprint contract and audit cross-site behavior |
 | Report/export shared layer | R0–R4 complete through PR #413 | preserve exact contracts during repair |
-| Local Watchlist v1 | W0–W5B complete through PR #425 | production accepted; maintain contracts |
+| Local Watchlist v1 | W0–W5B complete through PR #425; P8A inventoried | preserve accepted local/Preview/production contract |
 | Session / Category / Language / Event / Alerts | not approved for implementation | new data or infrastructure approval required |
 
 ## 2. Authority map
@@ -37,7 +37,7 @@ Verified production foundations:
 Product priority:
   docs/product/current-roadmap.md
 
-Exact active branch and next branch:
+Exact current state and next branch:
   docs/product/current-schedule.md
 
 Complete Phase 7–15 execution program:
@@ -48,8 +48,7 @@ History repair target and subplan:
   docs/product/history-ui-repair-plan.md
   docs/work-in-progress/history-ui-repair-working-note.md
 
-Current Phase 8 audit package:
-  docs/audits/P8A_SCOPE.md
+Completed P8A inventory package and P8B input:
   docs/audits/README.md
   docs/audits/public-surface-inventory.json
   docs/audits/public-surface-inventory.md
@@ -65,12 +64,14 @@ Phase 7 — source-of-truth reset and repair-program lock
 State: complete through PR #426
 
 Phase 8 — all-public-surface inventory and browser defect audit
-Current window: P8A
-Current branch: work-public-surface-inventory
+P8A: complete through PR #427
+Exact next window: P8B
 Exact next branch: work-public-browser-audit
 ```
 
-P8A inventories the existing public site and acceptance coverage. It does not repair UI, change APIs, alter D1, modify collectors, change retention, or request a Preview.
+P8A recorded repository ownership and acceptance coverage. It did not repair UI, change APIs, alter D1, modify collectors, change retention, or request a Preview.
+
+P8B must now capture browser evidence, classify defects, and produce the ordered Phase 9 queue. It must use the P8A package as its route and ownership baseline.
 
 The approved History P1 defects remain:
 
@@ -86,7 +87,7 @@ Additional reference screenshots may refine styling later. They are not a blocke
 
 ```text
 Phase 7   source-of-truth reset and repair-program lock              complete PR #426
-Phase 8   all-public-surface inventory and browser defect audit      active
+Phase 8   P8A inventory complete PR #427; P8B browser audit next
 Phase 9   P0/P1 core repair; History UI is the central track         queued
 Phase 10  cross-site visual and interaction-system consolidation      queued
 Phase 11  operations, monitoring, and maintenance lock                queued
@@ -117,39 +118,62 @@ No runtime UI, API, database, collector, cron, retention, binding, or export-sch
 
 ### P8A — public surface inventory
 
-Current branch:
-
 ```text
-work-public-surface-inventory
+branch: work-public-surface-inventory
+PR: #427
+state: complete
 ```
 
-Required outputs:
+Completed outputs:
 
-- route inventory for Portal, provider homes, Heatmap, Day Flow, Battle Lines, History, Channel, Watchlist, Status, About, Support/policy surfaces, and 404;
-- provider, metadata, entry point, API, control, state, owner, workflow, Preview, production, and gap fields;
-- route records and reusable surface profiles;
-- human-readable report;
-- machine-readable manifest;
-- explicit gap ledger;
-- validation script and CI workflow.
+- one machine-readable manifest for 20 Vite HTML inputs plus the explicit 404 page;
+- Portal, Twitch, and Kick route records;
+- shared owner/control/state/gate profiles;
+- separate Twitch and Kick API/binding ownership;
+- human-readable inventory report;
+- explicit missing-surface and acceptance-gap ledger;
+- permanent inventory verifier and CI workflow;
+- History task, metric, archive, selected-day, comparison, calendar, ranking, coverage, and output inventory.
 
-Completion criteria:
+Stable findings:
 
-- every public route has an owner and acceptance status;
-- missing browser/state coverage is explicit;
-- no product repair is mixed into P8A;
-- latest-head validation passes;
-- P8B is the exact next branch.
+```text
+Owned inventory entries                  21
+Indexable routes                         16
+Explicit noindex utility routes           4
+Sitemap routes                           16
+Public Readiness configured pages        18
+Production Smoke page routes             13
+```
+
+P8A recorded that:
+
+- both Watchlist routes are missing from Public Readiness configuration;
+- About, Support, Changelog, Channel, and Watchlist routes are absent from the general Production Smoke page list;
+- no single permanent browser matrix covers every major route at 1440, 820, 390, and 360 pixels across required states;
+- History remains a known P1 surface despite broad legacy workflows;
+- repository-owned Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent.
 
 ### P8B — public browser defect audit
 
-Next branch:
+Exact next branch:
 
 ```text
 work-public-browser-audit
 ```
 
-P8B captures 1440, 820, 390, and 360px evidence and real/fresh, partial, stale, empty, missing, demo, error, and loading states where applicable.
+P8B captures 1440, 820, 390, and 360px evidence and real/fresh, partial, stale, empty, missing, demo, error, loading, storage-unavailable, and long-content states where applicable.
+
+Required interaction evidence includes:
+
+- period and metric changes;
+- Back, Forward, and direct links;
+- chart scale, units, ticks, tooltip/day detail, and selected-day synchronization;
+- filters, sorting, task and archive navigation;
+- copy, share, PNG, CSV, JSON, and deep links;
+- keyboard, focus, touch targets, reduced motion, contrast, long text, and overflow;
+- Twitch/Kick separation;
+- Home, Channel, Watchlist, Status, support, policy, and error entry points.
 
 Defect classes:
 
@@ -191,8 +215,6 @@ History repair preserves:
 
 Begin only after Phase 9 P0/P1 repairs are accepted.
 
-Tracks:
-
 ```text
 U10A design tokens and component audit
 U10B data-visualization grammar
@@ -205,8 +227,6 @@ Scope includes typography, spacing, surfaces, controls, status, focus, loading, 
 
 ## 9. Phase 11 — operations and maintenance lock
 
-Tracks:
-
 ```text
 O11A unified production acceptance matrix
 O11B collector freshness and capacity monitoring
@@ -217,8 +237,6 @@ O11D dependency and maintenance cadence
 Prefer existing Status APIs and GitHub Actions over unnecessary cron jobs.
 
 ## 10. Phase 12 — Support, legal, Stripe, and release readiness
-
-Tracks:
 
 ```text
 R12A Support, Contact, Terms, Privacy, refund, disclosure, About, and footer audit
@@ -246,9 +264,7 @@ Candidates may include:
 - Language Trends;
 - Alerts.
 
-Evaluate provider source parity, D1 growth, collector changes, rollups, Cloudflare Free limits, data honesty, user value, overlap, and maintenance cost.
-
-Approve zero or one candidate.
+Evaluate provider source parity, D1 growth, collector changes, rollups, Cloudflare Free limits, data honesty, user value, overlap, and maintenance cost. Approve zero or one candidate.
 
 ## 13. Phase 15 — separately approved feature
 
