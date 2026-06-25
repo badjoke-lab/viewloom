@@ -1,0 +1,36 @@
+{
+  "schema": "viewloom-public-surface-profiles-v1",
+  "version": 1,
+  "group": "history",
+  "gates": {
+    "common_repository": [".github/workflows/web-build.yml", ".github/workflows/web-verification.yml", ".github/workflows/platform-naming.yml"],
+    "public_readiness": [".github/workflows/public-readiness-audit.yml", "apps/web/scripts/public-readiness-audit.mjs"],
+    "production_smoke": [".github/workflows/production-smoke.yml"],
+    "history_contract": ["apps/web/scripts/verify-history-qa.mjs", ".github/workflows/history-peak-archive.yml", ".github/workflows/history-battle-archive.yml", ".github/workflows/history-period-comparison.yml", ".github/workflows/history-report-text.yml", ".github/workflows/history-export.yml", ".github/workflows/history-share-card.yml", ".github/workflows/shared-output-r1.yml"],
+    "history_browser": [".github/workflows/history-browser-gate.yml", ".github/workflows/history-overview.yml", ".github/workflows/history-archives.yml", ".github/workflows/history-calendar-heat.yml", ".github/workflows/history-view-shell.yml", ".github/workflows/history-peak-browser.yml", ".github/workflows/history-battle-browser.yml", ".github/workflows/history-period-comparison-browser.yml", ".github/workflows/history-visual-responsive.yml", ".github/workflows/history-report-export-h4.yml"],
+    "history_acceptance": ["docs/operations/history-production-acceptance-2026-06-23.md"],
+    "channel_contract": [".github/workflows/channel-profile.yml"],
+    "channel_browser": [".github/workflows/channel-profile-browser.yml", ".github/workflows/channel-overview-browser.yml", ".github/workflows/channel-report-browser.yml", ".github/workflows/channel-candidate-acceptance.yml"],
+    "channel_acceptance": ["docs/operations/channel-production-acceptance-2026-06-23.md"]
+  },
+  "profiles": {
+    "history": {
+      "owner": ["apps/web/src/live/history-usability-pass.ts", "apps/web/src/live/history-current-shell-entry.ts", "apps/web/src/live/history-usability.ts", "apps/web/src/live/history-overview.ts"],
+      "data": ["provider History Pages Function"],
+      "controls": ["period/custom", "Viewer-minutes/Peak viewers", "Overview/Archives/Report & Export", "Daily/Peaks/Battles", "day", "sort", "limit", "outputs"],
+      "states": ["loading", "real", "partial", "stale", "empty", "missing", "demo", "error", "in_progress"],
+      "gates": ["common_repository", "public_readiness", "history_contract", "history_browser", "history_acceptance", "production_smoke"],
+      "assessment": "known_p1_defects",
+      "gaps": ["metric changes not sufficiently observable", "chart scale/ticks/units/interaction inadequate", "selected-day/supporting information too thin", "lower-page task hierarchy sparse/unclear", "old gates do not permanently reject these failures"]
+    },
+    "channel": {
+      "owner": ["apps/web/src/live/channel-profile.ts", "apps/web/src/live/channel-report.ts", "apps/web/src/live/channel-watchlist.ts", "apps/web/src/live/channel/url-state.ts"],
+      "data": ["provider History Pages Function"],
+      "controls": ["period", "Overview/Retained Days/Report & Export", "day", "copy URL", "Watchlist save", "deep links"],
+      "states": ["missing_id", "loading", "real", "partial", "empty", "missing", "demo", "error"],
+      "gates": ["common_repository", "public_readiness", "channel_contract", "channel_browser", "channel_acceptance"],
+      "assessment": "complete_for_v1_contract",
+      "gaps": ["not in general Production Smoke", "P8B still needs cross-site 820/360 and long-content audit"]
+    }
+  }
+}
