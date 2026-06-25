@@ -2,12 +2,16 @@
 
 ## Active Phase 8 P8B public browser defect audit
 
-- [`P8B_SCOPE.md`](P8B_SCOPE.md) — active route, viewport, state, classification, and no-repair boundary
+P8B runtime execution and defect classification are complete on the active completion branch. Latest-head gates and PR #428 merge remain.
+
+- [`P8B_SCOPE.md`](P8B_SCOPE.md) — audit boundary, executed matrix, result, and completion criteria
+- [`public-browser-defects.json`](public-browser-defects.json) — canonical machine-readable defect ledger and ordered queue
+- [`public-browser-audit.md`](public-browser-audit.md) — human-readable audit report
 - [`../../apps/web/scripts/public-browser-audit.mjs`](../../apps/web/scripts/public-browser-audit.mjs) — browser evidence generator
 - [`../../scripts/verify-public-browser-audit.mjs`](../../scripts/verify-public-browser-audit.mjs) — repository-side P8B verifier
 - [`../../.github/workflows/public-browser-audit.yml`](../../.github/workflows/public-browser-audit.yml) — latest-head CI and artifact workflow
 
-Required before P8B completion:
+P8B completion package:
 
 ```text
 public-browser-defects.json
@@ -15,7 +19,16 @@ public-browser-audit.md
 GitHub Actions artifact: public-browser-audit-p8b
 ```
 
-P8B audits 21 owned routes at 1440, 820, 390, and 360px, probes five missing policy/disclosure routes, and captures ten deterministic History state/interaction scenarios.
+Executed scope:
+
+```text
+21 owned routes
+1440 / 820 / 390 / 360
+84 production route scenarios
+5 missing-surface probes
+10 deterministic History scenarios
+P0 0 / P1 3 / P2 5 / P3 0
+```
 
 P8B is audit-only. It does not silently repair UI or change API, D1, binding, collector, cron, retention, output-schema, provider-separation, or Preview behavior.
 
@@ -38,4 +51,4 @@ node scripts/verify-public-browser-audit.mjs
 
 The P8A package records repository presence, owners, bindings, and known gate gaps. It does not claim that an interaction works merely because a page builds or an older workflow exists.
 
-P8B treats P8A as its static baseline. Browser evidence may add classification, but inventory changes must update the machine-readable package and verifier.
+P8B treats P8A as its static baseline. Browser evidence adds classification without silently rewriting inventory history.
