@@ -37,7 +37,7 @@ Phase 14 next-feature audit              queued
 Phase 15 next major feature              not approved
 ```
 
-## 3. Active window
+## 3. Active completion window
 
 ```text
 Current window: P8B — public browser defect audit
@@ -45,6 +45,7 @@ Current branch: work-public-browser-audit
 Predecessor: PR #427 merged
 Runtime product change: none allowed
 Cloudflare Preview: not required and not allowed for this audit
+Execution state: runtime matrix and final defect records produced; latest-head gates and merge remain
 Exact next branch after completion: work-history-ui-h0-baseline
 Exception: a newly proven P0 may interrupt
 ```
@@ -64,6 +65,8 @@ docs/audits/P8B_SCOPE.md
 docs/audits/public-surface-inventory.json
 docs/audits/public-surface-inventory.md
 docs/audits/public-surface-gaps.json
+docs/audits/public-browser-defects.json
+docs/audits/public-browser-audit.md
 ```
 
 ## 4. Immediate sequence
@@ -84,7 +87,19 @@ P9H7 work-history-ui-h7-acceptance       queued
 
 No later branch may be created before the preceding merge report and explicit continuation.
 
-## 5. P8A baseline retained by P8B
+## 5. P8A handoff record retained for completed Watchlist verification
+
+The following exact block is a historical P8A handoff record, not the current schedule:
+
+```text
+Phase 8 P8B browser audit                exact next
+Completed branch: work-public-surface-inventory
+Exact next branch: work-public-browser-audit
+```
+
+The live completion branch is `work-public-browser-audit`; after its merge, the next branch is `work-history-ui-h0-baseline`.
+
+## 6. P8A baseline retained by P8B
 
 ```text
 20 Vite HTML inputs
@@ -104,96 +119,34 @@ Stable P8A findings:
 - combined totals and rankings remain forbidden;
 - both Watchlist routes are absent from Public Readiness configuration;
 - About, Support, Changelog, Channel, and Watchlist are absent from the general Production Smoke route list;
-- no consolidated browser matrix covers every major route, required viewport, and required state;
 - Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent;
 - History remains an approved P1 surface.
 
-## 6. P8B required route matrix
-
-Owned route groups:
+## 7. P8B executed matrix
 
 ```text
-Portal
-Twitch Home
-Kick Home
-Twitch/Kick Heatmap
-Twitch/Kick Day Flow
-Twitch/Kick Battle Lines
-Twitch/Kick History
-Twitch/Kick Channel
-Twitch/Kick Watchlist
-Twitch/Kick Status
-About
-Support
-Changelog
-404
+21 owned routes
+1440 / 820 / 390 / 360
+84 production route scenarios
+5 missing policy/disclosure probes
+10 deterministic History scenarios
 ```
 
-Required widths:
+Required checks include route identity, overflow, keyboard entry, accessible names, target sizes, provider separation, History metric execution, chart interpretation, selected-day synchronization, task/archive navigation, report/export, Back/Forward, request reuse, and honest degraded states.
 
-```text
-1440px
-820px
-390px
-360px
-```
-
-Required states where applicable:
-
-```text
-real/fresh
-partial
-stale
-empty
-missing
-demo
-error
-loading
-in progress
-storage unavailable
-long content
-```
-
-Required checks:
-
-- status, title, canonical, robots, H1, route entry, and recovery links;
-- horizontal overflow, keyboard focus, accessible control names, and mobile target sizes;
-- period and metric changes;
-- Back, Forward, and direct links;
-- chart scale, units, ticks, day detail, and selected-day synchronization;
-- filters, sorts, task and archive navigation;
-- copy, share, PNG, CSV, JSON, and deep links where supported;
-- provider-specific API requests and provider-crossing detection;
-- honest loading, partial, stale, empty, missing, demo, and error language.
-
-History-specific evidence:
-
-```text
-1440px Twitch Overview
-390px Kick Overview
-820px partial state
-360px stale / in-progress / loading evidence
-Viewer-minutes before and after
-Peak viewers before and after
-Overview / Archives / Report & Export
-Daily / Peaks / Battles
-Back / Forward
-no-refetch task switching
-```
-
-## 7. P8B evidence package
+## 8. P8B evidence package
 
 ```text
 docs/audits/P8B_SCOPE.md
 apps/web/scripts/public-browser-audit.mjs
 .github/workflows/public-browser-audit.yml
 scripts/verify-public-browser-audit.mjs
-docs/audits/public-browser-defects.json        required before completion
-docs/audits/public-browser-audit.md            required before completion
+docs/audits/public-browser-defects.json
+docs/audits/public-browser-audit.md
 GitHub Actions artifact: public-browser-audit-p8b
 ```
 
-The runtime artifact must contain:
+The runtime artifact contains:
 
 ```text
 viewloom-public-browser-audit-v1 evidence
@@ -204,18 +157,18 @@ browser audit log
 local preview log
 ```
 
-## 8. Defect classification
+## 9. Defect classification and result
 
 ```text
-P0  outage, materially wrong data, provider/privacy failure
-P1  primary feature unusable, misleading, or materially incomplete
-P2  clarity, consistency, polish, automation, or secondary interaction defect
-P3  deferred improvement or feature request
+P0  0
+P1  3
+P2  5
+P3  0
 ```
 
-Known History problems remain P1 without another approval gate.
+The ordered details and exact reproduction records are in `docs/audits/public-browser-defects.json` and `docs/audits/public-browser-audit.md`.
 
-## 9. P8B completion criteria
+## 10. P8B completion criteria
 
 - exact browser evidence exists for all 21 owned routes at all four widths;
 - missing policy/disclosure routes are probed;
@@ -228,7 +181,7 @@ Known History problems remain P1 without another approval gate.
 - no product repair, API, D1, binding, collector, cron, retention, output-schema, or Preview change is mixed into P8B;
 - `work-history-ui-h0-baseline` is named as the exact next branch unless a P0 interrupts.
 
-## 10. Phase 9 History repair sequence
+## 11. Phase 9 History repair sequence
 
 ```text
 P9H0 exact baseline, ownership trace, and failing permanent gates
@@ -243,6 +196,6 @@ P9H7 deliberate Preview and exact production acceptance
 
 Non-History P0/P1 defects discovered by P8B receive narrow repair branches. P2 work waits for Phase 10 unless it blocks P1 acceptance.
 
-## 11. Stop rule
+## 12. Stop rule
 
-P8B is active. After its completion PR merges, issue the full merge report and stop. Do not create `work-history-ui-h0-baseline` until explicit continuation.
+P8B is active only as the completion branch until PR #428 merges. After the merge, issue the full merge report and stop. Do not create `work-history-ui-h0-baseline` until explicit continuation.
