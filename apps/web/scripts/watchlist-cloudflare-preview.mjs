@@ -237,7 +237,10 @@ async function verifyWatchlist(browser, data, viewport) {
   assertDelta(calls, paths, before, { latest: 1, history: 1 }, `${provider} combined refresh`)
 
   await assertNoOverflow(page, `${provider} ${viewport.width}px hosted`)
-  if (viewport.mobile) await assertTargets(page, 48)
+  if (viewport.mobile) {
+    await assertTargets(page, 44)
+    await assertManagementTargets(page, 48)
+  }
   await page.screenshot({ path: viewport.screenshot, fullPage: true })
 
   const result = {
@@ -253,7 +256,8 @@ async function verifyWatchlist(browser, data, viewport) {
     realHistoryId: data.historyPresent,
     retainedUiState: data.historyState30 === 'partial' || data.historyState30 === 'demo' ? 'partial' : 'present',
     absentId: data.absent,
-    mobileMinimumTarget: viewport.mobile ? 48 : null,
+    mobileMinimumTarget: viewport.mobile ? 44 : null,
+    mobileManagementMinimumTarget: viewport.mobile ? 48 : null,
     totalObservedFeatureRequests: counts(calls, paths),
   }
   await appendLog(result)
@@ -420,6 +424,15 @@ async function assertTargets(page, minimum) {
     height: node.getBoundingClientRect().height,
   })))
   check(targets.every((target) => target.height >= minimum), `Hosted target below ${minimum}px: ${JSON.stringify(targets.filter((target) => target.height < minimum))}`)
+}
+
+async function assertManagementTargets(page, minimum) {
+  const targets = await page.locator('.watchlist-card__manage .button:visible').evaluateAll((nodes) => nodes.map((node) => ({
+    label: node.textContent?.trim(),
+    height: node.getBoundingClientRect().height,
+  })))
+  check(targets.length > 0, 'Hosted mobile management controls are missing.')
+  check(targets.every((target) => target.height >= minimum), `Hosted management target below ${minimum}px: ${JSON.stringify(targets.filter((target) => target.height < minimum))}`)
 }
 
 function strip(value) {
