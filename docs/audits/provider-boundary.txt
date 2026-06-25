@@ -1,3 +1,0 @@
-Twitch: DB_TWITCH_HOT
-Kick: DB_KICK_HOT
-No combined totals or rankings.
