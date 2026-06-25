@@ -145,12 +145,14 @@ Implemented:
 - exact provider key names;
 - plain id and same-provider URL normalization;
 - cross-provider and invalid input rejection;
-- duplicate behavior and fifty-entry cap;
+- duplicate behavior and 50-entry cap;
 - new-entry top insertion and deterministic move/remove/clear/reset;
 - corrupt, unavailable, repair, and write-error states;
-- same-origin storage-event parsing;
+- same-origin cross-tab storage-event handling;
 - clean period URL state;
-- no fetch or DOM dependency.
+- no fetch or DOM dependency in the model/storage layer.
+
+No public Watchlist route is added in W1.
 
 ## 6. W2A — latest-observation foundation
 
@@ -176,7 +178,10 @@ Implemented:
 - empty list zero requests;
 - one through fifty entries exactly one provider Heatmap request;
 - cache reuse, explicit refresh, and in-flight deduplication;
+- a concurrent refresh click is deduplicated;
 - no route, UI, History interpretation, per-channel request, or polling.
+
+No public Watchlist route is added in W2A.
 
 ## 7. W2B — retained-History and combined evidence foundation
 
