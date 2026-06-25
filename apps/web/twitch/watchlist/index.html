@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Twitch Local Watchlist — ViewLoom</title>
+  <meta name="description" content="Keep a browser-local list of Twitch channel ids and prepare to inspect bounded latest and retained ViewLoom evidence without creating an account." />
+  <meta name="robots" content="noindex,follow" />
+  <link rel="canonical" href="https://vl.badjoke-lab.com/twitch/watchlist/" />
+  <meta property="og:site_name" content="ViewLoom" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://vl.badjoke-lab.com/twitch/watchlist/" />
+  <meta property="og:title" content="Twitch Local Watchlist — ViewLoom" />
+  <meta property="og:description" content="Save Twitch channel ids only in this browser and reopen provider-safe ViewLoom pages." />
+  <meta property="og:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Twitch Local Watchlist — ViewLoom" />
+  <meta name="twitter:description" content="Save Twitch channel ids only in this browser and reopen provider-safe ViewLoom pages." />
+  <meta name="twitter:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
+  <link rel="stylesheet" href="/src/mock-site.css" />
+</head>
+<body data-provider="twitch" data-page="twitch-watchlist" data-watchlist-state="loading">
+<div class="site-frame">
+  <header class="masthead"><div class="masthead__inner">
+    <a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
+    <nav class="global-nav" id="watchlist-global-nav" aria-label="Global navigation"><a href="/">Portal</a><a href="/twitch/" aria-current="page">Twitch data</a><a href="/kick/">Kick data</a><a href="/changelog/">Changelog</a><a href="/about/">About</a><a href="/support/">Support</a></nav>
+    <div class="status-inline" role="status"><span class="dot" aria-hidden="true"></span>Browser-local utility</div>
+    <button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation" aria-controls="watchlist-global-nav" aria-expanded="false">Menu</button>
+  </div></header>
+
+  <main class="page page--full watchlist-page">
+    <div class="breadcrumb">ViewLoom / Twitch data / Local Watchlist</div>
+    <nav class="feature-tabs" aria-label="Twitch analysis pages"><a href="/twitch/heatmap/">Heatmap</a><a href="/twitch/day-flow/">Day Flow</a><a href="/twitch/battle-lines/">Battle Lines</a><a href="/twitch/history/">History</a><a href="/twitch/status/">Status</a></nav>
+
+    <section class="page-head">
+      <div>
+        <div class="kicker">TWITCH DATA · LOCAL WATCHLIST</div>
+        <div class="watchlist-badge">Saved only in this browser</div>
+        <h1>Local Watchlist</h1>
+        <p class="lede">Save Twitch channel ids in this browser, reopen their provider-safe pages, and prepare bounded latest and retained evidence. Absence from an observed result is not proof that a channel is offline.</p>
+      </div>
+      <div class="head-facts" aria-live="polite">
+        <div class="fact"><small>Saved</small><strong data-watchlist-saved-count>0 saved</strong></div>
+        <div class="fact"><small>Retained period</small><strong data-watchlist-period-fact>Last 30 days</strong></div>
+        <div class="fact"><small>Storage</small><strong data-watchlist-storage-fact>Loading</strong></div>
+        <div class="fact"><small>Data requests</small><strong>Not connected in W3A</strong></div>
+      </div>
+    </section>
+
+    <section class="data-strip watchlist-data-strip" aria-label="Twitch Watchlist facts">
+      <div class="data-strip__title">Twitch Watchlist</div>
+      <div class="data-strip__cell"><small>Provider</small>Twitch only</div>
+      <div class="data-strip__cell"><small>Storage key</small><code data-watchlist-storage-key>viewloom.watchlist.twitch.v1</code></div>
+      <div class="data-strip__cell"><small>Latest source</small>Not requested</div>
+      <div class="data-strip__cell"><small>History source</small>Not requested</div>
+    </section>
+
+    <section class="surface watchlist-controls" aria-label="Local Watchlist controls">
+      <div class="watchlist-control-block">
+        <form data-watchlist-add-form novalidate>
+          <label for="watchlist-channel-input">Twitch channel id or Twitch URL</label>
+          <div class="watchlist-add-row"><input id="watchlist-channel-input" data-watchlist-input type="text" inputmode="url" autocomplete="off" spellcheck="false" aria-describedby="watchlist-input-help watchlist-storage-feedback" /><button class="button" data-watchlist-add type="submit">Add channel</button></div>
+          <p class="watchlist-help" id="watchlist-input-help">Example: <code>example_channel</code> or <code>https://www.twitch.tv/example_channel</code>. The normalized id is saved only in this browser.</p>
+        </form>
+      </div>
+      <div class="watchlist-control-block">
+        <span class="watchlist-control-label">Retained period</span>
+        <div class="watchlist-period-row"><div class="control-group"><button type="button" data-watchlist-period="7d" aria-pressed="false">Last 7 days</button><button type="button" data-watchlist-period="30d" aria-pressed="true">Last 30 days</button></div><button class="button button--paper watchlist-refresh" data-watchlist-refresh type="button" disabled aria-describedby="watchlist-latest-feedback watchlist-history-feedback">Refresh data</button></div>
+        <p class="watchlist-help">Period changes update browser history. W3A changes the local shell only and sends no Heatmap or History request.</p>
+      </div>
+    </section>
+
+    <section class="watchlist-feedback-grid" aria-label="Watchlist feedback">
+      <div class="watchlist-feedback"><small>Storage</small><p id="watchlist-storage-feedback" data-watchlist-storage-feedback aria-live="polite">Loading this browser’s Twitch Watchlist…</p></div>
+      <div class="watchlist-feedback"><small>Latest observation</small><p id="watchlist-latest-feedback" data-watchlist-latest-feedback aria-live="polite">Latest observation is not requested in the W3A storage-first shell.</p></div>
+      <div class="watchlist-feedback"><small>Retained History</small><p id="watchlist-history-feedback" data-watchlist-history-feedback aria-live="polite">Retained History is not requested in the W3A storage-first shell.</p></div>
+    </section>
+
+    <section class="watchlist-list-tools" data-watchlist-filter-controls hidden aria-label="Saved channel controls">
+      <div class="watchlist-control-block"><label for="watchlist-filter">Filter saved channels</label><div class="watchlist-filter-row"><input id="watchlist-filter" data-watchlist-filter type="search" autocomplete="off" placeholder="Filter by saved name or id" /><button class="button button--paper" data-watchlist-show type="button" aria-expanded="false">Show all</button></div></div>
+      <p class="watchlist-list-summary" data-watchlist-list-summary>No saved channels.</p>
+      <button class="button watchlist-remove" data-watchlist-clear type="button" disabled>Clear Watchlist</button>
+    </section>
+
+    <section class="watchlist-storage-error" data-watchlist-storage-error hidden aria-live="polite">
+      <h2>Storage unavailable or corrupted</h2>
+      <p>This page remains available, but it cannot claim that any Twitch channel is saved. Nothing is uploaded to a ViewLoom account.</p>
+      <button class="button button--paper" data-watchlist-reset type="button" hidden>Reset local Watchlist</button>
+    </section>
+
+    <section class="watchlist-empty" data-watchlist-empty>
+      <h2>No channels saved in this browser.</h2>
+      <p>Add a Twitch channel id or URL to create this local Watchlist.</p>
+      <p>Nothing is uploaded to a ViewLoom account.</p>
+    </section>
+    <section class="watchlist-no-results" data-watchlist-no-results hidden><p>No saved Twitch channels match this local filter.</p></section>
+    <ol class="watchlist-list" data-watchlist-list hidden aria-label="Saved Twitch channels"></ol>
+
+    <section>
+      <div class="rule-title"><h2>Local scope and limits</h2><span>Browser-only utility</span></div>
+      <div class="watchlist-limits">
+        <article class="watchlist-limit"><small>Local storage</small><h2>Browser-specific</h2><p>Saved ids stay in this browser’s provider-specific localStorage key. There is no account, cloud sync, cookie fallback, or shared Watchlist URL.</p></article>
+        <article class="watchlist-limit"><small>Evidence</small><h2>Bounded observations</h2><p>Latest and retained evidence will use existing provider payloads in W3B. Not appearing in a bounded result does not prove offline status. No complete history is implied.</p></article>
+        <article class="watchlist-limit"><small>Privacy</small><h2>No saved ids in metadata</h2><p>Saved ids are not placed in the canonical URL, share metadata, or analytics payloads. External Twitch links follow normal browser navigation.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/twitch/">Twitch data</a><a href="/about/">Method &amp; limits</a><a href="/support/">Support</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
+</div>
+<script type="module" src="/src/live/watchlist-page.ts"></script>
+<script type="module" src="/src/live/watchlist-move-focus.ts"></script>
+<script type="module" src="/src/analytics.ts"></script>
+</body>
+</html>

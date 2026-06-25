@@ -1,0 +1,116 @@
+name: Watchlist Page
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/twitch/watchlist/**'
+      - 'apps/web/kick/watchlist/**'
+      - 'apps/web/src/live/watchlist-page.ts'
+      - 'apps/web/src/live/watchlist-move-focus.ts'
+      - 'apps/web/src/watchlist-page.css'
+      - 'apps/web/src/provider-home.ts'
+      - 'apps/web/src/provider-home-shell.ts'
+      - 'apps/web/src/provider-watchlist-link.css'
+      - 'apps/web/scripts/verify-watchlist-page.mjs'
+      - 'apps/web/scripts/watchlist-shell-browser-*.mjs'
+      - 'apps/web/vite.config.ts'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/work-in-progress/watchlist-v1-working-note.md'
+      - 'docs/README.md'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/watchlist-page.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/twitch/watchlist/**'
+      - 'apps/web/kick/watchlist/**'
+      - 'apps/web/src/live/watchlist-page.ts'
+      - 'apps/web/src/live/watchlist-move-focus.ts'
+      - 'apps/web/src/watchlist-page.css'
+      - 'apps/web/src/provider-home.ts'
+      - 'apps/web/src/provider-home-shell.ts'
+      - 'apps/web/src/provider-watchlist-link.css'
+      - 'apps/web/scripts/verify-watchlist-page.mjs'
+      - 'apps/web/scripts/watchlist-shell-browser-*.mjs'
+      - 'apps/web/vite.config.ts'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/work-in-progress/watchlist-v1-working-note.md'
+      - 'docs/README.md'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/watchlist-page.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Typecheck web application
+        run: pnpm --filter @viewloom/web typecheck:app
+      - name: Verify Watchlist route contract
+        working-directory: apps/web
+        run: node scripts/verify-watchlist-page.mjs
+      - name: Build web application
+        run: pnpm build:web
+      - name: Start local preview
+        shell: bash
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/watchlist-shell-preview.log 2>&1 &
+          for attempt in {1..40}; do
+            curl --silent --fail http://127.0.0.1:4173/twitch/watchlist/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/kick/watchlist/ > /dev/null \
+              && exit 0
+            sleep 1
+          done
+          cat /tmp/watchlist-shell-preview.log
+          exit 1
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+      - name: Verify desktop storage shell
+        working-directory: apps/web
+        env:
+          WATCHLIST_BASE_URL: http://127.0.0.1:4173
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/watchlist-shell-browser-core.mjs 2>&1 | tee -a /tmp/watchlist-shell-preview.log
+      - name: Verify narrow responsive shell
+        working-directory: apps/web
+        env:
+          WATCHLIST_BASE_URL: http://127.0.0.1:4173
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/watchlist-shell-browser-narrow.mjs 2>&1 | tee -a /tmp/watchlist-shell-preview.log
+      - name: Upload Watchlist page artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: watchlist-page-artifacts
+          path: |
+            /tmp/watchlist-twitch-desktop.png
+            /tmp/watchlist-kick-mobile-360.png
+            /tmp/watchlist-shell-preview.log
+          if-no-files-found: warn

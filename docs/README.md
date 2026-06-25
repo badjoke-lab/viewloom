@@ -30,7 +30,7 @@ Before changing ViewLoom, read:
 - [`product/local-watchlist-spec.md`](product/local-watchlist-spec.md) — active permanent Local Watchlist v1 contract
 - [`product/watchlist-v1-implementation-plan.md`](product/watchlist-v1-implementation-plan.md) — active W0–W5 implementation and acceptance plan
 - [`../apps/web/docs/watchlist-latest-w2a-contract.md`](../apps/web/docs/watchlist-latest-w2a-contract.md) — accepted W2A latest-observation and request contract
-- [`../apps/web/docs/watchlist-history-w2b-contract.md`](../apps/web/docs/watchlist-history-w2b-contract.md) — active W2B retained-History and combined-evidence contract
+- [`../apps/web/docs/watchlist-history-w2b-contract.md`](../apps/web/docs/watchlist-history-w2b-contract.md) — accepted W2B retained-History and combined-evidence contract
 
 ## Permanent acceptance records
 
@@ -48,7 +48,7 @@ There is no active History rebuild, Channel v1, Report & Export consolidation, o
 
 The pending History UI appearance revision has no working note because screenshots and detailed instructions remain unavailable. Begin that work later with a new audit and note rather than reviving an old completed note.
 
-Local Watchlist W0 is complete through PR #415, W1 through PR #416, and W2A through PR #417. W2B History/combined foundation is the completion candidate in PR #418. W3A provider routes are next only after the PR #418 merge report.
+Local Watchlist W0 is complete through PR #415, W1 through PR #416, W2A through PR #417, and W2B through PR #418. W3A provider routes and the storage-first shell are the completion candidate in PR #419. W3B evidence UI and approved entry points are next only after the PR #419 merge report.
 
 ## Temporary-note lifecycle
 

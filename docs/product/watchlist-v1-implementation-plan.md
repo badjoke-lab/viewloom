@@ -2,7 +2,7 @@
 
 Status: active implementation plan
 Version: 1.0
-Last updated: 2026-06-24
+Last updated: 2026-06-25
 Roadmap phase: Phase 6 — Local Watchlist v1
 Permanent specification: `local-watchlist-spec.md`
 Capability authority: `next-feature-data-capability-audit.md`
@@ -132,6 +132,17 @@ W4B  work-watchlist-w4-browser
 W5A  work-watchlist-w5-hosted
      preview-watchlist-v1
 W5B  work-watchlist-w5-production
+```
+
+Current implementation position:
+
+```text
+W0   complete PR #415
+W1   complete PR #416
+W2A  complete PR #417
+W2B  complete PR #418
+W3A  completion candidate PR #419
+W3B  next after PR #419 merge report
 ```
 
 Each merged PR requires the full merge report and a new explicit proceed instruction before the next branch begins.
