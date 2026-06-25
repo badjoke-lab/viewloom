@@ -1,8 +1,12 @@
 # ViewLoom Phase 8 P8B public browser audit
 
-Status: completion candidate for PR #428  
+Status: complete on the PR #428 completion branch  
 Audit date: 2026-06-26  
 Branch: `work-public-browser-audit`  
+Verified evidence head: `75bc7f22e015edfe004158746796081a3719219b`  
+Verified workflow run: `28203107250`  
+Artifact: `public-browser-audit-p8b` (`7892012367`)  
+Artifact digest: `sha256:793d2c70f24d0a1056767d1c59056b2b2884b03c25177d70c65ab506d18a268b`  
 Exact next branch after merge and explicit continuation: `work-history-ui-h0-baseline`
 
 ## 1. Scope executed
@@ -17,7 +21,7 @@ P8B executed the repository-owned public-surface matrix against production and d
 10 deterministic History state and interaction scenarios
 ```
 
-The workflow stores full-page screenshots, a browser audit log, local preview log, and `viewloom-public-browser-audit-v1` evidence in the `public-browser-audit-p8b` GitHub Actions artifact.
+The workflow stores full-page screenshots, a browser audit log, local preview log, and `viewloom-public-browser-audit-v1` evidence in the `public-browser-audit-p8b` GitHub Actions artifact. The verified artifact is 30,608,845 bytes and expires on 2026-09-23 unless GitHub retention changes.
 
 ## 2. Result
 
@@ -112,6 +116,8 @@ The first P8B run never reached browser execution because the development-policy
 
 The next run completed the production matrix but the audit harness aborted while expecting two Back operations to skip several valid Archives history entries and return directly to Overview. Source inspection showed that every task tab intentionally pushes its own URL state. The final probe therefore tests the real browser contract: one Back restores the immediately preceding Archives state and one Forward restores Report. The incorrect timeout is not recorded as a product defect.
 
+The completed Watchlist verifier also required exact text from the P8A handoff and treated any later schedule as invalid. The historical P8A handoff strings are now retained explicitly while the live schedule remains P8B, so completed Watchlist acceptance no longer blocks later phases.
+
 ## 7. Ordered Phase 9 queue
 
 ```text
@@ -144,7 +150,7 @@ No non-History P0/P1 interrupt was found. The exact next branch remains `work-hi
 
 ## 8. Machine-readable record
 
-The canonical defect details, exact reproduction data, owners, existing gates, missing assertions, evidence filenames, and ordered queue are in:
+The canonical defect details, exact reproduction data, owners, existing gates, missing assertions, evidence filenames, artifact identity, and ordered queue are in:
 
 ```text
 docs/audits/public-browser-defects.json
