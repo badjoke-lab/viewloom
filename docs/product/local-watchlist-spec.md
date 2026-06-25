@@ -1,7 +1,7 @@
 # ViewLoom Local Watchlist v1 specification
 
 Status: accepted permanent product specification
-Version: 1.1
+Version: 1.2
 Last updated: 2026-06-25
 Roadmap phase: Phase 6 — Local Watchlist v1 complete
 Capability authority: `next-feature-data-capability-audit.md`
@@ -10,18 +10,18 @@ Production acceptance: `../operations/watchlist-production-acceptance-2026-06-25
 
 ## 1. Purpose
 
-Local Watchlist is a provider-specific browser-local list of channel ids that helps a visitor reopen saved channels and inspect the latest and retained evidence already available in ViewLoom.
+Local Watchlist is a provider-specific browser-local list of channel ids. It helps a visitor reopen saved Twitch or Kick channels and inspect the latest and retained evidence already available in ViewLoom.
 
 It answers:
 
-1. which Twitch or Kick channel ids the visitor saved in this browser;
-2. whether each saved id appears in the latest available bounded provider observation;
-3. which latest observed viewers, timestamp, title, and movement facts are available;
-4. whether each saved id appears in the selected retained History period;
+1. which provider channel ids the visitor saved in this browser;
+2. whether a saved id appears in the latest bounded observation;
+3. which latest observed viewer, timestamp, title, and momentum facts are available;
+4. whether a saved id appears in the selected retained History period;
 5. which bounded retained viewer-minute, peak, average, duration, day-count, date, and rank facts are available;
-6. how to reopen the provider channel and provider-specific ViewLoom pages.
+6. how to reopen provider-specific Channel, History, and Heatmap pages.
 
-It does not create a cross-provider identity system, complete channel directory, authoritative live/offline monitor, complete session history, account, sync system, or alert service.
+It is not a cross-provider identity system, complete channel directory, authoritative live/offline monitor, complete session history, account, sync system, or alert service.
 
 ## 2. Routes and provider separation
 
@@ -33,18 +33,17 @@ It does not create a cross-provider identity system, complete channel directory,
 Twitch and Kick remain separate in:
 
 - routes;
-- localStorage keys;
-- saved documents;
+- localStorage keys and documents;
 - API requests;
 - evidence facts;
 - external links;
 - ViewLoom Channel, History, and Heatmap links;
 - D1 bindings and provider data;
-- counts and limitation language.
+- counts and limitation wording.
 
 No combined total, rank, identity, or cross-provider saved list is allowed.
 
-Watchlist is a secondary browser utility. It appears from provider Home and Channel surfaces but is not inserted into the primary Heatmap, Day Flow, Battle Lines, History, and Status tab sequence.
+Watchlist is a secondary browser utility. It is available from provider Home and Channel surfaces but is not inserted into the primary Heatmap, Day Flow, Battle Lines, History, and Status tab sequence.
 
 ## 3. Storage contract
 
@@ -78,10 +77,11 @@ Rules:
 - no fallback to cookies, sessionStorage, IndexedDB, D1, KV, or R2 is permitted;
 - same-origin storage events update another open tab;
 - corrupted documents are recoverable;
-- invalid entries may be removed with the message `Some invalid saved entries were removed.`;
+- invalid entries may be removed with `Some invalid saved entries were removed.`;
 - unavailable or failed storage uses `Changes cannot be saved in this browser.`;
-- provider clear and reset operations never modify the other provider key;
-- no current legacy schema exists.
+- provider clear and reset operations never modify the other provider key.
+
+No current legacy schema exists.
 
 ## 4. URL and metadata contract
 
@@ -116,6 +116,7 @@ Latest observation:
 ```text
 Twitch: /api/twitch-heatmap
 Kick:   /api/kick-heatmap
+Heatmap requests: exactly 1 for one through fifty valid saved entries
 ```
 
 Retained History:
@@ -127,7 +128,7 @@ Kick:   /api/kick-history?period=<7d|30d>&metric=viewer_minutes
 
 No Watchlist-specific server API is required or allowed for v1.
 
-The page builds one normalized lookup index from each provider response. It must not issue a request per saved channel.
+The page builds one normalized lookup index from each provider response. There is no per-channel request loop.
 
 ## 6. Request contract
 
@@ -143,20 +144,13 @@ task-local list operations:     0 Heatmap + 0 History
 Channel save:                   0 additional requests
 ```
 
+The period change performs exactly one new provider History request when that period is not cached. A cached Back/Forward period restore performs zero new requests.
+
 One through fifty saved entries have identical initial request counts.
 
-Task-local operations include:
+Task-local operations include add, remove, move, filter, Show all, Show recent, clear, reset, repair, and same-origin storage refresh.
 
-- add;
-- remove;
-- move up or down;
-- filter;
-- Show all / Show recent;
-- clear;
-- reset or repair;
-- same-origin storage refresh.
-
-The latest and retained controllers maintain independent page-memory caches. Back/Forward period restoration uses cached evidence when available. Concurrent requests for the same source and period are deduplicated.
+The latest and retained controllers maintain independent page-memory caches. Concurrent requests for the same source and period are deduplicated.
 
 No interval polling, background refresh, service worker monitoring, or page-hidden polling is allowed.
 
@@ -171,7 +165,7 @@ absent_usable
 latest_unavailable
 ```
 
-Exact user-facing labels:
+Exact labels:
 
 ```text
 In latest observed set
@@ -182,14 +176,9 @@ Not confirmed offline
 Latest observation unavailable
 ```
 
-When available, facts may include:
+When available, latest facts may include viewers, observed timestamp, title, and momentum.
 
-- observed viewers;
-- observed timestamp;
-- observed title;
-- momentum.
-
-Absence from a bounded provider result is not proof that a channel is offline. Empty or unusable provider responses must not be converted into an absence claim.
+Absence from a bounded provider result is not proof that a channel is offline. Empty or unusable provider responses must not become an absence claim.
 
 ## 8. Retained-History evidence
 
@@ -202,7 +191,7 @@ history_partial
 history_unavailable
 ```
 
-Exact user-facing labels:
+Exact labels:
 
 ```text
 Present in retained History result
@@ -212,15 +201,7 @@ Retained History is partial
 Retained History unavailable
 ```
 
-When available, facts may include:
-
-- viewer-minutes;
-- peak viewers;
-- average viewers;
-- observed time;
-- retained daily appearance count;
-- most recent retained appearance;
-- bounded viewer-minute rank.
+When available, retained facts may include viewer-minutes, peak viewers, average viewers, observed time, retained daily appearance count, most recent retained appearance, and bounded viewer-minute rank.
 
 A partial History payload must use `Retained History is partial` and must not support a complete presence or absence conclusion. An absent usable result must retain `No complete history is implied`.
 
@@ -273,21 +254,11 @@ Watchlist unavailable
 No data request was made.
 ```
 
-Behavior:
-
-- a valid unsaved channel provides `Save to Watchlist`;
-- save writes only the provider-specific localStorage key;
-- save makes zero additional data requests;
-- a saved channel provides `Saved in Watchlist` linking to the provider Watchlist;
-- the saved action is not a remove toggle;
-- invalid or missing channel ids disable the action;
-- unavailable storage disables the action;
-- saving one provider must not modify the other provider key;
-- existing Channel API and retained-footprint request contracts remain unchanged.
+A valid unsaved channel can be saved to the provider-specific localStorage key with zero additional data requests. A saved channel provides a management link to the provider Watchlist. The saved action is not a remove toggle. Invalid ids and unavailable storage disable the action. Saving one provider never modifies the other provider key.
 
 ## 12. Provider Home entry point
 
-Each provider Home exposes Local Watchlist as a secondary browser utility with a provider-specific route and disclosure. It must not be added to the primary analysis-card sequence.
+Each provider Home exposes Local Watchlist as a secondary browser utility with a provider-specific route and local-storage disclosure. It is not part of the primary analysis-card sequence.
 
 ## 13. Responsive and accessibility contract
 
@@ -304,26 +275,17 @@ Requirements:
 
 - no page-level horizontal overflow;
 - long ids, names, titles, facts, and links wrap safely;
-- visible keyboard focus;
-- logical tab and focus order;
+- visible keyboard focus and logical focus order;
 - reordered cards restore focus to the moved card heading;
-- general interactive targets are at least 44px on touch layouts;
+- general touch targets are at least 44px;
 - mobile management targets are at least 48px;
-- reduced-motion preference is respected;
-- increased-contrast and forced-color modes retain usable distinctions;
-- evidence state must not rely on color alone;
+- reduced motion, increased contrast, and forced colors remain usable;
+- evidence state does not rely on color alone;
 - empty, partial, unavailable, corrupted-storage, and long-content states remain readable.
 
 ## 14. Privacy and analytics
 
-Local ids remain local. Runtime Watchlist and Channel-save code must not send saved ids through:
-
-- analytics events;
-- query strings other than an explicitly opened provider Channel route;
-- canonical or social metadata;
-- background requests;
-- beacon APIs;
-- server storage.
+Local ids remain local. Runtime Watchlist and Channel-save code must not send saved ids through analytics events, canonical or social metadata, background requests, beacon APIs, or server storage.
 
 ## 15. Explicit non-goals
 
@@ -344,13 +306,13 @@ Local Watchlist v1 does not provide:
 
 ## 16. Production acceptance
 
-Permanent acceptance record:
+Permanent record:
 
 ```text
 docs/operations/watchlist-production-acceptance-2026-06-25.md
 ```
 
-Accepted revision and evidence:
+Accepted evidence:
 
 ```text
 production SHA: f3e0ee8741e96015c5440df167574b8002fccc0d
@@ -364,14 +326,4 @@ Production acceptance confirmed separate provider bindings, real provider data, 
 
 ## 17. Scope-change rule
 
-A new specification revision is required before work that adds or changes:
-
-- Watchlist server APIs;
-- D1, KV, R2, account, or sync storage;
-- polling, alerts, or notifications;
-- collector or retention behavior;
-- provider endpoint schemas or meanings;
-- category, language, or session claims;
-- cross-provider identities or totals;
-- primary-tab placement;
-- per-channel data requests.
+A new specification revision is required before work that adds or changes Watchlist server APIs, D1/KV/R2/account storage, sync, polling, alerts, collectors, retention, endpoint meanings, category/language/session claims, cross-provider identities or totals, primary-tab placement, or per-channel data requests.
