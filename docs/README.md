@@ -40,9 +40,10 @@ Before changing ViewLoom, read:
 - [`operations/channel-production-acceptance-2026-06-23.md`](operations/channel-production-acceptance-2026-06-23.md)
 - [`operations/report-export-consolidation-acceptance-2026-06-24.md`](operations/report-export-consolidation-acceptance-2026-06-24.md)
 
-## Active temporary working note
+## Active temporary working notes
 
 - [`work-in-progress/watchlist-v1-working-note.md`](work-in-progress/watchlist-v1-working-note.md) — active Local Watchlist implementation ledger; retain through W5 production closure
+- [`work-in-progress/watchlist-w5a-hosted-preview-note.md`](work-in-progress/watchlist-w5a-hosted-preview-note.md) — W5A hosted Preview evidence and W5B handoff; delete during production closure
 
 There is no active History rebuild, Channel v1, Report & Export consolidation, or Phase 5 capability-audit working note.
 
@@ -59,42 +60,55 @@ W3A complete PR #419
 W3B complete PR #420
 W3C complete PR #421
 W4A complete PR #422
-W4B completion candidate PR #423
-W5A next after PR #423 merge report
+W4B complete PR #423
+W5A completion candidate PR #424
+W5B next after PR #424 merge report
 ```
 
-W4B is the complete deterministic local browser acceptance and candidate-freeze window. It adds no runtime product behavior and does not request a hosted Preview.
+W5A verified the exact W4B candidate on hosted Cloudflare Preview. The hosted branch `preview-watchlist-v1` points to `c75b4549bb50d7eb54c0135874dba63db0b7cc69`; it does not include W5A verification code or any runtime feature change.
 
-Current W4B authorities:
+Current W5A authorities:
 
 ```text
-apps/web/scripts/watchlist-browser-acceptance.mjs
-.github/workflows/watchlist-browser.yml
-scripts/verify-development-policy.mjs
+apps/web/scripts/watchlist-cloudflare-preview.mjs
+.github/workflows/watchlist-hosted-preview.yml
+docs/work-in-progress/watchlist-w5a-hosted-preview-note.md
 ```
 
-The W4B workflow runs:
+Hosted deployment evidence:
 
 ```text
-Development policy
-web typecheck
-W4A consolidated contracts
-web build
-W3B desktop and narrow regressions
-W3C desktop/tablet and mobile regressions
-W4B integrated browser acceptance
-machine-readable evidence validation
+environment: preview
+branch: preview-watchlist-v1
+commit_sha: c75b4549bb50d7eb54c0135874dba63db0b7cc69
+pages_url: https://c0228ac1.viewloom.pages.dev
+Twitch binding: DB_TWITCH_HOT -> vl_twitch_hot
+Kick binding: DB_KICK_HOT -> vl_kick_hot
 ```
 
 Machine-readable output:
 
 ```text
-schema: viewloom-watchlist-local-browser-acceptance-v1
-scenarios: 4
-artifacts: desktop, cross-tab, tablet, mobile, storage-error, W3B, and W3C matrices
+schema: viewloom-watchlist-hosted-preview-acceptance-v1
+result: pass
+scenarios:
+  twitch-desktop-hosted
+  kick-mobile-hosted
+  kick-channel-save-hosted
 ```
 
-After PR #423 merges and its full report is issued, W5A may begin on `work-watchlist-w5-hosted`, with the deliberate hosted branch `preview-watchlist-v1`.
+The accepted hosted request contract remains:
+
+```text
+empty initial load:       0 Heatmap + 0 History
+nonempty initial load:    1 Heatmap + 1 History
+uncached period change:   0 Heatmap + 1 History
+cached period restore:    0 Heatmap + 0 History
+combined refresh:         1 Heatmap + 1 History
+Channel save:             0 additional requests
+```
+
+After PR #424 merges and its full report is issued, W5B production acceptance and documentation closure may begin. No W5B branch exists yet.
 
 ## Temporary-note lifecycle
 
