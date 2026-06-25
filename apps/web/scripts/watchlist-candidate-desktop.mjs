@@ -42,6 +42,7 @@ async function verifyTwitchDesktop() {
   const cardRadius = await page.locator('.watchlist-card').first().evaluate((node) => Number.parseFloat(getComputedStyle(node).borderRadius))
   check(heroRadius >= 12 && cardRadius >= 12, `Candidate surface hierarchy is not active: ${JSON.stringify({ heroRadius, cardRadius })}`)
 
+  await prepareFullPageScreenshot(page)
   await page.screenshot({ path: '/tmp/watchlist-candidate-twitch-desktop-1440.png', fullPage: true })
   await appendFile('/tmp/watchlist-candidate.log', `TWITCH_DESKTOP ${JSON.stringify({ calls: calls.api, heroRadius, cardRadius })}\n`)
   await context.close()
@@ -66,6 +67,7 @@ async function verifyTwitchTablet() {
   const controlColumns = await page.locator('.watchlist-controls').evaluate((node) => getComputedStyle(node).gridTemplateColumns)
   check(controlColumns.split(' ').length === 1, `Tablet controls did not collapse to one column: ${controlColumns}`)
 
+  await prepareFullPageScreenshot(page)
   await page.screenshot({ path: '/tmp/watchlist-candidate-twitch-tablet-820.png', fullPage: true })
   await appendFile('/tmp/watchlist-candidate.log', `TWITCH_TABLET ${JSON.stringify({ calls: calls.api, controlColumns })}\n`)
   await context.close()
@@ -103,6 +105,7 @@ async function verifyKickPartialDesktop() {
   check((await page.locator('[data-watchlist-history-feedback]').innerText()).includes('Partial'), 'Kick partial feedback is missing.')
   await assertNoOverflow(page, 'Kick desktop partial')
 
+  await prepareFullPageScreenshot(page)
   await page.screenshot({ path: '/tmp/watchlist-candidate-kick-desktop-1440-partial.png', fullPage: true })
   await appendFile('/tmp/watchlist-candidate.log', `KICK_DESKTOP_PARTIAL ${JSON.stringify({ calls: calls.api })}\n`)
   await context.close()
@@ -118,6 +121,15 @@ async function openPopulated(context, provider, entries) {
   await waitReady(page)
   await waitDataIdle(page)
   return page
+}
+
+async function prepareFullPageScreenshot(page) {
+  await page.evaluate(() => {
+    const active = document.activeElement
+    if (active instanceof HTMLElement) active.blur()
+    window.scrollTo(0, 0)
+  })
+  await page.waitForFunction(() => window.scrollY === 0)
 }
 
 async function assertNoOverflow(page, label) {
