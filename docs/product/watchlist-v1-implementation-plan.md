@@ -200,10 +200,13 @@ Implemented:
 - viewer-minutes, peak, average, observed minutes, ranks, daily count, and recent appearance retention;
 - missing values remain null rather than zero;
 - separate 7d and 30d page-memory caches;
+- Back/Forward period restore uses page-memory cache and makes no request when that period is already cached;
 - independent `stored`, `latest`, and `retained` evidence axes;
 - latest and History failure isolation;
 - exact initial, period, cached restore, refresh, and task-local request lifecycle;
 - no route, UI, API, D1, or History visual change.
+
+No public Watchlist route is added in W2B.
 
 ## 8. W3A — provider routes and storage-first shell
 
