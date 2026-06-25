@@ -32,22 +32,17 @@ The active program is public-surface audit and P0/P1 repair, not a new major fea
 
 ```text
 Phase 7  source-of-truth reset and repair-program lock    complete PR #426
-Phase 8  all-public-surface inventory and browser audit   active
+Phase 8  all-public-surface inventory and browser audit   P8A complete PR #427
 Phase 9  P0/P1 repair; History UI is the central track    queued
 ```
 
-Current window and branch:
-
-```text
-P8A
-work-public-surface-inventory
-```
-
-Exact next branch after P8A merge reporting and explicit continuation:
+Exact next branch after the P8A merge report and explicit continuation:
 
 ```text
 work-public-browser-audit
 ```
+
+The completed P8A inventory is under `docs/audits/`. It owns 20 Vite HTML inputs plus the explicit 404 page, records separate Twitch and Kick bindings, and lists missing browser/state coverage without treating an existing build or legacy workflow as proof of usability.
 
 ## Approved History repair
 
@@ -75,17 +70,19 @@ Before changing this repository, read in order:
 - [`docs/product/current-schedule.md`](docs/product/current-schedule.md)
 - [`docs/product/post-watchlist-program-plan.md`](docs/product/post-watchlist-program-plan.md)
 
-For the active History repair program also read:
+For the History repair program also read:
 
 - [`docs/product/history-and-trends-spec.md`](docs/product/history-and-trends-spec.md) — accepted baseline
 - [`docs/product/history-ui-repair-spec.md`](docs/product/history-ui-repair-spec.md) — active repair target
 - [`docs/product/history-ui-repair-plan.md`](docs/product/history-ui-repair-plan.md) — Phase 7–9 subplan
 - [`docs/work-in-progress/history-ui-repair-working-note.md`](docs/work-in-progress/history-ui-repair-working-note.md) — active execution memory
 
-For P8A also read:
+For Phase 8 browser work also read:
 
-- [`docs/audits/P8A_SCOPE.md`](docs/audits/P8A_SCOPE.md)
 - [`docs/audits/README.md`](docs/audits/README.md)
+- [`docs/audits/public-surface-inventory.json`](docs/audits/public-surface-inventory.json)
+- [`docs/audits/public-surface-inventory.md`](docs/audits/public-surface-inventory.md)
+- [`docs/audits/public-surface-gaps.json`](docs/audits/public-surface-gaps.json)
 
 Implementation does not begin from chat memory, an old PR, or screenshots alone. Repository authorities are updated first when scope, priority, or behavior changes.
 
@@ -110,8 +107,8 @@ Implementation does not begin from chat memory, an old PR, or screenshots alone.
 
 ```text
 P7A  governance and schedule reset                         complete PR #426
-P8A  public route and acceptance inventory                 active
-P8B  desktop/tablet/mobile browser defect audit            next
+P8A  public route and acceptance inventory                 complete PR #427
+P8B  desktop/tablet/mobile browser defect audit            exact next
 P9H0 exact History reproduction and failing gates          queued
 P9H1 metric execution repair                               queued
 P9H2 chart scale, axes, units, and day interaction          queued
