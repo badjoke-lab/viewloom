@@ -46,6 +46,7 @@ const requiredFiles = [
   'docs/operations/watchlist-production-acceptance-2026-06-25.md',
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
+  'docs/product/post-watchlist-program-plan.md',
   'docs/product/history-and-trends-spec.md',
   'docs/product/history-layout-rebuild-plan.md',
   'docs/product/history-ui-repair-spec.md',
@@ -56,6 +57,19 @@ const requiredFiles = [
   'docs/product/next-feature-data-capability-audit.md',
   'docs/product/local-watchlist-spec.md',
   'docs/product/watchlist-v1-implementation-plan.md',
+  'docs/audits/P8A_SCOPE.md',
+  'docs/audits/README.md',
+  'docs/audits/public-surface-inventory.json',
+  'docs/audits/public-surface-inventory.md',
+  'docs/audits/public-surface-gaps.json',
+  'docs/audits/public-surface-routes-portal.json',
+  'docs/audits/public-surface-routes-twitch.json',
+  'docs/audits/public-surface-routes-kick.json',
+  'docs/audits/public-surface-profiles-core.json',
+  'docs/audits/public-surface-profiles-analysis.json',
+  'docs/audits/public-surface-profiles-history.json',
+  'docs/audits/public-surface-profiles-utility.json',
+  'scripts/verify-public-surface-inventory.mjs',
   'apps/web/docs/watchlist-latest-w2a-contract.md',
   'apps/web/docs/watchlist-history-w2b-contract.md',
   'apps/web/src/live/watchlist-page.ts',
@@ -65,6 +79,7 @@ const requiredFiles = [
   'apps/web/scripts/watchlist-cloudflare-preview.mjs',
   'apps/web/scripts/watchlist-production-acceptance.mjs',
   '.github/workflows/development-policy.yml',
+  '.github/workflows/public-surface-inventory.yml',
   '.github/workflows/watchlist-storage.yml',
   '.github/workflows/watchlist-latest.yml',
   '.github/workflows/watchlist-history.yml',
@@ -94,11 +109,12 @@ requireFragments('docs/operations/documentation-governance.md', [
 ])
 
 requireFragments('README.md', [
-  'Phase 7  source-of-truth reset and repair-program lock',
-  'Phase 8  all-public-surface inventory and browser defect audit',
-  'Phase 9  P0/P1 repair, with History UI as the central approved track',
-  'work-history-ui-repair-governance',
+  'Phase 7  source-of-truth reset and repair-program lock    complete PR #426',
+  'Phase 8  all-public-surface inventory and browser audit   active',
+  'P8A',
   'work-public-surface-inventory',
+  'work-public-browser-audit',
+  'post-watchlist-program-plan.md',
   'history-ui-repair-spec.md',
   'history-ui-repair-plan.md',
   'history-ui-repair-working-note.md',
@@ -108,48 +124,74 @@ const index = read('docs/README.md')
 for (const path of [
   'product/current-roadmap.md',
   'product/current-schedule.md',
+  'product/post-watchlist-program-plan.md',
   'product/history-and-trends-spec.md',
   'product/history-layout-rebuild-plan.md',
   'product/history-ui-repair-spec.md',
   'product/history-ui-repair-plan.md',
   'work-in-progress/history-ui-repair-working-note.md',
+  'audits/P8A_SCOPE.md',
+  'audits/public-surface-inventory.json',
+  'audits/public-surface-inventory.md',
+  'audits/public-surface-gaps.json',
   'product/local-watchlist-spec.md',
   'product/watchlist-v1-implementation-plan.md',
   'operations/watchlist-production-acceptance-2026-06-25.md',
 ]) assert(index.includes(path), `docs/README.md: missing canonical link: ${path}`)
 for (const note of retiredNotes) assert(!index.includes(note.replace('docs/', '')), `docs/README.md: retired note remains linked: ${note}`)
 for (const fragment of [
-  'Phase 7  source-of-truth reset and repair-program lock    active',
-  'P7A      work-history-ui-repair-governance                active',
-  'Phase 9  P0/P1 repair; History UI central track           approved and queued',
-  'work-public-surface-inventory',
+  'Phase 7  source-of-truth reset and repair-program lock    complete through PR #426',
+  'Phase 8  public surface inventory and browser audit       active',
+  'P8A      work-public-surface-inventory                     active',
+  'P8B      work-public-browser-audit                         exact next branch',
   'The following are P1 defects',
-]) assert(index.includes(fragment), `docs/README.md: missing active repair state: ${fragment}`)
+  'Repository-comparison rule',
+]) assert(index.includes(fragment), `docs/README.md: missing active Phase 8 state: ${fragment}`)
 
 requireFragments('docs/product/current-roadmap.md', [
   'History & Trends | production baseline accepted; public-quality P1 repair approved',
   'Phase 7 — source-of-truth reset and repair-program lock',
-  'Branch: work-history-ui-repair-governance',
-  'Phase 8   all-public-surface inventory and browser defect audit',
-  'Phase 9   P0/P1 core repair, with History UI repair as the central approved track',
+  'State: complete through PR #426',
+  'Current window: P8A',
+  'Current branch: work-public-surface-inventory',
+  'Exact next branch: work-public-browser-audit',
+  'Phase 8   all-public-surface inventory and browser defect audit      active',
+  'Phase 9   P0/P1 core repair; History UI is the central track',
   'P9H1 metric execution repair',
-  'P9H2 chart axes, scale, units, and day-interaction repair',
+  'P9H2 chart axes, scale, units, and day interaction',
   'Additional reference screenshots may refine styling later.',
   'No Phase 15 feature is approved by this roadmap.',
 ])
 
 requireFragments('docs/product/current-schedule.md', [
-  'History public-quality repair            approved P1 program',
-  'Phase 7 source reset                     active',
-  'Window: P7A',
-  'Branch: work-history-ui-repair-governance',
-  'P8A  work-public-surface-inventory       next after P7A merge report',
-  'P8B  work-public-browser-audit',
+  'Phase 7 source reset                     complete through PR #426',
+  'Phase 8 public audit                     active',
+  'Window: P8A — public surface inventory',
+  'Branch: work-public-surface-inventory',
+  'Exact next branch: work-public-browser-audit',
+  'P7A  work-history-ui-repair-governance   complete PR #426',
+  'P8A  work-public-surface-inventory       active',
+  'P8B  work-public-browser-audit           exact next after P8A merge report',
   'P9H0 work-history-ui-h0-baseline',
-  'P9H1 work-history-ui-h1-metric',
-  'P9H2 work-history-ui-h2-chart',
   'P9H7 work-history-ui-h7-acceptance',
-  'No later branch exists yet.',
+  'P8A is the only active branch.',
+])
+
+requireFragments('docs/product/post-watchlist-program-plan.md', [
+  'Status: active source-of-truth program plan',
+  'Current phase: Phase 8',
+  'Current window: P8A',
+  'Current branch: `work-public-surface-inventory`',
+  'Completed predecessor: Phase 7 P7A through PR #426',
+  'Repository comparison rule',
+  '| 8 | P8A | active | `work-public-surface-inventory`',
+  'P8B — public browser defect audit',
+  'U10A — design tokens and component audit',
+  'O11A — unified acceptance matrix',
+  'R12A — legal and policy surfaces',
+  'L13A — staged publication',
+  'N14A — candidate audit',
+  'Phase 15 has no approved implementation branch.',
 ])
 
 requireFragments('docs/product/history-and-trends-spec.md', [
@@ -177,30 +219,54 @@ requireFragments('docs/product/history-ui-repair-spec.md', [
   'production acceptance',
 ])
 requireFragments('docs/product/history-ui-repair-plan.md', [
-  'Status: active implementation plan',
-  'P7A  work-history-ui-repair-governance',
-  'P8A  work-public-surface-inventory',
-  'P8B  work-public-browser-audit',
+  'Status: active implementation subplan',
+  'Version: 1.1',
+  'Current window: Phase 8 P8A',
+  'Current branch: `work-public-surface-inventory`',
+  'P7A  work-history-ui-repair-governance   complete PR #426',
+  'P8A  work-public-surface-inventory       active',
+  'P8B  work-public-browser-audit           exact next after P8A merge report',
   'P9H0 work-history-ui-h0-baseline',
-  'P9H1 work-history-ui-h1-metric',
-  'P9H2 work-history-ui-h2-chart',
-  'P9H3 work-history-ui-h3-overview',
-  'P9H4 work-history-ui-h4-tasks',
-  'P9H5 work-history-ui-h5-responsive',
-  'P9H6 work-history-ui-h6-candidate',
   'P9H7 work-history-ui-h7-acceptance',
-  'Checking only `aria-pressed` or button styling is insufficient.',
+  'Checking only `aria-pressed`, selected styling, or button text is insufficient.',
   'After each PR merge:',
 ])
 requireFragments('docs/work-in-progress/history-ui-repair-working-note.md', [
   'Status: active',
-  'Current branch: `work-history-ui-repair-governance`',
-  'Current window: P7A',
+  'Current branch: `work-public-surface-inventory`',
+  'Current window: P8A — public surface inventory',
+  'Completed predecessor: P7A through PR #426',
   'approved P1 defects',
+  'Current P8A repository package',
   'Which module is authoritative for metric URL state?',
-  'P8A  work-public-surface-inventory',
+  'P8A  work-public-surface-inventory       active',
   'P9H7 work-history-ui-h7-acceptance',
   'Delete when: P9H7 production acceptance',
+])
+
+requireFragments('docs/audits/P8A_SCOPE.md', [
+  'This branch inventories current public routes',
+  'It does not repair product UI',
+  'work-public-browser-audit',
+])
+requireFragments('docs/audits/README.md', [
+  'Active public-surface audit',
+  'public-surface-inventory.json',
+  'public-surface-gaps.json',
+  'node scripts/verify-public-surface-inventory.mjs',
+])
+requireFragments('scripts/verify-public-surface-inventory.mjs', [
+  "manifest.schema === 'viewloom-public-surface-inventory-v1'",
+  "manifest.next_branch === 'work-public-browser-audit'",
+  "history?.assessment === 'known_p1_defects'",
+  "watchlist?.assessment === 'complete_for_v1_contract'",
+  "'/commercial-disclosure/'",
+])
+requireFragments('.github/workflows/public-surface-inventory.yml', [
+  'name: Public Surface Inventory',
+  'concurrency:',
+  'cancel-in-progress: true',
+  'verify-public-surface-inventory.mjs',
 ])
 
 requireFragments('docs/product/local-watchlist-spec.md', [
@@ -260,6 +326,7 @@ for (const entryPath of ['AGENTS.md', 'CONTRIBUTING.md']) {
 
 const concurrencyWorkflows = [
   '.github/workflows/development-policy.yml',
+  '.github/workflows/public-surface-inventory.yml',
   '.github/workflows/web-build.yml',
   '.github/workflows/web-checks.yml',
   '.github/workflows/web-verification.yml',
@@ -319,8 +386,9 @@ console.log('ViewLoom development, documentation, and deployment policy verifica
 console.log(`- ${requiredFiles.length} required files present`)
 console.log('- completed temporary notes remain retired')
 console.log('- Local Watchlist W0 through W5B remains governed as a completed production phase')
-console.log('- History UI repair P7A is the only active work window')
-console.log('- P8A public surface inventory is next only after P7A merge reporting and explicit continuation')
+console.log('- Phase 7 P7A is complete through PR #426')
+console.log('- Phase 8 P8A public surface inventory is the only active work window')
+console.log('- P8B work-public-browser-audit is next only after P8A merge reporting and explicit continuation')
 console.log(`- ${concurrencyWorkflows.length} active workflows cancel obsolete runs`)
 
 function walkFiles(directory) {
