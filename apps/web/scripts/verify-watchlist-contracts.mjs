@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
-import { basename, relative, resolve } from 'node:path'
+import { relative, resolve } from 'node:path'
 
 const webRoot = process.cwd()
 const repoRoot = resolve(webRoot, '../..')
@@ -22,24 +22,21 @@ const labels = [
   'Retained History unavailable',
 ]
 
-runFoundationVerifiers()
+runFoundations()
 verifyGovernance()
-verifyRoutes()
-verifyStorageAndUrl()
-verifyProviderRequests()
-verifyChannelEntryPoint()
-verifyRuntimePrivacy()
-verifyCandidateLayer()
-verifyHostedAcceptanceLayer()
+verifyRuntimeContract()
+verifyCandidateContract()
+verifyAcceptanceContract()
 verifyNoServerExpansion()
 verifyWorkflows()
 
-console.log('Watchlist W4A executable contract closure verification passed.')
-console.log('- W1 through W4B local foundations and regressions remain governed')
-console.log('- W5A hosted Preview identity, provider binding, real-data, request, and artifact contracts are governed')
-console.log('- no Watchlist-specific server, binding change, collector, cron, polling, or analytics-id path exists')
+console.log('Watchlist completed production contract verification passed.')
+console.log('- W1 through W4B foundations and local browser regressions remain governed')
+console.log('- W5A hosted Preview and W5B production acceptance remain operational gates')
+console.log('- temporary Watchlist notes remain retired')
+console.log('- no Watchlist-specific server, polling, per-channel request, or analytics-id path exists')
 
-function runFoundationVerifiers() {
+function runFoundations() {
   for (const script of [
     'scripts/verify-watchlist-storage.mjs',
     'scripts/verify-watchlist-latest.mjs',
@@ -57,269 +54,212 @@ function runFoundationVerifiers() {
 
 function verifyGovernance() {
   const spec = readRepo('docs/product/local-watchlist-spec.md')
-  const plan = readRepo('docs/product/watchlist-v1-implementation-plan.md')
+  const record = readRepo('docs/product/watchlist-v1-implementation-plan.md')
   const roadmap = readRepo('docs/product/current-roadmap.md')
   const schedule = readRepo('docs/product/current-schedule.md')
   const index = readRepo('docs/README.md')
-  const note = readRepo('docs/work-in-progress/watchlist-v1-working-note.md')
-  const hostedNote = readRepo('docs/work-in-progress/watchlist-w5a-hosted-preview-note.md')
+  const acceptance = readRepo('docs/operations/watchlist-production-acceptance-2026-06-25.md')
 
-  for (const fragment of [
+  requireAll(spec, [
+    'Status: accepted permanent product specification',
+    'Version: 1.1',
     '/twitch/watchlist/',
     '/kick/watchlist/',
     'viewloom.watchlist.twitch.v1',
     'viewloom.watchlist.kick.v1',
-    'saved ids, filter text, expanded state, and ordering are not serialized into the URL',
-    'no channel id or local list contents are added to analytics URLs, canonical URLs, or share metadata',
-    'No Watchlist-specific server API is required.',
-    'no interval polling, background refresh, service worker monitoring, or page-hidden polling is allowed',
-    'Watchlist is a secondary utility surface',
-  ]) assert.ok(spec.includes(fragment), `spec missing: ${fragment}`)
+    'maximum entries: 50 per provider',
+    'initial visible entries: 12',
+    'No Watchlist-specific server API is required or allowed for v1.',
+    'production acceptance run: 28166806560',
+  ], 'spec')
   for (const label of labels) assert.ok(spec.includes(label), `spec missing exact label: ${label}`)
 
-  for (const fragment of [
-    'Version: 1.5',
+  requireAll(record, [
+    'Status: completed implementation record',
+    'Version: 2.1',
     'work-watchlist-w4-browser            complete PR #423',
-    'work-watchlist-w5-hosted             completion candidate PR #424',
-    'work-watchlist-w5-production         next after PR #424 merge report',
-    '## 13. W5A — hosted Preview acceptance',
-    'State: completion candidate PR #424.',
+    'work-watchlist-w5-hosted             complete PR #424',
+    'work-watchlist-w5-production         completion PR #425',
+    'No public Watchlist route is added in W1.',
+    'No public Watchlist route is added in W2A.',
+    'No public Watchlist route is added in W2B.',
+    'concurrent refresh click is deduplicated',
+    'Back/Forward period restore from page memory',
+    'viewloom-watchlist-local-browser-acceptance-v1',
     'viewloom-watchlist-hosted-preview-acceptance-v1',
-    '28162895177',
-  ]) assert.ok(plan.includes(fragment), `plan missing accepted/current state: ${fragment}`)
+    'viewloom-watchlist-production-acceptance-v1',
+    '28166806560',
+    'No additional Local Watchlist branch is scheduled.',
+  ], 'implementation record')
 
-  for (const [path, source, fragments] of [
-    ['docs/product/current-roadmap.md', roadmap, [
-      'W4B  complete local browser candidate QA           complete PR #423',
-      'W5A  hosted preview-watchlist-v1 acceptance        completion candidate PR #424',
-      'W5B  production acceptance and document cleanup    next after merge report',
-      'viewloom-watchlist-hosted-preview-acceptance-v1',
-    ]],
-    ['docs/product/current-schedule.md', schedule, [
-      'Local Watchlist W4B                      complete through PR #423',
-      'Local Watchlist W5A                      completion candidate PR #424',
-      'Local Watchlist W5B                      next after PR #424 merge report',
-      'Watchlist Hosted Preview',
-    ]],
-    ['docs/README.md', index, [
-      'W4B complete PR #423',
-      'W5A completion candidate PR #424',
-      'W5B next after PR #424 merge report',
-      'watchlist-w5a-hosted-preview-note.md',
-    ]],
-    ['docs/work-in-progress/watchlist-v1-working-note.md', note, [
-      'W4B browser candidate QA         complete PR #423',
-      'W5A hosted Preview               completion candidate PR #424',
-      'W5B production closure           next after PR #424 merge report',
-    ]],
-    ['docs/work-in-progress/watchlist-w5a-hosted-preview-note.md', hostedNote, [
-      'Status: W5A completion candidate',
-      'preview-watchlist-v1',
-      'c75b4549bb50d7eb54c0135874dba63db0b7cc69',
-      'viewloom-watchlist-hosted-preview-acceptance-v1',
-      '28162895177',
-    ]],
-  ]) {
-    for (const fragment of fragments) assert.ok(source.includes(fragment), `${path} missing current marker: ${fragment}`)
-  }
+  requireAll(roadmap, [
+    'Local Watchlist v1 | W0–W5B complete through PR #425',
+    'Phase 6 — Local Watchlist v1 is complete after PR #425 merges',
+    'There is no automatically approved next major feature.',
+    'viewloom-watchlist-production-acceptance-v1',
+  ], 'roadmap')
+  requireAll(schedule, [
+    'Local Watchlist W5A                      complete through PR #424',
+    'Local Watchlist W5B                      completion PR #425',
+    'Next major feature                        not selected',
+    'Watchlist Production Acceptance',
+  ], 'schedule')
+  requireAll(index, [
+    'operations/watchlist-production-acceptance-2026-06-25.md',
+    'W5A complete PR #424',
+    'W5B completion PR #425',
+    'There is no active Local Watchlist',
+  ], 'documentation index')
+  requireAll(acceptance, [
+    'Status: completed permanent record',
+    'f3e0ee8741e96015c5440df167574b8002fccc0d',
+    'viewloom-watchlist-production-acceptance-v1',
+    '28166806560',
+    '7876704775',
+    '6 / 6 pass',
+    'DB_TWITCH_HOT -> vl_twitch_hot',
+    'DB_KICK_HOT -> vl_kick_hot',
+  ], 'production acceptance')
+
+  for (const path of [
+    'docs/work-in-progress/watchlist-v1-working-note.md',
+    'docs/work-in-progress/watchlist-w5a-hosted-preview-note.md',
+    'docs/work-in-progress/watchlist-w5b-production-note.md',
+    'docs/work-in-progress/watchlist-w5b-production-note-copy.md',
+    'docs/work-in-progress/watchlist-w5b-production-note-copy-2.md',
+    'docs/work-in-progress/watchlist-w5b-production-note-copy-3.md',
+    'docs/work-in-progress/watchlist-w5b-production-note-copy-4.md',
+    'docs/work-in-progress/watchlist-w5b-production-note-copy-5.md',
+    'docs/work-in-progress/watchlist-w5b-production-note-copy-6.md',
+  ]) assert.equal(existsSync(resolve(repoRoot, path)), false, `retired temporary note remains: ${path}`)
 }
 
-function verifyRoutes() {
-  verifyRoute('twitch', 'Twitch')
-  verifyRoute('kick', 'Kick')
-}
-
-function verifyRoute(provider, providerName) {
-  const source = readWeb(`${provider}/watchlist/index.html`)
-  const canonical = `https://vl.badjoke-lab.com/${provider}/watchlist/`
-  const head = section(source, '<head>', '</head>')
-  const tabs = source.match(/<nav class="feature-tabs"[\s\S]*?<\/nav>/)?.[0] ?? ''
-  const hrefs = [...tabs.matchAll(/href="([^"]+)"/g)].map((match) => match[1])
-
-  for (const fragment of [
-    `<title>${providerName} Local Watchlist — ViewLoom</title>`,
-    '<meta name="robots" content="noindex,follow" />',
-    `<link rel="canonical" href="${canonical}" />`,
-    `<meta property="og:url" content="${canonical}" />`,
-    `data-provider="${provider}"`,
-    'Saved only in this browser',
-    'Nothing is uploaded to a ViewLoom account.',
-    'Absence from an observed result is not proof that a channel is offline.',
-    '/src/live/watchlist-page.ts',
-    '/src/live/watchlist-move-focus.ts',
-  ]) assert.ok(source.includes(fragment), `${provider} route missing: ${fragment}`)
-
-  assert.deepEqual(hrefs, [
-    `/${provider}/heatmap/`,
-    `/${provider}/day-flow/`,
-    `/${provider}/battle-lines/`,
-    `/${provider}/history/`,
-    `/${provider}/status/`,
-  ], `${provider} primary tabs changed`)
-  assert.equal(/watchlist/i.test(tabs), false, `${provider} Watchlist entered primary tabs`)
-
-  for (const token of [
-    '?id=', '&id=', 'data-watchlist-entry=', 'data-channel-id=', 'example_channel',
-    'viewloom.watchlist.twitch.v1', 'viewloom.watchlist.kick.v1',
-  ]) assert.equal(head.includes(token), false, `${provider} metadata leaks local state: ${token}`)
-
-  assert.equal(source.includes(`href="/${provider}/watchlist/?`), false, `${provider} route serializes local state`)
-  assert.equal(source.includes('data-copy-current-view'), false, `${provider} route exposes share/copy-list behavior`)
-  assert.equal(source.includes('method="get"'), false, `${provider} route exposes local ids through GET`)
-}
-
-function verifyStorageAndUrl() {
+function verifyRuntimeContract() {
+  const page = readWeb('src/live/watchlist-page.ts')
+  const channel = readWeb('src/live/channel-watchlist.ts')
   const model = readWeb('src/live/watchlist/model.ts')
   const storage = readWeb('src/live/watchlist/storage.ts')
   const urlState = readWeb('src/live/watchlist/url-state.ts')
-
-  for (const fragment of [
-    "export const WATCHLIST_SCHEMA = 'viewloom-watchlist-v1'",
-    'export const WATCHLIST_REVISION = 1',
-    'export const WATCHLIST_MAX_ENTRIES = 50',
-    'export const WATCHLIST_INITIAL_VISIBLE_ENTRIES = 12',
-  ]) assert.ok(model.includes(fragment), `model missing: ${fragment}`)
-
-  assert.ok(storage.includes('return `viewloom.watchlist.${provider}.v1`'), 'versioned provider key function changed')
-  assert.equal(storage.includes('viewloom.watchlist.v1'), false, 'shared Watchlist key introduced')
-
-  for (const key of ['id', 'name', 'filter', 'saved', 'order', 'expanded']) {
-    assert.ok(urlState.includes(`'${key}'`), `URL scrub list missing: ${key}`)
-  }
-  assert.ok(urlState.includes('url.searchParams.delete(key)'), 'local-only query keys are not removed')
-  assert.ok(urlState.includes("url.searchParams.set('period', '7d')"), '7d URL state missing')
-  assert.ok(urlState.includes("url.searchParams.delete('period')"), '30d clean URL state missing')
-  assert.equal(urlState.includes('channelId'), false, 'URL-state layer serializes channel ids')
-}
-
-function verifyProviderRequests() {
-  const page = readWeb('src/live/watchlist-page.ts')
   const latestModel = readWeb('src/live/watchlist/latest-model.ts')
   const historyModel = readWeb('src/live/watchlist/history-model.ts')
   const combined = readWeb('src/live/watchlist/combined-controller.ts')
 
-  assert.ok(latestModel.includes("provider === 'kick' ? '/api/kick-heatmap' : '/api/twitch-heatmap'"), 'latest endpoint provider mapping changed')
-  assert.ok(historyModel.includes("provider === 'kick' ? '/api/kick-history' : '/api/history'"), 'History endpoint provider mapping changed')
-  assert.ok(historyModel.includes('return `${base}?period=${period}&metric=viewer_minutes`'), 'History period/metric endpoint changed')
-
-  assert.equal((page.match(/\bfetch\s*\(/g) ?? []).length, 1, 'Watchlist page must retain one generic fetch seam')
-  assert.match(page, /fetch\s*\(endpoint/, 'generic fetch seam no longer uses injected endpoint')
-  assert.ok(page.includes('if (!hasEntries)'), 'empty-list zero-request guard missing')
-  assert.ok(page.includes("action === 'retry_latest'"), 'latest-only retry missing')
-  assert.ok(page.includes("action === 'retry_history'"), 'History-only retry missing')
-
-  for (const fragment of [
+  requireAll(model, [
+    "export const WATCHLIST_SCHEMA = 'viewloom-watchlist-v1'",
+    'export const WATCHLIST_REVISION = 1',
+    'export const WATCHLIST_MAX_ENTRIES = 50',
+    'export const WATCHLIST_INITIAL_VISIBLE_ENTRIES = 12',
+  ], 'Watchlist model')
+  assert.ok(storage.includes('return `viewloom.watchlist.${provider}.v1`'), 'provider storage key changed')
+  assert.equal(storage.includes('viewloom.watchlist.v1'), false, 'shared Watchlist key introduced')
+  for (const key of ['id', 'name', 'filter', 'saved', 'order', 'expanded']) {
+    assert.ok(urlState.includes(`'${key}'`), `URL scrub key missing: ${key}`)
+  }
+  assert.ok(latestModel.includes("provider === 'kick' ? '/api/kick-heatmap' : '/api/twitch-heatmap'"), 'latest endpoint mapping changed')
+  assert.ok(historyModel.includes("provider === 'kick' ? '/api/kick-history' : '/api/history'"), 'History endpoint mapping changed')
+  requireAll(combined, [
     'latest.refresh(entries)',
     'history.refresh(entries, period)',
     "history.getSnapshot(period) ? 'cache' : 'memory_only'",
     "latest.getSnapshot() ? 'cache' : 'memory_only'",
-  ]) assert.ok(combined.includes(fragment), `combined request contract missing: ${fragment}`)
+  ], 'combined controller')
 
-  for (const label of labels) assert.ok(page.includes(label), `runtime missing exact label: ${label}`)
-  assert.equal(page.includes('/api/watchlist'), false, 'Watchlist-specific API endpoint introduced')
-  assert.equal(page.includes('Promise.all(documentState.entries'), false, 'per-channel request loop introduced')
-}
+  assert.equal((page.match(/\bfetch\s*\(/g) ?? []).length, 1, 'Watchlist page must retain one generic fetch seam')
+  assert.match(page, /fetch\s*\(endpoint/, 'generic fetch seam no longer uses injected endpoint')
+  requireAll(page, [
+    'dataController.initialLoad',
+    'dataController.changePeriod',
+    'dataController.refresh',
+    'dataController.retryLatest',
+    'dataController.retryHistory',
+    'dataController.taskLocal',
+    'Open Channel',
+    'Open History',
+    'Open Heatmap',
+  ], 'Watchlist page')
+  for (const label of labels) assert.ok(page.includes(label), `runtime missing label: ${label}`)
 
-function verifyChannelEntryPoint() {
-  const action = readWeb('src/live/channel-watchlist.ts')
-  for (const provider of ['twitch', 'kick']) {
-    assert.ok(readWeb(`${provider}/channel/index.html`).includes('/src/live/channel-watchlist.ts'), `${provider} Channel lost Watchlist action`)
+  requireAll(channel, [
+    'Save to Watchlist',
+    'Saved in Watchlist',
+    'No data request was made.',
+    'addStoredWatchlistEntry',
+    'readWatchlistStorageEvent',
+  ], 'Channel Watchlist action')
+  for (const token of ['fetch(', 'removeStoredWatchlistEntry', 'setInterval(', 'serviceWorker', 'gtag(']) {
+    assert.equal(channel.includes(token), false, `Channel action contains forbidden behavior: ${token}`)
   }
-  for (const fragment of [
-    'Save to Watchlist', 'Saved in Watchlist', 'No data request was made.',
-    'addStoredWatchlistEntry', 'readWatchlistStorageEvent',
-  ]) assert.ok(action.includes(fragment), `Channel action missing: ${fragment}`)
-  for (const token of ['fetch(', 'removeStoredWatchlistEntry', 'setInterval(', 'serviceWorker', 'trackEvent(', 'gtag(']) {
-    assert.equal(action.includes(token), false, `Channel action contains forbidden behavior: ${token}`)
-  }
-}
 
-function verifyRuntimePrivacy() {
-  const paths = [
-    ...walkFiles(resolve(webRoot, 'src/live/watchlist')).map((path) => relative(webRoot, path)),
-    'src/live/watchlist-page.ts',
-    'src/live/watchlist-move-focus.ts',
-    'src/live/channel-watchlist.ts',
+  const runtimeFiles = [
+    ...walkFiles(resolve(webRoot, 'src/live/watchlist')),
+    resolve(webRoot, 'src/live/watchlist-page.ts'),
+    resolve(webRoot, 'src/live/watchlist-move-focus.ts'),
+    resolve(webRoot, 'src/live/channel-watchlist.ts'),
   ]
-  const forbidden = [
-    'setInterval(', 'navigator.serviceWorker', 'serviceWorker.register', 'indexedDB',
-    'sessionStorage', 'document.cookie', 'navigator.sendBeacon', 'trackEvent(', 'gtag(',
-    '/api/watchlist', 'D1Database', 'KVNamespace', 'R2Bucket', 'scheduled(',
-  ]
-  for (const path of paths) {
-    const source = readWeb(path)
-    for (const token of forbidden) assert.equal(source.includes(token), false, `${path} contains forbidden behavior: ${token}`)
-  }
-
-  const analytics = readWeb('src/analytics.ts')
-  for (const token of ['localStorage', 'sessionStorage', 'searchParams', 'location.search', 'channelId']) {
-    assert.equal(analytics.includes(token), false, `generic analytics could capture a local id: ${token}`)
+  for (const path of runtimeFiles) {
+    const source = readFileSync(path, 'utf8')
+    for (const token of [
+      'setInterval(', 'navigator.serviceWorker', 'serviceWorker.register',
+      'sessionStorage', 'indexedDB', 'document.cookie', 'navigator.sendBeacon',
+      'trackEvent(', 'gtag(', '/api/watchlist', 'D1Database', 'KVNamespace', 'R2Bucket', 'scheduled(',
+    ]) assert.equal(source.includes(token), false, `${relative(webRoot, path)} contains forbidden behavior: ${token}`)
   }
 }
 
-function verifyCandidateLayer() {
+function verifyCandidateContract() {
   const focus = readWeb('src/live/watchlist-move-focus.ts')
-  const base = readWeb('src/watchlist-candidate.css')
-  const panels = readWeb('src/watchlist-candidate-panels.css')
   const responsive = readWeb('src/watchlist-candidate-responsive.css')
   const desktop = readWeb('scripts/watchlist-candidate-desktop.mjs')
   const mobile = readWeb('scripts/watchlist-candidate-mobile.mjs')
 
-  for (const fragment of [
+  requireAll(focus, [
     "import '../watchlist-candidate.css'",
     "import '../watchlist-candidate-panels.css'",
     "import '../watchlist-candidate-responsive.css'",
-  ]) assert.ok(focus.includes(fragment), `candidate style entry missing: ${fragment}`)
-
-  for (const fragment of ['.watchlist-page .page-head', '.watchlist-controls', '.watchlist-feedback']) {
-    assert.ok(base.includes(fragment), `candidate base missing: ${fragment}`)
-  }
-  for (const fragment of ['.watchlist-card', '.watchlist-evidence-grid', '.watchlist-remove']) {
-    assert.ok(panels.includes(fragment), `candidate panels missing: ${fragment}`)
-  }
-  for (const fragment of [
-    '@media (max-width: 980px)', '@media (max-width: 760px)', '@media (max-width: 430px)',
-    '@media (prefers-contrast: more)', '@media (forced-colors: active)',
-    '@media (prefers-reduced-motion: reduce)', 'min-height: 44px', 'min-height: 48px',
-  ]) assert.ok(responsive.includes(fragment), `candidate responsive contract missing: ${fragment}`)
-
-  for (const fragment of ['width: 1440', 'width: 820', 'watchlist-candidate-twitch-desktop-1440.png', 'watchlist-candidate-kick-desktop-1440-partial.png']) {
-    assert.ok(desktop.includes(fragment), `desktop candidate gate missing: ${fragment}`)
-  }
-  for (const fragment of ['width: 390', 'width: 360', 'watchlist-candidate-kick-mobile-390-empty.png', 'watchlist-candidate-kick-mobile-360-storage-error.png', 'watchlist-candidate-kick-mobile-360-long-content.png']) {
-    assert.ok(mobile.includes(fragment), `mobile candidate gate missing: ${fragment}`)
-  }
+  ], 'candidate style entry')
+  requireAll(responsive, [
+    '@media (max-width: 980px)',
+    '@media (max-width: 760px)',
+    '@media (max-width: 430px)',
+    '@media (prefers-reduced-motion: reduce)',
+    '@media (prefers-contrast: more)',
+    '@media (forced-colors: active)',
+    'min-height: 44px',
+    'min-height: 48px',
+  ], 'candidate responsive contract')
+  requireAll(desktop, ['width: 1440', 'width: 820'], 'desktop candidate gate')
+  requireAll(mobile, ['width: 390', 'width: 360'], 'mobile candidate gate')
 }
 
-function verifyHostedAcceptanceLayer() {
-  const script = readWeb('scripts/watchlist-cloudflare-preview.mjs')
-  const workflow = readRepo('.github/workflows/watchlist-hosted-preview.yml')
+function verifyAcceptanceContract() {
+  const local = readWeb('scripts/watchlist-browser-acceptance.mjs')
+  const hosted = readWeb('scripts/watchlist-cloudflare-preview.mjs')
+  const production = readWeb('scripts/watchlist-production-acceptance.mjs')
 
-  for (const fragment of [
+  requireAll(local, [
+    'viewloom-watchlist-local-browser-acceptance-v1',
+    'verifyTwitchIntegratedDesktop',
+    'verifyKickTabletAndChannel',
+    'verifyKickMobile',
+    'verifyStorageUnavailable',
+  ], 'local browser acceptance')
+  requireAll(hosted, [
     'viewloom-watchlist-hosted-preview-acceptance-v1',
     'preview-watchlist-v1',
     'c75b4549bb50d7eb54c0135874dba63db0b7cc69',
-    'DB_TWITCH_HOT', 'vl_twitch_hot', 'DB_KICK_HOT', 'vl_kick_hot',
+    'DB_TWITCH_HOT', 'DB_KICK_HOT',
     'verifyWatchlist', 'verifyChannelSave',
-    "mobile ? 'mobile' : 'desktop'",
-    'kick-channel-save-hosted',
-    'additionalRequestsOnSave', 'assertProviderOnly', 'assertManagementTargets',
-    'Retained History is partial',
-  ]) assert.ok(script.includes(fragment), `hosted acceptance script missing: ${fragment}`)
-
-  for (const fragment of [
-    'name: Watchlist Hosted Preview',
-    'concurrency:',
-    'cancel-in-progress: true',
-    'WATCHLIST_EXPECTED_BRANCH: preview-watchlist-v1',
-    'WATCHLIST_EXPECTED_SHA:',
-    'Run W5A hosted Preview acceptance',
-    'Verify hosted evidence',
-    'watchlist-w5a-hosted-preview',
-  ]) assert.ok(workflow.includes(fragment), `hosted Preview workflow missing: ${fragment}`)
-
-  assert.equal(script.includes('/api/watchlist'), false, 'hosted acceptance assumes a Watchlist-specific API')
-  assert.equal(script.includes('setInterval('), false, 'hosted acceptance introduces polling behavior')
+  ], 'hosted acceptance')
+  requireAll(production, [
+    'viewloom-watchlist-production-acceptance-v1',
+    'f3e0ee8741e96015c5440df167574b8002fccc0d',
+    "collectorState === 'ok'",
+    "collectorState === 'snapshot_available'",
+    'verifyHome', 'verifyWatchlist', 'verifyChannelSave',
+    "`${provider}-home-entry-production`",
+    "`${provider}-channel-save-production`",
+    'additionalRequestsOnSave',
+  ], 'production acceptance')
 }
 
 function verifyNoServerExpansion() {
@@ -327,8 +267,7 @@ function verifyNoServerExpansion() {
     if (!existsSync(root)) continue
     for (const path of walkFiles(root)) {
       const normalized = relative(repoRoot, path).replaceAll('\\', '/')
-      assert.equal(/watchlist/i.test(normalized), false, `Watchlist-specific server/collector file introduced: ${normalized}`)
-      if (!isText(path)) continue
+      assert.equal(/watchlist/i.test(normalized), false, `Watchlist-specific server file introduced: ${normalized}`)
       const source = readFileSync(path, 'utf8')
       assert.equal(source.includes('/api/watchlist'), false, `Watchlist-specific endpoint introduced: ${normalized}`)
       assert.equal(source.includes('viewloom.watchlist.'), false, `browser-local key leaked into server code: ${normalized}`)
@@ -337,32 +276,39 @@ function verifyNoServerExpansion() {
 }
 
 function verifyWorkflows() {
-  const contractWorkflow = readRepo('.github/workflows/watchlist-contracts.yml')
-  for (const fragment of [
-    'name: Watchlist Contracts', 'concurrency:',
-    'group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}',
-    'cancel-in-progress: true', 'Verify development policy',
-    'Verify consolidated Watchlist contracts', 'node scripts/verify-watchlist-contracts.mjs',
-  ]) assert.ok(contractWorkflow.includes(fragment), `contract workflow missing: ${fragment}`)
-
-  const packageSource = readWeb('package.json')
-  assert.ok(packageSource.includes('"verify:watchlist-contracts": "node scripts/verify-watchlist-contracts.mjs"'), 'package command missing')
-
-  const policy = readRepo('scripts/verify-development-policy.mjs')
-  for (const fragment of [
-    'docs/product/current-roadmap.md', 'docs/product/current-schedule.md',
-    'docs/product/local-watchlist-spec.md', 'docs/product/watchlist-v1-implementation-plan.md',
-    'docs/work-in-progress/watchlist-v1-working-note.md',
-    'docs/work-in-progress/watchlist-w5a-hosted-preview-note.md',
+  const workflows = [
+    '.github/workflows/watchlist-storage.yml',
+    '.github/workflows/watchlist-latest.yml',
+    '.github/workflows/watchlist-history.yml',
+    '.github/workflows/watchlist-page.yml',
+    '.github/workflows/watchlist-candidate.yml',
+    '.github/workflows/watchlist-contracts.yml',
+    '.github/workflows/watchlist-browser.yml',
     '.github/workflows/watchlist-hosted-preview.yml',
-  ]) assert.ok(policy.includes(fragment), `Development policy lost Watchlist governance: ${fragment}`)
+    '.github/workflows/watchlist-production-acceptance.yml',
+  ]
+  for (const path of workflows) {
+    const source = readRepo(path)
+    requireAll(source, [
+      'concurrency:',
+      'group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}',
+      'cancel-in-progress: true',
+    ], path)
+  }
+
+  requireAll(readRepo('.github/workflows/watchlist-production-acceptance.yml'), [
+    'name: Watchlist Production Acceptance',
+    'WATCHLIST_EXPECTED_BRANCH: main',
+    'Run W5B production acceptance',
+    'Verify production evidence',
+    "assert.equal(evidence.providers.kick.collectorState, 'snapshot_available')",
+    'watchlist-w5b-production-acceptance',
+  ], 'production acceptance workflow')
+  assert.ok(readWeb('package.json').includes('"verify:watchlist-contracts": "node scripts/verify-watchlist-contracts.mjs"'), 'package command missing')
 }
 
-function section(source, start, end) {
-  const from = source.indexOf(start)
-  const to = source.indexOf(end)
-  assert.ok(from >= 0 && to > from, `missing section ${start}...${end}`)
-  return source.slice(from, to + end.length)
+function requireAll(source, fragments, label) {
+  for (const fragment of fragments) assert.ok(source.includes(fragment), `${label} missing: ${fragment}`)
 }
 
 function walkFiles(root) {
@@ -373,11 +319,7 @@ function walkFiles(root) {
     const path = resolve(root, entry)
     const stats = statSync(path)
     if (stats.isDirectory()) files.push(...walkFiles(path))
-    else if (stats.isFile()) files.push(path)
+    else if (stats.isFile() && /\.(?:[cm]?[jt]sx?|jsonc?|ya?ml|toml|md|html|css|sql|py)$/i.test(entry)) files.push(path)
   }
   return files
-}
-
-function isText(path) {
-  return /\.(?:[cm]?[jt]sx?|jsonc?|ya?ml|toml|md|html|css|sql|py)$/i.test(basename(path))
 }

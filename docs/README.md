@@ -26,11 +26,11 @@ Before changing ViewLoom, read:
 - [`product/channel-and-streamer-spec.md`](product/channel-and-streamer-spec.md) — accepted Channel / Streamer v1 specification
 - [`product/channel-v1-implementation-plan.md`](product/channel-v1-implementation-plan.md) — completed Channel v1 implementation record
 - [`product/report-export-consolidation-plan.md`](product/report-export-consolidation-plan.md) — completed Phase 4 consolidation record
-- [`product/next-feature-data-capability-audit.md`](product/next-feature-data-capability-audit.md) — completed Phase 5 audit and Watchlist approval boundary
-- [`product/local-watchlist-spec.md`](product/local-watchlist-spec.md) — active permanent Local Watchlist v1 contract
-- [`product/watchlist-v1-implementation-plan.md`](product/watchlist-v1-implementation-plan.md) — active W0–W5 implementation and acceptance plan
-- [`../apps/web/docs/watchlist-latest-w2a-contract.md`](../apps/web/docs/watchlist-latest-w2a-contract.md) — accepted W2A latest-observation and request contract
-- [`../apps/web/docs/watchlist-history-w2b-contract.md`](../apps/web/docs/watchlist-history-w2b-contract.md) — accepted W2B retained-History and combined-evidence contract
+- [`product/next-feature-data-capability-audit.md`](product/next-feature-data-capability-audit.md) — completed Phase 5 audit
+- [`product/local-watchlist-spec.md`](product/local-watchlist-spec.md) — accepted permanent Local Watchlist v1 contract
+- [`product/watchlist-v1-implementation-plan.md`](product/watchlist-v1-implementation-plan.md) — completed W0–W5 implementation record
+- [`../apps/web/docs/watchlist-latest-w2a-contract.md`](../apps/web/docs/watchlist-latest-w2a-contract.md) — accepted latest-observation contract
+- [`../apps/web/docs/watchlist-history-w2b-contract.md`](../apps/web/docs/watchlist-history-w2b-contract.md) — accepted retained-History contract
 
 ## Permanent acceptance records
 
@@ -39,17 +39,15 @@ Before changing ViewLoom, read:
 - [`operations/history-production-acceptance-2026-06-23.md`](operations/history-production-acceptance-2026-06-23.md)
 - [`operations/channel-production-acceptance-2026-06-23.md`](operations/channel-production-acceptance-2026-06-23.md)
 - [`operations/report-export-consolidation-acceptance-2026-06-24.md`](operations/report-export-consolidation-acceptance-2026-06-24.md)
+- [`operations/watchlist-production-acceptance-2026-06-25.md`](operations/watchlist-production-acceptance-2026-06-25.md)
 
 ## Active temporary working notes
 
-- [`work-in-progress/watchlist-v1-working-note.md`](work-in-progress/watchlist-v1-working-note.md) — active Local Watchlist implementation ledger; retain through W5 production closure
-- [`work-in-progress/watchlist-w5a-hosted-preview-note.md`](work-in-progress/watchlist-w5a-hosted-preview-note.md) — W5A hosted Preview evidence and W5B handoff; delete during production closure
+There is no active Local Watchlist, History rebuild, Channel v1, Report & Export consolidation, or Phase 5 capability-audit working note.
 
-There is no active History rebuild, Channel v1, Report & Export consolidation, or Phase 5 capability-audit working note.
+The pending History UI appearance revision has no working note because screenshots and detailed instructions remain unavailable. Begin that work later with a new audit and note rather than reviving a completed note.
 
-The pending History UI appearance revision has no working note because screenshots and detailed instructions remain unavailable. Begin that work later with a new audit and note rather than reviving an old completed note.
-
-## Current Local Watchlist state
+## Local Watchlist completion state
 
 ```text
 W0  complete PR #415
@@ -61,54 +59,37 @@ W3B complete PR #420
 W3C complete PR #421
 W4A complete PR #422
 W4B complete PR #423
-W5A completion candidate PR #424
-W5B next after PR #424 merge report
+W5A complete PR #424
+W5B completion PR #425
 ```
 
-W5A verified the exact W4B candidate on hosted Cloudflare Preview. The hosted branch `preview-watchlist-v1` points to `c75b4549bb50d7eb54c0135874dba63db0b7cc69`; it does not include W5A verification code or any runtime feature change.
-
-Current W5A authorities:
+Accepted production revision:
 
 ```text
-apps/web/scripts/watchlist-cloudflare-preview.mjs
-.github/workflows/watchlist-hosted-preview.yml
-docs/work-in-progress/watchlist-w5a-hosted-preview-note.md
+branch: main
+commit_sha: f3e0ee8741e96015c5440df167574b8002fccc0d
+environment: production
+pages_url: https://2e557de7.viewloom.pages.dev
+production acceptance run: 28166806560
+artifact id: 7876704775
+artifact digest: sha256:baad267afc68dca50ca08bf0227e8e0a1e46be3797965e9f982115f734cb5c33
 ```
 
-Hosted deployment evidence:
+Accepted permanent request contract:
 
 ```text
-environment: preview
-branch: preview-watchlist-v1
-commit_sha: c75b4549bb50d7eb54c0135874dba63db0b7cc69
-pages_url: https://c0228ac1.viewloom.pages.dev
-Twitch binding: DB_TWITCH_HOT -> vl_twitch_hot
-Kick binding: DB_KICK_HOT -> vl_kick_hot
+empty initial load:             0 Heatmap + 0 History
+nonempty initial load:          1 Heatmap + 1 History
+uncached period change:         0 Heatmap + 1 History
+cached period restore:          0 Heatmap + 0 History
+combined refresh:               1 Heatmap + 1 History
+Retry latest:                   1 Heatmap + 0 History
+Retry History:                  0 Heatmap + 1 History
+task-local list operations:     0 Heatmap + 0 History
+Channel save:                   0 additional requests
 ```
 
-Machine-readable output:
-
-```text
-schema: viewloom-watchlist-hosted-preview-acceptance-v1
-result: pass
-scenarios:
-  twitch-desktop-hosted
-  kick-mobile-hosted
-  kick-channel-save-hosted
-```
-
-The accepted hosted request contract remains:
-
-```text
-empty initial load:       0 Heatmap + 0 History
-nonempty initial load:    1 Heatmap + 1 History
-uncached period change:   0 Heatmap + 1 History
-cached period restore:    0 Heatmap + 0 History
-combined refresh:         1 Heatmap + 1 History
-Channel save:             0 additional requests
-```
-
-After PR #424 merges and its full report is issued, W5B production acceptance and documentation closure may begin. No W5B branch exists yet.
+Twitch and Kick remain separate in routes, storage, requests, facts, links, bindings, and counts. Watchlist remains browser-local and outside primary feature tabs.
 
 ## Temporary-note lifecycle
 
