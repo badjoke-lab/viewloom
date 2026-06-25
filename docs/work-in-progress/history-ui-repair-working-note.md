@@ -6,7 +6,8 @@ Last updated: 2026-06-25
 Roadmap phase: Phase 7–9 — source reset, public audit, and P0/P1 repair
 Current branch: `work-history-ui-repair-governance`
 Current window: P7A — source-of-truth reset and repair-program lock
-Permanent specification: `../product/history-and-trends-spec.md`
+Accepted baseline specification: `../product/history-and-trends-spec.md`
+Active repair specification: `../product/history-ui-repair-spec.md`
 Implementation plan: `../product/history-ui-repair-plan.md`
 Delete when: P9H7 production acceptance and permanent-document transfer are complete.
 
@@ -31,10 +32,10 @@ Canonical documents before P7A still contained stale or conflicting statements:
 - the root README described the old History rebuild and Channel as future work;
 - the current schedule still described merged PR #425 as a completion candidate;
 - roadmap and schedule said History repair remained blocked on screenshots and detailed instructions;
-- the History specification described the desired chart-first product but did not explicitly reject control-only metric switching or a chart without visible scale and units;
+- the accepted History baseline specification described a chart-first product but did not explicitly reject control-only metric switching or a chart without visible scale and units;
 - the completed H1–H7 implementation record correctly allowed verified defect repair but did not point to an active repair milestone.
 
-P7A must resolve all of these conflicts before runtime changes begin.
+P7A resolves these conflicts before runtime changes begin.
 
 ## 3. Current public implementation observations
 
@@ -52,9 +53,9 @@ Daily archive
 coverage detail
 ```
 
-The page also loads several compatibility and enhancement layers in sequence. P9H0 must trace the actual owner of period state, metric state, API query, chart rendering, summary rendering, selected-day rendering, archives, and outputs before changing implementation.
+The page loads multiple compatibility and enhancement layers in sequence. P9H0 must trace the actual owner of period state, metric state, API query, chart rendering, summary rendering, selected-day rendering, archives, and outputs before implementation changes.
 
-Do not assume that a passing old acceptance workflow proves current public usability. Existing gates must be inspected for whether they verify visible values, axes, units, and interaction behavior rather than only DOM presence or selected-state attributes.
+Do not assume that an old passing acceptance workflow proves current public usability. Existing gates must be checked for visible values, axes, units, interaction behavior, and dependent-surface updates rather than only DOM presence or selected-state attributes.
 
 ## 4. Required Phase 8 evidence
 
