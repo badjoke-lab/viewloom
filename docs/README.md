@@ -18,12 +18,12 @@ Before changing ViewLoom, read:
 8. any active repair or feature specification
 9. the affected implementation or repair plan
 10. any active temporary note under `work-in-progress/`
-11. the active audit scope under `audits/` when the branch is an audit branch
+11. the relevant audit records under `audits/`
 
 ## Current canonical program and product documents
 
 - [`product/current-roadmap.md`](product/current-roadmap.md) — product priority and ordered roadmap
-- [`product/current-schedule.md`](product/current-schedule.md) — exact active window, branch order, entry criteria, and completion criteria
+- [`product/current-schedule.md`](product/current-schedule.md) — exact current state, next branch, entry criteria, and completion criteria
 - [`product/post-watchlist-program-plan.md`](product/post-watchlist-program-plan.md) — complete approved Phase 7–15 execution program and repository-comparison rule
 - [`product/history-and-trends-spec.md`](product/history-and-trends-spec.md) — accepted History production baseline specification
 - [`product/history-layout-rebuild-plan.md`](product/history-layout-rebuild-plan.md) — completed H1–H7 History baseline implementation record
@@ -38,13 +38,17 @@ Before changing ViewLoom, read:
 - [`../apps/web/docs/watchlist-latest-w2a-contract.md`](../apps/web/docs/watchlist-latest-w2a-contract.md) — accepted latest-observation contract
 - [`../apps/web/docs/watchlist-history-w2b-contract.md`](../apps/web/docs/watchlist-history-w2b-contract.md) — accepted retained-History contract
 
-## Active audit documents
+## Completed Phase 8 P8A audit records
 
-- [`audits/P8A_SCOPE.md`](audits/P8A_SCOPE.md) — P8A scope and no-repair boundary
-- [`audits/README.md`](audits/README.md) — active public-surface inventory package
+- [`audits/P8A_SCOPE.md`](audits/P8A_SCOPE.md) — P8A no-repair boundary and handoff
+- [`audits/README.md`](audits/README.md) — public-surface inventory package index
 - [`audits/public-surface-inventory.json`](audits/public-surface-inventory.json) — canonical machine-readable inventory manifest
-- [`audits/public-surface-inventory.md`](audits/public-surface-inventory.md) — human-readable inventory and P8B handoff
+- [`audits/public-surface-inventory.md`](audits/public-surface-inventory.md) — human-readable findings and P8B handoff
 - [`audits/public-surface-gaps.json`](audits/public-surface-gaps.json) — missing surfaces and acceptance gaps
+- `audits/public-surface-routes-*.json` — Portal, Twitch, and Kick route records
+- `audits/public-surface-profiles-*.json` — shared owner, control, state, gate, assessment, and gap profiles
+
+These records remain authoritative input to P8B. P8B adds browser evidence and classifications; it must not silently rewrite the static inventory without updating the package and verifier.
 
 ## Active temporary working note
 
@@ -68,8 +72,8 @@ There is no active Local Watchlist, old History rebuild, Channel v1, Report & Ex
 ```text
 Phase 6  Local Watchlist v1                               complete through PR #425
 Phase 7  source-of-truth reset and repair-program lock    complete through PR #426
-Phase 8  public surface inventory and browser audit       active
-P8A      work-public-surface-inventory                     active
+Phase 8  public surface inventory and browser audit       P8A complete through PR #427
+P8A      work-public-surface-inventory                     complete PR #427
 P8B      work-public-browser-audit                         exact next branch
 Phase 9  P0/P1 repair; History UI central track           approved and queued
 Phase 10 cross-site UI consolidation                      queued
@@ -80,13 +84,34 @@ Phase 14 next-feature capability audit                    queued
 Phase 15 next major feature                               not approved
 ```
 
-Exact next branch after P8A merge reporting:
+Exact next branch after the P8A merge report and explicit continuation:
 
 ```text
 work-public-browser-audit
 ```
 
-Do not create it before the P8A merge report and explicit continuation instruction.
+Do not create it before explicit continuation.
+
+## P8A stable findings
+
+```text
+20 Vite HTML inputs
+1 explicit 404 page
+21 owned inventory entries
+16 indexable routes
+4 explicit noindex utility routes
+16 sitemap routes
+18 Public Readiness configured pages
+13 Production Smoke page routes
+```
+
+P8A also records:
+
+- both Watchlist routes are omitted from Public Readiness;
+- About, Support, Changelog, Channel, and Watchlist routes are omitted from the general Production Smoke page list;
+- no single permanent 1440/820/390/360 browser matrix covers every major public route and required state;
+- History remains an approved P1 surface despite broad legacy workflow coverage;
+- repository-owned Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent.
 
 ## Approved History repair classification
 
