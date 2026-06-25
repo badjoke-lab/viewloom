@@ -1,7 +1,7 @@
 # ViewLoom Local Watchlist v1 implementation plan
 
 Status: active implementation plan
-Version: 1.1
+Version: 1.2
 Last updated: 2026-06-25
 Roadmap phase: Phase 6 — Local Watchlist v1
 Permanent specification: `local-watchlist-spec.md`
@@ -48,6 +48,9 @@ apps/web/src/live/channel-watchlist.ts                Channel save/read action
 apps/web/src/watchlist-page.css                       base Watchlist layout
 apps/web/src/watchlist-touch.css                      touch/focus support
 apps/web/src/watchlist-evidence.css                   evidence-state presentation
+apps/web/src/watchlist-candidate.css                  W3C hero/control candidate layer
+apps/web/src/watchlist-candidate-panels.css           W3C card/evidence candidate layer
+apps/web/src/watchlist-candidate-responsive.css       W3C responsive/accessibility layer
 apps/web/src/channel-watchlist.css                    Channel action presentation
 apps/web/twitch/watchlist/index.html                  Twitch route
 apps/web/kick/watchlist/index.html                    Kick route
@@ -63,10 +66,13 @@ apps/web/scripts/verify-watchlist-page.mjs
 apps/web/scripts/watchlist-shell-browser-fixture.mjs
 apps/web/scripts/watchlist-shell-browser-core.mjs
 apps/web/scripts/watchlist-shell-browser-narrow.mjs
+apps/web/scripts/watchlist-candidate-desktop.mjs
+apps/web/scripts/watchlist-candidate-mobile.mjs
 .github/workflows/watchlist-storage.yml
 .github/workflows/watchlist-latest.yml
 .github/workflows/watchlist-history.yml
 .github/workflows/watchlist-page.yml
+.github/workflows/watchlist-candidate.yml
 ```
 
 Ownership rules:
@@ -77,7 +83,8 @@ Ownership rules:
 - latest and History controllers own one-response caches and injected request functions;
 - combined controller coordinates initial load, period change, refresh, retries, and task-local reuse;
 - Watchlist page owns rendering, focus, feedback, list operations, and provider-safe links;
-- Channel action owns local save/read state only and makes no data request.
+- Channel action owns local save/read state only and makes no data request;
+- W3C candidate styles may change presentation only and must not alter the functional contract.
 
 ## 3. PR and branch sequence
 
@@ -104,8 +111,9 @@ W1   complete PR #416
 W2A  complete PR #417
 W2B  complete PR #418
 W3A  complete PR #419
-W3B  completion candidate PR #420
-W3C  next after PR #420 merge report
+W3B  complete PR #420
+W3C  completion candidate PR #421
+W4A  next after PR #421 merge report
 ```
 
 Each merged PR requires the full merge report and a new explicit proceed instruction before the next branch begins.
@@ -246,7 +254,7 @@ Implemented:
 
 Branch: `work-watchlist-w3b-ui`
 
-Completion candidate in PR #420.
+Completed through PR #420 and merge `66ed54cdd0e165c0e47c144a7d3ab27e10d5eefb`.
 
 Implemented:
 
@@ -289,15 +297,6 @@ task-local list operations     0 Heatmap + 0 History
 Channel save                   0 additional requests
 ```
 
-Channel rules:
-
-- valid unsaved Channel shows `Save to Watchlist`;
-- saved Channel shows `Saved in Watchlist` linking to management;
-- missing or invalid id disables the action;
-- save makes no History, Heatmap, or other request;
-- saved action is not a remove toggle;
-- existing Channel URL, task, report, export, and one-History-request contract remain unchanged.
-
 ### W3B completion criteria
 
 - one and fifty entries use identical initial request counts;
@@ -313,14 +312,15 @@ Channel rules:
 
 Branch: `work-watchlist-w3c-candidate`
 
-State: next after PR #420 merge report.
+Completion candidate in PR #421.
 
-Scope:
+Implemented candidate scope:
 
 - final dark-theme visual hierarchy after functionality is complete;
+- clearer hero, facts, data strip, controls, storage/data feedback, cards, evidence facts, actions, empty state, and storage-error state;
 - desktop, tablet, 390px, and 360px compositions;
 - long content, storage/data messages, and destructive action placement;
-- focus, keyboard, live-region, touch-target, symbol, and reduced-motion behavior;
+- focus, keyboard, live-region, touch-target, reduced-motion, increased-contrast, and forced-color behavior;
 - local full-page artifacts for both providers and key evidence states;
 - no serialized, storage, request, API, or product-contract change.
 
@@ -335,13 +335,26 @@ Kick mobile 390 — empty state
 Kick mobile 360 — storage error and long id/name wrapping
 ```
 
+### W3C completion criteria
+
+- all candidate artifacts are generated from deterministic local fixtures;
+- no horizontal overflow at 1440, 820, 390, or 360 widths;
+- visible interactive targets meet the accepted tablet/mobile minimums;
+- keyboard focus remains visible after add and reorder;
+- empty, partial, storage-unavailable, and long-content states remain legible;
+- reduced-motion removes candidate motion;
+- W3B request, storage, provider, wording, and Channel contracts remain unchanged;
+- no hosted Preview.
+
 ## 11. W4A — executable contract closure
 
 Branch: `work-watchlist-w4-contracts`
 
+State: next only after PR #421 merge reporting.
+
 Scope:
 
-- consolidate storage, adapter, request, wording, route, SEO, privacy, provider-separation, and Channel-integration checks;
+- consolidate storage, adapter, request, wording, route, SEO, privacy, provider-separation, Channel-integration, and W3C candidate checks;
 - prevent Watchlist-specific API, D1, KV, R2, collector, cron, service worker, interval polling, and analytics-id leakage;
 - require permanent labels and key names;
 - verify saved ids are absent from URLs and metadata;
@@ -410,7 +423,7 @@ At candidate closure, run at minimum:
 - History Overview, Archives, Calendar, Peaks, Battles, comparisons, report, export, and browser gates;
 - Channel profile, overview, report, candidate, and browser gates;
 - shared output contracts;
-- all Watchlist storage, latest, History, page, request, and browser gates.
+- all Watchlist storage, latest, History, page, candidate, request, and browser gates.
 
 A pre-existing flaky browser gate may be rerun only on the exact same head with no code change and must be reported explicitly.
 
