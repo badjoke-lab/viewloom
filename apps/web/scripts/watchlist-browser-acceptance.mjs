@@ -378,6 +378,7 @@ async function assertTouchTargets(page, minimum) {
 }
 
 async function assertVisibleFocus(page) {
+  await page.bringToFront()
   const button = page.getByRole('button', { name: 'Refresh data' })
   await button.focus()
   const style = await button.evaluate((node) => ({
