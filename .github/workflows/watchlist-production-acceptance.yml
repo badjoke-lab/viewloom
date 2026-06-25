@@ -33,6 +33,7 @@ on:
       - 'docs/product/watchlist-v1-implementation-plan.md'
       - 'docs/work-in-progress/watchlist-v1-working-note.md'
       - 'docs/work-in-progress/watchlist-w5a-hosted-preview-note.md'
+      - 'docs/work-in-progress/watchlist-w5b-production-note.md'
       - 'scripts/verify-development-policy.mjs'
       - '.github/workflows/watchlist-production-acceptance.yml'
 
@@ -109,7 +110,7 @@ jobs:
           assert.equal(evidence.providers.twitch.isStale, false)
           assert.equal(evidence.providers.kick.binding, 'DB_KICK_HOT')
           assert.equal(evidence.providers.kick.database, 'vl_kick_hot')
-          assert.equal(evidence.providers.kick.collectorState, 'ok')
+          assert.equal(evidence.providers.kick.collectorState, 'snapshot_available')
           assert.equal(evidence.providers.kick.isStale, false)
           assert.equal(evidence.scenarios.length, 6)
           assert.ok(evidence.scenarios.every((scenario) => scenario.result === 'pass'))
