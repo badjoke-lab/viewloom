@@ -82,12 +82,65 @@ jobs:
         working-directory: apps/web
         run: npx playwright install --with-deps chromium
 
+      - name: Make History navigation probes non-fatal
+        working-directory: apps/web
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/public-browser-audit.mjs')
+          source = path.read_text()
+          source = source.replace(
+              "  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'archives')",
+              "  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'archives', null, { timeout: 5_000 }).catch(() => null)",
+          )
+          source = source.replace(
+              "  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'overview')",
+              "  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'overview', null, { timeout: 5_000 }).catch(() => null)",
+          )
+          path.write_text(source)
+          PY
+
       - name: Run P8B public browser audit
         working-directory: apps/web
         shell: bash
         run: |
           set -o pipefail
           node scripts/public-browser-audit.mjs 2>&1 | tee /tmp/public-browser-audit-run.log
+
+      - name: Classify History task-navigation evidence
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs'
+          const path = '/tmp/public-browser-audit/public-browser-audit-evidence.json'
+          const evidence = JSON.parse(readFileSync(path, 'utf8'))
+          const failures = evidence.historyScenarios.filter((scenario) =>
+            scenario.state === 'real' && (!scenario.reportVisible || !scenario.backForwardRestored || scenario.taskRequests > 0)
+          )
+          if (failures.length && !evidence.findings.some((finding) => finding.id === 'P8B-P1-HISTORY-TASK-NAVIGATION')) {
+            evidence.findings.push({
+              id: 'P8B-P1-HISTORY-TASK-NAVIGATION',
+              severity: 'P1',
+              title: 'History task navigation does not preserve a coherent local task flow',
+              routes: ['/twitch/history/', '/kick/history/'],
+              reproduction: failures.map((scenario) => ({
+                scenario: scenario.id,
+                reportVisible: scenario.reportVisible,
+                backForwardRestored: scenario.backForwardRestored,
+                taskRequests: scenario.taskRequests,
+              })),
+              owner: ['apps/web/src/live/history-current-shell-entry.ts'],
+              missingAssertion: 'existing gates do not treat Back/Forward restoration and request reuse as one executable contract',
+              next: 'P9H0 then P9H4',
+            })
+          }
+          evidence.counts.p0 = evidence.findings.filter((finding) => finding.severity === 'P0').length
+          evidence.counts.p1 = evidence.findings.filter((finding) => finding.severity === 'P1').length
+          evidence.counts.p2 = evidence.findings.filter((finding) => finding.severity === 'P2').length
+          evidence.counts.p3 = evidence.findings.filter((finding) => finding.severity === 'P3').length
+          writeFileSync(path, `${JSON.stringify(evidence, null, 2)}\n`)
+          NODE
 
       - name: Verify P8B machine-readable evidence
         run: |
