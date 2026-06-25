@@ -1,7 +1,7 @@
 # ViewLoom Local Watchlist v1 implementation plan
 
 Status: active implementation plan
-Version: 1.3
+Version: 1.4
 Last updated: 2026-06-25
 Roadmap phase: Phase 6 — Local Watchlist v1
 Permanent specification: `local-watchlist-spec.md`
@@ -18,7 +18,7 @@ one existing provider Heatmap response
 one existing provider History response
 ```
 
-The implementation must preserve separate Twitch and Kick data, storage, routes, APIs, links, counts, and claims. Absence is not proof of offline status, and retained History is not complete channel history.
+The implementation preserves separate Twitch and Kick storage, routes, requests, links, counts, and claims. Absence is not proof of offline status, and retained History is not complete channel history.
 
 ## 2. Fixed product contract
 
@@ -74,12 +74,12 @@ apps/web/src/live/watchlist/combined-controller.ts   combined action lifecycle
 apps/web/src/live/watchlist-page.ts                   Watchlist DOM and interactions
 apps/web/src/live/channel-watchlist.ts                Channel save/read action
 apps/web/src/live/watchlist-move-focus.ts             focus and candidate style entry
-apps/web/src/watchlist-page.css                       base Watchlist layout
-apps/web/src/watchlist-touch.css                      touch/focus support
-apps/web/src/watchlist-evidence.css                   evidence-state presentation
-apps/web/src/watchlist-candidate.css                  W3C hero/control candidate layer
-apps/web/src/watchlist-candidate-panels.css           W3C card/evidence candidate layer
-apps/web/src/watchlist-candidate-responsive.css       W3C responsive/accessibility layer
+apps/web/src/watchlist-page.css                       base layout
+apps/web/src/watchlist-touch.css                      touch and focus support
+apps/web/src/watchlist-evidence.css                   evidence states
+apps/web/src/watchlist-candidate.css                  W3C hero and controls
+apps/web/src/watchlist-candidate-panels.css           W3C cards and evidence panels
+apps/web/src/watchlist-candidate-responsive.css       W3C responsive and accessibility layer
 apps/web/src/channel-watchlist.css                    Channel action presentation
 apps/web/twitch/watchlist/index.html                  Twitch route
 apps/web/kick/watchlist/index.html                    Kick route
@@ -94,8 +94,9 @@ Ownership rules:
 - combined controller coordinates initial load, period change, refresh, retries, and task-local reuse;
 - Watchlist page owns rendering, focus, feedback, list operations, and provider-safe links;
 - Channel action owns local save/read state only and makes no data request;
-- W3C candidate styles change presentation only;
-- W4A contract files verify existing behavior and do not add feature behavior.
+- W3C styles change presentation only;
+- W4A verifies permanent contracts without changing runtime behavior;
+- W4B exercises the complete built candidate locally without changing runtime behavior.
 
 ## 4. Branch and PR sequence
 
@@ -107,14 +108,14 @@ W2B  work-watchlist-w2b-history           complete PR #418
 W3A  work-watchlist-w3a-routes            complete PR #419
 W3B  work-watchlist-w3b-ui                complete PR #420
 W3C  work-watchlist-w3c-candidate         complete PR #421
-W4A  work-watchlist-w4-contracts          completion candidate PR #422
-W4B  work-watchlist-w4-browser            next after PR #422 merge report
-W5A  work-watchlist-w5-hosted             queued
+W4A  work-watchlist-w4-contracts          complete PR #422
+W4B  work-watchlist-w4-browser            completion candidate PR #423
+W5A  work-watchlist-w5-hosted             next after PR #423 merge report
      preview-watchlist-v1
 W5B  work-watchlist-w5-production         queued
 ```
 
-Each merged PR requires the full merge report and a new explicit proceed instruction before the next branch begins.
+Each merged PR requires a full merge report and a new explicit proceed instruction before the next branch begins.
 
 ## 5. W1 — local state and storage foundation
 
@@ -258,7 +259,7 @@ Implemented:
 
 Branch: `work-watchlist-w4-contracts`
 
-State: completion candidate PR #422.
+Completed through PR #422 and merge `a7324cea387db7477c01d97bf35b762a0bc8ea76`.
 
 Contract files:
 
@@ -268,7 +269,7 @@ apps/web/scripts/verify-watchlist-contracts.mjs
 apps/web/package.json
 ```
 
-W4A consolidates executable checks for:
+W4A consolidated:
 
 - W1 storage and URL behavior;
 - W2A latest adapter and request lifecycle;
@@ -276,22 +277,13 @@ W4A consolidates executable checks for:
 - W3A routes, SEO, privacy, provider separation, and primary-tab boundary;
 - W3B evidence wording, request counts, retries, links, and Channel save;
 - W3C responsive, focus, touch-target, long-content, reduced-motion, contrast, and artifact definitions;
-- current documentation and Development policy governance.
+- documentation and Development policy governance.
 
-W4A permanently rejects:
-
-- Watchlist-specific server APIs;
-- D1, KV, R2, binding, collector, or cron additions for Watchlist;
-- interval polling, service workers, hidden-page monitoring, cookies, IndexedDB, or sessionStorage fallbacks;
-- per-channel request loops;
-- analytics transmission of local ids;
-- local ids in canonical URLs, metadata, static HTML, or public share URLs;
-- Watchlist insertion into the primary feature tabs;
-- cross-provider storage, facts, requests, links, or counts.
+W4A permanently rejects Watchlist-specific server APIs, D1/KV/R2/binding/collector/cron additions, polling, service workers, browser-storage fallbacks, per-channel requests, analytics transmission of local ids, metadata or share leakage, primary-tab insertion, and cross-provider mixing.
 
 ### W4A completion criteria
 
-- all W1, W2A, W2B, W3A, W3B, and W3C foundation verifiers run through one command;
+- all W1 through W3C foundation verifiers run through one command;
 - route, provider, privacy, request, Channel, candidate, and infrastructure boundaries are executable;
 - Development policy and documentation current-state checks pass;
 - web typecheck and build pass;
@@ -302,22 +294,100 @@ W4A permanently rejects:
 
 Branch: `work-watchlist-w4-browser`
 
-W4B  next after PR #422 merge report.
+State: completion candidate PR #423.
 
-Scope:
+Acceptance files:
 
-- integrated deterministic browser flow;
-- storage reload and cross-tab behavior;
-- Back/Forward, periods, refresh, retries, and focus;
-- desktop/tablet/mobile artifacts and machine-readable evidence;
-- complete affected and shared regression matrix;
-- candidate freeze for hosted acceptance.
+```text
+apps/web/scripts/watchlist-browser-acceptance.mjs
+.github/workflows/watchlist-browser.yml
+scripts/verify-development-policy.mjs
+```
+
+Machine-readable evidence schema:
+
+```text
+viewloom-watchlist-local-browser-acceptance-v1
+```
+
+Integrated scenarios:
+
+1. Twitch desktop 1440:
+   - empty zero-request state;
+   - storage reload and one Heatmap plus one History request;
+   - fresh, retained-only, and bounded-absence evidence;
+   - local filtering and persisted reorder with focus preservation;
+   - uncached 7d request;
+   - cached Back and cached Forward restore;
+   - combined refresh;
+   - latest failure isolation and Retry latest;
+   - History failure isolation and Retry History;
+   - second-tab load and cross-tab add without feature-data requests.
+2. Kick tablet 820:
+   - one provider Heatmap plus one provider History request;
+   - no Twitch storage or request mutation;
+   - provider-safe external, Channel, History, and Heatmap links;
+   - 44px minimum targets and no horizontal overflow;
+   - Channel save with zero additional requests.
+3. Kick mobile 390:
+   - empty zero-request load;
+   - task-local add and explicit refresh;
+   - 44px general targets and 48px management targets;
+   - long-content wrapping, no overflow, and reduced motion.
+4. Storage unavailable mobile 360:
+   - visible recoverable storage state;
+   - zero data requests;
+   - no horizontal overflow.
+
+Complete regression matrix executed by the W4B workflow:
+
+```text
+Development policy
+web typecheck
+W4A consolidated contracts
+web build
+W3B desktop functional gate
+W3B narrow functional gate
+W3C desktop/tablet candidate gate
+W3C mobile candidate gate
+W4B integrated browser acceptance
+machine-readable evidence validation
+```
+
+W4B artifact matrix:
+
+```text
+watchlist-browser-evidence.json
+watchlist-w4b.log
+watchlist-w4b-preview.log
+watchlist-w4b-twitch-desktop.png
+watchlist-w4b-twitch-cross-tab.png
+watchlist-w4b-kick-tablet.png
+watchlist-w4b-kick-mobile.png
+watchlist-w4b-storage-error.png
+W3B desktop and mobile regression screenshots
+W3C seven-image candidate matrix
+```
+
+### W4B completion criteria
+
+- all four integrated scenarios pass;
+- machine-readable evidence reports `result: pass` and four passing scenarios;
+- exact request deltas pass for initial load, period change, Back/Forward, refresh, retries, task-local operations, cross-tab updates, and Channel save;
+- Twitch and Kick remain isolated in storage, requests, links, and facts;
+- focus, touch targets, long-content, reduced-motion, storage-error, and overflow checks pass;
+- W3B and W3C browser regressions pass in the same workflow;
+- the complete local candidate is frozen for W5A;
+- no runtime feature behavior changes;
+- no hosted Preview.
 
 ## 13. W5A — hosted Preview acceptance
 
 Implementation branch: `work-watchlist-w5-hosted`
 
 Approved hosted branch: `preview-watchlist-v1`
+
+W5A next after PR #423 merge report.
 
 Scope:
 
