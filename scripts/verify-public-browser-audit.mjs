@@ -18,6 +18,8 @@ const requireFragments = (path, fragments) => {
 
 for (const path of [
   'docs/audits/P8B_SCOPE.md',
+  'docs/audits/public-browser-defects.json',
+  'docs/audits/public-browser-audit.md',
   'docs/audits/public-surface-inventory.json',
   'docs/audits/public-surface-gaps.json',
   'apps/web/scripts/public-browser-audit.mjs',
@@ -32,6 +34,7 @@ for (const path of [
 
 const manifest = JSON.parse(read('docs/audits/public-surface-inventory.json'))
 const gaps = JSON.parse(read('docs/audits/public-surface-gaps.json'))
+const ledger = JSON.parse(read('docs/audits/public-browser-defects.json'))
 
 if (manifest.schema !== 'viewloom-public-surface-inventory-v1') failures.push('P8A manifest schema changed')
 if (manifest.counts?.inventory_entries !== 21) failures.push('P8A inventory must retain 21 owned entries')
@@ -41,22 +44,58 @@ if (manifest.provider_invariants?.combined_totals_allowed !== false) failures.pu
 if (manifest.provider_invariants?.combined_rankings_allowed !== false) failures.push('Combined rankings must remain forbidden')
 if ((gaps.missing_surfaces ?? []).length !== 5) failures.push('Five missing policy/disclosure routes must remain explicit')
 
+if (ledger.schema !== 'viewloom-public-browser-defect-ledger-v1') failures.push('P8B defect ledger schema changed')
+if (!['completion_candidate', 'complete'].includes(ledger.status)) failures.push('P8B defect ledger must be a completion candidate or complete')
+if (ledger.phase !== 'P8B') failures.push('P8B defect ledger phase changed')
+if (ledger.evidence?.matrix?.owned_routes !== 21) failures.push('P8B ledger must retain 21 owned routes')
+if (ledger.evidence?.matrix?.production_scenarios !== 84) failures.push('P8B ledger must retain 84 production scenarios')
+if (ledger.evidence?.matrix?.missing_surface_probes !== 5) failures.push('P8B ledger must retain five missing-surface probes')
+if (ledger.evidence?.matrix?.history_scenarios !== 10) failures.push('P8B ledger must retain ten History scenarios')
+if (ledger.counts?.p0 !== 0) failures.push('P8B must not claim an unverified P0')
+if (ledger.counts?.p1 !== 3) failures.push('P8B final ledger must retain three P1 defects')
+if (ledger.counts?.p2 !== 5) failures.push('P8B final ledger must retain five P2 findings')
+if (ledger.counts?.total !== 8) failures.push('P8B final ledger must retain eight classified findings')
+if ((ledger.defects ?? []).length !== 8) failures.push('P8B final defect array must contain eight findings')
+if ((ledger.ordered_phase_9_queue ?? []).length !== 8) failures.push('P8B ordered Phase 9 queue must contain P9H0 through P9H7')
+for (const id of [
+  'P8B-P1-HISTORY-METRIC-SYNCHRONIZATION',
+  'P8B-P1-HISTORY-KEYBOARD-ENTRY',
+  'P8B-P1-HISTORY-TASK-HIERARCHY',
+  'P8B-P2-SMALL-INTERACTIVE-TARGETS',
+  'P8B-P2-WATCHLIST-PUBLIC-READINESS-OMISSION',
+  'P8B-P2-PRODUCTION-SMOKE-OMISSIONS',
+  'P8B-P2-RELEASE-POLICY-SURFACES-MISSING',
+  'P8B-P2-UNLABELED-CONTROLS',
+]) {
+  if (!(ledger.defects ?? []).some((defect) => defect.id === id)) failures.push(`P8B ledger missing finding: ${id}`)
+}
+
 requireFragments('docs/audits/P8B_SCOPE.md', [
   'Status: active',
   'Branch: `work-public-browser-audit`',
-  '1440px',
-  '820px',
-  '390px',
-  '360px',
+  '84 production route scenarios',
+  '10 deterministic History state and interaction scenarios',
+  'P0  0',
+  'P1  3',
+  'P2  5',
   'P8B is an audit branch.',
+  'work-history-ui-h0-baseline',
+])
+
+requireFragments('docs/audits/public-browser-audit.md', [
+  '21 owned routes',
+  '84 production route scenarios',
+  'P8B-P1-HISTORY-METRIC-SYNCHRONIZATION',
+  'P8B-P1-HISTORY-KEYBOARD-ENTRY',
+  'P8B-P1-HISTORY-TASK-HIERARCHY',
   'work-history-ui-h0-baseline',
 ])
 
 requireFragments('apps/web/scripts/public-browser-audit.mjs', [
   "schema: 'viewloom-public-browser-audit-v1'",
   "phase: 'P8B'",
-  "productionOrigin",
-  "localOrigin",
+  'productionOrigin',
+  'localOrigin',
   'productionMatrix',
   'missingSurfaceProbes',
   'historyScenarios',
@@ -72,6 +111,7 @@ requireFragments('.github/workflows/public-browser-audit.yml', [
   'cancel-in-progress: true',
   'Verify development policy',
   'Verify P8A inventory',
+  'Correct History Back and Forward probe semantics',
   'Run P8B public browser audit',
   'Verify P8B machine-readable evidence',
   'public-browser-audit-p8b',
@@ -106,6 +146,8 @@ requireFragments('docs/README.md', [
   'P8B      work-public-browser-audit                         active',
   'P9H0     work-history-ui-h0-baseline                       exact next after P8B',
   'audits/P8B_SCOPE.md',
+  'audits/public-browser-defects.json',
+  'audits/public-browser-audit.md',
 ])
 
 if (failures.length) {
@@ -116,7 +158,8 @@ if (failures.length) {
 
 console.log('ViewLoom P8B repository verification passed.')
 console.log('- P8A inventory remains the static route and ownership baseline')
-console.log('- P8B work-public-browser-audit is the active audit branch')
-console.log('- 21 owned routes, four required viewports, missing surfaces, and History states are governed')
+console.log('- P8B completion branch contains the runtime audit package and final defect records')
+console.log('- 21 owned routes, four required viewports, five missing surfaces, and ten History scenarios are governed')
+console.log('- final ledger retains P0 0, P1 3, P2 5, and the P9H0-P9H7 queue')
 console.log('- provider separation and no-repair boundary remain locked')
 console.log('- work-history-ui-h0-baseline is next unless a P0 interrupts')
