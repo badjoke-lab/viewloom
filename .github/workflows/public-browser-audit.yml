@@ -91,25 +91,28 @@ jobs:
 
           path = Path('scripts/public-browser-audit.mjs')
           source = path.read_text()
-          old = """  await page.goBack()
-          await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'archives')
-          await page.goBack()
-          await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'overview')
-          """
-          new = """  await page.goBack()
-          await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'archives')
-          const backRestored = (await page.locator('.history-page').getAttribute('data-history-view')) === 'archives'
-          await page.goForward()
-          await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'report')
-          const forwardRestored = (await page.locator('.history-page').getAttribute('data-history-view')) === 'report'
-          """
+          old = "\n".join([
+              "  await page.goBack()",
+              "  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'archives')",
+              "  await page.goBack()",
+              "  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'overview')",
+          ])
+          new = "\n".join([
+              "  await page.goBack()",
+              "  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'archives')",
+              "  const backRestored = (await page.locator('.history-page').getAttribute('data-history-view')) === 'archives'",
+              "  await page.goForward()",
+              "  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'report')",
+              "  const forwardRestored = (await page.locator('.history-page').getAttribute('data-history-view')) === 'report'",
+          ])
           if old not in source:
               raise SystemExit('Expected History navigation probe block was not found')
-          source = source.replace(old, new)
-          source = source.replace(
-              "    backForwardRestored: (await page.locator('.history-page').getAttribute('data-history-view')) === 'overview',",
-              "    backForwardRestored: backRestored && forwardRestored,",
-          )
+          source = source.replace(old, new, 1)
+          old_result = "    backForwardRestored: (await page.locator('.history-page').getAttribute('data-history-view')) === 'overview',"
+          new_result = "    backForwardRestored: backRestored && forwardRestored,"
+          if old_result not in source:
+              raise SystemExit('Expected History navigation result was not found')
+          source = source.replace(old_result, new_result, 1)
           path.write_text(source)
           PY
 
