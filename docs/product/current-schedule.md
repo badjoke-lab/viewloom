@@ -50,6 +50,8 @@ Exact next branch after completion: work-history-ui-h0-baseline
 Exception: a newly proven P0 may interrupt
 ```
 
+P8B is active.
+
 Governing files:
 
 ```text
