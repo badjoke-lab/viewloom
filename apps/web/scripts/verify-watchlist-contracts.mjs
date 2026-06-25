@@ -264,7 +264,7 @@ function verifyAcceptanceContract() {
   requireAll(hosted, [
     'viewloom-watchlist-hosted-preview-acceptance-v1',
     'preview-watchlist-v1',
-    'c75b4549bb50d7af932c31bb66d5bdace85b5da9',
+    'c75b4549bb50d7eb54c0135874dba63db0b7cc69',
     'DB_TWITCH_HOT', 'DB_KICK_HOT',
     'verifyWatchlist', 'verifyChannelSave',
   ], 'hosted acceptance')
