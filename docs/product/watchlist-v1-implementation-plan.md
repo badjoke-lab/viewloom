@@ -146,6 +146,8 @@ Implemented:
 - clean period URL state;
 - no fetch or DOM dependency in the model/storage layer.
 
+No public Watchlist route is added in W1.
+
 ## 6. W2A — latest-observation foundation
 
 Branch: `work-watchlist-w2a-latest`
@@ -165,8 +167,11 @@ Implemented:
 - one normalized id index per response;
 - empty-list zero requests;
 - one through fifty entries exactly one provider request;
-- cache reuse, explicit refresh, and in-flight deduplication;
+- cache reuse and explicit refresh;
+- concurrent refresh click is deduplicated;
 - no History interpretation, per-channel request, polling, route, or UI.
+
+No public Watchlist route is added in W2A.
 
 ## 7. W2B — retained-History and combined foundation
 
@@ -190,6 +195,8 @@ Implemented:
 - independent latest and retained evidence axes;
 - exact request lifecycle and failure isolation;
 - no route, UI, API, D1, or History visual change.
+
+No public Watchlist route is added in W2B.
 
 ## 8. W3A — provider routes and storage-first shell
 
