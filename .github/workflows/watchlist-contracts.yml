@@ -26,8 +26,10 @@ on:
       - 'docs/README.md'
       - 'docs/product/current-roadmap.md'
       - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
       - 'docs/product/local-watchlist-spec.md'
       - 'docs/product/watchlist-v1-implementation-plan.md'
+      - 'docs/audits/public-surface-inventory.json'
       - 'docs/work-in-progress/watchlist-v1-working-note.md'
       - 'scripts/verify-development-policy.mjs'
       - '.github/workflows/watchlist-*.yml'
@@ -56,8 +58,10 @@ on:
       - 'docs/README.md'
       - 'docs/product/current-roadmap.md'
       - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
       - 'docs/product/local-watchlist-spec.md'
       - 'docs/product/watchlist-v1-implementation-plan.md'
+      - 'docs/audits/public-surface-inventory.json'
       - 'docs/work-in-progress/watchlist-v1-working-note.md'
       - 'scripts/verify-development-policy.mjs'
       - '.github/workflows/watchlist-*.yml'
@@ -89,6 +93,16 @@ jobs:
         run: pnpm --filter @viewloom/web typecheck:app
       - name: Verify consolidated Watchlist contracts
         working-directory: apps/web
-        run: node scripts/verify-watchlist-contracts.mjs
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-watchlist-contracts.mjs 2>&1 | tee /tmp/watchlist-contracts.log
       - name: Build web application
         run: pnpm build:web
+      - name: Upload Watchlist contract diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: watchlist-contract-diagnostics
+          path: /tmp/watchlist-contracts.log
+          if-no-files-found: warn
