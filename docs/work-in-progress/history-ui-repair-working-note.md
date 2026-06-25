@@ -4,172 +4,136 @@ Status: active
 Created: 2026-06-25
 Last updated: 2026-06-26
 Roadmap phase: Phase 7–9 — source reset, public audit, and P0/P1 repair
-Completed window: P8A — public surface inventory through PR #427
-Exact next window: P8B — public browser defect audit
-Exact next branch: `work-public-browser-audit`
+Completed predecessor: P8A through PR #427
+Current window: P8B — public browser defect audit
+Current branch: `work-public-browser-audit`
+Exact next branch after P8B: `work-history-ui-h0-baseline`
 Accepted baseline specification: `../product/history-and-trends-spec.md`
 Active repair specification: `../product/history-ui-repair-spec.md`
 Program plan: `../product/post-watchlist-program-plan.md`
 Implementation subplan: `../product/history-ui-repair-plan.md`
-Completed inventory: `../audits/public-surface-inventory.json`
+P8A inventory: `../audits/public-surface-inventory.json`
+P8B scope: `../audits/P8B_SCOPE.md`
 Delete when: P9H7 production acceptance and permanent-document transfer are complete.
 
-## 1. Approved defect classification
-
-The following are approved P1 defects and are not waiting for another product decision:
+## 1. Approved P1 defects
 
 ```text
 Metric controls do not produce a sufficiently observable and trustworthy change.
-The main chart does not expose a readable scale, ticks, units, or complete interaction cues.
-The chart-side information is too thin to support analysis.
-Lower-page regions are sparse, weakly prioritized, or unclear in purpose.
-Desktop and mobile do not read as one coherent analysis product.
+The chart does not yet permanently prove scale, ticks, units, and complete interaction cues.
+Selected-day and supporting information are too thin or disconnected.
+Lower-page regions are sparse, weakly prioritized, duplicated, or unclear.
+Desktop, tablet, and mobile do not prove one coherent analysis product.
 ```
 
-Additional reference screenshots may refine styling later. They are not required before functional, chart-interpretability, information-architecture, responsive, or accessibility repair begins.
+These defects do not require another approval gate or additional screenshots before reproduction and repair.
 
 ## 2. Completed predecessors
 
 ### P7A — PR #426
 
-- corrected stale post-Watchlist authorities;
-- approved History UI repair as P1 work;
-- removed the screenshot blocker;
-- added permanent repair specification and implementation plan;
-- created this working note;
-- updated policy verification.
+- corrected stale source-of-truth documents;
+- approved History repair as P1 work;
+- added repair specification, plan, and this note;
+- removed the screenshot blocker.
 
 ### P8A — PR #427
 
-- inventoried all 20 Vite HTML inputs plus the explicit 404 page;
-- created Portal, Twitch, and Kick route records;
-- created shared owner, control, state, gate, assessment, and gap profiles;
-- recorded separate Twitch and Kick API/binding ownership;
-- recorded existing contract, browser, Preview, and production evidence;
-- added a human-readable report, machine-readable manifest, verifier, and workflow;
-- made no runtime UI, API, D1, collector, cron, retention, binding, or Preview change.
+- inventoried 21 repository-owned public surfaces;
+- recorded route owners, controls, states, gates, and provider bindings;
+- recorded separate History routes and APIs;
+- recorded existing browser, Preview, and production evidence;
+- recorded missing policy/disclosure routes and acceptance gaps;
+- made no runtime repair.
 
-## 3. P8A stable History findings
+## 3. Active P8B package
 
-Both History routes are owned and recorded:
+```text
+docs/audits/P8B_SCOPE.md
+apps/web/scripts/public-browser-audit.mjs
+.github/workflows/public-browser-audit.yml
+scripts/verify-public-browser-audit.mjs
+```
+
+Required completion records:
+
+```text
+docs/audits/public-browser-defects.json
+docs/audits/public-browser-audit.md
+GitHub Actions artifact: public-browser-audit-p8b
+```
+
+P8B audits all 21 owned routes at 1440, 820, 390, and 360px, probes five missing surfaces, and generates deterministic History state/interaction evidence.
+
+## 4. Static History ownership findings
 
 ```text
 /twitch/history/ -> /api/history -> DB_TWITCH_HOT
 /kick/history/   -> /api/kick-history -> DB_KICK_HOT
 ```
 
-Recorded user state and tasks:
+Key owners:
 
 ```text
-period: 7d / 30d / custom from-to
-metric: viewer_minutes / peak_viewers
-task: Overview / Archives / Report & Export
-archive: Daily / Peaks / Battles
-selected day
-ranking sort and limit
-Back / Forward and direct URL responsibility
-report / short post / share / PNG / CSV / JSON
-```
-
-Recorded data states:
-
-```text
-loading
-real
-partial
-stale
-empty
-missing
-demo
-error
-in_progress
-```
-
-Recorded owners include:
-
-```text
-history-usability-pass.ts
-history-current-shell-entry.ts
-history-usability.ts
-history-overview.ts
-History API model/builders
+apps/web/src/live/history-current-shell-entry.ts
+apps/web/src/live/history-usability-pass.ts
+apps/web/src/live/history-view-shell.ts
+apps/web/src/live/history-overview.ts
 History archive, comparison, report, share, and export modules
 ```
 
-P8A confirms that broad legacy workflow coverage does not prove current usability. The approved History P1 classification remains unchanged.
+Current source observations to verify in browser:
 
-## 4. Cross-site P8A findings relevant to P8B
+- metric controls update URL, request metric, selected control, and ranking sort;
+- `renderSummary()` currently emits Viewer-minutes labels and values regardless of selected primary metric;
+- selected-day rendering shows both metrics rather than one selected-metric interpretation;
+- chart source includes numeric Y labels, date labels, day controls, and an aria label, but browser evidence must prove readability and complete interaction;
+- task and archive shell uses pushState/popstate and should preserve provider/data without refetch;
+- broad legacy workflows do not prove current public usability.
 
-```text
-20 Vite HTML inputs
-1 explicit 404 page
-21 owned inventory entries
-16 indexable routes
-4 noindex utility routes
-16 sitemap routes
-18 Public Readiness configured pages
-13 Production Smoke page routes
-```
+These observations are hypotheses until the P8B artifact confirms exact behavior.
 
-Gaps requiring P8B evidence or later repair classification:
-
-- both Watchlist routes are omitted from Public Readiness configuration;
-- About, Support, Changelog, Channel, and Watchlist are omitted from the general Production Smoke page list;
-- no single permanent browser matrix covers every major route at 1440, 820, 390, and 360 pixels across required states;
-- Portal, provider homes, Heatmap, Day Flow, Battle Lines, content pages, and 404 have fragmented rather than consolidated viewport/state coverage;
-- Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent;
-- Support refers to refund handling without a dedicated repository-owned Refund Policy route.
-
-These are inventory findings, not automatically product defects. P8B must reproduce and classify them.
-
-## 5. Required P8B browser evidence
-
-P8B must include:
+## 5. P8B required History evidence
 
 ```text
-1440px Twitch Overview
-1440px Kick Overview
-820px task and control wrapping
-390px Overview and selected-day flow
-360px narrow control and chart behavior
-Viewer-minutes before and after state
-Peak viewers before and after state
-partial data
-empty data
-stale data
-missing data
-demo data
+Twitch real Overview at 1440
+Kick real Overview at 390
+partial at 820
+stale at 360
+empty
+missing
+demo
+in progress
 API error
-loading state
-Archives Daily / Peaks / Battles
-Report & Export
-Back / Forward and direct links
+loading
+Viewer-minutes before and after
+Peak viewers before and after
+Overview / Archives / Report & Export
+Daily / Peaks / Battles
+Back / Forward
+task switching without refetch
 ```
 
-Cross-site evidence must also cover:
+For each P0/P1 record:
 
-- Portal and provider homes;
-- Heatmap, Day Flow, and Battle Lines;
-- Channel and Watchlist;
-- Status;
-- About, Support, missing-policy entry points, Changelog, and 404;
-- keyboard, focus, touch targets, reduced motion, contrast, long text, and horizontal overflow;
-- provider separation and bounded-coverage wording.
+- route and provider;
+- viewport and data state;
+- exact reproduction;
+- owner module and affected file;
+- current workflow coverage;
+- missing assertion;
+- ordered repair destination.
 
-P8B must record route, provider, viewport, data state, reproduction, owner file, current workflow, missing assertion, and P0/P1/P2/P3 classification for each defect.
+## 6. Cross-site findings under audit
 
-## 6. Questions P9H0 must answer
+- both Watchlist routes are absent from Public Readiness configuration;
+- About, Support, Changelog, Channel, and Watchlist are absent from general Production Smoke routes;
+- no single permanent browser matrix covers all owned routes and required widths/states;
+- Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent;
+- provider separation and bounded-coverage wording must remain exact;
+- keyboard focus, target sizes, long text, reduced motion, and overflow require cross-site evidence.
 
-- Which module is authoritative for metric URL state?
-- Does changing metric fetch a new payload, reuse a payload containing both metrics, or combine both behaviors?
-- Which visible values change when metric changes?
-- Which values remain mislabeled or stale?
-- Which module renders chart scale and day columns?
-- What accessible representation exists for chart values?
-- Which sections are physically moved by the view shell and which remain duplicated or hidden?
-- Which compatibility layers can be retired safely?
-- Which workflows assert real metric differences, axes, units, selected-day synchronization, and touch behavior?
-- Which sparse areas are caused by missing data, hidden task content, fixed min-height, or empty placeholders?
+These inventory findings are not automatically P0/P1. P8B classifies them from evidence.
 
 ## 7. Fixed boundaries
 
@@ -183,6 +147,7 @@ No exact sessions.
 No cross-platform total or ranking.
 No login, cloud preference, alert, or AI summary.
 No silent output-schema change.
+P8B performs no product repair unless a P0 requires isolation.
 ```
 
 ## 8. Current sequence
@@ -190,8 +155,8 @@ No silent output-schema change.
 ```text
 P7A  work-history-ui-repair-governance   complete PR #426
 P8A  work-public-surface-inventory       complete PR #427
-P8B  work-public-browser-audit           exact next after explicit continuation
-P9H0 work-history-ui-h0-baseline         queued
+P8B  work-public-browser-audit           active
+P9H0 work-history-ui-h0-baseline         exact next after P8B unless P0 interrupts
 P9H1 work-history-ui-h1-metric           queued
 P9H2 work-history-ui-h2-chart            queued
 P9H3 work-history-ui-h3-overview         queued
@@ -201,33 +166,33 @@ P9H6 work-history-ui-h6-candidate        queued
 P9H7 work-history-ui-h7-acceptance       queued
 ```
 
-## 9. Repository-comparison checklist
+## 9. Questions P9H0 must answer
 
-Before each branch:
+- Which module owns final metric URL and request state?
+- Which metric-dependent values remain mislabeled or stale?
+- Which modules own summary, chart, selected day, comparison, ranking, archives, report, share, and exports?
+- Which compatibility layers duplicate or move sections?
+- Which permanent workflows fail to reject the exact P8B P1 defects?
+- Which sparse regions come from missing data, hidden task content, fixed height, or placeholders?
 
-```text
-[ ] predecessor PR merged
-[ ] full merge report issued
-[ ] explicit continuation exists
-[ ] schedule names the intended branch
-[ ] roadmap, program plan, subplan, note, and audit records agree
-[ ] required files and workflows exist
-[ ] missing deliverables are listed
-[ ] scope boundaries remain valid
-```
+## 10. Repository comparison checklist
 
 Before merge:
 
 ```text
 [ ] latest-head CI passes
-[ ] required evidence exists
+[ ] 84 owned-route browser scenarios exist
+[ ] five missing-surface probes exist
+[ ] ten History scenarios exist
+[ ] every P0/P1 has exact ownership and missing-gate evidence
 [ ] provider separation passes
-[ ] canonical documents show completed and next state
-[ ] exact next branch is named
+[ ] defect ledger and human report are committed
+[ ] canonical documents show P8B complete and P9H0 next
+[ ] no product repair is mixed into P8B
 ```
 
-## 10. Working-note rule
+## 11. Working-note rule
 
-Update this note whenever an audit or repair branch discovers or resolves a material defect, owner, visual hierarchy decision, acceptance requirement, or scope boundary.
+Update this note when P8B evidence confirms or rejects a source hypothesis, changes defect classification, identifies an owner, or changes the ordered repair queue.
 
-Transfer stable decisions into permanent documentation and delete this note in P9H7.
+Transfer stable decisions to permanent documentation and delete this note in P9H7.
