@@ -1,0 +1,9 @@
+.watchlist-page {
+  --wl-panel: color-mix(in srgb, var(--surface) 92%, #020817 8%);
+  --wl-raised: color-mix(in srgb, var(--surface-raised) 90%, #13233a 10%);
+  --wl-accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+  --wl-accent-line: color-mix(in srgb, var(--accent) 42%, var(--line-strong));
+  gap: 24px;
+  max-width: 1540px;
+  margin-inline: auto;
+}
