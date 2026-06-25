@@ -26,12 +26,12 @@ Current feature state:
 | Heatmap | production core complete | verified defects only |
 | Day Flow | production core complete | verified defects only |
 | Battle Lines | production core complete | verified defects only |
-| History & Trends | functional and production acceptance complete | preserve; visual revision pending separate instructions |
+| History & Trends | production acceptance complete | preserve; visual revision pending separate instructions |
 | Data Status | production core complete | maintain |
 | Channel / Streamer | v1 and production acceptance complete | preserve retained-footprint contract |
 | Report/export shared layer | R0–R4 complete through PR #413 | maintain exact contracts |
 | Phase 5 capability audit | complete through PR #414 | permanent decision recorded |
-| Local Watchlist v1 | W0–W3C complete; W4A completion candidate PR #422 | W4B next after merge report |
+| Local Watchlist v1 | W0–W4A complete; W4B completion candidate PR #423 | W5A next after PR #423 merge report |
 | Session / Category / Language / Event / Alerts | not approved for immediate implementation | data or infrastructure expansion required |
 
 Permanent records:
@@ -67,6 +67,7 @@ Local Watchlist v1:
   W3B PR: #420
   W3C PR: #421
   W4A PR: #422
+  W4B PR: #423
 ```
 
 ## 2. Immediate priority
@@ -75,55 +76,89 @@ The active completion window is:
 
 ```text
 Phase 6 — Local Watchlist v1
-W4A — executable contract closure
-Branch: work-watchlist-w4-contracts
-PR: #422
+W4B — complete local browser candidate QA
+Branch: work-watchlist-w4-browser
+PR: #423
 State: completion candidate
 Preview: not requested
 ```
 
-W4A adds no runtime feature behavior. It consolidates the accepted W1–W3C contracts into one executable command and one permanent workflow.
+W4B adds no runtime product behavior. It runs the complete built candidate through one deterministic local acceptance workflow and freezes the candidate for the hosted W5A window.
 
-Contract files:
+Acceptance files:
 
 ```text
-apps/web/scripts/verify-watchlist-contracts.mjs
-.github/workflows/watchlist-contracts.yml
-apps/web/package.json
+apps/web/scripts/watchlist-browser-acceptance.mjs
+.github/workflows/watchlist-browser.yml
+scripts/verify-development-policy.mjs
 ```
 
-The consolidated verifier reruns and closes:
-
-- storage schema, normalization, repair, mutation, ordering, and provider-key contracts;
-- latest Heatmap endpoint, adapter, evidence, cache, request, and failure contracts;
-- retained History endpoint, adapter, period cache, combined evidence, request, and failure contracts;
-- route, canonical, `noindex,follow`, metadata, clean URL, local-only privacy, and primary-tab contracts;
-- exact evidence wording, one generic request seam, empty-list zero-request, source-specific retry, and no per-channel loop contracts;
-- Channel `Save to Watchlist` / `Saved in Watchlist` local-only behavior;
-- W3C candidate styles, breakpoints, touch targets, focus, long-content, reduced-motion, contrast, and artifact definitions;
-- documentation and Development policy governance.
-
-W4A permanently rejects:
+Machine-readable evidence:
 
 ```text
-Watchlist-specific API routes
-Watchlist-specific D1 / KV / R2 / bindings
-Watchlist collector or cron work
-interval polling or service-worker monitoring
-cookie, IndexedDB, or sessionStorage fallback
-per-channel network requests
-local ids in canonical URLs or metadata
-public share/copy-list URLs
-analytics transmission of local ids
-cross-provider storage, facts, links, requests, or counts
-Watchlist as a primary feature tab
+schema: viewloom-watchlist-local-browser-acceptance-v1
+result: pass | fail
+scenarios:
+  twitch-desktop-integrated
+  kick-tablet-channel
+  kick-mobile-integrated
+  storage-unavailable-mobile
 ```
 
-After PR #422 merges and its full report is issued, the next approved work window is:
+W4B verifies:
+
+- empty state with zero requests;
+- storage reload with one Heatmap and one History request;
+- independent latest and retained evidence;
+- local filter, reorder, persisted order, and focus;
+- one History request for uncached period changes;
+- zero requests for cached Back and Forward restores;
+- one Heatmap plus one History request for combined refresh;
+- latest-only and History-only retries;
+- endpoint failure isolation;
+- second-tab initial load and cross-tab updates without task-local data requests;
+- provider-safe links and provider-isolated storage and requests;
+- Channel save with zero additional requests;
+- desktop, tablet, mobile, long-content, reduced-motion, storage-error, target-size, and overflow behavior;
+- W3B, W3C, and W4A regression gates in the same workflow.
+
+Artifact matrix:
 
 ```text
-W4B — complete local browser candidate QA
-Branch: work-watchlist-w4-browser
+watchlist-browser-evidence.json
+watchlist-w4b.log
+watchlist-w4b-preview.log
+watchlist-w4b-twitch-desktop.png
+watchlist-w4b-twitch-cross-tab.png
+watchlist-w4b-kick-tablet.png
+watchlist-w4b-kick-mobile.png
+watchlist-w4b-storage-error.png
+W3B desktop/mobile screenshots
+W3C seven-image candidate matrix
+```
+
+The W4B candidate preserves:
+
+```text
+empty initial load = 0 Heatmap + 0 History
+nonempty initial load = 1 Heatmap + 1 History
+uncached period change = 0 Heatmap + 1 History
+cached period restore = 0 Heatmap + 0 History
+combined refresh = 1 Heatmap + 1 History
+Retry latest = 1 Heatmap + 0 History
+Retry History = 0 Heatmap + 1 History
+task-local list operations = 0 Heatmap + 0 History
+Channel save = 0 additional requests
+```
+
+It also preserves separate Twitch and Kick routes, storage, requests, links, facts, and counts; no authoritative live/offline claim; no complete-history claim; no exact sessions; no per-channel request loop; no login, sync, or alerts; no API schema or endpoint-meaning change; no D1, binding, collector, cron, retention, or rollup change; no History visual change; and no primary Watchlist tab.
+
+After PR #423 merges and its full report is issued, the next approved work window is:
+
+```text
+W5A — hosted Preview acceptance
+Implementation branch: work-watchlist-w5-hosted
+Approved hosted branch: preview-watchlist-v1
 State: next after merge report
 ```
 
@@ -212,104 +247,6 @@ Alerts: not approved
 
 ## 4. Phase 6 — Local Watchlist v1
 
-Fixed product contract:
-
-```text
-/twitch/watchlist/
-/kick/watchlist/
-provider-separated browser localStorage
-maximum 50 entries per provider
-12 entries initially visible
-empty initial load = 0 Heatmap + 0 History
-nonempty initial load = 1 Heatmap + 1 History
-uncached period change = 0 Heatmap + 1 History
-cached period restore = 0 Heatmap + 0 History
-combined refresh = 1 Heatmap + 1 History
-Retry latest = 1 Heatmap + 0 History
-Retry History = 0 Heatmap + 1 History
-Channel save = 0 additional requests
-no per-channel request loop
-no authoritative live/offline claim
-no alerts, login, sync, exact sessions, or cross-provider identity
-```
-
-### W1 — storage foundation
-
-Completed through PR #416.
-
-- exact versioned provider keys;
-- deterministic id and provider-URL normalization;
-- immutable list operations;
-- duplicate preservation and fifty-entry cap;
-- recoverable storage states and provider-isolated clear/reset;
-- clean `period=7d|30d` URL state without saved ids.
-
-### W2A — latest-observation foundation
-
-Completed through PR #417.
-
-- schema `viewloom-watchlist-latest-v1`;
-- `present_fresh`, `present_stale`, `absent_usable`, and `latest_unavailable`;
-- Twitch/Kick Heatmap normalization;
-- one provider request for one through fifty entries;
-- cache reuse and in-flight deduplication.
-
-### W2B — retained-History and combined foundation
-
-Completed through PR #418.
-
-- schema `viewloom-watchlist-history-v1`;
-- `present_retained`, `absent_usable`, `history_partial`, and `history_unavailable`;
-- Twitch/Kick viewer-minute History normalization;
-- separate 7d/30d page-memory caches;
-- independent latest and retained evidence axes;
-- exact request lifecycle and failure isolation.
-
-### W3A — provider routes and storage-first shell
-
-Completed through PR #419.
-
-- canonical provider routes with `noindex,follow`;
-- unchanged primary feature tabs;
-- provider-separated local storage shell;
-- add, remove, move, clear, reset, filter, show, repair, and cross-tab behavior;
-- provider Home secondary utility link;
-- keyboard and desktop/360px shell gates.
-
-### W3B — evidence UI and Channel entry point
-
-Completed through PR #420 and merge `66ed54cdd0e165c0e47c144a7d3ab27e10d5eefb`.
-
-- existing Heatmap and History payloads connected without contract changes;
-- exact evidence and limitation wording;
-- combined refresh and source-specific retries;
-- provider-safe card links;
-- local-only Channel save;
-- one and fifty entries retain identical request counts;
-- no API, D1, binding, collector, cron, retention, rollup, or History visual change.
-
-### W3C — responsive, visual, and accessibility candidate
-
-Completed through PR #421 and merge `6535397ab1be32866df22a636cff15f7da4e570c`.
-
-- final dark-theme hierarchy;
-- 1440, 820, 390, and 360 layouts;
-- mixed, partial, empty, unavailable-storage, and long-content states;
-- focus, touch-target, reduced-motion, contrast, and forced-color support;
-- seven deterministic full-page artifacts.
-
-### W4A — executable contract closure
-
-Completion candidate PR #422.
-
-- one consolidated command runs all Watchlist foundation verifiers;
-- route, SEO, URL, privacy, provider, request, Channel, candidate, and infrastructure boundaries are executable;
-- server-expansion and local-id-leakage tripwires are permanent;
-- Development policy and current-document state are checked;
-- no runtime feature behavior changes.
-
-Implementation sequence:
-
 ```text
 W0   specification and plan                         complete PR #415
 W1   local model, storage, and URL state            complete PR #416
@@ -318,29 +255,17 @@ W2B  History adapter and combined evidence         complete PR #418
 W3A  provider routes and storage-first shell       complete PR #419
 W3B  evidence cards and approved entry points      complete PR #420
 W3C  responsive/accessibility candidate pass       complete PR #421
-W4A  executable contract closure                   completion candidate PR #422
-W4B  complete local browser candidate QA           next after merge report
-W5A  hosted preview-watchlist-v1 acceptance        queued
+W4A  executable contract closure                   complete PR #422
+W4B  complete local browser candidate QA           completion candidate PR #423
+W5A  hosted preview-watchlist-v1 acceptance        next after merge report
 W5B  production acceptance and document cleanup    queued
 ```
 
-Hosted `preview-watchlist-v1` acceptance remains scheduled for W5A.
+W1 fixed storage and URL state. W2A fixed latest-observation normalization and one-response request behavior. W2B fixed retained-History normalization, independent evidence axes, period caches, and failure isolation. W3A added provider routes and the storage-first shell. W3B connected evidence and Channel save. W3C fixed responsive and accessibility presentation. W4A closed executable contracts. W4B now completes local integrated browser acceptance and candidate freeze.
 
-## 5. Prior transition record retained for audit compatibility
+Hosted `preview-watchlist-v1` acceptance remains scheduled only for W5A.
 
-```text
-W3A PR #419; W3B completion candidate PR #420
-W3C candidate polish is next after merge report
-work-watchlist-w3b-ui
-work-watchlist-w3c-candidate
-apps/web/src/live/channel-watchlist.ts
-Retry latest = 1 Heatmap + 0 History
-Retry History = 0 Heatmap + 1 History
-Channel save = 0 additional requests
-no API, D1, binding, collector, cron, retention, rollup, or History visual change
-```
-
-## 6. Work not scheduled for immediate implementation
+## 5. Work not scheduled for immediate implementation
 
 - speculative History visual fixes without screenshots and instructions;
 - exact Session page or complete session history;
@@ -354,6 +279,6 @@ no API, D1, binding, collector, cron, retention, rollup, or History visual chang
 - AI-generated interpretation;
 - multiple major expansions in parallel.
 
-## 7. Roadmap update rule
+## 6. Roadmap update rule
 
 Update this file when a phase begins or completes, a blocker changes priority, a feature is approved or deferred, or the pending History UI revision receives enough evidence to begin.
