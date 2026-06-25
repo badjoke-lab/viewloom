@@ -66,7 +66,7 @@ function verifyRoute(source, provider, name) {
     'Nothing is uploaded to a ViewLoom account.',
     'Storage unavailable or corrupted',
     'Reset local Watchlist',
-    'No complete history is implied.',
+    'no complete history is implied.',
     '/src/live/watchlist-page.ts',
     '/src/live/watchlist-move-focus.ts',
     '/src/analytics.ts',
@@ -166,8 +166,8 @@ function verifyChannelAction() {
     'Saved in Watchlist',
     'Watchlist unavailable',
     'No data request was made.',
-    'window.addEventListener(\'storage\'',
-    'window.addEventListener(\'popstate\'',
+    "window.addEventListener('storage'",
+    "window.addEventListener('popstate'",
   ]) assert.ok(channelAction.includes(fragment), `channel-watchlist.ts missing: ${fragment}`)
 
   for (const forbidden of ['fetch(', 'removeStoredWatchlistEntry', 'setInterval(', 'serviceWorker', 'gtag(']) {
