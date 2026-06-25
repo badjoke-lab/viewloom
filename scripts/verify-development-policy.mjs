@@ -69,6 +69,7 @@ const requiredFiles = [
   'docs/audits/public-surface-profiles-analysis.json',
   'docs/audits/public-surface-profiles-history.json',
   'docs/audits/public-surface-profiles-utility.json',
+  'docs/audits/public-surface-schema-note.md',
   'scripts/verify-public-surface-inventory.mjs',
   'apps/web/docs/watchlist-latest-w2a-contract.md',
   'apps/web/docs/watchlist-history-w2b-contract.md',
@@ -110,14 +111,13 @@ requireFragments('docs/operations/documentation-governance.md', [
 
 requireFragments('README.md', [
   'Phase 7  source-of-truth reset and repair-program lock    complete PR #426',
-  'Phase 8  all-public-surface inventory and browser audit   active',
-  'P8A',
-  'work-public-surface-inventory',
+  'Phase 8  all-public-surface inventory and browser audit   P8A complete PR #427',
+  'P8A  public route and acceptance inventory                 complete PR #427',
+  'P8B  desktop/tablet/mobile browser defect audit            exact next',
   'work-public-browser-audit',
   'post-watchlist-program-plan.md',
+  'public-surface-inventory.json',
   'history-ui-repair-spec.md',
-  'history-ui-repair-plan.md',
-  'history-ui-repair-working-note.md',
 ])
 
 const index = read('docs/README.md')
@@ -141,22 +141,21 @@ for (const path of [
 for (const note of retiredNotes) assert(!index.includes(note.replace('docs/', '')), `docs/README.md: retired note remains linked: ${note}`)
 for (const fragment of [
   'Phase 7  source-of-truth reset and repair-program lock    complete through PR #426',
-  'Phase 8  public surface inventory and browser audit       active',
-  'P8A      work-public-surface-inventory                     active',
+  'Phase 8  public surface inventory and browser audit       P8A complete through PR #427',
+  'P8A      work-public-surface-inventory                     complete PR #427',
   'P8B      work-public-browser-audit                         exact next branch',
-  'The following are P1 defects',
+  'P8A stable findings',
   'Repository-comparison rule',
-]) assert(index.includes(fragment), `docs/README.md: missing active Phase 8 state: ${fragment}`)
+]) assert(index.includes(fragment), `docs/README.md: missing P8A completion state: ${fragment}`)
 
 requireFragments('docs/product/current-roadmap.md', [
   'History & Trends | production baseline accepted; public-quality P1 repair approved',
-  'Phase 7 — source-of-truth reset and repair-program lock',
-  'State: complete through PR #426',
-  'Current window: P8A',
-  'Current branch: work-public-surface-inventory',
+  'P8A: complete through PR #427',
+  'Exact next window: P8B',
   'Exact next branch: work-public-browser-audit',
-  'Phase 8   all-public-surface inventory and browser defect audit      active',
-  'Phase 9   P0/P1 core repair; History UI is the central track',
+  'Phase 8   P8A inventory complete PR #427; P8B browser audit next',
+  'Owned inventory entries                  21',
+  'both Watchlist routes are missing from Public Readiness configuration',
   'P9H1 metric execution repair',
   'P9H2 chart axes, scale, units, and day interaction',
   'Additional reference screenshots may refine styling later.',
@@ -165,26 +164,27 @@ requireFragments('docs/product/current-roadmap.md', [
 
 requireFragments('docs/product/current-schedule.md', [
   'Phase 7 source reset                     complete through PR #426',
-  'Phase 8 public audit                     active',
-  'Window: P8A — public surface inventory',
-  'Branch: work-public-surface-inventory',
+  'Phase 8 P8A inventory                    complete through PR #427',
+  'Phase 8 P8B browser audit                exact next',
+  'Completed branch: work-public-surface-inventory',
+  'Completion PR: #427',
   'Exact next branch: work-public-browser-audit',
-  'P7A  work-history-ui-repair-governance   complete PR #426',
-  'P8A  work-public-surface-inventory       active',
-  'P8B  work-public-browser-audit           exact next after P8A merge report',
+  'P8A  work-public-surface-inventory       complete PR #427',
+  'P8B  work-public-browser-audit           exact next after explicit continuation',
+  'No P8B branch exists yet.',
   'P9H0 work-history-ui-h0-baseline',
   'P9H7 work-history-ui-h7-acceptance',
-  'P8A is the only active branch.',
+  'P8A is complete through PR #427.',
 ])
 
 requireFragments('docs/product/post-watchlist-program-plan.md', [
   'Status: active source-of-truth program plan',
-  'Current phase: Phase 8',
-  'Current window: P8A',
-  'Current branch: `work-public-surface-inventory`',
-  'Completed predecessor: Phase 7 P7A through PR #426',
-  'Repository comparison rule',
-  '| 8 | P8A | active | `work-public-surface-inventory`',
+  'Version: 1.1',
+  'Completed window: P8A through PR #427',
+  'Exact next branch: `work-public-browser-audit`',
+  '| 8 | P8A | complete PR #427 | `work-public-surface-inventory`',
+  '| 8 | P8B | exact next | `work-public-browser-audit`',
+  'P8A — completed public surface inventory',
   'P8B — public browser defect audit',
   'U10A — design tokens and component audit',
   'O11A — unified acceptance matrix',
@@ -220,40 +220,48 @@ requireFragments('docs/product/history-ui-repair-spec.md', [
 ])
 requireFragments('docs/product/history-ui-repair-plan.md', [
   'Status: active implementation subplan',
-  'Version: 1.1',
-  'Current window: Phase 8 P8A',
-  'Current branch: `work-public-surface-inventory`',
+  'Version: 1.2',
+  'Completed window: Phase 8 P8A through PR #427',
+  'Exact next branch: `work-public-browser-audit`',
   'P7A  work-history-ui-repair-governance   complete PR #426',
-  'P8A  work-public-surface-inventory       active',
-  'P8B  work-public-browser-audit           exact next after P8A merge report',
-  'P9H0 work-history-ui-h0-baseline',
-  'P9H7 work-history-ui-h7-acceptance',
+  'P8A  work-public-surface-inventory       complete PR #427',
+  'P8B  work-public-browser-audit           exact next after explicit continuation',
   'Checking only `aria-pressed`, selected styling, or button text is insufficient.',
+  'P8A — completed public surface inventory',
+  'P9H7 — hosted and production acceptance',
   'After each PR merge:',
 ])
 requireFragments('docs/work-in-progress/history-ui-repair-working-note.md', [
   'Status: active',
-  'Current branch: `work-public-surface-inventory`',
-  'Current window: P8A — public surface inventory',
-  'Completed predecessor: P7A through PR #426',
+  'Completed window: P8A — public surface inventory through PR #427',
+  'Exact next branch: `work-public-browser-audit`',
   'approved P1 defects',
-  'Current P8A repository package',
+  'P8A stable History findings',
+  'Cross-site P8A findings relevant to P8B',
   'Which module is authoritative for metric URL state?',
-  'P8A  work-public-surface-inventory       active',
+  'P8A  work-public-surface-inventory       complete PR #427',
   'P9H7 work-history-ui-h7-acceptance',
   'Delete when: P9H7 production acceptance',
 ])
 
 requireFragments('docs/audits/P8A_SCOPE.md', [
-  'This branch inventories current public routes',
-  'It does not repair product UI',
+  'Status: completed through PR #427',
+  'did not repair product UI',
   'work-public-browser-audit',
 ])
 requireFragments('docs/audits/README.md', [
-  'Active public-surface audit',
+  'Completed Phase 8 P8A public-surface inventory',
   'public-surface-inventory.json',
   'public-surface-gaps.json',
   'node scripts/verify-public-surface-inventory.mjs',
+  'P8B must treat these files as its route',
+])
+requireFragments('docs/audits/public-surface-inventory.md', [
+  'Status: completed Phase 8 P8A inventory',
+  'Vite HTML inputs                 20',
+  'Owned inventory entries          21',
+  'History remains a known P1 surface',
+  'work-public-browser-audit',
 ])
 requireFragments('scripts/verify-public-surface-inventory.mjs', [
   "manifest.schema === 'viewloom-public-surface-inventory-v1'",
@@ -387,8 +395,8 @@ console.log(`- ${requiredFiles.length} required files present`)
 console.log('- completed temporary notes remain retired')
 console.log('- Local Watchlist W0 through W5B remains governed as a completed production phase')
 console.log('- Phase 7 P7A is complete through PR #426')
-console.log('- Phase 8 P8A public surface inventory is the only active work window')
-console.log('- P8B work-public-browser-audit is next only after P8A merge reporting and explicit continuation')
+console.log('- Phase 8 P8A public surface inventory is complete through PR #427')
+console.log('- P8B work-public-browser-audit is exact next only after merge reporting and explicit continuation')
 console.log(`- ${concurrencyWorkflows.length} active workflows cancel obsolete runs`)
 
 function walkFiles(directory) {
