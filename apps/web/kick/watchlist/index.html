@@ -4,18 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kick Local Watchlist — ViewLoom</title>
-  <meta name="description" content="Keep a browser-local list of Kick channel ids and prepare to inspect bounded latest and retained ViewLoom evidence without creating an account." />
+  <meta name="description" content="Keep a browser-local list of Kick channel ids and inspect bounded latest and retained ViewLoom evidence without creating an account." />
   <meta name="robots" content="noindex,follow" />
   <link rel="canonical" href="https://vl.badjoke-lab.com/kick/watchlist/" />
   <meta property="og:site_name" content="ViewLoom" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://vl.badjoke-lab.com/kick/watchlist/" />
   <meta property="og:title" content="Kick Local Watchlist — ViewLoom" />
-  <meta property="og:description" content="Save Kick channel ids only in this browser and reopen provider-safe ViewLoom pages." />
+  <meta property="og:description" content="Save Kick channel ids only in this browser and inspect bounded latest and retained observations." />
   <meta property="og:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Kick Local Watchlist — ViewLoom" />
-  <meta name="twitter:description" content="Save Kick channel ids only in this browser and reopen provider-safe ViewLoom pages." />
+  <meta name="twitter:description" content="Save Kick channel ids only in this browser and inspect bounded latest and retained observations." />
   <meta name="twitter:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
   <link rel="stylesheet" href="/src/mock-site.css" />
 </head>
@@ -37,13 +37,13 @@
         <div class="kicker">KICK DATA · LOCAL WATCHLIST</div>
         <div class="watchlist-badge">Saved only in this browser</div>
         <h1>Local Watchlist</h1>
-        <p class="lede">Save Kick channel ids in this browser, reopen their provider-safe pages, and prepare bounded latest and retained evidence. Absence from an observed result is not proof that a channel is offline.</p>
+        <p class="lede">Save Kick channel ids in this browser and compare each one with the latest bounded provider observation and the selected retained History result. Absence from an observed result is not proof that a channel is offline.</p>
       </div>
       <div class="head-facts" aria-live="polite">
         <div class="fact"><small>Saved</small><strong data-watchlist-saved-count>0 saved</strong></div>
         <div class="fact"><small>Retained period</small><strong data-watchlist-period-fact>Last 30 days</strong></div>
         <div class="fact"><small>Storage</small><strong data-watchlist-storage-fact>Loading</strong></div>
-        <div class="fact"><small>Data requests</small><strong>Not connected in W3A</strong></div>
+        <div class="fact"><small>Data requests</small><strong data-watchlist-request-fact>0 while empty</strong></div>
       </div>
     </section>
 
@@ -51,8 +51,8 @@
       <div class="data-strip__title">Kick Watchlist</div>
       <div class="data-strip__cell"><small>Provider</small>Kick only</div>
       <div class="data-strip__cell"><small>Storage key</small><code data-watchlist-storage-key>viewloom.watchlist.kick.v1</code></div>
-      <div class="data-strip__cell"><small>Latest source</small>Not requested</div>
-      <div class="data-strip__cell"><small>History source</small>Not requested</div>
+      <div class="data-strip__cell"><small>Latest source</small><span data-watchlist-latest-source>Not requested</span></div>
+      <div class="data-strip__cell"><small>History source</small><span data-watchlist-history-source>Not requested</span></div>
     </section>
 
     <section class="surface watchlist-controls" aria-label="Local Watchlist controls">
@@ -65,19 +65,19 @@
       </div>
       <div class="watchlist-control-block">
         <span class="watchlist-control-label">Retained period</span>
-        <div class="watchlist-period-row"><div class="control-group"><button type="button" data-watchlist-period="7d" aria-pressed="false">Last 7 days</button><button type="button" data-watchlist-period="30d" aria-pressed="true">Last 30 days</button></div><button class="button button--paper watchlist-refresh" data-watchlist-refresh type="button" disabled aria-describedby="watchlist-latest-feedback watchlist-history-feedback">Refresh data</button></div>
-        <p class="watchlist-help">Period changes update browser history. W3A changes the local shell only and sends no Heatmap or History request.</p>
+        <div class="watchlist-period-row"><div class="control-group"><button type="button" data-watchlist-period="7d" aria-pressed="false">Last 7 days</button><button type="button" data-watchlist-period="30d" aria-pressed="true">Last 30 days</button></div><button class="button button--paper watchlist-refresh" data-watchlist-refresh type="button" aria-describedby="watchlist-latest-feedback watchlist-history-feedback">Refresh data</button></div>
+        <p class="watchlist-help">A nonempty initial load uses one Kick Heatmap request and one Kick History request. Period changes request History only; local list operations make no data request.</p>
       </div>
     </section>
 
     <section class="watchlist-feedback-grid" aria-label="Watchlist feedback">
       <div class="watchlist-feedback"><small>Storage</small><p id="watchlist-storage-feedback" data-watchlist-storage-feedback aria-live="polite">Loading this browser’s Kick Watchlist…</p></div>
-      <div class="watchlist-feedback"><small>Latest observation</small><p id="watchlist-latest-feedback" data-watchlist-latest-feedback aria-live="polite">Latest observation is not requested in the W3A storage-first shell.</p></div>
-      <div class="watchlist-feedback"><small>Retained History</small><p id="watchlist-history-feedback" data-watchlist-history-feedback aria-live="polite">Retained History is not requested in the W3A storage-first shell.</p></div>
+      <div class="watchlist-feedback"><small>Latest observation</small><p id="watchlist-latest-feedback" data-watchlist-latest-feedback aria-live="polite">Latest observation has not been requested.</p><button class="button button--quiet watchlist-retry" data-watchlist-retry-latest type="button" hidden>Retry latest</button></div>
+      <div class="watchlist-feedback"><small>Retained History</small><p id="watchlist-history-feedback" data-watchlist-history-feedback aria-live="polite">Retained History has not been requested.</p><button class="button button--quiet watchlist-retry" data-watchlist-retry-history type="button" hidden>Retry History</button></div>
     </section>
 
     <section class="watchlist-list-tools" data-watchlist-filter-controls hidden aria-label="Saved channel controls">
-      <div class="watchlist-control-block"><label for="watchlist-filter">Filter saved channels</label><div class="watchlist-filter-row"><input id="watchlist-filter" data-watchlist-filter type="search" autocomplete="off" placeholder="Filter by saved name or id" /><button class="button button--paper" data-watchlist-show type="button" aria-expanded="false">Show all</button></div></div>
+      <div class="watchlist-control-block"><label for="watchlist-filter">Filter saved channels</label><div class="watchlist-filter-row"><input id="watchlist-filter" data-watchlist-filter type="search" autocomplete="off" placeholder="Filter by saved or observed name or id" /><button class="button button--paper" data-watchlist-show type="button" aria-expanded="false">Show all</button></div></div>
       <p class="watchlist-list-summary" data-watchlist-list-summary>No saved channels.</p>
       <button class="button watchlist-remove" data-watchlist-clear type="button" disabled>Clear Watchlist</button>
     </section>
@@ -100,7 +100,7 @@
       <div class="rule-title"><h2>Local scope and limits</h2><span>Browser-only utility</span></div>
       <div class="watchlist-limits">
         <article class="watchlist-limit"><small>Local storage</small><h2>Browser-specific</h2><p>Saved ids stay in this browser’s provider-specific localStorage key. There is no account, cloud sync, cookie fallback, or shared Watchlist URL.</p></article>
-        <article class="watchlist-limit"><small>Evidence</small><h2>Bounded observations</h2><p>Latest and retained evidence will use existing provider payloads in W3B. Not appearing in a bounded result does not prove offline status. No complete history is implied.</p></article>
+        <article class="watchlist-limit"><small>Evidence</small><h2>Bounded observations</h2><p>Latest evidence comes from the existing Kick Heatmap payload. Retained evidence comes from the selected Kick History payload. Not appearing in either bounded result does not prove offline status, and no complete history is implied.</p></article>
         <article class="watchlist-limit"><small>Privacy</small><h2>No saved ids in metadata</h2><p>Saved ids are not placed in the canonical URL, share metadata, or analytics payloads. External Kick links follow normal browser navigation.</p></article>
       </div>
     </section>

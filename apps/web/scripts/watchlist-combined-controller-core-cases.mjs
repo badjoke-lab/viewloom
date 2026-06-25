@@ -74,6 +74,24 @@ export async function verifyCombinedControllerCore(controllerModule) {
   assert.equal(latest.calls.length, 2)
   assert.equal(history.calls.length, 3)
 
+  const latestRetry = await controller.retryLatest(entries, '7d')
+  assert.equal(latestRetry.action, 'retry_latest')
+  assert.equal(latestRetry.latestRequested, true)
+  assert.equal(latestRetry.historyRequested, false)
+  assert.equal(latestRetry.historySource, 'cache')
+  assert.equal(latest.calls.length, 3)
+  assert.equal(history.calls.length, 3)
+  assert.equal(latestRetry.evidence.entries[0].retained.state, 'present_retained')
+
+  const historyRetry = await controller.retryHistory(entries, '7d')
+  assert.equal(historyRetry.action, 'retry_history')
+  assert.equal(historyRetry.latestRequested, false)
+  assert.equal(historyRetry.historyRequested, true)
+  assert.equal(historyRetry.latestSource, 'cache')
+  assert.equal(latest.calls.length, 3)
+  assert.equal(history.calls.length, 4)
+  assert.equal(historyRetry.evidence.entries[0].latest.state, 'present_fresh')
+
   const oneLatest = latestRecorder()
   const oneHistory = historyRecorder()
   const oneController = controllerModule.createWatchlistCombinedController({

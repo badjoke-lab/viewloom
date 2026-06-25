@@ -1,0 +1,36 @@
+.channel-watchlist-action {
+  display: inline-flex;
+}
+
+.channel-watchlist-feedback {
+  display: block;
+  width: 100%;
+  min-height: 1.4em;
+  margin-top: 8px;
+  color: var(--muted, #6e7781);
+  font-size: .82rem;
+  line-height: 1.45;
+}
+
+.channel-watchlist-action .button[disabled] {
+  cursor: not-allowed;
+  opacity: .58;
+}
+
+@media (max-width: 760px) {
+  .channel-watchlist-action {
+    flex: 1 1 180px;
+  }
+
+  .channel-watchlist-action .button {
+    width: 100%;
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 420px) {
+  .channel-watchlist-action {
+    width: 100%;
+    flex-basis: auto;
+  }
+}

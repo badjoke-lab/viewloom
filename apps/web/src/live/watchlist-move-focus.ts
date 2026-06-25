@@ -1,4 +1,5 @@
 import '../watchlist-touch.css'
+import '../watchlist-evidence.css'
 
 let pendingChannelId = ''
 
