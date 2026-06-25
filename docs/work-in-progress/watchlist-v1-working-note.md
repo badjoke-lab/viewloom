@@ -2,9 +2,11 @@
 
 Status: active implementation ledger
 Created: 2026-06-24
+Last updated: 2026-06-25
 Roadmap phase: Phase 6 — Local Watchlist v1
-Current branch: `work-watchlist-w4-browser`
-Current PR: `#423 Complete Local Watchlist browser candidate QA`
+Current branch: `work-watchlist-w5-hosted`
+Current PR: `#424 Verify Local Watchlist on hosted Preview`
+Hosted branch: `preview-watchlist-v1`
 Delete when: W5 production acceptance and documentation closure are complete.
 
 ## 1. Completed records
@@ -18,6 +20,7 @@ W3A work-watchlist-w3a-routes    PR #419  provider routes and storage-first shel
 W3B work-watchlist-w3b-ui        PR #420  evidence UI, retries, links, and Channel save
 W3C work-watchlist-w3c-candidate PR #421  responsive, visual, and accessibility candidate
 W4A work-watchlist-w4-contracts  PR #422  executable contract closure
+W4B work-watchlist-w4-browser    PR #423  deterministic local browser acceptance
 ```
 
 W1 fixed provider-separated versioned storage, normalization, immutable list operations, duplicate and fifty-entry behavior, recoverable storage states, provider-isolated clear/reset, storage-event parsing, and clean period URL state.
@@ -30,111 +33,131 @@ W3A fixed provider routes, canonical and noindex metadata, unchanged primary tab
 
 W3B fixed existing Heatmap/History connection, independent evidence cards, limitation wording, combined refresh, source retries, provider-safe links, Channel save, one-through-fifty request invariance, and desktop/360px functional gates.
 
-W3C fixed the final visual hierarchy, provider accents, 1440/820/390/360 compositions, focus, touch targets, wrapping, reduced motion, contrast, forced colors, and seven deterministic screenshots.
+W3C fixed the final visual hierarchy, provider accents, 1440/820/390/360 compositions, focus, touch targets, wrapping, reduced motion, contrast, forced colors, and deterministic screenshots.
 
 W4A fixed one consolidated executable contract command and permanent workflow covering storage, URL, latest, History, routes, SEO, privacy, providers, requests, Channel, candidate presentation, forbidden infrastructure, and documentation governance.
 
-W4A merge record:
+W4B completed the integrated local browser candidate QA and froze the accepted candidate.
+
+W4B merge record:
 
 ```text
-PR: #422 Close Local Watchlist executable contracts
-head: 2d900a57dfdb14942ebe06e9a905d5df88f06438
-merge: a7324cea387db7477c01d97bf35b762a0bc8ea76
+PR: #423 Complete Local Watchlist browser candidate QA
+head: fa66656a3fecd7af932c31bb66d5bdace85b5da9
+merge: c75b4549bb50d7eb54c0135874dba63db0b7cc69
 Preview: not requested
+runtime feature changes: none
 ```
 
-## 2. Active W4B completion candidate
+## 2. Active W5A completion candidate
 
 ```text
-branch: work-watchlist-w4-browser
-PR: #423 Complete Local Watchlist browser candidate QA
-Preview: not requested
+implementation branch: work-watchlist-w5-hosted
+hosted branch: preview-watchlist-v1
+PR: #424 Verify Local Watchlist on hosted Preview
+hosted candidate: c75b4549bb50d7eb54c0135874dba63db0b7cc69
+branch origin: https://preview-watchlist-v1.viewloom.pages.dev
+deployment origin: https://c0228ac1.viewloom.pages.dev
 runtime product changes: none
 ```
+
+The hosted branch points exactly to the W4B merge commit and does not include the W5A acceptance script or documentation changes.
 
 Acceptance files:
 
 ```text
-apps/web/scripts/watchlist-browser-acceptance.mjs
-.github/workflows/watchlist-browser.yml
-scripts/verify-development-policy.mjs
+apps/web/scripts/watchlist-cloudflare-preview.mjs
+.github/workflows/watchlist-hosted-preview.yml
+docs/work-in-progress/watchlist-w5a-hosted-preview-note.md
 ```
 
 Machine-readable evidence:
 
 ```text
-schema: viewloom-watchlist-local-browser-acceptance-v1
-phase: W4B
-result: pass | fail
-scenario count: 4
+schema: viewloom-watchlist-hosted-preview-acceptance-v1
+phase: W5A
+result: pass
+scenario count: 3
 ```
 
-Integrated scenario matrix:
+Deployment identity:
 
 ```text
-twitch-desktop-integrated
-  empty zero-request state
-  storage reload
-  latest / retained / absence evidence
-  filter and reorder
-  focus preservation
-  7d request
-  cached Back and Forward
-  refresh
-  latest failure and Retry latest
-  History failure and Retry History
-  second tab and cross-tab add
-
-kick-tablet-channel
-  provider request isolation
-  provider-safe links
-  no Twitch storage mutation
-  44px targets
-  Channel save with zero additional requests
-
-kick-mobile-integrated
-  empty zero-request state
-  task-local add
-  explicit refresh
-  44px / 48px targets
-  long-content wrapping
-  no overflow
-  reduced motion
-
-storage-unavailable-mobile
-  visible recovery panel
-  zero requests
-  no overflow
+schema: viewloom-deployment-v1
+environment: preview
+branch: preview-watchlist-v1
+commit_sha: c75b4549bb50d7eb54c0135874dba63db0b7cc69
 ```
 
-W4B workflow matrix:
+Provider evidence:
 
 ```text
-Development policy
-web typecheck
-W4A consolidated contracts
-web build
-W3B desktop functional regression
-W3B narrow functional regression
-W3C desktop/tablet regression
-W3C mobile regression
-W4B integrated browser acceptance
-machine-readable evidence validation
+Twitch
+  binding: DB_TWITCH_HOT -> vl_twitch_hot
+  source mode: real
+  state: partial
+  latest rows: 300
+  retained 30d ids: 63
+  retained 7d ids: 56
+  latest/retained id: kato_junichi0817
+  latest-only id: shinjifromjapanxd
+  retained-only id: jynxzi
+
+Kick
+  binding: DB_KICK_HOT -> vl_kick_hot
+  source mode: authenticated
+  state: fresh
+  latest rows: 100
+  retained 30d ids: 59
+  retained 7d ids: 51
+  latest/retained id: absi
+  latest-only id: thedoctor
+  retained-only id: maherco
 ```
 
-W4B artifacts:
+Both retained History payloads were partial. The hosted UI correctly rendered `Retained History is partial` rather than claiming complete retained presence or absence.
+
+Hosted scenarios:
 
 ```text
-watchlist-browser-evidence.json
-watchlist-w4b.log
-watchlist-w4b-preview.log
-watchlist-w4b-twitch-desktop.png
-watchlist-w4b-twitch-cross-tab.png
-watchlist-w4b-kick-tablet.png
-watchlist-w4b-kick-mobile.png
-watchlist-w4b-storage-error.png
-W3B desktop/mobile screenshots
-W3C seven-image candidate matrix
+twitch-desktop-hosted
+  exact deployment identity
+  real Twitch latest and retained evidence
+  exact initial, 7d, cached restore, and refresh counts
+  provider isolation
+  no horizontal overflow
+
+kick-mobile-hosted
+  real Kick latest and retained evidence
+  exact initial, 7d, cached restore, and refresh counts
+  provider isolation
+  no horizontal overflow
+  44px general targets
+  48px management targets
+
+kick-channel-save-hosted
+  real Kick id: absi
+  storage key: viewloom.watchlist.kick.v1
+  additional requests on save: 0
+```
+
+Accepted workflow:
+
+```text
+Watchlist Hosted Preview
+run: 28162895177
+result: success
+accepted work-branch head: eac0d0f941818b64a357802fe3bfed02479c482a
+```
+
+W5A artifacts:
+
+```text
+watchlist-w5a-evidence.json
+watchlist-w5a.log
+watchlist-w5a-twitch-desktop.png
+watchlist-w5a-kick-mobile.png
+watchlist-w5a-channel-save.png
 ```
 
 ## 3. Preserved functional contract
@@ -175,7 +198,7 @@ Preserved boundaries:
 - retained evidence is not complete channel history;
 - no per-channel request loop or polling;
 - no login, sync, alerts, or server-side user storage;
-- no API schema, endpoint meaning, D1, binding, collector, cron, retention, or rollup change;
+- no API schema, endpoint meaning, D1 write, migration, binding, collector, cron, retention, or rollup change;
 - no History UI, DOM, or CSS change.
 
 ## 4. Current position
@@ -189,28 +212,22 @@ W3A routes and shell             complete PR #419
 W3B evidence UI/entry points     complete PR #420
 W3C candidate polish             complete PR #421
 W4A contract closure             complete PR #422
-W4B browser candidate QA         completion candidate PR #423
-W5A hosted Preview               next after PR #423 merge report
-W5B production closure           queued
+W4B browser candidate QA         complete PR #423
+W5A hosted Preview               completion candidate PR #424
+W5B production closure           next after PR #424 merge report
 ```
 
-## 5. W5A handoff
+## 5. W5B handoff
 
-Planned implementation branch after W4B merge reporting:
+Planned branch after W5A merge reporting:
 
 ```text
-work-watchlist-w5-hosted
+work-watchlist-w5-production
 ```
 
-Approved hosted branch:
+The branch does not exist yet.
 
-```text
-preview-watchlist-v1
-```
-
-W5A must deploy only the complete accepted W4 candidate, verify exact Preview SHA and separate Twitch/Kick Functions bindings, and exercise real-data routes, request counts, evidence states, and responsive behavior. It must not introduce D1 writes, migrations, collectors, retention changes, or new feature scope.
-
-W5A next after PR #423 merge report.
+W5B must verify the exact production deployment identity, routes, metadata, APIs, storage, Channel/Home entry points, request counts, provider separation, and responsive behavior. It must record permanent acceptance evidence and delete both temporary Watchlist notes after stable content is transferred.
 
 ## 6. Stop rule
 
