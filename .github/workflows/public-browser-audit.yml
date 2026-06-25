@@ -12,6 +12,7 @@ on:
       - 'docs/product/history-ui-repair-plan.md'
       - 'docs/work-in-progress/history-ui-repair-working-note.md'
       - 'docs/README.md'
+      - 'README.md'
       - 'scripts/verify-development-policy.mjs'
       - 'scripts/verify-public-browser-audit.mjs'
       - '.github/workflows/public-browser-audit.yml'
@@ -50,6 +51,9 @@ jobs:
 
       - name: Verify P8A inventory
         run: node scripts/verify-public-surface-inventory.mjs
+
+      - name: Verify P8B repository state
+        run: node scripts/verify-public-browser-audit.mjs
 
       - name: Typecheck web application
         run: pnpm --filter @viewloom/web typecheck:app
