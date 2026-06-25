@@ -31,7 +31,7 @@ Current feature state:
 | Channel / Streamer | v1 and production acceptance complete | preserve retained-footprint contract |
 | Report/export shared layer | R0–R4 complete through PR #413 | maintain exact contracts |
 | Phase 5 capability audit | complete through PR #414 | permanent decision recorded |
-| Local Watchlist v1 | W0 PR #415; W1 PR #416; W2A PR #417; W2B PR #418; W3A PR #419; W3B completion candidate PR #420 | W3C candidate polish is next after merge report |
+| Local Watchlist v1 | W0–W3B complete; W3C completion candidate PR #421 | W4A next after merge report |
 | Session / Category / Language / Event / Alerts | not approved for immediate implementation | data or infrastructure expansion required |
 
 Permanent records:
@@ -65,6 +65,7 @@ Local Watchlist v1:
   W2B PR: #418
   W3A PR: #419
   W3B PR: #420
+  W3C PR: #421
 ```
 
 ## 2. Immediate priority
@@ -73,39 +74,50 @@ The active completion window is:
 
 ```text
 Phase 6 — Local Watchlist v1
-W3B — evidence cards and approved entry points
-Branch: work-watchlist-w3b-ui
-PR: #420
+W3C — responsive, visual, and accessibility candidate pass
+Branch: work-watchlist-w3c-candidate
+PR: #421
 State: completion candidate
 ```
 
-W3B implements:
+W3C implements only presentation and candidate acceptance support:
 
-- the accepted W2 latest/History combined controller on both provider Watchlist routes;
-- independent latest and retained evidence in every saved-channel card;
-- loading, present, stale, partial, absent, empty, error, and retry states using permanent exact wording;
-- combined refresh plus source-specific retry behavior;
-- provider-safe Channel, History, Heatmap, and external provider links;
-- additive `Save to Watchlist` / `Saved in Watchlist` controls on Twitch and Kick Channel pages;
-- exact request-count, cache, failure-isolation, Channel-save, desktop, and 360px browser verification.
+- final dark-theme hierarchy for the completed Watchlist feature;
+- clearer hero, facts, controls, storage/data feedback, saved-channel cards, evidence facts, actions, empty state, and storage-error state;
+- desktop 1440, tablet 820, mobile 390, and mobile 360 compositions;
+- deterministic mixed-evidence, partial-coverage, empty, storage-unavailable, and long-content states;
+- stronger focus treatment, touch targets, long-content wrapping, reduced-motion, increased-contrast, and forced-color behavior;
+- destructive list management separated visually from navigation actions;
+- full-page local artifacts for both providers.
 
-W3B preserves:
-
-- zero requests for an empty Watchlist;
-- one Heatmap plus one History request for a nonempty initial load regardless of one through fifty entries;
-- History-only uncached period changes and zero-request cached period restore;
-- zero data requests for add, remove, move, filter, show, clear, and cross-tab storage refresh;
-- zero additional request for Channel save;
-- independent latest and retained failure handling;
-- no authoritative offline or complete-history claim;
-- no per-channel request loop or polling;
-- no API, D1, binding, collector, cron, retention, rollup, or History visual change.
-
-After PR #420 merges and its full report is issued, the next approved work window is:
+W3C preserves the complete W3B product contract:
 
 ```text
-W3C — responsive, visual, and accessibility candidate pass
-Branch: work-watchlist-w3c-candidate
+/twitch/watchlist/
+/kick/watchlist/
+provider-separated browser localStorage
+maximum 50 entries per provider
+12 entries initially visible
+empty initial load = 0 Heatmap + 0 History
+nonempty initial load = 1 Heatmap + 1 History
+uncached period change = 0 Heatmap + 1 History
+cached period restore = 0 Heatmap + 0 History
+combined refresh = 1 Heatmap + 1 History
+Retry latest = 1 Heatmap + 0 History
+Retry History = 0 Heatmap + 1 History
+Channel save = 0 additional requests
+no per-channel request loop
+no authoritative live/offline claim
+no alerts, login, sync, exact sessions, or cross-provider identity
+```
+
+W3C makes no serialized state, request lifecycle, localStorage contract, API schema, D1, binding, collector, cron, retention, rollup, or History visual change.
+
+After PR #421 merges and its full report is issued, the next approved work window is:
+
+```text
+W4A — executable contract closure
+Branch: work-watchlist-w4-contracts
 State: next after merge report
 ```
 
@@ -204,27 +216,6 @@ apps/web/docs/watchlist-latest-w2a-contract.md
 apps/web/docs/watchlist-history-w2b-contract.md
 ```
 
-Fixed product contract:
-
-```text
-/twitch/watchlist/
-/kick/watchlist/
-provider-separated browser localStorage
-maximum 50 entries per provider
-12 entries initially visible
-empty initial load = 0 Heatmap + 0 History
-nonempty initial load = 1 Heatmap + 1 History
-uncached period change = 0 Heatmap + 1 History
-cached period restore = 0 Heatmap + 0 History
-combined refresh = 1 Heatmap + 1 History
-Retry latest = 1 Heatmap + 0 History
-Retry History = 0 Heatmap + 1 History
-Channel save = 0 additional requests
-no per-channel request loop
-no authoritative live/offline claim
-no alerts, login, sync, exact sessions, or cross-provider identity
-```
-
 ### W1 — storage foundation
 
 Completed through PR #416.
@@ -275,7 +266,7 @@ Completed through PR #419.
 
 ### W3B — evidence UI and Channel entry point
 
-Completion candidate in PR #420.
+Completed through PR #420 and merge `66ed54cdd0e165c0e47c144a7d3ab27e10d5eefb`.
 
 Runtime files:
 
@@ -291,7 +282,7 @@ apps/web/twitch/channel/index.html
 apps/web/kick/channel/index.html
 ```
 
-Completion-candidate behavior:
+Completed behavior:
 
 - existing Heatmap and History payloads connected without changing their contracts;
 - exact present, stale, absent, partial, and unavailable wording;
@@ -303,6 +294,39 @@ Completion-candidate behavior:
 - deterministic desktop and 360px evidence gates;
 - no API, D1, binding, collector, cron, retention, rollup, or History visual change.
 
+### W3C — responsive, visual, and accessibility candidate
+
+Completion candidate in PR #421.
+
+Presentation files:
+
+```text
+apps/web/src/watchlist-candidate.css
+apps/web/src/watchlist-candidate-panels.css
+apps/web/src/watchlist-candidate-responsive.css
+apps/web/src/live/watchlist-move-focus.ts
+```
+
+Verification files:
+
+```text
+apps/web/scripts/watchlist-candidate-desktop.mjs
+apps/web/scripts/watchlist-candidate-mobile.mjs
+.github/workflows/watchlist-candidate.yml
+```
+
+Required artifact matrix:
+
+```text
+Twitch desktop 1440 — populated mixed evidence
+Twitch tablet 820 — storage controls and reordered list
+Twitch mobile 390 — latest absent and retained present
+Kick desktop 1440 — partial retained coverage
+Kick mobile 390 — empty state
+Kick mobile 360 — storage unavailable
+Kick mobile 360 — long id/name wrapping
+```
+
 Implementation sequence:
 
 ```text
@@ -311,9 +335,9 @@ W1   local model, storage, and URL state            complete PR #416
 W2A  latest Heatmap adapter and request foundation complete PR #417
 W2B  History adapter and combined evidence         complete PR #418
 W3A  provider routes and storage-first shell       complete PR #419
-W3B  evidence cards and approved entry points      completion candidate PR #420
-W3C  responsive/accessibility candidate pass       next after merge report
-W4A  executable contract closure                   queued
+W3B  evidence cards and approved entry points      complete PR #420
+W3C  responsive/accessibility candidate pass       completion candidate PR #421
+W4A  executable contract closure                   next after merge report
 W4B  complete local browser candidate QA           queued
 W5A  hosted preview-watchlist-v1 acceptance        queued
 W5B  production acceptance and document cleanup    queued
@@ -321,7 +345,21 @@ W5B  production acceptance and document cleanup    queued
 
 Hosted `preview-watchlist-v1` acceptance remains scheduled for W5A unless a verified blocker requires an earlier Preview.
 
-## 5. Work not scheduled for immediate implementation
+## 5. Prior W3B transition record retained for audit compatibility
+
+```text
+W3A PR #419; W3B completion candidate PR #420
+W3C candidate polish is next after merge report
+work-watchlist-w3b-ui
+work-watchlist-w3c-candidate
+apps/web/src/live/channel-watchlist.ts
+Retry latest = 1 Heatmap + 0 History
+Retry History = 0 Heatmap + 1 History
+Channel save = 0 additional requests
+no API, D1, binding, collector, cron, retention, rollup, or History visual change
+```
+
+## 6. Work not scheduled for immediate implementation
 
 - speculative History visual fixes without screenshots and instructions;
 - exact Session page or complete session history;
@@ -335,7 +373,7 @@ Hosted `preview-watchlist-v1` acceptance remains scheduled for W5A unless a veri
 - AI-generated interpretation;
 - multiple major expansions in parallel.
 
-## 6. Roadmap update rule
+## 7. Roadmap update rule
 
 Update this file when a phase begins or completes, a blocker changes priority, a feature is approved or deferred, or the pending History UI revision receives enough evidence to begin.
 
