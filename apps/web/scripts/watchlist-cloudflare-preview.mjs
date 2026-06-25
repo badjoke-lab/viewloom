@@ -1,11 +1,6 @@
 import { appendFile, writeFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
-import {
-  check,
-  setStoredDocument,
-  waitDataIdle,
-  waitReady,
-} from './watchlist-shell-browser-fixture.mjs'
+import { check, setStoredDocument, waitDataIdle, waitReady } from './watchlist-shell-browser-fixture.mjs'
 
 const previewOrigin = strip(process.env.WATCHLIST_PREVIEW_URL || 'https://preview-watchlist-v1.viewloom.pages.dev')
 const expectedBranch = process.env.WATCHLIST_EXPECTED_BRANCH || 'preview-watchlist-v1'
@@ -39,8 +34,18 @@ try {
 
   const browser = await chromium.launch({ headless: true })
   try {
-    evidence.scenarios.push(await verifyWatchlist(browser, twitch, 1440, 1000, false, '/tmp/watchlist-w5a-twitch-desktop.png'))
-    evidence.scenarios.push(await verifyWatchlist(browser, kick, 390, 844, true, '/tmp/watchlist-w5a-kick-mobile.png'))
+    evidence.scenarios.push(await verifyWatchlist(browser, twitch, {
+      width: 1440,
+      height: 1000,
+      mobile: false,
+      screenshot: '/tmp/watchlist-w5a-twitch-desktop.png',
+    }))
+    evidence.scenarios.push(await verifyWatchlist(browser, kick, {
+      width: 390,
+      height: 844,
+      mobile: true,
+      screenshot: '/tmp/watchlist-w5a-kick-mobile.png',
+    }))
     evidence.scenarios.push(await verifyChannelSave(browser, kick))
   } finally {
     await browser.close()
@@ -123,17 +128,18 @@ async function inspectProvider(provider) {
   const names = new Map()
   for (const row of latestRows) {
     const id = latestId(row)
-    if (id) names.set(id, String(row?.displayName ?? row?.name ?? row?.user_name ?? row?.username ?? id).trim().slice(0, 100) || id)
+    if (id) names.set(id, displayName(row, id))
   }
   for (const row of historyRows(history30)) {
     const id = historyId(row)
-    if (id && !names.has(id)) names.set(id, String(row?.displayName ?? row?.name ?? row?.user_name ?? id).trim().slice(0, 100) || id)
+    if (id && !names.has(id)) names.set(id, displayName(row, id))
   }
 
+  const historyState30 = String(history30?.state ?? '')
   return {
     provider,
     paths,
-    historyState30: String(history30?.state ?? ''),
+    historyState30,
     latestPresent,
     historyPresent,
     latestOnly,
@@ -149,7 +155,7 @@ async function inspectProvider(provider) {
       latestItemCount: latestIds.length,
       retained30ItemCount: retained30.length,
       retained7ItemCount: retained7.length,
-      historyState30: String(history30?.state ?? ''),
+      historyState30,
       latestPresent,
       historyPresent,
       latestOnly,
@@ -160,12 +166,12 @@ async function inspectProvider(provider) {
   }
 }
 
-async function verifyWatchlist(browser, data, width, height, mobile, screenshot) {
+async function verifyWatchlist(browser, data, viewport) {
   const { provider, paths } = data
   const context = await browser.newContext({
-    viewport: { width, height },
-    isMobile: mobile,
-    reducedMotion: mobile ? 'reduce' : 'no-preference',
+    viewport: { width: viewport.width, height: viewport.height },
+    isMobile: viewport.mobile,
+    reducedMotion: viewport.mobile ? 'reduce' : 'no-preference',
   })
   const page = await context.newPage()
   const calls = []
@@ -230,14 +236,14 @@ async function verifyWatchlist(browser, data, width, height, mobile, screenshot)
   await waitDataIdle(page)
   assertDelta(calls, paths, before, { latest: 1, history: 1 }, `${provider} combined refresh`)
 
-  await assertNoOverflow(page, `${provider} ${width}px hosted`)
-  await assertTargets(page, mobile ? 48 : 44)
-  await page.screenshot({ path: screenshot, fullPage: true })
+  await assertNoOverflow(page, `${provider} ${viewport.width}px hosted`)
+  if (viewport.mobile) await assertTargets(page, 48)
+  await page.screenshot({ path: viewport.screenshot, fullPage: true })
 
   const result = {
-    id: `${provider}-${mobile ? 'mobile' : 'desktop'}-hosted`,
+    id: `${provider}-${viewport.mobile ? 'mobile' : 'desktop'}-hosted`,
     result: 'pass',
-    viewport: { width, height },
+    viewport: { width: viewport.width, height: viewport.height },
     initialRequests: { latest: 1, history: 1 },
     periodChangeRequests: { latest: 0, history: 1 },
     cachedRestoreRequests: { latest: 0, history: 0 },
@@ -247,6 +253,7 @@ async function verifyWatchlist(browser, data, width, height, mobile, screenshot)
     realHistoryId: data.historyPresent,
     retainedUiState: data.historyState30 === 'partial' || data.historyState30 === 'demo' ? 'partial' : 'present',
     absentId: data.absent,
+    mobileMinimumTarget: viewport.mobile ? 48 : null,
     totalObservedFeatureRequests: counts(calls, paths),
   }
   await appendLog(result)
@@ -267,7 +274,10 @@ async function verifyChannelSave(browser, data) {
   await waitReady(page)
   await setStoredDocument(page, 'kick', [])
   calls.length = 0
-  await page.goto(`${previewOrigin}/kick/channel/?id=${encodeURIComponent(data.latestPresent)}&qa=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+  await page.goto(`${previewOrigin}/kick/channel/?id=${encodeURIComponent(data.latestPresent)}&qa=${Date.now()}`, {
+    waitUntil: 'domcontentloaded',
+    timeout: 30_000,
+  })
   await page.locator('[data-channel-watchlist-action]').waitFor()
   await page.waitForFunction(() => document.body.dataset.channelWatchlist === 'available')
   await page.waitForFunction(() => document.querySelector('[data-channel-state]')?.textContent !== 'Loading')
@@ -296,11 +306,18 @@ async function verifyChannelSave(browser, data) {
 
 async function fetchJson(path) {
   const url = `${previewOrigin}${path}`
-  const response = await fetch(url, { headers: { accept: 'application/json', 'cache-control': 'no-cache' }, cache: 'no-store' })
+  const response = await fetch(url, {
+    headers: { accept: 'application/json', 'cache-control': 'no-cache' },
+    cache: 'no-store',
+  })
   const text = await response.text()
   log(`${response.status} ${url} ${text.slice(0, 300)}`)
   check(response.ok, `Hosted request failed: ${response.status} ${url}`)
-  try { return JSON.parse(text) } catch { throw new Error(`Hosted response is not JSON: ${url}`) }
+  try {
+    return JSON.parse(text)
+  } catch {
+    throw new Error(`Hosted response is not JSON: ${url}`)
+  }
 }
 
 function providerPaths(provider) {
@@ -315,66 +332,118 @@ function latestItems(payload) {
   try {
     const parsed = JSON.parse(payload.latest.payload_json)
     return Array.isArray(parsed?.items) ? parsed.items : Array.isArray(parsed?.data) ? parsed.data : []
-  } catch { return [] }
+  } catch {
+    return []
+  }
 }
 
 function latestId(row) {
-  return normalize(row?.channelLogin ?? row?.id ?? row?.login ?? row?.slug ?? row?.username ?? row?.user_login ?? row?.user_slug ?? row?.channel?.slug ?? row?.channel?.username ?? row?.channel?.name)
+  return normalize(row?.channelLogin ?? row?.id ?? row?.login ?? row?.slug ?? row?.username
+    ?? row?.user_login ?? row?.user_slug ?? row?.channel?.slug ?? row?.channel?.username ?? row?.channel?.name)
 }
 
 function historyRows(payload) {
   const rows = Array.isArray(payload?.topStreamers) ? [...payload.topStreamers] : []
-  if (Array.isArray(payload?.daily)) for (const day of payload.daily) if (Array.isArray(day?.topStreamers)) rows.push(...day.topStreamers)
+  if (Array.isArray(payload?.daily)) {
+    for (const day of payload.daily) if (Array.isArray(day?.topStreamers)) rows.push(...day.topStreamers)
+  }
   return rows
 }
 
-function historyIds(payload) { return unique(historyRows(payload).map(historyId).filter(Boolean)) }
-function historyId(row) { return normalize(row?.streamerId ?? row?.channelId ?? row?.channelLogin ?? row?.id ?? row?.login ?? row?.slug) }
+function historyIds(payload) {
+  return unique(historyRows(payload).map(historyId).filter(Boolean))
+}
+
+function historyId(row) {
+  return normalize(row?.streamerId ?? row?.channelId ?? row?.channelLogin ?? row?.id ?? row?.login ?? row?.slug)
+}
+
+function displayName(row, fallback) {
+  return String(row?.displayName ?? row?.name ?? row?.user_name ?? row?.username ?? fallback).trim().slice(0, 100) || fallback
+}
+
 function normalize(value) {
   if (typeof value !== 'string') return null
   const id = value.trim().toLowerCase()
   return /^[a-z0-9_-]{1,64}$/.test(id) ? id : null
 }
+
 function absentId(provider, used) {
-  for (const id of [`viewloom_w5a_absent_${provider}`, `viewloom_w5a_missing_${provider}`]) if (!used.has(id)) return id
+  for (const id of [`viewloom_w5a_absent_${provider}`, `viewloom_w5a_missing_${provider}`]) {
+    if (!used.has(id)) return id
+  }
   throw new Error(`${provider} could not allocate an absent id.`)
 }
-function unique(values) { return [...new Set(values)] }
+
+function unique(values) {
+  return [...new Set(values)]
+}
+
 function counts(calls, paths) {
   return {
     latest: calls.filter((value) => value.startsWith(paths.latest)).length,
     history: calls.filter((value) => value.startsWith(paths.history)).length,
   }
 }
+
 function assertCounts(calls, paths, expected, label) {
   const actual = counts(calls, paths)
   check(actual.latest === expected.latest && actual.history === expected.history, `${label}: ${JSON.stringify({ expected, actual, calls })}`)
 }
+
 function assertDelta(calls, paths, before, expected, label) {
   const after = counts(calls, paths)
   const delta = { latest: after.latest - before.latest, history: after.history - before.history }
   check(delta.latest === expected.latest && delta.history === expected.history, `${label}: ${JSON.stringify({ expected, delta, before, after, calls })}`)
 }
+
 function assertProviderOnly(calls, provider) {
   const forbidden = provider === 'twitch'
     ? calls.filter((value) => value.startsWith('/api/kick-'))
     : calls.filter((value) => value.startsWith('/api/twitch-') || value.startsWith('/api/history?'))
   check(forbidden.length === 0, `${provider} crossed provider APIs: ${JSON.stringify(forbidden)}`)
 }
-async function ready(page) { await waitReady(page); await waitDataIdle(page) }
+
+async function ready(page) {
+  await waitReady(page)
+  await waitDataIdle(page)
+}
+
 async function assertNoOverflow(page, label) {
   const size = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, innerWidth }))
   check(size.scrollWidth <= size.innerWidth + 1, `${label} overflow: ${JSON.stringify(size)}`)
 }
+
 async function assertTargets(page, minimum) {
-  const targets = await page.locator('.watchlist-page button:visible, .watchlist-page a.button:visible, .watchlist-page .watchlist-external:visible').evaluateAll((nodes) => nodes.map((node) => ({ label: node.textContent?.trim(), height: node.getBoundingClientRect().height })))
+  const targets = await page.locator('.watchlist-page button:visible, .watchlist-page a.button:visible, .watchlist-page .watchlist-external:visible').evaluateAll((nodes) => nodes.map((node) => ({
+    label: node.textContent?.trim(),
+    height: node.getBoundingClientRect().height,
+  })))
   check(targets.every((target) => target.height >= minimum), `Hosted target below ${minimum}px: ${JSON.stringify(targets.filter((target) => target.height < minimum))}`)
 }
-function strip(value) { return value.replace(/\/+$/, '') }
-function message(error) { return error instanceof Error ? error.message : String(error) }
-function delay(ms) { return new Promise((resolve) => setTimeout(resolve, ms)) }
-function log(value) { const line = String(value); diagnostics.push(line); console.log(line) }
-async function appendLog(value) { await appendFile('/tmp/watchlist-w5a.log', `${JSON.stringify(value)}\n`) }
+
+function strip(value) {
+  return value.replace(/\/+$/, '')
+}
+
+function message(error) {
+  return error instanceof Error ? error.message : String(error)
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function log(value) {
+  const line = String(value)
+  diagnostics.push(line)
+  console.log(line)
+}
+
+async function appendLog(value) {
+  await appendFile('/tmp/watchlist-w5a.log', `${JSON.stringify(value)}\n`)
+}
+
 async function writeEvidence() {
   evidence.diagnostics = diagnostics.slice(-200)
   await writeFile('/tmp/watchlist-w5a-evidence.json', `${JSON.stringify(evidence, null, 2)}\n`)
