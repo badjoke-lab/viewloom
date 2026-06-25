@@ -28,35 +28,36 @@ Local Watchlist v1 completed through PR #425 with local, hosted Preview, and pro
 
 ## Current priority
 
-The active program is not a new major feature. It is the public-surface audit and P0/P1 repair program.
+The active program is public-surface audit and P0/P1 repair, not a new major feature.
 
 ```text
-Phase 7  source-of-truth reset and repair-program lock
-Phase 8  all-public-surface inventory and browser defect audit
-Phase 9  P0/P1 repair, with History UI as the central approved track
+Phase 7  source-of-truth reset and repair-program lock    complete PR #426
+Phase 8  all-public-surface inventory and browser audit   active
+Phase 9  P0/P1 repair; History UI is the central track    queued
 ```
 
-Current branch:
+Current window and branch:
 
 ```text
-work-history-ui-repair-governance
-```
-
-Exact next branch after its merge report and explicit continuation:
-
-```text
+P8A
 work-public-surface-inventory
+```
+
+Exact next branch after P8A merge reporting and explicit continuation:
+
+```text
+work-public-browser-audit
 ```
 
 ## Approved History repair
 
-The current History production baseline remains deployed, but the following are approved P1 public-quality defects:
+The current History production baseline remains deployed, but these are approved P1 defects:
 
 - Viewer-minutes and Peak viewers do not produce a sufficiently observable, trustworthy change across the page;
-- the main chart lacks the readable scale, date ticks, units, and interaction cues needed for interpretation;
+- the main chart lacks readable scale, date ticks, units, and interaction cues;
 - chart-side information is too thin or placeholder-like;
 - lower-page regions are sparse or unclear in purpose;
-- desktop, tablet, and mobile do not yet form one coherent analysis workflow.
+- desktop, tablet, and mobile do not form one coherent analysis workflow.
 
 Additional reference screenshots may refine styling later. They are not a blocker for functional, chart, information-architecture, responsive, or accessibility repair.
 
@@ -72,13 +73,19 @@ Before changing this repository, read in order:
 - [`docs/README.md`](docs/README.md)
 - [`docs/product/current-roadmap.md`](docs/product/current-roadmap.md)
 - [`docs/product/current-schedule.md`](docs/product/current-schedule.md)
+- [`docs/product/post-watchlist-program-plan.md`](docs/product/post-watchlist-program-plan.md)
 
-For the active History repair also read:
+For the active History repair program also read:
 
 - [`docs/product/history-and-trends-spec.md`](docs/product/history-and-trends-spec.md) — accepted baseline
 - [`docs/product/history-ui-repair-spec.md`](docs/product/history-ui-repair-spec.md) — active repair target
-- [`docs/product/history-ui-repair-plan.md`](docs/product/history-ui-repair-plan.md) — active branch and acceptance plan
+- [`docs/product/history-ui-repair-plan.md`](docs/product/history-ui-repair-plan.md) — Phase 7–9 subplan
 - [`docs/work-in-progress/history-ui-repair-working-note.md`](docs/work-in-progress/history-ui-repair-working-note.md) — active execution memory
+
+For P8A also read:
+
+- [`docs/audits/P8A_SCOPE.md`](docs/audits/P8A_SCOPE.md)
+- [`docs/audits/README.md`](docs/audits/README.md)
 
 Implementation does not begin from chat memory, an old PR, or screenshots alone. Repository authorities are updated first when scope, priority, or behavior changes.
 
@@ -94,7 +101,7 @@ Implementation does not begin from chat memory, an old PR, or screenshots alone.
 
 ## Repository structure
 
-- `docs/` — canonical product, implementation, operations, and temporary working documents
+- `docs/` — canonical product, program, operations, audit, and temporary working documents
 - `apps/web/` — public pages, shared UI, Pages Functions, and browser/contract checks
 - `workers/` — provider collectors and retention operations
 - `packages/` — shared contracts and helpers where applicable
@@ -102,17 +109,17 @@ Implementation does not begin from chat memory, an old PR, or screenshots alone.
 ## Immediate execution order
 
 ```text
-P7A  governance and schedule reset
-P8A  public route and acceptance inventory
-P8B  desktop/tablet/mobile defect audit
-P9H0 exact History reproduction and failing gates
-P9H1 metric execution repair
-P9H2 chart scale, axes, units, and day interaction
-P9H3 Overview information hierarchy
-P9H4 Archives and Report & Export task repair
-P9H5 responsive and accessibility repair
-P9H6 complete local candidate QA
-P9H7 deliberate Preview and exact production acceptance
+P7A  governance and schedule reset                         complete PR #426
+P8A  public route and acceptance inventory                 active
+P8B  desktop/tablet/mobile browser defect audit            next
+P9H0 exact History reproduction and failing gates          queued
+P9H1 metric execution repair                               queued
+P9H2 chart scale, axes, units, and day interaction          queued
+P9H3 Overview information hierarchy                        queued
+P9H4 Archives and Report & Export task repair               queued
+P9H5 responsive and accessibility repair                    queued
+P9H6 complete local candidate QA                            queued
+P9H7 deliberate Preview and exact production acceptance    queued
 ```
 
-No next major feature is approved. Category/Game, Observed Runs, Event, Language, and Alerts require a later data-capability audit and explicit approval.
+Phase 10–15 are governed by `post-watchlist-program-plan.md`. No next major feature is approved. Category/Game, Observed Runs, Event, Language, and Alerts require a later data-capability audit and explicit approval.
