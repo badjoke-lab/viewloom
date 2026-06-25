@@ -48,20 +48,15 @@ Completed P8A baseline:
 - `audits/public-surface-routes-*.json`
 - `audits/public-surface-profiles-*.json`
 
-Active P8B package:
+Active P8B package; runtime execution and records are complete, latest-head gates and PR #428 merge remain:
 
-- [`audits/P8B_SCOPE.md`](audits/P8B_SCOPE.md) — active browser-audit boundary and completion criteria
+- [`audits/P8B_SCOPE.md`](audits/P8B_SCOPE.md) — browser-audit boundary, result, and completion criteria
+- [`audits/public-browser-defects.json`](audits/public-browser-defects.json) — machine-readable ledger
+- [`audits/public-browser-audit.md`](audits/public-browser-audit.md) — human-readable report
 - [`../apps/web/scripts/public-browser-audit.mjs`](../apps/web/scripts/public-browser-audit.mjs) — browser evidence generator
 - [`../scripts/verify-public-browser-audit.mjs`](../scripts/verify-public-browser-audit.mjs) — repository verifier
 - [`../.github/workflows/public-browser-audit.yml`](../.github/workflows/public-browser-audit.yml) — latest-head browser workflow
-
-Required before P8B completion:
-
-```text
-audits/public-browser-defects.json
-audits/public-browser-audit.md
-GitHub Actions artifact public-browser-audit-p8b
-```
+- GitHub Actions artifact `public-browser-audit-p8b`
 
 P8B adds browser evidence and defect classifications. It may not silently rewrite the P8A inventory or mix product repair into the audit.
 
@@ -87,7 +82,7 @@ There is no active Local Watchlist, old History rebuild, Channel v1, Report & Ex
 ```text
 Phase 6  Local Watchlist v1                               complete through PR #425
 Phase 7  source-of-truth reset                            complete through PR #426
-Phase 8  public inventory and browser audit               active
+Phase 8  public inventory and browser audit               active completion branch
 P8A      work-public-surface-inventory                     complete PR #427
 P8B      work-public-browser-audit                         active
 P9H0     work-history-ui-h0-baseline                       exact next after P8B
@@ -116,9 +111,10 @@ A newly proven P0 may interrupt. Do not create P9H0 before the P8B merge report 
 84 production route scenarios
 5 missing-surface probes
 10 deterministic History scenarios
+P0 0 / P1 3 / P2 5 / P3 0
 ```
 
-Known History defects remain P1. P8B captures exact reproduction, ownership, existing gates, and missing assertions; it does not repair them.
+Known History defects remain P1. P8B captured exact reproduction, ownership, existing gates, missing assertions, and the ordered repair queue; it did not repair them.
 
 ## Repository-comparison rule
 
