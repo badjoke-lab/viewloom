@@ -1,0 +1,70 @@
+{
+  "schema": "viewloom-public-surface-routes-v1",
+  "version": 1,
+  "group": "portal",
+  "routes": [
+    {
+      "id": "portal",
+      "route": "/",
+      "provider": "portal",
+      "profile": "portal",
+      "source": "apps/web/index.html",
+      "title": "ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts",
+      "canonical": "https://vl.badjoke-lab.com/",
+      "robots": "index,follow",
+      "sitemap": true,
+      "apis": [
+        { "path": "/api/twitch-home", "binding": "DB_TWITCH_HOT" },
+        { "path": "/api/kick-home", "binding": "DB_KICK_HOT" }
+      ]
+    },
+    {
+      "id": "about",
+      "route": "/about/",
+      "provider": "portal",
+      "profile": "static_content",
+      "source": "apps/web/about/index.html",
+      "title": "About — ViewLoom",
+      "canonical": "https://vl.badjoke-lab.com/about/",
+      "robots": "index,follow",
+      "sitemap": true,
+      "apis": []
+    },
+    {
+      "id": "support",
+      "route": "/support/",
+      "provider": "portal",
+      "profile": "static_content",
+      "source": "apps/web/support/index.html",
+      "title": "Support — ViewLoom",
+      "canonical": "https://vl.badjoke-lab.com/support/",
+      "robots": "index,follow",
+      "sitemap": true,
+      "apis": []
+    },
+    {
+      "id": "changelog",
+      "route": "/changelog/",
+      "provider": "portal",
+      "profile": "changelog",
+      "source": "apps/web/changelog/index.html",
+      "title": "Changelog — ViewLoom",
+      "canonical": "https://vl.badjoke-lab.com/changelog/",
+      "robots": "index,follow",
+      "sitemap": true,
+      "apis": [{ "path": "/data/changelog.json", "binding": "static" }]
+    },
+    {
+      "id": "not-found",
+      "route": "*",
+      "provider": "portal",
+      "profile": "not_found",
+      "source": "apps/web/public/404.html",
+      "title": "Page not found | ViewLoom",
+      "canonical": null,
+      "robots": "noindex,follow",
+      "sitemap": false,
+      "apis": []
+    }
+  ]
+}

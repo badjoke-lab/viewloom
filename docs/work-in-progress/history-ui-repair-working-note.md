@@ -2,13 +2,16 @@
 
 Status: active
 Created: 2026-06-25
-Last updated: 2026-06-25
+Last updated: 2026-06-26
 Roadmap phase: Phase 7–9 — source reset, public audit, and P0/P1 repair
-Current branch: `work-history-ui-repair-governance`
-Current window: P7A — source-of-truth reset and repair-program lock
+Completed window: P8A — public surface inventory through PR #427
+Exact next window: P8B — public browser defect audit
+Exact next branch: `work-public-browser-audit`
 Accepted baseline specification: `../product/history-and-trends-spec.md`
 Active repair specification: `../product/history-ui-repair-spec.md`
-Implementation plan: `../product/history-ui-repair-plan.md`
+Program plan: `../product/post-watchlist-program-plan.md`
+Implementation subplan: `../product/history-ui-repair-plan.md`
+Completed inventory: `../audits/public-surface-inventory.json`
 Delete when: P9H7 production acceptance and permanent-document transfer are complete.
 
 ## 1. Approved defect classification
@@ -20,61 +23,108 @@ Metric controls do not produce a sufficiently observable and trustworthy change.
 The main chart does not expose a readable scale, ticks, units, or complete interaction cues.
 The chart-side information is too thin to support analysis.
 Lower-page regions are sparse, weakly prioritized, or unclear in purpose.
-The desktop and mobile information flow does not yet read as one coherent analysis product.
+Desktop and mobile do not read as one coherent analysis product.
 ```
 
 Additional reference screenshots may refine styling later. They are not required before functional, chart-interpretability, information-architecture, responsive, or accessibility repair begins.
 
-## 2. Current repository findings
+## 2. Completed predecessors
 
-Canonical documents before P7A still contained stale or conflicting statements:
+### P7A — PR #426
 
-- the root README described the old History rebuild and Channel as future work;
-- the current schedule still described merged PR #425 as a completion candidate;
-- roadmap and schedule said History repair remained blocked on screenshots and detailed instructions;
-- the accepted History baseline specification described a chart-first product but did not explicitly reject control-only metric switching or a chart without visible scale and units;
-- the completed H1–H7 implementation record correctly allowed verified defect repair but did not point to an active repair milestone.
+- corrected stale post-Watchlist authorities;
+- approved History UI repair as P1 work;
+- removed the screenshot blocker;
+- added permanent repair specification and implementation plan;
+- created this working note;
+- updated policy verification.
 
-P7A resolves these conflicts before runtime changes begin.
+### P8A — PR #427
 
-## 3. Current public implementation observations
+- inventoried all 20 Vite HTML inputs plus the explicit 404 page;
+- created Portal, Twitch, and Kick route records;
+- created shared owner, control, state, gate, assessment, and gap profiles;
+- recorded separate Twitch and Kick API/binding ownership;
+- recorded existing contract, browser, Preview, and production evidence;
+- added a human-readable report, machine-readable manifest, verifier, and workflow;
+- made no runtime UI, API, D1, collector, cron, retention, binding, or Preview change.
 
-The current Twitch History HTML exposes:
+## 3. P8A stable History findings
+
+Both History routes are owned and recorded:
 
 ```text
-Viewer-minutes button
-Peak viewers button
-Daily trend card
-coverage legend
-Selected day aside
-summary cards
-Top streamers
-Daily archive
-coverage detail
+/twitch/history/ -> /api/history -> DB_TWITCH_HOT
+/kick/history/   -> /api/kick-history -> DB_KICK_HOT
 ```
 
-The page loads multiple compatibility and enhancement layers in sequence. P9H0 must trace the actual owner of period state, metric state, API query, chart rendering, summary rendering, selected-day rendering, archives, and outputs before implementation changes.
+Recorded user state and tasks:
 
-Do not assume that an old passing acceptance workflow proves current public usability. Existing gates must be checked for visible values, axes, units, interaction behavior, and dependent-surface updates rather than only DOM presence or selected-state attributes.
+```text
+period: 7d / 30d / custom from-to
+metric: viewer_minutes / peak_viewers
+task: Overview / Archives / Report & Export
+archive: Daily / Peaks / Battles
+selected day
+ranking sort and limit
+Back / Forward and direct URL responsibility
+report / short post / share / PNG / CSV / JSON
+```
 
-## 4. Required Phase 8 evidence
+Recorded data states:
 
-P8A route inventory must record, for Twitch and Kick History:
+```text
+loading
+real
+partial
+stale
+empty
+missing
+demo
+error
+in_progress
+```
 
-- public route and metadata;
-- API path and supported query state;
-- task views and archive subviews;
-- period and metric controls;
-- chart ownership;
-- selected-day ownership;
-- previous-period comparison;
-- calendar heat;
-- rankings;
-- coverage;
-- report, share, CSV, and JSON;
-- existing contract, browser, Preview, and production gates.
+Recorded owners include:
 
-P8B browser evidence must include:
+```text
+history-usability-pass.ts
+history-current-shell-entry.ts
+history-usability.ts
+history-overview.ts
+History API model/builders
+History archive, comparison, report, share, and export modules
+```
+
+P8A confirms that broad legacy workflow coverage does not prove current usability. The approved History P1 classification remains unchanged.
+
+## 4. Cross-site P8A findings relevant to P8B
+
+```text
+20 Vite HTML inputs
+1 explicit 404 page
+21 owned inventory entries
+16 indexable routes
+4 noindex utility routes
+16 sitemap routes
+18 Public Readiness configured pages
+13 Production Smoke page routes
+```
+
+Gaps requiring P8B evidence or later repair classification:
+
+- both Watchlist routes are omitted from Public Readiness configuration;
+- About, Support, Changelog, Channel, and Watchlist are omitted from the general Production Smoke page list;
+- no single permanent browser matrix covers every major route at 1440, 820, 390, and 360 pixels across required states;
+- Portal, provider homes, Heatmap, Day Flow, Battle Lines, content pages, and 404 have fragmented rather than consolidated viewport/state coverage;
+- Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent;
+- Support refers to refund handling without a dedicated repository-owned Refund Policy route.
+
+These are inventory findings, not automatically product defects. P8B must reproduce and classify them.
+
+## 5. Required P8B browser evidence
+
+P8B must include:
 
 ```text
 1440px Twitch Overview
@@ -82,31 +132,46 @@ P8B browser evidence must include:
 820px task and control wrapping
 390px Overview and selected-day flow
 360px narrow control and chart behavior
-Viewer-minutes before/after state
-Peak viewers before/after state
+Viewer-minutes before and after state
+Peak viewers before and after state
 partial data
 empty data
 stale data
+missing data
+demo data
 API error
+loading state
 Archives Daily / Peaks / Battles
 Report & Export
 Back / Forward and direct links
 ```
 
-## 5. Questions P9H0 must answer
+Cross-site evidence must also cover:
+
+- Portal and provider homes;
+- Heatmap, Day Flow, and Battle Lines;
+- Channel and Watchlist;
+- Status;
+- About, Support, missing-policy entry points, Changelog, and 404;
+- keyboard, focus, touch targets, reduced motion, contrast, long text, and horizontal overflow;
+- provider separation and bounded-coverage wording.
+
+P8B must record route, provider, viewport, data state, reproduction, owner file, current workflow, missing assertion, and P0/P1/P2/P3 classification for each defect.
+
+## 6. Questions P9H0 must answer
 
 - Which module is authoritative for metric URL state?
 - Does changing metric fetch a new payload, reuse a payload containing both metrics, or combine both behaviors?
-- Which visible values currently change when metric changes?
+- Which visible values change when metric changes?
 - Which values remain mislabeled or stale?
-- Which module renders the chart scale and day columns?
+- Which module renders chart scale and day columns?
 - What accessible representation exists for chart values?
 - Which sections are physically moved by the view shell and which remain duplicated or hidden?
-- Which old CSS/compatibility layers can be retired safely?
-- Which current workflows assert real metric differences, axes, units, selected-day synchronization, and touch behavior?
+- Which compatibility layers can be retired safely?
+- Which workflows assert real metric differences, axes, units, selected-day synchronization, and touch behavior?
 - Which sparse areas are caused by missing data, hidden task content, fixed min-height, or empty placeholders?
 
-## 6. Fixed boundaries
+## 7. Fixed boundaries
 
 ```text
 Providers remain separate.
@@ -120,12 +185,12 @@ No login, cloud preference, alert, or AI summary.
 No silent output-schema change.
 ```
 
-## 7. Current sequence
+## 8. Current sequence
 
 ```text
-P7A  work-history-ui-repair-governance   active
-P8A  work-public-surface-inventory       next after P7A merge report
-P8B  work-public-browser-audit           queued
+P7A  work-history-ui-repair-governance   complete PR #426
+P8A  work-public-surface-inventory       complete PR #427
+P8B  work-public-browser-audit           exact next after explicit continuation
 P9H0 work-history-ui-h0-baseline         queued
 P9H1 work-history-ui-h1-metric           queued
 P9H2 work-history-ui-h2-chart            queued
@@ -136,6 +201,33 @@ P9H6 work-history-ui-h6-candidate        queued
 P9H7 work-history-ui-h7-acceptance       queued
 ```
 
-## 8. Working-note rule
+## 9. Repository-comparison checklist
 
-Update this note whenever a branch discovers or resolves a material defect, ownership decision, visual hierarchy decision, acceptance requirement, or scope boundary. Transfer stable decisions into permanent documentation and delete this note in P9H7.
+Before each branch:
+
+```text
+[ ] predecessor PR merged
+[ ] full merge report issued
+[ ] explicit continuation exists
+[ ] schedule names the intended branch
+[ ] roadmap, program plan, subplan, note, and audit records agree
+[ ] required files and workflows exist
+[ ] missing deliverables are listed
+[ ] scope boundaries remain valid
+```
+
+Before merge:
+
+```text
+[ ] latest-head CI passes
+[ ] required evidence exists
+[ ] provider separation passes
+[ ] canonical documents show completed and next state
+[ ] exact next branch is named
+```
+
+## 10. Working-note rule
+
+Update this note whenever an audit or repair branch discovers or resolves a material defect, owner, visual hierarchy decision, acceptance requirement, or scope boundary.
+
+Transfer stable decisions into permanent documentation and delete this note in P9H7.

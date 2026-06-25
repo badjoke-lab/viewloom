@@ -34,7 +34,7 @@ console.log('Watchlist completed production contract verification passed.')
 console.log('- W1 through W4B foundations and local browser regressions remain governed')
 console.log('- W5A hosted Preview and W5B production acceptance remain operational gates')
 console.log('- temporary Watchlist notes remain retired')
-console.log('- current roadmap phase may advance without weakening completed Watchlist contracts')
+console.log('- P8A completion and P8B handoff do not weaken completed Watchlist contracts')
 console.log('- no Watchlist-specific server, polling, per-channel request, or analytics-id path exists')
 
 function runFoundations() {
@@ -58,7 +58,9 @@ function verifyGovernance() {
   const record = readRepo('docs/product/watchlist-v1-implementation-plan.md')
   const roadmap = readRepo('docs/product/current-roadmap.md')
   const schedule = readRepo('docs/product/current-schedule.md')
+  const program = readRepo('docs/product/post-watchlist-program-plan.md')
   const index = readRepo('docs/README.md')
+  const inventory = readRepo('docs/audits/public-surface-inventory.json')
   const acceptance = readRepo('docs/operations/watchlist-production-acceptance-2026-06-25.md')
 
   requireAll(spec, [
@@ -94,23 +96,42 @@ function verifyGovernance() {
   ], 'implementation record')
 
   requireAll(roadmap, [
-    'Local Watchlist v1 | W0–W5B complete through PR #425',
-    'docs/product/local-watchlist-spec.md',
-    'docs/product/watchlist-v1-implementation-plan.md',
-    'docs/operations/watchlist-production-acceptance-2026-06-25.md',
-    'closure PR: #425',
+    'Local Watchlist v1 | W0–W5B complete through PR #425; P8A inventoried',
+    'P8A: complete through PR #427',
+    'Exact next branch: work-public-browser-audit',
+    'both Watchlist routes are missing from Public Readiness configuration',
   ], 'roadmap')
   requireAll(schedule, [
     'Local Watchlist W0-W5B                   complete through PR #425',
-    'No later branch exists yet.',
+    'Phase 8 P8A inventory                    complete through PR #427',
+    'Phase 8 P8B browser audit                exact next',
+    'Completed branch: work-public-surface-inventory',
+    'Exact next branch: work-public-browser-audit',
   ], 'schedule')
+  requireAll(program, [
+    'Status: active source-of-truth program plan',
+    'Completed window: P8A through PR #427',
+    'Exact next branch: `work-public-browser-audit`',
+    '| 7 | P7A | complete PR #426',
+    '| 8 | P8A | complete PR #427',
+    '| 8 | P8B | exact next',
+    'Phase 15 has no approved implementation branch.',
+  ], 'post-Watchlist program')
   requireAll(index, [
     'operations/watchlist-production-acceptance-2026-06-25.md',
     'product/local-watchlist-spec.md',
     'product/watchlist-v1-implementation-plan.md',
+    'product/post-watchlist-program-plan.md',
     'Phase 6  Local Watchlist v1                               complete through PR #425',
+    'P8A      work-public-surface-inventory                     complete PR #427',
     'There is no active Local Watchlist',
   ], 'documentation index')
+  requireAll(inventory, [
+    'viewloom-public-surface-inventory-v1',
+    '"vite_html_inputs": 20',
+    '"inventory_entries": 21',
+    '"next_branch": "work-public-browser-audit"',
+  ], 'public-surface inventory')
   requireAll(acceptance, [
     'Status: completed permanent record',
     'f3e0ee8741e96015c5440df167574b8002fccc0d',
@@ -153,9 +174,7 @@ function verifyRuntimeContract() {
   ], 'Watchlist model')
   assert.ok(storage.includes('return `viewloom.watchlist.${provider}.v1`'), 'provider storage key changed')
   assert.equal(storage.includes('viewloom.watchlist.v1'), false, 'shared Watchlist key introduced')
-  for (const key of ['id', 'name', 'filter', 'saved', 'order', 'expanded']) {
-    assert.ok(urlState.includes(`'${key}'`), `URL scrub key missing: ${key}`)
-  }
+  for (const key of ['id', 'name', 'filter', 'saved', 'order', 'expanded']) assert.ok(urlState.includes(`'${key}'`), `URL scrub key missing: ${key}`)
   assert.ok(latestModel.includes("provider === 'kick' ? '/api/kick-heatmap' : '/api/twitch-heatmap'"), 'latest endpoint mapping changed')
   assert.ok(historyModel.includes("provider === 'kick' ? '/api/kick-history' : '/api/history'"), 'History endpoint mapping changed')
   requireAll(combined, [
@@ -187,9 +206,7 @@ function verifyRuntimeContract() {
     'addStoredWatchlistEntry',
     'readWatchlistStorageEvent',
   ], 'Channel Watchlist action')
-  for (const token of ['fetch(', 'removeStoredWatchlistEntry', 'setInterval(', 'serviceWorker', 'gtag(']) {
-    assert.equal(channel.includes(token), false, `Channel action contains forbidden behavior: ${token}`)
-  }
+  for (const token of ['fetch(', 'removeStoredWatchlistEntry', 'setInterval(', 'serviceWorker', 'gtag(']) assert.equal(channel.includes(token), false, `Channel action contains forbidden behavior: ${token}`)
 
   const runtimeFiles = [
     ...walkFiles(resolve(webRoot, 'src/live/watchlist')),

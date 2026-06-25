@@ -1,7 +1,7 @@
 # ViewLoom current execution schedule
 
 Status: source of truth
-Last updated: 2026-06-25
+Last updated: 2026-06-26
 
 ## 1. Operating rules
 
@@ -11,23 +11,25 @@ Last updated: 2026-06-25
 - `preview-*` branches are reserved for deliberate Cloudflare runtime validation of completed candidates.
 - Only the latest candidate head is authoritative.
 - Full acceptance uses the exact deployed revision.
-- After every merge, issue the full merge report, identify the next branch, stop, and wait for explicit continuation.
-- Every branch must read the current roadmap, this schedule, the active permanent specification, the active implementation plan, and the active working note before changing code.
+- After every merge, issue the full merge report, update this schedule, identify the exact next branch, stop, and wait for explicit continuation.
+- Every branch must read the roadmap, this schedule, `post-watchlist-program-plan.md`, the affected specification/plan, the active working note, and relevant audit records before changing code.
+- When repository state and documentation disagree, update documentation first and do not proceed from chat memory.
 
 ## 2. Current position
 
 ```text
 Production foundation                    complete
-Heatmap                                  production core; Phase 8 audit pending
-Day Flow                                 production core; Phase 8 audit pending
-Battle Lines                             production core; Phase 8 audit pending
+Heatmap                                  production core; P8A inventory complete
+Day Flow                                 production core; P8A inventory complete
+Battle Lines                             production core; P8A inventory complete
 History baseline H1-H7                   production accepted
 History public-quality repair            approved P1 program
 Channel C0-C5B                           production accepted
 Report/export R0-R4                      complete through PR #413
 Local Watchlist W0-W5B                   complete through PR #425
-Phase 7 source reset                     active
-Phase 8 public audit                     next
+Phase 7 source reset                     complete through PR #426
+Phase 8 P8A inventory                    complete through PR #427
+Phase 8 P8B browser audit                exact next
 Phase 9 P0/P1 repair                     queued
 Phase 10 shared UI consolidation         queued
 Phase 11 operations lock                 queued
@@ -37,53 +39,46 @@ Phase 14 next-feature audit              queued
 Phase 15 next major feature              not approved
 ```
 
-## 3. Active window
+## 3. Current state and next branch
 
 ```text
-Phase 7 — source-of-truth reset and repair-program lock
-Window: P7A
-Branch: work-history-ui-repair-governance
-State: active
-Runtime change: none allowed
+Completed window: P8A — public surface inventory
+Completed branch: work-public-surface-inventory
+Completion PR: #427
+Runtime change: none
+
+Exact next window: P8B — public browser defect audit
+Exact next branch: work-public-browser-audit
+State: waiting for explicit continuation after P8A merge report
 ```
 
-Governing files:
+No P8B branch exists yet.
+
+Governing files for the next branch:
 
 ```text
 docs/README.md
 docs/product/current-roadmap.md
 docs/product/current-schedule.md
+docs/product/post-watchlist-program-plan.md
 docs/product/history-and-trends-spec.md
 docs/product/history-ui-repair-spec.md
 docs/product/history-layout-rebuild-plan.md
 docs/product/history-ui-repair-plan.md
 docs/work-in-progress/history-ui-repair-working-note.md
+docs/audits/README.md
+docs/audits/public-surface-inventory.json
+docs/audits/public-surface-inventory.md
+docs/audits/public-surface-gaps.json
 ```
-
-P7A deliverables:
-
-- correct stale post-Watchlist state in root and canonical documents;
-- remove the statement that History repair is blocked on screenshots;
-- classify the known History problems as approved P1 defects;
-- establish permanent repair specification and active implementation plan;
-- establish one active working note;
-- update repository policy verification to require these authorities;
-- identify P8A as the exact next branch.
-
-P7A completion criteria:
-
-- roadmap, schedule, documentation index, root README, repair spec, plan, and note agree;
-- no runtime History, API, database, collector, cron, retention, binding, or export-schema change;
-- Development policy and relevant documentation checks pass;
-- PR is merged and fully reported.
 
 ## 4. Immediate sequence
 
 ```text
-P7A  work-history-ui-repair-governance   active
-P8A  work-public-surface-inventory       next after P7A merge report
-P8B  work-public-browser-audit           after P8A merge report
-P9H0 work-history-ui-h0-baseline         after P8B merge report
+P7A  work-history-ui-repair-governance   complete PR #426
+P8A  work-public-surface-inventory       complete PR #427
+P8B  work-public-browser-audit           exact next after explicit continuation
+P9H0 work-history-ui-h0-baseline         after P8B merge report unless P0 interrupts
 P9H1 work-history-ui-h1-metric           queued
 P9H2 work-history-ui-h2-chart            queued
 P9H3 work-history-ui-h3-overview         queued
@@ -93,60 +88,63 @@ P9H6 work-history-ui-h6-candidate        queued
 P9H7 work-history-ui-h7-acceptance       queued
 ```
 
-No later branch exists yet.
+No later branch may be created before the preceding merge report and explicit continuation.
 
-## 5. Phase 8 schedule — public surface audit
-
-### P8A — public surface inventory
-
-Branch:
+## 5. P8A — completed public surface inventory
 
 ```text
-work-public-surface-inventory
+branch: work-public-surface-inventory
+PR: #427
+state: complete
 ```
 
-Purpose:
-
-Create one machine-readable inventory of public routes, providers, metadata, APIs, user controls, data states, entry points, and current acceptance coverage.
-
-Required route groups:
+Completed package:
 
 ```text
-Portal
-Twitch Home
-Kick Home
-Twitch/Kick Heatmap
-Twitch/Kick Day Flow
-Twitch/Kick Battle Lines
-Twitch/Kick History
-Twitch/Kick Channel
-Twitch/Kick Watchlist
-Twitch/Kick Status
-About
-Support and policy surfaces
-404
+docs/audits/P8A_SCOPE.md
+docs/audits/README.md
+docs/audits/public-surface-inventory.json
+docs/audits/public-surface-inventory.md
+docs/audits/public-surface-gaps.json
+docs/audits/public-surface-routes-portal.json
+docs/audits/public-surface-routes-twitch.json
+docs/audits/public-surface-routes-kick.json
+docs/audits/public-surface-profiles-core.json
+docs/audits/public-surface-profiles-analysis.json
+docs/audits/public-surface-profiles-history.json
+docs/audits/public-surface-profiles-utility.json
+scripts/verify-public-surface-inventory.mjs
+.github/workflows/public-surface-inventory.yml
 ```
 
-History inventory must include:
+Verified inventory totals:
 
-- Overview, Archives, and Report & Export;
-- Daily, Peaks, and Battles;
-- 7d, 30d, and custom periods;
-- Viewer-minutes and Peak viewers;
-- chart, selected day, comparison, calendar, rankings, coverage;
-- report, short post, share card, PNG, CSV, and JSON;
-- existing local, Preview, and production gates.
+```text
+20 Vite HTML inputs
+1 explicit not-found page
+21 owned inventory entries
+16 indexable routes
+4 explicit noindex utility routes
+16 sitemap routes
+18 Public Readiness configured pages
+13 Production Smoke page routes
+```
 
-P8A completion criteria:
+Stable findings:
 
-- every public route has an owner and acceptance status;
-- missing browser/state coverage is explicit;
-- no product repair is mixed into the inventory PR;
-- exact next branch is P8B.
+- all repository-owned public HTML routes have route records and reusable owner/control/state/gate profiles;
+- Twitch APIs are bound to `DB_TWITCH_HOT` and Kick APIs to `DB_KICK_HOT`;
+- combined totals and rankings remain forbidden;
+- History tasks, metrics, archives, selected day, comparison, calendar, rankings, coverage, reports, share, PNG, CSV, and JSON are inventoried;
+- both Watchlist routes are omitted from Public Readiness configuration;
+- About, Support, Changelog, Channel, and Watchlist routes are absent from the general Production Smoke page list;
+- no consolidated browser matrix covers every major route, required viewport, and data state;
+- Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent;
+- P8A made no runtime UI, API, D1, collector, cron, retention, binding, or Preview change.
 
-### P8B — public browser defect audit
+## 6. P8B — public browser defect audit
 
-Branch:
+Branch to create only after explicit continuation:
 
 ```text
 work-public-browser-audit
@@ -172,18 +170,53 @@ missing
 demo
 error
 loading
+storage unavailable
+long content
+```
+
+Required route groups:
+
+```text
+Portal
+Twitch Home
+Kick Home
+Twitch/Kick Heatmap
+Twitch/Kick Day Flow
+Twitch/Kick Battle Lines
+Twitch/Kick History
+Twitch/Kick Channel
+Twitch/Kick Watchlist
+Twitch/Kick Status
+About
+Support and missing-policy entry points
+404
 ```
 
 Required interaction checks:
 
 - period and metric changes;
-- Back / Forward and direct links;
-- chart scale, units, ticks, tooltip/day detail;
-- selected-day synchronization;
+- Back, Forward, and direct links;
+- chart scale, units, ticks, tooltip/day detail, and selected-day synchronization;
 - filters, sorting, task and archive navigation;
-- keyboard, focus, touch targets, reduced motion, long text, overflow;
+- copy, share, PNG, CSV, JSON, and deep-link actions;
+- keyboard, focus, target sizes, reduced motion, contrast, long text, and overflow;
 - provider separation;
-- output and deep-link actions.
+- loading, recovery, partial, missing, stale, empty, demo, and error honesty.
+
+History-specific evidence:
+
+```text
+1440px Twitch Overview
+1440px Kick Overview
+820px task and control wrapping
+390px Overview and selected-day flow
+360px narrow chart and control behavior
+Viewer-minutes before and after
+Peak viewers before and after
+Archives Daily / Peaks / Battles
+Report & Export
+Back / Forward and direct links
+```
 
 Defect classes:
 
@@ -198,131 +231,99 @@ The known History problems remain P1 without another approval gate.
 
 P8B completion criteria:
 
-- exact reproduction evidence exists for every P0/P1;
-- affected routes, states, files, and workflows are identified;
-- the repair queue is ordered without beginning a new feature;
-- exact next branch is P9H0 unless a newly discovered P0 interrupts.
+- exact browser evidence exists for all major route/viewport combinations;
+- every P0/P1 has an exact reproduction;
+- affected route, state, viewport, owner, file, existing gate, and missing assertion are recorded;
+- provider separation and bounded-coverage claims remain exact;
+- the ordered Phase 9 repair queue is explicit;
+- P9H0 is the exact next branch unless a newly discovered P0 interrupts;
+- no product repair is mixed into the audit PR unless a P0 requires immediate isolation.
 
-## 6. Phase 9 schedule — P0/P1 repair
+## 7. Phase 9 — P0/P1 repair schedule
 
 ### P9H0 — History baseline and failing gates
 
-Branch:
-
 ```text
-work-history-ui-h0-baseline
+branch: work-history-ui-h0-baseline
 ```
 
-Deliverables:
-
-- trace metric state from controls through URL, API query, payload, chart, summary, inspector, comparison, rankings, archives, report, share, and export;
-- identify current owner modules and compatibility layers;
-- add failing assertions for visible metric changes, chart scale/units/ticks, selected-day detail, sparse regions, touch behavior, and Back/Forward;
-- freeze 1440, 820, 390, and 360px baseline artifacts;
-- document real, partial, empty, stale, demo, and error behavior.
-
-No broad styling rewrite is allowed in P9H0.
+- trace metric state through URL, API query, payload, chart, summary, selected day, comparison, rankings, archives, report, share, and exports;
+- identify owner modules and compatibility layers;
+- add failing assertions for visible metric changes, axes, scale, units, selected-day detail, sparse regions, touch behavior, and Back/Forward;
+- freeze 1440, 820, 390, 360, partial, empty, stale, demo, and error artifacts;
+- no broad styling rewrite.
 
 ### P9H1 — metric execution repair
 
-Branch:
-
 ```text
-work-history-ui-h1-metric
+branch: work-history-ui-h1-metric
 ```
 
-Deliverables:
-
 - repair Viewer-minutes and Peak viewers end to end;
-- synchronize URL state, request/cache behavior, chart values, units, summary, selected day, comparison, ranking meaning, archives, report, and export context;
+- synchronize URL, request/cache, chart, summary, selected day, comparison, rankings, archives, report, share, and exports;
 - preserve one provider request per uncached period/metric state;
-- preserve task/archive no-refetch behavior;
-- add regression evidence that rendered values or units change, not only button styling.
+- prove visible values or units change, not only selected styling.
 
 ### P9H2 — chart interpretability repair
 
-Branch:
-
 ```text
-work-history-ui-h2-chart
+branch: work-history-ui-h2-chart
 ```
 
-Deliverables:
-
-- readable UTC X-axis ticks;
+- readable UTC X-axis;
 - readable numeric Y-axis or equivalent scale;
 - metric label and unit;
-- compact and exact values;
-- visible selected day;
-- pointer, keyboard, and touch-accessible day details;
+- pointer, keyboard, and touch day details;
+- selected-day state;
 - complete, partial, in-progress, and missing distinctions;
 - non-color-only legend and accessible description.
 
-### P9H3 — Overview information architecture repair
-
-Branch:
+### P9H3 — Overview information architecture
 
 ```text
-work-history-ui-h3-overview
+branch: work-history-ui-h3-overview
 ```
-
-Deliverables:
 
 - metric-aware high-value summary;
 - useful selected-day panel;
-- compact comparable previous-period change;
-- calendar and Top streamers in the approved analysis order;
-- removal of duplicate or placeholder facts;
+- compact previous-period comparison;
+- calendar and rankings in approved order;
+- no duplicate or placeholder facts;
 - clear provider, period, metric, state, and coverage hierarchy.
 
 ### P9H4 — task and lower-page repair
 
-Branch:
-
 ```text
-work-history-ui-h4-tasks
+branch: work-history-ui-h4-tasks
 ```
 
-Deliverables:
-
 - one visible top-level task and one archive subview;
-- repaired Daily, Peaks, and Battles hierarchy and bounded visibility;
-- Report & Export connected to current provider, period, metric, selected scope, source, state, and limitations;
-- oversized sparse regions removed or replaced by compact explicit states;
+- repaired Daily, Peaks, and Battles hierarchy;
+- Report & Export connected to provider, period, metric, selected scope, source, state, and limitations;
+- oversized sparse regions replaced by compact explicit states;
 - existing output schemas preserved unless separately approved.
 
 ### P9H5 — responsive and accessibility repair
 
-Branch:
-
 ```text
-work-history-ui-h5-responsive
+branch: work-history-ui-h5-responsive
 ```
 
-Deliverables:
-
-- 1440, 820, 390, and 360px reconciliation;
-- readable controls, axes, units, and selected-day flow;
-- touch day inspection;
-- keyboard order and visible focus;
-- 44px general touch targets;
-- 48px important mobile management/publishing targets;
-- wrapping, reduced motion, contrast, and forced-color support;
+- reconcile 1440, 820, 390, and 360px layouts;
+- keep controls, axes, units, and selected-day flow readable;
+- implement touch day inspection;
+- verify keyboard order, focus, target sizes, wrapping, reduced motion, contrast, and forced colors;
 - no page-level horizontal overflow.
 
 ### P9H6 — complete local candidate QA
 
-Branch:
-
 ```text
-work-history-ui-h6-candidate
+branch: work-history-ui-h6-candidate
 ```
-
-Deliverables:
 
 - all History and shared-web workflows on the latest candidate head;
 - both metrics and all supported periods;
-- Back / Forward, direct links, tasks, archives, selected day, comparison, calendar, ranking, report, share, PNG, CSV, and JSON;
+- Back, Forward, direct links, tasks, archives, selected day, comparison, calendar, rankings, report, share, PNG, CSV, and JSON;
 - Twitch/Kick separation;
 - real, partial, stale, empty, missing, demo, and error states;
 - desktop/tablet/mobile full-page artifacts;
@@ -330,28 +331,23 @@ Deliverables:
 
 ### P9H7 — Preview, production acceptance, and closure
 
-Work branch:
-
 ```text
-work-history-ui-h7-acceptance
+work branch: work-history-ui-h7-acceptance
+hosted branch: one deliberate preview-* branch chosen later
 ```
 
-Hosted branch is chosen later and must use `preview-*`.
-
-Deliverables:
-
-- one deliberate Preview from the completed P9H6 candidate;
+- deliberate Preview from the completed P9H6 candidate;
 - Pages Functions and Twitch/Kick binding verification;
 - real retained-data verification for both metrics;
 - responsive and output verification;
-- merge of the accepted candidate only;
+- merge only the accepted candidate;
 - exact production SHA through `/deployment.json`;
 - public Twitch and Kick History acceptance;
 - permanent acceptance record;
 - stable specification and plan update;
 - deletion of `history-ui-repair-working-note.md`.
 
-## 7. Other Phase 9 repairs
+## 8. Other Phase 9 repairs
 
 P8B may identify non-History P0/P1 defects in Portal, Heatmap, Day Flow, Battle Lines, Channel, Watchlist, Status, or support surfaces.
 
@@ -363,32 +359,15 @@ Rules:
 - no new feature may enter Phase 9;
 - History remains the central scheduled repair track.
 
-## 8. Later phases
+## 9. Later phases
 
-### Phase 10 — shared UI system
+- Phase 10: shared UI, chart, responsive, and accessibility consolidation.
+- Phase 11: unified acceptance, monitoring, runbooks, and maintenance cadence.
+- Phase 12: Support, Contact, Terms, Privacy, refund, disclosure, Stripe, and launch readiness.
+- Phase 13: staged external launch and feedback classification.
+- Phase 14: one-candidate-at-a-time data-capability audit.
+- Phase 15: no branch until one candidate is approved and explicitly authorized.
 
-Unify typography, spacing, surfaces, controls, chart grammar, status, loading, empty, partial, error, focus, and responsive behavior after P0/P1 repair.
+## 10. Current stop rule
 
-### Phase 11 — operations lock
-
-Create the cross-feature acceptance matrix, freshness/capacity monitoring, failure runbooks, dependency cadence, and workflow ownership.
-
-### Phase 12 — support/legal/release readiness
-
-Audit Support, Contact, Terms, Privacy, refund policy, commercial disclosure, footer links, Stripe registration, Payment Link, and mobile support flow.
-
-### Phase 13 — external launch
-
-Publish incrementally and classify feedback. P0/P1 may interrupt; feature requests do not automatically change the roadmap.
-
-### Phase 14 — next-feature audit
-
-Audit one candidate at a time for source parity, collector requirements, D1 growth, rollups, Cloudflare limits, honesty, value, and maintenance cost.
-
-### Phase 15 — separately approved feature
-
-No branch may be created until Phase 14 approves one candidate and the user explicitly authorizes it.
-
-## 9. Current stop rule
-
-P7A is the only active branch. After its merge report, stop. Do not create P8A until the user explicitly instructs continuation.
+P8A is complete through PR #427. Stop after the full merge report. Do not create `work-public-browser-audit` until explicit continuation.

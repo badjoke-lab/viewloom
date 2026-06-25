@@ -1,0 +1,18 @@
+{
+  "schema": "viewloom-public-surface-gaps-v1",
+  "version": 1,
+  "missing_surfaces": [
+    {"route":"/contact/","state":"missing","current_replacement":"External Google Form links","required_phase":"Phase 12","note":"No repository-owned Contact HTML route or Vite input exists."},
+    {"route":"/terms/","state":"missing","current_replacement":null,"required_phase":"Phase 12","note":"No repository-owned Terms route exists."},
+    {"route":"/privacy/","state":"missing","current_replacement":null,"required_phase":"Phase 12","note":"No repository-owned Privacy route exists."},
+    {"route":"/refund-policy/","state":"missing","current_replacement":"Support copy only","required_phase":"Phase 12","note":"Support refers to a refund policy but no dedicated route exists."},
+    {"route":"/commercial-disclosure/","state":"missing","current_replacement":null,"required_phase":"Phase 12","note":"No repository-owned commercial disclosure route exists."}
+  ],
+  "cross_route_gaps": [
+    {"id":"watchlist-public-readiness-omission","severity":"P2","detail":"Vite builds both Watchlist routes, but public-readiness-audit.mjs does not include them in its configured page list.","next_phase":"P8B evidence; repair queue after classification"},
+    {"id":"production-smoke-omissions","severity":"P2","detail":"Production Smoke omits About, Support, Changelog, both Channel routes, and both Watchlist routes. Channel and Watchlist have separate acceptance records, but content routes do not.","next_phase":"P8B"},
+    {"id":"no-consolidated-public-browser-matrix","severity":"P1","detail":"No single permanent browser gate covers every major public route at 1440, 820, 390, and 360 pixels across required data states.","next_phase":"P8B"},
+    {"id":"history-known-p1","severity":"P1","detail":"History has pre-approved metric, chart, selected-day, lower-page, responsive, and coherence defects despite broad legacy workflow coverage.","next_phase":"P9H0-P9H7"},
+    {"id":"policy-surfaces-missing","severity":"release_blocker_candidate","detail":"Repository-owned Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent.","next_phase":"Phase 12 unless audit evidence promotes earlier"}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "viewloom-public-surface-routes-v1",
+  "version": 1,
+  "group": "kick",
+  "routes": [
+    {"id":"kick-home","route":"/kick/","provider":"kick","profile":"provider_home","source":"apps/web/kick/index.html","title":"Kick Data — ViewLoom","canonical":"https://vl.badjoke-lab.com/kick/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-home","binding":"DB_KICK_HOT"}]},
+    {"id":"kick-heatmap","route":"/kick/heatmap/","provider":"kick","profile":"heatmap","source":"apps/web/kick/heatmap/index.html","title":"Kick Heatmap — ViewLoom","canonical":"https://vl.badjoke-lab.com/kick/heatmap/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-heatmap","binding":"DB_KICK_HOT"}]},
+    {"id":"kick-day-flow","route":"/kick/day-flow/","provider":"kick","profile":"day_flow","source":"apps/web/kick/day-flow/index.html","title":"Day Flow — ViewLoom","canonical":"https://vl.badjoke-lab.com/kick/day-flow/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-day-flow","binding":"DB_KICK_HOT"}]},
+    {"id":"kick-battle-lines","route":"/kick/battle-lines/","provider":"kick","profile":"battle_lines","source":"apps/web/kick/battle-lines/index.html","title":"Battle Lines for Kick live streams | ViewLoom","canonical":"https://vl.badjoke-lab.com/kick/battle-lines/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-battle-lines","binding":"DB_KICK_HOT"}]},
+    {"id":"kick-history","route":"/kick/history/","provider":"kick","profile":"history","source":"apps/web/kick/history/index.html","title":"History & Trends for Kick live streams | ViewLoom","canonical":"https://vl.badjoke-lab.com/kick/history/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-history","binding":"DB_KICK_HOT"}]},
+    {"id":"kick-channel","route":"/kick/channel/","provider":"kick","profile":"channel","source":"apps/web/kick/channel/index.html","title":"Kick channel history | ViewLoom","canonical":"https://vl.badjoke-lab.com/kick/channel/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/kick-history","binding":"DB_KICK_HOT"}]},
+    {"id":"kick-watchlist","route":"/kick/watchlist/","provider":"kick","profile":"watchlist","source":"apps/web/kick/watchlist/index.html","title":"Kick Local Watchlist — ViewLoom","canonical":"https://vl.badjoke-lab.com/kick/watchlist/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/kick-heatmap","binding":"DB_KICK_HOT"},{"path":"/api/kick-history","binding":"DB_KICK_HOT"}]},
+    {"id":"kick-status","route":"/kick/status/","provider":"kick","profile":"status","source":"apps/web/kick/status/index.html","title":"Data Status for Kick live streams | ViewLoom","canonical":"https://vl.badjoke-lab.com/kick/status/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-status","binding":"DB_KICK_HOT"}]}
+  ]
+}

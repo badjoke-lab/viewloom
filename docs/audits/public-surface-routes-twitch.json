@@ -1,0 +1,15 @@
+{
+  "schema": "viewloom-public-surface-routes-v1",
+  "version": 1,
+  "group": "twitch",
+  "routes": [
+    {"id":"twitch-home","route":"/twitch/","provider":"twitch","profile":"provider_home","source":"apps/web/twitch/index.html","title":"Twitch Data — ViewLoom","canonical":"https://vl.badjoke-lab.com/twitch/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/twitch-home","binding":"DB_TWITCH_HOT"}]},
+    {"id":"twitch-heatmap","route":"/twitch/heatmap/","provider":"twitch","profile":"heatmap","source":"apps/web/twitch/heatmap/index.html","title":"Heatmap — ViewLoom","canonical":"https://vl.badjoke-lab.com/twitch/heatmap/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/twitch-heatmap","binding":"DB_TWITCH_HOT"}]},
+    {"id":"twitch-day-flow","route":"/twitch/day-flow/","provider":"twitch","profile":"day_flow","source":"apps/web/twitch/day-flow/index.html","title":"Day Flow — ViewLoom","canonical":"https://vl.badjoke-lab.com/twitch/day-flow/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/day-flow","binding":"DB_TWITCH_HOT"}]},
+    {"id":"twitch-battle-lines","route":"/twitch/battle-lines/","provider":"twitch","profile":"battle_lines","source":"apps/web/twitch/battle-lines/index.html","title":"Battle Lines for Twitch live streams | ViewLoom","canonical":"https://vl.badjoke-lab.com/twitch/battle-lines/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/battle-lines","binding":"DB_TWITCH_HOT"}]},
+    {"id":"twitch-history","route":"/twitch/history/","provider":"twitch","profile":"history","source":"apps/web/twitch/history/index.html","title":"History & Trends for Twitch live streams | ViewLoom","canonical":"https://vl.badjoke-lab.com/twitch/history/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/history","binding":"DB_TWITCH_HOT"}]},
+    {"id":"twitch-channel","route":"/twitch/channel/","provider":"twitch","profile":"channel","source":"apps/web/twitch/channel/index.html","title":"Twitch channel history | ViewLoom","canonical":"https://vl.badjoke-lab.com/twitch/channel/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/history","binding":"DB_TWITCH_HOT"}]},
+    {"id":"twitch-watchlist","route":"/twitch/watchlist/","provider":"twitch","profile":"watchlist","source":"apps/web/twitch/watchlist/index.html","title":"Twitch Local Watchlist — ViewLoom","canonical":"https://vl.badjoke-lab.com/twitch/watchlist/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/twitch-heatmap","binding":"DB_TWITCH_HOT"},{"path":"/api/history","binding":"DB_TWITCH_HOT"}]},
+    {"id":"twitch-status","route":"/twitch/status/","provider":"twitch","profile":"status","source":"apps/web/twitch/status/index.html","title":"Data Status for Twitch live streams | ViewLoom","canonical":"https://vl.badjoke-lab.com/twitch/status/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/twitch-status","binding":"DB_TWITCH_HOT"}]}
+  ]
+}

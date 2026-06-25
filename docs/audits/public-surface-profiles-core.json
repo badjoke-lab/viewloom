@@ -1,0 +1,51 @@
+{
+  "schema": "viewloom-public-surface-profiles-v1",
+  "version": 1,
+  "group": "core",
+  "gates": {
+    "common_repository": [".github/workflows/web-build.yml", ".github/workflows/web-verification.yml", ".github/workflows/platform-naming.yml"],
+    "public_readiness": [".github/workflows/public-readiness-audit.yml", "apps/web/scripts/public-readiness-audit.mjs"],
+    "production_smoke": [".github/workflows/production-smoke.yml"],
+    "home_contract": ["apps/web/scripts/verify-home-qa.mjs"],
+    "content_contract": ["apps/web/scripts/verify-content-qa.mjs", "apps/web/scripts/verify-seo-qa.mjs"],
+    "changelog_contract": ["apps/web/scripts/verify-changelog-qa.mjs"]
+  },
+  "profiles": {
+    "portal": {
+      "owner": ["apps/web/src/portal-page.ts"],
+      "data": ["apps/web/functions/api/twitch-home.ts", "apps/web/functions/api/kick-home.ts"],
+      "controls": ["provider cards", "feature directory", "status links"],
+      "states": ["loading", "fresh", "partial", "stale", "empty", "demo", "error"],
+      "gates": ["common_repository", "public_readiness", "home_contract", "production_smoke"],
+      "assessment": "partial",
+      "gaps": ["no 1440/820/390/360 browser matrix", "no all-state browser matrix"]
+    },
+    "static_content": {
+      "owner": ["apps/web/src/mock-site.ts"],
+      "data": [],
+      "controls": ["navigation", "external links"],
+      "states": ["static"],
+      "gates": ["common_repository", "public_readiness", "content_contract"],
+      "assessment": "partial",
+      "gaps": ["no dedicated browser acceptance", "not in Production Smoke"]
+    },
+    "changelog": {
+      "owner": ["apps/web/src/changelog-page.ts"],
+      "data": ["apps/web/public/data/changelog.json"],
+      "controls": ["Open JSON", "Retry"],
+      "states": ["loading", "ready", "empty", "error"],
+      "gates": ["common_repository", "public_readiness", "changelog_contract"],
+      "assessment": "partial",
+      "gaps": ["no dedicated state/browser acceptance", "not in Production Smoke"]
+    },
+    "provider_home": {
+      "owner": ["apps/web/src/provider-home.ts", "apps/web/src/provider-home-data.ts"],
+      "data": ["provider home Pages Function"],
+      "controls": ["feature directory", "status", "external stream links", "Watchlist entry"],
+      "states": ["loading", "fresh", "partial", "stale", "empty", "demo", "error"],
+      "gates": ["common_repository", "public_readiness", "home_contract", "production_smoke"],
+      "assessment": "partial",
+      "gaps": ["no full viewport/state browser matrix"]
+    }
+  }
+}
