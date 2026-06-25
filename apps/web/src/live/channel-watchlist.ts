@@ -1,5 +1,7 @@
+import '../channel-watchlist.css'
 import { parseChannelState } from './channel/url-state'
 import type { ChannelProvider } from './channel/model'
+import { normalizeStoredChannelId } from './watchlist/model'
 import {
   addStoredWatchlistEntry,
   readWatchlistStorage,
@@ -34,7 +36,7 @@ if (actions) {
 
   function render(): void {
     const state = parseChannelState(new URL(window.location.href), provider)
-    const channelId = state.channelId
+    const channelId = normalizeStoredChannelId(state.channelId)
     host.replaceChildren()
 
     if (!channelId) {
@@ -72,15 +74,16 @@ if (actions) {
     const button = actionButton('Save to Watchlist', false)
     button.addEventListener('click', () => {
       const current = parseChannelState(new URL(window.location.href), provider)
-      if (!current.channelId) return render()
+      const currentChannelId = normalizeStoredChannelId(current.channelId)
+      if (!currentChannelId) return render()
       const latestRead = readWatchlistStorage(storage, provider)
       if (!latestRead.ok || latestRead.state === 'write_error') return render()
 
-      const displayName = currentDisplayName(current.channelId)
+      const displayName = currentDisplayName(currentChannelId)
       const result = addStoredWatchlistEntry(
         storage,
         latestRead.document,
-        current.channelId,
+        currentChannelId,
         displayName,
       )
       if (!result.ok) {
@@ -89,9 +92,8 @@ if (actions) {
         return
       }
 
-      feedback.textContent = `Saved ${current.channelId} in this browser. No data request was made.`
       render()
-      feedback.textContent = `Saved ${current.channelId} in this browser. No data request was made.`
+      feedback.textContent = `Saved ${currentChannelId} in this browser. No data request was made.`
     })
     host.append(button)
     feedback.textContent = ''
