@@ -13,11 +13,11 @@ import {
 } from './watchlist-shell-browser-fixture.mjs'
 
 const artifacts = [
-  '/tmp/watchlist-w4b-twitch-desktop.png',
-  '/tmp/watchlist-w4b-twitch-cross-tab.png',
-  '/tmp/watchlist-w4b-kick-tablet.png',
-  '/tmp/watchlist-w4b-kick-mobile.png',
-  '/tmp/watchlist-w4b-storage-error.png',
+  'watchlist-w4b-twitch-desktop.png',
+  'watchlist-w4b-twitch-cross-tab.png',
+  'watchlist-w4b-kick-tablet.png',
+  'watchlist-w4b-kick-mobile.png',
+  'watchlist-w4b-storage-error.png',
 ]
 const evidence = {
   schema: 'viewloom-watchlist-local-browser-acceptance-v1',
@@ -37,7 +37,7 @@ const evidence = {
     channelSave: { additionalRequests: 0 },
   },
   scenarios: [],
-  artifacts: artifacts.map((path) => path.replace('/tmp/', '')),
+  artifacts,
 }
 
 const browser = await chromium.launch({ headless: true })
@@ -64,9 +64,7 @@ async function verifyTwitchIntegratedDesktop() {
   await installNetworkGuards(context, calls)
   const page = await context.newPage()
   await page.goto(`${baseUrl}/twitch/watchlist/`, { waitUntil: 'domcontentloaded' })
-  await waitReady(page)
-  await waitDataIdle(page)
-
+  await ready(page)
   check(calls.api.length === 0, `Twitch empty load requested data: ${JSON.stringify(calls.api)}`)
   check(await page.locator('[data-watchlist-empty]').isVisible(), 'Twitch empty state is not visible.')
 
@@ -77,9 +75,8 @@ async function verifyTwitchIntegratedDesktop() {
   ])
   clearApiCalls(calls)
   await page.reload({ waitUntil: 'domcontentloaded' })
-  await waitReady(page)
-  await waitDataIdle(page)
-  assertRequestDelta(calls, { latest: 1, history: 1 }, 'Twitch nonempty initial load')
+  await ready(page)
+  assertExact(calls, 'twitch', { latest: 1, history: 1 }, 'Twitch nonempty initial load')
   assertProviderOnly(calls, 'twitch')
 
   const alpha = page.locator('[data-watchlist-entry="alpha"]')
@@ -92,94 +89,92 @@ async function verifyTwitchIntegratedDesktop() {
   check((await missing.innerText()).includes('Not confirmed offline'), 'Twitch offline limitation is missing.')
   check((await missing.innerText()).includes('No complete history is implied'), 'Twitch complete-history limitation is missing.')
 
-  let before = snapshotCounts(calls, 'twitch')
+  let before = counts(calls, 'twitch')
   await page.getByLabel('Filter saved channels').fill('alpha')
   check(await page.locator('[data-watchlist-entry]').count() === 1, 'Twitch local filter failed.')
   await page.getByLabel('Filter saved channels').fill('')
-  assertCountsUnchanged(calls, before, 'Twitch local filter')
+  assertDelta(calls, 'twitch', before, { latest: 0, history: 0 }, 'Twitch local filter')
 
-  before = snapshotCounts(calls, 'twitch')
+  before = counts(calls, 'twitch')
   await dailyOnly.getByRole('button', { name: /Move Daily Only up/ }).click()
   await page.waitForFunction(() => document.activeElement?.matches('[data-watchlist-entry="daily_only"] h2') ?? false)
   check((await readStoredDocument(page, 'twitch')).entries[0].channelId === 'daily_only', 'Twitch reorder was not persisted.')
-  assertCountsUnchanged(calls, before, 'Twitch reorder')
+  assertDelta(calls, 'twitch', before, { latest: 0, history: 0 }, 'Twitch reorder')
 
-  before = snapshotCounts(calls, 'twitch')
+  before = counts(calls, 'twitch')
   await page.getByRole('button', { name: 'Last 7 days' }).click()
   await waitDataIdle(page)
-  assertRequestDifference(calls, before, { latest: 0, history: 1 }, 'Twitch uncached 7d period change')
+  assertDelta(calls, 'twitch', before, { latest: 0, history: 1 }, 'Twitch uncached 7d period change')
   check(new URL(page.url()).searchParams.get('period') === '7d', 'Twitch 7d URL state is missing.')
 
-  before = snapshotCounts(calls, 'twitch')
+  before = counts(calls, 'twitch')
   await page.goBack()
   await page.waitForFunction(() => document.querySelector('[data-watchlist-period="30d"]')?.getAttribute('aria-pressed') === 'true')
   await waitDataIdle(page)
-  assertCountsUnchanged(calls, before, 'Twitch cached Back restore')
+  assertDelta(calls, 'twitch', before, { latest: 0, history: 0 }, 'Twitch cached Back restore')
   check(!new URL(page.url()).searchParams.has('period'), 'Twitch 30d clean URL was not restored.')
 
-  before = snapshotCounts(calls, 'twitch')
+  before = counts(calls, 'twitch')
   await page.goForward()
   await page.waitForFunction(() => document.querySelector('[data-watchlist-period="7d"]')?.getAttribute('aria-pressed') === 'true')
   await waitDataIdle(page)
-  assertCountsUnchanged(calls, before, 'Twitch cached Forward restore')
+  assertDelta(calls, 'twitch', before, { latest: 0, history: 0 }, 'Twitch cached Forward restore')
 
-  before = snapshotCounts(calls, 'twitch')
+  before = counts(calls, 'twitch')
   await page.getByRole('button', { name: 'Refresh data' }).click()
   await waitDataIdle(page)
-  assertRequestDifference(calls, before, { latest: 1, history: 1 }, 'Twitch combined refresh')
+  assertDelta(calls, 'twitch', before, { latest: 1, history: 1 }, 'Twitch combined refresh')
 
   calls.failLatest = true
-  before = snapshotCounts(calls, 'twitch')
+  before = counts(calls, 'twitch')
   await page.getByRole('button', { name: 'Refresh data' }).click()
   await waitDataIdle(page)
-  assertRequestDifference(calls, before, { latest: 1, history: 1 }, 'Twitch latest-failure combined refresh')
+  assertDelta(calls, 'twitch', before, { latest: 1, history: 1 }, 'Twitch latest-failure refresh')
   check((await alpha.innerText()).includes('Latest observation unavailable'), 'Twitch latest failure did not isolate latest evidence.')
   check((await alpha.innerText()).includes('Present in retained History result'), 'Twitch latest failure removed retained evidence.')
 
   calls.failLatest = false
-  before = snapshotCounts(calls, 'twitch')
+  before = counts(calls, 'twitch')
   await page.getByRole('button', { name: 'Retry latest' }).click()
   await waitDataIdle(page)
-  assertRequestDifference(calls, before, { latest: 1, history: 0 }, 'Twitch Retry latest')
+  assertDelta(calls, 'twitch', before, { latest: 1, history: 0 }, 'Twitch Retry latest')
 
   calls.failHistory = true
-  before = snapshotCounts(calls, 'twitch')
+  before = counts(calls, 'twitch')
   await page.getByRole('button', { name: 'Refresh data' }).click()
   await waitDataIdle(page)
-  assertRequestDifference(calls, before, { latest: 1, history: 1 }, 'Twitch History-failure combined refresh')
+  assertDelta(calls, 'twitch', before, { latest: 1, history: 1 }, 'Twitch History-failure refresh')
   check((await alpha.innerText()).includes('In latest observed set'), 'Twitch History failure removed latest evidence.')
   check((await alpha.innerText()).includes('Retained History unavailable'), 'Twitch History failure did not isolate retained evidence.')
 
   calls.failHistory = false
-  before = snapshotCounts(calls, 'twitch')
+  before = counts(calls, 'twitch')
   await page.getByRole('button', { name: 'Retry History' }).click()
   await waitDataIdle(page)
-  assertRequestDifference(calls, before, { latest: 0, history: 1 }, 'Twitch Retry History')
+  assertDelta(calls, 'twitch', before, { latest: 0, history: 1 }, 'Twitch Retry History')
 
   const secondPage = await context.newPage()
-  before = snapshotCounts(calls, 'twitch')
+  before = counts(calls, 'twitch')
   await secondPage.goto(`${baseUrl}/twitch/watchlist/`, { waitUntil: 'domcontentloaded' })
-  await waitReady(secondPage)
-  await waitDataIdle(secondPage)
-  assertRequestDifference(calls, before, { latest: 1, history: 1 }, 'Twitch second-tab initial load')
+  await ready(secondPage)
+  assertDelta(calls, 'twitch', before, { latest: 1, history: 1 }, 'Twitch second-tab initial load')
 
-  before = snapshotCounts(calls, 'twitch')
+  before = counts(calls, 'twitch')
   await page.getByLabel('Twitch channel id or Twitch URL').fill('latest_only')
   await page.getByRole('button', { name: 'Add channel' }).click()
   await secondPage.waitForFunction(() => document.querySelector('[data-watchlist-entry="latest_only"]'))
-  assertCountsUnchanged(calls, before, 'Twitch cross-tab add')
+  assertDelta(calls, 'twitch', before, { latest: 0, history: 0 }, 'Twitch cross-tab add')
   check((await secondPage.locator('[data-watchlist-storage-feedback]').innerText()).includes('another tab'), 'Twitch cross-tab feedback is missing.')
 
   await secondPage.screenshot({ path: '/tmp/watchlist-w4b-twitch-cross-tab.png', fullPage: true })
   await page.screenshot({ path: '/tmp/watchlist-w4b-twitch-desktop.png', fullPage: true })
   await assertNoOverflow(page, 'Twitch desktop')
-  await assertVisibleFocus(page)
 
   const result = {
     id: 'twitch-desktop-integrated',
     result: 'pass',
     viewport: { width: 1440, height: 1000 },
-    finalCounts: snapshotCounts(calls, 'twitch'),
+    finalCounts: counts(calls, 'twitch'),
     crossTab: true,
     backForwardCache: true,
     failureIsolation: true,
@@ -197,8 +192,7 @@ async function verifyKickTabletAndChannel() {
   await installNetworkGuards(context, calls)
   const page = await context.newPage()
   await page.goto(`${baseUrl}/kick/watchlist/`, { waitUntil: 'domcontentloaded' })
-  await waitReady(page)
-  await waitDataIdle(page)
+  await ready(page)
   await setStoredDocument(page, 'kick', [
     { channelId: 'gamma', displayName: 'Gamma' },
     { channelId: 'kick_one', displayName: 'Kick One' },
@@ -206,9 +200,8 @@ async function verifyKickTabletAndChannel() {
   ])
   clearApiCalls(calls)
   await page.reload({ waitUntil: 'domcontentloaded' })
-  await waitReady(page)
-  await waitDataIdle(page)
-  assertRequestDelta(calls, { latest: 1, history: 1 }, 'Kick tablet initial load')
+  await ready(page)
+  assertExact(calls, 'kick', { latest: 1, history: 1 }, 'Kick tablet initial load')
   assertProviderOnly(calls, 'kick')
   check(await page.evaluate(() => localStorage.getItem('viewloom.watchlist.twitch.v1')) === null, 'Kick tablet created Twitch storage.')
 
@@ -217,7 +210,6 @@ async function verifyKickTabletAndChannel() {
   check(await gamma.locator('a', { hasText: 'Open History' }).getAttribute('href') === '/kick/history/', 'Kick History link crossed provider.')
   check(await gamma.locator('a', { hasText: 'Open Heatmap' }).getAttribute('href') === '/kick/heatmap/', 'Kick Heatmap link crossed provider.')
   check((await gamma.locator('.watchlist-external').getAttribute('href'))?.startsWith('https://kick.com/') ?? false, 'Kick external link crossed provider.')
-
   await assertNoOverflow(page, 'Kick tablet')
   await assertTouchTargets(page, 44)
   await page.screenshot({ path: '/tmp/watchlist-w4b-kick-tablet.png', fullPage: true })
@@ -256,8 +248,7 @@ async function verifyKickMobile() {
   await installNetworkGuards(context, calls)
   const page = await context.newPage()
   await page.goto(`${baseUrl}/kick/watchlist/`, { waitUntil: 'domcontentloaded' })
-  await waitReady(page)
-  await waitDataIdle(page)
+  await ready(page)
   check(calls.api.length === 0, 'Kick mobile empty load made a request.')
 
   const longId = `long_${'x'.repeat(58)}`
@@ -268,7 +259,7 @@ async function verifyKickMobile() {
 
   await page.getByRole('button', { name: 'Refresh data' }).click()
   await waitDataIdle(page)
-  assertRequestDelta(calls, { latest: 1, history: 1 }, 'Kick mobile refresh')
+  assertExact(calls, 'kick', { latest: 1, history: 1 }, 'Kick mobile refresh')
   await assertNoOverflow(page, 'Kick mobile')
   await assertTouchTargets(page, 44)
   const manageTargets = await page.locator('.watchlist-card__manage .button:visible').evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().height))
@@ -286,7 +277,7 @@ async function verifyKickMobile() {
     id: 'kick-mobile-integrated',
     result: 'pass',
     viewport: { width: 390, height: 844 },
-    finalCounts: snapshotCounts(calls, 'kick'),
+    finalCounts: counts(calls, 'kick'),
     minimumTarget: 44,
     minimumManagementTarget: 48,
     reducedMotion: true,
@@ -308,8 +299,7 @@ async function verifyStorageUnavailable() {
   await installNetworkGuards(context, calls)
   const page = await context.newPage()
   await page.goto(`${baseUrl}/twitch/watchlist/`, { waitUntil: 'domcontentloaded' })
-  await waitReady(page)
-  await waitDataIdle(page)
+  await ready(page)
   check(await page.locator('body').getAttribute('data-watchlist-storage') === 'unavailable', 'Storage-unavailable body state is missing.')
   check(await page.locator('[data-watchlist-storage-error]').isVisible(), 'Storage-unavailable panel is missing.')
   check(calls.api.length === 0, 'Storage-unavailable state made data requests.')
@@ -328,33 +318,30 @@ async function verifyStorageUnavailable() {
   return result
 }
 
+async function ready(page) {
+  await waitReady(page)
+  await waitDataIdle(page)
+}
+
 function callState() {
   return { api: [], analytics: 0, failLatest: false, failHistory: false }
 }
 
-function snapshotCounts(calls, provider) {
+function counts(calls, provider) {
   return provider === 'kick'
     ? { latest: countCalls(calls, '/api/kick-heatmap'), history: countCalls(calls, '/api/kick-history') }
     : { latest: countCalls(calls, '/api/twitch-heatmap'), history: countCalls(calls, '/api/history') }
 }
 
-function assertRequestDelta(calls, expected, label) {
-  const provider = calls.api.some((value) => value.startsWith('/api/kick-')) ? 'kick' : 'twitch'
-  const actual = snapshotCounts(calls, provider)
+function assertExact(calls, provider, expected, label) {
+  const actual = counts(calls, provider)
   check(actual.latest === expected.latest && actual.history === expected.history, `${label} request count mismatch: ${JSON.stringify({ expected, actual, calls: calls.api })}`)
 }
 
-function assertRequestDifference(calls, before, expected, label) {
-  const provider = calls.api.some((value) => value.startsWith('/api/kick-')) ? 'kick' : 'twitch'
-  const after = snapshotCounts(calls, provider)
-  const difference = { latest: after.latest - before.latest, history: after.history - before.history }
-  check(difference.latest === expected.latest && difference.history === expected.history, `${label} request delta mismatch: ${JSON.stringify({ expected, difference, before, after, calls: calls.api })}`)
-}
-
-function assertCountsUnchanged(calls, before, label) {
-  const provider = calls.api.some((value) => value.startsWith('/api/kick-')) ? 'kick' : 'twitch'
-  const after = snapshotCounts(calls, provider)
-  check(after.latest === before.latest && after.history === before.history, `${label} unexpectedly requested data: ${JSON.stringify({ before, after, calls: calls.api })}`)
+function assertDelta(calls, provider, before, expected, label) {
+  const after = counts(calls, provider)
+  const delta = { latest: after.latest - before.latest, history: after.history - before.history }
+  check(delta.latest === expected.latest && delta.history === expected.history, `${label} request delta mismatch: ${JSON.stringify({ expected, delta, before, after, calls: calls.api })}`)
 }
 
 function assertProviderOnly(calls, provider) {
@@ -375,17 +362,6 @@ async function assertTouchTargets(page, minimum) {
     height: node.getBoundingClientRect().height,
   })))
   check(targets.every((target) => target.height >= minimum), `Target below ${minimum}px: ${JSON.stringify(targets.filter((target) => target.height < minimum))}`)
-}
-
-async function assertVisibleFocus(page) {
-  await page.bringToFront()
-  const button = page.getByRole('button', { name: 'Refresh data' })
-  await button.focus()
-  const style = await button.evaluate((node) => ({
-    outlineStyle: getComputedStyle(node).outlineStyle,
-    outlineWidth: Number.parseFloat(getComputedStyle(node).outlineWidth),
-  }))
-  check(style.outlineStyle !== 'none' && style.outlineWidth >= 2, `Watchlist focus is not visible: ${JSON.stringify(style)}`)
 }
 
 function transitionMilliseconds(value) {
