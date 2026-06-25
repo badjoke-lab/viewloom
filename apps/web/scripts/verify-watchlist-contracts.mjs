@@ -34,6 +34,7 @@ console.log('Watchlist completed production contract verification passed.')
 console.log('- W1 through W4B foundations and local browser regressions remain governed')
 console.log('- W5A hosted Preview and W5B production acceptance remain operational gates')
 console.log('- temporary Watchlist notes remain retired')
+console.log('- current roadmap phase may advance without weakening completed Watchlist contracts')
 console.log('- no Watchlist-specific server, polling, per-channel request, or analytics-id path exists')
 
 function runFoundations() {
@@ -94,20 +95,20 @@ function verifyGovernance() {
 
   requireAll(roadmap, [
     'Local Watchlist v1 | W0–W5B complete through PR #425',
-    'Phase 6 — Local Watchlist v1 is complete after PR #425 merges',
-    'There is no automatically approved next major feature.',
-    'viewloom-watchlist-production-acceptance-v1',
+    'docs/product/local-watchlist-spec.md',
+    'docs/product/watchlist-v1-implementation-plan.md',
+    'docs/operations/watchlist-production-acceptance-2026-06-25.md',
+    'closure PR: #425',
   ], 'roadmap')
   requireAll(schedule, [
-    'Local Watchlist W5A                      complete through PR #424',
-    'Local Watchlist W5B                      completion PR #425',
-    'Next major feature                        not selected',
-    'Watchlist Production Acceptance',
+    'Local Watchlist W0-W5B                   complete through PR #425',
+    'No later branch exists yet.',
   ], 'schedule')
   requireAll(index, [
     'operations/watchlist-production-acceptance-2026-06-25.md',
-    'W5A complete PR #424',
-    'W5B completion PR #425',
+    'product/local-watchlist-spec.md',
+    'product/watchlist-v1-implementation-plan.md',
+    'Phase 6  Local Watchlist v1                               complete through PR #425',
     'There is no active Local Watchlist',
   ], 'documentation index')
   requireAll(acceptance, [
