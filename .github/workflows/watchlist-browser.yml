@@ -1,0 +1,179 @@
+name: Watchlist Browser Acceptance
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/twitch/watchlist/**'
+      - 'apps/web/kick/watchlist/**'
+      - 'apps/web/twitch/channel/index.html'
+      - 'apps/web/kick/channel/index.html'
+      - 'apps/web/src/live/watchlist-page.ts'
+      - 'apps/web/src/live/watchlist-move-focus.ts'
+      - 'apps/web/src/live/channel-watchlist.ts'
+      - 'apps/web/src/live/watchlist/**'
+      - 'apps/web/src/watchlist-*.css'
+      - 'apps/web/src/channel-watchlist.css'
+      - 'apps/web/src/provider-home-shell.ts'
+      - 'apps/web/src/provider-watchlist-link.css'
+      - 'apps/web/scripts/verify-watchlist-*.mjs'
+      - 'apps/web/scripts/watchlist-*.mjs'
+      - 'apps/web/package.json'
+      - 'apps/web/vite.config.ts'
+      - 'apps/web/functions/**'
+      - 'workers/**'
+      - 'docs/README.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/local-watchlist-spec.md'
+      - 'docs/product/watchlist-v1-implementation-plan.md'
+      - 'docs/work-in-progress/watchlist-v1-working-note.md'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/watchlist-*.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/twitch/watchlist/**'
+      - 'apps/web/kick/watchlist/**'
+      - 'apps/web/twitch/channel/index.html'
+      - 'apps/web/kick/channel/index.html'
+      - 'apps/web/src/live/watchlist-page.ts'
+      - 'apps/web/src/live/watchlist-move-focus.ts'
+      - 'apps/web/src/live/channel-watchlist.ts'
+      - 'apps/web/src/live/watchlist/**'
+      - 'apps/web/src/watchlist-*.css'
+      - 'apps/web/src/channel-watchlist.css'
+      - 'apps/web/src/provider-home-shell.ts'
+      - 'apps/web/src/provider-watchlist-link.css'
+      - 'apps/web/scripts/verify-watchlist-*.mjs'
+      - 'apps/web/scripts/watchlist-*.mjs'
+      - 'apps/web/package.json'
+      - 'apps/web/vite.config.ts'
+      - 'apps/web/functions/**'
+      - 'workers/**'
+      - 'docs/README.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/local-watchlist-spec.md'
+      - 'docs/product/watchlist-v1-implementation-plan.md'
+      - 'docs/work-in-progress/watchlist-v1-working-note.md'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/watchlist-*.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Typecheck web application
+        run: pnpm --filter @viewloom/web typecheck:app
+      - name: Verify consolidated Watchlist contracts
+        working-directory: apps/web
+        run: node scripts/verify-watchlist-contracts.mjs
+      - name: Build web application
+        run: pnpm build:web
+      - name: Start local preview
+        shell: bash
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/watchlist-w4b-preview.log 2>&1 &
+          for attempt in {1..40}; do
+            curl --silent --fail http://127.0.0.1:4173/twitch/watchlist/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/kick/watchlist/ > /dev/null \
+              && curl --silent --fail 'http://127.0.0.1:4173/twitch/channel/?id=alpha' > /dev/null \
+              && curl --silent --fail 'http://127.0.0.1:4173/kick/channel/?id=gamma' > /dev/null \
+              && exit 0
+            sleep 1
+          done
+          cat /tmp/watchlist-w4b-preview.log
+          exit 1
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+      - name: Run W3B desktop functional regression
+        working-directory: apps/web
+        env:
+          WATCHLIST_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/watchlist-shell-browser-core.mjs
+      - name: Run W3B narrow functional regression
+        working-directory: apps/web
+        env:
+          WATCHLIST_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/watchlist-shell-browser-narrow.mjs
+      - name: Run W3C desktop and tablet regression
+        working-directory: apps/web
+        env:
+          WATCHLIST_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/watchlist-candidate-desktop.mjs
+      - name: Run W3C mobile regression
+        working-directory: apps/web
+        env:
+          WATCHLIST_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/watchlist-candidate-mobile.mjs
+      - name: Run W4B integrated browser acceptance
+        working-directory: apps/web
+        env:
+          WATCHLIST_BASE_URL: http://127.0.0.1:4173
+          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/watchlist-browser-acceptance.mjs 2>&1 | tee -a /tmp/watchlist-w4b.log
+      - name: Verify machine-readable acceptance evidence
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          const evidence = JSON.parse(readFileSync('/tmp/watchlist-browser-evidence.json', 'utf8'))
+          assert.equal(evidence.schema, 'viewloom-watchlist-local-browser-acceptance-v1')
+          assert.equal(evidence.phase, 'W4B')
+          assert.equal(evidence.result, 'pass')
+          assert.equal(evidence.scenarios.length, 4)
+          assert.ok(evidence.scenarios.every((scenario) => scenario.result === 'pass'))
+          assert.equal(evidence.artifacts.length, 5)
+          console.log(JSON.stringify({ schema: evidence.schema, phase: evidence.phase, result: evidence.result, scenarios: evidence.scenarios.map((scenario) => scenario.id) }))
+          NODE
+      - name: Upload W4B acceptance artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: watchlist-w4b-browser-acceptance
+          path: |
+            /tmp/watchlist-browser-evidence.json
+            /tmp/watchlist-w4b.log
+            /tmp/watchlist-w4b-preview.log
+            /tmp/watchlist-w4b-twitch-desktop.png
+            /tmp/watchlist-w4b-twitch-cross-tab.png
+            /tmp/watchlist-w4b-kick-tablet.png
+            /tmp/watchlist-w4b-kick-mobile.png
+            /tmp/watchlist-w4b-storage-error.png
+            /tmp/watchlist-twitch-desktop.png
+            /tmp/watchlist-kick-mobile-360.png
+            /tmp/watchlist-candidate-twitch-desktop-1440.png
+            /tmp/watchlist-candidate-twitch-tablet-820.png
+            /tmp/watchlist-candidate-twitch-mobile-390-mixed.png
+            /tmp/watchlist-candidate-kick-desktop-1440-partial.png
+            /tmp/watchlist-candidate-kick-mobile-390-empty.png
+            /tmp/watchlist-candidate-kick-mobile-360-storage-error.png
+            /tmp/watchlist-candidate-kick-mobile-360-long-content.png
+          if-no-files-found: warn
