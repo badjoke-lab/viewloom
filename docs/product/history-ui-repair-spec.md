@@ -26,7 +26,7 @@ The following are approved defects:
 4. Lower-page regions are sparse, weakly prioritized, duplicated, or unclear in purpose.
 5. Desktop, tablet, and mobile do not yet present one coherent task-oriented analysis flow.
 
-These defects may be reproduced and repaired without additional reference screenshots. Reference imagery may refine styling later but is not an entry criterion for this milestone.
+These defects may be reproduced and repaired without additional reference screenshots. Additional reference screenshots may refine styling later but are not an entry criterion for this milestone.
 
 ## 3. Provider and data invariants
 
