@@ -58,21 +58,43 @@ W2B complete PR #418
 W3A complete PR #419
 W3B complete PR #420
 W3C complete PR #421
-W4A completion candidate PR #422
-W4B next after PR #422 merge report
+W4A complete PR #422
+W4B completion candidate PR #423
+W5A next after PR #423 merge report
 ```
 
-W4A is the executable contract-closure window. It adds one consolidated command and one permanent workflow that rerun the storage, latest, History, route/UI, provider, privacy, Channel, and W3C candidate contracts. It does not change runtime behavior.
+W4B is the complete deterministic local browser acceptance and candidate-freeze window. It adds no runtime product behavior and does not request a hosted Preview.
 
-Current W4A authorities:
+Current W4B authorities:
 
 ```text
-apps/web/scripts/verify-watchlist-contracts.mjs
-.github/workflows/watchlist-contracts.yml
-apps/web/package.json
+apps/web/scripts/watchlist-browser-acceptance.mjs
+.github/workflows/watchlist-browser.yml
+scripts/verify-development-policy.mjs
 ```
 
-Prior transition wording retained for audit compatibility: Local Watchlist W0 is complete through PR #415, W1 through PR #416, W2A through PR #417, W2B through PR #418, and W3A through PR #419. W3B evidence cards and the approved Channel save entry point are the completion candidate in PR #420. W3C responsive and accessibility candidate polish is next only after the PR #420 merge report.
+The W4B workflow runs:
+
+```text
+Development policy
+web typecheck
+W4A consolidated contracts
+web build
+W3B desktop and narrow regressions
+W3C desktop/tablet and mobile regressions
+W4B integrated browser acceptance
+machine-readable evidence validation
+```
+
+Machine-readable output:
+
+```text
+schema: viewloom-watchlist-local-browser-acceptance-v1
+scenarios: 4
+artifacts: desktop, cross-tab, tablet, mobile, storage-error, W3B, and W3C matrices
+```
+
+After PR #423 merges and its full report is issued, W5A may begin on `work-watchlist-w5-hosted`, with the deliberate hosted branch `preview-watchlist-v1`.
 
 ## Temporary-note lifecycle
 
