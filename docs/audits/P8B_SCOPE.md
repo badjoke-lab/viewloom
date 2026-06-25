@@ -1,8 +1,9 @@
 # Phase 8 P8B — public browser defect audit
 
-Status: active
+Status: active completion branch; runtime execution complete
 Branch: `work-public-browser-audit`
 Predecessor: PR #427
+Completion PR: #428
 Roadmap phase: Phase 8 — all-public-surface inventory and browser defect audit
 Exact next branch after completion: `work-history-ui-h0-baseline` unless a newly discovered P0 interrupts
 
@@ -35,24 +36,14 @@ storage unavailable
 long content
 ```
 
-## Route groups
+## Executed matrix
 
 ```text
-Portal
-Twitch Home
-Kick Home
-Twitch/Kick Heatmap
-Twitch/Kick Day Flow
-Twitch/Kick Battle Lines
-Twitch/Kick History
-Twitch/Kick Channel
-Twitch/Kick Watchlist
-Twitch/Kick Status
-About
-Support
-Changelog
-404
-missing policy/disclosure routes
+21 owned routes
+4 required viewports
+84 production route scenarios
+5 missing policy/disclosure probes
+10 deterministic History state and interaction scenarios
 ```
 
 ## Evidence package
@@ -63,9 +54,46 @@ apps/web/scripts/public-browser-audit.mjs
 scripts/verify-public-browser-audit.mjs
 docs/audits/public-browser-defects.json
 docs/audits/public-browser-audit.md
+GitHub Actions artifact: public-browser-audit-p8b
 ```
 
-The workflow produces machine-readable runtime evidence and full-page screenshots as a GitHub Actions artifact.
+The workflow produces machine-readable runtime evidence, full-page screenshots, a browser audit log, and a local preview log.
+
+## Result
+
+```text
+P0  0
+P1  3
+P2  5
+P3  0
+```
+
+P1 defects:
+
+- History metric synchronization;
+- History first keyboard-focus entry;
+- History desktop/mobile task hierarchy.
+
+P2 findings:
+
+- shared mobile target sizes;
+- Watchlist omission from general Public Readiness;
+- general Production Smoke route omissions;
+- missing Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes;
+- Day Flow date control accessible name.
+
+The exact reproduction records, owners, files, current gates, missing assertions, evidence filenames, and ordered queue are in `public-browser-defects.json`.
+
+## Verified invariants
+
+- no P0 was found;
+- no Twitch/Kick provider-crossing request was found;
+- no horizontal page overflow was found over the audit threshold;
+- owned routes returned the expected 200 or explicit 404;
+- deterministic History charts exposed numeric Y labels, date labels, and day controls;
+- History task switching did not refetch data;
+- one Back restores the previous Archives state and one Forward restores Report;
+- all degraded History states were captured.
 
 ## Required checks
 
@@ -101,13 +129,15 @@ A P0 may be isolated immediately only when the audit proves a production outage,
 
 ## Completion criteria
 
-- 21 owned surfaces are audited at all four required widths;
-- missing policy/disclosure routes are probed;
-- History required states and interactions are captured;
-- every P0/P1 has exact reproduction, route, provider, viewport, state, owner, file, existing gate, and missing assertion;
-- Twitch/Kick separation and bounded-coverage claims remain exact;
-- a machine-readable defect ledger and human-readable report are committed;
-- the ordered Phase 9 queue is explicit;
-- latest-head CI passes;
-- `work-history-ui-h0-baseline` is named as the exact next branch unless a P0 interrupts;
-- no product repair is mixed into this PR.
+- 21 owned surfaces are audited at all four required widths — complete;
+- missing policy/disclosure routes are probed — complete;
+- History required states and interactions are captured — complete;
+- every P0/P1 has exact reproduction, route, provider, viewport, state, owner, file, existing gate, and missing assertion — complete;
+- Twitch/Kick separation and bounded-coverage claims remain exact — complete;
+- a machine-readable defect ledger and human-readable report are committed — complete;
+- the ordered Phase 9 queue is explicit — complete;
+- latest-head CI passes — pending final completion head;
+- `work-history-ui-h0-baseline` is named as the exact next branch unless a P0 interrupts — complete;
+- no product repair is mixed into this PR — complete.
+
+After PR #428 merges, issue the full merge report and stop. Do not create `work-history-ui-h0-baseline` until explicit continuation.
