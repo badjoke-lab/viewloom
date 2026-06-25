@@ -55,16 +55,22 @@ const requiredFiles = [
   'apps/web/src/live/watchlist/combined-controller.ts',
   'apps/web/src/live/watchlist-page.ts',
   'apps/web/src/live/watchlist-move-focus.ts',
+  'apps/web/src/live/channel-watchlist.ts',
   'apps/web/src/watchlist-page.css',
   'apps/web/src/watchlist-touch.css',
+  'apps/web/src/watchlist-evidence.css',
+  'apps/web/src/channel-watchlist.css',
   'apps/web/src/provider-home-shell.ts',
   'apps/web/src/provider-watchlist-link.css',
   'apps/web/twitch/watchlist/index.html',
   'apps/web/kick/watchlist/index.html',
+  'apps/web/twitch/channel/index.html',
+  'apps/web/kick/channel/index.html',
   'apps/web/scripts/verify-watchlist-storage.mjs',
   'apps/web/scripts/verify-watchlist-latest.mjs',
   'apps/web/scripts/verify-watchlist-history.mjs',
   'apps/web/scripts/verify-watchlist-page.mjs',
+  'apps/web/scripts/watchlist-shell-browser-fixture.mjs',
   'apps/web/scripts/watchlist-shell-browser-core.mjs',
   'apps/web/scripts/watchlist-shell-browser-narrow.mjs',
   '.github/workflows/development-policy.yml',
@@ -108,37 +114,40 @@ if (failures.length === 0) {
     assert(!index.includes(note.replace('docs/', '')), `docs/README.md: retired note linked: ${note}`)
   }
   for (const fragment of [
-    'W2B through PR #418',
-    'W3A provider routes and the storage-first shell are the completion candidate in PR #419',
-    'W3B evidence UI and approved entry points are next only after the PR #419 merge report',
+    'W3A through PR #419',
+    'W3B evidence cards and the approved Channel save entry point are the completion candidate in PR #420',
+    'W3C responsive and accessibility candidate polish is next only after the PR #420 merge report',
   ]) assert(index.includes(fragment), `docs/README.md: missing current state: ${fragment}`)
 
   requireFragments('docs/product/current-roadmap.md', [
-    'W2B complete PR #418; W3A completion candidate PR #419',
-    'W3B evidence UI is next after merge report',
+    'W3A PR #419; W3B completion candidate PR #420',
+    'W3C candidate polish is next after merge report',
     'work-watchlist-w3b-ui',
-    'apps/web/twitch/watchlist/index.html',
-    'apps/web/src/live/watchlist-page.ts',
-    'feature-data requests deliberately disabled until W3B',
-    'no API, D1, binding, collector, cron, retention, or History visual change',
+    'work-watchlist-w3c-candidate',
+    'Retry latest = 1 Heatmap + 0 History',
+    'Retry History = 0 Heatmap + 1 History',
+    'Channel save = 0 additional requests',
+    'apps/web/src/live/channel-watchlist.ts',
+    'no API, D1, binding, collector, cron, retention, rollup, or History visual change',
   ])
   requireFragments('docs/product/current-schedule.md', [
-    'Local Watchlist W2B                      complete through PR #418',
-    'Local Watchlist W3A                      completion candidate in PR #419',
-    'Local Watchlist W3B                      next, not started',
-    'W3B — evidence cards and approved entry points',
+    'Local Watchlist W3A                      complete through PR #419',
+    'Local Watchlist W3B                      completion candidate in PR #420',
+    'Local Watchlist W3C                      next after merge report',
     'Branch: work-watchlist-w3b-ui',
-    'populated W3A shell:    0 Heatmap + 0 History',
-    'dedicated `Watchlist Page` workflow passed',
-    'Do not begin W3B before the PR #419 merge report is issued.',
+    'PR: #420',
+    'Retry latest:                   1 Heatmap + 0 History',
+    'Retry History:                  0 Heatmap + 1 History',
+    'Channel save:                   0 additional requests',
+    'Do not begin W3C before the PR #420 merge report is issued.',
   ])
   requireFragments('docs/work-in-progress/watchlist-v1-working-note.md', [
-    'Current branch: `work-watchlist-w3a-routes`',
-    '#419 Add Local Watchlist provider route shells',
-    'W2B History/combined foundation  complete PR #418',
-    'W3A routes and shell             completion candidate PR #419',
-    'W3B evidence UI/entry points     next, not started',
-    'work-watchlist-w3b-ui',
+    'Current branch: `work-watchlist-w3b-ui`',
+    'Current PR: `#420 Connect Local Watchlist evidence and Channel save`',
+    'W3A routes and shell             complete PR #419',
+    'W3B evidence UI/entry points     completion candidate PR #420',
+    'W3C candidate polish             next after merge report',
+    'work-watchlist-w3c-candidate',
   ])
 
   requireFragments('docs/product/local-watchlist-spec.md', [
@@ -155,6 +164,7 @@ if (failures.length === 0) {
   requireFragments('docs/product/watchlist-v1-implementation-plan.md', [
     'work-watchlist-w3a-routes',
     'work-watchlist-w3b-ui',
+    'work-watchlist-w3c-candidate',
     'W3A completion criteria',
     'W3B completion criteria',
   ])
@@ -173,55 +183,71 @@ if (failures.length === 0) {
   ])
 
   requireFragments('apps/web/src/live/watchlist-page.ts', [
-    'readWatchlistStorage(storage, provider)',
-    'addStoredWatchlistEntry',
-    'removeStoredWatchlistEntry',
-    'moveStoredWatchlistEntry',
-    'clearStoredWatchlist',
-    'resetStoredWatchlist',
-    'readWatchlistStorageEvent',
-    'window.history.pushState',
-    "window.addEventListener('popstate'",
-    "window.addEventListener('storage'",
-    'Latest observation is not connected in the W3A storage-first shell.',
+    'createWatchlistCombinedController',
+    'dataController.initialLoad',
+    'dataController.changePeriod',
+    'dataController.refresh',
+    'dataController.retryLatest',
+    'dataController.retryHistory',
+    'dataController.taskLocal',
+    'In latest observed set',
+    'Not confirmed offline',
+    'No complete history is implied',
+    'Retained History unavailable',
+    'Open Channel',
+    'Open History',
+    'Open Heatmap',
   ])
   const pageSource = read('apps/web/src/live/watchlist-page.ts')
-  for (const forbidden of [
-    '/api/twitch-heatmap',
-    '/api/kick-heatmap',
-    '/api/history',
-    '/api/kick-history',
-    'createWatchlistCombinedController',
-    'setInterval(',
-    'serviceWorker',
-  ]) assert(!pageSource.includes(forbidden), `W3A page contains forbidden behavior: ${forbidden}`)
-  assert(!/\bfetch\s*\(/.test(pageSource), 'W3A page must not issue feature-data requests')
-  assert(!pageSource.includes('gtag('), 'W3A page must not send saved ids to analytics')
+  assert((pageSource.match(/\bfetch\s*\(/g) ?? []).length === 1, 'W3B page must expose exactly one generic request seam')
+  for (const forbidden of ['setInterval(', 'serviceWorker', 'gtag(']) {
+    assert(!pageSource.includes(forbidden), `W3B page contains forbidden behavior: ${forbidden}`)
+  }
+
+  requireFragments('apps/web/src/live/watchlist/combined-controller.ts', [
+    "| 'retry_latest'",
+    "| 'retry_history'",
+    'retryLatest(',
+    'retryHistory(',
+  ])
+  requireFragments('apps/web/src/live/channel-watchlist.ts', [
+    'Save to Watchlist',
+    'Saved in Watchlist',
+    'No data request was made.',
+    'addStoredWatchlistEntry',
+    'readWatchlistStorageEvent',
+  ])
+  const channelAction = read('apps/web/src/live/channel-watchlist.ts')
+  for (const forbidden of ['fetch(', 'removeStoredWatchlistEntry', 'setInterval(', 'serviceWorker', 'gtag(']) {
+    assert(!channelAction.includes(forbidden), `Channel Watchlist action contains forbidden behavior: ${forbidden}`)
+  }
 
   requireFragments('apps/web/twitch/watchlist/index.html', [
     '<title>Twitch Local Watchlist — ViewLoom</title>',
     '<meta name="robots" content="noindex,follow" />',
-    'https://vl.badjoke-lab.com/twitch/watchlist/',
-    'TWITCH DATA · LOCAL WATCHLIST',
-    'Saved only in this browser',
+    'data-watchlist-retry-latest',
+    'data-watchlist-retry-history',
+    'data-watchlist-request-fact',
   ])
   requireFragments('apps/web/kick/watchlist/index.html', [
     '<title>Kick Local Watchlist — ViewLoom</title>',
     '<meta name="robots" content="noindex,follow" />',
-    'https://vl.badjoke-lab.com/kick/watchlist/',
-    'KICK DATA · LOCAL WATCHLIST',
-    'Saved only in this browser',
+    'data-watchlist-retry-latest',
+    'data-watchlist-retry-history',
+    'data-watchlist-request-fact',
   ])
+  requireFragments('apps/web/twitch/channel/index.html', ['/src/live/channel-watchlist.ts'])
+  requireFragments('apps/web/kick/channel/index.html', ['/src/live/channel-watchlist.ts'])
   requireFragments('apps/web/scripts/verify-watchlist-page.mjs', [
-    'Watchlist W3A route and storage-first shell verification passed.',
-    'W3A controller must not issue feature-data requests.',
+    'Watchlist W3B evidence UI and Channel entry-point verification passed.',
+    'W3B page must have exactly one generic request seam.',
     'Watchlist was inserted into primary tabs.',
   ])
   requireFragments('.github/workflows/watchlist-page.yml', [
     'name: Watchlist Page',
-    'Verify Watchlist route contract',
-    'Verify desktop storage shell',
-    'Verify narrow responsive shell',
+    'Verify Watchlist route and evidence contract',
+    'Verify desktop evidence and Channel save',
+    'Verify narrow responsive evidence',
     'watchlist-page-artifacts',
   ])
 
@@ -290,6 +316,6 @@ if (failures.length) {
 console.log('ViewLoom development, documentation, and deployment policy verification passed.')
 console.log(`- ${requiredFiles.length} required files present`)
 console.log('- completed temporary notes remain retired')
-console.log('- Watchlist W1, W2A, W2B, and W3A foundations are governed')
-console.log('- Watchlist W3B is next only after PR #419 merge reporting')
+console.log('- Watchlist W1, W2A, W2B, W3A, and W3B foundations are governed')
+console.log('- Watchlist W3C is next only after PR #420 merge reporting')
 console.log(`- ${concurrencyWorkflows.length} active workflows cancel obsolete runs`)
