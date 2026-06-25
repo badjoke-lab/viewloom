@@ -98,16 +98,10 @@ for (const path of retiredNotes) assert(!existsSync(join(root, path)), `Complete
 
 if (failures.length === 0) {
   requireFragments('docs/operations/development-and-deployment-policy.md', [
-    'Status: source of truth',
-    '`work-*`',
-    '`preview-*`',
-    '`main` is the production branch',
-    'Twitch and Kick remain separate',
+    'Status: source of truth', '`work-*`', '`preview-*`', '`main` is the production branch', 'Twitch and Kick remain separate',
   ])
   requireFragments('docs/operations/documentation-governance.md', [
-    'Implementation must not begin from chat memory',
-    'Temporary-note lifecycle',
-    'delete the temporary note',
+    'Implementation must not begin from chat memory', 'Temporary-note lifecycle', 'delete the temporary note',
   ])
 
   const index = read('docs/README.md')
@@ -128,115 +122,83 @@ if (failures.length === 0) {
     'W5A next after PR #423 merge report',
   ]) assert(index.includes(fragment), `docs/README.md: missing current Watchlist state: ${fragment}`)
 
-  for (const path of [
-    'docs/product/current-roadmap.md',
-    'docs/product/current-schedule.md',
-    'docs/work-in-progress/watchlist-v1-working-note.md',
-  ]) requireFragments(path, [
-    'W3C complete PR #421',
-    'W4A complete PR #422',
-    'W4B completion candidate PR #423',
-    'W5A next after PR #423 merge report',
+  requireFragments('docs/product/current-roadmap.md', [
+    'W3C  responsive/accessibility candidate pass       complete PR #421',
+    'W4A  executable contract closure                   complete PR #422',
+    'W4B  complete local browser candidate QA           completion candidate PR #423',
+    'W5A  hosted preview-watchlist-v1 acceptance        next after merge report',
+    'work-watchlist-w4-browser',
+    'preview-watchlist-v1',
+  ])
+  requireFragments('docs/product/current-schedule.md', [
+    'Local Watchlist W3C                      complete through PR #421',
+    'Local Watchlist W4A                      complete through PR #422',
+    'Local Watchlist W4B                      completion candidate PR #423',
+    'Local Watchlist W5A                      next after PR #423 merge report',
+    'work-watchlist-w4-browser',
+    'preview-watchlist-v1',
+  ])
+  requireFragments('docs/work-in-progress/watchlist-v1-working-note.md', [
+    'W3C candidate polish             complete PR #421',
+    'W4A contract closure             complete PR #422',
+    'W4B browser candidate QA         completion candidate PR #423',
+    'W5A hosted Preview               next after PR #423 merge report',
     'work-watchlist-w4-browser',
     'preview-watchlist-v1',
   ])
 
   requireFragments('docs/product/local-watchlist-spec.md', [
-    '/twitch/watchlist/',
-    '/kick/watchlist/',
-    'viewloom.watchlist.twitch.v1',
-    'viewloom.watchlist.kick.v1',
-    'maximum entries: 50 per provider',
-    'initial visible entries: 12',
-    'Not confirmed offline',
-    'No complete history is implied',
-    'no per-channel request loop',
+    '/twitch/watchlist/', '/kick/watchlist/', 'viewloom.watchlist.twitch.v1', 'viewloom.watchlist.kick.v1',
+    'maximum entries: 50 per provider', 'initial visible entries: 12', 'Not confirmed offline',
+    'No complete history is implied', 'no per-channel request loop',
   ])
   requireFragments('docs/product/watchlist-v1-implementation-plan.md', [
-    'work-watchlist-w3a-routes',
-    'work-watchlist-w3b-ui',
-    'work-watchlist-w3c-candidate',
-    'work-watchlist-w4-contracts',
-    'work-watchlist-w4-browser',
-    'W3A completion criteria',
-    'W3B completion criteria',
-    'W4A completion criteria',
-    'W4B completion criteria',
-    'viewloom-watchlist-local-browser-acceptance-v1',
-    'W5A next after PR #423 merge report',
+    'work-watchlist-w3a-routes', 'work-watchlist-w3b-ui', 'work-watchlist-w3c-candidate',
+    'work-watchlist-w4-contracts', 'work-watchlist-w4-browser',
+    'W3A completion criteria', 'W3B completion criteria', 'W4A completion criteria', 'W4B completion criteria',
+    'viewloom-watchlist-local-browser-acceptance-v1', 'W5A next after PR #423 merge report',
   ])
 
   requireFragments('apps/web/docs/watchlist-latest-w2a-contract.md', [
-    'viewloom-watchlist-latest-v1',
-    'zero valid saved entries -> zero requests',
+    'viewloom-watchlist-latest-v1', 'zero valid saved entries -> zero requests',
     'one through fifty saved entries -> exactly one provider request',
   ])
   requireFragments('apps/web/docs/watchlist-history-w2b-contract.md', [
-    'viewloom-watchlist-history-v1',
-    'present_retained',
-    'history_partial',
-    'period restore from page memory',
-    'A latest failure must not remove retained evidence.',
+    'viewloom-watchlist-history-v1', 'present_retained', 'history_partial',
+    'period restore from page memory', 'A latest failure must not remove retained evidence.',
   ])
 
   requireFragments('apps/web/src/live/watchlist-page.ts', [
-    'createWatchlistCombinedController',
-    'dataController.initialLoad',
-    'dataController.changePeriod',
-    'dataController.refresh',
-    'dataController.retryLatest',
-    'dataController.retryHistory',
-    'dataController.taskLocal',
-    'In latest observed set',
-    'Not confirmed offline',
-    'No complete history is implied',
-    'Retained History unavailable',
-    'Open Channel',
-    'Open History',
-    'Open Heatmap',
+    'createWatchlistCombinedController', 'dataController.initialLoad', 'dataController.changePeriod',
+    'dataController.refresh', 'dataController.retryLatest', 'dataController.retryHistory', 'dataController.taskLocal',
+    'In latest observed set', 'Not confirmed offline', 'No complete history is implied',
+    'Retained History unavailable', 'Open Channel', 'Open History', 'Open Heatmap',
   ])
   const pageSource = read('apps/web/src/live/watchlist-page.ts')
   assert((pageSource.match(/\bfetch\s*\(/g) ?? []).length === 1, 'Watchlist page must expose exactly one generic request seam')
   for (const forbidden of ['setInterval(', 'serviceWorker', 'gtag(']) assert(!pageSource.includes(forbidden), `Watchlist page contains forbidden behavior: ${forbidden}`)
 
   requireFragments('apps/web/src/live/channel-watchlist.ts', [
-    'Save to Watchlist',
-    'Saved in Watchlist',
-    'No data request was made.',
-    'addStoredWatchlistEntry',
-    'readWatchlistStorageEvent',
+    'Save to Watchlist', 'Saved in Watchlist', 'No data request was made.', 'addStoredWatchlistEntry', 'readWatchlistStorageEvent',
   ])
   const channelAction = read('apps/web/src/live/channel-watchlist.ts')
   for (const forbidden of ['fetch(', 'removeStoredWatchlistEntry', 'setInterval(', 'serviceWorker', 'gtag(']) assert(!channelAction.includes(forbidden), `Channel Watchlist action contains forbidden behavior: ${forbidden}`)
 
   requireFragments('apps/web/scripts/verify-watchlist-contracts.mjs', [
     'Watchlist W4A executable contract closure verification passed.',
-    'verifyNoServerExpansion()',
-    'verifyRuntimePrivacy()',
-    'verifyCandidateLayer()',
+    'verifyNoServerExpansion()', 'verifyRuntimePrivacy()', 'verifyCandidateLayer()',
   ])
   requireFragments('apps/web/scripts/watchlist-browser-acceptance.mjs', [
     'viewloom-watchlist-local-browser-acceptance-v1',
-    'verifyTwitchIntegratedDesktop',
-    'verifyKickTabletAndChannel',
-    'verifyKickMobile',
-    'verifyStorageUnavailable',
-    'cached Back restore',
-    'cached Forward restore',
-    'Retry latest',
-    'Retry History',
-    'cross-tab add',
-    'Channel save made an additional data request',
+    'verifyTwitchIntegratedDesktop', 'verifyKickTabletAndChannel', 'verifyKickMobile', 'verifyStorageUnavailable',
+    'cached Back restore', 'cached Forward restore', 'Retry latest', 'Retry History',
+    'cross-tab add', 'Channel save made an additional data request',
   ])
   requireFragments('.github/workflows/watchlist-browser.yml', [
-    'name: Watchlist Browser Acceptance',
-    'Run W3B desktop functional regression',
-    'Run W3B narrow functional regression',
-    'Run W3C desktop and tablet regression',
-    'Run W3C mobile regression',
-    'Run W4B integrated browser acceptance',
-    'Verify machine-readable acceptance evidence',
-    'watchlist-w4b-browser-acceptance',
+    'name: Watchlist Browser Acceptance', 'Run W3B desktop functional regression',
+    'Run W3B narrow functional regression', 'Run W3C desktop and tablet regression',
+    'Run W3C mobile regression', 'Run W4B integrated browser acceptance',
+    'Verify machine-readable acceptance evidence', 'watchlist-w4b-browser-acceptance',
   ])
 
   for (const entryPath of ['AGENTS.md', 'CONTRIBUTING.md']) {
@@ -250,10 +212,7 @@ if (failures.length === 0) {
     ]) assert(source.includes(path), `${entryPath}: canonical link missing: ${path}`)
   }
   requireFragments('.github/pull_request_template.md', [
-    '## Governing documents',
-    'Roadmap phase:',
-    'Schedule window:',
-    'Active working note, if any:',
+    '## Governing documents', 'Roadmap phase:', 'Schedule window:', 'Active working note, if any:',
     'Unnecessary Cloudflare Preview deployments were not requested',
   ])
 }
