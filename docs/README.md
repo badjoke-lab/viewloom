@@ -48,7 +48,22 @@ There is no active History rebuild, Channel v1, Report & Export consolidation, o
 
 The pending History UI appearance revision has no working note because screenshots and detailed instructions remain unavailable. Begin that work later with a new audit and note rather than reviving an old completed note.
 
-Local Watchlist W0 is complete through PR #415, W1 through PR #416, W2A through PR #417, W2B through PR #418, and W3A through PR #419. W3B evidence cards and the approved Channel save entry point are the completion candidate in PR #420. W3C responsive and accessibility candidate polish is next only after the PR #420 merge report.
+Current Local Watchlist state:
+
+```text
+W0  complete PR #415
+W1  complete PR #416
+W2A complete PR #417
+W2B complete PR #418
+W3A complete PR #419
+W3B complete PR #420
+W3C active completion candidate PR #421
+W4A next only after the PR #421 merge report
+```
+
+W3C is limited to responsive, visual, and accessibility candidate polish. It adds deterministic desktop, tablet, 390px, and 360px artifacts without changing Watchlist storage, requests, APIs, provider separation, or product claims.
+
+Prior transition wording retained for audit compatibility: Local Watchlist W0 is complete through PR #415, W1 through PR #416, W2A through PR #417, W2B through PR #418, and W3A through PR #419. W3B evidence cards and the approved Channel save entry point are the completion candidate in PR #420. W3C responsive and accessibility candidate polish is next only after the PR #420 merge report.
 
 ## Temporary-note lifecycle
 
