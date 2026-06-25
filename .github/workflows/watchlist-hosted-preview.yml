@@ -1,0 +1,124 @@
+name: Watchlist Hosted Preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      preview_origin:
+        description: Cloudflare Pages Preview origin
+        required: false
+        default: https://preview-watchlist-v1.viewloom.pages.dev
+      expected_sha:
+        description: Exact deployed Watchlist candidate SHA
+        required: false
+        default: c75b4549bb50d7eb54c0135874dba63db0b7cc69
+  pull_request:
+    paths:
+      - 'apps/web/scripts/watchlist-cloudflare-preview.mjs'
+      - 'apps/web/scripts/watchlist-shell-browser-fixture.mjs'
+      - 'apps/web/src/live/watchlist-page.ts'
+      - 'apps/web/src/live/channel-watchlist.ts'
+      - 'apps/web/src/live/watchlist/**'
+      - 'apps/web/twitch/watchlist/**'
+      - 'apps/web/kick/watchlist/**'
+      - 'apps/web/twitch/channel/**'
+      - 'apps/web/kick/channel/**'
+      - 'apps/web/functions/**'
+      - 'docs/README.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/local-watchlist-spec.md'
+      - 'docs/product/watchlist-v1-implementation-plan.md'
+      - 'docs/work-in-progress/watchlist-v1-working-note.md'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/watchlist-hosted-preview.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hosted-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      WATCHLIST_PREVIEW_URL: ${{ inputs.preview_origin || 'https://preview-watchlist-v1.viewloom.pages.dev' }}
+      WATCHLIST_EXPECTED_BRANCH: preview-watchlist-v1
+      WATCHLIST_EXPECTED_SHA: ${{ inputs.expected_sha || 'c75b4549bb50d7eb54c0135874dba63db0b7cc69' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Verify consolidated Watchlist contracts
+        working-directory: apps/web
+        run: node scripts/verify-watchlist-contracts.mjs
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run W5A hosted Preview acceptance
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -o pipefail
+          : > /tmp/watchlist-w5a.log
+          node scripts/watchlist-cloudflare-preview.mjs 2>&1 | tee -a /tmp/watchlist-w5a.log
+
+      - name: Verify hosted evidence
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          const evidence = JSON.parse(readFileSync('/tmp/watchlist-w5a-evidence.json', 'utf8'))
+          assert.equal(evidence.schema, 'viewloom-watchlist-hosted-preview-acceptance-v1')
+          assert.equal(evidence.phase, 'W5A')
+          assert.equal(evidence.result, 'pass')
+          assert.equal(evidence.deployment.environment, 'preview')
+          assert.equal(evidence.deployment.branch, 'preview-watchlist-v1')
+          assert.equal(evidence.deployment.commit_sha, process.env.WATCHLIST_EXPECTED_SHA)
+          assert.equal(evidence.providers.twitch.binding, 'DB_TWITCH_HOT')
+          assert.equal(evidence.providers.twitch.database, 'vl_twitch_hot')
+          assert.equal(evidence.providers.kick.binding, 'DB_KICK_HOT')
+          assert.equal(evidence.providers.kick.database, 'vl_kick_hot')
+          assert.equal(evidence.scenarios.length, 3)
+          assert.ok(evidence.scenarios.every((scenario) => scenario.result === 'pass'))
+          console.log(JSON.stringify({
+            result: evidence.result,
+            deployment: evidence.deployment,
+            providers: evidence.providers,
+            scenarios: evidence.scenarios.map((scenario) => scenario.id),
+          }, null, 2))
+          NODE
+
+      - name: Upload W5A hosted Preview artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: watchlist-w5a-hosted-preview
+          path: |
+            /tmp/watchlist-w5a-evidence.json
+            /tmp/watchlist-w5a.log
+            /tmp/watchlist-w5a-twitch-desktop.png
+            /tmp/watchlist-w5a-kick-mobile.png
+            /tmp/watchlist-w5a-channel-save.png
+          if-no-files-found: warn
