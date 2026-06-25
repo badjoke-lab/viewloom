@@ -2,16 +2,16 @@
 
 Status: active
 Created: 2026-06-25
-Last updated: 2026-06-25
+Last updated: 2026-06-26
 Roadmap phase: Phase 7–9 — source reset, public audit, and P0/P1 repair
-Current branch: `work-public-surface-inventory`
-Current window: P8A — public surface inventory
-Completed predecessor: P7A through PR #426
+Completed window: P8A — public surface inventory through PR #427
+Exact next window: P8B — public browser defect audit
+Exact next branch: `work-public-browser-audit`
 Accepted baseline specification: `../product/history-and-trends-spec.md`
 Active repair specification: `../product/history-ui-repair-spec.md`
 Program plan: `../product/post-watchlist-program-plan.md`
 Implementation subplan: `../product/history-ui-repair-plan.md`
-Active audit scope: `../audits/P8A_SCOPE.md`
+Completed inventory: `../audits/public-surface-inventory.json`
 Delete when: P9H7 production acceptance and permanent-document transfer are complete.
 
 ## 1. Approved defect classification
@@ -28,69 +28,99 @@ Desktop and mobile do not read as one coherent analysis product.
 
 Additional reference screenshots may refine styling later. They are not required before functional, chart-interpretability, information-architecture, responsive, or accessibility repair begins.
 
-## 2. P7A closure
+## 2. Completed predecessors
 
-PR #426 completed the source-of-truth reset:
+### P7A — PR #426
 
-- stale post-Watchlist root and canonical documents were corrected;
-- History UI repair was approved as P1 work;
-- the screenshot blocker was removed;
-- permanent repair specification and implementation plan were added;
-- this working note was established;
-- policy verification was updated;
-- P8A was named as the exact next branch.
+- corrected stale post-Watchlist authorities;
+- approved History UI repair as P1 work;
+- removed the screenshot blocker;
+- added permanent repair specification and implementation plan;
+- created this working note;
+- updated policy verification.
 
-No runtime History, API, D1, collector, cron, retention, binding, or output-schema change was included.
+### P8A — PR #427
 
-## 3. Current P8A repository package
+- inventoried all 20 Vite HTML inputs plus the explicit 404 page;
+- created Portal, Twitch, and Kick route records;
+- created shared owner, control, state, gate, assessment, and gap profiles;
+- recorded separate Twitch and Kick API/binding ownership;
+- recorded existing contract, browser, Preview, and production evidence;
+- added a human-readable report, machine-readable manifest, verifier, and workflow;
+- made no runtime UI, API, D1, collector, cron, retention, binding, or Preview change.
 
-Current branch:
+## 3. P8A stable History findings
+
+Both History routes are owned and recorded:
 
 ```text
-work-public-surface-inventory
+/twitch/history/ -> /api/history -> DB_TWITCH_HOT
+/kick/history/   -> /api/kick-history -> DB_KICK_HOT
 ```
 
-Current audit files:
+Recorded user state and tasks:
 
 ```text
-docs/audits/P8A_SCOPE.md
-docs/audits/README.md
-docs/audits/public-surface-inventory.json
-docs/audits/public-surface-inventory.md
-docs/audits/public-surface-gaps.json
-docs/audits/public-surface-routes-portal.json
-docs/audits/public-surface-routes-twitch.json
-docs/audits/public-surface-routes-kick.json
-docs/audits/public-surface-profiles-core.json
-docs/audits/public-surface-profiles-analysis.json
-docs/audits/public-surface-profiles-history.json
-docs/audits/public-surface-profiles-utility.json
-scripts/verify-public-surface-inventory.mjs
-.github/workflows/public-surface-inventory.yml
+period: 7d / 30d / custom from-to
+metric: viewer_minutes / peak_viewers
+task: Overview / Archives / Report & Export
+archive: Daily / Peaks / Battles
+selected day
+ranking sort and limit
+Back / Forward and direct URL responsibility
+report / short post / share / PNG / CSV / JSON
 ```
 
-P8A is inventory only. It must not repair UI, change APIs, alter D1, modify collectors, change retention, or deploy a Preview.
+Recorded data states:
 
-## 4. Required History inventory evidence
+```text
+loading
+real
+partial
+stale
+empty
+missing
+demo
+error
+in_progress
+```
 
-P8A must record for both Twitch and Kick History:
+Recorded owners include:
 
-- public route and metadata;
-- API path and supported query state;
-- Overview, Archives, and Report & Export;
-- Daily, Peaks, and Battles;
-- period and metric controls;
-- chart owner and accepted/rejected interaction evidence;
-- selected-day owner;
-- previous-period comparison;
-- calendar heat;
-- rankings;
-- coverage;
-- report, short post, share card, PNG, CSV, and JSON;
-- existing contract, browser, Preview, and production gates;
-- explicit missing browser/state coverage.
+```text
+history-usability-pass.ts
+history-current-shell-entry.ts
+history-usability.ts
+history-overview.ts
+History API model/builders
+History archive, comparison, report, share, and export modules
+```
 
-The inventory must distinguish repository presence from proven usability. A page, script, or old workflow existing does not prove the current public interaction is accepted.
+P8A confirms that broad legacy workflow coverage does not prove current usability. The approved History P1 classification remains unchanged.
+
+## 4. Cross-site P8A findings relevant to P8B
+
+```text
+20 Vite HTML inputs
+1 explicit 404 page
+21 owned inventory entries
+16 indexable routes
+4 noindex utility routes
+16 sitemap routes
+18 Public Readiness configured pages
+13 Production Smoke page routes
+```
+
+Gaps requiring P8B evidence or later repair classification:
+
+- both Watchlist routes are omitted from Public Readiness configuration;
+- About, Support, Changelog, Channel, and Watchlist are omitted from the general Production Smoke page list;
+- no single permanent browser matrix covers every major route at 1440, 820, 390, and 360 pixels across required states;
+- Portal, provider homes, Heatmap, Day Flow, Battle Lines, content pages, and 404 have fragmented rather than consolidated viewport/state coverage;
+- Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent;
+- Support refers to refund handling without a dedicated repository-owned Refund Policy route.
+
+These are inventory findings, not automatically product defects. P8B must reproduce and classify them.
 
 ## 5. Required P8B browser evidence
 
@@ -102,18 +132,31 @@ P8B must include:
 820px task and control wrapping
 390px Overview and selected-day flow
 360px narrow control and chart behavior
-Viewer-minutes before/after state
-Peak viewers before/after state
+Viewer-minutes before and after state
+Peak viewers before and after state
 partial data
 empty data
 stale data
+missing data
+demo data
 API error
+loading state
 Archives Daily / Peaks / Battles
 Report & Export
 Back / Forward and direct links
 ```
 
-P8B classifies exact defects and owners. It does not re-approve the known History P1 defects.
+Cross-site evidence must also cover:
+
+- Portal and provider homes;
+- Heatmap, Day Flow, and Battle Lines;
+- Channel and Watchlist;
+- Status;
+- About, Support, missing-policy entry points, Changelog, and 404;
+- keyboard, focus, touch targets, reduced motion, contrast, long text, and horizontal overflow;
+- provider separation and bounded-coverage wording.
+
+P8B must record route, provider, viewport, data state, reproduction, owner file, current workflow, missing assertion, and P0/P1/P2/P3 classification for each defect.
 
 ## 6. Questions P9H0 must answer
 
@@ -146,8 +189,8 @@ No silent output-schema change.
 
 ```text
 P7A  work-history-ui-repair-governance   complete PR #426
-P8A  work-public-surface-inventory       active
-P8B  work-public-browser-audit           exact next after P8A merge report
+P8A  work-public-surface-inventory       complete PR #427
+P8B  work-public-browser-audit           exact next after explicit continuation
 P9H0 work-history-ui-h0-baseline         queued
 P9H1 work-history-ui-h1-metric           queued
 P9H2 work-history-ui-h2-chart            queued
@@ -166,8 +209,8 @@ Before each branch:
 [ ] predecessor PR merged
 [ ] full merge report issued
 [ ] explicit continuation exists
-[ ] current branch matches current-schedule.md
-[ ] roadmap, program plan, subplan, and working note agree
+[ ] schedule names the intended branch
+[ ] roadmap, program plan, subplan, note, and audit records agree
 [ ] required files and workflows exist
 [ ] missing deliverables are listed
 [ ] scope boundaries remain valid
@@ -179,7 +222,7 @@ Before merge:
 [ ] latest-head CI passes
 [ ] required evidence exists
 [ ] provider separation passes
-[ ] current documents show completed and next state
+[ ] canonical documents show completed and next state
 [ ] exact next branch is named
 ```
 
