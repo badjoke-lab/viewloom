@@ -10,6 +10,7 @@
   .watchlist-feedback-grid, .watchlist-limits { gap: 10px; }
   .watchlist-feedback, .watchlist-limit { min-height: auto; }
   .watchlist-evidence { min-height: 190px; }
+  .watchlist-page button:visible, .watchlist-page a.button, .watchlist-external { min-height: 44px; }
 }
 
 @media (max-width: 760px) {
