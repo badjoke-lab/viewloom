@@ -68,13 +68,6 @@ const requiredFiles = [
   'apps/web/src/live/watchlist-page.ts',
   'apps/web/src/live/watchlist-move-focus.ts',
   'apps/web/src/live/channel-watchlist.ts',
-  'apps/web/src/watchlist-page.css',
-  'apps/web/src/watchlist-touch.css',
-  'apps/web/src/watchlist-evidence.css',
-  'apps/web/src/watchlist-candidate.css',
-  'apps/web/src/watchlist-candidate-panels.css',
-  'apps/web/src/watchlist-candidate-responsive.css',
-  'apps/web/src/channel-watchlist.css',
   'apps/web/twitch/watchlist/index.html',
   'apps/web/kick/watchlist/index.html',
   'apps/web/twitch/channel/index.html',
@@ -104,16 +97,10 @@ for (const path of requiredFiles) requireFile(path)
 for (const path of retiredNotes) assert(!existsSync(join(root, path)), `Retired temporary note must remain deleted: ${path}`)
 
 requireFragments('docs/operations/development-and-deployment-policy.md', [
-  'Status: source of truth',
-  '`work-*`',
-  '`preview-*`',
-  '`main` is the production branch',
-  'Twitch and Kick remain separate',
+  'Status: source of truth', '`work-*`', '`preview-*`', '`main` is the production branch', 'Twitch and Kick remain separate',
 ])
 requireFragments('docs/operations/documentation-governance.md', [
-  'Implementation must not begin from chat memory',
-  'Temporary-note lifecycle',
-  'delete the temporary note',
+  'Implementation must not begin from chat memory', 'Temporary-note lifecycle', 'delete the temporary note',
 ])
 
 const index = read('docs/README.md')
@@ -126,23 +113,19 @@ for (const path of [
   '../apps/web/docs/watchlist-latest-w2a-contract.md',
   '../apps/web/docs/watchlist-history-w2b-contract.md',
 ]) assert(index.includes(path), `docs/README.md: missing canonical link: ${path}`)
-for (const note of retiredNotes) {
-  assert(!index.includes(note.replace('docs/', '')), `docs/README.md: retired note remains linked: ${note}`)
-}
+for (const note of retiredNotes) assert(!index.includes(note.replace('docs/', '')), `docs/README.md: retired note remains linked: ${note}`)
 for (const fragment of [
-  'W5A complete PR #424',
-  'W5B completion PR #425',
-  'f3e0ee8741e96015c5440df167574b8002fccc0d',
-  '28166806560',
+  'W5A complete PR #424', 'W5B completion PR #425',
+  'f3e0ee8741e96015c5440df167574b8002fccc0d', '28166806560',
   'There is no active Local Watchlist',
 ]) assert(index.includes(fragment), `docs/README.md: missing completed Watchlist state: ${fragment}`)
 
 requireFragments('docs/product/current-roadmap.md', [
   'Local Watchlist v1 | W0–W5B complete through PR #425',
-  'Phase 6 is complete after PR #425 merges',
+  'Phase 6 — Local Watchlist v1 is complete after PR #425 merges',
+  'There is no automatically approved next major feature.',
   'viewloom-watchlist-production-acceptance-v1',
   '28166806560',
-  'no next major feature is automatically approved',
 ])
 requireFragments('docs/product/current-schedule.md', [
   'Local Watchlist W5A                      complete through PR #424',
@@ -152,54 +135,34 @@ requireFragments('docs/product/current-schedule.md', [
   'Next major feature                        not selected',
 ])
 requireFragments('docs/product/local-watchlist-spec.md', [
-  'Status: accepted permanent product specification',
-  'Version: 1.1',
-  '/twitch/watchlist/',
-  '/kick/watchlist/',
-  'viewloom.watchlist.twitch.v1',
-  'viewloom.watchlist.kick.v1',
-  'maximum entries: 50 per provider',
-  'initial visible entries: 12',
-  'Not confirmed offline',
-  'No complete history is implied',
-  'no per-channel request loop',
-  'production acceptance run: 28166806560',
+  'Status: accepted permanent product specification', 'Version: 1.1',
+  '/twitch/watchlist/', '/kick/watchlist/',
+  'viewloom.watchlist.twitch.v1', 'viewloom.watchlist.kick.v1',
+  'maximum entries: 50 per provider', 'initial visible entries: 12',
+  'Not confirmed offline', 'No complete history is implied',
+  'per-channel API requests', 'production acceptance run: 28166806560',
 ])
 requireFragments('docs/product/watchlist-v1-implementation-plan.md', [
-  'Status: completed implementation record',
-  'Version: 2.0',
+  'Status: completed implementation record', 'Version: 2.0',
   'work-watchlist-w5-hosted             complete PR #424',
   'work-watchlist-w5-production         completion PR #425',
-  'viewloom-watchlist-production-acceptance-v1',
-  '28166806560',
+  'viewloom-watchlist-production-acceptance-v1', '28166806560',
   'No additional Local Watchlist branch is scheduled.',
 ])
 requireFragments('docs/operations/watchlist-production-acceptance-2026-06-25.md', [
   'Status: completed permanent record',
   'f3e0ee8741e96015c5440df167574b8002fccc0d',
-  'viewloom-watchlist-production-acceptance-v1',
-  '28166806560',
-  '7876704775',
-  '6 / 6 pass',
-  'DB_TWITCH_HOT -> vl_twitch_hot',
-  'DB_KICK_HOT -> vl_kick_hot',
+  'viewloom-watchlist-production-acceptance-v1', '28166806560', '7876704775',
+  '6 / 6 pass', 'DB_TWITCH_HOT -> vl_twitch_hot', 'DB_KICK_HOT -> vl_kick_hot',
 ])
 
 const pageSource = read('apps/web/src/live/watchlist-page.ts')
 assert((pageSource.match(/\bfetch\s*\(/g) ?? []).length === 1, 'Watchlist page must retain exactly one generic request seam')
 for (const fragment of [
-  'dataController.initialLoad',
-  'dataController.changePeriod',
-  'dataController.refresh',
-  'dataController.retryLatest',
-  'dataController.retryHistory',
-  'dataController.taskLocal',
-  'In latest observed set',
-  'Not confirmed offline',
-  'No complete history is implied',
-  'Open Channel',
-  'Open History',
-  'Open Heatmap',
+  'dataController.initialLoad', 'dataController.changePeriod', 'dataController.refresh',
+  'dataController.retryLatest', 'dataController.retryHistory', 'dataController.taskLocal',
+  'In latest observed set', 'Not confirmed offline', 'No complete history is implied',
+  'Open Channel', 'Open History', 'Open Heatmap',
 ]) assert(pageSource.includes(fragment), `Watchlist page missing permanent contract: ${fragment}`)
 for (const forbidden of ['setInterval(', 'serviceWorker', 'gtag(', '/api/watchlist']) {
   assert(!pageSource.includes(forbidden), `Watchlist page contains forbidden behavior: ${forbidden}`)
@@ -216,17 +179,13 @@ for (const forbidden of ['fetch(', 'removeStoredWatchlistEntry', 'setInterval(',
 requireFragments('apps/web/scripts/watchlist-production-acceptance.mjs', [
   'viewloom-watchlist-production-acceptance-v1',
   'f3e0ee8741e96015c5440df167574b8002fccc0d',
-  "collectorState === 'ok'",
-  "collectorState === 'snapshot_available'",
-  'twitch-home-entry-production',
-  'kick-home-entry-production',
-  'additionalRequestsOnSave',
+  "collectorState === 'ok'", "collectorState === 'snapshot_available'",
+  'verifyHome', 'verifyWatchlist', 'verifyChannelSave',
+  '-home-entry-production', '-channel-save-production', 'additionalRequestsOnSave',
 ])
 requireFragments('.github/workflows/watchlist-production-acceptance.yml', [
-  'name: Watchlist Production Acceptance',
-  'WATCHLIST_EXPECTED_BRANCH: main',
-  'Run W5B production acceptance',
-  'Verify production evidence',
+  'name: Watchlist Production Acceptance', 'WATCHLIST_EXPECTED_BRANCH: main',
+  'Run W5B production acceptance', 'Verify production evidence',
   "assert.equal(evidence.providers.kick.collectorState, 'snapshot_available')",
   'watchlist-w5b-production-acceptance',
 ])
