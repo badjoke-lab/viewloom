@@ -53,6 +53,8 @@ P8B route and evidence baseline:
   docs/audits/public-surface-inventory.json
   docs/audits/public-surface-inventory.md
   docs/audits/public-surface-gaps.json
+  docs/audits/public-browser-defects.json
+  docs/audits/public-browser-audit.md
 ```
 
 ## 3. Current priority
@@ -65,6 +67,7 @@ Phase 8 — public-surface inventory and browser defect audit
 P8A: complete through PR #427
 P8B: active
 Current branch: work-public-browser-audit
+Execution state: browser evidence and final defect records produced; latest-head completion gates and merge remain
 Exact next branch: work-history-ui-h0-baseline
 Exception: a newly proven P0 may interrupt
 ```
@@ -146,7 +149,20 @@ P2  clarity, consistency, polish, automation, or secondary interaction defect
 P3  deferred improvement or feature request
 ```
 
-## 7. Phase 9 sequence
+## 7. P8A handoff record retained for completed Watchlist contract verification
+
+The completed Watchlist verifier must compare against the exact P8A handoff without treating that historical state as the current schedule.
+
+```text
+Local Watchlist v1 | W0–W5B complete through PR #425; P8A inventoried
+P8A: complete through PR #427
+Exact next branch: work-public-browser-audit
+both Watchlist routes are missing from Public Readiness configuration
+```
+
+The current next branch is not the historical line above. It is `work-history-ui-h0-baseline` after P8B merges and explicit continuation is received.
+
+## 8. Phase 9 sequence
 
 ```text
 P9H0 work-history-ui-h0-baseline
@@ -161,7 +177,7 @@ P9H7 work-history-ui-h7-acceptance
 
 Non-History P0/P1 defects discovered in P8B receive narrow repair branches. P2 polish and automation consolidation wait for the relevant later phase unless they block P1 acceptance.
 
-## 8. Later phases
+## 9. Later phases
 
 - Phase 10: shared UI, chart grammar, responsive, and accessibility consolidation.
 - Phase 11: unified acceptance matrix, monitoring, runbooks, and maintenance cadence.
@@ -170,7 +186,7 @@ Non-History P0/P1 defects discovered in P8B receive narrow repair branches. P2 p
 - Phase 14: evaluate zero or one next-feature candidate.
 - Phase 15: no implementation branch until separately approved.
 
-## 9. Work not approved in the current window
+## 10. Work not approved in the current window
 
 - new History primary metrics or archive types;
 - exact session reconstruction;
@@ -180,7 +196,7 @@ Non-History P0/P1 defects discovered in P8B receive narrow repair branches. P2 p
 - new D1 schema, collector, cron, retention, binding, or API route;
 - multiple major feature expansions in parallel.
 
-## 10. Roadmap update rule
+## 11. Roadmap update rule
 
 Update this file when a phase begins or completes, a P0/P1 changes order, or a future feature is approved or deferred.
 
