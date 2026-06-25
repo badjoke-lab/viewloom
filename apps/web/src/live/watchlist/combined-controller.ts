@@ -19,6 +19,8 @@ export type WatchlistCombinedAction =
   | 'initial_load'
   | 'period_change'
   | 'refresh'
+  | 'retry_latest'
+  | 'retry_history'
   | 'task_local'
 
 export type WatchlistCombinedMemorySource = 'memory_only'
@@ -42,6 +44,14 @@ export interface WatchlistCombinedController {
     period: WatchlistPeriod,
   ): Promise<WatchlistCombinedLoadResult>
   refresh(
+    entries: readonly WatchlistEntry[],
+    period: WatchlistPeriod,
+  ): Promise<WatchlistCombinedLoadResult>
+  retryLatest(
+    entries: readonly WatchlistEntry[],
+    period: WatchlistPeriod,
+  ): Promise<WatchlistCombinedLoadResult>
+  retryHistory(
     entries: readonly WatchlistEntry[],
     period: WatchlistPeriod,
   ): Promise<WatchlistCombinedLoadResult>
@@ -107,6 +117,32 @@ export function createWatchlistCombinedController(options: {
         latestResult.source,
         historyResult.source,
         latestResult.requested,
+        historyResult.requested,
+      )
+    },
+
+    async retryLatest(entries, period) {
+      const latestResult = await latest.refresh(entries)
+      return result(
+        'retry_latest',
+        entries,
+        period,
+        latestResult.source,
+        history.getSnapshot(period) ? 'cache' : 'memory_only',
+        latestResult.requested,
+        false,
+      )
+    },
+
+    async retryHistory(entries, period) {
+      const historyResult = await history.refresh(entries, period)
+      return result(
+        'retry_history',
+        entries,
+        period,
+        latest.getSnapshot() ? 'cache' : 'memory_only',
+        historyResult.source,
+        false,
         historyResult.requested,
       )
     },
