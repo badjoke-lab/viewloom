@@ -300,7 +300,9 @@ function verifyHostedAcceptanceLayer() {
     'preview-watchlist-v1',
     'c75b4549bb50d7eb54c0135874dba63db0b7cc69',
     'DB_TWITCH_HOT', 'vl_twitch_hot', 'DB_KICK_HOT', 'vl_kick_hot',
-    'twitch-desktop-hosted', 'kick-mobile-hosted', 'kick-channel-save-hosted',
+    'verifyWatchlist', 'verifyChannelSave',
+    "mobile ? 'mobile' : 'desktop'",
+    'kick-channel-save-hosted',
     'additionalRequestsOnSave', 'assertProviderOnly', 'assertManagementTargets',
     'Retained History is partial',
   ]) assert.ok(script.includes(fragment), `hosted acceptance script missing: ${fragment}`)
