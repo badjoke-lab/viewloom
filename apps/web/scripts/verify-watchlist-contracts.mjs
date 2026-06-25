@@ -61,12 +61,10 @@ function runFoundationVerifiers() {
 function verifyGovernance() {
   const spec = readRepo('docs/product/local-watchlist-spec.md')
   const plan = readRepo('docs/product/watchlist-v1-implementation-plan.md')
-  const currentDocs = [
-    ['docs/product/current-roadmap.md', readRepo('docs/product/current-roadmap.md')],
-    ['docs/product/current-schedule.md', readRepo('docs/product/current-schedule.md')],
-    ['docs/README.md', readRepo('docs/README.md')],
-    ['docs/work-in-progress/watchlist-v1-working-note.md', readRepo('docs/work-in-progress/watchlist-v1-working-note.md')],
-  ]
+  const roadmap = readRepo('docs/product/current-roadmap.md')
+  const schedule = readRepo('docs/product/current-schedule.md')
+  const index = readRepo('docs/README.md')
+  const note = readRepo('docs/work-in-progress/watchlist-v1-working-note.md')
 
   for (const fragment of [
     '/twitch/watchlist/',
@@ -84,17 +82,39 @@ function verifyGovernance() {
 
   for (const fragment of [
     '## 11. W4A — executable contract closure',
-    'Branch: `work-watchlist-w4-contracts`',
-    'completion candidate PR #422',
+    'Completed through PR #422',
+    'a7324cea387db7477c01d97bf35b762a0bc8ea76',
     'apps/web/scripts/verify-watchlist-contracts.mjs',
     '.github/workflows/watchlist-contracts.yml',
-    'W4B  next after PR #422 merge report',
-  ]) assert.ok(plan.includes(fragment), `plan missing W4A state: ${fragment}`)
+    '## 12. W4B — complete local browser candidate QA',
+    'State: completion candidate PR #423.',
+    'viewloom-watchlist-local-browser-acceptance-v1',
+    'W5A next after PR #423 merge report.',
+  ]) assert.ok(plan.includes(fragment), `plan missing accepted/current state: ${fragment}`)
 
-  for (const [path, source] of currentDocs) {
-    for (const fragment of ['#421', '#422', 'W4B', 'merge report']) {
-      assert.ok(source.includes(fragment), `${path} missing current closure marker: ${fragment}`)
-    }
+  for (const [path, source, fragments] of [
+    ['docs/product/current-roadmap.md', roadmap, [
+      'W4A  executable contract closure                   complete PR #422',
+      'W4B  complete local browser candidate QA           completion candidate PR #423',
+      'W5A  hosted preview-watchlist-v1 acceptance        next after merge report',
+    ]],
+    ['docs/product/current-schedule.md', schedule, [
+      'Local Watchlist W4A                      complete through PR #422',
+      'Local Watchlist W4B                      completion candidate PR #423',
+      'Local Watchlist W5A                      next after PR #423 merge report',
+    ]],
+    ['docs/README.md', index, [
+      'W4A complete PR #422',
+      'W4B completion candidate PR #423',
+      'W5A next after PR #423 merge report',
+    ]],
+    ['docs/work-in-progress/watchlist-v1-working-note.md', note, [
+      'W4A contract closure             complete PR #422',
+      'W4B browser candidate QA         completion candidate PR #423',
+      'W5A hosted Preview               next after PR #423 merge report',
+    ]],
+  ]) {
+    for (const fragment of fragments) assert.ok(source.includes(fragment), `${path} missing current closure marker: ${fragment}`)
   }
 }
 
