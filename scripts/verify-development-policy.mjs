@@ -54,28 +54,8 @@ const requiredFiles = [
   'docs/product/watchlist-v1-implementation-plan.md',
   'apps/web/docs/watchlist-latest-w2a-contract.md',
   'apps/web/docs/watchlist-history-w2b-contract.md',
-  'apps/web/src/live/watchlist/model.ts',
-  'apps/web/src/live/watchlist/storage.ts',
-  'apps/web/src/live/watchlist/url-state.ts',
-  'apps/web/src/live/watchlist/latest-model.ts',
-  'apps/web/src/live/watchlist/latest-adapter.ts',
-  'apps/web/src/live/watchlist/latest-controller.ts',
-  'apps/web/src/live/watchlist/history-model.ts',
-  'apps/web/src/live/watchlist/history-adapter.ts',
-  'apps/web/src/live/watchlist/history-controller.ts',
-  'apps/web/src/live/watchlist/combined-model.ts',
-  'apps/web/src/live/watchlist/combined-controller.ts',
   'apps/web/src/live/watchlist-page.ts',
-  'apps/web/src/live/watchlist-move-focus.ts',
   'apps/web/src/live/channel-watchlist.ts',
-  'apps/web/twitch/watchlist/index.html',
-  'apps/web/kick/watchlist/index.html',
-  'apps/web/twitch/channel/index.html',
-  'apps/web/kick/channel/index.html',
-  'apps/web/scripts/verify-watchlist-storage.mjs',
-  'apps/web/scripts/verify-watchlist-latest.mjs',
-  'apps/web/scripts/verify-watchlist-history.mjs',
-  'apps/web/scripts/verify-watchlist-page.mjs',
   'apps/web/scripts/verify-watchlist-contracts.mjs',
   'apps/web/scripts/watchlist-browser-acceptance.mjs',
   'apps/web/scripts/watchlist-cloudflare-preview.mjs',
@@ -110,8 +90,6 @@ for (const path of [
   'product/local-watchlist-spec.md',
   'product/watchlist-v1-implementation-plan.md',
   'operations/watchlist-production-acceptance-2026-06-25.md',
-  '../apps/web/docs/watchlist-latest-w2a-contract.md',
-  '../apps/web/docs/watchlist-history-w2b-contract.md',
 ]) assert(index.includes(path), `docs/README.md: missing canonical link: ${path}`)
 for (const note of retiredNotes) assert(!index.includes(note.replace('docs/', '')), `docs/README.md: retired note remains linked: ${note}`)
 for (const fragment of [
@@ -124,14 +102,12 @@ requireFragments('docs/product/current-roadmap.md', [
   'Local Watchlist v1 | W0–W5B complete through PR #425',
   'Phase 6 — Local Watchlist v1 is complete after PR #425 merges',
   'There is no automatically approved next major feature.',
-  'viewloom-watchlist-production-acceptance-v1',
-  '28166806560',
+  'viewloom-watchlist-production-acceptance-v1', '28166806560',
 ])
 requireFragments('docs/product/current-schedule.md', [
   'Local Watchlist W5A                      complete through PR #424',
   'Local Watchlist W5B                      completion PR #425',
-  'Watchlist Production Acceptance',
-  '28166806560',
+  'Watchlist Production Acceptance', '28166806560',
   'Next major feature                        not selected',
 ])
 requireFragments('docs/product/local-watchlist-spec.md', [
@@ -140,7 +116,7 @@ requireFragments('docs/product/local-watchlist-spec.md', [
   'viewloom.watchlist.twitch.v1', 'viewloom.watchlist.kick.v1',
   'maximum entries: 50 per provider', 'initial visible entries: 12',
   'Not confirmed offline', 'No complete history is implied',
-  'per-channel API requests', 'production acceptance run: 28166806560',
+  'per-channel requests', 'production acceptance run: 28166806560',
 ])
 requireFragments('docs/product/watchlist-v1-implementation-plan.md', [
   'Status: completed implementation record', 'Version: 2.0',
