@@ -1,0 +1,141 @@
+name: Watchlist Production Acceptance
+
+on:
+  workflow_dispatch:
+    inputs:
+      production_origin:
+        description: Production origin
+        required: false
+        default: https://vl.badjoke-lab.com
+      expected_sha:
+        description: Exact deployed main SHA to accept
+        required: false
+  pull_request:
+    paths:
+      - 'apps/web/scripts/watchlist-production-acceptance.mjs'
+      - 'apps/web/scripts/watchlist-shell-browser-fixture.mjs'
+      - 'apps/web/src/live/watchlist-page.ts'
+      - 'apps/web/src/live/channel-watchlist.ts'
+      - 'apps/web/src/live/watchlist/**'
+      - 'apps/web/src/provider-home-shell.ts'
+      - 'apps/web/twitch/index.html'
+      - 'apps/web/kick/index.html'
+      - 'apps/web/twitch/watchlist/**'
+      - 'apps/web/kick/watchlist/**'
+      - 'apps/web/twitch/channel/**'
+      - 'apps/web/kick/channel/**'
+      - 'apps/web/functions/**'
+      - 'docs/README.md'
+      - 'docs/operations/watchlist-production-acceptance-2026-06-25.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/local-watchlist-spec.md'
+      - 'docs/product/watchlist-v1-implementation-plan.md'
+      - 'docs/work-in-progress/watchlist-v1-working-note.md'
+      - 'docs/work-in-progress/watchlist-w5a-hosted-preview-note.md'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/watchlist-production-acceptance.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      WATCHLIST_PRODUCTION_URL: ${{ inputs.production_origin || 'https://vl.badjoke-lab.com' }}
+      WATCHLIST_EXPECTED_BRANCH: main
+      WATCHLIST_ACCEPTED_SHA: ${{ inputs.expected_sha || github.event.pull_request.base.sha || github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Verify consolidated Watchlist contracts
+        working-directory: apps/web
+        run: node scripts/verify-watchlist-contracts.mjs
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run W5B production acceptance
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -o pipefail
+          : > /tmp/watchlist-w5b.log
+          node scripts/watchlist-production-acceptance.mjs 2>&1 | tee -a /tmp/watchlist-w5b.log
+
+      - name: Verify production evidence
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          const evidence = JSON.parse(readFileSync('/tmp/watchlist-w5b-evidence.json', 'utf8'))
+          assert.equal(evidence.schema, 'viewloom-watchlist-production-acceptance-v1')
+          assert.equal(evidence.phase, 'W5B')
+          assert.equal(evidence.result, 'pass')
+          assert.equal(evidence.deployment.environment, 'production')
+          assert.equal(evidence.deployment.branch, 'main')
+          assert.equal(evidence.deployment.commit_sha, process.env.WATCHLIST_ACCEPTED_SHA)
+          assert.equal(evidence.providers.twitch.binding, 'DB_TWITCH_HOT')
+          assert.equal(evidence.providers.twitch.database, 'vl_twitch_hot')
+          assert.equal(evidence.providers.twitch.collectorState, 'ok')
+          assert.equal(evidence.providers.twitch.isStale, false)
+          assert.equal(evidence.providers.kick.binding, 'DB_KICK_HOT')
+          assert.equal(evidence.providers.kick.database, 'vl_kick_hot')
+          assert.equal(evidence.providers.kick.collectorState, 'ok')
+          assert.equal(evidence.providers.kick.isStale, false)
+          assert.equal(evidence.scenarios.length, 6)
+          assert.ok(evidence.scenarios.every((scenario) => scenario.result === 'pass'))
+          assert.equal(evidence.scenarios.filter((scenario) => scenario.id.endsWith('-home-entry-production')).length, 2)
+          assert.equal(evidence.scenarios.filter((scenario) => scenario.id.endsWith('-channel-save-production')).length, 2)
+          assert.ok(evidence.scenarios.filter((scenario) => scenario.id.endsWith('-channel-save-production')).every((scenario) => scenario.additionalRequestsOnSave === 0))
+          console.log(JSON.stringify({
+            result: evidence.result,
+            deployment: evidence.deployment,
+            providers: evidence.providers,
+            scenarios: evidence.scenarios.map((scenario) => scenario.id),
+          }, null, 2))
+          NODE
+
+      - name: Upload W5B production artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: watchlist-w5b-production-acceptance
+          path: |
+            /tmp/watchlist-w5b-evidence.json
+            /tmp/watchlist-w5b.log
+            /tmp/watchlist-w5b-twitch-home.png
+            /tmp/watchlist-w5b-kick-home.png
+            /tmp/watchlist-w5b-twitch-desktop.png
+            /tmp/watchlist-w5b-kick-mobile.png
+            /tmp/watchlist-w5b-twitch-channel-save.png
+            /tmp/watchlist-w5b-kick-channel-save.png
+          if-no-files-found: warn
