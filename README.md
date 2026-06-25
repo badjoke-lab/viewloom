@@ -8,8 +8,10 @@ ViewLoom is an independent, unofficial observatory for retained Twitch and Kick 
 - Day Flow = Today / selected UTC day
 - Battle Lines = Rivalry
 - History = Trends across retained days
+- Channel = One retained channel footprint
+- Local Watchlist = Browser-local saved channel evidence
 
-Twitch and Kick remain separated across routes, APIs, storage, rankings, exports, and coverage claims. ViewLoom does not publish combined provider totals.
+Twitch and Kick remain separated across routes, APIs, storage, D1 bindings, rankings, exports, and coverage claims. ViewLoom does not publish combined provider totals.
 
 ## Current production state
 
@@ -17,46 +19,78 @@ ViewLoom Core v1 is deployed on Cloudflare Pages with:
 
 - separate Twitch and Kick D1 bindings;
 - provider-specific Pages Functions;
-- fresh bounded collector data;
+- bounded collector and retained-history data;
 - production deployment identity and smoke checks;
 - explicit not-found behavior;
-- production Heatmap, Day Flow, Battle Lines, History, Channel, and Status routes.
+- production Heatmap, Day Flow, Battle Lines, History, Channel, Watchlist, and Status routes.
+
+Local Watchlist v1 completed through PR #425 with local, hosted Preview, and production acceptance.
 
 ## Current priority
 
-History & Trends is functionally extensive but its information architecture and visual layout are not accepted as final public quality.
-
-The next milestone is the History layout rebuild:
+The active program is not a new major feature. It is the public-surface audit and P0/P1 repair program.
 
 ```text
-Overview
-Archives
-Report & Export
+Phase 7  source-of-truth reset and repair-program lock
+Phase 8  all-public-surface inventory and browser defect audit
+Phase 9  P0/P1 repair, with History UI as the central approved track
 ```
 
-Channel / Streamer v1 expansion follows only after History production acceptance.
+Current branch:
 
-## Documentation and execution
+```text
+work-history-ui-repair-governance
+```
 
-Before changing this repository, read the canonical documentation index:
+Exact next branch after its merge report and explicit continuation:
 
-- [`docs/README.md`](docs/README.md)
+```text
+work-public-surface-inventory
+```
+
+## Approved History repair
+
+The current History production baseline remains deployed, but the following are approved P1 public-quality defects:
+
+- Viewer-minutes and Peak viewers do not produce a sufficiently observable, trustworthy change across the page;
+- the main chart lacks the readable scale, date ticks, units, and interaction cues needed for interpretation;
+- chart-side information is too thin or placeholder-like;
+- lower-page regions are sparse or unclear in purpose;
+- desktop, tablet, and mobile do not yet form one coherent analysis workflow.
+
+Additional reference screenshots may refine styling later. They are not a blocker for functional, chart, information-architecture, responsive, or accessibility repair.
+
+The repair preserves the two existing primary metrics and does not authorize new History APIs, D1 schemas, collectors, cron changes, retention changes, bindings, exact sessions, cross-provider totals, login, alerts, or AI summaries.
+
+## Canonical documentation
+
+Before changing this repository, read in order:
+
 - [`docs/operations/development-and-deployment-policy.md`](docs/operations/development-and-deployment-policy.md)
+- [`docs/operations/development-policy-addendum.md`](docs/operations/development-policy-addendum.md)
+- [`docs/operations/documentation-governance.md`](docs/operations/documentation-governance.md)
+- [`docs/README.md`](docs/README.md)
 - [`docs/product/current-roadmap.md`](docs/product/current-roadmap.md)
 - [`docs/product/current-schedule.md`](docs/product/current-schedule.md)
 
-Feature work must also read the affected permanent specification, implementation plan, and any active note under `docs/work-in-progress/`.
+For the active History repair also read:
 
-Implementation does not begin from chat memory, an old PR, or screenshots alone. Governing repository documents are updated first when scope or behavior changes.
+- [`docs/product/history-and-trends-spec.md`](docs/product/history-and-trends-spec.md) — accepted baseline
+- [`docs/product/history-ui-repair-spec.md`](docs/product/history-ui-repair-spec.md) — active repair target
+- [`docs/product/history-ui-repair-plan.md`](docs/product/history-ui-repair-plan.md) — active branch and acceptance plan
+- [`docs/work-in-progress/history-ui-repair-working-note.md`](docs/work-in-progress/history-ui-repair-working-note.md) — active execution memory
+
+Implementation does not begin from chat memory, an old PR, or screenshots alone. Repository authorities are updated first when scope, priority, or behavior changes.
 
 ## Development operations
 
 - normal work uses `work-*` branches;
-- `preview-*` is reserved for deliberate Cloudflare runtime validation;
-- completed candidates run the full required CI/browser gates;
+- `preview-*` is reserved for deliberate Cloudflare runtime validation of a completed candidate;
+- only the latest candidate head is authoritative;
 - merge status is not production status;
-- production completion requires exact deployment identity and smoke verification;
-- provider separation and honest bounded coverage are mandatory.
+- production completion requires exact deployment identity and public smoke verification;
+- provider separation and honest bounded coverage are mandatory;
+- after every merge, issue the full merge report and stop before creating the next branch.
 
 ## Repository structure
 
@@ -67,13 +101,18 @@ Implementation does not begin from chat memory, an old PR, or screenshots alone.
 
 ## Immediate execution order
 
-1. documentation reset and History baseline;
-2. History view-state and shell contract;
-3. History Overview rebuild;
-4. History Archives rebuild;
-5. History Report & Export consolidation;
-6. visual/responsive pass and complete candidate QA;
-7. Cloudflare Preview and production acceptance;
-8. delete the temporary History working note after permanent docs are finalized;
-9. Channel / Streamer v1 completion;
-10. next-feature data-capability audit.
+```text
+P7A  governance and schedule reset
+P8A  public route and acceptance inventory
+P8B  desktop/tablet/mobile defect audit
+P9H0 exact History reproduction and failing gates
+P9H1 metric execution repair
+P9H2 chart scale, axes, units, and day interaction
+P9H3 Overview information hierarchy
+P9H4 Archives and Report & Export task repair
+P9H5 responsive and accessibility repair
+P9H6 complete local candidate QA
+P9H7 deliberate Preview and exact production acceptance
+```
+
+No next major feature is approved. Category/Game, Observed Runs, Event, Language, and Alerts require a later data-capability audit and explicit approval.
