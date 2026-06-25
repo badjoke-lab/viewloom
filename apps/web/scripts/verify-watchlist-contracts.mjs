@@ -34,7 +34,7 @@ console.log('Watchlist completed production contract verification passed.')
 console.log('- W1 through W4B foundations and local browser regressions remain governed')
 console.log('- W5A hosted Preview and W5B production acceptance remain operational gates')
 console.log('- temporary Watchlist notes remain retired')
-console.log('- current roadmap phase may advance without weakening completed Watchlist contracts')
+console.log('- Phase 8 governance may advance without weakening completed Watchlist contracts')
 console.log('- no Watchlist-specific server, polling, per-channel request, or analytics-id path exists')
 
 function runFoundations() {
@@ -58,6 +58,7 @@ function verifyGovernance() {
   const record = readRepo('docs/product/watchlist-v1-implementation-plan.md')
   const roadmap = readRepo('docs/product/current-roadmap.md')
   const schedule = readRepo('docs/product/current-schedule.md')
+  const program = readRepo('docs/product/post-watchlist-program-plan.md')
   const index = readRepo('docs/README.md')
   const acceptance = readRepo('docs/operations/watchlist-production-acceptance-2026-06-25.md')
 
@@ -95,20 +96,37 @@ function verifyGovernance() {
 
   requireAll(roadmap, [
     'Local Watchlist v1 | W0–W5B complete through PR #425',
-    'docs/product/local-watchlist-spec.md',
-    'docs/product/watchlist-v1-implementation-plan.md',
-    'docs/operations/watchlist-production-acceptance-2026-06-25.md',
-    'closure PR: #425',
+    'Phase 7 — source-of-truth reset and repair-program lock',
+    'State: complete through PR #426',
+    'Current window: P8A',
+    'Current branch: work-public-surface-inventory',
+    'Exact next branch: work-public-browser-audit',
   ], 'roadmap')
   requireAll(schedule, [
     'Local Watchlist W0-W5B                   complete through PR #425',
-    'No later branch exists yet.',
+    'Phase 7 source reset                     complete through PR #426',
+    'Phase 8 public audit                     active',
+    'Window: P8A — public surface inventory',
+    'Branch: work-public-surface-inventory',
+    'Exact next branch: work-public-browser-audit',
   ], 'schedule')
+  requireAll(program, [
+    'Status: active source-of-truth program plan',
+    'Current phase: Phase 8',
+    'Current window: P8A',
+    'Current branch: `work-public-surface-inventory`',
+    '| 7 | P7A | complete PR #426',
+    '| 8 | P8A | active',
+    'work-public-browser-audit',
+    'Phase 15 has no approved implementation branch.',
+  ], 'post-Watchlist program')
   requireAll(index, [
     'operations/watchlist-production-acceptance-2026-06-25.md',
     'product/local-watchlist-spec.md',
     'product/watchlist-v1-implementation-plan.md',
+    'product/post-watchlist-program-plan.md',
     'Phase 6  Local Watchlist v1                               complete through PR #425',
+    'P8A      work-public-surface-inventory                     active',
     'There is no active Local Watchlist',
   ], 'documentation index')
   requireAll(acceptance, [
