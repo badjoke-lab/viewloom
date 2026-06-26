@@ -23,8 +23,10 @@ Current state:
 
 ```text
 P9H0 complete through PR #430
-Current branch: work-p9h0-closeout
+P9H0 documentation closeout complete through PR #432
+Active implementation branch: none
 Exact next implementation branch: work-history-ui-h1-metric
+P9H1 branch created: no
 ```
 
-Do not create P9H1 before the closeout merge report and explicit continuation. Do not start Phase 10–16 before its documented entry condition. After every merge, issue the full merge report and stop.
+Do not start P9H1 before explicit continuation. Do not start Phase 10–16 before its documented entry condition. After every merge, issue the full merge report and stop.
