@@ -1,7 +1,10 @@
 let scheduled = false
 let applying = false
 
-const observer = new MutationObserver(schedule)
+const observer = new MutationObserver(() => {
+  invalidateDailyHierarchy()
+  schedule()
+})
 observer.observe(document.documentElement, { childList: true, subtree: true })
 document.addEventListener('click', (event) => {
   if ((event.target as HTMLElement | null)?.closest('[data-history-clarity-filter],[data-history-archive-toggle]')) scheduleAfterInteraction()
@@ -10,7 +13,13 @@ window.addEventListener('viewloom:peak-archive-toggle', scheduleAfterInteraction
 window.addEventListener('viewloom:battle-archive-toggle', scheduleAfterInteraction)
 schedule()
 
+function invalidateDailyHierarchy(): void {
+  const root = document.querySelector<HTMLElement>('[data-history-daily-archive]')
+  if (root) root.dataset.historyDailyHierarchyReady = 'false'
+}
+
 function scheduleAfterInteraction(): void {
+  invalidateDailyHierarchy()
   requestAnimationFrame(schedule)
 }
 
