@@ -12,14 +12,9 @@ Phase 8 P8B   complete PR #428
 Phase 9 P9H0  complete PR #430
 P9H0 closeout complete PR #432
 Final-state correction complete PR #433
-Phase 9 P9H1  active
-Active implementation branch: work-history-ui-h1-metric
-```
-
-Exact current implementation branch:
-
-```text
-work-history-ui-h1-metric
+Phase 9 P9H1  complete PR #434
+Active implementation branch: none
+Exact next implementation branch: work-history-ui-h2-chart
 ```
 
 P9H2 has not been created.
@@ -31,31 +26,35 @@ P9H2 has not been created.
 - Public-surface inventory is complete through PR #427.
 - Public browser audit is complete through PR #428.
 - The deterministic History P9H0 baseline is complete through PR #430.
-- P9H0 documentation and program closeout is complete through PR #432.
+- P9H0 documentation/program closeout is complete through PR #432.
 - Post-closeout canonical state is corrected through PR #433.
+- History metric synchronization is complete through PR #434 at merge `31b81d3ed3a56369055ba09eb4de871dfc59d315`.
 - Twitch and Kick remain separate across routes, APIs, storage, bindings, rankings, exports, and coverage claims.
 
-P8B result:
+P9H1 accepted evidence:
 
 ```text
-P0 0
-P1 3
-P2 5
-P3 0
+Head: 9c4e3278b609e3f8d41fa3df71ba69f5ebc00618
+Workflow run: 28232602651
+Artifact: history-ui-h1-metric / 7903212809
+Digest: sha256:783283fd1c913e7ccb99d04bb607ed5801db1c74ab3d341c81a40c440835e82c
 ```
 
-P9H0 locked these deterministic failures:
+P9H1 converted these failures to passing assertions:
 
 ```text
 history-metric-ranking-context-stale
 history-metric-summary-stale
-history-mobile-task-flow-too-long
 history-selected-day-context-stale
 ```
 
-P9H1 owns the three metric-context failures. `history-mobile-task-flow-too-long` remains owned by P9H3/P9H5.
+The remaining deterministic History defect is:
 
-The local first-Tab scenarios moved focus to the ViewLoom home link. The earlier P8B production body-focus observation remains a production/local discrepancy for P9H5 and final acceptance.
+```text
+history-mobile-task-flow-too-long
+```
+
+It remains owned by P9H3/P9H5. The earlier P8B production body-focus observation remains a production/local discrepancy for P9H5 and final acceptance.
 
 ## 3. Authority map
 
@@ -80,6 +79,11 @@ P9H0 evidence:
   docs/audits/history-ui-h0-source-map.md
   docs/audits/history-ui-h0-findings.md
 
+P9H1 evidence:
+  apps/web/scripts/history-ui-h1-browser.mjs
+  scripts/verify-history-ui-h1-metric.mjs
+  .github/workflows/history-ui-h1-metric.yml
+
 Cross-site quality:
   docs/product/cross-site-quality-remediation-spec.md
   docs/product/cross-site-quality-remediation-plan.md
@@ -94,7 +98,7 @@ Localization:
 ```text
 Phase 7   source-of-truth reset                              complete PR #426
 Phase 8   inventory and browser defect audit                 complete PR #428
-Phase 9   History P1 repair                                   P9H1 active
+Phase 9   History P1 repair                                   P9H1 complete; P9H2 next
 Phase 10  cross-site defect/UI/architecture repair           queued
 Phase 11  acceptance, CI, type safety, monitoring            queued
 Phase 12  English legal, Support, Stripe, release readiness  queued
@@ -110,8 +114,8 @@ No Phase 16 feature is approved.
 
 ```text
 P9H0 work-history-ui-h0-baseline   complete PR #430
-P9H1 work-history-ui-h1-metric     active
-P9H2 work-history-ui-h2-chart      exact next after P9H1 merge and explicit continuation
+P9H1 work-history-ui-h1-metric     complete PR #434
+P9H2 work-history-ui-h2-chart      exact next after explicit continuation; not created
 P9H3 work-history-ui-h3-overview   queued
 P9H4 work-history-ui-h4-tasks      queued
 P9H5 work-history-ui-h5-responsive queued
@@ -119,9 +123,11 @@ P9H6 work-history-ui-h6-candidate  queued
 P9H7 work-history-ui-h7-acceptance queued
 ```
 
-P9H1 repairs Viewer-minutes / Peak viewers execution across URL, provider request, selected control, chart, Summary, Selected day, Ranking context, supported Archives, Report, Share, and Exports. It does not add a metric, API, D1 schema, collector, binding, cron, retention rule, provider combination, or output schema.
+P9H1 synchronizes Viewer-minutes / Peak viewers across URL, provider request, selected control, chart, Summary, Selected day, comparison, Ranking context, supported Archives, Report, Share, and Exports. It also excludes missing daily rows from metric-day selection. It added no metric, API, D1 schema, collector, binding, cron, retention rule, provider combination, or output schema.
 
 ## 6. Later phases
+
+P9H2 repairs chart interpretation. P9H3 repairs Overview hierarchy. P9H4 repairs Archives and publishing hierarchy. P9H5 repairs responsive/accessibility behavior and the production/local keyboard discrepancy. P9H6–P9H7 perform candidate and production acceptance.
 
 Phase 10 repairs reproduced cross-site defects and consolidates shared shell, chart grammar, responsive/accessibility behavior, route readiness, and safe architecture cleanup.
 
@@ -133,19 +139,6 @@ Phase 13 introduces the localization runtime and completes English/Japanese acce
 
 UI localization is distinct from collecting or analyzing stream language. Provider-origin names, IDs, titles, and categories are not translated by the initial program.
 
-## 7. Work not approved in P9H1
+## 7. Stop rule
 
-- another History metric or archive type;
-- exact session reconstruction;
-- category or stream-language collection;
-- combined provider totals or rankings;
-- login, cloud accounts, alerts, or AI interpretation;
-- new D1 schema, collector, cron, retention, binding, or API route;
-- output-schema changes;
-- localization runtime before Phase 13;
-- broad chart/task/responsive work owned by P9H2–P9H5;
-- parallel major feature expansion.
-
-## 8. Stop rule
-
-Complete P9H1 on `work-history-ui-h1-metric`, merge it, name `work-history-ui-h2-chart` as the exact next branch, and stop until explicit continuation.
+P9H1 is complete through PR #434. There is no active implementation branch. Do not create `work-history-ui-h2-chart` until explicit continuation.
