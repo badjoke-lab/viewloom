@@ -34,8 +34,8 @@ function enhance(): void {
   const metric = currentMetric()
   const title = svgText(svg, 'title', 'history-chart-title')
   const description = svgText(svg, 'desc', 'history-chart-description')
-  title.textContent = `${metricLabel(metric)} by UTC day`
-  description.textContent = `${metricLabel(metric)} daily rollup. Arrow keys move between days. Home and End jump. Enter or Space selects. Symbols identify coverage without color.`
+  setText(title, `${metricLabel(metric)} by UTC day`)
+  setText(description, `${metricLabel(metric)} daily rollup. Arrow keys move between days. Home and End jump. Enter or Space selects. Symbols identify coverage without color.`)
   svg.setAttribute('aria-labelledby', `${title.id} ${description.id}`)
   svg.removeAttribute('aria-label')
 
@@ -43,7 +43,7 @@ function enhance(): void {
   if (focusIndex < 0) focusIndex = 0
   days.forEach((day, index) => enhanceDay(day, index === focusIndex))
   const caption = stage.querySelector<HTMLElement>('.history-chart-caption span')
-  if (caption) caption.textContent = `UTC daily rollup · ${metricUnit(metric)} · Arrow keys move between days`
+  if (caption) setText(caption, `UTC daily rollup · ${metricUnit(metric)} · Arrow keys move between days`)
   enhanceLegend()
   showInspection(days[focusIndex])
   stage.dataset.historyChartReady = 'true'
@@ -54,7 +54,9 @@ function enhanceDay(day: SVGGElement, focusable: boolean): void {
   const bar = day.querySelector<SVGRectElement>('.history-bar')
   if (!bar) return
   const coverage = coverageFrom(bar)
+  const symbol = coverageSymbol(coverage)
   day.dataset.historyCoverage = coverage
+  day.dataset.historyStateSymbol = symbol
   day.setAttribute('tabindex', focusable ? '0' : '-1')
   day.setAttribute('aria-roledescription', 'daily observation')
   day.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight Home End Enter Space')
@@ -73,7 +75,7 @@ function enhanceDay(day: SVGGElement, focusable: boolean): void {
   }
   marker.setAttribute('x', String(attributeNumber(bar, 'x') + attributeNumber(bar, 'width') / 2))
   marker.setAttribute('y', String(Math.max(22, attributeNumber(bar, 'y') - 8)))
-  marker.textContent = coverageSymbol(coverage)
+  setText(marker, symbol)
 }
 
 function onKeydown(event: KeyboardEvent): void {
@@ -111,7 +113,7 @@ function showInspection(day?: SVGGElement): void {
     node.setAttribute('aria-live', 'polite')
     stage.insertAdjacentElement('afterend', node)
   }
-  node.textContent = `${day.dataset.historyDay ?? 'Day'} UTC · ${day.getAttribute('aria-label') ?? 'Details unavailable'} · Arrow keys inspect adjacent days`
+  setText(node, `${day.dataset.historyDay ?? 'Day'} UTC · ${day.getAttribute('aria-label') ?? 'Details unavailable'} · Arrow keys inspect adjacent days`)
   node.dataset.historyInspectionDay = day.dataset.historyDay ?? ''
 }
 
@@ -171,6 +173,10 @@ function svgText(svg: SVGSVGElement, tag: 'title' | 'desc', id: string): SVGTitl
   node.id = id
   svg.prepend(node)
   return node
+}
+
+function setText(node: Node, value: string): void {
+  if (node.textContent !== value) node.textContent = value
 }
 
 export {}
