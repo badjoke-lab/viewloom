@@ -31,10 +31,9 @@ verifyNoServerExpansion()
 verifyWorkflows()
 
 console.log('Watchlist completed production contract verification passed.')
-console.log('- W1 through W4B foundations and local browser regressions remain governed')
-console.log('- W5A hosted Preview and W5B production acceptance remain operational gates')
+console.log('- W1 through W5B behavior and acceptance remain governed')
+console.log('- later Phase 8/9/10/13 schedule updates do not weaken Watchlist contracts')
 console.log('- temporary Watchlist notes remain retired')
-console.log('- P8A completion and P8B handoff do not weaken completed Watchlist contracts')
 console.log('- no Watchlist-specific server, polling, per-channel request, or analytics-id path exists')
 
 function runFoundations() {
@@ -96,42 +95,41 @@ function verifyGovernance() {
   ], 'implementation record')
 
   requireAll(roadmap, [
-    'Local Watchlist v1 | W0–W5B complete through PR #425; P8A inventoried',
-    'P8A: complete through PR #427',
-    'Exact next branch: work-public-browser-audit',
-    'both Watchlist routes are missing from Public Readiness configuration',
+    'Local Watchlist v1 is complete through PR #425.',
+    'Phase 8 P8B   complete PR #428',
+    'Phase 9 P9H0  complete PR #430',
+    'P9H0 closeout active on work-p9h0-closeout',
+    'work-history-ui-h1-metric',
+    'No Phase 16 feature is approved.',
   ], 'roadmap')
   requireAll(schedule, [
     'Local Watchlist W0-W5B                   complete through PR #425',
-    'Phase 8 P8A inventory                    complete through PR #427',
-    'Phase 8 P8B browser audit                exact next',
-    'Completed branch: work-public-surface-inventory',
-    'Exact next branch: work-public-browser-audit',
+    'Phase 8 P8B browser audit                complete through PR #428',
+    'Phase 9 P9H0                             complete through PR #430',
+    'Current branch: work-p9h0-closeout',
+    'work-history-ui-h1-metric',
   ], 'schedule')
   requireAll(program, [
     'Status: active source-of-truth program plan',
-    'Completed window: P8A through PR #427',
-    'Exact next branch: `work-public-browser-audit`',
-    '| 7 | P7A | complete PR #426',
-    '| 8 | P8A | complete PR #427',
-    '| 8 | P8B | exact next',
-    'Phase 15 has no approved implementation branch.',
-  ], 'post-Watchlist program')
+    'Current branch: `work-p9h0-closeout`',
+    '| 9 | P9H0 | complete PR #430',
+    'Exact next implementation branch: `work-history-ui-h1-metric`',
+    'Phase 16 begins only after one candidate is separately approved',
+  ], 'program')
   requireAll(index, [
-    'operations/watchlist-production-acceptance-2026-06-25.md',
     'product/local-watchlist-spec.md',
     'product/watchlist-v1-implementation-plan.md',
-    'product/post-watchlist-program-plan.md',
-    'Phase 6  Local Watchlist v1                               complete through PR #425',
-    'P8A      work-public-surface-inventory                     complete PR #427',
-    'There is no active Local Watchlist',
+    'operations/watchlist-production-acceptance-2026-06-25.md',
+    'Phase 6  Local Watchlist v1',
+    'C9H0     work-p9h0-closeout',
+    'P9H1     work-history-ui-h1-metric',
   ], 'documentation index')
   requireAll(inventory, [
     'viewloom-public-surface-inventory-v1',
     '"vite_html_inputs": 20',
     '"inventory_entries": 21',
     '"next_branch": "work-public-browser-audit"',
-  ], 'public-surface inventory')
+  ], 'historical public-surface inventory')
   requireAll(acceptance, [
     'Status: completed permanent record',
     'f3e0ee8741e96015c5440df167574b8002fccc0d',
@@ -305,14 +303,11 @@ function verifyWorkflows() {
     '.github/workflows/watchlist-hosted-preview.yml',
     '.github/workflows/watchlist-production-acceptance.yml',
   ]
-  for (const path of workflows) {
-    const source = readRepo(path)
-    requireAll(source, [
-      'concurrency:',
-      'group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}',
-      'cancel-in-progress: true',
-    ], path)
-  }
+  for (const path of workflows) requireAll(readRepo(path), [
+    'concurrency:',
+    'group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}',
+    'cancel-in-progress: true',
+  ], path)
 
   requireAll(readRepo('.github/workflows/watchlist-production-acceptance.yml'), [
     'name: Watchlist Production Acceptance',
