@@ -7,12 +7,15 @@ Roadmap phase: Phase 9 — History P1 repair
 Completed predecessor: P8B through PR #428
 Current window: P9H0 — exact baseline, ownership trace, and failing permanent gates
 Current branch: `work-history-ui-h0-baseline`
+Current draft PR: #431
 Exact next branch after P9H0: `work-history-ui-h1-metric`
 Accepted baseline specification: `../product/history-and-trends-spec.md`
 Active repair specification: `../product/history-ui-repair-spec.md`
 Program plan: `../product/post-watchlist-program-plan.md`
 Implementation subplan: `../product/history-ui-repair-plan.md`
-Audit baseline: `../audits/public-browser-defects.json`
+P8B defect baseline: `../audits/public-browser-defects.json`
+P9H0 ownership baseline: `../audits/history-p9h0-ownership.md`
+Executable contract: `../../apps/web/docs/history-p9h0-baseline-contract.md`
 Delete when: P9H7 production acceptance and permanent-document transfer are complete.
 
 ## 1. Approved P1 defects
@@ -54,7 +57,7 @@ b2dd44dff6efd9da78a3ddd28f2ed26661bf9eb8
 
 ## 3. P9H0 documentation-first batch
 
-Explicit continuation was received on 2026-06-26. The branch was created from current `main`.
+Explicit continuation was received on 2026-06-26. The branch was created from current `main` and draft PR #431 was opened.
 
 Required document changes:
 
@@ -69,14 +72,16 @@ Required document changes:
 [x] history-ui-repair-spec.md strengthened
 [x] history-ui-repair-plan.md advanced to P9H0
 [x] this working note advanced to P9H0
-[ ] docs/README.md and root README.md aligned
-[ ] AGENTS.md and CONTRIBUTING.md aligned
-[ ] pull request template aligned
-[ ] P8B audit status records marked complete
-[ ] development-policy verifier aligned and executed
+[x] docs/README.md and root README.md aligned
+[x] AGENTS.md and CONTRIBUTING.md aligned
+[x] pull request template aligned
+[x] P8B audit status records marked complete
+[x] development-policy verifier aligned
+[x] completed Watchlist verifier decoupled from stale P8A/P8B current-state wording
+[ ] latest-head documentation and completed-feature gates all pass
 ```
 
-No runtime or public UI change is allowed before this batch is internally consistent.
+No runtime or public UI change was included in this documentation-first batch.
 
 ## 4. Exact P8B History findings
 
@@ -84,82 +89,99 @@ No runtime or public UI change is allowed before this batch is internally consis
 
 Switching Viewer-minutes to Peak viewers changes URL, selected control, chart caption, and chart accessible name. It does not change the period summary or selected-day facts.
 
-Known source evidence:
+Confirmed source evidence:
 
 - `history-current-shell-entry.ts` reads and requests the selected metric;
-- `renderSummary()` currently emits Viewer-minutes labels/values regardless of the selected primary metric;
-- selected-day rendering shows both metrics instead of a selected-metric primary interpretation;
-- ranking sorting can follow metric but surrounding meaning remains inconsistent.
+- `renderSummary()` receives no metric argument and emits Viewer-minutes labels/values;
+- `renderSelectedDay()` receives no metric argument and shows both metrics without one selected-metric primary interpretation;
+- ranking sorting can follow metric but surrounding meaning remains inconsistent;
+- report state labels the selected metric, but several generated report facts remain Viewer-minutes-specific.
 
 ### Keyboard entry
 
 At 1440, 820, 390, and 360 on both provider History routes, the first Tab did not move focus from `body` into a visible actionable control. Existing accessibility workflows did not reject it.
 
+`history-visual-responsive.ts` binds focus paint to task/archive/report tabs but does not establish reliable first-page keyboard entry.
+
 ### Task hierarchy
 
 Desktop separates many analytical blocks without one sufficiently strong primary sequence. Mobile stacks the desktop information architecture into a very long page where selected-day inspection, ranking, comparison, calendar, changes, and coverage compete.
 
-## 5. Current ownership candidates
+The primary renderer creates the original long document. `history-view-shell.ts` later creates task panels and uses a MutationObserver to rehome already-rendered sections.
+
+## 5. Confirmed runtime ownership
+
+### Primary state/request/render owner
 
 ```text
 apps/web/src/live/history-current-shell-entry.ts
-apps/web/src/live/history-view-shell.ts
-apps/web/src/live/history-overview.ts
+```
+
+It owns provider endpoint, period, metric, selected day, ranking sort/limit, primary URL replacement, AbortController request lifecycle, summary, chart, selected day, primary ranking, daily archive, and coverage rendering.
+
+### Usability/import entry
+
+```text
 apps/web/src/live/history-usability-pass.ts
-History comparison, archive, report, share, export, responsive, focus, compatibility, and hotfix modules
 ```
 
-P9H0 must not assume the first entry file is the sole owner. It must trace runtime script order and all later DOM/state mutation.
+It executes before the primary renderer and imports the compatibility, usability, formatting, view-shell, Overview, default-day, archive, report, and responsive layers.
 
-## 6. Architecture questions P9H0 must answer
-
-- Which module owns provider, period, metric, selected day, task, archive, sort, and limit after all scripts load?
-- Which module owns the final request and cache lifecycle?
-- Which metric-dependent values remain stale or mislabeled?
-- Which modules own chart, summary, selected day, comparison, ranking, archives, report, share, and exports?
-- Which layers patch `window.fetch` or observe/move document-wide DOM?
-- Which layers are authoritative, compatibility-only, redundant, or obsolete?
-- Which layers can be retired in P9H1–P9H5 without changing accepted URL/request/output behavior?
-- Which retained layers need a named removal condition?
-
-## 7. Required failing-gate baseline
-
-P9H0 must add or extend gates for:
+### Fetch-wrapper owners
 
 ```text
-metric changes summary label/value
-metric changes selected-day primary fact/unit
-metric changes report context where supported
-first Tab reaches visible actionable control
-mobile task order remains compact and intentional
-one authoritative state owner is recorded
-no new global fetch/MutationObserver coordination layer
+history-clarity-hotfix.ts
+history-usability.ts
+history-overview.ts
+history-additional-rankings-state.ts
+history-peak-archive-state.ts
+history-battle-archive-state.ts
+history-calendar-heat-state.ts
+history-report-text-state.ts
 ```
 
-The baseline may use an expected-failure mode or machine-readable defect fixture. Required CI must not remain permanently red.
+Each binds the previous `window.fetch` and replaces it again. P9H1–P9H5 must not add another wrapper.
 
-## 8. Required viewports and states
+### Observer/rehome owners
 
 ```text
-1440
-820
-390
-360
-
-real
-partial
-stale
-empty
-missing
-demo
-in progress
-error
-loading
+history-clarity-hotfix.ts
+history-clarity-compat.ts
+history-usability.ts
+history-number-format.ts
+history-view-shell.ts
+history-overview.ts
+history-default-day.ts
+history-archives.ts
+history-visual-responsive.ts
 ```
 
-Baseline artifacts must make provider, metric, period, state, and viewport identifiable.
+Several observers watch `document.documentElement` with `subtree: true`. `history-view-shell.ts` also patches `history.replaceState` and rehomes sections after render.
 
-## 9. Fixed boundaries
+Permanent detail is in `docs/audits/history-p9h0-ownership.md`.
+
+## 6. P9H0 executable baseline
+
+Added:
+
+```text
+docs/audits/history-p9h0-ownership.md
+apps/web/docs/history-p9h0-baseline-contract.md
+scripts/verify-history-p9h0-baseline.mjs
+.github/workflows/history-p9h0-baseline.yml
+```
+
+The verifier treats the three P1 defects as explicit scheduled known failures rather than passing behavior:
+
+```text
+P9H1: summary and selected-day metric synchronization
+P9H3/P9H5: coherent task hierarchy
+P9H5: reliable first keyboard entry
+```
+
+It also freezes the current fetch-wrapper, observer, replaceState, and DOM-rehome ownership. Each later repair PR must replace its expected-failure assertion with a passing permanent assertion.
+
+## 7. Fixed boundaries
 
 ```text
 Providers remain separate.
@@ -172,23 +194,35 @@ No localization runtime in Phase 9.
 No Cloudflare Preview in P9H0–P9H6.
 ```
 
-## 10. P9H0 repository checklist
+## 8. P9H0 repository checklist
 
 ```text
-[ ] revised governing documents pass policy verification
-[ ] P8B permanent audit records remain intact and marked historical/complete
-[ ] all three P1 defects have exact deterministic baseline evidence
-[ ] Twitch and Kick owner traces are complete
-[ ] final runtime script/module ownership is documented
-[ ] compatibility/hotfix/observer/fetch layers are inventoried
-[ ] missing permanent assertions are implemented or recorded in approved expected-failure form
+[x] revised governing documents pass development-policy verification on an earlier PR head
+[x] P8B permanent audit records remain intact and marked historical/complete
+[x] all three P1 defects have exact P8B evidence and executable known-failure assertions
+[x] Twitch and Kick entry traces are complete
+[x] primary and secondary runtime ownership is documented
+[x] compatibility/hotfix/observer/fetch layers are inventoried
+[x] missing permanent assertions are represented in approved expected-failure form
+[ ] Watchlist completed-contract gates pass after stale-governance correction
+[ ] P9H0 baseline workflow passes on latest head
 [ ] targeted typecheck/build/History checks pass
 [ ] final latest-head candidate gates pass
-[ ] no product repair or forbidden scope is mixed in
-[ ] P9H1 is named as exact next branch
+[x] no product repair or forbidden scope is mixed in
+[x] P9H1 is named as exact next branch
 ```
 
-## 11. Working-note rule
+## 9. P9H1 handoff target
+
+P9H1 must repair metric execution end to end without broad task/layout work:
+
+- pass selected metric explicitly to summary and selected-day renderers;
+- synchronize summary labels/values, selected-day primary fact, comparison, ranking meaning, supported archives, report/share/export context;
+- preserve one request per uncached provider/period/metric state and task no-refetch behavior;
+- replace P9H0 metric expected-failure assertions with passing metric assertions;
+- avoid adding another fetch wrapper or observer layer.
+
+## 10. Working-note rule
 
 Update this note when a source hypothesis is confirmed/rejected, ownership changes, a layer is retired/retained, a gate is added, defect behavior changes, or the ordered repair sequence changes.
 
