@@ -28,6 +28,13 @@ Exact next implementation branch: work-history-ui-h3-overview
 P9H3 branch created: no
 ```
 
+Historical P9H1 closeout evidence, not current state:
+
+```text
+Active implementation branch: none
+P9H2 branch created: no
+```
+
 P9H3 must not be created before P9H2 merges, the full report is issued, and explicit continuation is received.
 
 ## Standard workflow
