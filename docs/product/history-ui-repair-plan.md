@@ -1,14 +1,15 @@
 # ViewLoom History UI repair implementation plan
 
 Status: active implementation subplan
-Version: 1.5
+Version: 1.6
 Created: 2026-06-25
 Last updated: 2026-06-26
 Roadmap phase: Phase 9 — History P1 repair
 Completed window: P9H0 through PR #430
 Completed closeout: PR #432
-Current implementation branch: none
-Exact next branch: `work-history-ui-h1-metric`
+Completed final-state correction: PR #433
+Current implementation branch: `work-history-ui-h1-metric`
+Exact next branch after P9H1 merge and explicit continuation: `work-history-ui-h2-chart`
 Permanent specification: `history-and-trends-spec.md`
 Active repair specification: `history-ui-repair-spec.md`
 Program authority: `post-watchlist-program-plan.md`
@@ -49,8 +50,9 @@ P8A  complete PR #427
 P8B  complete PR #428
 P9H0 complete PR #430
 C9H0 work-p9h0-closeout                  complete PR #432
-P9H1 work-history-ui-h1-metric           exact next; not created
-P9H2 work-history-ui-h2-chart            queued
+C9H0F work-p9h0-final-state              complete PR #433
+P9H1 work-history-ui-h1-metric           active
+P9H2 work-history-ui-h2-chart            exact next after P9H1 merge and explicit continuation
 P9H3 work-history-ui-h3-overview         queued
 P9H4 work-history-ui-h4-tasks            queued
 P9H5 work-history-ui-h5-responsive       queued
@@ -88,7 +90,7 @@ Changing Viewer-minutes or Peak viewers must update:
 - supported archive values;
 - Report, Share, and Export context.
 
-P9H1 must replace metric-related P9H0 expected failures with passing assertions. Checking only styling or `aria-pressed` is insufficient.
+P9H1 replaces the three metric-context failures with passing assertions. `history-mobile-task-flow-too-long` remains expected until P9H3/P9H5.
 
 P9H1 must preserve one request per uncached provider/period/metric state, task/archive no-refetch, Back/Forward, provider separation, degraded states, and output schemas. It must not add another global fetch wrapper or document-wide observer.
 
@@ -124,4 +126,4 @@ By P9H6:
 
 ## 13. Stop rule
 
-There is no active implementation branch. Do not create `work-history-ui-h1-metric` until explicit continuation. Apply the same merge-report-and-stop rule after every later branch.
+Complete P9H1 on `work-history-ui-h1-metric`, merge it, name `work-history-ui-h2-chart` as the exact next branch, and stop until explicit continuation.

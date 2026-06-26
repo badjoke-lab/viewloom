@@ -2,92 +2,19 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const root = process.cwd()
-const failures = []
+const errors = []
 const read = (path) => readFileSync(join(root, path), 'utf8')
-const needFile = (path) => { if (!existsSync(join(root, path))) failures.push(`missing file: ${path}`) }
 const need = (path, fragments) => {
-  needFile(path)
-  if (!existsSync(join(root, path))) return
+  if (!existsSync(join(root, path))) {
+    errors.push(`missing file: ${path}`)
+    return
+  }
   const source = read(path)
-  for (const fragment of fragments) if (!source.includes(fragment)) failures.push(`${path}: missing ${fragment}`)
+  for (const fragment of fragments) if (!source.includes(fragment)) errors.push(`${path}: missing ${fragment}`)
 }
 
-for (const path of [
-  'README.md',
-  'docs/README.md',
-  'docs/product/current-roadmap.md',
-  'docs/product/current-schedule.md',
-  'docs/product/post-watchlist-program-plan.md',
-  'docs/product/history-ui-repair-plan.md',
-  'docs/work-in-progress/history-ui-repair-working-note.md',
-  'docs/audits/history-ui-h0-baseline.md',
-  'docs/audits/history-ui-h0-source-map.md',
-  'docs/audits/history-ui-h0-owner-map.json',
-  'docs/audits/history-ui-h0-findings.md',
-  'docs/audits/public-browser-defects.json',
-  'apps/web/scripts/history-ui-h0-browser.mjs',
-  'apps/web/src/live/history-current-shell-entry.ts',
-  'apps/web/src/live/history-usability-pass.ts',
-  'apps/web/src/live/history-view-shell.ts',
-  'apps/web/src/live/history-overview.ts',
-  'apps/web/src/live/history-report-text.ts',
-  'apps/web/src/live/history-report-text-state.ts',
-  '.github/workflows/history-ui-h0-baseline.yml',
-]) needFile(path)
-
-need('README.md', [
-  'P9H0 History baseline               complete PR #430',
-  'P9H0 documentation closeout         complete PR #432',
-  'Active implementation branch        none',
-  'work-history-ui-h1-metric',
-])
-need('docs/README.md', [
-  'P9H0 completed through PR #430.',
-  'closeout completed through PR #432',
-  'Active implementation branch',
-  'work-history-ui-h1-metric',
-])
-need('docs/product/current-roadmap.md', [
-  'Phase 9 P9H0  complete PR #430',
-  'P9H0 closeout complete PR #432',
-  'Active implementation branch: none',
-  'work-history-ui-h1-metric',
-])
-need('docs/product/current-schedule.md', [
-  'P9H0 History baseline                   complete PR #430',
-  'P9H0 documentation closeout             complete PR #432',
-  'Active implementation branch            none',
-  'work-history-ui-h1-metric',
-])
-need('docs/product/post-watchlist-program-plan.md', [
-  'Current implementation branch: none',
-  'Completed closeout: PR #432',
-  'Exact next implementation branch: `work-history-ui-h1-metric`',
-])
-need('docs/product/history-ui-repair-plan.md', [
-  'Completed window: P9H0 through PR #430',
-  'Completed closeout: PR #432',
-  'Current implementation branch: none',
-  'work-history-ui-h1-metric',
-])
-need('docs/work-in-progress/history-ui-repair-working-note.md', [
-  'Completed predecessor: P9H0 through PR #430',
-  'Completed closeout: PR #432',
-  'Current implementation branch: none',
-  'work-history-ui-h1-metric',
-])
-
-need('docs/audits/history-ui-h0-baseline.md', [
-  'work-p9h0-baseline',
-  'work-history-ui-h0-baseline',
-])
-need('docs/audits/history-ui-h0-source-map.md', [
-  'history-current-shell-entry.ts',
-  'history-usability-pass.ts',
-  'history-view-shell.ts',
-  'history-overview.ts',
-  'history-report-text-state.ts',
-])
+need('docs/audits/history-ui-h0-baseline.md', ['Status: complete through PR #430', 'work-p9h0-baseline', 'work-history-ui-h1-metric'])
+need('docs/audits/history-ui-h0-source-map.md', ['history-current-shell-entry.ts', 'history-overview.ts', 'history-report-text-state.ts'])
 need('docs/audits/history-ui-h0-findings.md', [
   'history-metric-summary-stale',
   'history-selected-day-context-stale',
@@ -99,83 +26,47 @@ need('docs/audits/history-ui-h0-findings.md', [
 ])
 
 const ownerMap = JSON.parse(read('docs/audits/history-ui-h0-owner-map.json'))
-if (ownerMap.schema !== 'viewloom-history-ui-h0-owner-map-v1') failures.push('P9H0 owner-map schema changed')
-if (!['complete_candidate', 'complete'].includes(ownerMap.status)) failures.push('P9H0 owner-map status invalid')
-if (ownerMap.owners?.state_request_and_base_rendering !== 'apps/web/src/live/history-current-shell-entry.ts') failures.push('P9H0 primary owner changed')
-if (ownerMap.next_branch !== 'work-history-ui-h1-metric') failures.push('P9H0 next branch changed')
+if (ownerMap.schema !== 'viewloom-history-ui-h0-owner-map-v1') errors.push('owner-map schema changed')
+if (ownerMap.status !== 'complete') errors.push('owner-map completion state changed')
+if (ownerMap.completion_pr !== 430) errors.push('owner-map completion PR changed')
+if (ownerMap.next_branch !== 'work-history-ui-h1-metric') errors.push('owner-map handoff changed')
 for (const id of [
   'history-metric-ranking-context-stale',
   'history-metric-summary-stale',
   'history-mobile-task-flow-too-long',
   'history-selected-day-context-stale',
-]) if (!ownerMap.deterministic_failures?.includes(id)) failures.push(`P9H0 owner map missing ${id}`)
+]) if (!ownerMap.deterministic_failures?.includes(id)) errors.push(`owner map missing ${id}`)
+
+const ledger = JSON.parse(read('docs/audits/public-browser-defects.json'))
+if (ledger.status !== 'complete') errors.push('P8B ledger completion changed')
+if (ledger.counts?.p1 !== 3 || ledger.counts?.p2 !== 5) errors.push('P8B counts changed')
 
 need('apps/web/scripts/history-ui-h0-browser.mjs', [
   "schema: 'viewloom-history-ui-h0-baseline-v1'",
+  "phase: 'P9H0'",
   'history-metric-summary-stale',
   'history-selected-day-context-stale',
   'history-metric-ranking-context-stale',
-  'history-first-keyboard-entry-missing',
   'history-mobile-task-flow-too-long',
-  'Unexpected P9H0 acceptance set',
 ])
-need('apps/web/src/live/history-current-shell-entry.ts', [
-  "params.set('metric', pageState.metric)",
-  'renderSummary(payload, daily, top)',
-  '<span>viewer-minutes</span>',
-  '<small>Viewer-minutes</small>',
-  '<small>Peak viewers</small>',
-])
-need('apps/web/src/live/history-usability-pass.ts', [
-  "import './history-view-shell'",
-  "import './history-overview'",
-  "import './history-archives'",
-])
-need('apps/web/src/live/history-view-shell.ts', [
-  'installReplaceStateBridge',
-  'MutationObserver',
-  "move('overview'",
-  "move('report'",
-])
-need('apps/web/src/live/history-overview.ts', [
-  'installPayloadCapture()',
-  'window.fetch =',
-  'ensureInsights(panel)',
-])
-need('apps/web/src/live/history-report-text.ts', [
-  'renderHistoryReport(payload)',
-  'renderHistoryShareCard(payload)',
-  'renderHistoryExport(payload)',
-])
-need('apps/web/src/live/history-report-text-state.ts', [
-  'installHistoryReportPayloadCapture',
-  'Metric: ${metricLabel(metric)}',
-])
+need('apps/web/scripts/prepare-history-ui-h0-baseline.mjs', ['P9H0 deterministic baseline prepared.'])
 need('.github/workflows/history-ui-h0-baseline.yml', [
-  'name: History UI P9H0 Baseline',
-  'Verify P9H0 repository contract',
-  'Run P9H0 browser baseline',
-  'history-ui-h0-baseline',
+  'name: History UI P9H0 Evidence',
+  'Verify completed P9H0 evidence contract',
+  'cancel-in-progress: true',
 ])
+need('docs/product/current-roadmap.md', ['Phase 9 P9H1  active', 'Active implementation branch: work-history-ui-h1-metric'])
+need('docs/product/current-schedule.md', ['Active implementation branch            work-history-ui-h1-metric', 'Exact next branch                       work-history-ui-h2-chart'])
+need('docs/product/history-ui-repair-plan.md', ['P9H1 work-history-ui-h1-metric           active', 'P9H2 work-history-ui-h2-chart'])
+need('docs/work-in-progress/history-ui-repair-working-note.md', ['P9H1 work-history-ui-h1-metric           active', 'The three metric-context expected failures must become passing assertions.'])
 
-const ledger = JSON.parse(read('docs/audits/public-browser-defects.json'))
-if (ledger.status !== 'complete') failures.push('P8B ledger is not complete')
-if (ledger.counts?.p1 !== 3) failures.push('P8B must retain three P1 findings')
-for (const id of [
-  'P8B-P1-HISTORY-METRIC-SYNCHRONIZATION',
-  'P8B-P1-HISTORY-KEYBOARD-ENTRY',
-  'P8B-P1-HISTORY-TASK-HIERARCHY',
-]) if (!ledger.defects?.some((item) => item.id === id)) failures.push(`P8B ledger missing ${id}`)
-
-if (failures.length) {
-  console.error('History UI P9H0 repository verification failed:')
-  for (const failure of failures) console.error(`- ${failure}`)
+if (errors.length) {
+  console.error('History UI P9H0 evidence verification did not pass:')
+  for (const error of errors) console.error(`- ${error}`)
   process.exit(1)
 }
 
-console.log('History UI P9H0 repository verification passed.')
-console.log('- P9H0 remains completed through PR #430')
-console.log('- exact deterministic failures and source owners remain recorded')
-console.log('- the keyboard production/local discrepancy remains explicit')
-console.log('- P9H0 closeout is complete through PR #432')
-console.log('- work-history-ui-h1-metric remains the uncreated next branch')
+console.log('History UI P9H0 historical evidence verification passed.')
+console.log('- PR #430 findings and owners remain exact')
+console.log('- P9H1 owns current metric synchronization acceptance')
+console.log('- later phases retain mobile hierarchy and keyboard discrepancy work')

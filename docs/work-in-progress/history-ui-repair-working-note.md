@@ -6,8 +6,9 @@ Last updated: 2026-06-26
 Roadmap phase: Phase 9 — History P1 repair
 Completed predecessor: P9H0 through PR #430
 Completed closeout: PR #432
-Current implementation branch: none
-Exact next branch: `work-history-ui-h1-metric`
+Completed final-state correction: PR #433
+Current implementation branch: `work-history-ui-h1-metric`
+Exact next branch after P9H1 merge and explicit continuation: `work-history-ui-h2-chart`
 Accepted baseline specification: `../product/history-and-trends-spec.md`
 Active repair specification: `../product/history-ui-repair-spec.md`
 Program plan: `../product/post-watchlist-program-plan.md`
@@ -28,11 +29,12 @@ Desktop/tablet/mobile do not present one coherent compact task-first analysis fl
 ## 2. Completed predecessors
 
 ```text
-P7A  PR #426  source-of-truth reset
-P8A  PR #427  21-surface inventory
-P8B  PR #428  all-public browser audit
-P9H0 PR #430  deterministic History baseline and owner trace
-C9H0 PR #432  documentation and program closeout
+P7A   PR #426  source-of-truth reset
+P8A   PR #427  21-surface inventory
+P8B   PR #428  all-public browser audit
+P9H0  PR #430  deterministic History baseline and owner trace
+C9H0  PR #432  documentation and program closeout
+C9H0F PR #433  final canonical state correction
 ```
 
 ## 3. P9H0 evidence
@@ -74,7 +76,7 @@ history-focus-fallback.css          focus presentation
 history-visual-responsive.css       responsive layout
 ```
 
-P9H1 must begin from `history-ui-h0-owner-map.json` and `history-ui-h0-source-map.md`, not from chat memory.
+P9H1 begins from `history-ui-h0-owner-map.json` and `history-ui-h0-source-map.md`, not from chat memory.
 
 ## 5. P9H1 exact scope
 
@@ -89,7 +91,7 @@ P9H1 repairs Viewer-minutes and Peak viewers across:
 - supported Archives;
 - Report, Share, and Exports.
 
-It must replace the metric-related expected failures with passing assertions.
+The three metric-context expected failures must become passing assertions. `history-mobile-task-flow-too-long` remains expected until P9H3/P9H5.
 
 ## 6. P9H1 preserved contracts
 
@@ -102,15 +104,16 @@ real/partial/stale/empty/missing/demo/error/in-progress honesty
 report/share/PNG/CSV/JSON schemas
 ```
 
-P9H1 must not add another global `window.fetch` wrapper or document-wide MutationObserver. Broad task/layout work remains P9H3/P9H5.
+P9H1 must not add another global `window.fetch` wrapper or document-wide MutationObserver. Broad chart/task/layout work remains P9H2–P9H5.
 
 ## 7. Current sequence
 
 ```text
 P9H0 complete PR #430
 C9H0 work-p9h0-closeout                  complete PR #432
-P9H1 work-history-ui-h1-metric           exact next; not created
-P9H2 work-history-ui-h2-chart            queued
+C9H0F work-p9h0-final-state              complete PR #433
+P9H1 work-history-ui-h1-metric           active
+P9H2 work-history-ui-h2-chart            exact next after P9H1 merge and explicit continuation
 P9H3 work-history-ui-h3-overview         queued
 P9H4 work-history-ui-h4-tasks            queued
 P9H5 work-history-ui-h5-responsive       queued
@@ -126,4 +129,4 @@ No new metric, API, D1 schema, collector, binding, cron, retention, exact sessio
 
 Update this note when ownership changes, an expected failure is replaced, a compatibility layer is retired/retained, a permanent gate is added, the keyboard discrepancy changes, or the ordered sequence changes.
 
-There is no active implementation branch. Do not create P9H1 until explicit continuation. Delete this note only in P9H7 after permanent transfer.
+Complete P9H1 on the active branch, merge it, then stop before P9H2 until explicit continuation.

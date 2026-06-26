@@ -4,17 +4,26 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - 'apps/web/**'
-      - 'docs/audits/**'
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/README.md'
       - 'docs/product/current-roadmap.md'
       - 'docs/product/current-schedule.md'
       - 'docs/product/post-watchlist-program-plan.md'
-      - 'docs/product/history-ui-repair-plan.md'
+      - 'docs/product/history-ui-repair-*'
       - 'docs/work-in-progress/history-ui-repair-working-note.md'
-      - 'docs/README.md'
-      - 'README.md'
-      - 'scripts/verify-development-policy.mjs'
+      - 'docs/audits/P8B_SCOPE.md'
+      - 'docs/audits/public-browser-*'
+      - 'docs/audits/public-surface-*'
+      - 'apps/web/scripts/public-browser-audit.mjs'
+      - 'apps/web/scripts/public-browser-fixtures.mjs'
+      - 'apps/web/src/**'
+      - 'apps/web/*/*.html'
+      - 'apps/web/*/*/*.html'
       - 'scripts/verify-public-browser-audit.mjs'
+      - 'scripts/verify-public-surface-inventory.mjs'
+      - 'scripts/verify-development-policy.mjs'
       - '.github/workflows/public-browser-audit.yml'
 
 concurrency:
@@ -24,10 +33,11 @@ concurrency:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 70
+    timeout-minutes: 45
     env:
-      P8B_PRODUCTION_ORIGIN: https://vl.badjoke-lab.com
-      P8B_LOCAL_ORIGIN: http://127.0.0.1:4173
+      PUBLIC_BROWSER_BASE_URL: http://127.0.0.1:4173
+      PUBLIC_BROWSER_PRODUCTION_URL: https://vl.badjoke-lab.com
+      PUBLIC_BROWSER_ARTIFACT_DIR: /tmp/public-browser-audit
       GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - name: Checkout
@@ -66,7 +76,8 @@ jobs:
         run: |
           pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/public-browser-preview.log 2>&1 &
           for attempt in {1..50}; do
-            curl --silent --fail http://127.0.0.1:4173/twitch/history/ > /dev/null \
+            curl --silent --fail http://127.0.0.1:4173/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/twitch/history/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/kick/history/ > /dev/null \
               && exit 0
             sleep 1
@@ -137,7 +148,7 @@ jobs:
           assert.equal(evidence.counts.productionScenarios, 84)
           assert.equal(evidence.counts.missingSurfaceProbes, 5)
           assert.equal(evidence.counts.historyScenarios, 10)
-          assert.ok(evidence.findings.some((finding) => finding.id === 'P8B-P1-HISTORY-METRIC-SYNCHRONIZATION'))
+          assert.ok(!evidence.findings.some((finding) => finding.id === 'P8B-P1-HISTORY-METRIC-SYNCHRONIZATION'))
           assert.ok(evidence.historyScenarios.filter((scenario) => scenario.state === 'real').every((scenario) => scenario.backForwardRestored && scenario.taskRequests === 0))
           assert.equal(evidence.counts.p0, 0)
           console.log(JSON.stringify({ result: evidence.result, counts: evidence.counts }, null, 2))

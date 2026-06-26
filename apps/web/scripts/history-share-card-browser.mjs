@@ -45,7 +45,7 @@ async function check(browser, provider, viewport) {
   const canvas = page.locator('[data-history-share-card]')
   assert(await preview.isHidden(), `${provider} share-card preview is open by default.`)
   assert(await canvas.getAttribute('data-share-rendered') !== 'true', `${provider} share card was drawn before the user requested it.`)
-  assert((await page.locator('[data-history-share-status]').textContent()) === 'Share card available on demand.', `${provider} initial on-demand status is incorrect.`)
+  assert((await page.locator('[data-history-share-status]').textContent()) === 'Viewer-minutes share card available on demand.', `${provider} initial on-demand status is incorrect.`)
 
   const callsBeforePreview = calls[provider]
   await page.locator('[data-history-share-toggle]').click()
@@ -91,7 +91,7 @@ async function check(browser, provider, viewport) {
   assert(size > 10000, `${provider} downloaded PNG is unexpectedly small: ${size}.`)
   const dimensions = pngDimensions(pngPath)
   assert(dimensions.width === 1200 && dimensions.height === 630, `${provider} downloaded PNG dimensions are incorrect.`)
-  await page.waitForFunction(() => document.querySelector('[data-history-share-status]')?.textContent === 'PNG downloaded.')
+  await page.waitForFunction(() => document.querySelector('[data-history-share-status]')?.textContent === 'Viewer-minutes PNG downloaded.')
   assert(calls[provider] === callsBeforeDownload, `${provider} PNG download caused another History request.`)
   assert(calls[other] === 0, `${provider} PNG download crossed provider endpoints.`)
 

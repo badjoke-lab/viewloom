@@ -1,0 +1,120 @@
+name: History UI P9H1 Metric
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/README.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/product/history-ui-repair-*'
+      - 'docs/work-in-progress/history-ui-repair-working-note.md'
+      - 'apps/web/scripts/history-ui-h1-browser.mjs'
+      - 'apps/web/scripts/history-period-comparison-fixture.mjs'
+      - 'apps/web/src/live/history-*.ts'
+      - 'apps/web/src/history-*.css'
+      - 'scripts/verify-history-ui-h1-metric.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/history-ui-h1-metric.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  metric:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      HISTORY_H1_BASE_URL: http://127.0.0.1:4173
+      HISTORY_H1_ARTIFACT_DIR: /tmp/history-ui-h1
+      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Verify P9H1 repository contract
+        run: node scripts/verify-history-ui-h1-metric.mjs
+
+      - name: Typecheck web application
+        run: pnpm --filter @viewloom/web typecheck:app
+
+      - name: Build web application
+        run: pnpm build:web
+
+      - name: Start local preview
+        shell: bash
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/history-ui-h1-preview.log 2>&1 &
+          for attempt in {1..50}; do
+            curl --silent --fail http://127.0.0.1:4173/twitch/history/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/kick/history/ > /dev/null \
+              && exit 0
+            sleep 1
+          done
+          cat /tmp/history-ui-h1-preview.log
+          exit 1
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run P9H1 metric browser acceptance
+        working-directory: apps/web
+        run: node scripts/history-ui-h1-browser.mjs
+
+      - name: Verify P9H1 evidence
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          const evidence = JSON.parse(readFileSync('/tmp/history-ui-h1/history-ui-h1-evidence.json', 'utf8'))
+          assert.equal(evidence.schema, 'viewloom-history-ui-h1-metric-v1')
+          assert.equal(evidence.phase, 'P9H1')
+          assert.equal(evidence.result, 'pass')
+          assert.equal(evidence.scenarios.length, 2)
+          for (const scenario of evidence.scenarios) {
+            assert.equal(scenario.calls.filter((call) => call.metric === 'viewer_minutes').length, 1)
+            assert.equal(scenario.calls.filter((call) => call.metric === 'peak_viewers').length, 1)
+            assert.ok(scenario.calls.every((call) => call.provider === scenario.provider))
+            assert.equal(scenario.viewer.summaryMetric, 'viewer_minutes')
+            assert.equal(scenario.peak.summaryMetric, 'peak_viewers')
+            assert.equal(scenario.viewer.exportMetric, 'viewer_minutes')
+            assert.equal(scenario.peak.exportMetric, 'peak_viewers')
+          }
+          console.log(JSON.stringify({ result: evidence.result, scenarios: evidence.scenarios.map((item) => item.id) }, null, 2))
+          NODE
+
+      - name: Upload P9H1 artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: history-ui-h1-metric
+          path: |
+            /tmp/history-ui-h1/**
+            /tmp/history-ui-h1-preview.log
+          if-no-files-found: warn

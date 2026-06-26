@@ -24,12 +24,13 @@ Do not begin from chat memory, screenshots, an old PR, or a stale document. Comp
 ```text
 P9H0 complete through PR #430
 P9H0 documentation closeout complete through PR #432
-Active implementation branch: none
-Exact next implementation branch: work-history-ui-h1-metric
-P9H1 branch created: no
+Final-state correction complete through PR #433
+Active implementation branch: work-history-ui-h1-metric
+Exact next implementation branch: work-history-ui-h2-chart
+P9H2 branch created: no
 ```
 
-P9H1 must not be created before explicit continuation is received.
+Complete P9H1 on the active branch. P9H2 must not be created before P9H1 merges, the full report is issued, and explicit continuation is received.
 
 ## Standard workflow
 

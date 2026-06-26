@@ -15,6 +15,8 @@ export type HistoryReportRise = {
 
 export type HistoryReportDay = {
   day?: string
+  totalViewerMinutes?: number
+  peakViewers?: number
   coverageState?: string
 }
 
@@ -111,9 +113,10 @@ export function historyReportText(
   currentUrl: string,
 ): string {
   const coverage = historyReportCoverage(payload)
-  const metric = payload.metric === 'peak_viewers' ? 'peak_viewers' : 'viewer_minutes'
+  const metric = reportMetric(payload)
   const summary = payload.summary
-  const topStreamer = summary?.topStreamer ?? payload.topStreamers?.[0] ?? null
+  const topStreamer = metricTopStreamer(payload, metric)
+  const metricDay = topMetricDay(payload, metric)
   const biggestRise = summary?.biggestRise ?? null
   const lines = [
     `ViewLoom — ${providerLabel(provider)} History & Trends`,
@@ -122,28 +125,34 @@ export function historyReportText(
     `Observed days: ${coverage.observedDays} of ${coverage.totalDays}${coverage.missingDays ? ` · ${coverage.missingDays} missing` : ''}${coverage.attentionDays ? ` · ${coverage.attentionDays} need attention` : ''}`,
   ]
 
-  if (finite(summary?.totalViewerMinutes)) {
+  if (metric === 'peak_viewers') {
+    const peak = finite(summary?.peakViewers) ? summary!.peakViewers! : metricDay?.peakViewers
+    if (finite(peak)) {
+      const day = validDay(metricDay?.day) ? ` on ${formatDay(metricDay!.day!)}` : ''
+      lines.push(`Highest peak: ${formatNumber(peak)} viewers${day}`)
+    }
+  } else if (finite(summary?.totalViewerMinutes)) {
     lines.push(`Total observed: ${formatNumber(summary!.totalViewerMinutes!)} viewer-minutes`)
   }
-  if (finite(summary?.peakViewers)) {
-    const peakDay = validDay(summary?.peakDay) ? ` on ${formatDay(summary!.peakDay!)}` : ''
-    lines.push(`Peak: ${formatNumber(summary!.peakViewers!)} viewers${peakDay}`)
-  }
+
   if (topStreamer?.displayName) {
-    const amount = finite(topStreamer.viewerMinutes)
-      ? ` — ${formatNumber(topStreamer.viewerMinutes!)} viewer-minutes`
-      : ''
-    lines.push(`Top streamer: ${clean(topStreamer.displayName)}${amount}`)
+    const amount = streamerMetricValue(topStreamer, metric)
+    lines.push(`Top streamer by ${metricLabel(metric)}: ${clean(topStreamer.displayName)}${finite(amount) ? ` — ${formatNumber(amount)} ${metricUnit(metric)}` : ''}`)
   }
-  if (biggestRise?.displayName) {
-    const change = finite(biggestRise.changePct)
-      ? ` (${signed(biggestRise.changePct!)}%)`
-      : finite(biggestRise.changeAbs)
-        ? ` (${signed(biggestRise.changeAbs!)})`
-        : ''
-    lines.push(`Biggest rise: ${clean(biggestRise.displayName)}${change}`)
-  } else {
-    lines.push('Biggest rise: unavailable for this period')
+
+  if (metric === 'viewer_minutes') {
+    if (biggestRise?.displayName) {
+      const change = finite(biggestRise.changePct)
+        ? ` (${signed(biggestRise.changePct!)}%)`
+        : finite(biggestRise.changeAbs)
+          ? ` (${signed(biggestRise.changeAbs!)})`
+          : ''
+      lines.push(`Biggest rise: ${clean(biggestRise.displayName)}${change}`)
+    } else {
+      lines.push('Biggest rise: unavailable for this period')
+    }
+  } else if (finite(summary?.totalViewerMinutes)) {
+    lines.push(`Viewer-minutes context: ${formatNumber(summary!.totalViewerMinutes!)} observed`)
   }
 
   const state = normalize(payload.state)
@@ -153,6 +162,53 @@ export function historyReportText(
   lines.push('Coverage note: observed ViewLoom data; not a provider-wide total.')
   lines.push(cleanUrl(currentUrl, provider))
   return lines.join('\n')
+}
+
+export function reportMetric(payload: HistoryReportPayload): HistoryReportMetric {
+  return payload.metric === 'peak_viewers' ? 'peak_viewers' : 'viewer_minutes'
+}
+
+export function metricTopStreamer(payload: HistoryReportPayload, metric = reportMetric(payload)): HistoryReportStreamer | null {
+  const streamers = payload.topStreamers ?? []
+  const top = streamers.reduce<HistoryReportStreamer | null>((best, streamer) => {
+    if (!best) return streamer
+    return streamerMetricValue(streamer, metric) > streamerMetricValue(best, metric) ? streamer : best
+  }, null)
+  return top ?? payload.summary?.topStreamer ?? null
+}
+
+export function topMetricDay(payload: HistoryReportPayload, metric = reportMetric(payload)): HistoryReportDay | null {
+  const daily = (payload.daily ?? []).filter((day) => normalize(day.coverageState) !== 'missing')
+  if (metric === 'peak_viewers' && validDay(payload.summary?.peakDay)) {
+    const exact = daily.find((day) => day.day === payload.summary!.peakDay)
+    return {
+      ...exact,
+      day: payload.summary!.peakDay,
+      peakViewers: finite(payload.summary?.peakViewers) ? payload.summary!.peakViewers : exact?.peakViewers,
+    }
+  }
+  return daily.reduce<HistoryReportDay | null>((best, day) => {
+    if (!best) return day
+    return dayMetricValue(day, metric) > dayMetricValue(best, metric) ? day : best
+  }, null)
+}
+
+export function streamerMetricValue(streamer: HistoryReportStreamer | null | undefined, metric: HistoryReportMetric): number | undefined {
+  const value = metric === 'peak_viewers' ? streamer?.peakViewers : streamer?.viewerMinutes
+  return finite(value) ? value : undefined
+}
+
+export function dayMetricValue(day: HistoryReportDay | null | undefined, metric: HistoryReportMetric): number {
+  const value = metric === 'peak_viewers' ? day?.peakViewers : day?.totalViewerMinutes
+  return finite(value) ? value : 0
+}
+
+export function metricLabel(metric: HistoryReportMetric): string {
+  return metric === 'peak_viewers' ? 'Peak viewers' : 'Viewer-minutes'
+}
+
+export function metricUnit(metric: HistoryReportMetric): string {
+  return metric === 'peak_viewers' ? 'viewers' : 'viewer-minutes'
 }
 
 function periodLabel(payload: HistoryReportPayload): string {
@@ -175,10 +231,6 @@ function cleanUrl(value: string, provider: HistoryReportProvider): string {
 
 function providerLabel(provider: HistoryReportProvider): string {
   return provider === 'kick' ? 'Kick' : 'Twitch'
-}
-
-function metricLabel(metric: HistoryReportMetric): string {
-  return metric === 'peak_viewers' ? 'Peak viewers' : 'Viewer-minutes'
 }
 
 function formatDay(day: string): string {

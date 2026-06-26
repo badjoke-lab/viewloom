@@ -11,7 +11,10 @@ mkdirSync(out, { recursive: true })
 async function routes(context, calls, state) {
   const reply = async (route, provider) => {
     calls[provider] += 1
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(historyPayload(provider, state)) })
+    const url = new URL(route.request().url())
+    const payload = structuredClone(historyPayload(provider, state))
+    payload.metric = url.searchParams.get('metric') === 'peak_viewers' ? 'peak_viewers' : 'viewer_minutes'
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(payload) })
   }
   await context.route('**/api/history*', (route) => reply(route, 'twitch'))
   await context.route('**/api/kick-history*', (route) => reply(route, 'kick'))
@@ -63,7 +66,8 @@ async function desktop(browser) {
   assert(layout.ranking.top < layout.insights.bottom && layout.insights.top < layout.ranking.bottom, 'Desktop: Key changes is not paired with Top streamers.')
   assert(layout.coverage.top > layout.ranking.top, 'Desktop: detailed coverage appears too early.')
   const text = await page.locator('[data-history-overview-insights]').textContent()
-  assert(text?.includes('+40%') && text.includes('+20%') && text.includes('Alpha 0'), 'Desktop: supported Key changes are incomplete.')
+  assert(text?.includes('Viewer-minutes vs previous') && text.includes('+40%') && text.includes('Alpha 0'), 'Desktop: selected metric Key changes are incomplete.')
+  assert(!text?.includes('Peak vs previous'), 'Desktop: unselected peak comparison remained visible.')
   await noOverflow(page, 'Twitch desktop Overview')
   await page.screenshot({ path: resolve(out, 'history-overview-twitch-desktop.png'), fullPage: true })
   await context.close()
@@ -78,8 +82,10 @@ async function mobile(browser) {
   await ready(page)
   assert(calls.kick > 0 && calls.twitch === 0, 'Kick Overview crossed provider endpoints.')
   const text = await page.locator('[data-history-overview-insights]').textContent()
-  assert((text?.match(/Withheld/g) ?? []).length === 2, 'Mobile: unsupported comparison changes are not withheld.')
+  assert(text?.includes('Peak viewers vs previous'), 'Mobile: selected peak comparison label is missing.')
+  assert((text?.match(/Withheld/g) ?? []).length === 1, 'Mobile: unsupported selected metric comparison is not withheld exactly once.')
   assert(text?.includes('7 and 4 selected days'), 'Mobile: partial reason is missing.')
+  assert(text?.includes('Alpha 0'), 'Mobile: supported streamer context is missing.')
   const tops = await page.evaluate(() => ['[data-history-columns]','.history-period-comparison-block','.history-calendar-block','.history-overview-ranking-title','[data-history-overview-insights]','.history-overview-coverage-title'].map((selector) => document.querySelector(selector)?.getBoundingClientRect().top ?? -1))
   assert(tops.every((value, index) => index === 0 || value > tops[index - 1]), 'Mobile: Overview reading order is incorrect.')
   await noOverflow(page, 'Kick mobile Overview')

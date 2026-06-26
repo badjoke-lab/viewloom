@@ -1,13 +1,14 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 2.1
+Version: 2.2
 Created: 2026-06-25
 Last updated: 2026-06-26
 Current phase: Phase 9 — History P1 repair
-Current implementation branch: none
+Current implementation branch: `work-history-ui-h1-metric`
 Completed closeout: PR #432
-Exact next implementation branch: `work-history-ui-h1-metric`
+Completed final-state correction: PR #433
+Exact next implementation branch after P9H1 merge and explicit continuation: `work-history-ui-h2-chart`
 Exception: a newly proven P0 may interrupt
 
 ## 1. Purpose
@@ -16,7 +17,7 @@ This document owns the complete approved execution program after Local Watchlist
 
 ```text
 current-roadmap.md                 product priority
-current-schedule.md                exact current state and next branch
+current-schedule.md                exact current state and branch
 post-watchlist-program-plan.md     complete Phase 7–16 program
 feature/quality specifications     stable product contracts
 implementation plans               branch sequence and gates
@@ -24,7 +25,7 @@ working notes                      unstable execution memory
 audit/acceptance records           evidence baseline
 ```
 
-Before each branch, compare the schedule with actual branches/PRs, confirm the predecessor merge and merge report, confirm explicit continuation, read the affected specifications/plans, and record missing work before implementation. After each merge, update canonical state, issue the full merge report, name the next branch, and stop.
+Before each branch, compare the schedule with actual branches/PRs, confirm the predecessor merge/report and explicit continuation, read affected specifications/plans, and record missing work. After each merge, update canonical state, issue the full report, name the next branch, and stop.
 
 ## 2. Program status
 
@@ -35,7 +36,9 @@ Before each branch, compare the schedule with actual branches/PRs, confirm the p
 | 8 | P8B | complete PR #428 | browser audit | defect ledger and evidence complete |
 | 9 | P9H0 | complete PR #430 | History baseline | deterministic failures and owners fixed |
 | 9 | closeout | complete PR #432 | governance closeout | authorities aligned and merged |
-| 9 | P9H1–P9H7 | queued | `history-ui-repair-plan.md` | History repair accepted in production |
+| 9 | final-state | complete PR #433 | canonical correction | P9H1 entry state exact |
+| 9 | P9H1 | active | `history-ui-repair-plan.md` | metric execution synchronized |
+| 9 | P9H2–P9H7 | queued | `history-ui-repair-plan.md` | History repair accepted in production |
 | 10 | U10A–U10H | queued | cross-site quality plan | reproduced cross-site defects accepted |
 | 11 | O11A–O11G | queued | engineering/operations plan | acceptance, CI, type safety, monitoring locked |
 | 12 | R12A–R12C | queued | release readiness | English legal/Support/Stripe package complete |
@@ -62,7 +65,7 @@ No outage, provider crossing, materially wrong provider path, or page-level hori
 
 ## 4. Completed P9H0 and closeout
 
-P9H0 completed through PR #430. Documentation and program closeout completed through PR #432 at merge commit `3b315a14ff75b3fe9c0129cbc62de8127425ea12`.
+P9H0 completed through PR #430. Documentation/program closeout completed through PR #432. The post-closeout canonical state was corrected through PR #433.
 
 ```text
 Final head: e3a1f64e7225a652de95a37ea755b192565d7798
@@ -81,14 +84,14 @@ history-mobile-task-flow-too-long
 history-selected-day-context-stale
 ```
 
-The 390px Kick fixture measured 15,058px, about 17.84 viewport heights, with seven major Overview sections. Local keyboard scenarios moved focus to the ViewLoom home link; the P8B production body-focus observation remains a discrepancy for P9H5 and final acceptance.
+P9H1 owns the three metric-context failures. The mobile task-flow defect remains for P9H3/P9H5. Local keyboard scenarios moved focus to the ViewLoom home link; the P8B production body-focus observation remains a P9H5/final-acceptance discrepancy.
 
 ## 5. Phase 9 sequence
 
 ```text
 P9H0 work-history-ui-h0-baseline   complete PR #430
-P9H1 work-history-ui-h1-metric     exact next; not created
-P9H2 work-history-ui-h2-chart      queued
+P9H1 work-history-ui-h1-metric     active
+P9H2 work-history-ui-h2-chart      exact next after P9H1 merge and explicit continuation
 P9H3 work-history-ui-h3-overview   queued
 P9H4 work-history-ui-h4-tasks      queued
 P9H5 work-history-ui-h5-responsive queued
@@ -98,7 +101,7 @@ P9H7 work-history-ui-h7-acceptance queued
 
 ### P9H1 — metric execution
 
-Synchronize Viewer-minutes and Peak viewers across URL, request/cache, chart, Summary, Selected day, comparison, Ranking context, supported Archives, Report, Share, and Exports. Replace metric-related expected failures with passing permanent assertions.
+Synchronize Viewer-minutes and Peak viewers across URL, request/cache, chart, Summary, Selected day, comparison, Ranking context, supported Archives, Report, Share, and Exports. Replace the three metric-context expected failures with passing permanent assertions while preserving one request per uncached provider/period/metric state, provider separation, local task no-refetch, degraded states, and output schemas.
 
 ### P9H2 — chart interpretation
 
@@ -128,8 +131,6 @@ Authority:
 docs/product/cross-site-quality-remediation-spec.md
 docs/product/cross-site-quality-remediation-plan.md
 ```
-
-Sequence:
 
 ```text
 U10A defect ledger and ownership baseline
@@ -167,13 +168,6 @@ R12C English launch assets, limitations, status explanation, links, and FAQ
 English is the source language. Legal/support content must be structured for later localization.
 
 ## 9. Phase 13 — English and Japanese localization
-
-Authority:
-
-```text
-docs/product/localization-spec.md
-docs/product/localization-implementation-plan.md
-```
 
 ```text
 I13A localization contract and route manifest
@@ -217,4 +211,4 @@ Phase 15 evaluates one candidate at a time for source parity, D1 growth, collect
 
 ## 13. Current stop rule
 
-There is no active implementation branch. Do not create `work-history-ui-h1-metric` until explicit continuation.
+Complete P9H1 on `work-history-ui-h1-metric`, merge it, name `work-history-ui-h2-chart` as the exact next branch, and stop until explicit continuation.
