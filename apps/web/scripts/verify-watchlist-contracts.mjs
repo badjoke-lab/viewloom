@@ -30,7 +30,7 @@ verifyWorkflows()
 
 console.log('Watchlist completed production contract verification passed.')
 console.log('- W1 through W5B behavior and acceptance remain governed')
-console.log('- P9H1 schedule updates do not weaken Watchlist contracts')
+console.log('- P9H1 closeout does not weaken Watchlist contracts')
 console.log('- temporary Watchlist notes remain retired')
 console.log('- no Watchlist-specific server, polling, per-channel request, or analytics path exists')
 
@@ -74,29 +74,31 @@ function verifyGovernance() {
 
   requireAll(roadmap, [
     'Local Watchlist v1 is complete through PR #425.',
-    'Phase 8 P8B   complete PR #428', 'Phase 9 P9H0  complete PR #430',
-    'Final-state correction complete PR #433', 'Phase 9 P9H1  active',
-    'Active implementation branch: work-history-ui-h1-metric',
-    'work-history-ui-h2-chart', 'No Phase 16 feature is approved.',
+    'Phase 8 P8B   complete PR #428',
+    'Phase 9 P9H1  complete PR #434',
+    'Active implementation branch: none',
+    'work-history-ui-h2-chart',
+    'No Phase 16 feature is approved.',
   ], 'roadmap')
   requireAll(schedule, [
-    'Final-state correction                  complete PR #433',
-    'Active implementation branch            work-history-ui-h1-metric',
-    'Exact next branch                       work-history-ui-h2-chart',
-    'P9H2 branch created                     no',
+    'P9H1 History metric synchronization      complete PR #434',
+    'Active implementation branch             none',
+    'Exact next branch                        work-history-ui-h2-chart',
+    'P9H2 branch created                      no',
   ], 'schedule')
   requireAll(program, [
-    'Status: active source-of-truth program plan', 'Version: 2.2',
-    'Current implementation branch: `work-history-ui-h1-metric`',
-    'Completed final-state correction: PR #433', '| 9 | P9H1 | active',
-    'Exact next implementation branch after P9H1 merge and explicit continuation: `work-history-ui-h2-chart`',
+    'Status: active source-of-truth program plan', 'Version: 2.3',
+    'Current implementation branch: none',
+    'Completed metric synchronization: PR #434',
+    '| 9 | P9H1 | complete PR #434',
+    'Exact next implementation branch after explicit continuation: `work-history-ui-h2-chart`',
     'Phase 16 begins only after one candidate is separately approved',
   ], 'program')
   requireAll(index, [
     'product/local-watchlist-spec.md', 'product/watchlist-v1-implementation-plan.md',
     'operations/watchlist-production-acceptance-2026-06-25.md',
     'Phase 6  Local Watchlist v1', 'P9H1     metric execution repair',
-    'work-history-ui-h1-metric', 'work-history-ui-h2-chart',
+    'work-history-ui-h2-chart',
   ], 'documentation index')
   requireAll(inventory, [
     'viewloom-public-surface-inventory-v1', '"vite_html_inputs": 20',
@@ -133,7 +135,8 @@ function verifyRuntime() {
 
   requireAll(model, [
     "export const WATCHLIST_SCHEMA = 'viewloom-watchlist-v1'",
-    'export const WATCHLIST_REVISION = 1', 'export const WATCHLIST_MAX_ENTRIES = 50',
+    'export const WATCHLIST_REVISION = 1',
+    'export const WATCHLIST_MAX_ENTRIES = 50',
     'export const WATCHLIST_INITIAL_VISIBLE_ENTRIES = 12',
   ], 'model')
   assert.ok(storage.includes('return `viewloom.watchlist.${provider}.v1`'))
