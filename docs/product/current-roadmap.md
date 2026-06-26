@@ -3,34 +3,35 @@
 Status: source of truth
 Last updated: 2026-06-26
 
-## 1. Current priority
+## 1. Current position
 
 ```text
 Phase 7 P7A   complete PR #426
 Phase 8 P8A   complete PR #427
 Phase 8 P8B   complete PR #428
 Phase 9 P9H0  complete PR #430
-Phase 9 P9H1  exact next after explicit continuation
+P9H0 closeout active on work-p9h0-closeout
+Phase 9 P9H1  exact next after closeout merge report and explicit continuation
 ```
 
-Exact next branch:
+Exact next implementation branch:
 
 ```text
 work-history-ui-h1-metric
 ```
 
-P9H1 repairs the existing Viewer-minutes / Peak viewers execution contract across URL, provider request, selected control, chart, Summary, Selected day, Ranking context, Archives, Report, Share, and Exports. It does not add a new metric, API, D1 schema, collector, binding, cron, retention policy, provider combination, or output schema.
+P9H1 has not been created.
 
-## 2. Verified product state
+## 2. Verified state
 
-- Local Watchlist v1 is accepted through PR #425.
-- Source-of-truth reset is complete through PR #426.
+- Local Watchlist v1 is complete through PR #425.
+- The source-of-truth reset is complete through PR #426.
 - Public-surface inventory is complete through PR #427.
 - Public browser audit is complete through PR #428.
-- P9H0 deterministic History baseline is complete through PR #430.
+- The deterministic History P9H0 baseline is complete through PR #430.
 - Twitch and Kick remain separate across routes, APIs, storage, bindings, rankings, exports, and coverage claims.
 
-P8B result remains:
+P8B result:
 
 ```text
 P0 0
@@ -39,7 +40,7 @@ P2 5
 P3 0
 ```
 
-P9H0 locked these deterministic acceptance failures:
+P9H0 locked these deterministic failures:
 
 ```text
 history-metric-ranking-context-stale
@@ -48,9 +49,58 @@ history-mobile-task-flow-too-long
 history-selected-day-context-stale
 ```
 
-The local first-Tab scenarios moved focus to the ViewLoom home link. The earlier P8B production body-focus observation remains an explicit production/local discrepancy for P9H5 and final acceptance.
+The local first-Tab scenarios moved focus to the ViewLoom home link. The earlier P8B production body-focus observation remains a production/local discrepancy for P9H5 and final acceptance.
 
-## 3. Phase 9 sequence
+## 3. Authority map
+
+```text
+Product priority:
+  docs/product/current-roadmap.md
+
+Exact active state and next branch:
+  docs/product/current-schedule.md
+
+Complete Phase 7–16 program:
+  docs/product/post-watchlist-program-plan.md
+
+History repair:
+  docs/product/history-ui-repair-spec.md
+  docs/product/history-ui-repair-plan.md
+  docs/work-in-progress/history-ui-repair-working-note.md
+
+P9H0 evidence:
+  docs/audits/history-ui-h0-baseline.md
+  docs/audits/history-ui-h0-owner-map.json
+  docs/audits/history-ui-h0-source-map.md
+  docs/audits/history-ui-h0-findings.md
+
+Cross-site quality:
+  docs/product/cross-site-quality-remediation-spec.md
+  docs/product/cross-site-quality-remediation-plan.md
+
+Localization:
+  docs/product/localization-spec.md
+  docs/product/localization-implementation-plan.md
+```
+
+## 4. Ordered roadmap
+
+```text
+Phase 7   source-of-truth reset                              complete PR #426
+Phase 8   inventory and browser defect audit                 complete PR #428
+Phase 9   History P1 repair                                   P9H0 complete; P9H1 next
+Phase 10  cross-site defect/UI/architecture repair           queued
+Phase 11  acceptance, CI, type safety, monitoring            queued
+Phase 12  English legal, Support, Stripe, release readiness  queued
+Phase 13  localization foundation plus English/Japanese      approved and queued
+Phase 14  Spanish/pt-BR localization and staged launch       approved and queued
+Phase 15  next-feature data-capability audit                  queued
+Phase 16  one separately approved major feature              not approved
+```
+
+No Phase 16 feature is approved.
+
+## 5. Phase 9 sequence
 
 ```text
 P9H0 work-history-ui-h0-baseline   complete PR #430
@@ -63,82 +113,32 @@ P9H6 work-history-ui-h6-candidate  queued
 P9H7 work-history-ui-h7-acceptance queued
 ```
 
-## 4. Known History defects remain P1
+P9H1 repairs Viewer-minutes / Peak viewers execution across URL, provider request, selected control, chart, Summary, Selected day, Ranking context, supported Archives, Report, Share, and Exports. It does not add a metric, API, D1 schema, collector, binding, cron, retention rule, provider combination, or output schema.
 
-- Viewer-minutes and Peak viewers do not update every metric-dependent surface.
-- Production and deterministic keyboard-entry evidence do not yet agree.
-- Desktop and mobile do not yet present one coherent task-first analysis flow.
+## 6. Later phases
 
-The broader repair contract still requires readable scale, ticks, units, selected-day interaction, honest degraded states, responsive density, visible focus, and accessible descriptions.
+Phase 10 repairs reproduced cross-site defects and consolidates shared shell, chart grammar, responsive/accessibility behavior, route readiness, and safe architecture cleanup.
 
-## 5. Authority map
+Phase 11 locks one all-public acceptance matrix, CI consolidation, staged strict-null-checking, monitoring, runbooks, and maintenance cadence.
 
-```text
-Product priority:
-  docs/product/current-roadmap.md
+Phase 12 completes the English source versions of Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Support, Stripe flow, limitations, FAQ, and release assets.
 
-Exact active window and next branch:
-  docs/product/current-schedule.md
+Phase 13 introduces the localization runtime and completes English/Japanese acceptance. Phase 14 adds Spanish and Brazilian Portuguese and then performs staged launch. Arabic/RTL requires separate approval after usage evidence.
 
-Complete Phase 7–15 program:
-  docs/product/post-watchlist-program-plan.md
+UI localization is distinct from collecting or analyzing stream language. Provider-origin names, IDs, titles, and categories are not translated by the initial program.
 
-History repair:
-  docs/product/history-ui-repair-spec.md
-  docs/product/history-ui-repair-plan.md
-  docs/work-in-progress/history-ui-repair-working-note.md
+## 7. Work not approved before P9H1 authorization
 
-P8B baseline:
-  docs/audits/public-browser-defects.json
-  docs/audits/public-browser-audit.md
-
-P9H0 baseline:
-  docs/audits/history-ui-h0-baseline.md
-  docs/audits/history-ui-h0-owner-map.json
-  docs/audits/history-ui-h0-source-map.md
-  docs/audits/history-ui-h0-findings.md
-```
-
-## 6. Historical verifier snapshots
-
-The exact strings below are retained only for completed P8A/P8B and Watchlist verifier compatibility. They are not current roadmap state.
-
-```text
-Local Watchlist v1 | W0–W5B complete through PR #425; P8A inventoried
-P8A: complete through PR #427
-Exact next branch: work-public-browser-audit
-both Watchlist routes are missing from Public Readiness configuration
-P8B: active
-Current branch: work-public-browser-audit
-Exact next branch: work-history-ui-h0-baseline
-Phase 8   P8A inventory complete PR #427; P8B browser audit active
-21 owned routes × 4 required viewports
-```
-
-## 7. Ordered program
-
-```text
-Phase 7   complete PR #426
-Phase 8   complete PR #428
-Phase 9   P9H0 complete; P9H1 exact next
-Phase 10  queued
-Phase 11  queued
-Phase 12  queued
-Phase 13  queued
-Phase 14  queued
-Phase 15  not approved
-```
-
-No Phase 15 feature is approved by this roadmap.
-
-## 8. Work not approved before P9H1 authorization
-
-- a new History metric or archive type;
+- another History metric or archive type;
 - exact session reconstruction;
-- category or language collection;
-- cross-platform totals or rankings;
+- category or stream-language collection;
+- combined provider totals or rankings;
 - login, cloud accounts, alerts, or AI interpretation;
 - new D1 schema, collector, cron, retention, binding, or API route;
-- output-schema changes.
+- output-schema changes;
+- localization runtime before Phase 13;
+- parallel major feature expansion.
 
-After every merge, issue the full merge report, update canonical state, name the exact next branch, and stop until explicit continuation.
+## 8. Stop rule
+
+After this closeout branch merges, issue the full merge report, name `work-history-ui-h1-metric` as the exact next branch, and stop. Do not create P9H1 until explicit continuation.
