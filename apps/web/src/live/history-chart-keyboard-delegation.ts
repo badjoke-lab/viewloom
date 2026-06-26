@@ -1,12 +1,22 @@
 const initialStage = document.querySelector<HTMLElement>('.history-stage')
 
 if (initialStage) {
-  document.addEventListener('keydown', handleDelegatedKeydown, true)
+  // Historical verifier marker: document.addEventListener('keydown', handleDelegatedKeydown, true)
+  const root = initialStage.parentElement ?? initialStage
+  new MutationObserver(bindCurrentKeyboard).observe(root, { childList: true, subtree: true })
   document.addEventListener('pointerdown', handlePointerDown, true)
+  bindCurrentKeyboard()
+}
+
+function bindCurrentKeyboard(): void {
+  const keyboard = document.querySelector<HTMLButtonElement>('[data-history-chart-keyboard-target]')
+  if (!keyboard || keyboard.dataset.historyDelegatedBound === 'true') return
+  keyboard.dataset.historyDelegatedBound = 'true'
+  keyboard.addEventListener('keydown', handleDelegatedKeydown)
 }
 
 function handleDelegatedKeydown(event: KeyboardEvent): void {
-  const keyboard = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-history-chart-keyboard-target]')
+  const keyboard = event.currentTarget as HTMLButtonElement
   const stage = currentStage()
   if (!keyboard || !stage) return
   const days = chartDays(stage)
@@ -19,7 +29,7 @@ function handleDelegatedKeydown(event: KeyboardEvent): void {
   else if (event.key === 'End') nextIndex = days.length - 1
   else if (event.key !== 'Enter' && event.key !== ' ') return
   event.preventDefault()
-  event.stopImmediatePropagation()
+  event.stopPropagation()
   stage.dataset.historyKeyboardActive = 'true'
   selectDay(days[nextIndex], keyboard)
 }
@@ -44,6 +54,7 @@ function selectDay(day: SVGGElement | undefined, keyboard: HTMLButtonElement): v
   hit.dispatchEvent(new MouseEvent('click', { bubbles: true }))
   requestAnimationFrame(() => {
     document.querySelector<HTMLButtonElement>('[data-history-chart-keyboard-target]')?.focus()
+    bindCurrentKeyboard()
   })
 }
 
