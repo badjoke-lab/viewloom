@@ -5,7 +5,7 @@ import { chromium } from 'playwright'
 import { historyPayload } from './history-period-comparison-fixture.mjs'
 
 // Historical verifier markers: keyboard.press('Home') and keyboard.press('ArrowRight').
-// The accepted path now proves focus with a real click, then sends native page.keyboard input.
+// The accepted path now proves focus on the native HTML button, then sends page.keyboard input.
 
 const base = process.env.HISTORY_H2_BASE_URL ?? 'http://127.0.0.1:4173'
 const out = resolve(process.env.HISTORY_H2_ARTIFACT_DIR ?? 'artifacts/history-ui-h2')
@@ -61,7 +61,7 @@ async function run(browser, provider, viewport, touch) {
   if (!touch) {
     const keyboard = page.locator('[data-history-chart-keyboard-target]')
     evidence.checkpoint = `${provider}:keyboard-focus`
-    await keyboard.click()
+    await keyboard.focus()
     assert.equal((await interactionSnapshot(page)).activeKeyboardDay, initial.selected)
 
     evidence.checkpoint = `${provider}:home-press`
