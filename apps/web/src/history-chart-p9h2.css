@@ -4,7 +4,7 @@
 .history-page .history-chart-legend b{display:inline-grid;place-items:center;min-width:1.25em;color:var(--text);font:800 12px var(--mono)}
 .history-page .history-legend-swatch--demo{background:#a78bfa}
 .history-page .history-day-column[aria-current="date"] .history-state-marker{fill:#fff;stroke-width:5px}
-.history-page .history-day-column:focus-visible .history-bar-hit{stroke:var(--history-focus);stroke-width:4px;fill:rgba(255,255,255,.025)}
+.history-page .history-bar-hit:focus-visible{stroke:var(--history-focus);stroke-width:4px;fill:rgba(255,255,255,.025);outline:none}
 .history-page .history-day-column[data-history-coverage="missing"] .history-bar-hit{stroke-dasharray:7 5}
 .history-page .history-day-column[data-history-coverage="in-progress"] .history-bar-hit{stroke-dasharray:2 5}
 
@@ -15,5 +15,5 @@
 
 @media(forced-colors:active){
   .history-page .history-state-marker{fill:CanvasText;stroke:Canvas;forced-color-adjust:auto}
-  .history-page .history-day-column:focus-visible .history-bar-hit{stroke:Highlight}
+  .history-page .history-bar-hit:focus-visible{stroke:Highlight}
 }
