@@ -96,6 +96,7 @@ jobs:
           assert.equal(evidence.scenarios.length, 6)
           assert.deepEqual(evidence.observedFailures, [...evidence.expectedFailures].sort())
           assert.deepEqual(evidence.expectedFailures, [
+            'history-metric-ranking-context-stale',
             'history-metric-summary-stale',
             'history-mobile-task-flow-too-long',
             'history-selected-day-context-stale',
