@@ -38,7 +38,7 @@ When repository state and documentation disagree, update documentation before im
 
 ## P9H0 permanent evidence
 
-P9H0 completed through PR #430. Documentation and program closeout completed through PR #432.
+P9H0 completed through PR #430. Documentation/program closeout completed through PR #432. Final canonical correction completed through PR #433.
 
 - `audits/history-ui-h0-baseline.md`
 - `audits/history-ui-h0-owner-map.json`
@@ -49,6 +49,14 @@ P9H0 completed through PR #430. Documentation and program closeout completed thr
 - `../.github/workflows/history-ui-h0-baseline.yml`
 
 The local keyboard run did not reproduce the P8B production body-focus result. This remains a P9H5/final-acceptance discrepancy.
+
+## Active P9H1 evidence
+
+- `../apps/web/scripts/history-ui-h1-browser.mjs`
+- `../scripts/verify-history-ui-h1-metric.mjs`
+- `../.github/workflows/history-ui-h1-metric.yml`
+
+P9H1 must turn the Summary, Selected day, and Ranking metric-context failures into passing assertions while retaining the mobile task-flow defect for later phases.
 
 ## Approved future authorities
 
@@ -112,8 +120,10 @@ Phase 7  source-of-truth reset                            complete PR #426
 Phase 8  public inventory and browser audit               complete PR #428
 P9H0     History deterministic baseline                    complete PR #430
 C9H0     documentation and program closeout                complete PR #432
-Active implementation branch                              none
-P9H1     work-history-ui-h1-metric                         exact next; not created
+C9H0F    final canonical correction                        complete PR #433
+Active implementation branch                              work-history-ui-h1-metric
+P9H1     metric execution repair                           active
+P9H2     work-history-ui-h2-chart                          exact next after merge; not created
 Phase 10 cross-site quality remediation                   queued
 Phase 11 engineering and operations lock                  queued
 Phase 12 English legal/Support/Stripe readiness           queued
@@ -145,4 +155,4 @@ At milestone completion, transfer stable decisions, update roadmap/schedule/prog
 10. audit/acceptance evidence
 11. completed records
 
-There is no active implementation branch. P9H1 begins only after explicit continuation.
+Complete P9H1 on the active branch, merge it, then stop before P9H2 until explicit continuation.
