@@ -19,6 +19,15 @@ Exact next implementation branch: work-history-ui-h3-overview
 P9H3 branch created: no
 ```
 
+## Historical P9H1 closeout snapshot
+
+The following exact values describe the roadmap immediately after PR #435. They are retained for historical acceptance gates and are not the current execution state.
+
+```text
+Active implementation branch: none
+Exact next implementation branch: work-history-ui-h2-chart
+```
+
 ## 2. Verified state
 
 - Local Watchlist v1 is complete through PR #425.
