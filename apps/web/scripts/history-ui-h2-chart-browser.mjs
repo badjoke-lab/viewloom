@@ -76,10 +76,11 @@ async function run(browser, provider, viewport, touch) {
   assert.equal(state.inspectionDay, '2026-06-13')
   assert.equal(calls.length, requestCount)
 
-  const demo = page.locator('[data-history-day="2026-06-16"]')
+  const demoDay = page.locator('[data-history-day="2026-06-16"]')
+  const demoHit = demoDay.locator('.history-bar-hit')
   evidence.checkpoint = `${provider}:demo-action`
-  if (touch) await demo.tap()
-  else await demo.click()
+  if (touch) await demoHit.tap()
+  else await demoHit.click()
   evidence.diagnostics.push({ provider, checkpoint: 'after-demo', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
   evidence.checkpoint = `${provider}:demo-wait`
   await dayReady(page, '2026-06-16')
