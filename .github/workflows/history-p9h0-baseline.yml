@@ -1,0 +1,56 @@
+name: History P9H0 Baseline
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/twitch/history/index.html'
+      - 'apps/web/kick/history/index.html'
+      - 'apps/web/src/live/history-*.ts'
+      - 'apps/web/docs/history-p9h0-baseline-contract.md'
+      - 'docs/audits/history-p9h0-ownership.md'
+      - 'docs/audits/public-browser-defects.json'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/product/history-ui-repair-spec.md'
+      - 'docs/product/history-ui-repair-plan.md'
+      - 'docs/work-in-progress/history-ui-repair-working-note.md'
+      - 'scripts/verify-history-p9h0-baseline.mjs'
+      - '.github/workflows/history-p9h0-baseline.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/twitch/history/index.html'
+      - 'apps/web/kick/history/index.html'
+      - 'apps/web/src/live/history-*.ts'
+      - 'apps/web/docs/history-p9h0-baseline-contract.md'
+      - 'docs/audits/history-p9h0-ownership.md'
+      - 'docs/audits/public-browser-defects.json'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/product/history-ui-repair-spec.md'
+      - 'docs/product/history-ui-repair-plan.md'
+      - 'docs/work-in-progress/history-ui-repair-working-note.md'
+      - 'scripts/verify-history-p9h0-baseline.mjs'
+      - '.github/workflows/history-p9h0-baseline.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Verify completed P8B baseline
+        run: node scripts/verify-public-browser-audit.mjs
+      - name: Verify History P9H0 ownership and known failures
+        run: node scripts/verify-history-p9h0-baseline.mjs
