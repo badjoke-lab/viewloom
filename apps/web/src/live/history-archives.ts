@@ -1,10 +1,10 @@
 let scheduled = false
 let applying = false
 let observedRoot: HTMLElement | null = null
+let initialReadyCheck = false
 
 const observer = new MutationObserver((records) => {
   if (!records.some(isHierarchyMutation)) return
-  invalidateDailyHierarchy()
   schedule()
 })
 
@@ -15,6 +15,7 @@ document.addEventListener('click', (event) => {
 window.addEventListener('viewloom:peak-archive-toggle', scheduleAfterInteraction)
 window.addEventListener('viewloom:battle-archive-toggle', scheduleAfterInteraction)
 schedule()
+ensureInitialReady()
 
 function observeRelevantRoot(): void {
   observer.disconnect()
@@ -51,13 +52,22 @@ function isHierarchyMutation(record: MutationRecord): boolean {
     && (node.matches('[data-history-day-card]') || Boolean(node.querySelector('[data-history-day-card]'))))
 }
 
-function invalidateDailyHierarchy(): void {
-  const root = document.querySelector<HTMLElement>('[data-history-daily-archive]')
-  if (root && root.dataset.historyDailyHierarchyReady !== 'false') root.dataset.historyDailyHierarchyReady = 'false'
+function ensureInitialReady(): void {
+  if (initialReadyCheck) return
+  initialReadyCheck = true
+  const check = () => {
+    const root = document.querySelector<HTMLElement>('[data-history-daily-archive]')
+    if (root?.querySelector('[data-history-day-card]')) {
+      initialReadyCheck = false
+      schedule()
+      return
+    }
+    requestAnimationFrame(check)
+  }
+  requestAnimationFrame(check)
 }
 
 function scheduleAfterInteraction(): void {
-  invalidateDailyHierarchy()
   requestAnimationFrame(schedule)
 }
 
