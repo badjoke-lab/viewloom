@@ -10,13 +10,27 @@ type InspectionElements = {
 
 const stage = document.querySelector<HTMLElement>('.history-stage')
 let queued = false
+let observedParent: HTMLElement | null = null
+const parentObserver = new MutationObserver(() => {
+  observeParent()
+  queue()
+})
 
 if (stage) {
   new MutationObserver(queue).observe(stage, { childList: true, subtree: true })
   stage.addEventListener('focusin', inspect)
   stage.addEventListener('pointerover', inspect)
   stage.addEventListener('click', queue)
+  observeParent()
   queue()
+}
+
+function observeParent(): void {
+  const parent = stage?.parentElement ?? null
+  if (parent === observedParent) return
+  parentObserver.disconnect()
+  observedParent = parent
+  if (parent) parentObserver.observe(parent, { childList: true })
 }
 
 function queue(): void {
@@ -30,6 +44,7 @@ function queue(): void {
 
 function enhance(): void {
   if (!stage) return
+  observeParent()
   const svg = stage.querySelector<SVGSVGElement>('svg')
   const days = chartDays()
   if (!svg || !days.length) {
@@ -132,7 +147,10 @@ function ensureInspection(): InspectionElements {
     help.textContent = 'Left / Right: adjacent day · Home / End: range edge · Enter: select'
 
     root.append(keyboard, detail, help)
-    const anchor = stage.closest<HTMLElement>('.surface') ?? stage
+  }
+
+  const anchor = stage.closest<HTMLElement>('.surface') ?? stage
+  if (root.parentElement !== anchor.parentElement || root.previousElementSibling !== anchor) {
     anchor.insertAdjacentElement('afterend', root)
   }
 
