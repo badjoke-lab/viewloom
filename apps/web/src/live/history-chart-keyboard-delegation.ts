@@ -2,7 +2,6 @@ const stage = document.querySelector<HTMLElement>('.history-stage')
 
 if (stage) {
   document.addEventListener('keydown', handleDelegatedKeydown, true)
-  document.addEventListener('click', handleDelegatedClick, true)
 }
 
 function handleDelegatedKeydown(event: KeyboardEvent): void {
@@ -16,18 +15,10 @@ function handleDelegatedKeydown(event: KeyboardEvent): void {
   else if (event.key === 'ArrowLeft') nextIndex = Math.max(0, currentIndex - 1)
   else if (event.key === 'Home') nextIndex = 0
   else if (event.key === 'End') nextIndex = days.length - 1
-  else return
+  else if (event.key !== 'Enter' && event.key !== ' ') return
   event.preventDefault()
   event.stopImmediatePropagation()
   selectDay(days[nextIndex], keyboard)
-}
-
-function handleDelegatedClick(event: MouseEvent): void {
-  const keyboard = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-history-chart-keyboard-target]')
-  if (!keyboard) return
-  event.stopImmediatePropagation()
-  const day = chartDays().find((item) => item.dataset.historyDay === keyboard.dataset.historyKeyboardDay)
-  selectDay(day, keyboard)
 }
 
 function selectDay(day: SVGGElement | undefined, keyboard: HTMLButtonElement): void {
@@ -37,8 +28,11 @@ function selectDay(day: SVGGElement | undefined, keyboard: HTMLButtonElement): v
   const dayValue = day.dataset.historyDay ?? ''
   keyboard.dataset.historyKeyboardDay = dayValue
   keyboard.textContent = `${dayValue || 'Selected day'} UTC`
-  hit.dispatchEvent(new MouseEvent('click', { bubbles: true }))
   keyboard.focus()
+  hit.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+  requestAnimationFrame(() => {
+    document.querySelector<HTMLButtonElement>('[data-history-chart-keyboard-target]')?.focus()
+  })
 }
 
 function chartDays(): SVGGElement[] {
