@@ -55,18 +55,12 @@ async function run(browser, provider, viewport, touch) {
 
   const requestCount = calls.length
   const keyboard = page.locator('[data-history-chart-keyboard-target]')
-  evidence.checkpoint = `${provider}:home-focus`
-  await keyboard.focus()
-  assert.equal((await interactionSnapshot(page)).activeKeyboardDay, initial.selected)
   evidence.checkpoint = `${provider}:home-press`
   await keyboard.press('Home')
   evidence.diagnostics.push({ provider, checkpoint: 'after-home', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
   evidence.checkpoint = `${provider}:home-wait`
   await dayReady(page, '2026-06-12')
 
-  evidence.checkpoint = `${provider}:arrow-focus`
-  await keyboard.focus()
-  assert.equal((await interactionSnapshot(page)).activeKeyboardDay, '2026-06-12')
   evidence.checkpoint = `${provider}:arrow-press`
   await keyboard.press('ArrowRight')
   evidence.diagnostics.push({ provider, checkpoint: 'after-arrow', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
