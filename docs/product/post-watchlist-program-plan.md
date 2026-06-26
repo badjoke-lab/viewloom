@@ -11,6 +11,17 @@ Completed final-state correction: PR #433
 Completed metric synchronization: PR #434
 Exact next implementation branch after P9H2 merge and explicit continuation: `work-history-ui-h3-overview`
 
+## Historical P9H1 closeout snapshot
+
+The following exact values describe the source-of-truth program immediately after PR #435. They are retained for historical acceptance gates and are not the current execution state.
+
+```text
+Version: 2.3
+Current implementation branch: none
+Exact next implementation branch after explicit continuation: `work-history-ui-h2-chart`
+P9H2 work-history-ui-h2-chart      exact next after explicit continuation; not created
+```
+
 ## 1. Purpose
 
 This document owns the complete approved execution program after Local Watchlist v1.
