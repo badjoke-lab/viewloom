@@ -67,6 +67,15 @@ P9H1 aligns Summary, Selected day, Ranking context, Daily archive, Report, Share
 
 The compact mobile task flow remains for P9H3/P9H5. The production/local keyboard discrepancy remains for P9H5 and final acceptance.
 
+## Historical P9H1 closeout snapshot
+
+The following exact values describe the documentation index immediately after PR #435. They are retained for historical acceptance gates and are not the current execution state.
+
+```text
+Active implementation branch                              none
+P9H2     work-history-ui-h2-chart                          exact next; not created
+```
+
 ## Active P9H2 evidence
 
 P9H2 is active on `work-history-ui-h2-chart`.
