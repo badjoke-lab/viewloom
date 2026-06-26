@@ -178,7 +178,16 @@ export function metricTopStreamer(payload: HistoryReportPayload, metric = report
 }
 
 export function topMetricDay(payload: HistoryReportPayload, metric = reportMetric(payload)): HistoryReportDay | null {
-  return (payload.daily ?? []).reduce<HistoryReportDay | null>((best, day) => {
+  const daily = (payload.daily ?? []).filter((day) => normalize(day.coverageState) !== 'missing')
+  if (metric === 'peak_viewers' && validDay(payload.summary?.peakDay)) {
+    const exact = daily.find((day) => day.day === payload.summary!.peakDay)
+    return {
+      ...exact,
+      day: payload.summary!.peakDay,
+      peakViewers: finite(payload.summary?.peakViewers) ? payload.summary!.peakViewers : exact?.peakViewers,
+    }
+  }
+  return daily.reduce<HistoryReportDay | null>((best, day) => {
     if (!best) return day
     return dayMetricValue(day, metric) > dayMetricValue(best, metric) ? day : best
   }, null)
