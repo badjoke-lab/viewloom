@@ -115,8 +115,12 @@ async function scenario(browser, provider, viewport) {
   assert.match(peak.exportStatus, /Peak viewers/i)
 
   const beforeLocalActions = calls.length
+  await page.locator('[data-history-view="report"]').click()
+  await page.waitForFunction(() => document.querySelector('[data-history-view-panel="report"]')?.hidden === false)
   const reportPost = page.locator('[data-history-report-mode="post"]')
   if (await reportPost.count()) await reportPost.click()
+  await page.locator('[data-history-view="archives"]').click()
+  await page.waitForFunction(() => document.querySelector('[data-history-view-panel="archives"]')?.hidden === false)
   const archiveAttention = page.locator('[data-history-archive-filter="attention"]')
   if (await archiveAttention.count()) await archiveAttention.click()
   await page.waitForTimeout(100)
