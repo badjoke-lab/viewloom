@@ -5,7 +5,7 @@ let initialReadyCheck = false
 
 const observer = new MutationObserver((records) => {
   if (!records.some(isHierarchyMutation)) return
-  schedule()
+  enhanceArchives()
 })
 
 observeRelevantRoot()
