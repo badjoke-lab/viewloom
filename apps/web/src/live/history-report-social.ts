@@ -1,5 +1,11 @@
 import {
   historyReportCoverage,
+  metricLabel,
+  metricTopStreamer,
+  metricUnit,
+  reportMetric,
+  streamerMetricValue,
+  topMetricDay,
   type HistoryReportPayload,
   type HistoryReportProvider,
 } from './history-report-text-state'
@@ -13,19 +19,21 @@ export function historyShortPostText(
 ): string {
   const coverage = historyReportCoverage(payload)
   const summary = payload.summary
-  const topStreamer = summary?.topStreamer ?? payload.topStreamers?.[0] ?? null
+  const metric = reportMetric(payload)
+  const topStreamer = metricTopStreamer(payload, metric)
+  const metricDay = topMetricDay(payload, metric)
   const biggestRise = summary?.biggestRise ?? null
   const optional: string[] = []
 
   if (topStreamer?.displayName) {
-    const amount = finite(topStreamer.viewerMinutes) ? ` · ${compact(topStreamer.viewerMinutes)} viewer-min` : ''
-    optional.push(`Top: ${shortName(topStreamer.displayName)}${amount}`)
+    const amount = streamerMetricValue(topStreamer, metric)
+    optional.push(`Top by ${metricLabel(metric)}: ${shortName(topStreamer.displayName)}${finite(amount) ? ` · ${compact(amount)} ${metricUnit(metric)}` : ''}`)
   }
-  if (finite(summary?.peakViewers)) {
-    const day = validDay(summary?.peakDay) ? ` · ${shortDay(summary.peakDay)}` : ''
-    optional.push(`Peak: ${compact(summary.peakViewers)} viewers${day}`)
+  if (metric === 'peak_viewers' && finite(summary?.peakViewers)) {
+    const day = validDay(metricDay?.day) ? ` · ${shortDay(metricDay.day)}` : ''
+    optional.push(`Highest peak: ${compact(summary.peakViewers)} viewers${day}`)
   }
-  if (biggestRise?.displayName) {
+  if (metric === 'viewer_minutes' && biggestRise?.displayName) {
     const change = finite(biggestRise.changePct)
       ? ` ${signed(biggestRise.changePct)}%`
       : finite(biggestRise.changeAbs)
@@ -36,10 +44,9 @@ export function historyShortPostText(
 
   const state = normalize(payload.state)
   const source = normalize(payload.source)
-  const metric = payload.metric === 'peak_viewers' ? 'Peak viewers' : 'Viewer-minutes'
   const start = [
     `ViewLoom | ${provider === 'kick' ? 'Kick' : 'Twitch'} History snapshot`,
-    `${periodLabel(payload)} UTC · ${metric}`,
+    `${periodLabel(payload)} UTC · ${metricLabel(metric)}`,
   ]
   const end = [
     `Coverage: ${coverage.observedDays}/${coverage.totalDays} days observed${coverage.attentionDays ? ` · ${coverage.attentionDays} partial` : ''}`,
