@@ -54,20 +54,22 @@ async function run(browser, provider, viewport, touch) {
   assert.equal(initial.focusable, 1)
 
   const requestCount = calls.length
-  let selected = page.locator('[data-history-day][aria-current="date"]')
+  let selectedHit = page.locator('[data-history-day][aria-current="date"] .history-bar-hit')
   evidence.checkpoint = `${provider}:home-focus`
-  await selected.focus()
+  await selectedHit.focus()
+  assert.equal((await interactionSnapshot(page)).activeDay, initial.selected)
   evidence.checkpoint = `${provider}:home-press`
-  await selected.press('Home')
+  await selectedHit.press('Home')
   evidence.diagnostics.push({ provider, checkpoint: 'after-home', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
   evidence.checkpoint = `${provider}:home-wait`
   await dayReady(page, '2026-06-12')
 
-  selected = page.locator('[data-history-day][aria-current="date"]')
+  selectedHit = page.locator('[data-history-day][aria-current="date"] .history-bar-hit')
   evidence.checkpoint = `${provider}:arrow-focus`
-  await selected.focus()
+  await selectedHit.focus()
+  assert.equal((await interactionSnapshot(page)).activeDay, '2026-06-12')
   evidence.checkpoint = `${provider}:arrow-press`
-  await selected.press('ArrowRight')
+  await selectedHit.press('ArrowRight')
   evidence.diagnostics.push({ provider, checkpoint: 'after-arrow', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
   evidence.checkpoint = `${provider}:arrow-wait`
   await dayReady(page, '2026-06-13')
@@ -117,7 +119,7 @@ async function dayReady(page, day) {
 async function interactionSnapshot(page) {
   return page.evaluate(() => ({
     activeTag: document.activeElement?.tagName ?? '',
-    activeDay: document.activeElement?.getAttribute('data-history-day') ?? '',
+    activeDay: document.activeElement?.closest?.('[data-history-day]')?.getAttribute('data-history-day') ?? '',
     urlDay: new URL(location.href).searchParams.get('day') ?? '',
     selectedClass: document.querySelector('[data-history-day].is-selected')?.getAttribute('data-history-day') ?? '',
     ariaCurrent: document.querySelector('[data-history-day][aria-current="date"]')?.getAttribute('data-history-day') ?? '',
@@ -144,7 +146,7 @@ async function snapshot(page) {
     inspection: document.querySelector('[data-history-chart-inspection]')?.textContent ?? '',
     inspectionDay: document.querySelector('[data-history-chart-inspection]')?.getAttribute('data-history-inspection-day') ?? '',
     selected: document.querySelector('[data-history-day][aria-current="date"]')?.getAttribute('data-history-day') ?? '',
-    focusable: [...document.querySelectorAll('[data-history-day]')].filter((node) => node.getAttribute('tabindex') === '0').length,
+    focusable: document.querySelectorAll('[data-history-day] .history-bar-hit[tabindex="0"]').length,
   }))
 }
 
