@@ -20,7 +20,8 @@ P9H3 branch created: no
 
 ## Verified state
 
-P9H1 completed metric synchronization across History URL, requests, chart, Summary, Selected day, ranking, archives, reports, share cards, and exports.
+- Local Watchlist v1 is complete through PR #425.
+- P9H1 completed metric synchronization across History URL, requests, chart, Summary, Selected day, ranking, archives, reports, share cards, and exports.
 
 ```text
 P9H1 merge: 31b81d3ed3a56369055ba09eb4de871dfc59d315
