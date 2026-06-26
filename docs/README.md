@@ -48,15 +48,24 @@ P9H0 completed through PR #430. Documentation/program closeout completed through
 - `../scripts/verify-history-ui-h0-baseline.mjs`
 - `../.github/workflows/history-ui-h0-baseline.yml`
 
-The local keyboard run did not reproduce the P8B production body-focus result. This remains a P9H5/final-acceptance discrepancy.
+## P9H1 permanent evidence
 
-## Active P9H1 evidence
+P9H1 completed through PR #434 at merge `31b81d3ed3a56369055ba09eb4de871dfc59d315`.
+
+```text
+Final head: 9c4e3278b609e3f8d41fa3df71ba69f5ebc00618
+Workflow run: 28232602651
+Artifact: history-ui-h1-metric / 7903212809
+Digest: sha256:783283fd1c913e7ccb99d04bb607ed5801db1c74ab3d341c81a40c440835e82c
+```
 
 - `../apps/web/scripts/history-ui-h1-browser.mjs`
 - `../scripts/verify-history-ui-h1-metric.mjs`
 - `../.github/workflows/history-ui-h1-metric.yml`
 
-P9H1 must turn the Summary, Selected day, and Ranking metric-context failures into passing assertions while retaining the mobile task-flow defect for later phases.
+P9H1 aligns Summary, Selected day, Ranking context, Daily archive, Report, Share, and Export with the selected History metric. It preserves provider separation, loaded-response reuse, Back/Forward, state honesty, and output formats.
+
+The compact mobile task flow remains for P9H3/P9H5. The production/local keyboard discrepancy remains for P9H5 and final acceptance.
 
 ## Approved future authorities
 
@@ -91,8 +100,6 @@ P8A:
 - `audits/public-surface-inventory.json`
 - `audits/public-surface-inventory.md`
 - `audits/public-surface-gaps.json`
-- `audits/public-surface-routes-*.json`
-- `audits/public-surface-profiles-*.json`
 
 P8B:
 
@@ -121,9 +128,9 @@ Phase 8  public inventory and browser audit               complete PR #428
 P9H0     History deterministic baseline                    complete PR #430
 C9H0     documentation and program closeout                complete PR #432
 C9H0F    final canonical correction                        complete PR #433
-Active implementation branch                              work-history-ui-h1-metric
-P9H1     metric execution repair                           active
-P9H2     work-history-ui-h2-chart                          exact next after merge; not created
+P9H1     metric execution repair                           complete PR #434
+Active implementation branch                              none
+P9H2     work-history-ui-h2-chart                          exact next; not created
 Phase 10 cross-site quality remediation                   queued
 Phase 11 engineering and operations lock                  queued
 Phase 12 English legal/Support/Stripe readiness           queued
@@ -135,7 +142,7 @@ Phase 16 next major feature                               not approved
 
 ## Repository comparison rule
 
-Before changing code or public behavior, compare `current-schedule.md` with actual branches/PRs, confirm predecessor merge reporting and explicit continuation, compare plan deliverables with repository evidence, record missing work, and update documents first when state or scope changed.
+Before changing code or public behavior, compare `current-schedule.md` with actual branches/PRs, confirm explicit continuation, compare plan deliverables with repository evidence, record missing work, and update documents first when state or scope changed.
 
 ## Temporary-note lifecycle
 
@@ -155,4 +162,4 @@ At milestone completion, transfer stable decisions, update roadmap/schedule/prog
 10. audit/acceptance evidence
 11. completed records
 
-Complete P9H1 on the active branch, merge it, then stop before P9H2 until explicit continuation.
+P9H1 is complete. Do not create `work-history-ui-h2-chart` until explicit continuation.
