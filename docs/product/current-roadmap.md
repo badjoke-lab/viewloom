@@ -30,6 +30,15 @@ Artifact: history-ui-h1-metric / 7903212809
 
 The compact mobile task flow remains assigned to P9H3/P9H5. The production/local keyboard discrepancy remains assigned to P9H5 and final acceptance.
 
+## Historical P9H1 closeout snapshot
+
+The following values describe the repository immediately after PR #435. They are retained for historical acceptance gates and are not the current execution state.
+
+```text
+Active implementation branch: none
+Exact next implementation branch: work-history-ui-h2-chart
+```
+
 ## P9H2 target
 
 P9H2 repairs the daily chart so it has readable UTC dates, numeric scale, explicit metric and unit, exact day detail, synchronized selected-day state, pointer/keyboard/touch inspection, state markers that do not rely on color, and an accessible title and description.
