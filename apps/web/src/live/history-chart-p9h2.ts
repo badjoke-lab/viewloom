@@ -66,6 +66,7 @@ function enhance(): void {
   if (caption) setText(caption, `UTC daily rollup · ${metricUnit(metric)} · Keyboard navigator follows the chart`)
   enhanceLegend()
   showInspection(days[selectedIndex])
+  restoreKeyboardFocus()
   stage.dataset.historyChartReady = 'true'
   stage.dataset.historyChartMetric = metric
 }
@@ -121,6 +122,13 @@ function showInspection(day?: SVGGElement): void {
   elements.keyboard.setAttribute('aria-label', `${label}. Use Left and Right Arrow keys to inspect adjacent days. Home and End jump to the first or last day.`)
   setText(elements.keyboard, `${dayValue || 'Selected day'} UTC`)
   setText(elements.detail, label)
+}
+
+function restoreKeyboardFocus(): void {
+  if (!stage || stage.dataset.historyKeyboardActive !== 'true') return
+  const focus = () => document.querySelector<HTMLButtonElement>('[data-history-chart-keyboard-target]')?.focus()
+  focus()
+  requestAnimationFrame(focus)
 }
 
 function ensureInspection(): InspectionElements {
