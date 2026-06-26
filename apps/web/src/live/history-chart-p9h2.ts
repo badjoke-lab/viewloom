@@ -157,9 +157,8 @@ function ensureInspection(): InspectionElements {
     root.append(keyboard, detail, help)
   }
 
-  const anchor = stage.closest<HTMLElement>('.surface') ?? stage
-  if (root.parentElement !== anchor.parentElement || root.previousElementSibling !== anchor) {
-    anchor.insertAdjacentElement('afterend', root)
+  if (root.parentElement !== stage.parentElement || root.previousElementSibling !== stage) {
+    stage.insertAdjacentElement('afterend', root)
   }
 
   const keyboard = root.querySelector<HTMLButtonElement>('[data-history-chart-keyboard-target]')
