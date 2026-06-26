@@ -9,6 +9,14 @@ Completed P9H1: PR #434
 Current implementation branch: `work-history-ui-h2-chart`
 Exact next branch: `work-history-ui-h3-overview`
 
+## Historical P9H1 closeout snapshot
+
+This retained line describes the pre-P9H2 state and is not the current sequence.
+
+```text
+P9H2 work-history-ui-h2-chart      exact next; not created
+```
+
 ## P9H2 active scope
 
 P9H2 repairs the daily trend chart while preserving all accepted P9H1 metric behavior.
