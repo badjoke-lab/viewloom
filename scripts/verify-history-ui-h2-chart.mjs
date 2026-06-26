@@ -51,23 +51,27 @@ check('apps/web/src/live/history-usability.ts', [
 ])
 check('apps/web/src/live/history-chart-p9h2.ts', [
   'new MutationObserver(queue).observe(stage',
-  "stage.addEventListener('keydown', onKeydown, true)",
+  'data-history-chart-keyboard-target',
+  "keyboard.addEventListener('keydown', onKeyboardNavigation)",
   'ArrowLeft ArrowRight Home End Enter Space',
   "svg.setAttribute('aria-labelledby'",
   "stage.dataset.historyChartReady = 'true'",
   "legend.dataset.historyLegendNonColor = 'true'",
-  "node.setAttribute('aria-live', 'polite')",
+  "detail.setAttribute('aria-live', 'polite')",
+  "hit.setAttribute('aria-hidden', 'true')",
 ])
 check('apps/web/src/history-chart-p9h2.css', [
   '.history-state-marker',
   '.history-chart-inspection',
+  '.history-chart-keyboard-target:focus-visible',
   'forced-colors:active',
 ])
 check('apps/web/scripts/history-ui-h2-chart-browser.mjs', [
   "schema: 'viewloom-history-ui-h2-chart-v1'",
   "phase: 'P9H2'",
-  "press('Home')",
-  "press('ArrowRight')",
+  "[data-history-chart-keyboard-target]",
+  "keyboard.press('Home')",
+  "keyboard.press('ArrowRight')",
   "demoDay.locator('.history-bar-hit')",
   'demoHit.tap()',
   'calls.length, requestCount',
