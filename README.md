@@ -17,49 +17,47 @@ Twitch and Kick remain separated across routes, APIs, storage, D1 bindings, rank
 
 ViewLoom Core v1 is deployed on Cloudflare Pages with separate provider bindings, provider-specific Functions, bounded collector/history data, deployment identity, production smoke, explicit 404 behavior, and public Heatmap, Day Flow, Battle Lines, History, Channel, Watchlist, and Status routes.
 
-Local Watchlist v1 completed through PR #425 with local, hosted Preview, and production acceptance.
+Local Watchlist v1 completed through PR #425. The all-public browser audit completed through PR #428.
 
-## Current priority
+## Authoritative execution state
 
-The active program is public-surface audit and P0/P1 repair, not a new feature expansion.
+```text
+Phase 7  source-of-truth reset                            complete PR #426
+Phase 8  public inventory and browser defect audit        complete PR #428
+Phase 9  P0/P1 repair; History is the central track       P9H0 active
+```
+
+Scheduled identifier: `work-history-ui-h0-baseline`  
+Execution branch: `work-p9h0-baseline`  
+Exact next branch after P9H0: `work-history-ui-h1-metric`
+
+P9H0 reproduces the three accepted History P1 findings, traces source ownership, records executable acceptance failures, and freezes browser evidence before product repair. No public UI, API, D1, binding, collector, cron, retention, or output-schema change is allowed in this window.
+
+Active P9H0 package:
+
+- [`docs/audits/history-ui-h0-baseline.md`](docs/audits/history-ui-h0-baseline.md)
+- [`docs/audits/history-ui-h0-owner-map.json`](docs/audits/history-ui-h0-owner-map.json)
+- [`apps/web/scripts/history-ui-h0-browser.mjs`](apps/web/scripts/history-ui-h0-browser.mjs)
+- [`scripts/verify-history-ui-h0-baseline.mjs`](scripts/verify-history-ui-h0-baseline.mjs)
+- [`.github/workflows/history-ui-h0-baseline.yml`](.github/workflows/history-ui-h0-baseline.yml)
+
+## Historical P8B verifier record
+
+The following exact text is retained only for completed Phase 8 verification. It is not the current schedule.
 
 ```text
 Phase 7  source-of-truth reset                            complete PR #426
 Phase 8  public inventory and browser defect audit        P8B active
 Phase 9  P0/P1 repair; History is the central track       queued
-```
-
-Current branch:
-
-```text
 work-public-browser-audit
-```
-
-Exact next branch after P8B completion, merge reporting, and explicit continuation:
-
-```text
 work-history-ui-h0-baseline
 ```
 
-A newly proven P0 may interrupt.
-
-## Active P8B audit
-
-P8B uses the completed P8A inventory as its route, provider-binding, owner, state, and existing-gate baseline.
-
-```text
-21 owned routes
-4 required widths: 1440 / 820 / 390 / 360
-84 production browser scenarios
-5 missing policy/disclosure probes
-10 deterministic History scenarios
-```
-
-P8B records exact browser evidence and classifies defects. It does not repair public UI or change APIs, D1, bindings, collectors, cron, retention, output schemas, or Cloudflare Preview state.
-
-Active files:
+The completed P8B package remains:
 
 - [`docs/audits/P8B_SCOPE.md`](docs/audits/P8B_SCOPE.md)
+- [`docs/audits/public-browser-defects.json`](docs/audits/public-browser-defects.json)
+- [`docs/audits/public-browser-audit.md`](docs/audits/public-browser-audit.md)
 - [`apps/web/scripts/public-browser-audit.mjs`](apps/web/scripts/public-browser-audit.mjs)
 - [`scripts/verify-public-browser-audit.mjs`](scripts/verify-public-browser-audit.mjs)
 - [`.github/workflows/public-browser-audit.yml`](.github/workflows/public-browser-audit.yml)
@@ -69,12 +67,10 @@ Active files:
 The current History production baseline remains deployed, but these are approved P1 defects:
 
 - Viewer-minutes and Peak viewers do not produce a sufficiently observable, trustworthy change across the page;
-- chart interpretation is not yet permanently protected by complete scale, date, unit, and interaction gates;
-- selected-day and supporting information are too thin or disconnected;
-- lower-page regions are sparse, duplicated, or unclear;
+- the first keyboard entry is not reliably actionable;
 - desktop, tablet, and mobile do not yet prove one coherent analysis workflow.
 
-The repair preserves the two existing metrics and does not authorize new History APIs, D1 schemas, collectors, cron, retention, bindings, exact sessions, provider totals, login, alerts, or AI summaries.
+The broader repair specification also requires permanent chart interpretation, selected-day, lower-page, responsive, and accessibility acceptance.
 
 ## Canonical documentation
 
@@ -87,20 +83,10 @@ Read in order:
 - [`docs/product/current-roadmap.md`](docs/product/current-roadmap.md)
 - [`docs/product/current-schedule.md`](docs/product/current-schedule.md)
 - [`docs/product/post-watchlist-program-plan.md`](docs/product/post-watchlist-program-plan.md)
-
-For History:
-
 - [`docs/product/history-and-trends-spec.md`](docs/product/history-and-trends-spec.md)
 - [`docs/product/history-ui-repair-spec.md`](docs/product/history-ui-repair-spec.md)
 - [`docs/product/history-ui-repair-plan.md`](docs/product/history-ui-repair-plan.md)
 - [`docs/work-in-progress/history-ui-repair-working-note.md`](docs/work-in-progress/history-ui-repair-working-note.md)
-
-For P8B:
-
-- [`docs/audits/P8B_SCOPE.md`](docs/audits/P8B_SCOPE.md)
-- [`docs/audits/public-surface-inventory.json`](docs/audits/public-surface-inventory.json)
-- [`docs/audits/public-surface-inventory.md`](docs/audits/public-surface-inventory.md)
-- [`docs/audits/public-surface-gaps.json`](docs/audits/public-surface-gaps.json)
 
 Implementation does not begin from chat memory, an old PR, or screenshots alone.
 
@@ -125,9 +111,9 @@ Implementation does not begin from chat memory, an old PR, or screenshots alone.
 ```text
 P7A  governance and schedule reset                         complete PR #426
 P8A  public route and acceptance inventory                 complete PR #427
-P8B  all-public browser defect audit                       active
-P9H0 exact History reproduction and failing gates          exact next
-P9H1 metric execution repair                               queued
+P8B  all-public browser defect audit                       complete PR #428
+P9H0 exact History reproduction and baseline gates         active
+P9H1 metric execution repair                               exact next
 P9H2 chart scale, axes, units, and day interaction          queued
 P9H3 Overview information hierarchy                        queued
 P9H4 Archives and Report & Export repair                    queued
