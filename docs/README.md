@@ -65,6 +65,18 @@ Digest: sha256:783283fd1c913e7ccb99d04bb607ed5801db1c74ab3d341c81a40c440835e82c
 
 P9H1 aligns Summary, Selected day, Ranking context, Daily archive, Report, Share, and Export with the selected History metric. It preserves provider separation, loaded-response reuse, Back/Forward, state honesty, and output formats.
 
+## Active P9H2 evidence contract
+
+P9H2 is active on `work-history-ui-h2-chart`.
+
+- `../apps/web/src/live/history-chart-p9h2.ts`
+- `../apps/web/src/history-chart-p9h2.css`
+- `../apps/web/scripts/history-ui-h2-chart-browser.mjs`
+- `../scripts/verify-history-ui-h2-chart.mjs`
+- `../.github/workflows/history-ui-h2-chart.yml`
+
+P9H2 repairs UTC date/scale/unit interpretation, exact day detail, chart/URL/Selected-day synchronization, keyboard and touch inspection, non-color state symbols, and accessible SVG description without changing provider/request/output boundaries.
+
 The compact mobile task flow remains for P9H3/P9H5. The production/local keyboard discrepancy remains for P9H5 and final acceptance.
 
 ## Approved future authorities
@@ -129,8 +141,9 @@ P9H0     History deterministic baseline                    complete PR #430
 C9H0     documentation and program closeout                complete PR #432
 C9H0F    final canonical correction                        complete PR #433
 P9H1     metric execution repair                           complete PR #434
-Active implementation branch                              none
-P9H2     work-history-ui-h2-chart                          exact next; not created
+P9H2     chart interpretation                              active
+Active implementation branch                              work-history-ui-h2-chart
+P9H3     work-history-ui-h3-overview                       exact next; not created
 Phase 10 cross-site quality remediation                   queued
 Phase 11 engineering and operations lock                  queued
 Phase 12 English legal/Support/Stripe readiness           queued
@@ -162,4 +175,4 @@ At milestone completion, transfer stable decisions, update roadmap/schedule/prog
 10. audit/acceptance evidence
 11. completed records
 
-P9H1 is complete. Do not create `work-history-ui-h2-chart` until explicit continuation.
+Complete P9H2 on `work-history-ui-h2-chart`. Do not create `work-history-ui-h3-overview` until P9H2 merges and explicit continuation is received.
