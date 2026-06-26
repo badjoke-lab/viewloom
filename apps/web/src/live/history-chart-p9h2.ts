@@ -52,18 +52,31 @@ function enhance(): void {
 
 function enhanceDay(day: SVGGElement, focusable: boolean): void {
   const bar = day.querySelector<SVGRectElement>('.history-bar')
-  if (!bar) return
+  const hit = day.querySelector<SVGRectElement>('.history-bar-hit')
+  if (!bar || !hit) return
   const coverage = coverageFrom(bar)
   const symbol = coverageSymbol(coverage)
+  const selected = day.classList.contains('is-selected')
+  const label = day.getAttribute('aria-label') ?? ''
+  const accessibleLabel = label.includes('coverage state')
+    ? label
+    : `${label}, coverage state ${coverage.replace('-', ' ')}`
+
   day.dataset.historyCoverage = coverage
   day.dataset.historyStateSymbol = symbol
-  day.setAttribute('tabindex', focusable ? '0' : '-1')
-  day.setAttribute('aria-roledescription', 'daily observation')
-  day.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight Home End Enter Space')
-  if (day.classList.contains('is-selected')) day.setAttribute('aria-current', 'date')
+  day.removeAttribute('tabindex')
+  day.setAttribute('aria-roledescription', 'daily observation group')
+  day.setAttribute('aria-label', accessibleLabel)
+  if (selected) day.setAttribute('aria-current', 'date')
   else day.removeAttribute('aria-current')
-  const label = day.getAttribute('aria-label') ?? ''
-  if (!label.includes('coverage state')) day.setAttribute('aria-label', `${label}, coverage state ${coverage.replace('-', ' ')}`)
+
+  hit.setAttribute('tabindex', focusable ? '0' : '-1')
+  hit.setAttribute('role', 'button')
+  hit.setAttribute('aria-roledescription', 'daily observation')
+  hit.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight Home End Enter Space')
+  hit.setAttribute('aria-label', accessibleLabel)
+  if (selected) hit.setAttribute('aria-current', 'date')
+  else hit.removeAttribute('aria-current')
 
   let marker = day.querySelector<SVGTextElement>('.history-state-marker')
   if (!marker) {
@@ -91,9 +104,10 @@ function onKeydown(event: KeyboardEvent): void {
   else return
   event.preventDefault()
   const target = days[next]
-  if (!target) return
-  target.focus()
-  target.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+  const targetHit = target?.querySelector<SVGRectElement>('.history-bar-hit')
+  if (!target || !targetHit) return
+  targetHit.focus()
+  targetHit.dispatchEvent(new MouseEvent('click', { bubbles: true }))
   showInspection(target)
 }
 
