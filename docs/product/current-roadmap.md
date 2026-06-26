@@ -11,17 +11,18 @@ Phase 8 P8A   complete PR #427
 Phase 8 P8B   complete PR #428
 Phase 9 P9H0  complete PR #430
 P9H0 closeout complete PR #432
-Active implementation branch: none
-Phase 9 P9H1  exact next after explicit continuation
+Final-state correction complete PR #433
+Phase 9 P9H1  active
+Active implementation branch: work-history-ui-h1-metric
 ```
 
-Exact next implementation branch:
+Exact current implementation branch:
 
 ```text
 work-history-ui-h1-metric
 ```
 
-P9H1 has not been created.
+P9H2 has not been created.
 
 ## 2. Verified state
 
@@ -31,6 +32,7 @@ P9H1 has not been created.
 - Public browser audit is complete through PR #428.
 - The deterministic History P9H0 baseline is complete through PR #430.
 - P9H0 documentation and program closeout is complete through PR #432.
+- Post-closeout canonical state is corrected through PR #433.
 - Twitch and Kick remain separate across routes, APIs, storage, bindings, rankings, exports, and coverage claims.
 
 P8B result:
@@ -51,6 +53,8 @@ history-mobile-task-flow-too-long
 history-selected-day-context-stale
 ```
 
+P9H1 owns the three metric-context failures. `history-mobile-task-flow-too-long` remains owned by P9H3/P9H5.
+
 The local first-Tab scenarios moved focus to the ViewLoom home link. The earlier P8B production body-focus observation remains a production/local discrepancy for P9H5 and final acceptance.
 
 ## 3. Authority map
@@ -59,7 +63,7 @@ The local first-Tab scenarios moved focus to the ViewLoom home link. The earlier
 Product priority:
   docs/product/current-roadmap.md
 
-Exact current state and next branch:
+Exact current state and branch:
   docs/product/current-schedule.md
 
 Complete Phase 7–16 program:
@@ -90,7 +94,7 @@ Localization:
 ```text
 Phase 7   source-of-truth reset                              complete PR #426
 Phase 8   inventory and browser defect audit                 complete PR #428
-Phase 9   History P1 repair                                   P9H0 complete; P9H1 next
+Phase 9   History P1 repair                                   P9H1 active
 Phase 10  cross-site defect/UI/architecture repair           queued
 Phase 11  acceptance, CI, type safety, monitoring            queued
 Phase 12  English legal, Support, Stripe, release readiness  queued
@@ -106,8 +110,8 @@ No Phase 16 feature is approved.
 
 ```text
 P9H0 work-history-ui-h0-baseline   complete PR #430
-P9H1 work-history-ui-h1-metric     exact next; not created
-P9H2 work-history-ui-h2-chart      queued
+P9H1 work-history-ui-h1-metric     active
+P9H2 work-history-ui-h2-chart      exact next after P9H1 merge and explicit continuation
 P9H3 work-history-ui-h3-overview   queued
 P9H4 work-history-ui-h4-tasks      queued
 P9H5 work-history-ui-h5-responsive queued
@@ -129,7 +133,7 @@ Phase 13 introduces the localization runtime and completes English/Japanese acce
 
 UI localization is distinct from collecting or analyzing stream language. Provider-origin names, IDs, titles, and categories are not translated by the initial program.
 
-## 7. Work not approved before P9H1 authorization
+## 7. Work not approved in P9H1
 
 - another History metric or archive type;
 - exact session reconstruction;
@@ -139,8 +143,9 @@ UI localization is distinct from collecting or analyzing stream language. Provid
 - new D1 schema, collector, cron, retention, binding, or API route;
 - output-schema changes;
 - localization runtime before Phase 13;
+- broad chart/task/responsive work owned by P9H2–P9H5;
 - parallel major feature expansion.
 
 ## 8. Stop rule
 
-There is no active implementation branch. Do not create `work-history-ui-h1-metric` until explicit continuation.
+Complete P9H1 on `work-history-ui-h1-metric`, merge it, name `work-history-ui-h2-chart` as the exact next branch, and stop until explicit continuation.
