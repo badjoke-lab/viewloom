@@ -106,7 +106,7 @@ function selectLatestCompletedDay(data: Payload): void {
   const today = todayUtc()
   const days = data.daily ?? []
   const candidate = [...days].reverse().find((day) => day.day && day.day < today && day.coverageState === 'good')
-    ?? [...days].reverse().find((day) => day.day && day.day < today && day.coverageState !== 'missing')
+    ?? [...days].reverse().find((day) => day.day && day.day < today && day.coverageState !== 'missing' && day.coverageState !== 'in-progress')
   if (candidate?.day && new URL(location.href).searchParams.get('day') !== candidate.day) {
     const target = document.querySelector<SVGGElement>(`.history-day-column[data-history-day="${cssEscape(candidate.day)}"]`)
     target?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
@@ -146,14 +146,18 @@ function compactSummary(data: Payload): void {
 function renderCoverageScope(data: Payload): void {
   const root = document.querySelector<HTMLElement>('[data-history-coverage-summary]')
   if (!root) return
-  const hasToday = (data.daily ?? []).some((day) => day.day === todayUtc())
+  const days = data.daily ?? []
+  const hasToday = days.some((day) => day.day === todayUtc())
+  const hasInProgress = days.some((day) => isInProgressDay(day))
   const observed = data.coverage?.observedDays ?? data.daily?.length ?? 0
   const partial = data.coverage?.partialDays ?? 0
   const missing = data.coverage?.missingDays ?? 0
-  root.className = `history-coverage-summary ${hasToday || partial || missing ? 'is-attention' : 'is-good'}`
+  root.className = `history-coverage-summary ${hasInProgress || partial || missing ? 'is-attention' : 'is-good'}`
   const html = hasToday
     ? `<div><strong>Today is still in progress.</strong><span>Today stays visible in the chart and archive, but completed-period summaries and rankings stop at the latest finished day.</span></div>`
-    : `<div><strong>Completed-period view.</strong><span>Summary cards and rankings use finished observed days in this range.</span></div>`
+    : hasInProgress
+      ? `<div><strong>An observed day is still in progress.</strong><span>In-progress observations stay visible but are excluded from completed-period summaries and rankings.</span></div>`
+      : `<div><strong>Completed-period view.</strong><span>Summary cards and rankings use finished observed days in this range.</span></div>`
   const counts = `<div class="history-coverage-summary__counts"><span>${observed} observed</span><span>${partial} partial</span><span>${missing} missing</span></div>`
   if (root.innerHTML !== html + counts) root.innerHTML = html + counts
 }
@@ -162,17 +166,22 @@ function markDayStates(data: Payload): void {
   const today = todayUtc()
   const dayMap = new Map((data.daily ?? []).filter((day) => day.day).map((day) => [day.day as string, day]))
   document.querySelectorAll<SVGGElement>('.history-day-column[data-history-day]').forEach((group) => {
-    const inProgress = group.dataset.historyDay === today
+    const day = group.dataset.historyDay ?? ''
+    const record = dayMap.get(day)
+    const sourceCoverage = record?.coverageState ?? ''
+    const inProgress = sourceCoverage === 'in-progress' || day === today
+    if (sourceCoverage) group.dataset.historySourceCoverage = sourceCoverage
     group.classList.toggle('is-in-progress', inProgress)
     group.querySelector('.history-bar')?.classList.toggle('history-bar--in-progress', inProgress)
   })
   document.querySelectorAll<HTMLElement>('[data-history-day-card]').forEach((card) => {
     const day = card.dataset.historyDayCard ?? ''
     const record = dayMap.get(day)
-    const state = day === today ? 'in-progress' : record?.coverageState === 'good' ? 'complete' : 'attention'
+    const inProgress = record?.coverageState === 'in-progress' || day === today
+    const state = inProgress ? 'in-progress' : record?.coverageState === 'good' ? 'complete' : 'attention'
     card.dataset.historyArchiveState = state
     const badge = card.querySelector<HTMLElement>('.history-badge')
-    if (badge && day === today) {
+    if (badge && inProgress) {
       setText(badge, 'In progress')
       badge.className = 'history-badge history-badge--in-progress'
     }
@@ -184,9 +193,11 @@ function improveSelectedDay(data: Payload): void {
   const selected = new URL(location.href).searchParams.get('day')
   const day = (data.daily ?? []).find((item) => item.day === selected)
   if (!root || !day?.day) return
-  const inProgress = day.day === todayUtc()
+  const inProgress = isInProgressDay(day)
   const needsAttention = inProgress || day.coverageState !== 'good'
-  if (inProgress) setText(root.querySelector<HTMLElement>('.surface__head small'), 'Today · In progress')
+  if (inProgress) {
+    setText(root.querySelector<HTMLElement>('.surface__head small'), day.day === todayUtc() ? 'Today · In progress' : 'Selected day · In progress')
+  }
   const body = root.querySelector<HTMLElement>('.history-selected-body')
   let warning = body?.querySelector<HTMLElement>('[data-history-selected-warning]') ?? null
   if (body && needsAttention) {
@@ -303,6 +314,10 @@ function updateArchive(_data: Payload): void {
   setText(document.querySelector<HTMLButtonElement>('[data-history-archive-filter="all"]'), `All (${cards.length})`)
   setText(document.querySelector<HTMLButtonElement>('[data-history-archive-filter="complete"]'), `Complete (${complete})`)
   setText(document.querySelector<HTMLButtonElement>('[data-history-archive-filter="attention"]'), `Needs attention (${cards.length - complete})`)
+}
+
+function isInProgressDay(day: Day | undefined): boolean {
+  return day?.coverageState === 'in-progress' || day?.day === todayUtc()
 }
 
 function setText(node: HTMLElement | null | undefined, value: string, title?: string): void {
