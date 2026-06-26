@@ -43,6 +43,8 @@ check('docs/work-in-progress/history-ui-repair-working-note.md', [
 check('apps/web/src/live/history-usability-pass.ts', [
   "import '../history-chart-p9h2.css'",
   "import './history-chart-p9h2'",
+  "import './history-chart-keyboard-delegation'",
+  "import './history-comparison-clarity'",
 ])
 check('apps/web/src/live/history-usability.ts', [
   "sourceCoverage === 'in-progress' || day === today",
@@ -52,13 +54,28 @@ check('apps/web/src/live/history-usability.ts', [
 check('apps/web/src/live/history-chart-p9h2.ts', [
   'new MutationObserver(queue).observe(stage',
   'data-history-chart-keyboard-target',
-  "keyboard.addEventListener('keydown', onKeyboardNavigation)",
   'ArrowLeft ArrowRight Home End Enter Space',
   "svg.setAttribute('aria-labelledby'",
   "stage.dataset.historyChartReady = 'true'",
   "legend.dataset.historyLegendNonColor = 'true'",
   "detail.setAttribute('aria-live', 'polite')",
   "hit.setAttribute('aria-hidden', 'true')",
+])
+check('apps/web/src/live/history-chart-keyboard-delegation.ts', [
+  "document.addEventListener('keydown', handleDelegatedKeydown, true)",
+  "event.key === 'Home'",
+  "event.key === 'ArrowRight'",
+  "hit.dispatchEvent(new MouseEvent('click', { bubbles: true }))",
+])
+check('apps/web/src/live/history-comparison-clarity.ts', [
+  'response.clone().json()',
+  "setText(card.querySelector<HTMLElement>('strong'), 'No baseline')",
+  "setText(label, 'Tracked streams (max)')",
+])
+check('apps/web/src/live/history-archives.ts', [
+  'function ensureInitialReady()',
+  "root.dataset.historyDailyHierarchyReady = 'true'",
+  "node.matches('[data-history-day-card]')",
 ])
 check('apps/web/src/history-chart-p9h2.css', [
   '.history-state-marker',
@@ -69,7 +86,7 @@ check('apps/web/src/history-chart-p9h2.css', [
 check('apps/web/scripts/history-ui-h2-chart-browser.mjs', [
   "schema: 'viewloom-history-ui-h2-chart-v1'",
   "phase: 'P9H2'",
-  "[data-history-chart-keyboard-target]",
+  'if (!touch)',
   "keyboard.press('Home')",
   "keyboard.press('ArrowRight')",
   "demoDay.locator('.history-bar-hit')",
@@ -86,6 +103,7 @@ check('.github/workflows/history-ui-h2-chart.yml', [
 for (const path of [
   'apps/web/src/live/history-chart-p9h2.ts',
   'apps/web/src/live/history-chart-source-state.ts',
+  'apps/web/src/live/history-chart-keyboard-delegation.ts',
 ]) {
   if (!existsSync(join(root, path))) continue
   const source = readFileSync(join(root, path), 'utf8')
