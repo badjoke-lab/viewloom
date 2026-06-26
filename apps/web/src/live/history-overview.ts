@@ -61,9 +61,25 @@ let currentPayload: Payload | null = null
 let scheduled = false
 
 installPayloadCapture()
-const observer = new MutationObserver(schedule)
+const observer = new MutationObserver((records) => {
+  if (records.every(isNumberFormatOnlyMutation)) return
+  schedule()
+})
 observer.observe(document.documentElement, { childList: true, subtree: true })
 schedule()
+
+function isNumberFormatOnlyMutation(record: MutationRecord): boolean {
+  const target = record.target instanceof Element ? record.target : record.target.parentElement
+  return Boolean(target?.closest([
+    '[data-history-selected-day] .history-selected-metrics strong',
+    '[data-history-selected-day] .history-selected-top strong',
+    '[data-history-daily-archive] .day-card > strong',
+    '[data-history-daily-archive] .day-card dd',
+    '.history-peak-archive tbody td:nth-child(3)',
+    '.history-peak-archive tbody td:nth-child(4)',
+    '.history-streamer-card dd',
+  ].join(',')))
+}
 
 function installPayloadCapture(): void {
   const originalFetch = window.fetch.bind(window)
