@@ -3,201 +3,142 @@
 Status: source of truth
 Last updated: 2026-06-26
 
-## 1. Current product state
+## 1. Current position
 
-ViewLoom Core v1 is deployed on Cloudflare Pages with separate Twitch and Kick data paths.
+```text
+Phase 7 P7A   complete PR #426
+Phase 8 P8A   complete PR #427
+Phase 8 P8B   complete PR #428
+Phase 9 P9H0  complete PR #430
+P9H0 closeout active on work-p9h0-closeout
+Phase 9 P9H1  exact next after closeout merge report and explicit continuation
+```
 
-Verified production foundations:
+Exact next implementation branch:
 
-- `main` is the production branch;
-- production deployment identity is exposed through `/deployment.json`;
-- Twitch and Kick Pages Functions and D1 bindings remain separate;
-- collectors expose bounded observations and freshness state;
-- explicit 404 behavior and permanent Production Smoke automation exist;
-- Local Watchlist v1 is accepted through PR #425;
-- the post-Watchlist source reset completed through PR #426;
-- the static public-surface inventory completed through PR #427.
+```text
+work-history-ui-h1-metric
+```
 
-| Area | State | Roadmap meaning |
-|---|---|---|
-| Portal and provider homes | production core; P8B audit active | verified defects only after audit |
-| Heatmap | production core; P8B audit active | verified defects only after audit |
-| Day Flow | production core; P8B audit active | verified defects only after audit |
-| Battle Lines | production core; P8B audit active | verified defects only after audit |
-| History & Trends | production baseline accepted; P1 repair approved | P8B reproduction, then Phase 9 central repair |
-| Data Status | production core; P8B audit active | verified defects only after audit |
-| Channel / Streamer | v1 accepted; P8B cross-site audit active | preserve retained-footprint contract |
-| Report/export shared layer | complete through PR #413 | preserve exact output contracts |
-| Local Watchlist v1 | complete through PR #425 | preserve accepted local/Preview/production contract |
-| Session / Category / Language / Event / Alerts | not approved | require later capability audit and explicit approval |
+P9H1 has not been created.
 
-## 2. Authority map
+## 2. Verified state
+
+- Local Watchlist v1 is complete through PR #425.
+- The source-of-truth reset is complete through PR #426.
+- Public-surface inventory is complete through PR #427.
+- Public browser audit is complete through PR #428.
+- The deterministic History P9H0 baseline is complete through PR #430.
+- Twitch and Kick remain separate across routes, APIs, storage, bindings, rankings, exports, and coverage claims.
+
+P8B result:
+
+```text
+P0 0
+P1 3
+P2 5
+P3 0
+```
+
+P9H0 locked these deterministic failures:
+
+```text
+history-metric-ranking-context-stale
+history-metric-summary-stale
+history-mobile-task-flow-too-long
+history-selected-day-context-stale
+```
+
+The local first-Tab scenarios moved focus to the ViewLoom home link. The earlier P8B production body-focus observation remains a production/local discrepancy for P9H5 and final acceptance.
+
+## 3. Authority map
 
 ```text
 Product priority:
   docs/product/current-roadmap.md
 
-Exact active window and next branch:
+Exact active state and next branch:
   docs/product/current-schedule.md
 
-Complete Phase 7–15 program:
+Complete Phase 7–16 program:
   docs/product/post-watchlist-program-plan.md
 
-History repair target and sequence:
+History repair:
   docs/product/history-ui-repair-spec.md
   docs/product/history-ui-repair-plan.md
   docs/work-in-progress/history-ui-repair-working-note.md
 
-P8B route and evidence baseline:
-  docs/audits/P8B_SCOPE.md
-  docs/audits/public-surface-inventory.json
-  docs/audits/public-surface-inventory.md
-  docs/audits/public-surface-gaps.json
-  docs/audits/public-browser-defects.json
-  docs/audits/public-browser-audit.md
+P9H0 evidence:
+  docs/audits/history-ui-h0-baseline.md
+  docs/audits/history-ui-h0-owner-map.json
+  docs/audits/history-ui-h0-source-map.md
+  docs/audits/history-ui-h0-findings.md
+
+Cross-site quality:
+  docs/product/cross-site-quality-remediation-spec.md
+  docs/product/cross-site-quality-remediation-plan.md
+
+Localization:
+  docs/product/localization-spec.md
+  docs/product/localization-implementation-plan.md
 ```
 
-## 3. Current priority
+## 4. Ordered roadmap
 
 ```text
-Phase 7 — source-of-truth reset
-State: complete through PR #426
-
-Phase 8 — public-surface inventory and browser defect audit
-P8A: complete through PR #427
-P8B: active
-Current branch: work-public-browser-audit
-Execution state: browser evidence and final defect records produced; latest-head completion gates and merge remain
-Exact next branch: work-history-ui-h0-baseline
-Exception: a newly proven P0 may interrupt
+Phase 7   source-of-truth reset                              complete PR #426
+Phase 8   inventory and browser defect audit                 complete PR #428
+Phase 9   History P1 repair                                   P9H0 complete; P9H1 next
+Phase 10  cross-site defect/UI/architecture repair           queued
+Phase 11  acceptance, CI, type safety, monitoring            queued
+Phase 12  English legal, Support, Stripe, release readiness  queued
+Phase 13  localization foundation plus English/Japanese      approved and queued
+Phase 14  Spanish/pt-BR localization and staged launch       approved and queued
+Phase 15  next-feature data-capability audit                  queued
+Phase 16  one separately approved major feature              not approved
 ```
 
-P8B is an audit branch. It captures exact browser evidence, classifies defects, and produces the ordered Phase 9 queue. It does not repair product UI or alter data/runtime contracts.
+No Phase 16 feature is approved.
 
-## 4. Known History defects remain P1
-
-The following remain approved without another product gate:
-
-- Viewer-minutes and Peak viewers do not produce a sufficiently observable, trustworthy page-wide change;
-- the main chart lacks or fails to prove all required scale, ticks, units, and interaction cues;
-- chart-side or selected-day information is too thin or disconnected;
-- lower-page regions are sparse, weakly prioritized, duplicated, or unclear;
-- desktop, tablet, and mobile do not yet prove one coherent task-oriented analysis flow.
-
-Additional screenshots may refine styling later. They are not an entry criterion for repair.
-
-## 5. Ordered roadmap
+## 5. Phase 9 sequence
 
 ```text
-Phase 7   source-of-truth reset and repair-program lock              complete PR #426
-Phase 8   P8A inventory complete PR #427; P8B browser audit active
-Phase 9   P0/P1 core repair; History UI central track                queued
-Phase 10  cross-site visual and interaction-system consolidation     queued
-Phase 11  operations, monitoring, and maintenance lock               queued
-Phase 12  Support, legal, Stripe, and release-readiness audit        queued
-Phase 13  external launch and feedback classification                queued
-Phase 14  next-feature data-capability audit                         queued
-Phase 15  one separately approved major feature, if any              not approved
+P9H0 work-history-ui-h0-baseline   complete PR #430
+P9H1 work-history-ui-h1-metric     exact next
+P9H2 work-history-ui-h2-chart      queued
+P9H3 work-history-ui-h3-overview   queued
+P9H4 work-history-ui-h4-tasks      queued
+P9H5 work-history-ui-h5-responsive queued
+P9H6 work-history-ui-h6-candidate  queued
+P9H7 work-history-ui-h7-acceptance queued
 ```
 
-No Phase 15 feature is approved by this roadmap.
+P9H1 repairs Viewer-minutes / Peak viewers execution across URL, provider request, selected control, chart, Summary, Selected day, Ranking context, supported Archives, Report, Share, and Exports. It does not add a metric, API, D1 schema, collector, binding, cron, retention rule, provider combination, or output schema.
 
-## 6. Phase 8 P8B deliverables
+## 6. Later phases
 
-```text
-21 owned routes × 4 required viewports
-5 missing policy/disclosure probes
-10 deterministic History state/interaction scenarios
-machine-readable runtime evidence
-full-page screenshot artifact
-machine-readable defect ledger
-human-readable audit report
-ordered Phase 9 queue
-```
+Phase 10 repairs reproduced cross-site defects and consolidates shared shell, chart grammar, responsive/accessibility behavior, route readiness, and safe architecture cleanup.
 
-Required widths:
+Phase 11 locks one all-public acceptance matrix, CI consolidation, staged strict-null-checking, monitoring, runbooks, and maintenance cadence.
 
-```text
-1440px
-820px
-390px
-360px
-```
+Phase 12 completes the English source versions of Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Support, Stripe flow, limitations, FAQ, and release assets.
 
-Required states where applicable:
+Phase 13 introduces the localization runtime and completes English/Japanese acceptance. Phase 14 adds Spanish and Brazilian Portuguese and then performs staged launch. Arabic/RTL requires separate approval after usage evidence.
 
-```text
-real/fresh
-partial
-stale
-empty
-missing
-demo
-error
-loading
-in progress
-storage unavailable
-long content
-```
+UI localization is distinct from collecting or analyzing stream language. Provider-origin names, IDs, titles, and categories are not translated by the initial program.
 
-Defect classes:
+## 7. Work not approved before P9H1 authorization
 
-```text
-P0  outage, materially wrong data, provider/privacy failure
-P1  primary feature unusable, misleading, or materially incomplete
-P2  clarity, consistency, polish, automation, or secondary interaction defect
-P3  deferred improvement or feature request
-```
-
-## 7. P8A handoff record retained for completed Watchlist contract verification
-
-The completed Watchlist verifier must compare against the exact P8A handoff without treating that historical state as the current schedule.
-
-```text
-Local Watchlist v1 | W0–W5B complete through PR #425; P8A inventoried
-P8A: complete through PR #427
-Exact next branch: work-public-browser-audit
-both Watchlist routes are missing from Public Readiness configuration
-```
-
-The current next branch is not the historical line above. It is `work-history-ui-h0-baseline` after P8B merges and explicit continuation is received.
-
-## 8. Phase 9 sequence
-
-```text
-P9H0 work-history-ui-h0-baseline
-P9H1 work-history-ui-h1-metric
-P9H2 work-history-ui-h2-chart
-P9H3 work-history-ui-h3-overview
-P9H4 work-history-ui-h4-tasks
-P9H5 work-history-ui-h5-responsive
-P9H6 work-history-ui-h6-candidate
-P9H7 work-history-ui-h7-acceptance
-```
-
-Non-History P0/P1 defects discovered in P8B receive narrow repair branches. P2 polish and automation consolidation wait for the relevant later phase unless they block P1 acceptance.
-
-## 9. Later phases
-
-- Phase 10: shared UI, chart grammar, responsive, and accessibility consolidation.
-- Phase 11: unified acceptance matrix, monitoring, runbooks, and maintenance cadence.
-- Phase 12: Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Stripe, and launch readiness.
-- Phase 13: staged external launch and feedback classification.
-- Phase 14: evaluate zero or one next-feature candidate.
-- Phase 15: no implementation branch until separately approved.
-
-## 10. Work not approved in the current window
-
-- new History primary metrics or archive types;
+- another History metric or archive type;
 - exact session reconstruction;
-- category or language collection;
-- cross-platform totals or rankings;
+- category or stream-language collection;
+- combined provider totals or rankings;
 - login, cloud accounts, alerts, or AI interpretation;
 - new D1 schema, collector, cron, retention, binding, or API route;
-- multiple major feature expansions in parallel.
+- output-schema changes;
+- localization runtime before Phase 13;
+- parallel major feature expansion.
 
-## 11. Roadmap update rule
+## 8. Stop rule
 
-Update this file when a phase begins or completes, a P0/P1 changes order, or a future feature is approved or deferred.
-
-After every merge, issue the full merge report, update canonical state, name the exact next branch, and stop until explicit continuation.
+After this closeout branch merges, issue the full merge report, name `work-history-ui-h1-metric` as the exact next branch, and stop. Do not create P9H1 until explicit continuation.
