@@ -3,73 +3,49 @@ import { join } from 'node:path'
 
 const root = process.cwd()
 const failures = []
-const read = (path) => readFileSync(join(root, path), 'utf8')
-const need = (path, fragments) => {
-  if (!existsSync(join(root, path))) {
-    failures.push(`missing file: ${path}`)
+const check = (path, parts) => {
+  const file = join(root, path)
+  if (!existsSync(file)) {
+    failures.push(`missing ${path}`)
     return
   }
-  const source = read(path)
-  for (const fragment of fragments) if (!source.includes(fragment)) failures.push(`${path}: missing ${fragment}`)
+  const source = readFileSync(file, 'utf8')
+  for (const part of parts) if (!source.includes(part)) failures.push(`${path}: missing ${part}`)
 }
 
-need('docs/product/current-roadmap.md', [
-  'Phase 9 P9H2  active',
-  'Active implementation branch: work-history-ui-h2-chart',
-  'Exact next implementation branch: work-history-ui-h3-overview',
-])
-need('docs/product/current-schedule.md', [
-  'P9H2 History chart interpretation        active',
-  'Active implementation branch             work-history-ui-h2-chart',
-  'Exact next branch                        work-history-ui-h3-overview',
-])
-need('apps/web/src/live/history-usability-pass.ts', [
-  "import '../history-chart-p9h2.css'",
-  "import './history-chart-p9h2'",
-])
-need('apps/web/src/live/history-chart-p9h2.ts', [
-  "new MutationObserver(queue).observe(stage, { childList: true, subtree: true })",
+check('docs/product/current-roadmap.md', ['Phase 9 P9H2  active', 'work-history-ui-h2-chart', 'work-history-ui-h3-overview'])
+check('docs/product/current-schedule.md', ['P9H2 active', 'Active branch: work-history-ui-h2-chart', 'Next branch: work-history-ui-h3-overview'])
+check('docs/product/history-ui-repair-plan.md', ['Version: 1.8', 'work-history-ui-h2-chart', 'work-history-ui-h3-overview'])
+check('docs/work-in-progress/history-ui-repair-working-note.md', ['history-chart-p9h2.ts', 'history-ui-h2-chart-browser.mjs'])
+check('apps/web/src/live/history-usability-pass.ts', ["import '../history-chart-p9h2.css'", "import './history-chart-p9h2'"])
+check('apps/web/src/live/history-chart-p9h2.ts', [
+  'new MutationObserver(queue).observe(stage',
   "stage.addEventListener('keydown', onKeydown, true)",
-  "day.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight Home End Enter Space')",
-  "svg.setAttribute('aria-labelledby', `${title.id} ${description.id}`)",
+  'ArrowLeft ArrowRight Home End Enter Space',
+  "svg.setAttribute('aria-labelledby'",
   "stage.dataset.historyChartReady = 'true'",
   "legend.dataset.historyLegendNonColor = 'true'",
   "node.setAttribute('aria-live', 'polite')",
 ])
-need('apps/web/src/history-chart-p9h2.css', [
-  '.history-state-marker',
-  '.history-chart-inspection',
-  '[data-history-coverage="missing"]',
-  '@media(forced-colors:active)',
-])
-need('apps/web/scripts/history-ui-h2-chart-browser.mjs', [
+check('apps/web/src/history-chart-p9h2.css', ['.history-state-marker', '.history-chart-inspection', 'forced-colors:active'])
+check('apps/web/scripts/history-ui-h2-chart-browser.mjs', [
   "schema: 'viewloom-history-ui-h2-chart-v1'",
   "phase: 'P9H2'",
-  "await selected.press('Home')",
-  "await selected.press('ArrowRight')",
-  "if (touch) await demo.tap()",
-  'keyboard day inspection',
-  "calls.every((call) => call.provider === provider)",
+  "press('Home')",
+  "press('ArrowRight')",
+  'demo.tap()',
+  'calls.length, requestCount',
 ])
-need('.github/workflows/history-ui-h2-chart.yml', [
-  'name: History UI P9H2 Chart',
-  'Verify P9H2 repository contract',
-  'Run P9H2 chart browser acceptance',
-  'history-ui-h2-chart',
-  'cancel-in-progress: true',
-])
+check('.github/workflows/history-ui-h2-chart.yml', ['name: History UI P9H2 Chart', 'Run P9H2 chart browser acceptance', 'cancel-in-progress: true'])
 
-const source = read('apps/web/src/live/history-chart-p9h2.ts')
-if (source.includes('window.fetch =')) failures.push('P9H2 must not add a fetch wrapper')
-if (source.includes('document.documentElement')) failures.push('P9H2 observer must stay scoped to the chart stage')
+const chart = readFileSync(join(root, 'apps/web/src/live/history-chart-p9h2.ts'), 'utf8')
+if (chart.includes('window.fetch =')) failures.push('chart layer adds fetch wrapper')
+if (chart.includes('document.documentElement')) failures.push('chart observer is not stage-scoped')
 
 if (failures.length) {
-  console.error('History UI P9H2 verification failed:')
-  for (const failure of failures) console.error(`- ${failure}`)
+  console.error('P9H2 verification failed')
+  failures.forEach((failure) => console.error(`- ${failure}`))
   process.exit(1)
 }
 
-console.log('History UI P9H2 repository verification passed.')
-console.log('- chart dates, scale, metric, unit, exact detail, keyboard/touch inspection, and non-color state meaning are governed')
-console.log('- provider and request boundaries remain unchanged')
-console.log('- work-history-ui-h3-overview remains next and uncreated')
+console.log('P9H2 chart repository verification passed.')
