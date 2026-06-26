@@ -1,20 +1,20 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 
 const path = new URL('./history-ui-h0-browser.mjs', import.meta.url)
-const lines = readFileSync(path, 'utf8').split('\n')
-const output = []
-let fixed = 0
+const source = readFileSync(path, 'utf8')
 
-for (const line of lines) {
-  if (line.includes("'history-first-keyboard-entry-missing'")) continue
-  if (line.includes('before.ranking') && line.includes('history-metric-ranking-context-stale')) {
-    output.push("  if (before.ranking === after.ranking) fail('history-metric-ranking-context-stale')")
-    fixed += 1
-  } else {
-    output.push(line)
-  }
+for (const fragment of [
+  "'history-metric-ranking-context-stale'",
+  "'history-metric-summary-stale'",
+  "'history-mobile-task-flow-too-long'",
+  "'history-selected-day-context-stale'",
+  'before.ranking === after.ranking',
+]) {
+  if (!source.includes(fragment)) throw new Error(`P9H0 browser baseline missing: ${fragment}`)
 }
 
-if (fixed !== 1) throw new Error('ranking comparison count mismatch')
-writeFileSync(path, output.join('\n'))
-console.log('P9H0 deterministic baseline prepared.')
+if (source.includes("'history-first-keyboard-entry-missing',\n")) {
+  throw new Error('P9H0 browser baseline still expects the production-only keyboard finding locally')
+}
+
+console.log('P9H0 deterministic baseline is static and self-contained.')
