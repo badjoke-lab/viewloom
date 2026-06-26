@@ -36,38 +36,44 @@ for (const path of [
 ]) needFile(path)
 
 need('README.md', [
-  'P9H0 complete PR #430',
-  'work-p9h0-closeout',
+  'P9H0 History baseline               complete PR #430',
+  'P9H0 documentation closeout         complete PR #432',
+  'Active implementation branch        none',
   'work-history-ui-h1-metric',
 ])
 need('docs/README.md', [
   'P9H0 completed through PR #430.',
-  'C9H0     work-p9h0-closeout',
-  'P9H1     work-history-ui-h1-metric',
+  'closeout completed through PR #432',
+  'Active implementation branch',
+  'work-history-ui-h1-metric',
 ])
 need('docs/product/current-roadmap.md', [
   'Phase 9 P9H0  complete PR #430',
-  'P9H0 closeout active on work-p9h0-closeout',
+  'P9H0 closeout complete PR #432',
+  'Active implementation branch: none',
   'work-history-ui-h1-metric',
 ])
 need('docs/product/current-schedule.md', [
-  'History P9H0 deterministic baseline      complete PR #430',
-  'Current branch: work-p9h0-closeout',
+  'P9H0 History baseline                   complete PR #430',
+  'P9H0 documentation closeout             complete PR #432',
+  'Active implementation branch            none',
   'work-history-ui-h1-metric',
 ])
 need('docs/product/post-watchlist-program-plan.md', [
-  'Completed predecessor: P9H0 through PR #430',
-  'Current branch: `work-p9h0-closeout`',
+  'Current implementation branch: none',
+  'Completed closeout: PR #432',
   'Exact next implementation branch: `work-history-ui-h1-metric`',
 ])
 need('docs/product/history-ui-repair-plan.md', [
   'Completed window: P9H0 through PR #430',
-  'Current branch: `work-p9h0-closeout`',
+  'Completed closeout: PR #432',
+  'Current implementation branch: none',
   'work-history-ui-h1-metric',
 ])
 need('docs/work-in-progress/history-ui-repair-working-note.md', [
   'Completed predecessor: P9H0 through PR #430',
-  'Current branch: `work-p9h0-closeout`',
+  'Completed closeout: PR #432',
+  'Current implementation branch: none',
   'work-history-ui-h1-metric',
 ])
 
@@ -171,4 +177,5 @@ console.log('History UI P9H0 repository verification passed.')
 console.log('- P9H0 remains completed through PR #430')
 console.log('- exact deterministic failures and source owners remain recorded')
 console.log('- the keyboard production/local discrepancy remains explicit')
-console.log('- work-history-ui-h1-metric remains next after closeout')
+console.log('- P9H0 closeout is complete through PR #432')
+console.log('- work-history-ui-h1-metric remains the uncreated next branch')
