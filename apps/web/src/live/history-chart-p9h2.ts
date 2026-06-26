@@ -88,9 +88,11 @@ function onKeydown(event: KeyboardEvent): void {
   else if (event.key === 'End') next = days.length - 1
   else return
   event.preventDefault()
-  days[next]?.focus()
-  days[next]?.click()
-  showInspection(days[next])
+  const target = days[next]
+  if (!target) return
+  target.focus()
+  target.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+  showInspection(target)
 }
 
 function inspect(event: Event): void {
@@ -126,7 +128,7 @@ function enhanceLegend(): void {
 }
 
 function chartDays(): SVGGElement[] {
-  return stage ? [...stage.querySelectorAll<SVGGElement>('[data-history-day]')] : []
+  return stage ? Array.from(stage.querySelectorAll<SVGGElement>('[data-history-day]')) : []
 }
 
 function currentMetric(): Metric {
