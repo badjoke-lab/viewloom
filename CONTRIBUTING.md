@@ -22,13 +22,13 @@ P9H0 complete through PR #430
 P9H0 documentation closeout complete through PR #432
 Final-state correction complete through PR #433
 P9H1 complete through PR #434
-P9H1 merge: 31b81d3ed3a56369055ba09eb4de871dfc59d315
-Active implementation branch: none
-Exact next implementation branch: work-history-ui-h2-chart
-P9H2 branch created: no
+P9H2 active
+Active implementation branch: work-history-ui-h2-chart
+Exact next implementation branch: work-history-ui-h3-overview
+P9H3 branch created: no
 ```
 
-P9H2 must not be created before explicit continuation.
+P9H3 must not be created before P9H2 merges, the full report is issued, and explicit continuation is received.
 
 ## Standard workflow
 
