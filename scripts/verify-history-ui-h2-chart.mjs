@@ -68,7 +68,8 @@ check('apps/web/scripts/history-ui-h2-chart-browser.mjs', [
   "phase: 'P9H2'",
   "press('Home')",
   "press('ArrowRight')",
-  'demo.tap()',
+  "demoDay.locator('.history-bar-hit')",
+  'demoHit.tap()',
   'calls.length, requestCount',
   'evidence.checkpoint',
 ])
