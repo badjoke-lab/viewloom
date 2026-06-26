@@ -7,7 +7,7 @@ import { historyPayload } from './history-period-comparison-fixture.mjs'
 const base = process.env.HISTORY_H2_BASE_URL ?? 'http://127.0.0.1:4173'
 const out = resolve(process.env.HISTORY_H2_ARTIFACT_DIR ?? 'artifacts/history-ui-h2')
 mkdirSync(out, { recursive: true })
-const evidence = { schema: 'viewloom-history-ui-h2-chart-v1', phase: 'P9H2', scenarios: [], diagnostics: [], result: 'running' }
+const evidence = { schema: 'viewloom-history-ui-h2-chart-v1', phase: 'P9H2', scenarios: [], diagnostics: [], checkpoint: 'start', result: 'running' }
 
 function payload(provider, metric) {
   const value = structuredClone(historyPayload(provider, 'comparable'))
@@ -37,10 +37,11 @@ async function run(browser, provider, viewport, touch) {
   await context.route('**/api/kick-history*', (route) => reply(route, 'kick'))
   await context.route('**/api/history*', (route) => reply(route, 'twitch'))
   const page = await context.newPage()
+  evidence.checkpoint = `${provider}:navigate`
   await page.goto(`${base}/${provider}/history/?period=7d&metric=viewer_minutes`, { waitUntil: 'domcontentloaded' })
   await ready(page, 'viewer_minutes')
   const initial = await snapshot(page)
-  evidence.diagnostics.push({ provider, initial })
+  evidence.diagnostics.push({ provider, checkpoint: 'initial', state: initial, url: page.url() })
   assert.match(initial.title, /Viewer-minutes by UTC day/)
   assert.match(initial.description, /Arrow keys move between days/)
   assert.equal(initial.labelledBy, 'history-chart-title history-chart-description')
@@ -54,12 +55,21 @@ async function run(browser, provider, viewport, touch) {
 
   const requestCount = calls.length
   let selected = page.locator('[data-history-day][aria-current="date"]')
+  evidence.checkpoint = `${provider}:home-focus`
   await selected.focus()
+  evidence.checkpoint = `${provider}:home-press`
   await selected.press('Home')
+  evidence.diagnostics.push({ provider, checkpoint: 'after-home', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
+  evidence.checkpoint = `${provider}:home-wait`
   await dayReady(page, '2026-06-12')
+
   selected = page.locator('[data-history-day][aria-current="date"]')
+  evidence.checkpoint = `${provider}:arrow-focus`
   await selected.focus()
+  evidence.checkpoint = `${provider}:arrow-press`
   await selected.press('ArrowRight')
+  evidence.diagnostics.push({ provider, checkpoint: 'after-arrow', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
+  evidence.checkpoint = `${provider}:arrow-wait`
   await dayReady(page, '2026-06-13')
   let state = await snapshot(page)
   assert.equal(state.selected, '2026-06-13')
@@ -67,14 +77,20 @@ async function run(browser, provider, viewport, touch) {
   assert.equal(calls.length, requestCount)
 
   const demo = page.locator('[data-history-day="2026-06-16"]')
+  evidence.checkpoint = `${provider}:demo-action`
   if (touch) await demo.tap()
   else await demo.click()
+  evidence.diagnostics.push({ provider, checkpoint: 'after-demo', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
+  evidence.checkpoint = `${provider}:demo-wait`
   await dayReady(page, '2026-06-16')
   state = await snapshot(page)
   assert.match(state.inspection, /coverage state demo/i)
   assert.equal(calls.length, requestCount)
 
+  evidence.checkpoint = `${provider}:metric-click`
   await page.locator('[data-history-metric="peak_viewers"]').click()
+  evidence.diagnostics.push({ provider, checkpoint: 'after-metric', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url(), calls: structuredClone(calls) })
+  evidence.checkpoint = `${provider}:metric-wait`
   await ready(page, 'peak_viewers')
   const peak = await snapshot(page)
   assert.match(peak.title, /Peak viewers by UTC day/)
@@ -95,6 +111,16 @@ async function ready(page, metric) {
 async function dayReady(page, day) {
   await page.waitForFunction((value) => new URL(location.href).searchParams.get('day') === value
     && document.querySelector('[data-history-day][aria-current="date"]')?.getAttribute('data-history-day') === value, day)
+}
+
+async function interactionSnapshot(page) {
+  return page.evaluate(() => ({
+    activeTag: document.activeElement?.tagName ?? '',
+    activeDay: document.activeElement?.getAttribute('data-history-day') ?? '',
+    urlDay: new URL(location.href).searchParams.get('day') ?? '',
+    selectedClass: document.querySelector('[data-history-day].is-selected')?.getAttribute('data-history-day') ?? '',
+    ariaCurrent: document.querySelector('[data-history-day][aria-current="date"]')?.getAttribute('data-history-day') ?? '',
+  }))
 }
 
 async function snapshot(page) {
@@ -126,6 +152,7 @@ try {
   await run(browser, 'twitch', { width: 1440, height: 1000 }, false)
   await run(browser, 'kick', { width: 390, height: 844 }, true)
   evidence.result = 'pass'
+  evidence.checkpoint = 'complete'
   writeFileSync(resolve(out, 'history-ui-h2-chart-evidence.json'), `${JSON.stringify(evidence, null, 2)}\n`)
 } catch (error) {
   evidence.result = 'fail'
