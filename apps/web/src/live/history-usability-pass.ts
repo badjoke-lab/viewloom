@@ -1,4 +1,5 @@
-// Accepted History entry: compatibility, task views, archives, and final visual layers load in this order.
+// Accepted History entry: source capture, compatibility, task views, archives, and final visual layers load in this order.
+import './history-chart-source-state'
 import '../history-clarity-hotfix.css'
 import '../history-card-visibility.css'
 import '../history-view-shell.css'
