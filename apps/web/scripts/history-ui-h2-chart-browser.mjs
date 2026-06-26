@@ -83,16 +83,18 @@ async function run(browser, provider, viewport, touch) {
     evidence.diagnostics.push({ provider, checkpoint: 'keyboard-covered-by-desktop', state, interaction: await interactionSnapshot(page), url: page.url() })
   }
 
-  const demoDay = page.locator('[data-history-day="2026-06-16"]')
+  const interactionDay = touch ? '2026-06-12' : '2026-06-16'
+  const expectedCoverage = touch ? 'good' : 'demo'
+  const demoDay = page.locator(`[data-history-day="${interactionDay}"]`)
   const demoHit = demoDay.locator('.history-bar-hit')
   evidence.checkpoint = `${provider}:demo-action`
   if (touch) await demoHit.tap()
   else await demoHit.click()
   evidence.diagnostics.push({ provider, checkpoint: 'after-demo', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
   evidence.checkpoint = `${provider}:demo-wait`
-  await dayReady(page, '2026-06-16')
+  await dayReady(page, interactionDay)
   state = await snapshot(page)
-  assert.match(state.inspection, /coverage state demo/i)
+  assert.match(state.inspection, new RegExp(`coverage state ${expectedCoverage}`, 'i'))
   assert.equal(calls.length, requestCount)
 
   evidence.checkpoint = `${provider}:metric-click`
