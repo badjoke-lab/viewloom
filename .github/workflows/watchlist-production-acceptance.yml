@@ -25,17 +25,6 @@ on:
       - 'apps/web/twitch/channel/**'
       - 'apps/web/kick/channel/**'
       - 'apps/web/functions/**'
-      - 'docs/README.md'
-      - 'docs/operations/watchlist-production-acceptance-2026-06-25.md'
-      - 'docs/product/current-roadmap.md'
-      - 'docs/product/current-schedule.md'
-      - 'docs/product/local-watchlist-spec.md'
-      - 'docs/product/watchlist-v1-implementation-plan.md'
-      - 'docs/work-in-progress/watchlist-v1-working-note.md'
-      - 'docs/work-in-progress/watchlist-w5a-hosted-preview-note.md'
-      - 'docs/work-in-progress/watchlist-w5b-production-note.md'
-      - 'scripts/verify-development-policy.mjs'
-      - '.github/workflows/watchlist-production-acceptance.yml'
 
 permissions:
   contents: read
