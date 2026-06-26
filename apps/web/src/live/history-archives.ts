@@ -46,11 +46,9 @@ function isHierarchyMutation(record: MutationRecord): boolean {
       && (node.matches('[data-history-daily-archive]') || Boolean(node.querySelector('[data-history-daily-archive]'))))
   }
 
-  if (record.target === observedRoot) {
-    return nodes.some((node) => node instanceof Element
-      && (node.matches('[data-history-day-card]') || Boolean(node.querySelector('[data-history-day-card]'))))
-  }
-  return false
+  if (!observedRoot.contains(record.target)) return false
+  return nodes.some((node) => node instanceof Element
+    && (node.matches('[data-history-day-card]') || Boolean(node.querySelector('[data-history-day-card]'))))
 }
 
 function invalidateDailyHierarchy(): void {
