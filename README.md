@@ -20,9 +20,10 @@ Phase 7 source reset                complete PR #426
 Phase 8 public browser audit        complete PR #428
 P9H0 History baseline               complete PR #430
 P9H0 documentation closeout         complete PR #432
-Active implementation branch        none
-Exact next branch                   work-history-ui-h1-metric
-P9H1 branch created                 no
+Final-state correction              complete PR #433
+Active implementation branch        work-history-ui-h1-metric
+Exact next branch                   work-history-ui-h2-chart
+P9H2 branch created                 no
 ```
 
 P9H0 locked:
@@ -34,9 +35,9 @@ history-mobile-task-flow-too-long
 history-selected-day-context-stale
 ```
 
-The local keyboard run reached the ViewLoom home link. The P8B production body-focus observation remains a P9H5/final-acceptance discrepancy.
+P9H1 repairs the three metric-context failures. `history-mobile-task-flow-too-long` remains for P9H3/P9H5. The local keyboard run reached the ViewLoom home link; the P8B production body-focus observation remains a P9H5/final-acceptance discrepancy.
 
-P9H1 repairs Viewer-minutes and Peak viewers across URL, request, control, chart, Summary, Selected day, Ranking context, supported Archives, Report, Share, and Exports. It does not add a metric, API, D1 schema, collector, binding, cron, retention rule, provider combination, or output schema.
+P9H1 synchronizes Viewer-minutes and Peak viewers across URL, request, control, chart, Summary, Selected day, comparison, Ranking context, supported Archives, Report, Share, and Exports. It does not add a metric, API, D1 schema, collector, binding, cron, retention rule, provider combination, or output schema.
 
 ## Later program
 
@@ -76,4 +77,4 @@ Future authorities:
 
 Ordinary development uses `work-*`; deliberate Cloudflare candidate validation uses `preview-*`. Only latest-head evidence counts. After every merge, issue the full report and stop.
 
-There is no active implementation branch. P9H1 starts only after explicit continuation.
+Complete P9H1 on `work-history-ui-h1-metric`, merge it, and stop before creating P9H2 until explicit continuation.
