@@ -1,8 +1,9 @@
 {
   "schema": "viewloom-history-ui-h0-owner-map-v1",
   "phase": "P9H0",
-  "status": "complete_candidate",
+  "status": "complete",
   "execution_branch": "work-p9h0-baseline",
+  "completion_pr": 430,
   "owners": {
     "state_request_and_base_rendering": "apps/web/src/live/history-current-shell-entry.ts",
     "compatibility_import_order": "apps/web/src/live/history-usability-pass.ts",
@@ -19,5 +20,6 @@
     "history-mobile-task-flow-too-long",
     "history-selected-day-context-stale"
   ],
+  "keyboard_result": "local_first_tab_reaches_viewloom_home_link_production_body_focus_discrepancy_retained",
   "next_branch": "work-history-ui-h1-metric"
 }
