@@ -1,9 +1,10 @@
 # ViewLoom History UI repair specification
 
 Status: approved active repair specification
-Version: 1.0
+Version: 1.1
 Created: 2026-06-25
-Roadmap phase: Phase 7–9 — source reset, public audit, and P0/P1 repair
+Last updated: 2026-06-26
+Roadmap phase: Phase 9 — History P1 repair
 Accepted baseline specification: `history-and-trends-spec.md`
 Completed baseline implementation: `history-layout-rebuild-plan.md`
 Active implementation plan: `history-ui-repair-plan.md`
@@ -12,21 +13,15 @@ Active implementation plan: `history-ui-repair-plan.md`
 
 This document defines the approved repair target for the public Twitch and Kick History experience.
 
-The 2026-06-23 History production acceptance remains the baseline record for existing retained-data behavior. It does not override subsequently verified public-quality defects. This repair specification has authority for the active History UI repair milestone while preserving the baseline data and provider contracts.
-
-The repair turns the current History surface into an understandable analysis product. It is not a request for cosmetic polish alone.
+The 2026-06-23 History production acceptance remains the baseline record for retained-data behavior. It does not override subsequently verified public-quality defects. This repair turns the current History surface into an understandable, accessible, maintainable analysis product. It is not cosmetic polish alone.
 
 ## 2. Approved P1 defects
 
-The following are approved defects:
+1. Viewer-minutes and Peak viewers controls do not produce a sufficiently observable, trustworthy page-wide change.
+2. The first keyboard Tab does not reliably enter a visible actionable control.
+3. Desktop, tablet, and mobile do not present one coherent task-oriented analysis flow.
 
-1. Viewer-minutes and Peak viewers controls do not produce a sufficiently observable, trustworthy change across the page.
-2. The main chart lacks the readable numeric scale, date ticks, metric unit, and interaction cues needed to interpret it.
-3. The chart-side summary or selected-day area is too thin, placeholder-like, or disconnected from the chart.
-4. Lower-page regions are sparse, weakly prioritized, duplicated, or unclear in purpose.
-5. Desktop, tablet, and mobile do not yet present one coherent task-oriented analysis flow.
-
-These defects may be reproduced and repaired without additional reference screenshots. Additional reference screenshots may refine styling later but are not an entry criterion for this milestone.
+The repair must also permanently protect readable chart scale/date/unit/detail, useful selected-day interpretation, compact explicit unavailable states, and safe controller/module ownership.
 
 ## 3. Provider and data invariants
 
@@ -50,8 +45,6 @@ Mandatory invariants:
 
 ## 4. Supported primary metrics
 
-The primary metric controls remain:
-
 ```text
 viewer_minutes
 peak_viewers
@@ -59,95 +52,75 @@ peak_viewers
 
 This repair does not authorize another primary metric.
 
-Average viewers, observed streams, and observed minutes may appear as supporting facts when already supplied or safely derived under the existing response contract. They do not become additional primary metric buttons.
+Average viewers, observed streams, and observed minutes may appear as supporting facts when already supplied or safely derived under the existing response contract. They do not become additional primary metric controls.
 
-## 5. Metric switching contract
+## 5. Metric execution contract
 
-Changing the selected metric must update every metric-dependent surface consistently.
-
-Required dependent surfaces:
+Changing the selected metric must update every metric-dependent surface consistently:
 
 - URL state;
-- API query or loaded-payload selection, according to the existing architecture;
-- selected button state and accessible name;
-- chart values;
-- chart scale, ticks, unit, and accessible description;
+- API query or loaded-payload selection under the accepted request architecture;
+- selected control and accessible name;
+- chart values, scale, ticks, unit, and accessible description;
 - period summary labels and values;
-- selected-day metric fact;
+- selected-day primary metric fact;
 - previous-period comparison;
 - Top streamers ranking meaning and default sort where relevant;
-- metric values in Daily, Peak, or Battle archive surfaces where the selected metric is supported;
-- Report & Export context and generated text.
+- supported Daily, Peak, and Battle archive values;
+- Report & Export context and ViewLoom-authored generated text.
 
-A repair is not accepted when only the button appearance or `aria-pressed` state changes.
-
-Permanent browser gates must prove that, for a fixture or real response where the metrics differ, at least the chart values or unit and the dependent summary context change.
+A repair is not accepted when only selected styling, button text, or `aria-pressed` changes. Permanent gates must prove rendered metric meaning changes for fixtures where the two metrics differ.
 
 ## 6. Chart contract
 
-The main daily trend chart is the dominant Overview visual.
+The main daily trend chart is the dominant Overview visual. It must expose:
 
-It must expose:
-
-- a readable X-axis with UTC date ticks;
-- a readable Y-axis or equivalent numeric scale;
-- numeric tick labels;
-- the selected metric name;
-- the selected metric unit;
-- compact formatting for large values with exact values available in detail text or tooltip;
-- a meaningful baseline;
-- a visible selected day;
-- pointer-accessible day detail;
-- keyboard-accessible day detail and selection;
-- touch-accessible day detail and selection;
-- visible complete, partial, in-progress, and missing distinctions;
-- a data-quality legend that does not rely on color alone;
-- an accessible chart title, description, or equivalent structured text.
+- readable UTC date ticks;
+- readable numeric scale and tick labels;
+- selected metric name and unit;
+- meaningful baseline;
+- compact large-number formatting with exact detail;
+- visible selected day;
+- pointer, keyboard, and touch day detail/selection;
+- complete, partial, in-progress, and missing distinctions;
+- non-color-only data-quality legend;
+- accessible title and description.
 
 A chart containing bars or lines without a readable scale, unit, date context, or day detail fails acceptance.
 
 ## 7. Period summary contract
 
-The summary near the top must use high-value period facts rather than repeated labels or placeholders.
+The top summary uses high-value supported facts, such as:
 
-Supported facts may include:
-
-- selected metric total or period aggregate;
-- daily average for the selected metric where valid;
-- period peak value;
-- peak day;
+- selected metric total/aggregate;
+- valid daily average;
+- period peak value and day;
 - top streamer;
 - strongest supported rise;
 - previous-period change when comparable;
-- observed days / requested days;
-- partial and missing day counts;
+- observed/requested days;
+- partial/missing day counts;
 - concise coverage state.
 
-Labels and values must change with the selected metric where the fact is metric-dependent. Unavailable values are not rendered as invented zeroes.
+Metric-dependent labels and values change with the selected metric. Unavailable values are not rendered as invented zeroes.
 
-## 8. Selected-day analysis contract
+## 8. Selected-day contract
 
-The selected-day area must be a useful interpretation of the chart selection.
-
-When supported, it includes:
+The selected-day area must interpret the chart selection. When supported, it includes:
 
 - UTC date;
 - selected metric value and unit;
 - peak viewers;
 - top streamer;
-- observed stream count;
-- observed minutes;
-- coverage state;
-- in-progress, partial, or missing warning;
-- provider-safe Open Day Flow and Open Battle Lines actions.
+- observed stream count and minutes;
+- coverage state and partial/in-progress/missing warning;
+- provider-safe Day Flow and Battle Lines actions.
 
-The panel must not remain a large placeholder when a valid day is selected.
-
-Desktop may place this panel beside the chart. Tablet and mobile place it after the chart in reading order.
+Desktop may place it beside the chart. Tablet/mobile place it immediately after the chart in reading order. It must not remain a large placeholder when a valid day exists.
 
 ## 9. Information architecture
 
-The fixed top-level tasks remain:
+Top-level tasks remain:
 
 ```text
 Overview
@@ -165,55 +138,41 @@ Battles
 
 Only one top-level task and one archive subview are visible at a time.
 
-### 9.1 Overview order
+Overview order:
 
 1. provider, period, metric, state, and observed scope;
-2. period and metric controls;
-3. top-level task navigation;
+2. period/metric controls;
+3. task navigation;
 4. metric-aware summary;
 5. chart and selected-day analysis;
 6. compact previous-period comparison;
 7. calendar heat;
 8. Top streamers and supported changes;
-9. concise coverage explanation and methodology/status links.
+9. concise coverage/methodology/status links.
 
-### 9.2 Archives
+Archives switching reuses the loaded History response. Report & Export retains provider, period, metric, selected scope, source, state, and limitation language.
 
-Daily, Peaks, and Battles remain distinct bounded exploration tasks. Archive switching reuses the loaded History response and does not trigger an unnecessary provider request.
-
-### 9.3 Report & Export
-
-Report & Export remains one secondary workspace with Full report, Short post, Copy, share-card preview, PNG, CSV, and JSON actions. It must visibly retain the current provider, period, metric, selected scope, source, state, and limitation language.
-
-## 10. Sparse, empty, partial, and error states
+## 10. Sparse and degraded states
 
 A large empty container with no clear task or explanation is not acceptable.
 
-When content is unavailable:
+For unavailable content:
 
-- use a compact state panel;
-- identify whether the state is empty, partial, missing, stale, demo, or error;
-- state what evidence is still usable;
-- provide the next useful action when one exists;
-- do not reserve excessive blank height for unavailable content.
+- use a compact explicit state panel;
+- identify empty, partial, missing, stale, demo, in-progress, or error;
+- state what evidence remains usable;
+- offer the next useful action when one exists;
+- do not reserve excessive blank height.
 
-Partial and missing are not equivalent. Missing is never shown as observed zero. Demo is visibly distinct from real data.
+Missing is never shown as observed zero. Demo is visibly distinct from real data.
 
-## 11. Period, URL, and request behavior
+## 11. URL and request behavior
 
-Supported periods remain:
+Supported periods remain Last 7 days, Last 30 days, and supported custom range.
 
-```text
-Last 7 days
-Last 30 days
-supported custom range
-```
+URL state preserves provider, period, metric, valid custom dates, task, archive, selected day, sort, and limit where relevant.
 
-URL state preserves provider, period, metric, valid custom dates, task, archive, selected day, sort, and limit when relevant.
-
-Back and Forward restore the intended History state. Direct links restore the intended task and archive.
-
-Task and archive changes do not trigger another History request. Metric and period request behavior must follow one response per uncached provider/period/metric state and reuse page-memory state where supported. No per-day or per-streamer request loop is allowed.
+Back/Forward and direct links restore supported state. Task/archive changes do not trigger another History request. Metric/period requests follow one response per uncached provider/period/metric state and reuse page-memory state where supported. No per-day or per-streamer request loop is allowed.
 
 ## 12. Responsive and accessibility contract
 
@@ -229,20 +188,48 @@ Required widths:
 Requirements:
 
 - no page-level horizontal overflow;
+- first keyboard entry reaches a visible actionable control;
 - controls wrap in semantic order;
 - chart scale, ticks, units, and selected day remain readable;
-- the PC layout is not merely scaled down;
-- touch users can inspect days without hover-only behavior;
-- keyboard users can change period, metric, task, archive, and selected day;
+- mobile is reorganized rather than merely scaled down;
+- pointer, keyboard, and touch users can inspect days;
+- period, metric, task, archive, and day selection are keyboard accessible;
 - visible focus is retained;
 - general touch targets are at least 44px;
-- important mobile management and publishing targets are at least 48px;
-- long text and URLs wrap inside their surfaces;
-- reduced-motion preference is respected;
-- increased-contrast and forced-color modes remain usable;
-- state, selection, and comparison do not rely on color alone.
+- important management/publishing targets are at least 48px;
+- long text/URLs wrap;
+- reduced motion, increased contrast, and forced colors remain usable;
+- state and selection do not rely on color alone.
 
-## 13. Visual hierarchy
+## 13. Architecture ownership contract
+
+The accepted repair must make History ownership explicit.
+
+Requirements:
+
+- one documented authoritative controller/state owner for provider, period, metric, selected day, task, archive, sort, and limit;
+- explicit request/cache and render boundaries;
+- an inventory of all active shell, overview, usability, compatibility, hotfix, archive, report, responsive, focus, and output layers;
+- no new global `window.fetch` replacement used for feature coordination;
+- no new document-wide `MutationObserver` used as primary History state management;
+- redundant compatibility/hotfix layers are retired where browser and contract gates prove equivalence;
+- any retained legacy layer has a named purpose, owner, and removal condition;
+- no broad rewrite may weaken URL, Back/Forward, provider, request-count, output, or degraded-state contracts.
+
+P9H0 records ownership and failing gates. P9H1–P9H5 perform bounded repair. P9H6 proves the final architecture and behavior together.
+
+## 14. Localization boundary
+
+Phase 9 does not implement localization. It must avoid making later localization harder:
+
+- new ViewLoom-authored strings should be grouped behind clear rendering/helper boundaries rather than scattered across unrelated patches;
+- provider-origin names, IDs, titles, and categories remain separate from UI copy;
+- UTC, metric, unit, state, and limitation meaning stays explicit;
+- no locale routing, catalog, automatic translation, or stream-language analytics is added.
+
+The later authoritative localization contract is `localization-spec.md`.
+
+## 15. Visual hierarchy
 
 Priority:
 
@@ -255,43 +242,39 @@ Priority:
 7. report/export;
 8. detailed methodology.
 
-Twitch uses disciplined purple accents and Kick uses disciplined green accents. Provider accent does not fill every surface. Partial uses amber semantics, error uses red semantics, and missing uses neutral/non-color distinctions where practical.
+Twitch uses disciplined purple accents and Kick disciplined green accents. Partial uses amber semantics, error red semantics, and missing neutral/non-color distinctions where practical.
 
-## 14. Non-goals and forbidden expansion
+## 16. Non-goals
 
 This repair does not add:
 
-- new primary metrics;
-- new archive types;
-- a new History API;
-- D1 schema changes;
-- collector, cron, retention, or binding changes;
+- new primary metrics or archive types;
+- a new History API, D1 schema, collector, cron, retention, or binding;
 - exact sessions;
-- category or language trends;
+- category or stream-language trends;
 - cross-platform comparison;
-- login or cloud-saved preferences;
-- alerts;
-- AI interpretation;
+- login/cloud preferences, alerts, or AI interpretation;
 - additional report modes;
-- density-increasing sections without a defined user task.
+- localization runtime;
+- density-increasing sections without a defined task.
 
-## 15. Acceptance contract
+## 17. Acceptance contract
 
 The repair is accepted only when:
 
-- both metric controls change rendered metric meaning, not only selected styling;
-- chart scale, date ticks, metric name, unit, and day details are present and tested;
-- summary and selected-day analysis show supported useful facts;
+- both metrics change rendered meaning, not only styling;
+- chart scale, date ticks, metric, unit, and day details are present/tested;
+- summary and selected day show useful supported facts;
 - Overview follows the approved order;
-- Archives and Report & Export are separate complete tasks;
-- sparse areas have a defined task or compact explicit state;
-- real, partial, stale, empty, missing, demo, and error states remain honest;
-- direct links and Back/Forward restore supported state;
-- task and archive switching do not refetch History;
+- Archives and Report & Export are complete separate tasks;
+- sparse areas have a defined task or compact state;
+- real, partial, stale, empty, missing, demo, in-progress, and error states remain honest;
+- direct links and Back/Forward restore state;
+- task/archive switching does not refetch;
 - Twitch and Kick remain separated;
-- 1440, 820, 390, and 360px browser gates pass;
-- keyboard, focus, touch, reduced-motion, contrast, wrapping, and overflow gates pass;
-- History shell, Overview, Archives, Peak, Battle, comparison, report, share, export, Status, Channel, build, policy, naming, and readiness regressions pass;
-- deliberate Preview validation passes with real provider data and correct bindings;
-- exact production deployment identity and public Twitch/Kick acceptance pass;
+- 1440/820/390/360 browser gates pass;
+- keyboard entry, focus, touch, motion, contrast, wrapping, targets, and overflow pass;
+- authoritative controller/layer ownership is documented and redundant layers are safely retired or explicitly retained;
+- History, output, Status, Channel, build, policy, naming, readiness, and provider regressions pass;
+- deliberate Preview with real provider data and exact production acceptance pass;
 - permanent evidence is recorded and the temporary working note is deleted.
