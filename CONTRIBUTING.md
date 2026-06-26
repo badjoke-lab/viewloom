@@ -23,11 +23,13 @@ Do not begin from chat memory, screenshots, an old PR, or a stale document. Comp
 
 ```text
 P9H0 complete through PR #430
-Current closeout branch: work-p9h0-closeout
+P9H0 documentation closeout complete through PR #432
+Active implementation branch: none
 Exact next implementation branch: work-history-ui-h1-metric
+P9H1 branch created: no
 ```
 
-P9H1 must not be created before the closeout PR merges, the full merge report is issued, and explicit continuation is received.
+P9H1 must not be created before explicit continuation is received.
 
 ## Standard workflow
 
