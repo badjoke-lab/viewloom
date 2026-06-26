@@ -26,6 +26,17 @@ Phase 15 next-feature audit              queued
 Phase 16 major feature                   not approved
 ```
 
+## Historical P9H1 closeout snapshot
+
+The following exact values describe the accepted state immediately after PR #435. They are retained for historical gates and are not the current execution state.
+
+```text
+P9H1 History metric synchronization      complete PR #434
+Active implementation branch             none
+Exact next branch                        work-history-ui-h2-chart
+P9H2 branch created                      no
+```
+
 ## P9H1 evidence
 
 ```text
