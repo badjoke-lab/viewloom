@@ -2,76 +2,39 @@
 
 ## Required reading
 
-Before changing the repository, read:
+Before changing the repository, read the development/deployment policy and addendum, documentation governance, `docs/README.md`, the current roadmap/schedule/program plan, the affected specifications and implementation plan, the active working note, and relevant audit/acceptance records.
 
-- `docs/operations/development-and-deployment-policy.md`;
-- `docs/operations/development-policy-addendum.md`;
-- `docs/operations/documentation-governance.md`;
-- `docs/README.md`;
-- `docs/product/current-roadmap.md`;
-- `docs/product/current-schedule.md`;
-- `docs/product/post-watchlist-program-plan.md`;
-- the affected baseline specification;
-- the affected active/future specification;
-- the affected implementation plan;
-- the active working note;
-- relevant audit and acceptance records.
-
-Do not begin from chat memory, screenshots, an old PR, or a stale document. Compare the current schedule with actual branches/PRs and update governing documents before implementation when state, scope, order, or acceptance criteria changed.
+Do not begin from chat memory, screenshots, an old PR, or a stale document. Compare the schedule with actual repository state and update governing documents first when state, scope, order, or acceptance criteria changed.
 
 ## Current state
 
 ```text
 P9H0 complete through PR #430
-Current closeout branch: work-p9h0-closeout
+P9H0 documentation closeout complete through PR #432
+Active implementation branch: none
 Exact next implementation branch: work-history-ui-h1-metric
+P9H1 branch created: no
 ```
 
-P9H1 must not be created before the closeout PR merges, the full merge report is issued, and explicit continuation is received.
-
-## Standard workflow
+## Workflow
 
 ```text
-canonical docs
+read current authorities
   -> compare actual repository state
-  -> confirm branch and entry condition
-  -> work-* branch
-  -> targeted checks
-  -> update working note
-  -> final candidate checks and artifact review
-  -> optional preview-* validation
-  -> merge to main
-  -> production identity/smoke/visual acceptance where applicable
-  -> permanent documentation update
-  -> full merge report and stop
+  -> confirm predecessor report and explicit continuation
+  -> create the scheduled work-* branch
+  -> run targeted checks
+  -> update the working note
+  -> run final latest-head CI/browser/artifact checks
+  -> use preview-* only when deliberate runtime validation is required
+  -> merge
+  -> verify production where applicable
+  -> update permanent documentation
+  -> issue the full report and stop
 ```
 
-## Branches and commits
+Keep Twitch and Kick routes, APIs, storage, rankings, exports, locales, and coverage claims separate. Group related changes logically. Connector-forced multi-commit PRs use `[CF-Pages-Skip]` where appropriate and squash merge.
 
-- `work-*`: ordinary development; no intentional Cloudflare Preview.
-- `preview-*`: completed candidate only, for deliberate runtime validation.
-- `main`: production branch.
+A merged PR is not automatically deployed or visually accepted. Completion uses the applicable CI, browser artifacts, Preview, exact production identity, smoke, manual visual/localization acceptance, permanent documentation, and temporary-note cleanup.
 
-Group related changes logically. When a connector forces multiple file commits, use `[CF-Pages-Skip]` where appropriate, explain the limitation, and squash merge.
-
-## Pull requests
-
-Every PR states:
-
-```text
-Roadmap phase
-Schedule window
-Program plan
-Baseline specification
-Active/future specification
-Implementation plan
-Working note
-Predecessor merge and explicit continuation
-Exact next branch after merge
-```
-
-Also state provider, DB/binding, collector/cron, retention, output-schema, Cloudflare, layout/accessibility, localization, and temporary-note impact.
-
-## Completion
-
-A merged PR is not automatically deployed or visually accepted. Completion uses the applicable combination of latest-head CI, browser gates, screenshot review, deliberate Preview, exact production deployment identity, production smoke, manual visual/localization acceptance, permanent documentation, and temporary-note cleanup.
+P9H1 resumes only after explicit continuation.
