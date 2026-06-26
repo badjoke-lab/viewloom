@@ -1,17 +1,35 @@
 let scheduled = false
 let applying = false
+let observedRoot: HTMLElement | null = null
 
 const observer = new MutationObserver(() => {
   invalidateDailyHierarchy()
   schedule()
 })
-observer.observe(document.documentElement, { childList: true, subtree: true })
+
+observeRelevantRoot()
 document.addEventListener('click', (event) => {
   if ((event.target as HTMLElement | null)?.closest('[data-history-clarity-filter],[data-history-archive-toggle]')) scheduleAfterInteraction()
 })
 window.addEventListener('viewloom:peak-archive-toggle', scheduleAfterInteraction)
 window.addEventListener('viewloom:battle-archive-toggle', scheduleAfterInteraction)
 schedule()
+
+function observeRelevantRoot(): void {
+  observer.disconnect()
+  const root = document.querySelector<HTMLElement>('[data-history-daily-archive]')
+  observedRoot = root
+  if (root) {
+    observer.observe(root, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['hidden'],
+    })
+    return
+  }
+  observer.observe(document.documentElement, { childList: true, subtree: true })
+}
 
 function invalidateDailyHierarchy(): void {
   const root = document.querySelector<HTMLElement>('[data-history-daily-archive]')
@@ -47,7 +65,7 @@ function enhanceArchives(): void {
       ))
     }
   } finally {
-    observer.observe(document.documentElement, { childList: true, subtree: true })
+    observeRelevantRoot()
     applying = false
   }
 }
