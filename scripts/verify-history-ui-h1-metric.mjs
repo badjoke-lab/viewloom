@@ -60,7 +60,7 @@ need('docs/product/post-watchlist-program-plan.md', [
 need('docs/product/history-ui-repair-plan.md', [
   'Version: 1.6',
   'Current implementation branch: `work-history-ui-h1-metric`',
-  'The three metric-context expected failures must become passing assertions',
+  'P9H1 replaces the three metric-context failures with passing assertions.',
   'work-history-ui-h2-chart',
 ])
 need('docs/work-in-progress/history-ui-repair-working-note.md', [
