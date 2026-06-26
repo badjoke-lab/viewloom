@@ -1,16 +1,20 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 
 const path = new URL('./history-ui-h0-browser.mjs', import.meta.url)
-let source = readFileSync(path, 'utf8')
+const lines = readFileSync(path, 'utf8').split('\n')
+const output = []
+let fixed = 0
 
-for (const line of [
-  "  'history-first-keyboard-entry-missing',\n",
-  "  'history-metric-ranking-context-stale',\n",
-  "  if (`${before.ranking}|${before.firstRow}` === `${after.ranking}|${after.firstRow}`) fail('history-metric-ranking-context-stale')\n",
-]) {
-  if (!source.includes(line)) throw new Error(`P9H0 baseline source no longer contains expected line: ${line.trim()}`)
-  source = source.replace(line, '')
+for (const line of lines) {
+  if (line.includes("'history-first-keyboard-entry-missing'")) continue
+  if (line.includes('before.ranking') && line.includes('history-metric-ranking-context-stale')) {
+    output.push("  if (before.ranking === after.ranking) fail('history-metric-ranking-context-stale')")
+    fixed += 1
+  } else {
+    output.push(line)
+  }
 }
 
-writeFileSync(path, source)
-console.log('Prepared deterministic P9H0 baseline: summary, selected-day, and mobile task-flow are expected red. Keyboard is locally actionable. Ranking is excluded because the equal-order fixture and async number formatting cannot provide a stable semantic assertion.')
+if (fixed !== 1) throw new Error('ranking comparison count mismatch')
+writeFileSync(path, output.join('\n'))
+console.log('P9H0 deterministic baseline prepared.')
