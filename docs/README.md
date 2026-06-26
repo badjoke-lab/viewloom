@@ -38,6 +38,15 @@ Implementation must not begin from chat memory, screenshots, or an old PR alone.
 - [`product/history-ui-repair-plan.md`](product/history-ui-repair-plan.md) — active P9H0–P9H7 subplan
 - [`work-in-progress/history-ui-repair-working-note.md`](work-in-progress/history-ui-repair-working-note.md) — active execution memory; delete in P9H7
 
+### Active P9H0 executable baseline
+
+- [`audits/history-p9h0-ownership.md`](audits/history-p9h0-ownership.md) — current primary/secondary owners, fetch wrappers, MutationObservers, DOM rehome chain, and known failures
+- [`../apps/web/docs/history-p9h0-baseline-contract.md`](../apps/web/docs/history-p9h0-baseline-contract.md) — expected-failure transition contract
+- [`../scripts/verify-history-p9h0-baseline.mjs`](../scripts/verify-history-p9h0-baseline.mjs) — executable ownership and known-failure verifier
+- [`../.github/workflows/history-p9h0-baseline.yml`](../.github/workflows/history-p9h0-baseline.yml) — permanent P9H0 baseline workflow
+
+P9H1–P9H5 must update these baseline assertions when their scheduled defect is repaired. A known failure may not disappear without a replacement passing assertion.
+
 ## 4. Approved future quality and localization authorities
 
 ### Phase 10–11
