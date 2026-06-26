@@ -219,7 +219,7 @@ function renderMetricSelectedDay(payload: Payload, metric: HistoryMetric): void 
       </div>
       <div class="history-selected-top">
         <small>Top streamers by ${metricLabel(metric)}</small>
-        ${top.length ? `<ol>${top.map((streamer) => `<li><span>${escapeHtml(streamer.displayName ?? '—')}</span><strong>${formatNumber(streamerMetricValue(streamer, metric))} ${metricUnit(metric)}</strong></li>`).join('')}</ol>` : '<p>Daily streamer breakdown unavailable.</p>'}
+        ${top.length ? `<ol>${top.map((streamer, index) => `<li><span>#${index + 1} ${escapeHtml(streamer.displayName ?? '—')}</span><strong>${formatNumber(streamerMetricValue(streamer, metric))} ${metricUnit(metric)}</strong></li>`).join('')}</ol>` : '<p>Daily streamer breakdown unavailable.</p>'}
       </div>
       <div class="history-selected-actions">
         <a class="button" href="/${provider}/day-flow/?date=${encodeURIComponent(day.day)}">Open Day Flow</a>
