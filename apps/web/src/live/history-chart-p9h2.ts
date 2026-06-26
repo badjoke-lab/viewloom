@@ -110,7 +110,7 @@ function showInspection(day?: SVGGElement): void {
 
 function ensureInspection(): InspectionElements {
   if (!stage) throw new Error('History chart stage unavailable')
-  let root = stage.parentElement?.querySelector<HTMLElement>('[data-history-chart-inspection]') ?? null
+  let root = document.querySelector<HTMLElement>('[data-history-chart-inspection]')
   if (!root) {
     root = document.createElement('div')
     root.className = 'history-chart-inspection'
@@ -121,8 +121,6 @@ function ensureInspection(): InspectionElements {
     keyboard.className = 'history-chart-keyboard-target'
     keyboard.dataset.historyChartKeyboardTarget = ''
     keyboard.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight Home End Enter Space')
-    keyboard.addEventListener('keydown', onKeyboardNavigation)
-    keyboard.addEventListener('click', selectKeyboardDay)
 
     const detail = document.createElement('span')
     detail.dataset.historyChartInspectionDetail = ''
@@ -134,43 +132,14 @@ function ensureInspection(): InspectionElements {
     help.textContent = 'Left / Right: adjacent day · Home / End: range edge · Enter: select'
 
     root.append(keyboard, detail, help)
-    stage.insertAdjacentElement('afterend', root)
+    const anchor = stage.closest<HTMLElement>('.surface') ?? stage
+    anchor.insertAdjacentElement('afterend', root)
   }
 
   const keyboard = root.querySelector<HTMLButtonElement>('[data-history-chart-keyboard-target]')
   const detail = root.querySelector<HTMLElement>('[data-history-chart-inspection-detail]')
   if (!keyboard || !detail) throw new Error('History chart inspection controls unavailable')
   return { root, keyboard, detail }
-}
-
-function onKeyboardNavigation(event: KeyboardEvent): void {
-  const keyboard = event.currentTarget as HTMLButtonElement
-  const days = chartDays()
-  const currentDay = keyboard.dataset.historyKeyboardDay ?? ''
-  const currentIndex = Math.max(0, days.findIndex((day) => day.dataset.historyDay === currentDay))
-  let nextIndex = currentIndex
-  if (event.key === 'ArrowRight') nextIndex = Math.min(days.length - 1, currentIndex + 1)
-  else if (event.key === 'ArrowLeft') nextIndex = Math.max(0, currentIndex - 1)
-  else if (event.key === 'Home') nextIndex = 0
-  else if (event.key === 'End') nextIndex = days.length - 1
-  else return
-  event.preventDefault()
-  selectDay(days[nextIndex])
-  keyboard.focus()
-}
-
-function selectKeyboardDay(event: Event): void {
-  const keyboard = event.currentTarget as HTMLButtonElement
-  const day = chartDays().find((item) => item.dataset.historyDay === keyboard.dataset.historyKeyboardDay)
-  selectDay(day)
-}
-
-function selectDay(day?: SVGGElement): void {
-  if (!day) return
-  const hit = day.querySelector<SVGRectElement>('.history-bar-hit')
-  if (!hit) return
-  hit.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-  showInspection(day)
 }
 
 function enhanceLegend(): void {
