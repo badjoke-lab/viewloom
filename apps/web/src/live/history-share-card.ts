@@ -1,5 +1,11 @@
 import {
   historyReportCoverage,
+  metricLabel,
+  metricTopStreamer,
+  metricUnit,
+  reportMetric,
+  streamerMetricValue,
+  topMetricDay,
   type HistoryReportPayload,
   type HistoryReportProvider,
 } from './history-report-text-state'
@@ -18,9 +24,14 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
   if (!canvas || !preview || !toggle || !button || !status) return
 
   const coverage = historyReportCoverage(payload)
-  const metric = payload.metric === 'peak_viewers' ? 'peak_viewers' : 'viewer_minutes'
+  const metric = reportMetric(payload)
   const summary = payload.summary
-  const topStreamer = summary?.topStreamer ?? payload.topStreamers?.[0] ?? null
+  const topStreamer = metricTopStreamer(payload, metric)
+  const metricDay = topMetricDay(payload, metric)
+  const topValue = streamerMetricValue(topStreamer, metric)
+  const primaryValue = metric === 'peak_viewers'
+    ? summary?.peakViewers
+    : summary?.totalViewerMinutes
   const state = normalize(payload.state || payload.coverage?.state || summary?.coverageState)
   const source = normalize(payload.source)
   const period = periodParts(payload)
@@ -28,14 +39,18 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
     provider,
     metric,
     periodLabel: period.label,
+    topLabel: `TOP BY ${metricLabel(metric).toUpperCase()}`,
     topStreamer: clean(topStreamer?.displayName) || 'Unavailable for this period',
-    topStreamerValue: finite(topStreamer?.viewerMinutes)
-      ? `${formatNumber(topStreamer.viewerMinutes)} viewer-minutes`
+    topStreamerValue: finite(topValue)
+      ? `${formatNumber(topValue)} ${metricUnit(metric)}`
       : 'Observed ranking value unavailable',
-    peak: finite(summary?.peakViewers)
-      ? `${formatNumber(summary.peakViewers)} viewers`
+    primaryLabel: metric === 'peak_viewers' ? 'HIGHEST PEAK' : 'TOTAL OBSERVED',
+    primaryValue: finite(primaryValue)
+      ? `${formatNumber(primaryValue)} ${metricUnit(metric)}`
       : 'Unavailable',
-    peakDay: validDay(summary?.peakDay) ? formatDay(summary.peakDay) : 'Peak day unavailable',
+    primaryDetail: validDay(metricDay?.day)
+      ? `${metric === 'peak_viewers' ? 'Highest day' : 'Peak day'}: ${formatDay(metricDay.day)}`
+      : 'Metric day unavailable',
     observedDays: coverage.observedDays,
     totalDays: coverage.totalDays,
     missingDays: coverage.missingDays,
@@ -54,6 +69,8 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
   canvas.dataset.shareAttention = String(coverage.attentionDays)
   canvas.dataset.shareWidth = String(CARD_WIDTH)
   canvas.dataset.shareHeight = String(CARD_HEIGHT)
+  canvas.dataset.shareTopStreamer = model.topStreamer
+  canvas.dataset.sharePrimaryValue = model.primaryValue
 
   const draw = (): boolean => {
     const context = canvas.getContext('2d')
@@ -74,8 +91,8 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
     preview.hidden = !open
     toggle.setAttribute('aria-expanded', String(open))
     toggle.textContent = open ? 'Hide share card' : 'Preview share card'
-    if (open && draw()) status.textContent = 'Share card ready.'
-    else if (!open) status.textContent = 'Share card available on demand.'
+    if (open && draw()) status.textContent = `${metricLabel(metric)} share card ready.`
+    else if (!open) status.textContent = `${metricLabel(metric)} share card available on demand.`
   }
 
   toggle.disabled = false
@@ -95,7 +112,7 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
       anchor.click()
       anchor.remove()
       window.setTimeout(() => URL.revokeObjectURL(url), 1000)
-      status.textContent = 'PNG downloaded.'
+      status.textContent = `${metricLabel(metric)} PNG downloaded.`
     } catch {
       status.textContent = 'PNG generation failed in this browser.'
     } finally {
@@ -110,10 +127,12 @@ type CardModel = {
   provider: HistoryReportProvider
   metric: 'viewer_minutes' | 'peak_viewers'
   periodLabel: string
+  topLabel: string
   topStreamer: string
   topStreamerValue: string
-  peak: string
-  peakDay: string
+  primaryLabel: string
+  primaryValue: string
+  primaryDetail: string
   observedDays: number
   totalDays: number
   missingDays: number
@@ -149,10 +168,10 @@ function drawCard(context: CanvasRenderingContext2D, model: CardModel): void {
   context.fillStyle = '#aeb8ca'
   context.font = '650 25px ui-monospace, monospace'
   context.fillText(`${model.periodLabel} UTC`, 70, 238)
-  context.fillText(`Metric: ${model.metric === 'peak_viewers' ? 'Peak viewers' : 'Viewer-minutes'}`, 70, 276)
+  context.fillText(`Metric: ${metricLabel(model.metric)}`, 70, 276)
 
-  drawPanel(context, 70, 322, 485, 164, accent, 'TOP STREAMER', model.topStreamer, model.topStreamerValue)
-  drawPanel(context, 575, 322, 250, 164, accent, 'PEAK', model.peak, model.peakDay)
+  drawPanel(context, 70, 322, 485, 164, accent, model.topLabel, model.topStreamer, model.topStreamerValue)
+  drawPanel(context, 575, 322, 250, 164, accent, model.primaryLabel, model.primaryValue, model.primaryDetail)
   drawCoveragePanel(context, 845, 322, 285, 164, accent, model)
 
   context.fillStyle = '#aeb8ca'
