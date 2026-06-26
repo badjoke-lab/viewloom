@@ -21,22 +21,24 @@ Heatmap                                  production core
 Day Flow                                 production core; Phase 10 repair queued
 Battle Lines                             production core; Phase 10 repair queued
 History baseline H1-H7                   production accepted
-History P9H0 deterministic baseline      complete PR #430
+P9H0 History baseline                   complete PR #430
 History metric repair                    exact next after explicit continuation
 Channel C0-C5B                           production accepted
 Report/export R0-R4                      complete through PR #413
 Local Watchlist W0-W5B                   complete through PR #425
 Phase 7 source reset                     complete through PR #426
 Phase 8 P8A inventory                    complete through PR #427
-Phase 8 P8B browser audit                complete through PR #428
+Phase 8 public inventory/browser audit  complete PR #428
 Phase 9 P9H0                             complete through PR #430
-P9H0 documentation closeout              complete through PR #432
-Active implementation branch             none
+P9H0 documentation closeout             complete PR #432
+Active implementation branch            none
+Exact next branch                       work-history-ui-h1-metric
+P9H1 branch created                     no
 Phase 10 cross-site quality              queued
 Phase 11 engineering/operations lock     queued
 Phase 12 English release readiness       queued
 Phase 13 English/Japanese localization   queued
-Phase 14 es/pt-BR localization + launch  queued
+Phase 14 Spanish/pt-BR localization and staged launch queued
 Phase 15 next-feature audit              queued
 Phase 16 next major feature              not approved
 ```
