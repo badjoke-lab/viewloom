@@ -19,6 +19,14 @@ P9H0 record: `../audits/history-ui-h0-findings.md`
 P9H0 owner map: `../audits/history-ui-h0-owner-map.json`
 Delete when: P9H7 production acceptance and permanent-document transfer are complete.
 
+## Historical P9H1 closeout snapshot
+
+The following exact value describes the working note immediately after PR #435. It is retained for historical acceptance gates and is not the current execution state.
+
+```text
+Current implementation branch: none
+```
+
 ## P9H1 completion
 
 ```text
