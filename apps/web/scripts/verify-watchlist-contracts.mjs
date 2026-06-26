@@ -18,7 +18,7 @@ for (const script of [
   'scripts/verify-watchlist-page.mjs',
 ]) {
   const result = spawnSync(process.execPath, [script], { cwd: webRoot, encoding: 'utf8', env: process.env })
-  assert.equal(result.status, 0, `${script} failed.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`)
+  assert.equal(result.status, 0, `${script} did not pass.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`)
 }
 
 verifyGovernance()
@@ -30,7 +30,7 @@ verifyWorkflows()
 
 console.log('Watchlist completed production contract verification passed.')
 console.log('- W1 through W5B behavior and acceptance remain governed')
-console.log('- P9H0 closeout is complete through PR #432')
+console.log('- P9H1 schedule updates do not weaken Watchlist contracts')
 console.log('- temporary Watchlist notes remain retired')
 console.log('- no Watchlist-specific server, polling, per-channel request, or analytics path exists')
 
@@ -75,27 +75,28 @@ function verifyGovernance() {
   requireAll(roadmap, [
     'Local Watchlist v1 is complete through PR #425.',
     'Phase 8 P8B   complete PR #428', 'Phase 9 P9H0  complete PR #430',
-    'P9H0 closeout complete PR #432', 'Active implementation branch: none',
-    'work-history-ui-h1-metric', 'No Phase 16 feature is approved.',
+    'Final-state correction complete PR #433', 'Phase 9 P9H1  active',
+    'Active implementation branch: work-history-ui-h1-metric',
+    'work-history-ui-h2-chart', 'No Phase 16 feature is approved.',
   ], 'roadmap')
   requireAll(schedule, [
-    'P9H0 documentation closeout             complete PR #432',
-    'Active implementation branch            none',
-    'Exact next branch                       work-history-ui-h1-metric',
-    'P9H1 branch created                     no',
+    'Final-state correction                  complete PR #433',
+    'Active implementation branch            work-history-ui-h1-metric',
+    'Exact next branch                       work-history-ui-h2-chart',
+    'P9H2 branch created                     no',
   ], 'schedule')
   requireAll(program, [
-    'Status: active source-of-truth program plan',
-    'Current implementation branch: none', 'Completed closeout: PR #432',
-    '| 9 | P9H0 | complete PR #430', '| 9 | closeout | complete PR #432',
-    'Exact next implementation branch: `work-history-ui-h1-metric`',
+    'Status: active source-of-truth program plan', 'Version: 2.2',
+    'Current implementation branch: `work-history-ui-h1-metric`',
+    'Completed final-state correction: PR #433', '| 9 | P9H1 | active',
+    'Exact next implementation branch after P9H1 merge and explicit continuation: `work-history-ui-h2-chart`',
     'Phase 16 begins only after one candidate is separately approved',
   ], 'program')
   requireAll(index, [
     'product/local-watchlist-spec.md', 'product/watchlist-v1-implementation-plan.md',
     'operations/watchlist-production-acceptance-2026-06-25.md',
-    'Phase 6  Local Watchlist v1', 'documentation and program closeout',
-    'work-history-ui-h1-metric',
+    'Phase 6  Local Watchlist v1', 'P9H1     metric execution repair',
+    'work-history-ui-h1-metric', 'work-history-ui-h2-chart',
   ], 'documentation index')
   requireAll(inventory, [
     'viewloom-public-surface-inventory-v1', '"vite_html_inputs": 20',
