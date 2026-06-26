@@ -1,6 +1,6 @@
 # Contributing to ViewLoom
 
-## Required documents
+## Required reading
 
 Before changing the repository, read:
 
@@ -10,86 +10,68 @@ Before changing the repository, read:
 - `docs/README.md`;
 - `docs/product/current-roadmap.md`;
 - `docs/product/current-schedule.md`;
-- the affected feature specification and implementation plan;
-- any active note under `docs/work-in-progress/`.
+- `docs/product/post-watchlist-program-plan.md`;
+- the affected baseline specification;
+- the affected active/future specification;
+- the affected implementation plan;
+- the active working note;
+- relevant audit and acceptance records.
 
-Do not begin from chat memory, screenshots, or an old pull request alone. When required behavior or priority changed, update the governing documents before implementation.
+Do not begin from chat memory, screenshots, an old PR, or a stale document. Compare the current schedule with actual branches/PRs and update governing documents before implementation when state, scope, order, or acceptance criteria changed.
+
+## Current state
+
+```text
+P9H0 complete through PR #430
+Current closeout branch: work-p9h0-closeout
+Exact next implementation branch: work-history-ui-h1-metric
+```
+
+P9H1 must not be created before the closeout PR merges, the full merge report is issued, and explicit continuation is received.
 
 ## Standard workflow
 
 ```text
 canonical docs
-  -> confirm roadmap phase and schedule window
+  -> compare actual repository state
+  -> confirm branch and entry condition
   -> work-* branch
-  -> targeted iteration checks
-  -> update active working note as decisions change
-  -> completed candidate
-  -> full required CI, browser gates, and artifact review
-  -> optional preview-* branch when Cloudflare runtime validation is necessary
+  -> targeted checks
+  -> update working note
+  -> final candidate checks and artifact review
+  -> optional preview-* validation
   -> merge to main
-  -> production deployment verification
-  -> production smoke and visual acceptance
-  -> permanent documentation finalization
-  -> delete completed temporary working notes
+  -> production identity/smoke/visual acceptance where applicable
+  -> permanent documentation update
+  -> full merge report and stop
 ```
 
-## Branches
+## Branches and commits
 
-- `work-*`: ordinary development. Do not intentionally trigger Cloudflare Preview.
-- `preview-*`: completed candidate only. Use for deliberate Cloudflare runtime validation.
+- `work-*`: ordinary development; no intentional Cloudflare Preview.
+- `preview-*`: completed candidate only, for deliberate runtime validation.
 - `main`: production branch.
 
-## Commits
-
-Group related changes into logical commits. Do not use one-file-per-commit as the normal workflow.
-
-When an editing tool forces multiple branch commits:
-
-- use `[CF-Pages-Skip]` when the change must not deploy;
-- keep each commit internally valid where practical;
-- squash merge the PR so `main` receives one logical change.
-
-## Checks
-
-During implementation, run focused checks for the affected code. Before merge, run the complete required checks on the latest candidate HEAD. Old CI results from superseded commits do not count.
-
-Layout or responsive changes require screenshot artifact review in addition to automated browser assertions.
+Group related changes logically. When a connector forces multiple file commits, use `[CF-Pages-Skip]` where appropriate, explain the limitation, and squash merge.
 
 ## Pull requests
 
-Every implementation PR must state:
+Every PR states:
 
 ```text
-Roadmap phase:
-Schedule window:
-Permanent specification:
-Implementation plan:
-Active working note, if any:
+Roadmap phase
+Schedule window
+Program plan
+Baseline specification
+Active/future specification
+Implementation plan
+Working note
+Predecessor merge and explicit continuation
+Exact next branch after merge
 ```
 
-Also state whether the change affects:
-
-- Twitch;
-- Kick;
-- provider separation;
-- databases or bindings;
-- collectors or cron;
-- retention;
-- Cloudflare deployment behavior;
-- temporary-note lifecycle or permanent documentation.
+Also state provider, DB/binding, collector/cron, retention, output-schema, Cloudflare, layout/accessibility, localization, and temporary-note impact.
 
 ## Completion
 
-Do not state that a change is live, deployed, complete, or visually accepted merely because the PR merged.
-
-Completion requires the applicable combination of:
-
-- final candidate CI;
-- browser gates;
-- screenshot artifact review;
-- deliberate Preview verification;
-- exact production deployment identity;
-- production smoke checks;
-- manual visual acceptance;
-- permanent documentation update;
-- deletion of completed temporary working notes.
+A merged PR is not automatically deployed or visually accepted. Completion uses the applicable combination of latest-head CI, browser gates, screenshot review, deliberate Preview, exact production deployment identity, production smoke, manual visual/localization acceptance, permanent documentation, and temporary-note cleanup.
