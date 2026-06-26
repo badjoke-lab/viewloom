@@ -11,13 +11,9 @@ Before changing the repository, read:
 - `docs/product/current-roadmap.md`;
 - `docs/product/current-schedule.md`;
 - `docs/product/post-watchlist-program-plan.md`;
-- the affected baseline specification;
-- the affected active/future specification;
-- the affected implementation plan;
-- the active working note;
-- relevant audit and acceptance records.
+- the affected specifications, plan, working note, and acceptance records.
 
-Do not begin from chat memory, screenshots, an old PR, or a stale document. Compare the current schedule with actual branches/PRs and update governing documents before implementation when state, scope, order, or acceptance criteria changed.
+Do not begin from chat memory, screenshots, an old PR, or a stale document. Compare the current schedule with actual branches and PRs before implementation.
 
 ## Current state
 
@@ -25,56 +21,39 @@ Do not begin from chat memory, screenshots, an old PR, or a stale document. Comp
 P9H0 complete through PR #430
 P9H0 documentation closeout complete through PR #432
 Final-state correction complete through PR #433
-Active implementation branch: work-history-ui-h1-metric
+P9H1 complete through PR #434
+P9H1 merge: 31b81d3ed3a56369055ba09eb4de871dfc59d315
+Active implementation branch: none
 Exact next implementation branch: work-history-ui-h2-chart
 P9H2 branch created: no
 ```
 
-Complete P9H1 on the active branch. P9H2 must not be created before P9H1 merges, the full report is issued, and explicit continuation is received.
+P9H2 must not be created before explicit continuation.
 
 ## Standard workflow
 
 ```text
-canonical docs
-  -> compare actual repository state
+canonical documents
+  -> compare repository state
   -> confirm branch and entry condition
   -> work-* branch
   -> targeted checks
   -> update working note
-  -> final candidate checks and artifact review
+  -> final evidence review
   -> optional preview-* validation
   -> merge to main
-  -> production identity/smoke/visual acceptance where applicable
-  -> permanent documentation update
-  -> full merge report and stop
+  -> update permanent documents
+  -> full report and stop
 ```
 
-## Branches and commits
+## Branches
 
-- `work-*`: ordinary development; no intentional Cloudflare Preview.
-- `preview-*`: completed candidate only, for deliberate runtime validation.
+- `work-*`: ordinary development.
+- `preview-*`: completed candidate for deliberate runtime validation.
 - `main`: production branch.
 
-Group related changes logically. When a connector forces multiple file commits, use `[CF-Pages-Skip]` where appropriate, explain the limitation, and squash merge.
+Connector-created multi-commit work must be squash merged.
 
 ## Pull requests
 
-Every PR states:
-
-```text
-Roadmap phase
-Schedule window
-Program plan
-Baseline specification
-Active/future specification
-Implementation plan
-Working note
-Predecessor merge and explicit continuation
-Exact next branch after merge
-```
-
-Also state provider, DB/binding, collector/cron, retention, output-schema, Cloudflare, layout/accessibility, localization, and temporary-note impact.
-
-## Completion
-
-A merged PR is not automatically deployed or visually accepted. Completion uses the applicable combination of latest-head CI, browser gates, screenshot review, deliberate Preview, exact production deployment identity, production smoke, manual visual/localization acceptance, permanent documentation, and temporary-note cleanup.
+Every PR states the roadmap phase, schedule window, governing plans, working note, predecessor, exact next branch, provider impact, data/storage impact, output impact, Cloudflare impact, layout/accessibility impact, localization impact, and temporary-note impact.
