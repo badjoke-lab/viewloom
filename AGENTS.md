@@ -32,4 +32,11 @@ Exact next implementation branch: work-history-ui-h3-overview
 P9H3 branch created: no
 ```
 
+Historical P9H1 closeout evidence, not current state:
+
+```text
+Active implementation branch: none
+P9H2 branch created: no
+```
+
 Complete P9H2 on the active branch. Do not create P9H3 before P9H2 merges, the full report is issued, and explicit continuation is received. Do not start Phase 10–16 before its documented entry condition. After every merge, issue the full merge report and stop.
