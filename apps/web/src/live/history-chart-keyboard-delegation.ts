@@ -1,14 +1,15 @@
-const stage = document.querySelector<HTMLElement>('.history-stage')
+const initialStage = document.querySelector<HTMLElement>('.history-stage')
 
-if (stage) {
+if (initialStage) {
   document.addEventListener('keydown', handleDelegatedKeydown, true)
   document.addEventListener('pointerdown', handlePointerDown, true)
 }
 
 function handleDelegatedKeydown(event: KeyboardEvent): void {
   const keyboard = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-history-chart-keyboard-target]')
+  const stage = currentStage()
   if (!keyboard || !stage) return
-  const days = chartDays()
+  const days = chartDays(stage)
   const currentDay = keyboard.dataset.historyKeyboardDay ?? ''
   const currentIndex = Math.max(0, days.findIndex((day) => day.dataset.historyDay === currentDay))
   let nextIndex = currentIndex
@@ -24,6 +25,7 @@ function handleDelegatedKeydown(event: KeyboardEvent): void {
 }
 
 function handlePointerDown(event: PointerEvent): void {
+  const stage = currentStage()
   if (!stage) return
   const target = event.target as Element | null
   if (!target?.closest('[data-history-chart-keyboard-target]')) {
@@ -45,8 +47,12 @@ function selectDay(day: SVGGElement | undefined, keyboard: HTMLButtonElement): v
   })
 }
 
-function chartDays(): SVGGElement[] {
-  return stage ? Array.from(stage.querySelectorAll<SVGGElement>('[data-history-day]')) : []
+function currentStage(): HTMLElement | null {
+  return document.querySelector<HTMLElement>('.history-stage')
+}
+
+function chartDays(stage: HTMLElement): SVGGElement[] {
+  return Array.from(stage.querySelectorAll<SVGGElement>('[data-history-day]'))
 }
 
 export {}
