@@ -167,7 +167,7 @@ function renderMetricSummary(payload: Payload, metric: HistoryMetric): void {
   const html = `
     <div class="lead-stat" data-history-summary-primary="${metric}">
       <small>${metric === 'peak_viewers' ? 'Highest peak' : 'Total observed'}</small>
-      <strong>${formatNumber(primaryValue)}</strong>
+      <strong title="${formatNumber(primaryValue)}">${formatCompact(primaryValue)}</strong>
       <span>${metricUnit(metric)}</span>
     </div>
     <div>
@@ -397,6 +397,12 @@ function formatDuration(minutes: unknown): string {
 function formatDate(value?: string): string {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return value || '—'
   return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`))
+}
+
+function formatCompact(value: unknown): string {
+  return finite(value)
+    ? new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(value)
+    : '—'
 }
 
 function formatNumber(value: unknown): string {
