@@ -5,9 +5,9 @@ Last updated: 2026-06-26
 
 ## 1. Current product state
 
-ViewLoom Core v1 is deployed on Cloudflare Pages with separate Twitch and Kick data paths.
+ViewLoom Core v1 is deployed on Cloudflare Pages with separate Twitch and Kick routes, APIs, D1 bindings, collectors, rankings, exports, and coverage claims.
 
-Verified production foundations:
+Verified foundations:
 
 - `main` is the production branch;
 - production deployment identity is exposed through `/deployment.json`;
@@ -16,20 +16,23 @@ Verified production foundations:
 - explicit 404 behavior and permanent Production Smoke automation exist;
 - Local Watchlist v1 is accepted through PR #425;
 - the post-Watchlist source reset completed through PR #426;
-- the static public-surface inventory completed through PR #427.
+- the static public-surface inventory completed through PR #427;
+- the all-public browser audit completed through PR #428.
 
 | Area | State | Roadmap meaning |
 |---|---|---|
-| Portal and provider homes | production core; P8B audit active | verified defects only after audit |
-| Heatmap | production core; P8B audit active | verified defects only after audit |
-| Day Flow | production core; P8B audit active | verified defects only after audit |
-| Battle Lines | production core; P8B audit active | verified defects only after audit |
-| History & Trends | production baseline accepted; P1 repair approved | P8B reproduction, then Phase 9 central repair |
-| Data Status | production core; P8B audit active | verified defects only after audit |
-| Channel / Streamer | v1 accepted; P8B cross-site audit active | preserve retained-footprint contract |
+| Portal and provider homes | production core | shared-quality work is scheduled in Phase 10 |
+| Heatmap | production core | preserve current data and interaction contracts |
+| Day Flow | production core | accessible date naming and first-render clarity are scheduled in Phase 10 |
+| Battle Lines | production core | selected-time/default-battle coherence is scheduled for Phase 10 reproduction and repair |
+| History & Trends | production baseline accepted; P1 repair active | Phase 9 central repair track |
+| Data Status | production core | preserve explicit freshness, coverage, partial, and stale states |
+| Channel / Streamer | v1 accepted | Phase 10 may repair empty-entry navigation without changing retained-footprint claims |
 | Report/export shared layer | complete through PR #413 | preserve exact output contracts |
-| Local Watchlist v1 | complete through PR #425 | preserve accepted local/Preview/production contract |
-| Session / Category / Language / Event / Alerts | not approved | require later capability audit and explicit approval |
+| Local Watchlist v1 | complete through PR #425 | preserve browser-local and provider-separated contracts |
+| Support/legal/Stripe | incomplete | Phase 12 release-readiness work |
+| UI localization | approved future program | Phase 13 English/Japanese; Phase 14 Spanish/pt-BR |
+| Session / Category / stream-language analytics / Event / Alerts | not approved | require later capability audit and explicit approval |
 
 ## 2. Authority map
 
@@ -40,19 +43,24 @@ Product priority:
 Exact active window and next branch:
   docs/product/current-schedule.md
 
-Complete Phase 7–15 program:
+Complete Phase 7–16 program:
   docs/product/post-watchlist-program-plan.md
 
-History repair target and sequence:
+History repair:
   docs/product/history-ui-repair-spec.md
   docs/product/history-ui-repair-plan.md
   docs/work-in-progress/history-ui-repair-working-note.md
 
-P8B route and evidence baseline:
+Cross-site quality program:
+  docs/product/cross-site-quality-remediation-spec.md
+  docs/product/cross-site-quality-remediation-plan.md
+
+Localization program:
+  docs/product/localization-spec.md
+  docs/product/localization-implementation-plan.md
+
+Browser-audit baseline:
   docs/audits/P8B_SCOPE.md
-  docs/audits/public-surface-inventory.json
-  docs/audits/public-surface-inventory.md
-  docs/audits/public-surface-gaps.json
   docs/audits/public-browser-defects.json
   docs/audits/public-browser-audit.md
 ```
@@ -65,104 +73,63 @@ State: complete through PR #426
 
 Phase 8 — public-surface inventory and browser defect audit
 P8A: complete through PR #427
-P8B: active
-Current branch: work-public-browser-audit
-Execution state: browser evidence and final defect records produced; latest-head completion gates and merge remain
-Exact next branch: work-history-ui-h0-baseline
+P8B: complete through PR #428
+
+Phase 9 — P0/P1 core repair; History central track
+Current window: P9H0
+Current branch: work-history-ui-h0-baseline
+Execution state: documentation alignment and exact failing-gate baseline active
+Exact next branch after P9H0 merge report and explicit continuation: work-history-ui-h1-metric
 Exception: a newly proven P0 may interrupt
 ```
 
-P8B is an audit branch. It captures exact browser evidence, classifies defects, and produces the ordered Phase 9 queue. It does not repair product UI or alter data/runtime contracts.
+The first P9H0 batch must align all governing documents before runtime repair. Every later branch must reread the revised authorities instead of using chat memory or the pre-PR-428 schedule.
 
-## 4. Known History defects remain P1
+## 4. Phase 8 result
 
-The following remain approved without another product gate:
+```text
+21 owned routes
+4 required widths: 1440 / 820 / 390 / 360
+84 production route scenarios
+5 missing policy/disclosure probes
+10 deterministic History state/interaction scenarios
+P0 0 / P1 3 / P2 5 / P3 0
+```
 
-- Viewer-minutes and Peak viewers do not produce a sufficiently observable, trustworthy page-wide change;
-- the main chart lacks or fails to prove all required scale, ticks, units, and interaction cues;
-- chart-side or selected-day information is too thin or disconnected;
-- lower-page regions are sparse, weakly prioritized, duplicated, or unclear;
-- desktop, tablet, and mobile do not yet prove one coherent task-oriented analysis flow.
+No production outage, materially wrong provider path, provider crossing, or horizontal overflow was found.
 
-Additional screenshots may refine styling later. They are not an entry criterion for repair.
+Approved P1 defects:
+
+- History metric execution is not synchronized across the full page;
+- History has no reliable first keyboard-focus entry;
+- History lacks one coherent desktop/mobile task hierarchy.
+
+Scheduled P2 work:
+
+- shared mobile targets below 44px;
+- Watchlist missing from general Public Readiness;
+- general Production Smoke route omissions;
+- Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes absent;
+- Day Flow date control lacks an accessible name.
 
 ## 5. Ordered roadmap
 
 ```text
 Phase 7   source-of-truth reset and repair-program lock              complete PR #426
-Phase 8   P8A inventory complete PR #427; P8B browser audit active
-Phase 9   P0/P1 core repair; History UI central track                queued
-Phase 10  cross-site visual and interaction-system consolidation     queued
-Phase 11  operations, monitoring, and maintenance lock               queued
-Phase 12  Support, legal, Stripe, and release-readiness audit        queued
-Phase 13  external launch and feedback classification                queued
-Phase 14  next-feature data-capability audit                         queued
-Phase 15  one separately approved major feature, if any              not approved
+Phase 8   public inventory and browser defect audit                   complete PR #428
+Phase 9   History P1 repair                                           active P9H0
+Phase 10  cross-site defect, UI, responsive, and architecture repair queued
+Phase 11  acceptance, CI, type safety, monitoring, and maintenance   queued
+Phase 12  English legal, Support, Stripe, and release readiness      queued
+Phase 13  localization foundation plus English/Japanese             approved and queued
+Phase 14  Spanish/pt-BR localization and staged external launch      approved and queued
+Phase 15  next-feature data-capability audit                          queued
+Phase 16  one separately approved major feature, if any              not approved
 ```
 
-No Phase 15 feature is approved by this roadmap.
+No Phase 16 feature is approved by this roadmap.
 
-## 6. Phase 8 P8B deliverables
-
-```text
-21 owned routes × 4 required viewports
-5 missing policy/disclosure probes
-10 deterministic History state/interaction scenarios
-machine-readable runtime evidence
-full-page screenshot artifact
-machine-readable defect ledger
-human-readable audit report
-ordered Phase 9 queue
-```
-
-Required widths:
-
-```text
-1440px
-820px
-390px
-360px
-```
-
-Required states where applicable:
-
-```text
-real/fresh
-partial
-stale
-empty
-missing
-demo
-error
-loading
-in progress
-storage unavailable
-long content
-```
-
-Defect classes:
-
-```text
-P0  outage, materially wrong data, provider/privacy failure
-P1  primary feature unusable, misleading, or materially incomplete
-P2  clarity, consistency, polish, automation, or secondary interaction defect
-P3  deferred improvement or feature request
-```
-
-## 7. P8A handoff record retained for completed Watchlist contract verification
-
-The completed Watchlist verifier must compare against the exact P8A handoff without treating that historical state as the current schedule.
-
-```text
-Local Watchlist v1 | W0–W5B complete through PR #425; P8A inventoried
-P8A: complete through PR #427
-Exact next branch: work-public-browser-audit
-both Watchlist routes are missing from Public Readiness configuration
-```
-
-The current next branch is not the historical line above. It is `work-history-ui-h0-baseline` after P8B merges and explicit continuation is received.
-
-## 8. Phase 9 sequence
+## 6. Phase 9 sequence
 
 ```text
 P9H0 work-history-ui-h0-baseline
@@ -175,29 +142,55 @@ P9H6 work-history-ui-h6-candidate
 P9H7 work-history-ui-h7-acceptance
 ```
 
-Non-History P0/P1 defects discovered in P8B receive narrow repair branches. P2 polish and automation consolidation wait for the relevant later phase unless they block P1 acceptance.
+P9H0 owns exact reproduction, authoritative-module tracing, compatibility-layer inventory, failing permanent gates, and documentation alignment. It does not add a new metric, API, D1 schema, collector field, cron, retention rule, or provider combination.
 
-## 9. Later phases
+## 7. Phase 10–14 summary
 
-- Phase 10: shared UI, chart grammar, responsive, and accessibility consolidation.
-- Phase 11: unified acceptance matrix, monitoring, runbooks, and maintenance cadence.
-- Phase 12: Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Stripe, and launch readiness.
-- Phase 13: staged external launch and feedback classification.
-- Phase 14: evaluate zero or one next-feature candidate.
-- Phase 15: no implementation branch until separately approved.
+### Phase 10 — cross-site quality remediation
 
-## 10. Work not approved in the current window
+Repair only reproduced defects and accepted cross-site inconsistencies. This includes common shell/components, chart grammar, Day Flow/Battle Lines coherence, responsive/accessibility targets, Channel/Watchlist readiness gaps, and safe retirement of duplicate or obsolete UI layers.
 
-- new History primary metrics or archive types;
+### Phase 11 — engineering and operations lock
+
+Create one permanent all-public acceptance matrix, consolidate overlapping CI without weakening feature gates, restore effective strict null checking in staged scopes, and lock monitoring/runbooks/maintenance cadence.
+
+### Phase 12 — English release readiness
+
+Complete Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Support, Stripe registration/payment flow, public limitations, FAQ, and release assets in the English source language.
+
+### Phase 13 — English and Japanese localization
+
+Introduce locale routing, typed message catalogs, fallback/missing-key gates, `Intl` formatting, pseudo-locale checks, localized shared shell and all public feature surfaces, then complete English/Japanese browser and production acceptance.
+
+### Phase 14 — Spanish, Brazilian Portuguese, and launch
+
+Add `es` and `pt-BR`, complete four-language SEO/browser acceptance, and perform staged external publication with evidence-based feedback classification.
+
+Arabic/RTL is not included. It requires a separately approved RTL phase after actual usage evidence.
+
+## 8. Localization boundaries
+
+UI localization is distinct from collecting or analyzing stream language. The approved localization program:
+
+- does not add provider-language analytics;
+- does not translate streamer names, channel IDs, stream titles, categories, or provider-origin data;
+- does not alter APIs, D1, collectors, cron, retention, or bindings;
+- keeps existing English URLs canonical and adds locale-prefixed non-English routes;
+- keeps Twitch and Kick separated in every locale.
+
+## 9. Work not approved in the current window
+
+- another History primary metric or archive type;
 - exact session reconstruction;
-- category or language collection;
+- category or stream-language collection;
 - cross-platform totals or rankings;
 - login, cloud accounts, alerts, or AI interpretation;
 - new D1 schema, collector, cron, retention, binding, or API route;
+- localization runtime work before Phase 13;
 - multiple major feature expansions in parallel.
 
-## 11. Roadmap update rule
+## 10. Roadmap update rule
 
-Update this file when a phase begins or completes, a P0/P1 changes order, or a future feature is approved or deferred.
+Update this file when a phase begins or completes, a P0/P1 changes order, localization scope changes, or a future feature is approved or deferred.
 
 After every merge, issue the full merge report, update canonical state, name the exact next branch, and stop until explicit continuation.
