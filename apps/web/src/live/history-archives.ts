@@ -2,7 +2,8 @@ let scheduled = false
 let applying = false
 let observedRoot: HTMLElement | null = null
 
-const observer = new MutationObserver(() => {
+const observer = new MutationObserver((records) => {
+  if (!records.some(isHierarchyMutation)) return
   invalidateDailyHierarchy()
   schedule()
 })
@@ -31,9 +32,30 @@ function observeRelevantRoot(): void {
   observer.observe(document.documentElement, { childList: true, subtree: true })
 }
 
+function isHierarchyMutation(record: MutationRecord): boolean {
+  if (record.type === 'attributes') {
+    return record.attributeName === 'hidden'
+      && record.target instanceof Element
+      && Boolean(record.target.closest('[data-history-day-card]'))
+  }
+
+  if (record.type !== 'childList') return false
+  const nodes = [...record.addedNodes, ...record.removedNodes]
+  if (!observedRoot) {
+    return nodes.some((node) => node instanceof Element
+      && (node.matches('[data-history-daily-archive]') || Boolean(node.querySelector('[data-history-daily-archive]'))))
+  }
+
+  if (record.target === observedRoot) {
+    return nodes.some((node) => node instanceof Element
+      && (node.matches('[data-history-day-card]') || Boolean(node.querySelector('[data-history-day-card]'))))
+  }
+  return false
+}
+
 function invalidateDailyHierarchy(): void {
   const root = document.querySelector<HTMLElement>('[data-history-daily-archive]')
-  if (root) root.dataset.historyDailyHierarchyReady = 'false'
+  if (root && root.dataset.historyDailyHierarchyReady !== 'false') root.dataset.historyDailyHierarchyReady = 'false'
 }
 
 function scheduleAfterInteraction(): void {
@@ -85,16 +107,19 @@ function enhanceDailyArchive(): void {
       label.dataset.historyDayType = ''
       card.prepend(label)
     }
-    label.textContent = 'Observed day'
+    setText(label, 'Observed day')
   })
 
   const featured = cards.find((card) => !card.hidden)
   if (featured) {
     featured.classList.add('is-featured')
-    const label = featured.querySelector<HTMLElement>('[data-history-day-type]')
-    if (label) label.textContent = 'Latest matching day'
+    setText(featured.querySelector<HTMLElement>('[data-history-day-type]'), 'Latest matching day')
   }
   root.dataset.historyDailyHierarchyReady = 'true'
+}
+
+function setText(node: HTMLElement | null | undefined, value: string): void {
+  if (node && node.textContent !== value) node.textContent = value
 }
 
 export {}
