@@ -34,7 +34,7 @@ console.log('Watchlist completed production contract verification passed.')
 console.log('- W1 through W4B foundations and local browser regressions remain governed')
 console.log('- W5A hosted Preview and W5B production acceptance remain operational gates')
 console.log('- temporary Watchlist notes remain retired')
-console.log('- P8A completion and P8B handoff do not weaken completed Watchlist contracts')
+console.log('- later Phase 8 and Phase 9 schedule updates do not weaken completed Watchlist contracts')
 console.log('- no Watchlist-specific server, polling, per-channel request, or analytics-id path exists')
 
 function runFoundations() {
@@ -96,26 +96,28 @@ function verifyGovernance() {
   ], 'implementation record')
 
   requireAll(roadmap, [
-    'Local Watchlist v1 | W0–W5B complete through PR #425; P8A inventoried',
-    'P8A: complete through PR #427',
-    'Exact next branch: work-public-browser-audit',
-    'both Watchlist routes are missing from Public Readiness configuration',
+    'Local Watchlist v1 is accepted through PR #425',
+    '| Local Watchlist v1 | complete through PR #425 |',
+    'P8B: complete through PR #428',
+    'Current branch: work-history-ui-h0-baseline',
+    'work-history-ui-h1-metric',
+    'Watchlist missing from general Public Readiness',
+    'No Phase 16 feature is approved by this roadmap.',
   ], 'roadmap')
   requireAll(schedule, [
     'Local Watchlist W0-W5B                   complete through PR #425',
-    'Phase 8 P8A inventory                    complete through PR #427',
-    'Phase 8 P8B browser audit                exact next',
-    'Completed branch: work-public-surface-inventory',
-    'Exact next branch: work-public-browser-audit',
+    'Phase 8 P8B browser audit                complete through PR #428',
+    'Current window: P9H0',
+    'Current branch: work-history-ui-h0-baseline',
+    'P9H1 work-history-ui-h1-metric           exact next after P9H0',
   ], 'schedule')
   requireAll(program, [
     'Status: active source-of-truth program plan',
-    'Completed window: P8A through PR #427',
-    'Exact next branch: `work-public-browser-audit`',
-    '| 7 | P7A | complete PR #426',
-    '| 8 | P8A | complete PR #427',
-    '| 8 | P8B | exact next',
-    'Phase 15 has no approved implementation branch.',
+    'Current window: P9H0',
+    'Current branch: `work-history-ui-h0-baseline`',
+    '| 8 | P8B | complete PR #428',
+    '| 9 | P9H0 | active',
+    'Phase 16 has no approved implementation branch.',
   ], 'post-Watchlist program')
   requireAll(index, [
     'operations/watchlist-production-acceptance-2026-06-25.md',
@@ -123,8 +125,9 @@ function verifyGovernance() {
     'product/watchlist-v1-implementation-plan.md',
     'product/post-watchlist-program-plan.md',
     'Phase 6  Local Watchlist v1                               complete through PR #425',
-    'P8A      work-public-surface-inventory                     complete PR #427',
-    'There is no active Local Watchlist',
+    'Phase 8  public inventory and browser audit               complete through PR #428',
+    'P9H0     work-history-ui-h0-baseline                       active',
+    'There is no active Watchlist',
   ], 'documentation index')
   requireAll(inventory, [
     'viewloom-public-surface-inventory-v1',
