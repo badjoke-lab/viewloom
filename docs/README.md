@@ -17,28 +17,27 @@ Chat memory, screenshots, old PRs, and completed milestone notes do not override
 8. affected baseline specification
 9. affected active/future specification
 10. affected implementation plan
-11. active note under `work-in-progress/`
-12. relevant audit/acceptance records
+11. active working note
+12. relevant audit and acceptance records
 
-When repository state and documentation disagree, update documentation before implementation. Every later branch rereads the current authorities.
+## Current state
 
-## Canonical program documents
+```text
+P9H0 baseline                 complete PR #430
+P9H0 documentation closeout  complete PR #432
+Active implementation branch none
+Exact next branch             work-history-ui-h1-metric
+P9H1 branch created           no
+```
 
-- `product/current-roadmap.md`
-- `product/current-schedule.md`
-- `product/post-watchlist-program-plan.md`
-
-## Active History repair authorities
+## Active History authorities
 
 - `product/history-and-trends-spec.md`
-- `product/history-layout-rebuild-plan.md`
 - `product/history-ui-repair-spec.md`
 - `product/history-ui-repair-plan.md`
 - `work-in-progress/history-ui-repair-working-note.md`
 
-## P9H0 permanent evidence
-
-P9H0 completed through PR #430.
+## P9H0 evidence
 
 - `audits/history-ui-h0-baseline.md`
 - `audits/history-ui-h0-owner-map.json`
@@ -48,9 +47,9 @@ P9H0 completed through PR #430.
 - `../scripts/verify-history-ui-h0-baseline.mjs`
 - `../.github/workflows/history-ui-h0-baseline.yml`
 
-The local keyboard run did not reproduce the P8B production body-focus result. This remains a P9H5/final-acceptance discrepancy.
+The local keyboard run did not reproduce the P8B production body-focus result. That discrepancy remains for P9H5 and final production acceptance.
 
-## Approved future authorities
+## Future authorities
 
 Phase 10–11:
 
@@ -64,84 +63,36 @@ Phase 13–14:
 
 These documents do not authorize early implementation.
 
-## Other accepted product records
-
-- `product/channel-and-streamer-spec.md`
-- `product/channel-v1-implementation-plan.md`
-- `product/report-export-consolidation-plan.md`
-- `product/next-feature-data-capability-audit.md`
-- `product/local-watchlist-spec.md`
-- `product/watchlist-v1-implementation-plan.md`
-- `../apps/web/docs/watchlist-latest-w2a-contract.md`
-- `../apps/web/docs/watchlist-history-w2b-contract.md`
-
-## Completed Phase 8 records
-
-P8A:
+## Completed audit and acceptance records
 
 - `audits/P8A_SCOPE.md`
-- `audits/public-surface-inventory.json`
-- `audits/public-surface-inventory.md`
-- `audits/public-surface-gaps.json`
-- `audits/public-surface-routes-*.json`
-- `audits/public-surface-profiles-*.json`
-
-P8B:
-
 - `audits/P8B_SCOPE.md`
+- `audits/public-surface-inventory.json`
 - `audits/public-browser-defects.json`
 - `audits/public-browser-audit.md`
-- `../apps/web/scripts/public-browser-audit.mjs`
-- `../scripts/verify-public-browser-audit.mjs`
-- `../.github/workflows/public-browser-audit.yml`
-
-## Permanent acceptance records
-
-- `operations/cloudflare-verification-2026-06-21.md`
-- `operations/production-smoke-runbook.md`
 - `operations/history-production-acceptance-2026-06-23.md`
 - `operations/channel-production-acceptance-2026-06-23.md`
 - `operations/report-export-consolidation-acceptance-2026-06-24.md`
 - `operations/watchlist-production-acceptance-2026-06-25.md`
 
-## Current execution state
-
-```text
-Phase 6  Local Watchlist v1                               complete PR #425
-Phase 7  source-of-truth reset                            complete PR #426
-Phase 8  public inventory and browser audit               complete PR #428
-P9H0     History deterministic baseline                    complete PR #430
-C9H0     work-p9h0-closeout                                active
-P9H1     work-history-ui-h1-metric                         exact next after closeout
-Phase 10 cross-site quality remediation                   queued
-Phase 11 engineering and operations lock                  queued
-Phase 12 English legal/Support/Stripe readiness           queued
-Phase 13 English/Japanese localization                    queued
-Phase 14 Spanish/pt-BR localization and staged launch     queued
-Phase 15 next-feature capability audit                    queued
-Phase 16 next major feature                               not approved
-```
-
-P9H1 has not been created.
-
 ## Repository comparison rule
 
-Before changing code or public behavior, compare `current-schedule.md` with actual branches/PRs, confirm predecessor merge reporting and explicit continuation, compare plan deliverables with repository evidence, record missing work, and update documents first when state or scope changed.
+Before changing code or public behavior, compare the schedule with actual branches and PRs, confirm the predecessor merge report and explicit continuation, compare planned deliverables with repository evidence, and update governing documents first when state or scope changed.
 
-## Temporary-note lifecycle
+## Precedence
 
-At milestone completion, transfer stable decisions, update roadmap/schedule/program, resolve or defer questions, delete the temporary note, and unlink it here.
+```text
+development policy
+this index and documentation governance
+roadmap
+schedule
+program plan
+active/future specification
+baseline specification
+implementation plan
+working note
+audit/acceptance evidence
+completed records
+```
 
-## Document precedence
-
-1. development/deployment policy
-2. this index and documentation governance
-3. roadmap
-4. schedule
-5. program plan
-6. active/future specification
-7. baseline specification
-8. implementation plan
-9. working note
-10. audit/acceptance evidence
-11. completed records
+There is no active implementation branch. P9H1 resumes only after explicit continuation.
