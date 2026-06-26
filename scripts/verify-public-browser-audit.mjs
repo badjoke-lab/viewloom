@@ -92,33 +92,39 @@ need('.github/workflows/public-browser-audit.yml', [
 need('docs/product/current-roadmap.md', [
   'Phase 8 P8B   complete PR #428',
   'Phase 9 P9H0  complete PR #430',
+  'P9H0 closeout complete PR #432',
+  'Active implementation branch: none',
   'work-history-ui-h1-metric',
 ])
 need('docs/product/current-schedule.md', [
-  'Phase 8 P8B browser audit                complete through PR #428',
-  'Phase 9 P9H0                             complete through PR #430',
-  'Current branch: work-p9h0-closeout',
+  'Phase 8 public inventory/browser audit  complete PR #428',
+  'P9H0 documentation closeout             complete PR #432',
+  'Active implementation branch            none',
   'work-history-ui-h1-metric',
 ])
 need('docs/product/post-watchlist-program-plan.md', [
   '| 8 | P8B | complete PR #428',
   '| 9 | P9H0 | complete PR #430',
-  'Current branch: `work-p9h0-closeout`',
+  '| 9 | closeout | complete PR #432',
+  'Current implementation branch: none',
 ])
 need('docs/product/history-ui-repair-plan.md', [
   'Completed window: P9H0 through PR #430',
-  'Current branch: `work-p9h0-closeout`',
+  'Completed closeout: PR #432',
+  'Current implementation branch: none',
   'work-history-ui-h1-metric',
 ])
 need('docs/work-in-progress/history-ui-repair-working-note.md', [
   'Completed predecessor: P9H0 through PR #430',
-  'Current branch: `work-p9h0-closeout`',
+  'Completed closeout: PR #432',
+  'Current implementation branch: none',
   'work-history-ui-h1-metric',
 ])
 need('docs/README.md', [
   'P9H0 completed through PR #430.',
-  'C9H0     work-p9h0-closeout',
-  'P9H1     work-history-ui-h1-metric',
+  'closeout completed through PR #432',
+  'Active implementation branch',
+  'work-history-ui-h1-metric',
 ])
 
 if (failures.length) {
@@ -131,4 +137,4 @@ console.log('ViewLoom P8B repository verification passed.')
 console.log('- P8B remains completed historical evidence through PR #428')
 console.log('- 21 routes, four widths, five missing surfaces, ten History scenarios, and eight findings remain exact')
 console.log('- provider separation and the audit-only boundary remain locked')
-console.log('- P9H0 is complete through PR #430 and P9H1 is next after closeout')
+console.log('- P9H0 closeout is complete and P9H1 remains the uncreated next branch')
