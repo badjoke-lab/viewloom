@@ -18,5 +18,6 @@ import '../history-focus-fallback.css'
 import './history-visual-responsive'
 import '../history-chart-p9h2.css'
 import './history-chart-p9h2'
+import './history-chart-keyboard-delegation'
 
 export {}
