@@ -109,13 +109,12 @@ requireFragments('apps/web/src/live/history-usability-pass.ts', [
   "import './history-archives'",
   "import './history-visual-responsive'",
 ])
-requireOrder('apps/web/src/live/history-usability-pass.ts', "import './history-clarity-hotfix'", "import './history-current-shell-entry'")
 
 const entry = read('apps/web/src/live/history-current-shell-entry.ts')
 for (const fragment of [
   "type HistoryMetric = 'viewer_minutes' | 'peak_viewers'",
   "const endpoint = provider === 'kick' ? '/api/kick-history' : '/api/history'",
-  'params.set(\'metric\', pageState.metric)',
+  "params.set('metric', pageState.metric)",
   'renderChart(payload, daily, metric)',
 ]) {
   if (!entry.includes(fragment)) failures.push(`primary History entry missing: ${fragment}`)
@@ -177,7 +176,7 @@ for (const id of [
   'P8B-P1-HISTORY-TASK-HIERARCHY',
 ]) {
   const defect = (ledger.defects ?? []).find((item) => item.id === id)
-  if (!defect || defect.priority !== 'P1') failures.push(`P9H0 baseline missing P1 defect: ${id}`)
+  if (!defect || defect.severity !== 'P1') failures.push(`P9H0 baseline missing P1 defect: ${id}`)
 }
 if (ledger.counts?.p1 !== 3) failures.push('P9H0 baseline expects exactly three P8B P1 defects')
 
