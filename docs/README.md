@@ -38,7 +38,7 @@ When repository state and documentation disagree, update documentation before im
 
 ## P9H0 permanent evidence
 
-P9H0 completed through PR #430.
+P9H0 completed through PR #430. Documentation and program closeout completed through PR #432.
 
 - `audits/history-ui-h0-baseline.md`
 - `audits/history-ui-h0-owner-map.json`
@@ -111,8 +111,9 @@ Phase 6  Local Watchlist v1                               complete PR #425
 Phase 7  source-of-truth reset                            complete PR #426
 Phase 8  public inventory and browser audit               complete PR #428
 P9H0     History deterministic baseline                    complete PR #430
-C9H0     work-p9h0-closeout                                active
-P9H1     work-history-ui-h1-metric                         exact next after closeout
+C9H0     documentation and program closeout                complete PR #432
+Active implementation branch                              none
+P9H1     work-history-ui-h1-metric                         exact next; not created
 Phase 10 cross-site quality remediation                   queued
 Phase 11 engineering and operations lock                  queued
 Phase 12 English legal/Support/Stripe readiness           queued
@@ -121,8 +122,6 @@ Phase 14 Spanish/pt-BR localization and staged launch     queued
 Phase 15 next-feature capability audit                    queued
 Phase 16 next major feature                               not approved
 ```
-
-P9H1 has not been created.
 
 ## Repository comparison rule
 
@@ -145,3 +144,5 @@ At milestone completion, transfer stable decisions, update roadmap/schedule/prog
 9. working note
 10. audit/acceptance evidence
 11. completed records
+
+There is no active implementation branch. P9H1 begins only after explicit continuation.
