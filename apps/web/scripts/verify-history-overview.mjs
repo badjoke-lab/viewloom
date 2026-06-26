@@ -22,7 +22,7 @@ if (existsSync(join(root, required[0]))) {
 }
 if (existsSync(join(root, required[1]))) {
   const source = read(required[1])
-  for (const fragment of ["url.pathname === '/api/history' || url.pathname === '/api/kick-history'",'Audience vs previous','Peak vs previous','Biggest supported rise','Withheld','history-overview-ranking-title','history-overview-coverage-title']) need(required[1], source, fragment)
+  for (const fragment of ["url.pathname === '/api/history' || url.pathname === '/api/kick-history'",'renderMetricSummary(currentPayload, metric)','renderMetricSelectedDay(currentPayload, metric)','renderMetricRanking(panel, currentPayload, metric)','renderMetricDailyArchive(currentPayload, metric)','`${metricLabel(metric)} vs previous`','Biggest supported viewer-minutes rise','Withheld','history-overview-ranking-title','history-overview-coverage-title']) need(required[1], source, fragment)
 }
 if (existsSync(join(root, required[2]))) {
   const source = read(required[2])
