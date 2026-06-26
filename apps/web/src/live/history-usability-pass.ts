@@ -15,5 +15,7 @@ import './history-archives'
 import '../history-visual-responsive.css'
 import '../history-focus-fallback.css'
 import './history-visual-responsive'
+import '../history-chart-p9h2.css'
+import './history-chart-p9h2'
 
 export {}
