@@ -9,6 +9,16 @@ Completed P9H1: PR #434
 Current implementation branch: `work-history-ui-h2-chart`
 Exact next branch: `work-history-ui-h3-overview`
 
+## Historical P9H1 closeout snapshot
+
+The following exact values describe the implementation plan immediately after PR #435. They are retained for historical acceptance gates and are not the current execution state.
+
+```text
+Version: 1.7
+Current implementation branch: none
+P9H2 work-history-ui-h2-chart      exact next; not created
+```
+
 ## Completed P9H1
 
 PR #434 aligned Viewer-minutes and Peak viewers across the History URL, request state, chart, Summary, Selected day, comparison, Ranking context, Daily archive, Report, Share, and Export.
