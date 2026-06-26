@@ -39,16 +39,17 @@ window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
 }) as typeof window.fetch
 
 const observer = new MutationObserver((records) => {
-  if (records.some(isSummaryMutation)) schedule()
+  if (records.some(isRelevantMutation)) schedule()
 })
 observer.observe(document.documentElement, { childList: true, subtree: true })
 schedule()
 
-function isSummaryMutation(record: MutationRecord): boolean {
+function isRelevantMutation(record: MutationRecord): boolean {
   const target = record.target instanceof Element ? record.target : record.target.parentElement
-  if (target?.closest('[data-history-summary]')) return true
+  if (target?.closest('[data-history-summary],[data-history-selected-day],[data-history-daily-archive]')) return true
   return [...record.addedNodes].some((node) => node instanceof Element
-    && (node.matches('[data-history-summary]') || Boolean(node.querySelector('[data-history-summary]'))))
+    && (node.matches('[data-history-summary],[data-history-selected-day],[data-history-daily-archive]')
+      || Boolean(node.querySelector('[data-history-summary],[data-history-selected-day],[data-history-daily-archive]'))))
 }
 
 function schedule(): void {
@@ -61,11 +62,22 @@ function schedule(): void {
 }
 
 function apply(): void {
+  applyComparisonState()
+  applyTrackedStreamLabels()
+}
+
+function applyComparisonState(): void {
   const card = document.querySelectorAll<HTMLElement>('[data-history-summary] > div')[3]
   if (!card || !noBaseline) return
   card.dataset.historyComparisonState = 'no-baseline'
   setText(card.querySelector<HTMLElement>('strong'), 'No baseline')
   setText(card.querySelector<HTMLElement>('span'), 'Previous-period data unavailable')
+}
+
+function applyTrackedStreamLabels(): void {
+  document.querySelectorAll<HTMLElement>('[data-history-selected-day] small, [data-history-daily-archive] dt').forEach((label) => {
+    if (label.textContent?.trim() === 'Observed streams') setText(label, 'Tracked streams (max)')
+  })
 }
 
 function setText(node: HTMLElement | null | undefined, value: string): void {
