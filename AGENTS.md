@@ -1,6 +1,6 @@
 # ViewLoom agent instructions
 
-Before changing this repository, read these files in order:
+Read before changing the repository:
 
 1. `docs/operations/development-and-deployment-policy.md`
 2. `docs/operations/development-policy-addendum.md`
@@ -8,23 +8,23 @@ Before changing this repository, read these files in order:
 4. `docs/README.md`
 5. `docs/product/current-roadmap.md`
 6. `docs/product/current-schedule.md`
-7. the affected permanent specification and implementation plan
-8. any active note under `docs/work-in-progress/`
+7. `docs/product/post-watchlist-program-plan.md`
+8. affected baseline specification
+9. affected active/future specification
+10. affected implementation plan
+11. active working note
+12. relevant audit and acceptance records
 
-Non-negotiable rules:
+Do not start from chat memory, screenshots, an old PR, or a stale document. Compare the schedule with actual branches and PRs. Confirm predecessor merge reporting and explicit continuation. Update governing documents before implementation when state, scope, order, or acceptance criteria changed.
 
-1. Do not start from chat memory, screenshots, or an old PR alone.
-2. Confirm that the roadmap and schedule place the work next.
-3. Update governing docs before implementation when scope, behavior, order, or acceptance criteria changed.
-4. Use `work-*` branches for ordinary development.
-5. Keep Cloudflare Preview deployments off during implementation.
-6. Group related changes into logical commits; do not use one-file-per-commit as the normal workflow.
-7. Run targeted checks while iterating and the full required CI/browser/artifact review only on the completed candidate HEAD.
-8. Use `preview-*` only when deployable Cloudflare runtime validation is required.
-9. Merge to `main` only after the completed candidate passes required gates.
-10. Do not report a feature as deployed or visually complete until production deployment, smoke checks, and required visual acceptance are verified.
-11. Keep Twitch and Kick data, rankings, storage, exports, routes, and coverage claims separated.
-12. Update active working notes as decisions change.
-13. At milestone completion, transfer stable decisions to permanent docs and delete the completed temporary note.
+Use `work-*` for ordinary development and `preview-*` only for deliberate Cloudflare validation of a completed candidate. Only latest-head evidence counts. Keep Twitch and Kick routes, APIs, storage, rankings, exports, locales, and coverage claims separated.
 
-The policy, current addendum, documentation index, roadmap, schedule, permanent specification, implementation plan, and active working note are the execution context. This file is only the mandatory entry point.
+Current state:
+
+```text
+P9H0 complete through PR #430
+Current branch: work-p9h0-closeout
+Exact next implementation branch: work-history-ui-h1-metric
+```
+
+Do not create P9H1 before the closeout merge report and explicit continuation. Do not start Phase 10–16 before its documented entry condition. After every merge, issue the full merge report and stop.
