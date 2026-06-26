@@ -22,6 +22,17 @@ P9H0 History baseline               complete PR #430
 P9H0 documentation closeout         complete PR #432
 Final-state correction              complete PR #433
 P9H1 metric synchronization         complete PR #434
+P9H2 chart interpretation           active
+Active implementation branch        work-history-ui-h2-chart
+Exact next branch                   work-history-ui-h3-overview
+P9H3 branch created                 no
+```
+
+## Historical P9H1 closeout snapshot
+
+The following exact values describe the repository immediately after PR #435. They are retained for historical acceptance gates and are not the current execution state.
+
+```text
 Active implementation branch        none
 Exact next branch                   work-history-ui-h2-chart
 P9H2 branch created                 no
@@ -49,10 +60,11 @@ Digest: sha256:783283fd1c913e7ccb99d04bb607ed5801db1c74ab3d341c81a40c440835e82c
 Merge: 31b81d3ed3a56369055ba09eb4de871dfc59d315
 ```
 
+P9H2 adds readable UTC date and numeric scale context, explicit metric and unit, exact daily inspection, chart/URL/Selected-day synchronization, Left/Right/Home/End keyboard movement, touch selection, non-color state symbols, and accessible SVG title and description. Day inspection reuses the loaded History response.
+
 ## Later program
 
 ```text
-P9H2 chart interpretation
 P9H3 Overview hierarchy
 P9H4 Archives and Report & Export
 P9H5 responsive and accessibility
@@ -93,4 +105,4 @@ Future authorities:
 
 Ordinary development uses `work-*`; deliberate Cloudflare candidate validation uses `preview-*`. Only latest-head evidence counts. After every merge, issue the full report and stop.
 
-P9H1 is complete through PR #434. Do not create `work-history-ui-h2-chart` until explicit continuation.
+Complete P9H2 on `work-history-ui-h2-chart`. Do not create `work-history-ui-h3-overview` until P9H2 merges, the full merge report is issued, and explicit continuation is received.
