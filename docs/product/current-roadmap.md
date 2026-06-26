@@ -10,8 +10,9 @@ Phase 7 P7A   complete PR #426
 Phase 8 P8A   complete PR #427
 Phase 8 P8B   complete PR #428
 Phase 9 P9H0  complete PR #430
-P9H0 closeout active on work-p9h0-closeout
-Phase 9 P9H1  exact next after closeout merge report and explicit continuation
+P9H0 closeout complete PR #432
+Active implementation branch: none
+Phase 9 P9H1  exact next after explicit continuation
 ```
 
 Exact next implementation branch:
@@ -29,6 +30,7 @@ P9H1 has not been created.
 - Public-surface inventory is complete through PR #427.
 - Public browser audit is complete through PR #428.
 - The deterministic History P9H0 baseline is complete through PR #430.
+- P9H0 documentation and program closeout is complete through PR #432.
 - Twitch and Kick remain separate across routes, APIs, storage, bindings, rankings, exports, and coverage claims.
 
 P8B result:
@@ -57,7 +59,7 @@ The local first-Tab scenarios moved focus to the ViewLoom home link. The earlier
 Product priority:
   docs/product/current-roadmap.md
 
-Exact active state and next branch:
+Exact current state and next branch:
   docs/product/current-schedule.md
 
 Complete Phase 7–16 program:
@@ -104,7 +106,7 @@ No Phase 16 feature is approved.
 
 ```text
 P9H0 work-history-ui-h0-baseline   complete PR #430
-P9H1 work-history-ui-h1-metric     exact next
+P9H1 work-history-ui-h1-metric     exact next; not created
 P9H2 work-history-ui-h2-chart      queued
 P9H3 work-history-ui-h3-overview   queued
 P9H4 work-history-ui-h4-tasks      queued
@@ -141,4 +143,4 @@ UI localization is distinct from collecting or analyzing stream language. Provid
 
 ## 8. Stop rule
 
-After this closeout branch merges, issue the full merge report, name `work-history-ui-h1-metric` as the exact next branch, and stop. Do not create P9H1 until explicit continuation.
+There is no active implementation branch. Do not create `work-history-ui-h1-metric` until explicit continuation.

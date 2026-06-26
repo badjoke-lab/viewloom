@@ -91,24 +91,26 @@ need('docs/operations/documentation-governance.md', [
 ])
 
 need('README.md', [
-  'P9H0 complete PR #430',
-  'work-p9h0-closeout',
+  'P9H0 documentation closeout         complete PR #432',
+  'Active implementation branch        none',
   'work-history-ui-h1-metric',
   'cross-site-quality-remediation-spec.md',
   'localization-spec.md',
-  'No Phase 16 feature is approved.',
+  'Phase 16 not approved',
 ])
 need('docs/README.md', [
   'P9H0 completed through PR #430.',
-  'C9H0     work-p9h0-closeout',
-  'P9H1     work-history-ui-h1-metric',
+  'closeout completed through PR #432',
+  'Active implementation branch',
+  'work-history-ui-h1-metric',
   'product/cross-site-quality-remediation-spec.md',
   'product/localization-spec.md',
 ])
 
 need('docs/product/current-roadmap.md', [
   'Phase 9 P9H0  complete PR #430',
-  'P9H0 closeout active on work-p9h0-closeout',
+  'P9H0 closeout complete PR #432',
+  'Active implementation branch: none',
   'work-history-ui-h1-metric',
   'Phase 13  localization foundation plus English/Japanese',
   'Phase 14  Spanish/pt-BR localization and staged launch',
@@ -117,28 +119,30 @@ need('docs/product/current-roadmap.md', [
 forbid('docs/product/current-roadmap.md', [
   'P8B: active',
   'Current branch: work-public-browser-audit',
+  'P9H0 closeout active on work-p9h0-closeout',
   'No Phase 15 feature is approved',
 ])
 
 need('docs/product/current-schedule.md', [
-  'History P9H0 deterministic baseline      complete PR #430',
-  'Current window: P9H0 documentation closeout',
-  'Current branch: work-p9h0-closeout',
+  'P9H0 documentation closeout             complete PR #432',
+  'Active implementation branch            none',
   'work-history-ui-h1-metric',
-  'P9H1 has not been created.',
-  'Phase 13  I13A–I13K',
-  'Phase 14  I14A–I14C',
+  'P9H1 branch created                     no',
+  'Phase 13 English/Japanese localization',
+  'Phase 14 Spanish/pt-BR localization and staged launch',
 ])
 forbid('docs/product/current-schedule.md', [
-  'Current window: P8B — public browser defect audit',
+  'Current window: P9H0 documentation closeout',
+  'Current branch: work-p9h0-closeout',
   'P8B is active.',
 ])
 
 need('docs/product/post-watchlist-program-plan.md', [
-  'Version: 2.0',
-  'Current window: P9H0 documentation closeout',
-  'Current branch: `work-p9h0-closeout`',
+  'Version: 2.1',
+  'Current implementation branch: none',
+  'Completed closeout: PR #432',
   '| 9 | P9H0 | complete PR #430',
+  '| 9 | closeout | complete PR #432',
   'U10A defect ledger and ownership baseline',
   'O11D browser application strict-null migration',
   'I13A localization contract and route manifest',
@@ -154,15 +158,17 @@ need('docs/product/history-ui-repair-spec.md', [
   'Localization boundary',
 ])
 need('docs/product/history-ui-repair-plan.md', [
-  'Version: 1.4',
+  'Version: 1.5',
   'Completed window: P9H0 through PR #430',
-  'Current branch: `work-p9h0-closeout`',
+  'Completed closeout: PR #432',
+  'Current implementation branch: none',
   'work-history-ui-h1-metric',
   'P9H0 completed baseline',
 ])
 need('docs/work-in-progress/history-ui-repair-working-note.md', [
   'Completed predecessor: P9H0 through PR #430',
-  'Current branch: `work-p9h0-closeout`',
+  'Completed closeout: PR #432',
+  'Current implementation branch: none',
   'work-history-ui-h1-metric',
   'P9H0 evidence',
   'P9H1 exact scope',
@@ -211,8 +217,8 @@ need('docs/audits/history-ui-h0-findings.md', [
 
 for (const path of ['AGENTS.md', 'CONTRIBUTING.md']) {
   need(path, [
-    'docs/product/post-watchlist-program-plan.md',
-    'work-p9h0-closeout',
+    'P9H0 documentation closeout complete through PR #432',
+    'Active implementation branch: none',
     'work-history-ui-h1-metric',
   ])
 }
@@ -304,8 +310,9 @@ console.log('ViewLoom development, documentation, and deployment policy verifica
 console.log(`- ${requiredFiles.length} required files present`)
 console.log('- Phase 8 is complete through PR #428')
 console.log('- P9H0 is complete through PR #430')
-console.log('- work-p9h0-closeout is the active documentation window')
-console.log('- work-history-ui-h1-metric is next only after closeout reporting and explicit continuation')
+console.log('- P9H0 documentation closeout is complete through PR #432')
+console.log('- there is no active implementation branch')
+console.log('- work-history-ui-h1-metric is next only after explicit continuation')
 console.log('- Phase 10–14 quality and localization authorities are registered but not active')
 console.log('- Phase 16 has no approved feature')
 console.log(`- ${concurrencyWorkflows.length} workflows cancel obsolete runs`)

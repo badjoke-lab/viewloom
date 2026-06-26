@@ -1,14 +1,14 @@
 # ViewLoom History UI repair implementation plan
 
 Status: active implementation subplan
-Version: 1.4
+Version: 1.5
 Created: 2026-06-25
 Last updated: 2026-06-26
 Roadmap phase: Phase 9 — History P1 repair
 Completed window: P9H0 through PR #430
-Current window: P9H0 documentation closeout
-Current branch: `work-p9h0-closeout`
-Exact next branch after closeout: `work-history-ui-h1-metric`
+Completed closeout: PR #432
+Current implementation branch: none
+Exact next branch: `work-history-ui-h1-metric`
 Permanent specification: `history-and-trends-spec.md`
 Active repair specification: `history-ui-repair-spec.md`
 Program authority: `post-watchlist-program-plan.md`
@@ -48,8 +48,8 @@ P7A  complete PR #426
 P8A  complete PR #427
 P8B  complete PR #428
 P9H0 complete PR #430
-C9H0 work-p9h0-closeout                  active
-P9H1 work-history-ui-h1-metric           exact next
+C9H0 work-p9h0-closeout                  complete PR #432
+P9H1 work-history-ui-h1-metric           exact next; not created
 P9H2 work-history-ui-h2-chart            queued
 P9H3 work-history-ui-h3-overview         queued
 P9H4 work-history-ui-h4-tasks            queued
@@ -124,4 +124,4 @@ By P9H6:
 
 ## 13. Stop rule
 
-After the closeout PR merges, issue the full merge report and stop. Do not create `work-history-ui-h1-metric` until explicit continuation. Apply the same merge-report-and-stop rule after every later branch.
+There is no active implementation branch. Do not create `work-history-ui-h1-metric` until explicit continuation. Apply the same merge-report-and-stop rule after every later branch.

@@ -5,9 +5,9 @@ Created: 2026-06-25
 Last updated: 2026-06-26
 Roadmap phase: Phase 9 — History P1 repair
 Completed predecessor: P9H0 through PR #430
-Current window: P9H0 documentation closeout
-Current branch: `work-p9h0-closeout`
-Exact next branch after closeout: `work-history-ui-h1-metric`
+Completed closeout: PR #432
+Current implementation branch: none
+Exact next branch: `work-history-ui-h1-metric`
 Accepted baseline specification: `../product/history-and-trends-spec.md`
 Active repair specification: `../product/history-ui-repair-spec.md`
 Program plan: `../product/post-watchlist-program-plan.md`
@@ -32,6 +32,7 @@ P7A  PR #426  source-of-truth reset
 P8A  PR #427  21-surface inventory
 P8B  PR #428  all-public browser audit
 P9H0 PR #430  deterministic History baseline and owner trace
+C9H0 PR #432  documentation and program closeout
 ```
 
 ## 3. P9H0 evidence
@@ -107,8 +108,8 @@ P9H1 must not add another global `window.fetch` wrapper or document-wide Mutatio
 
 ```text
 P9H0 complete PR #430
-C9H0 work-p9h0-closeout                  active
-P9H1 work-history-ui-h1-metric           exact next
+C9H0 work-p9h0-closeout                  complete PR #432
+P9H1 work-history-ui-h1-metric           exact next; not created
 P9H2 work-history-ui-h2-chart            queued
 P9H3 work-history-ui-h3-overview         queued
 P9H4 work-history-ui-h4-tasks            queued
@@ -125,4 +126,4 @@ No new metric, API, D1 schema, collector, binding, cron, retention, exact sessio
 
 Update this note when ownership changes, an expected failure is replaced, a compatibility layer is retired/retained, a permanent gate is added, the keyboard discrepancy changes, or the ordered sequence changes.
 
-After the closeout PR merges, issue the full merge report and stop. Do not create P9H1 until explicit continuation. Delete this note only in P9H7 after permanent transfer.
+There is no active implementation branch. Do not create P9H1 until explicit continuation. Delete this note only in P9H7 after permanent transfer.
