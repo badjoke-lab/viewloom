@@ -1,13 +1,12 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 2.0
+Version: 2.1
 Created: 2026-06-25
 Last updated: 2026-06-26
 Current phase: Phase 9 — History P1 repair
-Current window: P9H0 documentation closeout
-Current branch: `work-p9h0-closeout`
-Completed predecessor: P9H0 through PR #430
+Current implementation branch: none
+Completed closeout: PR #432
 Exact next implementation branch: `work-history-ui-h1-metric`
 Exception: a newly proven P0 may interrupt
 
@@ -17,7 +16,7 @@ This document owns the complete approved execution program after Local Watchlist
 
 ```text
 current-roadmap.md                 product priority
-current-schedule.md                exact active state and next branch
+current-schedule.md                exact current state and next branch
 post-watchlist-program-plan.md     complete Phase 7–16 program
 feature/quality specifications     stable product contracts
 implementation plans               branch sequence and gates
@@ -35,7 +34,7 @@ Before each branch, compare the schedule with actual branches/PRs, confirm the p
 | 8 | P8A | complete PR #427 | public inventory | 21 owned surfaces inventoried |
 | 8 | P8B | complete PR #428 | browser audit | defect ledger and evidence complete |
 | 9 | P9H0 | complete PR #430 | History baseline | deterministic failures and owners fixed |
-| 9 | closeout | active | `work-p9h0-closeout` | authorities aligned and merged |
+| 9 | closeout | complete PR #432 | governance closeout | authorities aligned and merged |
 | 9 | P9H1–P9H7 | queued | `history-ui-repair-plan.md` | History repair accepted in production |
 | 10 | U10A–U10H | queued | cross-site quality plan | reproduced cross-site defects accepted |
 | 11 | O11A–O11G | queued | engineering/operations plan | acceptance, CI, type safety, monitoring locked |
@@ -61,9 +60,9 @@ P0 0 / P1 3 / P2 5 / P3 0
 
 No outage, provider crossing, materially wrong provider path, or page-level horizontal overflow was found.
 
-## 4. Completed P9H0
+## 4. Completed P9H0 and closeout
 
-P9H0 completed through PR #430.
+P9H0 completed through PR #430. Documentation and program closeout completed through PR #432 at merge commit `3b315a14ff75b3fe9c0129cbc62de8127425ea12`.
 
 ```text
 Final head: e3a1f64e7225a652de95a37ea755b192565d7798
@@ -88,7 +87,7 @@ The 390px Kick fixture measured 15,058px, about 17.84 viewport heights, with sev
 
 ```text
 P9H0 work-history-ui-h0-baseline   complete PR #430
-P9H1 work-history-ui-h1-metric     exact next
+P9H1 work-history-ui-h1-metric     exact next; not created
 P9H2 work-history-ui-h2-chart      queued
 P9H3 work-history-ui-h3-overview   queued
 P9H4 work-history-ui-h4-tasks      queued
@@ -218,4 +217,4 @@ Phase 15 evaluates one candidate at a time for source parity, D1 growth, collect
 
 ## 13. Current stop rule
 
-`work-p9h0-closeout` is active only for documentation and governance alignment. After it merges, issue the full merge report and stop. Do not create `work-history-ui-h1-metric` until explicit continuation.
+There is no active implementation branch. Do not create `work-history-ui-h1-metric` until explicit continuation.
