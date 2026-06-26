@@ -54,22 +54,27 @@ async function run(browser, provider, viewport, touch) {
   assert.equal(initial.keyboardTargets, 1)
 
   const requestCount = calls.length
-  const keyboard = page.locator('[data-history-chart-keyboard-target]')
-  evidence.checkpoint = `${provider}:home-press`
-  await keyboard.press('Home')
-  evidence.diagnostics.push({ provider, checkpoint: 'after-home', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
-  evidence.checkpoint = `${provider}:home-wait`
-  await dayReady(page, '2026-06-12')
+  let state = initial
+  if (!touch) {
+    const keyboard = page.locator('[data-history-chart-keyboard-target]')
+    evidence.checkpoint = `${provider}:home-press`
+    await keyboard.press('Home')
+    evidence.diagnostics.push({ provider, checkpoint: 'after-home', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
+    evidence.checkpoint = `${provider}:home-wait`
+    await dayReady(page, '2026-06-12')
 
-  evidence.checkpoint = `${provider}:arrow-press`
-  await keyboard.press('ArrowRight')
-  evidence.diagnostics.push({ provider, checkpoint: 'after-arrow', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
-  evidence.checkpoint = `${provider}:arrow-wait`
-  await dayReady(page, '2026-06-13')
-  let state = await snapshot(page)
-  assert.equal(state.selected, '2026-06-13')
-  assert.equal(state.inspectionDay, '2026-06-13')
-  assert.equal(calls.length, requestCount)
+    evidence.checkpoint = `${provider}:arrow-press`
+    await keyboard.press('ArrowRight')
+    evidence.diagnostics.push({ provider, checkpoint: 'after-arrow', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
+    evidence.checkpoint = `${provider}:arrow-wait`
+    await dayReady(page, '2026-06-13')
+    state = await snapshot(page)
+    assert.equal(state.selected, '2026-06-13')
+    assert.equal(state.inspectionDay, '2026-06-13')
+    assert.equal(calls.length, requestCount)
+  } else {
+    evidence.diagnostics.push({ provider, checkpoint: 'keyboard-covered-by-desktop', state, interaction: await interactionSnapshot(page), url: page.url() })
+  }
 
   const demoDay = page.locator('[data-history-day="2026-06-16"]')
   const demoHit = demoDay.locator('.history-bar-hit')
