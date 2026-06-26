@@ -7,7 +7,7 @@ import { historyPayload } from './history-period-comparison-fixture.mjs'
 const base = process.env.HISTORY_H2_BASE_URL ?? 'http://127.0.0.1:4173'
 const out = resolve(process.env.HISTORY_H2_ARTIFACT_DIR ?? 'artifacts/history-ui-h2')
 mkdirSync(out, { recursive: true })
-const evidence = { schema: 'viewloom-history-ui-h2-chart-v1', phase: 'P9H2', scenarios: [], result: 'running' }
+const evidence = { schema: 'viewloom-history-ui-h2-chart-v1', phase: 'P9H2', scenarios: [], diagnostics: [], result: 'running' }
 
 function payload(provider, metric) {
   const value = structuredClone(historyPayload(provider, 'comparable'))
@@ -40,12 +40,15 @@ async function run(browser, provider, viewport, touch) {
   await page.goto(`${base}/${provider}/history/?period=7d&metric=viewer_minutes`, { waitUntil: 'domcontentloaded' })
   await ready(page, 'viewer_minutes')
   const initial = await snapshot(page)
+  evidence.diagnostics.push({ provider, initial })
   assert.match(initial.title, /Viewer-minutes by UTC day/)
   assert.match(initial.description, /Arrow keys move between days/)
   assert.equal(initial.labelledBy, 'history-chart-title history-chart-description')
   assert.match(initial.caption, /UTC daily rollup/)
   assert.ok(initial.yTicks >= 5 && initial.xTicks >= 2)
-  for (const symbol of ['●', '▲', '◐', '×', '◇']) assert.ok(initial.markers.includes(symbol))
+  for (const symbol of ['●', '▲', '◐', '×', '◇']) {
+    assert.ok(initial.markers.includes(symbol), `${provider}: missing state marker ${symbol}; ${JSON.stringify(initial.days)}`)
+  }
   for (const label of ['Complete', 'Partial', 'In progress', 'Missing', 'Demo']) assert.match(initial.legend, new RegExp(label, 'i'))
   assert.equal(initial.focusable, 1)
 
@@ -103,6 +106,13 @@ async function snapshot(page) {
     yTicks: document.querySelectorAll('.history-y-label').length,
     xTicks: document.querySelectorAll('.history-x-label').length,
     markers: [...document.querySelectorAll('.history-state-marker')].map((node) => node.textContent ?? ''),
+    days: [...document.querySelectorAll('[data-history-day]')].map((node) => ({
+      day: node.getAttribute('data-history-day') ?? '',
+      coverage: node.getAttribute('data-history-coverage') ?? '',
+      symbol: node.getAttribute('data-history-state-symbol') ?? '',
+      marker: node.querySelector('.history-state-marker')?.textContent ?? '',
+      barClass: node.querySelector('.history-bar')?.getAttribute('class') ?? '',
+    })),
     legend: document.querySelector('[data-history-chart-legend]')?.textContent ?? '',
     inspection: document.querySelector('[data-history-chart-inspection]')?.textContent ?? '',
     inspectionDay: document.querySelector('[data-history-chart-inspection]')?.getAttribute('data-history-inspection-day') ?? '',
