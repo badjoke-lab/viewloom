@@ -25,6 +25,7 @@ function observeRelevantRoot(): void {
     observer.observe(root, {
       childList: true,
       subtree: true,
+      characterData: true,
       attributes: true,
       attributeFilter: ['hidden'],
     })
@@ -34,10 +35,14 @@ function observeRelevantRoot(): void {
 }
 
 function isHierarchyMutation(record: MutationRecord): boolean {
+  const target = record.target instanceof Element ? record.target : record.target.parentElement
   if (record.type === 'attributes') {
     return record.attributeName === 'hidden'
-      && record.target instanceof Element
-      && Boolean(record.target.closest('[data-history-day-card]'))
+      && Boolean(target?.closest('[data-history-day-card]'))
+  }
+
+  if (record.type === 'characterData') {
+    return Boolean(target?.closest('[data-history-day-card]'))
   }
 
   if (record.type !== 'childList') return false
@@ -48,6 +53,7 @@ function isHierarchyMutation(record: MutationRecord): boolean {
   }
 
   if (!observedRoot.contains(record.target)) return false
+  if (target?.closest('[data-history-day-card]')) return true
   return nodes.some((node) => node instanceof Element
     && (node.matches('[data-history-day-card]') || Boolean(node.querySelector('[data-history-day-card]'))))
 }
