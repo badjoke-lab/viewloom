@@ -22,7 +22,7 @@ Day Flow                                 production core; Phase 10 repair queued
 Battle Lines                             production core; Phase 10 repair queued
 History baseline H1-H7                   production accepted
 P9H0 History baseline                   complete PR #430
-History metric repair                    exact next after explicit continuation
+History metric repair                   active on work-history-ui-h1-metric
 Channel C0-C5B                           production accepted
 Report/export R0-R4                      complete through PR #413
 Local Watchlist W0-W5B                   complete through PR #425
@@ -31,9 +31,10 @@ Phase 8 P8A inventory                    complete through PR #427
 Phase 8 public inventory/browser audit  complete PR #428
 Phase 9 P9H0                             complete through PR #430
 P9H0 documentation closeout             complete PR #432
-Active implementation branch            none
-Exact next branch                       work-history-ui-h1-metric
-P9H1 branch created                     no
+Final-state correction                  complete PR #433
+Active implementation branch            work-history-ui-h1-metric
+Exact next branch                       work-history-ui-h2-chart
+P9H2 branch created                     no
 Phase 10 cross-site quality              queued
 Phase 11 engineering/operations lock     queued
 Phase 12 English release readiness       queued
@@ -43,16 +44,14 @@ Phase 15 next-feature audit              queued
 Phase 16 next major feature              not approved
 ```
 
-## 3. Post-closeout handoff
+## 3. P9H1 handoff
 
 ```text
-Completed closeout: PR #432
-Merge commit: 3b315a14ff75b3fe9c0129cbc62de8127425ea12
-Active implementation branch: none
-Exact next branch: work-history-ui-h1-metric
-P9H1 branch created: no
-Runtime product change in closeout: none
-Cloudflare Preview in closeout: not used
+Current branch: work-history-ui-h1-metric
+Entry predecessor: PR #433
+P9H0 evidence source: PR #430
+Exact next branch after merge and explicit continuation: work-history-ui-h2-chart
+P9H2 branch created: no
 Exception: a newly proven P0 may interrupt
 ```
 
@@ -76,6 +75,8 @@ history-metric-summary-stale
 history-mobile-task-flow-too-long
 history-selected-day-context-stale
 ```
+
+P9H1 owns the three metric-context failures. `history-mobile-task-flow-too-long` remains owned by P9H3/P9H5.
 
 The local keyboard scenarios moved focus to the ViewLoom home link. The P8B production body-focus observation remains an explicit production/local discrepancy for P9H5 and final production acceptance.
 
@@ -101,8 +102,6 @@ docs/audits/history-ui-h0-source-map.md
 docs/audits/history-ui-h0-findings.md
 ```
 
-Future Phase 10–14 branches also read their registered permanent specification and implementation plan.
-
 ## 6. Immediate sequence
 
 ```text
@@ -111,8 +110,9 @@ P8A  work-public-surface-inventory       complete PR #427
 P8B  work-public-browser-audit           complete PR #428
 P9H0 work-history-ui-h0-baseline         complete PR #430
 C9H0 work-p9h0-closeout                  complete PR #432
-P9H1 work-history-ui-h1-metric           exact next; not created
-P9H2 work-history-ui-h2-chart            queued
+C9H0F work-p9h0-final-state              complete PR #433
+P9H1 work-history-ui-h1-metric           active
+P9H2 work-history-ui-h2-chart            exact next after P9H1 merge and explicit continuation
 P9H3 work-history-ui-h3-overview         queued
 P9H4 work-history-ui-h4-tasks            queued
 P9H5 work-history-ui-h5-responsive       queued
@@ -120,26 +120,24 @@ P9H6 work-history-ui-h6-candidate        queued
 P9H7 work-history-ui-h7-acceptance       queued
 ```
 
-No later branch may be created before P9H1 receives explicit continuation.
+No later branch may be created before P9H1 merges, is fully reported, and explicit continuation is received.
 
-## 7. Closeout completion record
+## 7. P9H1 implementation contract
 
-- roadmap, schedule, program plan, History repair plan, working note, documentation index, README, agent/contributor rules, and PR template identify P9H0 as complete and P9H1 as next;
-- PR #430 evidence and the production/local keyboard discrepancy remain exact;
-- Phase 10–11 cross-site quality specifications/plans are registered;
-- Phase 13–14 localization specification/plan are registered;
-- stale P8B-active wording is rejected by policy verification except where explicitly retained as historical verifier text;
-- completed Watchlist/P8B/P9H0 contracts remain valid without requiring stale current-state wording;
-- no product UI, API, D1, binding, collector, cron, retention, output-schema, provider-combination, Preview, or localization-runtime change was included;
-- PR #432 was squash merged after latest-head documentation and product gates passed.
+Changing Viewer-minutes or Peak viewers must update:
 
-## 8. P9H1 entry contract
+- URL and provider request/payload state;
+- selected control and accessible name;
+- chart values, scale, ticks, unit, and description;
+- Summary labels and values;
+- Selected day primary fact;
+- comparison and Ranking context;
+- supported Archives;
+- Report, Share, and Export context.
 
-P9H1 begins only after explicit continuation. It repairs Viewer-minutes and Peak viewers across URL, provider request, selected control, chart, Summary, Selected day, Ranking context, supported Archives, Report, Share, and Exports.
+P9H1 must replace the three metric-context expected failures with passing assertions. It must preserve provider separation, one request per uncached provider/period/metric state, task no-refetch, Back/Forward, degraded states, and output schemas. It must not add another global fetch wrapper or document-wide observer.
 
-P9H1 must replace the metric-related P9H0 expected failures with passing assertions. It must preserve provider separation, one request per uncached provider/period/metric state, task no-refetch, Back/Forward, degraded states, and output schemas. It must not add another global fetch wrapper or document-wide observer.
-
-## 9. Later approved windows
+## 8. Later approved windows
 
 ```text
 Phase 10  U10A–U10H  cross-site defect/UI/architecture remediation
@@ -152,6 +150,6 @@ Phase 15  N15A–N15B  next-feature data-capability audit
 Phase 16  feature-specific; not approved
 ```
 
-## 10. Stop rule
+## 9. Stop rule
 
-There is no active implementation branch. Do not create `work-history-ui-h1-metric` until explicit continuation.
+Complete P9H1 on `work-history-ui-h1-metric`, merge it, name `work-history-ui-h2-chart`, and stop until explicit continuation.
