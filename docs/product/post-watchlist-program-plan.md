@@ -1,15 +1,15 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 2.2
+Version: 2.3
 Created: 2026-06-25
 Last updated: 2026-06-26
 Current phase: Phase 9 — History P1 repair
-Current implementation branch: `work-history-ui-h1-metric`
+Current implementation branch: none
 Completed closeout: PR #432
 Completed final-state correction: PR #433
-Exact next implementation branch after P9H1 merge and explicit continuation: `work-history-ui-h2-chart`
-Exception: a newly proven P0 may interrupt
+Completed metric synchronization: PR #434
+Exact next implementation branch after explicit continuation: `work-history-ui-h2-chart`
 
 ## 1. Purpose
 
@@ -25,7 +25,7 @@ working notes                      unstable execution memory
 audit/acceptance records           evidence baseline
 ```
 
-Before each branch, compare the schedule with actual branches/PRs, confirm the predecessor merge/report and explicit continuation, read affected specifications/plans, and record missing work. After each merge, update canonical state, issue the full report, name the next branch, and stop.
+Before each branch, compare the schedule with actual branches/PRs, confirm explicit continuation, read affected specifications/plans, and record missing work. After each merge, update canonical state, issue the full report, name the next branch, and stop.
 
 ## 2. Program status
 
@@ -33,13 +33,13 @@ Before each branch, compare the schedule with actual branches/PRs, confirm the p
 |---|---|---|---|---|
 | 7 | P7A | complete PR #426 | source reset | repair program locked |
 | 8 | P8A | complete PR #427 | public inventory | 21 owned surfaces inventoried |
-| 8 | P8B | complete PR #428 | browser audit | defect ledger and evidence complete |
-| 9 | P9H0 | complete PR #430 | History baseline | deterministic failures and owners fixed |
-| 9 | closeout | complete PR #432 | governance closeout | authorities aligned and merged |
-| 9 | final-state | complete PR #433 | canonical correction | P9H1 entry state exact |
-| 9 | P9H1 | active | `history-ui-repair-plan.md` | metric execution synchronized |
+| 8 | P8B | complete PR #428 | browser audit | evidence complete |
+| 9 | P9H0 | complete PR #430 | History baseline | deterministic baseline fixed |
+| 9 | closeout | complete PR #432 | governance closeout | authorities aligned |
+| 9 | final-state | complete PR #433 | canonical correction | P9H1 entry exact |
+| 9 | P9H1 | complete PR #434 | `history-ui-repair-plan.md` | metric execution synchronized |
 | 9 | P9H2–P9H7 | queued | `history-ui-repair-plan.md` | History repair accepted in production |
-| 10 | U10A–U10H | queued | cross-site quality plan | reproduced cross-site defects accepted |
+| 10 | U10A–U10H | queued | cross-site quality plan | reproduced quality issues accepted |
 | 11 | O11A–O11G | queued | engineering/operations plan | acceptance, CI, type safety, monitoring locked |
 | 12 | R12A–R12C | queued | release readiness | English legal/Support/Stripe package complete |
 | 13 | I13A–I13K | queued | localization plan | English/Japanese accepted |
@@ -50,58 +50,36 @@ Before each branch, compare the schedule with actual branches/PRs, confirm the p
 
 ## 3. Completed Phase 7–8
 
-P7A completed through PR #426. P8A completed through PR #427 with 21 owned surfaces. P8B completed through PR #428 with:
+P7A completed through PR #426. P8A completed through PR #427 with 21 owned surfaces. P8B completed through PR #428 with 84 production route scenarios, five policy/disclosure probes, ten deterministic History scenarios, and no P0 result.
+
+## 4. Completed P9H0–P9H1
+
+P9H0 completed through PR #430. Documentation/program closeout completed through PR #432. Canonical entry state was corrected through PR #433. P9H1 completed through PR #434.
+
+P9H1 evidence:
 
 ```text
-21 owned routes
-1440 / 820 / 390 / 360
-84 production route scenarios
-5 missing policy/disclosure probes
-10 deterministic History scenarios
-P0 0 / P1 3 / P2 5 / P3 0
+Final head: 9c4e3278b609e3f8d41fa3df71ba69f5ebc00618
+Merge: 31b81d3ed3a56369055ba09eb4de871dfc59d315
+Workflow: 28232602651
+Artifact: history-ui-h1-metric / 7903212809
+Digest: sha256:783283fd1c913e7ccb99d04bb607ed5801db1c74ab3d341c81a40c440835e82c
 ```
 
-No outage, provider crossing, materially wrong provider path, or page-level horizontal overflow was found.
-
-## 4. Completed P9H0 and closeout
-
-P9H0 completed through PR #430. Documentation/program closeout completed through PR #432. The post-closeout canonical state was corrected through PR #433.
-
-```text
-Final head: e3a1f64e7225a652de95a37ea755b192565d7798
-Merge: 716b8e2fb59a6783a647cb62274c82a521c0e535
-Workflow: 28217951126
-Artifact: history-ui-h0-baseline / 7897373665
-Digest: sha256:366d5aeeb896b62201cc842f79ba9426807ae81e997a3cc5d53360cfa43b104a
-```
-
-Deterministic failures:
-
-```text
-history-metric-ranking-context-stale
-history-metric-summary-stale
-history-mobile-task-flow-too-long
-history-selected-day-context-stale
-```
-
-P9H1 owns the three metric-context failures. The mobile task-flow defect remains for P9H3/P9H5. Local keyboard scenarios moved focus to the ViewLoom home link; the P8B production body-focus observation remains a P9H5/final-acceptance discrepancy.
+P9H1 synchronizes Viewer-minutes and Peak viewers across URL, request, chart, Summary, Selected day, comparison, Ranking context, Daily archive, Report, Share, and Exports. It preserves provider separation, one request per uncached provider/period/metric state, local task no-refetch, degraded states, and output schemas. Daily rows without observations are excluded from metric-day selection.
 
 ## 5. Phase 9 sequence
 
 ```text
 P9H0 work-history-ui-h0-baseline   complete PR #430
-P9H1 work-history-ui-h1-metric     active
-P9H2 work-history-ui-h2-chart      exact next after P9H1 merge and explicit continuation
+P9H1 work-history-ui-h1-metric     complete PR #434
+P9H2 work-history-ui-h2-chart      exact next after explicit continuation; not created
 P9H3 work-history-ui-h3-overview   queued
 P9H4 work-history-ui-h4-tasks      queued
 P9H5 work-history-ui-h5-responsive queued
 P9H6 work-history-ui-h6-candidate  queued
 P9H7 work-history-ui-h7-acceptance queued
 ```
-
-### P9H1 — metric execution
-
-Synchronize Viewer-minutes and Peak viewers across URL, request/cache, chart, Summary, Selected day, comparison, Ranking context, supported Archives, Report, Share, and Exports. Replace the three metric-context expected failures with passing permanent assertions while preserving one request per uncached provider/period/metric state, provider separation, local task no-refetch, degraded states, and output schemas.
 
 ### P9H2 — chart interpretation
 
@@ -125,13 +103,6 @@ Run the complete local candidate and all permanent gates, then use one deliberat
 
 ## 6. Phase 10 — cross-site quality remediation
 
-Authority:
-
-```text
-docs/product/cross-site-quality-remediation-spec.md
-docs/product/cross-site-quality-remediation-plan.md
-```
-
 ```text
 U10A defect ledger and ownership baseline
 U10B shared shell and components
@@ -142,8 +113,6 @@ U10F route/readiness/smoke coverage
 U10G architecture cleanup
 U10H local/Preview/production acceptance
 ```
-
-Only reproduced defects are repaired. No new API, D1, collector, cron, retention, provider total, login, alert, or AI interpretation is authorized.
 
 ## 7. Phase 11 — engineering and operations lock
 
@@ -200,15 +169,6 @@ Initial locales are `en`, `ja`, `es`, and `pt-BR`. Arabic/RTL requires separate 
 
 Phase 15 evaluates one candidate at a time for source parity, D1 growth, collector changes, rollups, Cloudflare Free limits, data honesty, value, overlap, and maintenance cost. Phase 16 begins only after one candidate is separately approved with its own specification and branch sequence.
 
-## 12. Scope rules
+## 12. Current stop rule
 
-- P0 interrupts immediately.
-- P1 may reorder Phase 9 when it blocks acceptance.
-- P2 waits for Phase 10 unless it blocks P1 acceptance.
-- P3 remains deferred.
-- UI localization is not stream-language analytics.
-- new APIs, D1 schemas, collector fields, cron, retention, bindings, exact sessions, provider totals, login, alerts, AI interpretation, or automatic provider-content translation require separate approval.
-
-## 13. Current stop rule
-
-Complete P9H1 on `work-history-ui-h1-metric`, merge it, name `work-history-ui-h2-chart` as the exact next branch, and stop until explicit continuation.
+P9H1 is complete through PR #434. There is no active implementation branch. Do not create `work-history-ui-h2-chart` until explicit continuation.

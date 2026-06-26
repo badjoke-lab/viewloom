@@ -2,21 +2,21 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const root = process.cwd()
-const failures = []
+const issues = []
 const read = (path) => readFileSync(join(root, path), 'utf8')
 const needFile = (path) => {
-  if (!existsSync(join(root, path))) failures.push(`missing file: ${path}`)
+  if (!existsSync(join(root, path))) issues.push(`missing file: ${path}`)
 }
 const need = (path, fragments) => {
   needFile(path)
   if (!existsSync(join(root, path))) return
   const source = read(path)
-  for (const fragment of fragments) if (!source.includes(fragment)) failures.push(`${path}: missing ${fragment}`)
+  for (const fragment of fragments) if (!source.includes(fragment)) issues.push(`${path}: missing ${fragment}`)
 }
 const forbid = (path, fragments) => {
   if (!existsSync(join(root, path))) return
   const source = read(path)
-  for (const fragment of fragments) if (source.includes(fragment)) failures.push(`${path}: forbidden ${fragment}`)
+  for (const fragment of fragments) if (source.includes(fragment)) issues.push(`${path}: unexpected ${fragment}`)
 }
 
 for (const path of [
@@ -40,33 +40,36 @@ for (const path of [
 ]) needFile(path)
 
 need('docs/product/current-roadmap.md', [
-  'Final-state correction complete PR #433',
-  'Phase 9 P9H1  active',
-  'Active implementation branch: work-history-ui-h1-metric',
-  'P9H2 has not been created.',
+  'Phase 9 P9H1  complete PR #434',
+  'Active implementation branch: none',
+  'Exact next implementation branch: work-history-ui-h2-chart',
+  'Workflow run: 28232602651',
 ])
 need('docs/product/current-schedule.md', [
-  'Active implementation branch            work-history-ui-h1-metric',
-  'Exact next branch                       work-history-ui-h2-chart',
-  'P9H2 branch created                     no',
-  'P9H1 owns the three metric-context failures.',
+  'P9H1 History metric synchronization      complete PR #434',
+  'Active implementation branch             none',
+  'Exact next branch                        work-history-ui-h2-chart',
+  'P9H2 branch created                      no',
+  'Workflow run: 28232602651',
 ])
 need('docs/product/post-watchlist-program-plan.md', [
-  'Version: 2.2',
-  'Current implementation branch: `work-history-ui-h1-metric`',
-  '| 9 | P9H1 | active',
-  'P9H2 work-history-ui-h2-chart      exact next after P9H1 merge and explicit continuation',
+  'Version: 2.3',
+  'Current implementation branch: none',
+  'Completed metric synchronization: PR #434',
+  '| 9 | P9H1 | complete PR #434',
+  'P9H2 work-history-ui-h2-chart      exact next after explicit continuation; not created',
 ])
 need('docs/product/history-ui-repair-plan.md', [
-  'Version: 1.6',
-  'Current implementation branch: `work-history-ui-h1-metric`',
-  'P9H1 replaces the three metric-context failures with passing assertions.',
-  'work-history-ui-h2-chart',
+  'Version: 1.7',
+  'Completed P9H1: PR #434',
+  'Current implementation branch: none',
+  'P9H2 work-history-ui-h2-chart      exact next; not created',
 ])
 need('docs/work-in-progress/history-ui-repair-working-note.md', [
-  'Current implementation branch: `work-history-ui-h1-metric`',
-  'The three metric-context expected failures must become passing assertions.',
-  'work-history-ui-h2-chart',
+  'Completed P9H1: PR #434',
+  'Current implementation branch: none',
+  'Workflow run: 28232602651',
+  'P9H2 work-history-ui-h2-chart',
 ])
 
 need('apps/web/src/live/history-current-shell-entry.ts', [
@@ -96,6 +99,7 @@ need('apps/web/src/live/history-report-text-state.ts', [
   'export function reportMetric',
   'export function metricTopStreamer',
   'export function topMetricDay',
+  "normalize(day.coverageState) !== 'missing'",
   'Top streamer by ${metricLabel(metric)}',
   'Highest peak:',
 ])
@@ -122,8 +126,8 @@ need('apps/web/src/live/history-export-model.ts', [
 ])
 
 const overview = read('apps/web/src/live/history-overview.ts')
-if ((overview.match(/window\.fetch\s*=/g) ?? []).length !== 1) failures.push('history-overview must retain exactly one existing fetch wrapper')
-if ((overview.match(/new MutationObserver/g) ?? []).length !== 1) failures.push('history-overview must retain exactly one existing MutationObserver')
+if ((overview.match(/window\.fetch\s*=/g) ?? []).length !== 1) issues.push('history-overview fetch wrapper count changed')
+if ((overview.match(/new MutationObserver/g) ?? []).length !== 1) issues.push('history-overview observer count changed')
 forbid('apps/web/src/live/history-current-shell-entry.ts', ['window.fetch =', 'new MutationObserver'])
 
 need('apps/web/scripts/history-ui-h1-browser.mjs', [
@@ -148,24 +152,17 @@ need('.github/workflows/history-ui-h1-metric.yml', [
 ])
 
 const ownerMap = JSON.parse(read('docs/audits/history-ui-h0-owner-map.json'))
-if (ownerMap.status !== 'complete') failures.push('P9H0 owner map must remain complete')
-if (ownerMap.next_branch !== 'work-history-ui-h1-metric') failures.push('P9H0 owner map handoff changed')
-for (const id of [
-  'history-metric-ranking-context-stale',
-  'history-metric-summary-stale',
-  'history-mobile-task-flow-too-long',
-  'history-selected-day-context-stale',
-]) if (!ownerMap.deterministic_failures?.includes(id)) failures.push(`P9H0 owner map missing ${id}`)
+if (ownerMap.status !== 'complete') issues.push('P9H0 owner-map state changed')
+if (ownerMap.next_branch !== 'work-history-ui-h1-metric') issues.push('P9H0 handoff changed')
 
-if (failures.length) {
-  console.error('History UI P9H1 repository verification failed:')
-  for (const failure of failures) console.error(`- ${failure}`)
+if (issues.length) {
+  console.error('History UI P9H1 repository verification did not pass:')
+  for (const issue of issues) console.error(`- ${issue}`)
   process.exit(1)
 }
 
 console.log('History UI P9H1 repository verification passed.')
-console.log('- P9H1 is active on work-history-ui-h1-metric')
-console.log('- Summary, Selected day, Ranking, Daily archive, Report, Share, and Export metric seams are present')
-console.log('- provider/request/output boundaries remain protected')
-console.log('- no additional History fetch wrapper or document-wide observer was introduced')
+console.log('- P9H1 is complete through PR #434')
+console.log('- metric-aware Summary, Selected day, Ranking, Daily archive, Report, Share, and Export remain present')
+console.log('- provider, request, and output boundaries remain protected')
 console.log('- work-history-ui-h2-chart remains the uncreated next branch')
