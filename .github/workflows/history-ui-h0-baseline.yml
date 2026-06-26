@@ -7,7 +7,7 @@ on:
       - 'README.md'
       - 'docs/audits/history-ui-h0-*'
       - 'docs/audits/public-browser-defects.json'
-      - 'apps/web/scripts/history-ui-h0-browser.mjs'
+      - 'apps/web/scripts/history-ui-h0-*.mjs'
       - 'apps/web/src/live/history-*.ts'
       - 'apps/web/src/history-*.css'
       - 'scripts/verify-history-ui-h0-baseline.mjs'
@@ -76,6 +76,10 @@ jobs:
         working-directory: apps/web
         run: npx playwright install --with-deps chromium
 
+      - name: Prepare deterministic P9H0 baseline
+        working-directory: apps/web
+        run: node scripts/prepare-history-ui-h0-baseline.mjs
+
       - name: Run P9H0 browser baseline
         working-directory: apps/web
         run: node scripts/history-ui-h0-browser.mjs
@@ -91,7 +95,15 @@ jobs:
           assert.equal(evidence.result, 'pass')
           assert.equal(evidence.scenarios.length, 6)
           assert.deepEqual(evidence.observedFailures, [...evidence.expectedFailures].sort())
-          console.log(JSON.stringify({ result: evidence.result, failures: evidence.observedFailures }, null, 2))
+          assert.deepEqual(evidence.expectedFailures, [
+            'history-metric-summary-stale',
+            'history-mobile-task-flow-too-long',
+            'history-selected-day-context-stale',
+          ])
+          const keyboard = evidence.scenarios.filter((item) => item.id.includes('-keyboard-'))
+          assert.equal(keyboard.length, 2)
+          assert.ok(keyboard.every((item) => item.focus.moved))
+          console.log(JSON.stringify({ result: evidence.result, failures: evidence.observedFailures, keyboard: keyboard.map((item) => item.focus) }, null, 2))
           NODE
 
       - name: Upload P9H0 artifacts
