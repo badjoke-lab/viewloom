@@ -75,14 +75,18 @@ need('apps/web/scripts/history-ui-h4b-tasks-browser.mjs', [
 need('docs/product/current-schedule.md', [
   'P9H4B Archives and publishing hierarchy  active',
   'Active implementation branch             work-history-ui-h4b-tasks',
+  'P9H4B Archives and publishing hierarchy  complete PR #443',
+  'P9H4B canonical closeout                 complete PR #444',
+  'Active implementation branch             none',
   'Exact next branch                        work-history-ui-h5-responsive',
   'P9H5 branch created                      no',
 ])
 need('docs/work-in-progress/p9h4b-activation.md', [
-  'Status: active',
+  'Status: complete',
   'work-history-ui-h4b-tasks',
   'Archives and Report & Export hierarchy',
   'work-history-ui-h5-responsive',
+  'P9H5 branch created: no',
 ])
 
 need('apps/web/src/live/history-view-shell.ts', [
@@ -133,9 +137,9 @@ if (issues.length) {
 }
 
 console.log('ViewLoom History P9H4B task hierarchy verification passed.')
-console.log('- P9H4B is active on work-history-ui-h4b-tasks')
+console.log('- P9H4B is complete through PR #443 and canonically closed through PR #444')
 console.log('- Archives hierarchy and non-sticky controls are protected')
 console.log('- Report & Export context and action groups are protected')
 console.log('- State/source context is derived from the accepted Report source line')
 console.log('- Back/Forward and no-refetch task switching remain protected')
-console.log('- report, share, PNG, CSV, JSON, provider, API, and storage contracts are unchanged')
+console.log('- work-history-ui-h5-responsive is next and not created')
