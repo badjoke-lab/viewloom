@@ -27,7 +27,7 @@ async function run(browser, provider, viewport, touch) {
   await ready(page)
 
   const initial = await snapshot(page)
-  assert.equal(initial.requestCount, 1)
+  assert.equal(calls.length, 1)
   assert.ok(calls.every((call) => call.provider === provider), `${provider}: crossed provider endpoint`)
   assert.equal(initial.summaryCards, 5)
   assert.equal(initial.mobileNavButtons, 4)
@@ -76,22 +76,21 @@ async function ready(page) {
 
 async function snapshot(page) {
   return page.evaluate(() => {
-    const visible = (selector) => {
-      const node = document.querySelector(selector)
+    const isVisible = (node) => {
       if (!(node instanceof HTMLElement)) return false
       const style = getComputedStyle(node)
       return style.display !== 'none' && style.visibility !== 'hidden' && node.getClientRects().length > 0
     }
     const top = (selector) => document.querySelector(selector)?.getBoundingClientRect().top ?? Number.MAX_SAFE_INTEGER
     const groupNodes = [...document.querySelectorAll('[data-history-secondary-group]')]
+    const mobileNavigation = document.querySelector('[data-history-mobile-analysis]')
     return {
-      requestCount: performance.getEntriesByType('resource').filter((entry) => entry.name.includes('/api/history') || entry.name.includes('/api/kick-history')).length,
       summaryCards: document.querySelectorAll('[data-history-summary] > div').length,
       mobileNavButtons: document.querySelectorAll('[data-history-mobile-analysis-toggle]').length,
-      mobileNavDisplay: getComputedStyle(document.querySelector('[data-history-mobile-analysis]')).display,
-      visibleSecondaryGroups: groupNodes.filter((node) => visible(`[data-history-secondary-group="${node.getAttribute('data-history-secondary-group')}"]${node.classList.contains('is-mobile-open') ? '.is-mobile-open' : ':not(.is-mobile-open)'}`)).length,
+      mobileNavDisplay: mobileNavigation instanceof HTMLElement ? getComputedStyle(mobileNavigation).display : 'missing',
+      visibleSecondaryGroups: groupNodes.filter(isVisible).length,
       openGroups: [...new Set(groupNodes.filter((node) => node.classList.contains('is-mobile-open')).map((node) => node.getAttribute('data-history-secondary-group')))].filter(Boolean),
-      visibleSelectedStreamers: [...document.querySelectorAll('.history-selected-top li')].filter((node) => node instanceof HTMLElement && getComputedStyle(node).display !== 'none').length,
+      visibleSelectedStreamers: [...document.querySelectorAll('.history-selected-top li')].filter(isVisible).length,
       documentHeight: document.documentElement.scrollHeight,
       bodyOverflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
       order: {
