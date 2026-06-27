@@ -40,6 +40,7 @@ need('apps/web/src/live/history-tasks-p9h4b.ts', [
   "window.addEventListener('popstate', schedule)",
   "window.addEventListener('viewloom:peak-archive-toggle', schedule)",
   "window.addEventListener('viewloom:battle-archive-toggle', schedule)",
+  "reportField(report, 'Source')",
   "root.dataset.historyP9h4bReady = 'true'",
 ])
 
@@ -113,7 +114,7 @@ need('apps/web/src/live/history-share-card.ts', [
 ])
 
 const moduleSource = read('apps/web/src/live/history-tasks-p9h4b.ts')
-for (const forbidden of ['fetch(', 'MutationObserver', 'setInterval(', '/api/history', '/api/kick-history']) {
+for (const forbidden of ['fetch(', 'MutationObserver', 'setInterval(', '/api/history', '/api/kick-history', ".data-strip__cell:nth-child(4)"]) {
   check(!moduleSource.includes(forbidden), `P9H4B module contains forbidden ${forbidden}`)
 }
 
@@ -135,5 +136,6 @@ console.log('ViewLoom History P9H4B task hierarchy verification passed.')
 console.log('- P9H4B is active on work-history-ui-h4b-tasks')
 console.log('- Archives hierarchy and non-sticky controls are protected')
 console.log('- Report & Export context and action groups are protected')
+console.log('- State/source context is derived from the accepted Report source line')
 console.log('- Back/Forward and no-refetch task switching remain protected')
 console.log('- report, share, PNG, CSV, JSON, provider, API, and storage contracts are unchanged')
