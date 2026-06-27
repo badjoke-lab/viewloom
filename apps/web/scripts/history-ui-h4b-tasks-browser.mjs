@@ -142,7 +142,13 @@ async function desktopScenario(browser) {
   await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'archives'
     && document.querySelector('.history-page')?.getAttribute('data-history-archive-view') === 'peaks')
   await page.goBack()
+  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'archives'
+    && document.querySelector('.history-page')?.getAttribute('data-history-archive-view') === 'daily')
+  await page.goBack()
   await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'overview')
+  await page.goForward()
+  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'archives'
+    && document.querySelector('.history-page')?.getAttribute('data-history-archive-view') === 'daily')
   await page.goForward()
   await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'archives'
     && document.querySelector('.history-page')?.getAttribute('data-history-archive-view') === 'peaks')
