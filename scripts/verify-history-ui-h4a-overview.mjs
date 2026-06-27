@@ -83,6 +83,8 @@ for (const path of [
   'work-history-ui-h4a-overview-balance',
   'work-history-ui-h4b-tasks',
   'work-history-ui-h4-tasks',
+  'PR #441',
+  'PR #442',
 ])
 
 const moduleSource = read('apps/web/src/live/history-overview-p9h4a.ts')
@@ -110,7 +112,7 @@ if (issues.length) {
 }
 
 console.log('ViewLoom History P9H4A Overview balance verification passed.')
-console.log('- P9H4A is active on work-history-ui-h4a-overview-balance')
+console.log('- P9H4A is complete through PR #441 and canonically closed through PR #442')
 console.log('- Key changes is normal-flow and Calendar geometry is bounded')
 console.log('- four primary Summary facts and the CSS-owned coverage band are protected')
 console.log('- P9H4A adds no competing History observer or request seam')

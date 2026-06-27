@@ -16,8 +16,9 @@ P9H2 History chart interpretation        complete PR #436
 P9H2 canonical closeout                  complete PR #437
 P9H3 History Overview hierarchy          complete PR #439
 P9H3 canonical closeout                  complete PR #440
-P9H4A Overview balance                   active
-Active implementation branch             work-history-ui-h4a-overview-balance
+P9H4A Overview balance                   complete PR #441
+P9H4A canonical closeout                 complete PR #442
+Active implementation branch             none
 Exact next branch                        work-history-ui-h4b-tasks
 P9H4B branch created                     no
 Phase 10 cross-site quality              queued
@@ -36,6 +37,14 @@ P9H4A was inserted after production screenshots confirmed that the desktop `Key 
 These exact strings are retained for permanent gates and are not current state.
 
 ```text
+P9H4A Overview balance                   active
+Active implementation branch             work-history-ui-h4a-overview-balance
+Exact next branch                        work-history-ui-h4b-tasks
+P9H4B branch created                     no
+
+P9H4A canonical closeout                 active
+Active implementation branch             work-history-ui-h4a-closeout
+
 Active implementation branch             none
 Exact next branch                        work-history-ui-h4-tasks
 P9H4 branch created                      no
@@ -80,9 +89,17 @@ Workflow run: 28280486736
 Artifact: history-ui-h3-overview
 Artifact ID: 7921680615
 Digest: sha256:33e6c4fa3deeaab4a12394b768371dde06409ebf6d899f230110948fb63defee
+
+PR: #441
+Final head: 9cbaed979394232ceee5efc6c95954385eb230fa
+Merge commit: 0201ff8464a568e5d6aebd1b3d179bcde93a17e7
+Workflow run: 28283570437
+Artifact: history-ui-h4a-overview-balance
+Artifact ID: 7922730563
+Digest: sha256:62bd0bd1c991cdc87286aa62d28668c961cac987eebaf606db5512469e968aac
 ```
 
-P9H3 keeps full desktop analysis and shortens the mobile default path to Summary, coverage status, chart, and Selected day. Compare periods, Calendar, Rankings & changes, and detailed Coverage remain available through explicit secondary controls without another History request.
+P9H4A makes `Key changes` normal-flow, bounds desktop Calendar geometry, protects ranking width, presents four primary Summary facts plus a full-width coverage band, compacts withheld comparison, and improves mobile chart, Selected day, and More analysis presentation without changing provider, request, API, storage, or output contracts.
 
 ## Immediate sequence
 
@@ -91,23 +108,13 @@ P9H0  work-history-ui-h0-baseline          complete PR #430
 P9H1  work-history-ui-h1-metric            complete PR #434
 P9H2  work-history-ui-h2-chart             complete PR #436
 P9H3  work-history-ui-h3-overview          complete PR #439
-P9H4A work-history-ui-h4a-overview-balance active
-P9H4B work-history-ui-h4b-tasks            next after P9H4A merge and explicit continuation; not created
+P9H4A work-history-ui-h4a-overview-balance complete PR #441
+P9H4B work-history-ui-h4b-tasks            exact next after explicit continuation; not created
 P9H5  work-history-ui-h5-responsive        queued
 P9H6  work-history-ui-h6-candidate         queued
 P9H7  work-history-ui-h7-acceptance        queued
 ```
 
-## P9H4A acceptance scope
-
-- remove sticky/fixed behavior from `Key changes` and prevent overlap with later sections;
-- cap the desktop calendar height and remove square-cell dominance;
-- protect ranking-table width and stack `Key changes` below the table at narrower desktop widths;
-- reduce Summary to four primary metric cards and move coverage quality into the coverage status band;
-- compact partial/unavailable comparison presentation;
-- improve mobile chart height, Selected day density, and explanatory secondary-analysis controls;
-- preserve metric synchronization, no-refetch secondary switching, URL state, outputs, provider separation, APIs, D1, collectors, cron, retention, and bindings.
-
 ## Stop rule
 
-P9H4A is active on `work-history-ui-h4a-overview-balance`. Do not create `work-history-ui-h4b-tasks` before P9H4A merges, its canonical closeout is complete, and explicit continuation is received.
+P9H4A is complete and canonically closed through PR #442. Do not create `work-history-ui-h4b-tasks` before explicit continuation is received.

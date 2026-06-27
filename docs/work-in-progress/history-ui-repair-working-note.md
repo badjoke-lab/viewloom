@@ -12,13 +12,22 @@ Completed P9H2: PR #436
 Completed P9H2 canonical closeout: PR #437
 Completed P9H3: PR #439
 Completed P9H3 canonical closeout: PR #440
-Current implementation branch: `work-history-ui-h4a-overview-balance`
-Exact next branch after merge and explicit continuation: `work-history-ui-h4b-tasks`
+Completed P9H4A: PR #441
+Completed P9H4A canonical closeout: PR #442
+Current implementation branch: none
+Exact next branch after explicit continuation: `work-history-ui-h4b-tasks`
 Delete when: P9H7 production acceptance and permanent-document transfer are complete.
 
 Historical gate strings, not current state:
 
 ```text
+Current implementation branch: `work-history-ui-h4a-overview-balance`
+P9H4A work-history-ui-h4a-overview-balance active
+P9H4B work-history-ui-h4b-tasks            next after P9H4A merge and explicit continuation; not created
+
+P9H4A canonical closeout active
+Current implementation branch: `work-history-ui-h4a-closeout`
+
 Current implementation branch: none
 Exact next branch after explicit continuation: `work-history-ui-h4-tasks`
 P9H4 work-history-ui-h4-tasks            exact next after explicit continuation; not created
@@ -67,7 +76,7 @@ Artifact ID: 7921680615
 Digest: sha256:33e6c4fa3deeaab4a12394b768371dde06409ebf6d899f230110948fb63defee
 ```
 
-Accepted behavior:
+Accepted P9H3 behavior:
 
 - desktop retains the complete Overview analysis;
 - mobile defaults to Summary, coverage status, chart, and Selected day;
@@ -77,11 +86,9 @@ Accepted behavior:
 - Twitch and Kick remain separate;
 - report, share, PNG, CSV, and JSON formats remain.
 
-The compact mobile task-flow defect is resolved. The production/local keyboard discrepancy remains assigned to P9H5 and final acceptance.
+## P9H4A completion
 
-## Active P9H4A findings
-
-Production screenshots supplied on 2026-06-27 establish the following latest defects:
+Production screenshots supplied on 2026-06-27 established:
 
 ```text
 H4A-1  Key changes sticky card crosses into later section space on desktop
@@ -93,17 +100,29 @@ H4A-6  Mobile chart remains tight and tooltip-heavy
 H4A-7  Mobile Selected day and More analysis need denser, clearer presentation
 ```
 
-Approved repair:
+PR #441 completed the approved repair:
 
-- remove sticky/fixed positioning from `Key changes`;
-- pair ranking and insight only at wide desktop widths and stack at narrower desktop/tablet widths;
-- cap calendar cells to low fixed/clamped rows and remove desktop square aspect ratio;
-- reduce Summary to four primary facts and add coverage state to the coverage band;
-- compact withheld comparison;
-- increase mobile chart height, keep only the first three selected-day streamers, and use compact metric/action layout;
-- add descriptions and disclosure indicators to mobile More analysis buttons;
-- add geometry and request-count acceptance at 1440, 1280, 1024, 820, 390, and 360;
-- preserve provider separation, one request per uncached provider/period/metric state, no-refetch secondary analysis, URL state, output schemas, API, D1, collector, cron, retention, and bindings.
+- `Key changes` uses normal document flow and has zero intersection with detailed Coverage;
+- ranking and insight pair only at wide desktop widths and stack at narrower widths;
+- Calendar cells use bounded low rows rather than square geometry;
+- four primary Summary facts precede a full-width coverage band;
+- withheld comparison omits empty metric tiles;
+- mobile chart height and Selected day density are improved;
+- More analysis controls explain their contents;
+- one correct provider request is used in every accepted scenario;
+- no P9H4A MutationObserver or History request seam was added.
+
+```text
+Final head: 9cbaed979394232ceee5efc6c95954385eb230fa
+Merge commit: 0201ff8464a568e5d6aebd1b3d179bcde93a17e7
+Workflow run: 28283570437
+Artifact: history-ui-h4a-overview-balance
+Artifact ID: 7922730563
+Digest: sha256:62bd0bd1c991cdc87286aa62d28668c961cac987eebaf606db5512469e968aac
+Accepted widths: 1440, 1280, 1024, 820, 390, 360
+```
+
+The production/local keyboard discrepancy remains assigned to P9H5 and final acceptance.
 
 ## Current sequence
 
@@ -112,11 +131,11 @@ P9H0  work-history-ui-h0-baseline          complete PR #430
 P9H1  work-history-ui-h1-metric            complete PR #434
 P9H2  work-history-ui-h2-chart             complete PR #436
 P9H3  work-history-ui-h3-overview          complete PR #439
-P9H4A work-history-ui-h4a-overview-balance active
-P9H4B work-history-ui-h4b-tasks            next after P9H4A merge and explicit continuation; not created
+P9H4A work-history-ui-h4a-overview-balance complete PR #441
+P9H4B work-history-ui-h4b-tasks            exact next after explicit continuation; not created
 P9H5  work-history-ui-h5-responsive        queued
 P9H6  work-history-ui-h6-candidate         queued
 P9H7  work-history-ui-h7-acceptance        queued
 ```
 
-Do not create `work-history-ui-h4b-tasks` before P9H4A merges, its canonical closeout is complete, and explicit continuation is received.
+P9H4A is complete and canonically closed through PR #442. Do not create `work-history-ui-h4b-tasks` before explicit continuation is received.
