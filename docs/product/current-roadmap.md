@@ -21,16 +21,24 @@ Phase 9 P9H4A complete PR #441
 P9H4A canonical closeout complete PR #442
 Phase 9 P9H4B complete PR #443
 P9H4B canonical closeout complete PR #444
+Phase 9 P9H5 complete PR #447
+P9H5 canonical closeout complete PR #448
 Active implementation branch: none
-Exact next implementation branch: work-history-ui-h5-responsive
-P9H5 branch created: no
+Exact next implementation branch: work-history-ui-h6-candidate
+P9H6 branch created: no
 ```
 
-P9H4B repaired Archives and Report & Export hierarchy while preserving direct links, Back/Forward, one loaded provider response, and every output contract.
+P9H5 completed required-width responsive and accessibility repair while preserving provider, navigation, archive, request, and output contracts.
 
 ## Historical gate snapshots
 
 ```text
+Phase 9 P9H5 active
+Active implementation branch: work-history-ui-h5-responsive
+Exact next implementation branch: work-history-ui-h6-candidate
+P9H6 branch created: no
+P9H5 canonical closeout active
+Active implementation branch: work-history-ui-h5-closeout
 Phase 9 P9H4B active
 Active implementation branch: work-history-ui-h4b-tasks
 Exact next implementation branch: work-history-ui-h5-responsive
@@ -74,6 +82,7 @@ P9H2 branch created: no
 - History Overview hierarchy is complete through PR #439 and closed through PR #440.
 - History Overview balance is complete through PR #441 and closed through PR #442.
 - History Archives and publishing hierarchy is complete through PR #443 and closed through PR #444.
+- History responsive and accessibility repair is complete through PR #447 and closed through PR #448.
 - Twitch and Kick remain separate across routes, APIs, storage, bindings, rankings, exports, and coverage claims.
 
 Historical P9H1 evidence:
@@ -83,17 +92,15 @@ Workflow run: 28232602651
 Artifact: history-ui-h1-metric / 7903212809
 ```
 
-P9H4B accepted evidence:
+P9H5 accepted evidence:
 
 ```text
-Head: 93195f3e79f1edf7c95cd1150c94b41582c50c29
-Workflow run: 28289223184
-Artifact: history-ui-h4b-tasks / 7924451682
-Digest: sha256:f07200e1d5966dda3093788778d845fa2f8e2cc2ddf8fb4d939dba7c9992662f
-Merge: e28a6db311129fafe8cd1069ffe4ab240ba2b8bf
+Head: 2dd3926cd3e02ded472ef20ab1090b86d13675d4
+Workflow run: 28293856405
+Artifact: history-ui-h5-responsive / 7925847144
+Digest: sha256:5d6f0d7a38dd58f19b270b9ab9ea0de331f3f0aaaa3bb66ef6d4caae4211d854
+Merge: d7d20a4874fb44afc2abe6cf2384951d26bd4804
 ```
-
-The production/local keyboard discrepancy remains assigned to P9H5 and final acceptance.
 
 ## Authority map
 
@@ -111,7 +118,7 @@ History repair: docs/product/history-ui-repair-spec.md
 ```text
 Phase 7   source-of-truth reset                              complete PR #426
 Phase 8   inventory and browser defect audit                 complete PR #428
-Phase 9   History P1 repair                                  P9H4B complete; P9H5 next
+Phase 9   History P1 repair                                  P9H5 complete; P9H6 next
 Phase 10  cross-site defect/UI/architecture repair           queued
 Phase 11  acceptance, CI, type safety, monitoring            queued
 Phase 12  English legal, Support, Stripe, release readiness  queued
@@ -132,9 +139,9 @@ P9H2  work-history-ui-h2-chart             complete PR #436
 P9H3  work-history-ui-h3-overview          complete PR #439
 P9H4A work-history-ui-h4a-overview-balance complete PR #441
 P9H4B work-history-ui-h4b-tasks            complete PR #443
-P9H5  work-history-ui-h5-responsive        exact next after explicit continuation; not created
-P9H6  work-history-ui-h6-candidate         queued
+P9H5  work-history-ui-h5-responsive        complete PR #447
+P9H6  work-history-ui-h6-candidate         exact next after explicit continuation; not created
 P9H7  work-history-ui-h7-acceptance        queued
 ```
 
-P9H4B is complete and canonically closed through PR #444. Do not create `work-history-ui-h5-responsive` before explicit continuation is received.
+P9H5 is complete and canonically closed through PR #448. Do not create `work-history-ui-h6-candidate` before explicit continuation is received.
