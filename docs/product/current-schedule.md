@@ -15,8 +15,8 @@ P9H1 History metric synchronization      complete PR #434
 P9H2 History chart interpretation        complete PR #436
 P9H2 canonical closeout                  complete PR #437
 P9H3 History Overview hierarchy          complete PR #439
-P9H3 canonical closeout                  active
-Active implementation branch             work-history-ui-h3-closeout
+P9H3 canonical closeout                  complete PR #440
+Active implementation branch             none
 Exact next branch                        work-history-ui-h4-tasks
 P9H4 branch created                      no
 Phase 10 cross-site quality              queued
@@ -84,7 +84,7 @@ P9H0 work-history-ui-h0-baseline   complete PR #430
 P9H1 work-history-ui-h1-metric     complete PR #434
 P9H2 work-history-ui-h2-chart      complete PR #436
 P9H3 work-history-ui-h3-overview   complete PR #439
-P9H4 work-history-ui-h4-tasks      exact next after closeout and explicit continuation; not created
+P9H4 work-history-ui-h4-tasks      exact next after explicit continuation; not created
 P9H5 work-history-ui-h5-responsive queued
 P9H6 work-history-ui-h6-candidate  queued
 P9H7 work-history-ui-h7-acceptance queued
@@ -92,4 +92,4 @@ P9H7 work-history-ui-h7-acceptance queued
 
 ## Stop rule
 
-Complete the P9H3 canonical closeout on `work-history-ui-h3-closeout`. Do not create `work-history-ui-h4-tasks` before the closeout merges and explicit continuation is received.
+P9H3 is complete and canonically closed through PR #440. Do not create `work-history-ui-h4-tasks` before explicit continuation is received.
