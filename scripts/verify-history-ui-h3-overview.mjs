@@ -16,6 +16,7 @@ const need = (path, fragments) => {
 const files = [
   'apps/web/src/live/history-overview-p9h3.ts',
   'apps/web/src/history-overview-p9h3.css',
+  'apps/web/src/history-overview-p9h3-grid-fix.css',
   'apps/web/scripts/history-ui-h3-overview-browser.mjs',
   'scripts/verify-history-ui-h3-overview.mjs',
   '.github/workflows/history-ui-h3-overview.yml',
@@ -26,6 +27,7 @@ need('apps/web/src/live/history-usability-pass.ts', [
   "import '../history-chart-p9h2.css'",
   "import './history-chart-p9h2'",
   "import '../history-overview-p9h3.css'",
+  "import '../history-overview-p9h3-grid-fix.css'",
   "import './history-overview-p9h3'",
 ])
 
@@ -46,12 +48,20 @@ need('apps/web/src/history-overview-p9h3.css', [
   '@media(forced-colors:active)',
 ])
 
+need('apps/web/src/history-overview-p9h3-grid-fix.css', [
+  '#history-view-overview{display:block;min-width:0}',
+  '#history-view-overview>*{width:100%;min-width:0}',
+  '#history-view-overview>.history-summary{display:grid;grid-template-columns:1fr 1fr!important}',
+])
+
 need('apps/web/scripts/history-ui-h3-overview-browser.mjs', [
   "{ width: 1440, height: 1000 }",
   "{ width: 390, height: 844 }",
   "context.route('**/api/kick-history*'",
   "context.route('**/api/history*'",
   'mobile Overview remains too long',
+  'Overview width collapsed',
+  'primary width collapsed',
   'data-history-mobile-analysis-toggle="ranking"',
   'data-history-mobile-analysis-toggle="coverage"',
   'assert.equal(calls.length, before)',
@@ -90,5 +100,6 @@ if (issues.length) {
 console.log('ViewLoom History P9H3 Overview verification passed.')
 console.log('- P9H3 is active on work-history-ui-h3-overview')
 console.log('- mobile secondary analysis is explicit and collapsed by default')
+console.log('- mobile Overview width is protected by a permanent grid regression gate')
 console.log('- accepted P9H1/P9H2 request and observer seams are unchanged')
 console.log('- Twitch and Kick History endpoints remain separate')
