@@ -1,11 +1,11 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 2.7
+Version: 2.8
 Created: 2026-06-25
 Last updated: 2026-06-27
-Current phase: Phase 9 — P9H3 complete; P9H4 next
-Current implementation branch: none
+Current phase: Phase 9 — P9H4A Overview balance
+Current implementation branch: `work-history-ui-h4a-overview-balance`
 Completed closeout: PR #432
 Completed final-state correction: PR #433
 Completed metric synchronization: PR #434
@@ -13,11 +13,19 @@ Completed chart interpretation: PR #436
 Completed P9H2 canonical closeout: PR #437
 Completed Overview hierarchy: PR #439
 Completed P9H3 canonical closeout: PR #440
-Exact next implementation branch after explicit continuation: `work-history-ui-h4-tasks`
+Exact next implementation branch after merge and explicit continuation: `work-history-ui-h4b-tasks`
+
+P9H4 was split after production screenshots exposed a section-crossing sticky card, oversized desktop Calendar, compressed ranking table, and remaining mobile density problems. P9H4A repairs Overview balance first. P9H4B then repairs Archives and Report & Export.
 
 Historical gate strings, not current state:
 
 ```text
+Version: 2.7
+Current phase: Phase 9 — P9H3 complete; P9H4 next
+Current implementation branch: none
+P9H3 work-history-ui-h3-overview   complete PR #439
+P9H4 work-history-ui-h4-tasks      exact next after explicit continuation; not created
+
 | 8 | P8B | complete PR #428
 
 Version: 2.6
@@ -60,7 +68,8 @@ P9H2      complete PR #436
 P9H2 closeout complete PR #437
 P9H3      complete PR #439
 P9H3 closeout complete PR #440
-P9H4–P9H7 queued
+P9H4A     active
+P9H4B–P9H7 queued
 Phase 10–15 queued
 Phase 16 not approved
 ```
@@ -80,18 +89,32 @@ P9H3 keeps the complete desktop Overview, shortens the mobile default path, and 
 ## Phase 9 sequence
 
 ```text
-P9H0 work-history-ui-h0-baseline   complete PR #430
-P9H1 work-history-ui-h1-metric     complete PR #434
-P9H2 work-history-ui-h2-chart      complete PR #436
-P9H3 work-history-ui-h3-overview   complete PR #439
-P9H4 work-history-ui-h4-tasks      exact next after explicit continuation; not created
-P9H5 work-history-ui-h5-responsive queued
-P9H6 work-history-ui-h6-candidate  queued
-P9H7 work-history-ui-h7-acceptance queued
+P9H0  work-history-ui-h0-baseline          complete PR #430
+P9H1  work-history-ui-h1-metric            complete PR #434
+P9H2  work-history-ui-h2-chart             complete PR #436
+P9H3  work-history-ui-h3-overview          complete PR #439
+P9H4A work-history-ui-h4a-overview-balance active
+P9H4B work-history-ui-h4b-tasks            next after P9H4A merge and explicit continuation; not created
+P9H5  work-history-ui-h5-responsive        queued
+P9H6  work-history-ui-h6-candidate         queued
+P9H7  work-history-ui-h7-acceptance        queued
 ```
 
-P9H4 repairs Archives and publishing hierarchy. P9H5 repairs responsive and accessibility behavior. P9H6–P9H7 perform candidate and production acceptance.
+## P9H4A contract
+
+P9H4A must:
+
+- make `Key changes` a normal-flow card and prove it never intersects later sections;
+- reduce the desktop Calendar from square-cell dominance to bounded low cells while retaining UTC, intensity, state symbols, keyboard, pointer, and touch selection;
+- keep ranking controls compact and protect the table as the primary ranking surface;
+- use four primary Summary cards and move coverage quality/counts into the coverage status band;
+- reduce partial/unavailable comparison to a concise result-first explanation;
+- improve mobile chart height, Selected day density, and More analysis descriptions;
+- add permanent browser geometry gates at 1440, 1280, 1024, 820, 390, and 360 where appropriate;
+- make no API, D1, collector, cron, retention, binding, provider, or output-schema change.
+
+P9H4B repairs Archives and publishing hierarchy. P9H5 repairs required widths and accessibility. P9H6–P9H7 perform candidate and production acceptance.
 
 Phase 16 begins only after one candidate is separately approved with its own specification and branch sequence.
 
-P9H3 is complete and canonically closed through PR #440. Do not create `work-history-ui-h4-tasks` before explicit continuation is received.
+P9H4A is active. Do not create `work-history-ui-h4b-tasks` before P9H4A merges, canonical closeout is complete, and explicit continuation is received.
