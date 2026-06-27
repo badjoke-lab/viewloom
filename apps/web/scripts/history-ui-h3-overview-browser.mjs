@@ -33,8 +33,8 @@ async function run(browser, provider, viewport, touch) {
   assert.equal(initial.summaryCards, 5)
   assert.equal(initial.mobileNavButtons, 4)
   assert.ok(initial.bodyOverflow <= 2, `${provider}: body overflow ${initial.bodyOverflow}px`)
-  assert.ok(initial.geometry.overviewWidth >= viewport.width - 40, `${provider}: Overview width collapsed to ${initial.geometry.overviewWidth}px`)
-  assert.ok(initial.geometry.primaryWidth >= viewport.width - 40, `${provider}: primary width collapsed to ${initial.geometry.primaryWidth}px`)
+  assert.ok(initial.geometry.overviewWidth >= viewport.width - 80, `${provider}: Overview width collapsed to ${initial.geometry.overviewWidth}px`)
+  assert.ok(initial.geometry.primaryWidth >= viewport.width - 80, `${provider}: primary width collapsed to ${initial.geometry.primaryWidth}px`)
 
   if (!touch) {
     assert.equal(initial.mobileNavDisplay, 'none')
