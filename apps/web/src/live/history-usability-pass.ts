@@ -24,6 +24,8 @@ import '../history-overview-p9h3.css'
 import './history-overview-p9h3'
 import '../history-overview-p9h4a.css'
 import './history-overview-p9h4a'
+import '../history-responsive-p9h5.css'
+import './history-responsive-p9h5'
 
 document.addEventListener('click', syncDailyCardSelectionKey, true)
 document.addEventListener('keydown', syncDailyCardSelectionKey, true)
