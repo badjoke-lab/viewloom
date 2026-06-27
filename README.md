@@ -20,8 +20,9 @@ Final-state correction              complete PR #433
 P9H1 metric synchronization         complete PR #434
 P9H2 chart interpretation           complete PR #436
 P9H2 canonical closeout             complete PR #437
-P9H3 Overview hierarchy             active
-Active implementation branch        work-history-ui-h3-overview
+P9H3 Overview hierarchy             complete PR #439
+P9H3 canonical closeout             complete PR #440
+Active implementation branch        none
 Exact next branch                   work-history-ui-h4-tasks
 P9H4 branch created                 no
 ```
@@ -29,6 +30,10 @@ P9H4 branch created                 no
 Historical gate strings, not current state:
 
 ```text
+P9H3 Overview hierarchy             active
+Active implementation branch        work-history-ui-h3-overview
+Exact next branch                   work-history-ui-h4-tasks
+P9H4 branch created                 no
 Active implementation branch        none
 Exact next branch                   work-history-ui-h3-overview
 P9H3 branch created                 no
@@ -37,33 +42,31 @@ Exact next branch                   work-history-ui-h2-chart
 P9H2 branch created                 no
 ```
 
-P9H1 evidence:
-
-```text
-Workflow run: 28232602651
-Artifact: history-ui-h1-metric / 7903212809
-```
-
 P9H2 evidence:
 
 ```text
-PR: #436
-Head: ccba4d4c29dd1442a684e35bafba23d392410365
-Merge: 4afba32749bb5098cc99fbabe897543791ec72fa
 Workflow run: 28278497196
 Artifact: history-ui-h2-chart / 7921020539
-Digest: sha256:e6eeb9b2d1dad28237ad467554f4e1adcff5b4cc56577a8525d2d1cb1bb316ea
 ```
 
-P9H2 completed chart scale, UTC date context, metric/unit meaning, exact day inspection, keyboard/touch inspection, non-color state symbols, forced-colors support, and accessible SVG semantics without changing APIs, D1, collectors, bindings, provider separation, or outputs.
+P9H3 evidence:
 
-P9H3 repairs the Overview hierarchy. Desktop retains the full analysis. Mobile keeps Summary, coverage status, chart, and Selected day in the default flow, then exposes comparison, calendar, rankings/changes, and detailed coverage through explicit secondary-analysis controls. It adds no History request and changes no provider, API, storage, or output contract.
+```text
+PR: #439
+Head: 2cdd780787d06ab951e68b7cbca031089ab5312e
+Merge: 38e21f910d303f391a988121ff562f53a6a426b7
+Workflow run: 28280486736
+Artifact: history-ui-h3-overview / 7921680615
+Digest: sha256:33e6c4fa3deeaab4a12394b768371dde06409ebf6d899f230110948fb63defee
+```
+
+P9H3 keeps the full desktop Overview and shortens the mobile default flow to Summary, coverage status, chart, and Selected day. Compare periods, Calendar, Rankings & changes, and detailed Coverage remain available through explicit controls without another History request.
 
 ## Next sequence
 
 ```text
-P9H3 Overview hierarchy             active
-P9H4 Archives and Report & Export   next after merge and explicit continuation
+P9H3 Overview hierarchy             complete PR #439
+P9H4 Archives and Report & Export   next after explicit continuation
 P9H5 responsive and accessibility
 P9H6 local candidate
 P9H7 production acceptance
