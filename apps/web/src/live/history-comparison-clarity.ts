@@ -39,10 +39,18 @@ window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
 }) as typeof window.fetch
 
 const observer = new MutationObserver((records) => {
+  if (records.some(isSummaryMutation)) applyComparisonState()
   if (records.some(isRelevantMutation)) schedule()
 })
 observer.observe(document.documentElement, { childList: true, subtree: true })
 schedule()
+
+function isSummaryMutation(record: MutationRecord): boolean {
+  const target = record.target instanceof Element ? record.target : record.target.parentElement
+  if (target?.closest('[data-history-summary]')) return true
+  return [...record.addedNodes].some((node) => node instanceof Element
+    && (node.matches('[data-history-summary]') || Boolean(node.querySelector('[data-history-summary]'))))
+}
 
 function isRelevantMutation(record: MutationRecord): boolean {
   const target = record.target instanceof Element ? record.target : record.target.parentElement
