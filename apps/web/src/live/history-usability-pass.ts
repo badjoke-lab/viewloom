@@ -22,6 +22,8 @@ import './history-chart-p9h2'
 import './history-chart-keyboard-delegation'
 import '../history-overview-p9h3.css'
 import './history-overview-p9h3'
+import '../history-overview-p9h4a.css'
+import './history-overview-p9h4a'
 
 document.addEventListener('click', syncDailyCardSelectionKey, true)
 document.addEventListener('keydown', syncDailyCardSelectionKey, true)
