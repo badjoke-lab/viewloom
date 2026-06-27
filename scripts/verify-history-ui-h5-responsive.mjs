@@ -95,18 +95,43 @@ need('apps/web/scripts/history-ui-h5-responsive-runner.mjs', [
 need('docs/product/current-schedule.md', [
   'P9H5 Responsive and accessibility        active',
   'Active implementation branch             work-history-ui-h5-responsive',
+  'P9H5 Responsive and accessibility        complete PR #447',
+  'P9H5 canonical closeout                  complete PR #448',
+  'Active implementation branch             none',
   'Exact next branch                        work-history-ui-h6-candidate',
   'P9H6 branch created                      no',
-  'Workflow run: 28232602651',
-  'Workflow run: 28289223184',
+  'Workflow run: 28293856405',
+  'Artifact ID: 7925847144',
+])
+need('docs/product/current-roadmap.md', [
+  'Phase 9 P9H5 complete PR #447',
+  'P9H5 canonical closeout complete PR #448',
+  'Active implementation branch: none',
+  'Exact next implementation branch: work-history-ui-h6-candidate',
+  'P9H6 branch created: no',
+])
+need('docs/product/post-watchlist-program-plan.md', [
+  'Completed responsive and accessibility repair: PR #447',
+  'Completed P9H5 canonical closeout: PR #448',
+  'Exact next implementation branch after explicit continuation: `work-history-ui-h6-candidate`',
+])
+need('docs/product/history-ui-repair-plan.md', [
+  'Completed P9H5: PR #447',
+  'Completed P9H5 canonical closeout: PR #448',
+  'Exact next branch after explicit continuation: `work-history-ui-h6-candidate`',
+])
+need('docs/work-in-progress/history-ui-repair-working-note.md', [
+  'Completed P9H5: PR #447',
+  'Completed P9H5 canonical closeout: PR #448',
+  'Workflow run: 28293856405',
+  'Artifact ID: 7925847144',
 ])
 need('docs/work-in-progress/p9h5-activation.md', [
-  'Status: active',
-  'work-history-ui-h5-responsive',
-  'Required-width responsive behavior, accessibility, focus, touch, and forced-mode acceptance',
-  '1440px, 820px, 390px, 360px',
-  'production body focus versus deterministic first-link focus',
+  'Status: complete',
+  'Implementation PR: #447',
+  'Canonical closeout PR: #448',
   'work-history-ui-h6-candidate',
+  'P9H6 branch created: no',
 ])
 
 need('.github/workflows/history-ui-h5-responsive.yml', [
@@ -129,8 +154,8 @@ if (issues.length) {
 }
 
 console.log('ViewLoom History P9H5 responsive verification passed.')
+console.log('- P9H5 is complete through PR #447 and canonically closed through PR #448')
 console.log('- required widths are 1440, 820, 390, and 360')
 console.log('- one canonical browser acceptance file is executed by the deterministic runner')
-console.log('- skip-link and first-focus ownership are explicit')
-console.log('- keyboard, touch, target size, overflow, reduced motion, contrast, and forced colors are protected')
-console.log('- provider, API, storage, task, archive, and output contracts are unchanged')
+console.log('- skip-link, keyboard, touch, target size, overflow, reduced motion, contrast, and forced colors are protected')
+console.log('- work-history-ui-h6-candidate is next and not created')
