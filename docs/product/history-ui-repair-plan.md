@@ -1,13 +1,16 @@
 # ViewLoom History UI repair implementation plan
 
 Status: active implementation subplan
-Version: 1.8
-Last updated: 2026-06-26
+Version: 1.9
+Last updated: 2026-06-27
 Roadmap phase: Phase 9 — History P1 repair
 Completed P9H0: PR #430
 Completed P9H1: PR #434
-Current implementation branch: `work-history-ui-h2-chart`
-Exact next branch: `work-history-ui-h3-overview`
+Completed P9H2: PR #436
+Completed P9H2 canonical closeout: PR #438
+Current implementation branch: none
+Exact next branch after explicit continuation: `work-history-ui-h3-overview`
+P9H3 branch created: no
 
 ## Historical P9H1 closeout snapshot
 
@@ -31,23 +34,30 @@ Artifact: history-ui-h1-metric / 7903212809
 Digest: sha256:783283fd1c913e7ccb99d04bb607ed5801db1c74ab3d341c81a40c440835e82c
 ```
 
-Twitch and Kick remain separate. The existing metrics, periods, state labels, task routes, and output formats remain. Daily rows without observations are not used as the metric day.
+## Completed P9H2
 
-## Active P9H2
+PR #436 repaired the daily trend chart while preserving all accepted P9H1 metric behavior.
 
-P9H2 repairs the daily trend chart while preserving all accepted P9H1 metric behavior.
+```text
+Final head: ccba4d4c29dd1442a684e35bafba23d392410365
+Merge: 4afba32749bb5098cc99fbabe897543791ec72fa
+Workflow: 28278497196
+Artifact: history-ui-h2-chart / 7921020539
+Digest: sha256:e6eeb9b2d1dad28237ad467554f4e1adcff5b4cc56577a8525d2d1cb1bb316ea
+```
 
-Required results:
+Accepted results:
 
 - readable UTC date ticks and numeric scale;
 - explicit metric and unit;
 - exact daily detail;
-- synchronized chart, URL, and Selected day state;
+- synchronized chart, URL, Selected day, and inspection state;
 - pointer, keyboard, and touch inspection;
 - Left/Right and Home/End movement;
 - complete, partial, in-progress, missing, and demo meaning without color alone;
-- accessible SVG title, description, and live inspection context;
+- accessible SVG title, description, live inspection, focus, and forced-colors behavior;
 - no additional History request when a day is inspected;
+- stable Daily archive and Battle Archive day selection after redraws;
 - no Twitch/Kick crossing or output-format change.
 
 Permanent acceptance files:
@@ -61,16 +71,16 @@ scripts/verify-history-ui-h2-chart.mjs
 ## Remaining sequence
 
 ```text
-P9H2 work-history-ui-h2-chart      active
-P9H3 work-history-ui-h3-overview   exact next after P9H2 merge and explicit continuation; not created
+P9H2 work-history-ui-h2-chart      complete PR #436
+P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
 P9H4 work-history-ui-h4-tasks      queued
 P9H5 work-history-ui-h5-responsive queued
 P9H6 work-history-ui-h6-candidate  queued
 P9H7 work-history-ui-h7-acceptance queued
 ```
 
-P9H3 covers Overview order and compactness. P9H4 covers Archives and publishing hierarchy. P9H5 covers required widths and accessibility. P9H6–P9H7 cover local candidate and production acceptance.
+P9H3 covers Overview order, analytical usefulness, duplicate removal, and compactness while preserving P9H1/P9H2 behavior. P9H4 covers Archives and publishing hierarchy. P9H5 covers required widths and accessibility. P9H6–P9H7 cover local candidate and production acceptance.
 
 ## Stop rule
 
-Finish and merge P9H2 before creating `work-history-ui-h3-overview`. After the merge, issue the full merge report and stop until explicit continuation.
+P9H2 and PR #438 closeout are complete. Do not create `work-history-ui-h3-overview` until the full closeout report is issued and explicit continuation is received.
