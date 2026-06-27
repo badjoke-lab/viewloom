@@ -1,1 +1,11 @@
-@media(max-width:760px){#history-view-overview{display:block}}
+@media(max-width:760px){
+  #history-view-overview{display:block;min-width:0}
+  #history-view-overview>*{width:100%;min-width:0}
+  #history-view-overview>.history-summary{display:grid;grid-template-columns:1fr 1fr!important}
+  #history-view-overview>.history-summary .lead-stat{grid-column:1/-1}
+  #history-view-overview>.history-overview-mobile-analysis{margin-top:12px}
+}
+@media(max-width:420px){
+  #history-view-overview>.history-summary{grid-template-columns:1fr 1fr!important}
+  #history-view-overview>.history-summary .lead-stat{grid-column:1/-1}
+}
