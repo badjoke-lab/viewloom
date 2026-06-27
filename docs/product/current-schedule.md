@@ -13,8 +13,8 @@ P9H0 documentation closeout              complete PR #432
 Final-state correction                   complete PR #433
 P9H1 History metric synchronization      complete PR #434
 P9H2 History chart interpretation        complete PR #436
-P9H2 canonical closeout                  active
-Active implementation branch             work-history-ui-h2-closeout
+P9H2 canonical closeout                  complete PR #437
+Active implementation branch             none
 Exact next branch                        work-history-ui-h3-overview
 P9H3 branch created                      no
 Phase 10 cross-site quality              queued
@@ -87,7 +87,7 @@ P9H2 adds readable UTC date and numeric scale context, explicit metric and unit,
 P9H0 work-history-ui-h0-baseline   complete PR #430
 P9H1 work-history-ui-h1-metric     complete PR #434
 P9H2 work-history-ui-h2-chart      complete PR #436
-P9H3 work-history-ui-h3-overview   exact next after closeout merge and explicit continuation; not created
+P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
 P9H4 work-history-ui-h4-tasks      queued
 P9H5 work-history-ui-h5-responsive queued
 P9H6 work-history-ui-h6-candidate  queued
@@ -104,4 +104,4 @@ scripts/verify-history-ui-h2-chart.mjs
 
 ## Stop rule
 
-Complete the P9H2 canonical closeout on `work-history-ui-h2-closeout`. Do not create `work-history-ui-h3-overview` until the closeout merges, the full report is issued, and explicit continuation is confirmed.
+P9H2 is complete and canonically closed through PR #437. Do not create `work-history-ui-h3-overview` until explicit continuation is confirmed. After every merge, issue the full report and stop.
