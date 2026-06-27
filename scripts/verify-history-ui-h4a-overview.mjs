@@ -32,18 +32,16 @@ need('apps/web/src/live/history-usability-pass.ts', [
 need('apps/web/src/live/history-overview-p9h4a.ts', [
   'historyOverviewP9h3Ready',
   'historyOverviewP9h4aReady',
-  'history-summary-coverage-source',
-  'data-history-coverage-quality',
   'Current vs previous retained period',
   'Daily intensity and coverage',
   'Top streamers and supported movement',
   'Partial, missing and in-progress days',
-  'new MutationObserver(schedule).observe(summary',
-  'new MutationObserver(schedule).observe(coverage',
-  'legacy five-card Summary renderer',
+  'data-history-mobile-analysis-copy',
 ])
 
 need('apps/web/src/history-overview-p9h4a.css', [
+  '#history-view-overview>.history-summary>div:nth-child(5){',
+  'grid-column:1/-1;',
   '#history-view-overview>.history-overview-insights{',
   'position:static;',
   'grid-auto-rows:clamp(56px,4.5vw,72px)',
@@ -52,7 +50,6 @@ need('apps/web/src/history-overview-p9h4a.css', [
   'grid-template-columns:repeat(2,minmax(0,1fr))!important',
   'height:clamp(460px,126vw,510px)',
   '.history-comparison-status--partial',
-  '.history-coverage-summary__quality',
 ])
 
 need('apps/web/scripts/history-ui-h4a-overview-browser.mjs', [
@@ -65,7 +62,9 @@ need('apps/web/scripts/history-ui-h4a-overview-browser.mjs', [
   "mobileScenario(browser, 'twitch', 360)",
   "initial.keyPosition !== 'sticky'",
   'Calendar height',
-  'visibleSummaryCards, 4',
+  'visiblePrimarySummaryCards, 4',
+  'visibleSummaryCards, 5',
+  "coverageBandDisplay, 'grid'",
   'coverageOverlap',
   'assert.equal(calls.length, before',
 ])
@@ -87,7 +86,7 @@ for (const path of [
 ])
 
 const moduleSource = read('apps/web/src/live/history-overview-p9h4a.ts')
-for (const forbidden of ['fetch(', 'setInterval(', '/api/history', '/api/kick-history', 'observe(document.documentElement']) {
+for (const forbidden of ['fetch(', 'setInterval(', '/api/history', '/api/kick-history', 'MutationObserver']) {
   check(!moduleSource.includes(forbidden), `P9H4A module contains forbidden ${forbidden}`)
 }
 
@@ -99,6 +98,11 @@ const acceptedOverview = read('apps/web/src/live/history-overview.ts')
 check((acceptedOverview.match(/window\.fetch\s*=/g) ?? []).length === 1, 'accepted History fetch capture count changed')
 check((acceptedOverview.match(/new MutationObserver/g) ?? []).length === 1, 'accepted History observer count changed')
 
+const workflow = read('.github/workflows/history-ui-h4a-overview.yml')
+check(workflow.includes('concurrency:'), 'P9H4A workflow concurrency is missing')
+check(workflow.includes('group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}'), 'P9H4A workflow concurrency group changed')
+check(workflow.includes('cancel-in-progress: true'), 'P9H4A workflow does not cancel obsolete runs')
+
 if (issues.length) {
   console.error('ViewLoom History P9H4A Overview balance verification did not pass:')
   for (const issue of issues) console.error(`- ${issue}`)
@@ -108,6 +112,7 @@ if (issues.length) {
 console.log('ViewLoom History P9H4A Overview balance verification passed.')
 console.log('- P9H4A is active on work-history-ui-h4a-overview-balance')
 console.log('- Key changes is normal-flow and Calendar geometry is bounded')
-console.log('- four visible Summary facts and coverage-band ownership are protected')
+console.log('- four primary Summary facts and the CSS-owned coverage band are protected')
+console.log('- P9H4A adds no competing History observer or request seam')
 console.log('- mobile chart density and explanatory More analysis controls are protected')
 console.log('- accepted provider, request, API, storage, and output seams are unchanged')
