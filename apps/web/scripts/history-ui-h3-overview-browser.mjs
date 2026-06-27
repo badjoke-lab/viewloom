@@ -27,11 +27,14 @@ async function run(browser, provider, viewport, touch) {
   await ready(page)
 
   const initial = await snapshot(page)
+  await page.screenshot({ path: resolve(out, `${provider}-${viewport.width}-initial.png`), fullPage: true })
   assert.equal(calls.length, 1)
   assert.ok(calls.every((call) => call.provider === provider), `${provider}: crossed provider endpoint`)
   assert.equal(initial.summaryCards, 5)
   assert.equal(initial.mobileNavButtons, 4)
   assert.ok(initial.bodyOverflow <= 2, `${provider}: body overflow ${initial.bodyOverflow}px`)
+  assert.ok(initial.geometry.overviewWidth >= viewport.width - 40, `${provider}: Overview width collapsed to ${initial.geometry.overviewWidth}px`)
+  assert.ok(initial.geometry.primaryWidth >= viewport.width - 40, `${provider}: primary width collapsed to ${initial.geometry.primaryWidth}px`)
 
   if (!touch) {
     assert.equal(initial.mobileNavDisplay, 'none')
@@ -64,7 +67,7 @@ async function run(browser, provider, viewport, touch) {
     assert.equal(calls.length, before)
   }
 
-  await page.screenshot({ path: resolve(out, `${provider}-${viewport.width}.png`), fullPage: true })
+  await page.screenshot({ path: resolve(out, `${provider}-${viewport.width}-final.png`), fullPage: true })
   evidence.scenarios.push({ provider, viewport, touch, calls, initial, final: await snapshot(page) })
   await context.close()
 }
@@ -82,6 +85,10 @@ async function snapshot(page) {
       return style.display !== 'none' && style.visibility !== 'hidden' && node.getClientRects().length > 0
     }
     const top = (selector) => document.querySelector(selector)?.getBoundingClientRect().top ?? Number.MAX_SAFE_INTEGER
+    const rect = (selector) => {
+      const box = document.querySelector(selector)?.getBoundingClientRect()
+      return { left: box?.left ?? 0, width: box?.width ?? 0 }
+    }
     const groupNodes = [...document.querySelectorAll('[data-history-secondary-group]')]
     const mobileNavigation = document.querySelector('[data-history-mobile-analysis]')
     return {
@@ -93,6 +100,11 @@ async function snapshot(page) {
       visibleSelectedStreamers: [...document.querySelectorAll('.history-selected-top li')].filter(isVisible).length,
       documentHeight: document.documentElement.scrollHeight,
       bodyOverflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
+      geometry: {
+        overviewWidth: rect('[data-history-view-panel="overview"]').width,
+        primaryWidth: rect('[data-history-columns]').width,
+        navigationWidth: rect('[data-history-mobile-analysis]').width,
+      },
       order: {
         summary: top('[data-history-summary]'),
         primary: top('[data-history-columns]'),
