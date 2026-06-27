@@ -35,11 +35,13 @@ const requiredFiles = [
   'docs/audits/public-browser-defects.json', 'docs/audits/history-ui-h0-owner-map.json',
   'scripts/verify-public-surface-inventory.mjs', 'scripts/verify-public-browser-audit.mjs',
   'scripts/verify-history-ui-h0-baseline.mjs', 'scripts/verify-history-ui-h1-metric.mjs',
+  'scripts/verify-history-ui-h2-chart.mjs', 'scripts/verify-history-ui-h3-overview.mjs',
   'apps/web/scripts/verify-watchlist-contracts.mjs',
   'apps/web/src/live/watchlist-page.ts', 'apps/web/src/live/channel-watchlist.ts',
   '.github/workflows/development-policy.yml', '.github/workflows/public-surface-inventory.yml',
   '.github/workflows/public-browser-audit.yml', '.github/workflows/history-ui-h0-baseline.yml',
-  '.github/workflows/history-ui-h1-metric.yml', '.github/pull_request_template.md',
+  '.github/workflows/history-ui-h1-metric.yml', '.github/workflows/history-ui-h2-chart.yml',
+  '.github/workflows/history-ui-h3-overview.yml', '.github/pull_request_template.md',
 ]
 for (const path of requiredFiles) needFile(path)
 
@@ -52,63 +54,65 @@ need('docs/operations/documentation-governance.md', [
 ])
 
 for (const path of ['README.md', 'docs/README.md', 'AGENTS.md', 'CONTRIBUTING.md']) need(path, [
-  'PR #430', 'PR #432', 'PR #433', 'PR #434', 'work-history-ui-h2-chart',
+  'PR #430', 'PR #432', 'PR #433', 'PR #434', 'PR #436', 'PR #437',
+  'work-history-ui-h3-overview', 'work-history-ui-h4-tasks', 'work-history-ui-h2-chart',
 ])
 need('README.md', [
-  'P9H1 metric synchronization         complete PR #434',
-  'Active implementation branch        none',
-  'P9H2 branch created                 no',
-  '28232602651', '7903212809',
+  'P9H3 Overview hierarchy             active',
+  'Active implementation branch        work-history-ui-h3-overview',
+  'P9H4 branch created                 no',
+  '28278497196', '7921020539',
 ])
 need('docs/README.md', [
-  'P9H1 completed through PR #434',
-  'Active implementation branch                              none',
-  'P9H2     work-history-ui-h2-chart',
+  'P9H3     work-history-ui-h3-overview                       active',
+  'Active implementation branch                              work-history-ui-h3-overview',
+  'P9H4     work-history-ui-h4-tasks',
 ])
 need('AGENTS.md', [
-  'P9H1 complete through PR #434',
-  'Active implementation branch: none',
-  'P9H2 branch created: no',
+  'P9H3 active on work-history-ui-h3-overview',
+  'Active implementation branch: work-history-ui-h3-overview',
+  'P9H4 branch created: no',
 ])
 need('CONTRIBUTING.md', [
-  'P9H1 complete through PR #434',
-  'Active implementation branch: none',
-  'P9H2 branch created: no',
+  'P9H3 active on work-history-ui-h3-overview',
+  'Active implementation branch: work-history-ui-h3-overview',
+  'P9H4 branch created: no',
 ])
 
 need('docs/product/current-roadmap.md', [
-  'Phase 9 P9H1  complete PR #434',
-  'Active implementation branch: none',
-  'Exact next implementation branch: work-history-ui-h2-chart',
-  'Workflow run: 28232602651',
+  'Phase 9 P9H3  active',
+  'Active implementation branch: work-history-ui-h3-overview',
+  'Exact next implementation branch: work-history-ui-h4-tasks',
+  'P9H4 branch created: no',
+  'P9H2 canonical closeout complete PR #437',
   'No Phase 16 feature is approved.',
 ])
 need('docs/product/current-schedule.md', [
-  'P9H1 History metric synchronization      complete PR #434',
-  'Active implementation branch             none',
-  'Exact next branch                        work-history-ui-h2-chart',
-  'P9H2 branch created                      no',
-  'Workflow run: 28232602651',
+  'P9H3 History Overview hierarchy          active',
+  'Active implementation branch             work-history-ui-h3-overview',
+  'Exact next branch                        work-history-ui-h4-tasks',
+  'P9H4 branch created                      no',
+  'PR: #436',
 ])
 need('docs/product/post-watchlist-program-plan.md', [
-  'Version: 2.3',
-  'Current implementation branch: none',
-  'Completed metric synchronization: PR #434',
-  '| 9 | P9H1 | complete PR #434',
-  'P9H2 work-history-ui-h2-chart      exact next after explicit continuation; not created',
+  'Version: 2.6',
+  'Current phase: Phase 9 — P9H3 Overview hierarchy',
+  'Current implementation branch: `work-history-ui-h3-overview`',
+  '| 9 | P9H3 | active',
+  'P9H4 work-history-ui-h4-tasks',
   'Phase 16 begins only after one candidate is separately approved',
 ])
 need('docs/product/history-ui-repair-plan.md', [
-  'Version: 1.7',
-  'Completed P9H1: PR #434',
-  'Current implementation branch: none',
-  'P9H2 work-history-ui-h2-chart      exact next; not created',
+  'Version: 2.0',
+  'Completed P9H2: PR #436',
+  'Current implementation branch: `work-history-ui-h3-overview`',
+  'P9H3 work-history-ui-h3-overview   active',
 ])
 need('docs/work-in-progress/history-ui-repair-working-note.md', [
-  'Completed P9H1: PR #434',
-  'Current implementation branch: none',
-  'P9H2 work-history-ui-h2-chart',
-  'Workflow run: 28232602651',
+  'Completed P9H2: PR #436',
+  'Current implementation branch: `work-history-ui-h3-overview`',
+  'P9H3 work-history-ui-h3-overview',
+  'Workflow run: 28278497196',
 ])
 
 for (const path of [
@@ -151,7 +155,8 @@ for (const token of ['fetch(', 'removeStoredWatchlistEntry', 'setInterval(', 'se
 const workflows = [
   '.github/workflows/development-policy.yml', '.github/workflows/public-surface-inventory.yml',
   '.github/workflows/public-browser-audit.yml', '.github/workflows/history-ui-h0-baseline.yml',
-  '.github/workflows/history-ui-h1-metric.yml', '.github/workflows/web-build.yml',
+  '.github/workflows/history-ui-h1-metric.yml', '.github/workflows/history-ui-h2-chart.yml',
+  '.github/workflows/history-ui-h3-overview.yml', '.github/workflows/web-build.yml',
   '.github/workflows/web-checks.yml', '.github/workflows/web-verification.yml',
   '.github/workflows/provider-coverage-contract.yml', '.github/workflows/history-browser-gate.yml',
   '.github/workflows/history-peak-archive.yml', '.github/workflows/history-peak-browser.yml',
@@ -194,9 +199,9 @@ if (issues.length) {
 }
 
 console.log('ViewLoom development and documentation verification passed.')
-console.log('- P9H1 is complete through PR #434')
-console.log('- there is no active implementation branch')
-console.log('- work-history-ui-h2-chart is next and not created')
+console.log('- P9H2 is complete through PR #436 and canonically closed through PR #437')
+console.log('- P9H3 is active on work-history-ui-h3-overview')
+console.log('- work-history-ui-h4-tasks is next and not created')
 console.log('- Phase 10–14 authorities remain queued')
 console.log('- Phase 16 remains unapproved')
 console.log(`- ${workflows.length} workflows cancel obsolete runs`)
