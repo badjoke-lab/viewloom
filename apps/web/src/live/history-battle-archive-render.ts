@@ -28,12 +28,13 @@ export function renderBattleArchive(entries: BattleArchiveEntry[]): void {
       if ((event.target as HTMLElement | null)?.closest('a')) return
       const day = card.dataset.historyBattleDay
       if (!day) return
-      const chartDay = document.querySelector<SVGGElement>(`.history-day-column[data-history-day="${cssEscape(day)}"]`)
-      if (chartDay) {
-        chartDay.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
+      const archiveDay = document.querySelector<HTMLElement>(`[data-history-day-card="${cssEscape(day)}"]`)
+      if (archiveDay) {
+        archiveDay.click()
         return
       }
-      document.querySelector<HTMLElement>(`[data-history-day-card="${cssEscape(day)}"]`)?.click()
+      document.querySelector<SVGGElement>(`.history-day-column[data-history-day="${cssEscape(day)}"]`)
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
     }
     card.addEventListener('click', choose)
     card.addEventListener('keydown', (event) => {
