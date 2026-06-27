@@ -21,13 +21,17 @@ P9H4A    work-history-ui-h4a-overview-balance            complete PR #441
 P9H4A canonical closeout complete PR #442
 P9H4B    work-history-ui-h4b-tasks                       complete PR #443
 P9H4B canonical closeout complete PR #444
+P9H5     work-history-ui-h5-responsive                   complete PR #447
+P9H5 canonical closeout complete PR #448
 Active implementation branch                            none
-P9H5     work-history-ui-h5-responsive                   exact next; not created
+P9H6     work-history-ui-h6-candidate                    exact next; not created
 ```
 
 Historical gate strings, not current state:
 
 ```text
+P9H5     work-history-ui-h5-responsive                   active
+Active implementation branch                            work-history-ui-h5-responsive
 P9H1 completed through PR #434
 P9H3     work-history-ui-h3-overview                       complete PR #439
 P9H4A    work-history-ui-h4a-overview-balance            active
@@ -58,4 +62,6 @@ P9H4A is complete through PR #441 and closed through PR #442. Permanent acceptan
 
 P9H4B is complete through PR #443 and closed through PR #444. Permanent acceptance is owned by the P9H4B browser script, verifier, and workflow.
 
-Do not create `work-history-ui-h5-responsive` before explicit continuation is received.
+P9H5 is complete through PR #447 and canonically closed through PR #448. Permanent acceptance is owned by `apps/web/scripts/history-ui-h5-responsive-browser.mjs`, `scripts/verify-history-ui-h5-responsive.mjs`, and `.github/workflows/history-ui-h5-responsive.yml`.
+
+Do not create `work-history-ui-h6-candidate` before explicit continuation is received.
