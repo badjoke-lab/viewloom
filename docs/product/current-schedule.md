@@ -6,6 +6,7 @@ Last updated: 2026-06-27
 ## Current position
 
 ```text
+Phase 8 inventory/browser audit          complete PR #428
 P9H0 History baseline                    complete PR #430
 P9H1 History metric synchronization      complete PR #434
 P9H2 History chart interpretation        complete PR #436
