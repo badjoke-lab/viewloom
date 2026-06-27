@@ -1,17 +1,29 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 2.5
+Version: 2.6
 Created: 2026-06-25
 Last updated: 2026-06-27
-Current phase: Phase 9 — P9H2 complete; P9H3 next
-Current implementation branch: none
+Current phase: Phase 9 — P9H3 Overview hierarchy
+Current implementation branch: `work-history-ui-h3-overview`
 Completed closeout: PR #432
 Completed final-state correction: PR #433
 Completed metric synchronization: PR #434
 Completed chart interpretation: PR #436
 Completed P9H2 canonical closeout: PR #437
+Exact next implementation branch after P9H3 merge and explicit continuation: `work-history-ui-h4-tasks`
+
+## Historical P9H2 closeout snapshot
+
+The following values describe the source-of-truth program immediately after PR #437. They are retained for historical gates and are not current execution state.
+
+```text
+Version: 2.5
+Current phase: Phase 9 — P9H2 complete; P9H3 next
+Current implementation branch: none
 Exact next implementation branch after explicit continuation: `work-history-ui-h3-overview`
+P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
+```
 
 ## Historical P9H2 active snapshot
 
@@ -66,7 +78,8 @@ Before each branch, compare the schedule with actual branches/PRs, confirm expli
 | 9 | P9H1 | complete PR #434 | `history-ui-repair-plan.md` | metric execution synchronized |
 | 9 | P9H2 | complete PR #436 | `history-ui-repair-plan.md` | chart interpretation accepted |
 | 9 | P9H2-closeout | complete PR #437 | canonical state | P9H3 entry exact |
-| 9 | P9H3–P9H7 | queued | `history-ui-repair-plan.md` | History repair accepted in production |
+| 9 | P9H3 | active | `history-ui-repair-plan.md` | Overview hierarchy accepted |
+| 9 | P9H4–P9H7 | queued | `history-ui-repair-plan.md` | History repair accepted in production |
 | 10 | U10A–U10H | queued | cross-site quality plan | reproduced quality issues accepted |
 | 11 | O11A–O11G | queued | engineering/operations plan | acceptance, CI, type safety, monitoring locked |
 | 12 | R12A–R12C | queued | release readiness | English legal/Support/Stripe package complete |
@@ -112,8 +125,8 @@ P9H1 synchronizes Viewer-minutes and Peak viewers across URL, request, chart, Su
 P9H0 work-history-ui-h0-baseline   complete PR #430
 P9H1 work-history-ui-h1-metric     complete PR #434
 P9H2 work-history-ui-h2-chart      complete PR #436
-P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
-P9H4 work-history-ui-h4-tasks      queued
+P9H3 work-history-ui-h3-overview   active
+P9H4 work-history-ui-h4-tasks      exact next after P9H3 merge and explicit continuation; not created
 P9H5 work-history-ui-h5-responsive queued
 P9H6 work-history-ui-h6-candidate  queued
 P9H7 work-history-ui-h7-acceptance queued
@@ -125,7 +138,7 @@ P9H2 requires readable UTC date ticks, numeric scale, visible metric/unit, point
 
 ### P9H3 — Overview hierarchy
 
-Require metric-aware summary, useful selected-day analysis, coherent comparison/calendar/ranking/coverage order, compact mobile task flow, and removal of duplicate or placeholder facts.
+Require metric-aware Summary, useful Selected-day analysis, coherent comparison/calendar/ranking/coverage order, compact mobile task flow, and removal of duplicate or placeholder facts. Preserve the accepted P9H1/P9H2 metric, request, provider, state, and output contracts.
 
 ### P9H4 — Archives and Report & Export
 
@@ -209,4 +222,4 @@ Phase 15 evaluates one candidate at a time for source parity, D1 growth, collect
 
 ## 12. Current stop rule
 
-P9H2 is complete and canonically closed through PR #437. Do not create `work-history-ui-h3-overview` until explicit continuation is received. After every merge, issue the full report and stop.
+Complete P9H3 on `work-history-ui-h3-overview`. Do not create `work-history-ui-h4-tasks` until P9H3 merges, the full merge report is issued, and explicit continuation is received.
