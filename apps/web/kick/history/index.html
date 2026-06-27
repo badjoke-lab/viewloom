@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="/src/history-page.css" />
 </head>
 <body data-provider="kick" data-page="kick-history">
+<a class="history-skip-link" href="#history-main" data-history-skip-link>Skip to History content</a>
 <div class="site-frame">
   <header class="masthead"><div class="masthead__inner">
     <a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
@@ -28,7 +29,7 @@
     <button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button>
   </div></header>
 
-  <main class="page page--full history-main history-page">
+  <main id="history-main" tabindex="-1" class="page page--full history-main history-page">
     <div class="breadcrumb">ViewLoom / Kick data / History</div>
     <nav class="feature-tabs"><a href="/kick/heatmap/">Heatmap</a><a href="/kick/day-flow/">Day Flow</a><a href="/kick/battle-lines/">Battle Lines</a><a class="active" href="/kick/history/">History</a><a href="/kick/status/">Status</a></nav>
 
