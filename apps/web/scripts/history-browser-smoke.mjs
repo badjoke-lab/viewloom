@@ -209,11 +209,17 @@ async function mobileGate(browser) {
   const page = await context.newPage()
   await page.goto(`${baseUrl}/kick/history/`, { waitUntil: 'networkidle' })
   await waitForHistory(page, 30)
+  await page.waitForFunction(() => document.querySelector('[data-history-view-panel="overview"]')?.getAttribute('data-history-overview-p9h3-ready') === 'true')
+
+  const rankingToggle = page.locator('[data-history-mobile-analysis-toggle="ranking"]')
+  assert(await rankingToggle.count() === 1, 'Mobile: P9H3 ranking disclosure is missing')
+  await rankingToggle.click()
+  await page.waitForFunction(() => document.querySelector('[data-history-mobile-analysis-toggle="ranking"]')?.getAttribute('aria-expanded') === 'true')
 
   const tableDisplay = await page.locator('.history-table-wrap').evaluate((node) => getComputedStyle(node).display)
   const cardsDisplay = await page.locator('[data-history-streamer-cards]').evaluate((node) => getComputedStyle(node).display)
   assert(tableDisplay === 'none', 'Mobile: ranking table is still visible')
-  assert(cardsDisplay !== 'none', 'Mobile: streamer cards are hidden')
+  assert(cardsDisplay !== 'none', 'Mobile: streamer cards are hidden after opening rankings')
   assert(await page.locator('.history-streamer-card').count() === 10, 'Mobile: expected Top 10 streamer cards')
 
   await openArchive(page, 'daily')
