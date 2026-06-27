@@ -24,6 +24,7 @@ P9H4     work-history-ui-h4-tasks                          exact next; not creat
 Historical gate strings, not current state:
 
 ```text
+P9H1 completed through PR #434
 P9H3     work-history-ui-h3-overview                       active
 Active implementation branch                              work-history-ui-h3-overview
 P9H4     work-history-ui-h4-tasks                          exact next; not created
