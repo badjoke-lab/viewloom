@@ -1,7 +1,7 @@
 # ViewLoom current roadmap
 
 Status: source of truth
-Last updated: 2026-06-26
+Last updated: 2026-06-27
 
 ## 1. Current position
 
@@ -13,6 +13,18 @@ Phase 9 P9H0  complete PR #430
 P9H0 closeout complete PR #432
 Final-state correction complete PR #433
 Phase 9 P9H1  complete PR #434
+Phase 9 P9H2  complete PR #436
+P9H2 canonical closeout complete PR #437
+Active implementation branch: none
+Exact next implementation branch: work-history-ui-h3-overview
+P9H3 branch created: no
+```
+
+## Historical P9H2 active snapshot
+
+The following exact values describe the roadmap before PR #436 merged. They are retained for permanent P9H2 acceptance gates and are not the current execution state.
+
+```text
 Phase 9 P9H2  active
 Active implementation branch: work-history-ui-h2-chart
 Exact next implementation branch: work-history-ui-h3-overview
@@ -26,6 +38,7 @@ The following exact values describe the roadmap immediately after PR #435. They 
 ```text
 Active implementation branch: none
 Exact next implementation branch: work-history-ui-h2-chart
+P9H2 branch created: no
 ```
 
 ## 2. Verified state
@@ -38,7 +51,8 @@ Exact next implementation branch: work-history-ui-h2-chart
 - P9H0 documentation/program closeout is complete through PR #432.
 - Post-closeout canonical state is corrected through PR #433.
 - History metric synchronization is complete through PR #434 at merge `31b81d3ed3a56369055ba09eb4de871dfc59d315`.
-- P9H2 chart interpretation is active on `work-history-ui-h2-chart`.
+- History chart interpretation is complete through PR #436 at merge `4afba32749bb5098cc99fbabe897543791ec72fa`.
+- P9H2 canonical closeout is complete through PR #437.
 - Twitch and Kick remain separate across routes, APIs, storage, bindings, rankings, exports, and coverage claims.
 
 P9H1 accepted evidence:
@@ -48,6 +62,17 @@ Head: 9c4e3278b609e3f8d41fa3df71ba69f5ebc00618
 Workflow run: 28232602651
 Artifact: history-ui-h1-metric / 7903212809
 Digest: sha256:783283fd1c913e7ccb99d04bb607ed5801db1c74ab3d341c81a40c440835e82c
+Merge: 31b81d3ed3a56369055ba09eb4de871dfc59d315
+```
+
+P9H2 accepted evidence:
+
+```text
+Head: ccba4d4c29dd1442a684e35bafba23d392410365
+Workflow run: 28278497196
+Artifact: history-ui-h2-chart / 7921020539
+Digest: sha256:e6eeb9b2d1dad28237ad467554f4e1adcff5b4cc56577a8525d2d1cb1bb316ea
+Merge: 4afba32749bb5098cc99fbabe897543791ec72fa
 ```
 
 P9H1 converted these failures to passing assertions:
@@ -113,13 +138,13 @@ Localization:
 ```text
 Phase 7   source-of-truth reset                              complete PR #426
 Phase 8   inventory and browser defect audit                 complete PR #428
-Phase 9   History P1 repair                                   P9H2 active
+Phase 9   History P1 repair                                  P9H2 complete; P9H3 next
 Phase 10  cross-site defect/UI/architecture repair           queued
 Phase 11  acceptance, CI, type safety, monitoring            queued
 Phase 12  English legal, Support, Stripe, release readiness  queued
 Phase 13  localization foundation plus English/Japanese      approved and queued
 Phase 14  Spanish/pt-BR localization and staged launch       approved and queued
-Phase 15  next-feature data-capability audit                  queued
+Phase 15  next-feature data-capability audit                 queued
 Phase 16  one separately approved major feature              not approved
 ```
 
@@ -130,8 +155,8 @@ No Phase 16 feature is approved.
 ```text
 P9H0 work-history-ui-h0-baseline   complete PR #430
 P9H1 work-history-ui-h1-metric     complete PR #434
-P9H2 work-history-ui-h2-chart      active
-P9H3 work-history-ui-h3-overview   exact next after P9H2 merge and explicit continuation; not created
+P9H2 work-history-ui-h2-chart      complete PR #436
+P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
 P9H4 work-history-ui-h4-tasks      queued
 P9H5 work-history-ui-h5-responsive queued
 P9H6 work-history-ui-h6-candidate  queued
@@ -140,7 +165,7 @@ P9H7 work-history-ui-h7-acceptance queued
 
 P9H1 synchronizes Viewer-minutes / Peak viewers across URL, provider request, selected control, chart, Summary, Selected day, comparison, Ranking context, supported Archives, Report, Share, and Exports. It also excludes missing daily rows from metric-day selection. It added no metric, API, D1 schema, collector, binding, cron, retention rule, provider combination, or output schema.
 
-P9H2 repairs chart interpretation: readable UTC date ticks, numeric scale, visible metric and unit, exact daily detail, chart/URL/Selected-day synchronization, pointer/keyboard/touch inspection, complete/partial/in-progress/missing/demo distinction without color alone, and an accessible SVG title and description. It must not add another History request during day inspection.
+P9H2 repairs chart interpretation: readable UTC date ticks, numeric scale, visible metric and unit, exact daily detail, chart/URL/Selected-day synchronization, pointer/keyboard/touch inspection, complete/partial/in-progress/missing/demo distinction without color alone, and an accessible SVG title and description. It does not add another History request during day inspection.
 
 ## 6. Later phases
 
@@ -158,4 +183,4 @@ UI localization is distinct from collecting or analyzing stream language. Provid
 
 ## 7. Stop rule
 
-Complete P9H2 on `work-history-ui-h2-chart`. Do not create `work-history-ui-h3-overview` until P9H2 merges, the full merge report is issued, and explicit continuation is received.
+P9H2 is complete and canonically closed through PR #437. Do not create `work-history-ui-h3-overview` until explicit continuation is received. After every merge, issue the full report and stop.

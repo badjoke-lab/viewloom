@@ -1,17 +1,28 @@
 # ViewLoom History UI repair implementation plan
 
 Status: active implementation subplan
-Version: 1.8
-Last updated: 2026-06-26
+Version: 1.9
+Last updated: 2026-06-27
 Roadmap phase: Phase 9 — History P1 repair
 Completed P9H0: PR #430
 Completed P9H1: PR #434
-Current implementation branch: `work-history-ui-h2-chart`
+Completed P9H2: PR #436
+Completed P9H2 canonical closeout: PR #437
+Current implementation branch: none
 Exact next branch: `work-history-ui-h3-overview`
 
-## Historical P9H1 closeout snapshot
+## Historical P9H2 active snapshot
 
-The following exact values describe the implementation plan immediately after PR #435. They are retained for historical acceptance gates and are not the current execution state.
+The following values describe the plan before PR #436 merged. They are retained for permanent P9H2 gates and are not current execution state.
+
+```text
+Version: 1.8
+Current implementation branch: `work-history-ui-h2-chart`
+Exact next branch: `work-history-ui-h3-overview`
+P9H2 work-history-ui-h2-chart      active
+```
+
+## Historical P9H1 closeout snapshot
 
 ```text
 Version: 1.7
@@ -31,13 +42,11 @@ Artifact: history-ui-h1-metric / 7903212809
 Digest: sha256:783283fd1c913e7ccb99d04bb607ed5801db1c74ab3d341c81a40c440835e82c
 ```
 
-Twitch and Kick remain separate. The existing metrics, periods, state labels, task routes, and output formats remain. Daily rows without observations are not used as the metric day.
+## Completed P9H2
 
-## Active P9H2
+PR #436 repaired the daily trend chart while preserving all accepted P9H1 metric behavior.
 
-P9H2 repairs the daily trend chart while preserving all accepted P9H1 metric behavior.
-
-Required results:
+Required results now accepted:
 
 - readable UTC date ticks and numeric scale;
 - explicit metric and unit;
@@ -50,6 +59,14 @@ Required results:
 - no additional History request when a day is inspected;
 - no Twitch/Kick crossing or output-format change.
 
+```text
+Final head: ccba4d4c29dd1442a684e35bafba23d392410365
+Merge: 4afba32749bb5098cc99fbabe897543791ec72fa
+Workflow: 28278497196
+Artifact: history-ui-h2-chart / 7921020539
+Digest: sha256:e6eeb9b2d1dad28237ad467554f4e1adcff5b4cc56577a8525d2d1cb1bb316ea
+```
+
 Permanent acceptance files:
 
 ```text
@@ -61,16 +78,28 @@ scripts/verify-history-ui-h2-chart.mjs
 ## Remaining sequence
 
 ```text
-P9H2 work-history-ui-h2-chart      active
-P9H3 work-history-ui-h3-overview   exact next after P9H2 merge and explicit continuation; not created
+P9H2 work-history-ui-h2-chart      complete PR #436
+P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
 P9H4 work-history-ui-h4-tasks      queued
 P9H5 work-history-ui-h5-responsive queued
 P9H6 work-history-ui-h6-candidate  queued
 P9H7 work-history-ui-h7-acceptance queued
 ```
 
-P9H3 covers Overview order and compactness. P9H4 covers Archives and publishing hierarchy. P9H5 covers required widths and accessibility. P9H6–P9H7 cover local candidate and production acceptance.
+## P9H3 contract
+
+P9H3 covers Overview order and compactness. It must:
+
+- preserve provider, period, metric, state, and observed-scope context;
+- keep controls and task navigation in coherent order;
+- render a metric-aware Summary without duplicate or placeholder facts;
+- make Selected day useful when a valid day exists;
+- order chart, Selected day, comparison, calendar, rankings, supported changes, and coverage links coherently;
+- shorten the mobile task flow without treating mobile as a scaled desktop;
+- reuse loaded History data and preserve Back/Forward, provider separation, state honesty, and output schemas.
+
+P9H4 covers Archives and publishing hierarchy. P9H5 covers required widths and accessibility. P9H6–P9H7 cover local candidate and production acceptance.
 
 ## Stop rule
 
-Finish and merge P9H2 before creating `work-history-ui-h3-overview`. After the merge, issue the full merge report and stop until explicit continuation.
+P9H2 is complete and canonically closed through PR #437. Do not create `work-history-ui-h3-overview` until explicit continuation is received. After every merge, issue the full report and stop.

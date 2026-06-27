@@ -2,14 +2,16 @@
 
 Status: active
 Created: 2026-06-25
-Last updated: 2026-06-26
+Last updated: 2026-06-27
 Roadmap phase: Phase 9 — History P1 repair
 Completed P9H0: PR #430
 Completed closeout: PR #432
 Completed final-state correction: PR #433
 Completed P9H1: PR #434
-Current implementation branch: `work-history-ui-h2-chart`
-Exact next branch after P9H2 merge and explicit continuation: `work-history-ui-h3-overview`
+Completed P9H2: PR #436
+Completed P9H2 canonical closeout: PR #437
+Current implementation branch: none
+Exact next branch after explicit continuation: `work-history-ui-h3-overview`
 Accepted baseline specification: `../product/history-and-trends-spec.md`
 Active repair specification: `../product/history-ui-repair-spec.md`
 Program plan: `../product/post-watchlist-program-plan.md`
@@ -19,12 +21,17 @@ P9H0 record: `../audits/history-ui-h0-findings.md`
 P9H0 owner map: `../audits/history-ui-h0-owner-map.json`
 Delete when: P9H7 production acceptance and permanent-document transfer are complete.
 
-## Historical P9H1 closeout snapshot
+## Historical gate snapshots
 
-The following exact value describes the working note immediately after PR #435. It is retained for historical acceptance gates and is not the current execution state.
+The following values are retained for permanent gates and are not current state.
 
 ```text
+Current implementation branch: `work-history-ui-h2-chart`
+P9H2 work-history-ui-h2-chart            active
+P9H3 work-history-ui-h3-overview         exact next after P9H2 merge and explicit continuation; not created
+
 Current implementation branch: none
+P9H2 work-history-ui-h2-chart            exact next after explicit continuation; not created
 ```
 
 ## P9H1 completion
@@ -38,15 +45,29 @@ Artifact ID: 7903212809
 Digest: sha256:783283fd1c913e7ccb99d04bb607ed5801db1c74ab3d341c81a40c440835e82c
 ```
 
+## P9H2 completion
+
+```text
+Final head: ccba4d4c29dd1442a684e35bafba23d392410365
+Merge commit: 4afba32749bb5098cc99fbabe897543791ec72fa
+Workflow run: 28278497196
+Artifact: history-ui-h2-chart
+Artifact ID: 7921020539
+Digest: sha256:e6eeb9b2d1dad28237ad467554f4e1adcff5b4cc56577a8525d2d1cb1bb316ea
+```
+
 Accepted behavior:
 
-- Viewer-minutes and Peak viewers update URL, request state, chart, Summary, Selected day, comparison, Ranking context, Daily archive, Report, Share, and Export;
-- one response is used per uncached provider/period/metric state;
-- task and archive switching reuse the loaded response;
-- Back/Forward and direct links remain;
+- readable UTC date and numeric scale context;
+- explicit selected metric and unit;
+- exact daily inspection;
+- synchronized chart, URL, and Selected day;
+- pointer, keyboard, and touch inspection;
+- complete, partial, in-progress, missing, and demo meaning without color alone;
+- accessible SVG title, description, focus, and forced-colors support;
+- one loaded History response reused for day inspection;
 - Twitch and Kick remain separate;
-- report/share/PNG/CSV/JSON formats remain;
-- daily rows without observations are not used as the report metric day.
+- report/share/PNG/CSV/JSON formats remain.
 
 The compact mobile task flow remains assigned to P9H3/P9H5. The production/local keyboard discrepancy remains assigned to P9H5 and final production acceptance.
 
@@ -64,7 +85,7 @@ history-focus-fallback.css          focus presentation
 history-visual-responsive.css       responsive layout
 ```
 
-## P9H2 implementation owners
+## P9H2 implementation owners retained for permanent acceptance
 
 ```text
 history-chart-p9h2.ts               SVG semantics, roving day navigation, exact inspection
@@ -82,27 +103,18 @@ history-ui-h2-chart.yml             latest-head workflow and artifact evidence
 ```text
 P9H0 work-history-ui-h0-baseline         complete PR #430
 P9H1 work-history-ui-h1-metric           complete PR #434
-P9H2 work-history-ui-h2-chart            active
-P9H3 work-history-ui-h3-overview         exact next after P9H2 merge and explicit continuation; not created
+P9H2 work-history-ui-h2-chart            complete PR #436
+P9H3 work-history-ui-h3-overview         exact next after explicit continuation; not created
 P9H4 work-history-ui-h4-tasks            queued
 P9H5 work-history-ui-h5-responsive       queued
 P9H6 work-history-ui-h6-candidate        queued
 P9H7 work-history-ui-h7-acceptance       queued
 ```
 
-## P9H2 acceptance
+## P9H3 entry target
 
-P9H2 covers chart scale, UTC date context, visible metric and unit, exact daily detail, pointer/keyboard/touch inspection, selected-day synchronization, complete/partial/in-progress/missing/demo distinction, non-color state meaning, and accessible SVG title and description.
-
-It must preserve the P9H1 metric behavior, provider/request boundaries, Back/Forward, loaded-response reuse, state honesty, and output formats. Day inspection must not request History again.
-
-Deterministic browser scenarios:
-
-```text
-Twitch desktop 1440 × 1000
-Kick touch mobile 390 × 844
-```
+P9H3 repairs Overview order and compactness while preserving all accepted P9H1/P9H2 contracts. The implementation must remove duplicate or placeholder facts, make Summary and Selected day useful, order comparison/calendar/rankings/coverage coherently, and shorten the mobile task flow without adding requests or crossing providers.
 
 ## Stop rule
 
-Complete and merge P9H2 before creating `work-history-ui-h3-overview`. After the merge, update permanent documents, issue the full report, and stop until explicit continuation.
+P9H2 is complete and canonically closed through PR #437. Do not create `work-history-ui-h3-overview` until explicit continuation is received. After every merge, issue the full report and stop.

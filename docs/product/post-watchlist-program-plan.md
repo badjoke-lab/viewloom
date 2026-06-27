@@ -1,15 +1,30 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 2.4
+Version: 2.5
 Created: 2026-06-25
-Last updated: 2026-06-26
-Current phase: Phase 9 — P9H2 chart interpretation
-Current implementation branch: `work-history-ui-h2-chart`
+Last updated: 2026-06-27
+Current phase: Phase 9 — P9H2 complete; P9H3 next
+Current implementation branch: none
 Completed closeout: PR #432
 Completed final-state correction: PR #433
 Completed metric synchronization: PR #434
-Exact next implementation branch after P9H2 merge and explicit continuation: `work-history-ui-h3-overview`
+Completed chart interpretation: PR #436
+Completed P9H2 canonical closeout: PR #437
+Exact next implementation branch after explicit continuation: `work-history-ui-h3-overview`
+
+## Historical P9H2 active snapshot
+
+The following exact values describe the source-of-truth program before PR #436 merged. They are retained for permanent P9H2 gates and are not the current execution state.
+
+```text
+Version: 2.4
+Current phase: Phase 9 — P9H2 chart interpretation
+Current implementation branch: `work-history-ui-h2-chart`
+| 9 | P9H2 | active
+P9H2 work-history-ui-h2-chart      active
+P9H3 work-history-ui-h3-overview   exact next after P9H2 merge and explicit continuation; not created
+```
 
 ## Historical P9H1 closeout snapshot
 
@@ -49,7 +64,8 @@ Before each branch, compare the schedule with actual branches/PRs, confirm expli
 | 9 | closeout | complete PR #432 | governance closeout | authorities aligned |
 | 9 | final-state | complete PR #433 | canonical correction | P9H1 entry exact |
 | 9 | P9H1 | complete PR #434 | `history-ui-repair-plan.md` | metric execution synchronized |
-| 9 | P9H2 | active | `history-ui-repair-plan.md` | chart interpretation accepted |
+| 9 | P9H2 | complete PR #436 | `history-ui-repair-plan.md` | chart interpretation accepted |
+| 9 | P9H2-closeout | complete PR #437 | canonical state | P9H3 entry exact |
 | 9 | P9H3–P9H7 | queued | `history-ui-repair-plan.md` | History repair accepted in production |
 | 10 | U10A–U10H | queued | cross-site quality plan | reproduced quality issues accepted |
 | 11 | O11A–O11G | queued | engineering/operations plan | acceptance, CI, type safety, monitoring locked |
@@ -64,9 +80,9 @@ Before each branch, compare the schedule with actual branches/PRs, confirm expli
 
 P7A completed through PR #426. P8A completed through PR #427 with 21 owned surfaces. P8B completed through PR #428 with 84 production route scenarios, five policy/disclosure probes, ten deterministic History scenarios, and no P0 result.
 
-## 4. Completed P9H0–P9H1
+## 4. Completed P9H0–P9H2
 
-P9H0 completed through PR #430. Documentation/program closeout completed through PR #432. Canonical entry state was corrected through PR #433. P9H1 completed through PR #434.
+P9H0 completed through PR #430. Documentation/program closeout completed through PR #432. Canonical entry state was corrected through PR #433. P9H1 completed through PR #434. P9H2 completed through PR #436 and was canonically closed through PR #437.
 
 P9H1 evidence:
 
@@ -78,6 +94,16 @@ Artifact: history-ui-h1-metric / 7903212809
 Digest: sha256:783283fd1c913e7ccb99d04bb607ed5801db1c74ab3d341c81a40c440835e82c
 ```
 
+P9H2 evidence:
+
+```text
+Final head: ccba4d4c29dd1442a684e35bafba23d392410365
+Merge: 4afba32749bb5098cc99fbabe897543791ec72fa
+Workflow: 28278497196
+Artifact: history-ui-h2-chart / 7921020539
+Digest: sha256:e6eeb9b2d1dad28237ad467554f4e1adcff5b4cc56577a8525d2d1cb1bb316ea
+```
+
 P9H1 synchronizes Viewer-minutes and Peak viewers across URL, request, chart, Summary, Selected day, comparison, Ranking context, Daily archive, Report, Share, and Exports. It preserves provider separation, one request per uncached provider/period/metric state, local task no-refetch, degraded states, and output schemas. Daily rows without observations are excluded from metric-day selection.
 
 ## 5. Phase 9 sequence
@@ -85,8 +111,8 @@ P9H1 synchronizes Viewer-minutes and Peak viewers across URL, request, chart, Su
 ```text
 P9H0 work-history-ui-h0-baseline   complete PR #430
 P9H1 work-history-ui-h1-metric     complete PR #434
-P9H2 work-history-ui-h2-chart      active
-P9H3 work-history-ui-h3-overview   exact next after P9H2 merge and explicit continuation; not created
+P9H2 work-history-ui-h2-chart      complete PR #436
+P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
 P9H4 work-history-ui-h4-tasks      queued
 P9H5 work-history-ui-h5-responsive queued
 P9H6 work-history-ui-h6-candidate  queued
@@ -95,11 +121,11 @@ P9H7 work-history-ui-h7-acceptance queued
 
 ### P9H2 — chart interpretation
 
-Require readable UTC date ticks, numeric scale, visible metric/unit, pointer/keyboard/touch day inspection, selected-day synchronization, exact daily detail, complete/partial/in-progress/missing/demo distinction, accessible SVG title and description, and a non-color-only legend. Day inspection must reuse the loaded History response and must not cross provider boundaries.
+P9H2 requires readable UTC date ticks, numeric scale, visible metric/unit, pointer/keyboard/touch day inspection, selected-day synchronization, exact daily detail, complete/partial/in-progress/missing/demo distinction, accessible SVG title and description, and a non-color-only legend. Day inspection reuses the loaded History response and does not cross provider boundaries.
 
 ### P9H3 — Overview hierarchy
 
-Require metric-aware summary, useful selected-day analysis, coherent comparison/calendar/ranking/coverage order, and removal of duplicate or placeholder facts.
+Require metric-aware summary, useful selected-day analysis, coherent comparison/calendar/ranking/coverage order, compact mobile task flow, and removal of duplicate or placeholder facts.
 
 ### P9H4 — Archives and Report & Export
 
@@ -183,4 +209,4 @@ Phase 15 evaluates one candidate at a time for source parity, D1 growth, collect
 
 ## 12. Current stop rule
 
-Complete P9H2 on `work-history-ui-h2-chart`. Do not create `work-history-ui-h3-overview` until P9H2 merges, the full merge report is issued, and explicit continuation is received.
+P9H2 is complete and canonically closed through PR #437. Do not create `work-history-ui-h3-overview` until explicit continuation is received. After every merge, issue the full report and stop.

@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map
-Last updated: 2026-06-26
+Last updated: 2026-06-27
 
 Chat memory, screenshots, old PRs, and completed milestone notes do not override this index.
 
@@ -35,6 +35,26 @@ When repository state and documentation disagree, update documentation before im
 - `product/history-ui-repair-spec.md`
 - `product/history-ui-repair-plan.md`
 - `work-in-progress/history-ui-repair-working-note.md`
+
+## Current execution state
+
+```text
+Phase 6  Local Watchlist v1                              complete PR #425
+P9H0     deterministic History baseline                  complete PR #430
+P9H1     metric execution repair                         complete PR #434
+P9H2     chart interpretation repair                     complete PR #436
+P9H2     canonical closeout                              complete PR #437
+Active implementation branch                              none
+P9H3     work-history-ui-h3-overview                       exact next; not created
+```
+
+## Historical P9H2 active snapshot
+
+The following exact values describe the documentation index before PR #436 merged. They are retained for permanent P9H2 gates and are not current execution state.
+
+```text
+P9H2 active on work-history-ui-h2-chart
+```
 
 ## P9H0 permanent evidence
 
@@ -76,9 +96,16 @@ Active implementation branch                              none
 P9H2     work-history-ui-h2-chart                          exact next; not created
 ```
 
-## Active P9H2 evidence
+## P9H2 permanent evidence
 
-P9H2 is active on `work-history-ui-h2-chart`.
+P9H2 completed through PR #436 at merge `4afba32749bb5098cc99fbabe897543791ec72fa` and was canonically closed through PR #437.
+
+```text
+Final head: ccba4d4c29dd1442a684e35bafba23d392410365
+Workflow run: 28278497196
+Artifact: history-ui-h2-chart / 7921020539
+Digest: sha256:e6eeb9b2d1dad28237ad467554f4e1adcff5b4cc56577a8525d2d1cb1bb316ea
+```
 
 - `../apps/web/src/live/history-chart-p9h2.ts`
 - `../apps/web/src/live/history-chart-p9h2-compat.ts`
@@ -87,7 +114,7 @@ P9H2 is active on `work-history-ui-h2-chart`.
 - `../scripts/verify-history-ui-h2-chart.mjs`
 - `../.github/workflows/history-ui-h2-chart.yml`
 
-P9H2 repairs UTC date and numeric scale interpretation, visible metric and unit, exact day detail, chart/URL/Selected-day synchronization, keyboard and touch inspection, non-color state symbols, and accessible SVG title and description. It preserves provider/request/output boundaries and does not refetch History when inspecting a day.
+P9H2 repairs UTC date and numeric scale interpretation, visible metric and unit, exact day detail, chart/URL/Selected-day synchronization, keyboard and touch inspection, non-color state symbols, forced-colors support, and accessible SVG title and description. It preserves provider/request/output boundaries and does not refetch History when inspecting a day.
 
 ## Approved future authorities
 
@@ -111,6 +138,7 @@ These documents do not authorize early implementation.
 - `product/next-feature-data-capability-audit.md`
 - `product/local-watchlist-spec.md`
 - `product/watchlist-v1-implementation-plan.md`
+- `operations/watchlist-production-acceptance-2026-06-25.md`
 - `../apps/web/docs/watchlist-latest-w2a-contract.md`
 - `../apps/web/docs/watchlist-history-w2b-contract.md`
 
@@ -128,61 +156,5 @@ P8B:
 - `audits/P8B_SCOPE.md`
 - `audits/public-browser-defects.json`
 - `audits/public-browser-audit.md`
-- `../apps/web/scripts/public-browser-audit.mjs`
-- `../scripts/verify-public-browser-audit.mjs`
-- `../.github/workflows/public-browser-audit.yml`
 
-## Permanent acceptance records
-
-- `operations/cloudflare-verification-2026-06-21.md`
-- `operations/production-smoke-runbook.md`
-- `operations/history-production-acceptance-2026-06-23.md`
-- `operations/channel-production-acceptance-2026-06-23.md`
-- `operations/report-export-consolidation-acceptance-2026-06-24.md`
-- `operations/watchlist-production-acceptance-2026-06-25.md`
-
-## Current execution state
-
-```text
-Phase 6  Local Watchlist v1                               complete PR #425
-Phase 7  source-of-truth reset                            complete PR #426
-Phase 8  public inventory and browser audit               complete PR #428
-P9H0     History deterministic baseline                    complete PR #430
-C9H0     documentation and program closeout                complete PR #432
-C9H0F    final canonical correction                        complete PR #433
-P9H1     metric execution repair                           complete PR #434
-P9H2     chart interpretation                              active
-Active implementation branch                              work-history-ui-h2-chart
-P9H3     work-history-ui-h3-overview                       exact next after P9H2 merge and explicit continuation; not created
-Phase 10 cross-site quality remediation                   queued
-Phase 11 engineering and operations lock                  queued
-Phase 12 English legal/Support/Stripe readiness           queued
-Phase 13 English/Japanese localization                    queued
-Phase 14 Spanish/pt-BR localization and staged launch     queued
-Phase 15 next-feature capability audit                    queued
-Phase 16 next major feature                               not approved
-```
-
-## Repository comparison rule
-
-Before changing code or public behavior, compare `current-schedule.md` with actual branches/PRs, confirm explicit continuation, compare plan deliverables with repository evidence, record missing work, and update documents first when state or scope changed.
-
-## Temporary-note lifecycle
-
-At milestone completion, transfer stable decisions, update roadmap/schedule/program, resolve or defer questions, delete the temporary note, and unlink it here.
-
-## Document precedence
-
-1. development/deployment policy
-2. this index and documentation governance
-3. roadmap
-4. schedule
-5. program plan
-6. active/future specification
-7. baseline specification
-8. implementation plan
-9. working note
-10. audit/acceptance evidence
-11. completed records
-
-Complete P9H2 on `work-history-ui-h2-chart`. Do not create `work-history-ui-h3-overview` until P9H2 merges, the full merge report is issued, and explicit continuation is received.
+P9H2 is complete and canonically closed through PR #437. `work-history-ui-h3-overview` is the exact next branch after explicit continuation.
