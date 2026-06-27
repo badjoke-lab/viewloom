@@ -4,6 +4,7 @@ if (initialStage) {
   // Historical verifier marker: document.addEventListener('keydown', handleDelegatedKeydown, true)
   const root = initialStage.parentElement ?? initialStage
   new MutationObserver(bindCurrentKeyboard).observe(root, { childList: true, subtree: true })
+  document.addEventListener('keydown', handleDelegatedKeydown, true)
   document.addEventListener('pointerdown', handlePointerDown, true)
   bindCurrentKeyboard()
 }
@@ -12,11 +13,11 @@ function bindCurrentKeyboard(): void {
   const keyboard = document.querySelector<HTMLButtonElement>('[data-history-chart-keyboard-target]')
   if (!keyboard || keyboard.dataset.historyDelegatedBound === 'true') return
   keyboard.dataset.historyDelegatedBound = 'true'
-  keyboard.addEventListener('keydown', handleDelegatedKeydown)
 }
 
 function handleDelegatedKeydown(event: KeyboardEvent): void {
-  const keyboard = event.currentTarget as HTMLButtonElement
+  const target = event.target as Element | null
+  const keyboard = target?.closest<HTMLButtonElement>('[data-history-chart-keyboard-target]')
   const stage = currentStage()
   if (!keyboard || !stage) return
   const days = chartDays(stage)
