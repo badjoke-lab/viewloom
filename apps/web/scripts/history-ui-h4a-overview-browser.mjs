@@ -64,8 +64,13 @@ async function installRoutes(context, calls) {
 }
 
 async function ready(page) {
-  await page.waitForFunction(() => document.querySelector('[data-history-view-panel="overview"]')?.getAttribute('data-history-overview-p9h4a-ready') === 'true'
-    && document.querySelector('.history-stage')?.getAttribute('data-history-chart-ready') === 'true')
+  await page.waitForFunction(() => {
+    const panel = document.querySelector('[data-history-view-panel="overview"]')
+    return panel?.getAttribute('data-history-overview-p9h4a-ready') === 'true'
+      && document.querySelector('.history-stage')?.getAttribute('data-history-chart-ready') === 'true'
+      && document.querySelectorAll('[data-history-summary] > div').length === 5
+      && document.querySelectorAll('[data-history-mobile-analysis-copy]').length === 4
+  })
 }
 
 async function snapshot(page) {
@@ -79,6 +84,7 @@ async function snapshot(page) {
       return rect ? { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, width: rect.width, height: rect.height } : null
     }
     const summaryCards = [...document.querySelectorAll('[data-history-summary] > div')]
+    const coverageBand = summaryCards[4]
     const secondary = [...document.querySelectorAll('[data-history-secondary-group]')]
     const metrics = document.querySelector('.history-selected-metrics')
     return {
@@ -86,8 +92,11 @@ async function snapshot(page) {
       documentHeight: document.documentElement.scrollHeight,
       summaryCards: summaryCards.length,
       visibleSummaryCards: summaryCards.filter(visible).length,
-      hiddenCoverageSource: document.querySelector('[data-history-coverage-source]')?.hasAttribute('hidden') ?? false,
-      coverageQuality: document.querySelector('[data-history-coverage-quality]')?.textContent?.replace(/\s+/g, ' ').trim() ?? '',
+      visiblePrimarySummaryCards: summaryCards.slice(0, 4).filter(visible).length,
+      summary: box('[data-history-summary]'),
+      coverageBand: box('[data-history-summary] > div:nth-child(5)'),
+      coverageBandDisplay: coverageBand ? getComputedStyle(coverageBand).display : '',
+      coverageQuality: coverageBand?.textContent?.replace(/\s+/g, ' ').trim() ?? '',
       keyPosition: getComputedStyle(document.querySelector('[data-history-overview-insights]')).position,
       comparisonGridDisplay: getComputedStyle(document.querySelector('.history-comparison-grid')).display,
       calendar: box('.history-calendar'),
@@ -119,6 +128,17 @@ async function coverageCollision(page) {
   })
 }
 
+function assertSummaryBalance(initial, label, mobile = false) {
+  assert.equal(initial.summaryCards, 5, `${label}: Summary source count changed`)
+  assert.equal(initial.visibleSummaryCards, 5, `${label}: coverage status band is hidden`)
+  assert.equal(initial.visiblePrimarySummaryCards, 4, `${label}: four primary Summary facts are required`)
+  assert.equal(initial.coverageBandDisplay, 'grid', `${label}: coverage is not rendered as a status band`)
+  assert.match(initial.coverageQuality, /Coverage quality Partial/i, `${label}: coverage quality is missing from the band`)
+  assert.ok(initial.summary && initial.coverageBand, `${label}: Summary or coverage band geometry is missing`)
+  assert.ok(Math.abs(initial.coverageBand.width - initial.summary.width) <= 3, `${label}: coverage band does not span Summary width`)
+  assert.ok(initial.coverageBand.height <= (mobile ? 96 : 72), `${label}: coverage band is too tall at ${initial.coverageBand.height}px`)
+}
+
 async function desktopScenario(browser, provider, width) {
   const calls = []
   const viewport = { width, height: 1000 }
@@ -132,10 +152,7 @@ async function desktopScenario(browser, provider, width) {
   assert.equal(calls.length, 1, `${provider}-${width}: initial request count changed`)
   assert.ok(calls.every((call) => call.provider === provider), `${provider}-${width}: crossed provider endpoint`)
   assert.ok(initial.bodyOverflow <= 2, `${provider}-${width}: body overflow ${initial.bodyOverflow}px`)
-  assert.equal(initial.summaryCards, 5, `${provider}-${width}: compatibility Summary source count changed`)
-  assert.equal(initial.visibleSummaryCards, 4, `${provider}-${width}: visible Summary must contain four primary facts`)
-  assert.equal(initial.hiddenCoverageSource, true, `${provider}-${width}: legacy coverage source is visible`)
-  assert.match(initial.coverageQuality, /Coverage Partial/i, `${provider}-${width}: coverage quality was not moved into the status band`)
+  assertSummaryBalance(initial, `${provider}-${width}`)
   assert.ok(initial.keyPosition !== 'sticky' && initial.keyPosition !== 'fixed', `${provider}-${width}: Key changes remains ${initial.keyPosition}`)
   assert.ok(initial.calendar && initial.calendar.height <= 540, `${provider}-${width}: Calendar height ${initial.calendar?.height}px remains dominant`)
   assert.ok(initial.calendarCell && initial.calendarCell.height >= 54 && initial.calendarCell.height <= 74, `${provider}-${width}: Calendar cell height ${initial.calendarCell?.height}px is outside bounds`)
@@ -169,15 +186,14 @@ async function mobileScenario(browser, provider, width) {
   assert.equal(calls.length, 1, `${provider}-${width}: initial request count changed`)
   assert.ok(calls.every((call) => call.provider === provider), `${provider}-${width}: crossed provider endpoint`)
   assert.ok(initial.bodyOverflow <= 2, `${provider}-${width}: body overflow ${initial.bodyOverflow}px`)
-  assert.equal(initial.visibleSummaryCards, 4, `${provider}-${width}: visible Summary must contain four primary facts`)
-  assert.match(initial.coverageQuality, /Coverage Partial/i, `${provider}-${width}: coverage quality is missing`)
+  assertSummaryBalance(initial, `${provider}-${width}`, true)
   assert.equal(initial.mobileNavVisible, true, `${provider}-${width}: More analysis is hidden`)
   assert.equal(initial.mobileDescriptions, 4, `${provider}-${width}: More analysis descriptions are incomplete`)
   assert.equal(initial.visibleSecondaryGroups, 0, `${provider}-${width}: secondary analysis is open by default`)
   assert.ok(initial.chart.height >= 450, `${provider}-${width}: chart remains too short at ${initial.chart.height}px`)
   assert.ok(initial.selectedMetricColumns >= 2, `${provider}-${width}: Selected day metrics are not compacted to two columns`)
   assert.equal(initial.visibleSelectedStreamers, 3, `${provider}-${width}: Selected day streamer limit changed`)
-  assert.ok(initial.documentHeight < viewport.height * 7.8, `${provider}-${width}: collapsed Overview remains too long at ${initial.documentHeight}px`)
+  assert.ok(initial.documentHeight < viewport.height * 7.9, `${provider}-${width}: collapsed Overview remains too long at ${initial.documentHeight}px`)
 
   const before = calls.length
   await page.locator('[data-history-mobile-analysis-toggle="ranking"]').click()
