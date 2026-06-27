@@ -4,13 +4,8 @@ const overview = document.querySelector<HTMLElement>('[data-history-view-panel="
 if (overview) installOverviewHierarchy(overview)
 
 function installOverviewHierarchy(panel: HTMLElement): void {
-  let attempts = 0
-
   const waitForAcceptedOverview = (): void => {
-    attempts += 1
-    const ready = panel.dataset.historyOverviewReady === 'true'
-      && panel.querySelector('[data-history-overview-insights-ready="true"]')
-    if (!ready && attempts < 180) {
+    if (panel.dataset.historyOverviewReady !== 'true') {
       requestAnimationFrame(waitForAcceptedOverview)
       return
     }
@@ -75,6 +70,8 @@ function toggleButton(group: SecondaryGroup, label: string): string {
 }
 
 function bindMobileNavigation(panel: HTMLElement, navigation: HTMLElement): void {
+  if (navigation.dataset.historyMobileAnalysisBound === 'true') return
+  navigation.dataset.historyMobileAnalysisBound = 'true'
   navigation.addEventListener('click', (event) => {
     const target = event.target instanceof Element
       ? event.target.closest<HTMLButtonElement>('[data-history-mobile-analysis-toggle]')
