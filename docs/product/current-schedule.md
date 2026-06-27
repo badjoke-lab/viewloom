@@ -14,9 +14,10 @@ Final-state correction                   complete PR #433
 P9H1 History metric synchronization      complete PR #434
 P9H2 History chart interpretation        complete PR #436
 P9H2 canonical closeout                  complete PR #437
-Active implementation branch             none
-Exact next branch                        work-history-ui-h3-overview
-P9H3 branch created                      no
+P9H3 History Overview hierarchy          active
+Active implementation branch             work-history-ui-h3-overview
+Exact next branch                        work-history-ui-h4-tasks
+P9H4 branch created                      no
 Phase 10 cross-site quality              queued
 Phase 11 engineering/operations lock     queued
 Phase 12 English release readiness       queued
@@ -24,6 +25,16 @@ Phase 13 English/Japanese localization   queued
 Phase 14 Spanish/pt-BR and launch        queued
 Phase 15 next-feature audit              queued
 Phase 16 major feature                   not approved
+```
+
+## Historical P9H2 closeout snapshot
+
+The following exact values describe the accepted state immediately after PR #437. They are retained for historical gates and are not the current execution state.
+
+```text
+Active implementation branch             none
+Exact next branch                        work-history-ui-h3-overview
+P9H3 branch created                      no
 ```
 
 ## Historical P9H2 active snapshot
@@ -81,14 +92,26 @@ Kick touch mobile 390 × 844
 
 P9H2 adds readable UTC date and numeric scale context, explicit metric and unit, exact daily inspection, chart/URL/Selected-day synchronization, Left/Right/Home/End keyboard movement, touch selection, non-color state symbols, forced-colors support, and accessible SVG title and description. Day inspection reuses the loaded History response. No API, D1, collector, cron, retention, binding, provider-combination, or output-schema change was made.
 
+## P9H3 implementation target
+
+```text
+Summary and Selected day become one coherent analysis entry
+Overview order follows task priority rather than source insertion order
+Comparison is compact and metric-aware
+Calendar and ranking remain secondary analysis
+Supported changes and coverage follow the primary tasks
+Mobile default flow is materially shorter without removing access to detail
+No new History request, provider crossing, output change, or data-model change
+```
+
 ## Immediate sequence
 
 ```text
 P9H0 work-history-ui-h0-baseline   complete PR #430
 P9H1 work-history-ui-h1-metric     complete PR #434
 P9H2 work-history-ui-h2-chart      complete PR #436
-P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
-P9H4 work-history-ui-h4-tasks      queued
+P9H3 work-history-ui-h3-overview   active
+P9H4 work-history-ui-h4-tasks      exact next after P9H3 merge and explicit continuation; not created
 P9H5 work-history-ui-h5-responsive queued
 P9H6 work-history-ui-h6-candidate  queued
 P9H7 work-history-ui-h7-acceptance queued
@@ -104,4 +127,4 @@ scripts/verify-history-ui-h2-chart.mjs
 
 ## Stop rule
 
-P9H2 is complete and canonically closed through PR #437. Do not create `work-history-ui-h3-overview` until explicit continuation is confirmed. After every merge, issue the full report and stop.
+Complete P9H3 on `work-history-ui-h3-overview`. Do not create `work-history-ui-h4-tasks` until P9H3 merges, the full merge report is issued, and explicit continuation is confirmed.
