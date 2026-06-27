@@ -21,6 +21,14 @@ async function waitForComparison(page) {
   })
 }
 
+async function openMobileComparison(page) {
+  await page.waitForFunction(() => document.querySelector('[data-history-view-panel="overview"]')?.getAttribute('data-history-overview-p9h3-ready') === 'true')
+  const toggle = page.locator('[data-history-mobile-analysis-toggle="comparison"]')
+  assert(await toggle.count() === 1, 'Mobile: comparison disclosure is missing.')
+  await toggle.click()
+  await page.waitForFunction(() => document.querySelector('[data-history-mobile-analysis-toggle="comparison"]')?.getAttribute('aria-expanded') === 'true')
+}
+
 async function assertNoOverflow(page, label) {
   const size = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
@@ -56,10 +64,12 @@ async function mobilePartial(browser) {
   await installRoute(context, 'kick', 'partial')
   const page = await context.newPage()
   await page.goto(`${baseUrl}/kick/history/`, { waitUntil: 'networkidle' })
+  await openMobileComparison(page)
   await waitForComparison(page)
 
   const block = page.locator('[data-history-period-comparison]')
   const text = await block.textContent()
+  assert(await block.isVisible(), 'Mobile: comparison remains hidden after disclosure.')
   assert((await page.locator('[data-history-period-comparison-status]').textContent()) === 'Partial', 'Mobile: partial status is missing.')
   assert(text?.includes('7 selected days') && text?.includes('4 selected days'), 'Mobile: mismatched day counts are not disclosed.')
   assert(text?.includes('Current and previous scopes contain 7 and 4 selected days.'), 'Mobile: partial reason is missing.')

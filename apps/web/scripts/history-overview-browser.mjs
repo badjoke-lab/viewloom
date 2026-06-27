@@ -22,7 +22,8 @@ async function routes(context, calls, state) {
 
 async function ready(page) {
   await page.waitForFunction(() => document.querySelector('[data-history-view-panel="overview"]')?.dataset.historyOverviewReady === 'true'
-    && document.querySelector('[data-history-overview-insights]')?.dataset.historyOverviewInsightsReady === 'true')
+    && document.querySelector('[data-history-overview-insights]')?.dataset.historyOverviewInsightsReady === 'true'
+    && document.querySelector('[data-history-view-panel="overview"]')?.dataset.historyOverviewP9h3Ready === 'true')
 }
 
 async function noOverflow(page, label) {
@@ -86,8 +87,35 @@ async function mobile(browser) {
   assert((text?.match(/Withheld/g) ?? []).length === 1, 'Mobile: unsupported selected metric comparison is not withheld exactly once.')
   assert(text?.includes('7 and 4 selected days'), 'Mobile: partial reason is missing.')
   assert(text?.includes('Alpha 0'), 'Mobile: supported streamer context is missing.')
-  const tops = await page.evaluate(() => ['[data-history-columns]','.history-period-comparison-block','.history-calendar-block','.history-overview-ranking-title','[data-history-overview-insights]','.history-overview-coverage-title'].map((selector) => document.querySelector(selector)?.getBoundingClientRect().top ?? -1))
-  assert(tops.every((value, index) => index === 0 || value > tops[index - 1]), 'Mobile: Overview reading order is incorrect.')
+
+  const initial = await page.evaluate(() => {
+    const visible = (node) => node instanceof HTMLElement
+      && getComputedStyle(node).display !== 'none'
+      && getComputedStyle(node).visibility !== 'hidden'
+      && node.getClientRects().length > 0
+    const groups = [...document.querySelectorAll('[data-history-secondary-group]')]
+    const nav = document.querySelector('[data-history-mobile-analysis]')
+    return {
+      navVisible: visible(nav),
+      visibleGroups: groups.filter(visible).length,
+      documentHeight: document.documentElement.scrollHeight,
+    }
+  })
+  assert(initial.navVisible, 'Mobile: More analysis navigation is hidden.')
+  assert(initial.visibleGroups === 0, 'Mobile: secondary analysis is visible before disclosure.')
+  assert(initial.documentHeight < 844 * 7, 'Mobile: collapsed Overview remains too long.')
+
+  const rankingToggle = page.locator('[data-history-mobile-analysis-toggle="ranking"]')
+  await rankingToggle.click()
+  await page.waitForFunction(() => document.querySelector('[data-history-mobile-analysis-toggle="ranking"]')?.getAttribute('aria-expanded') === 'true')
+  const opened = await page.evaluate(() => {
+    const visible = (node) => node instanceof HTMLElement
+      && getComputedStyle(node).display !== 'none'
+      && getComputedStyle(node).visibility !== 'hidden'
+      && node.getClientRects().length > 0
+    return [...document.querySelectorAll('[data-history-secondary-group="ranking"]')].filter(visible).length
+  })
+  assert(opened >= 3, 'Mobile: Rankings & changes disclosure did not reveal its content.')
   await noOverflow(page, 'Kick mobile Overview')
   await page.screenshot({ path: resolve(out, 'history-overview-kick-mobile.png'), fullPage: true })
   await context.close()

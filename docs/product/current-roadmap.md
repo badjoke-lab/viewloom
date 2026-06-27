@@ -15,6 +15,17 @@ Final-state correction complete PR #433
 Phase 9 P9H1  complete PR #434
 Phase 9 P9H2  complete PR #436
 P9H2 canonical closeout complete PR #437
+Phase 9 P9H3  active
+Active implementation branch: work-history-ui-h3-overview
+Exact next implementation branch: work-history-ui-h4-tasks
+P9H4 branch created: no
+```
+
+## Historical P9H2 closeout snapshot
+
+The following exact values describe the roadmap immediately after PR #437. They are retained for historical acceptance gates and are not the current execution state.
+
+```text
 Active implementation branch: none
 Exact next implementation branch: work-history-ui-h3-overview
 P9H3 branch created: no
@@ -52,7 +63,8 @@ P9H2 branch created: no
 - Post-closeout canonical state is corrected through PR #433.
 - History metric synchronization is complete through PR #434 at merge `31b81d3ed3a56369055ba09eb4de871dfc59d315`.
 - History chart interpretation is complete through PR #436 at merge `4afba32749bb5098cc99fbabe897543791ec72fa`.
-- P9H2 canonical closeout is complete through PR #437.
+- P9H2 canonical closeout is complete through PR #437 at merge `74566f9c333be3379f392e416be9529c9933be52`.
+- P9H3 Overview hierarchy work is active on `work-history-ui-h3-overview`.
 - Twitch and Kick remain separate across routes, APIs, storage, bindings, rankings, exports, and coverage claims.
 
 P9H1 accepted evidence:
@@ -89,7 +101,7 @@ The remaining deterministic History defect is:
 history-mobile-task-flow-too-long
 ```
 
-It remains owned by P9H3/P9H5. The earlier P8B production body-focus observation remains a production/local discrepancy for P9H5 and final acceptance.
+It is owned by P9H3/P9H5. The earlier P8B production body-focus observation remains a production/local discrepancy for P9H5 and final acceptance.
 
 ## 3. Authority map
 
@@ -138,7 +150,7 @@ Localization:
 ```text
 Phase 7   source-of-truth reset                              complete PR #426
 Phase 8   inventory and browser defect audit                 complete PR #428
-Phase 9   History P1 repair                                  P9H2 complete; P9H3 next
+Phase 9   History P1 repair                                  P9H3 active
 Phase 10  cross-site defect/UI/architecture repair           queued
 Phase 11  acceptance, CI, type safety, monitoring            queued
 Phase 12  English legal, Support, Stripe, release readiness  queued
@@ -156,8 +168,8 @@ No Phase 16 feature is approved.
 P9H0 work-history-ui-h0-baseline   complete PR #430
 P9H1 work-history-ui-h1-metric     complete PR #434
 P9H2 work-history-ui-h2-chart      complete PR #436
-P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
-P9H4 work-history-ui-h4-tasks      queued
+P9H3 work-history-ui-h3-overview   active
+P9H4 work-history-ui-h4-tasks      exact next after P9H3 merge and explicit continuation; not created
 P9H5 work-history-ui-h5-responsive queued
 P9H6 work-history-ui-h6-candidate  queued
 P9H7 work-history-ui-h7-acceptance queued
@@ -167,9 +179,11 @@ P9H1 synchronizes Viewer-minutes / Peak viewers across URL, provider request, se
 
 P9H2 repairs chart interpretation: readable UTC date ticks, numeric scale, visible metric and unit, exact daily detail, chart/URL/Selected-day synchronization, pointer/keyboard/touch inspection, complete/partial/in-progress/missing/demo distinction without color alone, and an accessible SVG title and description. It does not add another History request during day inspection.
 
+P9H3 repairs Overview hierarchy and compactness. It keeps provider/period/metric/state context, controls, and task navigation ahead of the analysis; makes Summary and Selected day useful; orders chart, comparison, calendar, ranking, supported changes, and coverage by task priority; and materially shortens the mobile default flow without hiding state honesty or adding requests.
+
 ## 6. Later phases
 
-P9H3 repairs Overview hierarchy. P9H4 repairs Archives and publishing hierarchy. P9H5 repairs responsive/accessibility behavior and the production/local keyboard discrepancy. P9H6–P9H7 perform candidate and production acceptance.
+P9H4 repairs Archives and publishing hierarchy. P9H5 repairs responsive/accessibility behavior and the production/local keyboard discrepancy. P9H6–P9H7 perform candidate and production acceptance.
 
 Phase 10 repairs reproduced cross-site defects and consolidates shared shell, chart grammar, responsive/accessibility behavior, route readiness, and safe architecture cleanup.
 
@@ -183,4 +197,4 @@ UI localization is distinct from collecting or analyzing stream language. Provid
 
 ## 7. Stop rule
 
-P9H2 is complete and canonically closed through PR #437. Do not create `work-history-ui-h3-overview` until explicit continuation is received. After every merge, issue the full report and stop.
+Complete P9H3 on `work-history-ui-h3-overview`. Do not create `work-history-ui-h4-tasks` until P9H3 merges, the full merge report is issued, and explicit continuation is received.

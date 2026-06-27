@@ -103,6 +103,7 @@ try {
   await page.waitForFunction(() => document.querySelectorAll('.history-day-column').length === 30)
   await page.waitForFunction(() => document.querySelectorAll('[data-history-day-card]').length === 30)
   await page.waitForFunction(() => document.querySelector('.history-peak-archive thead th:last-child')?.textContent?.trim() === 'Vs previous')
+  await page.waitForFunction(() => document.querySelector('[data-history-summary] > div:nth-child(4) strong')?.textContent?.trim() === 'No baseline')
 
   assert(await page.locator('.history-bar--missing').count() === 4, 'Chart does not preserve four missing date slots')
   assert(await page.locator('[data-history-day-card][data-history-clarity-state="missing"]').count() === 4, 'Archive does not preserve four missing dates')

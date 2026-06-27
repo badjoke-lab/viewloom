@@ -24,6 +24,15 @@ Final-state correction complete through PR #433
 P9H1 complete through PR #434
 P9H2 complete through PR #436
 P9H2 canonical closeout complete through PR #437
+P9H3 active on work-history-ui-h3-overview
+Active implementation branch: work-history-ui-h3-overview
+Exact next implementation branch: work-history-ui-h4-tasks
+P9H4 branch created: no
+```
+
+Historical P9H2 closeout evidence, not current state:
+
+```text
 Active implementation branch: none
 Exact next implementation branch: work-history-ui-h3-overview
 P9H3 branch created: no
@@ -45,7 +54,7 @@ Active implementation branch: none
 P9H2 branch created: no
 ```
 
-P9H3 must not be created before explicit continuation is received.
+P9H4 must not be created before P9H3 merges and explicit continuation is received.
 
 ## Standard workflow
 

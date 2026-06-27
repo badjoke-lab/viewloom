@@ -1,0 +1,82 @@
+.history-overview-mobile-analysis{display:none}
+
+@media(max-width:760px){
+  #history-view-overview{display:flex;flex-direction:column;min-width:0}
+  #history-view-overview>*{width:100%;min-width:0}
+  #history-view-overview>[data-history-summary]{order:1}
+  #history-view-overview>[data-history-coverage-summary]{order:2}
+  #history-view-overview>[data-history-columns]{order:3;gap:12px}
+  #history-view-overview>.history-overview-mobile-analysis{order:4;margin-top:12px}
+  #history-view-overview>.history-period-comparison-block{order:5}
+  #history-view-overview>.history-calendar-block{order:6}
+  #history-view-overview>.history-overview-ranking-title{order:7}
+  #history-view-overview>.history-ranking-toolbar{order:8}
+  #history-view-overview>.history-table-wrap{order:9}
+  #history-view-overview>[data-history-streamer-cards]{order:10}
+  #history-view-overview>[data-history-overview-insights]{order:11}
+  #history-view-overview>.history-overview-coverage-title{order:12}
+  #history-view-overview>.history-coverage-detail{order:13}
+
+  .history-overview-mobile-analysis{
+    display:grid;
+    gap:10px;
+    padding:12px;
+    border:1px solid var(--line-strong);
+    background:var(--surface);
+  }
+  .history-overview-mobile-analysis__head{display:grid;gap:3px}
+  .history-overview-mobile-analysis__head strong{font-size:13px}
+  .history-overview-mobile-analysis__head span{color:var(--muted);font-size:11px;line-height:1.45}
+  .history-overview-mobile-analysis__buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .history-overview-mobile-analysis button{
+    min-height:44px;
+    padding:9px 10px;
+    border:1px solid var(--line-strong);
+    background:var(--surface-raised);
+    color:var(--text);
+    font:750 11px var(--sans);
+    text-align:left;
+    cursor:pointer;
+  }
+  .history-overview-mobile-analysis button:hover,
+  .history-overview-mobile-analysis button:focus-visible,
+  .history-overview-mobile-analysis button.active{
+    border-color:var(--accent);
+    outline:none;
+  }
+  .history-overview-mobile-analysis button.active{background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
+
+  #history-view-overview>[data-history-secondary-group]:not(.is-mobile-open){display:none!important}
+
+  #history-view-overview>.history-summary{display:grid;grid-template-columns:1fr 1fr!important}
+  #history-view-overview>.history-summary .lead-stat{grid-column:1/-1}
+  #history-view-overview>.history-summary>div{min-height:82px!important;padding:11px!important}
+  #history-view-overview>.history-summary .lead-stat{min-height:96px!important}
+  #history-view-overview>.history-summary .lead-stat strong{font-size:clamp(26px,9vw,38px)}
+  #history-view-overview>.history-summary>div strong{font-size:13px}
+  #history-view-overview>.history-summary>div span{font-size:10px}
+
+  #history-view-overview>.history-coverage-summary{margin-bottom:12px}
+  .history-selected-body{gap:11px}
+  .history-selected-metrics>div{padding:9px}
+  .history-selected-top li:nth-child(n+4){display:none}
+  .history-selected-top>small::after{content:" · first 3";text-transform:none;letter-spacing:0}
+  .history-selected-actions .button{flex:1 1 140px;justify-content:center}
+
+  #history-view-overview>[data-history-secondary-group].is-mobile-open{scroll-margin-top:64px}
+  #history-view-overview>.history-overview-ranking-title.is-mobile-open,
+  #history-view-overview>.history-overview-coverage-title.is-mobile-open{display:flex!important}
+  #history-view-overview>.history-ranking-toolbar.is-mobile-open{display:grid!important}
+  #history-view-overview>[data-history-streamer-cards].is-mobile-open{display:grid!important}
+  #history-view-overview>.history-table-wrap.is-mobile-open{display:none!important}
+}
+
+@media(max-width:420px){
+  .history-overview-mobile-analysis__buttons{grid-template-columns:1fr}
+  #history-view-overview>.history-summary>div{min-height:76px!important}
+  #history-view-overview>.history-summary .lead-stat{min-height:90px!important}
+}
+
+@media(forced-colors:active){
+  .history-overview-mobile-analysis button.active{outline:2px solid Highlight;outline-offset:1px}
+}
