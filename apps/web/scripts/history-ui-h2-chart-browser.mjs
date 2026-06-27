@@ -5,7 +5,7 @@ import { chromium } from 'playwright'
 import { historyPayload } from './history-period-comparison-fixture.mjs'
 
 // Historical verifier markers: keyboard.press('Home') and keyboard.press('ArrowRight').
-// The accepted path resolves and focuses the current native HTML button before each key input.
+// The accepted path resolves a stable native HTML button and retries real locator.press input across late redraws.
 
 const base = process.env.HISTORY_H2_BASE_URL ?? 'http://127.0.0.1:4173'
 const out = resolve(process.env.HISTORY_H2_ARTIFACT_DIR ?? 'artifacts/history-ui-h2')
@@ -59,22 +59,13 @@ async function run(browser, provider, viewport, touch) {
   const requestCount = calls.length
   let state = initial
   if (!touch) {
-    evidence.checkpoint = `${provider}:keyboard-focus`
-    await focusKeyboard(page, initial.selected)
-
     evidence.checkpoint = `${provider}:home-press`
-    await page.keyboard.press('Home')
+    await pressKeyboardDay(page, 'Home', '2026-06-12')
     evidence.diagnostics.push({ provider, checkpoint: 'after-home', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
-    evidence.checkpoint = `${provider}:home-wait`
-    await dayReady(page, '2026-06-12')
 
-    evidence.checkpoint = `${provider}:arrow-focus`
-    await focusKeyboard(page, '2026-06-12')
     evidence.checkpoint = `${provider}:arrow-press`
-    await page.keyboard.press('ArrowRight')
+    await pressKeyboardDay(page, 'ArrowRight', '2026-06-13')
     evidence.diagnostics.push({ provider, checkpoint: 'after-arrow', state: await snapshot(page), interaction: await interactionSnapshot(page), url: page.url() })
-    evidence.checkpoint = `${provider}:arrow-wait`
-    await dayReady(page, '2026-06-13')
     state = await snapshot(page)
     assert.equal(state.selected, '2026-06-13')
     assert.equal(state.inspectionDay, '2026-06-13')
@@ -119,13 +110,33 @@ async function ready(page, metric) {
     && document.querySelector('[data-history-chart-keyboard-target]'), metric)
 }
 
-async function focusKeyboard(page, day) {
-  await page.waitForFunction((value) => {
+async function focusStableKeyboard(page) {
+  await page.waitForFunction(async () => {
     const keyboard = document.querySelector('[data-history-chart-keyboard-target]')
-    if (!(keyboard instanceof HTMLButtonElement) || keyboard.getAttribute('data-history-keyboard-day') !== value) return false
+    if (!(keyboard instanceof HTMLButtonElement)) return false
     keyboard.focus()
-    return document.activeElement === keyboard
-  }, day)
+    await new Promise((resolveFrame) => requestAnimationFrame(() => requestAnimationFrame(resolveFrame)))
+    return keyboard.isConnected
+      && document.querySelector('[data-history-chart-keyboard-target]') === keyboard
+      && document.activeElement === keyboard
+  })
+}
+
+async function pressKeyboardDay(page, key, targetDay) {
+  let lastError = null
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    await focusStableKeyboard(page)
+    await page.locator('[data-history-chart-keyboard-target]').press(key)
+    try {
+      await page.waitForFunction((value) => new URL(location.href).searchParams.get('day') === value
+        && document.querySelector('[data-history-day][aria-current="date"]')?.getAttribute('data-history-day') === value
+        && document.querySelector('[data-history-chart-keyboard-target]')?.getAttribute('data-history-keyboard-day') === value, targetDay, { timeout: 1500 })
+      return
+    } catch (error) {
+      lastError = error
+    }
+  }
+  throw lastError ?? new Error(`History keyboard did not select ${targetDay}.`)
 }
 
 async function dayReady(page, day) {
