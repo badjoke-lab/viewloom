@@ -12,7 +12,6 @@ import './history-overview'
 import './history-comparison-clarity'
 import './history-usability'
 import './history-default-day'
-import './history-battle-selection-bridge'
 import '../history-archives.css'
 import './history-archives'
 import '../history-visual-responsive.css'
@@ -21,5 +20,34 @@ import './history-visual-responsive'
 import '../history-chart-p9h2.css'
 import './history-chart-p9h2'
 import './history-chart-keyboard-delegation'
+
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter' && event.key !== ' ') return
+  const target = event.target as Element | null
+  const card = target?.closest<HTMLElement>('[data-history-battle-day]')
+  if (!card || target?.closest('a')) return
+  event.preventDefault()
+  selectBattleDay(card)
+}, true)
+
+document.addEventListener('click', (event) => {
+  const target = event.target as Element | null
+  const card = target?.closest<HTMLElement>('[data-history-battle-day]')
+  if (!card || target?.closest('a')) return
+  selectBattleDay(card)
+}, true)
+
+function selectBattleDay(card: HTMLElement): void {
+  const day = card.dataset.historyBattleDay
+  if (!day) return
+  const selectorDay = window.CSS?.escape ? window.CSS.escape(day) : day
+  const dailyCard = document.querySelector<HTMLElement>(`[data-history-day-card="${selectorDay}"]`)
+  if (dailyCard) {
+    dailyCard.click()
+    return
+  }
+  document.querySelector<SVGGElement>(`.history-day-column[data-history-day="${selectorDay}"]`)
+    ?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
+}
 
 export {}
