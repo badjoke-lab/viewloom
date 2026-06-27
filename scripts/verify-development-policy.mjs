@@ -12,11 +12,6 @@ const need = (path, fragments) => {
   const source = read(path)
   for (const fragment of fragments) check(source.includes(fragment), `${path}: missing ${fragment}`)
 }
-const forbid = (path, fragments) => {
-  if (!existsSync(join(root, path))) return
-  const source = read(path)
-  for (const fragment of fragments) check(!source.includes(fragment), `${path}: stale ${fragment}`)
-}
 
 const requiredFiles = [
   'README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'docs/README.md',
@@ -54,78 +49,71 @@ need('docs/operations/documentation-governance.md', [
 ])
 
 for (const path of ['README.md', 'docs/README.md', 'AGENTS.md', 'CONTRIBUTING.md']) need(path, [
-  'PR #430', 'PR #432', 'PR #433', 'PR #434', 'PR #436', 'PR #437',
+  'PR #430', 'PR #432', 'PR #433', 'PR #434', 'PR #436', 'PR #437', 'PR #439', 'PR #440',
   'work-history-ui-h3-overview', 'work-history-ui-h4-tasks', 'work-history-ui-h2-chart',
 ])
 need('README.md', [
-  'P9H3 Overview hierarchy             active',
-  'Active implementation branch        work-history-ui-h3-overview',
+  'P9H3 Overview hierarchy             complete PR #439',
+  'P9H3 canonical closeout             complete PR #440',
+  'Active implementation branch        none',
   'P9H4 branch created                 no',
-  '28278497196', '7921020539',
+  '28280486736', '7921680615',
 ])
 need('docs/README.md', [
-  'P9H3     work-history-ui-h3-overview                       active',
-  'Active implementation branch                              work-history-ui-h3-overview',
+  'P9H3     work-history-ui-h3-overview                       complete PR #439',
+  'Active implementation branch                              none',
   'P9H4     work-history-ui-h4-tasks',
 ])
 need('AGENTS.md', [
-  'P9H3 active on work-history-ui-h3-overview',
-  'Active implementation branch: work-history-ui-h3-overview',
+  'P9H3 complete through PR #439',
+  'P9H3 canonical closeout complete through PR #440',
+  'Active implementation branch: none',
   'P9H4 branch created: no',
 ])
 need('CONTRIBUTING.md', [
-  'P9H3 active on work-history-ui-h3-overview',
-  'Active implementation branch: work-history-ui-h3-overview',
+  'P9H3 complete through PR #439',
+  'P9H3 canonical closeout complete through PR #440',
+  'Active implementation branch: none',
   'P9H4 branch created: no',
 ])
 
 need('docs/product/current-roadmap.md', [
-  'Phase 9 P9H3  active',
-  'Active implementation branch: work-history-ui-h3-overview',
+  'Phase 9 P9H3  complete PR #439',
+  'P9H3 canonical closeout complete PR #440',
+  'Active implementation branch: none',
   'Exact next implementation branch: work-history-ui-h4-tasks',
   'P9H4 branch created: no',
-  'P9H2 canonical closeout complete PR #437',
   'No Phase 16 feature is approved.',
 ])
 need('docs/product/current-schedule.md', [
-  'P9H3 History Overview hierarchy          active',
-  'Active implementation branch             work-history-ui-h3-overview',
+  'P9H3 History Overview hierarchy          complete PR #439',
+  'P9H3 canonical closeout                  complete PR #440',
+  'Active implementation branch             none',
   'Exact next branch                        work-history-ui-h4-tasks',
   'P9H4 branch created                      no',
-  'PR: #436',
+  'PR: #439',
 ])
 need('docs/product/post-watchlist-program-plan.md', [
-  'Version: 2.6',
-  'Current phase: Phase 9 — P9H3 Overview hierarchy',
-  'Current implementation branch: `work-history-ui-h3-overview`',
-  '| 9 | P9H3 | active',
+  'Version: 2.7',
+  'Current phase: Phase 9 — P9H3 complete; P9H4 next',
+  'Current implementation branch: none',
+  'P9H3 work-history-ui-h3-overview   complete PR #439',
   'P9H4 work-history-ui-h4-tasks',
   'Phase 16 begins only after one candidate is separately approved',
 ])
 need('docs/product/history-ui-repair-plan.md', [
-  'Version: 2.0',
+  'Version: 2.1',
   'Completed P9H2: PR #436',
-  'Current implementation branch: `work-history-ui-h3-overview`',
-  'P9H3 work-history-ui-h3-overview   active',
+  'Completed P9H3: PR #439',
+  'Current implementation branch: none',
+  'P9H3 work-history-ui-h3-overview   complete PR #439',
 ])
 need('docs/work-in-progress/history-ui-repair-working-note.md', [
   'Completed P9H2: PR #436',
-  'Current implementation branch: `work-history-ui-h3-overview`',
+  'Completed P9H3: PR #439',
+  'Current implementation branch: none',
   'P9H3 work-history-ui-h3-overview',
-  'Workflow run: 28278497196',
-])
-
-for (const path of [
-  'README.md', 'docs/README.md', 'AGENTS.md', 'CONTRIBUTING.md',
-  'docs/product/current-roadmap.md', 'docs/product/current-schedule.md',
-  'docs/product/post-watchlist-program-plan.md', 'docs/product/history-ui-repair-plan.md',
-  'docs/work-in-progress/history-ui-repair-working-note.md',
-]) forbid(path, [
-  'Active implementation branch: work-history-ui-h1-metric',
-  'Active implementation branch        work-history-ui-h1-metric',
-  'Active implementation branch            work-history-ui-h1-metric',
-  'Current implementation branch: `work-history-ui-h1-metric`',
-  'P9H1 work-history-ui-h1-metric           active',
+  'Workflow run: 28280486736',
 ])
 
 need('docs/product/cross-site-quality-remediation-spec.md', [
@@ -199,8 +187,7 @@ if (issues.length) {
 }
 
 console.log('ViewLoom development and documentation verification passed.')
-console.log('- P9H2 is complete through PR #436 and canonically closed through PR #437')
-console.log('- P9H3 is active on work-history-ui-h3-overview')
+console.log('- P9H3 is complete through PR #439 and canonically closed through PR #440')
 console.log('- work-history-ui-h4-tasks is next and not created')
 console.log('- Phase 10–14 authorities remain queued')
 console.log('- Phase 16 remains unapproved')

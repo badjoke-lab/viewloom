@@ -14,8 +14,9 @@ Final-state correction                   complete PR #433
 P9H1 History metric synchronization      complete PR #434
 P9H2 History chart interpretation        complete PR #436
 P9H2 canonical closeout                  complete PR #437
-P9H3 History Overview hierarchy          active
-Active implementation branch             work-history-ui-h3-overview
+P9H3 History Overview hierarchy          complete PR #439
+P9H3 canonical closeout                  complete PR #440
+Active implementation branch             none
 Exact next branch                        work-history-ui-h4-tasks
 P9H4 branch created                      no
 Phase 10 cross-site quality              queued
@@ -27,82 +28,54 @@ Phase 15 next-feature audit              queued
 Phase 16 major feature                   not approved
 ```
 
-## Historical P9H2 closeout snapshot
+## Historical execution snapshots
 
-The following exact values describe the accepted state immediately after PR #437. They are retained for historical gates and are not the current execution state.
+These exact strings are retained for permanent gates and are not current state.
 
 ```text
+P9H3 History Overview hierarchy          active
+Active implementation branch             work-history-ui-h3-overview
+Exact next branch                        work-history-ui-h4-tasks
+P9H4 branch created                      no
+
 Active implementation branch             none
 Exact next branch                        work-history-ui-h3-overview
 P9H3 branch created                      no
-```
 
-## Historical P9H2 active snapshot
-
-The following exact values describe the accepted implementation state before PR #436 merged. They are retained for permanent P9H2 gates and are not the current execution state.
-
-```text
 P9H2 History chart interpretation        active
 Active implementation branch             work-history-ui-h2-chart
 Exact next branch                        work-history-ui-h3-overview
 P9H3 branch created                      no
-```
 
-## Historical P9H1 closeout snapshot
-
-The following exact values describe the accepted state immediately after PR #435. They are retained for historical gates and are not the current execution state.
-
-```text
 P9H1 History metric synchronization      complete PR #434
 Active implementation branch             none
 Exact next branch                        work-history-ui-h2-chart
 P9H2 branch created                      no
 ```
 
-## P9H1 evidence
+## Accepted evidence
 
 ```text
 PR: #434
-Final head: 9c4e3278b609e3f8d41fa3df71ba69f5ebc00618
-Merge commit: 31b81d3ed3a56369055ba09eb4de871dfc59d315
 Workflow run: 28232602651
-Artifact: history-ui-h1-metric
 Artifact ID: 7903212809
-Digest: sha256:783283fd1c913e7ccb99d04bb607ed5801db1c74ab3d341c81a40c440835e82c
-```
 
-## P9H2 evidence
-
-```text
 PR: #436
 Final head: ccba4d4c29dd1442a684e35bafba23d392410365
 Merge commit: 4afba32749bb5098cc99fbabe897543791ec72fa
 Workflow run: 28278497196
-Artifact: history-ui-h2-chart
 Artifact ID: 7921020539
-Digest: sha256:e6eeb9b2d1dad28237ad467554f4e1adcff5b4cc56577a8525d2d1cb1bb316ea
+
+PR: #439
+Final head: 2cdd780787d06ab951e68b7cbca031089ab5312e
+Merge commit: 38e21f910d303f391a988121ff562f53a6a426b7
+Workflow run: 28280486736
+Artifact: history-ui-h3-overview
+Artifact ID: 7921680615
+Digest: sha256:33e6c4fa3deeaab4a12394b768371dde06409ebf6d899f230110948fb63defee
 ```
 
-Accepted scenarios:
-
-```text
-Twitch desktop 1440 × 1000
-Kick touch mobile 390 × 844
-```
-
-P9H2 adds readable UTC date and numeric scale context, explicit metric and unit, exact daily inspection, chart/URL/Selected-day synchronization, Left/Right/Home/End keyboard movement, touch selection, non-color state symbols, forced-colors support, and accessible SVG title and description. Day inspection reuses the loaded History response. No API, D1, collector, cron, retention, binding, provider-combination, or output-schema change was made.
-
-## P9H3 implementation target
-
-```text
-Summary and Selected day become one coherent analysis entry
-Overview order follows task priority rather than source insertion order
-Comparison is compact and metric-aware
-Calendar and ranking remain secondary analysis
-Supported changes and coverage follow the primary tasks
-Mobile default flow is materially shorter without removing access to detail
-No new History request, provider crossing, output change, or data-model change
-```
+P9H3 keeps full desktop analysis and shortens the mobile default path to Summary, coverage status, chart, and Selected day. Compare periods, Calendar, Rankings & changes, and detailed Coverage remain available through explicit secondary controls without another History request.
 
 ## Immediate sequence
 
@@ -110,21 +83,13 @@ No new History request, provider crossing, output change, or data-model change
 P9H0 work-history-ui-h0-baseline   complete PR #430
 P9H1 work-history-ui-h1-metric     complete PR #434
 P9H2 work-history-ui-h2-chart      complete PR #436
-P9H3 work-history-ui-h3-overview   active
-P9H4 work-history-ui-h4-tasks      exact next after P9H3 merge and explicit continuation; not created
+P9H3 work-history-ui-h3-overview   complete PR #439
+P9H4 work-history-ui-h4-tasks      exact next after explicit continuation; not created
 P9H5 work-history-ui-h5-responsive queued
 P9H6 work-history-ui-h6-candidate  queued
 P9H7 work-history-ui-h7-acceptance queued
 ```
 
-## P9H2 permanent gate
-
-```text
-apps/web/scripts/history-ui-h2-chart-browser.mjs
-scripts/verify-history-ui-h2-chart.mjs
-.github/workflows/history-ui-h2-chart.yml
-```
-
 ## Stop rule
 
-Complete P9H3 on `work-history-ui-h3-overview`. Do not create `work-history-ui-h4-tasks` until P9H3 merges, the full merge report is issued, and explicit continuation is confirmed.
+P9H3 is complete and canonically closed through PR #440. Do not create `work-history-ui-h4-tasks` before explicit continuation is received.
