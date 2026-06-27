@@ -17,14 +17,21 @@ P9H2 complete through PR #436
 P9H2 canonical closeout complete through PR #437
 P9H3 complete through PR #439
 P9H3 canonical closeout complete through PR #440
-Active implementation branch: none
-Exact next implementation branch: work-history-ui-h4-tasks
-P9H4 branch created: no
+P9H4A active on work-history-ui-h4a-overview-balance
+Active implementation branch: work-history-ui-h4a-overview-balance
+Exact next implementation branch: work-history-ui-h4b-tasks
+P9H4B branch created: no
 ```
+
+P9H4A repairs only the confirmed History Overview balance defects. It must preserve provider separation, metric meaning, URL state, no-refetch secondary switching, output schemas, API, D1, collectors, cron, retention, and bindings.
 
 Historical gate evidence, not current state:
 
 ```text
+Active implementation branch: none
+Exact next implementation branch: work-history-ui-h4-tasks
+P9H4 branch created: no
+
 P9H3 active on work-history-ui-h3-overview
 Active implementation branch: work-history-ui-h3-overview
 Exact next implementation branch: work-history-ui-h4-tasks
@@ -43,7 +50,7 @@ Active implementation branch: none
 P9H2 branch created: no
 ```
 
-P9H4 must not be created before explicit continuation is received.
+Do not create `work-history-ui-h4b-tasks` before P9H4A merges, canonical closeout is complete, and explicit continuation is received.
 
 ## Standard workflow
 

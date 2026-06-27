@@ -12,13 +12,17 @@ Completed P9H2: PR #436
 Completed P9H2 canonical closeout: PR #437
 Completed P9H3: PR #439
 Completed P9H3 canonical closeout: PR #440
-Current implementation branch: none
-Exact next branch after explicit continuation: `work-history-ui-h4-tasks`
+Current implementation branch: `work-history-ui-h4a-overview-balance`
+Exact next branch after merge and explicit continuation: `work-history-ui-h4b-tasks`
 Delete when: P9H7 production acceptance and permanent-document transfer are complete.
 
 Historical gate strings, not current state:
 
 ```text
+Current implementation branch: none
+Exact next branch after explicit continuation: `work-history-ui-h4-tasks`
+P9H4 work-history-ui-h4-tasks            exact next after explicit continuation; not created
+
 Current implementation branch: `work-history-ui-h3-overview`
 P9H3 work-history-ui-h3-overview         active
 P9H4 work-history-ui-h4-tasks            exact next after P9H3 merge and explicit continuation; not created
@@ -75,17 +79,44 @@ Accepted behavior:
 
 The compact mobile task-flow defect is resolved. The production/local keyboard discrepancy remains assigned to P9H5 and final acceptance.
 
+## Active P9H4A findings
+
+Production screenshots supplied on 2026-06-27 establish the following latest defects:
+
+```text
+H4A-1  Key changes sticky card crosses into later section space on desktop
+H4A-2  Calendar square cells make the supporting calendar dominate the full page
+H4A-3  Ranking table is compressed by a persistent low-information right column
+H4A-4  Five-card Summary gives coverage the wrong visual role
+H4A-5  Withheld comparison keeps empty metric-card volume
+H4A-6  Mobile chart remains tight and tooltip-heavy
+H4A-7  Mobile Selected day and More analysis need denser, clearer presentation
+```
+
+Approved repair:
+
+- remove sticky/fixed positioning from `Key changes`;
+- pair ranking and insight only at wide desktop widths and stack at narrower desktop/tablet widths;
+- cap calendar cells to low fixed/clamped rows and remove desktop square aspect ratio;
+- reduce Summary to four primary facts and add coverage state to the coverage band;
+- compact withheld comparison;
+- increase mobile chart height, keep only the first three selected-day streamers, and use compact metric/action layout;
+- add descriptions and disclosure indicators to mobile More analysis buttons;
+- add geometry and request-count acceptance at 1440, 1280, 1024, 820, 390, and 360;
+- preserve provider separation, one request per uncached provider/period/metric state, no-refetch secondary analysis, URL state, output schemas, API, D1, collector, cron, retention, and bindings.
+
 ## Current sequence
 
 ```text
-P9H0 work-history-ui-h0-baseline         complete PR #430
-P9H1 work-history-ui-h1-metric           complete PR #434
-P9H2 work-history-ui-h2-chart            complete PR #436
-P9H3 work-history-ui-h3-overview         complete PR #439
-P9H4 work-history-ui-h4-tasks            exact next after explicit continuation; not created
-P9H5 work-history-ui-h5-responsive       queued
-P9H6 work-history-ui-h6-candidate        queued
-P9H7 work-history-ui-h7-acceptance       queued
+P9H0  work-history-ui-h0-baseline          complete PR #430
+P9H1  work-history-ui-h1-metric            complete PR #434
+P9H2  work-history-ui-h2-chart             complete PR #436
+P9H3  work-history-ui-h3-overview          complete PR #439
+P9H4A work-history-ui-h4a-overview-balance active
+P9H4B work-history-ui-h4b-tasks            next after P9H4A merge and explicit continuation; not created
+P9H5  work-history-ui-h5-responsive        queued
+P9H6  work-history-ui-h6-candidate         queued
+P9H7  work-history-ui-h7-acceptance        queued
 ```
 
-P9H3 is complete and canonically closed through PR #440. Do not create `work-history-ui-h4-tasks` before explicit continuation is received.
+Do not create `work-history-ui-h4b-tasks` before P9H4A merges, its canonical closeout is complete, and explicit continuation is received.

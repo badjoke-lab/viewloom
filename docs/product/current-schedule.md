@@ -16,9 +16,10 @@ P9H2 History chart interpretation        complete PR #436
 P9H2 canonical closeout                  complete PR #437
 P9H3 History Overview hierarchy          complete PR #439
 P9H3 canonical closeout                  complete PR #440
-Active implementation branch             none
-Exact next branch                        work-history-ui-h4-tasks
-P9H4 branch created                      no
+P9H4A Overview balance                   active
+Active implementation branch             work-history-ui-h4a-overview-balance
+Exact next branch                        work-history-ui-h4b-tasks
+P9H4B branch created                     no
 Phase 10 cross-site quality              queued
 Phase 11 engineering/operations lock     queued
 Phase 12 English release readiness       queued
@@ -28,11 +29,17 @@ Phase 15 next-feature audit              queued
 Phase 16 major feature                   not approved
 ```
 
+P9H4A was inserted after production screenshots confirmed that the desktop `Key changes` sticky card crossed section boundaries, the desktop calendar dominated the page, ranking width was compressed, and mobile chart/secondary-analysis density still needed repair. P9H4B retains the previously approved Archives and Report & Export scope.
+
 ## Historical execution snapshots
 
 These exact strings are retained for permanent gates and are not current state.
 
 ```text
+Active implementation branch             none
+Exact next branch                        work-history-ui-h4-tasks
+P9H4 branch created                      no
+
 P9H3 History Overview hierarchy          active
 Active implementation branch             work-history-ui-h3-overview
 Exact next branch                        work-history-ui-h4-tasks
@@ -80,16 +87,27 @@ P9H3 keeps full desktop analysis and shortens the mobile default path to Summary
 ## Immediate sequence
 
 ```text
-P9H0 work-history-ui-h0-baseline   complete PR #430
-P9H1 work-history-ui-h1-metric     complete PR #434
-P9H2 work-history-ui-h2-chart      complete PR #436
-P9H3 work-history-ui-h3-overview   complete PR #439
-P9H4 work-history-ui-h4-tasks      exact next after explicit continuation; not created
-P9H5 work-history-ui-h5-responsive queued
-P9H6 work-history-ui-h6-candidate  queued
-P9H7 work-history-ui-h7-acceptance queued
+P9H0  work-history-ui-h0-baseline          complete PR #430
+P9H1  work-history-ui-h1-metric            complete PR #434
+P9H2  work-history-ui-h2-chart             complete PR #436
+P9H3  work-history-ui-h3-overview          complete PR #439
+P9H4A work-history-ui-h4a-overview-balance active
+P9H4B work-history-ui-h4b-tasks            next after P9H4A merge and explicit continuation; not created
+P9H5  work-history-ui-h5-responsive        queued
+P9H6  work-history-ui-h6-candidate         queued
+P9H7  work-history-ui-h7-acceptance        queued
 ```
+
+## P9H4A acceptance scope
+
+- remove sticky/fixed behavior from `Key changes` and prevent overlap with later sections;
+- cap the desktop calendar height and remove square-cell dominance;
+- protect ranking-table width and stack `Key changes` below the table at narrower desktop widths;
+- reduce Summary to four primary metric cards and move coverage quality into the coverage status band;
+- compact partial/unavailable comparison presentation;
+- improve mobile chart height, Selected day density, and explanatory secondary-analysis controls;
+- preserve metric synchronization, no-refetch secondary switching, URL state, outputs, provider separation, APIs, D1, collectors, cron, retention, and bindings.
 
 ## Stop rule
 
-P9H3 is complete and canonically closed through PR #440. Do not create `work-history-ui-h4-tasks` before explicit continuation is received.
+P9H4A is active on `work-history-ui-h4a-overview-balance`. Do not create `work-history-ui-h4b-tasks` before P9H4A merges, its canonical closeout is complete, and explicit continuation is received.
