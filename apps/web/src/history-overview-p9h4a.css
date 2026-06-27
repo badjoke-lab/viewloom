@@ -1,0 +1,203 @@
+/* P9H4A owns final Overview balance after the accepted P9H3 hierarchy. */
+
+#history-view-overview{
+  grid-template-columns:minmax(0,1fr) minmax(300px,340px);
+  gap:12px 22px;
+}
+
+#history-view-overview>.history-summary{
+  grid-template-columns:minmax(260px,1.35fr) repeat(3,minmax(0,1fr));
+}
+#history-view-overview>.history-summary>.history-summary-coverage-source[hidden]{display:none!important}
+
+#history-view-overview>.history-overview-insights{
+  position:static;
+  inset:auto;
+  align-self:start;
+  max-height:none;
+  margin-top:14px;
+}
+
+#history-view-overview>.history-ranking-toolbar{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:10px 18px;
+  flex-wrap:wrap;
+}
+#history-view-overview .history-ranking-context{
+  flex:1 0 100%;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+}
+
+#history-view-overview .history-calendar__scroll{padding:12px 14px}
+#history-view-overview .history-calendar__weekdays,
+#history-view-overview .history-calendar__grid{
+  grid-template-columns:repeat(7,minmax(72px,1fr));
+  gap:6px;
+}
+#history-view-overview .history-calendar__grid{
+  grid-auto-rows:clamp(56px,4.5vw,72px);
+}
+#history-view-overview .history-calendar__blank{
+  min-height:56px;
+  height:100%;
+  aspect-ratio:auto;
+}
+#history-view-overview .history-calendar__cell{
+  min-height:56px;
+  height:100%;
+  aspect-ratio:auto;
+  grid-template-rows:auto 1fr auto;
+  padding:6px 8px;
+}
+#history-view-overview .history-calendar__cell strong{font-size:.98rem}
+#history-view-overview .history-calendar__meta{padding:9px 13px}
+#history-view-overview .history-calendar__detail{min-height:46px;padding:9px 13px}
+
+#history-view-overview .history-period-comparison:has(.history-comparison-status--partial) .history-comparison-grid,
+#history-view-overview .history-period-comparison:has(.history-comparison-status--unavailable) .history-comparison-grid{
+  display:none;
+}
+#history-view-overview .history-period-comparison:has(.history-comparison-status--partial) .history-period-comparison__body{
+  gap:8px;
+}
+#history-view-overview .history-period-comparison:has(.history-comparison-status--partial) .history-comparison-scope{
+  padding:7px 9px;
+}
+#history-view-overview .history-period-comparison:has(.history-comparison-status--partial) .history-comparison-note{
+  margin:0;
+  padding:8px 10px;
+  border-left:3px solid var(--warning);
+  background:color-mix(in srgb,var(--warning) 7%,var(--surface));
+}
+
+#history-view-overview>.history-coverage-summary{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px 16px;
+}
+.history-coverage-summary__quality{
+  display:grid;
+  gap:2px;
+  min-width:110px;
+  padding-right:14px;
+  border-right:1px solid var(--line);
+}
+.history-coverage-summary__quality small{
+  color:var(--muted);
+  font:700 10px var(--mono);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.history-coverage-summary__quality strong{font-size:14px;line-height:1.2}
+
+.history-overview-mobile-analysis button{
+  position:relative;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:3px 10px;
+  align-items:center;
+}
+.history-overview-mobile-analysis button strong{
+  display:block;
+  font:750 11px var(--sans);
+}
+.history-overview-mobile-analysis button span{
+  display:block;
+  margin-top:2px;
+  color:var(--muted);
+  font:500 10px/1.4 var(--sans);
+}
+.history-overview-mobile-analysis button b{
+  grid-column:2;
+  grid-row:1/3;
+  color:var(--muted);
+  font:800 16px/1 var(--sans);
+  transition:transform .14s ease;
+}
+.history-overview-mobile-analysis button[aria-expanded="true"] b{transform:rotate(90deg);color:var(--text)}
+
+@media(max-width:1320px){
+  #history-view-overview{
+    grid-template-columns:1fr;
+    grid-template-areas:
+      "context"
+      "summary"
+      "coverage-summary"
+      "primary"
+      "comparison"
+      "calendar"
+      "ranking-title"
+      "ranking-toolbar"
+      "ranking-table"
+      "ranking-cards"
+      "insights"
+      "coverage-title"
+      "coverage-detail";
+  }
+  #history-view-overview>.history-overview-insights{
+    width:100%;
+    margin-top:4px;
+  }
+}
+
+@media(max-width:1180px){
+  #history-view-overview>.history-summary{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  #history-view-overview>.history-summary .lead-stat{grid-column:1/-1}
+}
+
+@media(max-width:760px){
+  #history-view-overview>.history-coverage-summary{
+    grid-template-columns:1fr;
+    align-items:start;
+    gap:8px;
+  }
+  .history-coverage-summary__quality{
+    grid-template-columns:auto 1fr;
+    align-items:baseline;
+    gap:8px;
+    min-width:0;
+    padding:0 0 8px;
+    border-right:0;
+    border-bottom:1px solid var(--line);
+  }
+  #history-view-overview .history-stage{
+    height:clamp(460px,126vw,510px);
+    min-height:460px;
+  }
+  #history-view-overview .history-selected-metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  #history-view-overview .history-selected-actions{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+  #history-view-overview .history-selected-actions .button{
+    width:100%;
+    min-width:0;
+    min-height:48px;
+  }
+  .history-overview-mobile-analysis button{display:grid;min-height:54px;padding:9px 11px}
+}
+
+@media(max-width:520px){
+  .history-overview-mobile-analysis__buttons{grid-template-columns:1fr!important}
+}
+
+@media(max-width:380px){
+  #history-view-overview .history-selected-actions{grid-template-columns:1fr}
+  #history-view-overview .history-stage{height:470px;min-height:470px}
+}
+
+@media(forced-colors:active){
+  #history-view-overview .history-period-comparison:has(.history-comparison-status--partial) .history-comparison-note{
+    border-left-color:Highlight;
+  }
+  .history-overview-mobile-analysis button b{color:ButtonText}
+}
