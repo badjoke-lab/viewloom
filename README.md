@@ -20,16 +20,19 @@ Final-state correction              complete PR #433
 P9H1 metric synchronization         complete PR #434
 P9H2 chart interpretation           complete PR #436
 P9H2 canonical closeout             complete PR #437
-Active implementation branch        none
-Exact next branch                   work-history-ui-h3-overview
-P9H3 branch created                 no
+P9H3 Overview hierarchy             active
+Active implementation branch        work-history-ui-h3-overview
+Exact next branch                   work-history-ui-h4-tasks
+P9H4 branch created                 no
 ```
 
 Historical gate strings, not current state:
 
 ```text
-Active implementation branch        work-history-ui-h2-chart
 Active implementation branch        none
+Exact next branch                   work-history-ui-h3-overview
+P9H3 branch created                 no
+Active implementation branch        work-history-ui-h2-chart
 Exact next branch                   work-history-ui-h2-chart
 P9H2 branch created                 no
 ```
@@ -54,11 +57,13 @@ Digest: sha256:e6eeb9b2d1dad28237ad467554f4e1adcff5b4cc56577a8525d2d1cb1bb316ea
 
 P9H2 completed chart scale, UTC date context, metric/unit meaning, exact day inspection, keyboard/touch inspection, non-color state symbols, forced-colors support, and accessible SVG semantics without changing APIs, D1, collectors, bindings, provider separation, or outputs.
 
+P9H3 repairs the Overview hierarchy. Desktop retains the full analysis. Mobile keeps Summary, coverage status, chart, and Selected day in the default flow, then exposes comparison, calendar, rankings/changes, and detailed coverage through explicit secondary-analysis controls. It adds no History request and changes no provider, API, storage, or output contract.
+
 ## Next sequence
 
 ```text
-P9H3 Overview hierarchy
-P9H4 Archives and Report & Export
+P9H3 Overview hierarchy             active
+P9H4 Archives and Report & Export   next after merge and explicit continuation
 P9H5 responsive and accessibility
 P9H6 local candidate
 P9H7 production acceptance
