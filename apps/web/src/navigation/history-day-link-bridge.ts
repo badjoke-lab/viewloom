@@ -49,17 +49,23 @@ function validDay(value: string): boolean {
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
 }
 
-function bridgeBattleDay(target: EventTarget | null): boolean {
+function battleDayFromTarget(target: EventTarget | null): string | null {
   const element = target instanceof Element ? target : null
   const card = element?.closest<HTMLElement>('[data-history-battle-day]')
-  if (!card || element?.closest('a')) return false
+  if (!card || element?.closest('a')) return null
   const day = card.dataset.historyBattleDay
-  if (!day || !validDay(day)) return false
+  return day && validDay(day) ? day : null
+}
+
+function bridgeBattleDay(target: EventTarget | null, fallbackDay?: string): boolean {
+  const day = battleDayFromTarget(target) ?? (fallbackDay && validDay(fallbackDay) ? fallbackDay : null)
+  if (!day) return false
   document.body.dataset.historyBattleBridgeDay = day
   const escaped = window.CSS?.escape ? window.CSS.escape(day) : day
   const archiveDay = document.querySelector<HTMLElement>(`[data-history-day-card="${escaped}"]`)
   if (archiveDay) {
     document.body.dataset.historyBattleBridgeRoute = 'daily'
+    archiveDay.dataset.historyDay = archiveDay.dataset.historyDayCard ?? day
     archiveDay.click()
     return true
   }
@@ -81,13 +87,19 @@ if (typeof document !== 'undefined') {
   })
   observer.observe(document.body, { childList: true, subtree: true })
 
+  document.addEventListener('focusin', (event) => {
+    const day = battleDayFromTarget(event.target)
+    if (day) document.body.dataset.historyBattleBridgeFocusDay = day
+  }, true)
   document.addEventListener('keydown', (event) => {
     document.body.dataset.historyBattleBridgeKey = event.key
     if (event.key !== 'Enter' && event.key !== ' ') return
-    if (!bridgeBattleDay(event.target)) return
+    if (!bridgeBattleDay(event.target, document.body.dataset.historyBattleBridgeFocusDay)) return
     event.preventDefault()
   }, true)
   document.addEventListener('click', (event) => {
+    const day = battleDayFromTarget(event.target)
+    if (day) document.body.dataset.historyBattleBridgeFocusDay = day
     bridgeBattleDay(event.target)
   }, true)
 }
