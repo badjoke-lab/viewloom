@@ -8,6 +8,7 @@
 #history-view-overview>.history-summary{
   grid-template-columns:minmax(260px,1.35fr) repeat(3,minmax(0,1fr));
 }
+#history-view-overview>.history-summary>div:nth-child(5){display:none}
 #history-view-overview>.history-summary>.history-summary-coverage-source[hidden]{display:none!important}
 
 #history-view-overview>.history-overview-insights{
