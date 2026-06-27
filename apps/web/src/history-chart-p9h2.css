@@ -1,0 +1,22 @@
+.history-page .history-state-marker{fill:#f8fafc;font:700 17px var(--mono);paint-order:stroke;stroke:#07101d;stroke-width:4px;stroke-linejoin:round;pointer-events:none}
+.history-page .history-chart-inspection{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);background:var(--surface-raised);color:var(--text);font:600 12px/1.5 var(--mono);overflow-wrap:anywhere}
+.history-page .history-chart-inspection::before{content:"Selected chart day";grid-column:1/-1;color:var(--muted);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.history-page .history-chart-inspection small{grid-column:1/-1;color:var(--muted);font-weight:500}
+.history-page .history-chart-keyboard-target{min-height:44px;padding:8px 12px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface);color:var(--text);font:700 12px/1.3 var(--mono);cursor:pointer}
+.history-page .history-chart-keyboard-target:focus-visible{outline:3px solid var(--history-focus);outline-offset:3px}
+.history-page .history-chart-legend b{display:inline-grid;place-items:center;min-width:1.25em;color:var(--text);font:800 12px var(--mono)}
+.history-page .history-legend-swatch--demo{background:#a78bfa}
+.history-page .history-day-column[aria-current="date"] .history-state-marker{fill:#fff;stroke-width:5px}
+.history-page .history-day-column[data-history-coverage="missing"] .history-bar-hit{stroke-dasharray:7 5}
+.history-page .history-day-column[data-history-coverage="in-progress"] .history-bar-hit{stroke-dasharray:2 5}
+
+@media(max-width:760px){
+  .history-page .history-chart-inspection{position:sticky;left:0;grid-template-columns:1fr;min-width:min(100%,390px);font-size:12px}
+  .history-page .history-chart-inspection::before,.history-page .history-chart-inspection small{grid-column:1}
+  .history-page .history-state-marker{font-size:19px}
+}
+
+@media(forced-colors:active){
+  .history-page .history-state-marker{fill:CanvasText;stroke:Canvas;forced-color-adjust:auto}
+  .history-page .history-chart-keyboard-target:focus-visible{outline-color:Highlight}
+}

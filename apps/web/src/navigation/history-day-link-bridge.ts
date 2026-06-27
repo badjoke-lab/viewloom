@@ -49,7 +49,34 @@ function validDay(value: string): boolean {
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
 }
 
+function battleDayFromTarget(target: EventTarget | null): string | null {
+  const element = target instanceof Element ? target : null
+  const card = element?.closest<HTMLElement>('[data-history-battle-day]')
+  if (!card || element?.closest('a')) return null
+  const day = card.dataset.historyBattleDay
+  return day && validDay(day) ? day : null
+}
+
+function bridgeBattleDay(target: EventTarget | null, fallbackDay?: string): boolean {
+  const day = battleDayFromTarget(target) ?? (fallbackDay && validDay(fallbackDay) ? fallbackDay : null)
+  if (!day) return false
+  document.body.dataset.historyBattleBridgeDay = day
+  const escaped = window.CSS?.escape ? window.CSS.escape(day) : day
+  const archiveDay = document.querySelector<HTMLElement>(`[data-history-day-card="${escaped}"]`)
+  if (archiveDay) {
+    document.body.dataset.historyBattleBridgeRoute = 'daily'
+    archiveDay.dataset.historyDay = archiveDay.dataset.historyDayCard ?? day
+    archiveDay.click()
+    return true
+  }
+  const chartDay = document.querySelector<SVGGElement>(`.history-day-column[data-history-day="${escaped}"]`)
+  document.body.dataset.historyBattleBridgeRoute = chartDay ? 'chart' : 'missing'
+  chartDay?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
+  return Boolean(chartDay)
+}
+
 if (typeof document !== 'undefined') {
+  document.body.dataset.historyDayLinkBridgeReady = 'true'
   rewriteHistoryDayLinks()
   const observer = new MutationObserver((records) => {
     for (const record of records) {
@@ -59,4 +86,20 @@ if (typeof document !== 'undefined') {
     }
   })
   observer.observe(document.body, { childList: true, subtree: true })
+
+  document.addEventListener('focusin', (event) => {
+    const day = battleDayFromTarget(event.target)
+    if (day) document.body.dataset.historyBattleBridgeFocusDay = day
+  }, true)
+  document.addEventListener('keydown', (event) => {
+    document.body.dataset.historyBattleBridgeKey = event.key
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    if (!bridgeBattleDay(event.target, document.body.dataset.historyBattleBridgeFocusDay)) return
+    event.preventDefault()
+  }, true)
+  document.addEventListener('click', (event) => {
+    const day = battleDayFromTarget(event.target)
+    if (day) document.body.dataset.historyBattleBridgeFocusDay = day
+    bridgeBattleDay(event.target)
+  }, true)
 }

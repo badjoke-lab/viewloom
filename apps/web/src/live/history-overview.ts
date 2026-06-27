@@ -61,9 +61,28 @@ let currentPayload: Payload | null = null
 let scheduled = false
 
 installPayloadCapture()
-const observer = new MutationObserver(schedule)
+const observer = new MutationObserver((records) => {
+  if (records.every(isPresentationOnlyMutation)) return
+  schedule()
+})
 observer.observe(document.documentElement, { childList: true, subtree: true })
 schedule()
+
+function isPresentationOnlyMutation(record: MutationRecord): boolean {
+  const target = record.target instanceof Element ? record.target : record.target.parentElement
+  return Boolean(target?.closest([
+    '[data-history-summary] > div:nth-child(4) strong',
+    '[data-history-summary] > div:nth-child(4) span',
+    '[data-history-selected-day] small',
+    '[data-history-selected-day] .history-selected-metrics strong',
+    '[data-history-selected-day] .history-selected-top strong',
+    '[data-history-daily-archive] .day-card > strong',
+    '[data-history-daily-archive] .day-card dd',
+    '.history-peak-archive tbody td:nth-child(3)',
+    '.history-peak-archive tbody td:nth-child(4)',
+    '.history-streamer-card dd',
+  ].join(',')))
+}
 
 function installPayloadCapture(): void {
   const originalFetch = window.fetch.bind(window)
@@ -167,7 +186,7 @@ function renderMetricSummary(payload: Payload, metric: HistoryMetric): void {
   const html = `
     <div class="lead-stat" data-history-summary-primary="${metric}">
       <small>${metric === 'peak_viewers' ? 'Highest peak' : 'Total observed'}</small>
-      <strong>${formatNumber(primaryValue)}</strong>
+      <strong title="${formatNumber(primaryValue)}">${formatCompact(primaryValue)}</strong>
       <span>${metricUnit(metric)}</span>
     </div>
     <div>
@@ -219,7 +238,7 @@ function renderMetricSelectedDay(payload: Payload, metric: HistoryMetric): void 
       </div>
       <div class="history-selected-top">
         <small>Top streamers by ${metricLabel(metric)}</small>
-        ${top.length ? `<ol>${top.map((streamer) => `<li><span>${escapeHtml(streamer.displayName ?? '—')}</span><strong>${formatNumber(streamerMetricValue(streamer, metric))} ${metricUnit(metric)}</strong></li>`).join('')}</ol>` : '<p>Daily streamer breakdown unavailable.</p>'}
+        ${top.length ? `<ol>${top.map((streamer, index) => `<li><span>#${index + 1} ${escapeHtml(streamer.displayName ?? '—')}</span><strong>${formatNumber(streamerMetricValue(streamer, metric))} ${metricUnit(metric)}</strong></li>`).join('')}</ol>` : '<p>Daily streamer breakdown unavailable.</p>'}
       </div>
       <div class="history-selected-actions">
         <a class="button" href="/${provider}/day-flow/?date=${encodeURIComponent(day.day)}">Open Day Flow</a>
@@ -397,6 +416,12 @@ function formatDuration(minutes: unknown): string {
 function formatDate(value?: string): string {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return value || '—'
   return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`))
+}
+
+function formatCompact(value: unknown): string {
+  return finite(value)
+    ? new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(value)
+    : '—'
 }
 
 function formatNumber(value: unknown): string {

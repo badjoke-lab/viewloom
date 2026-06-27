@@ -25,6 +25,67 @@ async function assertNoOverflow(page, label) {
   assert(dimensions.scrollWidth <= dimensions.innerWidth + 1, `${label}: horizontal overflow (${dimensions.scrollWidth} > ${dimensions.innerWidth})`)
 }
 
+async function selectionState(page, day) {
+  return page.evaluate((value) => {
+    const chart = document.querySelector(`.history-day-column[data-history-day="${value}"]`)
+    const archive = document.querySelector(`[data-history-day-card="${value}"]`)
+    return {
+      day: value,
+      bridgeReady: document.body.dataset.historyDayLinkBridgeReady ?? '',
+      bridgeKey: document.body.dataset.historyBattleBridgeKey ?? '',
+      bridgeDay: document.body.dataset.historyBattleBridgeDay ?? '',
+      bridgeRoute: document.body.dataset.historyBattleBridgeRoute ?? '',
+      activeBattleDay: document.activeElement?.getAttribute('data-history-battle-day') ?? '',
+      activeTag: document.activeElement?.tagName ?? '',
+      urlDay: new URL(location.href).searchParams.get('day'),
+      chartFound: Boolean(chart),
+      chartSelected: chart?.classList.contains('is-selected') ?? false,
+      chartAriaCurrent: chart?.getAttribute('aria-current') ?? '',
+      archiveFound: Boolean(archive),
+      archiveSelected: archive?.classList.contains('is-selected') ?? false,
+      selectedChartDay: document.querySelector('.history-day-column.is-selected')?.getAttribute('data-history-day') ?? '',
+      selectedArchiveDay: document.querySelector('[data-history-day-card].is-selected')?.getAttribute('data-history-day-card') ?? '',
+    }
+  }, day)
+}
+
+async function focusStableBattleCard(page, day) {
+  await page.waitForFunction(async (value) => {
+    const card = document.querySelector(`[data-history-battle-day="${value}"]`)
+    if (!(card instanceof HTMLElement)) return false
+    card.focus()
+    await new Promise((resolveFrame) => requestAnimationFrame(() => requestAnimationFrame(resolveFrame)))
+    return card.isConnected
+      && document.querySelector(`[data-history-battle-day="${value}"]`) === card
+      && document.activeElement === card
+  }, day)
+}
+
+async function waitForBattleSelection(page, day, timeout) {
+  await page.waitForFunction((value) => {
+    const selectedChartDay = document.querySelector(`.history-day-column[data-history-day="${value}"]`)
+    const selectedArchiveDay = document.querySelector(`[data-history-day-card="${value}"]`)
+    return new URL(location.href).searchParams.get('day') === value
+      && selectedChartDay?.classList.contains('is-selected')
+      && selectedArchiveDay?.classList.contains('is-selected')
+  }, day, { timeout })
+}
+
+async function pressBattleDay(page, day) {
+  let lastError = null
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    await focusStableBattleCard(page, day)
+    await page.locator(`[data-history-battle-day="${day}"]`).press('Enter')
+    try {
+      await waitForBattleSelection(page, day, 1500)
+      return
+    } catch (error) {
+      lastError = error
+    }
+  }
+  throw new Error(`Desktop: Battle selection did not synchronize: ${JSON.stringify(await selectionState(page, day))}; ${lastError instanceof Error ? lastError.message : ''}`)
+}
+
 async function desktopGate(browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1100 } })
   await installRoutes(context)
@@ -55,15 +116,9 @@ async function desktopGate(browser) {
   await page.waitForFunction(() => document.querySelectorAll('[data-history-battle-day]').length === 12)
   assert((await page.locator('[data-history-battle-toggle]').textContent())?.includes('Show top 10'), 'Desktop: expanded toggle label is wrong.')
 
-  const expandedFirst = page.locator('[data-history-battle-day]').first()
-  await expandedFirst.press('Enter')
-  await page.waitForFunction((day) => {
-    const selectedChartDay = document.querySelector(`.history-day-column[data-history-day="${day}"]`)
-    const selectedArchiveDay = document.querySelector(`[data-history-day-card="${day}"]`)
-    return new URL(location.href).searchParams.get('day') === day
-      && selectedChartDay?.classList.contains('is-selected')
-      && selectedArchiveDay?.classList.contains('is-selected')
-  }, firstDay)
+  const before = await selectionState(page, firstDay)
+  assert(before.bridgeReady === 'true', `Desktop: direct History day bridge did not load: ${JSON.stringify(before)}`)
+  await pressBattleDay(page, firstDay)
   await assertNoOverflow(page, 'Desktop')
   await page.screenshot({ path: '/tmp/history-battle-twitch-desktop.png', fullPage: true })
   await context.close()

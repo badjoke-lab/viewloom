@@ -1,3 +1,5 @@
+import './history-chart-p9h2-compat'
+
 const page = document.querySelector<HTMLElement>('.history-page')
 const statePill = document.querySelector<HTMLElement>('.history-state-pill')
 

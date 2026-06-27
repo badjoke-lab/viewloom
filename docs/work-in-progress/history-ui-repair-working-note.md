@@ -8,8 +8,8 @@ Completed P9H0: PR #430
 Completed closeout: PR #432
 Completed final-state correction: PR #433
 Completed P9H1: PR #434
-Current implementation branch: none
-Exact next branch after explicit continuation: `work-history-ui-h2-chart`
+Current implementation branch: `work-history-ui-h2-chart`
+Exact next branch after P9H2 merge and explicit continuation: `work-history-ui-h3-overview`
 Accepted baseline specification: `../product/history-and-trends-spec.md`
 Active repair specification: `../product/history-ui-repair-spec.md`
 Program plan: `../product/post-watchlist-program-plan.md`
@@ -18,6 +18,14 @@ P8B baseline: `../audits/public-browser-defects.json`
 P9H0 record: `../audits/history-ui-h0-findings.md`
 P9H0 owner map: `../audits/history-ui-h0-owner-map.json`
 Delete when: P9H7 production acceptance and permanent-document transfer are complete.
+
+## Historical P9H1 closeout snapshot
+
+The following exact value describes the working note immediately after PR #435. It is retained for historical acceptance gates and is not the current execution state.
+
+```text
+Current implementation branch: none
+```
 
 ## P9H1 completion
 
@@ -47,6 +55,7 @@ The compact mobile task flow remains assigned to P9H3/P9H5. The production/local
 ```text
 history-current-shell-entry.ts      URL, request, base chart and daily rendering
 history-usability-pass.ts           compatibility import order
+history-usability.ts                completed-day and coverage-state augmentation
 history-view-shell.ts               task URL state, Back/Forward, section rehoming
 history-overview.ts                 metric-aware Overview augmentation
 history-report-text.ts              report, share, export rendering
@@ -55,25 +64,45 @@ history-focus-fallback.css          focus presentation
 history-visual-responsive.css       responsive layout
 ```
 
+## P9H2 implementation owners
+
+```text
+history-chart-p9h2.ts               SVG semantics, roving day navigation, exact inspection
+history-chart-p9h2-compat.ts        compatibility with the accepted four-span legend DOM
+history-chart-p9h2.css              state markers, focus, forced-colors, inspection panel
+history-usability.ts                API coverageState preservation, including in-progress
+history-archives.ts                 deterministic archive hierarchy readiness
+history-ui-h2-chart-browser.mjs     Twitch desktop and Kick touch-mobile acceptance
+verify-history-ui-h2-chart.mjs      repository and boundary contract
+history-ui-h2-chart.yml             latest-head workflow and artifact evidence
+```
+
 ## Current sequence
 
 ```text
 P9H0 work-history-ui-h0-baseline         complete PR #430
 P9H1 work-history-ui-h1-metric           complete PR #434
-P9H2 work-history-ui-h2-chart            exact next after explicit continuation; not created
-P9H3 work-history-ui-h3-overview         queued
+P9H2 work-history-ui-h2-chart            active
+P9H3 work-history-ui-h3-overview         exact next after P9H2 merge and explicit continuation; not created
 P9H4 work-history-ui-h4-tasks            queued
 P9H5 work-history-ui-h5-responsive       queued
 P9H6 work-history-ui-h6-candidate        queued
 P9H7 work-history-ui-h7-acceptance       queued
 ```
 
-## P9H2 entry
+## P9H2 acceptance
 
-P9H2 begins from PR #434 and the current owner map. It covers chart scale, date context, units, exact detail, pointer/keyboard/touch inspection, selected-day synchronization, state distinction, legend, and accessible description.
+P9H2 covers chart scale, UTC date context, visible metric and unit, exact daily detail, pointer/keyboard/touch inspection, selected-day synchronization, complete/partial/in-progress/missing/demo distinction, non-color state meaning, and accessible SVG title and description.
 
-It must preserve the P9H1 metric behavior, provider/request boundaries, Back/Forward, loaded-response reuse, state honesty, and output formats.
+It must preserve the P9H1 metric behavior, provider/request boundaries, Back/Forward, loaded-response reuse, state honesty, and output formats. Day inspection must not request History again.
+
+Deterministic browser scenarios:
+
+```text
+Twitch desktop 1440 × 1000
+Kick touch mobile 390 × 844
+```
 
 ## Stop rule
 
-P9H1 is complete through PR #434. There is no active implementation branch. Do not create `work-history-ui-h2-chart` until explicit continuation.
+Complete and merge P9H2 before creating `work-history-ui-h3-overview`. After the merge, update permanent documents, issue the full report, and stop until explicit continuation.
