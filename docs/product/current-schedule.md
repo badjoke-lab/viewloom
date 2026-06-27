@@ -16,8 +16,8 @@ P9H3 canonical closeout                  complete PR #440
 P9H4A Overview balance                   complete PR #441
 P9H4A canonical closeout                 complete PR #442
 P9H4B Archives and publishing hierarchy  complete PR #443
-P9H4B canonical closeout                 active
-Active implementation branch             work-history-ui-h4b-closeout
+P9H4B canonical closeout                 complete PR #444
+Active implementation branch             none
 Exact next branch                        work-history-ui-h5-responsive
 P9H5 branch created                      no
 ```
@@ -31,6 +31,8 @@ P9H4B Archives and publishing hierarchy  active
 Active implementation branch             work-history-ui-h4b-tasks
 Exact next branch                        work-history-ui-h5-responsive
 P9H5 branch created                      no
+P9H4B canonical closeout                 active
+Active implementation branch             work-history-ui-h4b-closeout
 Active implementation branch             none
 Exact next branch                        work-history-ui-h4b-tasks
 P9H4B branch created                     no
@@ -79,9 +81,9 @@ Accepted scenarios: Twitch 1440 desktop, Kick 820 tablet, Kick 390 mobile, and T
 ```text
 P9H4A work-history-ui-h4a-overview-balance complete PR #441
 P9H4B work-history-ui-h4b-tasks            complete PR #443
-P9H5  work-history-ui-h5-responsive        exact next after closeout and explicit continuation; not created
+P9H5  work-history-ui-h5-responsive        exact next after explicit continuation; not created
 P9H6  work-history-ui-h6-candidate         queued
 P9H7  work-history-ui-h7-acceptance        queued
 ```
 
-P9H4B implementation is complete through PR #443. Canonical closeout is active on `work-history-ui-h4b-closeout`. Do not create `work-history-ui-h5-responsive` before closeout merges and explicit continuation is received.
+P9H4B is complete and canonically closed through PR #444. Do not create `work-history-ui-h5-responsive` before explicit continuation is received.
