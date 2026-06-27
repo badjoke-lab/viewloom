@@ -63,6 +63,26 @@ Exact next branch                        work-history-ui-h2-chart
 P9H2 branch created                      no
 ```
 
+## Retained History evidence
+
+```text
+PR: #434
+Workflow run: 28232602651
+Artifact ID: 7903212809
+
+PR: #436
+Workflow run: 28278497196
+Artifact ID: 7921020539
+
+PR: #439
+Workflow run: 28280486736
+Artifact ID: 7921680615
+
+PR: #441
+Workflow run: 28283570437
+Artifact ID: 7922730563
+```
+
 ## Accepted P9H4B evidence
 
 ```text
