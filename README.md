@@ -26,14 +26,20 @@ P9H4A Overview balance              complete PR #441
 P9H4A canonical closeout            complete PR #442
 P9H4B Archives and publishing       complete PR #443
 P9H4B canonical closeout            complete PR #444
+P9H5 responsive and accessibility  complete PR #447
+P9H5 canonical closeout             complete PR #448
 Active implementation branch        none
-Exact next branch                   work-history-ui-h5-responsive
-P9H5 branch created                 no
+Exact next branch                   work-history-ui-h6-candidate
+P9H6 branch created                 no
 ```
 
 Historical gate strings, not current state:
 
 ```text
+P9H5 responsive and accessibility  active
+Active implementation branch        work-history-ui-h5-responsive
+Exact next branch                   work-history-ui-h6-candidate
+P9H6 branch created                 no
 P9H4A Overview balance              active
 Active implementation branch        work-history-ui-h4a-overview-balance
 Exact next branch                   work-history-ui-h4b-tasks
@@ -55,35 +61,26 @@ Exact next branch                   work-history-ui-h2-chart
 P9H2 branch created                 no
 ```
 
-P9H3 retained evidence:
+## P9H5 accepted evidence
 
 ```text
-Workflow run: 28280486736
-Artifact: history-ui-h3-overview / 7921680615
+PR: #447
+Head: 2dd3926cd3e02ded472ef20ab1090b86d13675d4
+Merge: d7d20a4874fb44afc2abe6cf2384951d26bd4804
+Workflow run: 28293856405
+Artifact: history-ui-h5-responsive / 7925847144
+Digest: sha256:5d6f0d7a38dd58f19b270b9ab9ea0de331f3f0aaaa3bb66ef6d4caae4211d854
 ```
 
-P9H4A evidence:
-
-```text
-PR: #441
-Head: 9cbaed979394232ceee5efc6c95954385eb230fa
-Merge: 0201ff8464a568e5d6aebd1b3d179bcde93a17e7
-Workflow run: 28283570437
-Artifact: history-ui-h4a-overview-balance / 7922730563
-Digest: sha256:62bd0bd1c991cdc87286aa62d28668c961cac987eebaf606db5512469e968aac
-```
-
-P9H4A makes `Key changes` normal-flow, bounds the desktop Calendar, protects ranking width, presents four primary Summary facts plus a full-width coverage band, compacts withheld comparison, and improves mobile chart, Selected day, and More analysis presentation. It adds no History observer or request seam and changes no API, D1, collector, cron, retention, binding, provider, or output schema.
-
-P9H4B is complete through PR #443 and canonically closed through PR #444. Accepted evidence is recorded in `docs/product/current-schedule.md` and the P9H4B permanent verifier.
+P9H5 establishes deterministic keyboard entry, stable chart keyboard inspection, pointer/touch day selection, required-width wrapping, 44px general and 48px archive/publishing targets, long-text wrapping, reduced-motion support, increased contrast, and forced-colors acceptance. It adds no competing History request seam and changes no API, D1, collector, cron, retention, binding, provider, archive, or output schema.
 
 ## Next sequence
 
 ```text
 P9H4A Overview balance              complete PR #441
 P9H4B Archives and Report & Export  complete PR #443
-P9H5 responsive and accessibility  exact next after explicit continuation
-P9H6 local candidate
+P9H5 responsive and accessibility  complete PR #447
+P9H6 local candidate               exact next after explicit continuation
 P9H7 production acceptance
 ```
 
