@@ -1,6 +1,9 @@
-# P9H4B activation
+# P9H4B closeout
 
-Status: active
-Branch: `work-history-ui-h4b-tasks`
+Status: complete
+Implementation branch: `work-history-ui-h4b-tasks`
+Implementation PR: #443
+Canonical closeout PR: #444
 Scope: Archives and Report & Export hierarchy.
-Next branch after merge and explicit continuation: `work-history-ui-h5-responsive`.
+Exact next branch after explicit continuation: `work-history-ui-h5-responsive`.
+P9H5 branch created: no.
