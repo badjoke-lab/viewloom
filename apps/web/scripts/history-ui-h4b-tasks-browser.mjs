@@ -56,8 +56,8 @@ async function snapshot(page) {
       archive: document.querySelector('.history-page')?.getAttribute('data-history-archive-view'),
       visibleViews: viewPanels.filter(visible).map((node) => node.getAttribute('data-history-view-panel')),
       visibleArchives: archivePanels.filter(visible).map((node) => node.getAttribute('data-history-archive-panel')),
-      taskDescriptions: document.querySelectorAll('[data-history-view] small').length,
-      archiveDescriptions: document.querySelectorAll('[data-history-archive-view] small').length,
+      taskDescriptions: document.querySelectorAll('.history-view-tabs button[data-history-view] small').length,
+      archiveDescriptions: document.querySelectorAll('.history-archive-view-tabs button[data-history-archive-view] small').length,
       archiveIntro: document.querySelector('[data-history-archives-intro]')?.textContent?.replace(/\s+/g, ' ').trim() ?? '',
       archiveTabPosition: getComputedStyle(document.querySelector('.history-archive-view-tabs')).position,
       dailyToolbarPosition: getComputedStyle(document.querySelector('#history-archive-daily .history-archive-toolbar')).position,
@@ -73,8 +73,8 @@ async function snapshot(page) {
       shareHidden: document.querySelector('[data-history-share-preview]')?.hasAttribute('hidden') ?? false,
       preview: box('[data-history-report-preview]'),
       bodyOverflow: Math.max(0, document.documentElement.scrollWidth - innerWidth),
-      minTaskHeight: Math.min(...[...document.querySelectorAll('[data-history-view]')].map((node) => node.getBoundingClientRect().height)),
-      minArchiveHeight: Math.min(...[...document.querySelectorAll('[data-history-archive-view]')].map((node) => node.getBoundingClientRect().height)),
+      minTaskHeight: Math.min(...[...document.querySelectorAll('.history-view-tabs button[data-history-view]')].map((node) => node.getBoundingClientRect().height)),
+      minArchiveHeight: Math.min(...[...document.querySelectorAll('.history-archive-view-tabs button[data-history-archive-view]')].map((node) => node.getBoundingClientRect().height)),
       minPublishButtonHeight: Math.min(...[...document.querySelectorAll('.history-publish-group button')].map((node) => node.getBoundingClientRect().height)),
     }
   })
