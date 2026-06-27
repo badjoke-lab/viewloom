@@ -49,8 +49,11 @@ need('apps/web/src/history-overview-p9h3.css', [
 ])
 
 need('apps/web/src/history-overview-p9h3-grid-fix.css', [
-  '#history-view-overview{display:block;min-width:0}',
+  '#history-view-overview{display:flex;flex-direction:column;min-width:0}',
   '#history-view-overview>*{width:100%;min-width:0}',
+  '#history-view-overview>[data-history-summary]{order:1}',
+  '#history-view-overview>[data-history-columns]{order:3}',
+  '#history-view-overview>.history-overview-mobile-analysis{order:4',
   '#history-view-overview>.history-summary{display:grid;grid-template-columns:1fr 1fr!important}',
 ])
 
@@ -100,6 +103,6 @@ if (issues.length) {
 console.log('ViewLoom History P9H3 Overview verification passed.')
 console.log('- P9H3 is active on work-history-ui-h3-overview')
 console.log('- mobile secondary analysis is explicit and collapsed by default')
-console.log('- mobile Overview width is protected by a permanent grid regression gate')
+console.log('- mobile Overview width and task order are protected by permanent gates')
 console.log('- accepted P9H1/P9H2 request and observer seams are unchanged')
 console.log('- Twitch and Kick History endpoints remain separate')
