@@ -12,3 +12,19 @@ button[data-history-report-mode]:focus{
   outline:3px solid #c4b5fd!important;
   outline-offset:3px!important;
 }
+
+.history-skip-link{
+  top:-96px!important;
+  transform:none!important;
+  transition:top .12s ease!important;
+}
+
+.history-skip-link:focus,
+.history-skip-link:focus-visible{
+  top:8px!important;
+  transform:none!important;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .history-skip-link{transition:none!important}
+}
