@@ -28,6 +28,15 @@ Final-state correction complete through PR #433
 P9H1 complete through PR #434
 P9H2 complete through PR #436
 P9H2 canonical closeout complete through PR #437
+P9H3 active on work-history-ui-h3-overview
+Active implementation branch: work-history-ui-h3-overview
+Exact next implementation branch: work-history-ui-h4-tasks
+P9H4 branch created: no
+```
+
+Historical P9H2 closeout evidence, not current state:
+
+```text
 Active implementation branch: none
 Exact next implementation branch: work-history-ui-h3-overview
 P9H3 branch created: no
@@ -49,4 +58,4 @@ Active implementation branch: none
 P9H2 branch created: no
 ```
 
-Do not create P9H3 before explicit continuation is received. Do not start Phase 10–16 before its documented entry condition. After every merge, issue the full merge report and stop.
+Complete P9H3 before creating P9H4. Do not start Phase 10–16 before its documented entry condition. After every merge, issue the full merge report and stop.
