@@ -30,11 +30,26 @@ Current implementation branch: none
 P9H2 work-history-ui-h2-chart            exact next after explicit continuation; not created
 ```
 
+## Historical P9H1 evidence
+
+```text
+Workflow run: 28232602651
+Artifact ID: 7903212809
+```
+
 ## P9H2 completion
 
 ```text
 Workflow run: 28278497196
 Artifact ID: 7921020539
+```
+
+Historical P9H2 implementation owners retained for permanent acceptance:
+
+```text
+history-chart-p9h2.ts               SVG semantics, roving day navigation, exact inspection
+history-usability.ts                API coverageState preservation, including in-progress
+history-ui-h2-chart-browser.mjs     Twitch desktop and Kick touch-mobile acceptance
 ```
 
 ## P9H3 completion
