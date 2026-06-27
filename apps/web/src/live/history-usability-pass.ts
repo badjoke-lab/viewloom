@@ -21,7 +21,6 @@ import '../history-chart-p9h2.css'
 import './history-chart-p9h2'
 import './history-chart-keyboard-delegation'
 import '../history-overview-p9h3.css'
-import '../history-overview-p9h3-grid-fix.css'
 import './history-overview-p9h3'
 
 document.addEventListener('click', syncDailyCardSelectionKey, true)
