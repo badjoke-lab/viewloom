@@ -112,9 +112,10 @@ async function pressKeyboardDay(page, key, targetDay, label) {
   let lastError = null
   for (let attempt = 0; attempt < 5; attempt += 1) {
     await focusStableKeyboard(page)
-    await page.keyboard.press(key)
+    await page.locator('[data-history-chart-keyboard-target]').press(key)
     try {
-      await page.waitForFunction((value) => document.querySelector('[data-history-day][aria-current="date"]')?.getAttribute('data-history-day') === value
+      await page.waitForFunction((value) => new URL(location.href).searchParams.get('day') === value
+        && document.querySelector('[data-history-day][aria-current="date"]')?.getAttribute('data-history-day') === value
         && document.querySelector('[data-history-chart-keyboard-target]')?.getAttribute('data-history-keyboard-day') === value, targetDay, { timeout: 2500 })
       return
     } catch (error) {
