@@ -25,6 +25,24 @@ async function assertNoOverflow(page, label) {
   assert(dimensions.scrollWidth <= dimensions.innerWidth + 1, `${label}: horizontal overflow (${dimensions.scrollWidth} > ${dimensions.innerWidth})`)
 }
 
+async function selectionState(page, day) {
+  return page.evaluate((value) => {
+    const chart = document.querySelector(`.history-day-column[data-history-day="${value}"]`)
+    const archive = document.querySelector(`[data-history-day-card="${value}"]`)
+    return {
+      day: value,
+      urlDay: new URL(location.href).searchParams.get('day'),
+      chartFound: Boolean(chart),
+      chartSelected: chart?.classList.contains('is-selected') ?? false,
+      chartAriaCurrent: chart?.getAttribute('aria-current') ?? '',
+      archiveFound: Boolean(archive),
+      archiveSelected: archive?.classList.contains('is-selected') ?? false,
+      selectedChartDay: document.querySelector('.history-day-column.is-selected')?.getAttribute('data-history-day') ?? '',
+      selectedArchiveDay: document.querySelector('[data-history-day-card].is-selected')?.getAttribute('data-history-day-card') ?? '',
+    }
+  }, day)
+}
+
 async function desktopGate(browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1100 } })
   await installRoutes(context)
@@ -57,13 +75,17 @@ async function desktopGate(browser) {
 
   const expandedFirst = page.locator('[data-history-battle-day]').first()
   await expandedFirst.press('Enter')
-  await page.waitForFunction((day) => {
-    const selectedChartDay = document.querySelector(`.history-day-column[data-history-day="${day}"]`)
-    const selectedArchiveDay = document.querySelector(`[data-history-day-card="${day}"]`)
-    return new URL(location.href).searchParams.get('day') === day
-      && selectedChartDay?.classList.contains('is-selected')
-      && selectedArchiveDay?.classList.contains('is-selected')
-  }, firstDay)
+  try {
+    await page.waitForFunction((day) => {
+      const selectedChartDay = document.querySelector(`.history-day-column[data-history-day="${day}"]`)
+      const selectedArchiveDay = document.querySelector(`[data-history-day-card="${day}"]`)
+      return new URL(location.href).searchParams.get('day') === day
+        && selectedChartDay?.classList.contains('is-selected')
+        && selectedArchiveDay?.classList.contains('is-selected')
+    }, firstDay, { timeout: 5000 })
+  } catch {
+    throw new Error(`Desktop: Battle selection did not synchronize: ${JSON.stringify(await selectionState(page, firstDay))}`)
+  }
   await assertNoOverflow(page, 'Desktop')
   await page.screenshot({ path: '/tmp/history-battle-twitch-desktop.png', fullPage: true })
   await context.close()
