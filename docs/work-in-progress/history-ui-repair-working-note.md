@@ -10,8 +10,8 @@ Completed final-state correction: PR #433
 Completed P9H1: PR #434
 Completed P9H2: PR #436
 Completed P9H2 canonical closeout: PR #437
-Current implementation branch: none
-Exact next branch after explicit continuation: `work-history-ui-h3-overview`
+Current implementation branch: `work-history-ui-h3-overview`
+Exact next branch after merge and explicit continuation: `work-history-ui-h4-tasks`
 Accepted baseline specification: `../product/history-and-trends-spec.md`
 Active repair specification: `../product/history-ui-repair-spec.md`
 Program plan: `../product/post-watchlist-program-plan.md`
@@ -26,6 +26,9 @@ Delete when: P9H7 production acceptance and permanent-document transfer are comp
 The following values are retained for permanent gates and are not current state.
 
 ```text
+Current implementation branch: none
+P9H3 work-history-ui-h3-overview         exact next after explicit continuation; not created
+
 Current implementation branch: `work-history-ui-h2-chart`
 P9H2 work-history-ui-h2-chart            active
 P9H3 work-history-ui-h3-overview         exact next after P9H2 merge and explicit continuation; not created
@@ -78,11 +81,12 @@ history-current-shell-entry.ts      URL, request, base chart and daily rendering
 history-usability-pass.ts           compatibility import order
 history-usability.ts                completed-day and coverage-state augmentation
 history-view-shell.ts               task URL state, Back/Forward, section rehoming
-history-overview.ts                 metric-aware Overview augmentation
+history-overview.ts                 metric-aware Summary/Selected day/ranking/insights
+history-overview.css                Overview hierarchy and compactness
+history-view-shell.css              task navigation
+history-visual-responsive.css       responsive baseline
 history-report-text.ts              report, share, export rendering
 history-report-text-state.ts        report payload and metric context
-history-focus-fallback.css          focus presentation
-history-visual-responsive.css       responsive layout
 ```
 
 ## P9H2 implementation owners retained for permanent acceptance
@@ -98,23 +102,43 @@ verify-history-ui-h2-chart.mjs      repository and boundary contract
 history-ui-h2-chart.yml             latest-head workflow and artifact evidence
 ```
 
+## P9H3 observed problems
+
+```text
+Summary repeats facts already present in the selected metric context and coverage status
+Selected day is useful but visually detached from Summary and can become a long mobile card
+comparison, calendar, ranking, supported changes, and coverage are all expanded by default
+mobile top-streamer cards and coverage detail lengthen the default task path
+history-view-shell.ts rehomes sections by source selector order rather than one explicit Overview contract
+history-overview.ts retains one legacy fetch wrapper and one document-wide observer; P9H3 must not add more
+```
+
+## P9H3 execution plan
+
+```text
+1. preserve the accepted P9H1/P9H2 request, metric, state, chart, and output contracts
+2. make the Overview order explicit and task-first
+3. compact Summary and connect it to Selected day analysis
+4. make comparison compact while retaining metric meaning
+5. keep calendar and ranking secondary to chart inspection
+6. collapse or limit secondary mobile detail while retaining an explicit way to reveal it
+7. add dedicated P9H3 repository and browser gates for desktop and 390px mobile
+8. prove no additional History request and no Twitch/Kick endpoint crossing
+```
+
 ## Current sequence
 
 ```text
 P9H0 work-history-ui-h0-baseline         complete PR #430
 P9H1 work-history-ui-h1-metric           complete PR #434
 P9H2 work-history-ui-h2-chart            complete PR #436
-P9H3 work-history-ui-h3-overview         exact next after explicit continuation; not created
-P9H4 work-history-ui-h4-tasks            queued
+P9H3 work-history-ui-h3-overview         active
+P9H4 work-history-ui-h4-tasks            exact next after P9H3 merge and explicit continuation; not created
 P9H5 work-history-ui-h5-responsive       queued
 P9H6 work-history-ui-h6-candidate        queued
 P9H7 work-history-ui-h7-acceptance       queued
 ```
 
-## P9H3 entry target
-
-P9H3 repairs Overview order and compactness while preserving all accepted P9H1/P9H2 contracts. The implementation must remove duplicate or placeholder facts, make Summary and Selected day useful, order comparison/calendar/rankings/coverage coherently, and shorten the mobile task flow without adding requests or crossing providers.
-
 ## Stop rule
 
-P9H2 is complete and canonically closed through PR #437. Do not create `work-history-ui-h3-overview` until explicit continuation is received. After every merge, issue the full report and stop.
+Complete P9H3 on `work-history-ui-h3-overview`. Do not create `work-history-ui-h4-tasks` until P9H3 merges, the full merge report is issued, and explicit continuation is received.
