@@ -218,9 +218,11 @@ function refreshContext(root: HTMLElement, report: HTMLElement, previousSource: 
 
 function reportField(report: HTMLElement, label: string): string {
   const text = report.querySelector<HTMLElement>('[data-history-report-preview]')?.textContent ?? ''
-  const prefix = `${label}:`
-  const line = text.split(/\r?\n/).map((value) => value.trim()).find((value) => value.startsWith(prefix))
-  return line ? clean(line.slice(prefix.length)) : ''
+  const marker = `${label}:`
+  const line = text.split(/\r?\n/).map((value) => value.trim()).find((value) => value.includes(marker))
+  if (!line) return ''
+  const markerIndex = line.indexOf(marker)
+  return clean(line.slice(markerIndex + marker.length))
 }
 
 function setContext(report: HTMLElement, key: string, value: string): void {
