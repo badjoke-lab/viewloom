@@ -21,14 +21,20 @@ P9H4A complete through PR #441
 P9H4A canonical closeout complete through PR #442
 P9H4B complete through PR #443
 P9H4B canonical closeout complete through PR #444
+P9H5 complete through PR #447
+P9H5 canonical closeout complete through PR #448
 Active implementation branch: none
-Exact next implementation branch: work-history-ui-h5-responsive
-P9H5 branch created: no
+Exact next implementation branch: work-history-ui-h6-candidate
+P9H6 branch created: no
 ```
 
 Historical gate evidence, not current state:
 
 ```text
+P9H5 active on work-history-ui-h5-responsive
+Active implementation branch: work-history-ui-h5-responsive
+Exact next implementation branch: work-history-ui-h6-candidate
+P9H6 branch created: no
 P9H4B active on work-history-ui-h4b-tasks
 Active implementation branch: work-history-ui-h4b-tasks
 Exact next implementation branch: work-history-ui-h5-responsive
@@ -55,7 +61,7 @@ Active implementation branch: none
 P9H2 branch created: no
 ```
 
-Do not create `work-history-ui-h5-responsive` before explicit continuation.
+Do not create `work-history-ui-h6-candidate` before explicit continuation.
 
 ## Standard workflow
 
