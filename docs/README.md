@@ -39,9 +39,11 @@ When repository state and documentation disagree, update documentation before im
 ## Current execution state
 
 ```text
-P9H1 completed through PR #434
-P9H2 completed through PR #436
-P9H2 canonical closeout completed through PR #437
+Phase 6  Local Watchlist v1                              complete PR #425
+P9H0     deterministic History baseline                  complete PR #430
+P9H1     metric execution repair                         complete PR #434
+P9H2     chart interpretation repair                     complete PR #436
+P9H2     canonical closeout                              complete PR #437
 Active implementation branch                              none
 P9H3     work-history-ui-h3-overview                       exact next; not created
 ```
@@ -56,6 +58,16 @@ P9H2     work-history-ui-h2-chart                          exact next; not creat
 P9H2 active on work-history-ui-h2-chart
 ```
 
+## Local Watchlist permanent evidence
+
+Local Watchlist v1 completed through PR #425. Its accepted product, implementation, and production records remain indexed here:
+
+- `product/local-watchlist-spec.md`
+- `product/watchlist-v1-implementation-plan.md`
+- `operations/watchlist-production-acceptance-2026-06-25.md`
+- `../apps/web/docs/watchlist-latest-w2a-contract.md`
+- `../apps/web/docs/watchlist-history-w2b-contract.md`
+
 ## P9H0 permanent evidence
 
 P9H0 completed through PR #430. Documentation/program closeout completed through PR #432. Final canonical correction completed through PR #433.
@@ -66,6 +78,8 @@ P9H0 completed through PR #430. Documentation/program closeout completed through
 - `audits/history-ui-h0-findings.md`
 
 ## P9H1 permanent evidence
+
+P9H1 completed through PR #434.
 
 ```text
 Final head: 9c4e3278b609e3f8d41fa3df71ba69f5ebc00618
@@ -111,7 +125,5 @@ These documents do not authorize early implementation.
 - `product/channel-v1-implementation-plan.md`
 - `product/report-export-consolidation-plan.md`
 - `product/next-feature-data-capability-audit.md`
-- `product/local-watchlist-spec.md`
-- `product/watchlist-v1-implementation-plan.md`
 
 P9H2 is complete and canonically closed through PR #437. `work-history-ui-h3-overview` is the exact next branch after explicit continuation.
