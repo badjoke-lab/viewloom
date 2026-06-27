@@ -1,6 +1,6 @@
 # TEMPORARY — ViewLoom History UI repair working note
 
-Status: P9H2 closeout active
+Status: P9H2 closeout complete
 Created: 2026-06-25
 Last updated: 2026-06-27
 Roadmap phase: Phase 9 — History P1 repair
@@ -9,9 +9,10 @@ Completed closeout: PR #432
 Completed final-state correction: PR #433
 Completed P9H1: PR #434
 Completed P9H2 implementation: PR #436
+Completed P9H2 canonical closeout: PR #438
 Current implementation branch: none
-Current documentation branch: `work-p9h2-closeout`
-Exact next branch after closeout merge, full report, and explicit continuation: `work-history-ui-h3-overview`
+Current documentation branch: none
+Exact next branch after full report and explicit continuation: `work-history-ui-h3-overview`
 P9H3 branch created: no
 Accepted baseline specification: `../product/history-and-trends-spec.md`
 Active repair specification: `../product/history-ui-repair-spec.md`
@@ -51,6 +52,7 @@ Workflow run: 28278497196
 Artifact: history-ui-h2-chart
 Artifact ID: 7921020539
 Digest: sha256:e6eeb9b2d1dad28237ad467554f4e1adcff5b4cc56577a8525d2d1cb1bb316ea
+Canonical closeout: PR #438
 ```
 
 Accepted behavior:
@@ -102,8 +104,8 @@ history-ui-h2-chart.yml              latest-head workflow and artifact evidence
 P9H0 work-history-ui-h0-baseline         complete PR #430
 P9H1 work-history-ui-h1-metric           complete PR #434
 P9H2 work-history-ui-h2-chart            complete PR #436
-P9H2 canonical closeout                  active on work-p9h2-closeout
-P9H3 work-history-ui-h3-overview         exact next after closeout, full report, and explicit continuation; not created
+P9H2 canonical closeout                  complete PR #438
+P9H3 work-history-ui-h3-overview         exact next after full report and explicit continuation; not created
 P9H4 work-history-ui-h4-tasks            queued
 P9H5 work-history-ui-h5-responsive       queued
 P9H6 work-history-ui-h6-candidate        queued
@@ -112,4 +114,4 @@ P9H7 work-history-ui-h7-acceptance       queued
 
 ## Stop rule
 
-Merge the P9H2 canonical closeout, issue the full report, and stop. Do not create `work-history-ui-h3-overview` until explicit continuation.
+P9H2 implementation and canonical closeout are complete. Issue the full report and stop. Do not create `work-history-ui-h3-overview` until explicit continuation.
