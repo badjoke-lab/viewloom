@@ -155,7 +155,10 @@
   #history-view-overview>.history-summary{
     grid-template-columns:repeat(2,minmax(0,1fr));
   }
-  #history-view-overview>.history-summary .lead-stat{grid-column:1/-1}
+  #history-view-overview>.history-summary .lead-stat,
+  #history-view-overview>.history-summary>div:nth-child(4){
+    grid-column:1/-1;
+  }
 }
 
 @media(max-width:760px){
