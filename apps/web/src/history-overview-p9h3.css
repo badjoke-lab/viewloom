@@ -1,26 +1,23 @@
 .history-overview-mobile-analysis{display:none}
 
 @media(max-width:760px){
-  [data-history-view-panel="overview"]{
-    grid-template-areas:
-      "strip"
-      "summary"
-      "coverage"
-      "primary"
-      "mobile-analysis"
-      "comparison"
-      "calendar"
-      "ranking-title"
-      "ranking-toolbar"
-      "ranking-table"
-      "ranking-cards"
-      "insights"
-      "coverage-title"
-      "coverage-detail";
-  }
+  #history-view-overview{display:flex;flex-direction:column;min-width:0}
+  #history-view-overview>*{width:100%;min-width:0}
+  #history-view-overview>[data-history-summary]{order:1}
+  #history-view-overview>[data-history-coverage-summary]{order:2}
+  #history-view-overview>[data-history-columns]{order:3;gap:12px}
+  #history-view-overview>.history-overview-mobile-analysis{order:4;margin-top:12px}
+  #history-view-overview>.history-period-comparison-block{order:5}
+  #history-view-overview>.history-calendar-block{order:6}
+  #history-view-overview>.history-overview-ranking-title{order:7}
+  #history-view-overview>.history-ranking-toolbar{order:8}
+  #history-view-overview>.history-table-wrap{order:9}
+  #history-view-overview>[data-history-streamer-cards]{order:10}
+  #history-view-overview>[data-history-overview-insights]{order:11}
+  #history-view-overview>.history-overview-coverage-title{order:12}
+  #history-view-overview>.history-coverage-detail{order:13}
 
   .history-overview-mobile-analysis{
-    grid-area:mobile-analysis;
     display:grid;
     gap:10px;
     padding:12px;
@@ -49,40 +46,35 @@
   }
   .history-overview-mobile-analysis button.active{background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
 
-  [data-history-secondary-group]:not(.is-mobile-open){display:none!important}
+  #history-view-overview>[data-history-secondary-group]:not(.is-mobile-open){display:none!important}
 
-  .history-summary{grid-template-columns:1fr 1fr!important}
-  .history-summary .lead-stat{grid-column:1/-1}
-  .history-summary>div{min-height:82px!important;padding:11px!important}
-  .history-summary .lead-stat{min-height:96px!important}
-  .history-summary .lead-stat strong{font-size:clamp(26px,9vw,38px)}
-  .history-summary>div strong{font-size:13px}
-  .history-summary>div span{font-size:10px}
+  #history-view-overview>.history-summary{display:grid;grid-template-columns:1fr 1fr!important}
+  #history-view-overview>.history-summary .lead-stat{grid-column:1/-1}
+  #history-view-overview>.history-summary>div{min-height:82px!important;padding:11px!important}
+  #history-view-overview>.history-summary .lead-stat{min-height:96px!important}
+  #history-view-overview>.history-summary .lead-stat strong{font-size:clamp(26px,9vw,38px)}
+  #history-view-overview>.history-summary>div strong{font-size:13px}
+  #history-view-overview>.history-summary>div span{font-size:10px}
 
-  .history-coverage-summary{margin-bottom:12px}
-  [data-history-columns]{gap:12px}
+  #history-view-overview>.history-coverage-summary{margin-bottom:12px}
   .history-selected-body{gap:11px}
   .history-selected-metrics>div{padding:9px}
   .history-selected-top li:nth-child(n+4){display:none}
   .history-selected-top>small::after{content:" · first 3";text-transform:none;letter-spacing:0}
   .history-selected-actions .button{flex:1 1 140px;justify-content:center}
 
-  [data-history-secondary-group="comparison"].is-mobile-open,
-  [data-history-secondary-group="calendar"].is-mobile-open,
-  [data-history-secondary-group="ranking"].is-mobile-open,
-  [data-history-secondary-group="coverage"].is-mobile-open{scroll-margin-top:64px}
-
-  .history-overview-ranking-title.is-mobile-open,
-  .history-overview-coverage-title.is-mobile-open{display:flex!important}
-  .history-ranking-toolbar.is-mobile-open{display:grid!important}
-  [data-history-streamer-cards].is-mobile-open{display:grid!important}
-  .history-table-wrap.is-mobile-open{display:none!important}
+  #history-view-overview>[data-history-secondary-group].is-mobile-open{scroll-margin-top:64px}
+  #history-view-overview>.history-overview-ranking-title.is-mobile-open,
+  #history-view-overview>.history-overview-coverage-title.is-mobile-open{display:flex!important}
+  #history-view-overview>.history-ranking-toolbar.is-mobile-open{display:grid!important}
+  #history-view-overview>[data-history-streamer-cards].is-mobile-open{display:grid!important}
+  #history-view-overview>.history-table-wrap.is-mobile-open{display:none!important}
 }
 
 @media(max-width:420px){
   .history-overview-mobile-analysis__buttons{grid-template-columns:1fr}
-  .history-summary>div{min-height:76px!important}
-  .history-summary .lead-stat{min-height:90px!important}
+  #history-view-overview>.history-summary>div{min-height:76px!important}
+  #history-view-overview>.history-summary .lead-stat{min-height:90px!important}
 }
 
 @media(forced-colors:active){
