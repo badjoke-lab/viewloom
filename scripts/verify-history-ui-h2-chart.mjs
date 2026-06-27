@@ -14,30 +14,39 @@ const check = (path, parts) => {
 }
 
 check('docs/product/current-roadmap.md', [
-  'Phase 9 P9H2  active',
-  'Active implementation branch: work-history-ui-h2-chart',
+  'Phase 9 P9H2  complete PR #436',
+  'P9H2 closeout complete PR #438',
+  'Active implementation branch: none',
   'Exact next implementation branch: work-history-ui-h3-overview',
+  'P9H3 branch created: no',
 ])
 check('docs/product/current-schedule.md', [
-  'P9H2 History chart interpretation        active',
-  'Active implementation branch             work-history-ui-h2-chart',
+  'P9H2 History chart interpretation        complete PR #436',
+  'P9H2 documentation closeout              complete PR #438',
+  'Active implementation branch             none',
   'Exact next branch                        work-history-ui-h3-overview',
   'P9H3 branch created                      no',
 ])
 check('docs/product/post-watchlist-program-plan.md', [
-  'Version: 2.4',
-  'Current phase: Phase 9 — P9H2 chart interpretation',
-  'Current implementation branch: `work-history-ui-h2-chart`',
-  '| 9 | P9H2 | active',
+  'Version: 2.5',
+  'Current phase: Phase 9 — P9H3 exact next, not started',
+  'Current implementation branch: none',
+  '| 9 | P9H2 | complete PR #436',
+  '| 9 | P9H2 closeout | complete PR #438',
 ])
 check('docs/product/history-ui-repair-plan.md', [
-  'Version: 1.8',
-  'Current implementation branch: `work-history-ui-h2-chart`',
-  'Exact next branch: `work-history-ui-h3-overview`',
+  'Version: 1.9',
+  'Completed P9H2: PR #436',
+  'Completed P9H2 canonical closeout: PR #438',
+  'Current implementation branch: none',
+  'Exact next branch after explicit continuation: `work-history-ui-h3-overview`',
 ])
 check('docs/work-in-progress/history-ui-repair-working-note.md', [
+  'Completed P9H2 implementation: PR #436',
+  'Completed P9H2 canonical closeout: PR #438',
   'history-chart-p9h2.ts',
-  'history-usability.ts                API coverageState preservation, including in-progress',
+  'history-usability.ts                 completed-day and coverage-state augmentation',
+  'history-day-link-bridge.ts',
   'history-ui-h2-chart-browser.mjs',
 ])
 check('apps/web/src/live/history-usability-pass.ts', [
@@ -77,6 +86,11 @@ check('apps/web/src/live/history-archives.ts', [
   "root.dataset.historyDailyHierarchyReady = 'true'",
   "node.matches('[data-history-day-card]')",
 ])
+check('apps/web/src/navigation/history-day-link-bridge.ts', [
+  'historyBattleBridgeFocusDay',
+  'bridgeBattleDay',
+  'archiveDay.dataset.historyDay = archiveDay.dataset.historyDayCard ?? day',
+])
 check('apps/web/src/history-chart-p9h2.css', [
   '.history-state-marker',
   '.history-chart-inspection',
@@ -89,6 +103,7 @@ check('apps/web/scripts/history-ui-h2-chart-browser.mjs', [
   'if (!touch)',
   "keyboard.press('Home')",
   "keyboard.press('ArrowRight')",
+  'pressKeyboardDay',
   "demoDay.locator('.history-bar-hit')",
   'demoHit.tap()',
   'calls.length, requestCount',
