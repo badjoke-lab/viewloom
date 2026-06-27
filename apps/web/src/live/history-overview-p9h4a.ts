@@ -6,22 +6,10 @@ type AnalysisCopy = {
 }
 
 const analysisCopy: Record<SecondaryGroup, AnalysisCopy> = {
-  comparison: {
-    label: 'Compare periods',
-    description: 'Current vs previous retained period',
-  },
-  calendar: {
-    label: 'Calendar',
-    description: 'Daily intensity and coverage',
-  },
-  ranking: {
-    label: 'Rankings & changes',
-    description: 'Top streamers and supported movement',
-  },
-  coverage: {
-    label: 'Coverage',
-    description: 'Partial, missing and in-progress days',
-  },
+  comparison: { label: 'Compare periods', description: 'Current vs previous retained period' },
+  calendar: { label: 'Calendar', description: 'Daily intensity and coverage' },
+  ranking: { label: 'Rankings & changes', description: 'Top streamers and supported movement' },
+  coverage: { label: 'Coverage', description: 'Partial, missing and in-progress days' },
 }
 
 const overview = document.querySelector<HTMLElement>('[data-history-view-panel="overview"]')
@@ -60,6 +48,7 @@ function installOverviewBalance(panel: HTMLElement): void {
     }
 
     const schedule = (): void => {
+      panel.dataset.historyOverviewP9h4aReady = 'false'
       if (scheduled) return
       scheduled = true
       requestAnimationFrame(() => {
@@ -68,9 +57,8 @@ function installOverviewBalance(panel: HTMLElement): void {
       })
     }
 
-    // These observers are intentionally scoped to the two owned render roots.
-    // They keep the compatibility source hidden after metric/period rerenders and
-    // may be removed when P9H6 retires the legacy five-card Summary renderer.
+    // These observers are scoped to the two owned render roots. P9H6 may remove
+    // them after the legacy five-card Summary renderer is retired.
     new MutationObserver(schedule).observe(summary, { childList: true, subtree: true })
     new MutationObserver(schedule).observe(coverage, { childList: true, subtree: true })
 
