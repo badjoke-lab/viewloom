@@ -106,8 +106,10 @@ need('apps/web/src/live/history-export-model.ts', [
   'peak_viewers:',
 ])
 need('apps/web/src/live/history-share-card.ts', [
-  'canvas.width = 1200',
-  'canvas.height = 630',
+  'const CARD_WIDTH = 1200',
+  'const CARD_HEIGHT = 630',
+  'canvas.width = CARD_WIDTH',
+  'canvas.height = CARD_HEIGHT',
 ])
 
 const moduleSource = read('apps/web/src/live/history-tasks-p9h4b.ts')
