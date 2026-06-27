@@ -31,6 +31,10 @@ async function selectionState(page, day) {
     const archive = document.querySelector(`[data-history-day-card="${value}"]`)
     return {
       day: value,
+      bridgeReady: document.body.dataset.historyDayLinkBridgeReady ?? '',
+      bridgeKey: document.body.dataset.historyBattleBridgeKey ?? '',
+      bridgeDay: document.body.dataset.historyBattleBridgeDay ?? '',
+      bridgeRoute: document.body.dataset.historyBattleBridgeRoute ?? '',
       activeBattleDay: document.activeElement?.getAttribute('data-history-battle-day') ?? '',
       activeTag: document.activeElement?.tagName ?? '',
       urlDay: new URL(location.href).searchParams.get('day'),
@@ -76,6 +80,8 @@ async function desktopGate(browser) {
   assert((await page.locator('[data-history-battle-toggle]').textContent())?.includes('Show top 10'), 'Desktop: expanded toggle label is wrong.')
 
   const expandedFirst = page.locator('[data-history-battle-day]').first()
+  const before = await selectionState(page, firstDay)
+  assert(before.bridgeReady === 'true', `Desktop: direct History day bridge did not load: ${JSON.stringify(before)}`)
   await expandedFirst.focus()
   assert((await selectionState(page, firstDay)).activeBattleDay === firstDay, 'Desktop: Battle card did not receive focus.')
   await page.keyboard.press('Enter')
