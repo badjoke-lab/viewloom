@@ -21,6 +21,9 @@ import '../history-chart-p9h2.css'
 import './history-chart-p9h2'
 import './history-chart-keyboard-delegation'
 
+document.addEventListener('click', syncDailyCardSelectionKey, true)
+document.addEventListener('keydown', syncDailyCardSelectionKey, true)
+
 document.addEventListener('keydown', (event) => {
   if (event.key !== 'Enter' && event.key !== ' ') return
   const target = event.target as Element | null
@@ -37,12 +40,19 @@ document.addEventListener('click', (event) => {
   selectBattleDay(card)
 }, true)
 
+function syncDailyCardSelectionKey(event: Event): void {
+  const card = (event.target as Element | null)?.closest<HTMLElement>('[data-history-day-card]')
+  const day = card?.dataset.historyDayCard
+  if (card && day) card.dataset.historyDay = day
+}
+
 function selectBattleDay(card: HTMLElement): void {
   const day = card.dataset.historyBattleDay
   if (!day) return
   const selectorDay = window.CSS?.escape ? window.CSS.escape(day) : day
   const dailyCard = document.querySelector<HTMLElement>(`[data-history-day-card="${selectorDay}"]`)
   if (dailyCard) {
+    dailyCard.dataset.historyDay = dailyCard.dataset.historyDayCard ?? day
     dailyCard.click()
     return
   }
