@@ -20,12 +20,19 @@ Version: 2.0
 Current implementation branch: `work-history-ui-h3-overview`
 P9H3 work-history-ui-h3-overview   active
 P9H4 work-history-ui-h4-tasks      exact next after P9H3 merge and explicit continuation; not created
+
 Version: 1.9
 Current implementation branch: none
 P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
+
 Version: 1.8
 Current implementation branch: `work-history-ui-h2-chart`
+Exact next branch: `work-history-ui-h3-overview`
 P9H2 work-history-ui-h2-chart      active
+
+Version: 1.7
+Current implementation branch: none
+P9H2 work-history-ui-h2-chart      exact next; not created
 ```
 
 ## Completed P9H3
@@ -68,7 +75,5 @@ P9H7 work-history-ui-h7-acceptance queued
 ```
 
 P9H4 covers Archives and publishing hierarchy. P9H5 covers required widths and accessibility. P9H6–P9H7 cover local candidate and production acceptance.
-
-## Stop rule
 
 P9H3 is complete and canonically closed through PR #440. Do not create `work-history-ui-h4-tasks` before explicit continuation is received.
