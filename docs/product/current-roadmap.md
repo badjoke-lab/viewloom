@@ -17,17 +17,26 @@ Phase 9 P9H2  complete PR #436
 P9H2 canonical closeout complete PR #437
 Phase 9 P9H3  complete PR #439
 P9H3 canonical closeout complete PR #440
-Phase 9 P9H4A active
-Active implementation branch: work-history-ui-h4a-overview-balance
+Phase 9 P9H4A complete PR #441
+P9H4A canonical closeout complete PR #442
+Active implementation branch: none
 Exact next implementation branch: work-history-ui-h4b-tasks
 P9H4B branch created: no
 ```
 
-P9H4A was added after public screenshots exposed a desktop sticky-overlap defect, an oversized calendar, compressed ranking width, and remaining mobile density problems. P9H4B preserves the approved Archives and Report & Export work.
+P9H4A repaired the screenshot-confirmed sticky overlap, oversized desktop Calendar, compressed ranking width, Summary balance, withheld comparison volume, and mobile density. P9H4B retains Archives and Report & Export.
 
 ## Historical gate snapshots
 
 ```text
+Phase 9 P9H4A active
+Active implementation branch: work-history-ui-h4a-overview-balance
+Exact next implementation branch: work-history-ui-h4b-tasks
+P9H4B branch created: no
+
+P9H4A canonical closeout active
+Active implementation branch: work-history-ui-h4a-closeout
+
 Active implementation branch: none
 Exact next implementation branch: work-history-ui-h4-tasks
 P9H4 branch created: no
@@ -59,26 +68,20 @@ P9H2 branch created: no
 - History metric synchronization is complete through PR #434.
 - History chart interpretation is complete through PR #436 and closed through PR #437.
 - History Overview hierarchy is complete through PR #439 and closed through PR #440.
+- History Overview balance is complete through PR #441 and closed through PR #442.
 - Twitch and Kick remain separate across routes, APIs, storage, bindings, rankings, exports, and coverage claims.
 
-Historical P9H1 evidence:
+P9H4A accepted evidence:
 
 ```text
-Workflow run: 28232602651
-Artifact: history-ui-h1-metric / 7903212809
+Head: 9cbaed979394232ceee5efc6c95954385eb230fa
+Workflow run: 28283570437
+Artifact: history-ui-h4a-overview-balance / 7922730563
+Digest: sha256:62bd0bd1c991cdc87286aa62d28668c961cac987eebaf606db5512469e968aac
+Merge: 0201ff8464a568e5d6aebd1b3d179bcde93a17e7
 ```
 
-P9H3 accepted evidence:
-
-```text
-Head: 2cdd780787d06ab951e68b7cbca031089ab5312e
-Workflow run: 28280486736
-Artifact: history-ui-h3-overview / 7921680615
-Digest: sha256:33e6c4fa3deeaab4a12394b768371dde06409ebf6d899f230110948fb63defee
-Merge: 38e21f910d303f391a988121ff562f53a6a426b7
-```
-
-The mobile task-flow defect is resolved by P9H3. P9H4A now repairs visual balance and section collision. The earlier production/local keyboard discrepancy remains for P9H5 and final acceptance.
+The production/local keyboard discrepancy remains assigned to P9H5 and final acceptance.
 
 ## Authority map
 
@@ -96,7 +99,7 @@ History repair: docs/product/history-ui-repair-spec.md
 ```text
 Phase 7   source-of-truth reset                              complete PR #426
 Phase 8   inventory and browser defect audit                 complete PR #428
-Phase 9   History P1 repair                                  P9H4A active
+Phase 9   History P1 repair                                  P9H4A complete; P9H4B next
 Phase 10  cross-site defect/UI/architecture repair           queued
 Phase 11  acceptance, CI, type safety, monitoring            queued
 Phase 12  English legal, Support, Stripe, release readiness  queued
@@ -115,15 +118,13 @@ P9H0  work-history-ui-h0-baseline          complete PR #430
 P9H1  work-history-ui-h1-metric            complete PR #434
 P9H2  work-history-ui-h2-chart             complete PR #436
 P9H3  work-history-ui-h3-overview          complete PR #439
-P9H4A work-history-ui-h4a-overview-balance active
-P9H4B work-history-ui-h4b-tasks            next after P9H4A merge and explicit continuation; not created
+P9H4A work-history-ui-h4a-overview-balance complete PR #441
+P9H4B work-history-ui-h4b-tasks            exact next after explicit continuation; not created
 P9H5  work-history-ui-h5-responsive        queued
 P9H6  work-history-ui-h6-candidate         queued
 P9H7  work-history-ui-h7-acceptance        queued
 ```
 
-P9H4A owns Overview balance: non-sticky Key changes, compact desktop Calendar, ranking width, Summary/coverage separation, comparison compactness, mobile chart density, Selected day density, and explanatory More analysis controls. P9H4B owns Archives and Report & Export while preserving no-refetch switching and output schemas.
-
 ## Stop rule
 
-P9H4A is active. Do not create `work-history-ui-h4b-tasks` before P9H4A merges, canonical state is updated, and explicit continuation is received.
+P9H4A is complete and canonically closed through PR #442. Do not create `work-history-ui-h4b-tasks` before explicit continuation is received.
