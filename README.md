@@ -24,14 +24,20 @@ P9H3 Overview hierarchy             complete PR #439
 P9H3 canonical closeout             complete PR #440
 P9H4A Overview balance              complete PR #441
 P9H4A canonical closeout            complete PR #442
+P9H4B Archives and publishing       complete PR #443
+P9H4B canonical closeout            complete PR #444
 Active implementation branch        none
-Exact next branch                   work-history-ui-h4b-tasks
-P9H4B branch created                no
+Exact next branch                   work-history-ui-h5-responsive
+P9H5 branch created                 no
 ```
 
 Historical gate strings, not current state:
 
 ```text
+P9H4B Archives and publishing hierarchy  active
+Active implementation branch        work-history-ui-h4b-tasks
+Exact next branch                   work-history-ui-h5-responsive
+P9H5 branch created                no
 P9H4A Overview balance              active
 Active implementation branch        work-history-ui-h4a-overview-balance
 Exact next branch                   work-history-ui-h4b-tasks
@@ -73,12 +79,25 @@ Digest: sha256:62bd0bd1c991cdc87286aa62d28668c961cac987eebaf606db5512469e968aac
 
 P9H4A makes `Key changes` normal-flow, bounds the desktop Calendar, protects ranking width, presents four primary Summary facts plus a full-width coverage band, compacts withheld comparison, and improves mobile chart, Selected day, and More analysis presentation. It adds no History observer or request seam and changes no API, D1, collector, cron, retention, binding, provider, or output schema.
 
+P9H4B evidence:
+
+```text
+PR: #443
+Head: 93195f3e79f1edf7c95cd1150c94b41582c50c29
+Merge: e28a6db311129fafe8cd1069ffe4ab240ba2b8bf
+Workflow run: 28289223184
+Artifact: history-ui-h4b-tasks / 7924451682
+Digest: sha256:f07200e1d5966dda3093788778d845fa2f8e2cc2ddf8fb4d939dba7c9992662f
+```
+
+P9H4B repairs Archives and Report & Export hierarchy while preserving one provider response, direct links, Back/Forward, report, post, PNG, CSV, and JSON contracts.
+
 ## Next sequence
 
 ```text
 P9H4A Overview balance              complete PR #441
-P9H4B Archives and Report & Export  exact next after explicit continuation
-P9H5 responsive and accessibility
+P9H4B Archives and Report & Export  complete PR #443
+P9H5 responsive and accessibility  exact next after explicit continuation
 P9H6 local candidate
 P9H7 production acceptance
 ```
