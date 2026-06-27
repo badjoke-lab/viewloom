@@ -55,18 +55,22 @@ function bridgeBattleDay(target: EventTarget | null): boolean {
   if (!card || element?.closest('a')) return false
   const day = card.dataset.historyBattleDay
   if (!day || !validDay(day)) return false
+  document.body.dataset.historyBattleBridgeDay = day
   const escaped = window.CSS?.escape ? window.CSS.escape(day) : day
   const archiveDay = document.querySelector<HTMLElement>(`[data-history-day-card="${escaped}"]`)
   if (archiveDay) {
+    document.body.dataset.historyBattleBridgeRoute = 'daily'
     archiveDay.click()
     return true
   }
   const chartDay = document.querySelector<SVGGElement>(`.history-day-column[data-history-day="${escaped}"]`)
+  document.body.dataset.historyBattleBridgeRoute = chartDay ? 'chart' : 'missing'
   chartDay?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
   return Boolean(chartDay)
 }
 
 if (typeof document !== 'undefined') {
+  document.body.dataset.historyDayLinkBridgeReady = 'true'
   rewriteHistoryDayLinks()
   const observer = new MutationObserver((records) => {
     for (const record of records) {
@@ -78,6 +82,7 @@ if (typeof document !== 'undefined') {
   observer.observe(document.body, { childList: true, subtree: true })
 
   document.addEventListener('keydown', (event) => {
+    document.body.dataset.historyBattleBridgeKey = event.key
     if (event.key !== 'Enter' && event.key !== ' ') return
     if (!bridgeBattleDay(event.target)) return
     event.preventDefault()
