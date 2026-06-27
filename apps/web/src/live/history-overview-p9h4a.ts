@@ -1,3 +1,6 @@
+import '../history-tasks-p9h4b.css'
+import './history-tasks-p9h4b'
+
 type SecondaryGroup = 'comparison' | 'calendar' | 'ranking' | 'coverage'
 
 type AnalysisCopy = {
