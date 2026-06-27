@@ -99,7 +99,10 @@ function ensureCoverageQuality(root: HTMLElement, quality: string): void {
     block = document.createElement('div')
     block.className = 'history-coverage-summary__quality'
     block.dataset.historyCoverageQuality = ''
-    block.innerHTML = '<small>Coverage</small><strong></strong>'
+    const label = document.createElement('small')
+    label.textContent = 'Coverage'
+    const value = document.createElement('strong')
+    block.append(label, document.createTextNode(' '), value)
     root.prepend(block)
   }
 
