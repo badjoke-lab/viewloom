@@ -24,12 +24,23 @@ Current implementation branch: `work-history-ui-h3-overview`
 | 9 | P9H3 | active
 P9H3 work-history-ui-h3-overview   active
 P9H4 work-history-ui-h4-tasks      exact next after P9H3 merge and explicit continuation; not created
+
 Version: 2.5
+Current implementation branch: none
 P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
+
 Version: 2.4
+Current phase: Phase 9 — P9H2 chart interpretation
 Current implementation branch: `work-history-ui-h2-chart`
 | 9 | P9H2 | active
 P9H2 work-history-ui-h2-chart      active
+
+Version: 2.3
+Current implementation branch: none
+Completed metric synchronization: PR #434
+| 9 | P9H1 | complete PR #434
+Exact next implementation branch after explicit continuation: `work-history-ui-h2-chart`
+P9H2 work-history-ui-h2-chart      exact next after explicit continuation; not created
 ```
 
 This document owns the complete approved execution program after Local Watchlist v1. Before each branch, compare the schedule with actual branches and PRs, confirm explicit continuation, read affected authorities, and record missing work. After each merge, update canonical state, issue the full report, name the next branch, and stop.
