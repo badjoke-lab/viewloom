@@ -1,7 +1,7 @@
 # ViewLoom History UI repair implementation plan
 
 Status: active implementation subplan
-Version: 2.3
+Version: 2.4
 Last updated: 2026-06-27
 Roadmap phase: Phase 9 — History P1 repair
 Completed P9H0: PR #430
@@ -12,14 +12,26 @@ Completed P9H3: PR #439
 Completed P9H3 canonical closeout: PR #440
 Completed P9H4A: PR #441
 Completed P9H4A canonical closeout: PR #442
+Completed P9H4B: PR #443
+Completed P9H4B canonical closeout: PR #444
 Current implementation branch: none
-Exact next branch after explicit continuation: `work-history-ui-h4b-tasks`
+Exact next branch after explicit continuation: `work-history-ui-h5-responsive`
 
-P9H4 is split. P9H4A completed the Overview layout and visual hierarchy repair. P9H4B retains Archives and Report & Export.
+P9H4 is split. P9H4A completed the Overview layout and visual hierarchy repair. P9H4B completed Archives and Report & Export hierarchy.
 
 Historical gate strings, not current state:
 
 ```text
+Version: 2.3
+Current implementation branch: none
+Exact next branch after explicit continuation: `work-history-ui-h4b-tasks`
+P9H4B work-history-ui-h4b-tasks            exact next after explicit continuation; not created
+
+P9H4B active
+Current implementation branch: `work-history-ui-h4b-tasks`
+P9H4B canonical closeout active
+Current implementation branch: `work-history-ui-h4b-closeout`
+
 Version: 2.2
 Current implementation branch: `work-history-ui-h4a-overview-balance`
 P9H4A work-history-ui-h4a-overview-balance active
@@ -116,17 +128,57 @@ Accepted widths:
 360px
 ```
 
+## Completed P9H4B — Archives and publishing hierarchy
+
+PR #443 repaired the task hierarchy outside Overview while preserving the accepted History controller and output contracts.
+
+Accepted behavior:
+
+- Archives identifies Daily, Peaks, and Battles and reports visible counts;
+- archive tabs and the Daily toolbar stay in normal flow;
+- only one task and one archive subview are visible;
+- direct links and Back/Forward restore state without another History request;
+- Report & Export identifies provider, period, metric, observed scope, state/source, and limitations;
+- Copy text, Share image, and Download data reuse the accepted handlers;
+- report, post, PNG, CSV, and JSON contracts remain unchanged;
+- Twitch and Kick each use one correct provider request.
+
+```text
+Final head: 93195f3e79f1edf7c95cd1150c94b41582c50c29
+Merge: e28a6db311129fafe8cd1069ffe4ab240ba2b8bf
+Workflow: 28289223184
+Artifact: history-ui-h4b-tasks / 7924451682
+Digest: sha256:f07200e1d5966dda3093788778d845fa2f8e2cc2ddf8fb4d939dba7c9992662f
+```
+
+Permanent acceptance files:
+
+```text
+apps/web/scripts/history-ui-h4b-tasks-browser.mjs
+scripts/verify-history-ui-h4b-tasks.mjs
+.github/workflows/history-ui-h4b-tasks.yml
+```
+
+Accepted widths:
+
+```text
+1440px
+820px
+390px
+360px
+```
+
 ## Remaining sequence
 
 ```text
 P9H3  work-history-ui-h3-overview          complete PR #439
 P9H4A work-history-ui-h4a-overview-balance complete PR #441
-P9H4B work-history-ui-h4b-tasks            exact next after explicit continuation; not created
-P9H5  work-history-ui-h5-responsive        queued
+P9H4B work-history-ui-h4b-tasks            complete PR #443
+P9H5  work-history-ui-h5-responsive        exact next after explicit continuation; not created
 P9H6  work-history-ui-h6-candidate         queued
 P9H7  work-history-ui-h7-acceptance        queued
 ```
 
-P9H4B covers Archives and publishing hierarchy. P9H5 covers required widths and accessibility. P9H6–P9H7 cover local candidate and production acceptance.
+P9H5 covers required widths and accessibility. P9H6–P9H7 cover local candidate and production acceptance.
 
-P9H4A is complete and canonically closed through PR #442. Do not create `work-history-ui-h4b-tasks` before explicit continuation is received.
+P9H4B is complete and canonically closed through PR #444. Do not create `work-history-ui-h5-responsive` before explicit continuation is received.

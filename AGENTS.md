@@ -28,9 +28,11 @@ P9H3 complete through PR #439
 P9H3 canonical closeout complete through PR #440
 P9H4A complete through PR #441
 P9H4A canonical closeout complete through PR #442
+P9H4B complete through PR #443
+P9H4B canonical closeout complete through PR #444
 Active implementation branch: none
-Exact next implementation branch: work-history-ui-h4b-tasks
-P9H4B branch created: no
+Exact next implementation branch: work-history-ui-h5-responsive
+P9H5 branch created: no
 ```
 
 Historical gate evidence, not current state:
@@ -58,4 +60,4 @@ Active implementation branch: none
 P9H2 branch created: no
 ```
 
-Do not create `work-history-ui-h4b-tasks` before explicit continuation. Do not start Phase 10–16 before its documented entry condition. After every merge, issue the full merge report and stop.
+Do not create `work-history-ui-h5-responsive` before explicit continuation. Do not start Phase 10–16 before its documented entry condition. After every merge, issue the full merge report and stop.
