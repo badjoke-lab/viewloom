@@ -22,8 +22,9 @@ P9H2 chart interpretation           complete PR #436
 P9H2 canonical closeout             complete PR #437
 P9H3 Overview hierarchy             complete PR #439
 P9H3 canonical closeout             complete PR #440
-P9H4A Overview balance              active
-Active implementation branch        work-history-ui-h4a-overview-balance
+P9H4A Overview balance              complete PR #441
+P9H4A canonical closeout            complete PR #442
+Active implementation branch        none
 Exact next branch                   work-history-ui-h4b-tasks
 P9H4B branch created                no
 ```
@@ -31,6 +32,12 @@ P9H4B branch created                no
 Historical gate strings, not current state:
 
 ```text
+P9H4A Overview balance              active
+Active implementation branch        work-history-ui-h4a-overview-balance
+Exact next branch                   work-history-ui-h4b-tasks
+P9H4B branch created                no
+P9H4A canonical closeout            active
+Active implementation branch        work-history-ui-h4a-closeout
 Active implementation branch        none
 Exact next branch                   work-history-ui-h4-tasks
 P9H4 branch created                 no
@@ -46,33 +53,24 @@ Exact next branch                   work-history-ui-h2-chart
 P9H2 branch created                 no
 ```
 
-P9H2 evidence:
+P9H4A evidence:
 
 ```text
-Workflow run: 28278497196
-Artifact: history-ui-h2-chart / 7921020539
+PR: #441
+Head: 9cbaed979394232ceee5efc6c95954385eb230fa
+Merge: 0201ff8464a568e5d6aebd1b3d179bcde93a17e7
+Workflow run: 28283570437
+Artifact: history-ui-h4a-overview-balance / 7922730563
+Digest: sha256:62bd0bd1c991cdc87286aa62d28668c961cac987eebaf606db5512469e968aac
 ```
 
-P9H3 evidence:
-
-```text
-PR: #439
-Head: 2cdd780787d06ab951e68b7cbca031089ab5312e
-Merge: 38e21f910d303f391a988121ff562f53a6a426b7
-Workflow run: 28280486736
-Artifact: history-ui-h3-overview / 7921680615
-Digest: sha256:33e6c4fa3deeaab4a12394b768371dde06409ebf6d899f230110948fb63defee
-```
-
-P9H3 keeps the full desktop Overview and shortens the mobile default flow to Summary, coverage status, chart, and Selected day. Compare periods, Calendar, Rankings & changes, and detailed Coverage remain available through explicit controls without another History request.
-
-P9H4A repairs the newly confirmed Overview defects: `Key changes` overlap, oversized desktop Calendar, compressed ranking width, Summary/coverage imbalance, withheld-comparison volume, and remaining mobile density. It changes no API, D1, collector, cron, retention, binding, provider, or output schema.
+P9H4A makes `Key changes` normal-flow, bounds the desktop Calendar, protects ranking width, presents four primary Summary facts plus a full-width coverage band, compacts withheld comparison, and improves mobile chart, Selected day, and More analysis presentation. It adds no History observer or request seam and changes no API, D1, collector, cron, retention, binding, provider, or output schema.
 
 ## Next sequence
 
 ```text
-P9H4A Overview balance              active
-P9H4B Archives and Report & Export  next after merge and explicit continuation
+P9H4A Overview balance              complete PR #441
+P9H4B Archives and Report & Export  exact next after explicit continuation
 P9H5 responsive and accessibility
 P9H6 local candidate
 P9H7 production acceptance
