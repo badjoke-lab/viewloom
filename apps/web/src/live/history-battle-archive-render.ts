@@ -1,6 +1,9 @@
 import type { BattleArchiveEntry } from './history-battle-archive-state'
 
 let expanded = false
+let interactionsBound = false
+
+bindBattleInteractions()
 
 export function renderBattleArchive(entries: BattleArchiveEntry[]): void {
   const mount = ensureMount()
@@ -8,7 +11,6 @@ export function renderBattleArchive(entries: BattleArchiveEntry[]): void {
   const toggle = mount.querySelector<HTMLButtonElement>('[data-history-battle-toggle]')
   const summary = mount.querySelector<HTMLElement>('[data-history-battle-summary]')
   if (!list || !toggle || !summary) return
-  bindBattleList(list)
 
   if (!entries.length) {
     summary.textContent = 'No completed-day matchup has enough retained aggregate data.'
@@ -25,22 +27,26 @@ export function renderBattleArchive(entries: BattleArchiveEntry[]): void {
   toggle.setAttribute('aria-expanded', String(expanded))
 }
 
-function bindBattleList(list: HTMLElement): void {
-  if (list.dataset.historyBattleListBound === 'true') return
-  list.dataset.historyBattleListBound = 'true'
-  list.addEventListener('click', chooseBattleDay)
-  list.addEventListener('keydown', (event) => {
-    if (event.key !== 'Enter' && event.key !== ' ') return
-    if (!(event.target as Element | null)?.closest('[data-history-battle-day]')) return
-    event.preventDefault()
-    chooseBattleDay(event)
+function bindBattleInteractions(): void {
+  if (interactionsBound) return
+  interactionsBound = true
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null
+    if (!target?.closest('[data-history-battle-day]') || target.closest('a')) return
+    chooseBattleDay(target)
   })
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    const target = event.target as HTMLElement | null
+    if (!target?.closest('[data-history-battle-day]') || target.closest('a')) return
+    event.preventDefault()
+    event.stopPropagation()
+    chooseBattleDay(target)
+  }, true)
 }
 
-function chooseBattleDay(event: Event): void {
-  const target = event.target as HTMLElement | null
-  if (target?.closest('a')) return
-  const card = target?.closest<HTMLElement>('[data-history-battle-day]')
+function chooseBattleDay(target: HTMLElement): void {
+  const card = target.closest<HTMLElement>('[data-history-battle-day]')
   const day = card?.dataset.historyBattleDay
   if (!day) return
   const archiveDay = document.querySelector<HTMLElement>(`[data-history-day-card="${cssEscape(day)}"]`)
