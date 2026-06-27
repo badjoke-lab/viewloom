@@ -49,6 +49,23 @@ function validDay(value: string): boolean {
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
 }
 
+function bridgeBattleDay(target: EventTarget | null): boolean {
+  const element = target instanceof Element ? target : null
+  const card = element?.closest<HTMLElement>('[data-history-battle-day]')
+  if (!card || element?.closest('a')) return false
+  const day = card.dataset.historyBattleDay
+  if (!day || !validDay(day)) return false
+  const escaped = window.CSS?.escape ? window.CSS.escape(day) : day
+  const archiveDay = document.querySelector<HTMLElement>(`[data-history-day-card="${escaped}"]`)
+  if (archiveDay) {
+    archiveDay.click()
+    return true
+  }
+  const chartDay = document.querySelector<SVGGElement>(`.history-day-column[data-history-day="${escaped}"]`)
+  chartDay?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
+  return Boolean(chartDay)
+}
+
 if (typeof document !== 'undefined') {
   rewriteHistoryDayLinks()
   const observer = new MutationObserver((records) => {
@@ -59,4 +76,13 @@ if (typeof document !== 'undefined') {
     }
   })
   observer.observe(document.body, { childList: true, subtree: true })
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    if (!bridgeBattleDay(event.target)) return
+    event.preventDefault()
+  }, true)
+  document.addEventListener('click', (event) => {
+    bridgeBattleDay(event.target)
+  }, true)
 }
