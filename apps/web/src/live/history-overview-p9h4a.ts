@@ -22,80 +22,17 @@ function installOverviewBalance(panel: HTMLElement): void {
       return
     }
 
-    const summary = panel.querySelector<HTMLElement>('[data-history-summary]')
-    const coverage = panel.querySelector<HTMLElement>('[data-history-coverage-summary]')
     const mobileNavigation = panel.querySelector<HTMLElement>('[data-history-mobile-analysis]')
-    if (!summary || !coverage || !mobileNavigation) {
+    if (!mobileNavigation) {
       requestAnimationFrame(waitForP9H3)
       return
     }
 
-    let scheduled = false
-    let applying = false
-    let lastCoverageQuality = qualityFallback()
-
-    const reconcile = (): void => {
-      if (applying) return
-      applying = true
-      try {
-        lastCoverageQuality = balanceSummary(summary, lastCoverageQuality)
-        ensureCoverageQuality(coverage, lastCoverageQuality)
-        enhanceMobileNavigation(mobileNavigation)
-        panel.dataset.historyOverviewP9h4aReady = 'true'
-      } finally {
-        applying = false
-      }
-    }
-
-    const schedule = (): void => {
-      panel.dataset.historyOverviewP9h4aReady = 'false'
-      if (scheduled) return
-      scheduled = true
-      requestAnimationFrame(() => {
-        scheduled = false
-        reconcile()
-      })
-    }
-
-    // These observers are scoped to the two owned render roots. P9H6 may remove
-    // them after the legacy five-card Summary renderer is retired.
-    new MutationObserver(schedule).observe(summary, { childList: true, subtree: true })
-    new MutationObserver(schedule).observe(coverage, { childList: true, subtree: true })
-
-    reconcile()
+    enhanceMobileNavigation(mobileNavigation)
+    panel.dataset.historyOverviewP9h4aReady = 'true'
   }
 
   requestAnimationFrame(waitForP9H3)
-}
-
-function balanceSummary(summary: HTMLElement, fallback: string): string {
-  const cards = [...summary.children].filter((node): node is HTMLElement => node instanceof HTMLElement)
-  const coverageSource = cards[4]
-  if (!coverageSource) return fallback
-
-  const quality = coverageSource.querySelector('strong')?.textContent?.trim() || fallback
-  coverageSource.classList.add('history-summary-coverage-source')
-  coverageSource.dataset.historyCoverageSource = 'true'
-  coverageSource.hidden = true
-  coverageSource.setAttribute('aria-hidden', 'true')
-  return quality
-}
-
-function ensureCoverageQuality(root: HTMLElement, quality: string): void {
-  let block = root.querySelector<HTMLElement>('[data-history-coverage-quality]')
-  if (!block) {
-    block = document.createElement('div')
-    block.className = 'history-coverage-summary__quality'
-    block.dataset.historyCoverageQuality = ''
-    const label = document.createElement('small')
-    label.textContent = 'Coverage'
-    const value = document.createElement('strong')
-    block.append(label, document.createTextNode(' '), value)
-    root.prepend(block)
-  }
-
-  const value = block.querySelector<HTMLElement>('strong')
-  if (value && value.textContent !== quality) value.textContent = quality
 }
 
 function enhanceMobileNavigation(navigation: HTMLElement): void {
@@ -115,11 +52,6 @@ function enhanceMobileNavigation(navigation: HTMLElement): void {
 
 function validGroup(value: unknown): SecondaryGroup | null {
   return value === 'comparison' || value === 'calendar' || value === 'ranking' || value === 'coverage' ? value : null
-}
-
-function qualityFallback(): string {
-  const value = document.querySelector<HTMLElement>('.history-page')?.dataset.historyVisualState ?? 'unknown'
-  return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
 export {}
