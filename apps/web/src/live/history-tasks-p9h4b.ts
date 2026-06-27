@@ -199,12 +199,19 @@ function refreshContext(root: HTMLElement, report: HTMLElement): void {
   const metric = clean(metricButton?.textContent) || (new URL(location.href).searchParams.get('metric') === 'peak_viewers' ? 'Peak viewers' : 'Viewer-minutes')
   const scope = facts[3] || 'Observed days unavailable'
   const state = clean(root.querySelector('[data-history-state-pill]')?.textContent) || facts[2] || 'Unknown'
-  const source = clean(root.querySelector('.data-strip__cell:nth-child(4)')?.textContent)
+  const source = reportField(report, 'Source')
   setContext(report, 'provider', provider)
   setContext(report, 'period', period)
   setContext(report, 'metric', metric)
   setContext(report, 'scope', scope)
   setContext(report, 'state', source ? `${state} · ${source}` : state)
+}
+
+function reportField(report: HTMLElement, label: string): string {
+  const text = report.querySelector<HTMLElement>('[data-history-report-preview]')?.textContent ?? ''
+  const prefix = `${label}:`
+  const line = text.split(/\r?\n/).map((value) => value.trim()).find((value) => value.startsWith(prefix))
+  return line ? clean(line.slice(prefix.length)) : ''
 }
 
 function setContext(report: HTMLElement, key: string, value: string): void {
