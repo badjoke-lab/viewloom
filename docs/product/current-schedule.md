@@ -17,8 +17,8 @@ P9H2 canonical closeout                  complete PR #437
 P9H3 History Overview hierarchy          complete PR #439
 P9H3 canonical closeout                  complete PR #440
 P9H4A Overview balance                   complete PR #441
-P9H4A canonical closeout                 active
-Active implementation branch             work-history-ui-h4a-closeout
+P9H4A canonical closeout                 complete PR #442
+Active implementation branch             none
 Exact next branch                        work-history-ui-h4b-tasks
 P9H4B branch created                     no
 Phase 10 cross-site quality              queued
@@ -41,6 +41,9 @@ P9H4A Overview balance                   active
 Active implementation branch             work-history-ui-h4a-overview-balance
 Exact next branch                        work-history-ui-h4b-tasks
 P9H4B branch created                     no
+
+P9H4A canonical closeout                 active
+Active implementation branch             work-history-ui-h4a-closeout
 
 Active implementation branch             none
 Exact next branch                        work-history-ui-h4-tasks
@@ -106,7 +109,7 @@ P9H1  work-history-ui-h1-metric            complete PR #434
 P9H2  work-history-ui-h2-chart             complete PR #436
 P9H3  work-history-ui-h3-overview          complete PR #439
 P9H4A work-history-ui-h4a-overview-balance complete PR #441
-P9H4B work-history-ui-h4b-tasks            exact next after closeout and explicit continuation; not created
+P9H4B work-history-ui-h4b-tasks            exact next after explicit continuation; not created
 P9H5  work-history-ui-h5-responsive        queued
 P9H6  work-history-ui-h6-candidate         queued
 P9H7  work-history-ui-h7-acceptance        queued
@@ -114,4 +117,4 @@ P9H7  work-history-ui-h7-acceptance        queued
 
 ## Stop rule
 
-P9H4A implementation is complete through PR #441. Canonical closeout is active on `work-history-ui-h4a-closeout`. Do not create `work-history-ui-h4b-tasks` before closeout merges and explicit continuation is received.
+P9H4A is complete and canonically closed through PR #442. Do not create `work-history-ui-h4b-tasks` before explicit continuation is received.
