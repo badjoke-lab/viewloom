@@ -1,7 +1,7 @@
 # ViewLoom current execution schedule
 
 Status: source of truth
-Last updated: 2026-06-26
+Last updated: 2026-06-27
 
 ## Current position
 
@@ -13,8 +13,10 @@ P9H0 documentation closeout              complete PR #432
 Final-state correction                   complete PR #433
 P9H1 History metric synchronization      complete PR #434
 P9H1 merge                               31b81d3ed3a56369055ba09eb4de871dfc59d315
-P9H2 History chart interpretation        active
-Active implementation branch             work-history-ui-h2-chart
+P9H2 History chart interpretation        complete PR #436
+P9H2 merge                               4afba32749bb5098cc99fbabe897543791ec72fa
+P9H2 documentation closeout              complete PR #438
+Active implementation branch             none
 Exact next branch                        work-history-ui-h3-overview
 P9H3 branch created                      no
 Phase 10 cross-site quality              queued
@@ -37,26 +39,26 @@ Exact next branch                        work-history-ui-h2-chart
 P9H2 branch created                      no
 ```
 
-## P9H1 evidence
+## P9H2 evidence
 
 ```text
-PR: #434
-Final head: 9c4e3278b609e3f8d41fa3df71ba69f5ebc00618
-Merge commit: 31b81d3ed3a56369055ba09eb4de871dfc59d315
-Workflow run: 28232602651
-Artifact: history-ui-h1-metric
-Artifact ID: 7903212809
-Digest: sha256:783283fd1c913e7ccb99d04bb607ed5801db1c74ab3d341c81a40c440835e82c
+PR: #436
+Final head: ccba4d4c29dd1442a684e35bafba23d392410365
+Merge commit: 4afba32749bb5098cc99fbabe897543791ec72fa
+Workflow run: 28278497196
+Artifact: history-ui-h2-chart
+Artifact ID: 7921020539
+Digest: sha256:e6eeb9b2d1dad28237ad467554f4e1adcff5b4cc56577a8525d2d1cb1bb316ea
 ```
 
 Accepted scenarios:
 
 ```text
 Twitch desktop 1440 × 1000
-Kick mobile 390 × 844
+Kick touch mobile 390 × 844
 ```
 
-P9H1 keeps URL, provider request, control, chart, Summary, Selected day, comparison, Ranking context, Daily archive, Report, Share, and Export aligned with Viewer-minutes or Peak viewers. Report and Archives task changes do not request History again. Twitch and Kick remain separate. Daily rows without observations are excluded from report metric-day selection.
+P9H2 keeps URL, chart, Selected day, pointer/keyboard/touch inspection, metric/unit context, coverage-state meaning, and accessible SVG semantics aligned. Inspection reuses the loaded response. Battle Archive and Daily archive selection remain synchronized after late redraws. Twitch and Kick remain separate.
 
 No API, D1, collector, cron, retention, binding, provider-combination, or output-schema change was made.
 
@@ -65,19 +67,13 @@ No API, D1, collector, cron, retention, binding, provider-combination, or output
 ```text
 P9H0 work-history-ui-h0-baseline   complete PR #430
 P9H1 work-history-ui-h1-metric     complete PR #434
-P9H2 work-history-ui-h2-chart      active
-P9H3 work-history-ui-h3-overview   exact next after P9H2 merge and explicit continuation; not created
+P9H2 work-history-ui-h2-chart      complete PR #436
+P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
 P9H4 work-history-ui-h4-tasks      queued
 P9H5 work-history-ui-h5-responsive queued
 P9H6 work-history-ui-h6-candidate  queued
 P9H7 work-history-ui-h7-acceptance queued
 ```
-
-## P9H2 execution contract
-
-P9H2 covers chart interpretation: readable UTC date ticks, numeric scale, visible metric and unit, exact daily detail, pointer/keyboard/touch inspection, chart/URL/Selected-day synchronization, complete/partial/in-progress/missing/demo distinction, non-color-only legend, and an accessible SVG title and description.
-
-P9H2 preserves P9H1 metric synchronization, provider/request boundaries, Back/Forward, local task no-refetch, degraded states, and output schemas. Day inspection must not request History again.
 
 ## P9H2 permanent gate
 
@@ -87,8 +83,12 @@ scripts/verify-history-ui-h2-chart.mjs
 .github/workflows/history-ui-h2-chart.yml
 ```
 
-The deterministic scenarios are Twitch desktop at 1440 × 1000 and Kick touch mobile at 390 × 844.
+The accepted latest-head run also passed History Battle Browser, History Archives Browser, History Visual Responsive Browser, History browser gate, P9H1, build, policy, Public Browser Audit, Watchlist, Channel, and Data Status workflows.
+
+## Exact next work
+
+P9H3 repairs Overview hierarchy and compactness while preserving the accepted P9H1 metric and P9H2 chart behavior. Its branch is not created.
 
 ## Stop rule
 
-Complete P9H2 on `work-history-ui-h2-chart`. Do not create `work-history-ui-h3-overview` until P9H2 merges, the full merge report is issued, and explicit continuation is received.
+P9H2 and PR #438 closeout are complete. Do not create `work-history-ui-h3-overview` until the full closeout report is issued and explicit continuation is received.
