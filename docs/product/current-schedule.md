@@ -27,6 +27,7 @@ P9H4B repaired Archives and Report & Export hierarchy while preserving Back/Forw
 ## Historical gate strings
 
 ```text
+PR: #439
 P9H4B Archives and publishing hierarchy  active
 Active implementation branch             work-history-ui-h4b-tasks
 Exact next branch                        work-history-ui-h5-responsive
