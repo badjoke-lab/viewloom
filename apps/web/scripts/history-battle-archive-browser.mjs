@@ -31,6 +31,8 @@ async function selectionState(page, day) {
     const archive = document.querySelector(`[data-history-day-card="${value}"]`)
     return {
       day: value,
+      activeBattleDay: document.activeElement?.getAttribute('data-history-battle-day') ?? '',
+      activeTag: document.activeElement?.tagName ?? '',
       urlDay: new URL(location.href).searchParams.get('day'),
       chartFound: Boolean(chart),
       chartSelected: chart?.classList.contains('is-selected') ?? false,
@@ -74,7 +76,9 @@ async function desktopGate(browser) {
   assert((await page.locator('[data-history-battle-toggle]').textContent())?.includes('Show top 10'), 'Desktop: expanded toggle label is wrong.')
 
   const expandedFirst = page.locator('[data-history-battle-day]').first()
-  await expandedFirst.press('Enter')
+  await expandedFirst.focus()
+  assert((await selectionState(page, firstDay)).activeBattleDay === firstDay, 'Desktop: Battle card did not receive focus.')
+  await page.keyboard.press('Enter')
   try {
     await page.waitForFunction((day) => {
       const selectedChartDay = document.querySelector(`.history-day-column[data-history-day="${day}"]`)
