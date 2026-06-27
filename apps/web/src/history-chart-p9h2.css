@@ -9,6 +9,7 @@
 .history-page .history-day-column[aria-current="date"] .history-state-marker{fill:#fff;stroke-width:5px}
 .history-page .history-day-column[data-history-coverage="missing"] .history-bar-hit{stroke-dasharray:7 5}
 .history-page .history-day-column[data-history-coverage="in-progress"] .history-bar-hit{stroke-dasharray:2 5}
+.history-page .history-bar-hit{pointer-events:all;touch-action:manipulation}
 
 @media(max-width:760px){
   .history-page .history-chart-inspection{position:sticky;left:0;grid-template-columns:1fr;min-width:min(100%,390px);font-size:12px}
