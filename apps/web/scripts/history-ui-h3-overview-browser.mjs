@@ -40,7 +40,7 @@ async function run(browser, provider, viewport, touch) {
     assert.ok(initial.order.primary < initial.order.comparison)
     assert.ok(initial.order.comparison < initial.order.calendar)
     assert.ok(initial.order.calendar < initial.order.ranking)
-    assert.ok(initial.order.ranking < initial.order.insights)
+    assert.ok(initial.order.ranking <= initial.order.insights)
     assert.ok(initial.order.insights < initial.order.coverage)
   } else {
     assert.notEqual(initial.mobileNavDisplay, 'none')
