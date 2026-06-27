@@ -46,10 +46,18 @@ function install(root: HTMLElement, shell: HTMLElement, archives: HTMLElement, r
   labelPublishingStatuses(report)
 
   let scheduled = false
+  let reportSource = ''
+  let sourceAttempts = 0
   const refresh = (): void => {
     scheduled = false
     refreshArchiveCounts(archives)
-    refreshContext(root, report)
+    reportSource = refreshContext(root, report, reportSource)
+    if (!reportSource && sourceAttempts < 120) {
+      sourceAttempts += 1
+      requestAnimationFrame(schedule)
+      return
+    }
+    sourceAttempts = 0
     root.dataset.historyP9h4bReady = 'true'
   }
   const schedule = (): void => {
@@ -60,7 +68,7 @@ function install(root: HTMLElement, shell: HTMLElement, archives: HTMLElement, r
 
   document.addEventListener('click', (event) => {
     const target = event.target as Element | null
-    if (target?.closest('[data-history-view],[data-history-archive-view],[data-history-period],[data-history-metric],[data-history-apply-range],[data-history-peak-toggle],[data-history-battle-toggle]')) schedule()
+    if (target?.closest('[data-history-view],[data-history-archive-view],[data-history-period],[data-history-metric],[data-history-apply-range],[data-history-peak-toggle],[data-history-battle-toggle],[data-history-report-mode]')) schedule()
   }, true)
   window.addEventListener('popstate', schedule)
   window.addEventListener('viewloom:peak-archive-toggle', schedule)
@@ -191,7 +199,7 @@ function refreshArchiveCounts(archives: HTMLElement): void {
   })
 }
 
-function refreshContext(root: HTMLElement, report: HTMLElement): void {
+function refreshContext(root: HTMLElement, report: HTMLElement, previousSource: string): string {
   const provider = document.body.dataset.provider === 'kick' ? 'Kick' : 'Twitch'
   const facts = [...root.querySelectorAll<HTMLElement>('.head-facts .fact strong')].map((node) => clean(node.textContent))
   const period = clean(root.querySelector('[data-history-period-label]')?.textContent) || facts[0] || 'Current retained period'
@@ -199,12 +207,13 @@ function refreshContext(root: HTMLElement, report: HTMLElement): void {
   const metric = clean(metricButton?.textContent) || (new URL(location.href).searchParams.get('metric') === 'peak_viewers' ? 'Peak viewers' : 'Viewer-minutes')
   const scope = facts[3] || 'Observed days unavailable'
   const state = clean(root.querySelector('[data-history-state-pill]')?.textContent) || facts[2] || 'Unknown'
-  const source = reportField(report, 'Source')
+  const source = reportField(report, 'Source') || previousSource
   setContext(report, 'provider', provider)
   setContext(report, 'period', period)
   setContext(report, 'metric', metric)
   setContext(report, 'scope', scope)
   setContext(report, 'state', source ? `${state} · ${source}` : state)
+  return source
 }
 
 function reportField(report: HTMLElement, label: string): string {
