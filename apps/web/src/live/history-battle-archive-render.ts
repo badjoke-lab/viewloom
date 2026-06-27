@@ -8,6 +8,7 @@ export function renderBattleArchive(entries: BattleArchiveEntry[]): void {
   const toggle = mount.querySelector<HTMLButtonElement>('[data-history-battle-toggle]')
   const summary = mount.querySelector<HTMLElement>('[data-history-battle-summary]')
   if (!list || !toggle || !summary) return
+  bindBattleList(list)
 
   if (!entries.length) {
     summary.textContent = 'No completed-day matchup has enough retained aggregate data.'
@@ -22,28 +23,33 @@ export function renderBattleArchive(entries: BattleArchiveEntry[]): void {
   toggle.hidden = entries.length <= 10
   toggle.textContent = expanded ? 'Show top 10' : `Show all ${entries.length}`
   toggle.setAttribute('aria-expanded', String(expanded))
+}
 
-  list.querySelectorAll<HTMLElement>('[data-history-battle-day]').forEach((card) => {
-    const choose = (event: Event) => {
-      if ((event.target as HTMLElement | null)?.closest('a')) return
-      const day = card.dataset.historyBattleDay
-      if (!day) return
-      const archiveDay = document.querySelector<HTMLElement>(`[data-history-day-card="${cssEscape(day)}"]`)
-      if (archiveDay) {
-        archiveDay.click()
-        return
-      }
-      document.querySelector<SVGGElement>(`.history-day-column[data-history-day="${cssEscape(day)}"]`)
-        ?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
-    }
-    card.addEventListener('click', choose)
-    card.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault()
-        choose(event)
-      }
-    })
+function bindBattleList(list: HTMLElement): void {
+  if (list.dataset.historyBattleListBound === 'true') return
+  list.dataset.historyBattleListBound = 'true'
+  list.addEventListener('click', chooseBattleDay)
+  list.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    if (!(event.target as Element | null)?.closest('[data-history-battle-day]')) return
+    event.preventDefault()
+    chooseBattleDay(event)
   })
+}
+
+function chooseBattleDay(event: Event): void {
+  const target = event.target as HTMLElement | null
+  if (target?.closest('a')) return
+  const card = target?.closest<HTMLElement>('[data-history-battle-day]')
+  const day = card?.dataset.historyBattleDay
+  if (!day) return
+  const archiveDay = document.querySelector<HTMLElement>(`[data-history-day-card="${cssEscape(day)}"]`)
+  if (archiveDay) {
+    archiveDay.click()
+    return
+  }
+  document.querySelector<SVGGElement>(`.history-day-column[data-history-day="${cssEscape(day)}"]`)
+    ?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
 }
 
 function ensureMount(): HTMLElement {
