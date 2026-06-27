@@ -1,15 +1,24 @@
 # ViewLoom History UI repair implementation plan
 
 Status: active implementation subplan
-Version: 1.9
+Version: 2.0
 Last updated: 2026-06-27
 Roadmap phase: Phase 9 — History P1 repair
 Completed P9H0: PR #430
 Completed P9H1: PR #434
 Completed P9H2: PR #436
 Completed P9H2 canonical closeout: PR #437
+Current implementation branch: `work-history-ui-h3-overview`
+Exact next branch after merge and explicit continuation: `work-history-ui-h4-tasks`
+
+## Historical P9H2 closeout snapshot
+
+```text
+Version: 1.9
 Current implementation branch: none
 Exact next branch: `work-history-ui-h3-overview`
+P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
+```
 
 ## Historical P9H2 active snapshot
 
@@ -75,12 +84,12 @@ scripts/verify-history-ui-h2-chart.mjs
 .github/workflows/history-ui-h2-chart.yml
 ```
 
-## Remaining sequence
+## Active P9H3 sequence
 
 ```text
 P9H2 work-history-ui-h2-chart      complete PR #436
-P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
-P9H4 work-history-ui-h4-tasks      queued
+P9H3 work-history-ui-h3-overview   active
+P9H4 work-history-ui-h4-tasks      exact next after P9H3 merge and explicit continuation; not created
 P9H5 work-history-ui-h5-responsive queued
 P9H6 work-history-ui-h6-candidate  queued
 P9H7 work-history-ui-h7-acceptance queued
@@ -98,8 +107,21 @@ P9H3 covers Overview order and compactness. It must:
 - shorten the mobile task flow without treating mobile as a scaled desktop;
 - reuse loaded History data and preserve Back/Forward, provider separation, state honesty, and output schemas.
 
+Implementation ownership:
+
+```text
+apps/web/src/live/history-current-shell-entry.ts   accepted state/request/base render owner
+apps/web/src/live/history-view-shell.ts            task shell and section rehoming owner
+apps/web/src/live/history-overview.ts              metric-aware Summary/Selected day/ranking/insights owner
+apps/web/src/history-overview.css                  Overview hierarchy and compactness owner
+apps/web/src/history-view-shell.css                task navigation owner
+apps/web/src/history-visual-responsive.css         existing responsive baseline
+```
+
+P9H3 must not add a second History data source, another global fetch wrapper, a provider-neutral endpoint, or new server/storage work. New acceptance belongs in dedicated P9H3 repository and browser gates.
+
 P9H4 covers Archives and publishing hierarchy. P9H5 covers required widths and accessibility. P9H6–P9H7 cover local candidate and production acceptance.
 
 ## Stop rule
 
-P9H2 is complete and canonically closed through PR #437. Do not create `work-history-ui-h3-overview` until explicit continuation is received. After every merge, issue the full report and stop.
+Complete P9H3 on `work-history-ui-h3-overview`. Do not create `work-history-ui-h4-tasks` until P9H3 merges, the full merge report is issued, and explicit continuation is received.
