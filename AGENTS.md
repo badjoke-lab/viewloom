@@ -9,15 +9,11 @@ Read before changing the repository:
 5. `docs/product/current-roadmap.md`
 6. `docs/product/current-schedule.md`
 7. `docs/product/post-watchlist-program-plan.md`
-8. affected baseline specification
-9. affected active/future specification
-10. affected implementation plan
-11. active working note
-12. relevant audit and acceptance records
+8. affected specifications, implementation plan, working note, and evidence records
 
-Do not start from chat memory, screenshots, an old PR, or a stale document. Compare the schedule with actual branches and PRs. Confirm explicit continuation. Update governing documents before implementation when state, scope, order, or acceptance criteria changed.
+Do not start from chat memory, screenshots, an old PR, or a stale document. Compare the schedule with actual branches and PRs, confirm explicit continuation, and update governing documents before implementation when state or acceptance changed.
 
-Use `work-*` for ordinary development and `preview-*` only for deliberate Cloudflare validation of a completed candidate. Only latest-head evidence counts. Keep Twitch and Kick routes, APIs, storage, rankings, exports, locales, and coverage claims separated.
+Use `work-*` for ordinary development and `preview-*` only for deliberate Cloudflare validation. Only latest-head evidence counts. Keep Twitch and Kick routes, APIs, storage, rankings, exports, locales, and coverage claims separated.
 
 Current state:
 
@@ -28,34 +24,32 @@ Final-state correction complete through PR #433
 P9H1 complete through PR #434
 P9H2 complete through PR #436
 P9H2 canonical closeout complete through PR #437
-P9H3 active on work-history-ui-h3-overview
-Active implementation branch: work-history-ui-h3-overview
+P9H3 complete through PR #439
+P9H3 canonical closeout complete through PR #440
+Active implementation branch: none
 Exact next implementation branch: work-history-ui-h4-tasks
 P9H4 branch created: no
 ```
 
-Historical P9H2 closeout evidence, not current state:
+Historical gate evidence, not current state:
 
 ```text
+P9H3 active on work-history-ui-h3-overview
+Active implementation branch: work-history-ui-h3-overview
+Exact next implementation branch: work-history-ui-h4-tasks
+P9H4 branch created: no
+
 Active implementation branch: none
 Exact next implementation branch: work-history-ui-h3-overview
 P9H3 branch created: no
-```
 
-Historical P9H2 active evidence, not current state:
-
-```text
 P9H2 active
 Active implementation branch: work-history-ui-h2-chart
 Exact next implementation branch: work-history-ui-h3-overview
 P9H3 branch created: no
-```
 
-Historical P9H1 closeout evidence, not current state:
-
-```text
 Active implementation branch: none
 P9H2 branch created: no
 ```
 
-Complete P9H3 before creating P9H4. Do not start Phase 10–16 before its documented entry condition. After every merge, issue the full merge report and stop.
+Do not create P9H4 before explicit continuation. Do not start Phase 10–16 before its documented entry condition. After every merge, issue the full merge report and stop.
