@@ -18,6 +18,8 @@ Exact next implementation branch after explicit continuation: `work-history-ui-h
 Historical gate strings, not current state:
 
 ```text
+| 8 | P8B | complete PR #428
+
 Version: 2.6
 Current phase: Phase 9 — P9H3 Overview hierarchy
 Current implementation branch: `work-history-ui-h3-overview`
