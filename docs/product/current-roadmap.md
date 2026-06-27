@@ -71,6 +71,13 @@ P9H2 branch created: no
 - History Overview balance is complete through PR #441 and closed through PR #442.
 - Twitch and Kick remain separate across routes, APIs, storage, bindings, rankings, exports, and coverage claims.
 
+Historical P9H1 evidence:
+
+```text
+Workflow run: 28232602651
+Artifact: history-ui-h1-metric / 7903212809
+```
+
 P9H4A accepted evidence:
 
 ```text
