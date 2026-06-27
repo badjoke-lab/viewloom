@@ -24,9 +24,11 @@ P9H3 Overview hierarchy             complete PR #439
 P9H3 canonical closeout             complete PR #440
 P9H4A Overview balance              complete PR #441
 P9H4A canonical closeout            complete PR #442
+P9H4B Archives and publishing       complete PR #443
+P9H4B canonical closeout            complete PR #444
 Active implementation branch        none
-Exact next branch                   work-history-ui-h4b-tasks
-P9H4B branch created                no
+Exact next branch                   work-history-ui-h5-responsive
+P9H5 branch created                 no
 ```
 
 Historical gate strings, not current state:
@@ -73,12 +75,14 @@ Digest: sha256:62bd0bd1c991cdc87286aa62d28668c961cac987eebaf606db5512469e968aac
 
 P9H4A makes `Key changes` normal-flow, bounds the desktop Calendar, protects ranking width, presents four primary Summary facts plus a full-width coverage band, compacts withheld comparison, and improves mobile chart, Selected day, and More analysis presentation. It adds no History observer or request seam and changes no API, D1, collector, cron, retention, binding, provider, or output schema.
 
+P9H4B is complete through PR #443 and canonically closed through PR #444. Accepted evidence is recorded in `docs/product/current-schedule.md` and the P9H4B permanent verifier.
+
 ## Next sequence
 
 ```text
 P9H4A Overview balance              complete PR #441
-P9H4B Archives and Report & Export  exact next after explicit continuation
-P9H5 responsive and accessibility
+P9H4B Archives and Report & Export  complete PR #443
+P9H5 responsive and accessibility  exact next after explicit continuation
 P9H6 local candidate
 P9H7 production acceptance
 ```
