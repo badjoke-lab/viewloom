@@ -33,6 +33,8 @@ P9H6 canonical closeout             complete PR #450
 P9H7 hosted/production acceptance  active
 Active implementation branch        work-history-ui-h7-acceptance
 Attempted Preview branch            preview-history-ui-h7-acceptance
+Preview branch                      preview-history-ui-h7-acceptance
+Preview deployment                  unavailable; exact-SHA 404 before tests
 ```
 
 Historical gate strings, not current state:
