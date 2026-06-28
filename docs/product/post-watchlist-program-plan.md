@@ -1,11 +1,12 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 3.2
+Version: 3.3
 Created: 2026-06-25
 Last updated: 2026-06-28
-Current phase: Phase 9 — P9H6 complete; P9H7 next
-Current implementation branch: none
+Current phase: Phase 9 — P9H7 hosted and production acceptance
+Current implementation branch: `work-history-ui-h7-acceptance`
+Current Preview branch: `preview-history-ui-h7-acceptance`
 Completed metric synchronization: PR #434
 Completed chart interpretation: PR #436
 Completed Overview hierarchy: PR #439
@@ -17,11 +18,15 @@ Completed responsive and accessibility repair: PR #447
 Completed P9H5 canonical closeout: PR #448
 Completed local candidate: PR #449
 Completed P9H6 canonical closeout: PR #450
-Exact next implementation branch after explicit continuation: `work-history-ui-h7-acceptance`
 
 ## Historical gate strings
 
 ```text
+Version: 3.2
+Current phase: Phase 9 — P9H6 complete; P9H7 next
+Current implementation branch: none
+Exact next implementation branch after explicit continuation: `work-history-ui-h7-acceptance`
+P9H7 work-history-ui-h7-acceptance exact next after explicit continuation; not created
 Version: 3.1
 Current phase: Phase 9 — P9H5 complete; P9H6 next
 Current implementation branch: none
@@ -94,6 +99,19 @@ Phases: 6
 Scenarios: 21
 ```
 
+## P9H7 acceptance program
+
+```text
+P9H7 work-history-ui-h7-acceptance active
+Preview preview-history-ui-h7-acceptance exact final work HEAD only
+Production main exact squash-merge SHA only
+Permanent record required
+Temporary History repair notes deleted only after acceptance
+Phase 10 blocked until P9H7 closure
+```
+
+P9H7 uses `apps/web/scripts/history-ui-h7-hosted-acceptance.mjs` and `.github/workflows/history-ui-h7-acceptance.yml` to prove real provider data, exact deployment identity, public browser behavior, provider separation, and accessibility at 1440, 820, 390, and 360 pixels.
+
 ```text
 P9H0 complete PR #430
 P9H1 complete PR #434
@@ -104,11 +122,9 @@ P9H4B complete PR #443
 P9H5 complete PR #447
 P9H6 complete PR #449
 P9H6 closeout complete PR #450
-P9H7 work-history-ui-h7-acceptance exact next after explicit continuation; not created
+P9H7 work-history-ui-h7-acceptance active
 Phase 10–15 queued
 Phase 16 not approved
 ```
 
 Phase 16 begins only after one candidate is separately approved with its own specification and branch sequence.
-
-P9H6 is complete and canonically closed through PR #450. Do not create `work-history-ui-h7-acceptance` before explicit continuation is received.
