@@ -1,0 +1,172 @@
+name: History UI P9H6 Candidate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/README.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/product/history-ui-repair-plan.md'
+      - 'docs/work-in-progress/history-ui-repair-working-note.md'
+      - 'docs/work-in-progress/p9h6-candidate.md'
+      - 'apps/web/twitch/history/index.html'
+      - 'apps/web/kick/history/index.html'
+      - 'apps/web/src/live/history-*.ts'
+      - 'apps/web/src/history-*.css'
+      - 'apps/web/scripts/history-ui-h1-browser.mjs'
+      - 'apps/web/scripts/history-ui-h2-chart-browser.mjs'
+      - 'apps/web/scripts/history-ui-h3-overview-browser.mjs'
+      - 'apps/web/scripts/history-ui-h4a-overview-browser.mjs'
+      - 'apps/web/scripts/history-ui-h4b-tasks-browser.mjs'
+      - 'apps/web/scripts/history-ui-h5-responsive-*.mjs'
+      - 'apps/web/scripts/history-ui-h6-candidate-manifest.mjs'
+      - 'scripts/verify-history-ui-h*.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/history-ui-h6-candidate.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/twitch/history/index.html'
+      - 'apps/web/kick/history/index.html'
+      - 'apps/web/src/live/history-*.ts'
+      - 'apps/web/src/history-*.css'
+      - 'apps/web/scripts/history-ui-h*.mjs'
+      - 'scripts/verify-history-ui-h*.mjs'
+      - '.github/workflows/history-ui-h6-candidate.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      HISTORY_H1_BASE_URL: http://127.0.0.1:4173
+      HISTORY_H1_ARTIFACT_DIR: /tmp/history-ui-h6/h1
+      HISTORY_H2_BASE_URL: http://127.0.0.1:4173
+      HISTORY_H2_ARTIFACT_DIR: /tmp/history-ui-h6/h2
+      HISTORY_H3_BASE_URL: http://127.0.0.1:4173
+      HISTORY_H3_ARTIFACT_DIR: /tmp/history-ui-h6/h3
+      HISTORY_H4A_BASE_URL: http://127.0.0.1:4173
+      HISTORY_H4A_ARTIFACT_DIR: /tmp/history-ui-h6/h4a
+      HISTORY_H4B_BASE_URL: http://127.0.0.1:4173
+      HISTORY_H4B_ARTIFACT_DIR: /tmp/history-ui-h6/h4b
+      HISTORY_H5_BASE_URL: http://127.0.0.1:4173
+      HISTORY_H5_ARTIFACT_DIR: /tmp/history-ui-h6/h5
+      HISTORY_H6_ARTIFACT_DIR: /tmp/history-ui-h6
+      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Verify retained History contracts
+        run: |
+          node scripts/verify-history-ui-h1-metric.mjs
+          node scripts/verify-history-ui-h2-chart.mjs
+          node scripts/verify-history-ui-h3-overview.mjs
+          node scripts/verify-history-ui-h4a-overview.mjs
+          node scripts/verify-history-ui-h4b-tasks.mjs
+          node scripts/verify-history-ui-h5-responsive.mjs
+
+      - name: Verify P9H6 repository contract
+        run: node scripts/verify-history-ui-h6-candidate.mjs
+
+      - name: Typecheck web application
+        run: pnpm --filter @viewloom/web typecheck:app
+
+      - name: Build web application once
+        run: pnpm build:web
+
+      - name: Start one local History preview
+        shell: bash
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/history-ui-h6-preview.log 2>&1 &
+          for attempt in {1..60}; do
+            curl --silent --fail http://127.0.0.1:4173/twitch/history/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/kick/history/ > /dev/null \
+              && exit 0
+            sleep 1
+          done
+          cat /tmp/history-ui-h6-preview.log
+          exit 1
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run P9H1 through P9H5 candidate evidence
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/history-ui-h1-browser.mjs
+          node scripts/history-ui-h2-chart-browser.mjs
+          node scripts/history-ui-h3-overview-browser.mjs
+          node scripts/history-ui-h4a-overview-browser.mjs
+          node scripts/history-ui-h4b-tasks-browser.mjs
+          node scripts/history-ui-h5-responsive-runner.mjs
+
+      - name: Build P9H6 candidate manifest
+        working-directory: apps/web
+        run: node scripts/history-ui-h6-candidate-manifest.mjs
+
+      - name: Verify P9H6 candidate manifest
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          const manifest = JSON.parse(readFileSync('/tmp/history-ui-h6/history-ui-h6-candidate-manifest.json', 'utf8'))
+          assert.equal(manifest.schema, 'viewloom-history-ui-h6-candidate-v1')
+          assert.equal(manifest.phase, 'P9H6')
+          assert.equal(manifest.result, 'pass')
+          assert.equal(manifest.candidateHead, process.env.GITHUB_HEAD_SHA)
+          assert.equal(manifest.phaseCount, 6)
+          assert.equal(manifest.scenarioCount, 21)
+          assert.deepEqual(manifest.providers, ['kick', 'twitch'])
+          assert.equal(manifest.invariants.oneExactHead, true)
+          assert.equal(manifest.invariants.oneBuild, true)
+          assert.equal(manifest.invariants.oneLocalPreview, true)
+          assert.equal(manifest.invariants.providerSeparated, true)
+          for (const phase of manifest.phases) {
+            assert.match(phase.sha256, /^[a-f0-9]{64}$/)
+            assert.ok(phase.scenarios.length > 0)
+            assert.ok(phase.providers.every((provider) => provider === 'kick' || provider === 'twitch'))
+          }
+          NODE
+
+      - name: Upload P9H6 candidate artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: history-ui-h6-candidate
+          path: |
+            /tmp/history-ui-h6/**
+            /tmp/history-ui-h6-preview.log
+          if-no-files-found: error
