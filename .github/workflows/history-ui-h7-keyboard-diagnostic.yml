@@ -1,0 +1,61 @@
+name: History UI P9H7 Keyboard Diagnostic
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/scripts/history-ui-h7-keyboard-diagnostic.mjs'
+      - '.github/workflows/history-ui-h7-keyboard-diagnostic.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      HISTORY_H7_ORIGIN: https://vl.badjoke-lab.com
+      HISTORY_H7_DIAGNOSTIC_DIR: /tmp/history-ui-h7-keyboard-diagnostic
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify script syntax
+        run: node --check apps/web/scripts/history-ui-h7-keyboard-diagnostic.mjs
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run keyboard diagnostic
+        working-directory: apps/web
+        run: node scripts/history-ui-h7-keyboard-diagnostic.mjs
+
+      - name: Upload keyboard diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: history-ui-h7-keyboard-diagnostic
+          path: /tmp/history-ui-h7-keyboard-diagnostic/**
+          if-no-files-found: warn
