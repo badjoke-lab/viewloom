@@ -102,8 +102,6 @@ async function inspectProvider(provider) {
   if (provider === 'twitch') check(collectorState === 'ok', `twitch: collector state ${collectorState}.`)
   else check(collectorState === 'snapshot_available', `kick: collector state ${collectorState}.`)
 
-  const viewerSummary = inspectHistoryPayload(viewerMinutes, provider, 'viewer_minutes')
-  const peakSummary = inspectHistoryPayload(peakViewers, provider, 'peak_viewers')
   const summary = {
     binding: status.storage.binding,
     database: status.storage.database,
@@ -111,8 +109,8 @@ async function inspectProvider(provider) {
     observedCount: status.latestSnapshot.observedCount,
     sourceMode: status.sourceMode ?? null,
     state: status.state ?? null,
-    viewerMinutes: viewerSummary,
-    peakViewers: peakSummary,
+    viewerMinutes: inspectHistoryPayload(viewerMinutes, provider, 'viewer_minutes'),
+    peakViewers: inspectHistoryPayload(peakViewers, provider, 'peak_viewers'),
   }
   log(`${provider} provider evidence: ${JSON.stringify(summary)}`)
   return summary
@@ -128,24 +126,14 @@ function inspectHistoryPayload(payload, provider, metric) {
   const topStreamers = Array.isArray(payload?.topStreamers) ? payload.topStreamers.length : 0
   check(observedDays > 0, `${provider} ${metric}: no retained observed day.`)
   check(topStreamers > 0, `${provider} ${metric}: no retained top streamers.`)
-  return {
-    source: payload.source,
-    state: payload.state,
-    metric: payload.metric,
-    requestedDays: daily.length,
-    observedDays,
-    topStreamers,
-  }
+  return { source: payload.source, state: payload.state, metric: payload.metric, requestedDays: daily.length, observedDays, topStreamers }
 }
 
 async function verifyDesktop(browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } })
   const page = await context.newPage()
   const calls = trackRequests(page)
-  await page.goto(`${origin}/twitch/history/?period=30d&metric=viewer_minutes&p9h7=${Date.now()}`, {
-    waitUntil: 'domcontentloaded',
-    timeout: 30_000,
-  })
+  await page.goto(`${origin}/twitch/history/?period=30d&metric=viewer_minutes&p9h7=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 30_000 })
   await ready(page, 'viewer_minutes')
   await assertPublicIdentity(page, 'twitch')
   await assertLayout(page, 'twitch desktop 1440')
@@ -184,10 +172,7 @@ async function verifyTablet(browser) {
   const context = await browser.newContext({ viewport: { width: 820, height: 1000 } })
   const page = await context.newPage()
   const calls = trackRequests(page)
-  await page.goto(`${origin}/kick/history/?period=30d&metric=peak_viewers&view=archives&archive=battles&p9h7=${Date.now()}`, {
-    waitUntil: 'domcontentloaded',
-    timeout: 30_000,
-  })
+  await page.goto(`${origin}/kick/history/?period=30d&metric=peak_viewers&view=archives&archive=battles&p9h7=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 30_000 })
   await ready(page, 'peak_viewers')
   await assertPublicIdentity(page, 'kick')
   await assertLayout(page, 'kick tablet 820')
@@ -207,10 +192,7 @@ async function verifyMobileReport(browser) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
   const page = await context.newPage()
   const calls = trackRequests(page)
-  await page.goto(`${origin}/kick/history/?period=30d&metric=peak_viewers&view=report&p9h7=${Date.now()}`, {
-    waitUntil: 'domcontentloaded',
-    timeout: 30_000,
-  })
+  await page.goto(`${origin}/kick/history/?period=30d&metric=peak_viewers&view=report&p9h7=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 30_000 })
   await ready(page, 'peak_viewers')
   await assertPublicIdentity(page, 'kick')
   await assertLayout(page, 'kick mobile 390')
@@ -231,10 +213,7 @@ async function verifyMobileChart(browser) {
   const context = await browser.newContext({ viewport: { width: 360, height: 800 }, isMobile: true, hasTouch: true })
   const page = await context.newPage()
   const calls = trackRequests(page)
-  await page.goto(`${origin}/twitch/history/?period=30d&metric=viewer_minutes&p9h7=${Date.now()}`, {
-    waitUntil: 'domcontentloaded',
-    timeout: 30_000,
-  })
+  await page.goto(`${origin}/twitch/history/?period=30d&metric=viewer_minutes&p9h7=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 30_000 })
   await ready(page, 'viewer_minutes')
   await assertPublicIdentity(page, 'twitch')
   await assertLayout(page, 'twitch mobile 360')
@@ -250,17 +229,10 @@ async function verifyMobileChart(browser) {
 }
 
 async function verifyForcedColors(browser) {
-  const context = await browser.newContext({
-    viewport: { width: 390, height: 844 },
-    reducedMotion: 'reduce',
-    forcedColors: 'active',
-  })
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', forcedColors: 'active' })
   const page = await context.newPage()
   const calls = trackRequests(page)
-  await page.goto(`${origin}/twitch/history/?period=7d&metric=viewer_minutes&p9h7=${Date.now()}`, {
-    waitUntil: 'domcontentloaded',
-    timeout: 30_000,
-  })
+  await page.goto(`${origin}/twitch/history/?period=7d&metric=viewer_minutes&p9h7=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 30_000 })
   await ready(page, 'viewer_minutes')
   await assertLayout(page, 'twitch forced-colors 390')
   check(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), 'forced-colors scenario: reduced motion inactive.')
@@ -309,17 +281,31 @@ async function assertLayout(page, label) {
 }
 
 async function assertSkipEntry(page, label) {
-  await page.evaluate(() => {
-    if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+  const reset = await page.evaluate(() => {
+    const skip = document.querySelector('[data-history-skip-link]')
+    if (!(skip instanceof HTMLAnchorElement)) return { ok: false, reason: 'missing' }
+    if (skip.getAttribute('tabindex') === '-1') return { ok: false, reason: 'tabindex' }
+    const style = getComputedStyle(skip)
+    if (style.display === 'none' || style.visibility === 'hidden') return { ok: false, reason: 'hidden' }
+    document.body.setAttribute('tabindex', '-1')
+    document.body.focus()
+    return { ok: document.activeElement === document.body, reason: 'body-focus' }
   })
-  check(await page.evaluate(() => document.activeElement === document.body), `${label}: initial focus is not body.`)
+  check(reset.ok, `${label}: could not establish keyboard navigation origin (${reset.reason}).`)
   await page.keyboard.press('Tab')
-  check(await page.evaluate(() => document.activeElement?.hasAttribute('data-history-skip-link') ?? false), `${label}: first Tab did not reach History skip link.`)
+  const active = await page.evaluate(() => ({
+    skip: document.activeElement?.hasAttribute('data-history-skip-link') ?? false,
+    tag: document.activeElement?.tagName ?? '',
+    text: document.activeElement?.textContent?.trim().slice(0, 80) ?? '',
+  }))
+  await page.evaluate(() => document.body.removeAttribute('tabindex'))
+  check(active.skip, `${label}: first Tab did not reach History skip link; active=${active.tag}:${active.text}.`)
   const style = await page.locator('[data-history-skip-link]').evaluate((node) => {
     const value = getComputedStyle(node)
-    return { outlineStyle: value.outlineStyle, outlineWidth: value.outlineWidth }
+    return { outlineStyle: value.outlineStyle, outlineWidth: value.outlineWidth, transform: value.transform }
   })
   check(style.outlineStyle !== 'none' && style.outlineWidth !== '0px', `${label}: skip-link focus is not visible.`)
+  check(style.transform === 'none' || style.transform === 'matrix(1, 0, 0, 1, 0, 0)', `${label}: focused skip link remained off-canvas.`)
   await page.keyboard.press('Enter')
   await page.waitForFunction(() => document.activeElement?.id === 'history-main')
 }
@@ -453,10 +439,7 @@ async function assertNoOverflow(page, label) {
 
 async function fetchJson(path) {
   const url = `${origin}${path}`
-  const response = await fetch(url, {
-    headers: { accept: 'application/json', 'cache-control': 'no-cache' },
-    cache: 'no-store',
-  })
+  const response = await fetch(url, { headers: { accept: 'application/json', 'cache-control': 'no-cache' }, cache: 'no-store' })
   const text = await response.text()
   log(`${response.status} ${url} ${text.slice(0, 300)}`)
   check(response.ok, `Hosted request failed: ${response.status} ${url}`)
