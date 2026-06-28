@@ -26,11 +26,15 @@ Exact next implementation branch: work-history-ui-h7-acceptance
 P9H7 branch created: no
 ```
 
+Local Watchlist v1 is complete through PR #425.
+
 P9H6 produced one deterministic local candidate from one exact HEAD, one build, and one local preview. P9H7 is production acceptance.
 
 ## Historical gate strings
 
 ```text
+Phase 8 P8B   complete PR #428
+Phase 9 P9H1  complete PR #434
 Phase 9 P9H6 active
 Active implementation branch: work-history-ui-h6-candidate
 Exact next implementation branch: work-history-ui-h7-acceptance
