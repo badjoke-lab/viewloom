@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map
-Last updated: 2026-06-27
+Last updated: 2026-06-28
 
 Read the development policy, documentation governance, roadmap, schedule, program plan, affected specifications, implementation plan, working note, and evidence before changing the repository.
 
@@ -23,15 +23,19 @@ P9H4B    work-history-ui-h4b-tasks                       complete PR #443
 P9H4B canonical closeout complete PR #444
 P9H5     work-history-ui-h5-responsive                   complete PR #447
 P9H5 canonical closeout complete PR #448
+P9H6     work-history-ui-h6-candidate                    complete PR #449
+P9H6 canonical closeout complete PR #450
 Active implementation branch                            none
-P9H6     work-history-ui-h6-candidate                    exact next; not created
+P9H7     work-history-ui-h7-acceptance                   exact next; not created
 ```
 
 Historical gate strings, not current state:
 
 ```text
-P9H5     work-history-ui-h5-responsive                   active
-Active implementation branch                            work-history-ui-h5-responsive
+P9H6     work-history-ui-h6-candidate                    active
+Active implementation branch                            work-history-ui-h6-candidate
+P9H6 canonical closeout active
+Active implementation branch                            work-history-ui-h6-closeout
 P9H1 completed through PR #434
 P9H3     work-history-ui-h3-overview                       complete PR #439
 P9H4A    work-history-ui-h4a-overview-balance            active
@@ -48,20 +52,13 @@ P9H2 active on work-history-ui-h2-chart
 P9H2     work-history-ui-h2-chart                          exact next; not created
 ```
 
-## Local Watchlist permanent evidence
+## Permanent evidence owners
 
-- `product/local-watchlist-spec.md`
-- `product/watchlist-v1-implementation-plan.md`
-- `operations/watchlist-production-acceptance-2026-06-25.md`
-- `../apps/web/docs/watchlist-latest-w2a-contract.md`
-- `../apps/web/docs/watchlist-history-w2b-contract.md`
+- Local Watchlist: `product/local-watchlist-spec.md`, `product/watchlist-v1-implementation-plan.md`, and `operations/watchlist-production-acceptance-2026-06-25.md`.
+- P9H3: its browser script, verifier, and workflow.
+- P9H4A: its browser script, verifier, and workflow.
+- P9H4B: its browser script, verifier, and workflow.
+- P9H5: `apps/web/scripts/history-ui-h5-responsive-browser.mjs`, `scripts/verify-history-ui-h5-responsive.mjs`, and `.github/workflows/history-ui-h5-responsive.yml`.
+- P9H6: `apps/web/scripts/history-ui-h6-candidate-manifest.mjs`, `scripts/verify-history-ui-h6-candidate.mjs`, and `.github/workflows/history-ui-h6-candidate.yml`.
 
-P9H3 permanent acceptance remains owned by the P9H3 browser script, verifier, and workflow.
-
-P9H4A is complete through PR #441 and closed through PR #442. Permanent acceptance is owned by the P9H4A browser script, verifier, and workflow.
-
-P9H4B is complete through PR #443 and closed through PR #444. Permanent acceptance is owned by the P9H4B browser script, verifier, and workflow.
-
-P9H5 is complete through PR #447 and canonically closed through PR #448. Permanent acceptance is owned by `apps/web/scripts/history-ui-h5-responsive-browser.mjs`, `scripts/verify-history-ui-h5-responsive.mjs`, and `.github/workflows/history-ui-h5-responsive.yml`.
-
-Do not create `work-history-ui-h6-candidate` before explicit continuation is received.
+Do not create `work-history-ui-h7-acceptance` before explicit continuation is received.
