@@ -1,6 +1,6 @@
 # TEMPORARY — P9H7 hosted and production acceptance
 
-Status: closeout active
+Status: active — closeout
 Created: 2026-06-28
 Roadmap phase: Phase 9 — History P1 repair
 Implementation branch: `work-history-ui-h7-acceptance`
