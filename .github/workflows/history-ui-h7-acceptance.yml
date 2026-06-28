@@ -31,6 +31,7 @@ on:
       - 'docs/work-in-progress/history-ui-repair-working-note.md'
       - 'docs/work-in-progress/p9h7-acceptance.md'
       - 'apps/web/scripts/history-ui-h7-hosted-acceptance.mjs'
+      - 'apps/web/scripts/history-ui-h7-preview-trigger.json'
       - 'scripts/verify-history-ui-h7-acceptance.mjs'
       - 'scripts/verify-history-ui-h7-evidence.mjs'
       - 'scripts/verify-development-policy.mjs'
@@ -41,6 +42,7 @@ on:
       - main
     paths:
       - 'apps/web/scripts/history-ui-h7-hosted-acceptance.mjs'
+      - 'apps/web/scripts/history-ui-h7-preview-trigger.json'
       - 'scripts/verify-history-ui-h7-acceptance.mjs'
       - 'scripts/verify-history-ui-h7-evidence.mjs'
       - '.github/workflows/history-ui-h7-acceptance.yml'
@@ -92,16 +94,17 @@ jobs:
       - name: Build web application
         run: pnpm build:web
 
-  preview:
-    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/preview-history-ui-h7-acceptance')
+  premerge-production-baseline:
+    if: github.event_name == 'pull_request'
+    needs: repository
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      HISTORY_H7_ORIGIN: https://preview-history-ui-h7-acceptance.viewloom.pages.dev
-      HISTORY_H7_EXPECTED_ENVIRONMENT: preview
-      HISTORY_H7_EXPECTED_BRANCH: preview-history-ui-h7-acceptance
-      HISTORY_H7_EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-      HISTORY_H7_ARTIFACT_DIR: /tmp/history-ui-h7-preview
+      HISTORY_H7_ORIGIN: https://vl.badjoke-lab.com
+      HISTORY_H7_EXPECTED_ENVIRONMENT: production
+      HISTORY_H7_EXPECTED_BRANCH: main
+      HISTORY_H7_EXPECTED_SHA: ${{ github.event.pull_request.base.sha }}
+      HISTORY_H7_ARTIFACT_DIR: /tmp/history-ui-h7-premerge-production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -139,12 +142,68 @@ jobs:
         working-directory: apps/web
         run: npx playwright install --with-deps chromium
 
+      - name: Run P9H7 pre-merge production baseline
+        working-directory: apps/web
+        run: node scripts/history-ui-h7-hosted-acceptance.mjs
+
+      - name: Verify pre-merge production evidence
+        run: node scripts/verify-history-ui-h7-evidence.mjs /tmp/history-ui-h7-premerge-production/history-ui-h7-evidence.json production main "$HISTORY_H7_EXPECTED_SHA"
+
+      - name: Upload P9H7 pre-merge production artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: history-ui-h7-premerge-production-baseline
+          path: /tmp/history-ui-h7-premerge-production/**
+          if-no-files-found: warn
+
+  preview:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/preview-history-ui-h7-acceptance'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      HISTORY_H7_ORIGIN: https://preview-history-ui-h7-acceptance.viewloom.pages.dev
+      HISTORY_H7_EXPECTED_ENVIRONMENT: preview
+      HISTORY_H7_EXPECTED_BRANCH: preview-history-ui-h7-acceptance
+      HISTORY_H7_EXPECTED_SHA: ${{ github.sha }}
+      HISTORY_H7_ARTIFACT_DIR: /tmp/history-ui-h7-preview
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Verify P9H7 repository contract
+        run: node scripts/verify-history-ui-h7-acceptance.mjs
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
       - name: Run P9H7 hosted Preview acceptance
         working-directory: apps/web
         run: node scripts/history-ui-h7-hosted-acceptance.mjs
 
       - name: Verify Preview evidence
-        run: node scripts/verify-history-ui-h7-evidence.mjs /tmp/history-ui-h7-preview/history-ui-h7-evidence.json preview preview-history-ui-h7-acceptance "$HISTORY_H7_EXPECTED_SHA"
+        run: node scripts/verify-history-ui-h7-evidence.mjs /tmp/history-ui-h7-preview/history-ui-h7-evidence.json preview preview-history-ui-h7-acceptance "$GITHUB_SHA"
 
       - name: Upload P9H7 Preview artifacts
         if: always()
