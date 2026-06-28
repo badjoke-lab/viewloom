@@ -313,30 +313,25 @@ async function assertSkipEntry(page, label) {
 async function assertChartKeyboard(page, label) {
   const days = await page.locator('[data-history-day]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-history-day')).filter(Boolean))
   check(days.length > 0, `${label}: no chart days.`)
-  await focusStableKeyboard(page)
-  await page.locator('[data-history-chart-keyboard-target]').press('Home')
-  await waitForDay(page, days[0])
-  if (days.length > 1) {
-    await focusStableKeyboard(page)
-    await page.locator('[data-history-chart-keyboard-target]').press('ArrowRight')
-    await waitForDay(page, days[1])
+  await pressKeyboardDay(page, 'Home', days[0], label)
+  if (days.length > 1) await pressKeyboardDay(page, 'ArrowRight', days[1], label)
+}
+
+async function pressKeyboardDay(page, key, targetDay, label) {
+  let lastError = null
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
+    try {
+      await page.locator('[data-history-chart-keyboard-target]').press(key)
+      await page.waitForFunction((value) => new URL(location.href).searchParams.get('day') === value
+        && document.querySelector('[data-history-day][aria-current="date"]')?.getAttribute('data-history-day') === value
+        && document.querySelector('[data-history-chart-keyboard-target]')?.getAttribute('data-history-keyboard-day') === value, targetDay, { timeout: 2500 })
+      return
+    } catch (error) {
+      lastError = error
+      log(`${label}: ${key} attempt ${attempt}/5 did not settle on ${targetDay}: ${message(error)}`)
+    }
   }
-}
-
-async function focusStableKeyboard(page) {
-  await page.waitForFunction(async () => {
-    const keyboard = document.querySelector('[data-history-chart-keyboard-target]')
-    if (!(keyboard instanceof HTMLButtonElement)) return false
-    keyboard.focus()
-    await new Promise((resolveFrame) => requestAnimationFrame(() => requestAnimationFrame(resolveFrame)))
-    return keyboard.isConnected && document.activeElement === keyboard
-  })
-}
-
-async function waitForDay(page, day) {
-  await page.waitForFunction((value) => new URL(location.href).searchParams.get('day') === value
-    && document.querySelector('[data-history-day][aria-current="date"]')?.getAttribute('data-history-day') === value
-    && document.querySelector('[data-history-chart-keyboard-target]')?.getAttribute('data-history-keyboard-day') === value, day)
+  throw lastError ?? new Error(`${label}: ${key} did not select ${targetDay}.`)
 }
 
 async function clickTask(page, task) {
