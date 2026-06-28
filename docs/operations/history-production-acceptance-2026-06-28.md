@@ -17,3 +17,16 @@ Keyboard diagnostic: workflow 28325387025, artifact 7935540388, pass
 ```
 
 The post-merge evidence matched production branch `main` and commit `233a35ebe219c6be42723eb749e2bcc84ae7fc09`.
+
+## Provider proof
+
+```text
+Twitch storage: DB_TWITCH_HOT / vl_twitch_hot
+Twitch collector: ok
+Twitch observed streams: 300
+Kick storage: DB_KICK_HOT / vl_kick_hot
+Kick collector: snapshot_available
+Kick observed streams: 100
+Viewer-minutes: real data, 30 observed days, top 50 on both providers
+Peak viewers: real data, 30 observed days, top 50 on both providers
+```
