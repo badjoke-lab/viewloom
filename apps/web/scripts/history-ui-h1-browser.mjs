@@ -33,15 +33,24 @@ async function waitForMetric(page, metric) {
   await page.waitForFunction(({ metric, label }) => {
     const summary = document.querySelector('[data-history-summary]')
     const selected = document.querySelector('[data-history-selected-day]')
+    const selectedPrimary = document.querySelector('[data-history-selected-primary]')
     const ranking = document.querySelector('[data-history-ranking-context]')
+    const rankingLedger = document.querySelector('.metric-ledger')
+    const archiveCard = document.querySelector('[data-history-day-card]')
     const exportRoot = document.querySelector('[data-history-export]')
+    const exportStatus = document.querySelector('[data-history-export-status]')
     const share = document.querySelector('[data-history-share-card]')
     const report = document.querySelector('[data-history-report-preview]')
     return summary?.getAttribute('data-history-metric') === metric
       && selected?.getAttribute('data-history-metric') === metric
+      && selectedPrimary?.getAttribute('data-history-selected-primary') === metric
       && ranking?.textContent?.includes(label)
+      && rankingLedger?.getAttribute('data-history-metric') === metric
+      && archiveCard?.getAttribute('data-history-metric') === metric
       && exportRoot?.getAttribute('data-export-metric') === metric
+      && exportStatus?.textContent?.includes(label)
       && share?.getAttribute('data-share-metric') === metric
+      && Boolean(share?.getAttribute('data-share-primary-value'))
       && report?.textContent?.includes(`Metric: ${label}`)
   }, { metric, label })
 }
