@@ -30,14 +30,17 @@ P9H5 responsive and accessibility  complete PR #447
 P9H5 canonical closeout             complete PR #448
 P9H6 local candidate               complete PR #449
 P9H6 canonical closeout             complete PR #450
-Active implementation branch        none
-Exact next branch                   work-history-ui-h7-acceptance
-P9H7 branch created                 no
+P9H7 hosted/production acceptance  active
+Active implementation branch        work-history-ui-h7-acceptance
+Preview branch                      preview-history-ui-h7-acceptance
 ```
 
 Historical gate strings, not current state:
 
 ```text
+Active implementation branch        none
+Exact next branch                   work-history-ui-h7-acceptance
+P9H7 branch created                 no
 P9H6 local candidate               active
 Active implementation branch        work-history-ui-h6-candidate
 P9H6 canonical closeout             active
@@ -83,12 +86,17 @@ Scenarios: 21
 
 P9H6 builds the accepted History implementation once, runs P9H1–P9H5 against one local preview and one exact HEAD, and records stable scenario IDs, provider-separated requests, and per-phase evidence digests. It changes no runtime, API, D1, collector, cron, retention, binding, provider, archive, metric, or output schema.
 
+## Active P9H7 boundary
+
+P9H7 adds acceptance tooling only. The final work HEAD must be deployed once to `preview-history-ui-h7-acceptance`, accepted against real Twitch and Kick data, squash merged to `main`, and then accepted again against the exact production deployment SHA. Phase 10 remains blocked until permanent evidence is written and temporary History repair notes are deleted.
+
 ## Next sequence
 
 ```text
 P9H5 responsive and accessibility  complete PR #447
 P9H6 local candidate               complete PR #449
-P9H7 production acceptance         exact next after explicit continuation
+P9H7 production acceptance         active
+Phase 10 cross-site repair         blocked until P9H7 closure
 ```
 
 Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*`. Only latest-head evidence counts. After every merge, issue the full report and stop.
