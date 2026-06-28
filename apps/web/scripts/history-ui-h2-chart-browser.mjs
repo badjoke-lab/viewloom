@@ -10,7 +10,15 @@ import { historyPayload } from './history-period-comparison-fixture.mjs'
 const base = process.env.HISTORY_H2_BASE_URL ?? 'http://127.0.0.1:4173'
 const out = resolve(process.env.HISTORY_H2_ARTIFACT_DIR ?? 'artifacts/history-ui-h2')
 mkdirSync(out, { recursive: true })
-const evidence = { schema: 'viewloom-history-ui-h2-chart-v1', phase: 'P9H2', scenarios: [], diagnostics: [], checkpoint: 'start', result: 'running' }
+const evidence = {
+  schema: 'viewloom-history-ui-h2-chart-v1',
+  phase: 'P9H2',
+  candidateHead: process.env.GITHUB_HEAD_SHA ?? process.env.GITHUB_SHA ?? null,
+  scenarios: [],
+  diagnostics: [],
+  checkpoint: 'start',
+  result: 'running',
+}
 
 function payload(provider, metric) {
   const value = structuredClone(historyPayload(provider, 'comparable'))
@@ -100,7 +108,15 @@ async function run(browser, provider, viewport, touch) {
   assert.equal(calls.filter((call) => call.metric === 'peak_viewers').length, 1)
   assert.ok(calls.every((call) => call.provider === provider))
   await page.screenshot({ path: resolve(out, `${provider}-${viewport.width}.png`), fullPage: true })
-  evidence.scenarios.push({ provider, viewport, touch, calls, initial, peak })
+  evidence.scenarios.push({
+    id: `${provider}-chart-${viewport.width}`,
+    provider,
+    viewport,
+    touch,
+    calls,
+    initial,
+    peak,
+  })
   await context.close()
 }
 
