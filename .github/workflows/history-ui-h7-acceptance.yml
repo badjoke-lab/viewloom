@@ -32,6 +32,7 @@ on:
       - 'docs/work-in-progress/p9h7-acceptance.md'
       - 'apps/web/scripts/history-ui-h7-hosted-acceptance.mjs'
       - 'scripts/verify-history-ui-h7-acceptance.mjs'
+      - 'scripts/verify-history-ui-h7-evidence.mjs'
       - 'scripts/verify-development-policy.mjs'
       - '.github/workflows/history-ui-h7-acceptance.yml'
   push:
@@ -41,6 +42,7 @@ on:
     paths:
       - 'apps/web/scripts/history-ui-h7-hosted-acceptance.mjs'
       - 'scripts/verify-history-ui-h7-acceptance.mjs'
+      - 'scripts/verify-history-ui-h7-evidence.mjs'
       - '.github/workflows/history-ui-h7-acceptance.yml'
 
 permissions:
@@ -71,6 +73,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+
+      - name: Verify P9H7 script syntax
+        run: |
+          node --check apps/web/scripts/history-ui-h7-hosted-acceptance.mjs
+          node --check scripts/verify-history-ui-h7-acceptance.mjs
+          node --check scripts/verify-history-ui-h7-evidence.mjs
 
       - name: Verify development policy
         run: node scripts/verify-development-policy.mjs
@@ -110,6 +118,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+
+      - name: Verify P9H7 script syntax
+        run: |
+          node --check apps/web/scripts/history-ui-h7-hosted-acceptance.mjs
+          node --check scripts/verify-history-ui-h7-acceptance.mjs
+          node --check scripts/verify-history-ui-h7-evidence.mjs
 
       - name: Verify development policy
         run: node scripts/verify-development-policy.mjs
@@ -166,6 +180,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+
+      - name: Verify P9H7 script syntax
+        run: |
+          node --check apps/web/scripts/history-ui-h7-hosted-acceptance.mjs
+          node --check scripts/verify-history-ui-h7-acceptance.mjs
+          node --check scripts/verify-history-ui-h7-evidence.mjs
 
       - name: Verify development policy
         run: node scripts/verify-development-policy.mjs
