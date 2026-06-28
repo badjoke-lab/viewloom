@@ -53,6 +53,20 @@ Compensating controls:
 - the PR must disclose the preliminary ref creation;
 - no product runtime or data contract changed in the preliminary ref.
 
+## Preview trigger record
+
+```text
+Implementation PR: #451
+Preview trigger Draft PR: #452 — never merge
+First exact-head attempt SHA: ea72ee27ed7d3b43763370240d05cf9e328910ac
+First tracked Preview workflow: 28317314450
+First artifact: history-ui-h7-preview-acceptance / 7933140146
+First result: fail before browser/API acceptance
+Failure: branch Preview origin returned 404 for all 60 deployment identity probes
+```
+
+PR #452 was opened only to activate Cloudflare Pages Preview deployment for the `preview-*` branch. The failed 404 attempt is retained as operational evidence but is not product failure and cannot count as acceptance. This documentation commit creates a new exact candidate SHA after the trigger PR exists; both the work and Preview refs must move to that same SHA before the next attempt.
+
 ## Completion sequence
 
 ```text
