@@ -24,6 +24,8 @@ P9H6 canonical closeout complete PR #450
 Phase 9 P9H7 active
 Active implementation branch: work-history-ui-h7-acceptance
 Attempted Preview branch: preview-history-ui-h7-acceptance
+Preview branch: preview-history-ui-h7-acceptance
+Preview deployment: unavailable; exact-SHA 404 before tests
 ```
 
 Local Watchlist v1 is complete through PR #425.
