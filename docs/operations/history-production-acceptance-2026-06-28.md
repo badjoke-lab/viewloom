@@ -30,3 +30,30 @@ Kick observed streams: 100
 Viewer-minutes: real data, 30 observed days, top 50 on both providers
 Peak viewers: real data, 30 observed days, top 50 on both providers
 ```
+
+## Browser proof
+
+The accepted scenarios were:
+
+```text
+twitch-desktop-1440-hosted
+kick-tablet-820-hosted
+kick-mobile-390-hosted
+twitch-mobile-360-hosted
+twitch-forced-colors-390-hosted
+```
+
+All passed with zero horizontal overflow. Metric execution, direct links, Back/Forward, no-refetch task switching, keyboard and touch inspection, minimum targets, reduced motion, and forced colors passed. No console or page diagnostics remained.
+
+## Artifact integrity
+
+```text
+Preview artifact digest: sha256:6478747e87b5bb749e9323343e22f7b521c0efad7fa8b788926e41b791c6c584
+Pre-merge artifact digest: sha256:254f73e88d29ecbde1eff92df1eaa97baf14bd994ddb5a0f8fda7e9c44355742
+Post-merge artifact digest: sha256:d7fb7d469ff112e611fdcd7d81dc918c9c719c1667f6b9802ffca7919dba369b
+Keyboard artifact digest: sha256:0d98dbea15eb5640c0dd62cd28abc0fd7809f42fa875f0a0df2b7abba8af578f
+```
+
+## Decision
+
+History Phase 9 is accepted in production. The exact next approved branch is `work-quality-u10a-baseline`. No Phase 10 branch was created during this closeout.
