@@ -1,86 +1,74 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 3.1
+Version: 3.2
 Created: 2026-06-25
-Last updated: 2026-06-27
-Current phase: Phase 9 — P9H5 complete; P9H6 next
+Last updated: 2026-06-28
+Current phase: Phase 9 — P9H6 complete; P9H7 next
 Current implementation branch: none
-Completed closeout: PR #432
-Completed final-state correction: PR #433
 Completed metric synchronization: PR #434
 Completed chart interpretation: PR #436
-Completed P9H2 canonical closeout: PR #437
 Completed Overview hierarchy: PR #439
-Completed P9H3 canonical closeout: PR #440
 Completed Overview balance: PR #441
-Completed P9H4A canonical closeout: PR #442
 Completed Archives and publishing hierarchy: PR #443
-Completed P9H4B canonical closeout: PR #444
 Completed responsive and accessibility repair: PR #447
 Completed P9H5 canonical closeout: PR #448
-Exact next implementation branch after explicit continuation: `work-history-ui-h6-candidate`
+Completed local candidate: PR #449
+Completed P9H6 canonical closeout: PR #450
+Exact next implementation branch after explicit continuation: `work-history-ui-h7-acceptance`
 
-P9H5 completed required-width responsive and accessibility repair. P9H6 creates the local candidate; P9H7 performs production acceptance.
-
-Historical gate strings, not current state:
+## Historical gate strings
 
 ```text
+Version: 3.1
+Current phase: Phase 9 — P9H5 complete; P9H6 next
+Current implementation branch: none
+Exact next implementation branch after explicit continuation: `work-history-ui-h6-candidate`
+P9H6  work-history-ui-h6-candidate         exact next after explicit continuation; not created
+P9H6 active
+Current implementation branch: `work-history-ui-h6-candidate`
+P9H6 canonical closeout active
+Current implementation branch: `work-history-ui-h6-closeout`
 Version: 3.0
 Current phase: Phase 9 — P9H4B complete; P9H5 next
-Current implementation branch: none
 Exact next implementation branch after explicit continuation: `work-history-ui-h5-responsive`
 P9H5 work-history-ui-h5-responsive        exact next after explicit continuation; not created
-
 P9H5 active
 Current implementation branch: `work-history-ui-h5-responsive`
 P9H5 canonical closeout active
 Current implementation branch: `work-history-ui-h5-closeout`
-
 Version: 2.9
 Current phase: Phase 9 — P9H4A complete; P9H4B next
-Current implementation branch: none
 Exact next implementation branch after explicit continuation: `work-history-ui-h4b-tasks`
 P9H4B work-history-ui-h4b-tasks            exact next after explicit continuation; not created
-
 P9H4B active
 Current implementation branch: `work-history-ui-h4b-tasks`
 P9H4B canonical closeout active
 Current implementation branch: `work-history-ui-h4b-closeout`
-
 Version: 2.8
-Current phase: Phase 9 — P9H4A Overview balance
 Current implementation branch: `work-history-ui-h4a-overview-balance`
 P9H4A work-history-ui-h4a-overview-balance active
 P9H4B work-history-ui-h4b-tasks            next after P9H4A merge and explicit continuation; not created
 P9H4A canonical closeout active
 Current implementation branch: `work-history-ui-h4a-closeout`
-
 Version: 2.7
 Current phase: Phase 9 — P9H3 complete; P9H4 next
 Current implementation branch: none
 P9H3 work-history-ui-h3-overview   complete PR #439
 P9H4 work-history-ui-h4-tasks      exact next after explicit continuation; not created
-
 | 8 | P8B | complete PR #428
-
 Version: 2.6
-Current phase: Phase 9 — P9H3 Overview hierarchy
 Current implementation branch: `work-history-ui-h3-overview`
 | 9 | P9H3 | active
 P9H3 work-history-ui-h3-overview   active
-P9H4 work-history-ui-h4-tasks      exact next after P9H3 merge and explicit continuation; not created
-
 Version: 2.5
 Current implementation branch: none
 P9H3 work-history-ui-h3-overview   exact next after explicit continuation; not created
-
 Version: 2.4
 Current phase: Phase 9 — P9H2 chart interpretation
 Current implementation branch: `work-history-ui-h2-chart`
 | 9 | P9H2 | active
 P9H2 work-history-ui-h2-chart      active
-
 Version: 2.3
 Current implementation branch: none
 Completed metric synchronization: PR #434
@@ -89,58 +77,36 @@ Exact next implementation branch after explicit continuation: `work-history-ui-h
 P9H2 work-history-ui-h2-chart      exact next after explicit continuation; not created
 ```
 
-This document owns the complete approved execution program after Local Watchlist v1. Before each branch, compare the schedule with actual branches and PRs, confirm explicit continuation, read affected authorities, and record missing work. After each merge, update canonical state, issue the full report, name the next branch, and stop.
+This document owns the approved execution program after Local Watchlist v1. Before each branch, compare the schedule with actual branches and PRs, confirm explicit continuation, read affected authorities, and record missing work. After each merge, update canonical state, issue the full report, name the next branch, and stop.
 
-## Program status
+## P9H6 evidence
 
 ```text
-Phase 7   complete PR #426
-Phase 8   complete PR #428
-P9H0      complete PR #430
-closeout  complete PR #432
-final     complete PR #433
-P9H1      complete PR #434
-P9H2      complete PR #436
-P9H2 closeout complete PR #437
-P9H3      complete PR #439
-P9H3 closeout complete PR #440
-P9H4A     complete PR #441
-P9H4A closeout complete PR #442
-P9H4B     complete PR #443
-P9H4B closeout complete PR #444
-P9H5      complete PR #447
-P9H5 closeout complete PR #448
-P9H6–P9H7 queued
+Final head: c7d54e530053b29091b84e651b78b679f55f3a8a
+Merge: d46e2f3d04c9528e6493d9aa3d436000e340272a
+Workflow: 28308389704
+Artifact: history-ui-h6-candidate / 7930159988
+Digest: sha256:658ad6332313b024119cb68541f2702c0f3af3451247e0ba57fbea917db7b292
+Manifest: viewloom-history-ui-h6-candidate-v1
+Phases: 6
+Scenarios: 21
+```
+
+```text
+P9H0 complete PR #430
+P9H1 complete PR #434
+P9H2 complete PR #436
+P9H3 complete PR #439
+P9H4A complete PR #441
+P9H4B complete PR #443
+P9H5 complete PR #447
+P9H6 complete PR #449
+P9H6 closeout complete PR #450
+P9H7 work-history-ui-h7-acceptance exact next after explicit continuation; not created
 Phase 10–15 queued
 Phase 16 not approved
 ```
 
-## P9H5 evidence
-
-```text
-Final head: 2dd3926cd3e02ded472ef20ab1090b86d13675d4
-Merge: d7d20a4874fb44afc2abe6cf2384951d26bd4804
-Workflow: 28293856405
-Artifact: history-ui-h5-responsive / 7925847144
-Digest: sha256:5d6f0d7a38dd58f19b270b9ab9ea0de331f3f0aaaa3bb66ef6d4caae4211d854
-```
-
-P9H5 establishes deterministic skip-link entry, stable chart keyboard inspection, pointer/touch day selection, required-width wrapping, 44px general and 48px archive/publishing targets, reduced motion, increased contrast, and forced-colors acceptance. It adds no History request seam and preserves provider, API, storage, archive, and output contracts.
-
-## Phase 9 sequence
-
-```text
-P9H0  work-history-ui-h0-baseline          complete PR #430
-P9H1  work-history-ui-h1-metric            complete PR #434
-P9H2  work-history-ui-h2-chart             complete PR #436
-P9H3  work-history-ui-h3-overview          complete PR #439
-P9H4A work-history-ui-h4a-overview-balance complete PR #441
-P9H4B work-history-ui-h4b-tasks            complete PR #443
-P9H5  work-history-ui-h5-responsive        complete PR #447
-P9H6  work-history-ui-h6-candidate         exact next after explicit continuation; not created
-P9H7  work-history-ui-h7-acceptance        queued
-```
-
 Phase 16 begins only after one candidate is separately approved with its own specification and branch sequence.
 
-P9H5 is complete and canonically closed through PR #448. Do not create `work-history-ui-h6-candidate` before explicit continuation is received.
+P9H6 is complete and canonically closed through PR #450. Do not create `work-history-ui-h7-acceptance` before explicit continuation is received.

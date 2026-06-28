@@ -28,14 +28,20 @@ P9H4B Archives and publishing       complete PR #443
 P9H4B canonical closeout            complete PR #444
 P9H5 responsive and accessibility  complete PR #447
 P9H5 canonical closeout             complete PR #448
+P9H6 local candidate               complete PR #449
+P9H6 canonical closeout             complete PR #450
 Active implementation branch        none
-Exact next branch                   work-history-ui-h6-candidate
-P9H6 branch created                 no
+Exact next branch                   work-history-ui-h7-acceptance
+P9H7 branch created                 no
 ```
 
 Historical gate strings, not current state:
 
 ```text
+P9H6 local candidate               active
+Active implementation branch        work-history-ui-h6-candidate
+P9H6 canonical closeout             active
+Active implementation branch        work-history-ui-h6-closeout
 P9H5 responsive and accessibility  active
 Active implementation branch        work-history-ui-h5-responsive
 Exact next branch                   work-history-ui-h6-candidate
@@ -61,27 +67,28 @@ Exact next branch                   work-history-ui-h2-chart
 P9H2 branch created                 no
 ```
 
-## P9H5 accepted evidence
+## P9H6 accepted evidence
 
 ```text
-PR: #447
-Head: 2dd3926cd3e02ded472ef20ab1090b86d13675d4
-Merge: d7d20a4874fb44afc2abe6cf2384951d26bd4804
-Workflow run: 28293856405
-Artifact: history-ui-h5-responsive / 7925847144
-Digest: sha256:5d6f0d7a38dd58f19b270b9ab9ea0de331f3f0aaaa3bb66ef6d4caae4211d854
+PR: #449
+Head: c7d54e530053b29091b84e651b78b679f55f3a8a
+Merge: d46e2f3d04c9528e6493d9aa3d436000e340272a
+Workflow run: 28308389704
+Artifact: history-ui-h6-candidate / 7930159988
+Digest: sha256:658ad6332313b024119cb68541f2702c0f3af3451247e0ba57fbea917db7b292
+Manifest: viewloom-history-ui-h6-candidate-v1
+Phases: 6
+Scenarios: 21
 ```
 
-P9H5 establishes deterministic keyboard entry, stable chart keyboard inspection, pointer/touch day selection, required-width wrapping, 44px general and 48px archive/publishing targets, long-text wrapping, reduced-motion support, increased contrast, and forced-colors acceptance. It adds no competing History request seam and changes no API, D1, collector, cron, retention, binding, provider, archive, or output schema.
+P9H6 builds the accepted History implementation once, runs P9H1–P9H5 against one local preview and one exact HEAD, and records stable scenario IDs, provider-separated requests, and per-phase evidence digests. It changes no runtime, API, D1, collector, cron, retention, binding, provider, archive, metric, or output schema.
 
 ## Next sequence
 
 ```text
-P9H4A Overview balance              complete PR #441
-P9H4B Archives and Report & Export  complete PR #443
 P9H5 responsive and accessibility  complete PR #447
-P9H6 local candidate               exact next after explicit continuation
-P9H7 production acceptance
+P9H6 local candidate               complete PR #449
+P9H7 production acceptance         exact next after explicit continuation
 ```
 
 Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*`. Only latest-head evidence counts. After every merge, issue the full report and stop.

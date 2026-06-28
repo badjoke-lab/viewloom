@@ -13,7 +13,7 @@ const need = (path, fragments) => {
   for (const fragment of fragments) check(source.includes(fragment), `${path}: missing ${fragment}`)
 }
 
-const required = [
+for (const path of [
   'apps/web/scripts/history-ui-h1-browser.mjs',
   'apps/web/scripts/history-ui-h2-chart-browser.mjs',
   'apps/web/scripts/history-ui-h3-overview-browser.mjs',
@@ -29,28 +29,26 @@ const required = [
   'scripts/verify-history-ui-h5-responsive.mjs',
   '.github/workflows/history-ui-h6-candidate.yml',
   'docs/work-in-progress/p9h6-candidate.md',
-]
-for (const path of required) needFile(path)
+]) needFile(path)
 
+need('apps/web/scripts/history-ui-h2-chart-browser.mjs', [
+  'candidateHead: process.env.GITHUB_HEAD_SHA ?? process.env.GITHUB_SHA ?? null',
+  'id: `${provider}-chart-${viewport.width}`',
+])
+need('apps/web/scripts/history-ui-h3-overview-browser.mjs', [
+  'candidateHead: process.env.GITHUB_HEAD_SHA ?? process.env.GITHUB_SHA ?? null',
+  'id: `${provider}-overview-${viewport.width}`',
+])
 need('apps/web/scripts/history-ui-h6-candidate-manifest.mjs', [
   "schema: 'viewloom-history-ui-h6-candidate-v1'",
   "phase: 'P9H6'",
   "source: 'deterministic-local-preview'",
-  "phase: 'P9H1'",
-  "phase: 'P9H2'",
-  "phase: 'P9H3'",
-  "phase: 'P9H4A'",
-  "phase: 'P9H4B'",
-  "phase: 'P9H5'",
-  'candidate head mismatch',
-  'crossed provider endpoint',
-  "createHash('sha256')",
-  'oneExactHead: true',
-  'oneBuild: true',
-  'oneLocalPreview: true',
-  'providerSeparated: true',
+  "phase: 'P9H1'", "phase: 'P9H2'", "phase: 'P9H3'",
+  "phase: 'P9H4A'", "phase: 'P9H4B'", "phase: 'P9H5'",
+  'candidate head mismatch', 'crossed provider endpoint',
+  "createHash('sha256')", 'oneExactHead: true', 'oneBuild: true',
+  'oneLocalPreview: true', 'providerSeparated: true',
 ])
-
 need('.github/workflows/history-ui-h6-candidate.yml', [
   'name: History UI P9H6 Candidate',
   'Verify P9H6 repository contract',
@@ -59,26 +57,44 @@ need('.github/workflows/history-ui-h6-candidate.yml', [
   'Run P9H1 through P9H5 candidate evidence',
   'Build P9H6 candidate manifest',
   'Verify P9H6 candidate manifest',
-  'history-ui-h6-candidate',
-  'cancel-in-progress: true',
+  'history-ui-h6-candidate', 'cancel-in-progress: true',
 ])
-
 need('docs/product/current-schedule.md', [
   'P9H6 Local candidate                     active',
   'Active implementation branch             work-history-ui-h6-candidate',
+  'P9H6 Local candidate                     complete PR #449',
+  'P9H6 canonical closeout                  complete PR #450',
+  'Active implementation branch             none',
   'Exact next branch                        work-history-ui-h7-acceptance',
   'P9H7 branch created                      no',
-  'viewloom-history-ui-h6-candidate-v1',
+  'Workflow run: 28308389704', 'Artifact ID: 7930159988',
+  'viewloom-history-ui-h6-candidate-v1', 'Scenarios: 21',
 ])
-
-need('docs/work-in-progress/p9h6-candidate.md', [
-  'Status: active',
-  'work-history-ui-h6-candidate',
-  'P9H1 metric synchronization',
-  'P9H5 responsive and accessibility',
-  'one build and one local preview',
-  'work-history-ui-h7-acceptance',
+need('docs/product/current-roadmap.md', [
+  'Phase 9 P9H6 complete PR #449',
+  'P9H6 canonical closeout complete PR #450',
+  'Active implementation branch: none',
+  'Exact next implementation branch: work-history-ui-h7-acceptance',
   'P9H7 branch created: no',
+])
+need('docs/product/post-watchlist-program-plan.md', [
+  'Completed local candidate: PR #449',
+  'Completed P9H6 canonical closeout: PR #450',
+  'Exact next implementation branch after explicit continuation: `work-history-ui-h7-acceptance`',
+])
+need('docs/product/history-ui-repair-plan.md', [
+  'Completed P9H6: PR #449',
+  'Completed P9H6 canonical closeout: PR #450',
+  'Exact next branch after explicit continuation: `work-history-ui-h7-acceptance`',
+])
+need('docs/work-in-progress/history-ui-repair-working-note.md', [
+  'Completed P9H6: PR #449',
+  'Completed P9H6 canonical closeout: PR #450',
+  'Workflow run: 28308389704', 'Artifact ID: 7930159988',
+])
+need('docs/work-in-progress/p9h6-candidate.md', [
+  'Status: complete', 'Implementation PR: #449', 'Canonical closeout PR: #450',
+  'work-history-ui-h7-acceptance', 'P9H7 branch created: no',
 ])
 
 if (issues.length) {
@@ -88,7 +104,7 @@ if (issues.length) {
 }
 
 console.log('ViewLoom History P9H6 candidate verification passed.')
-console.log('- P9H1 through P9H5 permanent browser evidence is consolidated')
-console.log('- one exact candidate HEAD, build, and local preview are required')
-console.log('- phase schemas, scenario counts, provider separation, and evidence digests are protected')
+console.log('- P9H6 is complete through PR #449 and canonically closed through PR #450')
+console.log('- one exact candidate HEAD, build, local preview, six phases, and twenty-one scenarios are protected')
+console.log('- phase schemas, stable IDs, provider separation, and evidence digests are protected')
 console.log('- work-history-ui-h7-acceptance is next and not created')
