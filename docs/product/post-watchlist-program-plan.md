@@ -10,7 +10,9 @@ Completed metric synchronization: PR #434
 Completed chart interpretation: PR #436
 Completed Overview hierarchy: PR #439
 Completed Overview balance: PR #441
+Completed P9H4A canonical closeout: PR #442
 Completed Archives and publishing hierarchy: PR #443
+Completed P9H4B canonical closeout: PR #444
 Completed responsive and accessibility repair: PR #447
 Completed P9H5 canonical closeout: PR #448
 Completed local candidate: PR #449

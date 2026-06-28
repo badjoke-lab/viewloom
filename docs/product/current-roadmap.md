@@ -14,7 +14,9 @@ Phase 9 P9H1 complete PR #434
 Phase 9 P9H2 complete PR #436
 Phase 9 P9H3 complete PR #439
 Phase 9 P9H4A complete PR #441
+P9H4A canonical closeout complete PR #442
 Phase 9 P9H4B complete PR #443
+P9H4B canonical closeout complete PR #444
 Phase 9 P9H5 complete PR #447
 P9H5 canonical closeout complete PR #448
 Phase 9 P9H6 complete PR #449
@@ -60,10 +62,11 @@ P9H4 branch created: no
 Active implementation branch: none
 Exact next implementation branch: work-history-ui-h3-overview
 P9H3 branch created: no
-Phase 9 P9H2 active
+Phase 9 P9H2  active
 Active implementation branch: work-history-ui-h2-chart
 Exact next implementation branch: work-history-ui-h3-overview
 P9H3 branch created: no
+Phase 9 P9H1  complete PR #434
 Active implementation branch: none
 Exact next implementation branch: work-history-ui-h2-chart
 P9H2 branch created: no
