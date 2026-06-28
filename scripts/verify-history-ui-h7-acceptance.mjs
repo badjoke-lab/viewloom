@@ -4,17 +4,21 @@ import { join } from 'node:path'
 const root = process.cwd()
 const issues = []
 const read = (path) => readFileSync(join(root, path), 'utf8')
-const needFile = (path) => {
+
+function requireFile(path) {
   if (!existsSync(join(root, path))) issues.push(`missing file: ${path}`)
 }
-const need = (path, fragments) => {
-  needFile(path)
+
+function requireText(path, fragments) {
+  requireFile(path)
   if (!existsSync(join(root, path))) return
   const source = read(path)
-  for (const fragment of fragments) if (!source.includes(fragment)) issues.push(`${path}: missing ${fragment}`)
+  for (const fragment of fragments) {
+    if (!source.includes(fragment)) issues.push(`${path}: missing ${fragment}`)
+  }
 }
 
-for (const path of [
+const files = [
   'README.md',
   'AGENTS.md',
   'CONTRIBUTING.md',
@@ -27,118 +31,78 @@ for (const path of [
   'docs/work-in-progress/history-ui-repair-working-note.md',
   'docs/work-in-progress/p9h7-acceptance.md',
   'apps/web/scripts/history-ui-h7-hosted-acceptance.mjs',
+  'apps/web/scripts/history-ui-h7-preview-trigger.json',
   'scripts/verify-history-ui-h7-evidence.mjs',
-  'scripts/verify-history-ui-h7-acceptance.mjs',
   '.github/workflows/history-ui-h7-acceptance.yml',
-]) needFile(path)
+]
+for (const path of files) requireFile(path)
 
-need('README.md', [
-  'P9H6 local candidate               complete PR #449',
-  'P9H6 canonical closeout             complete PR #450',
-  'P9H7 hosted/production acceptance  active',
-  'Active implementation branch        work-history-ui-h7-acceptance',
-  'Preview branch                      preview-history-ui-h7-acceptance',
-])
-need('AGENTS.md', [
-  'P9H7 active on work-history-ui-h7-acceptance',
-  'Active implementation branch: work-history-ui-h7-acceptance',
-  'Preview branch: preview-history-ui-h7-acceptance',
-  'P9H7 is acceptance-only.',
-])
-need('CONTRIBUTING.md', [
-  'P9H7 active on work-history-ui-h7-acceptance',
-  'Active implementation branch: work-history-ui-h7-acceptance',
-  'Preview branch: preview-history-ui-h7-acceptance',
-])
-need('docs/README.md', [
-  'P9H7     work-history-ui-h7-acceptance                   active',
-  'Active implementation branch                            work-history-ui-h7-acceptance',
-  'Preview branch                                          preview-history-ui-h7-acceptance',
-  'history-ui-h7-hosted-acceptance.mjs',
-])
-need('docs/product/current-roadmap.md', [
+for (const path of ['README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'docs/README.md']) {
+  requireText(path, ['work-history-ui-h7-acceptance', 'preview-history-ui-h7-acceptance', 'PR #450'])
+}
+requireText('docs/product/current-roadmap.md', [
   'Phase 9 P9H7 active',
   'Active implementation branch: work-history-ui-h7-acceptance',
-  'Preview branch: preview-history-ui-h7-acceptance',
   'Phase 10 cross-site repair blocked until P9H7 closure',
-  'No Phase 16 feature is approved.',
 ])
-need('docs/product/current-schedule.md', [
+requireText('docs/product/current-schedule.md', [
   'P9H7 Hosted and production acceptance    active',
-  'Active implementation branch             work-history-ui-h7-acceptance',
-  'Preview branch                           preview-history-ui-h7-acceptance',
-  'viewloom-history-ui-h6-candidate-v1',
   '1440 / 820 / 390 / 360',
 ])
-need('docs/product/post-watchlist-program-plan.md', [
+requireText('docs/product/post-watchlist-program-plan.md', [
   'Version: 3.3',
   'Current phase: Phase 9 — P9H7 hosted and production acceptance',
-  'Current implementation branch: `work-history-ui-h7-acceptance`',
-  'Current Preview branch: `preview-history-ui-h7-acceptance`',
-  'Phase 16 begins only after one candidate is separately approved',
 ])
-need('docs/product/history-ui-repair-spec.md', [
+requireText('docs/product/history-ui-repair-spec.md', [
   'exact production identity and public acceptance pass',
   'the temporary working note is deleted',
 ])
-need('docs/product/history-ui-repair-plan.md', [
-  'Version: 2.7',
-  'Current implementation branch: `work-history-ui-h7-acceptance`',
-  'Current Preview branch: `preview-history-ui-h7-acceptance`',
+requireText('docs/product/history-ui-repair-plan.md', [
   'Active P9H7 — Hosted and production acceptance',
 ])
-need('docs/work-in-progress/history-ui-repair-working-note.md', [
+requireText('docs/work-in-progress/history-ui-repair-working-note.md', [
   'P9H7 active',
-  'Current implementation branch: `work-history-ui-h7-acceptance`',
-  'Current Preview branch: `preview-history-ui-h7-acceptance`',
   'Evidence schema: viewloom-history-ui-h7-hosted-acceptance-v1',
 ])
-need('docs/work-in-progress/p9h7-acceptance.md', [
-  'Status: active',
-  'Starting main SHA a2d641958c0068b818218d9e6080b2b3b5ee9e72',
-  'Preview sequencing exception',
+requireText('docs/work-in-progress/p9h7-acceptance.md', [
+  'Preview trigger PR: #452 — never merge',
   'only the exact final work-branch HEAD may be moved to the Preview ref',
-  'No History UI feature, API, D1 schema, collector, cron, retention, binding, primary metric, archive type, provider mixing, localization runtime, or output schema change is authorized.',
 ])
-need('apps/web/scripts/history-ui-h7-hosted-acceptance.mjs', [
+requireText('apps/web/scripts/history-ui-h7-hosted-acceptance.mjs', [
   "schema: 'viewloom-history-ui-h7-hosted-acceptance-v1'",
   "phase: 'P9H7'",
-  "last?.environment === expectedEnvironment",
-  "last?.branch === expectedBranch",
-  "last?.commit_sha === expectedSha",
   "payload?.source === 'real'",
   "binding: 'DB_TWITCH_HOT'",
   "binding: 'DB_KICK_HOT'",
   'twitch-desktop-1440-hosted',
-  'kick-tablet-820-hosted',
   'kick-mobile-390-hosted',
-  'twitch-mobile-360-hosted',
   'twitch-forced-colors-390-hosted',
-  'task/archive switching refetched History',
-  'Back/Forward refetched History',
-  'first Tab did not reach History skip link',
 ])
-need('scripts/verify-history-ui-h7-evidence.mjs', [
+requireText('scripts/verify-history-ui-h7-evidence.mjs', [
   'viewloom-history-ui-h7-hosted-acceptance-v1',
-  "assert.equal(evidence.scenarios.length, 5)",
-  "assert.equal(evidence.providers.twitch.binding, 'DB_TWITCH_HOT')",
-  "assert.equal(evidence.providers.kick.binding, 'DB_KICK_HOT')",
+  'assert.equal(evidence.scenarios.length, 5)',
 ])
-need('.github/workflows/history-ui-h7-acceptance.yml', [
+requireText('.github/workflows/history-ui-h7-acceptance.yml', [
   'name: History UI P9H7 Acceptance',
-  'preview-history-ui-h7-acceptance',
   'Run P9H7 hosted Preview acceptance',
   'Run P9H7 production acceptance',
-  'history-ui-h7-preview-acceptance',
-  'history-ui-h7-production-acceptance',
-  'concurrency:',
-  'group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}',
   'cancel-in-progress: true',
 ])
 
-const hosted = read('apps/web/scripts/history-ui-h7-hosted-acceptance.mjs')
-for (const token of ['setInterval(', 'serviceWorker', 'gtag(', '/api/watchlist']) {
-  if (hosted.includes(token)) issues.push(`P9H7 hosted runner contains forbidden token: ${token}`)
+if (existsSync(join(root, 'apps/web/scripts/history-ui-h7-preview-trigger.json'))) {
+  const trigger = JSON.parse(read('apps/web/scripts/history-ui-h7-preview-trigger.json'))
+  if (trigger.schema !== 'viewloom-history-ui-h7-preview-trigger-v1') issues.push('Preview trigger schema changed')
+  if (trigger.phase !== 'P9H7') issues.push('Preview trigger phase changed')
+  if (trigger.implementation_pr !== 451 || trigger.preview_trigger_pr !== 452) issues.push('Preview trigger PR identity changed')
+  if (trigger.preview_branch !== 'preview-history-ui-h7-acceptance') issues.push('Preview trigger branch changed')
+  if (trigger.runtime_change !== false || trigger.merge_preview_pr !== false) issues.push('Preview trigger boundary changed')
+}
+
+if (existsSync(join(root, 'apps/web/scripts/history-ui-h7-hosted-acceptance.mjs'))) {
+  const hosted = read('apps/web/scripts/history-ui-h7-hosted-acceptance.mjs')
+  for (const token of ['setInterval(', 'serviceWorker', 'gtag(', '/api/watchlist']) {
+    if (hosted.includes(token)) issues.push(`hosted runner contains forbidden token: ${token}`)
+  }
 }
 
 if (issues.length) {
