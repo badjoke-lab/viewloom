@@ -19,17 +19,24 @@ P9H4B Archives and publishing hierarchy  complete PR #443
 P9H4B canonical closeout                 complete PR #444
 P9H5 Responsive and accessibility        complete PR #447
 P9H5 canonical closeout                  complete PR #448
-P9H6 Local candidate                     active
-Active implementation branch             work-history-ui-h6-candidate
+P9H6 Local candidate                     complete PR #449
+P9H6 canonical closeout                  complete PR #450
+Active implementation branch             none
 Exact next branch                        work-history-ui-h7-acceptance
 P9H7 branch created                      no
 ```
 
-P9H6 creates one deterministic local History candidate from the current build. It reruns the accepted metric, chart, Overview, task/archive, publishing, responsive, keyboard, touch, and forced-mode gates against one exact HEAD and publishes a machine-readable candidate manifest plus screenshots and logs.
+P9H6 built one deterministic local History candidate from one exact HEAD and consolidated P9H1–P9H5 into a six-phase, twenty-one-scenario evidence manifest.
 
 ## Historical gate strings
 
 ```text
+P9H6 Local candidate                     active
+Active implementation branch             work-history-ui-h6-candidate
+Exact next branch                        work-history-ui-h7-acceptance
+P9H7 branch created                      no
+P9H6 canonical closeout                  active
+Active implementation branch             work-history-ui-h6-closeout
 P9H5 Responsive and accessibility        active
 Active implementation branch             work-history-ui-h5-responsive
 Exact next branch                        work-history-ui-h6-candidate
@@ -88,54 +95,45 @@ P9H2 branch created                      no
 PR: #434
 Workflow run: 28232602651
 Artifact ID: 7903212809
-
 PR: #436
 Workflow run: 28278497196
 Artifact ID: 7921020539
-
 PR: #439
 Workflow run: 28280486736
 Artifact ID: 7921680615
-
 PR: #441
 Workflow run: 28283570437
 Artifact ID: 7922730563
-
 PR: #443
 Workflow run: 28289223184
 Artifact ID: 7924451682
+PR: #447
+Workflow run: 28293856405
+Artifact ID: 7925847144
 ```
 
-## Accepted P9H5 evidence
+## Accepted P9H6 evidence
 
 ```text
-PR: #447
-Final head: 2dd3926cd3e02ded472ef20ab1090b86d13675d4
-Merge commit: d7d20a4874fb44afc2abe6cf2384951d26bd4804
-Workflow run: 28293856405
-Artifact: history-ui-h5-responsive
-Artifact ID: 7925847144
-Digest: sha256:5d6f0d7a38dd58f19b270b9ab9ea0de331f3f0aaaa3bb66ef6d4caae4211d854
+PR: #449
+Final head: c7d54e530053b29091b84e651b78b679f55f3a8a
+Merge commit: d46e2f3d04c9528e6493d9aa3d436000e340272a
+Workflow run: 28308389704
+Artifact: history-ui-h6-candidate
+Artifact ID: 7930159988
+Digest: sha256:658ad6332313b024119cb68541f2702c0f3af3451247e0ba57fbea917db7b292
+Manifest: viewloom-history-ui-h6-candidate-v1
+Phases: 6
+Scenarios: 21
+Providers: Kick and Twitch, separated
 ```
-
-## P9H6 acceptance scope
-
-- build and typecheck once from the exact candidate HEAD;
-- run P9H1, P9H2, P9H3, P9H4A, P9H4B, and P9H5 browser acceptance against that one local preview;
-- preserve Twitch/Kick endpoint separation in every evidence file;
-- verify required evidence schemas, phase labels, result states, scenario counts, and candidate HEAD identity;
-- preserve direct links, Back/Forward, no-refetch task/archive switching, metric execution, output context, required widths, keyboard, touch, focus, reduced motion, and forced colors;
-- emit one `viewloom-history-ui-h6-candidate-v1` manifest with per-phase evidence digests;
-- upload all screenshots, evidence JSON, manifest, and preview log as one candidate artifact;
-- make no API, D1, collector, cron, retention, binding, provider, archive, metric, or output-schema change.
 
 ## Sequence
 
 ```text
-P9H4B work-history-ui-h4b-tasks            complete PR #443
 P9H5  work-history-ui-h5-responsive        complete PR #447
-P9H6  work-history-ui-h6-candidate         active
-P9H7  work-history-ui-h7-acceptance        exact next after P9H6 merge and canonical closeout; not created
+P9H6  work-history-ui-h6-candidate         complete PR #449
+P9H7  work-history-ui-h7-acceptance        exact next after explicit continuation; not created
 ```
 
-Do not create `work-history-ui-h7-acceptance` before P9H6 merges, canonical closeout is complete, and explicit continuation is received.
+P9H6 is complete and canonically closed through PR #450. Do not create `work-history-ui-h7-acceptance` before explicit continuation is received.
