@@ -32,7 +32,7 @@ P9H6 local candidate               complete PR #449
 P9H6 canonical closeout             complete PR #450
 P9H7 hosted/production acceptance  active
 Active implementation branch        work-history-ui-h7-acceptance
-Preview branch                      preview-history-ui-h7-acceptance
+Attempted Preview branch            preview-history-ui-h7-acceptance
 ```
 
 Historical gate strings, not current state:
@@ -88,7 +88,7 @@ P9H6 builds the accepted History implementation once, runs P9H1–P9H5 against o
 
 ## Active P9H7 boundary
 
-P9H7 adds acceptance tooling only. The final work HEAD must be deployed once to `preview-history-ui-h7-acceptance`, accepted against real Twitch and Kick data, squash merged to `main`, and then accepted again against the exact production deployment SHA. Phase 10 remains blocked until permanent evidence is written and temporary History repair notes are deleted.
+P9H7 adds acceptance tooling only. The requested Cloudflare Preview branch did not produce a deployment and returned 404 before any provider or browser test ran. The governed substitute is a complete exact-base-SHA production baseline on the PR, followed by the same complete exact-merge-SHA production acceptance after squash merge. Phase 10 remains blocked until both hosted gates, permanent evidence transfer, and temporary History repair note deletion are complete.
 
 ## Next sequence
 
@@ -99,4 +99,4 @@ P9H7 production acceptance         active
 Phase 10 cross-site repair         blocked until P9H7 closure
 ```
 
-Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*`. Only latest-head evidence counts. After every merge, issue the full report and stop.
+Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*` when the external deployment is available. Only latest-head evidence counts. After every merge, issue the full report and stop.
