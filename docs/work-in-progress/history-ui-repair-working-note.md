@@ -18,13 +18,16 @@ Completed P9H5: PR #447
 Completed P9H5 canonical closeout: PR #448
 Completed P9H6: PR #449
 Completed P9H6 canonical closeout: PR #450
-Current implementation branch: none
-Exact next branch after explicit continuation: `work-history-ui-h7-acceptance`
+P9H7 active
+Current implementation branch: `work-history-ui-h7-acceptance`
+Current Preview branch: `preview-history-ui-h7-acceptance`
 Delete when: P9H7 production acceptance and permanent-document transfer are complete.
 
 ## Historical gate strings
 
 ```text
+Current implementation branch: none
+Exact next branch after explicit continuation: `work-history-ui-h7-acceptance`
 P9H6 active
 Current implementation branch: `work-history-ui-h6-candidate`
 P9H6 canonical closeout active
@@ -92,4 +95,19 @@ Accepted phases: 6
 Accepted scenarios: 21
 ```
 
-P9H6 is complete and canonically closed through PR #450. Do not create `work-history-ui-h7-acceptance` before explicit continuation is received.
+## P9H7 active acceptance
+
+```text
+Starting main SHA: a2d641958c0068b818218d9e6080b2b3b5ee9e72
+Work branch: work-history-ui-h7-acceptance
+Preview branch: preview-history-ui-h7-acceptance
+Preview origin: https://preview-history-ui-h7-acceptance.viewloom.pages.dev
+Production origin: https://vl.badjoke-lab.com
+Evidence schema: viewloom-history-ui-h7-hosted-acceptance-v1
+Required scenarios: 5
+Required widths: 1440 / 820 / 390 / 360
+```
+
+The preliminary Preview ref created at the starting main SHA is superseded and cannot count. Only a deployment whose `/deployment.json` matches the exact final work HEAD is eligible for Preview acceptance.
+
+P9H7 is acceptance-only. No API, D1, collector, cron, retention, binding, primary metric, archive, provider, or output schema change is authorized.

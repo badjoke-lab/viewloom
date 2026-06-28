@@ -21,20 +21,21 @@ P9H5 Responsive and accessibility        complete PR #447
 P9H5 canonical closeout                  complete PR #448
 P9H6 Local candidate                     complete PR #449
 P9H6 canonical closeout                  complete PR #450
-Active implementation branch             none
-Exact next branch                        work-history-ui-h7-acceptance
-P9H7 branch created                      no
+P9H7 Hosted and production acceptance    active
+Active implementation branch             work-history-ui-h7-acceptance
+Preview branch                           preview-history-ui-h7-acceptance
 ```
 
-P9H6 built one deterministic local History candidate from one exact HEAD and consolidated P9H1–P9H5 into a six-phase, twenty-one-scenario evidence manifest.
+P9H7 accepts the exact final work HEAD on Cloudflare Preview, then the exact squash-merged `main` SHA in production. It reuses real provider data and does not authorize another runtime feature.
 
 ## Historical gate strings
 
 ```text
-P9H6 Local candidate                     active
-Active implementation branch             work-history-ui-h6-candidate
+Active implementation branch             none
 Exact next branch                        work-history-ui-h7-acceptance
 P9H7 branch created                      no
+P9H6 Local candidate                     active
+Active implementation branch             work-history-ui-h6-candidate
 P9H6 canonical closeout                  active
 Active implementation branch             work-history-ui-h6-closeout
 P9H5 Responsive and accessibility        active
@@ -128,12 +129,25 @@ Scenarios: 21
 Providers: Kick and Twitch, separated
 ```
 
+## Active P9H7 gates
+
+```text
+Repository contract, typecheck, and production build
+Exact Preview deployment identity
+Real Twitch/Kick Viewer-minutes and Peak viewers
+1440 / 820 / 390 / 360 public browser scenarios
+Provider separation, metric execution, URL and Back/Forward
+No-refetch task/archive/report switching
+Keyboard, touch, focus, targets, overflow, reduced motion, forced colors
+Exact production deployment identity and the same hosted scenarios
+Permanent production record and temporary-note deletion
+```
+
 ## Sequence
 
 ```text
 P9H5  work-history-ui-h5-responsive        complete PR #447
 P9H6  work-history-ui-h6-candidate         complete PR #449
-P9H7  work-history-ui-h7-acceptance        exact next after explicit continuation; not created
+P9H7  work-history-ui-h7-acceptance        active
+Phase 10                                  blocked until P9H7 closure
 ```
-
-P9H6 is complete and canonically closed through PR #450. Do not create `work-history-ui-h7-acceptance` before explicit continuation is received.

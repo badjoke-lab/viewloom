@@ -1,7 +1,7 @@
 # ViewLoom History UI repair implementation plan
 
 Status: active implementation subplan
-Version: 2.6
+Version: 2.7
 Last updated: 2026-06-28
 Roadmap phase: Phase 9 — History P1 repair
 Completed P9H0: PR #430
@@ -18,12 +18,16 @@ Completed P9H5: PR #447
 Completed P9H5 canonical closeout: PR #448
 Completed P9H6: PR #449
 Completed P9H6 canonical closeout: PR #450
-Current implementation branch: none
-Exact next branch after explicit continuation: `work-history-ui-h7-acceptance`
+Current implementation branch: `work-history-ui-h7-acceptance`
+Current Preview branch: `preview-history-ui-h7-acceptance`
 
 ## Historical gate strings
 
 ```text
+Version: 2.6
+Current implementation branch: none
+Exact next branch after explicit continuation: `work-history-ui-h7-acceptance`
+P9H7  work-history-ui-h7-acceptance        exact next after explicit continuation; not created
 Version: 2.5
 Completed P9H5: PR #447
 Completed P9H5 canonical closeout: PR #448
@@ -102,13 +106,44 @@ scripts/verify-history-ui-h6-candidate.mjs
 
 P9H2 and P9H3 evidence record the exact candidate HEAD and stable scenario IDs. Provider separation, direct links, Back/Forward, metric execution, no-refetch task/archive switching, publishing context, required widths, keyboard, touch, focus, reduced motion, forced colors, and all output schemas remain protected.
 
+## Active P9H7 — Hosted and production acceptance
+
+P9H7 does not change the product. It verifies the accepted implementation against real Cloudflare bindings and retained data.
+
+```text
+work branch:    work-history-ui-h7-acceptance
+Preview branch: preview-history-ui-h7-acceptance
+Preview origin: https://preview-history-ui-h7-acceptance.viewloom.pages.dev
+Production:     https://vl.badjoke-lab.com
+```
+
+Acceptance requires:
+
+- exact `/deployment.json` environment, branch, and commit SHA;
+- real Viewer-minutes and Peak viewers responses for Twitch and Kick;
+- correct provider bindings and databases;
+- 1440, 820, 390, and 360 pixel public browser scenarios;
+- task/archive/report direct links and Back/Forward;
+- one request per uncached metric and no-refetch task switching;
+- keyboard and touch chart inspection;
+- provider-safe publishing context and limitation language;
+- no overflow, minimum targets, focus, reduced motion, and forced colors;
+- permanent evidence transfer and deletion of temporary History repair notes.
+
+Permanent acceptance tooling under construction:
+
+```text
+apps/web/scripts/history-ui-h7-hosted-acceptance.mjs
+scripts/verify-history-ui-h7-evidence.mjs
+scripts/verify-history-ui-h7-acceptance.mjs
+.github/workflows/history-ui-h7-acceptance.yml
+```
+
 ```text
 P9H3  work-history-ui-h3-overview          complete PR #439
 P9H4A work-history-ui-h4a-overview-balance complete PR #441
 P9H4B work-history-ui-h4b-tasks            complete PR #443
 P9H5  work-history-ui-h5-responsive        complete PR #447
 P9H6  work-history-ui-h6-candidate         complete PR #449
-P9H7  work-history-ui-h7-acceptance        exact next after explicit continuation; not created
+P9H7  work-history-ui-h7-acceptance        active
 ```
-
-P9H6 is complete and canonically closed through PR #450. Do not create `work-history-ui-h7-acceptance` before explicit continuation is received.

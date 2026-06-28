@@ -1,0 +1,13 @@
+{
+  "schema": "viewloom-history-ui-h7-preview-trigger-v1",
+  "phase": "P9H7",
+  "implementation_pr": 451,
+  "preview_trigger_pr": 452,
+  "preview_branch": "preview-history-ui-h7-acceptance",
+  "attempt": 3,
+  "preview_result": "deployment_unavailable_404",
+  "acceptance_mode": "exact_production_before_and_after_merge",
+  "reason": "The exact Preview branch never produced deployment identity, so the acceptance-only change uses exact current-main and exact merged-main production gates.",
+  "runtime_change": false,
+  "merge_preview_pr": false
+}

@@ -25,14 +25,17 @@ P9H5 complete through PR #447
 P9H5 canonical closeout complete through PR #448
 P9H6 complete through PR #449
 P9H6 canonical closeout complete through PR #450
-Active implementation branch: none
-Exact next implementation branch: work-history-ui-h7-acceptance
-P9H7 branch created: no
+P9H7 active on work-history-ui-h7-acceptance
+Active implementation branch: work-history-ui-h7-acceptance
+Preview branch: preview-history-ui-h7-acceptance
 ```
 
 Historical gate evidence, not current state:
 
 ```text
+Active implementation branch: none
+Exact next implementation branch: work-history-ui-h7-acceptance
+P9H7 branch created: no
 P9H6 active on work-history-ui-h6-candidate
 Active implementation branch: work-history-ui-h6-candidate
 P9H6 canonical closeout active
@@ -67,7 +70,7 @@ Active implementation branch: none
 P9H2 branch created: no
 ```
 
-Do not create `work-history-ui-h7-acceptance` before explicit continuation.
+P9H7 is acceptance-only. Do not start Phase 10 before exact Preview and production evidence are complete and permanent documentation has replaced temporary notes.
 
 ## Standard workflow
 

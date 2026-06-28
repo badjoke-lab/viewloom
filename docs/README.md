@@ -25,13 +25,16 @@ P9H5     work-history-ui-h5-responsive                   complete PR #447
 P9H5 canonical closeout complete PR #448
 P9H6     work-history-ui-h6-candidate                    complete PR #449
 P9H6 canonical closeout complete PR #450
-Active implementation branch                            none
-P9H7     work-history-ui-h7-acceptance                   exact next; not created
+P9H7     work-history-ui-h7-acceptance                   active
+Active implementation branch                            work-history-ui-h7-acceptance
+Preview branch                                          preview-history-ui-h7-acceptance
 ```
 
 Historical gate strings, not current state:
 
 ```text
+Active implementation branch                            none
+P9H7     work-history-ui-h7-acceptance                   exact next; not created
 P9H6     work-history-ui-h6-candidate                    active
 Active implementation branch                            work-history-ui-h6-candidate
 P9H6 canonical closeout active
@@ -60,5 +63,6 @@ P9H2     work-history-ui-h2-chart                          exact next; not creat
 - P9H4B: its browser script, verifier, and workflow.
 - P9H5: `apps/web/scripts/history-ui-h5-responsive-browser.mjs`, `scripts/verify-history-ui-h5-responsive.mjs`, and `.github/workflows/history-ui-h5-responsive.yml`.
 - P9H6: `apps/web/scripts/history-ui-h6-candidate-manifest.mjs`, `scripts/verify-history-ui-h6-candidate.mjs`, and `.github/workflows/history-ui-h6-candidate.yml`.
+- Active P9H7: `apps/web/scripts/history-ui-h7-hosted-acceptance.mjs`, `scripts/verify-history-ui-h7-evidence.mjs`, `scripts/verify-history-ui-h7-acceptance.mjs`, `.github/workflows/history-ui-h7-acceptance.yml`, and `work-in-progress/p9h7-acceptance.md`.
 
-Do not create `work-history-ui-h7-acceptance` before explicit continuation is received.
+P9H7 is acceptance-only. Phase 10 remains blocked until exact Preview and production evidence are transferred to a permanent record and both temporary History repair notes are deleted.
