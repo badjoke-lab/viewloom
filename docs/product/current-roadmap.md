@@ -21,24 +21,25 @@ Phase 9 P9H5 complete PR #447
 P9H5 canonical closeout complete PR #448
 Phase 9 P9H6 complete PR #449
 P9H6 canonical closeout complete PR #450
-Active implementation branch: none
-Exact next implementation branch: work-history-ui-h7-acceptance
-P9H7 branch created: no
+Phase 9 P9H7 active
+Active implementation branch: work-history-ui-h7-acceptance
+Preview branch: preview-history-ui-h7-acceptance
 ```
 
 Local Watchlist v1 is complete through PR #425.
 
-P9H6 produced one deterministic local candidate from one exact HEAD, one build, and one local preview. P9H7 is production acceptance.
+P9H7 performs exact Cloudflare Preview and production acceptance for the accepted P9H6 candidate. It adds no product feature or data-path change. Phase 10 remains blocked until P9H7 evidence transfer and temporary-note deletion are complete.
 
 ## Historical gate strings
 
 ```text
+Active implementation branch: none
+Exact next implementation branch: work-history-ui-h7-acceptance
+P9H7 branch created: no
 Phase 8 P8B   complete PR #428
 Phase 9 P9H1  complete PR #434
 Phase 9 P9H6 active
 Active implementation branch: work-history-ui-h6-candidate
-Exact next implementation branch: work-history-ui-h7-acceptance
-P9H7 branch created: no
 P9H6 canonical closeout active
 Active implementation branch: work-history-ui-h6-closeout
 Phase 9 P9H5 complete PR #447
@@ -88,11 +89,23 @@ Merge: d46e2f3d04c9528e6493d9aa3d436000e340272a
 Manifest: viewloom-history-ui-h6-candidate-v1
 ```
 
+## Active P9H7 sequence
+
+```text
+work-history-ui-h7-acceptance
+  -> repository/type/build gates
+  -> exact preview-history-ui-h7-acceptance ref
+  -> real-data Preview acceptance
+  -> squash merge to main
+  -> exact-SHA production acceptance
+  -> permanent record and temporary-note deletion
+```
+
 ## Ordered roadmap
 
 ```text
-Phase 9 History P1 repair P9H6 complete; P9H7 next
-Phase 10 cross-site repair queued
+Phase 9 History P1 repair P9H7 active
+Phase 10 cross-site repair blocked until P9H7 closure
 Phase 11 acceptance and operations queued
 Phase 12 release readiness queued
 Phase 13–14 localization approved and queued
@@ -101,5 +114,3 @@ Phase 16 major feature not approved
 ```
 
 No Phase 16 feature is approved.
-
-P9H6 is complete and canonically closed through PR #450. Do not create `work-history-ui-h7-acceptance` before explicit continuation is received.
