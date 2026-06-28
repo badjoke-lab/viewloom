@@ -23,12 +23,12 @@ Phase 9 P9H6 complete PR #449
 P9H6 canonical closeout complete PR #450
 Phase 9 P9H7 active
 Active implementation branch: work-history-ui-h7-acceptance
-Preview branch: preview-history-ui-h7-acceptance
+Attempted Preview branch: preview-history-ui-h7-acceptance
 ```
 
 Local Watchlist v1 is complete through PR #425.
 
-P9H7 performs exact Cloudflare Preview and production acceptance for the accepted P9H6 candidate. It adds no product feature or data-path change. Phase 10 remains blocked until P9H7 evidence transfer and temporary-note deletion are complete.
+P9H7 adds no product feature or data-path change. The requested Cloudflare Preview branch did not produce a deployment and returned 404 before any provider or browser scenario ran. The governed substitute is a complete exact-base-SHA production baseline on PR #451, followed by the same exact-merge-SHA production acceptance after squash merge. Phase 10 remains blocked until P9H7 evidence transfer and temporary-note deletion are complete.
 
 ## Historical gate strings
 
@@ -94,12 +94,14 @@ Manifest: viewloom-history-ui-h6-candidate-v1
 ```text
 work-history-ui-h7-acceptance
   -> repository/type/build gates
-  -> exact preview-history-ui-h7-acceptance ref
-  -> real-data Preview acceptance
-  -> squash merge to main
-  -> exact-SHA production acceptance
+  -> exact current-main production baseline
+  -> close preview trigger PR #452 without merge
+  -> squash merge PR #451 to main
+  -> exact-merge-SHA production acceptance
   -> permanent record and temporary-note deletion
 ```
+
+The failed Preview attempts and artifacts remain part of the permanent operational record. They do not count as product acceptance because the Preview origin never reached deployment identity.
 
 ## Ordered roadmap
 
