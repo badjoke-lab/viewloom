@@ -66,7 +66,11 @@ requireText('docs/work-in-progress/history-ui-repair-working-note.md', [
 ])
 requireText('docs/work-in-progress/p9h7-acceptance.md', [
   'Preview trigger PR: #452 — never merge',
-  'only the exact final work-branch HEAD may be moved to the Preview ref',
+  'Controlled acceptance exception',
+  'pre-merge production baseline',
+  'Final exact-head workflow: 28318577620',
+  'Final artifact: history-ui-h7-preview-acceptance / 7933542788',
+  'Close PR #452 without merge',
 ])
 requireText('apps/web/scripts/history-ui-h7-hosted-acceptance.mjs', [
   "schema: 'viewloom-history-ui-h7-hosted-acceptance-v1'",
@@ -84,8 +88,13 @@ requireText('scripts/verify-history-ui-h7-evidence.mjs', [
 ])
 requireText('.github/workflows/history-ui-h7-acceptance.yml', [
   'name: History UI P9H7 Acceptance',
-  'Run P9H7 hosted Preview acceptance',
+  'premerge-production-baseline:',
+  'Run P9H7 pre-merge production baseline',
+  'history-ui-h7-premerge-production-baseline',
+  "HISTORY_H7_EXPECTED_SHA: ${{ github.event.pull_request.base.sha }}",
+  "if: github.event_name == 'push' && github.ref == 'refs/heads/preview-history-ui-h7-acceptance'",
   'Run P9H7 production acceptance',
+  'history-ui-h7-production-acceptance',
   'cancel-in-progress: true',
 ])
 
@@ -113,6 +122,7 @@ if (issues.length) {
 
 console.log('History UI P9H7 repository verification passed.')
 console.log('- P9H7 is active on work-history-ui-h7-acceptance')
-console.log('- exact Preview and production deployment identity are required')
+console.log('- unavailable Preview is recorded as an external deployment failure')
+console.log('- exact-SHA production acceptance is required before and after merge')
 console.log('- Twitch and Kick real-data acceptance remains separated')
 console.log('- Phase 10 remains blocked until P9H7 closure')
