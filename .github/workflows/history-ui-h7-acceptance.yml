@@ -93,14 +93,14 @@ jobs:
         run: pnpm build:web
 
   preview:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/preview-history-ui-h7-acceptance'
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/preview-history-ui-h7-acceptance')
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
       HISTORY_H7_ORIGIN: https://preview-history-ui-h7-acceptance.viewloom.pages.dev
       HISTORY_H7_EXPECTED_ENVIRONMENT: preview
       HISTORY_H7_EXPECTED_BRANCH: preview-history-ui-h7-acceptance
-      HISTORY_H7_EXPECTED_SHA: ${{ github.sha }}
+      HISTORY_H7_EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       HISTORY_H7_ARTIFACT_DIR: /tmp/history-ui-h7-preview
     steps:
       - name: Checkout
@@ -144,7 +144,7 @@ jobs:
         run: node scripts/history-ui-h7-hosted-acceptance.mjs
 
       - name: Verify Preview evidence
-        run: node scripts/verify-history-ui-h7-evidence.mjs /tmp/history-ui-h7-preview/history-ui-h7-evidence.json preview preview-history-ui-h7-acceptance "$GITHUB_SHA"
+        run: node scripts/verify-history-ui-h7-evidence.mjs /tmp/history-ui-h7-preview/history-ui-h7-evidence.json preview preview-history-ui-h7-acceptance "$HISTORY_H7_EXPECTED_SHA"
 
       - name: Upload P9H7 Preview artifacts
         if: always()
