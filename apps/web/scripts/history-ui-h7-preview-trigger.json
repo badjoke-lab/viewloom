@@ -1,0 +1,11 @@
+{
+  "schema": "viewloom-history-ui-h7-preview-trigger-v1",
+  "phase": "P9H7",
+  "implementation_pr": 451,
+  "preview_trigger_pr": 452,
+  "preview_branch": "preview-history-ui-h7-acceptance",
+  "attempt": 2,
+  "reason": "Trigger the configured apps/web Cloudflare Pages Preview build watch after the first exact-head deployment identity probe returned 404.",
+  "runtime_change": false,
+  "merge_preview_pr": false
+}
