@@ -63,8 +63,8 @@ jobs:
       - name: Verify P8A inventory
         run: node scripts/verify-public-surface-inventory.mjs
 
-      - name: Verify P8B current state
-        run: node scripts/verify-public-browser-audit-current.mjs
+      - name: Verify P8B repository state
+        run: node scripts/verify-public-browser-audit-historical.mjs && node scripts/verify-public-browser-audit-current.mjs
 
       - name: Typecheck web application
         run: pnpm --filter @viewloom/web typecheck:app
