@@ -20,9 +20,6 @@ const forbid = (path, fragments) => {
 }
 
 for (const path of [
-  'docs/product/current-roadmap.md',
-  'docs/product/current-schedule.md',
-  'docs/product/post-watchlist-program-plan.md',
   'docs/product/history-ui-repair-spec.md',
   'docs/product/history-ui-repair-plan.md',
   'docs/operations/history-production-acceptance-2026-06-28.md',
@@ -39,17 +36,9 @@ for (const path of [
   '.github/workflows/history-ui-h1-metric.yml',
 ]) needFile(path)
 
-need('docs/product/current-roadmap.md', [
-  'Phase 9 History P1 repair complete',
-  'Exact next implementation branch: work-quality-u10a-baseline',
-])
-need('docs/product/current-schedule.md', [
-  'P9H1 History metric synchronization      complete PR #434',
-  'Phase 9 History P1 repair                complete',
-])
-need('docs/product/post-watchlist-program-plan.md', [
-  'Completed metric synchronization: PR #434',
-  'Completed History production acceptance: PR #451',
+need('docs/product/history-ui-repair-spec.md', [
+  'Status: accepted and complete',
+  'Phase 9 — History P1 repair complete',
 ])
 need('docs/product/history-ui-repair-plan.md', [
   'Status: complete',
@@ -154,4 +143,4 @@ if (issues.length) {
 console.log('History UI P9H1 repository verification passed.')
 console.log('- P9H1 metric synchronization remains protected')
 console.log('- provider, request, and output boundaries remain protected')
-console.log('- Phase 9 production acceptance is permanent')
+console.log('- permanent History acceptance, not current roadmap wording, owns phase completion')
