@@ -1,27 +1,22 @@
 # ViewLoom cross-site quality remediation plan
 
 Status: active implementation plan
-Version: 1.5
+Version: 1.6
 Last updated: 2026-06-29
 Permanent specification: `cross-site-quality-remediation-spec.md`
-Current branch: `work-quality-u10c-visualization`
-Completed phase: U10B through PR #456
-Completed canonical closeout: PR #457
-Active phase: U10C visualization
-Exact next branch after U10C: `work-quality-u10d-analysis-coherence`
+Current branch: none
+Completed phase: U10C through PR #458
+Canonical closeout: PR #459
+Exact next branch: `work-quality-u10d-analysis-coherence`
 U10D branch created: no
 
-## Boundaries
-
-Twitch and Kick remain separate. U10C changes only visualization reading grammar, state presentation, accessible stage semantics, and acceptance evidence. It does not change recommendation ownership, selected-time ownership, APIs, D1, bindings, collectors, cron, retention, output schemas, localization runtime, or provider combination.
-
-## Sequence
+Twitch and Kick remain separate. U10C changed visualization grammar, state presentation, accessible stage semantics, and acceptance evidence only.
 
 ```text
-U10A work-quality-u10a-baseline complete PR #454
-U10B work-quality-u10b-shell complete PR #456
-U10C work-quality-u10c-visualization active
-U10D work-quality-u10d-analysis-coherence next after closeout
+U10A complete PR #454
+U10B complete PR #456
+U10C complete PR #458
+U10D work-quality-u10d-analysis-coherence next
 U10E work-quality-u10e-responsive
 U10F work-quality-u10f-readiness
 U10G work-quality-u10g-architecture
@@ -35,6 +30,4 @@ O11F work-operations-o11f-runbooks
 O11G work-operations-o11g-acceptance
 ```
 
-Active note: `docs/work-in-progress/u10c-visualization.md`.
-
-After each merge, update canonical state, report, name the next branch, and stop.
+Permanent U10C record: `docs/audits/cross-site-quality-u10c-visualization.json`.
