@@ -43,7 +43,7 @@ docs/audits/cross-site-quality-u10a-baseline.json
 docs/audits/cross-site-quality-u10a-owner-map.json
 ```
 
-U10A merge evidence must include the U10A deterministic baseline and the 84-route Public Browser Audit on the same latest branch head.
+U10A merge evidence must include the U10A deterministic baseline and the 84-route Public Browser Audit on the same latest branch head. The Public Browser Audit verifies both the retained P8B historical contract and the current U10A handoff.
 
 ## History production evidence
 
