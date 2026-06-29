@@ -21,7 +21,7 @@ on:
       - 'apps/web/src/**'
       - 'apps/web/*/*.html'
       - 'apps/web/*/*/*.html'
-      - 'scripts/verify-public-browser-audit.mjs'
+      - 'scripts/verify-public-browser-audit-current.mjs'
       - 'scripts/verify-public-surface-inventory.mjs'
       - 'scripts/verify-development-policy.mjs'
       - '.github/workflows/public-browser-audit.yml'
@@ -62,8 +62,8 @@ jobs:
       - name: Verify P8A inventory
         run: node scripts/verify-public-surface-inventory.mjs
 
-      - name: Verify P8B repository state
-        run: node scripts/verify-public-browser-audit.mjs
+      - name: Verify P8B current state
+        run: node scripts/verify-public-browser-audit-current.mjs
 
       - name: Typecheck web application
         run: pnpm --filter @viewloom/web typecheck:app
