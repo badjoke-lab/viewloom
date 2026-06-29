@@ -117,7 +117,7 @@ need('apps/web/src/mock-site.ts', ["import './visualization-grammar-entry'"])
 need('apps/web/scripts/quality-u10c-visualization-browser.mjs', [
   "schema: 'viewloom-quality-u10c-visualization-browser-v1'",
   "phase: 'U10C'",
-  'viewports: [1440, 820, 390, 360]',
+  'const viewports = [1440, 820, 390, 360]',
   'routes: routes.length',
   'assertGuide',
   'assertMetricSynchronization',
