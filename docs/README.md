@@ -33,6 +33,12 @@ U10D branch created                             no
 - U10B permanent shared shell record: `audits/cross-site-quality-u10b-shared-shell.json`
 - Permanent History acceptance: `operations/history-production-acceptance-2026-06-28.md`
 
+## Permanent Watchlist records
+
+- `product/local-watchlist-spec.md`
+- `product/watchlist-v1-implementation-plan.md`
+- `operations/watchlist-production-acceptance-2026-06-25.md`
+
 ## U10C implementation boundary
 
 U10C owns the shared visualization reading guide, metric/unit synchronization, UTC context, selection/detail explanation, normalized visualization state, and the eight-route browser matrix. It does not change feature analysis meaning, APIs, storage, collection, retention, or provider separation.
