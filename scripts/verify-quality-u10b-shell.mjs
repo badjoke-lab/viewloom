@@ -27,10 +27,6 @@ for (const path of [
   'scripts/verify-quality-u10b-browser-evidence.mjs',
   '.github/workflows/quality-u10b-shell.yml',
   'docs/audits/cross-site-quality-u10b-shared-shell.json',
-  'docs/product/current-roadmap.md',
-  'docs/product/current-schedule.md',
-  'docs/product/post-watchlist-program-plan.md',
-  'docs/product/cross-site-quality-remediation-plan.md',
 ]) needFile(path)
 
 check(!existsSync(join(root, 'docs/work-in-progress/u10b-shared-shell.md')), 'completed U10B working note still exists')
@@ -131,34 +127,8 @@ check(record.companion_public_browser_audit?.run_id === 28369803633, 'Public Bro
 check(record.companion_public_browser_audit?.artifact_id === 7951026988, 'Public Browser artifact evidence changed')
 check(record.companion_public_browser_audit?.production_scenarios === 84, 'Public Browser scenario count changed')
 check(record.companion_public_browser_audit?.p0 === 0, 'Public Browser P0 state changed')
-check(record.exact_next_branch === 'work-quality-u10c-visualization', 'U10C handoff changed')
-check(record.next_branch_created === false, 'U10C creation state changed')
-
-need('docs/product/current-roadmap.md', [
-  'Phase 10 U10B shared shell complete PR #456',
-  'U10B canonical closeout complete PR #457',
-  'Active implementation branch: none',
-  'Exact next implementation branch: work-quality-u10c-visualization',
-])
-need('docs/product/current-schedule.md', [
-  'U10B shared shell                         complete PR #456',
-  'U10B canonical closeout                  complete PR #457',
-  'Active implementation branch             none',
-  'Exact next branch                        work-quality-u10c-visualization',
-])
-need('docs/product/post-watchlist-program-plan.md', [
-  'Current phase: Phase 10 — U10B complete',
-  'Current implementation branch: none',
-  'Exact next implementation branch: `work-quality-u10c-visualization`',
-  'Completed U10B implementation: PR #456',
-  'Completed U10B canonical closeout: PR #457',
-])
-need('docs/product/cross-site-quality-remediation-plan.md', [
-  'Current branch: none',
-  'Completed phase: U10B through PR #456',
-  'Completed canonical closeout: PR #457',
-  'Exact next branch: `work-quality-u10c-visualization`',
-])
+check(record.exact_next_branch === 'work-quality-u10c-visualization', 'U10B closeout handoff changed')
+check(record.next_branch_created === false, 'U10B closeout creation snapshot changed')
 
 if (issues.length) {
   console.error('ViewLoom completed U10B shared shell verification did not pass:')
@@ -169,4 +139,4 @@ if (issues.length) {
 console.log('ViewLoom completed U10B shared shell verification passed.')
 console.log('- permanent implementation and browser evidence are exact')
 console.log('- common shell ownership remains centralized')
-console.log('- U10C is exact next and uncreated')
+console.log('- later roadmap phases do not rewrite U10B evidence')
