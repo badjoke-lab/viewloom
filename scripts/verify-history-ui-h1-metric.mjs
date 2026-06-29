@@ -25,7 +25,7 @@ for (const path of [
   'docs/product/post-watchlist-program-plan.md',
   'docs/product/history-ui-repair-spec.md',
   'docs/product/history-ui-repair-plan.md',
-  'docs/work-in-progress/history-ui-repair-working-note.md',
+  'docs/operations/history-production-acceptance-2026-06-28.md',
   'docs/audits/history-ui-h0-owner-map.json',
   'apps/web/src/live/history-current-shell-entry.ts',
   'apps/web/src/live/history-overview.ts',
@@ -40,36 +40,26 @@ for (const path of [
 ]) needFile(path)
 
 need('docs/product/current-roadmap.md', [
-  'Phase 9 P9H1  complete PR #434',
-  'Active implementation branch: none',
-  'Exact next implementation branch: work-history-ui-h2-chart',
-  'Workflow run: 28232602651',
+  'Phase 9 History P1 repair complete',
+  'Exact next implementation branch: work-quality-u10a-baseline',
 ])
 need('docs/product/current-schedule.md', [
   'P9H1 History metric synchronization      complete PR #434',
-  'Active implementation branch             none',
-  'Exact next branch                        work-history-ui-h2-chart',
-  'P9H2 branch created                      no',
-  'Workflow run: 28232602651',
+  'Phase 9 History P1 repair                complete',
 ])
 need('docs/product/post-watchlist-program-plan.md', [
-  'Version: 2.3',
-  'Current implementation branch: none',
   'Completed metric synchronization: PR #434',
-  '| 9 | P9H1 | complete PR #434',
-  'P9H2 work-history-ui-h2-chart      exact next after explicit continuation; not created',
+  'Completed History production acceptance: PR #451',
 ])
 need('docs/product/history-ui-repair-plan.md', [
-  'Version: 1.7',
+  'Status: complete',
   'Completed P9H1: PR #434',
-  'Current implementation branch: none',
-  'P9H2 work-history-ui-h2-chart      exact next; not created',
+  'Completed P9H7 production acceptance: PR #451',
 ])
-need('docs/work-in-progress/history-ui-repair-working-note.md', [
-  'Completed P9H1: PR #434',
-  'Current implementation branch: none',
-  'Workflow run: 28232602651',
-  'P9H2 work-history-ui-h2-chart',
+need('docs/operations/history-production-acceptance-2026-06-28.md', [
+  'History Phase 9 is accepted in production.',
+  'Viewer-minutes: real data',
+  'Peak viewers: real data',
 ])
 
 need('apps/web/src/live/history-current-shell-entry.ts', [
@@ -162,7 +152,6 @@ if (issues.length) {
 }
 
 console.log('History UI P9H1 repository verification passed.')
-console.log('- P9H1 is complete through PR #434')
-console.log('- metric-aware Summary, Selected day, Ranking, Daily archive, Report, Share, and Export remain present')
+console.log('- P9H1 metric synchronization remains protected')
 console.log('- provider, request, and output boundaries remain protected')
-console.log('- work-history-ui-h2-chart remains the uncreated next branch')
+console.log('- Phase 9 production acceptance is permanent')
