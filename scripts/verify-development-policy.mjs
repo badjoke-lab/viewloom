@@ -88,7 +88,8 @@ need('docs/product/post-watchlist-program-plan.md', [
   'Exact next implementation branch after U10A: `work-quality-u10b-shell`',
 ])
 need('docs/product/cross-site-quality-remediation-spec.md', [
-  'Roadmap phases: Phase 10–11', 'Reproduction and failing assertions before repair',
+  'Roadmap phases: Phase 10–11',
+  'Any new issue must record route/provider, viewport/state, expected and actual behavior, owner file, existing gate, missing assertion, and classification before repair.',
 ])
 need('docs/product/cross-site-quality-remediation-plan.md', [
   'Status: active implementation plan',
