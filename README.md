@@ -57,15 +57,4 @@ Phase 15 capability audit                queued
 Phase 16 major feature                    not approved
 ```
 
-## Archived implementation snapshot
-
-The following records the implementation-phase state retained for repository gate compatibility; it is not the current execution state.
-
-```text
-Phase 10 U10C visualization           active
-Active implementation branch          work-quality-u10c-visualization
-Exact next branch after U10C          work-quality-u10d-analysis-coherence
-U10D branch created                   no
-```
-
 Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*` only when runtime validation is necessary. Only latest-head evidence counts. After every merge, issue the full report and stop.
