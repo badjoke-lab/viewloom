@@ -18,12 +18,13 @@ Phase 10 U10A quality baseline complete through PR #454
 U10A canonical closeout complete through PR #455
 Phase 10 U10B shared shell complete through PR #456
 U10B canonical closeout complete through PR #457
-Active implementation branch: none
-Exact next implementation branch: work-quality-u10c-visualization
-U10C branch created: no
+Phase 10 U10C visualization active
+Active implementation branch: work-quality-u10c-visualization
+Exact next implementation branch after U10C: work-quality-u10d-analysis-coherence
+U10D branch created: no
 ```
 
-The permanent U10B record is `docs/audits/cross-site-quality-u10b-shared-shell.json`.
+The active working note is `docs/work-in-progress/u10c-visualization.md`. U10C is limited to shared visualization grammar and its acceptance gates.
 
 ## Standard workflow
 
@@ -40,4 +41,4 @@ canonical documents
   -> full report and stop
 ```
 
-Ordinary development uses `work-*`; deliberate runtime validation uses `preview-*`; `main` is production. Keep Twitch and Kick separated. Do not create U10C before explicit continuation.
+Ordinary development uses `work-*`; deliberate runtime validation uses `preview-*`; `main` is production. Keep Twitch and Kick separated. Do not create U10D before U10C closeout and explicit continuation.
