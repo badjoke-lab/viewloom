@@ -29,6 +29,7 @@ for (const path of [
   'scripts/verify-history-ui-h5-responsive.mjs',
   '.github/workflows/history-ui-h6-candidate.yml',
   'docs/work-in-progress/p9h6-candidate.md',
+  'docs/operations/history-production-acceptance-2026-06-28.md',
 ]) needFile(path)
 
 need('apps/web/scripts/history-ui-h2-chart-browser.mjs', [
@@ -60,41 +61,34 @@ need('.github/workflows/history-ui-h6-candidate.yml', [
   'history-ui-h6-candidate', 'cancel-in-progress: true',
 ])
 need('docs/product/current-schedule.md', [
-  'P9H6 Local candidate                     active',
-  'Active implementation branch             work-history-ui-h6-candidate',
   'P9H6 Local candidate                     complete PR #449',
   'P9H6 canonical closeout                  complete PR #450',
-  'Active implementation branch             none',
-  'Exact next branch                        work-history-ui-h7-acceptance',
-  'P9H7 branch created                      no',
+  'Phase 9 History P1 repair                complete',
   'Workflow run: 28308389704', 'Artifact ID: 7930159988',
   'viewloom-history-ui-h6-candidate-v1', 'Scenarios: 21',
 ])
 need('docs/product/current-roadmap.md', [
   'Phase 9 P9H6 complete PR #449',
   'P9H6 canonical closeout complete PR #450',
-  'Active implementation branch: none',
-  'Exact next implementation branch: work-history-ui-h7-acceptance',
-  'P9H7 branch created: no',
+  'Phase 9 History P1 repair complete',
 ])
 need('docs/product/post-watchlist-program-plan.md', [
   'Completed local candidate: PR #449',
   'Completed P9H6 canonical closeout: PR #450',
-  'Exact next implementation branch after explicit continuation: `work-history-ui-h7-acceptance`',
+  'Completed History production acceptance: PR #451',
 ])
 need('docs/product/history-ui-repair-plan.md', [
   'Completed P9H6: PR #449',
   'Completed P9H6 canonical closeout: PR #450',
-  'Exact next branch after explicit continuation: `work-history-ui-h7-acceptance`',
-])
-need('docs/work-in-progress/history-ui-repair-working-note.md', [
-  'Completed P9H6: PR #449',
-  'Completed P9H6 canonical closeout: PR #450',
-  'Workflow run: 28308389704', 'Artifact ID: 7930159988',
+  'Completed P9H7 production acceptance: PR #451',
 ])
 need('docs/work-in-progress/p9h6-candidate.md', [
   'Status: complete', 'Implementation PR: #449', 'Canonical closeout PR: #450',
   'work-history-ui-h7-acceptance', 'P9H7 branch created: no',
+])
+need('docs/operations/history-production-acceptance-2026-06-28.md', [
+  'Accepted production commit: `233a35ebe219c6be42723eb749e2bcc84ae7fc09`',
+  'Post-merge production: workflow 28325951638, artifact 7935706617, pass',
 ])
 
 if (issues.length) {
@@ -104,7 +98,6 @@ if (issues.length) {
 }
 
 console.log('ViewLoom History P9H6 candidate verification passed.')
-console.log('- P9H6 is complete through PR #449 and canonically closed through PR #450')
 console.log('- one exact candidate HEAD, build, local preview, six phases, and twenty-one scenarios are protected')
 console.log('- phase schemas, stable IDs, provider separation, and evidence digests are protected')
-console.log('- work-history-ui-h7-acceptance is next and not created')
+console.log('- Phase 9 production acceptance is permanent')
