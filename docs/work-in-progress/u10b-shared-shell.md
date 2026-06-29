@@ -1,10 +1,14 @@
 # ViewLoom U10B shared shell
 
-Status: active
+Status: closeout in progress
 Phase: U10B
-Branch: `work-quality-u10b-shell`
+Implementation branch: `work-quality-u10b-shell`
+Closeout branch: `work-quality-u10b-closeout`
 Entry main commit: `71400fbf8818e761e270f28c144cc5356380a0b8`
-Exact next branch after merge and closeout: `work-quality-u10c-visualization`
+Implementation PR: #456
+Implementation head: `654833f70fc0776babbbfe9a9fab6829643f228a`
+Implementation merge: `95ad125c05aed32408b1ee79915a4b7ac910ba6c`
+Exact next branch after closeout: `work-quality-u10c-visualization`
 U10C branch created: no
 
 ## Scope
