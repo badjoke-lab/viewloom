@@ -20,6 +20,7 @@ for (const path of [
   'apps/web/src/mock-site.ts',
   'apps/web/src/provider-home.ts',
   'apps/web/scripts/quality-u10b-shell-browser.mjs',
+  'scripts/verify-quality-u10b-browser-evidence.mjs',
   '.github/workflows/quality-u10b-shell.yml',
   'docs/work-in-progress/u10b-shared-shell.md',
   'docs/product/current-roadmap.md',
@@ -35,7 +36,7 @@ need('apps/web/src/shared-shell.ts', [
   "nav.setAttribute('aria-label', 'Global navigation')",
   "menu.setAttribute('aria-controls', nav.id)",
   "event.key !== 'Escape'",
-  "footer.setAttribute",
+  "nav.setAttribute('aria-label', 'Footer navigation')",
   'footerDisclaimer',
   'Twitch observation',
   'Kick observation',
@@ -62,6 +63,9 @@ need('apps/web/src/provider-home.ts', [
   "import { installSharedShell } from './shared-shell'",
   'installSharedShell()',
 ])
+const providerHome = read('apps/web/src/provider-home.ts')
+if (providerHome.includes('installMobileNavigation')) issues.push('provider-home.ts retains duplicate mobile navigation owner')
+
 need('apps/web/scripts/quality-u10b-shell-browser.mjs', [
   "schema: 'viewloom-quality-u10b-shell-browser-v1'",
   "phase: 'U10B'",
@@ -69,6 +73,11 @@ need('apps/web/scripts/quality-u10b-shell-browser.mjs', [
   'viewports: [1440, 390]',
   "assert.equal(initial.navInlineStyle, null",
   "await page.keyboard.press('Escape')",
+])
+need('scripts/verify-quality-u10b-browser-evidence.mjs', [
+  "viewloom-quality-u10b-shell-browser-v1",
+  'assert.equal(evidence.routes, 20)',
+  'assert.equal(evidence.scenarios.length, 40)',
 ])
 need('.github/workflows/quality-u10b-shell.yml', [
   'name: Quality U10B Shared Shell',
