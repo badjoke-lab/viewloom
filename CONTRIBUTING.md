@@ -14,14 +14,17 @@ Phase 8 complete through PR #428
 Phase 9 History P1 repair complete
 P9H7 production acceptance complete through PR #451
 P9H7 canonical closeout complete through PR #453
-Active implementation branch: none
-Exact next implementation branch: work-quality-u10a-baseline
-U10A branch created: no
+Phase 10 U10A quality baseline active
+Active implementation branch: work-quality-u10a-baseline
+Exact next implementation branch after U10A: work-quality-u10b-shell
+U10B branch created: no
 ```
 
-Permanent History evidence is owned by `docs/operations/history-production-acceptance-2026-06-28.md`.
+U10A uses `docs/work-in-progress/u10a-quality-baseline.md`, `docs/audits/cross-site-quality-u10a-baseline.json`, and `docs/audits/cross-site-quality-u10a-owner-map.json` as its temporary evidence authorities.
 
-Phase 10 U10A starts only after explicit continuation. U10A reproduces and classifies known non-History defects, identifies current and legacy owners, and adds failing assertions or explicit baseline fixtures. Product repair is outside U10A except proven P0 isolation.
+U10A is baseline-only. It reproduces and classifies known non-History defects, identifies current and compatibility owners, and adds static or browser fixtures. Product repair is outside U10A except proven P0 isolation.
+
+Permanent History evidence is owned by `docs/operations/history-production-acceptance-2026-06-28.md`.
 
 ## Standard workflow
 
@@ -39,4 +42,4 @@ canonical documents
   -> full report and stop
 ```
 
-`work-*` is ordinary development, `preview-*` is deliberate runtime validation, and `main` is production. Connector-created multi-commit work must be squash merged. Twitch and Kick must remain separated. Do not start later phases in parallel.
+`work-*` is ordinary development, `preview-*` is deliberate runtime validation, and `main` is production. Connector-created multi-commit work should be squash merged where the connector permits it. Twitch and Kick must remain separated. Do not start U10B or later phases in parallel.
