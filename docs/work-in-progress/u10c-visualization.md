@@ -16,7 +16,13 @@ U10C standardizes how the four provider visualization families explain themselve
 - Battle Lines;
 - History.
 
-Both Twitch and Kick routes are included, for eight built visualization routes.
+Both Twitch and Kick routes are included.
+
+```text
+Visualization routes: 8
+Required widths: 1440 / 820 / 390 / 360
+Browser scenarios: 32
+```
 
 The shared grammar owns:
 
