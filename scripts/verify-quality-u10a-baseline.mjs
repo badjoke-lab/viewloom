@@ -18,10 +18,6 @@ const requireText = (path, fragments) => {
 for (const path of [
   'docs/audits/cross-site-quality-u10a-baseline.json',
   'docs/audits/cross-site-quality-u10a-owner-map.json',
-  'docs/product/current-roadmap.md',
-  'docs/product/current-schedule.md',
-  'docs/product/post-watchlist-program-plan.md',
-  'docs/product/cross-site-quality-remediation-plan.md',
   'apps/web/scripts/quality-u10a-baseline-browser.mjs',
   'scripts/verify-quality-u10a-baseline.mjs',
   '.github/workflows/quality-u10a-baseline.yml',
@@ -122,26 +118,6 @@ requireText('apps/web/scripts/quality-u10a-baseline-browser.mjs', [
   'auditBattleCoherence',
   'auditMobileTargets',
 ])
-requireText('docs/product/current-roadmap.md', [
-  'Phase 10 U10A complete PR #454',
-  'Active implementation branch: none',
-  'Exact next implementation branch: work-quality-u10b-shell',
-])
-requireText('docs/product/current-schedule.md', [
-  'U10A defect and ownership baseline       complete PR #454',
-  'Active implementation branch             none',
-  'Exact next branch                        work-quality-u10b-shell',
-])
-requireText('docs/product/post-watchlist-program-plan.md', [
-  'Current phase: Phase 10 — U10A complete',
-  'Current implementation branch: none',
-  'Exact next implementation branch: `work-quality-u10b-shell`',
-])
-requireText('docs/product/cross-site-quality-remediation-plan.md', [
-  'Status: active implementation plan',
-  'Current branch: none',
-  'Exact next branch: `work-quality-u10b-shell`',
-])
 requireText('.github/workflows/quality-u10a-baseline.yml', [
   'name: Quality U10A Baseline',
   'Verify U10A repository baseline',
@@ -158,5 +134,4 @@ if (issues.length) {
 
 console.log('ViewLoom completed U10A baseline verification passed.')
 console.log('- eight findings and permanent evidence are exact')
-console.log('- no product repair entered the closeout')
-console.log('- U10B is exact next and uncreated')
+console.log('- later roadmap handoffs do not rewrite U10A evidence')
