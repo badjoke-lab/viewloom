@@ -18,8 +18,10 @@ on:
       - 'apps/web/src/visualization-grammar-entry.ts'
       - 'apps/web/src/mock-site.ts'
       - 'apps/web/scripts/quality-u10c-visualization-browser.mjs'
+      - 'apps/web/scripts/quality-u10c-state-settle-browser.mjs'
       - 'scripts/verify-quality-u10c-visualization.mjs'
       - 'scripts/verify-quality-u10c-browser-evidence.mjs'
+      - 'scripts/verify-quality-u10c-state-evidence.mjs'
       - 'scripts/verify-development-policy.mjs'
       - 'scripts/verify-quality-u10b-shell.mjs'
       - 'scripts/verify-public-browser-audit-current.mjs'
@@ -106,6 +108,13 @@ jobs:
 
       - name: Verify U10C browser evidence
         run: node scripts/verify-quality-u10c-browser-evidence.mjs
+
+      - name: Run U10C settled-state browser acceptance
+        working-directory: apps/web
+        run: node scripts/quality-u10c-state-settle-browser.mjs
+
+      - name: Verify U10C settled-state evidence
+        run: node scripts/verify-quality-u10c-state-evidence.mjs
 
       - name: Upload U10C visualization artifacts
         if: always()
