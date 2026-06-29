@@ -34,20 +34,15 @@ requireText('docs/product/current-roadmap.md', [
   'P9H7 production acceptance complete PR #451',
   'Phase 9 History P1 repair complete',
   'Phase 10 U10A complete PR #454',
-  'Active implementation branch: none',
-  'Exact next implementation branch: work-quality-u10b-shell',
 ])
 requireText('docs/product/current-schedule.md', [
   'P9H7 production acceptance              complete PR #451',
   'Phase 9 History P1 repair                complete',
   'U10A defect and ownership baseline       complete PR #454',
-  'Exact next branch                        work-quality-u10b-shell',
 ])
 requireText('docs/product/post-watchlist-program-plan.md', [
-  'Current phase: Phase 10 — U10A complete',
-  'Current implementation branch: none',
-  'Exact next implementation branch: `work-quality-u10b-shell`',
-  'Completed History production acceptance: PR #451',
+  'Phase 9 History P1 repair complete',
+  'Phase 10 U10A complete PR #454',
 ])
 requireText('docs/product/history-ui-repair-spec.md', [
   'Status: accepted and complete',
@@ -119,5 +114,5 @@ if (issues.length) {
 }
 console.log('History UI P9H7 repository verification passed.')
 console.log('- production acceptance is permanently recorded')
-console.log('- current Phase 10 handoff may advance without rewriting Phase 9 evidence')
+console.log('- later Phase 10 handoffs do not rewrite Phase 9 evidence')
 console.log('- Twitch and Kick real-data acceptance remains separated')
