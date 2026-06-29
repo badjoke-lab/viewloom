@@ -24,19 +24,24 @@ P9H0–P9H6 complete through PR #449
 P9H7 production acceptance complete through PR #451
 P9H7 canonical closeout complete through PR #453
 Phase 9 History P1 repair complete
-Active implementation branch: none
-Exact next implementation branch: work-quality-u10a-baseline
-U10A branch created: no
+Phase 10 U10A quality baseline active
+Active implementation branch: work-quality-u10a-baseline
+Exact next implementation branch after U10A: work-quality-u10b-shell
+U10B branch created: no
 ```
 
-Permanent History evidence:
+Current U10A authorities:
 
 ```text
-docs/operations/history-production-acceptance-2026-06-28.md
-Accepted production SHA: 233a35ebe219c6be42723eb749e2bcc84ae7fc09
-Post-merge workflow/artifact: 28325951638 / 7935706617
+docs/product/cross-site-quality-remediation-spec.md
+docs/product/cross-site-quality-remediation-plan.md
+docs/work-in-progress/u10a-quality-baseline.md
+docs/audits/cross-site-quality-u10a-baseline.json
+docs/audits/cross-site-quality-u10a-owner-map.json
 ```
 
-Phase 10 U10A is the exact next work after explicit continuation. It is a defect and ownership baseline: reproduce and classify known non-History defects, add failing gates or explicit fixtures, identify authoritative and legacy owners, and create the temporary Phase 10 working note. Do not repair beyond proven P0 isolation in U10A.
+U10A is baseline-only. Reproduce and classify non-History defects, identify authoritative and compatibility owners, and add failing assertions or explicit fixtures. Do not repair beyond proven P0 isolation.
 
-Do not start Phase 11–16 in parallel. No Phase 16 feature is approved. After every merge, issue the full merge report and stop.
+Permanent History evidence remains `docs/operations/history-production-acceptance-2026-06-28.md`.
+
+Do not start U10B or Phase 11–16 in parallel. No Phase 16 feature is approved. After every merge, issue the full merge report and stop.
