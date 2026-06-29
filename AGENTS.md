@@ -1,36 +1,17 @@
 # ViewLoom agent instructions
 
-Read before changing the repository:
-
-1. `docs/operations/development-and-deployment-policy.md`
-2. `docs/operations/development-policy-addendum.md`
-3. `docs/operations/documentation-governance.md`
-4. `docs/README.md`
-5. `docs/product/current-roadmap.md`
-6. `docs/product/current-schedule.md`
-7. `docs/product/post-watchlist-program-plan.md`
-8. affected specifications, implementation plans, working notes, and evidence records
-
-Do not start from chat memory, screenshots, an old PR, or a stale document. Compare the schedule with actual branches and PRs. Use `work-*` for ordinary development and `preview-*` only for deliberate runtime validation. Only latest-head evidence counts.
+Read `docs/README.md`, the development policy, current roadmap, current schedule, program plan, affected specifications, and permanent evidence before changing the repository.
 
 Current state:
 
 ```text
-Local Watchlist v1 complete through PR #425
-Phase 8 complete through PR #428
-Phase 9 History P1 repair complete
-P9H7 production acceptance complete through PR #451
-P9H7 canonical closeout complete through PR #453
-Phase 10 U10A quality baseline complete through PR #454
-U10A canonical closeout complete through PR #455
-Phase 10 U10B shared shell complete through PR #456
-U10B canonical closeout complete through PR #457
-Phase 10 U10C visualization active
-Active implementation branch: work-quality-u10c-visualization
-Exact next implementation branch after U10C: work-quality-u10d-analysis-coherence
+U10C implementation complete PR #458
+U10C canonical closeout PR #459
+Active implementation branch: none
+Exact next branch: work-quality-u10d-analysis-coherence
 U10D branch created: no
 ```
 
-Active authority: `docs/work-in-progress/u10c-visualization.md`.
+Permanent U10C authority: `docs/audits/cross-site-quality-u10c-visualization.json`.
 
-U10C may change only the shared visualization reading guide, metric/unit/time context, state presentation, stage semantics, and their browser gates. Keep Twitch and Kick routes, APIs, storage, rankings, exports, locales, and coverage claims separated. Do not start U10D or Phase 11–16 in parallel. No Phase 16 feature is approved. After every merge, issue the full merge report and stop.
+Keep Twitch and Kick separate. After every merge, issue the full report and stop.
