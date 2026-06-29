@@ -22,6 +22,7 @@ on:
       - 'apps/web/*/*.html'
       - 'apps/web/*/*/*.html'
       - 'scripts/verify-public-browser-audit-current.mjs'
+      - 'scripts/verify-public-browser-audit-historical.mjs'
       - 'scripts/verify-public-surface-inventory.mjs'
       - 'scripts/verify-development-policy.mjs'
       - '.github/workflows/public-browser-audit.yml'
