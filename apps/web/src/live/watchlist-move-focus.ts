@@ -3,6 +3,9 @@ import '../watchlist-evidence.css'
 import '../watchlist-candidate.css'
 import '../watchlist-candidate-panels.css'
 import '../watchlist-candidate-responsive.css'
+import { installSharedShell } from '../shared-shell'
+
+installSharedShell()
 
 let pendingChannelId = ''
 
