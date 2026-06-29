@@ -6,84 +6,29 @@ Last updated: 2026-06-29
 ## Current position
 
 ```text
-Phase 7 P7A complete PR #426
-Phase 8 P8A complete PR #427
 Phase 8 P8B complete PR #428
-Phase 9 P9H0 complete PR #430
-Phase 9 P9H1 complete PR #434
-Phase 9 P9H2 complete PR #436
-Phase 9 P9H3 complete PR #439
-Phase 9 P9H4A complete PR #441
-P9H4A canonical closeout complete PR #442
-Phase 9 P9H4B complete PR #443
-P9H4B canonical closeout complete PR #444
-Phase 9 P9H5 complete PR #447
-P9H5 canonical closeout complete PR #448
-Phase 9 P9H6 complete PR #449
-P9H6 canonical closeout complete PR #450
-Phase 9 P9H7 production acceptance complete PR #451
-P9H7 canonical closeout complete PR #453
 Phase 9 History P1 repair complete
-Active implementation branch: none
-Exact next implementation branch: work-quality-u10a-baseline
-U10A branch created: no
+P9H7 production acceptance complete PR #451
+P9H7 canonical closeout complete PR #453
+Phase 10 U10A active
+Active implementation branch: work-quality-u10a-baseline
+Exact next implementation branch after U10A: work-quality-u10b-shell
+U10B branch created: no
 ```
 
-Local Watchlist v1 is complete through PR #425. History production acceptance is permanently recorded in `docs/operations/history-production-acceptance-2026-06-28.md` against production commit `233a35ebe219c6be42723eb749e2bcc84ae7fc09`.
+U10A is a defect and ownership baseline. It records non-History defects, authoritative and compatibility owners, missing assertions, and deterministic browser evidence before repair. Product repair is prohibited except proven P0 isolation.
 
-Phase 10 U10A is the exact next work after explicit continuation. It is a defect and ownership baseline only: reproduce and classify known non-History defects, identify authoritative and legacy owners, add failing gates or explicit fixtures, and create the temporary Phase 10 working note. Do not perform product repair in U10A except proven P0 isolation.
-
-## Historical gate strings
-
-The following strings are retained only so permanent phase-specific verifiers can continue to prove earlier handoffs. They are not the current execution state.
+## Current evidence
 
 ```text
-Active implementation branch: none
-Exact next implementation branch: work-history-ui-h7-acceptance
-P9H7 branch created: no
-Phase 8 P8B   complete PR #428
-Phase 9 P9H1  complete PR #434
-Phase 9 P9H6 active
-Active implementation branch: work-history-ui-h6-candidate
-P9H6 canonical closeout active
-Active implementation branch: work-history-ui-h6-closeout
-Phase 9 P9H5 complete PR #447
-P9H5 canonical closeout complete PR #448
-Active implementation branch: none
-Exact next implementation branch: work-history-ui-h6-candidate
-P9H6 branch created: no
-Phase 9 P9H4B complete PR #443
-P9H4B canonical closeout complete PR #444
-Active implementation branch: none
-Exact next implementation branch: work-history-ui-h5-responsive
-P9H5 branch created: no
-Phase 9 P9H4B active
-Active implementation branch: work-history-ui-h4b-tasks
-Phase 9 P9H4A active
-Active implementation branch: work-history-ui-h4a-overview-balance
-Exact next implementation branch: work-history-ui-h4b-tasks
-P9H4B branch created: no
-P9H4A canonical closeout active
-Active implementation branch: work-history-ui-h4a-closeout
-Phase 9 P9H3 active
-Active implementation branch: work-history-ui-h3-overview
-Exact next implementation branch: work-history-ui-h4-tasks
-P9H4 branch created: no
-Active implementation branch: none
-Exact next implementation branch: work-history-ui-h3-overview
-P9H3 branch created: no
-Phase 9 P9H2  active
-Active implementation branch: work-history-ui-h2-chart
-Exact next implementation branch: work-history-ui-h3-overview
-P9H3 branch created: no
-Phase 9 P9H1  complete PR #434
-Active implementation branch: none
-Exact next implementation branch: work-history-ui-h2-chart
-P9H2 branch created: no
-Workflow run: 28232602651
+docs/work-in-progress/u10a-quality-baseline.md
+docs/audits/cross-site-quality-u10a-baseline.json
+docs/audits/cross-site-quality-u10a-owner-map.json
+scripts/verify-quality-u10a-baseline.mjs
+.github/workflows/quality-u10a-baseline.yml
 ```
 
-## Production acceptance
+## Accepted History production evidence
 
 ```text
 Accepted production SHA: 233a35ebe219c6be42723eb749e2bcc84ae7fc09
@@ -97,13 +42,19 @@ Result: pass
 ## Ordered roadmap
 
 ```text
-Phase 9 History P1 repair complete
-Phase 10 cross-site quality remediation exact next
+Phase 10 U10A defect and ownership baseline active
+Phase 10 U10B shared shell exact next after U10A
+Phase 10 U10C visualization queued
+Phase 10 U10D analysis coherence queued
+Phase 10 U10E responsive and accessibility queued
+Phase 10 U10F readiness queued
+Phase 10 U10G architecture queued
+Phase 10 U10H acceptance queued
 Phase 11 acceptance and operations queued
 Phase 12 release readiness queued
-Phase 13–14 localization approved and queued
+Phase 13–14 localization queued
 Phase 15 capability audit queued
 Phase 16 major feature not approved
 ```
 
-Do not start Phase 11–16 in parallel. No Phase 16 feature is approved.
+Do not start U10B or later phases in parallel.
