@@ -19,7 +19,8 @@ for (const path of [
   'docs/audits/public-surface-gaps.json', 'apps/web/scripts/public-browser-audit.mjs',
   '.github/workflows/public-browser-audit.yml', 'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md', 'docs/product/post-watchlist-program-plan.md',
-  'docs/product/history-ui-repair-plan.md', 'docs/work-in-progress/history-ui-repair-working-note.md',
+  'docs/product/history-ui-repair-plan.md',
+  'docs/operations/history-production-acceptance-2026-06-28.md',
   'docs/README.md',
 ]) if (!existsSync(join(root, path))) issues.push(`missing file: ${path}`)
 
@@ -68,32 +69,33 @@ need('.github/workflows/public-browser-audit.yml', [
   "!evidence.findings.some((finding) => finding.id === 'P8B-P1-HISTORY-METRIC-SYNCHRONIZATION')",
 ])
 need('docs/product/current-roadmap.md', [
-  'Phase 8 P8B   complete PR #428',
-  'Phase 9 P9H1  complete PR #434',
-  'Active implementation branch: none',
+  'Phase 8 P8B complete PR #428',
+  'Phase 9 History P1 repair complete',
+  'Exact next implementation branch: work-quality-u10a-baseline',
 ])
 need('docs/product/current-schedule.md', [
   'Phase 8 inventory/browser audit          complete PR #428',
-  'P9H1 History metric synchronization      complete PR #434',
-  'Active implementation branch             none',
-  'Exact next branch                        work-history-ui-h2-chart',
+  'Phase 9 History P1 repair                complete',
+  'Exact next branch                        work-quality-u10a-baseline',
 ])
 need('docs/product/post-watchlist-program-plan.md', [
-  '| 8 | P8B | complete PR #428',
-  '| 9 | P9H1 | complete PR #434',
-  'Current implementation branch: none',
+  'Phase 8 inventory/browser audit complete PR #428',
+  'Phase 9 History P1 repair complete',
+  'Exact next implementation branch after explicit continuation: `work-quality-u10a-baseline`',
 ])
 need('docs/product/history-ui-repair-plan.md', [
+  'Status: complete',
   'Completed P9H1: PR #434',
-  'P9H2 work-history-ui-h2-chart      exact next; not created',
+  'Completed P9H7 production acceptance: PR #451',
 ])
-need('docs/work-in-progress/history-ui-repair-working-note.md', [
-  'Completed P9H1: PR #434',
-  'Current implementation branch: none',
+need('docs/operations/history-production-acceptance-2026-06-28.md', [
+  'History Phase 9 is accepted in production.',
+  'Accepted production commit: `233a35ebe219c6be42723eb749e2bcc84ae7fc09`',
 ])
 need('docs/README.md', [
-  'P9H1 completed through PR #434',
-  'Active implementation branch                              none',
+  'Phase 9 History P1 repair                        complete',
+  'Active implementation branch                    none',
+  'Exact next implementation branch                work-quality-u10a-baseline',
 ])
 
 if (issues.length) {
@@ -105,4 +107,4 @@ if (issues.length) {
 console.log('ViewLoom P8B historical repository verification passed.')
 console.log('- the 21-route historical audit record remains exact')
 console.log('- provider separation and the audit-only boundary remain locked')
-console.log('- P9H1 is complete and P9H2 remains next')
+console.log('- History P1 repairs are accepted and U10A is exact next')
