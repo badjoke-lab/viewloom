@@ -28,6 +28,32 @@ Provider boundary: Twitch and Kick remain separate
 
 U10A currently covers Day Flow first render and date controls, Battle Lines recommendation and selected-time coherence, Channel no-id entry, Watchlist Public Readiness ownership, Production Smoke route ownership, and mobile target-size measurement.
 
+## Historical verifier index
+
+These strings identify completed evidence only. They are not current execution state.
+
+```text
+P9H1 History metric synchronization      complete PR #434
+P9H2 History chart interpretation        complete PR #436
+P9H3 History Overview hierarchy          complete PR #439
+P9H4A Overview balance                   complete PR #441
+P9H4A canonical closeout                 complete PR #442
+P9H4B Archives and publishing hierarchy  complete PR #443
+P9H4B canonical closeout                 complete PR #444
+P9H5 Responsive and accessibility        complete PR #447
+P9H5 canonical closeout                  complete PR #448
+P9H6 Local candidate                     complete PR #449
+P9H6 canonical closeout                  complete PR #450
+P9H7 Hosted and production acceptance    complete PR #451
+Active implementation branch             none
+Exact next branch                        work-quality-u10a-baseline
+U10A branch created                      no
+Workflow run: 28308389704
+Artifact ID: 7930159988
+viewloom-history-ui-h6-candidate-v1
+Scenarios: 21
+```
+
 ## Exact sequence
 
 ```text
