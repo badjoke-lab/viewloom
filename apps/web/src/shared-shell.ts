@@ -139,7 +139,12 @@ function normalizeStatus(status: HTMLElement | null): void {
 function inferStatusState(text: string): ShellStatusState {
   const normalized = text.toLowerCase()
   if (normalized.includes('loading')) return 'loading'
-  if (normalized.includes('partial') || normalized.includes('stale')) return 'partial'
+  if (
+    normalized.includes('partial')
+    || normalized.includes('stale')
+    || normalized.includes('limited')
+    || normalized.includes('no data')
+  ) return 'partial'
   if (normalized.includes('unavailable') || normalized.includes('failed') || normalized.includes('error')) return 'unavailable'
   return 'fresh'
 }
