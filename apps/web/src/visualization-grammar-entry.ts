@@ -19,20 +19,24 @@ function mountFeatureGrammar(feature: VisualizationFeature): void {
   sync()
   window.requestAnimationFrame(sync)
 
-  const targets: HTMLElement[] = []
-  if (source) targets.push(source)
-  if (stage && stage !== source) targets.push(stage)
-  const observers = targets.map((target) => {
+  const observers: MutationObserver[] = []
+  const options: MutationObserverInit = {
+    subtree: true,
+    childList: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ['class', 'data-heatmap-state', 'data-state'],
+  }
+  if (source) {
     const observer = new MutationObserver(sync)
-    observer.observe(target, {
-      subtree: true,
-      childList: true,
-      characterData: true,
-      attributes: true,
-      attributeFilter: ['class', 'data-heatmap-state', 'data-state'],
-    })
-    return observer
-  })
+    observer.observe(source, options)
+    observers.push(observer)
+  }
+  if (stage && stage !== source) {
+    const observer = new MutationObserver(sync)
+    observer.observe(stage, options)
+    observers.push(observer)
+  }
   window.addEventListener('pagehide', () => observers.forEach((observer) => observer.disconnect()), { once: true })
 }
 
