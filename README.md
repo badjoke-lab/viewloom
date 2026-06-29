@@ -43,6 +43,8 @@ docs/audits/cross-site-quality-u10a-baseline.json
 docs/audits/cross-site-quality-u10a-owner-map.json
 ```
 
+U10A merge evidence must include the U10A deterministic baseline and the 84-route Public Browser Audit on the same latest branch head.
+
 ## History production evidence
 
 ```text
