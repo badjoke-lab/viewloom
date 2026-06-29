@@ -13,15 +13,19 @@ Phase 8 inventory/browser audit                  complete PR #428
 Phase 9 History P1 repair                        complete
 P9H7 production acceptance                      complete PR #451
 P9H7 canonical closeout                         complete PR #453
-Active implementation branch                    none
-Exact next implementation branch                work-quality-u10a-baseline
-U10A branch created                             no
+Phase 10 U10A quality baseline                   active
+Active implementation branch                    work-quality-u10a-baseline
+Exact next implementation branch after U10A     work-quality-u10b-shell
+U10B branch created                             no
 ```
 
 ## Current authorities
 
 - Phase 10–11: `product/cross-site-quality-remediation-spec.md`
 - Phase 10–11 implementation: `product/cross-site-quality-remediation-plan.md`
+- U10A working note: `work-in-progress/u10a-quality-baseline.md`
+- U10A defect ledger: `audits/cross-site-quality-u10a-baseline.json`
+- U10A owner map: `audits/cross-site-quality-u10a-owner-map.json`
 - Phase 13–14 localization: `product/localization-spec.md`
 - Phase 13–14 implementation: `product/localization-implementation-plan.md`
 
@@ -47,6 +51,7 @@ P9H6 canonical closeout complete PR #450
 P9H7     work-history-ui-h7-acceptance                   active
 Active implementation branch                            work-history-ui-h7-acceptance
 Preview branch                                          preview-history-ui-h7-acceptance
+U10A branch created                                     no
 ```
 
-Completed temporary History notes are absent by design. Earlier phase details remain in permanent specifications, implementation plans, audit records, and acceptance records.
+Completed temporary History notes are absent by design. U10A is the only active temporary workstream. Do not start U10B or later phases before U10A merge and explicit continuation.
