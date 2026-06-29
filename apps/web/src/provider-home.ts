@@ -1,6 +1,7 @@
 import './provider-home.css'
 import './provider-watchlist-link.css'
 import { mountProviderHome } from './provider-home-shell'
+import { installSharedShell } from './shared-shell'
 import type { Platform } from './provider-home/types'
 
 const platform = document.body.dataset.provider as Platform | undefined
@@ -8,6 +9,7 @@ const platform = document.body.dataset.provider as Platform | undefined
 if (platform === 'twitch' || platform === 'kick') {
   mountProviderHome(platform)
   installMobileNavigation()
+  installSharedShell()
 
   const observer = new MutationObserver(syncPresentation)
   observer.observe(document.body, { attributes: true, attributeFilter: ['data-home-state'] })
