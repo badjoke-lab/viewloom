@@ -27,10 +27,23 @@ P9H6 local candidate                  complete PR #449
 P9H7 production acceptance            complete PR #451
 P9H7 canonical closeout               complete PR #453
 Phase 9 History P1 repair             complete
-Active implementation branch          none
-Exact next branch                     work-quality-u10a-baseline
-U10A branch created                   no
+Phase 10 U10A quality baseline        active
+Active implementation branch          work-quality-u10a-baseline
+Exact next branch after U10A          work-quality-u10b-shell
+U10B branch created                   no
 ```
+
+U10A is baseline-only. It classifies non-History defects, records authoritative and compatibility owners, and adds static plus browser evidence before repair. Product repair is prohibited except proven P0 isolation.
+
+Current U10A records:
+
+```text
+docs/work-in-progress/u10a-quality-baseline.md
+docs/audits/cross-site-quality-u10a-baseline.json
+docs/audits/cross-site-quality-u10a-owner-map.json
+```
+
+U10A merge evidence must include the U10A deterministic baseline and the 84-route Public Browser Audit on the same latest branch head. The Public Browser Audit verifies both the retained P8B historical contract, including the P0–P3 severity vector, and the current U10A handoff.
 
 ## History production evidence
 
@@ -45,17 +58,16 @@ Result: pass
 
 The permanent record is `docs/operations/history-production-acceptance-2026-06-28.md`.
 
-The requested P9H7 Preview deployment never became available and returned 404 before product checks. PR #452 was closed without merge. Exact production identity and the full provider/browser matrix passed before and after the acceptance-only PR #451 merge.
-
 ## Next sequence
 
 ```text
-Phase 10 U10A defect and ownership baseline   exact next after explicit continuation
+Phase 10 U10A defect and ownership baseline   active
+Phase 10 U10B shared shell                    exact next after U10A
 Phase 11 acceptance and operations            queued
-Phase 12 release readiness                     queued
-Phase 13–14 localization                       queued
-Phase 15 capability audit                      queued
-Phase 16 major feature                         not approved
+Phase 12 release readiness                    queued
+Phase 13–14 localization                      queued
+Phase 15 capability audit                     queued
+Phase 16 major feature                        not approved
 ```
 
 Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*` only when runtime validation is necessary. Only latest-head evidence counts. After every merge, issue the full report and stop.

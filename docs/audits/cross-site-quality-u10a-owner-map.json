@@ -1,0 +1,107 @@
+{
+  "schema": "viewloom-cross-site-quality-u10a-owner-map-v1",
+  "phase": "U10A",
+  "status": "active",
+  "branch": "work-quality-u10a-baseline",
+  "owners": [
+    {
+      "surface": "shared shell and navigation",
+      "authoritative": [
+        "apps/web/src/mock-site.ts",
+        "apps/web/src/mock-site.css"
+      ],
+      "legacy_or_compatibility": [],
+      "removal_condition": null,
+      "next_phase": "U10B"
+    },
+    {
+      "surface": "Day Flow route shell",
+      "authoritative": [
+        "apps/web/src/live/day-flow-current-shell-entry.ts",
+        "apps/web/src/live/day-flow-layout-summary.ts",
+        "apps/web/twitch/day-flow/index.html",
+        "apps/web/kick/day-flow/index.html"
+      ],
+      "legacy_or_compatibility": [
+        "inline default-layout mutation in both provider HTML files",
+        "server-authored Split shell before the Wide default mutation"
+      ],
+      "removal_condition": "U10D proves one initial layout owner across HTML, URL, storage, hydrated controls, and browser first render.",
+      "next_phase": "U10D"
+    },
+    {
+      "surface": "Battle Lines state and rendering",
+      "authoritative": [
+        "apps/web/src/live/battle-lines-current-shell-entry.ts",
+        "apps/web/src/live/battle-lines-layout.ts",
+        "apps/web/functions/_lib/battle-lines-core.ts"
+      ],
+      "legacy_or_compatibility": [
+        "primaryBattle acting as the UI recommendation owner while recommendedBattle also exists",
+        "global history.replaceState wrapper in battle-lines-layout.ts",
+        "MutationObserver-derived Split rail"
+      ],
+      "removal_condition": "U10D establishes one pair owner and selected-time browser gate; U10G proves URL, request-count, provider, and layout equivalence before retiring compatibility layers.",
+      "next_phase": "U10D"
+    },
+    {
+      "surface": "Channel profile no-id entry",
+      "authoritative": [
+        "apps/web/src/live/channel-profile.ts",
+        "apps/web/twitch/channel/index.html",
+        "apps/web/kick/channel/index.html"
+      ],
+      "legacy_or_compatibility": [
+        "normal task controls remain mounted during the missing-id state"
+      ],
+      "removal_condition": "U10F adds a provider-safe no-id task and a browser assertion without introducing search or a new API.",
+      "next_phase": "U10F"
+    },
+    {
+      "surface": "Public Readiness route ownership",
+      "authoritative": [
+        "apps/web/scripts/public-readiness-audit.mjs",
+        "docs/audits/public-surface-inventory.json"
+      ],
+      "legacy_or_compatibility": [
+        "manually maintained route array separate from the public surface inventory"
+      ],
+      "removal_condition": "U10F establishes one route manifest or a verified derivation with both Watchlist routes included.",
+      "next_phase": "U10F"
+    },
+    {
+      "surface": "Production Smoke route ownership",
+      "authoritative": [
+        ".github/workflows/production-smoke.yml"
+      ],
+      "legacy_or_compatibility": [
+        "manually maintained shell route array",
+        "dedicated Channel and Watchlist workflows outside general smoke"
+      ],
+      "removal_condition": "U10F assigns all appropriate routes; O11A–O11C consolidate workflow ownership without losing dedicated feature assertions.",
+      "next_phase": "U10F"
+    },
+    {
+      "surface": "mobile target-size rules",
+      "authoritative": [
+        "apps/web/src/mock-site.css",
+        "route-specific CSS under apps/web/src"
+      ],
+      "legacy_or_compatibility": [
+        "feature-specific minimum-size rules with no all-route owner"
+      ],
+      "removal_condition": "U10E passes 390px and 360px all-route target-size evidence and records explicit exceptions.",
+      "next_phase": "U10E"
+    },
+    {
+      "surface": "History",
+      "authoritative": [
+        "docs/product/history-ui-repair-spec.md",
+        "docs/operations/history-production-acceptance-2026-06-28.md"
+      ],
+      "legacy_or_compatibility": [],
+      "removal_condition": null,
+      "next_phase": "regression-only during Phase 10"
+    }
+  ]
+}

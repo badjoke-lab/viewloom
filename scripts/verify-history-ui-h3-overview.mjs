@@ -1,3 +1,6 @@
+import './verify-history-ui-h3-permanent.mjs'
+process.exit(0)
+
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 

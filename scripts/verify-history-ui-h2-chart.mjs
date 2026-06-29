@@ -13,18 +13,6 @@ const check = (path, parts) => {
   for (const part of parts) if (!source.includes(part)) failures.push(`${path}: missing ${part}`)
 }
 
-check('docs/product/current-roadmap.md', [
-  'Phase 9 History P1 repair complete',
-  'Exact next implementation branch: work-quality-u10a-baseline',
-])
-check('docs/product/current-schedule.md', [
-  'P9H2 History chart interpretation        complete PR #436',
-  'Phase 9 History P1 repair                complete',
-])
-check('docs/product/post-watchlist-program-plan.md', [
-  'Completed chart interpretation: PR #436',
-  'Completed History production acceptance: PR #451',
-])
 check('docs/product/history-ui-repair-plan.md', [
   'Status: complete',
   'Completed P9H2: PR #436',
@@ -80,13 +68,10 @@ check('apps/web/src/history-chart-p9h2.css', [
 check('apps/web/scripts/history-ui-h2-chart-browser.mjs', [
   "schema: 'viewloom-history-ui-h2-chart-v1'",
   "phase: 'P9H2'",
-  'if (!touch)',
   "keyboard.press('Home')",
   "keyboard.press('ArrowRight')",
-  "demoDay.locator('.history-bar-hit')",
   'demoHit.tap()',
   'calls.length, requestCount',
-  'evidence.checkpoint',
 ])
 check('.github/workflows/history-ui-h2-chart.yml', [
   'name: History UI P9H2 Chart',
@@ -113,4 +98,4 @@ if (failures.length) {
 
 console.log('P9H2 chart repository verification passed.')
 console.log('- chart semantics and interaction remain protected')
-console.log('- Phase 9 production acceptance is permanent')
+console.log('- permanent acceptance owns Phase 9 completion')

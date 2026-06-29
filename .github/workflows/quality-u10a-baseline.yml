@@ -1,0 +1,144 @@
+name: Quality U10A Baseline
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/README.md'
+      - 'docs/audits/cross-site-quality-u10a-baseline.json'
+      - 'docs/audits/cross-site-quality-u10a-owner-map.json'
+      - 'docs/work-in-progress/u10a-quality-baseline.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/product/cross-site-quality-remediation-plan.md'
+      - 'apps/web/twitch/day-flow/index.html'
+      - 'apps/web/kick/day-flow/index.html'
+      - 'apps/web/twitch/channel/index.html'
+      - 'apps/web/kick/channel/index.html'
+      - 'apps/web/twitch/battle-lines/index.html'
+      - 'apps/web/kick/battle-lines/index.html'
+      - 'apps/web/src/live/channel-profile.ts'
+      - 'apps/web/src/live/battle-lines-current-shell-entry.ts'
+      - 'apps/web/scripts/public-readiness-audit.mjs'
+      - 'apps/web/scripts/quality-u10a-baseline-browser.mjs'
+      - '.github/workflows/production-smoke.yml'
+      - '.github/workflows/quality-u10a-baseline.yml'
+      - 'scripts/verify-quality-u10a-baseline.mjs'
+      - 'scripts/verify-development-policy.mjs'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      QUALITY_U10A_BASE_URL: http://127.0.0.1:4173
+      QUALITY_U10A_ARTIFACT_DIR: /tmp/quality-u10a
+      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Verify U10A repository baseline
+        run: node scripts/verify-quality-u10a-baseline.mjs
+
+      - name: Verify retained History acceptance
+        run: node scripts/verify-history-ui-h7-acceptance.mjs
+
+      - name: Verify Battle Lines retained contracts
+        run: |
+          pnpm --filter @viewloom/web verify:battle-lines
+          pnpm --filter @viewloom/web verify:battle-lines-ui
+
+      - name: Verify consolidated Watchlist contracts
+        run: pnpm --filter @viewloom/web verify:watchlist-contracts
+
+      - name: Typecheck web application
+        run: pnpm --filter @viewloom/web typecheck:app
+
+      - name: Build web application
+        run: pnpm build:web
+
+      - name: Start local preview
+        shell: bash
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/quality-u10a-preview.log 2>&1 &
+          for attempt in {1..50}; do
+            curl --silent --fail http://127.0.0.1:4173/twitch/day-flow/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/kick/battle-lines/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/twitch/channel/ > /dev/null \
+              && exit 0
+            sleep 1
+          done
+          cat /tmp/quality-u10a-preview.log
+          exit 1
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run U10A deterministic browser baseline
+        working-directory: apps/web
+        run: node scripts/quality-u10a-baseline-browser.mjs
+
+      - name: Verify U10A browser evidence
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          const evidence = JSON.parse(readFileSync('/tmp/quality-u10a/quality-u10a-browser-evidence.json', 'utf8'))
+          assert.equal(evidence.schema, 'viewloom-quality-u10a-browser-v1')
+          assert.equal(evidence.phase, 'U10A')
+          assert.equal(evidence.result, 'pass')
+          assert.equal(evidence.scenarios.length, 8)
+          assert.equal(evidence.mobileTargets.length, 18)
+          assert.equal(evidence.scenarios.filter((item) => item.classification === 'reproduced').length, 4)
+          assert.equal(evidence.scenarios.filter((item) => item.classification === 'resolved_before_u10a').length, 2)
+          assert.equal(evidence.scenarios.filter((item) => item.classification === 'protected_by_existing_logic').length, 2)
+          for (const provider of ['twitch', 'kick']) {
+            assert.ok(evidence.scenarios.some((item) => item.id === `${provider}-battle-recommended-owner-divergence`))
+            assert.ok(evidence.scenarios.some((item) => item.id === `${provider}-battle-selected-time-coherence`))
+          }
+          for (const item of evidence.mobileTargets) {
+            assert.ok(item.measured > 0)
+            assert.ok(item.width === 390 || item.width === 360)
+            assert.ok(item.horizontalOverflow >= 0)
+          }
+          NODE
+
+      - name: Upload U10A baseline artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-u10a-baseline
+          path: |
+            /tmp/quality-u10a/**
+            /tmp/quality-u10a-preview.log
+          if-no-files-found: warn
