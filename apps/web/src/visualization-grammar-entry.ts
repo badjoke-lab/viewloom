@@ -9,6 +9,7 @@ if (feature) mountFeatureGrammar(feature)
 function mountFeatureGrammar(feature: VisualizationFeature): void {
   const controller = installVisualizationGrammar(feature)
   const source = stateSource(feature)
+  const stage = document.querySelector<HTMLElement>(stageSelector(feature))
 
   const sync = () => {
     const { state, detail } = readState(feature, source)
@@ -18,17 +19,20 @@ function mountFeatureGrammar(feature: VisualizationFeature): void {
   sync()
   window.requestAnimationFrame(sync)
 
-  if (source) {
+  const observers: MutationObserver[] = []
+  for (const target of [source, stage]) {
+    if (!target || observers.some((item) => item === target)) continue
     const observer = new MutationObserver(sync)
-    observer.observe(source, {
+    observer.observe(target, {
       subtree: true,
       childList: true,
       characterData: true,
       attributes: true,
       attributeFilter: ['class', 'data-heatmap-state', 'data-state'],
     })
-    window.addEventListener('pagehide', () => observer.disconnect(), { once: true })
+    observers.push(observer)
   }
+  window.addEventListener('pagehide', () => observers.forEach((observer) => observer.disconnect()), { once: true })
 }
 
 function detectFeature(): VisualizationFeature | null {
