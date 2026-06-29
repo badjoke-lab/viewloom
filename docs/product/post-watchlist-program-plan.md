@@ -23,6 +23,28 @@ Phase 16 not approved
 
 U10A reproduces and classifies non-History defects, records route/provider/viewport/state/owner/gate gaps, identifies authoritative and compatibility owners, adds static and deterministic browser fixtures, and maintains the temporary Phase 10 working note. Product repair is prohibited except proven P0 isolation.
 
+## Historical verifier index
+
+These strings identify completed evidence only. They are not current execution state.
+
+```text
+Version: 3.4
+Current phase: Phase 10 — U10A defect and ownership baseline next
+Current implementation branch: none
+Exact next implementation branch after explicit continuation: `work-quality-u10a-baseline`
+Completed metric synchronization: PR #434
+Completed chart interpretation: PR #436
+Completed Overview hierarchy: PR #439
+Completed Overview balance: PR #441
+Completed P9H4A canonical closeout: PR #442
+Completed Archives and publishing hierarchy: PR #443
+Completed P9H4B canonical closeout: PR #444
+Completed responsive and accessibility repair: PR #447
+Completed P9H5 canonical closeout: PR #448
+Completed local candidate: PR #449
+Completed P9H6 canonical closeout: PR #450
+```
+
 ## Approved sequence
 
 ```text
