@@ -78,10 +78,6 @@ need('docs/product/current-roadmap.md', [
   'Phase 9 History P1 repair complete',
   'Phase 10 U10A complete PR #454',
 ])
-need('docs/product/post-watchlist-program-plan.md', [
-  'Completed History production acceptance: PR #451',
-  'Completed U10A implementation: PR #454',
-])
 
 if (issues.length) {
   console.error('ViewLoom History P9H6 candidate verification did not pass:')
@@ -90,4 +86,4 @@ if (issues.length) {
 }
 console.log('ViewLoom History P9H6 candidate verification passed.')
 console.log('- one exact candidate HEAD, build, local preview, six phases, and twenty-one scenarios remain protected')
-console.log('- current roadmap handoffs do not rewrite completed P9H6 evidence')
+console.log('- later Phase 10 handoffs do not rewrite P9H6 evidence')

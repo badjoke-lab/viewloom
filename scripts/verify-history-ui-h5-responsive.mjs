@@ -90,8 +90,8 @@ need('docs/operations/history-production-acceptance-2026-06-28.md', [
   'History Phase 9 is accepted in production.',
 ])
 need('docs/product/current-roadmap.md', [
-  'Phase 9 History P1 repair complete', 'Phase 10 U10A complete PR #454',
-  'Active implementation branch: none',
+  'Phase 9 History P1 repair complete',
+  'Phase 10 U10A complete PR #454',
 ])
 need('docs/product/current-schedule.md', [
   'Phase 9 History P1 repair                complete',
@@ -115,4 +115,4 @@ if (issues.length) {
 }
 console.log('ViewLoom History P9H5 responsive verification passed.')
 console.log('- responsive and accessibility contracts remain protected')
-console.log('- current roadmap handoffs do not rewrite completed P9H5 evidence')
+console.log('- later Phase 10 handoffs do not rewrite P9H5 evidence')

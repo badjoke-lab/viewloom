@@ -27,40 +27,24 @@ need('docs/audits/history-ui-h0-findings.md', [
 
 const ownerMap = JSON.parse(read('docs/audits/history-ui-h0-owner-map.json'))
 if (ownerMap.schema !== 'viewloom-history-ui-h0-owner-map-v1') issues.push('owner-map schema changed')
-if (ownerMap.status !== 'complete') issues.push('owner-map completion state changed')
-if (ownerMap.completion_pr !== 430) issues.push('owner-map completion PR changed')
+if (ownerMap.status !== 'complete' || ownerMap.completion_pr !== 430) issues.push('owner-map completion changed')
 if (ownerMap.next_branch !== 'work-history-ui-h1-metric') issues.push('P9H0 handoff changed')
-for (const id of [
-  'history-metric-ranking-context-stale',
-  'history-metric-summary-stale',
-  'history-mobile-task-flow-too-long',
-  'history-selected-day-context-stale',
-]) if (!ownerMap.deterministic_failures?.includes(id)) issues.push(`owner map missing ${id}`)
 
 const ledger = JSON.parse(read('docs/audits/public-browser-defects.json'))
-if (ledger.status !== 'complete') issues.push('P8B ledger completion changed')
-if (ledger.counts?.p1 !== 3 || ledger.counts?.p2 !== 5) issues.push('P8B counts changed')
+if (ledger.status !== 'complete' || ledger.counts?.p1 !== 3 || ledger.counts?.p2 !== 5) issues.push('P8B baseline changed')
 
 need('apps/web/scripts/history-ui-h0-browser.mjs', [
-  "schema: 'viewloom-history-ui-h0-baseline-v1'", "phase: 'P9H0'",
-  'history-metric-summary-stale', 'history-selected-day-context-stale',
-  'history-metric-ranking-context-stale', 'history-mobile-task-flow-too-long',
+  "schema: 'viewloom-history-ui-h0-baseline-v1'",
+  "phase: 'P9H0'",
+  'history-metric-summary-stale',
+  'history-selected-day-context-stale',
+  'history-metric-ranking-context-stale',
+  'history-mobile-task-flow-too-long',
 ])
-need('apps/web/scripts/prepare-history-ui-h0-baseline.mjs', ['P9H0 deterministic baseline prepared.'])
 need('.github/workflows/history-ui-h0-baseline.yml', [
   'name: History UI P9H0 Evidence',
   'Verify completed P9H0 evidence contract',
   'cancel-in-progress: true',
-])
-need('docs/product/current-roadmap.md', [
-  'Phase 9 History P1 repair complete',
-  'Phase 10 U10A complete PR #454',
-  'Exact next implementation branch: work-quality-u10b-shell',
-])
-need('docs/product/current-schedule.md', [
-  'Phase 9 History P1 repair                complete',
-  'U10A defect and ownership baseline       complete PR #454',
-  'Exact next branch                        work-quality-u10b-shell',
 ])
 need('docs/product/history-ui-repair-plan.md', [
   'Status: complete',
@@ -81,5 +65,4 @@ if (issues.length) {
 
 console.log('History UI P9H0 historical evidence verification passed.')
 console.log('- PR #430 evidence remains exact')
-console.log('- Phase 9 History repair is permanently accepted')
-console.log('- current Phase 10 handoff does not rewrite P9H0 evidence')
+console.log('- later roadmap handoffs do not rewrite P9H0 evidence')

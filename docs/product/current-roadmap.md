@@ -12,28 +12,20 @@ P9H7 production acceptance complete PR #451
 P9H7 canonical closeout complete PR #453
 Phase 10 U10A complete PR #454
 U10A canonical closeout complete PR #455
-Active implementation branch: none
-Exact next implementation branch: work-quality-u10b-shell
-U10B branch created: no
+Phase 10 U10B shared shell active
+Active implementation branch: work-quality-u10b-shell
+Exact next implementation branch after closeout: work-quality-u10c-visualization
+U10C branch created: no
 ```
 
-U10A recorded eight cross-site findings and their owners without product repair. Permanent records:
-
-```text
-docs/audits/cross-site-quality-u10a-baseline.json
-docs/audits/cross-site-quality-u10a-owner-map.json
-Quality U10A Baseline: 28356915812 / 7945707844
-Public Browser Audit: 28356915810 / 7945757041
-Implementation head: 51c8883ebdc31334828cc345f6a938f17c20a29b
-Implementation merge: 7665c5244d2fa71539ce9d69b3f5b55c47463075
-```
+Active note: `docs/work-in-progress/u10b-shared-shell.md`.
 
 ## Ordered roadmap
 
 ```text
-U10A defect and ownership baseline complete PR #454
-U10B shared shell exact next after explicit continuation
-U10C visualization queued
+U10A baseline complete PR #454
+U10B shared shell active
+U10C visualization next after U10B closeout
 U10D analysis coherence queued
 U10E responsive and accessibility queued
 U10F readiness queued
@@ -46,4 +38,4 @@ Phase 15 capability audit queued
 Phase 16 major feature not approved
 ```
 
-U10B remains uncreated until explicit continuation.
+U10C remains uncreated.
