@@ -58,7 +58,11 @@ jobs:
         run: node scripts/verify-development-policy.mjs
 
       - name: Verify U10C repository contract
-        run: node scripts/verify-quality-u10c-visualization.mjs
+        shell: bash
+        run: |
+          mkdir -p "$QUALITY_U10C_ARTIFACT_DIR"
+          set -o pipefail
+          node scripts/verify-quality-u10c-visualization.mjs 2>&1 | tee "$QUALITY_U10C_ARTIFACT_DIR/repository-verification.log"
 
       - name: Verify retained U10B shell
         run: node scripts/verify-quality-u10b-shell.mjs
