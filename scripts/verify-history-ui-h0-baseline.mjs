@@ -29,7 +29,7 @@ const ownerMap = JSON.parse(read('docs/audits/history-ui-h0-owner-map.json'))
 if (ownerMap.schema !== 'viewloom-history-ui-h0-owner-map-v1') issues.push('owner-map schema changed')
 if (ownerMap.status !== 'complete') issues.push('owner-map completion state changed')
 if (ownerMap.completion_pr !== 430) issues.push('owner-map completion PR changed')
-if (ownerMap.next_branch !== 'work-history-ui-h1-metric') issues.push('owner-map handoff changed')
+if (ownerMap.next_branch !== 'work-history-ui-h1-metric') issues.push('P9H0 handoff changed')
 for (const id of [
   'history-metric-ranking-context-stale',
   'history-metric-summary-stale',
@@ -56,21 +56,22 @@ need('.github/workflows/history-ui-h0-baseline.yml', [
   'cancel-in-progress: true',
 ])
 need('docs/product/current-roadmap.md', [
-  'Phase 9 P9H1  complete PR #434',
-  'Active implementation branch: none',
+  'Phase 9 History P1 repair complete',
+  'Exact next implementation branch: work-quality-u10a-baseline',
 ])
 need('docs/product/current-schedule.md', [
-  'P9H1 History metric synchronization      complete PR #434',
-  'Active implementation branch             none',
-  'Exact next branch                        work-history-ui-h2-chart',
+  'Phase 9 History P1 repair                complete',
+  'Exact next branch                        work-quality-u10a-baseline',
 ])
 need('docs/product/history-ui-repair-plan.md', [
+  'Status: complete',
   'Completed P9H1: PR #434',
-  'P9H2 work-history-ui-h2-chart      exact next; not created',
+  'Completed P9H7 production acceptance: PR #451',
 ])
-need('docs/work-in-progress/history-ui-repair-working-note.md', [
-  'Completed P9H1: PR #434',
-  'P9H2 work-history-ui-h2-chart',
+need('docs/operations/history-production-acceptance-2026-06-28.md', [
+  'Status: permanent acceptance record',
+  'Accepted production commit: `233a35ebe219c6be42723eb749e2bcc84ae7fc09`',
+  'History Phase 9 is accepted in production.',
 ])
 
 if (issues.length) {
@@ -81,5 +82,5 @@ if (issues.length) {
 
 console.log('History UI P9H0 historical evidence verification passed.')
 console.log('- PR #430 evidence remains exact')
-console.log('- P9H1 is complete through PR #434')
-console.log('- later phases retain mobile hierarchy and keyboard work')
+console.log('- Phase 9 History repair is permanently accepted')
+console.log('- Phase 10 U10A is the exact next branch')
