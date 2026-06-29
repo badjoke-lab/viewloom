@@ -119,7 +119,11 @@ need('docs/work-in-progress/p9h5-activation.md', [
   'P9H6 branch created: no',
 ])
 need('docs/operations/history-production-acceptance-2026-06-28.md', [
-  'Hosted scenarios: 1440 / 820 / 390 / 360 / forced colors',
+  'twitch-desktop-1440-hosted',
+  'kick-tablet-820-hosted',
+  'kick-mobile-390-hosted',
+  'twitch-mobile-360-hosted',
+  'twitch-forced-colors-390-hosted',
   'All passed with zero horizontal overflow.',
 ])
 
