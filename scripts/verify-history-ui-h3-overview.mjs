@@ -19,6 +19,7 @@ const files = [
   'apps/web/scripts/history-ui-h3-overview-browser.mjs',
   'scripts/verify-history-ui-h3-overview.mjs',
   '.github/workflows/history-ui-h3-overview.yml',
+  'docs/operations/history-production-acceptance-2026-06-28.md',
 ]
 for (const path of files) needFile(path)
 
@@ -66,17 +67,25 @@ need('apps/web/scripts/history-ui-h3-overview-browser.mjs', [
   'assert.equal(calls.length, before)',
 ])
 
-for (const path of [
-  'docs/product/current-roadmap.md',
-  'docs/product/current-schedule.md',
-  'docs/product/post-watchlist-program-plan.md',
-  'docs/product/history-ui-repair-plan.md',
-  'docs/work-in-progress/history-ui-repair-working-note.md',
-  'AGENTS.md',
-  'CONTRIBUTING.md',
-]) need(path, [
-  'work-history-ui-h3-overview',
-  'work-history-ui-h4-tasks',
+need('docs/product/current-roadmap.md', [
+  'Phase 9 P9H3 complete PR #439',
+  'Phase 9 History P1 repair complete',
+])
+need('docs/product/current-schedule.md', [
+  'P9H3 History Overview hierarchy          complete PR #439',
+  'Phase 9 History P1 repair                complete',
+])
+need('docs/product/post-watchlist-program-plan.md', [
+  'Completed Overview hierarchy: PR #439',
+  'Completed History production acceptance: PR #451',
+])
+need('docs/product/history-ui-repair-plan.md', [
+  'Completed P9H3: PR #439',
+  'Completed P9H7 production acceptance: PR #451',
+])
+need('docs/operations/history-production-acceptance-2026-06-28.md', [
+  'History Phase 9 is accepted in production.',
+  'No console or page diagnostics remained.',
 ])
 
 const moduleSource = read('apps/web/src/live/history-overview-p9h3.ts')
@@ -98,8 +107,6 @@ if (issues.length) {
 }
 
 console.log('ViewLoom History P9H3 Overview verification passed.')
-console.log('- P9H3 is active on work-history-ui-h3-overview')
-console.log('- mobile secondary analysis is explicit and collapsed by default')
-console.log('- mobile Overview width and task order are protected by permanent gates')
-console.log('- accepted P9H1/P9H2 request and observer seams are unchanged')
-console.log('- Twitch and Kick History endpoints remain separate')
+console.log('- task-first Overview hierarchy remains protected')
+console.log('- accepted request and observer seams remain unchanged')
+console.log('- Phase 9 production acceptance is permanent')

@@ -14,31 +14,25 @@ const check = (path, parts) => {
 }
 
 check('docs/product/current-roadmap.md', [
-  'Phase 9 P9H2  active',
-  'Active implementation branch: work-history-ui-h2-chart',
-  'Exact next implementation branch: work-history-ui-h3-overview',
+  'Phase 9 History P1 repair complete',
+  'Exact next implementation branch: work-quality-u10a-baseline',
 ])
 check('docs/product/current-schedule.md', [
-  'P9H2 History chart interpretation        active',
-  'Active implementation branch             work-history-ui-h2-chart',
-  'Exact next branch                        work-history-ui-h3-overview',
-  'P9H3 branch created                      no',
+  'P9H2 History chart interpretation        complete PR #436',
+  'Phase 9 History P1 repair                complete',
 ])
 check('docs/product/post-watchlist-program-plan.md', [
-  'Version: 2.4',
-  'Current phase: Phase 9 — P9H2 chart interpretation',
-  'Current implementation branch: `work-history-ui-h2-chart`',
-  '| 9 | P9H2 | active',
+  'Completed chart interpretation: PR #436',
+  'Completed History production acceptance: PR #451',
 ])
 check('docs/product/history-ui-repair-plan.md', [
-  'Version: 1.8',
-  'Current implementation branch: `work-history-ui-h2-chart`',
-  'Exact next branch: `work-history-ui-h3-overview`',
+  'Status: complete',
+  'Completed P9H2: PR #436',
+  'Completed P9H7 production acceptance: PR #451',
 ])
-check('docs/work-in-progress/history-ui-repair-working-note.md', [
-  'history-chart-p9h2.ts',
-  'history-usability.ts                API coverageState preservation, including in-progress',
-  'history-ui-h2-chart-browser.mjs',
+check('docs/operations/history-production-acceptance-2026-06-28.md', [
+  'History Phase 9 is accepted in production.',
+  'All passed with zero horizontal overflow.',
 ])
 check('apps/web/src/live/history-usability-pass.ts', [
   "import '../history-chart-p9h2.css'",
@@ -118,3 +112,5 @@ if (failures.length) {
 }
 
 console.log('P9H2 chart repository verification passed.')
+console.log('- chart semantics and interaction remain protected')
+console.log('- Phase 9 production acceptance is permanent')

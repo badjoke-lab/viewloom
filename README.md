@@ -14,91 +14,48 @@ ViewLoom is an independent, unofficial observatory for retained Twitch and Kick 
 ## Current state
 
 ```text
-P9H0 History baseline               complete PR #430
-P9H0 documentation closeout         complete PR #432
-Final-state correction              complete PR #433
-P9H1 metric synchronization         complete PR #434
-P9H2 chart interpretation           complete PR #436
-P9H2 canonical closeout             complete PR #437
-P9H3 Overview hierarchy             complete PR #439
-P9H3 canonical closeout             complete PR #440
-P9H4A Overview balance              complete PR #441
-P9H4A canonical closeout            complete PR #442
-P9H4B Archives and publishing       complete PR #443
-P9H4B canonical closeout            complete PR #444
-P9H5 responsive and accessibility  complete PR #447
-P9H5 canonical closeout             complete PR #448
-P9H6 local candidate               complete PR #449
-P9H6 canonical closeout             complete PR #450
-P9H7 hosted/production acceptance  active
-Active implementation branch        work-history-ui-h7-acceptance
-Attempted Preview branch            preview-history-ui-h7-acceptance
-Preview branch                      preview-history-ui-h7-acceptance
-Preview deployment                  unavailable; exact-SHA 404 before tests
+Local Watchlist v1                     complete PR #425
+Phase 8 inventory/browser audit        complete PR #428
+P9H0 History baseline                  complete PR #430
+P9H1 metric synchronization            complete PR #434
+P9H2 chart interpretation              complete PR #436
+P9H3 Overview hierarchy                complete PR #439
+P9H4A Overview balance                 complete PR #441
+P9H4B Archives and publishing          complete PR #443
+P9H5 responsive and accessibility     complete PR #447
+P9H6 local candidate                  complete PR #449
+P9H7 production acceptance            complete PR #451
+P9H7 canonical closeout               complete PR #453
+Phase 9 History P1 repair             complete
+Active implementation branch          none
+Exact next branch                     work-quality-u10a-baseline
+U10A branch created                   no
 ```
 
-Historical gate strings, not current state:
+## History production evidence
 
 ```text
-Active implementation branch        none
-Exact next branch                   work-history-ui-h7-acceptance
-P9H7 branch created                 no
-P9H6 local candidate               active
-Active implementation branch        work-history-ui-h6-candidate
-P9H6 canonical closeout             active
-Active implementation branch        work-history-ui-h6-closeout
-P9H5 responsive and accessibility  active
-Active implementation branch        work-history-ui-h5-responsive
-Exact next branch                   work-history-ui-h6-candidate
-P9H6 branch created                 no
-P9H4A Overview balance              active
-Active implementation branch        work-history-ui-h4a-overview-balance
-Exact next branch                   work-history-ui-h4b-tasks
-P9H4B branch created                no
-P9H4A canonical closeout            active
-Active implementation branch        work-history-ui-h4a-closeout
-Active implementation branch        none
-Exact next branch                   work-history-ui-h4-tasks
-P9H4 branch created                 no
-P9H3 Overview hierarchy             active
-Active implementation branch        work-history-ui-h3-overview
-Exact next branch                   work-history-ui-h4-tasks
-P9H4 branch created                 no
-Active implementation branch        none
-Exact next branch                   work-history-ui-h3-overview
-P9H3 branch created                 no
-Active implementation branch        work-history-ui-h2-chart
-Exact next branch                   work-history-ui-h2-chart
-P9H2 branch created                 no
+Accepted production SHA: 233a35ebe219c6be42723eb749e2bcc84ae7fc09
+Pre-merge workflow/artifact: 28325492470 / 7935573120
+Post-merge workflow/artifact: 28325951638 / 7935706617
+Providers: Twitch and Kick, separated
+Hosted scenarios: 1440 / 820 / 390 / 360 / forced colors
+Result: pass
 ```
 
-## P9H6 accepted evidence
+The permanent record is `docs/operations/history-production-acceptance-2026-06-28.md`.
 
-```text
-PR: #449
-Head: c7d54e530053b29091b84e651b78b679f55f3a8a
-Merge: d46e2f3d04c9528e6493d9aa3d436000e340272a
-Workflow run: 28308389704
-Artifact: history-ui-h6-candidate / 7930159988
-Digest: sha256:658ad6332313b024119cb68541f2702c0f3af3451247e0ba57fbea917db7b292
-Manifest: viewloom-history-ui-h6-candidate-v1
-Phases: 6
-Scenarios: 21
-```
-
-P9H6 builds the accepted History implementation once, runs P9H1–P9H5 against one local preview and one exact HEAD, and records stable scenario IDs, provider-separated requests, and per-phase evidence digests. It changes no runtime, API, D1, collector, cron, retention, binding, provider, archive, metric, or output schema.
-
-## Active P9H7 boundary
-
-P9H7 adds acceptance tooling only. The requested Cloudflare Preview branch did not produce a deployment and returned 404 before any provider or browser test ran. The governed substitute is a complete exact-base-SHA production baseline on the PR, followed by the same complete exact-merge-SHA production acceptance after squash merge. Phase 10 remains blocked until both hosted gates, permanent evidence transfer, and temporary History repair note deletion are complete.
+The requested P9H7 Preview deployment never became available and returned 404 before product checks. PR #452 was closed without merge. Exact production identity and the full provider/browser matrix passed before and after the acceptance-only PR #451 merge.
 
 ## Next sequence
 
 ```text
-P9H5 responsive and accessibility  complete PR #447
-P9H6 local candidate               complete PR #449
-P9H7 production acceptance         active
-Phase 10 cross-site repair         blocked until P9H7 closure
+Phase 10 U10A defect and ownership baseline   exact next after explicit continuation
+Phase 11 acceptance and operations            queued
+Phase 12 release readiness                     queued
+Phase 13–14 localization                       queued
+Phase 15 capability audit                      queued
+Phase 16 major feature                         not approved
 ```
 
-Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*` when the external deployment is available. Only latest-head evidence counts. After every merge, issue the full report and stop.
+Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*` only when runtime validation is necessary. Only latest-head evidence counts. After every merge, issue the full report and stop.

@@ -19,6 +19,7 @@ const files = [
   'apps/web/scripts/history-ui-h4a-overview-browser.mjs',
   'scripts/verify-history-ui-h4a-overview.mjs',
   '.github/workflows/history-ui-h4a-overview.yml',
+  'docs/operations/history-production-acceptance-2026-06-28.md',
 ]
 for (const path of files) needFile(path)
 
@@ -69,22 +70,27 @@ need('apps/web/scripts/history-ui-h4a-overview-browser.mjs', [
   'assert.equal(calls.length, before',
 ])
 
-for (const path of [
-  'README.md',
-  'docs/README.md',
-  'AGENTS.md',
-  'CONTRIBUTING.md',
-  'docs/product/current-roadmap.md',
-  'docs/product/current-schedule.md',
-  'docs/product/post-watchlist-program-plan.md',
-  'docs/product/history-ui-repair-plan.md',
-  'docs/work-in-progress/history-ui-repair-working-note.md',
-]) need(path, [
-  'work-history-ui-h4a-overview-balance',
-  'work-history-ui-h4b-tasks',
-  'work-history-ui-h4-tasks',
-  'PR #441',
-  'PR #442',
+need('docs/product/current-roadmap.md', [
+  'Phase 9 P9H4A complete PR #441',
+  'P9H4A canonical closeout complete PR #442',
+  'Phase 9 History P1 repair complete',
+])
+need('docs/product/current-schedule.md', [
+  'P9H4A Overview balance                   complete PR #441',
+  'P9H4A canonical closeout                 complete PR #442',
+  'Phase 9 History P1 repair                complete',
+])
+need('docs/product/post-watchlist-program-plan.md', [
+  'Completed Overview balance: PR #441',
+  'Completed P9H4A canonical closeout: PR #442',
+])
+need('docs/product/history-ui-repair-plan.md', [
+  'Completed P9H4A: PR #441',
+  'Completed P9H4A canonical closeout: PR #442',
+])
+need('docs/operations/history-production-acceptance-2026-06-28.md', [
+  'History Phase 9 is accepted in production.',
+  'All passed with zero horizontal overflow.',
 ])
 
 const moduleSource = read('apps/web/src/live/history-overview-p9h4a.ts')
@@ -112,9 +118,6 @@ if (issues.length) {
 }
 
 console.log('ViewLoom History P9H4A Overview balance verification passed.')
-console.log('- P9H4A is complete through PR #441 and canonically closed through PR #442')
-console.log('- Key changes is normal-flow and Calendar geometry is bounded')
-console.log('- four primary Summary facts and the CSS-owned coverage band are protected')
-console.log('- P9H4A adds no competing History observer or request seam')
-console.log('- mobile chart density and explanatory More analysis controls are protected')
-console.log('- accepted provider, request, API, storage, and output seams are unchanged')
+console.log('- accepted Overview geometry and hierarchy remain protected')
+console.log('- provider, request, API, storage, and output seams remain unchanged')
+console.log('- Phase 9 production acceptance is permanent')
