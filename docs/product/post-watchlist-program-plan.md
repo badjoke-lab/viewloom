@@ -1,14 +1,16 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 3.5
+Version: 3.6
 Last updated: 2026-06-29
-Current phase: Phase 10 — U10A defect and ownership baseline active
-Current implementation branch: `work-quality-u10a-baseline`
-Exact next implementation branch after U10A: `work-quality-u10b-shell`
+Current phase: Phase 10 — U10A complete
+Current implementation branch: none
+Exact next implementation branch: `work-quality-u10b-shell`
 U10B branch created: no
 Completed History production acceptance: PR #451
 Completed History canonical closeout: PR #453
+Completed U10A implementation: PR #454
+Completed U10A canonical closeout: PR #455
 
 ## Current program state
 
@@ -16,12 +18,13 @@ Completed History canonical closeout: PR #453
 Local Watchlist v1 complete PR #425
 Phase 8 inventory/browser audit complete PR #428
 Phase 9 History P1 repair complete
-Phase 10 U10A active
+Phase 10 U10A complete PR #454
+Phase 10 U10B exact next after explicit continuation
 Phase 11–15 queued
 Phase 16 not approved
 ```
 
-U10A reproduces and classifies non-History defects, records route/provider/viewport/state/owner/gate gaps, identifies authoritative and compatibility owners, adds static and deterministic browser fixtures, and maintains the temporary Phase 10 working note. Product repair is prohibited except proven P0 isolation.
+U10A classified eight non-History findings, recorded route/provider/viewport/state/owner/gate gaps, identified authoritative and compatibility owners, and added static and deterministic browser fixtures without product repair.
 
 ## Historical verifier index
 
@@ -48,7 +51,7 @@ Completed P9H6 canonical closeout: PR #450
 ## Approved sequence
 
 ```text
-U10A work-quality-u10a-baseline
+U10A work-quality-u10a-baseline complete PR #454
 U10B work-quality-u10b-shell
 U10C work-quality-u10c-visualization
 U10D work-quality-u10d-analysis-coherence
@@ -65,15 +68,13 @@ O11F work-operations-o11f-runbooks
 O11G work-operations-o11g-acceptance
 ```
 
-## U10A evidence
+## U10A permanent evidence
 
 ```text
-docs/work-in-progress/u10a-quality-baseline.md
 docs/audits/cross-site-quality-u10a-baseline.json
 docs/audits/cross-site-quality-u10a-owner-map.json
-apps/web/scripts/quality-u10a-baseline-browser.mjs
-scripts/verify-quality-u10a-baseline.mjs
-.github/workflows/quality-u10a-baseline.yml
+Quality U10A Baseline: 28356915812 / 7945707844
+Public Browser Audit: 28356915810 / 7945757041
 ```
 
 History production evidence remains in `docs/operations/history-production-acceptance-2026-06-28.md`.

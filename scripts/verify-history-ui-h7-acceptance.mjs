@@ -4,27 +4,19 @@ import { join } from 'node:path'
 const root = process.cwd()
 const issues = []
 const read = (path) => readFileSync(join(root, path), 'utf8')
-
-function requireFile(path) {
+const requireFile = (path) => {
   if (!existsSync(join(root, path))) issues.push(`missing file: ${path}`)
 }
-
-function requireText(path, fragments) {
+const requireText = (path, fragments) => {
   requireFile(path)
   if (!existsSync(join(root, path))) return
   const source = read(path)
-  for (const fragment of fragments) {
-    if (!source.includes(fragment)) issues.push(`${path}: missing ${fragment}`)
-  }
+  for (const fragment of fragments) if (!source.includes(fragment)) issues.push(`${path}: missing ${fragment}`)
 }
 
-const files = [
-  'README.md',
-  'AGENTS.md',
-  'CONTRIBUTING.md',
-  'docs/README.md',
-  'docs/product/current-roadmap.md',
-  'docs/product/current-schedule.md',
+for (const path of [
+  'README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'docs/README.md',
+  'docs/product/current-roadmap.md', 'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
   'docs/product/history-ui-repair-spec.md',
   'docs/product/history-ui-repair-plan.md',
@@ -33,30 +25,29 @@ const files = [
   'apps/web/scripts/history-ui-h7-preview-trigger.json',
   'scripts/verify-history-ui-h7-evidence.mjs',
   '.github/workflows/history-ui-h7-acceptance.yml',
-]
-for (const path of files) requireFile(path)
+]) requireFile(path)
 
 for (const path of ['README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'docs/README.md']) {
-  requireText(path, [
-    'P9H7 production acceptance',
-    'PR #451',
-    'work-quality-u10a-baseline',
-  ])
+  requireText(path, ['P9H7 production acceptance', 'PR #451', 'Phase 10 U10A'])
 }
 requireText('docs/product/current-roadmap.md', [
-  'Phase 9 P9H7 production acceptance complete PR #451',
+  'P9H7 production acceptance complete PR #451',
   'Phase 9 History P1 repair complete',
-  'Exact next implementation branch: work-quality-u10a-baseline',
+  'Phase 10 U10A complete PR #454',
+  'Active implementation branch: none',
+  'Exact next implementation branch: work-quality-u10b-shell',
 ])
 requireText('docs/product/current-schedule.md', [
-  'P9H7 Hosted and production acceptance    complete PR #451',
+  'P9H7 production acceptance              complete PR #451',
   'Phase 9 History P1 repair                complete',
-  'Exact next branch                        work-quality-u10a-baseline',
+  'U10A defect and ownership baseline       complete PR #454',
+  'Exact next branch                        work-quality-u10b-shell',
 ])
 requireText('docs/product/post-watchlist-program-plan.md', [
-  'Version: 3.4',
-  'Current phase: Phase 10 — U10A defect and ownership baseline next',
-  'Exact next implementation branch after explicit continuation: `work-quality-u10a-baseline`',
+  'Current phase: Phase 10 — U10A complete',
+  'Current implementation branch: none',
+  'Exact next implementation branch: `work-quality-u10b-shell`',
+  'Completed History production acceptance: PR #451',
 ])
 requireText('docs/product/history-ui-repair-spec.md', [
   'Status: accepted and complete',
@@ -66,7 +57,7 @@ requireText('docs/product/history-ui-repair-spec.md', [
 requireText('docs/product/history-ui-repair-plan.md', [
   'Status: complete',
   'Completed P9H7 production acceptance: PR #451',
-  'Exact next branch after explicit continuation: `work-quality-u10a-baseline`',
+  'Completed P9H7 canonical closeout: PR #453',
 ])
 requireText('docs/operations/history-production-acceptance-2026-06-28.md', [
   'Status: permanent acceptance record',
@@ -78,39 +69,30 @@ requireText('docs/operations/history-production-acceptance-2026-06-28.md', [
   'Twitch observed streams: 300',
   'Kick observed streams: 100',
   'History Phase 9 is accepted in production.',
-  'work-quality-u10a-baseline',
 ])
 
 for (const path of [
   'docs/work-in-progress/history-ui-repair-working-note.md',
   'docs/work-in-progress/p9h7-acceptance.md',
-]) {
-  if (existsSync(join(root, path))) issues.push(`completed temporary note still exists: ${path}`)
-}
+]) if (existsSync(join(root, path))) issues.push(`completed temporary note still exists: ${path}`)
 
 requireText('apps/web/scripts/history-ui-h7-hosted-acceptance.mjs', [
-  "schema: 'viewloom-history-ui-h7-hosted-acceptance-v1'",
-  "phase: 'P9H7'",
-  "payload?.source === 'real'",
-  "binding: 'DB_TWITCH_HOT'",
-  "binding: 'DB_KICK_HOT'",
-  'twitch-desktop-1440-hosted',
-  'kick-mobile-390-hosted',
-  'twitch-forced-colors-390-hosted',
+  "schema: 'viewloom-history-ui-h7-hosted-acceptance-v1'", "phase: 'P9H7'",
+  "payload?.source === 'real'", "binding: 'DB_TWITCH_HOT'",
+  "binding: 'DB_KICK_HOT'", 'twitch-desktop-1440-hosted',
+  'kick-mobile-390-hosted', 'twitch-forced-colors-390-hosted',
 ])
 requireText('scripts/verify-history-ui-h7-evidence.mjs', [
   'viewloom-history-ui-h7-hosted-acceptance-v1',
   'assert.equal(evidence.scenarios.length, 5)',
 ])
 requireText('.github/workflows/history-ui-h7-acceptance.yml', [
-  'name: History UI P9H7 Acceptance',
-  'premerge-production-baseline:',
+  'name: History UI P9H7 Acceptance', 'premerge-production-baseline:',
   'Run P9H7 pre-merge production baseline',
   'history-ui-h7-premerge-production-baseline',
   "HISTORY_H7_EXPECTED_SHA: ${{ github.event.pull_request.base.sha }}",
   "if: github.event_name == 'push' && github.ref == 'refs/heads/preview-history-ui-h7-acceptance'",
-  'Run P9H7 production acceptance',
-  'history-ui-h7-production-acceptance',
+  'Run P9H7 production acceptance', 'history-ui-h7-production-acceptance',
   'cancel-in-progress: true',
 ])
 
@@ -135,9 +117,7 @@ if (issues.length) {
   for (const issue of issues) console.error(`- ${issue}`)
   process.exit(1)
 }
-
 console.log('History UI P9H7 repository verification passed.')
 console.log('- production acceptance is permanently recorded')
-console.log('- completed temporary notes are absent')
+console.log('- current Phase 10 handoff may advance without rewriting Phase 9 evidence')
 console.log('- Twitch and Kick real-data acceptance remains separated')
-console.log('- Phase 10 U10A is exact next and uncreated')

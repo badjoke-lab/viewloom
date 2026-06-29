@@ -42,12 +42,9 @@ if (ledger.status !== 'complete') issues.push('P8B ledger completion changed')
 if (ledger.counts?.p1 !== 3 || ledger.counts?.p2 !== 5) issues.push('P8B counts changed')
 
 need('apps/web/scripts/history-ui-h0-browser.mjs', [
-  "schema: 'viewloom-history-ui-h0-baseline-v1'",
-  "phase: 'P9H0'",
-  'history-metric-summary-stale',
-  'history-selected-day-context-stale',
-  'history-metric-ranking-context-stale',
-  'history-mobile-task-flow-too-long',
+  "schema: 'viewloom-history-ui-h0-baseline-v1'", "phase: 'P9H0'",
+  'history-metric-summary-stale', 'history-selected-day-context-stale',
+  'history-metric-ranking-context-stale', 'history-mobile-task-flow-too-long',
 ])
 need('apps/web/scripts/prepare-history-ui-h0-baseline.mjs', ['P9H0 deterministic baseline prepared.'])
 need('.github/workflows/history-ui-h0-baseline.yml', [
@@ -57,11 +54,13 @@ need('.github/workflows/history-ui-h0-baseline.yml', [
 ])
 need('docs/product/current-roadmap.md', [
   'Phase 9 History P1 repair complete',
-  'Exact next implementation branch: work-quality-u10a-baseline',
+  'Phase 10 U10A complete PR #454',
+  'Exact next implementation branch: work-quality-u10b-shell',
 ])
 need('docs/product/current-schedule.md', [
   'Phase 9 History P1 repair                complete',
-  'Exact next branch                        work-quality-u10a-baseline',
+  'U10A defect and ownership baseline       complete PR #454',
+  'Exact next branch                        work-quality-u10b-shell',
 ])
 need('docs/product/history-ui-repair-plan.md', [
   'Status: complete',
@@ -83,4 +82,4 @@ if (issues.length) {
 console.log('History UI P9H0 historical evidence verification passed.')
 console.log('- PR #430 evidence remains exact')
 console.log('- Phase 9 History repair is permanently accepted')
-console.log('- Phase 10 U10A is the exact next branch')
+console.log('- current Phase 10 handoff does not rewrite P9H0 evidence')

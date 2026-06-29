@@ -10,55 +10,35 @@ Phase 8 inventory/browser audit          complete PR #428
 Phase 9 History P1 repair                complete
 P9H7 production acceptance              complete PR #451
 P9H7 canonical closeout                 complete PR #453
-U10A defect and ownership baseline       active
-Active implementation branch             work-quality-u10a-baseline
-Exact next branch after U10A              work-quality-u10b-shell
+U10A defect and ownership baseline       complete PR #454
+U10A canonical closeout                  complete PR #455
+Active implementation branch             none
+Exact next branch                        work-quality-u10b-shell
 U10B branch created                       no
 ```
 
-## U10A execution window
+## Accepted U10A evidence
 
 ```text
 Entry main commit: 3ad171002ca908f8cf05e458c40009f88fdc6df4
-Purpose: reproduce and classify non-History defects
-Required output: defect ledger, owner map, missing assertions, static verifier, browser evidence, temporary working note
-Product repair: prohibited except proven P0 isolation
-Provider boundary: Twitch and Kick remain separate
+Implementation head: 51c8883ebdc31334828cc345f6a938f17c20a29b
+Implementation merge: 7665c5244d2fa71539ce9d69b3f5b55c47463075
+Implementation PR: #454
+Canonical closeout PR: #455
+Quality U10A Baseline: 28356915812 / 7945707844
+Public Browser Audit: 28356915810 / 7945757041
+Findings: 8
+Product repair: none
+Provider separation: pass
 ```
 
-U10A currently covers Day Flow first render and date controls, Battle Lines recommendation and selected-time coherence, Channel no-id entry, Watchlist Public Readiness ownership, Production Smoke route ownership, and mobile target-size measurement.
-
-## Historical verifier index
-
-These strings identify completed evidence only. They are not current execution state.
-
-```text
-P9H1 History metric synchronization      complete PR #434
-P9H2 History chart interpretation        complete PR #436
-P9H3 History Overview hierarchy          complete PR #439
-P9H4A Overview balance                   complete PR #441
-P9H4A canonical closeout                 complete PR #442
-P9H4B Archives and publishing hierarchy  complete PR #443
-P9H4B canonical closeout                 complete PR #444
-P9H5 Responsive and accessibility        complete PR #447
-P9H5 canonical closeout                  complete PR #448
-P9H6 Local candidate                     complete PR #449
-P9H6 canonical closeout                  complete PR #450
-P9H7 Hosted and production acceptance    complete PR #451
-Active implementation branch             none
-Exact next branch                        work-quality-u10a-baseline
-U10A branch created                      no
-Workflow run: 28308389704
-Artifact ID: 7930159988
-viewloom-history-ui-h6-candidate-v1
-Scenarios: 21
-```
+U10A covered Day Flow first render and date controls, Battle Lines recommendation and selected-time coherence, Channel no-id entry, Watchlist Public Readiness ownership, Production Smoke route ownership, and mobile target-size measurement.
 
 ## Exact sequence
 
 ```text
-U10A work-quality-u10a-baseline          active
-U10B work-quality-u10b-shell             exact next after U10A merge and explicit continuation
+U10A work-quality-u10a-baseline          complete PR #454
+U10B work-quality-u10b-shell             exact next after explicit continuation
 U10C work-quality-u10c-visualization     queued
 U10D work-quality-u10d-analysis-coherence queued
 U10E work-quality-u10e-responsive        queued

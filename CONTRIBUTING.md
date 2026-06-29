@@ -2,9 +2,9 @@
 
 ## Required reading
 
-Before changing the repository, read the development/deployment policy, documentation governance, documentation index, current roadmap, current schedule, complete program plan, affected specifications, implementation plan, working note, and acceptance records.
+Before changing the repository, read the development and deployment policy, documentation governance, documentation index, current roadmap, current schedule, program plan, affected specifications, implementation plans, active working notes, and permanent evidence.
 
-Do not begin from chat memory, screenshots, an old PR, or a stale document. Compare the schedule with actual branches and PRs before implementation.
+Do not begin from chat memory, screenshots, an old pull request, or a stale document. Compare the schedule with actual branches and pull requests before implementation.
 
 ## Current state
 
@@ -14,17 +14,21 @@ Phase 8 complete through PR #428
 Phase 9 History P1 repair complete
 P9H7 production acceptance complete through PR #451
 P9H7 canonical closeout complete through PR #453
-Phase 10 U10A quality baseline active
-Active implementation branch: work-quality-u10a-baseline
-Exact next implementation branch after U10A: work-quality-u10b-shell
+Phase 10 U10A quality baseline complete through PR #454
+U10A canonical closeout complete through PR #455
+Active implementation branch: none
+Exact next implementation branch: work-quality-u10b-shell
 U10B branch created: no
 ```
 
-U10A uses `docs/work-in-progress/u10a-quality-baseline.md`, `docs/audits/cross-site-quality-u10a-baseline.json`, and `docs/audits/cross-site-quality-u10a-owner-map.json` as its temporary evidence authorities.
+Permanent U10A evidence:
 
-U10A is baseline-only. It reproduces and classifies known non-History defects, identifies current and compatibility owners, and adds static or browser fixtures. Product repair is outside U10A except proven P0 isolation.
+```text
+docs/audits/cross-site-quality-u10a-baseline.json
+docs/audits/cross-site-quality-u10a-owner-map.json
+```
 
-Permanent History evidence is owned by `docs/operations/history-production-acceptance-2026-06-28.md`.
+The U10A temporary working note is absent after closeout. Permanent History evidence remains `docs/operations/history-production-acceptance-2026-06-28.md`.
 
 ## Standard workflow
 
@@ -32,14 +36,13 @@ Permanent History evidence is owned by `docs/operations/history-production-accep
 canonical documents
   -> compare repository state
   -> confirm branch and entry condition
-  -> work-* branch
+  -> work branch
   -> targeted checks
-  -> update working note
-  -> final evidence review
-  -> optional preview-* validation
+  -> evidence review
+  -> optional preview validation
   -> merge to main
   -> update permanent documents
   -> full report and stop
 ```
 
-`work-*` is ordinary development, `preview-*` is deliberate runtime validation, and `main` is production. Connector-created multi-commit work should be squash merged where the connector permits it. Twitch and Kick must remain separated. Do not start U10B or later phases in parallel.
+Ordinary development uses `work-*`; deliberate runtime validation uses `preview-*`; `main` is production. Keep Twitch and Kick separated. Start U10B only after explicit continuation.

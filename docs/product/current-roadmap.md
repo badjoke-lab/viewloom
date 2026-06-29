@@ -10,66 +10,35 @@ Phase 8 P8B complete PR #428
 Phase 9 History P1 repair complete
 P9H7 production acceptance complete PR #451
 P9H7 canonical closeout complete PR #453
-Phase 10 U10A active
-Active implementation branch: work-quality-u10a-baseline
-Exact next implementation branch after U10A: work-quality-u10b-shell
+Phase 10 U10A complete PR #454
+U10A canonical closeout complete PR #455
+Active implementation branch: none
+Exact next implementation branch: work-quality-u10b-shell
 U10B branch created: no
 ```
 
-U10A is a defect and ownership baseline. It records non-History defects, authoritative and compatibility owners, missing assertions, and deterministic browser evidence before repair. Product repair is prohibited except proven P0 isolation.
-
-## Current evidence
+U10A recorded eight cross-site findings and their owners without product repair. Permanent records:
 
 ```text
-docs/work-in-progress/u10a-quality-baseline.md
 docs/audits/cross-site-quality-u10a-baseline.json
 docs/audits/cross-site-quality-u10a-owner-map.json
-scripts/verify-quality-u10a-baseline.mjs
-.github/workflows/quality-u10a-baseline.yml
-```
-
-## Historical verifier index
-
-These strings identify completed evidence only. They are not current execution state.
-
-```text
-Phase 8 P8B   complete PR #428
-Phase 9 P9H1  complete PR #434
-Phase 9 P9H3 complete PR #439
-Phase 9 P9H4A complete PR #441
-P9H4A canonical closeout complete PR #442
-Phase 9 P9H5 complete PR #447
-P9H5 canonical closeout complete PR #448
-Phase 9 P9H6 complete PR #449
-P9H6 canonical closeout complete PR #450
-Phase 9 P9H7 production acceptance complete PR #451
-Active implementation branch: none
-Exact next implementation branch: work-quality-u10a-baseline
-U10A branch created: no
-```
-
-## Accepted History production evidence
-
-```text
-Accepted production SHA: 233a35ebe219c6be42723eb749e2bcc84ae7fc09
-Pre-merge workflow/artifact: 28325492470 / 7935573120
-Post-merge workflow/artifact: 28325951638 / 7935706617
-Providers: Twitch and Kick, separated
-Hosted scenarios: 1440 / 820 / 390 / 360 / forced colors
-Result: pass
+Quality U10A Baseline: 28356915812 / 7945707844
+Public Browser Audit: 28356915810 / 7945757041
+Implementation head: 51c8883ebdc31334828cc345f6a938f17c20a29b
+Implementation merge: 7665c5244d2fa71539ce9d69b3f5b55c47463075
 ```
 
 ## Ordered roadmap
 
 ```text
-Phase 10 U10A defect and ownership baseline active
-Phase 10 U10B shared shell exact next after U10A
-Phase 10 U10C visualization queued
-Phase 10 U10D analysis coherence queued
-Phase 10 U10E responsive and accessibility queued
-Phase 10 U10F readiness queued
-Phase 10 U10G architecture queued
-Phase 10 U10H acceptance queued
+U10A defect and ownership baseline complete PR #454
+U10B shared shell exact next after explicit continuation
+U10C visualization queued
+U10D analysis coherence queued
+U10E responsive and accessibility queued
+U10F readiness queued
+U10G architecture queued
+U10H acceptance queued
 Phase 11 acceptance and operations queued
 Phase 12 release readiness queued
 Phase 13–14 localization queued
@@ -77,4 +46,4 @@ Phase 15 capability audit queued
 Phase 16 major feature not approved
 ```
 
-Do not start U10B or later phases in parallel.
+U10B remains uncreated until explicit continuation.

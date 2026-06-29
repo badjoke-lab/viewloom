@@ -1,8 +1,13 @@
 {
   "schema": "viewloom-cross-site-quality-u10a-owner-map-v1",
   "phase": "U10A",
-  "status": "active",
+  "status": "complete",
   "branch": "work-quality-u10a-baseline",
+  "implementation_pr": 454,
+  "implementation_head": "51c8883ebdc31334828cc345f6a938f17c20a29b",
+  "merge_commit": "7665c5244d2fa71539ce9d69b3f5b55c47463075",
+  "exact_next_branch": "work-quality-u10b-shell",
+  "next_branch_created": false,
   "owners": [
     {
       "surface": "shared shell and navigation",
