@@ -19,9 +19,10 @@ function mountFeatureGrammar(feature: VisualizationFeature): void {
   sync()
   window.requestAnimationFrame(sync)
 
-  const observers: MutationObserver[] = []
-  for (const target of [source, stage]) {
-    if (!target || observers.some((item) => item === target)) continue
+  const targets: HTMLElement[] = []
+  if (source) targets.push(source)
+  if (stage && stage !== source) targets.push(stage)
+  const observers = targets.map((target) => {
     const observer = new MutationObserver(sync)
     observer.observe(target, {
       subtree: true,
@@ -30,8 +31,8 @@ function mountFeatureGrammar(feature: VisualizationFeature): void {
       attributes: true,
       attributeFilter: ['class', 'data-heatmap-state', 'data-state'],
     })
-    observers.push(observer)
-  }
+    return observer
+  })
   window.addEventListener('pagehide', () => observers.forEach((observer) => observer.disconnect()), { once: true })
 }
 
