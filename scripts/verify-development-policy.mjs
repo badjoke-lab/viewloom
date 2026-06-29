@@ -22,14 +22,18 @@ for (const path of [
   'docs/product/post-watchlist-program-plan.md',
   'docs/product/cross-site-quality-remediation-spec.md',
   'docs/product/cross-site-quality-remediation-plan.md',
+  'docs/work-in-progress/u10c-visualization.md',
   'docs/audits/cross-site-quality-u10a-baseline.json',
   'docs/audits/cross-site-quality-u10a-owner-map.json',
   'docs/audits/cross-site-quality-u10b-shared-shell.json',
   'apps/web/src/shared-shell.ts', 'apps/web/src/shared-shell.css',
-  'apps/web/scripts/quality-u10b-shell-browser.mjs',
-  'scripts/verify-quality-u10b-shell.mjs',
-  'scripts/verify-quality-u10b-browser-evidence.mjs',
-  '.github/workflows/quality-u10b-shell.yml',
+  'apps/web/src/visualization-grammar.ts',
+  'apps/web/src/visualization-grammar.css',
+  'apps/web/src/visualization-grammar-entry.ts',
+  'apps/web/scripts/quality-u10c-visualization-browser.mjs',
+  'scripts/verify-quality-u10c-visualization.mjs',
+  'scripts/verify-quality-u10c-browser-evidence.mjs',
+  '.github/workflows/quality-u10c-visualization.yml',
   'apps/web/src/live/watchlist-page.ts',
   'apps/web/src/live/channel-watchlist.ts',
 ]) needFile(path)
@@ -52,14 +56,15 @@ need('docs/operations/documentation-governance.md', [
 ])
 
 const stateChecks = [
-  ['README.md', ['Phase 10 U10B shared shell            complete PR #456', 'U10B canonical closeout               complete PR #457', 'Active implementation branch          none', 'Exact next branch                     work-quality-u10c-visualization', 'U10C branch created                   no']],
-  ['docs/README.md', ['Phase 10 U10B shared shell                       complete PR #456', 'U10B canonical closeout                          complete PR #457', 'Active implementation branch                    none', 'Exact next implementation branch                work-quality-u10c-visualization', 'U10C branch created                             no']],
-  ['AGENTS.md', ['Phase 10 U10B shared shell complete through PR #456', 'U10B canonical closeout complete through PR #457', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-u10c-visualization', 'U10C branch created: no']],
-  ['CONTRIBUTING.md', ['Phase 10 U10B shared shell complete through PR #456', 'U10B canonical closeout complete through PR #457', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-u10c-visualization', 'U10C branch created: no']],
-  ['docs/product/current-roadmap.md', ['Phase 10 U10B shared shell complete PR #456', 'U10B canonical closeout complete PR #457', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-u10c-visualization', 'Phase 16 major feature not approved']],
-  ['docs/product/current-schedule.md', ['U10B shared shell                         complete PR #456', 'U10B canonical closeout                  complete PR #457', 'Active implementation branch             none', 'Exact next branch                        work-quality-u10c-visualization']],
-  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10B complete', 'Current implementation branch: none', 'Exact next implementation branch: `work-quality-u10c-visualization`', 'Completed U10B implementation: PR #456', 'Completed U10B canonical closeout: PR #457']],
-  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: none', 'Completed phase: U10B through PR #456', 'Completed canonical closeout: PR #457', 'Exact next branch: `work-quality-u10c-visualization`']],
+  ['README.md', ['Phase 10 U10C visualization           active', 'Active implementation branch          work-quality-u10c-visualization', 'Exact next branch after U10C          work-quality-u10d-analysis-coherence', 'U10D branch created                   no']],
+  ['docs/README.md', ['Phase 10 U10C visualization                      active', 'Active implementation branch                    work-quality-u10c-visualization', 'Exact next implementation branch                work-quality-u10d-analysis-coherence', 'U10D branch created                             no']],
+  ['AGENTS.md', ['Phase 10 U10C visualization active', 'Active implementation branch: work-quality-u10c-visualization', 'Exact next implementation branch after U10C: work-quality-u10d-analysis-coherence', 'U10D branch created: no']],
+  ['CONTRIBUTING.md', ['Phase 10 U10C visualization active', 'Active implementation branch: work-quality-u10c-visualization', 'Exact next implementation branch after U10C: work-quality-u10d-analysis-coherence', 'U10D branch created: no']],
+  ['docs/product/current-roadmap.md', ['Phase 10 U10C visualization active', 'Active implementation branch: work-quality-u10c-visualization', 'Exact next implementation branch after U10C: work-quality-u10d-analysis-coherence', 'Phase 16 major feature not approved']],
+  ['docs/product/current-schedule.md', ['U10C visualization                       active', 'Active implementation branch             work-quality-u10c-visualization', 'Exact next branch after U10C              work-quality-u10d-analysis-coherence', 'Browser scenarios: 32']],
+  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10C visualization active', 'Current implementation branch: `work-quality-u10c-visualization`', 'Exact next implementation branch after U10C: `work-quality-u10d-analysis-coherence`']],
+  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: `work-quality-u10c-visualization`', 'Active phase: U10C visualization', 'Exact next branch after U10C: `work-quality-u10d-analysis-coherence`']],
+  ['docs/work-in-progress/u10c-visualization.md', ['Status: active', 'Phase: U10C', 'Branch: `work-quality-u10c-visualization`', 'work-quality-u10d-analysis-coherence']],
 ]
 for (const [path, fragments] of stateChecks) need(path, fragments)
 
@@ -84,7 +89,6 @@ check(u10b.boundary?.provider_separation_required === true, 'U10B provider bound
 check(u10b.scope?.built_routes === 20 && u10b.scope?.browser_scenarios === 40, 'U10B browser matrix changed')
 check(u10b.browser_evidence?.run_id === 28369803589 && u10b.browser_evidence?.artifact_id === 7950954207, 'U10B artifact evidence changed')
 check(u10b.companion_public_browser_audit?.run_id === 28369803633 && u10b.companion_public_browser_audit?.p0 === 0, 'U10B public browser evidence changed')
-check(u10b.exact_next_branch === 'work-quality-u10c-visualization' && u10b.next_branch_created === false, 'U10C handoff changed')
 
 need('apps/web/src/shared-shell.ts', [
   'export function installSharedShell()',
@@ -92,10 +96,17 @@ need('apps/web/src/shared-shell.ts', [
   'normalizeMobileNavigation',
   'normalizeFooter',
 ])
-need('apps/web/scripts/quality-u10b-shell-browser.mjs', [
-  "schema: 'viewloom-quality-u10b-shell-browser-v1'",
-  'viewports: [1440, 390]',
+need('apps/web/src/visualization-grammar.ts', [
+  'export function installVisualizationGrammar',
+  'export function normalizeVisualizationState',
+  "guideCell('scale', 'Scale'",
+  "guideCell('state', 'State'",
 ])
+need('apps/web/src/visualization-grammar-entry.ts', [
+  'const observer = new MutationObserver(sync)',
+  'observer.observe(source',
+])
+check(!read('apps/web/src/visualization-grammar-entry.ts').includes('observer.observe(document.body'), 'U10C introduced a document-wide state observer')
 
 const watchlist = read('apps/web/src/live/watchlist-page.ts')
 check((watchlist.match(/\bfetch\s*\(/g) ?? []).length === 1, 'Watchlist request seam changed')
@@ -113,6 +124,7 @@ for (const path of [
   '.github/workflows/watchlist-browser.yml',
   '.github/workflows/quality-u10a-baseline.yml',
   '.github/workflows/quality-u10b-shell.yml',
+  '.github/workflows/quality-u10c-visualization.yml',
 ]) {
   needFile(path)
   if (!existsSync(join(root, path))) continue
@@ -141,7 +153,8 @@ if (issues.length) {
 
 console.log('ViewLoom development and documentation verification passed.')
 console.log('- U10A and U10B remain permanently recorded')
-console.log('- U10C is exact next and uncreated')
+console.log('- U10C visualization is active')
+console.log('- U10D is exact next and uncreated')
 console.log('- Twitch and Kick remain separate')
 
 function walkFiles(directory) {
