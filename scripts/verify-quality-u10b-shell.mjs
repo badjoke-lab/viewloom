@@ -32,6 +32,8 @@ for (const path of [
 need('apps/web/src/shared-shell.ts', [
   "import './shared-shell.css'",
   'export function installSharedShell()',
+  'export function setSharedShellStatus',
+  'export function syncSharedShellStatus',
   "nav.id = 'viewloom-global-navigation'",
   "nav.setAttribute('aria-label', 'Global navigation')",
   "menu.setAttribute('aria-controls', nav.id)",
@@ -60,8 +62,10 @@ for (const forbidden of ['nav.style.display', 'nav.style.position', 'ensureChang
   if (mockSite.includes(forbidden)) issues.push(`mock-site.ts retains obsolete shell owner: ${forbidden}`)
 }
 need('apps/web/src/provider-home.ts', [
-  "import { installSharedShell } from './shared-shell'",
+  "installSharedShell, setSharedShellStatus, syncSharedShellStatus",
   'installSharedShell()',
+  'setSharedShellStatus(status',
+  'syncSharedShellStatus(status)',
 ])
 const providerHome = read('apps/web/src/provider-home.ts')
 if (providerHome.includes('installMobileNavigation')) issues.push('provider-home.ts retains duplicate mobile navigation owner')
@@ -75,7 +79,7 @@ need('apps/web/scripts/quality-u10b-shell-browser.mjs', [
   "await page.keyboard.press('Escape')",
 ])
 need('scripts/verify-quality-u10b-browser-evidence.mjs', [
-  "viewloom-quality-u10b-shell-browser-v1",
+  'viewloom-quality-u10b-shell-browser-v1',
   'assert.equal(evidence.routes, 20)',
   'assert.equal(evidence.scenarios.length, 40)',
 ])
@@ -117,5 +121,5 @@ if (issues.length) {
 
 console.log('ViewLoom U10B shared shell verification passed.')
 console.log('- common shell ownership is centralized')
+console.log('- provider status updates are normalized through the shared shell')
 console.log('- 20 built routes have one desktop/mobile browser matrix')
-console.log('- Twitch and Kick provider identities remain separate')
