@@ -3,7 +3,7 @@
 Status: source-of-truth map
 Last updated: 2026-06-29
 
-Read the development policy, documentation governance, roadmap, schedule, program plan, affected specifications, implementation plan, active working note, and permanent evidence before changing the repository.
+Read the development policy, documentation governance, roadmap, schedule, program plan, affected specifications, implementation plans, and permanent evidence before changing the repository.
 
 ## Current execution state
 
@@ -17,8 +17,9 @@ Phase 10 U10A quality baseline                   complete PR #454
 U10A canonical closeout                          complete PR #455
 Phase 10 U10B shared shell                       complete PR #456
 U10B canonical closeout                          complete PR #457
-Phase 10 U10C visualization                      active
-Active implementation branch                    work-quality-u10c-visualization
+Phase 10 U10C visualization                      complete PR #458
+U10C canonical closeout                          active PR #459
+Active implementation branch                    none
 Exact next implementation branch                work-quality-u10d-analysis-coherence
 U10D branch created                             no
 ```
@@ -27,10 +28,10 @@ U10D branch created                             no
 
 - Phase 10–11 specification: `product/cross-site-quality-remediation-spec.md`
 - Phase 10–11 plan: `product/cross-site-quality-remediation-plan.md`
-- Active U10C note: `work-in-progress/u10c-visualization.md`
 - U10A permanent defect ledger: `audits/cross-site-quality-u10a-baseline.json`
 - U10A permanent owner map: `audits/cross-site-quality-u10a-owner-map.json`
 - U10B permanent shared shell record: `audits/cross-site-quality-u10b-shared-shell.json`
+- U10C permanent visualization record: `audits/cross-site-quality-u10c-visualization.json`
 - Permanent History acceptance: `operations/history-production-acceptance-2026-06-28.md`
 
 ## Permanent Watchlist records
@@ -39,8 +40,4 @@ U10D branch created                             no
 - `product/watchlist-v1-implementation-plan.md`
 - `operations/watchlist-production-acceptance-2026-06-25.md`
 
-## U10C implementation boundary
-
-U10C owns the shared visualization reading guide, metric/unit synchronization, UTC context, selection/detail explanation, normalized visualization state, and the eight-route browser matrix. It does not change feature analysis meaning, APIs, storage, collection, retention, or provider separation.
-
-Do not create U10D or start later phases before U10C merge, canonical closeout, reporting, and explicit continuation.
+U10D must not be created before U10C closeout merge, reporting, and explicit continuation.
