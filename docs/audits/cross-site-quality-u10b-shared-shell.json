@@ -1,0 +1,84 @@
+{
+  "schema": "viewloom-cross-site-quality-u10b-shared-shell-v1",
+  "phase": "U10B",
+  "status": "complete",
+  "created_at": "2026-06-29",
+  "completed_at": "2026-06-29",
+  "entry_main_commit": "71400fbf8818e761e270f28c144cc5356380a0b8",
+  "branch": "work-quality-u10b-shell",
+  "implementation_pr": 456,
+  "implementation_head": "654833f70fc0776babbbfe9a9fab6829643f228a",
+  "merge_commit": "95ad125c05aed32408b1ee79915a4b7ac910ba6c",
+  "canonical_closeout_pr": 457,
+  "boundary": {
+    "provider_separation_required": true,
+    "feature_visualization_change_authorized": false,
+    "analysis_logic_change_authorized": false,
+    "api_change_authorized": false,
+    "d1_change_authorized": false,
+    "binding_change_authorized": false,
+    "collector_change_authorized": false,
+    "cron_change_authorized": false,
+    "retention_change_authorized": false,
+    "output_schema_change_authorized": false,
+    "localization_runtime_change_authorized": false
+  },
+  "scope": {
+    "built_routes": 20,
+    "viewports": [1440, 390],
+    "browser_scenarios": 40,
+    "providers": ["portal", "twitch", "kick"]
+  },
+  "runtime_owners": [
+    "apps/web/src/shared-shell.ts",
+    "apps/web/src/shared-shell.css",
+    "apps/web/src/mock-site.ts",
+    "apps/web/src/provider-home.ts",
+    "apps/web/src/live/watchlist-move-focus.ts"
+  ],
+  "contracts": {
+    "global_navigation_order": ["Portal", "Twitch data", "Kick data", "Changelog", "About", "Support"],
+    "provider_contexts": ["Platform-separated observatory", "Twitch observation", "Kick observation"],
+    "status_states": ["loading", "fresh", "partial", "unavailable"],
+    "mobile_behaviors": ["open", "close", "escape_focus_return", "link_selection_close", "desktop_reset"],
+    "footer_independence_disclaimer": true,
+    "inline_navigation_style_mutation": false
+  },
+  "browser_evidence": {
+    "workflow": "Quality U10B Shared Shell",
+    "run_id": 28369803589,
+    "artifact": "quality-u10b-shell",
+    "artifact_id": 7950954207,
+    "artifact_digest": "sha256:080336d0d04c084929267601ed5c008c21488141943657c8b37f37a326315050",
+    "verified_head": "654833f70fc0776babbbfe9a9fab6829643f228a",
+    "result": "pass",
+    "routes": 20,
+    "viewports": [1440, 390],
+    "scenarios": 40
+  },
+  "companion_public_browser_audit": {
+    "workflow": "Public Browser Audit",
+    "run_id": 28369803633,
+    "artifact": "public-browser-audit-p8b",
+    "artifact_id": 7951026988,
+    "artifact_digest": "sha256:7be24988a9516056422ae801d038459aafb9c2fcaf81b912b7ceda548ae8e730",
+    "verified_head": "654833f70fc0776babbbfe9a9fab6829643f228a",
+    "result": "pass",
+    "owned_routes": 21,
+    "viewports": 4,
+    "production_scenarios": 84,
+    "missing_surface_probes": 5,
+    "history_scenarios": 10,
+    "p0": 0
+  },
+  "regression_evidence": {
+    "web_verification_run_id": 28369803609,
+    "development_policy_run_id": 28369803622,
+    "quality_u10a_run_id": 28369803530,
+    "history_p9h6_candidate_run_id": 28369803765,
+    "history_p9h5_rerun_result": "pass",
+    "history_peak_browser_rerun_result": "pass"
+  },
+  "exact_next_branch": "work-quality-u10c-visualization",
+  "next_branch_created": false
+}

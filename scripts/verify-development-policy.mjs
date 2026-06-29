@@ -13,7 +13,7 @@ const need = (path, fragments) => {
   for (const fragment of fragments) check(source.includes(fragment), `${path}: missing ${fragment}`)
 }
 
-const required = [
+for (const path of [
   'README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'docs/README.md',
   'docs/operations/development-and-deployment-policy.md',
   'docs/operations/documentation-governance.md',
@@ -22,9 +22,9 @@ const required = [
   'docs/product/post-watchlist-program-plan.md',
   'docs/product/cross-site-quality-remediation-spec.md',
   'docs/product/cross-site-quality-remediation-plan.md',
-  'docs/work-in-progress/u10b-shared-shell.md',
   'docs/audits/cross-site-quality-u10a-baseline.json',
   'docs/audits/cross-site-quality-u10a-owner-map.json',
+  'docs/audits/cross-site-quality-u10b-shared-shell.json',
   'apps/web/src/shared-shell.ts', 'apps/web/src/shared-shell.css',
   'apps/web/scripts/quality-u10b-shell-browser.mjs',
   'scripts/verify-quality-u10b-shell.mjs',
@@ -32,13 +32,16 @@ const required = [
   '.github/workflows/quality-u10b-shell.yml',
   'apps/web/src/live/watchlist-page.ts',
   'apps/web/src/live/channel-watchlist.ts',
-]
-for (const path of required) needFile(path)
+]) needFile(path)
 
 for (const path of [
   'docs/work-in-progress/history-ui-repair-working-note.md',
   'docs/work-in-progress/p9h7-acceptance.md',
   'docs/work-in-progress/u10a-quality-baseline.md',
+  'docs/work-in-progress/u10b-shared-shell.md',
+  'docs/audits/u10a-closeout-marker.md',
+  'docs/audits/u10a-closeout-marker-2.md',
+  'docs/audits/u10b-closeout-marker.md',
 ]) check(!existsSync(join(root, path)), `completed temporary file still exists: ${path}`)
 
 need('docs/operations/development-and-deployment-policy.md', [
@@ -49,29 +52,39 @@ need('docs/operations/documentation-governance.md', [
 ])
 
 const stateChecks = [
-  ['README.md', ['Phase 10 U10B shared shell            active', 'Active implementation branch          work-quality-u10b-shell', 'work-quality-u10c-visualization']],
-  ['docs/README.md', ['Phase 10 U10B shared shell                       active', 'Active implementation branch                    work-quality-u10b-shell', 'work-quality-u10c-visualization']],
-  ['AGENTS.md', ['Phase 10 U10B shared shell active', 'Active implementation branch: work-quality-u10b-shell', 'work-quality-u10c-visualization']],
-  ['CONTRIBUTING.md', ['Phase 10 U10B shared shell active', 'Active implementation branch: work-quality-u10b-shell', 'work-quality-u10c-visualization']],
-  ['docs/product/current-roadmap.md', ['Phase 10 U10B shared shell active', 'Active implementation branch: work-quality-u10b-shell', 'Phase 16 major feature not approved']],
-  ['docs/product/current-schedule.md', ['U10B shared shell                         active', 'Active implementation branch             work-quality-u10b-shell', 'work-quality-u10c-visualization']],
-  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10B shared shell active', 'Current implementation branch: `work-quality-u10b-shell`', 'work-quality-u10c-visualization']],
-  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: `work-quality-u10b-shell`', 'Active phase: U10B shared shell', 'work-quality-u10c-visualization']],
-  ['docs/work-in-progress/u10b-shared-shell.md', ['Status: active', 'Phase: U10B', 'Branch: `work-quality-u10b-shell`']],
+  ['README.md', ['Phase 10 U10B shared shell            complete PR #456', 'U10B canonical closeout               complete PR #457', 'Active implementation branch          none', 'Exact next branch                     work-quality-u10c-visualization', 'U10C branch created                   no']],
+  ['docs/README.md', ['Phase 10 U10B shared shell                       complete PR #456', 'U10B canonical closeout                          complete PR #457', 'Active implementation branch                    none', 'Exact next implementation branch                work-quality-u10c-visualization', 'U10C branch created                             no']],
+  ['AGENTS.md', ['Phase 10 U10B shared shell complete through PR #456', 'U10B canonical closeout complete through PR #457', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-u10c-visualization', 'U10C branch created: no']],
+  ['CONTRIBUTING.md', ['Phase 10 U10B shared shell complete through PR #456', 'U10B canonical closeout complete through PR #457', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-u10c-visualization', 'U10C branch created: no']],
+  ['docs/product/current-roadmap.md', ['Phase 10 U10B shared shell complete PR #456', 'U10B canonical closeout complete PR #457', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-u10c-visualization', 'Phase 16 major feature not approved']],
+  ['docs/product/current-schedule.md', ['U10B shared shell                         complete PR #456', 'U10B canonical closeout                  complete PR #457', 'Active implementation branch             none', 'Exact next branch                        work-quality-u10c-visualization']],
+  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10B complete', 'Current implementation branch: none', 'Exact next implementation branch: `work-quality-u10c-visualization`', 'Completed U10B implementation: PR #456', 'Completed U10B canonical closeout: PR #457']],
+  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: none', 'Completed phase: U10B through PR #456', 'Completed canonical closeout: PR #457', 'Exact next branch: `work-quality-u10c-visualization`']],
 ]
 for (const [path, fragments] of stateChecks) need(path, fragments)
 
-const baseline = JSON.parse(read('docs/audits/cross-site-quality-u10a-baseline.json'))
-check(baseline.schema === 'viewloom-cross-site-quality-u10a-baseline-v1', 'U10A baseline schema changed')
-check(baseline.status === 'complete' && baseline.implementation_pr === 454, 'U10A completion changed')
-check(baseline.implementation_head === '51c8883ebdc31334828cc345f6a938f17c20a29b', 'U10A evidence head changed')
-check(baseline.merge_commit === '7665c5244d2fa71539ce9d69b3f5b55c47463075', 'U10A merge commit changed')
-check(baseline.boundary?.provider_separation_required === true, 'U10A provider boundary changed')
-check(baseline.counts?.total === 8 && baseline.counts?.browser_measurement_required === 0, 'U10A finding ledger changed')
+const u10a = JSON.parse(read('docs/audits/cross-site-quality-u10a-baseline.json'))
+check(u10a.schema === 'viewloom-cross-site-quality-u10a-baseline-v1', 'U10A baseline schema changed')
+check(u10a.status === 'complete' && u10a.implementation_pr === 454, 'U10A completion changed')
+check(u10a.implementation_head === '51c8883ebdc31334828cc345f6a938f17c20a29b', 'U10A evidence head changed')
+check(u10a.merge_commit === '7665c5244d2fa71539ce9d69b3f5b55c47463075', 'U10A merge commit changed')
+check(u10a.boundary?.provider_separation_required === true, 'U10A provider boundary changed')
+check(u10a.counts?.total === 8 && u10a.counts?.browser_measurement_required === 0, 'U10A finding ledger changed')
 
 const ownerMap = JSON.parse(read('docs/audits/cross-site-quality-u10a-owner-map.json'))
 check(ownerMap.schema === 'viewloom-cross-site-quality-u10a-owner-map-v1', 'U10A owner-map schema changed')
 check(ownerMap.status === 'complete' && ownerMap.exact_next_branch === 'work-quality-u10b-shell', 'U10A handoff changed')
+
+const u10b = JSON.parse(read('docs/audits/cross-site-quality-u10b-shared-shell.json'))
+check(u10b.schema === 'viewloom-cross-site-quality-u10b-shared-shell-v1', 'U10B record schema changed')
+check(u10b.status === 'complete' && u10b.implementation_pr === 456 && u10b.canonical_closeout_pr === 457, 'U10B completion changed')
+check(u10b.implementation_head === '654833f70fc0776babbbfe9a9fab6829643f228a', 'U10B evidence head changed')
+check(u10b.merge_commit === '95ad125c05aed32408b1ee79915a4b7ac910ba6c', 'U10B merge commit changed')
+check(u10b.boundary?.provider_separation_required === true, 'U10B provider boundary changed')
+check(u10b.scope?.built_routes === 20 && u10b.scope?.browser_scenarios === 40, 'U10B browser matrix changed')
+check(u10b.browser_evidence?.run_id === 28369803589 && u10b.browser_evidence?.artifact_id === 7950954207, 'U10B artifact evidence changed')
+check(u10b.companion_public_browser_audit?.run_id === 28369803633 && u10b.companion_public_browser_audit?.p0 === 0, 'U10B public browser evidence changed')
+check(u10b.exact_next_branch === 'work-quality-u10c-visualization' && u10b.next_branch_created === false, 'U10C handoff changed')
 
 need('apps/web/src/shared-shell.ts', [
   'export function installSharedShell()',
@@ -127,7 +140,8 @@ if (issues.length) {
 }
 
 console.log('ViewLoom development and documentation verification passed.')
-console.log('- U10A remains permanent and U10B is active')
+console.log('- U10A and U10B remain permanently recorded')
+console.log('- U10C is exact next and uncreated')
 console.log('- Twitch and Kick remain separate')
 
 function walkFiles(directory) {
