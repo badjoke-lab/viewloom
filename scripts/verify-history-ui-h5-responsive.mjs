@@ -21,6 +21,7 @@ for (const path of [
   'scripts/verify-history-ui-h5-responsive.mjs',
   '.github/workflows/history-ui-h5-responsive.yml',
   'docs/work-in-progress/p9h5-activation.md',
+  'docs/product/history-ui-repair-plan.md',
   'docs/operations/history-production-acceptance-2026-06-28.md',
 ]) needFile(path)
 
@@ -33,7 +34,6 @@ need('apps/web/src/live/history-usability-pass.ts', [
   "import '../history-responsive-p9h5.css'",
   "import './history-responsive-p9h5'",
 ])
-
 for (const path of ['apps/web/twitch/history/index.html', 'apps/web/kick/history/index.html']) need(path, [
   'class="history-skip-link"',
   'data-history-skip-link',
@@ -41,98 +41,66 @@ for (const path of ['apps/web/twitch/history/index.html', 'apps/web/kick/history
   'id="history-main"',
   'tabindex="-1"',
 ])
-
 need('apps/web/src/live/history-responsive-p9h5.ts', [
   "document.querySelector<HTMLElement>('.history-page')",
   "document.querySelector<HTMLAnchorElement>('[data-history-skip-link]')",
   "document.querySelector<HTMLElement>('#history-main')",
   "page.dataset.historyP9h5Ready = 'true'",
   "page.dataset.historyAccessibilityOwner = 'p9h5'",
-  "target.focus({ preventScroll: true })",
+  'target.focus({ preventScroll: true })',
   "target.scrollIntoView({ block: 'start' })",
 ])
-
 need('apps/web/src/live/history-chart-keyboard-delegation.ts', [
   "document.addEventListener('keydown', handleDelegatedKeydown, true)",
   "target?.closest<HTMLButtonElement>('[data-history-chart-keyboard-target]')",
   "keyboard.dataset.historyDelegatedBound = 'true'",
-  "keyboard.dataset.historyKeyboardDay = dayValue",
+  'keyboard.dataset.historyKeyboardDay = dayValue',
 ])
-
 need('apps/web/src/history-responsive-p9h5.css', [
-  '.history-skip-link',
-  ':focus-visible',
-  'min-height:44px',
-  'min-height:48px',
-  'overflow-wrap:anywhere',
-  '@media(max-width:820px)',
-  '@media(max-width:760px)',
-  '@media(max-width:420px)',
-  '@media(prefers-reduced-motion:reduce)',
-  '@media(prefers-contrast:more)',
-  '@media(forced-colors:active)',
+  '.history-skip-link', ':focus-visible', 'min-height:44px', 'min-height:48px',
+  'overflow-wrap:anywhere', '@media(max-width:820px)', '@media(max-width:760px)',
+  '@media(max-width:420px)', '@media(prefers-reduced-motion:reduce)',
+  '@media(prefers-contrast:more)', '@media(forced-colors:active)',
 ])
-
 need('apps/web/scripts/history-ui-h5-responsive-browser.mjs', [
-  "schema: 'viewloom-history-ui-h5-responsive-v1'",
-  "phase: 'P9H5'",
-  "provider: 'twitch', width: 1440",
-  "provider: 'kick', width: 820",
-  "provider: 'kick', width: 390",
-  "provider: 'twitch', width: 360",
-  "mode: 'forced'",
-  'first Tab did not reach History skip link',
-  'page horizontal overflow',
-  'period target',
-  'publishing target',
+  "schema: 'viewloom-history-ui-h5-responsive-v1'", "phase: 'P9H5'",
+  "provider: 'twitch', width: 1440", "provider: 'kick', width: 820",
+  "provider: 'kick', width: 390", "provider: 'twitch', width: 360",
+  "mode: 'forced'", 'first Tab did not reach History skip link',
+  'page horizontal overflow', 'period target', 'publishing target',
   'task switching refetched History',
 ])
-
 need('apps/web/scripts/history-ui-h5-responsive-runner.mjs', [
   "new RealDate('2026-06-25T00:00:00.000Z')",
   "await import('./history-ui-h5-responsive-browser.mjs')",
 ])
-
-need('docs/product/current-schedule.md', [
-  'P9H5 Responsive and accessibility        complete PR #447',
-  'P9H5 canonical closeout                  complete PR #448',
-  'Phase 9 History P1 repair                complete',
-])
-need('docs/product/current-roadmap.md', [
-  'Phase 9 P9H5 complete PR #447',
-  'P9H5 canonical closeout complete PR #448',
-  'Phase 9 History P1 repair complete',
-])
-need('docs/product/post-watchlist-program-plan.md', [
-  'Completed responsive and accessibility repair: PR #447',
-  'Completed P9H5 canonical closeout: PR #448',
-])
 need('docs/product/history-ui-repair-plan.md', [
-  'Completed P9H5: PR #447',
+  'Status: complete', 'Completed P9H5: PR #447',
   'Completed P9H5 canonical closeout: PR #448',
+  'Completed P9H7 production acceptance: PR #451',
 ])
 need('docs/work-in-progress/p9h5-activation.md', [
-  'Status: complete',
-  'Implementation PR: #447',
-  'Canonical closeout PR: #448',
-  'work-history-ui-h6-candidate',
-  'P9H6 branch created: no',
+  'Status: complete', 'Implementation PR: #447', 'Canonical closeout PR: #448',
+  'work-history-ui-h6-candidate', 'P9H6 branch created: no',
 ])
 need('docs/operations/history-production-acceptance-2026-06-28.md', [
-  'twitch-desktop-1440-hosted',
-  'kick-tablet-820-hosted',
-  'kick-mobile-390-hosted',
-  'twitch-mobile-360-hosted',
-  'twitch-forced-colors-390-hosted',
-  'All passed with zero horizontal overflow.',
+  'twitch-desktop-1440-hosted', 'kick-tablet-820-hosted',
+  'kick-mobile-390-hosted', 'twitch-mobile-360-hosted',
+  'twitch-forced-colors-390-hosted', 'All passed with zero horizontal overflow.',
+  'History Phase 9 is accepted in production.',
 ])
-
+need('docs/product/current-roadmap.md', [
+  'Phase 9 History P1 repair complete', 'Phase 10 U10A complete PR #454',
+  'Active implementation branch: none',
+])
+need('docs/product/current-schedule.md', [
+  'Phase 9 History P1 repair                complete',
+  'U10A defect and ownership baseline       complete PR #454',
+])
 need('.github/workflows/history-ui-h5-responsive.yml', [
-  'name: History UI P9H5 Responsive',
-  'Verify P9H5 repository contract',
+  'name: History UI P9H5 Responsive', 'Verify P9H5 repository contract',
   'Run P9H5 responsive and accessibility acceptance',
-  'history-ui-h5-responsive',
-  'cancel-in-progress: true',
+  'history-ui-h5-responsive', 'cancel-in-progress: true',
 ])
 
 const moduleSource = read('apps/web/src/live/history-responsive-p9h5.ts')
@@ -145,7 +113,6 @@ if (issues.length) {
   for (const issue of issues) console.error(`- ${issue}`)
   process.exit(1)
 }
-
 console.log('ViewLoom History P9H5 responsive verification passed.')
 console.log('- responsive and accessibility contracts remain protected')
-console.log('- Phase 9 production acceptance is permanent')
+console.log('- current roadmap handoffs do not rewrite completed P9H5 evidence')
