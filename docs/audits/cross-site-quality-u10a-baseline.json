@@ -1,0 +1,184 @@
+{
+  "schema": "viewloom-cross-site-quality-u10a-baseline-v1",
+  "phase": "U10A",
+  "status": "active",
+  "created_at": "2026-06-29",
+  "entry_main_commit": "3ad171002ca908f8cf05e458c40009f88fdc6df4",
+  "branch": "work-quality-u10a-baseline",
+  "boundary": {
+    "product_repair_authorized": false,
+    "p0_isolation_only": true,
+    "provider_separation_required": true,
+    "new_api_authorized": false,
+    "new_d1_schema_authorized": false,
+    "new_binding_authorized": false,
+    "collector_change_authorized": false,
+    "cron_change_authorized": false,
+    "retention_change_authorized": false,
+    "output_schema_change_authorized": false
+  },
+  "counts": {
+    "reproduced": 5,
+    "resolved_before_u10a": 1,
+    "protected_by_existing_logic": 1,
+    "browser_measurement_required": 1,
+    "total": 8
+  },
+  "findings": [
+    {
+      "id": "U10A-DF-DATE-ACCESSIBLE-NAME",
+      "severity": "P2",
+      "classification": "resolved_before_u10a",
+      "routes": ["/twitch/day-flow/", "/kick/day-flow/"],
+      "providers": ["twitch", "kick"],
+      "viewports": [1440, 820, 390, 360],
+      "state": "built route",
+      "expected": "The visible UTC date input has a stable accessible name.",
+      "actual": "Both provider pages now use a visible UTC date label associated by for/id.",
+      "owners": [
+        "apps/web/twitch/day-flow/index.html",
+        "apps/web/kick/day-flow/index.html"
+      ],
+      "existing_gates": ["Public Browser Audit", "Day Flow feature checks"],
+      "missing_assertion": "A cross-site permanent accessible-name gate is still absent.",
+      "next_phase": "U10E"
+    },
+    {
+      "id": "U10A-DF-FIRST-RENDER-LAYOUT",
+      "severity": "P2",
+      "classification": "reproduced",
+      "routes": ["/twitch/day-flow/", "/kick/day-flow/"],
+      "providers": ["twitch", "kick"],
+      "viewports": [1440, 820, 390, 360],
+      "state": "first render before module hydration",
+      "expected": "The server-authored shell and selected control represent the same default layout that users receive.",
+      "actual": "HTML is authored as Split with Split pressed, then an inline script mutates the shell to Wide when no URL or storage preference exists.",
+      "owners": [
+        "apps/web/twitch/day-flow/index.html",
+        "apps/web/kick/day-flow/index.html",
+        "apps/web/src/live/day-flow-layout-summary.ts"
+      ],
+      "legacy_or_compatibility": ["inline default-layout mutation"],
+      "existing_gates": ["Day Flow feature checks"],
+      "missing_assertion": "No gate compares server-authored default layout, first painted state, stored state, and hydrated control state.",
+      "next_phase": "U10D"
+    },
+    {
+      "id": "U10A-WATCHLIST-PUBLIC-READINESS",
+      "severity": "P2",
+      "classification": "reproduced",
+      "routes": ["/twitch/watchlist/", "/kick/watchlist/"],
+      "providers": ["twitch", "kick"],
+      "viewports": ["configuration"],
+      "state": "built route inventory",
+      "expected": "General Public Readiness enumerates every repository-owned public route.",
+      "actual": "providerPages() includes heatmap, day-flow, battle-lines, history, channel, and status but omits Watchlist.",
+      "owners": ["apps/web/scripts/public-readiness-audit.mjs"],
+      "existing_gates": ["Watchlist dedicated acceptance"],
+      "missing_assertion": "Public Readiness does not require both Watchlist routes.",
+      "next_phase": "U10F"
+    },
+    {
+      "id": "U10A-PRODUCTION-SMOKE-ROUTE-OWNERSHIP",
+      "severity": "P2",
+      "classification": "reproduced",
+      "routes": [
+        "/about/",
+        "/support/",
+        "/changelog/",
+        "/twitch/channel/",
+        "/kick/channel/",
+        "/twitch/watchlist/",
+        "/kick/watchlist/"
+      ],
+      "providers": ["portal", "twitch", "kick"],
+      "viewports": ["workflow configuration"],
+      "state": "production",
+      "expected": "General Production Smoke owns every appropriate public route group.",
+      "actual": "The workflow route array covers portal and primary provider feature/status routes but omits the listed route groups.",
+      "owners": [".github/workflows/production-smoke.yml"],
+      "existing_gates": ["Channel dedicated acceptance", "Watchlist dedicated acceptance"],
+      "missing_assertion": "No unified production route ownership assertion exists.",
+      "next_phase": "U10F"
+    },
+    {
+      "id": "U10A-CHANNEL-NO-ID-ENTRY",
+      "severity": "P2",
+      "classification": "reproduced",
+      "routes": ["/twitch/channel/", "/kick/channel/"],
+      "providers": ["twitch", "kick"],
+      "viewports": [1440, 820, 390, 360],
+      "state": "missing channel id",
+      "expected": "The no-id state presents one clear provider-safe route back to a place where a channel can be selected, without pretending data loaded.",
+      "actual": "The feedback is plain text while normal task tabs, period controls, copy actions, and empty analysis panels remain visible.",
+      "owners": [
+        "apps/web/src/live/channel-profile.ts",
+        "apps/web/twitch/channel/index.html",
+        "apps/web/kick/channel/index.html"
+      ],
+      "existing_gates": ["Channel Profile", "Channel Profile Browser"],
+      "missing_assertion": "No browser gate requires a focused no-id entry task and suppresses irrelevant controls.",
+      "next_phase": "U10F"
+    },
+    {
+      "id": "U10A-BATTLE-RECOMMENDED-OWNER",
+      "severity": "P1",
+      "classification": "reproduced",
+      "routes": ["/twitch/battle-lines/", "/kick/battle-lines/"],
+      "providers": ["twitch", "kick"],
+      "viewports": [1440, 820, 390, 360],
+      "state": "real or deterministic fixture with distinct primary and recommended pairs",
+      "expected": "The default pair, Back to recommended action, Recommended battle label, chart, and inspector use one explicit recommendation owner.",
+      "actual": "The payload defines both primaryBattle and recommendedBattle, but default selection, the Back to recommended action, and recommended labeling all use primaryBattle.",
+      "owners": [
+        "apps/web/src/live/battle-lines-current-shell-entry.ts",
+        "apps/web/functions/_lib/battle-lines-core.ts"
+      ],
+      "legacy_or_compatibility": ["primaryBattle used as recommendation alias"],
+      "existing_gates": ["Battle Lines core fixtures", "Battle Lines Wide and Split layout contract"],
+      "missing_assertion": "No fixture supplies distinct primaryBattle and recommendedBattle values and requires UI agreement.",
+      "next_phase": "U10D"
+    },
+    {
+      "id": "U10A-BATTLE-SELECTED-TIME-COHERENCE",
+      "severity": "P1",
+      "classification": "protected_by_existing_logic",
+      "routes": ["/twitch/battle-lines/", "/kick/battle-lines/"],
+      "providers": ["twitch", "kick"],
+      "viewports": [1440, 820, 390, 360],
+      "state": "deterministic observed timeline",
+      "expected": "Primary summary, chart cursor, Time Inspector, URL point state, and coverage use the same selected bucket.",
+      "actual": "Shared selectedIndex drives those surfaces and metric/bucket refresh attempts to preserve the selected bucket, but no cross-surface browser evidence is permanent.",
+      "owners": ["apps/web/src/live/battle-lines-current-shell-entry.ts"],
+      "existing_gates": ["Battle Lines Wide and Split layout contract"],
+      "missing_assertion": "No browser fixture proves initial latest selection and keyboard/pointer changes remain coherent across all selected-time surfaces.",
+      "next_phase": "U10D"
+    },
+    {
+      "id": "U10A-MOBILE-TARGET-SIZES",
+      "severity": "P2",
+      "classification": "browser_measurement_required",
+      "routes": ["multiple owned public routes"],
+      "providers": ["portal", "twitch", "kick"],
+      "viewports": [390, 360],
+      "state": "built local candidate",
+      "expected": "Applicable mobile controls are at least 44px and important management or publishing actions are at least 48px.",
+      "actual": "P8B recorded 34–42px controls; U10A must remeasure the current candidate before repair.",
+      "owners": ["shared and route-specific responsive styles"],
+      "existing_gates": ["fragmented feature browser checks"],
+      "missing_assertion": "No all-route target-size evidence artifact exists.",
+      "next_phase": "U10E"
+    }
+  ],
+  "browser_evidence": {
+    "schema": "viewloom-quality-u10a-browser-v1",
+    "artifact": "quality-u10a-baseline",
+    "required_scenarios": [
+      "day-flow-accessible-name",
+      "channel-no-id-entry",
+      "battle-recommended-owner-divergence",
+      "battle-selected-time-coherence",
+      "mobile-target-measurement"
+    ]
+  }
+}
