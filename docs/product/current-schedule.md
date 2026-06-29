@@ -1,7 +1,7 @@
 # ViewLoom current execution schedule
 
 Status: source of truth
-Last updated: 2026-06-28
+Last updated: 2026-06-29
 
 ## Current position
 
@@ -21,14 +21,29 @@ P9H5 Responsive and accessibility        complete PR #447
 P9H5 canonical closeout                  complete PR #448
 P9H6 Local candidate                     complete PR #449
 P9H6 canonical closeout                  complete PR #450
-P9H7 Hosted and production acceptance    active
-Active implementation branch             work-history-ui-h7-acceptance
-Preview branch                           preview-history-ui-h7-acceptance
+P9H7 Hosted and production acceptance    complete PR #451
+P9H7 canonical closeout                  complete PR #453
+Phase 9 History P1 repair                complete
+Active implementation branch             none
+Exact next branch                        work-quality-u10a-baseline
+U10A branch created                      no
 ```
 
-P9H7 accepts the exact final work HEAD on Cloudflare Preview, then the exact squash-merged `main` SHA in production. It reuses real provider data and does not authorize another runtime feature.
+History Phase 9 is accepted against the exact production commit `233a35ebe219c6be42723eb749e2bcc84ae7fc09`. Permanent evidence is owned by `docs/operations/history-production-acceptance-2026-06-28.md`.
+
+## Exact next window
+
+```text
+U10A work-quality-u10a-baseline
+Purpose: defect and ownership baseline
+Entry condition: Phase 9 closeout merged and explicit continuation received
+Product repair: prohibited except proven P0 isolation
+Required output: classified defect ledger, owner map, missing/failing assertions or fixtures, temporary Phase 10 working note
+```
 
 ## Historical gate strings
+
+The following strings are retained only for earlier phase-specific verifiers and are not current execution state.
 
 ```text
 Active implementation branch             none
@@ -129,18 +144,20 @@ Scenarios: 21
 Providers: Kick and Twitch, separated
 ```
 
-## Active P9H7 gates
+## Accepted P9H7 evidence
 
 ```text
-Repository contract, typecheck, and production build
-Exact Preview deployment identity
-Real Twitch/Kick Viewer-minutes and Peak viewers
-1440 / 820 / 390 / 360 public browser scenarios
-Provider separation, metric execution, URL and Back/Forward
-No-refetch task/archive/report switching
-Keyboard, touch, focus, targets, overflow, reduced motion, forced colors
-Exact production deployment identity and the same hosted scenarios
-Permanent production record and temporary-note deletion
+Implementation PR: #451
+Closeout PR: #453
+Accepted production SHA: 233a35ebe219c6be42723eb749e2bcc84ae7fc09
+Pre-merge production workflow: 28325492470
+Pre-merge artifact: 7935573120
+Post-merge production workflow: 28325951638
+Post-merge artifact: 7935706617
+1440 / 820 / 390 / 360
+Forced colors: pass
+Provider separation: pass
+Real Viewer-minutes and Peak viewers: pass
 ```
 
 ## Sequence
@@ -148,6 +165,9 @@ Permanent production record and temporary-note deletion
 ```text
 P9H5  work-history-ui-h5-responsive        complete PR #447
 P9H6  work-history-ui-h6-candidate         complete PR #449
-P9H7  work-history-ui-h7-acceptance        active
-Phase 10                                  blocked until P9H7 closure
+P9H7  work-history-ui-h7-acceptance        complete PR #451
+Phase 9 canonical closeout                 complete PR #453
+U10A   work-quality-u10a-baseline          exact next; not created
 ```
+
+After every merge, update canonical documents, issue the full merge report, name the next branch, and stop until explicit continuation.
