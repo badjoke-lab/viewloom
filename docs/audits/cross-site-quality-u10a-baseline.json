@@ -1,10 +1,14 @@
 {
   "schema": "viewloom-cross-site-quality-u10a-baseline-v1",
   "phase": "U10A",
-  "status": "active",
+  "status": "complete",
   "created_at": "2026-06-29",
+  "completed_at": "2026-06-29",
   "entry_main_commit": "3ad171002ca908f8cf05e458c40009f88fdc6df4",
   "branch": "work-quality-u10a-baseline",
+  "implementation_pr": 454,
+  "implementation_head": "51c8883ebdc31334828cc345f6a938f17c20a29b",
+  "merge_commit": "7665c5244d2fa71539ce9d69b3f5b55c47463075",
   "boundary": {
     "product_repair_authorized": false,
     "p0_isolation_only": true,
@@ -18,10 +22,10 @@
     "output_schema_change_authorized": false
   },
   "counts": {
-    "reproduced": 5,
+    "reproduced": 6,
     "resolved_before_u10a": 1,
     "protected_by_existing_logic": 1,
-    "browser_measurement_required": 1,
+    "browser_measurement_required": 0,
     "total": 8
   },
   "findings": [
@@ -34,13 +38,13 @@
       "viewports": [1440, 820, 390, 360],
       "state": "built route",
       "expected": "The visible UTC date input has a stable accessible name.",
-      "actual": "Both provider pages now use a visible UTC date label associated by for/id.",
+      "actual": "Both provider pages use a visible UTC date label associated by for/id.",
       "owners": [
         "apps/web/twitch/day-flow/index.html",
         "apps/web/kick/day-flow/index.html"
       ],
-      "existing_gates": ["Public Browser Audit", "Day Flow feature checks"],
-      "missing_assertion": "A cross-site permanent accessible-name gate is still absent.",
+      "existing_gates": ["Public Browser Audit", "Quality U10A Baseline", "Day Flow feature checks"],
+      "missing_assertion": "U10E must retain a permanent cross-site accessible-name gate while repairing target sizes.",
       "next_phase": "U10E"
     },
     {
@@ -59,8 +63,8 @@
         "apps/web/src/live/day-flow-layout-summary.ts"
       ],
       "legacy_or_compatibility": ["inline default-layout mutation"],
-      "existing_gates": ["Day Flow feature checks"],
-      "missing_assertion": "No gate compares server-authored default layout, first painted state, stored state, and hydrated control state.",
+      "existing_gates": ["Quality U10A Baseline", "Day Flow feature checks"],
+      "missing_assertion": "U10D must compare server-authored default layout, first painted state, stored state, and hydrated control state.",
       "next_phase": "U10D"
     },
     {
@@ -74,8 +78,8 @@
       "expected": "General Public Readiness enumerates every repository-owned public route.",
       "actual": "providerPages() includes heatmap, day-flow, battle-lines, history, channel, and status but omits Watchlist.",
       "owners": ["apps/web/scripts/public-readiness-audit.mjs"],
-      "existing_gates": ["Watchlist dedicated acceptance"],
-      "missing_assertion": "Public Readiness does not require both Watchlist routes.",
+      "existing_gates": ["Quality U10A Baseline", "Watchlist dedicated acceptance"],
+      "missing_assertion": "U10F must require both Watchlist routes in general Public Readiness.",
       "next_phase": "U10F"
     },
     {
@@ -97,8 +101,8 @@
       "expected": "General Production Smoke owns every appropriate public route group.",
       "actual": "The workflow route array covers portal and primary provider feature/status routes but omits the listed route groups.",
       "owners": [".github/workflows/production-smoke.yml"],
-      "existing_gates": ["Channel dedicated acceptance", "Watchlist dedicated acceptance"],
-      "missing_assertion": "No unified production route ownership assertion exists.",
+      "existing_gates": ["Quality U10A Baseline", "Channel dedicated acceptance", "Watchlist dedicated acceptance"],
+      "missing_assertion": "U10F must establish unified production route ownership before O11 workflow consolidation.",
       "next_phase": "U10F"
     },
     {
@@ -116,8 +120,8 @@
         "apps/web/twitch/channel/index.html",
         "apps/web/kick/channel/index.html"
       ],
-      "existing_gates": ["Channel Profile", "Channel Profile Browser"],
-      "missing_assertion": "No browser gate requires a focused no-id entry task and suppresses irrelevant controls.",
+      "existing_gates": ["Quality U10A Baseline", "Channel Profile", "Channel Profile Browser"],
+      "missing_assertion": "U10F must require a focused no-id entry task and suppress irrelevant controls without adding a new API.",
       "next_phase": "U10F"
     },
     {
@@ -135,8 +139,8 @@
         "apps/web/functions/_lib/battle-lines-core.ts"
       ],
       "legacy_or_compatibility": ["primaryBattle used as recommendation alias"],
-      "existing_gates": ["Battle Lines core fixtures", "Battle Lines Wide and Split layout contract"],
-      "missing_assertion": "No fixture supplies distinct primaryBattle and recommendedBattle values and requires UI agreement.",
+      "existing_gates": ["Quality U10A Baseline", "Battle Lines core fixtures", "Battle Lines Wide and Split layout contract"],
+      "missing_assertion": "U10D must supply distinct primaryBattle and recommendedBattle values and require UI agreement.",
       "next_phase": "U10D"
     },
     {
@@ -148,37 +152,60 @@
       "viewports": [1440, 820, 390, 360],
       "state": "deterministic observed timeline",
       "expected": "Primary summary, chart cursor, Time Inspector, URL point state, and coverage use the same selected bucket.",
-      "actual": "Shared selectedIndex drives those surfaces and metric/bucket refresh attempts to preserve the selected bucket, but no cross-surface browser evidence is permanent.",
+      "actual": "Shared selectedIndex drives the surfaces. U10A browser evidence proves initial latest selection and ArrowLeft preserve agreement between summary, inspector, and URL point state.",
       "owners": ["apps/web/src/live/battle-lines-current-shell-entry.ts"],
-      "existing_gates": ["Battle Lines Wide and Split layout contract"],
-      "missing_assertion": "No browser fixture proves initial latest selection and keyboard/pointer changes remain coherent across all selected-time surfaces.",
+      "existing_gates": ["Quality U10A Baseline", "Battle Lines Wide and Split layout contract"],
+      "missing_assertion": "U10D must retain the cross-surface browser contract while changing recommendation ownership.",
       "next_phase": "U10D"
     },
     {
       "id": "U10A-MOBILE-TARGET-SIZES",
       "severity": "P2",
-      "classification": "browser_measurement_required",
+      "classification": "reproduced",
       "routes": ["multiple owned public routes"],
       "providers": ["portal", "twitch", "kick"],
       "viewports": [390, 360],
       "state": "built local candidate",
       "expected": "Applicable mobile controls are at least 44px and important management or publishing actions are at least 48px.",
-      "actual": "P8B recorded 34–42px controls; U10A must remeasure the current candidate before repair.",
+      "actual": "Eighteen route/viewport scenarios were measured. Each width produced 57 visible targets below 44px, the minimum measured height was 34px, and horizontal overflow was zero.",
       "owners": ["shared and route-specific responsive styles"],
-      "existing_gates": ["fragmented feature browser checks"],
-      "missing_assertion": "No all-route target-size evidence artifact exists.",
+      "existing_gates": ["Quality U10A Baseline", "fragmented feature browser checks"],
+      "missing_assertion": "U10E must add an all-route target-size acceptance gate and record explicit exceptions.",
       "next_phase": "U10E"
     }
   ],
   "browser_evidence": {
     "schema": "viewloom-quality-u10a-browser-v1",
+    "workflow": "Quality U10A Baseline",
+    "run_id": 28356915812,
     "artifact": "quality-u10a-baseline",
-    "required_scenarios": [
-      "day-flow-accessible-name",
-      "channel-no-id-entry",
-      "battle-recommended-owner-divergence",
-      "battle-selected-time-coherence",
-      "mobile-target-measurement"
-    ]
+    "artifact_id": 7945707844,
+    "artifact_digest": "sha256:f19f3f24c84e587f6a0c04ab60a4675cdb5e2ef073bdf220d9dd52c14e755f22",
+    "verified_head": "51c8883ebdc31334828cc345f6a938f17c20a29b",
+    "result": "pass",
+    "scenario_count": 8,
+    "mobile_target_scenarios": 18,
+    "mobile_widths": [390, 360],
+    "under_44_by_width": {
+      "390": 57,
+      "360": 57
+    },
+    "minimum_height_px": 34,
+    "horizontal_overflow_scenarios": 0
+  },
+  "companion_public_browser_audit": {
+    "workflow": "Public Browser Audit",
+    "run_id": 28356915810,
+    "artifact": "public-browser-audit-p8b",
+    "artifact_id": 7945757041,
+    "artifact_digest": "sha256:d06187c96e4ea301c52f6f3812c5a5ea5e4956037ed9c17cfcbf29c1514f5986",
+    "verified_head": "51c8883ebdc31334828cc345f6a938f17c20a29b",
+    "result": "pass",
+    "owned_routes": 21,
+    "viewports": 4,
+    "production_scenarios": 84,
+    "missing_surface_probes": 5,
+    "history_scenarios": 10,
+    "p0": 0
   }
 }
