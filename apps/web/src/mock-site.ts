@@ -1,27 +1,10 @@
 import './dayflow-responsive.css'
 import './features/heatmap-page/layout-mode.css'
 import './kick-coverage-ui'
+import { installSharedShell, setSharedShellStatus } from './shared-shell'
 
 (() => {
-  ensureChangelogLinks()
-
-  const menu = document.querySelector<HTMLButtonElement>('[data-mobile-menu]')
-  if (menu) menu.addEventListener('click', () => {
-    const nav = document.querySelector<HTMLElement>('.global-nav')
-    if (!nav) return
-    const open = nav.style.display !== 'flex'
-    nav.style.display = open ? 'flex' : 'none'
-    nav.style.position = 'absolute'
-    nav.style.top = '50px'
-    nav.style.left = '14px'
-    nav.style.right = '14px'
-    nav.style.padding = '12px'
-    nav.style.background = '#07111f'
-    nav.style.border = '1px solid rgba(255,255,255,.17)'
-    nav.style.flexDirection = open ? 'column' : ''
-    menu.setAttribute('aria-expanded', String(open))
-    menu.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation')
-  })
+  installSharedShell()
 
   document.querySelectorAll('[data-toggle-group]').forEach(group => {
     group.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
@@ -61,9 +44,10 @@ async function hydrateLiveStatus(): Promise<void> {
   const results = await Promise.all(providers.map(async (key) => [key, await fetchStatus(key)] as const))
   for (const [key, payload] of results) updateProviderCopy(key, payload)
   const freshCount = results.filter(([, payload]) => String(payload?.state ?? '').toLowerCase() === 'fresh').length
-  const status = freshCount === results.length ? 'Collectors healthy' : freshCount > 0 ? 'Collectors partially fresh' : 'Collector status unavailable'
+  const text = freshCount === results.length ? 'Collectors healthy' : freshCount > 0 ? 'Collectors partially fresh' : 'Collector status unavailable'
+  const state = freshCount === results.length ? 'fresh' : freshCount > 0 ? 'partial' : 'unavailable'
   document.querySelectorAll<HTMLElement>('.status-inline').forEach((node) => {
-    node.innerHTML = `<span class="dot"></span>${escapeText(status)} · 5m cadence`
+    setSharedShellStatus(node, `${text} · 5m cadence`, state)
   })
 }
 
@@ -105,26 +89,6 @@ function updateProviderCopy(key: 'twitch' | 'kick', payload: StatusPayload | nul
       signal.insertAdjacentHTML('beforeend', `<div class="signal"><time>${escapeText(name)}</time><strong>${escapeText(name)} collector state: ${escapeText(payload?.state ? labelText(payload.state) : 'Unavailable')}.</strong><span>${escapeText(observed)} observed streams</span></div>`)
     }
   }
-}
-
-function ensureChangelogLinks(): void {
-  document.querySelectorAll<HTMLElement>('.global-nav').forEach((nav) => {
-    if (nav.querySelector('a[href="/changelog/"]')) return
-    const link = document.createElement('a')
-    link.href = '/changelog/'
-    link.textContent = 'Changelog'
-    if (window.location.pathname.startsWith('/changelog/')) link.setAttribute('aria-current', 'page')
-    const before = nav.querySelector('a[href="/about/"]')
-    nav.insertBefore(link, before)
-  })
-
-  document.querySelectorAll<HTMLElement>('.footer nav').forEach((nav) => {
-    if (nav.querySelector('a[href="/changelog/"]')) return
-    const link = document.createElement('a')
-    link.href = '/changelog/'
-    link.textContent = 'Changelog'
-    nav.insertBefore(link, nav.firstElementChild)
-  })
 }
 
 function setStatAfterLabel(root: ParentNode, label: string, value: string): void {
