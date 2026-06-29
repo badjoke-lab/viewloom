@@ -1,40 +1,35 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 3.9
+Version: 4.0
 Last updated: 2026-06-29
-Current phase: Phase 10 — U10C visualization active
-Current implementation branch: `work-quality-u10c-visualization`
-Exact next implementation branch after U10C: `work-quality-u10d-analysis-coherence`
+Current phase: Phase 10 — U10C closeout
+Current implementation branch: none
+Exact next implementation branch: `work-quality-u10d-analysis-coherence`
 U10D branch created: no
 Completed U10A implementation: PR #454
 Completed U10A canonical closeout: PR #455
 Completed U10B implementation: PR #456
 Completed U10B canonical closeout: PR #457
-
-## Current program state
+Completed U10C implementation: PR #458
+U10C canonical closeout: PR #459
 
 ```text
 Local Watchlist v1 complete PR #425
-Phase 8 inventory/browser audit complete PR #428
-Phase 9 History P1 repair complete
+Phase 8 complete PR #428
+Phase 9 complete
 Phase 10 U10A complete PR #454
 Phase 10 U10B complete PR #456
-Phase 10 U10C active
-Phase 10 U10D next after U10C closeout
+Phase 10 U10C complete PR #458
+Phase 10 U10D next
 Phase 11–15 queued
 Phase 16 not approved
 ```
 
-U10C owns the shared visualization reading guide, metric/unit synchronization, UTC context, normalized state presentation, stage semantics, and an eight-route browser matrix.
-
-## Approved sequence
+Permanent U10C record: `docs/audits/cross-site-quality-u10c-visualization.json`.
 
 ```text
-U10A work-quality-u10a-baseline complete PR #454
-U10B work-quality-u10b-shell complete PR #456
-U10C work-quality-u10c-visualization active
-U10D work-quality-u10d-analysis-coherence next
+U10D work-quality-u10d-analysis-coherence
 U10E work-quality-u10e-responsive
 U10F work-quality-u10f-readiness
 U10G work-quality-u10g-architecture
@@ -47,7 +42,3 @@ O11E work-operations-o11e-server-types
 O11F work-operations-o11f-runbooks
 O11G work-operations-o11g-acceptance
 ```
-
-Active note: `docs/work-in-progress/u10c-visualization.md`.
-
-After each merge, update canonical state, issue the full report, name the next branch, and stop.
