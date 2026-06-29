@@ -18,6 +18,7 @@ const files = [
   'index.html', 'twitch/index.html', 'kick/index.html',
   'src/portal-page.ts', 'src/portal-page.css',
   'src/provider-home.ts', 'src/provider-home-shell.ts', 'src/provider-home-data.ts', 'src/provider-home.css',
+  'src/shared-shell.ts', 'src/shared-shell.css',
   'functions/_home/model.ts', 'functions/api/twitch-home.ts', 'functions/api/kick-home.ts',
   'fixtures/home-payload-states.json', 'docs/home-qa-contract.md', 'docs/home-payload-contract.md', 'docs/platform-home-repair-plan.md',
 ]
@@ -139,14 +140,31 @@ if (existsSync(join(root, 'src/provider-home-data.ts'))) {
 if (existsSync(join(root, 'src/provider-home.ts'))) {
   const source = read('src/provider-home.ts')
   for (const fragment of [
-    'installMobileNavigation',
+    'installSharedShell, setSharedShellStatus, syncSharedShellStatus',
+    'installSharedShell()',
     "document.body.dataset.homeState === 'partial'",
     "document.body.dataset.homeState = 'fresh'",
-    "menu.setAttribute('aria-expanded'",
+    'setSharedShellStatus(status',
+    'syncSharedShellStatus(status)',
   ]) need('src/provider-home.ts', source, fragment)
+  forbid('src/provider-home.ts', source, 'duplicate mobile navigation owner', /installMobileNavigation|menu\.setAttribute\('aria-expanded'/)
   forbid('src/provider-home.ts', source, 'internal provider signal section', /Latest provider signals/)
   forbid('src/provider-home.ts', source, 'internal update section', /ViewLoom updates/)
   forbid('src/provider-home.ts', source, 'unofficial badge row', /provider-home-badge/)
+}
+
+if (existsSync(join(root, 'src/shared-shell.ts'))) {
+  const source = read('src/shared-shell.ts')
+  for (const fragment of [
+    'export function installSharedShell()',
+    "nav.id = 'viewloom-global-navigation'",
+    "menu.setAttribute('aria-expanded'",
+    "event.key !== 'Escape'",
+    'export function setSharedShellStatus',
+    'export function syncSharedShellStatus',
+    'Twitch observation',
+    'Kick observation',
+  ]) need('src/shared-shell.ts', source, fragment)
 }
 
 if (existsSync(join(root, 'src/provider-home.css'))) {
@@ -155,13 +173,21 @@ if (existsSync(join(root, 'src/provider-home.css'))) {
     '.provider-overview',
     'align-items: start',
     '.home-table--no-context .home-live-context',
-    '.status-inline[data-state="stale"] .dot',
-    '.status-inline[data-state="error"] .dot',
-    '.global-nav.is-open',
     '@media (max-width: 760px)',
     '@media (max-width: 520px)',
   ]) need('src/provider-home.css', source, fragment)
   forbid('src/provider-home.css', source, 'forced equal-height Home surface', /\.home-surface\s*\{[^}]*height:\s*100%/s)
+}
+
+if (existsSync(join(root, 'src/shared-shell.css'))) {
+  const source = read('src/shared-shell.css')
+  for (const fragment of [
+    '.global-nav.is-open',
+    '.status-inline[data-state="fresh"] .dot',
+    '.status-inline[data-state="partial"] .dot',
+    '.status-inline[data-state="unavailable"] .dot',
+    '@media(max-width:760px)',
+  ]) need('src/shared-shell.css', source, fragment)
 }
 
 if (existsSync(join(root, 'functions/api/twitch-home.ts'))) {
@@ -251,4 +277,4 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log('ViewLoom Home QA verification passed for the Portal briefing and data-connected provider pages.')
+console.log('ViewLoom Home QA verification passed for the Portal briefing, data-connected provider pages, and shared shell ownership.')
