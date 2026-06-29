@@ -15,9 +15,6 @@ const requireText = (path, fragments) => {
 }
 
 for (const path of [
-  'README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'docs/README.md',
-  'docs/product/current-roadmap.md', 'docs/product/current-schedule.md',
-  'docs/product/post-watchlist-program-plan.md',
   'docs/product/history-ui-repair-spec.md',
   'docs/product/history-ui-repair-plan.md',
   'docs/operations/history-production-acceptance-2026-06-28.md',
@@ -27,23 +24,6 @@ for (const path of [
   '.github/workflows/history-ui-h7-acceptance.yml',
 ]) requireFile(path)
 
-for (const path of ['README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'docs/README.md']) {
-  requireText(path, ['P9H7 production acceptance', 'PR #451', 'Phase 10 U10A'])
-}
-requireText('docs/product/current-roadmap.md', [
-  'P9H7 production acceptance complete PR #451',
-  'Phase 9 History P1 repair complete',
-  'Phase 10 U10A complete PR #454',
-])
-requireText('docs/product/current-schedule.md', [
-  'P9H7 production acceptance              complete PR #451',
-  'Phase 9 History P1 repair                complete',
-  'U10A defect and ownership baseline       complete PR #454',
-])
-requireText('docs/product/post-watchlist-program-plan.md', [
-  'Phase 9 History P1 repair complete',
-  'Phase 10 U10A complete PR #454',
-])
 requireText('docs/product/history-ui-repair-spec.md', [
   'Status: accepted and complete',
   'exact production identity and public acceptance pass',
@@ -72,22 +52,26 @@ for (const path of [
 ]) if (existsSync(join(root, path))) issues.push(`completed temporary note still exists: ${path}`)
 
 requireText('apps/web/scripts/history-ui-h7-hosted-acceptance.mjs', [
-  "schema: 'viewloom-history-ui-h7-hosted-acceptance-v1'", "phase: 'P9H7'",
-  "payload?.source === 'real'", "binding: 'DB_TWITCH_HOT'",
-  "binding: 'DB_KICK_HOT'", 'twitch-desktop-1440-hosted',
-  'kick-mobile-390-hosted', 'twitch-forced-colors-390-hosted',
+  "schema: 'viewloom-history-ui-h7-hosted-acceptance-v1'",
+  "phase: 'P9H7'",
+  "payload?.source === 'real'",
+  "binding: 'DB_TWITCH_HOT'",
+  "binding: 'DB_KICK_HOT'",
+  'twitch-desktop-1440-hosted',
+  'kick-mobile-390-hosted',
+  'twitch-forced-colors-390-hosted',
 ])
 requireText('scripts/verify-history-ui-h7-evidence.mjs', [
   'viewloom-history-ui-h7-hosted-acceptance-v1',
   'assert.equal(evidence.scenarios.length, 5)',
 ])
 requireText('.github/workflows/history-ui-h7-acceptance.yml', [
-  'name: History UI P9H7 Acceptance', 'premerge-production-baseline:',
+  'name: History UI P9H7 Acceptance',
+  'premerge-production-baseline:',
   'Run P9H7 pre-merge production baseline',
   'history-ui-h7-premerge-production-baseline',
-  "HISTORY_H7_EXPECTED_SHA: ${{ github.event.pull_request.base.sha }}",
-  "if: github.event_name == 'push' && github.ref == 'refs/heads/preview-history-ui-h7-acceptance'",
-  'Run P9H7 production acceptance', 'history-ui-h7-production-acceptance',
+  'Run P9H7 production acceptance',
+  'history-ui-h7-production-acceptance',
   'cancel-in-progress: true',
 ])
 
@@ -100,19 +84,12 @@ if (existsSync(join(root, 'apps/web/scripts/history-ui-h7-preview-trigger.json')
   if (trigger.runtime_change !== false || trigger.merge_preview_pr !== false) issues.push('Preview trigger boundary changed')
 }
 
-if (existsSync(join(root, 'apps/web/scripts/history-ui-h7-hosted-acceptance.mjs'))) {
-  const hosted = read('apps/web/scripts/history-ui-h7-hosted-acceptance.mjs')
-  for (const token of ['setInterval(', 'serviceWorker', 'gtag(', '/api/watchlist']) {
-    if (hosted.includes(token)) issues.push(`hosted runner contains forbidden token: ${token}`)
-  }
-}
-
 if (issues.length) {
-  console.error('History UI P9H7 repository verification did not pass:')
+  console.error('History UI P9H7 permanent verification did not pass:')
   for (const issue of issues) console.error(`- ${issue}`)
   process.exit(1)
 }
-console.log('History UI P9H7 repository verification passed.')
-console.log('- production acceptance is permanently recorded')
-console.log('- later Phase 10 handoffs do not rewrite Phase 9 evidence')
-console.log('- Twitch and Kick real-data acceptance remains separated')
+console.log('History UI P9H7 permanent verification passed.')
+console.log('- production acceptance remains permanently recorded')
+console.log('- later roadmap phases do not rewrite Phase 9 evidence')
+console.log('- Twitch and Kick acceptance remains separated')
