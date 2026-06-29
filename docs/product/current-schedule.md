@@ -14,21 +14,21 @@ U10A defect and ownership baseline       complete PR #454
 U10A canonical closeout                  complete PR #455
 U10B shared shell                         complete PR #456
 U10B canonical closeout                  complete PR #457
-Active implementation branch             none
-Exact next branch                        work-quality-u10c-visualization
-U10C branch created                       no
+U10C visualization                       active
+Active implementation branch             work-quality-u10c-visualization
+Exact next branch after U10C              work-quality-u10d-analysis-coherence
+U10D branch created                       no
 ```
 
-## U10B acceptance
+## U10C acceptance target
 
 ```text
-Built public routes: 20
-Viewports: 1440 and 390
-Browser scenarios: 40
-Authoritative runtime: apps/web/src/shared-shell.ts
-Permanent record: docs/audits/cross-site-quality-u10b-shared-shell.json
-Implementation workflow/artifact: 28369803589 / 7950954207
-Public Browser workflow/artifact: 28369803633 / 7951026988
+Visualization routes: 8
+Providers: Twitch and Kick, separated
+Features: Heatmap / Day Flow / Battle Lines / History
+Required widths: 1440 / 820 / 390 / 360
+Browser scenarios: 32
+Shared guide cells: Scale / Time / Selection / Detail / State
 ```
 
 ## Exact sequence
@@ -36,8 +36,8 @@ Public Browser workflow/artifact: 28369803633 / 7951026988
 ```text
 U10A work-quality-u10a-baseline          complete PR #454
 U10B work-quality-u10b-shell             complete PR #456
-U10C work-quality-u10c-visualization     exact next after explicit continuation
-U10D work-quality-u10d-analysis-coherence queued
+U10C work-quality-u10c-visualization     active
+U10D work-quality-u10d-analysis-coherence exact next after U10C merge and closeout
 U10E work-quality-u10e-responsive        queued
 U10F work-quality-u10f-readiness         queued
 U10G work-quality-u10g-architecture      queued

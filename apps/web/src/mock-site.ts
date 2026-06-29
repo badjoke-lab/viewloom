@@ -1,6 +1,7 @@
 import './dayflow-responsive.css'
 import './features/heatmap-page/layout-mode.css'
 import './kick-coverage-ui'
+import './visualization-grammar-entry'
 import { installSharedShell, setSharedShellStatus } from './shared-shell'
 
 (() => {

@@ -25,11 +25,12 @@ Phase 10 U10A quality baseline complete through PR #454
 U10A canonical closeout complete through PR #455
 Phase 10 U10B shared shell complete through PR #456
 U10B canonical closeout complete through PR #457
-Active implementation branch: none
-Exact next implementation branch: work-quality-u10c-visualization
-U10C branch created: no
+Phase 10 U10C visualization active
+Active implementation branch: work-quality-u10c-visualization
+Exact next implementation branch after U10C: work-quality-u10d-analysis-coherence
+U10D branch created: no
 ```
 
-Permanent U10B authority: `docs/audits/cross-site-quality-u10b-shared-shell.json`.
+Active authority: `docs/work-in-progress/u10c-visualization.md`.
 
-Keep Twitch and Kick routes, APIs, storage, rankings, exports, locales, and coverage claims separated. Do not start U10C or Phase 11–16 without explicit continuation. No Phase 16 feature is approved. After every merge, issue the full merge report and stop.
+U10C may change only the shared visualization reading guide, metric/unit/time context, state presentation, stage semantics, and their browser gates. Keep Twitch and Kick routes, APIs, storage, rankings, exports, locales, and coverage claims separated. Do not start U10D or Phase 11–16 in parallel. No Phase 16 feature is approved. After every merge, issue the full merge report and stop.

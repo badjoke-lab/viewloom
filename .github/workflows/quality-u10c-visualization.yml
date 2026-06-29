@@ -1,0 +1,127 @@
+name: Quality U10C Visualization
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/README.md'
+      - 'docs/work-in-progress/u10c-visualization.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/product/cross-site-quality-remediation-plan.md'
+      - 'apps/web/src/visualization-grammar.ts'
+      - 'apps/web/src/visualization-grammar.css'
+      - 'apps/web/src/visualization-grammar-entry.ts'
+      - 'apps/web/src/mock-site.ts'
+      - 'apps/web/scripts/quality-u10c-visualization-browser.mjs'
+      - 'apps/web/scripts/quality-u10c-state-settle-browser.mjs'
+      - 'scripts/verify-quality-u10c-visualization.mjs'
+      - 'scripts/verify-quality-u10c-browser-evidence.mjs'
+      - 'scripts/verify-quality-u10c-state-evidence.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-quality-u10b-shell.mjs'
+      - 'scripts/verify-public-browser-audit-current.mjs'
+      - '.github/workflows/quality-u10c-visualization.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visualization:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      QUALITY_U10C_BASE_URL: http://127.0.0.1:4173
+      QUALITY_U10C_ARTIFACT_DIR: /tmp/quality-u10c
+      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Verify U10C repository contract
+        shell: bash
+        run: |
+          mkdir -p "$QUALITY_U10C_ARTIFACT_DIR"
+          set -o pipefail
+          node scripts/verify-quality-u10c-visualization.mjs 2>&1 | tee "$QUALITY_U10C_ARTIFACT_DIR/repository-verification.log"
+
+      - name: Verify retained U10B shell
+        run: node scripts/verify-quality-u10b-shell.mjs
+
+      - name: Verify retained U10A baseline
+        run: node scripts/verify-quality-u10a-baseline.mjs
+
+      - name: Verify retained History acceptance
+        run: node scripts/verify-history-ui-h7-acceptance.mjs
+
+      - name: Verify Watchlist contracts
+        run: pnpm --filter @viewloom/web verify:watchlist-contracts
+
+      - name: Typecheck web application
+        run: pnpm --filter @viewloom/web typecheck:app
+
+      - name: Build web application
+        run: pnpm build:web
+
+      - name: Start local preview
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/quality-u10c-preview.log 2>&1 &
+          for attempt in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50; do
+            if curl --silent --fail http://127.0.0.1:4173/twitch/heatmap/ > /dev/null && curl --silent --fail http://127.0.0.1:4173/kick/day-flow/ > /dev/null && curl --silent --fail http://127.0.0.1:4173/twitch/history/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/quality-u10c-preview.log
+          exit 1
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run U10C visualization browser acceptance
+        working-directory: apps/web
+        run: node scripts/quality-u10c-visualization-browser.mjs
+
+      - name: Verify U10C browser evidence
+        run: node scripts/verify-quality-u10c-browser-evidence.mjs
+
+      - name: Run U10C settled-state browser acceptance
+        working-directory: apps/web
+        run: node scripts/quality-u10c-state-settle-browser.mjs
+
+      - name: Verify U10C settled-state evidence
+        run: node scripts/verify-quality-u10c-state-evidence.mjs
+
+      - name: Upload U10C visualization artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-u10c-visualization
+          path: |
+            /tmp/quality-u10c/**
+            /tmp/quality-u10c-preview.log
+          if-no-files-found: warn
