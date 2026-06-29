@@ -16,19 +16,13 @@ P9H7 production acceptance complete through PR #451
 P9H7 canonical closeout complete through PR #453
 Phase 10 U10A quality baseline complete through PR #454
 U10A canonical closeout complete through PR #455
-Active implementation branch: none
-Exact next implementation branch: work-quality-u10b-shell
-U10B branch created: no
+Phase 10 U10B shared shell active
+Active implementation branch: work-quality-u10b-shell
+Exact next implementation branch after closeout: work-quality-u10c-visualization
+U10C branch created: no
 ```
 
-Permanent U10A evidence:
-
-```text
-docs/audits/cross-site-quality-u10a-baseline.json
-docs/audits/cross-site-quality-u10a-owner-map.json
-```
-
-The U10A temporary working note is absent after closeout. Permanent History evidence remains `docs/operations/history-production-acceptance-2026-06-28.md`.
+The active working note is `docs/work-in-progress/u10b-shared-shell.md`. U10B is limited to the common shell and its acceptance gates.
 
 ## Standard workflow
 
@@ -38,11 +32,11 @@ canonical documents
   -> confirm branch and entry condition
   -> work branch
   -> targeted checks
-  -> evidence review
+  -> browser evidence
   -> optional preview validation
   -> merge to main
-  -> update permanent documents
+  -> canonical closeout
   -> full report and stop
 ```
 
-Ordinary development uses `work-*`; deliberate runtime validation uses `preview-*`; `main` is production. Keep Twitch and Kick separated. Start U10B only after explicit continuation.
+Ordinary development uses `work-*`; deliberate runtime validation uses `preview-*`; `main` is production. Keep Twitch and Kick separated. Do not create U10C before U10B closeout and explicit continuation.
