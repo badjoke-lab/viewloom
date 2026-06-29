@@ -28,6 +28,26 @@ scripts/verify-quality-u10a-baseline.mjs
 .github/workflows/quality-u10a-baseline.yml
 ```
 
+## Historical verifier index
+
+These strings identify completed evidence only. They are not current execution state.
+
+```text
+Phase 8 P8B   complete PR #428
+Phase 9 P9H1  complete PR #434
+Phase 9 P9H3 complete PR #439
+Phase 9 P9H4A complete PR #441
+P9H4A canonical closeout complete PR #442
+Phase 9 P9H5 complete PR #447
+P9H5 canonical closeout complete PR #448
+Phase 9 P9H6 complete PR #449
+P9H6 canonical closeout complete PR #450
+Phase 9 P9H7 production acceptance complete PR #451
+Active implementation branch: none
+Exact next implementation branch: work-quality-u10a-baseline
+U10A branch created: no
+```
+
 ## Accepted History production evidence
 
 ```text
