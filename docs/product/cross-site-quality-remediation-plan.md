@@ -2,11 +2,11 @@
 
 Status: active implementation plan
 Version: 1.6
-Last updated: 2026-06-29
+Last updated: 2026-06-30
 Permanent specification: `cross-site-quality-remediation-spec.md`
 Current branch: none
 Completed phase: U10C through PR #458
-Canonical closeout: PR #459
+Canonical closeout complete: PR #459
 Exact next branch: `work-quality-u10d-analysis-coherence`
 U10D branch created: no
 
