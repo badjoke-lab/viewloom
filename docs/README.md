@@ -36,4 +36,10 @@ U10E branch created                             no
 - U10C permanent visualization record: `audits/cross-site-quality-u10c-visualization.json`
 - Permanent History acceptance: `operations/history-production-acceptance-2026-06-28.md`
 
+## Permanent Watchlist records
+
+- `product/local-watchlist-spec.md`
+- `product/watchlist-v1-implementation-plan.md`
+- `operations/watchlist-production-acceptance-2026-06-25.md`
+
 The U10C handoff fields are closeout-time snapshots. Current execution state is owned by this index, the roadmap, and the schedule.
