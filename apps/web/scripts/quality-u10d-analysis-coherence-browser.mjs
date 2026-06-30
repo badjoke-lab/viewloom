@@ -52,7 +52,7 @@ async function auditDayFlowDefault(provider, width) {
   assert.equal(initial.shellSplit, false, `${provider} ${width}: Split class remained`)
   assert.equal(initial.widePressed, 'true', `${provider} ${width}: Wide control is not pressed`)
   assert.equal(initial.splitPressed, 'false', `${provider} ${width}: Split control is pressed`)
-  assert.equal(initial.urlLayout, 'wide', `${provider} ${width}: URL did not normalize to Wide`)
+  assert.equal(initial.urlLayout, null, `${provider} ${width}: clean default wrote a URL preference`)
   assert.equal(initial.storedLayout, null, `${provider} ${width}: default visit wrote a storage preference`)
 
   let actionRefetched = false
