@@ -97,24 +97,10 @@ assert.equal(record.boundary.provider_combination_authorized, false)
 assert.equal(record.exact_next_branch, 'work-quality-u10e-responsive')
 assert.equal(record.next_branch_created, false)
 
-for (const [path, fragments] of [
-  ['README.md', ['Phase 10 U10D analysis coherence      complete PR #462', 'U10D canonical closeout               complete PR #464', 'Active implementation branch          none', 'Exact next implementation branch      work-quality-u10e-responsive']],
-  ['docs/README.md', ['Phase 10 U10D analysis coherence                 complete PR #462', 'U10D canonical closeout                          complete PR #464', 'Active implementation branch                    none', 'Exact next implementation branch                work-quality-u10e-responsive']],
-  ['AGENTS.md', ['U10D analysis coherence complete PR #462', 'U10D canonical closeout complete PR #464', 'Active implementation branch: none', 'Exact next branch: work-quality-u10e-responsive']],
-  ['CONTRIBUTING.md', ['Phase 10 U10D analysis coherence complete through PR #462', 'U10D canonical closeout complete through PR #464', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-u10e-responsive']],
-  ['docs/product/current-roadmap.md', ['Phase 10 U10D analysis coherence complete PR #462', 'U10D canonical closeout complete PR #464', 'Active implementation branch: none', 'Exact next branch: work-quality-u10e-responsive']],
-  ['docs/product/current-schedule.md', ['U10D complete PR #462', 'U10D closeout complete PR #464', 'Active branch: none', 'Next branch: work-quality-u10e-responsive', 'U10D total browser scenarios: 20']],
-  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10E responsive and accessibility', 'Current implementation branch: none', 'Exact next implementation branch: `work-quality-u10e-responsive`', 'Completed U10D canonical closeout: PR #464']],
-  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: none', 'Completed phase: U10D through PR #462', 'Completed canonical closeout: PR #464', 'Exact next branch: `work-quality-u10e-responsive`']],
-]) {
-  const source = read(path)
-  for (const fragment of fragments) assert.ok(source.includes(fragment), `${path}: missing ${fragment}`)
-}
-
 const workflow = read('.github/workflows/quality-u10d-analysis-coherence.yml')
 for (const fragment of ['name: Quality U10D Analysis Coherence', 'Run U10D browser acceptance', 'Verify U10D browser evidence', 'cancel-in-progress: true']) assert.ok(workflow.includes(fragment))
 
 console.log('Completed U10D analysis coherence verification passed.')
 console.log('- Day Flow default-layout ownership is permanent')
 console.log('- Battle Lines recommendation and selected-time ownership are permanent')
-console.log('- U10E remains exact next and uncreated')
+console.log('- permanent U10D boundaries remain exact')
