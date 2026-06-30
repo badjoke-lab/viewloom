@@ -5,6 +5,8 @@ Version: 1.8
 Last updated: 2026-07-01
 Permanent specification: `cross-site-quality-remediation-spec.md`
 Current branch: none
+Completed phase: U10C through PR #458
+Completed canonical closeout: U10C through PR #459
 Completed phase: U10D through PR #462
 Completed canonical closeout: PR #464
 Active phase: none
