@@ -60,7 +60,10 @@ try {
         }
         const nameOf = (node) => {
           if (!(node instanceof HTMLElement)) return ''
-          return (node.getAttribute('aria-label') || node.getAttribute('title') || node.textContent || (node instanceof HTMLInputElement ? node.name || node.placeholder : '') || '').trim().replace(/\s+/g, ' ')
+          const label = 'labels' in node && node.labels
+            ? [...node.labels].map((item) => item.textContent?.trim() ?? '').filter(Boolean).join(' ')
+            : ''
+          return (node.getAttribute('aria-label') || label || node.getAttribute('title') || node.textContent || (node instanceof HTMLInputElement ? node.name || node.placeholder : '') || '').trim().replace(/\s+/g, ' ')
         }
         const selector = 'button, a.button, input:not([type="hidden"]), select, textarea, [role="button"]'
         const targets = [...document.querySelectorAll(selector)].filter(visible).map((node) => {
