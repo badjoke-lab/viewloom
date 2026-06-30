@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  U10D_RUNNER_REVISION: '9'
+  U10D_RUNNER_REVISION: '10'
 
 jobs:
   patch:
@@ -26,7 +26,7 @@ jobs:
         with:
           ref: work-quality-u10d-analysis-coherence
           fetch-depth: 1
-      - name: Fix Day Flow URL ownership
+      - name: Synchronize Battle Lines controls
         shell: bash
         run: |
           python - <<'PY'
@@ -41,42 +41,29 @@ jobs:
               target.write_text(source.replace(old, new, 1), encoding='utf-8')
 
           replace_once(
-              'apps/web/src/live/day-flow-layout-summary.ts',
-              "  applyLayout(true)\n}\n\nfunction readInitialLayout(): LayoutMode {",
-              "  applyLayout(false)\n}\n\nfunction readInitialLayout(): LayoutMode {",
-          )
-
-          replace_once(
-              'apps/web/src/live/day-flow-current-shell-entry.ts',
-              "function syncUrl(payload?: DayFlowPayload): void {\n  const params = new URLSearchParams()\n  params.set('metric', state.metric)",
-              "function syncUrl(payload?: DayFlowPayload): void {\n  const current = new URLSearchParams(window.location.search)\n  const params = new URLSearchParams()\n  const layout = current.get('layout')\n  if (layout === 'split' || layout === 'wide') params.set('layout', layout)\n  else if (layout === 'theater') params.set('layout', 'wide')\n  params.set('metric', state.metric)",
-          )
-
-          replace_once(
-              'apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs',
-              "  assert.equal(snapshot.urlLayout, 'split')\n  assert.equal(snapshot.storedLayout, 'split')\n  assert.equal(crossRequests.value, 0)\n  evidence.scenarios.push({ id: `${provider}-day-flow-stored-split-1440`",
-              "  assert.equal(snapshot.urlLayout, null)\n  assert.equal(snapshot.storedLayout, 'split')\n  assert.equal(crossRequests.value, 0)\n  evidence.scenarios.push({ id: `${provider}-day-flow-stored-split-1440`",
+              'apps/web/src/live/battle-lines-current-shell-entry.ts',
+              "function renderAll(): void {\n  if (!payload) return\n  renderHeadFacts(payload)",
+              "function renderAll(): void {\n  if (!payload) return\n  syncControls()\n  renderHeadFacts(payload)",
           )
 
           verifier = Path('scripts/verify-quality-u10d-analysis-coherence.mjs')
           source = verifier.read_text(encoding='utf-8')
-          anchor = "assert.ok(dayFlow.includes('shell.dataset.dayflowLayoutRequested = requestedLayout'))\n"
-          addition = "assert.ok(dayFlow.includes('applyLayout(false)'))\nconst dayFlowShell = read('apps/web/src/live/day-flow-current-shell-entry.ts')\nassert.ok(dayFlowShell.includes(\"const layout = current.get('layout')\"))\nassert.ok(dayFlowShell.includes(\"if (layout === 'split' || layout === 'wide') params.set('layout', layout)\"))\nassert.ok(dayFlowShell.includes(\"else if (layout === 'theater') params.set('layout', 'wide')\"))\n"
+          anchor = "assert.equal(battle.includes('new MutationObserver'), false)\n"
+          addition = "assert.ok(battle.includes('function renderAll(): void {\\n  if (!payload) return\\n  syncControls()'))\n"
           if source.count(anchor) != 1:
               raise SystemExit(f'verifier anchor count: {source.count(anchor)}')
           verifier.write_text(source.replace(anchor, anchor + addition, 1), encoding='utf-8')
           PY
-      - name: Verify U10D URL owner patch
+      - name: Verify Battle Lines control patch
         run: |
-          node --check apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs
           node --check scripts/verify-quality-u10d-analysis-coherence.mjs
           node scripts/verify-development-policy.mjs
           node scripts/verify-quality-u10d-analysis-coherence.mjs
           git diff --check
-      - name: Commit URL owner fix
+      - name: Commit control synchronization
         run: |
           git config user.name badjoke-lab
           git config user.email 227710934+badjoke-lab@users.noreply.github.com
-          git add apps/web/src/live/day-flow-layout-summary.ts apps/web/src/live/day-flow-current-shell-entry.ts apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs scripts/verify-quality-u10d-analysis-coherence.mjs
-          git commit -m "Align U10D Day Flow URL ownership"
+          git add apps/web/src/live/battle-lines-current-shell-entry.ts scripts/verify-quality-u10d-analysis-coherence.mjs
+          git commit -m "Synchronize U10D Battle Lines controls"
           git push origin HEAD:work-quality-u10d-analysis-coherence
