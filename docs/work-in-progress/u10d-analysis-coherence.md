@@ -9,7 +9,11 @@ Exact next branch after U10D: `work-quality-u10e-responsive`
 
 Day Flow receives one initial layout owner. Battle Lines uses `recommendedBattle` as its recommendation owner and keeps summary, chart, inspector, and public time state aligned.
 
-Clean Day Flow visits use Wide while leaving the URL and local preference unset. Explicit Split choices remain preserved.
+Day Flow layout state follows three paths:
+
+- a clean visit uses Wide without creating a URL or local preference;
+- an explicit layout query remains in the URL;
+- a stored preference remains in local storage without creating a query value.
 
 ## Browser matrix
 
