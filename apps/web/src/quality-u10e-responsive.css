@@ -1,0 +1,30 @@
+:where(button,a.button,[role="button"],input,select,textarea){touch-action:manipulation}
+:where(button,a.button,[role="button"],input,select,textarea):focus-visible{outline:3px solid var(--accent);outline-offset:3px;box-shadow:0 0 0 2px var(--bg-deep)}
+:where(.toolbar,.battle-controls,.channel-profile-controls,.watchlist-controls) :where(button,a.button,input,select,textarea){max-width:100%}
+:where(.toolbar-label,.battle-control>span,.watchlist-control-label,.channel-profile-feedback,.coverage-note,.notice){overflow-wrap:anywhere}
+
+@media(max-width:760px){
+  :where(button,a.button,[role="button"],input:not([type="hidden"]),select,textarea){min-height:44px}
+  :where(a.button,button.button,[role="button"]){display:inline-flex;align-items:center;justify-content:center}
+  .mobile-menu{min-height:44px;min-width:76px}
+  .control-group button,.control-group input,.control-group select{min-height:44px}
+  .dayflow-toolbar .control-group{max-width:100%;flex-wrap:wrap}
+  .dayflow-toolbar .control-group button{flex:1 1 auto}
+  .channel-profile-controls,.channel-profile-actions{align-items:stretch}
+  .channel-profile-actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .channel-profile-actions .button,[data-channel-copy-url],.history-selected-actions .button{min-height:48px;width:100%}
+  [data-watchlist-add],[data-watchlist-refresh],[data-watchlist-clear],[data-watchlist-reset],.watchlist-card__manage .button{min-height:48px}
+  .portal-provider-card__actions .button{min-height:48px}
+  .battle-actions button{min-height:44px}
+  .footer nav a{display:inline-flex;align-items:center;min-height:44px;padding-block:6px}
+}
+
+@media(prefers-contrast:more){
+  :where(button,a.button,[role="button"],input,select,textarea){border-color:currentColor}
+  :where(button,a.button,[role="button"],input,select,textarea):focus-visible{outline-width:4px;box-shadow:none}
+}
+
+@media(forced-colors:active){
+  :where(button,a.button,[role="button"],input,select,textarea):focus-visible{outline:3px solid Highlight;outline-offset:3px;box-shadow:none}
+  :where(button,a.button,[role="button"]){forced-color-adjust:auto}
+}
