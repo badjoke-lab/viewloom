@@ -68,7 +68,7 @@ function setupLayout(): void {
     applyLayout(false)
   })
 
-  applyLayout(true)
+  applyLayout(false)
 }
 
 function readInitialLayout(): LayoutMode {

@@ -108,7 +108,7 @@ async function auditDayFlowStoredSplit(provider) {
   assert.equal(snapshot.current, 'split')
   assert.equal(snapshot.requested, 'split')
   assert.equal(snapshot.splitPressed, 'true')
-  assert.equal(snapshot.urlLayout, 'split')
+  assert.equal(snapshot.urlLayout, null)
   assert.equal(snapshot.storedLayout, 'split')
   assert.equal(crossRequests.value, 0)
   evidence.scenarios.push({ id: `${provider}-day-flow-stored-split-1440`, feature: 'day-flow', provider, width: 1440, mode: 'stored-split', requests: requests.value, crossRequests: crossRequests.value, actionRefetched: false, snapshot })

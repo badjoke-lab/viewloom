@@ -702,7 +702,11 @@ function rangeLabel(payload: DayFlowPayload): string {
 }
 
 function syncUrl(payload?: DayFlowPayload): void {
+  const current = new URLSearchParams(window.location.search)
   const params = new URLSearchParams()
+  const layout = current.get('layout')
+  if (layout === 'split' || layout === 'wide') params.set('layout', layout)
+  else if (layout === 'theater') params.set('layout', 'wide')
   params.set('metric', state.metric)
   params.set('scope', state.scope)
   params.set('top', String(state.top))

@@ -30,6 +30,11 @@ for (const path of ['apps/web/twitch/day-flow/index.html', 'apps/web/kick/day-fl
 const dayFlow = read('apps/web/src/live/day-flow-layout-summary.ts')
 assert.ok(dayFlow.includes("return 'wide'\n}\n\nfunction applyLayout"))
 assert.ok(dayFlow.includes('shell.dataset.dayflowLayoutRequested = requestedLayout'))
+assert.ok(dayFlow.includes('applyLayout(false)'))
+const dayFlowShell = read('apps/web/src/live/day-flow-current-shell-entry.ts')
+assert.ok(dayFlowShell.includes("const layout = current.get('layout')"))
+assert.ok(dayFlowShell.includes("if (layout === 'split' || layout === 'wide') params.set('layout', layout)"))
+assert.ok(dayFlowShell.includes("else if (layout === 'theater') params.set('layout', 'wide')"))
 
 const battle = read('apps/web/src/live/battle-lines-current-shell-entry.ts')
 for (const fragment of [
