@@ -89,14 +89,6 @@ need('docs/operations/history-production-acceptance-2026-06-28.md', [
   'twitch-forced-colors-390-hosted', 'All passed with zero horizontal overflow.',
   'History Phase 9 is accepted in production.',
 ])
-need('docs/product/current-roadmap.md', [
-  'Phase 9 History P1 repair complete',
-  'Phase 10 U10A complete PR #454',
-])
-need('docs/product/current-schedule.md', [
-  'Phase 9 History P1 repair                complete',
-  'U10A defect and ownership baseline       complete PR #454',
-])
 need('.github/workflows/history-ui-h5-responsive.yml', [
   'name: History UI P9H5 Responsive', 'Verify P9H5 repository contract',
   'Run P9H5 responsive and accessibility acceptance',
@@ -115,4 +107,4 @@ if (issues.length) {
 }
 console.log('ViewLoom History P9H5 responsive verification passed.')
 console.log('- responsive and accessibility contracts remain protected')
-console.log('- later Phase 10 handoffs do not rewrite P9H5 evidence')
+console.log('- permanent History acceptance, not current roadmap wording, owns P9H5 completion')
