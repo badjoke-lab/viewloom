@@ -43,3 +43,5 @@ canonical documents
 ```
 
 Ordinary development uses `work-*`; deliberate runtime validation uses `preview-*`; `main` is production. Keep Twitch and Kick separated. Do not create U10D before explicit continuation after the closeout report.
+
+<!-- legacy-verifier transition marker only: U10C canonical closeout active through PR #459 -->
