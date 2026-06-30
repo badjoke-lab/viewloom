@@ -1,0 +1,53 @@
+name: U10D Isolated Runner
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/u10d-runner.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: u10d-isolated-runner
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout U10D implementation branch
+        uses: actions/checkout@v4
+        with:
+          ref: work-quality-u10d-analysis-coherence
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply guarded U10D patches
+        run: |
+          python scripts/u10d_patch_runtime.py
+          python scripts/u10d_patch_tests.py
+          python scripts/u10d_patch_finalize.py
+      - name: Remove branch-local bootstrap files
+        run: |
+          rm scripts/u10d_patch_runtime.py scripts/u10d_patch_tests.py scripts/u10d_patch_finalize.py
+          rm .github/workflows/u10d-bootstrap.yml
+      - name: Verify generated state
+        run: |
+          node --check apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs
+          node --check scripts/verify-quality-u10d-analysis-coherence.mjs
+          node --check scripts/verify-quality-u10d-browser-evidence.mjs
+          node scripts/verify-development-policy.mjs
+          node scripts/verify-quality-u10d-analysis-coherence.mjs
+          git diff --check
+      - name: Commit U10D implementation
+        run: |
+          git config user.name badjoke-lab
+          git config user.email 227710934+badjoke-lab@users.noreply.github.com
+          git add -A
+          git commit -m "Implement U10D analysis coherence"
+          git push origin HEAD:work-quality-u10d-analysis-coherence
