@@ -58,3 +58,5 @@ Phase 16 major feature                    not approved
 ```
 
 Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*` only when runtime validation is necessary. Only latest-head evidence counts. After every merge, issue the full report and stop.
+
+<!-- legacy-verifier transition marker only: U10C canonical closeout               active PR #459 -->
