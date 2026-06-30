@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  U10D_RUNNER_REVISION: '7'
+  U10D_RUNNER_REVISION: '8'
 
 jobs:
   patch:
@@ -26,45 +26,27 @@ jobs:
         with:
           ref: work-quality-u10d-analysis-coherence
           fetch-depth: 1
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Apply guarded U10D patches
-        run: |
-          python scripts/u10d_patch_runtime.py
-          python scripts/u10d_patch_tests.py
-          python scripts/u10d_patch_finalize.py
-      - name: Correct generated verifier quote
+      - name: Correct clean-default URL expectation
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          path = Path('scripts/verify-quality-u10d-analysis-coherence.mjs')
-          lines = path.read_text(encoding='utf-8').splitlines()
-          targets = [index for index, line in enumerate(lines) if "assert.equal(html.includes('const key =" in line]
-          if len(targets) != 1:
-              raise SystemExit(f'unexpected quote target count: {len(targets)}')
-          lines[targets[0]] = '  assert.equal(html.includes("const key = \'viewloom:"), false)'
-          path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          path = Path('apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs')
+          source = path.read_text(encoding='utf-8')
+          old = "  assert.equal(initial.urlLayout, 'wide', `${provider} ${width}: URL did not normalize to Wide`)"
+          new = "  assert.equal(initial.urlLayout, null, `${provider} ${width}: clean default wrote a URL preference`)"
+          if source.count(old) != 1:
+              raise SystemExit(f'unexpected clean-default assertion count: {source.count(old)}')
+          path.write_text(source.replace(old, new, 1), encoding='utf-8')
           PY
-      - name: Remove branch-local bootstrap files in workspace
-        run: |
-          rm scripts/u10d_patch_runtime.py scripts/u10d_patch_tests.py scripts/u10d_patch_finalize.py
-          rm .github/workflows/u10d-bootstrap.yml
-      - name: Check generated U10D state
+      - name: Verify corrected browser script
         run: |
           node --check apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs
-          node --check scripts/verify-quality-u10d-analysis-coherence.mjs
-          node --check scripts/verify-quality-u10d-browser-evidence.mjs
-          node scripts/verify-development-policy.mjs
-          node scripts/verify-quality-u10d-analysis-coherence.mjs
           git diff --check
-      - name: Commit non-workflow U10D implementation
+      - name: Commit corrected acceptance
         run: |
           git config user.name badjoke-lab
           git config user.email 227710934+badjoke-lab@users.noreply.github.com
-          git add -A -- . ':(exclude).github/workflows/**'
-          git status --short
-          git commit -m "Implement U10D analysis coherence"
+          git add apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs
+          git commit -m "Correct U10D clean default acceptance"
           git push origin HEAD:work-quality-u10d-analysis-coherence
