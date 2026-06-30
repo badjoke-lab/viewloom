@@ -19,27 +19,21 @@ Phase 10 U10B shared shell                       complete PR #456
 U10B canonical closeout                          complete PR #457
 Phase 10 U10C visualization                      complete PR #458
 U10C canonical closeout                          complete PR #459
-Active implementation branch                    none
-Exact next implementation branch                work-quality-u10d-analysis-coherence
-U10D branch created                             no
+Phase 10 U10D analysis coherence                 active
+Active implementation branch                    work-quality-u10d-analysis-coherence
+Exact next implementation branch                work-quality-u10e-responsive
+U10E branch created                             no
 ```
 
 ## Current authorities
 
 - Phase 10–11 specification: `product/cross-site-quality-remediation-spec.md`
 - Phase 10–11 plan: `product/cross-site-quality-remediation-plan.md`
+- U10D working record: `work-in-progress/u10d-analysis-coherence.md`
 - U10A permanent defect ledger: `audits/cross-site-quality-u10a-baseline.json`
 - U10A permanent owner map: `audits/cross-site-quality-u10a-owner-map.json`
 - U10B permanent shared shell record: `audits/cross-site-quality-u10b-shared-shell.json`
 - U10C permanent visualization record: `audits/cross-site-quality-u10c-visualization.json`
 - Permanent History acceptance: `operations/history-production-acceptance-2026-06-28.md`
 
-## Permanent Watchlist records
-
-- `product/local-watchlist-spec.md`
-- `product/watchlist-v1-implementation-plan.md`
-- `operations/watchlist-production-acceptance-2026-06-25.md`
-
-U10D remains exact next and uncreated.
-
-<!-- legacy-verifier transition marker only: U10C canonical closeout                          active PR #459 -->
+The U10C handoff fields are closeout-time snapshots. Current execution state is owned by this index, the roadmap, and the schedule.
