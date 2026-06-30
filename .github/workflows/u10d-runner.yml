@@ -36,14 +36,17 @@ jobs:
         run: |
           rm scripts/u10d_patch_runtime.py scripts/u10d_patch_tests.py scripts/u10d_patch_finalize.py
           rm .github/workflows/u10d-bootstrap.yml
-      - name: Verify generated state
+      - name: Check generated JavaScript syntax
         run: |
           node --check apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs
           node --check scripts/verify-quality-u10d-analysis-coherence.mjs
           node --check scripts/verify-quality-u10d-browser-evidence.mjs
-          node scripts/verify-development-policy.mjs
-          node scripts/verify-quality-u10d-analysis-coherence.mjs
-          git diff --check
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Verify U10D repository contract
+        run: node scripts/verify-quality-u10d-analysis-coherence.mjs
+      - name: Check generated diff
+        run: git diff --check
       - name: Commit U10D implementation
         run: |
           git config user.name badjoke-lab
