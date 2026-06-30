@@ -41,3 +41,5 @@ U10D branch created                             no
 - `operations/watchlist-production-acceptance-2026-06-25.md`
 
 U10D remains exact next and uncreated.
+
+<!-- legacy-verifier transition marker only: U10C canonical closeout                          active PR #459 -->
