@@ -81,8 +81,9 @@ function wireControls(): void {
   })
   document.querySelector<HTMLElement>('[data-battle-refresh]')?.addEventListener('click', () => void hydrate({ preserveBattle: true, preserveTime: true }))
   document.querySelector<HTMLElement>('[data-battle-recommended]')?.addEventListener('click', () => {
-    if (!payload?.primaryBattle) return
-    state.selectedBattleId = payload.primaryBattle.id
+    const recommended = payload ? recommendedBattleFor(payload) : null
+    if (!recommended) return
+    state.selectedBattleId = recommended.id
     state.manualBattle = false
     syncUrl()
     renderAll()
@@ -106,16 +107,17 @@ async function hydrate(options: { preserveBattle?: boolean; preserveTime?: boole
     const next = await response.json() as Payload
     if (serial !== requestSerial) return
     if (!response.ok && next.state !== 'error') throw new Error(`Battle Lines API returned ${response.status}`)
-    const previousBattle = options.preserveBattle ? state.selectedBattleId : null
+    const previousBattle = options.preserveBattle && state.manualBattle ? state.selectedBattleId : null
     const previousBucket = options.preserveTime && payload && state.selectedIndex >= 0 ? payload.timeline[state.selectedIndex] : null
     payload = next
     const battles = next.battles ?? []
+    const recommended = recommendedBattleFor(next)
     if (previousBattle && battles.some((battle) => battle.id === previousBattle)) {
       state.selectedBattleId = previousBattle
     } else if (state.selectedBattleId && battles.some((battle) => battle.id === state.selectedBattleId)) {
-      state.manualBattle = true
+      state.manualBattle = state.selectedBattleId !== recommended?.id
     } else {
-      state.selectedBattleId = next.primaryBattle?.id ?? null
+      state.selectedBattleId = recommended?.id ?? null
       state.manualBattle = false
     }
     if (previousBucket) state.selectedIndex = nearestTimelineIndex(next.timeline, previousBucket)
@@ -171,7 +173,10 @@ function renderPrimary(data: Payload): void {
     return
   }
   const selected = pairSnapshot(data, battle, state.selectedIndex)
-  const recommended = battle.id === data.primaryBattle?.id && !state.manualBattle
+  target.dataset.battleRecommendationOwner = data.recommendedBattle ? 'recommendedBattle' : data.primaryBattle ? 'primaryBattle-fallback' : 'none'
+  target.dataset.battleSelectedBattleId = battle.id
+  target.dataset.battleSelectedIndex = String(state.selectedIndex)
+  const recommended = battle.id === recommendedBattleFor(data)?.id && !state.manualBattle
   target.innerHTML = `<div class="battle-primary__identity"><div class="kicker">${recommended ? 'RECOMMENDED BATTLE' : 'SELECTED BATTLE'}</div><h2>${escapeHtml(battle.streamerAName)} <span>vs</span> ${escapeHtml(battle.streamerBName)}</h2><p><small>Selected time</small>${escapeHtml(formatSelectedTime(data))}</p></div><div class="battle-primary__metrics"><div><small>Leader at selected time</small><strong>${escapeHtml(selected.leaderName ?? 'Unavailable')}</strong></div><div><small>Gap at selected time</small><strong>${escapeHtml(formatMetric(selected.gap))}</strong></div><div><small>Gap trend</small><strong>${escapeHtml(label(selected.trend))}</strong></div><div><small>Latest reversal</small><strong>${escapeHtml(battle.latestReversalAt ? formatClock(battle.latestReversalAt) : 'None')}</strong></div><div><small>Reversals</small><strong>${battle.reversalCount}</strong></div><div><small>Battle score</small><strong>${battle.score.toFixed(1)}</strong></div></div>`
 }
 
@@ -220,7 +225,7 @@ function renderChart(data: Payload): void {
   const markers = chartMarkers(data, battle, chartW, chartH, pad, yMax)
   const endpoints = endpointLabels(data, battle, chartW, chartH, pad, yMax)
   const legend = visible.map((line) => `<button type="button" class="battle-legend__item${state.selectedLineId === line.id ? ' active' : ''}${primaryIds.has(line.id) ? ' primary' : ''}" data-battle-line-select="${escapeAttr(line.id)}" aria-pressed="${state.selectedLineId === line.id}"><i style="background:${lineColor(data.lines.findIndex((item) => item.id === line.id))}"></i><span>${escapeHtml(line.name)}</span><small>${escapeHtml(formatMetric(lastValue(line)))}</small></button>`).join('')
-  target.innerHTML = `<div class="battle-legend" aria-label="Displayed streams">${legend}</div><div class="battle-chart-wrap"><svg data-battle-chart viewBox="0 0 ${width} ${height}" role="img" tabindex="0" aria-label="Battle Lines ${escapeAttr(state.metric)} chart. Use left and right arrow keys to inspect time."><g class="chart-grid">${axes}</g><g class="battle-gap-band">${band}</g>${lineMarkup}<g class="battle-markers">${markers}</g>${endpoints}${cursor}</svg></div>`
+  target.innerHTML = `<div class="battle-legend" aria-label="Displayed streams">${legend}</div><div class="battle-chart-wrap"><svg data-battle-chart data-battle-selected-index="${selectedIndex}" data-battle-selected-time="${escapeAttr(data.timeline[selectedIndex] ?? '')}" viewBox="0 0 ${width} ${height}" role="img" tabindex="0" aria-label="Battle Lines ${escapeAttr(state.metric)} chart. Use left and right arrow keys to inspect time."><g class="chart-grid">${axes}</g><g class="battle-gap-band">${band}</g>${lineMarkup}<g class="battle-markers">${markers}</g>${endpoints}${cursor}</svg></div>`
   bindChart(data, { width, pad, chartW })
   target.querySelectorAll<HTMLButtonElement>('[data-battle-line-select]').forEach((button) => button.addEventListener('click', () => {
     const id = button.dataset.battleLineSelect ?? null
@@ -242,6 +247,8 @@ function renderInspector(data: Payload): void {
   const ap = a.points[index]
   const bp = b.points[index]
   const snapshot = pairSnapshot(data, battle, index)
+  target.dataset.battleSelectedIndex = String(index)
+  target.dataset.battleSelectedTime = data.timeline[index] ?? ''
   const ranked = data.lines
     .map((line) => ({ line, point: line.points[index], value: drawable(line.points[index]) }))
     .sort((left, right) => {
@@ -277,8 +284,9 @@ function renderSecondary(data: Payload): void {
   const target = document.querySelector<HTMLElement>('[data-battle-secondary]')
   if (!target) return
   const current = activeBattle(data)
+  const recommended = recommendedBattleFor(data)
   const ordered = current && state.manualBattle
-    ? [current, ...data.battles.filter((battle) => battle.id !== current.id && battle.id !== data.primaryBattle?.id)]
+    ? [current, ...data.battles.filter((battle) => battle.id !== current.id && battle.id !== recommended?.id)]
     : data.battles.filter((battle) => battle.id !== current?.id)
   const candidates = ordered.slice(0, 3)
   if (!candidates.length) { target.innerHTML = '<p class="empty-inline">No secondary battle has enough overlapping observations.</p>'; return }
@@ -288,7 +296,7 @@ function renderSecondary(data: Payload): void {
   }).join('')
   target.querySelectorAll<HTMLButtonElement>('[data-battle-select]').forEach((button) => button.addEventListener('click', () => {
     state.selectedBattleId = button.dataset.battleSelect ?? null
-    state.manualBattle = state.selectedBattleId !== data.primaryBattle?.id
+    state.manualBattle = state.selectedBattleId !== recommendedBattleFor(data)?.id
     state.selectedLineId = null
     syncUrl()
     renderAll()
@@ -369,8 +377,12 @@ function setSelected(data: Payload, index: number, follow = false): void {
   document.querySelector<SVGSVGElement>('[data-battle-chart]')?.focus()
 }
 
+function recommendedBattleFor(data: Payload): Battle | null {
+  return data.recommendedBattle ?? data.primaryBattle ?? data.battles[0] ?? null
+}
+
 function activeBattle(data: Payload): Battle | null {
-  return data.battles.find((battle) => battle.id === state.selectedBattleId) ?? data.primaryBattle ?? null
+  return data.battles.find((battle) => battle.id === state.selectedBattleId) ?? recommendedBattleFor(data)
 }
 
 function pairSnapshot(data: Payload, battle: Battle, index: number): PairSnapshot {

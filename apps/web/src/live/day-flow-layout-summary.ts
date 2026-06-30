@@ -81,7 +81,7 @@ function readInitialLayout(): LayoutMode {
   if (saved === 'wide' || saved === 'theater') return 'wide'
   if (saved === 'split') return 'split'
 
-  return 'split'
+  return 'wide'
 }
 
 function applyLayout(updateUrl: boolean): void {
@@ -90,6 +90,7 @@ function applyLayout(updateUrl: boolean): void {
   shell.classList.toggle('is-split', effectiveLayout === 'split')
   shell.classList.toggle('is-wide', effectiveLayout === 'wide')
   shell.dataset.dayflowLayoutCurrent = effectiveLayout
+  shell.dataset.dayflowLayoutRequested = requestedLayout
 
   for (const button of layoutButtons) {
     const active = button.dataset.dayflowLayout === requestedLayout
