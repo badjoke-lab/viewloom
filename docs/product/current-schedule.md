@@ -25,6 +25,7 @@ U10C total browser checks: 64
 U10D Day Flow scenarios: 12
 U10D Battle Lines scenarios: 8
 U10D total browser scenarios: 20
+U10D pair-control synchronization: covered
 ```
 
 ```text
