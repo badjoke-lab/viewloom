@@ -1,0 +1,108 @@
+name: Quality U10E Responsive Accessibility
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/README.md'
+      - 'docs/work-in-progress/u10e-responsive.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/product/cross-site-quality-remediation-plan.md'
+      - 'apps/web/src/quality-u10e-responsive.css'
+      - 'apps/web/src/shared-shell.ts'
+      - 'apps/web/twitch/watchlist/index.html'
+      - 'apps/web/kick/watchlist/index.html'
+      - 'apps/web/scripts/quality-u10e-responsive-browser.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-quality-u10d-analysis-coherence.mjs'
+      - 'scripts/verify-quality-u10e-responsive.mjs'
+      - 'scripts/verify-quality-u10e-browser-evidence.mjs'
+      - '.github/workflows/quality-u10e-responsive.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  responsive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    env:
+      QUALITY_U10E_BASE_URL: http://127.0.0.1:4173
+      QUALITY_U10E_ARTIFACT_DIR: /tmp/quality-u10e
+      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Verify U10E repository contract
+        run: node scripts/verify-quality-u10e-responsive.mjs
+      - name: Verify retained U10D analysis coherence
+        run: node scripts/verify-quality-u10d-analysis-coherence.mjs
+      - name: Verify retained U10C visualization
+        run: node scripts/verify-quality-u10c-visualization.mjs
+      - name: Verify retained U10B shared shell
+        run: node scripts/verify-quality-u10b-shell.mjs
+      - name: Verify retained U10A evidence
+        run: node scripts/verify-quality-u10a-baseline.mjs
+      - name: Verify retained History acceptance
+        run: node scripts/verify-history-ui-h7-acceptance.mjs
+      - name: Verify Battle Lines contracts
+        run: |
+          pnpm --filter @viewloom/web verify:battle-lines
+          pnpm --filter @viewloom/web verify:battle-lines-ui
+      - name: Verify Watchlist contracts
+        run: pnpm --filter @viewloom/web verify:watchlist-contracts
+      - name: Typecheck web application
+        run: pnpm --filter @viewloom/web typecheck:app
+      - name: Build web application
+        run: pnpm build:web
+      - name: Start local preview
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/quality-u10e-preview.log 2>&1 &
+          for attempt in {1..60}; do
+            ready=true
+            for route in / /twitch/day-flow/ /kick/day-flow/ /twitch/battle-lines/ /kick/battle-lines/ /twitch/channel/ /kick/channel/ /twitch/watchlist/ /kick/watchlist/; do
+              curl --silent --fail "http://127.0.0.1:4173${route}" > /dev/null || ready=false
+            done
+            if [ "$ready" = true ]; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/quality-u10e-preview.log
+          exit 1
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+      - name: Run U10E browser acceptance
+        working-directory: apps/web
+        run: node scripts/quality-u10e-responsive-browser.mjs
+      - name: Verify U10E browser evidence
+        run: node scripts/verify-quality-u10e-browser-evidence.mjs
+      - name: Upload U10E artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-u10e-responsive
+          path: |
+            /tmp/quality-u10e/**
+            /tmp/quality-u10e-preview.log
+          if-no-files-found: warn

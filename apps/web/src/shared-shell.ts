@@ -1,4 +1,5 @@
 import './shared-shell.css'
+import './quality-u10e-responsive.css'
 
 type ShellProvider = 'portal' | 'twitch' | 'kick'
 type ShellStatusState = 'loading' | 'fresh' | 'partial' | 'unavailable'

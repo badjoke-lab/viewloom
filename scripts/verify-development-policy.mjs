@@ -12,19 +12,22 @@ const required = [
   'docs/product/post-watchlist-program-plan.md',
   'docs/product/cross-site-quality-remediation-spec.md',
   'docs/product/cross-site-quality-remediation-plan.md',
+  'docs/work-in-progress/u10e-responsive.md',
   'docs/audits/cross-site-quality-u10a-baseline.json',
   'docs/audits/cross-site-quality-u10a-owner-map.json',
   'docs/audits/cross-site-quality-u10b-shared-shell.json',
   'docs/audits/cross-site-quality-u10c-visualization.json',
   'docs/audits/cross-site-quality-u10d-analysis-coherence.json',
   'apps/web/src/shared-shell.ts',
+  'apps/web/src/quality-u10e-responsive.css',
   'apps/web/src/visualization-grammar.ts',
   'apps/web/src/live/day-flow-layout-summary.ts',
   'apps/web/src/live/battle-lines-current-shell-entry.ts',
-  'apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs',
+  'apps/web/scripts/quality-u10e-responsive-browser.mjs',
   'scripts/verify-quality-u10d-analysis-coherence.mjs',
-  'scripts/verify-quality-u10d-browser-evidence.mjs',
-  '.github/workflows/quality-u10d-analysis-coherence.yml',
+  'scripts/verify-quality-u10e-responsive.mjs',
+  'scripts/verify-quality-u10e-browser-evidence.mjs',
+  '.github/workflows/quality-u10e-responsive.yml',
 ]
 for (const path of required) assert.equal(existsSync(join(root, path)), true, `missing file: ${path}`)
 
@@ -40,19 +43,29 @@ for (const path of [
 ]) assert.equal(existsSync(join(root, path)), false, `temporary file remains: ${path}`)
 
 const stateChecks = [
-  ['README.md', ['Phase 10 U10D analysis coherence      complete PR #462', 'U10D canonical closeout               complete PR #464', 'Active implementation branch          none', 'Exact next implementation branch      work-quality-u10e-responsive']],
-  ['docs/README.md', ['Phase 10 U10D analysis coherence                 complete PR #462', 'U10D canonical closeout                          complete PR #464', 'Active implementation branch                    none', 'Exact next implementation branch                work-quality-u10e-responsive']],
-  ['AGENTS.md', ['U10D analysis coherence complete PR #462', 'U10D canonical closeout complete PR #464', 'Active implementation branch: none', 'Exact next branch: work-quality-u10e-responsive']],
-  ['CONTRIBUTING.md', ['Phase 10 U10D analysis coherence complete through PR #462', 'U10D canonical closeout complete through PR #464', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-u10e-responsive']],
-  ['docs/product/current-roadmap.md', ['Phase 10 U10D analysis coherence complete PR #462', 'U10D canonical closeout complete PR #464', 'Active implementation branch: none', 'Exact next branch: work-quality-u10e-responsive']],
-  ['docs/product/current-schedule.md', ['U10D complete PR #462', 'U10D closeout complete PR #464', 'Active branch: none', 'Next branch: work-quality-u10e-responsive', 'U10D total browser scenarios: 20']],
-  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10E responsive and accessibility', 'Current implementation branch: none', 'Exact next implementation branch: `work-quality-u10e-responsive`', 'Completed U10D canonical closeout: PR #464']],
-  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: none', 'Completed phase: U10D through PR #462', 'Completed canonical closeout: PR #464', 'Exact next branch: `work-quality-u10e-responsive`']],
+  ['README.md', ['Phase 10 U10E responsive repair       active', 'Active implementation branch          work-quality-u10e-responsive', 'Exact next branch after U10E          work-quality-u10f-readiness']],
+  ['docs/README.md', ['Phase 10 U10E responsive and accessibility       active', 'Active implementation branch                    work-quality-u10e-responsive', 'Exact next implementation branch                work-quality-u10f-readiness']],
+  ['AGENTS.md', ['U10E responsive and accessibility active', 'Active implementation branch: work-quality-u10e-responsive', 'Exact next branch: work-quality-u10f-readiness']],
+  ['CONTRIBUTING.md', ['Phase 10 U10E responsive and accessibility active', 'Active implementation branch: work-quality-u10e-responsive', 'Exact next implementation branch: work-quality-u10f-readiness']],
+  ['docs/product/current-roadmap.md', ['Phase 10 U10E responsive and accessibility active', 'Active implementation branch: work-quality-u10e-responsive', 'Exact next branch: work-quality-u10f-readiness']],
+  ['docs/product/current-schedule.md', ['U10E responsive and accessibility active', 'Active branch: work-quality-u10e-responsive', 'Next branch: work-quality-u10f-readiness', 'U10E total browser scenarios: 36']],
+  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10E responsive and accessibility', 'Current implementation branch: `work-quality-u10e-responsive`', 'Exact next implementation branch: `work-quality-u10f-readiness`']],
+  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: `work-quality-u10e-responsive`', 'Active phase: U10E responsive and accessibility', 'Exact next branch: `work-quality-u10f-readiness`']],
 ]
 for (const [path, fragments] of stateChecks) {
   const source = read(path)
   for (const fragment of fragments) assert.ok(source.includes(fragment), `${path}: missing ${fragment}`)
 }
+
+const note = read('docs/work-in-progress/u10e-responsive.md')
+for (const fragment of [
+  'Status: active',
+  'work-quality-u10e-responsive',
+  'work-quality-u10f-readiness',
+  'mobile interactive targets are at least 44px',
+  'important management or publishing actions are at least 48px',
+  'APIs, D1 schemas, bindings, collectors, cron, retention, output schemas, localization runtime, and provider separation remain unchanged.',
+]) assert.ok(note.includes(fragment), `U10E working note missing ${fragment}`)
 
 const u10a = JSON.parse(read('docs/audits/cross-site-quality-u10a-baseline.json'))
 assert.equal(u10a.status, 'complete')
@@ -89,8 +102,6 @@ assert.equal(u10d.boundary.api_change_authorized, false)
 assert.equal(u10d.boundary.storage_change_authorized, false)
 assert.equal(u10d.boundary.collector_change_authorized, false)
 assert.equal(u10d.boundary.provider_combination_authorized, false)
-assert.equal(u10d.exact_next_branch, 'work-quality-u10e-responsive')
-assert.equal(u10d.next_branch_created, false)
 
 for (const path of [
   '.github/workflows/development-policy.yml',
@@ -99,6 +110,7 @@ for (const path of [
   '.github/workflows/quality-u10b-shell.yml',
   '.github/workflows/quality-u10c-visualization.yml',
   '.github/workflows/quality-u10d-analysis-coherence.yml',
+  '.github/workflows/quality-u10e-responsive.yml',
 ]) {
   const source = read(path)
   assert.ok(source.includes('concurrency:'), `${path}: concurrency missing`)
@@ -111,5 +123,5 @@ assert.equal(battle.includes('new MutationObserver'), false)
 
 console.log('ViewLoom development and documentation verification passed.')
 console.log('- U10A, U10B, U10C, and U10D remain permanent evidence')
-console.log('- no implementation branch is active and U10E is exact next')
+console.log('- U10E is active and U10F is exact next')
 console.log('- Twitch and Kick remain separate')
