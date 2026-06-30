@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  U10D_RUNNER_REVISION: '6'
+  U10D_RUNNER_REVISION: '7'
 
 jobs:
   patch:
@@ -48,26 +48,23 @@ jobs:
           lines[targets[0]] = '  assert.equal(html.includes("const key = \'viewloom:"), false)'
           path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
           PY
-      - name: Remove branch-local bootstrap files
+      - name: Remove branch-local bootstrap files in workspace
         run: |
           rm scripts/u10d_patch_runtime.py scripts/u10d_patch_tests.py scripts/u10d_patch_finalize.py
           rm .github/workflows/u10d-bootstrap.yml
-      - name: Check U10D browser script syntax
-        run: node --check apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs
-      - name: Check U10D repository verifier syntax
-        run: node --check scripts/verify-quality-u10d-analysis-coherence.mjs
-      - name: Check U10D evidence verifier syntax
-        run: node --check scripts/verify-quality-u10d-browser-evidence.mjs
-      - name: Verify development policy
-        run: node scripts/verify-development-policy.mjs
-      - name: Verify U10D repository contract
-        run: node scripts/verify-quality-u10d-analysis-coherence.mjs
-      - name: Check generated diff
-        run: git diff --check
-      - name: Commit U10D implementation
+      - name: Check generated U10D state
+        run: |
+          node --check apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs
+          node --check scripts/verify-quality-u10d-analysis-coherence.mjs
+          node --check scripts/verify-quality-u10d-browser-evidence.mjs
+          node scripts/verify-development-policy.mjs
+          node scripts/verify-quality-u10d-analysis-coherence.mjs
+          git diff --check
+      - name: Commit non-workflow U10D implementation
         run: |
           git config user.name badjoke-lab
           git config user.email 227710934+badjoke-lab@users.noreply.github.com
-          git add -A
+          git add -A -- . ':(exclude).github/workflows/**'
+          git status --short
           git commit -m "Implement U10D analysis coherence"
           git push origin HEAD:work-quality-u10d-analysis-coherence
