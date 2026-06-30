@@ -103,10 +103,10 @@ check(record.boundary?.provider_combination_authorized === false, 'provider comb
 check(record.exact_next_branch === 'work-quality-u10d-analysis-coherence', 'handoff changed')
 check(record.next_branch_created === false, 'next branch snapshot changed')
 
-need('docs/product/current-roadmap.md', ['U10C visualization complete PR #458', 'Active implementation branch: none', 'work-quality-u10d-analysis-coherence'])
-need('docs/product/current-schedule.md', ['U10C complete PR #458', 'Active branch: none', 'U10C total browser checks: 64'])
-need('docs/product/post-watchlist-program-plan.md', ['Completed U10C implementation: PR #458', 'Current implementation branch: none'])
-need('docs/product/cross-site-quality-remediation-plan.md', ['Completed phase: U10C through PR #458', 'Current branch: none'])
+need('docs/product/current-roadmap.md', ['Phase 10 U10C visualization complete PR #458'])
+need('docs/product/current-schedule.md', ['U10C complete PR #458', 'U10C total browser checks: 64'])
+need('docs/product/post-watchlist-program-plan.md', ['Completed U10C implementation: PR #458'])
+need('docs/product/cross-site-quality-remediation-plan.md', ['Completed phase: U10C through PR #458'])
 
 if (issues.length) {
   console.error('Completed U10C verification failed:')
