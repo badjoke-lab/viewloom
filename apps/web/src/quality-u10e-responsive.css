@@ -13,7 +13,7 @@
   .channel-profile-controls,.channel-profile-actions{align-items:stretch}
   .channel-profile-actions{display:grid;grid-template-columns:1fr;gap:8px}
   .channel-profile-actions .button,[data-channel-copy-url],.history-selected-actions .button{min-height:48px;width:100%}
-  [data-watchlist-add],[data-watchlist-refresh],[data-watchlist-clear],[data-watchlist-reset],.watchlist-card__manage .button{min-height:48px}
+  .watchlist-page [data-watchlist-add],.watchlist-page [data-watchlist-refresh],.watchlist-page [data-watchlist-clear],.watchlist-page [data-watchlist-reset],.watchlist-card__manage .button{min-height:48px}
   .portal-provider-card__actions .button{min-height:48px}
   .battle-actions button{min-height:44px}
   .footer nav a{display:inline-flex;align-items:center;min-height:44px;padding-block:6px}
