@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  U10D_RUNNER_REVISION: '5'
+  U10D_RUNNER_REVISION: '6'
 
 jobs:
   patch:
@@ -35,6 +35,19 @@ jobs:
           python scripts/u10d_patch_runtime.py
           python scripts/u10d_patch_tests.py
           python scripts/u10d_patch_finalize.py
+      - name: Correct generated verifier quote
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/verify-quality-u10d-analysis-coherence.mjs')
+          lines = path.read_text(encoding='utf-8').splitlines()
+          targets = [index for index, line in enumerate(lines) if "assert.equal(html.includes('const key =" in line]
+          if len(targets) != 1:
+              raise SystemExit(f'unexpected quote target count: {len(targets)}')
+          lines[targets[0]] = '  assert.equal(html.includes("const key = \'viewloom:"), false)'
+          path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          PY
       - name: Remove branch-local bootstrap files
         run: |
           rm scripts/u10d_patch_runtime.py scripts/u10d_patch_tests.py scripts/u10d_patch_finalize.py
@@ -42,10 +55,7 @@ jobs:
       - name: Check U10D browser script syntax
         run: node --check apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs
       - name: Check U10D repository verifier syntax
-        shell: bash
-        run: |
-          set -o pipefail
-          node --check scripts/verify-quality-u10d-analysis-coherence.mjs 2>&1 | tee /tmp/u10d-verifier-syntax.log
+        run: node --check scripts/verify-quality-u10d-analysis-coherence.mjs
       - name: Check U10D evidence verifier syntax
         run: node --check scripts/verify-quality-u10d-browser-evidence.mjs
       - name: Verify development policy
