@@ -70,14 +70,6 @@ need('docs/operations/history-production-acceptance-2026-06-28.md', [
   'Post-merge production: workflow 28325951638, artifact 7935706617, pass',
   'History Phase 9 is accepted in production.',
 ])
-need('docs/product/current-schedule.md', [
-  'Phase 9 History P1 repair                complete',
-  'U10A defect and ownership baseline       complete PR #454',
-])
-need('docs/product/current-roadmap.md', [
-  'Phase 9 History P1 repair complete',
-  'Phase 10 U10A complete PR #454',
-])
 
 if (issues.length) {
   console.error('ViewLoom History P9H6 candidate verification did not pass:')
@@ -86,4 +78,4 @@ if (issues.length) {
 }
 console.log('ViewLoom History P9H6 candidate verification passed.')
 console.log('- one exact candidate HEAD, build, local preview, six phases, and twenty-one scenarios remain protected')
-console.log('- later Phase 10 handoffs do not rewrite P9H6 evidence')
+console.log('- permanent History acceptance, not current roadmap wording, owns P9H6 completion')

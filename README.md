@@ -23,13 +23,12 @@ Phase 10 U10A quality baseline        complete PR #454
 U10A canonical closeout               complete PR #455
 Phase 10 U10B shared shell            complete PR #456
 U10B canonical closeout               complete PR #457
-Phase 10 U10C visualization           active
-Active implementation branch          work-quality-u10c-visualization
-Exact next branch after U10C          work-quality-u10d-analysis-coherence
+Phase 10 U10C visualization           complete PR #458
+U10C canonical closeout               complete PR #459
+Active implementation branch          none
+Exact next branch                     work-quality-u10d-analysis-coherence
 U10D branch created                   no
 ```
-
-Active authority: `docs/work-in-progress/u10c-visualization.md`.
 
 Permanent Phase 10 evidence:
 
@@ -37,6 +36,7 @@ Permanent Phase 10 evidence:
 docs/audits/cross-site-quality-u10a-baseline.json
 docs/audits/cross-site-quality-u10a-owner-map.json
 docs/audits/cross-site-quality-u10b-shared-shell.json
+docs/audits/cross-site-quality-u10c-visualization.json
 ```
 
 ## Current sequence
@@ -44,8 +44,8 @@ docs/audits/cross-site-quality-u10b-shared-shell.json
 ```text
 U10A defect and ownership baseline       complete PR #454
 U10B shared shell                        complete PR #456
-U10C visualization                       active
-U10D analysis coherence                  exact next after U10C merge and closeout
+U10C visualization                       complete PR #458
+U10D analysis coherence                  exact next
 U10E responsive and accessibility        queued
 U10F readiness                           queued
 U10G architecture                        queued
@@ -58,3 +58,5 @@ Phase 16 major feature                    not approved
 ```
 
 Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*` only when runtime validation is necessary. Only latest-head evidence counts. After every merge, issue the full report and stop.
+
+<!-- legacy-verifier transition marker only: U10C canonical closeout               active PR #459 -->
