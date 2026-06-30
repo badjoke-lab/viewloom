@@ -21,6 +21,8 @@ U10D branch created: no
 
 Permanent record: `docs/audits/cross-site-quality-u10c-visualization.json`.
 
+Audit trail: U10C canonical closeout PR #459; status complete.
+
 ```text
 U10D analysis coherence exact next
 U10E responsive and accessibility queued
