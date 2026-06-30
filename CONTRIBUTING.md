@@ -11,13 +11,14 @@ Phase 10 U10A quality baseline complete through PR #454
 Phase 10 U10B shared shell complete through PR #456
 Phase 10 U10C visualization complete through PR #458
 U10C canonical closeout complete through PR #459
-Phase 10 U10D analysis coherence active
-Active implementation branch: work-quality-u10d-analysis-coherence
+Phase 10 U10D analysis coherence complete through PR #462
+U10D canonical closeout complete through PR #464
+Active implementation branch: none
 Exact next implementation branch: work-quality-u10e-responsive
 U10E branch created: no
 ```
 
-Active record: `docs/work-in-progress/u10d-analysis-coherence.md`.
+Permanent U10D record: `docs/audits/cross-site-quality-u10d-analysis-coherence.json`.
 
 ## Standard workflow
 
