@@ -1,7 +1,7 @@
 # ViewLoom current roadmap
 
 Status: source of truth
-Last updated: 2026-06-30
+Last updated: 2026-07-01
 
 ```text
 Phase 8 P8B complete PR #428
@@ -14,18 +14,18 @@ Phase 10 U10B shared shell complete PR #456
 U10B canonical closeout complete PR #457
 Phase 10 U10C visualization complete PR #458
 U10C canonical closeout complete PR #459
-Phase 10 U10D analysis coherence active
-Active implementation branch: work-quality-u10d-analysis-coherence
+Phase 10 U10D analysis coherence complete PR #462
+U10D canonical closeout complete PR #464
+Active implementation branch: none
 Exact next branch: work-quality-u10e-responsive
 U10E branch created: no
 ```
 
-Active record: `docs/work-in-progress/u10d-analysis-coherence.md`.
-Permanent U10C record: `docs/audits/cross-site-quality-u10c-visualization.json`.
+Permanent U10D record: `docs/audits/cross-site-quality-u10d-analysis-coherence.json`.
 
 ```text
-U10D analysis coherence active
-U10E responsive and accessibility exact next after U10D
+U10D analysis coherence complete
+U10E responsive and accessibility exact next
 U10F readiness queued
 U10G architecture queued
 U10H acceptance queued

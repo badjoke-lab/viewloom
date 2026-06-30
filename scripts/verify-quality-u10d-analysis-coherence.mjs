@@ -5,7 +5,7 @@ import { join } from 'node:path'
 const root = process.cwd()
 const read = (path) => readFileSync(join(root, path), 'utf8')
 const required = [
-  'docs/work-in-progress/u10d-analysis-coherence.md',
+  'docs/audits/cross-site-quality-u10d-analysis-coherence.json',
   'apps/web/twitch/day-flow/index.html', 'apps/web/kick/day-flow/index.html',
   'apps/web/src/live/day-flow-layout-summary.ts',
   'apps/web/src/live/battle-lines-current-shell-entry.ts',
@@ -16,9 +16,13 @@ const required = [
   '.github/workflows/quality-u10d-analysis-coherence.yml',
 ]
 for (const path of required) assert.equal(existsSync(join(root, path)), true, `missing file: ${path}`)
-for (const path of ['scripts/u10d_patch_runtime.py', 'scripts/u10d_patch_tests.py', 'scripts/u10d_patch_docs.py', '.github/workflows/u10d-bootstrap.yml']) {
-  assert.equal(existsSync(join(root, path)), false, `temporary U10D bootstrap remains: ${path}`)
-}
+for (const path of [
+  'docs/work-in-progress/u10d-analysis-coherence.md',
+  'scripts/u10d_patch_runtime.py',
+  'scripts/u10d_patch_tests.py',
+  'scripts/u10d_patch_docs.py',
+  '.github/workflows/u10d-bootstrap.yml',
+]) assert.equal(existsSync(join(root, path)), false, `temporary U10D file remains: ${path}`)
 
 for (const path of ['apps/web/twitch/day-flow/index.html', 'apps/web/kick/day-flow/index.html']) {
   const html = read(path)
@@ -62,23 +66,55 @@ const core = read('apps/web/functions/_lib/battle-lines-core.ts')
 assert.ok(core.includes('recommendedBattle: primaryBattle'))
 assert.ok(core.includes('primaryBattle,'))
 
-const note = read('docs/work-in-progress/u10d-analysis-coherence.md')
-for (const fragment of ['Status: active', 'work-quality-u10d-analysis-coherence', 'work-quality-u10e-responsive', 'APIs, persistence, collection, retention, output contracts, and provider separation remain unchanged.']) assert.ok(note.includes(fragment))
-for (const [path, fragment] of [
-  ['README.md', 'Phase 10 U10D analysis coherence'],
-  ['docs/README.md', 'Phase 10 U10D analysis coherence'],
-  ['AGENTS.md', 'Active implementation branch: work-quality-u10d-analysis-coherence'],
-  ['CONTRIBUTING.md', 'Active implementation branch: work-quality-u10d-analysis-coherence'],
-  ['docs/product/current-roadmap.md', 'Phase 10 U10D analysis coherence active'],
-  ['docs/product/current-schedule.md', 'U10D analysis coherence active'],
-  ['docs/product/post-watchlist-program-plan.md', 'Current phase: Phase 10 — U10D analysis coherence'],
-  ['docs/product/cross-site-quality-remediation-plan.md', 'Current branch: `work-quality-u10d-analysis-coherence`'],
-]) assert.ok(read(path).includes(fragment), `${path}: active U10D state missing`)
+const record = JSON.parse(read('docs/audits/cross-site-quality-u10d-analysis-coherence.json'))
+assert.equal(record.schema, 'viewloom-cross-site-quality-u10d-analysis-coherence-v1')
+assert.equal(record.phase, 'U10D')
+assert.equal(record.status, 'complete')
+assert.equal(record.implementation_pr, 462)
+assert.equal(record.implementation_head, '882ba418180c054d76e31e54ad8090559d96a23f')
+assert.equal(record.merge_commit, '203287bb9e1a28d6ad08f5fcb10ec1b261d84db5')
+assert.equal(record.canonical_closeout_pr, 464)
+assert.deepEqual(record.scope.providers, ['twitch', 'kick'])
+assert.equal(record.scope.routes, 4)
+assert.deepEqual(record.scope.viewports, [1440, 820, 390, 360])
+assert.equal(record.scope.day_flow_scenarios, 12)
+assert.equal(record.scope.battle_lines_scenarios, 8)
+assert.equal(record.scope.total_browser_scenarios, 20)
+assert.equal(record.ownership.day_flow_default_layout, 'wide')
+assert.equal(record.ownership.battle_lines_recommendation, 'recommendedBattle')
+assert.equal(record.ownership.battle_lines_compatibility_fallback, 'primaryBattle')
+assert.equal(record.verification.result, 'pass')
+assert.equal(record.boundary.provider_separation_required, true)
+assert.equal(record.boundary.api_change_authorized, false)
+assert.equal(record.boundary.storage_change_authorized, false)
+assert.equal(record.boundary.binding_change_authorized, false)
+assert.equal(record.boundary.collector_change_authorized, false)
+assert.equal(record.boundary.cron_change_authorized, false)
+assert.equal(record.boundary.retention_change_authorized, false)
+assert.equal(record.boundary.output_schema_change_authorized, false)
+assert.equal(record.boundary.localization_runtime_change_authorized, false)
+assert.equal(record.boundary.provider_combination_authorized, false)
+assert.equal(record.exact_next_branch, 'work-quality-u10e-responsive')
+assert.equal(record.next_branch_created, false)
+
+for (const [path, fragments] of [
+  ['README.md', ['Phase 10 U10D analysis coherence      complete PR #462', 'U10D canonical closeout               complete PR #464', 'Active implementation branch          none', 'Exact next implementation branch      work-quality-u10e-responsive']],
+  ['docs/README.md', ['Phase 10 U10D analysis coherence                 complete PR #462', 'U10D canonical closeout                          complete PR #464', 'Active implementation branch                    none', 'Exact next implementation branch                work-quality-u10e-responsive']],
+  ['AGENTS.md', ['U10D analysis coherence complete PR #462', 'U10D canonical closeout complete PR #464', 'Active implementation branch: none', 'Exact next branch: work-quality-u10e-responsive']],
+  ['CONTRIBUTING.md', ['Phase 10 U10D analysis coherence complete through PR #462', 'U10D canonical closeout complete through PR #464', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-u10e-responsive']],
+  ['docs/product/current-roadmap.md', ['Phase 10 U10D analysis coherence complete PR #462', 'U10D canonical closeout complete PR #464', 'Active implementation branch: none', 'Exact next branch: work-quality-u10e-responsive']],
+  ['docs/product/current-schedule.md', ['U10D complete PR #462', 'U10D closeout complete PR #464', 'Active branch: none', 'Next branch: work-quality-u10e-responsive', 'U10D total browser scenarios: 20']],
+  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10E responsive and accessibility', 'Current implementation branch: none', 'Exact next implementation branch: `work-quality-u10e-responsive`', 'Completed U10D canonical closeout: PR #464']],
+  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: none', 'Completed phase: U10D through PR #462', 'Completed canonical closeout: PR #464', 'Exact next branch: `work-quality-u10e-responsive`']],
+]) {
+  const source = read(path)
+  for (const fragment of fragments) assert.ok(source.includes(fragment), `${path}: missing ${fragment}`)
+}
 
 const workflow = read('.github/workflows/quality-u10d-analysis-coherence.yml')
 for (const fragment of ['name: Quality U10D Analysis Coherence', 'Run U10D browser acceptance', 'Verify U10D browser evidence', 'cancel-in-progress: true']) assert.ok(workflow.includes(fragment))
 
-console.log('U10D analysis coherence repository verification passed.')
-console.log('- Day Flow has one authored default layout owner')
-console.log('- Battle Lines uses recommendedBattle as the UI recommendation owner')
-console.log('- selected-time ownership and provider separation are protected')
+console.log('Completed U10D analysis coherence verification passed.')
+console.log('- Day Flow default-layout ownership is permanent')
+console.log('- Battle Lines recommendation and selected-time ownership are permanent')
+console.log('- U10E remains exact next and uncreated')

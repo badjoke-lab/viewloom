@@ -1,0 +1,48 @@
+{
+  "schema": "viewloom-cross-site-quality-u10d-analysis-coherence-v1",
+  "phase": "U10D",
+  "status": "complete",
+  "implementation_pr": 462,
+  "implementation_head": "882ba418180c054d76e31e54ad8090559d96a23f",
+  "merge_commit": "203287bb9e1a28d6ad08f5fcb10ec1b261d84db5",
+  "canonical_closeout_pr": 464,
+  "scope": {
+    "providers": ["twitch", "kick"],
+    "routes": 4,
+    "viewports": [1440, 820, 390, 360],
+    "day_flow_scenarios": 12,
+    "battle_lines_scenarios": 8,
+    "total_browser_scenarios": 20
+  },
+  "ownership": {
+    "day_flow_default_layout": "wide",
+    "battle_lines_recommendation": "recommendedBattle",
+    "battle_lines_compatibility_fallback": "primaryBattle",
+    "selected_time_surfaces": [
+      "primary_summary",
+      "chart_cursor",
+      "time_inspector",
+      "public_time_url_state"
+    ]
+  },
+  "verification": {
+    "repository_verifier": "scripts/verify-quality-u10d-analysis-coherence.mjs",
+    "browser_verifier": "scripts/verify-quality-u10d-browser-evidence.mjs",
+    "workflow": ".github/workflows/quality-u10d-analysis-coherence.yml",
+    "result": "pass"
+  },
+  "boundary": {
+    "provider_separation_required": true,
+    "api_change_authorized": false,
+    "storage_change_authorized": false,
+    "binding_change_authorized": false,
+    "collector_change_authorized": false,
+    "cron_change_authorized": false,
+    "retention_change_authorized": false,
+    "output_schema_change_authorized": false,
+    "localization_runtime_change_authorized": false,
+    "provider_combination_authorized": false
+  },
+  "exact_next_branch": "work-quality-u10e-responsive",
+  "next_branch_created": false
+}
