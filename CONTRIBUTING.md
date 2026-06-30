@@ -19,7 +19,7 @@ U10A canonical closeout complete through PR #455
 Phase 10 U10B shared shell complete through PR #456
 U10B canonical closeout complete through PR #457
 Phase 10 U10C visualization complete through PR #458
-U10C canonical closeout active through PR #459
+U10C canonical closeout complete through PR #459
 Active implementation branch: none
 Exact next implementation branch: work-quality-u10d-analysis-coherence
 U10D branch created: no
@@ -42,4 +42,4 @@ canonical documents
   -> full report and stop
 ```
 
-Ordinary development uses `work-*`; deliberate runtime validation uses `preview-*`; `main` is production. Keep Twitch and Kick separated. Do not create U10D before closeout merge and explicit continuation.
+Ordinary development uses `work-*`; deliberate runtime validation uses `preview-*`; `main` is production. Keep Twitch and Kick separated. Do not create U10D before explicit continuation after the closeout report.
