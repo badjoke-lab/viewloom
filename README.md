@@ -25,12 +25,13 @@ Phase 10 U10B shared shell            complete PR #456
 U10B canonical closeout               complete PR #457
 Phase 10 U10C visualization           complete PR #458
 U10C canonical closeout               complete PR #459
-Active implementation branch          none
-Exact next branch                     work-quality-u10d-analysis-coherence
-U10D branch created                   no
+Phase 10 U10D analysis coherence      active
+Active implementation branch          work-quality-u10d-analysis-coherence
+Exact next branch after U10D          work-quality-u10e-responsive
+U10E branch created                   no
 ```
 
-Permanent Phase 10 evidence:
+Permanent evidence:
 
 ```text
 docs/audits/cross-site-quality-u10a-baseline.json
@@ -39,14 +40,16 @@ docs/audits/cross-site-quality-u10b-shared-shell.json
 docs/audits/cross-site-quality-u10c-visualization.json
 ```
 
+Active U10D record: `docs/work-in-progress/u10d-analysis-coherence.md`.
+
 ## Current sequence
 
 ```text
 U10A defect and ownership baseline       complete PR #454
 U10B shared shell                        complete PR #456
 U10C visualization                       complete PR #458
-U10D analysis coherence                  exact next
-U10E responsive and accessibility        queued
+U10D analysis coherence                  active
+U10E responsive and accessibility        exact next after U10D
 U10F readiness                           queued
 U10G architecture                        queued
 U10H acceptance                          queued
@@ -58,5 +61,3 @@ Phase 16 major feature                    not approved
 ```
 
 Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*` only when runtime validation is necessary. Only latest-head evidence counts. After every merge, issue the full report and stop.
-
-<!-- legacy-verifier transition marker only: U10C canonical closeout               active PR #459 -->
