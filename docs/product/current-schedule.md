@@ -26,6 +26,7 @@ U10D Day Flow scenarios: 12
 U10D Battle Lines scenarios: 8
 U10D total browser scenarios: 20
 U10D pair-control synchronization: covered
+U10A retained browser record: permanent historical evidence
 ```
 
 ```text
