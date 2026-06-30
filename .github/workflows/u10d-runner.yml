@@ -36,11 +36,12 @@ jobs:
         run: |
           rm scripts/u10d_patch_runtime.py scripts/u10d_patch_tests.py scripts/u10d_patch_finalize.py
           rm .github/workflows/u10d-bootstrap.yml
-      - name: Check generated JavaScript syntax
-        run: |
-          node --check apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs
-          node --check scripts/verify-quality-u10d-analysis-coherence.mjs
-          node --check scripts/verify-quality-u10d-browser-evidence.mjs
+      - name: Check U10D browser script syntax
+        run: node --check apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs
+      - name: Check U10D repository verifier syntax
+        run: node --check scripts/verify-quality-u10d-analysis-coherence.mjs
+      - name: Check U10D evidence verifier syntax
+        run: node --check scripts/verify-quality-u10d-browser-evidence.mjs
       - name: Verify development policy
         run: node scripts/verify-development-policy.mjs
       - name: Verify U10D repository contract
