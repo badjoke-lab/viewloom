@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map
-Last updated: 2026-06-29
+Last updated: 2026-06-30
 
 Read the development policy, documentation governance, roadmap, schedule, program plan, affected specifications, implementation plans, and permanent evidence before changing the repository.
 
@@ -18,7 +18,7 @@ U10A canonical closeout                          complete PR #455
 Phase 10 U10B shared shell                       complete PR #456
 U10B canonical closeout                          complete PR #457
 Phase 10 U10C visualization                      complete PR #458
-U10C canonical closeout                          active PR #459
+U10C canonical closeout                          complete PR #459
 Active implementation branch                    none
 Exact next implementation branch                work-quality-u10d-analysis-coherence
 U10D branch created                             no
@@ -40,4 +40,4 @@ U10D branch created                             no
 - `product/watchlist-v1-implementation-plan.md`
 - `operations/watchlist-production-acceptance-2026-06-25.md`
 
-U10D must not be created before U10C closeout merge, reporting, and explicit continuation.
+U10D remains exact next and uncreated.
