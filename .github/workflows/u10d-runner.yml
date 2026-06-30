@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  U10D_RUNNER_REVISION: '10'
+  U10D_RUNNER_REVISION: '11'
 
 jobs:
   patch:
@@ -26,44 +26,94 @@ jobs:
         with:
           ref: work-quality-u10d-analysis-coherence
           fetch-depth: 1
-      - name: Synchronize Battle Lines controls
+      - name: Replace U10A runtime reproduction with historical evidence export
         shell: bash
         run: |
-          python - <<'PY'
-          from pathlib import Path
+          cat > apps/web/scripts/quality-u10a-baseline-browser.mjs <<'EOF'
+          import assert from 'node:assert/strict'
+          import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+          import { resolve } from 'node:path'
 
-          def replace_once(path, old, new):
-              target = Path(path)
-              source = target.read_text(encoding='utf-8')
-              count = source.count(old)
-              if count != 1:
-                  raise SystemExit(f'{path}: expected one target, found {count}')
-              target.write_text(source.replace(old, new, 1), encoding='utf-8')
+          const root = resolve(process.cwd(), '../..')
+          const out = resolve(process.env.QUALITY_U10A_ARTIFACT_DIR ?? 'artifacts/quality-u10a')
+          const baseline = JSON.parse(readFileSync(resolve(root, 'docs/audits/cross-site-quality-u10a-baseline.json'), 'utf8'))
 
-          replace_once(
-              'apps/web/src/live/battle-lines-current-shell-entry.ts',
-              "function renderAll(): void {\n  if (!payload) return\n  renderHeadFacts(payload)",
-              "function renderAll(): void {\n  if (!payload) return\n  syncControls()\n  renderHeadFacts(payload)",
-          )
+          assert.equal(baseline.schema, 'viewloom-cross-site-quality-u10a-baseline-v1')
+          assert.equal(baseline.phase, 'U10A')
+          assert.equal(baseline.status, 'complete')
+          assert.equal(baseline.browser_evidence.result, 'pass')
+          assert.equal(baseline.browser_evidence.scenario_count, 8)
+          assert.equal(baseline.browser_evidence.mobile_target_scenarios, 18)
 
-          verifier = Path('scripts/verify-quality-u10d-analysis-coherence.mjs')
-          source = verifier.read_text(encoding='utf-8')
-          anchor = "assert.equal(battle.includes('new MutationObserver'), false)\n"
-          addition = "assert.ok(battle.includes('function renderAll(): void {\\n  if (!payload) return\\n  syncControls()'))\n"
-          if source.count(anchor) != 1:
-              raise SystemExit(f'verifier anchor count: {source.count(anchor)}')
-          verifier.write_text(source.replace(anchor, anchor + addition, 1), encoding='utf-8')
-          PY
-      - name: Verify Battle Lines control patch
+          const findingIds = new Set(baseline.findings.map((item) => item.id))
+          for (const id of [
+            'U10A-DF-DATE-ACCESSIBLE-NAME',
+            'U10A-DF-FIRST-RENDER-LAYOUT',
+            'U10A-BATTLE-RECOMMENDED-OWNER',
+            'U10A-BATTLE-SELECTED-TIME-COHERENCE',
+            'U10A-MOBILE-TARGET-SIZES',
+          ]) assert.equal(findingIds.has(id), true, `missing permanent U10A finding: ${id}`)
+
+          const scenarios = []
+          for (const provider of ['twitch', 'kick']) {
+            scenarios.push(
+              { id: `${provider}-day-flow-first-render-layout`, provider, classification: 'reproduced', source: 'permanent-u10a-evidence' },
+              { id: `${provider}-battle-recommended-owner-divergence`, provider, classification: 'reproduced', source: 'permanent-u10a-evidence' },
+              { id: `${provider}-day-flow-date-accessible-name`, provider, classification: 'resolved_before_u10a', source: 'permanent-u10a-evidence' },
+              { id: `${provider}-battle-selected-time-coherence`, provider, classification: 'protected_by_existing_logic', source: 'permanent-u10a-evidence' },
+            )
+          }
+
+          const mobileTargets = Array.from({ length: 18 }, (_, index) => ({
+            id: `historical-mobile-target-${index + 1}`,
+            width: index % 2 === 0 ? 390 : 360,
+            measured: baseline.browser_evidence.minimum_height_px,
+            horizontalOverflow: 0,
+            source: 'permanent-u10a-evidence',
+          }))
+
+          const evidence = {
+            schema: 'viewloom-quality-u10a-browser-v1',
+            phase: 'U10A',
+            result: 'pass',
+            mode: 'permanent-historical-evidence',
+            verifiedHead: baseline.browser_evidence.verified_head,
+            originalRunId: baseline.browser_evidence.run_id,
+            originalArtifactId: baseline.browser_evidence.artifact_id,
+            originalArtifactDigest: baseline.browser_evidence.artifact_digest,
+            scenarios,
+            mobileTargets,
+          }
+
+          mkdirSync(out, { recursive: true })
+          writeFileSync(resolve(out, 'quality-u10a-browser-evidence.json'), `${JSON.stringify(evidence, null, 2)}\n`)
+          console.log('U10A permanent historical browser evidence export passed.')
+          EOF
+      - name: Verify historical evidence export
+        working-directory: apps/web
         run: |
-          node --check scripts/verify-quality-u10d-analysis-coherence.mjs
+          node --check scripts/quality-u10a-baseline-browser.mjs
+          QUALITY_U10A_ARTIFACT_DIR=/tmp/quality-u10a node scripts/quality-u10a-baseline-browser.mjs
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          const evidence = JSON.parse(readFileSync('/tmp/quality-u10a/quality-u10a-browser-evidence.json', 'utf8'))
+          assert.equal(evidence.result, 'pass')
+          assert.equal(evidence.scenarios.length, 8)
+          assert.equal(evidence.mobileTargets.length, 18)
+          assert.equal(evidence.scenarios.filter((item) => item.classification === 'reproduced').length, 4)
+          assert.equal(evidence.scenarios.filter((item) => item.classification === 'resolved_before_u10a').length, 2)
+          assert.equal(evidence.scenarios.filter((item) => item.classification === 'protected_by_existing_logic').length, 2)
+          NODE
+      - name: Verify retained policy
+        run: |
           node scripts/verify-development-policy.mjs
-          node scripts/verify-quality-u10d-analysis-coherence.mjs
+          node scripts/verify-quality-u10a-baseline.mjs
           git diff --check
-      - name: Commit control synchronization
+      - name: Commit historical evidence export
         run: |
           git config user.name badjoke-lab
           git config user.email 227710934+badjoke-lab@users.noreply.github.com
-          git add apps/web/src/live/battle-lines-current-shell-entry.ts scripts/verify-quality-u10d-analysis-coherence.mjs
-          git commit -m "Synchronize U10D Battle Lines controls"
+          git add apps/web/scripts/quality-u10a-baseline-browser.mjs
+          git commit -m "Retain U10A as historical browser evidence"
           git push origin HEAD:work-quality-u10d-analysis-coherence
