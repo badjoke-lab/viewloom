@@ -56,6 +56,7 @@ for (const forbidden of [
 ]) assert.equal(battle.includes(forbidden), false, `stale recommendation owner remains: ${forbidden}`)
 assert.equal(battle.includes('window.fetch ='), false)
 assert.equal(battle.includes('new MutationObserver'), false)
+assert.ok(battle.includes('function renderAll(): void {\n  if (!payload) return\n  syncControls()'))
 
 const core = read('apps/web/functions/_lib/battle-lines-core.ts')
 assert.ok(core.includes('recommendedBattle: primaryBattle'))

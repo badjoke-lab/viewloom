@@ -136,6 +136,7 @@ async function hydrate(options: { preserveBattle?: boolean; preserveTime?: boole
 
 function renderAll(): void {
   if (!payload) return
+  syncControls()
   renderHeadFacts(payload)
   renderStatus(payload)
   renderPrimary(payload)
