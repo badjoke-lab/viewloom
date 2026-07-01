@@ -12,13 +12,13 @@ const required = [
   'docs/product/post-watchlist-program-plan.md',
   'docs/product/cross-site-quality-remediation-spec.md',
   'docs/product/cross-site-quality-remediation-plan.md',
-  'docs/work-in-progress/u10f-readiness.md',
   'docs/audits/cross-site-quality-u10a-baseline.json',
   'docs/audits/cross-site-quality-u10a-owner-map.json',
   'docs/audits/cross-site-quality-u10b-shared-shell.json',
   'docs/audits/cross-site-quality-u10c-visualization.json',
   'docs/audits/cross-site-quality-u10d-analysis-coherence.json',
   'docs/audits/cross-site-quality-u10e-responsive.json',
+  'docs/audits/cross-site-quality-u10f-readiness.json',
   'docs/audits/public-surface-inventory.json',
   'apps/web/scripts/public-readiness-audit.mjs',
   'apps/web/scripts/quality-u10f-readiness-browser.mjs',
@@ -40,6 +40,7 @@ for (const path of [
   'docs/work-in-progress/u10c-visualization.md',
   'docs/work-in-progress/u10d-analysis-coherence.md',
   'docs/work-in-progress/u10e-responsive.md',
+  'docs/work-in-progress/u10f-readiness.md',
   'scripts/u10d_patch_runtime.py',
   'scripts/u10d_patch_tests.py',
   'scripts/u10d_patch_docs.py',
@@ -47,29 +48,19 @@ for (const path of [
 ]) assert.equal(existsSync(join(root, path)), false, `temporary file remains: ${path}`)
 
 const stateChecks = [
-  ['README.md', ['Phase 10 U10F readiness               active', 'Active implementation branch          work-quality-u10f-readiness', 'Exact next branch after U10F          work-quality-u10g-architecture']],
-  ['docs/README.md', ['Phase 10 U10F readiness                          active', 'Active implementation branch                    work-quality-u10f-readiness', 'Exact next implementation branch                work-quality-u10g-architecture']],
-  ['AGENTS.md', ['U10F readiness active', 'Active implementation branch: work-quality-u10f-readiness', 'Exact next branch: work-quality-u10g-architecture']],
-  ['CONTRIBUTING.md', ['Phase 10 U10F readiness active', 'Active implementation branch: work-quality-u10f-readiness', 'Exact next implementation branch: work-quality-u10g-architecture']],
-  ['docs/product/current-roadmap.md', ['Phase 10 U10F readiness active', 'Active implementation branch: work-quality-u10f-readiness', 'Exact next branch: work-quality-u10g-architecture']],
-  ['docs/product/current-schedule.md', ['U10F readiness active', 'Active branch: work-quality-u10f-readiness', 'Next branch: work-quality-u10g-architecture']],
-  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10F readiness', 'Current implementation branch: `work-quality-u10f-readiness`', 'Exact next implementation branch: `work-quality-u10g-architecture`']],
-  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: `work-quality-u10f-readiness`', 'Active phase: U10F public readiness and Channel entry', 'Exact next branch: `work-quality-u10g-architecture`']],
+  ['README.md', ['Phase 10 U10F readiness               complete PR #468', 'U10F canonical closeout               complete PR #469', 'Active implementation branch          none', 'Exact next implementation branch      work-quality-u10g-architecture']],
+  ['docs/README.md', ['Phase 10 U10F readiness                          complete PR #468', 'U10F canonical closeout                          complete PR #469', 'Active implementation branch                    none', 'Exact next implementation branch                work-quality-u10g-architecture']],
+  ['AGENTS.md', ['U10F implementation complete PR #468', 'U10F closeout complete PR #469', 'Active implementation branch: none', 'Exact next branch: work-quality-u10g-architecture']],
+  ['CONTRIBUTING.md', ['Phase 10 U10F readiness complete through PR #468', 'U10F canonical closeout complete through PR #469', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-u10g-architecture']],
+  ['docs/product/current-roadmap.md', ['Phase 10 U10F readiness complete PR #468', 'U10F canonical closeout complete PR #469', 'Active implementation branch: none', 'Exact next branch: work-quality-u10g-architecture']],
+  ['docs/product/current-schedule.md', ['U10F readiness complete PR #468', 'U10F closeout complete PR #469', 'Active branch: none', 'Next branch: work-quality-u10g-architecture']],
+  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10G architecture exact next', 'Current implementation branch: none', 'Exact next implementation branch: `work-quality-u10g-architecture`', 'Completed U10F canonical closeout: PR #469']],
+  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: none', 'Completed phase: U10F through PR #468', 'Completed canonical closeout: U10F through PR #469', 'Exact next branch: `work-quality-u10g-architecture`']],
 ]
 for (const [path, fragments] of stateChecks) {
   const source = read(path)
   for (const fragment of fragments) assert.ok(source.includes(fragment), `${path}: missing ${fragment}`)
 }
-
-const note = read('docs/work-in-progress/u10f-readiness.md')
-for (const fragment of [
-  'Status: active',
-  'work-quality-u10f-readiness',
-  'work-quality-u10g-architecture',
-  'Public Readiness audits all 20 repository-owned HTML routes',
-  'Production Smoke owns 20 repository-owned HTML routes',
-  'Missing-id entry makes zero Twitch or Kick History requests.',
-]) assert.ok(note.includes(fragment), `U10F working note missing ${fragment}`)
 
 const records = [
   JSON.parse(read('docs/audits/cross-site-quality-u10a-baseline.json')),
@@ -77,12 +68,13 @@ const records = [
   JSON.parse(read('docs/audits/cross-site-quality-u10c-visualization.json')),
   JSON.parse(read('docs/audits/cross-site-quality-u10d-analysis-coherence.json')),
   JSON.parse(read('docs/audits/cross-site-quality-u10e-responsive.json')),
+  JSON.parse(read('docs/audits/cross-site-quality-u10f-readiness.json')),
 ]
 for (const record of records) {
   assert.equal(record.status, 'complete')
   assert.equal(record.boundary.provider_separation_required, true)
 }
-const u10e = records.at(-1)
+const u10e = records.at(-2)
 assert.equal(u10e.implementation_pr, 465)
 assert.equal(u10e.canonical_closeout_pr, 466)
 assert.equal(u10e.scope.total_browser_scenarios, 36)
@@ -90,6 +82,18 @@ assert.equal(u10e.responsive_contract.mobile_target_floor_px, 44)
 assert.equal(u10e.responsive_contract.important_action_floor_px, 48)
 assert.equal(u10e.responsive_contract.page_horizontal_overflow_px, 0)
 assert.equal(u10e.exact_next_branch, 'work-quality-u10f-readiness')
+
+const u10f = records.at(-1)
+assert.equal(u10f.implementation_pr, 468)
+assert.equal(u10f.canonical_closeout_pr, 469)
+assert.equal(u10f.scope.public_readiness_routes, 20)
+assert.equal(u10f.scope.production_smoke_routes, 20)
+assert.equal(u10f.scope.total_browser_scenarios, 8)
+assert.equal(u10f.readiness_contract.production_acceptance_claimed, false)
+assert.equal(u10f.readiness_contract.production_acceptance_owner, 'U10H')
+assert.equal(u10f.browser_evidence.result, 'pass')
+assert.equal(u10f.exact_next_branch, 'work-quality-u10g-architecture')
+assert.equal(u10f.next_branch_created, false)
 
 const inventory = JSON.parse(read('docs/audits/public-surface-inventory.json'))
 assert.equal(inventory.counts.public_readiness_configured_pages, 20)
@@ -118,6 +122,6 @@ assert.equal(battle.includes('window.fetch ='), false)
 assert.equal(battle.includes('new MutationObserver'), false)
 
 console.log('ViewLoom development and documentation verification passed.')
-console.log('- U10A through U10E remain permanent evidence')
-console.log('- U10F readiness is active and U10G architecture is exact next')
+console.log('- U10A through U10F remain permanent evidence')
+console.log('- U10G architecture is exact next and remains uncreated')
 console.log('- Twitch and Kick remain separate')
