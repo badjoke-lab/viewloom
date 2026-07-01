@@ -1,0 +1,79 @@
+{
+  "schema": "viewloom-cross-site-quality-u10f-readiness-v1",
+  "phase": "U10F",
+  "status": "complete",
+  "implementation_pr": 468,
+  "implementation_head": "cf655ace5f61e9b70552afefcd26ddceda76a253",
+  "merge_commit": "5884c2335a66b4fdf9acf5223a4d3843eaafadb1",
+  "canonical_closeout_pr": 469,
+  "scope": {
+    "providers": ["twitch", "kick"],
+    "public_readiness_routes": 20,
+    "production_smoke_routes": 20,
+    "channel_missing_id_routes": 2,
+    "viewports": [1440, 820, 390, 360],
+    "total_browser_scenarios": 8
+  },
+  "readiness_contract": {
+    "route_inventory_is_authority": true,
+    "separate_manual_provider_array": false,
+    "watchlist_routes_required": 2,
+    "production_smoke_route_count_asserted": 20,
+    "provider_status_checks_retained": true,
+    "separate_d1_binding_checks_retained": true,
+    "collector_freshness_checks_retained": true,
+    "explicit_404_checks_retained": true,
+    "production_acceptance_claimed": false,
+    "production_acceptance_owner": "U10H"
+  },
+  "channel_entry_contract": {
+    "history_requests_without_channel_id": 0,
+    "primary_actions_per_route": 1,
+    "provider_safe_history_action": true,
+    "irrelevant_regions_hidden": true,
+    "irrelevant_regions_inert": true,
+    "important_action_floor_px": 48,
+    "page_horizontal_overflow_px": 0,
+    "visible_focus_required": true
+  },
+  "browser_evidence": {
+    "run_id": 28519749704,
+    "artifact_id": 8010896825,
+    "artifact_digest": "sha256:e56238d94c0fa08a6e02a782ad58bce6e4a90d7233f9c2ac7e74677cfa2e0240",
+    "result": "pass",
+    "scenarios": 8,
+    "providers": 2,
+    "viewports_per_provider": 4,
+    "history_request_failures": 0,
+    "provider_crossing_failures": 0,
+    "primary_action_count_failures": 0,
+    "important_action_failures": 0,
+    "focus_failures": 0,
+    "hidden_region_failures": 0,
+    "inert_region_failures": 0,
+    "horizontal_overflow_failures": 0
+  },
+  "verification": {
+    "repository_verifier": "scripts/verify-quality-u10f-readiness.mjs",
+    "browser_verifier": "scripts/verify-quality-u10f-browser-evidence.mjs",
+    "workflow": ".github/workflows/quality-u10f-readiness.yml",
+    "public_readiness_workflow": ".github/workflows/public-readiness-audit.yml",
+    "production_smoke_workflow": ".github/workflows/production-smoke.yml",
+    "result": "pass"
+  },
+  "boundary": {
+    "provider_separation_required": true,
+    "api_change_authorized": false,
+    "storage_change_authorized": false,
+    "binding_change_authorized": false,
+    "collector_change_authorized": false,
+    "cron_change_authorized": false,
+    "retention_change_authorized": false,
+    "output_schema_change_authorized": false,
+    "localization_runtime_change_authorized": false,
+    "provider_combination_authorized": false,
+    "channel_search_authorized": false
+  },
+  "exact_next_branch": "work-quality-u10g-architecture",
+  "next_branch_created": false
+}
