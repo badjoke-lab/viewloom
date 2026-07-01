@@ -1,7 +1,7 @@
 # ViewLoom current roadmap
 
 Status: source of truth
-Last updated: 2026-07-01
+Last updated: 2026-07-02
 
 ```text
 Phase 8 P8B complete PR #428
@@ -18,19 +18,19 @@ Phase 10 U10D analysis coherence complete PR #462
 U10D canonical closeout complete PR #464
 Phase 10 U10E responsive and accessibility complete PR #465
 U10E canonical closeout complete PR #466
-Phase 10 U10F readiness active
-Active implementation branch: work-quality-u10f-readiness
+Phase 10 U10F readiness complete PR #468
+U10F canonical closeout complete PR #469
+Active implementation branch: none
 Exact next branch: work-quality-u10g-architecture
 U10G branch created: no
 ```
 
-Active U10F record: `docs/work-in-progress/u10f-readiness.md`.
-Permanent U10E record: `docs/audits/cross-site-quality-u10e-responsive.json`.
+Permanent U10F record: `docs/audits/cross-site-quality-u10f-readiness.json`.
 
 ```text
 U10E responsive and accessibility complete
-U10F readiness active
-U10G architecture exact next after U10F
+U10F readiness complete
+U10G architecture exact next
 U10H acceptance queued
 Phase 11 acceptance and operations queued
 Phase 12 release readiness queued
