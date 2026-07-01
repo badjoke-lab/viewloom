@@ -27,9 +27,10 @@ Phase 10 U10C visualization           complete PR #458
 U10C canonical closeout               complete PR #459
 Phase 10 U10D analysis coherence      complete PR #462
 U10D canonical closeout               complete PR #464
-Phase 10 U10E responsive repair       active
-Active implementation branch          work-quality-u10e-responsive
-Exact next branch after U10E          work-quality-u10f-readiness
+Phase 10 U10E responsive repair       complete PR #465
+U10E canonical closeout               complete PR #466
+Active implementation branch          none
+Exact next implementation branch      work-quality-u10f-readiness
 U10F branch created                   no
 ```
 
@@ -41,9 +42,8 @@ docs/audits/cross-site-quality-u10a-owner-map.json
 docs/audits/cross-site-quality-u10b-shared-shell.json
 docs/audits/cross-site-quality-u10c-visualization.json
 docs/audits/cross-site-quality-u10d-analysis-coherence.json
+docs/audits/cross-site-quality-u10e-responsive.json
 ```
-
-Active U10E record: `docs/work-in-progress/u10e-responsive.md`.
 
 ## Current sequence
 
@@ -52,8 +52,8 @@ U10A defect and ownership baseline       complete PR #454
 U10B shared shell                        complete PR #456
 U10C visualization                       complete PR #458
 U10D analysis coherence                  complete PR #462
-U10E responsive and accessibility        active
-U10F readiness                           exact next after U10E
+U10E responsive and accessibility        complete PR #465
+U10F readiness                           exact next
 U10G architecture                        queued
 U10H acceptance                          queued
 Phase 11 acceptance and operations       queued
