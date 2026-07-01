@@ -9,11 +9,17 @@ on:
       - main
     paths:
       - 'apps/web/**'
+      - 'docs/audits/public-surface-routes-portal.json'
+      - 'docs/audits/public-surface-routes-twitch.json'
+      - 'docs/audits/public-surface-routes-kick.json'
       - 'package.json'
       - '.github/workflows/public-readiness-audit.yml'
   pull_request:
     paths:
       - 'apps/web/**'
+      - 'docs/audits/public-surface-routes-portal.json'
+      - 'docs/audits/public-surface-routes-twitch.json'
+      - 'docs/audits/public-surface-routes-kick.json'
       - 'package.json'
       - '.github/workflows/public-readiness-audit.yml'
 
