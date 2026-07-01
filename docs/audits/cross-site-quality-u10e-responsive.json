@@ -1,0 +1,58 @@
+{
+  "schema": "viewloom-cross-site-quality-u10e-responsive-v1",
+  "phase": "U10E",
+  "status": "complete",
+  "implementation_pr": 465,
+  "implementation_head": "916c544eef39a186ebde40037047197b1f33e378",
+  "merge_commit": "cae92973d6185f9e0f81151ab94260229dc65287",
+  "canonical_closeout_pr": 0,
+  "scope": {
+    "providers": ["twitch", "kick"],
+    "routes": 9,
+    "viewports": [1440, 820, 390, 360],
+    "total_browser_scenarios": 36
+  },
+  "responsive_contract": {
+    "mobile_target_floor_px": 44,
+    "important_action_floor_px": 48,
+    "page_horizontal_overflow_px": 0,
+    "visible_focus_required": true,
+    "accessible_names_required": true,
+    "reduced_motion_covered": true,
+    "forced_colors_covered": true,
+    "day_flow_utc_date_label_preserved": true
+  },
+  "browser_evidence": {
+    "run_id": 28472230004,
+    "artifact_id": 7992181629,
+    "artifact_digest": "sha256:1af5844d41968763fcade5f56179e46b6b67c7e6c3a96139e3bccff7450b27a5",
+    "result": "pass",
+    "scenarios": 36,
+    "horizontal_overflow_failures": 0,
+    "unnamed_control_failures": 0,
+    "mobile_target_failures": 0,
+    "important_action_failures": 0,
+    "focus_failures": 0,
+    "date_label_failures": 0
+  },
+  "verification": {
+    "repository_verifier": "scripts/verify-quality-u10e-responsive.mjs",
+    "browser_verifier": "scripts/verify-quality-u10e-browser-evidence.mjs",
+    "workflow": ".github/workflows/quality-u10e-responsive.yml",
+    "result": "pass"
+  },
+  "boundary": {
+    "provider_separation_required": true,
+    "api_change_authorized": false,
+    "storage_change_authorized": false,
+    "binding_change_authorized": false,
+    "collector_change_authorized": false,
+    "cron_change_authorized": false,
+    "retention_change_authorized": false,
+    "output_schema_change_authorized": false,
+    "localization_runtime_change_authorized": false,
+    "provider_combination_authorized": false
+  },
+  "exact_next_branch": "work-quality-u10f-readiness",
+  "next_branch_created": false
+}
