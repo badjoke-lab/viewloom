@@ -12,8 +12,9 @@ U10C complete PR #458
 U10C closeout complete PR #459
 U10D complete PR #462
 U10D closeout complete PR #464
-U10E responsive and accessibility active
-Active branch: work-quality-u10e-responsive
+U10E responsive and accessibility complete PR #465
+U10E closeout complete PR #466
+Active branch: none
 Next branch: work-quality-u10f-readiness
 U10F created: no
 ```
@@ -33,12 +34,13 @@ U10E required widths: 1440 / 820 / 390 / 360
 U10E total browser scenarios: 36
 U10E mobile target floor: 44px
 U10E important action floor: 48px
+U10E accepted horizontal overflow: 0
 ```
 
 ```text
 U10D analysis coherence complete
-U10E responsive and accessibility active
-U10F readiness next
+U10E responsive and accessibility complete
+U10F readiness exact next
 U10G architecture queued
 U10H acceptance queued
 ```
