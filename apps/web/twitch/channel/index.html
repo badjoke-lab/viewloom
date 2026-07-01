@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="/src/mock-site.css" />
   <link rel="stylesheet" href="/src/history-page.css" />
 </head>
-<body data-provider="twitch" data-page="twitch-channel">
+<body data-provider="twitch" data-page="twitch-channel" data-channel-entry="loading">
 <div class="site-frame">
   <header class="masthead"><div class="masthead__inner">
     <a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
@@ -33,16 +33,20 @@
         <div class="kicker">TWITCH DATA · CHANNEL FOOTPRINT</div>
         <h1 data-channel-name>Loading channel…</h1>
         <p class="lede" data-channel-provider>Twitch retained ranking footprint</p>
-        <div class="channel-profile-title__meta"><span class="history-state-pill history-state-pill--loading" data-channel-state>Loading</span><span data-channel-period-label>Last 30 days</span><a data-channel-external href="https://www.twitch.tv/" rel="noopener noreferrer">Open on Twitch</a></div>
+        <div class="channel-profile-title__meta"><span class="history-state-pill history-state-pill--loading" data-channel-state>Loading</span><span data-channel-period-label>Last 30 days</span><a data-channel-external data-channel-requires-id href="https://www.twitch.tv/" rel="noopener noreferrer">Open on Twitch</a></div>
       </div>
       <div class="head-facts channel-evidence-facts">
         <div class="fact"><small>Provider</small><strong>Twitch only</strong></div><div class="fact"><small>Period</small><strong data-channel-period-fact>Last 30 days</strong></div><div class="fact"><small>Source / state</small><strong data-channel-source>Loading</strong></div><div class="fact"><small>Observed scope</small><strong data-channel-observed>Loading</strong></div><div class="fact"><small>Retained appearances</small><strong data-channel-appearances>Loading</strong></div><div class="fact"><small>Session history</small><strong>Unavailable</strong></div>
       </div>
     </section>
-    <section class="channel-profile-controls" aria-label="Channel history controls"><div class="history-control-section"><span class="toolbar-label">Period</span><div class="control-group"><button type="button" data-channel-period="7d" aria-pressed="false">Last 7 days</button><button type="button" data-channel-period="30d" aria-pressed="true">Last 30 days</button></div></div><div class="channel-profile-actions"><button class="button button--paper" type="button" data-channel-copy-url>Copy current URL</button><a class="button button--paper" href="/twitch/history/">Back to History</a></div></section>
+    <section class="channel-profile-controls" data-channel-requires-id aria-label="Channel history controls"><div class="history-control-section"><span class="toolbar-label">Period</span><div class="control-group"><button type="button" data-channel-period="7d" aria-pressed="false">Last 7 days</button><button type="button" data-channel-period="30d" aria-pressed="true">Last 30 days</button></div></div><div class="channel-profile-actions"><button class="button button--paper" type="button" data-channel-copy-url>Copy current URL</button><a class="button button--paper" href="/twitch/history/">Back to History</a></div></section>
     <p class="channel-profile-feedback" data-channel-feedback aria-live="polite">Loading retained ranking footprint…</p>
-    <nav class="channel-task-tabs" aria-label="Channel tasks"><button type="button" data-channel-view="overview" aria-pressed="true">Overview</button><button type="button" data-channel-view="days" aria-pressed="false">Retained Days</button><button type="button" data-channel-view="report" aria-pressed="false">Report &amp; Export</button></nav>
-    <section class="channel-task-panel" data-channel-view-panel="overview">
+    <section class="surface channel-missing-entry" data-channel-missing-entry hidden aria-labelledby="channel-missing-title">
+      <div><small>Channel required</small><h2 id="channel-missing-title">Select a Twitch channel from History</h2><p>This page opens a retained channel footprint after a channel is selected from the Twitch History ranking. No channel data is requested until then.</p></div>
+      <a class="button" data-channel-missing-action href="/twitch/history/">Open Twitch History</a>
+    </section>
+    <nav class="channel-task-tabs" data-channel-requires-id aria-label="Channel tasks"><button type="button" data-channel-view="overview" aria-pressed="true">Overview</button><button type="button" data-channel-view="days" aria-pressed="false">Retained Days</button><button type="button" data-channel-view="report" aria-pressed="false">Report &amp; Export</button></nav>
+    <section class="channel-task-panel" data-channel-requires-id data-channel-view-panel="overview">
       <section class="channel-profile-summary" data-channel-summary><div class="notice">Loading channel summary…</div></section>
       <div class="rule-title"><h2>Daily footprint</h2><span>Retained daily Top 10 only</span></div>
       <section class="surface channel-profile-surface" data-channel-trend><div class="notice">Loading daily footprint…</div></section>
@@ -53,9 +57,9 @@
       <div class="rule-title"><h2>Rivalry candidates</h2><span>Up to three day-level aggregate pairs</span></div>
       <section class="channel-rival-grid" data-channel-rivals><div class="notice">Loading rivalry candidates…</div></section>
     </section>
-    <section class="channel-task-panel" data-channel-view-panel="days" hidden><div class="rule-title"><h2>Retained Days</h2><span>Days where this channel appears in daily Top 10</span></div><section class="channel-day-grid" data-channel-days><div class="notice">Loading retained days…</div></section></section>
-    <section class="channel-task-panel" data-channel-view-panel="report" hidden><div class="rule-title"><h2>Report &amp; Export</h2><span>Current retained evidence and reusable link</span></div><section class="surface channel-profile-surface channel-report-foundation"><p>Use the current URL to preserve this provider, channel, period, task, and selected-day state.</p><button class="button button--paper" type="button" data-channel-copy-url>Copy current URL</button><p class="channel-copy-feedback" data-channel-copy-feedback aria-live="polite"></p></section></section>
-    <div class="rule-title"><h2>Scope &amp; limits</h2><span>What this page can prove</span></div><section class="surface channel-profile-surface channel-profile-scope" data-channel-scope><p>Loading scope notes…</p></section>
+    <section class="channel-task-panel" data-channel-requires-id data-channel-view-panel="days" hidden><div class="rule-title"><h2>Retained Days</h2><span>Days where this channel appears in daily Top 10</span></div><section class="channel-day-grid" data-channel-days><div class="notice">Loading retained days…</div></section></section>
+    <section class="channel-task-panel" data-channel-requires-id data-channel-view-panel="report" hidden><div class="rule-title"><h2>Report &amp; Export</h2><span>Current retained evidence and reusable link</span></div><section class="surface channel-profile-surface channel-report-foundation"><p>Use the current URL to preserve this provider, channel, period, task, and selected-day state.</p><button class="button button--paper" type="button" data-channel-copy-url>Copy current URL</button><p class="channel-copy-feedback" data-channel-copy-feedback aria-live="polite"></p></section></section>
+    <div class="rule-title" data-channel-requires-id><h2>Scope &amp; limits</h2><span>What this page can prove</span></div><section class="surface channel-profile-surface channel-profile-scope" data-channel-requires-id data-channel-scope><p>Loading scope notes…</p></section>
   </main>
   <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method &amp; limits</a><a href="/support/">Support</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
 </div>
