@@ -1,7 +1,7 @@
 # ViewLoom current execution schedule
 
 Status: source of truth
-Last updated: 2026-07-01
+Last updated: 2026-07-02
 
 ```text
 Phase 8 complete PR #428
@@ -14,8 +14,9 @@ U10D complete PR #462
 U10D closeout complete PR #464
 U10E responsive and accessibility complete PR #465
 U10E closeout complete PR #466
-U10F readiness active
-Active branch: work-quality-u10f-readiness
+U10F readiness complete PR #468
+U10F closeout complete PR #469
+Active branch: none
 Next branch: work-quality-u10g-architecture
 U10G created: no
 ```
@@ -41,12 +42,13 @@ U10F Production Smoke routes: 20
 U10F missing-id browser scenarios: 8
 U10F missing-id History requests: 0
 U10F missing-id primary actions: 1 per provider route
+U10F production acceptance: not claimed; owned by U10H
 ```
 
 ```text
 U10D analysis coherence complete
 U10E responsive and accessibility complete
-U10F readiness active
+U10F readiness complete
 U10G architecture exact next
 U10H acceptance queued
 ```

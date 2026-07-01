@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map
-Last updated: 2026-07-01
+Last updated: 2026-07-02
 
 Read the development policy, documentation governance, roadmap, schedule, program plan, affected specifications, implementation plans, and permanent evidence before changing the repository.
 
@@ -23,8 +23,9 @@ Phase 10 U10D analysis coherence                 complete PR #462
 U10D canonical closeout                          complete PR #464
 Phase 10 U10E responsive and accessibility       complete PR #465
 U10E canonical closeout                          complete PR #466
-Phase 10 U10F readiness                          active
-Active implementation branch                    work-quality-u10f-readiness
+Phase 10 U10F readiness                          complete PR #468
+U10F canonical closeout                          complete PR #469
+Active implementation branch                    none
 Exact next implementation branch                work-quality-u10g-architecture
 U10G branch created                             no
 ```
@@ -33,13 +34,13 @@ U10G branch created                             no
 
 - Phase 10–11 specification: `product/cross-site-quality-remediation-spec.md`
 - Phase 10–11 plan: `product/cross-site-quality-remediation-plan.md`
-- U10F working record: `work-in-progress/u10f-readiness.md`
 - U10A permanent defect ledger: `audits/cross-site-quality-u10a-baseline.json`
 - U10A permanent owner map: `audits/cross-site-quality-u10a-owner-map.json`
 - U10B permanent shared shell record: `audits/cross-site-quality-u10b-shared-shell.json`
 - U10C permanent visualization record: `audits/cross-site-quality-u10c-visualization.json`
 - U10D permanent analysis-coherence record: `audits/cross-site-quality-u10d-analysis-coherence.json`
 - U10E permanent responsive record: `audits/cross-site-quality-u10e-responsive.json`
+- U10F permanent readiness record: `audits/cross-site-quality-u10f-readiness.json`
 - Permanent History acceptance: `operations/history-production-acceptance-2026-06-28.md`
 
 ## Permanent Watchlist records
@@ -48,4 +49,4 @@ U10G branch created                             no
 - `product/watchlist-v1-implementation-plan.md`
 - `operations/watchlist-production-acceptance-2026-06-25.md`
 
-The U10E handoff fields are completed evidence. Current execution state is owned by this index, the roadmap, and the schedule.
+The U10F handoff fields are completed evidence. Current execution state is owned by this index, the roadmap, and the schedule.
