@@ -42,7 +42,7 @@ for (const route of sitemapRoutes) {
 }
 
 const report = {
-  schema: 'viewloom-public-readiness-v2',
+  schema: 'viewloom-public-readiness-v1',
   generated_at: new Date().toISOString(),
   build_root: 'apps/web/dist',
   ownership: {
