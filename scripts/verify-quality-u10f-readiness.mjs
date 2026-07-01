@@ -5,7 +5,7 @@ import { join } from 'node:path'
 const root = process.cwd()
 const read = (path) => readFileSync(join(root, path), 'utf8')
 const required = [
-  'docs/work-in-progress/u10f-readiness.md',
+  'docs/audits/cross-site-quality-u10f-readiness.json',
   'docs/audits/public-surface-inventory.json',
   'docs/audits/public-surface-routes-portal.json',
   'docs/audits/public-surface-routes-twitch.json',
@@ -23,17 +23,55 @@ const required = [
   '.github/workflows/quality-u10f-readiness.yml',
 ]
 for (const path of required) assert.equal(existsSync(join(root, path)), true, `missing file: ${path}`)
+assert.equal(existsSync(join(root, 'docs/work-in-progress/u10f-readiness.md')), false, 'temporary U10F working note remains')
 
-const note = read('docs/work-in-progress/u10f-readiness.md')
-for (const fragment of [
-  'Status: active',
-  'work-quality-u10f-readiness',
-  'work-quality-u10g-architecture',
-  'all 20 repository-owned HTML routes',
-  'Production Smoke owns 20 repository-owned HTML routes',
-  'Missing-id entry makes zero Twitch or Kick History requests.',
-  'APIs, D1 schemas, bindings, collectors, cron, retention, output schemas, localization runtime, and provider separation remain unchanged.',
-]) assert.ok(note.includes(fragment), `U10F note missing ${fragment}`)
+const record = JSON.parse(read('docs/audits/cross-site-quality-u10f-readiness.json'))
+assert.equal(record.schema, 'viewloom-cross-site-quality-u10f-readiness-v1')
+assert.equal(record.phase, 'U10F')
+assert.equal(record.status, 'complete')
+assert.equal(record.implementation_pr, 468)
+assert.equal(record.implementation_head, 'cf655ace5f61e9b70552afefcd26ddceda76a253')
+assert.equal(record.merge_commit, '5884c2335a66b4fdf9acf5223a4d3843eaafadb1')
+assert.equal(record.canonical_closeout_pr, 469)
+assert.deepEqual(record.scope.providers, ['twitch', 'kick'])
+assert.equal(record.scope.public_readiness_routes, 20)
+assert.equal(record.scope.production_smoke_routes, 20)
+assert.equal(record.scope.channel_missing_id_routes, 2)
+assert.deepEqual(record.scope.viewports, [1440, 820, 390, 360])
+assert.equal(record.scope.total_browser_scenarios, 8)
+assert.equal(record.readiness_contract.route_inventory_is_authority, true)
+assert.equal(record.readiness_contract.separate_manual_provider_array, false)
+assert.equal(record.readiness_contract.watchlist_routes_required, 2)
+assert.equal(record.readiness_contract.production_smoke_route_count_asserted, 20)
+assert.equal(record.readiness_contract.provider_status_checks_retained, true)
+assert.equal(record.readiness_contract.separate_d1_binding_checks_retained, true)
+assert.equal(record.readiness_contract.collector_freshness_checks_retained, true)
+assert.equal(record.readiness_contract.explicit_404_checks_retained, true)
+assert.equal(record.readiness_contract.production_acceptance_claimed, false)
+assert.equal(record.readiness_contract.production_acceptance_owner, 'U10H')
+assert.equal(record.channel_entry_contract.history_requests_without_channel_id, 0)
+assert.equal(record.channel_entry_contract.primary_actions_per_route, 1)
+assert.equal(record.channel_entry_contract.provider_safe_history_action, true)
+assert.equal(record.channel_entry_contract.irrelevant_regions_hidden, true)
+assert.equal(record.channel_entry_contract.irrelevant_regions_inert, true)
+assert.equal(record.channel_entry_contract.important_action_floor_px, 48)
+assert.equal(record.channel_entry_contract.page_horizontal_overflow_px, 0)
+assert.equal(record.channel_entry_contract.visible_focus_required, true)
+assert.equal(record.browser_evidence.run_id, 28519749704)
+assert.equal(record.browser_evidence.artifact_id, 8010896825)
+assert.equal(record.browser_evidence.artifact_digest, 'sha256:e56238d94c0fa08a6e02a782ad58bce6e4a90d7233f9c2ac7e74677cfa2e0240')
+assert.equal(record.browser_evidence.result, 'pass')
+assert.equal(record.browser_evidence.scenarios, 8)
+for (const key of ['history_request_failures', 'provider_crossing_failures', 'primary_action_count_failures', 'important_action_failures', 'focus_failures', 'hidden_region_failures', 'inert_region_failures', 'horizontal_overflow_failures']) {
+  assert.equal(record.browser_evidence[key], 0, `U10F browser failure count changed: ${key}`)
+}
+assert.equal(record.verification.result, 'pass')
+assert.equal(record.boundary.provider_separation_required, true)
+for (const key of ['api_change_authorized', 'storage_change_authorized', 'binding_change_authorized', 'collector_change_authorized', 'cron_change_authorized', 'retention_change_authorized', 'output_schema_change_authorized', 'localization_runtime_change_authorized', 'provider_combination_authorized', 'channel_search_authorized']) {
+  assert.equal(record.boundary[key], false, `U10F boundary changed: ${key}`)
+}
+assert.equal(record.exact_next_branch, 'work-quality-u10g-architecture')
+assert.equal(record.next_branch_created, false)
 
 const inventory = JSON.parse(read('docs/audits/public-surface-inventory.json'))
 assert.equal(inventory.schema, 'viewloom-public-surface-inventory-v1')
@@ -55,6 +93,7 @@ for (const route of ['/twitch/watchlist/', '/kick/watchlist/', '/twitch/channel/
 
 const readiness = read('apps/web/scripts/public-readiness-audit.mjs')
 for (const fragment of [
+  "schema: 'viewloom-public-readiness-v1'",
   'docs/audits/public-surface-routes-portal.json',
   'docs/audits/public-surface-routes-twitch.json',
   'docs/audits/public-surface-routes-kick.json',
@@ -124,14 +163,14 @@ for (const fragment of [
 ]) assert.ok(browser.includes(fragment), `U10F browser acceptance missing ${fragment}`)
 
 for (const [path, fragments] of [
-  ['README.md', ['Phase 10 U10F readiness               active', 'Active implementation branch          work-quality-u10f-readiness', 'Exact next branch after U10F          work-quality-u10g-architecture']],
-  ['docs/README.md', ['Phase 10 U10F readiness                          active', 'Active implementation branch                    work-quality-u10f-readiness', 'Exact next implementation branch                work-quality-u10g-architecture']],
-  ['AGENTS.md', ['U10F readiness active', 'Active implementation branch: work-quality-u10f-readiness', 'Exact next branch: work-quality-u10g-architecture']],
-  ['CONTRIBUTING.md', ['Phase 10 U10F readiness active', 'Active implementation branch: work-quality-u10f-readiness', 'Exact next implementation branch: work-quality-u10g-architecture']],
-  ['docs/product/current-roadmap.md', ['Phase 10 U10F readiness active', 'Active implementation branch: work-quality-u10f-readiness', 'Exact next branch: work-quality-u10g-architecture']],
-  ['docs/product/current-schedule.md', ['U10F readiness active', 'Active branch: work-quality-u10f-readiness', 'Next branch: work-quality-u10g-architecture', 'U10F missing-id browser scenarios: 8']],
-  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10F readiness', 'Current implementation branch: `work-quality-u10f-readiness`', 'Exact next implementation branch: `work-quality-u10g-architecture`']],
-  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: `work-quality-u10f-readiness`', 'Active phase: U10F public readiness and Channel entry', 'Exact next branch: `work-quality-u10g-architecture`']],
+  ['README.md', ['Phase 10 U10F readiness               complete PR #468', 'U10F canonical closeout               complete PR #469', 'Active implementation branch          none', 'Exact next implementation branch      work-quality-u10g-architecture']],
+  ['docs/README.md', ['Phase 10 U10F readiness                          complete PR #468', 'U10F canonical closeout                          complete PR #469', 'Active implementation branch                    none', 'Exact next implementation branch                work-quality-u10g-architecture']],
+  ['AGENTS.md', ['U10F implementation complete PR #468', 'U10F closeout complete PR #469', 'Active implementation branch: none', 'Exact next branch: work-quality-u10g-architecture']],
+  ['CONTRIBUTING.md', ['Phase 10 U10F readiness complete through PR #468', 'U10F canonical closeout complete through PR #469', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-u10g-architecture']],
+  ['docs/product/current-roadmap.md', ['Phase 10 U10F readiness complete PR #468', 'U10F canonical closeout complete PR #469', 'Active implementation branch: none', 'Exact next branch: work-quality-u10g-architecture']],
+  ['docs/product/current-schedule.md', ['U10F readiness complete PR #468', 'U10F closeout complete PR #469', 'Active branch: none', 'Next branch: work-quality-u10g-architecture', 'U10F production acceptance: not claimed; owned by U10H']],
+  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10G architecture exact next', 'Current implementation branch: none', 'Exact next implementation branch: `work-quality-u10g-architecture`', 'Completed U10F canonical closeout: PR #469']],
+  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: none', 'Completed phase: U10F through PR #468', 'Completed canonical closeout: U10F through PR #469', 'Exact next branch: `work-quality-u10g-architecture`']],
 ]) {
   const source = read(path)
   for (const fragment of fragments) assert.ok(source.includes(fragment), `${path}: missing ${fragment}`)
@@ -147,7 +186,8 @@ for (const fragment of [
   'cancel-in-progress: true',
 ]) assert.ok(workflow.includes(fragment), `U10F workflow missing ${fragment}`)
 
-console.log('U10F public readiness repository verification passed.')
-console.log('- Public Readiness derives 20 routes from the route inventory')
-console.log('- Production Smoke owns 20 repository HTML routes')
-console.log('- Channel missing-id entry has one provider-safe action and zero History requests')
+console.log('Completed U10F public readiness verification passed.')
+console.log('- permanent U10F evidence replaces the temporary working note')
+console.log('- Public Readiness and Production Smoke each own 20 routes')
+console.log('- Channel missing-id entry retains zero History requests and one provider-safe action')
+console.log('- production acceptance remains owned by U10H')
