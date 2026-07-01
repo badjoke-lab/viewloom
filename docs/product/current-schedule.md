@@ -14,9 +14,10 @@ U10D complete PR #462
 U10D closeout complete PR #464
 U10E responsive and accessibility complete PR #465
 U10E closeout complete PR #466
-Active branch: none
-Next branch: work-quality-u10f-readiness
-U10F created: no
+U10F readiness active
+Active branch: work-quality-u10f-readiness
+Next branch: work-quality-u10g-architecture
+U10G created: no
 ```
 
 ```text
@@ -35,12 +36,17 @@ U10E total browser scenarios: 36
 U10E mobile target floor: 44px
 U10E important action floor: 48px
 U10E accepted horizontal overflow: 0
+U10F Public Readiness routes: 20
+U10F Production Smoke routes: 20
+U10F missing-id browser scenarios: 8
+U10F missing-id History requests: 0
+U10F missing-id primary actions: 1 per provider route
 ```
 
 ```text
 U10D analysis coherence complete
 U10E responsive and accessibility complete
-U10F readiness exact next
-U10G architecture queued
+U10F readiness active
+U10G architecture exact next
 U10H acceptance queued
 ```
