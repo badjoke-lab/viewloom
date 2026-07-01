@@ -5,7 +5,7 @@
   "implementation_pr": 465,
   "implementation_head": "916c544eef39a186ebde40037047197b1f33e378",
   "merge_commit": "cae92973d6185f9e0f81151ab94260229dc65287",
-  "canonical_closeout_pr": 0,
+  "canonical_closeout_pr": 466,
   "scope": {
     "providers": ["twitch", "kick"],
     "routes": 9,
