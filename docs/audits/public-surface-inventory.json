@@ -1,7 +1,7 @@
 {
   "schema": "viewloom-public-surface-inventory-v1",
-  "version": 1,
-  "updated_at": "2026-06-26",
+  "version": 2,
+  "updated_at": "2026-07-01",
   "source": {
     "branch": "work-public-surface-inventory",
     "base_commit": "2d1b23ec9cb506212c4fefc828a8c3524d52183b",
@@ -17,8 +17,8 @@
     "indexable_routes": 16,
     "noindex_routes": 4,
     "sitemap_routes": 16,
-    "public_readiness_configured_pages": 18,
-    "production_smoke_page_routes": 13
+    "public_readiness_configured_pages": 20,
+    "production_smoke_page_routes": 20
   },
   "provider_invariants": {
     "separate_routes": true,
