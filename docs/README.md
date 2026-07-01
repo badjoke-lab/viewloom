@@ -23,15 +23,17 @@ Phase 10 U10D analysis coherence                 complete PR #462
 U10D canonical closeout                          complete PR #464
 Phase 10 U10E responsive and accessibility       complete PR #465
 U10E canonical closeout                          complete PR #466
-Active implementation branch                    none
-Exact next implementation branch                work-quality-u10f-readiness
-U10F branch created                             no
+Phase 10 U10F readiness                          active
+Active implementation branch                    work-quality-u10f-readiness
+Exact next implementation branch                work-quality-u10g-architecture
+U10G branch created                             no
 ```
 
 ## Current authorities
 
 - Phase 10–11 specification: `product/cross-site-quality-remediation-spec.md`
 - Phase 10–11 plan: `product/cross-site-quality-remediation-plan.md`
+- U10F working record: `work-in-progress/u10f-readiness.md`
 - U10A permanent defect ledger: `audits/cross-site-quality-u10a-baseline.json`
 - U10A permanent owner map: `audits/cross-site-quality-u10a-owner-map.json`
 - U10B permanent shared shell record: `audits/cross-site-quality-u10b-shared-shell.json`
@@ -46,4 +48,4 @@ U10F branch created                             no
 - `product/watchlist-v1-implementation-plan.md`
 - `operations/watchlist-production-acceptance-2026-06-25.md`
 
-The U10E handoff fields are closeout-time snapshots. Current execution state is owned by this index, the roadmap, and the schedule.
+The U10E handoff fields are completed evidence. Current execution state is owned by this index, the roadmap, and the schedule.
