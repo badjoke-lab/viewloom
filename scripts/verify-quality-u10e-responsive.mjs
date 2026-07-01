@@ -83,20 +83,6 @@ for (const key of ['api_change_authorized', 'storage_change_authorized', 'bindin
 assert.equal(record.exact_next_branch, 'work-quality-u10f-readiness')
 assert.equal(record.next_branch_created, false)
 
-for (const [path, fragments] of [
-  ['README.md', ['Phase 10 U10E responsive repair       complete PR #465', 'U10E canonical closeout               complete PR #466', 'Active implementation branch          none', 'Exact next implementation branch      work-quality-u10f-readiness']],
-  ['docs/README.md', ['Phase 10 U10E responsive and accessibility       complete PR #465', 'U10E canonical closeout                          complete PR #466', 'Active implementation branch                    none', 'Exact next implementation branch                work-quality-u10f-readiness']],
-  ['AGENTS.md', ['U10E implementation complete PR #465', 'U10E closeout complete PR #466', 'Active implementation branch: none', 'Exact next branch: work-quality-u10f-readiness']],
-  ['CONTRIBUTING.md', ['Phase 10 U10E responsive and accessibility complete through PR #465', 'U10E canonical closeout complete through PR #466', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-u10f-readiness']],
-  ['docs/product/current-roadmap.md', ['Phase 10 U10E responsive and accessibility complete PR #465', 'U10E canonical closeout complete PR #466', 'Active implementation branch: none', 'Exact next branch: work-quality-u10f-readiness']],
-  ['docs/product/current-schedule.md', ['U10E responsive and accessibility complete PR #465', 'U10E closeout complete PR #466', 'Active branch: none', 'Next branch: work-quality-u10f-readiness']],
-  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10F readiness exact next', 'Current implementation branch: none', 'Exact next implementation branch: `work-quality-u10f-readiness`', 'Completed U10E canonical closeout: PR #466']],
-  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: none', 'Completed phase: U10E through PR #465', 'Completed canonical closeout: U10E through PR #466', 'Exact next branch: `work-quality-u10f-readiness`']],
-]) {
-  const source = read(path)
-  for (const fragment of fragments) assert.ok(source.includes(fragment), `${path}: missing ${fragment}`)
-}
-
 const workflow = read('.github/workflows/quality-u10e-responsive.yml')
 for (const fragment of [
   'name: Quality U10E Responsive Accessibility',
@@ -106,6 +92,6 @@ for (const fragment of [
 ]) assert.ok(workflow.includes(fragment), `U10E workflow missing ${fragment}`)
 
 console.log('Completed U10E responsive and accessibility verification passed.')
+console.log('- permanent U10E evidence is independent of the current execution phase')
 console.log('- 36 route and viewport scenarios remain permanent evidence')
-console.log('- 44px and 48px target floors remain exact')
 console.log('- Twitch and Kick remain separate')
