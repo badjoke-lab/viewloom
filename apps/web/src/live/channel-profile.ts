@@ -155,6 +155,7 @@ async function load(): Promise<void> {
 }
 
 function render(payload: ChannelHistoryPayload): void {
+  setChannelEntryMode(false)
   normalizeSelectedDay(payload)
   const periodRow = findStreamer(payload.topStreamers ?? [])
   const daily: ChannelDailyEntry[] = (payload.daily ?? []).map((day) => ({ day, streamer: findStreamer(day.topStreamers ?? []) }))
@@ -291,9 +292,11 @@ function renderScope(requestedDays: number | undefined, appearances: number): vo
 }
 
 function renderMissingId(): void {
+  setChannelEntryMode(true)
   setStatus('Missing channel', 'empty')
-  setText('[data-channel-feedback]', 'Open this page from a History streamer ranking or provide an id query parameter.')
+  setText('[data-channel-feedback]', `Select a ${providerName} channel from History to open its retained footprint.`)
   setText('[data-channel-name]', 'Channel not selected')
+  setText('[data-channel-provider]', `${providerName} channel selection required`)
   setEvidence('No request', `0 / ${state.period === '7d' ? 7 : 30} days`, '0 days', labelForPeriod())
   setHtml('[data-channel-summary]', '<div class="notice">No channel identifier was provided.</div>')
   setHtml('[data-channel-trend]', '<div class="notice">No retained footprint can be loaded.</div>')
@@ -304,6 +307,7 @@ function renderMissingId(): void {
 }
 
 function renderError(message: string): void {
+  setChannelEntryMode(false)
   setStatus('Error', 'error')
   setText('[data-channel-feedback]', message)
   setEvidence('Request error', 'Unavailable', 'Unavailable', labelForPeriod())
@@ -326,6 +330,21 @@ async function copyCurrentUrl(button: HTMLButtonElement): Promise<void> {
     setTextAll('[data-channel-copy-feedback]', 'Copy was unavailable. Use the browser address bar.')
   }
   window.setTimeout(() => { button.textContent = original }, 1400)
+}
+
+function setChannelEntryMode(missing: boolean): void {
+  document.body.dataset.channelEntry = missing ? 'missing-id' : 'ready'
+  const entry = document.querySelector<HTMLElement>('[data-channel-missing-entry]')
+  if (entry) entry.hidden = !missing
+  document.querySelectorAll<HTMLElement>('[data-channel-requires-id]').forEach((node) => {
+    if (missing) {
+      node.setAttribute('inert', '')
+      node.setAttribute('aria-hidden', 'true')
+    } else {
+      node.removeAttribute('inert')
+      node.removeAttribute('aria-hidden')
+    }
+  })
 }
 
 function setEvidence(sourceState: string, observed: string, appearances: string, period: string): void {

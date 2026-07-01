@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-gaps-v1",
-  "version": 1,
+  "version": 2,
   "missing_surfaces": [
     {"route":"/contact/","state":"missing","current_replacement":"External Google Form links","required_phase":"Phase 12","note":"No repository-owned Contact HTML route or Vite input exists."},
     {"route":"/terms/","state":"missing","current_replacement":null,"required_phase":"Phase 12","note":"No repository-owned Terms route exists."},
@@ -9,10 +9,10 @@
     {"route":"/commercial-disclosure/","state":"missing","current_replacement":null,"required_phase":"Phase 12","note":"No repository-owned commercial disclosure route exists."}
   ],
   "cross_route_gaps": [
-    {"id":"watchlist-public-readiness-omission","severity":"P2","detail":"Vite builds both Watchlist routes, but public-readiness-audit.mjs does not include them in its configured page list.","next_phase":"P8B evidence; repair queue after classification"},
-    {"id":"production-smoke-omissions","severity":"P2","detail":"Production Smoke omits About, Support, Changelog, both Channel routes, and both Watchlist routes. Channel and Watchlist have separate acceptance records, but content routes do not.","next_phase":"P8B"},
-    {"id":"no-consolidated-public-browser-matrix","severity":"P1","detail":"No single permanent browser gate covers every major public route at 1440, 820, 390, and 360 pixels across required data states.","next_phase":"P8B"},
-    {"id":"history-known-p1","severity":"P1","detail":"History has pre-approved metric, chart, selected-day, lower-page, responsive, and coherence defects despite broad legacy workflow coverage.","next_phase":"P9H0-P9H7"},
-    {"id":"policy-surfaces-missing","severity":"release_blocker_candidate","detail":"Repository-owned Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent.","next_phase":"Phase 12 unless audit evidence promotes earlier"}
+    {"id":"watchlist-public-readiness-omission","severity":"P2","state":"resolved","detail":"U10F derives General Public Readiness from the repository-owned route inventory and requires both Twitch and Kick Watchlist routes within the 20-route build audit.","resolved_phase":"U10F"},
+    {"id":"production-smoke-omissions","severity":"P2","state":"resolved","detail":"U10F assigns all 20 repository-owned HTML routes to Production Smoke, including About, Support, Changelog, both Channel routes, and both Watchlist routes.","resolved_phase":"U10F"},
+    {"id":"no-consolidated-public-browser-matrix","severity":"P1","state":"historical","detail":"P8B established a permanent browser audit across major public routes and four required widths; later Phase 10 gates retain feature-specific evidence.","resolved_phase":"P8B"},
+    {"id":"history-known-p1","severity":"P1","state":"resolved","detail":"Phase 9 P9H0-P9H7 repaired and accepted the approved History P1 defects.","resolved_phase":"P9H7"},
+    {"id":"policy-surfaces-missing","severity":"release_blocker_candidate","state":"open","detail":"Repository-owned Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure routes are absent.","next_phase":"Phase 12 unless audit evidence promotes earlier"}
   ]
 }

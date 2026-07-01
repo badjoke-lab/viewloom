@@ -1,0 +1,122 @@
+name: Quality U10F Public Readiness
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/README.md'
+      - 'docs/work-in-progress/u10f-readiness.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/product/cross-site-quality-remediation-plan.md'
+      - 'docs/audits/public-surface-inventory.json'
+      - 'docs/audits/public-surface-routes-portal.json'
+      - 'docs/audits/public-surface-routes-twitch.json'
+      - 'docs/audits/public-surface-routes-kick.json'
+      - 'apps/web/scripts/public-readiness-audit.mjs'
+      - 'apps/web/scripts/quality-u10f-readiness-browser.mjs'
+      - 'apps/web/src/live/channel-profile.ts'
+      - 'apps/web/src/channel-profile.css'
+      - 'apps/web/twitch/channel/index.html'
+      - 'apps/web/kick/channel/index.html'
+      - 'scripts/verify-quality-u10e-responsive.mjs'
+      - 'scripts/verify-quality-u10f-readiness.mjs'
+      - 'scripts/verify-quality-u10f-browser-evidence.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/public-readiness-audit.yml'
+      - '.github/workflows/production-smoke.yml'
+      - '.github/workflows/quality-u10f-readiness.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      QUALITY_U10F_BASE_URL: http://127.0.0.1:4173
+      QUALITY_U10F_ARTIFACT_DIR: /tmp/quality-u10f
+      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Verify U10F repository contract
+        run: node scripts/verify-quality-u10f-readiness.mjs
+      - name: Verify retained U10E responsive contract
+        run: node scripts/verify-quality-u10e-responsive.mjs
+      - name: Verify retained U10D analysis coherence
+        run: node scripts/verify-quality-u10d-analysis-coherence.mjs
+      - name: Verify public surface inventory
+        run: node scripts/verify-public-surface-inventory.mjs
+      - name: Verify retained History acceptance
+        run: node scripts/verify-history-ui-h7-acceptance.mjs
+      - name: Verify Battle Lines contracts
+        run: |
+          pnpm --filter @viewloom/web verify:battle-lines
+          pnpm --filter @viewloom/web verify:battle-lines-ui
+      - name: Verify Watchlist contracts
+        run: pnpm --filter @viewloom/web verify:watchlist-contracts
+      - name: Typecheck web application
+        run: pnpm --filter @viewloom/web typecheck:app
+      - name: Build web application
+        run: pnpm build:web
+      - name: Run Public Readiness audit
+        working-directory: apps/web
+        run: node scripts/public-readiness-audit.mjs
+      - name: Start local preview
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/quality-u10f-preview.log 2>&1 &
+          for attempt in {1..60}; do
+            curl --silent --fail http://127.0.0.1:4173/twitch/channel/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/kick/channel/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/twitch/watchlist/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/kick/watchlist/ > /dev/null \
+              && exit 0
+            sleep 1
+          done
+          cat /tmp/quality-u10f-preview.log
+          exit 1
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+      - name: Run retained Channel Profile browser gate
+        working-directory: apps/web
+        env:
+          CHANNEL_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/channel-profile-browser.mjs
+      - name: Run U10F browser acceptance
+        working-directory: apps/web
+        run: node scripts/quality-u10f-readiness-browser.mjs
+      - name: Verify U10F browser evidence
+        run: node scripts/verify-quality-u10f-browser-evidence.mjs
+      - name: Upload U10F artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-u10f-readiness
+          path: |
+            /tmp/quality-u10f/
+            apps/web/artifacts/public-readiness/
+            /tmp/quality-u10f-preview.log
+          if-no-files-found: error

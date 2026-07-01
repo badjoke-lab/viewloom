@@ -47,24 +47,32 @@ jobs:
             sleep 10
           done
           exit 1
-      - name: Verify production pages
+      - name: Verify all repository-owned production pages
         run: |
           set -euo pipefail
           routes=(
             '/'
+            '/about/'
+            '/support/'
+            '/changelog/'
             '/twitch/'
-            '/kick/'
             '/twitch/heatmap/'
-            '/kick/heatmap/'
             '/twitch/day-flow/'
-            '/kick/day-flow/'
             '/twitch/battle-lines/'
-            '/kick/battle-lines/'
             '/twitch/history/'
-            '/kick/history/'
+            '/twitch/channel/'
+            '/twitch/watchlist/'
             '/twitch/status/'
+            '/kick/'
+            '/kick/heatmap/'
+            '/kick/day-flow/'
+            '/kick/battle-lines/'
+            '/kick/history/'
+            '/kick/channel/'
+            '/kick/watchlist/'
             '/kick/status/'
           )
+          test "${#routes[@]}" = '20'
           for route in "${routes[@]}"; do
             name="$(echo "$route" | tr '/' '-' | sed 's/^-//;s/-$//')"
             [ -n "$name" ] || name='portal'
@@ -74,6 +82,10 @@ jobs:
           done
           grep -q '<title>Twitch history' "$ARTIFACT_DIR/twitch-history.html"
           grep -q '<title>Kick history' "$ARTIFACT_DIR/kick-history.html"
+          grep -q '<title>Twitch channel history' "$ARTIFACT_DIR/twitch-channel.html"
+          grep -q '<title>Kick channel history' "$ARTIFACT_DIR/kick-channel.html"
+          grep -q '<title>Twitch Local Watchlist' "$ARTIFACT_DIR/twitch-watchlist.html"
+          grep -q '<title>Kick Local Watchlist' "$ARTIFACT_DIR/kick-watchlist.html"
           grep -q 'googletagmanager.com/gtag/js?id=G-YHX7HS1VBK' "$ARTIFACT_DIR/portal.html"
       - name: Verify Twitch production status
         run: |
@@ -118,7 +130,8 @@ jobs:
             if [ -f "$ARTIFACT_DIR/deployment.json" ]; then
               echo "- Deployed SHA: \`$(jq -r '.commit_sha // "unavailable"' "$ARTIFACT_DIR/deployment.json")\`"
             fi
-            echo '- Portal and provider routes: checked'
+            echo '- Repository-owned HTML routes: 20 checked'
+            echo '- About, Support, Changelog, Channel, and Watchlist ownership: checked'
             echo '- Twitch and Kick status APIs: checked'
             echo '- Separate D1 bindings: checked'
             echo '- Collector freshness: checked'

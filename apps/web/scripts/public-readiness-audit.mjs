@@ -1,19 +1,17 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join, normalize } from 'node:path'
+import { join, normalize, resolve } from 'node:path'
 
 const root = process.cwd()
+const repoRoot = resolve(root, '../..')
 const dist = join(root, 'dist')
 const artifactDir = join(root, 'artifacts', 'public-readiness')
 const origin = 'https://vl.badjoke-lab.com'
-
-const pages = [
-  { route: '/', file: 'index.html', provider: 'portal', indexable: true },
-  { route: '/about/', file: 'about/index.html', provider: 'portal', indexable: true },
-  { route: '/support/', file: 'support/index.html', provider: 'portal', indexable: true },
-  { route: '/changelog/', file: 'changelog/index.html', provider: 'portal', indexable: true },
-  ...providerPages('twitch'),
-  ...providerPages('kick'),
+const routeFiles = [
+  'docs/audits/public-surface-routes-portal.json',
+  'docs/audits/public-surface-routes-twitch.json',
+  'docs/audits/public-surface-routes-kick.json',
 ]
+const pages = loadPublicPages()
 
 const knownRoutes = new Set(pages.map((page) => page.route))
 const errors = []
@@ -47,9 +45,18 @@ const report = {
   schema: 'viewloom-public-readiness-v1',
   generated_at: new Date().toISOString(),
   build_root: 'apps/web/dist',
+  ownership: {
+    source: 'repository public route inventory',
+    route_files: routeFiles,
+    separate_manual_provider_array: false,
+  },
   totals: {
     configured_pages: pages.length,
     audited_pages: pageReports.filter((page) => page.exists).length,
+    portal_pages: pages.filter((page) => page.provider === 'portal').length,
+    twitch_pages: pages.filter((page) => page.provider === 'twitch').length,
+    kick_pages: pages.filter((page) => page.provider === 'kick').length,
+    watchlist_pages: pages.filter((page) => page.profile === 'watchlist').length,
     errors: errors.length,
     warnings: warnings.length,
   },
@@ -68,16 +75,35 @@ for (const item of errors) console.error(`ERROR [${item.scope}] ${item.message}`
 for (const item of warnings) console.warn(`WARN  [${item.scope}] ${item.message}`)
 if (errors.length) process.exit(1)
 
-function providerPages(provider) {
-  return [
-    { route: `/${provider}/`, file: `${provider}/index.html`, provider, indexable: true },
-    { route: `/${provider}/heatmap/`, file: `${provider}/heatmap/index.html`, provider, indexable: true, featureTabs: true },
-    { route: `/${provider}/day-flow/`, file: `${provider}/day-flow/index.html`, provider, indexable: true, featureTabs: true },
-    { route: `/${provider}/battle-lines/`, file: `${provider}/battle-lines/index.html`, provider, indexable: true, featureTabs: true },
-    { route: `/${provider}/history/`, file: `${provider}/history/index.html`, provider, indexable: true, featureTabs: true },
-    { route: `/${provider}/channel/`, file: `${provider}/channel/index.html`, provider, indexable: false, featureTabs: true },
-    { route: `/${provider}/status/`, file: `${provider}/status/index.html`, provider, indexable: true, featureTabs: true },
-  ]
+function loadPublicPages() {
+  const routes = []
+  for (const file of routeFiles) {
+    const path = join(repoRoot, file)
+    if (!existsSync(path)) {
+      error('route inventory', `route file is missing: ${file}`)
+      continue
+    }
+    const document = JSON.parse(readFileSync(path, 'utf8'))
+    if (document.schema !== 'viewloom-public-surface-routes-v1') {
+      error('route inventory', `route file schema is invalid: ${file}`)
+      continue
+    }
+    routes.push(...(document.routes ?? []))
+  }
+
+  return routes
+    .filter((route) => route.route !== '*')
+    .map((route) => ({
+      id: route.id,
+      route: route.route,
+      file: route.source.replace(/^apps\/web\//, ''),
+      provider: route.provider,
+      profile: route.profile,
+      indexable: route.sitemap === true,
+      canonical: route.canonical,
+      robots: route.robots,
+      featureTabs: route.provider !== 'portal' && route.profile !== 'provider_home',
+    }))
 }
 
 function auditPage(page) {
@@ -99,7 +125,7 @@ function auditPage(page) {
   const ogImage = metaContent(html, 'property', 'og:image')
   const twitterCard = metaContent(html, 'name', 'twitter:card')
   const robotsMeta = metaContent(html, 'name', 'robots').toLowerCase()
-  const expectedCanonical = `${origin}${page.route}`
+  const expectedCanonical = page.canonical ?? `${origin}${page.route}`
   const localLinks = [...html.matchAll(/\bhref=["']([^"']+)["']/gi)].map((match) => match[1])
   const assetSources = [...html.matchAll(/\b(?:src|href)=["'](\/assets\/[^"']+)["']/gi)].map((match) => match[1])
 
@@ -124,17 +150,19 @@ function auditPage(page) {
   if (!ogDescription) warning(page.route, 'Open Graph description is missing.')
   if (!ogImage) warning(page.route, 'Open Graph image is missing.')
   if (!twitterCard) warning(page.route, 'Twitter card metadata is missing.')
-  if (!page.indexable && !robotsMeta.includes('noindex')) warning(page.route, 'utility channel route is indexable without an explicit noindex directive.')
+  if (!page.indexable && !robotsMeta.includes('noindex')) error(page.route, 'utility route is missing an explicit noindex directive.')
 
   if (page.featureTabs) auditFeatureTabs(page, html)
   for (const source of assetSources) auditAsset(page.route, source)
   for (const href of localLinks) auditLocalLink(page.route, href)
 
   pageReports.push({
+    id: page.id,
     route: page.route,
     file: page.file,
     exists: true,
     provider: page.provider,
+    profile: page.profile,
     indexable: page.indexable,
     title,
     canonical,
@@ -194,17 +222,13 @@ function attribute(tag, name) {
   const match = tag.match(new RegExp(`\\b${name}=["']([^"']*)["']`, 'i'))
   return match?.[1]
 }
-function stripQuery(value) {
-  return value.split(/[?#]/)[0]
-}
+function stripQuery(value) { return value.split(/[?#]/)[0] }
 function normalizeRoute(value) {
   const clean = stripQuery(value || '/').replace(/\/index\.html$/, '/')
   if (clean === '' || clean === '/') return '/'
   return `/${clean.replace(/^\/+|\/+$/g, '')}/`
 }
-function decodeEntities(value) {
-  return value.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-}
+function decodeEntities(value) { return value.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>') }
 function error(scope, message) { errors.push({ scope, message }) }
 function warning(scope, message) { warnings.push({ scope, message }) }
 
@@ -214,8 +238,11 @@ function markdownReport(value) {
     '',
     `Generated: ${value.generated_at}`,
     '',
+    `- Ownership: ${value.ownership.source}`,
     `- Configured pages: ${value.totals.configured_pages}`,
     `- Audited pages: ${value.totals.audited_pages}`,
+    `- Portal / Twitch / Kick: ${value.totals.portal_pages} / ${value.totals.twitch_pages} / ${value.totals.kick_pages}`,
+    `- Watchlist pages: ${value.totals.watchlist_pages}`,
     `- Errors: ${value.totals.errors}`,
     `- Warnings: ${value.totals.warnings}`,
     '',
@@ -229,9 +256,9 @@ function markdownReport(value) {
     '',
     '## Page inventory',
     '',
-    '| Route | Exists | Provider | Indexable | H1 |',
-    '|---|---:|---|---:|---:|',
-    ...value.pages.map((page) => `| ${page.route} | ${page.exists ? 'yes' : 'no'} | ${page.provider ?? '—'} | ${page.indexable ? 'yes' : 'no'} | ${page.h1_count ?? '—'} |`),
+    '| Route | Exists | Provider | Profile | Indexable | H1 |',
+    '|---|---:|---|---|---:|---:|',
+    ...value.pages.map((page) => `| ${page.route} | ${page.exists ? 'yes' : 'no'} | ${page.provider ?? '—'} | ${page.profile ?? '—'} | ${page.indexable ? 'yes' : 'no'} | ${page.h1_count ?? '—'} |`),
     '',
     `Boundary: ${value.boundary}`,
     '',

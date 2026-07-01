@@ -10,11 +10,13 @@ const exists = (path) => existsSync(join(root, path))
 const manifestPath = 'docs/audits/public-surface-inventory.json'
 const manifest = load(manifestPath)
 check(manifest.schema === 'viewloom-public-surface-inventory-v1', 'manifest schema mismatch')
-check(manifest.next_branch === 'work-public-browser-audit', 'next branch must be work-public-browser-audit')
+check(manifest.next_branch === 'work-public-browser-audit', 'historical next branch must remain work-public-browser-audit')
 check(manifest.provider_invariants?.twitch_binding === 'DB_TWITCH_HOT', 'Twitch binding mismatch')
 check(manifest.provider_invariants?.kick_binding === 'DB_KICK_HOT', 'Kick binding mismatch')
 check(manifest.provider_invariants?.combined_totals_allowed === false, 'combined totals must remain forbidden')
 check(manifest.provider_invariants?.combined_rankings_allowed === false, 'combined rankings must remain forbidden')
+check(manifest.counts?.public_readiness_configured_pages === 20, 'Public Readiness must own 20 HTML routes')
+check(manifest.counts?.production_smoke_page_routes === 20, 'Production Smoke must own 20 HTML routes')
 
 const gates = {}
 const profiles = {}
@@ -46,6 +48,7 @@ check(routes.length === manifest.counts?.inventory_entries, `expected ${manifest
 check(routes.filter((route) => route.source !== 'apps/web/public/404.html').length === manifest.counts?.vite_html_inputs, 'Vite route count mismatch')
 check(new Set(routes.map((route) => route.id)).size === routes.length, 'duplicate route id')
 check(new Set(routes.map((route) => route.route)).size === routes.length, 'duplicate route path')
+check(routes.filter((route) => route.profile === 'watchlist').length === 2, 'both Watchlist routes must remain inventoried')
 
 const vite = readFileSync(join(root, 'apps/web/vite.config.ts'), 'utf8')
 const sitemap = readFileSync(join(root, 'apps/web/public/sitemap.xml'), 'utf8')
@@ -85,8 +88,8 @@ for (const route of routes) {
 }
 
 const history = profiles.history
-check(history?.assessment === 'known_p1_defects', 'History P1 assessment missing')
-check((history?.gaps?.length ?? 0) >= 5, 'History P1 gaps are incomplete')
+check(history?.assessment === 'known_p1_defects', 'historical History P1 profile assessment changed without profile migration')
+check((history?.gaps?.length ?? 0) >= 5, 'historical History P1 profile gaps are incomplete')
 const watchlist = profiles.watchlist
 check(watchlist?.assessment === 'complete_for_v1_contract', 'Watchlist completion assessment changed')
 
@@ -95,9 +98,12 @@ check(gaps.schema === 'viewloom-public-surface-gaps-v1', 'gap schema mismatch')
 for (const route of ['/contact/', '/terms/', '/privacy/', '/refund-policy/', '/commercial-disclosure/']) {
   check(gaps.missing_surfaces?.some((item) => item.route === route && item.state === 'missing'), `missing surface not recorded: ${route}`)
 }
-for (const id of ['watchlist-public-readiness-omission', 'production-smoke-omissions', 'no-consolidated-public-browser-matrix', 'history-known-p1', 'policy-surfaces-missing']) {
-  check(gaps.cross_route_gaps?.some((item) => item.id === id), `cross-route gap not recorded: ${id}`)
+for (const id of ['watchlist-public-readiness-omission', 'production-smoke-omissions']) {
+  check(gaps.cross_route_gaps?.some((item) => item.id === id && item.state === 'resolved' && item.resolved_phase === 'U10F'), `U10F resolution not recorded: ${id}`)
 }
+check(gaps.cross_route_gaps?.some((item) => item.id === 'no-consolidated-public-browser-matrix'), 'historical browser matrix record missing')
+check(gaps.cross_route_gaps?.some((item) => item.id === 'history-known-p1'), 'historical History record missing')
+check(gaps.cross_route_gaps?.some((item) => item.id === 'policy-surfaces-missing' && item.state === 'open'), 'policy surface gap must remain open')
 
 if (fail.length) {
   console.error('Public surface inventory verification failed:')
@@ -106,9 +112,9 @@ if (fail.length) {
 }
 console.log(`Public surface inventory verified: ${routes.length} routes, ${Object.keys(profiles).length} profiles, ${Object.keys(gates).length} gate groups.`)
 console.log('- 20 Vite HTML inputs plus explicit 404 are owned')
+console.log('- Public Readiness and Production Smoke each own all 20 HTML routes')
 console.log('- Twitch and Kick bindings remain separate')
-console.log('- known History P1 defects and missing policy surfaces remain explicit')
-console.log('- next branch is work-public-browser-audit')
+console.log('- U10F readiness ownership gaps are resolved; policy surfaces remain open')
 
 function tag(html, name) { return html.match(new RegExp(`<${name}\\b[^>]*>([\\s\\S]*?)<\\/${name}>`, 'i'))?.[1]?.trim() ?? '' }
 function attr(tagSource, name) { return tagSource.match(new RegExp(`\\b${name}=["']([^"']*)["']`, 'i'))?.[1] ?? '' }
