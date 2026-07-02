@@ -24,47 +24,11 @@ on:
       - '.github/pull_request_template.md'
       - '.github/workflows/**'
 
-permissions:
-  contents: write
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  u10g-patch-artifact:
-    if: github.event_name == 'pull_request' && github.head_ref == 'work-quality-u10g-architecture'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Apply guarded architecture patch
-        shell: bash
-        run: |
-          if grep -q "renderEnhancedDayFlowSummary" apps/web/src/live/day-flow-current-shell-entry.ts; then
-            echo "U10G architecture patch already applied."
-            exit 0
-          fi
-          python - <<'PY'
-          from pathlib import Path
-          path = Path('scripts/u10g_patch_architecture.mjs')
-          source = path.read_text()
-          source = source.replace('${endpoint}', r'\${endpoint}')
-          source = source.replace('${location.pathname}', r'\${location.pathname}')
-          path.write_text(source)
-          PY
-          node scripts/u10g_patch_architecture.mjs
-          git diff --check
-      - name: Commit generated controller files
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: Consolidate U10G feature controllers
-          file_pattern: apps/web/src/live/day-flow-current-shell-entry.ts apps/web/src/live/battle-lines-current-shell-entry.ts apps/web/twitch/day-flow/index.html apps/web/kick/day-flow/index.html apps/web/twitch/battle-lines/index.html apps/web/kick/battle-lines/index.html
-
   verify:
     runs-on: ubuntu-latest
     steps:
