@@ -137,7 +137,15 @@ for (const path of [
   }
 }
 
+const battleController = read('apps/web/src/live/battle-lines-current-shell-entry.ts')
+assert.equal(
+  /if \(state\.layout === 'split' && !canUseBattleLinesSplit\(\)\)[\s\S]{0,180}state\.layout = 'wide'/.test(battleController),
+  false,
+  'Battle Lines responsive fallback must not overwrite requested layout state',
+)
+
 console.log('ViewLoom development and documentation verification passed.')
 console.log('- U10A through U10F remain permanent evidence')
 console.log('- U10G architecture is active and U10H acceptance is exact next')
+console.log('- requested and effective Battle Lines layouts remain separate')
 console.log('- Twitch and Kick remain separate')
