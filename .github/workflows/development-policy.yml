@@ -41,7 +41,13 @@ jobs:
         shell: bash
         run: |
           set +e
-          sed -i 's/${endpoint}/\${endpoint}/g' scripts/u10g_patch_architecture.mjs
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/u10g_patch_architecture.mjs')
+          source = path.read_text()
+          source = source.replace('${endpoint}', r'\${endpoint}')
+          path.write_text(source)
+          PY
           node scripts/u10g_patch_architecture.mjs > u10g-patch.log 2>&1
           status=$?
           cat u10g-patch.log
