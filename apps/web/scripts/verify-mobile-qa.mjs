@@ -57,9 +57,14 @@ for (const path of ['twitch/heatmap/index.html', 'kick/heatmap/index.html']) {
 for (const path of ['twitch/day-flow/index.html', 'kick/day-flow/index.html']) {
   const source = read(path)
   for (const text of [
-    'dayflow-layout-shell', 'is-split', 'data-dayflow-layout="split"',
-    'data-dayflow-layout="wide"', '@media(max-width:760px)', 'touch-action:none',
+    'class="dayflow-layout-shell is-wide"',
+    'data-dayflow-layout-current="wide"',
+    'data-dayflow-layout="split"',
+    'data-dayflow-layout="wide"',
+    '@media(max-width:760px)',
+    'touch-action:none',
   ]) requireText(path, source, text)
+  forbidText(path, source, 'class="dayflow-layout-shell is-split"')
   requireText(path, source, 'class="toolbar')
 }
 
@@ -98,6 +103,9 @@ const cssChecks = {
     '.pair-inspector{grid-template-columns:1fr}', '.secondary-grid,.event-feed{grid-template-columns:1fr}',
     '.battle-chart-wrap{min-height:330px',
   ],
+  'src/live/battle-lines-split.css': [
+    '@media(max-width:1179px)', '.battle-split-rail', 'display:none!important',
+  ],
 }
 
 for (const [path, fragments] of Object.entries(cssChecks)) {
@@ -121,4 +129,4 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log(`ViewLoom Mobile QA verification passed for ${pages.length} public pages, including Wide-first Heatmap, Split-default Day Flow, and Wide Battle Lines.`)
+console.log(`ViewLoom Mobile QA verification passed for ${pages.length} public pages, including Wide-first Heatmap, Wide-default Day Flow with responsive Split fallback, and Wide Battle Lines.`)
