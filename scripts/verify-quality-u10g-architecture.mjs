@@ -104,8 +104,8 @@ for (const fragment of [
 ]) assert.ok(browser.includes(fragment), `U10G browser contract missing ${fragment}`)
 
 for (const [path, fragments] of [
-  ['README.md', ['Phase 10 U10G architecture              active', 'Active implementation branch          work-quality-u10g-architecture', 'Exact next branch after U10G          work-quality-u10h-acceptance']],
-  ['docs/README.md', ['Phase 10 U10G architecture                        active', 'Active implementation branch                    work-quality-u10g-architecture', 'Exact next implementation branch                work-quality-u10h-acceptance']],
+  ['README.md', ['Phase 10 U10G architecture            active', 'Active implementation branch          work-quality-u10g-architecture', 'Exact next branch after U10G          work-quality-u10h-acceptance']],
+  ['docs/README.md', ['Phase 10 U10G architecture                       active', 'Active implementation branch                    work-quality-u10g-architecture', 'Exact next implementation branch                work-quality-u10h-acceptance']],
   ['AGENTS.md', ['U10G architecture active', 'Active implementation branch: work-quality-u10g-architecture', 'Exact next branch: work-quality-u10h-acceptance']],
   ['CONTRIBUTING.md', ['Phase 10 U10G architecture active', 'Active implementation branch: work-quality-u10g-architecture', 'Exact next implementation branch: work-quality-u10h-acceptance']],
   ['docs/product/current-roadmap.md', ['Phase 10 U10G architecture active', 'Active implementation branch: work-quality-u10g-architecture', 'Exact next branch: work-quality-u10h-acceptance']],
