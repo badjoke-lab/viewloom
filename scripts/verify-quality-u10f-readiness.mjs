@@ -162,20 +162,6 @@ for (const fragment of [
   'assert.equal(state.visibleRequiresId, 0',
 ]) assert.ok(browser.includes(fragment), `U10F browser acceptance missing ${fragment}`)
 
-for (const [path, fragments] of [
-  ['README.md', ['Phase 10 U10F readiness               complete PR #468', 'U10F canonical closeout               complete PR #469', 'Active implementation branch          none', 'Exact next implementation branch      work-quality-u10g-architecture']],
-  ['docs/README.md', ['Phase 10 U10F readiness                          complete PR #468', 'U10F canonical closeout                          complete PR #469', 'Active implementation branch                    none', 'Exact next implementation branch                work-quality-u10g-architecture']],
-  ['AGENTS.md', ['U10F implementation complete PR #468', 'U10F closeout complete PR #469', 'Active implementation branch: none', 'Exact next branch: work-quality-u10g-architecture']],
-  ['CONTRIBUTING.md', ['Phase 10 U10F readiness complete through PR #468', 'U10F canonical closeout complete through PR #469', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-u10g-architecture']],
-  ['docs/product/current-roadmap.md', ['Phase 10 U10F readiness complete PR #468', 'U10F canonical closeout complete PR #469', 'Active implementation branch: none', 'Exact next branch: work-quality-u10g-architecture']],
-  ['docs/product/current-schedule.md', ['U10F readiness complete PR #468', 'U10F closeout complete PR #469', 'Active branch: none', 'Next branch: work-quality-u10g-architecture', 'U10F production acceptance: not claimed; owned by U10H']],
-  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10G architecture exact next', 'Current implementation branch: none', 'Exact next implementation branch: `work-quality-u10g-architecture`', 'Completed U10F canonical closeout: PR #469']],
-  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: none', 'Completed phase: U10F through PR #468', 'Completed canonical closeout: U10F through PR #469', 'Exact next branch: `work-quality-u10g-architecture`']],
-]) {
-  const source = read(path)
-  for (const fragment of fragments) assert.ok(source.includes(fragment), `${path}: missing ${fragment}`)
-}
-
 const workflow = read('.github/workflows/quality-u10f-readiness.yml')
 for (const fragment of [
   'name: Quality U10F Public Readiness',
@@ -187,7 +173,7 @@ for (const fragment of [
 ]) assert.ok(workflow.includes(fragment), `U10F workflow missing ${fragment}`)
 
 console.log('Completed U10F public readiness verification passed.')
-console.log('- permanent U10F evidence replaces the temporary working note')
+console.log('- permanent U10F evidence is independent of the current execution phase')
 console.log('- Public Readiness and Production Smoke each own 20 routes')
 console.log('- Channel missing-id entry retains zero History requests and one provider-safe action')
 console.log('- production acceptance remains owned by U10H')
