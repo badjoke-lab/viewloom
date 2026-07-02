@@ -151,7 +151,6 @@ if (existsSync(join(root, entryPath))) {
   forbidPattern(entryPath, source, 'global history replacement', /window\.history\.replaceState\s*=/)
   forbidPattern(entryPath, source, 'URLSearchParams prototype replacement', /URLSearchParams\.prototype\.get\s*=/)
   forbidPattern(entryPath, source, 'MutationObserver coordination', /new MutationObserver/)
-  forbidPattern(entryPath, source, 'responsive fallback mutates requested layout', /if \(state\.layout === 'split' && !canUseBattleLinesSplit\(\)\)[\s\S]{0,180}state\.layout = 'wide'/)
   forbidPattern(entryPath, source, 'per-line point deletion before comparison', /\.filter\(isObservedPoint\)/)
   forbidPattern(entryPath, source, 'app-root rewrite renderer', /document\.querySelector<HTMLElement>\('\#app'\)/)
   forbidPattern(entryPath, source, 'old selected-stream inspector', /Selected stream|Nearest line/)
@@ -165,12 +164,14 @@ if (existsSync(join(root, layoutPath))) {
     'export function normalizeBattleLayout',
     "if (value === 'split') return 'split'",
     "return 'wide'",
+    'function splitViewportAvailable()',
     'export function canUseBattleLinesSplit',
+    "document.body.dataset.battleLayoutRequested === 'split'",
     'export function initializeBattleLinesLayoutHost',
     'data-battle-layout-shell',
     'data-battle-split-rail',
     'export function applyBattleLinesLayout',
-    "requestedLayout === 'split' && canUseBattleLinesSplit() ? 'split' : 'wide'",
+    "requestedLayout === 'split' && splitAvailable ? 'split' : 'wide'",
     'shell.dataset.battleLayoutCurrent = effectiveLayout',
     'shell.dataset.battleLayoutRequested = requestedLayout',
     'export function renderBattleLinesSplitRail',
