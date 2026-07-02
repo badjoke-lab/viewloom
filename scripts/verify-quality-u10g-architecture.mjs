@@ -21,6 +21,7 @@ for (const path of [
   'apps/web/src/live/battle-lines-loading-guard.ts',
   '.github/workflows/u10g-bootstrap.yml',
   '.github/workflows/u10g-test-patch.yml',
+  '.github/workflows/u10g-mobile-layout-fix.yml',
   'scripts/u10g_patch_architecture.mjs',
 ]) assert.equal(existsSync(join(root, path)), false, `temporary or retired architecture file remains: ${path}`)
 
@@ -80,6 +81,13 @@ for (const fragment of [
   'renderBattleLinesSplitRail()',
   "input.hidden = state.range !== 'date'",
 ]) assert.ok(battleMain.includes(fragment), `Battle Lines primary owner missing ${fragment}`)
+for (const fragment of [
+  'function splitViewportAvailable()',
+  "document.body.dataset.battleLayoutRequested === 'split'",
+  "requestedLayout === 'split' && splitAvailable ? 'split' : 'wide'",
+  'shell.dataset.battleLayoutCurrent = effectiveLayout',
+  'shell.dataset.battleLayoutRequested = requestedLayout',
+]) assert.ok(battleLayout.includes(fragment), `Battle Lines responsive layout owner missing ${fragment}`)
 for (const source of [battleMain, battleLayout, battleLink]) {
   for (const forbidden of ['window.fetch =', 'window.history.replaceState =', 'URLSearchParams.prototype.get =', 'new MutationObserver']) {
     assert.equal(source.includes(forbidden), false, `Battle Lines architecture contains ${forbidden}`)
@@ -129,4 +137,5 @@ for (const fragment of [
 console.log('U10G architecture repository verification passed.')
 console.log('- one Day Flow and Battle Lines feature controller entry per provider route')
 console.log('- no global fetch/history/prototype interception or MutationObserver coordination')
+console.log('- responsive fallback preserves requested layout while effective layout remains viewport-safe')
 console.log('- canonical time compatibility and provider separation retained')
