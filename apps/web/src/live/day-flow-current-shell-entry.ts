@@ -1,3 +1,5 @@
+import { applyDayFlowLayout, normalizeDayFlowLayout, renderEnhancedDayFlowSummary, type DayFlowLayoutMode } from './day-flow-layout-summary'
+
 type DayFlowBucket = {
   viewers?: number
   share?: number
@@ -71,6 +73,8 @@ type DayFlowState = {
   selectedStreamerId: string | null
   autoUpdate: boolean
   highlightOnly: boolean
+  layout: DayFlowLayoutMode
+  layoutInUrl: boolean
 }
 
 type ChartGeometry = {
@@ -86,6 +90,7 @@ type ChartGeometry = {
 const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
 const endpoint = provider === 'kick' ? '/api/kick-day-flow' : '/api/day-flow'
 const providerBase = provider === 'kick' ? '/kick' : '/twitch'
+const layoutStorageKey = `viewloom:${provider}:dayflow-layout`
 const state: DayFlowState = readInitialState()
 let lastPayload: DayFlowPayload | null = null
 let autoTimer: number | null = null
@@ -103,6 +108,9 @@ function readInitialState(): DayFlowState {
   const range = params.get('rangeMode')
   const metric = params.get('metric')
   const scope = params.get('scope')
+  const layoutParam = params.get('layout')
+  const layoutInUrl = layoutParam === 'wide' || layoutParam === 'split' || layoutParam === 'theater'
+  const layout = normalizeDayFlowLayout(layoutParam, window.localStorage.getItem(layoutStorageKey))
   return {
     metric: metric === 'share' ? 'share' : 'volume',
     scope: scope === 'topFocus' ? 'topFocus' : 'full',
@@ -114,10 +122,31 @@ function readInitialState(): DayFlowState {
     selectedStreamerId: params.get('streamer'),
     autoUpdate: params.get('auto') !== 'off',
     highlightOnly: false,
+    layout,
+    layoutInUrl,
   }
 }
 
 function wireControls(): void {
+  document.querySelectorAll<HTMLButtonElement>('[data-dayflow-layout]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.layout = button.dataset.dayflowLayout === 'split' ? 'split' : 'wide'
+      state.layoutInUrl = true
+      window.localStorage.setItem(layoutStorageKey, state.layout)
+      syncControls()
+      syncUrl(lastPayload ?? undefined)
+    })
+  })
+
+  window.addEventListener('resize', () => { applyDayFlowLayout(state.layout) })
+  window.addEventListener('popstate', () => {
+    const params = new URLSearchParams(window.location.search)
+    const value = params.get('layout')
+    state.layoutInUrl = value === 'wide' || value === 'split' || value === 'theater'
+    state.layout = normalizeDayFlowLayout(value, window.localStorage.getItem(layoutStorageKey))
+    syncControls()
+  })
+
   document.querySelectorAll<HTMLButtonElement>('[data-dayflow-metric]').forEach((button) => {
     button.addEventListener('click', () => {
       state.metric = button.dataset.dayflowMetric === 'share' ? 'share' : 'volume'
@@ -224,6 +253,7 @@ function syncControls(): void {
     autoButton.textContent = isLiveRange() ? `Auto ${state.autoUpdate ? 'on' : 'off'}` : 'Auto off'
     autoButton.setAttribute('aria-pressed', String(state.autoUpdate && isLiveRange()))
   }
+  applyDayFlowLayout(state.layout)
 }
 
 function markActive(selector: string, datasetKey: string, expected: string): void {
@@ -536,6 +566,7 @@ function renderDetail(payload: DayFlowPayload): void {
 function renderSummary(payload: DayFlowPayload): void {
   const target = document.querySelector<HTMLElement>('[data-dayflow-summary]')
   if (!target) return
+  if (renderEnhancedDayFlowSummary(target, payload)) return
   const summary = payload.summary ?? {}
   target.innerHTML = `<div class="dayflow-summary-grid"><div><small>Peak leader</small><strong>${escapeHtml(summary.peakLeader || 'Unavailable')}</strong></div><div><small>Longest dominance</small><strong>${escapeHtml(summary.longestDominance || 'Unavailable')}</strong></div><div><small>Biggest rise</small><strong>${escapeHtml(summary.biggestRise || 'Unavailable')}</strong></div><div><small>Highest activity</small><strong>${escapeHtml(summary.highestActivity || 'Activity unavailable')}</strong></div></div>`
 }
@@ -702,11 +733,8 @@ function rangeLabel(payload: DayFlowPayload): string {
 }
 
 function syncUrl(payload?: DayFlowPayload): void {
-  const current = new URLSearchParams(window.location.search)
   const params = new URLSearchParams()
-  const layout = current.get('layout')
-  if (layout === 'split' || layout === 'wide') params.set('layout', layout)
-  else if (layout === 'theater') params.set('layout', 'wide')
+  if (state.layoutInUrl) params.set('layout', state.layout)
   params.set('metric', state.metric)
   params.set('scope', state.scope)
   params.set('top', String(state.top))

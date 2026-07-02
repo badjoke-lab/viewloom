@@ -1,3 +1,6 @@
+import { applyBattleLinesLayout, canUseBattleLinesSplit, initializeBattleLinesLayoutHost, normalizeBattleLayout, renderBattleLinesSplitRail, type BattleLayoutMode } from './battle-lines-layout'
+import { canonicalBattleLinesTime, readBattleLinesSelection } from '../navigation/battle-lines-deep-link-bridge'
+
 type Metric = 'viewers' | 'indexed'
 type RangeMode = 'today' | 'yesterday' | 'date'
 type PointState = 'observed' | 'offline' | 'not_observed' | 'missing'
@@ -9,13 +12,14 @@ type BattleEvent = { id: string; type: 'reversal' | 'rapid_rise' | 'gap_collapse
 type Coverage = { expectedBuckets: number; observedBuckets: number; missingBuckets: number; missingRatio: number }
 type WindowContract = { mode: string; selectedDate: string; from: string; to: string; isLive: boolean }
 type Payload = { platform: string; state: string; status: string; source: string; updatedAt: string; generatedAt: string; top: number; requestedBucket: string; bucket: '5m' | '10m'; metric: Metric; valueMode: Metric; metricNote: string; granularityNote: string; timeline: string[]; coverage: Coverage; window: WindowContract; lines: Line[]; primaryBattle: Battle | null; recommendedBattle: Battle | null; secondaryBattles: Battle[]; battles: Battle[]; events: BattleEvent[]; reversals: BattleEvent[]; feed: BattleEvent[]; error?: { message?: string } }
-type State = { metric: Metric; top: 3 | 5 | 10; bucket: '5m' | '10m'; range: RangeMode; date: string; selectedBattleId: string | null; selectedLineId: string | null; selectedIndex: number; manualBattle: boolean; followLatest: boolean; dragging: boolean }
+type State = { metric: Metric; top: 3 | 5 | 10; bucket: '5m' | '10m'; range: RangeMode; date: string; selectedBattleId: string | null; selectedLineId: string | null; selectedIndex: number; requestedTime: string | null; legacyPoint: number; manualBattle: boolean; followLatest: boolean; dragging: boolean; layout: BattleLayoutMode; layoutInUrl: boolean }
 type PairSnapshot = { leaderName: string | null; gap: number | null; trend: GapTrend }
 type MarkerCandidate = { index: number; value: number; text: string; color: string; priority: number }
 
 const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
 const endpoint = provider === 'kick' ? '/api/kick-battle-lines' : '/api/battle-lines'
 const params = new URLSearchParams(location.search)
+const selection = readBattleLinesSelection(params)
 const todayUtc = new Date().toISOString().slice(0, 10)
 const state: State = {
   metric: params.get('metric') === 'indexed' ? 'indexed' : 'viewers',
@@ -25,21 +29,53 @@ const state: State = {
   date: validDate(params.get('date')) ?? todayUtc,
   selectedBattleId: params.get('battle'),
   selectedLineId: params.get('stream'),
-  selectedIndex: parseIndex(params.get('point')),
+  selectedIndex: selection.point,
+  requestedTime: selection.time,
+  legacyPoint: selection.point,
   manualBattle: Boolean(params.get('battle')),
-  followLatest: params.get('point') === null,
+  followLatest: selection.time === null && selection.point < 0,
   dragging: false,
+  layout: normalizeBattleLayout(params.get('layout')),
+  layoutInUrl: params.get('layout') !== null,
 }
 let payload: Payload | null = null
 let requestSerial = 0
 let autoTimer = 0
+const BATTLE_LINES_TIMEOUT_MS = 12_000
 
+initializeBattleLinesLayoutHost()
 wireControls()
 syncControls()
 void hydrate()
 startAutoRefresh()
 
 function wireControls(): void {
+  document.querySelectorAll<HTMLButtonElement>('[data-battle-layout]').forEach((button) => button.addEventListener('click', () => {
+    const next: BattleLayoutMode = button.dataset.battleLayout === 'split' ? 'split' : 'wide'
+    if (next === 'split' && !canUseBattleLinesSplit()) return
+    state.layout = next
+    state.layoutInUrl = true
+    syncControls()
+    syncUrl()
+    renderBattleLinesSplitRail()
+  }))
+  window.addEventListener('resize', () => {
+    if (state.layout === 'split' && !canUseBattleLinesSplit()) {
+      state.layout = 'wide'
+      state.layoutInUrl = true
+      syncUrl()
+    }
+    syncControls()
+    renderBattleLinesSplitRail()
+  })
+  window.addEventListener('popstate', () => {
+    const nextParams = new URLSearchParams(location.search)
+    state.layout = normalizeBattleLayout(nextParams.get('layout'))
+    state.layoutInUrl = nextParams.get('layout') !== null
+    syncControls()
+    renderBattleLinesSplitRail()
+  })
+
   document.querySelectorAll<HTMLButtonElement>('[data-battle-metric]').forEach((button) => button.addEventListener('click', () => {
     const next = button.dataset.battleMetric === 'indexed' ? 'indexed' : 'viewers'
     if (next === state.metric) return
@@ -103,7 +139,7 @@ async function hydrate(options: { preserveBattle?: boolean; preserveTime?: boole
   try {
     const query = new URLSearchParams({ metric: state.metric, top: String(state.top), bucket: state.bucket, range: state.range })
     if (state.range === 'date') query.set('date', state.date)
-    const response = await fetch(`${endpoint}?${query}`, { headers: { accept: 'application/json' }, cache: 'no-store' })
+    const response = await fetchBattleLinesResponse(`${endpoint}?${query}`)
     const next = await response.json() as Payload
     if (serial !== requestSerial) return
     if (!response.ok && next.state !== 'error') throw new Error(`Battle Lines API returned ${response.status}`)
@@ -121,7 +157,10 @@ async function hydrate(options: { preserveBattle?: boolean; preserveTime?: boole
       state.manualBattle = false
     }
     if (previousBucket) state.selectedIndex = nearestTimelineIndex(next.timeline, previousBucket)
+    else if (state.requestedTime) state.selectedIndex = nearestTimelineIndex(next.timeline, state.requestedTime)
     if (state.followLatest || state.selectedIndex < 0 || state.selectedIndex >= next.timeline.length) state.selectedIndex = latestUsefulIndex(next)
+    state.requestedTime = next.timeline[state.selectedIndex] ?? null
+    state.legacyPoint = -1
     if (!state.selectedLineId || !next.lines.some((line) => line.id === state.selectedLineId)) state.selectedLineId = null
     syncControls()
     syncUrl()
@@ -146,6 +185,8 @@ function renderAll(): void {
   renderSecondary(payload)
   renderFeed(payload)
   renderCoverage(payload)
+  applyBattleLinesLayout(state.layout)
+  renderBattleLinesSplitRail()
 }
 
 function renderHeadFacts(data: Payload): void {
@@ -498,8 +539,15 @@ function syncControls(): void {
   setPressed('[data-battle-top]', 'battleTop', String(state.top))
   setPressed('[data-battle-bucket]', 'battleBucket', state.bucket)
   setPressed('[data-battle-range]', 'battleRange', state.range)
+  setPressed('[data-battle-layout]', 'battleLayout', state.layout)
   const input = dateInput()
-  if (input) { input.value = state.date; input.max = todayUtc }
+  if (input) {
+    input.value = state.date
+    input.max = todayUtc
+    input.hidden = state.range !== 'date'
+    input.disabled = state.range !== 'date'
+  }
+  applyBattleLinesLayout(state.layout)
   const recommended = document.querySelector<HTMLButtonElement>('[data-battle-recommended]')
   if (recommended) recommended.disabled = !state.manualBattle
 }
@@ -514,6 +562,7 @@ function setPressed(selector: string, key: string, value: string): void {
 
 function syncUrl(): void {
   const next = new URLSearchParams()
+  if (state.layoutInUrl) next.set('layout', state.layout)
   if (state.metric !== 'viewers') next.set('metric', state.metric)
   if (state.top !== 5) next.set('top', String(state.top))
   if (state.bucket !== '5m') next.set('bucket', state.bucket)
@@ -521,15 +570,51 @@ function syncUrl(): void {
   if (state.range === 'date') next.set('date', state.date)
   if (state.manualBattle && state.selectedBattleId) next.set('battle', state.selectedBattleId)
   if (state.selectedLineId) next.set('stream', state.selectedLineId)
-  if (!state.followLatest && state.selectedIndex >= 0) next.set('point', String(state.selectedIndex))
+  if (!state.followLatest && state.selectedIndex >= 0) {
+    const time = canonicalBattleLinesTime(payload?.timeline ?? [], state.selectedIndex, state.legacyPoint, state.bucket, state.range, state.range === 'date' ? state.date : null)
+    if (time) next.set('time', time)
+  }
   history.replaceState(null, '', `${location.pathname}${next.size ? `?${next}` : ''}`)
 }
 
+async function fetchBattleLinesResponse(url: string): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = window.setTimeout(() => controller.abort(new DOMException('Battle Lines API timed out.', 'TimeoutError')), BATTLE_LINES_TIMEOUT_MS)
+  try {
+    return await fetch(url, { headers: { accept: 'application/json' }, cache: 'no-store', signal: controller.signal })
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error(`Battle Lines API did not respond within ${Math.round(BATTLE_LINES_TIMEOUT_MS / 1000)} seconds.`)
+    throw error
+  } finally {
+    window.clearTimeout(timeoutId)
+  }
+}
+
 function renderFatal(message: string): void {
+  const safe = escapeHtml(message)
+  const facts = document.querySelectorAll<HTMLElement>('.head-facts .fact strong')
+  if (facts[0]) facts[0].textContent = 'Error'
+  if (facts[1]) facts[1].textContent = 'Unavailable'
+  if (facts[2]) facts[2].textContent = '—'
+  if (facts[3]) facts[3].textContent = 'Request failed'
   const status = document.querySelector<HTMLElement>('[data-battle-status]')
-  if (status) { status.className = 'battle-status battle-status--error'; status.innerHTML = `<strong>Error</strong><span>${escapeHtml(message)}</span>` }
+  if (status) { status.className = 'battle-status battle-status--error'; status.innerHTML = `<strong>Error</strong><span>${safe}</span>` }
+  const primary = document.querySelector<HTMLElement>('[data-battle-primary]')
+  if (primary) primary.innerHTML = '<div class="notice">Recommended battle is unavailable because the data request failed.</div>'
   const stage = document.querySelector<HTMLElement>('[data-battle-stage]')
-  if (stage) stage.innerHTML = `<div class="notice">Battle Lines is unavailable: ${escapeHtml(message)}</div>`
+  if (stage) stage.innerHTML = `<div class="notice">Battle Lines is unavailable: ${safe}</div>`
+  const inspector = document.querySelector<HTMLElement>('[data-battle-inspector]')
+  if (inspector) inspector.innerHTML = '<p>No battle time can be inspected until the API responds.</p>'
+  const reversals = document.querySelector<HTMLElement>('[data-battle-reversals]')
+  if (reversals) reversals.innerHTML = '<p class="empty-inline">Reversals are unavailable.</p>'
+  const secondary = document.querySelector<HTMLElement>('[data-battle-secondary]')
+  if (secondary) secondary.innerHTML = '<p class="empty-inline">Secondary battles are unavailable.</p>'
+  const feed = document.querySelector<HTMLElement>('[data-battle-feed]')
+  if (feed) feed.innerHTML = '<p class="empty-inline">Battle events are unavailable.</p>'
+  const coverage = document.querySelector<HTMLElement>('[data-battle-coverage]')
+  if (coverage) coverage.innerHTML = `<strong>Coverage & limits</strong><p>${safe} Use Refresh to retry.</p>`
+  applyBattleLinesLayout(state.layout)
+  renderBattleLinesSplitRail()
 }
 
 function startAutoRefresh(): void {
