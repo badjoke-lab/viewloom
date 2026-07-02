@@ -1,28 +1,24 @@
-type BattleLayoutMode = 'wide' | 'split'
+export type BattleLayoutMode = 'wide' | 'split'
 
 const SPLIT_MIN_WIDTH = 1180
-const layoutButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-battle-layout]')]
-const stage = document.querySelector<HTMLElement>('[data-battle-stage]')
-const inspector = document.querySelector<HTMLElement>('[data-battle-inspector]')
-const inspectorSection = inspector?.closest<HTMLElement>('.battle-section') ?? null
-const layoutHost = stage?.parentElement ?? null
-let requestedLayout: BattleLayoutMode = readInitialLayout()
-let renderingRail = false
 
-const nativeReplaceState = window.history.replaceState.bind(window.history)
-window.history.replaceState = function replaceState(data: unknown, unused: string, url?: string | URL | null): void {
-  if (url === undefined || url === null) {
-    nativeReplaceState(data, unused, url)
-    return
-  }
-  const next = new URL(String(url), window.location.href)
-  next.searchParams.set('layout', requestedLayout)
-  nativeReplaceState(data, unused, `${next.pathname}?${next.searchParams.toString()}${next.hash}`)
+export function normalizeBattleLayout(value: string | null): BattleLayoutMode {
+  if (value === 'split') return 'split'
+  return 'wide'
 }
 
-if (stage && inspectorSection && layoutHost) setupLayout()
+export function canUseBattleLinesSplit(): boolean {
+  return window.matchMedia(`(min-width: ${SPLIT_MIN_WIDTH}px)`).matches
+}
 
-function setupLayout(): void {
+export function initializeBattleLinesLayoutHost(): void {
+  if (document.querySelector('[data-battle-layout-shell]')) return
+  const stage = document.querySelector<HTMLElement>('[data-battle-stage]')
+  const inspector = document.querySelector<HTMLElement>('[data-battle-inspector]')
+  const inspectorSection = inspector?.closest<HTMLElement>('.battle-section') ?? null
+  const layoutHost = stage?.parentElement ?? null
+  if (!stage || !inspectorSection || !layoutHost) return
+
   const shell = document.createElement('div')
   shell.className = 'battle-layout-shell is-wide'
   shell.setAttribute('data-battle-layout-shell', '')
@@ -41,94 +37,42 @@ function setupLayout(): void {
   main.append(stage)
   shell.append(main, rail)
   inspectorSection.setAttribute('data-battle-inspector-section', '')
-
-  for (const button of layoutButtons) {
-    button.addEventListener('click', () => {
-      const next: BattleLayoutMode = button.dataset.battleLayout === 'split' ? 'split' : 'wide'
-      if (next === 'split' && !canSplit()) return
-      requestedLayout = next
-      applyLayout(true)
-    })
-  }
-
-  window.addEventListener('resize', () => {
-    if (!canSplit() && requestedLayout === 'split') {
-      requestedLayout = 'wide'
-      applyLayout(true)
-      return
-    }
-    applyLayout(false)
-  })
-
-  window.addEventListener('popstate', () => {
-    requestedLayout = readInitialLayout()
-    if (!canSplit() && requestedLayout === 'split') requestedLayout = 'wide'
-    applyLayout(false)
-  })
-
-  const sources = [
-    document.querySelector<HTMLElement>('[data-battle-primary]'),
-    document.querySelector<HTMLElement>('[data-battle-status]'),
-    document.querySelector<HTMLElement>('[data-battle-inspector]'),
-    document.querySelector<HTMLElement>('[data-battle-feed]'),
-    document.querySelector<HTMLElement>('[data-battle-stage]'),
-  ].filter((node): node is HTMLElement => Boolean(node))
-
-  const observer = new MutationObserver(() => renderRail())
-  for (const source of sources) observer.observe(source, { childList: true, subtree: true, characterData: true })
-
-  applyLayout(true)
-  renderRail()
 }
 
-function readInitialLayout(): BattleLayoutMode {
-  const value = new URLSearchParams(window.location.search).get('layout')
-  if (value === 'split') return 'split'
-  if (value === 'theater') return 'wide'
-  return 'wide'
-}
-
-function canSplit(): boolean {
-  return window.matchMedia(`(min-width: ${SPLIT_MIN_WIDTH}px)`).matches
-}
-
-function applyLayout(updateUrl: boolean): void {
+export function applyBattleLinesLayout(requestedLayout: BattleLayoutMode): BattleLayoutMode {
+  initializeBattleLinesLayoutHost()
   const shell = document.querySelector<HTMLElement>('[data-battle-layout-shell]')
   const rail = document.querySelector<HTMLElement>('[data-battle-split-rail]')
-  if (!shell || !rail || !inspectorSection) return
+  const inspectorSection = document.querySelector<HTMLElement>('[data-battle-inspector-section]')
+  if (!shell || !rail || !inspectorSection) return 'wide'
 
-  const effectiveLayout: BattleLayoutMode = requestedLayout === 'split' && canSplit() ? 'split' : 'wide'
+  const effectiveLayout: BattleLayoutMode = requestedLayout === 'split' && canUseBattleLinesSplit() ? 'split' : 'wide'
   shell.classList.toggle('is-wide', effectiveLayout === 'wide')
   shell.classList.toggle('is-split', effectiveLayout === 'split')
   shell.dataset.battleLayoutCurrent = effectiveLayout
+  shell.dataset.battleLayoutRequested = requestedLayout
   document.body.dataset.battleLayoutRequested = requestedLayout
   document.body.dataset.battleLayoutCurrent = effectiveLayout
   rail.hidden = effectiveLayout !== 'split'
   inspectorSection.hidden = effectiveLayout === 'split'
 
-  for (const button of layoutButtons) {
+  document.querySelectorAll<HTMLButtonElement>('[data-battle-layout]').forEach((button) => {
     const mode: BattleLayoutMode = button.dataset.battleLayout === 'split' ? 'split' : 'wide'
-    const disabled = mode === 'split' && !canSplit()
+    const disabled = mode === 'split' && !canUseBattleLinesSplit()
     const active = mode === effectiveLayout
     button.disabled = disabled
     button.classList.toggle('active', active)
     button.setAttribute('aria-pressed', String(active))
     button.title = disabled ? 'Split is available on wider desktop screens.' : `${mode === 'wide' ? 'Wide' : 'Split'} layout`
-  }
+  })
 
-  if (effectiveLayout === 'split') renderRail()
-  if (!updateUrl) return
-
-  const next = new URL(window.location.href)
-  next.searchParams.set('layout', effectiveLayout)
-  nativeReplaceState(null, '', `${next.pathname}?${next.searchParams.toString()}${next.hash}`)
+  if (effectiveLayout === 'split') renderBattleLinesSplitRail()
+  return effectiveLayout
 }
 
-function renderRail(): void {
-  if (renderingRail) return
+export function renderBattleLinesSplitRail(): void {
   const target = document.querySelector<HTMLElement>('[data-battle-split-content]')
   if (!target) return
-  renderingRail = true
 
   const primary = document.querySelector<HTMLElement>('[data-battle-primary]')
   const status = document.querySelector<HTMLElement>('[data-battle-status]')
@@ -175,7 +119,6 @@ function renderRail(): void {
 
   const head = document.querySelector<HTMLElement>('.battle-split-rail__head strong')
   if (head) head.textContent = pair
-  renderingRail = false
 }
 
 function escapeHtml(value: string): string {
