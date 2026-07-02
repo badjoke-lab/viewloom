@@ -11,7 +11,7 @@ const layout = read(layoutPath)
 const deepLink = read(linkPath)
 const twitch = read('twitch/battle-lines/index.html')
 const kick = read('kick/battle-lines/index.html')
-const css = `${read('src/battle-lines.css')}\n${read('src/battle-lines-wide.css')}`
+const css = `${read('src/live/battle-lines-wide.css')}\n${read('src/live/battle-lines-split.css')}`
 
 assert.equal(existsSync(removedGuardPath), false, 'obsolete Battle Lines loading guard remains')
 
@@ -74,7 +74,7 @@ for (const fragment of [
   '.battle-layout-shell.is-split',
   '.battle-split-rail',
   '@media(max-width:1179px)',
-]) assert.ok(css.includes(fragment), `Battle Lines wide CSS missing ${fragment}`)
+]) assert.ok(css.includes(fragment), `Battle Lines layout CSS missing ${fragment}`)
 
 console.log('Battle Lines consolidated architecture verification passed.')
 console.log('- one primary controller entry per provider route')
