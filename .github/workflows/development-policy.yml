@@ -41,6 +41,7 @@ jobs:
         shell: bash
         run: |
           set +e
+          sed -i 's/${endpoint}/\${endpoint}/g' scripts/u10g_patch_architecture.mjs
           node scripts/u10g_patch_architecture.mjs > u10g-patch.log 2>&1
           status=$?
           cat u10g-patch.log
