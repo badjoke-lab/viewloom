@@ -76,7 +76,7 @@ jobs:
           pnpm --filter @viewloom/web verify:battle-lines
           pnpm --filter @viewloom/web verify:battle-lines-ui
       - name: Verify deep-link contracts
-        run: pnpm --filter @viewloom/web verify:deep-link
+        run: node apps/web/scripts/verify-deep-link-contract.mjs
       - name: Verify Watchlist contracts
         run: pnpm --filter @viewloom/web verify:watchlist-contracts
       - name: Typecheck web application
