@@ -7,8 +7,14 @@ export function normalizeBattleLayout(value: string | null): BattleLayoutMode {
   return 'wide'
 }
 
-export function canUseBattleLinesSplit(): boolean {
+function splitViewportAvailable(): boolean {
   return window.matchMedia(`(min-width: ${SPLIT_MIN_WIDTH}px)`).matches
+}
+
+export function canUseBattleLinesSplit(): boolean {
+  // Once Split has been requested, responsive fallback may change only the
+  // effective presentation. The requested state and canonical URL stay intact.
+  return splitViewportAvailable() || document.body.dataset.battleLayoutRequested === 'split'
 }
 
 export function initializeBattleLinesLayoutHost(): void {
@@ -46,7 +52,8 @@ export function applyBattleLinesLayout(requestedLayout: BattleLayoutMode): Battl
   const inspectorSection = document.querySelector<HTMLElement>('[data-battle-inspector-section]')
   if (!shell || !rail || !inspectorSection) return 'wide'
 
-  const effectiveLayout: BattleLayoutMode = requestedLayout === 'split' && canUseBattleLinesSplit() ? 'split' : 'wide'
+  const splitAvailable = splitViewportAvailable()
+  const effectiveLayout: BattleLayoutMode = requestedLayout === 'split' && splitAvailable ? 'split' : 'wide'
   shell.classList.toggle('is-wide', effectiveLayout === 'wide')
   shell.classList.toggle('is-split', effectiveLayout === 'split')
   shell.dataset.battleLayoutCurrent = effectiveLayout
@@ -58,7 +65,7 @@ export function applyBattleLinesLayout(requestedLayout: BattleLayoutMode): Battl
 
   document.querySelectorAll<HTMLButtonElement>('[data-battle-layout]').forEach((button) => {
     const mode: BattleLayoutMode = button.dataset.battleLayout === 'split' ? 'split' : 'wide'
-    const disabled = mode === 'split' && !canUseBattleLinesSplit()
+    const disabled = mode === 'split' && !splitAvailable
     const active = mode === effectiveLayout
     button.disabled = disabled
     button.classList.toggle('active', active)
