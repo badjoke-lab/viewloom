@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map
-Last updated: 2026-07-02
+Last updated: 2026-07-03
 
 Read the development policy, documentation governance, roadmap, schedule, program plan, affected specifications, implementation plans, and permanent evidence before changing the repository.
 
@@ -25,15 +25,17 @@ Phase 10 U10E responsive and accessibility       complete PR #465
 U10E canonical closeout                          complete PR #466
 Phase 10 U10F readiness                          complete PR #468
 U10F canonical closeout                          complete PR #469
-Active implementation branch                    none
-Exact next implementation branch                work-quality-u10g-architecture
-U10G branch created                             no
+Phase 10 U10G architecture                       active
+Active implementation branch                    work-quality-u10g-architecture
+Exact next implementation branch                work-quality-u10h-acceptance
+U10H branch created                             no
 ```
 
 ## Current authorities
 
 - Phase 10–11 specification: `product/cross-site-quality-remediation-spec.md`
 - Phase 10–11 plan: `product/cross-site-quality-remediation-plan.md`
+- U10G working record: `work-in-progress/u10g-architecture.md`
 - U10A permanent defect ledger: `audits/cross-site-quality-u10a-baseline.json`
 - U10A permanent owner map: `audits/cross-site-quality-u10a-owner-map.json`
 - U10B permanent shared shell record: `audits/cross-site-quality-u10b-shared-shell.json`
