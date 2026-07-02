@@ -29,6 +29,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  u10g-patch-artifact:
+    if: github.event_name == 'pull_request' && github.head_ref == 'work-quality-u10g-architecture'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply guarded architecture patch
+        run: |
+          node scripts/u10g_patch_architecture.mjs
+          git diff --check
+      - name: Upload patched controller files
+        uses: actions/upload-artifact@v4
+        with:
+          name: u10g-patched-controllers
+          path: |
+            apps/web/src/live/day-flow-current-shell-entry.ts
+            apps/web/src/live/battle-lines-current-shell-entry.ts
+            apps/web/twitch/day-flow/index.html
+            apps/web/kick/day-flow/index.html
+            apps/web/twitch/battle-lines/index.html
+            apps/web/kick/battle-lines/index.html
+          if-no-files-found: error
+
   verify:
     runs-on: ubuntu-latest
     steps:
