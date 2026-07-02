@@ -1,0 +1,41 @@
+name: U10G Test Patch
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/u10g-test-patch.yml'
+      - 'apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: u10g-test-patch-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  patch:
+    if: github.head_ref == 'work-quality-u10g-architecture'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Update retained U10D canonical URL expectation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs')
+          source = path.read_text()
+          before = "assert.equal(moved.legacyPoint, '1')"
+          after = "assert.equal(moved.legacyPoint, null)"
+          if before in source:
+              path.write_text(source.replace(before, after))
+          elif after not in source:
+              raise SystemExit('Expected U10D legacy point assertion was not found.')
+          PY
+          git diff --check
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Retain U10D canonical time expectation
+          file_pattern: apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs
