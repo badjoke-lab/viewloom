@@ -51,9 +51,9 @@ async function auditDayFlow(provider, width, mode) {
   const initial = await architectureSnapshot(page, 'day-flow')
   assert.equal(requests.value, 1, `${id}: Day Flow issued ${requests.value} feature requests`)
   assert.equal(crossRequests.value, 0, `${id}: Day Flow crossed provider endpoint`)
-  assert.equal(initial.fetchSame, true, `${id}: global fetch was replaced`)
-  assert.equal(initial.replaceStateSame, true, `${id}: history.replaceState was replaced`)
-  assert.equal(initial.urlGetSame, true, `${id}: URLSearchParams.get was replaced`)
+  assert.equal(initial.fetchSame, true, `${id}: global fetch was replaced\n${initial.fetchReplacementStack ?? ''}`)
+  assert.equal(initial.replaceStateSame, true, `${id}: history.replaceState was replaced\n${initial.replaceStateReplacementStack ?? ''}`)
+  assert.equal(initial.urlGetSame, true, `${id}: URLSearchParams.get was replaced\n${initial.urlGetReplacementStack ?? ''}`)
   assert.ok(initial.summaryCards >= 5, `${id}: enhanced summary did not render from primary payload`)
   assert.ok(initial.horizontalOverflow <= 2, `${id}: horizontal overflow ${initial.horizontalOverflow}`)
 
@@ -88,9 +88,9 @@ async function auditBattle(provider, width, mode) {
   const initial = await architectureSnapshot(page, 'battle-lines')
   assert.equal(requests.value, 1, `${id}: Battle Lines issued ${requests.value} feature requests`)
   assert.equal(crossRequests.value, 0, `${id}: Battle Lines crossed provider endpoint`)
-  assert.equal(initial.fetchSame, true, `${id}: global fetch was replaced`)
-  assert.equal(initial.replaceStateSame, true, `${id}: history.replaceState was replaced`)
-  assert.equal(initial.urlGetSame, true, `${id}: URLSearchParams.get was replaced`)
+  assert.equal(initial.fetchSame, true, `${id}: global fetch was replaced\n${initial.fetchReplacementStack ?? ''}`)
+  assert.equal(initial.replaceStateSame, true, `${id}: history.replaceState was replaced\n${initial.replaceStateReplacementStack ?? ''}`)
+  assert.equal(initial.urlGetSame, true, `${id}: URLSearchParams.get was replaced\n${initial.urlGetReplacementStack ?? ''}`)
   assert.equal(initial.selectedIndex, '1', `${id}: selected bucket was not resolved`)
   assert.equal(initial.timeParam, '2026-06-29T00:05:00.000Z', `${id}: canonical time missing`)
   assert.equal(initial.pointParam, null, `${id}: legacy point remained in canonical URL`)
@@ -124,6 +124,9 @@ async function architectureSnapshot(page, feature) {
       fetchSame: native.fetchReplaced === false,
       replaceStateSame: native.replaceStateReplaced === false,
       urlGetSame: native.urlGetReplaced === false,
+      fetchReplacementStack: native.fetchReplacementStack,
+      replaceStateReplacementStack: native.replaceStateReplacementStack,
+      urlGetReplacementStack: native.urlGetReplacementStack,
       layoutCurrent: shell?.getAttribute(featureName === 'day-flow' ? 'data-dayflow-layout-current' : 'data-battle-layout-current'),
       layoutRequested: shell?.getAttribute(featureName === 'day-flow' ? 'data-dayflow-layout-requested' : 'data-battle-layout-requested'),
       summaryCards: document.querySelectorAll('.dayflow-summary-stat').length,
@@ -142,6 +145,9 @@ async function baseContext(width) {
       fetchReplaced: false,
       replaceStateReplaced: false,
       urlGetReplaced: false,
+      fetchReplacementStack: null,
+      replaceStateReplacementStack: null,
+      urlGetReplacementStack: null,
     }
 
     installValueReplacementTrap(globalThis, 'fetch', replacementStatus, 'fetchReplaced')
@@ -161,12 +167,14 @@ async function baseContext(width) {
       const descriptor = Object.getOwnPropertyDescriptor(target, property)
       if (!descriptor || descriptor.configurable === false || typeof descriptor.value !== 'function') return
       let value = descriptor.value
+      const stackKey = `${statusKey.replace(/Replaced$/, '')}ReplacementStack`
       Object.defineProperty(target, property, {
         configurable: true,
         enumerable: descriptor.enumerable,
         get() { return value },
         set(nextValue) {
           status[statusKey] = true
+          status[stackKey] = new Error(`${String(property)} replacement detected`).stack ?? null
           value = nextValue
         },
       })
