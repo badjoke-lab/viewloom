@@ -5,41 +5,17 @@ import {
   type ProviderCoveragePayload,
 } from './provider-coverage'
 
-const installedKey = '__viewloomKickCoverageUiInstalled'
-const targetEndpoint = endpointForPath(window.location.pathname)
-
-if (document.body.dataset.provider === 'kick' && targetEndpoint && !(window as unknown as Record<string, unknown>)[installedKey]) {
-  ;(window as unknown as Record<string, unknown>)[installedKey] = true
-  install(targetEndpoint)
+declare global {
+  interface Window {
+    __viewloomApplyKickCoveragePayload?: (payload: ProviderCoveragePayload) => void
+  }
 }
 
-function install(endpoint: string): void {
-  const originalFetch = window.fetch.bind(window)
-  let payload: ProviderCoveragePayload | null = null
-  let queued = false
+window.__viewloomApplyKickCoveragePayload = applyKickCoveragePayload
 
-  window.fetch = (async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    const response = await originalFetch(input, init)
-    if (requestPath(input) === endpoint) {
-      void response.clone().json().then((raw: unknown): void => {
-        payload = isRecord(raw) ? raw as ProviderCoveragePayload : null
-        queueApply()
-      }).catch((): void => undefined)
-    }
-    return response
-  }) as typeof window.fetch
-
-  const observer = new MutationObserver(queueApply)
-  observer.observe(document.body, { subtree: true, childList: true, characterData: true })
-
-  function queueApply(): void {
-    if (!payload || queued) return
-    queued = true
-    window.requestAnimationFrame(() => {
-      queued = false
-      if (payload) applyCoverage(payload)
-    })
-  }
+export function applyKickCoveragePayload(payload: ProviderCoveragePayload): void {
+  if (document.body.dataset.provider !== 'kick') return
+  applyCoverage(payload)
 }
 
 function applyCoverage(payload: ProviderCoveragePayload): void {
@@ -76,26 +52,6 @@ function applyCoverage(payload: ProviderCoveragePayload): void {
   if (path === '/kick/history/') {
     setLabeledCell('Source', source)
     upsertNote('[data-history-notes]', `${summary}. ${note}`, 'p')
-  }
-}
-
-function endpointForPath(pathname: string): string | null {
-  const path = normalizePath(pathname)
-  if (path === '/kick/') return '/api/kick-home'
-  if (path === '/kick/status/') return '/api/kick-status'
-  if (path === '/kick/day-flow/') return '/api/kick-day-flow'
-  if (path === '/kick/battle-lines/') return '/api/kick-battle-lines'
-  if (path === '/kick/history/') return '/api/kick-history'
-  return null
-}
-
-function requestPath(input: RequestInfo | URL): string {
-  try {
-    if (typeof input === 'string') return new URL(input, window.location.href).pathname
-    if (input instanceof URL) return input.pathname
-    return new URL(input.url, window.location.href).pathname
-  } catch {
-    return ''
   }
 }
 
@@ -137,8 +93,4 @@ function upsertNote(selector: string, value: string, tag: 'p' | 'span'): void {
     root.append(node)
   }
   if (node.textContent !== value) node.textContent = value
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
