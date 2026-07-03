@@ -219,8 +219,8 @@ async function battleContext(provider, width) {
 }
 
 async function quietThirdParties(context) {
-  await context.route('**/googletagmanager.com/**', (route) => route.abort())
-  await context.route('**/google-analytics.com/**', (route) => route.abort())
+  await context.route('**/*googletagmanager.com/**', (route) => route.abort())
+  await context.route('**/*google-analytics.com/**', (route) => route.abort())
 }
 
 async function replyJson(route, value) {
