@@ -106,9 +106,12 @@ for (const fragment of [
   "await auditBattle(provider, 1440, 'direct-time')",
   "await auditBattle(provider, 390, 'legacy-point')",
   'assert.equal(evidence.scenarios.length, 8)',
-  'fetchSame: globalThis.fetch === native.fetch',
-  'replaceStateSame: history.replaceState === native.replaceState',
-  'urlGetSame: URLSearchParams.prototype.get === native.urlGet',
+  "installValueReplacementTrap(globalThis, 'fetch', replacementStatus, 'fetchReplaced')",
+  "installValueReplacementTrap(Object.getPrototypeOf(history), 'replaceState', replacementStatus, 'replaceStateReplaced')",
+  "installValueReplacementTrap(URLSearchParams.prototype, 'get', replacementStatus, 'urlGetReplaced')",
+  'fetchSame: native.fetchReplaced === false',
+  'replaceStateSame: native.replaceStateReplaced === false',
+  'urlGetSame: native.urlGetReplaced === false',
 ]) assert.ok(browser.includes(fragment), `U10G browser contract missing ${fragment}`)
 
 for (const [path, fragments] of [
