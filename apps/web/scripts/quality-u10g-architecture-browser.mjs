@@ -121,9 +121,9 @@ async function architectureSnapshot(page, feature) {
       : document.querySelector('[data-battle-layout-shell]')
     const params = new URLSearchParams(location.search)
     return {
-      fetchSame: globalThis.fetch === native.fetch,
-      replaceStateSame: history.replaceState === native.replaceState,
-      urlGetSame: URLSearchParams.prototype.get === native.urlGet,
+      fetchSame: native.fetchReplaced === false,
+      replaceStateSame: native.replaceStateReplaced === false,
+      urlGetSame: native.urlGetReplaced === false,
       layoutCurrent: shell?.getAttribute(featureName === 'day-flow' ? 'data-dayflow-layout-current' : 'data-battle-layout-current'),
       layoutRequested: shell?.getAttribute(featureName === 'day-flow' ? 'data-dayflow-layout-requested' : 'data-battle-layout-requested'),
       summaryCards: document.querySelectorAll('.dayflow-summary-stat').length,
@@ -138,17 +138,39 @@ async function architectureSnapshot(page, feature) {
 async function baseContext(width) {
   const context = await browser.newContext({ viewport: { width, height: 1000 }, isMobile: width <= 390, hasTouch: width <= 390 })
   await context.addInitScript(({ now }) => {
-    globalThis.__viewloomU10GNative = {
-      fetch: globalThis.fetch,
-      replaceState: history.replaceState,
-      urlGet: URLSearchParams.prototype.get,
+    const replacementStatus = {
+      fetchReplaced: false,
+      replaceStateReplaced: false,
+      urlGetReplaced: false,
     }
+
+    installValueReplacementTrap(globalThis, 'fetch', replacementStatus, 'fetchReplaced')
+    installValueReplacementTrap(Object.getPrototypeOf(history), 'replaceState', replacementStatus, 'replaceStateReplaced')
+    installValueReplacementTrap(URLSearchParams.prototype, 'get', replacementStatus, 'urlGetReplaced')
+
+    globalThis.__viewloomU10GNative = replacementStatus
+
     const RealDate = Date
     class FixedDate extends RealDate {
       constructor(...args) { super(...(args.length ? args : [now])) }
       static now() { return new RealDate(now).getTime() }
     }
     globalThis.Date = FixedDate
+
+    function installValueReplacementTrap(target, property, status, statusKey) {
+      const descriptor = Object.getOwnPropertyDescriptor(target, property)
+      if (!descriptor || descriptor.configurable === false || typeof descriptor.value !== 'function') return
+      let value = descriptor.value
+      Object.defineProperty(target, property, {
+        configurable: true,
+        enumerable: descriptor.enumerable,
+        get() { return value },
+        set(nextValue) {
+          status[statusKey] = true
+          value = nextValue
+        },
+      })
+    }
   }, { now: '2026-06-29T00:20:00.000Z' })
   await quietThirdParties(context)
   return context
