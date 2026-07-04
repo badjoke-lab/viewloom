@@ -3,7 +3,7 @@
 Status: source-of-truth map
 Last updated: 2026-07-04
 
-Read the development policy, documentation governance, roadmap, schedule, program plan, affected specifications, implementation plans, and permanent evidence before changing the repository.
+Read the development policy, documentation governance, documentation index, roadmap, schedule, program plan, affected specifications, implementation plans, and evidence before changing the repository.
 
 ## Current execution state
 
@@ -26,31 +26,33 @@ U10E canonical closeout                          complete PR #466
 Phase 10 U10F readiness                          complete PR #468
 U10F canonical closeout                          complete PR #469
 Phase 10 U10G architecture                       complete PR #470
-Phase 10 U10H production acceptance              active
-Active implementation branch                    work-quality-u10h-acceptance
+Phase 10 U10H production acceptance              complete PR #471
+U10H canonical closeout                          PR #472
+Active implementation branch                    none
 Exact next implementation branch                work-quality-phase11-acceptance-operations
-U10H branch created                             yes
+Phase 11 branch created                         no
 ```
 
 ## Current authorities
 
 - Phase 10–11 specification: `product/cross-site-quality-remediation-spec.md`
 - Phase 10–11 plan: `product/cross-site-quality-remediation-plan.md`
-- U10H working record: `work-in-progress/u10h-acceptance.md`
+- Completed U10H record: `work-in-progress/u10h-acceptance.md`
+- U10H production acceptance: `operations/u10h-production-acceptance-2026-07-04.md`
 - U10G merged evidence: PR #470 Quality U10G Architecture artifact `8076053343`
-- U10A permanent defect ledger: `audits/cross-site-quality-u10a-baseline.json`
-- U10A permanent owner map: `audits/cross-site-quality-u10a-owner-map.json`
-- U10B permanent shared shell record: `audits/cross-site-quality-u10b-shared-shell.json`
-- U10C permanent visualization record: `audits/cross-site-quality-u10c-visualization.json`
-- U10D permanent analysis-coherence record: `audits/cross-site-quality-u10d-analysis-coherence.json`
-- U10E permanent responsive record: `audits/cross-site-quality-u10e-responsive.json`
-- U10F permanent readiness record: `audits/cross-site-quality-u10f-readiness.json`
-- Permanent History acceptance: `operations/history-production-acceptance-2026-06-28.md`
+- U10A defect ledger: `audits/cross-site-quality-u10a-baseline.json`
+- U10A owner map: `audits/cross-site-quality-u10a-owner-map.json`
+- U10B shared shell record: `audits/cross-site-quality-u10b-shared-shell.json`
+- U10C visualization record: `audits/cross-site-quality-u10c-visualization.json`
+- U10D analysis-coherence record: `audits/cross-site-quality-u10d-analysis-coherence.json`
+- U10E responsive record: `audits/cross-site-quality-u10e-responsive.json`
+- U10F readiness record: `audits/cross-site-quality-u10f-readiness.json`
+- History acceptance: `operations/history-production-acceptance-2026-06-28.md`
 
-## Permanent Watchlist records
+## Watchlist records
 
 - `product/local-watchlist-spec.md`
 - `product/watchlist-v1-implementation-plan.md`
 - `operations/watchlist-production-acceptance-2026-06-25.md`
 
-The U10F handoff fields are completed evidence. Current execution state is owned by this index, the roadmap, and the schedule.
+U10H production acceptance is complete. Phase 11 acceptance and operations is the exact next phase, and its branch has not been created.
