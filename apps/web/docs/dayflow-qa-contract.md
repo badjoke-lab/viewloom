@@ -11,14 +11,23 @@ This contract defines production acceptance for ViewLoom Day Flow on Twitch and 
 - Full / Top Focus are separate scopes. Full includes Others and keeps global totals. Top Focus excludes Others from the scale and recalculates share inside Top N.
 - Today and Rolling 24h may auto-update. Yesterday and Date do not auto-update.
 
+## Controller ownership
+
+- Each provider page loads exactly one Day Flow feature entry: `day-flow-current-shell-entry.ts`.
+- The primary controller owns the feature request, state, controls, URL synchronization, auto-update, rendering, and degraded states.
+- `day-flow-layout-summary.ts` is a pure layout and summary helper. It does not fetch, observe DOM mutations, install event listeners, or schedule updates.
+- Enhanced summary rendering consumes the payload already held by the primary controller; it does not issue a second feature request.
+- Layout-only changes do not request feature data again.
+- Twitch and Kick retain separate routes and API endpoints.
+
 ## Layout
 
-- Desktop defaults to Split.
+- Desktop defaults to Wide.
 - Split keeps the chart on the left and stacks Time Focus plus Selected streamer on the right.
 - Wide keeps the chart full width and places Time Focus plus Selected streamer below it.
-- Split / Wide are user-selectable, persisted per provider, and represented by the `layout` URL parameter.
-- Old `layout=theater` values are interpreted as Wide.
-- At tablet and mobile widths the page collapses to a single-column Wide presentation.
+- Split / Wide are user-selectable, persisted per provider, and represented by the `layout` URL parameter after explicit user selection.
+- Old `layout=theater` and stored `theater` values are interpreted as Wide.
+- At tablet and mobile widths the effective presentation collapses to Wide while retaining the requested layout state.
 
 ## Chart behavior
 
@@ -51,11 +60,12 @@ This contract defines production acceptance for ViewLoom Day Flow on Twitch and 
 - Complete coverage uses a short observed/total bucket summary. Provider-internal DB and collector metadata are not shown in normal UI.
 - Long names and Japanese names truncate without breaking layout and remain available through title text.
 - Mobile uses the same data and supports tap and horizontal scrubbing.
-- URL state includes layout, metric, scope, top, bucket, rangeMode, date when applicable, time, streamer, and auto.
+- URL state includes layout when explicitly selected, metric, scope, top, bucket, rangeMode, date when applicable, time, streamer, and auto.
 
 ## Verification gates
 
 - Twitch and Kick pages pass the same source checks.
-- QA includes executable fixtures for share scaling, Full totals, Top Focus normalization, timestamp selection, selected bucket values, Top 50 count, Split default, and summary calculations.
-- Web build, Web checks, and Web verification must all pass before merge.
-- Static SVG-only rendering, text-presence-only QA, raw ISO labels, missing Others, fixed zero Time Focus values, missing layout controls, or a four-cell-only Day summary are regressions.
+- QA includes executable fixtures for share scaling, Full totals, Top Focus normalization, timestamp selection, selected bucket values, Top 50 count, Wide default, legacy Theater compatibility, and summary calculations.
+- Browser acceptance verifies one initial Day Flow request, no cross-provider request, no layout-only refetch, enhanced summary rendering from the primary payload, mobile Wide fallback, and native global function identities.
+- Web build, Web checks, Web verification, retained U10D acceptance, and U10G architecture acceptance must all pass before merge.
+- Static SVG-only rendering, text-presence-only QA, raw ISO labels, missing Others, fixed zero Time Focus values, missing layout controls, a four-cell-only Day summary, duplicate feature entries, or a second summary request are regressions.

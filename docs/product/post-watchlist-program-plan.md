@@ -1,12 +1,12 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 4.6
-Last updated: 2026-07-02
-Current phase: Phase 10 — U10G architecture exact next
-Current implementation branch: none
-Exact next implementation branch: `work-quality-u10g-architecture`
-U10G branch created: no
+Version: 4.7
+Last updated: 2026-07-03
+Current phase: Phase 10 — U10G architecture
+Current implementation branch: `work-quality-u10g-architecture`
+Exact next implementation branch: `work-quality-u10h-acceptance`
+U10H branch created: no
 
 Completed U10A implementation: PR #454
 Completed U10A canonical closeout: PR #455
@@ -31,9 +31,11 @@ Phase 10 U10C complete PR #458
 Phase 10 U10D complete PR #462
 Phase 10 U10E complete PR #465
 Phase 10 U10F complete PR #468
-Phase 10 U10G exact next
+Phase 10 U10G active
+Phase 10 U10H exact next after U10G
 Phase 11–15 queued
 Phase 16 not approved
 ```
 
+Active U10G record: `docs/work-in-progress/u10g-architecture.md`.
 Permanent U10F record: `docs/audits/cross-site-quality-u10f-readiness.json`.

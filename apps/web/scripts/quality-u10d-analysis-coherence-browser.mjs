@@ -182,7 +182,7 @@ async function auditBattleCoherence(provider, width) {
   assert.equal(moved.inspectorIndex, '1')
   assert.equal(moved.cursorTime, '00:05 UTC')
   assert.equal(moved.timeParam, '2026-06-29T00:05:00.000Z')
-  assert.equal(moved.legacyPoint, '1')
+  assert.equal(moved.legacyPoint, null)
   assert.equal(requests.value, beforeActions, `${provider} ${width}: selected-time inspection refetched Battle Lines`)
   assert.equal(crossRequests.value, 0, `${provider} ${width}: Battle Lines crossed provider endpoint`)
 

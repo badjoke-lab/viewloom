@@ -1,0 +1,126 @@
+name: Quality U10G Architecture
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/README.md'
+      - 'docs/work-in-progress/u10g-architecture.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/product/cross-site-quality-remediation-plan.md'
+      - 'apps/web/twitch/day-flow/index.html'
+      - 'apps/web/kick/day-flow/index.html'
+      - 'apps/web/twitch/battle-lines/index.html'
+      - 'apps/web/kick/battle-lines/index.html'
+      - 'apps/web/src/live/day-flow-current-shell-entry.ts'
+      - 'apps/web/src/live/day-flow-layout-summary.ts'
+      - 'apps/web/src/live/battle-lines-current-shell-entry.ts'
+      - 'apps/web/src/live/battle-lines-layout.ts'
+      - 'apps/web/src/navigation/battle-lines-deep-link-bridge.ts'
+      - 'apps/web/scripts/quality-u10d-analysis-coherence-browser.mjs'
+      - 'apps/web/scripts/quality-u10g-architecture-browser.mjs'
+      - 'apps/web/scripts/verify-battle-lines-wide-ui.mjs'
+      - 'apps/web/scripts/verify-deep-link-contract-impl.mjs'
+      - 'scripts/verify-quality-u10d-analysis-coherence.mjs'
+      - 'scripts/verify-quality-u10g-architecture.mjs'
+      - 'scripts/verify-quality-u10g-browser-evidence.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/quality-u10g-architecture.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      QUALITY_U10G_BASE_URL: http://127.0.0.1:4173
+      QUALITY_U10G_ARTIFACT_DIR: /tmp/quality-u10g
+      GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Verify U10G repository contract
+        run: node scripts/verify-quality-u10g-architecture.mjs
+      - name: Verify retained U10F readiness
+        run: node scripts/verify-quality-u10f-readiness.mjs
+      - name: Verify retained U10E responsive contract
+        run: node scripts/verify-quality-u10e-responsive.mjs
+      - name: Verify retained U10D analysis coherence
+        run: node scripts/verify-quality-u10d-analysis-coherence.mjs
+      - name: Verify public surface inventory
+        run: node scripts/verify-public-surface-inventory.mjs
+      - name: Verify retained History acceptance
+        run: node scripts/verify-history-ui-h7-acceptance.mjs
+      - name: Verify Battle Lines contracts
+        run: |
+          pnpm --filter @viewloom/web verify:battle-lines
+          pnpm --filter @viewloom/web verify:battle-lines-ui
+      - name: Verify deep-link contracts
+        working-directory: apps/web
+        run: node scripts/verify-deep-link-contract.mjs
+      - name: Verify Watchlist contracts
+        run: pnpm --filter @viewloom/web verify:watchlist-contracts
+      - name: Typecheck web application
+        run: pnpm --filter @viewloom/web typecheck:app
+      - name: Build web application
+        run: pnpm build:web
+      - name: Start local preview
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/quality-u10g-preview.log 2>&1 &
+          for attempt in {1..60}; do
+            curl --silent --fail http://127.0.0.1:4173/twitch/day-flow/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/kick/day-flow/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/twitch/battle-lines/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/kick/battle-lines/ > /dev/null \
+              && exit 0
+            sleep 1
+          done
+          cat /tmp/quality-u10g-preview.log
+          exit 1
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+      - name: Run retained U10D browser acceptance
+        working-directory: apps/web
+        env:
+          QUALITY_U10D_BASE_URL: http://127.0.0.1:4173
+          QUALITY_U10D_ARTIFACT_DIR: /tmp/quality-u10d-retained
+        run: node scripts/quality-u10d-analysis-coherence-browser.mjs
+      - name: Run U10G browser acceptance
+        working-directory: apps/web
+        run: node scripts/quality-u10g-architecture-browser.mjs
+      - name: Verify U10G browser evidence
+        run: node scripts/verify-quality-u10g-browser-evidence.mjs
+      - name: Upload U10G artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-u10g-architecture
+          path: |
+            /tmp/quality-u10g/
+            /tmp/quality-u10d-retained/
+            /tmp/quality-u10g-preview.log
+          if-no-files-found: error

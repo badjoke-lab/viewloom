@@ -1,4 +1,4 @@
-type LayoutMode = 'split' | 'wide'
+export type DayFlowLayoutMode = 'split' | 'wide'
 
 type DayFlowBucket = {
   viewers?: number
@@ -14,7 +14,7 @@ type DayFlowBand = {
   buckets?: DayFlowBucket[]
 }
 
-type DayFlowPayload = {
+export type DayFlowSummaryPayload = {
   buckets?: string[]
   bucketSize?: number
   topN?: number
@@ -36,156 +36,39 @@ type LeaderRun = {
 }
 
 const desktopBreakpoint = 1000
-const shell = document.querySelector<HTMLElement>('[data-dayflow-layout-shell]')
-const layoutButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-dayflow-layout]')]
-const summaryRoot = document.querySelector<HTMLElement>('[data-dayflow-summary]')
-const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
-const endpoint = provider === 'kick' ? '/api/kick-day-flow' : '/api/day-flow'
-const storageKey = `viewloom:${provider}:dayflow-layout`
-let requestedLayout = readInitialLayout()
-let summaryPayload: DayFlowPayload | null = null
-let summaryKey = ''
-let summaryWriting = false
-let summaryTimer: number | null = null
 
-setupLayout()
-setupSummary()
-
-function setupLayout(): void {
-  if (!shell) return
-
-  for (const button of layoutButtons) {
-    button.addEventListener('click', () => {
-      requestedLayout = button.dataset.dayflowLayout === 'wide' ? 'wide' : 'split'
-      window.localStorage.setItem(storageKey, requestedLayout)
-      applyLayout(true)
-    })
-  }
-
-  window.addEventListener('resize', () => applyLayout(false))
-  window.addEventListener('popstate', () => {
-    requestedLayout = readInitialLayout()
-    applyLayout(false)
-  })
-
-  applyLayout(false)
-}
-
-function readInitialLayout(): LayoutMode {
-  const params = new URLSearchParams(window.location.search)
-  const fromUrl = params.get('layout')
-  if (fromUrl === 'wide' || fromUrl === 'theater') return 'wide'
-  if (fromUrl === 'split') return 'split'
-
-  const saved = window.localStorage.getItem(storageKey)
-  if (saved === 'wide' || saved === 'theater') return 'wide'
-  if (saved === 'split') return 'split'
-
+export function normalizeDayFlowLayout(urlValue: string | null, storedValue: string | null): DayFlowLayoutMode {
+  if (urlValue === 'wide' || urlValue === 'theater') return 'wide'
+  if (urlValue === 'split') return 'split'
+  if (storedValue === 'wide' || storedValue === 'theater') return 'wide'
+  if (storedValue === 'split') return 'split'
   return 'wide'
 }
 
-function applyLayout(updateUrl: boolean): void {
-  if (!shell) return
-  const effectiveLayout: LayoutMode = window.innerWidth <= desktopBreakpoint ? 'wide' : requestedLayout
+export function applyDayFlowLayout(requestedLayout: DayFlowLayoutMode): DayFlowLayoutMode {
+  const shell = document.querySelector<HTMLElement>('[data-dayflow-layout-shell]')
+  if (!shell) return 'wide'
+  const effectiveLayout: DayFlowLayoutMode = window.innerWidth <= desktopBreakpoint ? 'wide' : requestedLayout
   shell.classList.toggle('is-split', effectiveLayout === 'split')
   shell.classList.toggle('is-wide', effectiveLayout === 'wide')
   shell.dataset.dayflowLayoutCurrent = effectiveLayout
   shell.dataset.dayflowLayoutRequested = requestedLayout
 
-  for (const button of layoutButtons) {
+  document.querySelectorAll<HTMLButtonElement>('[data-dayflow-layout]').forEach((button) => {
     const active = button.dataset.dayflowLayout === requestedLayout
     button.classList.toggle('active', active)
     button.setAttribute('aria-pressed', String(active))
-  }
-
-  if (!updateUrl) return
-  const url = new URL(window.location.href)
-  url.searchParams.set('layout', requestedLayout)
-  window.history.replaceState(null, '', `${url.pathname}?${url.searchParams.toString()}${url.hash}`)
-}
-
-function setupSummary(): void {
-  if (!summaryRoot) return
-
-  const observer = new MutationObserver(() => {
-    if (summaryWriting || !summaryPayload || summaryKey !== currentRequestKey()) return
-    if (!summaryRoot.querySelector('.dayflow-summary-overview')) renderEnhancedSummary(summaryPayload)
   })
-  observer.observe(summaryRoot, { childList: true, subtree: true })
-
-  const toolbar = document.querySelector<HTMLElement>('.dayflow-toolbar')
-  toolbar?.addEventListener('click', (event) => {
-    const target = event.target instanceof Element ? event.target.closest('button') : null
-    if (!target || target.hasAttribute('data-dayflow-layout')) return
-    scheduleSummaryRefresh()
-    window.setTimeout(() => applyLayout(true), 0)
-  })
-
-  document.querySelector<HTMLInputElement>('[data-dayflow-date]')?.addEventListener('change', () => scheduleSummaryRefresh())
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) scheduleSummaryRefresh(0)
-  })
-
-  window.setInterval(() => {
-    const auto = document.querySelector<HTMLButtonElement>('[data-dayflow-auto]')
-    if (!document.hidden && auto?.classList.contains('active')) scheduleSummaryRefresh(0)
-  }, 60_000)
-
-  scheduleSummaryRefresh(0)
+  return effectiveLayout
 }
 
-function scheduleSummaryRefresh(delay = 120): void {
-  if (summaryTimer !== null) window.clearTimeout(summaryTimer)
-  summaryTimer = window.setTimeout(() => {
-    summaryTimer = null
-    void refreshSummary()
-  }, delay)
-}
-
-async function refreshSummary(): Promise<void> {
-  const key = currentRequestKey()
-  try {
-    const response = await fetch(`${endpoint}?${key}`, {
-      headers: { accept: 'application/json' },
-      cache: 'no-store',
-    })
-    if (!response.ok) return
-    const payload = await response.json() as DayFlowPayload
-    summaryPayload = payload
-    summaryKey = key
-    renderEnhancedSummary(payload)
-  } catch {
-    // The primary Day Flow renderer owns the visible error state.
-  }
-}
-
-function currentRequestKey(): string {
-  const metric = activeValue('dayflowMetric', 'volume')
-  const top = activeValue('dayflowTop', '20')
-  const bucket = activeValue('dayflowBucket', '5')
-  const rangeMode = activeValue('dayflowRange', 'today')
-  const params = new URLSearchParams({ metric, top, bucket, rangeMode })
-  if (rangeMode === 'date') {
-    const date = document.querySelector<HTMLInputElement>('[data-dayflow-date]')?.value
-    if (date) params.set('date', date)
-  }
-  return params.toString()
-}
-
-function activeValue(datasetKey: string, fallback: string): string {
-  const selector = `[data-${datasetKey.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}].active`
-  const active = document.querySelector<HTMLButtonElement>(selector)
-  return active?.dataset[datasetKey] ?? fallback
-}
-
-function renderEnhancedSummary(payload: DayFlowPayload): void {
-  if (!summaryRoot) return
+export function renderEnhancedDayFlowSummary(root: HTMLElement, payload: DayFlowSummaryPayload): boolean {
   const buckets = payload.buckets ?? []
   const bands = (payload.bands ?? []).filter((band) => !isOthers(band))
   const totals = normalizedTotals(payload, buckets.length)
   const observedIndexes = totals.map((value, index) => value > 0 ? index : -1).filter((index) => index >= 0)
 
-  if (buckets.length === 0 || bands.length === 0 || observedIndexes.length === 0) return
+  if (buckets.length === 0 || bands.length === 0 || observedIndexes.length === 0) return false
 
   const bucketSize = Number(payload.bucketSize) === 10 ? 10 : 5
   const peakIndex = observedIndexes.reduce((best, index) => totals[index] > totals[best] ? index : best, observedIndexes[0])
@@ -226,12 +109,11 @@ function renderEnhancedSummary(payload: DayFlowPayload): void {
   const competition = leadChanges === 0 ? 'The same stream held the observed lead throughout the usable window.' : `${leadChanges} lead changes show how often the top position changed hands.`
   const movement = biggestRise && biggestDrop ? `${bandName(biggestRise.band)} produced the largest positive bucket move; ${bandName(biggestDrop.band)} produced the largest negative move.` : 'Bucket-to-bucket movement is limited in this window.'
 
-  summaryWriting = true
-  summaryRoot.innerHTML = `<div class="dayflow-summary-overview"><div class="dayflow-summary-stats">${cards}</div><div class="dayflow-summary-bottom"><div class="dayflow-summary-ranking"><div class="dayflow-summary-subhead"><strong>Top by viewer-minutes</strong><span>Current Top ${payload.topN ?? bands.length}</span></div>${rankingRows || '<div class="notice">No ranked viewer-minute data.</div>'}</div><div class="dayflow-summary-reading"><small>Day reading</small><strong>${escapeHtml(fieldDirection)}</strong><p>${escapeHtml(competition)}</p><p>${escapeHtml(movement)}</p></div></div></div>`
-  summaryWriting = false
+  root.innerHTML = `<div class="dayflow-summary-overview"><div class="dayflow-summary-stats">${cards}</div><div class="dayflow-summary-bottom"><div class="dayflow-summary-ranking"><div class="dayflow-summary-subhead"><strong>Top by viewer-minutes</strong><span>Current Top ${payload.topN ?? bands.length}</span></div>${rankingRows || '<div class="notice">No ranked viewer-minute data.</div>'}</div><div class="dayflow-summary-reading"><small>Day reading</small><strong>${escapeHtml(fieldDirection)}</strong><p>${escapeHtml(competition)}</p><p>${escapeHtml(movement)}</p></div></div></div>`
+  return true
 }
 
-function normalizedTotals(payload: DayFlowPayload, count: number): number[] {
+function normalizedTotals(payload: DayFlowSummaryPayload, count: number): number[] {
   const given = payload.totalViewersByBucket ?? []
   if (given.some((value) => safeNumber(value) > 0)) return Array.from({ length: count }, (_, index) => safeNumber(given[index]))
   const bands = payload.bands ?? []

@@ -20,10 +20,15 @@ function forbidPattern(path, source, label, pattern) {
   if (pattern.test(source)) failures.push(`${path}: contains forbidden Battle Lines regression: ${label}`)
 }
 
+function assertEqual(label, actual, expected) {
+  if (actual !== expected) failures.push(`behavior: ${label}: expected ${expected}, received ${actual}`)
+}
+
 const battlePages = ['twitch/battle-lines/index.html', 'kick/battle-lines/index.html']
 const entryPath = 'src/live/battle-lines-current-shell-entry.ts'
 const layoutPath = 'src/live/battle-lines-layout.ts'
-const guardPath = 'src/live/battle-lines-loading-guard.ts'
+const deepLinkPath = 'src/navigation/battle-lines-deep-link-bridge.ts'
+const retiredGuardPath = 'src/live/battle-lines-loading-guard.ts'
 const stylePath = 'src/live/battle-lines-wide.css'
 const recoveryStylePath = 'src/live/battle-lines-recovery.css'
 const polishStylePath = 'src/live/battle-lines-polish.css'
@@ -37,7 +42,7 @@ for (const path of [
   ...battlePages,
   entryPath,
   layoutPath,
-  guardPath,
+  deepLinkPath,
   stylePath,
   recoveryStylePath,
   polishStylePath,
@@ -47,13 +52,12 @@ for (const path of [
   kickApiPath,
   contractPath,
 ]) requireFile(path)
+assertEqual('retired Battle Lines loading guard removed', existsSync(join(root, retiredGuardPath)), false)
 
 for (const path of battlePages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
   for (const fragment of [
     '/src/live/battle-lines-current-shell-entry.ts',
-    '/src/live/battle-lines-layout.ts',
-    '/src/live/battle-lines-loading-guard.ts',
     '/src/live/battle-lines-wide.css',
     '/src/live/battle-lines-recovery.css',
     '/src/live/battle-lines-polish.css',
@@ -82,6 +86,12 @@ for (const path of battlePages.filter((path) => existsSync(join(root, path)))) {
     'data-battle-latest',
     'data-battle-refresh',
   ]) requireFragment(path, source, fragment)
+  assertEqual(`${path} primary feature entry count`, (source.match(/battle-lines-current-shell-entry\.ts/g) ?? []).length, 1)
+  for (const retired of [
+    'src="/src/live/battle-lines-layout.ts"',
+    'src="/src/live/battle-lines-loading-guard.ts"',
+    'src="/src/navigation/battle-lines-deep-link-bridge.ts"',
+  ]) forbidPattern(path, source, `retired independent entry ${retired}`, new RegExp(retired.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
   forbidPattern(path, source, 'obsolete fixed Split layout', /class="layout-split"/)
   forbidPattern(path, source, 'static legacy Battle Lines SVG', /<svg viewBox="0 0 1210 560"/)
   forbidPattern(path, source, 'static Stream tile labels', /data-name="Stream [A-Z]"|>Stream [A-Z]</)
@@ -90,8 +100,23 @@ for (const path of battlePages.filter((path) => existsSync(join(root, path)))) {
 if (existsSync(join(root, entryPath))) {
   const source = read(entryPath)
   for (const fragment of [
+    "from './battle-lines-layout'",
+    "from '../navigation/battle-lines-deep-link-bridge'",
     "provider === 'kick' ? '/api/kick-battle-lines' : '/api/battle-lines'",
-    'cache: \'no-store\'',
+    'const BATTLE_LINES_TIMEOUT_MS = 12_000',
+    'async function fetchBattleLinesResponse',
+    'new AbortController()',
+    "cache: 'no-store'",
+    'signal: controller.signal',
+    'readBattleLinesSelection(params)',
+    'requestedTime: selection.time',
+    'legacyPoint: selection.point',
+    'canonicalBattleLinesTime(',
+    "next.set('time', time)",
+    'initializeBattleLinesLayoutHost()',
+    'applyBattleLinesLayout(state.layout)',
+    'renderBattleLinesSplitRail()',
+    "input.hidden = state.range !== 'date'",
     'renderPrimary(payload)',
     'renderChart(payload)',
     'renderInspector(payload)',
@@ -109,17 +134,23 @@ if (existsSync(join(root, entryPath))) {
     'data-battle-event-index',
     'lineSegments(',
     'gapBand(',
-    'chart.addEventListener(\'pointerdown\'',
+    "chart.addEventListener('pointerdown'",
     "event.key === 'ArrowLeft'",
     "event.key === 'ArrowRight'",
     "event.key === 'Home'",
     "event.key === 'End'",
     'history.replaceState',
     'window.setInterval',
+    'Use Refresh to retry.',
     'missing',
     'offline',
     'not_observed',
   ]) requireFragment(entryPath, source, fragment)
+  forbidPattern(entryPath, source, 'legacy point URL emission', /next\.set\(['"]point['"]/)
+  forbidPattern(entryPath, source, 'global fetch replacement', /window\.fetch\s*=/)
+  forbidPattern(entryPath, source, 'global history replacement', /window\.history\.replaceState\s*=/)
+  forbidPattern(entryPath, source, 'URLSearchParams prototype replacement', /URLSearchParams\.prototype\.get\s*=/)
+  forbidPattern(entryPath, source, 'MutationObserver coordination', /new MutationObserver/)
   forbidPattern(entryPath, source, 'per-line point deletion before comparison', /\.filter\(isObservedPoint\)/)
   forbidPattern(entryPath, source, 'app-root rewrite renderer', /document\.querySelector<HTMLElement>\('\#app'\)/)
   forbidPattern(entryPath, source, 'old selected-stream inspector', /Selected stream|Nearest line/)
@@ -128,34 +159,44 @@ if (existsSync(join(root, entryPath))) {
 if (existsSync(join(root, layoutPath))) {
   const source = read(layoutPath)
   for (const fragment of [
-    "type BattleLayoutMode = 'wide' | 'split'",
+    "export type BattleLayoutMode = 'wide' | 'split'",
     'SPLIT_MIN_WIDTH = 1180',
+    'export function normalizeBattleLayout',
     "if (value === 'split') return 'split'",
-    "if (value === 'theater') return 'wide'",
     "return 'wide'",
+    'function splitViewportAvailable()',
+    'export function canUseBattleLinesSplit',
+    "document.body.dataset.battleLayoutRequested === 'split'",
+    'export function initializeBattleLinesLayoutHost',
     'data-battle-layout-shell',
     'data-battle-split-rail',
-    'effectiveLayout',
-    "requestedLayout = 'wide'",
-    "next.searchParams.set('layout', requestedLayout)",
-    'nativeReplaceState',
+    'export function applyBattleLinesLayout',
+    "requestedLayout === 'split' && splitAvailable ? 'split' : 'wide'",
+    'shell.dataset.battleLayoutCurrent = effectiveLayout',
+    'shell.dataset.battleLayoutRequested = requestedLayout',
+    'export function renderBattleLinesSplitRail',
     'Selected stream',
     'Top at selected time',
     'Recent battle feed',
     '.slice(0, 3)',
   ]) requireFragment(layoutPath, source, fragment)
-  forbidPattern(layoutPath, source, 'layout-triggered API request', /fetch\s*\(/)
+  forbidPattern(layoutPath, source, 'layout-triggered API request', /\bfetch\s*\(/)
+  forbidPattern(layoutPath, source, 'history replacement', /history\.replaceState\s*=|window\.history\.replaceState\s*=/)
+  forbidPattern(layoutPath, source, 'MutationObserver coordination', /new MutationObserver/)
 }
 
-if (existsSync(join(root, guardPath))) {
-  const source = read(guardPath)
+if (existsSync(join(root, deepLinkPath))) {
+  const source = read(deepLinkPath)
   for (const fragment of [
-    'BATTLE_LINES_TIMEOUT_MS',
-    'AbortController',
-    'renderUnavailableSurface(',
-    'syncDateInputVisibility(',
-    'Use Refresh to retry.',
-  ]) requireFragment(guardPath, source, fragment)
+    'export function pointFromTime',
+    'export function timeFromPoint',
+    'export function readBattleLinesSelection',
+    "params.get('point')",
+    'export function canonicalBattleLinesTime',
+  ]) requireFragment(deepLinkPath, source, fragment)
+  forbidPattern(deepLinkPath, source, 'URLSearchParams prototype replacement', /URLSearchParams\.prototype\.get\s*=/)
+  forbidPattern(deepLinkPath, source, 'history replacement', /history\.replaceState\s*=|window\.history\.replaceState\s*=/)
+  forbidPattern(deepLinkPath, source, 'MutationObserver coordination', /new MutationObserver/)
 }
 
 if (existsSync(join(root, requestPath))) {
@@ -203,7 +244,20 @@ if (existsSync(join(root, splitStylePath))) {
 
 if (existsSync(join(root, contractPath))) {
   const source = read(contractPath)
-  for (const fragment of ['Wide is the default layout', 'Split is an optional desktop layout', 'shared UTC bucket timeline', 'not-observed points must not be connected', 'selected-time cursor', 'Reversal strip', 'Secondary battles']) requireFragment(contractPath, source, fragment)
+  for (const fragment of [
+    'Each provider page loads exactly one Battle Lines feature entry',
+    'The primary controller owns request state, timeout',
+    'The retired loading guard must not exist.',
+    'Wide is the default layout.',
+    'Responsive fallback must preserve the requested layout state',
+    'New canonical links use the selected UTC bucket `time` value.',
+    'Legacy non-negative integer `point` values remain readable.',
+    'shared UTC bucket timeline',
+    'not-observed points are not connected',
+    'selected-time cursor',
+    'Reversal strip',
+    'Secondary battles',
+  ]) requireFragment(contractPath, source, fragment)
 }
 
 if (failures.length > 0) {
@@ -212,4 +266,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom Battle Lines QA verification passed for ${battlePages.length} Wide and Split rivalry workspaces.`)
+console.log(`ViewLoom Battle Lines QA verification passed for ${battlePages.length} single-owner Wide and Split rivalry workspaces.`)

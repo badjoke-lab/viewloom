@@ -16,11 +16,13 @@ Phase 10 U10E responsive and accessibility complete through PR #465
 U10E canonical closeout complete through PR #466
 Phase 10 U10F readiness complete through PR #468
 U10F canonical closeout complete through PR #469
-Active implementation branch: none
-Exact next implementation branch: work-quality-u10g-architecture
-U10G branch created: no
+Phase 10 U10G architecture active
+Active implementation branch: work-quality-u10g-architecture
+Exact next implementation branch: work-quality-u10h-acceptance
+U10H branch created: no
 ```
 
+Active U10G record: `docs/work-in-progress/u10g-architecture.md`.
 Permanent U10F record: `docs/audits/cross-site-quality-u10f-readiness.json`.
 
 ## Standard workflow

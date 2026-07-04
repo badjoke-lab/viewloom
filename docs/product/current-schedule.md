@@ -1,7 +1,7 @@
 # ViewLoom current execution schedule
 
 Status: source of truth
-Last updated: 2026-07-02
+Last updated: 2026-07-03
 
 ```text
 Phase 8 complete PR #428
@@ -16,9 +16,10 @@ U10E responsive and accessibility complete PR #465
 U10E closeout complete PR #466
 U10F readiness complete PR #468
 U10F closeout complete PR #469
-Active branch: none
-Next branch: work-quality-u10g-architecture
-U10G created: no
+U10G architecture active
+Active branch: work-quality-u10g-architecture
+Next branch: work-quality-u10h-acceptance
+U10H created: no
 ```
 
 ```text
@@ -43,12 +44,16 @@ U10F missing-id browser scenarios: 8
 U10F missing-id History requests: 0
 U10F missing-id primary actions: 1 per provider route
 U10F production acceptance: not claimed; owned by U10H
+U10G browser scenarios: 8
+U10G Day Flow feature requests: 1 per initial load
+U10G Battle Lines feature requests: 1 per initial load
+U10G global interception failures accepted: 0
+U10G provider crossing failures accepted: 0
 ```
 
 ```text
-U10D analysis coherence complete
 U10E responsive and accessibility complete
 U10F readiness complete
-U10G architecture exact next
-U10H acceptance queued
+U10G architecture active
+U10H acceptance exact next
 ```

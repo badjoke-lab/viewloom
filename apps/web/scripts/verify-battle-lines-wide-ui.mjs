@@ -1,113 +1,82 @@
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import { existsSync, readFileSync } from 'node:fs'
 
-const root = new URL('../', import.meta.url)
-const [ui, layout, guard, twitch, kick, css, recoveryCss, polishCss, splitCss] = await Promise.all([
-  readFile(new URL('src/live/battle-lines-current-shell-entry.ts', root), 'utf8'),
-  readFile(new URL('src/live/battle-lines-layout.ts', root), 'utf8'),
-  readFile(new URL('src/live/battle-lines-loading-guard.ts', root), 'utf8'),
-  readFile(new URL('twitch/battle-lines/index.html', root), 'utf8'),
-  readFile(new URL('kick/battle-lines/index.html', root), 'utf8'),
-  readFile(new URL('src/live/battle-lines-wide.css', root), 'utf8'),
-  readFile(new URL('src/live/battle-lines-recovery.css', root), 'utf8'),
-  readFile(new URL('src/live/battle-lines-polish.css', root), 'utf8'),
-  readFile(new URL('src/live/battle-lines-split.css', root), 'utf8'),
-])
+const read = (path) => readFileSync(path, 'utf8')
+const controllerPath = 'src/live/battle-lines-current-shell-entry.ts'
+const layoutPath = 'src/live/battle-lines-layout.ts'
+const linkPath = 'src/navigation/battle-lines-deep-link-bridge.ts'
+const removedGuardPath = 'src/live/battle-lines-loading-guard.ts'
+const controller = read(controllerPath)
+const layout = read(layoutPath)
+const deepLink = read(linkPath)
+const twitch = read('twitch/battle-lines/index.html')
+const kick = read('kick/battle-lines/index.html')
+const css = `${read('src/live/battle-lines-wide.css')}\n${read('src/live/battle-lines-split.css')}`
 
-for (const [name, html] of [['twitch', twitch], ['kick', kick]]) {
-  assert.ok(!html.includes('class="layout-split"'), `${name}: obsolete fixed Split shell must not return`)
-  for (const hook of [
+assert.equal(existsSync(removedGuardPath), false, 'obsolete Battle Lines loading guard remains')
+
+for (const [provider, html] of [['twitch', twitch], ['kick', kick]]) {
+  assert.ok(html.includes('/src/live/battle-lines-current-shell-entry.ts'), `${provider}: primary controller entry missing`)
+  for (const retired of [
     '/src/live/battle-lines-layout.ts',
     '/src/live/battle-lines-loading-guard.ts',
-    '/src/live/battle-lines-recovery.css',
-    '/src/live/battle-lines-polish.css',
-    '/src/live/battle-lines-split.css',
-    'data-battle-layout="wide"',
-    'data-battle-layout="split"',
-    'data-battle-range="today"',
-    'data-battle-range="yesterday"',
-    'data-battle-date',
-    'hidden disabled',
-    'data-battle-metric="viewers"',
-    'data-battle-metric="indexed"',
-    'data-battle-top="3"',
-    'data-battle-top="5"',
-    'data-battle-top="10"',
-    'data-battle-bucket="5m"',
-    'data-battle-bucket="10m"',
-    'data-battle-primary',
-    'data-battle-stage',
-    'data-battle-inspector',
-    'data-battle-reversals',
-    'data-battle-secondary',
-    'data-battle-feed',
-    'data-battle-coverage',
-  ]) assert.ok(html.includes(hook), `${name}: missing ${hook}`)
+    '/src/navigation/battle-lines-deep-link-bridge.ts',
+  ]) assert.equal(html.includes(retired), false, `${provider}: retired entry remains: ${retired}`)
+  assert.equal((html.match(/battle-lines-current-shell-entry\.ts/g) ?? []).length, 1, `${provider}: primary controller must load once`)
 }
 
-for (const behavior of [
-  'lineSegments(',
-  'gapBand(',
-  "event.key === 'ArrowLeft'",
-  "event.key === 'ArrowRight'",
-  "chart.addEventListener('pointerdown'",
-  'state.followLatest',
-  'data-battle-event-index',
-  'state.manualBattle',
-  'history.replaceState',
-  'window.setInterval',
-  'x-axis-tick',
-  'x-axis-title',
-  'Selected time',
-  'Leader at selected time',
-  'Selected battle',
-  'Gap before',
-  'Gap after',
-  'ranking__row--unavailable',
-  'Collector health:',
-  'chart-marker--dot-only',
-  'secondary-card${active',
-]) assert.ok(ui.includes(behavior), `Wide behavior missing: ${behavior}`)
+for (const fragment of [
+  "from './battle-lines-layout'",
+  "from '../navigation/battle-lines-deep-link-bridge'",
+  'initializeBattleLinesLayoutHost()',
+  'applyBattleLinesLayout(state.layout)',
+  'renderBattleLinesSplitRail()',
+  'const BATTLE_LINES_TIMEOUT_MS = 12_000',
+  'async function fetchBattleLinesResponse',
+  'new AbortController()',
+  'readBattleLinesSelection(params)',
+  'canonicalBattleLinesTime(',
+  "next.set('time', time)",
+  "input.hidden = state.range !== 'date'",
+]) assert.ok(controller.includes(fragment), `primary Battle Lines owner missing ${fragment}`)
 
-for (const behavior of [
-  "type BattleLayoutMode = 'wide' | 'split'",
+for (const forbidden of [
+  'window.fetch =',
+  'window.history.replaceState =',
+  'URLSearchParams.prototype.get =',
+  'new MutationObserver',
+  "next.set('point'",
+]) assert.equal(controller.includes(forbidden), false, `primary controller contains forbidden architecture: ${forbidden}`)
+
+for (const fragment of [
+  'export function initializeBattleLinesLayoutHost',
+  'export function applyBattleLinesLayout',
+  'export function renderBattleLinesSplitRail',
+  'export function canUseBattleLinesSplit',
   'SPLIT_MIN_WIDTH = 1180',
-  "if (value === 'split') return 'split'",
-  "return 'wide'",
-  "value === 'theater'",
-  'data-battle-layout-shell',
-  'data-battle-split-rail',
-  'effectiveLayout',
-  "requestedLayout = 'wide'",
-  "next.searchParams.set('layout', requestedLayout)",
-  'nativeReplaceState',
-  'Selected stream',
-  'Top at selected time',
-  'Recent battle feed',
-  '.slice(0, 3)',
-]) assert.ok(layout.includes(behavior), `Layout behavior missing: ${behavior}`)
-assert.ok(!layout.includes('fetch('), 'Layout switching must not refetch Battle Lines data')
+]) assert.ok(layout.includes(fragment), `layout helper missing ${fragment}`)
+for (const forbidden of ['window.history.replaceState =', 'new MutationObserver', 'fetch(']) {
+  assert.equal(layout.includes(forbidden), false, `layout helper owns forbidden state: ${forbidden}`)
+}
 
-for (const behavior of [
-  'BATTLE_LINES_TIMEOUT_MS',
-  'AbortController',
-  'renderUnavailableSurface(',
-  'syncDateInputVisibility(',
-  'Use Refresh to retry.',
-]) assert.ok(guard.includes(behavior), `Loading guard missing: ${behavior}`)
+for (const fragment of [
+  'export function pointFromTime',
+  'export function timeFromPoint',
+  'export function readBattleLinesSelection',
+  'export function canonicalBattleLinesTime',
+]) assert.ok(deepLink.includes(fragment), `deep-link helper missing ${fragment}`)
+for (const forbidden of ['URLSearchParams.prototype.get =', 'history.replaceState =', 'window.history.replaceState =', 'new MutationObserver']) {
+  assert.equal(deepLink.includes(forbidden), false, `deep-link helper contains forbidden interception: ${forbidden}`)
+}
 
-assert.ok(!ui.includes('.filter(isObservedPoint)'), 'UI must not delete timeline gaps')
-assert.ok(css.includes('@media(max-width:760px)'), 'Mobile-specific layout is required')
-assert.ok(css.includes('.battle-gap-band'), 'Gap band styling is required')
-assert.ok(css.includes('.battle-chart-wrap'), 'Wide chart styling is required')
-assert.ok(recoveryCss.includes('.battle-stage:has(> .notice)'), 'Loading stage must collapse instead of reserving an empty chart')
-assert.ok(recoveryCss.includes('.battle-control input[hidden]'), 'Inactive date input must stay hidden')
-assert.ok(polishCss.includes('.chart-grid .x-axis-tick text'), 'Readable X-axis labels are required')
-assert.ok(polishCss.includes('.secondary-card.active'), 'Selected Secondary battle must be visibly active')
-assert.ok(polishCss.includes('.ranking__row--unavailable'), 'Unavailable ranking rows must remain visible')
-assert.ok(splitCss.includes('.battle-layout-shell.is-split'), 'Split must use a dedicated desktop grid')
-assert.ok(splitCss.includes('position:sticky'), 'Split inspector must stay visible while the chart is inspected')
-assert.ok(splitCss.includes('@media(max-width:1179px)'), 'Tablet and mobile must collapse to Wide')
-assert.ok(splitCss.includes('.battle-split-rail[hidden]'), 'Wide mode must remove the Split rail')
+for (const fragment of [
+  '.battle-layout-shell',
+  '.battle-layout-shell.is-split',
+  '.battle-split-rail',
+  '@media(max-width:1179px)',
+]) assert.ok(css.includes(fragment), `Battle Lines layout CSS missing ${fragment}`)
 
-console.log('Battle Lines Wide and Split layout contract passed.')
+console.log('Battle Lines consolidated architecture verification passed.')
+console.log('- one primary controller entry per provider route')
+console.log('- layout, timeout, selected-time URL, and degraded state have explicit owners')
+console.log('- no fetch/history/prototype interception or MutationObserver coordination remains')

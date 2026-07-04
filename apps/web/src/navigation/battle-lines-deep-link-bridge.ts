@@ -1,9 +1,9 @@
-import { buildDeepLink } from './deep-link-contract'
-
-const BRIDGE_KEY = '__viewloomBattleLinesTimeBridge'
 const minuteMs = 60_000
 
-type BridgeWindow = Window & { [BRIDGE_KEY]?: boolean }
+export type BattleLinesSelectionInput = {
+  time: string | null
+  point: number
+}
 
 export function pointFromTime(value: string, bucket: string): number | null {
   const instant = new Date(value)
@@ -30,51 +30,29 @@ export function timeFromPoint(point: number, bucket: string, range: string, date
   return new Date(dayStart + point * bucketMinutes * minuteMs).toISOString()
 }
 
-export function installBattleLinesTimeBridge(): void {
-  if (typeof window === 'undefined') return
-  const target = window as BridgeWindow
-  if (target[BRIDGE_KEY]) return
-  target[BRIDGE_KEY] = true
-
-  const originalGet = URLSearchParams.prototype.get
-  URLSearchParams.prototype.get = function get(name: string): string | null {
-    const direct = originalGet.call(this, name)
-    if (name !== 'point' || direct !== null) return direct
-    const time = originalGet.call(this, 'time')
-    if (!time) return null
-    const bucket = originalGet.call(this, 'bucket') ?? '5m'
-    const point = pointFromTime(time, bucket)
-    return point === null ? null : String(point)
-  }
-
-  const originalReplaceState = history.replaceState.bind(history)
-  history.replaceState = (data: unknown, unused: string, url?: string | URL | null): void => {
-    if (url === null || url === undefined) {
-      originalReplaceState(data, unused, url)
-      return
-    }
-
-    const parsed = new URL(String(url), location.href)
-    if (!/\/(?:twitch|kick)\/battle-lines\/$/.test(parsed.pathname)) {
-      originalReplaceState(data, unused, url)
-      return
-    }
-
-    const pointValue = originalGet.call(parsed.searchParams, 'point')
-    const point = pointValue !== null && /^\d+$/.test(pointValue) ? Number(pointValue) : null
-    if (point !== null && originalGet.call(parsed.searchParams, 'time') === null) {
-      const time = timeFromPoint(
-        point,
-        originalGet.call(parsed.searchParams, 'bucket') ?? '5m',
-        originalGet.call(parsed.searchParams, 'range') ?? 'today',
-        originalGet.call(parsed.searchParams, 'date'),
-      )
-      if (time) parsed.searchParams.set('time', time)
-    }
-    parsed.searchParams.delete('point')
-
-    originalReplaceState(data, unused, buildDeepLink(parsed.pathname, 'battleLines', parsed.searchParams))
-  }
+export function readBattleLinesSelection(params: URLSearchParams): BattleLinesSelectionInput {
+  const time = validInstant(params.get('time'))
+  if (time) return { time, point: -1 }
+  const pointValue = params.get('point')
+  const point = pointValue !== null && /^\d+$/.test(pointValue) ? Number(pointValue) : -1
+  return { time: null, point: Number.isSafeInteger(point) && point >= 0 ? point : -1 }
 }
 
-installBattleLinesTimeBridge()
+export function canonicalBattleLinesTime(
+  timeline: string[],
+  selectedIndex: number,
+  fallbackPoint: number,
+  bucket: string,
+  range: string,
+  date: string | null,
+): string | null {
+  const direct = validInstant(timeline[selectedIndex] ?? null)
+  if (direct) return direct
+  return fallbackPoint >= 0 ? timeFromPoint(fallbackPoint, bucket, range, date) : null
+}
+
+function validInstant(value: string | null): string | null {
+  if (!value) return null
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString()
+}
