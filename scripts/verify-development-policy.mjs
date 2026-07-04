@@ -30,10 +30,12 @@ const required = [
   'apps/web/scripts/quality-u10g-architecture-browser.mjs',
   'scripts/verify-quality-u10g-architecture.mjs',
   'scripts/verify-quality-u10g-browser-evidence.mjs',
+  'scripts/verify-quality-u10h-acceptance.mjs',
   '.github/workflows/public-readiness-audit.yml',
   '.github/workflows/production-smoke.yml',
   '.github/workflows/quality-u10f-readiness.yml',
   '.github/workflows/quality-u10g-architecture.yml',
+  '.github/workflows/quality-u10h-acceptance.yml',
 ]
 for (const path of required) assert.equal(existsSync(join(root, path)), true, `missing file: ${path}`)
 
@@ -85,6 +87,9 @@ for (const fragment of [
   'work-quality-phase11-acceptance-operations',
   'Production Smoke routes: 20',
   'Provider separation failures accepted: 0',
+  'Matching production main SHA required: yes',
+  'U10H PR contract gate: active',
+  'Production Smoke trigger ownership: active',
   'Production acceptance claimed: no',
 ]) assert.ok(u10hNote.includes(fragment), `U10H working note missing ${fragment}`)
 
@@ -122,6 +127,7 @@ for (const path of [
   '.github/workflows/development-policy.yml',
   '.github/workflows/public-browser-audit.yml',
   '.github/workflows/public-readiness-audit.yml',
+  '.github/workflows/production-smoke.yml',
   '.github/workflows/quality-u10a-baseline.yml',
   '.github/workflows/quality-u10b-shell.yml',
   '.github/workflows/quality-u10c-visualization.yml',
@@ -129,6 +135,7 @@ for (const path of [
   '.github/workflows/quality-u10e-responsive.yml',
   '.github/workflows/quality-u10f-readiness.yml',
   '.github/workflows/quality-u10g-architecture.yml',
+  '.github/workflows/quality-u10h-acceptance.yml',
 ]) {
   const source = read(path)
   assert.ok(source.includes('concurrency:'), `${path}: concurrency missing`)
@@ -160,5 +167,6 @@ for (const fragment of [
 console.log('ViewLoom development and documentation verification passed.')
 console.log('- U10A through U10F remain permanent evidence')
 console.log('- U10G architecture is complete and U10H production acceptance is active')
+console.log('- U10H has a PR contract gate and exact-main-SHA Production Smoke ownership')
 console.log('- requested and effective Battle Lines layouts remain separate')
 console.log('- Twitch and Kick remain separate')
