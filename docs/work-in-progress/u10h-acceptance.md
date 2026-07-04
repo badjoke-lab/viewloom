@@ -60,8 +60,8 @@ Matching production main SHA required: yes
 ```text
 U10H branch created: yes
 U10H implementation started: yes
-U10H PR contract gate: being added
-Production Smoke trigger ownership: being added
+U10H PR contract gate: active
+Production Smoke trigger ownership: active
 Production acceptance claimed: no
 Phase 11 started: no
 ```
