@@ -77,8 +77,8 @@ jobs:
             test "$code" = '200'
             grep -qi 'ViewLoom' "$ARTIFACT_DIR/$name.html"
           done
-          grep -q '<title>Twitch history' "$ARTIFACT_DIR/twitch-history.html"
-          grep -q '<title>Kick history' "$ARTIFACT_DIR/kick-history.html"
+          grep -q '<title>History & Trends for Twitch live streams | ViewLoom</title>' "$ARTIFACT_DIR/twitch-history.html"
+          grep -q '<title>History & Trends for Kick live streams | ViewLoom</title>' "$ARTIFACT_DIR/kick-history.html"
           grep -q '<title>Twitch channel history' "$ARTIFACT_DIR/twitch-channel.html"
           grep -q '<title>Kick channel history' "$ARTIFACT_DIR/kick-channel.html"
           grep -q '<title>Twitch Local Watchlist' "$ARTIFACT_DIR/twitch-watchlist.html"
