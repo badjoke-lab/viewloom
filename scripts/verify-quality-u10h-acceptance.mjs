@@ -78,7 +78,7 @@ for (const fragment of [
   'cloudflare-preview-probe.json',
 ]) assert.ok(smoke.includes(fragment), `Production Smoke contract missing ${fragment}`)
 
-const routeCount = (smoke.match(/^\s+'\/[^"]*'$/gm) ?? []).length
+const routeCount = (smoke.match(/^\s+'\/[^'\r\n]*'\s*$/gm) ?? []).length
 assert.equal(routeCount, 20, 'Production Smoke route list must remain exactly 20 routes')
 
 console.log('U10H production acceptance contract verification passed.')
