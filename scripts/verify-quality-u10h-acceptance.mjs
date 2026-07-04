@@ -67,11 +67,17 @@ for (const fragment of [
   '[ "$deployed" = "$expected" ]',
   'Verify all repository-owned production pages',
   'test "${#routes[@]}" = \'20\'',
+  '<title>History & Trends for Twitch live streams | ViewLoom</title>',
+  '<title>History & Trends for Kick live streams | ViewLoom</title>',
   'Verify Twitch production status',
   '.storage.binding == "DB_TWITCH_HOT"',
+  '.sourceMode == "real"',
+  '.collector.state == "ok"',
   'Verify Kick production status',
   '.storage.binding == "DB_KICK_HOT"',
-  '.collector.state == "ok"',
+  '.sourceMode == "authenticated"',
+  '.collector.state == "snapshot_available"',
+  '.freshness.isFresh == true',
   '.freshness.isStale == false',
   'Verify explicit not-found behavior',
   'data-viewloom-not-found="v1"',
@@ -85,4 +91,4 @@ console.log('U10H production acceptance contract verification passed.')
 console.log('- U10F readiness hands production acceptance to U10H')
 console.log('- U10G architecture remains retained evidence')
 console.log('- Production Smoke owns exact-main-SHA hosted acceptance for 20 routes')
-console.log('- Twitch and Kick status, D1 binding, freshness, and 404 checks remain required')
+console.log('- provider-specific status contracts, D1 bindings, freshness, and 404 checks remain required')
