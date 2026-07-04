@@ -1,0 +1,33 @@
+name: Phase 11 CI Ownership
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'scripts/measure-phase11-ci-ownership.mjs'
+      - 'scripts/verify-phase11-ci-ownership.mjs'
+      - 'docs/work-in-progress/phase11-acceptance-operations.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Measure CI ownership inventory
+        run: node scripts/measure-phase11-ci-ownership.mjs
+      - name: Verify CI ownership inventory
+        run: node scripts/verify-phase11-ci-ownership.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase11-ci-ownership
+          path: artifacts/phase11-ci-ownership/
+          if-no-files-found: error
