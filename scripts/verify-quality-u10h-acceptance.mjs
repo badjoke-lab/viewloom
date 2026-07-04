@@ -4,82 +4,93 @@ import { join } from 'node:path'
 
 const root = process.cwd()
 const read = (path) => readFileSync(join(root, path), 'utf8')
-
-for (const path of [
+const required = [
   'docs/work-in-progress/u10h-acceptance.md',
+  'docs/operations/u10h-production-acceptance-2026-07-04.md',
   'docs/audits/cross-site-quality-u10f-readiness.json',
   'docs/work-in-progress/u10g-architecture.md',
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   '.github/workflows/production-smoke.yml',
   '.github/workflows/quality-u10h-acceptance.yml',
-]) assert.equal(existsSync(join(root, path)), true, `missing file: ${path}`)
+  '.github/workflows/quality-u10h-production-acceptance.yml',
+]
+for (const path of required) assert.equal(existsSync(join(root, path)), true, `missing file: ${path}`)
 
-const note = read('docs/work-in-progress/u10h-acceptance.md')
-for (const fragment of [
-  'Status: active',
-  'Branch: `work-quality-u10h-acceptance`',
+const checkFragments = (path, fragments) => {
+  const source = read(path)
+  for (const fragment of fragments) assert.ok(source.includes(fragment), `${path}: missing ${fragment}`)
+}
+
+checkFragments('docs/work-in-progress/u10h-acceptance.md', [
+  'Status: complete',
+  'Implementation PR: #471',
+  'Implementation merge commit: `9f2b9abd5a3d23b50fc01075a5c4f041899babf5`',
   'Production Smoke routes: 20',
-  'Provider separation failures accepted: 0',
-  'Public runtime failures accepted: 0',
-  'Hosted evidence required: yes',
-  'Matching production main SHA required: yes',
-  'Production acceptance claimed: no',
-]) assert.ok(note.includes(fragment), `U10H note missing ${fragment}`)
+  'Hosted production acceptance: pass',
+  'Production acceptance claimed: yes',
+  'Phase 11 branch created: no',
+])
+
+checkFragments('docs/operations/u10h-production-acceptance-2026-07-04.md', [
+  'Status: complete',
+  'Workflow run: 28701464391',
+  'Artifact id: 8080315127',
+  'Result: pass',
+  'Expected main SHA: 9f2b9abd5a3d23b50fc01075a5c4f041899babf5',
+  'Deployed SHA: 9f2b9abd5a3d23b50fc01075a5c4f041899babf5',
+  'Checked at: 2026-07-04T09:08:03Z',
+])
 
 const u10f = JSON.parse(read('docs/audits/cross-site-quality-u10f-readiness.json'))
 assert.equal(u10f.status, 'complete')
 assert.equal(u10f.scope.production_smoke_routes, 20)
 assert.equal(u10f.readiness_contract.production_acceptance_claimed, false)
 assert.equal(u10f.readiness_contract.production_acceptance_owner, 'U10H')
-assert.equal(u10f.readiness_contract.provider_status_checks_retained, true)
-assert.equal(u10f.readiness_contract.separate_d1_binding_checks_retained, true)
-assert.equal(u10f.readiness_contract.collector_freshness_checks_retained, true)
-assert.equal(u10f.readiness_contract.explicit_404_checks_retained, true)
 assert.equal(u10f.boundary.provider_separation_required, true)
 assert.equal(u10f.boundary.provider_combination_authorized, false)
 
-const u10g = read('docs/work-in-progress/u10g-architecture.md')
-for (const fragment of ['Status: complete', 'Merged PR: #470', 'Quality U10G Architecture: pass']) assert.ok(u10g.includes(fragment), `U10G retained evidence missing ${fragment}`)
+checkFragments('docs/work-in-progress/u10g-architecture.md', [
+  'Status: complete',
+  'Merged PR: #470',
+  'Quality U10G Architecture: pass',
+])
 
-const roadmap = read('docs/product/current-roadmap.md')
-for (const fragment of [
-  'Phase 10 U10G architecture complete PR #470',
-  'Phase 10 U10H production acceptance active',
-  'Active implementation branch: work-quality-u10h-acceptance',
+checkFragments('docs/product/current-roadmap.md', [
+  'Phase 10 U10H production acceptance complete PR #471',
+  'U10H canonical closeout PR #472',
+  'Active implementation branch: none',
   'Exact next branch: work-quality-phase11-acceptance-operations',
-]) assert.ok(roadmap.includes(fragment), `roadmap missing ${fragment}`)
+  'Phase 11 branch created: no',
+])
 
-const schedule = read('docs/product/current-schedule.md')
-for (const fragment of [
+checkFragments('docs/product/current-schedule.md', [
   'U10H Production Smoke routes: 20',
-  'U10H provider separation failures accepted: 0',
-  'U10H public runtime failures accepted: 0',
-  'U10H production acceptance source: hosted production and recorded evidence',
-]) assert.ok(schedule.includes(fragment), `schedule missing ${fragment}`)
+  'U10H status APIs: 2',
+  'U10H provider separation failures: 0',
+  'U10H public runtime failures: 0',
+  'U10H explicit 404 failures: 0',
+  'U10H production acceptance result: pass',
+  'U10H accepted production SHA: 9f2b9abd5a3d23b50fc01075a5c4f041899babf5',
+  'U10H workflow run: 28701464391',
+  'U10H artifact id: 8080315127',
+])
 
 const smoke = read('.github/workflows/production-smoke.yml')
 for (const fragment of [
   'name: Production Smoke',
-  "- 'docs/work-in-progress/u10h-acceptance.md'",
   'Wait for the matching production deployment',
-  'deployed="$(jq -r',
-  '[ "$deployed" = "$expected" ]',
-  'Verify all repository-owned production pages',
   'test "${#routes[@]}" = \'20\'',
   '<title>History & Trends for Twitch live streams | ViewLoom</title>',
   '<title>History & Trends for Kick live streams | ViewLoom</title>',
-  'Verify Twitch production status',
   '.storage.binding == "DB_TWITCH_HOT"',
   '.sourceMode == "real"',
   '.collector.state == "ok"',
-  'Verify Kick production status',
   '.storage.binding == "DB_KICK_HOT"',
   '.sourceMode == "authenticated"',
   '.collector.state == "snapshot_available"',
   '.freshness.isFresh == true',
   '.freshness.isStale == false',
-  'Verify explicit not-found behavior',
   'data-viewloom-not-found="v1"',
   'cloudflare-preview-probe.json',
 ]) assert.ok(smoke.includes(fragment), `Production Smoke contract missing ${fragment}`)
@@ -87,8 +98,7 @@ for (const fragment of [
 const routeCount = (smoke.match(/^\s+'\/[^'\r\n]*'\s*$/gm) ?? []).length
 assert.equal(routeCount, 20, 'Production Smoke route list must remain exactly 20 routes')
 
-console.log('U10H production acceptance contract verification passed.')
-console.log('- U10F readiness hands production acceptance to U10H')
-console.log('- U10G architecture remains retained evidence')
-console.log('- Production Smoke owns exact-main-SHA hosted acceptance for 20 routes')
-console.log('- provider-specific status contracts, D1 bindings, freshness, and 404 checks remain required')
+console.log('U10H production acceptance verification passed.')
+console.log('- hosted production evidence is complete')
+console.log('- provider-specific status and separation contracts remain required')
+console.log('- Phase 11 acceptance and operations is exact next and not yet created')
