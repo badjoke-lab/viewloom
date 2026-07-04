@@ -105,7 +105,9 @@ jobs:
             .platform == "kick" and
             .storage.binding == "DB_KICK_HOT" and
             .storage.database == "vl_kick_hot" and
-            .collector.state == "ok" and
+            .sourceMode == "authenticated" and
+            .collector.state == "snapshot_available" and
+            .freshness.isFresh == true and
             .freshness.isStale == false
           ' "$ARTIFACT_DIR/kick-status.json" > /dev/null
 
