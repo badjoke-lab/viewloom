@@ -19,6 +19,10 @@ on:
       - 'apps/web/docs/canonical-url-contract.md'
       - '.github/workflows/canonical-url-checks.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   canonical-url-checks:
     runs-on: ubuntu-latest
