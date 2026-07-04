@@ -13,6 +13,7 @@ const required = [
   'docs/product/cross-site-quality-remediation-spec.md',
   'docs/product/cross-site-quality-remediation-plan.md',
   'docs/work-in-progress/u10g-architecture.md',
+  'docs/work-in-progress/u10h-acceptance.md',
   'docs/audits/cross-site-quality-u10a-baseline.json',
   'docs/audits/cross-site-quality-u10a-owner-map.json',
   'docs/audits/cross-site-quality-u10b-shared-shell.json',
@@ -54,28 +55,38 @@ for (const path of [
 ]) assert.equal(existsSync(join(root, path)), false, `temporary or retired file remains: ${path}`)
 
 const stateChecks = [
-  ['README.md', ['Phase 10 U10G architecture            active', 'Active implementation branch          work-quality-u10g-architecture', 'Exact next branch after U10G          work-quality-u10h-acceptance']],
-  ['docs/README.md', ['Phase 10 U10G architecture                       active', 'Active implementation branch                    work-quality-u10g-architecture', 'Exact next implementation branch                work-quality-u10h-acceptance']],
-  ['AGENTS.md', ['U10G architecture active', 'Active implementation branch: work-quality-u10g-architecture', 'Exact next branch: work-quality-u10h-acceptance']],
-  ['CONTRIBUTING.md', ['Phase 10 U10G architecture active', 'Active implementation branch: work-quality-u10g-architecture', 'Exact next implementation branch: work-quality-u10h-acceptance']],
-  ['docs/product/current-roadmap.md', ['Phase 10 U10G architecture active', 'Active implementation branch: work-quality-u10g-architecture', 'Exact next branch: work-quality-u10h-acceptance']],
-  ['docs/product/current-schedule.md', ['U10G architecture active', 'Active branch: work-quality-u10g-architecture', 'Next branch: work-quality-u10h-acceptance']],
-  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10G architecture', 'Current implementation branch: `work-quality-u10g-architecture`', 'Exact next implementation branch: `work-quality-u10h-acceptance`']],
-  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: `work-quality-u10g-architecture`', 'Active phase: U10G architecture consolidation', 'Exact next branch: `work-quality-u10h-acceptance`']],
+  ['README.md', ['Phase 10 U10G architecture            complete PR #470', 'Phase 10 U10H production acceptance   active', 'Active implementation branch          work-quality-u10h-acceptance', 'Exact next branch after U10H          work-quality-phase11-acceptance-operations']],
+  ['docs/README.md', ['Phase 10 U10G architecture                       complete PR #470', 'Phase 10 U10H production acceptance              active', 'Active implementation branch                    work-quality-u10h-acceptance', 'Exact next implementation branch                work-quality-phase11-acceptance-operations']],
+  ['AGENTS.md', ['U10G architecture complete PR #470', 'U10H production acceptance active', 'Active implementation branch: work-quality-u10h-acceptance', 'Exact next branch: work-quality-phase11-acceptance-operations']],
+  ['CONTRIBUTING.md', ['Phase 10 U10G architecture complete through PR #470', 'Phase 10 U10H production acceptance active', 'Active implementation branch: work-quality-u10h-acceptance', 'Exact next implementation branch: work-quality-phase11-acceptance-operations']],
+  ['docs/product/current-roadmap.md', ['Phase 10 U10G architecture complete PR #470', 'Phase 10 U10H production acceptance active', 'Active implementation branch: work-quality-u10h-acceptance', 'Exact next branch: work-quality-phase11-acceptance-operations']],
+  ['docs/product/current-schedule.md', ['U10G architecture complete PR #470', 'U10H production acceptance active', 'Active branch: work-quality-u10h-acceptance', 'Next branch: work-quality-phase11-acceptance-operations']],
+  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10H production acceptance', 'Current implementation branch: `work-quality-u10h-acceptance`', 'Exact next implementation branch: `work-quality-phase11-acceptance-operations`']],
+  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: `work-quality-u10h-acceptance`', 'Active phase: U10H production acceptance', 'Exact next branch: `work-quality-phase11-acceptance-operations`']],
 ]
 for (const [path, fragments] of stateChecks) {
   const source = read(path)
   for (const fragment of fragments) assert.ok(source.includes(fragment), `${path}: missing ${fragment}`)
 }
 
-const note = read('docs/work-in-progress/u10g-architecture.md')
+const u10gNote = read('docs/work-in-progress/u10g-architecture.md')
 for (const fragment of [
-  'Status: active',
-  'work-quality-u10g-architecture',
-  'work-quality-u10h-acceptance',
+  'Status: complete',
+  'Merged PR: #470',
+  'Merge commit: `62dab7b6076c15b85c3d893589df22388753c1bc`',
   'Day Flow has one request/state/controller owner per provider route.',
   'Battle Lines has one request/state/controller owner per provider route.',
-]) assert.ok(note.includes(fragment), `U10G working note missing ${fragment}`)
+]) assert.ok(u10gNote.includes(fragment), `U10G working note missing ${fragment}`)
+
+const u10hNote = read('docs/work-in-progress/u10h-acceptance.md')
+for (const fragment of [
+  'Status: active',
+  'work-quality-u10h-acceptance',
+  'work-quality-phase11-acceptance-operations',
+  'Production Smoke routes: 20',
+  'Provider separation failures accepted: 0',
+  'Production acceptance claimed: no',
+]) assert.ok(u10hNote.includes(fragment), `U10H working note missing ${fragment}`)
 
 const records = [
   JSON.parse(read('docs/audits/cross-site-quality-u10a-baseline.json')),
@@ -148,6 +159,6 @@ for (const fragment of [
 
 console.log('ViewLoom development and documentation verification passed.')
 console.log('- U10A through U10F remain permanent evidence')
-console.log('- U10G architecture is active and U10H acceptance is exact next')
+console.log('- U10G architecture is complete and U10H production acceptance is active')
 console.log('- requested and effective Battle Lines layouts remain separate')
 console.log('- Twitch and Kick remain separate')
