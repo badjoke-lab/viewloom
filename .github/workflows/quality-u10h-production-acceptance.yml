@@ -1,0 +1,183 @@
+name: Quality U10H Production Acceptance
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/quality-u10h-production-acceptance.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  production-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ORIGIN: https://vl.badjoke-lab.com
+      ARTIFACT_DIR: artifacts/quality-u10h-production-acceptance
+      EXPECTED_MAIN_SHA: ${{ github.event.pull_request.base.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare artifact directory
+        run: mkdir -p "$ARTIFACT_DIR"
+
+      - name: Wait for matching production deployment
+        run: |
+          set -euo pipefail
+          for attempt in {1..60}; do
+            if curl --silent --show-error --fail --max-time 20 "$ORIGIN/deployment.json?attempt=$attempt" -o "$ARTIFACT_DIR/deployment.json"; then
+              deployed="$(jq -r '.commit_sha // empty' "$ARTIFACT_DIR/deployment.json")"
+              environment="$(jq -r '.environment // empty' "$ARTIFACT_DIR/deployment.json")"
+              branch="$(jq -r '.branch // empty' "$ARTIFACT_DIR/deployment.json")"
+              if [ "$deployed" = "$EXPECTED_MAIN_SHA" ] && [ "$environment" = "production" ] && [ "$branch" = "main" ]; then
+                cat "$ARTIFACT_DIR/deployment.json"
+                exit 0
+              fi
+              echo "Production is not on $EXPECTED_MAIN_SHA yet (found $deployed, attempt $attempt/60)."
+            else
+              echo "deployment.json is not available yet (attempt $attempt/60)."
+            fi
+            sleep 10
+          done
+          exit 1
+
+      - name: Verify 20 repository-owned production pages
+        run: |
+          set -euo pipefail
+          routes=(
+            '/'
+            '/about/'
+            '/support/'
+            '/changelog/'
+            '/twitch/'
+            '/twitch/heatmap/'
+            '/twitch/day-flow/'
+            '/twitch/battle-lines/'
+            '/twitch/history/'
+            '/twitch/channel/'
+            '/twitch/watchlist/'
+            '/twitch/status/'
+            '/kick/'
+            '/kick/heatmap/'
+            '/kick/day-flow/'
+            '/kick/battle-lines/'
+            '/kick/history/'
+            '/kick/channel/'
+            '/kick/watchlist/'
+            '/kick/status/'
+          )
+          test "${#routes[@]}" = '20'
+          for route in "${routes[@]}"; do
+            name="$(echo "$route" | tr '/' '-' | sed 's/^-//;s/-$//')"
+            [ -n "$name" ] || name='portal'
+            code="$(curl --silent --show-error --location --max-time 30 --output "$ARTIFACT_DIR/$name.html" --write-out '%{http_code}' "$ORIGIN$route")"
+            test "$code" = '200'
+            grep -qi 'ViewLoom' "$ARTIFACT_DIR/$name.html"
+          done
+          grep -q '<title>Twitch history' "$ARTIFACT_DIR/twitch-history.html"
+          grep -q '<title>Kick history' "$ARTIFACT_DIR/kick-history.html"
+          grep -q '<title>Twitch channel history' "$ARTIFACT_DIR/twitch-channel.html"
+          grep -q '<title>Kick channel history' "$ARTIFACT_DIR/kick-channel.html"
+          grep -q '<title>Twitch Local Watchlist' "$ARTIFACT_DIR/twitch-watchlist.html"
+          grep -q '<title>Kick Local Watchlist' "$ARTIFACT_DIR/kick-watchlist.html"
+
+      - name: Verify Twitch production status
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/twitch-status" -o "$ARTIFACT_DIR/twitch-status.json"
+          jq -e '
+            .platform == "twitch" and
+            .storage.binding == "DB_TWITCH_HOT" and
+            .storage.database == "vl_twitch_hot" and
+            .sourceMode == "real" and
+            .collector.state == "ok" and
+            .freshness.isStale == false
+          ' "$ARTIFACT_DIR/twitch-status.json" > /dev/null
+
+      - name: Verify Kick production status
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/kick-status" -o "$ARTIFACT_DIR/kick-status.json"
+          jq -e '
+            .platform == "kick" and
+            .storage.binding == "DB_KICK_HOT" and
+            .storage.database == "vl_kick_hot" and
+            .collector.state == "ok" and
+            .freshness.isStale == false
+          ' "$ARTIFACT_DIR/kick-status.json" > /dev/null
+
+      - name: Verify explicit not-found behavior
+        run: |
+          set -euo pipefail
+          path="/u10h-production-acceptance-not-found-$EXPECTED_MAIN_SHA"
+          code="$(curl --silent --show-error --max-time 30 --output "$ARTIFACT_DIR/not-found.html" --write-out '%{http_code}' "$ORIGIN$path")"
+          test "$code" = '404'
+          grep -q 'data-viewloom-not-found="v1"' "$ARTIFACT_DIR/not-found.html"
+          probe_code="$(curl --silent --show-error --max-time 30 --output "$ARTIFACT_DIR/preview-probe-response.html" --write-out '%{http_code}' "$ORIGIN/cloudflare-preview-probe.json")"
+          test "$probe_code" = '404'
+          grep -q 'data-viewloom-not-found="v1"' "$ARTIFACT_DIR/preview-probe-response.html"
+
+      - name: Write machine-readable acceptance evidence
+        run: |
+          set -euo pipefail
+          deployed="$(jq -r '.commit_sha' "$ARTIFACT_DIR/deployment.json")"
+          checked_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          jq -n \
+            --arg schema 'viewloom-quality-u10h-production-acceptance-v1' \
+            --arg phase 'U10H' \
+            --arg result 'pass' \
+            --arg expected_main_sha "$EXPECTED_MAIN_SHA" \
+            --arg deployed_sha "$deployed" \
+            --arg checked_at "$checked_at" \
+            '{
+              schema: $schema,
+              phase: $phase,
+              result: $result,
+              expected_main_sha: $expected_main_sha,
+              deployed_sha: $deployed_sha,
+              checked_at: $checked_at,
+              counts: {
+                html_routes: 20,
+                status_apis: 2,
+                provider_crossing_failures: 0,
+                public_runtime_failures: 0,
+                explicit_404_failures: 0
+              },
+              invariants: {
+                providers_separate: true,
+                twitch_binding: "DB_TWITCH_HOT",
+                kick_binding: "DB_KICK_HOT",
+                collector_freshness_required: true,
+                matching_production_sha_required: true
+              }
+            }' > "$ARTIFACT_DIR/u10h-production-acceptance-evidence.json"
+
+      - name: Verify machine-readable acceptance evidence
+        run: |
+          jq -e '
+            .schema == "viewloom-quality-u10h-production-acceptance-v1" and
+            .phase == "U10H" and
+            .result == "pass" and
+            .expected_main_sha == .deployed_sha and
+            .counts.html_routes == 20 and
+            .counts.status_apis == 2 and
+            .counts.provider_crossing_failures == 0 and
+            .counts.public_runtime_failures == 0 and
+            .counts.explicit_404_failures == 0 and
+            .invariants.providers_separate == true and
+            .invariants.twitch_binding == "DB_TWITCH_HOT" and
+            .invariants.kick_binding == "DB_KICK_HOT" and
+            .invariants.collector_freshness_required == true and
+            .invariants.matching_production_sha_required == true
+          ' "$ARTIFACT_DIR/u10h-production-acceptance-evidence.json" > /dev/null
+
+      - name: Upload U10H production acceptance artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quality-u10h-production-acceptance
+          path: artifacts/quality-u10h-production-acceptance/
+          if-no-files-found: warn
