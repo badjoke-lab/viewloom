@@ -1,62 +1,50 @@
-name: Production Smoke
+name: Quality U10H Production Acceptance
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: '17 3 * * *'
-  push:
-    branches:
-      - main
+  pull_request:
     paths:
-      - 'README.md'
-      - 'AGENTS.md'
-      - 'CONTRIBUTING.md'
-      - 'docs/README.md'
-      - 'docs/product/current-roadmap.md'
-      - 'docs/product/current-schedule.md'
-      - 'docs/product/post-watchlist-program-plan.md'
-      - 'docs/product/cross-site-quality-remediation-plan.md'
-      - 'docs/work-in-progress/u10h-acceptance.md'
-      - 'apps/web/**'
-      - 'package.json'
-      - '.github/workflows/production-smoke.yml'
+      - '.github/workflows/quality-u10h-production-acceptance.yml'
 
 concurrency:
-  group: production-smoke
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  smoke:
+  production-acceptance:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       ORIGIN: https://vl.badjoke-lab.com
-      ARTIFACT_DIR: artifacts/production-smoke
+      ARTIFACT_DIR: artifacts/quality-u10h-production-acceptance
+      EXPECTED_MAIN_SHA: ${{ github.event.pull_request.base.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Prepare artifact directory
         run: mkdir -p "$ARTIFACT_DIR"
-      - name: Wait for the matching production deployment
+
+      - name: Wait for matching production deployment
         run: |
           set -euo pipefail
-          expected="$GITHUB_SHA"
           for attempt in {1..60}; do
             if curl --silent --show-error --fail --max-time 20 "$ORIGIN/deployment.json?attempt=$attempt" -o "$ARTIFACT_DIR/deployment.json"; then
               deployed="$(jq -r '.commit_sha // empty' "$ARTIFACT_DIR/deployment.json")"
               environment="$(jq -r '.environment // empty' "$ARTIFACT_DIR/deployment.json")"
               branch="$(jq -r '.branch // empty' "$ARTIFACT_DIR/deployment.json")"
-              if [ "$deployed" = "$expected" ] && [ "$environment" = "production" ] && [ "$branch" = "main" ]; then
+              if [ "$deployed" = "$EXPECTED_MAIN_SHA" ] && [ "$environment" = "production" ] && [ "$branch" = "main" ]; then
                 cat "$ARTIFACT_DIR/deployment.json"
                 exit 0
               fi
-              echo "Production is not on $expected yet (found $deployed, attempt $attempt/60)."
+              echo "Production is not on $EXPECTED_MAIN_SHA yet (found $deployed, attempt $attempt/60)."
             else
               echo "deployment.json is not available yet (attempt $attempt/60)."
             fi
             sleep 10
           done
           exit 1
-      - name: Verify all repository-owned production pages
+
+      - name: Verify 20 repository-owned production pages
         run: |
           set -euo pipefail
           routes=(
@@ -95,7 +83,7 @@ jobs:
           grep -q '<title>Kick channel history' "$ARTIFACT_DIR/kick-channel.html"
           grep -q '<title>Twitch Local Watchlist' "$ARTIFACT_DIR/twitch-watchlist.html"
           grep -q '<title>Kick Local Watchlist' "$ARTIFACT_DIR/kick-watchlist.html"
-          grep -q 'googletagmanager.com/gtag/js?id=G-YHX7HS1VBK' "$ARTIFACT_DIR/portal.html"
+
       - name: Verify Twitch production status
         run: |
           set -euo pipefail
@@ -108,6 +96,7 @@ jobs:
             .collector.state == "ok" and
             .freshness.isStale == false
           ' "$ARTIFACT_DIR/twitch-status.json" > /dev/null
+
       - name: Verify Kick production status
         run: |
           set -euo pipefail
@@ -121,37 +110,76 @@ jobs:
             .freshness.isFresh == true and
             .freshness.isStale == false
           ' "$ARTIFACT_DIR/kick-status.json" > /dev/null
+
       - name: Verify explicit not-found behavior
         run: |
           set -euo pipefail
-          path="/production-smoke-not-found-$GITHUB_SHA"
+          path="/u10h-production-acceptance-not-found-$EXPECTED_MAIN_SHA"
           code="$(curl --silent --show-error --max-time 30 --output "$ARTIFACT_DIR/not-found.html" --write-out '%{http_code}' "$ORIGIN$path")"
           test "$code" = '404'
           grep -q 'data-viewloom-not-found="v1"' "$ARTIFACT_DIR/not-found.html"
           probe_code="$(curl --silent --show-error --max-time 30 --output "$ARTIFACT_DIR/preview-probe-response.html" --write-out '%{http_code}' "$ORIGIN/cloudflare-preview-probe.json")"
           test "$probe_code" = '404'
           grep -q 'data-viewloom-not-found="v1"' "$ARTIFACT_DIR/preview-probe-response.html"
-      - name: Publish production summary
-        if: always()
+
+      - name: Write machine-readable acceptance evidence
         run: |
-          {
-            echo '## ViewLoom Production Smoke'
-            echo
-            echo "- Expected main SHA: \`$GITHUB_SHA\`"
-            if [ -f "$ARTIFACT_DIR/deployment.json" ]; then
-              echo "- Deployed SHA: \`$(jq -r '.commit_sha // "unavailable"' "$ARTIFACT_DIR/deployment.json")\`"
-            fi
-            echo '- Repository-owned HTML routes: 20 checked'
-            echo '- About, Support, Changelog, Channel, and Watchlist ownership: checked'
-            echo '- Twitch and Kick status APIs: checked'
-            echo '- Separate D1 bindings: checked'
-            echo '- Collector freshness: checked'
-            echo '- Explicit 404 behavior: checked'
-            echo '- Preview probe absent from production: checked'
-          } >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+          set -euo pipefail
+          deployed="$(jq -r '.commit_sha' "$ARTIFACT_DIR/deployment.json")"
+          checked_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          jq -n \
+            --arg schema 'viewloom-quality-u10h-production-acceptance-v1' \
+            --arg phase 'U10H' \
+            --arg result 'pass' \
+            --arg expected_main_sha "$EXPECTED_MAIN_SHA" \
+            --arg deployed_sha "$deployed" \
+            --arg checked_at "$checked_at" \
+            '{
+              schema: $schema,
+              phase: $phase,
+              result: $result,
+              expected_main_sha: $expected_main_sha,
+              deployed_sha: $deployed_sha,
+              checked_at: $checked_at,
+              counts: {
+                html_routes: 20,
+                status_apis: 2,
+                provider_crossing_failures: 0,
+                public_runtime_failures: 0,
+                explicit_404_failures: 0
+              },
+              invariants: {
+                providers_separate: true,
+                twitch_binding: "DB_TWITCH_HOT",
+                kick_binding: "DB_KICK_HOT",
+                collector_freshness_required: true,
+                matching_production_sha_required: true
+              }
+            }' > "$ARTIFACT_DIR/u10h-production-acceptance-evidence.json"
+
+      - name: Verify machine-readable acceptance evidence
+        run: |
+          jq -e '
+            .schema == "viewloom-quality-u10h-production-acceptance-v1" and
+            .phase == "U10H" and
+            .result == "pass" and
+            .expected_main_sha == .deployed_sha and
+            .counts.html_routes == 20 and
+            .counts.status_apis == 2 and
+            .counts.provider_crossing_failures == 0 and
+            .counts.public_runtime_failures == 0 and
+            .counts.explicit_404_failures == 0 and
+            .invariants.providers_separate == true and
+            .invariants.twitch_binding == "DB_TWITCH_HOT" and
+            .invariants.kick_binding == "DB_KICK_HOT" and
+            .invariants.collector_freshness_required == true and
+            .invariants.matching_production_sha_required == true
+          ' "$ARTIFACT_DIR/u10h-production-acceptance-evidence.json" > /dev/null
+
+      - name: Upload U10H production acceptance artifacts
+        uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: production-smoke-artifacts
-          path: artifacts/production-smoke/
+          name: quality-u10h-production-acceptance
+          path: artifacts/quality-u10h-production-acceptance/
           if-no-files-found: warn

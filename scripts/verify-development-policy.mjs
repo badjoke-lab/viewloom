@@ -8,6 +8,7 @@ const required = [
   'README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'docs/README.md',
   'docs/operations/development-and-deployment-policy.md',
   'docs/operations/documentation-governance.md',
+  'docs/operations/u10h-production-acceptance-2026-07-04.md',
   'docs/product/current-roadmap.md', 'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
   'docs/product/cross-site-quality-remediation-spec.md',
@@ -36,6 +37,7 @@ const required = [
   '.github/workflows/quality-u10f-readiness.yml',
   '.github/workflows/quality-u10g-architecture.yml',
   '.github/workflows/quality-u10h-acceptance.yml',
+  '.github/workflows/quality-u10h-production-acceptance.yml',
 ]
 for (const path of required) assert.equal(existsSync(join(root, path)), true, `missing file: ${path}`)
 
@@ -57,14 +59,14 @@ for (const path of [
 ]) assert.equal(existsSync(join(root, path)), false, `temporary or retired file remains: ${path}`)
 
 const stateChecks = [
-  ['README.md', ['Phase 10 U10G architecture            complete PR #470', 'Phase 10 U10H production acceptance   active', 'Active implementation branch          work-quality-u10h-acceptance', 'Exact next branch after U10H          work-quality-phase11-acceptance-operations']],
-  ['docs/README.md', ['Phase 10 U10G architecture                       complete PR #470', 'Phase 10 U10H production acceptance              active', 'Active implementation branch                    work-quality-u10h-acceptance', 'Exact next implementation branch                work-quality-phase11-acceptance-operations']],
-  ['AGENTS.md', ['U10G architecture complete PR #470', 'U10H production acceptance active', 'Active implementation branch: work-quality-u10h-acceptance', 'Exact next branch: work-quality-phase11-acceptance-operations']],
-  ['CONTRIBUTING.md', ['Phase 10 U10G architecture complete through PR #470', 'Phase 10 U10H production acceptance active', 'Active implementation branch: work-quality-u10h-acceptance', 'Exact next implementation branch: work-quality-phase11-acceptance-operations']],
-  ['docs/product/current-roadmap.md', ['Phase 10 U10G architecture complete PR #470', 'Phase 10 U10H production acceptance active', 'Active implementation branch: work-quality-u10h-acceptance', 'Exact next branch: work-quality-phase11-acceptance-operations']],
-  ['docs/product/current-schedule.md', ['U10G architecture complete PR #470', 'U10H production acceptance active', 'Active branch: work-quality-u10h-acceptance', 'Next branch: work-quality-phase11-acceptance-operations']],
-  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10H production acceptance', 'Current implementation branch: `work-quality-u10h-acceptance`', 'Exact next implementation branch: `work-quality-phase11-acceptance-operations`']],
-  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: `work-quality-u10h-acceptance`', 'Active phase: U10H production acceptance', 'Exact next branch: `work-quality-phase11-acceptance-operations`']],
+  ['README.md', ['Phase 10 U10H production acceptance   complete PR #471', 'U10H canonical closeout               PR #472', 'Active implementation branch          none', 'Exact next branch                     work-quality-phase11-acceptance-operations', 'Phase 11 branch created               no']],
+  ['docs/README.md', ['Phase 10 U10H production acceptance              complete PR #471', 'U10H canonical closeout                          PR #472', 'Active implementation branch                    none', 'Exact next implementation branch                work-quality-phase11-acceptance-operations', 'Phase 11 branch created                         no']],
+  ['AGENTS.md', ['U10H production acceptance complete PR #471', 'U10H canonical closeout PR #472', 'Active implementation branch: none', 'Exact next branch: work-quality-phase11-acceptance-operations', 'Phase 11 branch created: no']],
+  ['CONTRIBUTING.md', ['Phase 10 U10H production acceptance complete through PR #471', 'U10H canonical closeout PR #472', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-phase11-acceptance-operations', 'Phase 11 branch created: no']],
+  ['docs/product/current-roadmap.md', ['Phase 10 U10H production acceptance complete PR #471', 'U10H canonical closeout PR #472', 'Active implementation branch: none', 'Exact next branch: work-quality-phase11-acceptance-operations', 'Phase 11 branch created: no']],
+  ['docs/product/current-schedule.md', ['U10H production acceptance complete PR #471', 'U10H canonical closeout PR #472', 'Active branch: none', 'Next branch: work-quality-phase11-acceptance-operations', 'Phase 11 created: no']],
+  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10H production acceptance complete', 'Current implementation branch: none', 'Exact next implementation branch: `work-quality-phase11-acceptance-operations`', 'Phase 11 branch created: no']],
+  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: none', 'Completed phase: U10H production acceptance through PR #471', 'Exact next branch: `work-quality-phase11-acceptance-operations`', 'Phase 11 branch created: no']],
 ]
 for (const [path, fragments] of stateChecks) {
   const source = read(path)
@@ -82,16 +84,23 @@ for (const fragment of [
 
 const u10hNote = read('docs/work-in-progress/u10h-acceptance.md')
 for (const fragment of [
-  'Status: active',
-  'work-quality-u10h-acceptance',
-  'work-quality-phase11-acceptance-operations',
-  'Production Smoke routes: 20',
-  'Provider separation failures accepted: 0',
-  'Matching production main SHA required: yes',
-  'U10H PR contract gate: active',
-  'Production Smoke trigger ownership: active',
-  'Production acceptance claimed: no',
+  'Status: complete',
+  'Implementation PR: #471',
+  'Implementation merge commit: `9f2b9abd5a3d23b50fc01075a5c4f041899babf5`',
+  'Hosted production acceptance: pass',
+  'Production acceptance claimed: yes',
+  'Phase 11 branch created: no',
 ]) assert.ok(u10hNote.includes(fragment), `U10H working note missing ${fragment}`)
+
+const acceptance = read('docs/operations/u10h-production-acceptance-2026-07-04.md')
+for (const fragment of [
+  'Status: complete',
+  'Workflow run: 28701464391',
+  'Artifact id: 8080315127',
+  'Result: pass',
+  'Deployed SHA: 9f2b9abd5a3d23b50fc01075a5c4f041899babf5',
+  'U10H production acceptance is claimed complete by this record.',
+]) assert.ok(acceptance.includes(fragment), `U10H acceptance record missing ${fragment}`)
 
 const records = [
   JSON.parse(read('docs/audits/cross-site-quality-u10a-baseline.json')),
@@ -114,8 +123,6 @@ assert.equal(u10f.scope.total_browser_scenarios, 8)
 assert.equal(u10f.readiness_contract.production_acceptance_claimed, false)
 assert.equal(u10f.readiness_contract.production_acceptance_owner, 'U10H')
 assert.equal(u10f.browser_evidence.result, 'pass')
-assert.equal(u10f.exact_next_branch, 'work-quality-u10g-architecture')
-assert.equal(u10f.next_branch_created, false)
 
 const inventory = JSON.parse(read('docs/audits/public-surface-inventory.json'))
 assert.equal(inventory.counts.public_readiness_configured_pages, 20)
@@ -136,6 +143,7 @@ for (const path of [
   '.github/workflows/quality-u10f-readiness.yml',
   '.github/workflows/quality-u10g-architecture.yml',
   '.github/workflows/quality-u10h-acceptance.yml',
+  '.github/workflows/quality-u10h-production-acceptance.yml',
 ]) {
   const source = read(path)
   assert.ok(source.includes('concurrency:'), `${path}: concurrency missing`)
@@ -166,7 +174,7 @@ for (const fragment of [
 
 console.log('ViewLoom development and documentation verification passed.')
 console.log('- U10A through U10F remain permanent evidence')
-console.log('- U10G architecture is complete and U10H production acceptance is active')
-console.log('- U10H has a PR contract gate and exact-main-SHA Production Smoke ownership')
+console.log('- U10G architecture and U10H production acceptance are complete')
+console.log('- Phase 11 acceptance and operations is exact next and not yet created')
 console.log('- requested and effective Battle Lines layouts remain separate')
 console.log('- Twitch and Kick remain separate')

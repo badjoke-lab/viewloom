@@ -1,17 +1,19 @@
 # U10H production acceptance working record
 
-Status: active
+Status: complete
 Branch: `work-quality-u10h-acceptance`
 Started: 2026-07-04
 Entry main commit: `62dab7b6076c15b85c3d893589df22388753c1bc`
+Implementation PR: #471
+Implementation merge commit: `9f2b9abd5a3d23b50fc01075a5c4f041899babf5`
 Previous phase: U10G architecture complete PR #470
 Exact next branch after U10H: `work-quality-phase11-acceptance-operations`
 
 ## Purpose
 
-U10H owns the production acceptance that U10F intentionally did not claim.
+U10H owned the production acceptance that U10F intentionally did not claim.
 
-The goal is not to add product functionality. The goal is to prove that the public ViewLoom surface is usable on hosted production after U10A-U10G repairs, with provider separation, degraded states, URL compatibility, and output contracts preserved.
+The goal was not to add product functionality. The goal was to prove that the public ViewLoom surface is usable on hosted production after U10A-U10G repairs, with provider separation, degraded states, URL compatibility, and output contracts preserved.
 
 ## Required confirmations
 
@@ -25,27 +27,30 @@ Hosted evidence required: yes
 Matching production main SHA required: yes
 ```
 
-## Acceptance scope
-
-- Confirm Twitch and Kick public routes load on hosted production.
-- Confirm Heatmap, Day Flow, Battle Lines, History, Channel, Watchlist, Data Status, support/legal/info pages do not regress from U10F readiness.
-- Confirm Day Flow and Battle Lines retain U10G ownership guarantees on production-facing builds.
-- Confirm no route silently combines Twitch and Kick data.
-- Confirm missing-id and degraded states remain usable.
-- Confirm production evidence is recorded before claiming production acceptance.
-
-## Acceptance flow
+## Completed acceptance
 
 ```text
-1. PR contract gate verifies U10H state, retained U10G/U10F evidence, and Production Smoke ownership.
-2. Merge U10H implementation PR to main only after latest-head CI is green.
-3. Production Smoke waits until deployment.json matches that exact main SHA.
-4. Production Smoke verifies 20 HTML routes, Twitch/Kick status APIs, separate D1 bindings, collector freshness, explicit 404 behavior, and preview-probe absence.
-5. Record the successful production run and artifact in permanent acceptance evidence.
-6. Only then claim U10H production acceptance complete and hand off to Phase 11.
+Workflow run: 28701464391
+Artifact id: 8080315127
+Artifact digest: sha256:6de6e9371ea77e9b46a220fdabdc1db0ca63b74f55b8aa9eb52a1761b6a4f604
+Result: pass
+Expected main SHA: 9f2b9abd5a3d23b50fc01075a5c4f041899babf5
+Deployed SHA: 9f2b9abd5a3d23b50fc01075a5c4f041899babf5
+Checked at: 2026-07-04T09:08:03Z
 ```
 
-## Non-goals
+Permanent record: `docs/operations/u10h-production-acceptance-2026-07-04.md`.
+
+## Acceptance scope
+
+- Twitch and Kick public routes loaded on hosted production.
+- Heatmap, Day Flow, Battle Lines, History, Channel, Watchlist, Data Status, support, and information surfaces retained public availability.
+- Day Flow and Battle Lines retained U10G ownership guarantees on production-facing builds.
+- Twitch and Kick remained separate.
+- Missing-route 404 behavior remained explicit.
+- Production evidence was recorded before claiming production acceptance.
+
+## Non-goals preserved
 
 - No new API routes.
 - No D1 schema changes.
@@ -59,9 +64,10 @@ Matching production main SHA required: yes
 
 ```text
 U10H branch created: yes
-U10H implementation started: yes
-U10H PR contract gate: active
-Production Smoke trigger ownership: active
-Production acceptance claimed: no
+U10H implementation complete: yes
+U10H PR contract gate: pass
+Hosted production acceptance: pass
+Production acceptance claimed: yes
 Phase 11 started: no
+Phase 11 branch created: no
 ```
