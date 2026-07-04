@@ -8,6 +8,15 @@ on:
     branches:
       - main
     paths:
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/README.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/product/cross-site-quality-remediation-plan.md'
+      - 'docs/work-in-progress/u10h-acceptance.md'
       - 'apps/web/**'
       - 'package.json'
       - '.github/workflows/production-smoke.yml'

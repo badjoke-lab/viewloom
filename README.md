@@ -31,10 +31,11 @@ Phase 10 U10E responsive repair       complete PR #465
 U10E canonical closeout               complete PR #466
 Phase 10 U10F readiness               complete PR #468
 U10F canonical closeout               complete PR #469
-Phase 10 U10G architecture            active
-Active implementation branch          work-quality-u10g-architecture
-Exact next branch after U10G          work-quality-u10h-acceptance
-U10H branch created                   no
+Phase 10 U10G architecture            complete PR #470
+Phase 10 U10H production acceptance   active
+Active implementation branch          work-quality-u10h-acceptance
+Exact next branch after U10H          work-quality-phase11-acceptance-operations
+U10H branch created                   yes
 ```
 
 Permanent evidence:
@@ -47,9 +48,10 @@ docs/audits/cross-site-quality-u10c-visualization.json
 docs/audits/cross-site-quality-u10d-analysis-coherence.json
 docs/audits/cross-site-quality-u10e-responsive.json
 docs/audits/cross-site-quality-u10f-readiness.json
+PR #470 Quality U10G Architecture artifact 8076053343
 ```
 
-Active U10G record: `docs/work-in-progress/u10g-architecture.md`.
+Active U10H record: `docs/work-in-progress/u10h-acceptance.md`.
 
 ## Current sequence
 
@@ -60,9 +62,9 @@ U10C visualization                       complete PR #458
 U10D analysis coherence                  complete PR #462
 U10E responsive and accessibility        complete PR #465
 U10F readiness                           complete PR #468
-U10G architecture                        active
-U10H acceptance                          exact next after U10G
-Phase 11 acceptance and operations       queued
+U10G architecture                        complete PR #470
+U10H acceptance                          active
+Phase 11 acceptance and operations       exact next after U10H
 Phase 12 release readiness               queued
 Phase 13–14 localization                 queued
 Phase 15 capability audit                queued

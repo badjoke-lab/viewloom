@@ -1,7 +1,7 @@
 # ViewLoom current execution schedule
 
 Status: source of truth
-Last updated: 2026-07-03
+Last updated: 2026-07-04
 
 ```text
 Phase 8 complete PR #428
@@ -16,10 +16,11 @@ U10E responsive and accessibility complete PR #465
 U10E closeout complete PR #466
 U10F readiness complete PR #468
 U10F closeout complete PR #469
-U10G architecture active
-Active branch: work-quality-u10g-architecture
-Next branch: work-quality-u10h-acceptance
-U10H created: no
+U10G architecture complete PR #470
+U10H production acceptance active
+Active branch: work-quality-u10h-acceptance
+Next branch: work-quality-phase11-acceptance-operations
+U10H created: yes
 ```
 
 ```text
@@ -49,11 +50,16 @@ U10G Day Flow feature requests: 1 per initial load
 U10G Battle Lines feature requests: 1 per initial load
 U10G global interception failures accepted: 0
 U10G provider crossing failures accepted: 0
+U10H Production Smoke routes: 20
+U10H provider separation failures accepted: 0
+U10H public runtime failures accepted: 0
+U10H production acceptance source: hosted production and recorded evidence
 ```
 
 ```text
 U10E responsive and accessibility complete
 U10F readiness complete
-U10G architecture active
-U10H acceptance exact next
+U10G architecture complete
+U10H production acceptance active
+Phase 11 acceptance and operations exact next
 ```
