@@ -1,0 +1,48 @@
+name: Quality U10H Acceptance
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/README.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/product/cross-site-quality-remediation-plan.md'
+      - 'docs/work-in-progress/u10g-architecture.md'
+      - 'docs/work-in-progress/u10h-acceptance.md'
+      - 'docs/audits/cross-site-quality-u10f-readiness.json'
+      - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-quality-u10g-architecture.mjs'
+      - 'scripts/verify-quality-u10h-acceptance.mjs'
+      - '.github/workflows/production-smoke.yml'
+      - '.github/workflows/quality-u10h-acceptance.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Verify retained U10G architecture contract
+        run: node scripts/verify-quality-u10g-architecture.mjs
+      - name: Verify retained U10F readiness contract
+        run: node scripts/verify-quality-u10f-readiness.mjs
+      - name: Verify public surface inventory
+        run: node scripts/verify-public-surface-inventory.mjs
+      - name: Verify U10H acceptance contract
+        run: node scripts/verify-quality-u10h-acceptance.mjs
