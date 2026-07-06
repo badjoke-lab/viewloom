@@ -15,6 +15,7 @@ on:
       - 'apps/web/scripts/verify-kick-coverage-contract-v2.mjs'
       - 'apps/web/scripts/verify-kick-feature-coverage.mjs'
       - 'apps/web/scripts/verify-kick-feature-coverage-doc.mjs'
+      - '.github/actions/setup-node-pnpm/action.yml'
       - '.github/workflows/kick-coverage-checks.yml'
   push:
     branches: [main]
@@ -30,6 +31,7 @@ on:
       - 'apps/web/scripts/verify-kick-coverage-contract-v2.mjs'
       - 'apps/web/scripts/verify-kick-feature-coverage.mjs'
       - 'apps/web/scripts/verify-kick-feature-coverage-doc.mjs'
+      - '.github/actions/setup-node-pnpm/action.yml'
       - '.github/workflows/kick-coverage-checks.yml'
 
 concurrency:
@@ -41,13 +43,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.17.1
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: pnpm install --no-frozen-lockfile
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
       - run: pnpm --filter @viewloom/web typecheck:functions
       - run: node scripts/verify-kick-coverage-contract-v2.mjs
         working-directory: apps/web
