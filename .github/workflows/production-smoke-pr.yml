@@ -9,6 +9,10 @@ on:
       - '.github/workflows/production-smoke*.yml'
       - '.github/workflows/public-readiness-audit.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify-contract:
     runs-on: ubuntu-latest
