@@ -8,6 +8,7 @@ on:
       - 'apps/web/src/navigation/url-contract.ts'
       - 'apps/web/scripts/verify-canonical-url-contract.mjs'
       - 'apps/web/docs/canonical-url-contract.md'
+      - '.github/actions/setup-node-pnpm/action.yml'
       - '.github/workflows/canonical-url-checks.yml'
   push:
     branches:
@@ -17,6 +18,7 @@ on:
       - 'apps/web/src/navigation/url-contract.ts'
       - 'apps/web/scripts/verify-canonical-url-contract.mjs'
       - 'apps/web/docs/canonical-url-contract.md'
+      - '.github/actions/setup-node-pnpm/action.yml'
       - '.github/workflows/canonical-url-checks.yml'
 
 concurrency:
@@ -29,16 +31,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.17.1
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
       - name: Verify canonical URL contract
         working-directory: apps/web
         run: node scripts/verify-canonical-url-contract.mjs
