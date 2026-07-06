@@ -59,7 +59,7 @@ for (const fragment of [
   '## Monthly operator review',
   '## Quarterly review',
   'workflowsMissingLatestHeadCancellation == 0',
-  'confirm no combined viewer total or combined ranking exists',
+  'verify no combined viewer total or combined ranking exists',
   'retire a workflow only when replacement assertions are named and passing',
 ]) assert.ok(cadence.includes(fragment), `maintenance cadence missing ${fragment}`)
 
