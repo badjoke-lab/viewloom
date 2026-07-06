@@ -1,0 +1,31 @@
+name: Phase 11 Operations Contract
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/production-smoke.yml'
+      - '.github/workflows/public-readiness-audit.yml'
+      - '.github/workflows/phase11-monitoring-contract.yml'
+      - '.github/workflows/phase11-operations-contract.yml'
+      - 'scripts/build-phase11-monitoring-evidence.mjs'
+      - 'scripts/verify-phase11-monitoring-evidence.mjs'
+      - 'scripts/verify-phase11-operations-contract.mjs'
+      - 'docs/operations/phase11-monitoring-and-escalation.md'
+      - 'docs/operations/phase11-maintenance-cadence.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify Phase 11 operations contract
+        run: node scripts/verify-phase11-operations-contract.mjs
