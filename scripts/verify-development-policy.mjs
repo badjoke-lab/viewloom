@@ -107,10 +107,11 @@ assert.equal(strictBaseline.scopes.functions.status, 'clean')
 const baseTsconfig = JSON.parse(read('tsconfig.base.json'))
 assert.equal(baseTsconfig.compilerOptions.strict, true)
 const webPackage = JSON.parse(read('apps/web/package.json'))
-assert.ok(webPackage.scripts.typecheck.includes('tsconfig.json --noEmit --strictNullChecks false'))
+for (const name of ['typecheck', 'typecheck:app', 'typecheck:functions']) {
+  assert.equal(webPackage.scripts[name].includes('--strictNullChecks false'), false, `${name}: strict-null override remains`)
+}
+assert.ok(webPackage.scripts.typecheck.includes('tsconfig.json --noEmit'))
 assert.ok(webPackage.scripts.typecheck.includes('tsconfig.functions.json --noEmit'))
-assert.equal(webPackage.scripts['typecheck:app'].includes('--strictNullChecks false'), true)
-assert.equal(webPackage.scripts['typecheck:functions'].includes('--strictNullChecks false'), false)
 
 const inventory = JSON.parse(read('docs/audits/public-surface-inventory.json'))
 assert.equal(inventory.counts.public_readiness_configured_pages, 20)
@@ -135,6 +136,6 @@ for (const path of [
 console.log('ViewLoom development and documentation verification passed.')
 console.log('- Phase 10 is complete through U10H closeout')
 console.log('- Phase 11 acceptance and operations is active')
-console.log('- P11A baseline is recorded: Functions clean, App debt remains')
-console.log('- Functions strict-null override is removed; App override remains staged')
+console.log('- P11A historical baseline is recorded: App 22 errors, Functions clean')
+console.log('- App and Functions strict-null overrides are removed')
 console.log('- Twitch and Kick remain separate')
