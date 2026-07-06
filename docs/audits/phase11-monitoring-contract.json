@@ -1,0 +1,55 @@
+{
+  "schema": "viewloom-phase11-monitoring-contract-v1",
+  "phase": "Phase 11",
+  "workstream": "P11C",
+  "status": "contract-complete-hosted-evidence-pending",
+  "contract_evidence": {
+    "workflow_run": 28807287168,
+    "artifact_id": 8115435281,
+    "artifact_digest": "sha256:4c8979068c2cf3f9e13baf1fa85a88777d5d474e37c4278f7c98b06c517f52b3",
+    "head_sha": "ccd139488734e83256be261f95d12157d993ab2f",
+    "result": "pass"
+  },
+  "monitoring_owner": {
+    "workflow": ".github/workflows/production-smoke.yml",
+    "schedule": "17 3 * * *",
+    "new_application_cron_added": false,
+    "new_collector_cron_added": false
+  },
+  "readiness_owner": {
+    "workflow": ".github/workflows/public-readiness-audit.yml",
+    "schedule": "23 2 * * 1"
+  },
+  "contract": {
+    "deployment_identity_required": true,
+    "matching_main_sha_required": true,
+    "public_routes_required": 20,
+    "provider_status_apis_required": 2,
+    "provider_separation_required": true,
+    "twitch_binding": "DB_TWITCH_HOT",
+    "kick_binding": "DB_KICK_HOT",
+    "freshness_observation_required": true,
+    "capacity_observation_required": true,
+    "capacity_classifications": [
+      "within-window",
+      "near-window-limit",
+      "at-or-over-window"
+    ],
+    "blocking_severities": [
+      "critical",
+      "high"
+    ],
+    "non_blocking_observation_severity": "watch"
+  },
+  "fixture_expectations": {
+    "twitch_capacity": "near-window-limit",
+    "kick_capacity": "at-or-over-window",
+    "watch_alerts": 2,
+    "blocking_alerts": 0
+  },
+  "hosted_evidence": {
+    "status": "pending-main-merge",
+    "owner": ".github/workflows/production-smoke.yml",
+    "required_before_phase11_production_closeout": true
+  }
+}
