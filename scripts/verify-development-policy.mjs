@@ -18,12 +18,17 @@ const required = [
   'docs/work-in-progress/u10h-acceptance.md',
   'docs/work-in-progress/phase11-acceptance-operations.md',
   'docs/audits/public-surface-inventory.json',
+  'docs/audits/phase11-strict-null-baseline.json',
+  'docs/audits/phase11-ci-ownership-baseline.json',
   'scripts/measure-phase11-strict-null-baseline.mjs',
   'scripts/verify-phase11-strict-null-baseline.mjs',
+  'scripts/measure-phase11-ci-ownership.mjs',
+  'scripts/verify-phase11-ci-ownership.mjs',
   '.github/workflows/production-smoke.yml',
   '.github/workflows/quality-u10g-architecture.yml',
   '.github/workflows/quality-u10h-acceptance.yml',
   '.github/workflows/phase11-strict-null-baseline.yml',
+  '.github/workflows/phase11-ci-ownership.yml',
 ]
 for (const path of required) assert.equal(existsSync(join(root, path)), true, `missing file: ${path}`)
 
@@ -92,12 +97,20 @@ check('docs/operations/u10h-production-acceptance-2026-07-04.md', [
   'Result: pass',
 ])
 
+const strictBaseline = JSON.parse(read('docs/audits/phase11-strict-null-baseline.json'))
+assert.equal(strictBaseline.status, 'baseline-recorded')
+assert.equal(strictBaseline.scopes.app.error_count, 22)
+assert.equal(strictBaseline.scopes.app.affected_file_count, 10)
+assert.equal(strictBaseline.scopes.functions.error_count, 0)
+assert.equal(strictBaseline.scopes.functions.status, 'clean')
+
 const baseTsconfig = JSON.parse(read('tsconfig.base.json'))
 assert.equal(baseTsconfig.compilerOptions.strict, true)
 const webPackage = JSON.parse(read('apps/web/package.json'))
-for (const name of ['typecheck', 'typecheck:app', 'typecheck:functions']) {
-  assert.ok(webPackage.scripts[name].includes('--strictNullChecks false'), `${name}: current migration override missing before P11A baseline`)
-}
+assert.ok(webPackage.scripts.typecheck.includes('tsconfig.json --noEmit --strictNullChecks false'))
+assert.ok(webPackage.scripts.typecheck.includes('tsconfig.functions.json --noEmit'))
+assert.equal(webPackage.scripts['typecheck:app'].includes('--strictNullChecks false'), true)
+assert.equal(webPackage.scripts['typecheck:functions'].includes('--strictNullChecks false'), false)
 
 const inventory = JSON.parse(read('docs/audits/public-surface-inventory.json'))
 assert.equal(inventory.counts.public_readiness_configured_pages, 20)
@@ -112,6 +125,7 @@ for (const path of [
   '.github/workflows/quality-u10g-architecture.yml',
   '.github/workflows/quality-u10h-acceptance.yml',
   '.github/workflows/phase11-strict-null-baseline.yml',
+  '.github/workflows/phase11-ci-ownership.yml',
 ]) {
   const source = read(path)
   assert.ok(source.includes('concurrency:'), `${path}: concurrency missing`)
@@ -121,5 +135,6 @@ for (const path of [
 console.log('ViewLoom development and documentation verification passed.')
 console.log('- Phase 10 is complete through U10H closeout')
 console.log('- Phase 11 acceptance and operations is active')
-console.log('- P11A strict-null baseline is the current workstream')
+console.log('- P11A baseline is recorded: Functions clean, App debt remains')
+console.log('- Functions strict-null override is removed; App override remains staged')
 console.log('- Twitch and Kick remain separate')
