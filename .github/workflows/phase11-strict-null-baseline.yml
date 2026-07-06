@@ -26,8 +26,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --no-frozen-lockfile
       - name: Measure strict-null baseline
         run: node scripts/measure-phase11-strict-null-baseline.mjs
       - name: Verify strict-null baseline evidence
