@@ -2,35 +2,56 @@
   "schema": "viewloom-phase11-ci-ownership-baseline-v1",
   "phase": "Phase 11",
   "workstream": "P11B",
-  "status": "baseline-recorded",
-  "source": {
+  "status": "cancellation-remediation-complete",
+  "baseline": {
     "workflow_run": 28713913285,
     "artifact_id": 8083822417,
     "artifact_digest": "sha256:94d17fd15f13e7d214322528cce354956123c44929d4bff8672e06ba105aeb25",
     "head_sha": "0c3a70142cb4f5774fbc82fef49c4222fab8fb00",
-    "generated_at": "2026-07-04T17:23:24.993Z"
+    "generated_at": "2026-07-04T17:23:24.993Z",
+    "counts": {
+      "workflows": 85,
+      "pull_request_workflows": 83,
+      "scheduled_workflows": 2,
+      "workflows_missing_latest_head_cancellation": 7,
+      "repeated_named_steps": 32
+    },
+    "missing_latest_head_cancellation": [
+      "canonical-url-checks.yml",
+      "collector-checks.yml",
+      "deep-link-checks.yml",
+      "history-repair-verification.yml",
+      "kick-coverage-checks.yml",
+      "production-smoke-pr.yml",
+      "state-contract-checks.yml"
+    ]
   },
-  "counts": {
-    "workflows": 85,
-    "pull_request_workflows": 83,
-    "scheduled_workflows": 2,
-    "workflows_missing_latest_head_cancellation": 7,
-    "repeated_named_steps": 32
+  "remediation": {
+    "workflow_run": 28802705378,
+    "artifact_id": 8113646893,
+    "artifact_digest": "sha256:5336aae99deb5d7e680c32e6bdb5d8ee964cf99af8552bf291745ca2514fecc3",
+    "head_sha": "7a585a62ab3762b6dda06477a3d54f77a09ef478",
+    "result": "pass",
+    "counts": {
+      "workflows": 85,
+      "pull_request_workflows": 83,
+      "scheduled_workflows": 2,
+      "workflows_missing_latest_head_cancellation": 0,
+      "repeated_named_steps": 32
+    },
+    "missing_latest_head_cancellation": [],
+    "cancellation_gaps_fixed": 7
   },
-  "missing_latest_head_cancellation": [
-    "canonical-url-checks.yml",
-    "collector-checks.yml",
-    "deep-link-checks.yml",
-    "history-repair-verification.yml",
-    "kick-coverage-checks.yml",
-    "production-smoke-pr.yml",
-    "state-contract-checks.yml"
-  ],
   "policy": {
     "delete_workflows_from_baseline_alone": false,
     "name_replacement_assertions_before_retirement": true,
     "latest_head_cancellation_required": true,
     "unique_feature_gates_remain": true,
     "all_public_browser_coherence_remains": true
+  },
+  "next": {
+    "workflow_retirement_started": false,
+    "ownership_mapping_required": true,
+    "repeated_named_steps_to_classify": 32
   }
 }
