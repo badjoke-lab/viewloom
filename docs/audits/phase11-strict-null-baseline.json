@@ -1,0 +1,52 @@
+{
+  "schema": "viewloom-phase11-strict-null-baseline-v1",
+  "phase": "Phase 11",
+  "workstream": "P11A",
+  "status": "baseline-recorded",
+  "source": {
+    "workflow_run": 28802705158,
+    "artifact_id": 8113609875,
+    "artifact_digest": "sha256:6394bb27278b590d16d982f981a5fd873e298bdf1d3cdbb0902e18f3e9882ba5",
+    "head_sha": "7a585a62ab3762b6dda06477a3d54f77a09ef478",
+    "generated_at": "2026-07-06T15:25:24.848Z"
+  },
+  "base_strict_intent": true,
+  "current_override_present": true,
+  "scopes": {
+    "app": {
+      "status": "debt-recorded",
+      "error_count": 22,
+      "affected_file_count": 10,
+      "affected_files": [
+        "apps/web/src/battle-lines-entry.ts",
+        "apps/web/src/battle-lines-status-entry.ts",
+        "apps/web/src/features/heatmap-page/mobile-inspector-sheet.ts",
+        "apps/web/src/features/twitch-heatmap/canvas-scene.ts",
+        "apps/web/src/history-unify.ts",
+        "apps/web/src/label-risk-cleanup.ts",
+        "apps/web/src/live/history-report-text-state.ts",
+        "apps/web/src/live/twitch-day-flow.ts",
+        "apps/web/src/live/twitch-heatmap.ts",
+        "apps/web/src/live/watchlist-page.ts"
+      ]
+    },
+    "functions": {
+      "status": "clean",
+      "error_count": 0,
+      "affected_file_count": 0,
+      "affected_files": []
+    }
+  },
+  "totals": {
+    "error_count": 22,
+    "affected_file_count": 10,
+    "clean_scope_count": 1
+  },
+  "migration_rule": {
+    "functions_override_may_be_removed_first": true,
+    "app_override_remains_until_clean": true,
+    "blanket_any_forbidden": true,
+    "mass_non_null_assertions_forbidden": true,
+    "behavior_changing_casts_forbidden": true
+  }
+}
