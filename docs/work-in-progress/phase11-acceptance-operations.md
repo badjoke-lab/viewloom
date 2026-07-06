@@ -33,22 +33,53 @@ Twitch and Kick separation: required
 New API / D1 / collector / cron / retention work: not authorized
 ```
 
-## P11A strict-null migration rule
+## P11A strict-null migration
 
-The repository base config already has `strict: true`, while the current web scripts override `strictNullChecks` to false. Phase 11 removes that debt in bounded stages.
+The repository base config has `strict: true`. Phase 11 measures and removes command-line `strictNullChecks false` overrides in bounded stages.
+
+Baseline evidence:
+
+```text
+Workflow run: 28802705158
+Artifact id: 8113609875
+Artifact digest: sha256:6394bb27278b590d16d982f981a5fd873e298bdf1d3cdbb0902e18f3e9882ba5
+Head SHA: 7a585a62ab3762b6dda06477a3d54f77a09ef478
+App: 22 errors / 10 affected files / debt-recorded
+Functions: 0 errors / 0 affected files / clean
+```
+
+Permanent baseline: `docs/audits/phase11-strict-null-baseline.json`.
 
 Rules:
 
-- measure app and Functions scopes separately before repair;
-- record error count and affected-file count as machine-readable evidence;
+- app and Functions scopes remain independently measurable;
+- Functions override is removed first because the scope is proven clean;
+- App override remains only while the recorded App debt is being repaired;
 - do not use blanket `any`, mass non-null assertions, or behavior-changing casts to force green;
-- add payload guards and explicit nullable state handling at browser and Functions boundaries;
-- preserve existing browser, output, URL, degraded-state, and provider-separation gates;
-- remove each command-line override only after its scope is genuinely clean.
+- add payload guards and explicit nullable state handling at boundaries;
+- preserve browser, output, URL, degraded-state, and provider-separation gates;
+- remove each override only after its scope is genuinely clean.
 
-## P11B CI rule
+## P11B CI ownership and duplication audit
 
-- inventory workflows and assertion ownership before deleting anything;
+Initial inventory evidence:
+
+```text
+Workflow run: 28713913285
+Artifact id: 8083822417
+Artifact digest: sha256:94d17fd15f13e7d214322528cce354956123c44929d4bff8672e06ba105aeb25
+Workflows: 85
+PR workflows: 83
+Scheduled workflows: 2
+Latest-head cancellation gaps: 7
+Repeated named steps: 32
+```
+
+All seven recorded latest-head cancellation gaps have been repaired on the Phase 11 branch. A latest-head inventory rerun must prove the remaining gap count is zero before P11B cancellation remediation is claimed complete.
+
+Rules:
+
+- inventory workflow and assertion ownership before deleting anything;
 - unique feature gates remain;
 - overlapping gates may retire only when replacement assertions are named and verified;
 - latest-head cancellation remains mandatory;
@@ -56,14 +87,18 @@ Rules:
 
 ## P11C–P11E operations rule
 
-Use existing Status APIs and GitHub Actions before adding any new scheduled runtime work. Operations must cover deployment identity, provider-specific status contracts, freshness/capacity observation, failure ownership, escalation, and periodic maintenance.
+Use existing Status APIs and GitHub Actions before adding scheduled runtime work. Operations must cover deployment identity, provider-specific status contracts, freshness/capacity observation, failure ownership, escalation, and periodic maintenance.
 
 ## Current status
 
 ```text
 Phase 11 branch created: yes
-P11A baseline gate: being added
-P11B CI audit: not started
+P11A baseline gate: pass
+P11A Functions scope: clean; override removed on branch
+P11A App scope: 22 errors across 10 files; repair pending
+P11B CI baseline: recorded
+P11B cancellation gaps: 7 repaired; zero-gap rerun pending
+P11B workflow retirement: not started
 P11C monitoring contract: not started
 P11D runbooks: not started
 P11E maintenance cadence: not started
