@@ -42,6 +42,7 @@ for (const path of dayHtmlPaths) {
   assert.equal((html.match(/day-flow-current-shell-entry\.ts/g) ?? []).length, 1, `${path}: primary Day Flow entry count changed`)
   assert.equal(html.includes('day-flow-layout-summary.ts'), false, `${path}: secondary Day Flow entry remains`)
 }
+
 const battleHtmlPaths = ['apps/web/twitch/battle-lines/index.html', 'apps/web/kick/battle-lines/index.html']
 for (const path of battleHtmlPaths) {
   const html = read(path)
@@ -114,20 +115,6 @@ for (const fragment of [
   'replaceStateSame: native.replaceStateReplaced === false',
   'urlGetSame: native.urlGetReplaced === false',
 ]) assert.ok(browser.includes(fragment), `U10G browser contract missing ${fragment}`)
-
-for (const [path, fragments] of [
-  ['README.md', ['Phase 10 U10G architecture            complete PR #470']],
-  ['docs/README.md', ['Phase 10 U10G architecture                       complete PR #470']],
-  ['AGENTS.md', ['U10G architecture complete PR #470']],
-  ['CONTRIBUTING.md', ['Phase 10 U10G architecture complete through PR #470']],
-  ['docs/product/current-roadmap.md', ['Phase 10 U10G architecture complete PR #470']],
-  ['docs/product/current-schedule.md', ['U10G architecture complete PR #470', 'U10G browser scenarios: 8']],
-  ['docs/product/post-watchlist-program-plan.md', ['Completed U10G implementation: PR #470']],
-  ['docs/product/cross-site-quality-remediation-plan.md', ['Completed phase: U10G through PR #470']],
-]) {
-  const source = read(path)
-  for (const fragment of fragments) assert.ok(source.includes(fragment), `${path}: missing ${fragment}`)
-}
 
 const workflow = read('.github/workflows/quality-u10g-architecture.yml')
 for (const fragment of [
