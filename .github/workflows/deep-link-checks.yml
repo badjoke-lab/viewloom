@@ -8,6 +8,7 @@ on:
       - 'apps/web/src/live/day-flow-current-shell-entry.ts'
       - 'apps/web/src/live/battle-lines-current-shell-entry.ts'
       - 'apps/web/scripts/verify-deep-link-contract.mjs'
+      - '.github/actions/setup-node-pnpm/action.yml'
       - '.github/workflows/deep-link-checks.yml'
   push:
     branches: [main]
@@ -16,6 +17,7 @@ on:
       - 'apps/web/src/live/day-flow-current-shell-entry.ts'
       - 'apps/web/src/live/battle-lines-current-shell-entry.ts'
       - 'apps/web/scripts/verify-deep-link-contract.mjs'
+      - '.github/actions/setup-node-pnpm/action.yml'
       - '.github/workflows/deep-link-checks.yml'
 
 concurrency:
@@ -27,13 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.17.1
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: pnpm install --no-frozen-lockfile
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
       - run: pnpm --filter @viewloom/web typecheck:app
       - run: node scripts/verify-deep-link-contract.mjs
         working-directory: apps/web
