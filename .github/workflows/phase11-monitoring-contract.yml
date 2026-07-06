@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 10
     env:
       ARTIFACT_DIR: artifacts/phase11-monitoring-contract
-      EXPECTED_MAIN_SHA: 1111111111111111111111111111111111111111
+      EXPECTED_MAIN_SHA: '1111111111111111111111111111111111111111'
     steps:
       - uses: actions/checkout@v4
       - name: Prepare monitoring fixtures
