@@ -118,6 +118,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
   const tilesCanvas = stage.querySelector<HTMLCanvasElement>('#heatmap-canvas-tiles')
   const overlayCanvas = stage.querySelector<HTMLCanvasElement>('#heatmap-canvas-overlay')
   if (!viewport || !statusLive || !hintLabel || !zoomOutButton || !zoomBaseButton || !zoomInButton || !resetButton || !refreshButton || !moveButton || !tilesCanvas || !overlayCanvas) return
+  const overlayCanvasElement: HTMLCanvasElement = overlayCanvas
 
   let viewportWidth = Math.max(1, viewport.clientWidth)
   let viewportHeight = Math.max(360, viewport.clientHeight)
@@ -490,7 +491,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
   })
 
   function startGesture(): void {
-    const gesture = getGestureState(overlayCanvas, activePointers)
+    const gesture = getGestureState(overlayCanvasElement, activePointers)
     if (!gesture) return
     gestureStartDistance = gesture.distance
     gestureStartZoom = camera.zoom
@@ -498,7 +499,7 @@ export function renderCanvasScene(input: CanvasSceneInput): void {
   }
 
   function applyGesture(): void {
-    const gesture = getGestureState(overlayCanvas, activePointers)
+    const gesture = getGestureState(overlayCanvasElement, activePointers)
     if (!gesture || gestureStartDistance <= 0) return
     camera = zoomCameraAroundScreenPoint(camera, gesture.center, gestureStartZoom * (gesture.distance / gestureStartDistance), getCameraBounds())
     redraw()

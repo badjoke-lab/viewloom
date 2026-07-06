@@ -128,18 +128,20 @@ function ensureHeaderLink(nav: HTMLElement, href: string, label: string, externa
 }
 
 function patchHero(): void {
-  if (!route.platform || !route.feature) return
+  const platform = route.platform
+  const feature = route.feature
+  if (!platform || !feature) return
   const eyebrow = document.querySelector<HTMLElement>('.hero .eyebrow, .bl-hero .eyebrow')
   const h1 = document.querySelector<HTMLHeadingElement>('.hero h1, .bl-hero h1')
   const copy = document.querySelector<HTMLElement>('.hero .hero-copy, .bl-hero p')
 
-  if (eyebrow) setText(eyebrow, getHeroEyebrow(route.platform, getFeatureRole(route.feature)))
-  if (h1) setText(h1, getFeatureTitle(route.feature))
-  if (copy) setText(copy, ROUTE_COPY[route.feature])
+  if (eyebrow) setText(eyebrow, getHeroEyebrow(platform, getFeatureRole(feature)))
+  if (h1) setText(h1, getFeatureTitle(feature))
+  if (copy) setText(copy, ROUTE_COPY[feature])
 
   document.querySelectorAll<HTMLElement>('.status-panel__label').forEach((label) => {
     if (/build state|live snapshot|current state|unofficial/i.test(label.textContent ?? '')) {
-      setText(label, getUnofficialBadge(route.platform))
+      setText(label, getUnofficialBadge(platform))
     }
   })
 }
