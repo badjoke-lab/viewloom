@@ -66,7 +66,7 @@ replaceStable(
 replaceStable('apps/web/src/label-risk-cleanup.ts', 'getHeroEyebrow(route.platform, getFeatureRole(route.feature))', 'getHeroEyebrow(platform, getFeatureRole(feature))')
 replaceStable('apps/web/src/label-risk-cleanup.ts', 'getFeatureTitle(route.feature)', 'getFeatureTitle(feature)')
 replaceStable('apps/web/src/label-risk-cleanup.ts', 'ROUTE_COPY[route.feature]', 'ROUTE_COPY[feature]')
-replaceStable('apps/web/src/label-risk-cleanup.ts', 'getUnofficialBadge(route.platform)', 'getUnofficialBadge(platform)')
+replaceStable('apps/web/src/label-risk-cleanup.ts', 'setText(label, getUnofficialBadge(route.platform))', 'setText(label, getUnofficialBadge(platform))')
 
 replaceStable(
   'apps/web/src/live/history-report-text-state.ts',
