@@ -35,7 +35,7 @@ New API / D1 / collector / cron / retention work: not authorized
 
 ## P11A strict-null migration
 
-The repository base config has `strict: true`. Phase 11 measures and removes command-line `strictNullChecks false` overrides in bounded stages.
+The repository base config has `strict: true`. Phase 11 measured and removed command-line `strictNullChecks false` overrides in bounded stages.
 
 Baseline evidence:
 
@@ -48,17 +48,29 @@ App: 22 errors / 10 affected files / debt-recorded
 Functions: 0 errors / 0 affected files / clean
 ```
 
-Permanent baseline: `docs/audits/phase11-strict-null-baseline.json`.
+Remediation evidence:
 
-Rules:
+```text
+Workflow run: 28805573292
+Artifact id: 8114730025
+Artifact digest: sha256:7ded6293fc0accd53e22837f5c629279189aeb168fe8e811c45ae6359d515177
+Head SHA: 92bd2033096e1d586c2107fbe5a8b2a5d03831ba
+Generated at: 2026-07-06T16:07:53.747Z
+App: 0 errors / 0 affected files / clean
+Functions: 0 errors / 0 affected files / clean
+Command-line override present: false
+```
 
-- app and Functions scopes remain independently measurable;
-- Functions override is removed first because the scope is proven clean;
-- App override remains only while the recorded App debt is being repaired;
-- do not use blanket `any`, mass non-null assertions, or behavior-changing casts to force green;
-- add payload guards and explicit nullable state handling at boundaries;
-- preserve browser, output, URL, degraded-state, and provider-separation gates;
-- remove each override only after its scope is genuinely clean.
+Permanent evidence: `docs/audits/phase11-strict-null-baseline.json`.
+
+P11A result:
+
+- Functions override was removed after its clean baseline;
+- App 22-error debt was repaired across the 10 recorded files;
+- App override was removed only after strict App typecheck passed;
+- final evidence records App clean, Functions clean, zero errors, and no command-line override;
+- no blanket `any`, mass non-null assertion, or behavior-changing cast was used to force green;
+- browser, output, URL, degraded-state, and provider-separation gates remain required.
 
 ## P11B CI ownership and duplication audit
 
@@ -75,7 +87,17 @@ Latest-head cancellation gaps: 7
 Repeated named steps: 32
 ```
 
-All seven recorded latest-head cancellation gaps have been repaired on the Phase 11 branch. A latest-head inventory rerun must prove the remaining gap count is zero before P11B cancellation remediation is claimed complete.
+Cancellation remediation evidence:
+
+```text
+Workflow run: 28802705378
+Artifact id: 8113646893
+Artifact digest: sha256:5336aae99deb5d7e680c32e6bdb5d8ee964cf99af8552bf291745ca2514fecc3
+Latest-head cancellation gaps: 0
+Repeated named steps: 32
+```
+
+The 32 repeated named steps are classified in `docs/audits/phase11-ci-overlap-classification.json`. Named-step overlap alone retires zero workflows.
 
 Rules:
 
@@ -93,12 +115,13 @@ Use existing Status APIs and GitHub Actions before adding scheduled runtime work
 
 ```text
 Phase 11 branch created: yes
-P11A baseline gate: pass
-P11A Functions scope: clean; override removed on branch
-P11A App scope: 22 errors across 10 files; repair pending
+P11A strict-null migration: complete
+P11A App scope: clean; override removed
+P11A Functions scope: clean; override removed
+P11A final evidence: pass
 P11B CI baseline: recorded
-P11B cancellation gaps: 7 repaired; zero-gap rerun pending
-P11B workflow retirement: not started
+P11B cancellation gaps: 0; remediation pass
+P11B overlap classification: complete; ownership/retirement decision active
 P11C monitoring contract: not started
 P11D runbooks: not started
 P11E maintenance cadence: not started

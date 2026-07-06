@@ -172,7 +172,10 @@ export function metricTopStreamer(payload: HistoryReportPayload, metric = report
   const streamers = payload.topStreamers ?? []
   const top = streamers.reduce<HistoryReportStreamer | null>((best, streamer) => {
     if (!best) return streamer
-    return streamerMetricValue(streamer, metric) > streamerMetricValue(best, metric) ? streamer : best
+    const streamerValue = streamerMetricValue(streamer, metric)
+    const bestValue = streamerMetricValue(best, metric)
+    if (streamerValue === undefined || bestValue === undefined) return best
+    return streamerValue > bestValue ? streamer : best
   }, null)
   return top ?? payload.summary?.topStreamer ?? null
 }

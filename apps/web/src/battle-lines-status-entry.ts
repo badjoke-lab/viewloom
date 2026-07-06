@@ -499,7 +499,7 @@ function normalizePayload(payload: unknown): NormalizedPayload | null {
   const secondaryPairs = normalizePairs(payload.secondaryBattles ?? payload.secondary_battles ?? payload.battles, lines, primaryPair ?? firstPair(lines))
   const events = normalizeEvents(payload.reversals ?? payload.events ?? payload.feed, lines, primaryPair ?? firstPair(lines))
   const status = normalizeStatus(payload.state ?? payload.status)
-  return { lines, primaryPair, secondaryPairs, events, status, sourceText: buildSourceText(payload, status), recommendedQuality: normalizeQuality(payload.recommendedQuality ?? payload.recommended_quality) }
+  return { lines, primaryPair: primaryPair ?? undefined, secondaryPairs, events, status, sourceText: buildSourceText(payload, status), recommendedQuality: normalizeQuality(payload.recommendedQuality ?? payload.recommended_quality) }
 }
 
 function normalizeQuality(raw: unknown): PairQualityDebug | null {

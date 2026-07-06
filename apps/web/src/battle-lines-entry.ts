@@ -251,7 +251,7 @@ function normalizePayload(payload: unknown): NormalizedPayload | null {
   const events = normalizeEvents(payload.reversals ?? payload.events ?? payload.feed, lines, primaryPair ?? firstPair(lines))
   return {
     lines,
-    primaryPair,
+    primaryPair: primaryPair ?? undefined,
     secondaryPairs,
     events,
     sourceText: buildSourceText(payload),

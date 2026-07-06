@@ -30,7 +30,7 @@ function applyHistoryUiUnification(): void {
 
   const heroActions = hero?.querySelector<HTMLElement>('.hero-actions')
   const existingFeatureNav = main?.querySelector<HTMLElement>('.site-subnav')
-  if (!main || !heroActions) return
+  if (!main || !hero || !heroActions) return
 
   if (existingFeatureNav) {
     existingFeatureNav.classList.add('vl-feature-nav', 'history-feature-nav--unified')

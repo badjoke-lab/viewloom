@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
@@ -38,13 +38,17 @@ const results = scopes.map(({ name, project }) => {
   }
 })
 
+const webPackage = JSON.parse(readFileSync('apps/web/package.json', 'utf8'))
+const typecheckScripts = ['typecheck', 'typecheck:app', 'typecheck:functions']
+const currentOverridePresent = typecheckScripts.some((name) => String(webPackage.scripts?.[name] ?? '').includes('--strictNullChecks false'))
+
 const evidence = {
   schema: 'viewloom-phase11-strict-null-baseline-v1',
   phase: 'Phase 11',
   workstream: 'P11A',
   generatedAt: new Date().toISOString(),
   baseStrictIntent: true,
-  currentOverridePresent: true,
+  currentOverridePresent,
   scopes: results,
   totals: {
     errorCount: results.reduce((sum, item) => sum + item.errorCount, 0),

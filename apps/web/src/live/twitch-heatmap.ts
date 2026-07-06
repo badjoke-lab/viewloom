@@ -75,8 +75,9 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
       stage.innerHTML = renderRuntimeState(`No ${provider.label} snapshot yet`, `${provider.storageLabel} is connected, but no latest snapshot is available.`)
       return
     }
+    const latest = data.latest
 
-    const payload = parsePayload(data.latest.payload_json)
+    const payload = parsePayload(latest.payload_json)
     const items = payload.items
       .map(normalizeHeatmapItem)
       .filter((item): item is HeatmapItem => item !== null)
@@ -90,18 +91,18 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
     renderCanvasScene({
       stage,
       items,
-      latest: data.latest,
+      latest,
       selectedStreamLogin,
       onSelect: (item) => {
         selectedStreamLogin = item.channelLogin
-        syncSelectedStreamBridge(item, data.latest, provider)
+        syncSelectedStreamBridge(item, latest, provider)
       },
     })
 
     const initial = items.find((item) => item.channelLogin === selectedStreamLogin) ?? items[0]
     if (initial) {
       selectedStreamLogin = initial.channelLogin
-      syncSelectedStreamBridge(initial, data.latest, provider)
+      syncSelectedStreamBridge(initial, latest, provider)
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
