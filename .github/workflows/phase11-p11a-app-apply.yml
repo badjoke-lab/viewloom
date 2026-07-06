@@ -50,7 +50,13 @@ jobs:
           cat artifacts/phase11-p11a-app-apply/apply.log
           exit $status
       - name: Verify strict-null App scope
-        run: pnpm exec tsc -p apps/web/tsconfig.json --noEmit --strictNullChecks true --pretty false
+        shell: bash
+        run: |
+          set +e
+          pnpm exec tsc -p apps/web/tsconfig.json --noEmit --strictNullChecks true --pretty false > artifacts/phase11-p11a-app-apply/strict-app.log 2>&1
+          status=$?
+          cat artifacts/phase11-p11a-app-apply/strict-app.log
+          exit $status
       - name: Commit verified App fixes
         shell: bash
         run: |
