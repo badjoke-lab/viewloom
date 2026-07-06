@@ -41,7 +41,14 @@ jobs:
           node-version: 22
       - run: pnpm install --no-frozen-lockfile
       - name: Apply deterministic App fixes
-        run: node scripts/apply-phase11-p11a-app-fixes.mjs
+        shell: bash
+        run: |
+          set +e
+          mkdir -p artifacts/phase11-p11a-app-apply
+          node scripts/apply-phase11-p11a-app-fixes.mjs > artifacts/phase11-p11a-app-apply/apply.log 2>&1
+          status=$?
+          cat artifacts/phase11-p11a-app-apply/apply.log
+          exit $status
       - name: Verify strict-null App scope
         run: pnpm exec tsc -p apps/web/tsconfig.json --noEmit --strictNullChecks true --pretty false
       - name: Commit verified App fixes
@@ -69,3 +76,10 @@ jobs:
           git add -- "${paths[@]}"
           git commit -m 'Repair P11A App strict-null boundaries'
           git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+      - name: Upload App repair diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase11-p11a-app-apply-diagnostics
+          path: artifacts/phase11-p11a-app-apply/
+          if-no-files-found: warn
