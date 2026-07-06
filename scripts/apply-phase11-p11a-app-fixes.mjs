@@ -40,7 +40,7 @@ replaceStable(
   "  if (!inspector) return () => undefined\n  const inspectorElement: HTMLElement = inspector\n\n  const media = window.matchMedia(MOBILE_QUERY)",
 )
 replaceCount('apps/web/src/features/heatmap-page/mobile-inspector-sheet.ts', 'inspector.setAttribute(', 'inspectorElement.setAttribute(', 7)
-replaceCount('apps/web/src/features/heatmap-page/mobile-inspector-sheet.ts', 'inspector.removeAttribute(', 'inspectorElement.removeAttribute(', 4)
+replaceCount('apps/web/src/features/heatmap-page/mobile-inspector-sheet.ts', 'inspector.removeAttribute(', 'inspectorElement.removeAttribute(', 8)
 replaceCount('apps/web/src/features/heatmap-page/mobile-inspector-sheet.ts', 'inspector.classList.', 'inspectorElement.classList.', 2)
 replaceStable('apps/web/src/features/heatmap-page/mobile-inspector-sheet.ts', 'ensureSheetBar(inspector)', 'ensureSheetBar(inspectorElement)')
 replaceStable('apps/web/src/features/heatmap-page/mobile-inspector-sheet.ts', 'focusableElements(inspector)', 'focusableElements(inspectorElement)')
