@@ -24,9 +24,9 @@
     "verify:heatmap-mobile-accessibility": "node scripts/verify-heatmap-mobile-accessibility.mjs",
     "verify:heatmap-release": "node scripts/verify-heatmap-final-cutover.mjs",
     "verify:watchlist-contracts": "node scripts/verify-watchlist-contracts-current.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit --strictNullChecks false && tsc -p tsconfig.functions.json --noEmit --strictNullChecks false",
+    "typecheck": "tsc -p tsconfig.json --noEmit --strictNullChecks false && tsc -p tsconfig.functions.json --noEmit",
     "typecheck:app": "tsc -p tsconfig.json --noEmit --strictNullChecks false",
-    "typecheck:functions": "tsc -p tsconfig.functions.json --noEmit --strictNullChecks false",
+    "typecheck:functions": "tsc -p tsconfig.functions.json --noEmit",
     "preview": "vite preview"
   },
   "devDependencies": {
