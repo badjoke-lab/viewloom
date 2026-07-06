@@ -27,4 +27,10 @@ Current workstream                               P11A strict-null baseline
 - U10G evidence: PR #470 Quality U10G Architecture artifact `8076053343`
 - U10F readiness record: `audits/cross-site-quality-u10f-readiness.json`
 
+## Permanent Watchlist records
+
+- `product/local-watchlist-spec.md`
+- `product/watchlist-v1-implementation-plan.md`
+- `operations/watchlist-production-acceptance-2026-06-25.md`
+
 Phase 11 acceptance and operations is active. P11A strict-null baseline is the current workstream.
