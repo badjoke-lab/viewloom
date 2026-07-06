@@ -21,6 +21,10 @@ on:
       - 'apps/web/docs/state-qa-contract.md'
       - '.github/workflows/state-contract-checks.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   state-contract-checks:
     runs-on: ubuntu-latest
