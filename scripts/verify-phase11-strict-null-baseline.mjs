@@ -8,7 +8,7 @@ assert.equal(evidence.schema, 'viewloom-phase11-strict-null-baseline-v1')
 assert.equal(evidence.phase, 'Phase 11')
 assert.equal(evidence.workstream, 'P11A')
 assert.equal(evidence.baseStrictIntent, true)
-assert.equal(evidence.currentOverridePresent, true)
+assert.equal(typeof evidence.currentOverridePresent, 'boolean')
 assert.equal(Array.isArray(evidence.scopes), true)
 assert.equal(evidence.scopes.length, 2)
 assert.deepEqual(evidence.scopes.map((scope) => scope.scope).sort(), ['app', 'functions'])
@@ -19,7 +19,9 @@ for (const scope of evidence.scopes) {
   assert.equal(Number.isInteger(scope.errorCount), true)
   assert.equal(Number.isInteger(scope.affectedFileCount), true)
   assert.equal(Array.isArray(scope.affectedFiles), true)
+  assert.equal(Array.isArray(scope.diagnostics), true)
   assert.equal(scope.affectedFileCount, scope.affectedFiles.length)
+  assert.equal(scope.errorCount, scope.diagnostics.length)
   assert.ok(scope.status === 'clean' || scope.status === 'debt-recorded')
   if (scope.status === 'clean') {
     assert.equal(scope.errorCount, 0)
@@ -32,7 +34,12 @@ assert.equal(Number.isInteger(evidence.totals.affectedFileCount), true)
 assert.equal(Number.isInteger(evidence.totals.cleanScopeCount), true)
 assert.equal(evidence.totals.errorCount, evidence.scopes.reduce((sum, scope) => sum + scope.errorCount, 0))
 
+if (evidence.totals.errorCount === 0 && evidence.totals.cleanScopeCount === 2) {
+  assert.equal(evidence.currentOverridePresent, false)
+}
+
 console.log('Phase 11 strict-null baseline evidence verification passed.')
 console.log(`- total errors: ${evidence.totals.errorCount}`)
 console.log(`- affected files: ${evidence.totals.affectedFileCount}`)
 console.log(`- clean scopes: ${evidence.totals.cleanScopeCount}/2`)
+console.log(`- override present: ${evidence.currentOverridePresent}`)
