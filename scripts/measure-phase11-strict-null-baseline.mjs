@@ -14,22 +14,27 @@ const results = scopes.map(({ name, project }) => {
     encoding: 'utf8',
     maxBuffer: 32 * 1024 * 1024,
   })
-
   if (run.error) throw run.error
 
   const output = `${run.stdout || ''}${run.stderr || ''}`
-  const errorMatches = output.match(/error TS\d+:/g) || []
-  const fileMatches = [...output.matchAll(/^(.+?)\(\d+,\d+\): error TS\d+:/gm)].map((match) => match[1])
-  const files = [...new Set(fileMatches)].sort()
+  const diagnostics = [...output.matchAll(/^(.+?)\((\d+),(\d+)\): error (TS\d+): (.+)$/gm)].map((match) => ({
+    file: match[1],
+    line: Number(match[2]),
+    column: Number(match[3]),
+    code: match[4],
+    message: match[5],
+  }))
+  const files = [...new Set(diagnostics.map((item) => item.file))].sort()
 
   return {
     scope: name,
     project,
     exitCode: run.status ?? 1,
-    errorCount: errorMatches.length,
+    errorCount: diagnostics.length,
     affectedFileCount: files.length,
     affectedFiles: files,
-    status: errorMatches.length === 0 && run.status === 0 ? 'clean' : 'debt-recorded',
+    diagnostics,
+    status: diagnostics.length === 0 && run.status === 0 ? 'clean' : 'debt-recorded',
   }
 })
 
