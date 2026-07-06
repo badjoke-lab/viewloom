@@ -75,7 +75,17 @@ Latest-head cancellation gaps: 7
 Repeated named steps: 32
 ```
 
-All seven recorded latest-head cancellation gaps have been repaired on the Phase 11 branch. A latest-head inventory rerun must prove the remaining gap count is zero before P11B cancellation remediation is claimed complete.
+Remediation evidence:
+
+```text
+Workflow run: 28802705378
+Artifact id: 8113646893
+Artifact digest: sha256:5336aae99deb5d7e680c32e6bdb5d8ee964cf99af8552bf291745ca2514fecc3
+Latest-head cancellation gaps: 0
+Repeated named steps: 32
+```
+
+The 32 repeated named steps are classified in `docs/audits/phase11-ci-overlap-classification.json`. Named-step overlap alone retires zero workflows.
 
 Rules:
 
@@ -94,11 +104,13 @@ Use existing Status APIs and GitHub Actions before adding scheduled runtime work
 ```text
 Phase 11 branch created: yes
 P11A baseline gate: pass
-P11A Functions scope: clean; override removed on branch
-P11A App scope: 22 errors across 10 files; repair pending
+P11A Functions scope: clean; override removed on Phase 11 branch
+P11A App scope: 22 errors across 10 files
+P11A App remediation branch: work-quality-phase11-p11a-app
+P11A App diagnostics: pending diagnostic artifact
 P11B CI baseline: recorded
-P11B cancellation gaps: 7 repaired; zero-gap rerun pending
-P11B workflow retirement: not started
+P11B cancellation gaps: 0; remediation pass
+P11B overlap classification: complete; no workflow retirement yet
 P11C monitoring contract: not started
 P11D runbooks: not started
 P11E maintenance cadence: not started
