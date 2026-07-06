@@ -1,0 +1,35 @@
+name: Phase 11 Public Acceptance Ownership
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'docs/audits/public-surface-routes-portal.json'
+      - 'docs/audits/public-surface-routes-twitch.json'
+      - 'docs/audits/public-surface-routes-kick.json'
+      - 'scripts/build-phase11-public-acceptance-ownership.mjs'
+      - 'scripts/verify-phase11-public-acceptance-ownership.mjs'
+      - '.github/workflows/phase11-public-acceptance-ownership.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ownership:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build public acceptance ownership matrix
+        run: node scripts/build-phase11-public-acceptance-ownership.mjs
+      - name: Verify public acceptance ownership matrix
+        run: node scripts/verify-phase11-public-acceptance-ownership.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase11-public-acceptance-ownership
+          path: artifacts/phase11-public-acceptance-ownership/
+          if-no-files-found: error
