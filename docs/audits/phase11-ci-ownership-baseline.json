@@ -42,9 +42,24 @@
     "missing_latest_head_cancellation": [],
     "cancellation_gaps_fixed": 7
   },
+  "latest_head": {
+    "workflow_run": 28863917879,
+    "artifact_id": 8136850691,
+    "artifact_digest": "sha256:c974ea41122718c00128925e28b95fa45350b5dbaef116d301b053d99ccf96b0",
+    "head_sha": "fe919b8657d47b1173f65c8764d4d1ef5d27b875",
+    "generated_at": "2026-07-07T11:52:04.778Z",
+    "counts": {
+      "workflows": 89,
+      "pull_request_workflows": 87,
+      "scheduled_workflows": 2,
+      "workflows_missing_latest_head_cancellation": 0,
+      "repeated_named_steps": 36
+    },
+    "missing_latest_head_cancellation": []
+  },
   "decision": {
     "overlap_classification": "complete",
-    "repeated_named_steps_classified": 32,
+    "repeated_named_steps_classified": 36,
     "workflows_retired_by_named_step_overlap": 0,
     "workflow_retirement_started": false,
     "workflow_retirement_authorized_by_current_evidence": false,
