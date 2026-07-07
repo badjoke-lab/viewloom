@@ -32,7 +32,6 @@ Phase 11 P11F acceptance ownership complete
 Phase 11 P11G final acceptance active
 Active implementation branch: work-quality-phase11-acceptance-operations
 Current workstream: P11G final pre-merge acceptance
-Latest candidate HEAD: 94fe2839a63a6f49275faf769ecce8adae3fd3de
 ```
 
 Active Phase 11 record: `docs/work-in-progress/phase11-acceptance-operations.md`.
