@@ -4,15 +4,16 @@
   "workstream": "P11B",
   "status": "classified",
   "source": {
-    "workflow_run": 28802705378,
-    "artifact_id": 8113646893,
-    "artifact_digest": "sha256:5336aae99deb5d7e680c32e6bdb5d8ee964cf99af8552bf291745ca2514fecc3",
-    "repeated_named_steps": 32
+    "workflow_run": 28863917879,
+    "artifact_id": 8136850691,
+    "artifact_digest": "sha256:c974ea41122718c00128925e28b95fa45350b5dbaef116d301b053d99ccf96b0",
+    "head_sha": "fe919b8657d47b1173f65c8764d4d1ef5d27b875",
+    "repeated_named_steps": 36
   },
   "category_counts": {
-    "infrastructure_repetition": 9,
-    "shared_prerequisite": 5,
-    "retained_contract_dependency": 11,
+    "infrastructure_repetition": 10,
+    "shared_prerequisite": 6,
+    "retained_contract_dependency": 13,
     "acceptance_context_specific": 7
   },
   "classifications": [
@@ -25,12 +26,14 @@
     {"step":"Start local preview","category":"infrastructure_repetition","disposition":"reusable_setup_candidate"},
     {"step":"Setup Node","category":"infrastructure_repetition","disposition":"naming_normalization_candidate"},
     {"step":"Prepare artifact directory","category":"infrastructure_repetition","disposition":"not_retirement_evidence"},
+    {"step":"Setup repository toolchain","category":"infrastructure_repetition","disposition":"shared_composite_action_reuse_not_retirement_evidence"},
 
     {"step":"Verify development policy","category":"shared_prerequisite","disposition":"canonical_owner_development_policy_workflow_keep_embedded_until_dependency_model_exists"},
     {"step":"Typecheck web application","category":"shared_prerequisite","disposition":"canonical_typecheck_owner_required_before_deduplication"},
     {"step":"Build web application","category":"shared_prerequisite","disposition":"canonical_build_owner_required_before_deduplication"},
     {"step":"Build web","category":"shared_prerequisite","disposition":"normalize_with_build_owner_before_deduplication"},
     {"step":"Typecheck web","category":"shared_prerequisite","disposition":"normalize_with_typecheck_owner_before_deduplication"},
+    {"step":"Build public acceptance ownership matrix","category":"shared_prerequisite","disposition":"shared_evidence_builder_required_by_owner_and_final_acceptance"},
 
     {"step":"Verify retained History acceptance","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
     {"step":"Verify Watchlist contracts","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
@@ -43,6 +46,8 @@
     {"step":"Verify retained U10B shell","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
     {"step":"Verify retained U10C visualization","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
     {"step":"Verify retained U10E responsive contract","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
+    {"step":"Verify Phase 11 operations contract","category":"retained_contract_dependency","disposition":"preserve_operations_owner_and_final_acceptance_dependency"},
+    {"step":"Verify public acceptance ownership matrix","category":"retained_contract_dependency","disposition":"preserve_ownership_owner_and_final_acceptance_dependency"},
 
     {"step":"Verify P9H7 repository contract","category":"acceptance_context_specific","disposition":"preserve_history_acceptance_context"},
     {"step":"Verify P9H7 script syntax","category":"acceptance_context_specific","disposition":"preserve_history_acceptance_context"},
