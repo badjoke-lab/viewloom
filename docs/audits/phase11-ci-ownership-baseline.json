@@ -2,7 +2,7 @@
   "schema": "viewloom-phase11-ci-ownership-baseline-v1",
   "phase": "Phase 11",
   "workstream": "P11B",
-  "status": "cancellation-remediation-complete",
+  "status": "complete",
   "baseline": {
     "workflow_run": 28713913285,
     "artifact_id": 8083822417,
@@ -42,16 +42,20 @@
     "missing_latest_head_cancellation": [],
     "cancellation_gaps_fixed": 7
   },
+  "decision": {
+    "overlap_classification": "complete",
+    "repeated_named_steps_classified": 32,
+    "workflows_retired_by_named_step_overlap": 0,
+    "workflow_retirement_started": false,
+    "workflow_retirement_authorized_by_current_evidence": false,
+    "workflow_retirement_requires_named_replacement_assertions": true,
+    "shared_setup_reuse_allowed_without_reducing_checks": true
+  },
   "policy": {
     "delete_workflows_from_baseline_alone": false,
     "name_replacement_assertions_before_retirement": true,
     "latest_head_cancellation_required": true,
     "unique_feature_gates_remain": true,
     "all_public_browser_coherence_remains": true
-  },
-  "next": {
-    "workflow_retirement_started": false,
-    "ownership_mapping_required": true,
-    "repeated_named_steps_to_classify": 32
   }
 }
