@@ -22,7 +22,7 @@ P11F all-public acceptance ownership complete
 P11G final pre-merge acceptance active
 ```
 
-P11B decision: seven latest-head cancellation gaps were repaired. Thirty-two repeated named steps were classified. Named-step overlap alone retired zero workflows; future retirement requires named replacement assertions and passing evidence.
+P11B decision: seven initial latest-head cancellation gaps were repaired and the current latest-head gap count is zero. Thirty-six current repeated named steps were classified. Named-step overlap alone retired zero workflows; future retirement requires named replacement assertions and passing evidence.
 
 P11C–P11E use existing Status APIs and GitHub Actions. No new application cron or collector cron was added.
 
