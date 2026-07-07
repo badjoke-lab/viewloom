@@ -31,8 +31,9 @@ P11A baseline: App 22 errors / 10 files; Functions clean
 P11A remediation: App clean / Functions clean / overrides 0
 P11B initial workflows: 85
 P11B initial cancellation gaps: 7
-P11B remediated cancellation gaps: 0
-P11B repeated named steps classified: 32
+P11B current workflows: 89
+P11B current cancellation gaps: 0
+P11B repeated named steps classified: 36
 P11B workflows retired solely from named-step overlap: 0
 P11C contract evidence: pass
 P11C hosted production evidence: pending main merge
