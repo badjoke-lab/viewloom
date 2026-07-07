@@ -94,6 +94,20 @@ Latest-head cancellation gaps: 0
 Repeated named steps: 32
 ```
 
+Latest-head inventory after Phase 11 workflows were added:
+
+```text
+Workflow run: 28863917879
+Artifact id: 8136850691
+Artifact digest: sha256:c974ea41122718c00128925e28b95fa45350b5dbaef116d301b053d99ccf96b0
+Head SHA: fe919b8657d47b1173f65c8764d4d1ef5d27b875
+Workflows: 89
+PR workflows: 87
+Scheduled workflows: 2
+Latest-head cancellation gaps: 0
+Repeated named steps: 36
+```
+
 Permanent evidence:
 
 - `docs/audits/phase11-ci-ownership-baseline.json`
@@ -101,9 +115,9 @@ Permanent evidence:
 
 Decision:
 
-- all 32 repeated named steps classified;
+- all 36 latest-head repeated named steps classified;
 - named-step overlap alone retired zero workflows;
-- seven latest-head cancellation gaps repaired;
+- seven initial latest-head cancellation gaps repaired and current gaps remain zero;
 - shared setup reuse may reduce YAML without reducing checks;
 - workflow retirement requires named replacement assertions and passing evidence;
 - unique feature gates and all-public browser coherence remain protected.
