@@ -1,7 +1,7 @@
 # ViewLoom current roadmap
 
 Status: source of truth
-Last updated: 2026-07-04
+Last updated: 2026-07-07
 
 ```text
 Phase 8 P8B complete PR #428
@@ -23,16 +23,22 @@ U10F canonical closeout complete PR #469
 Phase 10 U10G architecture complete PR #470
 Phase 10 U10H production acceptance complete PR #471
 U10H canonical closeout complete PR #472
-Phase 11 acceptance and operations active
+Phase 11 P11A strict-null migration complete
+Phase 11 P11B CI ownership complete
+Phase 11 P11C monitoring contract complete; hosted closeout after merge
+Phase 11 P11D escalation runbook complete
+Phase 11 P11E maintenance cadence complete
+Phase 11 P11F acceptance ownership complete
+Phase 11 P11G final acceptance active
 Active implementation branch: work-quality-phase11-acceptance-operations
-Current workstream: P11A strict-null baseline
+Current workstream: P11G final pre-merge acceptance
 ```
 
 Active Phase 11 record: `docs/work-in-progress/phase11-acceptance-operations.md`.
-Permanent U10H acceptance: `docs/operations/u10h-production-acceptance-2026-07-04.md`.
 
 ```text
-Phase 11 acceptance and operations active
+Phase 11 P11G final acceptance active
+Phase 11 hosted production monitoring closeout required after merge
 Phase 12 release readiness queued
 Phase 13–14 localization queued
 Phase 15 capability audit queued
