@@ -34,23 +34,27 @@ U10F canonical closeout               complete PR #469
 Phase 10 U10G architecture            complete PR #470
 Phase 10 U10H production acceptance   complete PR #471
 U10H canonical closeout               complete PR #472
-Phase 11 acceptance and operations    active
+Phase 11 P11A strict-null migration   complete
+Phase 11 P11B CI ownership            complete
+Phase 11 P11C monitoring contract     complete; hosted closeout after merge
+Phase 11 P11D escalation runbook      complete
+Phase 11 P11E maintenance cadence     complete
+Phase 11 P11F acceptance ownership    complete
+Phase 11 P11G final acceptance        active
 Active implementation branch          work-quality-phase11-acceptance-operations
-Current workstream                    P11A strict-null baseline
+Current workstream                    P11G final pre-merge acceptance
 ```
 
-Permanent evidence:
+Permanent Phase 11 evidence:
 
 ```text
-docs/audits/cross-site-quality-u10a-baseline.json
-docs/audits/cross-site-quality-u10a-owner-map.json
-docs/audits/cross-site-quality-u10b-shared-shell.json
-docs/audits/cross-site-quality-u10c-visualization.json
-docs/audits/cross-site-quality-u10d-analysis-coherence.json
-docs/audits/cross-site-quality-u10e-responsive.json
-docs/audits/cross-site-quality-u10f-readiness.json
-PR #470 Quality U10G Architecture artifact 8076053343
-docs/operations/u10h-production-acceptance-2026-07-04.md
+docs/audits/phase11-strict-null-baseline.json
+docs/audits/phase11-ci-ownership-baseline.json
+docs/audits/phase11-ci-overlap-classification.json
+docs/audits/phase11-monitoring-contract.json
+docs/audits/phase11-public-acceptance-ownership.json
+docs/operations/phase11-monitoring-and-escalation.md
+docs/operations/phase11-maintenance-cadence.md
 ```
 
 Active Phase 11 record: `docs/work-in-progress/phase11-acceptance-operations.md`.
@@ -58,19 +62,13 @@ Active Phase 11 record: `docs/work-in-progress/phase11-acceptance-operations.md`
 ## Current sequence
 
 ```text
-U10A defect and ownership baseline       complete PR #454
-U10B shared shell                        complete PR #456
-U10C visualization                       complete PR #458
-U10D analysis coherence                  complete PR #462
-U10E responsive and accessibility        complete PR #465
-U10F readiness                           complete PR #468
-U10G architecture                        complete PR #470
-U10H production acceptance               complete PR #471
-Phase 11 acceptance and operations       active
-Phase 12 release readiness               queued
-Phase 13–14 localization                 queued
-Phase 15 capability audit                queued
-Phase 16 major feature                    not approved
+Phase 10 complete through U10H
+Phase 11 P11A–P11F complete
+Phase 11 P11G final acceptance active
+Phase 12 release readiness queued
+Phase 13–14 localization queued
+Phase 15 capability audit queued
+Phase 16 major feature not approved
 ```
 
 Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*` only when runtime validation is necessary. Only latest-head evidence counts. After every merge, issue the full report and stop.
