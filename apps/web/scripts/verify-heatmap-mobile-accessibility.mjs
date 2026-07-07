@@ -49,8 +49,8 @@ for (const fragment of [
 ]) assert.ok(layoutSource.includes(fragment), `missing mobile Wide-only fragment: ${fragment}`)
 
 for (const fragment of [
-  "inspector.setAttribute('role', 'dialog')",
-  "inspector.setAttribute('aria-modal', 'true')",
+  "inspectorElement.setAttribute('role', 'dialog')",
+  "inspectorElement.setAttribute('aria-modal', 'true')",
   "event.key === 'Escape'",
   "event.key !== 'Tab'",
   'heatmap-mobile-sheet-backdrop',

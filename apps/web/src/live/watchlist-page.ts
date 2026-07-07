@@ -43,10 +43,11 @@ import type {
   WatchlistRetainedEvidence,
 } from './watchlist/history-model'
 
-const provider = document.body.dataset.provider as WatchlistProvider | undefined
-if (provider !== 'twitch' && provider !== 'kick') {
+const providerValue = document.body.dataset.provider
+if (providerValue !== 'twitch' && providerValue !== 'kick') {
   throw new Error('Local Watchlist provider is missing.')
 }
+const provider: WatchlistProvider = providerValue
 
 const providerName = provider === 'twitch' ? 'Twitch' : 'Kick'
 const otherProviderName = provider === 'twitch' ? 'Kick' : 'Twitch'

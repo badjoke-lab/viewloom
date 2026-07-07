@@ -1,0 +1,68 @@
+{
+  "schema": "viewloom-phase11-ci-overlap-classification-v1",
+  "phase": "Phase 11",
+  "workstream": "P11B",
+  "status": "classified",
+  "source": {
+    "workflow_run": 28863917879,
+    "artifact_id": 8136850691,
+    "artifact_digest": "sha256:c974ea41122718c00128925e28b95fa45350b5dbaef116d301b053d99ccf96b0",
+    "head_sha": "fe919b8657d47b1173f65c8764d4d1ef5d27b875",
+    "repeated_named_steps": 36
+  },
+  "category_counts": {
+    "infrastructure_repetition": 10,
+    "shared_prerequisite": 6,
+    "retained_contract_dependency": 13,
+    "acceptance_context_specific": 7
+  },
+  "classifications": [
+    {"step":"Checkout","category":"infrastructure_repetition","disposition":"not_retirement_evidence"},
+    {"step":"Setup Node.js","category":"infrastructure_repetition","disposition":"not_retirement_evidence"},
+    {"step":"Install dependencies","category":"infrastructure_repetition","disposition":"not_retirement_evidence"},
+    {"step":"Setup pnpm","category":"infrastructure_repetition","disposition":"not_retirement_evidence"},
+    {"step":"Install Chromium","category":"infrastructure_repetition","disposition":"reusable_setup_candidate"},
+    {"step":"Install Playwright","category":"infrastructure_repetition","disposition":"reusable_setup_candidate"},
+    {"step":"Start local preview","category":"infrastructure_repetition","disposition":"reusable_setup_candidate"},
+    {"step":"Setup Node","category":"infrastructure_repetition","disposition":"naming_normalization_candidate"},
+    {"step":"Prepare artifact directory","category":"infrastructure_repetition","disposition":"not_retirement_evidence"},
+    {"step":"Setup repository toolchain","category":"infrastructure_repetition","disposition":"shared_composite_action_reuse_not_retirement_evidence"},
+
+    {"step":"Verify development policy","category":"shared_prerequisite","disposition":"canonical_owner_development_policy_workflow_keep_embedded_until_dependency_model_exists"},
+    {"step":"Typecheck web application","category":"shared_prerequisite","disposition":"canonical_typecheck_owner_required_before_deduplication"},
+    {"step":"Build web application","category":"shared_prerequisite","disposition":"canonical_build_owner_required_before_deduplication"},
+    {"step":"Build web","category":"shared_prerequisite","disposition":"normalize_with_build_owner_before_deduplication"},
+    {"step":"Typecheck web","category":"shared_prerequisite","disposition":"normalize_with_typecheck_owner_before_deduplication"},
+    {"step":"Build public acceptance ownership matrix","category":"shared_prerequisite","disposition":"shared_evidence_builder_required_by_owner_and_final_acceptance"},
+
+    {"step":"Verify retained History acceptance","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
+    {"step":"Verify Watchlist contracts","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
+    {"step":"Verify consolidated Watchlist contracts","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
+    {"step":"Verify Battle Lines contracts","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
+    {"step":"Verify public surface inventory","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
+    {"step":"Verify retained U10D analysis coherence","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
+    {"step":"Verify retained U10A baseline","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
+    {"step":"Verify retained U10A evidence","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
+    {"step":"Verify retained U10B shell","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
+    {"step":"Verify retained U10C visualization","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
+    {"step":"Verify retained U10E responsive contract","category":"retained_contract_dependency","disposition":"preserve_until_named_replacement_dependency"},
+    {"step":"Verify Phase 11 operations contract","category":"retained_contract_dependency","disposition":"preserve_operations_owner_and_final_acceptance_dependency"},
+    {"step":"Verify public acceptance ownership matrix","category":"retained_contract_dependency","disposition":"preserve_ownership_owner_and_final_acceptance_dependency"},
+
+    {"step":"Verify P9H7 repository contract","category":"acceptance_context_specific","disposition":"preserve_history_acceptance_context"},
+    {"step":"Verify P9H7 script syntax","category":"acceptance_context_specific","disposition":"preserve_history_acceptance_context"},
+    {"step":"Verify explicit not-found behavior","category":"acceptance_context_specific","disposition":"preserve_production_contexts"},
+    {"step":"Verify Kick production status","category":"acceptance_context_specific","disposition":"preserve_provider_specific_production_contexts"},
+    {"step":"Verify machine-readable acceptance evidence","category":"acceptance_context_specific","disposition":"preserve_schema_specific_contexts"},
+    {"step":"Verify production evidence","category":"acceptance_context_specific","disposition":"preserve_feature_specific_acceptance_contexts"},
+    {"step":"Verify Twitch production status","category":"acceptance_context_specific","disposition":"preserve_provider_specific_production_contexts"}
+  ],
+  "decision": {
+    "workflows_retired_by_named_step_overlap": 0,
+    "workflow_retirement_requires_named_replacement_assertions": true,
+    "shared_setup_reuse_may_reduce_yaml_without_reducing_checks": true,
+    "retained_contract_dependencies_remain_protected": true,
+    "unique_feature_gates_remain": true,
+    "all_public_browser_coherence_remains": true
+  }
+}

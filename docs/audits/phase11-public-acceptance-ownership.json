@@ -1,0 +1,39 @@
+{
+  "schema": "viewloom-phase11-public-acceptance-ownership-record-v1",
+  "phase": "Phase 11",
+  "workstream": "P11F",
+  "status": "complete",
+  "evidence": {
+    "workflow_run": 28807787496,
+    "artifact_id": 8115640030,
+    "artifact_digest": "sha256:a72d2dcd84f3201c1d1d53dd65769a2a8121bdfed844a3e299375a329d169eac",
+    "head_sha": "0611d7a0cea2bb6ddc2ddc353766d101bbca8986",
+    "result": "pass"
+  },
+  "counts": {
+    "routes": 20,
+    "portal": 4,
+    "twitch": 8,
+    "kick": 8
+  },
+  "common_owners": {
+    "readiness": ".github/workflows/public-readiness-audit.yml",
+    "browser": ".github/workflows/public-browser-audit.yml",
+    "production": ".github/workflows/production-smoke.yml"
+  },
+  "requirements": {
+    "every_route_has_readiness_owner": true,
+    "every_route_has_browser_owner": true,
+    "every_route_has_production_owner": true,
+    "every_route_has_feature_contract_owner": true,
+    "provider_binding_crossing_failures": 0,
+    "route_duplicates": 0,
+    "combined_totals_allowed": false,
+    "combined_rankings_allowed": false
+  },
+  "sources": [
+    "docs/audits/public-surface-routes-portal.json",
+    "docs/audits/public-surface-routes-twitch.json",
+    "docs/audits/public-surface-routes-kick.json"
+  ]
+}

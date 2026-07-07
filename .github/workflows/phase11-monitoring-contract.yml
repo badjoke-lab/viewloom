@@ -1,0 +1,111 @@
+name: Phase 11 Monitoring Contract
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/build-phase11-monitoring-evidence.mjs'
+      - 'scripts/verify-phase11-monitoring-evidence.mjs'
+      - 'docs/operations/phase11-monitoring-and-escalation.md'
+      - '.github/workflows/production-smoke.yml'
+      - '.github/workflows/phase11-monitoring-contract.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ARTIFACT_DIR: artifacts/phase11-monitoring-contract
+      EXPECTED_MAIN_SHA: '1111111111111111111111111111111111111111'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare monitoring fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          cat > "$ARTIFACT_DIR/deployment.json" <<'JSON'
+          {
+            "schema": "viewloom-deployment-v1",
+            "environment": "production",
+            "branch": "main",
+            "commit_sha": "1111111111111111111111111111111111111111"
+          }
+          JSON
+          cat > "$ARTIFACT_DIR/twitch-status.json" <<'JSON'
+          {
+            "platform": "twitch",
+            "storage": {"binding": "DB_TWITCH_HOT", "database": "vl_twitch_hot"},
+            "sourceMode": "real",
+            "state": "fresh",
+            "collector": {"state": "ok"},
+            "freshness": {
+              "lastSuccessAt": "2026-07-06T16:00:00Z",
+              "minutesSinceSuccess": 4,
+              "staleAfterMinutes": 10,
+              "strongStaleAfterMinutes": 30,
+              "isFresh": true,
+              "isStale": false,
+              "isStrongStale": false
+            },
+            "latestSnapshot": {
+              "observedCount": 295,
+              "topLimit": 300,
+              "hasMore": false,
+              "coveredPages": 3
+            }
+          }
+          JSON
+          cat > "$ARTIFACT_DIR/kick-status.json" <<'JSON'
+          {
+            "platform": "kick",
+            "storage": {"binding": "DB_KICK_HOT", "database": "vl_kick_hot"},
+            "sourceMode": "authenticated",
+            "authMode": "client-credentials",
+            "state": "fresh",
+            "collector": {
+              "state": "snapshot_available",
+              "configuredChannels": 100,
+              "attemptedChannels": 100,
+              "observedSlugs": ["alpha", "beta"],
+              "missedSlugs": []
+            },
+            "coverageMode": "seed-list",
+            "targetSource": "registry",
+            "registryCandidateCount": 120,
+            "freshness": {
+              "lastSuccessAt": "2026-07-06T16:00:00Z",
+              "minutesSinceSuccess": 4,
+              "staleAfterMinutes": 10,
+              "strongStaleAfterMinutes": 30,
+              "isFresh": true,
+              "isStale": false
+            },
+            "latestSnapshot": {
+              "observedCount": 100,
+              "topLimit": 100
+            }
+          }
+          JSON
+      - name: Build monitoring evidence
+        run: node scripts/build-phase11-monitoring-evidence.mjs "$ARTIFACT_DIR"
+      - name: Verify monitoring evidence
+        run: node scripts/verify-phase11-monitoring-evidence.mjs "$ARTIFACT_DIR"
+      - name: Verify fixture capacity classifications
+        run: |
+          set -euo pipefail
+          jq -e '
+            .providers.twitch.capacity.state == "near-window-limit" and
+            .providers.kick.capacity.state == "at-or-over-window" and
+            ([.alerts[] | select(.severity == "watch")] | length) == 2 and
+            ([.alerts[] | select(.severity == "critical" or .severity == "high")] | length) == 0
+          ' "$ARTIFACT_DIR/phase11-monitoring-evidence.json" > /dev/null
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase11-monitoring-contract
+          path: artifacts/phase11-monitoring-contract/
+          if-no-files-found: error

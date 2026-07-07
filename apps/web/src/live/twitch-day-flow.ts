@@ -121,6 +121,7 @@ type Geometry = {
 
 const app = document.querySelector<HTMLDivElement>('#app')
 if (!app) throw new Error('#app not found')
+const appRoot: HTMLDivElement = app
 
 const numberFmt = new Intl.NumberFormat('en-US')
 const compactFmt = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 })
@@ -665,7 +666,7 @@ async function loadData(quiet = false): Promise<void> {
 }
 
 function renderApp(source?: DayFlowPayload, model?: ViewModel): void {
-  app.innerHTML = `
+  appRoot.innerHTML = `
     <div class="page-shell page-shell--site ${provider.themeClass}">
       ${renderHeader()}
       <main class="page-main">
@@ -684,7 +685,7 @@ function renderApp(source?: DayFlowPayload, model?: ViewModel): void {
 }
 
 function wireRoot(): void {
-  app.addEventListener('submit', (event) => {
+  appRoot.addEventListener('submit', (event) => {
     const form = event.target
     if (!(form instanceof HTMLFormElement) || form.id !== 'dayflow-controls') return
     event.preventDefault()
@@ -692,7 +693,7 @@ function wireRoot(): void {
     void loadData(true)
   })
 
-  app.addEventListener('click', (event) => {
+  appRoot.addEventListener('click', (event) => {
     const button = (event.target as Element).closest<HTMLButtonElement>('[data-layout-choice]')
     if (button) {
       state.requestedLayout = button.dataset.layoutChoice === 'split' ? 'split' : 'wide'
@@ -703,7 +704,7 @@ function wireRoot(): void {
     }
   })
 
-  app.addEventListener('change', (event) => {
+  appRoot.addEventListener('change', (event) => {
     const target = event.target
     const form = target instanceof Element ? target.closest<HTMLFormElement>('#dayflow-controls') : null
     if (!form) return

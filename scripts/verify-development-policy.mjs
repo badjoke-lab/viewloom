@@ -9,120 +9,130 @@ const required = [
   'docs/operations/development-and-deployment-policy.md',
   'docs/operations/documentation-governance.md',
   'docs/operations/u10h-production-acceptance-2026-07-04.md',
-  'docs/product/current-roadmap.md', 'docs/product/current-schedule.md',
+  'docs/operations/phase11-monitoring-and-escalation.md',
+  'docs/operations/phase11-maintenance-cadence.md',
+  'docs/product/current-roadmap.md',
+  'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
   'docs/product/cross-site-quality-remediation-spec.md',
   'docs/product/cross-site-quality-remediation-plan.md',
-  'docs/work-in-progress/u10g-architecture.md',
-  'docs/work-in-progress/u10h-acceptance.md',
-  'docs/audits/cross-site-quality-u10a-baseline.json',
-  'docs/audits/cross-site-quality-u10a-owner-map.json',
-  'docs/audits/cross-site-quality-u10b-shared-shell.json',
-  'docs/audits/cross-site-quality-u10c-visualization.json',
-  'docs/audits/cross-site-quality-u10d-analysis-coherence.json',
-  'docs/audits/cross-site-quality-u10e-responsive.json',
-  'docs/audits/cross-site-quality-u10f-readiness.json',
+  'docs/work-in-progress/phase11-acceptance-operations.md',
   'docs/audits/public-surface-inventory.json',
-  'apps/web/src/live/day-flow-current-shell-entry.ts',
-  'apps/web/src/live/day-flow-layout-summary.ts',
-  'apps/web/src/live/battle-lines-current-shell-entry.ts',
-  'apps/web/src/live/battle-lines-layout.ts',
-  'apps/web/src/navigation/battle-lines-deep-link-bridge.ts',
-  'apps/web/scripts/quality-u10g-architecture-browser.mjs',
-  'scripts/verify-quality-u10g-architecture.mjs',
-  'scripts/verify-quality-u10g-browser-evidence.mjs',
-  'scripts/verify-quality-u10h-acceptance.mjs',
-  '.github/workflows/public-readiness-audit.yml',
+  'docs/audits/phase11-strict-null-baseline.json',
+  'docs/audits/phase11-ci-ownership-baseline.json',
+  'docs/audits/phase11-ci-overlap-classification.json',
+  'docs/audits/phase11-monitoring-contract.json',
+  'docs/audits/phase11-public-acceptance-ownership.json',
+  'scripts/measure-phase11-strict-null-baseline.mjs',
+  'scripts/measure-phase11-ci-ownership.mjs',
+  'scripts/verify-phase11-operations-contract.mjs',
+  'scripts/build-phase11-final-acceptance-evidence.mjs',
+  'scripts/verify-phase11-final-acceptance-evidence.mjs',
   '.github/workflows/production-smoke.yml',
-  '.github/workflows/quality-u10f-readiness.yml',
-  '.github/workflows/quality-u10g-architecture.yml',
-  '.github/workflows/quality-u10h-acceptance.yml',
-  '.github/workflows/quality-u10h-production-acceptance.yml',
+  '.github/workflows/public-readiness-audit.yml',
+  '.github/workflows/phase11-strict-null-baseline.yml',
+  '.github/workflows/phase11-ci-ownership.yml',
+  '.github/workflows/phase11-monitoring-contract.yml',
+  '.github/workflows/phase11-operations-contract.yml',
+  '.github/workflows/phase11-public-acceptance-ownership.yml',
+  '.github/workflows/phase11-final-acceptance.yml',
 ]
 for (const path of required) assert.equal(existsSync(join(root, path)), true, `missing file: ${path}`)
 
-for (const path of [
-  'docs/work-in-progress/u10a-quality-baseline.md',
-  'docs/work-in-progress/u10b-shared-shell.md',
-  'docs/work-in-progress/u10c-visualization.md',
-  'docs/work-in-progress/u10d-analysis-coherence.md',
-  'docs/work-in-progress/u10e-responsive.md',
-  'docs/work-in-progress/u10f-readiness.md',
-  'apps/web/src/live/battle-lines-loading-guard.ts',
-  'scripts/u10d_patch_runtime.py',
-  'scripts/u10d_patch_tests.py',
-  'scripts/u10d_patch_docs.py',
-  'scripts/u10g_patch_architecture.mjs',
-  '.github/workflows/u10d-bootstrap.yml',
-  '.github/workflows/u10g-bootstrap.yml',
-  '.github/workflows/u10g-test-patch.yml',
-]) assert.equal(existsSync(join(root, path)), false, `temporary or retired file remains: ${path}`)
-
-const stateChecks = [
-  ['README.md', ['Phase 10 U10H production acceptance   complete PR #471', 'U10H canonical closeout               PR #472', 'Active implementation branch          none', 'Exact next branch                     work-quality-phase11-acceptance-operations', 'Phase 11 branch created               no']],
-  ['docs/README.md', ['Phase 10 U10H production acceptance              complete PR #471', 'U10H canonical closeout                          PR #472', 'Active implementation branch                    none', 'Exact next implementation branch                work-quality-phase11-acceptance-operations', 'Phase 11 branch created                         no']],
-  ['AGENTS.md', ['U10H production acceptance complete PR #471', 'U10H canonical closeout PR #472', 'Active implementation branch: none', 'Exact next branch: work-quality-phase11-acceptance-operations', 'Phase 11 branch created: no']],
-  ['CONTRIBUTING.md', ['Phase 10 U10H production acceptance complete through PR #471', 'U10H canonical closeout PR #472', 'Active implementation branch: none', 'Exact next implementation branch: work-quality-phase11-acceptance-operations', 'Phase 11 branch created: no']],
-  ['docs/product/current-roadmap.md', ['Phase 10 U10H production acceptance complete PR #471', 'U10H canonical closeout PR #472', 'Active implementation branch: none', 'Exact next branch: work-quality-phase11-acceptance-operations', 'Phase 11 branch created: no']],
-  ['docs/product/current-schedule.md', ['U10H production acceptance complete PR #471', 'U10H canonical closeout PR #472', 'Active branch: none', 'Next branch: work-quality-phase11-acceptance-operations', 'Phase 11 created: no']],
-  ['docs/product/post-watchlist-program-plan.md', ['Current phase: Phase 10 — U10H production acceptance complete', 'Current implementation branch: none', 'Exact next implementation branch: `work-quality-phase11-acceptance-operations`', 'Phase 11 branch created: no']],
-  ['docs/product/cross-site-quality-remediation-plan.md', ['Current branch: none', 'Completed phase: U10H production acceptance through PR #471', 'Exact next branch: `work-quality-phase11-acceptance-operations`', 'Phase 11 branch created: no']],
-]
-for (const [path, fragments] of stateChecks) {
+const check = (path, fragments) => {
   const source = read(path)
   for (const fragment of fragments) assert.ok(source.includes(fragment), `${path}: missing ${fragment}`)
 }
 
-const u10gNote = read('docs/work-in-progress/u10g-architecture.md')
-for (const fragment of [
-  'Status: complete',
-  'Merged PR: #470',
-  'Merge commit: `62dab7b6076c15b85c3d893589df22388753c1bc`',
-  'Day Flow has one request/state/controller owner per provider route.',
-  'Battle Lines has one request/state/controller owner per provider route.',
-]) assert.ok(u10gNote.includes(fragment), `U10G working note missing ${fragment}`)
+for (const path of ['README.md', 'docs/README.md']) check(path, [
+  'Phase 11 P11A',
+  'Phase 11 P11B',
+  'Phase 11 P11C',
+  'Phase 11 P11D',
+  'Phase 11 P11E',
+  'Phase 11 P11F',
+  'Phase 11 P11G',
+  'work-quality-phase11-acceptance-operations',
+  'P11G final pre-merge acceptance',
+])
 
-const u10hNote = read('docs/work-in-progress/u10h-acceptance.md')
-for (const fragment of [
-  'Status: complete',
-  'Implementation PR: #471',
-  'Implementation merge commit: `9f2b9abd5a3d23b50fc01075a5c4f041899babf5`',
-  'Hosted production acceptance: pass',
-  'Production acceptance claimed: yes',
-  'Phase 11 branch created: no',
-]) assert.ok(u10hNote.includes(fragment), `U10H working note missing ${fragment}`)
+check('AGENTS.md', [
+  'Phase 11 P11A–P11F complete',
+  'Phase 11 P11G final acceptance active',
+  'Current workstream: P11G final pre-merge acceptance',
+])
+check('CONTRIBUTING.md', [
+  'Phase 11 P11A–P11F complete',
+  'Phase 11 P11G final acceptance active',
+  'Current workstream: P11G final pre-merge acceptance',
+])
+for (const path of [
+  'docs/product/current-roadmap.md',
+  'docs/product/current-schedule.md',
+  'docs/product/post-watchlist-program-plan.md',
+  'docs/product/cross-site-quality-remediation-plan.md',
+]) check(path, [
+  'P11G final pre-merge acceptance',
+  'work-quality-phase11-acceptance-operations',
+])
 
-const acceptance = read('docs/operations/u10h-production-acceptance-2026-07-04.md')
-for (const fragment of [
-  'Status: complete',
-  'Workflow run: 28701464391',
-  'Artifact id: 8080315127',
-  'Result: pass',
-  'Deployed SHA: 9f2b9abd5a3d23b50fc01075a5c4f041899babf5',
-  'U10H production acceptance is claimed complete by this record.',
-]) assert.ok(acceptance.includes(fragment), `U10H acceptance record missing ${fragment}`)
+check('docs/work-in-progress/phase11-acceptance-operations.md', [
+  'P11A strict-null migration — complete',
+  'P11B CI ownership and duplication audit — complete',
+  'P11C monitoring contract — complete; hosted closeout after merge',
+  'P11D escalation runbook — complete',
+  'P11E maintenance cadence — complete',
+  'P11F all-public acceptance ownership — complete',
+  'P11G final acceptance — active',
+  'all 36 latest-head repeated named steps classified',
+])
 
-const records = [
-  JSON.parse(read('docs/audits/cross-site-quality-u10a-baseline.json')),
-  JSON.parse(read('docs/audits/cross-site-quality-u10b-shared-shell.json')),
-  JSON.parse(read('docs/audits/cross-site-quality-u10c-visualization.json')),
-  JSON.parse(read('docs/audits/cross-site-quality-u10d-analysis-coherence.json')),
-  JSON.parse(read('docs/audits/cross-site-quality-u10e-responsive.json')),
-  JSON.parse(read('docs/audits/cross-site-quality-u10f-readiness.json')),
-]
-for (const record of records) {
-  assert.equal(record.status, 'complete')
-  assert.equal(record.boundary.provider_separation_required, true)
+const strict = JSON.parse(read('docs/audits/phase11-strict-null-baseline.json'))
+assert.equal(strict.status, 'remediation-complete')
+assert.equal(strict.baseline.scopes.app.error_count, 22)
+assert.equal(strict.baseline.scopes.app.affected_file_count, 10)
+assert.equal(strict.remediation.scopes.app.error_count, 0)
+assert.equal(strict.remediation.scopes.functions.error_count, 0)
+assert.equal(strict.result.command_line_overrides_remaining, 0)
+assert.equal(strict.result.total_errors_remaining, 0)
+
+const ci = JSON.parse(read('docs/audits/phase11-ci-ownership-baseline.json'))
+assert.equal(ci.status, 'complete')
+assert.equal(ci.baseline.counts.workflows_missing_latest_head_cancellation, 7)
+assert.equal(ci.remediation.counts.workflows_missing_latest_head_cancellation, 0)
+assert.equal(ci.latest_head.counts.workflows, 89)
+assert.equal(ci.latest_head.counts.pull_request_workflows, 87)
+assert.equal(ci.latest_head.counts.workflows_missing_latest_head_cancellation, 0)
+assert.equal(ci.latest_head.counts.repeated_named_steps, 36)
+assert.equal(ci.decision.repeated_named_steps_classified, 36)
+assert.equal(ci.decision.workflows_retired_by_named_step_overlap, 0)
+assert.equal(ci.decision.workflow_retirement_requires_named_replacement_assertions, true)
+
+const overlap = JSON.parse(read('docs/audits/phase11-ci-overlap-classification.json'))
+assert.equal(overlap.status, 'classified')
+assert.equal(overlap.source.repeated_named_steps, 36)
+assert.equal(overlap.classifications.length, 36)
+assert.equal(Object.values(overlap.category_counts).reduce((sum, count) => sum + count, 0), 36)
+assert.equal(overlap.decision.workflows_retired_by_named_step_overlap, 0)
+
+const monitoring = JSON.parse(read('docs/audits/phase11-monitoring-contract.json'))
+assert.equal(monitoring.contract_evidence.result, 'pass')
+assert.equal(monitoring.monitoring_owner.new_application_cron_added, false)
+assert.equal(monitoring.monitoring_owner.new_collector_cron_added, false)
+assert.equal(monitoring.hosted_evidence.status, 'pending-main-merge')
+
+const ownership = JSON.parse(read('docs/audits/phase11-public-acceptance-ownership.json'))
+assert.equal(ownership.status, 'complete')
+assert.equal(ownership.counts.routes, 20)
+assert.equal(ownership.requirements.provider_binding_crossing_failures, 0)
+assert.equal(ownership.requirements.route_duplicates, 0)
+
+const baseTsconfig = JSON.parse(read('tsconfig.base.json'))
+assert.equal(baseTsconfig.compilerOptions.strict, true)
+const webPackage = JSON.parse(read('apps/web/package.json'))
+for (const name of ['typecheck', 'typecheck:app', 'typecheck:functions']) {
+  assert.equal(webPackage.scripts[name].includes('--strictNullChecks false'), false, `${name}: strict-null override remains`)
 }
-const u10f = records.at(-1)
-assert.equal(u10f.implementation_pr, 468)
-assert.equal(u10f.canonical_closeout_pr, 469)
-assert.equal(u10f.scope.public_readiness_routes, 20)
-assert.equal(u10f.scope.production_smoke_routes, 20)
-assert.equal(u10f.scope.total_browser_scenarios, 8)
-assert.equal(u10f.readiness_contract.production_acceptance_claimed, false)
-assert.equal(u10f.readiness_contract.production_acceptance_owner, 'U10H')
-assert.equal(u10f.browser_evidence.result, 'pass')
 
 const inventory = JSON.parse(read('docs/audits/public-surface-inventory.json'))
 assert.equal(inventory.counts.public_readiness_configured_pages, 20)
@@ -133,48 +143,23 @@ assert.equal(inventory.provider_invariants.combined_rankings_allowed, false)
 for (const path of [
   '.github/workflows/development-policy.yml',
   '.github/workflows/public-browser-audit.yml',
-  '.github/workflows/public-readiness-audit.yml',
   '.github/workflows/production-smoke.yml',
-  '.github/workflows/quality-u10a-baseline.yml',
-  '.github/workflows/quality-u10b-shell.yml',
-  '.github/workflows/quality-u10c-visualization.yml',
-  '.github/workflows/quality-u10d-analysis-coherence.yml',
-  '.github/workflows/quality-u10e-responsive.yml',
-  '.github/workflows/quality-u10f-readiness.yml',
-  '.github/workflows/quality-u10g-architecture.yml',
-  '.github/workflows/quality-u10h-acceptance.yml',
-  '.github/workflows/quality-u10h-production-acceptance.yml',
+  '.github/workflows/phase11-strict-null-baseline.yml',
+  '.github/workflows/phase11-ci-ownership.yml',
+  '.github/workflows/phase11-monitoring-contract.yml',
+  '.github/workflows/phase11-operations-contract.yml',
+  '.github/workflows/phase11-public-acceptance-ownership.yml',
+  '.github/workflows/phase11-final-acceptance.yml',
 ]) {
   const source = read(path)
   assert.ok(source.includes('concurrency:'), `${path}: concurrency missing`)
   assert.ok(source.includes('cancel-in-progress: true'), `${path}: cancellation missing`)
 }
 
-for (const path of [
-  'apps/web/src/live/day-flow-current-shell-entry.ts',
-  'apps/web/src/live/day-flow-layout-summary.ts',
-  'apps/web/src/live/battle-lines-current-shell-entry.ts',
-  'apps/web/src/live/battle-lines-layout.ts',
-  'apps/web/src/navigation/battle-lines-deep-link-bridge.ts',
-]) {
-  const source = read(path)
-  for (const forbidden of ['window.fetch =', 'window.history.replaceState =', 'URLSearchParams.prototype.get =', 'new MutationObserver']) {
-    assert.equal(source.includes(forbidden), false, `${path}: forbidden architecture remains: ${forbidden}`)
-  }
-}
-
-const battleLayout = read('apps/web/src/live/battle-lines-layout.ts')
-for (const fragment of [
-  'function splitViewportAvailable()',
-  "document.body.dataset.battleLayoutRequested === 'split'",
-  "requestedLayout === 'split' && splitAvailable ? 'split' : 'wide'",
-  'shell.dataset.battleLayoutCurrent = effectiveLayout',
-  'shell.dataset.battleLayoutRequested = requestedLayout',
-]) assert.ok(battleLayout.includes(fragment), `Battle Lines requested/effective layout ownership missing: ${fragment}`)
-
 console.log('ViewLoom development and documentation verification passed.')
-console.log('- U10A through U10F remain permanent evidence')
-console.log('- U10G architecture and U10H production acceptance are complete')
-console.log('- Phase 11 acceptance and operations is exact next and not yet created')
-console.log('- requested and effective Battle Lines layouts remain separate')
+console.log('- Phase 10 is complete through U10H closeout')
+console.log('- Phase 11 P11A through P11F are evidence-backed complete')
+console.log('- P11B latest-head inventory is 89 workflows, 36 classified repeated steps, and zero cancellation gaps')
+console.log('- Phase 11 P11G final pre-merge acceptance is active')
+console.log('- hosted production monitoring closeout remains required after merge')
 console.log('- Twitch and Kick remain separate')

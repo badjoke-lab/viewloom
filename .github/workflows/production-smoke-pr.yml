@@ -6,8 +6,14 @@ on:
       - 'apps/web/public/404.html'
       - 'apps/web/scripts/normalize-built-head.mjs'
       - 'apps/web/docs/not-found-and-deployment-contract.md'
+      - 'scripts/build-phase11-monitoring-evidence.mjs'
+      - 'scripts/verify-phase11-monitoring-evidence.mjs'
       - '.github/workflows/production-smoke*.yml'
       - '.github/workflows/public-readiness-audit.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify-contract:
@@ -36,4 +42,8 @@ jobs:
           grep -q 'Wait for the matching production deployment' .github/workflows/production-smoke.yml
           grep -q 'Verify Twitch production status' .github/workflows/production-smoke.yml
           grep -q 'Verify Kick production status' .github/workflows/production-smoke.yml
+          grep -q 'Build Phase 11 monitoring evidence' .github/workflows/production-smoke.yml
+          grep -q 'Verify Phase 11 monitoring evidence' .github/workflows/production-smoke.yml
           grep -q 'Verify explicit not-found behavior' .github/workflows/production-smoke.yml
+          test -f scripts/build-phase11-monitoring-evidence.mjs
+          test -f scripts/verify-phase11-monitoring-evidence.mjs

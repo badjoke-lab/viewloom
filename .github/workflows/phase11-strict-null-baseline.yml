@@ -1,0 +1,38 @@
+name: Phase 11 Strict Null Baseline
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/**'
+      - 'scripts/measure-phase11-strict-null-baseline.mjs'
+      - 'scripts/verify-phase11-strict-null-baseline.mjs'
+      - 'docs/work-in-progress/phase11-acceptance-operations.md'
+      - '.github/workflows/phase11-strict-null-baseline.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - name: Measure strict-null baseline
+        run: node scripts/measure-phase11-strict-null-baseline.mjs
+      - name: Verify strict-null baseline evidence
+        run: node scripts/verify-phase11-strict-null-baseline.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase11-strict-null-baseline
+          path: artifacts/phase11-strict-null-baseline/
+          if-no-files-found: error

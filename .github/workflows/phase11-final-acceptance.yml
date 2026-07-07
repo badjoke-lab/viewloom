@@ -1,0 +1,60 @@
+name: Phase 11 Final Acceptance
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/package.json'
+      - 'apps/web/src/**'
+      - 'docs/audits/phase11-*.json'
+      - 'docs/operations/phase11-*.md'
+      - 'docs/work-in-progress/phase11-acceptance-operations.md'
+      - 'scripts/build-phase11-*.mjs'
+      - 'scripts/measure-phase11-*.mjs'
+      - 'scripts/verify-phase11-*.mjs'
+      - '.github/workflows/phase11-*.yml'
+      - '.github/workflows/production-smoke.yml'
+      - '.github/workflows/public-readiness-audit.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Typecheck web App and Functions under repository strict policy
+        run: pnpm --filter @viewloom/web typecheck
+      - name: Measure current CI ownership
+        run: node scripts/measure-phase11-ci-ownership.mjs artifacts/phase11-final-acceptance/ci-ownership.json
+      - name: Verify current CI ownership evidence
+        run: node scripts/verify-phase11-ci-ownership.mjs artifacts/phase11-final-acceptance/ci-ownership.json
+      - name: Verify zero latest-head cancellation gaps
+        run: jq -e '.counts.workflowsMissingLatestHeadCancellation == 0' artifacts/phase11-final-acceptance/ci-ownership.json > /dev/null
+      - name: Verify Phase 11 operations contract
+        run: node scripts/verify-phase11-operations-contract.mjs
+      - name: Build public acceptance ownership matrix
+        run: node scripts/build-phase11-public-acceptance-ownership.mjs artifacts/phase11-final-acceptance/public-ownership.json
+      - name: Verify public acceptance ownership matrix
+        run: node scripts/verify-phase11-public-acceptance-ownership.mjs artifacts/phase11-final-acceptance/public-ownership.json
+      - name: Build Phase 11 final acceptance evidence
+        run: node scripts/build-phase11-final-acceptance-evidence.mjs artifacts/phase11-final-acceptance/evidence.json
+      - name: Verify Phase 11 final acceptance evidence
+        run: node scripts/verify-phase11-final-acceptance-evidence.mjs artifacts/phase11-final-acceptance/evidence.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase11-final-acceptance
+          path: artifacts/phase11-final-acceptance/
+          if-no-files-found: error

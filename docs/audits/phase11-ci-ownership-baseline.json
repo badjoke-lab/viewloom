@@ -1,0 +1,76 @@
+{
+  "schema": "viewloom-phase11-ci-ownership-baseline-v1",
+  "phase": "Phase 11",
+  "workstream": "P11B",
+  "status": "complete",
+  "baseline": {
+    "workflow_run": 28713913285,
+    "artifact_id": 8083822417,
+    "artifact_digest": "sha256:94d17fd15f13e7d214322528cce354956123c44929d4bff8672e06ba105aeb25",
+    "head_sha": "0c3a70142cb4f5774fbc82fef49c4222fab8fb00",
+    "generated_at": "2026-07-04T17:23:24.993Z",
+    "counts": {
+      "workflows": 85,
+      "pull_request_workflows": 83,
+      "scheduled_workflows": 2,
+      "workflows_missing_latest_head_cancellation": 7,
+      "repeated_named_steps": 32
+    },
+    "missing_latest_head_cancellation": [
+      "canonical-url-checks.yml",
+      "collector-checks.yml",
+      "deep-link-checks.yml",
+      "history-repair-verification.yml",
+      "kick-coverage-checks.yml",
+      "production-smoke-pr.yml",
+      "state-contract-checks.yml"
+    ]
+  },
+  "remediation": {
+    "workflow_run": 28802705378,
+    "artifact_id": 8113646893,
+    "artifact_digest": "sha256:5336aae99deb5d7e680c32e6bdb5d8ee964cf99af8552bf291745ca2514fecc3",
+    "head_sha": "7a585a62ab3762b6dda06477a3d54f77a09ef478",
+    "result": "pass",
+    "counts": {
+      "workflows": 85,
+      "pull_request_workflows": 83,
+      "scheduled_workflows": 2,
+      "workflows_missing_latest_head_cancellation": 0,
+      "repeated_named_steps": 32
+    },
+    "missing_latest_head_cancellation": [],
+    "cancellation_gaps_fixed": 7
+  },
+  "latest_head": {
+    "workflow_run": 28863917879,
+    "artifact_id": 8136850691,
+    "artifact_digest": "sha256:c974ea41122718c00128925e28b95fa45350b5dbaef116d301b053d99ccf96b0",
+    "head_sha": "fe919b8657d47b1173f65c8764d4d1ef5d27b875",
+    "generated_at": "2026-07-07T11:52:04.778Z",
+    "counts": {
+      "workflows": 89,
+      "pull_request_workflows": 87,
+      "scheduled_workflows": 2,
+      "workflows_missing_latest_head_cancellation": 0,
+      "repeated_named_steps": 36
+    },
+    "missing_latest_head_cancellation": []
+  },
+  "decision": {
+    "overlap_classification": "complete",
+    "repeated_named_steps_classified": 36,
+    "workflows_retired_by_named_step_overlap": 0,
+    "workflow_retirement_started": false,
+    "workflow_retirement_authorized_by_current_evidence": false,
+    "workflow_retirement_requires_named_replacement_assertions": true,
+    "shared_setup_reuse_allowed_without_reducing_checks": true
+  },
+  "policy": {
+    "delete_workflows_from_baseline_alone": false,
+    "name_replacement_assertions_before_retirement": true,
+    "latest_head_cancellation_required": true,
+    "unique_feature_gates_remain": true,
+    "all_public_browser_coherence_remains": true
+  }
+}

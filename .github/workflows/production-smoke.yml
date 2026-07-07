@@ -18,6 +18,8 @@ on:
       - 'docs/product/cross-site-quality-remediation-plan.md'
       - 'docs/work-in-progress/u10h-acceptance.md'
       - 'apps/web/**'
+      - 'scripts/build-phase11-monitoring-evidence.mjs'
+      - 'scripts/verify-phase11-monitoring-evidence.mjs'
       - 'package.json'
       - '.github/workflows/production-smoke.yml'
 
@@ -121,6 +123,10 @@ jobs:
             .freshness.isFresh == true and
             .freshness.isStale == false
           ' "$ARTIFACT_DIR/kick-status.json" > /dev/null
+      - name: Build Phase 11 monitoring evidence
+        run: node scripts/build-phase11-monitoring-evidence.mjs "$ARTIFACT_DIR"
+      - name: Verify Phase 11 monitoring evidence
+        run: node scripts/verify-phase11-monitoring-evidence.mjs "$ARTIFACT_DIR"
       - name: Verify explicit not-found behavior
         run: |
           set -euo pipefail
@@ -146,6 +152,11 @@ jobs:
             echo '- Twitch and Kick status APIs: checked'
             echo '- Separate D1 bindings: checked'
             echo '- Collector freshness: checked'
+            if [ -f "$ARTIFACT_DIR/phase11-monitoring-evidence.json" ]; then
+              echo "- Twitch capacity: $(jq -r '.providers.twitch.capacity.state + " (" + (.providers.twitch.capacity.observedCount|tostring) + "/" + (.providers.twitch.capacity.topLimit|tostring) + ")"' "$ARTIFACT_DIR/phase11-monitoring-evidence.json")"
+              echo "- Kick capacity: $(jq -r '.providers.kick.capacity.state + " (" + (.providers.kick.capacity.observedCount|tostring) + "/" + (.providers.kick.capacity.topLimit|tostring) + ")"' "$ARTIFACT_DIR/phase11-monitoring-evidence.json")"
+              echo "- Monitoring watch alerts: $(jq '[.alerts[] | select(.severity == "watch")] | length' "$ARTIFACT_DIR/phase11-monitoring-evidence.json")"
+            fi
             echo '- Explicit 404 behavior: checked'
             echo '- Preview probe absent from production: checked'
           } >> "$GITHUB_STEP_SUMMARY"
