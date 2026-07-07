@@ -23,7 +23,7 @@ const checks = {
     strict.result?.total_errors_remaining === 0 &&
     overridePresent === false,
   p11bCancellationComplete:
-    ci.status === 'cancellation-remediation-complete' &&
+    ci.status === 'complete' &&
     ci.remediation?.counts?.workflows_missing_latest_head_cancellation === 0,
   p11bOverlapClassified:
     overlap.status === 'classified' &&
