@@ -84,6 +84,7 @@ check('docs/work-in-progress/phase11-acceptance-operations.md', [
   'P11E maintenance cadence — complete',
   'P11F all-public acceptance ownership — complete',
   'P11G final acceptance — active',
+  'all 36 latest-head repeated named steps classified',
 ])
 
 const strict = JSON.parse(read('docs/audits/phase11-strict-null-baseline.json'))
@@ -99,12 +100,19 @@ const ci = JSON.parse(read('docs/audits/phase11-ci-ownership-baseline.json'))
 assert.equal(ci.status, 'complete')
 assert.equal(ci.baseline.counts.workflows_missing_latest_head_cancellation, 7)
 assert.equal(ci.remediation.counts.workflows_missing_latest_head_cancellation, 0)
-assert.equal(ci.decision.repeated_named_steps_classified, 32)
+assert.equal(ci.latest_head.counts.workflows, 89)
+assert.equal(ci.latest_head.counts.pull_request_workflows, 87)
+assert.equal(ci.latest_head.counts.workflows_missing_latest_head_cancellation, 0)
+assert.equal(ci.latest_head.counts.repeated_named_steps, 36)
+assert.equal(ci.decision.repeated_named_steps_classified, 36)
 assert.equal(ci.decision.workflows_retired_by_named_step_overlap, 0)
 assert.equal(ci.decision.workflow_retirement_requires_named_replacement_assertions, true)
 
 const overlap = JSON.parse(read('docs/audits/phase11-ci-overlap-classification.json'))
 assert.equal(overlap.status, 'classified')
+assert.equal(overlap.source.repeated_named_steps, 36)
+assert.equal(overlap.classifications.length, 36)
+assert.equal(Object.values(overlap.category_counts).reduce((sum, count) => sum + count, 0), 36)
 assert.equal(overlap.decision.workflows_retired_by_named_step_overlap, 0)
 
 const monitoring = JSON.parse(read('docs/audits/phase11-monitoring-contract.json'))
@@ -151,6 +159,7 @@ for (const path of [
 console.log('ViewLoom development and documentation verification passed.')
 console.log('- Phase 10 is complete through U10H closeout')
 console.log('- Phase 11 P11A through P11F are evidence-backed complete')
+console.log('- P11B latest-head inventory is 89 workflows, 36 classified repeated steps, and zero cancellation gaps')
 console.log('- Phase 11 P11G final pre-merge acceptance is active')
 console.log('- hosted production monitoring closeout remains required after merge')
 console.log('- Twitch and Kick remain separate')
