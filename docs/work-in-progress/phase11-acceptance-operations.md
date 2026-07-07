@@ -5,6 +5,7 @@ Branch: `work-quality-phase11-acceptance-operations`
 Started: 2026-07-04
 Entry main commit: `48d988e7a994a39a4300b02997cb7e1c7a5d242b`
 Previous phase: U10H production acceptance complete PR #471, canonical closeout PR #472
+Current workstream: P11G final pre-merge acceptance
 
 ## Purpose
 
@@ -33,9 +34,7 @@ Twitch and Kick separation: required
 New API / D1 / collector / cron / retention work: not authorized
 ```
 
-## P11A strict-null migration
-
-The repository base config has `strict: true`. Phase 11 measured and removed command-line `strictNullChecks false` overrides in bounded stages.
+## P11A strict-null migration — complete
 
 Baseline evidence:
 
@@ -55,7 +54,6 @@ Workflow run: 28805573292
 Artifact id: 8114730025
 Artifact digest: sha256:7ded6293fc0accd53e22837f5c629279189aeb168fe8e811c45ae6359d515177
 Head SHA: 92bd2033096e1d586c2107fbe5a8b2a5d03831ba
-Generated at: 2026-07-06T16:07:53.747Z
 App: 0 errors / 0 affected files / clean
 Functions: 0 errors / 0 affected files / clean
 Command-line override present: false
@@ -63,18 +61,17 @@ Command-line override present: false
 
 Permanent evidence: `docs/audits/phase11-strict-null-baseline.json`.
 
-P11A result:
+Result:
 
-- Functions override was removed after its clean baseline;
-- App 22-error debt was repaired across the 10 recorded files;
-- App override was removed only after strict App typecheck passed;
-- final evidence records App clean, Functions clean, zero errors, and no command-line override;
-- no blanket `any`, mass non-null assertion, or behavior-changing cast was used to force green;
+- Functions override removed after a clean baseline;
+- App 22-error debt repaired across the 10 recorded files;
+- App override removed after strict App typecheck passed;
+- App and Functions both clean with zero remaining strict-null errors;
 - browser, output, URL, degraded-state, and provider-separation gates remain required.
 
-## P11B CI ownership and duplication audit
+## P11B CI ownership and duplication audit — complete
 
-Initial inventory evidence:
+Initial inventory:
 
 ```text
 Workflow run: 28713913285
@@ -87,7 +84,7 @@ Latest-head cancellation gaps: 7
 Repeated named steps: 32
 ```
 
-Cancellation remediation evidence:
+Cancellation remediation:
 
 ```text
 Workflow run: 28802705378
@@ -97,34 +94,102 @@ Latest-head cancellation gaps: 0
 Repeated named steps: 32
 ```
 
-The 32 repeated named steps are classified in `docs/audits/phase11-ci-overlap-classification.json`. Named-step overlap alone retires zero workflows.
+Permanent evidence:
 
-Rules:
+- `docs/audits/phase11-ci-ownership-baseline.json`
+- `docs/audits/phase11-ci-overlap-classification.json`
 
-- inventory workflow and assertion ownership before deleting anything;
-- unique feature gates remain;
-- overlapping gates may retire only when replacement assertions are named and verified;
-- latest-head cancellation remains mandatory;
-- all-public browser coherence remains protected.
+Decision:
 
-## P11C–P11E operations rule
+- all 32 repeated named steps classified;
+- named-step overlap alone retired zero workflows;
+- seven latest-head cancellation gaps repaired;
+- shared setup reuse may reduce YAML without reducing checks;
+- workflow retirement requires named replacement assertions and passing evidence;
+- unique feature gates and all-public browser coherence remain protected.
 
-Use existing Status APIs and GitHub Actions before adding scheduled runtime work. Operations must cover deployment identity, provider-specific status contracts, freshness/capacity observation, failure ownership, escalation, and periodic maintenance.
+## P11C monitoring contract — complete; hosted closeout after merge
+
+Contract evidence:
+
+```text
+Workflow run: 28807287168
+Artifact id: 8115435281
+Artifact digest: sha256:4c8979068c2cf3f9e13baf1fa85a88777d5d474e37c4278f7c98b06c517f52b3
+Head SHA: ccd139488734e83256be261f95d12157d993ab2f
+Result: pass
+```
+
+Permanent evidence: `docs/audits/phase11-monitoring-contract.json`.
+
+Production Smoke owns daily hosted evidence for deployment identity, 20 routes, separate Twitch/Kick status contracts, freshness, provider-specific capacity observation, and explicit 404 behavior. Hosted production evidence remains pending until Phase 11 is merged to main.
+
+## P11D escalation runbook — complete
+
+Permanent contract: `docs/operations/phase11-monitoring-and-escalation.md`.
+
+The runbook separates Critical, High, and Watch severity, maps failures to deployment, route, Twitch, Kick, capacity-policy, or readiness ownership, and forbids provider-combined health totals.
+
+## P11E maintenance cadence — complete
+
+Permanent contract: `docs/operations/phase11-maintenance-cadence.md`.
+
+```text
+Daily: Production Smoke
+Weekly: Public Readiness Audit
+Monthly: operator review of evidence and CI ownership
+Quarterly: architecture / provider separation / retention / capacity / CI / documentation review
+```
+
+No new application cron or collector cron was added.
+
+## P11F all-public acceptance ownership — complete
+
+Evidence:
+
+```text
+Workflow run: 28807787496
+Artifact id: 8115640030
+Artifact digest: sha256:a72d2dcd84f3201c1d1d53dd65769a2a8121bdfed844a3e299375a329d169eac
+Head SHA: 0611d7a0cea2bb6ddc2ddc353766d101bbca8986
+Result: pass
+Routes: 20
+Portal: 4
+Twitch: 8
+Kick: 8
+Provider binding crossing failures: 0
+Route duplicates: 0
+```
+
+Permanent evidence: `docs/audits/phase11-public-acceptance-ownership.json`.
+
+Every owned public route has readiness, browser, production, and feature-contract ownership.
+
+## P11G final acceptance — active
+
+Pre-merge acceptance must verify on the latest candidate head:
+
+- Development policy and canonical state;
+- strict App and Functions typecheck;
+- zero latest-head cancellation gaps;
+- monitoring and operations contracts;
+- all-public acceptance ownership;
+- provider-separation boundaries;
+- no temporary P11A apply tooling remains;
+- final machine-readable evidence state is `pre-merge-pass`.
+
+After merge, Production Smoke must confirm the matching main SHA and emit passing `viewloom-phase11-monitoring-evidence-v1` evidence before Phase 11 production closeout is claimed.
 
 ## Current status
 
 ```text
 Phase 11 branch created: yes
 P11A strict-null migration: complete
-P11A App scope: clean; override removed
-P11A Functions scope: clean; override removed
-P11A final evidence: pass
-P11B CI baseline: recorded
-P11B cancellation gaps: 0; remediation pass
-P11B overlap classification: complete; ownership/retirement decision active
-P11C monitoring contract: not started
-P11D runbooks: not started
-P11E maintenance cadence: not started
-P11F all-public ownership closeout: not started
-P11G final acceptance: not started
+P11B CI ownership and overlap decision: complete
+P11C monitoring contract: complete; hosted evidence pending main merge
+P11D runbook: complete
+P11E maintenance cadence: complete
+P11F all-public acceptance ownership: complete
+P11G final pre-merge acceptance: active
+Phase 11 production closeout: pending main merge and hosted Production Smoke
 ```
