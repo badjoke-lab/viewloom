@@ -17,49 +17,75 @@ U10H production acceptance complete PR #471
 U10H canonical closeout complete PR #472
 Phase 11 P11A strict-null migration complete
 Phase 11 P11B CI ownership complete
-Phase 11 P11C monitoring contract complete; hosted closeout after merge
+Phase 11 P11C monitoring contract complete
 Phase 11 P11D escalation runbook complete
 Phase 11 P11E maintenance cadence complete
 Phase 11 P11F acceptance ownership complete
 Phase 11 P11G candidate merged PR #473
-Phase 11 hosted production monitoring closeout pending
-Current workstream: Phase 11 hosted closeout and canonical synchronization
+Phase 11 production closeout complete
+Phase 12 English release readiness active
+Current workstream: R12A-0 current legal/support surface audit
+Exact next implementation branch: work-release-r12a-legal-support
+Next branch created: no
 ```
 
+## Phase 11 closeout evidence
+
 ```text
-P11A baseline: App 22 errors / 10 files; Functions clean
-P11A remediation: App clean / Functions clean / overrides 0
-P11B initial workflows: 85
-P11B initial cancellation gaps: 7
-P11B latest recorded workflows: 89
-P11B current cancellation gaps: 0
-P11B repeated named steps classified: 36
-P11B workflows retired solely from named-step overlap: 0
-P11C contract evidence: pass
-P11C hosted production evidence: required after PR #473 merge
-P11D escalation runbook: complete
-P11E maintenance cadence: complete
-P11F public routes owned: 20 / 20
-P11F provider crossing failures: 0
-P11F route duplicates: 0
-P11G candidate: merged PR #473
+Hosted workflow run: 28932232525
+Artifact id: 8163904094
+Artifact digest: sha256:29469a860baa8da27d9155fd5fd79a162fa39467e58bc5ee2b2b4c143f8349be
+Expected/deployed main SHA: 90fb2714137cc83e6f20e44415574a5e35a98439
+Repository-owned HTML routes checked: 20
+Provider status APIs checked: 2
+Provider crossing failures: 0
+Blocking monitoring alerts: 0
+Twitch capacity watch: at-or-over-window 300/300
+Kick capacity watch: at-or-over-window 100/100
+Result: pass
 ```
 
-## Forward execution order
+Permanent record: `../operations/phase11-production-closeout-2026-07-08.md`.
+
+## Active Phase 12 execution order
 
 ```text
-1. Phase 11 hosted production monitoring closeout
-2. Phase 12 release readiness
-3. Phase 12A Analytics Capture Foundation
-4. Phase 13 localization
-5. Phase 14 localization completion and acceptance
-6. Phase 15 Analytics Capability and Calibration Audit
-7. Phase 16A Baseline Engine
-8. Phase 16B Anomaly Detection
-9. Phase 16C Observed Run Intelligence
-10. Phase 16D Category-relative Analysis
-11. Phase 16E Co-movement and Relationship Analysis
-12. Phase 16F Replay and Backtest
+R12A-0 current legal/support surface audit
+R12A-1 shared legal/support page foundation
+R12A-2 Contact, Terms, Privacy
+R12A-3 Refund Policy and Commercial Disclosure
+R12A-4 About/footer and route ownership integration
+R12A-5 R12A candidate and hosted acceptance
+R12B-0 evidence and configuration audit
+R12B-1 Support page and payment transition
+R12B-2 refund/disclosure consistency acceptance
+R12C-0 message inventory
+R12C-1 launch copy and FAQ
+R12C-2 launch/share asset package
+R12C-3 release candidate acceptance
+```
+
+Phase 12 authority:
+
+- `release-readiness-spec.md`
+- `release-readiness-plan.md`
+- `../work-in-progress/phase12-release-readiness.md`
+
+R12A begins with an evidence audit. Do not pre-edit route counts or inventory evidence before actual route implementation is measured. External Stripe dashboard/account state must not be claimed from repository content alone.
+
+## Forward execution order after Phase 12
+
+```text
+1. Phase 12A Analytics Capture Foundation
+2. Phase 13 localization
+3. Phase 14 localization completion and acceptance
+4. Phase 15 Analytics Capability and Calibration Audit
+5. Phase 16A Baseline Engine
+6. Phase 16B Anomaly Detection
+7. Phase 16C Observed Run Intelligence
+8. Phase 16D Category-relative Analysis
+9. Phase 16E Co-movement and Relationship Analysis
+10. Phase 16F Replay and Backtest
 ```
 
 ## Phase 12A schedule boundary
@@ -93,10 +119,10 @@ replay execution policy
 storage and query budgets
 ```
 
-## Governing documents
+## Governing analytics documents
 
 - Analytics specification: `analytics-observation-system-spec.md`
 - Analytics implementation plan: `analytics-observation-system-plan.md`
 - Prior capability audit: `next-feature-data-capability-audit.md`
 
-Do not create Phase 16 branches before Phase 15 closes. Do not bypass Phase 12A capture work with request-time long-window raw scans or unsupported session/category claims.
+Do not create Phase 12A or Phase 16 branches before their entry gates close. Do not bypass Phase 12A capture work with request-time long-window raw scans or unsupported session/category claims.
