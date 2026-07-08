@@ -55,7 +55,7 @@ The following routes are production accepted and resolved:
 /terms/
 /privacy/
 /refund-policy/
-/commerce-disclosure/
+/commercial-disclosure/
 ```
 
 ## Active Phase 12
