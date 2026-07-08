@@ -11,15 +11,18 @@ const required = [
   'docs/operations/u10h-production-acceptance-2026-07-04.md',
   'docs/operations/phase11-monitoring-and-escalation.md',
   'docs/operations/phase11-maintenance-cadence.md',
+  'docs/operations/phase11-production-closeout-2026-07-08.md',
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
   'docs/product/cross-site-quality-remediation-spec.md',
   'docs/product/cross-site-quality-remediation-plan.md',
+  'docs/product/release-readiness-spec.md',
+  'docs/product/release-readiness-plan.md',
+  'docs/work-in-progress/phase12-release-readiness.md',
   'docs/product/next-feature-data-capability-audit.md',
   'docs/product/analytics-observation-system-spec.md',
   'docs/product/analytics-observation-system-plan.md',
-  'docs/work-in-progress/phase11-acceptance-operations.md',
   'docs/audits/public-surface-inventory.json',
   'docs/audits/phase11-strict-null-baseline.json',
   'docs/audits/phase11-ci-ownership-baseline.json',
@@ -41,6 +44,8 @@ const required = [
   '.github/workflows/phase11-final-acceptance.yml',
 ]
 for (const path of required) assert.equal(existsSync(join(root, path)), true, `missing file: ${path}`)
+assert.equal(existsSync(join(root, 'docs/work-in-progress/phase11-acceptance-operations.md')), false, 'completed Phase 11 working note must be retired')
+assert.equal(existsSync(join(root, '.github/workflows/phase11-hosted-closeout-acceptance.yml')), false, 'temporary Phase 11 hosted closeout workflow must be removed')
 
 const check = (path, fragments) => {
   const source = read(path)
@@ -56,7 +61,11 @@ for (const path of ['README.md', 'docs/README.md']) check(path, [
   'Phase 11 P11F',
   'Phase 11 P11G candidate',
   'merged PR #473',
-  'Phase 11 hosted',
+  'Phase 11 production closeout',
+  'Phase 12 English release readiness',
+  'R12A',
+  'R12B',
+  'R12C',
   'Phase 12A Analytics Capture Foundation',
   'Phase 15 Analytics Capability and Calibration Audit',
   'Phase 16A Baseline Engine',
@@ -65,16 +74,24 @@ for (const path of ['README.md', 'docs/README.md']) check(path, [
 check('AGENTS.md', [
   'Phase 11 P11A–P11F complete',
   'Phase 11 P11G candidate merged PR #473',
-  'Phase 11 hosted production monitoring closeout pending',
+  'Phase 11 production closeout complete',
+  'Phase 12 English release readiness active',
+  'work-release-r12a-legal-support',
+  'release-readiness-spec.md',
   'analytics-observation-system-spec.md',
-  'Do not start Phase 16 branches before Phase 15 closes',
+  'Do not start Phase 12A or Phase 16 branches before their entry gates close',
 ])
+
 check('CONTRIBUTING.md', [
   'Phase 11 P11A–P11F complete',
   'Phase 11 P11G candidate merged PR #473',
-  'Phase 11 hosted production monitoring closeout pending',
-  'Phase 12A Analytics Capture Foundation',
-  'Phase 16 branches must not be created before Phase 15 closes',
+  'Phase 11 production closeout complete',
+  'Phase 12 English release readiness active',
+  'R12A legal and support public-surface completion',
+  'R12B Stripe and support-flow readiness',
+  'R12C English launch package and release acceptance',
+  'work-release-r12a-legal-support',
+  'Phase 12A and Phase 16 branches must not be created before their entry gates close',
 ])
 
 for (const path of [
@@ -82,8 +99,12 @@ for (const path of [
   'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
 ]) check(path, [
-  'P11G candidate merged PR #473',
-  'hosted production',
+  'Phase 11 production closeout complete',
+  'Phase 12 English release readiness',
+  'R12A',
+  'R12B',
+  'R12C',
+  'work-release-r12a-legal-support',
   'Phase 12A Analytics Capture Foundation',
   'Phase 15 Analytics Capability and Calibration Audit',
   'Phase 16A Baseline Engine',
@@ -91,22 +112,58 @@ for (const path of [
 ])
 
 check('docs/product/cross-site-quality-remediation-plan.md', [
+  'Status: complete',
   'P11G final pre-merge acceptance complete',
   'P11G candidate merged PR #473',
-  'Hosted production monitoring closeout pending',
-  'work-quality-phase11-acceptance-operations',
+  'Hosted production monitoring closeout complete',
+  'Workflow run: 28932232525',
+  'Artifact id: 8163904094',
 ])
 
-check('docs/work-in-progress/phase11-acceptance-operations.md', [
-  'P11A strict-null migration — complete',
-  'P11B CI ownership and duplication audit — complete',
-  'P11C monitoring contract — complete; hosted closeout after merge',
-  'P11D escalation runbook — complete',
-  'P11E maintenance cadence — complete',
-  'P11F all-public acceptance ownership — complete',
-  'P11G final acceptance — candidate merged; hosted closeout pending',
-  'all 36 latest-head repeated named steps classified',
-  'Phase 11 production closeout: pending matching-main hosted Production Smoke evidence',
+check('docs/operations/phase11-production-closeout-2026-07-08.md', [
+  'Status: complete',
+  'Workflow run: 28932232525',
+  'Artifact id: 8163904094',
+  'sha256:29469a860baa8da27d9155fd5fd79a162fa39467e58bc5ee2b2b4c143f8349be',
+  'Expected main SHA: 90fb2714137cc83e6f20e44415574a5e35a98439',
+  'Deployed SHA: 90fb2714137cc83e6f20e44415574a5e35a98439',
+  'Blocking monitoring alerts: 0',
+  'Twitch capacity state: at-or-over-window',
+  'Kick capacity state: at-or-over-window',
+  'Phase 11 production closeout is claimed complete by this record',
+])
+
+check('docs/product/release-readiness-spec.md', [
+  'R12A — legal and support public-surface completion',
+  '/contact/',
+  '/terms/',
+  '/privacy/',
+  '/refund-policy/',
+  '/commercial-disclosure/',
+  'R12B — Stripe and support-flow readiness',
+  'R12C — English launch package and release acceptance',
+  'English source-language contract',
+  'Phase 12A Analytics Capture Foundation',
+])
+
+check('docs/product/release-readiness-plan.md', [
+  'R12A-0 — current legal/support surface audit',
+  'R12A-5 — R12A candidate and hosted acceptance',
+  'R12B-0 — evidence and configuration audit',
+  'R12B-2 — refund/disclosure consistency acceptance',
+  'R12C-0 — message inventory',
+  'R12C-3 — release candidate acceptance',
+  'work-release-r12a-legal-support',
+  'Do not begin Phase 12A data/schema work before Phase 12 release acceptance closes',
+])
+
+check('docs/work-in-progress/phase12-release-readiness.md', [
+  'Status: active after Phase 11 closeout merge',
+  'R12A-0 current legal/support surface audit',
+  'work-release-r12a-legal-support',
+  'Branch created: no',
+  'Twitch capacity watch: at-or-over-window 300/300',
+  'Kick capacity watch: at-or-over-window 100/100',
 ])
 
 check('docs/product/analytics-observation-system-spec.md', [
@@ -162,10 +219,19 @@ assert.equal(Object.values(overlap.category_counts).reduce((sum, count) => sum +
 assert.equal(overlap.decision.workflows_retired_by_named_step_overlap, 0)
 
 const monitoring = JSON.parse(read('docs/audits/phase11-monitoring-contract.json'))
+assert.equal(monitoring.status, 'complete')
 assert.equal(monitoring.contract_evidence.result, 'pass')
 assert.equal(monitoring.monitoring_owner.new_application_cron_added, false)
 assert.equal(monitoring.monitoring_owner.new_collector_cron_added, false)
-assert.equal(monitoring.hosted_evidence.status, 'pending-main-merge')
+assert.equal(monitoring.hosted_evidence.status, 'complete')
+assert.equal(monitoring.hosted_evidence.workflow_run, 28932232525)
+assert.equal(monitoring.hosted_evidence.artifact_id, 8163904094)
+assert.equal(monitoring.hosted_evidence.expected_main_sha, '90fb2714137cc83e6f20e44415574a5e35a98439')
+assert.equal(monitoring.hosted_evidence.deployed_sha, '90fb2714137cc83e6f20e44415574a5e35a98439')
+assert.equal(monitoring.hosted_evidence.result, 'pass')
+assert.equal(monitoring.hosted_evidence.blocking_alerts, 0)
+assert.equal(monitoring.hosted_evidence.watch_alerts, 2)
+assert.equal(monitoring.hosted_evidence.phase11_production_closeout_satisfied, true)
 
 const ownership = JSON.parse(read('docs/audits/phase11-public-acceptance-ownership.json'))
 assert.equal(ownership.status, 'complete')
@@ -204,10 +270,10 @@ for (const path of [
 
 console.log('ViewLoom development and documentation verification passed.')
 console.log('- Phase 10 is complete through U10H closeout')
-console.log('- Phase 11 P11A through P11F are evidence-backed complete')
-console.log('- P11B latest-head inventory is 89 workflows, 36 classified repeated steps, and zero cancellation gaps')
-console.log('- Phase 11 P11G candidate merged in PR #473')
-console.log('- hosted production monitoring closeout remains required before Phase 12')
-console.log('- Analytics Observation System specification and implementation plan are present')
-console.log('- Phase 12A capture, Phase 15 calibration, and Phase 16A-F analytics gates are canonical')
+console.log('- Phase 11 P11A through P11G and hosted production closeout are complete')
+console.log('- hosted closeout run 28932232525 verified exact main SHA, 20 routes, two provider statuses, and zero blocking alerts')
+console.log('- completed Phase 11 working note and temporary hosted closeout workflow are retired')
+console.log('- Phase 12 English release readiness is active at R12A-0')
+console.log('- exact next implementation branch is work-release-r12a-legal-support and remains uncreated')
+console.log('- Phase 12A capture, Phase 15 calibration, and Phase 16A-F analytics gates remain canonical')
 console.log('- Twitch and Kick remain separate')
