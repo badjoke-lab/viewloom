@@ -1,12 +1,12 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 6.1
+Version: 6.2
 Last updated: 2026-07-08
 Current phase: Phase 12 — English release readiness
-Current workstream: R12A-0 current legal/support surface audit
-Exact next implementation branch: `work-release-r12a-legal-support`
-Next branch created: no
+Current workstream: R12A-5 candidate and hosted acceptance
+Active implementation branch: `work-release-r12a-legal-support`
+Branch created: yes
 
 Completed U10A implementation: PR #454
 Completed U10B implementation: PR #456
@@ -32,6 +32,8 @@ Phase 11 P11F acceptance ownership complete
 Phase 11 P11G candidate merged PR #473
 Phase 11 production closeout complete
 Phase 12 English release readiness active
+R12A-0 through R12A-4 complete on candidate branch
+R12A-5 candidate and hosted acceptance active
 Phase 12A Analytics Capture Foundation approved and queued
 Phase 13-14 localization queued after Phase 12A
 Phase 15 Analytics Capability and Calibration Audit queued
@@ -73,28 +75,36 @@ R12B Stripe and support-flow readiness
 R12C English launch package and release acceptance
 ```
 
-### R12A
-
-R12A owns:
+### R12A current state
 
 ```text
-current legal/support surface audit
+R12A-0 current legal/support surface audit                 complete
+R12A-1 shared legal/support page foundation                complete
+R12A-2 Contact, Terms, Privacy                             complete
+R12A-3 Refund Policy and Commercial Disclosure             complete
+R12A-4 About/footer and route ownership integration        complete
+R12A-5 candidate and hosted acceptance                     active
+```
+
+R12A candidate ownership:
+
+```text
 /contact/
 /terms/
 /privacy/
 /refund-policy/
 /commercial-disclosure/
-About wording audit
+About and Support provider-neutral static entry
 shared footer legal/support navigation
-build and route ownership integration
-Public Readiness ownership
-Production Smoke ownership
-metadata/canonical/sitemap policy
-responsive and accessibility acceptance
-hosted production acceptance
+25 Vite HTML inputs
+26 inventory entries including explicit 404
+21 indexable/sitemap routes
+25 Public Readiness routes
+25 Production Smoke routes
+100 current candidate browser scenarios at 1440/820/390/360
 ```
 
-The five missing routes were originally identified by the P8B public browser audit. Post-R12A route counts must be measured from actual implementation rather than pre-written into inventory evidence.
+Historical P8B evidence remains locked separately at 21 routes, 84 production scenarios, 5 missing-surface probes, and 10 History scenarios. The five policy pages are candidate surfaces until exact post-merge production acceptance passes.
 
 ### R12B
 
