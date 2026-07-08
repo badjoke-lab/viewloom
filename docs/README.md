@@ -15,13 +15,16 @@ Phase 10 U10H production acceptance              complete PR #471
 U10H canonical closeout                          complete PR #472
 Phase 11 P11A strict-null migration              complete
 Phase 11 P11B CI ownership                       complete
-Phase 11 P11C monitoring contract                complete; hosted closeout required after merge
+Phase 11 P11C monitoring contract                complete
 Phase 11 P11D escalation runbook                 complete
 Phase 11 P11E maintenance cadence                complete
 Phase 11 P11F acceptance ownership               complete
 Phase 11 P11G candidate                          merged PR #473
-Phase 11 hosted production monitoring closeout   pending
-Current workstream                               Phase 11 hosted closeout and canonical synchronization
+Phase 11 production closeout                     complete
+Phase 12 English release readiness               active
+Current workstream                               R12A-0 current legal/support surface audit
+Exact next implementation branch                 work-release-r12a-legal-support
+Next branch created                              no
 ```
 
 ## Current authorities
@@ -29,17 +32,30 @@ Current workstream                               Phase 11 hosted closeout and ca
 - Current roadmap: `product/current-roadmap.md`
 - Current schedule: `product/current-schedule.md`
 - Active program plan: `product/post-watchlist-program-plan.md`
+- Phase 12 specification: `product/release-readiness-spec.md`
+- Phase 12 implementation plan: `product/release-readiness-plan.md`
+- Active Phase 12 record: `work-in-progress/phase12-release-readiness.md`
+- Permanent Phase 11 closeout: `operations/phase11-production-closeout-2026-07-08.md`
 - Phase 10–11 specification: `product/cross-site-quality-remediation-spec.md`
 - Phase 10–11 plan: `product/cross-site-quality-remediation-plan.md`
-- Phase 11 record: `work-in-progress/phase11-acceptance-operations.md`
 - P11A strict-null evidence: `audits/phase11-strict-null-baseline.json`
 - P11B CI ownership evidence: `audits/phase11-ci-ownership-baseline.json`
 - P11B overlap classification: `audits/phase11-ci-overlap-classification.json`
-- P11C monitoring contract: `audits/phase11-monitoring-contract.json`
+- P11C monitoring contract and hosted evidence: `audits/phase11-monitoring-contract.json`
 - P11D runbook: `operations/phase11-monitoring-and-escalation.md`
 - P11E cadence: `operations/phase11-maintenance-cadence.md`
 - P11F ownership evidence: `audits/phase11-public-acceptance-ownership.json`
 - Permanent U10H production acceptance: `operations/u10h-production-acceptance-2026-07-04.md`
+
+## Active Phase 12 sequence
+
+```text
+R12A legal and support public-surface completion
+R12B Stripe and support-flow readiness
+R12C English launch package and release acceptance
+```
+
+R12A starts with an audit of current About, Support, footer, build inputs, public inventory, readiness, smoke ownership, sitemap, metadata, and browser ownership. Do not pre-edit route counts before implementation is measured. External Stripe dashboard/account state requires explicit evidence in R12B.
 
 ## Approved analytics program authorities
 
@@ -50,8 +66,7 @@ Current workstream                               Phase 11 hosted closeout and ca
 Approved forward order:
 
 ```text
-Phase 11 hosted closeout
-  -> Phase 12 release readiness
+Phase 12 English release readiness
   -> Phase 12A Analytics Capture Foundation
   -> Phase 13-14 localization and evidence accumulation
   -> Phase 15 Analytics Capability and Calibration Audit
@@ -71,4 +86,4 @@ Phase 12A begins capture and compact rollup work only after Phase 12 closes. Pha
 - `product/watchlist-v1-implementation-plan.md`
 - `operations/watchlist-production-acceptance-2026-06-25.md`
 
-The immediate repository priority remains Phase 11 hosted production monitoring closeout. Future analytics work must follow the new specification and plan instead of ad hoc feature additions.
+The immediate repository priority is Phase 12 R12A-0 audit followed by the exact next implementation branch `work-release-r12a-legal-support`. Future analytics work must follow its approved capture, calibration, and phase-entry gates rather than ad hoc feature additions.
