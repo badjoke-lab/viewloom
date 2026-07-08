@@ -1,0 +1,97 @@
+name: Release R12A Legal Support
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/about/**'
+      - 'apps/web/support/**'
+      - 'apps/web/contact/**'
+      - 'apps/web/terms/**'
+      - 'apps/web/privacy/**'
+      - 'apps/web/refund-policy/**'
+      - 'apps/web/commercial-disclosure/**'
+      - 'apps/web/src/static-page.ts'
+      - 'apps/web/src/legal-page.css'
+      - 'apps/web/src/shared-shell.ts'
+      - 'apps/web/vite.config.ts'
+      - 'apps/web/public/sitemap.xml'
+      - 'apps/web/scripts/verify-content-qa.mjs'
+      - 'apps/web/scripts/verify-seo-qa.mjs'
+      - 'apps/web/docs/content-qa-contract.md'
+      - 'docs/audits/public-surface-*'
+      - 'docs/audits/phase12-r12a-legal-support-baseline.json'
+      - 'docs/product/release-readiness-*'
+      - 'docs/work-in-progress/phase12-release-readiness.md'
+      - 'scripts/verify-public-surface-inventory.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/release-r12a-legal-support.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Verify current public surface ownership
+        run: node scripts/verify-public-surface-inventory.mjs
+
+      - name: Verify content contract
+        working-directory: apps/web
+        run: node scripts/verify-content-qa.mjs
+
+      - name: Verify SEO contract
+        working-directory: apps/web
+        run: node scripts/verify-seo-qa.mjs
+
+      - name: Typecheck web application
+        run: pnpm --filter @viewloom/web typecheck:app
+
+      - name: Build web application
+        run: pnpm build:web
+
+      - name: Audit built public pages
+        working-directory: apps/web
+        run: node scripts/public-readiness-audit.mjs
+
+      - name: Verify five R12A build outputs
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          pages=(contact terms privacy refund-policy commercial-disclosure)
+          for page in "${pages[@]}"; do
+            test -f "dist/$page/index.html"
+            grep -q 'ViewLoom' "dist/$page/index.html"
+            grep -q 'googletagmanager.com/gtag/js?id=G-YHX7HS1VBK' "dist/$page/index.html"
+          done
+
+      - name: Verify provider-neutral static entry ownership
+        run: |
+          set -euo pipefail
+          for page in about support contact terms privacy refund-policy commercial-disclosure; do
+            grep -q '/src/static-page.ts' "apps/web/$page/index.html"
+            ! grep -q '/src/mock-site.ts' "apps/web/$page/index.html"
+          done
+
+      - name: Upload R12A readiness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r12a-legal-support-readiness
+          path: |
+            apps/web/artifacts/public-readiness/
+          if-no-files-found: warn
