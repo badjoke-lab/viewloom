@@ -1,15 +1,15 @@
 {
   "schema": "viewloom-public-surface-gaps-v1",
-  "version": 3,
+  "version": 4,
   "missing_surfaces": [],
-  "candidate_surfaces": [
-    {"route":"/contact/","state":"candidate","previous_replacement":"External Google Form links","implementation_phase":"R12A","note":"Repository-owned Contact HTML route and Vite input added; hosted production acceptance pending."},
-    {"route":"/terms/","state":"candidate","previous_replacement":null,"implementation_phase":"R12A","note":"Repository-owned Terms route added; hosted production acceptance pending."},
-    {"route":"/privacy/","state":"candidate","previous_replacement":null,"implementation_phase":"R12A","note":"Repository-owned Privacy route added; hosted production acceptance pending."},
-    {"route":"/refund-policy/","state":"candidate","previous_replacement":"Support copy only","implementation_phase":"R12A","note":"Repository-owned Refund Policy route added; hosted production acceptance pending."},
-    {"route":"/commercial-disclosure/","state":"candidate","previous_replacement":null,"implementation_phase":"R12A","note":"Repository-owned Commercial Disclosure route added; hosted production acceptance pending."}
+  "candidate_surfaces": [],
+  "resolved_surfaces": [
+    {"route":"/contact/","state":"resolved","previous_replacement":"External Google Form links","implementation_phase":"R12A","acceptance_owner":"docs/audits/r12a-production-acceptance.json"},
+    {"route":"/terms/","state":"resolved","previous_replacement":null,"implementation_phase":"R12A","acceptance_owner":"docs/audits/r12a-production-acceptance.json"},
+    {"route":"/privacy/","state":"resolved","previous_replacement":null,"implementation_phase":"R12A","acceptance_owner":"docs/audits/r12a-production-acceptance.json"},
+    {"route":"/refund-policy/","state":"resolved","previous_replacement":"Support copy only","implementation_phase":"R12A","acceptance_owner":"docs/audits/r12a-production-acceptance.json"},
+    {"route":"/commercial-disclosure/","state":"resolved","previous_replacement":null,"implementation_phase":"R12A","acceptance_owner":"docs/audits/r12a-production-acceptance.json"}
   ],
-  "resolved_surfaces": [],
   "historical_missing_surface_baseline": {
     "phase": "P8B",
     "count": 5,
@@ -18,9 +18,9 @@
   },
   "cross_route_gaps": [
     {"id":"watchlist-public-readiness-omission","severity":"P2","state":"resolved","detail":"U10F derives General Public Readiness from the repository-owned route inventory and requires both Twitch and Kick Watchlist routes within the public build audit.","resolved_phase":"U10F"},
-    {"id":"production-smoke-omissions","severity":"P2","state":"resolved","detail":"U10F assigned all then-owned public HTML routes to Production Smoke. R12A expands the owned route set and updates the same owner.","resolved_phase":"U10F"},
-    {"id":"no-consolidated-public-browser-matrix","severity":"P1","state":"historical","detail":"P8B established a permanent browser audit across major public routes and four required widths; later gates retain current route evidence.","resolved_phase":"P8B"},
+    {"id":"production-smoke-omissions","severity":"P2","state":"resolved","detail":"U10F assigned all then-owned public HTML routes to Production Smoke. R12A expanded the owned route set to 25 and production acceptance verified all 25 routes.","resolved_phase":"R12A"},
+    {"id":"no-consolidated-public-browser-matrix","severity":"P1","state":"historical","detail":"P8B established a permanent browser audit across major public routes and four required widths; current browser ownership is separately retained.","resolved_phase":"P8B"},
     {"id":"history-known-p1","severity":"P1","state":"resolved","detail":"Phase 9 P9H0-P9H7 repaired and accepted the approved History P1 defects.","resolved_phase":"P9H7"},
-    {"id":"policy-surfaces-missing","severity":"release_blocker_candidate","state":"candidate_implementation","detail":"Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure are implemented on the R12A candidate branch but are not resolved until hosted production acceptance.","next_phase":"R12A-5 production acceptance"}
+    {"id":"policy-surfaces-missing","severity":"release_blocker_candidate","state":"resolved","detail":"Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure are repository-owned, production deployed, and exact-SHA accepted.","resolved_phase":"R12A","evidence_owner":"docs/audits/r12a-production-acceptance.json"}
   ]
 }
