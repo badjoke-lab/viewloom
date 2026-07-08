@@ -4,44 +4,39 @@ Status: active
 Phase: Phase 12
 Specification: `../product/release-readiness-spec.md`
 Implementation plan: `../product/release-readiness-plan.md`
-Entry evidence: `../operations/phase11-production-closeout-2026-07-08.md`
-Baseline audit: `../audits/phase12-r12a-legal-support-baseline.json`
-Current workstream: R12A-5 candidate and hosted acceptance
-Active branch: `work-release-r12a-legal-support`
-Branch created: yes
-
-## Purpose
-
-This note owns unstable Phase 12 execution memory. Permanent product behavior belongs in the specification and implementation plan.
+Phase 11 entry evidence: `../operations/phase11-production-closeout-2026-07-08.md`
+R12A baseline: `../audits/phase12-r12a-legal-support-baseline.json`
+R12A production evidence: `../audits/r12a-production-acceptance.json`
+R12A human record: `../operations/r12a-production-acceptance-2026-07-08.md`
+Current workstream: R12B-0 evidence and configuration audit
+Exact next implementation branch: `work-release-r12b-stripe-support-flow`
+Next branch created: no
 
 ## Workstreams
 
 ```text
-R12A legal and support public-surface completion
-R12B Stripe and support-flow readiness
-R12C English launch package and release acceptance
+R12A legal and support public-surface completion   complete
+R12B Stripe and support-flow readiness             active
+R12C English launch package and release acceptance queued
 ```
 
-## Entry facts
+## R12A closeout
 
 ```text
-Phase 11 hosted closeout: pass
-Target/deployed main SHA: 90fb2714137cc83e6f20e44415574a5e35a98439
-Hosted workflow run: 28932232525
-Hosted artifact: 8163904094
+Implementation PR: #477
+Implementation merge SHA: 952f0008209363f4fd5b22587975ac247ee8d6f2
+Production workflow run: 28941169278
+Expected/deployed SHA: 952f0008209363f4fd5b22587975ac247ee8d6f2
+Owned HTML routes: 25
+Provider status APIs: 2
+Provider crossing failures: 0
 Blocking monitoring alerts: 0
-Twitch capacity watch: at-or-over-window 300/300
-Kick capacity watch: at-or-over-window 100/100
-Phase 12 entry main SHA: fe11bcbfa893ce2190bd6cd9df8a12b8639f1167
+Watch alerts: 2
+Explicit 404: pass
+Result: pass
 ```
 
-The capacity watch observations are carried to Phase 12A analytics capacity baseline work. Phase 12 itself does not change observed-set limits.
-
-## R12A-0 baseline audit — complete
-
-Permanent machine-readable evidence: `docs/audits/phase12-r12a-legal-support-baseline.json`.
-
-Historical P8B evidence recorded five missing policy/disclosure routes:
+Accepted R12A routes:
 
 ```text
 /contact/
@@ -51,96 +46,64 @@ Historical P8B evidence recorded five missing policy/disclosure routes:
 /commercial-disclosure/
 ```
 
-Entry inventory before R12A implementation:
+The five routes are resolved surfaces. `static_legal` is accepted under the current contract. Historical P8B missing-surface evidence remains separately preserved and is not rewritten.
+
+## R12B-0 repository facts
+
+The repository currently contains:
 
 ```text
-Vite HTML inputs: 20
-Explicit not-found pages: 1
-Inventory entries: 21
-Public Readiness configured pages: 20
-Production Smoke page routes: 20
-Historical missing-surface probes: 5
+Support route: /support/
+Payment model wording: one-time support
+Payment Link: https://buy.stripe.com/6oUcMYeRh0Na2oX3cDcIE03
+Refund route: /refund-policy/
+Commercial Disclosure route: /commercial-disclosure/
+Contact route: /contact/
+Contact submission channel: external Google Form
 ```
 
-### Owner map
+These repository facts do not prove external Stripe dashboard or account state.
+
+## R12B-0 evidence questions
+
+Audit and record separately:
 
 ```text
-Build inputs              apps/web/vite.config.ts
-About                     apps/web/about/index.html
-Support                   apps/web/support/index.html
-Shared shell/footer       apps/web/src/shared-shell.ts
-Provider-neutral entry    apps/web/src/static-page.ts
-Portal route manifest     docs/audits/public-surface-routes-portal.json
-Profile inventory         docs/audits/public-surface-profiles-core.json
-Gap inventory             docs/audits/public-surface-gaps.json
-Public Readiness          apps/web/scripts/public-readiness-audit.mjs
-Current Browser matrix    apps/web/scripts/public-current-browser-audit.mjs
-Historical P8B owner      apps/web/scripts/public-browser-audit.mjs
-Production Smoke          .github/workflows/production-smoke.yml
-Sitemap                   apps/web/public/sitemap.xml
-Content QA                apps/web/scripts/verify-content-qa.mjs
-SEO QA                    apps/web/scripts/verify-seo-qa.mjs
-R12A contract gate        .github/workflows/release-r12a-legal-support.yml
+1. actual public Payment Link destination and hosted behavior
+2. Support CTA wording consistency
+3. Payment Link one-time/recurring behavior visible to the user
+4. refund wording consistency across Support, Refund Policy, and Stripe-hosted surface
+5. Commercial Disclosure consistency
+6. desktop external transition flow
+7. mobile external transition flow
+8. registered business website/domain evidence
+9. external Stripe configuration evidence source and date
+10. any missing external evidence that blocks completion
 ```
 
-### Audit findings and implemented decisions
+## External evidence boundary
 
-1. About and Support previously used `mock-site.ts`, which fetched both provider status APIs on provider-neutral pages despite route inventory `apis: []`.
-2. `static-page.ts` now installs shared shell behavior without provider status requests, and About/Support use it.
-3. GA4 measurement `G-YHX7HS1VBK` is injected into built HTML; Privacy describes that behavior.
-4. `/contact/` is now the owned contact surface; the existing Google Form remains the external submission channel.
-5. Support keeps the current Stripe Payment Link and one-time support wording; external Stripe account/dashboard facts remain R12B evidence items.
-6. Five candidate legal routes are Vite inputs, route-inventory entries, sitemap entries, Content QA/SEO QA subjects, Public Readiness subjects, current browser matrix subjects, and Production Smoke subjects.
-7. Public Browser ownership is split: P8B historical evidence remains locked in the permanent ledger, while current candidate routes are tested locally at 1440/820/390/360. Exact post-merge production verification remains Production Smoke ownership.
-8. Current gap inventory has zero `missing_surfaces`; the five pages are `candidate_surfaces` until R12A hosted production acceptance.
-9. Shared footer Contact is an internal route and Terms, Privacy, Refund Policy, and Commercial Disclosure are globally discoverable.
-10. Phase 11 historical 20-route acceptance evidence remains permanent, while the retained current ownership gate now covers 25 routes.
-
-## Candidate inventory
+Do not infer these facts from repository code alone:
 
 ```text
-Vite HTML inputs: 25
-Explicit not-found pages: 1
-Inventory entries: 26
-Indexable routes: 21
-Noindex routes: 4
-Sitemap routes: 21
-Public Readiness configured pages: 25
-Production Smoke page routes: 25
-Current candidate browser scenarios: 25 routes x 4 widths = 100
-Historical P8B baseline: 21 routes / 84 production scenarios / 5 missing probes / 10 History scenarios
+Stripe registered business website is current
+Stripe account approval/state is unchanged
+Payment Link dashboard configuration matches repository wording
+refund configuration is enabled or disabled in a particular way
+recurring payments are impossible solely because the site copy says one-time
 ```
 
-## R12A implementation state
+Where direct authoritative evidence is unavailable, keep the item pending rather than inventing completion.
+
+## Capacity carry-forward
 
 ```text
-R12A-0 current legal/support surface audit: complete
-R12A-1 shared legal/support page foundation: complete
-R12A-2 Contact, Terms, Privacy: complete
-R12A-3 Refund Policy and Commercial Disclosure: complete
-R12A-4 About/footer and route ownership integration: complete
-R12A-5 candidate and hosted acceptance: active
+Twitch: at-or-over-window 300/300
+Kick:   at-or-over-window 100/100
 ```
 
-## R12A-5 required evidence
+These non-blocking watch observations remain inputs to Phase 12A Analytics Capture Foundation. R12B does not change observed windows, retention, cron, collector, D1 schema, or provider separation.
 
-```text
-Development policy: pending latest head
-R12A contract gate: pending latest head
-Public Surface Inventory: pending latest head
-Public Readiness: pending latest head
-Current Browser matrix 100 scenarios: pending latest head
-Typecheck/build: pending latest head
-Hosted production evidence: pending merge and exact production SHA
-```
+## Stop rule
 
-## Open later-phase evidence items
-
-```text
-R12B actual Payment Link destination: repository URL known; hosted configuration audit pending
-R12B Stripe registered website evidence: pending external operator evidence audit
-R12B refund configuration evidence: pending external operator evidence audit
-R12C launch asset inventory: pending
-```
-
-Do not convert external Stripe state from memory into a completion claim. Record the evidence source and date when R12B begins.
+This closeout branch advances canonical state only. Create `work-release-r12b-stripe-support-flow` after the R12A closeout PR merges and the merge is verified.

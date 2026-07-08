@@ -1,0 +1,40 @@
+{
+  "schema": "viewloom-r12a-production-acceptance-v1",
+  "phase": "Phase 12",
+  "workstream": "R12A-5",
+  "status": "complete",
+  "result": "pass",
+  "checked_at": "2026-07-08T12:04:45Z",
+  "workflow_run": 28941169278,
+  "expected_main_sha": "952f0008209363f4fd5b22587975ac247ee8d6f2",
+  "deployed_sha": "952f0008209363f4fd5b22587975ac247ee8d6f2",
+  "counts": {
+    "html_routes": 25,
+    "provider_status_apis": 2,
+    "provider_crossing_failures": 0,
+    "blocking_alerts": 0,
+    "watch_alerts": 2
+  },
+  "providers": {
+    "twitch": {
+      "capacity_state": "at-or-over-window",
+      "observed_count": 300,
+      "top_limit": 300
+    },
+    "kick": {
+      "capacity_state": "at-or-over-window",
+      "observed_count": 100,
+      "top_limit": 100
+    }
+  },
+  "checks": {
+    "exact_production_sha": true,
+    "all_owned_routes_200": true,
+    "five_r12a_routes_200": true,
+    "twitch_status_contract": true,
+    "kick_status_contract": true,
+    "provider_separation": true,
+    "monitoring_evidence": true,
+    "explicit_404": true
+  }
+}

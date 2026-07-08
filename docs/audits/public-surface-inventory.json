@@ -1,16 +1,17 @@
 {
   "schema": "viewloom-public-surface-inventory-v1",
-  "version": 3,
+  "version": 4,
   "updated_at": "2026-07-08",
   "source": {
-    "branch": "work-release-r12a-legal-support",
-    "base_commit": "fe11bcbfa893ce2190bd6cd9df8a12b8639f1167",
+    "branch": "main",
+    "accepted_main_sha": "952f0008209363f4fd5b22587975ac247ee8d6f2",
+    "production_acceptance": "docs/audits/r12a-production-acceptance.json",
     "build_config": "apps/web/vite.config.ts",
     "public_readiness": "apps/web/scripts/public-readiness-audit.mjs",
     "current_browser_audit": "apps/web/scripts/public-current-browser-audit.mjs",
     "production_smoke": ".github/workflows/production-smoke.yml"
   },
-  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. Candidate legal routes remain pending hosted production acceptance until R12A-5.",
+  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. All 25 owned HTML routes are production accepted; historical P8B evidence remains separately preserved.",
   "counts": {
     "vite_html_inputs": 25,
     "explicit_not_found_pages": 1,
@@ -44,5 +45,5 @@
   ],
   "gap_file": "docs/audits/public-surface-gaps.json",
   "historical_next_branch": "work-public-browser-audit",
-  "active_branch": "work-release-r12a-legal-support"
+  "active_program": "Phase 12 R12B Stripe and support-flow readiness"
 }

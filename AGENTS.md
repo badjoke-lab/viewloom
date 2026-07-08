@@ -3,21 +3,25 @@
 Canonical project state is indexed in `docs/README.md`.
 
 ```text
-U10H production acceptance complete PR #471
-U10H canonical closeout complete PR #472
-Phase 11 P11A–P11F complete
-Phase 11 P11G candidate merged PR #473
+Phase 10 complete through U10H
+Phase 11 P11A-P11G complete
 Phase 11 production closeout complete
 Phase 12 English release readiness active
-Current workstream: R12A-5 candidate and hosted acceptance
-Active implementation branch: work-release-r12a-legal-support
-Branch created: yes
-Candidate public HTML routes: 25
-Candidate browser scenarios: 100
-Hosted production acceptance: pending merge
+R12A legal/support public surface complete
+R12A implementation merged PR #477
+R12A production acceptance pass
+Current workstream: R12B-0 evidence and configuration audit
+Exact next implementation branch: work-release-r12b-stripe-support-flow
+Next branch created: no
 ```
 
-Permanent Phase 11 closeout: `docs/operations/phase11-production-closeout-2026-07-08.md`.
+Permanent R12A evidence:
+
+```text
+docs/audits/phase12-r12a-legal-support-baseline.json
+docs/audits/r12a-production-acceptance.json
+docs/operations/r12a-production-acceptance-2026-07-08.md
+```
 
 Active Phase 12 authorities:
 
@@ -25,14 +29,11 @@ Active Phase 12 authorities:
 docs/product/release-readiness-spec.md
 docs/product/release-readiness-plan.md
 docs/work-in-progress/phase12-release-readiness.md
-docs/audits/phase12-r12a-legal-support-baseline.json
 ```
 
-Phase 12 sequence is R12A legal/support surface completion, R12B Stripe/support-flow readiness, and R12C English launch package/release acceptance.
+Phase 12 sequence is R12A complete, R12B active, and R12C queued.
 
-R12A-0 through R12A-4 are complete on the candidate branch. R12A-5 owns latest-head candidate gates, merge, exact production SHA verification, 25-route Production Smoke, provider status/monitoring checks, explicit 404 behavior, and final candidate-to-resolved gap transition. The five legal/support routes must not be marked resolved before hosted production evidence passes.
-
-External Stripe dashboard/account state must not be inferred from repository files alone.
+R12B begins with evidence separation between repository facts, hosted public behavior, and external Stripe dashboard/account facts. External Stripe registration, account state, Payment Link dashboard settings, and refund configuration must not be inferred from repository files alone.
 
 Approved future analytics authorities:
 
