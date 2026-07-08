@@ -13,9 +13,10 @@ Phase 11 production closeout complete
 Phase 12 English release readiness active
 R12A legal and support public-surface completion complete
 R12B Stripe and support-flow readiness complete through R12B-2
-R12C-0 message inventory complete
-Current workstream: R12C-1 launch copy and FAQ
-Exact next implementation branch: work-release-r12c1-launch-copy-faq
+R12C-0 message inventory complete PR #484
+R12C-1 launch copy and FAQ complete
+Current workstream: R12C-2 launch/share asset package
+Exact next implementation branch: work-release-r12c2-launch-assets
 Next branch created: no
 ```
 
@@ -27,12 +28,12 @@ docs/product/release-readiness-plan.md
 docs/work-in-progress/phase12-release-readiness.md
 ```
 
-Permanent R12C-0 evidence:
+Permanent R12C-1 source-language package:
 
 ```text
-docs/audits/r12c0-message-inventory.json
-docs/audits/r12c0-message-inventory.md
-docs/operations/r12c0-message-inventory-2026-07-09.md
+docs/product/english-launch-copy.md
+docs/audits/r12c1-launch-copy-package.json
+docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md
 ```
 
 Phase 12 sequence:
@@ -41,14 +42,14 @@ Phase 12 sequence:
 R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete
 R12C-0 message inventory                           complete
-R12C-1 launch copy and FAQ                         active
-R12C-2 launch/share asset package                  queued
+R12C-1 launch copy and FAQ                         complete
+R12C-2 launch/share asset package                  active
 R12C-3 release candidate acceptance                queued
 ```
 
-R12C-1 must use the R12C-0 inventory as its evidence boundary. Produce the approved description set, feature-role summary, coverage/provider-separation/retention explanations, FAQ, and Support/legal/Status/help link package without inventing unsupported claims.
+R12C-2 must use current product surfaces rather than mockups. Curate desktop/mobile and representative Heatmap, Day Flow, Battle Lines, and History screenshots; record source route, viewport, capture date, intended external use, and captions bounded by the R12C-1 English source package.
 
-Forbidden launch claims include complete platform coverage, official analytics, unique viewers, exact creator revenue, exact session reconstruction, combined Twitch/Kick audience totals, and cross-platform rankings.
+The generic `apps/web/public/og/viewloom.svg` is an identity card. Public Browser screenshots remain acceptance artifacts until deliberately curated into R12C-2.
 
 R12B external-state boundaries remain in force. Current Stripe Dashboard/account facts must be supported by direct evidence and must not be inferred from repository code or public browser behavior alone.
 
