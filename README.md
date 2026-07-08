@@ -23,8 +23,9 @@ Phase 11 production closeout           complete
 Phase 12 English release readiness     active
 R12A legal/support public surface      complete
 R12B Stripe/support readiness          complete through R12B-2
-R12C English launch package            active at R12C-0 message inventory
-Exact next branch                      work-release-r12c0-message-inventory
+R12C-0 message inventory               complete
+R12C-1 launch copy and FAQ             active
+Exact next branch                      work-release-r12c1-launch-copy-faq
 Next branch created                    no
 ```
 
@@ -41,39 +42,42 @@ Sequence:
 ```text
 R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete
-R12C English launch package and release acceptance active
+R12C-0 message inventory                           complete
+R12C-1 launch copy and FAQ                         active
+R12C-2 launch/share asset package                  queued
+R12C-3 release candidate acceptance                queued
 ```
 
-Permanent R12B evidence:
+Permanent R12C-0 evidence:
 
 ```text
-docs/audits/r12b-evidence-and-configuration-audit.json
-docs/audits/r12b-repository-consistency-notes.md
-docs/operations/r12b0-evidence-audit-2026-07-09.md
-docs/operations/r12b1-support-transition-acceptance-2026-07-09.md
-docs/operations/r12b2-refund-disclosure-acceptance-2026-07-09.md
+docs/audits/r12c0-message-inventory.json
+docs/audits/r12c0-message-inventory.md
+docs/operations/r12c0-message-inventory-2026-07-09.md
 ```
 
-R12B accepted repository facts, hosted public behavior, desktop/mobile payment transition, refund/disclosure consistency, legal-link availability, and mobile Back/return behavior. It does not convert unproven current Stripe Dashboard/account settings into completion claims.
+R12C-0 inventoried current Portal/About messages, provider-specific descriptions, feature roles, cadence/retention/coverage boundaries, Twitch/Kick separation wording, Status/help/support/legal links, FAQ source material, terminology candidates, the current generic OG asset, CI screenshot evidence sources, and missing launch messages/assets.
 
-## Active R12C-0
+## Active R12C-1
 
-R12C-0 inventories current English public messaging before launch copy is written:
+R12C-1 produces the evidence-bounded English launch package:
 
 ```text
-Portal and About descriptions
-feature-role descriptions
-bounded-data and coverage limitations
-Twitch/Kick separation explanation
-Status and methodology/help links
-Support and legal links
-FAQ-like explanations
-current screenshots and share assets
-missing launch explanations and assets
-approved terminology candidates
+one-line description
+short listing description
+long description
+feature-role summary
+coverage limitations
+provider separation explanation
+retention explanation
+FAQ
+Support/legal links
+Status/help links
 ```
 
-R12C-0 is evidence collection, not a broad copy rewrite.
+R12C-1 must not claim complete platform coverage, official analytics, unique viewers, exact creator revenue, exact session reconstruction, combined Twitch/Kick audience totals, or cross-platform rankings.
+
+R12C-2 remains responsible for a curated screenshot/share package. The current `apps/web/public/og/viewloom.svg` is a generic identity card, while Public Browser screenshots are CI acceptance artifacts rather than a curated launch package.
 
 ## Approved forward sequence
 
