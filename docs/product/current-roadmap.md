@@ -23,24 +23,17 @@ U10F canonical closeout complete PR #469
 Phase 10 U10G architecture complete PR #470
 Phase 10 U10H production acceptance complete PR #471
 U10H canonical closeout complete PR #472
-Phase 11 P11A strict-null migration complete
-Phase 11 P11B CI ownership complete
-Phase 11 P11C monitoring contract complete
-Phase 11 P11D escalation runbook complete
-Phase 11 P11E maintenance cadence complete
-Phase 11 P11F acceptance ownership complete
-Phase 11 P11G candidate merged PR #473
+Phase 11 P11A-P11G complete
 Phase 11 production closeout complete
 Phase 12 English release readiness active
-Current workstream: R12A-5 candidate and hosted acceptance
-Active implementation branch: work-release-r12a-legal-support
-Branch created: yes
-Candidate public HTML routes: 25
-Candidate browser scenarios: 100
-Hosted production acceptance: pending merge
+R12A legal and support public-surface completion complete
+R12A implementation PR: #477
+R12A implementation merge SHA: 952f0008209363f4fd5b22587975ac247ee8d6f2
+R12A production acceptance: pass
+Current workstream: R12B-0 evidence and configuration audit
+Exact next implementation branch: work-release-r12b-stripe-support-flow
+Next branch created: no
 ```
-
-Permanent Phase 11 production closeout: `../operations/phase11-production-closeout-2026-07-08.md`.
 
 ## Active Phase 12 authorities
 
@@ -48,29 +41,18 @@ Permanent Phase 11 production closeout: `../operations/phase11-production-closeo
 - Implementation plan: `release-readiness-plan.md`
 - Active working record: `../work-in-progress/phase12-release-readiness.md`
 - R12A baseline audit: `../audits/phase12-r12a-legal-support-baseline.json`
+- R12A production evidence: `../audits/r12a-production-acceptance.json`
+- R12A production record: `../operations/r12a-production-acceptance-2026-07-08.md`
 
 Phase 12 sequence:
 
 ```text
-R12A legal and support public-surface completion
-R12B Stripe and support-flow readiness
-R12C English launch package and release acceptance
+R12A legal and support public-surface completion   complete
+R12B Stripe and support-flow readiness             active
+R12C English launch package and release acceptance queued
 ```
 
-R12A candidate state:
-
-```text
-R12A-0 current legal/support surface audit              complete
-R12A-1 shared legal/support page foundation             complete
-R12A-2 Contact, Terms, Privacy                          complete
-R12A-3 Refund Policy and Commercial Disclosure          complete
-R12A-4 About/footer and route ownership integration     complete
-R12A-5 candidate and hosted acceptance                  active
-```
-
-The five R12A routes are candidate surfaces until exact post-merge Production Smoke verifies them on production. Current `missing_surfaces` is empty, but the five routes remain `candidate_surfaces` and the policy-surface gap remains `candidate_implementation` until hosted acceptance.
-
-Phase 12 English content is the source for the Phase 13–14 localization program. Phase 12 does not authorize analytics runtime, localization runtime, DB, collector, cron, retention, provider combination, or payment-backend work.
+R12B begins with evidence separation. Repository facts, hosted public behavior, and external Stripe dashboard/account facts must be recorded as separate evidence classes. Repository code alone must not be used to claim external Stripe registration, account state, Payment Link dashboard configuration, or refund configuration.
 
 ## Approved forward sequence
 
