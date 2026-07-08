@@ -21,6 +21,7 @@ on:
       - 'apps/web/docs/content-qa-contract.md'
       - 'docs/audits/public-surface-*'
       - 'docs/audits/phase12-r12a-legal-support-baseline.json'
+      - 'docs/audits/r12a-candidate-acceptance-marker.md'
       - 'docs/product/release-readiness-*'
       - 'docs/work-in-progress/phase12-release-readiness.md'
       - 'scripts/verify-public-surface-inventory.mjs'
