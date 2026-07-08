@@ -23,9 +23,10 @@ Phase 11 production closeout           complete
 Phase 12 English release readiness     active
 R12A legal/support public surface      complete
 R12B Stripe/support readiness          complete through R12B-2
-R12C-0 message inventory               complete
-R12C-1 launch copy and FAQ             active
-Exact next branch                      work-release-r12c1-launch-copy-faq
+R12C-0 message inventory               complete PR #484
+R12C-1 launch copy and FAQ             complete
+R12C-2 launch/share asset package      active
+Exact next branch                      work-release-r12c2-launch-assets
 Next branch created                    no
 ```
 
@@ -43,41 +44,39 @@ Sequence:
 R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete
 R12C-0 message inventory                           complete
-R12C-1 launch copy and FAQ                         active
-R12C-2 launch/share asset package                  queued
+R12C-1 launch copy and FAQ                         complete
+R12C-2 launch/share asset package                  active
 R12C-3 release candidate acceptance                queued
 ```
 
-Permanent R12C-0 evidence:
+Permanent R12C-1 package:
 
 ```text
-docs/audits/r12c0-message-inventory.json
-docs/audits/r12c0-message-inventory.md
-docs/operations/r12c0-message-inventory-2026-07-09.md
+docs/product/english-launch-copy.md
+docs/audits/r12c1-launch-copy-package.json
+docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md
 ```
 
-R12C-0 inventoried current Portal/About messages, provider-specific descriptions, feature roles, cadence/retention/coverage boundaries, Twitch/Kick separation wording, Status/help/support/legal links, FAQ source material, terminology candidates, the current generic OG asset, CI screenshot evidence sources, and missing launch messages/assets.
+The R12C-1 package provides one-line, short, and long descriptions; seven product-role summaries; coverage, provider-separation, cadence, and retention explanations; a 12-question FAQ; Status/help links; Support/legal links; and the English terminology contract.
 
-## Active R12C-1
+The English package becomes the Phase 13–14 localization source after the approved program reaches localization.
 
-R12C-1 produces the evidence-bounded English launch package:
+## Active R12C-2
+
+R12C-2 owns a curated launch/share asset package:
 
 ```text
-one-line description
-short listing description
-long description
-feature-role summary
-coverage limitations
-provider separation explanation
-retention explanation
-FAQ
-Support/legal links
-Status/help links
+current desktop product screenshot
+current mobile product screenshot
+representative Heatmap screenshot
+representative Day Flow screenshot
+representative Battle Lines screenshot
+representative History screenshot
+asset manifest with route / viewport / capture date / intended use
+captions bounded by the R12C-1 English package
 ```
 
-R12C-1 must not claim complete platform coverage, official analytics, unique viewers, exact creator revenue, exact session reconstruction, combined Twitch/Kick audience totals, or cross-platform rankings.
-
-R12C-2 remains responsible for a curated screenshot/share package. The current `apps/web/public/og/viewloom.svg` is a generic identity card, while Public Browser screenshots are CI acceptance artifacts rather than a curated launch package.
+The existing `apps/web/public/og/viewloom.svg` remains a generic identity card. Public Browser screenshots remain CI acceptance artifacts until deliberately curated and recorded in the R12C-2 package.
 
 ## Approved forward sequence
 
