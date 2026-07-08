@@ -2,17 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
 const read = (path) => readFileSync(path, 'utf8')
-const manifest = JSON.parse(read('docs/audits/public-surface-inventory.json'))
-const gaps = JSON.parse(read('docs/audits/public-surface-gaps.json'))
 const ledger = JSON.parse(read('docs/audits/public-browser-defects.json'))
-
-assert.equal(manifest.schema, 'viewloom-public-surface-inventory-v1')
-assert.equal(manifest.counts.inventory_entries, 21)
-assert.equal(manifest.provider_invariants.twitch_binding, 'DB_TWITCH_HOT')
-assert.equal(manifest.provider_invariants.kick_binding, 'DB_KICK_HOT')
-assert.equal(manifest.provider_invariants.combined_totals_allowed, false)
-assert.equal(manifest.provider_invariants.combined_rankings_allowed, false)
-assert.equal(gaps.missing_surfaces.length, 5)
 
 assert.equal(ledger.schema, 'viewloom-public-browser-defect-ledger-v1')
 assert.equal(ledger.status, 'complete')
@@ -23,6 +13,8 @@ assert.equal(ledger.evidence.matrix.missing_surface_probes, 5)
 assert.equal(ledger.evidence.matrix.history_scenarios, 10)
 assert.deepEqual(ledger.counts, { p0: 0, p1: 3, p2: 5, p3: 0, total: 8 })
 assert.equal(ledger.defects.length, 8)
+assert.equal(ledger.verified_invariants.provider_crossing_scenarios, 0)
+assert.equal(ledger.verified_invariants.horizontal_overflow_scenarios, 0)
 
 for (const id of [
   'P8B-P1-HISTORY-METRIC-SYNCHRONIZATION',
@@ -53,5 +45,6 @@ for (const text of [
 ]) assert.ok(browser.includes(text), `P8B browser owner missing: ${text}`)
 
 console.log('P8B historical repository verification passed.')
-console.log('- 21 owned routes and 84 production scenarios remain exact')
-console.log('- provider separation and the audit-only boundary remain locked')
+console.log('- historical ledger remains 21 owned routes and 84 production scenarios')
+console.log('- historical five missing-surface probes remain preserved in the P8B defect ledger')
+console.log('- current route inventory and current gap state may advance independently')
