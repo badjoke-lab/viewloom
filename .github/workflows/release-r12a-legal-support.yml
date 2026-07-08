@@ -1,4 +1,5 @@
 name: Release R12A Legal Support
+# Candidate contract: 25 owned HTML routes; current browser ownership is 25 routes x 4 widths.
 
 on:
   pull_request:
