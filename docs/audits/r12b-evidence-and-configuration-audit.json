@@ -2,7 +2,7 @@
   "schema": "viewloom-r12b-evidence-and-configuration-audit-v1",
   "phase": "Phase 12",
   "workstream": "R12B-0",
-  "status": "active",
+  "status": "complete",
   "updated_at": "2026-07-09",
   "evidence_classes": {
     "repository_facts": {
@@ -24,15 +24,57 @@
       }
     },
     "hosted_public_behavior": {
-      "status": "pending_ci_evidence",
-      "evidence_owner": "Release R12B Evidence Audit workflow artifact",
-      "required_checks": [
-        "support/refund/disclosure/contact HTTP behavior",
-        "desktop Support to Stripe transition",
-        "mobile Support to Stripe transition",
-        "actual final public payment hostname",
-        "publicly visible one-time or recurring language",
-        "legal/refund/contact links before payment transition"
+      "status": "confirmed",
+      "workflow_run": 28962351393,
+      "artifact_id": 8176591285,
+      "artifact_digest": "sha256:e419abdc27d24b1628c5a35cab55712146f1b6e0523094ad3df48fdf182395ad",
+      "head_sha": "e77ab5b24aa2b7df7bc400294ef01512c76a90e0",
+      "checked_at": "2026-07-08T17:26:09.969Z",
+      "pages": {
+        "/support/": 200,
+        "/refund-policy/": 200,
+        "/commercial-disclosure/": 200,
+        "/contact/": 200
+      },
+      "scenarios": {
+        "desktop_1440": {
+          "support_status": 200,
+          "payment_link_match": true,
+          "cta_target_blank": true,
+          "noreferrer_present": true,
+          "refund_link_present": true,
+          "commercial_disclosure_link_present": true,
+          "contact_link_present": true,
+          "support_one_time_wording_present": true,
+          "final_hostname": "buy.stripe.com",
+          "stripe_visible_product_label": "Support ViewLoom",
+          "stripe_visible_amount": "US$10.00",
+          "stripe_change_amount_visible": true,
+          "stripe_one_time_language_detected": false,
+          "stripe_recurring_language_detected": false
+        },
+        "mobile_390": {
+          "support_status": 200,
+          "payment_link_match": true,
+          "cta_target_blank": true,
+          "noreferrer_present": true,
+          "refund_link_present": true,
+          "commercial_disclosure_link_present": true,
+          "contact_link_present": true,
+          "support_one_time_wording_present": true,
+          "final_hostname": "buy.stripe.com",
+          "stripe_visible_product_label": "Support ViewLoom",
+          "stripe_visible_amount": "US$10.00",
+          "stripe_change_amount_visible": true,
+          "stripe_one_time_language_detected": false,
+          "stripe_recurring_language_detected": false
+        }
+      },
+      "limitations": [
+        "Public browser behavior cannot prove Stripe Dashboard configuration.",
+        "The public Stripe-hosted page did not expose explicit one-time or recurring language in the captured visible text.",
+        "Absence of recurring wording does not prove an account-level or Payment-Link-level recurring setting is impossible.",
+        "No payment was submitted."
       ]
     },
     "prior_external_correspondence": {
@@ -62,14 +104,20 @@
     }
   },
   "consistency_review": {
-    "repository_support_refund_disclosure": "pending_final_hosted_evidence",
+    "repository_support_refund_disclosure": "aligned_with_hosted_public_evidence",
+    "public_payment_destination_matches_repository_link": true,
+    "desktop_mobile_transition_consistent": true,
+    "legal_links_available_before_transition": true,
     "unsupported_dashboard_state_claims_detected": false,
-    "charitable_donation_wording_detected": false
+    "charitable_donation_wording_detected": false,
+    "public_stripe_page_conflicts_with_site_one_time_wording": false,
+    "public_stripe_page_independently_proves_one_time_dashboard_configuration": false
   },
   "completion_gate": {
     "permanent_audit_distinguishes_repository_and_external_facts": true,
     "missing_external_evidence_explicitly_pending": true,
-    "hosted_public_evidence_complete": false,
-    "r12b_0_complete": false
-  }
+    "hosted_public_evidence_complete": true,
+    "r12b_0_complete": true
+  },
+  "next_workstream": "R12B-1 Support page and payment transition"
 }
