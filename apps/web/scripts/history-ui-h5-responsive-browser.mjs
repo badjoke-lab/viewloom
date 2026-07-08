@@ -30,10 +30,19 @@ async function installRoutes(context, calls) {
 }
 
 async function ready(page) {
-  await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-p9h5-ready') === 'true'
-    && document.querySelector('.history-page')?.getAttribute('data-history-p9h4b-ready') === 'true'
-    && document.querySelector('.history-stage')?.getAttribute('data-history-chart-ready') === 'true'
-    && document.querySelector('[data-history-chart-keyboard-target]'))
+  await page.waitForFunction(() => {
+    const historyPage = document.querySelector('.history-page')
+    const stage = document.querySelector('.history-stage')
+    const selectedDay = document.querySelector('[data-history-day][aria-current="date"]')?.getAttribute('data-history-day') ?? ''
+    const keyboardDay = document.querySelector('[data-history-chart-keyboard-target]')?.getAttribute('data-history-keyboard-day') ?? ''
+    const urlDay = new URL(location.href).searchParams.get('day') ?? ''
+    return historyPage?.getAttribute('data-history-p9h5-ready') === 'true'
+      && historyPage?.getAttribute('data-history-p9h4b-ready') === 'true'
+      && stage?.getAttribute('data-history-chart-ready') === 'true'
+      && Boolean(selectedDay)
+      && selectedDay === keyboardDay
+      && selectedDay === urlDay
+  }, null, { timeout: 15_000 })
 }
 
 async function snapshot(page) {
@@ -79,6 +88,16 @@ async function snapshot(page) {
   })
 }
 
+async function keyboardState(page) {
+  return page.evaluate(() => ({
+    urlDay: new URL(location.href).searchParams.get('day') ?? '',
+    selectedDay: document.querySelector('[data-history-day][aria-current="date"]')?.getAttribute('data-history-day') ?? '',
+    keyboardDay: document.querySelector('[data-history-chart-keyboard-target]')?.getAttribute('data-history-keyboard-day') ?? '',
+    chartReady: document.querySelector('.history-stage')?.getAttribute('data-history-chart-ready') ?? '',
+    keyboardActive: document.querySelector('.history-stage')?.getAttribute('data-history-keyboard-active') ?? '',
+  }))
+}
+
 async function assertSkipEntry(page, label) {
   await page.evaluate(() => {
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
@@ -122,7 +141,8 @@ async function pressKeyboardDay(page, key, targetDay, label) {
       lastError = error
     }
   }
-  throw lastError ?? new Error(`${label}: ${key} did not select ${targetDay}`)
+  const state = await keyboardState(page)
+  throw new Error(`${label}: ${key} did not select ${targetDay}; state=${JSON.stringify(state)}; last=${lastError instanceof Error ? lastError.message : String(lastError)}`)
 }
 
 async function assertKeyboardControls(page, label) {
