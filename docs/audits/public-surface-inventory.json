@@ -1,7 +1,7 @@
 {
   "schema": "viewloom-public-surface-inventory-v1",
-  "version": 4,
-  "updated_at": "2026-07-08",
+  "version": 5,
+  "updated_at": "2026-07-09",
   "source": {
     "branch": "main",
     "accepted_main_sha": "952f0008209363f4fd5b22587975ac247ee8d6f2",
@@ -45,5 +45,5 @@
   ],
   "gap_file": "docs/audits/public-surface-gaps.json",
   "historical_next_branch": "work-public-browser-audit",
-  "active_program": "Phase 12 R12B Stripe and support-flow readiness"
+  "active_program": "Phase 12 R12C English launch package and release acceptance"
 }
