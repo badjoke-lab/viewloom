@@ -1,11 +1,11 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 6.4
+Version: 6.5
 Last updated: 2026-07-09
 Current phase: Phase 12 — English release readiness
-Current workstream: R12C-0 message inventory
-Exact next implementation branch: `work-release-r12c0-message-inventory`
+Current workstream: R12C-1 launch copy and FAQ
+Exact next implementation branch: `work-release-r12c1-launch-copy-faq`
 Next branch created: no
 
 ```text
@@ -15,7 +15,10 @@ Phase 11 production closeout complete
 Phase 12 English release readiness active
 R12A legal and support public-surface completion complete
 R12B Stripe and support-flow readiness complete through R12B-2
-R12C English launch package active at R12C-0
+R12C-0 message inventory complete
+R12C-1 launch copy and FAQ active
+R12C-2 launch/share asset package queued
+R12C-3 release candidate acceptance queued
 Phase 12A Analytics Capture Foundation approved and queued
 Phase 13-14 localization queued after Phase 12A
 Phase 15 Analytics Capability and Calibration Audit queued
@@ -50,74 +53,66 @@ Sequence:
 ```text
 R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete
-R12C English launch package and release acceptance active
+R12C-0 message inventory                           complete
+R12C-1 launch copy and FAQ                         active
+R12C-2 launch/share asset package                  queued
+R12C-3 release candidate acceptance                queued
 ```
 
-## R12B closeout
+## R12C-0 closeout
 
 Permanent evidence:
 
 ```text
-docs/audits/r12b-evidence-and-configuration-audit.json
-docs/audits/r12b-repository-consistency-notes.md
-docs/operations/r12b0-evidence-audit-2026-07-09.md
-docs/operations/r12b1-support-transition-acceptance-2026-07-09.md
-docs/operations/r12b2-refund-disclosure-acceptance-2026-07-09.md
+docs/audits/r12c0-message-inventory.json
+docs/audits/r12c0-message-inventory.md
+docs/operations/r12c0-message-inventory-2026-07-09.md
 ```
 
-Accepted execution:
+R12C-0 inventoried:
 
 ```text
-R12B-0 PR #481 / merge dcdedebc1e491c3dbab95149d1a46c38b6d2aeae
-R12B-1 PR #482 / merge 1bcc9590f4ca04202a8155e8d10862f91d73cc7f
-R12B-2 workflow 28963522407 / artifact 8177066249 / result pass
+Portal/About source messages
+provider-specific description boundaries
+Heatmap / Day Flow / Battle Lines / History roles
+Channel / Local Watchlist / Status utility roles
+cadence / retention / coverage boundaries
+Twitch/Kick separation wording
+Status/help/support/legal routes
+FAQ source material
+English terminology candidates
+repo-owned generic OG asset
+CI screenshot evidence source
+R12C-1 message gaps
+R12C-2 asset gaps
 ```
 
-R12B evidence keeps these classes separate:
+## R12C-1 active scope
 
-```text
-repository facts
-hosted public behavior
-historical external correspondence
-current external Stripe dashboard/account facts
-```
-
-Unproven current external state remains explicitly pending and is not converted into a completion claim.
-
-## R12C active scope
-
-R12C owns:
+Produce and integrate, as appropriate:
 
 ```text
 one-line product description
 short listing description
 long product description
 feature-role summary
-bounded-data limitations
+coverage limitations
 provider separation explanation
-Status/help links
-Support/legal links
+retention explanation
 FAQ
-launch/share asset package
-final release candidate acceptance
-exact production verification
+Support/legal links
+Status/help links
 ```
 
-R12C-0 begins with evidence collection rather than copy rewriting:
-
-```text
-Portal and About message inventory
-feature descriptions
-current limitations and coverage wording
-Twitch/Kick separation wording
-Status/help/support/legal links
-existing FAQ-like explanations
-current screenshots and share assets
-missing launch explanations/assets
-approved terminology candidates
-```
+R12C-1 copy must remain evidence-bounded. It must use the R12C-0 inventory rather than invent new platform-wide coverage, official analytics, unique-viewer, exact-revenue, exact-session, combined-provider, or cross-platform ranking claims.
 
 English remains the source language for Phase 13–14.
+
+## R12C-2 queued scope
+
+The current repo-owned share asset is the generic `apps/web/public/og/viewloom.svg`. Public Browser screenshots are CI acceptance artifacts rather than a curated launch package.
+
+R12C-2 therefore owns curated current desktop/mobile screenshots, representative feature screenshots, a source-route/viewport/date/use manifest, and bounded captions.
 
 ## Phase 12A purpose
 

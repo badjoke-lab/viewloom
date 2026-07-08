@@ -1,0 +1,296 @@
+{
+  "schema": "viewloom-r12c0-message-inventory-v1",
+  "phase": "Phase 12",
+  "workstream": "R12C-0",
+  "status": "complete",
+  "updated_at": "2026-07-09",
+  "source_boundary": {
+    "public_copy_sources": [
+      "apps/web/index.html",
+      "apps/web/about/index.html",
+      "apps/web/src/provider-home-shell.ts",
+      "apps/web/twitch/status/index.html",
+      "apps/web/kick/status/index.html",
+      "apps/web/twitch/heatmap/index.html",
+      "apps/web/twitch/day-flow/index.html",
+      "apps/web/twitch/battle-lines/index.html",
+      "apps/web/twitch/history/index.html",
+      "docs/audits/public-surface-routes-portal.json",
+      "docs/audits/public-surface-routes-twitch.json",
+      "docs/audits/public-surface-routes-kick.json"
+    ],
+    "share_asset_sources": [
+      "apps/web/public/og/viewloom.svg",
+      "apps/web/scripts/public-current-browser-audit.mjs"
+    ],
+    "inventory_rule": "Record current public wording and assets before producing launch copy. Do not promote a current sentence to approved launch copy merely because it exists on a page."
+  },
+  "product_identity": {
+    "current_title": "ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts",
+    "current_meta_description": "ViewLoom is an unofficial live-stream observation tool for reading Twitch and Kick data through heatmaps, daily audience flow, rivalry charts, history, and data status.",
+    "portal_kicker": "Live-stream data, separated by platform",
+    "portal_headline": "Observe the field. Then follow the movement.",
+    "portal_lede": "See who is largest now, follow audience movement through the day, compare rival streams, and review retained trends. Twitch and Kick observations always remain separate.",
+    "about_headline": "A narrow tool, built around distinct questions.",
+    "about_lede": "ViewLoom does not claim complete platform coverage. It records a bounded observed field, marks limitations, and gives each kind of movement its own view.",
+    "identity_constraints": [
+      "independent",
+      "unofficial",
+      "observation tool / observatory",
+      "bounded observed data",
+      "Twitch and Kick remain separate"
+    ]
+  },
+  "provider_messages": {
+    "twitch": {
+      "portal_card": "Helix-backed observation of the configured Top 300 window.",
+      "provider_home_lede": "Read the latest Helix-backed observed window, today’s movement, rivalries, retained trends, and data health without mixing Twitch with another platform.",
+      "coverage_label": "Top 300 observed",
+      "coverage_boundary": "More live streams may exist beyond the observed window."
+    },
+    "kick": {
+      "portal_card": "Candidate-based observation from the configured registry or seed list.",
+      "provider_home_lede": "Read the latest candidate-based Kick observation, today’s movement, rivalries, retained trends, and coverage limits without presenting it as Twitch-parity directory coverage.",
+      "coverage_label": "Top 100 observed candidates",
+      "coverage_boundary": "Not provider-wide directory coverage."
+    }
+  },
+  "feature_roles": {
+    "heatmap": {
+      "role": "Now",
+      "portal_copy": "Who is largest, rising, or active right now.",
+      "provider_home_copy": "See where observed viewers are largest and which streams are moving now.",
+      "representative_meta": "Read the current Twitch live-stream landscape through an unofficial ViewLoom heatmap based on observed live data."
+    },
+    "day_flow": {
+      "role": "Today",
+      "portal_copy": "How observed audiences moved through the UTC day.",
+      "provider_home_copy": "Read the day as audience terrain across observed streams.",
+      "representative_meta": "Review how observed Twitch audience volume and share moved across the day with ViewLoom Day Flow."
+    },
+    "battle_lines": {
+      "role": "Rivalry",
+      "portal_copy": "Where rival streams closed gaps, surged, or changed order.",
+      "provider_home_copy": "Compare observed live-stream gaps, reversals, and rivalries.",
+      "representative_meta": "Inspect Twitch audience rivalries, reversals, gaps, and momentum."
+    },
+    "history": {
+      "role": "Trends",
+      "portal_copy": "How peaks, rankings, and audience volume changed over time.",
+      "provider_home_copy": "Review retained rollups, top streamers, peaks, and trends.",
+      "representative_meta": "Review observed Twitch daily trends, top streamers, peaks, and coverage with ViewLoom."
+    },
+    "channel": {
+      "role": "One retained channel footprint",
+      "inventory_source": "current product role and route ownership",
+      "launch_copy_gap": "No concise Portal/About feature-role description currently exists."
+    },
+    "local_watchlist": {
+      "role": "Browser-local saved evidence",
+      "provider_home_copy": "Saved channels in this browser. Keep provider ids separate and reopen provider-safe ViewLoom pages.",
+      "launch_copy_gap": "Not currently represented in the Portal four-view summary."
+    },
+    "status": {
+      "role": "Freshness, coverage, source mode, and limitations",
+      "twitch_copy": "Current health, freshness, and coverage for ViewLoom's Twitch observations.",
+      "kick_copy": "Current health, freshness, and coverage for ViewLoom's Kick observations."
+    }
+  },
+  "operating_facts_and_limitations": {
+    "collection_cadence": "5 minutes",
+    "rollup_retention": "Up to 180 days",
+    "twitch_observed_window": "Top 300 observed",
+    "kick_observed_window": "Top 100 observed candidates",
+    "platform_separation": "Twitch and Kick use separate collectors, coverage models, routes, retained data, and rankings. No combined audience totals or cross-platform rankings are shown.",
+    "viewer_count_boundary": "Viewer counts are public observed values collected on a schedule.",
+    "viewer_minutes_boundary": "Viewer-minutes are derived from repeated snapshots and sample intervals.",
+    "non_claims": [
+      "not official platform analytics",
+      "not exact creator revenue",
+      "not unique viewers",
+      "not complete platform coverage",
+      "not exact session reconstruction",
+      "not cross-platform totals or rankings"
+    ],
+    "state_semantics": {
+      "fresh": "Shown only when returned by the live status API.",
+      "partial": "The observed limit or provider response did not cover the full available field.",
+      "empty": "The real pipeline returned no qualifying streams; it does not mean demo data.",
+      "other_public_states": ["stale", "demo", "missing", "error"]
+    }
+  },
+  "public_help_and_policy_routes": {
+    "method_and_limits": "/about/",
+    "twitch_status": "/twitch/status/",
+    "kick_status": "/kick/status/",
+    "changelog": "/changelog/",
+    "support": "/support/",
+    "contact": "/contact/",
+    "terms": "/terms/",
+    "privacy": "/privacy/",
+    "refund_policy": "/refund-policy/",
+    "commercial_disclosure": "/commercial-disclosure/",
+    "repository": "https://github.com/badjoke-lab/viewloom"
+  },
+  "faq_source_material": [
+    {
+      "question": "What is ViewLoom?",
+      "source_answer_boundary": "An independent, unofficial live-stream data observatory that presents bounded observed Twitch and Kick data through distinct views."
+    },
+    {
+      "question": "Does ViewLoom cover all live streams?",
+      "source_answer_boundary": "No. Twitch uses a configured Top 300 observed window and Kick uses a configured Top 100 candidate-based observed window."
+    },
+    {
+      "question": "Are Twitch and Kick combined?",
+      "source_answer_boundary": "No. Routes, storage, coverage models, retained data, rankings, exports, and analytical claims remain separate."
+    },
+    {
+      "question": "Are these official platform analytics?",
+      "source_answer_boundary": "No. Viewer counts are public observed values collected on a schedule; viewer-minutes are derived from repeated snapshots and intervals."
+    },
+    {
+      "question": "What is each view for?",
+      "source_answer_boundary": "Heatmap = Now, Day Flow = Today, Battle Lines = Rivalry, History = Trends."
+    },
+    {
+      "question": "How often is data collected and how long are rollups retained?",
+      "source_answer_boundary": "Collection cadence is 5 minutes and public rollup retention is up to 180 days."
+    },
+    {
+      "question": "What do Fresh, Partial, and Empty mean?",
+      "source_answer_boundary": "Fresh follows live status evidence; Partial means bounded/provider response coverage was incomplete; Empty means no qualifying streams were returned by the real pipeline."
+    },
+    {
+      "question": "Does support affect rankings or coverage?",
+      "source_answer_boundary": "No. Support does not purchase ranking placement, coverage, data correction, creator listing, or preferential treatment."
+    },
+    {
+      "question": "Where can I check data health?",
+      "source_answer_boundary": "Use the provider-specific Twitch Status and Kick Status pages."
+    },
+    {
+      "question": "Where is a saved Watchlist stored?",
+      "source_answer_boundary": "Local Watchlist data is browser-local and provider-separated."
+    }
+  ],
+  "terminology": {
+    "approved_candidates_for_r12c1": [
+      "ViewLoom",
+      "live-stream data observatory",
+      "independent",
+      "unofficial",
+      "observed data",
+      "observed field",
+      "observed window",
+      "observed candidates",
+      "platform-separated",
+      "current snapshot",
+      "UTC day",
+      "audience movement",
+      "rivalry",
+      "reversal",
+      "gap",
+      "retained trends",
+      "viewer-minutes",
+      "data status",
+      "coverage limits",
+      "Local Watchlist"
+    ],
+    "use_with_qualification": [
+      "share — only when clearly bounded to observed data",
+      "ranking — only within one provider and the observed field",
+      "coverage — always state the provider-specific boundary",
+      "real-time — avoid unless cadence and observation limits are clear"
+    ],
+    "avoid_or_forbid": [
+      "complete platform coverage",
+      "official analytics",
+      "unique viewers",
+      "exact creator revenue",
+      "exact session reconstruction",
+      "combined Twitch and Kick audience total",
+      "cross-platform ranking",
+      "Twitch-parity Kick directory coverage",
+      "donation or charitable donation wording for the support flow"
+    ]
+  },
+  "share_asset_inventory": {
+    "repo_owned": [
+      {
+        "path": "apps/web/public/og/viewloom.svg",
+        "public_url": "/og/viewloom.svg",
+        "dimensions": "1200x630",
+        "type": "generic Open Graph / summary card",
+        "current_copy": "ViewLoom — Live-stream data heatmaps, day flow, rivalry charts, and history.",
+        "assessment": "usable generic identity asset; not a representative product screenshot"
+      }
+    ],
+    "ci_generated_not_repo_owned_launch_assets": {
+      "source": "apps/web/scripts/public-current-browser-audit.mjs",
+      "viewports": ["1440x1000", "820x1180", "390x844", "360x800"],
+      "scope": "full-page screenshots for every current owned route",
+      "assessment": "valuable acceptance evidence, but not curated or versioned as an external launch/share package"
+    },
+    "r12c2_asset_gaps": [
+      "curated current desktop product screenshot",
+      "curated current mobile product screenshot",
+      "representative Heatmap screenshot",
+      "representative Day Flow screenshot",
+      "representative Battle Lines screenshot",
+      "representative History screenshot",
+      "asset manifest recording source route, viewport, capture date, and intended external use",
+      "caption set bounded to observed-data claims"
+    ]
+  },
+  "message_gaps_for_r12c1": [
+    {
+      "id": "launch-description-set-missing",
+      "severity": "required",
+      "detail": "Current page metadata and hero copy exist, but one approved one-line, short, and long launch description set is not centralized."
+    },
+    {
+      "id": "faq-package-missing",
+      "severity": "required",
+      "detail": "FAQ source material exists across About, Status, Support, and legal pages, but no unified launch FAQ exists."
+    },
+    {
+      "id": "retention-explanation-fragmented",
+      "severity": "required",
+      "detail": "Up-to-180-day rollup retention is visible, but raw-versus-rollup retention and provider-specific boundaries need one evidence-bounded launch explanation."
+    },
+    {
+      "id": "channel-watchlist-role-underrepresented",
+      "severity": "recommended",
+      "detail": "Channel and Local Watchlist are owned public utility surfaces but are not represented in the Portal four-view summary."
+    },
+    {
+      "id": "kick-candidate-model-needs-plain-language",
+      "severity": "required",
+      "detail": "Candidate-based Kick coverage is accurate but needs a concise non-jargon explanation for launch listings and FAQ."
+    },
+    {
+      "id": "launch-asset-package-missing",
+      "severity": "required",
+      "detail": "The repo has a generic OG card and CI screenshot artifacts, but no curated repo-owned external launch screenshot package or asset manifest."
+    },
+    {
+      "id": "status-help-link-set-not-centralized",
+      "severity": "recommended",
+      "detail": "Provider Status, About, Changelog, Contact, Support, and legal routes exist but need one launch-package link map."
+    }
+  ],
+  "completion": {
+    "portal_about_descriptions_collected": true,
+    "feature_roles_collected": true,
+    "limitations_collected": true,
+    "provider_separation_collected": true,
+    "status_help_support_legal_links_collected": true,
+    "faq_source_material_identified": true,
+    "share_assets_inventoried": true,
+    "missing_explanations_and_assets_identified": true,
+    "approved_terminology_candidate_set_defined": true,
+    "r12c0_complete": true,
+    "next_workstream": "R12C-1 launch copy and FAQ"
+  }
+}

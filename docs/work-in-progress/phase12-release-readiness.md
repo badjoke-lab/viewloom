@@ -7,142 +7,149 @@ Implementation plan: `../product/release-readiness-plan.md`
 Phase 11 entry evidence: `../operations/phase11-production-closeout-2026-07-08.md`
 R12A production evidence: `../audits/r12a-production-acceptance.json`
 R12B-0 audit: `../audits/r12b-evidence-and-configuration-audit.json`
-R12B-0 operation record: `../operations/r12b0-evidence-audit-2026-07-09.md`
 R12B-1 acceptance: `../operations/r12b1-support-transition-acceptance-2026-07-09.md`
 R12B-2 acceptance: `../operations/r12b2-refund-disclosure-acceptance-2026-07-09.md`
-Current workstream: R12C-0 message inventory
-Exact next implementation branch: `work-release-r12c0-message-inventory`
+R12C-0 inventory: `../audits/r12c0-message-inventory.json`
+R12C-0 notes: `../audits/r12c0-message-inventory.md`
+R12C-0 closeout: `../operations/r12c0-message-inventory-2026-07-09.md`
+Current workstream: R12C-1 launch copy and FAQ
+Exact next implementation branch: `work-release-r12c1-launch-copy-faq`
 Next branch created: no
-
-## Retained transition history
-
-Before R12B execution began, the canonical handoff state was:
-
-```text
-Current workstream: R12B-0 evidence and configuration audit
-Exact next implementation branch: `work-release-r12b-stripe-support-flow`
-Next branch created: no
-```
-
-R12B-0 executed on `work-release-r12b-stripe-support-flow` and merged through PR #481. R12B-1 executed on `work-release-r12b1-support-transition` and merged through PR #482. R12B-2 closes on the current acceptance branch before R12C-0 starts.
 
 ## Workstreams
 
 ```text
 R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete through R12B-2
-R12C English launch package and release acceptance active at R12C-0
+R12C-0 message inventory                           complete
+R12C-1 launch copy and FAQ                         active
+R12C-2 launch/share asset package                  queued
+R12C-3 release candidate acceptance                queued
 ```
 
-## R12A closeout
+## Retained R12B evidence boundary
 
-```text
-Implementation PR: #477
-Implementation merge SHA: 952f0008209363f4fd5b22587975ac247ee8d6f2
-Production workflow run: 28941169278
-Expected/deployed SHA: 952f0008209363f4fd5b22587975ac247ee8d6f2
-Owned HTML routes: 25
-Provider status APIs: 2
-Provider crossing failures: 0
-Blocking monitoring alerts: 0
-Watch alerts: 2
-Explicit 404: pass
-Result: pass
-```
-
-## R12B-0 closeout
-
-```text
-PR: #481
-Merge SHA: dcdedebc1e491c3dbab95149d1a46c38b6d2aeae
-Workflow run: 28962351393
-Artifact id: 8176591285
-Repository facts: confirmed
-Hosted public behavior: confirmed
-Prior external correspondence: historical evidence only
-Current Stripe Dashboard state: pending external evidence
-Permanent audit completion: complete
-```
-
-Permanent R12B-0 evidence:
+R12B is complete through R12B-2. Permanent evidence remains:
 
 ```text
 docs/audits/r12b-evidence-and-configuration-audit.json
 docs/audits/r12b-repository-consistency-notes.md
 docs/operations/r12b0-evidence-audit-2026-07-09.md
+docs/operations/r12b1-support-transition-acceptance-2026-07-09.md
+docs/operations/r12b2-refund-disclosure-acceptance-2026-07-09.md
 ```
 
-## R12B-1 acceptance
+R12B execution:
 
 ```text
-PR: #482
-Merge SHA: 1bcc9590f4ca04202a8155e8d10862f91d73cc7f
-Workflow run: 28963037083
-Artifact id: 8176871147
-Desktop 1440: pass
-Mobile 390: pass
-Violations: 0
-Horizontal overflow: 0px desktop / 0px mobile
-CTA name: Open Stripe payment page
-Desktop CTA size: 217x34px
-Mobile CTA size: 217x44px
+R12B-0 PR: #481
+R12B-0 merge SHA: dcdedebc1e491c3dbab95149d1a46c38b6d2aeae
+R12B-1 PR: #482
+R12B-1 merge SHA: 1bcc9590f4ca04202a8155e8d10862f91d73cc7f
+R12B-2 PR: #483
+R12B-2 merge SHA: eeeb41fc337b220bb48f28d7d2ed1b81664e02a6
 ```
 
-R12B-1 completed as acceptance-only work. The existing Support page already satisfied the approved transition contract.
+Current Stripe Dashboard/account facts not directly proven remain pending external evidence. Repository or public-browser behavior must not be used to claim the current registered website value, account review state, Payment Link dashboard configuration, recurring configuration, or refund configuration.
 
-## R12B-2 acceptance
+## R12C-0 closeout
+
+R12C-0 completed an evidence inventory before launch-copy writing.
+
+Permanent evidence:
 
 ```text
-Workflow run: 28963522407
-Artifact id: 8177066249
-Artifact digest: sha256:7c209bf81f04df9687f154b89c9ce89ee602900b583191b4691e2731cea9690d
-Evidence head SHA: 3cfc02ea3458170a19f86e43bc7dc6b2d7d16598
-Routes: 4
-Viewports: 2
-Page scenarios: 8
-Mobile Back/return flows: 2
-Violations: 0
+docs/audits/r12c0-message-inventory.json
+docs/audits/r12c0-message-inventory.md
+docs/operations/r12c0-message-inventory-2026-07-09.md
 ```
 
-Across all eight scenarios:
+Inventory completed:
 
 ```text
-HTTP status: pass
-canonical ownership: pass
-horizontal overflow: 0px
-charitable donation wording detected: false
-unsupported current Stripe Dashboard-state claim detected: false
-secret-like payment token count: 0
+Portal/About product identity source messages
+Twitch/Kick provider messages
+Heatmap / Day Flow / Battle Lines / History roles
+Channel / Local Watchlist / Status utility roles
+5-minute cadence wording
+up-to-180-day rollup retention wording
+Twitch Top 300 observed-window boundary
+Kick Top 100 observed-candidate boundary
+provider-separation explanation
+viewer-count and viewer-minutes boundaries
+state semantics
+Status/help/support/legal link map
+FAQ source material
+English terminology candidates
+current generic OG asset
+CI screenshot evidence source
+R12C-1 message gaps
+R12C-2 asset gaps
 ```
 
-Mobile return behavior:
+Current product source messages preserved in the inventory include:
 
 ```text
-/support/ -> /refund-policy/ -> Back -> /support/: pass
-/support/ -> /commercial-disclosure/ -> Back -> /support/: pass
+Live-stream data, separated by platform
+Observe the field. Then follow the movement.
+A narrow tool, built around distinct questions.
 ```
 
-R12B-2 completed as acceptance-only work. No support/refund/disclosure wording conflict requiring a copy change remains.
+These are evidence sources, not automatic approval of every current sentence as final launch copy.
 
-## External evidence boundary
+## R12C-1 active scope
 
-Do not infer these facts from repository code or public browser behavior alone:
+R12C-1 owns:
 
 ```text
-Stripe registered business website is current
-Stripe account approval/state is unchanged
-Payment Link dashboard configuration matches repository wording
-refund configuration is enabled or disabled in a particular way
-recurring payments are impossible solely because the site copy says one-time
+one-line description
+short listing description
+long description
+feature-role summary
+coverage limitations
+provider separation explanation
+retention explanation
+FAQ
+Support/legal links
+Status/help links
 ```
 
-Historical external project record date remains `2026-06-09`. Unproven current external state remains pending rather than converted into a completion claim.
+Required R12C-0 message gaps handed to R12C-1:
 
-## R12B decision
+```text
+central approved description set
+unified FAQ
+plain-language Kick candidate-coverage explanation
+evidence-bounded retention explanation
+launch-package link map
+Channel role decision
+Local Watchlist role decision
+```
 
-R12B is complete through R12B-2. The next active workstream is R12C-0 message inventory.
+R12C-1 must preserve these non-claim boundaries:
 
-R12C-0 begins with an evidence inventory of current English public descriptions, limitations, provider-separation wording, help/status/support/legal links, FAQ-like explanations, screenshots, share assets, and terminology candidates. It does not begin broad launch-copy rewriting before the inventory exists.
+```text
+no complete-platform-coverage claim
+no official-analytics claim
+no unique-viewer claim
+no exact creator revenue claim
+no exact session reconstruction claim
+no combined Twitch/Kick audience total
+no cross-platform ranking
+no Twitch-parity Kick directory-coverage claim
+no donation/charitable-donation framing for the support flow
+```
+
+## R12C-2 queued asset boundary
+
+Current repo-owned generic share asset:
+
+```text
+apps/web/public/og/viewloom.svg
+1200x630
+```
+
+Public Browser screenshots are CI acceptance artifacts, not a curated launch package. R12C-2 still owns curated desktop/mobile and representative feature screenshots plus an asset manifest and bounded caption set.
 
 ## Capacity carry-forward
 
