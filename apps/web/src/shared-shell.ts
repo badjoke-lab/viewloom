@@ -151,7 +151,6 @@ function inferStatusState(text: string): ShellStatusState {
 }
 
 function normalizeFooter(footer: HTMLElement): void {
-  const existingContact = [...footer.querySelectorAll<HTMLAnchorElement>('a')].find((link) => link.textContent?.trim() === 'Contact')
   let disclaimer = footer.querySelector<HTMLElement>('.footer__disclaimer')
   if (!disclaimer) {
     disclaimer = document.createElement('div')
@@ -170,7 +169,11 @@ function normalizeFooter(footer: HTMLElement): void {
     footerLink('/changelog/', 'Changelog'),
     footerLink('/about/', 'Method & limits'),
     footerLink('/support/', 'Support'),
-    ...(existingContact ? [footerLink(existingContact.href, 'Contact', true)] : []),
+    footerLink('/contact/', 'Contact'),
+    footerLink('/terms/', 'Terms'),
+    footerLink('/privacy/', 'Privacy'),
+    footerLink('/refund-policy/', 'Refund policy'),
+    footerLink('/commercial-disclosure/', 'Commercial disclosure'),
     footerLink('https://github.com/badjoke-lab/viewloom', 'GitHub', true),
   )
 }
