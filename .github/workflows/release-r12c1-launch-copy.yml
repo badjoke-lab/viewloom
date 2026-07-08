@@ -44,3 +44,6 @@ jobs:
 
       - name: Verify R12C-1 launch copy package
         run: node scripts/verify-r12c1-launch-copy-package.mjs
+
+      - name: Verify current public-state handoff
+        run: node scripts/verify-public-browser-audit-current.mjs
