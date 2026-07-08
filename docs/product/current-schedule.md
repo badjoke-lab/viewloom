@@ -15,38 +15,36 @@ U10F complete PR #468
 U10G complete PR #470
 U10H production acceptance complete PR #471
 U10H canonical closeout complete PR #472
-Phase 11 P11A strict-null migration complete
-Phase 11 P11B CI ownership complete
-Phase 11 P11C monitoring contract complete
-Phase 11 P11D escalation runbook complete
-Phase 11 P11E maintenance cadence complete
-Phase 11 P11F acceptance ownership complete
-Phase 11 P11G candidate merged PR #473
+Phase 11 P11A-P11G complete
 Phase 11 production closeout complete
 Phase 12 English release readiness active
-Current workstream: R12A-5 candidate and hosted acceptance
-Active implementation branch: work-release-r12a-legal-support
-Branch created: yes
-Hosted production acceptance: pending merge
+R12A legal and support public-surface completion complete
+R12A implementation PR: #477
+R12A production acceptance: pass
+Current workstream: R12B-0 evidence and configuration audit
+Exact next implementation branch: work-release-r12b-stripe-support-flow
+Next branch created: no
 ```
 
-## Phase 11 closeout evidence
+## R12A production acceptance
 
 ```text
-Hosted workflow run: 28932232525
-Artifact id: 8163904094
-Artifact digest: sha256:29469a860baa8da27d9155fd5fd79a162fa39467e58bc5ee2b2b4c143f8349be
-Expected/deployed main SHA: 90fb2714137cc83e6f20e44415574a5e35a98439
-Repository-owned HTML routes checked: 20
-Provider status APIs checked: 2
+Implementation merge SHA: 952f0008209363f4fd5b22587975ac247ee8d6f2
+Production workflow run: 28941169278
+Expected/deployed SHA: 952f0008209363f4fd5b22587975ac247ee8d6f2
+Repository-owned HTML routes: 25
+Provider status APIs: 2
 Provider crossing failures: 0
 Blocking monitoring alerts: 0
-Twitch capacity watch: at-or-over-window 300/300
-Kick capacity watch: at-or-over-window 100/100
+Watch alerts: 2
+Explicit 404: pass
 Result: pass
 ```
 
-Permanent record: `../operations/phase11-production-closeout-2026-07-08.md`.
+Permanent evidence:
+
+- `../audits/r12a-production-acceptance.json`
+- `../operations/r12a-production-acceptance-2026-07-08.md`
 
 ## Active Phase 12 execution order
 
@@ -56,8 +54,8 @@ R12A-1 shared legal/support page foundation                complete
 R12A-2 Contact, Terms, Privacy                             complete
 R12A-3 Refund Policy and Commercial Disclosure             complete
 R12A-4 About/footer and route ownership integration        complete
-R12A-5 R12A candidate and hosted acceptance                active
-R12B-0 evidence and configuration audit                    queued
+R12A-5 candidate and hosted acceptance                     complete
+R12B-0 evidence and configuration audit                    active
 R12B-1 Support page and payment transition                 queued
 R12B-2 refund/disclosure consistency acceptance            queued
 R12C-0 message inventory                                   queued
@@ -66,50 +64,32 @@ R12C-2 launch/share asset package                          queued
 R12C-3 release candidate acceptance                        queued
 ```
 
-## R12A candidate acceptance matrix
+## R12B-0 execution boundary
+
+Audit separately:
 
 ```text
-Candidate Vite HTML inputs: 25
-Explicit not-found pages: 1
-Candidate inventory entries: 26
-Indexable routes: 21
-Noindex routes: 4
-Sitemap routes: 21
-Public Readiness routes: 25
-Production Smoke routes after merge: 25
-Current candidate browser matrix: 25 routes x 4 widths = 100 scenarios
-Historical P8B evidence: 21 routes / 84 production scenarios / 5 missing probes / 10 History scenarios
+repository facts
+hosted public behavior
+external Stripe dashboard/account facts
 ```
 
-Required before merge:
+Required R12B-0 checks:
 
 ```text
-Development policy latest-head pass
-R12A legal/support contract gate pass
-Public Surface Inventory pass
-Public Readiness pass
-Current Browser matrix 100/100 pass
-Typecheck and build pass
+actual public Payment Link destination
+Support CTA wording consistency
+one-time versus recurring behavior visible to users
+Refund Policy consistency
+Commercial Disclosure consistency
+desktop external transition flow
+mobile external transition flow
+registered business website/domain evidence
+external configuration evidence source and date
+explicit list of unresolved external evidence
 ```
 
-Required after merge:
-
-```text
-Production deployment SHA matches merged main SHA
-25 repository-owned HTML routes return 200
-Twitch/Kick status and provider separation remain healthy
-monitoring evidence has no blocking alerts
-explicit 404 behavior remains correct
-five candidate surfaces move to resolved only after this hosted evidence passes
-```
-
-Phase 12 authority:
-
-- `release-readiness-spec.md`
-- `release-readiness-plan.md`
-- `../work-in-progress/phase12-release-readiness.md`
-
-External Stripe dashboard/account state must not be claimed from repository content alone. R12B requires explicit external evidence.
+Repository content alone must not be used to claim Stripe registered website state, account approval/state, Payment Link dashboard settings, or refund configuration.
 
 ## Forward execution order after Phase 12
 
@@ -139,7 +119,14 @@ Phase 12A starts only after Phase 12 closes. It must complete:
 12A-5 production acceptance and accumulation handoff
 ```
 
-Phase 12A does not launch analytics UI. Its purpose is to begin forward-only evidence accumulation that cannot be reconstructed from existing 180-day daily rollups.
+The R12A closeout carried forward these non-blocking capacity observations:
+
+```text
+Twitch: at-or-over-window 300/300
+Kick:   at-or-over-window 100/100
+```
+
+They are Phase 12A baseline inputs, not authorization to expand limits.
 
 ## Phase 15 schedule boundary
 
