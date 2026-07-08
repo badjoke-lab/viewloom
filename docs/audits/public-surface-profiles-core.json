@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-profiles-v1",
-  "version": 2,
+  "version": 3,
   "group": "core",
   "gates": {
     "common_repository": [".github/workflows/web-build.yml", ".github/workflows/web-verification.yml", ".github/workflows/platform-naming.yml"],
@@ -18,7 +18,7 @@
       "states": ["loading", "fresh", "partial", "stale", "empty", "demo", "error"],
       "gates": ["common_repository", "public_readiness", "home_contract", "production_smoke"],
       "assessment": "partial",
-      "gaps": ["no 1440/820/390/360 browser matrix", "no all-state browser matrix"]
+      "gaps": ["no all-state browser matrix"]
     },
     "static_content": {
       "owner": ["apps/web/src/static-page.ts", "apps/web/src/shared-shell.ts"],
@@ -35,8 +35,8 @@
       "controls": ["navigation", "policy links", "external contact or reference links where present"],
       "states": ["static"],
       "gates": ["common_repository", "public_readiness", "content_contract", "production_smoke"],
-      "assessment": "candidate_r12a",
-      "gaps": ["hosted production acceptance pending R12A-5"]
+      "assessment": "complete_current_contract",
+      "gaps": []
     },
     "changelog": {
       "owner": ["apps/web/src/changelog-page.ts"],
@@ -54,7 +54,7 @@
       "states": ["loading", "fresh", "partial", "stale", "empty", "demo", "error"],
       "gates": ["common_repository", "public_readiness", "home_contract", "production_smoke"],
       "assessment": "partial",
-      "gaps": ["no full viewport/state browser matrix"]
+      "gaps": ["no all-state browser matrix"]
     }
   }
 }
