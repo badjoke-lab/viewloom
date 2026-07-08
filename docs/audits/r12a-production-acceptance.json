@@ -4,8 +4,8 @@
   "workstream": "R12A-5",
   "status": "complete",
   "result": "pass",
-  "checked_at": "2026-07-08T12:09:01Z",
-  "workflow_run": 28941410097,
+  "checked_at": "2026-07-08T12:10:46Z",
+  "workflow_run": 28941499979,
   "expected_main_sha": "952f0008209363f4fd5b22587975ac247ee8d6f2",
   "deployed_sha": "952f0008209363f4fd5b22587975ac247ee8d6f2",
   "counts": {
