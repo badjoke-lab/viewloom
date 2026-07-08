@@ -22,9 +22,12 @@ Phase 11 P11F acceptance ownership               complete
 Phase 11 P11G candidate                          merged PR #473
 Phase 11 production closeout                     complete
 Phase 12 English release readiness               active
-Current workstream                               R12A-0 current legal/support surface audit
-Exact next implementation branch                 work-release-r12a-legal-support
-Next branch created                              no
+Current workstream                               R12A-5 candidate and hosted acceptance
+Active implementation branch                     work-release-r12a-legal-support
+Branch created                                   yes
+Candidate public HTML routes                     25
+Candidate browser scenarios                      100
+Hosted production acceptance                     pending merge
 ```
 
 ## Current authorities
@@ -35,6 +38,9 @@ Next branch created                              no
 - Phase 12 specification: `product/release-readiness-spec.md`
 - Phase 12 implementation plan: `product/release-readiness-plan.md`
 - Active Phase 12 record: `work-in-progress/phase12-release-readiness.md`
+- R12A baseline audit: `audits/phase12-r12a-legal-support-baseline.json`
+- Public surface inventory: `audits/public-surface-inventory.json`
+- Current gap state: `audits/public-surface-gaps.json`
 - Permanent Phase 11 closeout: `operations/phase11-production-closeout-2026-07-08.md`
 - Phase 10–11 specification: `product/cross-site-quality-remediation-spec.md`
 - Phase 10–11 plan: `product/cross-site-quality-remediation-plan.md`
@@ -44,7 +50,7 @@ Next branch created                              no
 - P11C monitoring contract and hosted evidence: `audits/phase11-monitoring-contract.json`
 - P11D runbook: `operations/phase11-monitoring-and-escalation.md`
 - P11E cadence: `operations/phase11-maintenance-cadence.md`
-- P11F ownership evidence: `audits/phase11-public-acceptance-ownership.json`
+- P11F historical ownership evidence: `audits/phase11-public-acceptance-ownership.json`
 - Permanent U10H production acceptance: `operations/u10h-production-acceptance-2026-07-04.md`
 
 ## Active Phase 12 sequence
@@ -55,7 +61,19 @@ R12B Stripe and support-flow readiness
 R12C English launch package and release acceptance
 ```
 
-R12A starts with an audit of current About, Support, footer, build inputs, public inventory, readiness, smoke ownership, sitemap, metadata, and browser ownership. Do not pre-edit route counts before implementation is measured. External Stripe dashboard/account state requires explicit evidence in R12B.
+R12A-0 through R12A-4 are complete on the active candidate branch. R12A-5 owns latest-head candidate gates, merge, exact production deployment verification, 25-route Production Smoke, provider status/monitoring checks, explicit 404 verification, and final gap transition from candidate to resolved.
+
+Five candidate surfaces remain pending hosted production acceptance:
+
+```text
+/contact/
+/terms/
+/privacy/
+/refund-policy/
+/commercial-disclosure/
+```
+
+Do not mark them resolved before exact post-merge production evidence passes. External Stripe dashboard/account state requires explicit evidence in R12B.
 
 ## Approved analytics program authorities
 
@@ -86,4 +104,4 @@ Phase 12A begins capture and compact rollup work only after Phase 12 closes. Pha
 - `product/watchlist-v1-implementation-plan.md`
 - `operations/watchlist-production-acceptance-2026-06-25.md`
 
-The immediate repository priority is Phase 12 R12A-0 audit followed by the exact next implementation branch `work-release-r12a-legal-support`. Future analytics work must follow its approved capture, calibration, and phase-entry gates rather than ad hoc feature additions.
+The immediate repository priority is R12A-5 candidate and hosted acceptance on `work-release-r12a-legal-support`. Future work must follow the active Phase 12 and analytics entry gates rather than ad hoc feature additions.
