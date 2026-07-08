@@ -7,6 +7,7 @@
     "base_commit": "fe11bcbfa893ce2190bd6cd9df8a12b8639f1167",
     "build_config": "apps/web/vite.config.ts",
     "public_readiness": "apps/web/scripts/public-readiness-audit.mjs",
+    "current_browser_audit": "apps/web/scripts/public-current-browser-audit.mjs",
     "production_smoke": ".github/workflows/production-smoke.yml"
   },
   "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. Candidate legal routes remain pending hosted production acceptance until R12A-5.",
@@ -18,7 +19,9 @@
     "noindex_routes": 4,
     "sitemap_routes": 21,
     "public_readiness_configured_pages": 25,
-    "production_smoke_page_routes": 25
+    "production_smoke_page_routes": 25,
+    "current_browser_required_viewports": 4,
+    "current_browser_scenarios": 100
   },
   "provider_invariants": {
     "separate_routes": true,
