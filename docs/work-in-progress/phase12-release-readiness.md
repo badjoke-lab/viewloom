@@ -5,26 +5,28 @@ Phase: Phase 12
 Specification: `../product/release-readiness-spec.md`
 Implementation plan: `../product/release-readiness-plan.md`
 Phase 11 entry evidence: `../operations/phase11-production-closeout-2026-07-08.md`
-R12A baseline: `../audits/phase12-r12a-legal-support-baseline.json`
 R12A production evidence: `../audits/r12a-production-acceptance.json`
-R12A human record: `../operations/r12a-production-acceptance-2026-07-08.md`
-R12B audit: `../audits/r12b-evidence-and-configuration-audit.json`
-Current workstream: R12B-0 evidence and configuration audit
-Active branch: `work-release-r12b-stripe-support-flow`
+R12B-0 audit: `../audits/r12b-evidence-and-configuration-audit.json`
+R12B-0 operation record: `../operations/r12b0-evidence-audit-2026-07-09.md`
+R12B-1 acceptance: `../operations/r12b1-support-transition-acceptance-2026-07-09.md`
+Current workstream: R12B-1 Support page and payment transition acceptance
+Active branch: `work-release-r12b1-support-transition`
 Branch created: yes
 R12B-0 completion: complete
-Next after R12B-0 merge: R12B-1 Support page and payment transition acceptance
+R12B-1 completion: complete
+Next after R12B-1 merge: R12B-2 refund/disclosure consistency acceptance
 
-## R12B entry transition record
+## Retained transition history
 
-Before the R12B branch was created, the canonical handoff state was:
+Before R12B execution began, the canonical handoff state was:
 
 ```text
+Current workstream: R12B-0 evidence and configuration audit
 Exact next implementation branch: `work-release-r12b-stripe-support-flow`
 Next branch created: no
 ```
 
-Current state is the active branch record above: the branch exists and R12B-0 closeout evidence is being finalized on it.
+R12B-0 then executed on `work-release-r12b-stripe-support-flow` and merged through PR #481.
 
 ## Workstreams
 
@@ -50,29 +52,19 @@ Explicit 404: pass
 Result: pass
 ```
 
-Accepted R12A routes:
+## R12B-0 closeout
 
 ```text
-/contact/
-/terms/
-/privacy/
-/refund-policy/
-/commercial-disclosure/
-```
-
-The five routes are resolved surfaces. `static_legal` is accepted under the current contract. Historical P8B missing-surface evidence remains separately preserved and is not rewritten.
-
-## R12B-0 audit state
-
-```text
+PR: #481
+Merge SHA: dcdedebc1e491c3dbab95149d1a46c38b6d2aeae
 Repository facts: confirmed
 Hosted public behavior: confirmed
-Prior external correspondence: recorded as historical evidence only
+Prior external correspondence: historical evidence only
 Current Stripe Dashboard state: pending external evidence
 Permanent audit completion: complete
 ```
 
-Permanent evidence owners:
+Permanent R12B-0 evidence:
 
 ```text
 docs/audits/r12b-evidence-and-configuration-audit.json
@@ -80,70 +72,53 @@ docs/audits/r12b-repository-consistency-notes.md
 docs/operations/r12b0-evidence-audit-2026-07-09.md
 ```
 
-R12B Hosted Audit evidence:
+R12B-0 hosted evidence:
 
 ```text
 Workflow run: 28962351393
 Artifact id: 8176591285
 Artifact digest: sha256:e419abdc27d24b1628c5a35cab55712146f1b6e0523094ad3df48fdf182395ad
-Evidence head SHA: e77ab5b24aa2b7df7bc400294ef01512c76a90e0
-Browser runner: apps/web/scripts/r12b-hosted-support-audit.mjs
-Hosted evidence verifier: scripts/verify-r12b-hosted-support-audit.mjs
-Permanent evidence verifier: scripts/verify-r12b-evidence-audit.mjs
-Required viewports: desktop 1440 / mobile 390
-No payment submission: confirmed
-```
-
-## R12B-0 hosted findings
-
-```text
-/support/: 200
-/refund-policy/: 200
-/commercial-disclosure/: 200
-/contact/: 200
-Desktop Support -> Stripe transition: pass
-Mobile Support -> Stripe transition: pass
 Final public hostname: buy.stripe.com
 Visible Stripe label: Support ViewLoom
-Visible Stripe amount: US$10.00
-Change amount control: visible
+Visible amount: US$10.00
 Explicit one-time wording on Stripe visible text: not detected
 Explicit recurring wording on Stripe visible text: not detected
+Payment submission: not performed
 ```
 
-The public Stripe-hosted page did not contradict the site wording, but public browser evidence does not independently prove current Payment Link or account-level recurrence configuration.
+## R12B-1 acceptance
 
-## R12B-0 repository facts
-
-The repository currently contains:
+R12B-1 was evaluated as acceptance-only work. The existing Support page passed the approved transition contract without a product/UI change.
 
 ```text
-Support route: /support/
-Payment model wording: one-time support
-Payment Link: https://buy.stripe.com/6oUcMYeRh0Na2oX3cDcIE03
-CTA label: Open Stripe payment page
-External target: _blank
-External rel: noreferrer
-Refund route: /refund-policy/
-Commercial Disclosure route: /commercial-disclosure/
-Contact route: /contact/
-Contact submission channel: external Google-hosted form
+Workflow run: 28963037083
+Artifact id: 8176871147
+Artifact digest: sha256:98d92c559c9ddeda0d3307be01a213e13cb85406a0ee4333d211b47dbf0197c1
+Evidence head SHA: 1f4405ace2735f7a34f1989bd1988800bc442897
+Desktop 1440: pass
+Mobile 390: pass
+Violations: 0
+Horizontal overflow: 0px desktop / 0px mobile
+CTA name: Open Stripe payment page
+Desktop CTA size: 217x34px
+Mobile CTA size: 217x44px
+Stripe-hosted transition explanation: present
+Refund Policy link: present
+Commercial Disclosure link: present
+Contact link: present
+Secret-like Stripe credential token in public DOM: none
 ```
 
-These repository facts do not prove external Stripe dashboard or account state.
+The mobile CTA meets the 44px action-target rule exactly. No unnecessary Support copy or layout change is authorized by the evidence.
 
-## Prior external correspondence boundary
-
-The 2026-06-09 project record preserves prior Stripe specialist guidance as historical external evidence:
+Permanent R12B-1 evidence:
 
 ```text
-vl.badjoke-lab.com was supportable as the ViewLoom business website
-registered website should be changed from the old Livefield URL before using the existing Payment Link on ViewLoom
-Support / Support ViewLoom wording should be used instead of charitable donation wording
-Commercial Disclosure surface was required for the support flow
+docs/operations/r12b1-support-transition-acceptance-2026-07-09.md
+scripts/verify-r12b1-acceptance-record.mjs
+apps/web/scripts/r12b1-support-transition-browser.mjs
+scripts/verify-r12b1-support-transition.mjs
 ```
-
-This historical record does not prove the current Stripe Dashboard website value, current account state, current Payment Link settings, or current refund configuration.
 
 ## External evidence boundary
 
@@ -159,11 +134,11 @@ recurring payments are impossible solely because the site copy says one-time
 
 Where direct authoritative evidence is unavailable, keep the item pending rather than inventing completion.
 
-## R12B-0 decision
+## R12B-1 decision
 
-R12B-0 is complete under its defined completion contract: repository facts and hosted public behavior are recorded separately from external Stripe facts, and missing current dashboard evidence remains explicitly pending.
+R12B-1 is complete as acceptance-only work. The existing Support page already satisfies the approved payment-transition contract.
 
-No repository wording conflict or hosted transition defect requiring immediate Support copy changes was identified. After this R12B-0 closeout merges, proceed to R12B-1 Support page and payment transition acceptance.
+After this R12B-1 acceptance PR merges, proceed to R12B-2 refund/disclosure consistency acceptance.
 
 ## Capacity carry-forward
 
