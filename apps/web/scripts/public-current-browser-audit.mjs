@@ -100,7 +100,21 @@ async function auditRoute(browser, route, viewport) {
       .filter((node) => isVisible(node))
       .map((node) => {
         const rect = node.getBoundingClientRect()
-        const name = node.getAttribute('aria-label') || node.getAttribute('title') || node.textContent?.trim() || (node instanceof HTMLInputElement ? node.name || node.placeholder : '') || ''
+        const labelledBy = node.getAttribute('aria-labelledby')
+          ?.split(/\s+/)
+          .map((id) => document.getElementById(id)?.textContent?.trim() ?? '')
+          .filter(Boolean)
+          .join(' ') ?? ''
+        const associatedLabel = node instanceof HTMLInputElement || node instanceof HTMLSelectElement || node instanceof HTMLTextAreaElement
+          ? Array.from(node.labels ?? []).map((label) => label.textContent?.trim() ?? '').filter(Boolean).join(' ')
+          : ''
+        const name = node.getAttribute('aria-label')
+          || labelledBy
+          || associatedLabel
+          || node.getAttribute('title')
+          || node.textContent?.trim()
+          || (node instanceof HTMLInputElement ? node.name || node.placeholder : '')
+          || ''
         return { tag: node.tagName.toLowerCase(), name, width: Math.round(rect.width), height: Math.round(rect.height) }
       })
     return {
