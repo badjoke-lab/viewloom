@@ -15,9 +15,10 @@ R12A implementation PR: #477
 R12A production acceptance: pass
 R12B-0 evidence and configuration audit complete PR #481
 R12B-1 Support page and payment transition acceptance complete PR #482
-R12B-2 refund/disclosure consistency acceptance complete
-Current workstream: R12C-0 message inventory
-Exact next implementation branch: work-release-r12c0-message-inventory
+R12B-2 refund/disclosure consistency acceptance complete PR #483
+R12C-0 message inventory complete
+Current workstream: R12C-1 launch copy and FAQ
+Exact next implementation branch: work-release-r12c1-launch-copy-faq
 Next branch created: no
 ```
 
@@ -33,49 +34,57 @@ R12A-5 candidate and hosted acceptance                     complete
 R12B-0 evidence and configuration audit                    complete
 R12B-1 Support page and payment transition                 complete
 R12B-2 refund/disclosure consistency acceptance            complete
-R12C-0 message inventory                                   active
-R12C-1 launch copy and FAQ                                 queued
+R12C-0 message inventory                                   complete
+R12C-1 launch copy and FAQ                                 active
 R12C-2 launch/share asset package                          queued
 R12C-3 release candidate acceptance                        queued
 ```
 
-## R12B accepted evidence
+## R12C-0 accepted inventory
+
+Permanent evidence:
 
 ```text
-R12B-0 PR: #481
-R12B-0 merge SHA: dcdedebc1e491c3dbab95149d1a46c38b6d2aeae
-R12B-0 hosted workflow: 28962351393
-R12B-1 PR: #482
-R12B-1 merge SHA: 1bcc9590f4ca04202a8155e8d10862f91d73cc7f
-R12B-1 workflow: 28963037083
-R12B-2 workflow: 28963522407
-R12B-2 artifact: 8177066249
-R12B-2 result: pass
+docs/audits/r12c0-message-inventory.json
+docs/audits/r12c0-message-inventory.md
+docs/operations/r12c0-message-inventory-2026-07-09.md
 ```
 
-R12B evidence keeps repository facts, hosted public behavior, historical correspondence, and current Stripe Dashboard/account facts separate. Unproven current external state remains explicitly pending.
-
-## R12C-0 execution boundary
-
-Collect and normalize the current English public-message inventory before writing launch copy.
-
-Required inventory:
+Inventory completed:
 
 ```text
-Portal product description
-About purpose and methodology wording
+Portal/About source descriptions
+provider-home descriptions
 feature-role descriptions
-bounded-data and coverage limitations
+coverage/retention/cadence boundaries
 Twitch/Kick separation explanation
-Status and methodology/help links
-Support and legal links
-current FAQ-like explanations
-available public screenshots and share assets
-missing launch explanations and assets
-approved terminology candidates
+Status/help/support/legal route map
+FAQ source material
+terminology candidates
+existing generic share asset
+CI screenshot evidence source
+R12C-1 message gaps
+R12C-2 asset gaps
 ```
 
-R12C-0 does not authorize broad copy rewrites. It produces the evidence inventory for R12C-1.
+## R12C-1 execution boundary
+
+Produce and integrate, as appropriate:
+
+```text
+one-line description
+short listing description
+long description
+feature-role summary
+coverage limitations
+provider separation explanation
+retention explanation
+FAQ
+Support/legal links
+Status/help links
+```
+
+R12C-1 must use the R12C-0 inventory as its evidence boundary. It must not claim complete platform coverage, official analytics, unique viewers, exact creator revenue, exact session reconstruction, combined Twitch/Kick audience totals, or cross-platform rankings.
 
 ## Forward execution order after Phase 12
 
