@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy — ViewLoom</title>
+  <meta name="description" content="Privacy information for ViewLoom, including Google Analytics measurement, browser-local Watchlist storage, contact forms, and Stripe-hosted payments." />
+  <link rel="canonical" href="https://vl.badjoke-lab.com/privacy/" />
+  <meta property="og:site_name" content="ViewLoom" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://vl.badjoke-lab.com/privacy/" />
+  <meta property="og:title" content="Privacy — ViewLoom" />
+  <meta property="og:description" content="Privacy information for ViewLoom, including Google Analytics measurement, browser-local Watchlist storage, contact forms, and Stripe-hosted payments." />
+  <meta property="og:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://vl.badjoke-lab.com/og/viewloom.svg" />
+  <meta name="twitter:title" content="Privacy — ViewLoom" />
+  <meta name="twitter:description" content="Privacy information for ViewLoom, including Google Analytics measurement, browser-local Watchlist storage, contact forms, and Stripe-hosted payments." />
+  <link rel="stylesheet" href="/src/mock-site.css" />
+</head>
+<body data-provider="portal">
+  <div class="site-frame">
+    <header class="masthead"><div class="masthead__inner">
+      <a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Platform-separated observatory</small></span></a>
+      <nav class="global-nav"><a href="/">Portal</a><a href="/twitch/">Twitch data</a><a href="/kick/">Kick data</a><a href="/about/">About</a><a href="/support/">Support</a></nav>
+      <button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button>
+    </div></header>
+    <main class="page">
+      <div class="breadcrumb">ViewLoom / Privacy</div>
+      <section class="page-head">
+        <div><div class="kicker">PRIVACY</div><h1>What the public site stores and what leaves it.</h1><p class="lede">ViewLoom has no user-account system. This page describes the current public site's measurement script, browser-local Watchlist data, external contact form, and Stripe-hosted payment transition.</p></div>
+        <div class="head-facts"><div class="fact"><small>ViewLoom accounts</small><strong>None</strong></div><div class="fact"><small>Watchlist</small><strong>Browser-local</strong></div><div class="fact"><small>Site measurement</small><strong>GA4</strong></div><div class="fact"><small>Payment page</small><strong>Stripe-hosted</strong></div></div>
+      </section>
+      <div class="legal-layout">
+        <article class="prose legal-article">
+          <p class="policy-meta">Effective date: 2026-07-08</p>
+          <h2>1. Scope</h2>
+          <p>This notice covers use of the public ViewLoom website. It does not replace the privacy terms of Twitch, Kick, Google, Stripe, GitHub, Cloudflare, or other third-party services linked from or used by the site.</p>
+          <h2>2. No ViewLoom user accounts</h2>
+          <p>ViewLoom does not currently provide a user registration or login system. The public site does not create a ViewLoom profile, subscription account, or cloud-synced Watchlist for visitors.</p>
+          <h2>3. Google Analytics 4</h2>
+          <p>ViewLoom currently loads Google Analytics 4 measurement on built public HTML pages using measurement ID <code>G-YHX7HS1VBK</code>. This is used to understand aggregate use of public pages and site navigation. Google's measurement technology may use cookies or similar identifiers and sends measurement data to Google according to the service configuration and Google's own terms and privacy practices.</p>
+          <p>ViewLoom does not use Google Analytics data to change creator rankings, provider coverage, or the contents of the observed data set.</p>
+          <h2>4. Local Watchlist storage</h2>
+          <p>The Local Watchlist stores saved channel shortcuts in versioned browser-local storage. This data remains in the browser profile where it was saved unless the visitor clears it or uses browser controls that remove site storage. ViewLoom does not currently provide server account storage or cross-device Watchlist sync.</p>
+          <h2>5. Contact form</h2>
+          <p>The Contact page links to a Google-hosted form. When you open or submit that form, information you provide is handled through Google's service. Only provide information necessary to explain the ViewLoom-related issue. Never send complete card numbers, card security codes, passwords, API secrets, or other unnecessary sensitive credentials.</p>
+          <h2>6. Stripe-hosted payment page</h2>
+          <p>The Support page links to a Stripe-hosted payment page. Payment details entered there are processed through Stripe's systems and are subject to Stripe's terms and privacy practices. ViewLoom's public site does not contain a payment-card form and must not ask you to send card credentials through the Contact page.</p>
+          <h2>7. Public live-stream observations</h2>
+          <p>ViewLoom collects and retains bounded public live-stream observations for its analytical pages. That provider observation pipeline is separate from visitor accounts: ViewLoom does not require visitors to identify themselves to view public pages.</p>
+          <h2>8. Operational logs and hosting</h2>
+          <p>Like other hosted websites, infrastructure providers may process technical request information needed to deliver, secure, and operate the site. ViewLoom is currently hosted using Cloudflare services, and linked repository activity may be visible through GitHub.</p>
+          <h2>9. Changes and questions</h2>
+          <p>This notice may be updated when measurement, storage, contact, payment, or hosting behavior changes. Questions may be sent through the <a href="/contact/">Contact page</a>.</p>
+        </article>
+        <aside class="legal-aside"><h2>Privacy surfaces</h2><p>Use these pages to understand the public site's current data and support flow.</p><nav><a href="/contact/">Contact</a><a href="/support/">Support</a><a href="/refund-policy/">Refund policy</a><a href="/commercial-disclosure/">Commercial disclosure</a><a href="/terms/">Terms</a></nav></aside>
+      </div>
+    </main>
+    <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/contact/">Contact</a></nav></footer>
+  </div>
+  <script type="module" src="/src/static-page.ts"></script>
+  <script type="module" src="/src/analytics.ts"></script>
+</body>
+</html>
