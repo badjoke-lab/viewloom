@@ -75,17 +75,16 @@ assert.equal(record.next_branch_created, false)
 
 const inventory = JSON.parse(read('docs/audits/public-surface-inventory.json'))
 assert.equal(inventory.schema, 'viewloom-public-surface-inventory-v1')
-assert.equal(inventory.counts.vite_html_inputs, 20)
-assert.equal(inventory.counts.inventory_entries, 21)
-assert.equal(inventory.counts.public_readiness_configured_pages, 20)
-assert.equal(inventory.counts.production_smoke_page_routes, 20)
+assert.equal(inventory.counts.public_readiness_configured_pages, inventory.counts.vite_html_inputs)
+assert.equal(inventory.counts.production_smoke_page_routes, inventory.counts.vite_html_inputs)
+assert.equal(inventory.counts.inventory_entries, inventory.counts.vite_html_inputs + inventory.counts.explicit_not_found_pages)
 assert.equal(inventory.provider_invariants.separate_routes, true)
 assert.equal(inventory.provider_invariants.combined_totals_allowed, false)
 assert.equal(inventory.provider_invariants.combined_rankings_allowed, false)
 
 const routeFiles = inventory.route_files
 const routes = routeFiles.flatMap((path) => JSON.parse(read(path)).routes).filter((route) => route.route !== '*')
-assert.equal(routes.length, 20)
+assert.equal(routes.length, inventory.counts.vite_html_inputs)
 assert.equal(routes.filter((route) => route.profile === 'watchlist').length, 2)
 for (const route of ['/twitch/watchlist/', '/kick/watchlist/', '/twitch/channel/', '/kick/channel/']) {
   assert.ok(routes.some((item) => item.route === route), `public route inventory missing ${route}`)
@@ -104,13 +103,10 @@ for (const fragment of [
 assert.equal(readiness.includes('function providerPages'), false, 'manual public readiness provider array remains')
 
 const smoke = read('.github/workflows/production-smoke.yml')
-const smokeRoutes = [
-  '/', '/about/', '/support/', '/changelog/',
-  '/twitch/', '/twitch/heatmap/', '/twitch/day-flow/', '/twitch/battle-lines/', '/twitch/history/', '/twitch/channel/', '/twitch/watchlist/', '/twitch/status/',
-  '/kick/', '/kick/heatmap/', '/kick/day-flow/', '/kick/battle-lines/', '/kick/history/', '/kick/channel/', '/kick/watchlist/', '/kick/status/',
-]
-for (const route of smokeRoutes) assert.ok(smoke.includes(`'${route}'`), `Production Smoke missing ${route}`)
-assert.ok(smoke.includes('test "${#routes[@]}" = \'20\''), 'Production Smoke route count assertion missing')
+for (const route of routes.map((item) => item.route)) {
+  assert.ok(smoke.includes(`'${route}'`), `Production Smoke missing current route ${route}`)
+}
+assert.ok(smoke.includes(`test "\${#routes[@]}" = '${inventory.counts.production_smoke_page_routes}'`), 'Production Smoke current route count assertion missing')
 for (const fragment of ['DB_TWITCH_HOT', 'DB_KICK_HOT', 'data-viewloom-not-found="v1"', 'cancel-in-progress: true']) {
   assert.ok(smoke.includes(fragment), `Production Smoke lost ${fragment}`)
 }
@@ -139,7 +135,7 @@ for (const fragment of [
   "document.body.dataset.channelEntry = missing ? 'missing-id' : 'ready'",
   "node.setAttribute('inert', '')",
   "node.setAttribute('aria-hidden', 'true')",
-  "Select a ${providerName} channel from History",
+  'Select a ${providerName} channel from History',
 ]) assert.ok(channel.includes(fragment), `Channel missing-id ownership missing ${fragment}`)
 
 const css = read('apps/web/src/channel-profile.css')
@@ -173,7 +169,7 @@ for (const fragment of [
 ]) assert.ok(workflow.includes(fragment), `U10F workflow missing ${fragment}`)
 
 console.log('Completed U10F public readiness verification passed.')
-console.log('- permanent U10F evidence is independent of the current execution phase')
-console.log('- Public Readiness and Production Smoke each own 20 routes')
+console.log('- historical U10F record remains fixed at its original 20-route acceptance boundary')
+console.log(`- current Public Readiness and Production Smoke each own ${inventory.counts.vite_html_inputs} routes`)
 console.log('- Channel missing-id entry retains zero History requests and one provider-safe action')
-console.log('- production acceptance remains owned by U10H')
+console.log('- production acceptance remains owned by U10H and current Production Smoke')
