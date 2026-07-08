@@ -8,9 +8,10 @@ Phase 11 entry evidence: `../operations/phase11-production-closeout-2026-07-08.m
 R12A baseline: `../audits/phase12-r12a-legal-support-baseline.json`
 R12A production evidence: `../audits/r12a-production-acceptance.json`
 R12A human record: `../operations/r12a-production-acceptance-2026-07-08.md`
+R12B audit: `../audits/r12b-evidence-and-configuration-audit.json`
 Current workstream: R12B-0 evidence and configuration audit
-Exact next implementation branch: `work-release-r12b-stripe-support-flow`
-Next branch created: no
+Active branch: `work-release-r12b-stripe-support-flow`
+Branch created: yes
 
 ## Workstreams
 
@@ -48,6 +49,27 @@ Accepted R12A routes:
 
 The five routes are resolved surfaces. `static_legal` is accepted under the current contract. Historical P8B missing-surface evidence remains separately preserved and is not rewritten.
 
+## R12B-0 audit state
+
+```text
+Repository facts: confirmed
+Hosted public behavior: pending CI evidence
+Prior external correspondence: recorded as historical evidence only
+Current Stripe Dashboard state: pending external evidence
+```
+
+The permanent audit owner is `docs/audits/r12b-evidence-and-configuration-audit.json`.
+
+R12B Hosted Audit ownership:
+
+```text
+Workflow: .github/workflows/release-r12b-evidence-audit.yml
+Browser runner: apps/web/scripts/r12b-hosted-support-audit.mjs
+Evidence verifier: scripts/verify-r12b-hosted-support-audit.mjs
+Required viewports: desktop 1440 / mobile 390
+No payment submission: required
+```
+
 ## R12B-0 repository facts
 
 The repository currently contains:
@@ -56,13 +78,29 @@ The repository currently contains:
 Support route: /support/
 Payment model wording: one-time support
 Payment Link: https://buy.stripe.com/6oUcMYeRh0Na2oX3cDcIE03
+CTA label: Open Stripe payment page
+External target: _blank
+External rel: noreferrer
 Refund route: /refund-policy/
 Commercial Disclosure route: /commercial-disclosure/
 Contact route: /contact/
-Contact submission channel: external Google Form
+Contact submission channel: external Google-hosted form
 ```
 
 These repository facts do not prove external Stripe dashboard or account state.
+
+## Prior external correspondence boundary
+
+The 2026-06-09 project record preserves prior Stripe specialist guidance as historical external evidence:
+
+```text
+vl.badjoke-lab.com was supportable as the ViewLoom business website
+registered website should be changed from the old Livefield URL before using the existing Payment Link on ViewLoom
+Support / Support ViewLoom wording should be used instead of charitable donation wording
+Commercial Disclosure surface was required for the support flow
+```
+
+This historical record does not prove the current Stripe Dashboard website value, current account state, current Payment Link settings, or current refund configuration.
 
 ## R12B-0 evidence questions
 
@@ -83,7 +121,7 @@ Audit and record separately:
 
 ## External evidence boundary
 
-Do not infer these facts from repository code alone:
+Do not infer these facts from repository code or public browser behavior alone:
 
 ```text
 Stripe registered business website is current
@@ -106,4 +144,4 @@ These non-blocking watch observations remain inputs to Phase 12A Analytics Captu
 
 ## Stop rule
 
-This closeout branch advances canonical state only. Create `work-release-r12b-stripe-support-flow` after the R12A closeout PR merges and the merge is verified.
+R12B-0 closes only after hosted public evidence is captured and the permanent audit record is updated from that evidence. Missing current dashboard/account evidence may remain explicitly pending; it must not be silently converted into a completion claim.
