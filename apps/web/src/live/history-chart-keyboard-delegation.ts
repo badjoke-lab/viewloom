@@ -46,13 +46,11 @@ function handlePointerDown(event: PointerEvent): void {
 
 function selectDay(day: SVGGElement | undefined, keyboard: HTMLButtonElement): void {
   if (!day) return
-  const hit = day.querySelector<SVGRectElement>('.history-bar-hit')
-  if (!hit) return
   const dayValue = day.dataset.historyDay ?? ''
   keyboard.dataset.historyKeyboardDay = dayValue
   keyboard.textContent = `${dayValue || 'Selected day'} UTC`
   keyboard.focus()
-  hit.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+  day.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
   requestAnimationFrame(() => {
     document.querySelector<HTMLButtonElement>('[data-history-chart-keyboard-target]')?.focus()
     bindCurrentKeyboard()
