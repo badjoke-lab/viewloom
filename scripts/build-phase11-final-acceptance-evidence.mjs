@@ -45,13 +45,27 @@ const checks = {
     !existsSync('.github/workflows/phase11-p11a-app-apply.yml'),
 }
 
-const allPreMergeChecksPass = Object.values(checks).every(Boolean)
+const allChecksPass = Object.values(checks).every(Boolean)
+const hosted = monitoring.hosted_evidence ?? {}
+const hostedCloseoutComplete =
+  hosted.status === 'complete' &&
+  hosted.result === 'pass' &&
+  hosted.phase11_production_closeout_satisfied === true &&
+  hosted.expected_main_sha === hosted.deployed_sha &&
+  Number(hosted.blocking_alerts) === 0
+
+const evidenceState = !allChecksPass
+  ? 'regression-fail'
+  : hostedCloseoutComplete
+    ? 'production-closeout-complete'
+    : 'pre-merge-pass'
+
 const evidence = {
   schema: 'viewloom-phase11-final-acceptance-v1',
   phase: 'Phase 11',
   workstream: 'P11G',
   generatedAt: new Date().toISOString(),
-  state: allPreMergeChecksPass ? 'pre-merge-pass' : 'pre-merge-fail',
+  state: evidenceState,
   checks,
   boundaries: {
     providerSeparationRequired: true,
@@ -65,12 +79,18 @@ const evidence = {
   },
   hostedProductionCloseout: {
     required: true,
-    status: 'pending-main-merge',
+    status: hostedCloseoutComplete ? 'complete' : 'pending-main-merge',
     owner: '.github/workflows/production-smoke.yml',
     requiredEvidenceSchema: 'viewloom-phase11-monitoring-evidence-v1',
+    closeoutRecord: hosted.closeout_record ?? null,
+    workflowRun: hosted.workflow_run ?? null,
+    artifactId: hosted.artifact_id ?? null,
+    expectedMainSha: hosted.expected_main_sha ?? null,
+    deployedSha: hosted.deployed_sha ?? null,
+    blockingAlerts: hosted.blocking_alerts ?? null,
   },
 }
 
 mkdirSync(dirname(outputPath), { recursive: true })
 writeFileSync(outputPath, `${JSON.stringify(evidence, null, 2)}\n`)
-console.log(JSON.stringify({ state: evidence.state, checks: evidence.checks }, null, 2))
+console.log(JSON.stringify({ state: evidence.state, checks: evidence.checks, hostedProductionCloseout: evidence.hostedProductionCloseout }, null, 2))
