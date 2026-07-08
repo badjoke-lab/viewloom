@@ -5,8 +5,11 @@ on:
     paths:
       - 'apps/web/scripts/r12b-hosted-support-audit.mjs'
       - 'scripts/verify-r12b-hosted-support-audit.mjs'
+      - 'scripts/verify-r12b-evidence-audit.mjs'
       - '.github/workflows/release-r12b-evidence-audit.yml'
       - 'docs/audits/r12b-evidence-and-configuration-audit.json'
+      - 'docs/audits/r12b-repository-consistency-notes.md'
+      - 'docs/operations/r12b0-evidence-audit-2026-07-09.md'
       - 'docs/work-in-progress/phase12-release-readiness.md'
       - 'scripts/verify-development-policy.mjs'
 
@@ -36,6 +39,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+
+      - name: Verify permanent R12B-0 audit state
+        run: node scripts/verify-r12b-evidence-audit.mjs
 
       - name: Install Playwright
         working-directory: apps/web
