@@ -1,0 +1,75 @@
+{
+  "schema": "viewloom-r12b-evidence-and-configuration-audit-v1",
+  "phase": "Phase 12",
+  "workstream": "R12B-0",
+  "status": "active",
+  "updated_at": "2026-07-09",
+  "evidence_classes": {
+    "repository_facts": {
+      "status": "confirmed",
+      "source": "repository inspection",
+      "facts": {
+        "support_route": "/support/",
+        "payment_link_url": "https://buy.stripe.com/6oUcMYeRh0Na2oX3cDcIE03",
+        "support_cta_label": "Open Stripe payment page",
+        "support_cta_target": "_blank",
+        "support_cta_rel": ["noreferrer"],
+        "support_model_wording": "one-time support",
+        "support_no_account_claim": true,
+        "support_no_product_tier_claim": true,
+        "refund_route": "/refund-policy/",
+        "commercial_disclosure_route": "/commercial-disclosure/",
+        "contact_route": "/contact/",
+        "contact_submission_channel": "external Google-hosted form"
+      }
+    },
+    "hosted_public_behavior": {
+      "status": "pending_ci_evidence",
+      "evidence_owner": "Release R12B Evidence Audit workflow artifact",
+      "required_checks": [
+        "support/refund/disclosure/contact HTTP behavior",
+        "desktop Support to Stripe transition",
+        "mobile Support to Stripe transition",
+        "actual final public payment hostname",
+        "publicly visible one-time or recurring language",
+        "legal/refund/contact links before payment transition"
+      ]
+    },
+    "prior_external_correspondence": {
+      "status": "historical_confirmed_project_record",
+      "recorded_date": "2026-06-09",
+      "current_state_claim": false,
+      "facts": [
+        "Stripe specialist support previously confirmed that https://vl.badjoke-lab.com/ was supportable as the ViewLoom business website.",
+        "The prior instruction was to update the Stripe account business website from the old Livefield URL to the ViewLoom URL before using the existing Payment Link on ViewLoom.",
+        "The prior wording direction was to use Support or Support ViewLoom rather than characterize the flow as a charitable donation.",
+        "The prior project record required a Japanese commercial disclosure surface for the support flow."
+      ],
+      "limitations": [
+        "This historical correspondence does not prove the current Stripe Dashboard website value.",
+        "This historical correspondence does not prove that account approval, Payment Link settings, or refund configuration are unchanged today."
+      ]
+    },
+    "current_external_dashboard_state": {
+      "status": "pending_external_evidence",
+      "facts_not_inferable_from_repository_or_public_browser": [
+        "current registered business website/domain value in Stripe Dashboard",
+        "current Stripe account approval/review state",
+        "current Payment Link dashboard configuration",
+        "current recurring/subscription configuration at account or Payment Link level",
+        "current refund configuration or dashboard policy settings"
+      ]
+    }
+  },
+  "consistency_review": {
+    "repository_support_refund_disclosure": "pending_final_hosted_evidence",
+    "unsupported_dashboard_state_claims_detected": false,
+    "charitable_donation_wording_detected": false
+  },
+  "completion_gate": {
+    "permanent_audit_distinguishes_repository_and_external_facts": true,
+    "missing_external_evidence_explicitly_pending": true,
+    "hosted_public_evidence_complete": false,
+    "r12b_0_complete": false
+  }
+}
