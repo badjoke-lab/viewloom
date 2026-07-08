@@ -9,6 +9,7 @@ on:
       - 'apps/web/contact/index.html'
       - 'apps/web/scripts/r12b2-refund-disclosure-browser.mjs'
       - 'scripts/verify-r12b2-refund-disclosure.mjs'
+      - 'scripts/verify-r12b2-acceptance-record.mjs'
       - '.github/workflows/release-r12b2-refund-disclosure.yml'
       - 'docs/work-in-progress/phase12-release-readiness.md'
       - 'docs/operations/r12b2-refund-disclosure-acceptance-2026-07-09.md'
@@ -39,6 +40,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+
+      - name: Verify permanent R12B-2 acceptance record
+        run: node scripts/verify-r12b2-acceptance-record.mjs
 
       - name: Install Playwright
         working-directory: apps/web
