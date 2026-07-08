@@ -13,6 +13,17 @@ Current workstream: R12B-0 evidence and configuration audit
 Active branch: `work-release-r12b-stripe-support-flow`
 Branch created: yes
 
+## R12B entry transition record
+
+Before the R12B branch was created, the canonical handoff state was:
+
+```text
+Exact next implementation branch: `work-release-r12b-stripe-support-flow`
+Next branch created: no
+```
+
+Current state is the active branch record above: the branch exists and R12B-0 is executing on it.
+
 ## Workstreams
 
 ```text
