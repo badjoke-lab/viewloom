@@ -8,6 +8,7 @@ const required = [
   'docs/work-in-progress/u10h-acceptance.md',
   'docs/operations/u10h-production-acceptance-2026-07-04.md',
   'docs/audits/cross-site-quality-u10f-readiness.json',
+  'docs/audits/public-surface-inventory.json',
   'docs/work-in-progress/u10g-architecture.md',
   '.github/workflows/production-smoke.yml',
 ]
@@ -49,10 +50,13 @@ check('docs/work-in-progress/u10g-architecture.md', [
   'Quality U10G Architecture: pass',
 ])
 
+const inventory = JSON.parse(read('docs/audits/public-surface-inventory.json'))
+assert.equal(inventory.schema, 'viewloom-public-surface-inventory-v1')
+assert.equal(inventory.counts.production_smoke_page_routes, inventory.counts.vite_html_inputs)
+
 const smoke = read('.github/workflows/production-smoke.yml')
 for (const fragment of [
   'name: Production Smoke',
-  'test "${#routes[@]}" = \'20\'',
   '.storage.binding == "DB_TWITCH_HOT"',
   '.sourceMode == "real"',
   '.collector.state == "ok"',
@@ -63,10 +67,13 @@ for (const fragment of [
   '.freshness.isStale == false',
 ]) assert.ok(smoke.includes(fragment), `Production Smoke contract missing ${fragment}`)
 
+const expectedCurrentRoutes = inventory.counts.production_smoke_page_routes
+assert.ok(smoke.includes(`test "\${#routes[@]}" = '${expectedCurrentRoutes}'`), `Production Smoke current route count assertion must be ${expectedCurrentRoutes}`)
 const routeCount = (smoke.match(/^\s+'\/[^'\r\n]*'\s*$/gm) ?? []).length
-assert.equal(routeCount, 20, 'Production Smoke route list must remain exactly 20 routes')
+assert.equal(routeCount, expectedCurrentRoutes, `Production Smoke route list must match current inventory (${expectedCurrentRoutes})`)
 
 console.log('U10H production acceptance verification passed.')
-console.log('- hosted production evidence is complete')
+console.log('- historical hosted production evidence remains complete at the original 20-route boundary')
+console.log(`- current Production Smoke ownership is verified against ${expectedCurrentRoutes} routes from current inventory`)
 console.log('- provider-specific status and separation contracts remain required')
 console.log('- U10H gate is independent of the active roadmap phase')
