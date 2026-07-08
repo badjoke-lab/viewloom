@@ -67,6 +67,11 @@ const expectedQuestions = [
 assert.deepEqual(pkg.faq.map((item) => item.question), expectedQuestions)
 for (const item of pkg.faq) assert.ok(item.answer.length >= 40, `${item.question}: answer too short`)
 
+const faqByQuestion = new Map(pkg.faq.map((item) => [item.question, item.answer]))
+assert.ok(faqByQuestion.get('Are Twitch and Kick combined?')?.includes('does not publish combined audience totals or cross-platform rankings'))
+assert.ok(faqByQuestion.get('Are these official Twitch or Kick analytics?')?.startsWith('No. ViewLoom is independent and unofficial.'))
+assert.ok(faqByQuestion.get('Does ViewLoom cover every live stream?')?.startsWith('No. Coverage is bounded.'))
+
 const expectedHelpLinks = {
   method_and_limits: 'https://vl.badjoke-lab.com/about/',
   twitch_status: 'https://vl.badjoke-lab.com/twitch/status/',
@@ -99,9 +104,17 @@ const expectedForbidden = [
 ]
 assert.deepEqual(pkg.forbidden_claims, expectedForbidden)
 
-const reusableCopy = `${pkg.descriptions.one_line}\n${pkg.descriptions.short}\n${pkg.faq.map((item) => item.answer).join('\n')}`.toLowerCase()
-for (const forbidden of ['complete platform coverage', 'unique viewers', 'exact creator revenue', 'exact session reconstruction', 'combined twitch and kick audience totals', 'cross-platform rankings']) {
-  assert.equal(reusableCopy.includes(forbidden), false, `reusable launch copy contains forbidden positive claim: ${forbidden}`)
+const positiveDescriptionCopy = `${pkg.descriptions.one_line}\n${pkg.descriptions.short}`.toLowerCase()
+for (const forbidden of [
+  'complete platform coverage',
+  'official twitch or kick analytics',
+  'unique viewers',
+  'exact creator revenue',
+  'exact session reconstruction',
+  'combined twitch and kick audience totals',
+  'cross-platform rankings',
+]) {
+  assert.equal(positiveDescriptionCopy.includes(forbidden), false, `positive description copy contains forbidden claim: ${forbidden}`)
 }
 
 for (const [key, value] of Object.entries(pkg.completion)) {
@@ -127,7 +140,7 @@ for (const fragment of [
   '## 12. R12C-2 handoff',
   'ViewLoom collects observations on a 5-minute schedule.',
   'Public daily rollups can be retained for up to 180 days.',
-  'The next workstream',
+  'R12C-2 owns the curated launch/share asset package',
 ]) assert.ok(md.includes(fragment), `${mdPath}: missing ${fragment}`)
 
 console.log('R12C-1 launch copy package verification passed.')
@@ -136,5 +149,5 @@ console.log('- seven product roles are covered')
 console.log('- provider-specific coverage and separation boundaries are explicit')
 console.log('- cadence and rollup-retention explanations are bounded')
 console.log('- 12 FAQ answers and both link packages are complete')
-console.log('- reusable launch copy avoids forbidden positive claims')
+console.log('- positive description copy avoids forbidden claims while FAQ negations remain explicit')
 console.log('- R12C-2 launch/share asset package is next')
