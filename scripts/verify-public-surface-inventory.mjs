@@ -10,13 +10,16 @@ const exists = (path) => existsSync(join(root, path))
 const manifestPath = 'docs/audits/public-surface-inventory.json'
 const manifest = load(manifestPath)
 check(manifest.schema === 'viewloom-public-surface-inventory-v1', 'manifest schema mismatch')
-check(manifest.next_branch === 'work-public-browser-audit', 'historical next branch must remain work-public-browser-audit')
+check(manifest.historical_next_branch === 'work-public-browser-audit', 'historical next branch must remain work-public-browser-audit')
+check(manifest.active_branch === 'work-release-r12a-legal-support', 'active R12A branch mismatch')
 check(manifest.provider_invariants?.twitch_binding === 'DB_TWITCH_HOT', 'Twitch binding mismatch')
 check(manifest.provider_invariants?.kick_binding === 'DB_KICK_HOT', 'Kick binding mismatch')
 check(manifest.provider_invariants?.combined_totals_allowed === false, 'combined totals must remain forbidden')
 check(manifest.provider_invariants?.combined_rankings_allowed === false, 'combined rankings must remain forbidden')
-check(manifest.counts?.public_readiness_configured_pages === 20, 'Public Readiness must own 20 HTML routes')
-check(manifest.counts?.production_smoke_page_routes === 20, 'Production Smoke must own 20 HTML routes')
+check(manifest.counts?.vite_html_inputs === 25, 'R12A candidate must own 25 Vite HTML routes')
+check(manifest.counts?.inventory_entries === 26, 'R12A candidate inventory must include 25 HTML routes plus explicit 404')
+check(manifest.counts?.public_readiness_configured_pages === manifest.counts?.vite_html_inputs, 'Public Readiness must own every Vite HTML route')
+check(manifest.counts?.production_smoke_page_routes === manifest.counts?.vite_html_inputs, 'Production Smoke must own every Vite HTML route')
 
 const gates = {}
 const profiles = {}
@@ -49,6 +52,7 @@ check(routes.filter((route) => route.source !== 'apps/web/public/404.html').leng
 check(new Set(routes.map((route) => route.id)).size === routes.length, 'duplicate route id')
 check(new Set(routes.map((route) => route.route)).size === routes.length, 'duplicate route path')
 check(routes.filter((route) => route.profile === 'watchlist').length === 2, 'both Watchlist routes must remain inventoried')
+check(routes.filter((route) => route.profile === 'static_legal').length === 5, 'R12A must own five static legal routes')
 
 const vite = readFileSync(join(root, 'apps/web/vite.config.ts'), 'utf8')
 const sitemap = readFileSync(join(root, 'apps/web/public/sitemap.xml'), 'utf8')
@@ -87,23 +91,31 @@ for (const route of routes) {
   }
 }
 
+check(sitemapRoutes.size === manifest.counts?.sitemap_routes, `expected ${manifest.counts?.sitemap_routes} sitemap routes, found ${sitemapRoutes.size}`)
+check(routes.filter((route) => route.route !== '*' && route.sitemap === true).length === manifest.counts?.indexable_routes, 'indexable route count mismatch')
+check(routes.filter((route) => route.route !== '*' && route.robots === 'noindex,follow').length === manifest.counts?.noindex_routes, 'noindex route count mismatch')
+
 const history = profiles.history
 check(history?.assessment === 'known_p1_defects', 'historical History P1 profile assessment changed without profile migration')
 check((history?.gaps?.length ?? 0) >= 5, 'historical History P1 profile gaps are incomplete')
 const watchlist = profiles.watchlist
 check(watchlist?.assessment === 'complete_for_v1_contract', 'Watchlist completion assessment changed')
+const staticLegal = profiles.static_legal
+check(staticLegal?.assessment === 'candidate_r12a', 'R12A static legal profile must remain candidate until hosted acceptance')
 
 const gaps = load(manifest.gap_file)
 check(gaps.schema === 'viewloom-public-surface-gaps-v1', 'gap schema mismatch')
+check(Array.isArray(gaps.missing_surfaces) && gaps.missing_surfaces.length === 0, 'R12A candidate must remove current missing-surface probes')
 for (const route of ['/contact/', '/terms/', '/privacy/', '/refund-policy/', '/commercial-disclosure/']) {
-  check(gaps.missing_surfaces?.some((item) => item.route === route && item.state === 'missing'), `missing surface not recorded: ${route}`)
+  check(gaps.candidate_surfaces?.some((item) => item.route === route && item.state === 'candidate'), `candidate surface not recorded: ${route}`)
 }
+check(gaps.historical_missing_surface_baseline?.count === 5, 'historical P8B missing-surface baseline count changed')
 for (const id of ['watchlist-public-readiness-omission', 'production-smoke-omissions']) {
   check(gaps.cross_route_gaps?.some((item) => item.id === id && item.state === 'resolved' && item.resolved_phase === 'U10F'), `U10F resolution not recorded: ${id}`)
 }
 check(gaps.cross_route_gaps?.some((item) => item.id === 'no-consolidated-public-browser-matrix'), 'historical browser matrix record missing')
 check(gaps.cross_route_gaps?.some((item) => item.id === 'history-known-p1'), 'historical History record missing')
-check(gaps.cross_route_gaps?.some((item) => item.id === 'policy-surfaces-missing' && item.state === 'open'), 'policy surface gap must remain open')
+check(gaps.cross_route_gaps?.some((item) => item.id === 'policy-surfaces-missing' && item.state === 'candidate_implementation'), 'policy surface gap must remain candidate until hosted acceptance')
 
 if (fail.length) {
   console.error('Public surface inventory verification failed:')
@@ -111,10 +123,11 @@ if (fail.length) {
   process.exit(1)
 }
 console.log(`Public surface inventory verified: ${routes.length} routes, ${Object.keys(profiles).length} profiles, ${Object.keys(gates).length} gate groups.`)
-console.log('- 20 Vite HTML inputs plus explicit 404 are owned')
-console.log('- Public Readiness and Production Smoke each own all 20 HTML routes')
+console.log('- 25 Vite HTML inputs plus explicit 404 are owned')
+console.log('- Public Readiness and Production Smoke each own all 25 HTML routes')
+console.log('- five R12A legal routes are candidate surfaces pending hosted acceptance')
 console.log('- Twitch and Kick bindings remain separate')
-console.log('- U10F readiness ownership gaps are resolved; policy surfaces remain open')
+console.log('- historical P8B missing-surface evidence remains locked separately')
 
 function tag(html, name) { return html.match(new RegExp(`<${name}\\b[^>]*>([\\s\\S]*?)<\\/${name}>`, 'i'))?.[1]?.trim() ?? '' }
 function attr(tagSource, name) { return tagSource.match(new RegExp(`\\b${name}=["']([^"']*)["']`, 'i'))?.[1] ?? '' }
