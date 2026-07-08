@@ -47,7 +47,7 @@ check('apps/web/src/live/history-chart-keyboard-delegation.ts', [
   "document.addEventListener('keydown', handleDelegatedKeydown, true)",
   "event.key === 'Home'",
   "event.key === 'ArrowRight'",
-  "hit.dispatchEvent(new MouseEvent('click', { bubbles: true }))",
+  "day.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))",
 ])
 check('apps/web/src/live/history-comparison-clarity.ts', [
   'response.clone().json()',
@@ -98,4 +98,5 @@ if (failures.length) {
 
 console.log('P9H2 chart repository verification passed.')
 console.log('- chart semantics and interaction remain protected')
+console.log('- keyboard selection dispatch is owned by the current day group instead of relying on SVG child bubbling')
 console.log('- permanent acceptance owns Phase 9 completion')
