@@ -1,0 +1,151 @@
+name: Phase 11 Hosted Closeout Acceptance
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/phase11-hosted-closeout-acceptance.yml'
+      - 'docs/operations/phase11-production-closeout-2026-07-08.md'
+
+concurrency:
+  group: phase11-hosted-closeout-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ORIGIN: https://vl.badjoke-lab.com
+      ARTIFACT_DIR: artifacts/phase11-hosted-closeout
+      EXPECTED_MAIN_SHA: ${{ github.event.pull_request.base.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare artifact directory
+        run: mkdir -p "$ARTIFACT_DIR"
+
+      - name: Wait for the matching production deployment
+        run: |
+          set -euo pipefail
+          expected="$EXPECTED_MAIN_SHA"
+          test "$expected" = '90fb2714137cc83e6f20e44415574a5e35a98439'
+          for attempt in {1..60}; do
+            if curl --silent --show-error --fail --max-time 20 "$ORIGIN/deployment.json?attempt=$attempt" -o "$ARTIFACT_DIR/deployment.json"; then
+              deployed="$(jq -r '.commit_sha // empty' "$ARTIFACT_DIR/deployment.json")"
+              environment="$(jq -r '.environment // empty' "$ARTIFACT_DIR/deployment.json")"
+              branch="$(jq -r '.branch // empty' "$ARTIFACT_DIR/deployment.json")"
+              if [ "$deployed" = "$expected" ] && [ "$environment" = 'production' ] && [ "$branch" = 'main' ]; then
+                cat "$ARTIFACT_DIR/deployment.json"
+                exit 0
+              fi
+              echo "Production is not on $expected yet (found $deployed, attempt $attempt/60)."
+            else
+              echo "deployment.json is not available yet (attempt $attempt/60)."
+            fi
+            sleep 10
+          done
+          exit 1
+
+      - name: Verify all repository-owned production pages
+        run: |
+          set -euo pipefail
+          routes=(
+            '/'
+            '/about/'
+            '/support/'
+            '/changelog/'
+            '/twitch/'
+            '/twitch/heatmap/'
+            '/twitch/day-flow/'
+            '/twitch/battle-lines/'
+            '/twitch/history/'
+            '/twitch/channel/'
+            '/twitch/watchlist/'
+            '/twitch/status/'
+            '/kick/'
+            '/kick/heatmap/'
+            '/kick/day-flow/'
+            '/kick/battle-lines/'
+            '/kick/history/'
+            '/kick/channel/'
+            '/kick/watchlist/'
+            '/kick/status/'
+          )
+          test "${#routes[@]}" = '20'
+          for route in "${routes[@]}"; do
+            name="$(echo "$route" | tr '/' '-' | sed 's/^-//;s/-$//')"
+            [ -n "$name" ] || name='portal'
+            code="$(curl --silent --show-error --location --max-time 30 --output "$ARTIFACT_DIR/$name.html" --write-out '%{http_code}' "$ORIGIN$route")"
+            test "$code" = '200'
+            grep -qi 'ViewLoom' "$ARTIFACT_DIR/$name.html"
+          done
+
+      - name: Verify Twitch production status
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/twitch-status" -o "$ARTIFACT_DIR/twitch-status.json"
+          jq -e '
+            .platform == "twitch" and
+            .storage.binding == "DB_TWITCH_HOT" and
+            .storage.database == "vl_twitch_hot" and
+            .sourceMode == "real" and
+            .collector.state == "ok" and
+            .freshness.isStale == false
+          ' "$ARTIFACT_DIR/twitch-status.json" > /dev/null
+
+      - name: Verify Kick production status
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/kick-status" -o "$ARTIFACT_DIR/kick-status.json"
+          jq -e '
+            .platform == "kick" and
+            .storage.binding == "DB_KICK_HOT" and
+            .storage.database == "vl_kick_hot" and
+            .sourceMode == "authenticated" and
+            .collector.state == "snapshot_available" and
+            .freshness.isFresh == true and
+            .freshness.isStale == false
+          ' "$ARTIFACT_DIR/kick-status.json" > /dev/null
+
+      - name: Build Phase 11 monitoring evidence
+        run: node scripts/build-phase11-monitoring-evidence.mjs "$ARTIFACT_DIR"
+
+      - name: Verify Phase 11 monitoring evidence
+        run: node scripts/verify-phase11-monitoring-evidence.mjs "$ARTIFACT_DIR"
+
+      - name: Verify explicit not-found behavior
+        run: |
+          set -euo pipefail
+          path="/phase11-closeout-not-found-$GITHUB_RUN_ID"
+          code="$(curl --silent --show-error --max-time 30 --output "$ARTIFACT_DIR/not-found.html" --write-out '%{http_code}' "$ORIGIN$path")"
+          test "$code" = '404'
+          grep -q 'data-viewloom-not-found="v1"' "$ARTIFACT_DIR/not-found.html"
+          probe_code="$(curl --silent --show-error --max-time 30 --output "$ARTIFACT_DIR/preview-probe-response.html" --write-out '%{http_code}' "$ORIGIN/cloudflare-preview-probe.json")"
+          test "$probe_code" = '404'
+          grep -q 'data-viewloom-not-found="v1"' "$ARTIFACT_DIR/preview-probe-response.html"
+
+      - name: Write closeout run metadata
+        run: |
+          jq -n \
+            --arg schema 'viewloom-phase11-production-closeout-v1' \
+            --arg phase 'Phase 11' \
+            --arg result 'pass' \
+            --arg run_id "$GITHUB_RUN_ID" \
+            --arg expected_main_sha "$EXPECTED_MAIN_SHA" \
+            --arg deployed_sha "$(jq -r '.commit_sha' "$ARTIFACT_DIR/deployment.json")" \
+            --arg checked_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{schema:$schema, phase:$phase, result:$result, workflow_run_id:$run_id, expected_main_sha:$expected_main_sha, deployed_sha:$deployed_sha, html_routes:20, status_apis:2, provider_crossing_failures:0, blocking_monitoring_alerts:0, explicit_404_failures:0, providers_separate:true, checked_at:$checked_at}' \
+            > "$ARTIFACT_DIR/phase11-production-closeout.json"
+          cat "$ARTIFACT_DIR/phase11-production-closeout.json"
+
+      - name: Upload Phase 11 hosted closeout evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase11-hosted-closeout-evidence
+          path: artifacts/phase11-hosted-closeout/
+          if-no-files-found: error
