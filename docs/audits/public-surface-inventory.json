@@ -1,24 +1,24 @@
 {
   "schema": "viewloom-public-surface-inventory-v1",
-  "version": 2,
-  "updated_at": "2026-07-01",
+  "version": 3,
+  "updated_at": "2026-07-08",
   "source": {
-    "branch": "work-public-surface-inventory",
-    "base_commit": "2d1b23ec9cb506212c4fefc828a8c3524d52183b",
+    "branch": "work-release-r12a-legal-support",
+    "base_commit": "fe11bcbfa893ce2190bd6cd9df8a12b8639f1167",
     "build_config": "apps/web/vite.config.ts",
     "public_readiness": "apps/web/scripts/public-readiness-audit.mjs",
     "production_smoke": ".github/workflows/production-smoke.yml"
   },
-  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. Untested interactions are not claimed as working.",
+  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. Candidate legal routes remain pending hosted production acceptance until R12A-5.",
   "counts": {
-    "vite_html_inputs": 20,
+    "vite_html_inputs": 25,
     "explicit_not_found_pages": 1,
-    "inventory_entries": 21,
-    "indexable_routes": 16,
+    "inventory_entries": 26,
+    "indexable_routes": 21,
     "noindex_routes": 4,
-    "sitemap_routes": 16,
-    "public_readiness_configured_pages": 20,
-    "production_smoke_page_routes": 20
+    "sitemap_routes": 21,
+    "public_readiness_configured_pages": 25,
+    "production_smoke_page_routes": 25
   },
   "provider_invariants": {
     "separate_routes": true,
@@ -40,5 +40,6 @@
     "docs/audits/public-surface-routes-kick.json"
   ],
   "gap_file": "docs/audits/public-surface-gaps.json",
-  "next_branch": "work-public-browser-audit"
+  "historical_next_branch": "work-public-browser-audit",
+  "active_branch": "work-release-r12a-legal-support"
 }
