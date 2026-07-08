@@ -38,6 +38,12 @@ Next branch created no
 - Permanent Phase 11 closeout: `operations/phase11-production-closeout-2026-07-08.md`
 - Permanent U10H production acceptance: `operations/u10h-production-acceptance-2026-07-04.md`
 
+## Permanent Watchlist records
+
+- `product/local-watchlist-spec.md`
+- `product/watchlist-v1-implementation-plan.md`
+- `operations/watchlist-production-acceptance-2026-06-25.md`
+
 ## Active Phase 12 sequence
 
 ```text
