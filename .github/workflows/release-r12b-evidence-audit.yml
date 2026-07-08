@@ -1,0 +1,67 @@
+name: Release R12B Evidence Audit
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/scripts/r12b-hosted-support-audit.mjs'
+      - 'scripts/verify-r12b-hosted-support-audit.mjs'
+      - 'scripts/verify-r12b-evidence-audit.mjs'
+      - '.github/workflows/release-r12b-evidence-audit.yml'
+      - 'docs/audits/r12b-evidence-and-configuration-audit.json'
+      - 'docs/audits/r12b-repository-consistency-notes.md'
+      - 'docs/operations/r12b0-evidence-audit-2026-07-09.md'
+      - 'docs/work-in-progress/phase12-release-readiness.md'
+      - 'scripts/verify-development-policy.mjs'
+
+concurrency:
+  group: release-r12b-evidence-audit-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  hosted-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      R12B_ARTIFACT_DIR: ${{ github.workspace }}/artifacts/r12b-hosted-support-audit
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify permanent R12B-0 audit state
+        run: node scripts/verify-r12b-evidence-audit.mjs
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run hosted R12B support-flow audit
+        working-directory: apps/web
+        run: node scripts/r12b-hosted-support-audit.mjs
+
+      - name: Verify hosted R12B support-flow evidence
+        run: node scripts/verify-r12b-hosted-support-audit.mjs artifacts/r12b-hosted-support-audit/evidence.json
+
+      - name: Upload R12B hosted audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r12b-hosted-support-audit
+          path: artifacts/r12b-hosted-support-audit/**
+          if-no-files-found: warn
