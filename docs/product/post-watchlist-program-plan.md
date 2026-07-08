@@ -1,11 +1,11 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 6.3
-Last updated: 2026-07-08
+Version: 6.4
+Last updated: 2026-07-09
 Current phase: Phase 12 — English release readiness
-Current workstream: R12B-0 evidence and configuration audit
-Exact next implementation branch: `work-release-r12b-stripe-support-flow`
+Current workstream: R12C-0 message inventory
+Exact next implementation branch: `work-release-r12c0-message-inventory`
 Next branch created: no
 
 ```text
@@ -14,20 +14,12 @@ Phase 11 P11A-P11G complete
 Phase 11 production closeout complete
 Phase 12 English release readiness active
 R12A legal and support public-surface completion complete
-R12B Stripe and support-flow readiness active
-R12C English launch package queued
+R12B Stripe and support-flow readiness complete through R12B-2
+R12C English launch package active at R12C-0
 Phase 12A Analytics Capture Foundation approved and queued
 Phase 13-14 localization queued after Phase 12A
 Phase 15 Analytics Capability and Calibration Audit queued
 Phase 16 Analytics Observation System approved and gated by Phase 15
-```
-
-Permanent Phase 11 closeout: `docs/operations/phase11-production-closeout-2026-07-08.md`.
-Permanent R12A acceptance:
-
-```text
-docs/audits/r12a-production-acceptance.json
-docs/operations/r12a-production-acceptance-2026-07-08.md
 ```
 
 ## Program sequence
@@ -45,9 +37,7 @@ Phase 12 English release readiness
   -> Phase 16F Replay and Backtest
 ```
 
-## Phase 12
-
-Authorities:
+## Phase 12 authorities
 
 ```text
 docs/product/release-readiness-spec.md
@@ -59,56 +49,42 @@ Sequence:
 
 ```text
 R12A legal and support public-surface completion   complete
-R12B Stripe and support-flow readiness             active
-R12C English launch package and release acceptance queued
+R12B Stripe and support-flow readiness             complete
+R12C English launch package and release acceptance active
 ```
 
-### R12A closeout
+## R12B closeout
+
+Permanent evidence:
 
 ```text
-Implementation PR: #477
-Implementation merge SHA: 952f0008209363f4fd5b22587975ac247ee8d6f2
-Production workflow run: 28941169278
-Expected/deployed SHA: 952f0008209363f4fd5b22587975ac247ee8d6f2
-Owned HTML routes: 25
-Provider status APIs: 2
-Provider crossing failures: 0
-Blocking alerts: 0
-Watch alerts: 2
-Explicit 404: pass
-Result: pass
+docs/audits/r12b-evidence-and-configuration-audit.json
+docs/audits/r12b-repository-consistency-notes.md
+docs/operations/r12b0-evidence-audit-2026-07-09.md
+docs/operations/r12b1-support-transition-acceptance-2026-07-09.md
+docs/operations/r12b2-refund-disclosure-acceptance-2026-07-09.md
 ```
 
-The five R12A policy/support routes are resolved surfaces. Historical P8B missing-surface evidence remains separately preserved.
-
-### R12B active scope
-
-R12B owns:
+Accepted execution:
 
 ```text
-repository Support/Payment Link fact audit
-actual hosted Payment Link destination behavior
-Support CTA wording
-one-time versus recurring behavior visible to users
-refund wording consistency
-Commercial Disclosure consistency
-mobile and desktop payment-transition flow
-external-link accessibility and behavior
-external Stripe registration/configuration evidence
-explicit unresolved-evidence list
+R12B-0 PR #481 / merge dcdedebc1e491c3dbab95149d1a46c38b6d2aeae
+R12B-1 PR #482 / merge 1bcc9590f4ca04202a8155e8d10862f91d73cc7f
+R12B-2 workflow 28963522407 / artifact 8177066249 / result pass
 ```
 
-R12B evidence must separate:
+R12B evidence keeps these classes separate:
 
 ```text
 repository facts
 hosted public behavior
-external Stripe dashboard/account facts
+historical external correspondence
+current external Stripe dashboard/account facts
 ```
 
-Repository content alone does not prove external Stripe account state, registered website state, Payment Link dashboard configuration, or refund configuration.
+Unproven current external state remains explicitly pending and is not converted into a completion claim.
 
-### R12C
+## R12C active scope
 
 R12C owns:
 
@@ -127,13 +103,25 @@ final release candidate acceptance
 exact production verification
 ```
 
+R12C-0 begins with evidence collection rather than copy rewriting:
+
+```text
+Portal and About message inventory
+feature descriptions
+current limitations and coverage wording
+Twitch/Kick separation wording
+Status/help/support/legal links
+existing FAQ-like explanations
+current screenshots and share assets
+missing launch explanations/assets
+approved terminology candidates
+```
+
 English remains the source language for Phase 13–14.
 
 ## Phase 12A purpose
 
-Phase 12A begins data capture and compact aggregation for facts that existing daily rollups cannot reconstruct later.
-
-It owns:
+Phase 12A begins data capture and compact aggregation for facts that existing daily rollups cannot reconstruct later. It starts only after R12C-3 closes Phase 12.
 
 ```text
 current capacity baseline
@@ -144,7 +132,7 @@ provider-specific category capture foundation
 production acceptance and accumulation handoff
 ```
 
-R12A closeout retained these non-blocking capacity observations:
+Capacity observations carried forward:
 
 ```text
 Twitch 300/300 at-or-over-window
@@ -158,8 +146,6 @@ They are baseline inputs, not authorization to expand observed windows.
 Localization remains the active product program after Phase 12A. During localization, compact intraday/category evidence may accumulate, while Phase 16 feature work remains blocked until Phase 15.
 
 ## Phase 15 purpose
-
-Phase 15 must produce:
 
 ```text
 sample support thresholds
