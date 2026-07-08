@@ -1,0 +1,65 @@
+name: Release R12B1 Support Transition
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/support/index.html'
+      - 'apps/web/scripts/r12b1-support-transition-browser.mjs'
+      - 'scripts/verify-r12b1-support-transition.mjs'
+      - 'scripts/verify-r12b1-acceptance-record.mjs'
+      - '.github/workflows/release-r12b1-support-transition.yml'
+      - 'docs/work-in-progress/phase12-release-readiness.md'
+      - 'docs/operations/r12b1-support-transition-acceptance-2026-07-09.md'
+
+concurrency:
+  group: release-r12b1-support-transition-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      R12B1_ARTIFACT_DIR: ${{ github.workspace }}/artifacts/r12b1-support-transition
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify permanent R12B-1 acceptance record
+        run: node scripts/verify-r12b1-acceptance-record.mjs
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run R12B-1 hosted transition acceptance
+        working-directory: apps/web
+        run: node scripts/r12b1-support-transition-browser.mjs
+
+      - name: Verify R12B-1 transition evidence
+        run: node scripts/verify-r12b1-support-transition.mjs artifacts/r12b1-support-transition/evidence.json
+
+      - name: Upload R12B-1 acceptance artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r12b1-support-transition
+          path: artifacts/r12b1-support-transition/**
+          if-no-files-found: warn
