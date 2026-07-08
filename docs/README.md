@@ -8,26 +8,16 @@ Read the development policy, documentation governance, documentation index, road
 ## Current execution state
 
 ```text
-Phase 10 U10F readiness                          complete PR #468
-U10F canonical closeout                          complete PR #469
-Phase 10 U10G architecture                       complete PR #470
-Phase 10 U10H production acceptance              complete PR #471
-U10H canonical closeout                          complete PR #472
-Phase 11 P11A strict-null migration              complete
-Phase 11 P11B CI ownership                       complete
-Phase 11 P11C monitoring contract                complete
-Phase 11 P11D escalation runbook                 complete
-Phase 11 P11E maintenance cadence                complete
-Phase 11 P11F acceptance ownership               complete
-Phase 11 P11G candidate                          merged PR #473
-Phase 11 production closeout                     complete
-Phase 12 English release readiness               active
-Current workstream                               R12A-5 candidate and hosted acceptance
-Active implementation branch                     work-release-r12a-legal-support
-Branch created                                   yes
-Candidate public HTML routes                     25
-Candidate browser scenarios                      100
-Hosted production acceptance                     pending merge
+Phase 10 complete through U10H
+Phase 11 P11A-P11G complete
+Phase 11 production closeout complete
+Phase 12 English release readiness active
+R12A legal and support public-surface completion complete
+R12A implementation PR #477 merged
+R12A production acceptance pass
+Current workstream R12B-0 evidence and configuration audit
+Exact next implementation branch work-release-r12b-stripe-support-flow
+Next branch created no
 ```
 
 ## Current authorities
@@ -39,6 +29,8 @@ Hosted production acceptance                     pending merge
 - Phase 12 implementation plan: `product/release-readiness-plan.md`
 - Active Phase 12 record: `work-in-progress/phase12-release-readiness.md`
 - R12A baseline audit: `audits/phase12-r12a-legal-support-baseline.json`
+- R12A production evidence: `audits/r12a-production-acceptance.json`
+- R12A production record: `operations/r12a-production-acceptance-2026-07-08.md`
 - Public surface inventory: `audits/public-surface-inventory.json`
 - Current gap state: `audits/public-surface-gaps.json`
 - Permanent Phase 11 closeout: `operations/phase11-production-closeout-2026-07-08.md`
@@ -56,14 +48,14 @@ Hosted production acceptance                     pending merge
 ## Active Phase 12 sequence
 
 ```text
-R12A legal and support public-surface completion
-R12B Stripe and support-flow readiness
-R12C English launch package and release acceptance
+R12A legal and support public-surface completion   complete
+R12B Stripe and support-flow readiness             active
+R12C English launch package and release acceptance queued
 ```
 
-R12A-0 through R12A-4 are complete on the active candidate branch. R12A-5 owns latest-head candidate gates, merge, exact production deployment verification, 25-route Production Smoke, provider status/monitoring checks, explicit 404 verification, and final gap transition from candidate to resolved.
+R12A exact production acceptance verified 25 owned HTML routes, both provider status contracts, provider separation, monitoring evidence with zero blocking alerts, and explicit 404 behavior against merged main SHA `952f0008209363f4fd5b22587975ac247ee8d6f2`.
 
-Five candidate surfaces remain pending hosted production acceptance:
+The five R12A routes are resolved:
 
 ```text
 /contact/
@@ -73,7 +65,7 @@ Five candidate surfaces remain pending hosted production acceptance:
 /commercial-disclosure/
 ```
 
-Do not mark them resolved before exact post-merge production evidence passes. External Stripe dashboard/account state requires explicit evidence in R12B.
+R12B begins with evidence separation between repository facts, hosted public behavior, and external Stripe dashboard/account facts. External Stripe state must not be inferred from repository files alone.
 
 ## Approved analytics program authorities
 
@@ -96,12 +88,10 @@ Phase 12 English release readiness
   -> Phase 16F Replay and Backtest
 ```
 
-Phase 12A begins capture and compact rollup work only after Phase 12 closes. Phase 16 implementation is gated by Phase 15 calibration and capacity acceptance.
-
 ## Permanent Watchlist records
 
 - `product/local-watchlist-spec.md`
 - `product/watchlist-v1-implementation-plan.md`
 - `operations/watchlist-production-acceptance-2026-06-25.md`
 
-The immediate repository priority is R12A-5 candidate and hosted acceptance on `work-release-r12a-legal-support`. Future work must follow the active Phase 12 and analytics entry gates rather than ad hoc feature additions.
+The immediate repository priority is R12B-0 evidence and configuration audit. The exact next implementation branch is `work-release-r12b-stripe-support-flow`, which must not be created before the R12A closeout PR merges and that merge is verified.
