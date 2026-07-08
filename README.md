@@ -22,45 +22,13 @@ Phase 11 P11A-P11G                     complete
 Phase 11 production closeout           complete
 Phase 12 English release readiness     active
 R12A legal/support public surface      complete
-R12A implementation                    merged PR #477
-R12A production acceptance             pass
-Current workstream                     R12B-0 evidence and configuration audit
-Exact next branch                      work-release-r12b-stripe-support-flow
+R12B Stripe/support readiness          complete through R12B-2
+R12C English launch package            active at R12C-0 message inventory
+Exact next branch                      work-release-r12c0-message-inventory
 Next branch created                    no
 ```
 
-Permanent R12A evidence:
-
-```text
-docs/audits/phase12-r12a-legal-support-baseline.json
-docs/audits/r12a-production-acceptance.json
-docs/operations/r12a-production-acceptance-2026-07-08.md
-```
-
-R12A production acceptance verified:
-
-```text
-Merged main SHA: 952f0008209363f4fd5b22587975ac247ee8d6f2
-25 repository-owned HTML routes
-2 provider status APIs
-0 provider crossing failures
-0 blocking monitoring alerts
-explicit 404 behavior
-```
-
-The following routes are production accepted and resolved:
-
-```text
-/contact/
-/terms/
-/privacy/
-/refund-policy/
-/commercial-disclosure/
-```
-
-## Active Phase 12
-
-Phase 12 authorities:
+## Phase 12 authorities
 
 ```text
 docs/product/release-readiness-spec.md
@@ -72,11 +40,40 @@ Sequence:
 
 ```text
 R12A legal and support public-surface completion   complete
-R12B Stripe and support-flow readiness             active
-R12C English launch package and release acceptance queued
+R12B Stripe and support-flow readiness             complete
+R12C English launch package and release acceptance active
 ```
 
-R12B audits the actual support/payment transition, Payment Link behavior, refund/disclosure consistency, and the external evidence needed to support Stripe configuration claims. Repository facts, hosted public behavior, and Stripe dashboard/account facts must remain distinct.
+Permanent R12B evidence:
+
+```text
+docs/audits/r12b-evidence-and-configuration-audit.json
+docs/audits/r12b-repository-consistency-notes.md
+docs/operations/r12b0-evidence-audit-2026-07-09.md
+docs/operations/r12b1-support-transition-acceptance-2026-07-09.md
+docs/operations/r12b2-refund-disclosure-acceptance-2026-07-09.md
+```
+
+R12B accepted repository facts, hosted public behavior, desktop/mobile payment transition, refund/disclosure consistency, legal-link availability, and mobile Back/return behavior. It does not convert unproven current Stripe Dashboard/account settings into completion claims.
+
+## Active R12C-0
+
+R12C-0 inventories current English public messaging before launch copy is written:
+
+```text
+Portal and About descriptions
+feature-role descriptions
+bounded-data and coverage limitations
+Twitch/Kick separation explanation
+Status and methodology/help links
+Support and legal links
+FAQ-like explanations
+current screenshots and share assets
+missing launch explanations and assets
+approved terminology candidates
+```
+
+R12C-0 is evidence collection, not a broad copy rewrite.
 
 ## Approved forward sequence
 
@@ -113,4 +110,4 @@ docs/product/analytics-observation-system-plan.md
 docs/product/next-feature-data-capability-audit.md
 ```
 
-Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*` only when runtime validation is necessary. Only latest-head evidence counts. Phase 12A and later analytics work must not bypass their approved entry gates.
+Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate runtime validation uses `preview-*` only when necessary. Only latest-head evidence counts. Phase 12A remains blocked until R12C-3 closes Phase 12.

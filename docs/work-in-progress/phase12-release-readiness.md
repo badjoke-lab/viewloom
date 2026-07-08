@@ -9,12 +9,10 @@ R12A production evidence: `../audits/r12a-production-acceptance.json`
 R12B-0 audit: `../audits/r12b-evidence-and-configuration-audit.json`
 R12B-0 operation record: `../operations/r12b0-evidence-audit-2026-07-09.md`
 R12B-1 acceptance: `../operations/r12b1-support-transition-acceptance-2026-07-09.md`
-Current workstream: R12B-1 Support page and payment transition acceptance
-Active branch: `work-release-r12b1-support-transition`
-Branch created: yes
-R12B-0 completion: complete
-R12B-1 completion: complete
-Next after R12B-1 merge: R12B-2 refund/disclosure consistency acceptance
+R12B-2 acceptance: `../operations/r12b2-refund-disclosure-acceptance-2026-07-09.md`
+Current workstream: R12C-0 message inventory
+Exact next implementation branch: `work-release-r12c0-message-inventory`
+Next branch created: no
 
 ## Retained transition history
 
@@ -26,14 +24,14 @@ Exact next implementation branch: `work-release-r12b-stripe-support-flow`
 Next branch created: no
 ```
 
-R12B-0 then executed on `work-release-r12b-stripe-support-flow` and merged through PR #481.
+R12B-0 executed on `work-release-r12b-stripe-support-flow` and merged through PR #481. R12B-1 executed on `work-release-r12b1-support-transition` and merged through PR #482. R12B-2 closes on the current acceptance branch before R12C-0 starts.
 
 ## Workstreams
 
 ```text
 R12A legal and support public-surface completion   complete
-R12B Stripe and support-flow readiness             active
-R12C English launch package and release acceptance queued
+R12B Stripe and support-flow readiness             complete through R12B-2
+R12C English launch package and release acceptance active at R12C-0
 ```
 
 ## R12A closeout
@@ -57,6 +55,8 @@ Result: pass
 ```text
 PR: #481
 Merge SHA: dcdedebc1e491c3dbab95149d1a46c38b6d2aeae
+Workflow run: 28962351393
+Artifact id: 8176591285
 Repository facts: confirmed
 Hosted public behavior: confirmed
 Prior external correspondence: historical evidence only
@@ -72,29 +72,13 @@ docs/audits/r12b-repository-consistency-notes.md
 docs/operations/r12b0-evidence-audit-2026-07-09.md
 ```
 
-R12B-0 hosted evidence:
-
-```text
-Workflow run: 28962351393
-Artifact id: 8176591285
-Artifact digest: sha256:e419abdc27d24b1628c5a35cab55712146f1b6e0523094ad3df48fdf182395ad
-Final public hostname: buy.stripe.com
-Visible Stripe label: Support ViewLoom
-Visible amount: US$10.00
-Explicit one-time wording on Stripe visible text: not detected
-Explicit recurring wording on Stripe visible text: not detected
-Payment submission: not performed
-```
-
 ## R12B-1 acceptance
 
-R12B-1 was evaluated as acceptance-only work. The existing Support page passed the approved transition contract without a product/UI change.
-
 ```text
+PR: #482
+Merge SHA: 1bcc9590f4ca04202a8155e8d10862f91d73cc7f
 Workflow run: 28963037083
 Artifact id: 8176871147
-Artifact digest: sha256:98d92c559c9ddeda0d3307be01a213e13cb85406a0ee4333d211b47dbf0197c1
-Evidence head SHA: 1f4405ace2735f7a34f1989bd1988800bc442897
 Desktop 1440: pass
 Mobile 390: pass
 Violations: 0
@@ -102,23 +86,43 @@ Horizontal overflow: 0px desktop / 0px mobile
 CTA name: Open Stripe payment page
 Desktop CTA size: 217x34px
 Mobile CTA size: 217x44px
-Stripe-hosted transition explanation: present
-Refund Policy link: present
-Commercial Disclosure link: present
-Contact link: present
-Secret-like Stripe credential token in public DOM: none
 ```
 
-The mobile CTA meets the 44px action-target rule exactly. No unnecessary Support copy or layout change is authorized by the evidence.
+R12B-1 completed as acceptance-only work. The existing Support page already satisfied the approved transition contract.
 
-Permanent R12B-1 evidence:
+## R12B-2 acceptance
 
 ```text
-docs/operations/r12b1-support-transition-acceptance-2026-07-09.md
-scripts/verify-r12b1-acceptance-record.mjs
-apps/web/scripts/r12b1-support-transition-browser.mjs
-scripts/verify-r12b1-support-transition.mjs
+Workflow run: 28963522407
+Artifact id: 8177066249
+Artifact digest: sha256:7c209bf81f04df9687f154b89c9ce89ee602900b583191b4691e2731cea9690d
+Evidence head SHA: 3cfc02ea3458170a19f86e43bc7dc6b2d7d16598
+Routes: 4
+Viewports: 2
+Page scenarios: 8
+Mobile Back/return flows: 2
+Violations: 0
 ```
+
+Across all eight scenarios:
+
+```text
+HTTP status: pass
+canonical ownership: pass
+horizontal overflow: 0px
+charitable donation wording detected: false
+unsupported current Stripe Dashboard-state claim detected: false
+secret-like payment token count: 0
+```
+
+Mobile return behavior:
+
+```text
+/support/ -> /refund-policy/ -> Back -> /support/: pass
+/support/ -> /commercial-disclosure/ -> Back -> /support/: pass
+```
+
+R12B-2 completed as acceptance-only work. No support/refund/disclosure wording conflict requiring a copy change remains.
 
 ## External evidence boundary
 
@@ -132,13 +136,13 @@ refund configuration is enabled or disabled in a particular way
 recurring payments are impossible solely because the site copy says one-time
 ```
 
-Where direct authoritative evidence is unavailable, keep the item pending rather than inventing completion.
+Historical external project record date remains `2026-06-09`. Unproven current external state remains pending rather than converted into a completion claim.
 
-## R12B-1 decision
+## R12B decision
 
-R12B-1 is complete as acceptance-only work. The existing Support page already satisfies the approved payment-transition contract.
+R12B is complete through R12B-2. The next active workstream is R12C-0 message inventory.
 
-After this R12B-1 acceptance PR merges, proceed to R12B-2 refund/disclosure consistency acceptance.
+R12C-0 begins with an evidence inventory of current English public descriptions, limitations, provider-separation wording, help/status/support/legal links, FAQ-like explanations, screenshots, share assets, and terminology candidates. It does not begin broad launch-copy rewriting before the inventory exists.
 
 ## Capacity carry-forward
 
@@ -147,4 +151,4 @@ Twitch: at-or-over-window 300/300
 Kick:   at-or-over-window 100/100
 ```
 
-These non-blocking watch observations remain inputs to Phase 12A Analytics Capture Foundation. R12B does not change observed windows, retention, cron, collector, D1 schema, or provider separation.
+These observations remain inputs to Phase 12A Analytics Capture Foundation. Phase 12A remains blocked until R12C-3 closes the full Phase 12 release acceptance.

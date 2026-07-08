@@ -1,0 +1,68 @@
+name: Release R12B2 Refund Disclosure
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/support/index.html'
+      - 'apps/web/refund-policy/index.html'
+      - 'apps/web/commercial-disclosure/index.html'
+      - 'apps/web/contact/index.html'
+      - 'apps/web/scripts/r12b2-refund-disclosure-browser.mjs'
+      - 'scripts/verify-r12b2-refund-disclosure.mjs'
+      - 'scripts/verify-r12b2-acceptance-record.mjs'
+      - '.github/workflows/release-r12b2-refund-disclosure.yml'
+      - 'docs/work-in-progress/phase12-release-readiness.md'
+      - 'docs/operations/r12b2-refund-disclosure-acceptance-2026-07-09.md'
+
+concurrency:
+  group: release-r12b2-refund-disclosure-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      R12B2_ARTIFACT_DIR: ${{ github.workspace }}/artifacts/r12b2-refund-disclosure
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify permanent R12B-2 acceptance record
+        run: node scripts/verify-r12b2-acceptance-record.mjs
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run R12B-2 consistency acceptance
+        working-directory: apps/web
+        run: node scripts/r12b2-refund-disclosure-browser.mjs
+
+      - name: Verify R12B-2 consistency evidence
+        run: node scripts/verify-r12b2-refund-disclosure.mjs artifacts/r12b2-refund-disclosure/evidence.json
+
+      - name: Upload R12B-2 acceptance artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r12b2-refund-disclosure
+          path: artifacts/r12b2-refund-disclosure/**
+          if-no-files-found: warn

@@ -8,19 +8,10 @@ Phase 11 P11A-P11G complete
 Phase 11 production closeout complete
 Phase 12 English release readiness active
 R12A legal/support public surface complete
-R12A implementation merged PR #477
-R12A production acceptance pass
-Current workstream: R12B-0 evidence and configuration audit
-Exact next implementation branch: work-release-r12b-stripe-support-flow
+R12B Stripe/support readiness complete through R12B-2
+Current workstream: R12C-0 message inventory
+Exact next implementation branch: work-release-r12c0-message-inventory
 Next branch created: no
-```
-
-Permanent R12A evidence:
-
-```text
-docs/audits/phase12-r12a-legal-support-baseline.json
-docs/audits/r12a-production-acceptance.json
-docs/operations/r12a-production-acceptance-2026-07-08.md
 ```
 
 Active Phase 12 authorities:
@@ -31,9 +22,21 @@ docs/product/release-readiness-plan.md
 docs/work-in-progress/phase12-release-readiness.md
 ```
 
-Phase 12 sequence is R12A complete, R12B active, and R12C queued.
+Permanent R12B evidence:
 
-R12B begins with evidence separation between repository facts, hosted public behavior, and external Stripe dashboard/account facts. External Stripe registration, account state, Payment Link dashboard settings, and refund configuration must not be inferred from repository files alone.
+```text
+docs/audits/r12b-evidence-and-configuration-audit.json
+docs/audits/r12b-repository-consistency-notes.md
+docs/operations/r12b0-evidence-audit-2026-07-09.md
+docs/operations/r12b1-support-transition-acceptance-2026-07-09.md
+docs/operations/r12b2-refund-disclosure-acceptance-2026-07-09.md
+```
+
+Phase 12 sequence is R12A complete, R12B complete, and R12C active at R12C-0.
+
+R12C-0 inventories current English public messaging, limitations, provider-separation wording, Status/help/support/legal links, FAQ-like explanations, screenshots/share assets, missing launch explanations, and terminology candidates. Do not begin broad launch-copy rewriting before the inventory exists.
+
+R12B's external evidence boundary remains active: current Stripe Dashboard/account facts must not be inferred from repository files or public browser behavior alone.
 
 Approved future analytics authorities:
 

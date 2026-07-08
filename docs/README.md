@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map
-Last updated: 2026-07-08
+Last updated: 2026-07-09
 
 Read the development policy, documentation governance, documentation index, roadmap, schedule, program plan, affected specifications, implementation plans, and evidence before changing the repository.
 
@@ -13,10 +13,9 @@ Phase 11 P11A-P11G complete
 Phase 11 production closeout complete
 Phase 12 English release readiness active
 R12A legal and support public-surface completion complete
-R12A implementation PR #477 merged
-R12A production acceptance pass
-Current workstream R12B-0 evidence and configuration audit
-Exact next implementation branch work-release-r12b-stripe-support-flow
+R12B Stripe and support-flow readiness complete through R12B-2
+Current workstream R12C-0 message inventory
+Exact next implementation branch work-release-r12c0-message-inventory
 Next branch created no
 ```
 
@@ -28,44 +27,51 @@ Next branch created no
 - Phase 12 specification: `product/release-readiness-spec.md`
 - Phase 12 implementation plan: `product/release-readiness-plan.md`
 - Active Phase 12 record: `work-in-progress/phase12-release-readiness.md`
-- R12A baseline audit: `audits/phase12-r12a-legal-support-baseline.json`
 - R12A production evidence: `audits/r12a-production-acceptance.json`
-- R12A production record: `operations/r12a-production-acceptance-2026-07-08.md`
+- R12B-0 audit: `audits/r12b-evidence-and-configuration-audit.json`
+- R12B repository consistency record: `audits/r12b-repository-consistency-notes.md`
+- R12B-0 operation record: `operations/r12b0-evidence-audit-2026-07-09.md`
+- R12B-1 acceptance: `operations/r12b1-support-transition-acceptance-2026-07-09.md`
+- R12B-2 acceptance: `operations/r12b2-refund-disclosure-acceptance-2026-07-09.md`
 - Public surface inventory: `audits/public-surface-inventory.json`
 - Current gap state: `audits/public-surface-gaps.json`
 - Permanent Phase 11 closeout: `operations/phase11-production-closeout-2026-07-08.md`
-- Phase 10–11 specification: `product/cross-site-quality-remediation-spec.md`
-- Phase 10–11 plan: `product/cross-site-quality-remediation-plan.md`
-- P11A strict-null evidence: `audits/phase11-strict-null-baseline.json`
-- P11B CI ownership evidence: `audits/phase11-ci-ownership-baseline.json`
-- P11B overlap classification: `audits/phase11-ci-overlap-classification.json`
-- P11C monitoring contract and hosted evidence: `audits/phase11-monitoring-contract.json`
-- P11D runbook: `operations/phase11-monitoring-and-escalation.md`
-- P11E cadence: `operations/phase11-maintenance-cadence.md`
-- P11F historical ownership evidence: `audits/phase11-public-acceptance-ownership.json`
 - Permanent U10H production acceptance: `operations/u10h-production-acceptance-2026-07-04.md`
+
+## Permanent Watchlist records
+
+- `product/local-watchlist-spec.md`
+- `product/watchlist-v1-implementation-plan.md`
+- `operations/watchlist-production-acceptance-2026-06-25.md`
 
 ## Active Phase 12 sequence
 
 ```text
 R12A legal and support public-surface completion   complete
-R12B Stripe and support-flow readiness             active
-R12C English launch package and release acceptance queued
+R12B Stripe and support-flow readiness             complete
+R12C English launch package and release acceptance active at R12C-0
 ```
 
-R12A exact production acceptance verified 25 owned HTML routes, both provider status contracts, provider separation, monitoring evidence with zero blocking alerts, and explicit 404 behavior against merged main SHA `952f0008209363f4fd5b22587975ac247ee8d6f2`.
+R12B accepted the public Support-to-Stripe path, desktop/mobile transition behavior, refund/disclosure wording consistency, legal-link availability, and mobile Back/return behavior. Current external Stripe Dashboard/account facts that were not directly proven remain explicitly pending and are not converted into current-state claims.
 
-The five R12A routes are resolved:
+## R12C-0 scope
+
+R12C-0 inventories the current English source package before launch copy is written:
 
 ```text
-/contact/
-/terms/
-/privacy/
-/refund-policy/
-/commercial-disclosure/
+Portal and About descriptions
+feature-role descriptions
+bounded-data and coverage limitations
+Twitch/Kick separation explanation
+Status and methodology/help links
+Support and legal links
+FAQ-like explanations
+current screenshots and share assets
+missing launch explanations and assets
+approved terminology candidates
 ```
 
-R12B begins with evidence separation between repository facts, hosted public behavior, and external Stripe dashboard/account facts. External Stripe state must not be inferred from repository files alone.
+The exact next implementation branch is `work-release-r12c0-message-inventory`, which must not be created before the R12B-2 closeout PR merges and that merge is verified.
 
 ## Approved analytics program authorities
 
@@ -88,10 +94,4 @@ Phase 12 English release readiness
   -> Phase 16F Replay and Backtest
 ```
 
-## Permanent Watchlist records
-
-- `product/local-watchlist-spec.md`
-- `product/watchlist-v1-implementation-plan.md`
-- `operations/watchlist-production-acceptance-2026-06-25.md`
-
-The immediate repository priority is R12B-0 evidence and configuration audit. The exact next implementation branch is `work-release-r12b-stripe-support-flow`, which must not be created before the R12A closeout PR merges and that merge is verified.
+Phase 12A remains blocked until R12C-3 closes the full Phase 12 release acceptance.
