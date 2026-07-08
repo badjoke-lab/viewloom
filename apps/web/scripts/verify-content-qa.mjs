@@ -112,7 +112,7 @@ if (existsSync(join(root, paths.commercial))) {
   requireFragment(paths.commercial, source, '特定商取引法に基づく表記')
   requireFragment(paths.commercial, source, 'provided without delay upon request before the transaction')
   requireFragment(paths.commercial, source, 'https://www.no-trouble.caa.go.jp/what/mailorder/')
-  requireFragment(paths.commercial, source, stripeUrl.replace('/6oUcMYeRh0Na2oX3cDcIE03', '').slice(0, 0) || '/support/')
+  requireFragment(paths.commercial, source, '/support/')
   requireFragment(paths.commercial, source, '/refund-policy/')
   requireFragment(paths.commercial, source, 'Support does not affect observations')
 }
