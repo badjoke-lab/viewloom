@@ -14,8 +14,9 @@ Phase 11 production closeout complete
 Phase 12 English release readiness active
 R12A legal and support public-surface completion complete
 R12B Stripe and support-flow readiness complete through R12B-2
-Current workstream R12C-0 message inventory
-Exact next implementation branch work-release-r12c0-message-inventory
+R12C-0 message inventory complete
+Current workstream R12C-1 launch copy and FAQ
+Exact next implementation branch work-release-r12c1-launch-copy-faq
 Next branch created no
 ```
 
@@ -33,6 +34,9 @@ Next branch created no
 - R12B-0 operation record: `operations/r12b0-evidence-audit-2026-07-09.md`
 - R12B-1 acceptance: `operations/r12b1-support-transition-acceptance-2026-07-09.md`
 - R12B-2 acceptance: `operations/r12b2-refund-disclosure-acceptance-2026-07-09.md`
+- R12C-0 machine inventory: `audits/r12c0-message-inventory.json`
+- R12C-0 human inventory: `audits/r12c0-message-inventory.md`
+- R12C-0 closeout: `operations/r12c0-message-inventory-2026-07-09.md`
 - Public surface inventory: `audits/public-surface-inventory.json`
 - Current gap state: `audits/public-surface-gaps.json`
 - Permanent Phase 11 closeout: `operations/phase11-production-closeout-2026-07-08.md`
@@ -49,29 +53,34 @@ Next branch created no
 ```text
 R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete
-R12C English launch package and release acceptance active at R12C-0
+R12C-0 message inventory                           complete
+R12C-1 launch copy and FAQ                         active
+R12C-2 launch/share asset package                  queued
+R12C-3 release candidate acceptance                queued
 ```
 
 R12B accepted the public Support-to-Stripe path, desktop/mobile transition behavior, refund/disclosure wording consistency, legal-link availability, and mobile Back/return behavior. Current external Stripe Dashboard/account facts that were not directly proven remain explicitly pending and are not converted into current-state claims.
 
-## R12C-0 scope
+## Active R12C-1
 
-R12C-0 inventories the current English source package before launch copy is written:
+R12C-1 uses the R12C-0 inventory as its source boundary and produces:
 
 ```text
-Portal and About descriptions
-feature-role descriptions
-bounded-data and coverage limitations
-Twitch/Kick separation explanation
-Status and methodology/help links
-Support and legal links
-FAQ-like explanations
-current screenshots and share assets
-missing launch explanations and assets
-approved terminology candidates
+one-line description
+short listing description
+long description
+feature-role summary
+coverage limitations
+provider separation explanation
+retention explanation
+FAQ
+Support/legal links
+Status/help links
 ```
 
-The exact next implementation branch is `work-release-r12c0-message-inventory`, which must not be created before the R12B-2 closeout PR merges and that merge is verified.
+The exact next implementation branch is `work-release-r12c1-launch-copy-faq`, which must not be created before the R12C-0 closeout PR merges and that merge is verified.
+
+R12C-1 must preserve bounded observed-data claims and must not invent complete platform coverage, official analytics, unique viewers, exact creator revenue, exact session reconstruction, combined Twitch/Kick audience totals, or cross-platform rankings.
 
 ## Approved analytics program authorities
 
