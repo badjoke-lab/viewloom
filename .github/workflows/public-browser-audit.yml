@@ -17,6 +17,7 @@ on:
       - 'docs/audits/P8B_SCOPE.md'
       - 'docs/audits/public-browser-*'
       - 'docs/audits/public-surface-*'
+      - 'docs/audits/r12a-candidate-acceptance-marker.md'
       - 'apps/web/scripts/public-browser-audit.mjs'
       - 'apps/web/scripts/public-browser-fixtures.mjs'
       - 'apps/web/scripts/public-current-browser-audit.mjs'
@@ -48,7 +49,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.17.1
+          node-version: 22
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
