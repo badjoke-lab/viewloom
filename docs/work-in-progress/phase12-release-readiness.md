@@ -6,7 +6,7 @@ Specification: `../product/release-readiness-spec.md`
 Implementation plan: `../product/release-readiness-plan.md`
 Entry evidence: `../operations/phase11-production-closeout-2026-07-08.md`
 Baseline audit: `../audits/phase12-r12a-legal-support-baseline.json`
-Current workstream: R12A-1 shared legal/support page foundation
+Current workstream: R12A-5 candidate and hosted acceptance
 Active branch: `work-release-r12a-legal-support`
 Branch created: yes
 
@@ -69,64 +69,74 @@ Build inputs              apps/web/vite.config.ts
 About                     apps/web/about/index.html
 Support                   apps/web/support/index.html
 Shared shell/footer       apps/web/src/shared-shell.ts
-Current static entry      apps/web/src/mock-site.ts
+Provider-neutral entry    apps/web/src/static-page.ts
 Portal route manifest     docs/audits/public-surface-routes-portal.json
 Profile inventory         docs/audits/public-surface-profiles-core.json
 Gap inventory             docs/audits/public-surface-gaps.json
 Public Readiness          apps/web/scripts/public-readiness-audit.mjs
-Public Browser            apps/web/scripts/public-browser-audit.mjs
+Current Browser matrix    apps/web/scripts/public-current-browser-audit.mjs
+Historical P8B owner      apps/web/scripts/public-browser-audit.mjs
 Production Smoke          .github/workflows/production-smoke.yml
 Sitemap                   apps/web/public/sitemap.xml
 Content QA                apps/web/scripts/verify-content-qa.mjs
 SEO QA                    apps/web/scripts/verify-seo-qa.mjs
+R12A contract gate        .github/workflows/release-r12a-legal-support.yml
 ```
 
-### Audit findings
+### Audit findings and implemented decisions
 
-1. About and Support currently use `mock-site.ts`.
-2. `mock-site.ts` fetches both provider status APIs on provider-neutral portal pages, while the route inventory records `apis: []` for About and Support.
-3. R12A will add a provider-neutral static page entry with no provider API requests and migrate About/Support to it.
-4. GA4 measurement `G-YHX7HS1VBK` is injected into every built HTML page by Vite, so Privacy must describe this actual behavior.
-5. Contact is currently an external Google Form footer link. `/contact/` will become the primary owned surface; the Google Form may remain the submission channel.
-6. Support already contains the Stripe Payment Link `https://buy.stripe.com/6oUcMYeRh0Na2oX3cDcIE03` and labels payment as one-time. External Stripe account/dashboard facts remain R12B evidence items.
-7. Public Readiness derives pages from route manifests, but Production Smoke hard-codes route paths.
-8. Public Browser derives routes from the route manifest but currently targets production for the route matrix even on PRs. R12A must test candidate routes locally on PRs and leave exact post-merge production verification to Production Smoke.
-9. Current gap probes are derived from `public-surface-gaps.json`; historical P8B evidence must be preserved separately before the five current gaps are resolved.
-10. Sitemap is static XML and requires explicit update.
+1. About and Support previously used `mock-site.ts`, which fetched both provider status APIs on provider-neutral pages despite route inventory `apis: []`.
+2. `static-page.ts` now installs shared shell behavior without provider status requests, and About/Support use it.
+3. GA4 measurement `G-YHX7HS1VBK` is injected into built HTML; Privacy describes that behavior.
+4. `/contact/` is now the owned contact surface; the existing Google Form remains the external submission channel.
+5. Support keeps the current Stripe Payment Link and one-time support wording; external Stripe account/dashboard facts remain R12B evidence items.
+6. Five candidate legal routes are Vite inputs, route-inventory entries, sitemap entries, Content QA/SEO QA subjects, Public Readiness subjects, current browser matrix subjects, and Production Smoke subjects.
+7. Public Browser ownership is split: P8B historical evidence remains locked in the permanent ledger, while current candidate routes are tested locally at 1440/820/390/360. Exact post-merge production verification remains Production Smoke ownership.
+8. Current gap inventory has zero `missing_surfaces`; the five pages are `candidate_surfaces` until R12A hosted production acceptance.
+9. Shared footer Contact is an internal route and Terms, Privacy, Refund Policy, and Commercial Disclosure are globally discoverable.
+10. Phase 11 historical 20-route acceptance evidence remains permanent, while the retained current ownership gate now covers 25 routes.
 
-### R12A decisions
+## Candidate inventory
 
 ```text
-New route profile: static_legal
-Five new routes: indexable and included in sitemap
-Provider-neutral static pages: no provider status API requests
-About/Support: migrate to provider-neutral static entry
-Footer Contact: internal /contact/ route
-Google Form: may remain contact submission channel
-PR browser route matrix: local candidate
-Exact production acceptance: Production Smoke
-Historical P8B missing evidence: preserved separately
-Current gap state after production acceptance: resolved
+Vite HTML inputs: 25
+Explicit not-found pages: 1
+Inventory entries: 26
+Indexable routes: 21
+Noindex routes: 4
+Sitemap routes: 21
+Public Readiness configured pages: 25
+Production Smoke page routes: 25
+Current candidate browser scenarios: 25 routes x 4 widths = 100
+Historical P8B baseline: 21 routes / 84 production scenarios / 5 missing probes / 10 History scenarios
 ```
 
 ## R12A implementation state
 
 ```text
 R12A-0 current legal/support surface audit: complete
-R12A-1 shared legal/support page foundation: active
-R12A-2 Contact, Terms, Privacy: queued
-R12A-3 Refund Policy and Commercial Disclosure: queued
-R12A-4 About/footer and route ownership integration: queued
-R12A-5 candidate and hosted acceptance: queued
+R12A-1 shared legal/support page foundation: complete
+R12A-2 Contact, Terms, Privacy: complete
+R12A-3 Refund Policy and Commercial Disclosure: complete
+R12A-4 About/footer and route ownership integration: complete
+R12A-5 candidate and hosted acceptance: active
 ```
 
-## Open evidence items
+## R12A-5 required evidence
 
 ```text
-R12A content draft verification: pending
-R12A current route count after implementation: pending measurement
-R12A browser matrix after implementation: pending
-R12A hosted production evidence: pending
+Development policy: pending latest head
+R12A contract gate: pending latest head
+Public Surface Inventory: pending latest head
+Public Readiness: pending latest head
+Current Browser matrix 100 scenarios: pending latest head
+Typecheck/build: pending latest head
+Hosted production evidence: pending merge and exact production SHA
+```
+
+## Open later-phase evidence items
+
+```text
 R12B actual Payment Link destination: repository URL known; hosted configuration audit pending
 R12B Stripe registered website evidence: pending external operator evidence audit
 R12B refund configuration evidence: pending external operator evidence audit
