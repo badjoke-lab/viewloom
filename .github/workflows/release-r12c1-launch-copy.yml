@@ -1,0 +1,49 @@
+name: Release R12C1 Launch Copy
+
+on:
+  pull_request:
+    paths:
+      - 'docs/product/english-launch-copy.md'
+      - 'docs/audits/r12c1-launch-copy-package.json'
+      - 'docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md'
+      - 'scripts/verify-r12c1-launch-copy-package.mjs'
+      - '.github/workflows/release-r12c1-launch-copy.yml'
+      - 'docs/work-in-progress/phase12-release-readiness.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'README.md'
+      - 'docs/README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-public-browser-audit-current.mjs'
+
+concurrency:
+  group: release-r12c1-launch-copy-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Verify R12C-0 source inventory
+        run: node scripts/verify-r12c0-message-inventory.mjs
+
+      - name: Verify R12C-1 launch copy package
+        run: node scripts/verify-r12c1-launch-copy-package.mjs
+
+      - name: Verify current public-state handoff
+        run: node scripts/verify-public-browser-audit-current.mjs

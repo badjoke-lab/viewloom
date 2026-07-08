@@ -20,8 +20,10 @@ for (const [path, source] of [
     'R12C-0',
     'complete',
     'R12C-1',
+    'complete',
+    'R12C-2',
     'active',
-    'work-release-r12c1-launch-copy-faq',
+    'work-release-r12c2-launch-assets',
     'Phase 12A Analytics Capture Foundation',
     'Phase 15 Analytics Capability and Calibration Audit',
     'Phase 16A',
@@ -29,8 +31,8 @@ for (const [path, source] of [
 }
 
 for (const fragment of [
-  'Current workstream: R12C-1 launch copy and FAQ',
-  'Exact next implementation branch: work-release-r12c1-launch-copy-faq',
+  'Current workstream: R12C-2 launch/share asset package',
+  'Exact next implementation branch: work-release-r12c2-launch-assets',
   'Next branch created: no',
 ]) {
   assert.ok(roadmap.includes(fragment), `roadmap missing ${fragment}`)
@@ -41,7 +43,13 @@ const messageInventory = JSON.parse(readFileSync('docs/audits/r12c0-message-inve
 assert.equal(messageInventory.status, 'complete')
 assert.equal(messageInventory.workstream, 'R12C-0')
 assert.equal(messageInventory.completion.r12c0_complete, true)
-assert.equal(messageInventory.completion.next_workstream, 'R12C-1 launch copy and FAQ')
+
+const launchPackage = JSON.parse(readFileSync('docs/audits/r12c1-launch-copy-package.json', 'utf8'))
+assert.equal(launchPackage.status, 'complete')
+assert.equal(launchPackage.workstream, 'R12C-1')
+assert.equal(launchPackage.completion.r12c1_complete, true)
+assert.equal(launchPackage.completion.next_workstream, 'R12C-2 launch/share asset package')
+assert.equal(launchPackage.faq.length, 12)
 
 const acceptance = JSON.parse(readFileSync('docs/audits/r12a-production-acceptance.json', 'utf8'))
 assert.equal(acceptance.status, 'complete')
@@ -60,7 +68,7 @@ assert.equal(inventory.active_program, 'Phase 12 R12C English launch package and
 
 console.log('Current public-state handoff verification passed.')
 console.log('- U10F, U10G, U10H, Phase 11, R12A, and R12B remain completed evidence')
-console.log('- R12C-0 message inventory is complete')
-console.log('- Phase 12 English release readiness is active at R12C-1 launch copy and FAQ')
-console.log('- exact next branch is work-release-r12c1-launch-copy-faq and remains uncreated')
+console.log('- R12C-0 inventory and R12C-1 English source package are complete')
+console.log('- Phase 12 English release readiness is active at R12C-2 launch/share asset package')
+console.log('- exact next branch is work-release-r12c2-launch-assets and remains uncreated')
 console.log('- current inventory owns 25 public HTML routes and 100 browser scenarios')

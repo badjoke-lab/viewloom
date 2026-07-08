@@ -16,9 +16,10 @@ R12A production acceptance: pass
 R12B-0 evidence and configuration audit complete PR #481
 R12B-1 Support page and payment transition acceptance complete PR #482
 R12B-2 refund/disclosure consistency acceptance complete PR #483
-R12C-0 message inventory complete
-Current workstream: R12C-1 launch copy and FAQ
-Exact next implementation branch: work-release-r12c1-launch-copy-faq
+R12C-0 message inventory complete PR #484
+R12C-1 launch copy and FAQ complete
+Current workstream: R12C-2 launch/share asset package
+Exact next implementation branch: work-release-r12c2-launch-assets
 Next branch created: no
 ```
 
@@ -35,56 +36,61 @@ R12B-0 evidence and configuration audit                    complete
 R12B-1 Support page and payment transition                 complete
 R12B-2 refund/disclosure consistency acceptance            complete
 R12C-0 message inventory                                   complete
-R12C-1 launch copy and FAQ                                 active
-R12C-2 launch/share asset package                          queued
+R12C-1 launch copy and FAQ                                 complete
+R12C-2 launch/share asset package                          active
 R12C-3 release candidate acceptance                        queued
 ```
 
-## R12C-0 accepted inventory
+## R12C-1 accepted package
 
 Permanent evidence:
 
 ```text
-docs/audits/r12c0-message-inventory.json
-docs/audits/r12c0-message-inventory.md
-docs/operations/r12c0-message-inventory-2026-07-09.md
+docs/product/english-launch-copy.md
+docs/audits/r12c1-launch-copy-package.json
+docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md
 ```
 
-Inventory completed:
-
-```text
-Portal/About source descriptions
-provider-home descriptions
-feature-role descriptions
-coverage/retention/cadence boundaries
-Twitch/Kick separation explanation
-Status/help/support/legal route map
-FAQ source material
-terminology candidates
-existing generic share asset
-CI screenshot evidence source
-R12C-1 message gaps
-R12C-2 asset gaps
-```
-
-## R12C-1 execution boundary
-
-Produce and integrate, as appropriate:
+Package includes:
 
 ```text
 one-line description
 short listing description
 long description
-feature-role summary
+seven-role feature summary
 coverage limitations
+plain-language Kick candidate explanation
 provider separation explanation
-retention explanation
-FAQ
-Support/legal links
+5-minute cadence explanation
+up-to-180-day daily rollup explanation
+12-question FAQ
 Status/help links
+Support/legal links
+terminology contract
+R12C-2 handoff
 ```
 
-R12C-1 must use the R12C-0 inventory as its evidence boundary. It must not claim complete platform coverage, official analytics, unique viewers, exact creator revenue, exact session reconstruction, combined Twitch/Kick audience totals, or cross-platform rankings.
+## R12C-2 execution boundary
+
+Produce a curated launch/share package from current product surfaces.
+
+Required:
+
+```text
+current desktop product screenshot
+current mobile product screenshot
+representative Heatmap screenshot
+representative Day Flow screenshot
+representative Battle Lines screenshot
+representative History screenshot
+asset manifest with source route
+asset manifest with viewport
+asset manifest with capture date
+asset manifest with intended external use
+captions bounded by R12C-1 copy
+```
+
+The generic `apps/web/public/og/viewloom.svg` remains usable as an identity card but does not replace representative product screenshots. CI Public Browser screenshots remain evidence artifacts until deliberately curated into the R12C-2 package.
 
 ## Forward execution order after Phase 12
 

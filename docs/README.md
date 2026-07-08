@@ -14,9 +14,10 @@ Phase 11 production closeout complete
 Phase 12 English release readiness active
 R12A legal and support public-surface completion complete
 R12B Stripe and support-flow readiness complete through R12B-2
-R12C-0 message inventory complete
-Current workstream R12C-1 launch copy and FAQ
-Exact next implementation branch work-release-r12c1-launch-copy-faq
+R12C-0 message inventory complete PR #484
+R12C-1 launch copy and FAQ complete
+Current workstream R12C-2 launch/share asset package
+Exact next implementation branch work-release-r12c2-launch-assets
 Next branch created no
 ```
 
@@ -30,13 +31,13 @@ Next branch created no
 - Active Phase 12 record: `work-in-progress/phase12-release-readiness.md`
 - R12A production evidence: `audits/r12a-production-acceptance.json`
 - R12B-0 audit: `audits/r12b-evidence-and-configuration-audit.json`
-- R12B repository consistency record: `audits/r12b-repository-consistency-notes.md`
-- R12B-0 operation record: `operations/r12b0-evidence-audit-2026-07-09.md`
 - R12B-1 acceptance: `operations/r12b1-support-transition-acceptance-2026-07-09.md`
 - R12B-2 acceptance: `operations/r12b2-refund-disclosure-acceptance-2026-07-09.md`
-- R12C-0 machine inventory: `audits/r12c0-message-inventory.json`
-- R12C-0 human inventory: `audits/r12c0-message-inventory.md`
+- R12C-0 inventory: `audits/r12c0-message-inventory.json`
 - R12C-0 closeout: `operations/r12c0-message-inventory-2026-07-09.md`
+- R12C-1 English source package: `product/english-launch-copy.md`
+- R12C-1 structured package: `audits/r12c1-launch-copy-package.json`
+- R12C-1 acceptance: `operations/r12c1-launch-copy-acceptance-2026-07-09.md`
 - Public surface inventory: `audits/public-surface-inventory.json`
 - Current gap state: `audits/public-surface-gaps.json`
 - Permanent Phase 11 closeout: `operations/phase11-production-closeout-2026-07-08.md`
@@ -54,33 +55,35 @@ Next branch created no
 R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete
 R12C-0 message inventory                           complete
-R12C-1 launch copy and FAQ                         active
-R12C-2 launch/share asset package                  queued
+R12C-1 launch copy and FAQ                         complete
+R12C-2 launch/share asset package                  active
 R12C-3 release candidate acceptance                queued
 ```
 
-R12B accepted the public Support-to-Stripe path, desktop/mobile transition behavior, refund/disclosure wording consistency, legal-link availability, and mobile Back/return behavior. Current external Stripe Dashboard/account facts that were not directly proven remain explicitly pending and are not converted into current-state claims.
+## R12C-1 source-language contract
 
-## Active R12C-1
+The approved English package contains one-line, short, and long descriptions; seven product-role summaries; provider-specific coverage limitations; Twitch/Kick separation; collection and retention explanations; a 12-question FAQ; Status/help links; Support/legal links; and the English terminology contract.
 
-R12C-1 uses the R12C-0 inventory as its source boundary and produces:
+It becomes the source-language package for Phase 13–14 localization after the approved program reaches localization.
+
+## Active R12C-2
+
+R12C-2 owns current product screenshots and their reusable external-use manifest:
 
 ```text
-one-line description
-short listing description
-long description
-feature-role summary
-coverage limitations
-provider separation explanation
-retention explanation
-FAQ
-Support/legal links
-Status/help links
+current desktop product screenshot
+current mobile product screenshot
+representative Heatmap screenshot
+representative Day Flow screenshot
+representative Battle Lines screenshot
+representative History screenshot
+asset source route / viewport / capture date / intended use
+bounded captions
 ```
 
-The exact next implementation branch is `work-release-r12c1-launch-copy-faq`, which must not be created before the R12C-0 closeout PR merges and that merge is verified.
+The exact next implementation branch is `work-release-r12c2-launch-assets`, which must not be created before the R12C-1 closeout PR merges and that merge is verified.
 
-R12C-1 must preserve bounded observed-data claims and must not invent complete platform coverage, official analytics, unique viewers, exact creator revenue, exact session reconstruction, combined Twitch/Kick audience totals, or cross-platform rankings.
+The generic `apps/web/public/og/viewloom.svg` remains an identity card. Public Browser screenshots remain acceptance artifacts until curated and recorded in the R12C-2 package.
 
 ## Approved analytics program authorities
 

@@ -9,9 +9,10 @@ Phase 11 production closeout complete
 Phase 12 English release readiness active
 R12A legal/support public surface complete
 R12B Stripe/support readiness complete through R12B-2
-R12C-0 message inventory complete
-Current workstream: R12C-1 launch copy and FAQ
-Exact next implementation branch: work-release-r12c1-launch-copy-faq
+R12C-0 message inventory complete PR #484
+R12C-1 launch copy and FAQ complete
+Current workstream: R12C-2 launch/share asset package
+Exact next implementation branch: work-release-r12c2-launch-assets
 Next branch created: no
 ```
 
@@ -23,19 +24,19 @@ docs/product/release-readiness-plan.md
 docs/work-in-progress/phase12-release-readiness.md
 ```
 
-Permanent R12C-0 evidence:
+Permanent R12C-1 source-language package:
 
 ```text
-docs/audits/r12c0-message-inventory.json
-docs/audits/r12c0-message-inventory.md
-docs/operations/r12c0-message-inventory-2026-07-09.md
+docs/product/english-launch-copy.md
+docs/audits/r12c1-launch-copy-package.json
+docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md
 ```
 
-Phase 12 sequence is R12A complete, R12B complete, R12C-0 complete, and R12C-1 active.
+Phase 12 sequence is R12A complete, R12B complete, R12C-0 complete, R12C-1 complete, R12C-2 active, and R12C-3 queued.
 
-R12C-1 must use the R12C-0 inventory to produce evidence-bounded one-line, short, and long descriptions; feature-role, coverage, provider-separation, and retention explanations; FAQ; and Support/legal/Status/help link sets.
+R12C-2 must capture current product surfaces rather than invent mockups. Produce curated desktop/mobile and representative feature screenshots, plus an asset manifest with source route, viewport, capture date, intended use, and captions bounded by the R12C-1 English package.
 
-Do not claim complete platform coverage, official analytics, unique viewers, exact creator revenue, exact session reconstruction, combined Twitch/Kick audience totals, or cross-platform rankings.
+The generic `apps/web/public/og/viewloom.svg` is an identity card. Public Browser screenshots remain acceptance artifacts until deliberately curated into R12C-2.
 
 R12B's external evidence boundary remains active: current Stripe Dashboard/account facts must not be inferred from repository files or public browser behavior alone.
 

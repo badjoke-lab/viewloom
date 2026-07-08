@@ -18,9 +18,10 @@ R12A production acceptance: pass
 R12B-0 evidence and configuration audit complete PR #481
 R12B-1 Support page and payment transition acceptance complete PR #482
 R12B-2 refund/disclosure consistency acceptance complete PR #483
-R12C-0 message inventory complete
-Current workstream: R12C-1 launch copy and FAQ
-Exact next implementation branch: work-release-r12c1-launch-copy-faq
+R12C-0 message inventory complete PR #484
+R12C-1 launch copy and FAQ complete
+Current workstream: R12C-2 launch/share asset package
+Exact next implementation branch: work-release-r12c2-launch-assets
 Next branch created: no
 ```
 
@@ -31,12 +32,12 @@ Next branch created: no
 - Active working record: `../work-in-progress/phase12-release-readiness.md`
 - R12A production evidence: `../audits/r12a-production-acceptance.json`
 - R12B-0 audit: `../audits/r12b-evidence-and-configuration-audit.json`
-- R12B-0 operation record: `../operations/r12b0-evidence-audit-2026-07-09.md`
 - R12B-1 acceptance: `../operations/r12b1-support-transition-acceptance-2026-07-09.md`
 - R12B-2 acceptance: `../operations/r12b2-refund-disclosure-acceptance-2026-07-09.md`
-- R12C-0 machine inventory: `../audits/r12c0-message-inventory.json`
-- R12C-0 human inventory: `../audits/r12c0-message-inventory.md`
-- R12C-0 closeout: `../operations/r12c0-message-inventory-2026-07-09.md`
+- R12C-0 inventory: `../audits/r12c0-message-inventory.json`
+- R12C-1 English source package: `english-launch-copy.md`
+- R12C-1 structured package: `../audits/r12c1-launch-copy-package.json`
+- R12C-1 acceptance: `../operations/r12c1-launch-copy-acceptance-2026-07-09.md`
 
 Phase 12 sequence:
 
@@ -44,14 +45,16 @@ Phase 12 sequence:
 R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete
 R12C-0 message inventory                           complete
-R12C-1 launch copy and FAQ                         active
-R12C-2 launch/share asset package                  queued
+R12C-1 launch copy and FAQ                         complete
+R12C-2 launch/share asset package                  active
 R12C-3 release candidate acceptance                queued
 ```
 
-## R12C-1 evidence boundary
+## R12C-2 boundary
 
-R12C-1 must use the R12C-0 inventory as its source boundary. Launch copy must preserve bounded observed-data claims, Twitch/Kick separation, provider-specific coverage limits, unofficial/independent status, and retention/cadence facts without inventing full-coverage, official-analytics, unique-viewer, exact-revenue, exact-session, or cross-platform ranking claims.
+R12C-2 owns a curated launch/share asset package: current desktop and mobile product screenshots, representative feature screenshots, an asset manifest recording source route, viewport, capture date, and intended use, plus captions that remain within the R12C-1 evidence boundaries.
+
+CI browser screenshots may be used as capture evidence, but they are not automatically approved launch assets. The generic `apps/web/public/og/viewloom.svg` remains an identity card rather than a representative product screenshot.
 
 ## Approved forward sequence
 
@@ -68,11 +71,5 @@ Phase 16 Analytics Observation System program
   Phase 16E Co-movement and Relationship Analysis
   Phase 16F Replay and Backtest
 ```
-
-## Analytics program authority
-
-- Specification: `analytics-observation-system-spec.md`
-- Implementation plan: `analytics-observation-system-plan.md`
-- Prior capability boundary: `next-feature-data-capability-audit.md`
 
 Phase 12A remains blocked until R12C-3 and the full Phase 12 release acceptance close. Phase 16 implementation remains gated by Phase 15 evidence, calibration, storage cost, and query-cost acceptance.

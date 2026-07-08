@@ -1,11 +1,11 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 6.5
+Version: 6.6
 Last updated: 2026-07-09
 Current phase: Phase 12 — English release readiness
-Current workstream: R12C-1 launch copy and FAQ
-Exact next implementation branch: `work-release-r12c1-launch-copy-faq`
+Current workstream: R12C-2 launch/share asset package
+Exact next implementation branch: `work-release-r12c2-launch-assets`
 Next branch created: no
 
 ```text
@@ -16,8 +16,8 @@ Phase 12 English release readiness active
 R12A legal and support public-surface completion complete
 R12B Stripe and support-flow readiness complete through R12B-2
 R12C-0 message inventory complete
-R12C-1 launch copy and FAQ active
-R12C-2 launch/share asset package queued
+R12C-1 launch copy and FAQ complete
+R12C-2 launch/share asset package active
 R12C-3 release candidate acceptance queued
 Phase 12A Analytics Capture Foundation approved and queued
 Phase 13-14 localization queued after Phase 12A
@@ -54,14 +54,12 @@ Sequence:
 R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete
 R12C-0 message inventory                           complete
-R12C-1 launch copy and FAQ                         active
-R12C-2 launch/share asset package                  queued
+R12C-1 launch copy and FAQ                         complete
+R12C-2 launch/share asset package                  active
 R12C-3 release candidate acceptance                queued
 ```
 
-## R12C-0 closeout
-
-Permanent evidence:
+## R12C-0 evidence
 
 ```text
 docs/audits/r12c0-message-inventory.json
@@ -69,50 +67,58 @@ docs/audits/r12c0-message-inventory.md
 docs/operations/r12c0-message-inventory-2026-07-09.md
 ```
 
-R12C-0 inventoried:
+## R12C-1 closeout
+
+Permanent English source-language package:
 
 ```text
-Portal/About source messages
-provider-specific description boundaries
-Heatmap / Day Flow / Battle Lines / History roles
-Channel / Local Watchlist / Status utility roles
-cadence / retention / coverage boundaries
-Twitch/Kick separation wording
-Status/help/support/legal routes
-FAQ source material
-English terminology candidates
-repo-owned generic OG asset
-CI screenshot evidence source
-R12C-1 message gaps
-R12C-2 asset gaps
+docs/product/english-launch-copy.md
+docs/audits/r12c1-launch-copy-package.json
+docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md
 ```
 
-## R12C-1 active scope
-
-Produce and integrate, as appropriate:
+Accepted package:
 
 ```text
 one-line product description
 short listing description
 long product description
-feature-role summary
+seven-role feature summary
 coverage limitations
+plain-language Kick candidate explanation
 provider separation explanation
-retention explanation
-FAQ
-Support/legal links
+5-minute cadence explanation
+up-to-180-day daily rollup explanation
+12-question FAQ
 Status/help links
+Support/legal links
+terminology contract
+R12C-2 asset handoff
 ```
 
-R12C-1 copy must remain evidence-bounded. It must use the R12C-0 inventory rather than invent new platform-wide coverage, official analytics, unique-viewer, exact-revenue, exact-session, combined-provider, or cross-platform ranking claims.
+The English package is the Phase 13–14 localization source after the approved program reaches localization.
 
-English remains the source language for Phase 13–14.
-
-## R12C-2 queued scope
+## R12C-2 active scope
 
 The current repo-owned share asset is the generic `apps/web/public/og/viewloom.svg`. Public Browser screenshots are CI acceptance artifacts rather than a curated launch package.
 
-R12C-2 therefore owns curated current desktop/mobile screenshots, representative feature screenshots, a source-route/viewport/date/use manifest, and bounded captions.
+R12C-2 owns:
+
+```text
+current desktop product screenshot
+current mobile product screenshot
+representative Heatmap screenshot
+representative Day Flow screenshot
+representative Battle Lines screenshot
+representative History screenshot
+asset manifest with source route
+asset manifest with viewport
+asset manifest with capture date
+asset manifest with intended use
+captions bounded by R12C-1 copy
+```
+
+Assets must represent current product surfaces rather than invented mockups. Captions must preserve bounded observed-data, provider separation, and coverage-limit language from the R12C-1 package.
 
 ## Phase 12A purpose
 

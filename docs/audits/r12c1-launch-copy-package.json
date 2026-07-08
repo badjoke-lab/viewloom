@@ -1,0 +1,106 @@
+{
+  "schema": "viewloom-r12c1-launch-copy-package-v1",
+  "phase": "Phase 12",
+  "workstream": "R12C-1",
+  "status": "complete",
+  "updated_at": "2026-07-09",
+  "source_inventory": "docs/audits/r12c0-message-inventory.json",
+  "source_language_document": "docs/product/english-launch-copy.md",
+  "descriptions": {
+    "one_line": "ViewLoom is an independent, unofficial live-stream data observatory for reading bounded Twitch and Kick observations through current snapshots, daily movement, rivalries, channel footprints, and retained trends.",
+    "short": "ViewLoom turns bounded observed Twitch and Kick live-stream data into separate views for what is happening now, how the UTC day is moving, where rival streams are closing gaps or changing order, and how retained trends develop over time. Twitch and Kick remain separate, with provider-specific coverage limits and Status pages that show freshness, source mode, and data health.",
+    "long_sections": [
+      "independent and unofficial product identity",
+      "distinct feature roles",
+      "5-minute collection cadence",
+      "up-to-180-day public daily rollup retention",
+      "Twitch Top 300 observed-window boundary",
+      "Kick up-to-100 observed-candidate boundary",
+      "provider separation",
+      "viewer count and viewer-minutes evidence boundary",
+      "Status, About, Support, Contact, and legal surfaces"
+    ]
+  },
+  "feature_roles": [
+    {"feature":"Heatmap","role":"Now","summary":"See where viewers are concentrated within the current observed field and which observed streams are moving now."},
+    {"feature":"Day Flow","role":"Today","summary":"Read how observed audience volume and distribution move through the UTC day."},
+    {"feature":"Battle Lines","role":"Rivalry","summary":"Compare observed gaps, reversals, surges, and changes in order between streams on the same provider."},
+    {"feature":"History","role":"Trends","summary":"Review retained daily rollups, peaks, provider-specific rankings within the observed field, and longer-term movement."},
+    {"feature":"Channel","role":"One retained footprint","summary":"Open one provider-specific channel view to review the retained evidence that ViewLoom has for that channel."},
+    {"feature":"Local Watchlist","role":"Saved in this browser","summary":"Save provider-separated channel references in the current browser and reopen provider-safe ViewLoom pages later."},
+    {"feature":"Status","role":"Data health and limits","summary":"Check provider-specific freshness, coverage, source mode, and current data limitations."}
+  ],
+  "coverage": {
+    "twitch": "configured Top 300 observed window",
+    "kick": "configured set of up to 100 observed candidates",
+    "kick_plain_language": "ViewLoom's Kick observation starts from a configured set of candidate channels to observe. It is not a provider-wide directory and should not be read as exhaustive Kick coverage.",
+    "global_boundary": "ViewLoom observes bounded provider-specific sets rather than claiming exhaustive platform coverage."
+  },
+  "provider_separation": {
+    "statement": "ViewLoom treats Twitch and Kick as separate observation systems.",
+    "separate_across": ["collection","storage","routes","coverage models","retained data","rankings","exports","baselines","relationships","analytical claims"],
+    "forbidden_outputs": ["combined Twitch-and-Kick audience totals","merged rankings","cross-platform relationship claims"]
+  },
+  "retention": {
+    "collection_cadence": "5 minutes",
+    "public_daily_rollups": "up to 180 days",
+    "boundary": "This does not mean every raw observation is retained for 180 days, and it does not turn scheduled observations into exact session records."
+  },
+  "faq": [
+    {"question":"What is ViewLoom?","answer":"ViewLoom is an independent, unofficial live-stream data observatory. It presents bounded observed Twitch and Kick data through separate views for the current field, the UTC day, rivalries, channel footprints, retained trends, and data health."},
+    {"question":"Does ViewLoom cover every live stream?","answer":"No. Coverage is bounded. Twitch uses a configured Top 300 observed window. Kick uses a configured set of up to 100 observed candidates. More streams may exist outside those observed sets."},
+    {"question":"Why is Kick described as candidate-based?","answer":"ViewLoom's Kick observation starts from a configured set of candidate channels to observe. It is not a provider-wide directory and should not be read as exhaustive Kick coverage."},
+    {"question":"Are Twitch and Kick combined?","answer":"No. Twitch and Kick remain separate across collection, storage, routes, coverage models, retained data, rankings, exports, and analytical claims. ViewLoom does not publish combined audience totals or cross-platform rankings."},
+    {"question":"Are these official Twitch or Kick analytics?","answer":"No. ViewLoom is independent and unofficial. Viewer counts are public observed values collected on a schedule, and viewer-minutes are derived from repeated snapshots and sample intervals."},
+    {"question":"What is each main view for?","answer":"Heatmap is for the current observed field. Day Flow is for movement through the UTC day. Battle Lines is for gaps, reversals, and changes in order between observed streams. History is for retained trends and rollups."},
+    {"question":"How often is data collected?","answer":"ViewLoom collects observations on a 5-minute schedule."},
+    {"question":"How long is historical data retained?","answer":"Public daily rollups can be retained for up to 180 days. Raw observation retention is a separate storage boundary, so this should not be described as 180 days of complete raw observations or exact session history."},
+    {"question":"What do Fresh, Partial, and Empty mean?","answer":"Fresh follows current live status evidence. Partial means the observed limit or provider response did not cover the full available field. Empty means the real pipeline returned no qualifying streams; it does not mean demo data. Other public states may include stale, demo, missing, or error."},
+    {"question":"Does support affect rankings, coverage, or data correction?","answer":"No. Support does not buy ranking placement, provider coverage, data correction, creator listing, or preferential treatment. The public support flow is documented separately from observation and ranking behavior."},
+    {"question":"Where can I check data health and methodology?","answer":"Use the provider-specific Twitch Status and Kick Status pages for freshness, coverage, source mode, and current limitations. Use About for methodology and broader product boundaries."},
+    {"question":"Where is Local Watchlist data stored?","answer":"Local Watchlist data is stored in the current browser. It is provider-separated and does not create a ViewLoom account."}
+  ],
+  "links": {
+    "status_help": {
+      "method_and_limits": "https://vl.badjoke-lab.com/about/",
+      "twitch_status": "https://vl.badjoke-lab.com/twitch/status/",
+      "kick_status": "https://vl.badjoke-lab.com/kick/status/",
+      "changelog": "https://vl.badjoke-lab.com/changelog/",
+      "repository": "https://github.com/badjoke-lab/viewloom"
+    },
+    "support_legal": {
+      "support": "https://vl.badjoke-lab.com/support/",
+      "contact": "https://vl.badjoke-lab.com/contact/",
+      "terms": "https://vl.badjoke-lab.com/terms/",
+      "privacy": "https://vl.badjoke-lab.com/privacy/",
+      "refund_policy": "https://vl.badjoke-lab.com/refund-policy/",
+      "commercial_disclosure": "https://vl.badjoke-lab.com/commercial-disclosure/"
+    }
+  },
+  "forbidden_claims": [
+    "complete platform coverage",
+    "official Twitch or Kick analytics",
+    "unique viewers",
+    "exact creator revenue",
+    "exact session reconstruction",
+    "causal explanations for audience movement",
+    "combined Twitch and Kick audience totals",
+    "cross-platform rankings",
+    "Twitch-parity Kick directory coverage",
+    "charitable donation framing for the support flow"
+  ],
+  "completion": {
+    "one_line_description": true,
+    "short_listing_description": true,
+    "long_description": true,
+    "feature_role_summary": true,
+    "coverage_limitations": true,
+    "provider_separation_explanation": true,
+    "retention_explanation": true,
+    "faq": true,
+    "support_legal_links": true,
+    "status_help_links": true,
+    "r12c1_complete": true,
+    "next_workstream": "R12C-2 launch/share asset package"
+  }
+}
