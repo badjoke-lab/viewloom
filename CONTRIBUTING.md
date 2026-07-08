@@ -7,22 +7,25 @@ Read the development policy, documentation governance, documentation index, road
 ## Current state
 
 ```text
-Phase 10 U10G architecture complete through PR #470
-Phase 10 U10H production acceptance complete through PR #471
-U10H canonical closeout complete through PR #472
-Phase 11 P11A–P11F complete
-Phase 11 P11G candidate merged PR #473
+Phase 10 complete through U10H
+Phase 11 P11A-P11G complete
 Phase 11 production closeout complete
 Phase 12 English release readiness active
-Current workstream: R12A-5 candidate and hosted acceptance
-Active implementation branch: work-release-r12a-legal-support
-Branch created: yes
-Candidate public HTML routes: 25
-Candidate browser scenarios: 100
-Hosted production acceptance: pending merge
+R12A legal and support public-surface completion complete
+R12A implementation merged PR #477
+R12A production acceptance pass
+Current workstream: R12B-0 evidence and configuration audit
+Exact next implementation branch: work-release-r12b-stripe-support-flow
+Next branch created: no
 ```
 
-Permanent Phase 11 closeout: `docs/operations/phase11-production-closeout-2026-07-08.md`.
+Permanent R12A evidence:
+
+```text
+docs/audits/phase12-r12a-legal-support-baseline.json
+docs/audits/r12a-production-acceptance.json
+docs/operations/r12a-production-acceptance-2026-07-08.md
+```
 
 Active Phase 12 authorities:
 
@@ -30,20 +33,17 @@ Active Phase 12 authorities:
 docs/product/release-readiness-spec.md
 docs/product/release-readiness-plan.md
 docs/work-in-progress/phase12-release-readiness.md
-docs/audits/phase12-r12a-legal-support-baseline.json
 ```
 
 Phase 12 sequence:
 
 ```text
-R12A legal and support public-surface completion
-R12B Stripe and support-flow readiness
-R12C English launch package and release acceptance
+R12A legal and support public-surface completion   complete
+R12B Stripe and support-flow readiness             active
+R12C English launch package and release acceptance queued
 ```
 
-R12A-0 through R12A-4 are complete on the active candidate branch. R12A-5 requires latest-head development policy, R12A contract, public inventory, readiness, 100-scenario current browser matrix, typecheck, and build evidence before merge; exact production deployment and 25-route smoke evidence are required after merge before the five candidate policy surfaces are marked resolved.
-
-External Stripe dashboard/account state must be supported by explicit evidence and must not be inferred from repository code alone.
+R12B-0 must separate repository facts, hosted public behavior, and external Stripe dashboard/account facts. External Stripe state must be supported by explicit evidence and must not be inferred from repository code alone.
 
 Approved future analytics authorities:
 
@@ -62,7 +62,7 @@ Phase 12A Analytics Capture Foundation
   -> Phase 16A-F Analytics Observation System implementation
 ```
 
-Phase 12A and Phase 16 branches must not be created before their entry gates close. Analytics work must not bypass the approved data capture, capacity, calibration, coverage, and evidence gates.
+Phase 12A and Phase 16 branches must not be created before their entry gates close. Analytics work must not bypass approved data capture, capacity, calibration, coverage, and evidence gates.
 
 ## Standard workflow
 
