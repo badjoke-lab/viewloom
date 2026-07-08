@@ -1,11 +1,12 @@
 # Phase 11 acceptance and operations working record
 
-Status: active
-Branch: `work-quality-phase11-acceptance-operations`
+Status: post-merge hosted closeout pending
+Implementation branch: `work-quality-phase11-acceptance-operations`
 Started: 2026-07-04
 Entry main commit: `48d988e7a994a39a4300b02997cb7e1c7a5d242b`
 Previous phase: U10H production acceptance complete PR #471, canonical closeout PR #472
-Current workstream: P11G final pre-merge acceptance
+Candidate merge: PR #473
+Current workstream: hosted production monitoring closeout and canonical synchronization
 
 ## Purpose
 
@@ -136,7 +137,7 @@ Result: pass
 
 Permanent evidence: `docs/audits/phase11-monitoring-contract.json`.
 
-Production Smoke owns daily hosted evidence for deployment identity, 20 routes, separate Twitch/Kick status contracts, freshness, provider-specific capacity observation, and explicit 404 behavior. Hosted production evidence remains pending until Phase 11 is merged to main.
+Production Smoke owns daily hosted evidence for deployment identity, 20 routes, separate Twitch/Kick status contracts, freshness, provider-specific capacity observation, and explicit 404 behavior. After PR #473 merged, matching-main hosted production evidence became the remaining Phase 11 closeout requirement.
 
 ## P11D escalation runbook — complete
 
@@ -179,9 +180,9 @@ Permanent evidence: `docs/audits/phase11-public-acceptance-ownership.json`.
 
 Every owned public route has readiness, browser, production, and feature-contract ownership.
 
-## P11G final acceptance — active
+## P11G final acceptance — candidate merged; hosted closeout pending
 
-Pre-merge acceptance must verify on the latest candidate head:
+Pre-merge acceptance verified on the latest candidate head:
 
 - Development policy and canonical state;
 - strict App and Functions typecheck;
@@ -192,18 +193,38 @@ Pre-merge acceptance must verify on the latest candidate head:
 - no temporary P11A apply tooling remains;
 - final machine-readable evidence state is `pre-merge-pass`.
 
-After merge, Production Smoke must confirm the matching main SHA and emit passing `viewloom-phase11-monitoring-evidence-v1` evidence before Phase 11 production closeout is claimed.
+PR #473 merged the Phase 11 candidate to main. The remaining requirement is hosted Production Smoke evidence that matches the merged main SHA and emits passing `viewloom-phase11-monitoring-evidence-v1` evidence before Phase 11 production closeout is claimed.
+
+No Phase 12 or analytics implementation work may bypass this hosted closeout requirement.
 
 ## Current status
 
 ```text
-Phase 11 branch created: yes
+Phase 11 candidate branch work: complete
 P11A strict-null migration: complete
 P11B CI ownership and overlap decision: complete
-P11C monitoring contract: complete; hosted evidence pending main merge
+P11C monitoring contract: complete; hosted closeout pending
 P11D runbook: complete
 P11E maintenance cadence: complete
 P11F all-public acceptance ownership: complete
-P11G final pre-merge acceptance: active
-Phase 11 production closeout: pending main merge and hosted Production Smoke
+P11G final pre-merge acceptance: complete
+P11G candidate merge: complete PR #473
+Phase 11 production closeout: pending matching-main hosted Production Smoke evidence
 ```
+
+## Forward handoff
+
+After Phase 11 hosted closeout and canonical synchronization:
+
+```text
+Phase 12 release readiness
+  -> Phase 12A Analytics Capture Foundation
+  -> Phase 13-14 localization and analytics evidence accumulation
+  -> Phase 15 Analytics Capability and Calibration Audit
+  -> Phase 16A-F Analytics Observation System implementation
+```
+
+Future analytics authority:
+
+- `docs/product/analytics-observation-system-spec.md`
+- `docs/product/analytics-observation-system-plan.md`
