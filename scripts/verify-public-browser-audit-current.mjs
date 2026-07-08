@@ -14,9 +14,12 @@ for (const text of [
   'Phase 11 P11G candidate merged PR #473',
   'Phase 11 production closeout complete',
   'Phase 12 English release readiness active',
-  'Current workstream: R12A-0 current legal/support surface audit',
-  'Exact next implementation branch: work-release-r12a-legal-support',
-  'Next branch created: no',
+  'Current workstream: R12A-5 candidate and hosted acceptance',
+  'Active implementation branch: work-release-r12a-legal-support',
+  'Branch created: yes',
+  'Candidate public HTML routes: 25',
+  'Candidate browser scenarios: 100',
+  'Hosted production acceptance: pending merge',
 ]) assert.ok(roadmap.includes(text), `roadmap missing ${text}`)
 
 for (const text of [
@@ -29,13 +32,16 @@ for (const text of [
   'Phase 11 P11G candidate merged PR #473',
   'Phase 11 production closeout complete',
   'Phase 12 English release readiness active',
-  'Current workstream: R12A-0 current legal/support surface audit',
-  'Exact next implementation branch: work-release-r12a-legal-support',
-  'Next branch created: no',
+  'Current workstream: R12A-5 candidate and hosted acceptance',
+  'Active implementation branch: work-release-r12a-legal-support',
+  'Branch created: yes',
+  'Hosted production acceptance: pending merge',
 ]) assert.ok(schedule.includes(text), `schedule missing ${text}`)
 
-console.log('P8B current-state handoff verification passed.')
+console.log('Current public-state handoff verification passed.')
 console.log('- U10F, U10G, and U10H remain completed evidence')
 console.log('- Phase 11 P11A through P11G and production closeout are complete')
-console.log('- Phase 12 English release readiness is active at R12A-0')
-console.log('- exact next implementation branch is work-release-r12a-legal-support and remains uncreated')
+console.log('- Phase 12 English release readiness is active at R12A-5')
+console.log('- active branch is work-release-r12a-legal-support')
+console.log('- candidate owns 25 public HTML routes and 100 browser scenarios')
+console.log('- hosted production acceptance remains pending merge')
