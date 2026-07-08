@@ -1,7 +1,7 @@
 # ViewLoom current roadmap
 
 Status: source of truth
-Last updated: 2026-07-07
+Last updated: 2026-07-08
 
 ```text
 Phase 8 P8B complete PR #428
@@ -29,18 +29,34 @@ Phase 11 P11C monitoring contract complete; hosted closeout after merge
 Phase 11 P11D escalation runbook complete
 Phase 11 P11E maintenance cadence complete
 Phase 11 P11F acceptance ownership complete
-Phase 11 P11G final acceptance active
-Active implementation branch: work-quality-phase11-acceptance-operations
-Current workstream: P11G final pre-merge acceptance
+Phase 11 P11G candidate merged PR #473
+Phase 11 hosted production monitoring closeout pending
+Current execution boundary: finish Phase 11 hosted closeout before Phase 12
 ```
 
-Active Phase 11 record: `docs/work-in-progress/phase11-acceptance-operations.md`.
+Current Phase 11 record: `../work-in-progress/phase11-acceptance-operations.md`.
+
+## Approved forward sequence
 
 ```text
-Phase 11 P11G final acceptance active
-Phase 11 hosted production monitoring closeout required after merge
-Phase 12 release readiness queued
-Phase 13–14 localization queued
-Phase 15 capability audit queued
-Phase 16 major feature not approved
+Phase 11 hosted production monitoring closeout
+Phase 12 release readiness
+Phase 12A Analytics Capture Foundation
+Phase 13-14 localization while analytics evidence accumulates
+Phase 15 Analytics Capability and Calibration Audit
+Phase 16 Analytics Observation System program
+  Phase 16A Baseline Engine
+  Phase 16B Anomaly Detection
+  Phase 16C Observed Run Intelligence
+  Phase 16D Category-relative Analysis
+  Phase 16E Co-movement and Relationship Analysis
+  Phase 16F Replay and Backtest
 ```
+
+## Analytics program authority
+
+- Specification: `analytics-observation-system-spec.md`
+- Implementation plan: `analytics-observation-system-plan.md`
+- Prior capability boundary: `next-feature-data-capability-audit.md`
+
+Phase 12A is an evidence-capture and compact-rollup foundation, not an analytics UI launch. Phase 13-14 may proceed after Phase 12A while forward-only intraday/category evidence accumulates. Phase 16 is approved as the future major program but remains implementation-gated by Phase 15 evidence, calibration, storage cost, and query-cost acceptance.

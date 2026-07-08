@@ -16,6 +16,9 @@ const required = [
   'docs/product/post-watchlist-program-plan.md',
   'docs/product/cross-site-quality-remediation-spec.md',
   'docs/product/cross-site-quality-remediation-plan.md',
+  'docs/product/next-feature-data-capability-audit.md',
+  'docs/product/analytics-observation-system-spec.md',
+  'docs/product/analytics-observation-system-plan.md',
   'docs/work-in-progress/phase11-acceptance-operations.md',
   'docs/audits/public-surface-inventory.json',
   'docs/audits/phase11-strict-null-baseline.json',
@@ -51,28 +54,46 @@ for (const path of ['README.md', 'docs/README.md']) check(path, [
   'Phase 11 P11D',
   'Phase 11 P11E',
   'Phase 11 P11F',
-  'Phase 11 P11G',
-  'work-quality-phase11-acceptance-operations',
-  'P11G final pre-merge acceptance',
+  'Phase 11 P11G candidate',
+  'merged PR #473',
+  'Phase 11 hosted',
+  'Phase 12A Analytics Capture Foundation',
+  'Phase 15 Analytics Capability and Calibration Audit',
+  'Phase 16A Baseline Engine',
 ])
 
 check('AGENTS.md', [
   'Phase 11 P11A–P11F complete',
-  'Phase 11 P11G final acceptance active',
-  'Current workstream: P11G final pre-merge acceptance',
+  'Phase 11 P11G candidate merged PR #473',
+  'Phase 11 hosted production monitoring closeout pending',
+  'analytics-observation-system-spec.md',
+  'Do not start Phase 16 branches before Phase 15 closes',
 ])
 check('CONTRIBUTING.md', [
   'Phase 11 P11A–P11F complete',
-  'Phase 11 P11G final acceptance active',
-  'Current workstream: P11G final pre-merge acceptance',
+  'Phase 11 P11G candidate merged PR #473',
+  'Phase 11 hosted production monitoring closeout pending',
+  'Phase 12A Analytics Capture Foundation',
+  'Phase 16 branches must not be created before Phase 15 closes',
 ])
+
 for (const path of [
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
-  'docs/product/cross-site-quality-remediation-plan.md',
 ]) check(path, [
-  'P11G final pre-merge acceptance',
+  'P11G candidate merged PR #473',
+  'hosted production',
+  'Phase 12A Analytics Capture Foundation',
+  'Phase 15 Analytics Capability and Calibration Audit',
+  'Phase 16A Baseline Engine',
+  'Phase 16F Replay and Backtest',
+])
+
+check('docs/product/cross-site-quality-remediation-plan.md', [
+  'P11G final pre-merge acceptance complete',
+  'P11G candidate merged PR #473',
+  'Hosted production monitoring closeout pending',
   'work-quality-phase11-acceptance-operations',
 ])
 
@@ -83,8 +104,33 @@ check('docs/work-in-progress/phase11-acceptance-operations.md', [
   'P11D escalation runbook — complete',
   'P11E maintenance cadence — complete',
   'P11F all-public acceptance ownership — complete',
-  'P11G final acceptance — active',
+  'P11G final acceptance — candidate merged; hosted closeout pending',
   'all 36 latest-head repeated named steps classified',
+  'Phase 11 production closeout: pending matching-main hosted Production Smoke evidence',
+])
+
+check('docs/product/analytics-observation-system-spec.md', [
+  'current value',
+  'normal state',
+  'Baseline Engine',
+  'Anomaly Detection',
+  'Observed Run Intelligence',
+  'Category-relative Analysis',
+  'Co-movement and Relationship Analysis',
+  'Replay and Backtest',
+  'Phase 12A Analytics Capture Foundation',
+])
+
+check('docs/product/analytics-observation-system-plan.md', [
+  'Phase 12A — Analytics Capture Foundation',
+  'Phase 15 — Analytics Capability and Calibration Audit',
+  'Phase 16A — Baseline Engine',
+  'Phase 16B — Anomaly Detection',
+  'Phase 16C — Observed Run Intelligence',
+  'Phase 16D — Category-relative Analysis',
+  'Phase 16E — Co-movement and Relationship Analysis',
+  'Phase 16F — Replay and Backtest',
+  'Do not create later-phase branches early',
 ])
 
 const strict = JSON.parse(read('docs/audits/phase11-strict-null-baseline.json'))
@@ -160,6 +206,8 @@ console.log('ViewLoom development and documentation verification passed.')
 console.log('- Phase 10 is complete through U10H closeout')
 console.log('- Phase 11 P11A through P11F are evidence-backed complete')
 console.log('- P11B latest-head inventory is 89 workflows, 36 classified repeated steps, and zero cancellation gaps')
-console.log('- Phase 11 P11G final pre-merge acceptance is active')
-console.log('- hosted production monitoring closeout remains required after merge')
+console.log('- Phase 11 P11G candidate merged in PR #473')
+console.log('- hosted production monitoring closeout remains required before Phase 12')
+console.log('- Analytics Observation System specification and implementation plan are present')
+console.log('- Phase 12A capture, Phase 15 calibration, and Phase 16A-F analytics gates are canonical')
 console.log('- Twitch and Kick remain separate')
