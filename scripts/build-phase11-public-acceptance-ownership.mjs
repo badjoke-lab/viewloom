@@ -11,6 +11,7 @@ const sources = [
 const profileOwner = {
   portal: 'public-surface-inventory',
   static_content: 'public-surface-inventory',
+  static_legal: 'release-r12a-legal-support',
   changelog: 'public-surface-inventory',
   provider_home: 'public-browser-audit',
   heatmap: 'heatmap-release-contract',
@@ -46,7 +47,7 @@ const routes = sources.flatMap((path) => JSON.parse(readFileSync(path, 'utf8')).
 const evidence = {
   schema: 'viewloom-phase11-public-acceptance-ownership-v1',
   phase: 'Phase 11',
-  workstream: 'P11F',
+  workstream: 'P11F-retained-current-ownership',
   generatedAt: new Date().toISOString(),
   sources,
   commonOwners,

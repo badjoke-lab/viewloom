@@ -16,7 +16,8 @@ on:
       - 'docs/product/current-schedule.md'
       - 'docs/product/post-watchlist-program-plan.md'
       - 'docs/product/cross-site-quality-remediation-plan.md'
-      - 'docs/work-in-progress/u10h-acceptance.md'
+      - 'docs/product/release-readiness-*'
+      - 'docs/work-in-progress/phase12-release-readiness.md'
       - 'apps/web/**'
       - 'scripts/build-phase11-monitoring-evidence.mjs'
       - 'scripts/verify-phase11-monitoring-evidence.mjs'
@@ -66,6 +67,11 @@ jobs:
             '/about/'
             '/support/'
             '/changelog/'
+            '/contact/'
+            '/terms/'
+            '/privacy/'
+            '/refund-policy/'
+            '/commercial-disclosure/'
             '/twitch/'
             '/twitch/heatmap/'
             '/twitch/day-flow/'
@@ -83,7 +89,7 @@ jobs:
             '/kick/watchlist/'
             '/kick/status/'
           )
-          test "${#routes[@]}" = '20'
+          test "${#routes[@]}" = '25'
           for route in "${routes[@]}"; do
             name="$(echo "$route" | tr '/' '-' | sed 's/^-//;s/-$//')"
             [ -n "$name" ] || name='portal'
@@ -97,6 +103,11 @@ jobs:
           grep -q '<title>Kick channel history' "$ARTIFACT_DIR/kick-channel.html"
           grep -q '<title>Twitch Local Watchlist' "$ARTIFACT_DIR/twitch-watchlist.html"
           grep -q '<title>Kick Local Watchlist' "$ARTIFACT_DIR/kick-watchlist.html"
+          grep -q '<title>Contact — ViewLoom</title>' "$ARTIFACT_DIR/contact.html"
+          grep -q '<title>Terms — ViewLoom</title>' "$ARTIFACT_DIR/terms.html"
+          grep -q '<title>Privacy — ViewLoom</title>' "$ARTIFACT_DIR/privacy.html"
+          grep -q '<title>Refund Policy — ViewLoom</title>' "$ARTIFACT_DIR/refund-policy.html"
+          grep -q '<title>Commercial Disclosure — ViewLoom</title>' "$ARTIFACT_DIR/commercial-disclosure.html"
           grep -q 'googletagmanager.com/gtag/js?id=G-YHX7HS1VBK' "$ARTIFACT_DIR/portal.html"
       - name: Verify Twitch production status
         run: |
@@ -147,8 +158,8 @@ jobs:
             if [ -f "$ARTIFACT_DIR/deployment.json" ]; then
               echo "- Deployed SHA: \`$(jq -r '.commit_sha // "unavailable"' "$ARTIFACT_DIR/deployment.json")\`"
             fi
-            echo '- Repository-owned HTML routes: 20 checked'
-            echo '- About, Support, Changelog, Channel, and Watchlist ownership: checked'
+            echo '- Repository-owned HTML routes: 25 checked'
+            echo '- About, Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Changelog, Channel, and Watchlist ownership: checked'
             echo '- Twitch and Kick status APIs: checked'
             echo '- Separate D1 bindings: checked'
             echo '- Collector freshness: checked'

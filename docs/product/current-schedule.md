@@ -24,9 +24,10 @@ Phase 11 P11F acceptance ownership complete
 Phase 11 P11G candidate merged PR #473
 Phase 11 production closeout complete
 Phase 12 English release readiness active
-Current workstream: R12A-0 current legal/support surface audit
-Exact next implementation branch: work-release-r12a-legal-support
-Next branch created: no
+Current workstream: R12A-5 candidate and hosted acceptance
+Active implementation branch: work-release-r12a-legal-support
+Branch created: yes
+Hosted production acceptance: pending merge
 ```
 
 ## Phase 11 closeout evidence
@@ -50,19 +51,56 @@ Permanent record: `../operations/phase11-production-closeout-2026-07-08.md`.
 ## Active Phase 12 execution order
 
 ```text
-R12A-0 current legal/support surface audit
-R12A-1 shared legal/support page foundation
-R12A-2 Contact, Terms, Privacy
-R12A-3 Refund Policy and Commercial Disclosure
-R12A-4 About/footer and route ownership integration
-R12A-5 R12A candidate and hosted acceptance
-R12B-0 evidence and configuration audit
-R12B-1 Support page and payment transition
-R12B-2 refund/disclosure consistency acceptance
-R12C-0 message inventory
-R12C-1 launch copy and FAQ
-R12C-2 launch/share asset package
-R12C-3 release candidate acceptance
+R12A-0 current legal/support surface audit                 complete
+R12A-1 shared legal/support page foundation                complete
+R12A-2 Contact, Terms, Privacy                             complete
+R12A-3 Refund Policy and Commercial Disclosure             complete
+R12A-4 About/footer and route ownership integration        complete
+R12A-5 R12A candidate and hosted acceptance                active
+R12B-0 evidence and configuration audit                    queued
+R12B-1 Support page and payment transition                 queued
+R12B-2 refund/disclosure consistency acceptance            queued
+R12C-0 message inventory                                   queued
+R12C-1 launch copy and FAQ                                 queued
+R12C-2 launch/share asset package                          queued
+R12C-3 release candidate acceptance                        queued
+```
+
+## R12A candidate acceptance matrix
+
+```text
+Candidate Vite HTML inputs: 25
+Explicit not-found pages: 1
+Candidate inventory entries: 26
+Indexable routes: 21
+Noindex routes: 4
+Sitemap routes: 21
+Public Readiness routes: 25
+Production Smoke routes after merge: 25
+Current candidate browser matrix: 25 routes x 4 widths = 100 scenarios
+Historical P8B evidence: 21 routes / 84 production scenarios / 5 missing probes / 10 History scenarios
+```
+
+Required before merge:
+
+```text
+Development policy latest-head pass
+R12A legal/support contract gate pass
+Public Surface Inventory pass
+Public Readiness pass
+Current Browser matrix 100/100 pass
+Typecheck and build pass
+```
+
+Required after merge:
+
+```text
+Production deployment SHA matches merged main SHA
+25 repository-owned HTML routes return 200
+Twitch/Kick status and provider separation remain healthy
+monitoring evidence has no blocking alerts
+explicit 404 behavior remains correct
+five candidate surfaces move to resolved only after this hosted evidence passes
 ```
 
 Phase 12 authority:
@@ -71,7 +109,7 @@ Phase 12 authority:
 - `release-readiness-plan.md`
 - `../work-in-progress/phase12-release-readiness.md`
 
-R12A begins with an evidence audit. Do not pre-edit route counts or inventory evidence before actual route implementation is measured. External Stripe dashboard/account state must not be claimed from repository content alone.
+External Stripe dashboard/account state must not be claimed from repository content alone. R12B requires explicit external evidence.
 
 ## Forward execution order after Phase 12
 
@@ -90,7 +128,7 @@ R12A begins with an evidence audit. Do not pre-edit route counts or inventory ev
 
 ## Phase 12A schedule boundary
 
-Phase 12A starts only after Phase 12 closes. It must complete the following before localization becomes the active implementation stream:
+Phase 12A starts only after Phase 12 closes. It must complete:
 
 ```text
 12A-0 current data and capacity baseline

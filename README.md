@@ -43,8 +43,11 @@ Phase 11 P11F acceptance ownership     complete
 Phase 11 P11G candidate                merged PR #473
 Phase 11 production closeout           complete
 Phase 12 English release readiness     active
-Current workstream                     R12A-0 current legal/support surface audit
-Exact next implementation branch       work-release-r12a-legal-support
+Current workstream                     R12A-5 candidate and hosted acceptance
+Active implementation branch           work-release-r12a-legal-support
+Candidate public HTML routes           25
+Candidate browser scenarios            100
+Hosted production acceptance           pending merge
 ```
 
 Permanent Phase 11 evidence includes:
@@ -68,6 +71,7 @@ Phase 12 authorities:
 docs/product/release-readiness-spec.md
 docs/product/release-readiness-plan.md
 docs/work-in-progress/phase12-release-readiness.md
+docs/audits/phase12-r12a-legal-support-baseline.json
 ```
 
 Sequence:
@@ -78,7 +82,9 @@ R12B Stripe and support-flow readiness
 R12C English launch package and release acceptance
 ```
 
-R12A completes Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, and the About/footer ownership audit. R12B verifies the actual support/Stripe/refund/disclosure flow with explicit external evidence. R12C completes the English launch package, FAQ, limitations, links, assets, and final release acceptance.
+R12A candidate currently contains Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, provider-neutral About/Support runtime ownership, shared legal/support footer navigation, 25-route build/readiness/production ownership, and a 100-scenario current browser matrix across 1440, 820, 390, and 360px. The five policy surfaces remain candidate until exact post-merge production acceptance passes.
+
+R12B verifies the actual support/Stripe/refund/disclosure flow with explicit external evidence. R12C completes the English launch package, FAQ, limitations, links, assets, and final release acceptance.
 
 ## Approved forward sequence
 

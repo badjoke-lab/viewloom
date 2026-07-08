@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-routes-v1",
-  "version": 1,
+  "version": 2,
   "group": "portal",
   "routes": [
     {
@@ -53,6 +53,66 @@
       "robots": "index,follow",
       "sitemap": true,
       "apis": [{ "path": "/data/changelog.json", "binding": "static" }]
+    },
+    {
+      "id": "contact",
+      "route": "/contact/",
+      "provider": "portal",
+      "profile": "static_legal",
+      "source": "apps/web/contact/index.html",
+      "title": "Contact — ViewLoom",
+      "canonical": "https://vl.badjoke-lab.com/contact/",
+      "robots": "index,follow",
+      "sitemap": true,
+      "apis": []
+    },
+    {
+      "id": "terms",
+      "route": "/terms/",
+      "provider": "portal",
+      "profile": "static_legal",
+      "source": "apps/web/terms/index.html",
+      "title": "Terms — ViewLoom",
+      "canonical": "https://vl.badjoke-lab.com/terms/",
+      "robots": "index,follow",
+      "sitemap": true,
+      "apis": []
+    },
+    {
+      "id": "privacy",
+      "route": "/privacy/",
+      "provider": "portal",
+      "profile": "static_legal",
+      "source": "apps/web/privacy/index.html",
+      "title": "Privacy — ViewLoom",
+      "canonical": "https://vl.badjoke-lab.com/privacy/",
+      "robots": "index,follow",
+      "sitemap": true,
+      "apis": []
+    },
+    {
+      "id": "refund-policy",
+      "route": "/refund-policy/",
+      "provider": "portal",
+      "profile": "static_legal",
+      "source": "apps/web/refund-policy/index.html",
+      "title": "Refund Policy — ViewLoom",
+      "canonical": "https://vl.badjoke-lab.com/refund-policy/",
+      "robots": "index,follow",
+      "sitemap": true,
+      "apis": []
+    },
+    {
+      "id": "commercial-disclosure",
+      "route": "/commercial-disclosure/",
+      "provider": "portal",
+      "profile": "static_legal",
+      "source": "apps/web/commercial-disclosure/index.html",
+      "title": "Commercial Disclosure — ViewLoom",
+      "canonical": "https://vl.badjoke-lab.com/commercial-disclosure/",
+      "robots": "index,follow",
+      "sitemap": true,
+      "apis": []
     },
     {
       "id": "not-found",

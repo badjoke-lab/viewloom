@@ -9,6 +9,11 @@ const pages = [
   'about/index.html',
   'support/index.html',
   'changelog/index.html',
+  'contact/index.html',
+  'terms/index.html',
+  'privacy/index.html',
+  'refund-policy/index.html',
+  'commercial-disclosure/index.html',
   'twitch/index.html',
   'twitch/heatmap/index.html',
   'twitch/day-flow/index.html',
@@ -28,6 +33,11 @@ const providerExpectations = [
   { path: 'about/index.html', provider: 'portal' },
   { path: 'support/index.html', provider: 'portal' },
   { path: 'changelog/index.html', provider: 'portal' },
+  { path: 'contact/index.html', provider: 'portal' },
+  { path: 'terms/index.html', provider: 'portal' },
+  { path: 'privacy/index.html', provider: 'portal' },
+  { path: 'refund-policy/index.html', provider: 'portal' },
+  { path: 'commercial-disclosure/index.html', provider: 'portal' },
   { path: 'twitch/index.html', provider: 'twitch' },
   { path: 'twitch/heatmap/index.html', provider: 'twitch' },
   { path: 'twitch/day-flow/index.html', provider: 'twitch' },
@@ -41,6 +51,16 @@ const providerExpectations = [
   { path: 'kick/history/index.html', provider: 'kick' },
   { path: 'kick/status/index.html', provider: 'kick' },
 ]
+
+const staticEntryContracts = [
+  'about/index.html',
+  'support/index.html',
+  'contact/index.html',
+  'terms/index.html',
+  'privacy/index.html',
+  'refund-policy/index.html',
+  'commercial-disclosure/index.html',
+].map((path) => ({ path, entry: '/src/static-page.ts' }))
 
 const liveEntryContracts = [
   { path: 'changelog/index.html', entry: '/src/changelog-page.ts' },
@@ -56,9 +76,11 @@ const liveEntryContracts = [
   { path: 'kick/status/index.html', entry: '/src/live/status-current-shell-entry.ts' },
 ]
 
+const staticPaths = new Set(staticEntryContracts.map((contract) => contract.path))
+const mockEntryPages = pages.filter((path) => !staticPaths.has(path))
+
 const requiredShellFragments = [
   '<span class="brand-mark">VL</span>',
-  'ViewLoom<small>Live data observatory</small>',
   'class="masthead"',
   'class="global-nav"',
   'href="/twitch/"',
@@ -69,7 +91,6 @@ const requiredShellFragments = [
   'class="breadcrumb"',
   'class="footer"',
   '/src/mock-site.css',
-  '/src/mock-site.ts',
   '/src/analytics.ts',
 ]
 
@@ -77,6 +98,9 @@ const requiredSourceFiles = [
   'vite.config.ts',
   'src/mock-site.css',
   'src/mock-site.ts',
+  'src/static-page.ts',
+  'src/legal-page.css',
+  'src/shared-shell.ts',
   'src/changelog-page.ts',
   'src/changelog-page.css',
   'src/live/heatmap-current-shell-entry.ts',
@@ -148,16 +172,27 @@ for (const path of pages.filter((path) => existsSync(join(root, path)))) {
   forbidPatterns(path, source, forbiddenGlobalPatterns)
 }
 
+for (const path of mockEntryPages.filter((path) => existsSync(join(root, path)))) {
+  const source = read(path)
+  if (!source.includes('/src/mock-site.ts')) failures.push(`${path}: missing production shell entry /src/mock-site.ts`)
+}
+
 for (const { path, provider } of providerExpectations) {
   if (!existsSync(join(root, path))) continue
   const source = read(path)
   if (!source.includes(`data-provider="${provider}"`)) failures.push(`${path}: expected data-provider="${provider}"`)
 }
 
-for (const { path, entry } of liveEntryContracts) {
+for (const { path, entry } of [...staticEntryContracts, ...liveEntryContracts]) {
   if (!existsSync(join(root, path))) continue
   const source = read(path)
-  if (!source.includes(entry)) failures.push(`${path}: missing live entry ${entry}`)
+  if (!source.includes(entry)) failures.push(`${path}: missing production entry ${entry}`)
+}
+
+for (const { path } of staticEntryContracts) {
+  if (!existsSync(join(root, path))) continue
+  const source = read(path)
+  if (source.includes('/src/mock-site.ts')) failures.push(`${path}: provider-neutral static page must not use mock-site.ts`)
 }
 
 for (const path of requiredSourceFiles) {
@@ -193,4 +228,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom production source verification passed for ${pages.length} public pages and ${liveEntryContracts.length} live entry contracts.`)
+console.log(`ViewLoom production source verification passed for ${pages.length} public pages, ${staticEntryContracts.length} provider-neutral static entries, and ${liveEntryContracts.length} live entry contracts.`)

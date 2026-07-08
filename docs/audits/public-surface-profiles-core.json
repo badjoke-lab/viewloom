@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-profiles-v1",
-  "version": 1,
+  "version": 2,
   "group": "core",
   "gates": {
     "common_repository": [".github/workflows/web-build.yml", ".github/workflows/web-verification.yml", ".github/workflows/platform-naming.yml"],
@@ -21,22 +21,31 @@
       "gaps": ["no 1440/820/390/360 browser matrix", "no all-state browser matrix"]
     },
     "static_content": {
-      "owner": ["apps/web/src/mock-site.ts"],
+      "owner": ["apps/web/src/static-page.ts", "apps/web/src/shared-shell.ts"],
       "data": [],
       "controls": ["navigation", "external links"],
       "states": ["static"],
-      "gates": ["common_repository", "public_readiness", "content_contract"],
-      "assessment": "partial",
-      "gaps": ["no dedicated browser acceptance", "not in Production Smoke"]
+      "gates": ["common_repository", "public_readiness", "content_contract", "production_smoke"],
+      "assessment": "complete_current_contract",
+      "gaps": []
+    },
+    "static_legal": {
+      "owner": ["apps/web/src/static-page.ts", "apps/web/src/shared-shell.ts", "apps/web/src/legal-page.css"],
+      "data": [],
+      "controls": ["navigation", "policy links", "external contact or reference links where present"],
+      "states": ["static"],
+      "gates": ["common_repository", "public_readiness", "content_contract", "production_smoke"],
+      "assessment": "candidate_r12a",
+      "gaps": ["hosted production acceptance pending R12A-5"]
     },
     "changelog": {
       "owner": ["apps/web/src/changelog-page.ts"],
       "data": ["apps/web/public/data/changelog.json"],
       "controls": ["Open JSON", "Retry"],
       "states": ["loading", "ready", "empty", "error"],
-      "gates": ["common_repository", "public_readiness", "changelog_contract"],
-      "assessment": "partial",
-      "gaps": ["no dedicated state/browser acceptance", "not in Production Smoke"]
+      "gates": ["common_repository", "public_readiness", "changelog_contract", "production_smoke"],
+      "assessment": "complete_current_contract",
+      "gaps": []
     },
     "provider_home": {
       "owner": ["apps/web/src/provider-home.ts", "apps/web/src/provider-home-data.ts"],

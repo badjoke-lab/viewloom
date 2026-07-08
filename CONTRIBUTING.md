@@ -14,9 +14,12 @@ Phase 11 P11A–P11F complete
 Phase 11 P11G candidate merged PR #473
 Phase 11 production closeout complete
 Phase 12 English release readiness active
-Current workstream: R12A-0 current legal/support surface audit
-Exact next implementation branch: work-release-r12a-legal-support
-Next branch created: no
+Current workstream: R12A-5 candidate and hosted acceptance
+Active implementation branch: work-release-r12a-legal-support
+Branch created: yes
+Candidate public HTML routes: 25
+Candidate browser scenarios: 100
+Hosted production acceptance: pending merge
 ```
 
 Permanent Phase 11 closeout: `docs/operations/phase11-production-closeout-2026-07-08.md`.
@@ -27,6 +30,7 @@ Active Phase 12 authorities:
 docs/product/release-readiness-spec.md
 docs/product/release-readiness-plan.md
 docs/work-in-progress/phase12-release-readiness.md
+docs/audits/phase12-r12a-legal-support-baseline.json
 ```
 
 Phase 12 sequence:
@@ -36,6 +40,8 @@ R12A legal and support public-surface completion
 R12B Stripe and support-flow readiness
 R12C English launch package and release acceptance
 ```
+
+R12A-0 through R12A-4 are complete on the active candidate branch. R12A-5 requires latest-head development policy, R12A contract, public inventory, readiness, 100-scenario current browser matrix, typecheck, and build evidence before merge; exact production deployment and 25-route smoke evidence are required after merge before the five candidate policy surfaces are marked resolved.
 
 External Stripe dashboard/account state must be supported by explicit evidence and must not be inferred from repository code alone.
 

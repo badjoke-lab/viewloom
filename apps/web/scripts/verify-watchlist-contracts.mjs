@@ -28,13 +28,16 @@ verifyWorkflowOwnership()
 
 console.log('Watchlist completed production contract verification passed.')
 console.log('- permanent specification, implementation record, and production evidence remain exact')
-console.log('- current Phase 10 roadmap wording is not used as historical Watchlist evidence')
+console.log('- current public route counts may grow without rewriting historical Watchlist evidence')
+console.log('- both provider Watchlist routes remain in current route ownership')
 console.log('- no Watchlist-specific server, polling, per-channel request, or analytics path exists')
 
 function verifyPermanentGovernance() {
   const spec = readRepo('docs/product/local-watchlist-spec.md')
   const record = readRepo('docs/product/watchlist-v1-implementation-plan.md')
-  const inventory = readRepo('docs/audits/public-surface-inventory.json')
+  const inventory = JSON.parse(readRepo('docs/audits/public-surface-inventory.json'))
+  const twitchRoutes = JSON.parse(readRepo('docs/audits/public-surface-routes-twitch.json'))
+  const kickRoutes = JSON.parse(readRepo('docs/audits/public-surface-routes-kick.json'))
   const acceptance = readRepo('docs/operations/watchlist-production-acceptance-2026-06-25.md')
   const index = readRepo('docs/README.md')
 
@@ -79,11 +82,13 @@ function verifyPermanentGovernance() {
     'No additional Local Watchlist branch is scheduled.',
   ], 'Watchlist implementation record')
 
-  requireAll(inventory, [
-    'viewloom-public-surface-inventory-v1',
-    '"vite_html_inputs": 20',
-    '"inventory_entries": 21',
-  ], 'historical inventory')
+  assert.equal(inventory.schema, 'viewloom-public-surface-inventory-v1')
+  assert.equal(inventory.counts.public_readiness_configured_pages, inventory.counts.vite_html_inputs)
+  assert.equal(inventory.counts.production_smoke_page_routes, inventory.counts.vite_html_inputs)
+  assert.equal(inventory.provider_invariants.combined_totals_allowed, false)
+  assert.equal(inventory.provider_invariants.combined_rankings_allowed, false)
+  assert.ok(twitchRoutes.routes.some((route) => route.route === '/twitch/watchlist/' && route.profile === 'watchlist'), 'current Twitch Watchlist route ownership missing')
+  assert.ok(kickRoutes.routes.some((route) => route.route === '/kick/watchlist/' && route.profile === 'watchlist'), 'current Kick Watchlist route ownership missing')
 
   requireAll(acceptance, [
     'Status: completed permanent record',

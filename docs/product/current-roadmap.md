@@ -32,9 +32,12 @@ Phase 11 P11F acceptance ownership complete
 Phase 11 P11G candidate merged PR #473
 Phase 11 production closeout complete
 Phase 12 English release readiness active
-Current workstream: R12A-0 current legal/support surface audit
-Exact next implementation branch: work-release-r12a-legal-support
-Next branch created: no
+Current workstream: R12A-5 candidate and hosted acceptance
+Active implementation branch: work-release-r12a-legal-support
+Branch created: yes
+Candidate public HTML routes: 25
+Candidate browser scenarios: 100
+Hosted production acceptance: pending merge
 ```
 
 Permanent Phase 11 production closeout: `../operations/phase11-production-closeout-2026-07-08.md`.
@@ -44,6 +47,7 @@ Permanent Phase 11 production closeout: `../operations/phase11-production-closeo
 - Specification: `release-readiness-spec.md`
 - Implementation plan: `release-readiness-plan.md`
 - Active working record: `../work-in-progress/phase12-release-readiness.md`
+- R12A baseline audit: `../audits/phase12-r12a-legal-support-baseline.json`
 
 Phase 12 sequence:
 
@@ -52,6 +56,19 @@ R12A legal and support public-surface completion
 R12B Stripe and support-flow readiness
 R12C English launch package and release acceptance
 ```
+
+R12A candidate state:
+
+```text
+R12A-0 current legal/support surface audit              complete
+R12A-1 shared legal/support page foundation             complete
+R12A-2 Contact, Terms, Privacy                          complete
+R12A-3 Refund Policy and Commercial Disclosure          complete
+R12A-4 About/footer and route ownership integration     complete
+R12A-5 candidate and hosted acceptance                  active
+```
+
+The five R12A routes are candidate surfaces until exact post-merge Production Smoke verifies them on production. Current `missing_surfaces` is empty, but the five routes remain `candidate_surfaces` and the policy-surface gap remains `candidate_implementation` until hosted acceptance.
 
 Phase 12 English content is the source for the Phase 13–14 localization program. Phase 12 does not authorize analytics runtime, localization runtime, DB, collector, cron, retention, provider combination, or payment-backend work.
 

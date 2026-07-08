@@ -1,5 +1,6 @@
 import './provider-home.css'
 import './provider-watchlist-link.css'
+import './provider-home-mobile-boundary.css'
 import { mountProviderHome } from './provider-home-shell'
 import { installSharedShell, setSharedShellStatus, syncSharedShellStatus } from './shared-shell'
 import type { Platform } from './provider-home/types'
