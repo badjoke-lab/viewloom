@@ -2,7 +2,7 @@
   "schema": "viewloom-phase11-monitoring-contract-v1",
   "phase": "Phase 11",
   "workstream": "P11C",
-  "status": "contract-complete-hosted-evidence-pending",
+  "status": "complete",
   "contract_evidence": {
     "workflow_run": 28807287168,
     "artifact_id": 8115435281,
@@ -48,8 +48,23 @@
     "blocking_alerts": 0
   },
   "hosted_evidence": {
-    "status": "pending-main-merge",
-    "owner": ".github/workflows/production-smoke.yml",
-    "required_before_phase11_production_closeout": true
+    "status": "complete",
+    "closeout_record": "docs/operations/phase11-production-closeout-2026-07-08.md",
+    "workflow_run": 28932232525,
+    "artifact_id": 8163904094,
+    "artifact_digest": "sha256:29469a860baa8da27d9155fd5fd79a162fa39467e58bc5ee2b2b4c143f8349be",
+    "expected_main_sha": "90fb2714137cc83e6f20e44415574a5e35a98439",
+    "deployed_sha": "90fb2714137cc83e6f20e44415574a5e35a98439",
+    "checked_at": "2026-07-08T09:27:30Z",
+    "result": "pass",
+    "public_routes_checked": 20,
+    "provider_status_apis_checked": 2,
+    "provider_crossing_failures": 0,
+    "blocking_alerts": 0,
+    "watch_alerts": 2,
+    "twitch_capacity_state": "at-or-over-window",
+    "kick_capacity_state": "at-or-over-window",
+    "required_before_phase11_production_closeout": true,
+    "phase11_production_closeout_satisfied": true
   }
 }

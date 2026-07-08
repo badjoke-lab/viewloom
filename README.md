@@ -36,16 +36,18 @@ Phase 10 U10H production acceptance    complete PR #471
 U10H canonical closeout                complete PR #472
 Phase 11 P11A strict-null migration    complete
 Phase 11 P11B CI ownership             complete
-Phase 11 P11C monitoring contract      complete; hosted closeout required after merge
+Phase 11 P11C monitoring contract      complete
 Phase 11 P11D escalation runbook       complete
 Phase 11 P11E maintenance cadence      complete
 Phase 11 P11F acceptance ownership     complete
 Phase 11 P11G candidate                merged PR #473
-Phase 11 hosted production closeout    pending
-Current workstream                     Phase 11 hosted closeout and canonical synchronization
+Phase 11 production closeout           complete
+Phase 12 English release readiness     active
+Current workstream                     R12A-0 current legal/support surface audit
+Exact next implementation branch       work-release-r12a-legal-support
 ```
 
-Permanent Phase 11 evidence:
+Permanent Phase 11 evidence includes:
 
 ```text
 docs/audits/phase11-strict-null-baseline.json
@@ -55,15 +57,33 @@ docs/audits/phase11-monitoring-contract.json
 docs/audits/phase11-public-acceptance-ownership.json
 docs/operations/phase11-monitoring-and-escalation.md
 docs/operations/phase11-maintenance-cadence.md
+docs/operations/phase11-production-closeout-2026-07-08.md
 ```
 
-Phase 11 working/closeout record: `docs/work-in-progress/phase11-acceptance-operations.md`.
+## Active Phase 12
+
+Phase 12 authorities:
+
+```text
+docs/product/release-readiness-spec.md
+docs/product/release-readiness-plan.md
+docs/work-in-progress/phase12-release-readiness.md
+```
+
+Sequence:
+
+```text
+R12A legal and support public-surface completion
+R12B Stripe and support-flow readiness
+R12C English launch package and release acceptance
+```
+
+R12A completes Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, and the About/footer ownership audit. R12B verifies the actual support/Stripe/refund/disclosure flow with explicit external evidence. R12C completes the English launch package, FAQ, limitations, links, assets, and final release acceptance.
 
 ## Approved forward sequence
 
 ```text
-Phase 11 hosted closeout
-Phase 12 release readiness
+Phase 12 English release readiness
 Phase 12A Analytics Capture Foundation
 Phase 13-14 localization while analytics evidence accumulates
 Phase 15 Analytics Capability and Calibration Audit
@@ -95,4 +115,4 @@ docs/product/analytics-observation-system-plan.md
 docs/product/next-feature-data-capability-audit.md
 ```
 
-Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*` only when runtime validation is necessary. Only latest-head evidence counts. After every merge, issue the full report and stop. Future analytics work must follow the approved capture, calibration, and phase-entry gates rather than ad hoc feature additions.
+Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate Cloudflare validation uses `preview-*` only when runtime validation is necessary. Only latest-head evidence counts. After every merge, issue the full report and stop. Phase 12A and later analytics work must not bypass their approved entry gates.

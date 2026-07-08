@@ -12,13 +12,32 @@ Phase 10 U10H production acceptance complete through PR #471
 U10H canonical closeout complete through PR #472
 Phase 11 P11A–P11F complete
 Phase 11 P11G candidate merged PR #473
-Phase 11 hosted production monitoring closeout pending
-Current workstream: Phase 11 hosted closeout and canonical synchronization
+Phase 11 production closeout complete
+Phase 12 English release readiness active
+Current workstream: R12A-0 current legal/support surface audit
+Exact next implementation branch: work-release-r12a-legal-support
+Next branch created: no
 ```
 
-Current Phase 11 record: `docs/work-in-progress/phase11-acceptance-operations.md`.
-Phase 11 monitoring/escalation: `docs/operations/phase11-monitoring-and-escalation.md`.
-Phase 11 maintenance cadence: `docs/operations/phase11-maintenance-cadence.md`.
+Permanent Phase 11 closeout: `docs/operations/phase11-production-closeout-2026-07-08.md`.
+
+Active Phase 12 authorities:
+
+```text
+docs/product/release-readiness-spec.md
+docs/product/release-readiness-plan.md
+docs/work-in-progress/phase12-release-readiness.md
+```
+
+Phase 12 sequence:
+
+```text
+R12A legal and support public-surface completion
+R12B Stripe and support-flow readiness
+R12C English launch package and release acceptance
+```
+
+External Stripe dashboard/account state must be supported by explicit evidence and must not be inferred from repository code alone.
 
 Approved future analytics authorities:
 
@@ -31,14 +50,13 @@ docs/product/next-feature-data-capability-audit.md
 Approved future sequence:
 
 ```text
-Phase 12 release readiness
-  -> Phase 12A Analytics Capture Foundation
+Phase 12A Analytics Capture Foundation
   -> Phase 13-14 localization and evidence accumulation
   -> Phase 15 Analytics Capability and Calibration Audit
   -> Phase 16A-F Analytics Observation System implementation
 ```
 
-Phase 16 branches must not be created before Phase 15 closes. Analytics work must not bypass the approved data capture, capacity, calibration, coverage, and evidence gates.
+Phase 12A and Phase 16 branches must not be created before their entry gates close. Analytics work must not bypass the approved data capture, capacity, calibration, coverage, and evidence gates.
 
 ## Standard workflow
 

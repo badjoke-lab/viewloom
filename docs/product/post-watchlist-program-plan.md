@@ -1,10 +1,12 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 6.0
+Version: 6.1
 Last updated: 2026-07-08
-Current phase: Phase 11 — hosted production monitoring closeout
-Current workstream: complete Phase 11 hosted closeout and canonical synchronization after PR #473
+Current phase: Phase 12 — English release readiness
+Current workstream: R12A-0 current legal/support surface audit
+Exact next implementation branch: `work-release-r12a-legal-support`
+Next branch created: no
 
 Completed U10A implementation: PR #454
 Completed U10B implementation: PR #456
@@ -16,31 +18,32 @@ Completed U10G implementation: PR #470
 Completed U10H implementation: PR #471
 Completed U10H canonical closeout: PR #472
 Phase 11 candidate merged: PR #473
+Analytics roadmap synchronized: PR #475
+Phase 11 hosted production closeout: complete
 
 ```text
 Phase 10 complete through U10H
 Phase 11 P11A strict-null migration complete
 Phase 11 P11B CI ownership complete
-Phase 11 P11C monitoring contract complete; hosted closeout required after merge
+Phase 11 P11C monitoring contract complete
 Phase 11 P11D escalation runbook complete
 Phase 11 P11E maintenance cadence complete
 Phase 11 P11F acceptance ownership complete
 Phase 11 P11G candidate merged PR #473
-Phase 11 hosted production monitoring closeout pending
-Phase 12 release readiness queued
+Phase 11 production closeout complete
+Phase 12 English release readiness active
 Phase 12A Analytics Capture Foundation approved and queued
 Phase 13-14 localization queued after Phase 12A
 Phase 15 Analytics Capability and Calibration Audit queued
 Phase 16 Analytics Observation System approved as future major program and gated by Phase 15
 ```
 
-Current Phase 11 record: `docs/work-in-progress/phase11-acceptance-operations.md`.
+Permanent Phase 11 closeout: `docs/operations/phase11-production-closeout-2026-07-08.md`.
 
 ## Program sequence
 
 ```text
-Phase 11 hosted closeout
-  -> Phase 12 release readiness
+Phase 12 English release readiness
   -> Phase 12A Analytics Capture Foundation
   -> Phase 13-14 localization and analytics evidence accumulation
   -> Phase 15 Analytics Capability and Calibration Audit
@@ -51,6 +54,84 @@ Phase 11 hosted closeout
   -> Phase 16E Co-movement and Relationship Analysis
   -> Phase 16F Replay and Backtest
 ```
+
+## Phase 12 — English release readiness
+
+Authorities:
+
+```text
+docs/product/release-readiness-spec.md
+docs/product/release-readiness-plan.md
+docs/work-in-progress/phase12-release-readiness.md
+```
+
+Sequence:
+
+```text
+R12A legal and support public-surface completion
+R12B Stripe and support-flow readiness
+R12C English launch package and release acceptance
+```
+
+### R12A
+
+R12A owns:
+
+```text
+current legal/support surface audit
+/contact/
+/terms/
+/privacy/
+/refund-policy/
+/commercial-disclosure/
+About wording audit
+shared footer legal/support navigation
+build and route ownership integration
+Public Readiness ownership
+Production Smoke ownership
+metadata/canonical/sitemap policy
+responsive and accessibility acceptance
+hosted production acceptance
+```
+
+The five missing routes were originally identified by the P8B public browser audit. Post-R12A route counts must be measured from actual implementation rather than pre-written into inventory evidence.
+
+### R12B
+
+R12B owns:
+
+```text
+Support CTA wording
+actual Payment Link destination audit
+external Stripe registration evidence
+refund wording consistency
+Commercial Disclosure consistency
+mobile and desktop support/payment transition flow
+external-link accessibility and behavior
+```
+
+Repository content alone does not prove external Stripe account/dashboard state. Any completion claim about registered website, Payment Link configuration, or refund configuration requires recorded authoritative/operator evidence.
+
+### R12C
+
+R12C owns:
+
+```text
+one-line product description
+short listing description
+long product description
+feature-role summary
+bounded-data limitations
+provider separation explanation
+Status/help links
+Support/legal links
+FAQ
+launch/share asset package
+final release candidate acceptance
+exact production verification
+```
+
+English is the source language for Phase 13–14. Phase 12 does not add localization runtime.
 
 ## Phase 12A purpose
 
@@ -67,7 +148,7 @@ provider-specific category capture foundation
 production acceptance and accumulation handoff
 ```
 
-It does not own analytics UI.
+It does not own analytics UI. Phase 11 closeout observed both Twitch 300/300 and Kick 100/100 at `at-or-over-window`; those non-blocking capacity observations are explicit Phase 12A baseline inputs, not authorization to expand limits.
 
 ## Phase 13-14 relationship to analytics
 
@@ -119,4 +200,4 @@ The program does not authorize raw-retention expansion, high-frequency cron grow
 - `docs/product/analytics-observation-system-plan.md`
 - `docs/product/next-feature-data-capability-audit.md`
 
-The prior capability audit remains authoritative for current limitations. The new analytics program addresses those limitations by creating evidence and compact data foundations before product claims are allowed.
+The prior capability audit remains authoritative for current limitations. The analytics program addresses those limitations by creating evidence and compact data foundations before product claims are allowed.
