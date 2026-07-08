@@ -37,11 +37,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
       - name: Install Chromium
-        run: pnpm --filter @viewloom/web exec playwright install --with-deps chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
 
       - name: Run hosted R12B support-flow audit
-        run: pnpm --filter @viewloom/web exec node scripts/r12b-hosted-support-audit.mjs
+        working-directory: apps/web
+        run: node scripts/r12b-hosted-support-audit.mjs
 
       - name: Verify hosted R12B support-flow evidence
         run: node scripts/verify-r12b-hosted-support-audit.mjs artifacts/r12b-hosted-support-audit/evidence.json
