@@ -25,22 +25,40 @@ Phase 10 U10H production acceptance complete PR #471
 U10H canonical closeout complete PR #472
 Phase 11 P11A strict-null migration complete
 Phase 11 P11B CI ownership complete
-Phase 11 P11C monitoring contract complete; hosted closeout after merge
+Phase 11 P11C monitoring contract complete
 Phase 11 P11D escalation runbook complete
 Phase 11 P11E maintenance cadence complete
 Phase 11 P11F acceptance ownership complete
 Phase 11 P11G candidate merged PR #473
-Phase 11 hosted production monitoring closeout pending
-Current execution boundary: finish Phase 11 hosted closeout before Phase 12
+Phase 11 production closeout complete
+Phase 12 English release readiness active
+Current workstream: R12A-0 current legal/support surface audit
+Exact next implementation branch: work-release-r12a-legal-support
+Next branch created: no
 ```
 
-Current Phase 11 record: `../work-in-progress/phase11-acceptance-operations.md`.
+Permanent Phase 11 production closeout: `../operations/phase11-production-closeout-2026-07-08.md`.
+
+## Active Phase 12 authorities
+
+- Specification: `release-readiness-spec.md`
+- Implementation plan: `release-readiness-plan.md`
+- Active working record: `../work-in-progress/phase12-release-readiness.md`
+
+Phase 12 sequence:
+
+```text
+R12A legal and support public-surface completion
+R12B Stripe and support-flow readiness
+R12C English launch package and release acceptance
+```
+
+Phase 12 English content is the source for the Phase 13–14 localization program. Phase 12 does not authorize analytics runtime, localization runtime, DB, collector, cron, retention, provider combination, or payment-backend work.
 
 ## Approved forward sequence
 
 ```text
-Phase 11 hosted production monitoring closeout
-Phase 12 release readiness
+Phase 12 English release readiness
 Phase 12A Analytics Capture Foundation
 Phase 13-14 localization while analytics evidence accumulates
 Phase 15 Analytics Capability and Calibration Audit
@@ -59,4 +77,4 @@ Phase 16 Analytics Observation System program
 - Implementation plan: `analytics-observation-system-plan.md`
 - Prior capability boundary: `next-feature-data-capability-audit.md`
 
-Phase 12A is an evidence-capture and compact-rollup foundation, not an analytics UI launch. Phase 13-14 may proceed after Phase 12A while forward-only intraday/category evidence accumulates. Phase 16 is approved as the future major program but remains implementation-gated by Phase 15 evidence, calibration, storage cost, and query-cost acceptance.
+Phase 12A is an evidence-capture and compact-rollup foundation, not an analytics UI launch. Phase 13-14 may proceed after Phase 12A while forward-only intraday/category evidence accumulates. Phase 16 implementation remains gated by Phase 15 evidence, calibration, storage cost, and query-cost acceptance.
