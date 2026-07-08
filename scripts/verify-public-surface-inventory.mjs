@@ -7,17 +7,19 @@ const check = (value, message) => { if (!value) fail.push(message) }
 const load = (path) => JSON.parse(readFileSync(join(root, path), 'utf8'))
 const exists = (path) => existsSync(join(root, path))
 
-const manifestPath = 'docs/audits/public-surface-inventory.json'
-const manifest = load(manifestPath)
+const manifest = load('docs/audits/public-surface-inventory.json')
 check(manifest.schema === 'viewloom-public-surface-inventory-v1', 'manifest schema mismatch')
-check(manifest.historical_next_branch === 'work-public-browser-audit', 'historical next branch must remain work-public-browser-audit')
-check(manifest.active_branch === 'work-release-r12a-legal-support', 'active R12A branch mismatch')
+check(manifest.historical_next_branch === 'work-public-browser-audit', 'historical next branch changed')
+check(manifest.source?.accepted_main_sha === '952f0008209363f4fd5b22587975ac247ee8d6f2', 'R12A accepted main SHA mismatch')
+check(manifest.source?.production_acceptance === 'docs/audits/r12a-production-acceptance.json', 'R12A production evidence owner missing')
+check(manifest.active_program === 'Phase 12 R12B Stripe and support-flow readiness', 'active program mismatch')
 check(manifest.provider_invariants?.twitch_binding === 'DB_TWITCH_HOT', 'Twitch binding mismatch')
 check(manifest.provider_invariants?.kick_binding === 'DB_KICK_HOT', 'Kick binding mismatch')
 check(manifest.provider_invariants?.combined_totals_allowed === false, 'combined totals must remain forbidden')
 check(manifest.provider_invariants?.combined_rankings_allowed === false, 'combined rankings must remain forbidden')
-check(manifest.counts?.vite_html_inputs === 25, 'R12A candidate must own 25 Vite HTML routes')
-check(manifest.counts?.inventory_entries === 26, 'R12A candidate inventory must include 25 HTML routes plus explicit 404')
+check(manifest.counts?.vite_html_inputs === 25, 'current inventory must own 25 Vite HTML routes')
+check(manifest.counts?.inventory_entries === 26, 'current inventory must include 25 HTML routes plus explicit 404')
+check(manifest.counts?.current_browser_scenarios === 100, 'current browser ownership must remain 100 scenarios')
 check(manifest.counts?.public_readiness_configured_pages === manifest.counts?.vite_html_inputs, 'Public Readiness must own every Vite HTML route')
 check(manifest.counts?.production_smoke_page_routes === manifest.counts?.vite_html_inputs, 'Production Smoke must own every Vite HTML route')
 
@@ -98,24 +100,30 @@ check(routes.filter((route) => route.route !== '*' && route.robots === 'noindex,
 const history = profiles.history
 check(history?.assessment === 'known_p1_defects', 'historical History P1 profile assessment changed without profile migration')
 check((history?.gaps?.length ?? 0) >= 5, 'historical History P1 profile gaps are incomplete')
-const watchlist = profiles.watchlist
-check(watchlist?.assessment === 'complete_for_v1_contract', 'Watchlist completion assessment changed')
-const staticLegal = profiles.static_legal
-check(staticLegal?.assessment === 'candidate_r12a', 'R12A static legal profile must remain candidate until hosted acceptance')
+check(profiles.watchlist?.assessment === 'complete_for_v1_contract', 'Watchlist completion assessment changed')
+check(profiles.static_legal?.assessment === 'complete_current_contract', 'R12A static legal profile must be production accepted')
+check((profiles.static_legal?.gaps?.length ?? -1) === 0, 'R12A static legal profile must have no remaining acceptance gap')
 
 const gaps = load(manifest.gap_file)
 check(gaps.schema === 'viewloom-public-surface-gaps-v1', 'gap schema mismatch')
-check(Array.isArray(gaps.missing_surfaces) && gaps.missing_surfaces.length === 0, 'R12A candidate must remove current missing-surface probes')
+check(gaps.missing_surfaces?.length === 0, 'current missing surfaces must remain empty')
+check(gaps.candidate_surfaces?.length === 0, 'R12A candidate surfaces must be cleared after production acceptance')
 for (const route of ['/contact/', '/terms/', '/privacy/', '/refund-policy/', '/commercial-disclosure/']) {
-  check(gaps.candidate_surfaces?.some((item) => item.route === route && item.state === 'candidate'), `candidate surface not recorded: ${route}`)
+  check(gaps.resolved_surfaces?.some((item) => item.route === route && item.state === 'resolved'), `resolved R12A surface not recorded: ${route}`)
 }
 check(gaps.historical_missing_surface_baseline?.count === 5, 'historical P8B missing-surface baseline count changed')
-for (const id of ['watchlist-public-readiness-omission', 'production-smoke-omissions']) {
-  check(gaps.cross_route_gaps?.some((item) => item.id === id && item.state === 'resolved' && item.resolved_phase === 'U10F'), `U10F resolution not recorded: ${id}`)
-}
-check(gaps.cross_route_gaps?.some((item) => item.id === 'no-consolidated-public-browser-matrix'), 'historical browser matrix record missing')
-check(gaps.cross_route_gaps?.some((item) => item.id === 'history-known-p1'), 'historical History record missing')
-check(gaps.cross_route_gaps?.some((item) => item.id === 'policy-surfaces-missing' && item.state === 'candidate_implementation'), 'policy surface gap must remain candidate until hosted acceptance')
+check(gaps.cross_route_gaps?.some((item) => item.id === 'watchlist-public-readiness-omission' && item.state === 'resolved'), 'Watchlist readiness resolution missing')
+check(gaps.cross_route_gaps?.some((item) => item.id === 'production-smoke-omissions' && item.state === 'resolved'), 'Production Smoke resolution missing')
+check(gaps.cross_route_gaps?.some((item) => item.id === 'policy-surfaces-missing' && item.state === 'resolved' && item.resolved_phase === 'R12A'), 'R12A policy surface gap must be resolved')
+
+const r12a = load('docs/audits/r12a-production-acceptance.json')
+check(r12a.schema === 'viewloom-r12a-production-acceptance-v1', 'R12A acceptance schema mismatch')
+check(r12a.status === 'complete' && r12a.result === 'pass', 'R12A production acceptance did not pass')
+check(r12a.expected_main_sha === r12a.deployed_sha, 'R12A expected/deployed SHA mismatch')
+check(r12a.expected_main_sha === '952f0008209363f4fd5b22587975ac247ee8d6f2', 'R12A accepted SHA changed')
+check(r12a.counts?.html_routes === 25, 'R12A production route count mismatch')
+check(r12a.counts?.provider_crossing_failures === 0, 'R12A provider crossing failure')
+check(r12a.counts?.blocking_alerts === 0, 'R12A blocking monitoring alert')
 
 if (fail.length) {
   console.error('Public surface inventory verification failed:')
@@ -125,7 +133,7 @@ if (fail.length) {
 console.log(`Public surface inventory verified: ${routes.length} routes, ${Object.keys(profiles).length} profiles, ${Object.keys(gates).length} gate groups.`)
 console.log('- 25 Vite HTML inputs plus explicit 404 are owned')
 console.log('- Public Readiness and Production Smoke each own all 25 HTML routes')
-console.log('- five R12A legal routes are candidate surfaces pending hosted acceptance')
+console.log('- five R12A legal/support routes are production accepted and resolved')
 console.log('- Twitch and Kick bindings remain separate')
 console.log('- historical P8B missing-surface evidence remains locked separately')
 
