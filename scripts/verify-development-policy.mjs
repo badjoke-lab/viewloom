@@ -69,6 +69,7 @@ for (const retired of [
   'docs/work-in-progress/phase12-release-readiness.md',
   '.github/workflows/phase11-hosted-closeout-acceptance.yml',
   '.github/workflows/release-r12a-production-closeout.yml',
+  '.github/workflows/release-r12c3-release-candidate.yml',
   '.github/workflows/release-phase12-hosted-closeout.yml',
   'scripts/verify-phase12-hosted-closeout-probe.mjs',
 ]) {
@@ -183,7 +184,7 @@ check('docs/product/analytics-observation-system-plan.md', [
 
 console.log('Development and documentation policy verification passed.')
 console.log('- Phase 12 permanent acceptance is complete and exact-SHA bound')
-console.log('- Phase 12 working note and temporary closeout tools are retired')
+console.log('- Phase 12 working note and temporary closeout/candidate tools are retired')
 console.log('- current program is Phase 12A Analytics Capture Foundation')
 console.log('- current workstream is 12A-0 current data and capacity baseline')
 console.log('- exact next branch is work-analytics-12a0-current-data-capacity-baseline and remains uncreated')
