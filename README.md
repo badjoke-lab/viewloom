@@ -20,91 +20,89 @@ Phase 9 History P1 repair              complete
 Phase 10 quality program               complete through U10H
 Phase 11 P11A-P11G                     complete
 Phase 11 production closeout           complete
-Phase 12 English release readiness     active
+Phase 12 English release readiness     complete
 R12A legal/support public surface      complete
 R12B Stripe/support readiness          complete through R12B-2
 R12C-0 message inventory               complete PR #484
 R12C-1 launch copy and FAQ             complete PR #485
-R12C-2 launch/share asset package      complete
-R12C-3 release candidate acceptance    active
-Exact active branch                    work-release-r12c3-release-candidate-acceptance
-Active branch created                  yes
+R12C-2 launch/share asset package      complete PR #486
+R12C-3 candidate acceptance            complete PR #487
+R12C-3 production closeout             complete
+Phase 12A Analytics Capture Foundation active
+12A-0 data and capacity baseline       active
+Exact next branch                      work-analytics-12a0-capacity-baseline
+Next branch created                    no
 ```
 
-## Phase 12 authorities
+## Phase 12 permanent release acceptance
 
 ```text
-docs/product/release-readiness-spec.md
-docs/product/release-readiness-plan.md
-docs/work-in-progress/phase12-release-readiness.md
+docs/audits/phase12-release-acceptance.json
+docs/audits/phase12-production-closeout-contract.json
+docs/operations/phase12-release-acceptance-2026-07-09.md
 ```
 
-Sequence:
+Accepted hosted production identity:
 
 ```text
-R12A legal and support public-surface completion   complete
-R12B Stripe and support-flow readiness             complete
-R12C-0 message inventory                           complete
-R12C-1 launch copy and FAQ                         complete
-R12C-2 launch/share asset package                  complete
-R12C-3 release candidate acceptance                active
+Expected main SHA: 32c27a9a772cb62ff38f009c5fd1bb095ac27ad8
+Deployed SHA:      32c27a9a772cb62ff38f009c5fd1bb095ac27ad8
+HTML routes: 25
+Status APIs: 2
+Sitemap URLs: 21
+Launch assets: 6
+Blocking alerts: 0
 ```
 
-Permanent R12C-1 package:
+Phase 12 completed legal/support surfaces, Stripe/support-flow readiness, the English launch-copy package, a 12-question FAQ, a repo-owned six-image launch/share asset package, premerge 100-scenario browser acceptance, and exact-SHA hosted production closeout.
+
+The R12B external-state evidence boundary remains active: current Stripe Dashboard/account facts must not be inferred from repository or public-browser evidence alone.
+
+## Active Phase 12A
+
+Permanent analytics authorities:
 
 ```text
-docs/product/english-launch-copy.md
-docs/audits/r12c1-launch-copy-package.json
-docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md
+docs/product/analytics-observation-system-spec.md
+docs/product/analytics-observation-system-plan.md
+docs/product/next-feature-data-capability-audit.md
 ```
 
-The R12C-1 package provides one-line, short, and long descriptions; seven product-role summaries; coverage, provider-separation, cadence, and retention explanations; a 12-question FAQ; Status/help links; Support/legal links; and the English terminology contract.
-
-The English package becomes the Phase 13–14 localization source after the approved program reaches localization.
-
-## R12C-2 accepted package
-
-R12C-2 fixed current production-surface screenshots and their evidence contract:
+Current workstream:
 
 ```text
-apps/web/public/launch-assets/
-docs/audits/r12c2-launch-assets-capture.json
-docs/audits/r12c2-launch-asset-manifest.json
-docs/product/launch-asset-captions.md
-docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md
+12A-0 current data and capacity baseline
+branch: work-analytics-12a0-capacity-baseline
 ```
 
-The package contains current desktop and mobile Portal screenshots plus representative Heatmap, Day Flow, Battle Lines, and History screenshots. The manifest records source route, viewport, capture time, intended use, captions, hashes, and public-surface evidence.
-
-The generic `apps/web/public/og/viewloom.svg` remains usable as an identity card and is separate from the representative product screenshot package.
-
-## Active R12C-3
-
-R12C-3 is the Phase 12 release candidate acceptance workstream. It owns:
+12A-0 is evidence-only and must not include runtime changes. It records:
 
 ```text
-full web typecheck
-production build
-public-surface inventory verification
-Public Readiness
-Public Browser Audit
-affected responsive/accessibility gates
-provider separation contracts
-legal/support direct-link checks
-outbound payment/support link checks
-metadata/canonical/sitemap checks
-deliberate hosted validation where required
-exact production SHA smoke after merge
+current D1 row counts
+payload size
+oldest/latest raw bucket
+daily-rollup counts
+collector duration
+relevant query timings
+Twitch/Kick source modes and coverage behavior
+five-minute cadence behavior
+rollup/retention schedule behavior
+current field matrix
+upstream fields discarded before storage
 ```
 
-The candidate contract is `docs/audits/r12c3-release-candidate-contract.json`. Candidate merge alone does not complete Phase 12; the exact merged `main` SHA must pass Production Smoke before permanent Phase 12 release acceptance is recorded.
+Current production capacity inputs:
 
-Phase 12A does not start until R12C-3 closes the full Phase 12 release acceptance.
+```text
+Twitch: at-or-over-window, 300 / 300, hasMore true
+Kick:   at-or-over-window, 100 / 100
+```
+
+These are baseline inputs, not authorization to expand observed windows.
 
 ## Approved forward sequence
 
 ```text
-Phase 12 English release readiness
 Phase 12A Analytics Capture Foundation
 Phase 13-14 localization while analytics evidence accumulates
 Phase 15 Analytics Capability and Calibration Audit
@@ -128,12 +126,4 @@ current value
   -> historical validation
 ```
 
-Permanent analytics authorities:
-
-```text
-docs/product/analytics-observation-system-spec.md
-docs/product/analytics-observation-system-plan.md
-docs/product/next-feature-data-capability-audit.md
-```
-
-Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate runtime validation uses `preview-*` only when necessary. Only latest-head evidence counts. Phase 12A remains blocked until R12C-3 closes Phase 12.
+Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate runtime validation uses `preview-*` only when necessary. Only latest-head evidence counts. Twitch and Kick remain provider-separated.
