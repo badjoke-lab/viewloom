@@ -4,16 +4,27 @@ import { readFileSync } from 'node:fs'
 
 const manifestPath = process.argv[2] || 'docs/audits/r12c2-launch-asset-manifest.json'
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+const captureEvidence = JSON.parse(readFileSync('docs/audits/r12c2-launch-assets-capture.json', 'utf8'))
 
 assert.equal(manifest.schema, 'viewloom-r12c2-launch-asset-manifest-v1')
 assert.equal(manifest.phase, 'Phase 12')
 assert.equal(manifest.workstream, 'R12C-2')
-assert.equal(manifest.packageRoot, 'docs/assets/launch/r12c2')
+assert.equal(manifest.packageRoot, 'apps/web/public/launch-assets')
+assert.equal(manifest.permanentCaptureEvidence, 'docs/audits/r12c2-launch-assets-capture.json')
 assert.equal(manifest.capture?.origin, 'https://vl.badjoke-lab.com')
 assert.equal(manifest.capture?.result, 'pass')
 assert.equal(manifest.assetCount, 6)
 assert.equal(manifest.assets.length, 6)
 assert.ok(Array.isArray(manifest.boundaries) && manifest.boundaries.length >= 4)
+
+assert.equal(captureEvidence.schema, 'viewloom-r12c2-launch-assets-capture-v1')
+assert.equal(captureEvidence.phase, 'Phase 12')
+assert.equal(captureEvidence.workstream, 'R12C-2')
+assert.equal(captureEvidence.origin, manifest.capture.origin)
+assert.equal(captureEvidence.checked_at, manifest.capture.checkedAt)
+assert.equal(captureEvidence.result, 'pass')
+assert.equal(captureEvidence.assets.length, 6)
+assert.equal(captureEvidence.violations.length, 0)
 
 const expected = [
   { id: 'viewloom-desktop', route: '/', width: 1440, height: 1000, provider: 'portal' },
@@ -37,7 +48,9 @@ const forbidden = [
 
 for (const item of expected) {
   const asset = manifest.assets.find((entry) => entry.id === item.id)
+  const capture = captureEvidence.assets.find((entry) => entry.id === item.id)
   assert.ok(asset, `missing manifest asset ${item.id}`)
+  assert.ok(capture, `missing capture evidence asset ${item.id}`)
   assert.equal(asset.route, item.route, `${item.id}: route mismatch`)
   assert.deepEqual(asset.viewport, { width: item.width, height: item.height }, `${item.id}: viewport mismatch`)
   assert.equal(asset.provider, item.provider, `${item.id}: provider mismatch`)
@@ -53,6 +66,10 @@ for (const item of expected) {
   assert.ok(asset.publicSurfaceEvidence?.h1, `${item.id}: H1 missing`)
   assert.ok(Array.isArray(asset.intendedUse) && asset.intendedUse.length >= 2, `${item.id}: intended-use metadata incomplete`)
   assert.ok(asset.caption?.length >= 40, `${item.id}: caption too short`)
+
+  assert.equal(asset.sha256, capture.sha256, `${item.id}: capture and manifest hash diverge`)
+  assert.equal(asset.sizeBytes, capture.sizeBytes, `${item.id}: capture and manifest size diverge`)
+  assert.equal(asset.caption, capture.caption, `${item.id}: capture and manifest caption diverge`)
 
   const bytes = readFileSync(asset.path)
   const actualHash = createHash('sha256').update(bytes).digest('hex')
@@ -71,4 +88,5 @@ console.log(JSON.stringify({
   schema: manifest.schema,
   assets: manifest.assets.length,
   packageRoot: manifest.packageRoot,
+  permanentCaptureEvidence: manifest.permanentCaptureEvidence,
 }, null, 2))
