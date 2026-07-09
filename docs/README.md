@@ -17,7 +17,8 @@ R12B Stripe and support-flow readiness complete through R12B-2
 R12C-0 message inventory complete PR #484
 R12C-1 launch copy and FAQ complete PR #485
 R12C-2 launch/share asset package complete PR #486
-Current workstream R12C-3 release candidate acceptance
+R12C-3 premerge candidate accepted
+Current workstream R12C-3 hosted exact-SHA closeout pending after candidate merge
 Exact active implementation branch work-release-r12c3-release-candidate-acceptance
 Active branch created yes
 ```
@@ -31,6 +32,8 @@ Active branch created yes
 - Phase 12 implementation plan: `product/release-readiness-plan.md`
 - Active Phase 12 record: `work-in-progress/phase12-release-readiness.md`
 - R12C-3 candidate contract: `audits/r12c3-release-candidate-contract.json`
+- R12C-3 candidate evidence: `audits/r12c3-candidate-acceptance.json`
+- R12C-3 candidate acceptance record: `operations/r12c3-release-candidate-acceptance-2026-07-09.md`
 - R12A production evidence: `audits/r12a-production-acceptance.json`
 - R12B-0 audit: `audits/r12b-evidence-and-configuration-audit.json`
 - R12B-1 acceptance: `operations/r12b1-support-transition-acceptance-2026-07-09.md`
@@ -63,7 +66,8 @@ R12B Stripe and support-flow readiness             complete
 R12C-0 message inventory                           complete
 R12C-1 launch copy and FAQ                         complete
 R12C-2 launch/share asset package                  complete
-R12C-3 release candidate acceptance                active
+R12C-3 premerge candidate acceptance               complete
+R12C-3 exact production SHA closeout                pending after merge
 ```
 
 ## R12C-1 source-language contract
@@ -86,15 +90,18 @@ operations/r12c2-launch-assets-acceptance-2026-07-09.md
 
 The package records source route, viewport, capture time, intended use, bounded captions, public-surface facts, byte size, and SHA-256 for each asset.
 
-## Active R12C-3
+## R12C-3 candidate acceptance
 
-The active implementation branch is `work-release-r12c3-release-candidate-acceptance`.
+The accepted premerge candidate evidence is fixed in:
 
-R12C-3 closes the complete Phase 12 candidate contract: latest-head typecheck/build, public inventory/readiness/browser gates, responsive/accessibility checks, provider separation, legal/support direct links, outbound payment/support links, metadata/canonical/sitemap checks, hosted validation where required, and exact production SHA smoke after merge.
+```text
+audits/r12c3-candidate-acceptance.json
+operations/r12c3-release-candidate-acceptance-2026-07-09.md
+```
 
-Candidate contract: `audits/r12c3-release-candidate-contract.json`.
+The accepted candidate head `52584565ae3ac4b10509df68c90692915f7fe475` passed the dedicated R12C-3 workflow run `28992701959`, including typecheck/build, Content/SEO, Public Readiness, the 25-route × 4-viewport = 100-scenario browser matrix with 0 violations, candidate Support-to-Stripe transition, and candidate Refund/Disclosure consistency.
 
-Candidate merge alone does not complete Phase 12. The exact merged `main` SHA must pass Production Smoke before permanent Phase 12 release acceptance is recorded and the temporary Phase 12 working note is retired.
+Candidate merge alone does not complete Phase 12. After candidate merge, the exact merged `main` SHA must appear in production `deployment.json` and pass hosted Production Smoke/monitoring acceptance before permanent Phase 12 release acceptance is recorded and the temporary Phase 12 working note is retired.
 
 ## Approved analytics program authorities
 
