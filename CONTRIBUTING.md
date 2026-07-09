@@ -15,10 +15,10 @@ R12A legal and support public-surface completion complete
 R12B Stripe and support-flow readiness complete through R12B-2
 R12C-0 message inventory complete PR #484
 R12C-1 launch copy and FAQ complete PR #485
-R12C-2 launch/share asset package complete
+R12C-2 launch/share asset package complete PR #486
 Current workstream: R12C-3 release candidate acceptance
-Exact next implementation branch: work-release-r12c3-release-candidate-acceptance
-Next branch created: no
+Exact active implementation branch: work-release-r12c3-release-candidate-acceptance
+Active branch created: yes
 ```
 
 Active Phase 12 authorities:
@@ -27,6 +27,7 @@ Active Phase 12 authorities:
 docs/product/release-readiness-spec.md
 docs/product/release-readiness-plan.md
 docs/work-in-progress/phase12-release-readiness.md
+docs/audits/r12c3-release-candidate-contract.json
 ```
 
 Permanent R12C-1 source-language package:
@@ -59,6 +60,8 @@ R12C-3 release candidate acceptance                active
 ```
 
 R12C-3 must close the complete release candidate contract: latest-head typecheck/build, public inventory/readiness/browser gates, responsive/accessibility checks, provider separation contracts, legal/support direct links, outbound support/payment links, metadata/canonical/sitemap checks, hosted validation where required, and exact production SHA smoke after merge.
+
+Candidate merge alone does not complete Phase 12. The exact merged `main` SHA must pass Production Smoke, then permanent Phase 12 release acceptance is recorded, canonical documents advance to Phase 12A, and the temporary Phase 12 working note is retired.
 
 R12B external-state boundaries remain in force. Current Stripe Dashboard/account facts must be supported by direct evidence and must not be inferred from repository code or public browser behavior alone.
 
