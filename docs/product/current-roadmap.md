@@ -19,9 +19,10 @@ R12B-0 evidence and configuration audit complete PR #481
 R12B-1 Support page and payment transition acceptance complete PR #482
 R12B-2 refund/disclosure consistency acceptance complete PR #483
 R12C-0 message inventory complete PR #484
-R12C-1 launch copy and FAQ complete
-Current workstream: R12C-2 launch/share asset package
-Exact next implementation branch: work-release-r12c2-launch-assets
+R12C-1 launch copy and FAQ complete PR #485
+R12C-2 launch/share asset package complete
+Current workstream: R12C-3 release candidate acceptance
+Exact next implementation branch: work-release-r12c3-release-candidate-acceptance
 Next branch created: no
 ```
 
@@ -38,6 +39,10 @@ Next branch created: no
 - R12C-1 English source package: `english-launch-copy.md`
 - R12C-1 structured package: `../audits/r12c1-launch-copy-package.json`
 - R12C-1 acceptance: `../operations/r12c1-launch-copy-acceptance-2026-07-09.md`
+- R12C-2 capture evidence: `../audits/r12c2-launch-assets-capture.json`
+- R12C-2 asset manifest: `../audits/r12c2-launch-asset-manifest.json`
+- R12C-2 captions: `launch-asset-captions.md`
+- R12C-2 acceptance: `../operations/r12c2-launch-assets-acceptance-2026-07-09.md`
 
 Phase 12 sequence:
 
@@ -46,15 +51,36 @@ R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete
 R12C-0 message inventory                           complete
 R12C-1 launch copy and FAQ                         complete
-R12C-2 launch/share asset package                  active
-R12C-3 release candidate acceptance                queued
+R12C-2 launch/share asset package                  complete
+R12C-3 release candidate acceptance                active
 ```
 
-## R12C-2 boundary
+## R12C-2 closeout
 
-R12C-2 owns a curated launch/share asset package: current desktop and mobile product screenshots, representative feature screenshots, an asset manifest recording source route, viewport, capture date, and intended use, plus captions that remain within the R12C-1 evidence boundaries.
+R12C-2 accepted six current production-surface screenshots: Portal desktop, Portal mobile, Twitch Heatmap, Twitch Day Flow, Twitch Battle Lines, and Twitch History.
 
-CI browser screenshots may be used as capture evidence, but they are not automatically approved launch assets. The generic `apps/web/public/og/viewloom.svg` remains an identity card rather than a representative product screenshot.
+The package is repo-owned and carries source route, viewport, capture time, intended external use, bounded caption, public-surface facts, byte size, and SHA-256 metadata. Capture evidence records six passing assets and zero violations; the frozen package verifier also passes.
+
+## R12C-3 boundary
+
+R12C-3 owns the final Phase 12 candidate acceptance:
+
+```text
+full web typecheck
+production build
+public-surface inventory verification
+Public Readiness
+Public Browser Audit
+affected responsive/accessibility gates
+provider separation contracts
+legal/support direct-link checks
+outbound payment/support link checks
+metadata/canonical/sitemap checks
+deliberate hosted validation where required
+exact production SHA smoke after merge
+```
+
+Phase 12 completes only after permanent release acceptance evidence is recorded, canonical documents are advanced, the temporary Phase 12 working note is retired, and Phase 12A becomes exact next.
 
 ## Approved forward sequence
 
