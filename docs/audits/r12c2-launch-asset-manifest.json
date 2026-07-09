@@ -1,0 +1,150 @@
+{
+  "schema": "viewloom-r12c2-launch-asset-manifest-v1",
+  "phase": "Phase 12",
+  "workstream": "R12C-2",
+  "packageRoot": "apps/web/public/launch-assets",
+  "permanentCaptureEvidence": "docs/audits/r12c2-launch-assets-capture.json",
+  "capture": {
+    "origin": "https://vl.badjoke-lab.com",
+    "checkedAt": "2026-07-09T03:09:05.031Z",
+    "evidenceSchema": "viewloom-r12c2-launch-assets-capture-v1",
+    "result": "pass",
+    "headSha": null,
+    "workflowRunId": null,
+    "workflowName": "Release R12C2 Launch Assets"
+  },
+  "packageVerification": {
+    "workflowRunId": "28991498796",
+    "headSha": "9b57de076b9265b87173c8215ef70f582ae2e400",
+    "result": "pass"
+  },
+  "assetCount": 6,
+  "assets": [
+    {
+      "id": "viewloom-desktop",
+      "filename": "viewloom-desktop.png",
+      "path": "apps/web/public/launch-assets/viewloom-desktop.png",
+      "route": "/",
+      "viewport": { "width": 1440, "height": 1000 },
+      "provider": "portal",
+      "intendedUse": ["launch listing hero", "desktop product overview"],
+      "caption": "ViewLoom separates bounded Twitch and Kick observations into distinct views for current activity, daily movement, rivalries, and retained trends.",
+      "sha256": "1b4b844f722bcd02c8d5b75efabd3a75f02e7a2de1334d701b542b0adeb52439",
+      "sizeBytes": 211895,
+      "publicSurfaceEvidence": {
+        "status": 200,
+        "title": "ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts",
+        "h1": "Observe the field.Then follow the movement.",
+        "canonical": "https://vl.badjoke-lab.com/",
+        "horizontalOverflowPx": 0,
+        "loadingPatternsRemaining": []
+      }
+    },
+    {
+      "id": "viewloom-mobile",
+      "filename": "viewloom-mobile.png",
+      "path": "apps/web/public/launch-assets/viewloom-mobile.png",
+      "route": "/",
+      "viewport": { "width": 390, "height": 844 },
+      "provider": "portal",
+      "intendedUse": ["mobile product overview", "responsive product proof"],
+      "caption": "The ViewLoom portal keeps Twitch and Kick observations separate while exposing the same product roles on mobile.",
+      "sha256": "97247830f6d93ef94621ff39310d74617b9cde33ca029b81e29459680e4282f9",
+      "sizeBytes": 78514,
+      "publicSurfaceEvidence": {
+        "status": 200,
+        "title": "ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts",
+        "h1": "Observe the field.Then follow the movement.",
+        "canonical": "https://vl.badjoke-lab.com/",
+        "horizontalOverflowPx": 0,
+        "loadingPatternsRemaining": []
+      }
+    },
+    {
+      "id": "twitch-heatmap",
+      "filename": "twitch-heatmap.png",
+      "path": "apps/web/public/launch-assets/twitch-heatmap.png",
+      "route": "/twitch/heatmap/",
+      "viewport": { "width": 1440, "height": 1000 },
+      "provider": "twitch",
+      "intendedUse": ["feature screenshot", "Heatmap explanation"],
+      "caption": "Heatmap shows concentration and movement within the current observed Twitch field.",
+      "sha256": "8c94a70d873a7a822cf19cdf8537558b428ff3e8c91e8efc4683c8231d8cb3c4",
+      "sizeBytes": 330626,
+      "publicSurfaceEvidence": {
+        "status": 200,
+        "title": "Heatmap — ViewLoom",
+        "h1": "Heatmap",
+        "canonical": "https://vl.badjoke-lab.com/twitch/heatmap/",
+        "horizontalOverflowPx": 0,
+        "loadingPatternsRemaining": []
+      }
+    },
+    {
+      "id": "twitch-day-flow",
+      "filename": "twitch-day-flow.png",
+      "path": "apps/web/public/launch-assets/twitch-day-flow.png",
+      "route": "/twitch/day-flow/",
+      "viewport": { "width": 1440, "height": 1000 },
+      "provider": "twitch",
+      "intendedUse": ["feature screenshot", "Day Flow explanation"],
+      "caption": "Day Flow follows observed Twitch audience movement through the UTC day.",
+      "sha256": "0261c0db8dd1a55b07190f9013359c125ea8093ec8b005a8e14f41884609deea",
+      "sizeBytes": 157766,
+      "publicSurfaceEvidence": {
+        "status": 200,
+        "title": "Day Flow — ViewLoom",
+        "h1": "Day Flow",
+        "canonical": "https://vl.badjoke-lab.com/twitch/day-flow/",
+        "horizontalOverflowPx": 0,
+        "loadingPatternsRemaining": []
+      }
+    },
+    {
+      "id": "twitch-battle-lines",
+      "filename": "twitch-battle-lines.png",
+      "path": "apps/web/public/launch-assets/twitch-battle-lines.png",
+      "route": "/twitch/battle-lines/",
+      "viewport": { "width": 1440, "height": 1000 },
+      "provider": "twitch",
+      "intendedUse": ["feature screenshot", "Battle Lines explanation"],
+      "caption": "Battle Lines compares observed Twitch gaps, reversals, and changes in order between streams.",
+      "sha256": "7a5a042416bbd928f9da5ff3a3d01370927ac660625e10ead68da09e6ab109f0",
+      "sizeBytes": 287957,
+      "publicSurfaceEvidence": {
+        "status": 200,
+        "title": "Battle Lines for Twitch live streams | ViewLoom",
+        "h1": "Battle Lines",
+        "canonical": "https://vl.badjoke-lab.com/twitch/battle-lines/",
+        "horizontalOverflowPx": 0,
+        "loadingPatternsRemaining": []
+      }
+    },
+    {
+      "id": "twitch-history",
+      "filename": "twitch-history.png",
+      "path": "apps/web/public/launch-assets/twitch-history.png",
+      "route": "/twitch/history/",
+      "viewport": { "width": 1440, "height": 1000 },
+      "provider": "twitch",
+      "intendedUse": ["feature screenshot", "History explanation"],
+      "caption": "History reviews retained Twitch daily rollups, peaks, observed-field rankings, and longer-term movement.",
+      "sha256": "c9f1dbcf90efeec3c835244f350fb76cafe4aa0a070ec278f3315497b3ff3b2d",
+      "sizeBytes": 214174,
+      "publicSurfaceEvidence": {
+        "status": 200,
+        "title": "History & Trends for Twitch live streams | ViewLoom",
+        "h1": "History & Trends",
+        "canonical": "https://vl.badjoke-lab.com/twitch/history/",
+        "horizontalOverflowPx": 0,
+        "loadingPatternsRemaining": []
+      }
+    }
+  ],
+  "boundaries": [
+    "Screenshots represent current production surfaces at the recorded capture time.",
+    "Captions describe observed product roles and do not claim complete platform coverage.",
+    "Twitch and Kick observations remain separated by provider.",
+    "The package does not claim official platform analytics, unique viewers, creator revenue, exact session reconstruction, causal audience explanations, combined provider totals, or cross-platform rankings."
+  ]
+}

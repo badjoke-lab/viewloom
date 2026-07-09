@@ -14,9 +14,10 @@ Phase 12 English release readiness active
 R12A legal and support public-surface completion complete
 R12B Stripe and support-flow readiness complete through R12B-2
 R12C-0 message inventory complete PR #484
-R12C-1 launch copy and FAQ complete
-Current workstream: R12C-2 launch/share asset package
-Exact next implementation branch: work-release-r12c2-launch-assets
+R12C-1 launch copy and FAQ complete PR #485
+R12C-2 launch/share asset package complete
+Current workstream: R12C-3 release candidate acceptance
+Exact next implementation branch: work-release-r12c3-release-candidate-acceptance
 Next branch created: no
 ```
 
@@ -36,6 +37,16 @@ docs/audits/r12c1-launch-copy-package.json
 docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md
 ```
 
+Permanent R12C-2 launch/share package:
+
+```text
+apps/web/public/launch-assets/
+docs/audits/r12c2-launch-assets-capture.json
+docs/audits/r12c2-launch-asset-manifest.json
+docs/product/launch-asset-captions.md
+docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md
+```
+
 Phase 12 sequence:
 
 ```text
@@ -43,13 +54,11 @@ R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete
 R12C-0 message inventory                           complete
 R12C-1 launch copy and FAQ                         complete
-R12C-2 launch/share asset package                  active
-R12C-3 release candidate acceptance                queued
+R12C-2 launch/share asset package                  complete
+R12C-3 release candidate acceptance                active
 ```
 
-R12C-2 must use current product surfaces rather than mockups. Curate desktop/mobile and representative Heatmap, Day Flow, Battle Lines, and History screenshots; record source route, viewport, capture date, intended external use, and captions bounded by the R12C-1 English source package.
-
-The generic `apps/web/public/og/viewloom.svg` is an identity card. Public Browser screenshots remain acceptance artifacts until deliberately curated into R12C-2.
+R12C-3 must close the complete release candidate contract: latest-head typecheck/build, public inventory/readiness/browser gates, responsive/accessibility checks, provider separation contracts, legal/support direct links, outbound support/payment links, metadata/canonical/sitemap checks, hosted validation where required, and exact production SHA smoke after merge.
 
 R12B external-state boundaries remain in force. Current Stripe Dashboard/account facts must be supported by direct evidence and must not be inferred from repository code or public browser behavior alone.
 

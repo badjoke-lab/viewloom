@@ -17,9 +17,10 @@ R12B-0 evidence and configuration audit complete PR #481
 R12B-1 Support page and payment transition acceptance complete PR #482
 R12B-2 refund/disclosure consistency acceptance complete PR #483
 R12C-0 message inventory complete PR #484
-R12C-1 launch copy and FAQ complete
-Current workstream: R12C-2 launch/share asset package
-Exact next implementation branch: work-release-r12c2-launch-assets
+R12C-1 launch copy and FAQ complete PR #485
+R12C-2 launch/share asset package complete
+Current workstream: R12C-3 release candidate acceptance
+Exact next implementation branch: work-release-r12c3-release-candidate-acceptance
 Next branch created: no
 ```
 
@@ -37,8 +38,8 @@ R12B-1 Support page and payment transition                 complete
 R12B-2 refund/disclosure consistency acceptance            complete
 R12C-0 message inventory                                   complete
 R12C-1 launch copy and FAQ                                 complete
-R12C-2 launch/share asset package                          active
-R12C-3 release candidate acceptance                        queued
+R12C-2 launch/share asset package                          complete
+R12C-3 release candidate acceptance                        active
 ```
 
 ## R12C-1 accepted package
@@ -70,11 +71,19 @@ terminology contract
 R12C-2 handoff
 ```
 
-## R12C-2 execution boundary
+## R12C-2 accepted package
 
-Produce a curated launch/share package from current product surfaces.
+Permanent evidence:
 
-Required:
+```text
+apps/web/public/launch-assets/
+docs/audits/r12c2-launch-assets-capture.json
+docs/audits/r12c2-launch-asset-manifest.json
+docs/product/launch-asset-captions.md
+docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md
+```
+
+Accepted assets:
 
 ```text
 current desktop product screenshot
@@ -85,12 +94,34 @@ representative Battle Lines screenshot
 representative History screenshot
 asset manifest with source route
 asset manifest with viewport
-asset manifest with capture date
-asset manifest with intended external use
-captions bounded by R12C-1 copy
+asset manifest with capture time
+asset manifest with intended use
+bounded captions
+binary SHA-256 and byte-size verification
 ```
 
-The generic `apps/web/public/og/viewloom.svg` remains usable as an identity card but does not replace representative product screenshots. CI Public Browser screenshots remain evidence artifacts until deliberately curated into the R12C-2 package.
+## R12C-3 execution boundary
+
+Required candidate checks:
+
+```text
+1. full web typecheck
+2. production build
+3. public-surface inventory verification
+4. Public Readiness
+5. Public Browser Audit
+6. affected responsive/accessibility gates
+7. provider separation contracts
+8. legal/support direct-link checks
+9. outbound payment/support link checks
+10. metadata/canonical/sitemap checks
+11. deliberate hosted validation where required
+12. exact production SHA smoke after merge
+13. permanent Phase 12 release acceptance evidence
+14. canonical closeout and temporary Phase 12 note retirement
+```
+
+Phase 12A cannot begin before items 1–14 close.
 
 ## Forward execution order after Phase 12
 

@@ -15,9 +15,10 @@ Phase 12 English release readiness active
 R12A legal and support public-surface completion complete
 R12B Stripe and support-flow readiness complete through R12B-2
 R12C-0 message inventory complete PR #484
-R12C-1 launch copy and FAQ complete
-Current workstream R12C-2 launch/share asset package
-Exact next implementation branch work-release-r12c2-launch-assets
+R12C-1 launch copy and FAQ complete PR #485
+R12C-2 launch/share asset package complete
+Current workstream R12C-3 release candidate acceptance
+Exact next implementation branch work-release-r12c3-release-candidate-acceptance
 Next branch created no
 ```
 
@@ -38,6 +39,10 @@ Next branch created no
 - R12C-1 English source package: `product/english-launch-copy.md`
 - R12C-1 structured package: `audits/r12c1-launch-copy-package.json`
 - R12C-1 acceptance: `operations/r12c1-launch-copy-acceptance-2026-07-09.md`
+- R12C-2 capture evidence: `audits/r12c2-launch-assets-capture.json`
+- R12C-2 asset manifest: `audits/r12c2-launch-asset-manifest.json`
+- R12C-2 captions: `product/launch-asset-captions.md`
+- R12C-2 acceptance: `operations/r12c2-launch-assets-acceptance-2026-07-09.md`
 - Public surface inventory: `audits/public-surface-inventory.json`
 - Current gap state: `audits/public-surface-gaps.json`
 - Permanent Phase 11 closeout: `operations/phase11-production-closeout-2026-07-08.md`
@@ -56,8 +61,8 @@ R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete
 R12C-0 message inventory                           complete
 R12C-1 launch copy and FAQ                         complete
-R12C-2 launch/share asset package                  active
-R12C-3 release candidate acceptance                queued
+R12C-2 launch/share asset package                  complete
+R12C-3 release candidate acceptance                active
 ```
 
 ## R12C-1 source-language contract
@@ -66,24 +71,25 @@ The approved English package contains one-line, short, and long descriptions; se
 
 It becomes the source-language package for Phase 13–14 localization after the approved program reaches localization.
 
-## Active R12C-2
+## R12C-2 accepted asset contract
 
-R12C-2 owns current product screenshots and their reusable external-use manifest:
+R12C-2 owns the six current production-surface screenshots and their reusable external-use evidence:
 
 ```text
-current desktop product screenshot
-current mobile product screenshot
-representative Heatmap screenshot
-representative Day Flow screenshot
-representative Battle Lines screenshot
-representative History screenshot
-asset source route / viewport / capture date / intended use
-bounded captions
+apps/web/public/launch-assets/
+audits/r12c2-launch-assets-capture.json
+audits/r12c2-launch-asset-manifest.json
+product/launch-asset-captions.md
+operations/r12c2-launch-assets-acceptance-2026-07-09.md
 ```
 
-The exact next implementation branch is `work-release-r12c2-launch-assets`, which must not be created before the R12C-1 closeout PR merges and that merge is verified.
+The package records source route, viewport, capture time, intended use, bounded captions, public-surface facts, byte size, and SHA-256 for each asset.
 
-The generic `apps/web/public/og/viewloom.svg` remains an identity card. Public Browser screenshots remain acceptance artifacts until curated and recorded in the R12C-2 package.
+## Active R12C-3
+
+The exact next implementation branch is `work-release-r12c3-release-candidate-acceptance`.
+
+R12C-3 closes the complete Phase 12 candidate contract: latest-head typecheck/build, public inventory/readiness/browser gates, responsive/accessibility checks, provider separation, legal/support direct links, outbound payment/support links, metadata/canonical/sitemap checks, hosted validation where required, and exact production SHA smoke after merge.
 
 ## Approved analytics program authorities
 

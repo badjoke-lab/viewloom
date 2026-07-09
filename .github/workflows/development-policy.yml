@@ -9,8 +9,10 @@ on:
       - 'README.md'
       - 'docs/**'
       - 'apps/web/docs/**'
+      - 'apps/web/public/launch-assets/**'
       - 'scripts/verify-development-policy.mjs'
       - 'scripts/verify-r12c1-launch-copy-package.mjs'
+      - 'scripts/verify-r12c2-launch-assets-package.mjs'
       - '.github/pull_request_template.md'
       - '.github/workflows/**'
   push:
@@ -21,8 +23,10 @@ on:
       - 'README.md'
       - 'docs/**'
       - 'apps/web/docs/**'
+      - 'apps/web/public/launch-assets/**'
       - 'scripts/verify-development-policy.mjs'
       - 'scripts/verify-r12c1-launch-copy-package.mjs'
+      - 'scripts/verify-r12c2-launch-assets-package.mjs'
       - '.github/pull_request_template.md'
       - '.github/workflows/**'
 
@@ -48,6 +52,8 @@ jobs:
           exit $status
       - name: Verify R12C-1 launch copy package
         run: node scripts/verify-r12c1-launch-copy-package.mjs
+      - name: Verify R12C-2 launch asset package
+        run: node scripts/verify-r12c2-launch-assets-package.mjs
       - name: Upload development policy diagnostics
         if: always()
         uses: actions/upload-artifact@v4

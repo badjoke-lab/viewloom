@@ -1,0 +1,116 @@
+name: Release R12C2 Launch Assets
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/scripts/r12c2-launch-assets-browser.mjs'
+      - 'scripts/freeze-r12c2-launch-assets.mjs'
+      - 'scripts/verify-r12c2-launch-assets-capture.mjs'
+      - 'scripts/verify-r12c2-launch-assets-package.mjs'
+      - '.github/workflows/release-r12c2-launch-assets.yml'
+      - 'apps/web/public/launch-assets/**'
+      - 'docs/audits/r12c2-launch-assets-capture.json'
+      - 'docs/audits/r12c2-launch-asset-manifest.json'
+      - 'docs/product/launch-asset-captions.md'
+      - 'docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md'
+      - 'docs/work-in-progress/phase12-release-readiness.md'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-r12c2-launch-assets-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  capture-and-freeze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      R12C2_ARTIFACT_DIR: ${{ github.workspace }}/artifacts/r12c2-launch-assets
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Detect frozen package
+        id: package
+        shell: bash
+        run: |
+          if [[ -f docs/audits/r12c2-launch-asset-manifest.json ]]; then
+            echo 'exists=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'exists=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup pnpm
+        if: steps.package.outputs.exists != 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Install dependencies
+        if: steps.package.outputs.exists != 'true'
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Install Playwright
+        if: steps.package.outputs.exists != 'true'
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        if: steps.package.outputs.exists != 'true'
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture production launch assets
+        if: steps.package.outputs.exists != 'true'
+        working-directory: apps/web
+        run: node scripts/r12c2-launch-assets-browser.mjs
+
+      - name: Verify capture evidence
+        if: steps.package.outputs.exists != 'true'
+        run: node scripts/verify-r12c2-launch-assets-capture.mjs artifacts/r12c2-launch-assets/evidence.json
+
+      - name: Freeze launch assets into repository package
+        if: steps.package.outputs.exists != 'true'
+        env:
+          R12C2_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/freeze-r12c2-launch-assets.mjs artifacts/r12c2-launch-assets/evidence.json artifacts/r12c2-launch-assets apps/web/public/launch-assets
+
+      - name: Verify frozen launch asset package
+        run: node scripts/verify-r12c2-launch-assets-package.mjs
+
+      - name: Commit frozen launch asset package
+        if: steps.package.outputs.exists != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add \
+            apps/web/public/launch-assets \
+            docs/audits/r12c2-launch-assets-capture.json \
+            docs/audits/r12c2-launch-asset-manifest.json \
+            docs/product/launch-asset-captions.md
+          if git diff --cached --quiet; then
+            echo 'Frozen package already matches the branch.'
+          else
+            git commit -m 'Freeze R12C-2 launch asset package'
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          fi
+
+      - name: Upload launch asset capture artifact
+        if: always() && steps.package.outputs.exists != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: r12c2-launch-assets
+          path: artifacts/r12c2-launch-assets/**
+          if-no-files-found: warn

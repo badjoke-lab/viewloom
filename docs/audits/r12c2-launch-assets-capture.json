@@ -1,0 +1,173 @@
+{
+  "schema": "viewloom-r12c2-launch-assets-capture-v1",
+  "phase": "Phase 12",
+  "workstream": "R12C-2",
+  "checked_at": "2026-07-09T03:09:05.031Z",
+  "origin": "https://vl.badjoke-lab.com",
+  "result": "pass",
+  "assets": [
+    {
+      "id": "viewloom-desktop",
+      "route": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "provider": "portal",
+      "intendedUse": [
+        "launch listing hero",
+        "desktop product overview"
+      ],
+      "caption": "ViewLoom separates bounded Twitch and Kick observations into distinct views for current activity, daily movement, rivalries, and retained trends.",
+      "filename": "viewloom-desktop.png",
+      "sha256": "1b4b844f722bcd02c8d5b75efabd3a75f02e7a2de1334d701b542b0adeb52439",
+      "sizeBytes": 211895,
+      "status": 200,
+      "facts": {
+        "title": "ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts",
+        "h1": "Observe the field.Then follow the movement.",
+        "canonical": "https://vl.badjoke-lab.com/",
+        "bodyOverflow": 0,
+        "loadingPatternsRemaining": [],
+        "bodyTextLength": 2364
+      },
+      "violations": []
+    },
+    {
+      "id": "viewloom-mobile",
+      "route": "/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "provider": "portal",
+      "intendedUse": [
+        "mobile product overview",
+        "responsive product proof"
+      ],
+      "caption": "The ViewLoom portal keeps Twitch and Kick observations separate while exposing the same product roles on mobile.",
+      "filename": "viewloom-mobile.png",
+      "sha256": "97247830f6d93ef94621ff39310d74617b9cde33ca029b81e29459680e4282f9",
+      "sizeBytes": 78514,
+      "status": 200,
+      "facts": {
+        "title": "ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts",
+        "h1": "Observe the field.Then follow the movement.",
+        "canonical": "https://vl.badjoke-lab.com/",
+        "bodyOverflow": 0,
+        "loadingPatternsRemaining": [],
+        "bodyTextLength": 2236
+      },
+      "violations": []
+    },
+    {
+      "id": "twitch-heatmap",
+      "route": "/twitch/heatmap/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "provider": "twitch",
+      "intendedUse": [
+        "feature screenshot",
+        "Heatmap explanation"
+      ],
+      "caption": "Heatmap shows concentration and movement within the current observed Twitch field.",
+      "filename": "twitch-heatmap.png",
+      "sha256": "8c94a70d873a7a822cf19cdf8537558b428ff3e8c91e8efc4683c8231d8cb3c4",
+      "sizeBytes": 330626,
+      "status": 200,
+      "facts": {
+        "title": "Heatmap — ViewLoom",
+        "h1": "Heatmap",
+        "canonical": "https://vl.badjoke-lab.com/twitch/heatmap/",
+        "bodyOverflow": 0,
+        "loadingPatternsRemaining": [],
+        "bodyTextLength": 3529
+      },
+      "violations": []
+    },
+    {
+      "id": "twitch-day-flow",
+      "route": "/twitch/day-flow/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "provider": "twitch",
+      "intendedUse": [
+        "feature screenshot",
+        "Day Flow explanation"
+      ],
+      "caption": "Day Flow follows observed Twitch audience movement through the UTC day.",
+      "filename": "twitch-day-flow.png",
+      "sha256": "0261c0db8dd1a55b07190f9013359c125ea8093ec8b005a8e14f41884609deea",
+      "sizeBytes": 157766,
+      "status": 200,
+      "facts": {
+        "title": "Day Flow — ViewLoom",
+        "h1": "Day Flow",
+        "canonical": "https://vl.badjoke-lab.com/twitch/day-flow/",
+        "bodyOverflow": 0,
+        "loadingPatternsRemaining": [],
+        "bodyTextLength": 2993
+      },
+      "violations": []
+    },
+    {
+      "id": "twitch-battle-lines",
+      "route": "/twitch/battle-lines/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "provider": "twitch",
+      "intendedUse": [
+        "feature screenshot",
+        "Battle Lines explanation"
+      ],
+      "caption": "Battle Lines compares observed Twitch gaps, reversals, and changes in order between streams.",
+      "filename": "twitch-battle-lines.png",
+      "sha256": "7a5a042416bbd928f9da5ff3a3d01370927ac660625e10ead68da09e6ab109f0",
+      "sizeBytes": 287957,
+      "status": 200,
+      "facts": {
+        "title": "Battle Lines for Twitch live streams | ViewLoom",
+        "h1": "Battle Lines",
+        "canonical": "https://vl.badjoke-lab.com/twitch/battle-lines/",
+        "bodyOverflow": 0,
+        "loadingPatternsRemaining": [],
+        "bodyTextLength": 3830
+      },
+      "violations": []
+    },
+    {
+      "id": "twitch-history",
+      "route": "/twitch/history/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "provider": "twitch",
+      "intendedUse": [
+        "feature screenshot",
+        "History explanation"
+      ],
+      "caption": "History reviews retained Twitch daily rollups, peaks, observed-field rankings, and longer-term movement.",
+      "filename": "twitch-history.png",
+      "sha256": "c9f1dbcf90efeec3c835244f350fb76cafe4aa0a070ec278f3315497b3ff3b2d",
+      "sizeBytes": 214174,
+      "status": 200,
+      "facts": {
+        "title": "History & Trends for Twitch live streams | ViewLoom",
+        "h1": "History & Trends",
+        "canonical": "https://vl.badjoke-lab.com/twitch/history/",
+        "bodyOverflow": 0,
+        "loadingPatternsRemaining": [],
+        "bodyTextLength": 4727
+      },
+      "violations": []
+    }
+  ],
+  "violations": []
+}

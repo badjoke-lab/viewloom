@@ -14,8 +14,12 @@ R12C-0 closeout: `../operations/r12c0-message-inventory-2026-07-09.md`
 R12C-1 source package: `../product/english-launch-copy.md`
 R12C-1 structured package: `../audits/r12c1-launch-copy-package.json`
 R12C-1 acceptance: `../operations/r12c1-launch-copy-acceptance-2026-07-09.md`
-Current workstream: R12C-2 launch/share asset package
-Exact next implementation branch: `work-release-r12c2-launch-assets`
+R12C-2 capture evidence: `../audits/r12c2-launch-assets-capture.json`
+R12C-2 asset manifest: `../audits/r12c2-launch-asset-manifest.json`
+R12C-2 captions: `../product/launch-asset-captions.md`
+R12C-2 acceptance: `../operations/r12c2-launch-assets-acceptance-2026-07-09.md`
+Current workstream: R12C-3 release candidate acceptance
+Exact next implementation branch: `work-release-r12c3-release-candidate-acceptance`
 Next branch created: no
 
 ## Workstreams
@@ -25,8 +29,8 @@ R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete through R12B-2
 R12C-0 message inventory                           complete
 R12C-1 launch copy and FAQ                         complete
-R12C-2 launch/share asset package                  active
-R12C-3 release candidate acceptance                queued
+R12C-2 launch/share asset package                  complete
+R12C-3 release candidate acceptance                active
 ```
 
 ## Retained R12B evidence boundary
@@ -103,31 +107,57 @@ no Twitch-parity Kick directory-coverage claim
 no charitable-donation framing for the support flow
 ```
 
-## R12C-2 active asset boundary
+## R12C-2 closeout
 
-Current repo-owned generic share asset:
-
-```text
-apps/web/public/og/viewloom.svg
-1200x630
-```
-
-It is an identity card rather than a representative product screenshot.
-
-R12C-2 owns:
+Permanent package:
 
 ```text
-current desktop product screenshot
-current mobile product screenshot
-representative Heatmap screenshot
-representative Day Flow screenshot
-representative Battle Lines screenshot
-representative History screenshot
-asset manifest with source route / viewport / capture date / intended use
-captions bounded by the R12C-1 English source package
+apps/web/public/launch-assets/
+docs/audits/r12c2-launch-assets-capture.json
+docs/audits/r12c2-launch-asset-manifest.json
+docs/product/launch-asset-captions.md
+docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md
+scripts/freeze-r12c2-launch-assets.mjs
+scripts/verify-r12c2-launch-assets-capture.mjs
+scripts/verify-r12c2-launch-assets-package.mjs
+.github/workflows/release-r12c2-launch-assets.yml
 ```
 
-Public Browser screenshots are CI acceptance artifacts and are not automatically approved launch assets.
+Accepted asset matrix:
+
+```text
+Portal desktop      /                         1440x1000
+Portal mobile       /                          390x844
+Twitch Heatmap      /twitch/heatmap/          1440x1000
+Twitch Day Flow     /twitch/day-flow/         1440x1000
+Twitch Battle Lines /twitch/battle-lines/     1440x1000
+Twitch History      /twitch/history/          1440x1000
+```
+
+Permanent capture evidence records six assets, zero violations, HTTP 200 for every asset, matching canonicals, no horizontal overflow, and no remaining loading text. The package verifier checks manifest facts against permanent capture evidence and verifies actual repository PNG byte size and SHA-256 values.
+
+The package uses current product surfaces rather than invented mockups. Captions remain bounded by the R12C-1 English source package.
+
+## R12C-3 active acceptance boundary
+
+Required candidate checks:
+
+```text
+full web typecheck
+production build
+public-surface inventory verification
+Public Readiness
+Public Browser Audit
+affected responsive/accessibility gates
+provider separation contracts
+legal/support direct-link checks
+outbound payment/support link checks
+metadata/canonical/sitemap checks
+deliberate hosted validation where required
+exact production SHA smoke after merge
+```
+
+R12C-3 must create permanent Phase 12 release acceptance evidence after the exact production SHA and smoke evidence are known. Then canonical documents advance to Phase 12A Analytics Capture Foundation and this temporary working record is retired according to documentation governance.
 
 ## Capacity carry-forward
 
