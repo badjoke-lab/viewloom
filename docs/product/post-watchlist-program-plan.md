@@ -1,11 +1,11 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 6.6
+Version: 6.7
 Last updated: 2026-07-09
 Current phase: Phase 12 — English release readiness
-Current workstream: R12C-2 launch/share asset package
-Exact next implementation branch: `work-release-r12c2-launch-assets`
+Current workstream: R12C-3 release candidate acceptance
+Exact next implementation branch: `work-release-r12c3-release-candidate-acceptance`
 Next branch created: no
 
 ```text
@@ -17,8 +17,8 @@ R12A legal and support public-surface completion complete
 R12B Stripe and support-flow readiness complete through R12B-2
 R12C-0 message inventory complete
 R12C-1 launch copy and FAQ complete
-R12C-2 launch/share asset package active
-R12C-3 release candidate acceptance queued
+R12C-2 launch/share asset package complete
+R12C-3 release candidate acceptance active
 Phase 12A Analytics Capture Foundation approved and queued
 Phase 13-14 localization queued after Phase 12A
 Phase 15 Analytics Capability and Calibration Audit queued
@@ -55,8 +55,8 @@ R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete
 R12C-0 message inventory                           complete
 R12C-1 launch copy and FAQ                         complete
-R12C-2 launch/share asset package                  active
-R12C-3 release candidate acceptance                queued
+R12C-2 launch/share asset package                  complete
+R12C-3 release candidate acceptance                active
 ```
 
 ## R12C-0 evidence
@@ -98,27 +98,61 @@ R12C-2 asset handoff
 
 The English package is the Phase 13–14 localization source after the approved program reaches localization.
 
-## R12C-2 active scope
+## R12C-2 closeout
 
-The current repo-owned share asset is the generic `apps/web/public/og/viewloom.svg`. Public Browser screenshots are CI acceptance artifacts rather than a curated launch package.
-
-R12C-2 owns:
+Permanent launch/share package:
 
 ```text
-current desktop product screenshot
-current mobile product screenshot
-representative Heatmap screenshot
-representative Day Flow screenshot
-representative Battle Lines screenshot
-representative History screenshot
-asset manifest with source route
-asset manifest with viewport
-asset manifest with capture date
-asset manifest with intended use
-captions bounded by R12C-1 copy
+apps/web/public/launch-assets/
+docs/audits/r12c2-launch-assets-capture.json
+docs/audits/r12c2-launch-asset-manifest.json
+docs/product/launch-asset-captions.md
+docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md
 ```
 
-Assets must represent current product surfaces rather than invented mockups. Captions must preserve bounded observed-data, provider separation, and coverage-limit language from the R12C-1 package.
+R12C-2 accepted:
+
+```text
+Portal desktop production screenshot
+Portal mobile production screenshot
+Twitch Heatmap production screenshot
+Twitch Day Flow production screenshot
+Twitch Battle Lines production screenshot
+Twitch History production screenshot
+source route and viewport metadata
+capture time and intended-use metadata
+bounded captions
+public-surface capture facts
+binary byte size and SHA-256 verification
+```
+
+Assets represent current product surfaces rather than invented mockups. Captions preserve bounded observed-data, provider separation, and coverage-limit language from the R12C-1 package.
+
+## R12C-3 active scope
+
+R12C-3 closes the full English release candidate and Phase 12 acceptance contract.
+
+Required checks:
+
+```text
+full web typecheck
+production build
+public-surface inventory verification
+Public Readiness
+Public Browser Audit
+affected responsive/accessibility gates
+provider separation contracts
+legal/support direct-link checks
+outbound payment/support link checks
+metadata/canonical/sitemap checks
+deliberate hosted validation where required
+exact production SHA smoke after merge
+permanent Phase 12 release acceptance evidence
+canonical closeout
+temporary Phase 12 working-note retirement
+```
+
+Phase 12A remains blocked until this workstream and the complete Phase 12 closeout are accepted.
 
 ## Phase 12A purpose
 
