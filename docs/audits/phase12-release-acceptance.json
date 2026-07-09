@@ -1,0 +1,341 @@
+{
+  "schema": "viewloom-phase12-release-acceptance-v1",
+  "phase": "Phase 12",
+  "workstream": "R12C-3 production closeout",
+  "status": "complete",
+  "result": "pass",
+  "checkedAt": "2026-07-09T04:09:55.736Z",
+  "workflowRunId": "28993366876",
+  "expectedMainSha": "32c27a9a772cb62ff38f009c5fd1bb095ac27ad8",
+  "deployedSha": "32c27a9a772cb62ff38f009c5fd1bb095ac27ad8",
+  "deployment": {
+    "environment": "production",
+    "branch": "main",
+    "matchesExpected": true
+  },
+  "candidateEvidence": {
+    "status": "candidate_pass",
+    "candidateHeadSha": "52584565ae3ac4b10509df68c90692915f7fe475",
+    "workflowRunId": "28992701959",
+    "artifact": {
+      "id": 8188563767,
+      "name": "r12c3-candidate-acceptance",
+      "digest": "sha256:e81cdbce17fb5a97285d1dbddce768fea7b0332705ab0afa424619db656c90d6"
+    },
+    "browserScenarios": 100,
+    "browserViolations": 0
+  },
+  "counts": {
+    "htmlRoutes": 25,
+    "statusApis": 2,
+    "sitemapRoutes": 21,
+    "launchAssets": 6,
+    "blockingAlerts": 0,
+    "watchAlerts": 2
+  },
+  "routes": [
+    {
+      "route": "/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/about/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/about/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/support/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/support/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/changelog/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/changelog/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/contact/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/contact/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/terms/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/terms/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/privacy/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/privacy/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/refund-policy/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/refund-policy/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/commercial-disclosure/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/commercial-disclosure/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/twitch/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/twitch/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/twitch/heatmap/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/twitch/heatmap/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/twitch/day-flow/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/twitch/day-flow/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/twitch/battle-lines/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/twitch/battle-lines/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/twitch/history/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/twitch/history/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/twitch/channel/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/twitch/channel/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/twitch/watchlist/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/twitch/watchlist/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/twitch/status/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/twitch/status/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/kick/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/kick/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/kick/heatmap/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/kick/heatmap/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/kick/day-flow/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/kick/day-flow/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/kick/battle-lines/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/kick/battle-lines/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/kick/history/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/kick/history/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/kick/channel/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/kick/channel/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/kick/watchlist/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/kick/watchlist/",
+      "canonicalMatches": true
+    },
+    {
+      "route": "/kick/status/",
+      "status": 200,
+      "hasViewLoom": true,
+      "canonical": "https://vl.badjoke-lab.com/kick/status/",
+      "canonicalMatches": true
+    }
+  ],
+  "support": {
+    "routeStatus": 200,
+    "paymentLinkPresent": true,
+    "refundPolicyLinkPresent": true,
+    "commercialDisclosureLinkPresent": true,
+    "contactLinkPresent": true
+  },
+  "providers": {
+    "twitch": {
+      "httpStatus": 200,
+      "platform": "twitch",
+      "binding": "DB_TWITCH_HOT",
+      "database": "vl_twitch_hot",
+      "sourceMode": "real",
+      "collectorState": "ok",
+      "isStale": false,
+      "observedCount": 300,
+      "topLimit": 300,
+      "hasMore": true,
+      "coveredPages": 3
+    },
+    "kick": {
+      "httpStatus": 200,
+      "platform": "kick",
+      "binding": "DB_KICK_HOT",
+      "database": "vl_kick_hot",
+      "sourceMode": "authenticated",
+      "collectorState": "snapshot_available",
+      "isFresh": true,
+      "isStale": false,
+      "observedCount": 100,
+      "topLimit": 100
+    }
+  },
+  "monitoring": {
+    "twitchCapacity": "at-or-over-window",
+    "kickCapacity": "at-or-over-window",
+    "alerts": [
+      {
+        "severity": "watch",
+        "code": "twitch_at-or-over-window"
+      },
+      {
+        "severity": "watch",
+        "code": "kick_at-or-over-window"
+      }
+    ]
+  },
+  "sitemap": {
+    "status": 200,
+    "routes": 21
+  },
+  "launchAssets": [
+    {
+      "id": "viewloom-desktop",
+      "publicPath": "/launch-assets/viewloom-desktop.png",
+      "status": 200,
+      "sizeBytes": 211895,
+      "expectedSizeBytes": 211895,
+      "sha256": "1b4b844f722bcd02c8d5b75efabd3a75f02e7a2de1334d701b542b0adeb52439",
+      "expectedSha256": "1b4b844f722bcd02c8d5b75efabd3a75f02e7a2de1334d701b542b0adeb52439",
+      "hashMatches": true,
+      "sizeMatches": true
+    },
+    {
+      "id": "viewloom-mobile",
+      "publicPath": "/launch-assets/viewloom-mobile.png",
+      "status": 200,
+      "sizeBytes": 78514,
+      "expectedSizeBytes": 78514,
+      "sha256": "97247830f6d93ef94621ff39310d74617b9cde33ca029b81e29459680e4282f9",
+      "expectedSha256": "97247830f6d93ef94621ff39310d74617b9cde33ca029b81e29459680e4282f9",
+      "hashMatches": true,
+      "sizeMatches": true
+    },
+    {
+      "id": "twitch-heatmap",
+      "publicPath": "/launch-assets/twitch-heatmap.png",
+      "status": 200,
+      "sizeBytes": 330626,
+      "expectedSizeBytes": 330626,
+      "sha256": "8c94a70d873a7a822cf19cdf8537558b428ff3e8c91e8efc4683c8231d8cb3c4",
+      "expectedSha256": "8c94a70d873a7a822cf19cdf8537558b428ff3e8c91e8efc4683c8231d8cb3c4",
+      "hashMatches": true,
+      "sizeMatches": true
+    },
+    {
+      "id": "twitch-day-flow",
+      "publicPath": "/launch-assets/twitch-day-flow.png",
+      "status": 200,
+      "sizeBytes": 157766,
+      "expectedSizeBytes": 157766,
+      "sha256": "0261c0db8dd1a55b07190f9013359c125ea8093ec8b005a8e14f41884609deea",
+      "expectedSha256": "0261c0db8dd1a55b07190f9013359c125ea8093ec8b005a8e14f41884609deea",
+      "hashMatches": true,
+      "sizeMatches": true
+    },
+    {
+      "id": "twitch-battle-lines",
+      "publicPath": "/launch-assets/twitch-battle-lines.png",
+      "status": 200,
+      "sizeBytes": 287957,
+      "expectedSizeBytes": 287957,
+      "sha256": "7a5a042416bbd928f9da5ff3a3d01370927ac660625e10ead68da09e6ab109f0",
+      "expectedSha256": "7a5a042416bbd928f9da5ff3a3d01370927ac660625e10ead68da09e6ab109f0",
+      "hashMatches": true,
+      "sizeMatches": true
+    },
+    {
+      "id": "twitch-history",
+      "publicPath": "/launch-assets/twitch-history.png",
+      "status": 200,
+      "sizeBytes": 214174,
+      "expectedSizeBytes": 214174,
+      "sha256": "c9f1dbcf90efeec3c835244f350fb76cafe4aa0a070ec278f3315497b3ff3b2d",
+      "expectedSha256": "c9f1dbcf90efeec3c835244f350fb76cafe4aa0a070ec278f3315497b3ff3b2d",
+      "hashMatches": true,
+      "sizeMatches": true
+    }
+  ],
+  "notFound": {
+    "explicitStatus": 404,
+    "explicitMarkerPresent": true,
+    "previewProbeStatus": 404,
+    "previewProbeMarkerPresent": true
+  },
+  "failures": [],
+  "nextWorkstream": "Phase 12A Analytics Capture Foundation"
+}
