@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 
 const path = process.argv[2] || 'artifacts/r12b2-refund-disclosure/evidence.json'
 const evidence = JSON.parse(readFileSync(path, 'utf8'))
+const canonicalOrigin = evidence.canonicalOrigin || evidence.origin
 
 assert.equal(evidence.schema, 'viewloom-r12b2-refund-disclosure-consistency-v1')
 assert.equal(evidence.phase, 'Phase 12')
@@ -19,7 +20,7 @@ for (const viewport of ['desktop-1440', 'mobile-390']) {
     assert.equal(page.status, 200)
     assert.equal(page.violations.length, 0)
     assert.ok(page.facts.h1)
-    assert.equal(page.facts.canonical, `${evidence.origin}${route}`)
+    assert.equal(page.facts.canonical, `${canonicalOrigin}${route}`)
     assert.ok(page.facts.bodyOverflow <= 2)
     assert.equal(page.facts.donationWordDetected, false)
     assert.equal(page.facts.dashboardStateClaimDetected, false)
@@ -36,6 +37,8 @@ for (const nav of evidence.navigation) {
 }
 
 console.log('R12B-2 refund/disclosure consistency evidence verification passed.')
+console.log(`- navigation origin: ${evidence.origin}`)
+console.log(`- canonical origin: ${canonicalOrigin}`)
 console.log('- Support, Refund Policy, Commercial Disclosure, and Contact passed desktop/mobile checks')
 console.log('- no charitable donation wording was detected')
 console.log('- no unsupported current Stripe Dashboard state claim was detected')
