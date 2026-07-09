@@ -27,8 +27,8 @@ R12C-0 message inventory               complete PR #484
 R12C-1 launch copy and FAQ             complete PR #485
 R12C-2 launch/share asset package      complete
 R12C-3 release candidate acceptance    active
-Exact next branch                      work-release-r12c3-release-candidate-acceptance
-Next branch created                    no
+Exact active branch                    work-release-r12c3-release-candidate-acceptance
+Active branch created                  yes
 ```
 
 ## Phase 12 authorities
@@ -96,6 +96,8 @@ metadata/canonical/sitemap checks
 deliberate hosted validation where required
 exact production SHA smoke after merge
 ```
+
+The candidate contract is `docs/audits/r12c3-release-candidate-contract.json`. Candidate merge alone does not complete Phase 12; the exact merged `main` SHA must pass Production Smoke before permanent Phase 12 release acceptance is recorded.
 
 Phase 12A does not start until R12C-3 closes the full Phase 12 release acceptance.
 
