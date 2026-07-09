@@ -1,0 +1,107 @@
+{
+  "schema": "viewloom-r12c3-release-candidate-contract-v1",
+  "phase": "Phase 12",
+  "workstream": "R12C-3",
+  "status": "active",
+  "branch": "work-release-r12c3-release-candidate-acceptance",
+  "baseMainSha": "13975969a077bbbf9979253e6ee4570b1e20aa4a",
+  "releaseOrigin": "https://vl.badjoke-lab.com",
+  "candidateContract": {
+    "htmlRoutes": 25,
+    "inventoryEntries": 26,
+    "browserViewports": 4,
+    "browserScenarios": 100,
+    "sitemapRoutes": 21,
+    "providers": ["twitch", "kick"],
+    "combinedTotalsAllowed": false,
+    "combinedRankingsAllowed": false
+  },
+  "requiredChecks": [
+    "full_web_typecheck",
+    "production_build",
+    "public_surface_inventory",
+    "public_readiness",
+    "public_browser_audit_100_scenarios",
+    "responsive_accessibility",
+    "provider_separation",
+    "legal_support_direct_links",
+    "outbound_support_payment_links",
+    "metadata_canonical_sitemap",
+    "exact_production_sha_smoke"
+  ],
+  "ownership": {
+    "full_web_typecheck": {
+      "command": "pnpm typecheck:web",
+      "phase": "premerge"
+    },
+    "production_build": {
+      "command": "pnpm build:web",
+      "phase": "premerge"
+    },
+    "public_surface_inventory": {
+      "workflow": "Public Surface Inventory",
+      "verifier": "scripts/verify-public-surface-inventory.mjs",
+      "phase": "premerge"
+    },
+    "public_readiness": {
+      "workflow": "Public Readiness Audit",
+      "workflowFile": ".github/workflows/public-readiness-audit.yml",
+      "audit": "apps/web/scripts/public-readiness-audit.mjs",
+      "phase": "premerge"
+    },
+    "public_browser_audit_100_scenarios": {
+      "workflow": "Public Browser Audit",
+      "workflowFile": ".github/workflows/public-browser-audit.yml",
+      "audit": "apps/web/scripts/public-current-browser-audit.mjs",
+      "verifier": "scripts/verify-public-current-browser-audit.mjs",
+      "phase": "premerge"
+    },
+    "responsive_accessibility": {
+      "workflow": "Quality U10E Responsive Accessibility",
+      "phase": "premerge"
+    },
+    "provider_separation": {
+      "inventory": "docs/audits/public-surface-inventory.json",
+      "productionWorkflow": ".github/workflows/production-smoke.yml",
+      "phase": "premerge_and_postmerge"
+    },
+    "legal_support_direct_links": {
+      "routeInventory": "docs/audits/public-surface-routes-portal.json",
+      "supportSource": "apps/web/support/index.html",
+      "phase": "premerge"
+    },
+    "outbound_support_payment_links": {
+      "supportSource": "apps/web/support/index.html",
+      "phase": "premerge"
+    },
+    "metadata_canonical_sitemap": {
+      "publicReadinessWorkflow": ".github/workflows/public-readiness-audit.yml",
+      "sitemap": "apps/web/public/sitemap.xml",
+      "phase": "premerge"
+    },
+    "exact_production_sha_smoke": {
+      "workflow": "Production Smoke",
+      "workflowFile": ".github/workflows/production-smoke.yml",
+      "deploymentMetadata": "/deployment.json",
+      "phase": "postmerge"
+    }
+  },
+  "permanentPrerequisites": [
+    "docs/audits/r12a-production-acceptance.json",
+    "docs/audits/r12b-evidence-and-configuration-audit.json",
+    "docs/operations/r12b1-support-transition-acceptance-2026-07-09.md",
+    "docs/operations/r12b2-refund-disclosure-acceptance-2026-07-09.md",
+    "docs/audits/r12c0-message-inventory.json",
+    "docs/audits/r12c1-launch-copy-package.json",
+    "docs/audits/r12c2-launch-assets-capture.json",
+    "docs/audits/r12c2-launch-asset-manifest.json",
+    "docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md"
+  ],
+  "postmergeBoundary": {
+    "candidateMergeDoesNotCompletePhase12": true,
+    "exactMainShaProductionSmokeRequired": true,
+    "permanentReleaseAcceptanceRequired": true,
+    "temporaryPhase12WorkingNoteMustBeRetired": true,
+    "canonicalNextAfterCloseout": "Phase 12A Analytics Capture Foundation"
+  }
+}
