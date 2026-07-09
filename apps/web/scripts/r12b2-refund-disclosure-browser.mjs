@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
 
 const origin = (process.env.R12B2_ORIGIN || 'https://vl.badjoke-lab.com').replace(/\/$/, '')
+const canonicalOrigin = (process.env.R12B2_CANONICAL_ORIGIN || 'https://vl.badjoke-lab.com').replace(/\/$/, '')
 const out = process.env.R12B2_ARTIFACT_DIR || 'artifacts/r12b2-refund-disclosure'
 const routes = ['/support/', '/refund-policy/', '/commercial-disclosure/', '/contact/']
 const viewports = [
@@ -16,6 +17,7 @@ const evidence = {
   phase: 'Phase 12',
   workstream: 'R12B-2',
   origin,
+  canonicalOrigin,
   checked_at: new Date().toISOString(),
   result: 'running',
   pages: [],
@@ -59,7 +61,7 @@ try {
       const violations = []
       if (response?.status() !== 200) violations.push(`HTTP ${response?.status()}`)
       if (!facts.h1) violations.push('H1 missing')
-      if (facts.canonical !== `${origin}${route}`) violations.push(`canonical mismatch: ${facts.canonical}`)
+      if (facts.canonical !== `${canonicalOrigin}${route}`) violations.push(`canonical mismatch: ${facts.canonical}`)
       if (facts.bodyOverflow > 2) violations.push(`horizontal overflow ${facts.bodyOverflow}px`)
       if (facts.donationWordDetected) violations.push('charitable donation wording detected')
       if (facts.dashboardStateClaimDetected) violations.push('unsupported Stripe Dashboard state claim detected')
