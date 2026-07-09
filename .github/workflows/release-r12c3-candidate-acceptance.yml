@@ -48,7 +48,9 @@ jobs:
         run: node scripts/verify-development-policy.mjs
 
       - name: Verify R12C-3 candidate contract
-        run: node scripts/verify-r12c3-release-candidate-contract.mjs
+        run: |
+          node scripts/verify-r12c3-release-candidate-contract.mjs
+          node scripts/verify-r12c3-release-candidate.mjs
 
       - name: Verify retained Phase 12 packages
         run: |
