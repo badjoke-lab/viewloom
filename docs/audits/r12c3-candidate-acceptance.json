@@ -1,0 +1,80 @@
+{
+  "schema": "viewloom-r12c3-candidate-acceptance-v1",
+  "phase": "Phase 12",
+  "workstream": "R12C-3",
+  "status": "candidate_pass",
+  "candidateHeadSha": "52584565ae3ac4b10509df68c90692915f7fe475",
+  "workflowRunId": "28992701959",
+  "artifact": {
+    "id": 8188563767,
+    "name": "r12c3-candidate-acceptance",
+    "digest": "sha256:e81cdbce17fb5a97285d1dbddce768fea7b0332705ab0afa424619db656c90d6"
+  },
+  "checkedAt": "2026-07-09T03:53:49.386Z",
+  "completedChecks": [
+    "development policy",
+    "R12C-3 candidate contract",
+    "R12C-0 message inventory",
+    "R12C-1 launch copy package",
+    "R12C-2 launch asset package",
+    "full web typecheck",
+    "production build",
+    "content QA",
+    "SEO QA",
+    "public-surface inventory",
+    "current public-state handoff",
+    "public readiness audit",
+    "100-scenario public browser matrix",
+    "candidate Support-to-Stripe transition",
+    "candidate Refund/Disclosure consistency"
+  ],
+  "publicSurface": {
+    "htmlRoutes": 25,
+    "inventoryEntries": 26,
+    "publicReadinessPages": 25,
+    "productionSmokeRoutes": 25
+  },
+  "browser": {
+    "routes": 25,
+    "viewports": 4,
+    "scenarios": 100,
+    "violations": 0,
+    "providerCrossingScenarios": 0,
+    "providerNeutralApiRequestScenarios": 0,
+    "overflowScenarios": 0,
+    "focusFailures": 0,
+    "unlabeledControlScenarios": 0,
+    "legalMobileTargetFailures": 0
+  },
+  "providerSeparation": {
+    "twitchBinding": "DB_TWITCH_HOT",
+    "kickBinding": "DB_KICK_HOT",
+    "combinedTotalsAllowed": false,
+    "combinedRankingsAllowed": false
+  },
+  "launchAssets": {
+    "count": 6,
+    "captureResult": "pass",
+    "packageVerificationResult": "pass"
+  },
+  "supportTransition": {
+    "result": "pass",
+    "navigationOrigin": "http://127.0.0.1:4173",
+    "paymentLink": "https://buy.stripe.com/6oUcMYeRh0Na2oX3cDcIE03",
+    "desktopStatus": 200,
+    "desktopOverflowPx": 0,
+    "mobileStatus": 200,
+    "mobileOverflowPx": 0,
+    "mobileCtaHeightPx": 44,
+    "violations": 0
+  },
+  "refundDisclosureConsistency": {
+    "result": "pass",
+    "navigationOrigin": "http://127.0.0.1:4173",
+    "canonicalOrigin": "https://vl.badjoke-lab.com",
+    "pageScenarios": 8,
+    "navigationFlows": 2,
+    "violations": 0
+  },
+  "remainingGate": "exact production SHA smoke after merge and permanent Phase 12 closeout evidence"
+}

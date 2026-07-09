@@ -18,10 +18,10 @@ R12B-1 Support page and payment transition acceptance complete PR #482
 R12B-2 refund/disclosure consistency acceptance complete PR #483
 R12C-0 message inventory complete PR #484
 R12C-1 launch copy and FAQ complete PR #485
-R12C-2 launch/share asset package complete
+R12C-2 launch/share asset package complete PR #486
 Current workstream: R12C-3 release candidate acceptance
-Exact next implementation branch: work-release-r12c3-release-candidate-acceptance
-Next branch created: no
+Exact active implementation branch: work-release-r12c3-release-candidate-acceptance
+Active branch created: yes
 ```
 
 ## Phase 12 execution order
@@ -102,6 +102,12 @@ binary SHA-256 and byte-size verification
 
 ## R12C-3 execution boundary
 
+Candidate contract:
+
+```text
+docs/audits/r12c3-release-candidate-contract.json
+```
+
 Required candidate checks:
 
 ```text
@@ -120,6 +126,8 @@ Required candidate checks:
 13. permanent Phase 12 release acceptance evidence
 14. canonical closeout and temporary Phase 12 note retirement
 ```
+
+Candidate merge alone does not complete Phase 12. The exact merged `main` SHA must pass Production Smoke before items 13–14 close.
 
 Phase 12A cannot begin before items 1–14 close.
 

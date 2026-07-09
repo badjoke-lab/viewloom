@@ -1,12 +1,12 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 6.7
+Version: 6.8
 Last updated: 2026-07-09
 Current phase: Phase 12 — English release readiness
 Current workstream: R12C-3 release candidate acceptance
-Exact next implementation branch: `work-release-r12c3-release-candidate-acceptance`
-Next branch created: no
+Exact active implementation branch: `work-release-r12c3-release-candidate-acceptance`
+Active branch created: yes
 
 ```text
 Phase 10 complete through U10H
@@ -17,7 +17,7 @@ R12A legal and support public-surface completion complete
 R12B Stripe and support-flow readiness complete through R12B-2
 R12C-0 message inventory complete
 R12C-1 launch copy and FAQ complete
-R12C-2 launch/share asset package complete
+R12C-2 launch/share asset package complete PR #486
 R12C-3 release candidate acceptance active
 Phase 12A Analytics Capture Foundation approved and queued
 Phase 13-14 localization queued after Phase 12A
@@ -46,6 +46,7 @@ Phase 12 English release readiness
 docs/product/release-readiness-spec.md
 docs/product/release-readiness-plan.md
 docs/work-in-progress/phase12-release-readiness.md
+docs/audits/r12c3-release-candidate-contract.json
 ```
 
 Sequence:
@@ -132,6 +133,12 @@ Assets represent current product surfaces rather than invented mockups. Captions
 
 R12C-3 closes the full English release candidate and Phase 12 acceptance contract.
 
+Candidate contract:
+
+```text
+docs/audits/r12c3-release-candidate-contract.json
+```
+
 Required checks:
 
 ```text
@@ -151,6 +158,8 @@ permanent Phase 12 release acceptance evidence
 canonical closeout
 temporary Phase 12 working-note retirement
 ```
+
+Candidate merge alone does not complete Phase 12. The exact merged `main` SHA must pass Production Smoke before permanent acceptance and canonical closeout.
 
 Phase 12A remains blocked until this workstream and the complete Phase 12 closeout are accepted.
 

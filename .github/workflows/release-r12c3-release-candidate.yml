@@ -1,0 +1,152 @@
+name: Release R12C3 Candidate Acceptance
+
+on:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/**'
+      - 'apps/web/**'
+      - 'scripts/**'
+      - 'package.json'
+      - '.github/workflows/release-r12c3-release-candidate.yml'
+
+concurrency:
+  group: release-r12c3-candidate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      PUBLIC_CURRENT_LOCAL_ORIGIN: http://127.0.0.1:4173
+      R12B1_ORIGIN: http://127.0.0.1:4173
+      R12B2_ORIGIN: http://127.0.0.1:4173
+      R12B1_ARTIFACT_DIR: ${{ github.workspace }}/artifacts/r12c3-candidate/r12b1
+      R12B2_ARTIFACT_DIR: ${{ github.workspace }}/artifacts/r12c3-candidate/r12b2
+      R12C3_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout candidate head
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Verify R12C-3 candidate contract
+        run: |
+          node scripts/verify-r12c3-release-candidate-contract.mjs
+          node scripts/verify-r12c3-release-candidate.mjs
+
+      - name: Verify permanent R12C-3 candidate record
+        run: node scripts/verify-r12c3-candidate-acceptance-record.mjs
+
+      - name: Verify retained Phase 12 packages
+        run: |
+          node scripts/verify-r12c0-message-inventory.mjs
+          node scripts/verify-r12c1-launch-copy-package.mjs
+          node scripts/verify-r12c2-launch-assets-package.mjs
+
+      - name: Verify support and legal acceptance records
+        run: |
+          node scripts/verify-r12b1-acceptance-record.mjs
+          node scripts/verify-r12b2-acceptance-record.mjs
+
+      - name: Full web typecheck
+        run: pnpm typecheck:web
+
+      - name: Production build
+        run: pnpm build:web
+
+      - name: Verify Content QA
+        working-directory: apps/web
+        run: node scripts/verify-content-qa.mjs
+
+      - name: Verify SEO QA
+        working-directory: apps/web
+        run: node scripts/verify-seo-qa.mjs
+
+      - name: Verify public-surface and provider-separation contracts
+        run: |
+          node scripts/verify-public-surface-inventory.mjs
+          node scripts/verify-public-browser-audit-current.mjs
+
+      - name: Run Public Readiness on built candidate
+        working-directory: apps/web
+        run: node scripts/public-readiness-audit.mjs
+
+      - name: Start local candidate preview
+        shell: bash
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/r12c3-preview.log 2>&1 &
+          for attempt in {1..50}; do
+            curl --silent --fail http://127.0.0.1:4173/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/support/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/twitch/history/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/kick/status/ > /dev/null \
+              && exit 0
+            sleep 1
+          done
+          cat /tmp/r12c3-preview.log
+          exit 1
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run 100-scenario public browser matrix
+        working-directory: apps/web
+        run: node scripts/public-current-browser-audit.mjs
+
+      - name: Verify public browser evidence
+        run: node scripts/verify-public-current-browser-audit.mjs /tmp/public-current-browser-audit/evidence.json
+
+      - name: Run local Support transition acceptance
+        working-directory: apps/web
+        run: node scripts/r12b1-support-transition-browser.mjs
+
+      - name: Verify local Support transition evidence
+        run: node scripts/verify-r12b1-support-transition.mjs artifacts/r12c3-candidate/r12b1/evidence.json
+
+      - name: Run local refund and disclosure consistency acceptance
+        working-directory: apps/web
+        run: node scripts/r12b2-refund-disclosure-browser.mjs
+
+      - name: Verify local refund and disclosure evidence
+        run: node scripts/verify-r12b2-refund-disclosure.mjs artifacts/r12c3-candidate/r12b2/evidence.json
+
+      - name: Build R12C-3 candidate evidence
+        run: node scripts/build-r12c3-candidate-evidence.mjs /tmp/public-current-browser-audit/evidence.json artifacts/r12c3-candidate/evidence.json
+
+      - name: Verify R12C-3 candidate evidence
+        run: node scripts/verify-r12c3-candidate-evidence.mjs artifacts/r12c3-candidate/evidence.json
+
+      - name: Upload R12C-3 candidate acceptance artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r12c3-candidate-acceptance
+          path: |
+            artifacts/r12c3-candidate/**
+            /tmp/public-current-browser-audit/**
+            /tmp/r12c3-preview.log
+            apps/web/artifacts/public-readiness/**
+          if-no-files-found: warn

@@ -20,10 +20,10 @@ R12B-1 Support page and payment transition acceptance complete PR #482
 R12B-2 refund/disclosure consistency acceptance complete PR #483
 R12C-0 message inventory complete PR #484
 R12C-1 launch copy and FAQ complete PR #485
-R12C-2 launch/share asset package complete
+R12C-2 launch/share asset package complete PR #486
 Current workstream: R12C-3 release candidate acceptance
-Exact next implementation branch: work-release-r12c3-release-candidate-acceptance
-Next branch created: no
+Exact active implementation branch: work-release-r12c3-release-candidate-acceptance
+Active branch created: yes
 ```
 
 ## Active Phase 12 authorities
@@ -31,6 +31,7 @@ Next branch created: no
 - Specification: `release-readiness-spec.md`
 - Implementation plan: `release-readiness-plan.md`
 - Active working record: `../work-in-progress/phase12-release-readiness.md`
+- R12C-3 candidate contract: `../audits/r12c3-release-candidate-contract.json`
 - R12A production evidence: `../audits/r12a-production-acceptance.json`
 - R12B-0 audit: `../audits/r12b-evidence-and-configuration-audit.json`
 - R12B-1 acceptance: `../operations/r12b1-support-transition-acceptance-2026-07-09.md`
@@ -79,6 +80,8 @@ metadata/canonical/sitemap checks
 deliberate hosted validation where required
 exact production SHA smoke after merge
 ```
+
+The candidate contract is `../audits/r12c3-release-candidate-contract.json`. Candidate merge alone does not complete Phase 12. The exact merged `main` SHA must pass Production Smoke before permanent release acceptance evidence is recorded.
 
 Phase 12 completes only after permanent release acceptance evidence is recorded, canonical documents are advanced, the temporary Phase 12 working note is retired, and Phase 12A becomes exact next.
 
