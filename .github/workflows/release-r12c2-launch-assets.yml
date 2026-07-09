@@ -1,0 +1,61 @@
+name: Release R12C2 Launch Assets
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/scripts/r12c2-launch-assets-browser.mjs'
+      - 'scripts/verify-r12c2-launch-assets-capture.mjs'
+      - '.github/workflows/release-r12c2-launch-assets.yml'
+      - 'docs/audits/r12c2-launch-asset-manifest.json'
+      - 'docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md'
+      - 'docs/work-in-progress/phase12-release-readiness.md'
+
+concurrency:
+  group: release-r12c2-launch-assets-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      R12C2_ARTIFACT_DIR: ${{ github.workspace }}/artifacts/r12c2-launch-assets
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture production launch assets
+        working-directory: apps/web
+        run: node scripts/r12c2-launch-assets-browser.mjs
+
+      - name: Verify capture evidence
+        run: node scripts/verify-r12c2-launch-assets-capture.mjs artifacts/r12c2-launch-assets/evidence.json
+
+      - name: Upload launch asset capture artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r12c2-launch-assets
+          path: artifacts/r12c2-launch-assets/**
+          if-no-files-found: warn
