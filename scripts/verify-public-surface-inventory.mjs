@@ -12,7 +12,8 @@ check(manifest.schema === 'viewloom-public-surface-inventory-v1', 'manifest sche
 check(manifest.historical_next_branch === 'work-public-browser-audit', 'historical next branch changed')
 check(manifest.source?.accepted_main_sha === '952f0008209363f4fd5b22587975ac247ee8d6f2', 'R12A accepted main SHA mismatch')
 check(manifest.source?.production_acceptance === 'docs/audits/r12a-production-acceptance.json', 'R12A evidence owner missing')
-check(manifest.active_program === 'Phase 12 R12C English launch package and release acceptance', 'active program mismatch')
+check(manifest.source?.phase12_release_acceptance === 'docs/audits/phase12-release-acceptance.json', 'Phase 12 release evidence owner missing')
+check(manifest.active_program === 'Phase 12A Analytics Capture Foundation', 'active program mismatch')
 check(manifest.provider_invariants?.twitch_binding === 'DB_TWITCH_HOT', 'Twitch binding mismatch')
 check(manifest.provider_invariants?.kick_binding === 'DB_KICK_HOT', 'Kick binding mismatch')
 check(manifest.provider_invariants?.combined_totals_allowed === false, 'combined totals must remain forbidden')
@@ -106,6 +107,15 @@ check(r12a.counts?.html_routes === 25, 'R12A route count mismatch')
 check(r12a.counts?.provider_crossing_failures === 0, 'R12A provider crossing failure')
 check(r12a.counts?.blocking_alerts === 0, 'R12A blocking alert')
 
+const phase12 = load('docs/audits/phase12-release-acceptance.json')
+check(phase12.status === 'complete' && phase12.result === 'pass', 'Phase 12 release acceptance must be complete')
+check(phase12.expectedMainSha === phase12.deployedSha, 'Phase 12 expected/deployed SHA mismatch')
+check(phase12.counts?.htmlRoutes === 25, 'Phase 12 route count mismatch')
+check(phase12.counts?.statusApis === 2, 'Phase 12 status API count mismatch')
+check(phase12.counts?.sitemapRoutes === 21, 'Phase 12 sitemap count mismatch')
+check(phase12.counts?.launchAssets === 6, 'Phase 12 launch asset count mismatch')
+check(phase12.counts?.blockingAlerts === 0, 'Phase 12 blocking alert')
+
 if (failures.length) {
   console.error('Public surface inventory verification failed:')
   failures.forEach((failure) => console.error(`- ${failure}`))
@@ -113,8 +123,9 @@ if (failures.length) {
 }
 
 console.log(`Public surface inventory verified: ${routes.length} routes, ${Object.keys(profiles).length} profiles, ${Object.keys(gates).length} gate groups.`)
-console.log('- active program is Phase 12 R12C English launch package and release acceptance')
+console.log('- active program is Phase 12A Analytics Capture Foundation')
 console.log('- 25 HTML routes plus explicit 404 remain owned')
+console.log('- Phase 12 exact-SHA production acceptance is complete')
 console.log('- five R12A legal/support routes remain production accepted and resolved')
 console.log('- Twitch and Kick bindings remain separate')
 console.log('- historical P8B evidence remains locked separately')

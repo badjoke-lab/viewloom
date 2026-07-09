@@ -9,22 +9,21 @@ Phase 9 complete
 U10A-U10H complete
 Phase 11 P11A-P11G complete
 Phase 11 production closeout complete
-Phase 12 English release readiness active
-R12A legal and support public-surface completion complete
-R12A implementation PR: #477
-R12A production acceptance: pass
-R12B-0 evidence and configuration audit complete PR #481
-R12B-1 Support page and payment transition acceptance complete PR #482
-R12B-2 refund/disclosure consistency acceptance complete PR #483
+Phase 12 English release readiness complete
+R12A legal/support public-surface completion complete
+R12B Stripe/support readiness complete through R12B-2
 R12C-0 message inventory complete PR #484
 R12C-1 launch copy and FAQ complete PR #485
 R12C-2 launch/share asset package complete PR #486
-Current workstream: R12C-3 release candidate acceptance
-Exact active implementation branch: work-release-r12c3-release-candidate-acceptance
-Active branch created: yes
+R12C-3 candidate acceptance complete PR #487
+R12C-3 exact production SHA closeout complete
+Current phase: Phase 12A Analytics Capture Foundation
+Current workstream: 12A-0 current data and capacity baseline
+Exact next implementation branch: work-analytics-12a0-capacity-baseline
+Next branch created: no
 ```
 
-## Phase 12 execution order
+## Phase 12 accepted execution order
 
 ```text
 R12A-0 current legal/support surface audit                 complete
@@ -39,99 +38,101 @@ R12B-2 refund/disclosure consistency acceptance            complete
 R12C-0 message inventory                                   complete
 R12C-1 launch copy and FAQ                                 complete
 R12C-2 launch/share asset package                          complete
-R12C-3 release candidate acceptance                        active
+R12C-3 release candidate acceptance                        complete
+R12C-3 exact production SHA smoke                          complete
+R12C permanent release evidence                            complete
+R12C canonical closeout                                    complete
 ```
 
-## R12C-1 accepted package
-
-Permanent evidence:
+Permanent Phase 12 release evidence:
 
 ```text
-docs/product/english-launch-copy.md
-docs/audits/r12c1-launch-copy-package.json
-docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md
+docs/audits/phase12-release-acceptance.json
+docs/audits/phase12-production-closeout-contract.json
+docs/operations/phase12-release-acceptance-2026-07-09.md
 ```
 
-Package includes:
+Accepted production baseline:
 
 ```text
-one-line description
-short listing description
-long description
-seven-role feature summary
-coverage limitations
-plain-language Kick candidate explanation
-provider separation explanation
-5-minute cadence explanation
-up-to-180-day daily rollup explanation
-12-question FAQ
-Status/help links
-Support/legal links
-terminology contract
-R12C-2 handoff
+Expected main SHA: 32c27a9a772cb62ff38f009c5fd1bb095ac27ad8
+Deployed SHA:      32c27a9a772cb62ff38f009c5fd1bb095ac27ad8
+HTML routes: 25
+Status APIs: 2
+Sitemap URLs: 21
+Launch assets: 6
+Blocking alerts: 0
+Twitch capacity: at-or-over-window 300/300, hasMore true
+Kick capacity: at-or-over-window 100/100
 ```
 
-## R12C-2 accepted package
-
-Permanent evidence:
+## Active Phase 12A schedule
 
 ```text
-apps/web/public/launch-assets/
-docs/audits/r12c2-launch-assets-capture.json
-docs/audits/r12c2-launch-asset-manifest.json
-docs/product/launch-asset-captions.md
-docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md
+12A-0 current data and capacity baseline            active
+12A-1 analytics field contract                      queued
+12A-2 compact intraday rollup design and migration  queued
+12A-3 bounded intraday rollup generation            queued
+12A-4 provider-specific category capture foundation queued
+12A-5 foundation acceptance and accumulation handoff queued
 ```
 
-Accepted assets:
+### 12A-0 — current data and capacity baseline
+
+Exact branch:
 
 ```text
-current desktop product screenshot
-current mobile product screenshot
-representative Heatmap screenshot
-representative Day Flow screenshot
-representative Battle Lines screenshot
-representative History screenshot
-asset manifest with source route
-asset manifest with viewport
-asset manifest with capture time
-asset manifest with intended use
-bounded captions
-binary SHA-256 and byte-size verification
+work-analytics-12a0-capacity-baseline
 ```
 
-## R12C-3 execution boundary
-
-Candidate contract:
+Required evidence:
 
 ```text
-docs/audits/r12c3-release-candidate-contract.json
+current D1 row counts
+payload size
+oldest/latest raw bucket
+daily-rollup counts
+collector duration
+relevant query timings
+Twitch/Kick source modes and coverage behavior
+five-minute cadence behavior
+rollup/retention schedule behavior
+current field matrix against the prior capability audit
+upstream fields fetched but discarded before storage
 ```
 
-Required candidate checks:
+Completion rules:
 
 ```text
-1. full web typecheck
-2. production build
-3. public-surface inventory verification
-4. Public Readiness
-5. Public Browser Audit
-6. affected responsive/accessibility gates
-7. provider separation contracts
-8. legal/support direct-link checks
-9. outbound payment/support link checks
-10. metadata/canonical/sitemap checks
-11. deliberate hosted validation where required
-12. exact production SHA smoke after merge
-13. permanent Phase 12 release acceptance evidence
-14. canonical closeout and temporary Phase 12 note retirement
+permanent machine-readable baseline evidence exists
+storage/query budgets are recorded before migration
+Twitch/Kick evidence remains provider-separated
+no runtime change is included
 ```
 
-Candidate merge alone does not complete Phase 12. The exact merged `main` SHA must pass Production Smoke before items 13–14 close.
+## Phase 12A sequence after 12A-0
 
-Phase 12A cannot begin before items 1–14 close.
+### 12A-1 — analytics field contract
 
-## Forward execution order after Phase 12
+Define minimum provider-specific fields for baseline, observed-run, and category work. Decide the evidence strength of Twitch `started_at`, verify a Kick category source before approving category capture, and document provider differences without claiming identity equivalence.
+
+### 12A-2 — compact intraday rollup design and migration
+
+Design a bounded per-stream/day compact intraday representation for 90-day baseline capability without extending raw retention. Add migration only after row/byte/query budgets are accepted.
+
+### 12A-3 — bounded intraday rollup generation
+
+Generate compact rollups idempotently, prefer existing schedule windows, avoid a new high-frequency cron by default, and measure collector duration plus D1 query/write cost.
+
+### 12A-4 — category capture foundation
+
+Add provider-specific category/game fields only after source verification, define coverage language, begin forward-only accumulation, and do not launch category analytics UI.
+
+### 12A-5 — foundation acceptance and accumulation handoff
+
+Run provider-separated collector/storage acceptance, verify retention and rollup behavior, record production evidence, freeze schema/output contracts, and hand off to Phase 13–14 localization while evidence accumulates.
+
+## Forward execution order
 
 ```text
 1. Phase 12A Analytics Capture Foundation
@@ -146,32 +147,11 @@ Phase 12A cannot begin before items 1–14 close.
 10. Phase 16F Replay and Backtest
 ```
 
-## Phase 12A schedule boundary
-
-Phase 12A starts only after R12C-3 closes the full Phase 12 release acceptance.
-
-```text
-12A-0 current data and capacity baseline
-12A-1 analytics field contract
-12A-2 compact intraday rollup design and migration
-12A-3 bounded intraday rollup generation
-12A-4 provider-specific category capture foundation
-12A-5 production acceptance and accumulation handoff
-```
-
-Capacity observations carried forward:
-
-```text
-Twitch: at-or-over-window 300/300
-Kick:   at-or-over-window 100/100
-```
-
-They are Phase 12A baseline inputs, not authorization to expand limits.
-
 ## Governing analytics documents
 
 - Analytics specification: `analytics-observation-system-spec.md`
 - Analytics implementation plan: `analytics-observation-system-plan.md`
 - Prior capability audit: `next-feature-data-capability-audit.md`
+- Current production baseline input: `../audits/phase12-release-acceptance.json`
 
-Do not create Phase 12A or Phase 16 branches before their entry gates close. Do not bypass Phase 12A capture work with request-time long-window raw scans or unsupported session/category claims.
+Do not bypass Phase 12A capture work with request-time long-window raw scans, raw-retention expansion, unsupported session/category claims, or cross-provider analytics.

@@ -2,10 +2,14 @@
   "schema": "viewloom-r12c3-release-candidate-contract-v1",
   "phase": "Phase 12",
   "workstream": "R12C-3",
-  "status": "active",
+  "status": "complete",
+  "result": "pass",
   "branch": "work-release-r12c3-release-candidate-acceptance",
   "baseMainSha": "13975969a077bbbf9979253e6ee4570b1e20aa4a",
   "releaseOrigin": "https://vl.badjoke-lab.com",
+  "candidateEvidence": "docs/audits/r12c3-candidate-acceptance.json",
+  "candidateOperationRecord": "docs/operations/r12c3-release-candidate-acceptance-2026-07-09.md",
+  "phase12ReleaseEvidence": "docs/audits/phase12-release-acceptance.json",
   "candidateContract": {
     "htmlRoutes": 25,
     "inventoryEntries": 26,
@@ -102,6 +106,7 @@
     "exactMainShaProductionSmokeRequired": true,
     "permanentReleaseAcceptanceRequired": true,
     "temporaryPhase12WorkingNoteMustBeRetired": true,
-    "canonicalNextAfterCloseout": "Phase 12A Analytics Capture Foundation"
+    "canonicalNextAfterCloseout": "Phase 12A Analytics Capture Foundation",
+    "closeoutSatisfied": true
   }
 }

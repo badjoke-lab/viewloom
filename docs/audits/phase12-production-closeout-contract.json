@@ -1,0 +1,66 @@
+{
+  "schema": "viewloom-phase12-production-closeout-contract-v1",
+  "phase": "Phase 12",
+  "workstream": "R12C-3 production closeout",
+  "status": "complete",
+  "result": "pass",
+  "expectedMainSha": "32c27a9a772cb62ff38f009c5fd1bb095ac27ad8",
+  "origin": "https://vl.badjoke-lab.com",
+  "releaseEvidence": "docs/audits/phase12-release-acceptance.json",
+  "operationRecord": "docs/operations/phase12-release-acceptance-2026-07-09.md",
+  "workflowRunId": "28993366876",
+  "artifact": {
+    "id": 8188770286,
+    "name": "phase12-production-closeout",
+    "digest": "sha256:70bf5b26c06813daa122ef0658efb1480efd569d740b4787449619d7124c757b"
+  },
+  "htmlRoutes": [
+    "/",
+    "/about/",
+    "/support/",
+    "/changelog/",
+    "/contact/",
+    "/terms/",
+    "/privacy/",
+    "/refund-policy/",
+    "/commercial-disclosure/",
+    "/twitch/",
+    "/twitch/heatmap/",
+    "/twitch/day-flow/",
+    "/twitch/battle-lines/",
+    "/twitch/history/",
+    "/twitch/channel/",
+    "/twitch/watchlist/",
+    "/twitch/status/",
+    "/kick/",
+    "/kick/heatmap/",
+    "/kick/day-flow/",
+    "/kick/battle-lines/",
+    "/kick/history/",
+    "/kick/channel/",
+    "/kick/watchlist/",
+    "/kick/status/"
+  ],
+  "statusApis": [
+    "/api/twitch-status",
+    "/api/kick-status"
+  ],
+  "sitemapUrl": "/sitemap.xml",
+  "expectedSitemapRoutes": 21,
+  "supportPaymentLink": "https://buy.stripe.com/6oUcMYeRh0Na2oX3cDcIE03",
+  "launchAssetManifest": "docs/audits/r12c2-launch-asset-manifest.json",
+  "candidateEvidence": "docs/audits/r12c3-candidate-acceptance.json",
+  "requirements": {
+    "deploymentEnvironment": "production",
+    "deploymentBranch": "main",
+    "htmlStatus": 200,
+    "providerBindings": {
+      "twitch": "DB_TWITCH_HOT",
+      "kick": "DB_KICK_HOT"
+    },
+    "explicitNotFoundStatus": 404,
+    "previewProbeStatus": 404,
+    "blockingAlerts": 0,
+    "launchAssetHashMatch": true
+  }
+}

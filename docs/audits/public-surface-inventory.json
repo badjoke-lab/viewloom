@@ -1,11 +1,12 @@
 {
   "schema": "viewloom-public-surface-inventory-v1",
-  "version": 5,
+  "version": 6,
   "updated_at": "2026-07-09",
   "source": {
     "branch": "main",
     "accepted_main_sha": "952f0008209363f4fd5b22587975ac247ee8d6f2",
     "production_acceptance": "docs/audits/r12a-production-acceptance.json",
+    "phase12_release_acceptance": "docs/audits/phase12-release-acceptance.json",
     "build_config": "apps/web/vite.config.ts",
     "public_readiness": "apps/web/scripts/public-readiness-audit.mjs",
     "current_browser_audit": "apps/web/scripts/public-current-browser-audit.mjs",
@@ -45,5 +46,5 @@
   ],
   "gap_file": "docs/audits/public-surface-gaps.json",
   "historical_next_branch": "work-public-browser-audit",
-  "active_program": "Phase 12 R12C English launch package and release acceptance"
+  "active_program": "Phase 12A Analytics Capture Foundation"
 }
