@@ -11,9 +11,9 @@ on:
       - 'apps/web/docs/**'
       - 'apps/web/public/launch-assets/**'
       - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-phase12-release-acceptance.mjs'
       - 'scripts/verify-r12c1-launch-copy-package.mjs'
       - 'scripts/verify-r12c2-launch-assets-package.mjs'
-      - 'scripts/verify-r12c3-release-candidate.mjs'
       - '.github/pull_request_template.md'
       - '.github/workflows/**'
   push:
@@ -26,9 +26,9 @@ on:
       - 'apps/web/docs/**'
       - 'apps/web/public/launch-assets/**'
       - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-phase12-release-acceptance.mjs'
       - 'scripts/verify-r12c1-launch-copy-package.mjs'
       - 'scripts/verify-r12c2-launch-assets-package.mjs'
-      - 'scripts/verify-r12c3-release-candidate.mjs'
       - '.github/pull_request_template.md'
       - '.github/workflows/**'
 
@@ -52,12 +52,12 @@ jobs:
           status=$?
           cat development-policy.log
           exit $status
-      - name: Verify R12C-1 launch copy package
+      - name: Verify permanent Phase 12 release acceptance
+        run: node scripts/verify-phase12-release-acceptance.mjs
+      - name: Verify retained R12C-1 launch copy package
         run: node scripts/verify-r12c1-launch-copy-package.mjs
-      - name: Verify R12C-2 launch asset package
+      - name: Verify retained R12C-2 launch asset package
         run: node scripts/verify-r12c2-launch-assets-package.mjs
-      - name: Verify R12C-3 release candidate contract
-        run: node scripts/verify-r12c3-release-candidate.mjs
       - name: Upload development policy diagnostics
         if: always()
         uses: actions/upload-artifact@v4
