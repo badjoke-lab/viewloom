@@ -9,9 +9,14 @@
     "checkedAt": "2026-07-09T03:09:05.031Z",
     "evidenceSchema": "viewloom-r12c2-launch-assets-capture-v1",
     "result": "pass",
-    "headSha": "9b5c4faf90c1002a0735f6aba7d8a780d8367385",
-    "workflowRunId": "28991349433",
+    "headSha": null,
+    "workflowRunId": null,
     "workflowName": "Release R12C2 Launch Assets"
+  },
+  "packageVerification": {
+    "workflowRunId": "28991498796",
+    "headSha": "9b57de076b9265b87173c8215ef70f582ae2e400",
+    "result": "pass"
   },
   "assetCount": 6,
   "assets": [
