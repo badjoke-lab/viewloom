@@ -8,7 +8,7 @@ on:
       - 'scripts/verify-r12c2-launch-assets-capture.mjs'
       - 'scripts/verify-r12c2-launch-assets-package.mjs'
       - '.github/workflows/release-r12c2-launch-assets.yml'
-      - 'apps/web/public/launch-assets/**'
+      - 'docs/assets/launch/r12c2/**'
       - 'docs/audits/r12c2-launch-assets-capture.json'
       - 'docs/audits/r12c2-launch-asset-manifest.json'
       - 'docs/product/launch-asset-captions.md'
@@ -83,7 +83,11 @@ jobs:
         if: steps.package.outputs.exists != 'true'
         env:
           R12C2_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node scripts/freeze-r12c2-launch-assets.mjs artifacts/r12c2-launch-assets/evidence.json artifacts/r12c2-launch-assets apps/web/public/launch-assets
+        run: node scripts/freeze-r12c2-launch-assets.mjs artifacts/r12c2-launch-assets/evidence.json artifacts/r12c2-launch-assets docs/assets/launch/r12c2
+
+      - name: Persist capture evidence
+        if: steps.package.outputs.exists != 'true'
+        run: cp artifacts/r12c2-launch-assets/evidence.json docs/audits/r12c2-launch-assets-capture.json
 
       - name: Verify frozen launch asset package
         run: node scripts/verify-r12c2-launch-assets-package.mjs
@@ -96,7 +100,7 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add \
-            apps/web/public/launch-assets \
+            docs/assets/launch/r12c2 \
             docs/audits/r12c2-launch-assets-capture.json \
             docs/audits/r12c2-launch-asset-manifest.json \
             docs/product/launch-asset-captions.md
