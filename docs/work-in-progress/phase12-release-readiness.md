@@ -18,9 +18,10 @@ R12C-2 capture evidence: `../audits/r12c2-launch-assets-capture.json`
 R12C-2 asset manifest: `../audits/r12c2-launch-asset-manifest.json`
 R12C-2 captions: `../product/launch-asset-captions.md`
 R12C-2 acceptance: `../operations/r12c2-launch-assets-acceptance-2026-07-09.md`
+R12C-3 candidate contract: `../audits/r12c3-release-candidate-contract.json`
 Current workstream: R12C-3 release candidate acceptance
-Exact next implementation branch: `work-release-r12c3-release-candidate-acceptance`
-Next branch created: no
+Exact active implementation branch: `work-release-r12c3-release-candidate-acceptance`
+Active branch created: yes
 
 ## Workstreams
 
@@ -140,6 +141,14 @@ The package uses current product surfaces rather than invented mockups. Captions
 
 ## R12C-3 active acceptance boundary
 
+Candidate contract:
+
+```text
+docs/audits/r12c3-release-candidate-contract.json
+scripts/verify-r12c3-release-candidate.mjs
+.github/workflows/release-r12c3-release-candidate.yml
+```
+
 Required candidate checks:
 
 ```text
@@ -157,7 +166,7 @@ deliberate hosted validation where required
 exact production SHA smoke after merge
 ```
 
-R12C-3 must create permanent Phase 12 release acceptance evidence after the exact production SHA and smoke evidence are known. Then canonical documents advance to Phase 12A Analytics Capture Foundation and this temporary working record is retired according to documentation governance.
+Candidate merge alone does not complete Phase 12. The exact merged `main` SHA must pass Production Smoke. R12C-3 then creates permanent Phase 12 release acceptance evidence, advances canonical documents to Phase 12A Analytics Capture Foundation, and retires this temporary working record according to documentation governance.
 
 ## Capacity carry-forward
 
