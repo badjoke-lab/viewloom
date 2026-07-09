@@ -24,9 +24,10 @@ Phase 12 English release readiness     active
 R12A legal/support public surface      complete
 R12B Stripe/support readiness          complete through R12B-2
 R12C-0 message inventory               complete PR #484
-R12C-1 launch copy and FAQ             complete
-R12C-2 launch/share asset package      active
-Exact next branch                      work-release-r12c2-launch-assets
+R12C-1 launch copy and FAQ             complete PR #485
+R12C-2 launch/share asset package      complete
+R12C-3 release candidate acceptance    active
+Exact next branch                      work-release-r12c3-release-candidate-acceptance
 Next branch created                    no
 ```
 
@@ -45,8 +46,8 @@ R12A legal and support public-surface completion   complete
 R12B Stripe and support-flow readiness             complete
 R12C-0 message inventory                           complete
 R12C-1 launch copy and FAQ                         complete
-R12C-2 launch/share asset package                  active
-R12C-3 release candidate acceptance                queued
+R12C-2 launch/share asset package                  complete
+R12C-3 release candidate acceptance                active
 ```
 
 Permanent R12C-1 package:
@@ -61,22 +62,42 @@ The R12C-1 package provides one-line, short, and long descriptions; seven produc
 
 The English package becomes the Phase 13–14 localization source after the approved program reaches localization.
 
-## Active R12C-2
+## R12C-2 accepted package
 
-R12C-2 owns a curated launch/share asset package:
+R12C-2 fixed current production-surface screenshots and their evidence contract:
 
 ```text
-current desktop product screenshot
-current mobile product screenshot
-representative Heatmap screenshot
-representative Day Flow screenshot
-representative Battle Lines screenshot
-representative History screenshot
-asset manifest with route / viewport / capture date / intended use
-captions bounded by the R12C-1 English package
+apps/web/public/launch-assets/
+docs/audits/r12c2-launch-assets-capture.json
+docs/audits/r12c2-launch-asset-manifest.json
+docs/product/launch-asset-captions.md
+docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md
 ```
 
-The existing `apps/web/public/og/viewloom.svg` remains a generic identity card. Public Browser screenshots remain CI acceptance artifacts until deliberately curated and recorded in the R12C-2 package.
+The package contains current desktop and mobile Portal screenshots plus representative Heatmap, Day Flow, Battle Lines, and History screenshots. The manifest records source route, viewport, capture time, intended use, captions, hashes, and public-surface evidence.
+
+The generic `apps/web/public/og/viewloom.svg` remains usable as an identity card and is separate from the representative product screenshot package.
+
+## Active R12C-3
+
+R12C-3 is the Phase 12 release candidate acceptance workstream. It owns:
+
+```text
+full web typecheck
+production build
+public-surface inventory verification
+Public Readiness
+Public Browser Audit
+affected responsive/accessibility gates
+provider separation contracts
+legal/support direct-link checks
+outbound payment/support link checks
+metadata/canonical/sitemap checks
+deliberate hosted validation where required
+exact production SHA smoke after merge
+```
+
+Phase 12A does not start until R12C-3 closes the full Phase 12 release acceptance.
 
 ## Approved forward sequence
 
