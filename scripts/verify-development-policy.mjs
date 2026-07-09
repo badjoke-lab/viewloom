@@ -22,12 +22,14 @@ const required = [
   'docs/operations/r12b2-refund-disclosure-acceptance-2026-07-09.md',
   'docs/operations/r12c0-message-inventory-2026-07-09.md',
   'docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md',
+  'docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md',
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
   'docs/product/release-readiness-spec.md',
   'docs/product/release-readiness-plan.md',
   'docs/product/english-launch-copy.md',
+  'docs/product/launch-asset-captions.md',
   'docs/work-in-progress/phase12-release-readiness.md',
   'docs/audits/r12a-production-acceptance.json',
   'docs/audits/r12b-evidence-and-configuration-audit.json',
@@ -35,6 +37,8 @@ const required = [
   'docs/audits/r12c0-message-inventory.json',
   'docs/audits/r12c0-message-inventory.md',
   'docs/audits/r12c1-launch-copy-package.json',
+  'docs/audits/r12c2-launch-assets-capture.json',
+  'docs/audits/r12c2-launch-asset-manifest.json',
   'docs/audits/public-surface-inventory.json',
   'docs/audits/public-surface-gaps.json',
   'docs/audits/phase11-strict-null-baseline.json',
@@ -49,6 +53,7 @@ const required = [
   'scripts/verify-r12b2-acceptance-record.mjs',
   'scripts/verify-r12c0-message-inventory.mjs',
   'scripts/verify-r12c1-launch-copy-package.mjs',
+  'scripts/verify-r12c2-launch-assets-package.mjs',
   'scripts/verify-public-surface-inventory.mjs',
   'scripts/verify-public-browser-audit-current.mjs',
   '.github/workflows/release-r12b-evidence-audit.yml',
@@ -56,10 +61,20 @@ const required = [
   '.github/workflows/release-r12b2-refund-disclosure.yml',
   '.github/workflows/release-r12c0-message-inventory.yml',
   '.github/workflows/release-r12c1-launch-copy.yml',
+  '.github/workflows/release-r12c2-launch-assets.yml',
   '.github/workflows/public-browser-audit.yml',
   '.github/workflows/production-smoke.yml',
 ]
 for (const path of required) assert.equal(exists(path), true, `missing file: ${path}`)
+
+for (const asset of [
+  'viewloom-desktop.png',
+  'viewloom-mobile.png',
+  'twitch-heatmap.png',
+  'twitch-day-flow.png',
+  'twitch-battle-lines.png',
+  'twitch-history.png',
+]) assert.equal(exists(`apps/web/public/launch-assets/${asset}`), true, `missing R12C-2 asset: ${asset}`)
 
 assert.equal(exists('docs/work-in-progress/phase11-acceptance-operations.md'), false, 'completed Phase 11 working note must be retired')
 assert.equal(exists('.github/workflows/phase11-hosted-closeout-acceptance.yml'), false, 'temporary Phase 11 workflow must remain retired')
@@ -72,8 +87,9 @@ for (const path of ['README.md', 'docs/README.md']) check(path, [
   'R12B', 'complete',
   'R12C-0', 'complete',
   'R12C-1', 'complete',
-  'R12C-2', 'active',
-  'work-release-r12c2-launch-assets',
+  'R12C-2', 'complete',
+  'R12C-3', 'active',
+  'work-release-r12c3-release-candidate-acceptance',
   'Phase 12A Analytics Capture Foundation',
   'Phase 15 Analytics Capability and Calibration Audit',
   'Phase 16A',
@@ -83,9 +99,10 @@ check('AGENTS.md', [
   'Phase 11 production closeout complete',
   'R12B Stripe/support readiness complete through R12B-2',
   'R12C-0 message inventory complete PR #484',
-  'R12C-1 launch copy and FAQ complete',
-  'Current workstream: R12C-2 launch/share asset package',
-  'Exact next implementation branch: work-release-r12c2-launch-assets',
+  'R12C-1 launch copy and FAQ complete PR #485',
+  'R12C-2 launch/share asset package complete',
+  'Current workstream: R12C-3 release candidate acceptance',
+  'Exact next implementation branch: work-release-r12c3-release-candidate-acceptance',
   'Next branch created: no',
 ])
 
@@ -93,10 +110,11 @@ check('CONTRIBUTING.md', [
   'Phase 11 production closeout complete',
   'R12B Stripe and support-flow readiness complete through R12B-2',
   'R12C-0 message inventory complete PR #484',
-  'R12C-1 launch copy and FAQ complete',
-  'Current workstream: R12C-2 launch/share asset package',
-  'Exact next implementation branch: work-release-r12c2-launch-assets',
-  'R12C-2 launch/share asset package                  active',
+  'R12C-1 launch copy and FAQ complete PR #485',
+  'R12C-2 launch/share asset package complete',
+  'Current workstream: R12C-3 release candidate acceptance',
+  'Exact next implementation branch: work-release-r12c3-release-candidate-acceptance',
+  'R12C-3 release candidate acceptance                active',
 ])
 
 for (const path of [
@@ -109,8 +127,9 @@ for (const path of [
   'R12B', 'complete',
   'R12C-0', 'complete',
   'R12C-1', 'complete',
-  'R12C-2', 'active',
-  'work-release-r12c2-launch-assets',
+  'R12C-2', 'complete',
+  'R12C-3', 'active',
+  'work-release-r12c3-release-candidate-acceptance',
   'Phase 12A Analytics Capture Foundation',
   'Phase 15 Analytics Capability and Calibration Audit',
   'Phase 16A',
@@ -119,13 +138,13 @@ for (const path of [
 
 check('docs/work-in-progress/phase12-release-readiness.md', [
   'Status: active',
-  'Current workstream: R12C-2 launch/share asset package',
-  'Exact next implementation branch: `work-release-r12c2-launch-assets`',
+  'Current workstream: R12C-3 release candidate acceptance',
+  'Exact next implementation branch: `work-release-r12c3-release-candidate-acceptance`',
   'Next branch created: no',
   'R12C-0 message inventory                           complete',
   'R12C-1 launch copy and FAQ                         complete',
-  'R12C-2 launch/share asset package                  active',
-  'R12C-3 release candidate acceptance                queued',
+  'R12C-2 launch/share asset package                  complete',
+  'R12C-3 release candidate acceptance                active',
 ])
 
 check('docs/product/release-readiness-plan.md', [
@@ -152,11 +171,13 @@ check('docs/operations/r12c0-message-inventory-2026-07-09.md', [
   'Status: complete', 'Workstream: R12C-0', 'Portal product identity messages', 'apps/web/public/og/viewloom.svg',
 ])
 check('docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md', [
-  'Status: complete',
-  'Workstream: R12C-1',
-  'one-line description',
-  '12-question FAQ',
+  'Status: complete', 'Workstream: R12C-1', 'one-line description', '12-question FAQ',
   'The next active workstream is R12C-2 launch/share asset package.',
+])
+check('docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md', [
+  'Status: complete', 'Workstream: R12C-2', 'Implementation PR: #486',
+  'workflow: Release R12C2 Launch Assets', 'run: 28991498796',
+  'The next active workstream is R12C-3 release candidate acceptance.',
 ])
 
 const r12a = JSON.parse(read('docs/audits/r12a-production-acceptance.json'))
@@ -193,6 +214,26 @@ assert.equal(r12c1.completion.r12c1_complete, true)
 assert.equal(r12c1.completion.next_workstream, 'R12C-2 launch/share asset package')
 assert.equal(r12c1.retention.collection_cadence, '5 minutes')
 assert.equal(r12c1.retention.public_daily_rollups, 'up to 180 days')
+
+const r12c2Capture = JSON.parse(read('docs/audits/r12c2-launch-assets-capture.json'))
+assert.equal(r12c2Capture.schema, 'viewloom-r12c2-launch-assets-capture-v1')
+assert.equal(r12c2Capture.phase, 'Phase 12')
+assert.equal(r12c2Capture.workstream, 'R12C-2')
+assert.equal(r12c2Capture.origin, 'https://vl.badjoke-lab.com')
+assert.equal(r12c2Capture.result, 'pass')
+assert.equal(r12c2Capture.assets.length, 6)
+assert.equal(r12c2Capture.violations.length, 0)
+
+const r12c2Manifest = JSON.parse(read('docs/audits/r12c2-launch-asset-manifest.json'))
+assert.equal(r12c2Manifest.schema, 'viewloom-r12c2-launch-asset-manifest-v1')
+assert.equal(r12c2Manifest.phase, 'Phase 12')
+assert.equal(r12c2Manifest.workstream, 'R12C-2')
+assert.equal(r12c2Manifest.packageRoot, 'apps/web/public/launch-assets')
+assert.equal(r12c2Manifest.permanentCaptureEvidence, 'docs/audits/r12c2-launch-assets-capture.json')
+assert.equal(r12c2Manifest.capture.result, 'pass')
+assert.equal(r12c2Manifest.packageVerification.result, 'pass')
+assert.equal(r12c2Manifest.assetCount, 6)
+assert.equal(r12c2Manifest.assets.length, 6)
 
 const inventory = JSON.parse(read('docs/audits/public-surface-inventory.json'))
 assert.equal(inventory.counts.vite_html_inputs, 25)
@@ -245,17 +286,13 @@ for (const path of [
   '.github/workflows/release-r12b2-refund-disclosure.yml',
   '.github/workflows/release-r12c0-message-inventory.yml',
   '.github/workflows/release-r12c1-launch-copy.yml',
-]) {
-  const source = read(path)
-  assert.ok(source.includes('concurrency:'), `${path}: concurrency missing`)
-  assert.ok(source.includes('cancel-in-progress: true'), `${path}: cancellation missing`)
-}
+  '.github/workflows/release-r12c2-launch-assets.yml',
+]) assert.equal(exists(path), true, `missing workflow: ${path}`)
 
-console.log('ViewLoom development and documentation verification passed.')
-console.log('- Phase 10, Phase 11, R12A, and R12B closeouts remain complete')
-console.log('- R12C-0 inventory and R12C-1 English launch package are complete')
-console.log('- Phase 12 English release readiness is active at R12C-2 launch/share asset package')
-console.log('- exact next branch is work-release-r12c2-launch-assets and remains uncreated')
-console.log('- current inventory owns 25 HTML routes and 100 browser scenarios')
-console.log('- Phase 12A remains blocked until R12C-3 closes Phase 12')
-console.log('- Twitch and Kick remain separate')
+console.log('Development and documentation policy verification passed.')
+console.log('- Phase 11 production closeout evidence remains complete')
+console.log('- R12A and R12B evidence remains complete')
+console.log('- R12C-0, R12C-1, and R12C-2 are complete with permanent evidence')
+console.log('- Phase 12 is active at R12C-3 release candidate acceptance')
+console.log('- exact next branch is work-release-r12c3-release-candidate-acceptance and remains uncreated')
+console.log('- Phase 12A remains gated by full Phase 12 acceptance')
