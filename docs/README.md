@@ -16,10 +16,10 @@ R12A legal and support public-surface completion complete
 R12B Stripe and support-flow readiness complete through R12B-2
 R12C-0 message inventory complete PR #484
 R12C-1 launch copy and FAQ complete PR #485
-R12C-2 launch/share asset package complete
+R12C-2 launch/share asset package complete PR #486
 Current workstream R12C-3 release candidate acceptance
-Exact next implementation branch work-release-r12c3-release-candidate-acceptance
-Next branch created no
+Exact active implementation branch work-release-r12c3-release-candidate-acceptance
+Active branch created yes
 ```
 
 ## Current authorities
@@ -30,6 +30,7 @@ Next branch created no
 - Phase 12 specification: `product/release-readiness-spec.md`
 - Phase 12 implementation plan: `product/release-readiness-plan.md`
 - Active Phase 12 record: `work-in-progress/phase12-release-readiness.md`
+- R12C-3 candidate contract: `audits/r12c3-release-candidate-contract.json`
 - R12A production evidence: `audits/r12a-production-acceptance.json`
 - R12B-0 audit: `audits/r12b-evidence-and-configuration-audit.json`
 - R12B-1 acceptance: `operations/r12b1-support-transition-acceptance-2026-07-09.md`
@@ -87,9 +88,13 @@ The package records source route, viewport, capture time, intended use, bounded 
 
 ## Active R12C-3
 
-The exact next implementation branch is `work-release-r12c3-release-candidate-acceptance`.
+The active implementation branch is `work-release-r12c3-release-candidate-acceptance`.
 
 R12C-3 closes the complete Phase 12 candidate contract: latest-head typecheck/build, public inventory/readiness/browser gates, responsive/accessibility checks, provider separation, legal/support direct links, outbound payment/support links, metadata/canonical/sitemap checks, hosted validation where required, and exact production SHA smoke after merge.
+
+Candidate contract: `audits/r12c3-release-candidate-contract.json`.
+
+Candidate merge alone does not complete Phase 12. The exact merged `main` SHA must pass Production Smoke before permanent Phase 12 release acceptance is recorded and the temporary Phase 12 working note is retired.
 
 ## Approved analytics program authorities
 
