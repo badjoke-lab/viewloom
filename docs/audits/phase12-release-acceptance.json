@@ -1,0 +1,135 @@
+{
+  "schema": "viewloom-phase12-release-acceptance-v1",
+  "phase": "Phase 12",
+  "status": "complete",
+  "result": "pass",
+  "acceptedAt": "2026-07-09T04:14:57Z",
+  "implementation": {
+    "r12c2Pr": 486,
+    "r12c2MergeSha": "13975969a077bbbf9979253e6ee4570b1e20aa4a",
+    "r12c3Pr": 487,
+    "r12c3MergeSha": "32c27a9a772cb62ff38f009c5fd1bb095ac27ad8"
+  },
+  "candidateAcceptance": {
+    "substantiveCandidateHeadSha": "52584565ae3ac4b10509df68c90692915f7fe475",
+    "workflowRunId": 28992701959,
+    "artifactId": 8188563767,
+    "artifactDigest": "sha256:e81cdbce17fb5a97285d1dbddce768fea7b0332705ab0afa424619db656c90d6",
+    "finalLatestHeadSha": "9f971a9a5f307c190d57f6a0ed0a8828a72262b8",
+    "finalDedicatedRunId": 28992998420,
+    "finalArtifactId": 8188684969,
+    "finalArtifactDigest": "sha256:9eba77e561a2f2660d9a9a1ff9cfc610f9b1fe94f08127f4ca66c86b4b7870ce",
+    "status": "candidate_pass",
+    "browser": {
+      "routes": 25,
+      "viewports": 4,
+      "scenarios": 100,
+      "violations": 0,
+      "providerCrossingScenarios": 0,
+      "providerNeutralApiRequestScenarios": 0,
+      "overflowScenarios": 0,
+      "focusFailures": 0,
+      "unlabeledControlScenarios": 0,
+      "legalMobileTargetFailures": 0
+    },
+    "supportTransition": {
+      "result": "pass",
+      "stripeLink": "https://buy.stripe.com/6oUcMYeRh0Na2oX3cDcIE03",
+      "desktopHttpStatus": 200,
+      "mobileHttpStatus": 200,
+      "horizontalOverflowPx": 0,
+      "mobileCtaHeightPx": 44,
+      "violations": 0
+    },
+    "refundDisclosure": {
+      "result": "pass",
+      "canonicalOrigin": "https://vl.badjoke-lab.com",
+      "pageScenarios": 8,
+      "navigationFlows": 2,
+      "violations": 0
+    },
+    "launchAssets": {
+      "count": 6,
+      "captureResult": "pass",
+      "packageVerificationResult": "pass"
+    }
+  },
+  "productionAcceptance": {
+    "targetMainSha": "32c27a9a772cb62ff38f009c5fd1bb095ac27ad8",
+    "deployedSha": "32c27a9a772cb62ff38f009c5fd1bb095ac27ad8",
+    "workflow": "Production Smoke",
+    "workflowRunId": 28993206779,
+    "artifactId": 8188712759,
+    "artifactDigest": "sha256:da5eb4e090f13edd469845f7270744356207ae2d268a79b64d805b5c7f6cd88b",
+    "checkedAt": "2026-07-09T04:05:45Z",
+    "publicRoutesChecked": 25,
+    "providerStatusApisChecked": 2,
+    "providerCrossingFailures": 0,
+    "explicit404Failures": 0,
+    "providersSeparate": true,
+    "twitch": {
+      "binding": "DB_TWITCH_HOT",
+      "database": "vl_twitch_hot",
+      "sourceMode": "real",
+      "collectorState": "ok",
+      "fresh": true,
+      "stale": false,
+      "observedCount": 300,
+      "topLimit": 300,
+      "capacityState": "at-or-over-window"
+    },
+    "kick": {
+      "binding": "DB_KICK_HOT",
+      "database": "vl_kick_hot",
+      "sourceMode": "authenticated",
+      "collectorState": "snapshot_available",
+      "fresh": true,
+      "stale": false,
+      "observedCount": 100,
+      "topLimit": 100,
+      "capacityState": "at-or-over-window"
+    },
+    "monitoring": {
+      "blockingAlerts": 0,
+      "watchAlerts": 2
+    }
+  },
+  "independentCloseoutProbe": {
+    "workflow": "Release Phase12 Hosted Closeout",
+    "workflowRunId": 28993547481,
+    "headSha": "8cfdeb8ad842c1a45d773becd18058442b79b972",
+    "artifactId": 8188835607,
+    "artifactDigest": "sha256:7b2feb1e7e73ceb14e2b85c161e791e173991e94396b3f63a914a2da303ec935",
+    "result": "pass",
+    "verifiedProductionSmokeRunId": 28993206779,
+    "verifiedProductionSmokeArtifactId": 8188712759
+  },
+  "completion": {
+    "r12aComplete": true,
+    "r12bCompleteThroughR12B2": true,
+    "r12c0Complete": true,
+    "r12c1Complete": true,
+    "r12c2Complete": true,
+    "r12c3CandidateAccepted": true,
+    "exactMainShaProductionSmokePassed": true,
+    "permanentReleaseAcceptanceRecorded": true,
+    "phase12Complete": true,
+    "nextProgram": "Phase 12A Analytics Capture Foundation",
+    "nextWorkstream": "12A-0 current data and capacity baseline",
+    "nextBranch": "work-analytics-12a0-current-data-capacity-baseline"
+  },
+  "capacityCarryForward": {
+    "twitch": {
+      "observedCount": 300,
+      "topLimit": 300,
+      "state": "at-or-over-window"
+    },
+    "kick": {
+      "observedCount": 100,
+      "topLimit": 100,
+      "state": "at-or-over-window"
+    },
+    "authorizationToExpandWindows": false,
+    "authorizationToExtendRawRetention": false
+  }
+}
