@@ -9,16 +9,19 @@ const exists = (path) => existsSync(join(root, path))
 
 const manifest = load('docs/audits/public-surface-inventory.json')
 check(manifest.schema === 'viewloom-public-surface-inventory-v1', 'manifest schema mismatch')
+check(manifest.version === 6, 'inventory version mismatch')
 check(manifest.historical_next_branch === 'work-public-browser-audit', 'historical next branch changed')
-check(manifest.source?.accepted_main_sha === '952f0008209363f4fd5b22587975ac247ee8d6f2', 'R12A accepted main SHA mismatch')
-check(manifest.source?.production_acceptance === 'docs/audits/r12a-production-acceptance.json', 'R12A evidence owner missing')
-check(manifest.active_program === 'Phase 12 R12C English launch package and release acceptance', 'active program mismatch')
+check(manifest.source?.accepted_main_sha === '32c27a9a772cb62ff38f009c5fd1bb095ac27ad8', 'Phase 12 accepted main SHA mismatch')
+check(manifest.source?.production_acceptance === 'docs/audits/phase12-release-acceptance.json', 'Phase 12 evidence owner missing')
+check(manifest.source?.historical_r12a_acceptance === 'docs/audits/r12a-production-acceptance.json', 'historical R12A evidence owner missing')
+check(manifest.active_program === 'Phase 12A Analytics Capture Foundation', 'active program mismatch')
 check(manifest.provider_invariants?.twitch_binding === 'DB_TWITCH_HOT', 'Twitch binding mismatch')
 check(manifest.provider_invariants?.kick_binding === 'DB_KICK_HOT', 'Kick binding mismatch')
 check(manifest.provider_invariants?.combined_totals_allowed === false, 'combined totals must remain forbidden')
 check(manifest.provider_invariants?.combined_rankings_allowed === false, 'combined rankings must remain forbidden')
 check(manifest.counts?.vite_html_inputs === 25, 'expected 25 Vite HTML routes')
 check(manifest.counts?.inventory_entries === 26, 'expected 26 inventory entries')
+check(manifest.counts?.current_browser_required_viewports === 4, 'expected 4 browser viewports')
 check(manifest.counts?.current_browser_scenarios === 100, 'expected 100 current browser scenarios')
 check(manifest.counts?.public_readiness_configured_pages === 25, 'Public Readiness route count mismatch')
 check(manifest.counts?.production_smoke_page_routes === 25, 'Production Smoke route count mismatch')
@@ -99,12 +102,17 @@ check(gaps.resolved_surfaces?.length === 5, 'five resolved R12A surfaces require
 check(gaps.historical_missing_surface_baseline?.count === 5, 'historical P8B missing count changed')
 check(gaps.cross_route_gaps?.some((item) => item.id === 'policy-surfaces-missing' && item.state === 'resolved'), 'policy surface gap must remain resolved')
 
+const phase12 = load('docs/audits/phase12-release-acceptance.json')
+check(phase12.status === 'complete' && phase12.result === 'pass', 'Phase 12 production acceptance must remain complete')
+check(phase12.productionAcceptance?.targetMainSha === manifest.source.accepted_main_sha, 'inventory and Phase 12 accepted SHA mismatch')
+check(phase12.productionAcceptance?.deployedSha === manifest.source.accepted_main_sha, 'Phase 12 deployed SHA mismatch')
+check(phase12.productionAcceptance?.publicRoutesChecked === 25, 'Phase 12 route count mismatch')
+check(phase12.productionAcceptance?.providerCrossingFailures === 0, 'Phase 12 provider crossing failure')
+check(phase12.productionAcceptance?.monitoring?.blockingAlerts === 0, 'Phase 12 blocking alert')
+
 const r12a = load('docs/audits/r12a-production-acceptance.json')
-check(r12a.status === 'complete' && r12a.result === 'pass', 'R12A production acceptance must remain complete')
-check(r12a.expected_main_sha === r12a.deployed_sha, 'R12A expected/deployed SHA mismatch')
-check(r12a.counts?.html_routes === 25, 'R12A route count mismatch')
-check(r12a.counts?.provider_crossing_failures === 0, 'R12A provider crossing failure')
-check(r12a.counts?.blocking_alerts === 0, 'R12A blocking alert')
+check(r12a.status === 'complete' && r12a.result === 'pass', 'historical R12A production acceptance must remain complete')
+check(r12a.expected_main_sha === r12a.deployed_sha, 'historical R12A expected/deployed SHA mismatch')
 
 if (failures.length) {
   console.error('Public surface inventory verification failed:')
@@ -113,11 +121,12 @@ if (failures.length) {
 }
 
 console.log(`Public surface inventory verified: ${routes.length} routes, ${Object.keys(profiles).length} profiles, ${Object.keys(gates).length} gate groups.`)
-console.log('- active program is Phase 12 R12C English launch package and release acceptance')
+console.log('- active program is Phase 12A Analytics Capture Foundation')
 console.log('- 25 HTML routes plus explicit 404 remain owned')
-console.log('- five R12A legal/support routes remain production accepted and resolved')
+console.log('- Phase 12 exact-SHA production acceptance owns current public-surface acceptance')
+console.log('- five R12A legal/support routes remain resolved and historically preserved')
 console.log('- Twitch and Kick bindings remain separate')
-console.log('- historical P8B evidence remains locked separately')
+console.log('- historical P8B and R12A evidence remain locked separately')
 
 function tag(html, name) { return html.match(new RegExp(`<${name}\\b[^>]*>([\\s\\S]*?)<\\/${name}>`, 'i'))?.[1]?.trim() ?? '' }
 function attr(source, name) { return source.match(new RegExp(`\\b${name}=["']([^"']*)["']`, 'i'))?.[1] ?? '' }
