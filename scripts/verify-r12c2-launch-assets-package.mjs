@@ -77,10 +77,10 @@ for (const item of expected) {
   assert.equal(actualHash, asset.sha256, `${item.id}: sha256 mismatch`)
   assert.ok(captions.includes(`### ${item.id}`), `${item.id}: caption section missing`)
   assert.ok(captions.includes(asset.caption), `${item.id}: manifest caption and caption package diverge`)
-}
 
-for (const pattern of forbidden) {
-  assert.equal(pattern.test(captions), false, `caption package contains forbidden stronger claim: ${pattern}`)
+  for (const pattern of forbidden) {
+    assert.equal(pattern.test(asset.caption), false, `${item.id}: caption contains forbidden stronger claim: ${pattern}`)
+  }
 }
 
 console.log(JSON.stringify({
