@@ -3,7 +3,8 @@ import { basename, dirname, resolve } from 'node:path'
 
 const evidencePath = process.argv[2] || 'artifacts/r12c2-launch-assets/evidence.json'
 const sourceDir = process.argv[3] || 'artifacts/r12c2-launch-assets'
-const packageRoot = process.argv[4] || 'docs/assets/launch/r12c2'
+const packageRoot = process.argv[4] || 'apps/web/public/launch-assets'
+const permanentEvidencePath = 'docs/audits/r12c2-launch-assets-capture.json'
 
 const evidence = JSON.parse(await readFile(evidencePath, 'utf8'))
 
@@ -47,11 +48,15 @@ for (const asset of evidence.assets) {
   })
 }
 
+await mkdir(dirname(permanentEvidencePath), { recursive: true })
+await writeFile(permanentEvidencePath, `${JSON.stringify(evidence, null, 2)}\n`)
+
 const manifest = {
   schema: 'viewloom-r12c2-launch-asset-manifest-v1',
   phase: 'Phase 12',
   workstream: 'R12C-2',
   packageRoot,
+  permanentCaptureEvidence: permanentEvidencePath,
   capture: {
     origin: evidence.origin,
     checkedAt: evidence.checked_at,
@@ -71,7 +76,6 @@ const manifest = {
   ],
 }
 
-await mkdir(dirname('docs/audits/r12c2-launch-asset-manifest.json'), { recursive: true })
 await writeFile(
   'docs/audits/r12c2-launch-asset-manifest.json',
   `${JSON.stringify(manifest, null, 2)}\n`,
@@ -94,6 +98,7 @@ for (const asset of assets) {
   captionLines.push(`### ${asset.id}`)
   captionLines.push('')
   captionLines.push(`- File: \`${basename(asset.path)}\``)
+  captionLines.push(`- Repository path: \`${asset.path}\``)
   captionLines.push(`- Source route: \`${asset.route}\``)
   captionLines.push(`- Viewport: \`${asset.viewport.width}×${asset.viewport.height}\``)
   captionLines.push(`- Intended use: ${asset.intendedUse.join('; ')}`)
@@ -113,6 +118,7 @@ await writeFile('docs/product/launch-asset-captions.md', `${captionLines.join('\
 console.log(JSON.stringify({
   result: 'pass',
   packageRoot,
+  permanentEvidence: permanentEvidencePath,
   manifest: 'docs/audits/r12c2-launch-asset-manifest.json',
   captions: 'docs/product/launch-asset-captions.md',
   assets: assets.length,
