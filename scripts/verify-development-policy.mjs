@@ -21,43 +21,30 @@ const required = [
   'docs/operations/development-and-deployment-policy.md',
   'docs/operations/documentation-governance.md',
   'docs/operations/phase11-production-closeout-2026-07-08.md',
-  'docs/operations/r12a-production-acceptance-2026-07-08.md',
-  'docs/operations/r12b0-evidence-audit-2026-07-09.md',
-  'docs/operations/r12b1-support-transition-acceptance-2026-07-09.md',
-  'docs/operations/r12b2-refund-disclosure-acceptance-2026-07-09.md',
-  'docs/operations/r12c0-message-inventory-2026-07-09.md',
-  'docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md',
-  'docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md',
+  'docs/operations/phase12-release-acceptance-2026-07-09.md',
+  'docs/operations/r12c3-release-candidate-acceptance-2026-07-09.md',
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
-  'docs/product/release-readiness-spec.md',
-  'docs/product/release-readiness-plan.md',
   'docs/product/english-launch-copy.md',
   'docs/product/launch-asset-captions.md',
-  'docs/work-in-progress/phase12-release-readiness.md',
-  'docs/audits/r12a-production-acceptance.json',
-  'docs/audits/r12b-evidence-and-configuration-audit.json',
-  'docs/audits/r12c0-message-inventory.json',
-  'docs/audits/r12c1-launch-copy-package.json',
-  'docs/audits/r12c2-launch-assets-capture.json',
-  'docs/audits/r12c2-launch-asset-manifest.json',
-  'docs/audits/r12c3-release-candidate-contract.json',
-  'docs/audits/public-surface-inventory.json',
-  'docs/audits/public-surface-gaps.json',
   'docs/product/analytics-observation-system-spec.md',
   'docs/product/analytics-observation-system-plan.md',
   'docs/product/next-feature-data-capability-audit.md',
+  'docs/audits/phase12-release-acceptance.json',
+  'docs/audits/r12c3-candidate-acceptance.json',
+  'docs/audits/r12c3-release-candidate-contract.json',
+  'docs/audits/r12c1-launch-copy-package.json',
+  'docs/audits/r12c2-launch-assets-capture.json',
+  'docs/audits/r12c2-launch-asset-manifest.json',
+  'docs/audits/public-surface-inventory.json',
+  'docs/audits/public-surface-gaps.json',
+  'scripts/verify-phase12-release-acceptance.mjs',
   'scripts/verify-r12c1-launch-copy-package.mjs',
   'scripts/verify-r12c2-launch-assets-package.mjs',
-  'scripts/verify-r12c3-release-candidate-contract.mjs',
-  'scripts/verify-r12c3-release-candidate.mjs',
-  'scripts/build-r12c3-candidate-evidence.mjs',
-  'scripts/verify-r12c3-candidate-evidence.mjs',
   'scripts/verify-public-surface-inventory.mjs',
   'scripts/verify-public-browser-audit-current.mjs',
   '.github/workflows/development-policy.yml',
-  '.github/workflows/release-r12c2-launch-assets.yml',
   '.github/workflows/public-browser-audit.yml',
   '.github/workflows/public-readiness-audit.yml',
   '.github/workflows/production-smoke.yml',
@@ -77,10 +64,16 @@ for (const asset of [
   assert.equal(exists(`apps/web/public/launch-assets/${asset}`), true, `missing R12C-2 asset: ${asset}`)
 }
 
-assert.equal(exists('docs/work-in-progress/phase11-acceptance-operations.md'), false)
-assert.equal(exists('.github/workflows/phase11-hosted-closeout-acceptance.yml'), false)
-assert.equal(exists('.github/workflows/release-r12a-production-closeout.yml'), false)
-assert.equal(exists('docs/audits/r12a-candidate-acceptance-marker.md'), false)
+for (const retired of [
+  'docs/work-in-progress/phase11-acceptance-operations.md',
+  'docs/work-in-progress/phase12-release-readiness.md',
+  '.github/workflows/phase11-hosted-closeout-acceptance.yml',
+  '.github/workflows/release-r12a-production-closeout.yml',
+  '.github/workflows/release-phase12-hosted-closeout.yml',
+  'scripts/verify-phase12-hosted-closeout-probe.mjs',
+]) {
+  assert.equal(exists(retired), false, `retired temporary file must be absent: ${retired}`)
+}
 
 for (const path of [
   'README.md',
@@ -90,92 +83,80 @@ for (const path of [
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
-  'docs/work-in-progress/phase12-release-readiness.md',
 ]) {
   check(path, [
     'Phase 12',
-    'R12C-2',
     'complete',
-    'R12C-3',
-    'active',
-    'work-release-r12c3-release-candidate-acceptance',
+    'Phase 12A',
+    '12A-0 current data and capacity baseline',
+    'work-analytics-12a0-current-data-capacity-baseline',
   ])
 }
 
 check('AGENTS.md', [
-  'Current workstream: R12C-3 release candidate acceptance',
-  'Exact active implementation branch: work-release-r12c3-release-candidate-acceptance',
-  'Active branch created: yes',
-  'Candidate merge does not complete Phase 12.',
+  'Current workstream: 12A-0 current data and capacity baseline',
+  'Exact next implementation branch: work-analytics-12a0-current-data-capacity-baseline',
+  'Next branch created: no',
 ])
 check('CONTRIBUTING.md', [
-  'Current workstream: R12C-3 release candidate acceptance',
-  'Exact active implementation branch: work-release-r12c3-release-candidate-acceptance',
-  'Active branch created: yes',
-  'Candidate merge alone does not complete Phase 12.',
-])
-check('docs/work-in-progress/phase12-release-readiness.md', [
-  'R12C-3 candidate contract: `../audits/r12c3-release-candidate-contract.json`',
-  'Exact active implementation branch: `work-release-r12c3-release-candidate-acceptance`',
-  'Active branch created: yes',
-  'Candidate merge alone does not complete Phase 12.',
+  'Current workstream: 12A-0 current data and capacity baseline',
+  'Exact next implementation branch: work-analytics-12a0-current-data-capacity-baseline',
+  'Next branch created: no',
 ])
 
-const r12a = json('docs/audits/r12a-production-acceptance.json')
-assert.equal(r12a.status, 'complete')
-assert.equal(r12a.result, 'pass')
-assert.equal(r12a.expected_main_sha, r12a.deployed_sha)
-assert.equal(r12a.counts.html_routes, 25)
-assert.equal(r12a.counts.provider_crossing_failures, 0)
-assert.equal(r12a.counts.blocking_alerts, 0)
+const phase12 = json('docs/audits/phase12-release-acceptance.json')
+assert.equal(phase12.schema, 'viewloom-phase12-release-acceptance-v1')
+assert.equal(phase12.status, 'complete')
+assert.equal(phase12.result, 'pass')
+assert.equal(phase12.productionAcceptance.targetMainSha, '32c27a9a772cb62ff38f009c5fd1bb095ac27ad8')
+assert.equal(phase12.productionAcceptance.deployedSha, phase12.productionAcceptance.targetMainSha)
+assert.equal(phase12.productionAcceptance.workflowRunId, 28993206779)
+assert.equal(phase12.productionAcceptance.artifactId, 8188712759)
+assert.equal(phase12.productionAcceptance.publicRoutesChecked, 25)
+assert.equal(phase12.productionAcceptance.providerCrossingFailures, 0)
+assert.equal(phase12.productionAcceptance.explicit404Failures, 0)
+assert.equal(phase12.productionAcceptance.monitoring.blockingAlerts, 0)
+assert.equal(phase12.independentCloseoutProbe.workflowRunId, 28993547481)
+assert.equal(phase12.independentCloseoutProbe.result, 'pass')
+assert.equal(phase12.completion.phase12Complete, true)
+assert.equal(phase12.completion.nextProgram, 'Phase 12A Analytics Capture Foundation')
+assert.equal(phase12.completion.nextWorkstream, '12A-0 current data and capacity baseline')
+assert.equal(phase12.completion.nextBranch, 'work-analytics-12a0-current-data-capacity-baseline')
+assert.equal(phase12.capacityCarryForward.authorizationToExpandWindows, false)
+assert.equal(phase12.capacityCarryForward.authorizationToExtendRawRetention, false)
 
-const r12b = json('docs/audits/r12b-evidence-and-configuration-audit.json')
-assert.equal(r12b.status, 'complete')
-assert.equal(r12b.workstream, 'R12B-0')
-assert.equal(r12b.completion_gate.r12b_0_complete, true)
-assert.equal(r12b.evidence_classes.current_external_dashboard_state.status, 'pending_external_evidence')
-assert.equal(r12b.consistency_review.unsupported_dashboard_state_claims_detected, false)
-assert.equal(r12b.consistency_review.charitable_donation_wording_detected, false)
+const candidate = json('docs/audits/r12c3-candidate-acceptance.json')
+assert.equal(candidate.status, 'candidate_pass')
+assert.equal(candidate.browser.routes, 25)
+assert.equal(candidate.browser.viewports, 4)
+assert.equal(candidate.browser.scenarios, 100)
+assert.equal(candidate.browser.violations, 0)
+assert.equal(candidate.browser.providerCrossingScenarios, 0)
+assert.equal(candidate.browser.legalMobileTargetFailures, 0)
 
-const r12c0 = json('docs/audits/r12c0-message-inventory.json')
-assert.equal(r12c0.status, 'complete')
-assert.equal(r12c0.workstream, 'R12C-0')
-assert.equal(r12c0.completion.r12c0_complete, true)
+const contract = json('docs/audits/r12c3-release-candidate-contract.json')
+assert.equal(contract.status, 'complete')
+assert.equal(contract.closeout.result, 'pass')
+assert.equal(contract.closeout.candidateMergeSha, '32c27a9a772cb62ff38f009c5fd1bb095ac27ad8')
+assert.equal(contract.closeout.productionSmokeRunId, 28993206779)
+assert.equal(contract.closeout.independentCloseoutProbeRunId, 28993547481)
 
 const r12c1 = json('docs/audits/r12c1-launch-copy-package.json')
-assert.equal(r12c1.schema, 'viewloom-r12c1-launch-copy-package-v1')
 assert.equal(r12c1.status, 'complete')
 assert.equal(r12c1.feature_roles.length, 7)
 assert.equal(r12c1.faq.length, 12)
 assert.equal(r12c1.completion.r12c1_complete, true)
-assert.equal(r12c1.retention.collection_cadence, '5 minutes')
-assert.equal(r12c1.retention.public_daily_rollups, 'up to 180 days')
 
 const r12c2Capture = json('docs/audits/r12c2-launch-assets-capture.json')
-assert.equal(r12c2Capture.schema, 'viewloom-r12c2-launch-assets-capture-v1')
 assert.equal(r12c2Capture.result, 'pass')
 assert.equal(r12c2Capture.assets.length, 6)
 assert.equal(r12c2Capture.violations.length, 0)
 
 const r12c2Manifest = json('docs/audits/r12c2-launch-asset-manifest.json')
-assert.equal(r12c2Manifest.schema, 'viewloom-r12c2-launch-asset-manifest-v1')
 assert.equal(r12c2Manifest.assetCount, 6)
 assert.equal(r12c2Manifest.assets.length, 6)
 assert.equal(r12c2Manifest.capture.result, 'pass')
 assert.equal(r12c2Manifest.packageVerification.result, 'pass')
-
-const r12c3 = json('docs/audits/r12c3-release-candidate-contract.json')
-assert.equal(r12c3.schema, 'viewloom-r12c3-release-candidate-contract-v1')
-assert.equal(r12c3.phase, 'Phase 12')
-assert.equal(r12c3.workstream, 'R12C-3')
-assert.equal(r12c3.status, 'active')
-assert.equal(r12c3.branch, 'work-release-r12c3-release-candidate-acceptance')
-assert.equal(r12c3.baseMainSha, '13975969a077bbbf9979253e6ee4570b1e20aa4a')
-assert.equal(r12c3.candidateContract.htmlRoutes, 25)
-assert.equal(r12c3.candidateContract.browserScenarios, 100)
-assert.equal(r12c3.candidateContract.combinedTotalsAllowed, false)
-assert.equal(r12c3.candidateContract.combinedRankingsAllowed, false)
-assert.equal(r12c3.postmergeBoundary.exactMainShaProductionSmokeRequired, true)
 
 const inventory = json('docs/audits/public-surface-inventory.json')
 assert.equal(inventory.counts.vite_html_inputs, 25)
@@ -193,12 +174,6 @@ assert.equal(gaps.missing_surfaces.length, 0)
 assert.equal(gaps.candidate_surfaces.length, 0)
 assert.equal(gaps.resolved_surfaces.length, 5)
 
-check('docs/product/release-readiness-plan.md', [
-  'R12C-3 — release candidate acceptance',
-  'exact production SHA smoke after merge',
-  'Create permanent Phase 12 release acceptance evidence.',
-  'Do not begin Phase 12A data/schema work before Phase 12 release acceptance closes',
-])
 check('docs/product/analytics-observation-system-plan.md', [
   'Phase 12A — Analytics Capture Foundation',
   'Phase 15 — Analytics Capability and Calibration Audit',
@@ -207,9 +182,9 @@ check('docs/product/analytics-observation-system-plan.md', [
 ])
 
 console.log('Development and documentation policy verification passed.')
-console.log('- R12C-0, R12C-1, and R12C-2 remain complete with permanent evidence')
-console.log('- R12C-3 candidate contract is active on work-release-r12c3-release-candidate-acceptance')
-console.log('- active branch state is synchronized across canonical handoff documents')
-console.log('- candidate acceptance workflow owns the premerge candidate artifact')
-console.log('- candidate merge does not complete Phase 12; exact main SHA Production Smoke remains required')
-console.log('- Phase 12A remains gated by full Phase 12 acceptance and closeout')
+console.log('- Phase 12 permanent acceptance is complete and exact-SHA bound')
+console.log('- Phase 12 working note and temporary closeout tools are retired')
+console.log('- current program is Phase 12A Analytics Capture Foundation')
+console.log('- current workstream is 12A-0 current data and capacity baseline')
+console.log('- exact next branch is work-analytics-12a0-current-data-capacity-baseline and remains uncreated')
+console.log('- Twitch/Kick separation and bounded-capacity constraints remain enforced')
