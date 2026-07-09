@@ -1,25 +1,25 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 6.8
+Version: 6.9
 Last updated: 2026-07-09
-Current phase: Phase 12 — English release readiness
-Current workstream: R12C-3 release candidate acceptance
-Exact active implementation branch: `work-release-r12c3-release-candidate-acceptance`
-Active branch created: yes
+Current phase: Phase 12A — Analytics Capture Foundation
+Current workstream: 12A-0 current data and capacity baseline
+Exact next implementation branch: `work-analytics-12a0-current-data-capacity-baseline`
+Next branch created: no
 
 ```text
 Phase 10 complete through U10H
 Phase 11 P11A-P11G complete
 Phase 11 production closeout complete
-Phase 12 English release readiness active
-R12A legal and support public-surface completion complete
-R12B Stripe and support-flow readiness complete through R12B-2
-R12C-0 message inventory complete
-R12C-1 launch copy and FAQ complete
-R12C-2 launch/share asset package complete PR #486
-R12C-3 release candidate acceptance active
-Phase 12A Analytics Capture Foundation approved and queued
+Phase 12 English release readiness complete
+R12A complete
+R12B complete through R12B-2
+R12C-0 complete PR #484
+R12C-1 complete PR #485
+R12C-2 complete PR #486
+R12C-3 complete PR #487
+Phase 12A Analytics Capture Foundation current
 Phase 13-14 localization queued after Phase 12A
 Phase 15 Analytics Capability and Calibration Audit queued
 Phase 16 Analytics Observation System approved and gated by Phase 15
@@ -28,8 +28,7 @@ Phase 16 Analytics Observation System approved and gated by Phase 15
 ## Program sequence
 
 ```text
-Phase 12 English release readiness
-  -> Phase 12A Analytics Capture Foundation
+Phase 12A Analytics Capture Foundation
   -> Phase 13-14 localization and analytics evidence accumulation
   -> Phase 15 Analytics Capability and Calibration Audit
   -> Phase 16A Baseline Engine
@@ -40,150 +39,80 @@ Phase 12 English release readiness
   -> Phase 16F Replay and Backtest
 ```
 
-## Phase 12 authorities
+## Phase 12 permanent closeout
+
+Phase 12 is complete.
 
 ```text
-docs/product/release-readiness-spec.md
-docs/product/release-readiness-plan.md
-docs/work-in-progress/phase12-release-readiness.md
-docs/audits/r12c3-release-candidate-contract.json
+main SHA: 32c27a9a772cb62ff38f009c5fd1bb095ac27ad8
+Production Smoke run: 28993206779
+Production Smoke artifact: 8188712759
+Independent closeout probe run: 28993547481
+Result: pass
 ```
 
-Sequence:
+Permanent records:
 
 ```text
-R12A legal and support public-surface completion   complete
-R12B Stripe and support-flow readiness             complete
-R12C-0 message inventory                           complete
-R12C-1 launch copy and FAQ                         complete
-R12C-2 launch/share asset package                  complete
-R12C-3 release candidate acceptance                active
+docs/audits/phase12-release-acceptance.json
+docs/operations/phase12-release-acceptance-2026-07-09.md
+docs/audits/r12c3-candidate-acceptance.json
+docs/operations/r12c3-release-candidate-acceptance-2026-07-09.md
 ```
 
-## R12C-0 evidence
-
-```text
-docs/audits/r12c0-message-inventory.json
-docs/audits/r12c0-message-inventory.md
-docs/operations/r12c0-message-inventory-2026-07-09.md
-```
-
-## R12C-1 closeout
-
-Permanent English source-language package:
+Retained launch packages:
 
 ```text
 docs/product/english-launch-copy.md
 docs/audits/r12c1-launch-copy-package.json
-docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md
-```
-
-Accepted package:
-
-```text
-one-line product description
-short listing description
-long product description
-seven-role feature summary
-coverage limitations
-plain-language Kick candidate explanation
-provider separation explanation
-5-minute cadence explanation
-up-to-180-day daily rollup explanation
-12-question FAQ
-Status/help links
-Support/legal links
-terminology contract
-R12C-2 asset handoff
-```
-
-The English package is the Phase 13–14 localization source after the approved program reaches localization.
-
-## R12C-2 closeout
-
-Permanent launch/share package:
-
-```text
 apps/web/public/launch-assets/
-docs/audits/r12c2-launch-assets-capture.json
 docs/audits/r12c2-launch-asset-manifest.json
 docs/product/launch-asset-captions.md
-docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md
 ```
-
-R12C-2 accepted:
-
-```text
-Portal desktop production screenshot
-Portal mobile production screenshot
-Twitch Heatmap production screenshot
-Twitch Day Flow production screenshot
-Twitch Battle Lines production screenshot
-Twitch History production screenshot
-source route and viewport metadata
-capture time and intended-use metadata
-bounded captions
-public-surface capture facts
-binary byte size and SHA-256 verification
-```
-
-Assets represent current product surfaces rather than invented mockups. Captions preserve bounded observed-data, provider separation, and coverage-limit language from the R12C-1 package.
-
-## R12C-3 active scope
-
-R12C-3 closes the full English release candidate and Phase 12 acceptance contract.
-
-Candidate contract:
-
-```text
-docs/audits/r12c3-release-candidate-contract.json
-```
-
-Required checks:
-
-```text
-full web typecheck
-production build
-public-surface inventory verification
-Public Readiness
-Public Browser Audit
-affected responsive/accessibility gates
-provider separation contracts
-legal/support direct-link checks
-outbound payment/support link checks
-metadata/canonical/sitemap checks
-deliberate hosted validation where required
-exact production SHA smoke after merge
-permanent Phase 12 release acceptance evidence
-canonical closeout
-temporary Phase 12 working-note retirement
-```
-
-Candidate merge alone does not complete Phase 12. The exact merged `main` SHA must pass Production Smoke before permanent acceptance and canonical closeout.
-
-Phase 12A remains blocked until this workstream and the complete Phase 12 closeout are accepted.
 
 ## Phase 12A purpose
 
-Phase 12A begins data capture and compact aggregation for facts that existing daily rollups cannot reconstruct later. It starts only after R12C-3 closes Phase 12.
+Phase 12A begins capture and compact aggregation for facts that existing daily rollups cannot reconstruct later. The program order is:
 
 ```text
-current capacity baseline
-analytics field contract
-compact intraday rollup model
-bounded rollup generation
-provider-specific category capture foundation
-production acceptance and accumulation handoff
+12A-0 current data and capacity baseline
+12A-1 analytics field contract
+12A-2 compact intraday rollup design and migration
+12A-3 bounded intraday rollup generation
+12A-4 provider-specific category capture foundation
+12A-5 production acceptance and accumulation handoff
 ```
+
+### 12A-0 current scope
+
+12A-0 is evidence-only baseline work. It records:
+
+```text
+current D1 and table footprint
+current raw and rollup retention
+row counts and observed growth evidence
+current query paths and known expensive paths
+5-minute cadence ownership
+scheduled work ownership
+current Twitch/Kick capacity state
+provider-specific category availability
+free-tier and operational constraints
+```
+
+No migration or runtime behavior change is allowed in 12A-0.
 
 Capacity observations carried forward:
 
 ```text
 Twitch 300/300 at-or-over-window
-Kick 100/100 at-or-over-window
+Kick   100/100 at-or-over-window
 ```
 
-They are baseline inputs, not authorization to expand observed windows.
+They are baseline inputs, not authorization to expand observed windows, extend raw retention, combine providers, or strengthen coverage claims.
+
+### Phase 12A completion intent
+
+Phase 12A should leave compact analytics evidence accumulating while Phase 13–14 localization proceeds. Phase 16 feature work remains blocked until Phase 15 evaluates evidence quantity, baseline support, anomaly calibration, category coverage, relationship candidates, replay feasibility, storage cost, and query cost.
 
 ## Phase 13-14 relationship to analytics
 
