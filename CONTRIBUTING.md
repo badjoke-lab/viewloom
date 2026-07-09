@@ -10,70 +10,52 @@ Read the development policy, documentation governance, documentation index, road
 Phase 10 complete through U10H
 Phase 11 P11A-P11G complete
 Phase 11 production closeout complete
-Phase 12 English release readiness active
-R12A legal and support public-surface completion complete
-R12B Stripe and support-flow readiness complete through R12B-2
-R12C-0 message inventory complete PR #484
-R12C-1 launch copy and FAQ complete PR #485
-R12C-2 launch/share asset package complete PR #486
-Current workstream: R12C-3 release candidate acceptance
-Exact active implementation branch: work-release-r12c3-release-candidate-acceptance
-Active branch created: yes
+Phase 12 English release readiness complete
+R12A complete
+R12B complete through R12B-2
+R12C-0 complete PR #484
+R12C-1 complete PR #485
+R12C-2 complete PR #486
+R12C-3 complete PR #487
+Phase 12A Analytics Capture Foundation current
+Current workstream: 12A-0 current data and capacity baseline
+Exact next implementation branch: work-analytics-12a0-current-data-capacity-baseline
+Next branch created: no
 ```
 
-Active Phase 12 authorities:
+Permanent Phase 12 acceptance:
 
 ```text
-docs/product/release-readiness-spec.md
-docs/product/release-readiness-plan.md
-docs/work-in-progress/phase12-release-readiness.md
-docs/audits/r12c3-release-candidate-contract.json
+docs/audits/phase12-release-acceptance.json
+docs/operations/phase12-release-acceptance-2026-07-09.md
+docs/audits/r12c3-candidate-acceptance.json
+docs/operations/r12c3-release-candidate-acceptance-2026-07-09.md
 ```
 
-Permanent R12C-1 source-language package:
+Exact production acceptance:
 
 ```text
-docs/product/english-launch-copy.md
-docs/audits/r12c1-launch-copy-package.json
-docs/operations/r12c1-launch-copy-acceptance-2026-07-09.md
+main SHA: 32c27a9a772cb62ff38f009c5fd1bb095ac27ad8
+Production Smoke run: 28993206779
+Independent closeout probe run: 28993547481
 ```
 
-Permanent R12C-2 launch/share package:
+## Phase 12A boundary
+
+12A-0 is evidence-only baseline work. Record current D1/storage/query/cadence/capacity facts before schema migration or analytics runtime changes.
+
+Closeout capacity observations carried forward:
 
 ```text
-apps/web/public/launch-assets/
-docs/audits/r12c2-launch-assets-capture.json
-docs/audits/r12c2-launch-asset-manifest.json
-docs/product/launch-asset-captions.md
-docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md
+Twitch 300/300  at-or-over-window
+Kick   100/100  at-or-over-window
 ```
 
-Phase 12 sequence:
-
-```text
-R12A legal and support public-surface completion   complete
-R12B Stripe and support-flow readiness             complete
-R12C-0 message inventory                           complete
-R12C-1 launch copy and FAQ                         complete
-R12C-2 launch/share asset package                  complete
-R12C-3 release candidate acceptance                active
-```
-
-R12C-3 must close the complete release candidate contract: latest-head typecheck/build, public inventory/readiness/browser gates, responsive/accessibility checks, provider separation contracts, legal/support direct links, outbound support/payment links, metadata/canonical/sitemap checks, hosted validation where required, and exact production SHA smoke after merge.
-
-Candidate merge alone does not complete Phase 12. The exact merged `main` SHA must pass Production Smoke, then permanent Phase 12 release acceptance is recorded, canonical documents advance to Phase 12A, and the temporary Phase 12 working note is retired.
+These observations do not authorize collection-window expansion, raw-retention extension, provider combination, or stronger coverage claims.
 
 R12B external-state boundaries remain in force. Current Stripe Dashboard/account facts must be supported by direct evidence and must not be inferred from repository code or public browser behavior alone.
 
-Approved future analytics authorities:
-
-```text
-docs/product/analytics-observation-system-spec.md
-docs/product/analytics-observation-system-plan.md
-docs/product/next-feature-data-capability-audit.md
-```
-
-Approved future sequence:
+Approved sequence:
 
 ```text
 Phase 12A Analytics Capture Foundation
@@ -82,7 +64,7 @@ Phase 12A Analytics Capture Foundation
   -> Phase 16A-F Analytics Observation System implementation
 ```
 
-Phase 12A and Phase 16 branches must not be created before their entry gates close. Analytics work must not bypass approved data capture, capacity, calibration, coverage, and evidence gates.
+Phase 16 branches must not be created before Phase 15 entry gates close. Analytics work must not bypass approved data capture, capacity, calibration, coverage, and evidence gates.
 
 ## Standard workflow
 
