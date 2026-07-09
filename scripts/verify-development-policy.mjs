@@ -58,7 +58,6 @@ const required = [
   'scripts/verify-public-browser-audit-current.mjs',
   '.github/workflows/development-policy.yml',
   '.github/workflows/release-r12c2-launch-assets.yml',
-  '.github/workflows/release-r12c3-candidate-acceptance.yml',
   '.github/workflows/public-browser-audit.yml',
   '.github/workflows/public-readiness-audit.yml',
   '.github/workflows/production-smoke.yml',
@@ -211,6 +210,6 @@ console.log('Development and documentation policy verification passed.')
 console.log('- R12C-0, R12C-1, and R12C-2 remain complete with permanent evidence')
 console.log('- R12C-3 candidate contract is active on work-release-r12c3-release-candidate-acceptance')
 console.log('- active branch state is synchronized across canonical handoff documents')
-console.log('- existing Release R12C3 Candidate Acceptance workflow owns the premerge candidate artifact')
+console.log('- candidate acceptance workflow owns the premerge candidate artifact')
 console.log('- candidate merge does not complete Phase 12; exact main SHA Production Smoke remains required')
 console.log('- Phase 12A remains gated by full Phase 12 acceptance and closeout')
