@@ -10,6 +10,9 @@ on:
       - 'docs/operations/r12c2-launch-assets-acceptance-2026-07-09.md'
       - 'docs/work-in-progress/phase12-release-readiness.md'
 
+permissions:
+  contents: write
+
 concurrency:
   group: release-r12c2-launch-assets-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -21,8 +24,11 @@ jobs:
     env:
       R12C2_ARTIFACT_DIR: ${{ github.workspace }}/artifacts/r12c2-launch-assets
     steps:
-      - name: Checkout
+      - name: Checkout PR head
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -51,6 +57,23 @@ jobs:
 
       - name: Verify capture evidence
         run: node scripts/verify-r12c2-launch-assets-capture.mjs artifacts/r12c2-launch-assets/evidence.json
+
+      - name: Persist exact captured assets and evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p apps/web/public/launch-assets
+          cp artifacts/r12c2-launch-assets/*.png apps/web/public/launch-assets/
+          cp artifacts/r12c2-launch-assets/evidence.json docs/audits/r12c2-launch-assets-capture.json
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/web/public/launch-assets docs/audits/r12c2-launch-assets-capture.json
+          if git diff --cached --quiet; then
+            echo 'Captured assets already match the branch.'
+          else
+            git commit -m 'Persist R12C-2 production launch assets'
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          fi
 
       - name: Upload launch asset capture artifact
         if: always()
