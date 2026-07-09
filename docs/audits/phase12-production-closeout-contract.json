@@ -2,9 +2,18 @@
   "schema": "viewloom-phase12-production-closeout-contract-v1",
   "phase": "Phase 12",
   "workstream": "R12C-3 production closeout",
-  "status": "active",
+  "status": "complete",
+  "result": "pass",
   "expectedMainSha": "32c27a9a772cb62ff38f009c5fd1bb095ac27ad8",
   "origin": "https://vl.badjoke-lab.com",
+  "releaseEvidence": "docs/audits/phase12-release-acceptance.json",
+  "operationRecord": "docs/operations/phase12-release-acceptance-2026-07-09.md",
+  "workflowRunId": "28993366876",
+  "artifact": {
+    "id": 8188770286,
+    "name": "phase12-production-closeout",
+    "digest": "sha256:70bf5b26c06813daa122ef0658efb1480efd569d740b4787449619d7124c757b"
+  },
   "htmlRoutes": [
     "/",
     "/about/",
