@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "viewloom-12a2-current-gate-state-v1",
+  "workstream": "12A-2 compact intraday rollup design and migration",
+  "status": "blocked_before_migration",
+  "design": {
+    "status": "accepted",
+    "pr": 494,
+    "mergeSha": "cc553861fa9d5959ca060a17ca08dd173ea16db0",
+    "contract": "docs/audits/12a2-intraday-rollup-design-contract.json",
+    "budgetEvidence": "docs/audits/12a2-intraday-rollup-budget-evidence.json",
+    "acceptance": "docs/operations/12a2-intraday-rollup-design-acceptance-2026-07-11.md",
+    "twitchSafeProjectionMb": 70.99,
+    "kickSafeProjectionMb": 23.57,
+    "combinedSafeProjectionMb": 94.56
+  },
+  "remoteSizeGate": {
+    "toolingStatus": "installed",
+    "pr": 495,
+    "mergeSha": "bc336bd1739472f47b8063afa586936a105c6851",
+    "evidence": "docs/audits/12a2-remote-d1-size-evidence.json",
+    "blockedRecord": "docs/operations/12a2-remote-d1-size-gate-blocked-2026-07-11.md",
+    "status": "blocked",
+    "blocker": "cloudflare_credentials_missing",
+    "migrationStorageGatePass": false
+  },
+  "migration": {
+    "status": "not_started",
+    "authorized": false,
+    "schemaApplied": false,
+    "runtimeGenerationStarted": false
+  },
+  "resumeCondition": {
+    "requiredRepositorySecrets": [
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_ACCOUNT_ID"
+    ],
+    "action": "rerun Analytics 12A2 Remote D1 Size Gate on main",
+    "nextMigrationBranchOnlyAfterGatePass": "work-analytics-12a2-migration"
+  }
+}
