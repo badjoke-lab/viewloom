@@ -1,0 +1,87 @@
+name: Analytics 12A2 Rollup Design
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'docs/audits/12a2-intraday-rollup-design-contract.json'
+      - 'docs/audits/12a2-intraday-rollup-budget-evidence.json'
+      - 'docs/product/intraday-rollup-design-v1.md'
+      - 'docs/operations/12a2-intraday-rollup-design-acceptance-*.md'
+      - 'docs/work-in-progress/phase12a2-intraday-rollup-design.md'
+      - 'scripts/measure-12a2-intraday-rollup-budget.mjs'
+      - 'scripts/verify-12a2-intraday-rollup-design.mjs'
+      - '.github/workflows/analytics-12a2-rollup-design.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: analytics-12a2-rollup-design-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  budget:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ARTIFACT_DIR: artifacts/12a2-intraday-rollup-budget
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install SQLite CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sqlite3
+
+      - name: Verify static 12A-2 design contract
+        run: node scripts/verify-12a2-intraday-rollup-design.mjs
+
+      - name: Measure conservative local SQLite storage budget
+        run: node scripts/measure-12a2-intraday-rollup-budget.mjs "$ARTIFACT_DIR/evidence.json"
+
+      - name: Verify measured budget evidence
+        run: node scripts/verify-12a2-intraday-rollup-design.mjs docs/audits/12a2-intraday-rollup-design-contract.json "$ARTIFACT_DIR/evidence.json"
+
+      - name: Verify permanent evidence when present
+        run: |
+          if [ -f docs/audits/12a2-intraday-rollup-budget-evidence.json ]; then
+            node scripts/verify-12a2-intraday-rollup-design.mjs docs/audits/12a2-intraday-rollup-design-contract.json docs/audits/12a2-intraday-rollup-budget-evidence.json
+          else
+            echo 'Permanent 12A-2 budget evidence is not frozen yet; generated artifact is candidate evidence.'
+          fi
+
+      - name: Publish budget summary
+        if: always()
+        run: |
+          if [ ! -f "$ARTIFACT_DIR/evidence.json" ]; then
+            echo '## ViewLoom 12A-2 Rollup Budget' >> "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+            echo '- Budget measurement did not complete.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo '## ViewLoom 12A-2 Rollup Budget'
+            echo
+            echo "- Twitch 90d rows: $(jq -r '.providers.twitch.projectedRows90d' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Twitch 90d storage: $(jq -r '.providers.twitch.projectedStorageMb90d' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Twitch 90d + safety: $(jq -r '.providers.twitch.projectedStorageMb90dWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Twitch payload baseline + safe projection: $(jq -r '.providers.twitch.payloadBaselinePlusProjectionWithSafetyMb' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Kick 90d rows: $(jq -r '.providers.kick.projectedRows90d' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Kick 90d storage: $(jq -r '.providers.kick.projectedStorageMb90d' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Kick 90d + safety: $(jq -r '.providers.kick.projectedStorageMb90dWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Kick payload baseline + safe projection: $(jq -r '.providers.kick.payloadBaselinePlusProjectionWithSafetyMb' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Maximum design rollup row upserts/day: $(jq -r '.writes.maximumRollupRowUpsertsPerDay.combined' "$ARTIFACT_DIR/evidence.json")"
+            echo '- Migration authorized: no'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload 12A-2 budget artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a2-intraday-rollup-budget
+          path: artifacts/12a2-intraday-rollup-budget/
+          if-no-files-found: warn

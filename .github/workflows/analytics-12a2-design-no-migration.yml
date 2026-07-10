@@ -1,0 +1,25 @@
+name: Analytics 12A2 Design No Migration
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: analytics-12a2-design-no-migration-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    if: ${{ github.head_ref == 'work-analytics-12a2-intraday-rollup-design' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify design-only branch boundary
+        run: node scripts/check-12a2-design-no-migration.mjs

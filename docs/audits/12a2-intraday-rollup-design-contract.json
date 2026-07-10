@@ -1,0 +1,182 @@
+{
+  "schemaVersion": "viewloom-12a2-intraday-rollup-design-v1",
+  "workstream": "12A-2 compact intraday rollup design and migration",
+  "status": "candidate_design",
+  "designOnly": true,
+  "migrationIncluded": false,
+  "runtimeGenerationIncluded": false,
+  "providerSeparated": true,
+  "baselineAuthority": "docs/audits/12a0-current-data-capacity-baseline.json",
+  "fieldContractAuthority": "docs/audits/12a1-analytics-field-contract.json",
+  "sourceContractVersion": "analytics-source-v1",
+  "platformConstraints": {
+    "observedAt": "2026-07-11",
+    "officialSources": [
+      "https://developers.cloudflare.com/d1/platform/limits/",
+      "https://developers.cloudflare.com/d1/platform/pricing/"
+    ],
+    "workersFree": {
+      "maximumDatabaseMb": 500,
+      "maximumAccountStorageMb": 5120,
+      "rowsReadPerDay": 5000000,
+      "rowsWrittenPerDay": 100000,
+      "queriesPerWorkerInvocation": 50,
+      "maximumQuerySeconds": 30
+    }
+  },
+  "model": {
+    "primaryTable": "streamer_intraday_rollups",
+    "statusTable": "intraday_rollup_status",
+    "grain": "provider x day x streamer",
+    "hourlyEncoding": {
+      "type": "sparse_json_array_of_arrays",
+      "sort": "hour_utc_ascending",
+      "cell": [
+        "hour_utc",
+        "viewer_minutes",
+        "peak_viewers",
+        "sample_count",
+        "observed_minutes",
+        "first_viewers",
+        "last_viewers"
+      ],
+      "example": [[0, 60000, 1200, 12, 60, 900, 1050]],
+      "maximumCellsPerRow": 24
+    },
+    "primaryColumns": [
+      "provider",
+      "day",
+      "streamer_id",
+      "display_name",
+      "daily_rank",
+      "total_viewer_minutes",
+      "peak_viewers",
+      "sample_count",
+      "observed_minutes",
+      "hourly_json",
+      "selection_state",
+      "source_mode",
+      "contract_version",
+      "updated_at"
+    ],
+    "primaryKey": ["provider", "day", "streamer_id"],
+    "secondaryIndex": ["provider", "streamer_id", "day"],
+    "categoryFieldsIncluded": false,
+    "providerStartedAtIncluded": false,
+    "exactSessionFieldsIncluded": false,
+    "reasoning": {
+      "category": "12A-1 capture approval is false for both providers.",
+      "providerStartedAt": "The compact baseline grain is day x streamer and must not imply one provider start time maps to one exact session or one daily row.",
+      "session": "Exact session identity and authoritative end/offline fields remain unavailable."
+    }
+  },
+  "selection": {
+    "metric": "daily_viewer_minutes_desc_then_peak_viewers_desc_then_streamer_id_asc",
+    "twitch": {
+      "currentObservedWindow": 300,
+      "retainedStreamerCapPerDay": 600,
+      "capMultiplier": 2
+    },
+    "kick": {
+      "currentObservedWindow": 100,
+      "retainedStreamerCapPerDay": 200,
+      "capMultiplier": 2
+    },
+    "statusEvidence": {
+      "candidateStreamers": true,
+      "retainedStreamers": true,
+      "retainedStreamerCap": true,
+      "selectionState": true,
+      "sourceSnapshots": true,
+      "coverageState": true
+    },
+    "truncationLanguage": "When candidate_streamers exceeds retained_streamer_cap, selection_state must be daily_cap_truncated and absence from retained rows must not be interpreted as offline or unobserved."
+  },
+  "retention": {
+    "intradayDays": 90,
+    "rawRetentionChanged": false,
+    "dailyRollupRetentionChanged": false,
+    "twitchRawDays": 30,
+    "kickRawDays": 60,
+    "dailyRollupDays": 180
+  },
+  "refresh": {
+    "newCronRequired": false,
+    "preferredExistingUtcWindows": ["00:20-00:24", "12:20-12:24"],
+    "daysPerRefresh": ["today", "yesterday"],
+    "idempotentUpsertRequired": true,
+    "analyticsFailureMustNotInvalidateRawCollection": true,
+    "maximumRollupRowUpsertsPerDay": {
+      "twitch": 2400,
+      "kick": 800,
+      "combined": 3200
+    },
+    "maximumStatusRowUpsertsPerDay": {
+      "twitch": 4,
+      "kick": 4,
+      "combined": 8
+    },
+    "logicalSourceObservationUpperBoundPerDay": {
+      "twitch": 345600,
+      "kick": 115200,
+      "combined": 460800,
+      "billingDisclaimer": "These are logical snapshot-item observations for four provider-day refresh scopes, not claimed D1 billed rows_read. 12A-3 must record D1 meta rows_read and rows_written from production execution."
+    }
+  },
+  "queryContracts": {
+    "streamer90DayBaseline": {
+      "index": ["provider", "streamer_id", "day"],
+      "maximumPrimaryRowsSelected": 90,
+      "purpose": "weekday x hour baseline input and support counts"
+    },
+    "streamerRecentTrend": {
+      "index": ["provider", "streamer_id", "day"],
+      "maximumPrimaryRowsSelected": 30,
+      "purpose": "recent trend and fallback context"
+    },
+    "dayRefresh": {
+      "primaryKeyPrefix": ["provider", "day"],
+      "purpose": "delete/upsert bounded daily rollup rows idempotently"
+    },
+    "productionTimingTargetsFor12A3": {
+      "singleProviderDayRefreshTargetMs": 10000,
+      "singleProviderDayRefreshHardStopMs": 25000,
+      "streamer90DayLookupTargetMs": 1000,
+      "note": "Targets are acceptance targets, not current measured D1 timings. Cloudflare documents a 30-second maximum query duration."
+    }
+  },
+  "budgetMeasurement": {
+    "script": "scripts/measure-12a2-intraday-rollup-budget.mjs",
+    "benchmarkDays": 7,
+    "projectionDays": 90,
+    "hourlyCellsPerSyntheticRow": 24,
+    "safetyMarginPct": 20,
+    "requiredOutputs": [
+      "data_and_primary_key_bytes_per_row",
+      "secondary_index_bytes_per_row",
+      "projected_90d_rows",
+      "projected_90d_storage_mb",
+      "projected_90d_storage_mb_with_safety",
+      "payload_baseline_plus_rollup_projection_mb",
+      "query_plan_index_use"
+    ]
+  },
+  "migrationGate": {
+    "designBudgetArtifactAccepted": false,
+    "remoteDatabaseSizeEvidenceRequiredBeforeApply": true,
+    "remoteDatabaseSizeEvidencePresent": false,
+    "migrationAuthorized": false,
+    "reasons": [
+      "The 12A-0 retained payload MB is not the same as full D1 database file size.",
+      "Workers Free currently limits each D1 database to 500 MB.",
+      "Migration deployment must not rely on payload-only storage estimates."
+    ]
+  },
+  "prohibitedAssumptions": [
+    "exact session boundaries",
+    "Kick provider_started_at availability",
+    "category capture approval",
+    "cross-provider category identity equivalence",
+    "absence from a daily-cap-truncated row set means offline"
+  ]
+}
