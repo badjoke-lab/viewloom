@@ -1,0 +1,25 @@
+name: Analytics 12A1 No Runtime Change
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: analytics-12a1-no-runtime-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    if: ${{ github.head_ref == 'work-analytics-12a1-field-contract' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify field-contract-only branch boundary
+        run: node scripts/check-12a1-no-runtime-change.mjs

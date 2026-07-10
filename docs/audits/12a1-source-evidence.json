@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "viewloom-12a1-source-evidence-v1",
+  "workstream": "12A-1 analytics field contract",
+  "status": "current",
+  "baselineAuthority": "docs/audits/12a0-current-data-capacity-baseline.json",
+  "providers": {
+    "twitch": {
+      "primarySource": {
+        "endpoint": "https://api.twitch.tv/helix/streams",
+        "collectorPath": "workers/collector-twitch/src/index.ts",
+        "coverage": "bounded top-window observation",
+        "observedWindowLimit": 300
+      },
+      "startedAt": {
+        "upstreamField": "started_at",
+        "codePathStatus": "fetched_used_then_discarded",
+        "currentUse": "derive age-based activity proxy before snapshot serialization",
+        "currentRetention": false,
+        "futureRetentionDecision": "approved",
+        "internalField": "provider_started_at",
+        "evidenceStrength": "provider_reported_start_time",
+        "exactSessionStartClaimAllowed": false,
+        "exactSessionEndClaimAllowed": false,
+        "sessionIdentityClaimAllowed": false
+      },
+      "category": {
+        "currentCollectorRetention": false,
+        "primaryPathVerificationStatus": "not_verified_in_viewloom_contract_evidence",
+        "captureApproved": false,
+        "approvalOwner": "12A-4 provider-specific category capture foundation"
+      }
+    },
+    "kick": {
+      "primarySource": {
+        "endpoint": "https://api.kick.com/public/v1/livestreams",
+        "collectorPath": "workers/collector-kick/src/official-livestreams.ts",
+        "coverage": "bounded official-livestreams observation",
+        "observedWindowLimit": 100
+      },
+      "startedAt": {
+        "currentPrimaryPathFieldVerified": false,
+        "currentRetention": false,
+        "futureRetentionDecision": "unapproved",
+        "internalField": "provider_started_at",
+        "availability": "unavailable_until_source_verification",
+        "exactSessionStartClaimAllowed": false,
+        "exactSessionEndClaimAllowed": false,
+        "sessionIdentityClaimAllowed": false
+      },
+      "category": {
+        "currentCollectorRetention": false,
+        "primaryPathVerificationStatus": "unverified",
+        "primaryPathProbe": "workers/collector-kick/scripts/probe-kick-official-livestreams.mjs",
+        "alternateOfficialChannelParserStatus": "category_object_inspected_only_for_title_fallback",
+        "alternateOfficialChannelPath": "workers/collector-kick/src/index.ts",
+        "captureApproved": false,
+        "approvalRule": "A live primary official-livestreams sample must show stable category identity and/or category name fields before capture approval.",
+        "approvalOwner": "12A-4 provider-specific category capture foundation"
+      }
+    }
+  },
+  "crossProviderIdentity": {
+    "categoryIdentityEquivalenceAllowed": false,
+    "channelIdentityEquivalenceAllowed": false,
+    "sessionIdentityEquivalenceAllowed": false
+  },
+  "decisionBoundary": "12A-1 defines field contracts and source evidence strength only. It does not perform migration or enable capture."
+}
