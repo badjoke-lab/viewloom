@@ -1,0 +1,92 @@
+name: Analytics 12A0 Capacity Baseline
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'scripts/collect-12a0-capacity-baseline.mjs'
+      - 'scripts/verify-12a0-capacity-baseline-evidence.mjs'
+      - 'docs/audits/12a0-current-data-capacity-baseline.json'
+      - 'docs/operations/12a0-current-data-capacity-baseline-*.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/analytics-12a0-capacity-baseline.yml'
+
+concurrency:
+  group: analytics-12a0-capacity-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VIEWLOOM_ORIGIN: https://vl.badjoke-lab.com
+      TIMING_SAMPLES: '5'
+      REQUEST_TIMEOUT_MS: '30000'
+      ARTIFACT_DIR: artifacts/12a0-capacity-baseline
+    steps:
+      - name: Checkout evidence branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Collect read-only production capacity baseline
+        run: node scripts/collect-12a0-capacity-baseline.mjs "$ARTIFACT_DIR/evidence.json"
+
+      - name: Verify generated 12A-0 evidence
+        run: node scripts/verify-12a0-capacity-baseline-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+
+      - name: Verify permanent evidence when present
+        run: |
+          if [ -f docs/audits/12a0-current-data-capacity-baseline.json ]; then
+            node scripts/verify-12a0-capacity-baseline-evidence.mjs docs/audits/12a0-current-data-capacity-baseline.json
+          else
+            echo 'Permanent 12A-0 evidence is not frozen yet; generated artifact is the current candidate evidence.'
+          fi
+
+      - name: Publish baseline summary
+        if: always()
+        run: |
+          if [ ! -f "$ARTIFACT_DIR/evidence.json" ]; then
+            echo '## ViewLoom 12A-0 Capacity Baseline' >> "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+            echo '- Evidence collection did not complete.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo '## ViewLoom 12A-0 Capacity Baseline'
+            echo
+            echo "- Generated: \`$(jq -r '.generatedAt' "$ARTIFACT_DIR/evidence.json")\`"
+            echo "- Twitch raw rows: $(jq -r '.providers.twitch.storage.rawRows' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Kick raw rows: $(jq -r '.providers.kick.storage.rawRows' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Twitch retained payload: $(jq -r '.providers.twitch.storage.retainedPayloadMb' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Kick retained payload: $(jq -r '.providers.kick.storage.retainedPayloadMb' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Twitch daily-rollup observed days: $(jq -r '.providers.twitch.storage.dailyRollupObservedDays' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Kick daily-rollup observed days: $(jq -r '.providers.kick.storage.dailyRollupObservedDays' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Twitch source mode: $(jq -r '.providers.twitch.collection.sourceMode' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Kick source/coverage: $(jq -r '.providers.kick.collection.sourceMode + " / " + .providers.kick.collection.coverageMode' "$ARTIFACT_DIR/evidence.json")"
+            echo '- Provider separation: retained'
+            echo '- Runtime/schema change: none'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload 12A-0 baseline artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a0-capacity-baseline
+          path: artifacts/12a0-capacity-baseline/
+          if-no-files-found: warn
