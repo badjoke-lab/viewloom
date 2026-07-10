@@ -17,17 +17,11 @@ R12C-3 exact production SHA closeout complete
 Current phase: Phase 12A Analytics Capture Foundation
 12A-0 current data and capacity baseline: complete PR #490
 12A-1 analytics field contract: complete PR #492
-Current workstream: 12A-2 compact intraday rollup design and migration
-Exact next implementation branch: work-analytics-12a2-intraday-rollup-design
-Next branch created: no
-```
-
-Permanent Phase 12 acceptance:
-
-```text
-docs/audits/phase12-release-acceptance.json
-docs/audits/phase12-production-closeout-contract.json
-docs/operations/phase12-release-acceptance-2026-07-09.md
+12A-2 rollup design budget: accepted PR #494
+12A-2 remote D1 size gate tooling: installed PR #495
+Current workstream: 12A-2 remote D1 size gate blocked before migration
+Current blocker: cloudflare_credentials_missing
+Migration started: no
 ```
 
 Permanent Phase 12A evidence:
@@ -38,43 +32,42 @@ docs/audits/12a0-closeout.json
 docs/audits/12a1-analytics-field-contract.json
 docs/audits/12a1-source-evidence.json
 docs/audits/12a1-closeout.json
+docs/audits/12a2-intraday-rollup-design-contract.json
+docs/audits/12a2-intraday-rollup-budget-evidence.json
+docs/audits/12a2-remote-d1-size-evidence.json
+docs/audits/12a2-current-gate-state.json
 docs/product/analytics-field-contract-v1.md
-docs/operations/12a1-field-contract-acceptance-2026-07-10.md
-docs/operations/12a1-closeout-2026-07-10.md
+docs/product/intraday-rollup-design-v1.md
+docs/operations/12a2-intraday-rollup-design-acceptance-2026-07-11.md
+docs/operations/12a2-remote-d1-size-gate-blocked-2026-07-11.md
 ```
 
-Accepted 12A-0 capacity baseline:
+Accepted 12A-2 design:
 
 ```text
-Twitch raw rows: 8,688
-Twitch retained payload: 314.14 MB
-Twitch estimated payload/day: 10.38 MB
-Twitch rollup observed days: 74
-
-Kick raw rows: 14,442
-Kick retained payload: 232.96 MB
-Kick estimated payload/day: 4.63 MB
-Kick rollup observed days: 52
-
-Latest 24h cadence: 287 / 288 for each provider
+grain: provider x day x streamer
+Twitch cap: 600 streamers/day
+Kick cap: 200 streamers/day
+intraday retention: 90 days
+new cron: no
+raw retention extension: no
+Twitch safe projection: 70.99 MB
+Kick safe projection: 23.57 MB
 ```
 
-Accepted 12A-1 contract boundaries:
+The current migration gate is blocked because the GitHub workflow environment does not expose `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. The blocked evidence makes no current remote D1 size or headroom claim.
+
+Resume order:
 
 ```text
-Twitch provider_started_at: approved for future capture as provider_reported_start_time
-Kick provider_started_at: unavailable until source verification
-Twitch category capture: unapproved
-Kick category capture: unapproved pending accepted live primary-path evidence
-cross-provider identity equivalence: prohibited
+make both repository secrets available
+rerun Analytics 12A2 Remote D1 Size Gate on main
+require observed evidence and migrationStorageGatePass=true
+only then create work-analytics-12a2-migration
 ```
 
-12A-2 must design provider-separated compact intraday storage for 90-day baseline capability without extending raw retention. Before migration is approved, estimate and accept rows/day, bytes/row, bytes/day, retained rows, retained size, index cost, query plan/timing target, refresh scope, retention policy, and failure visibility for Twitch and Kick separately.
-
-12A-2 must not perform migration before budget acceptance. Do not extend raw retention, add a high-frequency cron by default, activate category capture, claim exact sessions, or combine providers.
+Do not start migration, compact-rollup generation, retention extension, a new high-frequency cron, category capture activation, exact-session claims, or cross-provider analytics while the remote-size blocker remains current.
 
 R12B's external evidence boundary remains active: current Stripe Dashboard/account facts must not be inferred from repository files or public browser behavior alone.
-
-Approved forward order is Phase 12A Analytics Capture Foundation, Phase 13–14 localization with evidence accumulation, Phase 15 Analytics Capability and Calibration Audit, then Phase 16A–16F analytics implementation.
 
 Twitch and Kick remain separate across routes, APIs, bindings, storage, identities, coverage models, baselines, relationships, reports, exports, and claims.

@@ -31,9 +31,10 @@ R12C-3 production closeout             complete
 Phase 12A Analytics Capture Foundation active
 12A-0 data and capacity baseline       complete PR #490
 12A-1 analytics field contract         complete PR #492
-12A-2 compact intraday rollup design   current
-Exact next branch                      work-analytics-12a2-intraday-rollup-design
-Next branch created                    no
+12A-2 rollup design budget             accepted PR #494
+12A-2 remote D1 size gate              installed PR #495
+12A-2 migration                        blocked before start
+Blocker                                cloudflare_credentials_missing
 ```
 
 ## Phase 12 permanent release acceptance
@@ -60,25 +61,39 @@ The R12B external-state evidence boundary remains active: current Stripe Dashboa
 
 ## Phase 12A analytics foundation
 
-Permanent analytics authorities:
+Permanent analytics authorities now include:
 
 ```text
-docs/product/analytics-observation-system-spec.md
-docs/product/analytics-observation-system-plan.md
-docs/product/next-feature-data-capability-audit.md
 docs/audits/12a0-current-data-capacity-baseline.json
 docs/audits/12a0-closeout.json
 docs/audits/12a1-analytics-field-contract.json
 docs/audits/12a1-source-evidence.json
 docs/audits/12a1-closeout.json
+docs/audits/12a2-intraday-rollup-design-contract.json
+docs/audits/12a2-intraday-rollup-budget-evidence.json
+docs/audits/12a2-remote-d1-size-evidence.json
+docs/audits/12a2-current-gate-state.json
 docs/product/analytics-field-contract-v1.md
-docs/operations/12a1-field-contract-acceptance-2026-07-10.md
-docs/operations/12a1-closeout-2026-07-10.md
+docs/product/intraday-rollup-design-v1.md
 ```
 
-12A-0 established the measured provider-separated storage/query baseline. 12A-1 then froze provider-specific field semantics before migration design.
+### Accepted 12A-0 baseline
 
-Accepted 12A-1 decisions:
+```text
+Twitch raw rows: 8,688
+Twitch retained payload: 314.14 MB
+Twitch estimated payload/day: 10.38 MB
+Twitch rollup observed days: 74
+
+Kick raw rows: 14,442
+Kick retained payload: 232.96 MB
+Kick estimated payload/day: 4.63 MB
+Kick rollup observed days: 52
+
+Latest 24h cadence: 287 / 288 for each provider
+```
+
+### Accepted 12A-1 contract
 
 ```text
 Twitch provider_started_at: approved for future capture as provider_reported_start_time
@@ -88,31 +103,56 @@ Kick category capture: unapproved pending accepted live primary-path evidence
 cross-provider category identity equivalence: prohibited
 ```
 
-## Current workstream: 12A-2
+### Accepted 12A-2 design budget
 
 ```text
-12A-2 compact intraday rollup design and migration
-branch: work-analytics-12a2-intraday-rollup-design
+grain: provider x day x streamer
+hour encoding: sparse compact JSON cells
+Twitch cap: 600 streamers/day
+Kick cap: 200 streamers/day
+retention: 90 days
+new cron: no
+raw retention extension: no
+
+Twitch safe projected rollup storage: 70.99 MB
+Kick safe projected rollup storage:   23.57 MB
+Combined safe projection:             94.56 MB
 ```
 
-12A-2 must design a bounded provider-separated compact intraday representation for 90-day baseline capability without extending raw retention.
+## Current blocker
 
-Before migration is approved, it must record separately for Twitch and Kick:
+The remote D1 size gate tooling is installed and verified, but the current GitHub workflow environment does not expose:
 
 ```text
-rows/day
-bytes/row
-bytes/day
-retained rows
-retained size
-index cost
-query plan and timing target
-refresh scope
-retention policy
-failure visibility
+CLOUDFLARE_API_TOKEN
+CLOUDFLARE_ACCOUNT_ID
 ```
 
-The design must be compared against the accepted 12A-0 baseline. Migration is not authorized until row, byte, retention, index, and query budgets are accepted.
+Therefore the permanent gate state is:
+
+```text
+remote size evidence status: blocked
+blocker: cloudflare_credentials_missing
+Twitch storage gate: false
+Kick storage gate: false
+account storage gate: false
+migration storage gate: false
+migration authorized: false
+migration started: no
+```
+
+False means not measured / blocked, not capacity failure. No current remote D1 size or headroom claim is made.
+
+Resume condition:
+
+```text
+1. make the two repository secrets available
+2. rerun Analytics 12A2 Remote D1 Size Gate on main
+3. require observed-mode evidence and migrationStorageGatePass=true
+4. only then create work-analytics-12a2-migration
+```
+
+No migration, runtime generation, retention extension, cron change, category capture activation, exact-session claim, or cross-provider analytics is authorized while the blocker remains current.
 
 ## Approved forward sequence
 
@@ -120,7 +160,9 @@ The design must be compared against the accepted 12A-0 baseline. Migration is no
 Phase 12A Analytics Capture Foundation
   12A-0 current data and capacity baseline            complete PR #490
   12A-1 analytics field contract                      complete PR #492
-  12A-2 compact intraday rollup design and migration  current
+  12A-2 design budget                                 accepted PR #494
+  12A-2 remote size gate tooling                      installed PR #495
+  12A-2 migration                                     blocked
   12A-3 bounded intraday rollup generation            queued
   12A-4 provider-specific category capture foundation queued
   12A-5 foundation acceptance and accumulation handoff queued
@@ -134,16 +176,4 @@ Phase 16E Co-movement and Relationship Analysis
 Phase 16F Replay and Backtest
 ```
 
-The analytics target is:
-
-```text
-current value
-  -> normal state
-  -> change
-  -> anomaly
-  -> context
-  -> relationship
-  -> historical validation
-```
-
-Canonical reading starts at `docs/README.md`. Ordinary work uses `work-*`; deliberate runtime validation uses `preview-*` only when necessary. Only latest-head evidence counts. Twitch and Kick remain provider-separated.
+Canonical reading starts at `docs/README.md`. Only latest-head evidence counts. Twitch and Kick remain provider-separated.
