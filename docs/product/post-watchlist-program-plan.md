@@ -1,11 +1,11 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 7.0
+Version: 7.1
 Last updated: 2026-07-10
 Current phase: Phase 12A — Analytics Capture Foundation
-Current workstream: 12A-1 analytics field contract
-Exact next implementation branch: `work-analytics-12a1-field-contract`
+Current workstream: 12A-2 compact intraday rollup design and migration
+Exact next implementation branch: `work-analytics-12a2-intraday-rollup-design`
 Next branch created: no
 
 ```text
@@ -22,7 +22,8 @@ R12C-3 candidate acceptance complete PR #487
 R12C-3 exact production SHA closeout complete
 Phase 12A Analytics Capture Foundation active
 12A-0 current data and capacity baseline complete PR #490
-12A-1 analytics field contract current
+12A-1 analytics field contract complete PR #492
+12A-2 compact intraday rollup design and migration current
 Phase 13-14 localization queued after Phase 12A
 Phase 15 Analytics Capability and Calibration Audit queued
 Phase 16 Analytics Observation System approved and gated by Phase 15
@@ -42,34 +43,6 @@ Phase 12A Analytics Capture Foundation
   -> Phase 16F Replay and Backtest
 ```
 
-## Phase 12 permanent closeout
-
-Permanent release evidence:
-
-```text
-docs/audits/phase12-release-acceptance.json
-docs/audits/phase12-production-closeout-contract.json
-docs/operations/phase12-release-acceptance-2026-07-09.md
-docs/audits/r12c3-candidate-acceptance.json
-docs/operations/r12c3-release-candidate-acceptance-2026-07-09.md
-```
-
-Accepted production identity:
-
-```text
-Expected main SHA: 32c27a9a772cb62ff38f009c5fd1bb095ac27ad8
-Deployed SHA:      32c27a9a772cb62ff38f009c5fd1bb095ac27ad8
-Environment: production
-Branch: main
-HTML routes: 25
-Status APIs: 2
-Sitemap URLs: 21
-Launch assets: 6
-Blocking alerts: 0
-```
-
-The Phase 12 English package remains the Phase 13–14 localization source after Phase 12A.
-
 ## Active Phase 12A authorities
 
 ```text
@@ -78,15 +51,17 @@ docs/product/analytics-observation-system-plan.md
 docs/product/next-feature-data-capability-audit.md
 docs/audits/12a0-current-data-capacity-baseline.json
 docs/audits/12a0-closeout.json
-docs/operations/12a0-current-data-capacity-baseline-acceptance-2026-07-10.md
-docs/operations/12a0-closeout-2026-07-10.md
+docs/audits/12a1-analytics-field-contract.json
+docs/audits/12a1-source-evidence.json
+docs/audits/12a1-closeout.json
+docs/product/analytics-field-contract-v1.md
+docs/operations/12a1-field-contract-acceptance-2026-07-10.md
+docs/operations/12a1-closeout-2026-07-10.md
 ```
 
 Phase 12A begins collecting and compacting evidence that current daily rollups cannot reconstruct later. It preserves Free Strong collection, retention, provider separation, public-route ownership, and evidence honesty.
 
 ## Completed 12A-0 baseline
-
-12A-0 completed as provider-separated, evidence-only work in PR #490.
 
 ```text
 Twitch raw rows: 8,688
@@ -102,49 +77,68 @@ Kick rollup observed days: 52
 Latest 24h cadence: 287 / 288 for each provider
 ```
 
-The baseline records storage/query budgets, source and coverage behavior, schedule and retention behavior, field loss, and the current collector-duration measurement limitation. It does not authorize migration, retention expansion, observed-window expansion, category capture, or provider combination.
+The baseline does not authorize migration, retention expansion, observed-window expansion, category capture, or provider combination.
 
-## Active 12A-1 scope
+## Completed 12A-1 field contract
 
-12A-1 defines versioned provider-specific analytics field contracts before migration design.
-
-Required decisions:
+12A-1 completed in PR #492.
 
 ```text
-minimum Twitch baseline fields
-minimum Kick baseline fields
-minimum provider-specific observed-run fields
-minimum provider-specific category fields
-Twitch started_at evidence strength and retention policy
-verified Kick category source before category capture approval
-field provenance and evidence-strength labels
-source contract versioning
-provider differences without identity-equivalence claims
+Twitch provider_started_at: approved for future capture as provider_reported_start_time
+Kick provider_started_at: unavailable until source verification
+Twitch category capture: unapproved
+Kick category capture: unapproved pending accepted live primary-path evidence
+cross-provider identity equivalence: prohibited
+```
+
+The field contract defines migration inputs without performing migration or enabling new runtime capture.
+
+## Active 12A-2 scope
+
+12A-2 designs a bounded provider-separated compact intraday representation for 90-day baseline capability without retaining raw snapshots for 90 days.
+
+Required provider-specific design evidence:
+
+```text
+rows/day
+bytes/row
+bytes/day
+retained rows
+retained size
+index cost
+query plan and timing target
+refresh scope
+retention policy
+failure visibility
 ```
 
 Completion:
 
 ```text
-provider-specific field contracts exist
-field provenance is explicit
-Twitch started_at policy is decided
-Kick category source is verified or capture remains explicitly unapproved
-source contracts are versioned
-12A-2 migration inputs are defined without performing migration
-no analytics UI or cross-provider analytics is included
+schema design is provider-separated
+row/day and byte/day budgets exist for both providers
+retained-size and index-cost estimates exist
+query plans and timing targets exist
+refresh and failure behavior are explicit
+raw retention is not extended
+12A-1 field/source contract boundaries are preserved
+migration is added only after budget acceptance
 ```
 
-12A-1 must not add a D1 migration, compact-rollup generation, raw-retention extension, new high-frequency cron, unverified category capture, exact-session claims, or cross-provider totals/rankings/baselines/relationships.
+The design must be compared with the accepted 12A-0 raw payload baselines:
+
+```text
+Twitch 10.38 MB/day estimated raw payload
+Kick    4.63 MB/day estimated raw payload
+```
+
+12A-2 must not assume exact session boundaries, Kick provider start-time availability, category capture approval, or cross-provider category identity equivalence.
 
 ## Phase 12A sequence
 
-### 12A-1 analytics field contract
-
-Define provider-specific minimum fields for baseline, observed-run, and category work. Decide Twitch `started_at` evidence strength, verify a Kick category source before capture approval, and version analytics source contracts.
-
 ### 12A-2 compact intraday rollup design and migration
 
-Design bounded per-stream/day evidence for 90-day baseline capability without retaining raw snapshots for 90 days. Accept storage/query budgets against the 12A-0 baseline before migration.
+Design bounded per-stream/day evidence for 90-day baseline capability without retaining raw snapshots for 90 days. Accept provider-separated storage/query budgets before migration.
 
 ### 12A-3 bounded intraday rollup generation
 
