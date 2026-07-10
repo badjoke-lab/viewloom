@@ -8,6 +8,7 @@ on:
       - 'docs/audits/12a1-analytics-field-contract.json'
       - 'docs/audits/12a1-source-evidence.json'
       - 'docs/product/analytics-field-contract-v1.md'
+      - 'docs/operations/12a1-field-contract-acceptance-*.md'
       - 'docs/work-in-progress/phase12a1-field-contract.md'
       - 'scripts/verify-12a1-field-contract.mjs'
       - 'workers/collector-kick/scripts/probe-kick-official-livestreams.mjs'
