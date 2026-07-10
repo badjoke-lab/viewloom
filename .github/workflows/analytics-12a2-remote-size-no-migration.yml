@@ -1,0 +1,25 @@
+name: Analytics 12A2 Remote Size No Migration
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: analytics-12a2-remote-size-no-migration-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    if: ${{ github.head_ref == 'work-analytics-12a2-remote-size-gate' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify remote-size gate branch boundary
+        run: node scripts/check-12a2-remote-size-no-migration.mjs
