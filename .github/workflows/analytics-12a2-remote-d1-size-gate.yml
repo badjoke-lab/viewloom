@@ -8,6 +8,7 @@ on:
     paths:
       - '.github/workflows/analytics-12a2-remote-d1-size-gate.yml'
       - 'scripts/collect-12a2-remote-d1-size-evidence.mjs'
+      - 'scripts/write-12a2-remote-d1-size-blocked-evidence.mjs'
       - 'scripts/verify-12a2-remote-d1-size-evidence.mjs'
       - 'docs/audits/12a2-remote-d1-size-evidence.json'
       - 'docs/operations/12a2-remote-d1-size-gate-acceptance-*.md'
@@ -33,16 +34,24 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Verify Cloudflare evidence credentials exist
+      - name: Resolve Cloudflare evidence credential state
+        id: credentials
         shell: bash
         run: |
-          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
-            echo 'cloudflare_credentials_missing' >&2
-            echo 'Required repository secrets: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID' >&2
-            exit 1
+          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+            echo 'Cloudflare evidence credentials are available.'
+          else
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+            echo 'cloudflare_credentials_missing'
           fi
 
+      - name: Write blocked evidence when credentials are missing
+        if: steps.credentials.outputs.available != 'true'
+        run: node scripts/write-12a2-remote-d1-size-blocked-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+
       - name: Collect raw Wrangler control-plane observations
+        if: steps.credentials.outputs.available == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -51,7 +60,8 @@ jobs:
           npx --yes wrangler@4 d1 info vl_kick_hot --json > "$RAW_DIR/kick-info.json"
           npx --yes wrangler@4 d1 list --json > "$RAW_DIR/account-list.json"
 
-      - name: Normalize remote D1 size evidence
+      - name: Normalize observed remote D1 size evidence
+        if: steps.credentials.outputs.available == 'true'
         run: node scripts/collect-12a2-remote-d1-size-evidence.mjs "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
 
       - name: Verify normalized remote D1 size evidence
@@ -80,17 +90,24 @@ jobs:
             echo '- Normalized size evidence was not produced.' >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
+          status=$(jq -r '.status // "observed"' "$ARTIFACT_DIR/evidence.json")
           {
             echo '## ViewLoom 12A-2 Remote D1 Size Gate'
             echo
-            echo "- Twitch current: $(jq -r '.providers.twitch.currentSizeMb' "$ARTIFACT_DIR/evidence.json") MB"
-            echo "- Twitch projected with safe rollup: $(jq -r '.providers.twitch.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
-            echo "- Twitch gate: $(jq -r '.providers.twitch.perDatabaseGatePass' "$ARTIFACT_DIR/evidence.json")"
-            echo "- Kick current: $(jq -r '.providers.kick.currentSizeMb' "$ARTIFACT_DIR/evidence.json") MB"
-            echo "- Kick projected with safe rollup: $(jq -r '.providers.kick.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
-            echo "- Kick gate: $(jq -r '.providers.kick.perDatabaseGatePass' "$ARTIFACT_DIR/evidence.json")"
-            echo "- Account current: $(jq -r '.account.currentSizeMb' "$ARTIFACT_DIR/evidence.json") MB"
-            echo "- Account projected: $(jq -r '.account.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Evidence status: $status"
+            if [ "$status" = 'blocked' ]; then
+              echo "- Blocker: $(jq -r '.blocker.code' "$ARTIFACT_DIR/evidence.json")"
+              echo '- Remote size claims: none'
+            else
+              echo "- Twitch current: $(jq -r '.providers.twitch.currentSizeMb' "$ARTIFACT_DIR/evidence.json") MB"
+              echo "- Twitch projected with safe rollup: $(jq -r '.providers.twitch.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+              echo "- Twitch gate: $(jq -r '.providers.twitch.perDatabaseGatePass' "$ARTIFACT_DIR/evidence.json")"
+              echo "- Kick current: $(jq -r '.providers.kick.currentSizeMb' "$ARTIFACT_DIR/evidence.json") MB"
+              echo "- Kick projected with safe rollup: $(jq -r '.providers.kick.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+              echo "- Kick gate: $(jq -r '.providers.kick.perDatabaseGatePass' "$ARTIFACT_DIR/evidence.json")"
+              echo "- Account current: $(jq -r '.account.currentSizeMb' "$ARTIFACT_DIR/evidence.json") MB"
+              echo "- Account projected: $(jq -r '.account.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+            fi
             echo "- Storage gate pass: $(jq -r '.gate.migrationStorageGatePass' "$ARTIFACT_DIR/evidence.json")"
             echo '- Migration authorized by this evidence alone: no'
           } >> "$GITHUB_STEP_SUMMARY"
