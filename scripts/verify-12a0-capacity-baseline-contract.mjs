@@ -32,10 +32,20 @@ assert.equal(contract.providers.kick.expectedCoverageMode, 'official-livestreams
 
 assert.ok(Array.isArray(contract.requiredEvidence) && contract.requiredEvidence.length >= 17)
 assert.equal(contract.timingTargets.length, 9)
+assert.equal(contract.timingAcceptance.stableTargetsRequireAll200.length, 7)
+assert.deepEqual(contract.timingAcceptance.availabilityTargetsRecord200And503, [
+  'twitch_battle_lines',
+  'kick_battle_lines',
+])
+assert.equal(contract.timingAcceptance.availabilityTargetsRequireAtLeastOne200, true)
+assert.equal(contract.timingAcceptance.availabilityFailuresMustRemainVisible, true)
+
 assert.equal(contract.dailyRollupEvidence.windowCountPerProvider, 2)
 assert.equal(contract.dailyRollupEvidence.maximumDaysPerWindow, 90)
 assert.equal(contract.dailyRollupEvidence.windowsMustNotOverlap, true)
-assert.equal(contract.dailyRollupEvidence.requiredReadPath, 'daily_rollups')
+assert.equal(contract.dailyRollupEvidence.minimumDailyRollupWindowsPerProvider, 1)
+assert.equal(contract.dailyRollupEvidence.requiredReadPathForCountedRows, 'daily_rollups')
+assert.equal(contract.dailyRollupEvidence.emptyHistoricalRawFallbackAllowed, true)
 assert.equal(contract.dailyRollupEvidence.missingCalendarDaysCountAsObservedRollupRows, false)
 
 assert.equal(contract.collectorDurationBoundary.currentMeasurementStatus, 'not_persisted')
