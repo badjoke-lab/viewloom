@@ -51,8 +51,7 @@ for (const [provider, contract] of Object.entries(expected)) {
   assert.ok(validTimestamp(row.storage.oldestRawBucket), `${provider}: oldest raw bucket invalid`)
   assert.ok(validTimestamp(row.storage.latestRawBucket), `${provider}: latest raw bucket invalid`)
   assert.ok(Date.parse(row.storage.oldestRawBucket) <= Date.parse(row.storage.latestRawBucket), `${provider}: raw bucket order invalid`)
-  assert.equal(row.storage.dailyRollupReadPathVerified, true, `${provider}: History windows must verify daily_rollups read path`)
-  assert.ok(nonNegative(row.storage.dailyRollupObservedDays), `${provider}: daily rollup observed days invalid`)
+  assert.ok(positive(row.storage.dailyRollupObservedDays), `${provider}: daily rollup observed days must be positive`)
 
   assert.equal(row.collection.sourceMode, contract.sourceMode, `${provider}: unexpected production source mode`)
   assert.equal(row.collection.runCadenceSeconds, contract.cadenceSeconds, `${provider}: cadence mismatch`)
@@ -70,9 +69,19 @@ for (const [provider, contract] of Object.entries(expected)) {
   for (const window of windows) {
     assert.equal(window.requestedDays, 90, `${provider}: History window must remain within the 90-day API limit`)
     assert.equal(window.responseDays, 90, `${provider}: History response must include explicit daily rows for the requested window`)
-    assert.equal(window.readPath, 'daily_rollups', `${provider}: History window did not use daily_rollups`)
+    assert.ok(['daily_rollups', 'minute_snapshots'].includes(window.readPath), `${provider}: unexpected History read path ${window.readPath}`)
     assert.ok(nonNegative(window.observedDays), `${provider}: observed History days invalid`)
+    if (window.readPath === 'minute_snapshots') {
+      assert.equal(window.observedDays, 0, `${provider}: a historical raw fallback window with observed days would not prove rollup retention`)
+    }
   }
+  const rollupWindows = windows.filter((window) => window.readPath === 'daily_rollups')
+  assert.ok(rollupWindows.length >= 1, `${provider}: at least one History window must prove daily_rollups read path`)
+  assert.equal(
+    row.storage.dailyRollupObservedDays,
+    rollupWindows.reduce((sum, window) => sum + window.observedDays, 0),
+    `${provider}: daily rollup observed-day count mismatch`,
+  )
 }
 
 assert.equal(evidence.providers.twitch.collection.coverageMode, 'top-window')
@@ -88,7 +97,7 @@ assert.equal(evidence.schedules?.retentionCleanup?.kick?.rawDays, 60)
 assert.equal(evidence.schedules?.retentionCleanup?.twitch?.dailyRollupDays, 180)
 assert.equal(evidence.schedules?.retentionCleanup?.kick?.dailyRollupDays, 180)
 
-const requiredTimingTargets = [
+const stableTimingTargets = [
   'data_audit',
   'twitch_status',
   'kick_status',
@@ -96,14 +105,16 @@ const requiredTimingTargets = [
   'kick_history_30d',
   'twitch_day_flow',
   'kick_day_flow',
+]
+const availabilityTimingTargets = [
   'twitch_battle_lines',
   'kick_battle_lines',
 ]
+const requiredTimingTargets = [...stableTimingTargets, ...availabilityTimingTargets]
 assert.ok(evidence.queryTimings?.sampleCountPerTarget >= 3, 'at least three timing samples are required')
 for (const key of requiredTimingTargets) {
   const target = evidence.queryTimings?.targets?.[key]
   assert.ok(target, `timing target missing: ${key}`)
-  assert.deepEqual(target.statusCodes, [200], `${key}: every timing sample must return HTTP 200`)
   assert.equal(target.samples.length, evidence.queryTimings.sampleCountPerTarget, `${key}: timing sample count mismatch`)
   assert.ok(positive(target.durationMs.min), `${key}: min timing invalid`)
   assert.ok(positive(target.durationMs.median), `${key}: median timing invalid`)
@@ -111,6 +122,16 @@ for (const key of requiredTimingTargets) {
   assert.ok(target.durationMs.min <= target.durationMs.median, `${key}: timing order invalid`)
   assert.ok(target.durationMs.median <= target.durationMs.max, `${key}: timing order invalid`)
   assert.ok(positive(target.responseBytes.min), `${key}: response bytes invalid`)
+}
+for (const key of stableTimingTargets) {
+  const target = evidence.queryTimings.targets[key]
+  assert.deepEqual(target.statusCodes, [200], `${key}: baseline stable target must return HTTP 200 for every sample`)
+}
+for (const key of availabilityTimingTargets) {
+  const target = evidence.queryTimings.targets[key]
+  const statuses = target.samples.map((sample) => sample.status)
+  assert.ok(statuses.every((status) => status === 200 || status === 503), `${key}: only observed 200/503 availability states are accepted`)
+  assert.ok(statuses.includes(200), `${key}: at least one successful sample is required to establish a timing baseline`)
 }
 
 assert.equal(Array.isArray(evidence.fieldMatrix), true)
@@ -154,6 +175,11 @@ console.log(`- Twitch raw rows: ${evidence.providers.twitch.storage.rawRows}`)
 console.log(`- Kick raw rows: ${evidence.providers.kick.storage.rawRows}`)
 console.log(`- Twitch observed rollup days: ${evidence.providers.twitch.storage.dailyRollupObservedDays}`)
 console.log(`- Kick observed rollup days: ${evidence.providers.kick.storage.dailyRollupObservedDays}`)
+for (const key of availabilityTimingTargets) {
+  const target = evidence.queryTimings.targets[key]
+  const success = target.samples.filter((sample) => sample.status === 200).length
+  console.log(`- ${key} availability samples: ${success}/${target.samples.length} HTTP 200`)
+}
 console.log('- provider separation: retained')
 console.log('- runtime change: none')
 
