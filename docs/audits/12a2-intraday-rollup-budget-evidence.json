@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "viewloom-12a2-intraday-rollup-budget-v1",
+  "workstream": "12A-2 compact intraday rollup design and migration",
+  "generatedAt": "2026-07-10T17:35:29.371Z",
+  "acceptanceIdentity": {
+    "pr": 494,
+    "headSha": "398499a7161c81d014c5e9c5af83b03ffb93e4b4",
+    "workflowRunId": 29111507401,
+    "artifactId": 8234941392,
+    "artifactName": "phase12a2-intraday-rollup-budget",
+    "artifactDigest": "sha256:76992b5308750004c917bcc2795d2bbf90f9976360f31df3a948b40757631cb1"
+  },
+  "benchmark": {
+    "engine": "3.45.1 2024-01-30 16:01:20 e876e51a0ed5c5b3126f52e532044363a014bc594cfefa87ffb5b82257ccalt1 (64-bit)",
+    "benchmarkDays": 7,
+    "projectionDays": 90,
+    "hourlyCellsPerSyntheticRow": 24,
+    "safetyMarginPct": 20,
+    "measurementBoundary": "Local SQLite file-size benchmark after VACUUM. It is a conservative schema/storage projection, not remote D1 database-size evidence or production D1 query timing evidence."
+  },
+  "providers": {
+    "twitch": {
+      "retainedStreamerCapPerDay": 600,
+      "benchmarkRows": 4200,
+      "benchmarkStatusRows": 7,
+      "emptyDbBytes": 20480,
+      "dataAndPrimaryKeyBytes": 4567040,
+      "secondaryIndexBytes": 258048,
+      "dataAndPrimaryKeyBytesPerRow": 1087.39,
+      "secondaryIndexBytesPerRow": 61.44,
+      "totalMeasuredBytesPerRollupRow": 1148.83,
+      "projectedRows90d": 54000,
+      "projectedStorageMb90d": 59.16,
+      "projectedStorageMb90dWithSafety": 70.99,
+      "rawPayloadMbAtRetentionBaseline": 311.4,
+      "payloadBaselinePlusProjectionWithSafetyMb": 382.39,
+      "queryPlans": {
+        "streamer90DayLookup": [
+          "QUERY PLAN",
+          "`--SEARCH streamer_intraday_rollups USING INDEX idx_intraday_streamer_day (provider=? AND streamer_id=? AND day>? AND day<?)"
+        ],
+        "providerDayLookup": [
+          "QUERY PLAN",
+          "|--SEARCH streamer_intraday_rollups USING INDEX sqlite_autoindex_streamer_intraday_rollups_1 (provider=? AND day=?)",
+          "`--USE TEMP B-TREE FOR ORDER BY"
+        ]
+      }
+    },
+    "kick": {
+      "retainedStreamerCapPerDay": 200,
+      "benchmarkRows": 1400,
+      "benchmarkStatusRows": 7,
+      "emptyDbBytes": 20480,
+      "dataAndPrimaryKeyBytes": 1515520,
+      "secondaryIndexBytes": 86016,
+      "dataAndPrimaryKeyBytesPerRow": 1082.51,
+      "secondaryIndexBytesPerRow": 61.44,
+      "totalMeasuredBytesPerRollupRow": 1143.95,
+      "projectedRows90d": 18000,
+      "projectedStorageMb90d": 19.64,
+      "projectedStorageMb90dWithSafety": 23.57,
+      "rawPayloadMbAtRetentionBaseline": 277.8,
+      "payloadBaselinePlusProjectionWithSafetyMb": 301.37,
+      "queryPlans": {
+        "streamer90DayLookup": [
+          "QUERY PLAN",
+          "`--SEARCH streamer_intraday_rollups USING INDEX idx_intraday_streamer_day (provider=? AND streamer_id=? AND day>? AND day<?)"
+        ],
+        "providerDayLookup": [
+          "QUERY PLAN",
+          "|--SEARCH streamer_intraday_rollups USING INDEX sqlite_autoindex_streamer_intraday_rollups_1 (provider=? AND day=?)",
+          "`--USE TEMP B-TREE FOR ORDER BY"
+        ]
+      }
+    }
+  },
+  "writes": {
+    "maximumRollupRowUpsertsPerDay": {
+      "twitch": 2400,
+      "kick": 800,
+      "combined": 3200
+    },
+    "maximumStatusRowUpsertsPerDay": {
+      "twitch": 4,
+      "kick": 4,
+      "combined": 8
+    },
+    "note": "Projection assumes two existing refresh windows per day and today+yesterday refresh scope. These are design upper bounds, not current production D1 rows_written measurements."
+  },
+  "acceptance": {
+    "twitchProjected90dWithSafetyMbMax": 80,
+    "kickProjected90dWithSafetyMbMax": 30,
+    "twitchPayloadBaselinePlusProjectionWithSafetyMbMax": 400,
+    "kickPayloadBaselinePlusProjectionWithSafetyMbMax": 350,
+    "combinedProjectedRollupWithSafetyMbMax": 110,
+    "migrationAuthorized": false,
+    "remoteDatabaseSizeEvidenceRequiredBeforeApply": true
+  },
+  "limitations": [
+    "The 12A-0 payload baseline measures retained payload bytes and is not equivalent to complete D1 database file size.",
+    "Local SQLite page size and D1 internal storage accounting are not claimed to be identical.",
+    "Production D1 rows_read, rows_written, and SQL duration must be measured in 12A-3.",
+    "No category or exact-session fields are included in this design benchmark."
+  ]
+}
