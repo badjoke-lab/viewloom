@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "viewloom-12a0-capacity-baseline-contract-v1",
+  "workstream": "12A-0 current data and capacity baseline",
+  "status": "active",
+  "evidenceSchemaVersion": "viewloom-12a0-capacity-baseline-v1",
+  "origin": "https://vl.badjoke-lab.com",
+  "evidenceMode": "read-only-production-observation",
+  "providerSeparated": true,
+  "runtimeChanged": false,
+  "providers": {
+    "twitch": {
+      "binding": "DB_TWITCH_HOT",
+      "database": "vl_twitch_hot",
+      "rawRetentionDays": 30,
+      "dailyRollupRetentionDays": 180,
+      "expectedCadenceSeconds": 300,
+      "expectedProductionSourceMode": "real",
+      "coverageContract": "bounded Top 300 observation window with coveredPages and hasMore evidence"
+    },
+    "kick": {
+      "binding": "DB_KICK_HOT",
+      "database": "vl_kick_hot",
+      "rawRetentionDays": 60,
+      "dailyRollupRetentionDays": 180,
+      "expectedCadenceSeconds": 300,
+      "expectedProductionSourceMode": "authenticated",
+      "expectedCoverageMode": "official-livestreams",
+      "coverageContract": "bounded official livestream endpoint observation window with current configured Top 100 limit"
+    }
+  },
+  "requiredEvidence": [
+    "raw row counts",
+    "latest 24-hour row counts",
+    "average and maximum payload bytes",
+    "retained payload MB",
+    "estimated payload MB/day",
+    "oldest and latest raw buckets",
+    "daily-rollup observed-day counts",
+    "source modes",
+    "coverage modes and bounded-window behavior",
+    "five-minute cadence behavior",
+    "rollup refresh schedule",
+    "retention cleanup schedule",
+    "collector-duration evidence or explicit measurement limitation",
+    "provider-specific production query timings and availability states",
+    "current retained-field matrix",
+    "upstream fetched or inspected fields not retained",
+    "provider-specific storage and query baselines before migration"
+  ],
+  "timingTargets": [
+    "data_audit",
+    "twitch_status",
+    "kick_status",
+    "twitch_history_30d",
+    "kick_history_30d",
+    "twitch_day_flow",
+    "kick_day_flow",
+    "twitch_battle_lines",
+    "kick_battle_lines"
+  ],
+  "timingAcceptance": {
+    "stableTargetsRequireAll200": [
+      "data_audit",
+      "twitch_status",
+      "kick_status",
+      "twitch_history_30d",
+      "kick_history_30d",
+      "twitch_day_flow",
+      "kick_day_flow"
+    ],
+    "availabilityTargetsRecord200And503": [
+      "twitch_battle_lines",
+      "kick_battle_lines"
+    ],
+    "availabilityTargetsRequireAtLeastOne200": true,
+    "availabilityFailuresMustRemainVisible": true
+  },
+  "dailyRollupEvidence": {
+    "windowCountPerProvider": 2,
+    "maximumDaysPerWindow": 90,
+    "windowsMustNotOverlap": true,
+    "minimumDailyRollupWindowsPerProvider": 1,
+    "requiredReadPathForCountedRows": "daily_rollups",
+    "emptyHistoricalRawFallbackAllowed": true,
+    "missingCalendarDaysCountAsObservedRollupRows": false
+  },
+  "collectorDurationBoundary": {
+    "currentMeasurementStatus": "not_persisted",
+    "accepted12A0Proxy": "bucket_completion_offset_seconds",
+    "proxyIncludes": [
+      "cron dispatch delay",
+      "collection time",
+      "write time"
+    ],
+    "proxyMustNotBeClaimedAsPureExecutionDuration": true,
+    "trueDurationFollowUpOwner": "12A-3 bounded intraday rollup generation"
+  },
+  "completionRules": {
+    "permanentMachineReadableEvidenceRequired": true,
+    "storageAndQueryBudgetsRequiredBeforeMigration": true,
+    "providerSeparationRequired": true,
+    "runtimeChangeAllowed": false,
+    "migrationAuthorizedByBaselineAlone": false
+  }
+}

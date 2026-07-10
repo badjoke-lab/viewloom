@@ -1,0 +1,19 @@
+{
+  "workstream": "12A-0 current data and capacity baseline",
+  "boundary": "evidence-only",
+  "runtimeChangeAllowed": false,
+  "forbiddenPathPrefixes": [
+    "apps/web/functions/",
+    "apps/web/src/",
+    "workers/",
+    "db/"
+  ],
+  "forbiddenChanges": [
+    "D1 migration",
+    "collector payload schema change",
+    "collection cadence change",
+    "retention change",
+    "provider combination",
+    "public analytics UI"
+  ]
+}
