@@ -49,7 +49,7 @@ assert.equal(contract.selection.twitch.capMultiplier, 2)
 assert.equal(contract.selection.kick.currentObservedWindow, 100)
 assert.equal(contract.selection.kick.retainedStreamerCapPerDay, 200)
 assert.equal(contract.selection.kick.capMultiplier, 2)
-assert.match(contract.selection.truncationLanguage, /does not mean offline/i)
+assert.match(contract.selection.truncationLanguage, /must not be interpreted as offline/i)
 
 assert.equal(contract.retention.intradayDays, 90)
 assert.equal(contract.retention.rawRetentionChanged, false)
