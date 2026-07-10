@@ -20,8 +20,9 @@ R12C-3 candidate acceptance complete PR #487
 R12C-3 exact production SHA closeout complete
 Current phase: Phase 12A Analytics Capture Foundation
 12A-0 current data and capacity baseline: complete PR #490
-Current workstream: 12A-1 analytics field contract
-Exact next implementation branch: work-analytics-12a1-field-contract
+12A-1 analytics field contract: complete PR #492
+Current workstream: 12A-2 compact intraday rollup design and migration
+Exact next implementation branch: work-analytics-12a2-intraday-rollup-design
 Next branch created: no
 ```
 
@@ -33,61 +34,65 @@ docs/audits/phase12-production-closeout-contract.json
 docs/operations/phase12-release-acceptance-2026-07-09.md
 ```
 
-Permanent 12A-0 evidence:
+Permanent Phase 12A evidence:
 
 ```text
 docs/audits/12a0-current-data-capacity-baseline.json
 docs/audits/12a0-closeout.json
-docs/operations/12a0-current-data-capacity-baseline-acceptance-2026-07-10.md
-docs/operations/12a0-closeout-2026-07-10.md
+docs/audits/12a1-analytics-field-contract.json
+docs/audits/12a1-source-evidence.json
+docs/audits/12a1-closeout.json
+docs/product/analytics-field-contract-v1.md
+docs/operations/12a1-field-contract-acceptance-2026-07-10.md
+docs/operations/12a1-closeout-2026-07-10.md
 ```
 
-Active analytics authorities:
+## Active 12A-2 rules
+
+12A-2 designs and budgets provider-separated compact intraday storage before migration.
+
+Required provider-specific evidence:
 
 ```text
-docs/product/analytics-observation-system-spec.md
-docs/product/analytics-observation-system-plan.md
-docs/product/next-feature-data-capability-audit.md
-docs/audits/12a0-current-data-capacity-baseline.json
-docs/audits/12a0-closeout.json
+rows per day
+bytes per row
+bytes per day
+retained rows
+retained size
+index cost
+query plan
+query timing target
+refresh scope
+retention policy
+failure visibility
 ```
 
-## Active 12A-1 rules
-
-12A-1 defines provider-specific analytics field contracts. It must not introduce the 12A-2 migration or analytics runtime.
-
-Required decisions:
+The design must be compared against the accepted 12A-0 baseline:
 
 ```text
-minimum Twitch fields for baseline work
-minimum Kick fields for baseline work
-minimum provider-specific fields for observed-run work
-minimum provider-specific fields for category work
-Twitch started_at evidence strength and retention decision
-verified Kick category source before category capture approval
-versioned analytics source contracts
-explicit provider differences without identity-equivalence claims
+Twitch estimated raw payload baseline 10.38 MB/day
+Kick estimated raw payload baseline    4.63 MB/day
 ```
 
-Do not include any of the following in 12A-1:
+12A-1 source contracts remain authoritative:
 
 ```text
-D1 migration
-compact intraday rollup generation
-analytics UI
+Twitch provider_started_at may be used only as provider_reported_start_time evidence
+Kick provider_started_at remains unavailable until source verification
+Twitch category capture remains unapproved
+Kick category capture remains unapproved pending accepted live primary-path evidence
+cross-provider category identity equivalence is prohibited
+```
+
+Do not include any of the following before budget acceptance:
+
+```text
+migration deployment
 raw-retention extension
-new high-frequency cron
-unverified category capture
-exact-session or exact-stream-end claims
-cross-provider totals, rankings, baselines, or relationships
-```
-
-12A-0 baseline inputs remain evidence, not authorization to expand limits:
-
-```text
-Twitch raw rows: 8,688; retained payload 314.14 MB; estimated 10.38 MB/day
-Kick raw rows: 14,442; retained payload 232.96 MB; estimated 4.63 MB/day
-Latest 24h cadence: 287 / 288 for each provider
+new high-frequency cron by default
+category capture activation
+exact-session claims
+cross-provider totals, rankings, baselines, categories, or relationships
 ```
 
 R12B external-state boundaries remain in force. Current Stripe Dashboard/account facts must be supported by direct evidence and must not be inferred from repository code or public browser behavior alone.
