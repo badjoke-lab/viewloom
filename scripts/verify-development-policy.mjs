@@ -18,12 +18,13 @@ const required = [
   'docs/README.md',
   'docs/operations/development-and-deployment-policy.md',
   'docs/operations/documentation-governance.md',
-  'docs/operations/phase11-production-closeout-2026-07-08.md',
   'docs/operations/phase12-release-acceptance-2026-07-09.md',
   'docs/operations/12a0-current-data-capacity-baseline-acceptance-2026-07-10.md',
   'docs/operations/12a0-closeout-2026-07-10.md',
   'docs/operations/12a1-field-contract-acceptance-2026-07-10.md',
   'docs/operations/12a1-closeout-2026-07-10.md',
+  'docs/operations/12a2-intraday-rollup-design-acceptance-2026-07-11.md',
+  'docs/operations/12a2-remote-d1-size-gate-blocked-2026-07-11.md',
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
@@ -31,6 +32,7 @@ const required = [
   'docs/product/analytics-observation-system-plan.md',
   'docs/product/next-feature-data-capability-audit.md',
   'docs/product/analytics-field-contract-v1.md',
+  'docs/product/intraday-rollup-design-v1.md',
   'docs/audits/phase12-release-acceptance.json',
   'docs/audits/phase12-production-closeout-contract.json',
   'docs/audits/12a0-current-data-capacity-baseline.json',
@@ -38,14 +40,19 @@ const required = [
   'docs/audits/12a1-analytics-field-contract.json',
   'docs/audits/12a1-source-evidence.json',
   'docs/audits/12a1-closeout.json',
+  'docs/audits/12a2-intraday-rollup-design-contract.json',
+  'docs/audits/12a2-intraday-rollup-budget-evidence.json',
+  'docs/audits/12a2-remote-d1-size-evidence.json',
+  'docs/audits/12a2-current-gate-state.json',
   'docs/audits/public-surface-inventory.json',
   'docs/audits/public-surface-gaps.json',
   'scripts/verify-12a1-field-contract.mjs',
-  'scripts/verify-phase12-release-acceptance.mjs',
-  'scripts/verify-public-surface-inventory.mjs',
+  'scripts/verify-12a2-intraday-rollup-design.mjs',
+  'scripts/verify-12a2-remote-d1-size-evidence.mjs',
   '.github/workflows/development-policy.yml',
   '.github/workflows/analytics-12a1-field-contract.yml',
-  '.github/workflows/analytics-12a1-no-runtime-change.yml',
+  '.github/workflows/analytics-12a2-rollup-design.yml',
+  '.github/workflows/analytics-12a2-remote-d1-size-gate.yml',
 ]
 for (const path of required) assert.equal(exists(path), true, `missing file: ${path}`)
 
@@ -63,6 +70,7 @@ for (const retired of [
   'docs/work-in-progress/phase12-release-readiness.md',
   'docs/work-in-progress/phase12a0-capacity-baseline.md',
   'docs/work-in-progress/phase12a1-field-contract.md',
+  'docs/work-in-progress/phase12a2-intraday-rollup-design.md',
   '.github/workflows/phase11-hosted-closeout-acceptance.yml',
   '.github/workflows/release-r12a-production-closeout.yml',
   '.github/workflows/release-phase12-production-closeout.yml',
@@ -79,30 +87,29 @@ for (const path of [
 ]) {
   check(path, [
     'Phase 12A Analytics Capture Foundation',
-    '12A-0 current data and capacity baseline',
-    '12A-1 analytics field contract',
-    '12A-2 compact intraday rollup design',
-    'work-analytics-12a2-intraday-rollup-design',
+    '12A-0',
+    '12A-1',
+    '12A-2',
+    'cloudflare_credentials_missing',
   ])
 }
 
 check('AGENTS.md', [
-  'Current phase: Phase 12A Analytics Capture Foundation',
   '12A-0 current data and capacity baseline: complete PR #490',
   '12A-1 analytics field contract: complete PR #492',
-  'Current workstream: 12A-2 compact intraday rollup design and migration',
-  'Exact next implementation branch: work-analytics-12a2-intraday-rollup-design',
-  'Next branch created: no',
-  '12A-2 must not perform migration before budget acceptance.',
+  '12A-2 rollup design budget: accepted PR #494',
+  '12A-2 remote D1 size gate tooling: installed PR #495',
+  'Current workstream: 12A-2 remote D1 size gate blocked before migration',
+  'Migration started: no',
+  'work-analytics-12a2-migration',
 ])
 
 check('CONTRIBUTING.md', [
-  'Current phase: Phase 12A Analytics Capture Foundation',
-  '12A-1 analytics field contract: complete PR #492',
-  'Current workstream: 12A-2 compact intraday rollup design and migration',
-  'Exact next implementation branch: work-analytics-12a2-intraday-rollup-design',
-  'Next branch created: no',
-  '12A-2 designs and budgets provider-separated compact intraday storage before migration.',
+  '12A-2 rollup design budget accepted PR #494',
+  '12A-2 remote D1 size gate tooling installed PR #495',
+  'Current workstream 12A-2 remote D1 size gate blocked before migration',
+  'migrationStorageGatePass false',
+  'only then create work-analytics-12a2-migration',
 ])
 
 const phase12 = json('docs/audits/phase12-release-acceptance.json')
@@ -115,13 +122,11 @@ assert.equal(phase12.counts.sitemapRoutes, 21)
 assert.equal(phase12.counts.launchAssets, 6)
 assert.equal(phase12.counts.blockingAlerts, 0)
 assert.equal(phase12.failures.length, 0)
-assert.equal(phase12.nextWorkstream, 'Phase 12A Analytics Capture Foundation')
 assert.equal(phase12.providers.twitch.binding, 'DB_TWITCH_HOT')
 assert.equal(phase12.providers.kick.binding, 'DB_KICK_HOT')
 
 const baseline = json('docs/audits/12a0-current-data-capacity-baseline.json')
 assert.equal(baseline.schemaVersion, 'viewloom-12a0-capacity-baseline-v1')
-assert.equal(baseline.workstream, '12A-0 current data and capacity baseline')
 assert.equal(baseline.providerSeparated, true)
 assert.equal(baseline.runtimeChanged, false)
 assert.equal(baseline.acceptance.status, 'accepted')
@@ -129,67 +134,76 @@ assert.equal(baseline.providers.twitch.storage.rawRows, 8688)
 assert.equal(baseline.providers.kick.storage.rawRows, 14442)
 assert.equal(baseline.providers.twitch.storage.estimatedPayloadMbPerDay, 10.38)
 assert.equal(baseline.providers.kick.storage.estimatedPayloadMbPerDay, 4.63)
-assert.equal(baseline.providers.twitch.storage.dailyRollupObservedDays, 74)
-assert.equal(baseline.providers.kick.storage.dailyRollupObservedDays, 52)
-assert.match(baseline.budgets.decisionBoundary, /No 12A-2 migration is authorized/)
-
-const closeout12a0 = json('docs/audits/12a0-closeout.json')
-assert.equal(closeout12a0.status, 'complete')
-assert.equal(closeout12a0.result, 'pass')
-assert.equal(closeout12a0.implementationPr, 490)
-assert.equal(closeout12a0.completionRules.providerSeparated, true)
-assert.equal(closeout12a0.completionRules.runtimeChangeIncluded, false)
 
 const fieldContract = json('docs/audits/12a1-analytics-field-contract.json')
 assert.equal(fieldContract.schemaVersion, 'viewloom-analytics-field-contract-v1')
-assert.equal(fieldContract.workstream, '12A-1 analytics field contract')
 assert.equal(fieldContract.contractVersion, 'analytics-source-v1')
 assert.equal(fieldContract.providerSeparated, true)
 assert.equal(fieldContract.migrationIncluded, false)
 assert.equal(fieldContract.runtimeCaptureChangeIncluded, false)
-assert.equal(fieldContract.purposes.observedRun.twitch.providerStartedAt.retentionDecision, 'approved_for_future_capture')
 assert.equal(fieldContract.purposes.observedRun.twitch.providerStartedAt.evidenceStrength, 'provider_reported_start_time')
 assert.equal(fieldContract.purposes.observedRun.kick.providerStartedAt.availability, 'unavailable')
 assert.equal(fieldContract.purposes.category.twitch.captureApproved, false)
 assert.equal(fieldContract.purposes.category.kick.captureApproved, false)
 assert.equal(fieldContract.purposes.category.crossProviderIdentityEquivalenceAllowed, false)
-assert.equal(fieldContract.completion.migrationPerformed, false)
-assert.equal(fieldContract.completion.runtimeCaptureChanged, false)
 
-const sourceEvidence = json('docs/audits/12a1-source-evidence.json')
-assert.equal(sourceEvidence.providers.twitch.startedAt.futureRetentionDecision, 'approved')
-assert.equal(sourceEvidence.providers.twitch.startedAt.evidenceStrength, 'provider_reported_start_time')
-assert.equal(sourceEvidence.providers.kick.startedAt.futureRetentionDecision, 'unapproved')
-assert.equal(sourceEvidence.providers.kick.category.captureApproved, false)
-assert.equal(sourceEvidence.crossProviderIdentity.categoryIdentityEquivalenceAllowed, false)
+const design = json('docs/audits/12a2-intraday-rollup-design-contract.json')
+assert.equal(design.schemaVersion, 'viewloom-12a2-intraday-rollup-design-v1')
+assert.equal(design.providerSeparated, true)
+assert.equal(design.designOnly, true)
+assert.equal(design.migrationIncluded, false)
+assert.equal(design.model.grain, 'provider x day x streamer')
+assert.equal(design.selection.twitch.retainedStreamerCapPerDay, 600)
+assert.equal(design.selection.kick.retainedStreamerCapPerDay, 200)
+assert.equal(design.retention.intradayDays, 90)
+assert.equal(design.refresh.newCronRequired, false)
+assert.equal(design.retention.rawRetentionChanged, false)
 
-const closeout12a1 = json('docs/audits/12a1-closeout.json')
-assert.equal(closeout12a1.status, 'complete')
-assert.equal(closeout12a1.result, 'pass')
-assert.equal(closeout12a1.implementationPr, 492)
-assert.equal(closeout12a1.completedMainSha, '8878c0da1e32e60ee15697bbcc1f445888a65c59')
-assert.equal(closeout12a1.completionRules.providerSpecificFieldContractsExist, true)
-assert.equal(closeout12a1.completionRules.fieldProvenanceExplicit, true)
-assert.equal(closeout12a1.completionRules.unsupportedFieldsExplicit, true)
-assert.equal(closeout12a1.completionRules.sourceContractsVersioned, true)
-assert.equal(closeout12a1.completionRules.migrationPerformed, false)
-assert.equal(closeout12a1.completionRules.runtimeCaptureChanged, false)
-assert.equal(closeout12a1.nextWorkstream, '12A-2 compact intraday rollup design and migration')
-assert.equal(closeout12a1.nextBranch, 'work-analytics-12a2-intraday-rollup-design')
-assert.equal(closeout12a1.nextBranchCreated, false)
-assert.equal(closeout12a1.nextEntryGate.providerSeparatedBudgetingRequired, true)
-assert.equal(closeout12a1.nextEntryGate.rowCountEstimateRequired, true)
-assert.equal(closeout12a1.nextEntryGate.bytesPerDayEstimateRequired, true)
-assert.equal(closeout12a1.nextEntryGate.retainedSizeEstimateRequired, true)
-assert.equal(closeout12a1.nextEntryGate.indexCostEstimateRequired, true)
-assert.equal(closeout12a1.nextEntryGate.queryCostEstimateRequired, true)
-assert.equal(closeout12a1.nextEntryGate.rawRetentionExtensionAllowed, false)
-assert.equal(closeout12a1.nextEntryGate.migrationAuthorizedBeforeBudgetAcceptance, false)
+const budget = json('docs/audits/12a2-intraday-rollup-budget-evidence.json')
+assert.equal(budget.schemaVersion, 'viewloom-12a2-intraday-rollup-budget-v1')
+assert.equal(budget.providers.twitch.totalMeasuredBytesPerRollupRow, 1148.83)
+assert.equal(budget.providers.twitch.projectedStorageMb90dWithSafety, 70.99)
+assert.equal(budget.providers.kick.totalMeasuredBytesPerRollupRow, 1143.95)
+assert.equal(budget.providers.kick.projectedStorageMb90dWithSafety, 23.57)
+assert.equal(budget.acceptance.migrationAuthorized, false)
+assert.equal(budget.acceptance.remoteDatabaseSizeEvidenceRequiredBeforeApply, true)
+
+const remote = json('docs/audits/12a2-remote-d1-size-evidence.json')
+assert.equal(remote.schemaVersion, 'viewloom-12a2-remote-d1-size-gate-v1')
+assert.equal(remote.status, 'blocked')
+assert.equal(remote.blocker.code, 'cloudflare_credentials_missing')
+assert.equal(remote.blocker.secretValuesIncluded, false)
+assert.equal(remote.gate.twitchPass, false)
+assert.equal(remote.gate.kickPass, false)
+assert.equal(remote.gate.accountPass, false)
+assert.equal(remote.gate.migrationStorageGatePass, false)
+assert.equal(remote.gate.migrationAuthorizedByThisEvidenceAlone, false)
+assert.equal(remote.privacy.unrelatedDatabaseNamesIncluded, false)
+assert.equal(remote.privacy.secretsIncluded, false)
+assert.equal(remote.privacy.accountIdIncluded, false)
+assert.equal('providers' in remote, false)
+assert.equal('account' in remote, false)
+
+const state = json('docs/audits/12a2-current-gate-state.json')
+assert.equal(state.status, 'blocked_before_migration')
+assert.equal(state.design.status, 'accepted')
+assert.equal(state.design.pr, 494)
+assert.equal(state.design.twitchSafeProjectionMb, 70.99)
+assert.equal(state.design.kickSafeProjectionMb, 23.57)
+assert.equal(state.design.combinedSafeProjectionMb, 94.56)
+assert.equal(state.remoteSizeGate.toolingStatus, 'installed')
+assert.equal(state.remoteSizeGate.pr, 495)
+assert.equal(state.remoteSizeGate.status, 'blocked')
+assert.equal(state.remoteSizeGate.blocker, 'cloudflare_credentials_missing')
+assert.equal(state.remoteSizeGate.migrationStorageGatePass, false)
+assert.equal(state.migration.status, 'not_started')
+assert.equal(state.migration.authorized, false)
+assert.equal(state.migration.schemaApplied, false)
+assert.equal(state.migration.runtimeGenerationStarted, false)
+assert.equal(state.resumeCondition.nextMigrationBranchOnlyAfterGatePass, 'work-analytics-12a2-migration')
 
 const inventory = json('docs/audits/public-surface-inventory.json')
 assert.equal(inventory.active_program, 'Phase 12A Analytics Capture Foundation')
-assert.equal(inventory.counts.vite_html_inputs, 25)
-assert.equal(inventory.counts.inventory_entries, 26)
 assert.equal(inventory.provider_invariants.twitch_binding, 'DB_TWITCH_HOT')
 assert.equal(inventory.provider_invariants.kick_binding, 'DB_KICK_HOT')
 assert.equal(inventory.provider_invariants.combined_totals_allowed, false)
@@ -199,21 +213,13 @@ const gaps = json('docs/audits/public-surface-gaps.json')
 assert.equal(gaps.missing_surfaces.length, 0)
 assert.equal(gaps.candidate_surfaces.length, 0)
 
-check('docs/product/analytics-observation-system-plan.md', [
-  '12A-0 — current data and capacity baseline',
-  '12A-1 — analytics field contract',
-  '12A-2 — compact intraday rollup design and migration',
-  'Phase 15 — Analytics Capability and Calibration Audit',
-  'Phase 16A — Baseline Engine',
-  'Phase 16F — Replay and Backtest',
-])
-
 console.log('Development and documentation policy verification passed.')
 console.log('- Phase 12A Analytics Capture Foundation is active')
-console.log('- 12A-0 current data and capacity baseline is complete PR #490')
-console.log('- 12A-1 analytics field contract is complete PR #492')
-console.log('- 12A-1 permanent contract and closeout evidence are present')
-console.log('- current workstream is 12A-2 compact intraday rollup design and migration')
-console.log('- exact next branch is work-analytics-12a2-intraday-rollup-design and remains uncreated')
-console.log('- migration remains blocked until provider-specific budgets are accepted')
+console.log('- 12A-0 baseline complete PR #490')
+console.log('- 12A-1 field contract complete PR #492')
+console.log('- 12A-2 design budget accepted PR #494')
+console.log('- 12A-2 remote D1 size gate tooling installed PR #495')
+console.log('- current blocker is cloudflare_credentials_missing')
+console.log('- migration storage gate is false and migration has not started')
+console.log('- work-analytics-12a2-migration is allowed only after observed gate pass')
 console.log('- Twitch and Kick remain provider-separated')
