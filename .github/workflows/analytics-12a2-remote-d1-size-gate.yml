@@ -1,0 +1,104 @@
+name: Analytics 12A2 Remote D1 Size Gate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/analytics-12a2-remote-d1-size-gate.yml'
+      - 'scripts/collect-12a2-remote-d1-size-evidence.mjs'
+      - 'scripts/verify-12a2-remote-d1-size-evidence.mjs'
+      - 'docs/audits/12a2-remote-d1-size-evidence.json'
+      - 'docs/operations/12a2-remote-d1-size-gate-acceptance-*.md'
+      - 'docs/work-in-progress/phase12a2-remote-d1-size-gate.md'
+
+concurrency:
+  group: analytics-12a2-remote-d1-size-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  size-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      RAW_DIR: artifacts/12a2-remote-d1-size/raw
+      ARTIFACT_DIR: artifacts/12a2-remote-d1-size
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify Cloudflare evidence credentials exist
+        shell: bash
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo 'cloudflare_credentials_missing' >&2
+            echo 'Required repository secrets: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID' >&2
+            exit 1
+          fi
+
+      - name: Collect raw Wrangler control-plane observations
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RAW_DIR"
+          npx --yes wrangler@4 d1 info vl_twitch_hot --json > "$RAW_DIR/twitch-info.json"
+          npx --yes wrangler@4 d1 info vl_kick_hot --json > "$RAW_DIR/kick-info.json"
+          npx --yes wrangler@4 d1 list --json > "$RAW_DIR/account-list.json"
+
+      - name: Normalize remote D1 size evidence
+        run: node scripts/collect-12a2-remote-d1-size-evidence.mjs "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
+
+      - name: Verify normalized remote D1 size evidence
+        run: node scripts/verify-12a2-remote-d1-size-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+
+      - name: Verify permanent evidence when present
+        run: |
+          if [ -f docs/audits/12a2-remote-d1-size-evidence.json ]; then
+            node scripts/verify-12a2-remote-d1-size-evidence.mjs docs/audits/12a2-remote-d1-size-evidence.json
+          else
+            echo 'Permanent remote D1 size evidence is not frozen yet; normalized artifact is candidate evidence.'
+          fi
+
+      - name: Remove raw control-plane responses before artifact upload
+        if: always()
+        shell: bash
+        run: rm -rf "$RAW_DIR"
+
+      - name: Publish size-gate summary
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f "$ARTIFACT_DIR/evidence.json" ]; then
+            echo '## ViewLoom 12A-2 Remote D1 Size Gate' >> "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+            echo '- Normalized size evidence was not produced.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo '## ViewLoom 12A-2 Remote D1 Size Gate'
+            echo
+            echo "- Twitch current: $(jq -r '.providers.twitch.currentSizeMb' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Twitch projected with safe rollup: $(jq -r '.providers.twitch.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Twitch gate: $(jq -r '.providers.twitch.perDatabaseGatePass' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Kick current: $(jq -r '.providers.kick.currentSizeMb' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Kick projected with safe rollup: $(jq -r '.providers.kick.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Kick gate: $(jq -r '.providers.kick.perDatabaseGatePass' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Account current: $(jq -r '.account.currentSizeMb' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Account projected: $(jq -r '.account.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Storage gate pass: $(jq -r '.gate.migrationStorageGatePass' "$ARTIFACT_DIR/evidence.json")"
+            echo '- Migration authorized by this evidence alone: no'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload normalized size evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a2-remote-d1-size-gate
+          path: artifacts/12a2-remote-d1-size/evidence.json
+          if-no-files-found: warn
