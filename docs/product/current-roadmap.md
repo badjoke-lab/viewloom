@@ -21,8 +21,9 @@ R12C-3 candidate acceptance complete PR #487
 R12C-3 exact production SHA closeout complete
 Current phase: Phase 12A Analytics Capture Foundation
 12A-0 current data and capacity baseline: complete PR #490
-Current workstream: 12A-1 analytics field contract
-Exact next implementation branch: work-analytics-12a1-field-contract
+12A-1 analytics field contract: complete PR #492
+Current workstream: 12A-2 compact intraday rollup design and migration
+Exact next implementation branch: work-analytics-12a2-intraday-rollup-design
 Next branch created: no
 ```
 
@@ -31,22 +32,6 @@ Next branch created: no
 - Release acceptance evidence: `../audits/phase12-release-acceptance.json`
 - Production closeout contract: `../audits/phase12-production-closeout-contract.json`
 - Release acceptance record: `../operations/phase12-release-acceptance-2026-07-09.md`
-- R12C-3 candidate evidence: `../audits/r12c3-candidate-acceptance.json`
-- R12C-3 candidate record: `../operations/r12c3-release-candidate-acceptance-2026-07-09.md`
-
-Accepted production identity:
-
-```text
-Expected main SHA: 32c27a9a772cb62ff38f009c5fd1bb095ac27ad8
-Deployed SHA:      32c27a9a772cb62ff38f009c5fd1bb095ac27ad8
-Environment: production
-Branch: main
-HTML routes: 25
-Status APIs: 2
-Sitemap URLs: 21
-Launch assets: 6
-Blocking alerts: 0
-```
 
 ## Phase 12A authorities
 
@@ -55,8 +40,10 @@ Blocking alerts: 0
 - Prior capability audit: `next-feature-data-capability-audit.md`
 - 12A-0 production baseline: `../audits/12a0-current-data-capacity-baseline.json`
 - 12A-0 closeout: `../audits/12a0-closeout.json`
-- 12A-0 acceptance record: `../operations/12a0-current-data-capacity-baseline-acceptance-2026-07-10.md`
-- 12A-0 closeout record: `../operations/12a0-closeout-2026-07-10.md`
+- 12A-1 field contract: `../audits/12a1-analytics-field-contract.json`
+- 12A-1 source evidence: `../audits/12a1-source-evidence.json`
+- 12A-1 closeout: `../audits/12a1-closeout.json`
+- 12A-1 human contract: `analytics-field-contract-v1.md`
 
 Phase 12A purpose:
 
@@ -69,8 +56,6 @@ avoid analytics UI before evidence and calibration gates
 ```
 
 ## Completed 12A-0 baseline
-
-12A-0 completed as evidence-only work. Permanent evidence records current D1 row counts, payload size, oldest/latest raw buckets, rollup observations, query timing, provider source and coverage modes, five-minute cadence behavior, retention schedules, field matrix, upstream discarded fields, and the current collector-duration measurement boundary.
 
 ```text
 Twitch raw rows: 8,688
@@ -86,33 +71,46 @@ Kick rollup observed days: 52
 Latest 24h cadence: 287 / 288 for each provider
 ```
 
-No migration or runtime change was authorized by 12A-0.
+## Completed 12A-1 field contract
 
-## Active 12A-1 boundary
-
-12A-1 is the analytics field-contract workstream.
-
-Required decisions:
+12A-1 completed in PR #492 and froze versioned provider-specific source and field semantics before migration design.
 
 ```text
-minimum provider-specific baseline fields
-minimum provider-specific observed-run fields
-minimum provider-specific category fields
-Twitch started_at evidence strength and retention decision
-verified Kick category source before capture approval
-versioned analytics source contracts
-explicit provider differences without identity-equivalence claims
+Twitch provider_started_at: approved for future capture as provider_reported_start_time
+Kick provider_started_at: unavailable until source verification
+Twitch category capture: unapproved
+Kick category capture: unapproved pending accepted live primary-path evidence
+cross-provider identity equivalence: prohibited
 ```
 
-12A-1 must not introduce a D1 migration, compact-rollup generation, analytics UI, raw-retention extension, a new high-frequency cron, unverified category capture, exact-session claims, or cross-provider analytics.
+## Active 12A-2 boundary
+
+12A-2 designs bounded provider-separated compact intraday storage for 90-day baseline capability without extending raw retention.
+
+Required provider-specific budgets:
+
+```text
+rows/day
+bytes/row
+bytes/day
+retained rows
+retained size
+index cost
+query plan and timing target
+refresh scope
+retention policy
+failure visibility
+```
+
+Migration remains blocked until these budgets are accepted against the 12A-0 baseline. 12A-2 must not assume exact session boundaries, Kick provider start time, category capture approval, or cross-provider category identity.
 
 ## Approved forward sequence
 
 ```text
 Phase 12A Analytics Capture Foundation
   12A-0 current data and capacity baseline            complete PR #490
-  12A-1 analytics field contract                      current
-  12A-2 compact intraday rollup design and migration  queued
+  12A-1 analytics field contract                      complete PR #492
+  12A-2 compact intraday rollup design and migration  current
   12A-3 bounded intraday rollup generation            queued
   12A-4 category capture foundation                    queued
   12A-5 foundation acceptance and accumulation handoff queued

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "viewloom-12a1-closeout-v1",
+  "workstream": "12A-1 analytics field contract",
+  "status": "complete",
+  "result": "pass",
+  "implementationPr": 492,
+  "completedMainSha": "8878c0da1e32e60ee15697bbcc1f445888a65c59",
+  "contract": {
+    "version": "analytics-source-v1",
+    "fieldContract": "docs/audits/12a1-analytics-field-contract.json",
+    "sourceEvidence": "docs/audits/12a1-source-evidence.json",
+    "humanContract": "docs/product/analytics-field-contract-v1.md",
+    "acceptance": "docs/operations/12a1-field-contract-acceptance-2026-07-10.md"
+  },
+  "decisions": {
+    "twitchProviderStartedAt": {
+      "futureRetentionApproved": true,
+      "evidenceStrength": "provider_reported_start_time",
+      "exactSessionBoundaryClaimAllowed": false
+    },
+    "kickProviderStartedAt": {
+      "futureRetentionApproved": false,
+      "availability": "unavailable_until_source_verification",
+      "exactSessionBoundaryClaimAllowed": false
+    },
+    "categoryCapture": {
+      "twitchApproved": false,
+      "kickApproved": false,
+      "crossProviderIdentityEquivalenceAllowed": false
+    }
+  },
+  "completionRules": {
+    "providerSpecificFieldContractsExist": true,
+    "fieldProvenanceExplicit": true,
+    "unsupportedFieldsExplicit": true,
+    "twitchStartedAtPolicyDecided": true,
+    "kickCategoryStateExplicit": true,
+    "sourceContractsVersioned": true,
+    "migrationInputsDefined": true,
+    "migrationPerformed": false,
+    "runtimeCaptureChanged": false,
+    "crossProviderAnalyticsIncluded": false
+  },
+  "nextWorkstream": "12A-2 compact intraday rollup design and migration",
+  "nextBranch": "work-analytics-12a2-intraday-rollup-design",
+  "nextBranchCreated": false,
+  "nextEntryGate": {
+    "providerSeparatedBudgetingRequired": true,
+    "rowCountEstimateRequired": true,
+    "bytesPerDayEstimateRequired": true,
+    "retainedSizeEstimateRequired": true,
+    "indexCostEstimateRequired": true,
+    "queryCostEstimateRequired": true,
+    "rawRetentionExtensionAllowed": false,
+    "migrationAuthorizedBeforeBudgetAcceptance": false
+  }
+}

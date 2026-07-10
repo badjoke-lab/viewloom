@@ -30,8 +30,9 @@ R12C-3 candidate acceptance            complete PR #487
 R12C-3 production closeout             complete
 Phase 12A Analytics Capture Foundation active
 12A-0 data and capacity baseline       complete PR #490
-12A-1 analytics field contract         current
-Exact next branch                      work-analytics-12a1-field-contract
+12A-1 analytics field contract         complete PR #492
+12A-2 compact intraday rollup design   current
+Exact next branch                      work-analytics-12a2-intraday-rollup-design
 Next branch created                    no
 ```
 
@@ -55,8 +56,6 @@ Launch assets: 6
 Blocking alerts: 0
 ```
 
-Phase 12 completed legal/support surfaces, Stripe/support-flow readiness, the English launch-copy package, a 12-question FAQ, a repo-owned six-image launch/share asset package, premerge 100-scenario browser acceptance, and exact-SHA hosted production closeout.
-
 The R12B external-state evidence boundary remains active: current Stripe Dashboard/account facts must not be inferred from repository or public-browser evidence alone.
 
 ## Phase 12A analytics foundation
@@ -69,46 +68,59 @@ docs/product/analytics-observation-system-plan.md
 docs/product/next-feature-data-capability-audit.md
 docs/audits/12a0-current-data-capacity-baseline.json
 docs/audits/12a0-closeout.json
-docs/operations/12a0-current-data-capacity-baseline-acceptance-2026-07-10.md
-docs/operations/12a0-closeout-2026-07-10.md
+docs/audits/12a1-analytics-field-contract.json
+docs/audits/12a1-source-evidence.json
+docs/audits/12a1-closeout.json
+docs/product/analytics-field-contract-v1.md
+docs/operations/12a1-field-contract-acceptance-2026-07-10.md
+docs/operations/12a1-closeout-2026-07-10.md
 ```
 
-12A-0 completed the provider-separated production baseline without runtime or data-path changes. Accepted baseline highlights:
+12A-0 established the measured provider-separated storage/query baseline. 12A-1 then froze provider-specific field semantics before migration design.
+
+Accepted 12A-1 decisions:
 
 ```text
-Twitch raw rows:              8,688
-Twitch retained payload:      314.14 MB
-Twitch estimated payload/day: 10.38 MB
-Twitch rollup observed days:  74
-
-Kick raw rows:                14,442
-Kick retained payload:        232.96 MB
-Kick estimated payload/day:   4.63 MB
-Kick rollup observed days:    52
-
-Latest 24h cadence:           287 / 288 for each provider
+Twitch provider_started_at: approved for future capture as provider_reported_start_time
+Kick provider_started_at: unavailable until source verification
+Twitch category capture: unapproved
+Kick category capture: unapproved pending accepted live primary-path evidence
+cross-provider category identity equivalence: prohibited
 ```
 
-These are measured baseline inputs. They do not authorize migration, observed-window expansion, raw-retention extension, or provider combination.
-
-Current workstream:
+## Current workstream: 12A-2
 
 ```text
-12A-1 analytics field contract
-branch: work-analytics-12a1-field-contract
+12A-2 compact intraday rollup design and migration
+branch: work-analytics-12a2-intraday-rollup-design
 ```
 
-12A-1 must define minimum provider-specific fields for baseline, observed-run, and category work; classify Twitch `started_at` evidence strength; verify a Kick category source before category capture approval; version analytics source contracts; and document provider differences without identity-equivalence claims.
+12A-2 must design a bounded provider-separated compact intraday representation for 90-day baseline capability without extending raw retention.
 
-12A-1 does not authorize the 12A-2 migration. It must not add analytics UI, extend raw retention, add a new high-frequency cron, combine providers, or make exact-session claims.
+Before migration is approved, it must record separately for Twitch and Kick:
+
+```text
+rows/day
+bytes/row
+bytes/day
+retained rows
+retained size
+index cost
+query plan and timing target
+refresh scope
+retention policy
+failure visibility
+```
+
+The design must be compared against the accepted 12A-0 baseline. Migration is not authorized until row, byte, retention, index, and query budgets are accepted.
 
 ## Approved forward sequence
 
 ```text
 Phase 12A Analytics Capture Foundation
-  12A-0 current data and capacity baseline            complete
-  12A-1 analytics field contract                      current
-  12A-2 compact intraday rollup design and migration  queued
+  12A-0 current data and capacity baseline            complete PR #490
+  12A-1 analytics field contract                      complete PR #492
+  12A-2 compact intraday rollup design and migration  current
   12A-3 bounded intraday rollup generation            queued
   12A-4 provider-specific category capture foundation queued
   12A-5 foundation acceptance and accumulation handoff queued
