@@ -1,0 +1,33 @@
+name: Analytics 12A1 Field Contract
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'docs/audits/12a1-analytics-field-contract.json'
+      - 'docs/audits/12a1-source-evidence.json'
+      - 'docs/product/analytics-field-contract-v1.md'
+      - 'docs/work-in-progress/phase12a1-field-contract.md'
+      - 'scripts/verify-12a1-field-contract.mjs'
+      - 'workers/collector-kick/scripts/probe-kick-official-livestreams.mjs'
+      - '.github/workflows/analytics-12a1-field-contract.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: analytics-12a1-field-contract-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify analytics field contract v1
+        run: node scripts/verify-12a1-field-contract.mjs
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
