@@ -1,7 +1,7 @@
 # ViewLoom current roadmap
 
 Status: source of truth
-Last updated: 2026-07-09
+Last updated: 2026-07-10
 
 ```text
 Phase 8 P8B complete PR #428
@@ -20,8 +20,9 @@ R12C-2 launch/share asset package complete PR #486
 R12C-3 candidate acceptance complete PR #487
 R12C-3 exact production SHA closeout complete
 Current phase: Phase 12A Analytics Capture Foundation
-Current workstream: 12A-0 current data and capacity baseline
-Exact next implementation branch: work-analytics-12a0-capacity-baseline
+12A-0 current data and capacity baseline: complete PR #490
+Current workstream: 12A-1 analytics field contract
+Exact next implementation branch: work-analytics-12a1-field-contract
 Next branch created: no
 ```
 
@@ -47,21 +48,15 @@ Launch assets: 6
 Blocking alerts: 0
 ```
 
-Capacity carry-forward:
-
-```text
-Twitch: at-or-over-window, 300 / 300, hasMore true
-Kick:   at-or-over-window, 100 / 100
-```
-
-These are Phase 12A-0 baseline inputs, not authorization to expand observed windows.
-
-## Active Phase 12A authorities
+## Phase 12A authorities
 
 - Analytics specification: `analytics-observation-system-spec.md`
 - Analytics implementation plan: `analytics-observation-system-plan.md`
 - Prior capability audit: `next-feature-data-capability-audit.md`
-- Current production baseline input: `../audits/phase12-release-acceptance.json`
+- 12A-0 production baseline: `../audits/12a0-current-data-capacity-baseline.json`
+- 12A-0 closeout: `../audits/12a0-closeout.json`
+- 12A-0 acceptance record: `../operations/12a0-current-data-capacity-baseline-acceptance-2026-07-10.md`
+- 12A-0 closeout record: `../operations/12a0-closeout-2026-07-10.md`
 
 Phase 12A purpose:
 
@@ -73,37 +68,54 @@ retain Twitch/Kick provider separation
 avoid analytics UI before evidence and calibration gates
 ```
 
-## Active 12A-0 boundary
+## Completed 12A-0 baseline
 
-12A-0 is evidence-only. It must record:
+12A-0 completed as evidence-only work. Permanent evidence records current D1 row counts, payload size, oldest/latest raw buckets, rollup observations, query timing, provider source and coverage modes, five-minute cadence behavior, retention schedules, field matrix, upstream discarded fields, and the current collector-duration measurement boundary.
 
 ```text
-current D1 row counts
-payload size
-oldest/latest raw bucket
-daily-rollup counts
-collector duration
-relevant query timings
-Twitch/Kick source modes
-coverage behavior
-five-minute cadence behavior
-rollup/retention behavior
-current field matrix
-upstream fields discarded before storage
+Twitch raw rows: 8,688
+Twitch retained payload: 314.14 MB
+Twitch estimated payload/day: 10.38 MB
+Twitch rollup observed days: 74
+
+Kick raw rows: 14,442
+Kick retained payload: 232.96 MB
+Kick estimated payload/day: 4.63 MB
+Kick rollup observed days: 52
+
+Latest 24h cadence: 287 / 288 for each provider
 ```
 
-Completion requires permanent machine-readable baseline evidence and storage/query budgets before migration. No runtime change is allowed in 12A-0.
+No migration or runtime change was authorized by 12A-0.
+
+## Active 12A-1 boundary
+
+12A-1 is the analytics field-contract workstream.
+
+Required decisions:
+
+```text
+minimum provider-specific baseline fields
+minimum provider-specific observed-run fields
+minimum provider-specific category fields
+Twitch started_at evidence strength and retention decision
+verified Kick category source before capture approval
+versioned analytics source contracts
+explicit provider differences without identity-equivalence claims
+```
+
+12A-1 must not introduce a D1 migration, compact-rollup generation, analytics UI, raw-retention extension, a new high-frequency cron, unverified category capture, exact-session claims, or cross-provider analytics.
 
 ## Approved forward sequence
 
 ```text
 Phase 12A Analytics Capture Foundation
-  12A-0 current data and capacity baseline
-  12A-1 analytics field contract
-  12A-2 compact intraday rollup design and migration
-  12A-3 bounded intraday rollup generation
-  12A-4 category capture foundation
-  12A-5 foundation acceptance and accumulation handoff
+  12A-0 current data and capacity baseline            complete PR #490
+  12A-1 analytics field contract                      current
+  12A-2 compact intraday rollup design and migration  queued
+  12A-3 bounded intraday rollup generation            queued
+  12A-4 category capture foundation                    queued
+  12A-5 foundation acceptance and accumulation handoff queued
 Phase 13-14 localization while analytics evidence accumulates
 Phase 15 Analytics Capability and Calibration Audit
 Phase 16A Baseline Engine
