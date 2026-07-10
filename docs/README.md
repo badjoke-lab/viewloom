@@ -21,8 +21,9 @@ R12C-3 candidate acceptance complete PR #487
 R12C-3 exact production SHA closeout complete
 Current phase Phase 12A Analytics Capture Foundation
 12A-0 current data and capacity baseline complete PR #490
-Current workstream 12A-1 analytics field contract
-Exact next implementation branch work-analytics-12a1-field-contract
+12A-1 analytics field contract complete PR #492
+Current workstream 12A-2 compact intraday rollup design and migration
+Exact next implementation branch work-analytics-12a2-intraday-rollup-design
 Next branch created no
 ```
 
@@ -36,21 +37,19 @@ Next branch created no
 - Prior capability audit: `product/next-feature-data-capability-audit.md`
 - 12A-0 baseline evidence: `audits/12a0-current-data-capacity-baseline.json`
 - 12A-0 closeout evidence: `audits/12a0-closeout.json`
-- 12A-0 baseline acceptance: `operations/12a0-current-data-capacity-baseline-acceptance-2026-07-10.md`
-- 12A-0 canonical closeout: `operations/12a0-closeout-2026-07-10.md`
+- 12A-1 field contract: `audits/12a1-analytics-field-contract.json`
+- 12A-1 source evidence: `audits/12a1-source-evidence.json`
+- 12A-1 human contract: `product/analytics-field-contract-v1.md`
+- 12A-1 acceptance: `operations/12a1-field-contract-acceptance-2026-07-10.md`
+- 12A-1 closeout: `audits/12a1-closeout.json`
+- 12A-1 closeout record: `operations/12a1-closeout-2026-07-10.md`
 - Phase 12 release acceptance: `audits/phase12-release-acceptance.json`
 - Phase 12 closeout contract: `audits/phase12-production-closeout-contract.json`
 - Phase 12 release record: `operations/phase12-release-acceptance-2026-07-09.md`
 - R12C-3 candidate evidence: `audits/r12c3-candidate-acceptance.json`
 - R12C-3 candidate acceptance record: `operations/r12c3-release-candidate-acceptance-2026-07-09.md`
-- R12C-2 capture evidence: `audits/r12c2-launch-assets-capture.json`
-- R12C-2 asset manifest: `audits/r12c2-launch-asset-manifest.json`
-- R12C-2 captions: `product/launch-asset-captions.md`
-- R12C-1 English source package: `product/english-launch-copy.md`
 - Public surface inventory: `audits/public-surface-inventory.json`
 - Current gap state: `audits/public-surface-gaps.json`
-- Permanent Phase 11 closeout: `operations/phase11-production-closeout-2026-07-08.md`
-- Permanent U10H production acceptance: `operations/u10h-production-acceptance-2026-07-04.md`
 
 ## Permanent Watchlist records
 
@@ -58,42 +57,14 @@ Next branch created no
 - `product/watchlist-v1-implementation-plan.md`
 - `operations/watchlist-production-acceptance-2026-06-25.md`
 
-## Phase 12 permanent closeout
-
-```text
-R12A legal and support public-surface completion   complete
-R12B Stripe and support-flow readiness             complete
-R12C-0 message inventory                           complete
-R12C-1 launch copy and FAQ                         complete
-R12C-2 launch/share asset package                  complete
-R12C-3 premerge candidate acceptance               complete
-R12C-3 exact production SHA closeout                complete
-```
-
-Accepted production identity:
-
-```text
-Expected main SHA: 32c27a9a772cb62ff38f009c5fd1bb095ac27ad8
-Deployed SHA:      32c27a9a772cb62ff38f009c5fd1bb095ac27ad8
-HTML routes: 25
-Status APIs: 2
-Sitemap URLs: 21
-Launch assets: 6
-Blocking alerts: 0
-```
-
-The R12B external-state evidence boundary remains in force: repository/public-browser evidence does not prove unobserved current Stripe Dashboard/account state.
-
 ## Active Phase 12A
 
-Phase 12A begins evidence capture and compact aggregation for facts that current daily rollups cannot reconstruct later.
-
-Sequence:
+Phase 12A captures and compacts evidence that current daily rollups cannot reconstruct later.
 
 ```text
 12A-0 current data and capacity baseline            complete PR #490
-12A-1 analytics field contract                      current
-12A-2 compact intraday rollup design and migration  queued
+12A-1 analytics field contract                      complete PR #492
+12A-2 compact intraday rollup design and migration  current
 12A-3 bounded intraday rollup generation            queued
 12A-4 provider-specific category capture foundation queued
 12A-5 foundation acceptance and accumulation handoff queued
@@ -101,7 +72,7 @@ Sequence:
 
 ### Completed 12A-0
 
-12A-0 permanently records provider-separated production storage, cadence, source, coverage, rollup, field-loss, duration-boundary, and query timing evidence. It completed without runtime or data-path change.
+12A-0 permanently records provider-separated production storage, cadence, source, coverage, rollup, field-loss, duration-boundary, and query timing evidence.
 
 ```text
 Twitch raw rows: 8,688; retained payload: 314.14 MB; estimated: 10.38 MB/day
@@ -109,17 +80,42 @@ Kick raw rows: 14,442; retained payload: 232.96 MB; estimated: 4.63 MB/day
 Latest 24h cadence: 287 / 288 for each provider
 ```
 
-### Active 12A-1
+### Completed 12A-1
+
+12A-1 froze provider-specific field semantics before migration design.
+
+```text
+Twitch provider_started_at: approved for future capture as provider_reported_start_time
+Kick provider_started_at: unavailable until source verification
+Twitch category capture: unapproved
+Kick category capture: unapproved pending accepted live primary-path evidence
+cross-provider category identity equivalence: prohibited
+```
+
+### Active 12A-2
 
 Exact next branch:
 
 ```text
-work-analytics-12a1-field-contract
+work-analytics-12a2-intraday-rollup-design
 ```
 
-12A-1 must define minimum provider-specific fields for baseline, observed-run, and category work; classify Twitch `started_at` evidence strength; verify a Kick category source before category capture approval; version analytics source contracts; and document provider differences without claiming identity equivalence.
+12A-2 must design bounded provider-separated compact intraday storage for 90-day baseline capability without extending raw retention. Migration remains blocked until provider-specific row, byte, retention, index, and query budgets are accepted against the 12A-0 baseline.
 
-12A-1 must not introduce the 12A-2 migration, compact-rollup runtime generation, analytics UI, raw-retention extension, a new high-frequency cron, exact-session claims, or cross-provider analytics.
+Required design evidence:
+
+```text
+rows/day
+bytes/row
+bytes/day
+retained rows
+retained size
+index cost
+query plan and timing target
+refresh scope
+retention policy
+failure visibility
+```
 
 ## Approved analytics program order
 
