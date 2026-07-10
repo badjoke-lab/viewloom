@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "viewloom-12a0-closeout-v1",
+  "workstream": "12A-0 current data and capacity baseline",
+  "status": "complete",
+  "result": "pass",
+  "completedMainSha": "b2d5d88c251d40b59338ef53dac2917aef45e9d0",
+  "implementationPr": 490,
+  "evidence": {
+    "baselinePath": "docs/audits/12a0-current-data-capacity-baseline.json",
+    "acceptancePath": "docs/operations/12a0-current-data-capacity-baseline-acceptance-2026-07-10.md",
+    "workflowRunId": 29094472952,
+    "artifactId": 8228170837,
+    "artifactDigest": "sha256:4c9644aeb7fb065d4660f33055597515927c99d313830afd0793316ebde5c5cf",
+    "latestHeadBaselineVerification": "pass",
+    "latestHeadNoRuntimeChangeVerification": "pass"
+  },
+  "providers": {
+    "twitch": {
+      "binding": "DB_TWITCH_HOT",
+      "database": "vl_twitch_hot",
+      "rawRows": 8688,
+      "rows24h": 287,
+      "expectedRows24h": 288,
+      "retainedPayloadMb": 314.14,
+      "estimatedPayloadMbPerDay": 10.38,
+      "observedRollupDays": 74,
+      "sourceMode": "real",
+      "coverageMode": "top-window"
+    },
+    "kick": {
+      "binding": "DB_KICK_HOT",
+      "database": "vl_kick_hot",
+      "rawRows": 14442,
+      "rows24h": 287,
+      "expectedRows24h": 288,
+      "retainedPayloadMb": 232.96,
+      "estimatedPayloadMbPerDay": 4.63,
+      "observedRollupDays": 52,
+      "sourceMode": "authenticated",
+      "coverageMode": "official-livestreams"
+    }
+  },
+  "completionRules": {
+    "permanentMachineReadableBaselineEvidenceExists": true,
+    "storageBudgetsRecorded": true,
+    "queryBudgetsRecorded": true,
+    "providerSeparated": true,
+    "runtimeChangeIncluded": false
+  },
+  "decisionBoundaries": {
+    "migrationAuthorizedBy12A0Alone": false,
+    "observedWindowExpansionAuthorized": false,
+    "rawRetentionExtensionAuthorized": false,
+    "crossProviderAnalyticsAuthorized": false
+  },
+  "nextWorkstream": "12A-1 analytics field contract",
+  "nextBranch": "work-analytics-12a1-field-contract",
+  "nextBranchCreated": false
+}

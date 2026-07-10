@@ -1,11 +1,11 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 6.9
-Last updated: 2026-07-09
+Version: 7.0
+Last updated: 2026-07-10
 Current phase: Phase 12A — Analytics Capture Foundation
-Current workstream: 12A-0 current data and capacity baseline
-Exact next implementation branch: `work-analytics-12a0-capacity-baseline`
+Current workstream: 12A-1 analytics field contract
+Exact next implementation branch: `work-analytics-12a1-field-contract`
 Next branch created: no
 
 ```text
@@ -21,7 +21,8 @@ R12C-2 launch/share asset package complete PR #486
 R12C-3 candidate acceptance complete PR #487
 R12C-3 exact production SHA closeout complete
 Phase 12A Analytics Capture Foundation active
-12A-0 current data and capacity baseline active
+12A-0 current data and capacity baseline complete PR #490
+12A-1 analytics field contract current
 Phase 13-14 localization queued after Phase 12A
 Phase 15 Analytics Capability and Calibration Audit queued
 Phase 16 Analytics Observation System approved and gated by Phase 15
@@ -67,18 +68,6 @@ Launch assets: 6
 Blocking alerts: 0
 ```
 
-Completed Phase 12 sequence:
-
-```text
-R12A legal and support public-surface completion   complete
-R12B Stripe and support-flow readiness             complete
-R12C-0 message inventory                           complete
-R12C-1 launch copy and FAQ                         complete
-R12C-2 launch/share asset package                  complete
-R12C-3 candidate acceptance                        complete
-R12C-3 exact production SHA closeout                complete
-```
-
 The Phase 12 English package remains the Phase 13–14 localization source after Phase 12A.
 
 ## Active Phase 12A authorities
@@ -87,48 +76,65 @@ The Phase 12 English package remains the Phase 13–14 localization source after
 docs/product/analytics-observation-system-spec.md
 docs/product/analytics-observation-system-plan.md
 docs/product/next-feature-data-capability-audit.md
-docs/audits/phase12-release-acceptance.json
+docs/audits/12a0-current-data-capacity-baseline.json
+docs/audits/12a0-closeout.json
+docs/operations/12a0-current-data-capacity-baseline-acceptance-2026-07-10.md
+docs/operations/12a0-closeout-2026-07-10.md
 ```
 
 Phase 12A begins collecting and compacting evidence that current daily rollups cannot reconstruct later. It preserves Free Strong collection, retention, provider separation, public-route ownership, and evidence honesty.
 
-## 12A-0 active scope
+## Completed 12A-0 baseline
 
-12A-0 is a baseline and evidence workstream. No runtime change is allowed.
-
-Required evidence:
+12A-0 completed as provider-separated, evidence-only work in PR #490.
 
 ```text
-current D1 row counts
-payload size
-oldest/latest raw bucket
-daily-rollup counts
-collector duration
-relevant query timings
-Twitch/Kick source modes and coverage behavior
-five-minute cadence behavior
-rollup/retention schedule behavior
-current field matrix against the prior capability audit
-upstream fields fetched but discarded before storage
+Twitch raw rows: 8,688
+Twitch retained payload: 314.14 MB
+Twitch estimated payload/day: 10.38 MB
+Twitch rollup observed days: 74
+
+Kick raw rows: 14,442
+Kick retained payload: 232.96 MB
+Kick estimated payload/day: 4.63 MB
+Kick rollup observed days: 52
+
+Latest 24h cadence: 287 / 288 for each provider
+```
+
+The baseline records storage/query budgets, source and coverage behavior, schedule and retention behavior, field loss, and the current collector-duration measurement limitation. It does not authorize migration, retention expansion, observed-window expansion, category capture, or provider combination.
+
+## Active 12A-1 scope
+
+12A-1 defines versioned provider-specific analytics field contracts before migration design.
+
+Required decisions:
+
+```text
+minimum Twitch baseline fields
+minimum Kick baseline fields
+minimum provider-specific observed-run fields
+minimum provider-specific category fields
+Twitch started_at evidence strength and retention policy
+verified Kick category source before category capture approval
+field provenance and evidence-strength labels
+source contract versioning
+provider differences without identity-equivalence claims
 ```
 
 Completion:
 
 ```text
-permanent machine-readable baseline evidence exists
-storage/query budgets are recorded before migration
-provider differences are explicit
-no runtime change is included
+provider-specific field contracts exist
+field provenance is explicit
+Twitch started_at policy is decided
+Kick category source is verified or capture remains explicitly unapproved
+source contracts are versioned
+12A-2 migration inputs are defined without performing migration
+no analytics UI or cross-provider analytics is included
 ```
 
-Current production capacity observations carried into 12A-0:
-
-```text
-Twitch: at-or-over-window, 300 / 300, hasMore true
-Kick:   at-or-over-window, 100 / 100
-```
-
-These observations are baseline inputs, not authorization to expand observed windows.
+12A-1 must not add a D1 migration, compact-rollup generation, raw-retention extension, new high-frequency cron, unverified category capture, exact-session claims, or cross-provider totals/rankings/baselines/relationships.
 
 ## Phase 12A sequence
 
@@ -138,7 +144,7 @@ Define provider-specific minimum fields for baseline, observed-run, and category
 
 ### 12A-2 compact intraday rollup design and migration
 
-Design bounded per-stream/day evidence for 90-day baseline capability without retaining raw snapshots for 90 days. Accept storage/query budgets before migration.
+Design bounded per-stream/day evidence for 90-day baseline capability without retaining raw snapshots for 90 days. Accept storage/query budgets against the 12A-0 baseline before migration.
 
 ### 12A-3 bounded intraday rollup generation
 
@@ -182,4 +188,4 @@ current value
   -> historical validation
 ```
 
-The program does not authorize raw-retention expansion, high-frequency cron growth, all-pairs continuous computation, unsupported causal attribution, provider mixing, or constant LLM inference.
+Phase 16 implementation remains gated by Phase 15. Twitch and Kick remain provider-separated throughout the program.

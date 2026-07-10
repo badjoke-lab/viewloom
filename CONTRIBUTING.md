@@ -19,8 +19,9 @@ R12C-2 launch/share asset package complete PR #486
 R12C-3 candidate acceptance complete PR #487
 R12C-3 exact production SHA closeout complete
 Current phase: Phase 12A Analytics Capture Foundation
-Current workstream: 12A-0 current data and capacity baseline
-Exact next implementation branch: work-analytics-12a0-capacity-baseline
+12A-0 current data and capacity baseline: complete PR #490
+Current workstream: 12A-1 analytics field contract
+Exact next implementation branch: work-analytics-12a1-field-contract
 Next branch created: no
 ```
 
@@ -32,58 +33,62 @@ docs/audits/phase12-production-closeout-contract.json
 docs/operations/phase12-release-acceptance-2026-07-09.md
 ```
 
+Permanent 12A-0 evidence:
+
+```text
+docs/audits/12a0-current-data-capacity-baseline.json
+docs/audits/12a0-closeout.json
+docs/operations/12a0-current-data-capacity-baseline-acceptance-2026-07-10.md
+docs/operations/12a0-closeout-2026-07-10.md
+```
+
 Active analytics authorities:
 
 ```text
 docs/product/analytics-observation-system-spec.md
 docs/product/analytics-observation-system-plan.md
 docs/product/next-feature-data-capability-audit.md
-docs/audits/phase12-release-acceptance.json
+docs/audits/12a0-current-data-capacity-baseline.json
+docs/audits/12a0-closeout.json
 ```
 
-## Active 12A-0 rules
+## Active 12A-1 rules
 
-12A-0 is evidence-only and must not introduce runtime changes.
+12A-1 defines provider-specific analytics field contracts. It must not introduce the 12A-2 migration or analytics runtime.
 
-Required evidence:
+Required decisions:
 
 ```text
-current D1 row counts
-payload size
-oldest/latest raw bucket
-daily-rollup counts
-collector duration
-relevant query timings
-Twitch/Kick source modes and coverage behavior
-five-minute cadence behavior
-rollup/retention schedule behavior
-current field matrix
-upstream fields discarded before storage
+minimum Twitch fields for baseline work
+minimum Kick fields for baseline work
+minimum provider-specific fields for observed-run work
+minimum provider-specific fields for category work
+Twitch started_at evidence strength and retention decision
+verified Kick category source before category capture approval
+versioned analytics source contracts
+explicit provider differences without identity-equivalence claims
 ```
 
-Completion requires permanent machine-readable baseline evidence and storage/query budgets before migration.
-
-Do not include any of the following in 12A-0:
+Do not include any of the following in 12A-1:
 
 ```text
-runtime feature changes
-schema migration
-intraday rollup generation
-new analytics UI
+D1 migration
+compact intraday rollup generation
+analytics UI
 raw-retention extension
 new high-frequency cron
-unsupported session/category claims
+unverified category capture
+exact-session or exact-stream-end claims
 cross-provider totals, rankings, baselines, or relationships
 ```
 
-Current capacity evidence carried into 12A-0:
+12A-0 baseline inputs remain evidence, not authorization to expand limits:
 
 ```text
-Twitch: at-or-over-window, 300 / 300, hasMore true
-Kick:   at-or-over-window, 100 / 100
+Twitch raw rows: 8,688; retained payload 314.14 MB; estimated 10.38 MB/day
+Kick raw rows: 14,442; retained payload 232.96 MB; estimated 4.63 MB/day
+Latest 24h cadence: 287 / 288 for each provider
 ```
-
-These are baseline inputs, not authorization to expand limits.
 
 R12B external-state boundaries remain in force. Current Stripe Dashboard/account facts must be supported by direct evidence and must not be inferred from repository code or public browser behavior alone.
 

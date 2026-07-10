@@ -1,7 +1,7 @@
 # ViewLoom current execution schedule
 
 Status: source of truth
-Last updated: 2026-07-09
+Last updated: 2026-07-10
 
 ```text
 Phase 8 complete PR #428
@@ -18,33 +18,13 @@ R12C-2 launch/share asset package complete PR #486
 R12C-3 candidate acceptance complete PR #487
 R12C-3 exact production SHA closeout complete
 Current phase: Phase 12A Analytics Capture Foundation
-Current workstream: 12A-0 current data and capacity baseline
-Exact next implementation branch: work-analytics-12a0-capacity-baseline
+12A-0 current data and capacity baseline: complete PR #490
+Current workstream: 12A-1 analytics field contract
+Exact next implementation branch: work-analytics-12a1-field-contract
 Next branch created: no
 ```
 
-## Phase 12 accepted execution order
-
-```text
-R12A-0 current legal/support surface audit                 complete
-R12A-1 shared legal/support page foundation                complete
-R12A-2 Contact, Terms, Privacy                             complete
-R12A-3 Refund Policy and Commercial Disclosure             complete
-R12A-4 About/footer and route ownership integration        complete
-R12A-5 candidate and hosted acceptance                     complete
-R12B-0 evidence and configuration audit                    complete
-R12B-1 Support page and payment transition                 complete
-R12B-2 refund/disclosure consistency acceptance            complete
-R12C-0 message inventory                                   complete
-R12C-1 launch copy and FAQ                                 complete
-R12C-2 launch/share asset package                          complete
-R12C-3 release candidate acceptance                        complete
-R12C-3 exact production SHA smoke                          complete
-R12C permanent release evidence                            complete
-R12C canonical closeout                                    complete
-```
-
-Permanent Phase 12 release evidence:
+## Phase 12 permanent release evidence
 
 ```text
 docs/audits/phase12-release-acceptance.json
@@ -62,15 +42,13 @@ Status APIs: 2
 Sitemap URLs: 21
 Launch assets: 6
 Blocking alerts: 0
-Twitch capacity: at-or-over-window 300/300, hasMore true
-Kick capacity: at-or-over-window 100/100
 ```
 
 ## Active Phase 12A schedule
 
 ```text
-12A-0 current data and capacity baseline            active
-12A-1 analytics field contract                      queued
+12A-0 current data and capacity baseline            complete PR #490
+12A-1 analytics field contract                      active
 12A-2 compact intraday rollup design and migration  queued
 12A-3 bounded intraday rollup generation            queued
 12A-4 provider-specific category capture foundation queued
@@ -79,46 +57,72 @@ Kick capacity: at-or-over-window 100/100
 
 ### 12A-0 — current data and capacity baseline
 
+Status: complete PR #490
+
+Permanent evidence:
+
+```text
+docs/audits/12a0-current-data-capacity-baseline.json
+docs/audits/12a0-closeout.json
+docs/operations/12a0-current-data-capacity-baseline-acceptance-2026-07-10.md
+docs/operations/12a0-closeout-2026-07-10.md
+```
+
+Completion rules satisfied:
+
+```text
+permanent machine-readable baseline evidence exists yes
+storage/query budgets recorded                     yes
+Twitch/Kick evidence provider-separated            yes
+runtime change included                            no
+```
+
+Accepted baseline highlights:
+
+```text
+Twitch raw rows 8,688; retained payload 314.14 MB; estimated 10.38 MB/day; rollup observed days 74
+Kick raw rows 14,442; retained payload 232.96 MB; estimated 4.63 MB/day; rollup observed days 52
+Latest 24h cadence 287 / 288 for each provider
+```
+
+### 12A-1 — analytics field contract
+
 Exact branch:
 
 ```text
-work-analytics-12a0-capacity-baseline
+work-analytics-12a1-field-contract
 ```
 
-Required evidence:
+Required decisions:
 
 ```text
-current D1 row counts
-payload size
-oldest/latest raw bucket
-daily-rollup counts
-collector duration
-relevant query timings
-Twitch/Kick source modes and coverage behavior
-five-minute cadence behavior
-rollup/retention schedule behavior
-current field matrix against the prior capability audit
-upstream fields fetched but discarded before storage
+minimum Twitch fields for baseline work
+minimum Kick fields for baseline work
+minimum provider-specific fields for observed-run work
+minimum provider-specific fields for category work
+Twitch started_at evidence strength and retention decision
+verified Kick category source before category capture approval
+versioned analytics source contracts
+explicit provider differences without identity-equivalence claims
 ```
 
 Completion rules:
 
 ```text
-permanent machine-readable baseline evidence exists
-storage/query budgets are recorded before migration
-Twitch/Kick evidence remains provider-separated
-no runtime change is included
+provider-specific field contracts exist
+field provenance and evidence strength are explicit
+Twitch started_at policy is decided
+Kick category source is verified or explicitly remains unapproved
+source contracts are versioned
+12A-2 migration inputs are defined without performing migration
+no analytics UI or cross-provider analytics is included
 ```
 
-## Phase 12A sequence after 12A-0
-
-### 12A-1 — analytics field contract
-
-Define minimum provider-specific fields for baseline, observed-run, and category work. Decide the evidence strength of Twitch `started_at`, verify a Kick category source before approving category capture, and document provider differences without claiming identity equivalence.
+12A-1 does not authorize the 12A-2 migration.
 
 ### 12A-2 — compact intraday rollup design and migration
 
-Design a bounded per-stream/day compact intraday representation for 90-day baseline capability without extending raw retention. Add migration only after row/byte/query budgets are accepted.
+Design a bounded per-stream/day compact intraday representation for 90-day baseline capability without extending raw retention. Add migration only after row/byte/query budgets are accepted against the 12A-0 baseline.
 
 ### 12A-3 — bounded intraday rollup generation
 
@@ -152,6 +156,7 @@ Run provider-separated collector/storage acceptance, verify retention and rollup
 - Analytics specification: `analytics-observation-system-spec.md`
 - Analytics implementation plan: `analytics-observation-system-plan.md`
 - Prior capability audit: `next-feature-data-capability-audit.md`
-- Current production baseline input: `../audits/phase12-release-acceptance.json`
+- Accepted 12A-0 baseline: `../audits/12a0-current-data-capacity-baseline.json`
+- 12A-0 closeout: `../audits/12a0-closeout.json`
 
 Do not bypass Phase 12A capture work with request-time long-window raw scans, raw-retention expansion, unsupported session/category claims, or cross-provider analytics.

@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map
-Last updated: 2026-07-09
+Last updated: 2026-07-10
 
 Read the development policy, documentation governance, documentation index, roadmap, schedule, program plan, affected specifications, implementation plans, and evidence before changing the repository.
 
@@ -20,8 +20,9 @@ R12C-2 launch/share asset package complete PR #486
 R12C-3 candidate acceptance complete PR #487
 R12C-3 exact production SHA closeout complete
 Current phase Phase 12A Analytics Capture Foundation
-Current workstream 12A-0 current data and capacity baseline
-Exact next implementation branch work-analytics-12a0-capacity-baseline
+12A-0 current data and capacity baseline complete PR #490
+Current workstream 12A-1 analytics field contract
+Exact next implementation branch work-analytics-12a1-field-contract
 Next branch created no
 ```
 
@@ -33,6 +34,10 @@ Next branch created no
 - Analytics Observation System specification: `product/analytics-observation-system-spec.md`
 - Analytics Observation System implementation plan: `product/analytics-observation-system-plan.md`
 - Prior capability audit: `product/next-feature-data-capability-audit.md`
+- 12A-0 baseline evidence: `audits/12a0-current-data-capacity-baseline.json`
+- 12A-0 closeout evidence: `audits/12a0-closeout.json`
+- 12A-0 baseline acceptance: `operations/12a0-current-data-capacity-baseline-acceptance-2026-07-10.md`
+- 12A-0 canonical closeout: `operations/12a0-closeout-2026-07-10.md`
 - Phase 12 release acceptance: `audits/phase12-release-acceptance.json`
 - Phase 12 closeout contract: `audits/phase12-production-closeout-contract.json`
 - Phase 12 release record: `operations/phase12-release-acceptance-2026-07-09.md`
@@ -77,8 +82,6 @@ Launch assets: 6
 Blocking alerts: 0
 ```
 
-The permanent Phase 12 release evidence also records Twitch `300/300` with `hasMore=true` and Kick `100/100` as at-or-over-window capacity observations. These are Phase 12A-0 baseline inputs and do not authorize collection-limit expansion.
-
 The R12B external-state evidence boundary remains in force: repository/public-browser evidence does not prove unobserved current Stripe Dashboard/account state.
 
 ## Active Phase 12A
@@ -88,25 +91,35 @@ Phase 12A begins evidence capture and compact aggregation for facts that current
 Sequence:
 
 ```text
-12A-0 current data and capacity baseline            active
-12A-1 analytics field contract                      queued
+12A-0 current data and capacity baseline            complete PR #490
+12A-1 analytics field contract                      current
 12A-2 compact intraday rollup design and migration  queued
 12A-3 bounded intraday rollup generation            queued
 12A-4 provider-specific category capture foundation queued
 12A-5 foundation acceptance and accumulation handoff queued
 ```
 
-### Active 12A-0
+### Completed 12A-0
+
+12A-0 permanently records provider-separated production storage, cadence, source, coverage, rollup, field-loss, duration-boundary, and query timing evidence. It completed without runtime or data-path change.
+
+```text
+Twitch raw rows: 8,688; retained payload: 314.14 MB; estimated: 10.38 MB/day
+Kick raw rows: 14,442; retained payload: 232.96 MB; estimated: 4.63 MB/day
+Latest 24h cadence: 287 / 288 for each provider
+```
+
+### Active 12A-1
 
 Exact next branch:
 
 ```text
-work-analytics-12a0-capacity-baseline
+work-analytics-12a1-field-contract
 ```
 
-12A-0 must record current D1 row counts, payload size, oldest/latest raw bucket, daily-rollup counts, collector duration, relevant query timings, provider source modes and coverage behavior, five-minute cadence and retention behavior, the current field matrix, and upstream fields discarded before storage.
+12A-1 must define minimum provider-specific fields for baseline, observed-run, and category work; classify Twitch `started_at` evidence strength; verify a Kick category source before category capture approval; version analytics source contracts; and document provider differences without claiming identity equivalence.
 
-12A-0 is evidence-only. No runtime change is allowed.
+12A-1 must not introduce the 12A-2 migration, compact-rollup runtime generation, analytics UI, raw-retention extension, a new high-frequency cron, exact-session claims, or cross-provider analytics.
 
 ## Approved analytics program order
 
