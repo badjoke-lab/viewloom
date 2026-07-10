@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "viewloom-12a2-remote-d1-size-gate-v1",
+  "workstream": "12A-2 compact intraday rollup design and migration",
+  "generatedAt": "2026-07-10T17:48:34.908Z",
+  "status": "blocked",
+  "evidenceMode": "wrangler-d1-info-json",
+  "acceptanceIdentity": {
+    "pr": 495,
+    "headSha": "7558091e9585e09596b01c6f38ccdbe322c94666",
+    "workflowRunId": 29112267006,
+    "artifactId": 8235231905,
+    "artifactName": "phase12a2-remote-d1-size-gate",
+    "artifactDigest": "sha256:6874e20ac3d6d5a93facb5733ec486837c8a437143952a5d6982e1167676bcd9"
+  },
+  "blocker": {
+    "code": "cloudflare_credentials_missing",
+    "requiredRepositorySecrets": [
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_ACCOUNT_ID"
+    ],
+    "secretValuesIncluded": false
+  },
+  "sourceCommandContract": {
+    "providerInfo": "wrangler d1 info [NAME] --json",
+    "accountList": "wrangler d1 list --json",
+    "rawAccountDatabaseNamesPersisted": false
+  },
+  "gate": {
+    "twitchPass": false,
+    "kickPass": false,
+    "accountPass": false,
+    "migrationStorageGatePass": false,
+    "migrationAuthorizedByThisEvidenceAlone": false
+  },
+  "privacy": {
+    "unrelatedDatabaseNamesIncluded": false,
+    "secretsIncluded": false,
+    "accountIdIncluded": false
+  },
+  "limitations": [
+    "Remote D1 size observations were not collected because the required repository credentials were unavailable to the workflow.",
+    "No current database size, projected utilization, or storage headroom claim is made by this blocked evidence.",
+    "Migration remains blocked until observed remote D1 size evidence passes the storage gate."
+  ]
+}
