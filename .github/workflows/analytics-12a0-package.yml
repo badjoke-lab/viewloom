@@ -1,0 +1,33 @@
+name: Analytics 12A0 Package
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/analytics-12a0-package.yml'
+      - '.github/workflows/analytics-12a0-capacity-baseline.yml'
+      - 'docs/audits/12a0-capacity-baseline-contract.json'
+      - 'docs/work-in-progress/phase12a0-capacity-baseline.md'
+      - 'scripts/collect-12a0-capacity-baseline.mjs'
+      - 'scripts/verify-12a0-capacity-baseline-contract.mjs'
+      - 'scripts/verify-12a0-capacity-baseline-evidence.mjs'
+      - 'scripts/verify-12a0-capacity-baseline-package.mjs'
+
+concurrency:
+  group: analytics-12a0-package-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify 12A-0 evidence contract
+        run: node scripts/verify-12a0-capacity-baseline-contract.mjs
+      - name: Verify 12A-0 evidence package
+        run: node scripts/verify-12a0-capacity-baseline-package.mjs
