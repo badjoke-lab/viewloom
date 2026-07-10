@@ -42,7 +42,7 @@
     "rollup refresh schedule",
     "retention cleanup schedule",
     "collector-duration evidence or explicit measurement limitation",
-    "provider-specific production query timings",
+    "provider-specific production query timings and availability states",
     "current retained-field matrix",
     "upstream fetched or inspected fields not retained",
     "provider-specific storage and query baselines before migration"
@@ -58,11 +58,30 @@
     "twitch_battle_lines",
     "kick_battle_lines"
   ],
+  "timingAcceptance": {
+    "stableTargetsRequireAll200": [
+      "data_audit",
+      "twitch_status",
+      "kick_status",
+      "twitch_history_30d",
+      "kick_history_30d",
+      "twitch_day_flow",
+      "kick_day_flow"
+    ],
+    "availabilityTargetsRecord200And503": [
+      "twitch_battle_lines",
+      "kick_battle_lines"
+    ],
+    "availabilityTargetsRequireAtLeastOne200": true,
+    "availabilityFailuresMustRemainVisible": true
+  },
   "dailyRollupEvidence": {
     "windowCountPerProvider": 2,
     "maximumDaysPerWindow": 90,
     "windowsMustNotOverlap": true,
-    "requiredReadPath": "daily_rollups",
+    "minimumDailyRollupWindowsPerProvider": 1,
+    "requiredReadPathForCountedRows": "daily_rollups",
+    "emptyHistoricalRawFallbackAllowed": true,
     "missingCalendarDaysCountAsObservedRollupRows": false
   },
   "collectorDurationBoundary": {
