@@ -7,9 +7,12 @@ on:
       - main
     paths:
       - 'scripts/collect-12a0-capacity-baseline.mjs'
+      - 'scripts/verify-12a0-capacity-baseline-contract.mjs'
       - 'scripts/verify-12a0-capacity-baseline-evidence.mjs'
+      - 'docs/audits/12a0-capacity-baseline-contract.json'
       - 'docs/audits/12a0-current-data-capacity-baseline.json'
       - 'docs/operations/12a0-current-data-capacity-baseline-*.md'
+      - 'docs/work-in-progress/phase12a0-capacity-baseline.md'
       - 'docs/product/current-roadmap.md'
       - 'docs/product/current-schedule.md'
       - 'docs/product/post-watchlist-program-plan.md'
@@ -43,6 +46,9 @@ jobs:
 
       - name: Verify development policy
         run: node scripts/verify-development-policy.mjs
+
+      - name: Verify 12A-0 evidence contract
+        run: node scripts/verify-12a0-capacity-baseline-contract.mjs
 
       - name: Collect read-only production capacity baseline
         run: node scripts/collect-12a0-capacity-baseline.mjs "$ARTIFACT_DIR/evidence.json"
