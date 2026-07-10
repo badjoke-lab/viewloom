@@ -1,0 +1,343 @@
+{
+  "schemaVersion": "viewloom-12a0-capacity-baseline-v1",
+  "workstream": "12A-0 current data and capacity baseline",
+  "generatedAt": "2026-07-10T13:00:35.069Z",
+  "origin": "https://vl.badjoke-lab.com",
+  "evidenceMode": "read-only-production-observation",
+  "providerSeparated": true,
+  "runtimeChanged": false,
+  "acceptance": {
+    "status": "accepted",
+    "workflowRunId": 29094472952,
+    "artifactId": 8228170837,
+    "artifactName": "phase12a0-capacity-baseline",
+    "artifactDigest": "sha256:4c9644aeb7fb065d4660f33055597515927c99d313830afd0793316ebde5c5cf",
+    "evidenceHeadSha": "90bd33001a3cd894d933becfceb33984c018b1bf"
+  },
+  "providers": {
+    "twitch": {
+      "storage": {
+        "binding": "DB_TWITCH_HOT",
+        "database": "vl_twitch_hot",
+        "rawRows": 8688,
+        "rows24h": 287,
+        "expectedRows24h": 288,
+        "averagePayloadBytes": 37914,
+        "maximumPayloadBytes": 38948,
+        "retainedPayloadMb": 314.14,
+        "estimatedPayloadMbPerDay": 10.38,
+        "estimatedPayloadMbAtRetention": 311.4,
+        "rawRetentionDays": 30,
+        "rollupRetentionDays": 180,
+        "oldestRawBucket": "2026-06-10T00:35:00.000Z",
+        "latestRawBucket": "2026-07-10T12:55:00.000Z",
+        "dailyRollupObservedDays": 74,
+        "dailyRollupReadPathVerified": false
+      },
+      "collection": {
+        "sourceMode": "real",
+        "state": "partial",
+        "coverageMode": "top-window",
+        "targetSource": "helix-streams-pages",
+        "collectorState": "ok",
+        "runCadenceSeconds": 300,
+        "latestBucketMinute": "2026-07-10T12:55:00.000Z",
+        "latestCollectedAt": "2026-07-10T12:55:58.235Z",
+        "observedCount": 300,
+        "topLimit": 300,
+        "coveredPages": 3,
+        "hasMore": true,
+        "coverageState": "partial",
+        "rows24h": 287,
+        "expectedRows24h": 288,
+        "cadenceRatio": 0.9965,
+        "cadenceExact": false
+      },
+      "history": {
+        "windows": [
+          {
+            "from": "2026-01-12",
+            "to": "2026-04-11",
+            "requestedDays": 90,
+            "responseDays": 90,
+            "observedDays": 0,
+            "readPath": "minute_snapshots",
+            "state": "empty",
+            "coverageState": "missing"
+          },
+          {
+            "from": "2026-04-12",
+            "to": "2026-07-10",
+            "requestedDays": 90,
+            "responseDays": 90,
+            "observedDays": 74,
+            "readPath": "daily_rollups",
+            "state": "partial",
+            "coverageState": "partial"
+          }
+        ],
+        "observedRollupDays": 74,
+        "allWindowsUseDailyRollups": false
+      }
+    },
+    "kick": {
+      "storage": {
+        "binding": "DB_KICK_HOT",
+        "database": "vl_kick_hot",
+        "rawRows": 14442,
+        "rows24h": 287,
+        "expectedRows24h": 288,
+        "averagePayloadBytes": 16914,
+        "maximumPayloadBytes": 18642,
+        "retainedPayloadMb": 232.96,
+        "estimatedPayloadMbPerDay": 4.63,
+        "estimatedPayloadMbAtRetention": 277.8,
+        "rawRetentionDays": 60,
+        "rollupRetentionDays": 180,
+        "oldestRawBucket": "2026-05-20T16:42:00.000Z",
+        "latestRawBucket": "2026-07-10T12:55:00.000Z",
+        "dailyRollupObservedDays": 52,
+        "dailyRollupReadPathVerified": false
+      },
+      "collection": {
+        "sourceMode": "authenticated",
+        "state": "fresh",
+        "coverageMode": "official-livestreams",
+        "targetSource": "official-livestreams",
+        "collectorState": "snapshot_available",
+        "runCadenceSeconds": 300,
+        "latestBucketMinute": "2026-07-10T12:55:00.000Z",
+        "latestCollectedAt": "2026-07-10T12:55:58.380Z",
+        "observedCount": 100,
+        "topLimit": 100,
+        "coveredPages": null,
+        "hasMore": null,
+        "coverageState": "official-livestreams-observed",
+        "rows24h": 287,
+        "expectedRows24h": 288,
+        "cadenceRatio": 0.9965,
+        "cadenceExact": false,
+        "sourceModes": [
+          {
+            "source_mode": "authenticated",
+            "rows": 13764
+          },
+          {
+            "source_mode": "public-channel-fallback",
+            "rows": 678
+          }
+        ]
+      },
+      "history": {
+        "windows": [
+          {
+            "from": "2026-01-12",
+            "to": "2026-04-11",
+            "requestedDays": 90,
+            "responseDays": 90,
+            "observedDays": 0,
+            "readPath": "minute_snapshots",
+            "state": "empty",
+            "coverageState": "missing"
+          },
+          {
+            "from": "2026-04-12",
+            "to": "2026-07-10",
+            "requestedDays": 90,
+            "responseDays": 90,
+            "observedDays": 52,
+            "readPath": "daily_rollups",
+            "state": "partial",
+            "coverageState": "partial"
+          }
+        ],
+        "observedRollupDays": 52,
+        "allWindowsUseDailyRollups": false
+      }
+    }
+  },
+  "queryTimings": {
+    "sampleCountPerTarget": 5,
+    "timeoutMs": 30000,
+    "targets": {
+      "data_audit": {
+        "path": "/api/data-audit",
+        "samples": [{"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}],
+        "statusCodes": [200],
+        "durationMs": {"min": 2367.41, "median": 2411.56, "max": 2639.32},
+        "responseBytes": {"min": 862, "max": 862}
+      },
+      "twitch_status": {
+        "path": "/api/twitch-status",
+        "samples": [{"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}],
+        "statusCodes": [200],
+        "durationMs": {"min": 380.27, "median": 383.97, "max": 391.78},
+        "responseBytes": {"min": 2109, "max": 2109}
+      },
+      "kick_status": {
+        "path": "/api/kick-status",
+        "samples": [{"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}],
+        "statusCodes": [200],
+        "durationMs": {"min": 496.86, "median": 521.25, "max": 525.43},
+        "responseBytes": {"min": 23213, "max": 23271}
+      },
+      "twitch_history_30d": {
+        "path": "/api/history?from=2026-06-11&to=2026-07-10&metric=viewer_minutes",
+        "samples": [{"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}],
+        "statusCodes": [200],
+        "durationMs": {"min": 769.53, "median": 838.36, "max": 1101.09},
+        "responseBytes": {"min": 292453, "max": 292453}
+      },
+      "kick_history_30d": {
+        "path": "/api/kick-history?from=2026-06-11&to=2026-07-10&metric=viewer_minutes",
+        "samples": [{"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}],
+        "statusCodes": [200],
+        "durationMs": {"min": 755.54, "median": 799.56, "max": 980.85},
+        "responseBytes": {"min": 287277, "max": 287277}
+      },
+      "twitch_day_flow": {
+        "path": "/api/day-flow",
+        "samples": [{"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}],
+        "statusCodes": [200],
+        "durationMs": {"min": 1025.2, "median": 1494.98, "max": 2076.09},
+        "responseBytes": {"min": 352616, "max": 352616}
+      },
+      "kick_day_flow": {
+        "path": "/api/kick-day-flow",
+        "samples": [{"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}],
+        "statusCodes": [200],
+        "durationMs": {"min": 720.89, "median": 969.8, "max": 1827.05},
+        "responseBytes": {"min": 356962, "max": 356962}
+      },
+      "twitch_battle_lines": {
+        "path": "/api/battle-lines",
+        "samples": [{"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}],
+        "statusCodes": [200],
+        "durationMs": {"min": 942.59, "median": 1487.86, "max": 1795.56},
+        "responseBytes": {"min": 120350, "max": 120351}
+      },
+      "kick_battle_lines": {
+        "path": "/api/kick-battle-lines",
+        "samples": [{"status": 200}, {"status": 200}, {"status": 200}, {"status": 200}, {"status": 503}],
+        "statusCodes": [200, 503],
+        "durationMs": {"min": 671.71, "median": 711.59, "max": 831.2},
+        "responseBytes": {"min": 826, "max": 98639}
+      }
+    }
+  },
+  "schedules": {
+    "cadence": {
+      "twitch": {"minutes": 5, "source": "workers/collector-twitch/wrangler.toml"},
+      "kick": {"minutes": 5, "source": "workers/collector-kick/wrangler.toml"}
+    },
+    "dailyRollupRefresh": {
+      "twitch": {"utcWindows": ["00:20-00:24", "12:20-12:24"], "source": "workers/collector-twitch/src/index.ts"},
+      "kick": {"utcWindows": ["00:20-00:24", "12:20-12:24"], "source": "workers/collector-kick/src/index.ts"}
+    },
+    "retentionCleanup": {
+      "twitch": {"utcWindow": "00:30-00:34", "rawDays": 30, "dailyRollupDays": 180, "source": "workers/collector-twitch/src/index.ts"},
+      "kick": {"utcWindow": "00:30-00:34", "rawDays": 60, "dailyRollupDays": 180, "source": "workers/collector-kick/src/index.ts"}
+    }
+  },
+  "fieldMatrix": [
+    {"fact": "provider_channel_id", "twitch": "stored", "kick": "stored", "longTermRollup": "top_30_only"},
+    {"fact": "display_name", "twitch": "stored", "kick": "stored", "longTermRollup": "top_30_only"},
+    {"fact": "viewer_count_at_snapshot", "twitch": "stored", "kick": "stored", "longTermRollup": "aggregated"},
+    {"fact": "snapshot_time", "twitch": "stored", "kick": "stored", "longTermRollup": "day_only"},
+    {"fact": "stream_title", "twitch": "not_stored", "kick": "stored", "longTermRollup": "not_stored"},
+    {"fact": "category_game", "twitch": "not_stored", "kick": "not_stored_as_category", "longTermRollup": "not_stored"},
+    {"fact": "language", "twitch": "not_stored", "kick": "not_stored", "longTermRollup": "not_stored"},
+    {"fact": "upstream_start_time", "twitch": "fetched_used_then_discarded", "kick": "not_retained", "longTermRollup": "not_stored"},
+    {"fact": "session_id", "twitch": "not_stored", "kick": "not_stored", "longTermRollup": "not_stored"},
+    {"fact": "exact_stream_end", "twitch": "unavailable", "kick": "unavailable", "longTermRollup": "unavailable"},
+    {"fact": "authoritative_offline_state", "twitch": "unavailable", "kick": "unavailable", "longTermRollup": "unavailable"},
+    {"fact": "daily_viewer_minutes", "twitch": "derived", "kick": "derived", "longTermRollup": "stored"},
+    {"fact": "daily_peak", "twitch": "derived", "kick": "derived", "longTermRollup": "stored"},
+    {"fact": "daily_observed_minutes", "twitch": "derived", "kick": "derived", "longTermRollup": "stored"},
+    {"fact": "current_momentum", "twitch": "stored_in_raw_payload", "kick": "derived_by_consumer", "longTermRollup": "not_stored"},
+    {"fact": "activity_chat_heat", "twitch": "activity_proxy_only", "kick": "unavailable", "longTermRollup": "unavailable"},
+    {"fact": "latest_observed_membership", "twitch": "available", "kick": "available", "longTermRollup": "not_stored"}
+  ],
+  "upstreamDiscardAudit": {
+    "twitch": [
+      {
+        "field": "started_at",
+        "upstreamEndpoint": "https://api.twitch.tv/helix/streams",
+        "fetched": true,
+        "retained": false,
+        "currentUse": "derives activity from stream age before payload write",
+        "evidenceStrength": "code-path verified"
+      }
+    ],
+    "kick": [
+      {
+        "field": "category",
+        "fetchedWhenPresent": true,
+        "retainedAsCategory": false,
+        "currentUse": "official channel normalization may use category.name only as a title fallback",
+        "evidenceStrength": "code-path verified"
+      }
+    ],
+    "explicitlyNotClassedAsFetchedThenDiscarded": {
+      "twitch": ["stream title", "game/category id", "game/category name", "language", "session id"],
+      "kick": ["language", "session id", "upstream start time"]
+    }
+  },
+  "collectorDuration": {
+    "twitch": {
+      "measurementStatus": "not_persisted",
+      "proxyMetric": "bucket_completion_offset_seconds",
+      "proxySeconds": 58.235,
+      "bucketMinute": "2026-07-10T12:55:00.000Z",
+      "completionTimestamp": "2026-07-10T12:55:58.235Z",
+      "interpretation": "Upper-bound-style operational proxy only; includes cron dispatch delay plus collection and write time, not pure collector execution duration.",
+      "followUpOwner": "12A-3 bounded intraday rollup generation"
+    },
+    "kick": {
+      "measurementStatus": "not_persisted",
+      "proxyMetric": "bucket_completion_offset_seconds",
+      "proxySeconds": 58.38,
+      "bucketMinute": "2026-07-10T12:55:00.000Z",
+      "completionTimestamp": "2026-07-10T12:55:58.380Z",
+      "interpretation": "Upper-bound-style operational proxy only; includes cron dispatch delay plus collection and write time, not pure collector execution duration.",
+      "followUpOwner": "12A-3 bounded intraday rollup generation"
+    }
+  },
+  "budgets": {
+    "storage": {
+      "twitch": {
+        "currentRetainedPayloadMb": 314.14,
+        "estimatedPayloadMbPerDay": 10.38,
+        "acceptedRawRetentionDays": 30,
+        "estimatedPayloadMbAtAcceptedRetention": 311.4,
+        "migrationRule": "12A-2 must estimate compact-rollup rows/day and bytes/day against this provider-specific baseline before migration."
+      },
+      "kick": {
+        "currentRetainedPayloadMb": 232.96,
+        "estimatedPayloadMbPerDay": 4.63,
+        "acceptedRawRetentionDays": 60,
+        "estimatedPayloadMbAtAcceptedRetention": 277.8,
+        "migrationRule": "12A-2 must estimate compact-rollup rows/day and bytes/day against this provider-specific baseline before migration."
+      }
+    },
+    "query": {
+      "data_audit": {"medianMs": 2411.56, "maxMs": 2639.32, "baselineOnly": true},
+      "twitch_status": {"medianMs": 383.97, "maxMs": 391.78, "baselineOnly": true},
+      "kick_status": {"medianMs": 521.25, "maxMs": 525.43, "baselineOnly": true},
+      "twitch_history_30d": {"medianMs": 838.36, "maxMs": 1101.09, "baselineOnly": true},
+      "kick_history_30d": {"medianMs": 799.56, "maxMs": 980.85, "baselineOnly": true},
+      "twitch_day_flow": {"medianMs": 1494.98, "maxMs": 2076.09, "baselineOnly": true},
+      "kick_day_flow": {"medianMs": 969.8, "maxMs": 1827.05, "baselineOnly": true},
+      "twitch_battle_lines": {"medianMs": 1487.86, "maxMs": 1795.56, "baselineOnly": true},
+      "kick_battle_lines": {"medianMs": 711.59, "maxMs": 831.2, "baselineOnly": true}
+    },
+    "decisionBoundary": "No 12A-2 migration is authorized by this evidence alone; its row/byte/query delta must be compared against these baselines."
+  },
+  "limitations": [
+    "Collector wall-clock duration is not persisted by the current production data model. The recorded bucket completion offset is a proxy that includes dispatch delay, collection, and write time.",
+    "Daily-rollup counts are observed through provider-specific History responses only when the response reports read_path=daily_rollups; missing calendar days are excluded from observedRollupDays.",
+    "Query timings are end-to-end production HTTP timings from GitHub Actions and include network latency in addition to server and D1 work.",
+    "Kick Battle Lines returned one HTTP 503 in five accepted-run timing samples; the availability failure is retained as baseline evidence rather than hidden.",
+    "Twitch and Kick observations are bounded provider-specific windows and are not complete provider-wide coverage claims."
+  ]
+}
