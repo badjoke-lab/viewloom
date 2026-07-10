@@ -1,0 +1,19 @@
+{
+  "workstream": "12A-0 current data and capacity baseline",
+  "sources": {
+    "storage": "/api/data-audit",
+    "twitchStatus": "/api/twitch-status",
+    "kickStatus": "/api/kick-status",
+    "history": ["/api/history", "/api/kick-history"],
+    "dayFlow": ["/api/day-flow", "/api/kick-day-flow"],
+    "battleLines": ["/api/battle-lines", "/api/kick-battle-lines"],
+    "repositoryContracts": [
+      "workers/collector-twitch/wrangler.toml",
+      "workers/collector-kick/wrangler.toml",
+      "workers/collector-twitch/src/index.ts",
+      "workers/collector-kick/src/index.ts",
+      "docs/product/next-feature-data-capability-audit.md"
+    ]
+  },
+  "writeOperations": false
+}
