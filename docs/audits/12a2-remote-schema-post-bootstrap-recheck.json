@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "viewloom-12a2-remote-schema-post-bootstrap-recheck-v1",
+  "workstream": "12A-2 controlled remote schema apply and verification",
+  "status": "remote_schema_still_absent",
+  "observedAt": "2026-07-11T06:45:14.182Z",
+  "productionGeneratedAt": "2026-07-11T06:45:14.156Z",
+  "acceptanceIdentity": {
+    "pr": 504,
+    "headSha": "984c88bf78ec1ae262d0d186f84609a12a395d87",
+    "workflowRunId": 29143314721,
+    "artifactId": 8245882770,
+    "artifactName": "phase12a2-remote-schema-production",
+    "artifactDigest": "sha256:f1e18a955378f22ae1d8af8a519aabdbbd9c66e20babc885ff564a8d064bce5d"
+  },
+  "codeState": {
+    "controlledApplyPr": 502,
+    "controlledApplyMergeSha": "83e55c2a76d22fc2346522ce33d04eb550df8336",
+    "immediateBootstrapPr": 503,
+    "immediateBootstrapMergeSha": "ac4eb736929fd78061d2250e8dd2b91420723a45"
+  },
+  "providers": {
+    "twitch": {
+      "schemaComplete": false,
+      "observedObjectCount": 0,
+      "expectedObjectCount": 3,
+      "rowsRead": 14,
+      "rowsWritten": 0,
+      "databaseSizeBytes": 337027072
+    },
+    "kick": {
+      "schemaComplete": false,
+      "observedObjectCount": 0,
+      "expectedObjectCount": 3,
+      "rowsRead": 14,
+      "rowsWritten": 0,
+      "databaseSizeBytes": 277446656
+    }
+  },
+  "gate": {
+    "remoteSchemaGatePass": false,
+    "controlledApplyCodeMerged": true,
+    "workerDeploymentEvidencePresent": false,
+    "accountAggregateMeasured": false,
+    "generationStorageGatePass": false,
+    "generationAuthorized": false,
+    "blockers": [
+      "remote_schema_not_applied",
+      "collector_worker_deployment_not_evidenced",
+      "account_aggregate_storage_unmeasured"
+    ]
+  },
+  "boundary": {
+    "mergeClaimsWorkerDeployment": false,
+    "recheckClaimsAutomaticDeploymentFailure": false,
+    "nextAction": "deploy the collector Worker code through an authorized Cloudflare-side process or produce independent deployment evidence, then rerun the read-only schema probe"
+  }
+}
