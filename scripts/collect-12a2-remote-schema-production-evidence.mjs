@@ -59,7 +59,7 @@ for (const provider of ['twitch', 'kick']) {
 
 const remoteSchemaGatePass = providers.twitch.schemaComplete && providers.kick.schemaComplete
 const blockers = ['account_aggregate_storage_unmeasured']
-if (!remoteSchemaGatePass) blockers.unshift('remote_schema_apply_unverified')
+if (!remoteSchemaGatePass) blockers.unshift('remote_schema_not_applied')
 
 const evidence = {
   schemaVersion: 'viewloom-12a2-remote-schema-production-evidence-v1',
