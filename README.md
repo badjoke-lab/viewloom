@@ -14,17 +14,16 @@ ViewLoom is an independent, unofficial observatory for retained Twitch and Kick 
 ## Current state
 
 ```text
-Phase 12 English release readiness     complete
 Phase 12A Analytics Capture Foundation active
-12A-0 data and capacity baseline       complete PR #490
-12A-1 analytics field contract         complete PR #492
-12A-2 rollup design budget             accepted PR #494
-12A-2 control-plane gate tooling       installed PR #495
-12A-2 binding size source              merged PR #497
+12A-0 baseline                         complete PR #490
+12A-1 field contract                   complete PR #492
+12A-2 design budget                    accepted PR #494
 12A-2 production size evidence         accepted PR #498
-12A-2 schema migration                 authorized, not started
+12A-2 repository migration             accepted PR #499
+Remote D1 schema apply                 unverified
 12A-3 generation                       blocked
-Generation blocker                    account_aggregate_storage_unmeasured
+Generation blockers                    account_aggregate_storage_unmeasured
+                                       remote_schema_apply_unverified
 ```
 
 ## Phase 12A permanent authorities
@@ -36,69 +35,70 @@ docs/audits/12a1-source-evidence.json
 docs/audits/12a2-intraday-rollup-design-contract.json
 docs/audits/12a2-intraday-rollup-budget-evidence.json
 docs/audits/12a2-binding-size-production-evidence.json
+docs/audits/12a2-migration-acceptance.json
 docs/audits/12a2-current-gate-state.json
-docs/product/analytics-field-contract-v1.md
 docs/product/intraday-rollup-design-v1.md
 docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md
+docs/operations/12a2-migration-acceptance-2026-07-11.md
 ```
 
-## Accepted 12A-2 design and production size evidence
+## Accepted 12A-2 design and size evidence
 
 ```text
 grain: provider x day x streamer
-hour encoding: sparse compact JSON cells
 Twitch cap: 600 streamers/day
 Kick cap: 200 streamers/day
 intraday retention: 90 days
 new cron: no
 raw retention extension: no
-```
 
-Production D1 size evidence from `D1Result.meta.size_after`:
-
-```text
-Twitch current size:                  320.96 MB
-Twitch safe rollup projection:         70.99 MB
-Twitch projected size:                391.95 MB
-Twitch provider migration gate:       pass
-
-Kick current size:                    264.38 MB
-Kick safe rollup projection:           23.57 MB
-Kick projected size:                  287.95 MB
-Kick provider migration gate:         pass
-
+Twitch current/projected: 320.96 / 391.95 MB
+Kick current/projected:   264.38 / 287.95 MB
 schemaMigrationGatePass: true
 ```
 
-The legacy control-plane workflow remains blocked by missing Cloudflare repository credentials, but that blocker is superseded for the provider-specific schema migration gate by accepted binding-based production evidence.
+## Accepted repository migration
+
+```text
+db/d1/004_intraday_rollups.sql
+
+streamer_intraday_rollups
+idx_intraday_streamer_day
+intraday_rollup_status
+```
+
+Verified:
+
+```text
+scope guard pass
+local apply pass
+second apply idempotency pass
+exact table / PK / index shape pass
+empty after apply
+forbidden DML absent
+```
+
+This does **not** claim that the schema has been applied to the remote Twitch or Kick D1 databases.
 
 ## Current boundary
 
-The next allowed branch is:
-
 ```text
-work-analytics-12a2-migration
-```
-
-That branch may add only the accepted empty tables and indexes. It must not backfill rows or start compact-rollup generation.
-
-The remaining generation state is:
-
-```text
+repositoryMigrationAccepted: true
+remoteSchemaApplied: false
+remoteApplyEvidencePresent: false
 accountAggregateMeasured: false
 generationStorageGatePass: false
-generation authorized: false
-12A-3 status: blocked
+generationAuthorized: false
 ```
 
-No runtime generation, retention extension, new high-frequency cron, category capture activation, exact-session claim, or cross-provider analytics is authorized by the schema migration gate.
+12A-3 production generation must not begin until remote schema existence and storage/execution gates are accepted. No backfill, retention extension, new high-frequency cron, category capture activation, exact-session claim, or cross-provider analytics is authorized.
 
-## Approved forward sequence
+## Forward sequence
 
 ```text
-12A-2 empty schema migration
-  -> migration acceptance
-  -> 12A-3 generation gate and bounded generation
+remote schema apply / verification gate
+  -> 12A-3 generation storage and execution gate
+  -> bounded intraday rollup generation
   -> 12A-4 provider-specific category capture foundation
   -> 12A-5 foundation acceptance and accumulation handoff
   -> Phase 13-14 localization with evidence accumulation
