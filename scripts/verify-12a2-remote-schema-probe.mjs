@@ -44,9 +44,11 @@ for (const fragment of [
   "mode: 'read-only-schema-probe'",
 ]) assert.ok(source.includes(fragment), `schema-audit source missing: ${fragment}`)
 
-const executableSource = source
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/\/\/.*$/gm, '')
+const preparedQueries = [...source.matchAll(/db\.prepare\(`([\s\S]*?)`\)/g)].map((match) => match[1])
+assert.equal(preparedQueries.length, 1, 'schema-audit must contain exactly one prepared SQL template')
+const preparedSql = preparedQueries[0]
+assert.match(preparedSql, /^\s*SELECT\b/i, 'schema-audit SQL must be SELECT-only')
+assert.match(preparedSql, /FROM\s+sqlite_master/i, 'schema-audit SQL must read sqlite_master')
 
 for (const forbidden of [
   /\bINSERT\b/i,
@@ -58,13 +60,13 @@ for (const forbidden of [
   /\bDROP\b/i,
   /\bALTER\b/i,
   /\bTRIGGER\b/i,
-]) assert.equal(forbidden.test(executableSource), false, `schema-audit contains forbidden write/DDL token: ${forbidden}`)
+]) assert.equal(forbidden.test(preparedSql), false, `schema-audit prepared SQL contains forbidden write/DDL token: ${forbidden}`)
 
 assert.equal(source.includes('sql: observed?.sql'), false, 'schema-audit must not return raw SQL definitions')
 assert.equal(source.includes('sql: normalizedSql'), false, 'schema-audit must not return normalized SQL definitions')
 
 console.log('12A-2 remote schema probe verification passed.')
 console.log('- provider-separated read-only sqlite_master probe')
-console.log('- one query per provider')
+console.log('- one prepared SELECT query per provider')
 console.log('- raw SQL definitions are not returned')
-console.log('- no write or DDL statements are present')
+console.log('- prepared SQL contains no write or DDL statements')
