@@ -12,14 +12,12 @@ Phase 12A Analytics Capture Foundation active
 12A-0 baseline complete PR #490
 12A-1 field contract complete PR #492
 12A-2 design budget accepted PR #494
-12A-2 binding size source merged PR #497
 12A-2 production size evidence accepted PR #498
-Current workstream 12A-2 empty schema migration
-Schema migration authorized yes
-Schema migration started no
-Exact next branch work-analytics-12a2-migration
+12A-2 repository migration accepted PR #499
+Remote D1 schema apply unverified
+Current workstream remote schema apply / verification gate before 12A-3 generation
 12A-3 generation authorized no
-Generation blocker account_aggregate_storage_unmeasured
+Generation blockers account_aggregate_storage_unmeasured, remote_schema_apply_unverified
 ```
 
 ## Current authorities
@@ -35,8 +33,9 @@ Generation blocker account_aggregate_storage_unmeasured
 - 12A-2 design contract: `audits/12a2-intraday-rollup-design-contract.json`
 - 12A-2 budget evidence: `audits/12a2-intraday-rollup-budget-evidence.json`
 - 12A-2 production size evidence: `audits/12a2-binding-size-production-evidence.json`
-- 12A-2 current gate state: `audits/12a2-current-gate-state.json`
-- 12A-2 production size acceptance: `operations/12a2-binding-size-production-acceptance-2026-07-11.md`
+- 12A-2 repository migration acceptance: `audits/12a2-migration-acceptance.json`
+- 12A-2 current state: `audits/12a2-current-gate-state.json`
+- 12A-2 migration acceptance record: `operations/12a2-migration-acceptance-2026-07-11.md`
 - Phase 12 release acceptance: `audits/phase12-release-acceptance.json`
 - Public surface inventory: `audits/public-surface-inventory.json`
 - Current gap state: `audits/public-surface-gaps.json`
@@ -52,34 +51,34 @@ Generation blocker account_aggregate_storage_unmeasured
 ```text
 12A-0 current data and capacity baseline            complete PR #490
 12A-1 analytics field contract                      complete PR #492
-12A-2 design budget                                 accepted PR #494
-12A-2 production provider-size evidence             accepted PR #498
-12A-2 empty schema migration                        authorized / current
+12A-2 design and repository migration               accepted through PR #499
+Remote schema apply / verification                  current gate
 12A-3 bounded intraday rollup generation            blocked
 12A-4 provider-specific category capture foundation queued
 12A-5 foundation acceptance and accumulation handoff queued
 ```
 
-## Accepted provider size evidence
+## Accepted migration boundary
 
 ```text
-Twitch current/projected: 320.96 / 391.95 MB
-Kick current/projected:   264.38 / 287.95 MB
-schemaMigrationGatePass: true
-accountAggregateMeasured: false
-generationStorageGatePass: false
+repository migration accepted true
+local apply verified true
+idempotency verified true
+remoteSchemaApplied false
+remoteApplyEvidencePresent false
+accountAggregateMeasured false
+generationStorageGatePass false
+generation authorized false
 ```
 
-The accepted production evidence uses `D1Result.meta.size_after` from the existing provider-separated `/api/data-audit` queries. The audit wrote zero rows.
+The repository migration is `db/d1/004_intraday_rollups.sql`. It creates `streamer_intraday_rollups`, `idx_intraday_streamer_day`, and `intraday_rollup_status` without inserting rows.
 
-The next allowed branch is `work-analytics-12a2-migration`. It may add only the accepted empty tables and indexes. Backfill and runtime generation remain prohibited.
-
-## Approved analytics program order
+## Forward order
 
 ```text
-12A-2 migration
-  -> migration acceptance
-  -> 12A-3 generation gate and bounded generation
+remote schema apply / verification gate
+  -> 12A-3 generation storage and execution gate
+  -> bounded intraday generation
   -> 12A-4 category foundation
   -> 12A-5 foundation acceptance
   -> Phase 13-14 localization and evidence accumulation
