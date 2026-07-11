@@ -1,164 +1,119 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 7.2
+Version: 7.3
 Last updated: 2026-07-11
 Current phase: Phase 12A — Analytics Capture Foundation
-Current workstream: 12A-2 compact intraday rollup design and migration
-Current state: blocked before migration
-Current blocker: `cloudflare_credentials_missing`
+Current workstream: 12A-2 empty schema migration
+Schema migration authorized: yes
+Schema migration started: no
+Exact next branch: `work-analytics-12a2-migration`
+12A-3 generation authorized: no
+Generation blocker: `account_aggregate_storage_unmeasured`
 
 ```text
-Phase 10 complete through U10H
-Phase 11 complete and production-closed
-Phase 12 English release readiness complete
 Phase 12A Analytics Capture Foundation active
-12A-0 current data and capacity baseline complete PR #490
-12A-1 analytics field contract complete PR #492
+12A-0 baseline complete PR #490
+12A-1 field contract complete PR #492
 12A-2 design budget accepted PR #494
-12A-2 remote D1 size gate tooling installed PR #495
-12A-2 migration blocked before start
+12A-2 binding size source merged PR #497
+12A-2 production provider-size evidence accepted PR #498
+12A-2 empty schema migration current
+12A-3 generation blocked
 Phase 13-14 localization queued after Phase 12A
-Phase 15 Analytics Capability and Calibration Audit queued
-Phase 16 Analytics Observation System gated by Phase 15
+Phase 15 capability and calibration audit queued
+Phase 16 analytics observation system gated by Phase 15
 ```
 
 ## Program sequence
 
 ```text
-Phase 12A Analytics Capture Foundation
+12A-2 empty schema migration
+  -> migration acceptance
+  -> 12A-3 generation gate and bounded generation
+  -> 12A-4 category capture foundation
+  -> 12A-5 foundation acceptance and accumulation handoff
   -> Phase 13-14 localization and analytics evidence accumulation
   -> Phase 15 Analytics Capability and Calibration Audit
-  -> Phase 16A Baseline Engine
-  -> Phase 16B Anomaly Detection
-  -> Phase 16C Observed Run Intelligence
-  -> Phase 16D Category-relative Analysis
-  -> Phase 16E Co-movement and Relationship Analysis
-  -> Phase 16F Replay and Backtest
+  -> Phase 16A-F Analytics Observation System
 ```
 
 ## Active Phase 12A authorities
 
 ```text
 docs/audits/12a0-current-data-capacity-baseline.json
-docs/audits/12a0-closeout.json
 docs/audits/12a1-analytics-field-contract.json
 docs/audits/12a1-source-evidence.json
-docs/audits/12a1-closeout.json
 docs/audits/12a2-intraday-rollup-design-contract.json
 docs/audits/12a2-intraday-rollup-budget-evidence.json
-docs/audits/12a2-remote-d1-size-evidence.json
+docs/audits/12a2-binding-size-production-evidence.json
 docs/audits/12a2-current-gate-state.json
 docs/product/analytics-field-contract-v1.md
 docs/product/intraday-rollup-design-v1.md
+docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md
 ```
 
-## Completed 12A-0 baseline
+## Accepted 12A-2 provider size evidence
 
 ```text
-Twitch raw rows 8,688; estimated payload/day 10.38 MB; rollup observed days 74
-Kick raw rows 14,442; estimated payload/day 4.63 MB; rollup observed days 52
-Latest 24h cadence 287 / 288 for each provider
+Twitch current size 320.96 MB
+Twitch projected with safe rollup 391.95 MB
+Twitch provider migration gate true
+
+Kick current size 264.38 MB
+Kick projected with safe rollup 287.95 MB
+Kick provider migration gate true
+
+schemaMigrationGatePass true
 ```
 
-## Completed 12A-1 field contract
+The evidence was observed through the existing production provider bindings using `D1Result.meta.size_after`. The audit query wrote zero rows.
+
+## Current 12A-2 migration scope
+
+The next branch is:
 
 ```text
-Twitch provider_started_at approved for future capture as provider_reported_start_time
-Kick provider_started_at unavailable until source verification
-Twitch category capture unapproved
-Kick category capture unapproved pending accepted live primary-path evidence
-cross-provider identity equivalence prohibited
+work-analytics-12a2-migration
 ```
 
-## Accepted 12A-2 design budget
-
-PR #494 accepted:
+It may add only:
 
 ```text
-grain provider x day x streamer
-Twitch cap 600/day
-Kick cap 200/day
-intraday retention 90 days
-new cron no
-raw retention extension no
-Twitch safe rollup projection 70.99 MB
-Kick safe rollup projection 23.57 MB
-combined safe projection 94.56 MB
+streamer_intraday_rollups table
+idx_intraday_streamer_day index
+intraday_rollup_status table
+migration verification
+migration acceptance evidence
 ```
 
-The design budget passed conservative local SQLite measurement and query-plan verification.
-
-## Current blocked gate
-
-PR #495 installed the remote D1 size gate. Current permanent evidence records:
+It must not add:
 
 ```text
-status blocked
-blocker cloudflare_credentials_missing
-Twitch gate false
-Kick gate false
-account gate false
-migrationStorageGatePass false
-migration authorized false
-migration started no
+backfill
+runtime rollup generation
+raw-retention extension
+new high-frequency cron
+category capture
+exact-session fields or claims
+cross-provider analytics
 ```
 
-The workflow environment currently lacks:
+## 12A-3 generation gate
+
+Schema migration permission is not generation permission.
 
 ```text
-CLOUDFLARE_API_TOKEN
-CLOUDFLARE_ACCOUNT_ID
+accountAggregateMeasured false
+generationStorageGatePass false
+generation authorized false
+blocker account_aggregate_storage_unmeasured
 ```
 
-No current remote D1 size, utilization, or headroom claim is made. The false gate values mean not measured / blocked, not capacity failure.
+12A-3 remains blocked until storage and execution evidence is accepted. The empty schema migration must not begin data accumulation.
 
-## Resume condition
+## Later phases
 
-```text
-1. make both repository secrets available
-2. rerun Analytics 12A2 Remote D1 Size Gate on main
-3. require observed-mode evidence
-4. require migrationStorageGatePass=true
-5. only then create work-analytics-12a2-migration
-6. add and verify the migration
-7. proceed to 12A-3 generation only after migration acceptance
-```
+12A-4 remains a provider-specific category foundation with source verification. 12A-5 closes the foundation and hands off to localization while evidence accumulates. Phase 15 calibrates support thresholds, baselines, anomaly rules, observed-run policies, category coverage, relationship candidates, replay policy, and storage/query budgets. Phase 16 remains gated by Phase 15.
 
-## Remaining Phase 12A sequence
-
-### 12A-2 migration
-
-Blocked. Do not create or merge migration work until the remote-size gate passes.
-
-### 12A-3 bounded intraday rollup generation
-
-Queued. Generate compact rollups idempotently, prefer existing schedule windows, avoid a new high-frequency cron by default, and measure collector plus D1 cost.
-
-### 12A-4 category capture foundation
-
-Queued. Add only verified provider-specific category/game fields, define coverage language, begin forward-only accumulation, and do not launch category analytics UI.
-
-### 12A-5 foundation acceptance and accumulation handoff
-
-Queued. Run provider-separated collector/storage acceptance, verify retention/rollup behavior, freeze schema/output contracts, and hand off to localization while evidence accumulates.
-
-## Phase 13-14 relationship to analytics
-
-Localization follows Phase 12A. Accepted intraday/category evidence may accumulate while Phase 16 feature work remains blocked until Phase 15.
-
-## Phase 15 purpose
-
-```text
-sample support thresholds
-baseline fallback hierarchy
-baseline configuration v1
-anomaly rule candidate v1
-observed-run gap/confidence policy
-category coverage policy
-relationship candidate policy
-replay execution policy
-storage/query budget evidence
-```
-
-Phase 16 implementation remains gated by Phase 15. Twitch and Kick remain provider-separated throughout the program.
+Twitch and Kick remain provider-separated throughout the program.
