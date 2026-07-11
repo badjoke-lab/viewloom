@@ -64,6 +64,7 @@ jobs:
           command: deploy
 
       - name: Poll production schema
+        if: ${{ steps.twitch.outcome == 'success' && steps.kick.outcome == 'success' }}
         id: schema
         continue-on-error: true
         shell: bash
@@ -111,6 +112,8 @@ jobs:
           KICK_OUTCOME: ${{ steps.kick.outcome }}
           SCHEMA_OUTCOME: ${{ steps.schema.outcome }}
           SCHEMA_PASSED: ${{ steps.schema.outputs.passed }}
+          TWITCH_STDERR: ${{ steps.twitch.outputs.command-stderr }}
+          KICK_STDERR: ${{ steps.kick.outputs.command-stderr }}
         run: |
           twitch_objects='unknown'
           kick_objects='unknown'
@@ -130,13 +133,35 @@ jobs:
             generated_at=$(jq -r '.generatedAt' artifacts/one-time-deploy/schema.json)
           fi
 
+          sanitize() {
+            sed -E $'s/\x1B\[[0-9;]*[mK]//g' \
+              | sed -E 's/[A-Za-z0-9_+=\/.-]{48,}/[redacted]/g'
+          }
+
+          summarize() {
+            local value="$1"
+            if [ -z "$value" ]; then
+              printf '%s\n' '(no stderr output)'
+              return
+            fi
+            printf '%s\n' "$value" | sanitize > /tmp/stderr-clean.txt
+            grep -Ei 'error|permission|auth|account|token|d1|binding|forbidden|unauthorized|not found|code' /tmp/stderr-clean.txt | tail -n 12 > /tmp/stderr-summary.txt || true
+            if [ ! -s /tmp/stderr-summary.txt ]; then
+              tail -n 8 /tmp/stderr-clean.txt > /tmp/stderr-summary.txt
+            fi
+            cat /tmp/stderr-summary.txt
+          }
+
+          twitch_diag=$(summarize "$TWITCH_STDERR")
+          kick_diag=$(summarize "$KICK_STDERR")
+
           cat > /tmp/deploy-comment.md <<EOF
           ## One-time 12A-2 collector deployment result
 
           \`\`\`text
           Twitch deploy outcome: $TWITCH_OUTCOME
           Kick deploy outcome: $KICK_OUTCOME
-          Schema polling outcome: $SCHEMA_OUTCOME
+          Schema polling outcome: ${SCHEMA_OUTCOME:-skipped}
           Schema gate passed: ${SCHEMA_PASSED:-false}
 
           Twitch schema: $twitch_objects / 3
@@ -149,6 +174,18 @@ jobs:
 
           Production generated at: $generated_at
           Workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          \`\`\`
+
+          ### Twitch Wrangler diagnostic
+
+          \`\`\`text
+          $twitch_diag
+          \`\`\`
+
+          ### Kick Wrangler diagnostic
+
+          \`\`\`text
+          $kick_diag
           \`\`\`
 
           No secret value is included in this comment. No backfill or rollup generation was performed.
