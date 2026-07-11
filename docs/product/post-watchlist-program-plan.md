@@ -1,12 +1,12 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 7.5
+Version: 7.6
 Last updated: 2026-07-11
 Current phase: Phase 12A — Analytics Capture Foundation
-Current workstream: controlled remote schema apply and verification
+Current workstream: collector Worker deployment evidence and remote schema verification
 12A-3 generation authorized: no
-Generation blockers: `remote_schema_not_applied`, `account_aggregate_storage_unmeasured`
+Generation blockers: `remote_schema_not_applied`, `collector_worker_deployment_not_evidenced`, `account_aggregate_storage_unmeasured`
 
 ```text
 Phase 12A Analytics Capture Foundation active
@@ -16,8 +16,12 @@ Phase 12A Analytics Capture Foundation active
 12A-2 production size evidence accepted PR #498
 12A-2 repository migration accepted PR #499
 12A-2 remote schema evidence observed PR #501
+12A-2 controlled apply code merged PR #502
+12A-2 immediate bootstrap refinement merged PR #503
+12A-2 post-bootstrap recheck observed PR #504
 Twitch remote schema objects 0 / 3
 Kick remote schema objects 0 / 3
+Worker deployment evidence absent
 Remote schema gate blocked
 12A-3 generation blocked
 Phase 13-14 localization queued after Phase 12A
@@ -28,7 +32,8 @@ Phase 16 analytics observation system gated by Phase 15
 ## Program sequence
 
 ```text
-controlled remote schema apply
+collector Worker deployment evidence
+  -> controlled bootstrap execution
   -> read-only remote schema verification
   -> 12A-3 generation storage and execution gate
   -> bounded intraday rollup generation
@@ -47,70 +52,72 @@ docs/audits/12a2-intraday-rollup-budget-evidence.json
 docs/audits/12a2-binding-size-production-evidence.json
 docs/audits/12a2-migration-acceptance.json
 docs/audits/12a2-remote-schema-production-evidence.json
+docs/audits/12a2-remote-schema-post-bootstrap-recheck.json
 docs/audits/12a2-current-gate-state.json
 docs/product/intraday-rollup-design-v1.md
 docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md
 docs/operations/12a2-migration-acceptance-2026-07-11.md
 docs/operations/12a2-remote-schema-production-blocked-2026-07-11.md
+docs/operations/12a2-remote-schema-production-recheck-2026-07-11.md
 ```
 
-## Accepted size evidence
+## Accepted provider size and migration evidence
 
 ```text
 Twitch current/projected 320.96 / 391.95 MB
 Kick current/projected   264.38 / 287.95 MB
 schemaMigrationGatePass true
+repository migration accepted PR #499
 ```
 
-## Accepted repository migration
+## Controlled apply code
+
+PR #502 merged provider-separated controlled bootstrap through existing collector D1 bindings. PR #503 added one immediate startup attempt per Worker isolate, warm-isolate presence caching, and bounded maintenance retries.
 
 ```text
-db/d1/004_intraday_rollups.sql
-streamer_intraday_rollups
-idx_intraday_streamer_day
-intraday_rollup_status
+public DDL endpoint no
+new cron no
+backfill no
+generation no
+retention change no
 ```
 
-The repository migration passed scope, local apply, idempotency, schema-shape, empty-table, and no-DML checks.
+Repository merge does not prove Worker deployment.
 
-## Observed production remote schema
+## Post-bootstrap production recheck
 
 ```text
 Twitch schemaComplete false; observed 0 / 3
 Kick schemaComplete false; observed 0 / 3
 remoteSchemaGatePass false
 probe rowsWritten 0
+workerDeploymentEvidencePresent false
 ```
 
-All expected schema objects were observed absent in both provider databases. The remote apply blocker is confirmed.
+The merged code has not produced observed remote schema application. Historical runbooks treat collector deployment as a Cloudflare-side operation, and no repository collector deploy workflow has been identified. This state records deployment as not evidenced; it does not make a universal automatic-deploy failure claim.
 
 ## Current gate
 
-A controlled remote apply implementation must:
-
 ```text
-use the accepted 004 schema contract
-apply idempotently to Twitch and Kick separately
-keep generation disabled during apply
-perform no backfill
-perform no retention change
-perform no category capture
-record provider-separated apply evidence
-rerun the read-only schema probe
-require 3 / 3 matching objects for both providers
+deploy collector Worker code through an authorized Cloudflare-side process
+OR produce independent deployment evidence
+then allow controlled bootstrap execution
+rerun read-only /api/schema-audit
+require Twitch 3 / 3
+require Kick 3 / 3
 ```
 
 12A-3 remains blocked until remote schema verification and generation storage/execution gates pass.
 
 ## Remaining Phase 12A
 
-### Controlled remote schema apply and verification
+### Collector Worker deployment evidence and remote schema verification
 
-Apply the accepted schema through a bounded provider-separated path, then rerun production read-only evidence.
+Establish deployment evidence through an authorized Cloudflare-side process or independent deployment observation, then rerun provider-separated schema evidence.
 
 ### 12A-3 bounded intraday rollup generation
 
-After gates pass, generate compact rollups idempotently, prefer existing schedule windows, avoid a new high-frequency cron by default, and measure collector plus D1 cost.
+After all gates pass, generate compact rollups idempotently, prefer existing schedule windows, avoid a new high-frequency cron by default, and measure collector plus D1 cost.
 
 ### 12A-4 category capture foundation
 

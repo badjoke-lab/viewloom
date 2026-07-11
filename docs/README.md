@@ -15,12 +15,16 @@ Phase 12A Analytics Capture Foundation active
 12A-2 production size evidence accepted PR #498
 12A-2 repository migration accepted PR #499
 12A-2 remote schema evidence observed PR #501
+12A-2 controlled apply code merged PR #502
+12A-2 immediate bootstrap refinement merged PR #503
+12A-2 post-bootstrap recheck observed PR #504
 Twitch remote schema objects 0 / 3
 Kick remote schema objects 0 / 3
+Worker deployment evidence absent
 Remote schema gate blocked
-Current workstream controlled remote schema apply and verification
+Current workstream collector Worker deployment evidence and remote schema verification
 12A-3 generation authorized no
-Generation blockers remote_schema_not_applied, account_aggregate_storage_unmeasured
+Generation blockers remote_schema_not_applied, collector_worker_deployment_not_evidenced, account_aggregate_storage_unmeasured
 ```
 
 ## Current authorities
@@ -37,9 +41,11 @@ Generation blockers remote_schema_not_applied, account_aggregate_storage_unmeasu
 - 12A-2 budget evidence: `audits/12a2-intraday-rollup-budget-evidence.json`
 - 12A-2 production size evidence: `audits/12a2-binding-size-production-evidence.json`
 - 12A-2 repository migration acceptance: `audits/12a2-migration-acceptance.json`
-- 12A-2 remote schema production evidence: `audits/12a2-remote-schema-production-evidence.json`
+- 12A-2 initial remote schema evidence: `audits/12a2-remote-schema-production-evidence.json`
+- 12A-2 post-bootstrap schema recheck: `audits/12a2-remote-schema-post-bootstrap-recheck.json`
 - 12A-2 current state: `audits/12a2-current-gate-state.json`
-- 12A-2 remote schema blocked record: `operations/12a2-remote-schema-production-blocked-2026-07-11.md`
+- 12A-2 initial remote schema blocked record: `operations/12a2-remote-schema-production-blocked-2026-07-11.md`
+- 12A-2 post-bootstrap recheck record: `operations/12a2-remote-schema-production-recheck-2026-07-11.md`
 - Phase 12 release acceptance: `audits/phase12-release-acceptance.json`
 - Public surface inventory: `audits/public-surface-inventory.json`
 - Current gap state: `audits/public-surface-gaps.json`
@@ -56,14 +62,20 @@ Generation blockers remote_schema_not_applied, account_aggregate_storage_unmeasu
 12A-0 current data and capacity baseline            complete PR #490
 12A-1 analytics field contract                      complete PR #492
 12A-2 design and repository migration               accepted through PR #499
-12A-2 remote schema observation                     complete PR #501
-Controlled remote schema apply / verification       current
+12A-2 controlled apply code                         merged through PR #503
+12A-2 post-bootstrap production recheck             complete PR #504
+Collector Worker deployment evidence                current gate
+Remote schema verification                          blocked at 0 / 3 per provider
 12A-3 bounded intraday rollup generation            blocked
 12A-4 provider-specific category capture foundation queued
 12A-5 foundation acceptance and accumulation handoff queued
 ```
 
-## Observed remote schema state
+## Controlled apply and observed production state
+
+Controlled apply code uses separate Twitch and Kick D1 bindings, exact accepted migration parity, one immediate startup attempt per Worker isolate, warm-isolate presence caching, and bounded maintenance retries. It adds no public DDL endpoint and no new cron.
+
+The production recheck after repository merge still observed:
 
 ```text
 Twitch schemaComplete false
@@ -74,12 +86,13 @@ remoteSchemaGatePass false
 probe rowsWritten 0
 ```
 
-The repository migration is accepted, but all expected remote schema objects were observed absent in both provider databases. The next workstream is controlled, idempotent, provider-separated remote apply of the accepted schema, followed by the same read-only probe.
+Repository merge is not deployment evidence. No repository collector deploy workflow has been identified, and historical runbooks treat collector deploy as a Cloudflare-side step. The recheck does not claim universal automatic deployment failure; it records that deployment is not evidenced and remote schema remains absent.
 
 ## Forward order
 
 ```text
-controlled remote schema apply
+collector Worker deployment evidence
+  -> controlled bootstrap execution
   -> read-only remote schema verification
   -> 12A-3 generation storage and execution gate
   -> bounded intraday generation

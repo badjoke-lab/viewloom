@@ -14,12 +14,16 @@ Phase 12A Analytics Capture Foundation active
 12A-2 production size evidence accepted PR #498
 12A-2 repository migration accepted PR #499
 12A-2 remote schema evidence observed PR #501
+12A-2 controlled apply code merged PR #502
+12A-2 immediate bootstrap refinement merged PR #503
+12A-2 post-bootstrap recheck observed PR #504
 Twitch remote schema objects 0 / 3
 Kick remote schema objects 0 / 3
+Worker deployment evidence absent
 Remote schema gate blocked
-Current workstream controlled remote schema apply and verification
+Current workstream collector Worker deployment evidence and remote schema verification
 12A-3 generation authorized no
-Generation blockers remote_schema_not_applied, account_aggregate_storage_unmeasured
+Generation blockers remote_schema_not_applied, collector_worker_deployment_not_evidenced, account_aggregate_storage_unmeasured
 ```
 
 ## Current permanent evidence
@@ -30,39 +34,55 @@ docs/audits/12a2-intraday-rollup-budget-evidence.json
 docs/audits/12a2-binding-size-production-evidence.json
 docs/audits/12a2-migration-acceptance.json
 docs/audits/12a2-remote-schema-production-evidence.json
+docs/audits/12a2-remote-schema-post-bootstrap-recheck.json
 docs/audits/12a2-current-gate-state.json
 docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md
 docs/operations/12a2-migration-acceptance-2026-07-11.md
 docs/operations/12a2-remote-schema-production-blocked-2026-07-11.md
+docs/operations/12a2-remote-schema-production-recheck-2026-07-11.md
 ```
 
-## Observed remote schema state
+## Controlled apply status
+
+Repository code now contains:
 
 ```text
-Twitch schemaComplete false
-Twitch observed objects 0 / 3
-Kick schemaComplete false
-Kick observed objects 0 / 3
+provider-separated controlled bootstrap through collector D1 bindings
+one immediate startup attempt per Worker isolate
+warm-isolate presence cache
+bounded maintenance retries at 00:20 and 12:20 UTC windows
+exact accepted migration parity
+public DDL endpoint absent
+new cron absent
+backfill absent
+generation absent
+```
+
+Repository merge does not prove Worker deployment. The post-bootstrap production recheck still observed:
+
+```text
+Twitch schemaComplete false; objects 0 / 3
+Kick schemaComplete false; objects 0 / 3
 remoteSchemaGatePass false
 probe rowsWritten 0
 ```
 
-The schema is observed absent in both provider databases. Do not describe it as merely unverified.
+## Current deployment boundary
 
-## Allowed remote apply scope
-
-A remote apply implementation may only:
+Current code/evidence state:
 
 ```text
-use the accepted db/d1/004_intraday_rollups.sql schema contract
-apply idempotently to Twitch and Kick separately
-keep generation disabled during apply
-perform no backfill
-perform no retention change
-perform no category capture
-record provider-separated apply evidence
-rerun the read-only schema probe after apply
+controlledApplyCodeMerged true
+workerDeploymentEvidencePresent false
+remoteSchemaGatePass false
+accountAggregateMeasured false
+generationStorageGatePass false
+generationAuthorized false
 ```
+
+Current work must either deploy the collector Worker code through an authorized Cloudflare-side process or provide independent deployment evidence, then rerun the read-only schema probe.
+
+Do not claim that repository merge equals deployment. Do not claim automatic deployment failure from the recheck alone.
 
 Do not add:
 
