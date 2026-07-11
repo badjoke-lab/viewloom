@@ -11,21 +11,26 @@ const twitchWrangler = readFileSync('workers/collector-twitch/wrangler.toml', 'u
 const kickWrangler = readFileSync('workers/collector-kick/wrangler.toml', 'utf8')
 const contract = JSON.parse(readFileSync('docs/audits/12a2-controlled-remote-apply-contract.json', 'utf8'))
 
-assert.equal(contract.schemaVersion, 'viewloom-12a2-controlled-remote-apply-contract-v1')
+assert.equal(contract.schemaVersion, 'viewloom-12a2-controlled-remote-apply-contract-v2')
 assert.equal(contract.workstream, '12A-2 controlled remote schema apply and verification')
 assert.equal(contract.acceptedMigrationFile, 'db/d1/004_intraday_rollups.sql')
 assert.equal(contract.sharedBootstrapModule, 'workers/shared/intraday-schema.ts')
 assert.equal(contract.providerSeparated, true)
 assert.equal(contract.schedule.newCronAdded, false)
 assert.equal(contract.schedule.existingCollectorCron, '*/5 * * * *')
+assert.equal(contract.schedule.startupBootstrapEnabled, true)
+assert.equal(contract.schedule.maximumStartupAttemptsPerWorkerIsolate, 1)
 assert.deepEqual(contract.schedule.maintenanceWindowsUtc, ['00:20-00:24', '12:20-12:24'])
-assert.equal(contract.schedule.maximumBootstrapAttemptsPerProviderPerDay, 2)
+assert.equal(contract.schedule.maximumMaintenanceAttemptsPerProviderPerDay, 2)
 assert.equal(contract.bootstrap.preflightReadOnlyProbe, true)
 assert.equal(contract.bootstrap.preflightObjectCount, 3)
 assert.equal(contract.bootstrap.ddlStatementCount, 3)
 assert.equal(contract.bootstrap.ddlMustMatchAcceptedMigration, true)
 assert.equal(contract.bootstrap.idempotent, true)
 assert.equal(contract.bootstrap.skipDdlWhenAllObjectsPresent, true)
+assert.equal(contract.bootstrap.modulePresenceCache, true)
+assert.equal(contract.bootstrap.startupRetrySuppressedWithinSameIsolate, true)
+assert.equal(contract.bootstrap.maintenanceRetryAfterStartupFailure, true)
 assert.equal(contract.bootstrap.failureContained, true)
 assert.equal(contract.bootstrap.collectorResultPreserved, true)
 assert.equal(contract.scope.backfillIncluded, false)
@@ -49,10 +54,18 @@ assert.equal(bootstrapStatements.length, 3, 'bootstrap must contain exactly thre
 assert.deepEqual(bootstrapStatements, migrationStatements, 'bootstrap DDL must exactly match accepted migration after normalization')
 
 for (const fragment of [
+  'let schemaKnownPresent = false',
+  'let startupAttemptUsed = false',
+  'const maintenanceWindow = shouldRunIntradaySchemaBootstrap(now)',
+  'schemaKnownPresent && !maintenanceWindow',
+  '!maintenanceWindow && startupAttemptUsed',
+  "const reason = maintenanceWindow ? 'maintenance' : 'startup'",
+  'if (!maintenanceWindow) startupAttemptUsed = true',
   'SELECT COUNT(*) AS count',
   'FROM sqlite_master',
   'WHERE name IN (?, ?, ?)',
   'observedObjectCount === EXPECTED_SCHEMA_OBJECTS.length',
+  'schemaKnownPresent = true',
   'db.batch(INTRADAY_SCHEMA_STATEMENTS.map((statement) => db.prepare(statement)))',
   'return (hour === 0 || hour === 12) && minute >= 20 && minute < 25',
   'catch (error)',
@@ -96,7 +109,9 @@ console.log('12A-2 controlled remote apply verification passed.')
 console.log('- shared bootstrap DDL exactly matches accepted migration')
 console.log('- provider bindings remain separate')
 console.log('- existing collector cron unchanged')
-console.log('- maintenance windows bounded to two attempts per provider per day')
+console.log('- one immediate startup attempt per Worker isolate')
+console.log('- maintenance retries remain bounded to two windows per provider per day')
+console.log('- presence cache suppresses repeated probes in a warm isolate')
 console.log('- collection delegation precedes contained schema bootstrap')
 console.log('- generation and backfill remain absent')
 

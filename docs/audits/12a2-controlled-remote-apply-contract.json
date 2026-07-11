@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "viewloom-12a2-controlled-remote-apply-contract-v1",
+  "schemaVersion": "viewloom-12a2-controlled-remote-apply-contract-v2",
   "workstream": "12A-2 controlled remote schema apply and verification",
   "status": "implementation_candidate",
   "acceptedMigrationFile": "db/d1/004_intraday_rollups.sql",
@@ -22,11 +22,13 @@
   "schedule": {
     "newCronAdded": false,
     "existingCollectorCron": "*/5 * * * *",
+    "startupBootstrapEnabled": true,
+    "maximumStartupAttemptsPerWorkerIsolate": 1,
     "maintenanceWindowsUtc": [
       "00:20-00:24",
       "12:20-12:24"
     ],
-    "maximumBootstrapAttemptsPerProviderPerDay": 2
+    "maximumMaintenanceAttemptsPerProviderPerDay": 2
   },
   "bootstrap": {
     "preflightReadOnlyProbe": true,
@@ -35,6 +37,9 @@
     "ddlMustMatchAcceptedMigration": true,
     "idempotent": true,
     "skipDdlWhenAllObjectsPresent": true,
+    "modulePresenceCache": true,
+    "startupRetrySuppressedWithinSameIsolate": true,
+    "maintenanceRetryAfterStartupFailure": true,
     "failureContained": true,
     "collectorResultPreserved": true
   },
