@@ -1,12 +1,12 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 7.6
-Last updated: 2026-07-11
+Version: 7.7
+Last updated: 2026-07-12
 Current phase: Phase 12A — Analytics Capture Foundation
-Current workstream: collector Worker deployment evidence and remote schema verification
+Current workstream: 12A-3 generation storage and execution gate
 12A-3 generation authorized: no
-Generation blockers: `remote_schema_not_applied`, `collector_worker_deployment_not_evidenced`, `account_aggregate_storage_unmeasured`
+Remaining blocker: `account_aggregate_storage_unmeasured`
 
 ```text
 Phase 12A Analytics Capture Foundation active
@@ -15,15 +15,13 @@ Phase 12A Analytics Capture Foundation active
 12A-2 design budget accepted PR #494
 12A-2 production size evidence accepted PR #498
 12A-2 repository migration accepted PR #499
-12A-2 remote schema evidence observed PR #501
-12A-2 controlled apply code merged PR #502
-12A-2 immediate bootstrap refinement merged PR #503
-12A-2 post-bootstrap recheck observed PR #504
-Twitch remote schema objects 0 / 3
-Kick remote schema objects 0 / 3
-Worker deployment evidence absent
-Remote schema gate blocked
-12A-3 generation blocked
+12A-2 controlled apply code merged PRs #502-#503
+12A-2 collector deployment and remote schema accepted PR #506
+Twitch remote schema objects 3 / 3
+Kick remote schema objects 3 / 3
+Worker deployment evidence present
+Remote schema gate pass
+12A-3 generation blocked pending storage/execution acceptance
 Phase 13-14 localization queued after Phase 12A
 Phase 15 capability and calibration audit queued
 Phase 16 analytics observation system gated by Phase 15
@@ -32,10 +30,7 @@ Phase 16 analytics observation system gated by Phase 15
 ## Program sequence
 
 ```text
-collector Worker deployment evidence
-  -> controlled bootstrap execution
-  -> read-only remote schema verification
-  -> 12A-3 generation storage and execution gate
+12A-3 generation storage and execution gate
   -> bounded intraday rollup generation
   -> 12A-4 category capture foundation
   -> 12A-5 foundation acceptance and accumulation handoff
@@ -51,69 +46,47 @@ docs/audits/12a2-intraday-rollup-design-contract.json
 docs/audits/12a2-intraday-rollup-budget-evidence.json
 docs/audits/12a2-binding-size-production-evidence.json
 docs/audits/12a2-migration-acceptance.json
-docs/audits/12a2-remote-schema-production-evidence.json
-docs/audits/12a2-remote-schema-post-bootstrap-recheck.json
+docs/audits/12a2-collector-worker-deploy-evidence.json
 docs/audits/12a2-current-gate-state.json
 docs/product/intraday-rollup-design-v1.md
-docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md
-docs/operations/12a2-migration-acceptance-2026-07-11.md
-docs/operations/12a2-remote-schema-production-blocked-2026-07-11.md
-docs/operations/12a2-remote-schema-production-recheck-2026-07-11.md
+docs/operations/12a2-collector-worker-deploy-acceptance-2026-07-12.md
 ```
 
-## Accepted provider size and migration evidence
+## Accepted 12A-2 production state
 
 ```text
-Twitch current/projected 320.96 / 391.95 MB
-Kick current/projected   264.38 / 287.95 MB
+Twitch projected with safety 391.95 MB
+Kick projected with safety   287.95 MB
 schemaMigrationGatePass true
-repository migration accepted PR #499
-```
 
-## Controlled apply code
-
-PR #502 merged provider-separated controlled bootstrap through existing collector D1 bindings. PR #503 added one immediate startup attempt per Worker isolate, warm-isolate presence caching, and bounded maintenance retries.
-
-```text
-public DDL endpoint no
-new cron no
-backfill no
-generation no
-retention change no
-```
-
-Repository merge does not prove Worker deployment.
-
-## Post-bootstrap production recheck
-
-```text
-Twitch schemaComplete false; observed 0 / 3
-Kick schemaComplete false; observed 0 / 3
-remoteSchemaGatePass false
+Twitch Worker deployment success
+Twitch schemaComplete true; objects 3 / 3
+Kick Worker deployment success
+Kick schemaComplete true; objects 3 / 3
+remoteSchemaGatePass true
 probe rowsWritten 0
-workerDeploymentEvidencePresent false
 ```
 
-The merged code has not produced observed remote schema application. Historical runbooks treat collector deployment as a Cloudflare-side operation, and no repository collector deploy workflow has been identified. This state records deployment as not evidenced; it does not make a universal automatic-deploy failure claim.
+The permanent deployment workflow uses direct Wrangler 4 CLI and separate provider working directories. Pull requests verify only; main push and manual dispatch may deploy. Secret values are never stored in repository evidence.
 
-## Current gate
+## Closed 12A-2 blockers
 
 ```text
-deploy collector Worker code through an authorized Cloudflare-side process
-OR produce independent deployment evidence
-then allow controlled bootstrap execution
-rerun read-only /api/schema-audit
-require Twitch 3 / 3
-require Kick 3 / 3
+remote_schema_not_applied
+collector_worker_deployment_not_evidenced
 ```
 
-12A-3 remains blocked until remote schema verification and generation storage/execution gates pass.
+## Current 12A-3 gate
 
-## Remaining Phase 12A
+```text
+workerDeploymentEvidencePresent true
+remoteSchemaGatePass true
+accountAggregateMeasured false
+generationStorageGatePass false
+generation authorized false
+```
 
-### Collector Worker deployment evidence and remote schema verification
-
-Establish deployment evidence through an authorized Cloudflare-side process or independent deployment observation, then rerun provider-separated schema evidence.
+The next implementation must establish account-wide D1 storage evidence and bounded generator execution-cost evidence before production accumulation begins.
 
 ### 12A-3 bounded intraday rollup generation
 
