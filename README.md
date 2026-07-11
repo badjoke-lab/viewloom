@@ -20,10 +20,13 @@ Phase 12A Analytics Capture Foundation active
 12A-2 design budget                    accepted PR #494
 12A-2 production size evidence         accepted PR #498
 12A-2 repository migration             accepted PR #499
-Remote D1 schema apply                 unverified
+12A-2 remote schema evidence           observed PR #501
+Remote Twitch schema objects           0 / 3
+Remote Kick schema objects             0 / 3
+Remote schema gate                     blocked
 12A-3 generation                       blocked
-Generation blockers                    account_aggregate_storage_unmeasured
-                                       remote_schema_apply_unverified
+Generation blockers                    remote_schema_not_applied
+                                       account_aggregate_storage_unmeasured
 ```
 
 ## Phase 12A permanent authorities
@@ -36,10 +39,12 @@ docs/audits/12a2-intraday-rollup-design-contract.json
 docs/audits/12a2-intraday-rollup-budget-evidence.json
 docs/audits/12a2-binding-size-production-evidence.json
 docs/audits/12a2-migration-acceptance.json
+docs/audits/12a2-remote-schema-production-evidence.json
 docs/audits/12a2-current-gate-state.json
 docs/product/intraday-rollup-design-v1.md
 docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md
 docs/operations/12a2-migration-acceptance-2026-07-11.md
+docs/operations/12a2-remote-schema-production-blocked-2026-07-11.md
 ```
 
 ## Accepted 12A-2 design and size evidence
@@ -67,7 +72,7 @@ idx_intraday_streamer_day
 intraday_rollup_status
 ```
 
-Verified:
+Verified locally:
 
 ```text
 scope guard pass
@@ -78,25 +83,41 @@ empty after apply
 forbidden DML absent
 ```
 
-This does **not** claim that the schema has been applied to the remote Twitch or Kick D1 databases.
+## Observed production remote schema state
+
+Read-only production evidence from `/api/schema-audit` established:
+
+```text
+Twitch schemaComplete false
+Twitch observed objects 0 / 3
+Kick schemaComplete false
+Kick observed objects 0 / 3
+remoteSchemaGatePass false
+probe rowsWritten 0
+```
+
+This is no longer merely unverified. The accepted intraday schema is **not applied** in either provider database at the observation time.
 
 ## Current boundary
 
 ```text
 repositoryMigrationAccepted: true
-remoteSchemaApplied: false
-remoteApplyEvidencePresent: false
+remoteSchemaGatePass: false
+remoteApplyRequired: true
 accountAggregateMeasured: false
 generationStorageGatePass: false
 generationAuthorized: false
 ```
 
-12A-3 production generation must not begin until remote schema existence and storage/execution gates are accepted. No backfill, retention extension, new high-frequency cron, category capture activation, exact-session claim, or cross-provider analytics is authorized.
+The next workstream is a controlled, idempotent, provider-separated remote schema apply path for the accepted migration, followed by the same read-only probe. 12A-3 production generation must remain disabled throughout remote apply.
+
+No backfill, retention extension, new high-frequency cron, category capture activation, exact-session claim, or cross-provider analytics is authorized.
 
 ## Forward sequence
 
 ```text
-remote schema apply / verification gate
+controlled remote schema apply
+  -> read-only remote schema verification
   -> 12A-3 generation storage and execution gate
   -> bounded intraday rollup generation
   -> 12A-4 provider-specific category capture foundation

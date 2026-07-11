@@ -1,12 +1,12 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 7.4
+Version: 7.5
 Last updated: 2026-07-11
 Current phase: Phase 12A — Analytics Capture Foundation
-Current workstream: remote schema apply / verification gate before 12A-3 generation
+Current workstream: controlled remote schema apply and verification
 12A-3 generation authorized: no
-Generation blockers: `remote_schema_apply_unverified`, `account_aggregate_storage_unmeasured`
+Generation blockers: `remote_schema_not_applied`, `account_aggregate_storage_unmeasured`
 
 ```text
 Phase 12A Analytics Capture Foundation active
@@ -15,7 +15,10 @@ Phase 12A Analytics Capture Foundation active
 12A-2 design budget accepted PR #494
 12A-2 production size evidence accepted PR #498
 12A-2 repository migration accepted PR #499
-Remote D1 schema apply unverified
+12A-2 remote schema evidence observed PR #501
+Twitch remote schema objects 0 / 3
+Kick remote schema objects 0 / 3
+Remote schema gate blocked
 12A-3 generation blocked
 Phase 13-14 localization queued after Phase 12A
 Phase 15 capability and calibration audit queued
@@ -25,7 +28,8 @@ Phase 16 analytics observation system gated by Phase 15
 ## Program sequence
 
 ```text
-remote schema apply / verification gate
+controlled remote schema apply
+  -> read-only remote schema verification
   -> 12A-3 generation storage and execution gate
   -> bounded intraday rollup generation
   -> 12A-4 category capture foundation
@@ -42,10 +46,12 @@ docs/audits/12a2-intraday-rollup-design-contract.json
 docs/audits/12a2-intraday-rollup-budget-evidence.json
 docs/audits/12a2-binding-size-production-evidence.json
 docs/audits/12a2-migration-acceptance.json
+docs/audits/12a2-remote-schema-production-evidence.json
 docs/audits/12a2-current-gate-state.json
 docs/product/intraday-rollup-design-v1.md
 docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md
 docs/operations/12a2-migration-acceptance-2026-07-11.md
+docs/operations/12a2-remote-schema-production-blocked-2026-07-11.md
 ```
 
 ## Accepted size evidence
@@ -67,25 +73,40 @@ intraday_rollup_status
 
 The repository migration passed scope, local apply, idempotency, schema-shape, empty-table, and no-DML checks.
 
-## Current gate
-
-Repository acceptance does not prove remote application.
+## Observed production remote schema
 
 ```text
-remoteSchemaApplied false
-remoteApplyEvidencePresent false
-accountAggregateMeasured false
-generationStorageGatePass false
-generation authorized false
+Twitch schemaComplete false; observed 0 / 3
+Kick schemaComplete false; observed 0 / 3
+remoteSchemaGatePass false
+probe rowsWritten 0
 ```
 
-No production generator may write until remote schema existence and generation storage/execution gates are accepted.
+All expected schema objects were observed absent in both provider databases. The remote apply blocker is confirmed.
+
+## Current gate
+
+A controlled remote apply implementation must:
+
+```text
+use the accepted 004 schema contract
+apply idempotently to Twitch and Kick separately
+keep generation disabled during apply
+perform no backfill
+perform no retention change
+perform no category capture
+record provider-separated apply evidence
+rerun the read-only schema probe
+require 3 / 3 matching objects for both providers
+```
+
+12A-3 remains blocked until remote schema verification and generation storage/execution gates pass.
 
 ## Remaining Phase 12A
 
-### Remote schema apply / verification
+### Controlled remote schema apply and verification
 
-Use an authorized remote migration path or directly verify the accepted schema already exists in both provider databases. Record provider-separated evidence.
+Apply the accepted schema through a bounded provider-separated path, then rerun production read-only evidence.
 
 ### 12A-3 bounded intraday rollup generation
 

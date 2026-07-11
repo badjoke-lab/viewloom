@@ -9,10 +9,13 @@ Current phase: Phase 12A Analytics Capture Foundation
 12A-2 design budget: accepted PR #494
 12A-2 production size evidence: accepted PR #498
 12A-2 repository migration: accepted PR #499
-Remote D1 schema apply: unverified
-Current workstream: remote schema apply / verification gate before 12A-3 generation
+12A-2 remote schema evidence: observed PR #501
+Twitch remote schema objects: 0 / 3
+Kick remote schema objects: 0 / 3
+Remote schema gate: blocked
+Current workstream: controlled remote schema apply and verification
 12A-3 generation authorized: no
-Generation blockers: account_aggregate_storage_unmeasured, remote_schema_apply_unverified
+Generation blockers: remote_schema_not_applied, account_aggregate_storage_unmeasured
 ```
 
 Permanent 12A-2 authorities:
@@ -22,17 +25,24 @@ docs/audits/12a2-intraday-rollup-design-contract.json
 docs/audits/12a2-intraday-rollup-budget-evidence.json
 docs/audits/12a2-binding-size-production-evidence.json
 docs/audits/12a2-migration-acceptance.json
+docs/audits/12a2-remote-schema-production-evidence.json
 docs/audits/12a2-current-gate-state.json
 docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md
 docs/operations/12a2-migration-acceptance-2026-07-11.md
+docs/operations/12a2-remote-schema-production-blocked-2026-07-11.md
 ```
 
-Accepted provider evidence:
+Observed provider evidence:
 
 ```text
-Twitch current/projected 320.96 / 391.95 MB
-Kick current/projected   264.38 / 287.95 MB
+Twitch current/projected size 320.96 / 391.95 MB
+Kick current/projected size   264.38 / 287.95 MB
 schemaMigrationGatePass true
+
+Twitch remote schema complete false; objects 0 / 3
+Kick remote schema complete   false; objects 0 / 3
+remoteSchemaGatePass false
+probe rowsWritten 0
 ```
 
 Accepted repository migration:
@@ -44,7 +54,7 @@ idx_intraday_streamer_day
 intraday_rollup_status
 ```
 
-Do not infer remote schema application from repository migration acceptance. No production generator may write until remote schema existence is separately evidenced and generation storage/execution gates pass.
+The remote schema is observed absent, not merely unverified. Use only a controlled, idempotent, provider-separated remote apply path for the accepted schema. Keep generation disabled during apply, then rerun the read-only schema probe and require 3 / 3 matching objects for both providers.
 
 Do not add backfill, runtime generation, retention extension, a new high-frequency cron, category capture activation, exact-session claims, or cross-provider analytics before the relevant gates close.
 
