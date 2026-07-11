@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v3",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v4",
   "workstream": "12A-2 compact intraday rollup design and migration",
-  "status": "repository_migration_accepted_remote_apply_unverified_generation_blocked",
+  "status": "remote_schema_absent_generation_blocked",
   "design": {
     "status": "accepted",
     "pr": 494,
@@ -13,21 +13,10 @@
     "kickSafeProjectionMb": 23.57,
     "combinedSafeProjectionMb": 94.56
   },
-  "legacyControlPlaneGate": {
-    "toolingStatus": "installed",
-    "pr": 495,
-    "mergeSha": "bc336bd1739472f47b8063afa586936a105c6851",
-    "evidence": "docs/audits/12a2-remote-d1-size-evidence.json",
-    "status": "blocked",
-    "blocker": "cloudflare_credentials_missing",
-    "supersededForProviderSchemaGate": true
-  },
   "bindingSizeGate": {
     "sourcePr": 497,
-    "sourceMergeSha": "18724cf2ad130447b92efc8a39c772659d421d17",
     "evidencePr": 498,
     "evidence": "docs/audits/12a2-binding-size-production-evidence.json",
-    "acceptance": "docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md",
     "status": "accepted",
     "twitchCurrentSizeMb": 320.96,
     "twitchProjectedSizeMbWithSafety": 391.95,
@@ -39,27 +28,48 @@
     "accountAggregateMeasured": false,
     "generationStorageGatePass": false
   },
-  "migration": {
-    "status": "repository_accepted_remote_apply_unverified",
-    "authorized": true,
+  "repositoryMigration": {
+    "status": "accepted",
     "pr": 499,
+    "mergeSha": "225ca969730b56678de68d9d5a1af1b505d9451f",
     "migrationFile": "db/d1/004_intraday_rollups.sql",
     "acceptance": "docs/audits/12a2-migration-acceptance.json",
     "localApplyVerified": true,
     "idempotencyVerified": true,
-    "remoteSchemaApplied": false,
-    "remoteApplyEvidencePresent": false,
     "dataBackfillAllowed": false,
     "runtimeGenerationStarted": false
+  },
+  "remoteSchemaProbe": {
+    "routePr": 500,
+    "routeMergeSha": "dc219649a4f2202614488386b996ddb53f5f556d",
+    "evidencePr": 501,
+    "evidence": "docs/audits/12a2-remote-schema-production-evidence.json",
+    "record": "docs/operations/12a2-remote-schema-production-blocked-2026-07-11.md",
+    "status": "observed_absent",
+    "twitchObservedObjects": 0,
+    "twitchExpectedObjects": 3,
+    "twitchSchemaComplete": false,
+    "kickObservedObjects": 0,
+    "kickExpectedObjects": 3,
+    "kickSchemaComplete": false,
+    "remoteSchemaGatePass": false,
+    "probeRowsWritten": 0
+  },
+  "remoteApply": {
+    "status": "required",
+    "acceptedMigrationFile": "db/d1/004_intraday_rollups.sql",
+    "providerSeparated": true,
+    "idempotentApplyRequired": true,
+    "generationMustRemainDisabledDuringApply": true
   },
   "generation": {
     "status": "blocked",
     "authorized": false,
     "blockers": [
-      "account_aggregate_storage_unmeasured",
-      "remote_schema_apply_unverified"
+      "remote_schema_not_applied",
+      "account_aggregate_storage_unmeasured"
     ],
     "phase": "12A-3"
   },
-  "nextWorkstream": "12A-3 generation gate and bounded intraday rollup generation"
+  "nextWorkstream": "12A-2 controlled remote schema apply and verification"
 }
