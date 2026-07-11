@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "viewloom-12a2-binding-size-gate-contract-v1",
+  "workstream": "12A-2 compact intraday rollup design and migration",
+  "status": "implementation_candidate",
+  "source": "production /api/data-audit",
+  "evidenceField": "D1Result.meta.size_after",
+  "providerSeparated": true,
+  "newQueryAdded": false,
+  "newCronAdded": false,
+  "migrationIncluded": false,
+  "retentionChanged": false,
+  "acceptance": {
+    "databaseSizeEvidence": "d1_result_meta_size_after",
+    "databaseSizeBytesPositive": true,
+    "databaseSizeMbPositive": true,
+    "auditRowsWritten": 0
+  },
+  "postMergeAction": "fetch production /api/data-audit and freeze observed provider-specific size evidence"
+}
