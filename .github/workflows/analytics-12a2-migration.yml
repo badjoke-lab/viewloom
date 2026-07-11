@@ -8,6 +8,7 @@ on:
       - 'db/d1/004_intraday_rollups.sql'
       - 'scripts/verify-12a2-intraday-migration.mjs'
       - 'scripts/check-12a2-migration-scope.mjs'
+      - 'scripts/verify-12a2-migration-acceptance.mjs'
       - '.github/workflows/analytics-12a2-migration.yml'
       - 'docs/audits/12a2-migration-acceptance.json'
       - 'docs/operations/12a2-migration-acceptance-*.md'
@@ -43,22 +44,10 @@ jobs:
         run: node scripts/verify-12a2-intraday-migration.mjs
 
       - name: Verify permanent acceptance when present
+        shell: bash
         run: |
           if [ -f docs/audits/12a2-migration-acceptance.json ]; then
-            node --input-type=module <<'NODE'
-            import assert from 'node:assert/strict'
-            import { readFileSync } from 'node:fs'
-            const evidence = JSON.parse(readFileSync('docs/audits/12a2-migration-acceptance.json', 'utf8'))
-            assert.equal(evidence.schemaVersion, 'viewloom-12a2-migration-acceptance-v1')
-            assert.equal(evidence.status, 'accepted')
-            assert.equal(evidence.result, 'pass')
-            assert.equal(evidence.schemaOnly, true)
-            assert.equal(evidence.backfillIncluded, false)
-            assert.equal(evidence.runtimeGenerationIncluded, false)
-            assert.equal(evidence.generationAuthorized, false)
-            assert.equal(evidence.nextWorkstream, '12A-3 generation gate and bounded intraday rollup generation')
-            console.log('Permanent 12A-2 migration acceptance verification passed.')
-            NODE
+            node scripts/verify-12a2-migration-acceptance.mjs docs/audits/12a2-migration-acceptance.json
           else
             echo 'Permanent migration acceptance is not frozen yet.'
           fi
