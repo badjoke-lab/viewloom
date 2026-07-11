@@ -1,0 +1,169 @@
+name: Deploy Collector Workers
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/deploy-collector-workers.yml'
+      - 'workers/shared/**'
+      - 'workers/collector-twitch/**'
+      - 'workers/collector-kick/**'
+      - 'scripts/verify-12a2-controlled-remote-apply.mjs'
+      - 'scripts/verify-12a2-collector-worker-deploy.mjs'
+      - 'docs/audits/12a2-collector-worker-deploy-contract.json'
+      - 'docs/work-in-progress/phase12a2-collector-worker-deploy.md'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/deploy-collector-workers.yml'
+      - 'workers/shared/**'
+      - 'workers/collector-twitch/**'
+      - 'workers/collector-kick/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: viewloom-collector-worker-production-deploy
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify deployment workflow contract
+        run: node scripts/verify-12a2-collector-worker-deploy.mjs
+
+      - name: Verify controlled schema apply parity
+        run: node scripts/verify-12a2-controlled-remote-apply.mjs
+
+      - name: Typecheck and verify collectors
+        run: pnpm check:collectors
+
+  deploy-twitch:
+    if: github.event_name != 'pull_request'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require Cloudflare deployment secrets
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - name: Deploy Twitch collector
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4'
+          workingDirectory: workers/collector-twitch
+          command: deploy
+
+  deploy-kick:
+    if: github.event_name != 'pull_request'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require Cloudflare deployment secrets
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - name: Deploy Kick collector
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4'
+          workingDirectory: workers/collector-kick
+          command: deploy
+
+  verify-remote-schema:
+    if: github.event_name != 'pull_request'
+    needs:
+      - deploy-twitch
+      - deploy-kick
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VIEWLOOM_PRODUCTION_ORIGIN: https://vl.badjoke-lab.com
+      ARTIFACT_DIR: artifacts/12a2-collector-worker-deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Poll production schema gate
+        shell: bash
+        run: |
+          mkdir -p "$ARTIFACT_DIR"
+          passed=false
+          for attempt in $(seq 1 30); do
+            echo "Remote schema attempt $attempt/30"
+            node scripts/collect-12a2-remote-schema-production-evidence.mjs "$ARTIFACT_DIR/schema-evidence.json"
+            node scripts/verify-12a2-remote-schema-production-evidence.mjs "$ARTIFACT_DIR/schema-evidence.json"
+            if node -e "const fs=require('fs');const e=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.exit(e.gate.remoteSchemaGatePass?0:1)" "$ARTIFACT_DIR/schema-evidence.json"; then
+              passed=true
+              break
+            fi
+            sleep 30
+          done
+          if [ "$passed" != true ]; then
+            echo 'Remote schema gate did not pass within 15 minutes.' >&2
+            exit 1
+          fi
+
+      - name: Publish deployment summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## ViewLoom Collector Worker Deployment'
+            echo
+            echo '- Twitch Worker deploy requested: yes'
+            echo '- Kick Worker deploy requested: yes'
+            if [ -f "$ARTIFACT_DIR/schema-evidence.json" ]; then
+              echo "- Twitch schema complete: $(jq -r '.providers.twitch.schemaComplete' "$ARTIFACT_DIR/schema-evidence.json")"
+              echo "- Twitch observed objects: $(jq -r '.providers.twitch.observedObjectCount' "$ARTIFACT_DIR/schema-evidence.json")/3"
+              echo "- Kick schema complete: $(jq -r '.providers.kick.schemaComplete' "$ARTIFACT_DIR/schema-evidence.json")"
+              echo "- Kick observed objects: $(jq -r '.providers.kick.observedObjectCount' "$ARTIFACT_DIR/schema-evidence.json")/3"
+              echo "- Remote schema gate: $(jq -r '.gate.remoteSchemaGatePass' "$ARTIFACT_DIR/schema-evidence.json")"
+            else
+              echo '- Remote schema evidence: missing'
+            fi
+            echo '- Backfill: none'
+            echo '- Runtime generation: none'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a2-collector-worker-deploy
+          path: artifacts/12a2-collector-worker-deploy/schema-evidence.json
+          if-no-files-found: warn

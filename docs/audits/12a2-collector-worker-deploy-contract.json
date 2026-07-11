@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "viewloom-12a2-collector-worker-deploy-contract-v1",
+  "workstream": "12A-2 collector Worker deployment evidence and remote schema verification",
+  "status": "implementation_candidate",
+  "workflow": ".github/workflows/deploy-collector-workers.yml",
+  "deploymentAction": "cloudflare/wrangler-action@v3",
+  "wranglerVersion": "4",
+  "secrets": [
+    "CLOUDFLARE_API_TOKEN",
+    "CLOUDFLARE_ACCOUNT_ID"
+  ],
+  "triggers": {
+    "pullRequestVerificationOnly": true,
+    "mainPushDeploy": true,
+    "manualDeploy": true,
+    "pullRequestDeploy": false,
+    "pullRequestTargetUsed": false
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "providers": {
+    "twitch": {
+      "worker": "viewloom-collector-twitch",
+      "workingDirectory": "workers/collector-twitch",
+      "binding": "DB_TWITCH_HOT",
+      "databaseName": "vl_twitch_hot"
+    },
+    "kick": {
+      "worker": "viewloom-collector-kick",
+      "workingDirectory": "workers/collector-kick",
+      "binding": "DB_KICK_HOT",
+      "databaseName": "vl_kick_hot"
+    }
+  },
+  "verification": {
+    "preDeployCollectorChecks": true,
+    "preDeployMigrationParityCheck": true,
+    "postDeploySchemaAuditPath": "/api/schema-audit",
+    "pollIntervalSeconds": 30,
+    "maximumPollAttempts": 30,
+    "twitchRequiredObjects": 3,
+    "kickRequiredObjects": 3,
+    "rowsWrittenRequired": 0,
+    "artifactName": "phase12a2-collector-worker-deploy"
+  },
+  "scope": {
+    "pagesDeployIncluded": false,
+    "directD1ExecuteIncluded": false,
+    "backfillIncluded": false,
+    "generationIncluded": false,
+    "retentionChanged": false,
+    "newCronAdded": false,
+    "categoryCaptureIncluded": false,
+    "crossProviderAnalyticsIncluded": false
+  }
+}
