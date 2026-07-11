@@ -1,0 +1,82 @@
+name: Analytics 12A2 Binding Size Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      production_origin:
+        description: Production origin
+        required: false
+        default: https://vl.badjoke-lab.com
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/analytics-12a2-binding-size-production.yml'
+      - 'scripts/collect-12a2-binding-size-production-evidence.mjs'
+      - 'scripts/verify-12a2-binding-size-production-evidence.mjs'
+      - 'docs/audits/12a2-binding-size-production-evidence.json'
+      - 'docs/operations/12a2-binding-size-production-acceptance-*.md'
+
+concurrency:
+  group: analytics-12a2-binding-size-production-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VIEWLOOM_PRODUCTION_ORIGIN: ${{ inputs.production_origin || 'https://vl.badjoke-lab.com' }}
+      ARTIFACT_DIR: artifacts/12a2-binding-size
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Collect production binding-size evidence
+        run: node scripts/collect-12a2-binding-size-production-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+
+      - name: Verify production binding-size evidence
+        run: node scripts/verify-12a2-binding-size-production-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+
+      - name: Verify permanent evidence when present
+        run: |
+          if [ -f docs/audits/12a2-binding-size-production-evidence.json ]; then
+            node scripts/verify-12a2-binding-size-production-evidence.mjs docs/audits/12a2-binding-size-production-evidence.json
+          else
+            echo 'Permanent binding-size evidence is not frozen yet; generated artifact is candidate evidence.'
+          fi
+
+      - name: Publish evidence summary
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f "$ARTIFACT_DIR/evidence.json" ]; then
+            echo '## ViewLoom 12A-2 Binding Size Evidence' >> "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+            echo '- Production evidence was not produced.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo '## ViewLoom 12A-2 Binding Size Evidence'
+            echo
+            echo "- Twitch current: $(jq -r '.providers.twitch.currentSizeMb' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Twitch projected: $(jq -r '.providers.twitch.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Twitch migration gate: $(jq -r '.providers.twitch.providerMigrationGatePass' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Kick current: $(jq -r '.providers.kick.currentSizeMb' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Kick projected: $(jq -r '.providers.kick.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Kick migration gate: $(jq -r '.providers.kick.providerMigrationGatePass' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Schema migration gate: $(jq -r '.gate.schemaMigrationGatePass' "$ARTIFACT_DIR/evidence.json")"
+            echo '- Account aggregate measured: no'
+            echo '- Generation storage gate: false'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload production binding-size evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a2-binding-size-production
+          path: artifacts/12a2-binding-size/evidence.json
+          if-no-files-found: warn

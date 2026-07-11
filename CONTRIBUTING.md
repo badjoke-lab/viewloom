@@ -8,83 +8,76 @@ Read the development policy, documentation governance, documentation index, road
 
 ```text
 Phase 12A Analytics Capture Foundation active
-12A-0 current data and capacity baseline complete PR #490
-12A-1 analytics field contract complete PR #492
-12A-2 rollup design budget accepted PR #494
-12A-2 remote D1 size gate tooling installed PR #495
-Current workstream 12A-2 remote D1 size gate blocked before migration
-Current blocker cloudflare_credentials_missing
-Migration started no
+12A-0 baseline complete PR #490
+12A-1 field contract complete PR #492
+12A-2 design budget accepted PR #494
+12A-2 binding size source merged PR #497
+12A-2 production size evidence accepted PR #498
+Current workstream 12A-2 empty schema migration
+Schema migration authorized yes
+Schema migration started no
+Exact next branch work-analytics-12a2-migration
+12A-3 generation authorized no
+Generation blocker account_aggregate_storage_unmeasured
 ```
 
-Permanent current evidence:
+## Current permanent evidence
 
 ```text
 docs/audits/12a2-intraday-rollup-design-contract.json
 docs/audits/12a2-intraday-rollup-budget-evidence.json
-docs/audits/12a2-remote-d1-size-evidence.json
+docs/audits/12a2-binding-size-production-evidence.json
 docs/audits/12a2-current-gate-state.json
 docs/operations/12a2-intraday-rollup-design-acceptance-2026-07-11.md
-docs/operations/12a2-remote-d1-size-gate-blocked-2026-07-11.md
+docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md
 ```
 
-## Accepted 12A-2 design
+Accepted size evidence:
 
 ```text
-grain provider x day x streamer
-hour encoding sparse compact JSON cells
-Twitch cap 600 streamers/day
-Kick cap 200 streamers/day
-intraday retention 90 days
-new cron no
-raw retention extension no
-Twitch safe projected rollup storage 70.99 MB
-Kick safe projected rollup storage 23.57 MB
+Twitch current size 320.96 MB
+Twitch projected size 391.95 MB
+Twitch provider migration gate true
+
+Kick current size 264.38 MB
+Kick projected size 287.95 MB
+Kick provider migration gate true
+
+schemaMigrationGatePass true
+accountAggregateMeasured false
+generationStorageGatePass false
 ```
 
-## Current blocker boundary
+## Allowed 12A-2 migration scope
 
-The remote size workflow currently lacks:
+`work-analytics-12a2-migration` may add only the accepted empty provider-separated schema and indexes.
+
+Allowed:
 
 ```text
-CLOUDFLARE_API_TOKEN
-CLOUDFLARE_ACCOUNT_ID
+CREATE TABLE streamer_intraday_rollups
+CREATE INDEX idx_intraday_streamer_day
+CREATE TABLE intraday_rollup_status
+schema verification
+local migration verification
+provider-separated migration acceptance evidence
 ```
 
-The permanent evidence therefore records:
+Not allowed in that branch:
 
 ```text
-status blocked
-blocker cloudflare_credentials_missing
-migrationStorageGatePass false
-migrationAuthorizedByThisEvidenceAlone false
-```
-
-False means not measured / blocked, not capacity failure. Do not invent remote D1 size or headroom values from the 12A-0 payload baseline.
-
-Resume order:
-
-```text
-1. make the two repository secrets available
-2. rerun Analytics 12A2 Remote D1 Size Gate on main
-3. require observed-mode evidence
-4. require migrationStorageGatePass=true
-5. only then create work-analytics-12a2-migration
-```
-
-Until the gate passes, do not include:
-
-```text
-D1 migration
+backfill
 compact-rollup runtime generation
 raw-retention extension
 new high-frequency cron
 category capture activation
-exact-session claims
+exact-session fields or claims
 cross-provider totals, rankings, baselines, categories, or relationships
 ```
 
-12A-1 source contracts remain authoritative. Twitch `provider_started_at` is provider-reported evidence only; Kick provider start time remains unavailable; category capture remains unapproved for both providers under the current contract.
+12A-3 generation remains blocked until its storage and execution gates are accepted. The provider schema migration gate does not authorize data accumulation.
+
+12A-1 source contracts remain authoritative. Twitch `provider_started_at` is provider-reported evidence only; Kick provider start time remains unavailable; category capture remains unapproved for both providers.
 
 ## Standard workflow
 
