@@ -11,14 +11,12 @@ Phase 12A Analytics Capture Foundation active
 12A-0 baseline complete PR #490
 12A-1 field contract complete PR #492
 12A-2 design budget accepted PR #494
-12A-2 binding size source merged PR #497
 12A-2 production size evidence accepted PR #498
-Current workstream 12A-2 empty schema migration
-Schema migration authorized yes
-Schema migration started no
-Exact next branch work-analytics-12a2-migration
+12A-2 repository migration accepted PR #499
+Remote D1 schema apply unverified
+Current workstream remote schema apply / verification gate before 12A-3 generation
 12A-3 generation authorized no
-Generation blocker account_aggregate_storage_unmeasured
+Generation blockers account_aggregate_storage_unmeasured, remote_schema_apply_unverified
 ```
 
 ## Current permanent evidence
@@ -27,55 +25,48 @@ Generation blocker account_aggregate_storage_unmeasured
 docs/audits/12a2-intraday-rollup-design-contract.json
 docs/audits/12a2-intraday-rollup-budget-evidence.json
 docs/audits/12a2-binding-size-production-evidence.json
+docs/audits/12a2-migration-acceptance.json
 docs/audits/12a2-current-gate-state.json
-docs/operations/12a2-intraday-rollup-design-acceptance-2026-07-11.md
 docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md
+docs/operations/12a2-migration-acceptance-2026-07-11.md
 ```
 
-Accepted size evidence:
+## Accepted migration boundary
+
+Repository migration acceptance proves:
 
 ```text
-Twitch current size 320.96 MB
-Twitch projected size 391.95 MB
-Twitch provider migration gate true
-
-Kick current size 264.38 MB
-Kick projected size 287.95 MB
-Kick provider migration gate true
-
-schemaMigrationGatePass true
-accountAggregateMeasured false
-generationStorageGatePass false
+schema SQL accepted
+scope guard passed
+local SQLite apply passed
+second apply idempotency passed
+exact table / PK / index shape passed
+no rows inserted
+forbidden DML absent
 ```
 
-## Allowed 12A-2 migration scope
-
-`work-analytics-12a2-migration` may add only the accepted empty provider-separated schema and indexes.
-
-Allowed:
+It does not prove:
 
 ```text
-CREATE TABLE streamer_intraday_rollups
-CREATE INDEX idx_intraday_streamer_day
-CREATE TABLE intraday_rollup_status
-schema verification
-local migration verification
-provider-separated migration acceptance evidence
+remote Twitch D1 schema applied
+remote Kick D1 schema applied
+runtime generation authorized
+account-wide storage measured
 ```
 
-Not allowed in that branch:
+Before production generation, require remote schema evidence plus accepted storage and execution-cost gates.
+
+Do not add:
 
 ```text
 backfill
-compact-rollup runtime generation
+runtime rollup generation
 raw-retention extension
 new high-frequency cron
 category capture activation
-exact-session fields or claims
+exact-session claims
 cross-provider totals, rankings, baselines, categories, or relationships
 ```
-
-12A-3 generation remains blocked until its storage and execution gates are accepted. The provider schema migration gate does not authorize data accumulation.
 
 12A-1 source contracts remain authoritative. Twitch `provider_started_at` is provider-reported evidence only; Kick provider start time remains unavailable; category capture remains unapproved for both providers.
 

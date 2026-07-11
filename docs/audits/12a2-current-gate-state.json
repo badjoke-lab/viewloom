@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v2",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v3",
   "workstream": "12A-2 compact intraday rollup design and migration",
-  "status": "schema_migration_authorized_generation_blocked",
+  "status": "repository_migration_accepted_remote_apply_unverified_generation_blocked",
   "design": {
     "status": "accepted",
     "pr": 494,
@@ -18,7 +18,6 @@
     "pr": 495,
     "mergeSha": "bc336bd1739472f47b8063afa586936a105c6851",
     "evidence": "docs/audits/12a2-remote-d1-size-evidence.json",
-    "blockedRecord": "docs/operations/12a2-remote-d1-size-gate-blocked-2026-07-11.md",
     "status": "blocked",
     "blocker": "cloudflare_credentials_missing",
     "supersededForProviderSchemaGate": true
@@ -41,17 +40,26 @@
     "generationStorageGatePass": false
   },
   "migration": {
-    "status": "authorized_not_started",
+    "status": "repository_accepted_remote_apply_unverified",
     "authorized": true,
-    "nextBranch": "work-analytics-12a2-migration",
-    "schemaApplied": false,
+    "pr": 499,
+    "migrationFile": "db/d1/004_intraday_rollups.sql",
+    "acceptance": "docs/audits/12a2-migration-acceptance.json",
+    "localApplyVerified": true,
+    "idempotencyVerified": true,
+    "remoteSchemaApplied": false,
+    "remoteApplyEvidencePresent": false,
     "dataBackfillAllowed": false,
     "runtimeGenerationStarted": false
   },
   "generation": {
     "status": "blocked",
     "authorized": false,
-    "blocker": "account_aggregate_storage_unmeasured",
+    "blockers": [
+      "account_aggregate_storage_unmeasured",
+      "remote_schema_apply_unverified"
+    ],
     "phase": "12A-3"
-  }
+  },
+  "nextWorkstream": "12A-3 generation gate and bounded intraday rollup generation"
 }

@@ -8,11 +8,9 @@ Phase 12A Analytics Capture Foundation active
 12A-0 baseline complete PR #490
 12A-1 field contract complete PR #492
 12A-2 design budget accepted PR #494
-12A-2 production provider-size evidence accepted PR #498
-Current action 12A-2 empty schema migration
-Schema migration authorized yes
-Schema migration started no
-Exact next branch work-analytics-12a2-migration
+12A-2 production size evidence accepted PR #498
+12A-2 repository migration accepted PR #499
+Current gate remote schema apply / verification
 12A-3 generation authorized no
 ```
 
@@ -21,73 +19,69 @@ Exact next branch work-analytics-12a2-migration
 ```text
 12A-0 current data and capacity baseline            complete PR #490
 12A-1 analytics field contract                      complete PR #492
-12A-2 design budget                                 accepted PR #494
-12A-2 provider-size production evidence             accepted PR #498
-12A-2 empty schema migration                        current / authorized
+12A-2 design and repository migration               accepted through PR #499
+Remote schema apply / verification                  current gate
 12A-3 bounded intraday rollup generation            blocked
 12A-4 provider-specific category capture foundation queued
 12A-5 foundation acceptance and accumulation handoff queued
 ```
 
-## Accepted 12A-2 production size evidence
+## Accepted repository migration
 
 ```text
-Twitch current size                    320.96 MB
-Twitch safe rollup projection           70.99 MB
-Twitch projected size                  391.95 MB
-Twitch provider migration gate         true
+db/d1/004_intraday_rollups.sql
 
-Kick current size                      264.38 MB
-Kick safe rollup projection             23.57 MB
-Kick projected size                    287.95 MB
-Kick provider migration gate           true
-
-schemaMigrationGatePass                true
+streamer_intraday_rollups
+idx_intraday_streamer_day
+intraday_rollup_status
 ```
 
-Evidence source:
+Verified:
 
 ```text
-production /api/data-audit
-D1Result.meta.size_after
+scope guard pass
+local apply pass
+second apply idempotency pass
+exact table shape pass
+exact primary-key shape pass
+exact secondary-index shape pass
+empty after apply
+forbidden DML absent
 ```
 
-The audit wrote zero rows for both providers.
-
-## Exact next action
+## Current remote apply boundary
 
 ```text
-create work-analytics-12a2-migration from current main
-add only accepted empty tables and indexes
-verify migration locally and structurally
-merge only after latest-head migration checks
-record migration acceptance
+repositoryMigrationAccepted true
+remoteSchemaApplied false
+remoteApplyEvidencePresent false
 ```
 
-The migration branch must not backfill rows or add generation code.
+Before any production generator runs, prove the new tables exist in both provider D1 databases or apply the accepted migration through an authorized remote path and then verify the schema.
 
-## 12A-3 remaining gate
+## 12A-3 generation gate
 
 ```text
 accountAggregateMeasured false
 generationStorageGatePass false
 generation authorized false
-blocker account_aggregate_storage_unmeasured
+blockers:
+  remote_schema_apply_unverified
+  account_aggregate_storage_unmeasured
 ```
 
-12A-3 generation remains blocked even after empty schema migration. The provider schema migration gate does not authorize accumulation.
+Do not add production writes until these gates close.
 
-## 12A-4 and 12A-5
+## Later steps
 
-12A-4 category capture remains queued and provider-specific. 12A-5 foundation acceptance remains queued after generation/category foundations have accepted evidence.
+12A-4 remains a provider-specific category foundation. 12A-5 closes the foundation and hands off to localization while evidence accumulates. Phase 15 performs capability and calibration audit before Phase 16A-F implementation.
 
-## Governing documents
+## Governing evidence
 
-- Analytics specification: `analytics-observation-system-spec.md`
-- Analytics implementation plan: `analytics-observation-system-plan.md`
-- 12A-2 design contract: `../audits/12a2-intraday-rollup-design-contract.json`
-- 12A-2 budget evidence: `../audits/12a2-intraday-rollup-budget-evidence.json`
-- 12A-2 production size evidence: `../audits/12a2-binding-size-production-evidence.json`
-- 12A-2 current state: `../audits/12a2-current-gate-state.json`
+- `../audits/12a2-intraday-rollup-design-contract.json`
+- `../audits/12a2-intraday-rollup-budget-evidence.json`
+- `../audits/12a2-binding-size-production-evidence.json`
+- `../audits/12a2-migration-acceptance.json`
+- `../audits/12a2-current-gate-state.json`
 
-Do not bypass generation gates with raw-retention expansion, unsupported session/category claims, or cross-provider analytics.
+Do not bypass remote-schema or generation gates with payload-only estimates, raw-retention expansion, unsupported session/category claims, or cross-provider analytics.
