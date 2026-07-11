@@ -1,0 +1,46 @@
+name: Analytics 12A2 Remote Schema Probe
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/functions/api/schema-audit.ts'
+      - 'docs/audits/12a2-remote-schema-probe-contract.json'
+      - 'scripts/verify-12a2-remote-schema-probe.mjs'
+      - '.github/workflows/analytics-12a2-remote-schema-probe.yml'
+      - 'docs/work-in-progress/phase12a2-remote-schema-probe.md'
+  workflow_dispatch:
+
+concurrency:
+  group: analytics-12a2-remote-schema-probe-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify remote schema probe contract and read-only boundary
+        run: node scripts/verify-12a2-remote-schema-probe.mjs
+
+      - name: Publish probe summary
+        run: |
+          {
+            echo '## ViewLoom 12A-2 Remote Schema Probe'
+            echo
+            echo '- route: /api/schema-audit'
+            echo '- providers: Twitch and Kick, separate bindings'
+            echo '- query source: sqlite_master'
+            echo '- queries per provider: 1'
+            echo '- write/DDL statements: none'
+            echo '- raw SQL definitions returned: no'
+            echo '- migration apply: no'
+            echo '- generation: no'
+          } >> "$GITHUB_STEP_SUMMARY"
