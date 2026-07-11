@@ -65,10 +65,11 @@ assert.equal(evidence.gate.generationStorageGatePass, false)
 assert.equal(evidence.gate.generationAuthorizedByThisEvidenceAlone, false)
 assert.ok(Array.isArray(evidence.gate.blockers) && evidence.gate.blockers.includes('account_aggregate_storage_unmeasured'))
 if (evidence.gate.remoteSchemaGatePass) {
-  assert.equal(evidence.gate.blockers.includes('remote_schema_apply_unverified'), false)
+  assert.equal(evidence.gate.blockers.includes('remote_schema_not_applied'), false)
 } else {
-  assert.equal(evidence.gate.blockers.includes('remote_schema_apply_unverified'), true)
+  assert.equal(evidence.gate.blockers.includes('remote_schema_not_applied'), true)
 }
+assert.equal(evidence.gate.blockers.includes('remote_schema_apply_unverified'), false, 'observed evidence must not use the pre-observation unverified blocker')
 
 assert.equal(evidence.boundary.migrationApplyPerformedByProbe, false)
 assert.equal(evidence.boundary.backfillPerformedByProbe, false)
