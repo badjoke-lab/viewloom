@@ -10,12 +10,16 @@ Current phase: Phase 12A Analytics Capture Foundation
 12A-2 production size evidence: accepted PR #498
 12A-2 repository migration: accepted PR #499
 12A-2 remote schema evidence: observed PR #501
+12A-2 controlled apply code: merged PR #502
+12A-2 immediate bootstrap refinement: merged PR #503
+12A-2 post-bootstrap recheck: observed PR #504
 Twitch remote schema objects: 0 / 3
 Kick remote schema objects: 0 / 3
+Worker deployment evidence: absent
 Remote schema gate: blocked
-Current workstream: controlled remote schema apply and verification
+Current workstream: collector Worker deployment evidence and remote schema verification
 12A-3 generation authorized: no
-Generation blockers: remote_schema_not_applied, account_aggregate_storage_unmeasured
+Generation blockers: remote_schema_not_applied, collector_worker_deployment_not_evidenced, account_aggregate_storage_unmeasured
 ```
 
 Permanent 12A-2 authorities:
@@ -26,10 +30,12 @@ docs/audits/12a2-intraday-rollup-budget-evidence.json
 docs/audits/12a2-binding-size-production-evidence.json
 docs/audits/12a2-migration-acceptance.json
 docs/audits/12a2-remote-schema-production-evidence.json
+docs/audits/12a2-remote-schema-post-bootstrap-recheck.json
 docs/audits/12a2-current-gate-state.json
 docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md
 docs/operations/12a2-migration-acceptance-2026-07-11.md
 docs/operations/12a2-remote-schema-production-blocked-2026-07-11.md
+docs/operations/12a2-remote-schema-production-recheck-2026-07-11.md
 ```
 
 Observed provider evidence:
@@ -54,7 +60,9 @@ idx_intraday_streamer_day
 intraday_rollup_status
 ```
 
-The remote schema is observed absent, not merely unverified. Use only a controlled, idempotent, provider-separated remote apply path for the accepted schema. Keep generation disabled during apply, then rerun the read-only schema probe and require 3 / 3 matching objects for both providers.
+Controlled apply code is merged and uses separate provider D1 bindings, one immediate bootstrap attempt per Worker isolate, warm-isolate presence caching, and bounded maintenance retries. Repository merge does not prove Worker deployment.
+
+The post-bootstrap production recheck still observed 0 / 3 schema objects for both providers. Current work must establish collector Worker deployment through an authorized Cloudflare-side process or independent deployment evidence, then rerun the read-only schema probe.
 
 Do not add backfill, runtime generation, retention extension, a new high-frequency cron, category capture activation, exact-session claims, or cross-provider analytics before the relevant gates close.
 
