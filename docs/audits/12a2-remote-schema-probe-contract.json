@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "viewloom-12a2-remote-schema-probe-contract-v1",
+  "workstream": "12A-2 remote schema apply and verification gate",
+  "status": "implementation_candidate",
+  "route": "/api/schema-audit",
+  "readOnly": true,
+  "providerSeparated": true,
+  "queriesPerProvider": 1,
+  "querySource": "sqlite_master",
+  "rawSqlReturned": false,
+  "expectedObjects": [
+    {
+      "type": "table",
+      "name": "streamer_intraday_rollups"
+    },
+    {
+      "type": "index",
+      "name": "idx_intraday_streamer_day"
+    },
+    {
+      "type": "table",
+      "name": "intraday_rollup_status"
+    }
+  ],
+  "acceptance": {
+    "providers": ["twitch", "kick"],
+    "expectedObjectCount": 3,
+    "rowsWrittenMustBe": 0,
+    "schemaCompleteRequiredBeforeGeneration": true,
+    "definitionMatchesRequired": true
+  },
+  "scope": {
+    "migrationApplyIncluded": false,
+    "backfillIncluded": false,
+    "generationIncluded": false,
+    "retentionChanged": false,
+    "cronAdded": false
+  }
+}
