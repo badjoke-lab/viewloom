@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "viewloom-12a2-migration-acceptance-v1",
+  "workstream": "12A-2 compact intraday rollup design and migration",
+  "status": "accepted",
+  "result": "pass",
+  "acceptanceIdentity": {
+    "pr": 499,
+    "headSha": "ba68ab29ef119574038deb3b6d167c05b0b4b94a",
+    "workflowRunId": 29141999070,
+    "workflowName": "Analytics 12A2 Migration"
+  },
+  "schemaOnly": true,
+  "providerSeparated": true,
+  "migrationFile": "db/d1/004_intraday_rollups.sql",
+  "tables": {
+    "streamerIntradayRollups": "streamer_intraday_rollups",
+    "status": "intraday_rollup_status"
+  },
+  "indexes": {
+    "streamerDay": "idx_intraday_streamer_day"
+  },
+  "verification": {
+    "scopeGuardPass": true,
+    "localApplyPass": true,
+    "secondApplyIdempotencyPass": true,
+    "exactTableShapePass": true,
+    "exactPrimaryKeyShapePass": true,
+    "exactSecondaryIndexShapePass": true,
+    "emptyAfterApply": true,
+    "forbiddenDmlAbsent": true
+  },
+  "backfillIncluded": false,
+  "runtimeGenerationIncluded": false,
+  "generationAuthorized": false,
+  "remoteSchemaApplied": false,
+  "remoteApplyEvidencePresent": false,
+  "nextWorkstream": "12A-3 generation gate and bounded intraday rollup generation",
+  "nextBoundary": {
+    "repositoryMigrationAccepted": true,
+    "remoteApplyStillRequiredBeforeProductionGeneration": true,
+    "generationStorageGatePass": false,
+    "generationBlocker": "account_aggregate_storage_unmeasured"
+  }
+}
