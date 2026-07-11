@@ -10,8 +10,11 @@ Phase 12A Analytics Capture Foundation active
 12A-2 design budget accepted PR #494
 12A-2 production size evidence accepted PR #498
 12A-2 repository migration accepted PR #499
-Remote D1 schema apply unverified
-Current gate remote schema apply / verification before 12A-3 generation
+12A-2 remote schema evidence observed PR #501
+Twitch remote schema objects 0 / 3
+Kick remote schema objects 0 / 3
+Remote schema gate blocked
+Current workstream controlled remote schema apply and verification
 12A-3 generation authorized no
 ```
 
@@ -25,6 +28,7 @@ Current gate remote schema apply / verification before 12A-3 generation
 - 12A-2 budget evidence: `../audits/12a2-intraday-rollup-budget-evidence.json`
 - 12A-2 production size evidence: `../audits/12a2-binding-size-production-evidence.json`
 - 12A-2 migration acceptance: `../audits/12a2-migration-acceptance.json`
+- 12A-2 remote schema evidence: `../audits/12a2-remote-schema-production-evidence.json`
 - 12A-2 current state: `../audits/12a2-current-gate-state.json`
 
 ## Accepted 12A-2 provider size evidence
@@ -44,31 +48,35 @@ idx_intraday_streamer_day
 intraday_rollup_status
 ```
 
-Verification passed for branch scope, local apply, second-apply idempotency, exact table/PK/index shape, empty tables after apply, and forbidden DML absence.
+Local scope, apply, idempotency, schema-shape, empty-table, and no-DML checks passed.
+
+## Observed remote state
+
+```text
+Twitch schemaComplete false
+Twitch observed objects 0 / 3
+Kick schemaComplete false
+Kick observed objects 0 / 3
+remoteSchemaGatePass false
+probe rowsWritten 0
+```
+
+All expected schema objects were observed absent in both provider databases. The state is now `remote_schema_not_applied`, not merely unverified.
 
 ## Current blockers
 
-Repository migration acceptance does not prove remote schema application.
-
 ```text
-remoteSchemaApplied false
-remoteApplyEvidencePresent false
-accountAggregateMeasured false
-generationStorageGatePass false
-generation authorized false
-```
-
-12A-3 generation remains blocked by:
-
-```text
-remote_schema_apply_unverified
+remote_schema_not_applied
 account_aggregate_storage_unmeasured
 ```
+
+12A-3 generation remains unauthorized.
 
 ## Forward sequence
 
 ```text
-remote schema apply / verification gate
+controlled idempotent remote schema apply
+  -> read-only remote schema verification
   -> 12A-3 generation storage and execution gate
   -> bounded intraday rollup generation
   -> 12A-4 category capture foundation
