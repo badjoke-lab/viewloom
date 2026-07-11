@@ -16,7 +16,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: viewloom-one-time-12a2-collector-deploy
+  group: viewloom-one-time-12a2-collector-deploy-pr506-v2
   cancel-in-progress: false
 
 jobs:
