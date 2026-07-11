@@ -22,12 +22,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     source: 'api',
     generatedAt: new Date().toISOString(),
     mode: 'free-strong',
+    databaseSizeEvidence: 'd1_result_meta_size_after',
     providers: [twitch, kick],
   }, { headers: { 'cache-control': 'no-store' } })
 }
 
 async function audit(provider: Provider, db: D1Database, rawRetentionDays: number) {
-  const row = await db.prepare(`
+  const result = await db.prepare(`
     SELECT
       COUNT(*) AS rows,
       SUM(CASE WHEN unixepoch(bucket_minute) >= unixepoch('now', '-24 hours') THEN 1 ELSE 0 END) AS rows_24h,
@@ -38,11 +39,13 @@ async function audit(provider: Provider, db: D1Database, rawRetentionDays: numbe
       ROUND(SUM(LENGTH(payload_json)) / 1024.0 / 1024.0, 2) AS payload_mb
     FROM minute_snapshots
     WHERE provider = ?
-  `).bind(provider).first<Row>()
+  `).bind(provider).run<Row>()
 
+  const row = result.results?.[0]
   const rows24h = num(row?.rows_24h)
   const avgPayloadBytes = num(row?.avg_payload_bytes)
   const payloadMbPerDay = roundMb((avgPayloadBytes * (rows24h || EXPECTED_ROWS_PER_DAY)) / 1024 / 1024)
+  const databaseSizeBytes = num(result.meta?.size_after)
 
   return {
     provider,
@@ -60,6 +63,14 @@ async function audit(provider: Provider, db: D1Database, rawRetentionDays: numbe
     estimatedPayloadMbPerDay: payloadMbPerDay,
     estimatedPayloadMbAtRetention: roundMb(payloadMbPerDay * rawRetentionDays),
     estimatedPayloadMbAt90Days: roundMb(payloadMbPerDay * 90),
+    databaseSizeBytes,
+    databaseSizeMb: roundMb(databaseSizeBytes / 1024 / 1024),
+    databaseSizeEvidence: 'd1_result_meta_size_after',
+    auditQuery: {
+      rowsRead: num(result.meta?.rows_read),
+      rowsWritten: num(result.meta?.rows_written),
+      sqlDurationMs: roundMs(result.meta?.timings?.sql_duration_ms ?? result.meta?.duration),
+    },
   }
 }
 
@@ -78,4 +89,9 @@ function text(value: unknown): string | null {
 
 function roundMb(value: number): number {
   return Number.isFinite(value) ? Math.round(value * 100) / 100 : 0
+}
+
+function roundMs(value: unknown): number {
+  const parsed = num(value)
+  return Math.round(parsed * 1000) / 1000
 }
