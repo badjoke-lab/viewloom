@@ -10,7 +10,10 @@ Phase 12A Analytics Capture Foundation active
 12A-2 design budget accepted PR #494
 12A-2 production size evidence accepted PR #498
 12A-2 repository migration accepted PR #499
-Current gate remote schema apply / verification
+12A-2 remote schema evidence observed PR #501
+Twitch remote schema objects 0 / 3
+Kick remote schema objects 0 / 3
+Current gate controlled remote schema apply and verification
 12A-3 generation authorized no
 ```
 
@@ -20,7 +23,8 @@ Current gate remote schema apply / verification
 12A-0 current data and capacity baseline            complete PR #490
 12A-1 analytics field contract                      complete PR #492
 12A-2 design and repository migration               accepted through PR #499
-Remote schema apply / verification                  current gate
+12A-2 remote schema observation                     complete PR #501
+Controlled remote schema apply / verification       current
 12A-3 bounded intraday rollup generation            blocked
 12A-4 provider-specific category capture foundation queued
 12A-5 foundation acceptance and accumulation handoff queued
@@ -30,34 +34,38 @@ Remote schema apply / verification                  current gate
 
 ```text
 db/d1/004_intraday_rollups.sql
-
 streamer_intraday_rollups
 idx_intraday_streamer_day
 intraday_rollup_status
 ```
 
-Verified:
+Local scope, apply, idempotency, exact schema shape, empty-table, and no-DML verification passed.
+
+## Observed remote state
 
 ```text
-scope guard pass
-local apply pass
-second apply idempotency pass
-exact table shape pass
-exact primary-key shape pass
-exact secondary-index shape pass
-empty after apply
-forbidden DML absent
+Twitch schemaComplete false
+Twitch observed objects 0 / 3
+Kick schemaComplete false
+Kick observed objects 0 / 3
+remoteSchemaGatePass false
+probe rowsWritten 0
 ```
 
-## Current remote apply boundary
+The expected schema is observed absent in both provider databases.
+
+## Exact next action
 
 ```text
-repositoryMigrationAccepted true
-remoteSchemaApplied false
-remoteApplyEvidencePresent false
+implement a controlled idempotent provider-separated remote apply path
+apply only the accepted 004 schema
+keep generation disabled
+perform no backfill
+rerun /api/schema-audit
+require Twitch 3 / 3 matching objects
+require Kick 3 / 3 matching objects
+then close the remote_schema_not_applied blocker
 ```
-
-Before any production generator runs, prove the new tables exist in both provider D1 databases or apply the accepted migration through an authorized remote path and then verify the schema.
 
 ## 12A-3 generation gate
 
@@ -66,7 +74,7 @@ accountAggregateMeasured false
 generationStorageGatePass false
 generation authorized false
 blockers:
-  remote_schema_apply_unverified
+  remote_schema_not_applied
   account_aggregate_storage_unmeasured
 ```
 
@@ -82,6 +90,7 @@ Do not add production writes until these gates close.
 - `../audits/12a2-intraday-rollup-budget-evidence.json`
 - `../audits/12a2-binding-size-production-evidence.json`
 - `../audits/12a2-migration-acceptance.json`
+- `../audits/12a2-remote-schema-production-evidence.json`
 - `../audits/12a2-current-gate-state.json`
 
 Do not bypass remote-schema or generation gates with payload-only estimates, raw-retention expansion, unsupported session/category claims, or cross-provider analytics.
