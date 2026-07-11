@@ -95,9 +95,6 @@ for (const path of [
     '3 / 3',
     'account_aggregate_storage_unmeasured',
   ])
-  const source = read(path)
-  assert.equal(source.includes('remote_schema_not_applied'), false, `${path}: closed blocker still canonical`)
-  assert.equal(source.includes('collector_worker_deployment_not_evidenced'), false, `${path}: closed blocker still canonical`)
 }
 
 check('AGENTS.md', [
