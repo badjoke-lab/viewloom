@@ -39,6 +39,12 @@ Migration started no
 - Public surface inventory: `audits/public-surface-inventory.json`
 - Current gap state: `audits/public-surface-gaps.json`
 
+## Permanent Watchlist records
+
+- `product/local-watchlist-spec.md`
+- `product/watchlist-v1-implementation-plan.md`
+- `operations/watchlist-production-acceptance-2026-06-25.md`
+
 ## Active Phase 12A
 
 ```text
