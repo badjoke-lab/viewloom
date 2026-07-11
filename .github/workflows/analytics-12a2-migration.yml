@@ -1,0 +1,78 @@
+name: Analytics 12A2 Migration
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'db/d1/004_intraday_rollups.sql'
+      - 'scripts/verify-12a2-intraday-migration.mjs'
+      - 'scripts/check-12a2-migration-scope.mjs'
+      - '.github/workflows/analytics-12a2-migration.yml'
+      - 'docs/audits/12a2-migration-acceptance.json'
+      - 'docs/operations/12a2-migration-acceptance-*.md'
+      - 'docs/work-in-progress/phase12a2-migration.md'
+  workflow_dispatch:
+
+concurrency:
+  group: analytics-12a2-migration-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install SQLite CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sqlite3
+
+      - name: Verify migration scope
+        run: node scripts/check-12a2-migration-scope.mjs
+
+      - name: Verify migration schema and idempotency
+        run: node scripts/verify-12a2-intraday-migration.mjs
+
+      - name: Verify permanent acceptance when present
+        run: |
+          if [ -f docs/audits/12a2-migration-acceptance.json ]; then
+            node --input-type=module <<'NODE'
+            import assert from 'node:assert/strict'
+            import { readFileSync } from 'node:fs'
+            const evidence = JSON.parse(readFileSync('docs/audits/12a2-migration-acceptance.json', 'utf8'))
+            assert.equal(evidence.schemaVersion, 'viewloom-12a2-migration-acceptance-v1')
+            assert.equal(evidence.status, 'accepted')
+            assert.equal(evidence.result, 'pass')
+            assert.equal(evidence.schemaOnly, true)
+            assert.equal(evidence.backfillIncluded, false)
+            assert.equal(evidence.runtimeGenerationIncluded, false)
+            assert.equal(evidence.generationAuthorized, false)
+            assert.equal(evidence.nextWorkstream, '12A-3 generation gate and bounded intraday rollup generation')
+            console.log('Permanent 12A-2 migration acceptance verification passed.')
+            NODE
+          else
+            echo 'Permanent migration acceptance is not frozen yet.'
+          fi
+
+      - name: Publish migration summary
+        run: |
+          {
+            echo '## ViewLoom 12A-2 Migration'
+            echo
+            echo '- schema file: db/d1/004_intraday_rollups.sql'
+            echo '- tables: streamer_intraday_rollups, intraday_rollup_status'
+            echo '- secondary index: idx_intraday_streamer_day'
+            echo '- idempotent local apply: pass'
+            echo '- backfill: none'
+            echo '- runtime generation: none'
+            echo '- generation authorization: false'
+          } >> "$GITHUB_STEP_SUMMARY"
