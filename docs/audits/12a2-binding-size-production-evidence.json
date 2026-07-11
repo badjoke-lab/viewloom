@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "viewloom-12a2-binding-size-production-evidence-v1",
+  "workstream": "12A-2 compact intraday rollup design and migration",
+  "observedAt": "2026-07-11T05:41:29.837Z",
+  "productionGeneratedAt": "2026-07-11T05:41:29.817Z",
+  "acceptanceIdentity": {
+    "pr": 498,
+    "headSha": "1d5c8129412ef6feded36bc02d72ff2d7dec93b3",
+    "workflowRunId": 29141599674,
+    "artifactId": 8245314373,
+    "artifactName": "phase12a2-binding-size-production",
+    "artifactDigest": "sha256:e682f1d91b01f47b90cc72751985115501434de7b723ec1d52465c9f5e698766"
+  },
+  "source": {
+    "origin": "https://vl.badjoke-lab.com",
+    "path": "/api/data-audit",
+    "mode": "free-strong",
+    "evidenceField": "D1Result.meta.size_after"
+  },
+  "providers": {
+    "twitch": {
+      "databaseSizeEvidence": "d1_result_meta_size_after",
+      "currentSizeBytes": 336551936,
+      "currentSizeMb": 320.96,
+      "safeRollupProjectionMb": 70.99,
+      "projectedSizeMbWithSafety": 391.95,
+      "maximumDatabaseMb": 500,
+      "operationalCeilingMb": 450,
+      "projectedHeadroomMb": 108.05,
+      "projectedUtilizationPct": 78.39,
+      "providerMigrationGatePass": true,
+      "auditQuery": {
+        "rowsRead": 8601,
+        "rowsWritten": 0,
+        "sqlDurationMs": 3026.542
+      }
+    },
+    "kick": {
+      "databaseSizeEvidence": "d1_result_meta_size_after",
+      "currentSizeBytes": 277221376,
+      "currentSizeMb": 264.38,
+      "safeRollupProjectionMb": 23.57,
+      "projectedSizeMbWithSafety": 287.95,
+      "maximumDatabaseMb": 500,
+      "operationalCeilingMb": 450,
+      "projectedHeadroomMb": 212.05,
+      "projectedUtilizationPct": 57.59,
+      "providerMigrationGatePass": true,
+      "auditQuery": {
+        "rowsRead": 14643,
+        "rowsWritten": 0,
+        "sqlDurationMs": 3748.056
+      }
+    }
+  },
+  "gate": {
+    "twitchProviderPass": true,
+    "kickProviderPass": true,
+    "schemaMigrationGatePass": true,
+    "accountAggregateMeasured": false,
+    "generationStorageGatePass": false,
+    "generationAuthorizedByThisEvidenceAlone": false
+  },
+  "boundary": {
+    "schemaMigrationMeaning": "provider database headroom is sufficient for the accepted compact-rollup projection under the 450 MB operational ceiling",
+    "generationMeaning": "not authorized because account-wide D1 aggregate storage remains unmeasured",
+    "migrationAppliesData": false,
+    "migrationStartsGeneration": false
+  }
+}
