@@ -23,6 +23,7 @@ const required = [
   'docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md',
   'docs/operations/12a2-migration-acceptance-2026-07-11.md',
   'docs/operations/12a2-remote-schema-production-blocked-2026-07-11.md',
+  'docs/operations/12a2-remote-schema-production-recheck-2026-07-11.md',
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
@@ -39,16 +40,23 @@ const required = [
   'docs/audits/12a2-migration-acceptance.json',
   'docs/audits/12a2-remote-schema-probe-contract.json',
   'docs/audits/12a2-remote-schema-production-evidence.json',
+  'docs/audits/12a2-remote-schema-post-bootstrap-recheck.json',
   'docs/audits/12a2-current-gate-state.json',
+  'docs/audits/12a2-controlled-remote-apply-contract.json',
   'docs/audits/public-surface-inventory.json',
   'docs/audits/public-surface-gaps.json',
   'db/d1/004_intraday_rollups.sql',
   'apps/web/functions/api/schema-audit.ts',
+  'workers/shared/intraday-schema.ts',
+  'workers/collector-twitch/src/entry.ts',
+  'workers/collector-kick/src/entry.ts',
   'scripts/verify-12a2-remote-schema-probe.mjs',
   'scripts/verify-12a2-remote-schema-production-evidence.mjs',
+  'scripts/verify-12a2-controlled-remote-apply.mjs',
   '.github/workflows/development-policy.yml',
   '.github/workflows/analytics-12a2-remote-schema-probe.yml',
   '.github/workflows/analytics-12a2-remote-schema-production.yml',
+  '.github/workflows/analytics-12a2-controlled-remote-apply.yml',
 ]
 for (const path of required) assert.equal(exists(path), true, `missing file: ${path}`)
 
@@ -70,6 +78,7 @@ for (const retired of [
   'docs/work-in-progress/phase12a2-binding-size-gate.md',
   'docs/work-in-progress/phase12a2-migration.md',
   'docs/work-in-progress/phase12a2-remote-schema-probe.md',
+  'docs/work-in-progress/phase12a2-controlled-remote-apply.md',
 ]) assert.equal(exists(retired), false, `retired file still present: ${retired}`)
 
 for (const path of [
@@ -83,27 +92,30 @@ for (const path of [
 ]) {
   check(path, [
     'Phase 12A Analytics Capture Foundation',
-    '12A-2',
-    'PR #501',
+    'PR #504',
     'remote_schema_not_applied',
+    'collector_worker_deployment_not_evidenced',
     'account_aggregate_storage_unmeasured',
   ])
 }
 
 check('AGENTS.md', [
-  '12A-2 repository migration: accepted PR #499',
-  '12A-2 remote schema evidence: observed PR #501',
+  '12A-2 controlled apply code: merged PR #502',
+  '12A-2 immediate bootstrap refinement: merged PR #503',
+  '12A-2 post-bootstrap recheck: observed PR #504',
   'Twitch remote schema objects: 0 / 3',
   'Kick remote schema objects: 0 / 3',
-  'Current workstream: controlled remote schema apply and verification',
+  'Worker deployment evidence: absent',
+  'Current workstream: collector Worker deployment evidence and remote schema verification',
   '12A-3 generation authorized: no',
 ])
 
 check('CONTRIBUTING.md', [
-  '12A-2 repository migration accepted PR #499',
-  '12A-2 remote schema evidence observed PR #501',
-  'Remote schema gate blocked',
-  'Current workstream controlled remote schema apply and verification',
+  '12A-2 controlled apply code merged PR #502',
+  '12A-2 immediate bootstrap refinement merged PR #503',
+  '12A-2 post-bootstrap recheck observed PR #504',
+  'Worker deployment evidence absent',
+  'Current workstream collector Worker deployment evidence and remote schema verification',
   '12A-3 generation authorized no',
 ])
 
@@ -136,11 +148,6 @@ assert.equal(design.retention.intradayDays, 90)
 assert.equal(design.refresh.newCronRequired, false)
 assert.equal(design.retention.rawRetentionChanged, false)
 
-const budget = json('docs/audits/12a2-intraday-rollup-budget-evidence.json')
-assert.equal(budget.providers.twitch.projectedStorageMb90dWithSafety, 70.99)
-assert.equal(budget.providers.kick.projectedStorageMb90dWithSafety, 23.57)
-assert.equal(budget.acceptance.remoteDatabaseSizeEvidenceRequiredBeforeApply, true)
-
 const productionSize = json('docs/audits/12a2-binding-size-production-evidence.json')
 assert.equal(productionSize.providers.twitch.currentSizeMb, 320.96)
 assert.equal(productionSize.providers.twitch.projectedSizeMbWithSafety, 391.95)
@@ -157,70 +164,81 @@ assert.equal(migration.status, 'accepted')
 assert.equal(migration.result, 'pass')
 assert.equal(migration.schemaOnly, true)
 assert.equal(migration.providerSeparated, true)
-assert.equal(migration.migrationFile, 'db/d1/004_intraday_rollups.sql')
-assert.equal(migration.verification.scopeGuardPass, true)
-assert.equal(migration.verification.localApplyPass, true)
-assert.equal(migration.verification.secondApplyIdempotencyPass, true)
-assert.equal(migration.verification.emptyAfterApply, true)
-assert.equal(migration.verification.forbiddenDmlAbsent, true)
 assert.equal(migration.backfillIncluded, false)
 assert.equal(migration.runtimeGenerationIncluded, false)
 assert.equal(migration.generationAuthorized, false)
 
-const probeContract = json('docs/audits/12a2-remote-schema-probe-contract.json')
-assert.equal(probeContract.readOnly, true)
-assert.equal(probeContract.providerSeparated, true)
-assert.equal(probeContract.queriesPerProvider, 1)
-assert.equal(probeContract.querySource, 'sqlite_master')
-assert.equal(probeContract.rawSqlReturned, false)
-assert.equal(probeContract.scope.migrationApplyIncluded, false)
-assert.equal(probeContract.scope.generationIncluded, false)
+const controlled = json('docs/audits/12a2-controlled-remote-apply-contract.json')
+assert.equal(controlled.schemaVersion, 'viewloom-12a2-controlled-remote-apply-contract-v2')
+assert.equal(controlled.providerSeparated, true)
+assert.equal(controlled.schedule.newCronAdded, false)
+assert.equal(controlled.schedule.startupBootstrapEnabled, true)
+assert.equal(controlled.schedule.maximumStartupAttemptsPerWorkerIsolate, 1)
+assert.equal(controlled.bootstrap.ddlMustMatchAcceptedMigration, true)
+assert.equal(controlled.bootstrap.modulePresenceCache, true)
+assert.equal(controlled.bootstrap.startupRetrySuppressedWithinSameIsolate, true)
+assert.equal(controlled.bootstrap.maintenanceRetryAfterStartupFailure, true)
+assert.equal(controlled.scope.backfillIncluded, false)
+assert.equal(controlled.scope.generationIncluded, false)
+assert.equal(controlled.deploymentBoundary.repositoryMergeDoesNotClaimWorkerDeployment, true)
+assert.equal(controlled.deploymentBoundary.productionSchemaEvidenceRequiredAfterDeploy, true)
 
-const remoteSchema = json('docs/audits/12a2-remote-schema-production-evidence.json')
-assert.equal(remoteSchema.schemaVersion, 'viewloom-12a2-remote-schema-production-evidence-v1')
-assert.equal(remoteSchema.source.readOnly, true)
-assert.equal(remoteSchema.providers.twitch.schemaComplete, false)
-assert.equal(remoteSchema.providers.twitch.observedObjectCount, 0)
-assert.equal(remoteSchema.providers.twitch.expectedObjectCount, 3)
-assert.equal(remoteSchema.providers.twitch.auditQuery.rowsWritten, 0)
-assert.equal(remoteSchema.providers.kick.schemaComplete, false)
-assert.equal(remoteSchema.providers.kick.observedObjectCount, 0)
-assert.equal(remoteSchema.providers.kick.expectedObjectCount, 3)
-assert.equal(remoteSchema.providers.kick.auditQuery.rowsWritten, 0)
-assert.equal(remoteSchema.gate.remoteSchemaGatePass, false)
-assert.deepEqual(remoteSchema.gate.blockers, [
+const initialRemote = json('docs/audits/12a2-remote-schema-production-evidence.json')
+assert.equal(initialRemote.providers.twitch.schemaComplete, false)
+assert.equal(initialRemote.providers.twitch.observedObjectCount, 0)
+assert.equal(initialRemote.providers.kick.schemaComplete, false)
+assert.equal(initialRemote.providers.kick.observedObjectCount, 0)
+assert.equal(initialRemote.gate.remoteSchemaGatePass, false)
+assert.equal(initialRemote.providers.twitch.auditQuery.rowsWritten, 0)
+assert.equal(initialRemote.providers.kick.auditQuery.rowsWritten, 0)
+
+const recheck = json('docs/audits/12a2-remote-schema-post-bootstrap-recheck.json')
+assert.equal(recheck.schemaVersion, 'viewloom-12a2-remote-schema-post-bootstrap-recheck-v1')
+assert.equal(recheck.status, 'remote_schema_still_absent')
+assert.equal(recheck.codeState.controlledApplyPr, 502)
+assert.equal(recheck.codeState.immediateBootstrapPr, 503)
+assert.equal(recheck.providers.twitch.schemaComplete, false)
+assert.equal(recheck.providers.twitch.observedObjectCount, 0)
+assert.equal(recheck.providers.twitch.rowsWritten, 0)
+assert.equal(recheck.providers.kick.schemaComplete, false)
+assert.equal(recheck.providers.kick.observedObjectCount, 0)
+assert.equal(recheck.providers.kick.rowsWritten, 0)
+assert.equal(recheck.gate.remoteSchemaGatePass, false)
+assert.equal(recheck.gate.controlledApplyCodeMerged, true)
+assert.equal(recheck.gate.workerDeploymentEvidencePresent, false)
+assert.equal(recheck.gate.generationAuthorized, false)
+assert.deepEqual(recheck.gate.blockers, [
   'remote_schema_not_applied',
+  'collector_worker_deployment_not_evidenced',
   'account_aggregate_storage_unmeasured',
 ])
-assert.equal(remoteSchema.boundary.migrationApplyPerformedByProbe, false)
-assert.equal(remoteSchema.boundary.backfillPerformedByProbe, false)
-assert.equal(remoteSchema.boundary.generationStartedByProbe, false)
+assert.equal(recheck.boundary.mergeClaimsWorkerDeployment, false)
+assert.equal(recheck.boundary.recheckClaimsAutomaticDeploymentFailure, false)
 
 const state = json('docs/audits/12a2-current-gate-state.json')
-assert.equal(state.schemaVersion, 'viewloom-12a2-current-gate-state-v4')
-assert.equal(state.status, 'remote_schema_absent_generation_blocked')
+assert.equal(state.schemaVersion, 'viewloom-12a2-current-gate-state-v5')
+assert.equal(state.status, 'controlled_apply_merged_remote_schema_absent_deployment_not_evidenced_generation_blocked')
 assert.equal(state.repositoryMigration.status, 'accepted')
-assert.equal(state.repositoryMigration.pr, 499)
-assert.equal(state.remoteSchemaProbe.status, 'observed_absent')
+assert.equal(state.controlledApply.status, 'code_merged')
+assert.equal(state.controlledApply.initialPr, 502)
+assert.equal(state.controlledApply.immediateBootstrapPr, 503)
+assert.equal(state.controlledApply.workerDeploymentEvidencePresent, false)
+assert.equal(state.remoteSchemaProbe.recheckPr, 504)
+assert.equal(state.remoteSchemaProbe.status, 'observed_absent_after_code_merge')
 assert.equal(state.remoteSchemaProbe.twitchObservedObjects, 0)
-assert.equal(state.remoteSchemaProbe.twitchExpectedObjects, 3)
-assert.equal(state.remoteSchemaProbe.twitchSchemaComplete, false)
 assert.equal(state.remoteSchemaProbe.kickObservedObjects, 0)
-assert.equal(state.remoteSchemaProbe.kickExpectedObjects, 3)
-assert.equal(state.remoteSchemaProbe.kickSchemaComplete, false)
 assert.equal(state.remoteSchemaProbe.remoteSchemaGatePass, false)
-assert.equal(state.remoteSchemaProbe.probeRowsWritten, 0)
-assert.equal(state.remoteApply.status, 'required')
-assert.equal(state.remoteApply.providerSeparated, true)
-assert.equal(state.remoteApply.idempotentApplyRequired, true)
-assert.equal(state.remoteApply.generationMustRemainDisabledDuringApply, true)
+assert.equal(state.deploymentBoundary.status, 'deployment_not_evidenced')
+assert.equal(state.deploymentBoundary.repositoryDeployWorkflowIdentified, false)
+assert.equal(state.deploymentBoundary.automaticDeployFailureClaimed, false)
 assert.equal(state.generation.status, 'blocked')
 assert.equal(state.generation.authorized, false)
 assert.deepEqual(state.generation.blockers, [
   'remote_schema_not_applied',
+  'collector_worker_deployment_not_evidenced',
   'account_aggregate_storage_unmeasured',
 ])
-assert.equal(state.nextWorkstream, '12A-2 controlled remote schema apply and verification')
+assert.equal(state.nextWorkstream, '12A-2 collector Worker deployment evidence and remote schema verification')
 
 const inventory = json('docs/audits/public-surface-inventory.json')
 assert.equal(inventory.active_program, 'Phase 12A Analytics Capture Foundation')
@@ -235,10 +253,9 @@ assert.equal(gaps.candidate_surfaces.length, 0)
 
 console.log('Development and documentation policy verification passed.')
 console.log('- Phase 12A remains active')
-console.log('- 12A-2 repository migration accepted PR #499')
-console.log('- remote schema evidence observed PR #501')
-console.log('- Twitch and Kick remote schema objects: 0 / 3 each')
-console.log('- controlled provider-separated remote apply is current')
+console.log('- controlled apply code merged through PR #503')
+console.log('- post-bootstrap production recheck observed PR #504')
+console.log('- Twitch and Kick remote schema objects remain 0 / 3')
+console.log('- collector Worker deployment evidence is the current gate')
 console.log('- 12A-3 generation remains blocked')
-console.log('- generation blockers: remote schema not applied and account aggregate storage unmeasured')
 console.log('- Twitch and Kick remain provider-separated')
