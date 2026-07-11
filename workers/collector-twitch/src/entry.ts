@@ -14,15 +14,17 @@ export default {
   },
 
   async scheduled(event: ScheduledEvent, env: Env): Promise<void> {
-    await collector.scheduled(event, env)
-
-    const schemaBootstrap = await maybeApplyIntradaySchema(env.DB_TWITCH_HOT)
-    if (schemaBootstrap.attempted) {
-      console.log(JSON.stringify({
-        event: 'intraday_schema_bootstrap',
-        provider: 'twitch',
-        ...schemaBootstrap,
-      }))
+    try {
+      await collector.scheduled(event, env)
+    } finally {
+      const schemaBootstrap = await maybeApplyIntradaySchema(env.DB_TWITCH_HOT)
+      if (schemaBootstrap.attempted) {
+        console.log(JSON.stringify({
+          event: 'intraday_schema_bootstrap',
+          provider: 'twitch',
+          ...schemaBootstrap,
+        }))
+      }
     }
   },
 }
