@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "viewloom-12a2-collector-worker-deploy-evidence-v1",
+  "workstream": "12A-2 collector Worker deployment evidence and remote schema verification",
+  "status": "accepted",
+  "result": "pass",
+  "observedAt": "2026-07-11T16:01:17.970Z",
+  "acceptanceIdentity": {
+    "pr": 506,
+    "headSha": "6d83eeee128b205bf6656aa2b9eb44ea43c5ed3f",
+    "workflowName": "One-time 12A2 Collector Deploy CLI",
+    "workflowRunId": 29158855070,
+    "artifactId": 8250263833,
+    "artifactName": "phase12a2-one-time-collector-deploy-cli",
+    "artifactDigest": "sha256:de3bb82932e4fc88b3460076353a8df884b570a650e15136cba566f30d9ba0cd"
+  },
+  "deployment": {
+    "method": "wrangler@4 CLI",
+    "cloudflareSecretsPresent": true,
+    "secretValuesIncluded": false,
+    "providerSeparated": true,
+    "twitch": {
+      "worker": "viewloom-collector-twitch",
+      "outcome": "success",
+      "exitCode": 0,
+      "binding": "DB_TWITCH_HOT",
+      "databaseName": "vl_twitch_hot",
+      "uploadSeconds": 1.3,
+      "triggerDeploySeconds": 0.57
+    },
+    "kick": {
+      "worker": "viewloom-collector-kick",
+      "outcome": "success",
+      "exitCode": 0,
+      "binding": "DB_KICK_HOT",
+      "databaseName": "vl_kick_hot",
+      "uploadSeconds": 1.19,
+      "triggerDeploySeconds": 0.57
+    }
+  },
+  "remoteSchema": {
+    "source": "production /api/schema-audit",
+    "readOnly": true,
+    "twitch": {
+      "schemaComplete": true,
+      "observedObjectCount": 3,
+      "expectedObjectCount": 3,
+      "rowsRead": 21,
+      "rowsWritten": 0,
+      "sqlDurationMs": 0.188,
+      "databaseSizeBytes": 341442560,
+      "databaseSizeMb": 325.63
+    },
+    "kick": {
+      "schemaComplete": true,
+      "observedObjectCount": 3,
+      "expectedObjectCount": 3,
+      "rowsRead": 21,
+      "rowsWritten": 0,
+      "sqlDurationMs": 0.226,
+      "databaseSizeBytes": 279666688,
+      "databaseSizeMb": 266.71
+    }
+  },
+  "gate": {
+    "workerDeploymentEvidencePresent": true,
+    "twitchRemoteSchemaComplete": true,
+    "kickRemoteSchemaComplete": true,
+    "remoteSchemaGatePass": true,
+    "accountAggregateMeasured": false,
+    "generationStorageGatePass": false,
+    "generationAuthorized": false,
+    "remainingBlockers": [
+      "account_aggregate_storage_unmeasured"
+    ]
+  },
+  "boundary": {
+    "directD1ExecuteUsed": false,
+    "backfillPerformed": false,
+    "rollupGenerationStarted": false,
+    "rawRetentionChanged": false,
+    "newCronAdded": false,
+    "categoryCaptureActivated": false,
+    "crossProviderAnalyticsAdded": false
+  }
+}

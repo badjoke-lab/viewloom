@@ -1,7 +1,7 @@
 # ViewLoom current roadmap
 
 Status: source of truth
-Last updated: 2026-07-11
+Last updated: 2026-07-12
 
 ```text
 Phase 12A Analytics Capture Foundation active
@@ -10,15 +10,13 @@ Phase 12A Analytics Capture Foundation active
 12A-2 design budget accepted PR #494
 12A-2 production size evidence accepted PR #498
 12A-2 repository migration accepted PR #499
-12A-2 remote schema evidence observed PR #501
-12A-2 controlled apply code merged PR #502
-12A-2 immediate bootstrap refinement merged PR #503
-12A-2 post-bootstrap recheck observed PR #504
-Twitch remote schema objects 0 / 3
-Kick remote schema objects 0 / 3
-Worker deployment evidence absent
-Remote schema gate blocked
-Current workstream collector Worker deployment evidence and remote schema verification
+12A-2 controlled apply code merged PRs #502-#503
+12A-2 collector deployment and remote schema accepted PR #506
+Twitch remote schema objects 3 / 3
+Kick remote schema objects 3 / 3
+Worker deployment evidence present
+Remote schema gate pass
+Current workstream 12A-3 generation storage and execution gate
 12A-3 generation authorized no
 ```
 
@@ -32,74 +30,45 @@ Current workstream collector Worker deployment evidence and remote schema verifi
 - 12A-2 budget evidence: `../audits/12a2-intraday-rollup-budget-evidence.json`
 - 12A-2 production size evidence: `../audits/12a2-binding-size-production-evidence.json`
 - 12A-2 migration acceptance: `../audits/12a2-migration-acceptance.json`
-- 12A-2 initial remote schema evidence: `../audits/12a2-remote-schema-production-evidence.json`
-- 12A-2 post-bootstrap recheck: `../audits/12a2-remote-schema-post-bootstrap-recheck.json`
+- 12A-2 deployment evidence: `../audits/12a2-collector-worker-deploy-evidence.json`
 - 12A-2 current state: `../audits/12a2-current-gate-state.json`
 
-## Accepted 12A-2 provider size evidence
+## Accepted production state
 
 ```text
-Twitch current/projected 320.96 / 391.95 MB
-Kick current/projected   264.38 / 287.95 MB
+Twitch projected with safety 391.95 MB
+Kick projected with safety   287.95 MB
 schemaMigrationGatePass true
-```
 
-## Accepted repository migration
-
-```text
-db/d1/004_intraday_rollups.sql
-streamer_intraday_rollups
-idx_intraday_streamer_day
-intraday_rollup_status
-```
-
-Local scope, apply, idempotency, schema-shape, empty-table, and no-DML checks passed.
-
-## Controlled apply code state
-
-```text
-initial controlled apply PR #502 merged
-immediate bootstrap refinement PR #503 merged
-provider-separated bindings yes
-public DDL endpoint no
-new cron no
-backfill no
-generation no
-```
-
-The code allows one immediate bootstrap attempt per Worker isolate, caches known-present state in warm isolates, and retains bounded maintenance retries. Repository merge does not prove Worker deployment.
-
-## Post-bootstrap production recheck
-
-```text
-Twitch schemaComplete false
-Twitch observed objects 0 / 3
-Kick schemaComplete false
-Kick observed objects 0 / 3
-remoteSchemaGatePass false
+Twitch Worker deployment success
+Twitch schemaComplete true; objects 3 / 3
+Kick Worker deployment success
+Kick schemaComplete true; objects 3 / 3
+remoteSchemaGatePass true
 probe rowsWritten 0
-workerDeploymentEvidencePresent false
 ```
 
-The controlled apply code is merged, but remote schema remains absent and collector Worker deployment is not evidenced. Historical runbooks treat collector deployment as a Cloudflare-side step, and no repository collector deploy workflow has been identified. The recheck does not claim universal automatic deployment failure.
+The permanent deployment path uses direct Wrangler 4 CLI with separate provider working directories and bindings. Pull requests verify only; main push and manual dispatch may deploy.
 
-## Current blockers
+## Closed blockers
 
 ```text
 remote_schema_not_applied
 collector_worker_deployment_not_evidenced
+```
+
+## Current blocker
+
+```text
 account_aggregate_storage_unmeasured
 ```
 
-12A-3 generation remains unauthorized.
+Therefore 12A-3 generation remains unauthorized.
 
 ## Forward sequence
 
 ```text
-collector Worker deployment evidence
-  -> controlled bootstrap execution
-  -> read-only remote schema verification
-  -> 12A-3 generation storage and execution gate
+12A-3 generation storage and execution gate
   -> bounded intraday rollup generation
   -> 12A-4 category capture foundation
   -> 12A-5 foundation acceptance and accumulation handoff

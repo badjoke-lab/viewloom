@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "viewloom-12a2-collector-worker-deploy-contract-v1",
+  "schemaVersion": "viewloom-12a2-collector-worker-deploy-contract-v2",
   "workstream": "12A-2 collector Worker deployment evidence and remote schema verification",
-  "status": "implementation_candidate",
+  "status": "accepted",
   "workflow": ".github/workflows/deploy-collector-workers.yml",
-  "deploymentAction": "cloudflare/wrangler-action@v3",
+  "deploymentMethod": "wrangler@4 CLI",
   "wranglerVersion": "4",
   "secrets": [
     "CLOUDFLARE_API_TOKEN",
@@ -43,6 +43,14 @@
     "kickRequiredObjects": 3,
     "rowsWrittenRequired": 0,
     "artifactName": "phase12a2-collector-worker-deploy"
+  },
+  "acceptedEvidence": {
+    "workflowRunId": 29158855070,
+    "artifactId": 8250263833,
+    "artifactDigest": "sha256:de3bb82932e4fc88b3460076353a8df884b570a650e15136cba566f30d9ba0cd",
+    "twitchDeployPass": true,
+    "kickDeployPass": true,
+    "remoteSchemaGatePass": true
   },
   "scope": {
     "pagesDeployIncluded": false,

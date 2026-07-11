@@ -1,29 +1,22 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v5",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v6",
   "workstream": "12A-2 compact intraday rollup design and migration",
-  "status": "controlled_apply_merged_remote_schema_absent_deployment_not_evidenced_generation_blocked",
+  "status": "collector_deployed_remote_schema_complete_generation_blocked",
   "design": {
     "status": "accepted",
     "pr": 494,
-    "mergeSha": "cc553861fa9d5959ca060a17ca08dd173ea16db0",
     "contract": "docs/audits/12a2-intraday-rollup-design-contract.json",
     "budgetEvidence": "docs/audits/12a2-intraday-rollup-budget-evidence.json",
-    "acceptance": "docs/operations/12a2-intraday-rollup-design-acceptance-2026-07-11.md",
     "twitchSafeProjectionMb": 70.99,
     "kickSafeProjectionMb": 23.57,
     "combinedSafeProjectionMb": 94.56
   },
   "bindingSizeGate": {
-    "sourcePr": 497,
+    "status": "accepted",
     "evidencePr": 498,
     "evidence": "docs/audits/12a2-binding-size-production-evidence.json",
-    "status": "accepted",
-    "twitchCurrentSizeMb": 320.96,
     "twitchProjectedSizeMbWithSafety": 391.95,
-    "twitchProviderPass": true,
-    "kickCurrentSizeMb": 264.38,
     "kickProjectedSizeMbWithSafety": 287.95,
-    "kickProviderPass": true,
     "schemaMigrationGatePass": true,
     "accountAggregateMeasured": false,
     "generationStorageGatePass": false
@@ -31,7 +24,6 @@
   "repositoryMigration": {
     "status": "accepted",
     "pr": 499,
-    "mergeSha": "225ca969730b56678de68d9d5a1af1b505d9451f",
     "migrationFile": "db/d1/004_intraday_rollups.sql",
     "acceptance": "docs/audits/12a2-migration-acceptance.json",
     "localApplyVerified": true,
@@ -40,52 +32,44 @@
     "runtimeGenerationStarted": false
   },
   "controlledApply": {
-    "status": "code_merged",
-    "initialPr": 502,
-    "initialMergeSha": "83e55c2a76d22fc2346522ce33d04eb550df8336",
-    "immediateBootstrapPr": 503,
-    "immediateBootstrapMergeSha": "ac4eb736929fd78061d2250e8dd2b91420723a45",
+    "status": "deployed_and_verified",
+    "codePrs": [502, 503],
+    "deployWorkflowPr": 505,
+    "acceptancePr": 506,
+    "deploymentMethod": "wrangler@4 CLI",
+    "deploymentEvidence": "docs/audits/12a2-collector-worker-deploy-evidence.json",
+    "acceptance": "docs/operations/12a2-collector-worker-deploy-acceptance-2026-07-12.md",
     "providerSeparated": true,
+    "workerDeploymentEvidencePresent": true,
     "publicDdlEndpointAdded": false,
+    "directD1ExecuteUsed": false,
     "newCronAdded": false,
     "backfillIncluded": false,
-    "generationIncluded": false,
-    "workerDeploymentEvidencePresent": false
+    "generationIncluded": false
   },
   "remoteSchemaProbe": {
-    "routePr": 500,
-    "routeMergeSha": "dc219649a4f2202614488386b996ddb53f5f556d",
-    "initialEvidencePr": 501,
-    "initialEvidence": "docs/audits/12a2-remote-schema-production-evidence.json",
-    "recheckPr": 504,
-    "recheckEvidence": "docs/audits/12a2-remote-schema-post-bootstrap-recheck.json",
-    "recheckRecord": "docs/operations/12a2-remote-schema-production-recheck-2026-07-11.md",
-    "status": "observed_absent_after_code_merge",
-    "twitchObservedObjects": 0,
+    "status": "complete",
+    "twitchObservedObjects": 3,
     "twitchExpectedObjects": 3,
-    "twitchSchemaComplete": false,
-    "kickObservedObjects": 0,
+    "twitchSchemaComplete": true,
+    "kickObservedObjects": 3,
     "kickExpectedObjects": 3,
-    "kickSchemaComplete": false,
-    "remoteSchemaGatePass": false,
-    "probeRowsWritten": 0
+    "kickSchemaComplete": true,
+    "remoteSchemaGatePass": true,
+    "probeRowsWritten": 0,
+    "productionGeneratedAt": "2026-07-11T16:01:17.970Z"
   },
-  "deploymentBoundary": {
-    "status": "deployment_not_evidenced",
-    "repositoryDeployWorkflowIdentified": false,
-    "historicalRunbookTreatsCollectorDeployAsCloudflareSideStep": true,
-    "automaticDeployFailureClaimed": false,
-    "nextAction": "deploy collector Worker code through an authorized Cloudflare-side process or produce independent deployment evidence, then rerun read-only schema probe"
-  },
+  "closedBlockers": [
+    "remote_schema_not_applied",
+    "collector_worker_deployment_not_evidenced"
+  ],
   "generation": {
     "status": "blocked",
     "authorized": false,
     "blockers": [
-      "remote_schema_not_applied",
-      "collector_worker_deployment_not_evidenced",
       "account_aggregate_storage_unmeasured"
     ],
     "phase": "12A-3"
   },
-  "nextWorkstream": "12A-2 collector Worker deployment evidence and remote schema verification"
+  "nextWorkstream": "12A-3 generation storage and execution gate"
 }
