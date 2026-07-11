@@ -1,9 +1,11 @@
 # 12A-2 remote schema production evidence after collector deploy
 
 Date: 2026-07-12
-Status: evidence refresh trigger
+Status: second evidence refresh after the 15:30 UTC collector cron
 
 Purpose: collect fresh provider-separated production schema evidence after merge of PR #505, which added the GitHub Actions collector Worker deployment workflow using repository Cloudflare secrets.
+
+The first refresh occurred before the next five-minute collector cron and still observed 0 / 3 objects for both providers. This second refresh is intentionally triggered after the 15:30 UTC cron boundary.
 
 This record does not claim deployment success. The `Analytics 12A2 Remote Schema Production` workflow and its artifact are authoritative.
 
