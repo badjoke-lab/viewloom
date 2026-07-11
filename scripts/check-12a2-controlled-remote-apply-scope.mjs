@@ -21,7 +21,6 @@ const allowedRuntime = new Set([
 const runtimeChanges = changed.filter((path) => path.startsWith('workers/'))
 const forbiddenRuntime = runtimeChanges.filter((path) => !allowedRuntime.has(path))
 assert.deepEqual(forbiddenRuntime, [], `controlled apply branch changed unapproved worker runtime paths:\n${forbiddenRuntime.join('\n')}`)
-assert.ok(runtimeChanges.length > 0, 'controlled apply branch must change at least one approved worker runtime path')
 
 for (const forbiddenPrefix of ['apps/web/functions/', 'apps/web/src/', 'db/d1/']) {
   const matches = changed.filter((path) => path.startsWith(forbiddenPrefix))
@@ -31,6 +30,7 @@ for (const forbiddenPrefix of ['apps/web/functions/', 'apps/web/src/', 'db/d1/']
 console.log('12A-2 controlled remote apply scope verification passed.')
 console.log(`- changed files inspected: ${changed.length}`)
 console.log(`- approved worker runtime paths changed: ${runtimeChanges.length}`)
+console.log(`- documentation-only closeout: ${runtimeChanges.length === 0 ? 'yes' : 'no'}`)
 console.log('- unapproved worker runtime changes: 0')
 console.log('- collector index.ts changes: 0')
 console.log('- web/API changes: 0')
