@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "viewloom-12a2-controlled-remote-apply-contract-v1",
+  "workstream": "12A-2 controlled remote schema apply and verification",
+  "status": "implementation_candidate",
+  "acceptedMigrationFile": "db/d1/004_intraday_rollups.sql",
+  "sharedBootstrapModule": "workers/shared/intraday-schema.ts",
+  "providerSeparated": true,
+  "providers": {
+    "twitch": {
+      "worker": "viewloom-collector-twitch",
+      "entry": "workers/collector-twitch/src/entry.ts",
+      "binding": "DB_TWITCH_HOT",
+      "databaseName": "vl_twitch_hot"
+    },
+    "kick": {
+      "worker": "viewloom-collector-kick",
+      "entry": "workers/collector-kick/src/entry.ts",
+      "binding": "DB_KICK_HOT",
+      "databaseName": "vl_kick_hot"
+    }
+  },
+  "schedule": {
+    "newCronAdded": false,
+    "existingCollectorCron": "*/5 * * * *",
+    "maintenanceWindowsUtc": [
+      "00:20-00:24",
+      "12:20-12:24"
+    ],
+    "maximumBootstrapAttemptsPerProviderPerDay": 2
+  },
+  "bootstrap": {
+    "preflightReadOnlyProbe": true,
+    "preflightObjectCount": 3,
+    "ddlStatementCount": 3,
+    "ddlMustMatchAcceptedMigration": true,
+    "idempotent": true,
+    "skipDdlWhenAllObjectsPresent": true,
+    "failureContained": true,
+    "collectorResultPreserved": true
+  },
+  "scope": {
+    "backfillIncluded": false,
+    "generationIncluded": false,
+    "retentionChanged": false,
+    "categoryCaptureIncluded": false,
+    "providerStartedAtIncluded": false,
+    "exactSessionFieldsIncluded": false,
+    "crossProviderAnalyticsIncluded": false
+  },
+  "deploymentBoundary": {
+    "repositoryMergeDoesNotClaimWorkerDeployment": true,
+    "productionSchemaEvidenceRequiredAfterDeploy": true,
+    "generationMustRemainDisabled": true
+  }
+}
