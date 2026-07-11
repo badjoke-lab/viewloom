@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v1",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v2",
   "workstream": "12A-2 compact intraday rollup design and migration",
-  "status": "blocked_before_migration",
+  "status": "schema_migration_authorized_generation_blocked",
   "design": {
     "status": "accepted",
     "pr": 494,
@@ -13,7 +13,7 @@
     "kickSafeProjectionMb": 23.57,
     "combinedSafeProjectionMb": 94.56
   },
-  "remoteSizeGate": {
+  "legacyControlPlaneGate": {
     "toolingStatus": "installed",
     "pr": 495,
     "mergeSha": "bc336bd1739472f47b8063afa586936a105c6851",
@@ -21,20 +21,37 @@
     "blockedRecord": "docs/operations/12a2-remote-d1-size-gate-blocked-2026-07-11.md",
     "status": "blocked",
     "blocker": "cloudflare_credentials_missing",
-    "migrationStorageGatePass": false
+    "supersededForProviderSchemaGate": true
+  },
+  "bindingSizeGate": {
+    "sourcePr": 497,
+    "sourceMergeSha": "18724cf2ad130447b92efc8a39c772659d421d17",
+    "evidencePr": 498,
+    "evidence": "docs/audits/12a2-binding-size-production-evidence.json",
+    "acceptance": "docs/operations/12a2-binding-size-production-acceptance-2026-07-11.md",
+    "status": "accepted",
+    "twitchCurrentSizeMb": 320.96,
+    "twitchProjectedSizeMbWithSafety": 391.95,
+    "twitchProviderPass": true,
+    "kickCurrentSizeMb": 264.38,
+    "kickProjectedSizeMbWithSafety": 287.95,
+    "kickProviderPass": true,
+    "schemaMigrationGatePass": true,
+    "accountAggregateMeasured": false,
+    "generationStorageGatePass": false
   },
   "migration": {
-    "status": "not_started",
-    "authorized": false,
+    "status": "authorized_not_started",
+    "authorized": true,
+    "nextBranch": "work-analytics-12a2-migration",
     "schemaApplied": false,
+    "dataBackfillAllowed": false,
     "runtimeGenerationStarted": false
   },
-  "resumeCondition": {
-    "requiredRepositorySecrets": [
-      "CLOUDFLARE_API_TOKEN",
-      "CLOUDFLARE_ACCOUNT_ID"
-    ],
-    "action": "rerun Analytics 12A2 Remote D1 Size Gate on main",
-    "nextMigrationBranchOnlyAfterGatePass": "work-analytics-12a2-migration"
+  "generation": {
+    "status": "blocked",
+    "authorized": false,
+    "blocker": "account_aggregate_storage_unmeasured",
+    "phase": "12A-3"
   }
 }
