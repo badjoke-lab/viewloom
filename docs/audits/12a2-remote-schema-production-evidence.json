@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "viewloom-12a2-remote-schema-production-evidence-v1",
+  "workstream": "12A-2 remote schema apply and verification gate",
+  "observedAt": "2026-07-11T06:15:48.354Z",
+  "productionGeneratedAt": "2026-07-11T06:15:48.315Z",
+  "acceptanceIdentity": {
+    "pr": 501,
+    "headSha": "18ee65ff21681852cac22a52c6fbf406ed4f16c1",
+    "workflowRunId": 29142529475,
+    "artifactId": 8245626079,
+    "artifactName": "phase12a2-remote-schema-production",
+    "artifactDigest": "sha256:e910df73fd9f94afc205a8254859c79bf27ff1226c5d1c087e7aefc3924845f9"
+  },
+  "source": {
+    "origin": "https://vl.badjoke-lab.com",
+    "path": "/api/schema-audit",
+    "mode": "read-only-schema-probe",
+    "querySource": "sqlite_master",
+    "readOnly": true
+  },
+  "providers": {
+    "twitch": {
+      "schemaComplete": false,
+      "observedObjectCount": 0,
+      "expectedObjectCount": 3,
+      "objects": [
+        {
+          "type": "table",
+          "name": "streamer_intraday_rollups",
+          "present": false,
+          "observedType": null,
+          "definitionMatches": false
+        },
+        {
+          "type": "index",
+          "name": "idx_intraday_streamer_day",
+          "present": false,
+          "observedType": null,
+          "definitionMatches": false
+        },
+        {
+          "type": "table",
+          "name": "intraday_rollup_status",
+          "present": false,
+          "observedType": null,
+          "definitionMatches": false
+        }
+      ],
+      "auditQuery": {
+        "rowsRead": 14,
+        "rowsWritten": 0,
+        "sqlDurationMs": 0.286,
+        "databaseSizeBytes": 336785408
+      }
+    },
+    "kick": {
+      "schemaComplete": false,
+      "observedObjectCount": 0,
+      "expectedObjectCount": 3,
+      "objects": [
+        {
+          "type": "table",
+          "name": "streamer_intraday_rollups",
+          "present": false,
+          "observedType": null,
+          "definitionMatches": false
+        },
+        {
+          "type": "index",
+          "name": "idx_intraday_streamer_day",
+          "present": false,
+          "observedType": null,
+          "definitionMatches": false
+        },
+        {
+          "type": "table",
+          "name": "intraday_rollup_status",
+          "present": false,
+          "observedType": null,
+          "definitionMatches": false
+        }
+      ],
+      "auditQuery": {
+        "rowsRead": 14,
+        "rowsWritten": 0,
+        "sqlDurationMs": 0.132,
+        "databaseSizeBytes": 277336064
+      }
+    }
+  },
+  "gate": {
+    "twitchRemoteSchemaComplete": false,
+    "kickRemoteSchemaComplete": false,
+    "remoteSchemaGatePass": false,
+    "accountAggregateMeasured": false,
+    "generationStorageGatePass": false,
+    "generationAuthorizedByThisEvidenceAlone": false,
+    "blockers": [
+      "remote_schema_not_applied",
+      "account_aggregate_storage_unmeasured"
+    ]
+  },
+  "boundary": {
+    "migrationApplyPerformedByProbe": false,
+    "backfillPerformedByProbe": false,
+    "generationStartedByProbe": false,
+    "rawSqlDefinitionsPersisted": false
+  }
+}
