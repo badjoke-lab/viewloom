@@ -1,0 +1,165 @@
+name: One-time 12A2 Collector Deploy
+
+on:
+  push:
+    branches:
+      - work-analytics-12a2-post-deploy-schema-evidence
+    paths:
+      - '.github/workflows/one-time-12a2-collector-deploy.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: viewloom-one-time-12a2-collector-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy-and-verify:
+    if: github.repository == 'badjoke-lab/viewloom' && github.ref == 'refs/heads/work-analytics-12a2-post-deploy-schema-evidence'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: '506'
+      PRODUCTION_ORIGIN: https://vl.badjoke-lab.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require Cloudflare secrets
+        id: secrets
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - name: Deploy Twitch collector
+        id: twitch
+        continue-on-error: true
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4'
+          workingDirectory: workers/collector-twitch
+          command: deploy
+
+      - name: Deploy Kick collector
+        id: kick
+        continue-on-error: true
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4'
+          workingDirectory: workers/collector-kick
+          command: deploy
+
+      - name: Poll production schema
+        id: schema
+        continue-on-error: true
+        shell: bash
+        run: |
+          mkdir -p artifacts/one-time-deploy
+          passed=false
+          for attempt in $(seq 1 20); do
+            curl --fail --silent --show-error \
+              -H 'accept: application/json' \
+              -H 'cache-control: no-cache' \
+              "$PRODUCTION_ORIGIN/api/schema-audit" \
+              > artifacts/one-time-deploy/schema.json
+
+            twitch=$(jq -r '.providers[] | select(.provider == "twitch") | .observedObjectCount' artifacts/one-time-deploy/schema.json)
+            kick=$(jq -r '.providers[] | select(.provider == "kick") | .observedObjectCount' artifacts/one-time-deploy/schema.json)
+            twitch_complete=$(jq -r '.providers[] | select(.provider == "twitch") | .schemaComplete' artifacts/one-time-deploy/schema.json)
+            kick_complete=$(jq -r '.providers[] | select(.provider == "kick") | .schemaComplete' artifacts/one-time-deploy/schema.json)
+            twitch_written=$(jq -r '.providers[] | select(.provider == "twitch") | .auditQuery.rowsWritten' artifacts/one-time-deploy/schema.json)
+            kick_written=$(jq -r '.providers[] | select(.provider == "kick") | .auditQuery.rowsWritten' artifacts/one-time-deploy/schema.json)
+
+            echo "attempt=$attempt twitch=$twitch/3 kick=$kick/3"
+            if [ "$twitch_complete" = true ] && [ "$kick_complete" = true ] && [ "$twitch_written" = 0 ] && [ "$kick_written" = 0 ]; then
+              passed=true
+              break
+            fi
+            sleep 30
+          done
+
+          echo "passed=$passed" >> "$GITHUB_OUTPUT"
+          test "$passed" = true
+
+      - name: Upload one-time deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a2-one-time-collector-deploy
+          path: artifacts/one-time-deploy/schema.json
+          if-no-files-found: warn
+
+      - name: Comment deployment result on PR
+        if: always()
+        shell: bash
+        env:
+          TWITCH_OUTCOME: ${{ steps.twitch.outcome }}
+          KICK_OUTCOME: ${{ steps.kick.outcome }}
+          SCHEMA_OUTCOME: ${{ steps.schema.outcome }}
+          SCHEMA_PASSED: ${{ steps.schema.outputs.passed }}
+        run: |
+          twitch_objects='unknown'
+          kick_objects='unknown'
+          twitch_complete='unknown'
+          kick_complete='unknown'
+          twitch_written='unknown'
+          kick_written='unknown'
+          generated_at='unknown'
+
+          if [ -f artifacts/one-time-deploy/schema.json ]; then
+            twitch_objects=$(jq -r '.providers[] | select(.provider == "twitch") | .observedObjectCount' artifacts/one-time-deploy/schema.json)
+            kick_objects=$(jq -r '.providers[] | select(.provider == "kick") | .observedObjectCount' artifacts/one-time-deploy/schema.json)
+            twitch_complete=$(jq -r '.providers[] | select(.provider == "twitch") | .schemaComplete' artifacts/one-time-deploy/schema.json)
+            kick_complete=$(jq -r '.providers[] | select(.provider == "kick") | .schemaComplete' artifacts/one-time-deploy/schema.json)
+            twitch_written=$(jq -r '.providers[] | select(.provider == "twitch") | .auditQuery.rowsWritten' artifacts/one-time-deploy/schema.json)
+            kick_written=$(jq -r '.providers[] | select(.provider == "kick") | .auditQuery.rowsWritten' artifacts/one-time-deploy/schema.json)
+            generated_at=$(jq -r '.generatedAt' artifacts/one-time-deploy/schema.json)
+          fi
+
+          cat > /tmp/deploy-comment.md <<EOF
+          ## One-time 12A-2 collector deployment result
+
+          \`\`\`text
+          Twitch deploy outcome: $TWITCH_OUTCOME
+          Kick deploy outcome: $KICK_OUTCOME
+          Schema polling outcome: $SCHEMA_OUTCOME
+          Schema gate passed: ${SCHEMA_PASSED:-false}
+
+          Twitch schema: $twitch_objects / 3
+          Twitch complete: $twitch_complete
+          Twitch probe rows written: $twitch_written
+
+          Kick schema: $kick_objects / 3
+          Kick complete: $kick_complete
+          Kick probe rows written: $kick_written
+
+          Production generated at: $generated_at
+          Workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          \`\`\`
+
+          No secret value is included in this comment. No backfill or rollup generation was performed.
+          EOF
+
+          gh pr comment "$PR_NUMBER" --body-file /tmp/deploy-comment.md
+
+      - name: Fail when deployment or schema gate failed
+        if: always()
+        shell: bash
+        env:
+          TWITCH_OUTCOME: ${{ steps.twitch.outcome }}
+          KICK_OUTCOME: ${{ steps.kick.outcome }}
+          SCHEMA_PASSED: ${{ steps.schema.outputs.passed }}
+        run: |
+          test "$TWITCH_OUTCOME" = success
+          test "$KICK_OUTCOME" = success
+          test "$SCHEMA_PASSED" = true
