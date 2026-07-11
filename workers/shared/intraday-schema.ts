@@ -3,6 +3,7 @@ export type IntradaySchemaBootstrapResult = {
   schemaPresent: boolean
   applied: boolean
   observedObjectCount?: number
+  reason?: 'startup' | 'maintenance' | 'known-present' | 'startup-attempt-used'
   error?: string
 }
 
@@ -54,13 +55,35 @@ const EXPECTED_SCHEMA_OBJECTS = [
   'intraday_rollup_status',
 ] as const
 
+let schemaKnownPresent = false
+let startupAttemptUsed = false
+
 export async function maybeApplyIntradaySchema(
   db: D1Database,
   now = new Date(),
 ): Promise<IntradaySchemaBootstrapResult> {
-  if (!shouldRunIntradaySchemaBootstrap(now)) {
-    return { attempted: false, schemaPresent: false, applied: false }
+  const maintenanceWindow = shouldRunIntradaySchemaBootstrap(now)
+
+  if (schemaKnownPresent && !maintenanceWindow) {
+    return {
+      attempted: false,
+      schemaPresent: true,
+      applied: false,
+      reason: 'known-present',
+    }
   }
+
+  if (!maintenanceWindow && startupAttemptUsed) {
+    return {
+      attempted: false,
+      schemaPresent: false,
+      applied: false,
+      reason: 'startup-attempt-used',
+    }
+  }
+
+  const reason = maintenanceWindow ? 'maintenance' : 'startup'
+  if (!maintenanceWindow) startupAttemptUsed = true
 
   try {
     const probe = await db.prepare(`
@@ -71,26 +94,31 @@ export async function maybeApplyIntradaySchema(
 
     const observedObjectCount = Number(probe?.count ?? 0)
     if (observedObjectCount === EXPECTED_SCHEMA_OBJECTS.length) {
+      schemaKnownPresent = true
       return {
         attempted: true,
         schemaPresent: true,
         applied: false,
         observedObjectCount,
+        reason,
       }
     }
 
     await db.batch(INTRADAY_SCHEMA_STATEMENTS.map((statement) => db.prepare(statement)))
+    schemaKnownPresent = true
     return {
       attempted: true,
       schemaPresent: true,
       applied: true,
       observedObjectCount,
+      reason,
     }
   } catch (error) {
     return {
       attempted: true,
       schemaPresent: false,
       applied: false,
+      reason,
       error: error instanceof Error ? error.message : String(error),
     }
   }
