@@ -12,7 +12,8 @@ on:
       - 'scripts/verify-12a2-controlled-remote-apply.mjs'
       - 'scripts/verify-12a2-collector-worker-deploy.mjs'
       - 'docs/audits/12a2-collector-worker-deploy-contract.json'
-      - 'docs/work-in-progress/phase12a2-collector-worker-deploy.md'
+      - 'docs/audits/12a2-collector-worker-deploy-evidence.json'
+      - 'docs/operations/12a2-collector-worker-deploy-acceptance-*.md'
   push:
     branches:
       - main
@@ -57,6 +58,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Wrangler 4
+        run: npm install --global wrangler@4
+
       - name: Require Cloudflare deployment secrets
         shell: bash
         env:
@@ -67,13 +75,13 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID"
 
       - name: Deploy Twitch collector
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '4'
-          workingDirectory: workers/collector-twitch
-          command: deploy
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          cd workers/collector-twitch
+          wrangler deploy
 
   deploy-kick:
     if: github.event_name != 'pull_request'
@@ -82,6 +90,13 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Wrangler 4
+        run: npm install --global wrangler@4
 
       - name: Require Cloudflare deployment secrets
         shell: bash
@@ -93,13 +108,13 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID"
 
       - name: Deploy Kick collector
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '4'
-          workingDirectory: workers/collector-kick
-          command: deploy
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          cd workers/collector-kick
+          wrangler deploy
 
   verify-remote-schema:
     if: github.event_name != 'pull_request'
@@ -145,6 +160,7 @@ jobs:
           {
             echo '## ViewLoom Collector Worker Deployment'
             echo
+            echo '- Deployment method: Wrangler 4 CLI'
             echo '- Twitch Worker deploy requested: yes'
             echo '- Kick Worker deploy requested: yes'
             if [ -f "$ARTIFACT_DIR/schema-evidence.json" ]; then
