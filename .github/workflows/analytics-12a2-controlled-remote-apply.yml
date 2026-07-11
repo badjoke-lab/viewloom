@@ -1,0 +1,61 @@
+name: Analytics 12A2 Controlled Remote Apply
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'workers/shared/intraday-schema.ts'
+      - 'workers/collector-twitch/src/entry.ts'
+      - 'workers/collector-kick/src/entry.ts'
+      - 'workers/collector-twitch/wrangler.toml'
+      - 'workers/collector-kick/wrangler.toml'
+      - 'docs/audits/12a2-controlled-remote-apply-contract.json'
+      - 'scripts/verify-12a2-controlled-remote-apply.mjs'
+      - 'scripts/check-12a2-controlled-remote-apply-scope.mjs'
+      - '.github/workflows/analytics-12a2-controlled-remote-apply.yml'
+      - 'docs/work-in-progress/phase12a2-controlled-remote-apply.md'
+  workflow_dispatch:
+
+concurrency:
+  group: analytics-12a2-controlled-remote-apply-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify controlled apply branch scope
+        run: node scripts/check-12a2-controlled-remote-apply-scope.mjs
+
+      - name: Verify controlled apply contract and migration parity
+        run: node scripts/verify-12a2-controlled-remote-apply.mjs
+
+      - name: Typecheck and verify collectors
+        run: pnpm check:collectors
+
+      - name: Publish controlled apply summary
+        run: |
+          {
+            echo '## ViewLoom 12A-2 Controlled Remote Apply'
+            echo
+            echo '- accepted migration parity: exact after normalization'
+            echo '- providers: Twitch and Kick, separate bindings'
+            echo '- new cron: no'
+            echo '- maintenance windows: 00:20-00:24 and 12:20-12:24 UTC'
+            echo '- preflight: sqlite_master object count'
+            echo '- skip DDL when 3/3 objects are present'
+            echo '- DDL: three idempotent accepted statements'
+            echo '- collection outcome preserved through try/finally'
+            echo '- backfill: none'
+            echo '- generation: none'
+            echo '- merge does not claim worker deployment'
+          } >> "$GITHUB_STEP_SUMMARY"
