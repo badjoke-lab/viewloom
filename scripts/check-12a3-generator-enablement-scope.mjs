@@ -26,6 +26,7 @@ const allowed = new Set([
   'scripts/verify-12a3-generator-enablement.mjs',
   'scripts/check-12a3-generator-enablement-scope.mjs',
   '.github/workflows/analytics-12a3-generator-enablement.yml',
+  '.github/workflows/analytics-12a2-controlled-remote-apply.yml',
   'README.md',
   'AGENTS.md',
   'CONTRIBUTING.md',
@@ -68,4 +69,5 @@ console.log('- accepted generator runtime code changes: 0')
 console.log('- collector index/entry changes: 0')
 console.log('- web/API changes: 0')
 console.log('- migration changes: 0')
+console.log('- legacy 12A-2 gate restricted to its original branch/manual dispatch')
 console.log('- runtime change limited to two explicit Wrangler flags')
