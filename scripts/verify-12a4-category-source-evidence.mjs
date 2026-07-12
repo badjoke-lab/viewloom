@@ -3,16 +3,19 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
-const path = process.argv[2] || 'artifacts/12a4-category-source/evidence.json'
-const requirePass = process.argv.includes('--require-pass')
+const path = process.argv[2] || 'docs/audits/12a4-category-source-audit-evidence.json'
 const evidence = JSON.parse(readFileSync(path, 'utf8'))
 const contract = JSON.parse(readFileSync('docs/audits/12a4-category-source-audit-contract.json', 'utf8'))
 
 assert.equal(evidence.schemaVersion, 'viewloom-12a4-category-source-audit-evidence-v1')
 assert.equal(evidence.workstream, contract.workstream)
 assert.equal(evidence.stage, contract.stage)
-assert.ok(['observed', 'accepted'].includes(evidence.status))
+assert.equal(evidence.status, 'accepted')
 assert.equal(evidence.providerSeparated, true)
+assert.equal(evidence.acceptanceIdentity.pr, 513)
+assert.equal(evidence.acceptanceIdentity.workflowRunId, 29195340633)
+assert.equal(evidence.acceptanceIdentity.artifactId, 8260821948)
+assert.match(evidence.acceptanceIdentity.artifactDigest, /^sha256:[0-9a-f]{64}$/)
 
 for (const provider of ['twitch', 'kick']) {
   const lifecycle = evidence.lifecycle?.[provider]
@@ -26,40 +29,41 @@ for (const provider of ['twitch', 'kick']) {
   assert.equal(lifecycle?.restoreHealthCurlExitCode, 0, `${provider}: restored health curl failed`)
   assert.equal(lifecycle?.restoreHealthHttpStatus, 200, `${provider}: restored health HTTP failed`)
 }
-assert.equal(evidence.gate.lifecyclePass, true)
-assert.equal(evidence.boundaries.mainCollectorsRestored, true)
 
 const twitch = evidence.providers.twitch
 assert.equal(twitch.passes.length, 2)
+assert.equal(twitch.sourceVerified, true)
+assert.equal(twitch.captureApproved, true)
+assert.equal(twitch.selectedSourceContract.providerIdPath, 'game_id')
+assert.equal(twitch.selectedSourceContract.namePath, 'game_name')
 for (const pass of twitch.passes) {
-  assert.equal(pass.source.endpoint, contract.providers.twitch.primarySource)
-  assert.ok(pass.inventory.rowCount > 0)
-  assert.equal(pass.canonicalCandidate.rowCount, pass.inventory.rowCount)
-  assert.equal(pass.canonicalCandidate.providerIdKeyPresent, pass.inventory.rowCount)
-  assert.equal(pass.canonicalCandidate.nameKeyPresent, pass.inventory.rowCount)
-}
-if (twitch.captureApproved) {
-  assert.equal(twitch.sourceVerified, true)
-  assert.equal(twitch.selectedSourceContract.providerIdPath, contract.providers.twitch.expectedProviderIdPath)
-  assert.equal(twitch.selectedSourceContract.namePath, contract.providers.twitch.expectedNamePath)
+  assert.equal(pass.httpStatus, 200)
+  assert.equal(pass.rowCount, 100)
+  assert.equal(pass.providerIdKeyPresent, 100)
+  assert.equal(pass.nameKeyPresent, 100)
+  assert.equal(pass.pairedNonEmpty, 100)
 }
 
 const kick = evidence.providers.kick
 assert.equal(kick.passes.length, 2)
+assert.equal(kick.sourceVerified, true)
+assert.equal(kick.captureApproved, true)
 assert.equal(kick.alternateEvidenceCannotApprovePrimary, true)
-for (const key of ['primaryOfficialLivestreams', 'alternateOfficialChannels', 'publicChannelFallback']) {
-  const source = kick.sources[key]
-  assert.ok(source)
-  assert.ok(Array.isArray(source.stableFields))
-  assert.ok(Array.isArray(source.stableIdentityNamePairs))
-}
-if (kick.captureApproved) {
-  assert.equal(kick.sourceVerified, true)
-  assert.equal(kick.sources.primaryOfficialLivestreams.sourceVerified, true)
-  assert.ok(kick.selectedSourceContract.providerIdPath)
-  assert.ok(kick.selectedSourceContract.namePath)
-  assert.equal(kick.selectedSourceContract.categorySource, contract.providers.kick.primarySource)
-}
+assert.equal(kick.primaryOfficialLivestreams.sourceVerified, true)
+assert.equal(kick.primaryOfficialLivestreams.firstRowCount, 100)
+assert.equal(kick.primaryOfficialLivestreams.secondRowCount, 100)
+assert.equal(kick.selectedSourceContract.providerIdPath, 'category.id')
+assert.equal(kick.selectedSourceContract.namePath, 'category.name')
+assert.equal(kick.selectedSourceContract.minimumPresenceRatio, 1)
+assert.equal(kick.selectedSourceContract.categorySource, contract.providers.kick.primarySource)
+
+assert.equal(evidence.gate.lifecyclePass, true)
+assert.equal(evidence.gate.twitchSourceVerified, true)
+assert.equal(evidence.gate.kickPrimarySourceVerified, true)
+assert.equal(evidence.gate.categorySourceAuditPass, true)
+assert.equal(evidence.gate.sourceContractAccepted, true)
+assert.equal(evidence.gate.storageDesignAuthorized, true)
+assert.equal(evidence.gate.runtimeCaptureAuthorized, false)
 
 for (const value of Object.values(evidence.privacy)) assert.equal(value, false)
 for (const key of [
@@ -73,11 +77,7 @@ for (const key of [
   'crossProviderCategoryIdentityAllowed',
   'combinedProviderCategoryRankingAllowed',
 ]) assert.equal(evidence.boundaries[key], false)
-
-assert.equal(evidence.gate.runtimeCaptureAuthorized, false)
-assert.equal(evidence.gate.storageDesignAuthorized, evidence.gate.categorySourceAuditPass)
-assert.equal(evidence.gate.twitchSourceVerified, twitch.sourceVerified)
-assert.equal(evidence.gate.kickPrimarySourceVerified, kick.sourceVerified)
+assert.equal(evidence.boundaries.mainCollectorsRestored, true)
 
 const serialized = JSON.stringify(evidence)
 for (const forbidden of [
@@ -90,15 +90,8 @@ for (const forbidden of [
   'rawPrefix',
 ]) assert.equal(serialized.includes(forbidden), false, `forbidden evidence content: ${forbidden}`)
 
-if (requirePass) {
-  assert.equal(evidence.gate.categorySourceAuditPass, true, 'category source audit did not pass')
-  assert.equal(twitch.captureApproved, true)
-  assert.equal(kick.captureApproved, true)
-}
-
 console.log('12A-4 category source evidence verification passed.')
-console.log(`- lifecycle: ${evidence.gate.lifecyclePass}`)
-console.log(`- Twitch source verified: ${evidence.gate.twitchSourceVerified}`)
-console.log(`- Kick primary source verified: ${evidence.gate.kickPrimarySourceVerified}`)
-console.log(`- storage design authorized: ${evidence.gate.storageDesignAuthorized}`)
-console.log('- runtime capture authorized: false')
+console.log('- Twitch: game_id / game_name, 100/100 across two probes')
+console.log('- Kick: category.id / category.name, presence ratio 1.0 across two probes')
+console.log('- main collectors restored and healthy')
+console.log('- storage design authorized; runtime capture disabled')

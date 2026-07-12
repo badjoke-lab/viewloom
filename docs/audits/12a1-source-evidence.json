@@ -1,8 +1,9 @@
 {
-  "schemaVersion": "viewloom-12a1-source-evidence-v1",
-  "workstream": "12A-1 analytics field contract",
+  "schemaVersion": "viewloom-12a1-source-evidence-v2",
+  "workstream": "12A-1 analytics field contract with 12A-4 source verification",
   "status": "current",
   "baselineAuthority": "docs/audits/12a0-current-data-capacity-baseline.json",
+  "categoryAuditAuthority": "docs/audits/12a4-category-source-audit-evidence.json",
   "providers": {
     "twitch": {
       "primarySource": {
@@ -25,9 +26,18 @@
       },
       "category": {
         "currentCollectorRetention": false,
-        "primaryPathVerificationStatus": "not_verified_in_viewloom_contract_evidence",
-        "captureApproved": false,
-        "approvalOwner": "12A-4 provider-specific category capture foundation"
+        "primaryPathVerificationStatus": "accepted_live_evidence",
+        "providerIdPath": "game_id",
+        "namePath": "game_name",
+        "fieldPresenceRatio": 1,
+        "probeCount": 2,
+        "rowsPerProbe": 100,
+        "categorySource": "https://api.twitch.tv/helix/streams",
+        "categoryEvidenceStrength": "provider_primary_live_api",
+        "categoryContractVersion": "category-source-v1",
+        "captureApproved": true,
+        "runtimeCaptureStarted": false,
+        "acceptancePr": 513
       }
     },
     "kick": {
@@ -49,20 +59,29 @@
       },
       "category": {
         "currentCollectorRetention": false,
-        "primaryPathVerificationStatus": "unverified",
-        "primaryPathProbe": "workers/collector-kick/scripts/probe-kick-official-livestreams.mjs",
-        "alternateOfficialChannelParserStatus": "category_object_inspected_only_for_title_fallback",
-        "alternateOfficialChannelPath": "workers/collector-kick/src/index.ts",
-        "captureApproved": false,
-        "approvalRule": "A live primary official-livestreams sample must show stable category identity and/or category name fields before capture approval.",
-        "approvalOwner": "12A-4 provider-specific category capture foundation"
+        "primaryPathVerificationStatus": "accepted_live_evidence",
+        "providerIdPath": "category.id",
+        "namePath": "category.name",
+        "fieldPresenceRatio": 1,
+        "probeCount": 2,
+        "rowsPerProbe": 100,
+        "categorySource": "https://api.kick.com/public/v1/livestreams",
+        "categoryEvidenceStrength": "provider_primary_live_api",
+        "categoryContractVersion": "category-source-v1",
+        "captureApproved": true,
+        "runtimeCaptureStarted": false,
+        "acceptancePr": 513,
+        "alternateOfficialChannelPath": "https://api.kick.com/public/v1/channels?slug={slug}",
+        "publicFallbackPath": "https://kick.com/api/v2/channels/{slug}",
+        "alternateEvidenceCannotApprovePrimary": true
       }
     }
   },
   "crossProviderIdentity": {
     "categoryIdentityEquivalenceAllowed": false,
     "channelIdentityEquivalenceAllowed": false,
-    "sessionIdentityEquivalenceAllowed": false
+    "sessionIdentityEquivalenceAllowed": false,
+    "combinedProviderCategoryRankingAllowed": false
   },
-  "decisionBoundary": "12A-1 defines field contracts and source evidence strength only. It does not perform migration or enable capture."
+  "decisionBoundary": "The accepted live source audit approves provider-specific source fields only. Storage design, migration, runtime capture, backfill, and public category analytics remain separate gates."
 }

@@ -1,79 +1,79 @@
 # ViewLoom current roadmap
 
-Status: source of truth
+Status: source of truth  
 Last updated: 2026-07-12
 
 ```text
 Phase 12A Analytics Capture Foundation active
 12A-0 baseline complete PR #490
 12A-1 field contract complete PR #492
-12A-2 design and migration accepted through PR #499
-12A-2 collector deployment and remote schema accepted PR #506
-12A-3 account storage gate accepted PR #507
-12A-3 execution-cost gate accepted PR #508
-12A-3 bounded generator enabled PR #510
-12A-3 production accumulation accepted PR #511
-Twitch remote schema objects 3 / 3
-Kick remote schema objects 3 / 3
-Account D1 databases measured 8 / 8
-Generation storage gate pass
-Generation execution-cost gate pass
-Production generation started yes
-Current workstream 12A-4 provider-specific category capture foundation
+12A-2 design/migration/deploy/schema accepted through PR #506
+12A-3 bounded generation and accumulation complete through PR #511
+12A-4 category source audit accepted PR #513
+Production intraday generation started yes
+Current workstream 12A-4 provider-specific category storage design and budget gate
+Category capture runtime not started
 ```
 
 ## Phase 12A authorities
 
 - Analytics specification: `analytics-observation-system-spec.md`
 - Analytics implementation plan: `analytics-observation-system-plan.md`
-- 12A-0 baseline: `../audits/12a0-current-data-capacity-baseline.json`
 - 12A-1 field contract: `../audits/12a1-analytics-field-contract.json`
-- 12A-2 design contract: `../audits/12a2-intraday-rollup-design-contract.json`
-- 12A-2 budget evidence: `../audits/12a2-intraday-rollup-budget-evidence.json`
-- 12A-2 migration acceptance: `../audits/12a2-migration-acceptance.json`
-- 12A-2 deployment evidence: `../audits/12a2-collector-worker-deploy-evidence.json`
-- 12A-3 storage evidence: `../audits/12a3-account-storage-evidence.json`
-- 12A-3 execution-cost evidence: `../audits/12a3-execution-cost-evidence.json`
+- 12A-1 source evidence: `../audits/12a1-source-evidence.json`
 - 12A-3 generator evidence: `../audits/12a3-generator-enablement-evidence.json`
 - 12A-3 post-merge evidence: `../audits/12a3-postmerge-acceptance-evidence.json`
+- 12A-4 category source contract: `../audits/12a4-category-source-audit-contract.json`
+- 12A-4 category source evidence: `../audits/12a4-category-source-audit-evidence.json`
 - Current state: `../audits/12a2-current-gate-state.json`
 
-## Accepted 12A-3 boundary
+## Accepted 12A-4 source boundary
 
 ```text
-remoteSchemaGatePass true
-generationStorageGatePass true
-generationExecutionCostGatePass true
-boundedGeneratorEnabled true
-postMergeAccumulationPass true
-runtimeGenerationStarted true
-providerSeparated true
-newCronAdded false
-backfillPerformed false
-temporaryVerifiersRetained false
-```
+categorySourceAuditPass true
+storageDesignAuthorized true
+runtimeCaptureAuthorized false
 
-Twitch and Kick now refresh provider-separated intraday rollups during the existing 00:20 and 12:20 UTC maintenance windows. The retained daily limits remain Twitch 600 and Kick 200, with today and yesterday refreshed idempotently.
+Twitch provider id path game_id
+Twitch name path game_name
+Twitch minimum observed presence ratio 1.0
+
+Kick provider id path category.id
+Kick name path category.name
+Kick minimum observed presence ratio 1.0
+
+providerSeparated true
+crossProviderCategoryIdentityAllowed false
+combinedProviderCategoryRankingAllowed false
+mainCollectorsRestored true
+```
 
 ## Current implementation boundary
 
 ```text
-12A-3 complete
-12A-4 category capture foundation current
-category capture runtime not started
-cross-provider analytics not allowed
+12A-3 complete and accumulating
+12A-4-0 source verification complete
+12A-4-1 storage design and budget gate current
+production schema change not authorized
+category runtime capture not authorized
 raw retention unchanged
 new cron not authorized
+backfill not authorized
+category analytics UI not authorized
 ```
+
+The current task is to compare provider-separated category storage options, define coverage language, project storage growth, measure bounded query/write cost, and choose a migration candidate. No runtime capture may start in this step.
 
 ## Forward sequence
 
 ```text
-12A-4 provider-specific category capture foundation
+12A-4 category storage design and budget gate
+  -> migration and disabled runtime implementation
+  -> production capture acceptance
   -> 12A-5 foundation acceptance and accumulation handoff
   -> Phase 13-14 localization with evidence accumulation
   -> Phase 15 capability and calibration audit
   -> Phase 16A-F analytics observation system
 ```
 
-Phase 16 remains gated by Phase 15. Twitch and Kick remain provider-separated.
+Phase 16 remains gated by Phase 15.

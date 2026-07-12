@@ -1,0 +1,161 @@
+{
+  "schemaVersion": "viewloom-12a4-category-source-audit-evidence-v1",
+  "workstream": "12A-4 provider-specific category capture foundation",
+  "stage": "12A-4-0 category source verification",
+  "status": "accepted",
+  "observedAt": "2026-07-12T14:02:18.677Z",
+  "providerSeparated": true,
+  "acceptanceIdentity": {
+    "pr": 513,
+    "headSha": "010f4fdf40a6b2bc96e3c4ab59ccdda47756f391",
+    "workflowRunId": 29195340633,
+    "artifactName": "phase12a4-category-source-audit",
+    "artifactId": 8260821948,
+    "artifactDigest": "sha256:f484ff3640b858bdac8cc9648e634381e2b20ac764fb6baeb474a7cf67c782e0",
+    "workflowUrl": "https://github.com/badjoke-lab/viewloom/actions/runs/29195340633"
+  },
+  "lifecycle": {
+    "twitch": {
+      "auditDeployExitCode": 0,
+      "calls": [
+        { "curlExitCode": 0, "httpStatus": 200 },
+        { "curlExitCode": 0, "httpStatus": 200 }
+      ],
+      "restoreExitCode": 0,
+      "restoreHealthCurlExitCode": 0,
+      "restoreHealthHttpStatus": 200
+    },
+    "kick": {
+      "auditDeployExitCode": 0,
+      "calls": [
+        { "curlExitCode": 0, "httpStatus": 200 },
+        { "curlExitCode": 0, "httpStatus": 200 }
+      ],
+      "restoreExitCode": 0,
+      "restoreHealthCurlExitCode": 0,
+      "restoreHealthHttpStatus": 200
+    }
+  },
+  "providers": {
+    "twitch": {
+      "passes": [
+        {
+          "observedAt": "2026-07-12T14:01:37.156Z",
+          "httpStatus": 200,
+          "rowCount": 100,
+          "providerIdKeyPresent": 100,
+          "nameKeyPresent": 100,
+          "pairedNonEmpty": 100,
+          "missingBoth": 0,
+          "distinctPairCount": 45
+        },
+        {
+          "observedAt": "2026-07-12T14:01:49.639Z",
+          "httpStatus": 200,
+          "rowCount": 100,
+          "providerIdKeyPresent": 100,
+          "nameKeyPresent": 100,
+          "pairedNonEmpty": 100,
+          "missingBoth": 0,
+          "distinctPairCount": 45
+        }
+      ],
+      "stableFields": [
+        { "path": "game_id", "minimumPresenceRatio": 1, "valueTypes": ["string"] },
+        { "path": "game_name", "minimumPresenceRatio": 1, "valueTypes": ["string"] }
+      ],
+      "selectedSourceContract": {
+        "providerIdPath": "game_id",
+        "namePath": "game_name",
+        "categorySource": "https://api.twitch.tv/helix/streams",
+        "categoryEvidenceStrength": "provider_primary_live_api",
+        "categoryContractVersion": "category-source-v1"
+      },
+      "sourceVerified": true,
+      "captureApproved": true
+    },
+    "kick": {
+      "passes": [
+        { "observedAt": "2026-07-12T14:01:52.811Z", "primaryHttpStatus": 200, "primaryRowCount": 100 },
+        { "observedAt": "2026-07-12T14:02:08.317Z", "primaryHttpStatus": 200, "primaryRowCount": 100 }
+      ],
+      "primaryOfficialLivestreams": {
+        "source": "https://api.kick.com/public/v1/livestreams",
+        "firstRowCount": 100,
+        "secondRowCount": 100,
+        "stableFields": [
+          { "path": "category", "minimumPresenceRatio": 1, "valueTypes": ["object"], "objectKeys": ["id", "name", "thumbnail"] },
+          { "path": "category.id", "minimumPresenceRatio": 1, "valueTypes": ["number"], "objectKeys": [] },
+          { "path": "category.name", "minimumPresenceRatio": 1, "valueTypes": ["string"], "objectKeys": [] }
+        ],
+        "stableIdentityNamePairs": [
+          {
+            "providerIdPath": "category.id",
+            "namePath": "category.name",
+            "minimumPresenceRatio": 1,
+            "providerIdTypes": ["number"],
+            "nameTypes": ["string"]
+          }
+        ],
+        "sourceVerified": true
+      },
+      "alternateSources": {
+        "officialChannels": {
+          "source": "https://api.kick.com/public/v1/channels?slug={slug}",
+          "sourceVerified": true,
+          "firstRowCount": 5,
+          "secondRowCount": 5
+        },
+        "publicChannelFallback": {
+          "source": "https://kick.com/api/v2/channels/{slug}",
+          "sourceVerified": true,
+          "firstRowCount": 5,
+          "secondRowCount": 5
+        }
+      },
+      "selectedSourceContract": {
+        "providerIdPath": "category.id",
+        "namePath": "category.name",
+        "minimumPresenceRatio": 1,
+        "providerIdTypes": ["number"],
+        "nameTypes": ["string"],
+        "categorySource": "https://api.kick.com/public/v1/livestreams",
+        "categoryEvidenceStrength": "provider_primary_live_api",
+        "categoryContractVersion": "category-source-v1"
+      },
+      "sourceVerified": true,
+      "captureApproved": true,
+      "alternateEvidenceCannotApprovePrimary": true
+    }
+  },
+  "gate": {
+    "lifecyclePass": true,
+    "twitchSourceVerified": true,
+    "kickPrimarySourceVerified": true,
+    "categorySourceAuditPass": true,
+    "storageDesignAuthorized": true,
+    "runtimeCaptureAuthorized": false,
+    "sourceContractAccepted": true
+  },
+  "privacy": {
+    "channelIdentitiesIncluded": false,
+    "streamTitlesIncluded": false,
+    "rawUpstreamRowsIncluded": false,
+    "credentialsIncluded": false,
+    "databaseIdsIncluded": false,
+    "accountIdIncluded": false,
+    "deploymentLogsIncluded": false
+  },
+  "boundaries": {
+    "productionSchemaChanged": false,
+    "productionRowsWrittenByAudit": false,
+    "collectorCadenceChanged": false,
+    "rawRetentionChanged": false,
+    "backfillPerformed": false,
+    "categoryCaptureEnabled": false,
+    "categoryAnalyticsUiIncluded": false,
+    "crossProviderCategoryIdentityAllowed": false,
+    "combinedProviderCategoryRankingAllowed": false,
+    "mainCollectorsRestored": true
+  }
+}

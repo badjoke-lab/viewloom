@@ -5,49 +5,25 @@
   "contractVersion": "analytics-source-v1",
   "baselineAuthority": "docs/audits/12a0-current-data-capacity-baseline.json",
   "sourceEvidence": "docs/audits/12a1-source-evidence.json",
+  "categorySourceEvidence": "docs/audits/12a4-category-source-audit-evidence.json",
   "providerSeparated": true,
   "migrationIncluded": false,
   "runtimeCaptureChangeIncluded": false,
   "purposes": {
     "baseline": {
       "twitch": {
-        "required": [
-          "channel_key",
-          "display_name",
-          "viewer_count",
-          "bucket_minute",
-          "collected_at",
-          "source_mode",
-          "coverage_state",
-          "covered_pages",
-          "has_more"
-        ],
+        "required": ["channel_key", "display_name", "viewer_count", "bucket_minute", "collected_at", "source_mode", "coverage_state", "covered_pages", "has_more"],
         "channelKeySource": "channelLogin",
         "coverageContract": "bounded top-window observation"
       },
       "kick": {
-        "required": [
-          "channel_key",
-          "display_name",
-          "viewer_count",
-          "bucket_minute",
-          "collected_at",
-          "source_mode",
-          "coverage_state",
-          "target_source",
-          "coverage_mode"
-        ],
+        "required": ["channel_key", "display_name", "viewer_count", "bucket_minute", "collected_at", "source_mode", "coverage_state", "target_source", "coverage_mode"],
         "channelKeySource": "slug",
         "coverageContract": "bounded official-livestreams observation"
       }
     },
     "observedRun": {
-      "commonRequired": [
-        "channel_key",
-        "bucket_minute",
-        "viewer_count",
-        "observation_coverage_state"
-      ],
+      "commonRequired": ["channel_key", "bucket_minute", "viewer_count", "observation_coverage_state"],
       "derivedBoundaries": {
         "first_observed_at": "derived from retained ViewLoom observations",
         "last_observed_at": "derived from retained ViewLoom observations",
@@ -83,55 +59,48 @@
         "category_contract_version"
       ],
       "semantics": {
-        "category_provider_id": "provider-native category/game identifier when verified and available; never a cross-provider global id",
-        "category_name": "provider-reported or provider-source category/game label when verified",
-        "category_source": "exact provider endpoint or source path used for the observation",
+        "category_provider_id": "provider-native category/game identifier; never a cross-provider global id",
+        "category_name": "provider-reported category/game label from the accepted provider source",
+        "category_source": "exact provider endpoint/source path used for the observation",
         "category_observed_at": "ViewLoom observation timestamp for category evidence",
         "category_evidence_strength": "source-specific evidence label",
         "category_contract_version": "version of the provider-specific category source contract"
       },
       "twitch": {
-        "captureApproved": false,
-        "reason": "category source fields are not yet verified in current ViewLoom contract evidence",
-        "approvalOwner": "12A-4 provider-specific category capture foundation"
+        "captureApproved": true,
+        "runtimeCaptureStarted": false,
+        "providerIdPath": "game_id",
+        "namePath": "game_name",
+        "categorySource": "https://api.twitch.tv/helix/streams",
+        "categoryEvidenceStrength": "provider_primary_live_api",
+        "categoryContractVersion": "category-source-v1",
+        "acceptedBy": "12A-4-0 live source audit PR #513"
       },
       "kick": {
-        "captureApproved": false,
-        "reason": "primary official-livestreams category field shape is not yet verified by accepted live evidence",
-        "approvalOwner": "12A-4 provider-specific category capture foundation"
+        "captureApproved": true,
+        "runtimeCaptureStarted": false,
+        "providerIdPath": "category.id",
+        "namePath": "category.name",
+        "categorySource": "https://api.kick.com/public/v1/livestreams",
+        "categoryEvidenceStrength": "provider_primary_live_api",
+        "categoryContractVersion": "category-source-v1",
+        "acceptedBy": "12A-4-0 live source audit PR #513",
+        "alternateEvidenceCannotApprovePrimary": true
       },
-      "crossProviderIdentityEquivalenceAllowed": false
+      "crossProviderIdentityEquivalenceAllowed": false,
+      "combinedProviderCategoryRankingAllowed": false
     }
   },
   "unsupportedFields": [
-    {
-      "field": "exact_session_id",
-      "twitch": "unavailable",
-      "kick": "unavailable"
-    },
-    {
-      "field": "authoritative_stream_end_at",
-      "twitch": "unavailable",
-      "kick": "unavailable"
-    },
-    {
-      "field": "authoritative_offline_state",
-      "twitch": "unavailable",
-      "kick": "unavailable"
-    },
-    {
-      "field": "unique_viewers",
-      "twitch": "unavailable",
-      "kick": "unavailable"
-    },
-    {
-      "field": "exact_creator_revenue",
-      "twitch": "unavailable",
-      "kick": "unavailable"
-    }
+    {"field": "exact_session_id", "twitch": "unavailable", "kick": "unavailable"},
+    {"field": "authoritative_stream_end_at", "twitch": "unavailable", "kick": "unavailable"},
+    {"field": "authoritative_offline_state", "twitch": "unavailable", "kick": "unavailable"},
+    {"field": "unique_viewers", "twitch": "unavailable", "kick": "unavailable"},
+    {"field": "exact_creator_revenue", "twitch": "unavailable", "kick": "unavailable"}
   ],
   "sourceContractVersioning": {
     "current": "analytics-source-v1",
+    "categoryCurrent": "category-source-v1",
     "breakingChangesRequireVersionBump": [
       "provider endpoint replacement",
       "channel identity source change",
@@ -146,18 +115,20 @@
     ]
   },
   "nextMigrationInputs": {
-    "12A2MayUse": [
-      "channel_key",
-      "bucket_minute",
-      "viewer_count",
-      "observation_coverage_state",
-      "provider_started_at when provider-approved and available"
+    "12A4MayUse": [
+      "category_provider_id",
+      "category_name",
+      "category_source",
+      "category_observed_at",
+      "category_evidence_strength",
+      "category_contract_version"
     ],
-    "12A2MustNotAssume": [
-      "exact session boundaries",
-      "Kick provider_started_at availability",
-      "category capture approval",
-      "cross-provider category identity equivalence"
+    "12A4MustNotAssume": [
+      "cross-provider category identity equivalence",
+      "combined-provider category ranking",
+      "runtime capture approval",
+      "category analytics UI approval",
+      "backfill approval"
     ]
   },
   "completion": {
@@ -165,8 +136,9 @@
     "unsupportedFieldsExplicit": true,
     "providerDifferencesDocumented": true,
     "twitchStartedAtDecisionMade": true,
-    "kickCategoryCaptureApproved": false,
-    "kickCategoryUnapprovedStateExplicit": true,
+    "twitchCategoryCaptureApproved": true,
+    "kickCategoryCaptureApproved": true,
+    "categoryRuntimeCaptureStarted": false,
     "migrationPerformed": false,
     "runtimeCaptureChanged": false
   }

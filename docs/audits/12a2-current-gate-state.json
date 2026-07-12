@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v9",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v10",
   "workstream": "12A-4 provider-specific category capture foundation",
-  "status": "12a3_complete_12a4_current",
+  "status": "12a4_category_sources_accepted_storage_design_current",
   "design": {
     "status": "accepted",
     "pr": 494,
@@ -92,13 +92,39 @@
     "postMergeAccumulationPass": true,
     "temporaryVerifiersRetained": false
   },
+  "categorySourceAudit": {
+    "status": "accepted",
+    "pr": 513,
+    "workflowRunId": 29195340633,
+    "contract": "docs/audits/12a4-category-source-audit-contract.json",
+    "evidence": "docs/audits/12a4-category-source-audit-evidence.json",
+    "acceptance": "docs/operations/12a4-category-source-audit-2026-07-12.md",
+    "twitch": {
+      "providerIdPath": "game_id",
+      "namePath": "game_name",
+      "presenceRatio": 1,
+      "captureApproved": true
+    },
+    "kick": {
+      "providerIdPath": "category.id",
+      "namePath": "category.name",
+      "presenceRatio": 1,
+      "captureApproved": true
+    },
+    "lifecyclePass": true,
+    "mainCollectorsRestored": true,
+    "storageDesignAuthorized": true,
+    "runtimeCaptureAuthorized": false,
+    "providerSeparated": true
+  },
   "closedBlockers": [
     "remote_schema_not_applied",
     "collector_worker_deployment_not_evidenced",
     "account_aggregate_storage_unmeasured",
     "generation_execution_cost_unmeasured",
     "bounded_generator_not_implemented",
-    "post_merge_accumulation_not_verified"
+    "post_merge_accumulation_not_verified",
+    "category_source_unverified"
   ],
   "generation": {
     "status": "enabled_and_accumulating",
@@ -110,11 +136,25 @@
     "backfillPerformed": false,
     "phase": "12A-3"
   },
+  "categoryCapture": {
+    "sourceContractAccepted": true,
+    "storageDesignAuthorized": true,
+    "storageDesignAccepted": false,
+    "runtimeCaptureAuthorized": false,
+    "runtimeCaptureStarted": false,
+    "providerSeparated": true,
+    "crossProviderIdentityAllowed": false,
+    "combinedProviderRankingAllowed": false,
+    "newCronAuthorized": false,
+    "backfillAuthorized": false
+  },
   "currentWorkstream": {
     "phase": "12A-4",
-    "name": "provider-specific category capture foundation",
+    "name": "provider-specific category storage design and budget gate",
+    "sourceAuditAccepted": true,
+    "storageDesignStarted": false,
     "runtimeCaptureStarted": false,
     "crossProviderAnalyticsAllowed": false
   },
-  "nextWorkstream": "12A-4 provider-specific category capture foundation"
+  "nextWorkstream": "12A-4 provider-specific category storage design and budget gate"
 }
