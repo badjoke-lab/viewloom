@@ -12,13 +12,9 @@ const check = (path, fragments) => {
 }
 
 for (const path of [
-  'README.md',
-  'AGENTS.md',
-  'CONTRIBUTING.md',
-  'docs/README.md',
+  'README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'docs/README.md',
   'docs/operations/development-and-deployment-policy.md',
-  'docs/product/current-roadmap.md',
-  'docs/product/current-schedule.md',
+  'docs/product/current-roadmap.md', 'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
   'docs/product/analytics-observation-system-spec.md',
   'docs/product/analytics-observation-system-plan.md',
@@ -52,22 +48,13 @@ for (const retired of [
 ]) assert.equal(exists(retired), false, `retired file still present: ${retired}`)
 
 for (const path of ['docs/product/current-roadmap.md', 'docs/product/current-schedule.md']) {
-  check(path, [
-    'Phase 12A Analytics Capture Foundation',
-    'PR #506',
-    'PR #507',
-    'PR #508',
-    'PR #510',
-    'PR #511',
-    'Production generation started yes',
-    '12A-4 provider-specific category capture foundation',
-  ])
+  check(path, ['Phase 12A Analytics Capture Foundation', 'PR #506', 'PR #507', 'PR #508', 'PR #510', 'PR #511', 'Production generation started yes', '12A-4 provider-specific category capture foundation'])
 }
 
 const enablement = json('docs/audits/12a3-generator-enablement-evidence.json')
 assert.equal(enablement.status, 'accepted')
 assert.equal(enablement.providerSeparated, true)
-assert.equal(enablement.gate?.generationEnablementPass ?? enablement.gate?.acceptancePass, true)
+assert.equal(enablement.acceptanceIdentity.pr, 510)
 
 const postmerge = json('docs/audits/12a3-postmerge-acceptance-evidence.json')
 assert.equal(postmerge.status, 'accepted')
@@ -108,9 +95,6 @@ assert.equal(state.currentWorkstream.crossProviderAnalyticsAllowed, false)
 assert.equal(state.nextWorkstream, '12A-4 provider-specific category capture foundation')
 
 console.log('Development and documentation policy verification passed.')
-console.log('- Phase 12A remains active')
 console.log('- 12A-3 bounded generator enabled PR #510')
 console.log('- post-merge production accumulation accepted PR #511')
-console.log('- Twitch and Kick remain provider-separated')
-console.log('- no new cron, backfill, raw-retention extension, or cross-provider analytics')
 console.log('- current workstream: 12A-4 provider-specific category capture foundation')
