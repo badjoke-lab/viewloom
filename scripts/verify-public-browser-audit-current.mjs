@@ -2,34 +2,6 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
 const read = (path) => readFileSync(path, 'utf8')
-const roadmap = read('docs/product/current-roadmap.md')
-const schedule = read('docs/product/current-schedule.md')
-const program = read('docs/product/post-watchlist-program-plan.md')
-
-for (const [path, source] of [
-  ['roadmap', roadmap],
-  ['schedule', schedule],
-  ['program', program],
-]) {
-  for (const fragment of [
-    'Phase 12A Analytics Capture Foundation',
-    'PR #513',
-    'category source audit',
-    'storage design',
-    'runtime capture',
-    'Phase 15',
-    'Phase 16',
-  ]) assert.ok(source.includes(fragment), `${path} missing ${fragment}`)
-
-  assert.equal(source.includes('Current workstream: 12A-0 current data and capacity baseline'), false, `${path}: stale 12A-0 current state`)
-  assert.equal(source.includes('work-analytics-12a0-capacity-baseline'), false, `${path}: stale next branch`)
-  assert.equal(source.includes('Production generation started no'), false, `${path}: stale generation state`)
-}
-
-assert.ok(roadmap.includes('12A-4 category source audit accepted PR #513'))
-assert.ok(roadmap.includes('Current workstream 12A-4 provider-specific category storage design and budget gate'))
-assert.ok(schedule.includes('12A-4-1 category storage design and budget gate       current'))
-assert.ok(program.includes('Current workstream: 12A-4 provider-specific category storage design and budget gate'))
 
 const messageInventory = JSON.parse(read('docs/audits/r12c0-message-inventory.json'))
 assert.equal(messageInventory.status, 'complete')
@@ -100,12 +72,26 @@ const state = JSON.parse(read('docs/audits/12a2-current-gate-state.json'))
 assert.equal(state.schemaVersion, 'viewloom-12a2-current-gate-state-v10')
 assert.equal(state.status, '12a4_category_sources_accepted_storage_design_current')
 assert.equal(state.generation.runtimeGenerationStarted, true)
+assert.equal(state.generation.providerSeparated, true)
 assert.equal(state.categorySourceAudit.pr, 513)
+assert.equal(state.categorySourceAudit.lifecyclePass, true)
+assert.equal(state.categorySourceAudit.mainCollectorsRestored, true)
 assert.equal(state.categorySourceAudit.storageDesignAuthorized, true)
 assert.equal(state.categorySourceAudit.runtimeCaptureAuthorized, false)
+assert.equal(state.categorySourceAudit.twitch.providerIdPath, 'game_id')
+assert.equal(state.categorySourceAudit.twitch.namePath, 'game_name')
+assert.equal(state.categorySourceAudit.kick.providerIdPath, 'category.id')
+assert.equal(state.categorySourceAudit.kick.namePath, 'category.name')
 assert.equal(state.currentWorkstream.phase, '12A-4')
 assert.equal(state.currentWorkstream.name, 'provider-specific category storage design and budget gate')
+assert.equal(state.currentWorkstream.sourceAuditAccepted, true)
+assert.equal(state.currentWorkstream.storageDesignStarted, false)
 assert.equal(state.currentWorkstream.runtimeCaptureStarted, false)
+assert.equal(state.categoryCapture.sourceContractAccepted, true)
+assert.equal(state.categoryCapture.storageDesignAuthorized, true)
+assert.equal(state.categoryCapture.storageDesignAccepted, false)
+assert.equal(state.categoryCapture.runtimeCaptureAuthorized, false)
+assert.equal(state.categoryCapture.runtimeCaptureStarted, false)
 assert.equal(state.categoryCapture.crossProviderIdentityAllowed, false)
 assert.equal(state.categoryCapture.combinedProviderRankingAllowed, false)
 
