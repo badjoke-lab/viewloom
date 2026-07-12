@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "viewloom-12a4-category-source-audit-contract-v1",
+  "workstream": "12A-4 provider-specific category capture foundation",
+  "stage": "12A-4-0 category source verification",
+  "status": "candidate",
+  "providerSeparated": true,
+  "contractVersion": "category-source-v1",
+  "providers": {
+    "twitch": {
+      "primarySource": "https://api.twitch.tv/helix/streams",
+      "sourceMode": "helix-streams",
+      "expectedProviderIdPath": "game_id",
+      "expectedNamePath": "game_name",
+      "liveProbePasses": 2,
+      "captureApprovalRule": "Both live probes must expose stable game_id and game_name keys with at least one non-empty paired value."
+    },
+    "kick": {
+      "primarySource": "https://api.kick.com/public/v1/livestreams",
+      "sourceMode": "official-livestreams",
+      "alternateSources": [
+        "https://api.kick.com/public/v1/channels?slug={slug}",
+        "https://kick.com/api/v2/channels/{slug}"
+      ],
+      "liveProbePasses": 2,
+      "sampleChannelsPerPass": 5,
+      "captureApprovalRule": "The primary official-livestreams source must expose a stable provider-native category identifier/name pair across both live probes. Alternate paths are evidence only and cannot approve primary capture."
+    }
+  },
+  "stableFieldRule": {
+    "minimumPresenceRatio": 0.5,
+    "requiredProbeCount": 2,
+    "providerIdAndNamePairRequired": true,
+    "nonEmptySamplesRequired": true
+  },
+  "temporaryDeployment": {
+    "productionWorkerNamesReused": true,
+    "scheduledHandlerDelegated": true,
+    "existingCronPreserved": "*/5 * * * *",
+    "existingD1BindingsPreserved": true,
+    "existingGenerationFlagPreserved": true,
+    "randomAuditTokenInjectedAtRuntime": true,
+    "mainCollectorRestoreRequired": true,
+    "mainCollectorRestoreVerified": true
+  },
+  "evidencePolicy": {
+    "channelIdentitiesIncluded": false,
+    "streamTitlesIncluded": false,
+    "rawUpstreamRowsIncluded": false,
+    "credentialsIncluded": false,
+    "databaseIdsIncluded": false,
+    "accountIdIncluded": false,
+    "deploymentLogsIncluded": false,
+    "categoryValuesMayBeIncluded": true
+  },
+  "scope": {
+    "productionSchemaChanged": false,
+    "productionRowsWrittenByAudit": false,
+    "collectorCadenceChanged": false,
+    "rawRetentionChanged": false,
+    "backfillPerformed": false,
+    "categoryCaptureEnabled": false,
+    "categoryAnalyticsUiIncluded": false,
+    "crossProviderCategoryIdentityAllowed": false,
+    "combinedProviderCategoryRankingAllowed": false
+  },
+  "nextDecision": "Approve provider-specific source fields or retain an explicit unavailable/partial state before any storage design or runtime capture change."
+}
