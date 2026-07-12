@@ -12,28 +12,24 @@ for (const [path, source] of [
   ['program', program],
 ]) {
   for (const fragment of [
-    'Phase 11 production closeout complete',
-    'Phase 12 English release readiness complete',
-    'R12C-3', 'complete',
     'Phase 12A Analytics Capture Foundation',
-    '12A-0 current data and capacity baseline',
-    'work-analytics-12a0-capacity-baseline',
-    'Phase 15 Analytics Capability and Calibration Audit',
-    'Phase 16A',
-  ]) {
-    assert.ok(source.includes(fragment), `${path} missing ${fragment}`)
-  }
+    'PR #513',
+    'category source audit',
+    'storage design',
+    'runtime capture',
+    'Phase 15',
+    'Phase 16',
+  ]) assert.ok(source.includes(fragment), `${path} missing ${fragment}`)
+
+  assert.equal(source.includes('Current workstream: 12A-0 current data and capacity baseline'), false, `${path}: stale 12A-0 current state`)
+  assert.equal(source.includes('work-analytics-12a0-capacity-baseline'), false, `${path}: stale next branch`)
+  assert.equal(source.includes('Production generation started no'), false, `${path}: stale generation state`)
 }
 
-for (const fragment of [
-  'Current phase: Phase 12A Analytics Capture Foundation',
-  'Current workstream: 12A-0 current data and capacity baseline',
-  'Exact next implementation branch: work-analytics-12a0-capacity-baseline',
-  'Next branch created: no',
-]) {
-  assert.ok(roadmap.includes(fragment), `roadmap missing ${fragment}`)
-  assert.ok(schedule.includes(fragment), `schedule missing ${fragment}`)
-}
+assert.ok(roadmap.includes('12A-4 category source audit accepted PR #513'))
+assert.ok(roadmap.includes('Current workstream 12A-4 provider-specific category storage design and budget gate'))
+assert.ok(schedule.includes('12A-4-1 category storage design and budget gate       current'))
+assert.ok(program.includes('Current workstream: 12A-4 provider-specific category storage design and budget gate'))
 
 const messageInventory = JSON.parse(read('docs/audits/r12c0-message-inventory.json'))
 assert.equal(messageInventory.status, 'complete')
@@ -100,10 +96,23 @@ assert.equal(inventory.active_program, 'Phase 12A Analytics Capture Foundation')
 assert.equal(inventory.provider_invariants.combined_totals_allowed, false)
 assert.equal(inventory.provider_invariants.combined_rankings_allowed, false)
 
+const state = JSON.parse(read('docs/audits/12a2-current-gate-state.json'))
+assert.equal(state.schemaVersion, 'viewloom-12a2-current-gate-state-v10')
+assert.equal(state.status, '12a4_category_sources_accepted_storage_design_current')
+assert.equal(state.generation.runtimeGenerationStarted, true)
+assert.equal(state.categorySourceAudit.pr, 513)
+assert.equal(state.categorySourceAudit.storageDesignAuthorized, true)
+assert.equal(state.categorySourceAudit.runtimeCaptureAuthorized, false)
+assert.equal(state.currentWorkstream.phase, '12A-4')
+assert.equal(state.currentWorkstream.name, 'provider-specific category storage design and budget gate')
+assert.equal(state.currentWorkstream.runtimeCaptureStarted, false)
+assert.equal(state.categoryCapture.crossProviderIdentityAllowed, false)
+assert.equal(state.categoryCapture.combinedProviderRankingAllowed, false)
+
 console.log('Current public-state handoff verification passed.')
-console.log('- U10F, U10G, U10H, Phase 11, R12A, R12B, and Phase 12 remain completed evidence')
-console.log('- R12C-0 inventory, R12C-1 English package, R12C-2 assets, and R12C-3 candidate evidence remain accepted')
-console.log('- exact-SHA Phase 12 production release acceptance is complete')
-console.log('- Phase 12A Analytics Capture Foundation is active at 12A-0 current data and capacity baseline')
-console.log('- exact next branch is work-analytics-12a0-capacity-baseline and remains uncreated')
+console.log('- Phase 12 release evidence remains complete')
+console.log('- Phase 12A intraday generation is enabled and accumulating')
+console.log('- 12A-4 provider-specific category source audit accepted PR #513')
+console.log('- current workstream is the category storage design and budget gate')
+console.log('- runtime category capture remains disabled')
 console.log('- current inventory owns 25 public HTML routes and 100 browser scenarios')
