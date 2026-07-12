@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs'
 const path = process.argv[2] || 'artifacts/12a4-category-storage/evidence.json'
 const evidence = JSON.parse(readFileSync(path, 'utf8'))
 const contract = JSON.parse(readFileSync('docs/audits/12a4-category-storage-design-contract.json', 'utf8'))
+const accepted = evidence.status === 'accepted'
 
 assert.equal(evidence.schemaVersion, 'viewloom-12a4-category-storage-budget-v1')
 assert.equal(evidence.workstream, contract.workstream)
@@ -33,7 +34,9 @@ assert.equal(evidence.selectedDesign.model, 'embedded_hourly')
 assert.equal(evidence.selectedDesign.rawPayload.categoryContractVersion, 'root scalar')
 assert.equal(evidence.selectedDesign.rawPayload.categoryIds, 'root provider-native id array')
 assert.equal(evidence.selectedDesign.rawPayload.categoryRefs, 'root item-order-aligned reference array')
-assert.equal(evidence.selectedDesign.rawPayload.nameStorage, 'set-based provider_category_dictionary upsert')
+assert.equal(evidence.selectedDesign.rawPayload.nameStorage, accepted
+  ? 'one set-based provider_category_dictionary upsert'
+  : 'set-based provider_category_dictionary upsert')
 assert.equal(evidence.selectedDesign.dictionaryTable.name, 'provider_category_dictionary')
 assert.deepEqual(evidence.selectedDesign.dictionaryTable.primaryKey, ['provider', 'category_id'])
 for (const field of [
@@ -61,28 +64,64 @@ assert.equal(evidence.selectedDesign.runtimeCaptureEnabled, false)
 
 for (const state of contract.coverageStates) assert.ok(evidence.coverageContract[state], `missing coverage state: ${state}`)
 
-for (const provider of ['twitch', 'kick']) {
-  const row = evidence.providers[provider]
-  assert.equal(row.selectedModel, 'embedded_hourly')
-  assert.ok(row.rawReferenceEncoding.incrementalBytesPerSnapshot > 0)
-  assert.ok(row.rawReferenceEncoding.projectedIncrementalMbAtRawRetentionWithSafety > 0)
-  assert.equal(row.rawReferenceEncoding.categoryNamesRepeatedInRawItems, false)
-  for (const model of ['baseline', 'dominant_daily', 'embedded_hourly', 'separate_hourly_table']) {
-    assert.ok(row.models[model].fileBytes > 0, `${provider}/${model}: file bytes missing`)
-    assert.ok(row.models[model].counts.rollupRows > 0, `${provider}/${model}: rows missing`)
+if (accepted) {
+  assert.equal(evidence.acceptanceIdentity.pr, 514)
+  assert.equal(evidence.acceptanceIdentity.headSha, 'f4a874741ed1641833e2c580468cc75402d0d1ee')
+  assert.equal(evidence.acceptanceIdentity.workflowRunId, 29197092303)
+  assert.equal(evidence.acceptanceIdentity.artifactId, 8261289433)
+  assert.equal(evidence.acceptanceIdentity.artifactName, 'phase12a4-category-storage-design')
+  assert.equal(evidence.acceptanceIdentity.artifactDigest, 'sha256:e612bf560faed5272a8433c684e8968fdc58d72b48bb573f2241c0f4aa7a9dd9')
+
+  assert.equal(evidence.candidateModels.dominant_daily.twitchLongTermIncrementalMb90dWithSafety, 4.04)
+  assert.equal(evidence.candidateModels.dominant_daily.kickLongTermIncrementalMb90dWithSafety, 1.45)
+  assert.equal(evidence.candidateModels.embedded_hourly.twitchLongTermIncrementalMb90dWithSafety, 26.22)
+  assert.equal(evidence.candidateModels.embedded_hourly.kickLongTermIncrementalMb90dWithSafety, 8.86)
+  assert.equal(evidence.candidateModels.separate_hourly_table.twitchLongTermIncrementalMb90dWithSafety, 288.68)
+  assert.equal(evidence.candidateModels.separate_hourly_table.kickLongTermIncrementalMb90dWithSafety, 90.58)
+
+  for (const provider of ['twitch', 'kick']) {
+    const row = evidence.providers[provider]
+    assert.ok(row.rawIncrementalMbWithSafety > 0)
+    assert.ok(row.longTermIncrementalMbWithSafety > 0)
+    assert.equal(row.selectedIncrementalMbWithSafety, Number((row.rawIncrementalMbWithSafety + row.longTermIncrementalMbWithSafety).toFixed(2)))
+    assert.ok(row.projectedSizeMbWithCategorySafety <= row.operationalCeilingMb)
+    assert.ok(row.projectedHeadroomMb > 0)
+    assert.equal(row.storageGatePass, true)
+    assert.equal(row.dictionaryWriteBudget.additionalStatementsPerCollectorInvocation, 1)
+    assert.equal(row.dictionaryWriteBudget.conflictRule, 'update only when provider category name changes')
+    assert.equal(row.dictionaryWriteBudget.productionCostMeasurementRequiredBeforeEnablement, true)
+    assert.equal(row.generatorBudget.additionalStatementsPerMaintenanceRefresh, 0)
+    assert.equal(row.generatorBudget.maximumQueriesRemains, 12)
+    assert.equal(row.generatorBudget.productionCostMeasurementRequiredBeforeEnablement, true)
   }
-  assert.ok(row.models.dominant_daily.projectedIncrementalMb90dWithSafety < row.models.embedded_hourly.projectedIncrementalMb90dWithSafety)
-  assert.ok(row.models.embedded_hourly.projectedIncrementalMb90dWithSafety < row.models.separate_hourly_table.projectedIncrementalMb90dWithSafety)
-  assert.ok(row.selectedIncrementalMbWithSafety > 0)
-  assert.ok(row.projectedSizeMbWithCategorySafety <= row.operationalCeilingMb)
-  assert.ok(row.projectedHeadroomMb > 0)
-  assert.equal(row.storageGatePass, true)
-  assert.equal(row.dictionaryWriteBudget.additionalStatementsPerCollectorInvocation, 1)
-  assert.equal(row.dictionaryWriteBudget.conflictRule, 'update only when provider category name changes')
-  assert.equal(row.dictionaryWriteBudget.productionCostMeasurementRequiredBeforeEnablement, true)
-  assert.equal(row.generatorBudget.additionalStatementsPerMaintenanceRefresh, 0)
-  assert.equal(row.generatorBudget.maximumQueriesRemains, 12)
-  assert.equal(row.generatorBudget.productionCostMeasurementRequiredBeforeEnablement, true)
+
+  assert.equal(evidence.gate.repositoryMigrationCandidateAuthorized, true)
+  assert.equal(evidence.gate.remoteMigrationApplyAuthorized, false)
+} else {
+  for (const provider of ['twitch', 'kick']) {
+    const row = evidence.providers[provider]
+    assert.equal(row.selectedModel, 'embedded_hourly')
+    assert.ok(row.rawReferenceEncoding.incrementalBytesPerSnapshot > 0)
+    assert.ok(row.rawReferenceEncoding.projectedIncrementalMbAtRawRetentionWithSafety > 0)
+    assert.equal(row.rawReferenceEncoding.categoryNamesRepeatedInRawItems, false)
+    for (const model of ['baseline', 'dominant_daily', 'embedded_hourly', 'separate_hourly_table']) {
+      assert.ok(row.models[model].fileBytes > 0, `${provider}/${model}: file bytes missing`)
+      assert.ok(row.models[model].counts.rollupRows > 0, `${provider}/${model}: rows missing`)
+    }
+    assert.ok(row.models.dominant_daily.projectedIncrementalMb90dWithSafety < row.models.embedded_hourly.projectedIncrementalMb90dWithSafety)
+    assert.ok(row.models.embedded_hourly.projectedIncrementalMb90dWithSafety < row.models.separate_hourly_table.projectedIncrementalMb90dWithSafety)
+    assert.ok(row.selectedIncrementalMbWithSafety > 0)
+    assert.ok(row.projectedSizeMbWithCategorySafety <= row.operationalCeilingMb)
+    assert.ok(row.projectedHeadroomMb > 0)
+    assert.equal(row.storageGatePass, true)
+    assert.equal(row.dictionaryWriteBudget.additionalStatementsPerCollectorInvocation, 1)
+    assert.equal(row.dictionaryWriteBudget.conflictRule, 'update only when provider category name changes')
+    assert.equal(row.dictionaryWriteBudget.productionCostMeasurementRequiredBeforeEnablement, true)
+    assert.equal(row.generatorBudget.additionalStatementsPerMaintenanceRefresh, 0)
+    assert.equal(row.generatorBudget.maximumQueriesRemains, 12)
+    assert.equal(row.generatorBudget.productionCostMeasurementRequiredBeforeEnablement, true)
+  }
+  assert.equal(evidence.gate.migrationAuthorized, false)
 }
 
 assert.ok(evidence.providers.twitch.projectedSizeMbWithCategorySafety <= contract.selectedCandidateRequirements.twitchProjectedDatabaseMbMax)
@@ -97,10 +136,8 @@ assert.equal(evidence.gate.twitchStoragePass, true)
 assert.equal(evidence.gate.kickStoragePass, true)
 assert.equal(evidence.gate.accountStoragePass, true)
 assert.equal(evidence.gate.categoryStorageDesignPass, true)
-assert.equal(evidence.gate.migrationAuthorized, false)
 assert.equal(evidence.gate.runtimeCaptureAuthorized, false)
 assert.equal(evidence.gate.productionCostProbeRequired, true)
-
 for (const value of Object.values(evidence.boundaries)) assert.equal(value, false)
 
 const serialized = JSON.stringify(evidence)
@@ -113,8 +150,9 @@ for (const forbidden of [
 ]) assert.equal(serialized.includes(forbidden), false, `forbidden evidence content: ${forbidden}`)
 
 console.log('12A-4 category storage evidence verification passed.')
+console.log(`- evidence state: ${evidence.status}`)
 console.log(`- selected model: ${evidence.selectedDesign.model}`)
 console.log(`- Twitch projected total/headroom: ${evidence.providers.twitch.projectedSizeMbWithCategorySafety}/${evidence.providers.twitch.projectedHeadroomMb} MB`)
 console.log(`- Kick projected total/headroom: ${evidence.providers.kick.projectedSizeMbWithCategorySafety}/${evidence.providers.kick.projectedHeadroomMb} MB`)
 console.log(`- account projected total/headroom: ${evidence.account.projectedSizeMbWithCategorySafety}/${evidence.account.projectedHeadroomMb} MB`)
-console.log('- migration/runtime capture: unauthorized')
+console.log('- remote migration/runtime capture: unauthorized')
