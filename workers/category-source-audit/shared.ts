@@ -102,7 +102,7 @@ function walk(
 
   for (const [key, child] of Object.entries(value)) {
     const nextPath = path ? `${path}.${key}` : key
-    const nextContext = categoryContext || /category|game/i.test(key)
+    const nextContext = categoryContext || /categor|game/i.test(key)
     if (nextContext) {
       const values = perRow.get(nextPath) ?? []
       values.push(child)
