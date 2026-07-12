@@ -7,6 +7,7 @@ const contract = JSON.parse(readFileSync('docs/audits/12a3-execution-cost-probe-
 const worker = readFileSync('workers/analytics-cost-probe/src/index.ts', 'utf8')
 const twitchConfig = readFileSync('workers/analytics-cost-probe/wrangler.twitch.toml', 'utf8')
 const kickConfig = readFileSync('workers/analytics-cost-probe/wrangler.kick.toml', 'utf8')
+const workflow = readFileSync('.github/workflows/analytics-12a3-execution-cost-probe.yml', 'utf8')
 
 assert.equal(contract.schemaVersion, 'viewloom-12a3-execution-cost-probe-contract-v1')
 assert.equal(contract.workstream, '12A-3 bounded intraday rollup generation')
@@ -66,9 +67,27 @@ assert.equal(/(?:UPDATE|DELETE\s+FROM|INSERT\s+INTO)\s+daily_rollups/i.test(work
 assert.equal(worker.includes('fetch('), true, 'probe Worker fetch handler missing')
 assert.equal(worker.includes('scheduled('), false, 'probe Worker must not expose scheduled execution')
 
+for (const fragment of [
+  "github.repository == 'badjoke-lab/viewloom'",
+  "github.head_ref == 'work-analytics-12a3-execution-cost-probe'",
+  'github.event.pull_request.head.repo.full_name == github.repository',
+  'Require Cloudflare deployment credentials',
+  'openssl rand -hex 32',
+  'Force probe-row cleanup',
+  'wrangler delete --name viewloom-cost-probe-twitch --force',
+  'wrangler delete --name viewloom-cost-probe-kick --force',
+  'Remove raw responses and deployment logs',
+  'Upload sanitized execution-cost evidence only',
+]) assert.ok(workflow.includes(fragment), `probe workflow missing: ${fragment}`)
+
+assert.equal(workflow.includes('pull_request_target:'), false, 'probe workflow must not use pull_request_target')
+assert.equal(workflow.includes('schedule:'), false, 'probe workflow must not add recurring execution')
+assert.equal(workflow.includes('wrangler d1 execute'), false, 'probe workflow must use Worker bindings, not direct D1 execute')
+
 console.log('12A-3 execution cost probe static verification passed.')
 console.log('- Twitch and Kick use separate temporary Workers and D1 bindings')
 console.log('- latest complete UTC source day is read without source mutation')
 console.log('- bounded 25-row write sample runs twice for idempotency')
+console.log('- exact same-repository branch restriction is enforced')
 console.log('- cleanup and temporary Worker deletion are required')
 console.log('- production generation and new cron remain absent')
