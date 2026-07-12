@@ -13,7 +13,7 @@ const workflow = readFileSync('.github/workflows/analytics-12a3-generator-enable
 
 assert.equal(contract.schemaVersion, 'viewloom-12a3-generator-enablement-contract-v1')
 assert.equal(contract.workstream, '12A-3 bounded production generator enablement')
-assert.equal(contract.status, 'candidate')
+assert.equal(contract.status, 'accepted')
 assert.equal(contract.providerSeparated, true)
 assert.equal(contract.collectorEnablement.flag, 'INTRADAY_GENERATION_ENABLED')
 assert.equal(contract.collectorEnablement.value, 'true')
@@ -34,6 +34,16 @@ assert.equal(contract.acceptance.retentionCleanupMustRun, true)
 assert.equal(contract.acceptance.temporaryWorkersRetained, false)
 for (const value of Object.values(contract.evidence)) assert.equal(value, false)
 for (const value of Object.values(contract.scope)) assert.equal(value, false)
+
+assert.equal(contract.acceptedEvidence.pr, 510)
+assert.ok(/^[0-9a-f]{40}$/.test(contract.acceptedEvidence.headSha), 'accepted evidence head SHA invalid')
+assert.ok(Number.isInteger(contract.acceptedEvidence.workflowRunId) && contract.acceptedEvidence.workflowRunId > 0)
+assert.equal(contract.acceptedEvidence.artifactName, 'phase12a3-generator-enablement-freeze')
+assert.equal(contract.acceptedEvidence.twitchPass, true)
+assert.equal(contract.acceptedEvidence.kickPass, true)
+assert.equal(contract.acceptedEvidence.generatorEnablementGatePass, true)
+assert.equal(contract.acceptedEvidence.productionGenerationStarted, true)
+assert.equal(contract.acceptedEvidence.temporaryWorkersRetained, false)
 
 for (const [provider, source, binding] of [
   ['twitch', twitchWrangler, 'DB_TWITCH_HOT'],
@@ -104,6 +114,7 @@ assert.equal(workflow.includes('wrangler d1 execute'), false, 'enablement workfl
 
 console.log('12A-3 generator enablement static verification passed.')
 console.log('- both collector Wrangler configs enable the accepted generator')
+console.log('- accepted production evidence is frozen and linked to PR #510')
 console.log('- existing provider crons and bindings remain unchanged')
 console.log('- temporary acceptance Workers run two generator passes')
 console.log('- actual today/yesterday rows and status are observed without identities')
