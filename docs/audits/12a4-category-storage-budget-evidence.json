@@ -1,0 +1,231 @@
+{
+  "schemaVersion": "viewloom-12a4-category-storage-budget-v1",
+  "workstream": "12A-4 provider-specific category storage design and budget gate",
+  "status": "accepted",
+  "acceptanceIdentity": {
+    "pr": 514,
+    "headSha": "f4a874741ed1641833e2c580468cc75402d0d1ee",
+    "workflowRunId": 29197092303,
+    "artifactId": 8261289433,
+    "artifactName": "phase12a4-category-storage-design",
+    "artifactDigest": "sha256:e612bf560faed5272a8433c684e8968fdc58d72b48bb573f2241c0f4aa7a9dd9"
+  },
+  "benchmark": {
+    "engine": "3.45.1",
+    "benchmarkDays": 7,
+    "projectionDays": 90,
+    "snapshotsPerDay": 288,
+    "categoryDistinctRatioFixture": 0.45,
+    "safetyMarginPct": 20,
+    "measurementBoundary": "Deterministic local SQLite file-size benchmark after VACUUM plus compact JSON byte projections. This is a design comparison, not remote D1 size or production query-duration evidence."
+  },
+  "sourceContract": {
+    "twitch": {
+      "providerIdPath": "game_id",
+      "namePath": "game_name"
+    },
+    "kick": {
+      "providerIdPath": "category.id",
+      "namePath": "category.name"
+    },
+    "providerSeparated": true,
+    "categoryContractVersion": "category-source-v1"
+  },
+  "candidateModels": {
+    "raw_payload_only": {
+      "decision": "rejected",
+      "retains90DayCategoryEvidence": false,
+      "preservesHourlyCategory": true,
+      "twitchRawRetentionIncrementalMbWithSafety": 22.1,
+      "kickRawRetentionIncrementalMbWithSafety": 13.15,
+      "reason": "Raw retention remains Twitch 30 days and Kick 60 days, so raw-only storage cannot support the 90-day foundation without an unauthorized retention extension."
+    },
+    "dominant_daily": {
+      "decision": "rejected",
+      "retains90DayCategoryEvidence": true,
+      "preservesHourlyCategory": false,
+      "twitchLongTermIncrementalMb90dWithSafety": 4.04,
+      "kickLongTermIncrementalMb90dWithSafety": 1.45,
+      "reason": "One category per streamer/day irreversibly loses time-of-day category changes."
+    },
+    "embedded_hourly": {
+      "decision": "selected",
+      "retains90DayCategoryEvidence": true,
+      "preservesHourlyCategory": true,
+      "twitchLongTermIncrementalMb90dWithSafety": 26.22,
+      "kickLongTermIncrementalMb90dWithSafety": 8.86,
+      "reason": "Compact hourly evidence fits existing streamer/day rows without multiplying row count or adding a category index before Phase 15."
+    },
+    "separate_hourly_table": {
+      "decision": "rejected",
+      "retains90DayCategoryEvidence": true,
+      "preservesHourlyCategory": true,
+      "twitchLongTermIncrementalMb90dWithSafety": 288.68,
+      "kickLongTermIncrementalMb90dWithSafety": 90.58,
+      "projectedRows90d": {
+        "twitch": 1296000,
+        "kick": 432000
+      },
+      "reason": "One row per streamer/day/hour multiplies retained rows by up to 24 and consumes excessive storage and write volume."
+    }
+  },
+  "selectedDesign": {
+    "model": "embedded_hourly",
+    "rawPayload": {
+      "categoryContractVersion": "root scalar",
+      "categoryIds": "root provider-native id array",
+      "categoryRefs": "root item-order-aligned reference array",
+      "missingValue": null,
+      "categoryNamesRepeatedInRawItems": false,
+      "nameStorage": "one set-based provider_category_dictionary upsert"
+    },
+    "dictionaryTable": {
+      "name": "provider_category_dictionary",
+      "primaryKey": [
+        "provider",
+        "category_id"
+      ],
+      "fields": [
+        "provider",
+        "category_id",
+        "category_name",
+        "first_observed_at",
+        "last_observed_at",
+        "contract_version"
+      ]
+    },
+    "rollupColumns": [
+      "category_hourly_json",
+      "category_observed_samples",
+      "category_missing_samples",
+      "category_contract_version"
+    ],
+    "statusColumns": [
+      "category_observed_streamers",
+      "category_observed_samples",
+      "category_missing_samples",
+      "category_coverage_state"
+    ],
+    "categoryHourlyJson": {
+      "version": 1,
+      "keys": {
+        "c": "per streamer/day provider-id and historical-name dictionary",
+        "r": "24 hourly dictionary references",
+        "s": "24 hourly category sample counts",
+        "m": "24 hourly category viewer-minute support",
+        "o": "daily observed category samples",
+        "x": "daily missing category samples"
+      },
+      "hourlyResolution": true,
+      "exactSwitchTimeClaimAllowed": false,
+      "exactSessionClaimAllowed": false
+    },
+    "indexes": {
+      "newCategoryIndex": false,
+      "existingStreamerDayIndexReused": true,
+      "dictionaryPrimaryKeyUsed": true,
+      "futureMaterializationDecision": "Phase 15 may authorize category profiles if JSON expansion cost requires them."
+    },
+    "retentionDays": 90,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChanged": false,
+    "runtimeCaptureEnabled": false
+  },
+  "coverageContract": {
+    "observed": "A retained stream item has a valid category reference and provider id/name pair.",
+    "missing_from_source": "The stream item was observed but its accepted provider category pair was absent or invalid.",
+    "not_in_bounded_window": "The streamer/category was not present in ViewLoom's bounded provider window; this is not an offline claim.",
+    "partial_source_coverage": "The collector source reports partial or bounded coverage for the observation period.",
+    "stale": "The supporting collector or rollup timestamp is beyond its accepted freshness boundary.",
+    "unavailable": "The category contract or runtime capture is unavailable for that observation."
+  },
+  "providers": {
+    "twitch": {
+      "retainedStreamerCapPerDay": 600,
+      "snapshotItemCap": 300,
+      "rawRetentionDays": 30,
+      "rawIncrementalMbWithSafety": 22.1,
+      "longTermIncrementalMbWithSafety": 26.22,
+      "selectedIncrementalMbWithSafety": 48.32,
+      "existingProjectedSizeMbWithSafety": 390.38,
+      "projectedSizeMbWithCategorySafety": 438.7,
+      "operationalCeilingMb": 450,
+      "projectedHeadroomMb": 11.3,
+      "storageGatePass": true,
+      "dictionaryWriteBudget": {
+        "additionalStatementsPerCollectorInvocation": 1,
+        "maximumDistinctCategoriesPerSnapshotFixture": 135,
+        "maximumChangedRowsPerDayFixture": 38880,
+        "conflictRule": "update only when provider category name changes",
+        "productionCostMeasurementRequiredBeforeEnablement": true
+      },
+      "generatorBudget": {
+        "additionalStatementsPerMaintenanceRefresh": 0,
+        "maximumQueriesRemains": 12,
+        "productionCostMeasurementRequiredBeforeEnablement": true
+      }
+    },
+    "kick": {
+      "retainedStreamerCapPerDay": 200,
+      "snapshotItemCap": 100,
+      "rawRetentionDays": 60,
+      "rawIncrementalMbWithSafety": 13.15,
+      "longTermIncrementalMbWithSafety": 8.86,
+      "selectedIncrementalMbWithSafety": 22.01,
+      "existingProjectedSizeMbWithSafety": 292.56,
+      "projectedSizeMbWithCategorySafety": 314.57,
+      "operationalCeilingMb": 450,
+      "projectedHeadroomMb": 135.43,
+      "storageGatePass": true,
+      "dictionaryWriteBudget": {
+        "additionalStatementsPerCollectorInvocation": 1,
+        "maximumDistinctCategoriesPerSnapshotFixture": 45,
+        "maximumChangedRowsPerDayFixture": 12960,
+        "conflictRule": "update only when provider category name changes",
+        "productionCostMeasurementRequiredBeforeEnablement": true
+      },
+      "generatorBudget": {
+        "additionalStatementsPerMaintenanceRefresh": 0,
+        "maximumQueriesRemains": 12,
+        "productionCostMeasurementRequiredBeforeEnablement": true
+      }
+    }
+  },
+  "account": {
+    "existingProjectedSizeMbWithSafety": 3646.26,
+    "selectedCategoryIncrementalMbWithSafety": 70.33,
+    "projectedSizeMbWithCategorySafety": 3716.59,
+    "operationalCeilingMb": 4608,
+    "projectedHeadroomMb": 891.41,
+    "storageGatePass": true
+  },
+  "gate": {
+    "twitchStoragePass": true,
+    "kickStoragePass": true,
+    "accountStoragePass": true,
+    "categoryStorageDesignPass": true,
+    "repositoryMigrationCandidateAuthorized": true,
+    "remoteMigrationApplyAuthorized": false,
+    "runtimeCaptureAuthorized": false,
+    "productionCostProbeRequired": true
+  },
+  "boundaries": {
+    "productionSchemaChanged": false,
+    "productionRowsWritten": false,
+    "migrationAdded": false,
+    "runtimeCaptureStarted": false,
+    "rawRetentionChanged": false,
+    "newCronAdded": false,
+    "backfillPerformed": false,
+    "categoryAnalyticsUiIncluded": false,
+    "crossProviderCategoryIdentityAllowed": false,
+    "combinedProviderCategoryRankingAllowed": false
+  },
+  "limitations": [
+    "Local SQLite page accounting is not identical to remote D1 storage accounting.",
+    "The raw payload category distinct ratio is a deterministic conservative fixture, not a production distribution claim.",
+    "Production D1 rows_read, rows_written, SQL duration, Worker duration, and collector latency must be measured before runtime capture enablement.",
+    "The design preserves hourly dominant category evidence and support, not exact category switch timestamps or exact sessions."
+  ]
+}
