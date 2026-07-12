@@ -11,17 +11,17 @@ Phase 12A Analytics Capture Foundation active
 12A-0 baseline complete PR #490
 12A-1 field contract complete PR #492
 12A-2 design budget accepted PR #494
-12A-2 production size evidence accepted PR #498
 12A-2 repository migration accepted PR #499
-12A-2 controlled apply code merged PRs #502-#503
 12A-2 collector deployment and remote schema accepted PR #506
+12A-3 account storage gate accepted PR #507
 Twitch remote schema objects 3 / 3
 Kick remote schema objects 3 / 3
-Worker deployment evidence present
 Remote schema gate pass
-Current workstream 12A-3 generation storage and execution gate
+Account D1 databases measured 8 / 8
+Generation storage gate pass
+Current workstream 12A-3 production execution-cost measurement and bounded generation dry run
 12A-3 generation authorized no
-Remaining blocker account_aggregate_storage_unmeasured
+Remaining blocker generation_execution_cost_unmeasured
 ```
 
 ## Current permanent evidence
@@ -29,48 +29,50 @@ Remaining blocker account_aggregate_storage_unmeasured
 ```text
 docs/audits/12a2-intraday-rollup-design-contract.json
 docs/audits/12a2-intraday-rollup-budget-evidence.json
-docs/audits/12a2-binding-size-production-evidence.json
 docs/audits/12a2-migration-acceptance.json
 docs/audits/12a2-collector-worker-deploy-evidence.json
+docs/audits/12a3-account-storage-gate-contract.json
+docs/audits/12a3-account-storage-evidence.json
 docs/audits/12a2-current-gate-state.json
 docs/operations/12a2-collector-worker-deploy-acceptance-2026-07-12.md
+docs/operations/12a3-account-storage-acceptance-2026-07-12.md
 ```
 
-## Accepted deployment state
+## Accepted production state
 
 ```text
-method Wrangler 4 CLI
-Twitch Worker deploy success
-Twitch binding DB_TWITCH_HOT -> vl_twitch_hot
 Twitch schemaComplete true; objects 3 / 3
-
-Kick Worker deploy success
-Kick binding DB_KICK_HOT -> vl_kick_hot
 Kick schemaComplete true; objects 3 / 3
-
 remoteSchemaGatePass true
-probe rowsWritten 0
+
+Twitch current/projected storage 319.39 / 390.38 MB
+Kick current/projected storage   268.99 / 292.56 MB
+Account databases measured       8 / 8
+Account current/projected        3551.70 / 3646.26 MB
+Account operational ceiling      4608 MB
+generationStorageGatePass        true
 ```
 
-The permanent deploy workflow runs verification only on pull requests. Main pushes and manual dispatch may deploy using GitHub repository secrets. No direct D1 execute, public DDL endpoint, backfill, generation, retention extension, new cron, category capture, exact-session claim, or cross-provider analytics is included.
+The permanent storage workflow uses D1 Read only, deletes raw Wrangler responses before artifact upload, and persists no database names, database IDs, Account ID, or secret values.
 
 ## Current 12A-3 boundary
 
 ```text
 workerDeploymentEvidencePresent true
 remoteSchemaGatePass true
-accountAggregateMeasured false
-generationStorageGatePass false
+accountAggregateMeasured true
+generationStorageGatePass true
 generationAuthorized false
+runtimeGenerationStarted false
 ```
 
-The blockers `remote_schema_not_applied` and `collector_worker_deployment_not_evidenced` are closed. Do not start production rollup writes until the remaining account-wide storage and execution-cost gates pass.
+Passing storage does not authorize generation. The next branch must measure a bounded execution dry run and establish rows read, rows written, SQL duration, Worker duration, and failure behavior before production rollup writes are enabled.
 
 Do not add:
 
 ```text
-backfill
-runtime rollup generation before gate acceptance
+unbounded backfill
+runtime rollup generation before execution-gate acceptance
 raw-retention extension
 new high-frequency cron
 category capture activation
