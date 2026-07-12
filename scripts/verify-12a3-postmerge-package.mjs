@@ -21,7 +21,7 @@ assert.equal(contract.naturalMaintenance.temporaryGeneratorUsed, false)
 for (const value of Object.values(contract.privacy)) assert.equal(value, false)
 for (const value of Object.values(contract.scope)) assert.equal(value, false)
 if (contract.status === 'accepted') {
-  assert.equal(contract.acceptedEvidence.pr, 510)
+  assert.equal(contract.acceptedEvidence.pr, 511)
   assert.ok(Number.isInteger(contract.acceptedEvidence.workflowRunId) && contract.acceptedEvidence.workflowRunId > 0)
   assert.equal(contract.acceptedEvidence.postMergeAccumulationPass, true)
   assert.equal(contract.acceptedEvidence.temporaryVerifiersRetained, false)
