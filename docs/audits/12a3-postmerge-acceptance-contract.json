@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a3-postmerge-acceptance-contract-v1",
   "workstream": "12A-3 enabled collector post-merge acceptance",
-  "status": "candidate",
+  "status": "accepted",
   "merge": {
     "pr": 510,
     "sha": "ad90585d74149b0fb1805b9a76fd8d796a5e7c2d",
@@ -65,5 +65,14 @@
     "sourceRowsModified": false,
     "backfillPerformed": false,
     "crossProviderAnalyticsIncluded": false
+  },
+  "acceptedEvidence": {
+    "pr": 511,
+    "headSha": "614b61a0ac98aaa6954a9a6c157163c6539da5ff",
+    "workflowRunId": 29191430966,
+    "artifactName": "phase12a3-postmerge-acceptance",
+    "deploymentRunId": 29191094150,
+    "postMergeAccumulationPass": true,
+    "temporaryVerifiersRetained": false
   }
 }
