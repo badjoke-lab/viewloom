@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "viewloom-12a3-account-storage-gate-v1",
+  "workstream": "12A-3 generation storage and execution gate",
+  "status": "observed",
+  "observedAt": "2026-07-12T01:56:08.148Z",
+  "acceptanceIdentity": {
+    "pr": 507,
+    "headSha": "488fac1a5755d6b615224aa51f8ffb2018038a9d",
+    "workflowRunId": 29175976919,
+    "artifactId": 8254945754,
+    "artifactName": "phase12a3-account-storage-gate",
+    "artifactDigest": "sha256:5ee6365a342a9cf086d861cd354dab29cbb4135c92d81fcde3a7dda26c8bcd0b"
+  },
+  "evidenceMode": "wrangler-d1-control-plane-json",
+  "sourceCommandContract": {
+    "providerInfo": "wrangler d1 info [NAME] --json",
+    "accountList": "wrangler d1 list --json",
+    "rawControlPlaneResponsesPersisted": false
+  },
+  "platformLimits": {
+    "plan": "Workers Free",
+    "maximumDatabaseMb": 500,
+    "maximumAccountStorageMb": 5120,
+    "perDatabaseOperationalCeilingMb": 450,
+    "accountOperationalCeilingMb": 4608,
+    "operationalCeilingPct": 90,
+    "officialSource": "https://developers.cloudflare.com/d1/platform/limits/",
+    "officialSourceCheckedAt": "2026-07-12"
+  },
+  "providers": {
+    "twitch": {
+      "currentSizeBytes": 334905344,
+      "currentSizeMb": 319.39,
+      "safeRollupProjectionMb": 70.99,
+      "projectedSizeMbWithSafety": 390.38,
+      "maximumDatabaseMb": 500,
+      "operationalCeilingMb": 450,
+      "projectedHeadroomMb": 109.62,
+      "projectedUtilizationPct": 78.08,
+      "providerStorageGatePass": true
+    },
+    "kick": {
+      "currentSizeBytes": 282054656,
+      "currentSizeMb": 268.99,
+      "safeRollupProjectionMb": 23.57,
+      "projectedSizeMbWithSafety": 292.56,
+      "maximumDatabaseMb": 500,
+      "operationalCeilingMb": 450,
+      "projectedHeadroomMb": 207.44,
+      "projectedUtilizationPct": 58.51,
+      "providerStorageGatePass": true
+    }
+  },
+  "account": {
+    "databaseCount": 8,
+    "sizedDatabaseCount": 8,
+    "currentSizeBytes": 3724226560,
+    "currentSizeMb": 3551.7,
+    "combinedSafeRollupProjectionMb": 94.56,
+    "projectedSizeMbWithSafety": 3646.26,
+    "maximumAccountStorageMb": 5120,
+    "operationalCeilingMb": 4608,
+    "projectedHeadroomMb": 1473.74,
+    "projectedUtilizationPct": 71.22,
+    "accountStorageGatePass": true
+  },
+  "gate": {
+    "twitchProviderPass": true,
+    "kickProviderPass": true,
+    "accountPass": true,
+    "accountAggregateMeasured": true,
+    "generationStorageGatePass": true,
+    "generationAuthorizedByThisEvidenceAlone": false,
+    "nextGate": "generation_execution_cost_measurement"
+  },
+  "privacy": {
+    "providerDatabaseNamesIncluded": false,
+    "providerDatabaseIdsIncluded": false,
+    "unrelatedDatabaseNamesIncluded": false,
+    "accountIdIncluded": false,
+    "secretsIncluded": false
+  },
+  "boundaries": {
+    "d1ExecuteUsed": false,
+    "writesPerformed": false,
+    "migrationApplied": false,
+    "backfillPerformed": false,
+    "generationStarted": false,
+    "retentionChanged": false,
+    "crossProviderAnalyticsCreated": false
+  },
+  "limitations": [
+    "Database sizes are point-in-time Wrangler control-plane observations.",
+    "The accepted safe rollup projections are added to current size and do not model unrelated future growth.",
+    "Passing the storage gate does not authorize generation without a separate production execution-cost gate.",
+    "Account aggregate storage is summed only when every listed database exposes a size value."
+  ]
+}
