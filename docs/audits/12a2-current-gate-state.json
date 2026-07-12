@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v6",
-  "workstream": "12A-2 compact intraday rollup design and migration",
-  "status": "collector_deployed_remote_schema_complete_generation_blocked",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v7",
+  "workstream": "12A-3 generation storage and execution gate",
+  "status": "remote_schema_complete_storage_gate_passed_execution_gate_blocked",
   "design": {
     "status": "accepted",
     "pr": 494,
@@ -10,16 +10,6 @@
     "twitchSafeProjectionMb": 70.99,
     "kickSafeProjectionMb": 23.57,
     "combinedSafeProjectionMb": 94.56
-  },
-  "bindingSizeGate": {
-    "status": "accepted",
-    "evidencePr": 498,
-    "evidence": "docs/audits/12a2-binding-size-production-evidence.json",
-    "twitchProjectedSizeMbWithSafety": 391.95,
-    "kickProjectedSizeMbWithSafety": 287.95,
-    "schemaMigrationGatePass": true,
-    "accountAggregateMeasured": false,
-    "generationStorageGatePass": false
   },
   "repositoryMigration": {
     "status": "accepted",
@@ -59,17 +49,41 @@
     "probeRowsWritten": 0,
     "productionGeneratedAt": "2026-07-11T16:01:17.970Z"
   },
+  "generationStorageGate": {
+    "status": "accepted",
+    "pr": 507,
+    "contract": "docs/audits/12a3-account-storage-gate-contract.json",
+    "evidence": "docs/audits/12a3-account-storage-evidence.json",
+    "acceptance": "docs/operations/12a3-account-storage-acceptance-2026-07-12.md",
+    "observedAt": "2026-07-12T01:56:08.148Z",
+    "twitchCurrentSizeMb": 319.39,
+    "twitchProjectedSizeMbWithSafety": 390.38,
+    "twitchProviderPass": true,
+    "kickCurrentSizeMb": 268.99,
+    "kickProjectedSizeMbWithSafety": 292.56,
+    "kickProviderPass": true,
+    "accountDatabaseCount": 8,
+    "accountSizedDatabaseCount": 8,
+    "accountCurrentSizeMb": 3551.7,
+    "accountProjectedSizeMbWithSafety": 3646.26,
+    "accountOperationalCeilingMb": 4608,
+    "accountPass": true,
+    "accountAggregateMeasured": true,
+    "generationStorageGatePass": true
+  },
   "closedBlockers": [
     "remote_schema_not_applied",
-    "collector_worker_deployment_not_evidenced"
+    "collector_worker_deployment_not_evidenced",
+    "account_aggregate_storage_unmeasured"
   ],
   "generation": {
     "status": "blocked",
     "authorized": false,
     "blockers": [
-      "account_aggregate_storage_unmeasured"
+      "generation_execution_cost_unmeasured"
     ],
+    "runtimeGenerationStarted": false,
     "phase": "12A-3"
   },
-  "nextWorkstream": "12A-3 generation storage and execution gate"
+  "nextWorkstream": "12A-3 production execution-cost measurement and bounded generation dry run"
 }
