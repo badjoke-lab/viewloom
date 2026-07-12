@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "viewloom-12a3-execution-cost-probe-contract-v1",
+  "workstream": "12A-3 bounded intraday rollup generation",
+  "status": "candidate",
+  "providerSeparated": true,
+  "source": {
+    "table": "minute_snapshots",
+    "daySelection": "latest_complete_utc_day",
+    "rawRowsModified": false
+  },
+  "temporaryWorkers": {
+    "twitch": {
+      "name": "viewloom-cost-probe-twitch",
+      "binding": "DB",
+      "databaseName": "vl_twitch_hot",
+      "streamerCap": 600,
+      "probeWriteRows": 25,
+      "bucketMinutes": 5
+    },
+    "kick": {
+      "name": "viewloom-cost-probe-kick",
+      "binding": "DB",
+      "databaseName": "vl_kick_hot",
+      "streamerCap": 200,
+      "probeWriteRows": 25,
+      "bucketMinutes": 5
+    }
+  },
+  "writeProbe": {
+    "targetTables": [
+      "streamer_intraday_rollups",
+      "intraday_rollup_status"
+    ],
+    "reservedDay": "1900-01-01",
+    "selectionState": "cost_probe",
+    "firstPass": "upsert bounded sample rows and one status row",
+    "secondPass": "repeat identical upserts",
+    "idempotencyRule": "retained row count is unchanged by the second pass",
+    "cleanupRequired": true,
+    "retainedProbeRowsRequired": 0
+  },
+  "acceptance": {
+    "minimumSourceSnapshots": 60,
+    "minimumProbeWriteRows": 10,
+    "maximumAggregateD1DurationMs": 5000,
+    "maximumAggregateWallMs": 20000,
+    "maximumTotalWorkerWallMs": 30000,
+    "maximumProjectedFullCapWriteD1DurationMs": 5000,
+    "maximumProjectedFullCapWriteWallMs": 15000,
+    "idempotentRowCountRequired": true,
+    "cleanupRequired": true,
+    "providerGateRequired": true
+  },
+  "workflow": {
+    "candidateBranch": "work-analytics-12a3-execution-cost-probe",
+    "sameRepositoryOnly": true,
+    "forkSecretsAllowed": false,
+    "temporaryWorkerDeleteRequired": true,
+    "permanentPublicRouteAdded": false,
+    "newCronAdded": false
+  },
+  "boundaries": {
+    "productionGenerationStarted": false,
+    "backfillIncluded": false,
+    "retentionChanged": false,
+    "categoryCaptureIncluded": false,
+    "exactSessionFieldsIncluded": false,
+    "crossProviderAnalyticsIncluded": false
+  }
+}
