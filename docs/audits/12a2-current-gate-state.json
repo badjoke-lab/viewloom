@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v7",
-  "workstream": "12A-3 generation storage and execution gate",
-  "status": "remote_schema_complete_storage_gate_passed_execution_gate_blocked",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v8",
+  "workstream": "12A-3 bounded intraday rollup generation",
+  "status": "storage_and_execution_gates_passed_bounded_generator_not_started",
   "design": {
     "status": "accepted",
     "pr": 494,
@@ -71,19 +71,46 @@
     "accountAggregateMeasured": true,
     "generationStorageGatePass": true
   },
+  "generationExecutionCostGate": {
+    "status": "accepted",
+    "pr": 508,
+    "contract": "docs/audits/12a3-execution-cost-probe-contract.json",
+    "evidence": "docs/audits/12a3-execution-cost-evidence.json",
+    "acceptance": "docs/operations/12a3-execution-cost-acceptance-2026-07-12.md",
+    "observedAt": "2026-07-12T09:20:41.973Z",
+    "sourceDay": "2026-07-11",
+    "twitchSourceSnapshots": 288,
+    "twitchRetainedCandidates": 600,
+    "twitchAggregateDurationMs": 790.73,
+    "twitchAggregateWallMs": 1368,
+    "twitchProjectedFullCapWriteWallMs": 5040,
+    "twitchProviderPass": true,
+    "kickSourceSnapshots": 288,
+    "kickRetainedCandidates": 200,
+    "kickAggregateDurationMs": 426.097,
+    "kickAggregateWallMs": 788,
+    "kickProjectedFullCapWriteWallMs": 1848,
+    "kickProviderPass": true,
+    "idempotencyVerified": true,
+    "probeRowsRetained": false,
+    "temporaryWorkersRetained": false,
+    "generationExecutionCostGatePass": true
+  },
   "closedBlockers": [
     "remote_schema_not_applied",
     "collector_worker_deployment_not_evidenced",
-    "account_aggregate_storage_unmeasured"
+    "account_aggregate_storage_unmeasured",
+    "generation_execution_cost_unmeasured"
   ],
   "generation": {
-    "status": "blocked",
+    "status": "implementation_authorized_runtime_disabled",
     "authorized": false,
-    "blockers": [
-      "generation_execution_cost_unmeasured"
-    ],
+    "implementationAuthorized": true,
     "runtimeGenerationStarted": false,
+    "blockers": [
+      "bounded_generator_not_implemented"
+    ],
     "phase": "12A-3"
   },
-  "nextWorkstream": "12A-3 production execution-cost measurement and bounded generation dry run"
+  "nextWorkstream": "12A-3 bounded production generator implementation behind existing maintenance windows"
 }
