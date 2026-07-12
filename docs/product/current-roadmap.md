@@ -7,17 +7,17 @@ Last updated: 2026-07-12
 Phase 12A Analytics Capture Foundation active
 12A-0 baseline complete PR #490
 12A-1 field contract complete PR #492
-12A-2 design budget accepted PR #494
-12A-2 repository migration accepted PR #499
+12A-2 design and migration accepted through PR #499
 12A-2 collector deployment and remote schema accepted PR #506
 12A-3 account storage gate accepted PR #507
+12A-3 execution-cost gate accepted PR #508
 Twitch remote schema objects 3 / 3
 Kick remote schema objects 3 / 3
-Remote schema gate pass
 Account D1 databases measured 8 / 8
 Generation storage gate pass
-Current workstream 12A-3 production execution-cost measurement and bounded generation dry run
-12A-3 generation authorized no
+Generation execution-cost gate pass
+Current workstream 12A-3 bounded production generator implementation
+Production generation started no
 ```
 
 ## Phase 12A authorities
@@ -32,26 +32,26 @@ Current workstream 12A-3 production execution-cost measurement and bounded gener
 - 12A-2 deployment evidence: `../audits/12a2-collector-worker-deploy-evidence.json`
 - 12A-3 storage contract: `../audits/12a3-account-storage-gate-contract.json`
 - 12A-3 storage evidence: `../audits/12a3-account-storage-evidence.json`
+- 12A-3 execution-cost contract: `../audits/12a3-execution-cost-probe-contract.json`
+- 12A-3 execution-cost evidence: `../audits/12a3-execution-cost-evidence.json`
 - Current state: `../audits/12a2-current-gate-state.json`
 
-## Accepted production and storage state
+## Accepted gates
 
 ```text
-Twitch schemaComplete true; objects 3 / 3
-Kick schemaComplete true; objects 3 / 3
 remoteSchemaGatePass true
+generationStorageGatePass true
+generationExecutionCostGatePass true
 
-Twitch current/projected storage 319.39 / 390.38 MB
-Kick current/projected storage   268.99 / 292.56 MB
-Account databases measured       8 / 8
-Account current/projected        3551.70 / 3646.26 MB
-Account operational ceiling      4608 MB
-Account projected utilization    71.22%
-Account projected headroom       1473.74 MB
-generationStorageGatePass        true
+Twitch aggregate D1 duration / wall 790.730 / 1368 ms
+Twitch full-cap write wall projection 5040 ms
+Kick aggregate D1 duration / wall 426.097 / 788 ms
+Kick full-cap write wall projection 1848 ms
+
+idempotent second pass true
+probe rows retained 0
+temporary Workers retained no
 ```
-
-The storage workflow uses D1 Read only, deletes raw control-plane responses, and persists no database names, database IDs, Account ID, or secret values.
 
 ## Closed blockers
 
@@ -59,21 +59,25 @@ The storage workflow uses D1 Read only, deletes raw control-plane responses, and
 remote_schema_not_applied
 collector_worker_deployment_not_evidenced
 account_aggregate_storage_unmeasured
-```
-
-## Current blocker
-
-```text
 generation_execution_cost_unmeasured
 ```
 
-Therefore 12A-3 production generation remains unauthorized.
+## Current implementation boundary
+
+```text
+bounded_generator_not_implemented
+implementationAuthorized true
+generationAuthorized false
+runtimeGenerationStarted false
+```
+
+The next change is a bounded provider-specific generator behind the existing maintenance windows. It must preserve idempotency, failure containment, provider separation, cost observability, no backfill, and no new cron.
 
 ## Forward sequence
 
 ```text
-12A-3 production execution-cost measurement and bounded generation dry run
-  -> bounded intraday rollup generation
+12A-3 bounded production generator implementation
+  -> production accumulation acceptance
   -> 12A-4 category capture foundation
   -> 12A-5 foundation acceptance and accumulation handoff
   -> Phase 13-14 localization with evidence accumulation
