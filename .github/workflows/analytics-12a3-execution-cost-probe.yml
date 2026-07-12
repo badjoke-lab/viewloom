@@ -138,12 +138,23 @@ jobs:
 
             run_code=1
             if [ "$deploy_code" -eq 0 ] && [ -n "$url" ]; then
-              curl --silent --show-error --fail-with-body \
-                --retry 5 --retry-delay 2 --retry-all-errors \
-                -X POST \
-                -H "Authorization: Bearer $PROBE_TOKEN" \
-                "$url/run" > "$result_file"
-              run_code=$?
+              for attempt in $(seq 1 6); do
+                tmp="${result_file}.attempt"
+                http_code=$(curl --silent --show-error \
+                  --output "$tmp" \
+                  --write-out '%{http_code}' \
+                  -X POST \
+                  -H "Authorization: Bearer $PROBE_TOKEN" \
+                  "$url/run")
+                curl_code=$?
+                if [ "$curl_code" -eq 0 ] && [ "$http_code" = '200' ]; then
+                  mv "$tmp" "$result_file"
+                  run_code=0
+                  break
+                fi
+                rm -f "$tmp"
+                sleep 2
+              done
             fi
 
             printf '%s %s\n' "$deploy_code" "$run_code" > "$GITHUB_WORKSPACE/$RAW_DIR/${provider}-codes.txt"
@@ -164,12 +175,20 @@ jobs:
             cleanup_code=1
             if [ -f "$url_file" ]; then
               url=$(cat "$url_file")
-              curl --silent --show-error --fail-with-body \
-                --retry 3 --retry-delay 2 --retry-all-errors \
+              tmp="$RAW_DIR/${provider}-cleanup.attempt"
+              http_code=$(curl --silent --show-error \
+                --output "$tmp" \
+                --write-out '%{http_code}' \
                 -X POST \
                 -H "Authorization: Bearer $PROBE_TOKEN" \
-                "$url/cleanup" > "$RAW_DIR/${provider}-cleanup.json"
-              cleanup_code=$?
+                "$url/cleanup")
+              curl_code=$?
+              if [ "$curl_code" -eq 0 ] && [ "$http_code" = '200' ]; then
+                mv "$tmp" "$RAW_DIR/${provider}-cleanup.json"
+                cleanup_code=0
+              else
+                rm -f "$tmp"
+              fi
             fi
             printf '%s\n' "$cleanup_code" > "$RAW_DIR/${provider}-cleanup-code.txt"
           done
@@ -180,9 +199,9 @@ jobs:
         shell: bash
         run: |
           set +e
-          wrangler delete --name viewloom-cost-probe-twitch --force > "$RAW_DIR/twitch-delete.log" 2>&1
+          wrangler delete viewloom-cost-probe-twitch --force > "$RAW_DIR/twitch-delete.log" 2>&1
           twitch_delete=$?
-          wrangler delete --name viewloom-cost-probe-kick --force > "$RAW_DIR/kick-delete.log" 2>&1
+          wrangler delete viewloom-cost-probe-kick --force > "$RAW_DIR/kick-delete.log" 2>&1
           kick_delete=$?
           rm -f workers/analytics-cost-probe/.runtime.*.toml
 
@@ -230,17 +249,23 @@ jobs:
           {
             echo '## ViewLoom 12A-3 Execution Cost Probe'
             echo
+            echo "- evidence status: $(jq -r '.status' "$ARTIFACT_DIR/evidence.json")"
             for provider in twitch kick; do
-              echo "- $provider source snapshots: $(jq -r ".providers.$provider.source.sourceSnapshots" "$ARTIFACT_DIR/evidence.json")"
-              echo "- $provider aggregate D1 duration: $(jq -r ".providers.$provider.query.aggregate.durationMs" "$ARTIFACT_DIR/evidence.json") ms"
-              echo "- $provider aggregate wall: $(jq -r ".providers.$provider.query.aggregateWallMs" "$ARTIFACT_DIR/evidence.json") ms"
-              echo "- $provider total Worker wall: $(jq -r ".providers.$provider.totalWorkerWallMs" "$ARTIFACT_DIR/evidence.json") ms"
+              echo "- $provider lifecycle: $(jq -c ".providers.$provider.lifecycle" "$ARTIFACT_DIR/evidence.json")"
+              if [ "$(jq -r ".providers.$provider.status" "$ARTIFACT_DIR/evidence.json")" = 'observed' ]; then
+                echo "- $provider source snapshots: $(jq -r ".providers.$provider.source.sourceSnapshots" "$ARTIFACT_DIR/evidence.json")"
+                echo "- $provider aggregate D1 duration: $(jq -r ".providers.$provider.query.aggregate.durationMs" "$ARTIFACT_DIR/evidence.json") ms"
+                echo "- $provider aggregate wall: $(jq -r ".providers.$provider.query.aggregateWallMs" "$ARTIFACT_DIR/evidence.json") ms"
+                echo "- $provider total Worker wall: $(jq -r ".providers.$provider.totalWorkerWallMs" "$ARTIFACT_DIR/evidence.json") ms"
+              else
+                echo "- $provider diagnostic: $(jq -c ".providers.$provider.diagnostic" "$ARTIFACT_DIR/evidence.json")"
+              fi
               echo "- $provider provider gate: $(jq -r ".providers.$provider.providerGatePass" "$ARTIFACT_DIR/evidence.json")"
             done
             echo "- execution-cost gate: $(jq -r '.gate.generationExecutionCostGatePass' "$ARTIFACT_DIR/evidence.json")"
             echo '- production generation started: no'
             echo '- retained probe rows: 0'
-            echo '- temporary Workers retained: no'
+            echo "- temporary Workers retained: $(jq -r '.boundaries.temporaryWorkersRetained' "$ARTIFACT_DIR/evidence.json")"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload sanitized execution-cost evidence only
