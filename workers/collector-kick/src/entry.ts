@@ -1,5 +1,9 @@
 import collector from './index'
 import { maybeApplyIntradaySchema } from '../../shared/intraday-schema'
+import {
+  intradayGenerationEnabled,
+  maybeGenerateIntradayRollups,
+} from '../../shared/intraday-rollup'
 
 type Env = {
   DB_KICK_HOT: D1Database
@@ -9,6 +13,7 @@ type Env = {
   KICK_CLIENT_SECRET?: string
   KICK_ACCESS_TOKEN?: string
   KICK_USE_AUTHENTICATED_CHANNEL_READS?: string
+  INTRADAY_GENERATION_ENABLED?: string
 }
 
 export default {
@@ -26,6 +31,20 @@ export default {
           event: 'intraday_schema_bootstrap',
           provider: 'kick',
           ...schemaBootstrap,
+        }))
+      }
+
+      const intradayGeneration = await maybeGenerateIntradayRollups(env.DB_KICK_HOT, {
+        provider: 'kick',
+        streamerCap: 200,
+        bucketMinutes: 5,
+        enabled: intradayGenerationEnabled(env.INTRADAY_GENERATION_ENABLED),
+      })
+      if (intradayGeneration.attempted) {
+        console.log(JSON.stringify({
+          event: 'intraday_rollup_generation',
+          worker: 'viewloom-collector-kick',
+          ...intradayGeneration,
         }))
       }
     }
