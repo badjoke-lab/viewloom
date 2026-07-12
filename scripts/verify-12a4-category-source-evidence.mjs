@@ -23,6 +23,8 @@ for (const provider of ['twitch', 'kick']) {
     assert.equal(call.httpStatus, 200, `${provider}: probe HTTP failed`)
   }
   assert.equal(lifecycle?.restoreExitCode, 0, `${provider}: main collector restore failed`)
+  assert.equal(lifecycle?.restoreHealthCurlExitCode, 0, `${provider}: restored health curl failed`)
+  assert.equal(lifecycle?.restoreHealthHttpStatus, 200, `${provider}: restored health HTTP failed`)
 }
 assert.equal(evidence.gate.lifecyclePass, true)
 assert.equal(evidence.boundaries.mainCollectorsRestored, true)
