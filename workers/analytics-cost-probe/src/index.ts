@@ -19,7 +19,7 @@ type RollupRow = {
   candidate_streamers: number
 }
 
-type D1MetaSummary = {
+type MetaSummary = {
   statements: number
   durationMs: number
   rowsRead: number
@@ -48,8 +48,9 @@ export default {
 
     if (request.method === 'POST' && url.pathname === '/cleanup') {
       const cleanup = await cleanupProbeRows(env)
-      return Response.json({ ok: cleanup.remainingRows === 0, provider: env.PROVIDER, cleanup }, {
-        status: cleanup.remainingRows === 0 ? 200 : 500,
+      const ok = cleanup.remainingRows === 0
+      return Response.json({ ok, provider: env.PROVIDER, cleanup }, {
+        status: ok ? 200 : 500,
         headers: { 'cache-control': 'no-store' },
       })
     }
@@ -60,7 +61,7 @@ export default {
 
 async function runProbe(env: Env) {
   const startedAt = Date.now()
-  let cleanup = null as Awaited<ReturnType<typeof cleanupProbeRows>> | null
+  let cleanup: Awaited<ReturnType<typeof cleanupProbeRows>> | null = null
 
   try {
     const streamerCap = boundedInt(env.STREAMER_CAP, env.PROVIDER === 'twitch' ? 600 : 200, 1, 1000)
@@ -71,9 +72,7 @@ async function runProbe(env: Env) {
     if (initialCleanup.remainingRows !== 0) throw new Error('initial_probe_cleanup_incomplete')
 
     const dayResult = await env.DB.prepare(`
-      SELECT
-        substr(bucket_minute, 1, 10) AS day,
-        COUNT(*) AS source_snapshots
+      SELECT substr(bucket_minute, 1, 10) AS day, COUNT(*) AS source_snapshots
       FROM minute_snapshots
       WHERE provider = ?
         AND substr(bucket_minute, 1, 10) < substr(datetime('now'), 1, 10)
@@ -92,8 +91,8 @@ async function runProbe(env: Env) {
         target.day,
         bucketMinutes,
         bucketMinutes,
-        bucketMinutes,
         streamerCap,
+        bucketMinutes,
       )
       .all<RollupRow>()
     const aggregateWallMs = round(Date.now() - aggregateStartedAt, 2)
@@ -101,15 +100,24 @@ async function runProbe(env: Env) {
     if (!rows.length) throw new Error('intraday_aggregate_empty')
 
     const sampleRows = rows.slice(0, Math.min(probeWriteRows, rows.length))
+    const expectedProbeRows = sampleRows.length + 1
     const updatedAt = new Date().toISOString()
-    const firstBatch = buildWriteBatch(env, sampleRows, target.day, streamerCap, Number(target.source_snapshots), updatedAt)
+    const writeBatch = buildWriteBatch(
+      env,
+      sampleRows,
+      target.day,
+      streamerCap,
+      Number(target.source_snapshots),
+      updatedAt,
+    )
+
     const firstStartedAt = Date.now()
-    const firstResults = await env.DB.batch(firstBatch)
+    const firstResults = await env.DB.batch(writeBatch)
     const firstWallMs = round(Date.now() - firstStartedAt, 2)
     const countAfterFirst = await countProbeRows(env)
 
     const secondStartedAt = Date.now()
-    const secondResults = await env.DB.batch(firstBatch)
+    const secondResults = await env.DB.batch(writeBatch)
     const secondWallMs = round(Date.now() - secondStartedAt, 2)
     const countAfterSecond = await countProbeRows(env)
 
@@ -117,12 +125,9 @@ async function runProbe(env: Env) {
 
     const firstMeta = summarizeMeta(firstResults)
     const secondMeta = summarizeMeta(secondResults)
-    const aggregateMeta = summarizeMeta([aggregateResult])
-    const dayResolutionMeta = summarizeMeta([dayResult])
-    const totalWallMs = round(Date.now() - startedAt, 2)
     const candidateStreamers = Number(rows[0]?.candidate_streamers ?? rows.length)
 
-    const result = {
+    return {
       ok: true,
       schemaVersion: 'viewloom-12a3-execution-cost-probe-v1',
       provider: env.PROVIDER,
@@ -136,8 +141,8 @@ async function runProbe(env: Env) {
         retainedCandidateRows: rows.length,
       },
       query: {
-        dayResolution: dayResolutionMeta,
-        aggregate: aggregateMeta,
+        dayResolution: summarizeMeta([dayResult]),
+        aggregate: summarizeMeta([aggregateResult]),
         aggregateWallMs,
         resultRows: rows.length,
         serializedResultBytes: new TextEncoder().encode(JSON.stringify(rows)).byteLength,
@@ -146,9 +151,12 @@ async function runProbe(env: Env) {
         reservedDay: PROBE_DAY,
         requestedRows: probeWriteRows,
         sampledRows: sampleRows.length,
+        expectedRetainedRows: expectedProbeRows,
         firstPass: { ...firstMeta, wallMs: firstWallMs, retainedRows: countAfterFirst },
         secondPass: { ...secondMeta, wallMs: secondWallMs, retainedRows: countAfterSecond },
-        idempotentRowCount: countAfterFirst === sampleRows.length && countAfterSecond === countAfterFirst,
+        idempotentRowCount:
+          countAfterFirst === expectedProbeRows
+          && countAfterSecond === countAfterFirst,
         cleanup,
       },
       projections: {
@@ -158,7 +166,7 @@ async function runProbe(env: Env) {
         projectedFirstPassDurationMs: project(firstMeta.durationMs, sampleRows.length, streamerCap),
         projectedFirstPassWallMs: project(firstWallMs, sampleRows.length, streamerCap),
       },
-      totalWorkerWallMs: totalWallMs,
+      totalWorkerWallMs: round(Date.now() - startedAt, 2),
       boundaries: {
         productionGenerationStarted: false,
         probeRowsRetained: cleanup.remainingRows,
@@ -168,8 +176,6 @@ async function runProbe(env: Env) {
         crossProviderOperation: false,
       },
     }
-
-    return result
   } catch (error) {
     try {
       cleanup = await cleanupProbeRows(env)
@@ -297,14 +303,14 @@ async function countProbeRows(env: Env): Promise<number> {
   return Number(row?.count ?? 0)
 }
 
-function summarizeMeta(results: Array<{ meta?: Record<string, unknown> }>): D1MetaSummary {
+function summarizeMeta(results: Array<{ meta?: unknown }>): MetaSummary {
   const summary = { statements: results.length, durationMs: 0, rowsRead: 0, rowsWritten: 0, changes: 0 }
   for (const result of results) {
-    const meta = result?.meta ?? {}
-    summary.durationMs += number(meta.duration)
-    summary.rowsRead += number(meta.rows_read)
-    summary.rowsWritten += number(meta.rows_written)
-    summary.changes += number(meta.changes)
+    const meta = (result?.meta ?? {}) as Record<string, unknown>
+    summary.durationMs += numeric(meta.duration)
+    summary.rowsRead += numeric(meta.rows_read)
+    summary.rowsWritten += numeric(meta.rows_written)
+    summary.changes += numeric(meta.changes)
   }
   summary.durationMs = round(summary.durationMs, 3)
   return summary
@@ -316,9 +322,7 @@ function project(value: number, sampledRows: number, fullRows: number): number |
 }
 
 function authorized(request: Request, token: string): boolean {
-  if (!token) return false
-  const auth = request.headers.get('authorization')
-  return auth === `Bearer ${token}`
+  return Boolean(token) && request.headers.get('authorization') === `Bearer ${token}`
 }
 
 function boundedInt(value: string, fallback: number, min: number, max: number): number {
@@ -327,7 +331,7 @@ function boundedInt(value: string, fallback: number, min: number, max: number): 
   return Math.max(min, Math.min(max, Math.floor(parsed)))
 }
 
-function number(value: unknown): number {
+function numeric(value: unknown): number {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
 }
@@ -340,8 +344,6 @@ function round(value: number, digits: number): number {
 const INTRADAY_AGGREGATE_SQL = `
 WITH stream_rows AS (
   SELECT
-    m.provider,
-    substr(m.bucket_minute, 1, 10) AS day,
     CAST(strftime('%H', m.bucket_minute) AS INTEGER) AS hour,
     LOWER(REPLACE(COALESCE(
       json_extract(j.value, '$.channelLogin'),
