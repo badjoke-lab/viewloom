@@ -11,6 +11,7 @@ const workflow = readFileSync('.github/workflows/analytics-12a3-execution-cost-p
 
 assert.equal(contract.schemaVersion, 'viewloom-12a3-execution-cost-probe-contract-v1')
 assert.equal(contract.workstream, '12A-3 bounded intraday rollup generation')
+assert.equal(contract.status, 'accepted')
 assert.equal(contract.providerSeparated, true)
 assert.equal(contract.source.table, 'minute_snapshots')
 assert.equal(contract.source.daySelection, 'latest_complete_utc_day')
@@ -24,6 +25,14 @@ assert.equal(contract.workflow.forkSecretsAllowed, false)
 assert.equal(contract.workflow.temporaryWorkerDeleteRequired, true)
 assert.equal(contract.workflow.permanentPublicRouteAdded, false)
 assert.equal(contract.workflow.newCronAdded, false)
+assert.equal(contract.acceptedEvidence.pr, 508)
+assert.equal(contract.acceptedEvidence.workflowRunId, 29187282418)
+assert.equal(contract.acceptedEvidence.artifactId, 8258409485)
+assert.equal(contract.acceptedEvidence.twitchPass, true)
+assert.equal(contract.acceptedEvidence.kickPass, true)
+assert.equal(contract.acceptedEvidence.generationExecutionCostGatePass, true)
+assert.equal(contract.acceptedEvidence.temporaryWorkersRetained, false)
+assert.equal(contract.acceptedEvidence.probeRowsRetained, false)
 assert.equal(contract.boundaries.productionGenerationStarted, false)
 assert.equal(contract.boundaries.backfillIncluded, false)
 assert.equal(contract.boundaries.retentionChanged, false)
@@ -69,8 +78,11 @@ assert.equal(worker.includes('scheduled('), false, 'probe Worker must not expose
 
 for (const fragment of [
   "github.repository == 'badjoke-lab/viewloom'",
+  "github.event.action == 'opened'",
   "github.head_ref == 'work-analytics-12a3-execution-cost-probe'",
   'github.event.pull_request.head.repo.full_name == github.repository',
+  'Verify permanent accepted evidence',
+  'node scripts/verify-12a3-execution-cost-evidence.mjs docs/audits/12a3-execution-cost-evidence.json',
   'Require Cloudflare deployment credentials',
   'openssl rand -hex 32',
   'Force probe-row cleanup',
@@ -92,10 +104,11 @@ assert.equal(workflow.includes('schedule:'), false, 'probe workflow must not add
 assert.equal(workflow.includes('wrangler d1 execute'), false, 'probe workflow must use Worker bindings, not direct D1 execute')
 
 console.log('12A-3 execution cost probe static verification passed.')
+console.log('- accepted permanent evidence identity is fixed')
 console.log('- Twitch and Kick use separate temporary Workers and D1 bindings')
 console.log('- latest complete UTC source day is read without source mutation')
 console.log('- bounded 25-row write sample runs twice for idempotency')
-console.log('- atomic response files preserve only the final HTTP attempt')
 console.log('- temporary services are deleted through the Cloudflare service API')
-console.log('- exact same-repository branch restriction is enforced')
+console.log('- production probe runs only on initial trusted PR open or manual dispatch')
+console.log('- synchronize events verify frozen evidence without redeploying')
 console.log('- production generation and new cron remain absent')
