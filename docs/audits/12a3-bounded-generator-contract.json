@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "viewloom-12a3-bounded-generator-contract-v1",
+  "workstream": "12A-3 bounded production generator implementation",
+  "status": "implementation_candidate",
+  "providerSeparated": true,
+  "runtime": {
+    "sharedModule": "workers/shared/intraday-rollup.ts",
+    "enableFlag": "INTRADAY_GENERATION_ENABLED",
+    "enabledValue": "true",
+    "defaultEnabled": false,
+    "wranglerFlagPresent": false,
+    "productionGenerationStartedByMerge": false
+  },
+  "providers": {
+    "twitch": {
+      "entry": "workers/collector-twitch/src/entry.ts",
+      "binding": "DB_TWITCH_HOT",
+      "databaseName": "vl_twitch_hot",
+      "streamerCap": 600,
+      "bucketMinutes": 5
+    },
+    "kick": {
+      "entry": "workers/collector-kick/src/entry.ts",
+      "binding": "DB_KICK_HOT",
+      "databaseName": "vl_kick_hot",
+      "streamerCap": 200,
+      "bucketMinutes": 5
+    }
+  },
+  "schedule": {
+    "existingCron": "*/5 * * * *",
+    "newCronAdded": false,
+    "maintenanceWindowsUtc": [
+      "00:20-00:24",
+      "12:20-12:24"
+    ],
+    "targetDays": [
+      "today_utc",
+      "yesterday_utc"
+    ],
+    "retentionCleanupWindowUtc": "00:20-00:24",
+    "intradayRetentionDays": 90
+  },
+  "queryBudget": {
+    "precheckStatementsPerDay": 1,
+    "transactionalWriteStatementsPerDay": 4,
+    "maximumTargetDays": 2,
+    "retentionCleanupStatements": 2,
+    "maximumGeneratorQueriesPerInvocation": 12,
+    "perStreamerD1CallsAllowed": false,
+    "setBasedSqlRequired": true
+  },
+  "transaction": {
+    "api": "D1Database.batch",
+    "statementsPerDay": 4,
+    "steps": [
+      "mark existing provider-day rows refresh_pending",
+      "set-based upsert selected capped rows",
+      "delete provider-day rows still refresh_pending",
+      "upsert provider-day status"
+    ],
+    "idempotent": true,
+    "staleRowsRemoved": true,
+    "failureRollbackRequired": true
+  },
+  "source": {
+    "table": "minute_snapshots",
+    "payloadPath": "$.items",
+    "sourceRowsModified": false,
+    "minimumSourceSnapshotsToWrite": 1,
+    "noSourceDayPreserved": true
+  },
+  "targets": {
+    "rollupTable": "streamer_intraday_rollups",
+    "statusTable": "intraday_rollup_status",
+    "contractVersion": "analytics-source-v1",
+    "coverageStates": [
+      "good",
+      "partial",
+      "poor"
+    ],
+    "selectionStates": [
+      "complete_within_daily_cap",
+      "capped_at_daily_limit"
+    ]
+  },
+  "observability": {
+    "event": "intraday_rollup_generation",
+    "streamerIdentitiesLogged": false,
+    "fields": [
+      "sourceSnapshots",
+      "candidateStreamers",
+      "retainedStreamers",
+      "statements",
+      "durationMs",
+      "rowsRead",
+      "rowsWritten",
+      "changes",
+      "workerWallMs",
+      "maximumQueries",
+      "error"
+    ]
+  },
+  "failureContainment": {
+    "collectorRunsFirst": true,
+    "generatorRunsInFinally": true,
+    "generatorErrorsReturnedNotThrown": true,
+    "collectorOutcomeChanged": false
+  },
+  "scope": {
+    "collectorIndexChanged": false,
+    "webOrApiChanged": false,
+    "migrationChanged": false,
+    "backfillIncluded": false,
+    "rawRetentionChanged": false,
+    "categoryCaptureIncluded": false,
+    "exactSessionFieldsIncluded": false,
+    "crossProviderAnalyticsIncluded": false,
+    "directD1ExecuteIncluded": false
+  },
+  "nextBoundary": "separate enablement and production accumulation acceptance"
+}
