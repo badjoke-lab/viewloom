@@ -1,0 +1,239 @@
+{
+  "schemaVersion": "viewloom-12a3-execution-cost-evidence-v1",
+  "workstream": "12A-3 bounded intraday rollup generation",
+  "status": "accepted",
+  "observedAt": "2026-07-12T09:20:41.973Z",
+  "acceptanceIdentity": {
+    "pr": 508,
+    "headSha": "b13f808a51de5d8375532b9413750e66d8f7cb00",
+    "workflowMergeSha": "6fc53e4da749e3fbd6c7a8bb02d90cd8db46420d",
+    "workflowRunId": 29187282418,
+    "artifactId": 8258409485,
+    "artifactName": "phase12a3-execution-cost-probe",
+    "artifactDigest": "sha256:a6523da05fef711cd431b8803fd725cd7917231c72bd44397f0506b65339f2ab"
+  },
+  "providerSeparated": true,
+  "contract": "docs/audits/12a3-execution-cost-probe-contract.json",
+  "providers": {
+    "twitch": {
+      "status": "observed",
+      "observedAt": "2026-07-12T09:20:28.777Z",
+      "lifecycle": {
+        "deployExitCode": 0,
+        "runExitCode": 0,
+        "cleanupExitCode": 0,
+        "deleteExitCode": 0
+      },
+      "source": {
+        "day": "2026-07-11",
+        "sourceSnapshots": 288,
+        "bucketMinutes": 5,
+        "streamerCap": 600,
+        "candidateStreamers": 1996,
+        "retainedCandidateRows": 600
+      },
+      "query": {
+        "dayResolution": {
+          "statements": 1,
+          "durationMs": 4.135,
+          "rowsRead": 8933,
+          "rowsWritten": 0,
+          "changes": 0
+        },
+        "aggregate": {
+          "statements": 1,
+          "durationMs": 790.73,
+          "rowsRead": 491359,
+          "rowsWritten": 0,
+          "changes": 0
+        },
+        "aggregateWallMs": 1368,
+        "resultRows": 600,
+        "serializedResultBytes": 524610
+      },
+      "writeProbe": {
+        "requestedRows": 25,
+        "sampledRows": 25,
+        "expectedRetainedRows": 26,
+        "firstPass": {
+          "statements": 26,
+          "durationMs": 1.272,
+          "rowsRead": 0,
+          "rowsWritten": 77,
+          "changes": 26,
+          "wallMs": 210,
+          "retainedRows": 26
+        },
+        "secondPass": {
+          "statements": 26,
+          "durationMs": 1.413,
+          "rowsRead": 26,
+          "rowsWritten": 26,
+          "changes": 26,
+          "wallMs": 246,
+          "retainedRows": 26
+        },
+        "idempotentRowCount": true,
+        "cleanup": {
+          "statements": 2,
+          "durationMs": 0.278,
+          "rowsRead": 26,
+          "rowsWritten": 26,
+          "changes": 26,
+          "wallMs": 161,
+          "remainingRows": 0
+        }
+      },
+      "projections": {
+        "fullCapRows": 600,
+        "projectedFirstPassRowsRead": 0,
+        "projectedFirstPassRowsWritten": 1848,
+        "projectedFirstPassDurationMs": 30.53,
+        "projectedFirstPassWallMs": 5040
+      },
+      "totalWorkerWallMs": 3392,
+      "checks": {
+        "lifecyclePass": true,
+        "sourceSupportPass": true,
+        "writeSamplePass": true,
+        "aggregateD1DurationPass": true,
+        "aggregateWallPass": true,
+        "totalWorkerWallPass": true,
+        "projectedWriteD1DurationPass": true,
+        "projectedWriteWallPass": true,
+        "idempotentRowCountPass": true,
+        "cleanupPass": true,
+        "noProductionGenerationPass": true,
+        "noSourceMutationPass": true,
+        "providerSeparationPass": true
+      },
+      "providerGatePass": true
+    },
+    "kick": {
+      "status": "observed",
+      "observedAt": "2026-07-12T09:20:40.523Z",
+      "lifecycle": {
+        "deployExitCode": 0,
+        "runExitCode": 0,
+        "cleanupExitCode": 0,
+        "deleteExitCode": 0
+      },
+      "source": {
+        "day": "2026-07-11",
+        "sourceSnapshots": 288,
+        "bucketMinutes": 5,
+        "streamerCap": 200,
+        "candidateStreamers": 739,
+        "retainedCandidateRows": 200
+      },
+      "query": {
+        "dayResolution": {
+          "statements": 1,
+          "durationMs": 6.908,
+          "rowsRead": 15263,
+          "rowsWritten": 0,
+          "changes": 0
+        },
+        "aggregate": {
+          "statements": 1,
+          "durationMs": 426.097,
+          "rowsRead": 189525,
+          "rowsWritten": 0,
+          "changes": 0
+        },
+        "aggregateWallMs": 788,
+        "resultRows": 200,
+        "serializedResultBytes": 178383
+      },
+      "writeProbe": {
+        "requestedRows": 25,
+        "sampledRows": 25,
+        "expectedRetainedRows": 26,
+        "firstPass": {
+          "statements": 26,
+          "durationMs": 1.576,
+          "rowsRead": 0,
+          "rowsWritten": 77,
+          "changes": 26,
+          "wallMs": 231,
+          "retainedRows": 26
+        },
+        "secondPass": {
+          "statements": 26,
+          "durationMs": 1.292,
+          "rowsRead": 26,
+          "rowsWritten": 26,
+          "changes": 26,
+          "wallMs": 209,
+          "retainedRows": 26
+        },
+        "idempotentRowCount": true,
+        "cleanup": {
+          "statements": 2,
+          "durationMs": 0.352,
+          "rowsRead": 26,
+          "rowsWritten": 26,
+          "changes": 26,
+          "wallMs": 175,
+          "remainingRows": 0
+        }
+      },
+      "projections": {
+        "fullCapRows": 200,
+        "projectedFirstPassRowsRead": 0,
+        "projectedFirstPassRowsWritten": 616,
+        "projectedFirstPassDurationMs": 12.61,
+        "projectedFirstPassWallMs": 1848
+      },
+      "totalWorkerWallMs": 2799,
+      "checks": {
+        "lifecyclePass": true,
+        "sourceSupportPass": true,
+        "writeSamplePass": true,
+        "aggregateD1DurationPass": true,
+        "aggregateWallPass": true,
+        "totalWorkerWallPass": true,
+        "projectedWriteD1DurationPass": true,
+        "projectedWriteWallPass": true,
+        "idempotentRowCountPass": true,
+        "cleanupPass": true,
+        "noProductionGenerationPass": true,
+        "noSourceMutationPass": true,
+        "providerSeparationPass": true
+      },
+      "providerGatePass": true
+    }
+  },
+  "gate": {
+    "twitchPass": true,
+    "kickPass": true,
+    "generationExecutionCostGatePass": true,
+    "generationAuthorizedByThisEvidenceAlone": false,
+    "nextAction": "implement bounded production generation behind existing maintenance windows"
+  },
+  "privacy": {
+    "streamerIdsIncluded": false,
+    "streamerNamesIncluded": false,
+    "databaseIdsIncluded": false,
+    "accountIdIncluded": false,
+    "secretsIncluded": false,
+    "rawResponsesIncluded": false
+  },
+  "boundaries": {
+    "productionGenerationStarted": false,
+    "probeRowsRetained": false,
+    "sourceRowsModified": false,
+    "rawRetentionChanged": false,
+    "newCronAdded": false,
+    "categoryCaptureIncluded": false,
+    "exactSessionFieldsIncluded": false,
+    "crossProviderAnalyticsIncluded": false,
+    "temporaryWorkersRetained": false
+  },
+  "limitations": [
+    "This is a point-in-time production D1 measurement against the latest complete UTC source day.",
+    "Write cost is measured with a bounded 25-row sample plus one status row and projected linearly to the accepted provider cap.",
+    "A passing gate does not itself start production rollup generation.",
+    "Worker and D1 timings may vary with platform load and must remain observable after generation begins."
+  ]
+}
