@@ -47,7 +47,7 @@ assert.equal(contract.failureContainment.collectorOutcomeChanged, false)
 for (const value of Object.values(contract.scope)) assert.equal(value, false)
 
 for (const fragment of [
-  "const INTRADAY_RETENTION_DAYS = 90",
+  'const INTRADAY_RETENTION_DAYS = 90',
   'const MAX_GENERATOR_QUERIES = 12',
   "return value?.trim().toLowerCase() === 'true'",
   'return (hour === 0 || hour === 12) && minute >= 20 && minute < 25',
@@ -58,7 +58,6 @@ for (const fragment of [
   'source_mode',
   'coverageState',
   'contractVersion',
-  'MAX_GENERATOR_QUERIES',
   'DELETE FROM streamer_intraday_rollups',
   'DELETE FROM intraday_rollup_status',
   "date('now', ?)",
@@ -105,7 +104,10 @@ for (const [provider, source, binding, cap, worker] of [
   assert.ok(schemaAt > finallyAt && generatorAt > schemaAt, `${provider}: schema then generator order invalid`)
 }
 
-for (const [provider, source] of [['twitch', twitchWrangler], ['kick', kickWrangler']]) {
+for (const [provider, source] of [
+  ['twitch', twitchWrangler],
+  ['kick', kickWrangler],
+]) {
   assert.match(source, /^crons = \["\*\/5 \* \* \* \*"\]$/m, `${provider}: existing cron changed`)
   assert.equal(source.includes('INTRADAY_GENERATION_ENABLED'), false, `${provider}: runtime generation must remain disabled in this PR`)
 }
