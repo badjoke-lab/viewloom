@@ -78,7 +78,7 @@ for (const fragment of [
   'crossProviderOperation: false',
 ]) assert.ok(worker.includes(fragment), `acceptance Worker missing: ${fragment}`)
 
-assert.equal((worker.match(/maybeGenerateIntradayRollups\(/g) ?? []).length, 3, 'acceptance Worker must import/type and execute exactly two generation passes')
+assert.equal((worker.match(/maybeGenerateIntradayRollups\(/g) ?? []).length, 2, 'acceptance Worker must execute exactly two generation passes')
 assert.equal(/(?:INSERT|UPDATE|DELETE)\s+(?:INTO\s+|FROM\s+)?minute_snapshots/i.test(worker), false, 'acceptance Worker must not modify minute_snapshots')
 assert.equal(worker.includes('async scheduled('), false, 'acceptance Worker must not own a cron')
 assert.equal(worker.includes('wrangler d1 execute'), false, 'direct D1 execute is forbidden')
