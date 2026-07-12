@@ -8,6 +8,9 @@ compatibility_date = "2026-05-18"
 #   GET /health
 #   GET /status
 
+[vars]
+INTRADAY_GENERATION_ENABLED = "true"
+
 [triggers]
 crons = ["*/5 * * * *"]
 

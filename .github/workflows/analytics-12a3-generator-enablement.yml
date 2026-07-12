@@ -1,0 +1,309 @@
+name: Analytics 12A3 Generator Enablement
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - 'workers/collector-twitch/wrangler.toml'
+      - 'workers/collector-kick/wrangler.toml'
+      - 'workers/analytics-generator-acceptance/**'
+      - 'docs/audits/12a3-generator-enablement-contract.json'
+      - 'docs/audits/12a3-generator-enablement-evidence.json'
+      - 'docs/operations/12a3-generator-enablement-acceptance-*.md'
+      - 'docs/work-in-progress/phase12a3-generator-enablement.md'
+      - 'scripts/collect-12a3-generator-enablement-evidence.mjs'
+      - 'scripts/verify-12a3-generator-enablement-evidence.mjs'
+      - 'scripts/verify-12a3-generator-enablement.mjs'
+      - 'scripts/check-12a3-generator-enablement-scope.mjs'
+      - '.github/workflows/analytics-12a3-generator-enablement.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a3-generator-enablement-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify enablement branch scope
+        run: node scripts/check-12a3-generator-enablement-scope.mjs
+
+      - name: Verify enablement contract
+        run: node scripts/verify-12a3-generator-enablement.mjs
+
+      - name: Verify permanent accepted evidence when present
+        run: |
+          if [ -f docs/audits/12a3-generator-enablement-evidence.json ]; then
+            node scripts/verify-12a3-generator-enablement-evidence.mjs docs/audits/12a3-generator-enablement-evidence.json
+          else
+            echo 'Permanent generator enablement evidence is not frozen yet.'
+          fi
+
+      - name: Install Wrangler 4
+        run: npm install --global wrangler@4
+
+      - name: Bundle Twitch acceptance Worker without deploying
+        working-directory: workers/analytics-generator-acceptance
+        run: wrangler deploy --dry-run --config wrangler.twitch.toml --outdir /tmp/viewloom-generator-acceptance-twitch
+
+      - name: Bundle Kick acceptance Worker without deploying
+        working-directory: workers/analytics-generator-acceptance
+        run: wrangler deploy --dry-run --config wrangler.kick.toml --outdir /tmp/viewloom-generator-acceptance-kick
+
+  production-acceptance:
+    if: >-
+      github.repository == 'badjoke-lab/viewloom'
+      && (
+        github.event_name == 'workflow_dispatch'
+        || (
+          github.event.action == 'opened'
+          && github.event.pull_request.head.repo.full_name == github.repository
+          && github.head_ref == 'work-analytics-12a3-enable-generator'
+        )
+      )
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      RAW_DIR: artifacts/12a3-generator-enablement/raw
+      ARTIFACT_DIR: artifacts/12a3-generator-enablement
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PR_NUMBER: ${{ github.event.pull_request.number || 0 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Wrangler 4
+        run: npm install --global wrangler@4
+
+      - name: Require Cloudflare deployment credentials
+        shell: bash
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - name: Prepare ephemeral authentication and runtime configs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RAW_DIR"
+          token=$(openssl rand -hex 32)
+          echo "::add-mask::$token"
+          echo "ACCEPTANCE_TOKEN=$token" >> "$GITHUB_ENV"
+
+          python - "$token" <<'PY'
+          from pathlib import Path
+          import sys
+
+          token = sys.argv[1]
+          root = Path('workers/analytics-generator-acceptance')
+          for provider in ('twitch', 'kick'):
+              source = (root / f'wrangler.{provider}.toml').read_text()
+              marker = '[vars]\n'
+              if marker not in source:
+                  raise SystemExit(f'{provider}: vars section missing')
+              runtime = source.replace(marker, f'{marker}ACCEPTANCE_TOKEN = "{token}"\n', 1)
+              (root / f'.runtime.{provider}.toml').write_text(runtime)
+          PY
+
+      - name: Deploy and run provider acceptance Workers
+        shell: bash
+        run: |
+          set +e
+          cd workers/analytics-generator-acceptance
+
+          run_provider() {
+            provider="$1"
+            worker_name="$2"
+            config=".runtime.${provider}.toml"
+            log="$GITHUB_WORKSPACE/$RAW_DIR/${provider}-deploy.log"
+            url_file="$GITHUB_WORKSPACE/$RAW_DIR/${provider}-url.txt"
+            result_file="$GITHUB_WORKSPACE/$RAW_DIR/${provider}.json"
+
+            wrangler deploy --config "$config" > "$log" 2>&1
+            deploy_code=$?
+            url=$(sed -E 's/\x1B\[[0-9;]*[mK]//g' "$log" | grep -Eo 'https://[A-Za-z0-9.-]+\.workers\.dev' | tail -n 1)
+            if [ -n "$url" ]; then printf '%s' "$url" > "$url_file"; fi
+
+            run_code=1
+            final_curl_code=1
+            final_http_code=000
+            if [ "$deploy_code" -eq 0 ] && [ -n "$url" ]; then
+              for attempt in $(seq 1 6); do
+                tmp="${result_file}.attempt"
+                http_code=$(curl --silent --show-error \
+                  --output "$tmp" \
+                  --write-out '%{http_code}' \
+                  -X POST \
+                  -H "Authorization: Bearer $ACCEPTANCE_TOKEN" \
+                  "$url/run")
+                curl_code=$?
+                final_curl_code=$curl_code
+                final_http_code=${http_code:-000}
+                if [ "$curl_code" -eq 0 ] && [ "$http_code" = '200' ]; then
+                  mv "$tmp" "$result_file"
+                  run_code=0
+                  break
+                fi
+                if [ "$attempt" -eq 6 ]; then
+                  mv "$tmp" "$result_file"
+                else
+                  rm -f "$tmp"
+                  sleep 2
+                fi
+              done
+            fi
+
+            printf '%s %s %s %s\n' \
+              "$deploy_code" "$run_code" "$final_curl_code" "$final_http_code" \
+              > "$GITHUB_WORKSPACE/$RAW_DIR/${provider}-codes.txt"
+            echo "$provider deploy=$deploy_code run=$run_code curl=$final_curl_code http=$final_http_code worker=$worker_name"
+          }
+
+          run_provider twitch viewloom-generator-acceptance-twitch
+          run_provider kick viewloom-generator-acceptance-kick
+          exit 0
+
+      - name: Delete temporary acceptance Worker services
+        if: always()
+        shell: bash
+        run: |
+          set +e
+
+          delete_service() {
+            provider="$1"
+            worker_name="$2"
+            response="$RAW_DIR/${provider}-delete-response.json"
+            http_code=$(curl --silent --show-error \
+              --output "$response" \
+              --write-out '%{http_code}' \
+              -X DELETE \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              -H 'Content-Type: application/json' \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$worker_name?force=true")
+            curl_code=$?
+            success=false
+            if [ -f "$response" ]; then
+              success=$(jq -r '.success == true' "$response" 2>/dev/null || printf 'false')
+            fi
+            delete_code=1
+            if [ "$curl_code" -eq 0 ] && [ "$http_code" = '200' ] && [ "$success" = 'true' ]; then
+              delete_code=0
+            fi
+            printf '%s %s %s\n' "$delete_code" "$curl_code" "${http_code:-000}" \
+              > "$RAW_DIR/${provider}-delete-codes.txt"
+          }
+
+          delete_service twitch viewloom-generator-acceptance-twitch
+          delete_service kick viewloom-generator-acceptance-kick
+          rm -f workers/analytics-generator-acceptance/.runtime.*.toml
+
+          read twitch_deploy twitch_run twitch_run_curl twitch_run_http < "$RAW_DIR/twitch-codes.txt" 2>/dev/null || true
+          read kick_deploy kick_run kick_run_curl kick_run_http < "$RAW_DIR/kick-codes.txt" 2>/dev/null || true
+          read twitch_delete twitch_delete_curl twitch_delete_http < "$RAW_DIR/twitch-delete-codes.txt" 2>/dev/null || true
+          read kick_delete kick_delete_curl kick_delete_http < "$RAW_DIR/kick-delete-codes.txt" 2>/dev/null || true
+
+          node - "$RAW_DIR/lifecycle.json" \
+            "${twitch_deploy:-1}" "${twitch_run:-1}" "${twitch_run_curl:-1}" "${twitch_run_http:-000}" \
+            "${twitch_delete:-1}" "${twitch_delete_curl:-1}" "${twitch_delete_http:-000}" \
+            "${kick_deploy:-1}" "${kick_run:-1}" "${kick_run_curl:-1}" "${kick_run_http:-000}" \
+            "${kick_delete:-1}" "${kick_delete_curl:-1}" "${kick_delete_http:-000}" <<'NODE'
+          const fs = require('fs')
+          const values = process.argv.slice(3).map(Number)
+          const [td, tr, trc, trh, tdel, tdelc, tdelh, kd, kr, krc, krh, kdel, kdelc, kdelh] = values
+          const lifecycle = {
+            twitch: {
+              deployExitCode: td,
+              runExitCode: tr,
+              runCurlExitCode: trc,
+              runHttpStatus: trh,
+              deleteExitCode: tdel,
+              deleteCurlExitCode: tdelc,
+              deleteHttpStatus: tdelh,
+            },
+            kick: {
+              deployExitCode: kd,
+              runExitCode: kr,
+              runCurlExitCode: krc,
+              runHttpStatus: krh,
+              deleteExitCode: kdel,
+              deleteCurlExitCode: kdelc,
+              deleteHttpStatus: kdelh,
+            },
+          }
+          fs.writeFileSync(process.argv[2], `${JSON.stringify(lifecycle, null, 2)}\n`)
+          NODE
+          exit 0
+
+      - name: Normalize sanitized enablement evidence
+        if: always()
+        run: node scripts/collect-12a3-generator-enablement-evidence.mjs "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
+
+      - name: Verify generator enablement evidence
+        if: always()
+        run: node scripts/verify-12a3-generator-enablement-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+
+      - name: Remove raw responses and deployment logs
+        if: always()
+        shell: bash
+        run: rm -rf "$RAW_DIR"
+
+      - name: Publish enablement summary
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f "$ARTIFACT_DIR/evidence.json" ]; then
+            echo '## ViewLoom 12A-3 Generator Enablement' >> "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+            echo '- Evidence was not produced.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo '## ViewLoom 12A-3 Generator Enablement'
+            echo
+            echo "- evidence status: $(jq -r '.status' "$ARTIFACT_DIR/evidence.json")"
+            for provider in twitch kick; do
+              echo "- $provider lifecycle: $(jq -c ".providers.$provider.lifecycle" "$ARTIFACT_DIR/evidence.json")"
+              if [ "$(jq -r ".providers.$provider.status" "$ARTIFACT_DIR/evidence.json")" = 'observed' ]; then
+                echo "- $provider days: $(jq -r ".providers.$provider.firstObservation | length" "$ARTIFACT_DIR/evidence.json")"
+                echo "- $provider rows: $(jq -r ".providers.$provider.firstObservation | map(.rollupRows) | join(\",\")" "$ARTIFACT_DIR/evidence.json")"
+                echo "- $provider second pass unchanged: $(jq -r ".providers.$provider.checks.idempotentObservations" "$ARTIFACT_DIR/evidence.json")"
+              else
+                echo "- $provider diagnostic: $(jq -c ".providers.$provider.diagnostic" "$ARTIFACT_DIR/evidence.json")"
+              fi
+              echo "- $provider provider gate: $(jq -r ".providers.$provider.providerGatePass" "$ARTIFACT_DIR/evidence.json")"
+            done
+            echo "- enablement gate: $(jq -r '.gate.generatorEnablementGatePass' "$ARTIFACT_DIR/evidence.json")"
+            echo "- production generation started: $(jq -r '.gate.productionGenerationStarted' "$ARTIFACT_DIR/evidence.json")"
+            echo "- temporary Workers retained: $(jq -r '.boundaries.temporaryWorkersRetained' "$ARTIFACT_DIR/evidence.json")"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload sanitized enablement evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a3-generator-enablement
+          path: artifacts/12a3-generator-enablement/evidence.json
+          if-no-files-found: warn

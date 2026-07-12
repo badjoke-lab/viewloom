@@ -17,9 +17,8 @@ crons = ["*/5 * * * *"]
 # Configure after deploy or in Cloudflare dashboard.
 # KICK_CHANNEL_SLUGS is a comma-separated list, for example:
 # KICK_CHANNEL_SLUGS = "channel-one,channel-two"
-#
-# [vars]
-# KICK_CHANNEL_SLUGS = ""
+[vars]
+INTRADAY_GENERATION_ENABLED = "true"
 
 # Bind this after creating the D1 database in Cloudflare.
 # The database_id must be filled from the Cloudflare dashboard or `wrangler d1 list`.
