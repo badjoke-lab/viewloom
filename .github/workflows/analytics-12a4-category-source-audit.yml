@@ -1,0 +1,258 @@
+name: Analytics 12A4 Category Source Audit
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+    paths:
+      - 'workers/category-source-audit/**'
+      - 'docs/audits/12a4-category-source-audit-contract.json'
+      - 'docs/audits/12a4-category-source-audit-evidence.json'
+      - 'docs/operations/12a4-category-source-audit-*.md'
+      - 'docs/work-in-progress/phase12a4-category-source-audit.md'
+      - 'scripts/collect-12a4-category-source-evidence.mjs'
+      - 'scripts/verify-12a4-category-source-evidence.mjs'
+      - 'scripts/verify-12a4-category-source-audit-package.mjs'
+      - 'scripts/check-12a4-category-source-audit-scope.mjs'
+      - '.github/workflows/analytics-12a4-category-source-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: analytics-12a4-category-source-audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify category source audit scope
+        run: node scripts/check-12a4-category-source-audit-scope.mjs
+
+      - name: Verify category source audit package
+        run: node scripts/verify-12a4-category-source-audit-package.mjs
+
+      - name: Verify permanent evidence when present
+        run: |
+          if [ -f docs/audits/12a4-category-source-audit-evidence.json ]; then
+            node scripts/verify-12a4-category-source-evidence.mjs docs/audits/12a4-category-source-audit-evidence.json
+          else
+            echo 'Permanent category source evidence is not frozen yet.'
+          fi
+
+      - name: Install Wrangler 4
+        run: npm install --global wrangler@4
+
+      - name: Bundle Twitch audit wrapper without deploying
+        run: wrangler deploy --dry-run --config workers/category-source-audit/wrangler.twitch.toml --outdir /tmp/viewloom-category-audit-twitch
+
+      - name: Bundle Kick audit wrapper without deploying
+        run: wrangler deploy --dry-run --config workers/category-source-audit/wrangler.kick.toml --outdir /tmp/viewloom-category-audit-kick
+
+  production-audit:
+    if: >-
+      github.repository == 'badjoke-lab/viewloom'
+      && github.event_name == 'pull_request'
+      && github.event.action == 'opened'
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && github.head_ref == 'work-analytics-12a4-category-source-audit'
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      RAW_DIR: artifacts/12a4-category-source/raw
+      ARTIFACT_DIR: artifacts/12a4-category-source
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Wrangler 4
+        run: npm install --global wrangler@4
+
+      - name: Require trusted Cloudflare credentials
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - name: Prepare random protected audit route
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RAW_DIR"
+          token=$(openssl rand -hex 32)
+          echo "::add-mask::$token"
+          echo "CATEGORY_AUDIT_TOKEN=$token" >> "$GITHUB_ENV"
+          python - "$token" <<'PY'
+          from pathlib import Path
+          import sys
+          token = sys.argv[1]
+          for name in ('twitch.ts', 'kick.ts'):
+              path = Path('workers/category-source-audit') / name
+              text = path.read_text()
+              if text.count('__CATEGORY_AUDIT_TOKEN__') != 1:
+                  raise SystemExit(f'unexpected token placeholder count in {path}')
+              path.write_text(text.replace('__CATEGORY_AUDIT_TOKEN__', token))
+          PY
+
+      - name: Deploy temporary category audit wrappers
+        shell: bash
+        run: |
+          set +e
+          deploy_provider() {
+            provider="$1"
+            log="$RAW_DIR/${provider}-audit-deploy.log"
+            wrangler deploy --config "workers/category-source-audit/wrangler.${provider}.toml" > "$log" 2>&1
+            code=$?
+            clean=$(sed -E 's/\x1B\[[0-9;]*[mK]//g' "$log")
+            url=$(printf '%s\n' "$clean" | grep -Eo 'https://[A-Za-z0-9.-]+\.workers\.dev' | tail -n 1)
+            printf '%s\n' "$code" > "$RAW_DIR/${provider}-audit-deploy-code.txt"
+            printf '%s\n' "$url" > "$RAW_DIR/${provider}-url.txt"
+          }
+          deploy_provider twitch
+          deploy_provider kick
+          exit 0
+
+      - name: Call each provider audit twice
+        shell: bash
+        run: |
+          set +e
+          call_provider() {
+            provider="$1"
+            url=$(cat "$RAW_DIR/${provider}-url.txt" 2>/dev/null)
+            for pass in 1 2; do
+              output="$RAW_DIR/${provider}-${pass}.json"
+              curl_code=1
+              http_code=000
+              if [ -n "$url" ]; then
+                http_code=$(curl --silent --show-error --output "$output" --write-out '%{http_code}' \
+                  -X POST \
+                  -H "Authorization: Bearer $CATEGORY_AUDIT_TOKEN" \
+                  "$url/__viewloom_category_source_audit__")
+                curl_code=$?
+              else
+                printf '%s\n' '{"ok":false,"error":"audit_worker_url_missing"}' > "$output"
+              fi
+              printf '%s %s\n' "$curl_code" "${http_code:-000}" > "$RAW_DIR/${provider}-call-${pass}.txt"
+              if [ "$pass" -eq 1 ]; then sleep 12; fi
+            done
+          }
+          call_provider twitch
+          call_provider kick
+          exit 0
+
+      - name: Restore main collector Workers
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          restore_provider() {
+            provider="$1"
+            log="$RAW_DIR/${provider}-restore.log"
+            wrangler deploy --config "workers/collector-${provider}/wrangler.toml" > "$log" 2>&1
+            restore_code=$?
+            url=$(cat "$RAW_DIR/${provider}-url.txt" 2>/dev/null)
+            if [ -z "$url" ]; then
+              clean=$(sed -E 's/\x1B\[[0-9;]*[mK]//g' "$log")
+              url=$(printf '%s\n' "$clean" | grep -Eo 'https://[A-Za-z0-9.-]+\.workers\.dev' | tail -n 1)
+            fi
+            health_curl=1
+            health_http=000
+            if [ "$restore_code" -eq 0 ] && [ -n "$url" ]; then
+              health_http=$(curl --silent --show-error --output "$RAW_DIR/${provider}-health.json" --write-out '%{http_code}' "$url/health")
+              health_curl=$?
+            fi
+            printf '%s\n' "$restore_code" > "$RAW_DIR/${provider}-restore-code.txt"
+            printf '%s %s\n' "$health_curl" "${health_http:-000}" > "$RAW_DIR/${provider}-restore-health.txt"
+          }
+          restore_provider twitch
+          restore_provider kick
+          git checkout -- workers/category-source-audit/twitch.ts workers/category-source-audit/kick.ts
+          node - "$RAW_DIR" <<'NODE'
+          const fs = require('fs')
+          const path = require('path')
+          const rawDir = process.argv[2]
+          const read = (name, fallback = '') => {
+            try { return fs.readFileSync(path.join(rawDir, name), 'utf8').trim() } catch { return fallback }
+          }
+          const lifecycle = {}
+          for (const provider of ['twitch', 'kick']) {
+            const calls = [1, 2].map((pass) => {
+              const [curlExitCode = '1', httpStatus = '0'] = read(`${provider}-call-${pass}.txt`, '1 0').split(/\s+/)
+              return { curlExitCode: Number(curlExitCode), httpStatus: Number(httpStatus) }
+            })
+            const [restoreHealthCurlExitCode = '1', restoreHealthHttpStatus = '0'] = read(`${provider}-restore-health.txt`, '1 0').split(/\s+/)
+            lifecycle[provider] = {
+              auditDeployExitCode: Number(read(`${provider}-audit-deploy-code.txt`, '1')),
+              calls,
+              restoreExitCode: Number(read(`${provider}-restore-code.txt`, '1')),
+              restoreHealthCurlExitCode: Number(restoreHealthCurlExitCode),
+              restoreHealthHttpStatus: Number(restoreHealthHttpStatus),
+            }
+          }
+          fs.writeFileSync(path.join(rawDir, 'lifecycle.json'), `${JSON.stringify(lifecycle, null, 2)}\n`)
+          NODE
+          exit 0
+
+      - name: Normalize and verify sanitized category source evidence
+        run: |
+          node scripts/collect-12a4-category-source-evidence.mjs "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
+          node scripts/verify-12a4-category-source-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+
+      - name: Comment category source audit result
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          evidence="$ARTIFACT_DIR/evidence.json"
+          if [ ! -f "$evidence" ]; then exit 0; fi
+          {
+            echo '## 12A-4 category source audit'
+            echo
+            echo '```text'
+            echo "lifecycle pass: $(jq -r '.gate.lifecyclePass' "$evidence")"
+            echo "Twitch source verified: $(jq -r '.gate.twitchSourceVerified' "$evidence")"
+            echo "Kick primary source verified: $(jq -r '.gate.kickPrimarySourceVerified' "$evidence")"
+            echo "storage design authorized: $(jq -r '.gate.storageDesignAuthorized' "$evidence")"
+            echo "runtime capture authorized: $(jq -r '.gate.runtimeCaptureAuthorized' "$evidence")"
+            echo "Twitch selected pair: $(jq -r 'if .providers.twitch.selectedSourceContract then (.providers.twitch.selectedSourceContract.providerIdPath + " / " + .providers.twitch.selectedSourceContract.namePath) else "none" end' "$evidence")"
+            echo "Kick primary selected pair: $(jq -r 'if .providers.kick.selectedSourceContract then (.providers.kick.selectedSourceContract.providerIdPath + " / " + .providers.kick.selectedSourceContract.namePath) else "none" end' "$evidence")"
+            echo '```'
+          } > /tmp/category-audit-comment.md
+          gh pr comment "$PR_NUMBER" --body-file /tmp/category-audit-comment.md
+
+      - name: Remove deployment logs and probe working files
+        if: always()
+        run: rm -rf "$RAW_DIR"
+
+      - name: Upload sanitized category source evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a4-category-source-audit
+          path: artifacts/12a4-category-source/evidence.json
+          if-no-files-found: warn
