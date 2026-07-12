@@ -9,11 +9,20 @@ const contract = JSON.parse(readFileSync('docs/audits/12a3-execution-cost-probe-
 
 assert.equal(evidence.schemaVersion, 'viewloom-12a3-execution-cost-evidence-v1')
 assert.equal(evidence.workstream, '12A-3 bounded intraday rollup generation')
-assert.equal(evidence.status, 'observed')
+assert.ok(['observed', 'accepted'].includes(evidence.status), 'evidence status must be observed or accepted')
 assert.equal(evidence.providerSeparated, true)
 assert.ok(Number.isFinite(Date.parse(evidence.observedAt)), 'observedAt must be an ISO timestamp')
 assert.equal(evidence.contract, 'docs/audits/12a3-execution-cost-probe-contract.json')
 assert.equal(evidence.gate.generationAuthorizedByThisEvidenceAlone, false)
+
+if (evidence.status === 'accepted') {
+  assert.equal(contract.status, 'accepted')
+  assert.equal(evidence.acceptanceIdentity.pr, contract.acceptedEvidence.pr)
+  assert.equal(evidence.acceptanceIdentity.headSha, contract.acceptedEvidence.headSha)
+  assert.equal(evidence.acceptanceIdentity.workflowRunId, contract.acceptedEvidence.workflowRunId)
+  assert.equal(evidence.acceptanceIdentity.artifactId, contract.acceptedEvidence.artifactId)
+  assert.equal(evidence.acceptanceIdentity.artifactDigest, contract.acceptedEvidence.artifactDigest)
+}
 
 for (const provider of ['twitch', 'kick']) {
   const row = evidence.providers?.[provider]
