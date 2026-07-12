@@ -25,7 +25,7 @@ for (const path of [
   'docs/audits/12a3-postmerge-acceptance-evidence.json',
   'docs/operations/12a3-generator-enablement-acceptance-2026-07-12.md',
   'docs/operations/12a3-postmerge-acceptance-2026-07-12.md',
-  'workers/shared/intraday-generator.ts',
+  'workers/shared/intraday-rollup.ts',
   'workers/collector-twitch/src/entry.ts',
   'workers/collector-kick/src/entry.ts',
 ]) assert.equal(exists(path), true, `missing file: ${path}`)
