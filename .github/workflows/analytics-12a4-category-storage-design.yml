@@ -63,8 +63,10 @@ jobs:
           fi
 
       - name: Publish category storage summary
+        if: always()
         run: |
           evidence=artifacts/12a4-category-storage/evidence.json
+          if [ ! -f "$evidence" ]; then exit 0; fi
           {
             echo '## ViewLoom 12A-4 Category Storage Design'
             echo
@@ -78,8 +80,9 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload category storage evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: phase12a4-category-storage-design
           path: artifacts/12a4-category-storage/evidence.json
-          if-no-files-found: error
+          if-no-files-found: warn
