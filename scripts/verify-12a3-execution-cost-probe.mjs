@@ -77,13 +77,16 @@ for (const fragment of [
   'for attempt in $(seq 1 6)',
   '--output "$tmp"',
   "[ \"$http_code\" = '200' ]",
-  'wrangler delete viewloom-cost-probe-twitch --force',
-  'wrangler delete viewloom-cost-probe-kick --force',
+  'Delete temporary Worker services and write lifecycle evidence',
+  '-X DELETE',
+  '/workers/services/$worker_name?force=true',
+  'delete_service twitch viewloom-cost-probe-twitch',
+  'delete_service kick viewloom-cost-probe-kick',
   'Remove raw responses and deployment logs',
   'Upload sanitized execution-cost evidence only',
 ]) assert.ok(workflow.includes(fragment), `probe workflow missing: ${fragment}`)
 
-assert.equal(workflow.includes('wrangler delete --name'), false, 'wrangler delete must use the Worker name as a positional argument')
+assert.equal(workflow.includes('wrangler delete'), false, 'temporary service deletion must avoid Wrangler KV follow-up')
 assert.equal(workflow.includes('pull_request_target:'), false, 'probe workflow must not use pull_request_target')
 assert.equal(workflow.includes('schedule:'), false, 'probe workflow must not add recurring execution')
 assert.equal(workflow.includes('wrangler d1 execute'), false, 'probe workflow must use Worker bindings, not direct D1 execute')
@@ -92,8 +95,7 @@ console.log('12A-3 execution cost probe static verification passed.')
 console.log('- Twitch and Kick use separate temporary Workers and D1 bindings')
 console.log('- latest complete UTC source day is read without source mutation')
 console.log('- bounded 25-row write sample runs twice for idempotency')
-console.log('- atomic response files prevent retry-body concatenation')
-console.log('- positional Worker deletion is required')
+console.log('- atomic response files preserve only the final HTTP attempt')
+console.log('- temporary services are deleted through the Cloudflare service API')
 console.log('- exact same-repository branch restriction is enforced')
-console.log('- cleanup and temporary Worker deletion are required')
 console.log('- production generation and new cron remain absent')
