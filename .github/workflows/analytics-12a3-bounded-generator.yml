@@ -1,0 +1,68 @@
+name: Analytics 12A3 Bounded Generator
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'workers/shared/intraday-rollup.ts'
+      - 'workers/collector-twitch/src/entry.ts'
+      - 'workers/collector-kick/src/entry.ts'
+      - 'docs/audits/12a3-bounded-generator-contract.json'
+      - 'docs/work-in-progress/phase12a3-bounded-generator.md'
+      - 'scripts/test-12a3-bounded-generator-sql.py'
+      - 'scripts/verify-12a3-bounded-generator.mjs'
+      - 'scripts/check-12a3-bounded-generator-scope.mjs'
+      - '.github/workflows/analytics-12a3-bounded-generator.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: analytics-12a3-bounded-generator-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify bounded generator branch scope
+        run: node scripts/check-12a3-bounded-generator-scope.mjs
+
+      - name: Verify bounded generator contract
+        run: node scripts/verify-12a3-bounded-generator.mjs
+
+      - name: Run bounded generator SQLite fixture
+        run: python3 scripts/test-12a3-bounded-generator-sql.py
+
+      - name: Typecheck and verify collectors
+        run: pnpm check:collectors
+
+      - name: Publish bounded generator summary
+        run: |
+          {
+            echo '## ViewLoom 12A-3 Bounded Generator'
+            echo
+            echo '- providers: Twitch and Kick, separate D1 bindings'
+            echo '- source days: today and yesterday UTC only'
+            echo '- caps: Twitch 600, Kick 200 streamers/day'
+            echo '- maintenance windows: 00:20-00:24 and 12:20-12:24 UTC'
+            echo '- maximum generator queries/invocation: 12'
+            echo '- provider-day write batch statements: 4'
+            echo '- set-based SQL: required'
+            echo '- idempotency fixture: pass'
+            echo '- stale-row removal fixture: pass'
+            echo '- provider separation fixture: pass'
+            echo '- no-source preservation fixture: pass'
+            echo '- intraday retention: 90 days'
+            echo '- new cron: no'
+            echo '- backfill: no'
+            echo '- Wrangler enable flag: absent'
+            echo '- production generation started by merge: no'
+          } >> "$GITHUB_STEP_SUMMARY"
