@@ -1,0 +1,252 @@
+name: Analytics 12A3 Execution Cost Probe
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - 'workers/analytics-cost-probe/**'
+      - 'docs/audits/12a3-execution-cost-probe-contract.json'
+      - 'docs/audits/12a3-execution-cost-evidence.json'
+      - 'docs/operations/12a3-execution-cost-acceptance-*.md'
+      - 'docs/work-in-progress/phase12a3-execution-cost-probe.md'
+      - 'scripts/collect-12a3-execution-cost-evidence.mjs'
+      - 'scripts/verify-12a3-execution-cost-evidence.mjs'
+      - 'scripts/verify-12a3-execution-cost-probe.mjs'
+      - 'scripts/check-12a3-execution-cost-probe-scope.mjs'
+      - '.github/workflows/analytics-12a3-execution-cost-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a3-execution-cost-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify branch scope
+        run: node scripts/check-12a3-execution-cost-probe-scope.mjs
+
+      - name: Verify probe contract
+        run: node scripts/verify-12a3-execution-cost-probe.mjs
+
+      - name: Install Wrangler 4
+        run: npm install --global wrangler@4
+
+      - name: Bundle Twitch probe without deploying
+        working-directory: workers/analytics-cost-probe
+        run: wrangler deploy --dry-run --config wrangler.twitch.toml --outdir /tmp/viewloom-probe-twitch
+
+      - name: Bundle Kick probe without deploying
+        working-directory: workers/analytics-cost-probe
+        run: wrangler deploy --dry-run --config wrangler.kick.toml --outdir /tmp/viewloom-probe-kick
+
+  production-probe:
+    if: >-
+      github.repository == 'badjoke-lab/viewloom'
+      && (
+        github.event_name == 'workflow_dispatch'
+        || (
+          github.event.pull_request.head.repo.full_name == github.repository
+          && github.head_ref == 'work-analytics-12a3-execution-cost-probe'
+        )
+      )
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      RAW_DIR: artifacts/12a3-execution-cost/raw
+      ARTIFACT_DIR: artifacts/12a3-execution-cost
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PR_NUMBER: ${{ github.event.pull_request.number || 0 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Wrangler 4
+        run: npm install --global wrangler@4
+
+      - name: Require Cloudflare deployment credentials
+        shell: bash
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - name: Prepare ephemeral authentication and runtime configs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RAW_DIR"
+          token=$(openssl rand -hex 32)
+          echo "::add-mask::$token"
+          echo "PROBE_TOKEN=$token" >> "$GITHUB_ENV"
+
+          python - "$token" <<'PY'
+          from pathlib import Path
+          import sys
+
+          token = sys.argv[1]
+          root = Path('workers/analytics-cost-probe')
+          for provider in ('twitch', 'kick'):
+              source = (root / f'wrangler.{provider}.toml').read_text()
+              marker = '[vars]\n'
+              if marker not in source:
+                  raise SystemExit(f'{provider}: vars section missing')
+              runtime = source.replace(marker, f'{marker}PROBE_TOKEN = "{token}"\n', 1)
+              (root / f'.runtime.{provider}.toml').write_text(runtime)
+          PY
+
+      - name: Deploy and run provider probes
+        shell: bash
+        run: |
+          set +e
+          cd workers/analytics-cost-probe
+
+          run_provider() {
+            provider="$1"
+            worker_name="$2"
+            config=".runtime.${provider}.toml"
+            log="$GITHUB_WORKSPACE/$RAW_DIR/${provider}-deploy.log"
+            url_file="$GITHUB_WORKSPACE/$RAW_DIR/${provider}-url.txt"
+            result_file="$GITHUB_WORKSPACE/$RAW_DIR/${provider}.json"
+
+            wrangler deploy --config "$config" > "$log" 2>&1
+            deploy_code=$?
+            url=$(sed -E 's/\x1B\[[0-9;]*[mK]//g' "$log" | grep -Eo 'https://[A-Za-z0-9.-]+\.workers\.dev' | tail -n 1)
+            if [ -n "$url" ]; then printf '%s' "$url" > "$url_file"; fi
+
+            run_code=1
+            if [ "$deploy_code" -eq 0 ] && [ -n "$url" ]; then
+              curl --silent --show-error --fail-with-body \
+                --retry 5 --retry-delay 2 --retry-all-errors \
+                -X POST \
+                -H "Authorization: Bearer $PROBE_TOKEN" \
+                "$url/run" > "$result_file"
+              run_code=$?
+            fi
+
+            printf '%s %s\n' "$deploy_code" "$run_code" > "$GITHUB_WORKSPACE/$RAW_DIR/${provider}-codes.txt"
+            echo "$provider deploy=$deploy_code run=$run_code worker=$worker_name"
+          }
+
+          run_provider twitch viewloom-cost-probe-twitch
+          run_provider kick viewloom-cost-probe-kick
+          exit 0
+
+      - name: Force probe-row cleanup
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          for provider in twitch kick; do
+            url_file="$RAW_DIR/${provider}-url.txt"
+            cleanup_code=1
+            if [ -f "$url_file" ]; then
+              url=$(cat "$url_file")
+              curl --silent --show-error --fail-with-body \
+                --retry 3 --retry-delay 2 --retry-all-errors \
+                -X POST \
+                -H "Authorization: Bearer $PROBE_TOKEN" \
+                "$url/cleanup" > "$RAW_DIR/${provider}-cleanup.json"
+              cleanup_code=$?
+            fi
+            printf '%s\n' "$cleanup_code" > "$RAW_DIR/${provider}-cleanup-code.txt"
+          done
+          exit 0
+
+      - name: Delete temporary Workers and write lifecycle evidence
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          wrangler delete --name viewloom-cost-probe-twitch --force > "$RAW_DIR/twitch-delete.log" 2>&1
+          twitch_delete=$?
+          wrangler delete --name viewloom-cost-probe-kick --force > "$RAW_DIR/kick-delete.log" 2>&1
+          kick_delete=$?
+          rm -f workers/analytics-cost-probe/.runtime.*.toml
+
+          read twitch_deploy twitch_run < "$RAW_DIR/twitch-codes.txt" 2>/dev/null || true
+          read kick_deploy kick_run < "$RAW_DIR/kick-codes.txt" 2>/dev/null || true
+          twitch_cleanup=$(cat "$RAW_DIR/twitch-cleanup-code.txt" 2>/dev/null || printf '1')
+          kick_cleanup=$(cat "$RAW_DIR/kick-cleanup-code.txt" 2>/dev/null || printf '1')
+
+          node - "$RAW_DIR/lifecycle.json" \
+            "${twitch_deploy:-1}" "${twitch_run:-1}" "$twitch_cleanup" "$twitch_delete" \
+            "${kick_deploy:-1}" "${kick_run:-1}" "$kick_cleanup" "$kick_delete" <<'NODE'
+          const fs = require('fs')
+          const [path, td, tr, tc, tdel, kd, kr, kc, kdel] = process.argv.slice(2)
+          const lifecycle = {
+            twitch: { deployExitCode: Number(td), runExitCode: Number(tr), cleanupExitCode: Number(tc), deleteExitCode: Number(tdel) },
+            kick: { deployExitCode: Number(kd), runExitCode: Number(kr), cleanupExitCode: Number(kc), deleteExitCode: Number(kdel) },
+          }
+          fs.writeFileSync(path, `${JSON.stringify(lifecycle, null, 2)}\n`)
+          NODE
+          exit 0
+
+      - name: Normalize sanitized execution-cost evidence
+        if: always()
+        run: node scripts/collect-12a3-execution-cost-evidence.mjs "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
+
+      - name: Verify execution-cost evidence
+        if: always()
+        run: node scripts/verify-12a3-execution-cost-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+
+      - name: Remove raw responses and deployment logs
+        if: always()
+        shell: bash
+        run: rm -rf "$RAW_DIR"
+
+      - name: Publish execution-cost summary
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f "$ARTIFACT_DIR/evidence.json" ]; then
+            echo '## ViewLoom 12A-3 Execution Cost Probe' >> "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+            echo '- Evidence was not produced.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo '## ViewLoom 12A-3 Execution Cost Probe'
+            echo
+            for provider in twitch kick; do
+              echo "- $provider source snapshots: $(jq -r ".providers.$provider.source.sourceSnapshots" "$ARTIFACT_DIR/evidence.json")"
+              echo "- $provider aggregate D1 duration: $(jq -r ".providers.$provider.query.aggregate.durationMs" "$ARTIFACT_DIR/evidence.json") ms"
+              echo "- $provider aggregate wall: $(jq -r ".providers.$provider.query.aggregateWallMs" "$ARTIFACT_DIR/evidence.json") ms"
+              echo "- $provider total Worker wall: $(jq -r ".providers.$provider.totalWorkerWallMs" "$ARTIFACT_DIR/evidence.json") ms"
+              echo "- $provider provider gate: $(jq -r ".providers.$provider.providerGatePass" "$ARTIFACT_DIR/evidence.json")"
+            done
+            echo "- execution-cost gate: $(jq -r '.gate.generationExecutionCostGatePass' "$ARTIFACT_DIR/evidence.json")"
+            echo '- production generation started: no'
+            echo '- retained probe rows: 0'
+            echo '- temporary Workers retained: no'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload sanitized execution-cost evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a3-execution-cost-probe
+          path: artifacts/12a3-execution-cost/evidence.json
+          if-no-files-found: warn
