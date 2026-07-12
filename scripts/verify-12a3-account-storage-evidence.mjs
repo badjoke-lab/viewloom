@@ -43,6 +43,8 @@ for (const [provider, safeRollupProjectionMb] of Object.entries(expected)) {
   assert.equal(row.projectedHeadroomMb, round(500 - row.projectedSizeMbWithSafety, 2), `${provider}: headroom math mismatch`)
   assert.equal(row.projectedUtilizationPct, round((row.projectedSizeMbWithSafety / 500) * 100, 2), `${provider}: utilization math mismatch`)
   assert.equal(row.providerStorageGatePass, row.projectedSizeMbWithSafety <= 450, `${provider}: provider gate mismatch`)
+  assert.equal('databaseName' in row, false, `${provider}: databaseName must not be persisted`)
+  assert.equal('databaseId' in row, false, `${provider}: databaseId must not be persisted`)
 }
 
 const account = evidence.account
@@ -51,6 +53,8 @@ assert.ok(Number.isInteger(account.databaseCount) && account.databaseCount > 0, 
 assert.equal(account.sizedDatabaseCount, account.databaseCount, 'account size coverage incomplete')
 assert.ok(positive(account.currentSizeBytes), 'account current size bytes must be positive')
 assert.ok(positive(account.currentSizeMb), 'account current size MB must be positive')
+assert.equal('databaseNames' in account, false, 'account database names must not be persisted')
+assert.equal('accountId' in account, false, 'Account ID must not be persisted')
 const combinedProjection = round(expected.twitch + expected.kick, 2)
 assert.equal(account.combinedSafeRollupProjectionMb, combinedProjection)
 assert.equal(account.projectedSizeMbWithSafety, round(account.currentSizeMb + combinedProjection, 2), 'account projected size math mismatch')
@@ -85,15 +89,12 @@ assert.ok(Array.isArray(evidence.limitations) && evidence.limitations.length >= 
 
 const serialized = JSON.stringify(evidence)
 for (const forbidden of [
-  'databaseName',
-  'databaseId',
-  'accountId',
   'vl_twitch_hot',
   'vl_kick_hot',
   'CLOUDFLARE_API_TOKEN',
   'CLOUDFLARE_ACCOUNT_ID',
 ]) {
-  assert.equal(serialized.includes(forbidden), false, `sanitized evidence contains forbidden field/value: ${forbidden}`)
+  assert.equal(serialized.includes(forbidden), false, `sanitized evidence contains forbidden value: ${forbidden}`)
 }
 
 console.log('12A-3 account storage evidence verification passed.')
