@@ -1,27 +1,27 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan
-Version: 7.8
+Version: 7.9
 Last updated: 2026-07-12
 Current phase: Phase 12A — Analytics Capture Foundation
-Current workstream: 12A-3 production execution-cost measurement and bounded generation dry run
-12A-3 generation authorized: no
-Remaining blocker: `generation_execution_cost_unmeasured`
+Current workstream: 12A-3 bounded production generator implementation
+Production generation started: no
+Remaining implementation boundary: `bounded_generator_not_implemented`
 
 ```text
 Phase 12A Analytics Capture Foundation active
 12A-0 baseline complete PR #490
 12A-1 field contract complete PR #492
-12A-2 design budget accepted PR #494
-12A-2 repository migration accepted PR #499
+12A-2 design and migration accepted through PR #499
 12A-2 collector deployment and remote schema accepted PR #506
 12A-3 account storage gate accepted PR #507
+12A-3 execution-cost gate accepted PR #508
 Twitch remote schema objects 3 / 3
 Kick remote schema objects 3 / 3
-Remote schema gate pass
 Account D1 databases measured 8 / 8
 Generation storage gate pass
-12A-3 generation blocked pending execution-cost acceptance
+Generation execution-cost gate pass
+Bounded generator implementation current / not started
 Phase 13-14 localization queued after Phase 12A
 Phase 15 capability and calibration audit queued
 Phase 16 analytics observation system gated by Phase 15
@@ -30,8 +30,8 @@ Phase 16 analytics observation system gated by Phase 15
 ## Program sequence
 
 ```text
-12A-3 production execution-cost measurement and bounded generation dry run
-  -> bounded intraday rollup generation
+12A-3 bounded production generator implementation
+  -> production accumulation acceptance
   -> 12A-4 category capture foundation
   -> 12A-5 foundation acceptance and accumulation handoff
   -> Phase 13-14 localization and analytics evidence accumulation
@@ -48,30 +48,33 @@ docs/audits/12a2-migration-acceptance.json
 docs/audits/12a2-collector-worker-deploy-evidence.json
 docs/audits/12a3-account-storage-gate-contract.json
 docs/audits/12a3-account-storage-evidence.json
+docs/audits/12a3-execution-cost-probe-contract.json
+docs/audits/12a3-execution-cost-evidence.json
 docs/audits/12a2-current-gate-state.json
 docs/product/intraday-rollup-design-v1.md
-docs/operations/12a2-collector-worker-deploy-acceptance-2026-07-12.md
 docs/operations/12a3-account-storage-acceptance-2026-07-12.md
+docs/operations/12a3-execution-cost-acceptance-2026-07-12.md
 ```
 
-## Accepted production and storage state
+## Accepted 12A-3 gates
 
 ```text
-Twitch schemaComplete true; objects 3 / 3
-Kick schemaComplete true; objects 3 / 3
 remoteSchemaGatePass true
+generationStorageGatePass true
+generationExecutionCostGatePass true
 
-Twitch current/projected storage 319.39 / 390.38 MB
-Kick current/projected storage   268.99 / 292.56 MB
-Account databases measured       8 / 8
-Account current/projected        3551.70 / 3646.26 MB
-Account operational ceiling      4608 MB
-Account projected utilization    71.22%
-Account projected headroom       1473.74 MB
-generationStorageGatePass        true
+Twitch source snapshots 288
+Twitch aggregate D1 duration / wall 790.730 / 1368 ms
+Twitch full-cap write wall projection 5040 ms
+
+Kick source snapshots 288
+Kick aggregate D1 duration / wall 426.097 / 788 ms
+Kick full-cap write wall projection 1848 ms
+
+idempotent second pass true for both providers
+probe rows retained 0
+temporary Workers retained no
 ```
-
-The permanent deployment workflow uses direct Wrangler 4 CLI and separate provider working directories. The permanent account storage workflow uses D1 Read only, deletes raw control-plane responses before artifact upload, and runs manually and weekly.
 
 ## Closed blockers
 
@@ -79,25 +82,23 @@ The permanent deployment workflow uses direct Wrangler 4 CLI and separate provid
 remote_schema_not_applied
 collector_worker_deployment_not_evidenced
 account_aggregate_storage_unmeasured
+generation_execution_cost_unmeasured
 ```
 
-## Current 12A-3 execution gate
+## Current implementation boundary
 
 ```text
-workerDeploymentEvidencePresent true
-remoteSchemaGatePass true
-accountAggregateMeasured true
-generationStorageGatePass true
-generation authorized false
+implementationAuthorized true
+generationAuthorized false
 runtimeGenerationStarted false
-remaining blocker generation_execution_cost_unmeasured
+bounded_generator_not_implemented
 ```
-
-The next implementation must run a bounded provider-separated dry run and record D1 rows_read, rows_written, SQL duration, Worker duration, output rows/bytes, idempotency, and failure behavior before recurring production accumulation begins.
 
 ### 12A-3 bounded intraday rollup generation
 
-After the execution gate passes, generate compact rollups idempotently, prefer existing schedule windows, avoid a new high-frequency cron by default, and continue measuring collector plus D1 cost.
+Implement provider-specific generation behind existing maintenance windows. Reuse the accepted aggregate/upsert contract, refresh only today and yesterday, keep Twitch and Kick separate, use idempotent upserts, add no new cron, perform no backfill, contain failures after collector execution, and preserve cost observability.
+
+Runtime generation remains disabled until implementation acceptance and deploy verification.
 
 ### 12A-4 category capture foundation
 

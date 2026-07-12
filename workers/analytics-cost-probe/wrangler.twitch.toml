@@ -1,0 +1,15 @@
+name = "viewloom-cost-probe-twitch"
+main = "src/index.ts"
+compatibility_date = "2026-05-18"
+workers_dev = true
+
+[vars]
+PROVIDER = "twitch"
+STREAMER_CAP = "600"
+PROBE_WRITE_ROWS = "25"
+BUCKET_MINUTES = "5"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "vl_twitch_hot"
+database_id = "b77221fe-80a3-4749-bc0e-d3ad54003dcf"

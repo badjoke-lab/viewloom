@@ -1,0 +1,15 @@
+name = "viewloom-cost-probe-kick"
+main = "src/index.ts"
+compatibility_date = "2026-05-18"
+workers_dev = true
+
+[vars]
+PROVIDER = "kick"
+STREAMER_CAP = "200"
+PROBE_WRITE_ROWS = "25"
+BUCKET_MINUTES = "5"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "vl_kick_hot"
+database_id = "ed1e082f-85ac-4dd0-a44e-5d3e200667d5"

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "viewloom-12a3-execution-cost-probe-contract-v1",
+  "workstream": "12A-3 bounded intraday rollup generation",
+  "status": "accepted",
+  "providerSeparated": true,
+  "source": {
+    "table": "minute_snapshots",
+    "daySelection": "latest_complete_utc_day",
+    "rawRowsModified": false
+  },
+  "temporaryWorkers": {
+    "twitch": {
+      "name": "viewloom-cost-probe-twitch",
+      "binding": "DB",
+      "databaseName": "vl_twitch_hot",
+      "streamerCap": 600,
+      "probeWriteRows": 25,
+      "bucketMinutes": 5
+    },
+    "kick": {
+      "name": "viewloom-cost-probe-kick",
+      "binding": "DB",
+      "databaseName": "vl_kick_hot",
+      "streamerCap": 200,
+      "probeWriteRows": 25,
+      "bucketMinutes": 5
+    }
+  },
+  "writeProbe": {
+    "targetTables": [
+      "streamer_intraday_rollups",
+      "intraday_rollup_status"
+    ],
+    "reservedDay": "1900-01-01",
+    "selectionState": "cost_probe",
+    "firstPass": "upsert bounded sample rows and one status row",
+    "secondPass": "repeat identical upserts",
+    "idempotencyRule": "retained row count is unchanged by the second pass",
+    "cleanupRequired": true,
+    "retainedProbeRowsRequired": 0
+  },
+  "acceptance": {
+    "minimumSourceSnapshots": 60,
+    "minimumProbeWriteRows": 10,
+    "maximumAggregateD1DurationMs": 5000,
+    "maximumAggregateWallMs": 20000,
+    "maximumTotalWorkerWallMs": 30000,
+    "maximumProjectedFullCapWriteD1DurationMs": 5000,
+    "maximumProjectedFullCapWriteWallMs": 15000,
+    "idempotentRowCountRequired": true,
+    "cleanupRequired": true,
+    "providerGateRequired": true
+  },
+  "workflow": {
+    "candidateBranch": "work-analytics-12a3-execution-cost-probe",
+    "sameRepositoryOnly": true,
+    "forkSecretsAllowed": false,
+    "temporaryWorkerDeleteRequired": true,
+    "temporaryServiceDeleteMethod": "Cloudflare Workers service API",
+    "permanentPublicRouteAdded": false,
+    "newCronAdded": false
+  },
+  "acceptedEvidence": {
+    "pr": 508,
+    "headSha": "b13f808a51de5d8375532b9413750e66d8f7cb00",
+    "workflowRunId": 29187282418,
+    "artifactId": 8258409485,
+    "artifactName": "phase12a3-execution-cost-probe",
+    "artifactDigest": "sha256:a6523da05fef711cd431b8803fd725cd7917231c72bd44397f0506b65339f2ab",
+    "twitchPass": true,
+    "kickPass": true,
+    "generationExecutionCostGatePass": true,
+    "temporaryWorkersRetained": false,
+    "probeRowsRetained": false
+  },
+  "boundaries": {
+    "productionGenerationStarted": false,
+    "backfillIncluded": false,
+    "retentionChanged": false,
+    "categoryCaptureIncluded": false,
+    "exactSessionFieldsIncluded": false,
+    "crossProviderAnalyticsIncluded": false
+  }
+}
