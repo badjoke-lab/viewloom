@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "viewloom-12a3-postmerge-acceptance-contract-v1",
+  "workstream": "12A-3 enabled collector post-merge acceptance",
+  "status": "candidate",
+  "merge": {
+    "pr": 510,
+    "sha": "ad90585d74149b0fb1805b9a76fd8d796a5e7c2d",
+    "branch": "main"
+  },
+  "deployment": {
+    "workflow": "deploy-collector-workers.yml",
+    "event": "push",
+    "headShaMustMatchMerge": true,
+    "requiredJobs": [
+      "verify",
+      "deploy-twitch",
+      "deploy-kick",
+      "verify-remote-schema"
+    ],
+    "requiredConclusion": "success"
+  },
+  "naturalMaintenance": {
+    "windowUtc": "2026-07-12T12:20:00.000Z/2026-07-12T12:24:59.999Z",
+    "minimumRefreshedAt": "2026-07-12T12:20:00.000Z",
+    "newCronAdded": false,
+    "manualCollectorRouteUsed": false,
+    "temporaryGeneratorUsed": false
+  },
+  "providers": {
+    "twitch": {
+      "databaseName": "vl_twitch_hot",
+      "streamerCap": 600,
+      "temporaryVerifier": "viewloom-postmerge-verifier-twitch"
+    },
+    "kick": {
+      "databaseName": "vl_kick_hot",
+      "streamerCap": 200,
+      "temporaryVerifier": "viewloom-postmerge-verifier-kick"
+    }
+  },
+  "acceptance": {
+    "expectedDaysPerProvider": 2,
+    "rowsMustMatchStatus": true,
+    "ranksMustBeContiguous": true,
+    "aggregatesMustBePositive": true,
+    "statusAndAllRowsMustRefreshAfterMinimum": true,
+    "contractVersion": "analytics-source-v1",
+    "providerSeparationRequired": true,
+    "temporaryVerifiersRetained": false
+  },
+  "privacy": {
+    "streamerIdentitiesIncluded": false,
+    "databaseIdsIncluded": false,
+    "accountIdIncluded": false,
+    "secretValuesIncluded": false,
+    "rawResponsesIncluded": false,
+    "deploymentLogsIncluded": false
+  },
+  "scope": {
+    "collectorRuntimeChanged": false,
+    "collectorConfigurationChanged": false,
+    "sharedGeneratorChanged": false,
+    "migrationChanged": false,
+    "webOrApiChanged": false,
+    "sourceRowsModified": false,
+    "backfillPerformed": false,
+    "crossProviderAnalyticsIncluded": false
+  }
+}
