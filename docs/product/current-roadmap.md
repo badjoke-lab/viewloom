@@ -11,13 +11,15 @@ Phase 12A Analytics Capture Foundation active
 12A-2 collector deployment and remote schema accepted PR #506
 12A-3 account storage gate accepted PR #507
 12A-3 execution-cost gate accepted PR #508
+12A-3 bounded generator enabled PR #510
+12A-3 production accumulation accepted PR #511
 Twitch remote schema objects 3 / 3
 Kick remote schema objects 3 / 3
 Account D1 databases measured 8 / 8
 Generation storage gate pass
 Generation execution-cost gate pass
-Current workstream 12A-3 bounded production generator implementation
-Production generation started no
+Production generation started yes
+Current workstream 12A-4 provider-specific category capture foundation
 ```
 
 ## Phase 12A authorities
@@ -30,55 +32,44 @@ Production generation started no
 - 12A-2 budget evidence: `../audits/12a2-intraday-rollup-budget-evidence.json`
 - 12A-2 migration acceptance: `../audits/12a2-migration-acceptance.json`
 - 12A-2 deployment evidence: `../audits/12a2-collector-worker-deploy-evidence.json`
-- 12A-3 storage contract: `../audits/12a3-account-storage-gate-contract.json`
 - 12A-3 storage evidence: `../audits/12a3-account-storage-evidence.json`
-- 12A-3 execution-cost contract: `../audits/12a3-execution-cost-probe-contract.json`
 - 12A-3 execution-cost evidence: `../audits/12a3-execution-cost-evidence.json`
+- 12A-3 generator evidence: `../audits/12a3-generator-enablement-evidence.json`
+- 12A-3 post-merge evidence: `../audits/12a3-postmerge-acceptance-evidence.json`
 - Current state: `../audits/12a2-current-gate-state.json`
 
-## Accepted gates
+## Accepted 12A-3 boundary
 
 ```text
 remoteSchemaGatePass true
 generationStorageGatePass true
 generationExecutionCostGatePass true
-
-Twitch aggregate D1 duration / wall 790.730 / 1368 ms
-Twitch full-cap write wall projection 5040 ms
-Kick aggregate D1 duration / wall 426.097 / 788 ms
-Kick full-cap write wall projection 1848 ms
-
-idempotent second pass true
-probe rows retained 0
-temporary Workers retained no
+boundedGeneratorEnabled true
+postMergeAccumulationPass true
+runtimeGenerationStarted true
+providerSeparated true
+newCronAdded false
+backfillPerformed false
+temporaryVerifiersRetained false
 ```
 
-## Closed blockers
-
-```text
-remote_schema_not_applied
-collector_worker_deployment_not_evidenced
-account_aggregate_storage_unmeasured
-generation_execution_cost_unmeasured
-```
+Twitch and Kick now refresh provider-separated intraday rollups during the existing 00:20 and 12:20 UTC maintenance windows. The retained daily limits remain Twitch 600 and Kick 200, with today and yesterday refreshed idempotently.
 
 ## Current implementation boundary
 
 ```text
-bounded_generator_not_implemented
-implementationAuthorized true
-generationAuthorized false
-runtimeGenerationStarted false
+12A-3 complete
+12A-4 category capture foundation current
+category capture runtime not started
+cross-provider analytics not allowed
+raw retention unchanged
+new cron not authorized
 ```
-
-The next change is a bounded provider-specific generator behind the existing maintenance windows. It must preserve idempotency, failure containment, provider separation, cost observability, no backfill, and no new cron.
 
 ## Forward sequence
 
 ```text
-12A-3 bounded production generator implementation
-  -> production accumulation acceptance
-  -> 12A-4 category capture foundation
+12A-4 provider-specific category capture foundation
   -> 12A-5 foundation acceptance and accumulation handoff
   -> Phase 13-14 localization with evidence accumulation
   -> Phase 15 capability and calibration audit
