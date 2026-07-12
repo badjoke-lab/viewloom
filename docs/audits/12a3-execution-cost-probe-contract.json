@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a3-execution-cost-probe-contract-v1",
   "workstream": "12A-3 bounded intraday rollup generation",
-  "status": "candidate",
+  "status": "accepted",
   "providerSeparated": true,
   "source": {
     "table": "minute_snapshots",
@@ -56,8 +56,22 @@
     "sameRepositoryOnly": true,
     "forkSecretsAllowed": false,
     "temporaryWorkerDeleteRequired": true,
+    "temporaryServiceDeleteMethod": "Cloudflare Workers service API",
     "permanentPublicRouteAdded": false,
     "newCronAdded": false
+  },
+  "acceptedEvidence": {
+    "pr": 508,
+    "headSha": "b13f808a51de5d8375532b9413750e66d8f7cb00",
+    "workflowRunId": 29187282418,
+    "artifactId": 8258409485,
+    "artifactName": "phase12a3-execution-cost-probe",
+    "artifactDigest": "sha256:a6523da05fef711cd431b8803fd725cd7917231c72bd44397f0506b65339f2ab",
+    "twitchPass": true,
+    "kickPass": true,
+    "generationExecutionCostGatePass": true,
+    "temporaryWorkersRetained": false,
+    "probeRowsRetained": false
   },
   "boundaries": {
     "productionGenerationStarted": false,
