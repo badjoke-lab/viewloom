@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
 const contract = JSON.parse(readFileSync('docs/audits/12a3-postmerge-acceptance-contract.json', 'utf8'))
 const worker = readFileSync('workers/analytics-postmerge-verifier/src/index.ts', 'utf8')
@@ -10,7 +10,7 @@ const kick = readFileSync('workers/analytics-postmerge-verifier/wrangler.kick.to
 const workflow = readFileSync('.github/workflows/analytics-12a3-postmerge-acceptance.yml', 'utf8')
 
 assert.equal(contract.schemaVersion, 'viewloom-12a3-postmerge-acceptance-contract-v1')
-assert.equal(contract.status, 'candidate')
+assert.ok(['candidate', 'accepted'].includes(contract.status))
 assert.equal(contract.merge.pr, 510)
 assert.equal(contract.merge.sha, 'ad90585d74149b0fb1805b9a76fd8d796a5e7c2d')
 assert.equal(contract.deployment.workflow, 'deploy-collector-workers.yml')
@@ -20,6 +20,13 @@ assert.equal(contract.naturalMaintenance.manualCollectorRouteUsed, false)
 assert.equal(contract.naturalMaintenance.temporaryGeneratorUsed, false)
 for (const value of Object.values(contract.privacy)) assert.equal(value, false)
 for (const value of Object.values(contract.scope)) assert.equal(value, false)
+if (contract.status === 'accepted') {
+  assert.equal(contract.acceptedEvidence.pr, 510)
+  assert.ok(Number.isInteger(contract.acceptedEvidence.workflowRunId) && contract.acceptedEvidence.workflowRunId > 0)
+  assert.equal(contract.acceptedEvidence.postMergeAccumulationPass, true)
+  assert.equal(contract.acceptedEvidence.temporaryVerifiersRetained, false)
+  assert.ok(existsSync('docs/audits/12a3-postmerge-acceptance-evidence.json'))
+}
 
 for (const fragment of [
   "type Provider = 'twitch' | 'kick'",
@@ -67,7 +74,7 @@ for (const fragment of [
   'collect-12a3-postmerge-evidence.mjs',
   'verify-12a3-postmerge-evidence.mjs',
   'docs/audits/12a3-postmerge-acceptance-evidence.json',
-  'Remove one-time workflow and commit accepted evidence',
+  'Freeze accepted post-merge evidence',
 ]) assert.ok(workflow.includes(fragment), `post-merge workflow missing: ${fragment}`)
 assert.equal(workflow.includes('pull_request_target:'), false)
 assert.equal(workflow.includes('schedule:'), false)
