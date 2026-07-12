@@ -7,6 +7,7 @@ import { dirname, resolve } from 'node:path'
 const inputDir = resolve(process.argv[2] || 'artifacts/12a3-execution-cost/raw')
 const outputPath = resolve(process.argv[3] || 'artifacts/12a3-execution-cost/evidence.json')
 const contract = JSON.parse(readFileSync('docs/audits/12a3-execution-cost-probe-contract.json', 'utf8'))
+const lifecycle = JSON.parse(readFileSync(`${inputDir}/lifecycle.json`, 'utf8'))
 
 const providers = {}
 for (const provider of ['twitch', 'kick']) {
@@ -14,8 +15,10 @@ for (const provider of ['twitch', 'kick']) {
   if (raw.ok !== true) throw new Error(`${provider}: cost probe failed: ${raw.error || 'unknown_error'}`)
   if (raw.provider !== provider) throw new Error(`${provider}: provider mismatch`)
 
+  const providerLifecycle = sanitizeLifecycle(lifecycle[provider])
   const acceptance = contract.acceptance
   const checks = {
+    lifecyclePass: Object.values(providerLifecycle).every((value) => value === 0),
     sourceSupportPass: number(raw.source?.sourceSnapshots) >= acceptance.minimumSourceSnapshots,
     writeSamplePass: number(raw.writeProbe?.sampledRows) >= acceptance.minimumProbeWriteRows,
     aggregateD1DurationPass: number(raw.query?.aggregate?.durationMs) <= acceptance.maximumAggregateD1DurationMs,
@@ -37,6 +40,7 @@ for (const provider of ['twitch', 'kick']) {
   const providerGatePass = Object.values(checks).every(Boolean)
   providers[provider] = {
     observedAt: raw.observedAt,
+    lifecycle: providerLifecycle,
     source: {
       day: raw.source.day,
       sourceSnapshots: number(raw.source.sourceSnapshots),
@@ -55,6 +59,7 @@ for (const provider of ['twitch', 'kick']) {
     writeProbe: {
       requestedRows: number(raw.writeProbe.requestedRows),
       sampledRows: number(raw.writeProbe.sampledRows),
+      expectedRetainedRows: number(raw.writeProbe.expectedRetainedRows),
       firstPass: sanitizePass(raw.writeProbe.firstPass),
       secondPass: sanitizePass(raw.writeProbe.secondPass),
       idempotentRowCount: raw.writeProbe.idempotentRowCount === true,
@@ -73,6 +78,10 @@ for (const provider of ['twitch', 'kick']) {
   }
 }
 
+const temporaryWorkersRetained = [providers.twitch, providers.kick]
+  .some((row) => row.lifecycle.deleteExitCode !== 0)
+const executionGatePass = providers.twitch.providerGatePass && providers.kick.providerGatePass
+
 const evidence = {
   schemaVersion: 'viewloom-12a3-execution-cost-evidence-v1',
   workstream: '12A-3 bounded intraday rollup generation',
@@ -90,9 +99,9 @@ const evidence = {
   gate: {
     twitchPass: providers.twitch.providerGatePass,
     kickPass: providers.kick.providerGatePass,
-    generationExecutionCostGatePass: providers.twitch.providerGatePass && providers.kick.providerGatePass,
+    generationExecutionCostGatePass: executionGatePass,
     generationAuthorizedByThisEvidenceAlone: false,
-    nextAction: providers.twitch.providerGatePass && providers.kick.providerGatePass
+    nextAction: executionGatePass
       ? 'accept bounded production generator implementation behind existing maintenance windows'
       : 'reduce query/write cost or probe scope before production generation',
   },
@@ -113,7 +122,7 @@ const evidence = {
     categoryCaptureIncluded: false,
     exactSessionFieldsIncluded: false,
     crossProviderAnalyticsIncluded: false,
-    temporaryWorkersRetained: false,
+    temporaryWorkersRetained,
   },
   limitations: [
     'This is a point-in-time production D1 measurement against the latest complete UTC source day.',
@@ -130,6 +139,15 @@ for (const [provider, row] of Object.entries(providers)) {
   console.log(`${provider}: source=${row.source.sourceSnapshots} aggregate=${row.query.aggregate.durationMs}ms worker=${row.totalWorkerWallMs}ms pass=${row.providerGatePass}`)
 }
 console.log(`generationExecutionCostGatePass=${evidence.gate.generationExecutionCostGatePass}`)
+
+function sanitizeLifecycle(value = {}) {
+  return {
+    deployExitCode: number(value.deployExitCode),
+    runExitCode: number(value.runExitCode),
+    cleanupExitCode: number(value.cleanupExitCode),
+    deleteExitCode: number(value.deleteExitCode),
+  }
+}
 
 function sanitizeMeta(value = {}) {
   return {
