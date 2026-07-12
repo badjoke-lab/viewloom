@@ -1,6 +1,6 @@
 # Phase 12A-3 post-merge accumulation acceptance
 
-Status: awaiting the first natural production maintenance refresh after PR #510 merge  
+Status: post-merge production accumulation accepted; canonical closeout pending  
 Branch: `work-analytics-12a3-postmerge-acceptance`
 
 ## Purpose
@@ -49,4 +49,4 @@ no provider leakage inside the provider-specific D1 database
 
 Temporary token-protected read-only Workers query the two production D1 bindings separately. They do not call the generator, do not mutate source or rollup rows, have no cron, return no streamer identities, and are deleted after verification.
 
-A passing workflow freezes aggregate-only permanent evidence and an operations acceptance record on this branch. 12A-3 closeout remains a separate canonical-state change.
+A passing workflow froze aggregate-only permanent evidence and an operations acceptance record on this branch. 12A-3 closeout remains a separate canonical-state change.
