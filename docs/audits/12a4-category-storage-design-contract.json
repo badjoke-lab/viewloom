@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "viewloom-12a4-category-storage-design-contract-v1",
+  "workstream": "12A-4 provider-specific category storage design and budget gate",
+  "status": "candidate",
+  "sourceAuthority": "docs/audits/12a4-category-source-audit-evidence.json",
+  "storageAuthority": "docs/audits/12a3-account-storage-evidence.json",
+  "providerSeparated": true,
+  "categoryContractVersion": "category-source-v1",
+  "benchmark": {
+    "script": "scripts/measure-12a4-category-storage-models.py",
+    "benchmarkDays": 7,
+    "projectionDays": 90,
+    "snapshotsPerDay": 288,
+    "safetyMarginPct": 20,
+    "localSqliteOnly": true,
+    "remoteD1SizeClaimAllowed": false,
+    "productionQueryCostClaimAllowed": false
+  },
+  "candidateModels": [
+    "raw_payload_only",
+    "dominant_daily",
+    "embedded_hourly",
+    "separate_hourly_table"
+  ],
+  "requiredEvaluation": [
+    "provider-specific schema",
+    "category change fidelity",
+    "coverage and missing-field semantics",
+    "raw-retention overhead",
+    "90-day storage projection",
+    "row multiplication",
+    "D1 statement and changed-row estimate",
+    "index requirement",
+    "failure containment",
+    "migration requirement"
+  ],
+  "selectedCandidateRequirements": {
+    "retains90DayCategoryEvidence": true,
+    "preservesHourlyCategory": true,
+    "twitchProjectedDatabaseMbMax": 440,
+    "twitchMinimumHeadroomMb": 10,
+    "kickProjectedDatabaseMbMax": 330,
+    "kickMinimumHeadroomMb": 100,
+    "accountProjectedDatabaseMbMax": 4000,
+    "accountMinimumHeadroomMb": 500,
+    "newHighFrequencyCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "runtimeCaptureEnabled": false,
+    "categoryAnalyticsUiIncluded": false
+  },
+  "sourceLayer": {
+    "rawPayloadEncoding": {
+      "categoryContractVersion": "root scalar",
+      "categoryIds": "provider-native ids once per snapshot",
+      "categoryRefs": "item-order-aligned indexes; null means missing_from_source",
+      "categoryNamesRepeatedInRawItems": false
+    },
+    "dictionary": {
+      "table": "provider_category_dictionary",
+      "primaryKey": ["provider", "category_id"],
+      "upsertMode": "one set-based statement per collection",
+      "unchangedNameWriteAllowed": false
+    }
+  },
+  "coverageStates": [
+    "observed",
+    "missing_from_source",
+    "not_in_bounded_window",
+    "partial_source_coverage",
+    "stale",
+    "unavailable"
+  ],
+  "scope": {
+    "productionSchemaChanged": false,
+    "productionRowsWritten": false,
+    "migrationAdded": false,
+    "runtimeCaptureStarted": false,
+    "rawRetentionChanged": false,
+    "newCronAdded": false,
+    "backfillPerformed": false,
+    "categoryAnalyticsUiIncluded": false,
+    "crossProviderCategoryIdentityAllowed": false,
+    "combinedProviderCategoryRankingAllowed": false
+  },
+  "acceptance": {
+    "deterministicBenchmarkPassRequired": true,
+    "providerStoragePassRequired": true,
+    "accountStoragePassRequired": true,
+    "productionCostProbeRequiredBeforeRuntimeEnablement": true,
+    "migrationAuthorizedByThisContract": false,
+    "runtimeCaptureAuthorizedByThisContract": false
+  }
+}
