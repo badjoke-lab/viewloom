@@ -57,7 +57,6 @@ for (const fragment of [
   "'capped_at_daily_limit'",
   'source_mode',
   'coverageState',
-  'contractVersion',
   'DELETE FROM streamer_intraday_rollups',
   'DELETE FROM intraday_rollup_status',
   "date('now', ?)",
