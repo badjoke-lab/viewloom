@@ -1,0 +1,153 @@
+name: Analytics 12A3 Account Storage Gate
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/analytics-12a3-account-storage-gate.yml'
+      - 'scripts/collect-12a3-account-storage-evidence.mjs'
+      - 'scripts/verify-12a3-account-storage-evidence.mjs'
+      - 'docs/audits/12a3-account-storage-gate-contract.json'
+      - 'docs/audits/12a3-account-storage-evidence.json'
+      - 'docs/operations/12a3-account-storage-*.md'
+      - 'docs/work-in-progress/phase12a3-account-storage-gate.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a3-account-storage-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify scripts parse
+        run: |
+          node --check scripts/collect-12a3-account-storage-evidence.mjs
+          node --check scripts/verify-12a3-account-storage-evidence.mjs
+
+      - name: Verify account storage gate contract
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          const contract = JSON.parse(readFileSync('docs/audits/12a3-account-storage-gate-contract.json', 'utf8'))
+          assert.equal(contract.schemaVersion, 'viewloom-12a3-account-storage-gate-contract-v1')
+          assert.equal(contract.providerSeparated, true)
+          assert.equal(contract.platformLimits.maximumDatabaseMb, 500)
+          assert.equal(contract.platformLimits.maximumAccountStorageMb, 5120)
+          assert.equal(contract.platformLimits.perDatabaseOperationalCeilingMb, 450)
+          assert.equal(contract.platformLimits.accountOperationalCeilingMb, 4608)
+          assert.equal(contract.acceptedSafeRollupProjectionMb.twitch, 70.99)
+          assert.equal(contract.acceptedSafeRollupProjectionMb.kick, 23.57)
+          assert.equal(contract.acceptedSafeRollupProjectionMb.combined, 94.56)
+          assert.equal(contract.gate.generationAuthorizedByStorageEvidenceAlone, false)
+          assert.equal(contract.gate.nextGateAfterStoragePass, 'generation_execution_cost_measurement')
+          for (const value of Object.values(contract.privacy)) assert.equal(value, false)
+          for (const value of Object.values(contract.scope)) assert.equal(value, false)
+          assert.equal(contract.workflow.manual, true)
+          assert.equal(contract.workflow.weekly, true)
+          assert.equal(contract.workflow.forkPullRequestSecretsAllowed, false)
+          console.log('12A-3 account storage gate contract verification passed.')
+          NODE
+
+  measure:
+    if: ${{ github.event_name != 'pull_request' || (github.repository == 'badjoke-lab/viewloom' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'work-analytics-12a3-d1-read-diagnostic') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - contract
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      RAW_DIR: artifacts/12a3-account-storage/raw
+      ARTIFACT_DIR: artifacts/12a3-account-storage
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Wrangler 4
+        run: npm install --global wrangler@4
+
+      - name: Require Cloudflare D1 read credentials
+        shell: bash
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - name: Collect raw D1 control-plane observations
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RAW_DIR"
+          wrangler d1 info vl_twitch_hot --json > "$RAW_DIR/twitch-info.json"
+          wrangler d1 info vl_kick_hot --json > "$RAW_DIR/kick-info.json"
+          wrangler d1 list --json > "$RAW_DIR/account-list.json"
+
+      - name: Normalize sanitized account storage evidence
+        run: node scripts/collect-12a3-account-storage-evidence.mjs "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
+
+      - name: Verify generated account storage evidence
+        run: node scripts/verify-12a3-account-storage-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+
+      - name: Verify permanent evidence when present
+        shell: bash
+        run: |
+          if [ -f docs/audits/12a3-account-storage-evidence.json ]; then
+            node scripts/verify-12a3-account-storage-evidence.mjs docs/audits/12a3-account-storage-evidence.json
+          else
+            echo 'Permanent 12A-3 account storage evidence is not frozen yet; generated artifact is candidate evidence.'
+          fi
+
+      - name: Remove raw control-plane responses
+        if: always()
+        shell: bash
+        run: rm -rf "$RAW_DIR"
+
+      - name: Publish account storage summary
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f "$ARTIFACT_DIR/evidence.json" ]; then
+            echo '## ViewLoom 12A-3 Account Storage Gate' >> "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+            echo '- Sanitized evidence was not produced.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo '## ViewLoom 12A-3 Account Storage Gate'
+            echo
+            echo "- Twitch current/projected: $(jq -r '.providers.twitch.currentSizeMb' "$ARTIFACT_DIR/evidence.json") / $(jq -r '.providers.twitch.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Twitch provider gate: $(jq -r '.providers.twitch.providerStorageGatePass' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Kick current/projected: $(jq -r '.providers.kick.currentSizeMb' "$ARTIFACT_DIR/evidence.json") / $(jq -r '.providers.kick.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Kick provider gate: $(jq -r '.providers.kick.providerStorageGatePass' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Account databases measured: $(jq -r '.account.sizedDatabaseCount' "$ARTIFACT_DIR/evidence.json") / $(jq -r '.account.databaseCount' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Account current/projected: $(jq -r '.account.currentSizeMb' "$ARTIFACT_DIR/evidence.json") / $(jq -r '.account.projectedSizeMbWithSafety' "$ARTIFACT_DIR/evidence.json") MB"
+            echo "- Account gate: $(jq -r '.account.accountStorageGatePass' "$ARTIFACT_DIR/evidence.json")"
+            echo "- Generation storage gate: $(jq -r '.gate.generationStorageGatePass' "$ARTIFACT_DIR/evidence.json")"
+            echo '- Generation authorization: false; execution-cost gate remains'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload sanitized account storage evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a3-account-storage-gate
+          path: artifacts/12a3-account-storage/evidence.json
+          if-no-files-found: warn
