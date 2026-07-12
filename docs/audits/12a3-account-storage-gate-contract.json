@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "viewloom-12a3-account-storage-gate-contract-v1",
+  "workstream": "12A-3 generation storage and execution gate",
+  "status": "implementation_candidate",
+  "providerSeparated": true,
+  "commands": {
+    "twitchInfo": "wrangler d1 info vl_twitch_hot --json",
+    "kickInfo": "wrangler d1 info vl_kick_hot --json",
+    "accountList": "wrangler d1 list --json"
+  },
+  "platformLimits": {
+    "plan": "Workers Free",
+    "maximumDatabaseMb": 500,
+    "maximumAccountStorageMb": 5120,
+    "perDatabaseOperationalCeilingMb": 450,
+    "accountOperationalCeilingMb": 4608,
+    "operationalCeilingPct": 90,
+    "officialSource": "https://developers.cloudflare.com/d1/platform/limits/",
+    "officialSourceCheckedAt": "2026-07-12"
+  },
+  "acceptedSafeRollupProjectionMb": {
+    "twitch": 70.99,
+    "kick": 23.57,
+    "combined": 94.56
+  },
+  "gate": {
+    "twitchProviderPassRequired": true,
+    "kickProviderPassRequired": true,
+    "accountPassRequired": true,
+    "completeAccountSizeCoverageRequired": true,
+    "generationStorageGatePassIsProviderAndAccountConjunction": true,
+    "generationAuthorizedByStorageEvidenceAlone": false,
+    "nextGateAfterStoragePass": "generation_execution_cost_measurement"
+  },
+  "privacy": {
+    "rawControlPlaneResponsesPersisted": false,
+    "providerDatabaseNamesPersisted": false,
+    "providerDatabaseIdsPersisted": false,
+    "unrelatedDatabaseNamesPersisted": false,
+    "accountIdPersisted": false,
+    "secretValuesPersisted": false
+  },
+  "scope": {
+    "d1ExecuteUsed": false,
+    "writesPerformed": false,
+    "migrationApplied": false,
+    "backfillPerformed": false,
+    "generationStarted": false,
+    "retentionChanged": false,
+    "crossProviderAnalyticsCreated": false
+  },
+  "workflow": {
+    "manual": true,
+    "weekly": true,
+    "sameRepositoryPullRequestCandidate": true,
+    "forkPullRequestSecretsAllowed": false
+  }
+}
