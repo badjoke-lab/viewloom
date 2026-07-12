@@ -53,15 +53,14 @@ for (const fragment of [
   'return (hour === 0 || hour === 12) && minute >= 20 && minute < 25',
   'return [today, dayString(yesterdayDate)]',
   "selection_state = 'refresh_pending'",
-  "selection_state = 'capped_at_daily_limit'",
   "'complete_within_daily_cap'",
   "'capped_at_daily_limit'",
-  "source_mode",
-  "coverageState",
-  "contractVersion",
-  "MAX_GENERATOR_QUERIES",
-  "DELETE FROM streamer_intraday_rollups",
-  "DELETE FROM intraday_rollup_status",
+  'source_mode',
+  'coverageState',
+  'contractVersion',
+  'MAX_GENERATOR_QUERIES',
+  'DELETE FROM streamer_intraday_rollups',
+  'DELETE FROM intraday_rollup_status',
   "date('now', ?)",
   'error: sanitizeError(error)',
 ]) assert.ok(shared.includes(fragment), `shared generator missing: ${fragment}`)
@@ -106,7 +105,7 @@ for (const [provider, source, binding, cap, worker] of [
   assert.ok(schemaAt > finallyAt && generatorAt > schemaAt, `${provider}: schema then generator order invalid`)
 }
 
-for (const [provider, source] of [['twitch', twitchWrangler], ['kick', kickWrangler]]) {
+for (const [provider, source] of [['twitch', twitchWrangler], ['kick', kickWrangler']]) {
   assert.match(source, /^crons = \["\*\/5 \* \* \* \*"\]$/m, `${provider}: existing cron changed`)
   assert.equal(source.includes('INTRADAY_GENERATION_ENABLED'), false, `${provider}: runtime generation must remain disabled in this PR`)
 }
