@@ -20,6 +20,14 @@ for (const provider of ['twitch', 'kick']) {
   const providerContract = contract.temporaryWorkers[provider]
   assert.ok(row, `${provider}: evidence missing`)
   assert.ok(Number.isFinite(Date.parse(row.observedAt)), `${provider}: observedAt invalid`)
+
+  assert.deepEqual(row.lifecycle, {
+    deployExitCode: 0,
+    runExitCode: 0,
+    cleanupExitCode: 0,
+    deleteExitCode: 0,
+  }, `${provider}: temporary Worker lifecycle failed`)
+
   assert.ok(typeof row.source.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(row.source.day), `${provider}: source day invalid`)
   assert.ok(row.source.sourceSnapshots >= contract.acceptance.minimumSourceSnapshots, `${provider}: insufficient source snapshots`)
   assert.equal(row.source.bucketMinutes, providerContract.bucketMinutes)
@@ -36,10 +44,11 @@ for (const provider of ['twitch', 'kick']) {
   assert.equal(row.writeProbe.requestedRows, providerContract.probeWriteRows)
   assert.ok(row.writeProbe.sampledRows >= contract.acceptance.minimumProbeWriteRows, `${provider}: write sample too small`)
   assert.ok(row.writeProbe.sampledRows <= providerContract.probeWriteRows, `${provider}: write sample exceeds contract`)
+  assert.equal(row.writeProbe.expectedRetainedRows, row.writeProbe.sampledRows + 1, `${provider}: expected retained row count mismatch`)
   verifyPass(row.writeProbe.firstPass, `${provider}.writeProbe.firstPass`)
   verifyPass(row.writeProbe.secondPass, `${provider}.writeProbe.secondPass`)
   verifyPass(row.writeProbe.cleanup, `${provider}.writeProbe.cleanup`)
-  assert.equal(row.writeProbe.firstPass.retainedRows, row.writeProbe.sampledRows + 1, `${provider}: first-pass row count mismatch`)
+  assert.equal(row.writeProbe.firstPass.retainedRows, row.writeProbe.expectedRetainedRows, `${provider}: first-pass row count mismatch`)
   assert.equal(row.writeProbe.secondPass.retainedRows, row.writeProbe.firstPass.retainedRows, `${provider}: second-pass row count changed`)
   assert.equal(row.writeProbe.idempotentRowCount, true, `${provider}: idempotency failed`)
   assert.equal(row.writeProbe.cleanup.remainingRows, 0, `${provider}: cleanup incomplete`)
@@ -52,6 +61,7 @@ for (const provider of ['twitch', 'kick']) {
     'projectedFirstPassWallMs',
   ]) assert.ok(row.projections[key] == null || nonNegative(row.projections[key]), `${provider}: ${key} invalid`)
 
+  assert.equal(row.checks.lifecyclePass, true)
   assert.equal(row.checks.sourceSupportPass, true)
   assert.equal(row.checks.writeSamplePass, true)
   assert.equal(row.checks.aggregateD1DurationPass, true)
@@ -98,6 +108,7 @@ for (const provider of ['twitch', 'kick']) {
 console.log('- generation execution cost gate: pass')
 console.log('- generation authorized by this evidence alone: no')
 console.log('- probe rows retained: 0')
+console.log('- temporary Workers retained: no')
 
 function verifyMeta(value, label) {
   assert.ok(Number.isInteger(value.statements) && value.statements >= 1, `${label}: statements invalid`)
