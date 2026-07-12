@@ -1,0 +1,196 @@
+name: One-time 12A3 Generator Enablement Evidence Comment
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - '.github/workflows/one-time-12a3-generator-enablement-comment.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: analytics-12a3-generator-enablement-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  accept-and-comment:
+    if: >-
+      github.repository == 'badjoke-lab/viewloom'
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && github.head_ref == 'work-analytics-12a3-enable-generator'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      RAW_DIR: artifacts/12a3-generator-enablement/raw
+      ARTIFACT_DIR: artifacts/12a3-generator-enablement
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Wrangler 4
+        run: npm install --global wrangler@4
+
+      - name: Require Cloudflare credentials
+        shell: bash
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - name: Prepare ephemeral acceptance token and configs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RAW_DIR"
+          token=$(openssl rand -hex 32)
+          echo "::add-mask::$token"
+          echo "ACCEPTANCE_TOKEN=$token" >> "$GITHUB_ENV"
+          python - "$token" <<'PY'
+          from pathlib import Path
+          import sys
+          token = sys.argv[1]
+          root = Path('workers/analytics-generator-acceptance')
+          for provider in ('twitch', 'kick'):
+              source = (root / f'wrangler.{provider}.toml').read_text()
+              runtime = source.replace('[vars]\n', f'[vars]\nACCEPTANCE_TOKEN = "{token}"\n', 1)
+              (root / f'.runtime.{provider}.toml').write_text(runtime)
+          PY
+
+      - name: Deploy and run acceptance Workers
+        shell: bash
+        run: |
+          set +e
+          cd workers/analytics-generator-acceptance
+          run_provider() {
+            provider="$1"
+            config=".runtime.${provider}.toml"
+            log="$GITHUB_WORKSPACE/$RAW_DIR/${provider}-deploy.log"
+            result="$GITHUB_WORKSPACE/$RAW_DIR/${provider}.json"
+            wrangler deploy --config "$config" > "$log" 2>&1
+            deploy_code=$?
+            url=$(sed -E 's/\x1B\[[0-9;]*[mK]//g' "$log" | grep -Eo 'https://[A-Za-z0-9.-]+\.workers\.dev' | tail -n 1)
+            run_code=1
+            curl_code=1
+            http_code=000
+            if [ "$deploy_code" -eq 0 ] && [ -n "$url" ]; then
+              for attempt in $(seq 1 6); do
+                tmp="${result}.attempt"
+                http_code=$(curl --silent --show-error --output "$tmp" --write-out '%{http_code}' \
+                  -X POST -H "Authorization: Bearer $ACCEPTANCE_TOKEN" "$url/run")
+                curl_code=$?
+                if [ "$curl_code" -eq 0 ] && [ "$http_code" = '200' ]; then
+                  mv "$tmp" "$result"
+                  run_code=0
+                  break
+                fi
+                if [ "$attempt" -eq 6 ]; then mv "$tmp" "$result"; else rm -f "$tmp"; sleep 2; fi
+              done
+            fi
+            printf '%s %s %s %s\n' "$deploy_code" "$run_code" "$curl_code" "${http_code:-000}" \
+              > "$GITHUB_WORKSPACE/$RAW_DIR/${provider}-codes.txt"
+          }
+          run_provider twitch
+          run_provider kick
+          exit 0
+
+      - name: Delete temporary services and record lifecycle
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          delete_service() {
+            provider="$1"
+            worker="$2"
+            response="$RAW_DIR/${provider}-delete.json"
+            http=$(curl --silent --show-error --output "$response" --write-out '%{http_code}' \
+              -X DELETE -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$worker?force=true")
+            curl_code=$?
+            success=$(jq -r '.success == true' "$response" 2>/dev/null || printf 'false')
+            delete_code=1
+            if [ "$curl_code" -eq 0 ] && [ "$http" = '200' ] && [ "$success" = 'true' ]; then delete_code=0; fi
+            printf '%s %s %s\n' "$delete_code" "$curl_code" "${http:-000}" > "$RAW_DIR/${provider}-delete-codes.txt"
+          }
+          delete_service twitch viewloom-generator-acceptance-twitch
+          delete_service kick viewloom-generator-acceptance-kick
+          rm -f workers/analytics-generator-acceptance/.runtime.*.toml
+
+          read td tr trc trh < "$RAW_DIR/twitch-codes.txt" 2>/dev/null || true
+          read kd kr krc krh < "$RAW_DIR/kick-codes.txt" 2>/dev/null || true
+          read tdel tdelc tdelh < "$RAW_DIR/twitch-delete-codes.txt" 2>/dev/null || true
+          read kdel kdelc kdelh < "$RAW_DIR/kick-delete-codes.txt" 2>/dev/null || true
+          node - "$RAW_DIR/lifecycle.json" \
+            "${td:-1}" "${tr:-1}" "${trc:-1}" "${trh:-000}" "${tdel:-1}" "${tdelc:-1}" "${tdelh:-000}" \
+            "${kd:-1}" "${kr:-1}" "${krc:-1}" "${krh:-000}" "${kdel:-1}" "${kdelc:-1}" "${kdelh:-000}" <<'NODE'
+          const fs = require('fs')
+          const n = process.argv.slice(3).map(Number)
+          const [td,tr,trc,trh,tdel,tdelc,tdelh,kd,kr,krc,krh,kdel,kdelc,kdelh] = n
+          fs.writeFileSync(process.argv[2], JSON.stringify({
+            twitch:{deployExitCode:td,runExitCode:tr,runCurlExitCode:trc,runHttpStatus:trh,deleteExitCode:tdel,deleteCurlExitCode:tdelc,deleteHttpStatus:tdelh},
+            kick:{deployExitCode:kd,runExitCode:kr,runCurlExitCode:krc,runHttpStatus:krh,deleteExitCode:kdel,deleteCurlExitCode:kdelc,deleteHttpStatus:kdelh}
+          }, null, 2) + '\n')
+          NODE
+          exit 0
+
+      - name: Normalize and verify sanitized evidence
+        if: always()
+        run: |
+          node scripts/collect-12a3-generator-enablement-evidence.mjs "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
+          node scripts/verify-12a3-generator-enablement-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+
+      - name: Comment aggregate evidence on PR
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f "$ARTIFACT_DIR/evidence.json" ]; then
+            echo 'Generator enablement evidence was not produced.' > /tmp/comment.md
+          else
+            {
+              echo '## 12A-3 generator enablement production acceptance'
+              echo
+              echo '```text'
+              echo "status: $(jq -r '.status' "$ARTIFACT_DIR/evidence.json")"
+              for provider in twitch kick; do
+                echo "$provider lifecycle: $(jq -c ".providers.$provider.lifecycle" "$ARTIFACT_DIR/evidence.json")"
+                echo "$provider days: $(jq -r ".providers.$provider.firstObservation | length" "$ARTIFACT_DIR/evidence.json")"
+                echo "$provider rows: $(jq -r ".providers.$provider.firstObservation | map(.rollupRows) | join(\",\")" "$ARTIFACT_DIR/evidence.json")"
+                echo "$provider source snapshots: $(jq -r ".providers.$provider.firstObservation | map(.sourceSnapshots) | join(\",\")" "$ARTIFACT_DIR/evidence.json")"
+                echo "$provider second pass unchanged: $(jq -r ".providers.$provider.checks.idempotentObservations" "$ARTIFACT_DIR/evidence.json")"
+                echo "$provider maximum query budget: $(jq -r ".providers.$provider.first.totals.maximumQueries" "$ARTIFACT_DIR/evidence.json")"
+                echo "$provider gate: $(jq -r ".providers.$provider.providerGatePass" "$ARTIFACT_DIR/evidence.json")"
+              done
+              echo "enablement gate: $(jq -r '.gate.generatorEnablementGatePass' "$ARTIFACT_DIR/evidence.json")"
+              echo "production generation started: $(jq -r '.gate.productionGenerationStarted' "$ARTIFACT_DIR/evidence.json")"
+              echo "temporary Workers retained: $(jq -r '.boundaries.temporaryWorkersRetained' "$ARTIFACT_DIR/evidence.json")"
+              echo "workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+              echo '```'
+              echo
+              echo 'Streamer identities, database IDs, Account ID, secret values, raw responses, and deployment logs are not included.'
+            } > /tmp/comment.md
+          fi
+          gh pr comment "$PR_NUMBER" --body-file /tmp/comment.md
+
+      - name: Remove raw responses and logs
+        if: always()
+        run: rm -rf "$RAW_DIR"
+
+      - name: Upload sanitized evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a3-generator-enablement-comment
+          path: artifacts/12a3-generator-enablement/evidence.json
+          if-no-files-found: warn
