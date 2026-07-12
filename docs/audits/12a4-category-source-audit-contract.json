@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "viewloom-12a4-category-source-audit-contract-v1",
+  "workstream": "12A-4 provider-specific category capture foundation",
+  "stage": "12A-4-0 category source verification",
+  "status": "accepted",
+  "providerSeparated": true,
+  "contractVersion": "category-source-v1",
+  "providers": {
+    "twitch": {
+      "primarySource": "https://api.twitch.tv/helix/streams",
+      "sourceMode": "helix-streams",
+      "providerIdPath": "game_id",
+      "namePath": "game_name",
+      "providerIdType": "string",
+      "minimumObservedPresenceRatio": 1,
+      "liveProbePasses": 2,
+      "rowsPerPass": 100,
+      "captureApproved": true,
+      "evidenceStrength": "provider_primary_live_api"
+    },
+    "kick": {
+      "primarySource": "https://api.kick.com/public/v1/livestreams",
+      "sourceMode": "official-livestreams",
+      "providerIdPath": "category.id",
+      "namePath": "category.name",
+      "providerIdType": "number",
+      "minimumObservedPresenceRatio": 1,
+      "liveProbePasses": 2,
+      "rowsPerPass": 100,
+      "captureApproved": true,
+      "evidenceStrength": "provider_primary_live_api",
+      "alternateSources": [
+        "https://api.kick.com/public/v1/channels?slug={slug}",
+        "https://kick.com/api/v2/channels/{slug}"
+      ],
+      "alternateEvidenceCannotApprovePrimary": true
+    }
+  },
+  "stableFieldRule": {
+    "minimumPresenceRatio": 0.5,
+    "requiredProbeCount": 2,
+    "providerIdAndNamePairRequired": true,
+    "nonEmptySamplesRequired": true
+  },
+  "acceptedEvidence": {
+    "pr": 513,
+    "headSha": "010f4fdf40a6b2bc96e3c4ab59ccdda47756f391",
+    "workflowRunId": 29195340633,
+    "artifactName": "phase12a4-category-source-audit",
+    "artifactId": 8260821948,
+    "artifactDigest": "sha256:f484ff3640b858bdac8cc9648e634381e2b20ac764fb6baeb474a7cf67c782e0",
+    "observedAt": "2026-07-12T14:02:18.677Z",
+    "lifecyclePass": true,
+    "mainCollectorsRestored": true,
+    "postRestoreHealthPass": true
+  },
+  "temporaryDeployment": {
+    "productionWorkerNamesReused": true,
+    "scheduledHandlerDelegated": true,
+    "existingCronPreserved": "*/5 * * * *",
+    "existingD1BindingsPreserved": true,
+    "existingGenerationFlagPreserved": true,
+    "randomAuditTokenInjectedAtRuntime": true,
+    "mainCollectorRestoreRequired": true,
+    "mainCollectorRestoreVerified": true
+  },
+  "evidencePolicy": {
+    "channelIdentitiesIncluded": false,
+    "streamTitlesIncluded": false,
+    "rawUpstreamRowsIncluded": false,
+    "credentialsIncluded": false,
+    "databaseIdsIncluded": false,
+    "accountIdIncluded": false,
+    "deploymentLogsIncluded": false,
+    "categoryValuesMayBeIncluded": true
+  },
+  "scope": {
+    "productionSchemaChanged": false,
+    "productionRowsWrittenByAudit": false,
+    "collectorCadenceChanged": false,
+    "rawRetentionChanged": false,
+    "backfillPerformed": false,
+    "categoryCaptureEnabled": false,
+    "categoryAnalyticsUiIncluded": false,
+    "crossProviderCategoryIdentityAllowed": false,
+    "combinedProviderCategoryRankingAllowed": false
+  },
+  "gate": {
+    "categorySourceAuditPass": true,
+    "storageDesignAuthorized": true,
+    "runtimeCaptureAuthorized": false
+  },
+  "nextDecision": "12A-4 provider-specific category storage design and budget gate"
+}

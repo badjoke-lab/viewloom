@@ -2,7 +2,7 @@
 
 ## Required reading
 
-Read the development policy, documentation governance, documentation index, roadmap, schedule, program plan, affected specifications, implementation plans, and accepted evidence before changing the repository.
+Read the development policy, documentation index, roadmap, schedule, program plan, affected specifications, implementation plans, and accepted evidence before changing the repository.
 
 ## Current state
 
@@ -10,72 +10,60 @@ Read the development policy, documentation governance, documentation index, road
 Phase 12A Analytics Capture Foundation active
 12A-0 baseline complete PR #490
 12A-1 field contract complete PR #492
-12A-2 design and migration accepted through PR #499
-12A-2 collector deployment and remote schema accepted PR #506
-12A-3 account storage gate accepted PR #507
-12A-3 execution-cost gate accepted PR #508
-Twitch remote schema objects 3 / 3
-Kick remote schema objects 3 / 3
-Account D1 databases measured 8 / 8
-Generation storage gate pass
-Generation execution-cost gate pass
-Current workstream 12A-3 bounded production generator implementation
-Production generation started no
-Remaining implementation boundary bounded_generator_not_implemented
+12A-2 design/migration/deploy/schema accepted through PR #506
+12A-3 bounded generation and accumulation complete through PR #511
+12A-4 provider-specific category source audit accepted PR #513
+Production generation started yes
+Current workstream 12A-4 category storage design and budget gate
+Category capture runtime not started
 ```
 
-## Permanent evidence
+## Accepted source contracts
 
 ```text
-docs/audits/12a2-intraday-rollup-design-contract.json
-docs/audits/12a2-intraday-rollup-budget-evidence.json
-docs/audits/12a2-migration-acceptance.json
-docs/audits/12a2-collector-worker-deploy-evidence.json
-docs/audits/12a3-account-storage-gate-contract.json
-docs/audits/12a3-account-storage-evidence.json
-docs/audits/12a3-execution-cost-probe-contract.json
-docs/audits/12a3-execution-cost-evidence.json
-docs/audits/12a2-current-gate-state.json
-docs/operations/12a3-account-storage-acceptance-2026-07-12.md
-docs/operations/12a3-execution-cost-acceptance-2026-07-12.md
+Twitch category provider id: game_id
+Twitch category name: game_name
+Twitch source: Helix /streams
+
+Kick category provider id: category.id
+Kick category name: category.name
+Kick source: public/v1/livestreams
+
+provider category identity equivalence: false
+combined-provider category ranking: forbidden
 ```
 
-## Accepted execution boundary
+## Current implementation boundary
+
+A category storage-design PR must state:
 
 ```text
-remoteSchemaGatePass true
-generationStorageGatePass true
-generationExecutionCostGatePass true
-implementationAuthorized true
-generationAuthorized false
-runtimeGenerationStarted false
-
-Twitch aggregate D1 duration / wall 790.730 / 1368 ms
-Twitch full-cap write wall projection 5040 ms
-Kick aggregate D1 duration / wall 426.097 / 788 ms
-Kick full-cap write wall projection 1848 ms
-
-idempotent second pass true
-probe rows retained 0
-temporary Workers retained no
+provider scope
+input fields and source contract
+candidate storage models
+projected bytes per snapshot/day/90 days
+D1 query and write estimate
+retention policy
+coverage and missing-field semantics
+migration impact
+cron impact
+acceptance gate
 ```
 
-A new branch may implement bounded provider-specific generation behind the two existing maintenance windows. The implementation must:
+It must:
 
 ```text
-preserve Twitch/Kick binding separation
-run after the existing collector handler
-use idempotent upserts
-contain analytics failure without changing collector outcome
-record rows_read, rows_written, SQL duration, Worker duration, generated rows, and source support
-add no new cron
+keep Twitch and Kick storage separate
+preserve the existing */5 collector cadence
+leave raw retention unchanged
+avoid new high-frequency cron
 perform no backfill
-leave runtime generation disabled until implementation acceptance
+leave category runtime capture disabled
+add no category analytics UI
+retain explicit partial/missing coverage states
 ```
 
-Do not add raw-retention extension, category capture activation, exact-session claims, direct D1 execute, public DDL routes, or cross-provider totals, rankings, baselines, categories, or relationships.
-
-12A-1 source contracts remain authoritative. Twitch `provider_started_at` is provider-reported evidence only; Kick provider start time remains unavailable; category capture remains unapproved for both providers.
+Do not infer cross-provider category identity from names. Do not add cross-provider totals, rankings, baselines, categories, or relationships.
 
 ## Standard workflow
 
@@ -85,9 +73,9 @@ canonical documents
   -> branch and gate check
   -> implementation
   -> targeted checks
-  -> final latest-head evidence
+  -> latest-head evidence
   -> merge
   -> canonical state update
 ```
 
-Ordinary development uses `work-*`; deliberate runtime validation uses `preview-*`; `main` is production. Twitch and Kick remain provider-separated.
+Ordinary development uses `work-*`; deliberate runtime validation uses `preview-*`; `main` is production.

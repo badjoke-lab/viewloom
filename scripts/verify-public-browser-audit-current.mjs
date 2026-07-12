@@ -2,38 +2,6 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
 const read = (path) => readFileSync(path, 'utf8')
-const roadmap = read('docs/product/current-roadmap.md')
-const schedule = read('docs/product/current-schedule.md')
-const program = read('docs/product/post-watchlist-program-plan.md')
-
-for (const [path, source] of [
-  ['roadmap', roadmap],
-  ['schedule', schedule],
-  ['program', program],
-]) {
-  for (const fragment of [
-    'Phase 11 production closeout complete',
-    'Phase 12 English release readiness complete',
-    'R12C-3', 'complete',
-    'Phase 12A Analytics Capture Foundation',
-    '12A-0 current data and capacity baseline',
-    'work-analytics-12a0-capacity-baseline',
-    'Phase 15 Analytics Capability and Calibration Audit',
-    'Phase 16A',
-  ]) {
-    assert.ok(source.includes(fragment), `${path} missing ${fragment}`)
-  }
-}
-
-for (const fragment of [
-  'Current phase: Phase 12A Analytics Capture Foundation',
-  'Current workstream: 12A-0 current data and capacity baseline',
-  'Exact next implementation branch: work-analytics-12a0-capacity-baseline',
-  'Next branch created: no',
-]) {
-  assert.ok(roadmap.includes(fragment), `roadmap missing ${fragment}`)
-  assert.ok(schedule.includes(fragment), `schedule missing ${fragment}`)
-}
 
 const messageInventory = JSON.parse(read('docs/audits/r12c0-message-inventory.json'))
 assert.equal(messageInventory.status, 'complete')
@@ -100,10 +68,37 @@ assert.equal(inventory.active_program, 'Phase 12A Analytics Capture Foundation')
 assert.equal(inventory.provider_invariants.combined_totals_allowed, false)
 assert.equal(inventory.provider_invariants.combined_rankings_allowed, false)
 
+const state = JSON.parse(read('docs/audits/12a2-current-gate-state.json'))
+assert.equal(state.schemaVersion, 'viewloom-12a2-current-gate-state-v10')
+assert.equal(state.status, '12a4_category_sources_accepted_storage_design_current')
+assert.equal(state.generation.runtimeGenerationStarted, true)
+assert.equal(state.generation.providerSeparated, true)
+assert.equal(state.categorySourceAudit.pr, 513)
+assert.equal(state.categorySourceAudit.lifecyclePass, true)
+assert.equal(state.categorySourceAudit.mainCollectorsRestored, true)
+assert.equal(state.categorySourceAudit.storageDesignAuthorized, true)
+assert.equal(state.categorySourceAudit.runtimeCaptureAuthorized, false)
+assert.equal(state.categorySourceAudit.twitch.providerIdPath, 'game_id')
+assert.equal(state.categorySourceAudit.twitch.namePath, 'game_name')
+assert.equal(state.categorySourceAudit.kick.providerIdPath, 'category.id')
+assert.equal(state.categorySourceAudit.kick.namePath, 'category.name')
+assert.equal(state.currentWorkstream.phase, '12A-4')
+assert.equal(state.currentWorkstream.name, 'provider-specific category storage design and budget gate')
+assert.equal(state.currentWorkstream.sourceAuditAccepted, true)
+assert.equal(state.currentWorkstream.storageDesignStarted, false)
+assert.equal(state.currentWorkstream.runtimeCaptureStarted, false)
+assert.equal(state.categoryCapture.sourceContractAccepted, true)
+assert.equal(state.categoryCapture.storageDesignAuthorized, true)
+assert.equal(state.categoryCapture.storageDesignAccepted, false)
+assert.equal(state.categoryCapture.runtimeCaptureAuthorized, false)
+assert.equal(state.categoryCapture.runtimeCaptureStarted, false)
+assert.equal(state.categoryCapture.crossProviderIdentityAllowed, false)
+assert.equal(state.categoryCapture.combinedProviderRankingAllowed, false)
+
 console.log('Current public-state handoff verification passed.')
-console.log('- U10F, U10G, U10H, Phase 11, R12A, R12B, and Phase 12 remain completed evidence')
-console.log('- R12C-0 inventory, R12C-1 English package, R12C-2 assets, and R12C-3 candidate evidence remain accepted')
-console.log('- exact-SHA Phase 12 production release acceptance is complete')
-console.log('- Phase 12A Analytics Capture Foundation is active at 12A-0 current data and capacity baseline')
-console.log('- exact next branch is work-analytics-12a0-capacity-baseline and remains uncreated')
+console.log('- Phase 12 release evidence remains complete')
+console.log('- Phase 12A intraday generation is enabled and accumulating')
+console.log('- 12A-4 provider-specific category source audit accepted PR #513')
+console.log('- current workstream is the category storage design and budget gate')
+console.log('- runtime category capture remains disabled')
 console.log('- current inventory owns 25 public HTML routes and 100 browser scenarios')
