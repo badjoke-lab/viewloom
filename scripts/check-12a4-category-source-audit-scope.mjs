@@ -24,6 +24,7 @@ const allowed = new Set([
   'scripts/verify-12a4-category-source-evidence.mjs',
   'scripts/verify-12a4-category-source-audit-package.mjs',
   'scripts/check-12a4-category-source-audit-scope.mjs',
+  'scripts/verify-development-policy.mjs',
   '.github/workflows/analytics-12a4-category-source-audit.yml',
 ])
 
@@ -54,4 +55,5 @@ console.log('12A-4 category source audit scope verification passed.')
 console.log(`- changed files inspected: ${changed.length}`)
 console.log('- production collector/shared/web/migration changes: 0')
 console.log('- runtime category capture changes: 0')
+console.log('- development-policy path regression corrected')
 console.log('- evidence-only temporary audit package')
