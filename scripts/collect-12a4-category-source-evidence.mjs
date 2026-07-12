@@ -101,6 +101,8 @@ const lifecyclePass = ['twitch', 'kick'].every((provider) => {
     && row.calls.length === 2
     && row.calls.every((call) => Number(call.curlExitCode) === 0 && Number(call.httpStatus) === 200)
     && Number(row.restoreExitCode) === 0
+    && Number(row.restoreHealthCurlExitCode) === 0
+    && Number(row.restoreHealthHttpStatus) === 200
 })
 
 const evidence = {
