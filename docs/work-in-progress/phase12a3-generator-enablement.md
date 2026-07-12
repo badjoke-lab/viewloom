@@ -1,6 +1,6 @@
 # Phase 12A-3 bounded generator enablement
 
-Status: active production acceptance candidate
+Status: production acceptance passed; merge and post-merge deployment verification pending  
 Branch: `work-analytics-12a3-enable-generator`
 
 ## Purpose
@@ -18,40 +18,26 @@ new cron: no
 
 Pull-request workflows do not deploy the production collectors. Main push after merge performs the enabled collector deployment through the accepted deploy workflow.
 
-## Temporary production acceptance
+## Accepted production evidence
 
 ```text
-Twitch temporary Worker: viewloom-generator-acceptance-twitch
-Kick temporary Worker: viewloom-generator-acceptance-kick
-shared runtime: workers/shared/intraday-rollup.ts
-forced acceptance time: current UTC day 00:20
-generator passes: 2
-target days/pass: today and yesterday UTC
-actual production rollup rows: yes
-backfill: no
+PR: #510
+accepted workflow run: 29190852420
+permanent evidence: docs/audits/12a3-generator-enablement-evidence.json
+contract status: accepted
+Twitch rollup rows: 600/day for both observed days
+Kick rollup rows: 200/day for both observed days
+second pass unchanged: true for both providers
+maximum generator queries/pass: 12
+temporary Workers retained: false
 ```
 
-Each provider must prove:
-
-```text
-two observed days
-source snapshots > 0
-rollup rows = status retained_streamers
-rollup rows <= provider cap
-distinct ranks = rows
-minimum rank = 1
-maximum rank = rows
-viewer-minute/sample/hourly payload aggregates > 0
-second-pass observations exactly match first pass
-maximum generator query budget <= 12
-retention cleanup observed
-provider separation preserved
-```
+The accepted evidence used the same shared generator as production, forced the current UTC day to the existing 00:20 maintenance window, and refreshed only today and yesterday UTC.
 
 ## Lifecycle and privacy
 
 ```text
-deploy temporary Worker
+deploy temporary provider Worker
 run two-pass acceptance
 normalize aggregate-only evidence
 delete temporary Worker service through Cloudflare API
@@ -76,4 +62,15 @@ cross-provider analytics
 direct D1 execute
 ```
 
-A passing acceptance permits merge of the two explicit Wrangler flags. Main deployment and subsequent accumulation remain subject to post-merge verification.
+## Remaining boundary
+
+PR #510 may merge after latest-head CI passes. The merge must be followed by:
+
+```text
+main collector deployment success for Twitch and Kick
+post-merge production accumulation verification
+provider-separated status and row checks
+confirmation that query/storage budgets remain bounded
+```
+
+12A-3 is not closed until those post-merge checks are recorded and canonical project state is advanced.
