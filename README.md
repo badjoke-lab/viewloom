@@ -18,16 +18,16 @@ Phase 12A Analytics Capture Foundation active
 12A-0 baseline                         complete PR #490
 12A-1 field contract                   complete PR #492
 12A-2 design budget                    accepted PR #494
-12A-2 production size evidence         accepted PR #498
 12A-2 repository migration             accepted PR #499
-12A-2 controlled apply code            merged PRs #502-#503
 12A-2 collector deployment/schema      accepted PR #506
+12A-3 account storage gate             accepted PR #507
 Twitch remote schema objects           3 / 3
 Kick remote schema objects             3 / 3
-Worker deployment evidence             present
 Remote schema gate                     pass
+Account D1 databases measured          8 / 8
+Generation storage gate                pass
 12A-3 generation                       blocked
-Remaining blocker                      account_aggregate_storage_unmeasured
+Remaining blocker                      generation_execution_cost_unmeasured
 ```
 
 ## Phase 12A permanent authorities
@@ -38,14 +38,16 @@ docs/audits/12a1-analytics-field-contract.json
 docs/audits/12a1-source-evidence.json
 docs/audits/12a2-intraday-rollup-design-contract.json
 docs/audits/12a2-intraday-rollup-budget-evidence.json
-docs/audits/12a2-binding-size-production-evidence.json
 docs/audits/12a2-migration-acceptance.json
 docs/audits/12a2-collector-worker-deploy-evidence.json
+docs/audits/12a3-account-storage-gate-contract.json
+docs/audits/12a3-account-storage-evidence.json
 docs/audits/12a2-current-gate-state.json
 docs/operations/12a2-collector-worker-deploy-acceptance-2026-07-12.md
+docs/operations/12a3-account-storage-acceptance-2026-07-12.md
 ```
 
-## Accepted design and size evidence
+## Accepted design and storage evidence
 
 ```text
 grain: provider x day x streamer
@@ -55,10 +57,22 @@ intraday retention: 90 days
 new cron: no
 raw retention extension: no
 
-Twitch projected with safety: 391.95 MB
-Kick projected with safety:   287.95 MB
-schemaMigrationGatePass: true
+Twitch current/projected: 319.39 / 390.38 MB
+Twitch provider storage gate: true
+
+Kick current/projected: 268.99 / 292.56 MB
+Kick provider storage gate: true
+
+Account D1 databases measured: 8 / 8
+Account current/projected: 3551.70 / 3646.26 MB
+Account operational ceiling: 4608 MB
+Account projected headroom: 1473.74 MB
+Account storage gate: true
+
+generationStorageGatePass: true
 ```
+
+Cloudflare Workers Free limits used by the gate are 500 MB per database and 5 GB per account. ViewLoom applies 90% operational ceilings of 450 MB and 4608 MB.
 
 ## Accepted migration and remote deployment
 
@@ -75,14 +89,8 @@ Production deployment evidence:
 
 ```text
 method: Wrangler 4 CLI
-Twitch Worker: viewloom-collector-twitch
-Twitch binding: DB_TWITCH_HOT -> vl_twitch_hot
 Twitch schemaComplete: true; objects 3 / 3
-
-Kick Worker: viewloom-collector-kick
-Kick binding: DB_KICK_HOT -> vl_kick_hot
 Kick schemaComplete: true; objects 3 / 3
-
 read-only probe rowsWritten: 0
 remoteSchemaGatePass: true
 ```
@@ -94,19 +102,20 @@ The permanent deployment workflow uses the accepted direct Wrangler CLI path. Pu
 ```text
 workerDeploymentEvidencePresent: true
 remoteSchemaGatePass: true
-accountAggregateMeasured: false
-generationStorageGatePass: false
+accountAggregateMeasured: true
+generationStorageGatePass: true
 generationAuthorized: false
+runtimeGenerationStarted: false
 ```
 
-The blockers `remote_schema_not_applied` and `collector_worker_deployment_not_evidenced` are closed. The next workstream is the 12A-3 generation storage and execution gate.
+The storage blocker `account_aggregate_storage_unmeasured` is closed. Passing storage does not authorize generation. The next workstream is production execution-cost measurement and a bounded dry run.
 
 No backfill, retention extension, new high-frequency cron, category capture activation, exact-session claim, or cross-provider analytics is authorized.
 
 ## Forward sequence
 
 ```text
-12A-3 generation storage and execution gate
+12A-3 production execution-cost measurement and bounded dry run
   -> bounded intraday rollup generation
   -> 12A-4 provider-specific category capture foundation
   -> 12A-5 foundation acceptance and accumulation handoff
