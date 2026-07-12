@@ -1,21 +1,34 @@
 #!/usr/bin/env node
 
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 
 const inputDir = resolve(process.argv[2] || 'artifacts/12a3-execution-cost/raw')
 const outputPath = resolve(process.argv[3] || 'artifacts/12a3-execution-cost/evidence.json')
 const contract = JSON.parse(readFileSync('docs/audits/12a3-execution-cost-probe-contract.json', 'utf8'))
-const lifecycle = JSON.parse(readFileSync(`${inputDir}/lifecycle.json`, 'utf8'))
+const lifecycle = readJson(`${inputDir}/lifecycle.json`, {})
 
 const providers = {}
-for (const provider of ['twitch', 'kick']) {
-  const raw = JSON.parse(readFileSync(`${inputDir}/${provider}.json`, 'utf8'))
-  if (raw.ok !== true) throw new Error(`${provider}: cost probe failed: ${raw.error || 'unknown_error'}`)
-  if (raw.provider !== provider) throw new Error(`${provider}: provider mismatch`)
+let blocked = false
 
+for (const provider of ['twitch', 'kick']) {
   const providerLifecycle = sanitizeLifecycle(lifecycle[provider])
+  const rawPath = `${inputDir}/${provider}.json`
+  const loaded = loadProbeResponse(rawPath, provider)
+
+  if (!loaded.ok) {
+    blocked = true
+    providers[provider] = {
+      status: 'blocked',
+      diagnostic: loaded.diagnostic,
+      lifecycle: providerLifecycle,
+      providerGatePass: false,
+    }
+    continue
+  }
+
+  const raw = loaded.value
   const acceptance = contract.acceptance
   const checks = {
     lifecyclePass: Object.values(providerLifecycle).every((value) => value === 0),
@@ -38,7 +51,10 @@ for (const provider of ['twitch', 'kick']) {
   }
 
   const providerGatePass = Object.values(checks).every(Boolean)
+  if (!providerGatePass) blocked = true
+
   providers[provider] = {
+    status: 'observed',
     observedAt: raw.observedAt,
     lifecycle: providerLifecycle,
     source: {
@@ -78,14 +94,16 @@ for (const provider of ['twitch', 'kick']) {
   }
 }
 
-const temporaryWorkersRetained = [providers.twitch, providers.kick]
-  .some((row) => row.lifecycle.deleteExitCode !== 0)
-const executionGatePass = providers.twitch.providerGatePass && providers.kick.providerGatePass
+const temporaryWorkersRetained = Object.values(providers)
+  .some((row) => row.lifecycle?.deleteExitCode !== 0)
+const executionGatePass = !blocked
+  && providers.twitch?.providerGatePass === true
+  && providers.kick?.providerGatePass === true
 
 const evidence = {
   schemaVersion: 'viewloom-12a3-execution-cost-evidence-v1',
   workstream: '12A-3 bounded intraday rollup generation',
-  status: 'observed',
+  status: executionGatePass ? 'observed' : 'blocked',
   observedAt: new Date().toISOString(),
   acceptanceIdentity: {
     pr: number(process.env.PR_NUMBER),
@@ -97,13 +115,13 @@ const evidence = {
   contract: 'docs/audits/12a3-execution-cost-probe-contract.json',
   providers,
   gate: {
-    twitchPass: providers.twitch.providerGatePass,
-    kickPass: providers.kick.providerGatePass,
+    twitchPass: providers.twitch?.providerGatePass === true,
+    kickPass: providers.kick?.providerGatePass === true,
     generationExecutionCostGatePass: executionGatePass,
     generationAuthorizedByThisEvidenceAlone: false,
     nextAction: executionGatePass
       ? 'accept bounded production generator implementation behind existing maintenance windows'
-      : 'reduce query/write cost or probe scope before production generation',
+      : 'inspect sanitized provider diagnostics and lifecycle before rerunning',
   },
   privacy: {
     streamerIdsIncluded: false,
@@ -136,16 +154,59 @@ await mkdir(dirname(outputPath), { recursive: true })
 await writeFile(outputPath, `${JSON.stringify(evidence, null, 2)}\n`, 'utf8')
 console.log(`12A-3 execution cost evidence written to ${outputPath}`)
 for (const [provider, row] of Object.entries(providers)) {
-  console.log(`${provider}: source=${row.source.sourceSnapshots} aggregate=${row.query.aggregate.durationMs}ms worker=${row.totalWorkerWallMs}ms pass=${row.providerGatePass}`)
+  if (row.status === 'blocked') {
+    console.log(`${provider}: blocked=${row.diagnostic.code} lifecycle=${JSON.stringify(row.lifecycle)}`)
+  } else {
+    console.log(`${provider}: source=${row.source.sourceSnapshots} aggregate=${row.query.aggregate.durationMs}ms worker=${row.totalWorkerWallMs}ms pass=${row.providerGatePass}`)
+  }
 }
-console.log(`generationExecutionCostGatePass=${evidence.gate.generationExecutionCostGatePass}`)
+console.log(`generationExecutionCostGatePass=${executionGatePass}`)
+
+function loadProbeResponse(path, provider) {
+  if (!existsSync(path)) return { ok: false, diagnostic: { code: 'missing_probe_response' } }
+  let raw
+  try {
+    raw = JSON.parse(readFileSync(path, 'utf8'))
+  } catch {
+    return { ok: false, diagnostic: { code: 'invalid_probe_response' } }
+  }
+  if (raw?.provider !== provider) return { ok: false, diagnostic: { code: 'provider_mismatch' } }
+  if (raw?.ok !== true) {
+    return {
+      ok: false,
+      diagnostic: {
+        code: 'probe_execution_failed',
+        reason: classifyProbeError(raw?.error),
+        cleanupRemainingRows: nullableNumber(raw?.cleanup?.remainingRows),
+      },
+    }
+  }
+  return { ok: true, value: raw }
+}
+
+function classifyProbeError(value) {
+  const allowed = new Set([
+    'initial_probe_cleanup_incomplete',
+    'complete_source_day_unavailable',
+    'intraday_aggregate_empty',
+  ])
+  return allowed.has(value) ? value : 'unclassified_probe_error'
+}
+
+function readJson(path, fallback) {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'))
+  } catch {
+    return fallback
+  }
+}
 
 function sanitizeLifecycle(value = {}) {
   return {
-    deployExitCode: number(value.deployExitCode),
-    runExitCode: number(value.runExitCode),
-    cleanupExitCode: number(value.cleanupExitCode),
-    deleteExitCode: number(value.deleteExitCode),
+    deployExitCode: code(value.deployExitCode),
+    runExitCode: code(value.runExitCode),
+    cleanupExitCode: code(value.cleanupExitCode),
+    deleteExitCode: code(value.deleteExitCode),
   }
 }
 
@@ -171,6 +232,11 @@ function sanitizePass(value = {}) {
 function number(value) {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
+}
+
+function code(value) {
+  const parsed = Number(value)
+  return Number.isInteger(parsed) ? parsed : 1
 }
 
 function nullableNumber(value) {
