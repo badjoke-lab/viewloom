@@ -1,9 +1,10 @@
 {
   "schemaVersion": "viewloom-12a4-category-storage-design-contract-v1",
   "workstream": "12A-4 provider-specific category storage design and budget gate",
-  "status": "candidate",
+  "status": "accepted",
   "sourceAuthority": "docs/audits/12a4-category-source-audit-evidence.json",
   "storageAuthority": "docs/audits/12a3-account-storage-evidence.json",
+  "budgetEvidence": "docs/audits/12a4-category-storage-budget-evidence.json",
   "providerSeparated": true,
   "categoryContractVersion": "category-source-v1",
   "benchmark": {
@@ -49,6 +50,33 @@
     "runtimeCaptureEnabled": false,
     "categoryAnalyticsUiIncluded": false
   },
+  "selectedDesign": {
+    "model": "embedded_hourly",
+    "dictionaryTable": "provider_category_dictionary",
+    "rawPayloadFields": [
+      "categoryContractVersion",
+      "categoryIds",
+      "categoryRefs"
+    ],
+    "rollupColumns": [
+      "category_hourly_json",
+      "category_observed_samples",
+      "category_missing_samples",
+      "category_contract_version"
+    ],
+    "statusColumns": [
+      "category_observed_streamers",
+      "category_observed_samples",
+      "category_missing_samples",
+      "category_coverage_state"
+    ],
+    "retentionDays": 90,
+    "newCategoryIndex": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChanged": false,
+    "runtimeCaptureEnabled": false
+  },
   "sourceLayer": {
     "rawPayloadEncoding": {
       "categoryContractVersion": "root scalar",
@@ -58,7 +86,10 @@
     },
     "dictionary": {
       "table": "provider_category_dictionary",
-      "primaryKey": ["provider", "category_id"],
+      "primaryKey": [
+        "provider",
+        "category_id"
+      ],
       "upsertMode": "one set-based statement per collection",
       "unchangedNameWriteAllowed": false
     }
@@ -71,6 +102,22 @@
     "stale",
     "unavailable"
   ],
+  "acceptedEvidence": {
+    "pr": 514,
+    "headSha": "f4a874741ed1641833e2c580468cc75402d0d1ee",
+    "workflowRunId": 29197092303,
+    "artifactId": 8261289433,
+    "artifactName": "phase12a4-category-storage-design",
+    "artifactDigest": "sha256:e612bf560faed5272a8433c684e8968fdc58d72b48bb573f2241c0f4aa7a9dd9",
+    "selectedModel": "embedded_hourly",
+    "twitchProjectedSizeMbWithCategorySafety": 438.7,
+    "twitchProjectedHeadroomMb": 11.3,
+    "kickProjectedSizeMbWithCategorySafety": 314.57,
+    "kickProjectedHeadroomMb": 135.43,
+    "accountProjectedSizeMbWithCategorySafety": 3716.59,
+    "accountProjectedHeadroomMb": 891.41,
+    "categoryStorageDesignPass": true
+  },
   "scope": {
     "productionSchemaChanged": false,
     "productionRowsWritten": false,
@@ -88,7 +135,9 @@
     "providerStoragePassRequired": true,
     "accountStoragePassRequired": true,
     "productionCostProbeRequiredBeforeRuntimeEnablement": true,
-    "migrationAuthorizedByThisContract": false,
+    "repositoryMigrationCandidateAuthorized": true,
+    "remoteMigrationApplyAuthorized": false,
     "runtimeCaptureAuthorizedByThisContract": false
-  }
+  },
+  "nextDecision": "12A-4 category migration and disabled runtime implementation, followed by a production execution-cost probe before remote apply or capture enablement."
 }
