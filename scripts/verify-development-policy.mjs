@@ -24,6 +24,7 @@ const required = [
   'docs/operations/12a2-migration-acceptance-2026-07-11.md',
   'docs/operations/12a2-collector-worker-deploy-acceptance-2026-07-12.md',
   'docs/operations/12a3-account-storage-acceptance-2026-07-12.md',
+  'docs/operations/12a3-execution-cost-acceptance-2026-07-12.md',
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
@@ -43,6 +44,8 @@ const required = [
   'docs/audits/12a2-collector-worker-deploy-evidence.json',
   'docs/audits/12a3-account-storage-gate-contract.json',
   'docs/audits/12a3-account-storage-evidence.json',
+  'docs/audits/12a3-execution-cost-probe-contract.json',
+  'docs/audits/12a3-execution-cost-evidence.json',
   'docs/audits/12a2-current-gate-state.json',
   'docs/audits/public-surface-inventory.json',
   'docs/audits/public-surface-gaps.json',
@@ -51,14 +54,22 @@ const required = [
   'workers/shared/intraday-schema.ts',
   'workers/collector-twitch/src/entry.ts',
   'workers/collector-kick/src/entry.ts',
+  'workers/analytics-cost-probe/src/index.ts',
+  'workers/analytics-cost-probe/wrangler.twitch.toml',
+  'workers/analytics-cost-probe/wrangler.kick.toml',
   'scripts/verify-12a2-controlled-remote-apply.mjs',
   'scripts/verify-12a2-collector-worker-deploy.mjs',
   'scripts/collect-12a3-account-storage-evidence.mjs',
   'scripts/verify-12a3-account-storage-evidence.mjs',
+  'scripts/collect-12a3-execution-cost-evidence.mjs',
+  'scripts/verify-12a3-execution-cost-evidence.mjs',
+  'scripts/verify-12a3-execution-cost-probe.mjs',
+  'scripts/check-12a3-execution-cost-probe-scope.mjs',
   '.github/workflows/development-policy.yml',
   '.github/workflows/analytics-12a2-controlled-remote-apply.yml',
   '.github/workflows/deploy-collector-workers.yml',
   '.github/workflows/analytics-12a3-account-storage-gate.yml',
+  '.github/workflows/analytics-12a3-execution-cost-probe.yml',
 ]
 for (const path of required) assert.equal(exists(path), true, `missing file: ${path}`)
 
@@ -83,12 +94,13 @@ for (const retired of [
   'docs/work-in-progress/phase12a2-controlled-remote-apply.md',
   'docs/work-in-progress/phase12a2-collector-worker-deploy.md',
   'docs/work-in-progress/phase12a3-account-storage-gate.md',
+  'docs/work-in-progress/phase12a3-execution-cost-probe.md',
   '.github/workflows/one-time-12a2-collector-deploy.yml',
   '.github/workflows/one-time-12a2-collector-deploy-cli.yml',
   '.github/workflows/one-time-12a3-d1-read-diagnostic.yml',
 ]) assert.equal(exists(retired), false, `retired file still present: ${retired}`)
 
-for (const path of [
+const canonicalDocs = [
   'README.md',
   'docs/README.md',
   'AGENTS.md',
@@ -96,36 +108,34 @@ for (const path of [
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
-]) {
+]
+for (const path of canonicalDocs) {
   check(path, [
     'Phase 12A Analytics Capture Foundation',
     'PR #506',
     'PR #507',
+    'PR #508',
     '3 / 3',
     '8 / 8',
-    'generation_execution_cost_unmeasured',
+    'generationExecutionCostGatePass',
   ])
 }
 
 check('AGENTS.md', [
-  '12A-2 collector deployment and remote schema: accepted PR #506',
-  '12A-3 account storage gate: accepted PR #507',
-  'Twitch remote schema objects: 3 / 3',
-  'Kick remote schema objects: 3 / 3',
-  'Account D1 databases measured: 8 / 8',
+  '12A-3 execution-cost gate: accepted PR #508',
   'Generation storage gate: pass',
-  'Current workstream: 12A-3 production execution-cost measurement and bounded generation dry run',
-  '12A-3 generation authorized: no',
+  'Generation execution-cost gate: pass',
+  'Current workstream: 12A-3 bounded production generator implementation',
+  'Production generation started: no',
+  'bounded_generator_not_implemented',
 ])
-
 check('CONTRIBUTING.md', [
-  '12A-2 collector deployment and remote schema accepted PR #506',
-  '12A-3 account storage gate accepted PR #507',
-  'Twitch remote schema objects 3 / 3',
-  'Kick remote schema objects 3 / 3',
-  'Account D1 databases measured 8 / 8',
+  '12A-3 execution-cost gate accepted PR #508',
   'Generation storage gate pass',
-  '12A-3 generation authorized no',
+  'Generation execution-cost gate pass',
+  'Current workstream 12A-3 bounded production generator implementation',
+  'Production generation started no',
+  'bounded_generator_not_implemented',
 ])
 
 const phase12 = json('docs/audits/phase12-release-acceptance.json')
@@ -278,9 +288,65 @@ assert.equal(storage.gate.nextGate, 'generation_execution_cost_measurement')
 for (const value of Object.values(storage.privacy)) assert.equal(value, false)
 for (const value of Object.values(storage.boundaries)) assert.equal(value, false)
 
+const executionContract = json('docs/audits/12a3-execution-cost-probe-contract.json')
+assert.equal(executionContract.schemaVersion, 'viewloom-12a3-execution-cost-probe-contract-v1')
+assert.equal(executionContract.status, 'accepted')
+assert.equal(executionContract.providerSeparated, true)
+assert.equal(executionContract.source.table, 'minute_snapshots')
+assert.equal(executionContract.source.daySelection, 'latest_complete_utc_day')
+assert.equal(executionContract.temporaryWorkers.twitch.streamerCap, 600)
+assert.equal(executionContract.temporaryWorkers.kick.streamerCap, 200)
+assert.equal(executionContract.temporaryWorkers.twitch.probeWriteRows, 25)
+assert.equal(executionContract.temporaryWorkers.kick.probeWriteRows, 25)
+assert.equal(executionContract.writeProbe.cleanupRequired, true)
+assert.equal(executionContract.writeProbe.retainedProbeRowsRequired, 0)
+assert.equal(executionContract.workflow.sameRepositoryOnly, true)
+assert.equal(executionContract.workflow.forkSecretsAllowed, false)
+assert.equal(executionContract.workflow.temporaryWorkerDeleteRequired, true)
+assert.equal(executionContract.workflow.newCronAdded, false)
+assert.equal(executionContract.acceptedEvidence.pr, 508)
+assert.equal(executionContract.acceptedEvidence.workflowRunId, 29187282418)
+assert.equal(executionContract.acceptedEvidence.artifactId, 8258409485)
+assert.equal(executionContract.acceptedEvidence.twitchPass, true)
+assert.equal(executionContract.acceptedEvidence.kickPass, true)
+assert.equal(executionContract.acceptedEvidence.generationExecutionCostGatePass, true)
+assert.equal(executionContract.acceptedEvidence.temporaryWorkersRetained, false)
+assert.equal(executionContract.acceptedEvidence.probeRowsRetained, false)
+for (const value of Object.values(executionContract.boundaries)) assert.equal(value, false)
+
+const execution = json('docs/audits/12a3-execution-cost-evidence.json')
+assert.equal(execution.schemaVersion, 'viewloom-12a3-execution-cost-evidence-v1')
+assert.equal(execution.status, 'accepted')
+assert.equal(execution.acceptanceIdentity.pr, 508)
+assert.equal(execution.acceptanceIdentity.workflowRunId, 29187282418)
+assert.equal(execution.acceptanceIdentity.artifactId, 8258409485)
+assert.equal(execution.providerSeparated, true)
+assert.equal(execution.providers.twitch.source.sourceSnapshots, 288)
+assert.equal(execution.providers.twitch.source.retainedCandidateRows, 600)
+assert.equal(execution.providers.twitch.query.aggregate.durationMs, 790.73)
+assert.equal(execution.providers.twitch.query.aggregateWallMs, 1368)
+assert.equal(execution.providers.twitch.projections.projectedFirstPassWallMs, 5040)
+assert.equal(execution.providers.twitch.writeProbe.idempotentRowCount, true)
+assert.equal(execution.providers.twitch.writeProbe.cleanup.remainingRows, 0)
+assert.equal(execution.providers.twitch.providerGatePass, true)
+assert.equal(execution.providers.kick.source.sourceSnapshots, 288)
+assert.equal(execution.providers.kick.source.retainedCandidateRows, 200)
+assert.equal(execution.providers.kick.query.aggregate.durationMs, 426.097)
+assert.equal(execution.providers.kick.query.aggregateWallMs, 788)
+assert.equal(execution.providers.kick.projections.projectedFirstPassWallMs, 1848)
+assert.equal(execution.providers.kick.writeProbe.idempotentRowCount, true)
+assert.equal(execution.providers.kick.writeProbe.cleanup.remainingRows, 0)
+assert.equal(execution.providers.kick.providerGatePass, true)
+assert.equal(execution.gate.twitchPass, true)
+assert.equal(execution.gate.kickPass, true)
+assert.equal(execution.gate.generationExecutionCostGatePass, true)
+assert.equal(execution.gate.generationAuthorizedByThisEvidenceAlone, false)
+for (const value of Object.values(execution.privacy)) assert.equal(value, false)
+for (const value of Object.values(execution.boundaries)) assert.equal(value, false)
+
 const state = json('docs/audits/12a2-current-gate-state.json')
-assert.equal(state.schemaVersion, 'viewloom-12a2-current-gate-state-v7')
-assert.equal(state.status, 'remote_schema_complete_storage_gate_passed_execution_gate_blocked')
+assert.equal(state.schemaVersion, 'viewloom-12a2-current-gate-state-v8')
+assert.equal(state.status, 'storage_and_execution_gates_passed_bounded_generator_not_started')
 assert.equal(state.repositoryMigration.status, 'accepted')
 assert.equal(state.controlledApply.status, 'deployed_and_verified')
 assert.equal(state.controlledApply.workerDeploymentEvidencePresent, true)
@@ -297,16 +363,30 @@ assert.equal(state.generationStorageGate.accountDatabaseCount, 8)
 assert.equal(state.generationStorageGate.accountSizedDatabaseCount, 8)
 assert.equal(state.generationStorageGate.accountAggregateMeasured, true)
 assert.equal(state.generationStorageGate.generationStorageGatePass, true)
+assert.equal(state.generationExecutionCostGate.status, 'accepted')
+assert.equal(state.generationExecutionCostGate.pr, 508)
+assert.equal(state.generationExecutionCostGate.twitchSourceSnapshots, 288)
+assert.equal(state.generationExecutionCostGate.twitchRetainedCandidates, 600)
+assert.equal(state.generationExecutionCostGate.twitchProviderPass, true)
+assert.equal(state.generationExecutionCostGate.kickSourceSnapshots, 288)
+assert.equal(state.generationExecutionCostGate.kickRetainedCandidates, 200)
+assert.equal(state.generationExecutionCostGate.kickProviderPass, true)
+assert.equal(state.generationExecutionCostGate.idempotencyVerified, true)
+assert.equal(state.generationExecutionCostGate.probeRowsRetained, false)
+assert.equal(state.generationExecutionCostGate.temporaryWorkersRetained, false)
+assert.equal(state.generationExecutionCostGate.generationExecutionCostGatePass, true)
 assert.deepEqual(state.closedBlockers, [
   'remote_schema_not_applied',
   'collector_worker_deployment_not_evidenced',
   'account_aggregate_storage_unmeasured',
+  'generation_execution_cost_unmeasured',
 ])
-assert.equal(state.generation.status, 'blocked')
+assert.equal(state.generation.status, 'implementation_authorized_runtime_disabled')
 assert.equal(state.generation.authorized, false)
+assert.equal(state.generation.implementationAuthorized, true)
 assert.equal(state.generation.runtimeGenerationStarted, false)
-assert.deepEqual(state.generation.blockers, ['generation_execution_cost_unmeasured'])
-assert.equal(state.nextWorkstream, '12A-3 production execution-cost measurement and bounded generation dry run')
+assert.deepEqual(state.generation.blockers, ['bounded_generator_not_implemented'])
+assert.equal(state.nextWorkstream, '12A-3 bounded production generator implementation behind existing maintenance windows')
 
 const inventory = json('docs/audits/public-surface-inventory.json')
 assert.equal(inventory.active_program, 'Phase 12A Analytics Capture Foundation')
@@ -321,10 +401,10 @@ assert.equal(gaps.candidate_surfaces.length, 0)
 
 console.log('Development and documentation policy verification passed.')
 console.log('- Phase 12A remains active')
-console.log('- collector Worker deployment and remote schema accepted PR #506')
+console.log('- collector deployment and remote schema accepted PR #506')
 console.log('- account storage gate accepted PR #507')
-console.log('- Twitch and Kick remote schema objects are 3 / 3')
-console.log('- 8 / 8 account D1 databases have size evidence')
-console.log('- generation storage gate passed')
-console.log('- production generation remains blocked by execution-cost measurement')
+console.log('- execution-cost gate accepted PR #508')
+console.log('- storage and execution-cost gates passed')
+console.log('- bounded generator implementation is authorized but runtime generation is disabled')
+console.log('- current implementation boundary: bounded_generator_not_implemented')
 console.log('- Twitch and Kick remain provider-separated')
