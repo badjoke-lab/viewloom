@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a3-generator-enablement-contract-v1",
   "workstream": "12A-3 bounded production generator enablement",
-  "status": "candidate",
+  "status": "accepted",
   "providerSeparated": true,
   "collectorEnablement": {
     "flag": "INTRADAY_GENERATION_ENABLED",
@@ -78,5 +78,16 @@
     "productionAccumulationAcceptedBeforeMerge": true,
     "mainPushDeploysEnabledCollectors": true,
     "nextMaintenanceRefreshUsesExistingCron": true
+  },
+  "acceptedEvidence": {
+    "pr": 510,
+    "headSha": "33686a8409a685e3fe5dbe3b770741f57b3992ef",
+    "workflowRunId": 29190852420,
+    "artifactName": "phase12a3-generator-enablement-freeze",
+    "twitchPass": true,
+    "kickPass": true,
+    "generatorEnablementGatePass": true,
+    "productionGenerationStarted": true,
+    "temporaryWorkersRetained": false
   }
 }

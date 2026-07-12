@@ -1,1 +1,557 @@
-PLACEHOLDER
+{
+  "schemaVersion": "viewloom-12a3-generator-enablement-evidence-v1",
+  "workstream": "12A-3 bounded production generator enablement",
+  "status": "accepted",
+  "observedAt": "2026-07-12T11:27:48.944Z",
+  "acceptanceIdentity": {
+    "pr": 510,
+    "headSha": "33686a8409a685e3fe5dbe3b770741f57b3992ef",
+    "workflowRunId": 29190852420,
+    "artifactName": "phase12a3-generator-enablement-freeze",
+    "workflowUrl": "https://github.com/badjoke-lab/viewloom/actions/runs/29190852420"
+  },
+  "providerSeparated": true,
+  "providers": {
+    "twitch": {
+      "status": "observed",
+      "observedAt": "2026-07-12T11:27:39.607Z",
+      "forcedMaintenanceTimeUtc": "2026-07-12T00:20:00.000Z",
+      "config": {
+        "streamerCap": 600,
+        "bucketMinutes": 5
+      },
+      "lifecycle": {
+        "deployExitCode": 0,
+        "runExitCode": 0,
+        "deleteExitCode": 0
+      },
+      "first": {
+        "provider": "twitch",
+        "enabled": true,
+        "attempted": true,
+        "maintenanceWindow": true,
+        "days": [
+          {
+            "day": "2026-07-12",
+            "sourceSnapshots": 138,
+            "candidateStreamers": 1232,
+            "retainedStreamers": 600,
+            "selectionState": "capped_at_daily_limit",
+            "coverageState": "partial",
+            "sourceMode": "real",
+            "precheck": {
+              "statements": 1,
+              "durationMs": 134.878,
+              "rowsRead": 76074,
+              "rowsWritten": 0,
+              "changes": 0
+            },
+            "writeBatch": {
+              "statements": 4,
+              "durationMs": 454.387,
+              "rowsRead": 265811,
+              "rowsWritten": 1285,
+              "changes": 1229
+            },
+            "workerWallMs": 1237
+          },
+          {
+            "day": "2026-07-11",
+            "sourceSnapshots": 288,
+            "candidateStreamers": 1996,
+            "retainedStreamers": 600,
+            "selectionState": "capped_at_daily_limit",
+            "coverageState": "good",
+            "sourceMode": "real",
+            "precheck": {
+              "statements": 1,
+              "durationMs": 254.825,
+              "rowsRead": 121060,
+              "rowsWritten": 0,
+              "changes": 0
+            },
+            "writeBatch": {
+              "statements": 4,
+              "durationMs": 810.924,
+              "rowsRead": 488621,
+              "rowsWritten": 1201,
+              "changes": 1201
+            },
+            "workerWallMs": 1318
+          }
+        ],
+        "retentionCleanup": {
+          "attempted": true,
+          "statements": 2,
+          "durationMs": 0.254,
+          "rowsRead": 2,
+          "rowsWritten": 0,
+          "changes": 0
+        },
+        "totals": {
+          "statements": 12,
+          "durationMs": 1655.268,
+          "rowsRead": 951568,
+          "rowsWritten": 2486,
+          "changes": 2430,
+          "sourceSnapshots": 426,
+          "candidateStreamers": 3228,
+          "retainedStreamers": 1200,
+          "workerWallMs": 2671,
+          "maximumQueries": 12
+        },
+        "error": null
+      },
+      "second": {
+        "provider": "twitch",
+        "enabled": true,
+        "attempted": true,
+        "maintenanceWindow": true,
+        "days": [
+          {
+            "day": "2026-07-12",
+            "sourceSnapshots": 138,
+            "candidateStreamers": 1232,
+            "retainedStreamers": 600,
+            "selectionState": "capped_at_daily_limit",
+            "coverageState": "partial",
+            "sourceMode": "real",
+            "precheck": {
+              "statements": 1,
+              "durationMs": 119.73,
+              "rowsRead": 76074,
+              "rowsWritten": 0,
+              "changes": 0
+            },
+            "writeBatch": {
+              "statements": 4,
+              "durationMs": 437.365,
+              "rowsRead": 265811,
+              "rowsWritten": 1201,
+              "changes": 1201
+            },
+            "workerWallMs": 816
+          },
+          {
+            "day": "2026-07-11",
+            "sourceSnapshots": 288,
+            "candidateStreamers": 1996,
+            "retainedStreamers": 600,
+            "selectionState": "capped_at_daily_limit",
+            "coverageState": "good",
+            "sourceMode": "real",
+            "precheck": {
+              "statements": 1,
+              "durationMs": 287.304,
+              "rowsRead": 121060,
+              "rowsWritten": 0,
+              "changes": 0
+            },
+            "writeBatch": {
+              "statements": 4,
+              "durationMs": 835.872,
+              "rowsRead": 488621,
+              "rowsWritten": 1201,
+              "changes": 1201
+            },
+            "workerWallMs": 1381
+          }
+        ],
+        "retentionCleanup": {
+          "attempted": true,
+          "statements": 2,
+          "durationMs": 0.254,
+          "rowsRead": 2,
+          "rowsWritten": 0,
+          "changes": 0
+        },
+        "totals": {
+          "statements": 12,
+          "durationMs": 1680.525,
+          "rowsRead": 951568,
+          "rowsWritten": 2402,
+          "changes": 2402,
+          "sourceSnapshots": 426,
+          "candidateStreamers": 3228,
+          "retainedStreamers": 1200,
+          "workerWallMs": 2317,
+          "maximumQueries": 12
+        },
+        "error": null
+      },
+      "firstObservation": [
+        {
+          "day": "2026-07-11",
+          "candidateStreamers": 1996,
+          "retainedStreamers": 600,
+          "retainedStreamerCap": 600,
+          "sourceSnapshots": 288,
+          "selectionState": "capped_at_daily_limit",
+          "coverageState": "good",
+          "sourceMode": "real",
+          "rollupRows": 600,
+          "distinctRanks": 600,
+          "minimumRank": 1,
+          "maximumRank": 600,
+          "totalViewerMinutes": 1313338805,
+          "totalSampleCount": 52645,
+          "hourlyPayloadBytes": 360156
+        },
+        {
+          "day": "2026-07-12",
+          "candidateStreamers": 1232,
+          "retainedStreamers": 600,
+          "retainedStreamerCap": 600,
+          "sourceSnapshots": 138,
+          "selectionState": "capped_at_daily_limit",
+          "coverageState": "partial",
+          "sourceMode": "real",
+          "rollupRows": 600,
+          "distinctRanks": 600,
+          "minimumRank": 1,
+          "maximumRank": 600,
+          "totalViewerMinutes": 531569420,
+          "totalSampleCount": 34302,
+          "hourlyPayloadBytes": 240372
+        }
+      ],
+      "secondObservation": [
+        {
+          "day": "2026-07-11",
+          "candidateStreamers": 1996,
+          "retainedStreamers": 600,
+          "retainedStreamerCap": 600,
+          "sourceSnapshots": 288,
+          "selectionState": "capped_at_daily_limit",
+          "coverageState": "good",
+          "sourceMode": "real",
+          "rollupRows": 600,
+          "distinctRanks": 600,
+          "minimumRank": 1,
+          "maximumRank": 600,
+          "totalViewerMinutes": 1313338805,
+          "totalSampleCount": 52645,
+          "hourlyPayloadBytes": 360156
+        },
+        {
+          "day": "2026-07-12",
+          "candidateStreamers": 1232,
+          "retainedStreamers": 600,
+          "retainedStreamerCap": 600,
+          "sourceSnapshots": 138,
+          "selectionState": "capped_at_daily_limit",
+          "coverageState": "partial",
+          "sourceMode": "real",
+          "rollupRows": 600,
+          "distinctRanks": 600,
+          "minimumRank": 1,
+          "maximumRank": 600,
+          "totalViewerMinutes": 531569420,
+          "totalSampleCount": 34302,
+          "hourlyPayloadBytes": 240372
+        }
+      ],
+      "checks": {
+        "lifecyclePass": true,
+        "workerChecksPass": true,
+        "expectedDayCount": true,
+        "idempotentObservations": true,
+        "firstPassBounded": true,
+        "secondPassBounded": true,
+        "retentionCleanupObserved": true,
+        "providerSeparated": true,
+        "sourceRowsUnmodified": true,
+        "noBackfill": true,
+        "noNewCron": true
+      },
+      "providerGatePass": true
+    },
+    "kick": {
+      "status": "observed",
+      "observedAt": "2026-07-12T11:27:48.251Z",
+      "forcedMaintenanceTimeUtc": "2026-07-12T00:20:00.000Z",
+      "config": {
+        "streamerCap": 200,
+        "bucketMinutes": 5
+      },
+      "lifecycle": {
+        "deployExitCode": 0,
+        "runExitCode": 0,
+        "deleteExitCode": 0
+      },
+      "first": {
+        "provider": "kick",
+        "enabled": true,
+        "attempted": true,
+        "maintenanceWindow": true,
+        "days": [
+          {
+            "day": "2026-07-12",
+            "sourceSnapshots": 138,
+            "candidateStreamers": 459,
+            "retainedStreamers": 200,
+            "selectionState": "capped_at_daily_limit",
+            "coverageState": "partial",
+            "sourceMode": "authenticated",
+            "precheck": {
+              "statements": 1,
+              "durationMs": 77.972,
+              "rowsRead": 73800,
+              "rowsWritten": 0,
+              "changes": 0
+            },
+            "writeBatch": {
+              "statements": 4,
+              "durationMs": 208.613,
+              "rowsRead": 111943,
+              "rowsWritten": 419,
+              "changes": 407
+            },
+            "workerWallMs": 942
+          },
+          {
+            "day": "2026-07-11",
+            "sourceSnapshots": 288,
+            "candidateStreamers": 739,
+            "retainedStreamers": 200,
+            "selectionState": "capped_at_daily_limit",
+            "coverageState": "good",
+            "sourceMode": "authenticated",
+            "precheck": {
+              "statements": 1,
+              "durationMs": 139.512,
+              "rowsRead": 88800,
+              "rowsWritten": 0,
+              "changes": 0
+            },
+            "writeBatch": {
+              "statements": 4,
+              "durationMs": 389.099,
+              "rowsRead": 188501,
+              "rowsWritten": 401,
+              "changes": 401
+            },
+            "workerWallMs": 785
+          }
+        ],
+        "retentionCleanup": {
+          "attempted": true,
+          "statements": 2,
+          "durationMs": 0.175,
+          "rowsRead": 2,
+          "rowsWritten": 0,
+          "changes": 0
+        },
+        "totals": {
+          "statements": 12,
+          "durationMs": 815.371,
+          "rowsRead": 463046,
+          "rowsWritten": 820,
+          "changes": 808,
+          "sourceSnapshots": 426,
+          "candidateStreamers": 1198,
+          "retainedStreamers": 400,
+          "workerWallMs": 1849,
+          "maximumQueries": 12
+        },
+        "error": null
+      },
+      "second": {
+        "provider": "kick",
+        "enabled": true,
+        "attempted": true,
+        "maintenanceWindow": true,
+        "days": [
+          {
+            "day": "2026-07-12",
+            "sourceSnapshots": 138,
+            "candidateStreamers": 459,
+            "retainedStreamers": 200,
+            "selectionState": "capped_at_daily_limit",
+            "coverageState": "partial",
+            "sourceMode": "authenticated",
+            "precheck": {
+              "statements": 1,
+              "durationMs": 62.432,
+              "rowsRead": 73800,
+              "rowsWritten": 0,
+              "changes": 0
+            },
+            "writeBatch": {
+              "statements": 4,
+              "durationMs": 212.01,
+              "rowsRead": 111943,
+              "rowsWritten": 401,
+              "changes": 401
+            },
+            "workerWallMs": 624
+          },
+          {
+            "day": "2026-07-11",
+            "sourceSnapshots": 288,
+            "candidateStreamers": 739,
+            "retainedStreamers": 200,
+            "selectionState": "capped_at_daily_limit",
+            "coverageState": "good",
+            "sourceMode": "authenticated",
+            "precheck": {
+              "statements": 1,
+              "durationMs": 135.438,
+              "rowsRead": 88800,
+              "rowsWritten": 0,
+              "changes": 0
+            },
+            "writeBatch": {
+              "statements": 4,
+              "durationMs": 477.383,
+              "rowsRead": 188501,
+              "rowsWritten": 401,
+              "changes": 401
+            },
+            "workerWallMs": 876
+          }
+        ],
+        "retentionCleanup": {
+          "attempted": true,
+          "statements": 2,
+          "durationMs": 0.233,
+          "rowsRead": 2,
+          "rowsWritten": 0,
+          "changes": 0
+        },
+        "totals": {
+          "statements": 12,
+          "durationMs": 887.496,
+          "rowsRead": 463046,
+          "rowsWritten": 802,
+          "changes": 802,
+          "sourceSnapshots": 426,
+          "candidateStreamers": 1198,
+          "retainedStreamers": 400,
+          "workerWallMs": 1621,
+          "maximumQueries": 12
+        },
+        "error": null
+      },
+      "firstObservation": [
+        {
+          "day": "2026-07-11",
+          "candidateStreamers": 739,
+          "retainedStreamers": 200,
+          "retainedStreamerCap": 200,
+          "sourceSnapshots": 288,
+          "selectionState": "capped_at_daily_limit",
+          "coverageState": "good",
+          "sourceMode": "authenticated",
+          "rollupRows": 200,
+          "distinctRanks": 200,
+          "minimumRank": 1,
+          "maximumRank": 200,
+          "totalViewerMinutes": 583650150,
+          "totalSampleCount": 18021,
+          "hourlyPayloadBytes": 123589
+        },
+        {
+          "day": "2026-07-12",
+          "candidateStreamers": 459,
+          "retainedStreamers": 200,
+          "retainedStreamerCap": 200,
+          "sourceSnapshots": 138,
+          "selectionState": "capped_at_daily_limit",
+          "coverageState": "partial",
+          "sourceMode": "authenticated",
+          "rollupRows": 200,
+          "distinctRanks": 200,
+          "minimumRank": 1,
+          "maximumRank": 200,
+          "totalViewerMinutes": 269411560,
+          "totalSampleCount": 10873,
+          "hourlyPayloadBytes": 77314
+        }
+      ],
+      "secondObservation": [
+        {
+          "day": "2026-07-11",
+          "candidateStreamers": 739,
+          "retainedStreamers": 200,
+          "retainedStreamerCap": 200,
+          "sourceSnapshots": 288,
+          "selectionState": "capped_at_daily_limit",
+          "coverageState": "good",
+          "sourceMode": "authenticated",
+          "rollupRows": 200,
+          "distinctRanks": 200,
+          "minimumRank": 1,
+          "maximumRank": 200,
+          "totalViewerMinutes": 583650150,
+          "totalSampleCount": 18021,
+          "hourlyPayloadBytes": 123589
+        },
+        {
+          "day": "2026-07-12",
+          "candidateStreamers": 459,
+          "retainedStreamers": 200,
+          "retainedStreamerCap": 200,
+          "sourceSnapshots": 138,
+          "selectionState": "capped_at_daily_limit",
+          "coverageState": "partial",
+          "sourceMode": "authenticated",
+          "rollupRows": 200,
+          "distinctRanks": 200,
+          "minimumRank": 1,
+          "maximumRank": 200,
+          "totalViewerMinutes": 269411560,
+          "totalSampleCount": 10873,
+          "hourlyPayloadBytes": 77314
+        }
+      ],
+      "checks": {
+        "lifecyclePass": true,
+        "workerChecksPass": true,
+        "expectedDayCount": true,
+        "idempotentObservations": true,
+        "firstPassBounded": true,
+        "secondPassBounded": true,
+        "retentionCleanupObserved": true,
+        "providerSeparated": true,
+        "sourceRowsUnmodified": true,
+        "noBackfill": true,
+        "noNewCron": true
+      },
+      "providerGatePass": true
+    }
+  },
+  "gate": {
+    "twitchPass": true,
+    "kickPass": true,
+    "generatorEnablementGatePass": true,
+    "productionGenerationStarted": true,
+    "mainCollectorDeployAuthorizedByThisEvidence": true,
+    "nextAction": "merge enabled collector configuration and verify main deployment"
+  },
+  "privacy": {
+    "streamerIdentitiesIncluded": false,
+    "databaseIdsIncluded": false,
+    "accountIdIncluded": false,
+    "secretsIncluded": false,
+    "rawResponsesIncluded": false,
+    "deploymentLogsIncluded": false
+  },
+  "boundaries": {
+    "productionGenerationStarted": true,
+    "backfillPerformed": false,
+    "sourceRowsModified": false,
+    "rawRetentionChanged": false,
+    "newCronAdded": false,
+    "categoryCaptureIncluded": false,
+    "exactSessionFieldsIncluded": false,
+    "crossProviderAnalyticsIncluded": false,
+    "temporaryWorkersRetained": false
+  },
+  "limitations": [
+    "The acceptance probe forces the current UTC day to the existing 00:20 maintenance window and refreshes only today and yesterday.",
+    "The probe proves actual provider-specific D1 rows and status records, but the enabled production collector deployment occurs only after merge.",
+    "The second pass compares aggregate observations and does not compare updated_at timestamps.",
+    "Ongoing accumulation must continue to expose provider-specific operational logs and remain within accepted storage and query budgets."
+  ]
+}
