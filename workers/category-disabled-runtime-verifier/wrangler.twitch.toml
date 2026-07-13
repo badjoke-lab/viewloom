@@ -1,0 +1,13 @@
+name = "viewloom-category-disabled-verifier-twitch"
+main = "src/index.ts"
+compatibility_date = "2026-05-18"
+workers_dev = true
+
+[vars]
+PROVIDER = "twitch"
+MIN_COLLECTED_AT = "REPLACE_AT_RUNTIME"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "vl_twitch_hot"
+database_id = "b77221fe-80a3-4749-bc0e-d3ad54003dcf"
