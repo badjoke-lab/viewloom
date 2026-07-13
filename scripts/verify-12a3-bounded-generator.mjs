@@ -3,13 +3,18 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
-const contract = JSON.parse(readFileSync('docs/audits/12a3-bounded-generator-contract.json', 'utf8'))
-const shared = readFileSync('workers/shared/intraday-rollup.ts', 'utf8')
-const twitchEntry = readFileSync('workers/collector-twitch/src/entry.ts', 'utf8')
-const kickEntry = readFileSync('workers/collector-kick/src/entry.ts', 'utf8')
-const twitchWrangler = readFileSync('workers/collector-twitch/wrangler.toml', 'utf8')
-const kickWrangler = readFileSync('workers/collector-kick/wrangler.toml', 'utf8')
+const read = (path) => readFileSync(path, 'utf8')
+const contract = JSON.parse(read('docs/audits/12a3-bounded-generator-contract.json'))
+const state = JSON.parse(read('docs/audits/12a2-current-gate-state.json'))
+const enablement = JSON.parse(read('docs/audits/12a3-generator-enablement-evidence.json'))
+const postmerge = JSON.parse(read('docs/audits/12a3-postmerge-acceptance-evidence.json'))
+const shared = read('workers/shared/intraday-rollup.ts')
+const twitchEntry = read('workers/collector-twitch/src/entry.ts')
+const kickEntry = read('workers/collector-kick/src/entry.ts')
+const twitchWrangler = read('workers/collector-twitch/wrangler.toml')
+const kickWrangler = read('workers/collector-kick/wrangler.toml')
 
+// Historical PR #509 implementation contract remains immutable.
 assert.equal(contract.schemaVersion, 'viewloom-12a3-bounded-generator-contract-v1')
 assert.equal(contract.workstream, '12A-3 bounded production generator implementation')
 assert.equal(contract.status, 'implementation_candidate')
@@ -45,6 +50,24 @@ assert.equal(contract.failureContainment.generatorRunsInFinally, true)
 assert.equal(contract.failureContainment.generatorErrorsReturnedNotThrown, true)
 assert.equal(contract.failureContainment.collectorOutcomeChanged, false)
 for (const value of Object.values(contract.scope)) assert.equal(value, false)
+
+// Current accepted state reflects PR #510 enablement and PR #511 accumulation.
+assert.equal(state.generation.status, 'enabled_and_accumulating')
+assert.equal(state.generation.authorized, true)
+assert.equal(state.generation.runtimeGenerationStarted, true)
+assert.equal(state.generation.providerSeparated, true)
+assert.equal(state.generation.newCronAdded, false)
+assert.equal(state.generation.backfillPerformed, false)
+assert.equal(state.generationEnablement.pr, 510)
+assert.equal(state.postMergeAccumulation.pr, 511)
+assert.equal(state.postMergeAccumulation.postMergeAccumulationPass, true)
+assert.equal(enablement.status, 'accepted')
+assert.equal(enablement.acceptanceIdentity.pr, 510)
+assert.equal(enablement.providerSeparated, true)
+assert.equal(postmerge.status, 'accepted')
+assert.equal(postmerge.gate.postMergeAccumulationPass, true)
+assert.equal(postmerge.providers.twitch.providerGatePass, true)
+assert.equal(postmerge.providers.kick.providerGatePass, true)
 
 for (const fragment of [
   'const INTRADAY_RETENTION_DAYS = 90',
@@ -87,20 +110,20 @@ for (const [provider, source, binding, cap, worker] of [
   assert.ok(source.includes("import collector from './index'"), `${provider}: collector delegation missing`)
   assert.ok(source.includes("from '../../shared/intraday-rollup'"), `${provider}: shared generator import missing`)
   assert.ok(source.includes('INTRADAY_GENERATION_ENABLED?: string'), `${provider}: optional enable flag missing`)
-  assert.ok(source.includes(`maybeGenerateIntradayRollups(env.${binding}, {`), `${provider}: provider binding mismatch`)
-  assert.ok(source.includes(`provider: '${provider}'`), `${provider}: provider config missing`)
+  assert.ok(source.includes(`provider: '${provider}' as const`), `${provider}: provider config missing`)
   assert.ok(source.includes(`streamerCap: ${cap}`), `${provider}: cap mismatch`)
   assert.ok(source.includes('bucketMinutes: 5'), `${provider}: bucket contract missing`)
-  assert.ok(source.includes('enabled: intradayGenerationEnabled(env.INTRADAY_GENERATION_ENABLED)'), `${provider}: default-disabled gate missing`)
-  assert.ok(source.includes("event: 'intraday_rollup_generation'"), `${provider}: observability event missing`)
+  assert.ok(source.includes('enabled: intradayGenerationEnabled(env.INTRADAY_GENERATION_ENABLED)'), `${provider}: enable gate missing`)
+  assert.ok(source.includes(`maybeGenerateIntradayRollups(env.${binding}, generationConfig)`), `${provider}: accepted legacy generator path missing`)
+  assert.ok(source.includes("'intraday_rollup_generation'"), `${provider}: legacy observability event missing`)
   assert.ok(source.includes(`worker: '${worker}'`), `${provider}: worker log identity missing`)
 
   const collectorAt = source.indexOf('await collector.scheduled(event, env)')
   const finallyAt = source.indexOf('finally {')
   const schemaAt = source.indexOf('await maybeApplyIntradaySchema')
-  const generatorAt = source.indexOf('await maybeGenerateIntradayRollups')
+  const generatorAt = source.indexOf(`await maybeGenerateIntradayRollups(env.${binding}, generationConfig)`)
   assert.ok(collectorAt >= 0 && finallyAt > collectorAt, `${provider}: collector must run before finally`)
-  assert.ok(schemaAt > finallyAt && generatorAt > schemaAt, `${provider}: schema then generator order invalid`)
+  assert.ok(schemaAt > finallyAt && generatorAt > schemaAt, `${provider}: schema then legacy generator order invalid`)
 }
 
 for (const [provider, source] of [
@@ -108,14 +131,14 @@ for (const [provider, source] of [
   ['kick', kickWrangler],
 ]) {
   assert.match(source, /^crons = \["\*\/5 \* \* \* \*"\]$/m, `${provider}: existing cron changed`)
-  assert.equal(source.includes('INTRADAY_GENERATION_ENABLED'), false, `${provider}: runtime generation must remain disabled in this PR`)
+  assert.match(source, /^INTRADAY_GENERATION_ENABLED = "true"$/m, `${provider}: accepted generation enablement missing`)
+  assert.equal(/^CATEGORY_CAPTURE_ENABLED\s*=/m.test(source), false, `${provider}: category capture must remain disabled`)
 }
 
 console.log('12A-3 bounded generator static verification passed.')
+console.log('- historical PR #509 implementation contract remains unchanged')
+console.log('- PR #510 generation enablement and PR #511 accumulation are accepted')
 console.log('- provider-specific caps and D1 bindings remain separate')
-console.log('- runtime flag is optional and absent from Wrangler configs')
-console.log('- existing maintenance windows and cron are unchanged')
-console.log('- maximum generator query budget is 12 per invocation')
-console.log('- provider-day writes use one four-statement set-based batch')
+console.log('- existing maintenance windows, 12-query budget, and cron are unchanged')
+console.log('- disabled category path preserves the accepted legacy generator')
 console.log('- no per-streamer D1 calls, backfill, or source-table mutation')
-console.log('- collector runs first and generator errors are contained')

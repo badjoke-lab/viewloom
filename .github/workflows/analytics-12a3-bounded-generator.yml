@@ -6,8 +6,6 @@ on:
       - main
     paths:
       - 'workers/shared/intraday-rollup.ts'
-      - 'workers/collector-twitch/src/entry.ts'
-      - 'workers/collector-kick/src/entry.ts'
       - 'docs/audits/12a3-bounded-generator-contract.json'
       - 'docs/work-in-progress/phase12a3-bounded-generator.md'
       - 'scripts/test-12a3-bounded-generator-sql.py'

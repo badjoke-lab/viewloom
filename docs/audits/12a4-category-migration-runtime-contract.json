@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "viewloom-12a4-category-migration-runtime-contract-v1",
+  "workstream": "12A-4 provider-specific category migration and disabled runtime implementation",
+  "status": "implemented_candidate",
+  "providerSeparated": true,
+  "acceptedInputs": {
+    "sourceAuditPr": 513,
+    "storageDesignPr": 514,
+    "storageCloseoutPr": 515,
+    "categoryContractVersion": "category-source-v1",
+    "selectedStorageModel": "embedded_hourly"
+  },
+  "migration": {
+    "path": "db/d1/005_category_capture.sql",
+    "repositoryCandidateImplemented": true,
+    "remoteApplied": false,
+    "automaticProductionBootstrapAdded": false,
+    "controlledApplyRequired": true,
+    "idempotencyMethod": "probe PRAGMA table_info before every ALTER TABLE ADD COLUMN",
+    "objects": {
+      "dictionaryTable": "provider_category_dictionary",
+      "dictionaryPrimaryKey": [
+        "provider",
+        "category_id"
+      ],
+      "rollupColumns": [
+        "category_hourly_json",
+        "category_observed_samples",
+        "category_missing_samples",
+        "category_contract_version"
+      ],
+      "statusColumns": [
+        "category_observed_streamers",
+        "category_observed_samples",
+        "category_missing_samples",
+        "category_coverage_state"
+      ]
+    },
+    "newCategoryIndex": false
+  },
+  "runtime": {
+    "flag": "CATEGORY_CAPTURE_ENABLED",
+    "defaultEnabled": false,
+    "committedWranglerValue": false,
+    "productionCaptureStarted": false,
+    "sourceEncoding": {
+      "categoryContractVersion": "category-source-v1",
+      "categoryIdsStoredOncePerSnapshot": true,
+      "categoryRefsAlignedToItems": true,
+      "categoryNamesRepeatedInItems": false,
+      "internalSourceFieldsStrippedBeforeSerialization": true
+    },
+    "dictionary": {
+      "statementsPerCollectionWhenEnabled": 1,
+      "setBased": true,
+      "unchangedNameWriteAllowed": false,
+      "failureChangesCollectorSuccess": false
+    },
+    "twitch": {
+      "source": "https://api.twitch.tv/helix/streams",
+      "providerIdPath": "game_id",
+      "namePath": "game_name",
+      "boundedWindow": 300
+    },
+    "kick": {
+      "source": "https://api.kick.com/public/v1/livestreams",
+      "providerIdPath": "category.id",
+      "namePath": "category.name",
+      "boundedWindow": 100,
+      "alternateSourcesCanApproveOrPopulatePrimaryContract": false
+    }
+  },
+  "rollup": {
+    "providerSeparated": true,
+    "existingStreamerDayPrimaryKeyUnchanged": true,
+    "hourBuckets": 24,
+    "dominantCategoryRule": "sample_count desc, viewer_minutes desc, provider category id asc",
+    "categoryHourlyJsonKeys": [
+      "v",
+      "c",
+      "r",
+      "s",
+      "m",
+      "o",
+      "x"
+    ],
+    "generatorMaximumQueries": 12,
+    "additionalGeneratorStatements": 0,
+    "retentionDays": 90,
+    "exactCategorySwitchTimeClaimAllowed": false,
+    "exactSessionClaimAllowed": false
+  },
+  "coverageStates": [
+    "observed",
+    "missing_from_source",
+    "not_in_bounded_window",
+    "partial_source_coverage",
+    "stale",
+    "unavailable"
+  ],
+  "localAcceptance": {
+    "fixture": "scripts/test-12a4-category-migration-runtime.py",
+    "migrationSecondPassRequired": true,
+    "dictionaryUnchangedNameZeroChangesRequired": true,
+    "providerSeparationRequired": true,
+    "hourArrayLengthRequired": 24,
+    "sameDayRerunNoRowMultiplicationRequired": true
+  },
+  "nextGate": {
+    "productionExecutionCostProbeRequired": true,
+    "measure": [
+      "D1 rows read",
+      "D1 rows written",
+      "SQL duration",
+      "Worker duration",
+      "collector latency",
+      "failure containment"
+    ],
+    "remoteMigrationApplyAuthorized": false,
+    "runtimeCaptureEnablementAuthorized": false
+  },
+  "boundaries": {
+    "productionSchemaChanged": false,
+    "remoteMigrationApplied": false,
+    "productionCategoryRowsWritten": false,
+    "productionFlagCommitted": false,
+    "runtimeCaptureStarted": false,
+    "collectorCadenceChanged": false,
+    "rawRetentionChanged": false,
+    "newCronAdded": false,
+    "backfillPerformed": false,
+    "categoryAnalyticsUiIncluded": false,
+    "crossProviderCategoryIdentityAllowed": false,
+    "combinedProviderCategoryRankingAllowed": false,
+    "directD1ExecuteUsed": false,
+    "publicDdlRouteAdded": false
+  }
+}

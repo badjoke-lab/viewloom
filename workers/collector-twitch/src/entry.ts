@@ -1,4 +1,6 @@
 import collector from './index'
+import { categoryCaptureEnabled } from '../../shared/category-capture'
+import { maybeGenerateCategoryIntradayRollups } from '../../shared/category-intraday-rollup'
 import { maybeApplyIntradaySchema } from '../../shared/intraday-schema'
 import {
   intradayGenerationEnabled,
@@ -11,6 +13,7 @@ type Env = {
   TWITCH_CLIENT_SECRET?: string
   TWITCH_INGEST_TOKEN?: string
   INTRADAY_GENERATION_ENABLED?: string
+  CATEGORY_CAPTURE_ENABLED?: string
 }
 
 export default {
@@ -31,15 +34,19 @@ export default {
         }))
       }
 
-      const intradayGeneration = await maybeGenerateIntradayRollups(env.DB_TWITCH_HOT, {
-        provider: 'twitch',
+      const generationConfig = {
+        provider: 'twitch' as const,
         streamerCap: 600,
         bucketMinutes: 5,
         enabled: intradayGenerationEnabled(env.INTRADAY_GENERATION_ENABLED),
-      })
+      }
+      const categoryEnabled = categoryCaptureEnabled(env.CATEGORY_CAPTURE_ENABLED)
+      const intradayGeneration = categoryEnabled && generationConfig.enabled
+        ? await maybeGenerateCategoryIntradayRollups(env.DB_TWITCH_HOT, generationConfig)
+        : await maybeGenerateIntradayRollups(env.DB_TWITCH_HOT, generationConfig)
       if (intradayGeneration.attempted) {
         console.log(JSON.stringify({
-          event: 'intraday_rollup_generation',
+          event: categoryEnabled ? 'category_intraday_rollup_generation' : 'intraday_rollup_generation',
           worker: 'viewloom-collector-twitch',
           ...intradayGeneration,
         }))
