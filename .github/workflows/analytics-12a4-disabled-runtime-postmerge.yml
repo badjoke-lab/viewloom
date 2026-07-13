@@ -127,8 +127,10 @@ jobs:
           mkdir -p "$RAW_DIR/configs"
           cp workers/category-disabled-runtime-verifier/wrangler.twitch.toml "$RAW_DIR/configs/twitch.toml"
           cp workers/category-disabled-runtime-verifier/wrangler.kick.toml "$RAW_DIR/configs/kick.toml"
-          sed -i "s|MIN_COLLECTED_AT = \"REPLACE_AT_RUNTIME\"|MIN_COLLECTED_AT = \"$MIN_COLLECTED_AT\"|" "$RAW_DIR/configs/twitch.toml"
-          sed -i "s|MIN_COLLECTED_AT = \"REPLACE_AT_RUNTIME\"|MIN_COLLECTED_AT = \"$MIN_COLLECTED_AT\"|" "$RAW_DIR/configs/kick.toml"
+          for config in "$RAW_DIR/configs/twitch.toml" "$RAW_DIR/configs/kick.toml"; do
+            sed -i "s|main = \"src/index.ts\"|main = \"$GITHUB_WORKSPACE/workers/category-disabled-runtime-verifier/src/index.ts\"|" "$config"
+            sed -i "s|MIN_COLLECTED_AT = \"REPLACE_AT_RUNTIME\"|MIN_COLLECTED_AT = \"$MIN_COLLECTED_AT\"|" "$config"
+          done
           echo "VERIFY_TOKEN=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
 
       - name: Deploy, verify, and delete provider verifiers
