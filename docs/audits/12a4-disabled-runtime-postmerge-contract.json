@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "viewloom-12a4-disabled-runtime-postmerge-contract-v1",
+  "workstream": "12A-4 disabled runtime post-merge acceptance",
+  "status": "candidate",
+  "merge": {
+    "pr": 516,
+    "sha": "5d58b267a18399b5496a1f01aae7125a63f061c4"
+  },
+  "deployment": {
+    "workflow": "deploy-collector-workers.yml",
+    "event": "push",
+    "branch": "main",
+    "requiredJobs": [
+      "verify",
+      "deploy-twitch",
+      "deploy-kick",
+      "verify-remote-schema"
+    ],
+    "exactMergeShaRequired": true
+  },
+  "providers": {
+    "twitch": {
+      "worker": "viewloom-category-disabled-verifier-twitch",
+      "binding": "vl_twitch_hot",
+      "expectedProvider": "twitch"
+    },
+    "kick": {
+      "worker": "viewloom-category-disabled-verifier-kick",
+      "binding": "vl_kick_hot",
+      "expectedProvider": "kick"
+    }
+  },
+  "requiredChecks": {
+    "latestSnapshotAfterDeployment": true,
+    "categoryPayloadFieldsAbsent": true,
+    "categorySchemaAbsent": true,
+    "providerSeparated": true,
+    "temporaryVerifiersDeleted": true
+  },
+  "expectedAbsentPayloadFields": [
+    "categoryContractVersion",
+    "categoryIds",
+    "categoryRefs"
+  ],
+  "expectedAbsentSchema": {
+    "table": "provider_category_dictionary",
+    "rollupColumns": [
+      "category_hourly_json",
+      "category_observed_samples",
+      "category_missing_samples",
+      "category_contract_version"
+    ],
+    "statusColumns": [
+      "category_observed_streamers",
+      "category_observed_samples",
+      "category_missing_samples",
+      "category_coverage_state"
+    ]
+  },
+  "privacy": {
+    "channelIdentitiesIncluded": false,
+    "rawPayloadIncluded": false,
+    "credentialsIncluded": false,
+    "databaseIdsIncludedInEvidence": false,
+    "accountIdIncluded": false,
+    "deploymentLogsIncluded": false
+  },
+  "boundaries": {
+    "readOnly": true,
+    "productionSchemaChangedByAcceptance": false,
+    "productionRowsWrittenByAcceptance": false,
+    "manualCollectorRouteUsed": false,
+    "categoryRuntimeEnabled": false,
+    "remoteMigrationApplied": false,
+    "backfillPerformed": false,
+    "newCronAdded": false,
+    "rawRetentionChanged": false,
+    "categoryAnalyticsUiIncluded": false,
+    "crossProviderCategoryIdentityAllowed": false,
+    "combinedProviderCategoryRankingAllowed": false
+  },
+  "nextGate": {
+    "productionExecutionCostProbeRequired": true,
+    "remoteMigrationApplyAuthorized": false,
+    "runtimeCaptureEnablementAuthorized": false
+  }
+}
