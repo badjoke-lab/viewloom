@@ -1,0 +1,114 @@
+name: Analytics 12A4 Category Migration Runtime
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'db/d1/005_category_capture.sql'
+      - 'docs/audits/12a4-category-migration-runtime-contract.json'
+      - 'workers/shared/category-capture.ts'
+      - 'workers/shared/category-intraday-sql.ts'
+      - 'workers/shared/category-intraday-rollup.ts'
+      - 'workers/collector-twitch/src/index-category.ts'
+      - 'workers/collector-twitch/src/index.ts'
+      - 'workers/collector-twitch/src/entry.ts'
+      - 'workers/collector-kick/src/index-category.ts'
+      - 'workers/collector-kick/src/index.ts'
+      - 'workers/collector-kick/src/entry.ts'
+      - 'workers/collector-kick/src/official-livestreams.ts'
+      - 'scripts/test-12a4-category-migration-runtime.py'
+      - 'scripts/verify-12a4-category-migration-runtime.mjs'
+      - 'scripts/check-12a4-category-migration-runtime-scope.mjs'
+      - 'scripts/verify-collector-contracts.mjs'
+      - '.github/workflows/analytics-12a4-category-migration-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-category-migration-runtime-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify implementation branch scope
+        run: node scripts/check-12a4-category-migration-runtime-scope.mjs
+
+      - name: Verify category migration and disabled runtime contract
+        run: node scripts/verify-12a4-category-migration-runtime.mjs
+
+      - name: Verify canonical development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Verify active collector contracts
+        run: node scripts/verify-collector-contracts.mjs
+
+      - name: Typecheck Workers
+        run: npm run typecheck:workers
+
+      - name: Run local category migration and runtime fixture
+        run: |
+          mkdir -p artifacts/12a4-category-migration-runtime
+          python scripts/test-12a4-category-migration-runtime.py \
+            | tee artifacts/12a4-category-migration-runtime/local-fixture.txt
+
+      - name: Preserve existing bounded generator SQL acceptance
+        run: python scripts/test-12a3-bounded-generator-sql.py
+
+      - name: Install Wrangler 4
+        run: npm install --no-save wrangler@4
+
+      - name: Bundle Twitch collector without deploying
+        run: |
+          mkdir -p artifacts/12a4-category-migration-runtime/twitch
+          cd workers/collector-twitch
+          npx wrangler deploy --dry-run --outdir ../../artifacts/12a4-category-migration-runtime/twitch
+
+      - name: Bundle Kick collector without deploying
+        run: |
+          mkdir -p artifacts/12a4-category-migration-runtime/kick
+          cd workers/collector-kick
+          npx wrangler deploy --dry-run --outdir ../../artifacts/12a4-category-migration-runtime/kick
+
+      - name: Publish disabled-runtime summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4 Category Migration and Disabled Runtime'
+            echo
+            echo '- Repository migration candidate: implemented'
+            echo '- Remote migration applied: no'
+            echo '- CATEGORY_CAPTURE_ENABLED committed: no'
+            echo '- Production category rows written: no'
+            echo '- Collector cadence changed: no'
+            echo '- Raw retention changed: no'
+            echo '- New cron: no'
+            echo '- Backfill: no'
+            echo '- Category generator maximum queries: 12'
+            echo '- Production execution-cost probe still required: yes'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload local acceptance artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a4-category-migration-disabled-runtime
+          path: artifacts/12a4-category-migration-runtime
+          if-no-files-found: warn
