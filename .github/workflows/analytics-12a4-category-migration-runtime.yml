@@ -40,9 +40,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
 
       - uses: actions/setup-python@v5
         with:
@@ -70,7 +69,7 @@ jobs:
         run: |
           mkdir -p artifacts/12a4-category-migration-runtime
           set -o pipefail
-          npm run typecheck:collectors 2>&1 \
+          pnpm typecheck:collectors 2>&1 \
             | tee artifacts/12a4-category-migration-runtime/typecheck.txt
 
       - name: Run local category migration and runtime fixture
@@ -82,20 +81,17 @@ jobs:
       - name: Preserve existing bounded generator SQL acceptance
         run: python scripts/test-12a3-bounded-generator-sql.py
 
-      - name: Install Wrangler 4
-        run: npm install --no-save wrangler@4
-
       - name: Bundle Twitch collector without deploying
         run: |
           mkdir -p artifacts/12a4-category-migration-runtime/twitch
           cd workers/collector-twitch
-          npx wrangler deploy --dry-run --outdir ../../artifacts/12a4-category-migration-runtime/twitch
+          pnpm dlx wrangler@4 deploy --dry-run --outdir ../../artifacts/12a4-category-migration-runtime/twitch
 
       - name: Bundle Kick collector without deploying
         run: |
           mkdir -p artifacts/12a4-category-migration-runtime/kick
           cd workers/collector-kick
-          npx wrangler deploy --dry-run --outdir ../../artifacts/12a4-category-migration-runtime/kick
+          pnpm dlx wrangler@4 deploy --dry-run --outdir ../../artifacts/12a4-category-migration-runtime/kick
 
       - name: Publish disabled-runtime summary
         if: always()
