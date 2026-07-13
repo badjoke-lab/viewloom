@@ -4,6 +4,8 @@ export type KickOfficialStreamItem = {
   title: string
   viewer_count: number
   url: string
+  categoryProviderId?: string | null
+  categoryName?: string | null
 }
 
 type Raw = Record<string, unknown>
@@ -57,13 +59,24 @@ function normalizeOfficialStream(raw: Raw): KickOfficialStreamItem | null {
   const slug = asText(raw.slug ?? raw.channel_slug)
   const viewers = asNumber(raw.viewer_count ?? raw.viewers)
   if (!slug || viewers <= 0) return null
+  const category = asRecord(raw.category)
+  const categoryProviderId = asText(category?.id)
+  const categoryName = asText(category?.name)
   return {
     slug,
     displayName: slug,
     title: asText(raw.stream_title ?? raw.session_title ?? raw.title),
     viewer_count: viewers,
     url: `https://kick.com/${slug}`,
+    categoryProviderId: categoryProviderId || null,
+    categoryName: categoryName || null,
   }
+}
+
+function asRecord(value: unknown): Raw | null {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Raw
+    : null
 }
 
 function asText(value: unknown): string {
