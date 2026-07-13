@@ -14,8 +14,8 @@ Category runtime capture started: no
 12A-2 design/migration/deploy/schema accepted through PR #506
 12A-3 bounded generation and production accumulation complete through PR #511
 12A-4 category source audit accepted PR #513
-12A-4 storage design and budget accepted PR #514
-12A-4 migration and disabled runtime current
+12A-4 category storage design and budget accepted PR #514
+12A-4 category migration and disabled runtime current
 Phase 13-14 localization queued after Phase 12A
 Phase 15 capability and calibration audit queued
 Phase 16 analytics observation system gated by Phase 15
@@ -60,7 +60,7 @@ source audit pass true
 runtime capture authorized false
 ```
 
-## Accepted 12A-4 storage design
+## Accepted 12A-4 category storage design
 
 ```text
 selected model embedded_hourly
