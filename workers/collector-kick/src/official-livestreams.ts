@@ -60,7 +60,7 @@ function normalizeOfficialStream(raw: Raw): KickOfficialStreamItem | null {
   const viewers = asNumber(raw.viewer_count ?? raw.viewers)
   if (!slug || viewers <= 0) return null
   const category = asRecord(raw.category)
-  const categoryProviderId = asText(category?.id)
+  const categoryProviderId = asIdentifier(category?.id)
   const categoryName = asText(category?.name)
   return {
     slug,
@@ -77,6 +77,12 @@ function asRecord(value: unknown): Raw | null {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
     ? value as Raw
     : null
+}
+
+function asIdentifier(value: unknown): string {
+  if (typeof value === 'string') return value.trim()
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value)
+  return ''
 }
 
 function asText(value: unknown): string {
