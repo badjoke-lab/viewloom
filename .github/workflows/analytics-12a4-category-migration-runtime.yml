@@ -61,7 +61,12 @@ jobs:
         run: node scripts/verify-collector-contracts.mjs
 
       - name: Typecheck Workers
-        run: npm run typecheck:workers
+        shell: bash
+        run: |
+          mkdir -p artifacts/12a4-category-migration-runtime
+          set -o pipefail
+          npm run typecheck:workers 2>&1 \
+            | tee artifacts/12a4-category-migration-runtime/typecheck.txt
 
       - name: Run local category migration and runtime fixture
         run: |
