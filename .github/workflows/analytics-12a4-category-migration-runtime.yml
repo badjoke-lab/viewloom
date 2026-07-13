@@ -21,6 +21,8 @@ on:
       - 'scripts/verify-12a4-category-migration-runtime.mjs'
       - 'scripts/check-12a4-category-migration-runtime-scope.mjs'
       - 'scripts/verify-collector-contracts.mjs'
+      - 'scripts/check-12a3-bounded-generator-scope.mjs'
+      - '.github/workflows/analytics-12a3-bounded-generator.yml'
       - '.github/workflows/analytics-12a4-category-migration-runtime.yml'
   workflow_dispatch:
 
