@@ -58,7 +58,12 @@ jobs:
         run: node scripts/verify-development-policy.mjs
 
       - name: Verify active collector contracts
-        run: node scripts/verify-collector-contracts.mjs
+        shell: bash
+        run: |
+          mkdir -p artifacts/12a4-category-migration-runtime
+          set -o pipefail
+          node scripts/verify-collector-contracts.mjs 2>&1 \
+            | tee artifacts/12a4-category-migration-runtime/collector-contracts.txt
 
       - name: Typecheck Workers
         shell: bash
