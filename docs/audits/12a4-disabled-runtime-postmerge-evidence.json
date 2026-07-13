@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "viewloom-12a4-disabled-runtime-postmerge-evidence-v1",
+  "workstream": "12A-4 disabled runtime post-merge acceptance",
+  "status": "accepted",
+  "observedAt": "2026-07-13T19:28:50.878Z",
+  "providerSeparated": true,
+  "acceptanceIdentity": {
+    "pr": 517,
+    "workflowRunId": 29278511533,
+    "artifactId": 8290344264
+  },
+  "merge": {
+    "pr": 516,
+    "sha": "5d58b267a18399b5496a1f01aae7125a63f061c4"
+  },
+  "deployment": {
+    "workflow": "Deploy Collector Workers",
+    "event": "push",
+    "runId": 29277503634,
+    "headSha": "5d58b267a18399b5496a1f01aae7125a63f061c4",
+    "runStartedAt": "2026-07-13T19:20:47Z",
+    "updatedAt": "2026-07-13T19:21:14Z",
+    "jobs": [
+      {
+        "name": "verify",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy-twitch",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy-kick",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "verify-remote-schema",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "gatePass": true
+  },
+  "providers": {
+    "twitch": {
+      "provider": "twitch",
+      "observedAt": "2026-07-13T19:25:31.334Z",
+      "minimumCollectedAt": "2026-07-13T19:21:14Z",
+      "latest": {
+        "bucketMinute": "2026-07-13T19:25:00.000Z",
+        "collectedAt": "2026-07-13T19:25:27.569Z",
+        "sourceMode": "real",
+        "categoryContractType": null,
+        "categoryIdsType": null,
+        "categoryRefsType": null
+      },
+      "schema": {
+        "dictionaryTableCount": 0,
+        "presentRollupColumns": [],
+        "presentStatusColumns": []
+      },
+      "checks": {
+        "latestSnapshotPresent": true,
+        "latestAfterDeployment": true,
+        "categoryPayloadFieldsAbsent": true,
+        "categorySchemaAbsent": true,
+        "providerSeparated": true
+      },
+      "lifecycle": {
+        "deployExitCode": 0,
+        "runExitCode": 0,
+        "curlExitCode": 0,
+        "httpStatus": 200,
+        "deleteExitCode": 0,
+        "deleteCurlExitCode": 0,
+        "deleteHttpStatus": 404
+      },
+      "providerGatePass": true
+    },
+    "kick": {
+      "provider": "kick",
+      "observedAt": "2026-07-13T19:25:31.269Z",
+      "minimumCollectedAt": "2026-07-13T19:21:14Z",
+      "latest": {
+        "bucketMinute": "2026-07-13T19:25:00.000Z",
+        "collectedAt": "2026-07-13T19:25:26.670Z",
+        "sourceMode": "authenticated",
+        "categoryContractType": null,
+        "categoryIdsType": null,
+        "categoryRefsType": null
+      },
+      "schema": {
+        "dictionaryTableCount": 0,
+        "presentRollupColumns": [],
+        "presentStatusColumns": []
+      },
+      "checks": {
+        "latestSnapshotPresent": true,
+        "latestAfterDeployment": true,
+        "categoryPayloadFieldsAbsent": true,
+        "categorySchemaAbsent": true,
+        "providerSeparated": true
+      },
+      "lifecycle": {
+        "deployExitCode": 0,
+        "runExitCode": 0,
+        "curlExitCode": 0,
+        "httpStatus": 200,
+        "deleteExitCode": 0,
+        "deleteCurlExitCode": 0,
+        "deleteHttpStatus": 404
+      },
+      "providerGatePass": true
+    }
+  },
+  "gate": {
+    "deploymentPass": true,
+    "twitchGatePass": true,
+    "kickGatePass": true,
+    "disabledRuntimePostMergePass": true,
+    "productionExecutionCostProbeRequired": true,
+    "remoteMigrationApplyAuthorized": false,
+    "runtimeCaptureEnablementAuthorized": false
+  },
+  "privacy": {
+    "channelIdentitiesIncluded": false,
+    "rawPayloadIncluded": false,
+    "credentialsIncluded": false,
+    "databaseIdsIncludedInEvidence": false,
+    "accountIdIncluded": false,
+    "deploymentLogsIncluded": false
+  },
+  "boundaries": {
+    "readOnly": true,
+    "productionSchemaChangedByAcceptance": false,
+    "productionRowsWrittenByAcceptance": false,
+    "manualCollectorRouteUsed": false,
+    "categoryRuntimeEnabled": false,
+    "remoteMigrationApplied": false,
+    "backfillPerformed": false,
+    "newCronAdded": false,
+    "rawRetentionChanged": false,
+    "categoryAnalyticsUiIncluded": false,
+    "crossProviderCategoryIdentityAllowed": false,
+    "combinedProviderCategoryRankingAllowed": false,
+    "temporaryVerifiersRetained": false
+  }
+}
