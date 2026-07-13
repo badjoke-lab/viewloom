@@ -7,9 +7,10 @@ const contract = JSON.parse(readFileSync('docs/audits/12a4-category-storage-desi
 const benchmark = readFileSync('scripts/measure-12a4-category-storage-models.py', 'utf8')
 const sourceEvidence = JSON.parse(readFileSync('docs/audits/12a4-category-source-audit-evidence.json', 'utf8'))
 const storageEvidence = JSON.parse(readFileSync('docs/audits/12a3-account-storage-evidence.json', 'utf8'))
+const accepted = contract.status === 'accepted'
 
 assert.equal(contract.schemaVersion, 'viewloom-12a4-category-storage-design-contract-v1')
-assert.equal(contract.status, 'candidate')
+assert.ok(['candidate', 'accepted'].includes(contract.status), `unexpected contract status: ${contract.status}`)
 assert.equal(contract.providerSeparated, true)
 assert.equal(contract.categoryContractVersion, 'category-source-v1')
 assert.equal(sourceEvidence.status, 'accepted')
@@ -35,8 +36,24 @@ for (const state of [
 ]) assert.ok(contract.coverageStates.includes(state), `missing coverage state: ${state}`)
 for (const value of Object.values(contract.scope)) assert.equal(value, false)
 assert.equal(contract.acceptance.productionCostProbeRequiredBeforeRuntimeEnablement, true)
-assert.equal(contract.acceptance.migrationAuthorizedByThisContract, false)
+assert.equal(contract.acceptance.remoteMigrationApplyAuthorized, false)
 assert.equal(contract.acceptance.runtimeCaptureAuthorizedByThisContract, false)
+
+if (accepted) {
+  assert.equal(contract.selectedDesign.model, 'embedded_hourly')
+  assert.equal(contract.acceptance.repositoryMigrationCandidateAuthorized, true)
+  assert.equal(contract.acceptedEvidence.pr, 514)
+  assert.equal(contract.acceptedEvidence.selectedModel, contract.selectedDesign.model)
+  assert.equal(contract.acceptedEvidence.categoryStorageDesignPass, true)
+  assert.ok(contract.acceptedEvidence.twitchProjectedSizeMbWithCategorySafety <= contract.selectedCandidateRequirements.twitchProjectedDatabaseMbMax)
+  assert.ok(contract.acceptedEvidence.twitchProjectedHeadroomMb >= contract.selectedCandidateRequirements.twitchMinimumHeadroomMb)
+  assert.ok(contract.acceptedEvidence.kickProjectedSizeMbWithCategorySafety <= contract.selectedCandidateRequirements.kickProjectedDatabaseMbMax)
+  assert.ok(contract.acceptedEvidence.kickProjectedHeadroomMb >= contract.selectedCandidateRequirements.kickMinimumHeadroomMb)
+  assert.ok(contract.acceptedEvidence.accountProjectedSizeMbWithCategorySafety <= contract.selectedCandidateRequirements.accountProjectedDatabaseMbMax)
+  assert.ok(contract.acceptedEvidence.accountProjectedHeadroomMb >= contract.selectedCandidateRequirements.accountMinimumHeadroomMb)
+} else {
+  assert.notEqual(contract.acceptance.repositoryMigrationCandidateAuthorized, true)
+}
 
 for (const fragment of [
   'BENCHMARK_DAYS = 7',
@@ -67,6 +84,7 @@ for (const forbidden of [
 ]) assert.equal(benchmark.includes(forbidden), false, `benchmark must not use: ${forbidden}`)
 
 console.log('12A-4 category storage design contract verification passed.')
+console.log(`- contract state: ${contract.status}`)
 console.log('- four storage models are compared reproducibly')
 console.log('- accepted Twitch/Kick source contracts remain separate')
-console.log('- no migration, runtime capture, backfill, new cron, UI, or cross-provider category work')
+console.log('- remote migration, runtime capture, backfill, new cron, UI, and cross-provider category work remain unauthorized')
