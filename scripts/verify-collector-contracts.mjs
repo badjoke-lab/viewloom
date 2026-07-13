@@ -36,7 +36,7 @@ function numberFrom(path, source, pattern, label) {
 }
 
 function providerBlock(path, source, provider) {
-  const match = source.match(new RegExp(`${provider}:\\s*\\{([\\s\\S]*?)\\n\\s*\\},`))
+  const match = source.match(new RegExp(`${provider}:\s*\{([\s\S]*?)\n\s*\},`))
   if (!match) failures.push(`${path}: missing ${provider} runtime block`)
   return match?.[1] ?? ''
 }
@@ -48,7 +48,7 @@ function forbidAssignedValue(path, source, names) {
     .filter((line) => line && !line.startsWith('#'))
 
   for (const name of names) {
-    const pattern = new RegExp(`^${name}\\s*=`)
+    const pattern = new RegExp(`^${name}\s*=`)
     if (activeLines.some((line) => pattern.test(line))) {
       failures.push(`${path}: ${name} must not be committed in wrangler.toml`)
     }
@@ -98,8 +98,8 @@ forbidAssignedValue(kickWranglerPath, kickWrangler, [
 
 need(twitchIndexPath, twitchIndex, "export { default } from './index-category'", 'Twitch active collector delegation')
 need(kickIndexPath, kickIndex, "export { default } from './index-category'", 'Kick active collector delegation')
-need(twitchEntryPath, twitchEntry, "import collector from './index-category'", 'Twitch category-aware entry')
-need(kickEntryPath, kickEntry, "import collector from './index-category'", 'Kick category-aware entry')
+need(twitchEntryPath, twitchEntry, "import collector from './index'", 'Twitch accepted entry delegation')
+need(kickEntryPath, kickEntry, "import collector from './index'", 'Kick accepted entry delegation')
 
 const twitchPageSize = numberFrom(twitchWorkerPath, twitchWorker, /const PAGE_SIZE = (\d+)/, 'Twitch page size')
 const twitchMaxPages = numberFrom(twitchWorkerPath, twitchWorker, /const MAX_PAGES = (\d+)/, 'Twitch maximum pages')
@@ -149,5 +149,5 @@ if (failures.length > 0) {
 console.log('ViewLoom collector contract verification passed.')
 console.log('- Twitch: 5m cadence, Top 300, raw 30d, rollup 180d')
 console.log('- Kick: 5m cadence, Top 100, raw 60d, rollup 180d')
-console.log('- category-aware collectors are active but CATEGORY_CAPTURE_ENABLED is not committed')
+console.log('- category-aware collectors are active behind index.ts while CATEGORY_CAPTURE_ENABLED is not committed')
 console.log('- D1 bindings and secret placement contracts are intact')
