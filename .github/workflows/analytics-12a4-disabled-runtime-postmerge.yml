@@ -1,0 +1,224 @@
+name: Analytics 12A4 Disabled Runtime Post-Merge
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'docs/audits/12a4-disabled-runtime-postmerge-contract.json'
+      - 'docs/audits/12a4-disabled-runtime-postmerge-evidence.json'
+      - 'docs/operations/12a4-disabled-runtime-postmerge-acceptance-2026-07-14.md'
+      - 'docs/work-in-progress/phase12a4-disabled-runtime-postmerge.md'
+      - 'workers/category-disabled-runtime-verifier/**'
+      - 'scripts/collect-12a4-disabled-runtime-postmerge-evidence.mjs'
+      - 'scripts/verify-12a4-disabled-runtime-postmerge-evidence.mjs'
+      - 'scripts/verify-12a4-disabled-runtime-postmerge-package.mjs'
+      - 'scripts/check-12a4-disabled-runtime-postmerge-scope.mjs'
+      - '.github/workflows/analytics-12a4-disabled-runtime-postmerge.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: analytics-12a4-disabled-runtime-postmerge-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  MERGE_SHA: 5d58b267a18399b5496a1f01aae7125a63f061c4
+  ARTIFACT_DIR: artifacts/12a4-disabled-runtime
+  RAW_DIR: artifacts/12a4-disabled-runtime/raw
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify acceptance scope
+        run: node scripts/check-12a4-disabled-runtime-postmerge-scope.mjs
+
+      - name: Verify acceptance package
+        run: node scripts/verify-12a4-disabled-runtime-postmerge-package.mjs
+
+      - name: Verify permanent evidence when present
+        run: |
+          if [[ -f docs/audits/12a4-disabled-runtime-postmerge-evidence.json ]]; then
+            node scripts/verify-12a4-disabled-runtime-postmerge-evidence.mjs \
+              docs/audits/12a4-disabled-runtime-postmerge-evidence.json --require-pass
+          fi
+
+      - name: Bundle Twitch verifier without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-disabled-runtime-verifier/wrangler.twitch.toml
+
+      - name: Bundle Kick verifier without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-disabled-runtime-verifier/wrangler.kick.toml
+
+  production-acceptance:
+    needs: contract
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.head_ref == 'accept-analytics-12a4-disabled-runtime-postmerge'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Locate exact main deployment run
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RAW_DIR"
+          run='null'
+          for attempt in $(seq 1 60); do
+            response=$(gh api \
+              -H 'Accept: application/vnd.github+json' \
+              "/repos/$GITHUB_REPOSITORY/actions/workflows/deploy-collector-workers.yml/runs?branch=main&event=push&per_page=100")
+            run=$(jq --arg sha "$MERGE_SHA" '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.id) | last // null' <<<"$response")
+            if [[ "$run" != 'null' ]]; then
+              status=$(jq -r '.status' <<<"$run")
+              if [[ "$status" == 'completed' ]]; then break; fi
+            fi
+            sleep 10
+          done
+          [[ "$run" != 'null' ]]
+          [[ $(jq -r '.status' <<<"$run") == 'completed' ]]
+          [[ $(jq -r '.conclusion' <<<"$run") == 'success' ]]
+          run_id=$(jq -r '.id' <<<"$run")
+          jobs=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/jobs?per_page=100")
+          normalized_jobs=$(jq '[.jobs[] | {name, status, conclusion}]' <<<"$jobs")
+          for required in verify deploy-twitch deploy-kick verify-remote-schema; do
+            conclusion=$(jq -r --arg name "$required" '.[] | select(.name == $name) | .conclusion' <<<"$normalized_jobs")
+            [[ "$conclusion" == 'success' ]]
+          done
+          jq -n \
+            --arg workflow "$(jq -r '.name' <<<"$run")" \
+            --arg event "$(jq -r '.event' <<<"$run")" \
+            --argjson runId "$run_id" \
+            --arg headSha "$(jq -r '.head_sha' <<<"$run")" \
+            --arg runStartedAt "$(jq -r '.run_started_at' <<<"$run")" \
+            --arg updatedAt "$(jq -r '.updated_at' <<<"$run")" \
+            --argjson jobs "$normalized_jobs" \
+            '{workflow:$workflow,event:$event,runId:$runId,headSha:$headSha,runStartedAt:$runStartedAt,updatedAt:$updatedAt,jobs:$jobs,gatePass:true}' \
+            > "$RAW_DIR/deployment.json"
+          echo "MIN_COLLECTED_AT=$(jq -r '.updatedAt' "$RAW_DIR/deployment.json")" >> "$GITHUB_ENV"
+
+      - name: Prepare runtime verifier configs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RAW_DIR/configs"
+          cp workers/category-disabled-runtime-verifier/wrangler.twitch.toml "$RAW_DIR/configs/twitch.toml"
+          cp workers/category-disabled-runtime-verifier/wrangler.kick.toml "$RAW_DIR/configs/kick.toml"
+          sed -i "s|MIN_COLLECTED_AT = \"REPLACE_AT_RUNTIME\"|MIN_COLLECTED_AT = \"$MIN_COLLECTED_AT\"|" "$RAW_DIR/configs/twitch.toml"
+          sed -i "s|MIN_COLLECTED_AT = \"REPLACE_AT_RUNTIME\"|MIN_COLLECTED_AT = \"$MIN_COLLECTED_AT\"|" "$RAW_DIR/configs/kick.toml"
+          echo "VERIFY_TOKEN=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
+      - name: Deploy, verify, and delete provider verifiers
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          verify_provider() {
+            provider="$1"
+            service="viewloom-category-disabled-verifier-$provider"
+            config="$RAW_DIR/configs/$provider.toml"
+            log="$RAW_DIR/$provider-deploy.log"
+            body="$RAW_DIR/$provider.json"
+            deploy_code=1
+            run_code=1
+            curl_code=1
+            http_status=0
+            delete_code=1
+            delete_curl_code=1
+            delete_http_status=0
+            url=''
+
+            pnpm dlx wrangler@4 deploy --config "$config" >"$log" 2>&1
+            deploy_code=$?
+            if [[ $deploy_code -eq 0 ]]; then
+              printf '%s' "$VERIFY_TOKEN" | pnpm dlx wrangler@4 secret put VERIFY_TOKEN --config "$config" >>"$log" 2>&1
+              run_code=$?
+              url=$(grep -Eo 'https://[^ ]+workers.dev' "$log" | tail -1 || true)
+              if [[ $run_code -eq 0 && -n "$url" ]]; then
+                for attempt in $(seq 1 60); do
+                  http_status=$(curl -sS -o "$body" -w '%{http_code}' \
+                    -X POST -H "Authorization: Bearer $VERIFY_TOKEN" \
+                    "$url/verify")
+                  curl_code=$?
+                  if [[ $curl_code -eq 0 && "$http_status" == '200' ]]; then break; fi
+                  sleep 15
+                done
+              fi
+            fi
+
+            delete_response=$(curl -sS \
+              -X DELETE \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              -H 'Content-Type: application/json' \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
+            if [[ $(jq -r '.success // false' <<<"$delete_response") == 'true' ]]; then delete_code=0; fi
+            delete_http_status=$(curl -sS -o /dev/null -w '%{http_code}' \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
+            delete_curl_code=$?
+
+            printf '%s %s %s %s %s %s %s\n' \
+              "$deploy_code" "$run_code" "$curl_code" "$http_status" \
+              "$delete_code" "$delete_curl_code" "$delete_http_status" \
+              > "$RAW_DIR/$provider-codes.txt"
+
+            [[ $deploy_code -eq 0 ]]
+            [[ $run_code -eq 0 ]]
+            [[ $curl_code -eq 0 ]]
+            [[ "$http_status" == '200' ]]
+            [[ $delete_code -eq 0 ]]
+            [[ $delete_curl_code -eq 0 ]]
+            [[ "$delete_http_status" == '404' ]]
+          }
+
+          twitch_result=0
+          kick_result=0
+          verify_provider twitch || twitch_result=$?
+          verify_provider kick || kick_result=$?
+          [[ $twitch_result -eq 0 && $kick_result -eq 0 ]]
+
+      - name: Normalize and verify evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          node scripts/collect-12a4-disabled-runtime-postmerge-evidence.mjs \
+            "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
+          node scripts/verify-12a4-disabled-runtime-postmerge-evidence.mjs \
+            "$ARTIFACT_DIR/evidence.json" --require-pass
+
+      - name: Remove raw responses and logs
+        if: always()
+        run: rm -rf "$RAW_DIR"
+
+      - name: Upload sanitized evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a4-disabled-runtime-postmerge
+          path: artifacts/12a4-disabled-runtime/evidence.json
+          if-no-files-found: warn
