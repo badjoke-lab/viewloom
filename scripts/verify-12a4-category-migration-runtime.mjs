@@ -185,7 +185,7 @@ for (const [provider, entryPath] of [
   ['kick', 'workers/collector-kick/src/entry.ts'],
 ]) {
   const entry = read(entryPath)
-  assert.ok(entry.includes("import collector from './index-category'"), `${provider}: category-aware collector not active`)
+  assert.ok(entry.includes("import collector from './index'"), `${provider}: accepted collector delegation missing`)
   assert.ok(entry.includes('categoryCaptureEnabled(env.CATEGORY_CAPTURE_ENABLED)'), `${provider}: disabled flag routing missing`)
   assert.ok(entry.includes('categoryEnabled && generationConfig.enabled'), `${provider}: category generator gate missing`)
   assert.ok(entry.includes('maybeGenerateIntradayRollups'), `${provider}: legacy disabled path missing`)
