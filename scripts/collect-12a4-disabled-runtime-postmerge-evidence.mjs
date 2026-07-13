@@ -52,7 +52,7 @@ for (const provider of ['twitch', 'kick']) {
     && lifecycle.httpStatus === 200
     && lifecycle.deleteExitCode === 0
     && lifecycle.deleteCurlExitCode === 0
-    && lifecycle.deleteHttpStatus === 200
+    && lifecycle.deleteHttpStatus === 404
 
   providers[provider] = {
     provider,
@@ -67,7 +67,11 @@ for (const provider of ['twitch', 'kick']) {
 }
 
 const deploymentPass = deployment.gatePass === true
-const temporaryVerifiersRetained = ['twitch', 'kick'].some((provider) => providers[provider].lifecycle.deleteExitCode !== 0)
+const temporaryVerifiersRetained = ['twitch', 'kick'].some((provider) => (
+  providers[provider].lifecycle.deleteExitCode !== 0
+  || providers[provider].lifecycle.deleteCurlExitCode !== 0
+  || providers[provider].lifecycle.deleteHttpStatus !== 404
+))
 const disabledRuntimePostMergePass = deploymentPass
   && providers.twitch.providerGatePass
   && providers.kick.providerGatePass
