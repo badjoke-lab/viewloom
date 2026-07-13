@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MIGRATION = ROOT / "db/d1/005_category_capture.sql"
 CATEGORY_CAPTURE = ROOT / "workers/shared/category-capture.ts"
-CATEGORY_ROLLUP = ROOT / "workers/shared/category-intraday-rollup.ts"
+CATEGORY_SQL = ROOT / "workers/shared/category-intraday-sql.ts"
 CATEGORY_CONTRACT = "category-source-v1"
 ANALYTICS_CONTRACT = "analytics-source-v1"
 DAY = "2026-07-14"
@@ -143,8 +143,8 @@ def compact_payload(provider: str, minute: int, missing_second: bool = False) ->
 
 
 def bind_rollup_sql(source: str) -> str:
-    streamer_id_sql = extract_template(CATEGORY_ROLLUP, "STREAMER_ID_SQL")
-    viewers_sql = extract_template(CATEGORY_ROLLUP, "VIEWERS_SQL")
+    streamer_id_sql = extract_template(CATEGORY_SQL, "STREAMER_ID_SQL")
+    viewers_sql = extract_template(CATEGORY_SQL, "VIEWERS_SQL")
     return (
         source.replace("${STREAMER_ID_SQL}", streamer_id_sql)
         .replace("${VIEWERS_SQL}", viewers_sql)
@@ -156,7 +156,7 @@ def run_provider_rollup(db: sqlite3.Connection, provider: str, missing_second: b
     for minute in (0, 5):
         db.execute(
             """
-            INSERT INTO minute_snapshots (
+            INSERT OR REPLACE INTO minute_snapshots (
               provider, bucket_minute, collected_at, stream_count,
               total_viewers, payload_json, source_mode
             ) VALUES (?, ?, ?, 2, 200, ?, 'real')
@@ -169,8 +169,8 @@ def run_provider_rollup(db: sqlite3.Connection, provider: str, missing_second: b
             ),
         )
 
-    upsert_sql = bind_rollup_sql(extract_template(CATEGORY_ROLLUP, "CATEGORY_UPSERT_STREAMER_ROLLUPS_SQL"))
-    status_sql = extract_template(CATEGORY_ROLLUP, "CATEGORY_STATUS_UPSERT_SQL")
+    upsert_sql = bind_rollup_sql(extract_template(CATEGORY_SQL, "CATEGORY_UPSERT_STREAMER_ROLLUPS_SQL"))
+    status_sql = extract_template(CATEGORY_SQL, "CATEGORY_STATUS_UPSERT_SQL")
     db.execute(
         upsert_sql,
         (
@@ -182,12 +182,13 @@ def run_provider_rollup(db: sqlite3.Connection, provider: str, missing_second: b
             5,
             5,
             provider,
+            provider,
             DAY,
+            CATEGORY_CONTRACT,
             "complete_within_daily_cap",
             "real",
             ANALYTICS_CONTRACT,
             UPDATED_AT,
-            CATEGORY_CONTRACT,
         ),
     )
     retained = db.execute(
