@@ -1,4 +1,4 @@
-import collector from './index'
+import collector from './index-category'
 import { categoryCaptureEnabled } from '../../shared/category-capture'
 import { maybeGenerateCategoryIntradayRollups } from '../../shared/category-intraday-rollup'
 import { maybeApplyIntradaySchema } from '../../shared/intraday-schema'
