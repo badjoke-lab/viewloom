@@ -35,9 +35,13 @@ for (const path of [
   'docs/audits/12a3-postmerge-acceptance-evidence.json',
   'docs/audits/12a4-category-source-audit-contract.json',
   'docs/audits/12a4-category-source-audit-evidence.json',
+  'docs/audits/12a4-category-storage-design-contract.json',
+  'docs/audits/12a4-category-storage-budget-evidence.json',
   'docs/operations/12a3-generator-enablement-acceptance-2026-07-12.md',
   'docs/operations/12a3-postmerge-acceptance-2026-07-12.md',
   'docs/operations/12a4-category-source-audit-2026-07-12.md',
+  'docs/operations/12a4-category-storage-design-acceptance-2026-07-14.md',
+  'docs/work-in-progress/phase12a4-category-migration-disabled-runtime.md',
   'workers/shared/intraday-rollup.ts',
   'workers/collector-twitch/src/entry.ts',
   'workers/collector-kick/src/entry.ts',
@@ -59,6 +63,7 @@ for (const retired of [
   'docs/work-in-progress/phase12a3-generator-enablement.md',
   'docs/work-in-progress/phase12a3-postmerge-acceptance.md',
   'docs/work-in-progress/phase12a4-category-source-audit.md',
+  'docs/work-in-progress/phase12a4-category-storage-design.md',
   '.github/workflows/analytics-12a4-category-source-audit.yml',
   'workers/category-source-audit/shared.ts',
   'workers/category-source-audit/twitch.ts',
@@ -71,14 +76,15 @@ for (const retired of [
 ]) assert.equal(exists(retired), false, `retired one-time file still present: ${retired}`)
 
 for (const path of canonicalDocs) {
-  check(path, ['PR #513', 'category source audit', 'storage design', 'runtime capture'])
-}
-
-for (const path of canonicalDocs) {
+  check(path, ['PR #513', 'PR #514', 'category storage design', 'category migration', 'runtime capture'])
   const source = read(path)
   assert.equal(source.includes('bounded_generator_not_implemented'), false, `${path}: stale 12A-3 boundary`)
   assert.equal(source.includes('Production generation started no'), false, `${path}: stale generation state`)
   assert.equal(source.includes('category capture remains unapproved for both providers'), false, `${path}: stale category source state`)
+  assert.equal(source.includes('category storage design accepted: false'), false, `${path}: stale category storage state`)
+  assert.equal(source.includes('category storage design not accepted'), false, `${path}: stale category storage state`)
+  assert.equal(source.includes('Current workstream 12A-4 category storage design and budget gate'), false, `${path}: stale current workstream`)
+  assert.equal(source.includes('Current workstream: 12A-4 provider-specific category storage design and budget gate'), false, `${path}: stale current workstream`)
 }
 
 const enablement = json('docs/audits/12a3-generator-enablement-evidence.json')
@@ -131,6 +137,48 @@ assert.equal(categoryEvidence.gate.runtimeCaptureAuthorized, false)
 assert.equal(categoryEvidence.boundaries.mainCollectorsRestored, true)
 for (const value of Object.values(categoryEvidence.privacy)) assert.equal(value, false)
 
+const storageContract = json('docs/audits/12a4-category-storage-design-contract.json')
+assert.equal(storageContract.status, 'accepted')
+assert.equal(storageContract.providerSeparated, true)
+assert.equal(storageContract.categoryContractVersion, 'category-source-v1')
+assert.equal(storageContract.selectedDesign.model, 'embedded_hourly')
+assert.equal(storageContract.selectedDesign.dictionaryTable, 'provider_category_dictionary')
+assert.equal(storageContract.selectedDesign.newCategoryIndex, false)
+assert.equal(storageContract.selectedDesign.newCron, false)
+assert.equal(storageContract.selectedDesign.backfill, false)
+assert.equal(storageContract.selectedDesign.rawRetentionChanged, false)
+assert.equal(storageContract.selectedDesign.runtimeCaptureEnabled, false)
+assert.equal(storageContract.acceptedEvidence.pr, 514)
+assert.equal(storageContract.acceptedEvidence.workflowRunId, 29197092303)
+assert.equal(storageContract.acceptedEvidence.artifactId, 8261289433)
+assert.equal(storageContract.acceptedEvidence.selectedModel, 'embedded_hourly')
+assert.equal(storageContract.acceptedEvidence.categoryStorageDesignPass, true)
+assert.equal(storageContract.acceptance.repositoryMigrationCandidateAuthorized, true)
+assert.equal(storageContract.acceptance.remoteMigrationApplyAuthorized, false)
+assert.equal(storageContract.acceptance.runtimeCaptureAuthorizedByThisContract, false)
+for (const value of Object.values(storageContract.scope)) assert.equal(value, false)
+
+const storageEvidence = json('docs/audits/12a4-category-storage-budget-evidence.json')
+assert.equal(storageEvidence.status, 'accepted')
+assert.equal(storageEvidence.acceptanceIdentity.pr, 514)
+assert.equal(storageEvidence.acceptanceIdentity.workflowRunId, 29197092303)
+assert.equal(storageEvidence.acceptanceIdentity.artifactId, 8261289433)
+assert.equal(storageEvidence.sourceContract.providerSeparated, true)
+assert.equal(storageEvidence.sourceContract.categoryContractVersion, 'category-source-v1')
+assert.equal(storageEvidence.selectedDesign.model, 'embedded_hourly')
+assert.equal(storageEvidence.providers.twitch.projectedSizeMbWithCategorySafety, 438.7)
+assert.equal(storageEvidence.providers.twitch.projectedHeadroomMb, 11.3)
+assert.equal(storageEvidence.providers.kick.projectedSizeMbWithCategorySafety, 314.57)
+assert.equal(storageEvidence.providers.kick.projectedHeadroomMb, 135.43)
+assert.equal(storageEvidence.account.projectedSizeMbWithCategorySafety, 3716.59)
+assert.equal(storageEvidence.account.projectedHeadroomMb, 891.41)
+assert.equal(storageEvidence.gate.categoryStorageDesignPass, true)
+assert.equal(storageEvidence.gate.repositoryMigrationCandidateAuthorized, true)
+assert.equal(storageEvidence.gate.remoteMigrationApplyAuthorized, false)
+assert.equal(storageEvidence.gate.runtimeCaptureAuthorized, false)
+assert.equal(storageEvidence.gate.productionCostProbeRequired, true)
+for (const value of Object.values(storageEvidence.boundaries)) assert.equal(value, false)
+
 const fieldContract = json('docs/audits/12a1-analytics-field-contract.json')
 assert.equal(fieldContract.purposes.category.twitch.captureApproved, true)
 assert.equal(fieldContract.purposes.category.twitch.runtimeCaptureStarted, false)
@@ -151,28 +199,49 @@ assert.equal(sourceEvidence.crossProviderIdentity.categoryIdentityEquivalenceAll
 assert.equal(sourceEvidence.crossProviderIdentity.combinedProviderCategoryRankingAllowed, false)
 
 const state = json('docs/audits/12a2-current-gate-state.json')
-assert.equal(state.schemaVersion, 'viewloom-12a2-current-gate-state-v10')
-assert.equal(state.status, '12a4_category_sources_accepted_storage_design_current')
+assert.equal(state.schemaVersion, 'viewloom-12a2-current-gate-state-v11')
+assert.equal(state.status, '12a4_category_storage_accepted_migration_runtime_current')
 assert.equal(state.categorySourceAudit.pr, 513)
 assert.equal(state.categorySourceAudit.lifecyclePass, true)
-assert.equal(state.categorySourceAudit.storageDesignAuthorized, true)
-assert.equal(state.categorySourceAudit.runtimeCaptureAuthorized, false)
+assert.equal(state.categoryStorageDesign.pr, 514)
+assert.equal(state.categoryStorageDesign.mergeSha, 'd3c219670af2189fe9acd51ecd67777481162a29')
+assert.equal(state.categoryStorageDesign.selectedModel, 'embedded_hourly')
+assert.equal(state.categoryStorageDesign.repositoryMigrationCandidateAuthorized, true)
+assert.equal(state.categoryStorageDesign.remoteMigrationApplyAuthorized, false)
+assert.equal(state.categoryStorageDesign.runtimeCaptureAuthorized, false)
 assert.equal(state.categoryCapture.sourceContractAccepted, true)
 assert.equal(state.categoryCapture.storageDesignAuthorized, true)
-assert.equal(state.categoryCapture.storageDesignAccepted, false)
+assert.equal(state.categoryCapture.storageDesignAccepted, true)
+assert.equal(state.categoryCapture.selectedStorageModel, 'embedded_hourly')
+assert.equal(state.categoryCapture.repositoryMigrationCandidateAuthorized, true)
+assert.equal(state.categoryCapture.remoteMigrationApplyAuthorized, false)
+assert.equal(state.categoryCapture.productionCostProbeRequired, true)
 assert.equal(state.categoryCapture.runtimeCaptureAuthorized, false)
 assert.equal(state.categoryCapture.runtimeCaptureStarted, false)
 assert.equal(state.categoryCapture.crossProviderIdentityAllowed, false)
 assert.equal(state.categoryCapture.combinedProviderRankingAllowed, false)
 assert.equal(state.currentWorkstream.phase, '12A-4')
-assert.equal(state.currentWorkstream.name, 'provider-specific category storage design and budget gate')
+assert.equal(state.currentWorkstream.name, 'provider-specific category migration and disabled runtime implementation')
+assert.equal(state.currentWorkstream.storageDesignAccepted, true)
+assert.equal(state.currentWorkstream.remoteMigrationApplied, false)
 assert.equal(state.currentWorkstream.runtimeCaptureStarted, false)
-assert.equal(state.nextWorkstream, '12A-4 provider-specific category storage design and budget gate')
+assert.equal(state.nextWorkstream, '12A-4 provider-specific category migration and disabled runtime implementation')
+
+const wip = read('docs/work-in-progress/phase12a4-category-migration-disabled-runtime.md')
+for (const fragment of [
+  'repository migration candidate: authorized',
+  'remote migration apply: unauthorized',
+  'runtime capture: unauthorized',
+  'no CATEGORY_CAPTURE_ENABLED value in either committed wrangler.toml',
+  'no production migration apply',
+  'no backfill',
+  'no new cron',
+]) assert.ok(wip.includes(fragment), `current category WIP missing: ${fragment}`)
 
 console.log('Development and documentation policy verification passed.')
 console.log('- 12A-3 generation is enabled and accumulating')
 console.log('- 12A-4 category source audit accepted PR #513')
-console.log('- Twitch source: game_id / game_name')
-console.log('- Kick source: category.id / category.name')
-console.log('- current workstream: provider-specific category storage design and budget gate')
-console.log('- runtime category capture remains disabled')
+console.log('- 12A-4 category storage design accepted PR #514')
+console.log('- selected category storage model: embedded_hourly')
+console.log('- current workstream: provider-specific category migration and disabled runtime implementation')
+console.log('- remote category migration and runtime capture remain disabled')

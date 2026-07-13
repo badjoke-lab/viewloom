@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Last updated: 2026-07-12
+Last updated: 2026-07-14
 
 Read the development policy, documentation governance, this index, roadmap, schedule, program plan, affected specifications, implementation plans, and accepted evidence before changing the repository.
 
@@ -14,8 +14,9 @@ Phase 12A Analytics Capture Foundation active
 12A-2 design/migration/deploy/schema accepted through PR #506
 12A-3 bounded generation and production accumulation complete through PR #511
 12A-4 category source audit accepted PR #513
+12A-4 category storage design accepted PR #514
 Production intraday generation started yes
-Current workstream 12A-4 provider-specific category storage design and budget gate
+Current workstream 12A-4 provider-specific category migration and disabled runtime implementation
 Category capture runtime not started
 ```
 
@@ -39,8 +40,12 @@ Category capture runtime not started
 - 12A-3 post-merge evidence: `audits/12a3-postmerge-acceptance-evidence.json`
 - 12A-4 category source contract: `audits/12a4-category-source-audit-contract.json`
 - 12A-4 category source evidence: `audits/12a4-category-source-audit-evidence.json`
+- 12A-4 category storage contract: `audits/12a4-category-storage-design-contract.json`
+- 12A-4 category storage evidence: `audits/12a4-category-storage-budget-evidence.json`
 - Current gate state: `audits/12a2-current-gate-state.json`
 - 12A-4 source acceptance: `operations/12a4-category-source-audit-2026-07-12.md`
+- 12A-4 storage acceptance: `operations/12a4-category-storage-design-acceptance-2026-07-14.md`
+- Current WIP: `work-in-progress/phase12a4-category-migration-disabled-runtime.md`
 
 ## Permanent Watchlist records
 
@@ -51,30 +56,38 @@ Category capture runtime not started
 ## Active Phase 12A
 
 ```text
-12A-0 current data and capacity baseline              complete PR #490
-12A-1 analytics field contract                        complete PR #492
-12A-2 design/migration/deploy/remote schema            accepted through PR #506
-12A-3 storage/execution/generator/accumulation         complete through PR #511
-12A-4-0 provider-specific category source audit       accepted PR #513
-12A-4-1 category storage design and budget gate       current
-12A-4-2 migration and disabled runtime implementation queued
-12A-4-3 production capture acceptance                 queued
-12A-5 foundation acceptance and accumulation handoff  queued
+12A-0 current data and capacity baseline                    complete PR #490
+12A-1 analytics field contract                              complete PR #492
+12A-2 design/migration/deploy/remote schema                  accepted through PR #506
+12A-3 storage/execution/generator/accumulation               complete through PR #511
+12A-4-0 provider-specific category source audit             accepted PR #513
+12A-4-1 category storage design and budget gate             accepted PR #514
+12A-4-2 category migration and disabled runtime             current
+12A-4-3 production cost, remote apply, capture acceptance   queued
+12A-5 foundation acceptance and accumulation handoff        queued
 ```
 
-## Accepted category source boundary
+## Accepted category source and storage boundary
 
 ```text
 Twitch source: Helix /streams
 Twitch fields: game_id / game_name
 Kick source: public/v1/livestreams
 Kick fields: category.id / category.name
-live probes: two per provider
-rows per probe: 100
-minimum field presence ratio: 1.0
 source audit pass: true
-storage design authorized: true
+storage design pass: true
+selected model: embedded_hourly
+category contract: category-source-v1
+repository migration candidate authorized: true
+remote migration apply authorized: false
+production cost probe required: true
 runtime capture authorized: false
+```
+
+```text
+Twitch projected total/headroom: 438.70 / 11.30 MB
+Kick projected total/headroom: 314.57 / 135.43 MB
+Account projected total/headroom: 3716.59 / 891.41 MB
 ```
 
 ## Current boundary
@@ -82,7 +95,10 @@ runtime capture authorized: false
 ```text
 intraday generation enabled and accumulating
 category source contract accepted
-category storage design not accepted
+category storage design accepted
+repository migration candidate authorized
+production schema not changed by PR #514
+remote category migration not authorized
 category runtime capture disabled
 raw retention unchanged
 new cron not authorized
@@ -94,8 +110,8 @@ combined-provider category ranking forbidden
 ## Forward order
 
 ```text
-12A-4 category storage design and budget gate
-  -> migration and disabled runtime implementation
+12A-4 category migration and disabled runtime implementation
+  -> production execution-cost probe and remote migration decision
   -> provider-separated production capture acceptance
   -> 12A-5 foundation acceptance
   -> Phase 13-14 localization and evidence accumulation

@@ -24,8 +24,9 @@ Phase 12A Analytics Capture Foundation active
 12A-3 bounded generator                enabled PR #510
 12A-3 production accumulation          accepted PR #511
 12A-4 category source audit            accepted PR #513
+12A-4 category storage design          accepted PR #514
 Production intraday generation         enabled and accumulating
-Current workstream                     12A-4 category storage design and budget gate
+Current workstream                     12A-4 category migration and disabled runtime implementation
 Category capture runtime               not started
 ```
 
@@ -45,6 +46,8 @@ docs/audits/12a3-generator-enablement-evidence.json
 docs/audits/12a3-postmerge-acceptance-evidence.json
 docs/audits/12a4-category-source-audit-contract.json
 docs/audits/12a4-category-source-audit-evidence.json
+docs/audits/12a4-category-storage-design-contract.json
+docs/audits/12a4-category-storage-budget-evidence.json
 docs/audits/12a2-current-gate-state.json
 ```
 
@@ -64,14 +67,36 @@ combined-provider category ranking: forbidden
 runtime category capture: disabled
 ```
 
+## Accepted category storage design
+
+```text
+selected model: embedded_hourly
+category contract: category-source-v1
+raw encoding: categoryIds + item-order-aligned categoryRefs
+category names: one set-based provider_category_dictionary write
+long-term encoding: category_hourly_json in existing streamer/day rows
+new category index: no
+raw-retention extension: no
+new cron: no
+backfill: no
+```
+
+```text
+Twitch projected total/headroom: 438.70 / 11.30 MB
+Kick projected total/headroom: 314.57 / 135.43 MB
+Account projected total/headroom: 3716.59 / 891.41 MB
+```
+
 ## Current boundary
 
 ```text
 intraday generation authorized: true
 intraday generation running: true
 category source contract accepted: true
-category storage design authorized: true
-category storage design accepted: false
+category storage design accepted: true
+repository migration candidate authorized: true
+remote production migration authorized: false
+production cost probe required: true
 category runtime capture authorized: false
 category runtime capture started: false
 raw retention unchanged: true
@@ -80,14 +105,14 @@ backfill authorized: false
 category analytics UI authorized: false
 ```
 
-The next change compares provider-separated category storage models and measures projected bytes, D1 reads/writes, query duration, coverage semantics, retention, and migration impact. It must not enable runtime capture.
+The next change adds the provider-separated repository migration candidate and disabled-by-default runtime implementation. It must add no production flag, perform no remote migration, write no production category rows, and preserve the existing collector outcome, cadence, retention, and provider separation.
 
 ## Forward sequence
 
 ```text
-12A-4 category storage design and budget gate
-  -> migration and disabled runtime implementation
-  -> production source/capture acceptance
+12A-4 migration and disabled runtime implementation
+  -> production execution-cost probe and remote migration decision
+  -> provider-separated production capture acceptance
   -> 12A-5 foundation acceptance and accumulation handoff
   -> Phase 13-14 localization with evidence accumulation
   -> Phase 15 capability and calibration audit
