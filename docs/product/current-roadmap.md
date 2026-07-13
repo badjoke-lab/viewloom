@@ -1,7 +1,7 @@
 # ViewLoom current roadmap
 
 Status: source of truth  
-Last updated: 2026-07-12
+Last updated: 2026-07-14
 
 ```text
 Phase 12A Analytics Capture Foundation active
@@ -10,8 +10,9 @@ Phase 12A Analytics Capture Foundation active
 12A-2 design/migration/deploy/schema accepted through PR #506
 12A-3 bounded generation and accumulation complete through PR #511
 12A-4 category source audit accepted PR #513
+12A-4 category storage design accepted PR #514
 Production intraday generation started yes
-Current workstream 12A-4 provider-specific category storage design and budget gate
+Current workstream 12A-4 provider-specific category migration and disabled runtime implementation
 Category capture runtime not started
 ```
 
@@ -25,27 +26,44 @@ Category capture runtime not started
 - 12A-3 post-merge evidence: `../audits/12a3-postmerge-acceptance-evidence.json`
 - 12A-4 category source contract: `../audits/12a4-category-source-audit-contract.json`
 - 12A-4 category source evidence: `../audits/12a4-category-source-audit-evidence.json`
+- 12A-4 category storage contract: `../audits/12a4-category-storage-design-contract.json`
+- 12A-4 category storage evidence: `../audits/12a4-category-storage-budget-evidence.json`
+- 12A-4 storage acceptance: `../operations/12a4-category-storage-design-acceptance-2026-07-14.md`
 - Current state: `../audits/12a2-current-gate-state.json`
 
 ## Accepted 12A-4 source boundary
 
 ```text
 categorySourceAuditPass true
-storageDesignAuthorized true
-runtimeCaptureAuthorized false
-
 Twitch provider id path game_id
 Twitch name path game_name
-Twitch minimum observed presence ratio 1.0
-
 Kick provider id path category.id
 Kick name path category.name
-Kick minimum observed presence ratio 1.0
-
 providerSeparated true
 crossProviderCategoryIdentityAllowed false
 combinedProviderCategoryRankingAllowed false
-mainCollectorsRestored true
+```
+
+## Accepted 12A-4 storage boundary
+
+```text
+categoryStorageDesignPass true
+selectedModel embedded_hourly
+categoryContractVersion category-source-v1
+raw encoding categoryIds + categoryRefs
+category names provider_category_dictionary
+long-term encoding category_hourly_json in existing streamer/day rows
+newCategoryIndex false
+repositoryMigrationCandidateAuthorized true
+remoteMigrationApplyAuthorized false
+productionCostProbeRequired true
+runtimeCaptureAuthorized false
+```
+
+```text
+Twitch projected total/headroom 438.70 / 11.30 MB
+Kick projected total/headroom 314.57 / 135.43 MB
+Account projected total/headroom 3716.59 / 891.41 MB
 ```
 
 ## Current implementation boundary
@@ -53,8 +71,10 @@ mainCollectorsRestored true
 ```text
 12A-3 complete and accumulating
 12A-4-0 source verification complete
-12A-4-1 storage design and budget gate current
-production schema change not authorized
+12A-4-1 storage design and budget accepted
+12A-4-2 migration and disabled runtime current
+production category schema apply not authorized
+production category writes not authorized
 category runtime capture not authorized
 raw retention unchanged
 new cron not authorized
@@ -62,14 +82,14 @@ backfill not authorized
 category analytics UI not authorized
 ```
 
-The current task is to compare provider-separated category storage options, define coverage language, project storage growth, measure bounded query/write cost, and choose a migration candidate. No runtime capture may start in this step.
+The current task is to add the provider-separated repository migration candidate and disabled-by-default category runtime implementation, prove local schema/idempotency/payload/rollup behavior, and preserve collector failure containment. No remote migration or production category capture may start in this step.
 
 ## Forward sequence
 
 ```text
-12A-4 category storage design and budget gate
-  -> migration and disabled runtime implementation
-  -> production capture acceptance
+12A-4 migration and disabled runtime implementation
+  -> production execution-cost probe and remote migration decision
+  -> provider-separated production capture acceptance
   -> 12A-5 foundation acceptance and accumulation handoff
   -> Phase 13-14 localization with evidence accumulation
   -> Phase 15 capability and calibration audit
