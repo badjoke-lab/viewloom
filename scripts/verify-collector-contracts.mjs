@@ -41,7 +41,7 @@ function providerBlock(path, source, provider) {
   return match?.[1] ?? ''
 }
 
-function forbidAssignedSecret(path, source, names) {
+function forbidAssignedValue(path, source, names) {
   const activeLines = source
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -50,41 +50,56 @@ function forbidAssignedSecret(path, source, names) {
   for (const name of names) {
     const pattern = new RegExp(`^${name}\\s*=`)
     if (activeLines.some((line) => pattern.test(line))) {
-      failures.push(`${path}: ${name} must be configured as a secret, not committed in wrangler.toml`)
+      failures.push(`${path}: ${name} must not be committed in wrangler.toml`)
     }
   }
 }
 
 const twitchWranglerPath = 'workers/collector-twitch/wrangler.toml'
 const kickWranglerPath = 'workers/collector-kick/wrangler.toml'
-const twitchWorkerPath = 'workers/collector-twitch/src/index.ts'
-const kickWorkerPath = 'workers/collector-kick/src/index.ts'
+const twitchWorkerPath = 'workers/collector-twitch/src/index-category.ts'
+const kickWorkerPath = 'workers/collector-kick/src/index-category.ts'
+const twitchIndexPath = 'workers/collector-twitch/src/index.ts'
+const kickIndexPath = 'workers/collector-kick/src/index.ts'
+const twitchEntryPath = 'workers/collector-twitch/src/entry.ts'
+const kickEntryPath = 'workers/collector-kick/src/entry.ts'
 const runtimePath = 'apps/web/functions/_provider-runtime.ts'
 
 const twitchWrangler = read(twitchWranglerPath)
 const kickWrangler = read(kickWranglerPath)
 const twitchWorker = read(twitchWorkerPath)
 const kickWorker = read(kickWorkerPath)
+const twitchIndex = read(twitchIndexPath)
+const kickIndex = read(kickIndexPath)
+const twitchEntry = read(twitchEntryPath)
+const kickEntry = read(kickEntryPath)
 const runtime = read(runtimePath)
 
 need(twitchWranglerPath, twitchWrangler, 'crons = ["*/5 * * * *"]', '5-minute cron')
 need(twitchWranglerPath, twitchWrangler, 'binding = "DB_TWITCH_HOT"', 'DB_TWITCH_HOT binding')
 need(twitchWranglerPath, twitchWrangler, 'database_name = "vl_twitch_hot"', 'vl_twitch_hot database')
-forbidAssignedSecret(twitchWranglerPath, twitchWrangler, [
+forbidAssignedValue(twitchWranglerPath, twitchWrangler, [
   'TWITCH_CLIENT_ID',
   'TWITCH_CLIENT_SECRET',
   'TWITCH_INGEST_TOKEN',
+  'CATEGORY_CAPTURE_ENABLED',
 ])
 
 need(kickWranglerPath, kickWrangler, 'crons = ["*/5 * * * *"]', '5-minute cron')
 need(kickWranglerPath, kickWrangler, 'binding = "DB_KICK_HOT"', 'DB_KICK_HOT binding')
 need(kickWranglerPath, kickWrangler, 'database_name = "vl_kick_hot"', 'vl_kick_hot database')
-forbidAssignedSecret(kickWranglerPath, kickWrangler, [
+forbidAssignedValue(kickWranglerPath, kickWrangler, [
   'KICK_CLIENT_ID',
   'KICK_CLIENT_SECRET',
   'KICK_ACCESS_TOKEN',
   'KICK_INGEST_TOKEN',
+  'CATEGORY_CAPTURE_ENABLED',
 ])
+
+need(twitchIndexPath, twitchIndex, "export { default } from './index-category'", 'Twitch active collector delegation')
+need(kickIndexPath, kickIndex, "export { default } from './index-category'", 'Kick active collector delegation')
+need(twitchEntryPath, twitchEntry, "import collector from './index-category'", 'Twitch category-aware entry')
+need(kickEntryPath, kickEntry, "import collector from './index-category'", 'Kick category-aware entry')
 
 const twitchPageSize = numberFrom(twitchWorkerPath, twitchWorker, /const PAGE_SIZE = (\d+)/, 'Twitch page size')
 const twitchMaxPages = numberFrom(twitchWorkerPath, twitchWorker, /const MAX_PAGES = (\d+)/, 'Twitch maximum pages')
@@ -92,12 +107,15 @@ const twitchBucketMinutes = numberFrom(twitchWorkerPath, twitchWorker, /const TW
 need(twitchWorkerPath, twitchWorker, "sourceMode: 'real'", 'explicit Twitch real source mode')
 need(twitchWorkerPath, twitchWorker, "unixepoch('now', '-30 days')", '30-day Twitch raw retention')
 need(twitchWorkerPath, twitchWorker, "unixepoch('now', '-180 days')", '180-day Twitch rollup retention')
+need(twitchWorkerPath, twitchWorker, 'game_id?: string', 'accepted Twitch game id field')
+need(twitchWorkerPath, twitchWorker, 'game_name?: string', 'accepted Twitch game name field')
 
 const kickOfficialLimit = numberFrom(kickWorkerPath, kickWorker, /const OFFICIAL_LIVESTREAM_LIMIT = (\d+)/, 'Kick official livestream limit')
 need(kickWorkerPath, kickWorker, "'official-livestreams'", 'official-livestreams source mode')
 need(kickWorkerPath, kickWorker, "type TargetSource = 'seed-list' | 'registry'", 'Kick seed-list and registry target modes')
 need(kickWorkerPath, kickWorker, "unixepoch('now', '-60 days')", '60-day Kick raw retention')
 need(kickWorkerPath, kickWorker, "unixepoch('now', '-180 days')", '180-day Kick rollup retention')
+need(kickWorkerPath, kickWorker, "collectorMeta.sourceMode === 'official-livestreams'", 'Kick primary category source gate')
 
 const twitchRuntime = providerBlock(runtimePath, runtime, 'twitch')
 const kickRuntime = providerBlock(runtimePath, runtime, 'kick')
@@ -131,4 +149,5 @@ if (failures.length > 0) {
 console.log('ViewLoom collector contract verification passed.')
 console.log('- Twitch: 5m cadence, Top 300, raw 30d, rollup 180d')
 console.log('- Kick: 5m cadence, Top 100, raw 60d, rollup 180d')
+console.log('- category-aware collectors are active but CATEGORY_CAPTURE_ENABLED is not committed')
 console.log('- D1 bindings and secret placement contracts are intact')
