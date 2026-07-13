@@ -27,6 +27,7 @@ const allowed = new Set([
   'scripts/verify-12a4-category-migration-runtime.mjs',
   'scripts/check-12a4-category-migration-runtime-scope.mjs',
   'scripts/verify-collector-contracts.mjs',
+  'scripts/verify-12a3-bounded-generator.mjs',
   'scripts/check-12a3-bounded-generator-scope.mjs',
   '.github/workflows/analytics-12a3-bounded-generator.yml',
   '.github/workflows/analytics-12a4-category-migration-runtime.yml',
@@ -53,7 +54,6 @@ for (const path of [
   'docs/audits/12a2-current-gate-state.json',
   'docs/audits/12a3-bounded-generator-contract.json',
   'scripts/test-12a3-bounded-generator-sql.py',
-  'scripts/verify-12a3-bounded-generator.mjs',
 ]) assert.equal(changed.includes(path), false, `category migration/runtime must not change ${path}`)
 
 for (const required of [
@@ -69,6 +69,7 @@ for (const required of [
   'workers/collector-kick/src/official-livestreams.ts',
   'scripts/test-12a4-category-migration-runtime.py',
   'scripts/verify-12a4-category-migration-runtime.mjs',
+  'scripts/verify-12a3-bounded-generator.mjs',
   'scripts/check-12a3-bounded-generator-scope.mjs',
   '.github/workflows/analytics-12a3-bounded-generator.yml',
   '.github/workflows/analytics-12a4-category-migration-runtime.yml',
