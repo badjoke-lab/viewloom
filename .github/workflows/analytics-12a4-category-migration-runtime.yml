@@ -65,12 +65,12 @@ jobs:
           node scripts/verify-collector-contracts.mjs 2>&1 \
             | tee artifacts/12a4-category-migration-runtime/collector-contracts.txt
 
-      - name: Typecheck Workers
+      - name: Typecheck collectors
         shell: bash
         run: |
           mkdir -p artifacts/12a4-category-migration-runtime
           set -o pipefail
-          npm run typecheck:workers 2>&1 \
+          npm run typecheck:collectors 2>&1 \
             | tee artifacts/12a4-category-migration-runtime/typecheck.txt
 
       - name: Run local category migration and runtime fixture
