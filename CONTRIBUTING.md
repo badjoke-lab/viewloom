@@ -16,7 +16,7 @@ Phase 12A Analytics Capture Foundation active
 12A-4 provider-specific category storage design accepted PR #514
 Production generation started yes
 Current workstream 12A-4 category migration and disabled runtime implementation
-Category capture runtime not started
+Category runtime capture not started
 ```
 
 ## Accepted source and storage contracts
@@ -65,7 +65,7 @@ avoid a new cron
 perform no backfill
 add no category analytics UI
 retain explicit observed/missing/partial/unavailable states
-keep category runtime disabled without an explicit later production-approved flag
+keep category runtime capture disabled without an explicit later production-approved flag
 preserve the existing collector result if category processing fails
 add no extra intraday-generator statement
 require a later production execution-cost probe
