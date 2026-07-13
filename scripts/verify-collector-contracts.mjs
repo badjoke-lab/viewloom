@@ -36,9 +36,19 @@ function numberFrom(path, source, pattern, label) {
 }
 
 function providerBlock(path, source, provider) {
-  const match = source.match(new RegExp(`${provider}:\s*\{([\s\S]*?)\n\s*\},`))
-  if (!match) failures.push(`${path}: missing ${provider} runtime block`)
-  return match?.[1] ?? ''
+  const marker = `  ${provider}: {`
+  const start = source.indexOf(marker)
+  if (start < 0) {
+    failures.push(`${path}: missing ${provider} runtime block`)
+    return ''
+  }
+  const remainder = source.slice(start + marker.length)
+  const end = remainder.indexOf('\n  },')
+  if (end < 0) {
+    failures.push(`${path}: unterminated ${provider} runtime block`)
+    return ''
+  }
+  return remainder.slice(0, end)
 }
 
 function forbidAssignedValue(path, source, names) {
@@ -48,8 +58,7 @@ function forbidAssignedValue(path, source, names) {
     .filter((line) => line && !line.startsWith('#'))
 
   for (const name of names) {
-    const pattern = new RegExp(`^${name}\s*=`)
-    if (activeLines.some((line) => pattern.test(line))) {
+    if (activeLines.some((line) => line.startsWith(`${name}=`) || line.startsWith(`${name} =`))) {
       failures.push(`${path}: ${name} must not be committed in wrangler.toml`)
     }
   }
