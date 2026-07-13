@@ -48,7 +48,7 @@ for (const provider of ['twitch', 'kick']) {
   assert.equal(row.lifecycle.httpStatus, 200)
   assert.equal(row.lifecycle.deleteExitCode, 0)
   assert.equal(row.lifecycle.deleteCurlExitCode, 0)
-  assert.equal(row.lifecycle.deleteHttpStatus, 200)
+  assert.equal(row.lifecycle.deleteHttpStatus, 404)
   assert.equal(row.providerGatePass, true)
 }
 
@@ -95,4 +95,5 @@ console.log(`- Twitch latest: ${evidence.providers.twitch.latest.collectedAt}`)
 console.log(`- Kick latest: ${evidence.providers.kick.latest.collectedAt}`)
 console.log('- production category schema absent: true')
 console.log('- production category payload fields absent: true')
+console.log('- temporary verifier deletion confirmed by HTTP 404')
 console.log('- production cost probe still required: true')
