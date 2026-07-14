@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  TRIGGER_SHA: 2e1e3ea3e338574840cb69182581505bcb6eacff
+  TRIGGER_SHA: e78e21ef55fc3aadf22477308a2bcc25e44c71b0
   SOURCE_WORKFLOW: analytics-12a4-category-readonly-preflight.yml
   SOURCE_ARTIFACT: phase12a4-category-readonly-preflight
   ARTIFACT_DIR: artifacts/12a4-category-readonly-preflight-acceptance
@@ -170,8 +170,8 @@ jobs:
           jq --slurpfile run "$RAW_DIR/run.json" \
             '.status = "accepted" |
              .acceptanceIdentity = {
-               triggerPr: 522,
-               triggerMergeSha: "2e1e3ea3e338574840cb69182581505bcb6eacff",
+               triggerPr: 525,
+               triggerMergeSha: "e78e21ef55fc3aadf22477308a2bcc25e44c71b0",
                workflowRunId: $run[0].runId,
                artifactId: $run[0].artifactId
              } |
