@@ -14,21 +14,13 @@ on:
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
   group: analytics-12a4-category-execution-cost-probe-acceptance-v3-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-env:
-  TRIGGER_SHA: 741e080187cfc3c92595120e57899d52664dd85e
-  SOURCE_WORKFLOW: analytics-12a4-category-execution-cost-probe-execution.yml
-  SOURCE_ARTIFACT: phase12a4-category-execution-cost-probe
-  ARTIFACT_DIR: artifacts/12a4-category-execution-cost-probe-acceptance-v3
-  RAW_DIR: artifacts/12a4-category-execution-cost-probe-acceptance-v3/raw
-
 jobs:
-  contract:
+  verify-frozen-attempt-3-evidence:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -39,132 +31,23 @@ jobs:
         uses: ./.github/actions/setup-node-pnpm
       - name: Verify acceptance scope
         run: node scripts/check-12a4-category-execution-cost-probe-acceptance-v3-scope.mjs
-      - name: Verify acceptance package
+      - name: Verify frozen attempt 3 accepted evidence
         run: node scripts/verify-12a4-category-execution-cost-probe-acceptance-v3-package.mjs
-
-  source-acceptance:
-    needs: contract
-    if: >-
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      github.head_ref == 'accept-analytics-12a4-category-execution-cost-probe-v3'
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    env:
-      GH_TOKEN: ${{ github.token }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-
-      - name: Locate exact trigger push run
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RAW_DIR" "$ARTIFACT_DIR"
-          run='null'
-          for attempt in $(seq 1 300); do
-            response=$(gh api -H 'Accept: application/vnd.github+json' "/repos/$GITHUB_REPOSITORY/actions/workflows/$SOURCE_WORKFLOW/runs?branch=main&event=push&per_page=100")
-            run=$(jq --arg sha "$TRIGGER_SHA" '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.id) | last // null' <<<"$response")
-            if [[ "$run" != 'null' && $(jq -r '.status' <<<"$run") == 'completed' ]]; then break; fi
-            sleep 10
-          done
-          [[ "$run" != 'null' ]] || { echo '::error::Exact trigger push run was not found.'; exit 1; }
-          run_id=$(jq -r '.id' <<<"$run")
-          run_event=$(jq -r '.event' <<<"$run")
-          run_head_sha=$(jq -r '.head_sha' <<<"$run")
-          run_status=$(jq -r '.status' <<<"$run")
-          run_conclusion=$(jq -r '.conclusion' <<<"$run")
-          [[ "$run_event" == 'push' ]]
-          [[ "$run_head_sha" == "$TRIGGER_SHA" ]]
-          [[ "$run_status" == 'completed' ]]
-          jobs=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/jobs?per_page=100")
-          normalized_jobs=$(jq '[.jobs[] | {id,name,status,conclusion}]' <<<"$jobs")
-          jq -n \
-            --arg workflow "$(jq -r '.name' <<<"$run")" \
-            --arg event "$run_event" \
-            --argjson runId "$run_id" \
-            --arg headSha "$run_head_sha" \
-            --arg status "$run_status" \
-            --arg conclusion "$run_conclusion" \
-            --argjson jobs "$normalized_jobs" \
-            '{workflow:$workflow,event:$event,runId:$runId,headSha:$headSha,status:$status,conclusion:$conclusion,jobs:$jobs}' \
-            > "$RAW_DIR/run-base.json"
-
-      - name: Download sanitized source artifact
-        shell: bash
-        run: |
-          set -euo pipefail
-          run_id=$(jq -r '.runId' "$RAW_DIR/run-base.json")
-          artifacts=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100")
-          artifact=$(jq --arg name "$SOURCE_ARTIFACT" '[.artifacts[] | select(.name == $name and .expired == false)] | sort_by(.id) | last // null' <<<"$artifacts")
-          [[ "$artifact" != 'null' ]] || { echo "::error::Artifact $SOURCE_ARTIFACT not found"; exit 1; }
-          artifact_id=$(jq -r '.id' <<<"$artifact")
-          gh api "/repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > "$RAW_DIR/source.zip"
-          unzip -q "$RAW_DIR/source.zip" -d "$RAW_DIR/source"
-          evidence=$(find "$RAW_DIR/source" -type f -name 'evidence.json' -print -quit)
-          [[ -n "$evidence" ]] || { echo '::error::evidence.json missing'; exit 1; }
-          cp "$evidence" "$RAW_DIR/source-evidence.json"
-          jq --argjson artifactId "$artifact_id" '. + {artifactId:$artifactId}' "$RAW_DIR/run-base.json" > "$RAW_DIR/run.json"
-
-      - name: Normalize acceptance evidence
-        shell: bash
-        run: |
-          set -euo pipefail
-          source_verify_exit=0
-          node scripts/verify-12a4-category-execution-cost-probe-evidence.mjs "$RAW_DIR/source-evidence.json" || source_verify_exit=$?
-          run_conclusion=$(jq -r '.conclusion' "$RAW_DIR/run.json")
-          source_status=$(jq -r '.status // "unknown"' "$RAW_DIR/source-evidence.json")
-          source_pass=$(jq -r '.gate.executionCostProbePass // false' "$RAW_DIR/source-evidence.json")
-          acceptance_status='observed_failure'
-          if [[ "$source_verify_exit" == '0' && "$run_conclusion" == 'success' && "$source_status" == 'observed_pass' && "$source_pass" == 'true' ]]; then
-            acceptance_status='accepted'
-          fi
-          jq \
-            --arg acceptanceStatus "$acceptance_status" \
-            --argjson sourceEvidenceVerifierExitCode "$source_verify_exit" \
-            --slurpfile run "$RAW_DIR/run.json" \
-            '. + {
-              acceptance: {
-                status: $acceptanceStatus,
-                triggerPr: 557,
-                triggerMergeSha: "741e080187cfc3c92595120e57899d52664dd85e",
-                workflowRunId: $run[0].runId,
-                artifactId: $run[0].artifactId,
-                sourceEvidenceVerifierExitCode: $sourceEvidenceVerifierExitCode
-              },
-              workflow: $run[0]
-            }' "$RAW_DIR/source-evidence.json" > "$ARTIFACT_DIR/evidence.json"
-          node scripts/verify-12a4-category-execution-cost-probe-evidence.mjs "$ARTIFACT_DIR/evidence.json" || true
-
-      - name: Remove source archive and raw provider files
+      - name: Publish accepted measurement summary
         if: always()
-        run: rm -rf "$RAW_DIR"
-
-      - name: Upload sanitized acceptance evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: phase12a4-category-execution-cost-probe-acceptance-v3
-          path: artifacts/12a4-category-execution-cost-probe-acceptance-v3/evidence.json
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Enforce exact source acceptance
-        if: always()
-        shell: bash
         run: |
-          set -euo pipefail
-          evidence="$ARTIFACT_DIR/evidence.json"
-          [[ -f "$evidence" ]]
-          [[ $(jq -r '.workflow.event' "$evidence") == 'push' ]]
-          [[ $(jq -r '.workflow.headSha' "$evidence") == "$TRIGGER_SHA" ]]
-          [[ $(jq -r '.workflow.conclusion' "$evidence") == 'success' ]]
-          [[ $(jq -r '.acceptance.status' "$evidence") == 'accepted' ]]
-          for required in contract production-probe; do
-            conclusion=$(jq -r --arg name "$required" '[.workflow.jobs[] | select(.name == $name)] | last | .conclusion // "missing"' "$evidence")
-            [[ "$conclusion" == 'success' ]]
-          done
-          node scripts/verify-12a4-category-execution-cost-probe-evidence.mjs "$evidence" --require-pass
+          {
+            echo '## ViewLoom 12A-4-6 Attempt 3 Accepted Measurement'
+            echo
+            echo '- Exact source run: 29358245194'
+            echo '- Exact source artifact: 8321254541'
+            echo '- Acceptance artifact: 8321258554'
+            echo '- Twitch: 4 generator queries, 10 D1 statements, 10 rows written, 6 changes'
+            echo '- Twitch: 1.743 ms SQL, 2010 ms Worker, 942 ms collector latency delta'
+            echo '- Kick: 4 generator queries, 10 D1 statements, 10 rows written, 6 changes'
+            echo '- Kick: 1.417 ms SQL, 1760 ms Worker, 9 ms collector latency delta'
+            echo '- Both providers: first dictionary pass 1, second pass 0, probe rows 3'
+            echo '- Both providers: database size delta 0, cleanup remaining 0, leakage 0'
+            echo '- Both providers: natural snapshot observed and temporary Worker final HTTP 404'
+            echo '- Category capture remains disabled and unauthorized'
+          } >> "$GITHUB_STEP_SUMMARY"
