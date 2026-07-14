@@ -78,7 +78,9 @@ function providerRaw(provider, overrides = {}) {
     attempted: overrides.attempted ?? true,
     worker: overrides.worker === null ? null : worker(provider, overrides.worker),
     lifecycle: lifecycle(overrides.lifecycle),
-    collectorLatencyDeltaMs: overrides.collectorLatencyDeltaMs ?? 250,
+    collectorLatencyDeltaMs: Object.hasOwn(overrides, 'collectorLatencyDeltaMs')
+      ? overrides.collectorLatencyDeltaMs
+      : 250,
     errors: {
       runner: overrides.runnerError ?? null,
       delete: overrides.deleteError ?? null,
