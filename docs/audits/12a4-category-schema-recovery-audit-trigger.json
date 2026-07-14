@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "viewloom-12a4-category-schema-recovery-audit-trigger-v1",
+  "status": "armed_for_one_time_main_push",
+  "trackingIssue": 519,
+  "packagePr": 535,
+  "expectedPackageHeadSha": "e13698aa78039e13142735003ac24ea66a61a4fd",
+  "packageMergeSha": "c24a4e37408ad0df3efb04bc0bf4d69a82ec0d90",
+  "sourceAttemptTriggerPr": 533,
+  "sourceAttemptMergeSha": "a83b412e479dccb36ad04541843e3dd9456e7dff",
+  "sourceAttemptRunId": 29325444378,
+  "providerOrder": [
+    "twitch",
+    "kick"
+  ],
+  "oneTime": true,
+  "boundaries": {
+    "remoteSchemaApply": false,
+    "categoryRuntimeEnablement": false,
+    "productionCategoryRows": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  }
+}
