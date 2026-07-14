@@ -1,4 +1,4 @@
-name = "viewloom-category-cost-preflight-twitch"
+name = "viewloom-category-cost-probe-twitch"
 main = "src/index.ts"
 compatibility_date = "2026-07-01"
 workers_dev = true

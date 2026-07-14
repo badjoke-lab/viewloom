@@ -1,11 +1,14 @@
 # Phase 12A-4 bounded category execution-cost probe
 
-Status: current umbrella gate; provider-separated bounded probe design is the active sub-gate  
+Status: current umbrella gate; bounded probe package accepted and separate one-file trigger is the next sub-gate  
 Tracking issue: #519  
 Planning PR: #520  
 Read-only preflight acceptance PR: #523  
 Post-apply schema audit acceptance PR: #545  
-Current contract: `docs/audits/12a4-category-execution-cost-probe-contract.json`
+Schema execution retirement PR: #546  
+Bounded probe package PR: #547  
+Umbrella contract: `docs/audits/12a4-category-execution-cost-probe-contract.json`  
+Package contract: `docs/audits/12a4-category-execution-cost-probe-package-contract.json`
 
 ## Accepted starting point
 
@@ -17,10 +20,12 @@ PR #528 controlled schema design accepted
 PR #529 production execution package accepted
 PR #541 Kick-only recovery fix accepted
 PR #545 final post-apply audit evidence frozen on main
+PR #546 schema execution/recovery paths retired
+PR #547 bounded execution-cost probe package validated
 Twitch category schema complete
 Kick category schema complete
-CATEGORY_CAPTURE_ENABLED absent
-production category rows absent
+CATEGORY_CAPTURE_ENABLED remains absent
+production category rows remain absent
 provider separation preserved
 final audit D1 rows written zero
 final audit D1 changes zero
@@ -42,34 +47,61 @@ Twitch schema applied and independently audited
 Kick schema applied through a Kick-only recovery package
 both provider schemas re-audited as complete
 category capture remained disabled throughout
-all temporary Workers deleted
+all temporary schema Workers deleted
 all schema execution and recovery triggers retired
+bounded probe design accepted
+reserved-identifier-only Worker implemented
+fixed historical probe day enforced
+first dictionary pass and second no-op fixture passed
+probe row idempotency and failure containment fixture passed
+cleanup remaining rows zero fixture passed
+sanitized success and failure evidence fixtures passed
+Twitch and Kick Wrangler bundles passed dry-run
 ```
 
-## Current sub-gate: bounded probe design
-
-The design package must prove all of the following before any production trigger is allowed:
+## Accepted package boundary
 
 ```text
-accepted schema evidence is read directly from main
-Twitch and Kick are executed independently
-only reserved probe identifiers are permitted
-one provider finishes cleanup before the next provider starts
-category generator query count is bounded
-first dictionary pass and second no-op pass are measured
-collector latency is measured before and after
-provider leakage remains zero
-reserved probe rows and dictionary entries are removed
-cleanup remaining rows equals zero
-temporary Workers are deleted and return HTTP 404
-CATEGORY_CAPTURE_ENABLED remains absent
+Worker mode: bounded_execution_cost_probe
+confirmation: RUN_RESERVED_CATEGORY_COST_PROBE
+probe day: 1900-01-02
+reserved prefix: __viewloom_category_cost_probe__:
+provider order: Twitch then Kick
+one dictionary entry + one rollup row + one status row per provider
+cleanup executes in finally
+collector_status is never written
+arbitrary production identifiers are rejected
+production execution from package PR: no
+Cloudflare credentials in package CI: no
+CATEGORY_CAPTURE_ENABLED value: absent
+persistent production category rows: none
+new cron/backfill/raw-retention/category UI: none
+cross-provider category identity or combined rankings: none
+```
+
+## Current sub-gate: separate one-file production trigger
+
+The next PR may change only the trigger contract required to bind the accepted package to an exact package head and merge SHA. It must not alter Worker logic, thresholds, provider order, cleanup rules, evidence normalization, collector code, or runtime category capture.
+
+The trigger must preserve this sequence:
+
+```text
+1. verify the exact accepted package identity from PR #547
+2. execute Twitch reserved probe
+3. verify first pass, no-op, thresholds, cleanup zero, leakage zero, and Worker deletion 404
+4. stop before Kick on any Twitch failure
+5. execute Kick reserved probe
+6. verify the same Kick gates and Worker deletion 404
+7. publish sanitized provider-separated evidence
+8. freeze evidence in a separate acceptance PR
+9. retire the trigger and production execution workflow
+10. decide separately whether category capture may start
 ```
 
 ## Current boundary
 
 ```text
-no production probe execution from the design PR
-no Cloudflare credentials in PR validation jobs
+no production probe has run
 no schema apply or schema rollback
 no CATEGORY_CAPTURE_ENABLED value
 no persistent production category rows
@@ -81,20 +113,6 @@ no cross-provider category identity
 no combined-provider category totals or rankings
 ```
 
-## Remaining authorized sequence
-
-```text
-1. implement and accept the bounded provider-separated probe package
-2. prove local/fixture first-pass, no-op, cleanup, and failure evidence
-3. open a separate one-file production trigger PR
-4. execute Twitch reserved probe, measure, clean, verify zero rows, delete Worker
-5. stop before Kick on any Twitch failure
-6. execute Kick reserved probe, measure, clean, verify zero rows, delete Worker
-7. freeze sanitized provider-separated cost evidence
-8. retire the probe trigger and production workflow
-9. decide separately whether provider-separated category capture may start
-```
-
 ## Completion gate
 
-12A-4 is complete only when both providers independently satisfy the v2 execution-cost contract, all reserved rows and dictionary entries are removed, temporary Workers are deleted, category failure cannot replace a successful collector outcome, and runtime capture receives a separate explicit acceptance. Until then, category capture remains disabled.
+12A-4 is complete only when both providers independently satisfy the execution-cost contract in production, all reserved rows and dictionary entries are removed, temporary Workers are deleted, category failure cannot replace a successful collector outcome, and runtime capture receives a separate explicit acceptance. Until then, category capture remains disabled.
