@@ -10,6 +10,7 @@ on:
       - synchronize
     paths:
       - '.github/workflows/analytics-12a4-category-controlled-schema-apply.yml'
+      - '.github/workflows/analytics-12a4-category-readonly-preflight.yml'
       - 'README.md'
       - 'AGENTS.md'
       - 'CONTRIBUTING.md'
@@ -27,6 +28,7 @@ on:
       - 'scripts/check-12a4-category-controlled-schema-apply-scope.mjs'
       - 'scripts/test-12a4-category-controlled-schema-apply.py'
       - 'scripts/verify-12a4-category-controlled-schema-apply.mjs'
+      - 'scripts/verify-12a4-category-readonly-preflight-package.mjs'
       - 'scripts/verify-development-policy.mjs'
       - 'workers/shared/category-schema.ts'
       - 'workers/category-schema-apply/**'
@@ -94,6 +96,7 @@ jobs:
             echo '- Partial schema policy: stop without applying'
             echo '- Second pass: must execute zero statements'
             echo '- Category capture flag: absent'
+            echo '- Read-only production workflow retired: yes'
             echo '- Remote D1 schema applied by this PR: no'
             echo '- Production temporary Worker deployed by this PR: no'
             echo '- Production category rows written: no'
