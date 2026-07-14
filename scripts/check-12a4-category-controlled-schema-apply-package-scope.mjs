@@ -3,14 +3,23 @@ import { execFileSync } from 'node:child_process'
 const allowed = new Set([
   '.github/workflows/analytics-12a4-category-controlled-schema-apply.yml',
   '.github/workflows/analytics-12a4-category-controlled-schema-apply-execution.yml',
+  '.github/workflows/analytics-12a4-category-schema-recovery-audit.yml',
   'docs/audits/12a4-category-controlled-schema-apply-execution-contract.json',
   'docs/audits/12a4-category-controlled-schema-apply-trigger.json',
+  'docs/audits/12a4-category-schema-recovery-audit-contract.json',
+  'docs/audits/12a4-category-schema-recovery-audit-trigger.json',
   'docs/work-in-progress/phase12a4-category-controlled-schema-apply-execution.md',
+  'docs/work-in-progress/phase12a4-category-schema-recovery-audit.md',
   'scripts/check-12a4-category-controlled-schema-apply-package-scope.mjs',
+  'scripts/check-12a4-category-schema-recovery-audit-scope.mjs',
   'scripts/collect-12a4-category-controlled-schema-apply-evidence.mjs',
+  'scripts/collect-12a4-category-schema-recovery-audit-evidence.mjs',
+  'scripts/run-12a4-category-schema-recovery-audit.mjs',
   'scripts/test-12a4-category-controlled-schema-apply-evidence.mjs',
   'scripts/verify-12a4-category-controlled-schema-apply-evidence.mjs',
   'scripts/verify-12a4-category-controlled-schema-apply-package.mjs',
+  'scripts/verify-12a4-category-schema-recovery-audit-evidence.mjs',
+  'scripts/verify-12a4-category-schema-recovery-audit-package.mjs',
   'workers/category-schema-apply/src/index.ts',
 ])
 
