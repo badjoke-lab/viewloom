@@ -17,7 +17,7 @@ const wip = read('docs/work-in-progress/phase12a4-category-capture-enablement-de
 const workflow = read('.github/workflows/analytics-12a4-category-capture-enablement-decision.yml')
 
 assert.equal(decision.schemaVersion, 'viewloom-12a4-category-capture-enablement-decision-v1')
-assert.ok(['candidate', 'accepted'].includes(decision.status))
+assert.equal(decision.status, 'accepted')
 assert.equal(decision.trackingIssue, 519)
 assert.equal(decision.acceptedInputs.executionCostAcceptancePr, 558)
 assert.equal(decision.acceptedInputs.executionPathRetirementPr, 559)
@@ -26,6 +26,16 @@ assert.equal(decision.decision.productionRuntimeCaptureAuthorized, false)
 assert.equal(decision.decision.productionFlagChangeAuthorized, false)
 assert.equal(decision.decision.combinedProviderRolloutAuthorized, false)
 assert.deepEqual(decision.decision.sequencing, ['kick', 'twitch'])
+assert.equal(decision.acceptance.pr, 561)
+assert.equal(decision.acceptance.validatedCandidateHeadSha, '0293245b1608768ed75b48c4e7294bfdef376ac3')
+assert.equal(decision.acceptance.workflowRunId, 29360882057)
+assert.equal(decision.acceptance.workflowJobId, 87180338875)
+assert.equal(decision.acceptance.decisionPackagePass, true)
+assert.equal(decision.acceptance.developmentPolicyPass, true)
+assert.equal(decision.acceptance.webBuildPass, true)
+assert.equal(decision.acceptance.webChecksPass, true)
+assert.equal(decision.acceptance.productionRuntimeCaptureAuthorized, false)
+assert.equal(decision.acceptance.productionFlagChangeAuthorized, false)
 
 assert.equal(storageContract.status, 'accepted')
 assert.equal(storageContract.selectedDesign.model, 'embedded_hourly')
@@ -97,18 +107,37 @@ assert.equal(decision.canaryDesignRequirements.hardStops.collectorSuccessReplace
 assert.equal(decision.canaryDesignRequirements.hardStops.persistentCaptureAfterFailedCanary, false)
 assert.equal(Object.values(decision.pullRequestBoundary).every((value) => value === false), true)
 
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v15')
-assert.equal(gate.currentWorkstream.phase, '12A-4-7')
-assert.equal(gate.currentWorkstream.acceptedCostEvidence, true)
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v16')
+assert.equal(gate.status, '12a4_capture_decision_accepted_kick_canary_design_current')
+assert.equal(gate.categoryCaptureEnablementDecision.status, 'accepted')
+assert.equal(gate.categoryCaptureEnablementDecision.pr, 561)
+assert.deepEqual(gate.categoryCaptureEnablementDecision.sequence, ['kick', 'twitch'])
+assert.equal(gate.categoryCaptureEnablementDecision.productionRuntimeCaptureAuthorized, false)
+assert.equal(gate.categoryCapture.enablementDecisionAccepted, true)
+assert.equal(gate.categoryCapture.kickFirstCanaryDesignAuthorized, true)
+assert.equal(gate.categoryCapture.twitchSecondCanaryDesignAuthorized, true)
+assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
+assert.deepEqual(gate.openBlockers, [
+  'kick_category_capture_canary_package_not_accepted',
+  'runtime_category_capture_not_authorized',
+])
+assert.equal(gate.currentWorkstream.phase, '12A-4-8')
+assert.equal(gate.currentWorkstream.name, 'Kick-first disabled-by-default category capture canary package design')
+assert.equal(gate.currentWorkstream.acceptedEnablementDecision, true)
+assert.deepEqual(gate.currentWorkstream.providerSequence, ['kick', 'twitch'])
+assert.equal(gate.currentWorkstream.kickPackageDesignCurrent, true)
+assert.equal(gate.currentWorkstream.twitchPackageBlockedUntilKickEvidence, true)
 assert.equal(gate.currentWorkstream.runtimeCaptureAuthorized, false)
 
 for (const fragment of [
-  'Status: candidate decision package',
+  'Status: accepted;',
+  'Accepted decision PR: #561',
   'Kick canary design: eligible first',
   'Twitch canary design: eligible second',
   'production runtime capture: not authorized',
   'minimum 24-hour observation per provider',
   'no production runtime capture',
+  'The current gate is 12A-4-8',
 ]) assert.ok(wip.includes(fragment), `WIP missing ${fragment}`)
 
 assert.ok(workflow.includes('Verify category capture enablement decision'))
@@ -125,7 +154,9 @@ assert.equal(workflow.includes('CATEGORY_CAPTURE_ENABLED='), false)
 console.log(JSON.stringify({
   ok: true,
   status: decision.status,
+  acceptancePr: decision.acceptance.pr,
   sequencing: decision.decision.sequencing,
+  currentPhase: gate.currentWorkstream.phase,
   kickCanaryDesignAuthorized: decision.providers.kick.canaryPackageDesignAuthorized,
   twitchCanaryDesignAuthorized: decision.providers.twitch.canaryPackageDesignAuthorized,
   productionRuntimeCaptureAuthorized: decision.decision.productionRuntimeCaptureAuthorized,
