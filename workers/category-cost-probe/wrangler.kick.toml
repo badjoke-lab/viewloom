@@ -9,4 +9,4 @@ PROVIDER = "kick"
 [[d1_databases]]
 binding = "DB"
 database_name = "vl_kick_hot"
-database_id = "00000000-0000-0000-0000-000000000002"
+database_id = "ed1e082f-85ac-4dd0-a44e-5d3e200667d5"
