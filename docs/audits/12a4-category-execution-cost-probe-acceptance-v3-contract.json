@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "viewloom-12a4-category-execution-cost-probe-acceptance-v3-contract-v1",
+  "workstream": "12A-4-6 category cost result acceptance attempt 3",
+  "status": "accepted",
+  "trackingIssue": 519,
+  "trigger": {
+    "pr": 557,
+    "headSha": "6228412ddbb202691c69a2313e6cb753c1d11053",
+    "mergeSha": "741e080187cfc3c92595120e57899d52664dd85e",
+    "attempt": 3,
+    "runId": "category-cost-probe-attempt-3",
+    "providerOrder": ["twitch", "kick"]
+  },
+  "source": {
+    "workflow": "analytics-12a4-category-execution-cost-probe-execution.yml",
+    "event": "push",
+    "branch": "main",
+    "headSha": "741e080187cfc3c92595120e57899d52664dd85e",
+    "workflowRunId": 29358245194,
+    "artifact": "phase12a4-category-execution-cost-probe",
+    "artifactId": 8321254541,
+    "conclusion": "success"
+  },
+  "acceptance": {
+    "branch": "accept-analytics-12a4-category-execution-cost-probe-v3",
+    "evidence": "docs/audits/12a4-category-execution-cost-probe-attempt-3-evidence.json",
+    "artifact": "phase12a4-category-execution-cost-probe-acceptance-v3",
+    "artifactId": 8321258554,
+    "rawFilesRetained": false,
+    "successfulMeasurement": true
+  },
+  "requiredSourceJobs": ["contract", "production-probe"],
+  "readOnlyBoundary": true,
+  "categoryCaptureAuthorized": false,
+  "nextGate": "retire the one-time trigger and production execution path, then advance the category capture decision"
+}

@@ -1,0 +1,53 @@
+name: Analytics 12A4 Category Execution Cost Probe Acceptance V3
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.github/workflows/analytics-12a4-category-execution-cost-probe-acceptance-v3.yml'
+      - 'docs/audits/12a4-category-execution-cost-probe-acceptance-v3-contract.json'
+      - 'docs/audits/12a4-category-execution-cost-probe-attempt-3-evidence.json'
+      - 'scripts/check-12a4-category-execution-cost-probe-acceptance-v3-scope.mjs'
+      - 'scripts/verify-12a4-category-execution-cost-probe-acceptance-v3-package.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-category-execution-cost-probe-acceptance-v3-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-frozen-attempt-3-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify acceptance scope
+        run: node scripts/check-12a4-category-execution-cost-probe-acceptance-v3-scope.mjs
+      - name: Verify frozen attempt 3 accepted evidence
+        run: node scripts/verify-12a4-category-execution-cost-probe-acceptance-v3-package.mjs
+      - name: Publish accepted measurement summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4-6 Attempt 3 Accepted Measurement'
+            echo
+            echo '- Exact source run: 29358245194'
+            echo '- Exact source artifact: 8321254541'
+            echo '- Acceptance artifact: 8321258554'
+            echo '- Twitch: 4 generator queries, 10 D1 statements, 10 rows written, 6 changes'
+            echo '- Twitch: 1.743 ms SQL, 2010 ms Worker, 942 ms collector latency delta'
+            echo '- Kick: 4 generator queries, 10 D1 statements, 10 rows written, 6 changes'
+            echo '- Kick: 1.417 ms SQL, 1760 ms Worker, 9 ms collector latency delta'
+            echo '- Both providers: first dictionary pass 1, second pass 0, probe rows 3'
+            echo '- Both providers: database size delta 0, cleanup remaining 0, leakage 0'
+            echo '- Both providers: natural snapshot observed and temporary Worker final HTTP 404'
+            echo '- Category capture remains disabled and unauthorized'
+          } >> "$GITHUB_STEP_SUMMARY"

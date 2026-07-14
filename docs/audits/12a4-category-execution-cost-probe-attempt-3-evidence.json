@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "viewloom-12a4-category-execution-cost-probe-accepted-summary-v1",
+  "workstream": "12A-4-6 category cost result acceptance attempt 3",
+  "status": "accepted",
+  "observedAt": "2026-07-14T18:40:35Z",
+  "source": {
+    "triggerPr": 557,
+    "triggerMergeSha": "741e080187cfc3c92595120e57899d52664dd85e",
+    "workflowRunId": 29358245194,
+    "artifactId": 8321254541,
+    "workflowConclusion": "success"
+  },
+  "providerOrder": ["twitch", "kick"],
+  "providers": {
+    "twitch": {
+      "attempted": true,
+      "providerGatePass": true,
+      "categoryGeneratorQueries": 4,
+      "dictionaryFirstPassChanges": 1,
+      "dictionarySecondPassChanges": 0,
+      "probeRowsAfterWrite": 3,
+      "probeCleanupRemainingRows": 0,
+      "providerLeakageRows": 0,
+      "databaseSizeDeltaBytes": 0,
+      "d1Statements": 10,
+      "d1RowsRead": 7,
+      "d1RowsWritten": 10,
+      "d1Changes": 6,
+      "d1SqlDurationMs": 1.743,
+      "workerWallMs": 2010,
+      "collectorLatencyDeltaMs": 942,
+      "naturalSnapshotObserved": true,
+      "temporaryWorkerFinalHttpStatus": 404
+    },
+    "kick": {
+      "attempted": true,
+      "providerGatePass": true,
+      "categoryGeneratorQueries": 4,
+      "dictionaryFirstPassChanges": 1,
+      "dictionarySecondPassChanges": 0,
+      "probeRowsAfterWrite": 3,
+      "probeCleanupRemainingRows": 0,
+      "providerLeakageRows": 0,
+      "databaseSizeDeltaBytes": 0,
+      "d1Statements": 10,
+      "d1RowsRead": 7,
+      "d1RowsWritten": 10,
+      "d1Changes": 6,
+      "d1SqlDurationMs": 1.417,
+      "workerWallMs": 1760,
+      "collectorLatencyDeltaMs": 9,
+      "naturalSnapshotObserved": true,
+      "temporaryWorkerFinalHttpStatus": 404
+    }
+  },
+  "gates": {
+    "providerOrderPass": true,
+    "twitchGatePass": true,
+    "kickGatePass": true,
+    "allReservedRowsRemoved": true,
+    "providerLeakageRowsZero": true,
+    "temporaryWorkersDeleted": true,
+    "categoryCaptureRemainedDisabled": true,
+    "executionCostProbePass": true,
+    "runtimeCaptureEnablementAuthorized": false
+  },
+  "boundaries": {
+    "persistentProductionCategoryRows": false,
+    "categoryCaptureEnablement": false,
+    "remoteSchemaApply": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false
+  },
+  "nextGate": "retire the one-time trigger and execution path, then use these measured costs for the category capture decision"
+}
