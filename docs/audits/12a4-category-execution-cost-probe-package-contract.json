@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "viewloom-12a4-category-execution-cost-probe-package-contract-v1",
+  "workstream": "12A-4-5 bounded provider-separated category execution-cost probe package",
+  "status": "candidate",
+  "trackingIssue": 519,
+  "acceptedStartingPoint": {
+    "retirementPr": 546,
+    "retirementMergeSha": "b79bbeb6ad9c71b79af3dbbd7d35bc5c10680b1b",
+    "postApplyAuditAcceptancePr": 545,
+    "evidence": "docs/audits/12a4-category-schema-recovery-audit-evidence.json",
+    "twitchSchemaState": "complete",
+    "kickSchemaState": "complete",
+    "categoryCaptureEnabled": false,
+    "productionCategoryRowsPresent": false,
+    "schemaExecutionPathsRetired": true
+  },
+  "worker": {
+    "path": "workers/category-cost-probe/src/index.ts",
+    "mode": "bounded_execution_cost_probe",
+    "confirmation": "RUN_RESERVED_CATEGORY_COST_PROBE",
+    "probeDay": "1900-01-02",
+    "reservedPrefix": "__viewloom_category_cost_probe__:",
+    "runIdPattern": "^[a-z0-9][a-z0-9-]{7,63}$",
+    "providerDerivedIdentifiers": true,
+    "arbitraryProductionIdentifiersAllowed": false,
+    "scheduledHandler": false
+  },
+  "providerOrder": [
+    "twitch",
+    "kick"
+  ],
+  "providerBindings": {
+    "twitch": "DB_TWITCH_HOT",
+    "kick": "DB_KICK_HOT"
+  },
+  "operation": {
+    "preconditions": [
+      "accepted_schema_complete",
+      "provider_health_evidence_available",
+      "reserved_rows_absent",
+      "provider_leakage_zero"
+    ],
+    "writes": [
+      "one_reserved_dictionary_entry",
+      "one_reserved_streamer_intraday_rollup",
+      "one_reserved_intraday_rollup_status"
+    ],
+    "measurements": [
+      "database_size_before_and_after",
+      "d1_rows_read",
+      "d1_rows_written",
+      "d1_changes",
+      "d1_sql_duration_ms",
+      "worker_wall_ms",
+      "collector_latency_delta_ms",
+      "dictionary_first_pass_changes",
+      "dictionary_second_pass_changes",
+      "category_generator_query_count",
+      "probe_cleanup_remaining_rows",
+      "provider_leakage_rows"
+    ],
+    "cleanup": [
+      "delete_reserved_streamer_intraday_rollup",
+      "delete_reserved_intraday_rollup_status",
+      "delete_reserved_dictionary_entry",
+      "verify_zero_remaining_rows"
+    ],
+    "cleanupRunsInFinally": true,
+    "collectorStatusWrites": false
+  },
+  "acceptanceThresholds": {
+    "probeWorkerWallMsPerProviderMax": 15000,
+    "collectorLatencyDeltaMsPerProviderMax": 2000,
+    "categoryGeneratorQueriesMax": 12,
+    "dictionaryFirstPassChanges": 1,
+    "dictionarySecondPassChangesMax": 0,
+    "probeRowsAfterWrite": 3,
+    "probeCleanupRemainingRowsMax": 0,
+    "databaseSizeIncreaseMbPerProviderMax": 5,
+    "providerLeakageRowsMax": 0,
+    "temporaryWorkersRetained": false
+  },
+  "packageValidation": {
+    "localSqliteFixture": "scripts/test-12a4-category-execution-cost-probe.py",
+    "evidenceFixtureTest": "scripts/test-12a4-category-execution-cost-probe-evidence.mjs",
+    "packageVerifier": "scripts/verify-12a4-category-execution-cost-probe.mjs",
+    "evidenceVerifier": "scripts/verify-12a4-category-execution-cost-probe-evidence.mjs",
+    "scopeVerifier": "scripts/check-12a4-category-execution-cost-probe-package-scope.mjs",
+    "twitchWranglerDryRun": true,
+    "kickWranglerDryRun": true
+  },
+  "pullRequestBoundary": {
+    "productionExecution": false,
+    "cloudflareSecretsRequired": false,
+    "remoteSchemaApply": false,
+    "categoryCaptureEnablement": false,
+    "persistentProductionCategoryRows": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  },
+  "nextGate": "12A-4-6 separate one-file trigger and exact-SHA provider-separated production execution acceptance"
+}
