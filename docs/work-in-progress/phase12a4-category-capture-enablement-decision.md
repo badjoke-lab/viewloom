@@ -1,16 +1,17 @@
 # Phase 12A-4-7 category capture enablement decision
 
-Status: candidate decision package; no production runtime capture is authorized  
+Status: accepted; Kick-first canary package design is the current gate and production runtime capture remains unauthorized  
 Tracking issue: #519  
 Accepted cost evidence PR: #558  
 Cost execution retirement PR: #559  
+Accepted decision PR: #561  
 Decision contract: `docs/audits/12a4-category-capture-enablement-decision-contract.json`
 
-## Decision under review
+## Accepted decision
 
 The accepted one-time production probe demonstrated that the bounded category path can execute within the accepted query and latency thresholds for both providers, remove all reserved rows, preserve provider separation, and delete all temporary Workers.
 
-The decision is not a blanket production enablement. It authorizes design work for a sequenced provider-specific canary only.
+The accepted decision is not a blanket production enablement. It authorizes design work for a sequenced provider-specific canary only.
 
 ```text
 Kick canary design: eligible first
@@ -35,7 +36,7 @@ cleanup remaining rows: 0
 provider leakage rows: 0
 ```
 
-A later Kick canary package must still be disabled by default and must not execute from its package PR.
+The next Kick canary package must remain disabled by default and must not execute from its package PR.
 
 ## Why Twitch is second
 
@@ -85,7 +86,7 @@ storage projection falls outside the accepted provider or account threshold
 
 Any hard stop means the canary must be disabled and accepted failure evidence must be frozen before further work.
 
-## Current PR boundary
+## Accepted PR boundary
 
 ```text
 no collector code change
@@ -99,6 +100,6 @@ no cron
 no backfill
 ```
 
-## Next gate
+## Current gate
 
-After this decision is accepted, the next gate is a Kick-first disabled-by-default canary package design. That package may define code, rollback, evidence, and trigger boundaries, but production execution still requires a separate exact trigger and acceptance PR.
+The current gate is 12A-4-8: a Kick-first disabled-by-default category capture canary package design. That package may define code, rollback, evidence, and trigger boundaries, but production execution still requires a separate exact trigger and acceptance PR.
