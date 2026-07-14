@@ -1,21 +1,25 @@
 {
   "schemaVersion": "viewloom-12a4-category-execution-cost-probe-contract-v1",
   "workstream": "12A-4 production category execution-cost probe and remote migration decision",
-  "status": "planning_package_ready",
+  "status": "readonly_preflight_accepted_schema_apply_design_current",
   "trackingIssue": 519,
   "acceptedStartingPoint": {
     "implementationPr": 516,
     "disabledRuntimeAcceptancePr": 517,
     "evidenceFreezePr": 518,
+    "readonlyPreflightAcceptancePr": 523,
+    "readonlyPreflightAcceptanceMergeSha": "428154d16dc5b62c30ac6b7cdeb668f3e442a3b6",
+    "readonlyPreflightEvidence": "docs/audits/12a4-category-readonly-preflight-evidence.json",
     "repositoryMigrationCandidateImplemented": true,
     "disabledRuntimeDeployed": true,
     "productionCategorySchemaPresent": false,
     "productionCategoryCaptureEnabled": false,
-    "providerSeparated": true
+    "providerSeparated": true,
+    "readonlyPreflightAccepted": true
   },
   "probeOrder": [
-    "read_only_preflight",
-    "controlled_schema_apply_decision",
+    "read_only_preflight_accepted",
+    "controlled_schema_apply_design_current",
     "schema_apply_with_category_capture_disabled",
     "provider_separated_bounded_cost_probe",
     "cleanup_and_post_probe_verification",
@@ -70,6 +74,12 @@
     "schemaRollback": "do_not_drop_columns_in_incident_response; disable runtime and preserve provider-separated evidence",
     "probeCleanup": "delete_reserved_probe_rows_and_probe_dictionary_entries",
     "temporaryWorkerCleanup": "delete_both_provider_probe_workers_and_verify_http_404"
+  },
+  "currentDesign": {
+    "contract": "docs/audits/12a4-category-controlled-schema-apply-contract.json",
+    "runtimeModule": "workers/shared/category-schema.ts",
+    "temporaryWorker": "workers/category-schema-apply/src/index.ts",
+    "productionExecutionIncluded": false
   },
   "planningPrBoundary": {
     "remoteMigrationApply": false,
