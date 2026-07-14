@@ -150,6 +150,8 @@ function validatePassedProvider(provider, item) {
   assert.ok(measurements.schemaApplyWorkerWallMs <= contract.acceptanceThresholds.schemaApplyWorkerWallMsPerProviderMax)
   assert.ok(measurements.secondPassStatementCount <= contract.acceptanceThresholds.secondPassStatementCountMax)
 
+  assert.equal(item.lifecycle.preExistingCurlExitCode, 0, `${provider} pre-existing Worker check`)
+  assert.equal(item.lifecycle.preExistingHttpStatus, 404, `${provider} temporary Worker name must be unoccupied`)
   assert.equal(item.lifecycle.deployExitCode, 0, `${provider} deploy`)
   assert.equal(item.lifecycle.secretExitCode, 0, `${provider} secret`)
   assert.equal(item.lifecycle.preCurlExitCode, 0, `${provider} pre curl`)
