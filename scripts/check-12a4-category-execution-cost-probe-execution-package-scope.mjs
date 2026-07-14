@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process'
 
 const allowed = new Set([
+  '.github/workflows/analytics-12a4-category-readonly-preflight.yml',
   '.github/workflows/analytics-12a4-category-execution-cost-probe.yml',
   '.github/workflows/analytics-12a4-category-execution-cost-probe-execution.yml',
   'docs/audits/12a4-category-execution-cost-probe-execution-contract.json',
@@ -16,6 +17,8 @@ const allowed = new Set([
   'scripts/verify-12a4-category-execution-cost-probe-execution-package.mjs',
   'scripts/verify-12a4-category-execution-cost-probe-provider-result.mjs',
   'scripts/verify-12a4-category-execution-cost-probe-trigger.mjs',
+  'scripts/verify-12a4-category-readonly-preflight-package.mjs',
+  'workers/category-cost-probe/src/index.ts',
 ])
 
 const baseRef = process.env.GITHUB_BASE_REF

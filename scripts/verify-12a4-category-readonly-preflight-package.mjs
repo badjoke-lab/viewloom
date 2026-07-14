@@ -5,7 +5,6 @@ const contract = JSON.parse(read('docs/audits/12a4-category-readonly-preflight-c
 const trigger = JSON.parse(read('docs/audits/12a4-category-readonly-preflight-trigger.json'))
 const evidence = JSON.parse(read('docs/audits/12a4-category-readonly-preflight-evidence.json'))
 const workflow = read('.github/workflows/analytics-12a4-category-readonly-preflight.yml')
-const worker = read('workers/category-cost-probe/src/index.ts')
 const twitchConfig = read('workers/category-cost-probe/wrangler.twitch.toml')
 const kickConfig = read('workers/category-cost-probe/wrangler.kick.toml')
 
@@ -62,12 +61,8 @@ check(!workflow.includes('workers/services/$service'), 'temporary Worker deletio
 check(!workflow.includes('wrangler d1 execute'), 'no direct D1 execute')
 check(!workflow.includes('schedule:'), 'no schedule')
 check(workflow.includes('wrangler@4 deploy --dry-run'), 'dry-run bundle retained')
+check(!workflow.includes("'workers/category-cost-probe/**'"), 'retired workflow no longer watches active probe Worker')
 
-check(worker.includes("schemaVersion: 'viewloom-12a4-category-cost-preflight-v2'"), 'Worker provider-aware schema version')
-check(worker.includes('collectorStatusTablePresent'), 'Worker collector-status schema inspection')
-check(worker.includes("mode: 'read_only_preflight'"), 'Worker read-only mode')
-check(worker.includes('productionRowsWrittenByWorker: false'), 'Worker no-write boundary')
-check(!worker.includes('scheduled('), 'Worker has no scheduled handler')
 check(!twitchConfig.includes('CATEGORY_CAPTURE_ENABLED'), 'Twitch config flag absent')
 check(!kickConfig.includes('CATEGORY_CAPTURE_ENABLED'), 'Kick config flag absent')
 check(!twitchConfig.includes('[triggers]'), 'Twitch config has no trigger')
@@ -84,4 +79,5 @@ console.log(JSON.stringify({
   acceptancePr: trigger.acceptancePr,
   productionPushTrigger: false,
   productionDeploymentJob: false,
+  activeProbeWorkerCoupling: false,
 }, null, 2))

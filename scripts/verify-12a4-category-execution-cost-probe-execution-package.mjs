@@ -10,6 +10,7 @@ const exists = (file) => fs.existsSync(path.join(root, file))
 const execution = json('docs/audits/12a4-category-execution-cost-probe-execution-contract.json')
 const packageContract = json('docs/audits/12a4-category-execution-cost-probe-package-contract.json')
 const workflow = read('.github/workflows/analytics-12a4-category-execution-cost-probe-execution.yml')
+const probeWorker = read('workers/category-cost-probe/src/index.ts')
 const runner = read('scripts/run-12a4-category-execution-cost-probe-provider.mjs')
 const runnerTest = read('scripts/test-12a4-category-execution-cost-probe-runner.mjs')
 const evidenceTest = read('scripts/test-12a4-category-execution-cost-probe-evidence.mjs')
@@ -87,6 +88,16 @@ assert.equal(workflow.includes('production-probe:'), true)
 assert.equal(workflow.includes('workflow_dispatch:'), true)
 assert.equal(workflow.includes('CATEGORY_CAPTURE_ENABLED='), false)
 
+const dictionaryStart = probeWorker.indexOf('async function dictionaryUpsert')
+const dictionaryEnd = probeWorker.indexOf('async function inspectProvider')
+assert.ok(dictionaryStart >= 0 && dictionaryEnd > dictionaryStart)
+const dictionaryBlock = probeWorker.slice(dictionaryStart, dictionaryEnd)
+assert.equal(dictionaryBlock.includes('WITH incoming(category_id, category_name)'), false)
+assert.equal(dictionaryBlock.includes('FROM incoming'), false)
+assert.equal(dictionaryBlock.includes(') VALUES (?, ?, ?, ?, ?, ?)'), true)
+assert.match(dictionaryBlock, /`\)\.bind\(\s*env\.PROVIDER,\s*identity\.categoryId,\s*identity\.categoryName,\s*observedAt,\s*observedAt,\s*CATEGORY_CONTRACT_VERSION,/s)
+assert.equal(dictionaryBlock.includes('ON CONFLICT(provider, category_id) DO UPDATE SET'), true)
+
 for (const fragment of [
   'snapshotLatencyMs',
   'collectorLatencyDeltaMs',
@@ -136,6 +147,7 @@ assert.equal(triggerVerifier.includes('exactExecutionIdentityVerifiedByWorkflowA
 assert.equal(triggerScope.includes('changed.length !== 1'), true)
 assert.equal(triggerScope.includes('execution_package_scope'), true)
 assert.equal(packageScope.includes("'scripts/collect-12a4-category-execution-cost-probe-evidence.mjs'"), true)
+assert.equal(packageScope.includes("'workers/category-cost-probe/src/index.ts'"), true)
 
 console.log(JSON.stringify({
   ok: true,
@@ -146,6 +158,7 @@ console.log(JSON.stringify({
   triggerPresent,
   readinessRetry: true,
   serviceApiDelete: true,
+  d1CompatibleDictionaryUpsert: true,
   evidenceAttemptedFalsePreserved: true,
   missingMeasurementsNotZeroed: true,
   productionJobOnPullRequest: false,
