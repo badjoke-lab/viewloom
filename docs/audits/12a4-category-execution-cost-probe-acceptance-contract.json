@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-category-execution-cost-probe-acceptance-contract-v1",
   "workstream": "12A-4-6 category cost result acceptance",
-  "status": "candidate",
+  "status": "accepted_failure_evidence_ready_for_merge",
   "trackingIssue": 519,
   "trigger": {
     "pr": 549,
@@ -16,18 +16,24 @@
     "event": "push",
     "branch": "main",
     "headSha": "9637f4927fbc5e4674e3a78e285d7ea6c5049cfa",
-    "artifact": "phase12a4-category-execution-cost-probe"
+    "workflowRunId": 29339859588,
+    "artifactId": 8313547082,
+    "artifact": "phase12a4-category-execution-cost-probe",
+    "conclusion": "failure"
   },
   "acceptance": {
     "branch": "accept-analytics-12a4-category-execution-cost-probe",
-    "artifact": "phase12a4-category-execution-cost-probe-acceptance",
-    "sourceEvidenceStatusRequired": "observed_pass",
-    "sourceGateRequired": true,
-    "sourceWorkflowConclusionRequired": "success",
-    "rawFilesRetained": false
+    "failureEvidence": "docs/audits/12a4-category-execution-cost-probe-attempt-1-failure-evidence.json",
+    "sourceEvidenceStatusRequired": "observed_fail",
+    "sourceGateRequired": false,
+    "sourceWorkflowConclusionRequired": "failure",
+    "rawFilesRetained": false,
+    "attemptAcceptedAsSuccess": false,
+    "failureEvidenceAccepted": true
   },
   "requiredSourceJobs": ["contract", "production-probe"],
   "readOnlyBoundary": true,
   "categoryCaptureAuthorized": false,
-  "nextGate": "freeze accepted sanitized evidence and retire the one-time path"
+  "sameTriggerMayRearm": false,
+  "nextGate": "fix pre-inspect readiness and evidence normalization in a separate package, then issue a new one-file trigger"
 }
