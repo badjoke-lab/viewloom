@@ -12,7 +12,15 @@ assert.equal(evidence.schemaVersion, 'viewloom-12a4-category-readonly-preflight-
 assert.equal(evidence.providerSeparated, true)
 assert.equal(evidence.execution.parentPlanningPr, 520)
 assert.equal(evidence.execution.parentMerged, true)
-assert.equal(evidence.execution.event, 'workflow_dispatch')
+assert.equal(evidence.execution.packagePr, 521)
+assert.equal(evidence.execution.packageMerged, true)
+assert.ok(['workflow_dispatch', 'push'].includes(evidence.execution.event))
+if (evidence.execution.event === 'push') {
+  assert.equal(evidence.execution.trigger.schemaVersion, 'viewloom-12a4-category-readonly-preflight-trigger-v1')
+  assert.equal(evidence.execution.trigger.confirmation, 'READ_ONLY_PREFLIGHT_ONLY')
+  assert.equal(evidence.execution.trigger.oneTime, true)
+  assert.equal(evidence.execution.trigger.expectedPackageHeadSha, evidence.execution.packageHeadSha)
+}
 assert.equal(evidence.execution.readOnly, true)
 
 for (const provider of ['twitch', 'kick']) {
@@ -31,6 +39,7 @@ for (const provider of ['twitch', 'kick']) {
 }
 
 assert.equal(evidence.gate.parentPlanningPrMerged, true)
+assert.equal(evidence.gate.packagePrMerged, true)
 assert.equal(evidence.gate.remoteMigrationApplyAuthorized, false)
 assert.equal(evidence.gate.runtimeCaptureEnablementAuthorized, false)
 for (const value of Object.values(evidence.privacy)) assert.equal(value, false)
