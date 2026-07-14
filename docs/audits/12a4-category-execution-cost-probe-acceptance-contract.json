@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "viewloom-12a4-category-execution-cost-probe-acceptance-contract-v1",
+  "workstream": "12A-4-6 category cost result acceptance",
+  "status": "accepted_failure_evidence_ready_for_merge",
+  "trackingIssue": 519,
+  "trigger": {
+    "pr": 549,
+    "headSha": "7ef6a887d6bc4395ff3b0929add2fafaeff108b7",
+    "mergeSha": "9637f4927fbc5e4674e3a78e285d7ea6c5049cfa",
+    "runId": "category-cost-probe-attempt-1",
+    "providerOrder": ["twitch", "kick"]
+  },
+  "source": {
+    "workflow": "analytics-12a4-category-execution-cost-probe-execution.yml",
+    "workflowName": "Analytics 12A4 Category Execution Cost Probe Execution",
+    "event": "push",
+    "branch": "main",
+    "headSha": "9637f4927fbc5e4674e3a78e285d7ea6c5049cfa",
+    "workflowRunId": 29339859588,
+    "artifactId": 8313547082,
+    "artifact": "phase12a4-category-execution-cost-probe",
+    "conclusion": "failure"
+  },
+  "acceptance": {
+    "branch": "accept-analytics-12a4-category-execution-cost-probe",
+    "failureEvidence": "docs/audits/12a4-category-execution-cost-probe-attempt-1-failure-evidence.json",
+    "sourceEvidenceStatusRequired": "observed_fail",
+    "sourceGateRequired": false,
+    "sourceWorkflowConclusionRequired": "failure",
+    "rawFilesRetained": false,
+    "attemptAcceptedAsSuccess": false,
+    "failureEvidenceAccepted": true
+  },
+  "requiredSourceJobs": ["contract", "production-probe"],
+  "readOnlyBoundary": true,
+  "categoryCaptureAuthorized": false,
+  "sameTriggerMayRearm": false,
+  "nextGate": "fix pre-inspect readiness and evidence normalization in a separate package, then issue a new one-file trigger"
+}

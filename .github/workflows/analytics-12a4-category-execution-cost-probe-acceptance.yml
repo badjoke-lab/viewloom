@@ -1,0 +1,60 @@
+name: Analytics 12A4 Category Execution Cost Probe Acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.github/workflows/analytics-12a4-category-execution-cost-probe-acceptance.yml'
+      - 'docs/audits/12a4-category-execution-cost-probe-acceptance-contract.json'
+      - 'docs/audits/12a4-category-execution-cost-probe-attempt-1-failure-evidence.json'
+      - 'scripts/check-12a4-category-execution-cost-probe-acceptance-scope.mjs'
+      - 'scripts/verify-12a4-category-execution-cost-probe-acceptance-package.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-category-execution-cost-probe-acceptance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-frozen-failure-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify acceptance scope
+        run: node scripts/check-12a4-category-execution-cost-probe-acceptance-scope.mjs
+      - name: Verify frozen attempt 1 failure evidence
+        run: node scripts/verify-12a4-category-execution-cost-probe-acceptance-package.mjs
+      - name: Upload acceptance diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a4-category-execution-cost-probe-attempt-1-failure-diagnostics
+          path: artifacts/12a4-category-execution-cost-probe-acceptance/package-diagnostics.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Publish accepted failure boundary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4-6 Attempt 1 Failure Evidence'
+            echo
+            echo '- Exact source run: 29339859588'
+            echo '- Exact source artifact: 8313547082'
+            echo '- Twitch stage: pre-inspect HTTP 500'
+            echo '- Twitch probe endpoint called: no'
+            echo '- Kick attempted: no'
+            echo '- Reserved probe writes performed: no'
+            echo '- Twitch temporary Worker final state: HTTP 404'
+            echo '- Attempt accepted as success: no'
+            echo '- Same trigger may rearm: no'
+            echo '- Category capture authorized: no'
+          } >> "$GITHUB_STEP_SUMMARY"
