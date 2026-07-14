@@ -8,9 +8,12 @@ const exists = (file) => fs.existsSync(file)
 const contract = json('docs/audits/12a4-category-schema-recovery-audit-contract.json')
 const workflow = read('.github/workflows/analytics-12a4-category-schema-recovery-audit.yml')
 const worker = read('workers/category-cost-probe/src/index.ts')
+const runner = read('scripts/run-12a4-category-schema-recovery-audit.mjs')
 const collector = read('scripts/collect-12a4-category-schema-recovery-audit-evidence.mjs')
 const verifier = read('scripts/verify-12a4-category-schema-recovery-audit-evidence.mjs')
 const applyCollector = read('scripts/collect-12a4-category-controlled-schema-apply-evidence.mjs')
+const twitchCollectorConfig = read('workers/collector-twitch/wrangler.toml')
+const kickCollectorConfig = read('workers/collector-kick/wrangler.toml')
 const trigger = exists(contract.triggerFile) ? json(contract.triggerFile) : null
 
 assert.equal(contract.schemaVersion, 'viewloom-12a4-category-schema-recovery-audit-contract-v1')
@@ -27,10 +30,12 @@ assert.equal(contract.acceptance.postDeleteHttpStatus, 404)
 assert.equal(contract.boundaries.readOnly, true)
 assert.equal(contract.boundaries.remoteSchemaApply, false)
 assert.equal(contract.boundaries.categoryRuntimeEnablement, false)
+assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(twitchCollectorConfig), false)
+assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(kickCollectorConfig), false)
 
 for (const text of [
   "url.pathname === '/inspect'",
-  'mode: \'read_only_preflight\'',
+  "mode: 'read_only_preflight'",
   'categorySchemaComplete',
   'providerLeakageRows',
   'rowsWritten',
@@ -44,8 +49,21 @@ assert.equal(worker.includes('scheduled('), false)
 assert.equal(worker.includes('payload_json'), false)
 
 for (const text of [
+  'viewloom-category-cost-preflight-twitch',
+  'viewloom-category-cost-preflight-kick',
+  "['deploy', '--config', spec.config]",
+  "['secret', 'put', 'PROBE_TOKEN'",
+  '`${url}/inspect`',
+  "method: 'DELETE'",
+  'deleteHttpStatus',
+  'execution-status.json',
+]) assert.ok(runner.includes(text), `runner missing: ${text}`)
+assert.equal(runner.includes('/apply'), false)
+assert.equal(runner.includes('/collect'), false)
+
+for (const text of [
   'parseErrors',
-  "schemaState: state",
+  'schemaState: state',
   'rowsWrittenZero',
   'changesZero',
   'temporaryWorkerDeleted',
@@ -64,18 +82,15 @@ for (const text of [
   'CLOUDFLARE_API_TOKEN',
   'CLOUDFLARE_ACCOUNT_ID',
   'wrangler@4 deploy --dry-run',
-  'wrangler@4 deploy --config',
-  'secret put PROBE_TOKEN',
-  '"$url/inspect"',
-  'workers/services/$service',
+  'run-12a4-category-schema-recovery-audit.mjs',
   'collect-12a4-category-schema-recovery-audit-evidence.mjs',
   'verify-12a4-category-schema-recovery-audit-evidence.mjs',
   'rm -rf "$RAW_DIR"',
 ]) assert.ok(workflow.includes(text), `workflow missing: ${text}`)
 assert.equal(workflow.includes('schedule:'), false)
 assert.equal(workflow.includes('wrangler d1 execute'), false)
-assert.equal(workflow.includes('"$url/apply"'), false)
-assert.equal(workflow.includes('CATEGORY_CAPTURE_ENABLED'), false)
+assert.equal(workflow.includes('/apply'), false)
+assert.equal(workflow.includes('/collect'), false)
 assert.equal(workflow.includes('APPLY_CATEGORY_SCHEMA_WITH_CAPTURE_DISABLED'), false)
 
 if (trigger) {
