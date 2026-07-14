@@ -1,0 +1,53 @@
+name: Analytics 12A4 Category Execution Cost Probe Acceptance V2
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.github/workflows/analytics-12a4-category-execution-cost-probe-acceptance-v2.yml'
+      - 'docs/audits/12a4-category-execution-cost-probe-acceptance-v2-contract.json'
+      - 'docs/audits/12a4-category-execution-cost-probe-attempt-2-evidence.json'
+      - 'scripts/check-12a4-category-execution-cost-probe-acceptance-v2-scope.mjs'
+      - 'scripts/verify-12a4-category-execution-cost-probe-acceptance-v2-package.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-category-execution-cost-probe-acceptance-v2-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-frozen-attempt-2-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify acceptance scope
+        run: node scripts/check-12a4-category-execution-cost-probe-acceptance-v2-scope.mjs
+      - name: Verify frozen attempt 2 safe failure evidence
+        run: node scripts/verify-12a4-category-execution-cost-probe-acceptance-v2-package.mjs
+      - name: Publish accepted failure boundary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4-6 Attempt 2 Safe Failure'
+            echo
+            echo '- Exact source run: 29356246266'
+            echo '- Exact source artifact: 8320272101'
+            echo '- Twitch readiness and inspect: passed'
+            echo '- Failure point: first dictionary statement'
+            echo '- D1 rows written: 0'
+            echo '- Reserved rows remaining: 0'
+            echo '- Provider leakage rows: 0'
+            echo '- Kick attempted: no'
+            echo '- Temporary Worker final state: HTTP 404'
+            echo '- Accepted as successful measurement: no'
+            echo '- Category capture authorized: no'
+          } >> "$GITHUB_STEP_SUMMARY"

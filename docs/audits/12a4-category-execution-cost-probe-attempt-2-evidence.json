@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "viewloom-12a4-category-execution-cost-probe-safe-failure-v1",
+  "workstream": "12A-4-6 category cost result acceptance attempt 2",
+  "status": "accepted_safe_failure",
+  "source": {
+    "triggerPr": 553,
+    "triggerMergeSha": "e453053e23f5b4b930a736570d42cdbc1ff664a0",
+    "workflowRunId": 29356246266,
+    "artifactId": 8320272101,
+    "workflowConclusion": "failure"
+  },
+  "twitch": {
+    "attempted": true,
+    "stage": "cleanup",
+    "preconditionsPassed": true,
+    "healthAttempts": 5,
+    "healthHttpStatus": 200,
+    "inspectAttempts": 1,
+    "inspectHttpStatus": 200,
+    "probeHttpStatus": 409,
+    "failureCode": "dictionary_upsert_sql_syntax",
+    "categoryGeneratorQueries": 0,
+    "dictionaryFirstPassChanges": 0,
+    "probeRowsAfterWrite": 0,
+    "d1RowsWritten": 0,
+    "d1Changes": 0,
+    "databaseSizeDeltaBytes": 0,
+    "cleanupRemainingRows": 0,
+    "providerLeakageRows": 0,
+    "temporaryWorkerDeleteApiHttpStatus": 200,
+    "temporaryWorkerFinalHttpStatus": 404
+  },
+  "kick": {
+    "attempted": false,
+    "reason": "stopped_after_twitch_gate_failure"
+  },
+  "gates": {
+    "reservedRowsRemainingZero": true,
+    "providerLeakageZero": true,
+    "temporaryWorkersDeleted": true,
+    "categoryCaptureRemainedDisabled": true,
+    "runtimeCaptureEnablementAuthorized": false,
+    "acceptedAsSuccessfulMeasurement": false
+  },
+  "nextGate": "replace the single-row dictionary statement with D1-compatible direct values syntax and validate before a new trigger"
+}
