@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "viewloom-12a4-category-execution-cost-probe-trigger-v1",
+  "workstream": "12A-4-6 bounded category cost measurement attempt",
+  "status": "armed_for_one_time_main_push",
+  "confirmation": "RUN_BOUNDED_CATEGORY_EXECUTION_COST_PROBE",
+  "trackingIssue": 519,
+  "oneTime": true,
+  "rearm": false,
+  "attempt": 1,
+  "runId": "category-cost-probe-attempt-1",
+  "providerOrder": ["twitch", "kick"],
+  "stopBeforeKickOnTwitchFailure": true,
+  "categoryCaptureEnablementAuthorized": false,
+  "persistentProductionCategoryRowsAuthorized": false,
+  "packagePr": 547,
+  "expectedPackageHeadSha": "4556a5708ec3a33cd4b1835ca9e32baf78c5690d",
+  "expectedPackageMergeSha": "cb2673eec8424288bbee7b4403c415261926097a",
+  "executionPackagePr": 548,
+  "expectedExecutionPackageHeadSha": "95baf064e0e8dfd42c274971af36cab940ba12c1",
+  "expectedExecutionPackageMergeSha": "219d79351388a15a599e72f8e85228d498488f11"
+}
