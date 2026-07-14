@@ -17,16 +17,14 @@ ViewLoom is an independent, unofficial observatory for retained Twitch and Kick 
 Phase 12A Analytics Capture Foundation active
 12A-0 baseline                         complete PR #490
 12A-1 field contract                   complete PR #492
-12A-2 design and migration             accepted through PR #499
-12A-2 collector deployment/schema      accepted PR #506
-12A-3 account storage gate             accepted PR #507
-12A-3 execution-cost gate              accepted PR #508
-12A-3 bounded generator                enabled PR #510
-12A-3 production accumulation          accepted PR #511
+12A-2 design/migration/deploy/schema   accepted through PR #506
+12A-3 bounded generator/accumulation   complete through PR #511
 12A-4 category source audit            accepted PR #513
 12A-4 category storage design          accepted PR #514
+12A-4 migration/disabled runtime       implemented PR #516
+12A-4 disabled-runtime production gate accepted PR #517 / frozen PR #518
 Production intraday generation         enabled and accumulating
-Current workstream                     12A-4 category migration and disabled runtime implementation
+Current workstream                     12A-4 production category execution-cost probe
 Category capture runtime               not started
 ```
 
@@ -48,29 +46,23 @@ docs/audits/12a4-category-source-audit-contract.json
 docs/audits/12a4-category-source-audit-evidence.json
 docs/audits/12a4-category-storage-design-contract.json
 docs/audits/12a4-category-storage-budget-evidence.json
+docs/audits/12a4-category-migration-runtime-contract.json
+docs/audits/12a4-disabled-runtime-postmerge-evidence.json
+docs/audits/12a4-category-execution-cost-probe-contract.json
 docs/audits/12a2-current-gate-state.json
 ```
 
-## Accepted category source contracts
+## Accepted category boundary
 
 ```text
 Twitch endpoint: https://api.twitch.tv/helix/streams
 Twitch provider id / name: game_id / game_name
-Twitch live field presence: 1.0 across two 100-row probes
-
 Kick endpoint: https://api.kick.com/public/v1/livestreams
 Kick provider id / name: category.id / category.name
-Kick live field presence: 1.0 across two 100-row probes
-
 provider category identity equivalence: false
 combined-provider category ranking: forbidden
-runtime category capture: disabled
-```
 
-## Accepted category storage design
-
-```text
-selected model: embedded_hourly
+selected storage model: embedded_hourly
 category contract: category-source-v1
 raw encoding: categoryIds + item-order-aligned categoryRefs
 category names: one set-based provider_category_dictionary write
@@ -90,13 +82,12 @@ Account projected total/headroom: 3716.59 / 891.41 MB
 ## Current boundary
 
 ```text
-intraday generation authorized: true
 intraday generation running: true
-category source contract accepted: true
-category storage design accepted: true
-repository migration candidate authorized: true
-remote production migration authorized: false
-production cost probe required: true
+repository category migration candidate implemented: true
+disabled category runtime deployed and accepted: true
+production category schema present: false
+remote category migration authorized: false
+production execution-cost probe current: true
 category runtime capture authorized: false
 category runtime capture started: false
 raw retention unchanged: true
@@ -105,13 +96,12 @@ backfill authorized: false
 category analytics UI authorized: false
 ```
 
-The next change adds the provider-separated repository migration candidate and disabled-by-default runtime implementation. It must add no production flag, perform no remote migration, write no production category rows, and preserve the existing collector outcome, cadence, retention, and provider separation.
+The current change prepares Issue #519's provider-separated execution-cost gate with a formal contract, read-only preflight Worker, local controlled-migration fixtures, explicit stop conditions, and dry-run bundles. It performs no production deployment, remote migration, or category capture enablement.
 
 ## Forward sequence
 
 ```text
-12A-4 migration and disabled runtime implementation
-  -> production execution-cost probe and remote migration decision
+12A-4 production execution-cost probe and remote migration decision
   -> provider-separated production capture acceptance
   -> 12A-5 foundation acceptance and accumulation handoff
   -> Phase 13-14 localization with evidence accumulation
