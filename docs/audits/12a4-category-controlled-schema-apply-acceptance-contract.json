@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "viewloom-12a4-category-controlled-schema-apply-acceptance-contract-v1",
+  "workstream": "12A-4 controlled category schema apply acceptance",
+  "status": "acceptance_package_ready",
+  "trackingIssue": 519,
+  "designPr": 528,
+  "packagePr": 529,
+  "triggerPr": 530,
+  "triggerMergeSha": "2fb683405ba5e400cfb4197aad8c9535b6fdc0f2",
+  "sourceWorkflowFile": "analytics-12a4-category-controlled-schema-apply-execution.yml",
+  "sourceWorkflowName": "Analytics 12A4 Category Controlled Schema Apply Execution",
+  "sourceArtifactName": "phase12a4-category-controlled-schema-apply",
+  "acceptedEvidenceFile": "docs/audits/12a4-category-controlled-schema-apply-evidence.json",
+  "requiredJobs": [
+    "contract",
+    "production-schema-apply"
+  ],
+  "requiredEvidence": {
+    "schemaVersion": "viewloom-12a4-category-controlled-schema-apply-evidence-v1",
+    "event": "push",
+    "providerSeparated": true,
+    "twitchGatePass": true,
+    "kickGatePass": true,
+    "controlledSchemaApplyPass": true,
+    "categoryRuntimeEnablementAuthorized": false,
+    "boundedCategoryCostProbeAuthorizedByThisEvidence": false
+  },
+  "boundaries": {
+    "productionExecutionByAcceptance": false,
+    "categoryRuntimeEnablement": false,
+    "productionCategoryRows": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  },
+  "nextDecision": "bounded provider-separated category execution-cost probe may be designed only after accepted schema evidence is frozen on main"
+}
