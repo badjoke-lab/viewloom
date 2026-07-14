@@ -1,44 +1,22 @@
 # Phase 12A-4 disabled runtime post-merge acceptance
 
-Status: awaiting exact main deployment and read-only provider verification
-
-## Candidate
+Status: accepted PR #517; evidence frozen on main by PR #518
 
 ```text
 implementation PR: #516
 merge SHA: 5d58b267a18399b5496a1f01aae7125a63f061c4
-repository migration candidate: implemented
-production category schema: expected absent
-CATEGORY_CAPTURE_ENABLED: expected absent
-production category capture: expected disabled
+exact main collector deployment succeeded
+Twitch and Kick natural snapshots continued
+category payload fields absent
+category schema absent
+CATEGORY_CAPTURE_ENABLED absent
+provider separation preserved
+temporary read-only verifier Workers deleted
 ```
 
-## Required acceptance
+Accepted evidence:
+`docs/audits/12a4-disabled-runtime-postmerge-evidence.json`
 
-```text
-exact main push Deploy Collector Workers run succeeds
-verify, deploy-twitch, deploy-kick, verify-remote-schema all succeed
-latest Twitch snapshot is newer than deployment completion
-latest Kick snapshot is newer than deployment completion
-latest payloads contain no categoryContractVersion/categoryIds/categoryRefs
-provider_category_dictionary does not exist
-category rollup/status columns do not exist
-Twitch and Kick D1 remain provider-separated
-temporary read-only verifier Workers are deleted
-```
-
-## Boundaries
-
-```text
-read-only verification only
-no manual /collect
-no remote migration apply
-no category runtime enablement
-no production category writes
-no backfill
-no new cron
-no raw-retention change
-no category analytics UI
-```
-
-Passing this gate authorizes only the next production execution-cost probe and controlled remote-migration decision package. It does not authorize remote schema application or category capture enablement.
+Passing this gate authorized only preparation of the production execution-cost probe
+and controlled remote-migration decision package. It did not authorize remote schema
+application or category capture enablement.
