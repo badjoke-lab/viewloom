@@ -1,14 +1,14 @@
-# Phase 12A-4 category schema recovery audit acceptance
+# Phase 12A-4 post-apply category schema audit acceptance
 
 Status: current read-only acceptance gate  
 Tracking issue: #519  
-Package PR: #535  
-Trigger PR: #536  
-Trigger merge SHA: `b04c01e688123cb4d2f96bd2cb16c66a0a8c8d58`
+Audit package PR: #535  
+Post-apply trigger PR: #544  
+Trigger merge SHA: `867d2746a83be84b97a102cc86e011e5df055e05`
 
 ## Purpose
 
-Locate only the exact `main` push run created by PR #536, download its sanitized recovery-audit evidence, verify Twitch and Kick independently, and freeze the observed schema states without re-running production activity.
+Locate only the exact `main` push run created by PR #544, download its sanitized recovery-audit evidence, verify Twitch and Kick are both schema-complete after the Kick-only apply, and freeze the observed states without re-running production activity.
 
 ## Required result
 
@@ -16,8 +16,9 @@ Locate only the exact `main` push run created by PR #536, download its sanitized
 exact trigger SHA and push event matched
 contract job success
 production-recovery-audit job success
-Twitch state known
-Kick state known
+Twitch schema complete
+Kick schema complete
+later natural Kick snapshot observed
 D1 rows written zero
 D1 changes zero
 provider leakage zero
