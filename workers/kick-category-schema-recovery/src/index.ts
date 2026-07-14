@@ -82,9 +82,7 @@ async function inspectExecutionState(db: D1Database) {
       ORDER BY bucket_minute DESC
       LIMIT 2
     `).bind(PROVIDER),
-    db.prepare(`SELECT COUNT(*) AS count FROM minute_snapshots WHERE provider <> ?`).bind(PROVIDER),
-    db.prepare('PRAGMA page_count'),
-    db.prepare('PRAGMA page_size'),
+    db.prepare('SELECT COUNT(*) AS count FROM minute_snapshots WHERE provider <> ?').bind(PROVIDER),
   ]
   if (schema.dictionaryTablePresent) {
     statements.push(
@@ -94,8 +92,6 @@ async function inspectExecutionState(db: D1Database) {
   }
   const results = await db.batch(statements)
   const latestRows = rows(results[0])
-  const pageCount = number(first(results[2])?.page_count)
-  const pageSize = number(first(results[3])?.page_size)
   const query = summarize(results)
   return {
     schema,
@@ -106,9 +102,9 @@ async function inspectExecutionState(db: D1Database) {
       previousSnapshot: latestRows[1] ?? null,
     },
     providerLeakageRows: number(first(results[1])?.count),
-    categoryDictionaryRows: schema.dictionaryTablePresent ? number(first(results[4])?.count) : 0,
-    reservedProbeRows: schema.dictionaryTablePresent ? number(first(results[5])?.count) : 0,
-    databaseSizeBytes: pageCount * pageSize,
+    categoryDictionaryRows: schema.dictionaryTablePresent ? number(first(results[2])?.count) : 0,
+    reservedProbeRows: schema.dictionaryTablePresent ? number(first(results[3])?.count) : 0,
+    databaseSizeBytes: query.sizeAfter,
     query,
   }
 }
