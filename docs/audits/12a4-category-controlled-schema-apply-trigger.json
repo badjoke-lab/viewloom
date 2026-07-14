@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "viewloom-12a4-category-controlled-schema-apply-trigger-v1",
+  "status": "armed_for_one_time_main_push",
+  "trackingIssue": 519,
+  "designPr": 528,
+  "packagePr": 529,
+  "expectedPackageHeadSha": "641813bd9ef7108818a9a3ed475b449d1c364c3f",
+  "packageMergeSha": "dcfb2ce4e9271c4c8733de36c0c00c4b28194bdb",
+  "confirmation": "APPLY_CATEGORY_SCHEMA_WITH_CAPTURE_DISABLED",
+  "providerOrder": [
+    "twitch",
+    "kick"
+  ],
+  "oneTime": true,
+  "boundaries": {
+    "categoryRuntimeEnablement": false,
+    "productionCategoryRows": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  }
+}
