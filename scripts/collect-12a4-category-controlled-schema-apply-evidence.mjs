@@ -31,6 +31,11 @@ const nonNegative = (value) => {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? Math.max(0, parsed) : null
 }
+const snapshotLatency = (snapshot) => {
+  const bucket = timestamp(snapshot?.bucket_minute)
+  const collected = timestamp(snapshot?.collected_at)
+  return bucket !== null && collected !== null ? Math.max(0, collected - bucket) : null
+}
 
 const providers = {}
 for (const provider of contract.providers.order) {
@@ -46,16 +51,11 @@ for (const provider of contract.providers.order) {
   const firstPost = first?.post ?? null
   const postState = post?.state ?? firstPost ?? null
   const preLatestAt = timestamp(preState?.operational?.latestSnapshot?.collected_at)
-  const prePreviousAt = timestamp(preState?.operational?.previousSnapshot?.collected_at)
   const postLatestAt = timestamp(postState?.operational?.latestSnapshot?.collected_at)
-  const baselineIntervalMs = preLatestAt !== null && prePreviousAt !== null
-    ? Math.max(0, preLatestAt - prePreviousAt)
-    : null
-  const postIntervalMs = postLatestAt !== null && preLatestAt !== null
-    ? Math.max(0, postLatestAt - preLatestAt)
-    : null
-  const collectorIntervalDeltaMs = baselineIntervalMs !== null && postIntervalMs !== null
-    ? Math.abs(postIntervalMs - baselineIntervalMs)
+  const collectorLatencyBeforeMs = snapshotLatency(preState?.operational?.latestSnapshot)
+  const collectorLatencyAfterMs = snapshotLatency(postState?.operational?.latestSnapshot)
+  const collectorLatencyDeltaMs = collectorLatencyBeforeMs !== null && collectorLatencyAfterMs !== null
+    ? Math.abs(collectorLatencyAfterMs - collectorLatencyBeforeMs)
     : null
   const databaseSizeBefore = nonNegative(preState?.databaseSizeBytes)
   const databaseSizeAfter = nonNegative(postState?.databaseSizeBytes ?? firstPost?.databaseSizeBytes)
@@ -78,7 +78,7 @@ for (const provider of contract.providers.order) {
     secondApplySucceeded: lifecycle.secondCurlExitCode === 0 && lifecycle.secondHttpStatus === 200 && second?.ok === true,
     secondApplyNoop: second?.apply?.reason === 'already-complete' && Number(second?.apply?.metrics?.statementCount ?? -1) <= contract.acceptanceThresholds.secondPassStatementCountMax,
     newNaturalSnapshotObserved: lifecycle.pollSucceeded === true && preLatestAt !== null && postLatestAt !== null && postLatestAt > preLatestAt,
-    collectorIntervalDeltaWithinThreshold: collectorIntervalDeltaMs !== null && collectorIntervalDeltaMs <= contract.acceptanceThresholds.collectorIntervalDeltaMsPerProviderMax,
+    collectorLatencyDeltaWithinThreshold: collectorLatencyDeltaMs !== null && collectorLatencyDeltaMs <= contract.acceptanceThresholds.collectorLatencyDeltaMsPerProviderMax,
     schemaSizeIncreaseWithinThreshold: schemaSizeIncreaseBytes !== null && schemaSizeIncreaseBytes <= contract.acceptanceThresholds.schemaSizeIncreaseBytesPerProviderMax,
     workerWallWithinThreshold: Number(first?.workerWallMs ?? Infinity) <= contract.acceptanceThresholds.schemaApplyWorkerWallMsPerProviderMax,
     categoryDictionaryRowsZero: Number(postState?.categoryDictionaryRows ?? -1) <= contract.acceptanceThresholds.categoryDictionaryRowsMax,
@@ -121,9 +121,9 @@ for (const provider of contract.providers.order) {
       databaseSizeBefore,
       databaseSizeAfter,
       schemaSizeIncreaseBytes,
-      baselineIntervalMs,
-      postIntervalMs,
-      collectorIntervalDeltaMs,
+      collectorLatencyBeforeMs,
+      collectorLatencyAfterMs,
+      collectorLatencyDeltaMs,
       schemaApplyStatementCount: nonNegative(first?.apply?.metrics?.statementCount),
       schemaApplyDurationMs: nonNegative(first?.apply?.metrics?.durationMs),
       schemaApplyRowsRead: nonNegative(first?.apply?.metrics?.rowsRead),
