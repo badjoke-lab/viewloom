@@ -40,6 +40,13 @@ for (const provider of contract.providers.order) {
   assert.equal(typeof item.providerGatePass, 'boolean')
   assert.equal(typeof item.checks, 'object')
   assert.equal(typeof item.lifecycle, 'object')
+  assert.equal(typeof item.measurements, 'object')
+
+  for (const [name, value] of Object.entries(item.checks)) {
+    assert.equal(typeof value, 'boolean', `${provider} check ${name} must be boolean`)
+  }
+  const expectedProviderPass = Object.values(item.checks).every(Boolean)
+  assert.equal(item.providerGatePass, expectedProviderPass)
 
   if (!item.attempted) {
     assert.equal(provider, 'kick', 'only Kick may be skipped after a Twitch failure')
@@ -48,6 +55,52 @@ for (const provider of contract.providers.order) {
     continue
   }
 
+  if (item.providerGatePass || requirePass) validatePassedProvider(provider, item)
+  providerResults.push(item.providerGatePass)
+}
+
+assert.equal(evidence.gate.designAccepted, true)
+assert.equal(evidence.gate.acceptedReadOnlyPreflight, true)
+assert.equal(evidence.gate.twitchGatePass, evidence.providers.twitch.providerGatePass)
+assert.equal(evidence.gate.kickGatePass, evidence.providers.kick.providerGatePass)
+assert.equal(evidence.gate.controlledSchemaApplyPass, providerResults.every(Boolean))
+assert.equal(evidence.gate.categoryRuntimeEnablementAuthorized, false)
+assert.equal(evidence.gate.boundedCategoryCostProbeAuthorizedByThisEvidence, false)
+
+for (const [key, value] of Object.entries(evidence.privacy)) {
+  assert.equal(value, false, `privacy field must be false: ${key}`)
+}
+assert.equal(evidence.failurePolicy.doNotDropAppliedSchema, true)
+assert.equal(evidence.failurePolicy.leaveCategoryCaptureDisabled, true)
+assert.equal(evidence.failurePolicy.doNotBackfill, true)
+assert.equal(evidence.failurePolicy.doNotWriteProbeRows, true)
+assert.equal(evidence.failurePolicy.stopBeforeNextProviderOnFailure, true)
+assert.equal(evidence.failurePolicy.deleteTemporaryWorkerEvenOnFailure, true)
+assert.equal(evidence.failurePolicy.preserveSanitizedFailureEvidence, true)
+assert.equal(evidence.failurePolicy.partialProviderCompletionRequiresSeparateRecoveryDecision, true)
+for (const [key, value] of Object.entries(evidence.boundaries)) {
+  assert.equal(value, false, `boundary field must be false: ${key}`)
+}
+
+if (requirePass) {
+  assert.equal(evidence.status === 'observed_pass' || evidence.status === 'accepted', true)
+  assert.equal(evidence.providers.twitch.attempted, true)
+  assert.equal(evidence.providers.kick.attempted, true)
+  assert.equal(evidence.gate.twitchGatePass, true)
+  assert.equal(evidence.gate.kickGatePass, true)
+  assert.equal(evidence.gate.controlledSchemaApplyPass, true)
+}
+
+console.log(JSON.stringify({
+  ok: true,
+  requirePass,
+  status: evidence.status,
+  controlledSchemaApplyPass: evidence.gate.controlledSchemaApplyPass,
+  twitchGatePass: evidence.gate.twitchGatePass,
+  kickGatePass: evidence.gate.kickGatePass,
+}, null, 2))
+
+function validatePassedProvider(provider, item) {
   assert.equal(item.pre.schema.absent, true)
   assert.equal(item.pre.schema.complete, false)
   assert.equal(item.pre.schema.partial, false)
@@ -97,64 +150,16 @@ for (const provider of contract.providers.order) {
   assert.ok(measurements.schemaApplyWorkerWallMs <= contract.acceptanceThresholds.schemaApplyWorkerWallMsPerProviderMax)
   assert.ok(measurements.secondPassStatementCount <= contract.acceptanceThresholds.secondPassStatementCountMax)
 
-  assert.equal(item.lifecycle.deployExitCode, 0)
-  assert.equal(item.lifecycle.secretExitCode, 0)
-  assert.equal(item.lifecycle.preCurlExitCode, 0)
-  assert.equal(item.lifecycle.preHttpStatus, 200)
-  assert.equal(item.lifecycle.firstCurlExitCode, 0)
-  assert.equal(item.lifecycle.firstHttpStatus, 200)
-  assert.equal(item.lifecycle.secondCurlExitCode, 0)
-  assert.equal(item.lifecycle.secondHttpStatus, 200)
-  assert.equal(item.lifecycle.pollSucceeded, true)
-  assert.equal(item.lifecycle.deleteExitCode, 0)
-  assert.equal(item.lifecycle.deleteCurlExitCode, 0)
-  assert.equal(item.lifecycle.deleteHttpStatus, contract.acceptanceThresholds.postDeleteHttpStatus)
-
-  for (const [name, value] of Object.entries(item.checks)) {
-    assert.equal(typeof value, 'boolean', `${provider} check ${name} must be boolean`)
-  }
-  const expectedProviderPass = Object.values(item.checks).every(Boolean)
-  assert.equal(item.providerGatePass, expectedProviderPass)
-  providerResults.push(item.providerGatePass)
+  assert.equal(item.lifecycle.deployExitCode, 0, `${provider} deploy`)
+  assert.equal(item.lifecycle.secretExitCode, 0, `${provider} secret`)
+  assert.equal(item.lifecycle.preCurlExitCode, 0, `${provider} pre curl`)
+  assert.equal(item.lifecycle.preHttpStatus, 200, `${provider} pre HTTP`)
+  assert.equal(item.lifecycle.firstCurlExitCode, 0, `${provider} first curl`)
+  assert.equal(item.lifecycle.firstHttpStatus, 200, `${provider} first HTTP`)
+  assert.equal(item.lifecycle.secondCurlExitCode, 0, `${provider} second curl`)
+  assert.equal(item.lifecycle.secondHttpStatus, 200, `${provider} second HTTP`)
+  assert.equal(item.lifecycle.pollSucceeded, true, `${provider} poll`)
+  assert.equal(item.lifecycle.deleteExitCode, 0, `${provider} delete`)
+  assert.equal(item.lifecycle.deleteCurlExitCode, 0, `${provider} delete check`)
+  assert.equal(item.lifecycle.deleteHttpStatus, contract.acceptanceThresholds.postDeleteHttpStatus, `${provider} post-delete HTTP`)
 }
-
-assert.equal(evidence.gate.designAccepted, true)
-assert.equal(evidence.gate.acceptedReadOnlyPreflight, true)
-assert.equal(evidence.gate.twitchGatePass, evidence.providers.twitch.providerGatePass)
-assert.equal(evidence.gate.kickGatePass, evidence.providers.kick.providerGatePass)
-assert.equal(evidence.gate.controlledSchemaApplyPass, providerResults.every(Boolean))
-assert.equal(evidence.gate.categoryRuntimeEnablementAuthorized, false)
-assert.equal(evidence.gate.boundedCategoryCostProbeAuthorizedByThisEvidence, false)
-
-for (const [key, value] of Object.entries(evidence.privacy)) {
-  assert.equal(value, false, `privacy field must be false: ${key}`)
-}
-assert.equal(evidence.failurePolicy.doNotDropAppliedSchema, true)
-assert.equal(evidence.failurePolicy.leaveCategoryCaptureDisabled, true)
-assert.equal(evidence.failurePolicy.doNotBackfill, true)
-assert.equal(evidence.failurePolicy.doNotWriteProbeRows, true)
-assert.equal(evidence.failurePolicy.stopBeforeNextProviderOnFailure, true)
-assert.equal(evidence.failurePolicy.deleteTemporaryWorkerEvenOnFailure, true)
-assert.equal(evidence.failurePolicy.preserveSanitizedFailureEvidence, true)
-assert.equal(evidence.failurePolicy.partialProviderCompletionRequiresSeparateRecoveryDecision, true)
-for (const [key, value] of Object.entries(evidence.boundaries)) {
-  assert.equal(value, false, `boundary field must be false: ${key}`)
-}
-
-if (requirePass) {
-  assert.equal(evidence.status === 'observed_pass' || evidence.status === 'accepted', true)
-  assert.equal(evidence.providers.twitch.attempted, true)
-  assert.equal(evidence.providers.kick.attempted, true)
-  assert.equal(evidence.gate.twitchGatePass, true)
-  assert.equal(evidence.gate.kickGatePass, true)
-  assert.equal(evidence.gate.controlledSchemaApplyPass, true)
-}
-
-console.log(JSON.stringify({
-  ok: true,
-  requirePass,
-  status: evidence.status,
-  controlledSchemaApplyPass: evidence.gate.controlledSchemaApplyPass,
-  twitchGatePass: evidence.gate.twitchGatePass,
-  kickGatePass: evidence.gate.kickGatePass,
-}, null, 2))
