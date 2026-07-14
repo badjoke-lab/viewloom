@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  TRIGGER_SHA: b04c01e688123cb4d2f96bd2cb16c66a0a8c8d58
+  TRIGGER_SHA: 867d2746a83be84b97a102cc86e011e5df055e05
   SOURCE_WORKFLOW: analytics-12a4-category-schema-recovery-audit.yml
   SOURCE_ARTIFACT: phase12a4-category-schema-recovery-audit
   ARTIFACT_DIR: artifacts/12a4-category-schema-recovery-audit-acceptance
@@ -47,7 +47,7 @@ jobs:
     if: >-
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
-      github.head_ref == 'accept-analytics-12a4-category-schema-recovery-audit'
+      github.head_ref == 'accept-analytics-12a4-category-schema-postapply-audit'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
@@ -98,18 +98,20 @@ jobs:
           [[ -n "$evidence" ]] || { echo '::error::evidence.json missing'; exit 1; }
           cp "$evidence" "$RAW_DIR/source-evidence.json"
           jq --argjson artifactId "$artifact_id" '. + {artifactId:$artifactId}' "$RAW_DIR/run-base.json" > "$RAW_DIR/run.json"
-      - name: Normalize accepted audit evidence
+      - name: Normalize accepted post-apply audit evidence
         shell: bash
         run: |
           set -euo pipefail
           node scripts/verify-12a4-category-schema-recovery-audit-evidence.mjs "$RAW_DIR/source-evidence.json"
+          [[ $(jq -r '.providers.twitch.schemaState' "$RAW_DIR/source-evidence.json") == 'complete' ]]
+          [[ $(jq -r '.providers.kick.schemaState' "$RAW_DIR/source-evidence.json") == 'complete' ]]
           run_conclusion=$(jq -r '.conclusion' "$RAW_DIR/run.json")
           source_pass=$(jq -r '.gate.recoveryAuditPass // false' "$RAW_DIR/source-evidence.json")
           final_status='observed_failure'
           if [[ "$run_conclusion" == 'success' && "$source_pass" == 'true' ]]; then final_status='accepted'; fi
           jq --arg status "$final_status" --slurpfile run "$RAW_DIR/run.json" \
             '.status = $status |
-             .acceptanceIdentity = {triggerPr:536,triggerMergeSha:"b04c01e688123cb4d2f96bd2cb16c66a0a8c8d58",workflowRunId:$run[0].runId,artifactId:$run[0].artifactId} |
+             .acceptanceIdentity = {triggerPr:544,triggerMergeSha:"867d2746a83be84b97a102cc86e011e5df055e05",workflowRunId:$run[0].runId,artifactId:$run[0].artifactId} |
              .workflow = $run[0]' "$RAW_DIR/source-evidence.json" > "$ARTIFACT_DIR/evidence.json"
           node scripts/verify-12a4-category-schema-recovery-audit-evidence.mjs "$ARTIFACT_DIR/evidence.json"
       - name: Remove source archive and metadata
@@ -130,6 +132,8 @@ jobs:
           evidence="$ARTIFACT_DIR/evidence.json"
           [[ -f "$evidence" ]]
           [[ $(jq -r '.workflow.conclusion' "$evidence") == 'success' ]]
+          [[ $(jq -r '.providers.twitch.schemaState' "$evidence") == 'complete' ]]
+          [[ $(jq -r '.providers.kick.schemaState' "$evidence") == 'complete' ]]
           for required in contract production-recovery-audit; do
             conclusion=$(jq -r --arg name "$required" '[.workflow.jobs[] | select(.name == $name)] | last | .conclusion // "missing"' "$evidence")
             [[ "$conclusion" == 'success' ]]
