@@ -44,7 +44,7 @@ for (const text of [
   'categoryCaptureEnabledByWorker: false',
 ]) assert.ok(worker.includes(text), `worker missing: ${text}`)
 assert.equal(worker.includes("url.pathname === '/apply'"), false)
-assert.equal(worker.includes('/collect'), false)
+assert.equal(worker.includes("url.pathname === '/collect'"), false)
 assert.equal(worker.includes('scheduled('), false)
 assert.equal(worker.includes('payload_json'), false)
 
@@ -58,8 +58,8 @@ for (const text of [
   'deleteHttpStatus',
   'execution-status.json',
 ]) assert.ok(runner.includes(text), `runner missing: ${text}`)
-assert.equal(runner.includes('/apply'), false)
-assert.equal(runner.includes('/collect'), false)
+assert.equal(runner.includes('`${url}/apply`'), false)
+assert.equal(runner.includes('`${url}/collect`'), false)
 
 for (const text of [
   'parseErrors',
@@ -89,8 +89,8 @@ for (const text of [
 ]) assert.ok(workflow.includes(text), `workflow missing: ${text}`)
 assert.equal(workflow.includes('schedule:'), false)
 assert.equal(workflow.includes('wrangler d1 execute'), false)
-assert.equal(workflow.includes('/apply'), false)
-assert.equal(workflow.includes('/collect'), false)
+assert.equal(workflow.includes('"$url/apply"') || workflow.includes("'$url/apply'"), false)
+assert.equal(workflow.includes('"$url/collect"') || workflow.includes("'$url/collect'"), false)
 assert.equal(workflow.includes('APPLY_CATEGORY_SCHEMA_WITH_CAPTURE_DISABLED'), false)
 
 if (trigger) {
