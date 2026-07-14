@@ -217,7 +217,7 @@ jobs:
             fi
 
             pre_schema_absent=false
-            if [[ -f "$pre" && $(jq -r '.state.schema.absent // false' "$pre") == 'true' && $(jq -r '.state.schema.partial // true' "$pre") == 'false' ]]; then
+            if [[ -f "$pre" && $(jq -r '.state.schema.absent // false' "$pre") == 'true' && $(jq -r '.state.schema.partial == false' "$pre") == 'true' ]]; then
               pre_schema_absent=true
             fi
 
