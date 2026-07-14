@@ -1,8 +1,15 @@
 {
   "schemaVersion": "viewloom-12a4-category-execution-cost-probe-package-contract-v1",
   "workstream": "12A-4-5 bounded provider-separated category execution-cost probe package",
-  "status": "candidate",
+  "status": "accepted",
   "trackingIssue": 519,
+  "acceptance": {
+    "pr": 547,
+    "validatedImplementationHeadSha": "dbb52103ab34becd9873d07299b20128f3e9c0de",
+    "workflowRunId": 29337578641,
+    "workflowJobId": 87100634321,
+    "packageValidationPass": true
+  },
   "acceptedStartingPoint": {
     "retirementPr": 546,
     "retirementMergeSha": "b79bbeb6ad9c71b79af3dbbd7d35bc5c10680b1b",
