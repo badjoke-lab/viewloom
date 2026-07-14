@@ -1,20 +1,19 @@
 import assert from 'node:assert/strict'
-import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 
 const root = process.cwd()
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8')
 const json = (file) => JSON.parse(read(file))
-const evidencePath = 'docs/audits/12a4-category-execution-cost-probe-attempt-2-evidence.json'
 
 const contract = json('docs/audits/12a4-category-execution-cost-probe-acceptance-v2-contract.json')
 const trigger = json('docs/audits/12a4-category-execution-cost-probe-trigger.json')
 const execution = json('docs/audits/12a4-category-execution-cost-probe-execution-contract.json')
+const evidence = json('docs/audits/12a4-category-execution-cost-probe-attempt-2-evidence.json')
 const workflow = read('.github/workflows/analytics-12a4-category-execution-cost-probe-acceptance-v2.yml')
 
 assert.equal(contract.schemaVersion, 'viewloom-12a4-category-execution-cost-probe-acceptance-v2-contract-v1')
-assert.ok(['candidate', 'accepted'].includes(contract.status))
+assert.equal(contract.status, 'accepted_safe_failure')
 assert.equal(contract.trackingIssue, 519)
 assert.equal(contract.trigger.pr, 553)
 assert.equal(contract.trigger.headSha, 'a3e9cdcf80bacc9e349c7db3ec4b855c6ad9d31f')
@@ -26,10 +25,15 @@ assert.equal(contract.source.workflow, 'analytics-12a4-category-execution-cost-p
 assert.equal(contract.source.event, 'push')
 assert.equal(contract.source.branch, 'main')
 assert.equal(contract.source.headSha, contract.trigger.mergeSha)
+assert.equal(contract.source.workflowRunId, 29356246266)
 assert.equal(contract.source.artifact, 'phase12a4-category-execution-cost-probe')
+assert.equal(contract.source.artifactId, 8320272101)
+assert.equal(contract.source.conclusion, 'failure')
 assert.equal(contract.acceptance.branch, 'accept-analytics-12a4-category-execution-cost-probe-v2')
-assert.equal(contract.acceptance.artifact, 'phase12a4-category-execution-cost-probe-acceptance-v2')
+assert.equal(contract.acceptance.evidence, 'docs/audits/12a4-category-execution-cost-probe-attempt-2-evidence.json')
 assert.equal(contract.acceptance.rawFilesRetained, false)
+assert.equal(contract.acceptance.successfulMeasurement, false)
+assert.equal(contract.acceptance.safeFailureAccepted, true)
 assert.deepEqual(contract.requiredSourceJobs, ['contract', 'production-probe'])
 assert.equal(contract.readOnlyBoundary, true)
 assert.equal(contract.categoryCaptureAuthorized, false)
@@ -40,48 +44,59 @@ assert.equal(trigger.executionPackagePr, 551)
 assert.equal(trigger.expectedExecutionPackageHeadSha, execution.acceptance.validatedImplementationHeadSha)
 assert.equal(trigger.expectedExecutionPackageMergeSha, execution.acceptance.mergeSha)
 
-assert.match(workflow, /TRIGGER_SHA:\s*e453053e23f5b4b930a736570d42cdbc1ff664a0/)
-assert.match(workflow, /SOURCE_WORKFLOW:\s*analytics-12a4-category-execution-cost-probe-execution\.yml/)
-assert.match(workflow, /SOURCE_ARTIFACT:\s*phase12a4-category-execution-cost-probe/)
-assert.ok(workflow.includes("github.head_ref == 'accept-analytics-12a4-category-execution-cost-probe-v2'"))
-assert.ok(workflow.includes('select(.head_sha == $sha)'))
-assert.ok(workflow.includes('select(.name == $name and .expired == false)'))
-assert.ok(workflow.includes('verify-12a4-category-execution-cost-probe-evidence.mjs "$RAW_DIR/source-evidence.json"'))
-assert.ok(workflow.includes('verify-12a4-category-execution-cost-probe-evidence.mjs "$evidence" --require-pass'))
-assert.ok(workflow.includes('rm -rf "$RAW_DIR"'))
-assert.ok(workflow.includes('path: artifacts/12a4-category-execution-cost-probe-acceptance-v2/evidence.json'))
-assert.ok(workflow.includes('actions: read'))
+assert.equal(evidence.schemaVersion, 'viewloom-12a4-category-execution-cost-probe-safe-failure-v1')
+assert.equal(evidence.status, 'accepted_safe_failure')
+assert.equal(evidence.source.triggerPr, 553)
+assert.equal(evidence.source.triggerMergeSha, contract.trigger.mergeSha)
+assert.equal(evidence.source.workflowRunId, contract.source.workflowRunId)
+assert.equal(evidence.source.artifactId, contract.source.artifactId)
+assert.equal(evidence.source.workflowConclusion, 'failure')
+assert.equal(evidence.twitch.attempted, true)
+assert.equal(evidence.twitch.preconditionsPassed, true)
+assert.equal(evidence.twitch.healthHttpStatus, 200)
+assert.equal(evidence.twitch.inspectHttpStatus, 200)
+assert.equal(evidence.twitch.probeHttpStatus, 409)
+assert.equal(evidence.twitch.failureCode, 'dictionary_upsert_sql_syntax')
+assert.equal(evidence.twitch.categoryGeneratorQueries, 0)
+assert.equal(evidence.twitch.dictionaryFirstPassChanges, 0)
+assert.equal(evidence.twitch.probeRowsAfterWrite, 0)
+assert.equal(evidence.twitch.d1RowsWritten, 0)
+assert.equal(evidence.twitch.d1Changes, 0)
+assert.equal(evidence.twitch.databaseSizeDeltaBytes, 0)
+assert.equal(evidence.twitch.cleanupRemainingRows, 0)
+assert.equal(evidence.twitch.providerLeakageRows, 0)
+assert.equal(evidence.twitch.temporaryWorkerFinalHttpStatus, 404)
+assert.equal(evidence.kick.attempted, false)
+assert.equal(evidence.kick.reason, 'stopped_after_twitch_gate_failure')
+assert.equal(evidence.gates.reservedRowsRemainingZero, true)
+assert.equal(evidence.gates.providerLeakageZero, true)
+assert.equal(evidence.gates.temporaryWorkersDeleted, true)
+assert.equal(evidence.gates.categoryCaptureRemainedDisabled, true)
+assert.equal(evidence.gates.runtimeCaptureEnablementAuthorized, false)
+assert.equal(evidence.gates.acceptedAsSuccessfulMeasurement, false)
+
+assert.ok(workflow.includes('Verify frozen attempt 2 safe failure evidence'))
+assert.ok(workflow.includes('check-12a4-category-execution-cost-probe-acceptance-v2-scope.mjs'))
+assert.ok(workflow.includes('verify-12a4-category-execution-cost-probe-acceptance-v2-package.mjs'))
 assert.ok(workflow.includes('contents: read'))
+assert.equal(workflow.includes('actions: read'), false)
+assert.equal(workflow.includes('GH_TOKEN'), false)
 assert.equal(workflow.includes('CLOUDFLARE_API_TOKEN'), false)
 assert.equal(workflow.includes('CLOUDFLARE_ACCOUNT_ID'), false)
 assert.equal(workflow.toLowerCase().includes('wrangler'), false)
 assert.equal(/^\s*push:/m.test(workflow), false)
 assert.equal(/^\s*schedule:/m.test(workflow), false)
 
-let frozenEvidence = false
-if (fs.existsSync(path.join(root, evidencePath))) {
-  const result = spawnSync(process.execPath, [
-    'scripts/verify-12a4-category-execution-cost-probe-evidence.mjs',
-    evidencePath,
-    '--require-pass',
-  ], { cwd: root, encoding: 'utf8' })
-  if (result.status !== 0) throw new Error(result.stderr || result.stdout || 'frozen evidence verification failed')
-  const evidence = json(evidencePath)
-  assert.equal(evidence.acceptance?.status, 'accepted')
-  assert.equal(evidence.acceptance?.triggerPr, 553)
-  assert.equal(evidence.acceptance?.triggerMergeSha, contract.trigger.mergeSha)
-  assert.equal(evidence.workflow?.event, 'push')
-  assert.equal(evidence.workflow?.headSha, contract.trigger.mergeSha)
-  frozenEvidence = true
-  assert.equal(contract.status, 'accepted')
-}
-
 console.log(JSON.stringify({
   ok: true,
   status: contract.status,
   attempt: contract.trigger.attempt,
   triggerSha: contract.trigger.mergeSha,
-  readOnlyBoundary: contract.readOnlyBoundary,
+  sourceRunId: contract.source.workflowRunId,
+  sourceArtifactId: contract.source.artifactId,
+  twitchWrites: evidence.twitch.d1RowsWritten,
+  cleanupRemainingRows: evidence.twitch.cleanupRemainingRows,
+  kickAttempted: evidence.kick.attempted,
+  temporaryWorkersDeleted: evidence.gates.temporaryWorkersDeleted,
   categoryCaptureAuthorized: contract.categoryCaptureAuthorized,
-  frozenEvidence,
 }, null, 2))
