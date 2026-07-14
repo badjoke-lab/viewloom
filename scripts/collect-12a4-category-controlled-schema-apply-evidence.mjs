@@ -7,9 +7,21 @@ if (!rawDir || !outputFile) {
   process.exit(2)
 }
 
+const parseErrors = []
 const readJson = (name, fallback = null) => {
   const file = path.join(rawDir, name)
-  return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : fallback
+  if (!fs.existsSync(file)) return fallback
+  const text = fs.readFileSync(file, 'utf8')
+  try {
+    return JSON.parse(text)
+  } catch (error) {
+    parseErrors.push({
+      file: name,
+      error: error instanceof Error ? error.message.slice(0, 180) : String(error).slice(0, 180),
+      preview: text.trim().replace(/\s+/g, ' ').slice(0, 120),
+    })
+    return fallback
+  }
 }
 const readText = (name, fallback = '') => {
   const file = path.join(rawDir, name)
@@ -133,6 +145,7 @@ for (const provider of contract.providers.order) {
       secondPassStatementCount: nonNegative(second?.apply?.metrics?.statementCount),
     },
     lifecycle,
+    parseErrors: parseErrors.filter((entry) => entry.file.startsWith(`${provider}-`)),
     checks,
     providerGatePass: Object.values(checks).every(Boolean),
   }
@@ -167,6 +180,7 @@ const evidence = {
     stopAfterFirstProviderFailure: contract.providers.stopAfterFirstProviderFailure,
   },
   providers,
+  parseErrors,
   gate: {
     designAccepted: contract.design.accepted === true,
     acceptedReadOnlyPreflight: contract.acceptedPreflight.twitchGatePass === true && contract.acceptedPreflight.kickGatePass === true,
@@ -193,4 +207,4 @@ const evidence = {
 
 fs.mkdirSync(path.dirname(outputFile), { recursive: true })
 fs.writeFileSync(outputFile, `${JSON.stringify(evidence, null, 2)}\n`)
-console.log(JSON.stringify({ ok: true, outputFile, controlledSchemaApplyPass: evidence.gate.controlledSchemaApplyPass }, null, 2))
+console.log(JSON.stringify({ ok: true, outputFile, controlledSchemaApplyPass: evidence.gate.controlledSchemaApplyPass, parseErrors: parseErrors.length }, null, 2))
