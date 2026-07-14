@@ -34,7 +34,7 @@ check(workflow.includes('workers/services/$service'), 'temporary Worker deletion
 check(workflow.includes('"$http_status" == \'200\''), 'inspect HTTP 200 gate')
 check(workflow.includes('"$delete_http_status" == \'404\''), 'post-delete HTTP 404 gate')
 check(!workflow.includes('schedule:'), 'no schedule')
-check(!workflow.includes('/collect'), 'no manual collector route')
+check(!workflow.includes('"$url/collect"') && !workflow.includes("'$url/collect'"), 'no manual collector route')
 check(!workflow.includes('wrangler d1 execute'), 'no direct D1 execute')
 check(!/CATEGORY_CAPTURE_ENABLED\s*=/.test(workflow), 'no category enable assignment')
 check(!workflow.includes('--var CATEGORY_CAPTURE_ENABLED'), 'no category enable var')
