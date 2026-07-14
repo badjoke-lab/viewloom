@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "viewloom-12a4-category-execution-cost-probe-execution-contract-v1",
+  "workstream": "12A-4-6 provider-separated bounded category execution-cost production package",
+  "status": "candidate",
+  "trackingIssue": 519,
+  "acceptedPackage": {
+    "pr": 547,
+    "headSha": "4556a5708ec3a33cd4b1835ca9e32baf78c5690d",
+    "mergeSha": "cb2673eec8424288bbee7b4403c415261926097a",
+    "contract": "docs/audits/12a4-category-execution-cost-probe-package-contract.json",
+    "packageValidationRunId": 29337837976,
+    "twitchWorkerDryRun": true,
+    "kickWorkerDryRun": true
+  },
+  "workflow": {
+    "path": ".github/workflows/analytics-12a4-category-execution-cost-probe-execution.yml",
+    "triggerFile": "docs/audits/12a4-category-execution-cost-probe-trigger.json",
+    "triggerConfirmation": "RUN_BOUNDED_CATEGORY_EXECUTION_COST_PROBE",
+    "providerOrder": [
+      "twitch",
+      "kick"
+    ],
+    "stopBeforeKickOnTwitchFailure": true,
+    "productionJobOnPullRequest": false,
+    "productionJobWithoutTrigger": false,
+    "artifactName": "phase12a4-category-execution-cost-probe"
+  },
+  "providerExecution": {
+    "runner": "scripts/run-12a4-category-execution-cost-probe-provider.mjs",
+    "providerResultVerifier": "scripts/verify-12a4-category-execution-cost-probe-provider-result.mjs",
+    "evidenceCollector": "scripts/collect-12a4-category-execution-cost-probe-evidence.mjs",
+    "evidenceVerifier": "scripts/verify-12a4-category-execution-cost-probe-evidence.mjs",
+    "temporaryWorkerPreconditionHttpStatus": 404,
+    "temporaryWorkerPostDeleteHttpStatus": 404,
+    "naturalSnapshotPollingAttempts": 70,
+    "naturalSnapshotPollingIntervalSeconds": 10,
+    "collectorLatencyDefinition": "absolute difference between post-probe and pre-probe collected_at minus bucket_minute latency",
+    "deleteInFinally": true,
+    "rawDeploymentLogsInArtifact": false
+  },
+  "requiredSecrets": [
+    "CLOUDFLARE_API_TOKEN",
+    "CLOUDFLARE_ACCOUNT_ID"
+  ],
+  "sanitizedEvidence": {
+    "channelIdentitiesIncluded": false,
+    "snapshotPayloadIncluded": false,
+    "credentialsIncluded": false,
+    "databaseIdsIncluded": false,
+    "accountIdIncluded": false,
+    "deploymentLogsIncluded": false,
+    "reservedProbeIdsIncluded": true
+  },
+  "pullRequestBoundary": {
+    "productionExecution": false,
+    "cloudflareSecretsUsed": false,
+    "remoteSchemaApply": false,
+    "categoryCaptureEnablement": false,
+    "persistentProductionCategoryRows": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  },
+  "nextGate": "separate one-file exact-SHA trigger PR followed by sanitized evidence acceptance"
+}
