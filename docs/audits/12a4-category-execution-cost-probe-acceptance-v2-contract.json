@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-category-execution-cost-probe-acceptance-v2-contract-v1",
   "workstream": "12A-4-6 category cost result acceptance attempt 2",
-  "status": "candidate",
+  "status": "accepted_safe_failure",
   "trackingIssue": 519,
   "trigger": {
     "pr": 553,
@@ -16,18 +16,20 @@
     "event": "push",
     "branch": "main",
     "headSha": "e453053e23f5b4b930a736570d42cdbc1ff664a0",
-    "artifact": "phase12a4-category-execution-cost-probe"
+    "workflowRunId": 29356246266,
+    "artifact": "phase12a4-category-execution-cost-probe",
+    "artifactId": 8320272101,
+    "conclusion": "failure"
   },
   "acceptance": {
     "branch": "accept-analytics-12a4-category-execution-cost-probe-v2",
-    "artifact": "phase12a4-category-execution-cost-probe-acceptance-v2",
-    "sourceEvidenceStatusRequired": "observed_pass",
-    "sourceGateRequired": true,
-    "sourceWorkflowConclusionRequired": "success",
-    "rawFilesRetained": false
+    "evidence": "docs/audits/12a4-category-execution-cost-probe-attempt-2-evidence.json",
+    "rawFilesRetained": false,
+    "successfulMeasurement": false,
+    "safeFailureAccepted": true
   },
   "requiredSourceJobs": ["contract", "production-probe"],
   "readOnlyBoundary": true,
   "categoryCaptureAuthorized": false,
-  "nextGate": "freeze sanitized attempt 2 evidence and retire the one-time trigger"
+  "nextGate": "fix D1-compatible dictionary upsert syntax and validate a new execution package before another trigger"
 }
