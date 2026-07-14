@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "viewloom-12a4-category-controlled-schema-apply-execution-contract-v1",
+  "workstream": "12A-4 controlled provider-separated category schema apply execution",
+  "status": "execution_package_candidate_no_production_trigger",
+  "trackingIssue": 519,
+  "design": {
+    "pr": 528,
+    "mergeSha": "21be04c8532d9b20ec22f29af6658a2d926b78a1",
+    "contract": "docs/audits/12a4-category-controlled-schema-apply-contract.json",
+    "accepted": true
+  },
+  "acceptedPreflight": {
+    "pr": 523,
+    "evidence": "docs/audits/12a4-category-readonly-preflight-evidence.json",
+    "twitchGatePass": true,
+    "kickGatePass": true,
+    "productionCategorySchemaAbsent": true
+  },
+  "executionWorkflow": ".github/workflows/analytics-12a4-category-controlled-schema-apply-execution.yml",
+  "triggerFile": "docs/audits/12a4-category-controlled-schema-apply-trigger.json",
+  "artifactName": "phase12a4-category-controlled-schema-apply",
+  "migration": {
+    "file": "db/d1/005_category_capture.sql",
+    "statementCount": 9,
+    "secondPassStatementCountMax": 0,
+    "partialSchemaPolicy": "stop_without_applying"
+  },
+  "providers": {
+    "order": [
+      "twitch",
+      "kick"
+    ],
+    "stopAfterFirstProviderFailure": true,
+    "twitch": {
+      "databaseName": "vl_twitch_hot",
+      "workerName": "viewloom-category-schema-apply-twitch",
+      "workerConfig": "workers/category-schema-apply/wrangler.twitch.toml",
+      "healthSource": "collector_status"
+    },
+    "kick": {
+      "databaseName": "vl_kick_hot",
+      "workerName": "viewloom-category-schema-apply-kick",
+      "workerConfig": "workers/category-schema-apply/wrangler.kick.toml",
+      "healthSource": "latest_snapshot"
+    }
+  },
+  "requiredSequence": [
+    "verify_exact_main_and_accepted_design",
+    "verify_accepted_readonly_preflight",
+    "verify_category_capture_flag_absent",
+    "deploy_temporary_twitch_worker",
+    "inspect_twitch_absent_schema",
+    "apply_twitch_schema_once",
+    "repeat_twitch_apply_and_require_zero_statements",
+    "wait_for_new_twitch_natural_snapshot",
+    "inspect_twitch_post_state",
+    "delete_twitch_worker_and_require_404",
+    "stop_on_any_twitch_failure",
+    "deploy_temporary_kick_worker",
+    "inspect_kick_absent_schema",
+    "apply_kick_schema_once",
+    "repeat_kick_apply_and_require_zero_statements",
+    "wait_for_new_kick_natural_snapshot",
+    "inspect_kick_post_state",
+    "delete_kick_worker_and_require_404",
+    "freeze_sanitized_evidence"
+  ],
+  "acceptanceThresholds": {
+    "schemaApplyStatementsPerProvider": 9,
+    "secondPassStatementCountMax": 0,
+    "schemaApplyWorkerWallMsPerProviderMax": 15000,
+    "schemaSizeIncreaseBytesPerProviderMax": 5242880,
+    "collectorLatencyDeltaMsPerProviderMax": 2000,
+    "categoryDictionaryRowsMax": 0,
+    "reservedProbeRowsMax": 0,
+    "providerLeakageRowsMax": 0,
+    "temporaryWorkersRetained": false,
+    "postDeleteHttpStatus": 404
+  },
+  "evidencePrivacy": {
+    "rawPayloadIncluded": false,
+    "channelIdentitiesIncluded": false,
+    "credentialsIncluded": false,
+    "accountIdIncluded": false,
+    "databaseIdsIncluded": false,
+    "deploymentLogsIncluded": false
+  },
+  "failurePolicy": {
+    "doNotDropAppliedSchema": true,
+    "leaveCategoryCaptureDisabled": true,
+    "doNotBackfill": true,
+    "doNotWriteProbeRows": true,
+    "stopBeforeNextProviderOnFailure": true,
+    "deleteTemporaryWorkerEvenOnFailure": true,
+    "preserveSanitizedFailureEvidence": true,
+    "partialProviderCompletionRequiresSeparateRecoveryDecision": true
+  },
+  "packagePrBoundary": {
+    "productionExecution": false,
+    "triggerArmed": false,
+    "cloudflareSecretsUsed": false,
+    "remoteMigrationApply": false,
+    "categoryRuntimeEnablement": false,
+    "productionCategoryRows": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  },
+  "nextDecision": "after this package is accepted on main, create a separate one-time trigger PR"
+}
