@@ -17,7 +17,7 @@ provider-separated temporary apply Worker candidate
 Twitch and Kick Wrangler dry-run configs
 migration parity verification
 local absent -> complete -> second-pass no-op fixture
-partial-schema stop fixture
+partial schema stop fixture
 zero category-row fixture
 collector-state preservation fixture
 scope and safety verification
@@ -61,4 +61,4 @@ Applied schema is not dropped during incident response. Runtime remains disabled
 
 ## Completion condition
 
-This design gate completes when migration parity, local idempotency, partial-schema stop behavior, provider separation, Worker dry-runs, scope checks, and Development policy all pass. Completion authorizes only a separate one-time schema-apply trigger PR; it does not authorize category runtime capture.
+This design gate completes when migration parity, local idempotency, partial schema stop behavior, provider separation, Worker dry-runs, scope checks, and Development policy all pass. Completion authorizes only a separate one-time schema-apply trigger PR; it does not authorize category runtime capture.
