@@ -19,8 +19,14 @@ const triggerScope = read('scripts/check-12a4-category-execution-cost-probe-trig
 const triggerPresent = exists('docs/audits/12a4-category-execution-cost-probe-trigger.json')
 
 assert.equal(execution.schemaVersion, 'viewloom-12a4-category-execution-cost-probe-execution-contract-v1')
-assert.ok(['candidate', 'accepted'].includes(execution.status))
+assert.equal(execution.status, 'accepted')
 assert.equal(execution.trackingIssue, 519)
+assert.equal(execution.acceptance.pr, 548)
+assert.equal(execution.acceptance.validatedImplementationHeadSha, '92157e82795d7ddb83bed19df2810a230d3c04e4')
+assert.equal(execution.acceptance.workflowRunId, 29338898726)
+assert.equal(execution.acceptance.workflowJobId, 87105150990)
+assert.equal(execution.acceptance.contractPass, true)
+assert.equal(execution.acceptance.productionJobSkippedOnPullRequest, true)
 assert.equal(execution.acceptedPackage.pr, 547)
 assert.equal(execution.acceptedPackage.headSha, '4556a5708ec3a33cd4b1835ca9e32baf78c5690d')
 assert.equal(execution.acceptedPackage.mergeSha, 'cb2673eec8424288bbee7b4403c415261926097a')
@@ -92,19 +98,16 @@ assert.equal(providerVerifier.includes('lifecycle.naturalSnapshotObserved === tr
 assert.equal(providerVerifier.includes('lifecycle.deleteHttpStatus === 404'), true)
 assert.equal(providerVerifier.includes('collectorLatencyDeltaMs <= thresholds.collectorLatencyDeltaMsPerProviderMax'), true)
 assert.equal(triggerVerifier.includes('RUN_BOUNDED_CATEGORY_EXECUTION_COST_PROBE'), true)
-assert.equal(triggerVerifier.includes('expectedExecutionPackageMergeSha'), true)
+assert.equal(triggerVerifier.includes('exactExecutionIdentityVerifiedByWorkflowApi'), true)
 assert.equal(triggerScope.includes('changed.length !== 1'), true)
 assert.equal(packageScope.includes("'scripts/verify-12a4-category-execution-cost-probe-trigger.mjs'"), true)
-
-if (!triggerPresent) {
-  assert.equal(execution.status, 'candidate')
-}
 
 console.log(JSON.stringify({
   ok: true,
   workstream: execution.workstream,
   status: execution.status,
   acceptedPackagePr: execution.acceptedPackage.pr,
+  executionPackagePr: execution.acceptance.pr,
   triggerPresent,
   productionJobOnPullRequest: false,
   productionJobWithoutTrigger: false,
