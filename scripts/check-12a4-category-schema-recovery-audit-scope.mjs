@@ -7,6 +7,7 @@ const allowed = new Set([
   'docs/work-in-progress/phase12a4-category-schema-recovery-audit.md',
   'scripts/check-12a4-category-schema-recovery-audit-scope.mjs',
   'scripts/collect-12a4-category-schema-recovery-audit-evidence.mjs',
+  'scripts/run-12a4-category-schema-recovery-audit.mjs',
   'scripts/verify-12a4-category-schema-recovery-audit-evidence.mjs',
   'scripts/verify-12a4-category-schema-recovery-audit-package.mjs',
   'scripts/collect-12a4-category-controlled-schema-apply-evidence.mjs',
