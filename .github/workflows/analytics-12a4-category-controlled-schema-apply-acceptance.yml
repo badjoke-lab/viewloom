@@ -95,12 +95,14 @@ jobs:
             --argjson jobs "$normalized_jobs" \
             '{workflow:$workflow,event:$event,runId:$runId,headSha:$headSha,status:$status,conclusion:$conclusion,startedAt:$startedAt,updatedAt:$updatedAt,jobs:$jobs}' \
             > "$RAW_DIR/run-base.json"
+          cp "$RAW_DIR/run-base.json" "$ARTIFACT_DIR/source-run.json"
       - name: Download sanitized source artifact
         shell: bash
         run: |
           set -euo pipefail
           run_id=$(jq -r '.runId' "$RAW_DIR/run-base.json")
           artifacts=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100")
+          printf '%s\n' "$artifacts" > "$ARTIFACT_DIR/source-artifacts.json"
           artifact=$(jq --arg name "$SOURCE_ARTIFACT" '[.artifacts[] | select(.name == $name and .expired == false)] | sort_by(.id) | last // null' <<<"$artifacts")
           [[ "$artifact" != 'null' ]] || { echo "::error::Artifact $SOURCE_ARTIFACT not found"; exit 1; }
           artifact_id=$(jq -r '.id' <<<"$artifact")
@@ -139,7 +141,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: phase12a4-category-controlled-schema-apply-acceptance
-          path: artifacts/12a4-category-controlled-schema-apply-acceptance/evidence.json
+          path: artifacts/12a4-category-controlled-schema-apply-acceptance/
           if-no-files-found: error
       - name: Enforce source run and evidence acceptance
         if: always()
