@@ -12,6 +12,7 @@ const allowed = new Set([
   'docs/audits/12a2-current-gate-state.json',
   'docs/audits/12a4-category-execution-cost-probe-contract.json',
   'docs/audits/12a4-category-readonly-preflight-trigger.json',
+  'docs/audits/12a4-category-readonly-preflight-acceptance-contract.json',
   'docs/audits/12a4-category-controlled-schema-apply-contract.json',
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
