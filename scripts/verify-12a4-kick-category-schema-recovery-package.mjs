@@ -43,9 +43,12 @@ for (const text of [
   "url.pathname === '/inspect'",
   "url.pathname === '/apply'",
   'requireCompletelyAbsent: true',
+  'databaseSizeBytes: query.sizeAfter',
   'twitchSchemaTouched: false',
   'productionCategoryRowsWrittenByWorker: false',
 ]) assert.ok(worker.includes(text), `worker missing: ${text}`)
+assert.equal(worker.includes('PRAGMA page_count'), false)
+assert.equal(worker.includes('PRAGMA page_size'), false)
 assert.equal(worker.includes('payload_json'), false)
 assert.equal(worker.includes('/collect'), false)
 assert.equal(worker.includes('scheduled('), false)
