@@ -6,8 +6,8 @@
   "trackingIssue": 519,
   "oneTime": true,
   "rearm": false,
-  "attempt": 1,
-  "runId": "category-cost-probe-attempt-1",
+  "attempt": 2,
+  "runId": "category-cost-probe-attempt-2",
   "providerOrder": ["twitch", "kick"],
   "stopBeforeKickOnTwitchFailure": true,
   "categoryCaptureEnablementAuthorized": false,
@@ -15,7 +15,15 @@
   "packagePr": 547,
   "expectedPackageHeadSha": "4556a5708ec3a33cd4b1835ca9e32baf78c5690d",
   "expectedPackageMergeSha": "cb2673eec8424288bbee7b4403c415261926097a",
-  "executionPackagePr": 548,
-  "expectedExecutionPackageHeadSha": "95baf064e0e8dfd42c274971af36cab940ba12c1",
-  "expectedExecutionPackageMergeSha": "219d79351388a15a599e72f8e85228d498488f11"
+  "executionPackagePr": 551,
+  "expectedExecutionPackageHeadSha": "6b0ac0f58e41a8f4a8a969b60bad31b4aec18b68",
+  "expectedExecutionPackageMergeSha": "9f007c5024aa6db7abae8e9d17bea34cfbe8f0d9",
+  "previousAttempt": {
+    "attempt": 1,
+    "triggerPr": 549,
+    "triggerMergeSha": "9637f4927fbc5e4674e3a78e285d7ea6c5049cfa",
+    "acceptancePr": 550,
+    "acceptanceMergeSha": "aea060ede42b4b636bc17034e7ca2563535d6ed0",
+    "result": "accepted_safe_failure_before_probe"
+  }
 }
