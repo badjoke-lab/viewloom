@@ -1,14 +1,16 @@
 # Phase 12A-4 bounded category execution-cost probe
 
-Status: current umbrella gate; bounded probe package accepted and separate one-file trigger is the next sub-gate  
+Status: current umbrella gate; dormant production execution package accepted and separate one-file trigger is the next sub-gate  
 Tracking issue: #519  
 Planning PR: #520  
 Read-only preflight acceptance PR: #523  
 Post-apply schema audit acceptance PR: #545  
 Schema execution retirement PR: #546  
 Bounded probe package PR: #547  
+Dormant production execution package PR: #548  
 Umbrella contract: `docs/audits/12a4-category-execution-cost-probe-contract.json`  
-Package contract: `docs/audits/12a4-category-execution-cost-probe-package-contract.json`
+Package contract: `docs/audits/12a4-category-execution-cost-probe-package-contract.json`  
+Execution contract: `docs/audits/12a4-category-execution-cost-probe-execution-contract.json`
 
 ## Accepted starting point
 
@@ -22,6 +24,7 @@ PR #541 Kick-only recovery fix accepted
 PR #545 final post-apply audit evidence frozen on main
 PR #546 schema execution/recovery paths retired
 PR #547 bounded execution-cost probe package validated
+PR #548 dormant exact-trigger production execution package validated
 Twitch category schema complete
 Kick category schema complete
 CATEGORY_CAPTURE_ENABLED remains absent
@@ -57,6 +60,11 @@ probe row idempotency and failure containment fixture passed
 cleanup remaining rows zero fixture passed
 sanitized success and failure evidence fixtures passed
 Twitch and Kick Wrangler bundles passed dry-run
+dormant production workflow accepted
+Twitch failure blocks Kick execution
+natural snapshot latency measurement fixture passed
+temporary Worker deletion remains in provider finally path
+production job skipped on package PR
 ```
 
 ## Accepted package boundary
@@ -79,14 +87,29 @@ new cron/backfill/raw-retention/category UI: none
 cross-provider category identity or combined rankings: none
 ```
 
+## Accepted dormant execution boundary
+
+```text
+production workflow path exists but is inert without trigger JSON
+production job requires push to main plus armed trigger
+workflow_dispatch cannot satisfy production job condition
+Twitch executes first
+Kick executes only after Twitch provider gate passes
+provider runner polls the next natural snapshot
+collector latency delta is measured from snapshot bucket/collection lag
+sanitized evidence is uploaded before final acceptance enforcement
+raw deployment logs are not uploaded
+exact package identities are checked through GitHub API
+```
+
 ## Current sub-gate: separate one-file production trigger
 
-The next PR may change only the trigger contract required to bind the accepted package to an exact package head and merge SHA. It must not alter Worker logic, thresholds, provider order, cleanup rules, evidence normalization, collector code, or runtime category capture.
+The next PR may add only `docs/audits/12a4-category-execution-cost-probe-trigger.json`. It must bind PR #547 and PR #548 to their exact final head and merge SHA. It must not alter Worker logic, thresholds, provider order, cleanup rules, evidence normalization, collector code, or runtime category capture.
 
 The trigger must preserve this sequence:
 
 ```text
-1. verify the exact accepted package identity from PR #547
+1. verify the exact accepted package identities from PR #547 and PR #548
 2. execute Twitch reserved probe
 3. verify first pass, no-op, thresholds, cleanup zero, leakage zero, and Worker deletion 404
 4. stop before Kick on any Twitch failure
