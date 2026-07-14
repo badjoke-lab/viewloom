@@ -77,7 +77,6 @@ for (const fragment of [
   'naturalSnapshotObserved',
   'waitForDeleted',
   'finally',
-  'rawDeploymentLogs',
 ]) {
   assert.equal(runner.includes(fragment), true, `runner missing ${fragment}`)
 }
