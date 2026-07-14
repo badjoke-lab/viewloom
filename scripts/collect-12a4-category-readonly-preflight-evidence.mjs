@@ -16,7 +16,10 @@ const readCodes = (provider) => {
 
 const contract = JSON.parse(fs.readFileSync('docs/audits/12a4-category-readonly-preflight-contract.json', 'utf8'))
 const parent = readJson('parent-pr.json')
+const packagePr = readJson('package-pr.json')
 const headSha = fs.readFileSync(path.join(rawDir, 'head-sha.txt'), 'utf8').trim()
+const eventName = fs.readFileSync(path.join(rawDir, 'event-name.txt'), 'utf8').trim()
+const trigger = fs.existsSync(path.join(rawDir, 'trigger.json')) ? readJson('trigger.json') : null
 
 const providers = {}
 for (const provider of ['twitch', 'kick']) {
@@ -58,6 +61,8 @@ for (const provider of ['twitch', 'kick']) {
   }
 }
 
+const parentMerged = parent.merged === true
+const packageMerged = packagePr.merged === true
 const evidence = {
   schemaVersion: 'viewloom-12a4-category-readonly-preflight-evidence-v1',
   workstream: contract.workstream,
@@ -66,18 +71,29 @@ const evidence = {
   providerSeparated: true,
   execution: {
     parentPlanningPr: contract.parentPlanningPr,
-    parentMerged: parent.merged === true,
+    parentMerged,
     parentMergeSha: parent.merge_commit_sha ?? null,
+    packagePr: 521,
+    packageMerged,
+    packageHeadSha: packagePr.head?.sha ?? null,
+    packageMergeSha: packagePr.merge_commit_sha ?? null,
     headSha,
-    event: 'workflow_dispatch',
+    event: eventName,
+    trigger: trigger ? {
+      schemaVersion: trigger.schemaVersion,
+      confirmation: trigger.confirmation,
+      expectedPackageHeadSha: trigger.expectedPackageHeadSha,
+      oneTime: trigger.oneTime,
+    } : null,
     readOnly: true,
   },
   providers,
   gate: {
-    parentPlanningPrMerged: parent.merged === true,
+    parentPlanningPrMerged: parentMerged,
+    packagePrMerged: packageMerged,
     twitchGatePass: providers.twitch.providerGatePass,
     kickGatePass: providers.kick.providerGatePass,
-    readOnlyPreflightPass: parent.merged === true && providers.twitch.providerGatePass && providers.kick.providerGatePass,
+    readOnlyPreflightPass: parentMerged && packageMerged && providers.twitch.providerGatePass && providers.kick.providerGatePass,
     remoteMigrationApplyAuthorized: false,
     runtimeCaptureEnablementAuthorized: false,
   },
