@@ -4,6 +4,7 @@ const allowed = new Set([
   '.github/workflows/analytics-12a4-category-readonly-preflight.yml',
   '.github/workflows/analytics-12a4-category-execution-cost-probe.yml',
   '.github/workflows/analytics-12a4-category-execution-cost-probe-execution.yml',
+  'docs/audits/12a2-current-gate-state.json',
   'docs/audits/12a4-category-execution-cost-probe-execution-contract.json',
   'docs/audits/12a4-category-execution-cost-probe-trigger.json',
   'docs/work-in-progress/phase12a4-category-execution-cost-probe.md',
@@ -17,7 +18,9 @@ const allowed = new Set([
   'scripts/verify-12a4-category-execution-cost-probe-execution-package.mjs',
   'scripts/verify-12a4-category-execution-cost-probe-provider-result.mjs',
   'scripts/verify-12a4-category-execution-cost-probe-trigger.mjs',
+  'scripts/verify-12a4-category-execution-cost-probe.mjs',
   'scripts/verify-12a4-category-readonly-preflight-package.mjs',
+  'scripts/verify-development-policy.mjs',
   'workers/category-cost-probe/src/index.ts',
 ])
 

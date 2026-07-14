@@ -1,132 +1,131 @@
 # Phase 12A-4 bounded category execution-cost probe
 
-Status: current umbrella gate; dormant production execution package accepted and separate one-file trigger is the next sub-gate  
+Status: accepted and retired; provider-separated category capture enablement decision is the current gate  
 Tracking issue: #519  
 Planning PR: #520  
 Read-only preflight acceptance PR: #523  
 Post-apply schema audit acceptance PR: #545  
 Schema execution retirement PR: #546  
 Bounded probe package PR: #547  
-Dormant production execution package PR: #548  
+Production execution hardening PR: #551  
+D1 compatibility fix PR: #555  
+Accepted trigger PR: #557  
+Accepted evidence PR: #558  
+Production path retirement PR: #559  
 Umbrella contract: `docs/audits/12a4-category-execution-cost-probe-contract.json`  
-Package contract: `docs/audits/12a4-category-execution-cost-probe-package-contract.json`  
-Execution contract: `docs/audits/12a4-category-execution-cost-probe-execution-contract.json`
+Execution contract: `docs/audits/12a4-category-execution-cost-probe-execution-contract.json`  
+Accepted evidence: `docs/audits/12a4-category-execution-cost-probe-attempt-3-evidence.json`
 
-## Accepted starting point
+## Accepted result
 
 ```text
-PR #516 repository category migration candidate and disabled runtime implementation merged
-PR #517 disabled-runtime production boundary accepted
-PR #523 read-only production preflight accepted
-PR #528 controlled schema design accepted
-PR #529 production execution package accepted
-PR #541 Kick-only recovery fix accepted
-PR #545 final post-apply audit evidence frozen on main
-PR #546 schema execution/recovery paths retired
-PR #547 bounded execution-cost probe package validated
-PR #548 dormant exact-trigger production execution package validated
 Twitch category schema complete
 Kick category schema complete
+Twitch provider gate passed
+Kick provider gate passed
+provider order preserved: Twitch then Kick
+first dictionary pass changes: 1 per provider
+second dictionary pass changes: 0 per provider
+reserved probe rows created: 3 per provider
+reserved probe rows remaining after cleanup: 0
+provider leakage rows: 0
+database size delta: 0 bytes per provider
+natural snapshot observed after each provider probe
+temporary Workers deleted and final HTTP status 404
 CATEGORY_CAPTURE_ENABLED remains absent
 production category rows remain absent
-provider separation preserved
-final audit D1 rows written zero
-final audit D1 changes zero
-provider leakage zero
-temporary schema/audit Workers deleted and HTTP 404
-all schema execution triggers consumed and retired
+runtime capture enablement remains unauthorized
 ```
 
-## Purpose
+## Accepted production measurements
 
-Measure the real cost of the category generator and dictionary path with one bounded, reserved probe per provider before any runtime capture enablement decision. Schema work is complete and must not be repeated. The current phase is about execution cost, cleanup, and collector safety only.
+| Metric | Twitch | Kick |
+| --- | ---: | ---: |
+| Category generator queries | 4 | 4 |
+| D1 statements | 10 | 10 |
+| D1 rows read | 7 | 7 |
+| D1 rows written during bounded probe and cleanup | 10 | 10 |
+| D1 changes | 6 | 6 |
+| D1 SQL duration | 1.743 ms | 1.417 ms |
+| Worker wall time | 2010 ms | 1760 ms |
+| Collector latency delta | 942 ms | 9 ms |
+| Database size delta | 0 bytes | 0 bytes |
+| Cleanup remaining rows | 0 | 0 |
+| Provider leakage rows | 0 | 0 |
+
+These values describe the accepted one-time reserved probe. They do not authorize continuous category capture by themselves.
 
 ## Completed sub-gates
 
 ```text
-planning thresholds and stop conditions accepted
-provider-separated read-only preflight accepted
-Twitch schema applied and independently audited
-Kick schema applied through a Kick-only recovery package
-both provider schemas re-audited as complete
-category capture remained disabled throughout
-all temporary schema Workers deleted
-all schema execution and recovery triggers retired
-bounded probe design accepted
-reserved-identifier-only Worker implemented
-fixed historical probe day enforced
-first dictionary pass and second no-op fixture passed
-probe row idempotency and failure containment fixture passed
-cleanup remaining rows zero fixture passed
-sanitized success and failure evidence fixtures passed
-Twitch and Kick Wrangler bundles passed dry-run
-dormant production workflow accepted
-Twitch failure blocks Kick execution
-natural snapshot latency measurement fixture passed
-temporary Worker deletion remains in provider finally path
-production job skipped on package PR
+category source audit accepted
+embedded-hourly storage design accepted
+repository migration candidate implemented
+production category schema applied for Twitch and Kick
+disabled runtime accepted after merge
+read-only production preflight accepted
+schema execution and recovery paths retired
+bounded probe package accepted
+Worker readiness retry validated
+D1-compatible direct VALUES dictionary upsert validated
+attempt 1 stopped before probe execution
+attempt 2 stopped with zero writes and complete cleanup
+attempt 3 passed for Twitch and Kick
+sanitized accepted evidence frozen
+one-time trigger consumed and retired
+production push trigger removed
+production execution job removed
+Cloudflare secret references removed from the retired workflow
 ```
 
-## Accepted package boundary
+## Retired execution boundary
 
 ```text
-Worker mode: bounded_execution_cost_probe
-confirmation: RUN_RESERVED_CATEGORY_COST_PROBE
-probe day: 1900-01-02
-reserved prefix: __viewloom_category_cost_probe__:
-provider order: Twitch then Kick
-one dictionary entry + one rollup row + one status row per provider
-cleanup executes in finally
-collector_status is never written
-arbitrary production identifiers are rejected
-production execution from package PR: no
-Cloudflare credentials in package CI: no
-CATEGORY_CAPTURE_ENABLED value: absent
-persistent production category rows: none
-new cron/backfill/raw-retention/category UI: none
-cross-provider category identity or combined rankings: none
+trigger status: consumed_and_retired
+trigger rearm authorized: no
+production push trigger present: no
+production execution job present: no
+Cloudflare credentials referenced by retired workflow: no
+production Worker deployment from retired workflow: no
+verification-only Worker bundles: dry-run
+remote schema apply: no
+category capture enablement: no
+persistent production category rows: no
+new cron: no
+backfill: no
+raw-retention change: no
+category analytics UI: no
+cross-provider category identity: no
+combined-provider category ranking: no
 ```
 
-## Accepted dormant execution boundary
+## Current gate: provider-separated category capture enablement decision
+
+The cost measurement is complete. The current task is not to run another probe and not to enable capture automatically. A separate decision package must determine whether the measured provider-specific cost, storage projection, collector safety, and free-tier operating margin justify a disabled-by-default capture rollout.
+
+The decision must preserve these rules:
 
 ```text
-production workflow path exists but is inert without trigger JSON
-production job requires push to main plus armed trigger
-workflow_dispatch cannot satisfy production job condition
-Twitch executes first
-Kick executes only after Twitch provider gate passes
-provider runner polls the next natural snapshot
-collector latency delta is measured from snapshot bucket/collection lag
-sanitized evidence is uploaded before final acceptance enforcement
-raw deployment logs are not uploaded
-exact package identities are checked through GitHub API
-```
-
-## Current sub-gate: separate one-file production trigger
-
-The next PR may add only `docs/audits/12a4-category-execution-cost-probe-trigger.json`. It must bind PR #547 and PR #548 to their exact final head and merge SHA. It must not alter Worker logic, thresholds, provider order, cleanup rules, evidence normalization, collector code, or runtime category capture.
-
-The trigger must preserve this sequence:
-
-```text
-1. verify the exact accepted package identities from PR #547 and PR #548
-2. execute Twitch reserved probe
-3. verify first pass, no-op, thresholds, cleanup zero, leakage zero, and Worker deletion 404
-4. stop before Kick on any Twitch failure
-5. execute Kick reserved probe
-6. verify the same Kick gates and Worker deletion 404
-7. publish sanitized provider-separated evidence
-8. freeze evidence in a separate acceptance PR
-9. retire the trigger and production execution workflow
-10. decide separately whether category capture may start
+1. Twitch and Kick remain separate decisions and data paths.
+2. No cross-provider category identity is introduced.
+3. No combined-provider category totals or rankings are introduced.
+4. CATEGORY_CAPTURE_ENABLED remains absent until a separate accepted implementation gate.
+5. No backfill is included with initial enablement.
+6. No new cron is added.
+7. Collector success must not be replaced by optional category failure.
+8. Runtime and storage budgets must use the accepted production measurements, not fixture estimates alone.
+9. A rollback/disable path must exist before any production flag is introduced.
+10. Production evidence must remain provider-separated and sanitized.
 ```
 
 ## Current boundary
 
 ```text
-no production probe has run
-no schema apply or schema rollback
+accepted production cost evidence exists
+all probe execution paths are retired
 no CATEGORY_CAPTURE_ENABLED value
+runtime category capture not authorized
+runtime category capture not started
 no persistent production category rows
 no new cron
 no backfill
@@ -136,6 +135,6 @@ no cross-provider category identity
 no combined-provider category totals or rankings
 ```
 
-## Completion gate
+## Next completion gate
 
-12A-4 is complete only when both providers independently satisfy the execution-cost contract in production, all reserved rows and dictionary entries are removed, temporary Workers are deleted, category failure cannot replace a successful collector outcome, and runtime capture receives a separate explicit acceptance. Until then, category capture remains disabled.
+The next gate is complete only when a separate provider-separated enablement decision explicitly accepts or rejects runtime category capture using the frozen production cost evidence. A positive decision still does not enable capture; it may only authorize a separate disabled-by-default implementation package. Until that later package is accepted, category capture remains disabled.
