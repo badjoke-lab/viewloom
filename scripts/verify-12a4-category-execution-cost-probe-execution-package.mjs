@@ -12,6 +12,9 @@ const packageContract = json('docs/audits/12a4-category-execution-cost-probe-pac
 const workflow = read('.github/workflows/analytics-12a4-category-execution-cost-probe-execution.yml')
 const runner = read('scripts/run-12a4-category-execution-cost-probe-provider.mjs')
 const runnerTest = read('scripts/test-12a4-category-execution-cost-probe-runner.mjs')
+const evidenceTest = read('scripts/test-12a4-category-execution-cost-probe-evidence.mjs')
+const evidenceCollector = read('scripts/collect-12a4-category-execution-cost-probe-evidence.mjs')
+const evidenceVerifier = read('scripts/verify-12a4-category-execution-cost-probe-evidence.mjs')
 const providerVerifier = read('scripts/verify-12a4-category-execution-cost-probe-provider-result.mjs')
 const triggerVerifier = read('scripts/verify-12a4-category-execution-cost-probe-trigger.mjs')
 const packageScope = read('scripts/check-12a4-category-execution-cost-probe-execution-package-scope.mjs')
@@ -19,12 +22,9 @@ const triggerScope = read('scripts/check-12a4-category-execution-cost-probe-trig
 const triggerPresent = exists('docs/audits/12a4-category-execution-cost-probe-trigger.json')
 
 assert.equal(execution.schemaVersion, 'viewloom-12a4-category-execution-cost-probe-execution-contract-v1')
-assert.equal(execution.status, 'accepted')
+assert.ok(['accepted', 'accepted_runner_fix'].includes(execution.status))
 assert.equal(execution.trackingIssue, 519)
-assert.equal(execution.acceptance.pr, 548)
-assert.equal(execution.acceptance.validatedImplementationHeadSha, '92157e82795d7ddb83bed19df2810a230d3c04e4')
-assert.equal(execution.acceptance.workflowRunId, 29338898726)
-assert.equal(execution.acceptance.workflowJobId, 87105150990)
+assert.ok([548, 551].includes(execution.acceptance.pr))
 assert.equal(execution.acceptance.contractPass, true)
 assert.equal(execution.acceptance.productionJobSkippedOnPullRequest, true)
 assert.equal(execution.acceptedPackage.pr, 547)
@@ -73,10 +73,16 @@ assert.equal(workflow.includes('CATEGORY_CAPTURE_ENABLED='), false)
 for (const fragment of [
   'snapshotLatencyMs',
   'collectorLatencyDeltaMs',
+  'RETRYABLE_HTTP_STATUSES',
+  'waitForWorkerHealth',
+  'postJsonWithRetry',
+  'healthAttempts',
+  'inspectAttempts',
   'temporary_worker_preexisting_http_',
   "['dlx', 'wrangler@4', 'deploy'",
   "['dlx', 'wrangler@4', 'secret', 'put', 'PROBE_TOKEN'",
-  "['dlx', 'wrangler@4', 'delete'",
+  'deleteService',
+  "method: 'DELETE'",
   "'/inspect'",
   "'/probe'",
   "'x-viewloom-confirm': CONFIRMATION",
@@ -86,6 +92,7 @@ for (const fragment of [
 ]) {
   assert.equal(runner.includes(fragment), true, `runner missing ${fragment}`)
 }
+assert.equal(runner.includes("['dlx', 'wrangler@4', 'delete'"), false)
 assert.equal(runner.includes('console.log(deploy.output)'), false)
 assert.equal(runner.includes('console.log(secret.output)'), false)
 assert.equal(runner.includes('CATEGORY_CAPTURE_ENABLED'), false)
@@ -93,14 +100,23 @@ assert.equal(runner.includes('REMOTE_SCHEMA_APPLY'), false)
 
 assert.equal(runnerTest.includes('collectorLatencyDeltaMs(before, after), 550'), true)
 assert.equal(runnerTest.includes("validateRunId('../not-allowed')"), true)
+assert.equal(runnerTest.includes('isRetryableWorkerResponse({ status: 500'), true)
+assert.equal(runnerTest.includes('schema_query_failed'), true)
 assert.equal(runnerTest.includes("sanitized.includes('secret.workers.dev'), false"), true)
+assert.equal(evidenceTest.includes('attemptOneFailure'), true)
+assert.equal(evidenceTest.includes('providers.kick.attempted, false'), true)
+assert.equal(evidenceCollector.includes('rawProvider?.attempted === true'), true)
+assert.equal(evidenceCollector.includes('MISSING_NUMBER'), true)
+assert.equal(evidenceVerifier.includes('!item.attempted || !item.lifecycle.probeEndpointCalled'), true)
+assert.equal(providerVerifier.includes('lifecycle.healthHttpStatus === 200'), true)
+assert.equal(providerVerifier.includes('lifecycle.inspectAttempts'), true)
 assert.equal(providerVerifier.includes('lifecycle.naturalSnapshotObserved === true'), true)
 assert.equal(providerVerifier.includes('lifecycle.deleteHttpStatus === 404'), true)
 assert.equal(providerVerifier.includes('collectorLatencyDeltaMs <= thresholds.collectorLatencyDeltaMsPerProviderMax'), true)
 assert.equal(triggerVerifier.includes('RUN_BOUNDED_CATEGORY_EXECUTION_COST_PROBE'), true)
 assert.equal(triggerVerifier.includes('exactExecutionIdentityVerifiedByWorkflowApi'), true)
 assert.equal(triggerScope.includes('changed.length !== 1'), true)
-assert.equal(packageScope.includes("'scripts/verify-12a4-category-execution-cost-probe-trigger.mjs'"), true)
+assert.equal(packageScope.includes("'scripts/collect-12a4-category-execution-cost-probe-evidence.mjs'"), true)
 
 console.log(JSON.stringify({
   ok: true,
@@ -109,10 +125,13 @@ console.log(JSON.stringify({
   acceptedPackagePr: execution.acceptedPackage.pr,
   executionPackagePr: execution.acceptance.pr,
   triggerPresent,
+  readinessRetry: true,
+  serviceApiDelete: true,
+  evidenceAttemptedFalsePreserved: true,
+  missingMeasurementsNotZeroed: true,
   productionJobOnPullRequest: false,
   productionJobWithoutTrigger: false,
   providerOrder: execution.workflow.providerOrder,
   stopBeforeKickOnTwitchFailure: execution.workflow.stopBeforeKickOnTwitchFailure,
-  rawDeploymentLogsInArtifact: execution.providerExecution.rawDeploymentLogsInArtifact,
   categoryCaptureEnablement: false,
 }, null, 2))

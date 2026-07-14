@@ -37,10 +37,14 @@ export function verifyEvidence(evidence, contract, { requirePass = false } = {})
     assert.equal(typeof item.measurements.databaseSizeIncreaseBytes, 'number')
     assert.equal(typeof item.measurements.workerWallMs, 'number')
     assert.equal(typeof item.measurements.collectorLatencyDeltaMs, 'number')
+    assert.equal(typeof item.lifecycle.probeEndpointCalled, 'boolean')
+    assert.equal(typeof item.lifecycle.temporaryWorkerDeployed, 'boolean')
+    assert.equal(typeof item.lifecycle.naturalSnapshotObserved, 'boolean')
     assert.equal(typeof item.lifecycle.deleteHttpStatus, 'number')
     assert.equal(typeof item.checks.categoryCaptureStillDisabled, 'boolean')
 
     if (item.providerGatePass) {
+      assert.equal(item.attempted, true)
       assert.equal(item.workerOk, true)
       assert.ok(item.measurements.categoryGeneratorQueries <= contract.acceptanceThresholds.categoryGeneratorQueriesMax)
       assert.equal(item.measurements.dictionaryFirstPassChanges, contract.acceptanceThresholds.dictionaryFirstPassChanges)
@@ -55,23 +59,44 @@ export function verifyEvidence(evidence, contract, { requirePass = false } = {})
       assert.equal(item.lifecycle.preexistingHttpStatus, 404)
       assert.equal(item.lifecycle.deployExitCode, 0)
       assert.equal(item.lifecycle.secretExitCode, 0)
+      assert.equal(item.lifecycle.healthHttpStatus, 200)
       assert.equal(item.lifecycle.inspectHttpStatus, 200)
       assert.equal(item.lifecycle.probeHttpStatus, 200)
+      assert.equal(item.lifecycle.probeEndpointCalled, true)
+      assert.equal(item.lifecycle.naturalSnapshotObserved, true)
       assert.equal(item.lifecycle.deleteExitCode, 0)
       assert.equal(item.lifecycle.deleteHttpStatus, 404)
+      assert.equal(item.errors.runner, null)
+      assert.equal(item.errors.delete, null)
       assert.equal(item.errors.operation, null)
       assert.equal(item.errors.cleanup, null)
     }
   }
 
   const derivedPass = PROVIDERS.every((provider) => evidence.providers[provider].providerGatePass)
-  const derivedCaptureDisabled = PROVIDERS.every((provider) => evidence.providers[provider].checks.categoryCaptureStillDisabled)
+  const derivedRowsRemoved = PROVIDERS.every((provider) => {
+    const item = evidence.providers[provider]
+    return !item.attempted || !item.lifecycle.probeEndpointCalled || item.measurements.probeCleanupRemainingRows === 0
+  })
+  const derivedLeakageZero = PROVIDERS.every((provider) => {
+    const item = evidence.providers[provider]
+    return !item.attempted || !item.lifecycle.probeEndpointCalled || item.measurements.providerLeakageRows === 0
+  })
+  const derivedWorkersDeleted = PROVIDERS.every((provider) => {
+    const item = evidence.providers[provider]
+    return !item.attempted || !item.lifecycle.temporaryWorkerDeployed || item.lifecycle.deleteHttpStatus === 404
+  })
+  const derivedCaptureDisabled = PROVIDERS.every((provider) => {
+    const item = evidence.providers[provider]
+    return !item.attempted || !item.lifecycle.probeEndpointCalled || item.checks.categoryCaptureStillDisabled
+  })
+
   assert.equal(evidence.gate.executionCostProbePass, derivedPass)
   assert.equal(evidence.gate.twitchGatePass, evidence.providers.twitch.providerGatePass)
   assert.equal(evidence.gate.kickGatePass, evidence.providers.kick.providerGatePass)
-  assert.equal(evidence.gate.allReservedRowsRemoved, PROVIDERS.every((provider) => evidence.providers[provider].measurements.probeCleanupRemainingRows === 0))
-  assert.equal(evidence.gate.providerLeakageRowsZero, PROVIDERS.every((provider) => evidence.providers[provider].measurements.providerLeakageRows === 0))
-  assert.equal(evidence.gate.temporaryWorkersDeleted, PROVIDERS.every((provider) => evidence.providers[provider].lifecycle.deleteHttpStatus === 404))
+  assert.equal(evidence.gate.allReservedRowsRemoved, derivedRowsRemoved)
+  assert.equal(evidence.gate.providerLeakageRowsZero, derivedLeakageZero)
+  assert.equal(evidence.gate.temporaryWorkersDeleted, derivedWorkersDeleted)
   assert.equal(evidence.gate.categoryCaptureRemainedDisabled, derivedCaptureDisabled)
 
   if (requirePass) {

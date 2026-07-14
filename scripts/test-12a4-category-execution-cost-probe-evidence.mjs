@@ -5,6 +5,7 @@ import { collectEvidence } from './collect-12a4-category-execution-cost-probe-ev
 import { verifyEvidence } from './verify-12a4-category-execution-cost-probe-evidence.mjs'
 
 const contract = JSON.parse(fs.readFileSync(path.resolve('docs/audits/12a4-category-execution-cost-probe-package-contract.json'), 'utf8'))
+const MISSING = Number.MAX_SAFE_INTEGER
 
 function worker(provider, overrides = {}) {
   const checks = {
@@ -58,11 +59,32 @@ function lifecycle(overrides = {}) {
     preexistingHttpStatus: 404,
     deployExitCode: 0,
     secretExitCode: 0,
+    healthAttempts: 1,
+    healthHttpStatus: 200,
+    inspectAttempts: 1,
     inspectHttpStatus: 200,
     probeHttpStatus: 200,
+    pollAttempts: 1,
+    naturalSnapshotObserved: true,
+    deleteApiHttpStatus: 200,
     deleteExitCode: 0,
     deleteHttpStatus: 404,
     ...overrides,
+  }
+}
+
+function providerRaw(provider, overrides = {}) {
+  return {
+    attempted: overrides.attempted ?? true,
+    worker: overrides.worker === null ? null : worker(provider, overrides.worker),
+    lifecycle: lifecycle(overrides.lifecycle),
+    collectorLatencyDeltaMs: Object.hasOwn(overrides, 'collectorLatencyDeltaMs')
+      ? overrides.collectorLatencyDeltaMs
+      : 250,
+    errors: {
+      runner: overrides.runnerError ?? null,
+      delete: overrides.deleteError ?? null,
+    },
   }
 }
 
@@ -74,16 +96,8 @@ function raw(providerOverrides = {}) {
     event: 'push',
     providerOrder: ['twitch', 'kick'],
     providers: {
-      twitch: {
-        worker: worker('twitch', providerOverrides.twitch?.worker),
-        lifecycle: lifecycle(providerOverrides.twitch?.lifecycle),
-        collectorLatencyDeltaMs: providerOverrides.twitch?.collectorLatencyDeltaMs ?? 250,
-      },
-      kick: {
-        worker: worker('kick', providerOverrides.kick?.worker),
-        lifecycle: lifecycle(providerOverrides.kick?.lifecycle),
-        collectorLatencyDeltaMs: providerOverrides.kick?.collectorLatencyDeltaMs ?? 300,
-      },
+      twitch: providerRaw('twitch', providerOverrides.twitch),
+      kick: providerRaw('kick', providerOverrides.kick),
     },
   }
 }
@@ -104,7 +118,7 @@ const cleanupFailure = collectEvidence(raw({
       checks: { cleanupRemainingRowsZero: false },
       cleanupError: 'cleanup_failed',
     },
-    lifecycle: { probeHttpStatus: 409, deleteHttpStatus: 404 },
+    lifecycle: { probeHttpStatus: 409, naturalSnapshotObserved: false, deleteHttpStatus: 404 },
   },
 }), contract)
 assert.equal(cleanupFailure.status, 'observed_fail')
@@ -127,9 +141,64 @@ const missingProvider = collectEvidence({
   providers: { twitch: raw().providers.twitch },
 }, contract)
 assert.equal(missingProvider.status, 'observed_fail')
+assert.equal(missingProvider.providers.kick.attempted, false)
 assert.equal(missingProvider.providers.kick.parseError, 'provider_result_missing')
 assert.equal(missingProvider.parseErrors.length, 1)
+assert.equal(missingProvider.providers.kick.measurements.collectorLatencyDeltaMs, MISSING)
 assert.equal(verifyEvidence(missingProvider, contract).ok, true)
+
+const attemptOneFailure = collectEvidence(raw({
+  twitch: {
+    worker: null,
+    collectorLatencyDeltaMs: null,
+    lifecycle: {
+      healthAttempts: 1,
+      healthHttpStatus: 200,
+      inspectAttempts: 1,
+      inspectHttpStatus: 500,
+      probeHttpStatus: 0,
+      pollAttempts: 0,
+      naturalSnapshotObserved: false,
+      deleteApiHttpStatus: 200,
+      deleteExitCode: 0,
+      deleteHttpStatus: 404,
+    },
+    runnerError: 'pre_inspect_failed_http_500',
+  },
+  kick: {
+    attempted: false,
+    worker: null,
+    collectorLatencyDeltaMs: null,
+    lifecycle: {
+      preexistingHttpStatus: 0,
+      deployExitCode: null,
+      secretExitCode: null,
+      healthAttempts: 0,
+      healthHttpStatus: 0,
+      inspectAttempts: 0,
+      inspectHttpStatus: 0,
+      probeHttpStatus: 0,
+      pollAttempts: 0,
+      naturalSnapshotObserved: false,
+      deleteApiHttpStatus: 0,
+      deleteExitCode: null,
+      deleteHttpStatus: 0,
+    },
+    runnerError: 'skipped_after_twitch_gate_failure',
+  },
+}), contract)
+assert.equal(attemptOneFailure.status, 'observed_fail')
+assert.equal(attemptOneFailure.providers.twitch.attempted, true)
+assert.equal(attemptOneFailure.providers.twitch.lifecycle.probeEndpointCalled, false)
+assert.equal(attemptOneFailure.providers.twitch.measurements.collectorLatencyDeltaMs, MISSING)
+assert.equal(attemptOneFailure.providers.kick.attempted, false)
+assert.equal(attemptOneFailure.providers.kick.lifecycle.temporaryWorkerDeployed, false)
+assert.equal(attemptOneFailure.providers.kick.measurements.workerWallMs, MISSING)
+assert.equal(attemptOneFailure.gate.allReservedRowsRemoved, true)
+assert.equal(attemptOneFailure.gate.providerLeakageRowsZero, true)
+assert.equal(attemptOneFailure.gate.temporaryWorkersDeleted, true)
+assert.equal(attemptOneFailure.gate.categoryCaptureRemainedDisabled, true)
+assert.equal(verifyEvidence(attemptOneFailure, contract).ok, true)
 
 console.log(JSON.stringify({
   ok: true,
@@ -138,5 +207,6 @@ console.log(JSON.stringify({
     cleanupFailure: cleanupFailure.status,
     latencyFailure: latencyFailure.status,
     missingProvider: missingProvider.status,
+    attemptOneFailure: attemptOneFailure.status,
   },
 }, null, 2))
