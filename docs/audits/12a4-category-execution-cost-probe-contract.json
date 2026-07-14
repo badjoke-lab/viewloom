@@ -1,28 +1,33 @@
 {
-  "schemaVersion": "viewloom-12a4-category-execution-cost-probe-contract-v1",
-  "workstream": "12A-4 production category execution-cost probe and remote migration decision",
-  "status": "readonly_preflight_accepted_schema_apply_design_current",
+  "schemaVersion": "viewloom-12a4-category-execution-cost-probe-contract-v2",
+  "workstream": "12A-4 bounded provider-separated category execution-cost probe",
+  "status": "production_schema_accepted_bounded_probe_current",
   "trackingIssue": 519,
   "acceptedStartingPoint": {
     "implementationPr": 516,
     "disabledRuntimeAcceptancePr": 517,
-    "evidenceFreezePr": 518,
     "readonlyPreflightAcceptancePr": 523,
-    "readonlyPreflightAcceptanceMergeSha": "428154d16dc5b62c30ac6b7cdeb668f3e442a3b6",
-    "readonlyPreflightEvidence": "docs/audits/12a4-category-readonly-preflight-evidence.json",
-    "repositoryMigrationCandidateImplemented": true,
-    "disabledRuntimeDeployed": true,
-    "productionCategorySchemaPresent": false,
+    "controlledSchemaDesignPr": 528,
+    "executionPackagePr": 529,
+    "kickRecoveryPackagePr": 541,
+    "postApplyAuditAcceptancePr": 545,
+    "postApplyAuditAcceptanceMergeSha": "4e15d899df35e4330eccedb0ff3e91b04fc7b30d",
+    "postApplyEvidence": "docs/audits/12a4-category-schema-recovery-audit-evidence.json",
+    "twitchCategorySchemaState": "complete",
+    "kickCategorySchemaState": "complete",
     "productionCategoryCaptureEnabled": false,
+    "productionCategoryRowsPresent": false,
     "providerSeparated": true,
-    "readonlyPreflightAccepted": true
+    "schemaExecutionTriggersRetired": true
   },
   "probeOrder": [
-    "read_only_preflight_accepted",
-    "controlled_schema_apply_design_current",
-    "schema_apply_with_category_capture_disabled",
-    "provider_separated_bounded_cost_probe",
-    "cleanup_and_post_probe_verification",
+    "accepted_schema_and_disabled_runtime_revalidated",
+    "bounded_probe_package_design",
+    "twitch_single_reserved_probe_execution",
+    "twitch_cleanup_and_zero_row_verification",
+    "kick_single_reserved_probe_execution",
+    "kick_cleanup_and_zero_row_verification",
+    "provider_separated_cost_acceptance",
     "capture_enablement_decision"
   ],
   "providerBindings": {
@@ -31,7 +36,6 @@
   },
   "requiredMeasurements": [
     "database_size_before_and_after",
-    "schema_apply_wall_ms",
     "d1_rows_read",
     "d1_rows_written",
     "d1_changes",
@@ -41,25 +45,25 @@
     "dictionary_first_pass_changes",
     "dictionary_second_pass_changes",
     "category_generator_query_count",
-    "probe_cleanup_remaining_rows"
+    "probe_cleanup_remaining_rows",
+    "provider_leakage_rows"
   ],
   "acceptanceThresholds": {
-    "schemaApplyWallMsPerProviderMax": 15000,
     "probeWorkerWallMsPerProviderMax": 15000,
     "collectorLatencyDeltaMsPerProviderMax": 2000,
     "categoryGeneratorQueriesMax": 12,
     "dictionarySecondPassChangesMax": 0,
     "probeCleanupRemainingRowsMax": 0,
-    "schemaSizeIncreaseMbPerProviderMax": 5,
+    "databaseSizeIncreaseMbPerProviderMax": 5,
     "providerLeakageRowsMax": 0,
     "temporaryWorkersRetained": false
   },
   "stopConditions": [
+    "accepted_schema_evidence_missing_or_not_complete",
     "provider_database_binding_mismatch",
     "foreign_provider_rows_detected",
     "category_capture_flag_present_before_authorized_enablement",
-    "schema_apply_not_idempotent",
-    "schema_size_increase_exceeds_threshold",
+    "unbounded_or_non_reserved_probe_input",
     "collector_latency_delta_exceeds_threshold",
     "dictionary_second_pass_changes_nonzero",
     "category_generator_query_count_exceeds_12",
@@ -70,19 +74,21 @@
   "rollbackAndDisable": {
     "categoryCaptureFlag": "CATEGORY_CAPTURE_ENABLED",
     "defaultCommittedValue": "absent",
-    "disableAction": "remove_or_leave_absent_CATEGORY_CAPTURE_ENABLED_and_redeploy_provider_collectors",
-    "schemaRollback": "do_not_drop_columns_in_incident_response; disable runtime and preserve provider-separated evidence",
-    "probeCleanup": "delete_reserved_probe_rows_and_probe_dictionary_entries",
-    "temporaryWorkerCleanup": "delete_both_provider_probe_workers_and_verify_http_404"
+    "disableAction": "leave CATEGORY_CAPTURE_ENABLED absent and do not redeploy capture-enabled collectors",
+    "schemaRollback": "do not drop accepted category columns; preserve provider-separated evidence",
+    "probeCleanup": "delete reserved probe rows and reserved dictionary entries in the same provider before acceptance",
+    "temporaryWorkerCleanup": "delete each provider probe Worker and verify HTTP 404"
   },
   "currentDesign": {
-    "contract": "docs/audits/12a4-category-controlled-schema-apply-contract.json",
-    "runtimeModule": "workers/shared/category-schema.ts",
-    "temporaryWorker": "workers/category-schema-apply/src/index.ts",
-    "productionExecutionIncluded": false
+    "acceptedSchemaEvidence": "docs/audits/12a4-category-schema-recovery-audit-evidence.json",
+    "storageContract": "docs/audits/12a4-category-storage-design-contract.json",
+    "disabledRuntimeContract": "docs/audits/12a4-category-migration-runtime-contract.json",
+    "candidateWorker": "workers/category-cost-probe/src/index.ts",
+    "productionExecutionIncluded": false,
+    "runtimeCaptureEnablementIncluded": false
   },
   "planningPrBoundary": {
-    "remoteMigrationApply": false,
+    "remoteSchemaApply": false,
     "productionCategoryCapture": false,
     "productionCategoryRows": false,
     "newCron": false,
