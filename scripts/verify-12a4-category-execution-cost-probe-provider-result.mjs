@@ -44,6 +44,9 @@ const providerGatePass = raw.attempted === true
   && lifecycle.preexistingHttpStatus === 404
   && lifecycle.deployExitCode === 0
   && lifecycle.secretExitCode === 0
+  && integer(lifecycle.healthAttempts) >= 1
+  && lifecycle.healthHttpStatus === 200
+  && integer(lifecycle.inspectAttempts) >= 1
   && lifecycle.inspectHttpStatus === 200
   && lifecycle.probeHttpStatus === 200
   && lifecycle.naturalSnapshotObserved === true
@@ -59,6 +62,8 @@ console.log(JSON.stringify({
   provider: expectedProvider,
   requirePass,
   providerGatePass,
+  healthAttempts: integer(lifecycle.healthAttempts),
+  inspectAttempts: integer(lifecycle.inspectAttempts),
   categoryGeneratorQueries: integer(measurements.categoryGeneratorQueries, Number.MAX_SAFE_INTEGER),
   dictionaryFirstPassChanges: integer(measurements.dictionaryFirstPassChanges, Number.MAX_SAFE_INTEGER),
   dictionarySecondPassChanges: integer(measurements.dictionarySecondPassChanges, Number.MAX_SAFE_INTEGER),
@@ -66,10 +71,12 @@ console.log(JSON.stringify({
   providerLeakageRows: integer(measurements.providerLeakageRows, Number.MAX_SAFE_INTEGER),
   databaseSizeIncreaseBytes,
   collectorLatencyDeltaMs,
+  deleteApiHttpStatus: lifecycle.deleteApiHttpStatus ?? 0,
   deleteHttpStatus: lifecycle.deleteHttpStatus ?? 0,
 }, null, 2))
 
 function finite(value, fallback) {
+  if (value === null || value === undefined || value === '') return fallback
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : fallback
 }
