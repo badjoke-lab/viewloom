@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v14",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v15",
   "workstream": "12A-4 provider-specific category capture foundation",
-  "status": "12a4_schema_complete_bounded_cost_probe_current",
+  "status": "12a4_cost_probe_accepted_capture_decision_current",
   "intradayFoundation": {
     "designPr": 494,
     "migrationPr": 499,
@@ -35,7 +35,8 @@
     "twitchProjectedSizeMbWithCategorySafety": 438.7,
     "kickProjectedSizeMbWithCategorySafety": 314.57,
     "accountProjectedSizeMbWithCategorySafety": 3716.59,
-    "productionCostProbeRequired": true,
+    "productionCostProbeRequired": false,
+    "productionCostProbeAccepted": true,
     "runtimeCaptureAuthorized": false,
     "providerSeparated": true
   },
@@ -102,22 +103,40 @@
     "productionWorkflowPushTriggersRetired": true
   },
   "categoryExecutionCostProbe": {
-    "status": "bounded_probe_design_current",
+    "status": "accepted_and_retired",
     "trackingIssue": 519,
-    "contract": "docs/audits/12a4-category-execution-cost-probe-contract.json",
-    "acceptedSchemaEvidence": "docs/audits/12a4-category-schema-recovery-audit-evidence.json",
-    "twitchSchemaComplete": true,
-    "kickSchemaComplete": true,
-    "boundedProbePackageImplemented": false,
-    "productionProbeAuthorized": false,
-    "runtimeCaptureAuthorized": false,
-    "requiredProviderOrder": [
-      "twitch",
-      "kick"
-    ],
-    "requiredCleanupRemainingRows": 0,
-    "requiredProviderLeakageRows": 0,
-    "temporaryWorkersRetained": false
+    "designContract": "docs/audits/12a4-category-execution-cost-probe-contract.json",
+    "executionContract": "docs/audits/12a4-category-execution-cost-probe-execution-contract.json",
+    "trigger": "docs/audits/12a4-category-execution-cost-probe-trigger.json",
+    "evidence": "docs/audits/12a4-category-execution-cost-probe-attempt-3-evidence.json",
+    "packagePr": 547,
+    "executionFixPr": 555,
+    "triggerPr": 557,
+    "acceptancePr": 558,
+    "retirementPr": 559,
+    "sourceWorkflowRunId": 29358245194,
+    "sourceArtifactId": 8321254541,
+    "acceptanceArtifactId": 8321258554,
+    "twitchGatePass": true,
+    "kickGatePass": true,
+    "twitchCategoryGeneratorQueries": 4,
+    "kickCategoryGeneratorQueries": 4,
+    "twitchD1Statements": 10,
+    "kickD1Statements": 10,
+    "twitchD1RowsWritten": 10,
+    "kickD1RowsWritten": 10,
+    "twitchD1Changes": 6,
+    "kickD1Changes": 6,
+    "twitchDatabaseSizeDeltaBytes": 0,
+    "kickDatabaseSizeDeltaBytes": 0,
+    "twitchCollectorLatencyDeltaMs": 942,
+    "kickCollectorLatencyDeltaMs": 9,
+    "cleanupRemainingRows": 0,
+    "providerLeakageRows": 0,
+    "temporaryWorkersRetained": false,
+    "allExecutionTriggersRetired": true,
+    "productionWorkflowPushTriggersRetired": true,
+    "runtimeCaptureAuthorized": false
   },
   "categoryCapture": {
     "sourceContractAccepted": true,
@@ -129,8 +148,9 @@
     "productionSchemaPresent": true,
     "twitchSchemaComplete": true,
     "kickSchemaComplete": true,
-    "productionCostProbeRequired": true,
-    "productionCostProbeAuthorized": false,
+    "productionCostProbeRequired": false,
+    "productionCostProbeAccepted": true,
+    "productionCostProbeRetired": true,
     "runtimeCaptureAuthorized": false,
     "runtimeCaptureStarted": false,
     "categoryCaptureFlagPresent": false,
@@ -149,23 +169,28 @@
     "category_readonly_preflight_not_accepted",
     "category_schema_not_applied",
     "category_schema_provider_state_unknown",
-    "schema_execution_triggers_not_retired"
-  ],
-  "openBlockers": [
+    "schema_execution_triggers_not_retired",
     "bounded_category_execution_cost_unmeasured",
     "reserved_probe_cleanup_not_verified",
+    "cost_probe_execution_triggers_not_retired"
+  ],
+  "openBlockers": [
+    "category_capture_enablement_decision_not_accepted",
     "runtime_category_capture_not_authorized"
   ],
   "currentWorkstream": {
-    "phase": "12A-4-5",
-    "name": "bounded provider-separated category execution-cost probe design",
+    "phase": "12A-4-7",
+    "name": "provider-separated category capture enablement decision",
     "trackingIssue": 519,
     "acceptedSchemaEvidence": true,
+    "acceptedCostEvidence": true,
     "bothProviderSchemasComplete": true,
     "schemaExecutionRetired": true,
+    "costProbeExecutionRetired": true,
     "productionExecutionIncluded": false,
     "runtimeCaptureStarted": false,
+    "runtimeCaptureAuthorized": false,
     "crossProviderAnalyticsAllowed": false
   },
-  "nextWorkstream": "12A-4-6 provider-separated bounded category execution-cost probe execution and acceptance"
+  "nextWorkstream": "separate disabled-by-default provider-specific category capture package only after an accepted enablement decision"
 }
