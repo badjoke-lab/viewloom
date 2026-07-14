@@ -7,6 +7,7 @@ const allowed = new Set([
   'docs/work-in-progress/phase12a4-category-schema-recovery-audit-acceptance.md',
   'scripts/check-12a4-category-schema-recovery-audit-acceptance-scope.mjs',
   'scripts/verify-12a4-category-schema-recovery-audit-acceptance-package.mjs',
+  'scripts/verify-12a4-category-schema-recovery-audit-evidence.mjs',
 ])
 
 const base = process.env.GITHUB_BASE_REF ? `origin/${process.env.GITHUB_BASE_REF}` : 'HEAD^'
