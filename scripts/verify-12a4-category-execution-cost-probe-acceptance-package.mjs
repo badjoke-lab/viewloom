@@ -46,7 +46,7 @@ const checks = {
   workflowExactShaFilter: workflow.includes('select(.head_sha == $sha)'),
   workflowExactArtifactFilter: workflow.includes('select(.name == $name and .expired == false)'),
   workflowSourceVerifier: /verify-12a4-category-execution-cost-probe-evidence\.mjs\s+"\$RAW_DIR\/source-evidence\.json"/.test(workflow),
-  workflowPassVerifier: /verify-12a4-category-execution-cost-probe-evidence\.mjs\s+"\$ARTIFACT_DIR\/evidence\.json"\s+--require-pass/.test(workflow),
+  workflowPassVerifier: /verify-12a4-category-execution-cost-probe-evidence\.mjs\s+"\$(?:ARTIFACT_DIR\/evidence\.json|evidence)"\s+--require-pass/.test(workflow),
   workflowRawRemoval: /rm -rf\s+"\$RAW_DIR"/.test(workflow),
   workflowEvidenceOnlyUpload: workflow.includes('path: artifacts/12a4-category-execution-cost-probe-acceptance/evidence.json'),
   workflowActionsRead: workflow.includes('actions: read'),
