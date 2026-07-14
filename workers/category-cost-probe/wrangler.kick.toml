@@ -1,4 +1,4 @@
-name = "viewloom-category-cost-preflight-kick"
+name = "viewloom-category-cost-probe-kick"
 main = "src/index.ts"
 compatibility_date = "2026-07-01"
 workers_dev = true
