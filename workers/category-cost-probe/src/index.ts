@@ -154,15 +154,24 @@ async function inspectProvider(env: Env) {
   let providerLeakageRows = 0
 
   if (minuteSnapshotsTablePresent && minuteSnapshotColumns.includes('provider')) {
-    const latestResult = await env.DB.prepare(`
-      SELECT *
-      FROM minute_snapshots
-      WHERE provider = ?
-      ORDER BY bucket_minute DESC
-      LIMIT 1
-    `).bind(env.PROVIDER).all()
-    detailResults.push(latestResult)
-    latest = pickRow(firstRow(latestResult), LATEST_SNAPSHOT_FIELDS)
+    const latestFields = existingFields(LATEST_SNAPSHOT_FIELDS, minuteSnapshotColumns)
+    const orderField = minuteSnapshotColumns.includes('bucket_minute')
+      ? 'bucket_minute'
+      : minuteSnapshotColumns.includes('collected_at')
+        ? 'collected_at'
+        : null
+
+    if (latestFields.length > 0 && orderField) {
+      const latestResult = await env.DB.prepare(`
+        SELECT ${latestFields.map(quoteIdentifier).join(', ')}
+        FROM minute_snapshots
+        WHERE provider = ?
+        ORDER BY ${quoteIdentifier(orderField)} DESC
+        LIMIT 1
+      `).bind(env.PROVIDER).all()
+      detailResults.push(latestResult)
+      latest = pickRow(firstRow(latestResult), LATEST_SNAPSHOT_FIELDS)
+    }
 
     const providerLeakageResult = await env.DB.prepare(`
       SELECT COUNT(*) AS count
@@ -174,14 +183,17 @@ async function inspectProvider(env: Env) {
   }
 
   if (collectorStatusTablePresent && collectorStatusColumns.includes('provider')) {
-    const collectorResult = await env.DB.prepare(`
-      SELECT *
-      FROM collector_status
-      WHERE provider = ?
-      LIMIT 1
-    `).bind(env.PROVIDER).all()
-    detailResults.push(collectorResult)
-    collector = pickRow(firstRow(collectorResult), COLLECTOR_STATUS_FIELDS)
+    const collectorFields = existingFields(COLLECTOR_STATUS_FIELDS, collectorStatusColumns)
+    if (collectorFields.length > 0) {
+      const collectorResult = await env.DB.prepare(`
+        SELECT ${collectorFields.map(quoteIdentifier).join(', ')}
+        FROM collector_status
+        WHERE provider = ?
+        LIMIT 1
+      `).bind(env.PROVIDER).all()
+      detailResults.push(collectorResult)
+      collector = pickRow(firstRow(collectorResult), COLLECTOR_STATUS_FIELDS)
+    }
   }
 
   const healthSource = collector ? 'collector_status' : latest ? 'latest_snapshot' : 'unavailable'
@@ -254,12 +266,27 @@ function stringValues(result: D1Result<unknown>, key: string): string[] {
     .filter(Boolean)
 }
 
+function existingFields<const T extends readonly string[]>(
+  fields: T,
+  available: string[],
+): T[number][] {
+  const availableSet = new Set(available)
+  return fields.filter((field) => availableSet.has(field))
+}
+
+function quoteIdentifier(identifier: string): string {
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(identifier)) {
+    throw new Error('invalid_identifier')
+  }
+  return `"${identifier}"`
+}
+
 function pickRow<const T extends readonly string[]>(
   row: Record<string, unknown> | null,
   fields: T,
-): Record<T[number], unknown> | null {
+): Partial<Record<T[number], unknown>> | null {
   if (!row) return null
-  const picked = {} as Record<T[number], unknown>
+  const picked: Partial<Record<T[number], unknown>> = {}
   for (const field of fields) {
     if (Object.prototype.hasOwnProperty.call(row, field)) picked[field] = row[field]
   }
