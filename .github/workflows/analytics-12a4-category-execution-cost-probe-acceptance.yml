@@ -120,16 +120,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node scripts/verify-12a4-category-execution-cost-probe-evidence.mjs "$RAW_DIR/source-evidence.json"
+          source_verify_exit=0
+          node scripts/verify-12a4-category-execution-cost-probe-evidence.mjs "$RAW_DIR/source-evidence.json" || source_verify_exit=$?
           run_conclusion=$(jq -r '.conclusion' "$RAW_DIR/run.json")
-          source_status=$(jq -r '.status' "$RAW_DIR/source-evidence.json")
+          source_status=$(jq -r '.status // "unknown"' "$RAW_DIR/source-evidence.json")
           source_pass=$(jq -r '.gate.executionCostProbePass // false' "$RAW_DIR/source-evidence.json")
           acceptance_status='observed_failure'
-          if [[ "$run_conclusion" == 'success' && "$source_status" == 'observed_pass' && "$source_pass" == 'true' ]]; then
+          if [[ "$source_verify_exit" == '0' && "$run_conclusion" == 'success' && "$source_status" == 'observed_pass' && "$source_pass" == 'true' ]]; then
             acceptance_status='accepted'
           fi
           jq \
             --arg acceptanceStatus "$acceptance_status" \
+            --argjson sourceEvidenceVerifierExitCode "$source_verify_exit" \
             --slurpfile run "$RAW_DIR/run.json" \
             '. + {
               acceptance: {
@@ -137,11 +139,12 @@ jobs:
                 triggerPr: 549,
                 triggerMergeSha: "9637f4927fbc5e4674e3a78e285d7ea6c5049cfa",
                 workflowRunId: $run[0].runId,
-                artifactId: $run[0].artifactId
+                artifactId: $run[0].artifactId,
+                sourceEvidenceVerifierExitCode: $sourceEvidenceVerifierExitCode
               },
               workflow: $run[0]
             }' "$RAW_DIR/source-evidence.json" > "$ARTIFACT_DIR/evidence.json"
-          node scripts/verify-12a4-category-execution-cost-probe-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+          node scripts/verify-12a4-category-execution-cost-probe-evidence.mjs "$ARTIFACT_DIR/evidence.json" || true
 
       - name: Remove source archive and raw provider files
         if: always()
