@@ -1,24 +1,25 @@
 {
   "schemaVersion": "viewloom-12a4-category-schema-recovery-audit-trigger-v1",
-  "status": "armed_for_one_time_main_push",
+  "status": "consumed_and_retired",
   "trackingIssue": 519,
   "packagePr": 535,
-  "expectedPackageHeadSha": "e13698aa78039e13142735003ac24ea66a61a4fd",
-  "packageMergeSha": "c24a4e37408ad0df3efb04bc0bf4d69a82ec0d90",
-  "attempt": 2,
+  "triggerPr": 544,
+  "finalAuditAcceptancePr": 545,
+  "finalAuditAcceptanceMergeSha": "4e15d899df35e4330eccedb0ff3e91b04fc7b30d",
   "auditPurpose": "post_kick_schema_apply_verification",
-  "sourceAttemptTriggerPr": 542,
-  "sourceAttemptMergeSha": "27a143c83c134599bf1d92d61786fce86f4e76ba",
-  "sourceAttemptRunId": 29329062285,
-  "expectedProviderStates": {
-    "twitch": "complete",
-    "kick": "complete"
+  "result": {
+    "twitchSchemaState": "complete",
+    "kickSchemaState": "complete",
+    "rowsWritten": 0,
+    "changes": 0,
+    "providerLeakageRows": 0
   },
   "providerOrder": [
     "twitch",
     "kick"
   ],
   "oneTime": true,
+  "retired": true,
   "boundaries": {
     "remoteSchemaApply": false,
     "categoryRuntimeEnablement": false,
