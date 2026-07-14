@@ -70,7 +70,7 @@
     "secondPassStatementCountMax": 0,
     "schemaApplyWorkerWallMsPerProviderMax": 15000,
     "schemaSizeIncreaseBytesPerProviderMax": 5242880,
-    "collectorIntervalDeltaMsPerProviderMax": 2000,
+    "collectorLatencyDeltaMsPerProviderMax": 2000,
     "categoryDictionaryRowsMax": 0,
     "reservedProbeRowsMax": 0,
     "providerLeakageRowsMax": 0,
