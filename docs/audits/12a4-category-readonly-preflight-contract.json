@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "viewloom-12a4-category-readonly-preflight-contract-v1",
+  "workstream": "12A-4 provider-separated production category read-only preflight",
+  "status": "execution_package_ready",
+  "parentPlanningPr": 520,
+  "trackingIssue": 519,
+  "providerSeparated": true,
+  "execution": {
+    "event": "workflow_dispatch",
+    "requiredRef": "main",
+    "requiredConfirmation": "READ_ONLY_PREFLIGHT_ONLY",
+    "requireParentPlanningPrMerged": true,
+    "temporaryWorkers": true,
+    "temporaryWorkersMustBeDeleted": true
+  },
+  "providers": {
+    "twitch": {
+      "databaseBinding": "DB_TWITCH_HOT",
+      "databaseName": "vl_twitch_hot",
+      "workerConfig": "workers/category-cost-probe/wrangler.twitch.toml"
+    },
+    "kick": {
+      "databaseBinding": "DB_KICK_HOT",
+      "databaseName": "vl_kick_hot",
+      "workerConfig": "workers/category-cost-probe/wrangler.kick.toml"
+    }
+  },
+  "requiredChecks": [
+    "exact_main_sha_matches_input",
+    "parent_planning_pr_merged",
+    "category_capture_flag_absent_from_committed_collectors",
+    "production_category_dictionary_absent",
+    "production_category_rollup_columns_absent",
+    "production_category_status_columns_absent",
+    "latest_provider_snapshot_present",
+    "collector_status_present",
+    "provider_leakage_rows_zero",
+    "d1_rows_written_zero",
+    "d1_changes_zero",
+    "worker_reports_read_only_boundary",
+    "temporary_workers_deleted_and_http_404"
+  ],
+  "acceptance": {
+    "rowsWrittenMax": 0,
+    "changesMax": 0,
+    "providerLeakageRowsMax": 0,
+    "categorySchemaExpectedPresent": false,
+    "categoryCaptureExpectedEnabled": false,
+    "temporaryWorkersRetained": false,
+    "rawPayloadIncluded": false,
+    "channelIdentitiesIncluded": false
+  },
+  "stopConditions": [
+    "main_sha_mismatch",
+    "parent_planning_pr_not_merged",
+    "cloudflare_credentials_missing",
+    "provider_binding_mismatch",
+    "category_schema_already_present",
+    "provider_leakage_detected",
+    "read_only_query_reports_rows_written",
+    "read_only_query_reports_changes",
+    "latest_snapshot_missing",
+    "collector_status_missing",
+    "temporary_worker_delete_failure",
+    "temporary_worker_still_reachable"
+  ],
+  "boundaries": {
+    "remoteMigrationApply": false,
+    "categoryRuntimeEnablement": false,
+    "productionCategoryRows": false,
+    "manualCollectorRoute": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  },
+  "nextDecision": "controlled remote schema apply package may be designed only after sanitized preflight evidence is accepted"
+}
