@@ -19,6 +19,9 @@ for (const provider of ['twitch', 'kick']) {
   const item = evidence.providers[provider]
   assert.equal(item.provider, provider)
   assert.equal(item.mode, 'read_only_preflight')
+  assert.equal(item.schema.dictionaryTablePresent, false)
+  assert.deepEqual(item.schema.presentRollupColumns, [])
+  assert.deepEqual(item.schema.presentStatusColumns, [])
   assert.equal(item.schema.categorySchemaComplete, false)
   assert.equal(item.providerLeakageRows, 0)
   assert.equal(item.query.rowsWritten, 0)
