@@ -6,6 +6,14 @@ type Env = {
   PROBE_TOKEN: string
 }
 
+type ProbeIdentity = {
+  runId: string
+  day: string
+  streamerId: string
+  categoryId: string
+  categoryName: string
+}
+
 type MetaSummary = {
   statements: number
   durationMs: number
@@ -14,6 +22,13 @@ type MetaSummary = {
   changes: number
   sizeAfter: number | null
 }
+
+const CONFIRMATION = 'RUN_RESERVED_CATEGORY_COST_PROBE'
+const PROBE_DAY = '1900-01-02'
+const PROBE_PREFIX = '__viewloom_category_cost_probe__:'
+const MAX_GENERATOR_QUERIES = 12
+const CATEGORY_CONTRACT_VERSION = 'category-source-v1'
+const ANALYTICS_CONTRACT_VERSION = 'analytics-source-v1'
 
 const CATEGORY_ROLLUP_COLUMNS = [
   'category_hourly_json',
@@ -29,67 +44,284 @@ const CATEGORY_STATUS_COLUMNS = [
   'category_coverage_state',
 ] as const
 
-const LATEST_SNAPSHOT_FIELDS = [
-  'bucket_minute',
-  'collected_at',
-  'stream_count',
-  'total_viewers',
-  'source_mode',
-] as const
-
-const COLLECTOR_STATUS_FIELDS = [
-  'status',
-  'last_attempt_at',
-  'last_success_at',
-  'last_failure_at',
-  'latest_bucket_minute',
-  'latest_collected_at',
-  'updated_at',
-] as const
-
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
 
     if (request.method === 'GET' && url.pathname === '/health') {
-      return Response.json({
+      return jsonResponse({
         ok: true,
         provider: env.PROVIDER,
-        mode: 'read_only_preflight',
-        remoteMigrationApplied: false,
+        mode: 'bounded_execution_cost_probe',
+        probeDay: PROBE_DAY,
+        reservedPrefix: PROBE_PREFIX,
+        productionExecutionAuthorizedByPackage: false,
         categoryCaptureEnabled: false,
-      }, { headers: { 'cache-control': 'no-store' } })
+      })
+    }
+
+    if (!authorized(request, env.PROBE_TOKEN)) {
+      return jsonResponse({ ok: false, error: 'unauthorized' }, 401)
     }
 
     if (request.method === 'POST' && url.pathname === '/inspect') {
-      if (!authorized(request, env.PROBE_TOKEN)) {
-        return Response.json({ ok: false, error: 'unauthorized' }, { status: 401 })
-      }
-
       try {
-        return Response.json(await inspectProvider(env), {
-          headers: { 'cache-control': 'no-store' },
-        })
+        const body = await optionalJson(request)
+        const identity = body?.runId ? buildIdentity(env.PROVIDER, body.runId) : null
+        return jsonResponse(await inspectProvider(env, identity))
       } catch (error) {
-        return Response.json({
+        return jsonResponse({
           ok: false,
           provider: env.PROVIDER,
           error: sanitizeError(error),
-          boundaries: planningBoundaries(),
-        }, {
-          status: 500,
-          headers: { 'cache-control': 'no-store' },
-        })
+          boundaries: probeBoundaries(),
+        }, 400)
       }
     }
 
-    return Response.json({ ok: false, error: 'not_found' }, { status: 404 })
+    if (request.method === 'POST' && url.pathname === '/probe') {
+      if (request.headers.get('x-viewloom-confirm') !== CONFIRMATION) {
+        return jsonResponse({ ok: false, error: 'confirmation_required' }, 409)
+      }
+
+      try {
+        const body = await requiredJson(request)
+        const identity = buildIdentity(env.PROVIDER, body.runId)
+        const result = await runBoundedProbe(env, identity)
+        return jsonResponse(result, result.ok ? 200 : 409)
+      } catch (error) {
+        return jsonResponse({
+          ok: false,
+          provider: env.PROVIDER,
+          error: sanitizeError(error),
+          boundaries: probeBoundaries(),
+        }, 400)
+      }
+    }
+
+    return jsonResponse({ ok: false, error: 'not_found' }, 404)
   },
 }
 
-async function inspectProvider(env: Env) {
+async function runBoundedProbe(env: Env, identity: ProbeIdentity) {
   const startedAt = Date.now()
+  const pre = await inspectProvider(env, identity)
+  const preconditions = {
+    providerValid: env.PROVIDER === 'twitch' || env.PROVIDER === 'kick',
+    schemaComplete: pre.schema.categorySchemaComplete,
+    healthEvidenceAvailable: pre.health.evidenceAvailable,
+    reservedRowsAbsent: pre.reserved.totalRows === 0,
+    providerLeakageZero: pre.providerLeakageRows === 0,
+  }
 
+  if (!Object.values(preconditions).every(Boolean)) {
+    return {
+      ok: false,
+      schemaVersion: 'viewloom-12a4-category-execution-cost-probe-result-v1',
+      provider: env.PROVIDER,
+      runId: identity.runId,
+      stage: 'precondition',
+      preconditions,
+      pre,
+      operation: null,
+      post: pre,
+      boundaries: probeBoundaries(),
+      workerWallMs: round(Date.now() - startedAt, 2),
+    }
+  }
+
+  const operationResults: D1Result<unknown>[] = []
+  let operationError: string | null = null
+  let cleanupError: string | null = null
+  let dictionaryFirstPassChanges = 0
+  let dictionarySecondPassChanges = 0
+  let probeRowsAfterWrite = 0
+  let categoryGeneratorQueries = 0
+  let operationStage = 'dictionary_first_pass'
+  const observedAt = new Date().toISOString()
+
+  try {
+    const firstDictionary = await dictionaryUpsert(env, identity, observedAt)
+    operationResults.push(firstDictionary)
+    categoryGeneratorQueries += 1
+    dictionaryFirstPassChanges = metaInteger(firstDictionary, 'changes')
+
+    operationStage = 'dictionary_second_pass'
+    const secondDictionary = await dictionaryUpsert(env, identity, observedAt)
+    operationResults.push(secondDictionary)
+    categoryGeneratorQueries += 1
+    dictionarySecondPassChanges = metaInteger(secondDictionary, 'changes')
+
+    operationStage = 'rollup_probe_row'
+    const rollup = await env.DB.prepare(`
+      INSERT INTO streamer_intraday_rollups (
+        provider, day, streamer_id, display_name, daily_rank,
+        total_viewer_minutes, peak_viewers, sample_count, observed_minutes,
+        hourly_json, selection_state, source_mode, contract_version, updated_at,
+        category_hourly_json, category_observed_samples,
+        category_missing_samples, category_contract_version
+      ) VALUES (?, ?, ?, ?, 2147483647, 0, 0, 1, 1, '[]',
+                'category_cost_probe', 'cost-probe', ?, ?, ?, 1, 0, ?)
+      ON CONFLICT(provider, day, streamer_id) DO UPDATE SET
+        category_hourly_json = excluded.category_hourly_json,
+        category_observed_samples = excluded.category_observed_samples,
+        category_missing_samples = excluded.category_missing_samples,
+        category_contract_version = excluded.category_contract_version,
+        updated_at = excluded.updated_at
+    `).bind(
+      env.PROVIDER,
+      identity.day,
+      identity.streamerId,
+      `ViewLoom ${env.PROVIDER} category cost probe`,
+      ANALYTICS_CONTRACT_VERSION,
+      observedAt,
+      categoryHourlyJson(identity.categoryId),
+      CATEGORY_CONTRACT_VERSION,
+    ).run()
+    operationResults.push(rollup)
+    categoryGeneratorQueries += 1
+
+    operationStage = 'status_probe_row'
+    const status = await env.DB.prepare(`
+      INSERT INTO intraday_rollup_status (
+        provider, day, candidate_streamers, retained_streamers,
+        retained_streamer_cap, source_snapshots, selection_state,
+        coverage_state, source_mode, contract_version, refreshed_at,
+        category_observed_streamers, category_observed_samples,
+        category_missing_samples, category_coverage_state
+      ) VALUES (?, ?, 1, 1, 1, 1, 'category_cost_probe',
+                'good', 'cost-probe', ?, ?, 1, 1, 0, 'observed')
+      ON CONFLICT(provider, day) DO UPDATE SET
+        category_observed_streamers = excluded.category_observed_streamers,
+        category_observed_samples = excluded.category_observed_samples,
+        category_missing_samples = excluded.category_missing_samples,
+        category_coverage_state = excluded.category_coverage_state,
+        refreshed_at = excluded.refreshed_at
+    `).bind(
+      env.PROVIDER,
+      identity.day,
+      ANALYTICS_CONTRACT_VERSION,
+      observedAt,
+    ).run()
+    operationResults.push(status)
+    categoryGeneratorQueries += 1
+
+    operationStage = 'verify_probe_rows'
+    const during = await inspectReserved(env, identity)
+    operationResults.push(...during.results)
+    probeRowsAfterWrite = during.counts.totalRows
+  } catch (error) {
+    operationError = sanitizeError(error)
+  } finally {
+    operationStage = 'cleanup'
+    try {
+      const cleanup = await env.DB.batch([
+        env.DB.prepare(`
+          DELETE FROM streamer_intraday_rollups
+          WHERE provider = ? AND day = ? AND streamer_id = ?
+        `).bind(env.PROVIDER, identity.day, identity.streamerId),
+        env.DB.prepare(`
+          DELETE FROM intraday_rollup_status
+          WHERE provider = ? AND day = ? AND selection_state = 'category_cost_probe'
+        `).bind(env.PROVIDER, identity.day),
+        env.DB.prepare(`
+          DELETE FROM provider_category_dictionary
+          WHERE provider = ? AND category_id = ?
+        `).bind(env.PROVIDER, identity.categoryId),
+      ])
+      operationResults.push(...cleanup)
+    } catch (error) {
+      cleanupError = sanitizeError(error)
+    }
+  }
+
+  const post = await inspectProvider(env, identity)
+  const operationMeta = summarizeMeta(operationResults)
+  const databaseSizeBefore = pre.query.sizeAfter
+  const databaseSizeAfter = post.query.sizeAfter
+  const databaseSizeDeltaBytes = databaseSizeBefore === null || databaseSizeAfter === null
+    ? null
+    : databaseSizeAfter - databaseSizeBefore
+
+  const checks = {
+    preconditionsPassed: Object.values(preconditions).every(Boolean),
+    dictionaryFirstPassChangedOnce: dictionaryFirstPassChanges === 1,
+    dictionarySecondPassNoOp: dictionarySecondPassChanges === 0,
+    probeRowsCreated: probeRowsAfterWrite === 3,
+    generatorQueryCountWithinLimit: categoryGeneratorQueries <= MAX_GENERATOR_QUERIES,
+    cleanupSucceeded: cleanupError === null,
+    cleanupRemainingRowsZero: post.reserved.totalRows === 0,
+    providerLeakageZero: post.providerLeakageRows === 0,
+    collectorStatePreserved: stableJson(pre.collectorStatus) === stableJson(post.collectorStatus),
+    categoryCaptureStillDisabled: true,
+  }
+
+  const ok = operationError === null && Object.values(checks).every(Boolean)
+
+  return {
+    ok,
+    schemaVersion: 'viewloom-12a4-category-execution-cost-probe-result-v1',
+    provider: env.PROVIDER,
+    runId: identity.runId,
+    stage: ok ? 'complete' : operationStage,
+    observedAt,
+    identity: {
+      day: identity.day,
+      streamerId: identity.streamerId,
+      categoryId: identity.categoryId,
+    },
+    preconditions,
+    measurements: {
+      categoryGeneratorQueries,
+      dictionaryFirstPassChanges,
+      dictionarySecondPassChanges,
+      probeRowsAfterWrite,
+      probeCleanupRemainingRows: post.reserved.totalRows,
+      providerLeakageRows: post.providerLeakageRows,
+      databaseSizeBefore,
+      databaseSizeAfter,
+      databaseSizeDeltaBytes,
+      operation: operationMeta,
+      workerWallMs: round(Date.now() - startedAt, 2),
+    },
+    checks,
+    errors: {
+      operation: operationError,
+      cleanup: cleanupError,
+    },
+    pre,
+    post,
+    boundaries: probeBoundaries(),
+  }
+}
+
+async function dictionaryUpsert(env: Env, identity: ProbeIdentity, observedAt: string) {
+  return env.DB.prepare(`
+    WITH incoming(category_id, category_name) AS (VALUES (?, ?))
+    INSERT INTO provider_category_dictionary (
+      provider, category_id, category_name,
+      first_observed_at, last_observed_at, contract_version
+    )
+    SELECT ?, category_id, category_name, ?, ?, ?
+    FROM incoming
+    ON CONFLICT(provider, category_id) DO UPDATE SET
+      category_name = excluded.category_name,
+      last_observed_at = excluded.last_observed_at,
+      contract_version = excluded.contract_version
+    WHERE provider_category_dictionary.category_name != excluded.category_name
+       OR provider_category_dictionary.contract_version != excluded.contract_version
+  `).bind(
+    identity.categoryId,
+    identity.categoryName,
+    env.PROVIDER,
+    observedAt,
+    observedAt,
+    CATEGORY_CONTRACT_VERSION,
+  ).run()
+}
+
+async function inspectProvider(env: Env, identity: ProbeIdentity | null) {
+  const startedAt = Date.now()
   const schemaResults = await env.DB.batch([
     env.DB.prepare(`
       SELECT COUNT(*) AS count
@@ -111,100 +343,57 @@ async function inspectProvider(env: Env) {
     env.DB.prepare(`
       SELECT COUNT(*) AS count
       FROM sqlite_master
-      WHERE type = 'table' AND name = 'minute_snapshots'
-    `),
-    env.DB.prepare(`
-      SELECT COUNT(*) AS count
-      FROM sqlite_master
       WHERE type = 'table' AND name = 'collector_status'
-    `),
-    env.DB.prepare(`
-      SELECT name
-      FROM pragma_table_info('minute_snapshots')
-      ORDER BY cid
-    `),
-    env.DB.prepare(`
-      SELECT name
-      FROM pragma_table_info('collector_status')
-      ORDER BY cid
     `),
   ])
 
-  const [
-    dictionaryResult,
-    rollupColumnsResult,
-    statusColumnsResult,
-    minuteTableResult,
-    collectorTableResult,
-    minuteColumnsResult,
-    collectorColumnsResult,
-  ] = schemaResults
-
-  const dictionaryCount = integer(firstValue(dictionaryResult, 'count'))
-  const rollupColumns = stringValues(rollupColumnsResult, 'name')
-  const statusColumns = stringValues(statusColumnsResult, 'name')
-  const minuteSnapshotsTablePresent = integer(firstValue(minuteTableResult, 'count')) === 1
-  const collectorStatusTablePresent = integer(firstValue(collectorTableResult, 'count')) === 1
-  const minuteSnapshotColumns = stringValues(minuteColumnsResult, 'name')
-  const collectorStatusColumns = stringValues(collectorColumnsResult, 'name')
-
+  const dictionaryCount = integer(firstValue(schemaResults[0], 'count'))
+  const rollupColumns = stringValues(schemaResults[1], 'name')
+  const statusColumns = stringValues(schemaResults[2], 'name')
+  const collectorStatusTablePresent = integer(firstValue(schemaResults[3], 'count')) === 1
   const detailResults: D1Result<unknown>[] = []
-  let latest: Record<string, unknown> | null = null
-  let collector: Record<string, unknown> | null = null
-  let providerLeakageRows = 0
 
-  if (minuteSnapshotsTablePresent && minuteSnapshotColumns.includes('provider')) {
-    const latestFields = existingFields(LATEST_SNAPSHOT_FIELDS, minuteSnapshotColumns)
-    const orderField = minuteSnapshotColumns.includes('bucket_minute')
-      ? 'bucket_minute'
-      : minuteSnapshotColumns.includes('collected_at')
-        ? 'collected_at'
-        : null
+  const latestResult = await env.DB.prepare(`
+    SELECT bucket_minute, collected_at, stream_count, total_viewers, source_mode
+    FROM minute_snapshots
+    WHERE provider = ?
+    ORDER BY bucket_minute DESC
+    LIMIT 1
+  `).bind(env.PROVIDER).all()
+  detailResults.push(latestResult)
+  const latestSnapshot = firstRow(latestResult)
 
-    if (latestFields.length > 0 && orderField) {
-      const latestResult = await env.DB.prepare(`
-        SELECT ${latestFields.map(quoteIdentifier).join(', ')}
-        FROM minute_snapshots
-        WHERE provider = ?
-        ORDER BY ${quoteIdentifier(orderField)} DESC
-        LIMIT 1
-      `).bind(env.PROVIDER).all()
-      detailResults.push(latestResult)
-      latest = pickRow(firstRow(latestResult), LATEST_SNAPSHOT_FIELDS)
-    }
-
-    const providerLeakageResult = await env.DB.prepare(`
-      SELECT COUNT(*) AS count
-      FROM minute_snapshots
-      WHERE provider != ?
+  let collectorStatus: Record<string, unknown> | null = null
+  if (collectorStatusTablePresent) {
+    const collectorResult = await env.DB.prepare(`
+      SELECT status, last_attempt_at, last_success_at, last_failure_at,
+             latest_bucket_minute, latest_collected_at, updated_at
+      FROM collector_status
+      WHERE provider = ?
+      LIMIT 1
     `).bind(env.PROVIDER).all()
-    detailResults.push(providerLeakageResult)
-    providerLeakageRows = integer(firstValue(providerLeakageResult, 'count'))
+    detailResults.push(collectorResult)
+    collectorStatus = firstRow(collectorResult)
   }
 
-  if (collectorStatusTablePresent && collectorStatusColumns.includes('provider')) {
-    const collectorFields = existingFields(COLLECTOR_STATUS_FIELDS, collectorStatusColumns)
-    if (collectorFields.length > 0) {
-      const collectorResult = await env.DB.prepare(`
-        SELECT ${collectorFields.map(quoteIdentifier).join(', ')}
-        FROM collector_status
-        WHERE provider = ?
-        LIMIT 1
-      `).bind(env.PROVIDER).all()
-      detailResults.push(collectorResult)
-      collector = pickRow(firstRow(collectorResult), COLLECTOR_STATUS_FIELDS)
-    }
-  }
+  const reserved = identity
+    ? await inspectReserved(env, identity)
+    : { counts: emptyReservedCounts(), results: [] as D1Result<unknown>[] }
+  detailResults.push(...reserved.results)
 
-  const healthSource = collector ? 'collector_status' : latest ? 'latest_snapshot' : 'unavailable'
-  const meta = summarizeMeta([...schemaResults, ...detailResults])
+  const leakage = identity
+    ? await inspectLeakage(env, identity)
+    : { count: 0, results: [] as D1Result<unknown>[] }
+  detailResults.push(...leakage.results)
+
+  const healthSource = collectorStatus ? 'collector_status' : latestSnapshot ? 'latest_snapshot' : 'unavailable'
 
   return {
     ok: true,
-    schemaVersion: 'viewloom-12a4-category-cost-preflight-v2',
+    schemaVersion: 'viewloom-12a4-category-execution-cost-inspect-v1',
     provider: env.PROVIDER,
     observedAt: new Date().toISOString(),
-    mode: 'read_only_preflight',
+    mode: 'bounded_execution_cost_probe_inspect',
     schema: {
       dictionaryTablePresent: dictionaryCount === 1,
       presentRollupColumns: rollupColumns,
@@ -213,41 +402,135 @@ async function inspectProvider(env: Env) {
         dictionaryCount === 1
         && rollupColumns.length === CATEGORY_ROLLUP_COLUMNS.length
         && statusColumns.length === CATEGORY_STATUS_COLUMNS.length,
-      minuteSnapshotsTablePresent,
-      collectorStatusTablePresent,
-      minuteSnapshotColumns,
-      collectorStatusColumns,
     },
     health: {
       source: healthSource,
       evidenceAvailable: healthSource !== 'unavailable',
-      collectorStatusAvailable: Boolean(collector),
-      latestSnapshotAvailable: Boolean(latest),
+      collectorStatusAvailable: Boolean(collectorStatus),
+      latestSnapshotAvailable: Boolean(latestSnapshot),
     },
-    latestSnapshot: latest,
-    collectorStatus: collector,
-    providerLeakageRows,
-    query: meta,
+    latestSnapshot,
+    collectorStatus,
+    reserved: reserved.counts,
+    providerLeakageRows: leakage.count,
+    query: summarizeMeta([...schemaResults, ...detailResults]),
     workerWallMs: round(Date.now() - startedAt, 2),
-    boundaries: planningBoundaries(),
+    boundaries: probeBoundaries(),
   }
 }
 
-function planningBoundaries() {
+async function inspectReserved(env: Env, identity: ProbeIdentity) {
+  const results = await env.DB.batch([
+    env.DB.prepare(`
+      SELECT COUNT(*) AS count
+      FROM streamer_intraday_rollups
+      WHERE provider = ? AND day = ? AND streamer_id = ?
+    `).bind(env.PROVIDER, identity.day, identity.streamerId),
+    env.DB.prepare(`
+      SELECT COUNT(*) AS count
+      FROM intraday_rollup_status
+      WHERE provider = ? AND day = ? AND selection_state = 'category_cost_probe'
+    `).bind(env.PROVIDER, identity.day),
+    env.DB.prepare(`
+      SELECT COUNT(*) AS count
+      FROM provider_category_dictionary
+      WHERE provider = ? AND category_id = ?
+    `).bind(env.PROVIDER, identity.categoryId),
+  ])
+  const counts = {
+    rollupRows: integer(firstValue(results[0], 'count')),
+    statusRows: integer(firstValue(results[1], 'count')),
+    dictionaryRows: integer(firstValue(results[2], 'count')),
+    totalRows: 0,
+  }
+  counts.totalRows = counts.rollupRows + counts.statusRows + counts.dictionaryRows
+  return { counts, results }
+}
+
+async function inspectLeakage(env: Env, identity: ProbeIdentity) {
+  const results = await env.DB.batch([
+    env.DB.prepare(`
+      SELECT COUNT(*) AS count
+      FROM streamer_intraday_rollups
+      WHERE day = ? AND streamer_id = ? AND provider != ?
+    `).bind(identity.day, identity.streamerId, env.PROVIDER),
+    env.DB.prepare(`
+      SELECT COUNT(*) AS count
+      FROM intraday_rollup_status
+      WHERE day = ? AND selection_state = 'category_cost_probe' AND provider != ?
+    `).bind(identity.day, env.PROVIDER),
+    env.DB.prepare(`
+      SELECT COUNT(*) AS count
+      FROM provider_category_dictionary
+      WHERE category_id = ? AND provider != ?
+    `).bind(identity.categoryId, env.PROVIDER),
+  ])
+  const count = results.reduce((total, result) => total + integer(firstValue(result, 'count')), 0)
+  return { count, results }
+}
+
+function buildIdentity(provider: Provider, runIdValue: unknown): ProbeIdentity {
+  const runId = String(runIdValue ?? '').trim().toLowerCase()
+  if (!/^[a-z0-9][a-z0-9-]{7,63}$/.test(runId)) throw new Error('invalid_reserved_probe_run_id')
+  const base = `${PROBE_PREFIX}${provider}:${runId}`
   return {
-    readOnly: true,
-    remoteMigrationAppliedByWorker: false,
-    categoryCaptureEnabledByWorker: false,
-    productionRowsWrittenByWorker: false,
+    runId,
+    day: PROBE_DAY,
+    streamerId: `${base}:streamer`,
+    categoryId: `${base}:category`,
+    categoryName: `ViewLoom ${provider} category cost probe`,
+  }
+}
+
+function categoryHourlyJson(categoryId: string): string {
+  return JSON.stringify({
+    v: 1,
+    c: [categoryId],
+    r: [0],
+    s: [1],
+    m: [0],
+    o: 1,
+    x: 0,
+  })
+}
+
+function probeBoundaries() {
+  return {
+    reservedIdentifiersOnly: true,
+    fixedHistoricalProbeDay: PROBE_DAY,
+    providerSeparated: true,
+    remoteSchemaApply: false,
+    categoryCaptureEnablement: false,
+    collectorStatusWrites: false,
     newCron: false,
     backfill: false,
-    rawRetentionChanged: false,
-    crossProviderOperation: false,
+    rawRetentionChange: false,
+    categoryAnalyticsUi: false,
+    crossProviderCategoryIdentity: false,
+    combinedProviderCategoryRanking: false,
   }
+}
+
+function emptyReservedCounts() {
+  return { rollupRows: 0, statusRows: 0, dictionaryRows: 0, totalRows: 0 }
 }
 
 function authorized(request: Request, token: string): boolean {
   return Boolean(token) && request.headers.get('authorization') === `Bearer ${token}`
+}
+
+async function optionalJson(request: Request): Promise<Record<string, unknown> | null> {
+  const text = await request.text()
+  if (!text.trim()) return null
+  const value = JSON.parse(text)
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('invalid_json_body')
+  return value as Record<string, unknown>
+}
+
+async function requiredJson(request: Request): Promise<Record<string, unknown>> {
+  const value = await optionalJson(request)
+  if (!value) throw new Error('json_body_required')
+  return value
 }
 
 function firstRow(result: D1Result<unknown>): Record<string, unknown> | null {
@@ -266,33 +549,6 @@ function stringValues(result: D1Result<unknown>, key: string): string[] {
     .filter(Boolean)
 }
 
-function existingFields<const T extends readonly string[]>(
-  fields: T,
-  available: string[],
-): T[number][] {
-  const availableSet = new Set(available)
-  return fields.filter((field) => availableSet.has(field))
-}
-
-function quoteIdentifier(identifier: string): string {
-  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(identifier)) {
-    throw new Error('invalid_identifier')
-  }
-  return `"${identifier}"`
-}
-
-function pickRow<const T extends readonly string[]>(
-  row: Record<string, unknown> | null,
-  fields: T,
-): Partial<Record<T[number], unknown>> | null {
-  if (!row) return null
-  const picked: Partial<Record<T[number], unknown>> = {}
-  for (const field of fields) {
-    if (Object.prototype.hasOwnProperty.call(row, field)) picked[field] = row[field]
-  }
-  return picked
-}
-
 function summarizeMeta(results: D1Result<unknown>[]): MetaSummary {
   const summary: MetaSummary = {
     statements: results.length,
@@ -302,7 +558,6 @@ function summarizeMeta(results: D1Result<unknown>[]): MetaSummary {
     changes: 0,
     sizeAfter: null,
   }
-
   for (const result of results) {
     const meta = (result.meta ?? {}) as Record<string, unknown>
     summary.durationMs += numeric(meta.duration)
@@ -312,9 +567,12 @@ function summarizeMeta(results: D1Result<unknown>[]): MetaSummary {
     const sizeAfter = Number(meta.size_after)
     if (Number.isFinite(sizeAfter)) summary.sizeAfter = sizeAfter
   }
-
   summary.durationMs = round(summary.durationMs, 3)
   return summary
+}
+
+function metaInteger(result: D1Result<unknown>, key: string): number {
+  return integer((result.meta as Record<string, unknown> | undefined)?.[key])
 }
 
 function integer(value: unknown): number {
@@ -332,9 +590,21 @@ function round(value: number, digits: number): number {
   return Math.round(value * factor) / factor
 }
 
+function stableJson(value: unknown): string {
+  return JSON.stringify(value ?? null)
+}
+
 function sanitizeError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error)
   return message
     .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, 'Bearer [redacted]')
+    .replace(/[0-9a-f]{32,}/gi, '[redacted-id]')
     .slice(0, 240)
+}
+
+function jsonResponse(value: unknown, status = 200): Response {
+  return Response.json(value, {
+    status,
+    headers: { 'cache-control': 'no-store' },
+  })
 }
