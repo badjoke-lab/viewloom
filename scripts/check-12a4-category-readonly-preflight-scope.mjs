@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process'
 const allowed = [
   '.github/workflows/analytics-12a4-category-readonly-preflight.yml',
   'docs/audits/12a4-category-readonly-preflight-contract.json',
+  'docs/audits/12a4-category-readonly-preflight-trigger.json',
   'docs/work-in-progress/phase12a4-category-readonly-preflight.md',
   'scripts/check-12a4-category-readonly-preflight-scope.mjs',
   'scripts/collect-12a4-category-readonly-preflight-evidence.mjs',
