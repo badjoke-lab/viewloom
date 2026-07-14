@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v11",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v12",
   "workstream": "12A-4 provider-specific category capture foundation",
-  "status": "12a4_category_storage_accepted_migration_runtime_current",
+  "status": "12a4_disabled_runtime_accepted_execution_cost_probe_current",
   "design": {
     "status": "accepted",
     "pr": 494,
@@ -138,6 +138,45 @@
     "runtimeCaptureAuthorized": false,
     "providerSeparated": true
   },
+  "categoryMigrationRuntime": {
+    "status": "accepted",
+    "implementationPr": 516,
+    "mergeSha": "5d58b267a18399b5496a1f01aae7125a63f061c4",
+    "contract": "docs/audits/12a4-category-migration-runtime-contract.json",
+    "migrationFile": "db/d1/005_category_capture.sql",
+    "repositoryMigrationCandidateImplemented": true,
+    "localApplyVerified": true,
+    "idempotencyVerified": true,
+    "disabledByDefault": true,
+    "categoryGeneratorMaximumQueries": 12,
+    "remoteMigrationApplied": false,
+    "runtimeCaptureStarted": false,
+    "providerSeparated": true
+  },
+  "disabledRuntimePostMerge": {
+    "status": "accepted",
+    "acceptancePr": 517,
+    "evidenceFreezePr": 518,
+    "workflowRunId": 29278511533,
+    "deploymentRunId": 29277503634,
+    "evidence": "docs/audits/12a4-disabled-runtime-postmerge-evidence.json",
+    "twitchNaturalSnapshotContinued": true,
+    "kickNaturalSnapshotContinued": true,
+    "productionCategoryPayloadFieldsAbsent": true,
+    "productionCategorySchemaAbsent": true,
+    "providerSeparated": true,
+    "temporaryVerifiersRetained": false
+  },
+  "categoryExecutionCostProbe": {
+    "status": "planning_current",
+    "trackingIssue": 519,
+    "contract": "docs/audits/12a4-category-execution-cost-probe-contract.json",
+    "readOnlyPreflightImplemented": true,
+    "localControlledMigrationFixtureImplemented": true,
+    "remoteMigrationApplyAuthorized": false,
+    "productionProbeAuthorized": false,
+    "runtimeCaptureAuthorized": false
+  },
   "closedBlockers": [
     "remote_schema_not_applied",
     "collector_worker_deployment_not_evidenced",
@@ -146,7 +185,9 @@
     "bounded_generator_not_implemented",
     "post_merge_accumulation_not_verified",
     "category_source_unverified",
-    "category_storage_design_unmeasured"
+    "category_storage_design_unmeasured",
+    "category_migration_runtime_not_implemented",
+    "disabled_runtime_postmerge_not_verified"
   ],
   "generation": {
     "status": "enabled_and_accumulating",
@@ -164,6 +205,9 @@
     "storageDesignAccepted": true,
     "selectedStorageModel": "embedded_hourly",
     "repositoryMigrationCandidateAuthorized": true,
+    "repositoryMigrationCandidateImplemented": true,
+    "disabledRuntimeProductionAccepted": true,
+    "productionSchemaPresent": false,
     "remoteMigrationApplyAuthorized": false,
     "productionCostProbeRequired": true,
     "runtimeCaptureAuthorized": false,
@@ -175,15 +219,13 @@
     "backfillAuthorized": false
   },
   "currentWorkstream": {
-    "phase": "12A-4",
-    "name": "provider-specific category migration and disabled runtime implementation",
-    "sourceAuditAccepted": true,
-    "storageDesignAccepted": true,
-    "repositoryMigrationStarted": false,
-    "runtimeImplementationStarted": false,
+    "phase": "12A-4-3",
+    "name": "production category execution-cost probe and remote migration decision",
+    "trackingIssue": 519,
+    "planningPackageCurrent": true,
     "remoteMigrationApplied": false,
     "runtimeCaptureStarted": false,
     "crossProviderAnalyticsAllowed": false
   },
-  "nextWorkstream": "12A-4 provider-specific category migration and disabled runtime implementation"
+  "nextWorkstream": "12A-4 provider-separated production capture acceptance"
 }

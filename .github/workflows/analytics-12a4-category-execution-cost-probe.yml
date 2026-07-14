@@ -1,0 +1,108 @@
+name: Analytics 12A4 Category Execution Cost Probe Planning
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - '.github/workflows/analytics-12a4-category-execution-cost-probe.yml'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'README.md'
+      - 'docs/README.md'
+      - 'docs/audits/12a2-current-gate-state.json'
+      - 'docs/audits/12a4-category-execution-cost-probe-contract.json'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/work-in-progress/phase12a4-category-execution-cost-probe.md'
+      - 'docs/work-in-progress/phase12a4-category-migration-disabled-runtime.md'
+      - 'docs/work-in-progress/phase12a4-disabled-runtime-postmerge.md'
+      - 'scripts/check-12a4-category-execution-cost-probe-scope.mjs'
+      - 'scripts/test-12a4-category-execution-cost-probe.py'
+      - 'scripts/verify-12a4-category-execution-cost-probe.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - 'workers/category-cost-probe/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-category-cost-probe-planning-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify branch scope
+        run: node scripts/check-12a4-category-execution-cost-probe-scope.mjs
+
+      - name: Verify planning contract and safety boundary
+        run: node scripts/verify-12a4-category-execution-cost-probe.mjs
+
+      - name: Verify canonical development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Run local controlled migration and cost-probe fixture
+        run: python scripts/test-12a4-category-execution-cost-probe.py
+
+      - name: Bundle Twitch read-only preflight Worker without deploying
+        run: |
+          mkdir -p artifacts/12a4-category-cost-probe/twitch
+          cd workers/category-cost-probe
+          pnpm dlx wrangler@4 deploy --dry-run --config wrangler.twitch.toml \
+            --outdir ../../artifacts/12a4-category-cost-probe/twitch
+
+      - name: Bundle Kick read-only preflight Worker without deploying
+        run: |
+          mkdir -p artifacts/12a4-category-cost-probe/kick
+          cd workers/category-cost-probe
+          pnpm dlx wrangler@4 deploy --dry-run --config wrangler.kick.toml \
+            --outdir ../../artifacts/12a4-category-cost-probe/kick
+
+      - name: Publish planning boundary summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4 Category Execution-Cost Probe Planning'
+            echo
+            echo '- Tracking issue: #519'
+            echo '- Read-only provider preflight Worker: added'
+            echo '- Local controlled migration/idempotency fixture: added'
+            echo '- Dictionary unchanged-name no-op fixture: added'
+            echo '- Canonical development policy synchronized: yes'
+            echo '- Remote migration applied: no'
+            echo '- Production category capture enabled: no'
+            echo '- Production category rows written: no'
+            echo '- Cloudflare credentials used: no'
+            echo '- Production deploy job included: no'
+            echo '- New cron: no'
+            echo '- Backfill: no'
+            echo '- Raw retention changed: no'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload local planning artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a4-category-execution-cost-probe-planning
+          path: artifacts/12a4-category-cost-probe
+          if-no-files-found: warn

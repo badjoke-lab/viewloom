@@ -37,14 +37,20 @@ for (const path of [
   'docs/audits/12a4-category-source-audit-evidence.json',
   'docs/audits/12a4-category-storage-design-contract.json',
   'docs/audits/12a4-category-storage-budget-evidence.json',
+  'docs/audits/12a4-category-migration-runtime-contract.json',
+  'docs/audits/12a4-disabled-runtime-postmerge-evidence.json',
+  'docs/audits/12a4-category-execution-cost-probe-contract.json',
   'docs/operations/12a3-generator-enablement-acceptance-2026-07-12.md',
   'docs/operations/12a3-postmerge-acceptance-2026-07-12.md',
   'docs/operations/12a4-category-source-audit-2026-07-12.md',
   'docs/operations/12a4-category-storage-design-acceptance-2026-07-14.md',
   'docs/work-in-progress/phase12a4-category-migration-disabled-runtime.md',
+  'docs/work-in-progress/phase12a4-disabled-runtime-postmerge.md',
+  'docs/work-in-progress/phase12a4-category-execution-cost-probe.md',
   'workers/shared/intraday-rollup.ts',
   'workers/collector-twitch/src/entry.ts',
   'workers/collector-kick/src/entry.ts',
+  'workers/category-cost-probe/src/index.ts',
 ]) assert.equal(exists(path), true, `missing file: ${path}`)
 
 for (const retired of [
@@ -85,6 +91,8 @@ for (const path of canonicalDocs) {
   assert.equal(source.includes('category storage design not accepted'), false, `${path}: stale category storage state`)
   assert.equal(source.includes('Current workstream 12A-4 category storage design and budget gate'), false, `${path}: stale current workstream`)
   assert.equal(source.includes('Current workstream: 12A-4 provider-specific category storage design and budget gate'), false, `${path}: stale current workstream`)
+  assert.equal(source.includes('Current workstream 12A-4 category migration and disabled runtime implementation'), false, `${path}: stale 12A-4-2 workstream`)
+  assert.equal(source.includes('Current workstream: 12A-4 provider-specific category migration and disabled runtime implementation'), false, `${path}: stale 12A-4-2 workstream`)
 }
 
 const enablement = json('docs/audits/12a3-generator-enablement-evidence.json')
@@ -198,50 +206,92 @@ assert.equal(sourceEvidence.providers.kick.category.captureApproved, true)
 assert.equal(sourceEvidence.crossProviderIdentity.categoryIdentityEquivalenceAllowed, false)
 assert.equal(sourceEvidence.crossProviderIdentity.combinedProviderCategoryRankingAllowed, false)
 
+const disabledRuntime = json('docs/audits/12a4-disabled-runtime-postmerge-evidence.json')
+assert.equal(disabledRuntime.status, 'accepted')
+assert.equal(disabledRuntime.acceptanceIdentity.pr, 517)
+assert.equal(disabledRuntime.merge.pr, 516)
+assert.equal(disabledRuntime.deployment.runId, 29277503634)
+assert.equal(disabledRuntime.deployment.gatePass, true)
+assert.equal(disabledRuntime.providers.twitch.providerGatePass, true)
+assert.equal(disabledRuntime.providers.kick.providerGatePass, true)
+assert.equal(disabledRuntime.gate.disabledRuntimePostMergePass, true)
+assert.equal(disabledRuntime.gate.remoteMigrationApplyAuthorized, false)
+assert.equal(disabledRuntime.gate.runtimeCaptureEnablementAuthorized, false)
+assert.equal(disabledRuntime.boundaries.productionSchemaChangedByAcceptance, false)
+assert.equal(disabledRuntime.boundaries.productionRowsWrittenByAcceptance, false)
+assert.equal(disabledRuntime.boundaries.categoryRuntimeEnabled, false)
+assert.equal(disabledRuntime.boundaries.temporaryVerifiersRetained, false)
+
+const probeContract = json('docs/audits/12a4-category-execution-cost-probe-contract.json')
+assert.equal(probeContract.schemaVersion, 'viewloom-12a4-category-execution-cost-probe-contract-v1')
+assert.equal(probeContract.status, 'planning_package_ready')
+assert.equal(probeContract.trackingIssue, 519)
+assert.equal(probeContract.acceptedStartingPoint.implementationPr, 516)
+assert.equal(probeContract.acceptedStartingPoint.evidenceFreezePr, 518)
+assert.equal(probeContract.acceptanceThresholds.categoryGeneratorQueriesMax, 12)
+assert.equal(probeContract.acceptanceThresholds.dictionarySecondPassChangesMax, 0)
+assert.equal(probeContract.planningPrBoundary.remoteMigrationApply, false)
+assert.equal(probeContract.planningPrBoundary.productionCategoryCapture, false)
+assert.equal(probeContract.planningPrBoundary.cloudflareSecretsRequired, false)
+assert.equal(probeContract.planningPrBoundary.productionDeploymentJobIncluded, false)
+
 const state = json('docs/audits/12a2-current-gate-state.json')
-assert.equal(state.schemaVersion, 'viewloom-12a2-current-gate-state-v11')
-assert.equal(state.status, '12a4_category_storage_accepted_migration_runtime_current')
+assert.equal(state.schemaVersion, 'viewloom-12a2-current-gate-state-v12')
+assert.equal(state.status, '12a4_disabled_runtime_accepted_execution_cost_probe_current')
 assert.equal(state.categorySourceAudit.pr, 513)
 assert.equal(state.categorySourceAudit.lifecyclePass, true)
 assert.equal(state.categoryStorageDesign.pr, 514)
 assert.equal(state.categoryStorageDesign.mergeSha, 'd3c219670af2189fe9acd51ecd67777481162a29')
 assert.equal(state.categoryStorageDesign.selectedModel, 'embedded_hourly')
-assert.equal(state.categoryStorageDesign.repositoryMigrationCandidateAuthorized, true)
-assert.equal(state.categoryStorageDesign.remoteMigrationApplyAuthorized, false)
-assert.equal(state.categoryStorageDesign.runtimeCaptureAuthorized, false)
+assert.equal(state.categoryMigrationRuntime.implementationPr, 516)
+assert.equal(state.categoryMigrationRuntime.repositoryMigrationCandidateImplemented, true)
+assert.equal(state.disabledRuntimePostMerge.acceptancePr, 517)
+assert.equal(state.disabledRuntimePostMerge.evidenceFreezePr, 518)
+assert.equal(state.disabledRuntimePostMerge.productionCategorySchemaAbsent, true)
+assert.equal(state.categoryExecutionCostProbe.trackingIssue, 519)
+assert.equal(state.categoryExecutionCostProbe.status, 'planning_current')
+assert.equal(state.categoryExecutionCostProbe.remoteMigrationApplyAuthorized, false)
 assert.equal(state.categoryCapture.sourceContractAccepted, true)
-assert.equal(state.categoryCapture.storageDesignAuthorized, true)
 assert.equal(state.categoryCapture.storageDesignAccepted, true)
-assert.equal(state.categoryCapture.selectedStorageModel, 'embedded_hourly')
-assert.equal(state.categoryCapture.repositoryMigrationCandidateAuthorized, true)
+assert.equal(state.categoryCapture.repositoryMigrationCandidateImplemented, true)
+assert.equal(state.categoryCapture.disabledRuntimeProductionAccepted, true)
+assert.equal(state.categoryCapture.productionSchemaPresent, false)
 assert.equal(state.categoryCapture.remoteMigrationApplyAuthorized, false)
 assert.equal(state.categoryCapture.productionCostProbeRequired, true)
 assert.equal(state.categoryCapture.runtimeCaptureAuthorized, false)
 assert.equal(state.categoryCapture.runtimeCaptureStarted, false)
 assert.equal(state.categoryCapture.crossProviderIdentityAllowed, false)
 assert.equal(state.categoryCapture.combinedProviderRankingAllowed, false)
-assert.equal(state.currentWorkstream.phase, '12A-4')
-assert.equal(state.currentWorkstream.name, 'provider-specific category migration and disabled runtime implementation')
-assert.equal(state.currentWorkstream.storageDesignAccepted, true)
+assert.equal(state.currentWorkstream.phase, '12A-4-3')
+assert.equal(state.currentWorkstream.name, 'production category execution-cost probe and remote migration decision')
+assert.equal(state.currentWorkstream.trackingIssue, 519)
 assert.equal(state.currentWorkstream.remoteMigrationApplied, false)
 assert.equal(state.currentWorkstream.runtimeCaptureStarted, false)
-assert.equal(state.nextWorkstream, '12A-4 provider-specific category migration and disabled runtime implementation')
+assert.equal(state.nextWorkstream, '12A-4 provider-separated production capture acceptance')
 
-const wip = read('docs/work-in-progress/phase12a4-category-migration-disabled-runtime.md')
+const completedWip = read('docs/work-in-progress/phase12a4-category-migration-disabled-runtime.md')
 for (const fragment of [
-  'repository migration candidate: authorized',
-  'remote migration apply: unauthorized',
-  'runtime capture: unauthorized',
+  'Status: accepted through PR #518',
+  'repository migration candidate implemented',
   'no CATEGORY_CAPTURE_ENABLED value in either committed wrangler.toml',
   'no production migration apply',
-  'no backfill',
-  'no new cron',
-]) assert.ok(wip.includes(fragment), `current category WIP missing: ${fragment}`)
+  'production cost probe remains required',
+]) assert.ok(completedWip.includes(fragment), `completed category WIP missing: ${fragment}`)
+
+const currentWip = read('docs/work-in-progress/phase12a4-category-execution-cost-probe.md')
+for (const fragment of [
+  'Status: current',
+  'Tracking issue: #519',
+  'read-only provider preflight Worker',
+  'no remote D1 migration',
+  'no CATEGORY_CAPTURE_ENABLED value',
+  'no production category rows',
+]) assert.ok(currentWip.includes(fragment), `current category cost WIP missing: ${fragment}`)
 
 console.log('Development and documentation policy verification passed.')
 console.log('- 12A-3 generation is enabled and accumulating')
 console.log('- 12A-4 category source audit accepted PR #513')
 console.log('- 12A-4 category storage design accepted PR #514')
-console.log('- selected category storage model: embedded_hourly')
-console.log('- current workstream: provider-specific category migration and disabled runtime implementation')
+console.log('- 12A-4 migration and disabled runtime accepted through PR #518')
+console.log('- current workstream: production category execution-cost probe')
 console.log('- remote category migration and runtime capture remain disabled')

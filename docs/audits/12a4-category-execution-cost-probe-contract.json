@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "viewloom-12a4-category-execution-cost-probe-contract-v1",
+  "workstream": "12A-4 production category execution-cost probe and remote migration decision",
+  "status": "planning_package_ready",
+  "trackingIssue": 519,
+  "acceptedStartingPoint": {
+    "implementationPr": 516,
+    "disabledRuntimeAcceptancePr": 517,
+    "evidenceFreezePr": 518,
+    "repositoryMigrationCandidateImplemented": true,
+    "disabledRuntimeDeployed": true,
+    "productionCategorySchemaPresent": false,
+    "productionCategoryCaptureEnabled": false,
+    "providerSeparated": true
+  },
+  "probeOrder": [
+    "read_only_preflight",
+    "controlled_schema_apply_decision",
+    "schema_apply_with_category_capture_disabled",
+    "provider_separated_bounded_cost_probe",
+    "cleanup_and_post_probe_verification",
+    "capture_enablement_decision"
+  ],
+  "providerBindings": {
+    "twitch": "DB_TWITCH_HOT",
+    "kick": "DB_KICK_HOT"
+  },
+  "requiredMeasurements": [
+    "database_size_before_and_after",
+    "schema_apply_wall_ms",
+    "d1_rows_read",
+    "d1_rows_written",
+    "d1_changes",
+    "d1_sql_duration_ms",
+    "worker_wall_ms",
+    "collector_latency_delta_ms",
+    "dictionary_first_pass_changes",
+    "dictionary_second_pass_changes",
+    "category_generator_query_count",
+    "probe_cleanup_remaining_rows"
+  ],
+  "acceptanceThresholds": {
+    "schemaApplyWallMsPerProviderMax": 15000,
+    "probeWorkerWallMsPerProviderMax": 15000,
+    "collectorLatencyDeltaMsPerProviderMax": 2000,
+    "categoryGeneratorQueriesMax": 12,
+    "dictionarySecondPassChangesMax": 0,
+    "probeCleanupRemainingRowsMax": 0,
+    "schemaSizeIncreaseMbPerProviderMax": 5,
+    "providerLeakageRowsMax": 0,
+    "temporaryWorkersRetained": false
+  },
+  "stopConditions": [
+    "provider_database_binding_mismatch",
+    "foreign_provider_rows_detected",
+    "category_capture_flag_present_before_authorized_enablement",
+    "schema_apply_not_idempotent",
+    "schema_size_increase_exceeds_threshold",
+    "collector_latency_delta_exceeds_threshold",
+    "dictionary_second_pass_changes_nonzero",
+    "category_generator_query_count_exceeds_12",
+    "probe_cleanup_leaves_rows",
+    "collector_success_state_replaced_by_category_failure",
+    "temporary_worker_delete_failure"
+  ],
+  "rollbackAndDisable": {
+    "categoryCaptureFlag": "CATEGORY_CAPTURE_ENABLED",
+    "defaultCommittedValue": "absent",
+    "disableAction": "remove_or_leave_absent_CATEGORY_CAPTURE_ENABLED_and_redeploy_provider_collectors",
+    "schemaRollback": "do_not_drop_columns_in_incident_response; disable runtime and preserve provider-separated evidence",
+    "probeCleanup": "delete_reserved_probe_rows_and_probe_dictionary_entries",
+    "temporaryWorkerCleanup": "delete_both_provider_probe_workers_and_verify_http_404"
+  },
+  "planningPrBoundary": {
+    "remoteMigrationApply": false,
+    "productionCategoryCapture": false,
+    "productionCategoryRows": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false,
+    "cloudflareSecretsRequired": false,
+    "productionDeploymentJobIncluded": false
+  }
+}
