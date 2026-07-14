@@ -7,12 +7,18 @@ on:
     paths:
       - '.github/workflows/analytics-12a4-category-readonly-preflight.yml'
       - 'docs/audits/12a4-category-readonly-preflight-contract.json'
+      - 'docs/audits/12a4-category-readonly-preflight-trigger.json'
       - 'docs/work-in-progress/phase12a4-category-readonly-preflight.md'
       - 'scripts/check-12a4-category-readonly-preflight-scope.mjs'
       - 'scripts/collect-12a4-category-readonly-preflight-evidence.mjs'
       - 'scripts/verify-12a4-category-readonly-preflight-evidence.mjs'
       - 'scripts/verify-12a4-category-readonly-preflight-package.mjs'
       - 'workers/category-cost-probe/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/audits/12a4-category-readonly-preflight-trigger.json'
   workflow_dispatch:
     inputs:
       confirm:
@@ -50,6 +56,7 @@ jobs:
         uses: ./.github/actions/setup-node-pnpm
 
       - name: Verify branch scope
+        if: github.event_name == 'pull_request'
         run: node scripts/check-12a4-category-readonly-preflight-scope.mjs
 
       - name: Verify read-only preflight package
@@ -64,9 +71,11 @@ jobs:
   production-preflight:
     needs: contract
     if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.ref == 'refs/heads/main' &&
-      inputs.confirm == 'READ_ONLY_PREFLIGHT_ONLY'
+      (github.event_name == 'workflow_dispatch' &&
+       github.ref == 'refs/heads/main' &&
+       inputs.confirm == 'READ_ONLY_PREFLIGHT_ONLY') ||
+      (github.event_name == 'push' &&
+       github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -81,20 +90,46 @@ jobs:
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Verify exact main and accepted parent gate
+      - name: Verify exact main and accepted gates
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$RAW_DIR"
           actual_sha=$(git rev-parse HEAD)
-          [[ "$actual_sha" == "${{ inputs.expected_main_sha }}" ]]
           [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+
+          if [[ "$GITHUB_EVENT_NAME" == 'workflow_dispatch' ]]; then
+            [[ "$actual_sha" == "${{ inputs.expected_main_sha }}" ]]
+          elif [[ "$GITHUB_EVENT_NAME" == 'push' ]]; then
+            trigger='docs/audits/12a4-category-readonly-preflight-trigger.json'
+            [[ -f "$trigger" ]]
+            [[ $(jq -r '.status' "$trigger") == 'armed_for_one_time_main_push' ]]
+            [[ $(jq -r '.confirmation' "$trigger") == 'READ_ONLY_PREFLIGHT_ONLY' ]]
+            [[ $(jq -r '.oneTime' "$trigger") == 'true' ]]
+            cp "$trigger" "$RAW_DIR/trigger.json"
+          else
+            exit 1
+          fi
+
           parent=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/520")
+          package=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/521")
           [[ $(jq -r '.merged') == 'true' <<<"$parent" ]]
+          [[ $(jq -r '.merged') == 'true' <<<"$package" ]]
           parent_merge_sha=$(jq -r '.merge_commit_sha' <<<"$parent")
+          package_merge_sha=$(jq -r '.merge_commit_sha' <<<"$package")
+          package_head_sha=$(jq -r '.head.sha' <<<"$package")
           git merge-base --is-ancestor "$parent_merge_sha" HEAD
+          git merge-base --is-ancestor "$package_merge_sha" HEAD
+
+          if [[ "$GITHUB_EVENT_NAME" == 'push' ]]; then
+            [[ $(jq -r '.packagePr' "$RAW_DIR/trigger.json") == '521' ]]
+            [[ $(jq -r '.expectedPackageHeadSha' "$RAW_DIR/trigger.json") == "$package_head_sha" ]]
+          fi
+
           printf '%s' "$parent" > "$RAW_DIR/parent-pr.json"
+          printf '%s' "$package" > "$RAW_DIR/package-pr.json"
           printf '%s\n' "$actual_sha" > "$RAW_DIR/head-sha.txt"
+          printf '%s\n' "$GITHUB_EVENT_NAME" > "$RAW_DIR/event-name.txt"
           ! grep -R --line-number --fixed-strings 'CATEGORY_CAPTURE_ENABLED' \
             workers/collector-twitch/wrangler.toml workers/collector-kick/wrangler.toml
 
