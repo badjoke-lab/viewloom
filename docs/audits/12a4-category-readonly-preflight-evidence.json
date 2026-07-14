@@ -1,0 +1,257 @@
+{
+  "schemaVersion": "viewloom-12a4-category-readonly-preflight-evidence-v1",
+  "workstream": "12A-4 provider-separated production category read-only preflight",
+  "status": "accepted",
+  "observedAt": "2026-07-14T08:39:40.978Z",
+  "providerSeparated": true,
+  "execution": {
+    "parentPlanningPr": 520,
+    "parentMerged": true,
+    "parentMergeSha": "f596d72ce18f11f436012270c07027970baf6220",
+    "packagePr": 521,
+    "packageMerged": true,
+    "packageHeadSha": "26a2fb2112ddd7027913d2c44058416835637657",
+    "packageMergeSha": "0bb356b1a5fd13169458c425a6afaaafb67667fe",
+    "headSha": "51796234db2b88bd5d4e3393cf0b2a97b4927c7b",
+    "event": "push",
+    "trigger": {
+      "schemaVersion": "viewloom-12a4-category-readonly-preflight-trigger-v1",
+      "confirmation": "READ_ONLY_PREFLIGHT_ONLY",
+      "expectedPackageHeadSha": "26a2fb2112ddd7027913d2c44058416835637657",
+      "oneTime": true,
+      "attempt": 3
+    },
+    "readOnly": true
+  },
+  "providers": {
+    "twitch": {
+      "provider": "twitch",
+      "observedAt": "2026-07-14T08:39:21.439Z",
+      "mode": "read_only_preflight",
+      "schemaVersion": "viewloom-12a4-category-cost-preflight-v2",
+      "schema": {
+        "dictionaryTablePresent": false,
+        "presentRollupColumns": [],
+        "presentStatusColumns": [],
+        "categorySchemaComplete": false,
+        "minuteSnapshotsTablePresent": true,
+        "collectorStatusTablePresent": true,
+        "minuteSnapshotColumns": [
+          "provider",
+          "bucket_minute",
+          "collected_at",
+          "covered_pages",
+          "has_more",
+          "stream_count",
+          "total_viewers",
+          "payload_json",
+          "source_mode"
+        ],
+        "collectorStatusColumns": [
+          "provider",
+          "status",
+          "last_attempt_at",
+          "last_success_at",
+          "last_failure_at",
+          "last_error",
+          "latest_bucket_minute",
+          "latest_collected_at",
+          "latest_stream_count",
+          "latest_total_viewers",
+          "covered_pages",
+          "has_more",
+          "updated_at"
+        ]
+      },
+      "health": {
+        "source": "collector_status",
+        "evidenceAvailable": true,
+        "collectorStatusAvailable": true,
+        "latestSnapshotAvailable": true
+      },
+      "expectedHealthSource": "collector_status",
+      "latestSnapshot": {
+        "bucket_minute": "2026-07-14T08:35:00.000Z",
+        "collected_at": "2026-07-14T08:35:58.872Z",
+        "stream_count": 300,
+        "total_viewers": 443106,
+        "source_mode": "real"
+      },
+      "collectorStatus": {
+        "status": "ok",
+        "last_attempt_at": "2026-07-14T08:35:58.872Z",
+        "last_success_at": "2026-07-14T08:35:58.872Z",
+        "last_failure_at": "2026-06-14T17:15:54.060Z",
+        "latest_bucket_minute": "2026-07-14T08:35:00.000Z",
+        "latest_collected_at": "2026-07-14T08:35:58.872Z",
+        "updated_at": "2026-07-14T08:35:58.872Z"
+      },
+      "providerLeakageRows": 0,
+      "query": {
+        "statements": 10,
+        "durationMs": 14.139,
+        "rowsRead": 8763,
+        "rowsWritten": 0,
+        "changes": 0,
+        "sizeAfter": 339791872
+      },
+      "workerWallMs": 1172,
+      "lifecycle": {
+        "deployExitCode": 0,
+        "secretExitCode": 0,
+        "curlExitCode": 0,
+        "httpStatus": 200,
+        "deleteExitCode": 0,
+        "deleteCurlExitCode": 0,
+        "deleteHttpStatus": 404
+      },
+      "checks": {
+        "responseOk": true,
+        "readOnly": true,
+        "categorySchemaAbsent": true,
+        "latestSnapshotPresent": true,
+        "providerHealthEvidencePresent": true,
+        "providerHealthSourceMatches": true,
+        "providerLeakageAbsent": true,
+        "rowsWrittenZero": true,
+        "changesZero": true,
+        "deploymentSucceeded": true,
+        "requestSucceeded": true,
+        "deleted": true
+      },
+      "providerGatePass": true
+    },
+    "kick": {
+      "provider": "kick",
+      "observedAt": "2026-07-14T08:39:39.593Z",
+      "mode": "read_only_preflight",
+      "schemaVersion": "viewloom-12a4-category-cost-preflight-v2",
+      "schema": {
+        "dictionaryTablePresent": false,
+        "presentRollupColumns": [],
+        "presentStatusColumns": [],
+        "categorySchemaComplete": false,
+        "minuteSnapshotsTablePresent": true,
+        "collectorStatusTablePresent": false,
+        "minuteSnapshotColumns": [
+          "provider",
+          "bucket_minute",
+          "collected_at",
+          "total_viewers",
+          "stream_count",
+          "payload_json",
+          "source_mode"
+        ],
+        "collectorStatusColumns": []
+      },
+      "health": {
+        "source": "latest_snapshot",
+        "evidenceAvailable": true,
+        "collectorStatusAvailable": false,
+        "latestSnapshotAvailable": true
+      },
+      "expectedHealthSource": "latest_snapshot",
+      "latestSnapshot": {
+        "bucket_minute": "2026-07-14T08:35:00.000Z",
+        "collected_at": "2026-07-14T08:35:57.068Z",
+        "stream_count": 100,
+        "total_viewers": 155311,
+        "source_mode": "authenticated"
+      },
+      "collectorStatus": null,
+      "providerLeakageRows": 0,
+      "query": {
+        "statements": 9,
+        "durationMs": 34.152,
+        "rowsRead": 15638,
+        "rowsWritten": 0,
+        "changes": 0,
+        "sizeAfter": 295137280
+      },
+      "workerWallMs": 1063,
+      "lifecycle": {
+        "deployExitCode": 0,
+        "secretExitCode": 0,
+        "curlExitCode": 0,
+        "httpStatus": 200,
+        "deleteExitCode": 0,
+        "deleteCurlExitCode": 0,
+        "deleteHttpStatus": 404
+      },
+      "checks": {
+        "responseOk": true,
+        "readOnly": true,
+        "categorySchemaAbsent": true,
+        "latestSnapshotPresent": true,
+        "providerHealthEvidencePresent": true,
+        "providerHealthSourceMatches": true,
+        "providerLeakageAbsent": true,
+        "rowsWrittenZero": true,
+        "changesZero": true,
+        "deploymentSucceeded": true,
+        "requestSucceeded": true,
+        "deleted": true
+      },
+      "providerGatePass": true
+    }
+  },
+  "gate": {
+    "parentPlanningPrMerged": true,
+    "packagePrMerged": true,
+    "twitchGatePass": true,
+    "kickGatePass": true,
+    "readOnlyPreflightPass": true,
+    "remoteMigrationApplyAuthorized": false,
+    "runtimeCaptureEnablementAuthorized": false
+  },
+  "privacy": {
+    "channelIdentitiesIncluded": false,
+    "rawPayloadIncluded": false,
+    "credentialsIncluded": false,
+    "databaseIdsIncluded": false,
+    "accountIdIncluded": false,
+    "deploymentLogsIncluded": false
+  },
+  "boundaries": {
+    "remoteMigrationApply": false,
+    "categoryRuntimeEnablement": false,
+    "productionCategoryRows": false,
+    "manualCollectorRoute": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  },
+  "acceptanceIdentity": {
+    "triggerPr": 527,
+    "triggerMergeSha": "51796234db2b88bd5d4e3393cf0b2a97b4927c7b",
+    "workflowRunId": 29318733171,
+    "artifactId": 8305012815
+  },
+  "workflow": {
+    "workflow": "Analytics 12A4 Category Read-Only Preflight",
+    "event": "push",
+    "runId": 29318733171,
+    "headSha": "51796234db2b88bd5d4e3393cf0b2a97b4927c7b",
+    "runStartedAt": "2026-07-14T08:38:11Z",
+    "updatedAt": "2026-07-14T08:39:44Z",
+    "jobs": [
+      {
+        "id": 87038665135,
+        "name": "contract",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 87038729816,
+        "name": "production-preflight",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "artifactId": 8305012815,
+    "gatePass": true
+  }
+}
