@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process'
 
 const allowed = new Set([
+  '.github/workflows/analytics-12a4-category-readonly-preflight.yml',
   '.github/workflows/analytics-12a4-category-execution-cost-probe.yml',
   '.github/workflows/analytics-12a4-category-execution-cost-probe-execution.yml',
   'docs/audits/12a4-category-execution-cost-probe-execution-contract.json',
