@@ -11,25 +11,55 @@ Phase 12A Analytics Capture Foundation active
 12A-3 bounded generation and accumulation complete through PR #511
 12A-4 category source audit accepted PR #513
 12A-4 category storage design accepted PR #514
-12A-4 migration and disabled runtime accepted through PR #518
+12A-4 category migration and disabled runtime accepted through PR #518
 Production intraday generation started yes
 Current workstream 12A-4 production category execution-cost probe
 Category capture runtime not started
 ```
 
-## Accepted 12A-4 boundary
+## Phase 12A authorities
+
+- Analytics specification: `analytics-observation-system-spec.md`
+- Analytics implementation plan: `analytics-observation-system-plan.md`
+- 12A-1 field contract: `../audits/12a1-analytics-field-contract.json`
+- 12A-1 source evidence: `../audits/12a1-source-evidence.json`
+- 12A-3 generator evidence: `../audits/12a3-generator-enablement-evidence.json`
+- 12A-3 post-merge evidence: `../audits/12a3-postmerge-acceptance-evidence.json`
+- 12A-4 category source contract: `../audits/12a4-category-source-audit-contract.json`
+- 12A-4 category source evidence: `../audits/12a4-category-source-audit-evidence.json`
+- 12A-4 category storage contract: `../audits/12a4-category-storage-design-contract.json`
+- 12A-4 category storage evidence: `../audits/12a4-category-storage-budget-evidence.json`
+- 12A-4 storage acceptance: `../operations/12a4-category-storage-design-acceptance-2026-07-14.md`
+- 12A-4 migration/runtime contract: `../audits/12a4-category-migration-runtime-contract.json`
+- 12A-4 disabled-runtime evidence: `../audits/12a4-disabled-runtime-postmerge-evidence.json`
+- 12A-4 execution-cost contract: `../audits/12a4-category-execution-cost-probe-contract.json`
+- Current state: `../audits/12a2-current-gate-state.json`
+
+## Accepted 12A-4 source boundary
 
 ```text
-Twitch source game_id / game_name
-Kick source category.id / category.name
+categorySourceAuditPass true
+Twitch provider id path game_id
+Twitch name path game_name
+Kick provider id path category.id
+Kick name path category.name
 providerSeparated true
 crossProviderCategoryIdentityAllowed false
 combinedProviderCategoryRankingAllowed false
+```
 
+## Accepted 12A-4 storage boundary
+
+```text
+categoryStorageDesignPass true
 selectedModel embedded_hourly
 categoryContractVersion category-source-v1
+raw encoding categoryIds + categoryRefs
+category names provider_category_dictionary
+long-term encoding category_hourly_json in existing streamer/day rows
+newCategoryIndex false
 repositoryMigrationCandidateImplemented true
-disabledRuntimeProductionAcceptance true
+disabledRuntimeProductionAccepted true
 productionCategorySchemaPresent false
 remoteMigrationApplyAuthorized false
 productionCostProbeRequired true
