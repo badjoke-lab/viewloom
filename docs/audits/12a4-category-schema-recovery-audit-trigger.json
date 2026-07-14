@@ -5,9 +5,15 @@
   "packagePr": 535,
   "expectedPackageHeadSha": "e13698aa78039e13142735003ac24ea66a61a4fd",
   "packageMergeSha": "c24a4e37408ad0df3efb04bc0bf4d69a82ec0d90",
-  "sourceAttemptTriggerPr": 533,
-  "sourceAttemptMergeSha": "a83b412e479dccb36ad04541843e3dd9456e7dff",
-  "sourceAttemptRunId": 29325444378,
+  "attempt": 2,
+  "auditPurpose": "post_kick_schema_apply_verification",
+  "sourceAttemptTriggerPr": 542,
+  "sourceAttemptMergeSha": "27a143c83c134599bf1d92d61786fce86f4e76ba",
+  "sourceAttemptRunId": 29329062285,
+  "expectedProviderStates": {
+    "twitch": "complete",
+    "kick": "complete"
+  },
   "providerOrder": [
     "twitch",
     "kick"
