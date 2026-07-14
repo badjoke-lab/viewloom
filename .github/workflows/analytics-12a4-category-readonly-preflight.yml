@@ -96,42 +96,65 @@ jobs:
           set -euo pipefail
           mkdir -p "$RAW_DIR"
           actual_sha=$(git rev-parse HEAD)
-          [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]] || { echo "::error::Expected main ref, observed $GITHUB_REF"; exit 1; }
 
           if [[ "$GITHUB_EVENT_NAME" == 'workflow_dispatch' ]]; then
-            [[ "$actual_sha" == "${{ inputs.expected_main_sha }}" ]]
+            [[ "$actual_sha" == "${{ inputs.expected_main_sha }}" ]] || { echo '::error::Manual-dispatch main SHA mismatch'; exit 1; }
           elif [[ "$GITHUB_EVENT_NAME" == 'push' ]]; then
             trigger='docs/audits/12a4-category-readonly-preflight-trigger.json'
-            [[ -f "$trigger" ]]
-            [[ $(jq -r '.status' "$trigger") == 'armed_for_one_time_main_push' ]]
-            [[ $(jq -r '.confirmation' "$trigger") == 'READ_ONLY_PREFLIGHT_ONLY' ]]
-            [[ $(jq -r '.oneTime' "$trigger") == 'true' ]]
+            [[ -f "$trigger" ]] || { echo '::error::One-time trigger file missing'; exit 1; }
+            [[ $(jq -r '.status' "$trigger") == 'armed_for_one_time_main_push' ]] || { echo '::error::Trigger is not armed'; exit 1; }
+            [[ $(jq -r '.confirmation' "$trigger") == 'READ_ONLY_PREFLIGHT_ONLY' ]] || { echo '::error::Trigger confirmation mismatch'; exit 1; }
+            [[ $(jq -r '.oneTime' "$trigger") == 'true' ]] || { echo '::error::Trigger is not one-time'; exit 1; }
             cp "$trigger" "$RAW_DIR/trigger.json"
           else
+            echo "::error::Unsupported event $GITHUB_EVENT_NAME"
             exit 1
           fi
 
           parent=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/520")
           package=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/521")
-          [[ $(jq -r '.merged') == 'true' <<<"$parent" ]]
-          [[ $(jq -r '.merged') == 'true' <<<"$package" ]]
-          parent_merge_sha=$(jq -r '.merge_commit_sha' <<<"$parent")
-          package_merge_sha=$(jq -r '.merge_commit_sha' <<<"$package")
-          package_head_sha=$(jq -r '.head.sha' <<<"$package")
-          git merge-base --is-ancestor "$parent_merge_sha" HEAD
-          git merge-base --is-ancestor "$package_merge_sha" HEAD
+          printf '%s\n' "$parent" > "$RAW_DIR/parent-pr.json"
+          printf '%s\n' "$package" > "$RAW_DIR/package-pr.json"
+
+          parent_merged_at=$(jq -r '.merged_at // empty' <<<"$parent")
+          package_merged_at=$(jq -r '.merged_at // empty' <<<"$package")
+          parent_merge_sha=$(jq -r '.merge_commit_sha // empty' <<<"$parent")
+          package_merge_sha=$(jq -r '.merge_commit_sha // empty' <<<"$package")
+          package_head_sha=$(jq -r '.head.sha // empty' <<<"$package")
+
+          [[ -n "$parent_merged_at" && -n "$parent_merge_sha" ]] || { echo '::error::PR #520 is not merged'; exit 1; }
+          [[ -n "$package_merged_at" && -n "$package_merge_sha" && -n "$package_head_sha" ]] || { echo '::error::PR #521 is not merged'; exit 1; }
+          git cat-file -e "$parent_merge_sha^{commit}" || { echo "::error::PR #520 merge commit $parent_merge_sha is unavailable"; exit 1; }
+          git cat-file -e "$package_merge_sha^{commit}" || { echo "::error::PR #521 merge commit $package_merge_sha is unavailable"; exit 1; }
+          git merge-base --is-ancestor "$parent_merge_sha" HEAD || { echo '::error::PR #520 merge is not an ancestor of main'; exit 1; }
+          git merge-base --is-ancestor "$package_merge_sha" HEAD || { echo '::error::PR #521 merge is not an ancestor of main'; exit 1; }
 
           if [[ "$GITHUB_EVENT_NAME" == 'push' ]]; then
-            [[ $(jq -r '.packagePr' "$RAW_DIR/trigger.json") == '521' ]]
-            [[ $(jq -r '.expectedPackageHeadSha' "$RAW_DIR/trigger.json") == "$package_head_sha" ]]
+            trigger_package_pr=$(jq -r '.packagePr' "$RAW_DIR/trigger.json")
+            trigger_package_head=$(jq -r '.expectedPackageHeadSha' "$RAW_DIR/trigger.json")
+            [[ "$trigger_package_pr" == '521' ]] || { echo "::error::Trigger package PR mismatch: $trigger_package_pr"; exit 1; }
+            [[ "$trigger_package_head" == "$package_head_sha" ]] || { echo "::error::Trigger package head mismatch: expected $package_head_sha observed $trigger_package_head"; exit 1; }
           fi
 
-          printf '%s' "$parent" > "$RAW_DIR/parent-pr.json"
-          printf '%s' "$package" > "$RAW_DIR/package-pr.json"
+          if grep -R -n -E '^[[:space:]]*CATEGORY_CAPTURE_ENABLED[[:space:]]*=' \
+            workers/collector-twitch/wrangler.toml workers/collector-kick/wrangler.toml; then
+            echo '::error::CATEGORY_CAPTURE_ENABLED assignment exists in committed collector configuration'
+            exit 1
+          fi
+
           printf '%s\n' "$actual_sha" > "$RAW_DIR/head-sha.txt"
           printf '%s\n' "$GITHUB_EVENT_NAME" > "$RAW_DIR/event-name.txt"
-          ! grep -R --line-number --fixed-strings 'CATEGORY_CAPTURE_ENABLED' \
-            workers/collector-twitch/wrangler.toml workers/collector-kick/wrangler.toml
+          jq -n \
+            --arg actualSha "$actual_sha" \
+            --arg event "$GITHUB_EVENT_NAME" \
+            --arg parentMergedAt "$parent_merged_at" \
+            --arg parentMergeSha "$parent_merge_sha" \
+            --arg packageMergedAt "$package_merged_at" \
+            --arg packageMergeSha "$package_merge_sha" \
+            --arg packageHeadSha "$package_head_sha" \
+            '{actualSha:$actualSha,event:$event,parentMergedAt:$parentMergedAt,parentMergeSha:$parentMergeSha,packageMergedAt:$packageMergedAt,packageMergeSha:$packageMergeSha,packageHeadSha:$packageHeadSha,gatePass:true}' \
+            > "$RAW_DIR/gate.json"
 
       - name: Prepare temporary provider configs
         shell: bash
@@ -220,10 +243,27 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$ARTIFACT_DIR"
+          for required in parent-pr.json package-pr.json head-sha.txt event-name.txt twitch.json kick.json twitch-codes.txt kick-codes.txt; do
+            [[ -f "$RAW_DIR/$required" ]] || { echo "::error::Missing preflight input $required"; exit 1; }
+          done
           node scripts/collect-12a4-category-readonly-preflight-evidence.mjs \
             "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
           node scripts/verify-12a4-category-readonly-preflight-evidence.mjs \
             "$ARTIFACT_DIR/evidence.json" --require-pass
+
+      - name: Upload gate diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a4-category-readonly-preflight-gate-diagnostics
+          path: |
+            artifacts/12a4-category-readonly-preflight/raw/gate.json
+            artifacts/12a4-category-readonly-preflight/raw/parent-pr.json
+            artifacts/12a4-category-readonly-preflight/raw/package-pr.json
+            artifacts/12a4-category-readonly-preflight/raw/trigger.json
+            artifacts/12a4-category-readonly-preflight/raw/twitch-codes.txt
+            artifacts/12a4-category-readonly-preflight/raw/kick-codes.txt
+          if-no-files-found: warn
 
       - name: Remove raw responses, tokens, and logs
         if: always()
