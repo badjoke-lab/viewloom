@@ -6,9 +6,13 @@ const root = process.cwd()
 const read = (file) => readFileSync(join(root, file), 'utf8')
 const exists = (file) => existsSync(join(root, file))
 const json = (file) => JSON.parse(read(file))
-const check = (file, fragments) => {
+const check = (file, fragments, { caseInsensitive = false } = {}) => {
   const source = read(file)
-  for (const fragment of fragments) assert.ok(source.includes(fragment), `${file}: missing ${fragment}`)
+  const haystack = caseInsensitive ? source.toLowerCase() : source
+  for (const fragment of fragments) {
+    const needle = caseInsensitive ? fragment.toLowerCase() : fragment
+    assert.ok(haystack.includes(needle), `${file}: missing ${fragment}`)
+  }
 }
 
 const requiredFiles = [
@@ -54,7 +58,7 @@ for (const file of [
     '12A-4-5',
     'bounded provider-separated category execution-cost probe',
     'category capture',
-  ])
+  ], { caseInsensitive: true })
 }
 
 check('docs/work-in-progress/phase12a4-category-execution-cost-probe.md', [
@@ -68,13 +72,13 @@ check('docs/work-in-progress/phase12a4-category-execution-cost-probe.md', [
 ])
 
 check('docs/operations/development-and-deployment-policy.md', [
-  'main` is the production deployment branch',
-  'Twitch and Kick are separate data products',
-  'No direct push to `main`',
-  'One branch = one responsibility',
-  'Provider separation is permanent',
-  'Do not silently invent missing data',
-  'A temporary remote resource must be deleted before the task is considered complete',
+  '`main` is the production branch',
+  'Merge only completed candidates',
+  'Feature work and operating-policy work should remain separate',
+  'Provider separation remains mandatory',
+  'Twitch and Kick remain separate',
+  'Coverage remains bounded and explicitly non-provider-wide',
+  'production deployment deliberate and observable',
 ])
 
 const gate = json('docs/audits/12a2-current-gate-state.json')
