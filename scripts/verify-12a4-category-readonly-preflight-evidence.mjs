@@ -25,16 +25,33 @@ assert.equal(evidence.execution.readOnly, true)
 
 for (const provider of ['twitch', 'kick']) {
   const item = evidence.providers[provider]
+  const expectedHealthSource = provider === 'twitch' ? 'collector_status' : 'latest_snapshot'
   assert.equal(item.provider, provider)
   assert.equal(item.mode, 'read_only_preflight')
+  assert.equal(item.schemaVersion, 'viewloom-12a4-category-cost-preflight-v2')
   assert.equal(item.schema.dictionaryTablePresent, false)
   assert.deepEqual(item.schema.presentRollupColumns, [])
   assert.deepEqual(item.schema.presentStatusColumns, [])
   assert.equal(item.schema.categorySchemaComplete, false)
+  assert.equal(item.schema.minuteSnapshotsTablePresent, true)
+  assert.equal(item.expectedHealthSource, expectedHealthSource)
+  assert.equal(item.health.source, expectedHealthSource)
+  assert.equal(item.health.evidenceAvailable, true)
+  assert.equal(item.health.latestSnapshotAvailable, true)
+  assert.ok(item.latestSnapshot)
+  if (provider === 'twitch') {
+    assert.equal(item.schema.collectorStatusTablePresent, true)
+    assert.equal(item.health.collectorStatusAvailable, true)
+    assert.ok(item.collectorStatus)
+  } else {
+    assert.equal(item.health.collectorStatusAvailable, Boolean(item.collectorStatus))
+  }
   assert.equal(item.providerLeakageRows, 0)
   assert.equal(item.query.rowsWritten, 0)
   assert.equal(item.query.changes, 0)
-  for (const value of Object.values(item.checks)) assert.equal(value, true, `${provider} preflight check failed`)
+  for (const [check, value] of Object.entries(item.checks)) {
+    assert.equal(value, true, `${provider} preflight check failed: ${check}`)
+  }
   assert.equal(item.providerGatePass, true)
 }
 
