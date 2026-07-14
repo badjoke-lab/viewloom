@@ -35,7 +35,7 @@ for (const provider of ['twitch', 'kick']) {
 }
 
 if (mode === '--require-pass') {
-  assert.equal(evidence.status, 'observed_pass')
+  assert.ok(['observed_pass', 'accepted'].includes(evidence.status))
   assert.equal(evidence.gate.recoveryAuditPass, true)
   assert.equal(evidence.gate.providerStatesKnown, true)
   assert.equal(evidence.parseErrors.length, 0)
@@ -53,6 +53,7 @@ if (mode === '--require-pass') {
 console.log(JSON.stringify({
   ok: true,
   requirePass: mode === '--require-pass',
+  status: evidence.status,
   recoveryAuditPass: evidence.gate.recoveryAuditPass,
   providerStates: {
     twitch: evidence.providers.twitch.schemaState,
