@@ -11,8 +11,9 @@ Current phase: Phase 12A Analytics Capture Foundation
 12A-4 category source audit: accepted PR #513
 12A-4 category storage design: accepted PR #514
 12A-4 category migration and disabled runtime: accepted through PR #518
+12A-4 read-only production preflight: accepted PR #523
 Production intraday generation: enabled and accumulating
-Current workstream: 12A-4 production category execution-cost probe
+Current workstream: 12A-4 controlled category schema apply design
 Category runtime capture started: no
 ```
 
@@ -30,6 +31,8 @@ docs/audits/12a4-category-storage-budget-evidence.json
 docs/audits/12a4-category-migration-runtime-contract.json
 docs/audits/12a4-disabled-runtime-postmerge-evidence.json
 docs/audits/12a4-category-execution-cost-probe-contract.json
+docs/audits/12a4-category-readonly-preflight-evidence.json
+docs/audits/12a4-category-controlled-schema-apply-contract.json
 docs/audits/12a2-current-gate-state.json
 docs/operations/12a4-category-source-audit-2026-07-12.md
 docs/operations/12a4-category-storage-design-acceptance-2026-07-14.md
@@ -45,7 +48,7 @@ cross-provider category identity: forbidden
 combined-provider category ranking: forbidden
 ```
 
-Accepted provider-specific storage and disabled-runtime state:
+Accepted provider-specific storage and preflight state:
 
 ```text
 selected model: embedded_hourly
@@ -56,11 +59,13 @@ long-term category evidence: compact hourly JSON in existing streamer/day rows
 new category index: no
 raw-retention extension: no
 repository migration candidate: implemented
+disabled runtime production acceptance: complete
+read-only production preflight acceptance: complete PR #523
 production category schema: absent
 CATEGORY_CAPTURE_ENABLED: absent
 production category capture: disabled
 ```
 
-The current branch may prepare the provider-separated production execution-cost gate. It may add read-only preflight inspection, local controlled-migration and idempotency fixtures, explicit thresholds, stop conditions, cleanup rules, and dry-run bundles.
+The current branch may prepare the provider-separated controlled category schema apply design. It may add an exact migration-parity module, provider-separated temporary Worker candidates, inspect/apply routes protected by an explicit confirmation token, local absent/apply/no-op and partial-schema fixtures, explicit thresholds, stop conditions, deletion rules, and Wrangler dry-run bundles.
 
-It may not deploy a production Worker, apply the migration remotely, commit a production category-enable flag, write production category rows, add backfill, add a new cron, extend raw retention, add category UI, infer exact sessions or category switch times, use direct D1 execute in the planning PR, add a public DDL route, or create cross-provider category analysis. A separate evidence-bearing gate is mandatory before remote migration or runtime enablement.
+It may not deploy a production Worker, apply the category migration remotely, commit a production category-enable flag, write production category rows, add backfill, add a new cron, extend raw retention, add category UI, infer exact sessions or category switch times, use direct D1 execute in the design PR, add a public unauthenticated DDL route, or create cross-provider category analysis. A separate evidence-bearing one-time trigger gate is mandatory before remote schema application, bounded cost measurement, or runtime enablement.
