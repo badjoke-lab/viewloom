@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process'
 const allowed = new Set([
   '.github/workflows/analytics-12a4-category-execution-cost-probe-acceptance.yml',
   'docs/audits/12a4-category-execution-cost-probe-acceptance-contract.json',
+  'docs/audits/12a4-category-execution-cost-probe-attempt-1-failure-evidence.json',
   'scripts/check-12a4-category-execution-cost-probe-acceptance-scope.mjs',
   'scripts/verify-12a4-category-execution-cost-probe-acceptance-package.mjs',
 ])
