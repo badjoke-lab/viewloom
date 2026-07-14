@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 const CONFIRMATION = 'RUN_RESERVED_CATEGORY_COST_PROBE'
 const PROVIDERS = new Set(['twitch', 'kick'])
+const RETRYABLE_HTTP_STATUSES = new Set([0, 401, 408, 425, 429, 500, 502, 503, 504])
 
 export function snapshotLatencyMs(snapshot) {
   const bucket = Date.parse(String(snapshot?.bucket_minute ?? ''))
@@ -33,6 +34,11 @@ export function validateRunId(value) {
   return runId
 }
 
+export function isRetryableWorkerResponse(result) {
+  return RETRYABLE_HTTP_STATUSES.has(Number(result?.status ?? 0))
+    || result?.body?.error === 'non_json_response'
+}
+
 export function sanitize(value) {
   return String(value ?? '')
     .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, 'Bearer [redacted]')
@@ -48,6 +54,8 @@ async function runProvider() {
   const runId = validateRunId(process.env.RUN_ID)
   const accountId = String(process.env.CLOUDFLARE_ACCOUNT_ID ?? '').trim()
   const apiToken = String(process.env.CLOUDFLARE_API_TOKEN ?? '').trim()
+  const inspectAttempts = positiveInteger(process.env.INSPECT_ATTEMPTS, 40)
+  const inspectIntervalMs = positiveInteger(process.env.INSPECT_INTERVAL_MS, 5000)
   const pollAttempts = positiveInteger(process.env.POLL_ATTEMPTS, 70)
   const pollIntervalMs = positiveInteger(process.env.POLL_INTERVAL_MS, 10000)
 
@@ -72,10 +80,14 @@ async function runProvider() {
       preexistingHttpStatus: 0,
       deployExitCode: Number.MAX_SAFE_INTEGER,
       secretExitCode: Number.MAX_SAFE_INTEGER,
+      healthAttempts: 0,
+      healthHttpStatus: 0,
+      inspectAttempts: 0,
       inspectHttpStatus: 0,
       probeHttpStatus: 0,
       pollAttempts: 0,
       naturalSnapshotObserved: false,
+      deleteApiHttpStatus: 0,
       deleteExitCode: Number.MAX_SAFE_INTEGER,
       deleteHttpStatus: 0,
     },
@@ -107,7 +119,21 @@ async function runProvider() {
     raw.lifecycle.secretExitCode = secret.code
     if (secret.code !== 0) throw new Error(`wrangler_secret_failed:${sanitize(secret.output)}`)
 
-    const pre = await postJson(workerUrl, '/inspect', probeToken, { runId })
+    const health = await waitForWorkerHealth(workerUrl, inspectAttempts, inspectIntervalMs)
+    raw.lifecycle.healthAttempts = health.attempts
+    raw.lifecycle.healthHttpStatus = health.status
+    if (health.status !== 200 || health.body?.ok !== true) throw new Error(`worker_health_failed_http_${health.status}`)
+
+    const pre = await postJsonWithRetry(
+      workerUrl,
+      '/inspect',
+      probeToken,
+      { runId },
+      {},
+      inspectAttempts,
+      inspectIntervalMs,
+    )
+    raw.lifecycle.inspectAttempts = pre.attempts
     raw.lifecycle.inspectHttpStatus = pre.status
     raw.preInspect = pre.body
     if (pre.status !== 200 || pre.body?.ok !== true) throw new Error(`pre_inspect_failed_http_${pre.status}`)
@@ -140,9 +166,11 @@ async function runProvider() {
       try {
         const currentStatus = await serviceStatus(accountId, apiToken, serviceName)
         if (currentStatus !== 404) {
-          const deletion = runCommand('pnpm', ['dlx', 'wrangler@4', 'delete', '--config', configPath, '--force'])
-          raw.lifecycle.deleteExitCode = deletion.code
+          const deletion = await deleteService(accountId, apiToken, serviceName)
+          raw.lifecycle.deleteApiHttpStatus = deletion.status
+          raw.lifecycle.deleteExitCode = deletion.ok ? 0 : 1
         } else {
+          raw.lifecycle.deleteApiHttpStatus = 404
           raw.lifecycle.deleteExitCode = 0
         }
         raw.lifecycle.deleteHttpStatus = await waitForDeleted(accountId, apiToken, serviceName)
@@ -158,6 +186,8 @@ async function runProvider() {
       provider,
       outputPath,
       workerOk: raw.worker?.ok === true,
+      healthAttempts: raw.lifecycle.healthAttempts,
+      inspectAttempts: raw.lifecycle.inspectAttempts,
       naturalSnapshotObserved: raw.lifecycle.naturalSnapshotObserved,
       deleteHttpStatus: raw.lifecycle.deleteHttpStatus,
       runnerError: raw.errors.runner,
@@ -181,10 +211,27 @@ function runCommand(command, args, input = undefined) {
 }
 
 async function serviceStatus(accountId, apiToken, serviceName) {
-  const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/workers/services/${encodeURIComponent(serviceName)}`, {
+  const response = await fetch(serviceUrl(accountId, serviceName), {
     headers: { authorization: `Bearer ${apiToken}` },
   })
   return response.status
+}
+
+async function deleteService(accountId, apiToken, serviceName) {
+  const response = await fetch(serviceUrl(accountId, serviceName), {
+    method: 'DELETE',
+    headers: {
+      authorization: `Bearer ${apiToken}`,
+      'content-type': 'application/json',
+    },
+  })
+  if (response.status === 404) return { ok: true, status: 404 }
+  const body = await response.json().catch(() => null)
+  return { ok: response.ok && body?.success === true, status: response.status }
+}
+
+function serviceUrl(accountId, serviceName) {
+  return `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/workers/services/${encodeURIComponent(serviceName)}`
 }
 
 async function waitForDeleted(accountId, apiToken, serviceName) {
@@ -195,6 +242,37 @@ async function waitForDeleted(accountId, apiToken, serviceName) {
     await sleep(2000)
   }
   return status
+}
+
+async function waitForWorkerHealth(baseUrl, attempts, intervalMs) {
+  let result = { status: 0, body: null, attempts: 0 }
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    result = { ...(await getJson(baseUrl, '/health')), attempts: attempt }
+    if (result.status === 200 && result.body?.ok === true) return result
+    if (!isRetryableWorkerResponse(result)) return result
+    if (attempt < attempts) await sleep(intervalMs)
+  }
+  return result
+}
+
+async function postJsonWithRetry(baseUrl, pathname, token, body, extraHeaders, attempts, intervalMs) {
+  let result = { status: 0, body: null, attempts: 0 }
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    result = { ...(await postJson(baseUrl, pathname, token, body, extraHeaders)), attempts: attempt }
+    if (result.status === 200 && result.body?.ok === true) return result
+    if (!isRetryableWorkerResponse(result)) return result
+    if (attempt < attempts) await sleep(intervalMs)
+  }
+  return result
+}
+
+async function getJson(baseUrl, pathname) {
+  try {
+    const response = await fetch(`${baseUrl}${pathname}`)
+    return { status: response.status, body: await parseJsonResponse(response) }
+  } catch (error) {
+    return { status: 0, body: { ok: false, error: sanitize(error instanceof Error ? error.message : error) } }
+  }
 }
 
 async function postJson(baseUrl, pathname, token, body, extraHeaders = {}) {
@@ -208,16 +286,18 @@ async function postJson(baseUrl, pathname, token, body, extraHeaders = {}) {
       },
       body: JSON.stringify(body),
     })
-    const text = await response.text()
-    let parsed = null
-    try {
-      parsed = text ? JSON.parse(text) : null
-    } catch {
-      parsed = { ok: false, error: 'non_json_response', preview: sanitize(text) }
-    }
-    return { status: response.status, body: parsed }
+    return { status: response.status, body: await parseJsonResponse(response) }
   } catch (error) {
     return { status: 0, body: { ok: false, error: sanitize(error instanceof Error ? error.message : error) } }
+  }
+}
+
+async function parseJsonResponse(response) {
+  const text = await response.text()
+  try {
+    return text ? JSON.parse(text) : null
+  } catch {
+    return { ok: false, error: 'non_json_response', preview: sanitize(text) }
   }
 }
 
@@ -236,7 +316,7 @@ function sleep(ms) {
 }
 
 function jsonReplacer(_key, value) {
-  return value === Number.POSITIVE_INFINITY ? null : value
+  return value === Number.POSITIVE_INFINITY || value === Number.NEGATIVE_INFINITY ? null : value
 }
 
 async function main() {
