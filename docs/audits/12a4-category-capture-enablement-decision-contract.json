@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-category-capture-enablement-decision-v1",
   "workstream": "12A-4-7 provider-separated category capture enablement decision",
-  "status": "candidate",
+  "status": "accepted",
   "trackingIssue": 519,
   "acceptedInputs": {
     "sourceAudit": "docs/audits/12a4-category-source-audit-evidence.json",
@@ -116,6 +116,18 @@
       "crossProviderRowsAllowed": false,
       "persistentCaptureAfterFailedCanary": false
     }
+  },
+  "acceptance": {
+    "pr": 561,
+    "validatedCandidateHeadSha": "0293245b1608768ed75b48c4e7294bfdef376ac3",
+    "workflowRunId": 29360882057,
+    "workflowJobId": 87180338875,
+    "decisionPackagePass": true,
+    "developmentPolicyPass": true,
+    "webBuildPass": true,
+    "webChecksPass": true,
+    "productionRuntimeCaptureAuthorized": false,
+    "productionFlagChangeAuthorized": false
   },
   "pullRequestBoundary": {
     "productionRuntimeCaptureStarted": false,
