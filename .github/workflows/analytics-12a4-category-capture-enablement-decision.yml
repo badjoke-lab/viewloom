@@ -1,0 +1,56 @@
+name: Analytics 12A4 Category Capture Enablement Decision
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.github/workflows/analytics-12a4-category-capture-enablement-decision.yml'
+      - 'docs/audits/12a2-current-gate-state.json'
+      - 'docs/audits/12a4-category-capture-enablement-decision-contract.json'
+      - 'docs/work-in-progress/phase12a4-category-capture-enablement-decision.md'
+      - 'scripts/check-12a4-category-capture-enablement-decision-scope.mjs'
+      - 'scripts/verify-12a4-category-capture-enablement-decision.mjs'
+      - 'scripts/verify-development-policy.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-category-capture-enablement-decision-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-decision:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify decision package scope
+        run: node scripts/check-12a4-category-capture-enablement-decision-scope.mjs
+      - name: Verify category capture enablement decision
+        run: node scripts/verify-12a4-category-capture-enablement-decision.mjs
+      - name: Verify canonical development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Publish decision summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4-7 Category Capture Enablement Decision'
+            echo
+            echo '- Provider-separated canary design: candidate'
+            echo '- Production runtime capture: not authorized'
+            echo '- Production flag change: not authorized'
+            echo '- Rollout sequence: Kick, then Twitch'
+            echo '- Minimum observation: 24 hours per provider'
+            echo '- New cron: no'
+            echo '- Backfill: no'
+            echo '- Raw-retention change: no'
+            echo '- Cross-provider category identity: no'
+            echo '- Combined-provider category ranking: no'
+          } >> "$GITHUB_STEP_SUMMARY"
