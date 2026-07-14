@@ -4,17 +4,19 @@ Status: current acceptance gate
 Tracking issue: #519  
 Planning PR: #520  
 Package PR: #521  
-Trigger PR: #522  
-Trigger merge SHA: `2e1e3ea3e338574840cb69182581505bcb6eacff`
+Initial trigger PR: #522 — stopped before temporary Worker deployment  
+Gate fix PR: #524  
+Retry trigger PR: #525  
+Retry trigger merge SHA: `e78e21ef55fc3aadf22477308a2bcc25e44c71b0`
 
 ## Purpose
 
-Locate the exact `main` push run created by PR #522, require both the contract and production-preflight jobs to succeed, download the sanitized preflight artifact, and verify it against the accepted no-write/provider-separation boundary.
+Locate the exact `main` push run created by retry PR #525, require both the contract and production-preflight jobs to succeed, download the sanitized preflight artifact, and verify it against the accepted no-write/provider-separation boundary.
 
 ## Required result
 
 ```text
-exact trigger SHA matched
+exact retry trigger SHA matched
 push event matched
 contract job success
 production-preflight job success
