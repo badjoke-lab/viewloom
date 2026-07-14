@@ -1,115 +1,49 @@
-name: Analytics 12A4 Category Schema Recovery Audit
+name: Analytics 12A4 Category Schema Audit Archive
 
 on:
   pull_request:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a4-category-schema-recovery-audit.yml'
-      - 'docs/audits/12a4-category-schema-recovery-audit-*.json'
-      - 'docs/work-in-progress/phase12a4-category-schema-recovery-audit.md'
-      - 'scripts/*12a4-category-schema-recovery-audit*.mjs'
-      - 'scripts/collect-12a4-category-controlled-schema-apply-evidence.mjs'
-      - 'workers/category-cost-probe/**'
-  push:
-    branches: [main]
-    paths:
       - 'docs/audits/12a4-category-schema-recovery-audit-trigger.json'
+      - 'docs/audits/12a4-category-schema-recovery-audit-evidence.json'
+      - 'docs/audits/12a2-current-gate-state.json'
+      - 'scripts/verify-development-policy.mjs'
   workflow_dispatch:
 
 permissions:
   contents: read
-  actions: read
-  pull-requests: read
 
 concurrency:
-  group: analytics-12a4-category-schema-recovery-audit-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
-
-env:
-  ARTIFACT_DIR: artifacts/12a4-category-schema-recovery-audit
-  RAW_DIR: artifacts/12a4-category-schema-recovery-audit/raw
-  TRIGGER_FILE: docs/audits/12a4-category-schema-recovery-audit-trigger.json
+  group: analytics-12a4-category-schema-audit-archive-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  contract:
+  verify-retired-state:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify branch scope
-        if: github.event_name == 'pull_request'
-        run: node scripts/check-12a4-category-schema-recovery-audit-scope.mjs
-      - name: Verify package boundary
-        run: node scripts/verify-12a4-category-schema-recovery-audit-package.mjs
-      - name: Verify development policy
-        run: node scripts/verify-development-policy.mjs
-      - name: Bundle Twitch Worker without deploying
-        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-cost-probe/wrangler.twitch.toml
-      - name: Bundle Kick Worker without deploying
-        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-cost-probe/wrangler.kick.toml
-
-  production-recovery-audit:
-    needs: contract
-    if: >-
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    env:
-      GH_TOKEN: ${{ github.token }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - name: Verify exact main and armed audit
+      - name: Verify accepted post-apply audit
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "$RAW_DIR" "$ARTIFACT_DIR"
-          [[ -f "$TRIGGER_FILE" ]]
-          [[ $(jq -r '.status' "$TRIGGER_FILE") == 'armed_for_one_time_main_push' ]]
-          [[ $(jq -r '.oneTime' "$TRIGGER_FILE") == 'true' ]]
-          [[ $(jq -c '.providerOrder' "$TRIGGER_FILE") == '["twitch","kick"]' ]]
-          package_number=$(jq -r '.packagePr' "$TRIGGER_FILE")
-          package=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/$package_number")
-          [[ $(jq -r '.merged_at // empty' <<<"$package") != '' ]]
-          [[ $(jq -r '.head.sha' <<<"$package") == $(jq -r '.expectedPackageHeadSha' "$TRIGGER_FILE") ]]
-          merge_sha=$(jq -r '.merge_commit_sha' <<<"$package")
-          git cat-file -e "$merge_sha^{commit}"
-          git merge-base --is-ancestor "$merge_sha" HEAD
-          node scripts/verify-12a4-category-schema-recovery-audit-package.mjs
-          cp "$TRIGGER_FILE" "$RAW_DIR/trigger.json"
-          git rev-parse HEAD > "$RAW_DIR/head-sha.txt"
-          printf '%s\n' "$GITHUB_EVENT_NAME" > "$RAW_DIR/event-name.txt"
-      - name: Run provider-separated read-only audit
-        shell: bash
-        run: node scripts/run-12a4-category-schema-recovery-audit.mjs "$RAW_DIR"
-      - name: Normalize sanitized audit evidence
-        if: always()
-        shell: bash
+          [[ $(jq -r '.status' docs/audits/12a4-category-schema-recovery-audit-trigger.json) == 'consumed_and_retired' ]]
+          [[ $(jq -r '.retired' docs/audits/12a4-category-schema-recovery-audit-trigger.json) == 'true' ]]
+          node scripts/verify-12a4-category-schema-recovery-audit-evidence.mjs \
+            docs/audits/12a4-category-schema-recovery-audit-evidence.json --require-pass
+          [[ $(jq -r '.providers.twitch.schemaState' docs/audits/12a4-category-schema-recovery-audit-evidence.json) == 'complete' ]]
+          [[ $(jq -r '.providers.kick.schemaState' docs/audits/12a4-category-schema-recovery-audit-evidence.json) == 'complete' ]]
+          node scripts/verify-development-policy.mjs
+      - name: Publish archive boundary
         run: |
-          set -euo pipefail
-          mkdir -p "$ARTIFACT_DIR"
-          node scripts/collect-12a4-category-schema-recovery-audit-evidence.mjs "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
-          node scripts/verify-12a4-category-schema-recovery-audit-evidence.mjs "$ARTIFACT_DIR/evidence.json"
-      - name: Remove raw responses, tokens, and logs
-        if: always()
-        run: rm -rf "$RAW_DIR"
-      - name: Upload sanitized audit evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: phase12a4-category-schema-recovery-audit
-          path: artifacts/12a4-category-schema-recovery-audit/evidence.json
-          if-no-files-found: error
-      - name: Enforce audit acceptance
-        if: always()
-        run: node scripts/verify-12a4-category-schema-recovery-audit-evidence.mjs "$ARTIFACT_DIR/evidence.json" --require-pass
+          {
+            echo '## 12A-4 post-apply audit archive'
+            echo
+            echo '- Production read-only trigger: retired'
+            echo '- Provider schemas: complete / complete'
+            echo '- D1 writes during final audit: zero'
+            echo '- Category capture: disabled'
+          } >> "$GITHUB_STEP_SUMMARY"
