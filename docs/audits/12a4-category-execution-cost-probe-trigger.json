@@ -1,11 +1,14 @@
 {
   "schemaVersion": "viewloom-12a4-category-execution-cost-probe-trigger-v1",
   "workstream": "12A-4-6 bounded category cost measurement attempt",
-  "status": "armed_for_one_time_main_push",
+  "status": "consumed_and_retired",
   "confirmation": "RUN_BOUNDED_CATEGORY_EXECUTION_COST_PROBE",
   "trackingIssue": 519,
   "oneTime": true,
+  "consumed": true,
+  "retired": true,
   "rearm": false,
+  "rearmAuthorized": false,
   "attempt": 3,
   "runId": "category-cost-probe-attempt-3",
   "providerOrder": ["twitch", "kick"],
@@ -18,12 +21,18 @@
   "executionPackagePr": 555,
   "expectedExecutionPackageHeadSha": "6ebdee7053e9b94b62d21bda5a4572aa925a7555",
   "expectedExecutionPackageMergeSha": "003d4988df821294fd33fc3e0f8ed38da00af4cf",
-  "previousAttempt": {
-    "attempt": 2,
-    "triggerPr": 553,
-    "triggerMergeSha": "e453053e23f5b4b930a736570d42cdbc1ff664a0",
-    "acceptancePr": 554,
-    "acceptanceMergeSha": "68aeb4e13a46dc60abd109fb347b00fce69e69e0",
-    "result": "accepted_safe_failure_zero_writes"
-  }
+  "acceptedMeasurement": {
+    "acceptancePr": 558,
+    "acceptanceMergeSha": "7e272dcf831b1f3a3f331efa94996115d84f1add",
+    "evidence": "docs/audits/12a4-category-execution-cost-probe-attempt-3-evidence.json",
+    "sourceWorkflowRunId": 29358245194,
+    "sourceArtifactId": 8321254541,
+    "acceptanceArtifactId": 8321258554,
+    "twitchGatePass": true,
+    "kickGatePass": true,
+    "cleanupRemainingRows": 0,
+    "providerLeakageRows": 0,
+    "temporaryWorkersRetained": false
+  },
+  "nextGate": "provider-separated category capture enablement decision; no runtime enablement is authorized by this trigger"
 }

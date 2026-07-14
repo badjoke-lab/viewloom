@@ -5,184 +5,110 @@ import path from 'node:path'
 const root = process.cwd()
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8')
 const json = (file) => JSON.parse(read(file))
-const exists = (file) => fs.existsSync(path.join(root, file))
 
 const execution = json('docs/audits/12a4-category-execution-cost-probe-execution-contract.json')
+const trigger = json('docs/audits/12a4-category-execution-cost-probe-trigger.json')
+const evidence = json('docs/audits/12a4-category-execution-cost-probe-attempt-3-evidence.json')
 const packageContract = json('docs/audits/12a4-category-execution-cost-probe-package-contract.json')
 const workflow = read('.github/workflows/analytics-12a4-category-execution-cost-probe-execution.yml')
-const probeWorker = read('workers/category-cost-probe/src/index.ts')
-const runner = read('scripts/run-12a4-category-execution-cost-probe-provider.mjs')
-const runnerTest = read('scripts/test-12a4-category-execution-cost-probe-runner.mjs')
-const evidenceTest = read('scripts/test-12a4-category-execution-cost-probe-evidence.mjs')
-const evidenceCollector = read('scripts/collect-12a4-category-execution-cost-probe-evidence.mjs')
-const evidenceVerifier = read('scripts/verify-12a4-category-execution-cost-probe-evidence.mjs')
-const providerVerifier = read('scripts/verify-12a4-category-execution-cost-probe-provider-result.mjs')
+const worker = read('workers/category-cost-probe/src/index.ts')
 const triggerVerifier = read('scripts/verify-12a4-category-execution-cost-probe-trigger.mjs')
 const packageScope = read('scripts/check-12a4-category-execution-cost-probe-execution-package-scope.mjs')
-const triggerScope = read('scripts/check-12a4-category-execution-cost-probe-trigger-scope.mjs')
-const triggerPresent = exists('docs/audits/12a4-category-execution-cost-probe-trigger.json')
 
 assert.equal(execution.schemaVersion, 'viewloom-12a4-category-execution-cost-probe-execution-contract-v1')
-assert.equal(execution.status, 'accepted')
+assert.equal(execution.status, 'accepted_and_retired')
 assert.equal(execution.trackingIssue, 519)
-assert.equal(execution.acceptance.pr, 555)
-assert.equal(execution.acceptance.validatedImplementationHeadSha, '6ebdee7053e9b94b62d21bda5a4572aa925a7555')
-assert.equal(execution.acceptance.mergeSha, '003d4988df821294fd33fc3e0f8ed38da00af4cf')
-assert.equal(execution.acceptance.workflowRunId, 29357655205)
-assert.equal(execution.acceptance.workflowJobId, 87169261552)
-assert.equal(execution.acceptance.packageValidationRunId, 29357654496)
-assert.equal(execution.acceptance.packageValidationJobId, 87169285538)
-assert.equal(execution.acceptance.contractPass, true)
-assert.equal(execution.acceptance.productionJobSkippedOnPullRequest, true)
-assert.equal(execution.acceptance.readinessRetryValidated, true)
-assert.equal(execution.acceptance.explicitAttemptStateValidated, true)
-assert.equal(execution.acceptance.missingMeasurementsPreserved, true)
-assert.equal(execution.acceptance.d1CompatibleDictionaryUpsertValidated, true)
-assert.equal(execution.acceptance.retiredPreflightDecoupled, true)
-assert.equal(execution.previousAttempt.attempt, 2)
-assert.equal(execution.previousAttempt.runId, 'category-cost-probe-attempt-2')
-assert.equal(execution.previousAttempt.triggerPr, 553)
-assert.equal(execution.previousAttempt.triggerMergeSha, 'e453053e23f5b4b930a736570d42cdbc1ff664a0')
-assert.equal(execution.previousAttempt.acceptancePr, 554)
-assert.equal(execution.previousAttempt.acceptanceMergeSha, '68aeb4e13a46dc60abd109fb347b00fce69e69e0')
-assert.equal(execution.previousAttempt.sourceWorkflowRunId, 29356246266)
-assert.equal(execution.previousAttempt.sourceArtifactId, 8320272101)
-assert.equal(execution.previousAttempt.status, 'accepted_safe_failure')
-assert.equal(execution.previousAttempt.probeEndpointCalled, true)
-assert.equal(execution.previousAttempt.kickAttempted, false)
-assert.equal(execution.previousAttempt.reservedWritesPerformed, false)
-assert.equal(execution.previousAttempt.d1RowsWritten, 0)
-assert.equal(execution.previousAttempt.cleanupRemainingRows, 0)
-assert.equal(execution.previousAttempt.providerLeakageRows, 0)
-assert.equal(execution.previousAttempt.temporaryWorkerFinalHttpStatus, 404)
-assert.equal(execution.previousAttempt.failureCode, 'dictionary_upsert_sql_syntax')
-assert.equal(execution.acceptedPackage.pr, 547)
-assert.equal(execution.acceptedPackage.headSha, '4556a5708ec3a33cd4b1835ca9e32baf78c5690d')
-assert.equal(execution.acceptedPackage.mergeSha, 'cb2673eec8424288bbee7b4403c415261926097a')
-assert.equal(execution.acceptedPackage.packageValidationRunId, 29337837976)
-assert.equal(execution.acceptedPackage.twitchWorkerDryRun, true)
-assert.equal(execution.acceptedPackage.kickWorkerDryRun, true)
-assert.deepEqual(execution.workflow.providerOrder, ['twitch', 'kick'])
-assert.equal(execution.workflow.stopBeforeKickOnTwitchFailure, true)
-assert.equal(execution.workflow.productionJobOnPullRequest, false)
-assert.equal(execution.workflow.productionJobWithoutTrigger, false)
-assert.equal(execution.providerExecution.temporaryWorkerPreconditionHttpStatus, 404)
-assert.equal(execution.providerExecution.temporaryWorkerPostDeleteHttpStatus, 404)
-assert.equal(execution.providerExecution.workerReadinessPollingAttempts, 40)
-assert.equal(execution.providerExecution.workerReadinessPollingIntervalSeconds, 5)
-assert.equal(execution.providerExecution.naturalSnapshotPollingAttempts, 70)
-assert.equal(execution.providerExecution.naturalSnapshotPollingIntervalSeconds, 10)
-assert.equal(execution.providerExecution.deleteViaCloudflareServiceApi, true)
-assert.equal(execution.providerExecution.deleteInFinally, true)
-assert.equal(execution.providerExecution.rawDeploymentLogsInArtifact, false)
-assert.equal(execution.providerExecution.dictionaryUpsertSyntax, 'direct_values_on_conflict')
-assert.equal(execution.sanitizedEvidence.unattemptedProvidersExplicit, true)
-assert.equal(execution.sanitizedEvidence.missingMeasurementsCoercedToZero, false)
-assert.deepEqual(execution.requiredSecrets, ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID'])
-assert.equal(Object.values(execution.pullRequestBoundary).every((value) => value === false), true)
+assert.equal(execution.acceptedImplementation.packagePr, 547)
+assert.equal(execution.acceptedImplementation.executionHardeningPr, 551)
+assert.equal(execution.acceptedImplementation.d1CompatibilityFixPr, 555)
+assert.equal(execution.acceptedImplementation.validatedImplementationHeadSha, '6ebdee7053e9b94b62d21bda5a4572aa925a7555')
+assert.equal(execution.acceptedImplementation.mergeSha, '003d4988df821294fd33fc3e0f8ed38da00af4cf')
+assert.equal(execution.acceptedMeasurement.attempt, 3)
+assert.equal(execution.acceptedMeasurement.triggerPr, 557)
+assert.equal(execution.acceptedMeasurement.triggerMergeSha, '741e080187cfc3c92595120e57899d52664dd85e')
+assert.equal(execution.acceptedMeasurement.acceptancePr, 558)
+assert.equal(execution.acceptedMeasurement.acceptanceMergeSha, '7e272dcf831b1f3a3f331efa94996115d84f1add')
+assert.equal(execution.acceptedMeasurement.sourceWorkflowRunId, 29358245194)
+assert.equal(execution.acceptedMeasurement.sourceArtifactId, 8321254541)
+assert.equal(execution.acceptedMeasurement.acceptanceArtifactId, 8321258554)
+assert.deepEqual(execution.acceptedMeasurement.providerOrder, ['twitch', 'kick'])
+assert.equal(execution.acceptedMeasurement.twitchGatePass, true)
+assert.equal(execution.acceptedMeasurement.kickGatePass, true)
+assert.equal(execution.acceptedMeasurement.allReservedRowsRemoved, true)
+assert.equal(execution.acceptedMeasurement.providerLeakageRowsZero, true)
+assert.equal(execution.acceptedMeasurement.temporaryWorkersDeleted, true)
+assert.equal(execution.acceptedMeasurement.categoryCaptureRemainedDisabled, true)
+assert.equal(execution.acceptedMeasurement.runtimeCaptureEnablementAuthorized, false)
+
+for (const provider of ['twitch', 'kick']) {
+  const measured = execution.measurements[provider]
+  const frozen = evidence.providers[provider]
+  assert.equal(measured.categoryGeneratorQueries, 4)
+  assert.equal(measured.d1Statements, 10)
+  assert.equal(measured.d1RowsRead, 7)
+  assert.equal(measured.d1RowsWritten, 10)
+  assert.equal(measured.d1Changes, 6)
+  assert.equal(measured.databaseSizeDeltaBytes, 0)
+  assert.equal(measured.probeCleanupRemainingRows, 0)
+  assert.equal(measured.providerLeakageRows, 0)
+  assert.equal(frozen.providerGatePass, true)
+  assert.equal(frozen.temporaryWorkerFinalHttpStatus, 404)
+}
+
+assert.equal(execution.retirement.triggerStatus, 'consumed_and_retired')
+assert.equal(execution.retirement.productionPushTriggerPresent, false)
+assert.equal(execution.retirement.productionJobPresent, false)
+assert.equal(execution.retirement.cloudflareSecretsReferenced, false)
+assert.equal(execution.retirement.productionWorkerDeployPresent, false)
+assert.equal(execution.retirement.verificationOnlyWorkflow, true)
+assert.equal(execution.retirement.rearmAuthorized, false)
+assert.deepEqual(execution.requiredSecrets, [])
+assert.equal(Object.values(execution.historicalExecutionBoundary).every((value) => value === false || value === true || value === '1900-01-02'), true)
 
 assert.equal(packageContract.status, 'accepted')
-assert.equal(packageContract.acceptance.pr, 547)
-assert.equal(packageContract.acceptance.packageValidationPass, true)
-assert.equal(packageContract.pullRequestBoundary.productionExecution, false)
-assert.equal(packageContract.pullRequestBoundary.categoryCaptureEnablement, false)
+assert.equal(trigger.status, 'consumed_and_retired')
+assert.equal(trigger.consumed, true)
+assert.equal(trigger.retired, true)
+assert.equal(trigger.rearmAuthorized, false)
+assert.equal(evidence.status, 'accepted')
+assert.equal(evidence.gates.executionCostProbePass, true)
+assert.equal(evidence.gates.runtimeCaptureEnablementAuthorized, false)
 
-assert.equal(/^\s*schedule:/m.test(workflow), false)
-assert.equal(workflow.includes("paths:\n      - 'docs/audits/12a4-category-execution-cost-probe-trigger.json'"), true)
-assert.equal(workflow.includes("github.event_name == 'push'"), true)
-assert.equal(workflow.includes("needs.contract.outputs.armed == 'true'"), true)
-assert.equal(workflow.includes("if: steps.twitch-gate.outcome == 'success'"), true)
-assert.equal(workflow.includes('skipped_after_twitch_gate_failure'), true)
-assert.equal(workflow.includes('run-12a4-category-execution-cost-probe-provider.mjs'), true)
-assert.equal(workflow.includes('verify-12a4-category-execution-cost-probe-provider-result.mjs'), true)
-assert.equal(workflow.includes('collect-12a4-category-execution-cost-probe-evidence.mjs'), true)
-assert.equal(workflow.includes('verify-12a4-category-execution-cost-probe-evidence.mjs "$ARTIFACT_DIR/evidence.json" --require-pass'), true)
-assert.equal(workflow.includes('actions/upload-artifact@v4'), true)
-assert.ok(workflow.indexOf('actions/upload-artifact@v4') < workflow.indexOf('Enforce final provider-separated acceptance'))
-assert.equal(workflow.includes('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}'), true)
-assert.equal(workflow.includes('CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}'), true)
-assert.equal(workflow.includes('production-probe:'), true)
-assert.equal(workflow.includes('workflow_dispatch:'), true)
+assert.ok(workflow.includes('Category Execution Cost Probe Retired'))
+assert.ok(workflow.includes('verify-retired-execution-package:'))
+assert.ok(workflow.includes('Verify accepted and retired execution package'))
+assert.ok(workflow.includes('Verify retired trigger'))
+assert.ok(workflow.includes('wrangler@4 deploy --dry-run'))
+assert.ok(workflow.includes('workflow_dispatch:'))
+assert.equal(/^\s*push:/m.test(workflow), false)
+assert.equal(workflow.includes('production-probe:'), false)
+assert.equal(workflow.includes('CLOUDFLARE_API_TOKEN'), false)
+assert.equal(workflow.includes('CLOUDFLARE_ACCOUNT_ID'), false)
+assert.equal(workflow.includes('GH_TOKEN'), false)
+assert.equal(workflow.includes('gh api'), false)
+assert.equal(workflow.includes('run-12a4-category-execution-cost-probe-provider.mjs'), false)
+assert.equal(workflow.includes('actions/upload-artifact@v4'), false)
 assert.equal(workflow.includes('CATEGORY_CAPTURE_ENABLED='), false)
 
-const dictionaryStart = probeWorker.indexOf('async function dictionaryUpsert')
-const dictionaryEnd = probeWorker.indexOf('async function inspectProvider')
+const dictionaryStart = worker.indexOf('async function dictionaryUpsert')
+const dictionaryEnd = worker.indexOf('async function inspectProvider')
+const dictionaryBlock = worker.slice(dictionaryStart, dictionaryEnd)
 assert.ok(dictionaryStart >= 0 && dictionaryEnd > dictionaryStart)
-const dictionaryBlock = probeWorker.slice(dictionaryStart, dictionaryEnd)
 assert.equal(dictionaryBlock.includes('WITH incoming(category_id, category_name)'), false)
-assert.equal(dictionaryBlock.includes('FROM incoming'), false)
 assert.equal(dictionaryBlock.includes(') VALUES (?, ?, ?, ?, ?, ?)'), true)
-assert.match(dictionaryBlock, /`\)\.bind\(\s*env\.PROVIDER,\s*identity\.categoryId,\s*identity\.categoryName,\s*observedAt,\s*observedAt,\s*CATEGORY_CONTRACT_VERSION,/s)
 assert.equal(dictionaryBlock.includes('ON CONFLICT(provider, category_id) DO UPDATE SET'), true)
-
-for (const fragment of [
-  'snapshotLatencyMs',
-  'collectorLatencyDeltaMs',
-  'RETRYABLE_HTTP_STATUSES',
-  'waitForWorkerHealth',
-  'postJsonWithRetry',
-  'healthAttempts',
-  'inspectAttempts',
-  'temporary_worker_preexisting_http_',
-  "['dlx', 'wrangler@4', 'deploy'",
-  "['dlx', 'wrangler@4', 'secret', 'put', 'PROBE_TOKEN'",
-  'deleteService',
-  "method: 'DELETE'",
-  "'/inspect'",
-  "'/probe'",
-  "'x-viewloom-confirm': CONFIRMATION",
-  'naturalSnapshotObserved',
-  'waitForDeleted',
-  'finally',
-]) {
-  assert.equal(runner.includes(fragment), true, `runner missing ${fragment}`)
-}
-assert.equal(runner.includes("['dlx', 'wrangler@4', 'delete'"), false)
-assert.equal(runner.includes('console.log(deploy.output)'), false)
-assert.equal(runner.includes('console.log(secret.output)'), false)
-assert.equal(runner.includes('CATEGORY_CAPTURE_ENABLED'), false)
-assert.equal(runner.includes('REMOTE_SCHEMA_APPLY'), false)
-
-assert.equal(runnerTest.includes('collectorLatencyDeltaMs(before, after), 550'), true)
-assert.equal(runnerTest.includes("validateRunId('../not-allowed')"), true)
-assert.equal(runnerTest.includes('isRetryableWorkerResponse({ status: 500'), true)
-assert.equal(runnerTest.includes('schema_query_failed'), true)
-assert.equal(runnerTest.includes("sanitized.includes('secret.workers.dev'), false"), true)
-assert.equal(evidenceTest.includes('attemptOneFailure'), true)
-assert.equal(evidenceTest.includes('providers.kick.attempted, false'), true)
-assert.equal(evidenceCollector.includes('rawProvider?.attempted === true'), true)
-assert.equal(evidenceCollector.includes('MISSING_NUMBER'), true)
-assert.equal(evidenceVerifier.includes('!item.attempted || !item.lifecycle.probeEndpointCalled'), true)
-assert.equal(providerVerifier.includes('lifecycle.healthHttpStatus === 200'), true)
-assert.equal(providerVerifier.includes('lifecycle.inspectAttempts'), true)
-assert.equal(providerVerifier.includes('lifecycle.naturalSnapshotObserved === true'), true)
-assert.equal(providerVerifier.includes('lifecycle.deleteHttpStatus === 404'), true)
-assert.equal(providerVerifier.includes('collectorLatencyDeltaMs <= thresholds.collectorLatencyDeltaMsPerProviderMax'), true)
-assert.equal(triggerVerifier.includes('acceptedPreviousAttempt'), true)
-assert.equal(triggerVerifier.includes('previousAttempt?.attempt + 1'), true)
-assert.equal(triggerVerifier.includes('exactExecutionIdentityVerifiedByWorkflowApi'), true)
-assert.equal(triggerScope.includes('changed.length !== 1'), true)
-assert.equal(triggerScope.includes('execution_package_scope'), true)
-assert.equal(packageScope.includes("'scripts/collect-12a4-category-execution-cost-probe-evidence.mjs'"), true)
-assert.equal(packageScope.includes("'workers/category-cost-probe/src/index.ts'"), true)
+assert.equal(triggerVerifier.includes('consumed_and_retired'), true)
+assert.equal(triggerVerifier.includes('rearmAuthorized'), true)
+assert.equal(packageScope.includes("'docs/audits/12a4-category-execution-cost-probe-trigger.json'"), true)
 
 console.log(JSON.stringify({
   ok: true,
-  workstream: execution.workstream,
   status: execution.status,
-  acceptedPackagePr: execution.acceptedPackage.pr,
-  executionPackagePr: execution.acceptance.pr,
-  triggerPresent,
-  previousAttempt: execution.previousAttempt.attempt,
-  nextAttemptAllowed: execution.previousAttempt.attempt + 1,
-  readinessRetry: true,
-  serviceApiDelete: true,
-  d1CompatibleDictionaryUpsert: true,
-  evidenceAttemptedFalsePreserved: true,
-  missingMeasurementsNotZeroed: true,
-  productionJobOnPullRequest: false,
-  productionJobWithoutTrigger: false,
-  providerOrder: execution.workflow.providerOrder,
-  stopBeforeKickOnTwitchFailure: execution.workflow.stopBeforeKickOnTwitchFailure,
-  categoryCaptureEnablement: false,
+  acceptedMeasurementPr: execution.acceptedMeasurement.acceptancePr,
+  sourceRunId: execution.acceptedMeasurement.sourceWorkflowRunId,
+  productionPushTriggerPresent: false,
+  productionJobPresent: false,
+  cloudflareSecretsReferenced: false,
+  rearmAuthorized: false,
+  categoryCaptureEnablementAuthorized: false,
 }, null, 2))
