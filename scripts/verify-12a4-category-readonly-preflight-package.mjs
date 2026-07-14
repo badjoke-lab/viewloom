@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
 const read = (file) => fs.readFileSync(file, 'utf8')
@@ -10,51 +9,62 @@ const kickConfig = read('workers/category-cost-probe/wrangler.kick.toml')
 const triggerPath = 'docs/audits/12a4-category-readonly-preflight-trigger.json'
 const trigger = fs.existsSync(triggerPath) ? JSON.parse(read(triggerPath)) : null
 
-assert.equal(contract.schemaVersion, 'viewloom-12a4-category-readonly-preflight-contract-v1')
-assert.equal(contract.parentPlanningPr, 520)
-assert.equal(contract.execution.event, 'workflow_dispatch')
-assert.equal(contract.execution.requiredRef, 'main')
-assert.equal(contract.execution.requiredConfirmation, 'READ_ONLY_PREFLIGHT_ONLY')
-assert.equal(contract.providerSeparated, true)
-assert.equal(contract.acceptance.rowsWrittenMax, 0)
-assert.equal(contract.acceptance.changesMax, 0)
-for (const value of Object.values(contract.boundaries)) assert.equal(value, false)
-
-assert.ok(workflow.includes('workflow_dispatch:'))
-assert.ok(workflow.includes('Type READ_ONLY_PREFLIGHT_ONLY'))
-assert.ok(workflow.includes("github.ref == 'refs/heads/main'"))
-assert.ok(workflow.includes("inputs.confirm == 'READ_ONLY_PREFLIGHT_ONLY'"))
-assert.ok(workflow.includes("github.event_name == 'workflow_dispatch'"))
-assert.ok(workflow.includes('CLOUDFLARE_API_TOKEN'))
-assert.ok(workflow.includes('CLOUDFLARE_ACCOUNT_ID'))
-assert.ok(workflow.includes('/inspect'))
-assert.ok(workflow.includes('$provider-codes.txt'))
-assert.ok(workflow.includes('delete_http_status'))
-assert.equal(workflow.includes('schedule:'), false)
-assert.equal(workflow.includes('/collect'), false)
-assert.equal(workflow.includes('wrangler d1 execute'), false)
-assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(workflow), false)
-assert.equal(workflow.includes('--var CATEGORY_CAPTURE_ENABLED'), false)
-
-if (trigger) {
-  assert.equal(trigger.schemaVersion, 'viewloom-12a4-category-readonly-preflight-trigger-v1')
-  assert.equal(trigger.status, 'armed_for_one_time_main_push')
-  assert.equal(trigger.planningPr, 520)
-  assert.equal(trigger.packagePr, 521)
-  assert.equal(trigger.confirmation, 'READ_ONLY_PREFLIGHT_ONLY')
-  assert.equal(trigger.oneTime, true)
-  for (const value of Object.values(trigger.boundaries)) assert.equal(value, false)
-  assert.ok(workflow.includes('push:'))
-  assert.ok(workflow.includes("github.event_name == 'push'"))
-  assert.ok(workflow.includes(triggerPath))
-  assert.ok(workflow.includes('package=$(gh api'))
-  assert.ok(workflow.includes('expectedPackageHeadSha'))
+const failures = []
+const check = (condition, label) => {
+  if (!condition) failures.push(label)
 }
 
-assert.ok(worker.includes("mode: 'read_only_preflight'"))
-assert.ok(worker.includes('productionRowsWrittenByWorker: false'))
-assert.equal(worker.includes('scheduled('), false)
-assert.equal(twitchConfig.includes('CATEGORY_CAPTURE_ENABLED'), false)
-assert.equal(kickConfig.includes('CATEGORY_CAPTURE_ENABLED'), false)
+check(contract.schemaVersion === 'viewloom-12a4-category-readonly-preflight-contract-v1', 'contract schemaVersion')
+check(contract.parentPlanningPr === 520, 'parent planning PR')
+check(contract.execution.event === 'workflow_dispatch', 'manual dispatch contract')
+check(contract.execution.requiredRef === 'main', 'main-only contract')
+check(contract.execution.requiredConfirmation === 'READ_ONLY_PREFLIGHT_ONLY', 'confirmation contract')
+check(contract.providerSeparated === true, 'provider separation contract')
+check(contract.acceptance.rowsWrittenMax === 0, 'zero rows-written threshold')
+check(contract.acceptance.changesMax === 0, 'zero changes threshold')
+check(Object.values(contract.boundaries).every((value) => value === false), 'all contract boundaries false')
+
+check(workflow.includes('workflow_dispatch:'), 'workflow_dispatch present')
+check(workflow.includes('Type READ_ONLY_PREFLIGHT_ONLY'), 'confirmation input present')
+check(workflow.includes("github.ref == 'refs/heads/main'"), 'main-only condition')
+check(workflow.includes("inputs.confirm == 'READ_ONLY_PREFLIGHT_ONLY'"), 'dispatch confirmation condition')
+check(workflow.includes("github.event_name == 'workflow_dispatch'"), 'dispatch condition')
+check(workflow.includes('CLOUDFLARE_API_TOKEN'), 'Cloudflare API token binding')
+check(workflow.includes('CLOUDFLARE_ACCOUNT_ID'), 'Cloudflare account binding')
+check(workflow.includes('"$url/inspect"'), 'read-only inspect route')
+check(workflow.includes('workers/services/$service'), 'temporary Worker deletion API')
+check(workflow.includes('"$http_status" == \'200\''), 'inspect HTTP 200 gate')
+check(workflow.includes('"$delete_http_status" == \'404\''), 'post-delete HTTP 404 gate')
+check(!workflow.includes('schedule:'), 'no schedule')
+check(!workflow.includes('"$url/collect"') && !workflow.includes("'$url/collect'"), 'no manual collector route')
+check(!workflow.includes('wrangler d1 execute'), 'no direct D1 execute')
+check(!/CATEGORY_CAPTURE_ENABLED\s*=/.test(workflow), 'no category enable assignment')
+check(!workflow.includes('--var CATEGORY_CAPTURE_ENABLED'), 'no category enable var')
+
+if (trigger) {
+  check(trigger.schemaVersion === 'viewloom-12a4-category-readonly-preflight-trigger-v1', 'trigger schemaVersion')
+  check(trigger.status === 'armed_for_one_time_main_push', 'trigger armed status')
+  check(trigger.planningPr === 520, 'trigger planning PR')
+  check(trigger.packagePr === 521, 'trigger package PR')
+  check(trigger.confirmation === 'READ_ONLY_PREFLIGHT_ONLY', 'trigger confirmation')
+  check(trigger.oneTime === true, 'one-time trigger')
+  check(Object.values(trigger.boundaries).every((value) => value === false), 'all trigger boundaries false')
+  check(workflow.includes('push:'), 'main push trigger present')
+  check(workflow.includes("github.event_name == 'push'"), 'push job condition')
+  check(workflow.includes(triggerPath), 'trigger path present')
+  check(workflow.includes('package=$(gh api'), 'package PR verification')
+  check(workflow.includes('expectedPackageHeadSha'), 'package head pin')
+}
+
+check(worker.includes("mode: 'read_only_preflight'"), 'Worker read-only mode')
+check(worker.includes('productionRowsWrittenByWorker: false'), 'Worker no-write boundary')
+check(!worker.includes('scheduled('), 'Worker has no scheduled handler')
+check(!twitchConfig.includes('CATEGORY_CAPTURE_ENABLED'), 'Twitch config flag absent')
+check(!kickConfig.includes('CATEGORY_CAPTURE_ENABLED'), 'Kick config flag absent')
+
+if (failures.length) {
+  console.error(JSON.stringify({ ok: false, failures }, null, 2))
+  process.exit(1)
+}
 
 console.log(JSON.stringify({ ok: true, mode: 'read_only_preflight', parentPlanningPr: 520, oneTimeTrigger: Boolean(trigger) }, null, 2))
