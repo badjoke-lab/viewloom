@@ -1,11 +1,11 @@
 {
   "schemaVersion": "viewloom-12a4-category-schema-recovery-audit-acceptance-contract-v1",
-  "workstream": "12A-4 category schema recovery audit acceptance",
+  "workstream": "12A-4 post-apply category schema audit acceptance",
   "status": "acceptance_package_ready",
   "trackingIssue": 519,
   "packagePr": 535,
-  "triggerPr": 536,
-  "triggerMergeSha": "b04c01e688123cb4d2f96bd2cb16c66a0a8c8d58",
+  "triggerPr": 544,
+  "triggerMergeSha": "867d2746a83be84b97a102cc86e011e5df055e05",
   "sourceWorkflowFile": "analytics-12a4-category-schema-recovery-audit.yml",
   "sourceWorkflowName": "Analytics 12A4 Category Schema Recovery Audit",
   "sourceArtifactName": "phase12a4-category-schema-recovery-audit",
@@ -16,6 +16,8 @@
     "event": "push",
     "recoveryAuditPass": true,
     "providerStatesKnown": true,
+    "twitchSchemaState": "complete",
+    "kickSchemaState": "complete",
     "remoteSchemaApplyAuthorized": false,
     "categoryRuntimeEnablementAuthorized": false
   },
