@@ -2,12 +2,8 @@ name: Analytics 12A4 Category Execution Cost Gate Umbrella
 
 on:
   pull_request:
-    branches:
-      - main
-    types:
-      - opened
-      - reopened
-      - synchronize
+    branches: [main]
+    types: [opened, reopened, synchronize]
     paths:
       - '.github/workflows/analytics-12a4-category-execution-cost-probe.yml'
       - 'README.md'
@@ -16,13 +12,11 @@ on:
       - 'docs/README.md'
       - 'docs/audits/12a2-current-gate-state.json'
       - 'docs/audits/12a4-category-execution-cost-probe-contract.json'
-      - 'docs/audits/12a4-category-readonly-preflight-evidence.json'
-      - 'docs/audits/12a4-category-controlled-schema-apply-contract.json'
+      - 'docs/audits/12a4-category-schema-recovery-audit-evidence.json'
       - 'docs/product/current-roadmap.md'
       - 'docs/product/current-schedule.md'
       - 'docs/product/post-watchlist-program-plan.md'
       - 'docs/work-in-progress/phase12a4-category-execution-cost-probe.md'
-      - 'docs/work-in-progress/phase12a4-category-controlled-schema-apply.md'
       - 'scripts/test-12a4-category-execution-cost-probe.py'
       - 'scripts/verify-12a4-category-execution-cost-probe.mjs'
       - 'scripts/verify-development-policy.mjs'
@@ -43,36 +37,31 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
       - name: Verify execution-cost umbrella contract
         run: node scripts/verify-12a4-category-execution-cost-probe.mjs
-
       - name: Verify canonical development policy
         run: node scripts/verify-development-policy.mjs
-
       - name: Preserve local category cost fixtures
         run: python scripts/test-12a4-category-execution-cost-probe.py
-
       - name: Publish umbrella gate summary
         if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4 Category Execution-Cost Gate'
+            echo '## ViewLoom 12A-4 Bounded Category Execution-Cost Gate'
             echo
             echo '- Tracking issue: #519'
-            echo '- Read-only production preflight: accepted PR #523'
-            echo '- Current sub-gate: controlled category schema apply design'
-            echo '- Production workflow execution from this gate: no'
-            echo '- Remote migration applied: no'
+            echo '- Twitch category schema: complete'
+            echo '- Kick category schema: complete'
+            echo '- Schema execution/recovery triggers: retired'
+            echo '- Current sub-gate: bounded provider-separated probe design'
+            echo '- Production probe execution from this gate: no'
             echo '- Production category capture enabled: no'
-            echo '- Production category rows written: no'
+            echo '- Production category rows present: no'
             echo '- Cloudflare credentials used: no'
             echo '- New cron: no'
             echo '- Backfill: no'

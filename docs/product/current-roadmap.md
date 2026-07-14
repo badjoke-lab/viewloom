@@ -3,112 +3,65 @@
 Status: source of truth  
 Last updated: 2026-07-14
 
-```text
-Phase 12A Analytics Capture Foundation active
-12A-0 baseline complete PR #490
-12A-1 field contract complete PR #492
-12A-2 design/migration/deploy/schema accepted through PR #506
-12A-3 bounded generation and accumulation complete through PR #511
-12A-4 category source audit accepted PR #513
-12A-4 category storage design accepted PR #514
-12A-4 category migration and disabled runtime accepted through PR #518
-12A-4 read-only production preflight accepted PR #523
-Production intraday generation started yes
-Current workstream 12A-4 controlled category schema apply design
-Category capture runtime not started
-```
+## Current position
 
-## Phase 12A authorities
+ViewLoom is a production Twitch/Kick observation site with provider-separated collectors, D1 storage, public data-status surfaces, Heatmap, Day Flow, Battle Lines, History & Trends, and channel pages.
 
-- Analytics specification: `analytics-observation-system-spec.md`
-- Analytics implementation plan: `analytics-observation-system-plan.md`
-- 12A-1 field contract: `../audits/12a1-analytics-field-contract.json`
-- 12A-1 source evidence: `../audits/12a1-source-evidence.json`
-- 12A-3 generator evidence: `../audits/12a3-generator-enablement-evidence.json`
-- 12A-3 post-merge evidence: `../audits/12a3-postmerge-acceptance-evidence.json`
-- 12A-4 category source contract: `../audits/12a4-category-source-audit-contract.json`
-- 12A-4 category source evidence: `../audits/12a4-category-source-audit-evidence.json`
-- 12A-4 category storage contract: `../audits/12a4-category-storage-design-contract.json`
-- 12A-4 category storage evidence: `../audits/12a4-category-storage-budget-evidence.json`
-- 12A-4 storage acceptance: `../operations/12a4-category-storage-design-acceptance-2026-07-14.md`
-- 12A-4 category migration/runtime contract: `../audits/12a4-category-migration-runtime-contract.json`
-- 12A-4 disabled-runtime evidence: `../audits/12a4-disabled-runtime-postmerge-evidence.json`
-- 12A-4 execution-cost umbrella contract: `../audits/12a4-category-execution-cost-probe-contract.json`
-- 12A-4 read-only preflight evidence: `../audits/12a4-category-readonly-preflight-evidence.json`
-- 12A-4 controlled schema apply contract: `../audits/12a4-category-controlled-schema-apply-contract.json`
-- Current state: `../audits/12a2-current-gate-state.json`
+## Current milestone: 12A — free-tier long-run hardening
 
-## Accepted 12A-4 source boundary
+### Completed
 
-```text
-categorySourceAuditPass true
-Twitch provider id path game_id
-Twitch name path game_name
-Kick provider id path category.id
-Kick name path category.name
-providerSeparated true
-crossProviderCategoryIdentityAllowed false
-combinedProviderCategoryRankingAllowed false
-```
+- 12A-0 collection safety and raw retention controls.
+- 12A-1 daily rollup, pruning, and history integration.
+- 12A-2 intraday rollups with provider-separated schema and controlled apply.
+- 12A-3 bounded aggregate generation, execution-cost acceptance, enablement, and post-merge accumulation.
+- 12A-4 category source audit: Twitch `game_id/game_name`, Kick `category.id/category.name`.
+- 12A-4 category storage design: embedded hourly category summaries.
+- 12A-4 repository migration and disabled runtime implementation.
+- 12A-4 read-only production preflight.
+- 12A-4 controlled schema design, provider-specific recovery, and final post-apply audit.
+- Twitch and Kick production category schemas are both complete.
+- All schema execution and recovery triggers are consumed and retired.
 
-## Accepted 12A-4 storage and preflight boundary
+### Current gate: 12A-4-5 bounded provider-separated category execution-cost probe design
 
-```text
-categoryStorageDesignPass true
-selectedModel embedded_hourly
-categoryContractVersion category-source-v1
-raw encoding categoryIds + categoryRefs
-category names provider_category_dictionary
-long-term encoding category_hourly_json in existing streamer/day rows
-newCategoryIndex false
-repositoryMigrationCandidateImplemented true
-disabledRuntimeProductionAccepted true
-readOnlyPreflightAccepted true
-readOnlyPreflightAcceptancePr 523
-productionCategorySchemaPresent false
-remoteMigrationApplyAuthorized false
-boundedProductionProbeAuthorized false
-runtimeCaptureAuthorized false
-```
+The current work is **not** runtime capture enablement. It is a bounded one-shot probe package that must:
 
-```text
-Twitch projected total/headroom 438.70 / 11.30 MB
-Kick projected total/headroom 314.57 / 135.43 MB
-Account projected total/headroom 3716.59 / 891.41 MB
-```
+- read accepted schema evidence from `main`;
+- operate on Twitch and Kick independently;
+- use only reserved probe identifiers;
+- measure D1 reads, writes, changes, SQL duration, Worker wall time, database size, and collector latency;
+- prove the dictionary second pass is a no-op;
+- remove every reserved probe row and dictionary entry;
+- prove provider leakage is zero;
+- delete temporary Workers and verify HTTP 404;
+- leave `CATEGORY_CAPTURE_ENABLED` absent.
 
-## Current implementation boundary
+### Next gate: 12A-4-6 bounded probe execution and acceptance
 
-```text
-12A-3 complete and accumulating
-12A-4-0 source verification complete
-12A-4-1 category storage design and budget accepted
-12A-4-2 category migration and disabled runtime accepted
-12A-4-3 read-only production preflight accepted
-12A-4-4 controlled provider schema apply design current
-production temporary schema Worker deployment not authorized by this design PR
-production category schema apply not authorized by this design PR
-bounded production cost probe not authorized
-production category writes not authorized
-category runtime capture not authorized
-raw retention unchanged
-new cron not authorized
-backfill not authorized
-category analytics UI not authorized
-```
+A production probe may run only after a package PR passes local fixtures, dry-runs, evidence verification, and scope checks. The production trigger must be a separate one-file PR. Twitch completes and cleans up before Kick starts.
 
-The current task is to prepare and validate the exact provider-separated controlled schema apply package. It must prove migration parity, partial-schema stop behavior, second-pass no-op behavior, provider order, deletion requirements, and failure policy before a separate one-time production trigger is considered.
+### Later decision: category capture enablement
 
-## Forward sequence
+Runtime capture remains unauthorized until bounded cost evidence is accepted. Enablement, if justified, requires a separate contract, trigger, post-merge observation, and rollback boundary.
 
-```text
-12A-4 controlled provider-separated category schema apply
-  -> bounded provider-separated category execution-cost probe
-  -> provider-separated production capture acceptance
-  -> 12A-5 foundation acceptance and accumulation handoff
-  -> Phase 13-14 localization with evidence accumulation
-  -> Phase 15 capability and calibration audit
-  -> Phase 16A-F analytics observation system
-```
+## Hard boundaries
 
-Phase 16 remains gated by Phase 15.
+- Twitch and Kick remain separate data products.
+- Cross-provider category identity and combined category rankings are not allowed.
+- No new cron is authorized.
+- No backfill is authorized.
+- Raw-retention windows do not change in 12A-4.
+- Category schema columns are preserved; incident response disables runtime instead of dropping columns.
+- Free-tier safety takes precedence over feature breadth.
+
+## Canonical evidence
+
+- `docs/audits/12a2-current-gate-state.json`
+- `docs/audits/12a4-category-schema-recovery-audit-evidence.json`
+- `docs/audits/12a4-category-execution-cost-probe-contract.json`
+- `docs/work-in-progress/phase12a4-category-execution-cost-probe.md`
+
+## Deferred product expansion
+
+Public feature expansion, category analytics UI, additional platforms, aggressive retention, and cross-provider comparison remain deferred until the free-tier production gates are complete.

@@ -6,129 +6,76 @@ ViewLoom is an independent, unofficial observatory for retained Twitch and Kick 
 
 - Heatmap = Now
 - Day Flow = Today
-- Battle Lines = Rivalry and repeated temporal relationships
-- History = Trends and retained analytical evidence
-- Channel = one retained channel footprint and future personal baseline/run interpretation
-- Local Watchlist = browser-local saved evidence
+- Battle Lines = Rivalry
+- History = Trends
+- Channel = one retained channel footprint
+- Data Status = collection health and evidence quality
 
-## Current state
+## Current development state
 
 ```text
 Phase 12A Analytics Capture Foundation active
-12A-0 baseline                         complete PR #490
-12A-1 field contract                   complete PR #492
-12A-2 design and migration             accepted through PR #499
-12A-2 collector deployment/schema      accepted PR #506
-12A-3 account storage gate             accepted PR #507
-12A-3 execution-cost gate              accepted PR #508
-12A-3 bounded generator                enabled PR #510
-12A-3 production accumulation          accepted PR #511
-12A-4 category source audit            accepted PR #513
-12A-4 category storage design          accepted PR #514
-12A-4 category migration/disabled runtime implemented PR #516
-12A-4 disabled-runtime production gate accepted PR #517 / frozen PR #518
-12A-4 read-only production preflight   accepted and frozen PR #523
-Production intraday generation         enabled and accumulating
-Current workstream                     12A-4 controlled category schema apply design
-Category capture runtime               not started
+12A-0 through 12A-3 complete
+12A-4 category source audit accepted PR #513
+12A-4 category storage design accepted PR #514
+12A-4 migration and disabled runtime accepted through PR #518
+12A-4 read-only production preflight accepted PR #523
+12A-4 Twitch and Kick category schemas complete and audited PR #545
+Schema execution and recovery triggers retired
+Current workstream 12A-4-5 bounded provider-separated category execution-cost probe design
+CATEGORY_CAPTURE_ENABLED absent
+Production category rows absent
+Category runtime capture not started
 ```
 
-## Phase 12A permanent authorities
+The current task is **not** another schema apply and is **not** category capture enablement. It is a bounded one-shot cost probe design. The probe must measure provider-specific execution cost, prove dictionary idempotency, remove all reserved probe data, preserve collector success semantics, and delete temporary Workers.
 
-```text
-docs/audits/12a0-current-data-capacity-baseline.json
-docs/audits/12a1-analytics-field-contract.json
-docs/audits/12a1-source-evidence.json
-docs/audits/12a2-intraday-rollup-design-contract.json
-docs/audits/12a2-intraday-rollup-budget-evidence.json
-docs/audits/12a2-migration-acceptance.json
-docs/audits/12a2-collector-worker-deploy-evidence.json
-docs/audits/12a3-account-storage-evidence.json
-docs/audits/12a3-execution-cost-evidence.json
-docs/audits/12a3-generator-enablement-evidence.json
-docs/audits/12a3-postmerge-acceptance-evidence.json
-docs/audits/12a4-category-source-audit-contract.json
-docs/audits/12a4-category-source-audit-evidence.json
-docs/audits/12a4-category-storage-design-contract.json
-docs/audits/12a4-category-storage-budget-evidence.json
-docs/audits/12a4-category-migration-runtime-contract.json
-docs/audits/12a4-disabled-runtime-postmerge-evidence.json
-docs/audits/12a4-category-execution-cost-probe-contract.json
-docs/audits/12a4-category-readonly-preflight-evidence.json
-docs/audits/12a4-category-controlled-schema-apply-contract.json
-docs/audits/12a2-current-gate-state.json
+## Hard boundaries
+
+- No cross-provider category identity.
+- No combined Twitch/Kick category rankings.
+- No new cron for category capture.
+- No category backfill.
+- No retention expansion in 12A-4.
+- No production probe from a package PR.
+- No runtime capture before a separate accepted enablement gate.
+- Accepted category columns are preserved; rollback disables runtime rather than dropping schema.
+
+## Repository layout
+
+- `apps/web` — public site and Pages Functions APIs.
+- `workers/collector-twitch` — Twitch collector.
+- `workers/collector-kick` — Kick collector.
+- `workers/shared` — provider-independent bounded generation and schema logic.
+- `db/d1` — D1 migrations.
+- `docs/product` — current product roadmap and schedule.
+- `docs/audits` — machine-readable contracts and accepted evidence.
+- `docs/work-in-progress` — the one active bounded workstream.
+
+## Source of truth
+
+Read these before changing production behavior:
+
+1. `docs/product/current-roadmap.md`
+2. `docs/product/current-schedule.md`
+3. `docs/audits/12a2-current-gate-state.json`
+4. `docs/audits/12a4-category-schema-recovery-audit-evidence.json`
+5. `docs/audits/12a4-category-execution-cost-probe-contract.json`
+6. `docs/work-in-progress/phase12a4-category-execution-cost-probe.md`
+7. `docs/operations/development-and-deployment-policy.md`
+
+## Required validation
+
+Before merge, run the relevant package verifier plus:
+
+```bash
+node scripts/verify-development-policy.mjs
+pnpm build
+pnpm typecheck
 ```
 
-## Accepted category source contracts
+Production execution must remain isolated behind a separate one-file trigger PR and an exact-SHA acceptance workflow.
 
-```text
-Twitch endpoint: https://api.twitch.tv/helix/streams
-Twitch provider id / name: game_id / game_name
-Twitch live field presence: 1.0 across two 100-row probes
+## Data honesty
 
-Kick endpoint: https://api.kick.com/public/v1/livestreams
-Kick provider id / name: category.id / category.name
-Kick live field presence: 1.0 across two 100-row probes
-
-provider category identity equivalence: false
-combined-provider category ranking: forbidden
-runtime category capture: disabled
-```
-
-## Accepted category storage design
-
-```text
-selected model: embedded_hourly
-category contract: category-source-v1
-raw encoding: categoryIds + item-order-aligned categoryRefs
-category names: one set-based provider_category_dictionary write
-long-term encoding: category_hourly_json in existing streamer/day rows
-new category index: no
-raw-retention extension: no
-new cron: no
-backfill: no
-```
-
-```text
-Twitch projected total/headroom: 438.70 / 11.30 MB
-Kick projected total/headroom: 314.57 / 135.43 MB
-Account projected total/headroom: 3716.59 / 891.41 MB
-```
-
-## Current boundary
-
-```text
-intraday generation authorized: true
-intraday generation running: true
-category source contract accepted: true
-category storage design accepted: true
-repository category migration candidate implemented: true
-disabled category runtime deployed and accepted: true
-read-only category preflight accepted: true
-production category schema present: false
-controlled schema apply design current: true
-remote production migration authorized: false
-bounded production cost probe authorized: false
-category runtime capture authorized: false
-category runtime capture started: false
-raw retention unchanged: true
-new cron authorized: false
-backfill authorized: false
-category analytics UI authorized: false
-```
-
-The current change prepares Issue #519's one-time controlled remote schema apply gate. It adds migration-parity code, a provider-shared controlled apply module, provider-separated temporary Worker candidates, partial-schema stop behavior, local absent/apply/no-op fixtures, explicit failure policy, and Twitch/Kick Wrangler dry-runs. It performs no production deployment, remote migration, production category write, or runtime capture enablement.
-
-## Forward sequence
-
-```text
-12A-4 controlled provider-separated category schema apply
-  -> bounded provider-separated category execution-cost probe
-  -> provider-separated production capture acceptance
-  -> 12A-5 foundation acceptance and accumulation handoff
-  -> Phase 13-14 localization with evidence accumulation
-  -> Phase 15 capability and calibration audit
-  -> Phase 16A-F analytics observation system
-```
-
-Canonical reading starts at `docs/README.md`. Only accepted evidence and latest-head verification count.
+ViewLoom distinguishes real, partial, stale, empty, error, and demo states. Missing observations are not silently converted to zero, and provider coverage limitations remain visible.
