@@ -4,12 +4,16 @@
   "status": "accepted",
   "trackingIssue": 519,
   "acceptance": {
-    "pr": 548,
-    "validatedImplementationHeadSha": "92157e82795d7ddb83bed19df2810a230d3c04e4",
-    "workflowRunId": 29338898726,
-    "workflowJobId": 87105150990,
+    "pr": 551,
+    "validatedImplementationHeadSha": "6b0ac0f58e41a8f4a8a969b60bad31b4aec18b68",
+    "mergeSha": "9f007c5024aa6db7abae8e9d17bea34cfbe8f0d9",
+    "workflowRunId": 29355545064,
+    "workflowJobId": 87162131023,
     "contractPass": true,
-    "productionJobSkippedOnPullRequest": true
+    "productionJobSkippedOnPullRequest": true,
+    "readinessRetryValidated": true,
+    "explicitAttemptStateValidated": true,
+    "missingMeasurementsPreserved": true
   },
   "acceptedPackage": {
     "pr": 547,
@@ -19,6 +23,17 @@
     "packageValidationRunId": 29337837976,
     "twitchWorkerDryRun": true,
     "kickWorkerDryRun": true
+  },
+  "previousAttempt": {
+    "attempt": 1,
+    "triggerPr": 549,
+    "triggerMergeSha": "9637f4927fbc5e4674e3a78e285d7ea6c5049cfa",
+    "acceptancePr": 550,
+    "acceptanceMergeSha": "aea060ede42b4b636bc17034e7ca2563535d6ed0",
+    "status": "accepted_safe_failure",
+    "probeEndpointCalled": false,
+    "kickAttempted": false,
+    "reservedWritesPerformed": false
   },
   "workflow": {
     "path": ".github/workflows/analytics-12a4-category-execution-cost-probe-execution.yml",
@@ -40,9 +55,12 @@
     "evidenceVerifier": "scripts/verify-12a4-category-execution-cost-probe-evidence.mjs",
     "temporaryWorkerPreconditionHttpStatus": 404,
     "temporaryWorkerPostDeleteHttpStatus": 404,
+    "workerReadinessPollingAttempts": 40,
+    "workerReadinessPollingIntervalSeconds": 5,
     "naturalSnapshotPollingAttempts": 70,
     "naturalSnapshotPollingIntervalSeconds": 10,
     "collectorLatencyDefinition": "absolute difference between post-probe and pre-probe collected_at minus bucket_minute latency",
+    "deleteViaCloudflareServiceApi": true,
     "deleteInFinally": true,
     "rawDeploymentLogsInArtifact": false
   },
@@ -57,7 +75,9 @@
     "databaseIdsIncluded": false,
     "accountIdIncluded": false,
     "deploymentLogsIncluded": false,
-    "reservedProbeIdsIncluded": true
+    "reservedProbeIdsIncluded": true,
+    "unattemptedProvidersExplicit": true,
+    "missingMeasurementsCoercedToZero": false
   },
   "pullRequestBoundary": {
     "productionExecution": false,
@@ -72,5 +92,5 @@
     "crossProviderCategoryIdentity": false,
     "combinedProviderCategoryRanking": false
   },
-  "nextGate": "separate one-file exact-SHA trigger PR followed by sanitized evidence acceptance"
+  "nextGate": "separate one-file exact-SHA attempt 2 trigger PR followed by sanitized evidence acceptance"
 }
