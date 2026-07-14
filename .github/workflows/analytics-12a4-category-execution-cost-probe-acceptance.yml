@@ -40,6 +40,14 @@ jobs:
         run: node scripts/check-12a4-category-execution-cost-probe-acceptance-scope.mjs
       - name: Verify acceptance package
         run: node scripts/verify-12a4-category-execution-cost-probe-acceptance-package.mjs
+      - name: Upload acceptance package diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a4-category-execution-cost-probe-acceptance-package-diagnostics
+          path: artifacts/12a4-category-execution-cost-probe-acceptance/package-diagnostics.json
+          if-no-files-found: error
+          retention-days: 7
 
   source-acceptance:
     needs: contract
