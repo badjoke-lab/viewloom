@@ -16,6 +16,7 @@ const allowed = new Set([
   'scripts/verify-12a4-category-execution-cost-probe-execution-package.mjs',
   'scripts/verify-12a4-category-execution-cost-probe-provider-result.mjs',
   'scripts/verify-12a4-category-execution-cost-probe-trigger.mjs',
+  'workers/category-cost-probe/src/index.ts',
 ])
 
 const baseRef = process.env.GITHUB_BASE_REF
