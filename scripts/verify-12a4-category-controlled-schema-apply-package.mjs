@@ -40,7 +40,7 @@ assert.equal(contract.acceptanceThresholds.schemaApplyStatementsPerProvider, 9)
 assert.equal(contract.acceptanceThresholds.secondPassStatementCountMax, 0)
 assert.equal(contract.acceptanceThresholds.schemaApplyWorkerWallMsPerProviderMax, 15000)
 assert.equal(contract.acceptanceThresholds.schemaSizeIncreaseBytesPerProviderMax, 5242880)
-assert.equal(contract.acceptanceThresholds.collectorIntervalDeltaMsPerProviderMax, 2000)
+assert.equal(contract.acceptanceThresholds.collectorLatencyDeltaMsPerProviderMax, 2000)
 assert.equal(contract.acceptanceThresholds.categoryDictionaryRowsMax, 0)
 assert.equal(contract.acceptanceThresholds.reservedProbeRowsMax, 0)
 assert.equal(contract.acceptanceThresholds.providerLeakageRowsMax, 0)
@@ -105,7 +105,7 @@ assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(kickCollectorConfig), false)
 
 for (const text of [
   'viewloom-12a4-category-controlled-schema-apply-evidence-v1',
-  'collectorIntervalDeltaMs',
+  'collectorLatencyDeltaMs',
   'schemaSizeIncreaseBytes',
   'secondApplyNoop',
   'temporaryWorkerDeleted',
