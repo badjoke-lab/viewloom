@@ -33,8 +33,8 @@ for (const text of [
   'actions/artifacts/$artifact_id/zip',
   'verify-12a4-category-schema-recovery-audit-evidence.mjs',
   'production-recovery-audit',
-  "providers.twitch.schemaState == 'complete'",
-  "providers.kick.schemaState == 'complete'",
+  "'.providers.twitch.schemaState'",
+  "'.providers.kick.schemaState'",
 ]) assert.ok(workflow.includes(text), `workflow missing: ${text}`)
 assert.equal(workflow.includes('CLOUDFLARE_API_TOKEN'), false)
 assert.equal(workflow.includes('CLOUDFLARE_ACCOUNT_ID'), false)
