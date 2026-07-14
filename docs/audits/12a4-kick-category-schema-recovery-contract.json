@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "viewloom-12a4-kick-category-schema-recovery-contract-v1",
+  "workstream": "12A-4 Kick-only category schema recovery",
+  "status": "recovery_package_candidate_no_production_trigger",
+  "trackingIssue": 519,
+  "acceptedAudit": {
+    "acceptancePr": 537,
+    "mergeSha": "56891f4d0441da2122fa130c7e7d8a3491ee2740",
+    "evidenceFile": "docs/audits/12a4-category-schema-recovery-audit-evidence.json",
+    "twitchSchemaState": "complete",
+    "kickSchemaState": "absent"
+  },
+  "target": {
+    "provider": "kick",
+    "databaseName": "vl_kick_hot",
+    "temporaryWorkerName": "viewloom-kick-category-schema-recovery",
+    "confirmation": "APPLY_KICK_CATEGORY_SCHEMA_WITH_CAPTURE_DISABLED"
+  },
+  "triggerFile": "docs/audits/12a4-kick-category-schema-recovery-trigger.json",
+  "sourceArtifactName": "phase12a4-kick-category-schema-recovery",
+  "migration": {
+    "statementCount": 9,
+    "secondPassStatementCountMax": 0,
+    "partialSchemaPolicy": "stop_without_applying"
+  },
+  "acceptanceThresholds": {
+    "schemaApplyWorkerWallMsMax": 15000,
+    "schemaSizeIncreaseBytesMax": 5242880,
+    "collectorLatencyDeltaMsMax": 2000,
+    "categoryDictionaryRowsMax": 0,
+    "reservedProbeRowsMax": 0,
+    "providerLeakageRowsMax": 0,
+    "postDeleteHttpStatus": 404
+  },
+  "boundaries": {
+    "twitchSchemaApply": false,
+    "categoryRuntimeEnablement": false,
+    "productionCategoryRows": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  },
+  "nextDecision": "after accepted Kick recovery evidence, retire schema triggers and begin bounded provider-separated execution-cost probe design"
+}
