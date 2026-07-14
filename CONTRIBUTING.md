@@ -14,8 +14,9 @@ Phase 12A Analytics Capture Foundation active
 12A-3 bounded generation and accumulation complete through PR #511
 12A-4 provider-specific category source audit accepted PR #513
 12A-4 provider-specific category storage design accepted PR #514
+12A-4 category migration and disabled runtime accepted through PR #518
 Production generation started yes
-Current workstream 12A-4 category migration and disabled runtime implementation
+Current workstream 12A-4 production category execution-cost probe
 Category runtime capture not started
 ```
 
@@ -34,24 +35,30 @@ selected category storage model: embedded_hourly
 category contract version: category-source-v1
 provider category identity equivalence: false
 combined-provider category ranking: forbidden
+repository migration candidate: implemented
+disabled runtime production acceptance: complete
+production category schema: absent
 ```
 
-## Current implementation boundary
+## Current execution-cost planning boundary
 
-A category migration and disabled-runtime PR must state:
+A category execution-cost planning PR must state:
 
 ```text
 provider scope
-migration objects and columns
-migration idempotency strategy
-raw category encoding
-provider dictionary write contract
-hourly category rollup contract
-coverage and missing-field semantics
-disabled-by-default runtime flag behavior
-collector failure-containment behavior
-statement and changed-row budget
-local fixture and acceptance gates
+accepted starting PRs and evidence
+database bindings
+read-only preflight contract
+controlled migration order
+pre/post schema and size measurements
+D1 rows read/written, changes, and SQL duration
+Worker wall time and collector latency delta
+dictionary first-pass and unchanged-name second-pass behavior
+category generator query ceiling
+failure containment
+probe cleanup and temporary Worker deletion
+acceptance thresholds and stop conditions
+rollback and disable procedure
 remote apply and production enablement exclusions
 ```
 
@@ -64,20 +71,21 @@ leave raw retention unchanged
 avoid a new cron
 perform no backfill
 add no category analytics UI
-retain explicit observed/missing/partial/unavailable states
-keep category runtime capture disabled without an explicit later production-approved flag
+keep CATEGORY_CAPTURE_ENABLED absent during planning and schema preflight
 preserve the existing collector result if category processing fails
-add no extra intraday-generator statement
-require a later production execution-cost probe
+retain the 12-query category intraday-generator ceiling
+use reserved, fully removable probe rows for local or explicitly authorized probes
+require a separate evidence-bearing production gate
 ```
 
 It must not:
 
 ```text
+deploy a production probe from the planning PR
 apply the migration to production
 commit CATEGORY_CAPTURE_ENABLED=true to either wrangler.toml
-write production category rows from the implementation PR
-use direct wrangler d1 execute
+write production category rows from the planning PR
+use direct wrangler d1 execute in the planning PR
 add a public DDL route
 claim exact category switch times or exact sessions
 infer offline state from absence in the bounded window
@@ -100,4 +108,4 @@ canonical documents
   -> canonical state update
 ```
 
-Ordinary development uses `work-*`; deliberate runtime validation uses `preview-*`; `main` is production.
+Ordinary development uses `work-*` or an explicitly documented agent branch; deliberate runtime validation uses `preview-*`; `main` is production.
