@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "viewloom-12a4-category-readonly-preflight-trigger-v1",
+  "status": "armed_for_one_time_main_push",
+  "trackingIssue": 519,
+  "planningPr": 520,
+  "packagePr": 521,
+  "expectedPackageHeadSha": "26a2fb2112ddd7027913d2c44058416835637657",
+  "confirmation": "READ_ONLY_PREFLIGHT_ONLY",
+  "providerSeparated": true,
+  "oneTime": true,
+  "boundaries": {
+    "remoteMigrationApply": false,
+    "categoryRuntimeEnablement": false,
+    "productionCategoryRows": false,
+    "manualCollectorRoute": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  }
+}
