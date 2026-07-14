@@ -25,7 +25,7 @@ Phase 12A Analytics Capture Foundation active
 12A-3 production accumulation          accepted PR #511
 12A-4 category source audit            accepted PR #513
 12A-4 category storage design          accepted PR #514
-12A-4 migration and disabled runtime   implemented PR #516
+12A-4 category migration/disabled runtime implemented PR #516
 12A-4 disabled-runtime production gate accepted PR #517 / frozen PR #518
 Production intraday generation         enabled and accumulating
 Current workstream                     12A-4 production category execution-cost probe
@@ -99,7 +99,7 @@ intraday generation authorized: true
 intraday generation running: true
 category source contract accepted: true
 category storage design accepted: true
-repository migration candidate implemented: true
+repository category migration candidate implemented: true
 disabled category runtime deployed and accepted: true
 production category schema present: false
 remote production migration authorized: false
@@ -117,7 +117,7 @@ The current change prepares Issue #519's provider-separated production execution
 ## Forward sequence
 
 ```text
-12A-4 production execution-cost probe and remote migration decision
+12A-4 production category execution-cost probe and remote migration decision
   -> provider-separated production capture acceptance
   -> 12A-5 foundation acceptance and accumulation handoff
   -> Phase 13-14 localization with evidence accumulation
