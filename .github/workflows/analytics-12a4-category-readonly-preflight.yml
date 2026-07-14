@@ -1,0 +1,203 @@
+name: Analytics 12A4 Category Read-Only Preflight
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/analytics-12a4-category-readonly-preflight.yml'
+      - 'docs/audits/12a4-category-readonly-preflight-contract.json'
+      - 'docs/work-in-progress/phase12a4-category-readonly-preflight.md'
+      - 'scripts/check-12a4-category-readonly-preflight-scope.mjs'
+      - 'scripts/collect-12a4-category-readonly-preflight-evidence.mjs'
+      - 'scripts/verify-12a4-category-readonly-preflight-evidence.mjs'
+      - 'scripts/verify-12a4-category-readonly-preflight-package.mjs'
+      - 'workers/category-cost-probe/**'
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type READ_ONLY_PREFLIGHT_ONLY
+        required: true
+        type: string
+      expected_main_sha:
+        description: Exact main SHA that must be checked out
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: analytics-12a4-category-readonly-preflight-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+env:
+  ARTIFACT_DIR: artifacts/12a4-category-readonly-preflight
+  RAW_DIR: artifacts/12a4-category-readonly-preflight/raw
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify branch scope
+        run: node scripts/check-12a4-category-readonly-preflight-scope.mjs
+
+      - name: Verify read-only preflight package
+        run: node scripts/verify-12a4-category-readonly-preflight-package.mjs
+
+      - name: Bundle Twitch preflight Worker without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-cost-probe/wrangler.twitch.toml
+
+      - name: Bundle Kick preflight Worker without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-cost-probe/wrangler.kick.toml
+
+  production-preflight:
+    needs: contract
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      inputs.confirm == 'READ_ONLY_PREFLIGHT_ONLY'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact main and accepted parent gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RAW_DIR"
+          actual_sha=$(git rev-parse HEAD)
+          [[ "$actual_sha" == "${{ inputs.expected_main_sha }}" ]]
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          parent=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/520")
+          [[ $(jq -r '.merged') == 'true' <<<"$parent" ]]
+          parent_merge_sha=$(jq -r '.merge_commit_sha' <<<"$parent")
+          git merge-base --is-ancestor "$parent_merge_sha" HEAD
+          printf '%s' "$parent" > "$RAW_DIR/parent-pr.json"
+          printf '%s\n' "$actual_sha" > "$RAW_DIR/head-sha.txt"
+          ! grep -R --line-number --fixed-strings 'CATEGORY_CAPTURE_ENABLED' \
+            workers/collector-twitch/wrangler.toml workers/collector-kick/wrangler.toml
+
+      - name: Prepare temporary provider configs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RAW_DIR/configs"
+          cp workers/category-cost-probe/wrangler.twitch.toml "$RAW_DIR/configs/twitch.toml"
+          cp workers/category-cost-probe/wrangler.kick.toml "$RAW_DIR/configs/kick.toml"
+          for config in "$RAW_DIR/configs/twitch.toml" "$RAW_DIR/configs/kick.toml"; do
+            sed -i "s|main = \"src/index.ts\"|main = \"$GITHUB_WORKSPACE/workers/category-cost-probe/src/index.ts\"|" "$config"
+          done
+          echo "PROBE_TOKEN=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
+      - name: Deploy, inspect, and delete temporary provider Workers
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          inspect_provider() {
+            provider="$1"
+            service="viewloom-category-cost-preflight-$provider"
+            config="$RAW_DIR/configs/$provider.toml"
+            log="$RAW_DIR/$provider-deploy.log"
+            body="$RAW_DIR/$provider.json"
+            deploy_code=1
+            secret_code=1
+            curl_code=1
+            http_status=0
+            delete_code=1
+            delete_curl_code=1
+            delete_http_status=0
+            url=''
+
+            pnpm dlx wrangler@4 deploy --config "$config" >"$log" 2>&1
+            deploy_code=$?
+            if [[ $deploy_code -eq 0 ]]; then
+              printf '%s' "$PROBE_TOKEN" | pnpm dlx wrangler@4 secret put PROBE_TOKEN --config "$config" >>"$log" 2>&1
+              secret_code=$?
+              url=$(grep -Eo 'https://[^ ]+workers.dev' "$log" | tail -1 || true)
+              if [[ $secret_code -eq 0 && -n "$url" ]]; then
+                for attempt in $(seq 1 40); do
+                  http_status=$(curl -sS -o "$body" -w '%{http_code}' \
+                    -X POST -H "Authorization: Bearer $PROBE_TOKEN" \
+                    "$url/inspect")
+                  curl_code=$?
+                  if [[ $curl_code -eq 0 && "$http_status" == '200' ]]; then break; fi
+                  sleep 10
+                done
+              fi
+            fi
+
+            delete_response=$(curl -sS \
+              -X DELETE \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              -H 'Content-Type: application/json' \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
+            if [[ $(jq -r '.success // false' <<<"$delete_response") == 'true' ]]; then delete_code=0; fi
+            delete_http_status=$(curl -sS -o /dev/null -w '%{http_code}' \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
+            delete_curl_code=$?
+
+            printf '%s %s %s %s %s %s %s\n' \
+              "$deploy_code" "$secret_code" "$curl_code" "$http_status" \
+              "$delete_code" "$delete_curl_code" "$delete_http_status" \
+              > "$RAW_DIR/$provider-codes.txt"
+
+            [[ $deploy_code -eq 0 ]]
+            [[ $secret_code -eq 0 ]]
+            [[ $curl_code -eq 0 ]]
+            [[ "$http_status" == '200' ]]
+            [[ $delete_code -eq 0 ]]
+            [[ $delete_curl_code -eq 0 ]]
+            [[ "$delete_http_status" == '404' ]]
+          }
+
+          twitch_result=0
+          kick_result=0
+          inspect_provider twitch || twitch_result=$?
+          inspect_provider kick || kick_result=$?
+          [[ $twitch_result -eq 0 && $kick_result -eq 0 ]]
+
+      - name: Normalize and verify sanitized evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          node scripts/collect-12a4-category-readonly-preflight-evidence.mjs \
+            "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
+          node scripts/verify-12a4-category-readonly-preflight-evidence.mjs \
+            "$ARTIFACT_DIR/evidence.json" --require-pass
+
+      - name: Remove raw responses, tokens, and logs
+        if: always()
+        run: rm -rf "$RAW_DIR"
+
+      - name: Upload sanitized read-only evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a4-category-readonly-preflight
+          path: artifacts/12a4-category-readonly-preflight/evidence.json
+          if-no-files-found: warn
