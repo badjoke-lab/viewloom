@@ -1,129 +1,29 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v11",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v12",
   "workstream": "12A-4 provider-specific category capture foundation",
-  "status": "12a4_category_storage_accepted_migration_runtime_current",
-  "design": {
-    "status": "accepted",
-    "pr": 494,
-    "contract": "docs/audits/12a2-intraday-rollup-design-contract.json",
-    "budgetEvidence": "docs/audits/12a2-intraday-rollup-budget-evidence.json",
-    "twitchSafeProjectionMb": 70.99,
-    "kickSafeProjectionMb": 23.57,
-    "combinedSafeProjectionMb": 94.56
-  },
-  "repositoryMigration": {
-    "status": "accepted",
-    "pr": 499,
-    "migrationFile": "db/d1/004_intraday_rollups.sql",
-    "acceptance": "docs/audits/12a2-migration-acceptance.json",
-    "localApplyVerified": true,
-    "idempotencyVerified": true,
-    "dataBackfillAllowed": false,
-    "runtimeGenerationStarted": false
-  },
-  "controlledApply": {
-    "status": "deployed_and_verified",
-    "codePrs": [502, 503],
-    "deployWorkflowPr": 505,
-    "acceptancePr": 506,
-    "deploymentMethod": "wrangler@4 CLI",
-    "deploymentEvidence": "docs/audits/12a2-collector-worker-deploy-evidence.json",
-    "acceptance": "docs/operations/12a2-collector-worker-deploy-acceptance-2026-07-12.md",
+  "status": "12a4_disabled_runtime_accepted_execution_cost_probe_current",
+  "generation": {
+    "status": "enabled_and_accumulating",
+    "authorized": true,
+    "runtimeGenerationStarted": true,
     "providerSeparated": true,
-    "workerDeploymentEvidencePresent": true,
-    "publicDdlEndpointAdded": false,
-    "directD1ExecuteUsed": false,
-    "newCronAdded": false,
-    "backfillIncluded": false,
-    "generationIncluded": false
-  },
-  "remoteSchemaProbe": {
-    "status": "complete",
-    "twitchObservedObjects": 3,
-    "twitchExpectedObjects": 3,
-    "twitchSchemaComplete": true,
-    "kickObservedObjects": 3,
-    "kickExpectedObjects": 3,
-    "kickSchemaComplete": true,
-    "remoteSchemaGatePass": true,
-    "probeRowsWritten": 0,
-    "productionGeneratedAt": "2026-07-11T16:01:17.970Z"
-  },
-  "generationStorageGate": {
-    "status": "accepted",
-    "pr": 507,
-    "contract": "docs/audits/12a3-account-storage-gate-contract.json",
-    "evidence": "docs/audits/12a3-account-storage-evidence.json",
-    "acceptance": "docs/operations/12a3-account-storage-acceptance-2026-07-12.md",
-    "generationStorageGatePass": true
-  },
-  "generationExecutionCostGate": {
-    "status": "accepted",
-    "pr": 508,
-    "contract": "docs/audits/12a3-execution-cost-probe-contract.json",
-    "evidence": "docs/audits/12a3-execution-cost-evidence.json",
-    "acceptance": "docs/operations/12a3-execution-cost-acceptance-2026-07-12.md",
-    "idempotencyVerified": true,
-    "probeRowsRetained": false,
-    "temporaryWorkersRetained": false,
-    "generationExecutionCostGatePass": true
-  },
-  "generationEnablement": {
-    "status": "accepted",
-    "pr": 510,
-    "mergeSha": "ad90585d74149b0fb1805b9a76fd8d796a5e7c2d",
-    "contract": "docs/audits/12a3-generator-enablement-contract.json",
-    "evidence": "docs/audits/12a3-generator-enablement-evidence.json",
-    "acceptance": "docs/operations/12a3-generator-enablement-acceptance-2026-07-12.md",
-    "existingMaintenanceWindowsOnly": true,
     "newCronAdded": false,
     "backfillPerformed": false,
-    "providerSeparated": true
-  },
-  "postMergeAccumulation": {
-    "status": "accepted",
-    "pr": 511,
-    "workflowRunId": 29191430966,
-    "deploymentRunId": 29191094150,
-    "evidence": "docs/audits/12a3-postmerge-acceptance-evidence.json",
-    "acceptance": "docs/operations/12a3-postmerge-acceptance-2026-07-12.md",
-    "twitchRowsPerDay": 600,
-    "kickRowsPerDay": 200,
-    "postMergeAccumulationPass": true,
-    "temporaryVerifiersRetained": false
+    "phase": "12A-3"
   },
   "categorySourceAudit": {
     "status": "accepted",
     "pr": 513,
-    "workflowRunId": 29195340633,
-    "contract": "docs/audits/12a4-category-source-audit-contract.json",
-    "evidence": "docs/audits/12a4-category-source-audit-evidence.json",
-    "acceptance": "docs/operations/12a4-category-source-audit-2026-07-12.md",
-    "twitch": {
-      "providerIdPath": "game_id",
-      "namePath": "game_name",
-      "presenceRatio": 1,
-      "captureApproved": true
-    },
-    "kick": {
-      "providerIdPath": "category.id",
-      "namePath": "category.name",
-      "presenceRatio": 1,
-      "captureApproved": true
-    },
-    "lifecyclePass": true,
-    "mainCollectorsRestored": true,
-    "storageDesignAuthorized": true,
-    "runtimeCaptureAuthorized": false,
-    "providerSeparated": true
+    "twitchProviderIdPath": "game_id",
+    "twitchNamePath": "game_name",
+    "kickProviderIdPath": "category.id",
+    "kickNamePath": "category.name",
+    "providerSeparated": true,
+    "runtimeCaptureAuthorized": false
   },
   "categoryStorageDesign": {
     "status": "accepted",
     "pr": 514,
-    "mergeSha": "d3c219670af2189fe9acd51ecd67777481162a29",
-    "contract": "docs/audits/12a4-category-storage-design-contract.json",
-    "evidence": "docs/audits/12a4-category-storage-budget-evidence.json",
-    "acceptance": "docs/operations/12a4-category-storage-design-acceptance-2026-07-14.md",
     "selectedModel": "embedded_hourly",
     "categoryContractVersion": "category-source-v1",
     "twitchProjectedSizeMbWithCategorySafety": 438.7,
@@ -132,38 +32,49 @@
     "kickProjectedHeadroomMb": 135.43,
     "accountProjectedSizeMbWithCategorySafety": 3716.59,
     "accountProjectedHeadroomMb": 891.41,
-    "repositoryMigrationCandidateAuthorized": true,
-    "remoteMigrationApplyAuthorized": false,
-    "productionCostProbeRequired": true,
-    "runtimeCaptureAuthorized": false,
     "providerSeparated": true
   },
-  "closedBlockers": [
-    "remote_schema_not_applied",
-    "collector_worker_deployment_not_evidenced",
-    "account_aggregate_storage_unmeasured",
-    "generation_execution_cost_unmeasured",
-    "bounded_generator_not_implemented",
-    "post_merge_accumulation_not_verified",
-    "category_source_unverified",
-    "category_storage_design_unmeasured"
-  ],
-  "generation": {
-    "status": "enabled_and_accumulating",
-    "authorized": true,
-    "implementationAuthorized": true,
-    "runtimeGenerationStarted": true,
+  "categoryMigrationRuntime": {
+    "status": "accepted",
+    "implementationPr": 516,
+    "mergeSha": "5d58b267a18399b5496a1f01aae7125a63f061c4",
+    "migrationFile": "db/d1/005_category_capture.sql",
+    "repositoryMigrationCandidateImplemented": true,
+    "localApplyVerified": true,
+    "idempotencyVerified": true,
+    "disabledByDefault": true,
+    "remoteMigrationApplied": false,
+    "runtimeCaptureStarted": false
+  },
+  "disabledRuntimePostMerge": {
+    "status": "accepted",
+    "acceptancePr": 517,
+    "evidenceFreezePr": 518,
+    "evidence": "docs/audits/12a4-disabled-runtime-postmerge-evidence.json",
+    "deploymentRunId": 29277503634,
+    "twitchNaturalSnapshotContinued": true,
+    "kickNaturalSnapshotContinued": true,
+    "productionCategoryPayloadFieldsAbsent": true,
+    "productionCategorySchemaAbsent": true,
     "providerSeparated": true,
-    "newCronAdded": false,
-    "backfillPerformed": false,
-    "phase": "12A-3"
+    "temporaryVerifiersRetained": false
+  },
+  "categoryExecutionCostProbe": {
+    "status": "planning_current",
+    "trackingIssue": 519,
+    "contract": "docs/audits/12a4-category-execution-cost-probe-contract.json",
+    "readOnlyPreflightImplemented": true,
+    "localControlledMigrationFixtureImplemented": true,
+    "remoteMigrationApplyAuthorized": false,
+    "productionProbeAuthorized": false,
+    "runtimeCaptureAuthorized": false
   },
   "categoryCapture": {
     "sourceContractAccepted": true,
-    "storageDesignAuthorized": true,
     "storageDesignAccepted": true,
-    "selectedStorageModel": "embedded_hourly",
-    "repositoryMigrationCandidateAuthorized": true,
+    "repositoryMigrationCandidateImplemented": true,
+    "disabledRuntimeProductionAccepted": true,
+    "productionSchemaPresent": false,
     "remoteMigrationApplyAuthorized": false,
     "productionCostProbeRequired": true,
     "runtimeCaptureAuthorized": false,
@@ -175,15 +86,13 @@
     "backfillAuthorized": false
   },
   "currentWorkstream": {
-    "phase": "12A-4",
-    "name": "provider-specific category migration and disabled runtime implementation",
-    "sourceAuditAccepted": true,
-    "storageDesignAccepted": true,
-    "repositoryMigrationStarted": false,
-    "runtimeImplementationStarted": false,
+    "phase": "12A-4-3",
+    "name": "production category execution-cost probe and remote migration decision",
+    "trackingIssue": 519,
+    "planningPackageCurrent": true,
     "remoteMigrationApplied": false,
     "runtimeCaptureStarted": false,
     "crossProviderAnalyticsAllowed": false
   },
-  "nextWorkstream": "12A-4 provider-specific category migration and disabled runtime implementation"
+  "nextWorkstream": "12A-4 provider-separated production capture acceptance"
 }
