@@ -10,7 +10,6 @@ on:
       - 'docs/audits/12a4-category-execution-cost-probe-contract.json'
       - 'docs/audits/12a4-category-execution-cost-probe-package-contract.json'
       - 'docs/audits/12a4-category-schema-recovery-audit-evidence.json'
-      - 'docs/work-in-progress/phase12a4-category-execution-cost-probe.md'
       - 'scripts/check-12a4-category-execution-cost-probe-package-scope.mjs'
       - 'scripts/collect-12a4-category-execution-cost-probe-evidence.mjs'
       - 'scripts/test-12a4-category-execution-cost-probe-evidence.mjs'
@@ -44,11 +43,11 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Verify package branch scope
-        if: github.event_name == 'pull_request'
+      - name: Verify original package branch scope
+        if: github.event_name == 'pull_request' && hashFiles('docs/audits/12a4-category-execution-cost-probe-execution-contract.json') == ''
         run: node scripts/check-12a4-category-execution-cost-probe-package-scope.mjs
 
-      - name: Verify bounded execution-cost package
+      - name: Verify accepted bounded execution-cost package
         run: node scripts/verify-12a4-category-execution-cost-probe.mjs
 
       - name: Verify local SQLite first-pass, no-op, failure, and cleanup fixture
@@ -66,23 +65,21 @@ jobs:
       - name: Bundle Kick bounded probe Worker without deploying
         run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-cost-probe/wrangler.kick.toml
 
-      - name: Publish package boundary
+      - name: Publish accepted package boundary
         if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4-5 Bounded Category Execution-Cost Probe Package'
+            echo '## ViewLoom 12A-4-5 Accepted Category Execution-Cost Probe Package'
             echo
             echo '- Tracking issue: #519'
-            echo '- Accepted post-apply schema audit: PR #545'
-            echo '- Schema execution retirement: PR #546'
+            echo '- Package acceptance: PR #547'
             echo '- Provider order: Twitch then Kick'
             echo '- Reserved probe identifiers only: yes'
             echo '- Cleanup in finally: yes'
             echo '- Success/failure evidence fixtures: yes'
             echo '- Twitch Worker deployment: dry-run only'
             echo '- Kick Worker deployment: dry-run only'
-            echo '- Production execution from this PR: no'
+            echo '- Production execution from this workflow: no'
             echo '- Cloudflare credentials used: no'
             echo '- Category capture enablement: no'
-            echo '- New cron/backfill/retention/UI: no'
           } >> "$GITHUB_STEP_SUMMARY"
