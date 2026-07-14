@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "viewloom-12a4-category-schema-recovery-audit-acceptance-contract-v1",
+  "workstream": "12A-4 category schema recovery audit acceptance",
+  "status": "acceptance_package_ready",
+  "trackingIssue": 519,
+  "packagePr": 535,
+  "triggerPr": 536,
+  "triggerMergeSha": "b04c01e688123cb4d2f96bd2cb16c66a0a8c8d58",
+  "sourceWorkflowFile": "analytics-12a4-category-schema-recovery-audit.yml",
+  "sourceWorkflowName": "Analytics 12A4 Category Schema Recovery Audit",
+  "sourceArtifactName": "phase12a4-category-schema-recovery-audit",
+  "acceptedEvidenceFile": "docs/audits/12a4-category-schema-recovery-audit-evidence.json",
+  "requiredJobs": ["contract", "production-recovery-audit"],
+  "requiredEvidence": {
+    "schemaVersion": "viewloom-12a4-category-schema-recovery-audit-evidence-v1",
+    "event": "push",
+    "recoveryAuditPass": true,
+    "providerStatesKnown": true,
+    "remoteSchemaApplyAuthorized": false,
+    "categoryRuntimeEnablementAuthorized": false
+  },
+  "boundaries": {
+    "productionExecutionByAcceptance": false,
+    "remoteSchemaApply": false,
+    "categoryRuntimeEnablement": false,
+    "productionCategoryRows": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  }
+}
