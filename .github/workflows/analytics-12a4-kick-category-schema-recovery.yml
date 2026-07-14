@@ -1,128 +1,47 @@
-name: Analytics 12A4 Kick Category Schema Recovery
+name: Analytics 12A4 Kick Schema Recovery Archive
 
 on:
   pull_request:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a4-kick-category-schema-recovery.yml'
-      - 'docs/audits/12a4-kick-category-schema-recovery-*.json'
-      - 'docs/work-in-progress/phase12a4-kick-category-schema-recovery.md'
-      - 'scripts/*12a4-kick-category-schema-recovery*.mjs'
-      - 'workers/kick-category-schema-recovery/**'
-  push:
-    branches: [main]
-    paths:
       - 'docs/audits/12a4-kick-category-schema-recovery-trigger.json'
+      - 'docs/audits/12a4-category-schema-recovery-audit-evidence.json'
+      - 'docs/audits/12a2-current-gate-state.json'
+      - 'scripts/verify-development-policy.mjs'
   workflow_dispatch:
 
 permissions:
   contents: read
-  actions: read
-  pull-requests: read
 
 concurrency:
-  group: analytics-12a4-kick-category-schema-recovery-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
-
-env:
-  ARTIFACT_DIR: artifacts/12a4-kick-category-schema-recovery
-  RAW_DIR: artifacts/12a4-kick-category-schema-recovery/raw
-  TRIGGER_FILE: docs/audits/12a4-kick-category-schema-recovery-trigger.json
+  group: analytics-12a4-kick-schema-recovery-archive-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  contract:
+  verify-retired-state:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify Kick recovery branch scope
-        if: github.event_name == 'pull_request'
-        run: node scripts/check-12a4-kick-category-schema-recovery-scope.mjs
-      - name: Verify Kick-only recovery package and trigger boundary
-        run: node scripts/verify-12a4-kick-category-schema-recovery-package.mjs
-      - name: Verify canonical development policy
-        run: node scripts/verify-development-policy.mjs
-      - name: Bundle Kick recovery Worker without deploying
-        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/kick-category-schema-recovery/wrangler.toml
-      - name: Publish package boundary
-        if: always()
+      - name: Verify consumed Kick recovery and final schemas
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ $(jq -r '.status' docs/audits/12a4-kick-category-schema-recovery-trigger.json) == 'consumed_and_retired' ]]
+          [[ $(jq -r '.retired' docs/audits/12a4-kick-category-schema-recovery-trigger.json) == 'true' ]]
+          [[ $(jq -r '.providers.twitch.schemaState' docs/audits/12a4-category-schema-recovery-audit-evidence.json) == 'complete' ]]
+          [[ $(jq -r '.providers.kick.schemaState' docs/audits/12a4-category-schema-recovery-audit-evidence.json) == 'complete' ]]
+          node scripts/verify-development-policy.mjs
+      - name: Publish archive boundary
         run: |
           {
-            echo '## ViewLoom 12A-4 Kick-only Category Schema Recovery'
+            echo '## 12A-4 Kick recovery archive'
             echo
-            echo '- Pull-request execution: static checks and Kick Wrangler dry-run only'
-            echo '- Twitch D1 binding: absent'
-            echo '- Production execution: separate one-file trigger required'
+            echo '- Kick recovery trigger: retired'
+            echo '- Twitch execution in Kick recovery: none'
+            echo '- Kick schema: complete'
             echo '- Category capture: disabled'
           } >> "$GITHUB_STEP_SUMMARY"
-
-  production-kick-recovery:
-    needs: contract
-    if: >-
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      GH_TOKEN: ${{ github.token }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - name: Verify exact main, accepted audit, and armed Kick package
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RAW_DIR" "$ARTIFACT_DIR"
-          [[ -f "$TRIGGER_FILE" ]]
-          [[ $(jq -r '.status' "$TRIGGER_FILE") == 'armed_for_one_time_main_push' ]]
-          [[ $(jq -r '.targetProvider' "$TRIGGER_FILE") == 'kick' ]]
-          [[ $(jq -r '.confirmation' "$TRIGGER_FILE") == 'APPLY_KICK_CATEGORY_SCHEMA_WITH_CAPTURE_DISABLED' ]]
-          [[ $(jq -r '.oneTime' "$TRIGGER_FILE") == 'true' ]]
-          package_number=$(jq -r '.packagePr' "$TRIGGER_FILE")
-          package=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/$package_number")
-          [[ $(jq -r '.merged_at // empty' <<<"$package") != '' ]]
-          [[ $(jq -r '.head.sha' <<<"$package") == $(jq -r '.expectedPackageHeadSha' "$TRIGGER_FILE") ]]
-          merge_sha=$(jq -r '.merge_commit_sha' <<<"$package")
-          git cat-file -e "$merge_sha^{commit}"
-          git merge-base --is-ancestor "$merge_sha" HEAD
-          node scripts/verify-12a4-category-schema-recovery-audit-evidence.mjs \
-            docs/audits/12a4-category-schema-recovery-audit-evidence.json --require-pass
-          node scripts/verify-12a4-kick-category-schema-recovery-package.mjs
-          cp "$TRIGGER_FILE" "$RAW_DIR/trigger.json"
-          git rev-parse HEAD > "$RAW_DIR/head-sha.txt"
-          printf '%s\n' "$GITHUB_EVENT_NAME" > "$RAW_DIR/event-name.txt"
-      - name: Run Kick-only controlled schema recovery
-        shell: bash
-        run: node scripts/run-12a4-kick-category-schema-recovery.mjs "$RAW_DIR"
-      - name: Normalize sanitized Kick recovery evidence
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$ARTIFACT_DIR"
-          node scripts/collect-12a4-kick-category-schema-recovery-evidence.mjs \
-            "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
-          node scripts/verify-12a4-kick-category-schema-recovery-evidence.mjs \
-            "$ARTIFACT_DIR/evidence.json"
-      - name: Remove raw responses, tokens, and logs
-        if: always()
-        run: rm -rf "$RAW_DIR"
-      - name: Upload sanitized Kick recovery evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: phase12a4-kick-category-schema-recovery
-          path: artifacts/12a4-kick-category-schema-recovery/evidence.json
-          if-no-files-found: error
-      - name: Enforce Kick recovery acceptance
-        if: always()
-        run: node scripts/verify-12a4-kick-category-schema-recovery-evidence.mjs "$ARTIFACT_DIR/evidence.json" --require-pass
