@@ -15,12 +15,14 @@
   },
   "providers": {
     "twitch": {
-      "databaseBinding": "DB_TWITCH_HOT",
+      "collectorDatabaseBinding": "DB_TWITCH_HOT",
+      "probeWorkerBinding": "DB",
       "databaseName": "vl_twitch_hot",
       "workerConfig": "workers/category-cost-probe/wrangler.twitch.toml"
     },
     "kick": {
-      "databaseBinding": "DB_KICK_HOT",
+      "collectorDatabaseBinding": "DB_KICK_HOT",
+      "probeWorkerBinding": "DB",
       "databaseName": "vl_kick_hot",
       "workerConfig": "workers/category-cost-probe/wrangler.kick.toml"
     }
