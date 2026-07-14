@@ -104,7 +104,16 @@ jobs:
           artifacts=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100")
           printf '%s\n' "$artifacts" > "$ARTIFACT_DIR/source-artifacts.json"
           artifact=$(jq --arg name "$SOURCE_ARTIFACT" '[.artifacts[] | select(.name == $name and .expired == false)] | sort_by(.id) | last // null' <<<"$artifacts")
-          [[ "$artifact" != 'null' ]] || { echo "::error::Artifact $SOURCE_ARTIFACT not found"; exit 1; }
+          if [[ "$artifact" == 'null' ]]; then
+            job_id=$(jq -r '[.jobs[] | select(.name == "production-schema-apply")] | last | .id // empty' "$RAW_DIR/run-base.json")
+            if [[ -n "$job_id" ]]; then
+              gh api "/repos/$GITHUB_REPOSITORY/actions/jobs/$job_id/logs" > "$RAW_DIR/source-job.log" || true
+              grep -Ei '##\[error\]|Error|ENOENT|Unexpected|SyntaxError|ReferenceError|TypeError|Assertion|JSON|evidence|controlledSchemaApplyPass|Normalize sanitized' \
+                "$RAW_DIR/source-job.log" | tail -n 160 > "$ARTIFACT_DIR/source-job-errors.txt" || true
+            fi
+            echo "::error::Artifact $SOURCE_ARTIFACT not found"
+            exit 1
+          fi
           artifact_id=$(jq -r '.id' <<<"$artifact")
           gh api "/repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > "$RAW_DIR/source.zip"
           unzip -q "$RAW_DIR/source.zip" -d "$RAW_DIR/source"
