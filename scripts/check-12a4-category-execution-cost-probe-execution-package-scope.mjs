@@ -5,10 +5,12 @@ const allowed = new Set([
   'docs/audits/12a4-category-execution-cost-probe-execution-contract.json',
   'docs/work-in-progress/phase12a4-category-execution-cost-probe.md',
   'scripts/check-12a4-category-execution-cost-probe-execution-package-scope.mjs',
+  'scripts/check-12a4-category-execution-cost-probe-trigger-scope.mjs',
   'scripts/run-12a4-category-execution-cost-probe-provider.mjs',
   'scripts/test-12a4-category-execution-cost-probe-runner.mjs',
   'scripts/verify-12a4-category-execution-cost-probe-execution-package.mjs',
   'scripts/verify-12a4-category-execution-cost-probe-provider-result.mjs',
+  'scripts/verify-12a4-category-execution-cost-probe-trigger.mjs',
 ])
 
 const baseRef = process.env.GITHUB_BASE_REF
