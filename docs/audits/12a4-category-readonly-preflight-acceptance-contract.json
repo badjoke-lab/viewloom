@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-category-readonly-preflight-acceptance-contract-v1",
   "workstream": "12A-4 category read-only production preflight acceptance",
-  "status": "acceptance_package_ready",
+  "status": "accepted_evidence_frozen_on_branch",
   "trackingIssue": 519,
   "planningPr": 520,
   "packagePr": 521,
@@ -11,6 +11,11 @@
   "providerHealthFixPr": 526,
   "triggerPr": 527,
   "triggerMergeSha": "51796234db2b88bd5d4e3393cf0b2a97b4927c7b",
+  "sourceWorkflowRunId": 29318733171,
+  "sourceArtifactId": 8305012815,
+  "acceptanceWorkflowRunId": 29318857656,
+  "acceptanceArtifactId": 8305039676,
+  "acceptedEvidenceFile": "docs/audits/12a4-category-readonly-preflight-evidence.json",
   "workflowFile": "analytics-12a4-category-readonly-preflight.yml",
   "workflowName": "Analytics 12A4 Category Read-Only Preflight",
   "artifactName": "phase12a4-category-readonly-preflight",
@@ -47,5 +52,5 @@
     "crossProviderCategoryIdentity": false,
     "combinedProviderCategoryRanking": false
   },
-  "nextDecision": "controlled remote schema apply design may begin only after accepted evidence is frozen on main"
+  "nextDecision": "controlled remote schema apply design may begin only after this accepted evidence is merged to main"
 }
