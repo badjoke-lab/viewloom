@@ -28,7 +28,7 @@ scope and safety verification
 ```text
 production temporary Worker deployment: no
 remote D1 schema apply: no
-CATEGORY_CAPTURE_ENABLED: absent
+no CATEGORY_CAPTURE_ENABLED value
 production category rows: no
 new cron: no
 backfill: no
