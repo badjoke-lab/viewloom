@@ -1,0 +1,112 @@
+name: Analytics 12A4 Category Controlled Schema Apply Design
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - '.github/workflows/analytics-12a4-category-controlled-schema-apply.yml'
+      - 'README.md'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/README.md'
+      - 'docs/audits/12a2-current-gate-state.json'
+      - 'docs/audits/12a4-category-execution-cost-probe-contract.json'
+      - 'docs/audits/12a4-category-readonly-preflight-trigger.json'
+      - 'docs/audits/12a4-category-controlled-schema-apply-contract.json'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/work-in-progress/phase12a4-category-execution-cost-probe.md'
+      - 'docs/work-in-progress/phase12a4-category-readonly-preflight-acceptance.md'
+      - 'docs/work-in-progress/phase12a4-category-controlled-schema-apply.md'
+      - 'scripts/check-12a4-category-controlled-schema-apply-scope.mjs'
+      - 'scripts/test-12a4-category-controlled-schema-apply.py'
+      - 'scripts/verify-12a4-category-controlled-schema-apply.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - 'workers/shared/category-schema.ts'
+      - 'workers/category-schema-apply/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-category-controlled-schema-apply-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify branch scope
+        run: node scripts/check-12a4-category-controlled-schema-apply-scope.mjs
+
+      - name: Verify controlled schema apply contract and safety boundary
+        run: node scripts/verify-12a4-category-controlled-schema-apply.mjs
+
+      - name: Verify canonical development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Run local absent, apply, no-op, and partial-schema fixtures
+        run: python scripts/test-12a4-category-controlled-schema-apply.py
+
+      - name: Bundle Twitch temporary schema Worker without deploying
+        run: |
+          mkdir -p artifacts/12a4-category-controlled-schema-apply/twitch
+          cd workers/category-schema-apply
+          pnpm dlx wrangler@4 deploy --dry-run --config wrangler.twitch.toml \
+            --outdir ../../artifacts/12a4-category-controlled-schema-apply/twitch
+
+      - name: Bundle Kick temporary schema Worker without deploying
+        run: |
+          mkdir -p artifacts/12a4-category-controlled-schema-apply/kick
+          cd workers/category-schema-apply
+          pnpm dlx wrangler@4 deploy --dry-run --config wrangler.kick.toml \
+            --outdir ../../artifacts/12a4-category-controlled-schema-apply/kick
+
+      - name: Publish design boundary summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4 Controlled Category Schema Apply Design'
+            echo
+            echo '- Tracking issue: #519'
+            echo '- Accepted read-only preflight: PR #523'
+            echo '- Migration statements: 9'
+            echo '- Provider order: Twitch then Kick'
+            echo '- Partial schema policy: stop without applying'
+            echo '- Second pass: must execute zero statements'
+            echo '- Category capture flag: absent'
+            echo '- Remote D1 schema applied by this PR: no'
+            echo '- Production temporary Worker deployed by this PR: no'
+            echo '- Production category rows written: no'
+            echo '- Cloudflare credentials used: no'
+            echo '- New cron: no'
+            echo '- Backfill: no'
+            echo '- Raw retention changed: no'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload design artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a4-category-controlled-schema-apply-design
+          path: artifacts/12a4-category-controlled-schema-apply
+          if-no-files-found: warn
