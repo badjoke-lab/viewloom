@@ -15,7 +15,7 @@ Phase 12A Analytics Capture Foundation active
 12A-4 Twitch and Kick category schemas complete and audited PR #545
 Schema execution and recovery triggers retired
 Current workstream 12A-4-5 bounded provider-separated category execution-cost probe design
-Category runtime capture started no
+category capture started no
 ```
 
 ## Read first
