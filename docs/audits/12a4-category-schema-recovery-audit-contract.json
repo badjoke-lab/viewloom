@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "viewloom-12a4-category-schema-recovery-audit-contract-v1",
+  "workstream": "12A-4 category schema recovery read-only audit",
+  "status": "audit_package_candidate_no_production_trigger",
+  "trackingIssue": 519,
+  "sourceAttempt": {
+    "triggerPr": 533,
+    "triggerMergeSha": "a83b412e479dccb36ad04541843e3dd9456e7dff",
+    "workflowRunId": 29325444378,
+    "productionJobId": 87060634366,
+    "normalizationFailure": "non_json_provider_response_error_code_1104"
+  },
+  "providers": {
+    "order": ["twitch", "kick"],
+    "twitch": {
+      "workerName": "viewloom-category-cost-preflight-twitch",
+      "databaseName": "vl_twitch_hot",
+      "expectedHealthSource": "collector_status"
+    },
+    "kick": {
+      "workerName": "viewloom-category-cost-preflight-kick",
+      "databaseName": "vl_kick_hot",
+      "expectedHealthSource": "latest_snapshot"
+    }
+  },
+  "triggerFile": "docs/audits/12a4-category-schema-recovery-audit-trigger.json",
+  "sourceArtifactName": "phase12a4-category-schema-recovery-audit",
+  "acceptance": {
+    "providerStateMustBeKnown": true,
+    "allowedSchemaStates": ["absent", "complete", "partial"],
+    "providerLeakageRowsMax": 0,
+    "rowsWrittenMax": 0,
+    "changesMax": 0,
+    "temporaryWorkerPreExistingHttpStatus": 404,
+    "inspectHttpStatus": 200,
+    "postDeleteHttpStatus": 404
+  },
+  "boundaries": {
+    "readOnly": true,
+    "remoteSchemaApply": false,
+    "categoryRuntimeEnablement": false,
+    "productionCategoryRows": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  },
+  "nextDecision": "use accepted audit evidence to design a provider-specific recovery; never rerun the two-provider apply blindly"
+}
