@@ -1,0 +1,357 @@
+name: Analytics 12A4 Category Controlled Schema Apply Execution
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/analytics-12a4-category-controlled-schema-apply-execution.yml'
+      - 'docs/audits/12a4-category-controlled-schema-apply-execution-contract.json'
+      - 'docs/audits/12a4-category-controlled-schema-apply-trigger.json'
+      - 'docs/work-in-progress/phase12a4-category-controlled-schema-apply-execution.md'
+      - 'scripts/check-12a4-category-controlled-schema-apply-package-scope.mjs'
+      - 'scripts/collect-12a4-category-controlled-schema-apply-evidence.mjs'
+      - 'scripts/test-12a4-category-controlled-schema-apply-evidence.mjs'
+      - 'scripts/verify-12a4-category-controlled-schema-apply-evidence.mjs'
+      - 'scripts/verify-12a4-category-controlled-schema-apply-package.mjs'
+      - 'workers/category-schema-apply/**'
+      - 'workers/shared/category-schema.ts'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/audits/12a4-category-controlled-schema-apply-trigger.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: analytics-12a4-category-controlled-schema-apply-execution-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+env:
+  ARTIFACT_DIR: artifacts/12a4-category-controlled-schema-apply
+  RAW_DIR: artifacts/12a4-category-controlled-schema-apply/raw
+  TRIGGER_FILE: docs/audits/12a4-category-controlled-schema-apply-trigger.json
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify package branch scope
+        if: github.event_name == 'pull_request'
+        run: node scripts/check-12a4-category-controlled-schema-apply-package-scope.mjs
+
+      - name: Verify execution package and trigger boundary
+        run: node scripts/verify-12a4-category-controlled-schema-apply-package.mjs
+
+      - name: Verify success and failure evidence fixtures
+        run: node scripts/test-12a4-category-controlled-schema-apply-evidence.mjs
+
+      - name: Verify canonical development policy
+        run: node scripts/verify-development-policy.mjs
+
+      - name: Bundle Twitch schema Worker without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-schema-apply/wrangler.twitch.toml
+
+      - name: Bundle Kick schema Worker without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-schema-apply/wrangler.kick.toml
+
+      - name: Publish package boundary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4 Controlled Schema Apply Execution Package'
+            echo
+            echo '- Design PR: #528'
+            echo '- Production trigger present: ${{ hashFiles(env.TRIGGER_FILE) != '' }}'
+            echo '- Production job on pull request: skipped'
+            echo '- Remote schema apply from package PR: no'
+            echo '- Category runtime enablement: no'
+            echo '- Production category rows: no'
+            echo '- Cloudflare credentials in contract job: no'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  production-schema-apply:
+    needs: contract
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact main, accepted design, and armed package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RAW_DIR" "$ARTIFACT_DIR"
+          actual_sha=$(git rev-parse HEAD)
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          [[ -f "$TRIGGER_FILE" ]]
+          [[ $(jq -r '.status' "$TRIGGER_FILE") == 'armed_for_one_time_main_push' ]]
+          [[ $(jq -r '.confirmation' "$TRIGGER_FILE") == 'APPLY_CATEGORY_SCHEMA_WITH_CAPTURE_DISABLED' ]]
+          [[ $(jq -r '.oneTime' "$TRIGGER_FILE") == 'true' ]]
+          [[ $(jq -r '.designPr' "$TRIGGER_FILE") == '528' ]]
+          [[ $(jq -c '.providerOrder' "$TRIGGER_FILE") == '["twitch","kick"]' ]]
+
+          design=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/528")
+          package_number=$(jq -r '.packagePr' "$TRIGGER_FILE")
+          package=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/$package_number")
+          [[ $(jq -r '.merged_at // empty' <<<"$design") != '' ]]
+          [[ $(jq -r '.merged_at // empty' <<<"$package") != '' ]]
+          design_merge_sha=$(jq -r '.merge_commit_sha' <<<"$design")
+          package_merge_sha=$(jq -r '.merge_commit_sha' <<<"$package")
+          package_head_sha=$(jq -r '.head.sha' <<<"$package")
+          [[ "$design_merge_sha" == '21be04c8532d9b20ec22f29af6658a2d926b78a1' ]]
+          [[ "$package_head_sha" == $(jq -r '.expectedPackageHeadSha' "$TRIGGER_FILE") ]]
+          git cat-file -e "$design_merge_sha^{commit}"
+          git cat-file -e "$package_merge_sha^{commit}"
+          git merge-base --is-ancestor "$design_merge_sha" HEAD
+          git merge-base --is-ancestor "$package_merge_sha" HEAD
+
+          node scripts/verify-12a4-category-readonly-preflight-evidence.mjs \
+            docs/audits/12a4-category-readonly-preflight-evidence.json --require-pass
+          node scripts/verify-12a4-category-controlled-schema-apply-package.mjs
+
+          ! grep -R --line-number -E '^CATEGORY_CAPTURE_ENABLED\s*=' \
+            workers/collector-twitch/wrangler.toml workers/collector-kick/wrangler.toml
+
+          cp "$TRIGGER_FILE" "$RAW_DIR/trigger.json"
+          printf '%s' "$design" > "$RAW_DIR/design-pr.json"
+          printf '%s' "$package" > "$RAW_DIR/package-pr.json"
+          printf '%s\n' "$actual_sha" > "$RAW_DIR/head-sha.txt"
+          printf '%s\n' "$GITHUB_EVENT_NAME" > "$RAW_DIR/event-name.txt"
+          jq -n '{providers:{twitch:{attempted:false},kick:{attempted:false}}}' > "$RAW_DIR/execution-status.json"
+
+      - name: Prepare temporary provider configs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RAW_DIR/configs"
+          cp workers/category-schema-apply/wrangler.twitch.toml "$RAW_DIR/configs/twitch.toml"
+          cp workers/category-schema-apply/wrangler.kick.toml "$RAW_DIR/configs/kick.toml"
+          for config in "$RAW_DIR/configs/twitch.toml" "$RAW_DIR/configs/kick.toml"; do
+            sed -i "s|main = \"src/index.ts\"|main = \"$GITHUB_WORKSPACE/workers/category-schema-apply/src/index.ts\"|" "$config"
+          done
+          echo "APPLY_TOKEN=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
+      - name: Execute provider-separated controlled schema apply
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          run_provider() {
+            provider="$1"
+            service="viewloom-category-schema-apply-$provider"
+            config="$RAW_DIR/configs/$provider.toml"
+            log="$RAW_DIR/$provider-deploy.log"
+            pre="$RAW_DIR/$provider-pre.json"
+            first="$RAW_DIR/$provider-first-apply.json"
+            second="$RAW_DIR/$provider-second-apply.json"
+            post="$RAW_DIR/$provider-post.json"
+            candidate="$RAW_DIR/$provider-post-candidate.json"
+
+            pre_existing_curl_code=1
+            pre_existing_http_status=0
+            deploy_code=1
+            secret_code=1
+            pre_curl_code=1
+            pre_http_status=0
+            first_curl_code=1
+            first_http_status=0
+            second_curl_code=1
+            second_http_status=0
+            poll_succeeded=false
+            poll_attempts=0
+            delete_code=1
+            delete_curl_code=1
+            delete_http_status=0
+            url=''
+
+            pre_existing_http_status=$(curl -sS -o /dev/null -w '%{http_code}' \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
+            pre_existing_curl_code=$?
+
+            if [[ $pre_existing_curl_code -eq 0 && "$pre_existing_http_status" == '404' ]]; then
+              pnpm dlx wrangler@4 deploy --config "$config" >"$log" 2>&1
+              deploy_code=$?
+            fi
+
+            if [[ $deploy_code -eq 0 ]]; then
+              printf '%s' "$APPLY_TOKEN" | pnpm dlx wrangler@4 secret put APPLY_TOKEN --config "$config" >>"$log" 2>&1
+              secret_code=$?
+              url=$(grep -Eo 'https://[^ ]+workers.dev' "$log" | tail -1 || true)
+            fi
+
+            if [[ $secret_code -eq 0 && -n "$url" ]]; then
+              for attempt in $(seq 1 40); do
+                pre_http_status=$(curl -sS -o "$pre" -w '%{http_code}' \
+                  -X POST -H "Authorization: Bearer $APPLY_TOKEN" "$url/inspect")
+                pre_curl_code=$?
+                if [[ $pre_curl_code -eq 0 && "$pre_http_status" == '200' && $(jq -r '.ok // false' "$pre") == 'true' ]]; then break; fi
+                sleep 10
+              done
+            fi
+
+            pre_schema_absent=false
+            if [[ -f "$pre" && $(jq -r '.state.schema.absent // false' "$pre") == 'true' && $(jq -r '.state.schema.partial // true' "$pre") == 'false' ]]; then
+              pre_schema_absent=true
+            fi
+
+            if [[ "$pre_schema_absent" == 'true' ]]; then
+              first_http_status=$(curl -sS -o "$first" -w '%{http_code}' \
+                -X POST \
+                -H "Authorization: Bearer $APPLY_TOKEN" \
+                -H 'x-viewloom-confirm: APPLY_CATEGORY_SCHEMA_WITH_CAPTURE_DISABLED' \
+                "$url/apply")
+              first_curl_code=$?
+            fi
+
+            if [[ $first_curl_code -eq 0 && "$first_http_status" == '200' && -f "$first" && $(jq -r '.ok // false' "$first") == 'true' ]]; then
+              second_http_status=$(curl -sS -o "$second" -w '%{http_code}' \
+                -X POST \
+                -H "Authorization: Bearer $APPLY_TOKEN" \
+                -H 'x-viewloom-confirm: APPLY_CATEGORY_SCHEMA_WITH_CAPTURE_DISABLED' \
+                "$url/apply")
+              second_curl_code=$?
+            fi
+
+            if [[ $second_curl_code -eq 0 && "$second_http_status" == '200' && -f "$second" && $(jq -r '.ok // false' "$second") == 'true' ]]; then
+              pre_latest=$(jq -r '.state.operational.latestSnapshot.collected_at // empty' "$pre")
+              for attempt in $(seq 1 70); do
+                poll_attempts=$attempt
+                candidate_status=$(curl -sS -o "$candidate" -w '%{http_code}' \
+                  -X POST -H "Authorization: Bearer $APPLY_TOKEN" "$url/inspect")
+                candidate_code=$?
+                candidate_latest=''
+                if [[ $candidate_code -eq 0 && "$candidate_status" == '200' && -f "$candidate" ]]; then
+                  candidate_latest=$(jq -r '.state.operational.latestSnapshot.collected_at // empty' "$candidate")
+                fi
+                if [[ -n "$candidate_latest" && -n "$pre_latest" && "$candidate_latest" != "$pre_latest" ]]; then
+                  cp "$candidate" "$post"
+                  poll_succeeded=true
+                  break
+                fi
+                sleep 10
+              done
+            fi
+
+            if [[ $deploy_code -eq 0 ]]; then
+              delete_response=$(curl -sS \
+                -X DELETE \
+                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                -H 'Content-Type: application/json' \
+                "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
+              if [[ $(jq -r '.success // false' <<<"$delete_response") == 'true' ]]; then delete_code=0; fi
+              delete_http_status=$(curl -sS -o /dev/null -w '%{http_code}' \
+                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
+              delete_curl_code=$?
+            fi
+
+            jq -n \
+              --argjson preExistingCurlExitCode "$pre_existing_curl_code" \
+              --argjson preExistingHttpStatus "$pre_existing_http_status" \
+              --argjson deployExitCode "$deploy_code" \
+              --argjson secretExitCode "$secret_code" \
+              --argjson preCurlExitCode "$pre_curl_code" \
+              --argjson preHttpStatus "$pre_http_status" \
+              --argjson firstCurlExitCode "$first_curl_code" \
+              --argjson firstHttpStatus "$first_http_status" \
+              --argjson secondCurlExitCode "$second_curl_code" \
+              --argjson secondHttpStatus "$second_http_status" \
+              --argjson pollSucceeded "$poll_succeeded" \
+              --argjson pollAttempts "$poll_attempts" \
+              --argjson deleteExitCode "$delete_code" \
+              --argjson deleteCurlExitCode "$delete_curl_code" \
+              --argjson deleteHttpStatus "$delete_http_status" \
+              '{preExistingCurlExitCode:$preExistingCurlExitCode,preExistingHttpStatus:$preExistingHttpStatus,deployExitCode:$deployExitCode,secretExitCode:$secretExitCode,preCurlExitCode:$preCurlExitCode,preHttpStatus:$preHttpStatus,firstCurlExitCode:$firstCurlExitCode,firstHttpStatus:$firstHttpStatus,secondCurlExitCode:$secondCurlExitCode,secondHttpStatus:$secondHttpStatus,pollSucceeded:$pollSucceeded,pollAttempts:$pollAttempts,deleteExitCode:$deleteExitCode,deleteCurlExitCode:$deleteCurlExitCode,deleteHttpStatus:$deleteHttpStatus}' \
+              > "$RAW_DIR/$provider-lifecycle.json"
+
+            [[ $pre_existing_curl_code -eq 0 ]]
+            [[ "$pre_existing_http_status" == '404' ]]
+            [[ $deploy_code -eq 0 ]]
+            [[ $secret_code -eq 0 ]]
+            [[ $pre_curl_code -eq 0 && "$pre_http_status" == '200' ]]
+            [[ "$pre_schema_absent" == 'true' ]]
+            [[ $first_curl_code -eq 0 && "$first_http_status" == '200' ]]
+            [[ $second_curl_code -eq 0 && "$second_http_status" == '200' ]]
+            [[ "$poll_succeeded" == 'true' ]]
+            [[ $delete_code -eq 0 ]]
+            [[ $delete_curl_code -eq 0 && "$delete_http_status" == '404' ]]
+          }
+
+          twitch_result=0
+          run_provider twitch || twitch_result=$?
+          jq -n --argjson twitchAttempted true --argjson kickAttempted false \
+            '{providers:{twitch:{attempted:$twitchAttempted},kick:{attempted:$kickAttempted}}}' \
+            > "$RAW_DIR/execution-status.json"
+          node scripts/collect-12a4-category-controlled-schema-apply-evidence.mjs \
+            "$RAW_DIR" "$ARTIFACT_DIR/twitch-interim.json"
+          twitch_gate=$(jq -r '.providers.twitch.providerGatePass // false' "$ARTIFACT_DIR/twitch-interim.json")
+
+          kick_result=0
+          if [[ $twitch_result -eq 0 && "$twitch_gate" == 'true' ]]; then
+            run_provider kick || kick_result=$?
+            jq -n --argjson twitchAttempted true --argjson kickAttempted true \
+              '{providers:{twitch:{attempted:$twitchAttempted},kick:{attempted:$kickAttempted}}}' \
+              > "$RAW_DIR/execution-status.json"
+          else
+            jq -n --arg stopReason 'stop_after_twitch_failure' \
+              '{stopReason:$stopReason,providers:{twitch:{attempted:true},kick:{attempted:false}}}' \
+              > "$RAW_DIR/execution-status.json"
+          fi
+
+          printf '%s %s\n' "$twitch_result" "$kick_result" > "$RAW_DIR/provider-results.txt"
+          exit 0
+
+      - name: Normalize sanitized execution evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          node scripts/collect-12a4-category-controlled-schema-apply-evidence.mjs \
+            "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
+          node scripts/verify-12a4-category-controlled-schema-apply-evidence.mjs \
+            "$ARTIFACT_DIR/evidence.json"
+          rm -f "$ARTIFACT_DIR/twitch-interim.json"
+
+      - name: Remove raw responses, tokens, and logs
+        if: always()
+        run: rm -rf "$RAW_DIR"
+
+      - name: Upload sanitized schema-apply evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a4-category-controlled-schema-apply
+          path: artifacts/12a4-category-controlled-schema-apply/evidence.json
+          if-no-files-found: error
+
+      - name: Enforce controlled schema apply acceptance
+        if: always()
+        run: node scripts/verify-12a4-category-controlled-schema-apply-evidence.mjs "$ARTIFACT_DIR/evidence.json" --require-pass
