@@ -17,11 +17,15 @@ ViewLoom is an independent, unofficial observatory for retained Twitch and Kick 
 Phase 12A Analytics Capture Foundation active
 12A-0 baseline                         complete PR #490
 12A-1 field contract                   complete PR #492
-12A-2 design/migration/deploy/schema   accepted through PR #506
-12A-3 bounded generator/accumulation   complete through PR #511
+12A-2 design and migration             accepted through PR #499
+12A-2 collector deployment/schema      accepted PR #506
+12A-3 account storage gate             accepted PR #507
+12A-3 execution-cost gate              accepted PR #508
+12A-3 bounded generator                enabled PR #510
+12A-3 production accumulation          accepted PR #511
 12A-4 category source audit            accepted PR #513
 12A-4 category storage design          accepted PR #514
-12A-4 migration/disabled runtime       implemented PR #516
+12A-4 migration and disabled runtime   implemented PR #516
 12A-4 disabled-runtime production gate accepted PR #517 / frozen PR #518
 Production intraday generation         enabled and accumulating
 Current workstream                     12A-4 production category execution-cost probe
@@ -52,17 +56,26 @@ docs/audits/12a4-category-execution-cost-probe-contract.json
 docs/audits/12a2-current-gate-state.json
 ```
 
-## Accepted category boundary
+## Accepted category source contracts
 
 ```text
 Twitch endpoint: https://api.twitch.tv/helix/streams
 Twitch provider id / name: game_id / game_name
+Twitch live field presence: 1.0 across two 100-row probes
+
 Kick endpoint: https://api.kick.com/public/v1/livestreams
 Kick provider id / name: category.id / category.name
+Kick live field presence: 1.0 across two 100-row probes
+
 provider category identity equivalence: false
 combined-provider category ranking: forbidden
+runtime category capture: disabled
+```
 
-selected storage model: embedded_hourly
+## Accepted category storage design
+
+```text
+selected model: embedded_hourly
 category contract: category-source-v1
 raw encoding: categoryIds + item-order-aligned categoryRefs
 category names: one set-based provider_category_dictionary write
@@ -82,11 +95,14 @@ Account projected total/headroom: 3716.59 / 891.41 MB
 ## Current boundary
 
 ```text
+intraday generation authorized: true
 intraday generation running: true
-repository category migration candidate implemented: true
+category source contract accepted: true
+category storage design accepted: true
+repository migration candidate implemented: true
 disabled category runtime deployed and accepted: true
 production category schema present: false
-remote category migration authorized: false
+remote production migration authorized: false
 production execution-cost probe current: true
 category runtime capture authorized: false
 category runtime capture started: false
@@ -96,7 +112,7 @@ backfill authorized: false
 category analytics UI authorized: false
 ```
 
-The current change prepares Issue #519's provider-separated execution-cost gate with a formal contract, read-only preflight Worker, local controlled-migration fixtures, explicit stop conditions, and dry-run bundles. It performs no production deployment, remote migration, or category capture enablement.
+The current change prepares Issue #519's provider-separated production execution-cost gate. It adds a formal contract, explicit thresholds and stop conditions, a read-only Twitch/Kick preflight Worker, local controlled-migration/idempotency/failure-containment fixtures, and dry-run bundles. It performs no production deployment, remote migration, or category capture enablement.
 
 ## Forward sequence
 
