@@ -11,7 +11,7 @@ Phase 12A Analytics Capture Foundation active
 12A-3 bounded generation and accumulation complete through PR #511
 12A-4 category source audit accepted PR #513
 12A-4 category storage design accepted PR #514
-12A-4 migration and disabled runtime accepted through PR #518
+12A-4 category migration and disabled runtime accepted through PR #518
 Production intraday generation started yes
 Current gate 12A-4 production category execution-cost probe
 Category runtime capture started no
@@ -31,6 +31,25 @@ Category runtime capture started no
 12A-5 foundation acceptance and accumulation handoff        queued
 ```
 
+## Accepted source and storage gate
+
+```text
+Twitch source verified true
+Twitch fields game_id / game_name
+Kick primary source verified true
+Kick fields category.id / category.name
+sourceContractAccepted true
+storageDesignAccepted true
+selectedStorageModel embedded_hourly
+repositoryMigrationCandidateImplemented true
+disabledRuntimeProductionAccepted true
+productionCategorySchemaPresent false
+remoteMigrationApplyAuthorized false
+productionCostProbeRequired true
+runtimeCaptureAuthorized false
+providerSeparated true
+```
+
 ## Exact next action
 
 ```text
@@ -45,6 +64,10 @@ perform no production deployment in the planning PR
 perform no remote migration apply in the planning PR
 leave CATEGORY_CAPTURE_ENABLED absent
 write no production category rows
+add no backfill
+add no new cron
+leave raw retention unchanged
+add no category analytics UI
 ```
 
 ## Production probe order after planning acceptance
@@ -58,5 +81,18 @@ read-only provider preflight
   -> sanitized evidence freeze
   -> capture enablement decision
 ```
+
+## Governing evidence
+
+- `../audits/12a1-analytics-field-contract.json`
+- `../audits/12a1-source-evidence.json`
+- `../audits/12a4-category-source-audit-contract.json`
+- `../audits/12a4-category-source-audit-evidence.json`
+- `../audits/12a4-category-storage-design-contract.json`
+- `../audits/12a4-category-storage-budget-evidence.json`
+- `../audits/12a4-category-migration-runtime-contract.json`
+- `../audits/12a4-disabled-runtime-postmerge-evidence.json`
+- `../audits/12a4-category-execution-cost-probe-contract.json`
+- `../audits/12a2-current-gate-state.json`
 
 Do not merge provider category identities or create combined-provider category rankings.
