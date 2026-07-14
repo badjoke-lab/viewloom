@@ -1,4 +1,4 @@
-name: Analytics 12A4 Category Read-Only Preflight
+name: Analytics 12A4 Category Read-Only Preflight Retired
 
 on:
   pull_request:
@@ -8,43 +8,21 @@ on:
       - '.github/workflows/analytics-12a4-category-readonly-preflight.yml'
       - 'docs/audits/12a4-category-readonly-preflight-contract.json'
       - 'docs/audits/12a4-category-readonly-preflight-trigger.json'
-      - 'docs/work-in-progress/phase12a4-category-readonly-preflight.md'
-      - 'scripts/check-12a4-category-readonly-preflight-scope.mjs'
-      - 'scripts/collect-12a4-category-readonly-preflight-evidence.mjs'
-      - 'scripts/verify-12a4-category-readonly-preflight-evidence.mjs'
+      - 'docs/audits/12a4-category-readonly-preflight-evidence.json'
+      - 'docs/work-in-progress/phase12a4-category-readonly-preflight-acceptance.md'
       - 'scripts/verify-12a4-category-readonly-preflight-package.mjs'
       - 'workers/category-cost-probe/**'
-  push:
-    branches:
-      - main
-    paths:
-      - 'docs/audits/12a4-category-readonly-preflight-trigger.json'
   workflow_dispatch:
-    inputs:
-      confirm:
-        description: Type READ_ONLY_PREFLIGHT_ONLY
-        required: true
-        type: string
-      expected_main_sha:
-        description: Exact main SHA that must be checked out
-        required: true
-        type: string
 
 permissions:
   contents: read
-  actions: read
-  pull-requests: read
 
 concurrency:
-  group: analytics-12a4-category-readonly-preflight-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
-
-env:
-  ARTIFACT_DIR: artifacts/12a4-category-readonly-preflight
-  RAW_DIR: artifacts/12a4-category-readonly-preflight/raw
+  group: analytics-12a4-category-readonly-preflight-retired-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  contract:
+  verify-retired-package:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -55,11 +33,7 @@ jobs:
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Verify branch scope
-        if: github.event_name == 'pull_request'
-        run: node scripts/check-12a4-category-readonly-preflight-scope.mjs
-
-      - name: Verify read-only preflight package
+      - name: Verify accepted and retired preflight package
         run: node scripts/verify-12a4-category-readonly-preflight-package.mjs
 
       - name: Bundle Twitch preflight Worker without deploying
@@ -68,211 +42,18 @@ jobs:
       - name: Bundle Kick preflight Worker without deploying
         run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-cost-probe/wrangler.kick.toml
 
-  production-preflight:
-    needs: contract
-    if: >-
-      (github.event_name == 'workflow_dispatch' &&
-       github.ref == 'refs/heads/main' &&
-       inputs.confirm == 'READ_ONLY_PREFLIGHT_ONLY') ||
-      (github.event_name == 'push' &&
-       github.ref == 'refs/heads/main')
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    env:
-      GH_TOKEN: ${{ github.token }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-
-      - name: Verify exact main and accepted gates
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RAW_DIR"
-          actual_sha=$(git rev-parse HEAD)
-          [[ "$GITHUB_REF" == 'refs/heads/main' ]] || { echo "::error::Expected main ref, observed $GITHUB_REF"; exit 1; }
-
-          if [[ "$GITHUB_EVENT_NAME" == 'workflow_dispatch' ]]; then
-            [[ "$actual_sha" == "${{ inputs.expected_main_sha }}" ]] || { echo '::error::Manual-dispatch main SHA mismatch'; exit 1; }
-          elif [[ "$GITHUB_EVENT_NAME" == 'push' ]]; then
-            trigger='docs/audits/12a4-category-readonly-preflight-trigger.json'
-            [[ -f "$trigger" ]] || { echo '::error::One-time trigger file missing'; exit 1; }
-            [[ $(jq -r '.status' "$trigger") == 'armed_for_one_time_main_push' ]] || { echo '::error::Trigger is not armed'; exit 1; }
-            [[ $(jq -r '.confirmation' "$trigger") == 'READ_ONLY_PREFLIGHT_ONLY' ]] || { echo '::error::Trigger confirmation mismatch'; exit 1; }
-            [[ $(jq -r '.oneTime' "$trigger") == 'true' ]] || { echo '::error::Trigger is not one-time'; exit 1; }
-            cp "$trigger" "$RAW_DIR/trigger.json"
-          else
-            echo "::error::Unsupported event $GITHUB_EVENT_NAME"
-            exit 1
-          fi
-
-          parent=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/520")
-          package=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/521")
-          printf '%s\n' "$parent" > "$RAW_DIR/parent-pr.json"
-          printf '%s\n' "$package" > "$RAW_DIR/package-pr.json"
-
-          parent_merged_at=$(jq -r '.merged_at // empty' <<<"$parent")
-          package_merged_at=$(jq -r '.merged_at // empty' <<<"$package")
-          parent_merge_sha=$(jq -r '.merge_commit_sha // empty' <<<"$parent")
-          package_merge_sha=$(jq -r '.merge_commit_sha // empty' <<<"$package")
-          package_head_sha=$(jq -r '.head.sha // empty' <<<"$package")
-
-          [[ -n "$parent_merged_at" && -n "$parent_merge_sha" ]] || { echo '::error::PR #520 is not merged'; exit 1; }
-          [[ -n "$package_merged_at" && -n "$package_merge_sha" && -n "$package_head_sha" ]] || { echo '::error::PR #521 is not merged'; exit 1; }
-          git cat-file -e "$parent_merge_sha^{commit}" || { echo "::error::PR #520 merge commit $parent_merge_sha is unavailable"; exit 1; }
-          git cat-file -e "$package_merge_sha^{commit}" || { echo "::error::PR #521 merge commit $package_merge_sha is unavailable"; exit 1; }
-          git merge-base --is-ancestor "$parent_merge_sha" HEAD || { echo '::error::PR #520 merge is not an ancestor of main'; exit 1; }
-          git merge-base --is-ancestor "$package_merge_sha" HEAD || { echo '::error::PR #521 merge is not an ancestor of main'; exit 1; }
-
-          if [[ "$GITHUB_EVENT_NAME" == 'push' ]]; then
-            trigger_package_pr=$(jq -r '.packagePr' "$RAW_DIR/trigger.json")
-            trigger_package_head=$(jq -r '.expectedPackageHeadSha' "$RAW_DIR/trigger.json")
-            [[ "$trigger_package_pr" == '521' ]] || { echo "::error::Trigger package PR mismatch: $trigger_package_pr"; exit 1; }
-            [[ "$trigger_package_head" == "$package_head_sha" ]] || { echo "::error::Trigger package head mismatch: expected $package_head_sha observed $trigger_package_head"; exit 1; }
-          fi
-
-          if grep -R -n -E '^[[:space:]]*CATEGORY_CAPTURE_ENABLED[[:space:]]*=' \
-            workers/collector-twitch/wrangler.toml workers/collector-kick/wrangler.toml; then
-            echo '::error::CATEGORY_CAPTURE_ENABLED assignment exists in committed collector configuration'
-            exit 1
-          fi
-
-          printf '%s\n' "$actual_sha" > "$RAW_DIR/head-sha.txt"
-          printf '%s\n' "$GITHUB_EVENT_NAME" > "$RAW_DIR/event-name.txt"
-          jq -n \
-            --arg actualSha "$actual_sha" \
-            --arg event "$GITHUB_EVENT_NAME" \
-            --arg parentMergedAt "$parent_merged_at" \
-            --arg parentMergeSha "$parent_merge_sha" \
-            --arg packageMergedAt "$package_merged_at" \
-            --arg packageMergeSha "$package_merge_sha" \
-            --arg packageHeadSha "$package_head_sha" \
-            '{actualSha:$actualSha,event:$event,parentMergedAt:$parentMergedAt,parentMergeSha:$parentMergeSha,packageMergedAt:$packageMergedAt,packageMergeSha:$packageMergeSha,packageHeadSha:$packageHeadSha,gatePass:true}' \
-            > "$RAW_DIR/gate.json"
-
-      - name: Prepare temporary provider configs
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RAW_DIR/configs"
-          cp workers/category-cost-probe/wrangler.twitch.toml "$RAW_DIR/configs/twitch.toml"
-          cp workers/category-cost-probe/wrangler.kick.toml "$RAW_DIR/configs/kick.toml"
-          for config in "$RAW_DIR/configs/twitch.toml" "$RAW_DIR/configs/kick.toml"; do
-            sed -i "s|main = \"src/index.ts\"|main = \"$GITHUB_WORKSPACE/workers/category-cost-probe/src/index.ts\"|" "$config"
-          done
-          echo "PROBE_TOKEN=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
-
-      - name: Deploy, inspect, and delete temporary provider Workers
-        shell: bash
-        run: |
-          set -uo pipefail
-
-          inspect_provider() {
-            provider="$1"
-            service="viewloom-category-cost-preflight-$provider"
-            config="$RAW_DIR/configs/$provider.toml"
-            log="$RAW_DIR/$provider-deploy.log"
-            body="$RAW_DIR/$provider.json"
-            deploy_code=1
-            secret_code=1
-            curl_code=1
-            http_status=0
-            delete_code=1
-            delete_curl_code=1
-            delete_http_status=0
-            url=''
-
-            pnpm dlx wrangler@4 deploy --config "$config" >"$log" 2>&1
-            deploy_code=$?
-            if [[ $deploy_code -eq 0 ]]; then
-              printf '%s' "$PROBE_TOKEN" | pnpm dlx wrangler@4 secret put PROBE_TOKEN --config "$config" >>"$log" 2>&1
-              secret_code=$?
-              url=$(grep -Eo 'https://[^ ]+workers.dev' "$log" | tail -1 || true)
-              if [[ $secret_code -eq 0 && -n "$url" ]]; then
-                for attempt in $(seq 1 40); do
-                  http_status=$(curl -sS -o "$body" -w '%{http_code}' \
-                    -X POST -H "Authorization: Bearer $PROBE_TOKEN" \
-                    "$url/inspect")
-                  curl_code=$?
-                  if [[ $curl_code -eq 0 && "$http_status" == '200' ]]; then break; fi
-                  sleep 10
-                done
-              fi
-            fi
-
-            delete_response=$(curl -sS \
-              -X DELETE \
-              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-              -H 'Content-Type: application/json' \
-              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
-            if [[ $(jq -r '.success // false' <<<"$delete_response") == 'true' ]]; then delete_code=0; fi
-            delete_http_status=$(curl -sS -o /dev/null -w '%{http_code}' \
-              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
-            delete_curl_code=$?
-
-            printf '%s %s %s %s %s %s %s\n' \
-              "$deploy_code" "$secret_code" "$curl_code" "$http_status" \
-              "$delete_code" "$delete_curl_code" "$delete_http_status" \
-              > "$RAW_DIR/$provider-codes.txt"
-
-            [[ $deploy_code -eq 0 ]]
-            [[ $secret_code -eq 0 ]]
-            [[ $curl_code -eq 0 ]]
-            [[ "$http_status" == '200' ]]
-            [[ $delete_code -eq 0 ]]
-            [[ $delete_curl_code -eq 0 ]]
-            [[ "$delete_http_status" == '404' ]]
-          }
-
-          twitch_result=0
-          kick_result=0
-          inspect_provider twitch || twitch_result=$?
-          inspect_provider kick || kick_result=$?
-          [[ $twitch_result -eq 0 && $kick_result -eq 0 ]]
-
-      - name: Normalize and verify sanitized evidence
+      - name: Publish retirement summary
         if: always()
-        shell: bash
         run: |
-          set -euo pipefail
-          mkdir -p "$ARTIFACT_DIR"
-          for required in parent-pr.json package-pr.json head-sha.txt event-name.txt twitch.json kick.json twitch-codes.txt kick-codes.txt; do
-            [[ -f "$RAW_DIR/$required" ]] || { echo "::error::Missing preflight input $required"; exit 1; }
-          done
-          node scripts/collect-12a4-category-readonly-preflight-evidence.mjs \
-            "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
-          node scripts/verify-12a4-category-readonly-preflight-evidence.mjs \
-            "$ARTIFACT_DIR/evidence.json" --require-pass
-
-      - name: Upload gate diagnostics on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: phase12a4-category-readonly-preflight-gate-diagnostics
-          path: |
-            artifacts/12a4-category-readonly-preflight/raw/gate.json
-            artifacts/12a4-category-readonly-preflight/raw/parent-pr.json
-            artifacts/12a4-category-readonly-preflight/raw/package-pr.json
-            artifacts/12a4-category-readonly-preflight/raw/trigger.json
-            artifacts/12a4-category-readonly-preflight/raw/twitch-codes.txt
-            artifacts/12a4-category-readonly-preflight/raw/kick-codes.txt
-          if-no-files-found: warn
-
-      - name: Remove raw responses, tokens, and logs
-        if: always()
-        run: rm -rf "$RAW_DIR"
-
-      - name: Upload sanitized read-only evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: phase12a4-category-readonly-preflight
-          path: artifacts/12a4-category-readonly-preflight/evidence.json
-          if-no-files-found: warn
+          {
+            echo '## ViewLoom 12A-4 Read-Only Production Preflight'
+            echo
+            echo '- Accepted evidence: PR #523'
+            echo '- Trigger status: consumed and retired'
+            echo '- Production push trigger: removed'
+            echo '- Production deployment job: removed'
+            echo '- Temporary Worker deployment from this workflow: no'
+            echo '- Wrangler bundles: dry-run only'
+            echo '- Remote migration: no'
+            echo '- Category runtime capture: disabled'
+          } >> "$GITHUB_STEP_SUMMARY"

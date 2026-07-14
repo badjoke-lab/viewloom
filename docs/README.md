@@ -17,8 +17,9 @@ Phase 12A Analytics Capture Foundation active
 12A-4 category storage design accepted PR #514
 12A-4 category migration and disabled runtime implemented PR #516
 12A-4 disabled-runtime production boundary accepted PR #517 / frozen PR #518
+12A-4 read-only production preflight accepted and frozen PR #523
 Production intraday generation started yes
-Current workstream 12A-4 production category execution-cost probe
+Current workstream 12A-4 controlled category schema apply design
 Category capture runtime not started
 ```
 
@@ -46,11 +47,14 @@ Category capture runtime not started
 - 12A-4 category storage evidence: `audits/12a4-category-storage-budget-evidence.json`
 - 12A-4 category migration/runtime contract: `audits/12a4-category-migration-runtime-contract.json`
 - 12A-4 disabled-runtime evidence: `audits/12a4-disabled-runtime-postmerge-evidence.json`
-- 12A-4 execution-cost contract: `audits/12a4-category-execution-cost-probe-contract.json`
+- 12A-4 execution-cost umbrella contract: `audits/12a4-category-execution-cost-probe-contract.json`
+- 12A-4 read-only preflight evidence: `audits/12a4-category-readonly-preflight-evidence.json`
+- 12A-4 controlled schema apply contract: `audits/12a4-category-controlled-schema-apply-contract.json`
 - Current gate state: `audits/12a2-current-gate-state.json`
 - 12A-4 source acceptance: `operations/12a4-category-source-audit-2026-07-12.md`
 - 12A-4 storage acceptance: `operations/12a4-category-storage-design-acceptance-2026-07-14.md`
-- Current WIP: `work-in-progress/phase12a4-category-execution-cost-probe.md`
+- Accepted preflight history: `work-in-progress/phase12a4-category-readonly-preflight-acceptance.md`
+- Current WIP: `work-in-progress/phase12a4-category-controlled-schema-apply.md`
 
 ## Permanent Watchlist records
 
@@ -68,7 +72,10 @@ Category capture runtime not started
 12A-4-0 provider-specific category source audit             accepted PR #513
 12A-4-1 category storage design and budget gate             accepted PR #514
 12A-4-2 category migration and disabled runtime             accepted through PR #518
-12A-4-3 production cost, remote apply, capture acceptance   current
+12A-4-3 read-only production preflight                      accepted PR #523
+12A-4-4 controlled provider schema apply design             current
+12A-4-5 bounded provider execution-cost probe               queued
+12A-4-6 provider-separated capture acceptance               queued
 12A-5 foundation acceptance and accumulation handoff        queued
 ```
 
@@ -85,9 +92,10 @@ selected model: embedded_hourly
 category contract: category-source-v1
 repository migration candidate implemented: true
 disabled runtime production acceptance: true
+read-only production preflight acceptance: true
 production category schema present: false
 remote migration apply authorized: false
-production cost probe required: true
+bounded production cost probe authorized: false
 runtime capture authorized: false
 ```
 
@@ -103,6 +111,8 @@ Account projected total/headroom: 3716.59 / 891.41 MB
 intraday generation enabled and accumulating
 repository category migration candidate implemented
 disabled category runtime deployed and accepted
+read-only category preflight accepted
+controlled category schema apply design current
 production category schema absent
 remote category migration not authorized
 category runtime capture disabled
@@ -116,7 +126,8 @@ combined-provider category ranking forbidden
 ## Forward order
 
 ```text
-12A-4 production execution-cost probe and remote migration decision
+12A-4 controlled provider-separated category schema apply
+  -> bounded provider-separated category execution-cost probe
   -> provider-separated production capture acceptance
   -> 12A-5 foundation acceptance
   -> Phase 13-14 localization and evidence accumulation

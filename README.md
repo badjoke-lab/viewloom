@@ -27,8 +27,9 @@ Phase 12A Analytics Capture Foundation active
 12A-4 category storage design          accepted PR #514
 12A-4 category migration/disabled runtime implemented PR #516
 12A-4 disabled-runtime production gate accepted PR #517 / frozen PR #518
+12A-4 read-only production preflight   accepted and frozen PR #523
 Production intraday generation         enabled and accumulating
-Current workstream                     12A-4 production category execution-cost probe
+Current workstream                     12A-4 controlled category schema apply design
 Category capture runtime               not started
 ```
 
@@ -53,6 +54,8 @@ docs/audits/12a4-category-storage-budget-evidence.json
 docs/audits/12a4-category-migration-runtime-contract.json
 docs/audits/12a4-disabled-runtime-postmerge-evidence.json
 docs/audits/12a4-category-execution-cost-probe-contract.json
+docs/audits/12a4-category-readonly-preflight-evidence.json
+docs/audits/12a4-category-controlled-schema-apply-contract.json
 docs/audits/12a2-current-gate-state.json
 ```
 
@@ -101,9 +104,11 @@ category source contract accepted: true
 category storage design accepted: true
 repository category migration candidate implemented: true
 disabled category runtime deployed and accepted: true
+read-only category preflight accepted: true
 production category schema present: false
+controlled schema apply design current: true
 remote production migration authorized: false
-production execution-cost probe current: true
+bounded production cost probe authorized: false
 category runtime capture authorized: false
 category runtime capture started: false
 raw retention unchanged: true
@@ -112,12 +117,13 @@ backfill authorized: false
 category analytics UI authorized: false
 ```
 
-The current change prepares Issue #519's provider-separated production execution-cost gate. It adds a formal contract, explicit thresholds and stop conditions, a read-only Twitch/Kick preflight Worker, local controlled-migration/idempotency/failure-containment fixtures, and dry-run bundles. It performs no production deployment, remote migration, or category capture enablement.
+The current change prepares Issue #519's one-time controlled remote schema apply gate. It adds migration-parity code, a provider-shared controlled apply module, provider-separated temporary Worker candidates, partial-schema stop behavior, local absent/apply/no-op fixtures, explicit failure policy, and Twitch/Kick Wrangler dry-runs. It performs no production deployment, remote migration, production category write, or runtime capture enablement.
 
 ## Forward sequence
 
 ```text
-12A-4 production category execution-cost probe and remote migration decision
+12A-4 controlled provider-separated category schema apply
+  -> bounded provider-separated category execution-cost probe
   -> provider-separated production capture acceptance
   -> 12A-5 foundation acceptance and accumulation handoff
   -> Phase 13-14 localization with evidence accumulation

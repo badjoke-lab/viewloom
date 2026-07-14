@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "viewloom-12a4-category-controlled-schema-apply-contract-v1",
+  "workstream": "12A-4 controlled provider-separated category schema apply",
+  "status": "design_package_ready_no_production_execution",
+  "trackingIssue": 519,
+  "acceptedPreflight": {
+    "acceptancePr": 523,
+    "acceptanceMergeSha": "428154d16dc5b62c30ac6b7cdeb668f3e442a3b6",
+    "evidence": "docs/audits/12a4-category-readonly-preflight-evidence.json",
+    "sourceWorkflowRunId": 29318733171,
+    "acceptanceWorkflowRunId": 29318857656,
+    "twitchGatePass": true,
+    "kickGatePass": true,
+    "productionCategorySchemaPresent": false,
+    "providerLeakageRows": 0,
+    "temporaryWorkersRetained": false
+  },
+  "migration": {
+    "file": "db/d1/005_category_capture.sql",
+    "runtimeModule": "workers/shared/category-schema.ts",
+    "temporaryWorker": "workers/category-schema-apply/src/index.ts",
+    "expectedStatementCount": 9,
+    "expectedDictionaryTables": 1,
+    "expectedRollupColumns": 4,
+    "expectedStatusColumns": 4,
+    "secondPassStatementCountMax": 0,
+    "partialSchemaPolicy": "stop_without_applying"
+  },
+  "providers": {
+    "order": [
+      "twitch",
+      "kick"
+    ],
+    "stopAfterFirstProviderFailure": true,
+    "twitch": {
+      "databaseBinding": "DB",
+      "databaseName": "vl_twitch_hot",
+      "workerConfig": "workers/category-schema-apply/wrangler.twitch.toml"
+    },
+    "kick": {
+      "databaseBinding": "DB",
+      "databaseName": "vl_kick_hot",
+      "workerConfig": "workers/category-schema-apply/wrangler.kick.toml"
+    }
+  },
+  "requiredPreconditions": [
+    "exact_main_sha_confirmed",
+    "accepted_readonly_preflight_evidence_present",
+    "production_category_schema_completely_absent_for_both_providers",
+    "category_capture_flag_absent_from_committed_collector_configs",
+    "latest_provider_snapshots_fresh_enough_for_latency_baseline",
+    "provider_leakage_rows_zero",
+    "temporary_worker_names_unoccupied"
+  ],
+  "execution": {
+    "event": "one_time_main_trigger_after_design_acceptance",
+    "confirmation": "APPLY_CATEGORY_SCHEMA_WITH_CAPTURE_DISABLED",
+    "providerSeparated": true,
+    "sequential": true,
+    "temporaryWorkers": true,
+    "temporaryWorkersMustBeDeleted": true,
+    "firstCall": "inspect_pre_state",
+    "secondCall": "apply_if_completely_absent",
+    "thirdCall": "repeat_apply_and_require_already_complete_noop",
+    "finalCall": "inspect_post_state",
+    "collectorDeploymentIncluded": false,
+    "categoryCaptureEnablementIncluded": false,
+    "categoryRowsIncluded": false
+  },
+  "requiredEvidence": [
+    "exact_main_sha",
+    "provider_specific_pre_schema_state",
+    "provider_specific_post_schema_state",
+    "database_size_before_and_after",
+    "schema_apply_statement_count",
+    "schema_apply_d1_duration_ms",
+    "schema_apply_worker_wall_ms",
+    "schema_apply_rows_read",
+    "schema_apply_rows_written",
+    "schema_apply_changes",
+    "second_pass_noop_statement_count",
+    "latest_snapshot_before_and_after",
+    "collector_latency_delta_ms",
+    "category_dictionary_row_count_zero",
+    "reserved_probe_row_count_zero",
+    "provider_leakage_rows_zero",
+    "temporary_worker_delete_success",
+    "temporary_worker_post_delete_http_404"
+  ],
+  "acceptanceThresholds": {
+    "schemaApplyWallMsPerProviderMax": 15000,
+    "schemaSizeIncreaseMbPerProviderMax": 5,
+    "collectorLatencyDeltaMsPerProviderMax": 2000,
+    "secondPassStatementCountMax": 0,
+    "categoryDictionaryRowsMax": 0,
+    "reservedProbeRowsMax": 0,
+    "providerLeakageRowsMax": 0,
+    "temporaryWorkersRetained": false
+  },
+  "stopConditions": [
+    "main_sha_mismatch",
+    "accepted_preflight_evidence_missing_or_invalid",
+    "category_capture_flag_present",
+    "provider_binding_mismatch",
+    "pre_schema_partial",
+    "pre_schema_already_complete_without_recorded_acceptance",
+    "provider_leakage_detected",
+    "schema_apply_incomplete",
+    "second_pass_executes_any_statement",
+    "schema_size_increase_exceeds_threshold",
+    "collector_latency_delta_exceeds_threshold",
+    "category_dictionary_contains_rows_after_schema_apply",
+    "reserved_probe_rows_exist",
+    "temporary_worker_delete_failure",
+    "temporary_worker_still_reachable"
+  ],
+  "failurePolicy": {
+    "doNotDropAppliedSchema": true,
+    "leaveCategoryCaptureDisabled": true,
+    "doNotBackfill": true,
+    "doNotWriteProbeRows": true,
+    "stopBeforeNextProviderOnFailure": true,
+    "preserveSanitizedEvidence": true,
+    "requireSeparateRecoveryDecisionForPartialProviderCompletion": true
+  },
+  "planningPrBoundary": {
+    "productionWorkerDeployment": false,
+    "remoteMigrationApply": false,
+    "categoryRuntimeEnablement": false,
+    "productionCategoryRows": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false,
+    "cloudflareSecretsRequired": false
+  },
+  "nextDecision": "after this design package is accepted, issue a separate one-time trigger PR for controlled production schema apply"
+}

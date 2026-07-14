@@ -11,7 +11,7 @@ const check = (condition, label) => {
 }
 
 check(contract.schemaVersion === 'viewloom-12a4-category-readonly-preflight-acceptance-contract-v1', 'contract schemaVersion')
-check(contract.status === 'accepted_evidence_frozen_on_branch', 'contract accepted status')
+check(contract.status === 'accepted_on_main', 'contract accepted-on-main status')
 check(contract.planningPr === 520, 'planning PR')
 check(contract.packagePr === 521, 'package PR')
 check(contract.initialTriggerPr === 522, 'initial trigger PR')
@@ -22,13 +22,16 @@ check(contract.triggerPr === 527, 'attempt 3 trigger PR')
 check(contract.triggerMergeSha === '51796234db2b88bd5d4e3393cf0b2a97b4927c7b', 'attempt 3 trigger merge SHA')
 check(contract.sourceWorkflowRunId === 29318733171, 'source workflow run ID')
 check(contract.acceptanceWorkflowRunId === 29318857656, 'acceptance workflow run ID')
+check(contract.acceptancePr === 523, 'acceptance PR')
+check(contract.acceptanceMergeSha === '428154d16dc5b62c30ac6b7cdeb668f3e442a3b6', 'acceptance merge SHA')
 check(contract.acceptedEvidenceFile === 'docs/audits/12a4-category-readonly-preflight-evidence.json', 'accepted evidence path')
-check(contract.workflowFile === 'analytics-12a4-category-readonly-preflight.yml', 'source workflow file')
-check(contract.artifactName === 'phase12a4-category-readonly-preflight', 'source artifact name')
-check(contract.requiredEvidence.event === 'push', 'push evidence required')
 check(contract.requiredEvidence.readOnlyPreflightPass === true, 'preflight pass required')
 check(contract.requiredEvidence.rowsWrittenMax === 0, 'zero rows-written threshold')
 check(contract.requiredEvidence.changesMax === 0, 'zero changes threshold')
+check(contract.workflowRetirement.productionPushTriggerRemoved === true, 'production push trigger retired')
+check(contract.workflowRetirement.productionDeploymentJobRemoved === true, 'production deployment job retired')
+check(contract.workflowRetirement.artifactReacceptanceJobRemoved === true, 'artifact reacceptance job retired')
+check(contract.workflowRetirement.verificationOnly === true, 'verification-only retirement')
 check(Object.values(contract.boundaries).every((value) => value === false), 'all acceptance boundaries false')
 
 check(evidence.schemaVersion === 'viewloom-12a4-category-readonly-preflight-evidence-v1', 'frozen evidence schemaVersion')
@@ -58,13 +61,11 @@ check(evidence.workflow?.runId === contract.sourceWorkflowRunId, 'frozen workflo
 check(Object.values(evidence.privacy ?? {}).every((value) => value === false), 'frozen privacy exclusions')
 check(Object.values(evidence.boundaries ?? {}).every((value) => value === false), 'frozen evidence boundaries false')
 
-check(workflow.includes("github.head_ref == 'accept-analytics-12a4-category-readonly-preflight'"), 'acceptance branch gate')
-check(workflow.includes('event=push'), 'exact push run lookup')
-check(workflow.includes(contract.triggerMergeSha), 'attempt 3 trigger SHA pin')
-check(workflow.includes(contract.workflowFile), 'source workflow lookup')
-check(workflow.includes(contract.artifactName), 'source artifact lookup')
-check(workflow.includes('actions/artifacts/$artifact_id/zip'), 'artifact download')
-check(workflow.includes('verify-12a4-category-readonly-preflight-evidence.mjs'), 'evidence verifier')
+check(workflow.includes('Acceptance Retired'), 'retired acceptance workflow name')
+check(!workflow.includes('production-acceptance:'), 'production acceptance job removed')
+check(!workflow.includes('event=push'), 'source run lookup removed')
+check(!workflow.includes('actions/artifacts/$artifact_id/zip'), 'artifact download removed')
+check(!workflow.includes('GH_TOKEN'), 'GitHub run-fetch token removed')
 check(!workflow.includes('CLOUDFLARE_API_TOKEN'), 'no Cloudflare API token')
 check(!workflow.includes('wrangler deploy'), 'no Worker deployment')
 check(!workflow.includes('wrangler d1 execute'), 'no D1 execute')
@@ -77,9 +78,10 @@ if (failures.length) {
 
 console.log(JSON.stringify({
   ok: true,
-  triggerMergeSha: contract.triggerMergeSha,
+  mode: 'accepted_on_main_and_retired',
+  acceptancePr: contract.acceptancePr,
+  acceptanceMergeSha: contract.acceptanceMergeSha,
   sourceWorkflowRunId: contract.sourceWorkflowRunId,
-  acceptanceWorkflowRunId: contract.acceptanceWorkflowRunId,
   twitchRowsRead: evidence.providers.twitch.query.rowsRead,
   kickRowsRead: evidence.providers.kick.query.rowsRead,
 }, null, 2))

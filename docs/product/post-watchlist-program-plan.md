@@ -1,10 +1,10 @@
 # ViewLoom post-Watchlist execution program
 
 Status: active source-of-truth program plan  
-Version: 10.0  
+Version: 11.0  
 Last updated: 2026-07-14  
 Current phase: Phase 12A — Analytics Capture Foundation  
-Current workstream: 12A-4 production category execution-cost probe  
+Current workstream: 12A-4 controlled category schema apply design  
 Production intraday generation started: yes  
 Category runtime capture started: no
 
@@ -16,7 +16,8 @@ Category runtime capture started: no
 12A-4 category source audit accepted PR #513
 12A-4 category storage design and budget accepted PR #514
 12A-4 category migration and disabled runtime accepted through PR #518
-12A-4 production execution-cost probe current
+12A-4 read-only production preflight accepted PR #523
+12A-4 controlled category schema apply design current
 Phase 13-14 localization queued after Phase 12A
 Phase 15 capability and calibration audit queued
 Phase 16 analytics observation system gated by Phase 15
@@ -25,7 +26,8 @@ Phase 16 analytics observation system gated by Phase 15
 ## Program sequence
 
 ```text
-12A-4 production execution-cost probe and remote migration decision
+12A-4 controlled provider-separated category schema apply
+  -> bounded provider-separated category execution-cost probe
   -> provider-separated production capture acceptance
   -> 12A-5 foundation acceptance and accumulation handoff
   -> Phase 13-14 localization and analytics evidence accumulation
@@ -47,6 +49,8 @@ docs/audits/12a4-category-storage-budget-evidence.json
 docs/audits/12a4-category-migration-runtime-contract.json
 docs/audits/12a4-disabled-runtime-postmerge-evidence.json
 docs/audits/12a4-category-execution-cost-probe-contract.json
+docs/audits/12a4-category-readonly-preflight-evidence.json
+docs/audits/12a4-category-controlled-schema-apply-contract.json
 docs/audits/12a2-current-gate-state.json
 docs/operations/12a4-category-source-audit-2026-07-12.md
 docs/operations/12a4-category-storage-design-acceptance-2026-07-14.md
@@ -82,15 +86,16 @@ backfill false
 Twitch projected total/headroom 438.70 / 11.30 MB
 Kick projected total/headroom 314.57 / 135.43 MB
 Account projected total/headroom 3716.59 / 891.41 MB
-repository migration candidate implemented true
+repository category migration candidate implemented true
 disabled runtime production acceptance true
+read-only production preflight accepted true
 production category schema present false
 remote migration apply authorized false
-production execution-cost probe required true
+bounded production execution-cost probe authorized false
 runtime capture authorized false
 ```
 
-## 12A-4-2 migration and disabled runtime implementation
+## 12A-4-2 category migration and disabled runtime implementation
 
 Accepted result:
 
@@ -105,43 +110,58 @@ disabled runtime deployed and accepted PR #517
 accepted production evidence frozen PR #518
 ```
 
-The accepted boundary remains:
+## 12A-4-3 read-only production preflight
+
+Accepted result:
 
 ```text
-production category schema absent
-CATEGORY_CAPTURE_ENABLED absent
-production category rows absent
-new cron absent
-backfill absent
-raw retention unchanged
-category analytics UI absent
-cross-provider category identity forbidden
-combined-provider category rankings forbidden
+planning and thresholds accepted PR #520
+provider-separated read-only package accepted PR #521
+provider-health-aware verification accepted PR #526
+attempt 3 trigger accepted PR #527
+accepted evidence frozen on main PR #523
+Twitch health source collector_status
+Kick health source latest_snapshot
+category schema absent for both providers
+provider leakage zero
+D1 rows written zero
+D1 changes zero
+temporary Workers deleted and HTTP 404 confirmed
+remote migration unauthorized
+runtime capture unauthorized
 ```
 
-## 12A-4-3 production execution-cost gate
-
-Required work:
+Observed preflight cost:
 
 ```text
-provider-separated read-only preflight
-controlled remote migration decision
-pre/post schema and database-size evidence
-CATEGORY_CAPTURE_ENABLED remains absent during schema apply
-separate Twitch and Kick D1 cost measurements
-rows read/written, changes, SQL duration, Worker duration
-collector latency delta
-dictionary unchanged-name no-op measurement
-category-aware generator remains within 12 queries
-failure-containment proof
-cleanup and temporary Worker deletion
-explicit thresholds and stop conditions
+Twitch 10 statements / 8,763 rows read / 14.139 ms D1 / 1,172 ms Worker
+Kick 9 statements / 15,638 rows read / 34.152 ms D1 / 1,063 ms Worker
+```
+
+## 12A-4-4 controlled category schema apply design
+
+Current design work:
+
+```text
+exact parity with db/d1/005_category_capture.sql
+one provider-shared controlled apply module
+separate Twitch and Kick temporary Worker configurations
+exact confirmation header required
+completely absent pre-schema required
+partial schema stops without applying
+Twitch executes before Kick
+failure stops before the next provider
+first apply executes nine schema statements
+second apply must execute zero statements
+existing rollup rows and collector state preserved
+category dictionary remains empty after schema-only apply
+no production execution in the design PR
 ```
 
 Planning PR boundary:
 
 ```text
-no production deployment
+no production temporary Worker deployment
 no remote migration
 no category enablement
 no production category rows
@@ -150,6 +170,20 @@ no backfill
 no raw-retention change
 no category analytics UI
 no combined-provider category identity or ranking
+```
+
+## Later 12A-4 gates
+
+After the controlled schema apply is accepted and evidenced:
+
+```text
+bounded provider-separated execution-cost probe
+dictionary first-pass and unchanged-name second-pass measurement
+category-aware generator query count at or below 12
+collector latency delta measurement
+reserved probe-row cleanup
+provider-separated capture enablement decision
+post-merge capture acceptance
 ```
 
 ## 12A-4 completion boundary
