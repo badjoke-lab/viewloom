@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-category-execution-cost-probe-acceptance-v3-contract-v1",
   "workstream": "12A-4-6 category cost result acceptance attempt 3",
-  "status": "candidate",
+  "status": "accepted",
   "trackingIssue": 519,
   "trigger": {
     "pr": 557,
@@ -16,18 +16,21 @@
     "event": "push",
     "branch": "main",
     "headSha": "741e080187cfc3c92595120e57899d52664dd85e",
-    "artifact": "phase12a4-category-execution-cost-probe"
+    "workflowRunId": 29358245194,
+    "artifact": "phase12a4-category-execution-cost-probe",
+    "artifactId": 8321254541,
+    "conclusion": "success"
   },
   "acceptance": {
     "branch": "accept-analytics-12a4-category-execution-cost-probe-v3",
+    "evidence": "docs/audits/12a4-category-execution-cost-probe-attempt-3-evidence.json",
     "artifact": "phase12a4-category-execution-cost-probe-acceptance-v3",
-    "sourceEvidenceStatusRequired": "observed_pass",
-    "sourceGateRequired": true,
-    "sourceWorkflowConclusionRequired": "success",
-    "rawFilesRetained": false
+    "artifactId": 8321258554,
+    "rawFilesRetained": false,
+    "successfulMeasurement": true
   },
   "requiredSourceJobs": ["contract", "production-probe"],
   "readOnlyBoundary": true,
   "categoryCaptureAuthorized": false,
-  "nextGate": "freeze sanitized attempt 3 evidence and retire the one-time trigger"
+  "nextGate": "retire the one-time trigger and production execution path, then advance the category capture decision"
 }
