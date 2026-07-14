@@ -9,4 +9,4 @@ PROVIDER = "twitch"
 [[d1_databases]]
 binding = "DB"
 database_name = "vl_twitch_hot"
-database_id = "00000000-0000-0000-0000-000000000001"
+database_id = "b77221fe-80a3-4749-bc0e-d3ad54003dcf"
