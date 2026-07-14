@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "viewloom-12a4-category-readonly-preflight-acceptance-contract-v1",
+  "workstream": "12A-4 category read-only production preflight acceptance",
+  "status": "acceptance_package_ready",
+  "trackingIssue": 519,
+  "planningPr": 520,
+  "packagePr": 521,
+  "triggerPr": 522,
+  "triggerMergeSha": "2e1e3ea3e338574840cb69182581505bcb6eacff",
+  "workflowFile": "analytics-12a4-category-readonly-preflight.yml",
+  "workflowName": "Analytics 12A4 Category Read-Only Preflight",
+  "artifactName": "phase12a4-category-readonly-preflight",
+  "requiredJobs": [
+    "contract",
+    "production-preflight"
+  ],
+  "requiredEvidence": {
+    "schemaVersion": "viewloom-12a4-category-readonly-preflight-evidence-v1",
+    "event": "push",
+    "parentPlanningPr": 520,
+    "packagePr": 521,
+    "providerSeparated": true,
+    "readOnly": true,
+    "twitchGatePass": true,
+    "kickGatePass": true,
+    "readOnlyPreflightPass": true,
+    "remoteMigrationApplyAuthorized": false,
+    "runtimeCaptureEnablementAuthorized": false,
+    "rowsWrittenMax": 0,
+    "changesMax": 0,
+    "providerLeakageRowsMax": 0,
+    "temporaryWorkersRetained": false
+  },
+  "boundaries": {
+    "remoteMigrationApply": false,
+    "categoryRuntimeEnablement": false,
+    "productionCategoryRows": false,
+    "manualCollectorRoute": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  },
+  "nextDecision": "controlled remote schema apply design may begin only after accepted evidence is frozen on main"
+}
