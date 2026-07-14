@@ -38,7 +38,7 @@ export function verifyEvidence(evidence, contract, { requirePass = false } = {})
     assert.equal(typeof item.measurements.workerWallMs, 'number')
     assert.equal(typeof item.measurements.collectorLatencyDeltaMs, 'number')
     assert.equal(typeof item.lifecycle.deleteHttpStatus, 'number')
-    assert.equal(item.checks.categoryCaptureStillDisabled, true)
+    assert.equal(typeof item.checks.categoryCaptureStillDisabled, 'boolean')
 
     if (item.providerGatePass) {
       assert.equal(item.workerOk, true)
@@ -65,17 +65,19 @@ export function verifyEvidence(evidence, contract, { requirePass = false } = {})
   }
 
   const derivedPass = PROVIDERS.every((provider) => evidence.providers[provider].providerGatePass)
+  const derivedCaptureDisabled = PROVIDERS.every((provider) => evidence.providers[provider].checks.categoryCaptureStillDisabled)
   assert.equal(evidence.gate.executionCostProbePass, derivedPass)
   assert.equal(evidence.gate.twitchGatePass, evidence.providers.twitch.providerGatePass)
   assert.equal(evidence.gate.kickGatePass, evidence.providers.kick.providerGatePass)
   assert.equal(evidence.gate.allReservedRowsRemoved, PROVIDERS.every((provider) => evidence.providers[provider].measurements.probeCleanupRemainingRows === 0))
   assert.equal(evidence.gate.providerLeakageRowsZero, PROVIDERS.every((provider) => evidence.providers[provider].measurements.providerLeakageRows === 0))
   assert.equal(evidence.gate.temporaryWorkersDeleted, PROVIDERS.every((provider) => evidence.providers[provider].lifecycle.deleteHttpStatus === 404))
-  assert.equal(evidence.gate.categoryCaptureRemainedDisabled, true)
+  assert.equal(evidence.gate.categoryCaptureRemainedDisabled, derivedCaptureDisabled)
 
   if (requirePass) {
     assert.equal(evidence.status, 'observed_pass')
     assert.equal(evidence.gate.executionCostProbePass, true)
+    assert.equal(evidence.gate.categoryCaptureRemainedDisabled, true)
     assert.equal(evidence.parseErrors.length, 0)
   }
 
