@@ -1,0 +1,12 @@
+name = "viewloom-category-cost-preflight-twitch"
+main = "src/index.ts"
+compatibility_date = "2026-07-01"
+workers_dev = true
+
+[vars]
+PROVIDER = "twitch"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "vl_twitch_hot"
+database_id = "00000000-0000-0000-0000-000000000001"
