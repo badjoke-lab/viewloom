@@ -1,0 +1,12 @@
+name = "viewloom-category-schema-apply-twitch"
+main = "src/index.ts"
+compatibility_date = "2026-07-01"
+workers_dev = true
+
+[vars]
+PROVIDER = "twitch"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "vl_twitch_hot"
+database_id = "b77221fe-80a3-4749-bc0e-d3ad54003dcf"
