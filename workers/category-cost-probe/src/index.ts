@@ -297,13 +297,10 @@ async function runBoundedProbe(env: Env, identity: ProbeIdentity) {
 
 async function dictionaryUpsert(env: Env, identity: ProbeIdentity, observedAt: string) {
   return env.DB.prepare(`
-    WITH incoming(category_id, category_name) AS (VALUES (?, ?))
     INSERT INTO provider_category_dictionary (
       provider, category_id, category_name,
       first_observed_at, last_observed_at, contract_version
-    )
-    SELECT ?, category_id, category_name, ?, ?, ?
-    FROM incoming
+    ) VALUES (?, ?, ?, ?, ?, ?)
     ON CONFLICT(provider, category_id) DO UPDATE SET
       category_name = excluded.category_name,
       last_observed_at = excluded.last_observed_at,
@@ -311,9 +308,9 @@ async function dictionaryUpsert(env: Env, identity: ProbeIdentity, observedAt: s
     WHERE provider_category_dictionary.category_name != excluded.category_name
        OR provider_category_dictionary.contract_version != excluded.contract_version
   `).bind(
+    env.PROVIDER,
     identity.categoryId,
     identity.categoryName,
-    env.PROVIDER,
     observedAt,
     observedAt,
     CATEGORY_CONTRACT_VERSION,
