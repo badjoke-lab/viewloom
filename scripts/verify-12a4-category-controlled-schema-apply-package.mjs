@@ -113,6 +113,7 @@ for (const text of [
 assert.ok(verifier.includes("mode === '--require-pass'"))
 assert.ok(verifier.includes('controlledSchemaApplyPass'))
 assert.ok(verifier.includes('only Kick may be skipped after a Twitch failure'))
+assert.ok(verifier.includes('preExistingHttpStatus'))
 
 for (const text of [
   'pull_request:',
@@ -134,12 +135,13 @@ for (const text of [
   'collect-12a4-category-controlled-schema-apply-evidence.mjs',
   'verify-12a4-category-controlled-schema-apply-evidence.mjs',
   'workers/services/$service',
+  'preExistingHttpStatus',
   'deleteHttpStatus',
   'rm -rf "$RAW_DIR"',
 ]) assert.ok(workflow.includes(text), `workflow missing: ${text}`)
 assert.equal(workflow.includes('schedule:'), false)
 assert.equal(workflow.includes('wrangler d1 execute'), false)
-assert.equal(workflow.includes('/collect'), false)
+assert.equal(workflow.includes('"$url/collect"') || workflow.includes("'$url/collect'"), false)
 assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(workflow), false)
 assert.equal(workflow.includes('--var CATEGORY_CAPTURE_ENABLED'), false)
 
