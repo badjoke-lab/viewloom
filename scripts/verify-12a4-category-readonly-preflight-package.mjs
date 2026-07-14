@@ -20,6 +20,10 @@ check(contract.execution.event === 'workflow_dispatch', 'manual dispatch contrac
 check(contract.execution.requiredRef === 'main', 'main-only contract')
 check(contract.execution.requiredConfirmation === 'READ_ONLY_PREFLIGHT_ONLY', 'confirmation contract')
 check(contract.providerSeparated === true, 'provider separation contract')
+check(contract.providers.twitch.healthEvidenceSource === 'collector_status', 'Twitch health source contract')
+check(contract.providers.kick.healthEvidenceSource === 'latest_snapshot', 'Kick health source contract')
+check(contract.acceptance.healthEvidenceSource.twitch === 'collector_status', 'Twitch acceptance health source')
+check(contract.acceptance.healthEvidenceSource.kick === 'latest_snapshot', 'Kick acceptance health source')
 check(contract.acceptance.rowsWrittenMax === 0, 'zero rows-written threshold')
 check(contract.acceptance.changesMax === 0, 'zero changes threshold')
 check(Object.values(contract.boundaries).every((value) => value === false), 'all contract boundaries false')
@@ -56,6 +60,9 @@ if (trigger) {
   check(workflow.includes('expectedPackageHeadSha'), 'package head pin')
 }
 
+check(worker.includes("schemaVersion: 'viewloom-12a4-category-cost-preflight-v2'"), 'Worker provider-aware schema version')
+check(worker.includes('collectorStatusTablePresent'), 'Worker collector-status schema inspection')
+check(worker.includes("healthSource = collector ? 'collector_status' : latest ? 'latest_snapshot'"), 'Worker provider health fallback')
 check(worker.includes("mode: 'read_only_preflight'"), 'Worker read-only mode')
 check(worker.includes('productionRowsWrittenByWorker: false'), 'Worker no-write boundary')
 check(!worker.includes('scheduled('), 'Worker has no scheduled handler')
@@ -67,4 +74,4 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log(JSON.stringify({ ok: true, mode: 'read_only_preflight', parentPlanningPr: 520, oneTimeTrigger: Boolean(trigger) }, null, 2))
+console.log(JSON.stringify({ ok: true, mode: 'read_only_preflight', parentPlanningPr: 520, oneTimeTrigger: Boolean(trigger), providerHealthAware: true }, null, 2))

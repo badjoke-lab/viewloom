@@ -9,6 +9,7 @@ const allowed = [
   'scripts/collect-12a4-category-readonly-preflight-evidence.mjs',
   'scripts/verify-12a4-category-readonly-preflight-evidence.mjs',
   'scripts/verify-12a4-category-readonly-preflight-package.mjs',
+  'workers/category-cost-probe/src/index.ts',
 ]
 
 const baseRef = process.env.GITHUB_BASE_REF

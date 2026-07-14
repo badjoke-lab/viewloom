@@ -25,6 +25,7 @@ const providers = {}
 for (const provider of ['twitch', 'kick']) {
   const raw = readJson(`${provider}.json`)
   const lifecycle = readCodes(provider)
+  const expectedHealthSource = contract.providers?.[provider]?.healthEvidenceSource
   const categorySchemaAbsent =
     raw.schema?.dictionaryTablePresent === false
     && Array.isArray(raw.schema?.presentRollupColumns)
@@ -37,7 +38,8 @@ for (const provider of ['twitch', 'kick']) {
     readOnly: raw.boundaries?.readOnly === true,
     categorySchemaAbsent,
     latestSnapshotPresent: Boolean(raw.latestSnapshot),
-    collectorStatusPresent: Boolean(raw.collectorStatus),
+    providerHealthEvidencePresent: raw.health?.evidenceAvailable === true,
+    providerHealthSourceMatches: raw.health?.source === expectedHealthSource,
     providerLeakageAbsent: Number(raw.providerLeakageRows ?? -1) === 0,
     rowsWrittenZero: Number(raw.query?.rowsWritten ?? -1) === 0,
     changesZero: Number(raw.query?.changes ?? -1) === 0,
@@ -49,7 +51,10 @@ for (const provider of ['twitch', 'kick']) {
     provider,
     observedAt: raw.observedAt ?? null,
     mode: raw.mode ?? null,
+    schemaVersion: raw.schemaVersion ?? null,
     schema: raw.schema ?? null,
+    health: raw.health ?? null,
+    expectedHealthSource,
     latestSnapshot: raw.latestSnapshot ?? null,
     collectorStatus: raw.collectorStatus ?? null,
     providerLeakageRows: Number(raw.providerLeakageRows ?? -1),
@@ -61,8 +66,8 @@ for (const provider of ['twitch', 'kick']) {
   }
 }
 
-const parentMerged = parent.merged === true
-const packageMerged = packagePr.merged === true
+const parentMerged = Boolean(parent.merged_at && parent.merge_commit_sha)
+const packageMerged = Boolean(packagePr.merged_at && packagePr.merge_commit_sha)
 const evidence = {
   schemaVersion: 'viewloom-12a4-category-readonly-preflight-evidence-v1',
   workstream: contract.workstream,
@@ -84,6 +89,7 @@ const evidence = {
       confirmation: trigger.confirmation,
       expectedPackageHeadSha: trigger.expectedPackageHeadSha,
       oneTime: trigger.oneTime,
+      attempt: trigger.attempt ?? 1,
     } : null,
     readOnly: true,
   },
