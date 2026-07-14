@@ -1,4 +1,4 @@
-name: Analytics 12A4 Category Execution Cost Probe Execution
+name: Analytics 12A4 Category Execution Cost Probe Retired
 
 on:
   pull_request:
@@ -7,239 +7,66 @@ on:
     paths:
       - '.github/workflows/analytics-12a4-category-execution-cost-probe-execution.yml'
       - 'docs/audits/12a4-category-execution-cost-probe-execution-contract.json'
-      - 'docs/audits/12a4-category-execution-cost-probe-package-contract.json'
       - 'docs/audits/12a4-category-execution-cost-probe-trigger.json'
-      - 'docs/work-in-progress/phase12a4-category-execution-cost-probe.md'
+      - 'docs/audits/12a4-category-execution-cost-probe-attempt-3-evidence.json'
       - 'scripts/check-12a4-category-execution-cost-probe-execution-package-scope.mjs'
-      - 'scripts/check-12a4-category-execution-cost-probe-trigger-scope.mjs'
-      - 'scripts/collect-12a4-category-execution-cost-probe-evidence.mjs'
-      - 'scripts/run-12a4-category-execution-cost-probe-provider.mjs'
       - 'scripts/test-12a4-category-execution-cost-probe-evidence.mjs'
       - 'scripts/test-12a4-category-execution-cost-probe-runner.mjs'
-      - 'scripts/verify-12a4-category-execution-cost-probe-evidence.mjs'
       - 'scripts/verify-12a4-category-execution-cost-probe-execution-package.mjs'
-      - 'scripts/verify-12a4-category-execution-cost-probe-provider-result.mjs'
       - 'scripts/verify-12a4-category-execution-cost-probe-trigger.mjs'
       - 'scripts/verify-development-policy.mjs'
       - 'workers/category-cost-probe/**'
-  push:
-    branches: [main]
-    paths:
-      - 'docs/audits/12a4-category-execution-cost-probe-trigger.json'
   workflow_dispatch:
 
 permissions:
   contents: read
-  actions: read
-  pull-requests: read
 
 concurrency:
-  group: analytics-12a4-category-execution-cost-probe-execution-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
-
-env:
-  TRIGGER_FILE: docs/audits/12a4-category-execution-cost-probe-trigger.json
-  ARTIFACT_DIR: artifacts/12a4-category-execution-cost-probe
-  RAW_DIR: artifacts/12a4-category-execution-cost-probe/raw
+  group: analytics-12a4-category-execution-cost-probe-retired-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  contract:
+  verify-retired-execution-package:
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    outputs:
-      armed: ${{ steps.trigger-state.outputs.armed }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-
-      - name: Verify execution package branch scope
-        if: github.event_name == 'pull_request' && hashFiles(env.TRIGGER_FILE) == ''
+      - name: Verify retirement branch scope
         run: node scripts/check-12a4-category-execution-cost-probe-execution-package-scope.mjs
-
-      - name: Verify one-file trigger branch scope
-        if: github.event_name == 'pull_request' && hashFiles(env.TRIGGER_FILE) != ''
-        run: node scripts/check-12a4-category-execution-cost-probe-trigger-scope.mjs
-
-      - name: Verify dormant production execution package
+      - name: Verify accepted and retired execution package
         run: node scripts/verify-12a4-category-execution-cost-probe-execution-package.mjs
-
+      - name: Verify retired trigger
+        run: node scripts/verify-12a4-category-execution-cost-probe-trigger.mjs --require-present
       - name: Verify provider runner fixtures
         run: node scripts/test-12a4-category-execution-cost-probe-runner.mjs
-
       - name: Verify sanitized evidence fixtures
         run: node scripts/test-12a4-category-execution-cost-probe-evidence.mjs
-
       - name: Verify canonical development policy
         run: node scripts/verify-development-policy.mjs
-
       - name: Bundle Twitch probe Worker without deploying
         run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-cost-probe/wrangler.twitch.toml
-
       - name: Bundle Kick probe Worker without deploying
         run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-cost-probe/wrangler.kick.toml
-
-      - name: Verify optional trigger
-        id: trigger-state
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ -f "$TRIGGER_FILE" ]]; then
-            node scripts/verify-12a4-category-execution-cost-probe-trigger.mjs --require-present
-            echo 'armed=true' >> "$GITHUB_OUTPUT"
-          else
-            node scripts/verify-12a4-category-execution-cost-probe-trigger.mjs
-            echo 'armed=false' >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Verify exact merged package identities for armed trigger
-        if: hashFiles(env.TRIGGER_FILE) != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          package_pr=$(jq -r '.packagePr' "$TRIGGER_FILE")
-          execution_pr=$(jq -r '.executionPackagePr' "$TRIGGER_FILE")
-          package=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/$package_pr")
-          execution=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/$execution_pr")
-          [[ $(jq -r '.merged_at // empty' <<<"$package") != '' ]]
-          [[ $(jq -r '.merged_at // empty' <<<"$execution") != '' ]]
-          [[ $(jq -r '.head.sha' <<<"$package") == $(jq -r '.expectedPackageHeadSha' "$TRIGGER_FILE") ]]
-          [[ $(jq -r '.merge_commit_sha' <<<"$package") == $(jq -r '.expectedPackageMergeSha' "$TRIGGER_FILE") ]]
-          [[ $(jq -r '.head.sha' <<<"$execution") == $(jq -r '.expectedExecutionPackageHeadSha' "$TRIGGER_FILE") ]]
-          [[ $(jq -r '.merge_commit_sha' <<<"$execution") == $(jq -r '.expectedExecutionPackageMergeSha' "$TRIGGER_FILE") ]]
-          git cat-file -e "$(jq -r '.expectedPackageMergeSha' "$TRIGGER_FILE")^{commit}"
-          git cat-file -e "$(jq -r '.expectedExecutionPackageMergeSha' "$TRIGGER_FILE")^{commit}"
-          git merge-base --is-ancestor "$(jq -r '.expectedPackageMergeSha' "$TRIGGER_FILE")" HEAD
-          git merge-base --is-ancestor "$(jq -r '.expectedExecutionPackageMergeSha' "$TRIGGER_FILE")" HEAD
-
-      - name: Publish package boundary
+      - name: Publish retirement summary
         if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4-6 Category Execution-Cost Production Package'
+            echo '## ViewLoom 12A-4-6 Category Execution-Cost Probe Retired'
             echo
-            echo '- Accepted bounded probe package: PR #547'
-            echo '- Trigger present: ${{ hashFiles(env.TRIGGER_FILE) != '' }}'
-            echo '- Production job on pull request: no'
-            echo '- Production job without trigger: no'
-            echo '- Provider order: Twitch then Kick'
-            echo '- Stop before Kick on Twitch failure: yes'
-            echo '- Temporary Worker deletion in finally: yes'
-            echo '- Raw deployment logs in artifact: no'
+            echo '- Accepted measurement: PR #558'
+            echo '- Exact source run: 29358245194'
+            echo '- Twitch and Kick provider gates: passed'
+            echo '- Reserved probe rows remaining: 0'
+            echo '- Provider leakage rows: 0'
+            echo '- Temporary Workers retained: no'
+            echo '- Production push trigger: removed'
+            echo '- Production execution job: removed'
+            echo '- Cloudflare credentials referenced: no'
+            echo '- Worker deployment: dry-run only'
+            echo '- Trigger rearm authorized: no'
             echo '- Category capture enablement: no'
           } >> "$GITHUB_STEP_SUMMARY"
-
-  production-probe:
-    needs: contract
-    if: >-
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main' &&
-      needs.contract.outputs.armed == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-
-      - name: Verify exact main and armed trigger
-        shell: bash
-        run: |
-          set -euo pipefail
-          [[ "$GITHUB_REF" == 'refs/heads/main' ]]
-          node scripts/verify-12a4-category-execution-cost-probe-trigger.mjs --require-present
-          ! grep -R --line-number -E '^CATEGORY_CAPTURE_ENABLED\s*=' \
-            workers/collector-twitch/wrangler.toml workers/collector-kick/wrangler.toml
-          mkdir -p "$RAW_DIR" "$ARTIFACT_DIR"
-          echo "RUN_ID=$(jq -r '.runId' "$TRIGGER_FILE")" >> "$GITHUB_ENV"
-
-      - name: Execute Twitch reserved probe and cleanup
-        env:
-          PROVIDER: twitch
-          CONFIG_PATH: workers/category-cost-probe/wrangler.twitch.toml
-          OUTPUT_PATH: artifacts/12a4-category-execution-cost-probe/raw/twitch.json
-        run: node scripts/run-12a4-category-execution-cost-probe-provider.mjs
-
-      - name: Verify Twitch provider gate
-        id: twitch-gate
-        continue-on-error: true
-        run: node scripts/verify-12a4-category-execution-cost-probe-provider-result.mjs "$RAW_DIR/twitch.json" twitch --require-pass
-
-      - name: Execute Kick reserved probe and cleanup
-        if: steps.twitch-gate.outcome == 'success'
-        env:
-          PROVIDER: kick
-          CONFIG_PATH: workers/category-cost-probe/wrangler.kick.toml
-          OUTPUT_PATH: artifacts/12a4-category-execution-cost-probe/raw/kick.json
-        run: node scripts/run-12a4-category-execution-cost-probe-provider.mjs
-
-      - name: Preserve skipped Kick boundary
-        if: steps.twitch-gate.outcome != 'success'
-        run: |
-          jq -n '{
-            provider: "kick",
-            attempted: false,
-            worker: null,
-            collectorLatencyDeltaMs: null,
-            lifecycle: {},
-            errors: { runner: "skipped_after_twitch_gate_failure", delete: null }
-          }' > "$RAW_DIR/kick.json"
-
-      - name: Verify Kick provider gate
-        id: kick-gate
-        continue-on-error: true
-        run: node scripts/verify-12a4-category-execution-cost-probe-provider-result.mjs "$RAW_DIR/kick.json" kick --require-pass
-
-      - name: Normalize sanitized provider-separated evidence
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          [[ -f "$RAW_DIR/twitch.json" ]] || jq -n '{provider:"twitch",attempted:false,worker:null,lifecycle:{},errors:{runner:"twitch_result_missing"}}' > "$RAW_DIR/twitch.json"
-          [[ -f "$RAW_DIR/kick.json" ]] || jq -n '{provider:"kick",attempted:false,worker:null,lifecycle:{},errors:{runner:"kick_result_missing"}}' > "$RAW_DIR/kick.json"
-          jq -n \
-            --arg observedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --arg headSha "$GITHUB_SHA" \
-            --arg event "$GITHUB_EVENT_NAME" \
-            --argjson workflowRunId "$GITHUB_RUN_ID" \
-            --slurpfile twitch "$RAW_DIR/twitch.json" \
-            --slurpfile kick "$RAW_DIR/kick.json" \
-            '{
-              observedAt: $observedAt,
-              headSha: $headSha,
-              event: $event,
-              workflowRunId: $workflowRunId,
-              providerOrder: ["twitch", "kick"],
-              providers: {twitch: $twitch[0], kick: $kick[0]}
-            }' > "$RAW_DIR/aggregate.json"
-          node scripts/collect-12a4-category-execution-cost-probe-evidence.mjs \
-            "$RAW_DIR/aggregate.json" "$ARTIFACT_DIR/evidence.json"
-          node scripts/verify-12a4-category-execution-cost-probe-evidence.mjs "$ARTIFACT_DIR/evidence.json"
-
-      - name: Upload sanitized execution evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: phase12a4-category-execution-cost-probe
-          path: |
-            artifacts/12a4-category-execution-cost-probe/evidence.json
-            artifacts/12a4-category-execution-cost-probe/raw/twitch.json
-            artifacts/12a4-category-execution-cost-probe/raw/kick.json
-            artifacts/12a4-category-execution-cost-probe/raw/aggregate.json
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Enforce final provider-separated acceptance
-        if: always()
-        run: node scripts/verify-12a4-category-execution-cost-probe-evidence.mjs "$ARTIFACT_DIR/evidence.json" --require-pass
