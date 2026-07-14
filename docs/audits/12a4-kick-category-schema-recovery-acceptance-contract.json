@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "viewloom-12a4-kick-category-schema-recovery-acceptance-contract-v1",
+  "workstream": "12A-4 Kick category schema recovery acceptance",
+  "status": "acceptance_package_ready",
+  "trackingIssue": 519,
+  "packagePr": 541,
+  "triggerPr": 542,
+  "triggerMergeSha": "27a143c83c134599bf1d92d61786fce86f4e76ba",
+  "sourceWorkflowFile": "analytics-12a4-kick-category-schema-recovery.yml",
+  "sourceWorkflowName": "Analytics 12A4 Kick Category Schema Recovery",
+  "sourceArtifactName": "phase12a4-kick-category-schema-recovery",
+  "acceptedEvidenceFile": "docs/audits/12a4-kick-category-schema-recovery-evidence.json",
+  "requiredJobs": ["contract", "production-kick-recovery"],
+  "requiredEvidence": {
+    "schemaVersion": "viewloom-12a4-kick-category-schema-recovery-evidence-v1",
+    "event": "push",
+    "kickRecoveryPass": true,
+    "targetProvider": "kick",
+    "twitchExecutionIncluded": false,
+    "twitchSchemaApplyAuthorized": false,
+    "categoryRuntimeEnablementAuthorized": false
+  },
+  "boundaries": {
+    "productionExecutionByAcceptance": false,
+    "twitchSchemaApply": false,
+    "categoryRuntimeEnablement": false,
+    "productionCategoryRows": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false
+  }
+}
