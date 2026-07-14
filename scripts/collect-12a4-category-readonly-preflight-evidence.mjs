@@ -22,10 +22,17 @@ const providers = {}
 for (const provider of ['twitch', 'kick']) {
   const raw = readJson(`${provider}.json`)
   const lifecycle = readCodes(provider)
+  const categorySchemaAbsent =
+    raw.schema?.dictionaryTablePresent === false
+    && Array.isArray(raw.schema?.presentRollupColumns)
+    && raw.schema.presentRollupColumns.length === 0
+    && Array.isArray(raw.schema?.presentStatusColumns)
+    && raw.schema.presentStatusColumns.length === 0
+    && raw.schema?.categorySchemaComplete === false
   const checks = {
     responseOk: raw.ok === true,
     readOnly: raw.boundaries?.readOnly === true,
-    categorySchemaAbsent: raw.schema?.categorySchemaComplete === false,
+    categorySchemaAbsent,
     latestSnapshotPresent: Boolean(raw.latestSnapshot),
     collectorStatusPresent: Boolean(raw.collectorStatus),
     providerLeakageAbsent: Number(raw.providerLeakageRows ?? -1) === 0,
