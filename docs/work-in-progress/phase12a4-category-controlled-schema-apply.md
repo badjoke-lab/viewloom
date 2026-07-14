@@ -29,7 +29,7 @@ scope and safety verification
 production temporary Worker deployment: no
 remote D1 schema apply: no
 no CATEGORY_CAPTURE_ENABLED value
-production category rows: no
+no production category rows
 new cron: no
 backfill: no
 retention change: no
