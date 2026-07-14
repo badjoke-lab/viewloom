@@ -53,6 +53,7 @@ assert.equal(success.status, 'observed_pass')
 assert.equal(success.gate.controlledSchemaApplyPass, true)
 assert.equal(success.providers.twitch.measurements.schemaApplyStatementCount, 9)
 assert.equal(success.providers.kick.measurements.secondPassStatementCount, 0)
+assert.equal(success.providers.twitch.measurements.collectorLatencyDeltaMs, 0)
 
 const twitchLifecycle = read('twitch-lifecycle.json')
 twitchLifecycle.deleteHttpStatus = 500
@@ -148,6 +149,8 @@ function writeProvider(provider) {
   })
   write(`${provider}-post.json`, { ok: true, provider, state: naturalPost })
   write(`${provider}-lifecycle.json`, {
+    preExistingCurlExitCode: 0,
+    preExistingHttpStatus: 404,
     deployExitCode: 0,
     secretExitCode: 0,
     preCurlExitCode: 0,
