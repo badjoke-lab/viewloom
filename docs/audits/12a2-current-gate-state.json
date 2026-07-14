@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v12",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v13",
   "workstream": "12A-4 provider-specific category capture foundation",
-  "status": "12a4_disabled_runtime_accepted_execution_cost_probe_current",
+  "status": "12a4_readonly_preflight_accepted_schema_apply_design_current",
   "design": {
     "status": "accepted",
     "pr": 494,
@@ -167,12 +167,45 @@
     "providerSeparated": true,
     "temporaryVerifiersRetained": false
   },
+  "categoryReadOnlyPreflight": {
+    "status": "accepted",
+    "planningPr": 520,
+    "packagePr": 521,
+    "providerHealthFixPr": 526,
+    "triggerPr": 527,
+    "acceptancePr": 523,
+    "acceptanceMergeSha": "428154d16dc5b62c30ac6b7cdeb668f3e442a3b6",
+    "sourceWorkflowRunId": 29318733171,
+    "acceptanceWorkflowRunId": 29318857656,
+    "evidence": "docs/audits/12a4-category-readonly-preflight-evidence.json",
+    "twitchGatePass": true,
+    "kickGatePass": true,
+    "productionCategorySchemaAbsent": true,
+    "providerLeakageRows": 0,
+    "rowsWritten": 0,
+    "changes": 0,
+    "temporaryWorkersRetained": false,
+    "remoteMigrationApplyAuthorized": false,
+    "runtimeCaptureAuthorized": false
+  },
   "categoryExecutionCostProbe": {
-    "status": "planning_current",
+    "status": "readonly_preflight_accepted_schema_apply_design_current",
     "trackingIssue": 519,
     "contract": "docs/audits/12a4-category-execution-cost-probe-contract.json",
     "readOnlyPreflightImplemented": true,
+    "readOnlyPreflightAccepted": true,
+    "readOnlyPreflightEvidence": "docs/audits/12a4-category-readonly-preflight-evidence.json",
     "localControlledMigrationFixtureImplemented": true,
+    "controlledSchemaApplyDesign": {
+      "status": "current",
+      "contract": "docs/audits/12a4-category-controlled-schema-apply-contract.json",
+      "runtimeModule": "workers/shared/category-schema.ts",
+      "temporaryWorker": "workers/category-schema-apply/src/index.ts",
+      "providerOrder": ["twitch", "kick"],
+      "partialSchemaStops": true,
+      "secondPassStatementCountMax": 0,
+      "productionExecutionIncluded": false
+    },
     "remoteMigrationApplyAuthorized": false,
     "productionProbeAuthorized": false,
     "runtimeCaptureAuthorized": false
@@ -187,7 +220,8 @@
     "category_source_unverified",
     "category_storage_design_unmeasured",
     "category_migration_runtime_not_implemented",
-    "disabled_runtime_postmerge_not_verified"
+    "disabled_runtime_postmerge_not_verified",
+    "category_readonly_preflight_not_accepted"
   ],
   "generation": {
     "status": "enabled_and_accumulating",
@@ -207,9 +241,12 @@
     "repositoryMigrationCandidateAuthorized": true,
     "repositoryMigrationCandidateImplemented": true,
     "disabledRuntimeProductionAccepted": true,
+    "readOnlyPreflightAccepted": true,
+    "controlledSchemaApplyDesignCurrent": true,
     "productionSchemaPresent": false,
     "remoteMigrationApplyAuthorized": false,
     "productionCostProbeRequired": true,
+    "productionCostProbeAuthorized": false,
     "runtimeCaptureAuthorized": false,
     "runtimeCaptureStarted": false,
     "providerSeparated": true,
@@ -219,13 +256,15 @@
     "backfillAuthorized": false
   },
   "currentWorkstream": {
-    "phase": "12A-4-3",
-    "name": "production category execution-cost probe and remote migration decision",
+    "phase": "12A-4-4",
+    "name": "controlled category schema apply design",
     "trackingIssue": 519,
-    "planningPackageCurrent": true,
+    "acceptedReadOnlyPreflight": true,
+    "designPackageCurrent": true,
+    "productionExecutionIncluded": false,
     "remoteMigrationApplied": false,
     "runtimeCaptureStarted": false,
     "crossProviderAnalyticsAllowed": false
   },
-  "nextWorkstream": "12A-4 provider-separated production capture acceptance"
+  "nextWorkstream": "12A-4-5 provider-separated bounded category cost probe"
 }
