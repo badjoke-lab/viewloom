@@ -1,0 +1,205 @@
+name: Analytics 12A4 Category Read-Only Preflight Acceptance
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/analytics-12a4-category-readonly-preflight-acceptance.yml'
+      - 'docs/audits/12a4-category-readonly-preflight-acceptance-contract.json'
+      - 'docs/work-in-progress/phase12a4-category-readonly-preflight-acceptance.md'
+      - 'scripts/check-12a4-category-readonly-preflight-acceptance-scope.mjs'
+      - 'scripts/verify-12a4-category-readonly-preflight-acceptance-package.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: analytics-12a4-category-readonly-preflight-acceptance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  TRIGGER_SHA: 51796234db2b88bd5d4e3393cf0b2a97b4927c7b
+  SOURCE_WORKFLOW: analytics-12a4-category-readonly-preflight.yml
+  SOURCE_ARTIFACT: phase12a4-category-readonly-preflight
+  ARTIFACT_DIR: artifacts/12a4-category-readonly-preflight-acceptance
+  RAW_DIR: artifacts/12a4-category-readonly-preflight-acceptance/raw
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify acceptance scope
+        run: node scripts/check-12a4-category-readonly-preflight-acceptance-scope.mjs
+
+      - name: Verify acceptance package
+        run: node scripts/verify-12a4-category-readonly-preflight-acceptance-package.mjs
+
+  production-acceptance:
+    needs: contract
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.head_ref == 'accept-analytics-12a4-category-readonly-preflight'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Locate exact trigger push run
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RAW_DIR" "$ARTIFACT_DIR"
+          run='null'
+          for attempt in $(seq 1 60); do
+            response=$(gh api \
+              -H 'Accept: application/vnd.github+json' \
+              "/repos/$GITHUB_REPOSITORY/actions/workflows/$SOURCE_WORKFLOW/runs?branch=main&event=push&per_page=100")
+            run=$(jq --arg sha "$TRIGGER_SHA" '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.id) | last // null' <<<"$response")
+            if [[ "$run" != 'null' && $(jq -r '.status' <<<"$run") == 'completed' ]]; then break; fi
+            sleep 10
+          done
+
+          if [[ "$run" == 'null' ]]; then
+            echo '::error::Exact trigger push run was not found.'
+            exit 1
+          fi
+
+          printf '%s\n' "$run" > "$RAW_DIR/source-run.json"
+          run_id=$(jq -r '.id' <<<"$run")
+          run_event=$(jq -r '.event' <<<"$run")
+          run_head_sha=$(jq -r '.head_sha' <<<"$run")
+          run_status=$(jq -r '.status' <<<"$run")
+          run_conclusion=$(jq -r '.conclusion' <<<"$run")
+
+          echo "Source run id=$run_id event=$run_event head=$run_head_sha status=$run_status conclusion=$run_conclusion"
+          {
+            echo '## Exact source run'
+            echo
+            echo "- Run ID: $run_id"
+            echo "- Event: $run_event"
+            echo "- Head SHA: $run_head_sha"
+            echo "- Status: $run_status"
+            echo "- Conclusion: $run_conclusion"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          [[ "$run_event" == 'push' ]] || { echo "::error::Expected push event, observed $run_event"; exit 1; }
+          [[ "$run_head_sha" == "$TRIGGER_SHA" ]] || { echo "::error::Expected $TRIGGER_SHA, observed $run_head_sha"; exit 1; }
+          [[ "$run_status" == 'completed' ]] || { echo "::error::Source run is not completed: $run_status"; exit 1; }
+
+          jobs=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/jobs?per_page=100")
+          printf '%s\n' "$jobs" > "$RAW_DIR/source-jobs.json"
+          normalized_jobs=$(jq '[.jobs[] | {id,name,status,conclusion}]' <<<"$jobs")
+          echo "$normalized_jobs" | jq .
+          {
+            echo
+            echo '### Source jobs'
+            echo '```json'
+            echo "$normalized_jobs" | jq .
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$run_conclusion" != 'success' ]]; then
+            echo "::error::Source push run concluded $run_conclusion. Run ID: $run_id"
+            exit 1
+          fi
+
+          for required in contract production-preflight; do
+            conclusion=$(jq -r --arg name "$required" '[.[] | select(.name == $name)] | last | .conclusion // "missing"' <<<"$normalized_jobs")
+            [[ "$conclusion" == 'success' ]] || { echo "::error::Required source job $required concluded $conclusion"; exit 1; }
+          done
+
+          jq -n \
+            --arg workflow "$(jq -r '.name' <<<"$run")" \
+            --arg event "$run_event" \
+            --argjson runId "$run_id" \
+            --arg headSha "$run_head_sha" \
+            --arg runStartedAt "$(jq -r '.run_started_at' <<<"$run")" \
+            --arg updatedAt "$(jq -r '.updated_at' <<<"$run")" \
+            --argjson jobs "$normalized_jobs" \
+            '{workflow:$workflow,event:$event,runId:$runId,headSha:$headSha,runStartedAt:$runStartedAt,updatedAt:$updatedAt,jobs:$jobs}' \
+            > "$RAW_DIR/run-base.json"
+
+      - name: Locate and download sanitized source artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_id=$(jq -r '.runId' "$RAW_DIR/run-base.json")
+          artifacts=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100")
+          printf '%s\n' "$artifacts" > "$RAW_DIR/source-artifacts.json"
+          artifact_list=$(jq '[.artifacts[] | {id,name,expired,size_in_bytes}]' <<<"$artifacts")
+          echo "$artifact_list" | jq .
+          artifact=$(jq --arg name "$SOURCE_ARTIFACT" '[.artifacts[] | select(.name == $name and .expired == false)] | sort_by(.id) | last // null' <<<"$artifacts")
+          [[ "$artifact" != 'null' ]] || { echo "::error::Artifact $SOURCE_ARTIFACT not found on source run $run_id"; exit 1; }
+          artifact_id=$(jq -r '.id' <<<"$artifact")
+
+          gh api "/repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > "$RAW_DIR/source.zip"
+          unzip -q "$RAW_DIR/source.zip" -d "$RAW_DIR/source"
+          evidence=$(find "$RAW_DIR/source" -type f -name 'evidence.json' -print -quit)
+          [[ -n "$evidence" ]] || { echo '::error::evidence.json missing from source artifact'; exit 1; }
+          cp "$evidence" "$RAW_DIR/source-evidence.json"
+
+          jq --argjson artifactId "$artifact_id" '. + {artifactId:$artifactId,gatePass:true}' \
+            "$RAW_DIR/run-base.json" > "$RAW_DIR/run.json"
+
+      - name: Verify source evidence and create accepted evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-12a4-category-readonly-preflight-evidence.mjs \
+            "$RAW_DIR/source-evidence.json" --require-pass
+
+          jq --slurpfile run "$RAW_DIR/run.json" \
+            '.status = "accepted" |
+             .acceptanceIdentity = {
+               triggerPr: 527,
+               triggerMergeSha: "51796234db2b88bd5d4e3393cf0b2a97b4927c7b",
+               workflowRunId: $run[0].runId,
+               artifactId: $run[0].artifactId
+             } |
+             .workflow = $run[0]' \
+            "$RAW_DIR/source-evidence.json" > "$ARTIFACT_DIR/evidence.json"
+
+          node scripts/verify-12a4-category-readonly-preflight-evidence.mjs \
+            "$ARTIFACT_DIR/evidence.json" --require-pass
+
+      - name: Upload source run diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a4-category-readonly-preflight-diagnostics
+          path: |
+            artifacts/12a4-category-readonly-preflight-acceptance/raw/source-run.json
+            artifacts/12a4-category-readonly-preflight-acceptance/raw/source-jobs.json
+            artifacts/12a4-category-readonly-preflight-acceptance/raw/source-artifacts.json
+          if-no-files-found: warn
+
+      - name: Remove source archive and raw metadata
+        if: always()
+        run: rm -rf "$RAW_DIR"
+
+      - name: Upload accepted sanitized evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a4-category-readonly-preflight-acceptance
+          path: artifacts/12a4-category-readonly-preflight-acceptance/evidence.json
+          if-no-files-found: warn
