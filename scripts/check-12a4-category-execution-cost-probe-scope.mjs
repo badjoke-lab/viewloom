@@ -2,6 +2,8 @@ import { execFileSync } from 'node:child_process'
 
 const allowed = [
   '.github/workflows/analytics-12a4-category-execution-cost-probe.yml',
+  'AGENTS.md',
+  'CONTRIBUTING.md',
   'README.md',
   'docs/README.md',
   'docs/audits/12a2-current-gate-state.json',
@@ -15,6 +17,7 @@ const allowed = [
   'scripts/check-12a4-category-execution-cost-probe-scope.mjs',
   'scripts/test-12a4-category-execution-cost-probe.py',
   'scripts/verify-12a4-category-execution-cost-probe.mjs',
+  'scripts/verify-development-policy.mjs',
   'workers/category-cost-probe/src/index.ts',
   'workers/category-cost-probe/wrangler.twitch.toml',
   'workers/category-cost-probe/wrangler.kick.toml',
