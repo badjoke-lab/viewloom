@@ -1,6 +1,6 @@
 # Phase 12A-4 category read-only production preflight acceptance
 
-Status: accepted; evidence frozen on acceptance branch and pending merge to `main`  
+Status: accepted on `main` through PR #523  
 Tracking issue: #519  
 Planning PR: #520  
 Package PR: #521  
@@ -12,6 +12,8 @@ Attempt 3 trigger PR: #527
 Attempt 3 trigger merge SHA: `51796234db2b88bd5d4e3393cf0b2a97b4927c7b`  
 Source workflow run: `29318733171`  
 Acceptance workflow run: `29318857656`  
+Acceptance PR: #523  
+Acceptance merge SHA: `428154d16dc5b62c30ac6b7cdeb668f3e442a3b6`  
 Frozen evidence: `docs/audits/12a4-category-readonly-preflight-evidence.json`
 
 ## Accepted result
@@ -45,6 +47,6 @@ These are preflight observation costs only. They do not represent category runti
 
 This acceptance gate did not apply schema, enable capture, write category rows, add a cron, backfill data, change retention, or add category analytics UI.
 
-## Next decision
+## Handoff
 
-After this evidence is merged to `main`, controlled remote schema apply design may begin. Runtime category capture remains separately gated and disabled.
+Controlled category schema apply design is now the active sub-gate. Runtime category capture remains separately gated and disabled.
