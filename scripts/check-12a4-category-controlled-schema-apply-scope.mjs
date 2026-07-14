@@ -3,6 +3,8 @@ import { execFileSync } from 'node:child_process'
 const allowed = new Set([
   '.github/workflows/analytics-12a4-category-controlled-schema-apply.yml',
   '.github/workflows/analytics-12a4-category-readonly-preflight.yml',
+  '.github/workflows/analytics-12a4-category-readonly-preflight-acceptance.yml',
+  '.github/workflows/analytics-12a4-category-execution-cost-probe.yml',
   'README.md',
   'AGENTS.md',
   'CONTRIBUTING.md',
@@ -21,6 +23,7 @@ const allowed = new Set([
   'scripts/test-12a4-category-controlled-schema-apply.py',
   'scripts/verify-12a4-category-controlled-schema-apply.mjs',
   'scripts/verify-12a4-category-readonly-preflight-package.mjs',
+  'scripts/verify-12a4-category-readonly-preflight-acceptance-package.mjs',
   'scripts/verify-development-policy.mjs',
   'workers/shared/category-schema.ts',
 ])
