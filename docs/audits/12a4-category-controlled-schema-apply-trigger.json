@@ -6,6 +6,11 @@
   "packagePr": 529,
   "expectedPackageHeadSha": "641813bd9ef7108818a9a3ed475b449d1c364c3f",
   "packageMergeSha": "dcfb2ce4e9271c4c8733de36c0c00c4b28194bdb",
+  "gateFixPr": 532,
+  "gateFixMergeSha": "1327fd3c2b6398b61f31850a3e281d056f3c8e77",
+  "attempt": 2,
+  "previousFailedRunId": 29322677672,
+  "previousFailureBoundary": "twitch_preinspect_passed_apply_skipped_zero_schema_statements_kick_not_attempted_temporary_worker_deleted",
   "confirmation": "APPLY_CATEGORY_SCHEMA_WITH_CAPTURE_DISABLED",
   "providerOrder": [
     "twitch",
