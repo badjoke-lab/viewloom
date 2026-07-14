@@ -10,18 +10,23 @@ on:
       - synchronize
     paths:
       - '.github/workflows/analytics-12a4-category-execution-cost-probe.yml'
-      - 'docs/audits/12a4-category-execution-cost-probe-contract.json'
-      - 'docs/work-in-progress/phase12a4-category-execution-cost-probe.md'
-      - 'scripts/check-12a4-category-execution-cost-probe-scope.mjs'
-      - 'scripts/test-12a4-category-execution-cost-probe.py'
-      - 'scripts/verify-12a4-category-execution-cost-probe.mjs'
-      - 'workers/category-cost-probe/**'
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
       - 'README.md'
       - 'docs/README.md'
       - 'docs/audits/12a2-current-gate-state.json'
+      - 'docs/audits/12a4-category-execution-cost-probe-contract.json'
       - 'docs/product/current-roadmap.md'
       - 'docs/product/current-schedule.md'
       - 'docs/product/post-watchlist-program-plan.md'
+      - 'docs/work-in-progress/phase12a4-category-execution-cost-probe.md'
+      - 'docs/work-in-progress/phase12a4-category-migration-disabled-runtime.md'
+      - 'docs/work-in-progress/phase12a4-disabled-runtime-postmerge.md'
+      - 'scripts/check-12a4-category-execution-cost-probe-scope.mjs'
+      - 'scripts/test-12a4-category-execution-cost-probe.py'
+      - 'scripts/verify-12a4-category-execution-cost-probe.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - 'workers/category-cost-probe/**'
   workflow_dispatch:
 
 permissions:
@@ -53,6 +58,9 @@ jobs:
       - name: Verify planning contract and safety boundary
         run: node scripts/verify-12a4-category-execution-cost-probe.mjs
 
+      - name: Verify canonical development policy
+        run: node scripts/verify-development-policy.mjs
+
       - name: Run local controlled migration and cost-probe fixture
         run: python scripts/test-12a4-category-execution-cost-probe.py
 
@@ -80,6 +88,7 @@ jobs:
             echo '- Read-only provider preflight Worker: added'
             echo '- Local controlled migration/idempotency fixture: added'
             echo '- Dictionary unchanged-name no-op fixture: added'
+            echo '- Canonical development policy synchronized: yes'
             echo '- Remote migration applied: no'
             echo '- Production category capture enabled: no'
             echo '- Production category rows written: no'
