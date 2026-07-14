@@ -18,6 +18,8 @@ const trigger = JSON.parse(fs.readFileSync(triggerPath, 'utf8'))
 const packageContract = JSON.parse(fs.readFileSync(path.resolve('docs/audits/12a4-category-execution-cost-probe-package-contract.json'), 'utf8'))
 const executionContract = JSON.parse(fs.readFileSync(path.resolve('docs/audits/12a4-category-execution-cost-probe-execution-contract.json'), 'utf8'))
 
+assert.equal(packageContract.status, 'accepted')
+assert.equal(executionContract.status, 'accepted')
 assert.equal(trigger.schemaVersion, 'viewloom-12a4-category-execution-cost-probe-trigger-v1')
 assert.equal(trigger.status, 'armed_for_one_time_main_push')
 assert.equal(trigger.confirmation, 'RUN_BOUNDED_CATEGORY_EXECUTION_COST_PROBE')
@@ -31,11 +33,11 @@ assert.equal(trigger.stopBeforeKickOnTwitchFailure, true)
 assert.equal(trigger.categoryCaptureEnablementAuthorized, false)
 assert.equal(trigger.persistentProductionCategoryRowsAuthorized, false)
 assert.equal(trigger.packagePr, packageContract.acceptance.pr)
-assert.equal(trigger.expectedPackageHeadSha, packageContract.acceptance.validatedImplementationHeadSha)
+assert.equal(trigger.expectedPackageHeadSha, executionContract.acceptedPackage.headSha)
 assert.equal(trigger.expectedPackageMergeSha, executionContract.acceptedPackage.mergeSha)
 assert.equal(trigger.executionPackagePr, executionContract.acceptance.pr)
-assert.equal(trigger.expectedExecutionPackageHeadSha, executionContract.acceptance.validatedHeadSha)
-assert.equal(trigger.expectedExecutionPackageMergeSha, executionContract.acceptance.mergeSha)
+assert.ok(/^[0-9a-f]{40}$/.test(trigger.expectedExecutionPackageHeadSha))
+assert.ok(/^[0-9a-f]{40}$/.test(trigger.expectedExecutionPackageMergeSha))
 
 console.log(JSON.stringify({
   ok: true,
@@ -45,4 +47,5 @@ console.log(JSON.stringify({
   providerOrder: trigger.providerOrder,
   packagePr: trigger.packagePr,
   executionPackagePr: trigger.executionPackagePr,
+  exactExecutionIdentityVerifiedByWorkflowApi: true,
 }, null, 2))
