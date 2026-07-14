@@ -18,13 +18,15 @@
       "collectorDatabaseBinding": "DB_TWITCH_HOT",
       "probeWorkerBinding": "DB",
       "databaseName": "vl_twitch_hot",
-      "workerConfig": "workers/category-cost-probe/wrangler.twitch.toml"
+      "workerConfig": "workers/category-cost-probe/wrangler.twitch.toml",
+      "healthEvidenceSource": "collector_status"
     },
     "kick": {
       "collectorDatabaseBinding": "DB_KICK_HOT",
       "probeWorkerBinding": "DB",
       "databaseName": "vl_kick_hot",
-      "workerConfig": "workers/category-cost-probe/wrangler.kick.toml"
+      "workerConfig": "workers/category-cost-probe/wrangler.kick.toml",
+      "healthEvidenceSource": "latest_snapshot"
     }
   },
   "requiredChecks": [
@@ -35,7 +37,8 @@
     "production_category_rollup_columns_absent",
     "production_category_status_columns_absent",
     "latest_provider_snapshot_present",
-    "collector_status_present",
+    "provider_health_evidence_present",
+    "provider_health_source_matches_provider_contract",
     "provider_leakage_rows_zero",
     "d1_rows_written_zero",
     "d1_changes_zero",
@@ -48,6 +51,10 @@
     "providerLeakageRowsMax": 0,
     "categorySchemaExpectedPresent": false,
     "categoryCaptureExpectedEnabled": false,
+    "healthEvidenceSource": {
+      "twitch": "collector_status",
+      "kick": "latest_snapshot"
+    },
     "temporaryWorkersRetained": false,
     "rawPayloadIncluded": false,
     "channelIdentitiesIncluded": false
@@ -58,11 +65,12 @@
     "cloudflare_credentials_missing",
     "provider_binding_mismatch",
     "category_schema_already_present",
+    "provider_health_evidence_missing",
+    "provider_health_source_mismatch",
     "provider_leakage_detected",
     "read_only_query_reports_rows_written",
     "read_only_query_reports_changes",
     "latest_snapshot_missing",
-    "collector_status_missing",
     "temporary_worker_delete_failure",
     "temporary_worker_still_reachable"
   ],
