@@ -1,8 +1,16 @@
 {
   "schemaVersion": "viewloom-12a4-category-execution-cost-probe-execution-contract-v1",
   "workstream": "12A-4-6 provider-separated bounded category execution-cost production package",
-  "status": "candidate",
+  "status": "accepted",
   "trackingIssue": 519,
+  "acceptance": {
+    "pr": 548,
+    "validatedImplementationHeadSha": "92157e82795d7ddb83bed19df2810a230d3c04e4",
+    "workflowRunId": 29338898726,
+    "workflowJobId": 87105150990,
+    "contractPass": true,
+    "productionJobSkippedOnPullRequest": true
+  },
   "acceptedPackage": {
     "pr": 547,
     "headSha": "4556a5708ec3a33cd4b1835ca9e32baf78c5690d",
