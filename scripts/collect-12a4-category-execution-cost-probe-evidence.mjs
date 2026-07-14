@@ -4,10 +4,18 @@ import { fileURLToPath } from 'node:url'
 
 const PROVIDERS = ['twitch', 'kick']
 const FIVE_MIB = 5 * 1024 * 1024
+const MISSING_NUMBER = Number.MAX_SAFE_INTEGER
 
 const number = (value, fallback = 0) => {
+  if (value === null || value === undefined || value === '') return fallback
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : fallback
+}
+
+const nullableNumber = (value) => {
+  if (value === null || value === undefined || value === '') return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
 }
 
 const integer = (value, fallback = 0) => Math.max(0, Math.floor(number(value, fallback)))
@@ -23,6 +31,19 @@ export function collectEvidence(raw, contract) {
   const providerOrder = Array.isArray(raw?.providerOrder) ? raw.providerOrder.filter((value) => PROVIDERS.includes(value)) : []
   const providerOrderPass = JSON.stringify(providerOrder) === JSON.stringify(PROVIDERS)
   const executionCostProbePass = providerOrderPass && PROVIDERS.every((provider) => providers[provider].providerGatePass)
+
+  const untouchedOrClean = (item) => !item.attempted
+    || !item.lifecycle.probeEndpointCalled
+    || item.measurements.probeCleanupRemainingRows === 0
+  const untouchedOrNoLeakage = (item) => !item.attempted
+    || !item.lifecycle.probeEndpointCalled
+    || item.measurements.providerLeakageRows === 0
+  const untouchedOrDeleted = (item) => !item.attempted
+    || !item.lifecycle.temporaryWorkerDeployed
+    || item.lifecycle.deleteHttpStatus === 404
+  const untouchedOrCaptureDisabled = (item) => !item.attempted
+    || !item.lifecycle.probeEndpointCalled
+    || item.checks.categoryCaptureStillDisabled
 
   return {
     schemaVersion: 'viewloom-12a4-category-execution-cost-probe-evidence-v1',
@@ -41,10 +62,10 @@ export function collectEvidence(raw, contract) {
       providerOrderPass,
       twitchGatePass: providers.twitch.providerGatePass,
       kickGatePass: providers.kick.providerGatePass,
-      allReservedRowsRemoved: PROVIDERS.every((provider) => providers[provider].measurements.probeCleanupRemainingRows === 0),
-      providerLeakageRowsZero: PROVIDERS.every((provider) => providers[provider].measurements.providerLeakageRows === 0),
-      temporaryWorkersDeleted: PROVIDERS.every((provider) => providers[provider].lifecycle.deleteHttpStatus === 404),
-      categoryCaptureRemainedDisabled: PROVIDERS.every((provider) => providers[provider].checks.categoryCaptureStillDisabled),
+      allReservedRowsRemoved: PROVIDERS.every((provider) => untouchedOrClean(providers[provider])),
+      providerLeakageRowsZero: PROVIDERS.every((provider) => untouchedOrNoLeakage(providers[provider])),
+      temporaryWorkersDeleted: PROVIDERS.every((provider) => untouchedOrDeleted(providers[provider])),
+      categoryCaptureRemainedDisabled: PROVIDERS.every((provider) => untouchedOrCaptureDisabled(providers[provider])),
       executionCostProbePass,
       runtimeCaptureEnablementAuthorized: false,
     },
@@ -64,21 +85,22 @@ export function collectEvidence(raw, contract) {
 }
 
 function normalizeProvider(provider, rawProvider, thresholds) {
+  const attempted = rawProvider?.attempted === true
   const worker = rawProvider?.worker && typeof rawProvider.worker === 'object' ? rawProvider.worker : {}
   const measurements = worker.measurements && typeof worker.measurements === 'object' ? worker.measurements : {}
   const checks = worker.checks && typeof worker.checks === 'object' ? worker.checks : {}
   const lifecycle = rawProvider?.lifecycle && typeof rawProvider.lifecycle === 'object' ? rawProvider.lifecycle : {}
-  const collectorLatencyDeltaMs = Math.abs(number(rawProvider?.collectorLatencyDeltaMs, Number.POSITIVE_INFINITY))
-  const databaseSizeDeltaBytes = number(measurements.databaseSizeDeltaBytes, Number.POSITIVE_INFINITY)
+  const collectorLatencyDeltaMs = Math.abs(number(rawProvider?.collectorLatencyDeltaMs, MISSING_NUMBER))
+  const databaseSizeDeltaBytes = number(measurements.databaseSizeDeltaBytes, MISSING_NUMBER)
   const normalizedMeasurements = {
-    categoryGeneratorQueries: integer(measurements.categoryGeneratorQueries, Number.MAX_SAFE_INTEGER),
-    dictionaryFirstPassChanges: integer(measurements.dictionaryFirstPassChanges, Number.MAX_SAFE_INTEGER),
-    dictionarySecondPassChanges: integer(measurements.dictionarySecondPassChanges, Number.MAX_SAFE_INTEGER),
-    probeRowsAfterWrite: integer(measurements.probeRowsAfterWrite, Number.MAX_SAFE_INTEGER),
-    probeCleanupRemainingRows: integer(measurements.probeCleanupRemainingRows, Number.MAX_SAFE_INTEGER),
-    providerLeakageRows: integer(measurements.providerLeakageRows, Number.MAX_SAFE_INTEGER),
-    databaseSizeBefore: number(measurements.databaseSizeBefore, null),
-    databaseSizeAfter: number(measurements.databaseSizeAfter, null),
+    categoryGeneratorQueries: integer(measurements.categoryGeneratorQueries, MISSING_NUMBER),
+    dictionaryFirstPassChanges: integer(measurements.dictionaryFirstPassChanges, MISSING_NUMBER),
+    dictionarySecondPassChanges: integer(measurements.dictionarySecondPassChanges, MISSING_NUMBER),
+    probeRowsAfterWrite: integer(measurements.probeRowsAfterWrite, MISSING_NUMBER),
+    probeCleanupRemainingRows: integer(measurements.probeCleanupRemainingRows, MISSING_NUMBER),
+    providerLeakageRows: integer(measurements.providerLeakageRows, MISSING_NUMBER),
+    databaseSizeBefore: nullableNumber(measurements.databaseSizeBefore),
+    databaseSizeAfter: nullableNumber(measurements.databaseSizeAfter),
     databaseSizeDeltaBytes,
     databaseSizeIncreaseBytes: Math.max(0, databaseSizeDeltaBytes),
     d1Statements: integer(measurements.operation?.statements),
@@ -86,7 +108,7 @@ function normalizeProvider(provider, rawProvider, thresholds) {
     d1RowsWritten: integer(measurements.operation?.rowsWritten),
     d1Changes: integer(measurements.operation?.changes),
     d1SqlDurationMs: number(measurements.operation?.durationMs),
-    workerWallMs: number(measurements.workerWallMs, Number.POSITIVE_INFINITY),
+    workerWallMs: number(measurements.workerWallMs, MISSING_NUMBER),
     collectorLatencyDeltaMs,
   }
   const normalizedChecks = {
@@ -103,14 +125,23 @@ function normalizeProvider(provider, rawProvider, thresholds) {
   }
   const normalizedLifecycle = {
     preexistingHttpStatus: integer(lifecycle.preexistingHttpStatus),
-    deployExitCode: integer(lifecycle.deployExitCode, Number.MAX_SAFE_INTEGER),
-    secretExitCode: integer(lifecycle.secretExitCode, Number.MAX_SAFE_INTEGER),
+    deployExitCode: integer(lifecycle.deployExitCode, MISSING_NUMBER),
+    secretExitCode: integer(lifecycle.secretExitCode, MISSING_NUMBER),
+    healthAttempts: integer(lifecycle.healthAttempts),
+    healthHttpStatus: integer(lifecycle.healthHttpStatus),
+    inspectAttempts: integer(lifecycle.inspectAttempts),
     inspectHttpStatus: integer(lifecycle.inspectHttpStatus),
     probeHttpStatus: integer(lifecycle.probeHttpStatus),
-    deleteExitCode: integer(lifecycle.deleteExitCode, Number.MAX_SAFE_INTEGER),
+    probeEndpointCalled: integer(lifecycle.probeHttpStatus) > 0,
+    pollAttempts: integer(lifecycle.pollAttempts),
+    naturalSnapshotObserved: boolean(lifecycle.naturalSnapshotObserved),
+    deleteApiHttpStatus: integer(lifecycle.deleteApiHttpStatus),
+    deleteExitCode: integer(lifecycle.deleteExitCode, MISSING_NUMBER),
     deleteHttpStatus: integer(lifecycle.deleteHttpStatus),
+    temporaryWorkerDeployed: integer(lifecycle.deployExitCode, MISSING_NUMBER) === 0,
   }
-  const providerGatePass = boolean(worker.ok)
+  const providerGatePass = attempted
+    && boolean(worker.ok)
     && normalizedMeasurements.categoryGeneratorQueries <= thresholds.categoryGeneratorQueriesMax
     && normalizedMeasurements.dictionaryFirstPassChanges === thresholds.dictionaryFirstPassChanges
     && normalizedMeasurements.dictionarySecondPassChanges <= thresholds.dictionarySecondPassChangesMax
@@ -125,14 +156,16 @@ function normalizeProvider(provider, rawProvider, thresholds) {
     && normalizedLifecycle.preexistingHttpStatus === 404
     && normalizedLifecycle.deployExitCode === 0
     && normalizedLifecycle.secretExitCode === 0
+    && normalizedLifecycle.healthHttpStatus === 200
     && normalizedLifecycle.inspectHttpStatus === 200
     && normalizedLifecycle.probeHttpStatus === 200
+    && normalizedLifecycle.naturalSnapshotObserved === true
     && normalizedLifecycle.deleteExitCode === 0
     && normalizedLifecycle.deleteHttpStatus === 404
 
   return {
     provider,
-    attempted: Boolean(rawProvider),
+    attempted,
     workerOk: boolean(worker.ok),
     runId: text(worker.runId),
     stage: text(worker.stage),
@@ -140,6 +173,8 @@ function normalizeProvider(provider, rawProvider, thresholds) {
     checks: normalizedChecks,
     lifecycle: normalizedLifecycle,
     errors: {
+      runner: text(rawProvider?.errors?.runner, '') || null,
+      delete: text(rawProvider?.errors?.delete, '') || null,
       operation: text(worker.errors?.operation, '') || null,
       cleanup: text(worker.errors?.cleanup, '') || null,
     },
