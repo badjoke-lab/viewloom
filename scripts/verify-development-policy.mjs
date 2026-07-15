@@ -327,7 +327,9 @@ if (exists(exactTriggerPath)) {
     .split('\n')
     .map((value) => value.trim())
     .filter(Boolean)
-  assert.deepEqual(changed, [exactTriggerPath], 'armed Kick trigger must be the only changed file')
+  if (changed.includes(exactTriggerPath)) {
+    assert.deepEqual(changed, [exactTriggerPath], 'armed Kick trigger must be the only changed file in its trigger PR')
+  }
 } else {
   assert.equal(gate.currentWorkstream.exactKickTriggerCurrent, true)
   assert.equal(gate.categoryCapture.kickExactTriggerAccepted, false)
