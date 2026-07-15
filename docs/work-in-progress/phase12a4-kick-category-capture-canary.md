@@ -1,13 +1,14 @@
 # Phase 12A-4-8 Kick category capture canary package
 
-Status: candidate dormant package; production runtime capture remains unauthorized  
+Status: accepted dormant package; production runtime capture remains unauthorized  
 Tracking issue: #519  
 Accepted sequencing decision PR: #561  
+Accepted package PR: #562  
 Package contract: `docs/audits/12a4-kick-category-capture-canary-package-contract.json`
 
 ## Purpose
 
-This package prepares a provider-separated Kick-only category capture canary without changing the normal production collector configuration.
+This accepted package prepares a provider-separated Kick-only category capture canary without changing the normal production collector configuration.
 
 The accepted rollout order is:
 
@@ -48,7 +49,21 @@ Missing, invalid, pending, or expired configuration forces category capture off.
 
 ## Dictionary SQL repair
 
-The actual runtime dictionary writer still used the CTE form that failed during bounded production probe attempt 2. This package replaces it with a direct `INSERT ... SELECT ... FROM json_each(...)` statement while preserving first-write and unchanged-name no-op behavior.
+The runtime dictionary writer previously used the CTE form that failed during bounded production probe attempt 2. The accepted package replaces it with a direct `INSERT ... SELECT ... FROM json_each(...)` statement while preserving first-write and unchanged-name no-op behavior.
+
+## Accepted package verification
+
+```text
+package workflow: 29386501622
+migration compatibility: 29386501577
+collector checks: 29386501628
+Development policy: 29386501646
+Web build: 29386501678
+Web checks: 29386501671
+production Twitch deploy: skipped
+production Kick deploy: skipped
+remote schema verification: skipped
+```
 
 ## Execution preflight
 
@@ -100,6 +115,6 @@ Twitch category capture begins
 
 Rollback deploys the normal `workers/collector-kick/wrangler.toml` configuration. Schema rollback and deletion of already observed category data are not required. Normal non-category collection must continue.
 
-## Next gate
+## Current gate
 
-After this package is accepted, execution requires a separate exact one-file trigger and a separate read-only acceptance package. This PR cannot start the canary.
+The current gate is 12A-4-9: a dormant Kick canary execution and evidence package. Production execution still requires a later exact one-file trigger. This PR cannot start the canary.
