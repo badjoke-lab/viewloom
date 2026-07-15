@@ -9,6 +9,7 @@ const allowed = new Set([
   'scripts/run-12a4-kick-normal-collector-cloudflare-audit.mjs',
   'scripts/run-12a4-kick-normal-collector-recovery-acceptance.mjs',
   'scripts/run-12a4-kick-normal-collector-recovery-run-audit.mjs',
+  'scripts/run-12a4-kick-normal-collector-tail-audit.mjs',
   'scripts/verify-12a4-kick-normal-collector-recovery-acceptance-package.mjs',
 ])
 
@@ -50,5 +51,6 @@ console.log(JSON.stringify({
   categoryCanaryTriggerChanged: false,
   GitHubActionsReadOnlyAuditIncluded: changed.includes('scripts/run-12a4-kick-normal-collector-recovery-run-audit.mjs'),
   CloudflareGetOnlyAuditIncluded: changed.includes('scripts/run-12a4-kick-normal-collector-cloudflare-audit.mjs'),
+  BoundedSanitizedTailAuditIncluded: changed.includes('scripts/run-12a4-kick-normal-collector-tail-audit.mjs'),
   TwitchChanged: false,
 }, null, 2))
