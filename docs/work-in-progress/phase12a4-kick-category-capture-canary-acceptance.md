@@ -32,8 +32,10 @@ The evidence verifies:
 - Kick category dictionary rows exist;
 - category-bearing Kick snapshot rows exist;
 - provider leakage remains zero;
-- collector health remains acceptable;
+- the latest Kick minute snapshot exists and remains within the accepted freshness threshold;
 - Twitch has not been authorized or started.
+
+Kick production health is intentionally derived from the latest `minute_snapshots` row. The Kick database does not require Twitch's `collector_status` table, matching the accepted provider-aware preflight behavior from PR #526.
 
 ## Hard boundary
 
