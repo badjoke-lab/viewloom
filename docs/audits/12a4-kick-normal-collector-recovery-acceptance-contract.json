@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "viewloom-12a4-kick-normal-collector-recovery-acceptance-v1",
+  "workstream": "12A-4 Kick normal collector recovery read-only acceptance",
+  "status": "candidate",
+  "trackingIssue": 519,
+  "provider": "kick",
+  "recoveryPr": 573,
+  "recoveryMergeSha": "9323606d337f1930ce65a96465c104848b61c925",
+  "incidentSnapshot": {
+    "bucketMinute": "2026-07-15T11:50:00.000Z",
+    "collectedAt": "2026-07-15T11:50:40.703Z"
+  },
+  "acceptance": {
+    "freshnessMinutesMax": 10,
+    "requireSnapshotNewerThanIncident": true,
+    "requireCanaryBindingsAbsent": true,
+    "requirePermanentCategoryFlagAbsent": true,
+    "maximumProviderLeakageRows": 0,
+    "requireCategoryCanaryTriggerAbsent": true
+  },
+  "readOnlyBoundary": {
+    "cloudflareApiMethods": ["GET"],
+    "d1Statements": ["SELECT"],
+    "workerDeployment": false,
+    "workerSettingsMutation": false,
+    "manualCollect": false,
+    "remoteMigration": false,
+    "backfill": false,
+    "retentionChanged": false,
+    "twitchChanged": false,
+    "categoryCaptureStarted": false
+  },
+  "evidence": {
+    "artifactName": "analytics-12a4-kick-normal-collector-recovery-acceptance",
+    "artifactPath": "artifacts/12a4-kick-normal-collector-recovery-acceptance/evidence.json",
+    "sanitizedJsonOnly": true,
+    "rawPayloadIncluded": false,
+    "channelIdentitiesIncluded": false,
+    "secretsIncluded": false
+  },
+  "nextGateOnAcceptance": "confirm at least one additional normal five-minute snapshot before a new category canary trigger"
+}
