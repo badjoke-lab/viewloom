@@ -28,16 +28,20 @@ production category capture: disabled
 ## Accepted verification
 
 ```text
-execution package workflow: 29387553274
-execution package job: 87263862863
-Development policy: 29387553217
-Web build: 29387553228
-Web checks: 29387553242
+validated candidate head: e6b2e05811dfc70b262239603407254cc8d94246
+execution package workflow: 29387873802
+execution package job: 87264801162
+Development policy: 29387873767
+Web build: 29387873873
+Web checks: 29387873755
 start job: skipped
 monitor/finalize job: skipped
 trigger inspector job: skipped
 normal Kick bundle: passed
 disabled canary bundle: passed
+post-deploy verification failure rollback: verified
+already-rolled-back hourly no-op: verified
+mismatched binding rollback: verified
 ```
 
 ## Lifecycle
@@ -53,6 +57,8 @@ disabled canary bundle: passed
 ```
 
 No GitHub job sleeps for 24 hours. The wrapper enforces its own expiry, while the hourly monitor performs checkpoints and rollback.
+
+If deployment succeeds but the active canary bindings cannot be verified, the runner immediately deploys the normal Kick configuration. If an hourly run finds that all canary bindings are already absent, it records a successful no-op instead of redeploying.
 
 ## Start gate
 
@@ -88,7 +94,7 @@ collector status timestamps and state
 active canary bindings
 ```
 
-Before start the scheduled job is a no-op. After rollback, missing canary bindings also produce a no-op rather than a second deployment.
+Before start the scheduled job is a no-op. After rollback, missing canary bindings also produce a no-op rather than a second deployment. Partial or mismatched canary bindings cause a hard stop and normal-config rollback.
 
 ## Hard stops
 
