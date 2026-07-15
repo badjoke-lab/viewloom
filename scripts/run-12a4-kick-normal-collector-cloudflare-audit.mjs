@@ -39,13 +39,14 @@ async function execute() {
       workersDev: settingsResult?.workers_dev ?? null,
       compatibilityDate: settingsResult?.compatibility_date ?? null,
       compatibilityFlags: Array.isArray(settingsResult?.compatibility_flags) ? settingsResult.compatibility_flags : [],
+      resultKeys: objectKeys(settingsResult),
       bindings: bindingRows.map((binding) => ({
         name: String(binding?.name ?? ''),
         type: String(binding?.type ?? ''),
         namespace: binding?.namespace ?? null,
       })),
     },
-    schedules: summarize(scriptSchedules),
+    schedules: summarizeSchedules(scriptSchedules),
     serviceDeployments: summarizeDeployments(serviceDeployments),
     scriptDeployments: summarizeDeployments(scriptDeployments),
     subdomain: {
@@ -53,6 +54,7 @@ async function execute() {
       success: subdomain.success,
       configured: Boolean(subdomain.body?.result?.subdomain),
       value: subdomain.body?.result?.subdomain ?? null,
+      resultKeys: objectKeys(subdomain.body?.result),
     },
     gates: {
       readOnly: true,
@@ -91,26 +93,28 @@ async function cloudflareGet(url, headers) {
   }
 }
 
-function summarize(item) {
+function summarizeSchedules(item) {
+  const result = item.body?.result
+  const rows = arrayFromResult(result, ['schedules', 'items', 'triggers'])
   return {
     httpStatus: item.status,
     success: item.success,
-    crons: scheduleCrons(item),
-    resultType: Array.isArray(item.body?.result) ? 'array' : typeof item.body?.result,
-    resultCount: Array.isArray(item.body?.result) ? item.body.result.length : null,
+    crons: rows.map((row) => typeof row === 'string' ? row : String(row?.cron ?? row?.schedule ?? '')).filter(Boolean),
+    resultType: Array.isArray(result) ? 'array' : typeof result,
+    resultKeys: objectKeys(result),
+    resultCount: rows.length,
     errorCodes: item.errorCodes,
   }
 }
 
 function summarizeDeployments(item) {
-  const rows = Array.isArray(item.body?.result)
-    ? item.body.result
-    : Array.isArray(item.body?.result?.items)
-      ? item.body.result.items
-      : []
+  const result = item.body?.result
+  const rows = arrayFromResult(result, ['deployments', 'items', 'versions'])
   return {
     httpStatus: item.status,
     success: item.success,
+    resultType: Array.isArray(result) ? 'array' : typeof result,
+    resultKeys: objectKeys(result),
     count: rows.length,
     latest: rows.slice(0, 5).map((deployment) => ({
       id: deployment?.id ?? null,
@@ -123,8 +127,21 @@ function summarizeDeployments(item) {
 }
 
 function scheduleCrons(item) {
-  const rows = Array.isArray(item.body?.result) ? item.body.result : []
-  return rows.map((row) => String(row?.cron ?? '')).filter(Boolean)
+  const result = item.body?.result
+  return arrayFromResult(result, ['schedules', 'items', 'triggers'])
+    .map((row) => typeof row === 'string' ? row : String(row?.cron ?? row?.schedule ?? ''))
+    .filter(Boolean)
+}
+
+function arrayFromResult(result, keys) {
+  if (Array.isArray(result)) return result
+  if (!result || typeof result !== 'object') return []
+  for (const key of keys) if (Array.isArray(result[key])) return result[key]
+  return []
+}
+
+function objectKeys(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? Object.keys(value).slice(0, 30) : []
 }
 
 function tomlCron(source) {
