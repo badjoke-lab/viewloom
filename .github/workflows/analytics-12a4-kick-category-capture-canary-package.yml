@@ -1,0 +1,81 @@
+name: Analytics 12A4 Kick Category Capture Canary Package
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.github/workflows/analytics-12a4-kick-category-capture-canary-package.yml'
+      - 'docs/audits/12a4-kick-category-capture-canary-package-contract.json'
+      - 'docs/work-in-progress/phase12a4-kick-category-capture-canary.md'
+      - 'scripts/check-12a4-kick-category-capture-canary-package-scope.mjs'
+      - 'scripts/test-12a4-kick-category-capture-canary.py'
+      - 'scripts/verify-12a4-kick-category-capture-canary-package.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - 'workers/collector-kick/src/entry-category-canary.ts'
+      - 'workers/collector-kick/wrangler.category-canary.toml'
+      - 'workers/shared/category-capture.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-kick-category-capture-canary-package-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify package scope
+        run: node scripts/check-12a4-kick-category-capture-canary-package-scope.mjs
+      - name: Verify Kick category canary package
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-12a4-kick-category-capture-canary-package.mjs 2>&1 | tee kick-canary-package-verification.log
+      - name: Publish verifier diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-kick-category-canary-package-diagnostics
+          path: kick-canary-package-verification.log
+          if-no-files-found: error
+          retention-days: 7
+      - name: Verify canary and dictionary fixtures
+        run: python3 scripts/test-12a4-kick-category-capture-canary.py
+      - name: Verify collector typecheck
+        run: pnpm typecheck:collectors
+      - name: Verify canonical development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Bundle normal Kick collector without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-kick/wrangler.toml
+      - name: Bundle disabled Kick canary collector without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-kick/wrangler.category-canary.toml
+      - name: Publish package summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4-8 Kick Category Capture Canary Package'
+            echo
+            echo '- Provider: Kick only'
+            echo '- Committed canary state: disabled'
+            echo '- Observation window: bounded to 23-25 hours; target 24 hours'
+            echo '- Automatic expiry: required'
+            echo '- Normal collector config: unchanged'
+            echo '- Production deployment from this PR: no'
+            echo '- Production category capture from this PR: no'
+            echo '- Twitch start: no'
+            echo '- Exact trigger and separate acceptance PR: required'
+          } >> "$GITHUB_STEP_SUMMARY"

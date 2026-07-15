@@ -10,6 +10,36 @@ const changed = execFileSync('git', ['diff', '--name-only', `origin/${base}...HE
   .map((value) => value.trim())
   .filter(Boolean)
 
+const canaryContract = 'docs/audits/12a4-kick-category-capture-canary-package-contract.json'
+const isKickCanaryFollowUp = changed.includes(canaryContract)
+
+if (isKickCanaryFollowUp) {
+  const allowed = new Set([
+    '.github/workflows/analytics-12a4-kick-category-capture-canary-package.yml',
+    canaryContract,
+    'docs/work-in-progress/phase12a4-kick-category-capture-canary.md',
+    'scripts/check-12a4-category-migration-runtime-scope.mjs',
+    'scripts/check-12a4-kick-category-capture-canary-package-scope.mjs',
+    'scripts/test-12a4-kick-category-capture-canary.py',
+    'scripts/verify-12a4-kick-category-capture-canary-package.mjs',
+    'workers/collector-kick/src/entry-category-canary.ts',
+    'workers/collector-kick/wrangler.category-canary.toml',
+    'workers/shared/category-capture.ts',
+  ])
+  const forbidden = changed.filter((path) => !allowed.has(path))
+  assert.deepEqual(forbidden, [], `12A-4 Kick canary follow-up changed unapproved paths:\n${forbidden.join('\n')}`)
+  for (const prefix of ['apps/', 'packages/', 'workers/collector-twitch/', 'db/']) {
+    const matches = changed.filter((path) => path.startsWith(prefix))
+    assert.deepEqual(matches, [], `Kick canary follow-up must not change ${prefix}:\n${matches.join('\n')}`)
+  }
+  assert.ok(changed.includes('workers/shared/category-capture.ts'), 'Kick canary follow-up must include the D1-compatible dictionary repair')
+  assert.ok(changed.includes('workers/collector-kick/src/entry-category-canary.ts'), 'Kick canary follow-up must include the bounded wrapper')
+  console.log('12A-4 category migration/runtime follow-up compatibility scope passed.')
+  console.log(`- changed files inspected: ${changed.length}`)
+  console.log('- original migration candidate remains frozen; only Kick canary wrapper and D1 dictionary compatibility changed')
+  process.exit(0)
+}
+
 const allowed = new Set([
   'db/d1/005_category_capture.sql',
   'docs/audits/12a4-category-migration-runtime-contract.json',

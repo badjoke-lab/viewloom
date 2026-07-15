@@ -126,7 +126,7 @@ export async function writeCategoryDictionary(
   }
 
   const result = await db.prepare(CATEGORY_DICTIONARY_UPSERT_SQL)
-    .bind(JSON.stringify(entries), provider, observedAt, observedAt, CATEGORY_CONTRACT_VERSION)
+    .bind(provider, observedAt, observedAt, CATEGORY_CONTRACT_VERSION, JSON.stringify(entries))
     .run()
   const meta = (result.meta ?? {}) as Record<string, unknown>
 
@@ -157,18 +157,6 @@ function number(value: unknown): number {
 }
 
 export const CATEGORY_DICTIONARY_UPSERT_SQL = `
-WITH incoming AS (
-  SELECT
-    TRIM(CAST(json_extract(j.value, '$.id') AS TEXT)) AS category_id,
-    TRIM(CAST(json_extract(j.value, '$.name') AS TEXT)) AS category_name
-  FROM json_each(?) j
-),
-valid AS (
-  SELECT category_id, MAX(category_name) AS category_name
-  FROM incoming
-  WHERE category_id != '' AND category_name != ''
-  GROUP BY category_id
-)
 INSERT INTO provider_category_dictionary (
   provider,
   category_id,
@@ -177,9 +165,16 @@ INSERT INTO provider_category_dictionary (
   last_observed_at,
   contract_version
 )
-SELECT ?, category_id, category_name, ?, ?, ?
-FROM valid
-WHERE 1 = 1
+SELECT
+  ?,
+  TRIM(CAST(json_extract(j.value, '$.id') AS TEXT)),
+  TRIM(CAST(json_extract(j.value, '$.name') AS TEXT)),
+  ?,
+  ?,
+  ?
+FROM json_each(?) AS j
+WHERE TRIM(CAST(json_extract(j.value, '$.id') AS TEXT)) != ''
+  AND TRIM(CAST(json_extract(j.value, '$.name') AS TEXT)) != ''
 ON CONFLICT(provider, category_id) DO UPDATE SET
   category_name = excluded.category_name,
   last_observed_at = excluded.last_observed_at,
