@@ -29,8 +29,16 @@ async function execute() {
     provider: 'kick',
     observedAt: new Date().toISOString(),
     recovery: {
-      pr: contract.recoveryPr,
-      mergeSha: contract.recoveryMergeSha,
+      packagePr: contract.recoveryPackagePr,
+      packageMergeSha: contract.recoveryPackageMergeSha,
+      executionPr: contract.recoveryExecutionPr,
+      executionMergeSha: contract.recoveryExecutionMergeSha,
+      attempt: contract.recoveryAttempt,
+    },
+    polling: {
+      intervalSeconds: contract.acceptance.pollIntervalSeconds,
+      attemptsMax: contract.acceptance.pollAttempts,
+      attemptsUsed: 0,
     },
     snapshot: null,
     minutesSinceSnapshot: null,
@@ -54,14 +62,20 @@ async function execute() {
 
   try {
     evidence.gates.categoryCanaryTriggerAbsent = !fs.existsSync(CATEGORY_TRIGGER_PATH)
-    evidence.snapshot = latestSnapshot(NORMAL_CONFIG_PATH, databaseName)
-    evidence.gates.snapshotPresent = Boolean(evidence.snapshot)
-    evidence.minutesSinceSnapshot = minutesSince(evidence.snapshot?.collected_at ?? evidence.snapshot?.bucket_minute)
     const incidentTime = new Date(contract.incidentSnapshot.collectedAt).getTime()
-    const currentTime = new Date(String(evidence.snapshot?.collected_at ?? evidence.snapshot?.bucket_minute ?? '')).getTime()
-    evidence.gates.snapshotNewerThanIncident = Number.isFinite(currentTime) && currentTime > incidentTime
-    evidence.gates.snapshotFreshnessPass = Number.isFinite(evidence.minutesSinceSnapshot)
-      && evidence.minutesSinceSnapshot <= Number(contract.acceptance.freshnessMinutesMax)
+
+    for (let attempt = 1; attempt <= Number(contract.acceptance.pollAttempts); attempt += 1) {
+      evidence.polling.attemptsUsed = attempt
+      evidence.snapshot = latestSnapshot(NORMAL_CONFIG_PATH, databaseName)
+      evidence.gates.snapshotPresent = Boolean(evidence.snapshot)
+      evidence.minutesSinceSnapshot = minutesSince(evidence.snapshot?.collected_at ?? evidence.snapshot?.bucket_minute)
+      const currentTime = new Date(String(evidence.snapshot?.collected_at ?? evidence.snapshot?.bucket_minute ?? '')).getTime()
+      evidence.gates.snapshotNewerThanIncident = Number.isFinite(currentTime) && currentTime > incidentTime
+      evidence.gates.snapshotFreshnessPass = Number.isFinite(evidence.minutesSinceSnapshot)
+        && evidence.minutesSinceSnapshot <= Number(contract.acceptance.freshnessMinutesMax)
+      if (evidence.gates.snapshotPresent && evidence.gates.snapshotNewerThanIncident && evidence.gates.snapshotFreshnessPass) break
+      if (attempt < Number(contract.acceptance.pollAttempts)) await sleep(Number(contract.acceptance.pollIntervalSeconds) * 1000)
+    }
 
     const settings = await fetchWorkerSettings(accountId, apiToken, serviceName)
     evidence.serviceBindings = canaryBindingsFromSettings(settings)
@@ -93,6 +107,8 @@ async function execute() {
   console.log(JSON.stringify({
     outputPath,
     outcome: evidence.outcome,
+    recovery: evidence.recovery,
+    polling: evidence.polling,
     snapshot: evidence.snapshot,
     minutesSinceSnapshot: evidence.minutesSinceSnapshot,
     providerLeakageRows: evidence.providerLeakageRows,
@@ -187,6 +203,10 @@ function safeText(value) {
 
 function safeError(error) {
   return safeText(error instanceof Error ? error.message : error)
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 function writeOutput(key, value) {
