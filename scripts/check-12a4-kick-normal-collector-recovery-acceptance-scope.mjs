@@ -7,6 +7,7 @@ const allowed = new Set([
   'docs/work-in-progress/phase12a4-kick-normal-collector-recovery-acceptance.md',
   'scripts/check-12a4-kick-normal-collector-recovery-acceptance-scope.mjs',
   'scripts/run-12a4-kick-normal-collector-recovery-acceptance.mjs',
+  'scripts/run-12a4-kick-normal-collector-recovery-run-audit.mjs',
   'scripts/verify-12a4-kick-normal-collector-recovery-acceptance-package.mjs',
 ])
 
@@ -46,5 +47,6 @@ console.log(JSON.stringify({
   productionPathsChanged: false,
   recoveryTriggerChanged: false,
   categoryCanaryTriggerChanged: false,
+  GitHubActionsReadOnlyAuditIncluded: changed.includes('scripts/run-12a4-kick-normal-collector-recovery-run-audit.mjs'),
   TwitchChanged: false,
 }, null, 2))
