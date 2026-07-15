@@ -4,14 +4,15 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const NORMAL_CONFIG_PATH = 'workers/collector-kick/wrangler.toml'
-const TAIL_DURATION_MS = 8 * 60 * 1000
+const TAIL_DURATION_SECONDS = 420
+const EMERGENCY_KILL_MS = (TAIL_DURATION_SECONDS + 20) * 1000
 const MAX_EVENTS = 40
 
 async function execute() {
   const outputDir = path.resolve(process.env.OUTPUT_DIR ?? 'artifacts/12a4-kick-normal-collector-tail-audit')
   const normalConfig = fs.readFileSync(NORMAL_CONFIG_PATH, 'utf8')
   const serviceName = tomlValue(normalConfig, 'name')
-  if (!serviceName) throw new Error('kick_service_name_missing')
+  if (!serviceName || !/^[A-Za-z0-9_-]+$/.test(serviceName)) throw new Error('kick_service_name_missing_or_invalid')
   if (!String(process.env.CLOUDFLARE_API_TOKEN ?? '').trim() || !String(process.env.CLOUDFLARE_ACCOUNT_ID ?? '').trim()) {
     throw new Error('cloudflare_credentials_missing')
   }
@@ -23,8 +24,8 @@ async function execute() {
     serviceName,
     startedAt: new Date().toISOString(),
     completedAt: null,
-    durationSeconds: TAIL_DURATION_MS / 1000,
-    command: 'wrangler tail <kick-service> --format json',
+    durationSeconds: TAIL_DURATION_SECONDS,
+    command: 'timeout 420s wrangler tail <kick-service> --format json',
     productionMutationAuthorized: false,
     rawRequestDataStored: false,
     rawLogArtifactStored: false,
@@ -34,6 +35,7 @@ async function execute() {
       signal: null,
       spawnError: null,
       stderrSummary: [],
+      boundedTimeoutExitAccepted: false,
     },
     summary: {
       jsonEventsObserved: 0,
@@ -46,7 +48,18 @@ async function execute() {
     outcome: 'diagnostic_complete',
   }
 
-  const child = spawn('pnpm', ['dlx', 'wrangler@4', 'tail', serviceName, '--format', 'json'], {
+  const child = spawn('timeout', [
+    '--signal=INT',
+    '--kill-after=10s',
+    `${TAIL_DURATION_SECONDS}s`,
+    'pnpm',
+    'dlx',
+    'wrangler@4',
+    'tail',
+    serviceName,
+    '--format',
+    'json',
+  ], {
     cwd: process.cwd(),
     env: process.env,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -71,18 +84,19 @@ async function execute() {
     evidence.cli.spawnError = safeText(error.message, 500)
   })
 
-  const timer = setTimeout(() => {
-    if (!child.killed) child.kill('SIGINT')
-  }, TAIL_DURATION_MS)
+  const emergencyTimer = setTimeout(() => {
+    if (!child.killed) child.kill('SIGKILL')
+  }, EMERGENCY_KILL_MS)
 
   const close = await new Promise((resolve) => {
     child.on('close', (code, signal) => resolve({ code, signal }))
   })
-  clearTimeout(timer)
+  clearTimeout(emergencyTimer)
   if (stdoutBuffer.trim()) consumeLine(stdoutBuffer, evidence)
 
   evidence.cli.exitCode = close.code
   evidence.cli.signal = close.signal
+  evidence.cli.boundedTimeoutExitAccepted = close.code === 124 || close.code === 130 || close.signal === 'SIGINT'
   evidence.cli.stderrSummary = stderrBuffer
     .split(/\r?\n/)
     .map((line) => safeText(line, 500))
