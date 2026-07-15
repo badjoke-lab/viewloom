@@ -19,6 +19,7 @@
     "maximumProviderLeakageRows": 0,
     "projectedNinetyDaySizeMbMax": 330,
     "projectedProviderHeadroomMbMin": 100,
+    "collectorFreshnessMinutesMax": 20,
     "collectorStatesAccepted": ["idle", "running"],
     "requireActiveTriggerWindow": true,
     "requireExactCanaryBindings": true,
