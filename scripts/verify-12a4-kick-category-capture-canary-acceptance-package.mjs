@@ -91,7 +91,7 @@ for (const pattern of [
   /\bDROP\b/i,
   /\bALTER\b/i,
   /\bCREATE\b/i,
-  /\bREPLACE\b/i,
+  /\bREPLACE\s+INTO\b/i,
   /wrangler@4\s+deploy/i,
   /secret\s+put/i,
   /method\s*:\s*['"](?:POST|PUT|PATCH|DELETE)['"]/i,
