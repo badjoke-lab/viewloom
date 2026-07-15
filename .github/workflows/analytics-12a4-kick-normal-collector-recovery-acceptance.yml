@@ -9,6 +9,7 @@ on:
       - 'docs/audits/12a4-kick-normal-collector-recovery-acceptance-contract.json'
       - 'docs/work-in-progress/phase12a4-kick-normal-collector-recovery-acceptance.md'
       - 'scripts/check-12a4-kick-normal-collector-recovery-acceptance-scope.mjs'
+      - 'scripts/run-12a4-kick-normal-collector-cloudflare-audit.mjs'
       - 'scripts/run-12a4-kick-normal-collector-recovery-acceptance.mjs'
       - 'scripts/run-12a4-kick-normal-collector-recovery-run-audit.mjs'
       - 'scripts/verify-12a4-kick-normal-collector-recovery-acceptance-package.mjs'
@@ -66,6 +67,36 @@ jobs:
         with:
           name: analytics-12a4-kick-normal-collector-recovery-run-audit
           path: artifacts/12a4-kick-normal-collector-recovery-run-audit/run-audit.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  audit-cloudflare-state:
+    needs: verify-package
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      OUTPUT_DIR: artifacts/12a4-kick-normal-collector-cloudflare-audit
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - id: audit
+        name: Audit production Kick cron, deployment, and binding state
+        run: node scripts/run-12a4-kick-normal-collector-cloudflare-audit.mjs
+
+      - name: Upload sanitized Cloudflare audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-kick-normal-collector-cloudflare-audit
+          path: artifacts/12a4-kick-normal-collector-cloudflare-audit/cloudflare-audit.json
           if-no-files-found: warn
           retention-days: 30
 
