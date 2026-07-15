@@ -41,22 +41,42 @@ assert.equal(contract.trigger.windowHoursMax, 25)
 assert.equal(contract.trigger.oneFileTriggerPrRequired, true)
 assert.equal(contract.start.generatedConfigOnly, true)
 assert.equal(contract.start.committedCanaryConfigMutated, false)
+assert.equal(contract.start.postDeployVerificationFailureRollsBack, true)
 assert.equal(contract.monitor.beforeStartAction, 'no-op')
 assert.equal(contract.monitor.duringWindowAction, 'inspect and checkpoint')
 assert.equal(contract.monitor.afterWindowAction, 'finalize and rollback')
 assert.equal(contract.monitor.alreadyRolledBackAction, 'no-op')
+assert.equal(contract.monitor.mismatchedBindingsAction, 'hard stop and rollback')
 assert.equal(contract.hardStops.projectedNinetyDaySizeMbMax, 330)
 assert.equal(contract.hardStops.projectedProviderHeadroomMbMin, 100)
 assert.equal(contract.hardStops.providerLeakageRowsMax, 0)
 assert.equal(contract.hardStops.hardStopAction, 'deploy normal Kick config and freeze failure evidence')
 assert.equal(contract.rollback.requiredAtExpiry, true)
 assert.equal(contract.rollback.requiredAtHardStop, true)
+assert.equal(contract.rollback.requiredAfterPostDeployVerificationFailure, true)
 assert.equal(contract.rollback.schemaRollback, false)
 assert.equal(contract.rollback.categoryDataDeletion, false)
 assert.equal(contract.rollback.canaryBindingsAbsentAfterRollbackRequired, true)
 assert.equal(contract.evidence.sanitizedJsonOnly, true)
 assert.equal(contract.evidence.separateReadOnlyAcceptancePrRequired, true)
 assert.equal(contract.acceptance.pr, 563)
+assert.equal(contract.acceptance.validatedCandidateHeadSha, 'e6b2e05811dfc70b262239603407254cc8d94246')
+assert.equal(contract.acceptance.workflowRunId, 29387873802)
+assert.equal(contract.acceptance.workflowJobId, 87264801162)
+assert.equal(contract.acceptance.developmentPolicyRunId, 29387873767)
+assert.equal(contract.acceptance.webBuildRunId, 29387873873)
+assert.equal(contract.acceptance.webChecksRunId, 29387873755)
+assert.equal(contract.acceptance.scopePass, true)
+assert.equal(contract.acceptance.contractPass, true)
+assert.equal(contract.acceptance.triggerFixturePass, true)
+assert.equal(contract.acceptance.storageFixturePass, true)
+assert.equal(contract.acceptance.bindingFixturePass, true)
+assert.equal(contract.acceptance.rollbackContainmentPass, true)
+assert.equal(contract.acceptance.alreadyRolledBackNoopPass, true)
+assert.equal(contract.acceptance.mismatchedBindingsRollbackPass, true)
+assert.equal(contract.acceptance.startJobSkipped, true)
+assert.equal(contract.acceptance.monitorJobSkipped, true)
+assert.equal(contract.acceptance.triggerInspectorJobSkipped, true)
 assert.equal(contract.acceptance.triggerPresent, false)
 assert.equal(contract.acceptance.productionRuntimeCaptureStarted, false)
 assert.equal(contract.acceptance.productionWorkerDeployed, false)
@@ -150,6 +170,10 @@ assert.equal(workflow.includes('CATEGORY_CAPTURE_ENABLED='), false)
 for (const fragment of [
   'accepted dormant execution package',
   'Accepted execution package PR: #563',
+  'validated candidate head: e6b2e05811dfc70b262239603407254cc8d94246',
+  'execution package workflow: 29387873802',
+  'post-deploy verification failure rollback: verified',
+  'already-rolled-back hourly no-op: verified',
   'exact trigger file: absent',
   'execution merge SHA in contract: pending',
   'hourly monitor without trigger: no-op',
@@ -163,6 +187,7 @@ for (const fragment of [
 console.log(JSON.stringify({
   ok: true,
   status: contract.status,
+  acceptedCandidateHeadSha: contract.acceptance.validatedCandidateHeadSha,
   triggerPresent: false,
   packagePr: contract.acceptedPackage.pr,
   packageMergeSha: contract.acceptedPackage.mergeSha,
