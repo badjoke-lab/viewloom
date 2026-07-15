@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-kick-category-capture-canary-execution-v1",
   "workstream": "12A-4-9 dormant Kick category capture canary execution and evidence package",
-  "status": "candidate",
+  "status": "accepted",
   "trackingIssue": 519,
   "acceptedPackage": {
     "pr": 562,
@@ -110,6 +110,31 @@
     "finalArtifactPrefix": "analytics-12a4-kick-category-canary-final",
     "separateReadOnlyAcceptancePrRequired": true
   },
+  "acceptance": {
+    "pr": 563,
+    "validatedCandidateHeadSha": "e75ea4961c1b8ed0e2ce7599ee60e60e2bbbbe3d",
+    "workflowRunId": 29387553274,
+    "workflowJobId": 87263862863,
+    "developmentPolicyRunId": 29387553217,
+    "webBuildRunId": 29387553228,
+    "webChecksRunId": 29387553242,
+    "scopePass": true,
+    "contractPass": true,
+    "triggerFixturePass": true,
+    "storageFixturePass": true,
+    "bindingFixturePass": true,
+    "normalKickBundlePass": true,
+    "disabledCanaryBundlePass": true,
+    "startJobSkipped": true,
+    "monitorJobSkipped": true,
+    "triggerInspectorJobSkipped": true,
+    "triggerPresent": false,
+    "productionRuntimeCaptureStarted": false,
+    "productionWorkerDeployed": false,
+    "remoteD1OperationPerformed": false,
+    "mergeSha": null,
+    "mergeShaRecorded": false
+  },
   "pullRequestBoundary": {
     "triggerCreated": false,
     "productionRuntimeCaptureStarted": false,
@@ -126,5 +151,5 @@
     "crossProviderCategoryIdentityAllowed": false,
     "combinedProviderCategoryRankingAllowed": false
   },
-  "nextGate": "accept this dormant execution package, then create the exact one-file Kick canary trigger; acceptance remains separate and read-only"
+  "nextGate": "record the execution package merge identity and advance the canonical gate before creating the exact one-file Kick canary trigger"
 }
