@@ -1,26 +1,43 @@
 # Phase 12A-4-9 Kick category capture canary execution and evidence package
 
-Status: candidate dormant execution package; no trigger exists and production runtime capture remains unauthorized  
+Status: accepted dormant execution package; merge identity sync is required before any trigger and production runtime capture remains unauthorized  
 Tracking issue: #519  
 Accepted canary package PR: #562  
+Accepted execution package PR: #563  
 Execution contract: `docs/audits/12a4-kick-category-capture-canary-execution-contract.json`
 
 ## Purpose
 
-This package defines how the accepted disabled Kick canary package may later be started, monitored, stopped, rolled back, and frozen as evidence.
+This accepted package defines how the disabled Kick canary package may later be started, monitored, stopped, rolled back, and frozen as evidence.
 
-It does not create the exact trigger and cannot start production category capture from this PR.
+It does not create the exact trigger and cannot start production category capture from this PR. The execution contract intentionally keeps its merge SHA unset until a follow-up canonical sync records the actual squash merge identity.
 
 ## Dormant boundary
 
 ```text
 exact trigger file: absent
+execution merge SHA in contract: pending
 production start from pull request: impossible
 workflow_dispatch production start: impossible
 hourly monitor without trigger: no-op
 normal Kick configuration: unchanged
 Twitch configuration: unchanged
 production category capture: disabled
+```
+
+## Accepted verification
+
+```text
+execution package workflow: 29387553274
+execution package job: 87263862863
+Development policy: 29387553217
+Web build: 29387553228
+Web checks: 29387553242
+start job: skipped
+monitor/finalize job: skipped
+trigger inspector job: skipped
+normal Kick bundle: passed
+disabled canary bundle: passed
 ```
 
 ## Lifecycle
@@ -93,7 +110,7 @@ A hard stop deploys `workers/collector-kick/wrangler.toml`, preserves normal col
 
 Artifacts contain sanitized JSON only. They may record package identities, service and D1 identities, storage values, counts, states, timestamps, outcome, and rollback result. They must not contain API tokens, authorization headers, secret values, raw Worker URLs, or raw deployment logs.
 
-## Current PR boundary
+## Accepted PR boundary
 
 ```text
 no trigger
@@ -108,6 +125,6 @@ no category UI
 no Twitch change
 ```
 
-## Next gate
+## Current gate
 
-After this dormant execution package is accepted, the next gate is the exact one-file Kick canary trigger. The later source run and finalizer artifacts must be accepted by a separate read-only PR.
+Record the actual PR #563 squash merge SHA in the execution contract and advance the canonical gate. Only after that sync passes may the exact one-file Kick canary trigger be created. The later source run and finalizer artifacts must be accepted by a separate read-only PR.
