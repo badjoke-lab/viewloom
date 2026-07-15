@@ -1,22 +1,24 @@
 # Phase 12A-4-9 Kick category capture canary execution and evidence package
 
-Status: accepted dormant execution package; merge identity sync is required before any trigger and production runtime capture remains unauthorized  
+Status: accepted and merge identity recorded; canonical gate advancement remains separate and production runtime capture remains unauthorized  
 Tracking issue: #519  
 Accepted canary package PR: #562  
 Accepted execution package PR: #563  
+execution package merge SHA: `9391fd1479d3c149303637ae65deae7abf0e9b7d`  
 Execution contract: `docs/audits/12a4-kick-category-capture-canary-execution-contract.json`
 
 ## Purpose
 
 This accepted package defines how the disabled Kick canary package may later be started, monitored, stopped, rolled back, and frozen as evidence.
 
-It does not create the exact trigger and cannot start production category capture from this PR. The execution contract intentionally keeps its merge SHA unset until a follow-up canonical sync records the actual squash merge identity.
+The actual squash merge identity is now recorded. No trigger exists, the canonical current-gate record is unchanged by this sync, and the production path remains dormant.
 
 ## Dormant boundary
 
 ```text
 exact trigger file: absent
-execution merge SHA in contract: pending
+execution merge SHA in contract: recorded
+canonical gate advancement: separate change
 production start from pull request: impossible
 workflow_dispatch production start: impossible
 hourly monitor without trigger: no-op
@@ -68,7 +70,8 @@ Before deployment:
 provider = Kick
 package PR = #562
 package merge SHA = 8dc53c6041f425f78e82cddb62328cff1128120f
-execution package identity = exact accepted PR and merge SHA
+execution package PR = #563
+execution package merge SHA = 9391fd1479d3c149303637ae65deae7abf0e9b7d
 trigger status = armed
 oneTime = true
 confirmation = RUN_KICK_CATEGORY_CAPTURE_CANARY
@@ -119,6 +122,7 @@ Artifacts contain sanitized JSON only. They may record package identities, servi
 ## Accepted PR boundary
 
 ```text
+no canonical gate advancement
 no trigger
 no production deploy
 no remote D1 query
@@ -131,6 +135,6 @@ no category UI
 no Twitch change
 ```
 
-## Current gate
+## Next boundary
 
-Record the actual PR #563 squash merge SHA in the execution contract and advance the canonical gate. Only after that sync passes may the exact one-file Kick canary trigger be created. The later source run and finalizer artifacts must be accepted by a separate read-only PR.
+This sync records only the accepted PR #563 merge identity. Advancing the canonical gate and authorizing creation of the exact one-file Kick category capture canary trigger requires a separate reviewed change. The later source run and finalizer artifacts must be accepted by a separate read-only PR, and Twitch remains blocked until accepted Kick canary evidence exists.
