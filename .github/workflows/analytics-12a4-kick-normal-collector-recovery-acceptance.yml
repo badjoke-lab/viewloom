@@ -10,10 +10,12 @@ on:
       - 'docs/work-in-progress/phase12a4-kick-normal-collector-recovery-acceptance.md'
       - 'scripts/check-12a4-kick-normal-collector-recovery-acceptance-scope.mjs'
       - 'scripts/run-12a4-kick-normal-collector-recovery-acceptance.mjs'
+      - 'scripts/run-12a4-kick-normal-collector-recovery-run-audit.mjs'
       - 'scripts/verify-12a4-kick-normal-collector-recovery-acceptance-package.mjs'
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: analytics-12a4-kick-normal-collector-recovery-acceptance-${{ github.event.pull_request.number || github.ref }}
@@ -36,6 +38,36 @@ jobs:
 
       - name: Verify read-only acceptance package
         run: node scripts/verify-12a4-kick-normal-collector-recovery-acceptance-package.mjs
+
+  audit-recovery-run:
+    needs: verify-package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      OUTPUT_DIR: artifacts/12a4-kick-normal-collector-recovery-run-audit
+      GITHUB_TOKEN: ${{ github.token }}
+      RECOVERY_WORKFLOW_ID: '313764036'
+      RECOVERY_EXECUTION_SHA: d686008a5e3be177def4f787f89ef966a5a60165
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - id: audit
+        name: Audit the recovery attempt 2 push run
+        run: node scripts/run-12a4-kick-normal-collector-recovery-run-audit.mjs
+
+      - name: Upload sanitized recovery run audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-kick-normal-collector-recovery-run-audit
+          path: artifacts/12a4-kick-normal-collector-recovery-run-audit/run-audit.json
+          if-no-files-found: warn
+          retention-days: 30
 
   read-only-acceptance:
     needs: verify-package
@@ -76,6 +108,7 @@ jobs:
             echo '- Production mutation: no'
             echo '- Cloudflare operations: GET only'
             echo '- D1 operations: SELECT only'
+            echo '- GitHub Actions audit: read only'
             echo '- Category capture: disabled'
             echo '- Twitch change: no'
             echo '- Outcome: `${{ steps.acceptance.outputs.outcome }}`'
