@@ -1,0 +1,146 @@
+{
+  "schemaVersion": "viewloom-12a4-category-capture-enablement-decision-v1",
+  "workstream": "12A-4-7 provider-separated category capture enablement decision",
+  "status": "accepted",
+  "trackingIssue": 519,
+  "acceptedInputs": {
+    "sourceAudit": "docs/audits/12a4-category-source-audit-evidence.json",
+    "storageDesign": "docs/audits/12a4-category-storage-design-contract.json",
+    "storageBudget": "docs/audits/12a4-category-storage-budget-evidence.json",
+    "migrationRuntime": "docs/audits/12a4-category-migration-runtime-contract.json",
+    "schemaAudit": "docs/audits/12a4-category-schema-recovery-audit-evidence.json",
+    "executionCostEvidence": "docs/audits/12a4-category-execution-cost-probe-attempt-3-evidence.json",
+    "executionCostAcceptancePr": 558,
+    "executionPathRetirementPr": 559
+  },
+  "decision": {
+    "providerSeparatedCanaryDesignAuthorized": true,
+    "productionRuntimeCaptureAuthorized": false,
+    "productionFlagChangeAuthorized": false,
+    "combinedProviderRolloutAuthorized": false,
+    "sequencing": ["kick", "twitch"],
+    "reason": "The bounded production probe passed for both providers with low query latency, zero database-size delta, complete cleanup, and zero leakage. Kick has substantial conservative storage headroom. Twitch passed the accepted storage gate but retains only 11.3 MB of conservative 90-day headroom, so rollout must be sequenced and re-gated with current remote size before any Twitch canary."
+  },
+  "providers": {
+    "kick": {
+      "canaryPackageDesignAuthorized": true,
+      "productionCanaryExecutionAuthorizedByThisContract": false,
+      "sequence": 1,
+      "acceptedStorageProjectionMb": 314.57,
+      "acceptedStorageHeadroomMb": 135.43,
+      "boundedProbe": {
+        "categoryGeneratorQueries": 4,
+        "d1Statements": 10,
+        "d1RowsWritten": 10,
+        "d1Changes": 6,
+        "d1SqlDurationMs": 1.417,
+        "workerWallMs": 1760,
+        "collectorLatencyDeltaMs": 9,
+        "databaseSizeDeltaBytes": 0,
+        "cleanupRemainingRows": 0,
+        "providerLeakageRows": 0
+      },
+      "preconditionsBeforeExecution": [
+        "separate disabled-by-default canary package accepted",
+        "exact Kick collector and D1 identity verified",
+        "current remote D1 size captured",
+        "same 90-day storage projection remains at or below 330 MB",
+        "same provider headroom remains at or above 100 MB",
+        "category failure remains non-fatal to collector success",
+        "rollback disables capture without schema rollback"
+      ]
+    },
+    "twitch": {
+      "canaryPackageDesignAuthorized": true,
+      "productionCanaryExecutionAuthorizedByThisContract": false,
+      "sequence": 2,
+      "acceptedStorageProjectionMb": 438.7,
+      "acceptedStorageHeadroomMb": 11.3,
+      "boundedProbe": {
+        "categoryGeneratorQueries": 4,
+        "d1Statements": 10,
+        "d1RowsWritten": 10,
+        "d1Changes": 6,
+        "d1SqlDurationMs": 1.743,
+        "workerWallMs": 2010,
+        "collectorLatencyDeltaMs": 942,
+        "databaseSizeDeltaBytes": 0,
+        "cleanupRemainingRows": 0,
+        "providerLeakageRows": 0
+      },
+      "preconditionsBeforeExecution": [
+        "Kick canary evidence accepted first",
+        "separate disabled-by-default Twitch canary package accepted",
+        "exact Twitch collector and D1 identity verified",
+        "current remote D1 size captured",
+        "90-day projection recalculated from current remote size",
+        "projected Twitch database remains at or below 440 MB",
+        "projected Twitch headroom remains at or above 10 MB",
+        "account-wide projected headroom remains at or above 500 MB",
+        "category failure remains non-fatal to collector success",
+        "rollback disables capture without schema rollback"
+      ]
+    }
+  },
+  "canaryDesignRequirements": {
+    "providerOrder": ["kick", "twitch"],
+    "oneProviderAtATime": true,
+    "minimumObservationHoursPerProvider": 24,
+    "collectorCadenceChange": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "categoryAnalyticsUi": false,
+    "crossProviderCategoryIdentity": false,
+    "combinedProviderCategoryRanking": false,
+    "automaticSecondProviderStart": false,
+    "automaticPermanentEnablement": false,
+    "requiredMeasurements": [
+      "collector success and failure outcomes",
+      "category dictionary statements and changed rows",
+      "rollup generator query count",
+      "D1 rows read and written",
+      "D1 SQL duration",
+      "Worker duration",
+      "collector latency",
+      "remote D1 size before and after",
+      "category observed and missing sample counts",
+      "provider leakage rows",
+      "rollback completion"
+    ],
+    "hardStops": {
+      "categoryGeneratorQueriesMax": 12,
+      "collectorLatencyDeltaMsMax": 2000,
+      "providerLeakageRowsMax": 0,
+      "collectorSuccessReplacedByCategoryFailure": false,
+      "crossProviderRowsAllowed": false,
+      "persistentCaptureAfterFailedCanary": false
+    }
+  },
+  "acceptance": {
+    "pr": 561,
+    "validatedCandidateHeadSha": "0293245b1608768ed75b48c4e7294bfdef376ac3",
+    "workflowRunId": 29360882057,
+    "workflowJobId": 87180338875,
+    "decisionPackagePass": true,
+    "developmentPolicyPass": true,
+    "webBuildPass": true,
+    "webChecksPass": true,
+    "productionRuntimeCaptureAuthorized": false,
+    "productionFlagChangeAuthorized": false
+  },
+  "pullRequestBoundary": {
+    "productionRuntimeCaptureStarted": false,
+    "productionFlagChanged": false,
+    "productionRowsWritten": false,
+    "collectorCodeChanged": false,
+    "wranglerConfigChanged": false,
+    "newCronAdded": false,
+    "backfillPerformed": false,
+    "rawRetentionChanged": false,
+    "categoryAnalyticsUiIncluded": false,
+    "crossProviderCategoryIdentityAllowed": false,
+    "combinedProviderCategoryRankingAllowed": false
+  },
+  "nextGate": "12A-4-8 Kick-first disabled-by-default category capture canary package design; production execution requires a later exact trigger and acceptance package"
+}

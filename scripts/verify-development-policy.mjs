@@ -32,18 +32,17 @@ const requiredFiles = [
   'docs/audits/12a4-disabled-runtime-postmerge-evidence.json',
   'docs/audits/12a4-category-readonly-preflight-evidence.json',
   'docs/audits/12a4-category-schema-recovery-audit-evidence.json',
-  'docs/audits/12a4-category-execution-cost-probe-contract.json',
   'docs/audits/12a4-category-execution-cost-probe-execution-contract.json',
   'docs/audits/12a4-category-execution-cost-probe-trigger.json',
   'docs/audits/12a4-category-execution-cost-probe-attempt-3-evidence.json',
-  'docs/audits/12a4-category-controlled-schema-apply-trigger.json',
-  'docs/audits/12a4-category-schema-recovery-audit-trigger.json',
-  'docs/audits/12a4-kick-category-schema-recovery-trigger.json',
+  'docs/audits/12a4-category-capture-enablement-decision-contract.json',
   'docs/work-in-progress/phase12a4-category-execution-cost-probe.md',
+  'docs/work-in-progress/phase12a4-category-capture-enablement-decision.md',
   '.github/workflows/analytics-12a4-category-controlled-schema-apply-execution.yml',
   '.github/workflows/analytics-12a4-category-schema-recovery-audit.yml',
   '.github/workflows/analytics-12a4-kick-category-schema-recovery.yml',
   '.github/workflows/analytics-12a4-category-execution-cost-probe-execution.yml',
+  '.github/workflows/analytics-12a4-category-capture-enablement-decision.yml',
   'workers/collector-twitch/wrangler.toml',
   'workers/collector-kick/wrangler.toml',
 ]
@@ -57,23 +56,7 @@ for (const file of [
   'docs/product/current-roadmap.md',
   'docs/product/current-schedule.md',
   'docs/product/post-watchlist-program-plan.md',
-]) {
-  check(file, ['category capture'], { caseInsensitive: true })
-}
-
-check('docs/work-in-progress/phase12a4-category-execution-cost-probe.md', [
-  'Status: accepted and retired',
-  'Accepted evidence PR: #558',
-  'Production path retirement PR: #559',
-  'Twitch provider gate passed',
-  'Kick provider gate passed',
-  'reserved probe rows remaining after cleanup: 0',
-  'provider leakage rows: 0',
-  'production push trigger removed',
-  'production execution job removed',
-  'Current gate: provider-separated category capture enablement decision',
-  'CATEGORY_CAPTURE_ENABLED remains absent',
-])
+]) check(file, ['category capture'], { caseInsensitive: true })
 
 check('docs/operations/development-and-deployment-policy.md', [
   '`main` is the production branch',
@@ -85,58 +68,70 @@ check('docs/operations/development-and-deployment-policy.md', [
   'production deployment deliberate and observable',
 ])
 
+check('docs/work-in-progress/phase12a4-category-execution-cost-probe.md', [
+  'Status: accepted and retired',
+  'Accepted evidence PR: #558',
+  'Production path retirement PR: #559',
+  'reserved probe rows remaining after cleanup: 0',
+  'provider leakage rows: 0',
+  'production push trigger removed',
+  'production execution job removed',
+  'CATEGORY_CAPTURE_ENABLED remains absent',
+])
+check('docs/work-in-progress/phase12a4-category-capture-enablement-decision.md', [
+  'Status: accepted;',
+  'Accepted decision PR: #561',
+  'Kick canary design: eligible first',
+  'Twitch canary design: eligible second',
+  'production runtime capture: not authorized',
+  'The current gate is 12A-4-8',
+])
+
 const gate = json('docs/audits/12a2-current-gate-state.json')
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v15')
-assert.equal(gate.status, '12a4_cost_probe_accepted_capture_decision_current')
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v16')
+assert.equal(gate.status, '12a4_capture_decision_accepted_kick_canary_design_current')
 assert.equal(gate.categorySourceAudit.status, 'accepted')
 assert.equal(gate.categoryStorageDesign.status, 'accepted')
-assert.equal(gate.categoryStorageDesign.productionCostProbeRequired, false)
-assert.equal(gate.categoryStorageDesign.productionCostProbeAccepted, true)
 assert.equal(gate.categoryMigrationRuntime.status, 'accepted_and_schema_applied')
-assert.equal(gate.categoryMigrationRuntime.remoteMigrationApplied, true)
 assert.equal(gate.categoryMigrationRuntime.runtimeCaptureStarted, false)
 assert.equal(gate.categoryReadOnlyPreflight.status, 'accepted')
 assert.equal(gate.categorySchemaExecution.status, 'accepted_and_retired')
 assert.equal(gate.categorySchemaExecution.twitchSchemaState, 'complete')
 assert.equal(gate.categorySchemaExecution.kickSchemaState, 'complete')
 assert.equal(gate.categorySchemaExecution.providerLeakageRows, 0)
-assert.equal(gate.categorySchemaExecution.allExecutionTriggersRetired, true)
-assert.equal(gate.categorySchemaExecution.productionWorkflowPushTriggersRetired, true)
 assert.equal(gate.categoryExecutionCostProbe.status, 'accepted_and_retired')
-assert.equal(gate.categoryExecutionCostProbe.executionFixPr, 555)
-assert.equal(gate.categoryExecutionCostProbe.triggerPr, 557)
-assert.equal(gate.categoryExecutionCostProbe.acceptancePr, 558)
-assert.equal(gate.categoryExecutionCostProbe.retirementPr, 559)
-assert.equal(gate.categoryExecutionCostProbe.sourceWorkflowRunId, 29358245194)
 assert.equal(gate.categoryExecutionCostProbe.twitchGatePass, true)
 assert.equal(gate.categoryExecutionCostProbe.kickGatePass, true)
 assert.equal(gate.categoryExecutionCostProbe.cleanupRemainingRows, 0)
 assert.equal(gate.categoryExecutionCostProbe.providerLeakageRows, 0)
-assert.equal(gate.categoryExecutionCostProbe.temporaryWorkersRetained, false)
 assert.equal(gate.categoryExecutionCostProbe.allExecutionTriggersRetired, true)
-assert.equal(gate.categoryExecutionCostProbe.productionWorkflowPushTriggersRetired, true)
-assert.equal(gate.categoryExecutionCostProbe.runtimeCaptureAuthorized, false)
-assert.equal(gate.categoryCapture.productionSchemaPresent, true)
-assert.equal(gate.categoryCapture.productionCostProbeRequired, false)
-assert.equal(gate.categoryCapture.productionCostProbeAccepted, true)
-assert.equal(gate.categoryCapture.productionCostProbeRetired, true)
-assert.equal(gate.categoryCapture.categoryCaptureFlagPresent, false)
-assert.equal(gate.categoryCapture.productionCategoryRowsPresent, false)
+assert.equal(gate.categoryCaptureEnablementDecision.status, 'accepted')
+assert.equal(gate.categoryCaptureEnablementDecision.pr, 561)
+assert.deepEqual(gate.categoryCaptureEnablementDecision.sequence, ['kick', 'twitch'])
+assert.equal(gate.categoryCaptureEnablementDecision.productionRuntimeCaptureAuthorized, false)
+assert.equal(gate.categoryCaptureEnablementDecision.productionFlagChangeAuthorized, false)
+assert.equal(gate.categoryCapture.enablementDecisionAccepted, true)
+assert.equal(gate.categoryCapture.kickFirstCanaryDesignAuthorized, true)
+assert.equal(gate.categoryCapture.twitchSecondCanaryDesignAuthorized, true)
 assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
 assert.equal(gate.categoryCapture.runtimeCaptureStarted, false)
+assert.equal(gate.categoryCapture.categoryCaptureFlagPresent, false)
+assert.equal(gate.categoryCapture.productionCategoryRowsPresent, false)
 assert.equal(gate.categoryCapture.providerSeparated, true)
 assert.equal(gate.categoryCapture.crossProviderIdentityAllowed, false)
 assert.equal(gate.categoryCapture.combinedProviderRankingAllowed, false)
 assert.deepEqual(gate.openBlockers, [
-  'category_capture_enablement_decision_not_accepted',
+  'kick_category_capture_canary_package_not_accepted',
   'runtime_category_capture_not_authorized',
 ])
-assert.equal(gate.currentWorkstream.phase, '12A-4-7')
-assert.equal(gate.currentWorkstream.name, 'provider-separated category capture enablement decision')
+assert.equal(gate.currentWorkstream.phase, '12A-4-8')
+assert.equal(gate.currentWorkstream.name, 'Kick-first disabled-by-default category capture canary package design')
 assert.equal(gate.currentWorkstream.acceptedSchemaEvidence, true)
 assert.equal(gate.currentWorkstream.acceptedCostEvidence, true)
-assert.equal(gate.currentWorkstream.schemaExecutionRetired, true)
-assert.equal(gate.currentWorkstream.costProbeExecutionRetired, true)
+assert.equal(gate.currentWorkstream.acceptedEnablementDecision, true)
+assert.deepEqual(gate.currentWorkstream.providerSequence, ['kick', 'twitch'])
+assert.equal(gate.currentWorkstream.kickPackageDesignCurrent, true)
+assert.equal(gate.currentWorkstream.twitchPackageBlockedUntilKickEvidence, true)
 assert.equal(gate.currentWorkstream.productionExecutionIncluded, false)
 assert.equal(gate.currentWorkstream.runtimeCaptureAuthorized, false)
 assert.equal(gate.currentWorkstream.runtimeCaptureStarted, false)
@@ -152,45 +147,25 @@ const storageEvidence = json('docs/audits/12a4-category-storage-budget-evidence.
 assert.equal(storageContract.status, 'accepted')
 assert.equal(storageContract.selectedDesign.model, 'embedded_hourly')
 assert.equal(storageEvidence.status, 'accepted')
-assert.equal(storageEvidence.gate.categoryStorageDesignPass, true)
+assert.equal(storageEvidence.providers.kick.projectedHeadroomMb, 135.43)
+assert.equal(storageEvidence.providers.twitch.projectedHeadroomMb, 11.3)
 assert.equal(storageEvidence.gate.runtimeCaptureAuthorized, false)
 
 const migration = json('docs/audits/12a4-category-migration-runtime-contract.json')
-assert.equal(migration.status, 'implemented_candidate')
+assert.equal(migration.runtime.flag, 'CATEGORY_CAPTURE_ENABLED')
 assert.equal(migration.runtime.defaultEnabled, false)
+assert.equal(migration.runtime.committedWranglerValue, false)
+assert.equal(migration.runtime.productionCaptureStarted, false)
+assert.equal(migration.runtime.dictionary.failureChangesCollectorSuccess, false)
 assert.equal(migration.rollup.generatorMaximumQueries, 12)
-assert.equal(migration.nextGate.runtimeCaptureEnablementAuthorized, false)
-
-const disabled = json('docs/audits/12a4-disabled-runtime-postmerge-evidence.json')
-assert.equal(disabled.status, 'accepted')
-assert.equal(disabled.gate.disabledRuntimePostMergePass, true)
-assert.equal(disabled.gate.runtimeCaptureEnablementAuthorized, false)
-
-const preflight = json('docs/audits/12a4-category-readonly-preflight-evidence.json')
-assert.equal(preflight.status, 'accepted')
-assert.equal(preflight.gate.readOnlyPreflightPass, true)
-assert.equal(preflight.providers.twitch.providerGatePass, true)
-assert.equal(preflight.providers.kick.providerGatePass, true)
-assert.equal(preflight.gate.runtimeCaptureEnablementAuthorized, false)
 
 const schemaEvidence = json('docs/audits/12a4-category-schema-recovery-audit-evidence.json')
 assert.equal(schemaEvidence.status, 'accepted')
-assert.equal(schemaEvidence.gate.recoveryAuditPass, true)
 assert.equal(schemaEvidence.providers.twitch.schemaState, 'complete')
 assert.equal(schemaEvidence.providers.kick.schemaState, 'complete')
 assert.equal(schemaEvidence.providers.twitch.providerLeakageRows, 0)
 assert.equal(schemaEvidence.providers.kick.providerLeakageRows, 0)
-assert.equal(schemaEvidence.providers.twitch.lifecycle.deleteHttpStatus, 404)
-assert.equal(schemaEvidence.providers.kick.lifecycle.deleteHttpStatus, 404)
 assert.equal(schemaEvidence.gate.categoryRuntimeEnablementAuthorized, false)
-
-const probeDesign = json('docs/audits/12a4-category-execution-cost-probe-contract.json')
-assert.equal(probeDesign.schemaVersion, 'viewloom-12a4-category-execution-cost-probe-contract-v2')
-assert.equal(probeDesign.status, 'production_schema_accepted_bounded_probe_current')
-assert.equal(probeDesign.acceptanceThresholds.categoryGeneratorQueriesMax, 12)
-assert.equal(probeDesign.acceptanceThresholds.probeCleanupRemainingRowsMax, 0)
-assert.equal(probeDesign.acceptanceThresholds.providerLeakageRowsMax, 0)
-assert.equal(probeDesign.currentDesign.runtimeCaptureEnablementIncluded, false)
 
 const execution = json('docs/audits/12a4-category-execution-cost-probe-execution-contract.json')
 assert.equal(execution.status, 'accepted_and_retired')
@@ -199,11 +174,8 @@ assert.equal(execution.acceptedMeasurement.twitchGatePass, true)
 assert.equal(execution.acceptedMeasurement.kickGatePass, true)
 assert.equal(execution.acceptedMeasurement.allReservedRowsRemoved, true)
 assert.equal(execution.acceptedMeasurement.providerLeakageRowsZero, true)
-assert.equal(execution.acceptedMeasurement.temporaryWorkersDeleted, true)
-assert.equal(execution.acceptedMeasurement.runtimeCaptureEnablementAuthorized, false)
 assert.equal(execution.retirement.productionPushTriggerPresent, false)
 assert.equal(execution.retirement.productionJobPresent, false)
-assert.equal(execution.retirement.cloudflareSecretsReferenced, false)
 assert.equal(execution.retirement.rearmAuthorized, false)
 assert.deepEqual(execution.requiredSecrets, [])
 
@@ -216,10 +188,22 @@ assert.equal(costEvidence.providers.twitch.probeCleanupRemainingRows, 0)
 assert.equal(costEvidence.providers.kick.probeCleanupRemainingRows, 0)
 assert.equal(costEvidence.providers.twitch.providerLeakageRows, 0)
 assert.equal(costEvidence.providers.kick.providerLeakageRows, 0)
-assert.equal(costEvidence.providers.twitch.temporaryWorkerFinalHttpStatus, 404)
-assert.equal(costEvidence.providers.kick.temporaryWorkerFinalHttpStatus, 404)
 assert.equal(costEvidence.gates.executionCostProbePass, true)
 assert.equal(costEvidence.gates.runtimeCaptureEnablementAuthorized, false)
+
+const decision = json('docs/audits/12a4-category-capture-enablement-decision-contract.json')
+assert.equal(decision.status, 'accepted')
+assert.equal(decision.acceptance.pr, 561)
+assert.deepEqual(decision.decision.sequencing, ['kick', 'twitch'])
+assert.equal(decision.decision.providerSeparatedCanaryDesignAuthorized, true)
+assert.equal(decision.decision.productionRuntimeCaptureAuthorized, false)
+assert.equal(decision.decision.productionFlagChangeAuthorized, false)
+assert.equal(decision.providers.kick.canaryPackageDesignAuthorized, true)
+assert.equal(decision.providers.twitch.canaryPackageDesignAuthorized, true)
+assert.equal(decision.providers.kick.productionCanaryExecutionAuthorizedByThisContract, false)
+assert.equal(decision.providers.twitch.productionCanaryExecutionAuthorizedByThisContract, false)
+assert.equal(decision.canaryDesignRequirements.minimumObservationHoursPerProvider, 24)
+assert.equal(Object.values(decision.pullRequestBoundary).every((value) => value === false), true)
 
 for (const file of [
   'docs/audits/12a4-category-controlled-schema-apply-trigger.json',
@@ -258,11 +242,7 @@ console.log(JSON.stringify({
   ok: true,
   phase: gate.currentWorkstream.phase,
   currentWorkstream: gate.currentWorkstream.name,
-  providerSchemas: {
-    twitch: schemaEvidence.providers.twitch.schemaState,
-    kick: schemaEvidence.providers.kick.schemaState,
-  },
-  acceptedCostEvidence: gate.currentWorkstream.acceptedCostEvidence,
-  costProbeExecutionRetired: gate.currentWorkstream.costProbeExecutionRetired,
+  providerSequence: gate.currentWorkstream.providerSequence,
+  acceptedEnablementDecision: gate.currentWorkstream.acceptedEnablementDecision,
   runtimeCaptureAuthorized: gate.categoryCapture.runtimeCaptureAuthorized,
 }, null, 2))

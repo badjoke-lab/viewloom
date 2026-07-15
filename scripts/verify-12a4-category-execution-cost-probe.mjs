@@ -25,10 +25,12 @@ assert.equal(packageContract.acceptanceThresholds.probeCleanupRemainingRowsMax, 
 assert.equal(packageContract.acceptanceThresholds.providerLeakageRowsMax, 0)
 assert.equal(Object.values(packageContract.pullRequestBoundary).every((value) => value === false), true)
 
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v15')
-assert.equal(gate.status, '12a4_cost_probe_accepted_capture_decision_current')
-assert.equal(gate.currentWorkstream.phase, '12A-4-7')
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v16')
+assert.equal(gate.status, '12a4_capture_decision_accepted_kick_canary_design_current')
+assert.equal(gate.currentWorkstream.phase, '12A-4-8')
+assert.equal(gate.currentWorkstream.name, 'Kick-first disabled-by-default category capture canary package design')
 assert.equal(gate.currentWorkstream.acceptedCostEvidence, true)
+assert.equal(gate.currentWorkstream.acceptedEnablementDecision, true)
 assert.equal(gate.currentWorkstream.costProbeExecutionRetired, true)
 assert.equal(gate.categoryExecutionCostProbe.status, 'accepted_and_retired')
 assert.equal(gate.categoryExecutionCostProbe.twitchGatePass, true)
@@ -37,6 +39,9 @@ assert.equal(gate.categoryExecutionCostProbe.cleanupRemainingRows, 0)
 assert.equal(gate.categoryExecutionCostProbe.providerLeakageRows, 0)
 assert.equal(gate.categoryExecutionCostProbe.allExecutionTriggersRetired, true)
 assert.equal(gate.categoryExecutionCostProbe.productionWorkflowPushTriggersRetired, true)
+assert.equal(gate.categoryCaptureEnablementDecision.status, 'accepted')
+assert.deepEqual(gate.categoryCaptureEnablementDecision.sequence, ['kick', 'twitch'])
+assert.equal(gate.categoryCaptureEnablementDecision.productionRuntimeCaptureAuthorized, false)
 assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
 assert.equal(gate.categoryCapture.categoryCaptureFlagPresent, false)
 assert.equal(gate.categoryCapture.productionCategoryRowsPresent, false)
@@ -104,6 +109,7 @@ console.log(JSON.stringify({
   phase: gate.currentWorkstream.phase,
   currentWorkstream: gate.currentWorkstream.name,
   acceptedCostEvidence: true,
+  acceptedEnablementDecision: true,
   costProbeExecutionRetired: true,
   runtimeCaptureAuthorized: false,
 }, null, 2))
