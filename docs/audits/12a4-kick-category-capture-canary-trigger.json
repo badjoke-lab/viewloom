@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "viewloom-12a4-kick-category-capture-canary-trigger-v1",
+  "status": "armed",
+  "provider": "kick",
+  "oneTime": true,
+  "confirmation": "RUN_KICK_CATEGORY_CAPTURE_CANARY",
+  "attempt": 1,
+  "packagePr": 562,
+  "packageMergeSha": "8dc53c6041f425f78e82cddb62328cff1128120f",
+  "executionPackagePr": 563,
+  "executionPackageMergeSha": "9391fd1479d3c149303637ae65deae7abf0e9b7d",
+  "startAt": "2026-07-15T13:30:00.000Z",
+  "until": "2026-07-16T13:30:00.000Z"
+}
