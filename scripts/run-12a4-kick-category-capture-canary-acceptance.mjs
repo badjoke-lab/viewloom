@@ -10,7 +10,6 @@ import {
 } from './run-12a4-kick-category-capture-canary-execution.mjs'
 
 const REQUIRED_TABLES = [
-  'collector_status',
   'minute_snapshots',
   'provider_category_dictionary',
   'streamer_intraday_rollups',
@@ -71,8 +70,8 @@ async function execute() {
       categoryPayloadRows: null,
       observedSamples: null,
       missingSamples: null,
-      collector: null,
-      minutesSinceCollectorSuccess: null,
+      latestSnapshot: null,
+      minutesSinceLatestSnapshot: null,
     },
     gates: {
       readOnly: true,
@@ -84,8 +83,8 @@ async function execute() {
       dictionaryPass: false,
       categoryPayloadPass: false,
       providerLeakagePass: false,
-      collectorStatePass: false,
-      collectorFreshnessPass: false,
+      latestSnapshotPresent: false,
+      latestSnapshotFreshnessPass: false,
       twitchStartAuthorized: false,
       productionMutationAuthorized: false,
     },
@@ -114,7 +113,7 @@ async function execute() {
 SELECT name
 FROM sqlite_master
 WHERE type = 'table'
-  AND name IN ('collector_status', 'minute_snapshots', 'provider_category_dictionary', 'streamer_intraday_rollups')
+  AND name IN ('minute_snapshots', 'provider_category_dictionary', 'streamer_intraday_rollups')
 ORDER BY name;
 `.trim())
     evidence.schema.observedTables = tableRows.map((row) => String(row.name ?? '')).filter(Boolean)
@@ -127,7 +126,7 @@ SELECT COUNT(*) AS kick_dictionary_rows FROM provider_category_dictionary WHERE 
 SELECT COUNT(*) AS provider_leakage_rows FROM provider_category_dictionary WHERE provider != 'kick';
 SELECT COUNT(*) AS category_payload_rows FROM minute_snapshots WHERE provider = 'kick' AND json_extract(payload_json, '$.categoryContractVersion') = 'category-source-v1';
 SELECT COALESCE(SUM(category_observed_samples), 0) AS observed_samples, COALESCE(SUM(category_missing_samples), 0) AS missing_samples FROM streamer_intraday_rollups WHERE provider = 'kick';
-SELECT state, last_attempt_at, last_success_at, last_failure_at FROM collector_status WHERE provider = 'kick' LIMIT 1;
+SELECT bucket_minute, collected_at, stream_count, total_viewers, source_mode FROM minute_snapshots WHERE provider = 'kick' ORDER BY bucket_minute DESC LIMIT 1;
 `.trim())
 
       evidence.data.kickDictionaryRows = numberFromRows(rows, 'kick_dictionary_rows')
@@ -135,15 +134,17 @@ SELECT state, last_attempt_at, last_success_at, last_failure_at FROM collector_s
       evidence.data.categoryPayloadRows = numberFromRows(rows, 'category_payload_rows')
       evidence.data.observedSamples = numberFromRows(rows, 'observed_samples')
       evidence.data.missingSamples = numberFromRows(rows, 'missing_samples')
-      evidence.data.collector = rows.find((row) => Object.hasOwn(row, 'state')) ?? null
-      evidence.data.minutesSinceCollectorSuccess = minutesSince(evidence.data.collector?.last_success_at)
+      evidence.data.latestSnapshot = rows.find((row) => Object.hasOwn(row, 'bucket_minute')) ?? null
+      evidence.data.minutesSinceLatestSnapshot = minutesSince(
+        evidence.data.latestSnapshot?.collected_at ?? evidence.data.latestSnapshot?.bucket_minute,
+      )
 
       evidence.gates.dictionaryPass = Number(evidence.data.kickDictionaryRows) > 0
       evidence.gates.categoryPayloadPass = Number(evidence.data.categoryPayloadRows) >= Number(contract.observation.minimumCategoryPayloadRows)
       evidence.gates.providerLeakagePass = Number(evidence.data.providerLeakageRows) <= Number(contract.observation.maximumProviderLeakageRows)
-      evidence.gates.collectorStatePass = contract.observation.collectorStatesAccepted.includes(String(evidence.data.collector?.state ?? ''))
-      evidence.gates.collectorFreshnessPass = Number.isFinite(evidence.data.minutesSinceCollectorSuccess)
-        && evidence.data.minutesSinceCollectorSuccess <= Number(contract.observation.collectorFreshnessMinutesMax)
+      evidence.gates.latestSnapshotPresent = Boolean(evidence.data.latestSnapshot)
+      evidence.gates.latestSnapshotFreshnessPass = Number.isFinite(evidence.data.minutesSinceLatestSnapshot)
+        && evidence.data.minutesSinceLatestSnapshot <= Number(contract.observation.latestSnapshotFreshnessMinutesMax)
     }
 
     const required = [
@@ -155,8 +156,8 @@ SELECT state, last_attempt_at, last_success_at, last_failure_at FROM collector_s
       evidence.gates.dictionaryPass,
       evidence.gates.categoryPayloadPass,
       evidence.gates.providerLeakagePass,
-      evidence.gates.collectorStatePass,
-      evidence.gates.collectorFreshnessPass,
+      evidence.gates.latestSnapshotPresent,
+      evidence.gates.latestSnapshotFreshnessPass,
     ]
     evidence.outcome = required.every(Boolean) ? 'accepted' : 'rejected'
   } catch (error) {
@@ -242,7 +243,7 @@ function flattenRows(value) {
 }
 
 function numberFromRows(rows, key) {
-  const row = rows.find((candidate) => Object.hasOwn(candidate, key))
+  const row = rows.find((candidate) => Object.hasOwn(row, key))
   const value = Number(row?.[key])
   return Number.isFinite(value) ? value : null
 }
@@ -253,7 +254,10 @@ function minutesSince(value) {
 }
 
 function safeText(value) {
-  return String(value ?? '').slice(0, 240)
+  return String(value ?? '')
+    .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, 'Bearer [redacted]')
+    .replace(/[0-9a-f]{32,}/gi, '[redacted-id]')
+    .slice(0, 240)
 }
 
 function safeError(error) {
