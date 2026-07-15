@@ -8,6 +8,12 @@ const failures = []
 const check = (name, condition, actual = undefined) => {
   if (!condition) failures.push({ name, actual })
 }
+const activeTomlValue = (source, key) => source
+  .split(/\r?\n/)
+  .map((line) => line.trim())
+  .filter((line) => line && !line.startsWith('#'))
+  .map((line) => line.match(new RegExp(`^${key}\\s*=\\s*"([^"]+)"$`)))
+  .find(Boolean)?.[1]
 
 const contract = json('docs/audits/12a4-kick-category-capture-canary-package-contract.json')
 const decision = json('docs/audits/12a4-category-capture-enablement-decision-contract.json')
@@ -63,7 +69,9 @@ check('committed window empty', canaryConfig.includes('CATEGORY_CAPTURE_CANARY_S
 check('committed attempt invalid', canaryConfig.includes('CATEGORY_CAPTURE_CANARY_ATTEMPT = "0"'))
 check('no direct category flag in either config', !canaryConfig.includes('\nCATEGORY_CAPTURE_ENABLED =') && !normalConfig.includes('\nCATEGORY_CAPTURE_ENABLED ='))
 check('normal config has no canary controls', !normalConfig.includes('CATEGORY_CAPTURE_CANARY_ENABLED'))
-check('same Kick D1 identity', canaryConfig.match(/database_id = "([^"]+)"/)?.[1] === normalConfig.match(/database_id = "([^"]+)"/)?.[1], { canary: canaryConfig.match(/database_id = "([^"]+)"/)?.[1], normal: normalConfig.match(/database_id = "([^"]+)"/)?.[1] })
+const canaryDatabaseId = activeTomlValue(canaryConfig, 'database_id')
+const normalDatabaseId = activeTomlValue(normalConfig, 'database_id')
+check('same Kick D1 identity', Boolean(canaryDatabaseId) && canaryDatabaseId === normalDatabaseId, { canary: canaryDatabaseId, normal: normalDatabaseId })
 
 check('legacy dictionary CTE removed', !categoryCapture.includes('WITH incoming AS'))
 check('direct json_each insert present', categoryCapture.includes('FROM json_each(?) AS j'))
@@ -97,6 +105,7 @@ console.log(JSON.stringify({
   provider: contract.provider,
   observationHours: contract.package.minimumObservationHours,
   committedDisabled: contract.package.committedDisabled,
+  kickDatabaseId: canaryDatabaseId,
   productionRuntimeCaptureAuthorized: false,
   twitchBlockedUntilKickEvidence: true,
 }, null, 2))
