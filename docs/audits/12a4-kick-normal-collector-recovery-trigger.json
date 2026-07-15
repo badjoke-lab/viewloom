@@ -4,8 +4,8 @@
   "provider": "kick",
   "oneTime": true,
   "confirmation": "RECOVER_KICK_NORMAL_COLLECTOR",
-  "attempt": 1,
-  "createdAt": "2026-07-15T14:15:00.000Z",
-  "expiresAt": "2026-07-15T16:00:00.000Z",
-  "reason": "normal Kick minute snapshots stale before category canary attempt 1"
+  "attempt": 2,
+  "createdAt": "2026-07-15T14:28:00.000Z",
+  "expiresAt": "2026-07-15T15:30:00.000Z",
+  "reason": "execute the installed normal Kick collector recovery workflow after attempt 1 package merge did not produce a new snapshot"
 }
