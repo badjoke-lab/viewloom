@@ -4,14 +4,19 @@
   "status": "candidate",
   "trackingIssue": 519,
   "provider": "kick",
-  "recoveryPr": 573,
-  "recoveryMergeSha": "9323606d337f1930ce65a96465c104848b61c925",
+  "recoveryPackagePr": 573,
+  "recoveryPackageMergeSha": "9323606d337f1930ce65a96465c104848b61c925",
+  "recoveryExecutionPr": 575,
+  "recoveryExecutionMergeSha": "d686008a5e3be177def4f787f89ef966a5a60165",
+  "recoveryAttempt": 2,
   "incidentSnapshot": {
     "bucketMinute": "2026-07-15T11:50:00.000Z",
     "collectedAt": "2026-07-15T11:50:40.703Z"
   },
   "acceptance": {
     "freshnessMinutesMax": 10,
+    "pollIntervalSeconds": 30,
+    "pollAttempts": 20,
     "requireSnapshotNewerThanIncident": true,
     "requireCanaryBindingsAbsent": true,
     "requirePermanentCategoryFlagAbsent": true,
