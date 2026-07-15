@@ -41,7 +41,18 @@ jobs:
       - name: Verify package scope
         run: node scripts/check-12a4-kick-category-capture-canary-package-scope.mjs
       - name: Verify Kick category canary package
-        run: node scripts/verify-12a4-kick-category-capture-canary-package.mjs
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-12a4-kick-category-capture-canary-package.mjs 2>&1 | tee kick-canary-package-verification.log
+      - name: Publish verifier diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-kick-category-canary-package-diagnostics
+          path: kick-canary-package-verification.log
+          if-no-files-found: error
+          retention-days: 7
       - name: Verify canary and dictionary fixtures
         run: python3 scripts/test-12a4-kick-category-capture-canary.py
       - name: Verify collector typecheck
