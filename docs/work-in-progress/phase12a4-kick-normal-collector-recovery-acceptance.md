@@ -2,13 +2,15 @@
 
 ## Purpose
 
-Confirm that recovery PR #573 restored the canonical normal Kick collector before any new category canary attempt is considered.
+Confirm that recovery package PR #573 and the separate execution trigger PR #575 restored the canonical normal Kick collector before any new category canary attempt is considered.
+
+Attempt 2 is pinned to merge SHA `d686008a5e3be177def4f787f89ef966a5a60165`.
 
 The incident baseline is fixed at:
 
 - latest bucket: `2026-07-15T11:50:00.000Z`;
 - latest collection: `2026-07-15T11:50:40.703Z`;
-- normal collection was 137.17 minutes stale at the failed attempt 1 acceptance read.
+- normal collection was 137.17 minutes stale at the failed category canary attempt 1 acceptance read.
 
 ## Read-only checks
 
@@ -17,6 +19,8 @@ This pull request reads only:
 - production Kick Worker settings through Cloudflare `GET`;
 - the latest normal Kick snapshot through D1 `SELECT`;
 - provider leakage count through D1 `SELECT`.
+
+The acceptance probe polls only these read-only sources every 30 seconds for at most 20 attempts so that it can safely overlap the bounded recovery workflow.
 
 Acceptance requires:
 
@@ -36,4 +40,4 @@ Twitch remains unchanged and blocked from category canary work.
 
 ## Next gate
 
-One accepted fresh snapshot proves the recovery action worked. At least one additional normal five-minute snapshot must then be confirmed before a new category canary trigger is issued.
+One accepted fresh snapshot proves Attempt 2 restored normal collection. At least one additional normal five-minute snapshot must then be confirmed before a new category canary trigger is issued.
