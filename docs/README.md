@@ -18,7 +18,8 @@ Phase 12A Analytics Capture Foundation active
 Kick dormant canary package accepted PR #562
 Kick dormant execution package accepted PR #563
 Kick execution merge identity recorded PR #564
-canonical gate advancement pending as a separate reviewed change
+canonical gate 12A-4-10 exact one-file Kick trigger
+exact trigger present no
 category capture started no
 ```
 
@@ -54,7 +55,7 @@ category capture started no
 
 ## Current gate
 
-The repository has accepted the disabled Kick canary package and its dormant execution package. PR #564 recorded the actual PR #563 merge identity only. The canonical gate file remains unchanged until a separate gate-advancement change passes. No exact trigger exists, production runtime category capture is unauthorized, and Twitch remains blocked until accepted Kick canary evidence exists.
+The canonical gate is 12A-4-10: the exact one-file Kick category capture canary trigger. The disabled Kick package and dormant execution package are accepted, and PR #564 recorded the exact PR #563 merge identity. This gate-advancement change contains no trigger. Production runtime category capture remains unauthorized, the normal Kick collector remains unchanged, and Twitch remains blocked until accepted Kick canary evidence exists.
 
 ## Invariants
 
