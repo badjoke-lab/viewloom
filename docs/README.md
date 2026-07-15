@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Last updated: 2026-07-14
+Last updated: 2026-07-15
 
 ## Current execution state
 
@@ -13,8 +13,12 @@ Phase 12A Analytics Capture Foundation active
 12A-4 migration and disabled runtime accepted through PR #518
 12A-4 read-only production preflight accepted PR #523
 12A-4 Twitch and Kick category schemas complete and audited PR #545
-Schema execution and recovery triggers retired
-Current workstream 12A-4-5 bounded provider-separated category execution-cost probe design
+12A-4 bounded execution-cost probe accepted and retired through PR #559
+12A-4 provider-separated canary sequencing accepted PR #561
+Kick dormant canary package accepted PR #562
+Kick dormant execution package accepted PR #563
+Kick execution merge identity recorded PR #564
+canonical gate advancement pending as a separate reviewed change
 category capture started no
 ```
 
@@ -24,9 +28,11 @@ category capture started no
 2. `docs/product/current-roadmap.md`
 3. `docs/product/current-schedule.md`
 4. `docs/audits/12a2-current-gate-state.json`
-5. `docs/audits/12a4-category-schema-recovery-audit-evidence.json`
-6. `docs/audits/12a4-category-execution-cost-probe-contract.json`
-7. `docs/work-in-progress/phase12a4-category-execution-cost-probe.md`
+5. `docs/audits/12a4-category-capture-enablement-decision-contract.json`
+6. `docs/audits/12a4-kick-category-capture-canary-package-contract.json`
+7. `docs/audits/12a4-kick-category-capture-canary-execution-contract.json`
+8. `docs/work-in-progress/phase12a4-kick-category-capture-canary.md`
+9. `docs/work-in-progress/phase12a4-kick-category-capture-canary-execution.md`
 
 ## Current category evidence chain
 
@@ -35,19 +41,29 @@ category capture started no
 - Disabled runtime production evidence: `docs/audits/12a4-disabled-runtime-postmerge-evidence.json`
 - Read-only production preflight: `docs/audits/12a4-category-readonly-preflight-evidence.json`
 - Final provider schema state: `docs/audits/12a4-category-schema-recovery-audit-evidence.json`
-- Current cost-probe contract: `docs/audits/12a4-category-execution-cost-probe-contract.json`
+- Accepted execution-cost evidence: `docs/audits/12a4-category-execution-cost-probe-attempt-3-evidence.json`
+- Accepted provider sequence: `docs/audits/12a4-category-capture-enablement-decision-contract.json`
+- Accepted dormant Kick package: `docs/audits/12a4-kick-category-capture-canary-package-contract.json`
+- Accepted dormant Kick execution package: `docs/audits/12a4-kick-category-capture-canary-execution-contract.json`
+
+## Permanent product and operations records
+
+- Local Watchlist specification: `product/local-watchlist-spec.md`
+- Local Watchlist implementation record: `product/watchlist-v1-implementation-plan.md`
+- Local Watchlist production acceptance: `operations/watchlist-production-acceptance-2026-06-25.md`
 
 ## Current gate
 
-12A-4-5 is a design/package gate. It must not execute production work. The package must define a bounded reserved probe, provider order, query and latency measurements, complete cleanup, evidence normalization, and stop conditions. Production execution requires a later one-file trigger PR.
+The repository has accepted the disabled Kick canary package and its dormant execution package. PR #564 recorded the actual PR #563 merge identity only. The canonical gate file remains unchanged until a separate gate-advancement change passes. No exact trigger exists, production runtime category capture is unauthorized, and Twitch remains blocked until accepted Kick canary evidence exists.
 
 ## Invariants
 
 - Twitch and Kick remain separate.
 - Both production category schemas are complete.
-- `CATEGORY_CAPTURE_ENABLED` remains absent.
-- Production category rows remain absent.
-- Schema execution and recovery workflows are validation-only archives.
+- Normal collector configuration does not contain `CATEGORY_CAPTURE_ENABLED`.
+- Production runtime category capture has not started.
+- No exact Kick canary trigger exists.
+- Schema and execution-cost production triggers are retired.
 - No new cron, backfill, retention expansion, category UI, cross-provider category identity, or combined category rankings are authorized.
 - Missing, partial, stale, empty, error, and demo states remain distinct.
 
