@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "viewloom-12a4-kick-normal-collector-recovery-v1",
+  "workstream": "12A-4 Kick normal collector operational recovery",
+  "status": "candidate",
+  "trackingIssue": 519,
+  "provider": "kick",
+  "reason": "attempt_1_preflight_found_normal_collection_stale_and_canary_not_started",
+  "observedFailure": {
+    "latestBucketMinute": "2026-07-15T11:50:00.000Z",
+    "latestCollectedAt": "2026-07-15T11:50:40.703Z",
+    "observedAt": "2026-07-15T14:07:50.870Z",
+    "minutesStale": 137.17,
+    "canaryBindingsPresent": false,
+    "categoryDictionaryRows": 0,
+    "categoryPayloadRows": 0,
+    "providerLeakageRows": 0
+  },
+  "recovery": {
+    "config": "workers/collector-kick/wrangler.toml",
+    "service": "viewloom-collector-kick",
+    "database": "vl_kick_hot",
+    "expectedCron": "*/5 * * * *",
+    "deployNormalConfigOnly": true,
+    "manualCollect": false,
+    "pollIntervalSeconds": 30,
+    "pollAttempts": 20,
+    "freshnessMinutesMax": 10,
+    "requireSnapshotNewerThanPreDeploy": true,
+    "requireCanaryBindingsAbsentAfterDeploy": true,
+    "requirePermanentCategoryFlagAbsent": true,
+    "maximumProviderLeakageRows": 0
+  },
+  "hardBoundary": {
+    "twitchChanged": false,
+    "categoryCanaryStarted": false,
+    "permanentCategoryCaptureEnabled": false,
+    "remoteMigration": false,
+    "manualCollect": false,
+    "backfill": false,
+    "retentionChanged": false,
+    "categoryUiChanged": false,
+    "crossProviderIdentityAllowed": false,
+    "combinedProviderRankingAllowed": false
+  },
+  "evidence": {
+    "artifactName": "analytics-12a4-kick-normal-collector-recovery",
+    "artifactPath": "artifacts/12a4-kick-normal-collector-recovery/evidence.json",
+    "sanitizedJsonOnly": true,
+    "rawPayloadIncluded": false,
+    "channelIdentitiesIncluded": false,
+    "secretsIncluded": false
+  },
+  "nextGateOnSuccess": "confirm multiple fresh normal Kick snapshots before issuing a new category canary attempt"
+}
