@@ -26,7 +26,7 @@ const workflow = read('.github/workflows/analytics-12a4-kick-category-capture-ca
 const wip = read('docs/work-in-progress/phase12a4-kick-category-capture-canary.md')
 
 check('contract schema', contract.schemaVersion === 'viewloom-12a4-kick-category-capture-canary-package-v1', contract.schemaVersion)
-check('contract status', ['candidate', 'accepted'].includes(contract.status), contract.status)
+check('contract accepted', contract.status === 'accepted', contract.status)
 check('tracking issue', contract.trackingIssue === 519, contract.trackingIssue)
 check('accepted decision identity', contract.acceptedInputs.enablementDecisionPr === 561 && contract.acceptedInputs.enablementDecisionMergeSha === '02561cfbfd65d8de39eaff3256090915f96f65e3', contract.acceptedInputs)
 check('Kick-only provider order', contract.provider === 'kick' && JSON.stringify(contract.providerOrder) === JSON.stringify(['kick', 'twitch']), { provider: contract.provider, order: contract.providerOrder })
@@ -37,6 +37,11 @@ check('automatic expiry without permanent enablement', contract.package.automati
 check('Kick storage preflight thresholds', contract.preflight.projectedNinetyDaySizeMbMax === 330 && contract.preflight.projectedProviderHeadroomMbMin === 100, contract.preflight)
 check('hard stops', contract.hardStops.categoryGeneratorQueriesMax === 12 && contract.hardStops.collectorLatencyDeltaMsMax === 2000 && contract.hardStops.providerLeakageRowsMax === 0 && contract.hardStops.captureAfterExpiryAllowed === false && contract.hardStops.persistentCaptureAfterRollbackAllowed === false, contract.hardStops)
 check('rollback disables without schema rollback', contract.rollback.schemaRollbackRequired === false && contract.rollback.captureDisabledAfterRollbackRequired === true && contract.rollback.normalCollectionContinues === true, contract.rollback)
+check('accepted candidate identity', contract.acceptance?.pr === 562 && contract.acceptance?.validatedCandidateHeadSha === 'a8255c5aadf3d46156503fc5668e18305f6ad7bf', contract.acceptance)
+check('accepted package CI', contract.acceptance?.packageWorkflowRunId === 29386501622 && contract.acceptance?.packageWorkflowJobId === 87260809438 && contract.acceptance?.packageScopePass === true && contract.acceptance?.canaryFixturePass === true && contract.acceptance?.dictionaryFixturePass === true, contract.acceptance)
+check('accepted compatibility CI', contract.acceptance?.migrationCompatibilityRunId === 29386501577 && contract.acceptance?.collectorChecksRunId === 29386501628 && contract.acceptance?.developmentPolicyRunId === 29386501646, contract.acceptance)
+check('accepted bundles and deployment skip', contract.acceptance?.normalKickBundlePass === true && contract.acceptance?.disabledCanaryBundlePass === true && contract.acceptance?.deployTwitchSkipped === true && contract.acceptance?.deployKickSkipped === true && contract.acceptance?.remoteSchemaVerificationSkipped === true, contract.acceptance)
+check('acceptance performed no production work', contract.acceptance?.productionRuntimeCaptureStarted === false && contract.acceptance?.productionWorkerDeployed === false && contract.acceptance?.remoteD1OperationPerformed === false && contract.acceptance?.twitchChanged === false, contract.acceptance)
 check('PR boundary all false', Object.values(contract.pullRequestBoundary).every((value) => value === false), contract.pullRequestBoundary)
 
 check('accepted decision', decision.status === 'accepted' && JSON.stringify(decision.decision.sequencing) === JSON.stringify(['kick', 'twitch']), { status: decision.status, sequence: decision.decision.sequencing })
@@ -84,13 +89,15 @@ check('workflow dry-runs both Kick configs', workflow.includes('wrangler@4 deplo
 check('workflow includes policy gate', workflow.includes('verify-development-policy.mjs'))
 
 for (const fragment of [
-  'candidate dormant package',
+  'accepted dormant package',
+  'Accepted package PR: #562',
   'Kick first',
   'accepted Kick canary evidence',
   'production category capture from this PR: forbidden',
   'between 23 and 25 hours',
   'minimum duration: 24 hours',
   'Twitch category capture begins',
+  'current gate is 12A-4-9',
   'cannot start the canary',
 ]) check(`WIP contains ${fragment}`, wip.includes(fragment))
 
@@ -106,6 +113,7 @@ console.log(JSON.stringify({
   observationHours: contract.package.minimumObservationHours,
   committedDisabled: contract.package.committedDisabled,
   kickDatabaseId: canaryDatabaseId,
+  acceptedCandidateHeadSha: contract.acceptance.validatedCandidateHeadSha,
   productionRuntimeCaptureAuthorized: false,
   twitchBlockedUntilKickEvidence: true,
 }, null, 2))
