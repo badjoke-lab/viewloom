@@ -79,6 +79,15 @@ export function bindingsMatchTrigger(bindings, trigger) {
     && bindings.categoryCaptureDirectFlagPresent === false
 }
 
+export function canaryBindingsAbsent(bindings) {
+  return bindings.enabled === null
+    && bindings.provider === null
+    && bindings.startedAt === null
+    && bindings.until === null
+    && bindings.attempt === null
+    && bindings.categoryCaptureDirectFlagPresent === false
+}
+
 async function execute() {
   const action = String(process.env.ACTION ?? '').trim().toLowerCase()
   const triggerPath = process.env.TRIGGER_PATH ?? 'docs/audits/12a4-kick-category-capture-canary-trigger.json'
@@ -138,6 +147,7 @@ async function execute() {
   }
 
   let shouldRollback = action === 'finalize'
+  let canaryDeploySucceeded = false
   try {
     const dbInfo = await fetchD1Info(accountId, apiToken, normalDatabaseId)
     evidence.storage = projectKickStorage(dbInfo.fileSize)
@@ -152,28 +162,44 @@ async function execute() {
     evidence.serviceBindingsBefore = canaryBindingsFromSettings(settingsBefore)
 
     if (action === 'start') {
+      if (!canaryBindingsAbsent(evidence.serviceBindingsBefore)) {
+        shouldRollback = true
+        throw new Error(`preexisting_canary_bindings:${JSON.stringify(evidence.serviceBindingsBefore)}`)
+      }
       await waitUntil(new Date(trigger.startAt), 3 * 60 * 60 * 1000)
       const activeConfigPath = path.join(outputDir, `wrangler.kick-category-canary-attempt-${trigger.attempt}.toml`)
       fs.writeFileSync(activeConfigPath, renderActiveCanaryConfig(canaryTemplate, trigger))
       const deployed = runCommand('pnpm', ['dlx', 'wrangler@4', 'deploy', '--config', activeConfigPath])
       evidence.deployment.canaryExitCode = deployed.code
       if (deployed.code !== 0) throw new Error(`canary_deploy_failed:${sanitize(deployed.output)}`)
+      canaryDeploySucceeded = true
       const activeSettings = await waitForCanaryBindings(accountId, apiToken, serviceName, trigger)
       evidence.serviceBindingsAfter = canaryBindingsFromSettings(activeSettings)
       evidence.outcome = 'started'
     } else {
-      evidence.queryEvidence = runKickEvidenceQueries(normalConfigPath)
-      const leakage = Number(evidence.queryEvidence?.providerLeakageRows ?? Number.NaN)
-      evidence.gates.providerLeakageRows = Number.isFinite(leakage) ? leakage : null
-      if (!Number.isFinite(leakage) || leakage > 0) {
+      if (canaryBindingsAbsent(evidence.serviceBindingsBefore)) {
+        shouldRollback = false
+        evidence.gates.rollbackPass = true
+        evidence.serviceBindingsAfter = evidence.serviceBindingsBefore
+        evidence.outcome = 'already_rolled_back_noop'
+      } else if (!bindingsMatchTrigger(evidence.serviceBindingsBefore, trigger)) {
         evidence.gates.hardStop = true
         shouldRollback = true
+        throw new Error(`canary_bindings_mismatch:${JSON.stringify(evidence.serviceBindingsBefore)}`)
+      } else {
+        evidence.queryEvidence = runKickEvidenceQueries(normalConfigPath)
+        const leakage = Number(evidence.queryEvidence?.providerLeakageRows ?? Number.NaN)
+        evidence.gates.providerLeakageRows = Number.isFinite(leakage) ? leakage : null
+        if (!Number.isFinite(leakage) || leakage > 0) {
+          evidence.gates.hardStop = true
+          shouldRollback = true
+        }
+        if (action === 'monitor' && !shouldRollback) evidence.outcome = 'checkpoint_pass'
       }
-      if (action === 'monitor' && !shouldRollback) evidence.outcome = 'checkpoint_pass'
     }
   } catch (error) {
     evidence.error = sanitize(error instanceof Error ? error.message : error)
-    if (action !== 'start') shouldRollback = true
+    if (action !== 'start' || canaryDeploySucceeded) shouldRollback = true
     evidence.outcome = evidence.gates.hardStop ? 'hard_stop' : 'failed'
   } finally {
     if (shouldRollback) {
@@ -200,8 +226,11 @@ async function execute() {
   const accepted = action === 'start'
     ? evidence.outcome === 'started'
     : action === 'monitor'
-      ? evidence.outcome === 'checkpoint_pass' || (evidence.gates.hardStop && evidence.gates.rollbackPass)
-      : evidence.outcome === 'finalized' && evidence.gates.rollbackPass
+      ? evidence.outcome === 'checkpoint_pass'
+        || evidence.outcome === 'already_rolled_back_noop'
+        || (evidence.gates.hardStop && evidence.gates.rollbackPass)
+      : (evidence.outcome === 'finalized' && evidence.gates.rollbackPass)
+        || evidence.outcome === 'already_rolled_back_noop'
   if (!accepted) process.exit(1)
 }
 
@@ -249,7 +278,7 @@ async function fetchWorkerSettings(accountId, apiToken, serviceName) {
 async function serviceHasCanary(accountId, apiToken, serviceName) {
   try {
     const settings = await fetchWorkerSettings(accountId, apiToken, serviceName)
-    return canaryBindingsFromSettings(settings).enabled === 'true'
+    return !canaryBindingsAbsent(canaryBindingsFromSettings(settings))
   } catch {
     return false
   }
@@ -270,7 +299,7 @@ async function waitForNormalBindings(accountId, apiToken, serviceName) {
   for (let attempt = 1; attempt <= SERVICE_SETTINGS_RETRY_ATTEMPTS; attempt += 1) {
     last = await fetchWorkerSettings(accountId, apiToken, serviceName)
     const bindings = canaryBindingsFromSettings(last)
-    if (bindings.enabled === null && bindings.provider === null && bindings.startedAt === null && bindings.until === null && bindings.attempt === null && bindings.categoryCaptureDirectFlagPresent === false) return last
+    if (canaryBindingsAbsent(bindings)) return last
     if (attempt < SERVICE_SETTINGS_RETRY_ATTEMPTS) await sleep(SERVICE_SETTINGS_RETRY_MS)
   }
   throw new Error(`normal_bindings_not_observed:${JSON.stringify(canaryBindingsFromSettings(last))}`)
