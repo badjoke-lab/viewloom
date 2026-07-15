@@ -243,7 +243,7 @@ function flattenRows(value) {
 }
 
 function numberFromRows(rows, key) {
-  const row = rows.find((candidate) => Object.hasOwn(row, key))
+  const row = rows.find((candidate) => Object.hasOwn(candidate, key))
   const value = Number(row?.[key])
   return Number.isFinite(value) ? value : null
 }
