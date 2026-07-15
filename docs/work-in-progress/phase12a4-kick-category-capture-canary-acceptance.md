@@ -10,7 +10,8 @@ This gate follows:
 - accepted dormant execution package PR #563;
 - recorded execution merge identity PR #564;
 - canonical gate advancement PR #566;
-- exact one-file trigger PR #568, merged as `1b6d5750a04b6f70bad7e00f31843898573d006a`.
+- exact one-file trigger PR #568, merged as `1b6d5750a04b6f70bad7e00f31843898573d006a`;
+- armed-trigger lifecycle policy fix PR #571, which preserves the exact trigger boundary while allowing downstream acceptance evidence.
 
 ## Read-only checks
 
