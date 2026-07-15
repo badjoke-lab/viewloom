@@ -1,0 +1,23 @@
+name = "viewloom-collector-kick"
+main = "src/entry-category-canary.ts"
+compatibility_date = "2026-05-18"
+
+# This file is a dormant canary package template.
+# Production execution requires a later exact trigger and a generated temporary
+# config with a bounded start/end window. The committed values below cannot
+# activate category capture.
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+INTRADAY_GENERATION_ENABLED = "true"
+CATEGORY_CAPTURE_CANARY_ENABLED = "false"
+CATEGORY_CAPTURE_CANARY_PROVIDER = "kick"
+CATEGORY_CAPTURE_CANARY_STARTED_AT = ""
+CATEGORY_CAPTURE_CANARY_UNTIL = ""
+CATEGORY_CAPTURE_CANARY_ATTEMPT = "0"
+
+[[d1_databases]]
+binding = "DB_KICK_HOT"
+database_name = "vl_kick_hot"
+database_id = "ed1e082f-85ac-4dd0-a44e-5d3e200667d5"
