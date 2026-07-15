@@ -30,7 +30,8 @@ assert.equal(contract.acceptedInputs.triggerMergeSha, '1b6d5750a04b6f70bad7e00f3
 assert.equal(contract.observation.mode, 'read_only_pull_request_probe')
 assert.equal(contract.observation.minimumCategoryPayloadRows, 1)
 assert.equal(contract.observation.maximumProviderLeakageRows, 0)
-assert.equal(contract.observation.collectorFreshnessMinutesMax, 20)
+assert.equal(contract.observation.healthSource, 'latest_kick_minute_snapshot')
+assert.equal(contract.observation.latestSnapshotFreshnessMinutesMax, 20)
 assert.equal(contract.observation.requireActiveTriggerWindow, true)
 assert.equal(contract.observation.requireExactCanaryBindings, true)
 assert.equal(contract.readOnlyBoundary.cloudflareApiMethods.length, 1)
@@ -102,11 +103,14 @@ assert.ok(runner.includes("'--remote'"))
 assert.ok(runner.includes('SELECT COUNT(*) AS kick_dictionary_rows'))
 assert.ok(runner.includes('SELECT COUNT(*) AS provider_leakage_rows'))
 assert.ok(runner.includes('SELECT COUNT(*) AS category_payload_rows'))
+assert.ok(runner.includes('SELECT bucket_minute, collected_at, stream_count, total_viewers, source_mode FROM minute_snapshots'))
+assert.equal(runner.includes('FROM collector_status'), false)
 assert.ok(scope.includes("'apps/'"))
 assert.ok(scope.includes("'workers/'"))
 assert.ok(scope.includes('12a4-kick-category-capture-canary-trigger.json'))
 assert.ok(doc.includes('does not:'))
 assert.ok(doc.includes('write D1 rows'))
+assert.ok(doc.includes('latest Kick minute snapshot'))
 assert.ok(doc.includes('Twitch has not been authorized or started'))
 
 console.log(JSON.stringify({
@@ -116,6 +120,7 @@ console.log(JSON.stringify({
   triggerAttempt: trigger.attempt,
   triggerStartAt: trigger.startAt,
   triggerUntil: trigger.until,
+  healthSource: contract.observation.healthSource,
   readOnly: true,
   productionMutationAuthorized: false,
   TwitchStartAuthorized: false,
