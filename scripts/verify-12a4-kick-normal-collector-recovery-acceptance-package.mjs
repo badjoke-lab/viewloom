@@ -97,7 +97,8 @@ assert.ok(cloudflareAudit.includes('/deployments'))
 assert.ok(cloudflareAudit.includes('/workers/subdomain'))
 assert.ok(cloudflareAudit.includes('secret_text'))
 assert.equal(/method\s*:\s*['"](?:POST|PUT|PATCH|DELETE)['"]/i.test(cloudflareAudit), false)
-assert.equal(cloudflareAudit.includes('wrangler'), false)
+assert.equal(cloudflareAudit.includes('wrangler@'), false)
+assert.equal(cloudflareAudit.includes('spawnSync'), false)
 assert.equal(cloudflareAudit.includes('collector-twitch'), false)
 
 for (const source of [runner, runAudit, cloudflareAudit]) {
