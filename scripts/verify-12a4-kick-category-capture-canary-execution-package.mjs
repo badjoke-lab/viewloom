@@ -81,8 +81,8 @@ assert.equal(contract.acceptance.triggerPresent, false)
 assert.equal(contract.acceptance.productionRuntimeCaptureStarted, false)
 assert.equal(contract.acceptance.productionWorkerDeployed, false)
 assert.equal(contract.acceptance.remoteD1OperationPerformed, false)
-assert.equal(contract.acceptance.mergeSha, null)
-assert.equal(contract.acceptance.mergeShaRecorded, false)
+assert.equal(contract.acceptance.mergeSha, '9391fd1479d3c149303637ae65deae7abf0e9b7d')
+assert.equal(contract.acceptance.mergeShaRecorded, true)
 assert.equal(Object.values(contract.pullRequestBoundary).every((value) => value === false), true)
 
 assert.equal(packageContract.status, 'accepted')
@@ -100,7 +100,7 @@ assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
 assert.equal(gate.categoryCapture.categoryCaptureFlagPresent, false)
 assert.equal(gate.categoryCapture.productionCategoryRowsPresent, false)
 
-assert.equal(exists(triggerPath), false, 'package PR must not contain the exact production trigger')
+assert.equal(exists(triggerPath), false, 'merge identity sync must not contain the exact production trigger')
 
 for (const fragment of [
   "const CONFIRMATION = 'RUN_KICK_CATEGORY_CAPTURE_CANARY'",
@@ -168,30 +168,33 @@ assert.ok(workflow.includes('wrangler@4 deploy --dry-run --config workers/collec
 assert.equal(workflow.includes('CATEGORY_CAPTURE_ENABLED='), false)
 
 for (const fragment of [
-  'accepted dormant execution package',
+  'Status: accepted and merge identity recorded',
   'Accepted execution package PR: #563',
+  'execution package merge SHA: `9391fd1479d3c149303637ae65deae7abf0e9b7d`',
   'validated candidate head: e6b2e05811dfc70b262239603407254cc8d94246',
   'execution package workflow: 29387873802',
   'post-deploy verification failure rollback: verified',
   'already-rolled-back hourly no-op: verified',
   'exact trigger file: absent',
-  'execution merge SHA in contract: pending',
+  'execution merge SHA in contract: recorded',
+  'canonical gate advancement: separate change',
   'hourly monitor without trigger: no-op',
   'No GitHub job sleeps for 24 hours',
   'projected 90-day Kick size <= 330 MB',
   'provider leakage rows > 0',
   'no production deploy',
-  'Record the actual PR #563 squash merge SHA',
+  'Advancing the canonical gate',
 ]) assert.ok(wip.includes(fragment), `execution WIP missing ${fragment}`)
 
 console.log(JSON.stringify({
   ok: true,
   status: contract.status,
   acceptedCandidateHeadSha: contract.acceptance.validatedCandidateHeadSha,
+  executionMergeSha: contract.acceptance.mergeSha,
   triggerPresent: false,
   packagePr: contract.acceptedPackage.pr,
   packageMergeSha: contract.acceptedPackage.mergeSha,
-  pullRequestValidationOnly: contract.workflow.pullRequestValidationOnly,
+  currentPhase: gate.currentWorkstream.phase,
   rollbackContainment: true,
   alreadyRolledBackNoop: true,
   productionRuntimeCaptureStarted: false,
