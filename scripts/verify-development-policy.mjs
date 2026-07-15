@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -297,7 +298,40 @@ assert.ok(/^\s*push:/m.test(canaryWorkflow))
 assert.ok(/^\s*schedule:/m.test(canaryWorkflow))
 assert.ok(canaryWorkflow.includes("github.event_name == 'push' && needs.inspect-trigger.outputs.action == 'start'"))
 assert.ok(canaryWorkflow.includes("github.event_name == 'schedule' && (needs.inspect-trigger.outputs.action == 'monitor' || needs.inspect-trigger.outputs.action == 'finalize')"))
-assert.equal(exists('docs/audits/12a4-kick-category-capture-canary-trigger.json'), false)
+
+const exactTriggerPath = 'docs/audits/12a4-kick-category-capture-canary-trigger.json'
+if (exists(exactTriggerPath)) {
+  const trigger = json(exactTriggerPath)
+  assert.equal(trigger.schemaVersion, 'viewloom-12a4-kick-category-capture-canary-trigger-v1')
+  assert.equal(trigger.status, 'armed')
+  assert.equal(trigger.provider, 'kick')
+  assert.equal(trigger.oneTime, true)
+  assert.equal(trigger.confirmation, 'RUN_KICK_CATEGORY_CAPTURE_CANARY')
+  assert.ok(Number.isSafeInteger(trigger.attempt) && trigger.attempt > 0)
+  assert.equal(trigger.packagePr, 562)
+  assert.equal(trigger.packageMergeSha, '8dc53c6041f425f78e82cddb62328cff1128120f')
+  assert.equal(trigger.executionPackagePr, 563)
+  assert.equal(trigger.executionPackageMergeSha, '9391fd1479d3c149303637ae65deae7abf0e9b7d')
+  const start = new Date(trigger.startAt)
+  const until = new Date(trigger.until)
+  assert.ok(Number.isFinite(start.getTime()))
+  assert.ok(Number.isFinite(until.getTime()))
+  const windowMs = until.getTime() - start.getTime()
+  assert.ok(windowMs >= 23 * 60 * 60 * 1000 && windowMs <= 25 * 60 * 60 * 1000)
+  assert.ok(until.getTime() > Date.now(), 'exact trigger is already expired')
+
+  const baseRef = process.env.GITHUB_BASE_REF
+  const base = baseRef ? `origin/${baseRef}` : 'HEAD^'
+  const mergeBase = execFileSync('git', ['merge-base', 'HEAD', base], { encoding: 'utf8' }).trim()
+  const changed = execFileSync('git', ['diff', '--name-only', `${mergeBase}...HEAD`], { encoding: 'utf8' })
+    .split('\n')
+    .map((value) => value.trim())
+    .filter(Boolean)
+  assert.deepEqual(changed, [exactTriggerPath], 'armed Kick trigger must be the only changed file')
+} else {
+  assert.equal(gate.currentWorkstream.exactKickTriggerCurrent, true)
+  assert.equal(gate.categoryCapture.kickExactTriggerAccepted, false)
+}
 
 const twitchConfig = read('workers/collector-twitch/wrangler.toml')
 const kickConfig = read('workers/collector-kick/wrangler.toml')
@@ -315,5 +349,6 @@ console.log(JSON.stringify({
   acceptedKickCanaryPackage: gate.currentWorkstream.acceptedKickCanaryPackage,
   acceptedKickCanaryExecutionPackage: gate.currentWorkstream.acceptedKickCanaryExecutionPackage,
   exactKickTriggerCurrent: gate.currentWorkstream.exactKickTriggerCurrent,
+  exactKickTriggerPresent: exists(exactTriggerPath),
   runtimeCaptureAuthorized: gate.categoryCapture.runtimeCaptureAuthorized,
 }, null, 2))
