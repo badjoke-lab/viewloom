@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "viewloom-12a4-kick-normal-collector-recovery-trigger-v1",
+  "status": "armed",
+  "provider": "kick",
+  "oneTime": true,
+  "confirmation": "RECOVER_KICK_NORMAL_COLLECTOR",
+  "attempt": 1,
+  "createdAt": "2026-07-15T14:15:00.000Z",
+  "expiresAt": "2026-07-15T16:00:00.000Z",
+  "reason": "normal Kick minute snapshots stale before category canary attempt 1"
+}
