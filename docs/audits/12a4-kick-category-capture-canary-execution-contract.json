@@ -138,8 +138,8 @@
     "productionRuntimeCaptureStarted": false,
     "productionWorkerDeployed": false,
     "remoteD1OperationPerformed": false,
-    "mergeSha": null,
-    "mergeShaRecorded": false
+    "mergeSha": "9391fd1479d3c149303637ae65deae7abf0e9b7d",
+    "mergeShaRecorded": true
   },
   "pullRequestBoundary": {
     "triggerCreated": false,
@@ -157,5 +157,5 @@
     "crossProviderCategoryIdentityAllowed": false,
     "combinedProviderCategoryRankingAllowed": false
   },
-  "nextGate": "record the execution package merge identity and advance the canonical gate before creating the exact one-file Kick canary trigger"
+  "nextGate": "canonical gate advancement remains a separate change before creating the exact one-file Kick canary trigger"
 }
