@@ -8,6 +8,7 @@ const allowed = new Set([
   'scripts/check-12a4-category-capture-enablement-decision-scope.mjs',
   'scripts/check-12a4-category-execution-cost-probe-execution-package-scope.mjs',
   'scripts/verify-12a4-category-capture-enablement-decision.mjs',
+  'scripts/verify-12a4-category-execution-cost-probe.mjs',
   'scripts/verify-development-policy.mjs',
 ])
 
