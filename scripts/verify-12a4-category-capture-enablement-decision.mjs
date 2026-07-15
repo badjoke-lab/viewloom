@@ -107,8 +107,8 @@ assert.equal(decision.canaryDesignRequirements.hardStops.collectorSuccessReplace
 assert.equal(decision.canaryDesignRequirements.hardStops.persistentCaptureAfterFailedCanary, false)
 assert.equal(Object.values(decision.pullRequestBoundary).every((value) => value === false), true)
 
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v16')
-assert.equal(gate.status, '12a4_capture_decision_accepted_kick_canary_design_current')
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v17')
+assert.equal(gate.status, '12a4_kick_canary_execution_accepted_exact_trigger_current')
 assert.equal(gate.categoryCaptureEnablementDecision.status, 'accepted')
 assert.equal(gate.categoryCaptureEnablementDecision.pr, 561)
 assert.deepEqual(gate.categoryCaptureEnablementDecision.sequence, ['kick', 'twitch'])
@@ -116,16 +116,17 @@ assert.equal(gate.categoryCaptureEnablementDecision.productionRuntimeCaptureAuth
 assert.equal(gate.categoryCapture.enablementDecisionAccepted, true)
 assert.equal(gate.categoryCapture.kickFirstCanaryDesignAuthorized, true)
 assert.equal(gate.categoryCapture.twitchSecondCanaryDesignAuthorized, true)
+assert.equal(gate.categoryCapture.kickCanaryPackageAccepted, true)
+assert.equal(gate.categoryCapture.kickCanaryExecutionPackageAccepted, true)
+assert.equal(gate.categoryCapture.kickExactTriggerAccepted, false)
 assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
-assert.deepEqual(gate.openBlockers, [
-  'kick_category_capture_canary_package_not_accepted',
-  'runtime_category_capture_not_authorized',
-])
-assert.equal(gate.currentWorkstream.phase, '12A-4-8')
-assert.equal(gate.currentWorkstream.name, 'Kick-first disabled-by-default category capture canary package design')
+assert.equal(gate.currentWorkstream.phase, '12A-4-10')
+assert.equal(gate.currentWorkstream.name, 'exact one-file Kick category capture canary trigger')
 assert.equal(gate.currentWorkstream.acceptedEnablementDecision, true)
+assert.equal(gate.currentWorkstream.acceptedKickCanaryPackage, true)
+assert.equal(gate.currentWorkstream.acceptedKickCanaryExecutionPackage, true)
 assert.deepEqual(gate.currentWorkstream.providerSequence, ['kick', 'twitch'])
-assert.equal(gate.currentWorkstream.kickPackageDesignCurrent, true)
+assert.equal(gate.currentWorkstream.exactKickTriggerCurrent, true)
 assert.equal(gate.currentWorkstream.twitchPackageBlockedUntilKickEvidence, true)
 assert.equal(gate.currentWorkstream.runtimeCaptureAuthorized, false)
 
@@ -137,7 +138,9 @@ for (const fragment of [
   'production runtime capture: not authorized',
   'minimum 24-hour observation per provider',
   'no production runtime capture',
-  'The current gate is 12A-4-8',
+  '## Accepted handoff',
+  'PR #562 accepted that dormant package',
+  '12A-4-10',
 ]) assert.ok(wip.includes(fragment), `WIP missing ${fragment}`)
 
 assert.ok(workflow.includes('Verify category capture enablement decision'))

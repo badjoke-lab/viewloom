@@ -25,12 +25,15 @@ assert.equal(packageContract.acceptanceThresholds.probeCleanupRemainingRowsMax, 
 assert.equal(packageContract.acceptanceThresholds.providerLeakageRowsMax, 0)
 assert.equal(Object.values(packageContract.pullRequestBoundary).every((value) => value === false), true)
 
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v16')
-assert.equal(gate.status, '12a4_capture_decision_accepted_kick_canary_design_current')
-assert.equal(gate.currentWorkstream.phase, '12A-4-8')
-assert.equal(gate.currentWorkstream.name, 'Kick-first disabled-by-default category capture canary package design')
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v17')
+assert.equal(gate.status, '12a4_kick_canary_execution_accepted_exact_trigger_current')
+assert.equal(gate.currentWorkstream.phase, '12A-4-10')
+assert.equal(gate.currentWorkstream.name, 'exact one-file Kick category capture canary trigger')
 assert.equal(gate.currentWorkstream.acceptedCostEvidence, true)
 assert.equal(gate.currentWorkstream.acceptedEnablementDecision, true)
+assert.equal(gate.currentWorkstream.acceptedKickCanaryPackage, true)
+assert.equal(gate.currentWorkstream.acceptedKickCanaryExecutionPackage, true)
+assert.equal(gate.currentWorkstream.exactKickTriggerCurrent, true)
 assert.equal(gate.currentWorkstream.costProbeExecutionRetired, true)
 assert.equal(gate.categoryExecutionCostProbe.status, 'accepted_and_retired')
 assert.equal(gate.categoryExecutionCostProbe.twitchGatePass, true)
@@ -42,6 +45,9 @@ assert.equal(gate.categoryExecutionCostProbe.productionWorkflowPushTriggersRetir
 assert.equal(gate.categoryCaptureEnablementDecision.status, 'accepted')
 assert.deepEqual(gate.categoryCaptureEnablementDecision.sequence, ['kick', 'twitch'])
 assert.equal(gate.categoryCaptureEnablementDecision.productionRuntimeCaptureAuthorized, false)
+assert.equal(gate.categoryCapture.kickCanaryPackageAccepted, true)
+assert.equal(gate.categoryCapture.kickCanaryExecutionPackageAccepted, true)
+assert.equal(gate.categoryCapture.kickExactTriggerAccepted, false)
 assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
 assert.equal(gate.categoryCapture.categoryCaptureFlagPresent, false)
 assert.equal(gate.categoryCapture.productionCategoryRowsPresent, false)
@@ -110,6 +116,8 @@ console.log(JSON.stringify({
   currentWorkstream: gate.currentWorkstream.name,
   acceptedCostEvidence: true,
   acceptedEnablementDecision: true,
+  acceptedKickCanaryPackage: true,
+  acceptedKickCanaryExecutionPackage: true,
   costProbeExecutionRetired: true,
   runtimeCaptureAuthorized: false,
 }, null, 2))

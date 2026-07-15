@@ -36,15 +36,22 @@ const requiredFiles = [
   'docs/audits/12a4-category-execution-cost-probe-trigger.json',
   'docs/audits/12a4-category-execution-cost-probe-attempt-3-evidence.json',
   'docs/audits/12a4-category-capture-enablement-decision-contract.json',
+  'docs/audits/12a4-kick-category-capture-canary-package-contract.json',
+  'docs/audits/12a4-kick-category-capture-canary-execution-contract.json',
   'docs/work-in-progress/phase12a4-category-execution-cost-probe.md',
   'docs/work-in-progress/phase12a4-category-capture-enablement-decision.md',
+  'docs/work-in-progress/phase12a4-kick-category-capture-canary.md',
+  'docs/work-in-progress/phase12a4-kick-category-capture-canary-execution.md',
   '.github/workflows/analytics-12a4-category-controlled-schema-apply-execution.yml',
   '.github/workflows/analytics-12a4-category-schema-recovery-audit.yml',
   '.github/workflows/analytics-12a4-kick-category-schema-recovery.yml',
   '.github/workflows/analytics-12a4-category-execution-cost-probe-execution.yml',
   '.github/workflows/analytics-12a4-category-capture-enablement-decision.yml',
+  '.github/workflows/analytics-12a4-kick-category-capture-canary-package.yml',
+  '.github/workflows/analytics-12a4-kick-category-capture-canary-execution.yml',
   'workers/collector-twitch/wrangler.toml',
   'workers/collector-kick/wrangler.toml',
+  'workers/collector-kick/wrangler.category-canary.toml',
 ]
 for (const file of requiredFiles) assert.ok(exists(file), `${file}: missing`)
 
@@ -84,12 +91,30 @@ check('docs/work-in-progress/phase12a4-category-capture-enablement-decision.md',
   'Kick canary design: eligible first',
   'Twitch canary design: eligible second',
   'production runtime capture: not authorized',
-  'The current gate is 12A-4-8',
+  '## Accepted handoff',
+])
+check('docs/work-in-progress/phase12a4-kick-category-capture-canary.md', [
+  'Status: accepted dormant package',
+  'Accepted package PR: #562',
+  'canary config: disabled',
+  'minimum duration: 24 hours',
+  'Twitch automatic start: no',
+  '## Accepted handoff',
+])
+check('docs/work-in-progress/phase12a4-kick-category-capture-canary-execution.md', [
+  'Status: accepted and merge identity recorded',
+  'Accepted execution package PR: #563',
+  'execution package merge SHA: `9391fd1479d3c149303637ae65deae7abf0e9b7d`',
+  'exact trigger file: absent',
+  'execution merge SHA in contract: recorded',
+  'post-deploy verification failure rollback: verified',
+  'already-rolled-back hourly no-op: verified',
+  '12A-4-10 is the exact one-file Kick category capture canary trigger',
 ])
 
 const gate = json('docs/audits/12a2-current-gate-state.json')
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v16')
-assert.equal(gate.status, '12a4_capture_decision_accepted_kick_canary_design_current')
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v17')
+assert.equal(gate.status, '12a4_kick_canary_execution_accepted_exact_trigger_current')
 assert.equal(gate.categorySourceAudit.status, 'accepted')
 assert.equal(gate.categoryStorageDesign.status, 'accepted')
 assert.equal(gate.categoryMigrationRuntime.status, 'accepted_and_schema_applied')
@@ -109,10 +134,23 @@ assert.equal(gate.categoryCaptureEnablementDecision.status, 'accepted')
 assert.equal(gate.categoryCaptureEnablementDecision.pr, 561)
 assert.deepEqual(gate.categoryCaptureEnablementDecision.sequence, ['kick', 'twitch'])
 assert.equal(gate.categoryCaptureEnablementDecision.productionRuntimeCaptureAuthorized, false)
-assert.equal(gate.categoryCaptureEnablementDecision.productionFlagChangeAuthorized, false)
+assert.equal(gate.kickCategoryCaptureCanaryPackage.status, 'accepted')
+assert.equal(gate.kickCategoryCaptureCanaryPackage.pr, 562)
+assert.equal(gate.kickCategoryCaptureCanaryPackage.mergeSha, '8dc53c6041f425f78e82cddb62328cff1128120f')
+assert.equal(gate.kickCategoryCaptureCanaryPackage.committedDisabled, true)
+assert.equal(gate.kickCategoryCaptureCanaryPackage.productionRuntimeCaptureStarted, false)
+assert.equal(gate.kickCategoryCaptureCanaryExecutionPackage.status, 'accepted')
+assert.equal(gate.kickCategoryCaptureCanaryExecutionPackage.pr, 563)
+assert.equal(gate.kickCategoryCaptureCanaryExecutionPackage.mergeSha, '9391fd1479d3c149303637ae65deae7abf0e9b7d')
+assert.equal(gate.kickCategoryCaptureCanaryExecutionPackage.triggerPresent, false)
+assert.equal(gate.kickCategoryCaptureCanaryExecutionPackage.rollbackContainmentVerified, true)
+assert.equal(gate.kickCategoryCaptureCanaryExecutionPackage.alreadyRolledBackNoopVerified, true)
+assert.equal(gate.kickCategoryCaptureCanaryExecutionPackage.productionRuntimeCaptureStarted, false)
 assert.equal(gate.categoryCapture.enablementDecisionAccepted, true)
-assert.equal(gate.categoryCapture.kickFirstCanaryDesignAuthorized, true)
-assert.equal(gate.categoryCapture.twitchSecondCanaryDesignAuthorized, true)
+assert.equal(gate.categoryCapture.kickCanaryPackageAccepted, true)
+assert.equal(gate.categoryCapture.kickCanaryExecutionPackageAccepted, true)
+assert.equal(gate.categoryCapture.kickExactTriggerAccepted, false)
+assert.equal(gate.categoryCapture.kickCanaryExecuted, false)
 assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
 assert.equal(gate.categoryCapture.runtimeCaptureStarted, false)
 assert.equal(gate.categoryCapture.categoryCaptureFlagPresent, false)
@@ -121,16 +159,19 @@ assert.equal(gate.categoryCapture.providerSeparated, true)
 assert.equal(gate.categoryCapture.crossProviderIdentityAllowed, false)
 assert.equal(gate.categoryCapture.combinedProviderRankingAllowed, false)
 assert.deepEqual(gate.openBlockers, [
-  'kick_category_capture_canary_package_not_accepted',
+  'kick_category_capture_exact_trigger_not_accepted',
+  'kick_category_capture_canary_not_executed',
   'runtime_category_capture_not_authorized',
 ])
-assert.equal(gate.currentWorkstream.phase, '12A-4-8')
-assert.equal(gate.currentWorkstream.name, 'Kick-first disabled-by-default category capture canary package design')
+assert.equal(gate.currentWorkstream.phase, '12A-4-10')
+assert.equal(gate.currentWorkstream.name, 'exact one-file Kick category capture canary trigger')
 assert.equal(gate.currentWorkstream.acceptedSchemaEvidence, true)
 assert.equal(gate.currentWorkstream.acceptedCostEvidence, true)
 assert.equal(gate.currentWorkstream.acceptedEnablementDecision, true)
+assert.equal(gate.currentWorkstream.acceptedKickCanaryPackage, true)
+assert.equal(gate.currentWorkstream.acceptedKickCanaryExecutionPackage, true)
 assert.deepEqual(gate.currentWorkstream.providerSequence, ['kick', 'twitch'])
-assert.equal(gate.currentWorkstream.kickPackageDesignCurrent, true)
+assert.equal(gate.currentWorkstream.exactKickTriggerCurrent, true)
 assert.equal(gate.currentWorkstream.twitchPackageBlockedUntilKickEvidence, true)
 assert.equal(gate.currentWorkstream.productionExecutionIncluded, false)
 assert.equal(gate.currentWorkstream.runtimeCaptureAuthorized, false)
@@ -205,6 +246,25 @@ assert.equal(decision.providers.twitch.productionCanaryExecutionAuthorizedByThis
 assert.equal(decision.canaryDesignRequirements.minimumObservationHoursPerProvider, 24)
 assert.equal(Object.values(decision.pullRequestBoundary).every((value) => value === false), true)
 
+const canaryPackage = json('docs/audits/12a4-kick-category-capture-canary-package-contract.json')
+assert.equal(canaryPackage.status, 'accepted')
+assert.equal(canaryPackage.acceptance.pr, 562)
+assert.equal(canaryPackage.package.committedDisabled, true)
+assert.equal(canaryPackage.package.automaticExpiryRequired, true)
+assert.equal(canaryPackage.package.automaticTwitchStart, false)
+assert.equal(canaryPackage.pullRequestBoundary.productionRuntimeCaptureStarted, false)
+
+const canaryExecution = json('docs/audits/12a4-kick-category-capture-canary-execution-contract.json')
+assert.equal(canaryExecution.status, 'accepted')
+assert.equal(canaryExecution.acceptance.pr, 563)
+assert.equal(canaryExecution.acceptance.mergeSha, '9391fd1479d3c149303637ae65deae7abf0e9b7d')
+assert.equal(canaryExecution.acceptance.mergeShaRecorded, true)
+assert.equal(canaryExecution.acceptance.triggerPresent, false)
+assert.equal(canaryExecution.start.postDeployVerificationFailureRollsBack, true)
+assert.equal(canaryExecution.monitor.alreadyRolledBackAction, 'no-op')
+assert.equal(canaryExecution.monitor.mismatchedBindingsAction, 'hard stop and rollback')
+assert.equal(canaryExecution.pullRequestBoundary.productionRuntimeCaptureStarted, false)
+
 for (const file of [
   'docs/audits/12a4-category-controlled-schema-apply-trigger.json',
   'docs/audits/12a4-category-schema-recovery-audit-trigger.json',
@@ -224,18 +284,27 @@ for (const file of [
   '.github/workflows/analytics-12a4-category-execution-cost-probe-execution.yml',
 ]) {
   const workflow = read(file)
-  assert.equal(/^\s*push:/m.test(workflow), false, `${file}: production push trigger remains`)
-  assert.equal(workflow.includes('CLOUDFLARE_API_TOKEN'), false, `${file}: Cloudflare token remains`)
-  assert.equal(workflow.includes('CLOUDFLARE_ACCOUNT_ID'), false, `${file}: Cloudflare account remains`)
-  assert.equal(workflow.includes('wrangler@4 deploy --config'), false, `${file}: production deploy remains`)
+  assert.equal(/^\s*push:/m.test(workflow), false, `${file}: retired push trigger remains`)
+  assert.equal(workflow.includes('CLOUDFLARE_API_TOKEN'), false, `${file}: retired Cloudflare token remains`)
+  assert.equal(workflow.includes('CLOUDFLARE_ACCOUNT_ID'), false, `${file}: retired Cloudflare account remains`)
+  assert.equal(workflow.includes('wrangler@4 deploy --config'), false, `${file}: retired deploy remains`)
   assert.ok(workflow.includes('workflow_dispatch:'), `${file}: manual validation entry missing`)
   assert.ok(workflow.includes('verify-development-policy.mjs'), `${file}: policy gate missing`)
 }
 
+const canaryWorkflow = read('.github/workflows/analytics-12a4-kick-category-capture-canary-execution.yml')
+assert.ok(/^\s*push:/m.test(canaryWorkflow))
+assert.ok(/^\s*schedule:/m.test(canaryWorkflow))
+assert.ok(canaryWorkflow.includes("github.event_name == 'push' && needs.inspect-trigger.outputs.action == 'start'"))
+assert.ok(canaryWorkflow.includes("github.event_name == 'schedule' && (needs.inspect-trigger.outputs.action == 'monitor' || needs.inspect-trigger.outputs.action == 'finalize')"))
+assert.equal(exists('docs/audits/12a4-kick-category-capture-canary-trigger.json'), false)
+
 const twitchConfig = read('workers/collector-twitch/wrangler.toml')
 const kickConfig = read('workers/collector-kick/wrangler.toml')
+const kickCanaryConfig = read('workers/collector-kick/wrangler.category-canary.toml')
 assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(twitchConfig), false)
 assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(kickConfig), false)
+assert.equal(/CATEGORY_CAPTURE_CANARY_ENABLED\s*=\s*"false"/.test(kickCanaryConfig), true)
 assert.notEqual(twitchConfig.match(/database_id = "([^"]+)"/)?.[1], kickConfig.match(/database_id = "([^"]+)"/)?.[1])
 
 console.log(JSON.stringify({
@@ -243,6 +312,8 @@ console.log(JSON.stringify({
   phase: gate.currentWorkstream.phase,
   currentWorkstream: gate.currentWorkstream.name,
   providerSequence: gate.currentWorkstream.providerSequence,
-  acceptedEnablementDecision: gate.currentWorkstream.acceptedEnablementDecision,
+  acceptedKickCanaryPackage: gate.currentWorkstream.acceptedKickCanaryPackage,
+  acceptedKickCanaryExecutionPackage: gate.currentWorkstream.acceptedKickCanaryExecutionPackage,
+  exactKickTriggerCurrent: gate.currentWorkstream.exactKickTriggerCurrent,
   runtimeCaptureAuthorized: gate.categoryCapture.runtimeCaptureAuthorized,
 }, null, 2))

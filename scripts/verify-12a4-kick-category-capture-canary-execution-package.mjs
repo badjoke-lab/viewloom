@@ -63,9 +63,6 @@ assert.equal(contract.acceptance.pr, 563)
 assert.equal(contract.acceptance.validatedCandidateHeadSha, 'e6b2e05811dfc70b262239603407254cc8d94246')
 assert.equal(contract.acceptance.workflowRunId, 29387873802)
 assert.equal(contract.acceptance.workflowJobId, 87264801162)
-assert.equal(contract.acceptance.developmentPolicyRunId, 29387873767)
-assert.equal(contract.acceptance.webBuildRunId, 29387873873)
-assert.equal(contract.acceptance.webChecksRunId, 29387873755)
 assert.equal(contract.acceptance.scopePass, true)
 assert.equal(contract.acceptance.contractPass, true)
 assert.equal(contract.acceptance.triggerFixturePass, true)
@@ -92,15 +89,19 @@ assert.equal(packageContract.package.automaticExpiryRequired, true)
 assert.equal(packageContract.package.automaticTwitchStart, false)
 assert.equal(packageContract.pullRequestBoundary.productionRuntimeCaptureStarted, false)
 
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v16')
-assert.equal(gate.currentWorkstream.phase, '12A-4-8')
-assert.equal(gate.currentWorkstream.kickPackageDesignCurrent, true)
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v17')
+assert.equal(gate.currentWorkstream.phase, '12A-4-10')
+assert.equal(gate.currentWorkstream.acceptedKickCanaryPackage, true)
+assert.equal(gate.currentWorkstream.acceptedKickCanaryExecutionPackage, true)
+assert.equal(gate.currentWorkstream.exactKickTriggerCurrent, true)
 assert.equal(gate.currentWorkstream.twitchPackageBlockedUntilKickEvidence, true)
+assert.equal(gate.categoryCapture.kickExactTriggerAccepted, false)
+assert.equal(gate.categoryCapture.kickCanaryExecuted, false)
 assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
 assert.equal(gate.categoryCapture.categoryCaptureFlagPresent, false)
 assert.equal(gate.categoryCapture.productionCategoryRowsPresent, false)
 
-assert.equal(exists(triggerPath), false, 'merge identity sync must not contain the exact production trigger')
+assert.equal(exists(triggerPath), false, 'canonical sync must not contain the exact production trigger')
 
 for (const fragment of [
   "const CONFIRMATION = 'RUN_KICK_CATEGORY_CAPTURE_CANARY'",
@@ -177,13 +178,12 @@ for (const fragment of [
   'already-rolled-back hourly no-op: verified',
   'exact trigger file: absent',
   'execution merge SHA in contract: recorded',
-  'canonical gate advancement: separate change',
   'hourly monitor without trigger: no-op',
   'No GitHub job sleeps for 24 hours',
   'projected 90-day Kick size <= 330 MB',
   'provider leakage rows > 0',
   'no production deploy',
-  'Advancing the canonical gate',
+  '12A-4-10 is the exact one-file Kick category capture canary trigger',
 ]) assert.ok(wip.includes(fragment), `execution WIP missing ${fragment}`)
 
 console.log(JSON.stringify({

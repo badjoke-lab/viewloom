@@ -157,5 +157,5 @@
     "crossProviderCategoryIdentityAllowed": false,
     "combinedProviderCategoryRankingAllowed": false
   },
-  "nextGate": "canonical gate advancement remains a separate change before creating the exact one-file Kick canary trigger"
+  "nextGate": "create the exact one-file Kick category capture canary trigger; source-run and read-only acceptance remain separate"
 }

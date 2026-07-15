@@ -1,6 +1,6 @@
 # Phase 12A-4-7 category capture enablement decision
 
-Status: accepted; Kick-first canary package design is the current gate and production runtime capture remains unauthorized  
+Status: accepted; Kick-first sequencing remains canonical and production runtime capture remains unauthorized  
 Tracking issue: #519  
 Accepted cost evidence PR: #558  
 Cost execution retirement PR: #559  
@@ -36,7 +36,7 @@ cleanup remaining rows: 0
 provider leakage rows: 0
 ```
 
-The next Kick canary package must remain disabled by default and must not execute from its package PR.
+The Kick canary package remains disabled by default and cannot execute from its package or execution-package PR.
 
 ## Why Twitch is second
 
@@ -100,6 +100,6 @@ no cron
 no backfill
 ```
 
-## Current gate
+## Accepted handoff
 
-The current gate is 12A-4-8: a Kick-first disabled-by-default category capture canary package design. That package may define code, rollback, evidence, and trigger boundaries, but production execution still requires a separate exact trigger and acceptance PR.
+PR #561 handed off to the Kick-first disabled-by-default canary package. PR #562 accepted that dormant package, PR #563 accepted its dormant execution package, and PR #564 recorded the execution merge identity. The canonical gate is now 12A-4-10: the exact one-file Kick category capture canary trigger. No trigger is included in this gate-advancement change, and the decision contract still does not authorize runtime capture.

@@ -1,9 +1,11 @@
 # Phase 12A-4-8 Kick category capture canary package
 
-Status: accepted dormant package; production runtime capture remains unauthorized  
+Status: accepted dormant package; exact one-file trigger is the current gate and production runtime capture remains unauthorized  
 Tracking issue: #519  
 Accepted sequencing decision PR: #561  
 Accepted package PR: #562  
+Accepted execution package PR: #563  
+Execution merge identity record PR: #564  
 Package contract: `docs/audits/12a4-kick-category-capture-canary-package-contract.json`
 
 ## Purpose
@@ -26,8 +28,9 @@ CATEGORY_CAPTURE_ENABLED in normal config: absent
 canary config: disabled
 canary start: absent
 canary end: absent
-production deployment from this PR: forbidden
-production category capture from this PR: forbidden
+exact trigger file: absent
+production deployment from package or execution PR: forbidden
+production category capture from package or execution PR: forbidden
 Twitch changes: forbidden
 ```
 
@@ -67,10 +70,12 @@ remote schema verification: skipped
 
 ## Execution preflight
 
-A later exact trigger may execute only after it verifies:
+The exact trigger may execute only after it verifies:
 
 ```text
 exact Kick worker and D1 identities
+accepted package PR #562 and merge SHA
+accepted execution package PR #563 and merge SHA
 current remote D1 size
 90-day projected Kick size <= 330 MB
 projected Kick headroom >= 100 MB
@@ -115,6 +120,6 @@ Twitch category capture begins
 
 Rollback deploys the normal `workers/collector-kick/wrangler.toml` configuration. Schema rollback and deletion of already observed category data are not required. Normal non-category collection must continue.
 
-## Current gate
+## Accepted handoff
 
-The current gate is 12A-4-9: a dormant Kick canary execution and evidence package. Production execution still requires a later exact one-file trigger. This PR cannot start the canary.
+PR #562 handed off to the dormant execution package accepted in PR #563. PR #564 recorded the exact execution merge identity. The canonical gate is now 12A-4-10: a separate one-file Kick canary trigger. This historical package cannot start the canary by itself, runtime category capture remains unauthorized, and Twitch remains blocked until accepted Kick evidence exists.
