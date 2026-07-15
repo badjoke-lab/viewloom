@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-kick-category-capture-canary-package-v1",
   "workstream": "12A-4-8 Kick-first disabled-by-default category capture canary package",
-  "status": "candidate",
+  "status": "accepted",
   "trackingIssue": 519,
   "acceptedInputs": {
     "enablementDecisionPr": 561,
@@ -99,6 +99,31 @@
     "firstPassWritesRequired": true,
     "unchangedSecondPassZeroChangesRequired": true
   },
+  "acceptance": {
+    "pr": 562,
+    "validatedCandidateHeadSha": "a8255c5aadf3d46156503fc5668e18305f6ad7bf",
+    "packageWorkflowRunId": 29386501622,
+    "packageWorkflowJobId": 87260809438,
+    "migrationCompatibilityRunId": 29386501577,
+    "collectorChecksRunId": 29386501628,
+    "developmentPolicyRunId": 29386501646,
+    "webBuildRunId": 29386501678,
+    "webChecksRunId": 29386501671,
+    "deploymentWorkflowRunId": 29386501613,
+    "packageScopePass": true,
+    "canaryFixturePass": true,
+    "dictionaryFixturePass": true,
+    "collectorTypecheckPass": true,
+    "normalKickBundlePass": true,
+    "disabledCanaryBundlePass": true,
+    "deployTwitchSkipped": true,
+    "deployKickSkipped": true,
+    "remoteSchemaVerificationSkipped": true,
+    "productionRuntimeCaptureStarted": false,
+    "productionWorkerDeployed": false,
+    "remoteD1OperationPerformed": false,
+    "twitchChanged": false
+  },
   "pullRequestBoundary": {
     "productionRuntimeCaptureStarted": false,
     "productionFlagChanged": false,
@@ -115,5 +140,5 @@
     "crossProviderCategoryIdentityAllowed": false,
     "combinedProviderCategoryRankingAllowed": false
   },
-  "nextGate": "accept this dormant package, then create a separate one-file exact Kick canary trigger and read-only acceptance package"
+  "nextGate": "12A-4-9 dormant Kick canary execution and evidence package; production execution still requires a later exact one-file trigger"
 }
