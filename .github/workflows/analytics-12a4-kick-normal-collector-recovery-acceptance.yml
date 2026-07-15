@@ -12,6 +12,7 @@ on:
       - 'scripts/run-12a4-kick-normal-collector-cloudflare-audit.mjs'
       - 'scripts/run-12a4-kick-normal-collector-recovery-acceptance.mjs'
       - 'scripts/run-12a4-kick-normal-collector-recovery-run-audit.mjs'
+      - 'scripts/run-12a4-kick-normal-collector-tail-audit.mjs'
       - 'scripts/verify-12a4-kick-normal-collector-recovery-acceptance-package.mjs'
 
 permissions:
@@ -100,6 +101,36 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+  audit-scheduled-runtime:
+    needs: verify-package
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      OUTPUT_DIR: artifacts/12a4-kick-normal-collector-tail-audit
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - id: tail
+        name: Capture one bounded sanitized Kick scheduled-event tail
+        run: node scripts/run-12a4-kick-normal-collector-tail-audit.mjs
+
+      - name: Upload sanitized tail summary only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-kick-normal-collector-tail-audit
+          path: artifacts/12a4-kick-normal-collector-tail-audit/tail-audit.json
+          if-no-files-found: warn
+          retention-days: 30
+
   read-only-acceptance:
     needs: verify-package
     if: github.event.pull_request.head.repo.full_name == github.repository
@@ -137,9 +168,10 @@ jobs:
             echo '## ViewLoom 12A-4 Kick normal collector recovery acceptance'
             echo
             echo '- Production mutation: no'
-            echo '- Cloudflare operations: GET only'
+            echo '- Cloudflare state audit: GET only'
             echo '- D1 operations: SELECT only'
             echo '- GitHub Actions audit: read only'
+            echo '- Runtime tail: bounded and sanitized; raw requests are not stored'
             echo '- Category capture: disabled'
             echo '- Twitch change: no'
             echo '- Outcome: `${{ steps.acceptance.outputs.outcome }}`'
