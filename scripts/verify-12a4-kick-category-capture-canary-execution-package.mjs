@@ -18,7 +18,7 @@ const wip = read('docs/work-in-progress/phase12a4-kick-category-capture-canary-e
 const triggerPath = contract.workflow.triggerPath
 
 assert.equal(contract.schemaVersion, 'viewloom-12a4-kick-category-capture-canary-execution-v1')
-assert.ok(['candidate', 'accepted'].includes(contract.status))
+assert.equal(contract.status, 'accepted')
 assert.equal(contract.trackingIssue, 519)
 assert.equal(contract.acceptedPackage.pr, 562)
 assert.equal(contract.acceptedPackage.mergeSha, '8dc53c6041f425f78e82cddb62328cff1128120f')
@@ -44,6 +44,7 @@ assert.equal(contract.start.committedCanaryConfigMutated, false)
 assert.equal(contract.monitor.beforeStartAction, 'no-op')
 assert.equal(contract.monitor.duringWindowAction, 'inspect and checkpoint')
 assert.equal(contract.monitor.afterWindowAction, 'finalize and rollback')
+assert.equal(contract.monitor.alreadyRolledBackAction, 'no-op')
 assert.equal(contract.hardStops.projectedNinetyDaySizeMbMax, 330)
 assert.equal(contract.hardStops.projectedProviderHeadroomMbMin, 100)
 assert.equal(contract.hardStops.providerLeakageRowsMax, 0)
@@ -55,6 +56,13 @@ assert.equal(contract.rollback.categoryDataDeletion, false)
 assert.equal(contract.rollback.canaryBindingsAbsentAfterRollbackRequired, true)
 assert.equal(contract.evidence.sanitizedJsonOnly, true)
 assert.equal(contract.evidence.separateReadOnlyAcceptancePrRequired, true)
+assert.equal(contract.acceptance.pr, 563)
+assert.equal(contract.acceptance.triggerPresent, false)
+assert.equal(contract.acceptance.productionRuntimeCaptureStarted, false)
+assert.equal(contract.acceptance.productionWorkerDeployed, false)
+assert.equal(contract.acceptance.remoteD1OperationPerformed, false)
+assert.equal(contract.acceptance.mergeSha, null)
+assert.equal(contract.acceptance.mergeShaRecorded, false)
 assert.equal(Object.values(contract.pullRequestBoundary).every((value) => value === false), true)
 
 assert.equal(packageContract.status, 'accepted')
@@ -90,7 +98,13 @@ for (const fragment of [
   'PROJECTED_SIZE_MAX_MB = 330',
   'PROJECTED_HEADROOM_MIN_MB = 100',
   'export function renderActiveCanaryConfig',
+  'export function canaryBindingsAbsent',
   "if (rendered.includes('CATEGORY_CAPTURE_ENABLED ='))",
+  'let canaryDeploySucceeded = false',
+  'canaryDeploySucceeded = true',
+  "if (action !== 'start' || canaryDeploySucceeded) shouldRollback = true",
+  "evidence.outcome = 'already_rolled_back_noop'",
+  '!bindingsMatchTrigger(evidence.serviceBindingsBefore, trigger)',
   'fetchD1Info',
   'fetchWorkerSettings',
   'runKickEvidenceQueries',
@@ -115,6 +129,9 @@ for (const fragment of [
   'assert.equal(goodStorage.pass, true)',
   'assert.equal(badStorage.pass, false)',
   'assert.equal(bindingsMatchTrigger(bindings, trigger), true)',
+  'assert.equal(canaryBindingsAbsent(normalBindings), true)',
+  'assert.equal(canaryBindingsAbsent(partialBindings), false)',
+  'assert.equal(directFlagBindings.categoryCaptureDirectFlagPresent, true)',
 ]) assert.ok(fixture.includes(fragment), `execution fixture missing ${fragment}`)
 
 assert.ok(/^\s*push:/m.test(workflow), 'exact-trigger push event missing')
@@ -131,14 +148,16 @@ assert.ok(workflow.includes('wrangler@4 deploy --dry-run --config workers/collec
 assert.equal(workflow.includes('CATEGORY_CAPTURE_ENABLED='), false)
 
 for (const fragment of [
-  'candidate dormant execution package',
+  'accepted dormant execution package',
+  'Accepted execution package PR: #563',
   'exact trigger file: absent',
+  'execution merge SHA in contract: pending',
   'hourly monitor without trigger: no-op',
   'No GitHub job sleeps for 24 hours',
   'projected 90-day Kick size <= 330 MB',
   'provider leakage rows > 0',
   'no production deploy',
-  'exact one-file Kick canary trigger',
+  'Record the actual PR #563 squash merge SHA',
 ]) assert.ok(wip.includes(fragment), `execution WIP missing ${fragment}`)
 
 console.log(JSON.stringify({
@@ -148,6 +167,8 @@ console.log(JSON.stringify({
   packagePr: contract.acceptedPackage.pr,
   packageMergeSha: contract.acceptedPackage.mergeSha,
   pullRequestValidationOnly: contract.workflow.pullRequestValidationOnly,
+  rollbackContainment: true,
+  alreadyRolledBackNoop: true,
   productionRuntimeCaptureStarted: false,
   TwitchStartAuthorized: false,
 }, null, 2))
