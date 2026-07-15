@@ -5,6 +5,7 @@ import {
 import {
   activeTomlValue,
   bindingsMatchTrigger,
+  canaryBindingsAbsent,
   canaryBindingsFromSettings,
   projectKickStorage,
   renderActiveCanaryConfig,
@@ -104,6 +105,21 @@ const bindings = canaryBindingsFromSettings(settings)
 assert.equal(bindingsMatchTrigger(bindings, trigger), true)
 assert.equal(bindings.categoryCaptureDirectFlagPresent, false)
 assert.equal(bindingsMatchTrigger({ ...bindings, provider: 'twitch' }, trigger), false)
+assert.equal(canaryBindingsAbsent(bindings), false)
+
+const normalBindings = canaryBindingsFromSettings({ result: { bindings: [] } })
+assert.equal(canaryBindingsAbsent(normalBindings), true)
+assert.equal(bindingsMatchTrigger(normalBindings, trigger), false)
+
+const partialBindings = { ...normalBindings, enabled: 'true' }
+assert.equal(canaryBindingsAbsent(partialBindings), false)
+assert.equal(bindingsMatchTrigger(partialBindings, trigger), false)
+
+const directFlagBindings = canaryBindingsFromSettings({
+  result: { bindings: [{ type: 'plain_text', name: 'CATEGORY_CAPTURE_ENABLED', text: 'true' }] },
+})
+assert.equal(canaryBindingsAbsent(directFlagBindings), false)
+assert.equal(directFlagBindings.categoryCaptureDirectFlagPresent, true)
 
 console.log(JSON.stringify({
   ok: true,
@@ -111,5 +127,8 @@ console.log(JSON.stringify({
   actions: ['noop', 'start', 'monitor', 'finalize', 'reject'],
   projectedStoragePass: goodStorage,
   projectedStorageFailure: badStorage,
+  activeBindingsMatch: true,
+  normalBindingsAbsent: true,
+  partialBindingsRejected: true,
   directCategoryFlagPresent: false,
 }, null, 2))
