@@ -16,11 +16,16 @@ assert.equal(contract.workstream, '12A-4 Kick normal collector recovery read-onl
 assert.equal(contract.status, 'candidate')
 assert.equal(contract.trackingIssue, 519)
 assert.equal(contract.provider, 'kick')
-assert.equal(contract.recoveryPr, 573)
-assert.equal(contract.recoveryMergeSha, '9323606d337f1930ce65a96465c104848b61c925')
+assert.equal(contract.recoveryPackagePr, 573)
+assert.equal(contract.recoveryPackageMergeSha, '9323606d337f1930ce65a96465c104848b61c925')
+assert.equal(contract.recoveryExecutionPr, 575)
+assert.equal(contract.recoveryExecutionMergeSha, 'd686008a5e3be177def4f787f89ef966a5a60165')
+assert.equal(contract.recoveryAttempt, 2)
 assert.equal(contract.incidentSnapshot.bucketMinute, '2026-07-15T11:50:00.000Z')
 assert.equal(contract.incidentSnapshot.collectedAt, '2026-07-15T11:50:40.703Z')
 assert.equal(contract.acceptance.freshnessMinutesMax, 10)
+assert.equal(contract.acceptance.pollIntervalSeconds, 30)
+assert.equal(contract.acceptance.pollAttempts, 20)
 assert.equal(contract.acceptance.requireSnapshotNewerThanIncident, true)
 assert.equal(contract.acceptance.requireCanaryBindingsAbsent, true)
 assert.equal(contract.acceptance.requirePermanentCategoryFlagAbsent, true)
@@ -61,6 +66,8 @@ assert.ok(runner.includes('SELECT bucket_minute, collected_at, stream_count, tot
 assert.ok(runner.includes('SELECT COUNT(*) AS provider_leakage_rows'))
 assert.ok(runner.includes('fetchWorkerSettings'))
 assert.ok(runner.includes('canaryBindingsAbsent'))
+assert.ok(runner.includes('contract.acceptance.pollAttempts'))
+assert.ok(runner.includes('contract.acceptance.pollIntervalSeconds'))
 assert.equal(runner.includes("'deploy'"), false)
 assert.equal(runner.includes("'/collect'"), false)
 assert.equal(runner.includes('collector-twitch'), false)
@@ -83,15 +90,18 @@ assert.ok(scope.includes('12a4-kick-category-capture-canary-trigger.json'))
 assert.ok(scope.includes('12a4-kick-normal-collector-recovery-trigger.json'))
 assert.ok(doc.includes('does not deploy'))
 assert.ok(doc.includes('latest normal Kick snapshot'))
+assert.ok(doc.includes('Attempt 2'))
 assert.ok(doc.includes('Twitch remains unchanged'))
 
 console.log(JSON.stringify({
   ok: true,
   phase: contract.workstream,
   provider: contract.provider,
-  recoveryPr: contract.recoveryPr,
-  recoveryMergeSha: contract.recoveryMergeSha,
+  recoveryPackagePr: contract.recoveryPackagePr,
+  recoveryExecutionPr: contract.recoveryExecutionPr,
+  recoveryAttempt: contract.recoveryAttempt,
   incidentCollectedAt: contract.incidentSnapshot.collectedAt,
+  boundedPollingMinutes: contract.acceptance.pollIntervalSeconds * contract.acceptance.pollAttempts / 60,
   readOnly: true,
   productionMutationAuthorized: false,
   TwitchChanged: false,
