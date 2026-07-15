@@ -4,6 +4,7 @@ const allowed = new Set([
   '.github/workflows/analytics-12a4-kick-category-capture-canary-package.yml',
   'docs/audits/12a4-kick-category-capture-canary-package-contract.json',
   'docs/work-in-progress/phase12a4-kick-category-capture-canary.md',
+  'scripts/check-12a4-category-migration-runtime-scope.mjs',
   'scripts/check-12a4-kick-category-capture-canary-package-scope.mjs',
   'scripts/test-12a4-kick-category-capture-canary.py',
   'scripts/verify-12a4-kick-category-capture-canary-package.mjs',
