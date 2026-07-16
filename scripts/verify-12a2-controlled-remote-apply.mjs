@@ -71,9 +71,9 @@ for (const fragment of [
   'catch (error)',
 ]) assert.ok(sharedSource.includes(fragment), `shared bootstrap missing: ${fragment}`)
 
-for (const [provider, source, binding] of [
-  ['twitch', twitchEntry, 'DB_TWITCH_HOT'],
-  ['kick', kickEntry, 'DB_KICK_HOT'],
+for (const [provider, source, binding, scheduledInvocation] of [
+  ['twitch', twitchEntry, 'DB_TWITCH_HOT', 'await collector.scheduled(event, env)'],
+  ['kick', kickEntry, 'DB_KICK_HOT', 'await runKickScheduledObservation(event, env, () => collector.scheduled(event, env))'],
 ]) {
   assert.ok(source.includes("import collector from './index'"), `${provider}: collector delegation missing`)
   assert.ok(source.includes("import { maybeApplyIntradaySchema } from '../../shared/intraday-schema'"), `${provider}: bootstrap import missing`)
@@ -81,10 +81,12 @@ for (const [provider, source, binding] of [
   assert.ok(source.includes(`provider: '${provider}'`), `${provider}: provider log marker missing`)
   assert.ok(source.includes('try {'), `${provider}: scheduled try block missing`)
   assert.ok(source.includes('finally {'), `${provider}: scheduled finally block missing`)
-  const collectAt = source.indexOf('await collector.scheduled(event, env)')
+  const collectAt = source.indexOf(scheduledInvocation)
   const bootstrapAt = source.indexOf(`await maybeApplyIntradaySchema(env.${binding})`)
   assert.ok(collectAt >= 0 && bootstrapAt > collectAt, `${provider}: bootstrap must follow collector scheduled invocation`)
 }
+
+assert.ok(kickEntry.includes("import { runKickScheduledObservation } from './scheduled-observation'"), 'kick: scheduled observation wrapper import missing')
 
 assert.match(twitchWrangler, /^main = "src\/entry\.ts"$/m)
 assert.match(kickWrangler, /^main = "src\/entry\.ts"$/m)
