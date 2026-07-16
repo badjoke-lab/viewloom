@@ -45,6 +45,15 @@ export function renderActiveCanaryConfig(template, trigger) {
   return rendered
 }
 
+export function generatedCanaryConfigPath(templatePath, attempt) {
+  const parsedAttempt = Number(attempt)
+  if (!Number.isSafeInteger(parsedAttempt) || parsedAttempt <= 0) throw new Error('invalid_canary_attempt')
+  return path.join(
+    path.dirname(path.resolve(templatePath)),
+    `.wrangler.category-canary.active-attempt-${parsedAttempt}.toml`,
+  )
+}
+
 export function activeTomlValue(source, key) {
   return source
     .split(/\r?\n/)
@@ -167,9 +176,14 @@ async function execute() {
         throw new Error(`preexisting_canary_bindings:${JSON.stringify(evidence.serviceBindingsBefore)}`)
       }
       await waitUntil(new Date(trigger.startAt), 3 * 60 * 60 * 1000)
-      const activeConfigPath = path.join(outputDir, `wrangler.kick-category-canary-attempt-${trigger.attempt}.toml`)
-      fs.writeFileSync(activeConfigPath, renderActiveCanaryConfig(canaryTemplate, trigger))
-      const deployed = runCommand('pnpm', ['dlx', 'wrangler@4', 'deploy', '--config', activeConfigPath])
+      const activeConfigPath = generatedCanaryConfigPath(canaryTemplatePath, trigger.attempt)
+      let deployed
+      try {
+        fs.writeFileSync(activeConfigPath, renderActiveCanaryConfig(canaryTemplate, trigger))
+        deployed = runCommand('pnpm', ['dlx', 'wrangler@4', 'deploy', '--config', activeConfigPath])
+      } finally {
+        fs.rmSync(activeConfigPath, { force: true })
+      }
       evidence.deployment.canaryExitCode = deployed.code
       if (deployed.code !== 0) throw new Error(`canary_deploy_failed:${sanitize(deployed.output)}`)
       canaryDeploySucceeded = true
@@ -240,7 +254,7 @@ SELECT COUNT(*) AS kick_dictionary_rows FROM provider_category_dictionary WHERE 
 SELECT COUNT(*) AS provider_leakage_rows FROM provider_category_dictionary WHERE provider != 'kick';
 SELECT COUNT(*) AS category_payload_rows FROM minute_snapshots WHERE provider = 'kick' AND json_extract(payload_json, '$.categoryContractVersion') = 'category-source-v1';
 SELECT COALESCE(SUM(category_observed_samples), 0) AS observed_samples, COALESCE(SUM(category_missing_samples), 0) AS missing_samples FROM streamer_intraday_rollups WHERE provider = 'kick';
-SELECT state, last_attempt_at, last_success_at, last_failure_at FROM collector_status WHERE provider = 'kick' LIMIT 1;
+SELECT bucket_minute, collected_at, stream_count, total_viewers, source_mode FROM minute_snapshots WHERE provider = 'kick' ORDER BY bucket_minute DESC LIMIT 1;
 `.trim()
   const result = runCommand('pnpm', ['dlx', 'wrangler@4', 'd1', 'execute', 'vl_kick_hot', '--remote', '--json', '--config', configPath, '--command', sql])
   if (result.code !== 0) throw new Error(`d1_evidence_query_failed:${sanitize(result.output)}`)
@@ -252,7 +266,7 @@ SELECT state, last_attempt_at, last_success_at, last_failure_at FROM collector_s
     categoryPayloadRows: numberFromRows(rows, 'category_payload_rows'),
     observedSamples: numberFromRows(rows, 'observed_samples'),
     missingSamples: numberFromRows(rows, 'missing_samples'),
-    collectorState: rows.find((row) => Object.hasOwn(row, 'state')) ?? null,
+    latestSnapshot: rows.find((row) => Object.hasOwn(row, 'bucket_minute')) ?? null,
   }
 }
 
