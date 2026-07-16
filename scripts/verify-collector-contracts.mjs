@@ -72,6 +72,8 @@ const twitchIndexPath = 'workers/collector-twitch/src/index.ts'
 const kickIndexPath = 'workers/collector-kick/src/index.ts'
 const twitchEntryPath = 'workers/collector-twitch/src/entry.ts'
 const kickEntryPath = 'workers/collector-kick/src/entry.ts'
+const kickOfficialLivestreamsPath = 'workers/collector-kick/src/official-livestreams.ts'
+const kickScheduledObservationPath = 'workers/collector-kick/src/scheduled-observation.ts'
 const runtimePath = 'apps/web/functions/_provider-runtime.ts'
 
 const twitchWrangler = read(twitchWranglerPath)
@@ -82,6 +84,8 @@ const twitchIndex = read(twitchIndexPath)
 const kickIndex = read(kickIndexPath)
 const twitchEntry = read(twitchEntryPath)
 const kickEntry = read(kickEntryPath)
+const kickOfficialLivestreams = read(kickOfficialLivestreamsPath)
+const kickScheduledObservation = read(kickScheduledObservationPath)
 const runtime = read(runtimePath)
 
 need(twitchWranglerPath, twitchWrangler, 'crons = ["*/5 * * * *"]', '5-minute cron')
@@ -109,6 +113,16 @@ need(twitchIndexPath, twitchIndex, "export { default } from './index-category'",
 need(kickIndexPath, kickIndex, "export { default } from './index-category'", 'Kick active collector delegation')
 need(twitchEntryPath, twitchEntry, "import collector from './index'", 'Twitch accepted entry delegation')
 need(kickEntryPath, kickEntry, "import collector from './index'", 'Kick accepted entry delegation')
+need(kickEntryPath, kickEntry, "import { runKickScheduledObservation } from './scheduled-observation'", 'Kick scheduled observation wrapper import')
+need(kickEntryPath, kickEntry, 'await runKickScheduledObservation(event, env, () => collector.scheduled(event, env))', 'Kick scheduled observation wrapper call')
+need(kickOfficialLivestreamsPath, kickOfficialLivestreams, 'raw.slug ?? raw.channel_slug ?? channel?.slug', 'nested official channel slug normalization')
+need(kickOfficialLivestreamsPath, kickOfficialLivestreams, 'channel?.username ?? channel?.name', 'nested official channel display-name normalization')
+need(kickScheduledObservationPath, kickScheduledObservation, "event: 'kick_scheduled_collection_started'", 'scheduled start log')
+need(kickScheduledObservationPath, kickScheduledObservation, "event: 'kick_scheduled_collection_completed'", 'scheduled completion log')
+need(kickScheduledObservationPath, kickScheduledObservation, "event: 'kick_scheduled_collection_failed'", 'scheduled failure log')
+need(kickScheduledObservationPath, kickScheduledObservation, "'empty-scheduled-observation'", 'honest empty scheduled snapshot source')
+need(kickScheduledObservationPath, kickScheduledObservation, 'collector_completed_without_current_bucket_snapshot', 'empty scheduled observation reason')
+need(kickScheduledObservationPath, kickScheduledObservation, 'INSERT OR REPLACE INTO minute_snapshots', 'empty scheduled snapshot write')
 
 const twitchPageSize = numberFrom(twitchWorkerPath, twitchWorker, /const PAGE_SIZE = (\d+)/, 'Twitch page size')
 const twitchMaxPages = numberFrom(twitchWorkerPath, twitchWorker, /const MAX_PAGES = (\d+)/, 'Twitch maximum pages')
@@ -158,5 +172,6 @@ if (failures.length > 0) {
 console.log('ViewLoom collector contract verification passed.')
 console.log('- Twitch: 5m cadence, Top 300, raw 30d, rollup 180d')
 console.log('- Kick: 5m cadence, Top 100, raw 60d, rollup 180d')
+console.log('- Kick scheduled collections log lifecycle events and persist honest empty observations')
 console.log('- category-aware collectors are active behind index.ts while CATEGORY_CAPTURE_ENABLED is not committed')
 console.log('- D1 bindings and secret placement contracts are intact')

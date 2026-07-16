@@ -40,6 +40,41 @@ if (isKickCanaryFollowUp) {
   process.exit(0)
 }
 
+const scheduledObservationRepair = 'workers/collector-kick/src/scheduled-observation.ts'
+const isKickScheduledObservationRepair = changed.includes(scheduledObservationRepair)
+
+if (isKickScheduledObservationRepair) {
+  const allowed = new Set([
+    '.github/workflows/analytics-12a4-category-migration-runtime.yml',
+    'scripts/check-12a4-category-migration-runtime-scope.mjs',
+    'scripts/verify-12a2-controlled-remote-apply.mjs',
+    'scripts/verify-collector-contracts.mjs',
+    'workers/collector-kick/src/entry.ts',
+    'workers/collector-kick/src/official-livestreams.ts',
+    scheduledObservationRepair,
+  ])
+  const forbidden = changed.filter((path) => !allowed.has(path))
+  assert.deepEqual(forbidden, [], `12A-4 Kick scheduled observation repair changed unapproved paths:\n${forbidden.join('\n')}`)
+
+  for (const prefix of ['apps/', 'packages/', 'db/', 'workers/collector-twitch/', 'workers/shared/']) {
+    const matches = changed.filter((path) => path.startsWith(prefix))
+    assert.deepEqual(matches, [], `Kick scheduled observation repair must not change ${prefix}:\n${matches.join('\n')}`)
+  }
+
+  for (const required of [
+    'workers/collector-kick/src/entry.ts',
+    'workers/collector-kick/src/official-livestreams.ts',
+    scheduledObservationRepair,
+    'scripts/verify-collector-contracts.mjs',
+    'scripts/verify-12a2-controlled-remote-apply.mjs',
+  ]) assert.ok(changed.includes(required), `Kick scheduled observation repair missing required path: ${required}`)
+
+  console.log('12A-4 Kick scheduled observation repair scope passed.')
+  console.log(`- changed files inspected: ${changed.length}`)
+  console.log('- no schema, shared analytics, Twitch collector, application, or package changes')
+  process.exit(0)
+}
+
 const allowed = new Set([
   'db/d1/005_category_capture.sql',
   'docs/audits/12a4-category-migration-runtime-contract.json',

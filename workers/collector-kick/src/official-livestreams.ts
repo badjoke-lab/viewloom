@@ -55,17 +55,19 @@ export async function collectKickOfficialLivestreams(appToken: string, limit = 1
   }
 }
 
-function normalizeOfficialStream(raw: Raw): KickOfficialStreamItem | null {
-  const slug = asText(raw.slug ?? raw.channel_slug)
+export function normalizeOfficialStream(raw: Raw): KickOfficialStreamItem | null {
+  const channel = asRecord(raw.channel)
+  const slug = asText(raw.slug ?? raw.channel_slug ?? channel?.slug)
   const viewers = asNumber(raw.viewer_count ?? raw.viewers)
   if (!slug || viewers <= 0) return null
   const category = asRecord(raw.category)
   const categoryProviderId = asIdentifier(category?.id)
   const categoryName = asText(category?.name)
+  const displayName = asText(raw.username ?? raw.name ?? channel?.username ?? channel?.name) || slug
   return {
     slug,
-    displayName: slug,
-    title: asText(raw.stream_title ?? raw.session_title ?? raw.title),
+    displayName,
+    title: asText(raw.stream_title ?? raw.session_title ?? raw.title ?? categoryName),
     viewer_count: viewers,
     url: `https://kick.com/${slug}`,
     categoryProviderId: categoryProviderId || null,
