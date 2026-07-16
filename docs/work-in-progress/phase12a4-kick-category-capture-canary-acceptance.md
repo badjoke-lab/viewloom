@@ -1,5 +1,9 @@
 # Phase 12A-4-11 — Kick category capture canary read-only acceptance attempt 3
 
+## Status
+
+Accepted initial checkpoint.
+
 ## Purpose
 
 Validate the active Kick-only category capture canary without changing production state.
@@ -16,6 +20,29 @@ This gate follows:
 - execution-path repair PR #580, merged as `654543c46713c327a76f6ff7e61feeea97231982`;
 - exact one-file attempt 3 trigger PR #581, merged as `952716ee71ff9b15aae8771803ee8350cd8b917f`.
 
+## Accepted evidence
+
+Read-only workflow run `29469573749`, job `87529894504`, accepted at `2026-07-16T03:46:04.094Z`.
+
+- trigger attempt: `3`;
+- active window: `2026-07-16T03:45:00.000Z` to `2026-07-17T03:45:00.000Z`;
+- exact bounded canary bindings: present and matching;
+- permanent `CATEGORY_CAPTURE_ENABLED`: absent;
+- current D1 size: `289.17 MB`;
+- projected 90-day size: `311.18 MB`;
+- projected provider headroom: `138.82 MB`;
+- Kick category dictionary rows: `26`;
+- category-bearing snapshot rows since start: `1`;
+- provider leakage rows: `0`;
+- latest category snapshot bucket: `2026-07-16T03:45:00.000Z`;
+- collected at: `2026-07-16T03:45:58.312Z`;
+- stream count: `100`;
+- total viewers: `611,811`;
+- source: `authenticated`;
+- observed freshness: `0.1` minutes;
+- all read-only gates: passed;
+- Twitch authorization: false.
+
 ## Read-only checks
 
 The pull-request workflow reads only:
@@ -24,21 +51,6 @@ The pull-request workflow reads only:
 - the production Kick Worker settings through Cloudflare `GET`;
 - current Kick D1 size through Cloudflare `GET`;
 - aggregate `SELECT` results from the Kick D1 database.
-
-The probe is bounded and may poll while the start workflow deploys the canary and the first scheduled category-bearing snapshot is written.
-
-The evidence verifies:
-
-- the trigger is inside its 24-hour active window;
-- the production Kick Worker exposes the exact bounded attempt 3 canary bindings;
-- the permanent `CATEGORY_CAPTURE_ENABLED` binding is absent;
-- projected 90-day storage remains at or below 330 MB;
-- projected provider headroom remains at or above 100 MB;
-- Kick category dictionary rows exist;
-- category-bearing Kick snapshot rows exist;
-- provider leakage remains zero;
-- the latest Kick minute snapshot exists and remains within the accepted freshness threshold;
-- Twitch has not been authorized or started.
 
 Kick production health is derived from the latest `minute_snapshots` row. The Kick database does not require Twitch's `collector_status` table.
 
@@ -57,8 +69,6 @@ This PR does not:
 - start Twitch category capture;
 - permit cross-provider category identity or combined rankings.
 
-## Acceptance
+## Next gate
 
-The generated evidence artifact is accepted only when all read-only gates pass. A failure remains diagnostic: it must not deploy, roll back, mutate the trigger, or write production data.
-
-After initial acceptance, the scheduled execution workflow continues hourly read-only checkpoints and performs the bounded final rollback at expiry. A separate permanent evidence PR is required before any Twitch canary decision.
+The scheduled execution workflow continues hourly read-only checkpoints and must perform the bounded final rollback after expiry. A separate permanent evidence freeze is required before any Twitch canary decision.
