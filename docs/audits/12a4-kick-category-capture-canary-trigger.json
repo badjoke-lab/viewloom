@@ -4,11 +4,11 @@
   "provider": "kick",
   "oneTime": true,
   "confirmation": "RUN_KICK_CATEGORY_CAPTURE_CANARY",
-  "attempt": 2,
+  "attempt": 3,
   "packagePr": 562,
   "packageMergeSha": "8dc53c6041f425f78e82cddb62328cff1128120f",
   "executionPackagePr": 563,
   "executionPackageMergeSha": "9391fd1479d3c149303637ae65deae7abf0e9b7d",
-  "startAt": "2026-07-16T03:05:00.000Z",
-  "until": "2026-07-17T03:05:00.000Z"
+  "startAt": "2026-07-16T03:45:00.000Z",
+  "until": "2026-07-17T03:45:00.000Z"
 }
