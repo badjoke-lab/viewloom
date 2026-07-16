@@ -20,13 +20,13 @@ Attempt 1 therefore never became a valid canary observation. Its trigger was rem
 
 ## Recovery action
 
-This one-time package deploys only the canonical normal Kick collector configuration:
+The initial one-time package redeployed only the canonical normal Kick collector configuration:
 
 ```text
 workers/collector-kick/wrangler.toml
 ```
 
-That configuration keeps:
+That configuration kept:
 
 - service: `viewloom-collector-kick`;
 - cron: `*/5 * * * *`;
@@ -36,23 +36,34 @@ That configuration keeps:
 - permanent category capture flag absent;
 - canary bindings absent.
 
-After deployment, the workflow polls the Kick D1 database until a snapshot newer than the pre-deploy snapshot is observed or the bounded polling window ends.
+The redeploy alone did not restore snapshots. PR #576 then repaired the active collector path by:
 
-## Success gates
+- accepting official Kick rows with nested `channel.slug` and channel display-name fields;
+- logging scheduled collection lifecycle events;
+- writing an explicit `empty-scheduled-observation` row only when a successful scheduled run writes no current observation;
+- protecting real cross-minute writes from being replaced by a synthetic empty row.
 
-Recovery succeeds only when:
+## Recovery completed
 
-- the one-time trigger is valid and unexpired;
-- the normal Kick Worker deploy succeeds;
-- no canary binding remains after deploy;
-- `CATEGORY_CAPTURE_ENABLED` remains absent;
-- a newer Kick snapshot appears after deployment;
-- the new snapshot is no more than 10 minutes old;
-- provider leakage remains zero.
+PR #576 merged as `4c0e9afeadda9c443d83594648cdf1ea7079cf00`.
+
+Read-only production evidence then confirmed:
+
+- `2026-07-16T02:35:00.000Z`: 100 streams, 655,000 viewers, source `authenticated`;
+- `2026-07-16T02:50:00.000Z`: 100 streams, 659,200 viewers, source `authenticated`;
+- both acceptance reads completed on the first polling attempt;
+- bounded tail from `02:40:05Z` to `02:47:05Z` observed five scheduled events;
+- exceptions observed: `0`;
+- provider leakage rows: `0`;
+- category canary bindings: absent;
+- permanent `CATEGORY_CAPTURE_ENABLED`: absent;
+- Twitch changes: none.
+
+The normal collector recovery outcome is accepted.
 
 ## Hard boundary
 
-This recovery does not:
+This recovery did not:
 
 - start category capture;
 - start Twitch work;
@@ -63,8 +74,14 @@ This recovery does not:
 - change category analytics UI;
 - permit cross-provider category identity or combined rankings.
 
-The only production mutation is redeploying the already canonical normal Kick collector configuration. Any D1 write after deployment must come from the restored normal 5-minute cron.
+All post-repair D1 writes came from the normal scheduled collector path.
 
-## Next gate
+## Retirement
 
-After recovery, multiple consecutive normal Kick snapshots must be confirmed before a new category canary attempt is armed.
+The one-time recovery workflow is retired.
+
+- the main-branch push trigger is removed;
+- the production recovery job is removed;
+- the trigger is marked `retired` and `consumed`;
+- future normal collector changes must use the canonical collector deployment workflow;
+- any future category canary requires a new explicit trigger and a fresh read-only preflight.

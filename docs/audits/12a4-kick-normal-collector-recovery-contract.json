@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-kick-normal-collector-recovery-v1",
   "workstream": "12A-4 Kick normal collector operational recovery",
-  "status": "candidate",
+  "status": "completed",
   "trackingIssue": 519,
   "provider": "kick",
   "reason": "attempt_1_preflight_found_normal_collection_stale_and_canary_not_started",
@@ -30,6 +30,40 @@
     "requirePermanentCategoryFlagAbsent": true,
     "maximumProviderLeakageRows": 0
   },
+  "repair": {
+    "pr": 576,
+    "mergeSha": "4c0e9afeadda9c443d83594648cdf1ea7079cf00",
+    "nestedOfficialChannelNormalization": true,
+    "scheduledLifecycleLogging": true,
+    "honestEmptyObservationFallback": true
+  },
+  "completionEvidence": {
+    "firstAcceptedSnapshot": {
+      "bucketMinute": "2026-07-16T02:35:00.000Z",
+      "collectedAt": "2026-07-16T02:35:56.873Z",
+      "streamCount": 100,
+      "totalViewers": 655000,
+      "sourceMode": "authenticated"
+    },
+    "secondAcceptedSnapshot": {
+      "bucketMinute": "2026-07-16T02:50:00.000Z",
+      "collectedAt": "2026-07-16T02:50:57.695Z",
+      "streamCount": 100,
+      "totalViewers": 659200,
+      "sourceMode": "authenticated"
+    },
+    "boundedTail": {
+      "startedAt": "2026-07-16T02:40:05.446Z",
+      "completedAt": "2026-07-16T02:47:05.928Z",
+      "scheduledEventsObserved": 5,
+      "exceptionsObserved": 0,
+      "productionMutationAuthorized": false
+    },
+    "providerLeakageRows": 0,
+    "canaryBindingsAbsent": true,
+    "permanentCategoryFlagAbsent": true,
+    "outcome": "accepted"
+  },
   "hardBoundary": {
     "twitchChanged": false,
     "categoryCanaryStarted": false,
@@ -43,12 +77,11 @@
     "combinedProviderRankingAllowed": false
   },
   "evidence": {
-    "artifactName": "analytics-12a4-kick-normal-collector-recovery",
-    "artifactPath": "artifacts/12a4-kick-normal-collector-recovery/evidence.json",
+    "artifactName": "analytics-12a4-kick-normal-collector-recovery-acceptance",
     "sanitizedJsonOnly": true,
     "rawPayloadIncluded": false,
     "channelIdentitiesIncluded": false,
     "secretsIncluded": false
   },
-  "nextGateOnSuccess": "confirm multiple fresh normal Kick snapshots before issuing a new category canary attempt"
+  "nextGateOnSuccess": "normal recovery path retired; any future category canary requires a new explicit trigger and fresh preflight"
 }
