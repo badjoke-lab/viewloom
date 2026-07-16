@@ -17,6 +17,7 @@ on:
       - 'workers/collector-kick/src/index.ts'
       - 'workers/collector-kick/src/entry.ts'
       - 'workers/collector-kick/src/official-livestreams.ts'
+      - 'workers/collector-kick/src/scheduled-observation.ts'
       - 'scripts/test-12a4-category-migration-runtime.py'
       - 'scripts/verify-12a4-category-migration-runtime.mjs'
       - 'scripts/check-12a4-category-migration-runtime-scope.mjs'
