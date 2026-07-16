@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Last updated: 2026-07-15
+Last updated: 2026-07-16
 
 ## Current execution state
 
@@ -18,9 +18,14 @@ Phase 12A Analytics Capture Foundation active
 Kick dormant canary package accepted PR #562
 Kick dormant execution package accepted PR #563
 Kick execution merge identity recorded PR #564
-canonical gate 12A-4-10 exact one-file Kick trigger
-exact trigger present no
-category capture started no
+Kick execution-path repair accepted PR #580
+Kick attempt 3 exact trigger accepted PR #581
+Kick attempt 3 initial read-only checkpoint accepted PR #579
+canonical gate 12A-4-11 Kick 24-hour observation
+exact trigger present yes
+bounded Kick category capture active yes
+permanent category capture flag present no
+Twitch category capture started no
 ```
 
 ## Read first
@@ -32,8 +37,8 @@ category capture started no
 5. `docs/audits/12a4-category-capture-enablement-decision-contract.json`
 6. `docs/audits/12a4-kick-category-capture-canary-package-contract.json`
 7. `docs/audits/12a4-kick-category-capture-canary-execution-contract.json`
-8. `docs/work-in-progress/phase12a4-kick-category-capture-canary.md`
-9. `docs/work-in-progress/phase12a4-kick-category-capture-canary-execution.md`
+8. `docs/audits/12a4-kick-category-capture-canary-acceptance-contract.json`
+9. `docs/work-in-progress/phase12a4-kick-category-capture-canary-acceptance.md`
 
 ## Current category evidence chain
 
@@ -46,6 +51,7 @@ category capture started no
 - Accepted provider sequence: `docs/audits/12a4-category-capture-enablement-decision-contract.json`
 - Accepted dormant Kick package: `docs/audits/12a4-kick-category-capture-canary-package-contract.json`
 - Accepted dormant Kick execution package: `docs/audits/12a4-kick-category-capture-canary-execution-contract.json`
+- Accepted Kick attempt 3 initial checkpoint: `docs/audits/12a4-kick-category-capture-canary-acceptance-contract.json`
 
 ## Permanent product and operations records
 
@@ -55,15 +61,17 @@ category capture started no
 
 ## Current gate
 
-The canonical gate is 12A-4-10: the exact one-file Kick category capture canary trigger. The disabled Kick package and dormant execution package are accepted, and PR #564 recorded the exact PR #563 merge identity. This gate-advancement change contains no trigger. Production runtime category capture remains unauthorized, the normal Kick collector remains unchanged, and Twitch remains blocked until accepted Kick canary evidence exists.
+The canonical gate is 12A-4-11: Kick category capture canary 24-hour observation. Attempt 3 started at `2026-07-16T03:45:00.000Z`, and PR #579 accepted the initial read-only checkpoint with exact bounded bindings, category-bearing Kick data, zero provider leakage, and no permanent `CATEGORY_CAPTURE_ENABLED` flag. Hourly read-only checkpoints continue until expiry at `2026-07-17T03:45:00.000Z`; bounded rollback and final evidence remain pending. Twitch remains blocked until the complete Kick observation and rollback evidence are accepted.
 
 ## Invariants
 
 - Twitch and Kick remain separate.
 - Both production category schemas are complete.
 - Normal collector configuration does not contain `CATEGORY_CAPTURE_ENABLED`.
-- Production runtime category capture has not started.
-- No exact Kick canary trigger exists.
+- Kick category capture is active only through the bounded attempt 3 canary bindings.
+- Permanent runtime category capture is not authorized.
+- The exact Kick attempt 3 trigger is present until bounded finalization.
+- Twitch category capture has not started.
 - Schema and execution-cost production triggers are retired.
 - No new cron, backfill, retention expansion, category UI, cross-provider category identity, or combined category rankings are authorized.
 - Missing, partial, stale, empty, error, and demo states remain distinct.
