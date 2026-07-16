@@ -1,11 +1,15 @@
 {
   "schemaVersion": "viewloom-12a4-kick-normal-collector-recovery-trigger-v1",
-  "status": "armed",
+  "status": "retired",
   "provider": "kick",
   "oneTime": true,
+  "consumed": true,
   "confirmation": "RECOVER_KICK_NORMAL_COLLECTOR",
   "attempt": 2,
   "createdAt": "2026-07-15T14:28:00.000Z",
   "expiresAt": "2026-07-15T15:30:00.000Z",
-  "reason": "execute the installed normal Kick collector recovery workflow after attempt 1 package merge did not produce a new snapshot"
+  "retiredAt": "2026-07-16T02:51:01.017Z",
+  "repairPr": 576,
+  "repairMergeSha": "4c0e9afeadda9c443d83594648cdf1ea7079cf00",
+  "reason": "normal Kick collection restored and verified; one-time recovery path must not execute again"
 }
