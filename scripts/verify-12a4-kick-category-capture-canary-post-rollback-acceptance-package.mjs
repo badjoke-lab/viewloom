@@ -44,11 +44,15 @@ assert.equal(/^\s*push:/m.test(workflow), false)
 assert.equal(/^\s*schedule:/m.test(workflow), false)
 assert.ok(workflow.includes(contract.evidence.artifactName))
 assert.ok(workflow.includes('timeout-minutes: 75'))
+assert.match(
+  workflow,
+  /- name: Verify exact post-rollback acceptance scope\n\s+if: github\.event_name == 'pull_request'/,
+)
 assert.ok(runner.includes('canaryBindingsAbsent'))
 assert.ok(runner.includes("['dlx', 'wrangler@4', 'd1', 'execute'"))
 assert.ok(runner.includes('SELECT COUNT(*) AS category_payload_rows_after_grace'))
 assert.ok(runner.includes("json_extract(payload_json, '$.categoryContractVersion') IS NULL"))
-assert.ok(runner.includes("evidence.outcome = contract.observation.preExpiryOutcome"))
+assert.ok(runner.includes('evidence.outcome = contract.observation.preExpiryOutcome'))
 assert.equal(runner.includes('wrangler@4 deploy'), false)
 assert.equal(runner.includes('DELETE FROM'), false)
 assert.equal(runner.includes('INSERT INTO'), false)
@@ -65,6 +69,7 @@ console.log(JSON.stringify({
   provider: contract.provider,
   triggerAttempt: trigger.attempt,
   preExpiryOutcome: contract.observation.preExpiryOutcome,
+  manualDispatchScopeDiffSkipped: true,
   productionMutationAuthorized: false,
   twitchStartAuthorized: false,
 }, null, 2))
