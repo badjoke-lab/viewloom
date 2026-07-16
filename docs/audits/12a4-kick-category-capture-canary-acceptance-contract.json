@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "viewloom-12a4-kick-category-capture-canary-acceptance-v1",
+  "workstream": "12A-4-11 Kick category capture canary read-only acceptance",
+  "status": "candidate",
+  "trackingIssue": 519,
+  "provider": "kick",
+  "acceptedInputs": {
+    "packagePr": 562,
+    "packageMergeSha": "8dc53c6041f425f78e82cddb62328cff1128120f",
+    "executionPackagePr": 563,
+    "executionPackageMergeSha": "9391fd1479d3c149303637ae65deae7abf0e9b7d",
+    "triggerPr": 578,
+    "triggerMergeSha": "71b5f733d1fcf539472189cb90e4e325331f5ad1",
+    "triggerPath": "docs/audits/12a4-kick-category-capture-canary-trigger.json",
+    "executionContractPath": "docs/audits/12a4-kick-category-capture-canary-execution-contract.json"
+  },
+  "observation": {
+    "mode": "read_only_pull_request_probe",
+    "pollIntervalSeconds": 30,
+    "pollAttempts": 30,
+    "minimumCategoryPayloadRows": 1,
+    "maximumProviderLeakageRows": 0,
+    "projectedNinetyDaySizeMbMax": 330,
+    "projectedProviderHeadroomMbMin": 100,
+    "healthSource": "latest_kick_minute_snapshot",
+    "latestSnapshotFreshnessMinutesMax": 20,
+    "requireActiveTriggerWindow": true,
+    "requireExactCanaryBindings": true,
+    "requireKickDictionaryRows": true,
+    "requireCategoryPayloadRows": true,
+    "requireRollupCategorySamples": false
+  },
+  "readOnlyBoundary": {
+    "cloudflareApiMethods": ["GET"],
+    "d1Statements": ["SELECT"],
+    "workerDeployment": false,
+    "workerDeletion": false,
+    "workerSettingsMutation": false,
+    "remoteMigration": false,
+    "runtimeFlagMutation": false,
+    "categoryRowsWrittenByProbe": false,
+    "collectorCadenceChanged": false,
+    "backfillPerformed": false,
+    "retentionChanged": false,
+    "twitchChanged": false,
+    "crossProviderCategoryIdentityAllowed": false,
+    "combinedProviderCategoryRankingAllowed": false
+  },
+  "evidence": {
+    "artifactName": "analytics-12a4-kick-category-canary-readonly-acceptance-attempt-2",
+    "artifactPath": "artifacts/12a4-kick-category-canary-acceptance/evidence.json",
+    "sanitizedJsonOnly": true,
+    "rawPayloadRowsReturned": false,
+    "channelIdentitiesReturned": false,
+    "secretsReturned": false
+  },
+  "pullRequestBoundary": {
+    "productionWrite": false,
+    "productionDeployment": false,
+    "productionRollback": false,
+    "triggerMutation": false,
+    "gateStateMutation": false,
+    "permanentRuntimeEnablement": false,
+    "twitchStartAuthorized": false
+  },
+  "nextGateOnAcceptance": "continue hourly read-only checkpoints until expiry, then freeze final rollback evidence before any Twitch canary decision"
+}
