@@ -29,16 +29,20 @@ export async function runKickScheduledObservation(
   try {
     await collect()
 
+    const completedAt = new Date()
     const latest = await latestSnapshot(env)
-    const currentBucket = floorMinute(new Date())
+    const currentBucket = floorMinute(completedAt)
+    const latestCollectedAtMs = latest ? Date.parse(latest.collected_at) : Number.NaN
+    const collectorWroteSnapshot = Number.isFinite(latestCollectedAtMs)
+      && latestCollectedAtMs >= startedAt.getTime()
+    const currentBucketAlreadyObserved = latest?.bucket_minute === currentBucket
     let synthesizedEmptyObservation = false
 
-    if (!latest || latest.bucket_minute !== currentBucket) {
+    if (!collectorWroteSnapshot && !currentBucketAlreadyObserved) {
       await writeEmptyObservation(env, currentBucket, scheduledAt, latest)
       synthesizedEmptyObservation = true
     }
 
-    const completedAt = new Date()
     console.log(JSON.stringify({
       event: 'kick_scheduled_collection_completed',
       provider: 'kick',
@@ -46,6 +50,8 @@ export async function runKickScheduledObservation(
       completedAt: completedAt.toISOString(),
       durationMs: completedAt.getTime() - startedAt.getTime(),
       bucketMinute: currentBucket,
+      collectorWroteSnapshot,
+      currentBucketAlreadyObserved,
       synthesizedEmptyObservation,
       latestSnapshotMinute: synthesizedEmptyObservation ? currentBucket : latest?.bucket_minute ?? null,
       streamCount: synthesizedEmptyObservation ? 0 : latest?.stream_count ?? 0,
