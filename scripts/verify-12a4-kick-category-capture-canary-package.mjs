@@ -46,10 +46,10 @@ check('PR boundary all false', Object.values(contract.pullRequestBoundary).every
 
 check('accepted decision', decision.status === 'accepted' && JSON.stringify(decision.decision.sequencing) === JSON.stringify(['kick', 'twitch']), { status: decision.status, sequence: decision.decision.sequencing })
 check('Kick package design only', decision.providers.kick.canaryPackageDesignAuthorized === true && decision.providers.kick.productionCanaryExecutionAuthorizedByThisContract === false && decision.decision.productionRuntimeCaptureAuthorized === false, { kick: decision.providers.kick, decision: decision.decision })
-check('v17 current gate', gate.schemaVersion === 'viewloom-12a2-current-gate-state-v17' && gate.currentWorkstream.phase === '12A-4-10', { schemaVersion: gate.schemaVersion, currentWorkstream: gate.currentWorkstream })
-check('package and execution accepted', gate.currentWorkstream.acceptedKickCanaryPackage === true && gate.currentWorkstream.acceptedKickCanaryExecutionPackage === true, gate.currentWorkstream)
-check('exact trigger current and Twitch blocked', gate.currentWorkstream.exactKickTriggerCurrent === true && gate.currentWorkstream.twitchPackageBlockedUntilKickEvidence === true, gate.currentWorkstream)
-check('runtime remains disabled', gate.categoryCapture.runtimeCaptureAuthorized === false && gate.categoryCapture.categoryCaptureFlagPresent === false && gate.categoryCapture.productionCategoryRowsPresent === false && gate.categoryCapture.kickExactTriggerAccepted === false, gate.categoryCapture)
+check('v18 current gate', gate.schemaVersion === 'viewloom-12a2-current-gate-state-v18' && gate.currentWorkstream.phase === '12A-4-11', { schemaVersion: gate.schemaVersion, currentWorkstream: gate.currentWorkstream })
+check('package, execution, and initial checkpoint accepted', gate.currentWorkstream.acceptedKickCanaryPackage === true && gate.currentWorkstream.acceptedKickCanaryExecutionPackage === true && gate.currentWorkstream.acceptedKickCanaryInitialCheckpoint === true, gate.currentWorkstream)
+check('exact trigger current and Twitch blocked', gate.currentWorkstream.exactKickTriggerCurrent === true && gate.currentWorkstream.twitchPackageBlockedUntilKickFinalEvidence === true, gate.currentWorkstream)
+check('bounded canary active without permanent enablement', gate.categoryCapture.runtimeCaptureAuthorized === false && gate.categoryCapture.categoryCaptureFlagPresent === false && gate.categoryCapture.productionCategoryRowsPresent === true && gate.categoryCapture.kickExactTriggerAccepted === true && gate.categoryCapture.kickCanaryObservationActive === true, gate.categoryCapture)
 
 for (const fragment of [
   "import collector from './entry'",
@@ -118,6 +118,6 @@ console.log(JSON.stringify({
   kickDatabaseId: canaryDatabaseId,
   acceptedCandidateHeadSha: contract.acceptance.validatedCandidateHeadSha,
   currentPhase: gate.currentWorkstream.phase,
-  productionRuntimeCaptureAuthorized: false,
-  twitchBlockedUntilKickEvidence: true,
+  permanentRuntimeCaptureAuthorized: false,
+  twitchBlockedUntilKickFinalEvidence: true,
 }, null, 2))
