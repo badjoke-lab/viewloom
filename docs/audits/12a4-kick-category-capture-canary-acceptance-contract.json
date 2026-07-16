@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-kick-category-capture-canary-acceptance-v1",
   "workstream": "12A-4-11 Kick category capture canary read-only acceptance",
-  "status": "candidate",
+  "status": "accepted",
   "trackingIssue": 519,
   "provider": "kick",
   "acceptedInputs": {
@@ -31,6 +31,44 @@
     "requireKickDictionaryRows": true,
     "requireCategoryPayloadRows": true,
     "requireRollupCategorySamples": false
+  },
+  "acceptance": {
+    "pr": 579,
+    "workflowRunId": 29469573749,
+    "workflowJobId": 87529894504,
+    "artifactId": 8364325289,
+    "observedAt": "2026-07-16T03:46:04.094Z",
+    "triggerAttempt": 3,
+    "pollingAttemptsUsed": 8,
+    "storage": {
+      "currentBytes": 303218688,
+      "currentMb": 289.17,
+      "projectedNinetyDaySizeMb": 311.18,
+      "projectedProviderHeadroomMb": 138.82,
+      "pass": true
+    },
+    "serviceBindings": {
+      "enabled": "true",
+      "provider": "kick",
+      "startedAt": "2026-07-16T03:45:00.000Z",
+      "until": "2026-07-17T03:45:00.000Z",
+      "attempt": "3",
+      "categoryCaptureDirectFlagPresent": false
+    },
+    "kickDictionaryRows": 26,
+    "categoryPayloadRowsSinceStart": 1,
+    "providerLeakageRows": 0,
+    "latestCategorySnapshot": {
+      "bucketMinute": "2026-07-16T03:45:00.000Z",
+      "collectedAt": "2026-07-16T03:45:58.312Z",
+      "streamCount": 100,
+      "totalViewers": 611811,
+      "sourceMode": "authenticated",
+      "minutesSinceCollection": 0.1
+    },
+    "allReadOnlyGatesPass": true,
+    "outcome": "accepted",
+    "error": null
   },
   "readOnlyBoundary": {
     "cloudflareApiMethods": ["GET"],
