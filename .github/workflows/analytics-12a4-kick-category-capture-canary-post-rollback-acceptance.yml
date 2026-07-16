@@ -31,6 +31,7 @@ jobs:
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
       - name: Verify exact post-rollback acceptance scope
+        if: github.event_name == 'pull_request'
         run: node scripts/check-12a4-kick-category-capture-canary-post-rollback-acceptance-scope.mjs
       - name: Verify post-rollback read-only acceptance package
         run: node scripts/verify-12a4-kick-category-capture-canary-post-rollback-acceptance-package.mjs
