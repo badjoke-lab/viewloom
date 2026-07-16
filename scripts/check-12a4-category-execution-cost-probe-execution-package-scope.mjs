@@ -33,10 +33,6 @@ const allowed = new Set([
 const canonicalSyncAllowed = new Set([
   'docs/README.md',
   'docs/audits/12a2-current-gate-state.json',
-  'docs/audits/12a4-kick-category-capture-canary-execution-contract.json',
-  'docs/work-in-progress/phase12a4-category-capture-enablement-decision.md',
-  'docs/work-in-progress/phase12a4-kick-category-capture-canary-execution.md',
-  'docs/work-in-progress/phase12a4-kick-category-capture-canary.md',
   'scripts/check-12a4-category-capture-enablement-decision-scope.mjs',
   'scripts/check-12a4-category-execution-cost-probe-execution-package-scope.mjs',
   'scripts/check-12a4-kick-category-capture-canary-execution-package-scope.mjs',
@@ -51,14 +47,18 @@ const canonicalSyncAllowed = new Set([
 const isCanonicalSync = (() => {
   try {
     const gate = JSON.parse(readFileSync('docs/audits/12a2-current-gate-state.json', 'utf8'))
-    return gate.schemaVersion === 'viewloom-12a2-current-gate-state-v17'
-      && gate.status === '12a4_kick_canary_execution_accepted_exact_trigger_current'
-      && gate.currentWorkstream?.phase === '12A-4-10'
+    const trigger = JSON.parse(readFileSync('docs/audits/12a4-kick-category-capture-canary-trigger.json', 'utf8'))
+    return gate.schemaVersion === 'viewloom-12a2-current-gate-state-v18'
+      && gate.status === '12a4_kick_canary_initial_checkpoint_accepted_observation_active'
+      && gate.currentWorkstream?.phase === '12A-4-11'
       && gate.categoryCapture?.kickCanaryPackageAccepted === true
       && gate.categoryCapture?.kickCanaryExecutionPackageAccepted === true
-      && gate.categoryCapture?.kickExactTriggerAccepted === false
+      && gate.categoryCapture?.kickExactTriggerAccepted === true
+      && gate.categoryCapture?.kickCanaryExecuted === true
+      && gate.categoryCapture?.kickCanaryInitialAcceptanceAccepted === true
       && gate.categoryCapture?.runtimeCaptureAuthorized === false
-      && !existsSync('docs/audits/12a4-kick-category-capture-canary-trigger.json')
+      && existsSync('docs/audits/12a4-kick-category-capture-canary-trigger.json')
+      && trigger.attempt === 3
   } catch {
     return false
   }
