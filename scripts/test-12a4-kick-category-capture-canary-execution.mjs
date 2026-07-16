@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import path from 'node:path'
 import {
   inspectKickCanaryTrigger,
 } from './inspect-12a4-kick-category-capture-canary-trigger.mjs'
@@ -7,6 +8,7 @@ import {
   bindingsMatchTrigger,
   canaryBindingsAbsent,
   canaryBindingsFromSettings,
+  generatedCanaryConfigPath,
   projectKickStorage,
   renderActiveCanaryConfig,
 } from './run-12a4-kick-category-capture-canary-execution.mjs'
@@ -74,6 +76,7 @@ assert.equal(badStorage.pass, false)
 
 const template = `
 name = "viewloom-collector-kick"
+main = "src/entry-category-canary.ts"
 # database_id = "placeholder"
 CATEGORY_CAPTURE_CANARY_ENABLED = "false"
 CATEGORY_CAPTURE_CANARY_PROVIDER = "kick"
@@ -89,6 +92,12 @@ assert.ok(rendered.includes(`CATEGORY_CAPTURE_CANARY_UNTIL = "${trigger.until}"`
 assert.ok(rendered.includes('CATEGORY_CAPTURE_CANARY_ATTEMPT = "1"'))
 assert.equal(rendered.includes('\nCATEGORY_CAPTURE_ENABLED ='), false)
 assert.equal(activeTomlValue(template, 'database_id'), 'kick-database')
+
+const templatePath = path.resolve('workers/collector-kick/wrangler.category-canary.toml')
+const activeConfigPath = generatedCanaryConfigPath(templatePath, trigger.attempt)
+assert.equal(path.dirname(activeConfigPath), path.dirname(templatePath))
+assert.equal(path.basename(activeConfigPath), '.wrangler.category-canary.active-attempt-1.toml')
+assert.throws(() => generatedCanaryConfigPath(templatePath, 0), /invalid_canary_attempt/)
 
 const settings = {
   result: {
@@ -127,6 +136,7 @@ console.log(JSON.stringify({
   actions: ['noop', 'start', 'monitor', 'finalize', 'reject'],
   projectedStoragePass: goodStorage,
   projectedStorageFailure: badStorage,
+  generatedConfigDirectoryMatchesTemplate: true,
   activeBindingsMatch: true,
   normalBindingsAbsent: true,
   partialBindingsRejected: true,

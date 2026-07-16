@@ -101,7 +101,17 @@ assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
 assert.equal(gate.categoryCapture.categoryCaptureFlagPresent, false)
 assert.equal(gate.categoryCapture.productionCategoryRowsPresent, false)
 
-assert.equal(exists(triggerPath), false, 'canonical sync must not contain the exact production trigger')
+assert.equal(exists(triggerPath), true, 'active execution repair requires the armed Kick trigger')
+const trigger = json(triggerPath)
+assert.equal(trigger.status, 'armed')
+assert.equal(trigger.provider, 'kick')
+assert.equal(trigger.confirmation, 'RUN_KICK_CATEGORY_CAPTURE_CANARY')
+assert.ok(Number.isSafeInteger(trigger.attempt) && trigger.attempt > 0)
+assert.equal(trigger.packagePr, contract.trigger.exactPackagePr)
+assert.equal(trigger.packageMergeSha, contract.trigger.exactPackageMergeSha)
+assert.equal(trigger.executionPackagePr, contract.acceptance.pr)
+assert.equal(trigger.executionPackageMergeSha, contract.acceptance.mergeSha)
+assert.ok(Date.now() < new Date(trigger.until).getTime(), 'active Kick trigger expired before execution repair validation')
 
 for (const fragment of [
   "const CONFIRMATION = 'RUN_KICK_CATEGORY_CAPTURE_CANARY'",
@@ -119,6 +129,9 @@ for (const fragment of [
   'PROJECTED_SIZE_MAX_MB = 330',
   'PROJECTED_HEADROOM_MIN_MB = 100',
   'export function renderActiveCanaryConfig',
+  'export function generatedCanaryConfigPath',
+  'path.dirname(path.resolve(templatePath))',
+  'fs.rmSync(activeConfigPath, { force: true })',
   'export function canaryBindingsAbsent',
   "if (rendered.includes('CATEGORY_CAPTURE_ENABLED ='))",
   'let canaryDeploySucceeded = false',
@@ -138,6 +151,8 @@ for (const fragment of [
 ]) assert.ok(runner.includes(fragment), `execution runner missing ${fragment}`)
 assert.equal(runner.includes('CLOUDFLARE_API_TOKEN ??'), true)
 assert.equal(runner.includes('authorization: `Bearer ${apiToken}`'), true)
+assert.equal(runner.includes('FROM collector_status'), false)
+assert.ok(runner.includes('SELECT bucket_minute, collected_at, stream_count, total_viewers, source_mode FROM minute_snapshots'))
 assert.equal(runner.includes('rawDeploymentLogs'), false)
 assert.equal(runner.includes('API token'), false)
 
@@ -149,6 +164,8 @@ for (const fragment of [
   "assert.equal(badIdentity.action, 'reject')",
   'assert.equal(goodStorage.pass, true)',
   'assert.equal(badStorage.pass, false)',
+  'assert.equal(path.dirname(activeConfigPath), path.dirname(templatePath))',
+  "assert.equal(path.basename(activeConfigPath), '.wrangler.category-canary.active-attempt-1.toml')",
   'assert.equal(bindingsMatchTrigger(bindings, trigger), true)',
   'assert.equal(canaryBindingsAbsent(normalBindings), true)',
   'assert.equal(canaryBindingsAbsent(partialBindings), false)',
@@ -191,10 +208,13 @@ console.log(JSON.stringify({
   status: contract.status,
   acceptedCandidateHeadSha: contract.acceptance.validatedCandidateHeadSha,
   executionMergeSha: contract.acceptance.mergeSha,
-  triggerPresent: false,
+  triggerPresent: true,
+  triggerAttempt: trigger.attempt,
   packagePr: contract.acceptedPackage.pr,
   packageMergeSha: contract.acceptedPackage.mergeSha,
   currentPhase: gate.currentWorkstream.phase,
+  generatedConfigDirectoryMatchesTemplate: true,
+  kickHealthSource: 'latest_minute_snapshot',
   rollbackContainment: true,
   alreadyRolledBackNoop: true,
   productionRuntimeCaptureStarted: false,
