@@ -9,8 +9,10 @@
     "packageMergeSha": "8dc53c6041f425f78e82cddb62328cff1128120f",
     "executionPackagePr": 563,
     "executionPackageMergeSha": "9391fd1479d3c149303637ae65deae7abf0e9b7d",
-    "triggerPr": 578,
-    "triggerMergeSha": "71b5f733d1fcf539472189cb90e4e325331f5ad1",
+    "executionRepairPr": 580,
+    "executionRepairMergeSha": "654543c46713c327a76f6ff7e61feeea97231982",
+    "triggerPr": 581,
+    "triggerMergeSha": "952716ee71ff9b15aae8771803ee8350cd8b917f",
     "triggerPath": "docs/audits/12a4-kick-category-capture-canary-trigger.json",
     "executionContractPath": "docs/audits/12a4-kick-category-capture-canary-execution-contract.json"
   },
@@ -47,7 +49,7 @@
     "combinedProviderCategoryRankingAllowed": false
   },
   "evidence": {
-    "artifactName": "analytics-12a4-kick-category-canary-readonly-acceptance-attempt-2",
+    "artifactName": "analytics-12a4-kick-category-canary-readonly-acceptance-attempt-3",
     "artifactPath": "artifacts/12a4-kick-category-canary-acceptance/evidence.json",
     "sanitizedJsonOnly": true,
     "rawPayloadRowsReturned": false,
