@@ -6,6 +6,7 @@ import {
   intradayGenerationEnabled,
   maybeGenerateIntradayRollups,
 } from '../../shared/intraday-rollup'
+import { runKickScheduledObservation } from './scheduled-observation'
 
 type Env = {
   DB_KICK_HOT: D1Database
@@ -26,7 +27,7 @@ export default {
 
   async scheduled(event: ScheduledEvent, env: Env): Promise<void> {
     try {
-      await collector.scheduled(event, env)
+      await runKickScheduledObservation(event, env, () => collector.scheduled(event, env))
     } finally {
       const schemaBootstrap = await maybeApplyIntradaySchema(env.DB_KICK_HOT)
       if (schemaBootstrap.attempted) {
