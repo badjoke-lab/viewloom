@@ -1,4 +1,4 @@
-# Phase 12A-4-11 — Kick category capture canary read-only acceptance attempt 2
+# Phase 12A-4-11 — Kick category capture canary read-only acceptance attempt 3
 
 ## Purpose
 
@@ -12,13 +12,15 @@ This gate follows:
 - canonical gate advancement PR #566;
 - normal collector repair PR #576;
 - one-time recovery retirement PR #577;
-- exact one-file attempt 2 trigger PR #578, merged as `71b5f733d1fcf539472189cb90e4e325331f5ad1`.
+- failed no-deploy attempt 2 trigger PR #578;
+- execution-path repair PR #580, merged as `654543c46713c327a76f6ff7e61feeea97231982`;
+- exact one-file attempt 3 trigger PR #581, merged as `952716ee71ff9b15aae8771803ee8350cd8b917f`.
 
 ## Read-only checks
 
 The pull-request workflow reads only:
 
-- the exact attempt 2 trigger and accepted package identities;
+- the exact attempt 3 trigger and accepted package identities;
 - the production Kick Worker settings through Cloudflare `GET`;
 - current Kick D1 size through Cloudflare `GET`;
 - aggregate `SELECT` results from the Kick D1 database.
@@ -28,7 +30,7 @@ The probe is bounded and may poll while the start workflow deploys the canary an
 The evidence verifies:
 
 - the trigger is inside its 24-hour active window;
-- the production Kick Worker exposes the exact bounded attempt 2 canary bindings;
+- the production Kick Worker exposes the exact bounded attempt 3 canary bindings;
 - the permanent `CATEGORY_CAPTURE_ENABLED` binding is absent;
 - projected 90-day storage remains at or below 330 MB;
 - projected provider headroom remains at or above 100 MB;
