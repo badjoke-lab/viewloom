@@ -1,0 +1,22 @@
+name = "viewloom-collector-twitch"
+main = "src/entry-category-canary.ts"
+compatibility_date = "2026-05-18"
+
+# Dormant package template only. Production execution requires a later exact
+# trigger, a generated bounded window, current Twitch D1 size evidence, and a
+# separate acceptance chain. These committed values cannot enable capture.
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+INTRADAY_GENERATION_ENABLED = "true"
+CATEGORY_CAPTURE_CANARY_ENABLED = "false"
+CATEGORY_CAPTURE_CANARY_PROVIDER = "twitch"
+CATEGORY_CAPTURE_CANARY_STARTED_AT = ""
+CATEGORY_CAPTURE_CANARY_UNTIL = ""
+CATEGORY_CAPTURE_CANARY_ATTEMPT = "0"
+
+[[d1_databases]]
+binding = "DB_TWITCH_HOT"
+database_name = "vl_twitch_hot"
+database_id = "b77221fe-80a3-4749-bc0e-d3ad54003dcf"
