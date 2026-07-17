@@ -1,7 +1,0 @@
-{
-  "schemaVersion": "viewloom-12a4-twitch-storage-preflight-diagnostic-marker-v1",
-  "attempt": 5,
-  "requestedAt": "2026-07-17T16:56:12.000Z",
-  "purpose": "verify read-only preflight after Wrangler JSON parser fix",
-  "productionMutationAuthorized": false
-}
