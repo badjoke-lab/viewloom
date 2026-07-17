@@ -2,15 +2,22 @@
 
 ## Status
 
-Prepared. No production action occurs from this package pull request.
+Accepted and retired.
+
+- cleanup package PR: #586
+- cleanup package merge: `aaafab2266ef717b2e51dd5006044578bbfd8ae2`
+- exact one-file cleanup trigger PR: #587
+- cleanup trigger merge: `7fbc343207de235ae583e827ba2fa7796083faf4`
+- final read-only acceptance job: `87822408236`
+- final accepted artifact: `8399137444`
 
 ## Incident evidence
 
-Post-rollback read-only acceptance run `29488056134`, job `87810458773`, artifact `8398761959` completed after all 120 polling attempts and rejected one gate only:
+Post-rollback read-only acceptance run `29488056134`, job `87810458773`, artifact `8398761959` rejected one gate only:
 
 - `canaryBindingsAbsent`: false
 
-All other required conditions passed:
+All other required conditions already passed:
 
 - trigger expired;
 - permanent direct `CATEGORY_CAPTURE_ENABLED` absent;
@@ -19,17 +26,17 @@ All other required conditions passed:
 - provider leakage rows: `0`;
 - schema and storage gates passed.
 
-The expired wrapper is already producing normal payloads because its runtime window is closed. The remaining defect is stale service metadata: the five bounded canary plain-text bindings were not removed.
+The remaining defect was stale service metadata: the five bounded canary plain-text bindings were not removed.
 
-## Recovery boundary
+## Recovery performed
 
-The recovery performs one operation only when a separate exact one-file trigger is merged:
+The recovery performed one operation only:
 
 ```text
 pnpm dlx wrangler@4 deploy --config workers/collector-kick/wrangler.toml
 ```
 
-It does not:
+It did not:
 
 - restart category capture;
 - add `CATEGORY_CAPTURE_ENABLED`;
@@ -40,28 +47,24 @@ It does not:
 - change retention;
 - alter application UI or cross-provider behavior.
 
-## Acceptance
+## Final acceptance
 
-The cleanup succeeds only when:
+The independent post-rollback acceptance then passed:
 
-1. the exact attempt-3 category trigger is expired;
-2. the cleanup trigger is valid and unexpired;
-3. the production service has either the exact expired attempt-3 bindings or is already clean;
-4. normal Kick configuration is the only deployed configuration;
-5. all canary bindings are absent afterward;
-6. no permanent direct category flag exists;
-7. a newer fresh authenticated non-empty Kick snapshot is observed;
-8. category payload rows after the grace boundary remain zero;
-9. provider leakage remains zero.
+- all canary bindings absent;
+- no permanent direct category flag;
+- newer fresh authenticated non-empty Kick snapshot observed;
+- category payload rows after grace remained `0`;
+- provider leakage remained `0`;
+- current/projected/headroom storage gates passed;
+- Twitch change: none.
 
-Sanitized evidence is uploaded for every execution outcome.
+The accepted sanitized evidence is frozen at:
 
-## Sequence
+`docs/audits/12a4-kick-category-capture-canary-post-rollback-acceptance-evidence.json`
 
-1. Merge this dormant package.
-2. Open and merge a separate pull request containing only `docs/audits/12a4-kick-canary-expiry-binding-cleanup-trigger.json`.
-3. Inspect the cleanup evidence artifact.
-4. Re-run the post-rollback read-only acceptance package.
-5. Freeze accepted final evidence and advance the canonical gate.
+## Retirement
 
-Twitch remains blocked throughout this sequence.
+The one-time cleanup trigger is consumed and retired. The cleanup workflow no longer has a push event or production deployment job. It remains only as a retirement verifier and normal Kick dry-run gate.
+
+Kick final observation and rollback are accepted. Twitch remains a separate decision and is not automatically started or authorized.
