@@ -1,9 +1,10 @@
 {
   "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-storage-preflight-v1",
   "workstream": "12A-4-15 Twitch category canary read-only storage preflight",
-  "status": "prepared",
+  "status": "accepted_candidate",
   "trackingIssue": 519,
   "provider": "twitch",
+  "observedAt": "2026-07-17T16:57:55.343Z",
   "acceptedInputs": {
     "twitchPackagePr": 590,
     "twitchPackageMergeSha": "e798df275b2fad0601b2e9ef89c76a6a30f1d038",
@@ -15,16 +16,22 @@
   },
   "workflow": {
     "path": ".github/workflows/analytics-12a4-twitch-category-capture-canary-storage-preflight.yml",
-    "requestPath": "docs/audits/12a4-twitch-category-capture-canary-storage-preflight-request.json",
     "pullRequestValidationOnly": true,
-    "productionObservationEvent": "push of exact request to main",
+    "productionObservationRetired": true,
     "automaticRecurringExecution": false,
+    "pushEvent": false,
     "scheduleEvent": false,
-    "workflowDispatchProductionAllowed": false
+    "workflowDispatchProductionAllowed": false,
+    "reportingWorkflowRetired": true,
+    "allRequestFilesRetired": true
   },
   "readOnlyBoundary": {
-    "cloudflareApiMethods": ["GET"],
-    "d1Statements": ["SELECT"],
+    "cloudflareApiMethods": [
+      "GET"
+    ],
+    "d1Statements": [
+      "SELECT"
+    ],
     "workerDeployment": false,
     "workerDeletion": false,
     "workerSettingsMutation": false,
@@ -65,33 +72,67 @@
       "intraday_rollup_status"
     ]
   },
+  "storage": {
+    "providerCurrentBytes": 341733376,
+    "providerCurrentMb": 325.9,
+    "accountCurrentBytes": 3843391488,
+    "accountCurrentMb": 3665.34,
+    "incrementalMbWithSafety": 48.32,
+    "projectedNinetyDaySizeMb": 374.22,
+    "projectedProviderHeadroomMb": 75.78,
+    "projectedAccountWideSizeMb": 3713.66,
+    "projectedAccountWideHeadroomMb": 894.34,
+    "providerPass": true,
+    "accountPass": true,
+    "pass": true
+  },
   "evidence": {
     "runner": "scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs",
-    "artifactName": "analytics-12a4-twitch-category-canary-storage-preflight",
+    "artifactName": "analytics-12a4-twitch-category-canary-storage-preflight-diagnostics-attempt-4",
     "artifactPath": "artifacts/12a4-twitch-category-canary-storage-preflight/evidence.json",
     "repositoryEvidencePath": "docs/audits/12a4-twitch-category-capture-canary-storage-preflight-evidence.json",
     "digestAlgorithm": "sha256",
+    "digest": "sha256:0c7de9e6d71027b9b040c348f017d413908e631b01718d347b72d2ae8700f943",
     "sanitizedJsonOnly": true,
     "rawPayloadRowsReturned": false,
     "channelIdentitiesReturned": false,
     "credentialsReturned": false
   },
   "acceptance": {
-    "packagePr": null,
-    "packageMergeSha": null,
-    "productionWorkflowRunId": null,
-    "productionWorkflowJobId": null,
-    "artifactId": null,
-    "observedAt": null,
-    "evidenceDigest": null,
-    "storagePass": false,
-    "schemaPass": false,
-    "providerLeakagePass": false,
-    "bindingsPass": false,
-    "latestSnapshotPass": false,
-    "allReadOnlyGatesPass": false,
+    "pr": 599,
+    "mergeSha": null,
+    "mergeShaRecorded": false,
+    "packagePr": 594,
+    "packageMergeSha": "bb15f8ab9ebef98168129649573dd5c28a0a0b07",
+    "reportingPr": 595,
+    "reportingMergeSha": "335b3190595957008c55e64ca5cf9c808cf42cf8",
+    "metadataPr": 596,
+    "metadataMergeSha": "1d9e7385fe97e278d94aa72730f7f691c0809fa3",
+    "diagnosticPr": 597,
+    "diagnosticMergeSha": "7177958e7530043c1d04dd7fed73eca409ffd730",
+    "parserFixPr": 598,
+    "parserFixMergeSha": "a8af5e3d3bad24e1994312f2877e470276b3f517",
+    "validatedSourceCommitSha": "a8af5e3d3bad24e1994312f2877e470276b3f517",
+    "productionWorkflowRunId": 29598193753,
+    "productionWorkflowJobId": 87943655515,
+    "artifactId": 8413901173,
+    "artifactDigest": "sha256:ec0bd67698f93f104120aa626a854df027cb6d8a013469a4b6e8dd26a58f3225",
+    "observedAt": "2026-07-17T16:57:55.343Z",
+    "evidenceDigest": "sha256:0c7de9e6d71027b9b040c348f017d413908e631b01718d347b72d2ae8700f943",
+    "storagePass": true,
+    "providerStoragePass": true,
+    "accountStoragePass": true,
+    "schemaPass": true,
+    "providerLeakagePass": true,
+    "bindingsPass": true,
+    "latestSnapshotPass": true,
+    "allReadOnlyGatesPass": true,
     "productionMutationPerformed": false,
-    "triggerCreated": false
+    "triggerCreated": false,
+    "runtimeCaptureStarted": false,
+    "productionObservationPathRetired": true,
+    "reportingPathRetired": true,
+    "allRequestFilesRetired": true
   },
   "pullRequestBoundary": {
     "productionObservationPerformed": false,
@@ -110,5 +151,5 @@
     "crossProviderCategoryIdentityAllowed": false,
     "combinedProviderCategoryRankingAllowed": false
   },
-  "nextGate": "freeze exact sanitized evidence and digest in a separate acceptance PR; no Twitch canary trigger before accepted fresh preflight evidence"
+  "nextGate": "record PR #599 merge SHA and mark this contract accepted; Twitch trigger remains a separate one-file gate"
 }
