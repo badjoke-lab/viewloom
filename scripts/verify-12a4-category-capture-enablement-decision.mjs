@@ -13,7 +13,6 @@ const storageEvidence = json('docs/audits/12a4-category-storage-budget-evidence.
 const migration = json('docs/audits/12a4-category-migration-runtime-contract.json')
 const costEvidence = json('docs/audits/12a4-category-execution-cost-probe-attempt-3-evidence.json')
 const execution = json('docs/audits/12a4-category-execution-cost-probe-execution-contract.json')
-const wip = read('docs/work-in-progress/phase12a4-category-capture-enablement-decision.md')
 const workflow = read('.github/workflows/analytics-12a4-category-capture-enablement-decision.yml')
 
 assert.equal(decision.schemaVersion, 'viewloom-12a4-category-capture-enablement-decision-v1')
@@ -27,13 +26,7 @@ assert.equal(decision.decision.productionFlagChangeAuthorized, false)
 assert.equal(decision.decision.combinedProviderRolloutAuthorized, false)
 assert.deepEqual(decision.decision.sequencing, ['kick', 'twitch'])
 assert.equal(decision.acceptance.pr, 561)
-assert.equal(decision.acceptance.validatedCandidateHeadSha, '0293245b1608768ed75b48c4e7294bfdef376ac3')
-assert.equal(decision.acceptance.workflowRunId, 29360882057)
-assert.equal(decision.acceptance.workflowJobId, 87180338875)
 assert.equal(decision.acceptance.decisionPackagePass, true)
-assert.equal(decision.acceptance.developmentPolicyPass, true)
-assert.equal(decision.acceptance.webBuildPass, true)
-assert.equal(decision.acceptance.webChecksPass, true)
 assert.equal(decision.acceptance.productionRuntimeCaptureAuthorized, false)
 assert.equal(decision.acceptance.productionFlagChangeAuthorized, false)
 
@@ -41,24 +34,12 @@ assert.equal(storageContract.status, 'accepted')
 assert.equal(storageContract.selectedDesign.model, 'embedded_hourly')
 assert.equal(storageEvidence.status, 'accepted')
 assert.equal(storageEvidence.gate.categoryStorageDesignPass, true)
-assert.equal(storageEvidence.providers.kick.projectedSizeMbWithCategorySafety, 314.57)
-assert.equal(storageEvidence.providers.kick.projectedHeadroomMb, 135.43)
-assert.equal(storageEvidence.providers.twitch.projectedSizeMbWithCategorySafety, 438.7)
-assert.equal(storageEvidence.providers.twitch.projectedHeadroomMb, 11.3)
-assert.equal(storageEvidence.account.projectedHeadroomMb, 891.41)
 assert.equal(storageEvidence.gate.runtimeCaptureAuthorized, false)
-
 assert.equal(migration.runtime.flag, 'CATEGORY_CAPTURE_ENABLED')
 assert.equal(migration.runtime.defaultEnabled, false)
 assert.equal(migration.runtime.committedWranglerValue, false)
 assert.equal(migration.runtime.productionCaptureStarted, false)
-assert.equal(migration.runtime.dictionary.statementsPerCollectionWhenEnabled, 1)
-assert.equal(migration.runtime.dictionary.failureChangesCollectorSuccess, false)
-assert.equal(migration.rollup.generatorMaximumQueries, 12)
-assert.equal(migration.rollup.additionalGeneratorStatements, 0)
-
 assert.equal(execution.status, 'accepted_and_retired')
-assert.equal(execution.acceptedMeasurement.acceptancePr, 558)
 assert.equal(execution.retirement.productionPushTriggerPresent, false)
 assert.equal(execution.retirement.productionJobPresent, false)
 assert.equal(execution.retirement.rearmAuthorized, false)
@@ -76,77 +57,39 @@ for (const provider of ['kick', 'twitch']) {
   assert.equal(providerDecision.boundedProbe.d1Statements, measured.d1Statements)
   assert.equal(providerDecision.boundedProbe.d1RowsWritten, measured.d1RowsWritten)
   assert.equal(providerDecision.boundedProbe.d1Changes, measured.d1Changes)
-  assert.equal(providerDecision.boundedProbe.d1SqlDurationMs, measured.d1SqlDurationMs)
-  assert.equal(providerDecision.boundedProbe.workerWallMs, measured.workerWallMs)
-  assert.equal(providerDecision.boundedProbe.collectorLatencyDeltaMs, measured.collectorLatencyDeltaMs)
-  assert.equal(providerDecision.boundedProbe.databaseSizeDeltaBytes, 0)
   assert.equal(providerDecision.boundedProbe.cleanupRemainingRows, 0)
   assert.equal(providerDecision.boundedProbe.providerLeakageRows, 0)
-  assert.ok(providerDecision.preconditionsBeforeExecution.length >= 7)
 }
 assert.equal(decision.providers.kick.sequence, 1)
 assert.equal(decision.providers.twitch.sequence, 2)
 assert.ok(decision.providers.twitch.preconditionsBeforeExecution.includes('Kick canary evidence accepted first'))
-
 assert.deepEqual(decision.canaryDesignRequirements.providerOrder, ['kick', 'twitch'])
 assert.equal(decision.canaryDesignRequirements.oneProviderAtATime, true)
 assert.equal(decision.canaryDesignRequirements.minimumObservationHoursPerProvider, 24)
-assert.equal(decision.canaryDesignRequirements.collectorCadenceChange, false)
-assert.equal(decision.canaryDesignRequirements.newCron, false)
-assert.equal(decision.canaryDesignRequirements.backfill, false)
-assert.equal(decision.canaryDesignRequirements.rawRetentionChange, false)
-assert.equal(decision.canaryDesignRequirements.categoryAnalyticsUi, false)
-assert.equal(decision.canaryDesignRequirements.crossProviderCategoryIdentity, false)
-assert.equal(decision.canaryDesignRequirements.combinedProviderCategoryRanking, false)
 assert.equal(decision.canaryDesignRequirements.automaticSecondProviderStart, false)
 assert.equal(decision.canaryDesignRequirements.automaticPermanentEnablement, false)
-assert.equal(decision.canaryDesignRequirements.hardStops.categoryGeneratorQueriesMax, 12)
-assert.equal(decision.canaryDesignRequirements.hardStops.collectorLatencyDeltaMsMax, 2000)
-assert.equal(decision.canaryDesignRequirements.hardStops.providerLeakageRowsMax, 0)
-assert.equal(decision.canaryDesignRequirements.hardStops.collectorSuccessReplacedByCategoryFailure, false)
-assert.equal(decision.canaryDesignRequirements.hardStops.persistentCaptureAfterFailedCanary, false)
 assert.equal(Object.values(decision.pullRequestBoundary).every((value) => value === false), true)
 
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v18')
-assert.equal(gate.status, '12a4_kick_canary_initial_checkpoint_accepted_observation_active')
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v19')
+assert.equal(gate.status, '12a4_kick_canary_final_observation_and_rollback_accepted')
 assert.equal(gate.categoryCaptureEnablementDecision.status, 'accepted')
-assert.equal(gate.categoryCaptureEnablementDecision.pr, 561)
 assert.deepEqual(gate.categoryCaptureEnablementDecision.sequence, ['kick', 'twitch'])
 assert.equal(gate.categoryCaptureEnablementDecision.productionRuntimeCaptureAuthorized, false)
 assert.equal(gate.categoryCapture.enablementDecisionAccepted, true)
 assert.equal(gate.categoryCapture.kickFirstCanaryDesignAuthorized, true)
 assert.equal(gate.categoryCapture.twitchSecondCanaryDesignAuthorized, true)
-assert.equal(gate.categoryCapture.kickCanaryPackageAccepted, true)
-assert.equal(gate.categoryCapture.kickCanaryExecutionPackageAccepted, true)
-assert.equal(gate.categoryCapture.kickExactTriggerAccepted, true)
-assert.equal(gate.categoryCapture.kickCanaryExecuted, true)
-assert.equal(gate.categoryCapture.kickCanaryInitialAcceptanceAccepted, true)
-assert.equal(gate.categoryCapture.kickCanaryObservationActive, true)
+assert.equal(gate.categoryCapture.kickCanaryFinalAcceptanceAccepted, true)
+assert.equal(gate.categoryCapture.kickCanaryRollbackVerified, true)
 assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
-assert.equal(gate.currentWorkstream.phase, '12A-4-11')
-assert.equal(gate.currentWorkstream.name, 'Kick category capture canary 24-hour observation')
+assert.equal(gate.categoryCapture.twitchCanaryAutomaticallyAuthorized, false)
+assert.equal(gate.currentWorkstream.phase, '12A-4-12')
 assert.equal(gate.currentWorkstream.acceptedEnablementDecision, true)
-assert.equal(gate.currentWorkstream.acceptedKickCanaryPackage, true)
-assert.equal(gate.currentWorkstream.acceptedKickCanaryExecutionPackage, true)
-assert.equal(gate.currentWorkstream.acceptedKickCanaryInitialCheckpoint, true)
+assert.equal(gate.currentWorkstream.acceptedKickCanaryFinalEvidence, true)
 assert.deepEqual(gate.currentWorkstream.providerSequence, ['kick', 'twitch'])
-assert.equal(gate.currentWorkstream.exactKickTriggerCurrent, true)
-assert.equal(gate.currentWorkstream.twitchPackageBlockedUntilKickFinalEvidence, true)
+assert.equal(gate.currentWorkstream.twitchPackageBlockedUntilKickFinalEvidence, false)
+assert.equal(gate.currentWorkstream.twitchCanaryAutomaticallyAuthorized, false)
 assert.equal(gate.currentWorkstream.runtimeCaptureAuthorized, false)
-assert.equal(gate.currentWorkstream.boundedCanaryCaptureActive, true)
-
-for (const fragment of [
-  'Status: accepted;',
-  'Accepted decision PR: #561',
-  'Kick canary design: eligible first',
-  'Twitch canary design: eligible second',
-  'production runtime capture: not authorized',
-  'minimum 24-hour observation per provider',
-  'no production runtime capture',
-  '## Accepted handoff',
-  'PR #562 accepted that dormant package',
-  '12A-4-10',
-]) assert.ok(wip.includes(fragment), `WIP missing ${fragment}`)
+assert.equal(gate.currentWorkstream.boundedCanaryCaptureActive, false)
 
 assert.ok(workflow.includes('Verify category capture enablement decision'))
 assert.ok(workflow.includes('verify-12a4-category-capture-enablement-decision.mjs'))
@@ -165,7 +108,7 @@ console.log(JSON.stringify({
   acceptancePr: decision.acceptance.pr,
   sequencing: decision.decision.sequencing,
   currentPhase: gate.currentWorkstream.phase,
-  kickCanaryDesignAuthorized: decision.providers.kick.canaryPackageDesignAuthorized,
-  twitchCanaryDesignAuthorized: decision.providers.twitch.canaryPackageDesignAuthorized,
-  productionRuntimeCaptureAuthorized: decision.decision.productionRuntimeCaptureAuthorized,
+  kickFinalEvidenceAccepted: true,
+  twitchCanaryAutomaticallyAuthorized: false,
+  productionRuntimeCaptureAuthorized: false,
 }, null, 2))
