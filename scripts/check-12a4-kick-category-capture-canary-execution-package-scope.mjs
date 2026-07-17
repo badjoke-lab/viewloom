@@ -24,6 +24,12 @@ const canonicalSyncAllowed = new Set([
   'scripts/verify-12a4-kick-category-capture-canary-execution-package.mjs',
   'scripts/verify-12a4-kick-category-capture-canary-package.mjs',
   'scripts/verify-development-policy.mjs',
+  '.github/workflows/analytics-12a4-kick-canary-expiry-binding-cleanup.yml',
+  'docs/audits/12a4-kick-canary-expiry-binding-cleanup-contract.json',
+  'docs/work-in-progress/phase12a4-kick-canary-expiry-binding-cleanup.md',
+  'scripts/check-12a4-kick-canary-expiry-binding-cleanup-scope.mjs',
+  'scripts/run-12a4-kick-canary-expiry-binding-cleanup.mjs',
+  'scripts/verify-12a4-kick-canary-expiry-binding-cleanup-package.mjs',
 ])
 
 const forbiddenPrefixes = ['workers/collector-twitch/', 'apps/', 'db/']
