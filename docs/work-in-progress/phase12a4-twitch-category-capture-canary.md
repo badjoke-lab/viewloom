@@ -2,7 +2,9 @@
 
 ## Status
 
-Candidate package only. Production execution is not authorized.
+Accepted dormant package. Production execution is not authorized.
+
+PR #590 candidate head `685c813d5d1a0f3fd36e0d85072d791da3a30f41` passed exact scope, package verification, provider-separation fixtures, collector typecheck, development policy, and normal/disabled-canary Worker dry-runs in workflow run `29575999254`, job `87870458377`.
 
 ## Purpose
 
@@ -60,11 +62,10 @@ This pull request must not:
 
 ## Later gates
 
-1. Accept this dormant package through PR-only validation.
-2. Design a separate dormant execution/evidence package.
-3. Capture current Twitch D1 and account-wide storage evidence.
-4. Accept a later exact one-file trigger only if every storage and runtime precondition passes.
-5. Run a bounded 24-hour Twitch canary.
-6. Freeze final rollback evidence in a separate acceptance PR.
+1. Design and accept a separate dormant execution/evidence package.
+2. Capture current Twitch D1 and account-wide storage evidence.
+3. Accept a later exact one-file trigger only if every storage and runtime precondition passes.
+4. Run a bounded 24-hour Twitch canary.
+5. Freeze final rollback evidence in a separate acceptance PR.
 
 No later step is automatic.
