@@ -2,9 +2,9 @@
 
 ## Status
 
-Accepted evidence candidate in PR #599. The exact production observation passed every read-only gate. The contract remains `accepted_candidate` until PR #599's merge SHA is recorded in a separate finalization PR.
+Accepted. PR #599 froze the exact successful evidence and retired every production observation path. Its merge SHA is `785a271a7b95808e01478b9fb3846028229faa24`.
 
-No Twitch category canary trigger exists, and runtime category capture is not authorized.
+No Twitch category canary trigger exists, runtime category capture is not authorized, and permanent category enablement remains blocked.
 
 ## Accepted observation
 
@@ -15,7 +15,8 @@ No Twitch category canary trigger exists, and runtime category capture is not au
 - artifact digest: `sha256:ec0bd67698f93f104120aa626a854df027cb6d8a013469a4b6e8dd26a58f3225`
 - observed at: `2026-07-17T16:57:55.343Z`
 - evidence digest: `sha256:0c7de9e6d71027b9b040c348f017d413908e631b01718d347b72d2ae8700f943`
-- outcome: `accepted_candidate`
+- outcome: `accepted_candidate` in the immutable observed evidence
+- final contract status: `accepted`
 
 The initial reporting run exposed a Wrangler output parser defect. PR #598 replaced the parser with a balanced JSON boundary extractor and added prefix, suffix, ANSI, nested-object, and string-brace fixtures. The parser-fixed production observation then succeeded.
 
@@ -50,27 +51,25 @@ All storage thresholds passed:
 
 ## Read-only boundary
 
-The accepted observation used:
-
-- direct Cloudflare API `GET` requests only;
-- D1 `SELECT` statements only.
+The accepted observation used direct Cloudflare API `GET` requests and D1 `SELECT` statements only.
 
 It performed no Worker deployment or deletion, no Worker settings mutation, no D1 write, no migration, no flag change, no trigger creation, no runtime capture, and no Kick change.
 
-## Retirement
+## Retired paths
 
-PR #599 removes:
-
-- the original one-time observation request;
-- the reporting request;
-- the diagnostic marker;
-- the reporting production workflow;
-- the push-triggered production jobs from the original preflight workflow.
+PR #599 removed the original observation request, reporting request, diagnostic marker, reporting production workflow, and all push-triggered production jobs from the remaining preflight workflow.
 
 The remaining workflow is pull-request verification only and contains no production credentials or production operation.
 
 ## Next gate
 
-After PR #599 merges, a separate finalization PR must record its exact merge SHA and change the contract from `accepted_candidate` to `accepted`.
+A separate exact one-file Twitch canary trigger may now be designed. It must pin:
 
-Only after that finalization may a separate one-file Twitch canary trigger be considered. The trigger must pin the accepted preflight PR, merge SHA, observation timestamp, and evidence digest and must still pass the 60-minute freshness rule at start. No automatic start or permanent enablement is authorized.
+- preflight acceptance PR `#599`;
+- preflight acceptance merge SHA `785a271a7b95808e01478b9fb3846028229faa24`;
+- observation time `2026-07-17T16:57:55.343Z`;
+- evidence digest `sha256:0c7de9e6d71027b9b040c348f017d413908e631b01718d347b72d2ae8700f943`.
+
+The trigger inspector still rejects evidence older than 60 minutes at the start event. Therefore a later trigger requires a fresh accepted storage observation or an explicitly revised freshness gate; this acceptance does not silently bypass that rule.
+
+No automatic Twitch start, permanent enablement, cadence change, retention change, backfill, or cross-provider analytics is authorized.
