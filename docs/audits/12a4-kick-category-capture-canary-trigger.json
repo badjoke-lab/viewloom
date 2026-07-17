@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a4-kick-category-capture-canary-trigger-v1",
-  "status": "armed",
+  "status": "consumed_and_retired",
   "provider": "kick",
   "oneTime": true,
   "confirmation": "RUN_KICK_CATEGORY_CAPTURE_CANARY",
@@ -9,6 +9,13 @@
   "packageMergeSha": "8dc53c6041f425f78e82cddb62328cff1128120f",
   "executionPackagePr": 563,
   "executionPackageMergeSha": "9391fd1479d3c149303637ae65deae7abf0e9b7d",
+  "triggerPr": 581,
+  "triggerMergeSha": "952716ee71ff9b15aae8771803ee8350cd8b917f",
   "startAt": "2026-07-16T03:45:00.000Z",
-  "until": "2026-07-17T03:45:00.000Z"
+  "until": "2026-07-17T03:45:00.000Z",
+  "finalAcceptanceWorkflowRunId": 29488056134,
+  "finalAcceptanceWorkflowJobId": 87822408236,
+  "finalAcceptanceArtifactId": 8399137444,
+  "retired": true,
+  "retiredReason": "bounded_kick_canary_completed_and_final_rollback_evidence_accepted"
 }
