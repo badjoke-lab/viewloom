@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Last updated: 2026-07-17
+Last updated: 2026-07-18
 
 ## Current execution state
 
@@ -23,12 +23,16 @@ Kick attempt 3 initial read-only checkpoint accepted PR #579
 Kick expired-binding cleanup package accepted PR #586
 Kick expired-binding cleanup trigger accepted PR #587
 Kick cleanup production path retired PR #588
-canonical gate 12A-4-12 Kick final observation and rollback accepted
-exact Kick trigger current no
-bounded Kick category capture active no
-Kick execution push and hourly schedule retired yes
-permanent category capture flag present no
+Kick final observation and rollback accepted PR #589
+Twitch dormant canary package accepted PR #590
+Twitch dormant execution package accepted PR #591 and acceptance PR #592
+Twitch read-only storage preflight accepted PR #599 and finalized PR #600
+Twitch storage preflight artifact: `8413901173`
+canonical gate 12A-4-15 Twitch storage preflight accepted; exact trigger blocked by freshness
+exact Twitch trigger current no
+fresh Twitch storage evidence for start no
 Twitch category capture started no
+permanent category capture flag present no
 ```
 
 ## Read first
@@ -42,7 +46,11 @@ Twitch category capture started no
 7. `docs/audits/12a4-kick-category-capture-canary-execution-contract.json`
 8. `docs/audits/12a4-kick-category-capture-canary-post-rollback-acceptance-contract.json`
 9. `docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json`
-10. `docs/work-in-progress/phase12a4-kick-category-capture-canary-post-rollback-acceptance.md`
+10. `docs/audits/12a4-twitch-category-capture-canary-package-contract.json`
+11. `docs/audits/12a4-twitch-category-capture-canary-execution-contract.json`
+12. `docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json`
+13. `docs/audits/12a4-twitch-category-capture-canary-storage-preflight-evidence.json`
+14. `docs/work-in-progress/phase12a4-twitch-category-capture-canary-storage-preflight.md`
 
 ## Current category evidence chain
 
@@ -58,6 +66,10 @@ Twitch category capture started no
 - Accepted Kick attempt 3 initial checkpoint: `docs/audits/12a4-kick-category-capture-canary-acceptance-contract.json`
 - Accepted final Kick post-rollback evidence: `docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json`
 - Accepted and retired cleanup chain: `docs/audits/12a4-kick-canary-expiry-binding-cleanup-contract.json`
+- Accepted dormant Twitch package: `docs/audits/12a4-twitch-category-capture-canary-package-contract.json`
+- Accepted dormant Twitch execution package: `docs/audits/12a4-twitch-category-capture-canary-execution-contract.json`
+- Accepted Twitch storage preflight: `docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json`
+- Frozen Twitch storage evidence: `docs/audits/12a4-twitch-category-capture-canary-storage-preflight-evidence.json`
 
 ## Permanent product and operations records
 
@@ -67,9 +79,9 @@ Twitch category capture started no
 
 ## Current gate
 
-The canonical gate is 12A-4-12: Kick category capture canary final observation and rollback accepted. Final artifact `8399137444` proves that the attempt-3 window expired, all canary bindings are absent, permanent category capture remains disabled, no category payload was written after the ten-minute grace boundary, provider leakage is zero, and normal authenticated non-empty Kick snapshots resumed. The exact Kick trigger, hourly monitor/finalizer, cleanup deployment path, and production post-rollback probe are retired.
+The canonical gate is 12A-4-15: the Twitch category canary package, dormant execution package, and read-only storage preflight are accepted. The accepted observation recorded Twitch D1 at 325.90 MB, projected 90-day size at 374.22 MB, provider headroom at 75.78 MB, projected account-wide headroom at 894.34 MB, zero provider leakage, absent canary bindings, no permanent category flag, and a fresh authenticated non-empty 300-stream snapshot at observation time. All preflight production observation and reporting paths are retired.
 
-Twitch is now eligible only for a separate canary-package evaluation. Twitch has not started, is not automatically authorized, and permanent runtime category capture remains unauthorized.
+The exact Twitch trigger does not exist. The accepted observation is no longer within the execution inspector's 60-minute freshness window, so the next gate requires a new fresh read-only storage observation followed by a separate exact one-file trigger. Twitch has not started, is not automatically authorized, and permanent runtime category capture remains unauthorized.
 
 ## Invariants
 
@@ -77,11 +89,14 @@ Twitch is now eligible only for a separate canary-package evaluation. Twitch has
 - Both production category schemas are complete.
 - Normal collector configuration does not contain `CATEGORY_CAPTURE_ENABLED`.
 - Kick category capture is not active.
+- Twitch category capture has not started.
 - Permanent runtime category capture is not authorized.
 - The exact Kick attempt 3 trigger is consumed and retired.
 - The Kick canary push path and hourly schedule are retired.
 - The cleanup deployment path and post-rollback production probe are retired.
-- Twitch category capture has not started.
+- Twitch preflight production observation and reporting paths are retired.
+- The Twitch execution package remains dormant until a separate exact trigger is accepted.
+- The accepted Twitch storage evidence does not bypass the 60-minute start-time freshness rule.
 - Schema and execution-cost production triggers are retired.
 - No new cron, backfill, retention expansion, category UI, cross-provider category identity, or combined category rankings are authorized.
 - Missing, partial, stale, empty, error, and demo states remain distinct.

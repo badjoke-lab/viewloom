@@ -9,10 +9,10 @@ const requestPaths = [
   'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-reporting-request.json',
   'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-diagnostic-marker.json',
 ]
-
 const allowed = new Set([
-  'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json',
-  'docs/work-in-progress/phase12a4-twitch-category-capture-canary-storage-preflight.md',
+  'docs/audits/12a2-current-gate-state.json',
+  'docs/README.md',
+  'scripts/verify-development-policy.mjs',
   'scripts/check-12a4-twitch-category-capture-canary-storage-preflight-scope.mjs',
   'scripts/verify-12a4-twitch-category-capture-canary-storage-preflight-package.mjs',
 ])
@@ -20,13 +20,13 @@ const forbiddenExact = new Set([
   'docs/audits/12a4-twitch-category-capture-canary-trigger.json',
   workflowPath,
   evidencePath,
+  'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json',
   'workers/collector-twitch/wrangler.toml',
   'workers/collector-twitch/wrangler.category-canary.toml',
   'workers/collector-twitch/src/entry-category-canary.ts',
   'workers/shared/category-capture.ts',
 ])
 const forbiddenPrefixes = ['workers/', 'apps/', 'db/', 'packages/']
-
 const baseRef = process.env.GITHUB_BASE_REF
 const base = baseRef ? `origin/${baseRef}` : 'origin/main'
 
@@ -41,58 +41,44 @@ try {
   const forbidden = changed.filter(
     (file) => forbiddenExact.has(file) || forbiddenPrefixes.some((prefix) => file.startsWith(prefix)),
   )
-
   const failures = []
   if (unexpected.length) failures.push({ name: 'unexpected_files', actual: unexpected })
   if (forbidden.length) failures.push({ name: 'forbidden_files', actual: forbidden })
-  if (changed.length !== allowed.size) {
-    failures.push({ name: 'exact_file_count', expected: allowed.size, actual: changed.length })
-  }
+  if (changed.length !== allowed.size) failures.push({ name: 'exact_file_count', expected: allowed.size, actual: changed.length })
   for (const expected of allowed) {
     if (!changed.includes(expected)) failures.push({ name: 'missing_changed_file', actual: expected })
   }
 
+  const gate = JSON.parse(readFileSync('docs/audits/12a2-current-gate-state.json', 'utf8'))
+  if (gate.schemaVersion !== 'viewloom-12a2-current-gate-state-v20') failures.push({ name: 'gate_version', actual: gate.schemaVersion })
+  if (gate.currentWorkstream?.phase !== '12A-4-15') failures.push({ name: 'gate_phase', actual: gate.currentWorkstream?.phase })
+  if (gate.twitchCategoryCaptureCanaryStoragePreflight?.status !== 'accepted') failures.push({ name: 'twitch_preflight_status' })
+  if (gate.twitchCategoryCaptureCanaryStoragePreflight?.freshForFutureStart !== false) failures.push({ name: 'freshness_blocker_missing' })
   if (!existsSync(evidencePath)) failures.push({ name: 'accepted_evidence_missing' })
   if (existsSync(reportingWorkflowPath)) failures.push({ name: 'reporting_workflow_not_retired' })
   for (const requestPath of requestPaths) {
     if (existsSync(requestPath)) failures.push({ name: 'request_not_retired', actual: requestPath })
   }
-  if (existsSync('docs/audits/12a4-twitch-category-capture-canary-trigger.json')) {
-    failures.push({ name: 'twitch_trigger_must_be_absent' })
-  }
+  if (existsSync('docs/audits/12a4-twitch-category-capture-canary-trigger.json')) failures.push({ name: 'twitch_trigger_must_be_absent' })
 
-  const workflow = existsSync(workflowPath) ? readFileSync(workflowPath, 'utf8') : ''
+  const workflow = readFileSync(workflowPath, 'utf8')
   if (!/^\s*pull_request:/m.test(workflow)) failures.push({ name: 'pull_request_validation_missing' })
-  for (const forbiddenFragment of [
-    /^\s*push:/m,
-    /^\s*schedule:/m,
-    /^\s*workflow_dispatch:/m,
-    /CLOUDFLARE_API_TOKEN/,
-    /CLOUDFLARE_ACCOUNT_ID/,
-    /observe-readonly/,
-    /observe-and-report/,
-    /inspect-request/,
-  ]) {
-    if (forbiddenFragment.test(workflow)) {
-      failures.push({ name: 'production_workflow_fragment_not_retired', actual: String(forbiddenFragment) })
-    }
+  for (const fragment of [/^\s*push:/m, /^\s*schedule:/m, /^\s*workflow_dispatch:/m, /CLOUDFLARE_API_TOKEN/, /CLOUDFLARE_ACCOUNT_ID/]) {
+    if (fragment.test(workflow)) failures.push({ name: 'production_workflow_fragment', actual: String(fragment) })
   }
 
   if (failures.length) {
     console.error(JSON.stringify({ ok: false, changed, allowed: [...allowed].sort(), failures }, null, 2))
     process.exit(1)
   }
-
   console.log(JSON.stringify({
     ok: true,
     changed,
-    exactFinalizationFiles: changed.length,
-    contractAccepted: true,
-    acceptanceMergeShaRecorded: true,
-    evidenceUnchanged: true,
-    productionObservationWorkflowRetired: true,
-    reportingWorkflowRetired: true,
-    allRequestFilesRetired: true,
+    exactCanonicalFiles: changed.length,
+    gateVersion: gate.schemaVersion,
+    phase: gate.currentWorkstream.phase,
+    twitchPreflightAccepted: true,
+    freshForFutureStart: false,
     triggerPresent: false,
     productionConfigChanged: false,
     kickChanged: false,
