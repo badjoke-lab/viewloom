@@ -1,0 +1,83 @@
+name: Analytics 12A4 Twitch Category Capture Canary Package
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.github/workflows/analytics-12a4-twitch-category-capture-canary-package.yml'
+      - 'docs/audits/12a4-twitch-category-capture-canary-package-contract.json'
+      - 'docs/work-in-progress/phase12a4-twitch-category-capture-canary.md'
+      - 'scripts/check-12a4-twitch-category-capture-canary-package-scope.mjs'
+      - 'scripts/test-12a4-twitch-category-capture-canary.py'
+      - 'scripts/verify-12a4-twitch-category-capture-canary-package.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - 'workers/collector-twitch/src/entry-category-canary.ts'
+      - 'workers/collector-twitch/wrangler.category-canary.toml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-twitch-category-capture-canary-package-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify exact package scope
+        run: node scripts/check-12a4-twitch-category-capture-canary-package-scope.mjs
+      - name: Verify Twitch category canary package
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-12a4-twitch-category-capture-canary-package.mjs 2>&1 | tee twitch-canary-package-verification.log
+      - name: Publish verifier diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-twitch-category-canary-package-diagnostics
+          path: twitch-canary-package-verification.log
+          if-no-files-found: error
+          retention-days: 7
+      - name: Verify canary and provider-separation fixtures
+        run: python3 scripts/test-12a4-twitch-category-capture-canary.py
+      - name: Verify collector typecheck
+        run: pnpm typecheck:collectors
+      - name: Verify canonical development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Bundle normal Twitch collector without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.toml
+      - name: Bundle disabled Twitch canary collector without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.category-canary.toml
+      - name: Publish package summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4-13 Twitch Category Capture Canary Package'
+            echo
+            echo '- Provider: Twitch only'
+            echo '- Committed canary state: disabled'
+            echo '- Observation window: bounded to 23-25 hours; target 24 hours'
+            echo '- Current remote D1 size before later execution: required'
+            echo '- Twitch 90-day projection hard stop: 440 MB'
+            echo '- Twitch provider headroom hard stop: 10 MB'
+            echo '- Account-wide headroom hard stop: 500 MB'
+            echo '- Normal Twitch config: unchanged'
+            echo '- Production deployment from this PR: no'
+            echo '- Production category capture from this PR: no'
+            echo '- Trigger included: no'
+            echo '- Exact trigger and separate execution/acceptance packages: required'
+          } >> "$GITHUB_STEP_SUMMARY"
