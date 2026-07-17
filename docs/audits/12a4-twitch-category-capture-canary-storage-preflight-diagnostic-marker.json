@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-storage-preflight-diagnostic-marker-v1",
+  "attempt": 4,
+  "requestedAt": "2026-07-17T16:48:17.000Z",
+  "purpose": "capture sanitized read-only preflight diagnostics",
+  "productionMutationAuthorized": false
+}
