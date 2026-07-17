@@ -1,0 +1,163 @@
+name: Analytics 12A4 Twitch Category Capture Canary Execution
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.github/workflows/analytics-12a4-twitch-category-capture-canary-execution.yml'
+      - 'docs/audits/12a4-twitch-category-capture-canary-execution-contract.json'
+      - 'docs/work-in-progress/phase12a4-twitch-category-capture-canary-execution.md'
+      - 'scripts/check-12a4-twitch-category-capture-canary-execution-package-scope.mjs'
+      - 'scripts/inspect-12a4-twitch-category-capture-canary-trigger.mjs'
+      - 'scripts/run-12a4-twitch-category-capture-canary-execution.mjs'
+      - 'scripts/test-12a4-twitch-category-capture-canary-execution.mjs'
+      - 'scripts/verify-12a4-twitch-category-capture-canary-execution-package.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - 'workers/collector-twitch/src/entry-category-canary.ts'
+      - 'workers/collector-twitch/wrangler.category-canary.toml'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a4-twitch-category-capture-canary-trigger.json'
+  schedule:
+    - cron: '47 */2 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-twitch-category-capture-canary-execution
+  cancel-in-progress: false
+
+jobs:
+  verify-package:
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify exact execution package scope
+        if: github.event_name == 'pull_request'
+        run: node scripts/check-12a4-twitch-category-capture-canary-execution-package-scope.mjs
+      - name: Verify dormant execution contract
+        run: node scripts/verify-12a4-twitch-category-capture-canary-execution-package.mjs
+      - name: Verify trigger, storage, binding, and rollback fixtures
+        run: node scripts/test-12a4-twitch-category-capture-canary-execution.mjs
+      - name: Verify canonical development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Bundle normal Twitch collector without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.toml
+      - name: Bundle disabled Twitch canary collector without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.category-canary.toml
+      - name: Publish validation summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4-14 Twitch canary execution package'
+            echo
+            echo '- Trigger present in package PR: no'
+            echo '- Production execution from package PR: no'
+            echo '- Provider: Twitch only'
+            echo '- Wrapper expiry: exact'
+            echo '- Monitor/finalizer schedule: every two hours'
+            echo '- Provider projected-size hard stop: 440 MB'
+            echo '- Provider headroom hard stop: 10 MB'
+            echo '- Account-wide headroom hard stop: 500 MB'
+            echo '- Normal Twitch config changed: no'
+            echo '- Kick changed: no'
+            echo '- Worker deployment: dry-run only'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  inspect-trigger:
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      present: ${{ steps.inspect.outputs.present }}
+      action: ${{ steps.inspect.outputs.action }}
+      phase: ${{ steps.inspect.outputs.phase }}
+      attempt: ${{ steps.inspect.outputs.attempt }}
+      start_at: ${{ steps.inspect.outputs.start_at }}
+      until: ${{ steps.inspect.outputs.until }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Inspect exact Twitch canary trigger
+        id: inspect
+        run: node scripts/inspect-12a4-twitch-category-capture-canary-trigger.mjs --event "${{ github.event_name }}"
+      - name: Publish dormant or active state
+        run: |
+          {
+            echo '## Twitch category canary trigger state'
+            echo
+            echo "- Present: ${{ steps.inspect.outputs.present }}"
+            echo "- Action: ${{ steps.inspect.outputs.action }}"
+            echo "- Phase: ${{ steps.inspect.outputs.phase }}"
+            echo "- Attempt: ${{ steps.inspect.outputs.attempt }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  start-canary:
+    needs: inspect-trigger
+    if: github.event_name == 'push' && needs.inspect-trigger.outputs.action == 'start'
+    runs-on: ubuntu-latest
+    timeout-minutes: 210
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ACTION: start
+      TRIGGER_PATH: docs/audits/12a4-twitch-category-capture-canary-trigger.json
+      OUTPUT_DIR: artifacts/12a4-twitch-category-canary/start
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Require accepted exact trigger
+        run: node scripts/inspect-12a4-twitch-category-capture-canary-trigger.mjs --event push --require-armed
+      - name: Start bounded Twitch category canary
+        id: execute
+        run: node scripts/run-12a4-twitch-category-capture-canary-execution.mjs
+      - name: Upload sanitized start evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-twitch-category-canary-start-attempt-${{ needs.inspect-trigger.outputs.attempt }}
+          path: artifacts/12a4-twitch-category-canary/start/*.json
+          if-no-files-found: error
+          retention-days: 14
+
+  monitor-or-finalize:
+    needs: inspect-trigger
+    if: github.event_name == 'schedule' && (needs.inspect-trigger.outputs.action == 'monitor' || needs.inspect-trigger.outputs.action == 'finalize')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ACTION: ${{ needs.inspect-trigger.outputs.action }}
+      TRIGGER_PATH: docs/audits/12a4-twitch-category-capture-canary-trigger.json
+      OUTPUT_DIR: artifacts/12a4-twitch-category-canary/${{ needs.inspect-trigger.outputs.action }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Monitor or finalize bounded Twitch category canary
+        run: node scripts/run-12a4-twitch-category-capture-canary-execution.mjs
+      - name: Upload sanitized checkpoint or final evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-twitch-category-canary-${{ needs.inspect-trigger.outputs.action }}-attempt-${{ needs.inspect-trigger.outputs.attempt }}
+          path: artifacts/12a4-twitch-category-canary/${{ needs.inspect-trigger.outputs.action }}/*.json
+          if-no-files-found: error
+          retention-days: 14
