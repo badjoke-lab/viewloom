@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "viewloom-12a4-kick-canary-expiry-binding-cleanup-v1",
+  "workstream": "12A-4 Kick canary expiry binding cleanup",
+  "status": "prepared",
+  "trackingIssue": 519,
+  "provider": "kick",
+  "reason": "post_rollback_acceptance_found_only_expired_canary_bindings_remaining",
+  "rejectedAcceptanceEvidence": {
+    "workflowRunId": 29488056134,
+    "workflowJobId": 87810458773,
+    "artifactId": 8398761959,
+    "observedAt": "2026-07-17T06:19:16.682Z",
+    "outcome": "rejected",
+    "onlyFailedGate": "canaryBindingsAbsent",
+    "normalSnapshotAfterExpiryPresent": true,
+    "normalSnapshotAuthenticated": true,
+    "normalSnapshotNonempty": true,
+    "categoryPayloadRowsAfterGrace": 0,
+    "providerLeakageRows": 0,
+    "storagePass": true
+  },
+  "acceptedCanaryIdentity": {
+    "attempt": 3,
+    "startAt": "2026-07-16T03:45:00.000Z",
+    "until": "2026-07-17T03:45:00.000Z",
+    "triggerMergeSha": "952716ee71ff9b15aae8771803ee8350cd8b917f",
+    "service": "viewloom-collector-kick",
+    "database": "vl_kick_hot"
+  },
+  "cleanup": {
+    "normalConfig": "workers/collector-kick/wrangler.toml",
+    "expectedCron": "*/5 * * * *",
+    "deployNormalConfigOnly": true,
+    "manualCollect": false,
+    "pollIntervalSeconds": 30,
+    "pollAttempts": 20,
+    "freshnessMinutesMax": 10,
+    "requireSnapshotNewerThanCleanup": true,
+    "requireCanaryBindingsAbsentAfterCleanup": true,
+    "requirePermanentCategoryFlagAbsent": true,
+    "maximumCategoryPayloadRowsAfterGrace": 0,
+    "maximumProviderLeakageRows": 0
+  },
+  "trigger": {
+    "path": "docs/audits/12a4-kick-canary-expiry-binding-cleanup-trigger.json",
+    "schemaVersion": "viewloom-12a4-kick-canary-expiry-binding-cleanup-trigger-v1",
+    "confirmation": "REMOVE_EXPIRED_KICK_CANARY_BINDINGS",
+    "exactOneFilePullRequest": true
+  },
+  "hardBoundary": {
+    "twitchChanged": false,
+    "categoryCanaryRestarted": false,
+    "permanentCategoryCaptureEnabled": false,
+    "remoteMigration": false,
+    "manualCollect": false,
+    "backfill": false,
+    "retentionChanged": false,
+    "collectorCadenceChanged": false,
+    "categoryUiChanged": false,
+    "crossProviderIdentityAllowed": false,
+    "combinedProviderRankingAllowed": false
+  },
+  "evidence": {
+    "artifactName": "analytics-12a4-kick-canary-expiry-binding-cleanup",
+    "sanitizedJsonOnly": true,
+    "rawPayloadIncluded": false,
+    "channelIdentitiesIncluded": false,
+    "secretsIncluded": false
+  },
+  "acceptance": null,
+  "nextGateOnSuccess": "rerun post-rollback read-only acceptance, freeze final evidence, then advance the canonical gate without automatically starting Twitch"
+}
