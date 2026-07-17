@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-storage-preflight-v1",
   "workstream": "12A-4-15 Twitch category canary read-only storage preflight",
-  "status": "accepted_candidate",
+  "status": "accepted",
   "trackingIssue": 519,
   "provider": "twitch",
   "observedAt": "2026-07-17T16:57:55.343Z",
@@ -100,8 +100,8 @@
   },
   "acceptance": {
     "pr": 599,
-    "mergeSha": null,
-    "mergeShaRecorded": false,
+    "mergeSha": "785a271a7b95808e01478b9fb3846028229faa24",
+    "mergeShaRecorded": true,
     "packagePr": 594,
     "packageMergeSha": "bb15f8ab9ebef98168129649573dd5c28a0a0b07",
     "reportingPr": 595,
@@ -151,5 +151,5 @@
     "crossProviderCategoryIdentityAllowed": false,
     "combinedProviderCategoryRankingAllowed": false
   },
-  "nextGate": "record PR #599 merge SHA and mark this contract accepted; Twitch trigger remains a separate one-file gate"
+  "nextGate": "separate exact one-file Twitch canary trigger; no automatic start, permanent enablement, cadence change, retention change, backfill, or cross-provider analytics"
 }
