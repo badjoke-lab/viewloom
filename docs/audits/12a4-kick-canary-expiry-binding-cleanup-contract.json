@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-kick-canary-expiry-binding-cleanup-v1",
   "workstream": "12A-4 Kick canary expiry binding cleanup",
-  "status": "prepared",
+  "status": "accepted_and_retired",
   "trackingIssue": 519,
   "provider": "kick",
   "reason": "post_rollback_acceptance_found_only_expired_canary_bindings_remaining",
@@ -62,11 +62,30 @@
   },
   "evidence": {
     "artifactName": "analytics-12a4-kick-canary-expiry-binding-cleanup",
+    "finalAcceptanceEvidencePath": "docs/audits/12a4-kick-category-capture-canary-post-rollback-acceptance-evidence.json",
     "sanitizedJsonOnly": true,
     "rawPayloadIncluded": false,
     "channelIdentitiesIncluded": false,
     "secretsIncluded": false
   },
-  "acceptance": null,
-  "nextGateOnSuccess": "rerun post-rollback read-only acceptance, freeze final evidence, then advance the canonical gate without automatically starting Twitch"
+  "acceptance": {
+    "cleanupPackagePr": 586,
+    "cleanupPackageMergeSha": "aaafab2266ef717b2e51dd5006044578bbfd8ae2",
+    "cleanupTriggerPr": 587,
+    "cleanupTriggerMergeSha": "7fbc343207de235ae583e827ba2fa7796083faf4",
+    "finalWorkflowRunId": 29488056134,
+    "finalWorkflowJobId": 87822408236,
+    "finalArtifactId": 8399137444,
+    "observedAt": "2026-07-17T06:41:08.710Z",
+    "canaryBindingsAbsent": true,
+    "permanentCategoryFlagAbsent": true,
+    "normalSnapshotAuthenticated": true,
+    "normalSnapshotNonempty": true,
+    "categoryPayloadRowsAfterGrace": 0,
+    "providerLeakageRows": 0,
+    "outcome": "accepted",
+    "productionPathRetired": true,
+    "twitchChanged": false
+  },
+  "nextGateOnSuccess": "Kick final evidence accepted; evaluate a separate Twitch canary package without automatic start"
 }
