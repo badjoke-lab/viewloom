@@ -1,0 +1,128 @@
+name: Analytics 12A4 Twitch Storage Preflight Reporting
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.github/workflows/analytics-12a4-twitch-category-capture-canary-storage-preflight-reporting.yml'
+      - 'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-reporting-request.json'
+      - 'scripts/inspect-12a4-twitch-category-capture-canary-storage-preflight-request.mjs'
+      - 'scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs'
+      - 'scripts/test-12a4-twitch-category-capture-canary-storage-preflight.mjs'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-reporting-request.json'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: analytics-12a4-twitch-storage-preflight-reporting
+  cancel-in-progress: false
+
+jobs:
+  verify-reporting-request:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      REQUEST_PATH: docs/audits/12a4-twitch-category-capture-canary-storage-preflight-reporting-request.json
+      CONTRACT_PATH: docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify exact reporting request
+        run: node scripts/inspect-12a4-twitch-category-capture-canary-storage-preflight-request.mjs
+      - name: Verify read-only fixtures
+        run: node scripts/test-12a4-twitch-category-capture-canary-storage-preflight.mjs
+      - name: Verify observer syntax
+        run: node --check scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs
+      - name: Verify development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Confirm no production operation in pull request
+        run: |
+          test "${{ github.event_name }}" = "pull_request"
+          echo 'Production observation: skipped' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Twitch trigger: absent' >> "$GITHUB_STEP_SUMMARY"
+
+  inspect-request:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      REQUEST_PATH: docs/audits/12a4-twitch-category-capture-canary-storage-preflight-reporting-request.json
+      CONTRACT_PATH: docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json
+    outputs:
+      action: ${{ steps.inspect.outputs.action }}
+      requested_at: ${{ steps.inspect.outputs.requested_at }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect exact reporting request
+        id: inspect
+        run: node scripts/inspect-12a4-twitch-category-capture-canary-storage-preflight-request.mjs
+
+  observe-and-report:
+    needs: inspect-request
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.inspect-request.outputs.action == 'observe'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      REQUEST_PATH: docs/audits/12a4-twitch-category-capture-canary-storage-preflight-reporting-request.json
+      CONTRACT_PATH: docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Re-verify exact request
+        run: node scripts/inspect-12a4-twitch-category-capture-canary-storage-preflight-request.mjs
+      - name: Verify read-only fixtures
+        run: node scripts/test-12a4-twitch-category-capture-canary-storage-preflight.mjs
+      - name: Run read-only production storage preflight
+        id: observe
+        run: node scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs
+      - name: Upload sanitized evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-twitch-category-canary-storage-preflight-reporting-attempt-2
+          path: artifacts/12a4-twitch-category-canary-storage-preflight/evidence.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Report exact run to Issue 519
+        if: always()
+        run: |
+          cat > /tmp/viewloom-preflight-report.md <<EOF
+          ## Twitch read-only storage preflight reporting attempt 2
+
+          - Workflow run: $GITHUB_RUN_ID
+          - Job: $GITHUB_JOB
+          - Source SHA: $GITHUB_SHA
+          - Requested at: ${{ needs.inspect-request.outputs.requested_at }}
+          - Step outcome: ${{ steps.observe.outcome }}
+          - Evidence outcome: ${{ steps.observe.outputs.outcome }}
+          - Observed at: ${{ steps.observe.outputs.observed_at }}
+          - Evidence digest: ${{ steps.observe.outputs.evidence_digest }}
+          - Current Twitch D1: ${{ steps.observe.outputs.provider_current_mb }} MB
+          - Projected Twitch 90-day size: ${{ steps.observe.outputs.projected_ninety_day_mb }} MB
+          - Projected Twitch headroom: ${{ steps.observe.outputs.projected_provider_headroom_mb }} MB
+          - Projected account-wide headroom: ${{ steps.observe.outputs.projected_account_headroom_mb }} MB
+          - Artifact: analytics-12a4-twitch-category-canary-storage-preflight-reporting-attempt-2
+          - Direct Cloudflare methods: GET only
+          - D1 statements: SELECT only
+          - Worker deployment: no
+          - D1 mutation: no
+          - Twitch trigger creation: no
+          - Runtime category capture: no
+          EOF
+          gh issue comment 519 --repo "$GITHUB_REPOSITORY" --body-file /tmp/viewloom-preflight-report.md
