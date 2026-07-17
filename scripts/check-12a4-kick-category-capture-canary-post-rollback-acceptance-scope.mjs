@@ -25,6 +25,7 @@ const allowed = new Set([
   'scripts/verify-12a4-kick-category-capture-canary-post-rollback-acceptance-package.mjs',
   'scripts/verify-12a4-kick-canary-expiry-binding-cleanup-package.mjs',
   'scripts/verify-development-policy.mjs',
+  'scripts/verify-public-browser-audit-current.mjs',
 ])
 const forbiddenExact = new Set([
   'workers/collector-kick/wrangler.toml',
