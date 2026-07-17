@@ -23,12 +23,25 @@ const executionContract = {
     schemaVersion: 'viewloom-12a4-twitch-category-capture-canary-trigger-v1',
     exactPackagePr: 590,
     exactPackageMergeSha: 'e798df275b2fad0601b2e9ef89c76a6a30f1d038',
+    exactExecutionPackagePr: 591,
+    exactExecutionPackageMergeSha: 'execution-merge-sha',
+    storagePreflightStatusRequired: 'accepted',
+    maximumPreflightAgeMinutesAtStart: 60,
   },
   acceptance: {
     pr: 591,
     mergeSha: 'execution-merge-sha',
     mergeShaRecorded: true,
   },
+}
+const storagePreflight = {
+  schemaVersion: 'viewloom-12a4-twitch-category-capture-canary-storage-preflight-v1',
+  status: 'accepted',
+  provider: 'twitch',
+  observedAt: '2026-07-17T23:30:00.000Z',
+  storage: { pass: true },
+  acceptance: { pr: 592, mergeSha: 'storage-preflight-merge' },
+  evidence: { digest: 'sha256:storage-preflight' },
 }
 const trigger = {
   schemaVersion: executionContract.trigger.schemaVersion,
@@ -41,6 +54,10 @@ const trigger = {
   packageMergeSha: executionContract.trigger.exactPackageMergeSha,
   executionPackagePr: 591,
   executionPackageMergeSha: 'execution-merge-sha',
+  storagePreflightPr: 592,
+  storagePreflightMergeSha: 'storage-preflight-merge',
+  storagePreflightObservedAt: storagePreflight.observedAt,
+  storagePreflightEvidenceDigest: storagePreflight.evidence.digest,
   startAt: '2026-07-18T00:00:00.000Z',
   until: '2026-07-19T00:00:00.000Z',
 }
@@ -49,6 +66,7 @@ const absent = inspectTwitchCanaryTrigger({
   trigger: null,
   executionContract,
   packageContract,
+  storagePreflight: null,
   eventName: 'schedule',
   now: new Date('2026-07-18T01:00:00.000Z'),
 })
@@ -60,17 +78,20 @@ const pushBefore = inspectTwitchCanaryTrigger({
   trigger,
   executionContract,
   packageContract,
+  storagePreflight,
   eventName: 'push',
   now: new Date('2026-07-17T23:55:00.000Z'),
 })
 assert.equal(pushBefore.ok, true)
 assert.equal(pushBefore.action, 'start')
 assert.equal(pushBefore.phase, 'before_start')
+assert.equal(pushBefore.storagePreflightPr, 592)
 
 const active = inspectTwitchCanaryTrigger({
   trigger,
   executionContract,
   packageContract,
+  storagePreflight,
   eventName: 'schedule',
   now: new Date('2026-07-18T12:00:00.000Z'),
 })
@@ -82,6 +103,7 @@ const expired = inspectTwitchCanaryTrigger({
   trigger,
   executionContract,
   packageContract,
+  storagePreflight,
   eventName: 'schedule',
   now: new Date('2026-07-19T00:01:00.000Z'),
 })
@@ -93,16 +115,54 @@ const expiredPush = inspectTwitchCanaryTrigger({
   trigger,
   executionContract,
   packageContract,
+  storagePreflight,
   eventName: 'push',
   now: new Date('2026-07-19T00:01:00.000Z'),
 })
 assert.equal(expiredPush.ok, false)
 assert.equal(expiredPush.action, 'reject')
 
+const missingPreflight = inspectTwitchCanaryTrigger({
+  trigger,
+  executionContract,
+  packageContract,
+  storagePreflight: null,
+  eventName: 'push',
+  now: new Date('2026-07-17T23:55:00.000Z'),
+})
+assert.equal(missingPreflight.ok, false)
+assert.equal(missingPreflight.action, 'reject')
+assert.ok(missingPreflight.failures.some((failure) => failure.name === 'storage preflight present'))
+
+const stalePreflight = inspectTwitchCanaryTrigger({
+  trigger,
+  executionContract,
+  packageContract,
+  storagePreflight,
+  eventName: 'push',
+  now: new Date('2026-07-18T01:00:00.000Z'),
+})
+assert.equal(stalePreflight.ok, false)
+assert.equal(stalePreflight.action, 'reject')
+assert.ok(stalePreflight.failures.some((failure) => failure.name === 'storage preflight fresh at start'))
+
+const preflightMismatch = inspectTwitchCanaryTrigger({
+  trigger: { ...trigger, storagePreflightEvidenceDigest: 'sha256:wrong' },
+  executionContract,
+  packageContract,
+  storagePreflight,
+  eventName: 'push',
+  now: new Date('2026-07-17T23:55:00.000Z'),
+})
+assert.equal(preflightMismatch.ok, false)
+assert.equal(preflightMismatch.action, 'reject')
+assert.ok(preflightMismatch.failures.some((failure) => failure.name === 'storage preflight digest identity'))
+
 const mismatched = inspectTwitchCanaryTrigger({
   trigger: { ...trigger, provider: 'kick' },
   executionContract,
   packageContract,
+  storagePreflight,
   eventName: 'push',
   now: new Date('2026-07-18T00:00:00.000Z'),
 })
@@ -181,6 +241,9 @@ console.log(JSON.stringify({
   monitorActionVerified: true,
   finalizeActionVerified: true,
   expiredPushRejected: true,
+  missingPreflightRejected: true,
+  stalePreflightRejected: true,
+  preflightIdentityMismatchRejected: true,
   providerMismatchRejected: true,
   providerStorageGateVerified: true,
   accountStorageGateVerified: true,

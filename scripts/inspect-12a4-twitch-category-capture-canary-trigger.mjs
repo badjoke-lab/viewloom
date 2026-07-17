@@ -10,10 +10,12 @@ export function inspectTwitchCanaryTrigger({
   trigger,
   executionContract,
   packageContract,
+  storagePreflight: suppliedStoragePreflight,
   eventName,
   now = new Date(),
 }) {
   if (!trigger) return dormant('trigger_absent')
+  const storagePreflight = suppliedStoragePreflight ?? loadStoragePreflight(executionContract)
   const failures = []
   const check = (name, condition, actual = undefined) => {
     if (!condition) failures.push({ name, actual })
@@ -27,11 +29,31 @@ export function inspectTwitchCanaryTrigger({
   check('positive attempt', Number.isSafeInteger(trigger.attempt) && trigger.attempt > 0, trigger.attempt)
   check('package PR identity', trigger.packagePr === executionContract.trigger.exactPackagePr, trigger.packagePr)
   check('package merge identity', trigger.packageMergeSha === executionContract.trigger.exactPackageMergeSha, trigger.packageMergeSha)
-  check('execution PR identity', trigger.executionPackagePr === executionContract.acceptance?.pr, trigger.executionPackagePr)
-  check('execution merge identity', trigger.executionPackageMergeSha === executionContract.acceptance?.mergeSha, trigger.executionPackageMergeSha)
+  check('execution PR identity', trigger.executionPackagePr === executionContract.trigger.exactExecutionPackagePr, trigger.executionPackagePr)
+  check('execution merge identity', trigger.executionPackageMergeSha === executionContract.trigger.exactExecutionPackageMergeSha, trigger.executionPackageMergeSha)
   check('accepted package', packageContract.status === 'accepted' && packageContract.acceptance?.pr === 590, packageContract.status)
   check('accepted execution package', executionContract.status === 'accepted', executionContract.status)
   check('execution merge identity recorded', executionContract.acceptance?.mergeShaRecorded === true, executionContract.acceptance)
+
+  check('storage preflight present', Boolean(storagePreflight), storagePreflight)
+  if (storagePreflight) {
+    check('storage preflight schema', storagePreflight.schemaVersion === 'viewloom-12a4-twitch-category-capture-canary-storage-preflight-v1', storagePreflight.schemaVersion)
+    check('storage preflight accepted', storagePreflight.status === executionContract.trigger.storagePreflightStatusRequired, storagePreflight.status)
+    check('storage preflight provider Twitch', storagePreflight.provider === 'twitch', storagePreflight.provider)
+    check('storage preflight pass', storagePreflight.storage?.pass === true, storagePreflight.storage)
+    check('storage preflight PR identity', trigger.storagePreflightPr === storagePreflight.acceptance?.pr, trigger.storagePreflightPr)
+    check('storage preflight merge identity', trigger.storagePreflightMergeSha === storagePreflight.acceptance?.mergeSha, trigger.storagePreflightMergeSha)
+    check('storage preflight observed identity', trigger.storagePreflightObservedAt === storagePreflight.observedAt, trigger.storagePreflightObservedAt)
+    check('storage preflight digest identity', trigger.storagePreflightEvidenceDigest === storagePreflight.evidence?.digest, trigger.storagePreflightEvidenceDigest)
+    if (eventName === 'push') {
+      const observedAt = parseDate(storagePreflight.observedAt)
+      const maximumAgeMs = Number(executionContract.trigger.maximumPreflightAgeMinutesAtStart) * 60 * 1000
+      const ageMs = observedAt ? now.getTime() - observedAt.getTime() : Number.NaN
+      check('storage preflight valid observedAt', Boolean(observedAt), storagePreflight.observedAt)
+      check('storage preflight not from future', Number.isFinite(ageMs) && ageMs >= -5 * 60 * 1000, ageMs)
+      check('storage preflight fresh at start', Number.isFinite(ageMs) && ageMs <= maximumAgeMs, ageMs)
+    }
+  }
 
   const start = parseDate(trigger.startAt)
   const until = parseDate(trigger.until)
@@ -66,8 +88,18 @@ export function inspectTwitchCanaryTrigger({
     observationHours: windowMs / (60 * 60 * 1000),
     packageMergeSha: trigger.packageMergeSha,
     executionPackageMergeSha: trigger.executionPackageMergeSha,
+    storagePreflightPr: trigger.storagePreflightPr,
+    storagePreflightMergeSha: trigger.storagePreflightMergeSha,
+    storagePreflightObservedAt: trigger.storagePreflightObservedAt,
+    storagePreflightEvidenceDigest: trigger.storagePreflightEvidenceDigest,
     failures: action === 'reject' ? [{ name: 'trigger expired before start event', actual: now.toISOString() }] : [],
   }
+}
+
+function loadStoragePreflight(executionContract) {
+  const preflightPath = executionContract?.trigger?.storagePreflightContract
+  if (!preflightPath || !fs.existsSync(preflightPath)) return null
+  return JSON.parse(fs.readFileSync(preflightPath, 'utf8'))
 }
 
 function dormant(reason) {
