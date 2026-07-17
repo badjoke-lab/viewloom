@@ -24,26 +24,48 @@ export function inspectRequest(request, contract) {
   const check = (name, condition, actual = undefined) => {
     if (!condition) failures.push({ name, actual })
   }
+
   check('request present', Boolean(request), request)
   if (request) {
-    check('request schema', request.schemaVersion === 'viewloom-12a4-twitch-category-capture-canary-storage-preflight-request-v1', request.schemaVersion)
+    check(
+      'request schema',
+      request.schemaVersion === 'viewloom-12a4-twitch-category-capture-canary-storage-preflight-request-v1',
+      request.schemaVersion,
+    )
     check('request status', request.status === 'requested', request.status)
     check('provider Twitch', request.provider === 'twitch', request.provider)
     check('one time', request.oneTime === true, request.oneTime)
     check('confirmation', request.confirmation === REQUEST_CONFIRMATION, request.confirmation)
     check('tracking issue', request.trackingIssue === 519, request.trackingIssue)
     check('package PR', request.acceptedPackagePr === contract.acceptedInputs.twitchPackagePr, request.acceptedPackagePr)
-    check('package merge', request.acceptedPackageMergeSha === contract.acceptedInputs.twitchPackageMergeSha, request.acceptedPackageMergeSha)
+    check(
+      'package merge',
+      request.acceptedPackageMergeSha === contract.acceptedInputs.twitchPackageMergeSha,
+      request.acceptedPackageMergeSha,
+    )
     check('execution PR', request.acceptedExecutionPr === contract.acceptedInputs.twitchExecutionPr, request.acceptedExecutionPr)
-    check('execution merge', request.acceptedExecutionMergeSha === contract.acceptedInputs.twitchExecutionMergeSha, request.acceptedExecutionMergeSha)
-    check('execution acceptance PR', request.acceptedExecutionAcceptancePr === contract.acceptedInputs.executionAcceptancePr, request.acceptedExecutionAcceptancePr)
-    check('execution acceptance merge', request.acceptedExecutionAcceptanceMergeSha === contract.acceptedInputs.executionAcceptanceMergeSha, request.acceptedExecutionAcceptanceMergeSha)
+    check(
+      'execution merge',
+      request.acceptedExecutionMergeSha === contract.acceptedInputs.twitchExecutionMergeSha,
+      request.acceptedExecutionMergeSha,
+    )
+    check(
+      'execution acceptance PR',
+      request.acceptedExecutionAcceptancePr === contract.acceptedInputs.executionAcceptancePr,
+      request.acceptedExecutionAcceptancePr,
+    )
+    check(
+      'execution acceptance merge',
+      request.acceptedExecutionAcceptanceMergeSha === contract.acceptedInputs.executionAcceptanceMergeSha,
+      request.acceptedExecutionAcceptanceMergeSha,
+    )
     check('read only', request.readOnly === true, request.readOnly)
     check('worker deployment forbidden', request.workerDeploymentAuthorized === false, request.workerDeploymentAuthorized)
     check('D1 mutation forbidden', request.d1MutationAuthorized === false, request.d1MutationAuthorized)
     check('trigger creation forbidden', request.triggerCreationAuthorized === false, request.triggerCreationAuthorized)
     check('runtime capture forbidden', request.runtimeCaptureAuthorized === false, request.runtimeCaptureAuthorized)
   }
+
   return { ok: failures.length === 0, failures }
 }
 
@@ -52,9 +74,12 @@ export function assertReadOnlySql(sql) {
     .split(';')
     .map((statement) => statement.trim())
     .filter(Boolean)
+
   if (statements.length === 0) throw new Error('readonly_sql_empty')
   for (const statement of statements) {
-    if (!/^SELECT\b/i.test(statement)) throw new Error(`readonly_sql_violation:${statement.slice(0, 120)}`)
+    if (!/^SELECT\b/i.test(statement)) {
+      throw new Error(`readonly_sql_violation:${statement.slice(0, 120)}`)
+    }
   }
   return statements.length
 }
@@ -69,6 +94,7 @@ export function evaluateLatestSnapshot(row, observedAt = new Date()) {
       pass: false,
     }
   }
+
   const snapshotTime = parseDate(row.collected_at ?? row.bucket_minute)
   const freshnessMinutes = snapshotTime
     ? Math.max(0, (observedAt.getTime() - snapshotTime.getTime()) / 60000)
@@ -78,6 +104,7 @@ export function evaluateLatestSnapshot(row, observedAt = new Date()) {
   const streamCount = Number(row.stream_count)
   const totalViewers = Number(row.total_viewers)
   const nonempty = Number.isFinite(streamCount) && streamCount > 0
+
   return {
     present: true,
     bucketMinute: row.bucket_minute ?? null,
@@ -98,13 +125,71 @@ export function evaluateLatestSnapshot(row, observedAt = new Date()) {
 export function canonicalJson(value) {
   if (Array.isArray(value)) return `[${value.map((item) => canonicalJson(item)).join(',')}]`
   if (value && typeof value === 'object') {
-    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`)
+      .join(',')}}`
   }
   return JSON.stringify(value)
 }
 
 export function evidenceDigest(value) {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`
+}
+
+export function parseLastJson(output) {
+  const source = stripAnsi(String(output ?? '')).trim()
+  if (!source) throw new Error('wrangler_json_output_missing')
+
+  for (let start = 0; start < source.length; start += 1) {
+    const opening = source[start]
+    if (opening !== '[' && opening !== '{') continue
+
+    const stack = []
+    let inString = false
+    let escaped = false
+
+    for (let index = start; index < source.length; index += 1) {
+      const character = source[index]
+
+      if (inString) {
+        if (escaped) {
+          escaped = false
+        } else if (character === '\\') {
+          escaped = true
+        } else if (character === '"') {
+          inString = false
+        }
+        continue
+      }
+
+      if (character === '"') {
+        inString = true
+        continue
+      }
+
+      if (character === '{' || character === '[') {
+        stack.push(character)
+        continue
+      }
+
+      if (character !== '}' && character !== ']') continue
+      const expectedOpening = character === '}' ? '{' : '['
+      if (stack.at(-1) !== expectedOpening) break
+      stack.pop()
+
+      if (stack.length === 0) {
+        const candidate = source.slice(start, index + 1)
+        try {
+          return JSON.parse(candidate)
+        } catch {
+          break
+        }
+      }
+    }
+  }
+
+  throw new Error('wrangler_json_output_missing')
 }
 
 async function execute() {
@@ -114,13 +199,20 @@ async function execute() {
     ?? 'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-request.json'
   const accountId = String(process.env.CLOUDFLARE_ACCOUNT_ID ?? '').trim()
   const apiToken = String(process.env.CLOUDFLARE_API_TOKEN ?? '').trim()
+
   if (!accountId || !apiToken) throw new Error('cloudflare_credentials_missing')
-  if (process.env.GITHUB_REF && process.env.GITHUB_REF !== 'refs/heads/main') throw new Error('main_ref_required')
+  if (process.env.GITHUB_REF && process.env.GITHUB_REF !== 'refs/heads/main') {
+    throw new Error('main_ref_required')
+  }
 
   const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'))
-  const request = fs.existsSync(requestPath) ? JSON.parse(fs.readFileSync(requestPath, 'utf8')) : null
+  const request = fs.existsSync(requestPath)
+    ? JSON.parse(fs.readFileSync(requestPath, 'utf8'))
+    : null
   const inspected = inspectRequest(request, contract)
-  if (!inspected.ok) throw new Error(`preflight_request_rejected:${JSON.stringify(inspected.failures)}`)
+  if (!inspected.ok) {
+    throw new Error(`preflight_request_rejected:${JSON.stringify(inspected.failures)}`)
+  }
 
   const normalConfigPath = path.resolve('workers/collector-twitch/wrangler.toml')
   const normalConfig = fs.readFileSync(normalConfigPath, 'utf8')
@@ -128,10 +220,13 @@ async function execute() {
   const databaseName = activeTomlValue(normalConfig, 'database_name')
   const databaseId = activeTomlValue(normalConfig, 'database_id')
   const cadence = cronFromConfig(normalConfig)
-  if (serviceName !== contract.identity.serviceName
+
+  if (
+    serviceName !== contract.identity.serviceName
     || databaseName !== contract.identity.databaseName
     || databaseId !== contract.identity.databaseId
-    || cadence !== contract.identity.normalCadence) {
+    || cadence !== contract.identity.normalCadence
+  ) {
     throw new Error('twitch_identity_mismatch')
   }
 
@@ -141,6 +236,7 @@ async function execute() {
     fetchAllD1Databases(accountId, apiToken),
     fetchWorkerSettings(accountId, apiToken, serviceName),
   ])
+
   const accountCurrentBytes = accountDatabases.reduce(
     (sum, item) => sum + Number(item?.file_size ?? item?.fileSize ?? 0),
     0,
@@ -223,9 +319,11 @@ async function execute() {
     },
     outcome: 'unknown',
   }
+
   coreEvidence.outcome = coreEvidence.gates.allReadOnlyGatesPass
     ? 'accepted_candidate'
     : 'rejected_candidate'
+
   const digest = evidenceDigest(coreEvidence)
   const evidence = {
     ...coreEvidence,
@@ -242,6 +340,7 @@ async function execute() {
   const outputPath = path.resolve(contract.evidence.artifactPath)
   fs.mkdirSync(path.dirname(outputPath), { recursive: true })
   fs.writeFileSync(outputPath, `${JSON.stringify(evidence, null, 2)}\n`)
+
   writeOutput('evidence_path', outputPath)
   writeOutput('outcome', evidence.outcome)
   writeOutput('observed_at', evidence.observedAt)
@@ -250,6 +349,7 @@ async function execute() {
   writeOutput('projected_ninety_day_mb', storage.projectedNinetyDaySizeMb)
   writeOutput('projected_provider_headroom_mb', storage.projectedProviderHeadroomMb)
   writeOutput('projected_account_headroom_mb', storage.projectedAccountWideHeadroomMb)
+
   console.log(JSON.stringify({
     outputPath,
     outcome: evidence.outcome,
@@ -274,6 +374,7 @@ SELECT (
 SELECT category_observed_streamers, category_observed_samples, category_missing_samples, category_coverage_state FROM intraday_rollup_status WHERE provider = 'twitch' ORDER BY day DESC LIMIT 1;
 SELECT bucket_minute, collected_at, stream_count, total_viewers, source_mode FROM minute_snapshots WHERE provider = 'twitch' ORDER BY bucket_minute DESC LIMIT 1;
 `.trim()
+
   assertReadOnlySql(sql)
   const result = runCommand('pnpm', [
     'dlx',
@@ -288,10 +389,17 @@ SELECT bucket_minute, collected_at, stream_count, total_viewers, source_mode FRO
     '--command',
     sql,
   ])
-  if (result.code !== 0) throw new Error(`d1_readonly_query_failed:${sanitize(result.output)}`)
-  const rows = flattenD1Rows(parseLastJson(result.output))
+
+  if (result.code !== 0) {
+    throw new Error(`d1_readonly_query_failed:${sanitize(result.output)}`)
+  }
+
+  const rows = flattenD1Rows(parseLastJson(result.stdout || result.output))
   return {
-    tables: rows.filter((row) => Object.hasOwn(row, 'table_name')).map((row) => String(row.table_name)).sort(),
+    tables: rows
+      .filter((row) => Object.hasOwn(row, 'table_name'))
+      .map((row) => String(row.table_name))
+      .sort(),
     twitchDictionaryRows: numberFromRows(rows, 'twitch_dictionary_rows'),
     providerLeakageRows: numberFromRows(rows, 'provider_leakage_rows'),
     latestCategoryStatus: rows.find((row) => Object.hasOwn(row, 'category_coverage_state')) ?? null,
@@ -319,6 +427,7 @@ async function fetchAllD1Databases(accountId, apiToken) {
     const totalPages = Number(payload?.result_info?.total_pages ?? 1)
     if (page >= totalPages || result.length === 0) break
   }
+
   if (collected.length === 0) throw new Error('account_d1_inventory_empty')
   return collected
 }
@@ -339,14 +448,18 @@ async function cloudflareGet(url, apiToken) {
     },
   })
   const text = await response.text()
+
   let payload
   try {
     payload = JSON.parse(text)
   } catch {
     throw new Error(`cloudflare_non_json_response:${response.status}`)
   }
+
   if (!response.ok || payload?.success === false) {
-    throw new Error(`cloudflare_get_failed:${response.status}:${sanitize(JSON.stringify(payload?.errors ?? payload))}`)
+    throw new Error(
+      `cloudflare_get_failed:${response.status}:${sanitize(JSON.stringify(payload?.errors ?? payload))}`,
+    )
   }
   return payload
 }
@@ -358,23 +471,14 @@ function runCommand(command, args) {
     env: process.env,
     maxBuffer: 20 * 1024 * 1024,
   })
+  const stdout = String(result.stdout ?? '').trim()
+  const stderr = String(result.stderr ?? '').trim()
   return {
     code: result.status ?? 1,
-    output: `${result.stdout ?? ''}\n${result.stderr ?? ''}`.trim(),
+    stdout,
+    stderr,
+    output: [stdout, stderr].filter(Boolean).join('\n'),
   }
-}
-
-function parseLastJson(output) {
-  const trimmed = String(output ?? '').trim()
-  for (let index = 0; index < trimmed.length; index += 1) {
-    if (trimmed[index] !== '[' && trimmed[index] !== '{') continue
-    try {
-      return JSON.parse(trimmed.slice(index))
-    } catch {
-      // Continue until a valid JSON boundary is found.
-    }
-  }
-  throw new Error('wrangler_json_output_missing')
 }
 
 function flattenD1Rows(payload) {
@@ -409,6 +513,10 @@ function parseDate(value) {
 function writeOutput(key, value) {
   if (!process.env.GITHUB_OUTPUT) return
   fs.appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${String(value)}\n`)
+}
+
+function stripAnsi(value) {
+  return value.replace(/\u001B\[[0-?]*[ -/]*[@-~]/g, '')
 }
 
 function sanitize(value) {

@@ -5,6 +5,7 @@ import {
   evaluateLatestSnapshot,
   evidenceDigest,
   inspectRequest,
+  parseLastJson,
 } from './run-12a4-twitch-category-capture-canary-storage-preflight.mjs'
 import {
   canaryBindingsAbsent,
@@ -95,6 +96,22 @@ assert.throws(() => assertReadOnlySql("UPDATE minute_snapshots SET source_mode =
 assert.throws(() => assertReadOnlySql('DELETE FROM minute_snapshots;'), /readonly_sql_violation/)
 assert.throws(() => assertReadOnlySql(''), /readonly_sql_empty/)
 
+const wranglerPayload = [{ results: [{ table_name: 'minute_snapshots' }] }]
+assert.deepEqual(parseLastJson(JSON.stringify(wranglerPayload)), wranglerPayload)
+assert.deepEqual(
+  parseLastJson(`wrangler notice before output\n${JSON.stringify(wranglerPayload)}\nwrangler notice after output`),
+  wranglerPayload,
+)
+assert.deepEqual(
+  parseLastJson(`\u001b[33mwarning\u001b[0m\n${JSON.stringify({ result: wranglerPayload })}\nDone`),
+  { result: wranglerPayload },
+)
+assert.deepEqual(
+  parseLastJson(`prefix {not-json}\n${JSON.stringify({ text: 'braces { inside } strings', rows: [1, 2] })}\nsuffix`),
+  { text: 'braces { inside } strings', rows: [1, 2] },
+)
+assert.throws(() => parseLastJson('wrangler output without JSON'), /wrangler_json_output_missing/)
+
 const ordered = { b: 2, a: { d: 4, c: 3 } }
 const reordered = { a: { c: 3, d: 4 }, b: 2 }
 assert.equal(canonicalJson(ordered), canonicalJson(reordered))
@@ -160,6 +177,7 @@ console.log(JSON.stringify({
   bindingsAbsenceVerified: true,
   permanentFlagRejected: true,
   readOnlySqlGuardVerified: true,
+  wranglerJsonBoundaryParserVerified: true,
   evidenceDigestDeterministic: true,
   freshAuthenticatedSnapshotAccepted: true,
   staleDemoAndEmptySnapshotsRejected: true,
