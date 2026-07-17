@@ -1,4 +1,4 @@
-name: Analytics 12A4 Kick Category Capture Canary Post-Rollback Acceptance
+name: Analytics 12A4 Kick Category Capture Canary Post-Rollback Acceptance Retired
 
 on:
   workflow_dispatch:
@@ -7,21 +7,24 @@ on:
     types: [opened, reopened, synchronize]
     paths:
       - '.github/workflows/analytics-12a4-kick-category-capture-canary-post-rollback-acceptance.yml'
+      - 'docs/audits/12a2-current-gate-state.json'
       - 'docs/audits/12a4-kick-category-capture-canary-post-rollback-acceptance-contract.json'
+      - 'docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json'
       - 'docs/work-in-progress/phase12a4-kick-category-capture-canary-post-rollback-acceptance.md'
       - 'scripts/check-12a4-kick-category-capture-canary-post-rollback-acceptance-scope.mjs'
-      - 'scripts/run-12a4-kick-category-capture-canary-post-rollback-acceptance.mjs'
       - 'scripts/verify-12a4-kick-category-capture-canary-post-rollback-acceptance-package.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-public-browser-audit-current.mjs'
 
 permissions:
   contents: read
 
 concurrency:
-  group: analytics-12a4-kick-category-capture-canary-post-rollback-acceptance-${{ github.event.pull_request.number || github.ref }}
+  group: analytics-12a4-kick-category-capture-canary-post-rollback-acceptance-retired-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  verify-package:
+  verify-retired-acceptance:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -30,49 +33,28 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify exact post-rollback acceptance scope
+      - name: Verify retirement scope
         if: github.event_name == 'pull_request'
         run: node scripts/check-12a4-kick-category-capture-canary-post-rollback-acceptance-scope.mjs
-      - name: Verify post-rollback read-only acceptance package
+      - name: Verify accepted and retired post-rollback package
         run: node scripts/verify-12a4-kick-category-capture-canary-post-rollback-acceptance-package.mjs
-
-  post-rollback-acceptance:
-    needs: verify-package
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    timeout-minutes: 75
-    env:
-      OUTPUT_DIR: artifacts/12a4-kick-category-canary-post-rollback-acceptance
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - id: probe
-        name: Run production read-only Kick post-rollback acceptance probe
-        run: node scripts/run-12a4-kick-category-capture-canary-post-rollback-acceptance.mjs
-      - name: Upload sanitized post-rollback acceptance evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: analytics-12a4-kick-category-canary-post-rollback-readonly-acceptance-attempt-3
-          path: artifacts/12a4-kick-category-canary-post-rollback-acceptance/evidence.json
-          if-no-files-found: warn
-          retention-days: 30
-      - name: Publish post-rollback acceptance summary
+      - name: Verify canonical development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Verify current public handoff state
+        run: node scripts/verify-public-browser-audit-current.mjs
+      - name: Publish retirement summary
         if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4-12 Kick canary post-rollback read-only acceptance'
+            echo '## ViewLoom 12A-4-12 Kick post-rollback acceptance retired'
             echo
-            echo '- Provider: Kick only'
-            echo '- Before expiry: not_ready, no production calls'
-            echo '- After expiry: Cloudflare GET and D1 SELECT only'
-            echo '- Worker deployment or rollback: no'
+            echo '- Final artifact: 8399137444'
+            echo '- Outcome: accepted'
+            echo '- Frozen evidence: docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json'
+            echo '- Current public handoff state: verified'
+            echo '- Production read-only probe job: removed'
+            echo '- Cloudflare credentials referenced: no'
+            echo '- D1 or Worker production call: no'
             echo '- Permanent category enablement: no'
             echo '- Twitch start: no'
-            echo '- Outcome: `${{ steps.probe.outputs.outcome }}`'
           } >> "$GITHUB_STEP_SUMMARY"

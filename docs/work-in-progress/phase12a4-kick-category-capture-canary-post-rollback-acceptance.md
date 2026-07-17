@@ -1,38 +1,49 @@
 # 12A-4-12 Kick category capture canary post-rollback read-only acceptance
 
-## Purpose
+## Status
 
-Freeze a final, sanitized proof that the bounded Kick category canary ended, the exact canary bindings were removed, permanent category capture was not enabled, and the normal Kick collector resumed fresh authenticated snapshots.
+Accepted and retired.
 
-## Execution model
+Final production read-only evidence is frozen at:
 
-The package is safe to merge before the 24-hour observation expires. A pull-request run before `2026-07-17T03:45:00.000Z` records `not_ready`, performs no Cloudflare or D1 call, and exits successfully. After expiry, the same job can be re-run or manually dispatched.
+- repository: `docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json`
+- workflow run: `29488056134`
+- workflow job: `87822408236`
+- artifact: `8399137444`
+- digest: `sha256:070d5de57a141bf3437847070451284e180c908c47de126ff52fda995bc20de1`
 
-The post-expiry probe is strictly read-only:
+## Accepted result
 
-- Cloudflare API: `GET` only
-- D1: aggregate and latest-row `SELECT` only
-- Worker deployment: none
-- Worker rollback: none
-- Trigger or canonical gate mutation: none
-- Twitch authorization remains false
+The bounded attempt-3 Kick canary ended and normal collection resumed.
 
-## Required final evidence
+- trigger expired: yes
+- canary bindings absent: yes
+- direct permanent `CATEGORY_CAPTURE_ENABLED`: absent
+- required D1 tables present: yes
+- Kick dictionary rows: `164`
+- category-bearing snapshots in the bounded window: `288`
+- category payload rows after the ten-minute grace boundary: `0`
+- provider leakage rows: `0`
+- latest normal snapshot after expiry: authenticated and non-empty
+- latest normal stream count: `100`
+- latest normal total viewers: `239409`
+- projected 90-day size: `317.48 MB`
+- projected provider headroom: `132.52 MB`
+- production mutation by the acceptance probe: no
+- Twitch authorization: false
 
-Acceptance requires all of the following:
+## Recovery chain
 
-1. the exact attempt-3 trigger window has expired;
-2. all bounded canary bindings are absent from the production Kick service;
-3. no direct permanent `CATEGORY_CAPTURE_ENABLED` binding exists;
-4. the required D1 tables remain present;
-5. Kick category dictionary and bounded-window category payload evidence remain present;
-6. provider leakage remains zero;
-7. no category payload is written after the ten-minute post-expiry grace boundary;
-8. a fresh authenticated, non-empty normal Kick snapshot exists after expiry;
-9. the current D1 size remains inside the accepted 90-day projection and headroom limits.
+The first final probe found only stale expired bindings. PR #586 installed the exact bounded cleanup package, PR #587 triggered the normal Kick configuration redeploy, and PR #588 retired the cleanup path after accepted evidence.
 
-## Operational sequence
+## Retirement
 
-The execution workflow finalizer is expected to run on its hourly schedule after the trigger expires and deploy the normal Kick configuration. This package does not perform or repeat that rollback. It polls only for the resulting normal state and normal Kick snapshot.
+The post-rollback production probe is retired:
 
-After a successful artifact is frozen, the next change is a separate canonical gate update. A Twitch canary is not authorized by this package.
+- no production probe job;
+- no Cloudflare credential references;
+- no D1 or Worker production call;
+- manual dispatch is validation-only;
+- the evidence file and contract are now immutable inputs to the canonical gate.
+
+A Twitch canary is not started or authorized by this acceptance. Any Twitch work requires a separate package, separate review, and separate trigger.

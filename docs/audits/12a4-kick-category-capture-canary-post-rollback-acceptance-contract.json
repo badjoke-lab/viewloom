@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-kick-category-capture-canary-post-rollback-acceptance-v1",
   "workstream": "12A-4-12 Kick category capture canary post-rollback read-only acceptance",
-  "status": "prepared",
+  "status": "accepted_and_retired",
   "trackingIssue": 519,
   "provider": "kick",
   "acceptedInputs": {
@@ -17,6 +17,12 @@
     "initialAcceptanceMergeSha": "b04da1427bd5ca0f2460fb811798b04182bd2ff9",
     "activeObservationGatePr": 582,
     "activeObservationGateMergeSha": "a06bf1c1a58f9fe2040f14c53affdb356f7cb221",
+    "cleanupPackagePr": 586,
+    "cleanupPackageMergeSha": "aaafab2266ef717b2e51dd5006044578bbfd8ae2",
+    "cleanupTriggerPr": 587,
+    "cleanupTriggerMergeSha": "7fbc343207de235ae583e827ba2fa7796083faf4",
+    "cleanupRetirementPr": 588,
+    "cleanupRetirementMergeSha": "309084713b963c11295289457b6082e8a589644d",
     "triggerPath": "docs/audits/12a4-kick-category-capture-canary-trigger.json",
     "executionContractPath": "docs/audits/12a4-kick-category-capture-canary-execution-contract.json",
     "currentGatePath": "docs/audits/12a2-current-gate-state.json"
@@ -61,10 +67,40 @@
   "evidence": {
     "artifactName": "analytics-12a4-kick-category-canary-post-rollback-readonly-acceptance-attempt-3",
     "artifactPath": "artifacts/12a4-kick-category-canary-post-rollback-acceptance/evidence.json",
+    "frozenRepositoryPath": "docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json",
+    "workflowRunId": 29488056134,
+    "workflowJobId": 87822408236,
+    "artifactId": 8399137444,
+    "artifactDigest": "sha256:070d5de57a141bf3437847070451284e180c908c47de126ff52fda995bc20de1",
     "sanitizedJsonOnly": true,
     "rawPayloadRowsReturned": false,
     "channelIdentitiesReturned": false,
     "credentialsReturned": false
+  },
+  "acceptance": {
+    "observedAt": "2026-07-17T06:41:08.710Z",
+    "outcome": "accepted",
+    "allReadOnlyGatesPass": true,
+    "canaryBindingsAbsent": true,
+    "permanentDirectFlagAbsent": true,
+    "kickDictionaryRows": 164,
+    "categoryPayloadRowsInCanaryWindow": 288,
+    "categoryPayloadRowsAfterGrace": 0,
+    "providerLeakageRows": 0,
+    "latestNormalSnapshotAfterExpiryAuthenticated": true,
+    "latestNormalSnapshotAfterExpiryNonempty": true,
+    "latestNormalSnapshotAfterExpiryStreamCount": 100,
+    "latestNormalSnapshotAfterExpiryTotalViewers": 239409,
+    "projectedNinetyDaySizeMb": 317.48,
+    "projectedProviderHeadroomMb": 132.52,
+    "twitchStartAuthorized": false,
+    "productionMutationAuthorized": false
+  },
+  "retirement": {
+    "manualProductionProbeRetired": true,
+    "cloudflareCredentialsReferencedByWorkflow": false,
+    "productionJobPresent": false,
+    "rerunAuthorized": false
   },
   "pullRequestBoundary": {
     "productionWrite": false,
@@ -75,6 +111,5 @@
     "permanentRuntimeEnablement": false,
     "twitchStartAuthorized": false
   },
-  "acceptance": null,
-  "nextGateOnAcceptance": "freeze final rollback evidence, advance the canonical gate, and only then evaluate a separate Twitch canary package"
+  "nextGateOnAcceptance": "evaluate a separate Twitch canary package without automatic start or permanent enablement"
 }

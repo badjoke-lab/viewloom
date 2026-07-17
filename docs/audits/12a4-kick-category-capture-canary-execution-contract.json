@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-kick-category-capture-canary-execution-v1",
   "workstream": "12A-4-9 dormant Kick category capture canary execution and evidence package",
-  "status": "accepted",
+  "status": "accepted_and_retired",
   "trackingIssue": 519,
   "acceptedPackage": {
     "pr": 562,
@@ -16,15 +16,15 @@
     "triggerPath": "docs/audits/12a4-kick-category-capture-canary-trigger.json",
     "triggerMayBeAbsentInPackagePr": true,
     "pullRequestValidationOnly": true,
-    "productionStartEvent": "push of exact trigger to main",
-    "monitorEvent": "hourly schedule while exact trigger is armed",
+    "productionStartEvent": "retired",
+    "monitorEvent": "retired",
     "productionExecutionFromPackagePr": false,
     "workflowDispatchProductionAllowed": false,
     "automaticTwitchStart": false
   },
   "trigger": {
     "schemaVersion": "viewloom-12a4-kick-category-capture-canary-trigger-v1",
-    "statusRequired": "armed",
+    "statusRequired": "consumed_and_retired",
     "providerRequired": "kick",
     "oneTimeRequired": true,
     "confirmationRequired": "RUN_KICK_CATEGORY_CAPTURE_CANARY",
@@ -57,7 +57,7 @@
     "postDeployVerificationFailureRollsBack": true
   },
   "monitor": {
-    "frequency": "hourly",
+    "frequency": "retired",
     "beforeStartAction": "no-op",
     "duringWindowAction": "inspect and checkpoint",
     "afterWindowAction": "finalize and rollback",
@@ -111,7 +111,8 @@
     "startArtifactPrefix": "analytics-12a4-kick-category-canary-start",
     "checkpointArtifactPrefix": "analytics-12a4-kick-category-canary-checkpoint",
     "finalArtifactPrefix": "analytics-12a4-kick-category-canary-final",
-    "separateReadOnlyAcceptancePrRequired": true
+    "separateReadOnlyAcceptancePrRequired": true,
+    "finalRepositoryEvidence": "docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json"
   },
   "acceptance": {
     "pr": 563,
@@ -141,6 +142,32 @@
     "mergeSha": "9391fd1479d3c149303637ae65deae7abf0e9b7d",
     "mergeShaRecorded": true
   },
+  "finalAcceptance": {
+    "status": "accepted",
+    "cleanupPackagePr": 586,
+    "cleanupTriggerPr": 587,
+    "cleanupRetirementPr": 588,
+    "workflowRunId": 29488056134,
+    "workflowJobId": 87822408236,
+    "artifactId": 8399137444,
+    "artifactDigest": "sha256:070d5de57a141bf3437847070451284e180c908c47de126ff52fda995bc20de1",
+    "canaryBindingsAbsent": true,
+    "permanentCategoryCaptureFlagPresent": false,
+    "categoryPayloadRowsAfterGrace": 0,
+    "providerLeakageRows": 0,
+    "normalKickSnapshotAuthenticated": true,
+    "normalKickSnapshotNonempty": true,
+    "twitchChanged": false
+  },
+  "retirement": {
+    "triggerStatus": "consumed_and_retired",
+    "productionPushTriggerPresent": false,
+    "scheduledMonitorPresent": false,
+    "productionStartJobPresent": false,
+    "productionFinalizeJobPresent": false,
+    "cloudflareCredentialsReferencedByWorkflow": false,
+    "rearmAuthorized": false
+  },
   "pullRequestBoundary": {
     "triggerCreated": false,
     "productionRuntimeCaptureStarted": false,
@@ -157,5 +184,5 @@
     "crossProviderCategoryIdentityAllowed": false,
     "combinedProviderCategoryRankingAllowed": false
   },
-  "nextGate": "create the exact one-file Kick category capture canary trigger; source-run and read-only acceptance remain separate"
+  "nextGate": "evaluate a separate Twitch canary package without automatic start or permanent enablement"
 }

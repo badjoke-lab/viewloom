@@ -25,18 +25,20 @@ assert.equal(packageContract.acceptanceThresholds.probeCleanupRemainingRowsMax, 
 assert.equal(packageContract.acceptanceThresholds.providerLeakageRowsMax, 0)
 assert.equal(Object.values(packageContract.pullRequestBoundary).every((value) => value === false), true)
 
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v18')
-assert.equal(gate.status, '12a4_kick_canary_initial_checkpoint_accepted_observation_active')
-assert.equal(gate.currentWorkstream.phase, '12A-4-11')
-assert.equal(gate.currentWorkstream.name, 'Kick category capture canary 24-hour observation')
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v19')
+assert.equal(gate.status, '12a4_kick_canary_final_observation_and_rollback_accepted')
+assert.equal(gate.currentWorkstream.phase, '12A-4-12')
 assert.equal(gate.currentWorkstream.acceptedCostEvidence, true)
 assert.equal(gate.currentWorkstream.acceptedEnablementDecision, true)
 assert.equal(gate.currentWorkstream.acceptedKickCanaryPackage, true)
 assert.equal(gate.currentWorkstream.acceptedKickCanaryExecutionPackage, true)
 assert.equal(gate.currentWorkstream.acceptedKickCanaryInitialCheckpoint, true)
-assert.equal(gate.currentWorkstream.exactKickTriggerCurrent, true)
+assert.equal(gate.currentWorkstream.acceptedKickCanaryFinalEvidence, true)
+assert.equal(gate.currentWorkstream.exactKickTriggerCurrent, false)
 assert.equal(gate.currentWorkstream.costProbeExecutionRetired, true)
-assert.equal(gate.currentWorkstream.boundedCanaryCaptureActive, true)
+assert.equal(gate.currentWorkstream.kickCanaryExecutionRetired, true)
+assert.equal(gate.currentWorkstream.boundedCanaryCaptureActive, false)
+assert.equal(gate.currentWorkstream.runtimeCaptureStarted, false)
 assert.equal(gate.categoryExecutionCostProbe.status, 'accepted_and_retired')
 assert.equal(gate.categoryExecutionCostProbe.twitchGatePass, true)
 assert.equal(gate.categoryExecutionCostProbe.kickGatePass, true)
@@ -47,19 +49,15 @@ assert.equal(gate.categoryExecutionCostProbe.productionWorkflowPushTriggersRetir
 assert.equal(gate.categoryCaptureEnablementDecision.status, 'accepted')
 assert.deepEqual(gate.categoryCaptureEnablementDecision.sequence, ['kick', 'twitch'])
 assert.equal(gate.categoryCaptureEnablementDecision.productionRuntimeCaptureAuthorized, false)
-assert.equal(gate.categoryCapture.kickCanaryPackageAccepted, true)
-assert.equal(gate.categoryCapture.kickCanaryExecutionPackageAccepted, true)
-assert.equal(gate.categoryCapture.kickExactTriggerAccepted, true)
-assert.equal(gate.categoryCapture.kickCanaryExecuted, true)
-assert.equal(gate.categoryCapture.kickCanaryInitialAcceptanceAccepted, true)
+assert.equal(gate.categoryCapture.kickCanaryFinalAcceptanceAccepted, true)
+assert.equal(gate.categoryCapture.kickCanaryRollbackVerified, true)
 assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
+assert.equal(gate.categoryCapture.runtimeCaptureStarted, false)
 assert.equal(gate.categoryCapture.categoryCaptureFlagPresent, false)
-assert.equal(gate.categoryCapture.productionCategoryRowsPresent, true)
 
 assert.equal(schemaEvidence.status, 'accepted')
 assert.equal(schemaEvidence.providers.twitch.schemaState, 'complete')
 assert.equal(schemaEvidence.providers.kick.schemaState, 'complete')
-
 assert.equal(execution.status, 'accepted_and_retired')
 assert.equal(execution.acceptedMeasurement.acceptancePr, 558)
 assert.equal(execution.acceptedMeasurement.twitchGatePass, true)
@@ -78,9 +76,6 @@ for (const provider of ['twitch', 'kick']) {
   const item = evidence.providers[provider]
   assert.equal(item.providerGatePass, true)
   assert.equal(item.categoryGeneratorQueries, 4)
-  assert.equal(item.dictionaryFirstPassChanges, 1)
-  assert.equal(item.dictionarySecondPassChanges, 0)
-  assert.equal(item.probeRowsAfterWrite, 3)
   assert.equal(item.probeCleanupRemainingRows, 0)
   assert.equal(item.providerLeakageRows, 0)
   assert.equal(item.databaseSizeDeltaBytes, 0)
@@ -117,12 +112,9 @@ assert.notEqual(twitch.match(/database_id = "([^"]+)"/)?.[1], kick.match(/databa
 console.log(JSON.stringify({
   ok: true,
   phase: gate.currentWorkstream.phase,
-  currentWorkstream: gate.currentWorkstream.name,
   acceptedCostEvidence: true,
-  acceptedEnablementDecision: true,
-  acceptedKickCanaryPackage: true,
-  acceptedKickCanaryExecutionPackage: true,
-  acceptedKickCanaryInitialCheckpoint: true,
+  acceptedKickCanaryFinalEvidence: true,
   costProbeExecutionRetired: true,
+  kickCanaryExecutionRetired: true,
   permanentRuntimeCaptureAuthorized: false,
 }, null, 2))
