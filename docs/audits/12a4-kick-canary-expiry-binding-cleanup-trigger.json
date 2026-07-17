@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a4-kick-canary-expiry-binding-cleanup-trigger-v1",
-  "status": "armed",
+  "status": "consumed_and_retired",
   "provider": "kick",
   "oneTime": true,
   "confirmation": "REMOVE_EXPIRED_KICK_CANARY_BINDINGS",
@@ -13,5 +13,10 @@
   "categoryCanaryAttempt": 3,
   "cleanupPackagePr": 586,
   "cleanupPackageMergeSha": "aaafab2266ef717b2e51dd5006044578bbfd8ae2",
-  "reason": "remove_only_the_expired_attempt_3_canary_bindings_after_all_other_post_rollback_gates_passed"
+  "consumedByPr": 587,
+  "consumedByMergeSha": "7fbc343207de235ae583e827ba2fa7796083faf4",
+  "acceptedWorkflowJobId": 87822408236,
+  "acceptedArtifactId": 8399137444,
+  "retired": true,
+  "reason": "expired_attempt_3_canary_bindings_removed_and_final_readonly_acceptance_passed"
 }
