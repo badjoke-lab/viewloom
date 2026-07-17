@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "viewloom-12a4-kick-category-capture-canary-post-rollback-readonly-evidence-v1",
+  "provider": "kick",
+  "attempt": 3,
+  "observedAt": "2026-07-17T06:41:08.710Z",
+  "trigger": {
+    "status": "armed",
+    "startAt": "2026-07-16T03:45:00.000Z",
+    "until": "2026-07-17T03:45:00.000Z",
+    "expired": true,
+    "graceUntil": "2026-07-17T03:55:00.000Z",
+    "packageMergeSha": "8dc53c6041f425f78e82cddb62328cff1128120f",
+    "executionPackageMergeSha": "9391fd1479d3c149303637ae65deae7abf0e9b7d",
+    "triggerMergeSha": "952716ee71ff9b15aae8771803ee8350cd8b917f"
+  },
+  "polling": {
+    "intervalSeconds": 30,
+    "attemptsMax": 120,
+    "attemptsUsed": 1
+  },
+  "identity": {
+    "serviceName": "viewloom-collector-kick",
+    "databaseId": "ed1e082f-85ac-4dd0-a44e-5d3e200667d5"
+  },
+  "storage": {
+    "currentBytes": 309825536,
+    "currentMb": 295.47,
+    "incrementalMbWithSafety": 22.01,
+    "projectedNinetyDaySizeMb": 317.48,
+    "projectedProviderHeadroomMb": 132.52,
+    "pass": true
+  },
+  "serviceBindings": {
+    "enabled": null,
+    "provider": null,
+    "startedAt": null,
+    "until": null,
+    "attempt": null,
+    "categoryCaptureDirectFlagPresent": false
+  },
+  "schema": {
+    "requiredTables": [
+      "minute_snapshots",
+      "provider_category_dictionary",
+      "streamer_intraday_rollups"
+    ],
+    "observedTables": [
+      "minute_snapshots",
+      "provider_category_dictionary",
+      "streamer_intraday_rollups"
+    ],
+    "missingTables": []
+  },
+  "data": {
+    "kickDictionaryRows": 164,
+    "providerLeakageRows": 0,
+    "categoryPayloadRowsInCanaryWindow": 288,
+    "categoryPayloadRowsAfterGrace": 0,
+    "latestSnapshot": {
+      "bucket_minute": "2026-07-17T06:40:00.000Z",
+      "collected_at": "2026-07-17T06:40:49.094Z",
+      "stream_count": 100,
+      "total_viewers": 239409,
+      "source_mode": "authenticated"
+    },
+    "latestNormalSnapshotAfterExpiry": {
+      "normal_bucket_minute": "2026-07-17T06:40:00.000Z",
+      "normal_collected_at": "2026-07-17T06:40:49.094Z",
+      "normal_stream_count": 100,
+      "normal_total_viewers": 239409,
+      "normal_source_mode": "authenticated"
+    },
+    "latestCategorySnapshotInWindow": {
+      "category_bucket_minute": "2026-07-17T03:40:00.000Z",
+      "category_collected_at": "2026-07-17T03:40:48.196Z",
+      "category_stream_count": 100,
+      "category_total_viewers": 491325,
+      "category_source_mode": "authenticated"
+    },
+    "minutesSinceLatestSnapshot": 0.33,
+    "minutesSinceLatestNormalSnapshotAfterExpiry": 0.33
+  },
+  "gates": {
+    "readOnly": true,
+    "triggerExpired": true,
+    "canaryBindingsAbsent": true,
+    "permanentDirectFlagAbsent": true,
+    "storagePass": true,
+    "schemaPass": true,
+    "dictionaryPass": true,
+    "canaryWindowPayloadPass": true,
+    "noCategoryPayloadAfterGracePass": true,
+    "providerLeakagePass": true,
+    "latestSnapshotFreshnessPass": true,
+    "normalSnapshotAfterExpiryPresent": true,
+    "normalSnapshotAfterExpiryFreshnessPass": true,
+    "normalSnapshotAuthenticatedPass": true,
+    "normalSnapshotNonemptyPass": true,
+    "twitchStartAuthorized": false,
+    "productionMutationAuthorized": false
+  },
+  "outcome": "accepted",
+  "error": null,
+  "artifact": {
+    "workflowRunId": 29488056134,
+    "workflowJobId": 87817771602,
+    "artifactId": 8399137444,
+    "artifactDigest": "sha256:070d5de57a141bf3437847070451284e180c908c47de126ff52fda995bc20de1"
+  }
+}
