@@ -13,44 +13,47 @@ const allowed = new Set([
   'workers/collector-kick/wrangler.category-canary.toml',
   'workers/shared/category-capture.ts',
 ])
-
 const canonicalSyncAllowed = new Set([
   'docs/README.md',
   'docs/audits/12a2-current-gate-state.json',
+  'docs/audits/12a4-kick-category-capture-canary-execution-contract.json',
+  'docs/audits/12a4-kick-category-capture-canary-trigger.json',
+  'docs/audits/12a4-kick-category-capture-canary-post-rollback-acceptance-contract.json',
+  'docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json',
+  'docs/work-in-progress/phase12a4-kick-category-capture-canary-post-rollback-acceptance.md',
+  '.github/workflows/analytics-12a4-kick-category-capture-canary-execution.yml',
+  '.github/workflows/analytics-12a4-kick-category-capture-canary-post-rollback-acceptance.yml',
   'scripts/check-12a4-category-capture-enablement-decision-scope.mjs',
   'scripts/check-12a4-category-execution-cost-probe-execution-package-scope.mjs',
   'scripts/check-12a4-kick-category-capture-canary-execution-package-scope.mjs',
   'scripts/check-12a4-kick-category-capture-canary-package-scope.mjs',
+  'scripts/check-12a4-kick-category-capture-canary-post-rollback-acceptance-scope.mjs',
+  'scripts/check-12a4-kick-canary-expiry-binding-cleanup-scope.mjs',
   'scripts/verify-12a4-category-capture-enablement-decision.mjs',
   'scripts/verify-12a4-category-execution-cost-probe.mjs',
   'scripts/verify-12a4-kick-category-capture-canary-execution-package.mjs',
   'scripts/verify-12a4-kick-category-capture-canary-package.mjs',
-  'scripts/verify-development-policy.mjs',
-  '.github/workflows/analytics-12a4-kick-canary-expiry-binding-cleanup.yml',
-  'docs/audits/12a4-kick-canary-expiry-binding-cleanup-contract.json',
-  'docs/work-in-progress/phase12a4-kick-canary-expiry-binding-cleanup.md',
-  'scripts/check-12a4-kick-canary-expiry-binding-cleanup-scope.mjs',
-  'scripts/run-12a4-kick-canary-expiry-binding-cleanup.mjs',
+  'scripts/verify-12a4-kick-category-capture-canary-post-rollback-acceptance-package.mjs',
   'scripts/verify-12a4-kick-canary-expiry-binding-cleanup-package.mjs',
+  'scripts/verify-development-policy.mjs',
 ])
-
 const forbiddenPrefixes = ['workers/collector-twitch/', 'apps/web/', 'db/']
 
 const isCanonicalSync = (() => {
   try {
     const gate = JSON.parse(readFileSync('docs/audits/12a2-current-gate-state.json', 'utf8'))
     const trigger = JSON.parse(readFileSync('docs/audits/12a4-kick-category-capture-canary-trigger.json', 'utf8'))
-    return gate.schemaVersion === 'viewloom-12a2-current-gate-state-v18'
-      && gate.status === '12a4_kick_canary_initial_checkpoint_accepted_observation_active'
-      && gate.currentWorkstream?.phase === '12A-4-11'
-      && gate.categoryCapture?.kickCanaryPackageAccepted === true
-      && gate.categoryCapture?.kickCanaryExecutionPackageAccepted === true
-      && gate.categoryCapture?.kickExactTriggerAccepted === true
-      && gate.categoryCapture?.kickCanaryExecuted === true
-      && gate.categoryCapture?.kickCanaryInitialAcceptanceAccepted === true
+    const evidence = JSON.parse(readFileSync('docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json', 'utf8'))
+    return gate.schemaVersion === 'viewloom-12a2-current-gate-state-v19'
+      && gate.status === '12a4_kick_canary_final_observation_and_rollback_accepted'
+      && gate.currentWorkstream?.phase === '12A-4-12'
+      && gate.currentWorkstream?.acceptedKickCanaryFinalEvidence === true
       && gate.categoryCapture?.runtimeCaptureAuthorized === false
       && existsSync('docs/audits/12a4-kick-category-capture-canary-trigger.json')
-      && trigger.attempt === 3
+      && trigger.status === 'consumed_and_retired'
+      && trigger.retired === true
+      && evidence.outcome === 'accepted'
+      && evidence.artifact?.artifactId === 8399137444
   } catch {
     return false
   }
@@ -63,9 +66,7 @@ const base = baseRef ? `origin/${baseRef}` : 'HEAD^'
 try {
   const mergeBase = execFileSync('git', ['merge-base', 'HEAD', base], { encoding: 'utf8' }).trim()
   const changed = execFileSync('git', ['diff', '--name-only', `${mergeBase}...HEAD`], { encoding: 'utf8' })
-    .split('\n')
-    .map((value) => value.trim())
-    .filter(Boolean)
+    .split('\n').map((value) => value.trim()).filter(Boolean)
   const unexpected = changed.filter((file) => !activeAllowed.has(file))
   const forbidden = changed.filter((file) => forbiddenPrefixes.some((prefix) => file.startsWith(prefix)))
   if (unexpected.length || forbidden.length) {
