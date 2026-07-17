@@ -6,14 +6,14 @@ on:
     types: [opened, reopened, synchronize]
     paths:
       - '.github/workflows/analytics-12a4-twitch-category-capture-canary-storage-preflight-reporting.yml'
-      - 'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-reporting-request.json'
+      - 'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-diagnostic-marker.json'
       - 'scripts/inspect-12a4-twitch-category-capture-canary-storage-preflight-request.mjs'
       - 'scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs'
       - 'scripts/test-12a4-twitch-category-capture-canary-storage-preflight.mjs'
   push:
     branches: [main]
     paths:
-      - 'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-reporting-request.json'
+      - 'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-diagnostic-marker.json'
 
 permissions:
   contents: read
@@ -46,11 +46,11 @@ jobs:
         run: node --check scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs
       - name: Verify development policy
         run: node scripts/verify-development-policy.mjs
-      - name: Confirm no production operation in pull request
+      - name: Confirm diagnostic boundary
         run: |
           test "${{ github.event_name }}" = "pull_request"
           echo 'Production observation: skipped' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Twitch trigger: absent' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Diagnostic artifact only: yes' >> "$GITHUB_STEP_SUMMARY"
 
   inspect-request:
     if: github.event_name == 'push'
@@ -89,22 +89,29 @@ jobs:
         run: node scripts/inspect-12a4-twitch-category-capture-canary-storage-preflight-request.mjs
       - name: Verify read-only fixtures
         run: node scripts/test-12a4-twitch-category-capture-canary-storage-preflight.mjs
-      - name: Run read-only production storage preflight
+      - name: Run read-only production storage preflight with diagnostic capture
         id: observe
-        run: node scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs
-      - name: Upload sanitized evidence
+        shell: bash
+        run: |
+          mkdir -p artifacts/12a4-twitch-category-canary-storage-preflight
+          set +e
+          node scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs 2>&1 | tee artifacts/12a4-twitch-category-canary-storage-preflight/diagnostic.log
+          code=${PIPESTATUS[0]}
+          set -e
+          exit "$code"
+      - name: Upload sanitized evidence and diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: analytics-12a4-twitch-category-canary-storage-preflight-reporting-attempt-3
-          path: artifacts/12a4-twitch-category-canary-storage-preflight/evidence.json
-          if-no-files-found: warn
+          name: analytics-12a4-twitch-category-canary-storage-preflight-diagnostics-attempt-4
+          path: artifacts/12a4-twitch-category-canary-storage-preflight/
+          if-no-files-found: error
           retention-days: 14
-      - name: Report exact run metadata
+      - name: Report exact diagnostic run metadata
         if: always()
         run: |
           cat > /tmp/viewloom-preflight-report.md <<EOF
-          ## Twitch read-only storage preflight reporting attempt 3
+          ## Twitch read-only storage preflight diagnostic attempt 4
 
           - Workflow run: $GITHUB_RUN_ID
           - Job: $GITHUB_JOB
@@ -114,11 +121,7 @@ jobs:
           - Evidence outcome: ${{ steps.observe.outputs.outcome }}
           - Observed at: ${{ steps.observe.outputs.observed_at }}
           - Evidence digest: ${{ steps.observe.outputs.evidence_digest }}
-          - Current Twitch D1: ${{ steps.observe.outputs.provider_current_mb }} MB
-          - Projected Twitch 90-day size: ${{ steps.observe.outputs.projected_ninety_day_mb }} MB
-          - Projected Twitch headroom: ${{ steps.observe.outputs.projected_provider_headroom_mb }} MB
-          - Projected account-wide headroom: ${{ steps.observe.outputs.projected_account_headroom_mb }} MB
-          - Artifact: analytics-12a4-twitch-category-canary-storage-preflight-reporting-attempt-3
+          - Artifact: analytics-12a4-twitch-category-canary-storage-preflight-diagnostics-attempt-4
           - Direct Cloudflare methods: GET only
           - D1 statements: SELECT only
           - Worker deployment: no
