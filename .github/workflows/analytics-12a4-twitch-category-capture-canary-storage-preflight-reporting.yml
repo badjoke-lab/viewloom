@@ -18,6 +18,7 @@ on:
 permissions:
   contents: read
   issues: write
+  pull-requests: write
 
 concurrency:
   group: analytics-12a4-twitch-storage-preflight-reporting
@@ -95,15 +96,15 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: analytics-12a4-twitch-category-canary-storage-preflight-reporting-attempt-2
+          name: analytics-12a4-twitch-category-canary-storage-preflight-reporting-attempt-3
           path: artifacts/12a4-twitch-category-canary-storage-preflight/evidence.json
           if-no-files-found: warn
           retention-days: 14
-      - name: Report exact run to Issue 519
+      - name: Report exact run metadata
         if: always()
         run: |
           cat > /tmp/viewloom-preflight-report.md <<EOF
-          ## Twitch read-only storage preflight reporting attempt 2
+          ## Twitch read-only storage preflight reporting attempt 3
 
           - Workflow run: $GITHUB_RUN_ID
           - Job: $GITHUB_JOB
@@ -117,7 +118,7 @@ jobs:
           - Projected Twitch 90-day size: ${{ steps.observe.outputs.projected_ninety_day_mb }} MB
           - Projected Twitch headroom: ${{ steps.observe.outputs.projected_provider_headroom_mb }} MB
           - Projected account-wide headroom: ${{ steps.observe.outputs.projected_account_headroom_mb }} MB
-          - Artifact: analytics-12a4-twitch-category-canary-storage-preflight-reporting-attempt-2
+          - Artifact: analytics-12a4-twitch-category-canary-storage-preflight-reporting-attempt-3
           - Direct Cloudflare methods: GET only
           - D1 statements: SELECT only
           - Worker deployment: no
@@ -126,3 +127,4 @@ jobs:
           - Runtime category capture: no
           EOF
           gh issue comment 519 --repo "$GITHUB_REPOSITORY" --body-file /tmp/viewloom-preflight-report.md
+          gh pr comment 595 --repo "$GITHUB_REPOSITORY" --body-file /tmp/viewloom-preflight-report.md
