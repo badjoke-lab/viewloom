@@ -27,7 +27,7 @@ const workflow = read('.github/workflows/analytics-12a4-twitch-category-capture-
 const note = read('docs/work-in-progress/phase12a4-twitch-category-capture-canary.md')
 
 check('contract schema', contract.schemaVersion === 'viewloom-12a4-twitch-category-capture-canary-package-v1', contract.schemaVersion)
-check('candidate or accepted status', ['candidate', 'accepted'].includes(contract.status), contract.status)
+check('accepted status', contract.status === 'accepted', contract.status)
 check('tracking issue', contract.trackingIssue === 519, contract.trackingIssue)
 check('provider Twitch', contract.provider === 'twitch', contract.provider)
 check('provider order', JSON.stringify(contract.providerOrder) === JSON.stringify(['kick', 'twitch']), contract.providerOrder)
@@ -83,14 +83,14 @@ check('workflow PR/manual only', /^\s*pull_request:/m.test(workflow) && /^\s*wor
 check('workflow has no Cloudflare secrets', !workflow.includes('CLOUDFLARE_API_TOKEN') && !workflow.includes('CLOUDFLARE_ACCOUNT_ID'))
 check('workflow dry-runs both Twitch configs', workflow.includes('wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.toml') && workflow.includes('wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.category-canary.toml'))
 check('workflow includes typecheck and policy', workflow.includes('pnpm typecheck:collectors') && workflow.includes('verify-development-policy.mjs'))
-check('working note says candidate only', note.includes('Candidate package only. Production execution is not authorized.'))
+check('working note accepted but execution unauthorized', note.includes('Accepted dormant package. Production execution is not authorized.'))
+check('working note records accepted CI', note.includes('workflow run `29575999254`, job `87870458377`'))
 check('working note preserves storage thresholds', note.includes('`440 MB`') && note.includes('`10 MB`') && note.includes('`500 MB`'))
 
-if (contract.status === 'accepted') {
-  check('accepted PR identity present', Number.isInteger(contract.acceptance.pr) && typeof contract.acceptance.validatedCandidateHeadSha === 'string', contract.acceptance)
-  check('accepted CI evidence present', Number.isInteger(contract.acceptance.packageWorkflowRunId) && Number.isInteger(contract.acceptance.packageWorkflowJobId), contract.acceptance)
-  check('all acceptance gates pass', contract.acceptance.packageScopePass === true && contract.acceptance.canaryFixturePass === true && contract.acceptance.collectorTypecheckPass === true && contract.acceptance.developmentPolicyPass === true && contract.acceptance.normalTwitchBundlePass === true && contract.acceptance.disabledCanaryBundlePass === true, contract.acceptance)
-}
+check('accepted PR identity', contract.acceptance.pr === 590 && contract.acceptance.validatedCandidateHeadSha === '685c813d5d1a0f3fd36e0d85072d791da3a30f41', contract.acceptance)
+check('accepted CI identity', contract.acceptance.packageWorkflowRunId === 29575999254 && contract.acceptance.packageWorkflowJobId === 87870458377, contract.acceptance)
+check('all acceptance gates pass', contract.acceptance.packageScopePass === true && contract.acceptance.canaryFixturePass === true && contract.acceptance.collectorTypecheckPass === true && contract.acceptance.developmentPolicyPass === true && contract.acceptance.normalTwitchBundlePass === true && contract.acceptance.disabledCanaryBundlePass === true, contract.acceptance)
+check('acceptance performed no production work', contract.acceptance.productionRuntimeCaptureStarted === false && contract.acceptance.productionWorkerDeployed === false && contract.acceptance.remoteD1OperationPerformed === false && contract.acceptance.kickChanged === false, contract.acceptance)
 
 if (failures.length) {
   console.error(JSON.stringify({ ok: false, failures }, null, 2))
@@ -101,6 +101,9 @@ console.log(JSON.stringify({
   ok: true,
   status: contract.status,
   provider: contract.provider,
+  acceptancePr: contract.acceptance.pr,
+  validatedCandidateHeadSha: contract.acceptance.validatedCandidateHeadSha,
+  packageWorkflowRunId: contract.acceptance.packageWorkflowRunId,
   observationHours: contract.package.minimumObservationHours,
   committedDisabled: contract.package.committedDisabled,
   twitchDatabaseId: canaryDatabaseId,
