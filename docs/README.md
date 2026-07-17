@@ -27,6 +27,7 @@ Kick final observation and rollback accepted PR #589
 Twitch dormant canary package accepted PR #590
 Twitch dormant execution package accepted PR #591 and acceptance PR #592
 Twitch read-only storage preflight accepted PR #599 and finalized PR #600
+Twitch storage preflight artifact: `8413901173`
 canonical gate 12A-4-15 Twitch storage preflight accepted; exact trigger blocked by freshness
 exact Twitch trigger current no
 fresh Twitch storage evidence for start no
