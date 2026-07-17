@@ -14,6 +14,7 @@ on:
       - 'scripts/check-12a4-kick-category-capture-canary-post-rollback-acceptance-scope.mjs'
       - 'scripts/verify-12a4-kick-category-capture-canary-post-rollback-acceptance-package.mjs'
       - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-public-browser-audit-current.mjs'
 
 permissions:
   contents: read
@@ -39,6 +40,8 @@ jobs:
         run: node scripts/verify-12a4-kick-category-capture-canary-post-rollback-acceptance-package.mjs
       - name: Verify canonical development policy
         run: node scripts/verify-development-policy.mjs
+      - name: Verify current public handoff state
+        run: node scripts/verify-public-browser-audit-current.mjs
       - name: Publish retirement summary
         if: always()
         run: |
@@ -48,6 +51,7 @@ jobs:
             echo '- Final artifact: 8399137444'
             echo '- Outcome: accepted'
             echo '- Frozen evidence: docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json'
+            echo '- Current public handoff state: verified'
             echo '- Production read-only probe job: removed'
             echo '- Cloudflare credentials referenced: no'
             echo '- D1 or Worker production call: no'
