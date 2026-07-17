@@ -10,6 +10,9 @@ const packageAllowed = new Set([
   'scripts/run-12a4-kick-canary-expiry-binding-cleanup.mjs',
   'scripts/verify-12a4-kick-canary-expiry-binding-cleanup-package.mjs',
   'scripts/verify-development-policy.mjs',
+  'scripts/check-12a4-kick-category-capture-canary-execution-package-scope.mjs',
+  'scripts/check-12a4-kick-category-capture-canary-package-scope.mjs',
+  'scripts/verify-12a4-kick-category-capture-canary-execution-package.mjs',
 ])
 
 const baseRef = process.env.GITHUB_BASE_REF
