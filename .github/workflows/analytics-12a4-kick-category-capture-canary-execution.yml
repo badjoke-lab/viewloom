@@ -1,4 +1,4 @@
-name: Analytics 12A4 Kick Category Capture Canary Execution
+name: Analytics 12A4 Kick Category Capture Canary Execution Retired
 
 on:
   pull_request:
@@ -6,7 +6,10 @@ on:
     types: [opened, reopened, synchronize]
     paths:
       - '.github/workflows/analytics-12a4-kick-category-capture-canary-execution.yml'
+      - 'docs/audits/12a2-current-gate-state.json'
       - 'docs/audits/12a4-kick-category-capture-canary-execution-contract.json'
+      - 'docs/audits/12a4-kick-category-capture-canary-trigger.json'
+      - 'docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json'
       - 'docs/work-in-progress/phase12a4-kick-category-capture-canary-execution.md'
       - 'scripts/check-12a4-kick-category-capture-canary-execution-package-scope.mjs'
       - 'scripts/inspect-12a4-kick-category-capture-canary-trigger.mjs'
@@ -16,24 +19,17 @@ on:
       - 'scripts/verify-development-policy.mjs'
       - 'workers/collector-kick/src/entry-category-canary.ts'
       - 'workers/collector-kick/wrangler.category-canary.toml'
-  push:
-    branches: [main]
-    paths:
-      - 'docs/audits/12a4-kick-category-capture-canary-trigger.json'
-  schedule:
-    - cron: '23 * * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: analytics-12a4-kick-category-capture-canary-execution-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
+  group: analytics-12a4-kick-category-capture-canary-execution-retired-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  verify-package:
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+  verify-retired-package:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -42,9 +38,10 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify execution package scope
+      - name: Verify retirement scope
+        if: github.event_name == 'pull_request'
         run: node scripts/check-12a4-kick-category-capture-canary-execution-package-scope.mjs
-      - name: Verify dormant execution package
+      - name: Verify accepted and retired execution package
         run: node scripts/verify-12a4-kick-category-capture-canary-execution-package.mjs
       - name: Verify trigger, phase, storage, and binding fixtures
         run: node scripts/test-12a4-kick-category-capture-canary-execution.mjs
@@ -54,96 +51,20 @@ jobs:
         run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-kick/wrangler.toml
       - name: Bundle disabled Kick canary collector without deploying
         run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-kick/wrangler.category-canary.toml
-      - name: Publish package summary
+      - name: Publish retirement summary
         if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4-9 Kick Canary Execution Package'
+            echo '## ViewLoom 12A-4 Kick category canary execution retired'
             echo
-            echo '- Exact trigger present in package PR: no'
-            echo '- Pull request production execution: no'
-            echo '- workflow_dispatch production execution: no'
-            echo '- Push start: exact trigger only'
-            echo '- Scheduled monitor: hourly, trigger-aware, no-op while dormant'
-            echo '- Hard stop and expiry rollback: normal Kick config'
+            echo '- Final read-only artifact: 8399137444'
+            echo '- Canary bindings absent: yes'
+            echo '- Permanent category flag present: no'
+            echo '- Exact trigger status: consumed and retired'
+            echo '- Push production start: removed'
+            echo '- Hourly scheduled monitor/finalizer: removed'
+            echo '- Production jobs: removed'
+            echo '- Cloudflare credentials referenced: no'
+            echo '- Worker deployment: dry-run only'
             echo '- Twitch automatic start: no'
           } >> "$GITHUB_STEP_SUMMARY"
-
-  inspect-trigger:
-    if: github.event_name == 'push' || github.event_name == 'schedule'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      present: ${{ steps.inspect.outputs.present }}
-      action: ${{ steps.inspect.outputs.action }}
-      phase: ${{ steps.inspect.outputs.phase }}
-      attempt: ${{ steps.inspect.outputs.attempt }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: inspect
-        name: Inspect exact Kick canary trigger
-        run: node scripts/inspect-12a4-kick-category-capture-canary-trigger.mjs --event "${{ github.event_name }}"
-      - name: Publish trigger state
-        run: |
-          {
-            echo '## Kick category canary trigger state'
-            echo
-            echo '- Present: `${{ steps.inspect.outputs.present }}`'
-            echo '- Action: `${{ steps.inspect.outputs.action }}`'
-            echo '- Phase: `${{ steps.inspect.outputs.phase }}`'
-            echo '- Attempt: `${{ steps.inspect.outputs.attempt }}`'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-  start-canary:
-    needs: inspect-trigger
-    if: github.event_name == 'push' && needs.inspect-trigger.outputs.action == 'start'
-    runs-on: ubuntu-latest
-    timeout-minutes: 240
-    env:
-      ACTION: start
-      TRIGGER_PATH: docs/audits/12a4-kick-category-capture-canary-trigger.json
-      OUTPUT_DIR: artifacts/12a4-kick-category-canary/start
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - id: execute
-        name: Run bounded Kick canary start
-        run: node scripts/run-12a4-kick-category-capture-canary-execution.mjs
-      - name: Upload sanitized start evidence
-        if: always() && steps.execute.outputs.evidence_path != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: analytics-12a4-kick-category-canary-start-attempt-${{ needs.inspect-trigger.outputs.attempt }}
-          path: ${{ steps.execute.outputs.evidence_path }}
-          if-no-files-found: error
-          retention-days: 30
-
-  monitor-or-finalize:
-    needs: inspect-trigger
-    if: github.event_name == 'schedule' && (needs.inspect-trigger.outputs.action == 'monitor' || needs.inspect-trigger.outputs.action == 'finalize')
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      ACTION: ${{ needs.inspect-trigger.outputs.action }}
-      TRIGGER_PATH: docs/audits/12a4-kick-category-capture-canary-trigger.json
-      OUTPUT_DIR: artifacts/12a4-kick-category-canary/${{ needs.inspect-trigger.outputs.action }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - id: execute
-        name: Run Kick canary checkpoint or finalizer
-        run: node scripts/run-12a4-kick-category-capture-canary-execution.mjs
-      - name: Upload sanitized checkpoint or final evidence
-        if: always() && steps.execute.outputs.evidence_path != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: analytics-12a4-kick-category-canary-${{ needs.inspect-trigger.outputs.action }}-attempt-${{ needs.inspect-trigger.outputs.attempt }}
-          path: ${{ steps.execute.outputs.evidence_path }}
-          if-no-files-found: error
-          retention-days: 30
