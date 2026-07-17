@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-kick-canary-expiry-binding-cleanup-v1",
   "workstream": "12A-4 Kick canary expiry binding cleanup",
-  "status": "prepared",
+  "status": "accepted_and_retired",
   "trackingIssue": 519,
   "provider": "kick",
   "reason": "post_rollback_acceptance_found_only_expired_canary_bindings_remaining",
@@ -61,12 +61,38 @@
     "combinedProviderRankingAllowed": false
   },
   "evidence": {
-    "artifactName": "analytics-12a4-kick-canary-expiry-binding-cleanup",
+    "cleanupPackagePr": 586,
+    "cleanupPackageMergeSha": "aaafab2266ef717b2e51dd5006044578bbfd8ae2",
+    "triggerPr": 587,
+    "triggerMergeSha": "7fbc343207de235ae583e827ba2fa7796083faf4",
+    "finalReadOnlyWorkflowRunId": 29488056134,
+    "finalReadOnlyArtifactId": 8399137444,
+    "finalReadOnlyArtifactDigest": "sha256:070d5de57a141bf3437847070451284e180c908c47de126ff52fda995bc20de1",
     "sanitizedJsonOnly": true,
     "rawPayloadIncluded": false,
     "channelIdentitiesIncluded": false,
     "secretsIncluded": false
   },
-  "acceptance": null,
-  "nextGateOnSuccess": "rerun post-rollback read-only acceptance, freeze final evidence, then advance the canonical gate without automatically starting Twitch"
+  "acceptance": {
+    "observedAt": "2026-07-17T06:41:08.710Z",
+    "outcome": "accepted",
+    "canaryBindingsAbsent": true,
+    "permanentCategoryCaptureFlagPresent": false,
+    "normalSnapshotAuthenticated": true,
+    "normalSnapshotNonempty": true,
+    "normalSnapshotStreamCount": 100,
+    "normalSnapshotTotalViewers": 239409,
+    "categoryPayloadRowsAfterGrace": 0,
+    "providerLeakageRows": 0,
+    "projectedNinetyDaySizeMb": 317.48,
+    "projectedProviderHeadroomMb": 132.52,
+    "twitchChanged": false
+  },
+  "retirement": {
+    "productionPushTriggerRetired": true,
+    "productionDeploymentJobRetired": true,
+    "cloudflareCredentialsReferencedByWorkflow": false,
+    "triggerRearmAuthorized": false
+  },
+  "nextGateOnSuccess": "freeze final post-rollback evidence and advance the canonical gate without automatically starting Twitch"
 }
