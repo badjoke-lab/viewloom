@@ -90,7 +90,7 @@ assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
 assert.equal(gate.categoryCapture.categoryCaptureFlagPresent, false)
 assert.equal(gate.categoryCapture.productionCategoryRowsPresent, true)
 
-assert.equal(exists(triggerPath), true, 'active observation requires the armed Kick trigger')
+assert.equal(exists(triggerPath), true, 'rollback cleanup requires the retained attempt-3 trigger identity')
 const trigger = json(triggerPath)
 assert.equal(trigger.status, 'armed')
 assert.equal(trigger.provider, 'kick')
@@ -100,7 +100,7 @@ assert.equal(trigger.packagePr, contract.trigger.exactPackagePr)
 assert.equal(trigger.packageMergeSha, contract.trigger.exactPackageMergeSha)
 assert.equal(trigger.executionPackagePr, contract.acceptance.pr)
 assert.equal(trigger.executionPackageMergeSha, contract.acceptance.mergeSha)
-assert.ok(Date.now() < new Date(trigger.until).getTime(), 'active Kick trigger expired before observation validation')
+assert.ok(Date.now() >= new Date(trigger.until).getTime(), 'attempt-3 trigger must be expired during rollback cleanup validation')
 
 for (const fragment of [
   "const CONFIRMATION = 'RUN_KICK_CATEGORY_CAPTURE_CANARY'",
