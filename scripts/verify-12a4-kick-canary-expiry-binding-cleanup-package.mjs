@@ -8,6 +8,7 @@ const contract = json('docs/audits/12a4-kick-canary-expiry-binding-cleanup-contr
 const gate = json('docs/audits/12a2-current-gate-state.json')
 const categoryTrigger = json('docs/audits/12a4-kick-category-capture-canary-trigger.json')
 const cleanupTrigger = json(contract.trigger.path)
+const finalEvidence = json('docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json')
 const normalConfig = read('workers/collector-kick/wrangler.toml')
 const twitchConfig = read('workers/collector-twitch/wrangler.toml')
 const workflow = read('.github/workflows/analytics-12a4-kick-canary-expiry-binding-cleanup.yml')
@@ -43,17 +44,24 @@ assert.equal(contract.retirement.productionDeploymentJobRetired, true)
 assert.equal(contract.retirement.cloudflareCredentialsReferencedByWorkflow, false)
 assert.equal(contract.retirement.triggerRearmAuthorized, false)
 
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v18')
-assert.equal(gate.currentWorkstream.phase, '12A-4-11')
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v19')
+assert.equal(gate.currentWorkstream.phase, '12A-4-12')
+assert.equal(gate.currentWorkstream.acceptedKickCanaryFinalEvidence, true)
+assert.equal(gate.currentWorkstream.kickCanaryExecutionRetired, true)
+assert.equal(gate.currentWorkstream.twitchPackageBlockedUntilKickFinalEvidence, false)
+assert.equal(gate.currentWorkstream.twitchCanaryAutomaticallyAuthorized, false)
 assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
-assert.equal(gate.currentWorkstream.twitchPackageBlockedUntilKickFinalEvidence, true)
+assert.equal(gate.categoryCapture.kickCanaryRollbackVerified, true)
+assert.equal(gate.categoryCapture.kickCanaryProductionPathRetired, true)
 
-assert.equal(categoryTrigger.status, 'armed')
+assert.equal(categoryTrigger.status, 'consumed_and_retired')
 assert.equal(categoryTrigger.provider, 'kick')
+assert.equal(categoryTrigger.oneTime, true)
+assert.equal(categoryTrigger.retired, true)
 assert.equal(categoryTrigger.attempt, 3)
 assert.equal(categoryTrigger.startAt, contract.acceptedCanaryIdentity.startAt)
 assert.equal(categoryTrigger.until, contract.acceptedCanaryIdentity.until)
-assert.ok(new Date(categoryTrigger.until).getTime() <= Date.now())
+assert.equal(categoryTrigger.finalArtifactId, 8399137444)
 
 assert.equal(cleanupTrigger.schemaVersion, contract.trigger.schemaVersion)
 assert.equal(cleanupTrigger.status, 'consumed_and_retired')
@@ -65,6 +73,13 @@ assert.equal(cleanupTrigger.attempt, 1)
 assert.equal(cleanupTrigger.cleanupPackagePr, 586)
 assert.equal(cleanupTrigger.triggerPr, 587)
 assert.equal(cleanupTrigger.acceptedFinalArtifactId, 8399137444)
+
+assert.equal(finalEvidence.outcome, 'accepted')
+assert.equal(finalEvidence.artifact.artifactId, 8399137444)
+assert.equal(finalEvidence.gates.canaryBindingsAbsent, true)
+assert.equal(finalEvidence.gates.permanentDirectFlagAbsent, true)
+assert.equal(finalEvidence.gates.noCategoryPayloadAfterGracePass, true)
+assert.equal(finalEvidence.gates.providerLeakagePass, true)
 
 assert.ok(normalConfig.includes(`crons = ["${contract.cleanup.expectedCron}"]`))
 assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(normalConfig), false)
@@ -87,7 +102,7 @@ for (const fragment of [
   'final artifact `8399137444`',
   'canary bindings: absent',
   'production cleanup workflow is retired',
-  'Twitch remains blocked',
+  'Twitch remains blocked until the accepted final evidence is frozen',
 ]) assert.ok(note.includes(fragment), `working note missing ${fragment}`)
 
 console.log(JSON.stringify({
@@ -96,8 +111,9 @@ console.log(JSON.stringify({
   cleanupPackagePr: contract.evidence.cleanupPackagePr,
   triggerPr: contract.evidence.triggerPr,
   finalArtifactId: contract.evidence.finalReadOnlyArtifactId,
-  canaryBindingsAbsent: contract.acceptance.canaryBindingsAbsent,
+  canaryBindingsAbsent: true,
   productionWorkflowRetired: true,
+  canonicalFinalEvidenceAccepted: true,
   twitchChanged: false,
   permanentRuntimeCaptureAuthorized: false,
 }, null, 2))
