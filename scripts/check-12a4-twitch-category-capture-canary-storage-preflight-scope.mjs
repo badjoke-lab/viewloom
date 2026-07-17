@@ -11,18 +11,15 @@ const requestPaths = [
 ]
 
 const allowed = new Set([
-  workflowPath,
-  reportingWorkflowPath,
   'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json',
-  evidencePath,
-  ...requestPaths,
   'docs/work-in-progress/phase12a4-twitch-category-capture-canary-storage-preflight.md',
   'scripts/check-12a4-twitch-category-capture-canary-storage-preflight-scope.mjs',
   'scripts/verify-12a4-twitch-category-capture-canary-storage-preflight-package.mjs',
 ])
-
 const forbiddenExact = new Set([
   'docs/audits/12a4-twitch-category-capture-canary-trigger.json',
+  workflowPath,
+  evidencePath,
   'workers/collector-twitch/wrangler.toml',
   'workers/collector-twitch/wrangler.category-canary.toml',
   'workers/collector-twitch/src/entry-category-canary.ts',
@@ -89,11 +86,13 @@ try {
   console.log(JSON.stringify({
     ok: true,
     changed,
-    exactAcceptanceFiles: changed.length,
-    evidenceFrozen: true,
+    exactFinalizationFiles: changed.length,
+    contractAccepted: true,
+    acceptanceMergeShaRecorded: true,
+    evidenceUnchanged: true,
+    productionObservationWorkflowRetired: true,
     reportingWorkflowRetired: true,
     allRequestFilesRetired: true,
-    productionObservationWorkflowRetired: true,
     triggerPresent: false,
     productionConfigChanged: false,
     kickChanged: false,
