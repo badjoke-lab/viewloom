@@ -1,38 +1,63 @@
 # 12A-4-12 Kick category capture canary post-rollback read-only acceptance
 
-## Purpose
+## Status
 
-Freeze a final, sanitized proof that the bounded Kick category canary ended, the exact canary bindings were removed, permanent category capture was not enabled, and the normal Kick collector resumed fresh authenticated snapshots.
+Accepted.
 
-## Execution model
+- final workflow run: `29488056134`
+- final workflow job: `87822408236`
+- final sanitized artifact: `8399137444`
+- observed at: `2026-07-17T06:41:08.710Z`
+- frozen evidence: `docs/audits/12a4-kick-category-capture-canary-post-rollback-acceptance-evidence.json`
 
-The package is safe to merge before the 24-hour observation expires. A pull-request run before `2026-07-17T03:45:00.000Z` records `not_ready`, performs no Cloudflare or D1 call, and exits successfully. After expiry, the same job can be re-run or manually dispatched.
+## Result
 
-The post-expiry probe is strictly read-only:
+The bounded Kick category canary ended and the normal Kick collector resumed with no permanent category enablement.
 
-- Cloudflare API: `GET` only
-- D1: aggregate and latest-row `SELECT` only
-- Worker deployment: none
-- Worker rollback: none
-- Trigger or canonical gate mutation: none
-- Twitch authorization remains false
+Accepted evidence:
 
-## Required final evidence
+- attempt-3 window expired at `2026-07-17T03:45:00.000Z`;
+- all bounded canary bindings absent;
+- direct permanent `CATEGORY_CAPTURE_ENABLED` absent;
+- required D1 tables present;
+- Kick category dictionary rows: `164`;
+- category-bearing payload rows inside the bounded window: `288`;
+- category-bearing payload rows after the ten-minute grace boundary: `0`;
+- provider leakage rows: `0`;
+- latest normal Kick snapshot: `2026-07-17T06:40:00.000Z`;
+- latest normal snapshot source: `authenticated`;
+- latest normal snapshot streams/viewers: `100` / `239,409`;
+- freshness at acceptance: `0.33` minutes;
+- D1 current/projected/headroom: `295.47 MB` / `317.48 MB` / `132.52 MB`.
 
-Acceptance requires all of the following:
+All read-only acceptance gates passed.
 
-1. the exact attempt-3 trigger window has expired;
-2. all bounded canary bindings are absent from the production Kick service;
-3. no direct permanent `CATEGORY_CAPTURE_ENABLED` binding exists;
-4. the required D1 tables remain present;
-5. Kick category dictionary and bounded-window category payload evidence remain present;
-6. provider leakage remains zero;
-7. no category payload is written after the ten-minute post-expiry grace boundary;
-8. a fresh authenticated, non-empty normal Kick snapshot exists after expiry;
-9. the current D1 size remains inside the accepted 90-day projection and headroom limits.
+## Focused rollback recovery
 
-## Operational sequence
+The first post-expiry acceptance artifact `8398761959` rejected one gate only: stale attempt-3 canary bindings remained in Worker settings even though normal authenticated snapshots continued and category writes had stopped.
 
-The execution workflow finalizer is expected to run on its hourly schedule after the trigger expires and deploy the normal Kick configuration. This package does not perform or repeat that rollback. It polls only for the resulting normal state and normal Kick snapshot.
+The focused recovery was therefore restricted to deploying the canonical normal Kick configuration:
 
-After a successful artifact is frozen, the next change is a separate canonical gate update. A Twitch canary is not authorized by this package.
+- cleanup package PR: #586, merge `aaafab2266ef717b2e51dd5006044578bbfd8ae2`;
+- exact one-file cleanup trigger PR: #587, merge `7fbc343207de235ae583e827ba2fa7796083faf4`;
+- deployed configuration: `workers/collector-kick/wrangler.toml` only;
+- manual collection: none;
+- migration/backfill/retention/cadence changes: none;
+- Twitch change: none.
+
+## Read-only boundary
+
+The final acceptance probe used only:
+
+- Cloudflare API `GET`;
+- D1 `SELECT`;
+- no Worker deployment or deletion;
+- no trigger or gate mutation;
+- no category writes;
+- no Twitch authorization.
+
+## Handoff
+
+The cleanup trigger and production cleanup path are retired by the canonical acceptance update.
+
+Kick final observation and rollback are accepted. A Twitch canary is not started or automatically authorized by this evidence. Any Twitch work requires a separate package, trigger, and acceptance sequence.
