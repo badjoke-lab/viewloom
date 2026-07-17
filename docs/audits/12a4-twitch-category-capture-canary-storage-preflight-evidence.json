@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-storage-preflight-evidence-v1",
+  "provider": "twitch",
+  "observedAt": "2026-07-17T16:57:55.343Z",
+  "sourceCommitSha": "a8af5e3d3bad24e1994312f2877e470276b3f517",
+  "request": {
+    "requestedAt": "2026-07-17T16:40:52.000Z",
+    "confirmation": "RUN_READ_ONLY_TWITCH_STORAGE_PREFLIGHT",
+    "oneTime": true
+  },
+  "identity": {
+    "serviceName": "viewloom-collector-twitch",
+    "databaseName": "vl_twitch_hot",
+    "databaseId": "b77221fe-80a3-4749-bc0e-d3ad54003dcf",
+    "cadence": "*/5 * * * *"
+  },
+  "readOnlyBoundary": {
+    "directCloudflareApiMethods": [
+      "GET"
+    ],
+    "d1Statements": [
+      "SELECT"
+    ],
+    "workerDeployment": false,
+    "workerDeletion": false,
+    "workerSettingsMutation": false,
+    "d1RowsWritten": 0,
+    "remoteMigration": false,
+    "triggerCreated": false,
+    "runtimeCaptureStarted": false,
+    "kickChanged": false
+  },
+  "storage": {
+    "providerCurrentBytes": 341733376,
+    "providerCurrentMb": 325.9,
+    "accountCurrentBytes": 3843391488,
+    "accountCurrentMb": 3665.34,
+    "incrementalMbWithSafety": 48.32,
+    "projectedNinetyDaySizeMb": 374.22,
+    "projectedProviderHeadroomMb": 75.78,
+    "projectedAccountWideSizeMb": 3713.66,
+    "projectedAccountWideHeadroomMb": 894.34,
+    "providerPass": true,
+    "accountPass": true,
+    "pass": true
+  },
+  "schema": {
+    "requiredTables": [
+      "minute_snapshots",
+      "provider_category_dictionary",
+      "streamer_intraday_rollups",
+      "intraday_rollup_status"
+    ],
+    "observedTables": [
+      "intraday_rollup_status",
+      "minute_snapshots",
+      "provider_category_dictionary",
+      "streamer_intraday_rollups"
+    ],
+    "pass": true
+  },
+  "bindings": {
+    "canaryEnabled": null,
+    "canaryProvider": null,
+    "canaryStartedAt": null,
+    "canaryUntil": null,
+    "canaryAttempt": null,
+    "categoryCaptureDirectFlagPresent": false,
+    "pass": true
+  },
+  "providerLeakageRows": 0,
+  "providerLeakagePass": true,
+  "twitchDictionaryRows": 0,
+  "latestCategoryStatus": {
+    "category_observed_streamers": 0,
+    "category_observed_samples": 0,
+    "category_missing_samples": 0,
+    "category_coverage_state": "unavailable"
+  },
+  "latestSnapshot": {
+    "present": true,
+    "bucketMinute": "2026-07-17T16:55:00.000Z",
+    "collectedAt": "2026-07-17T16:55:59.435Z",
+    "streamCount": 300,
+    "totalViewers": 1347962,
+    "sourceMode": "real",
+    "freshnessMinutes": 1.93,
+    "authenticated": true,
+    "nonempty": true,
+    "pass": true
+  },
+  "gates": {
+    "storagePass": true,
+    "providerStoragePass": true,
+    "accountStoragePass": true,
+    "schemaPass": true,
+    "providerLeakagePass": true,
+    "bindingsPass": true,
+    "latestSnapshotPass": true,
+    "allReadOnlyGatesPass": true,
+    "productionMutationPerformed": false,
+    "triggerCreated": false,
+    "runtimeCaptureStarted": false
+  },
+  "outcome": "accepted_candidate",
+  "evidence": {
+    "digestAlgorithm": "sha256",
+    "digest": "sha256:0c7de9e6d71027b9b040c348f017d413908e631b01718d347b72d2ae8700f943",
+    "sanitizedJsonOnly": true,
+    "rawPayloadRowsReturned": false,
+    "channelIdentitiesReturned": false,
+    "credentialsReturned": false
+  }
+}
