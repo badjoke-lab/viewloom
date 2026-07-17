@@ -1,0 +1,101 @@
+name: Analytics 12A4 Kick Canary Expiry Binding Cleanup
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.github/workflows/analytics-12a4-kick-canary-expiry-binding-cleanup.yml'
+      - 'docs/audits/12a4-kick-canary-expiry-binding-cleanup-contract.json'
+      - 'docs/audits/12a4-kick-canary-expiry-binding-cleanup-trigger.json'
+      - 'docs/work-in-progress/phase12a4-kick-canary-expiry-binding-cleanup.md'
+      - 'scripts/check-12a4-kick-canary-expiry-binding-cleanup-scope.mjs'
+      - 'scripts/run-12a4-kick-canary-expiry-binding-cleanup.mjs'
+      - 'scripts/verify-12a4-kick-canary-expiry-binding-cleanup-package.mjs'
+      - 'scripts/verify-development-policy.mjs'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a4-kick-canary-expiry-binding-cleanup-trigger.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-kick-canary-expiry-binding-cleanup-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify-package:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify exact cleanup scope
+        run: node scripts/check-12a4-kick-canary-expiry-binding-cleanup-scope.mjs
+      - name: Verify dormant cleanup package
+        run: node scripts/verify-12a4-kick-canary-expiry-binding-cleanup-package.mjs
+      - name: Verify canonical development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Bundle canonical normal Kick collector without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --outdir artifacts/12a4-kick-canary-expiry-binding-cleanup/dry-run --config workers/collector-kick/wrangler.toml
+      - name: Publish package summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4 Kick canary expiry binding cleanup package'
+            echo
+            echo '- Pull request production deployment: no'
+            echo '- Trigger included in package PR: no'
+            echo '- Cleanup action: deploy canonical normal Kick config only'
+            echo '- Category canary restart: no'
+            echo '- Permanent category enablement: no'
+            echo '- Twitch change: no'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  cleanup-expired-bindings:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OUTPUT_DIR: artifacts/12a4-kick-canary-expiry-binding-cleanup
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify cleanup package and exact trigger
+        run: node scripts/verify-12a4-kick-canary-expiry-binding-cleanup-package.mjs
+      - id: cleanup
+        name: Deploy canonical normal Kick config and verify cleanup
+        run: node scripts/run-12a4-kick-canary-expiry-binding-cleanup.mjs
+      - name: Upload sanitized cleanup evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-kick-canary-expiry-binding-cleanup
+          path: artifacts/12a4-kick-canary-expiry-binding-cleanup/evidence.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish cleanup summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4 Kick expired canary binding cleanup'
+            echo
+            echo '- Provider: Kick only'
+            echo '- Deployed config: workers/collector-kick/wrangler.toml only'
+            echo '- Manual collection: no'
+            echo '- Category canary restart: no'
+            echo '- Permanent category enablement: no'
+            echo '- Twitch change: no'
+            echo '- Outcome: `${{ steps.cleanup.outputs.outcome }}`'
+          } >> "$GITHUB_STEP_SUMMARY"

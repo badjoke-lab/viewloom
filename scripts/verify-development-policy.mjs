@@ -187,7 +187,7 @@ assert.equal(trigger.packagePr, 562)
 assert.equal(trigger.executionPackagePr, 563)
 assert.equal(trigger.startAt, '2026-07-16T03:45:00.000Z')
 assert.equal(trigger.until, '2026-07-17T03:45:00.000Z')
-assert.ok(new Date(trigger.until).getTime() > Date.now(), 'exact trigger is already expired')
+assert.ok(new Date(trigger.until).getTime() <= Date.now(), 'exact trigger must be expired while rollback cleanup is pending')
 
 const baseRef = process.env.GITHUB_BASE_REF
 const base = baseRef ? `origin/${baseRef}` : 'HEAD^'
