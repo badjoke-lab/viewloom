@@ -7,6 +7,7 @@ const allowed = new Set([
   'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-request.json',
   'docs/work-in-progress/phase12a4-twitch-category-capture-canary-storage-preflight.md',
   'scripts/check-12a4-twitch-category-capture-canary-storage-preflight-scope.mjs',
+  'scripts/inspect-12a4-twitch-category-capture-canary-storage-preflight-request.mjs',
   'scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs',
   'scripts/test-12a4-twitch-category-capture-canary-storage-preflight.mjs',
   'scripts/verify-12a4-twitch-category-capture-canary-storage-preflight-package.mjs',
