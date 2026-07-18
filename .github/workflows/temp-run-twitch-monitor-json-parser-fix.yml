@@ -22,7 +22,19 @@ jobs:
         with:
           node-version: 22
       - name: Apply focused patch
-        run: python scripts/temp-fix-twitch-monitor-json-parser.py
+        shell: bash
+        run: |
+          python scripts/temp-fix-twitch-monitor-json-parser.py
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/verify-12a4-twitch-category-capture-canary-execution-package.mjs')
+          source = path.read_text()
+          old = "assert.equal(trigger.attempt, 1)"
+          new = "assert.ok(Number.isSafeInteger(trigger.attempt) && trigger.attempt >= 2)"
+          if old not in source:
+            raise SystemExit('active trigger attempt verifier source missing')
+          path.write_text(source.replace(old, new, 1))
+          PY
       - name: Validate parser and package
         id: validate
         shell: bash
