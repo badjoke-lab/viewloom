@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-runtime-evidence-v1",
+  "provider": "twitch",
+  "attempt": 3,
+  "action": "monitor",
+  "observedAt": "2026-07-18T06:34:50.959Z",
+  "trigger": {
+    "startAt": "2026-07-18T05:15:00.000Z",
+    "until": "2026-07-19T05:15:00.000Z",
+    "packageMergeSha": "e798df275b2fad0601b2e9ef89c76a6a30f1d038",
+    "executionPackageMergeSha": "5c302c8b674edd1d13ab5a467465ed60d0fb96c5"
+  },
+  "identity": {
+    "serviceName": "viewloom-collector-twitch",
+    "databaseId": "b77221fe-80a3-4749-bc0e-d3ad54003dcf",
+    "cadence": "*/5 * * * *"
+  },
+  "storage": {
+    "providerCurrentBytes": 337338368,
+    "providerCurrentMb": 321.71,
+    "accountCurrentBytes": 3874410496,
+    "accountCurrentMb": 3694.93,
+    "incrementalMbWithSafety": 48.32,
+    "projectedNinetyDaySizeMb": 370.03,
+    "projectedProviderHeadroomMb": 79.97,
+    "projectedAccountWideSizeMb": 3743.25,
+    "projectedAccountWideHeadroomMb": 864.75,
+    "providerPass": true,
+    "accountPass": true,
+    "pass": true
+  },
+  "serviceBindingsBefore": {
+    "enabled": "true",
+    "provider": "twitch",
+    "startedAt": "2026-07-18T05:15:00.000Z",
+    "until": "2026-07-19T05:15:00.000Z",
+    "attempt": "3",
+    "categoryCaptureDirectFlagPresent": false
+  },
+  "serviceBindingsAfter": null,
+  "queryEvidence": {
+    "twitchDictionaryRows": 163,
+    "providerLeakageRows": 0,
+    "categoryPayloadRows": 30,
+    "observedSamples": 0,
+    "missingSamples": 0,
+    "latestCategoryStatus": {
+      "category_observed_streamers": 0,
+      "category_observed_samples": 0,
+      "category_missing_samples": 0,
+      "category_coverage_state": "unavailable"
+    },
+    "latestSnapshot": {
+      "bucket_minute": "2026-07-18T06:30:00.000Z",
+      "collected_at": "2026-07-18T06:30:45.866Z",
+      "stream_count": 300,
+      "total_viewers": 983615,
+      "source_mode": "real"
+    }
+  },
+  "deployment": {
+    "canaryExitCode": null,
+    "rollbackExitCode": null
+  },
+  "gates": {
+    "storagePass": true,
+    "providerStoragePass": true,
+    "accountStoragePass": true,
+    "triggerPass": true,
+    "providerLeakageRows": 0,
+    "hardStop": false,
+    "rollbackRequired": false,
+    "rollbackPass": false,
+    "productionRuntimeCaptureAuthorizedBeyondCanary": false,
+    "permanentEnablementAuthorized": false,
+    "kickStartAuthorized": false
+  },
+  "outcome": "checkpoint_pass",
+  "error": null
+}
