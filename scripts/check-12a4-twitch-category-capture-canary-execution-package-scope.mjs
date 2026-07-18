@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 
+const triggerPath = 'docs/audits/12a4-twitch-category-capture-canary-trigger.json'
 const allowed = new Set([
   '.github/workflows/analytics-12a4-twitch-category-capture-canary-execution.yml',
   'docs/audits/12a4-twitch-category-capture-canary-execution-contract.json',
@@ -8,11 +9,13 @@ const allowed = new Set([
   'scripts/check-12a4-twitch-category-capture-canary-execution-package-scope.mjs',
   'scripts/inspect-12a4-twitch-category-capture-canary-trigger.mjs',
   'scripts/run-12a4-twitch-category-capture-canary-execution.mjs',
+  'scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs',
+  'scripts/wait-12a4-twitch-category-capture-canary-start.mjs',
   'scripts/test-12a4-twitch-category-capture-canary-execution.mjs',
   'scripts/verify-12a4-twitch-category-capture-canary-execution-package.mjs',
 ])
 const forbiddenExact = new Set([
-  'docs/audits/12a4-twitch-category-capture-canary-trigger.json',
+  triggerPath,
   'workers/collector-twitch/wrangler.toml',
   'workers/collector-twitch/wrangler.category-canary.toml',
   'workers/collector-twitch/src/entry-category-canary.ts',
@@ -37,8 +40,8 @@ try {
   const unexpected = changed.filter((file) => !allowed.has(file))
   const forbidden = changed.filter((file) => forbiddenExact.has(file) || forbiddenPrefixes.some((prefix) => file.startsWith(prefix)))
 
-  if (existsSync('docs/audits/12a4-twitch-category-capture-canary-trigger.json')) {
-    console.error(JSON.stringify({ ok: false, reason: 'trigger_must_be_absent_in_execution_package' }, null, 2))
+  if (!existsSync(triggerPath)) {
+    console.error(JSON.stringify({ ok: false, reason: 'armed_trigger_expected_but_missing' }, null, 2))
     process.exit(1)
   }
   if (unexpected.length || forbidden.length) {
@@ -49,7 +52,8 @@ try {
   console.log(JSON.stringify({
     ok: true,
     changed,
-    triggerPresent: false,
+    triggerPresent: true,
+    triggerChanged: changed.includes(triggerPath),
     productionConfigChanged: false,
     kickChanged: false,
     productionExecutionFromPullRequest: false,
