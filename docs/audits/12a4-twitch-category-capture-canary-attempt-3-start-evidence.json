@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-runtime-evidence-v1",
+  "provider": "twitch",
+  "attempt": 3,
+  "action": "start",
+  "observedAt": "2026-07-18T05:15:12.865Z",
+  "trigger": {
+    "startAt": "2026-07-18T05:15:00.000Z",
+    "until": "2026-07-19T05:15:00.000Z",
+    "packageMergeSha": "e798df275b2fad0601b2e9ef89c76a6a30f1d038",
+    "executionPackageMergeSha": "5c302c8b674edd1d13ab5a467465ed60d0fb96c5"
+  },
+  "identity": {
+    "serviceName": "viewloom-collector-twitch",
+    "databaseId": "b77221fe-80a3-4749-bc0e-d3ad54003dcf",
+    "cadence": "*/5 * * * *"
+  },
+  "storage": {
+    "providerCurrentBytes": 336683008,
+    "providerCurrentMb": 321.09,
+    "accountCurrentBytes": 3861483520,
+    "accountCurrentMb": 3682.6,
+    "incrementalMbWithSafety": 48.32,
+    "projectedNinetyDaySizeMb": 369.41,
+    "projectedProviderHeadroomMb": 80.59,
+    "projectedAccountWideSizeMb": 3730.92,
+    "projectedAccountWideHeadroomMb": 877.08,
+    "providerPass": true,
+    "accountPass": true,
+    "pass": true
+  },
+  "serviceBindingsBefore": {
+    "enabled": null,
+    "provider": null,
+    "startedAt": null,
+    "until": null,
+    "attempt": null,
+    "categoryCaptureDirectFlagPresent": false
+  },
+  "serviceBindingsAfter": {
+    "enabled": "true",
+    "provider": "twitch",
+    "startedAt": "2026-07-18T05:15:00.000Z",
+    "until": "2026-07-19T05:15:00.000Z",
+    "attempt": "3",
+    "categoryCaptureDirectFlagPresent": false
+  },
+  "queryEvidence": null,
+  "deployment": {
+    "canaryExitCode": 0,
+    "rollbackExitCode": null
+  },
+  "gates": {
+    "storagePass": true,
+    "providerStoragePass": true,
+    "accountStoragePass": true,
+    "triggerPass": true,
+    "providerLeakageRows": null,
+    "hardStop": false,
+    "rollbackRequired": false,
+    "rollbackPass": false,
+    "productionRuntimeCaptureAuthorizedBeyondCanary": false,
+    "permanentEnablementAuthorized": false,
+    "kickStartAuthorized": false
+  },
+  "outcome": "started",
+  "error": null
+}
