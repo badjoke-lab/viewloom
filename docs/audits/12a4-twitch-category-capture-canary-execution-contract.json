@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-execution-v1",
   "workstream": "12A-4-16 Twitch category capture canary execution with start-boundary fresh preflight",
-  "status": "accepted_under_start_order_fix",
+  "status": "accepted",
   "trackingIssue": 519,
   "acceptedPackage": {
     "pr": 590,
