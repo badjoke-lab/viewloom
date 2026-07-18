@@ -11,8 +11,10 @@ import {
   projectTwitchStorage,
   renderActiveCanaryConfig,
 } from './run-12a4-twitch-category-capture-canary-execution.mjs'
+import { evaluateStartWait } from './wait-12a4-twitch-category-capture-canary-start.mjs'
 
 const MB = 1024 * 1024
+const HOUR_MS = 60 * 60 * 1000
 const packageContract = {
   status: 'accepted',
   acceptance: { pr: 590 },
@@ -27,7 +29,10 @@ const executionContract = {
     exactExecutionPackageMergeSha: 'execution-merge-sha',
     storagePreflightStatusRequired: 'accepted',
     acceptedBaselinePreflightIdentityRequired: true,
+    startBoundaryWaitBeforeFreshPreflightRequired: true,
+    startBoundaryWaitMaximumHours: 3,
     freshReadOnlyPreflightInStartJobRequired: true,
+    freshReadOnlyPreflightMustCompleteAfterStartBoundary: true,
     freshReadOnlyPreflightMustCompleteBeforeDeploy: true,
   },
   acceptance: {
@@ -51,7 +56,7 @@ const trigger = {
   provider: 'twitch',
   oneTime: true,
   confirmation: 'RUN_TWITCH_CATEGORY_CAPTURE_CANARY',
-  attempt: 1,
+  attempt: 2,
   packagePr: 590,
   packageMergeSha: executionContract.trigger.exactPackageMergeSha,
   executionPackagePr: 591,
@@ -88,6 +93,8 @@ assert.equal(pushWithOldAcceptedBaseline.ok, true)
 assert.equal(pushWithOldAcceptedBaseline.action, 'start')
 assert.equal(pushWithOldAcceptedBaseline.phase, 'before_start')
 assert.equal(pushWithOldAcceptedBaseline.acceptedBaselinePreflightPinned, true)
+assert.equal(pushWithOldAcceptedBaseline.startBoundaryWaitRequiredBeforeFreshPreflight, true)
+assert.equal(pushWithOldAcceptedBaseline.freshReadOnlyPreflightRequiredAfterStartBoundary, true)
 assert.equal(pushWithOldAcceptedBaseline.freshReadOnlyPreflightRequiredBeforeDeploy, true)
 
 const active = inspectTwitchCanaryTrigger({
@@ -146,19 +153,33 @@ const preflightMismatch = inspectTwitchCanaryTrigger({
 assert.equal(preflightMismatch.ok, false)
 assert.ok(preflightMismatch.failures.some((failure) => failure.name === 'storage preflight digest identity'))
 
-const noInlinePreflight = inspectTwitchCanaryTrigger({
+const noStartWait = inspectTwitchCanaryTrigger({
   trigger,
   executionContract: {
     ...executionContract,
-    trigger: { ...executionContract.trigger, freshReadOnlyPreflightInStartJobRequired: false },
+    trigger: { ...executionContract.trigger, startBoundaryWaitBeforeFreshPreflightRequired: false },
   },
   packageContract,
   storagePreflight,
   eventName: 'push',
   now: new Date('2026-07-18T02:45:00.000Z'),
 })
-assert.equal(noInlinePreflight.ok, false)
-assert.ok(noInlinePreflight.failures.some((failure) => failure.name === 'fresh read-only preflight required in start job'))
+assert.equal(noStartWait.ok, false)
+assert.ok(noStartWait.failures.some((failure) => failure.name === 'start boundary wait required before fresh preflight'))
+
+const preflightNotAfterBoundary = inspectTwitchCanaryTrigger({
+  trigger,
+  executionContract: {
+    ...executionContract,
+    trigger: { ...executionContract.trigger, freshReadOnlyPreflightMustCompleteAfterStartBoundary: false },
+  },
+  packageContract,
+  storagePreflight,
+  eventName: 'push',
+  now: new Date('2026-07-18T02:45:00.000Z'),
+})
+assert.equal(preflightNotAfterBoundary.ok, false)
+assert.ok(preflightNotAfterBoundary.failures.some((failure) => failure.name === 'fresh read-only preflight after start boundary'))
 
 const wrongProvider = inspectTwitchCanaryTrigger({
   trigger: { ...trigger, provider: 'kick' },
@@ -170,12 +191,42 @@ const wrongProvider = inspectTwitchCanaryTrigger({
 })
 assert.equal(wrongProvider.ok, false)
 
+const waitBeforeStart = evaluateStartWait(trigger, new Date('2026-07-18T02:45:00.000Z'))
+assert.equal(waitBeforeStart.ok, true)
+assert.equal(waitBeforeStart.waitMs, 15 * 60 * 1000)
+assert.equal(waitBeforeStart.reached, false)
+
+const waitAtStart = evaluateStartWait(trigger, new Date(trigger.startAt))
+assert.equal(waitAtStart.ok, true)
+assert.equal(waitAtStart.waitMs, 0)
+assert.equal(waitAtStart.reached, true)
+
+const waitAfterStart = evaluateStartWait(trigger, new Date('2026-07-18T03:05:00.000Z'))
+assert.equal(waitAfterStart.ok, true)
+assert.equal(waitAfterStart.waitMs, 0)
+assert.equal(waitAfterStart.reached, true)
+
+const waitTooLong = evaluateStartWait(trigger, new Date('2026-07-17T23:59:59.000Z'), 3 * HOUR_MS)
+assert.equal(waitTooLong.ok, false)
+assert.equal(waitTooLong.failure.name, 'start_wait_exceeds_limit')
+
+const waitExpired = evaluateStartWait(trigger, new Date('2026-07-19T03:00:00.000Z'))
+assert.equal(waitExpired.ok, false)
+assert.equal(waitExpired.failure.name, 'trigger_expired_before_wait')
+
+const invalidStart = evaluateStartWait({ ...trigger, startAt: 'invalid' }, new Date('2026-07-18T02:45:00.000Z'))
+assert.equal(invalidStart.ok, false)
+assert.equal(invalidStart.failure.name, 'invalid_start_at')
+
+const invalidWindow = evaluateStartWait({ ...trigger, until: trigger.startAt }, new Date('2026-07-18T02:45:00.000Z'))
+assert.equal(invalidWindow.ok, false)
+assert.equal(invalidWindow.failure.name, 'invalid_window')
+
 const acceptedStorage = projectTwitchStorage(390.38 * MB, 3716.59 * MB)
 assert.equal(acceptedStorage.projectedNinetyDaySizeMb, 438.7)
 assert.equal(acceptedStorage.projectedProviderHeadroomMb, 11.3)
 assert.equal(acceptedStorage.projectedAccountWideHeadroomMb, 843.09)
 assert.equal(acceptedStorage.pass, true)
-
 assert.equal(projectTwitchStorage(395 * MB, 3716.59 * MB).pass, false)
 assert.equal(projectTwitchStorage(390.38 * MB, 4100 * MB).pass, false)
 
@@ -186,7 +237,7 @@ assert.ok(rendered.includes('CATEGORY_CAPTURE_CANARY_ENABLED = "true"'))
 assert.ok(rendered.includes('CATEGORY_CAPTURE_CANARY_PROVIDER = "twitch"'))
 assert.ok(rendered.includes(`CATEGORY_CAPTURE_CANARY_STARTED_AT = "${trigger.startAt}"`))
 assert.ok(rendered.includes(`CATEGORY_CAPTURE_CANARY_UNTIL = "${trigger.until}"`))
-assert.ok(rendered.includes('CATEGORY_CAPTURE_CANARY_ATTEMPT = "1"'))
+assert.ok(rendered.includes('CATEGORY_CAPTURE_CANARY_ATTEMPT = "2"'))
 assert.equal(rendered.includes('\nCATEGORY_CAPTURE_ENABLED ='), false)
 assert.equal(activeTomlValue(template, 'database_id'), activeTomlValue(normal, 'database_id'))
 assert.equal(activeTomlValue(template, 'name'), activeTomlValue(normal, 'name'))
@@ -202,7 +253,7 @@ const activeBindings = canaryBindingsFromSettings({
       { type: 'plain_text', name: 'CATEGORY_CAPTURE_CANARY_PROVIDER', text: 'twitch' },
       { type: 'plain_text', name: 'CATEGORY_CAPTURE_CANARY_STARTED_AT', text: trigger.startAt },
       { type: 'plain_text', name: 'CATEGORY_CAPTURE_CANARY_UNTIL', text: trigger.until },
-      { type: 'plain_text', name: 'CATEGORY_CAPTURE_CANARY_ATTEMPT', text: '1' },
+      { type: 'plain_text', name: 'CATEGORY_CAPTURE_CANARY_ATTEMPT', text: '2' },
     ],
   },
 })
@@ -217,7 +268,8 @@ console.log(JSON.stringify({
   ok: true,
   triggerAbsentNoop: true,
   oldAcceptedBaselineIdentityAccepted: true,
-  inlineFreshPreflightRequired: true,
+  startBoundaryWaitRequired: true,
+  inlineFreshPreflightRequiredAfterStartBoundary: true,
   startActionVerified: true,
   monitorActionVerified: true,
   finalizeActionVerified: true,
@@ -225,6 +277,10 @@ console.log(JSON.stringify({
   missingBaselineRejected: true,
   baselineIdentityMismatchRejected: true,
   providerMismatchRejected: true,
+  exactWaitVerified: true,
+  waitLimitVerified: true,
+  expiredWaitRejected: true,
+  invalidWaitInputsRejected: true,
   providerStorageGateVerified: true,
   accountStorageGateVerified: true,
   generatedConfigContainsNoDirectFlag: true,
