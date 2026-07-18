@@ -34,6 +34,16 @@ export function inspectTwitchCanaryTrigger({
   check('accepted package', packageContract.status === 'accepted' && packageContract.acceptance?.pr === 590, packageContract.status)
   check('accepted execution package', executionContract.status === 'accepted', executionContract.status)
   check('execution merge identity recorded', executionContract.acceptance?.mergeShaRecorded === true, executionContract.acceptance)
+  check(
+    'fresh read-only preflight required in start job',
+    executionContract.trigger.freshReadOnlyPreflightInStartJobRequired === true,
+    executionContract.trigger.freshReadOnlyPreflightInStartJobRequired,
+  )
+  check(
+    'fresh read-only preflight before deploy',
+    executionContract.trigger.freshReadOnlyPreflightMustCompleteBeforeDeploy === true,
+    executionContract.trigger.freshReadOnlyPreflightMustCompleteBeforeDeploy,
+  )
 
   check('storage preflight present', Boolean(storagePreflight), storagePreflight)
   if (storagePreflight) {
@@ -45,14 +55,6 @@ export function inspectTwitchCanaryTrigger({
     check('storage preflight merge identity', trigger.storagePreflightMergeSha === storagePreflight.acceptance?.mergeSha, trigger.storagePreflightMergeSha)
     check('storage preflight observed identity', trigger.storagePreflightObservedAt === storagePreflight.observedAt, trigger.storagePreflightObservedAt)
     check('storage preflight digest identity', trigger.storagePreflightEvidenceDigest === storagePreflight.evidence?.digest, trigger.storagePreflightEvidenceDigest)
-    if (eventName === 'push') {
-      const observedAt = parseDate(storagePreflight.observedAt)
-      const maximumAgeMs = Number(executionContract.trigger.maximumPreflightAgeMinutesAtStart) * 60 * 1000
-      const ageMs = observedAt ? now.getTime() - observedAt.getTime() : Number.NaN
-      check('storage preflight valid observedAt', Boolean(observedAt), storagePreflight.observedAt)
-      check('storage preflight not from future', Number.isFinite(ageMs) && ageMs >= -5 * 60 * 1000, ageMs)
-      check('storage preflight fresh at start', Number.isFinite(ageMs) && ageMs <= maximumAgeMs, ageMs)
-    }
   }
 
   const start = parseDate(trigger.startAt)
@@ -92,6 +94,8 @@ export function inspectTwitchCanaryTrigger({
     storagePreflightMergeSha: trigger.storagePreflightMergeSha,
     storagePreflightObservedAt: trigger.storagePreflightObservedAt,
     storagePreflightEvidenceDigest: trigger.storagePreflightEvidenceDigest,
+    acceptedBaselinePreflightPinned: true,
+    freshReadOnlyPreflightRequiredBeforeDeploy: true,
     failures: action === 'reject' ? [{ name: 'trigger expired before start event', actual: now.toISOString() }] : [],
   }
 }
