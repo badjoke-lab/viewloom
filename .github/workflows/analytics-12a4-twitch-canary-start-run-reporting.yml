@@ -30,24 +30,24 @@ jobs:
         shell: bash
         run: |
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID/artifacts?per_page=100" \
-            --jq '.artifacts[] | "- Artifact: `\(.id)` / `\(.name)` / \(.size_in_bytes) bytes / expired=\(.expired)"' \
+            --jq '.artifacts[] | "- Artifact: \(.id) / \(.name) / \(.size_in_bytes) bytes / expired=\(.expired)"' \
             > /tmp/viewloom-twitch-run-artifacts.md
       - name: Report exact run to Issue 519
         shell: bash
         run: |
-          cat > /tmp/viewloom-twitch-run-report.md <<EOF
-          ## Twitch category canary execution workflow completed
-
-          - Workflow run: `$SOURCE_RUN_ID`
-          - Run attempt: `$SOURCE_RUN_ATTEMPT`
-          - Conclusion: `$SOURCE_RUN_CONCLUSION`
-          - Source event: `$SOURCE_EVENT`
-          - Source SHA: `$SOURCE_HEAD_SHA`
-          - Run URL: $SOURCE_URL
-          - Provider: Twitch only
-          - Permanent category enablement: not authorized
-          - Kick start: not authorized
-
-          $(cat /tmp/viewloom-twitch-run-artifacts.md)
-          EOF
+          {
+            echo '## Twitch category canary execution workflow completed'
+            echo
+            echo "- Workflow run: $SOURCE_RUN_ID"
+            echo "- Run attempt: $SOURCE_RUN_ATTEMPT"
+            echo "- Conclusion: $SOURCE_RUN_CONCLUSION"
+            echo "- Source event: $SOURCE_EVENT"
+            echo "- Source SHA: $SOURCE_HEAD_SHA"
+            echo "- Run URL: $SOURCE_URL"
+            echo '- Provider: Twitch only'
+            echo '- Permanent category enablement: not authorized'
+            echo '- Kick start: not authorized'
+            echo
+            cat /tmp/viewloom-twitch-run-artifacts.md
+          } > /tmp/viewloom-twitch-run-report.md
           gh issue comment 519 --repo "$GITHUB_REPOSITORY" --body-file /tmp/viewloom-twitch-run-report.md
