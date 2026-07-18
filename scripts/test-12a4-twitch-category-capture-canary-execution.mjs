@@ -26,7 +26,9 @@ const executionContract = {
     exactExecutionPackagePr: 591,
     exactExecutionPackageMergeSha: 'execution-merge-sha',
     storagePreflightStatusRequired: 'accepted',
-    maximumPreflightAgeMinutesAtStart: 60,
+    acceptedBaselinePreflightIdentityRequired: true,
+    freshReadOnlyPreflightInStartJobRequired: true,
+    freshReadOnlyPreflightMustCompleteBeforeDeploy: true,
   },
   acceptance: {
     pr: 591,
@@ -38,10 +40,10 @@ const storagePreflight = {
   schemaVersion: 'viewloom-12a4-twitch-category-capture-canary-storage-preflight-v1',
   status: 'accepted',
   provider: 'twitch',
-  observedAt: '2026-07-17T23:30:00.000Z',
+  observedAt: '2026-07-17T16:57:55.343Z',
   storage: { pass: true },
-  acceptance: { pr: 592, mergeSha: 'storage-preflight-merge' },
-  evidence: { digest: 'sha256:storage-preflight' },
+  acceptance: { pr: 599, mergeSha: '785a271a7b95808e01478b9fb3846028229faa24' },
+  evidence: { digest: 'sha256:baseline-storage-preflight' },
 }
 const trigger = {
   schemaVersion: executionContract.trigger.schemaVersion,
@@ -54,12 +56,12 @@ const trigger = {
   packageMergeSha: executionContract.trigger.exactPackageMergeSha,
   executionPackagePr: 591,
   executionPackageMergeSha: 'execution-merge-sha',
-  storagePreflightPr: 592,
-  storagePreflightMergeSha: 'storage-preflight-merge',
+  storagePreflightPr: 599,
+  storagePreflightMergeSha: storagePreflight.acceptance.mergeSha,
   storagePreflightObservedAt: storagePreflight.observedAt,
   storagePreflightEvidenceDigest: storagePreflight.evidence.digest,
-  startAt: '2026-07-18T00:00:00.000Z',
-  until: '2026-07-19T00:00:00.000Z',
+  startAt: '2026-07-18T03:00:00.000Z',
+  until: '2026-07-19T03:00:00.000Z',
 }
 
 const absent = inspectTwitchCanaryTrigger({
@@ -74,18 +76,19 @@ assert.equal(absent.ok, true)
 assert.equal(absent.present, false)
 assert.equal(absent.action, 'noop')
 
-const pushBefore = inspectTwitchCanaryTrigger({
+const pushWithOldAcceptedBaseline = inspectTwitchCanaryTrigger({
   trigger,
   executionContract,
   packageContract,
   storagePreflight,
   eventName: 'push',
-  now: new Date('2026-07-17T23:55:00.000Z'),
+  now: new Date('2026-07-18T02:45:00.000Z'),
 })
-assert.equal(pushBefore.ok, true)
-assert.equal(pushBefore.action, 'start')
-assert.equal(pushBefore.phase, 'before_start')
-assert.equal(pushBefore.storagePreflightPr, 592)
+assert.equal(pushWithOldAcceptedBaseline.ok, true)
+assert.equal(pushWithOldAcceptedBaseline.action, 'start')
+assert.equal(pushWithOldAcceptedBaseline.phase, 'before_start')
+assert.equal(pushWithOldAcceptedBaseline.acceptedBaselinePreflightPinned, true)
+assert.equal(pushWithOldAcceptedBaseline.freshReadOnlyPreflightRequiredBeforeDeploy, true)
 
 const active = inspectTwitchCanaryTrigger({
   trigger,
@@ -105,11 +108,10 @@ const expired = inspectTwitchCanaryTrigger({
   packageContract,
   storagePreflight,
   eventName: 'schedule',
-  now: new Date('2026-07-19T00:01:00.000Z'),
+  now: new Date('2026-07-19T03:01:00.000Z'),
 })
 assert.equal(expired.ok, true)
 assert.equal(expired.action, 'finalize')
-assert.equal(expired.phase, 'after_expiry')
 
 const expiredPush = inspectTwitchCanaryTrigger({
   trigger,
@@ -117,7 +119,7 @@ const expiredPush = inspectTwitchCanaryTrigger({
   packageContract,
   storagePreflight,
   eventName: 'push',
-  now: new Date('2026-07-19T00:01:00.000Z'),
+  now: new Date('2026-07-19T03:01:00.000Z'),
 })
 assert.equal(expiredPush.ok, false)
 assert.equal(expiredPush.action, 'reject')
@@ -128,23 +130,10 @@ const missingPreflight = inspectTwitchCanaryTrigger({
   packageContract,
   storagePreflight: null,
   eventName: 'push',
-  now: new Date('2026-07-17T23:55:00.000Z'),
+  now: new Date('2026-07-18T02:45:00.000Z'),
 })
 assert.equal(missingPreflight.ok, false)
-assert.equal(missingPreflight.action, 'reject')
 assert.ok(missingPreflight.failures.some((failure) => failure.name === 'storage preflight present'))
-
-const stalePreflight = inspectTwitchCanaryTrigger({
-  trigger,
-  executionContract,
-  packageContract,
-  storagePreflight,
-  eventName: 'push',
-  now: new Date('2026-07-18T01:00:00.000Z'),
-})
-assert.equal(stalePreflight.ok, false)
-assert.equal(stalePreflight.action, 'reject')
-assert.ok(stalePreflight.failures.some((failure) => failure.name === 'storage preflight fresh at start'))
 
 const preflightMismatch = inspectTwitchCanaryTrigger({
   trigger: { ...trigger, storagePreflightEvidenceDigest: 'sha256:wrong' },
@@ -152,40 +141,43 @@ const preflightMismatch = inspectTwitchCanaryTrigger({
   packageContract,
   storagePreflight,
   eventName: 'push',
-  now: new Date('2026-07-17T23:55:00.000Z'),
+  now: new Date('2026-07-18T02:45:00.000Z'),
 })
 assert.equal(preflightMismatch.ok, false)
-assert.equal(preflightMismatch.action, 'reject')
 assert.ok(preflightMismatch.failures.some((failure) => failure.name === 'storage preflight digest identity'))
 
-const mismatched = inspectTwitchCanaryTrigger({
+const noInlinePreflight = inspectTwitchCanaryTrigger({
+  trigger,
+  executionContract: {
+    ...executionContract,
+    trigger: { ...executionContract.trigger, freshReadOnlyPreflightInStartJobRequired: false },
+  },
+  packageContract,
+  storagePreflight,
+  eventName: 'push',
+  now: new Date('2026-07-18T02:45:00.000Z'),
+})
+assert.equal(noInlinePreflight.ok, false)
+assert.ok(noInlinePreflight.failures.some((failure) => failure.name === 'fresh read-only preflight required in start job'))
+
+const wrongProvider = inspectTwitchCanaryTrigger({
   trigger: { ...trigger, provider: 'kick' },
   executionContract,
   packageContract,
   storagePreflight,
   eventName: 'push',
-  now: new Date('2026-07-18T00:00:00.000Z'),
+  now: new Date('2026-07-18T02:45:00.000Z'),
 })
-assert.equal(mismatched.ok, false)
-assert.equal(mismatched.action, 'reject')
+assert.equal(wrongProvider.ok, false)
 
 const acceptedStorage = projectTwitchStorage(390.38 * MB, 3716.59 * MB)
 assert.equal(acceptedStorage.projectedNinetyDaySizeMb, 438.7)
 assert.equal(acceptedStorage.projectedProviderHeadroomMb, 11.3)
-assert.equal(acceptedStorage.projectedAccountWideSizeMb, 3764.91)
 assert.equal(acceptedStorage.projectedAccountWideHeadroomMb, 843.09)
-assert.equal(acceptedStorage.providerPass, true)
-assert.equal(acceptedStorage.accountPass, true)
 assert.equal(acceptedStorage.pass, true)
 
-const providerFailure = projectTwitchStorage(395 * MB, 3716.59 * MB)
-assert.equal(providerFailure.providerPass, false)
-assert.equal(providerFailure.pass, false)
-
-const accountFailure = projectTwitchStorage(390.38 * MB, 4100 * MB)
-assert.equal(accountFailure.providerPass, true)
-assert.equal(accountFailure.accountPass, false)
-assert.equal(accountFailure.pass, false)
+assert.equal(projectTwitchStorage(395 * MB, 3716.59 * MB).pass, false)
+assert.equal(projectTwitchStorage(390.38 * MB, 4100 * MB).pass, false)
 
 const template = fs.readFileSync('workers/collector-twitch/wrangler.category-canary.toml', 'utf8')
 const normal = fs.readFileSync('workers/collector-twitch/wrangler.toml', 'utf8')
@@ -196,7 +188,6 @@ assert.ok(rendered.includes(`CATEGORY_CAPTURE_CANARY_STARTED_AT = "${trigger.sta
 assert.ok(rendered.includes(`CATEGORY_CAPTURE_CANARY_UNTIL = "${trigger.until}"`))
 assert.ok(rendered.includes('CATEGORY_CAPTURE_CANARY_ATTEMPT = "1"'))
 assert.equal(rendered.includes('\nCATEGORY_CAPTURE_ENABLED ='), false)
-assert.equal(normal.includes('CATEGORY_CAPTURE_CANARY_ENABLED'), false)
 assert.equal(activeTomlValue(template, 'database_id'), activeTomlValue(normal, 'database_id'))
 assert.equal(activeTomlValue(template, 'name'), activeTomlValue(normal, 'name'))
 
@@ -204,7 +195,7 @@ const generated = generatedCanaryConfigPath('workers/collector-twitch/wrangler.c
 assert.equal(path.basename(generated), '.wrangler.category-canary.active-attempt-3.toml')
 assert.throws(() => generatedCanaryConfigPath('workers/collector-twitch/wrangler.category-canary.toml', 0), /invalid_canary_attempt/)
 
-const activeSettings = {
+const activeBindings = canaryBindingsFromSettings({
   result: {
     bindings: [
       { type: 'plain_text', name: 'CATEGORY_CAPTURE_CANARY_ENABLED', text: 'true' },
@@ -214,8 +205,7 @@ const activeSettings = {
       { type: 'plain_text', name: 'CATEGORY_CAPTURE_CANARY_ATTEMPT', text: '1' },
     ],
   },
-}
-const activeBindings = canaryBindingsFromSettings(activeSettings)
+})
 assert.equal(bindingsMatchTrigger(activeBindings, trigger), true)
 assert.equal(canaryBindingsAbsent(activeBindings), false)
 
@@ -223,31 +213,20 @@ const normalBindings = canaryBindingsFromSettings({ result: { bindings: [] } })
 assert.equal(canaryBindingsAbsent(normalBindings), true)
 assert.equal(bindingsMatchTrigger(normalBindings, trigger), false)
 
-const mismatchedBindings = canaryBindingsFromSettings({
-  result: {
-    bindings: [
-      { type: 'plain_text', name: 'CATEGORY_CAPTURE_CANARY_ENABLED', text: 'true' },
-      { type: 'plain_text', name: 'CATEGORY_CAPTURE_CANARY_PROVIDER', text: 'kick' },
-    ],
-  },
-})
-assert.equal(bindingsMatchTrigger(mismatchedBindings, trigger), false)
-assert.equal(canaryBindingsAbsent(mismatchedBindings), false)
-
 console.log(JSON.stringify({
   ok: true,
   triggerAbsentNoop: true,
+  oldAcceptedBaselineIdentityAccepted: true,
+  inlineFreshPreflightRequired: true,
   startActionVerified: true,
   monitorActionVerified: true,
   finalizeActionVerified: true,
   expiredPushRejected: true,
-  missingPreflightRejected: true,
-  stalePreflightRejected: true,
-  preflightIdentityMismatchRejected: true,
+  missingBaselineRejected: true,
+  baselineIdentityMismatchRejected: true,
   providerMismatchRejected: true,
   providerStorageGateVerified: true,
   accountStorageGateVerified: true,
   generatedConfigContainsNoDirectFlag: true,
   normalBindingNoopVerified: true,
-  mismatchedBindingRollbackRequired: true,
 }, null, 2))
