@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-execution-v1",
-  "workstream": "12A-4-16 Twitch category capture canary execution with start-boundary fresh preflight",
+  "workstream": "12A-4-17 Twitch category capture canary attempt 3 active initial checkpoint",
   "status": "accepted",
   "trackingIssue": 519,
   "acceptedPackage": {
@@ -204,8 +204,12 @@
     "mergeShaRecorded": true,
     "inlineFreshPreflightAmendmentPr": 602,
     "inlineFreshPreflightAmendmentMergeSha": "7d47357409cd9d181e408a30b842e713f4e20880",
-    "startOrderFixPendingPrAcceptance": true,
-    "monitorParserFixPendingPrAcceptance": true
+    "startOrderFixPendingPrAcceptance": false,
+    "monitorParserFixPendingPrAcceptance": false,
+    "startOrderFixPr": 609,
+    "startOrderFixMergeSha": "759b752c78b8a1a60e1132814429ca49c024da3b",
+    "monitorParserFixPr": 613,
+    "monitorParserFixMergeSha": "0091b0613be716f36ae7b89a2b363109eb67c107"
   },
   "pullRequestBoundary": {
     "triggerCreated": false,
@@ -224,7 +228,7 @@
     "crossProviderCategoryIdentityAllowed": false,
     "combinedProviderCategoryRankingAllowed": false
   },
-  "nextGate": "accept the monitor JSON parser fix, verify the normal Twitch collector through the next start-job read-only preflight, then use a separate exact one-file trigger for a new bounded attempt",
+  "nextGate": "continue scheduled attempt 3 checkpoints through exact expiry and accept final rollback evidence before any permanent enablement decision",
   "attempt2MonitorFailure": {
     "workflowRunId": 29629390710,
     "workflowJobId": 88040007930,
@@ -245,6 +249,35 @@
     "permanentDirectFlagPresentAfterRollback": false,
     "boundedRuntimeCaptureActiveAfterRollback": false,
     "productionRuntimeCaptureAuthorizedBeyondCanary": false,
+    "kickChanged": false
+  },
+  "runtimeState": "active_initial_checkpoint_accepted",
+  "attempt3ActiveCheckpoint": {
+    "triggerPr": 614,
+    "triggerMergeSha": "7726934cb8dc39f2e6706f8a6250989f897a831f",
+    "attempt": 3,
+    "startAt": "2026-07-18T05:15:00.000Z",
+    "until": "2026-07-19T05:15:00.000Z",
+    "startWorkflowRunId": 29631153598,
+    "startWorkflowJobId": 88044862377,
+    "startArtifactId": 8425765411,
+    "startArtifactDigest": "sha256:e8e0292e5fabb25dc539ddaa43e1b6f077a91709d7544be766290325044fdc22",
+    "startEvidence": "docs/audits/12a4-twitch-category-capture-canary-attempt-3-start-evidence.json",
+    "checkpointWorkflowRunId": 29634222309,
+    "checkpointWorkflowJobId": 88053537252,
+    "checkpointArtifactId": 8426512098,
+    "checkpointArtifactDigest": "sha256:b7bb41deef96896167a2db013933cee21b6f0eb2fc19fdfd857abb4121f7e3ef",
+    "checkpointEvidence": "docs/audits/12a4-twitch-category-capture-canary-attempt-3-initial-checkpoint-evidence.json",
+    "checkpointObservedAt": "2026-07-18T06:34:50.959Z",
+    "storagePass": true,
+    "providerLeakageRows": 0,
+    "categoryPayloadRows": 30,
+    "twitchDictionaryRows": 163,
+    "hardStop": false,
+    "rollbackRequired": false,
+    "boundedRuntimeCaptureActive": true,
+    "finalRollbackPending": true,
+    "permanentRuntimeCaptureAuthorized": false,
     "kickChanged": false
   }
 }

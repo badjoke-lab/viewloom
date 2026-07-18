@@ -41,6 +41,8 @@ const requiredFiles = [
   'docs/audits/12a4-twitch-category-capture-canary-execution-contract.json',
   'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json',
   'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-evidence.json',
+  'docs/audits/12a4-twitch-category-capture-canary-attempt-3-start-evidence.json',
+  'docs/audits/12a4-twitch-category-capture-canary-attempt-3-initial-checkpoint-evidence.json',
   '.github/workflows/analytics-12a4-kick-category-capture-canary-execution.yml',
   '.github/workflows/analytics-12a4-kick-category-capture-canary-post-rollback-acceptance.yml',
   '.github/workflows/analytics-12a4-kick-canary-expiry-binding-cleanup.yml',
@@ -63,17 +65,17 @@ check('docs/operations/development-and-deployment-policy.md', [
   'production deployment deliberate and observable',
 ])
 check('docs/README.md', [
-  'canonical gate 12A-4-15',
-  'Twitch read-only storage preflight accepted PR #599 and finalized PR #600',
-  'exact Twitch trigger current no',
-  'fresh Twitch storage evidence for start no',
-  'Twitch category capture started no',
-  'artifact: `8413901173`',
+  'canonical gate 12A-4-17',
+  'Twitch attempt 3 exact trigger accepted PR #614',
+  'exact Twitch trigger current yes',
+  'fresh Twitch start preflight accepted yes',
+  'Twitch bounded category capture active yes',
+  'artifact: 8426512098',
 ])
 
 const gate = json('docs/audits/12a2-current-gate-state.json')
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v20')
-assert.equal(gate.status, '12a4_twitch_canary_storage_preflight_accepted_trigger_blocked_by_freshness')
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v21')
+assert.equal(gate.status, '12a4_twitch_canary_attempt3_active_initial_checkpoint_accepted')
 assert.equal(gate.categorySourceAudit.status, 'accepted')
 assert.equal(gate.categoryStorageDesign.status, 'accepted')
 assert.equal(gate.categoryMigrationRuntime.status, 'accepted_and_schema_applied')
@@ -89,9 +91,9 @@ assert.equal(gate.categoryCaptureEnablementDecision.productionRuntimeCaptureAuth
 assert.equal(gate.kickCategoryCaptureCanaryPackage.status, 'accepted')
 assert.equal(gate.kickCategoryCaptureCanaryExecutionPackage.status, 'accepted_and_retired')
 assert.equal(gate.twitchCategoryCaptureCanaryPackage.status, 'accepted')
-assert.equal(gate.twitchCategoryCaptureCanaryExecutionPackage.status, 'accepted_dormant')
-assert.equal(gate.twitchCategoryCaptureCanaryExecutionPackage.triggerPresent, false)
-assert.equal(gate.twitchCategoryCaptureCanaryExecutionPackage.productionRuntimeCaptureStarted, false)
+assert.equal(gate.twitchCategoryCaptureCanaryExecutionPackage.status, 'accepted_active_bounded_canary')
+assert.equal(gate.twitchCategoryCaptureCanaryExecutionPackage.triggerPresent, true)
+assert.equal(gate.twitchCategoryCaptureCanaryExecutionPackage.productionRuntimeCaptureStarted, true)
 
 const twitchPreflight = gate.twitchCategoryCaptureCanaryStoragePreflight
 assert.equal(twitchPreflight.status, 'accepted')
@@ -124,12 +126,12 @@ assert.equal(gate.categoryCapture.kickCanaryProductionPathRetired, true)
 assert.equal(gate.categoryCapture.twitchCanaryPackageAccepted, true)
 assert.equal(gate.categoryCapture.twitchCanaryExecutionPackageAccepted, true)
 assert.equal(gate.categoryCapture.twitchCanaryStoragePreflightAccepted, true)
-assert.equal(gate.categoryCapture.twitchStoragePreflightFreshForStart, false)
-assert.equal(gate.categoryCapture.twitchExactTriggerAccepted, false)
-assert.equal(gate.categoryCapture.twitchCanaryExecuted, false)
+assert.equal(gate.categoryCapture.twitchStoragePreflightFreshForStart, true)
+assert.equal(gate.categoryCapture.twitchExactTriggerAccepted, true)
+assert.equal(gate.categoryCapture.twitchCanaryExecuted, true)
 assert.equal(gate.categoryCapture.kickCanaryObservationActive, false)
-assert.equal(gate.categoryCapture.boundedCanaryRuntimeCaptureActive, false)
-assert.equal(gate.categoryCapture.runtimeCaptureStarted, false)
+assert.equal(gate.categoryCapture.boundedCanaryRuntimeCaptureActive, true)
+assert.equal(gate.categoryCapture.runtimeCaptureStarted, true)
 assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
 assert.equal(gate.categoryCapture.categoryCaptureFlagPresent, false)
 assert.equal(gate.categoryCapture.twitchCanaryAutomaticallyAuthorized, false)
@@ -137,28 +139,27 @@ assert.equal(gate.categoryCapture.providerSeparated, true)
 assert.equal(gate.categoryCapture.crossProviderIdentityAllowed, false)
 assert.equal(gate.categoryCapture.combinedProviderRankingAllowed, false)
 assert.deepEqual(gate.openBlockers, [
-  'twitch_category_capture_storage_preflight_not_fresh_for_start',
-  'twitch_category_capture_exact_trigger_not_accepted',
-  'twitch_category_capture_canary_not_executed',
+  'twitch_category_capture_final_observation_not_accepted',
+  'twitch_category_capture_canary_rollback_not_verified',
   'runtime_category_capture_not_authorized',
 ])
 
-assert.equal(gate.currentWorkstream.phase, '12A-4-15')
+assert.equal(gate.currentWorkstream.phase, '12A-4-17')
 assert.equal(gate.currentWorkstream.acceptedKickCanaryFinalEvidence, true)
 assert.equal(gate.currentWorkstream.acceptedTwitchCanaryPackage, true)
 assert.equal(gate.currentWorkstream.acceptedTwitchCanaryExecutionPackage, true)
 assert.equal(gate.currentWorkstream.acceptedTwitchStoragePreflight, true)
 assert.deepEqual(gate.currentWorkstream.providerSequence, ['kick', 'twitch'])
-assert.equal(gate.currentWorkstream.exactTwitchTriggerCurrent, false)
-assert.equal(gate.currentWorkstream.twitchCanaryObservationActive, false)
-assert.equal(gate.currentWorkstream.twitchStoragePreflightFreshForStart, false)
+assert.equal(gate.currentWorkstream.exactTwitchTriggerCurrent, true)
+assert.equal(gate.currentWorkstream.twitchCanaryObservationActive, true)
+assert.equal(gate.currentWorkstream.twitchStoragePreflightFreshForStart, true)
 assert.equal(gate.currentWorkstream.twitchCanaryAutomaticallyAuthorized, false)
 assert.equal(gate.currentWorkstream.twitchStorageObservationExecutionRetired, true)
-assert.equal(gate.currentWorkstream.productionExecutionIncluded, false)
-assert.equal(gate.currentWorkstream.runtimeCaptureStarted, false)
+assert.equal(gate.currentWorkstream.productionExecutionIncluded, true)
+assert.equal(gate.currentWorkstream.runtimeCaptureStarted, true)
 assert.equal(gate.currentWorkstream.runtimeCaptureAuthorized, false)
-assert.equal(gate.currentWorkstream.boundedCanaryCaptureActive, false)
-assert.equal(gate.currentWorkstream.finalRollbackPending, false)
+assert.equal(gate.currentWorkstream.boundedCanaryCaptureActive, true)
+assert.equal(gate.currentWorkstream.finalRollbackPending, true)
 
 const finalAcceptance = gate.kickCategoryCaptureCanaryFinalAcceptance
 assert.equal(finalAcceptance.status, 'accepted_and_retired')
@@ -216,6 +217,29 @@ assert.equal(twitchEvidence.gates.allReadOnlyGatesPass, true)
 assert.equal(twitchEvidence.gates.productionMutationPerformed, false)
 assert.equal(twitchEvidence.gates.triggerCreated, false)
 assert.equal(twitchEvidence.gates.runtimeCaptureStarted, false)
+
+const twitchStart = json('docs/audits/12a4-twitch-category-capture-canary-attempt-3-start-evidence.json')
+const twitchCheckpoint = json('docs/audits/12a4-twitch-category-capture-canary-attempt-3-initial-checkpoint-evidence.json')
+const twitchAcceptance = gate.twitchCategoryCaptureCanaryInitialAcceptance
+assert.equal(twitchAcceptance.status, 'accepted_active_initial_checkpoint')
+assert.equal(twitchAcceptance.startWorkflowRunId, 29631153598)
+assert.equal(twitchAcceptance.startWorkflowJobId, 88044862377)
+assert.equal(twitchAcceptance.startArtifactId, 8425765411)
+assert.equal(twitchAcceptance.checkpointWorkflowRunId, 29634222309)
+assert.equal(twitchAcceptance.checkpointWorkflowJobId, 88053537252)
+assert.equal(twitchAcceptance.checkpointArtifactId, 8426512098)
+assert.equal(twitchAcceptance.providerLeakageRows, 0)
+assert.equal(twitchAcceptance.boundedCanaryActive, true)
+assert.equal(twitchAcceptance.permanentRuntimeCaptureAuthorized, false)
+assert.equal(twitchAcceptance.kickChanged, false)
+assert.equal(twitchStart.outcome, 'started')
+assert.equal(twitchStart.attempt, 3)
+assert.equal(twitchStart.serviceBindingsAfter.categoryCaptureDirectFlagPresent, false)
+assert.equal(twitchStart.gates.permanentEnablementAuthorized, false)
+assert.equal(twitchCheckpoint.outcome, 'checkpoint_pass')
+assert.equal(twitchCheckpoint.queryEvidence.providerLeakageRows, 0)
+assert.equal(twitchCheckpoint.queryEvidence.categoryPayloadRows, 30)
+assert.equal(twitchCheckpoint.gates.hardStop, false)
 
 const kickTrigger = json('docs/audits/12a4-kick-category-capture-canary-trigger.json')
 assert.equal(kickTrigger.status, 'consumed_and_retired')
@@ -277,7 +301,7 @@ console.log(JSON.stringify({
   currentWorkstream: gate.currentWorkstream.name,
   twitchPreflightArtifactId: twitchPreflight.artifactId,
   twitchPreflightAccepted: true,
-  twitchStoragePreflightFreshForStart: false,
-  exactTwitchTriggerCurrent: false,
+  twitchStoragePreflightFreshForStart: true,
+  exactTwitchTriggerCurrent: true,
   permanentRuntimeCaptureAuthorized: false,
 }, null, 2))
