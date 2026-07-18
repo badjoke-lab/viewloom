@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-execution-v1",
-  "workstream": "12A-4-16 Twitch category capture canary execution with inline fresh preflight",
-  "status": "accepted",
+  "workstream": "12A-4-16 Twitch category capture canary execution with start-boundary fresh preflight",
+  "status": "accepted_under_start_order_fix",
   "trackingIssue": 519,
   "acceptedPackage": {
     "pr": 590,
@@ -14,7 +14,7 @@
   "workflow": {
     "path": ".github/workflows/analytics-12a4-twitch-category-capture-canary-execution.yml",
     "triggerPath": "docs/audits/12a4-twitch-category-capture-canary-trigger.json",
-    "triggerMayBeAbsentInPackagePr": true,
+    "triggerMayBePresentButUnchangedInFixPr": true,
     "pullRequestValidationOnly": true,
     "productionStartEvent": "push of exact trigger to main",
     "monitorEvent": "two-hour schedule while exact trigger is armed; wrapper expires capture at exact until",
@@ -36,11 +36,14 @@
     "storagePreflightContract": "docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json",
     "storagePreflightStatusRequired": "accepted",
     "acceptedBaselinePreflightIdentityRequired": true,
+    "startBoundaryWaitBeforeFreshPreflightRequired": true,
+    "startBoundaryWaitMaximumHours": 3,
     "freshReadOnlyPreflightInStartJobRequired": true,
     "freshReadOnlyPreflightMethods": {
       "cloudflareApi": ["GET"],
       "d1": ["SELECT"]
     },
+    "freshReadOnlyPreflightMustCompleteAfterStartBoundary": true,
     "freshReadOnlyPreflightMustCompleteBeforeDeploy": true,
     "startAtRequired": true,
     "untilRequired": true,
@@ -49,12 +52,24 @@
     "oneFileTriggerPrRequired": true
   },
   "start": {
+    "mandatoryOrder": [
+      "inspect exact trigger",
+      "wait for exact start boundary",
+      "create ephemeral read-only request",
+      "run fresh read-only production preflight",
+      "copy fresh evidence into start artifact",
+      "deploy bounded Twitch canary"
+    ],
+    "waitRunner": "scripts/wait-12a4-twitch-category-capture-canary-start.mjs",
+    "waitBeforeEphemeralRequest": true,
+    "waitBeforeFreshPreflight": true,
+    "waitBeforeDeploy": true,
     "preflightBeforeDeploy": [
       "trigger and package identities",
       "provider is Twitch",
       "Kick final evidence remains accepted",
       "accepted baseline storage-preflight identity",
-      "fresh same-job read-only storage preflight",
+      "fresh same-job read-only storage preflight after start boundary",
       "current remote Twitch D1 size",
       "current account-wide D1 size",
       "projected 90-day Twitch size at or below 440 MB",
@@ -134,6 +149,7 @@
   "evidence": {
     "runner": "scripts/run-12a4-twitch-category-capture-canary-execution.mjs",
     "triggerInspector": "scripts/inspect-12a4-twitch-category-capture-canary-trigger.mjs",
+    "startWaitRunner": "scripts/wait-12a4-twitch-category-capture-canary-start.mjs",
     "freshPreflightRunner": "scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs",
     "sanitizedJsonOnly": true,
     "startArtifactPrefix": "analytics-12a4-twitch-category-canary-start",
@@ -142,6 +158,21 @@
     "freshPreflightArtifactFile": "fresh-storage-preflight.json",
     "separateReadOnlyAcceptancePrRequired": false,
     "acceptedBaselineEvidenceStillPinned": true
+  },
+  "attempt1Cancellation": {
+    "triggerPr": 604,
+    "triggerMergeSha": "62d24460d4250aca89c72916d9fade42c09f9503",
+    "workflowRunId": 29624622275,
+    "workflowJobId": 88026455393,
+    "artifactId": 8423630417,
+    "artifactDigest": "sha256:13891b14e96a9efcfc13298e7579c653d271c27269e397389dcacf60f2787777",
+    "freshPreflightObservedAt": "2026-07-18T01:09:16.159Z",
+    "freshPreflightPassed": true,
+    "startStepCancelledBeforeBoundary": true,
+    "startEvidencePresent": false,
+    "workerDeploymentPerformed": false,
+    "runtimeCaptureStarted": false,
+    "cancellationPr": 608
   },
   "acceptance": {
     "pr": 591,
@@ -167,7 +198,9 @@
     "remoteD1OperationPerformed": false,
     "mergeSha": "5c302c8b674edd1d13ab5a467465ed60d0fb96c5",
     "mergeShaRecorded": true,
-    "inlineFreshPreflightAmendmentPendingPrAcceptance": true
+    "inlineFreshPreflightAmendmentPr": 602,
+    "inlineFreshPreflightAmendmentMergeSha": "7d47357409cd9d181e408a30b842e713f4e20880",
+    "startOrderFixPendingPrAcceptance": true
   },
   "pullRequestBoundary": {
     "triggerCreated": false,
@@ -186,5 +219,5 @@
     "crossProviderCategoryIdentityAllowed": false,
     "combinedProviderCategoryRankingAllowed": false
   },
-  "nextGate": "accept this inline-fresh-preflight amendment, then create a separate exact one-file Twitch trigger; the start job must pass the fresh read-only preflight before any deploy"
+  "nextGate": "accept this start-order fix, then update the exact one-file Twitch trigger to attempt 2; the start boundary wait must complete before the fresh read-only preflight and any deploy"
 }
