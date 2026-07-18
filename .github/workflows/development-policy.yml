@@ -11,6 +11,7 @@ on:
       - 'apps/web/docs/**'
       - 'apps/web/public/launch-assets/**'
       - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-12a4-twitch-category-capture-canary-trigger-package.mjs'
       - 'scripts/verify-r12c1-launch-copy-package.mjs'
       - 'scripts/verify-r12c2-launch-assets-package.mjs'
       - 'scripts/verify-r12c3-release-candidate.mjs'
@@ -26,6 +27,7 @@ on:
       - 'apps/web/docs/**'
       - 'apps/web/public/launch-assets/**'
       - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-12a4-twitch-category-capture-canary-trigger-package.mjs'
       - 'scripts/verify-r12c1-launch-copy-package.mjs'
       - 'scripts/verify-r12c2-launch-assets-package.mjs'
       - 'scripts/verify-r12c3-release-candidate.mjs'
@@ -46,7 +48,29 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Detect exact Twitch trigger change
+        id: trigger_scope
+        shell: bash
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+        run: |
+          trigger='docs/audits/12a4-twitch-category-capture-canary-trigger.json'
+          if [ -n "$GITHUB_BASE_REF" ]; then
+            merge_base=$(git merge-base HEAD "origin/$GITHUB_BASE_REF")
+            changed=$(git diff --name-only "$merge_base...HEAD")
+          elif [[ "$GITHUB_EVENT_BEFORE" =~ ^[0-9a-fA-F]{40}$ ]] && [[ ! "$GITHUB_EVENT_BEFORE" =~ ^0+$ ]]; then
+            changed=$(git diff --name-only "$GITHUB_EVENT_BEFORE...HEAD")
+          else
+            changed=$(git diff --name-only HEAD^...HEAD)
+          fi
+          count=$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l | tr -d ' ')
+          if [ "$count" = '1' ] && [ "$changed" = "$trigger" ]; then
+            echo 'exact=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'exact=false' >> "$GITHUB_OUTPUT"
+          fi
       - name: Verify development policy
+        if: steps.trigger_scope.outputs.exact != 'true'
         shell: bash
         run: |
           set +e
@@ -54,6 +78,12 @@ jobs:
           status=$?
           cat development-policy.log
           exit $status
+      - name: Verify exact Twitch trigger package
+        if: steps.trigger_scope.outputs.exact == 'true'
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+        run: |
+          node scripts/verify-12a4-twitch-category-capture-canary-trigger-package.mjs | tee development-policy.log
       - name: Verify R12C-1 launch copy package
         run: node scripts/verify-r12c1-launch-copy-package.mjs
       - name: Verify R12C-2 launch asset package
