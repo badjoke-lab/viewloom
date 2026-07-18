@@ -1,0 +1,71 @@
+name: Analytics 12A4 Twitch Canary Start Cancellation
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.github/workflows/analytics-12a4-twitch-canary-start-cancel.yml'
+      - 'docs/audits/12a4-twitch-category-capture-canary-start-cancel-request.json'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a4-twitch-category-capture-canary-start-cancel-request.json'
+
+permissions:
+  actions: write
+  contents: read
+  issues: write
+
+jobs:
+  verify-request:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact cancellation request
+        shell: bash
+        run: |
+          request='docs/audits/12a4-twitch-category-capture-canary-start-cancel-request.json'
+          test "$(jq -r '.schemaVersion' "$request")" = 'viewloom-12a4-twitch-category-capture-canary-start-cancel-request-v1'
+          test "$(jq -r '.status' "$request")" = 'requested'
+          test "$(jq -r '.provider' "$request")" = 'twitch'
+          test "$(jq -r '.targetRunId' "$request")" = '29624622275'
+          test "$(jq -r '.targetSourceSha' "$request")" = '62d24460d4250aca89c72916d9fade42c09f9503'
+          test "$(jq -r '.attempt' "$request")" = '1'
+          test "$(jq -r '.cloudflareOperationAuthorized' "$request")" = 'false'
+          test "$(jq -r '.d1OperationAuthorized' "$request")" = 'false'
+          test "$(jq -r '.permanentRuntimeCaptureAuthorized' "$request")" = 'false'
+          echo 'Targeted GitHub Actions cancellation only.' >> "$GITHUB_STEP_SUMMARY"
+
+  cancel-run:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REQUEST_PATH: docs/audits/12a4-twitch-category-capture-canary-start-cancel-request.json
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cancel exact stale-preflight execution run
+        shell: bash
+        run: |
+          target_run=$(jq -r '.targetRunId' "$REQUEST_PATH")
+          source_sha=$(jq -r '.targetSourceSha' "$REQUEST_PATH")
+          test "$target_run" = '29624622275'
+          test "$source_sha" = '62d24460d4250aca89c72916d9fade42c09f9503'
+          gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$target_run/cancel"
+          {
+            echo '## Twitch canary stale-preflight start cancelled'
+            echo
+            echo "- Target run: $target_run"
+            echo "- Source SHA: $source_sha"
+            echo '- Reason: fresh preflight executed before the scheduled start wait'
+            echo '- Worker deployment authorized by this cancellation workflow: no'
+            echo '- Cloudflare access: no'
+            echo '- D1 access: no'
+            echo '- Permanent runtime capture: not authorized'
+          } > /tmp/viewloom-twitch-start-cancel.md
+          gh issue comment 519 --repo "$GITHUB_REPOSITORY" --body-file /tmp/viewloom-twitch-start-cancel.md
+          gh pr comment 606 --repo "$GITHUB_REPOSITORY" --body-file /tmp/viewloom-twitch-start-cancel.md
