@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-start-acceptance-v1",
+  "status": "accepted",
+  "provider": "twitch",
+  "attempt": 2,
+  "trackingIssue": 519,
+  "sourceSha": "21b62f250a1ddb6952623d718ca27ebc11f83c1d",
+  "workflowRunId": 29625794630,
+  "startJobId": 88029850124,
+  "artifact": {
+    "id": 8424232005,
+    "name": "analytics-12a4-twitch-category-canary-start-attempt-2",
+    "sizeBytes": 2338,
+    "digest": "sha256:039e1d260473f5aa72b67eac119b8175e2d9d9be9676c822d0021989e584b038",
+    "expired": false,
+    "sanitizedJsonOnly": true
+  },
+  "window": {
+    "startAt": "2026-07-18T02:30:00.000Z",
+    "until": "2026-07-19T02:30:00.000Z",
+    "observationHours": 24
+  },
+  "ordering": {
+    "startBoundaryReachedAt": "2026-07-18T02:30:01.978Z",
+    "freshPreflightObservedAt": "2026-07-18T02:30:02.030Z",
+    "deploymentObservedAt": "2026-07-18T02:30:19.053Z",
+    "boundaryBeforePreflight": true,
+    "preflightBeforeDeployment": true
+  },
+  "freshPreflight": {
+    "digest": "sha256:2ad41e149c2ded1f95148f44c6cb6ea6b4a55fce7d54bce373414e1ea2b5de49",
+    "storagePass": true,
+    "providerStoragePass": true,
+    "accountStoragePass": true,
+    "schemaPass": true,
+    "providerLeakageRows": 0,
+    "providerLeakagePass": true,
+    "bindingsPass": true,
+    "latestSnapshotPass": true,
+    "allReadOnlyGatesPass": true,
+    "productionMutationPerformed": false,
+    "triggerCreated": false,
+    "runtimeCaptureStarted": false
+  },
+  "deployment": {
+    "outcome": "started",
+    "canaryExitCode": 0,
+    "serviceName": "viewloom-collector-twitch",
+    "databaseId": "b77221fe-80a3-4749-bc0e-d3ad54003dcf",
+    "cadence": "*/5 * * * *",
+    "bindingProvider": "twitch",
+    "bindingAttempt": "2",
+    "categoryCaptureDirectFlagPresent": false,
+    "hardStop": false,
+    "rollbackRequired": false
+  },
+  "boundaries": {
+    "productionRuntimeCaptureAuthorizedBeyondCanary": false,
+    "permanentEnablementAuthorized": false,
+    "kickStartAuthorized": false,
+    "cadenceChanged": false,
+    "retentionChanged": false,
+    "backfillAuthorized": false,
+    "crossProviderAnalyticsAuthorized": false
+  },
+  "nextGate": "bounded observation and expiry finalization"
+}
