@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-execution-v1",
-  "workstream": "12A-4-14 dormant Twitch category capture canary execution and evidence package",
+  "workstream": "12A-4-16 Twitch category capture canary execution with inline fresh preflight",
   "status": "accepted",
   "trackingIssue": 519,
   "acceptedPackage": {
@@ -35,7 +35,13 @@
     "exactExecutionPackageMergeSha": "5c302c8b674edd1d13ab5a467465ed60d0fb96c5",
     "storagePreflightContract": "docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json",
     "storagePreflightStatusRequired": "accepted",
-    "maximumPreflightAgeMinutesAtStart": 60,
+    "acceptedBaselinePreflightIdentityRequired": true,
+    "freshReadOnlyPreflightInStartJobRequired": true,
+    "freshReadOnlyPreflightMethods": {
+      "cloudflareApi": ["GET"],
+      "d1": ["SELECT"]
+    },
+    "freshReadOnlyPreflightMustCompleteBeforeDeploy": true,
     "startAtRequired": true,
     "untilRequired": true,
     "windowHoursMin": 23,
@@ -47,17 +53,23 @@
       "trigger and package identities",
       "provider is Twitch",
       "Kick final evidence remains accepted",
-      "accepted current storage preflight identity",
-      "storage preflight age at start at or below 60 minutes",
+      "accepted baseline storage-preflight identity",
+      "fresh same-job read-only storage preflight",
       "current remote Twitch D1 size",
       "current account-wide D1 size",
       "projected 90-day Twitch size at or below 440 MB",
       "projected Twitch headroom at or above 10 MB",
       "projected account-wide headroom at or above 500 MB",
       "Twitch category schema complete",
+      "provider leakage is zero",
+      "latest normal Twitch snapshot is fresh, authenticated, and non-empty",
+      "temporary canary bindings and permanent direct flag are absent",
       "normal and canary D1 identities match",
       "normal collector cadence remains 5 minutes"
     ],
+    "ephemeralRequestOnly": true,
+    "ephemeralRequestCommitted": false,
+    "freshPreflightEvidenceIncludedInStartArtifact": true,
     "generatedConfigOnly": true,
     "committedCanaryConfigMutated": false,
     "deploysSameTwitchService": true,
@@ -104,6 +116,7 @@
     "persistentCaptureAfterRollbackAllowed": false,
     "automaticPermanentEnablementAllowed": false,
     "automaticKickStartAllowed": false,
+    "freshPreflightFailureAction": "do not deploy and freeze fresh read-only evidence",
     "hardStopAction": "deploy normal Twitch config and freeze failure evidence"
   },
   "rollback": {
@@ -121,11 +134,14 @@
   "evidence": {
     "runner": "scripts/run-12a4-twitch-category-capture-canary-execution.mjs",
     "triggerInspector": "scripts/inspect-12a4-twitch-category-capture-canary-trigger.mjs",
+    "freshPreflightRunner": "scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs",
     "sanitizedJsonOnly": true,
     "startArtifactPrefix": "analytics-12a4-twitch-category-canary-start",
     "checkpointArtifactPrefix": "analytics-12a4-twitch-category-canary-checkpoint",
     "finalArtifactPrefix": "analytics-12a4-twitch-category-canary-final",
-    "separateReadOnlyAcceptancePrRequired": true
+    "freshPreflightArtifactFile": "fresh-storage-preflight.json",
+    "separateReadOnlyAcceptancePrRequired": false,
+    "acceptedBaselineEvidenceStillPinned": true
   },
   "acceptance": {
     "pr": 591,
@@ -150,7 +166,8 @@
     "productionWorkerDeployed": false,
     "remoteD1OperationPerformed": false,
     "mergeSha": "5c302c8b674edd1d13ab5a467465ed60d0fb96c5",
-    "mergeShaRecorded": true
+    "mergeShaRecorded": true,
+    "inlineFreshPreflightAmendmentPendingPrAcceptance": true
   },
   "pullRequestBoundary": {
     "triggerCreated": false,
@@ -169,5 +186,5 @@
     "crossProviderCategoryIdentityAllowed": false,
     "combinedProviderCategoryRankingAllowed": false
   },
-  "nextGate": "separate read-only Twitch and account-wide storage preflight; exact one-file trigger remains blocked until accepted fresh storage evidence is frozen"
+  "nextGate": "accept this inline-fresh-preflight amendment, then create a separate exact one-file Twitch trigger; the start job must pass the fresh read-only preflight before any deploy"
 }

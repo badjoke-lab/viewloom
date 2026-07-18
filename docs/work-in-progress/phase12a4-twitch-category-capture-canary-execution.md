@@ -1,76 +1,84 @@
-# 12A-4-14 Twitch category capture canary execution package
+# 12A-4-16 Twitch category capture canary execution with inline fresh preflight
 
 ## Status
 
-Accepted dormant execution/evidence package. No trigger exists and production execution is not authorized.
+Accepted dormant execution package under amendment. No Twitch trigger exists and no production category capture is active.
 
-PR #591 candidate head `4a97486545926b251ee3307946f625310119becf` passed exact scope, execution contract, trigger/storage/binding/rollback fixtures, development policy, and normal/disabled-canary Worker dry-runs in workflow run `29576877370`, job `87873237039`. The package merged at `5c302c8b674edd1d13ab5a467465ed60d0fb96c5`.
+The package remains provider-separated and uses the previously accepted Twitch package PR #590, execution package PR #591, and accepted baseline storage evidence PR #599.
 
-## Purpose
+## Change in start gating
 
-Prepare the exact trigger inspection, storage preflight, bounded deployment, checkpoint evidence, hard-stop rollback, expiry rollback, and sanitized artifact path required for a later Twitch category capture canary.
+The accepted baseline evidence remains pinned by exact PR, merge SHA, observation timestamp, and evidence digest. It proves that the read-only observation path, schema checks, provider separation, binding checks, snapshot checks, storage projection, and evidence sanitization were accepted.
 
-The package is dormant while `docs/audits/12a4-twitch-category-capture-canary-trigger.json` is absent.
+The baseline observation age no longer decides whether a later start may proceed. Instead, the exact trigger start job must run a fresh read-only preflight immediately before any Worker deployment.
 
-## Cost-aware monitor design
+The fresh read-only preflight uses only:
 
-The wrapper disables category capture at the exact `until` timestamp. The GitHub monitor/finalizer runs every two hours rather than every hour while this temporary execution package is present.
+- Cloudflare `GET` requests;
+- D1 `SELECT` statements.
 
-This means:
+The boundary is Cloudflare `GET` and D1 `SELECT` only.
 
-- capture expiry is exact in the Worker wrapper;
-- binding cleanup and final rollback may occur up to two hours after expiry;
-- a later acceptance package must verify no category payload after the exact expiry grace boundary;
-- the execution workflow must be retired immediately after final acceptance.
+It uses an ephemeral request created inside the GitHub Actions job. The request is not committed to the repository and authorizes no deployment, D1 mutation, trigger creation, or permanent runtime capture.
 
-## Storage preflight
+## Mandatory order
 
-Every `start`, `monitor`, and `finalize` action recalculates from current production state:
+The start job order is fixed:
 
-- current Twitch D1 file size;
-- current account-wide D1 file-size total;
-- projected Twitch 90-day size using `48.32 MB` incremental safety;
-- projected Twitch provider headroom against `450 MB`;
-- projected account-wide headroom against `4608 MB`.
+1. inspect the exact one-file Twitch trigger and accepted package identities;
+2. create the ephemeral read-only request;
+3. run the accepted storage-preflight runner against current production state;
+4. require all fresh read-only gates to pass;
+5. copy the sanitized fresh evidence into the start artifact;
+6. only then run the bounded Twitch canary deployment.
 
-Hard stops:
+A fresh preflight failure stops the job before any Worker deployment.
 
-- Twitch projected size above `440 MB`;
-- Twitch provider headroom below `10 MB`;
-- account-wide projected headroom below `500 MB`;
-- provider leakage above `0`;
-- mismatched or pre-existing canary bindings;
-- failed post-deploy binding verification.
+## Fresh production checks
 
-A separate read-only storage-preflight contract must be accepted before an exact trigger is valid. At a start event, that preflight evidence must be no older than 60 minutes and its PR, merge SHA, observation timestamp, and digest must match the trigger exactly. The runner still recalculates all storage gates immediately before deployment.
+Immediately before deployment the preflight verifies:
 
-## Dormant package boundary
+- exact Twitch Worker and D1 identity;
+- normal five-minute cadence;
+- current Twitch D1 size;
+- current account-wide D1 total;
+- projected Twitch 90-day size at or below `440 MB`;
+- projected Twitch headroom at or above `10 MB`;
+- projected account-wide headroom at or above `500 MB`;
+- required category schema tables;
+- provider leakage exactly `0`;
+- temporary canary bindings absent;
+- permanent direct `CATEGORY_CAPTURE_ENABLED` absent;
+- latest normal Twitch snapshot fresh, authenticated, and non-empty.
 
-This accepted package did not add the exact trigger.
+## Bounded canary behavior
 
-During PR #591:
+The exact trigger still requires:
 
-- push start job was skipped;
-- scheduled inspector job was skipped;
-- monitor/finalize job was skipped;
-- no Cloudflare production call occurred;
-- no Worker was deployed;
-- no remote D1 query occurred;
-- normal Twitch config remained unchanged;
-- Kick remained unchanged;
-- permanent category capture remained unauthorized.
-
-## Later exact trigger
-
-A later exact one-file trigger must include:
-
+- provider `twitch`;
+- positive attempt number;
 - accepted package PR #590 and merge SHA;
 - accepted execution package PR #591 and merge SHA;
-- accepted storage-preflight PR and merge SHA;
-- exact storage-preflight observation timestamp and evidence digest;
-- provider `twitch`;
-- positive attempt;
-- 23-25 hour bounded window;
+- accepted baseline storage-preflight PR #599 and merge SHA;
+- exact baseline observation timestamp and evidence digest;
+- a 23-25 hour window;
 - confirmation `RUN_TWITCH_CATEGORY_CAPTURE_CANARY`.
 
-The trigger must not be accepted unless current Twitch and account-wide storage projections pass in a separate read-only preflight and are rechecked immediately before deployment.
+The wrapper disables category capture at the exact `until` timestamp. The monitor/finalizer runs every two hours, so binding cleanup and the normal-config rollback may occur up to two hours after exact capture expiry. Final acceptance must verify no payload after the expiry grace boundary.
+
+## Hard boundaries
+
+This amendment does not:
+
+- create the Twitch trigger;
+- contact production from a pull request;
+- deploy a Worker from a pull request;
+- mutate D1;
+- change normal Twitch configuration;
+- change Kick;
+- change cadence or retention;
+- backfill data;
+- authorize permanent category capture;
+- authorize cross-provider identity or combined rankings.
+
+The next gate is a separate exact one-file Twitch trigger. Its main-branch start job must pass the fresh read-only preflight before any Worker deployment.

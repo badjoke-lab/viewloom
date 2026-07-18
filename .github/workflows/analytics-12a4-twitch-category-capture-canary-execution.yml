@@ -11,6 +11,7 @@ on:
       - 'scripts/check-12a4-twitch-category-capture-canary-execution-package-scope.mjs'
       - 'scripts/inspect-12a4-twitch-category-capture-canary-trigger.mjs'
       - 'scripts/run-12a4-twitch-category-capture-canary-execution.mjs'
+      - 'scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs'
       - 'scripts/test-12a4-twitch-category-capture-canary-execution.mjs'
       - 'scripts/verify-12a4-twitch-category-capture-canary-execution-package.mjs'
       - 'scripts/verify-development-policy.mjs'
@@ -59,11 +60,14 @@ jobs:
         if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4-14 Twitch canary execution package'
+            echo '## ViewLoom Twitch canary execution package'
             echo
             echo '- Trigger present in package PR: no'
             echo '- Production execution from package PR: no'
             echo '- Provider: Twitch only'
+            echo '- Accepted baseline evidence identity: required'
+            echo '- Fresh read-only preflight in start job: required'
+            echo '- Fresh preflight methods: Cloudflare GET and D1 SELECT only'
             echo '- Wrapper expiry: exact'
             echo '- Monitor/finalizer schedule: every two hours'
             echo '- Provider projected-size hard stop: 440 MB'
@@ -114,6 +118,8 @@ jobs:
       ACTION: start
       TRIGGER_PATH: docs/audits/12a4-twitch-category-capture-canary-trigger.json
       OUTPUT_DIR: artifacts/12a4-twitch-category-canary/start
+      CONTRACT_PATH: docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json
+      REQUEST_PATH: /tmp/viewloom-twitch-inline-storage-preflight-request.json
     steps:
       - uses: actions/checkout@v4
         with:
@@ -122,10 +128,40 @@ jobs:
         uses: ./.github/actions/setup-node-pnpm
       - name: Require accepted exact trigger
         run: node scripts/inspect-12a4-twitch-category-capture-canary-trigger.mjs --event push --require-armed
+      - name: Create ephemeral read-only preflight request
+        run: |
+          cat > "$REQUEST_PATH" <<'EOF'
+          {
+            "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-storage-preflight-request-v1",
+            "status": "requested",
+            "provider": "twitch",
+            "oneTime": true,
+            "confirmation": "RUN_READ_ONLY_TWITCH_STORAGE_PREFLIGHT",
+            "requestedAt": "${{ github.event.head_commit.timestamp }}",
+            "trackingIssue": 519,
+            "acceptedPackagePr": 590,
+            "acceptedPackageMergeSha": "e798df275b2fad0601b2e9ef89c76a6a30f1d038",
+            "acceptedExecutionPr": 591,
+            "acceptedExecutionMergeSha": "5c302c8b674edd1d13ab5a467465ed60d0fb96c5",
+            "acceptedExecutionAcceptancePr": 592,
+            "acceptedExecutionAcceptanceMergeSha": "e202bc24aa9fb200999e678f958984cc9c6ca238",
+            "readOnly": true,
+            "workerDeploymentAuthorized": false,
+            "d1MutationAuthorized": false,
+            "triggerCreationAuthorized": false,
+            "runtimeCaptureAuthorized": false
+          }
+          EOF
+      - name: Run fresh read-only production preflight
+        id: fresh_preflight
+        run: |
+          node scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs
+          mkdir -p "$OUTPUT_DIR"
+          cp artifacts/12a4-twitch-category-canary-storage-preflight/evidence.json "$OUTPUT_DIR/fresh-storage-preflight.json"
       - name: Start bounded Twitch category canary
         id: execute
         run: node scripts/run-12a4-twitch-category-capture-canary-execution.mjs
-      - name: Upload sanitized start evidence
+      - name: Upload sanitized fresh-preflight and start evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
