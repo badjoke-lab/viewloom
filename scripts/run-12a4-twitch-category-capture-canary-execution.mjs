@@ -290,7 +290,7 @@ SELECT bucket_minute, collected_at, stream_count, total_viewers, source_mode FRO
 `.trim()
   const result = runCommand('pnpm', ['dlx', 'wrangler@4', 'd1', 'execute', 'vl_twitch_hot', '--remote', '--json', '--config', configPath, '--command', sql])
   if (result.code !== 0) throw new Error(`d1_evidence_query_failed:${sanitize(result.output)}`)
-  const parsed = parseLastJson(result.output)
+  const parsed = parseLastJson(result.stdout || result.output)
   const rows = flattenD1Rows(parsed)
   return {
     twitchDictionaryRows: numberFromRows(rows, 'twitch_dictionary_rows'),
@@ -400,23 +400,67 @@ function runCommand(command, args) {
     env: process.env,
     maxBuffer: 20 * 1024 * 1024,
   })
+  const stdout = String(result.stdout ?? '').trim()
+  const stderr = String(result.stderr ?? '').trim()
   return {
     code: result.status ?? 1,
-    output: `${result.stdout ?? ''}\n${result.stderr ?? ''}`.trim(),
+    stdout,
+    stderr,
+    output: [stdout, stderr].filter(Boolean).join('\n'),
   }
 }
 
-function parseLastJson(output) {
-  const trimmed = String(output ?? '').trim()
-  for (let index = 0; index < trimmed.length; index += 1) {
-    if (trimmed[index] !== '[' && trimmed[index] !== '{') continue
-    try {
-      return JSON.parse(trimmed.slice(index))
-    } catch {
-      // Continue until a valid JSON boundary is found.
+export function parseLastJson(output) {
+  const source = stripAnsi(String(output ?? '')).trim()
+  if (!source) throw new Error('wrangler_json_output_missing')
+
+  for (let start = 0; start < source.length; start += 1) {
+    const opening = source[start]
+    if (opening !== '[' && opening !== '{') continue
+
+    const stack = []
+    let inString = false
+    let escaped = false
+
+    for (let index = start; index < source.length; index += 1) {
+      const character = source[index]
+
+      if (inString) {
+        if (escaped) escaped = false
+        else if (character === '\\') escaped = true
+        else if (character === '"') inString = false
+        continue
+      }
+
+      if (character === '"') {
+        inString = true
+        continue
+      }
+      if (character === '{' || character === '[') {
+        stack.push(character)
+        continue
+      }
+      if (character !== '}' && character !== ']') continue
+
+      const expectedOpening = character === '}' ? '{' : '['
+      if (stack.at(-1) !== expectedOpening) break
+      stack.pop()
+      if (stack.length !== 0) continue
+
+      const candidate = source.slice(start, index + 1)
+      try {
+        return JSON.parse(candidate)
+      } catch {
+        break
+      }
     }
   }
+
   throw new Error('wrangler_json_output_missing')
+}
+
+function stripAnsi(value) {
+  return String(value ?? '').replace(/\u001B\[[0-?]*[ -/]*[@-~]/g, '')
 }
 
 function flattenD1Rows(payload) {

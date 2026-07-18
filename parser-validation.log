@@ -1,0 +1,40 @@
+> node --check scripts/run-12a4-twitch-category-capture-canary-execution.mjs
+> node --check scripts/test-12a4-twitch-category-capture-canary-execution.mjs
+> node scripts/test-12a4-twitch-category-capture-canary-execution.mjs
+{
+  "ok": true,
+  "triggerAbsentNoop": true,
+  "oldAcceptedBaselineIdentityAccepted": true,
+  "startBoundaryWaitRequired": true,
+  "inlineFreshPreflightRequiredAfterStartBoundary": true,
+  "startActionVerified": true,
+  "monitorActionVerified": true,
+  "finalizeActionVerified": true,
+  "expiredPushRejected": true,
+  "missingBaselineRejected": true,
+  "baselineIdentityMismatchRejected": true,
+  "providerMismatchRejected": true,
+  "exactWaitVerified": true,
+  "waitLimitVerified": true,
+  "expiredWaitRejected": true,
+  "invalidWaitInputsRejected": true,
+  "providerStorageGateVerified": true,
+  "accountStorageGateVerified": true,
+  "generatedConfigContainsNoDirectFlag": true,
+  "normalBindingNoopVerified": true
+}
+> node scripts/verify-12a4-twitch-category-capture-canary-execution-package.mjs
+{
+  "ok": true,
+  "status": "accepted",
+  "provider": "twitch",
+  "armedAttempt": 2,
+  "attempt1CancelledBeforeDeploy": true,
+  "startBoundaryWaitRequired": true,
+  "freshPreflightAfterStartBoundaryRequired": true,
+  "workflowOrderVerified": true,
+  "providerStorageLimitMb": 440,
+  "accountHeadroomMinMb": 500,
+  "productionExecutionFromPullRequest": false,
+  "permanentRuntimeCaptureAuthorized": false
+}
