@@ -15,6 +15,7 @@ permissions:
   actions: read
   contents: read
   issues: write
+  pull-requests: write
 
 jobs:
   locate:
@@ -53,6 +54,7 @@ jobs:
             echo '- Kick start: not authorized'
           } > /tmp/viewloom-twitch-run-located.md
           gh issue comment 519 --repo "$GITHUB_REPOSITORY" --body-file /tmp/viewloom-twitch-run-located.md
+          gh pr comment 606 --repo "$GITHUB_REPOSITORY" --body-file /tmp/viewloom-twitch-run-located.md
 
   report:
     if: github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main'
@@ -92,3 +94,4 @@ jobs:
             cat /tmp/viewloom-twitch-run-artifacts.md
           } > /tmp/viewloom-twitch-run-report.md
           gh issue comment 519 --repo "$GITHUB_REPOSITORY" --body-file /tmp/viewloom-twitch-run-report.md
+          gh pr comment 606 --repo "$GITHUB_REPOSITORY" --body-file /tmp/viewloom-twitch-run-report.md
