@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-run-report-request-v1",
+  "status": "requested",
+  "provider": "twitch",
+  "attempt": 1,
+  "sourceSha": "62d24460d4250aca89c72916d9fade42c09f9503",
+  "trackingIssue": 519,
+  "readOnlyActionsMetadata": true,
+  "productionMutationAuthorized": false
+}
