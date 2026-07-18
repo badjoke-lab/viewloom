@@ -24,15 +24,42 @@ jobs:
       - name: Apply focused patch
         run: python scripts/temp-fix-twitch-monitor-json-parser.py
       - name: Validate parser and package
+        id: validate
+        shell: bash
         run: |
-          node --check scripts/run-12a4-twitch-category-capture-canary-execution.mjs
-          node --check scripts/test-12a4-twitch-category-capture-canary-execution.mjs
-          node scripts/test-12a4-twitch-category-capture-canary-execution.mjs
-          node scripts/verify-12a4-twitch-category-capture-canary-execution-package.mjs
+          set +e
+          : > parser-validation.log
+          status=0
+          for command in \
+            "node --check scripts/run-12a4-twitch-category-capture-canary-execution.mjs" \
+            "node --check scripts/test-12a4-twitch-category-capture-canary-execution.mjs" \
+            "node scripts/test-12a4-twitch-category-capture-canary-execution.mjs" \
+            "node scripts/verify-12a4-twitch-category-capture-canary-execution-package.mjs"
+          do
+            echo "> $command" | tee -a parser-validation.log
+            bash -lc "$command" >> parser-validation.log 2>&1
+            status=$?
+            if [ "$status" -ne 0 ]; then
+              break
+            fi
+          done
+          cat parser-validation.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+      - name: Upload validation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-monitor-parser-validation
+          path: parser-validation.log
+          retention-days: 7
       - name: Commit focused patch
+        if: steps.validate.outputs.status == '0'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git commit -m 'Fix Twitch canary monitor JSON parsing'
           git push origin HEAD:agent/fix-twitch-monitor-json-parser
+      - name: Fail when validation failed
+        if: steps.validate.outputs.status != '0'
+        run: exit 1
