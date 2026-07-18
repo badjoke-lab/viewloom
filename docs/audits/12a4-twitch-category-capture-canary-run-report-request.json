@@ -3,6 +3,8 @@
   "status": "requested",
   "provider": "twitch",
   "attempt": 1,
+  "revision": 2,
+  "requestedAt": "2026-07-18T01:23:26.000Z",
   "sourceSha": "62d24460d4250aca89c72916d9fade42c09f9503",
   "trackingIssue": 519,
   "readOnlyActionsMetadata": true,
