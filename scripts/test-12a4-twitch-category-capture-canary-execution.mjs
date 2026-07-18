@@ -8,6 +8,7 @@ import {
   canaryBindingsAbsent,
   canaryBindingsFromSettings,
   generatedCanaryConfigPath,
+  parseLastJson,
   projectTwitchStorage,
   renderActiveCanaryConfig,
 } from './run-12a4-twitch-category-capture-canary-execution.mjs'
@@ -229,6 +230,14 @@ assert.equal(acceptedStorage.projectedAccountWideHeadroomMb, 843.09)
 assert.equal(acceptedStorage.pass, true)
 assert.equal(projectTwitchStorage(395 * MB, 3716.59 * MB).pass, false)
 assert.equal(projectTwitchStorage(390.38 * MB, 4100 * MB).pass, false)
+
+const noisyWranglerOutput = `\u001b[90mwrangler informational prefix\u001b[0m
+[{"results":[{"provider_leakage_rows":0,"category_payload_rows":12}],"success":true}]
+warning emitted after the JSON payload`
+const parsedNoisyWranglerOutput = parseLastJson(noisyWranglerOutput)
+assert.equal(parsedNoisyWranglerOutput[0].results[0].provider_leakage_rows, 0)
+assert.equal(parsedNoisyWranglerOutput[0].results[0].category_payload_rows, 12)
+assert.throws(() => parseLastJson('wrangler output without JSON'), /wrangler_json_output_missing/)
 
 const template = fs.readFileSync('workers/collector-twitch/wrangler.category-canary.toml', 'utf8')
 const normal = fs.readFileSync('workers/collector-twitch/wrangler.toml', 'utf8')

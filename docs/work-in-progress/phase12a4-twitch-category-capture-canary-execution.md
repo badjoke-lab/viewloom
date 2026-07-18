@@ -100,3 +100,24 @@ This fix does not:
 - authorize cross-provider identity or combined rankings.
 
 The next gate is an exact one-file attempt 2 trigger. Its start job must reach the start boundary, pass the fresh read-only preflight, and only then deploy the bounded Twitch canary.
+
+## Attempt 2 monitor failure and rollback
+
+Attempt 2 started successfully after the exact start boundary and fresh read-only preflight. The first scheduled monitor run `29629390710` failed while parsing Wrangler D1 JSON output with `wrangler_json_output_missing`.
+
+This was a monitor parser failure, not a storage or provider-separation failure. At the failure checkpoint:
+
+- Twitch D1 was `320.45 MB`;
+- projected 90-day Twitch size was `368.77 MB`;
+- provider headroom was `81.23 MB`;
+- account-wide headroom was `882.78 MB`;
+- the attempt-2 bindings matched before inspection;
+- the normal Twitch configuration rollback exited `0`;
+- all canary bindings were absent after rollback;
+- the permanent direct category flag remained absent;
+- Kick remained unchanged.
+
+Artifact `8424948287` with digest `sha256:cf2ff1038ea4f51ec7d378fcba9e0503090afefa2ac0f831931dfeee43d06ed8` records the failure and successful rollback. Runtime category capture is no longer active.
+
+The focused fix separates Wrangler stdout from stderr and replaces the suffix parser with ANSI-tolerant balanced JSON extraction. Fixtures cover prefixes, ANSI sequences, trailing warnings, and missing JSON. A future attempt still requires a separate exact trigger and a fresh start-job read-only preflight.
+

@@ -111,7 +111,7 @@ assert.equal(kickEvidence.gates.canaryBindingsAbsent, true)
 
 assert.equal(trigger.status, 'armed')
 assert.equal(trigger.provider, 'twitch')
-assert.equal(trigger.attempt, 1)
+assert.ok(Number.isSafeInteger(trigger.attempt) && trigger.attempt >= 2)
 assert.equal(trigger.packagePr, 590)
 assert.equal(trigger.executionPackagePr, 591)
 assert.equal(trigger.storagePreflightPr, 599)
@@ -220,6 +220,12 @@ assert.ok(note.includes('artifact `8423630417`'))
 assert.ok(note.includes('Worker deployment: no'))
 assert.ok(note.includes('wait until the exact `startAt` boundary'))
 assert.ok(note.includes('The next gate is an exact one-file attempt 2 trigger'))
+
+assert.ok(runner.includes('export function parseLastJson'))
+assert.ok(runner.includes("const stdout = String(result.stdout ?? '').trim()"))
+assert.ok(runner.includes('parseLastJson(result.stdout || result.output)'))
+assert.ok(fixture.includes('const noisyWranglerOutput ='))
+assert.ok(fixture.includes('wrangler_json_output_missing'))
 
 console.log(JSON.stringify({
   ok: true,

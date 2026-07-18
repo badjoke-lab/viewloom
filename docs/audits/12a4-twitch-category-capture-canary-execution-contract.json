@@ -40,8 +40,12 @@
     "startBoundaryWaitMaximumHours": 3,
     "freshReadOnlyPreflightInStartJobRequired": true,
     "freshReadOnlyPreflightMethods": {
-      "cloudflareApi": ["GET"],
-      "d1": ["SELECT"]
+      "cloudflareApi": [
+        "GET"
+      ],
+      "d1": [
+        "SELECT"
+      ]
     },
     "freshReadOnlyPreflightMustCompleteAfterStartBoundary": true,
     "freshReadOnlyPreflightMustCompleteBeforeDeploy": true,
@@ -200,7 +204,8 @@
     "mergeShaRecorded": true,
     "inlineFreshPreflightAmendmentPr": 602,
     "inlineFreshPreflightAmendmentMergeSha": "7d47357409cd9d181e408a30b842e713f4e20880",
-    "startOrderFixPendingPrAcceptance": true
+    "startOrderFixPendingPrAcceptance": true,
+    "monitorParserFixPendingPrAcceptance": true
   },
   "pullRequestBoundary": {
     "triggerCreated": false,
@@ -219,5 +224,27 @@
     "crossProviderCategoryIdentityAllowed": false,
     "combinedProviderCategoryRankingAllowed": false
   },
-  "nextGate": "accept this start-order fix, then update the exact one-file Twitch trigger to attempt 2; the start boundary wait must complete before the fresh read-only preflight and any deploy"
+  "nextGate": "accept the monitor JSON parser fix, verify the normal Twitch collector through the next start-job read-only preflight, then use a separate exact one-file trigger for a new bounded attempt",
+  "attempt2MonitorFailure": {
+    "workflowRunId": 29629390710,
+    "workflowJobId": 88040007930,
+    "artifactId": 8424948287,
+    "artifactDigest": "sha256:cf2ff1038ea4f51ec7d378fcba9e0503090afefa2ac0f831931dfeee43d06ed8",
+    "observedAt": "2026-07-18T03:46:13.424Z",
+    "error": "wrangler_json_output_missing",
+    "failureClass": "monitor_output_parser",
+    "storagePass": true,
+    "providerCurrentMb": 320.45,
+    "projectedNinetyDaySizeMb": 368.77,
+    "projectedProviderHeadroomMb": 81.23,
+    "projectedAccountWideHeadroomMb": 882.78,
+    "bindingsMatchedAttemptBeforeMonitor": true,
+    "rollbackExitCode": 0,
+    "rollbackPass": true,
+    "canaryBindingsAbsentAfterRollback": true,
+    "permanentDirectFlagPresentAfterRollback": false,
+    "boundedRuntimeCaptureActiveAfterRollback": false,
+    "productionRuntimeCaptureAuthorizedBeyondCanary": false,
+    "kickChanged": false
+  }
 }
