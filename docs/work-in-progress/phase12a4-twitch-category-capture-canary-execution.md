@@ -1,42 +1,60 @@
-# 12A-4-16 Twitch category capture canary execution with inline fresh preflight
+# 12A-4-16 Twitch category capture canary execution with start-boundary fresh preflight
 
 ## Status
 
-Accepted dormant execution package under amendment. No Twitch trigger exists and no production category capture is active.
+Accepted dormant execution package with a start-order fix under review. Attempt 1 was cancelled before the scheduled boundary and before any Worker deployment.
 
-The package remains provider-separated and uses the previously accepted Twitch package PR #590, execution package PR #591, and accepted baseline storage evidence PR #599.
+The exact trigger currently records attempt 1, but its execution run is cancelled and no production category capture is active. A separate exact one-file update will arm attempt 2 only after this fix is accepted.
 
-## Change in start gating
+## Attempt 1 safe cancellation
+
+Attempt 1 used trigger PR #604 and main SHA `62d24460d4250aca89c72916d9fade42c09f9503`.
+
+The execution run was:
+
+- workflow run `29624622275`;
+- start job `88026455393`;
+- artifact `8423630417`;
+- artifact digest `sha256:13891b14e96a9efcfc13298e7579c653d271c27269e397389dcacf60f2787777`.
+
+The fresh read-only preflight passed at `2026-07-18T01:09:16.159Z`, but the workflow then waited for the scheduled start inside the deployment runner. That ordering could make a previously fresh snapshot older than the 20-minute threshold by deployment time.
+
+The run was cancelled while still waiting. The artifact contains `fresh-storage-preflight.json` only. It contains no start evidence, no successful deployment result, and no active binding evidence.
+
+Confirmed boundaries:
+
+- Worker deployment: no;
+- runtime category capture: no;
+- D1 mutation: no;
+- permanent `CATEGORY_CAPTURE_ENABLED`: absent;
+- Kick change: no.
+
+## Corrected mandatory order
+
+The start job order is now fixed:
+
+1. inspect the exact one-file Twitch trigger and accepted package identities;
+2. wait until the exact `startAt` boundary, with a maximum wait of three hours;
+3. create the ephemeral read-only preflight request;
+4. run the accepted storage-preflight runner against current production state;
+5. require all fresh read-only gates to pass;
+6. copy the sanitized fresh evidence into the start artifact;
+7. only then deploy the bounded Twitch canary.
+
+A wait failure or fresh-preflight failure stops the job before any Worker deployment.
+
+## Accepted baseline and fresh production evidence
 
 The accepted baseline evidence remains pinned by exact PR, merge SHA, observation timestamp, and evidence digest. It proves that the read-only observation path, schema checks, provider separation, binding checks, snapshot checks, storage projection, and evidence sanitization were accepted.
 
-The baseline observation age no longer decides whether a later start may proceed. Instead, the exact trigger start job must run a fresh read-only preflight immediately before any Worker deployment.
-
-The fresh read-only preflight uses only:
+The deploy decision is made by a new same-job observation after the exact start boundary. It uses only:
 
 - Cloudflare `GET` requests;
 - D1 `SELECT` statements.
 
-The boundary is Cloudflare `GET` and D1 `SELECT` only.
+The ephemeral request is not committed and authorizes no deployment by itself, D1 mutation, trigger creation, or permanent runtime capture.
 
-It uses an ephemeral request created inside the GitHub Actions job. The request is not committed to the repository and authorizes no deployment, D1 mutation, trigger creation, or permanent runtime capture.
-
-## Mandatory order
-
-The start job order is fixed:
-
-1. inspect the exact one-file Twitch trigger and accepted package identities;
-2. create the ephemeral read-only request;
-3. run the accepted storage-preflight runner against current production state;
-4. require all fresh read-only gates to pass;
-5. copy the sanitized fresh evidence into the start artifact;
-6. only then run the bounded Twitch canary deployment.
-
-A fresh preflight failure stops the job before any Worker deployment.
-
-## Fresh production checks
-
-Immediately before deployment the preflight verifies:
+Immediately before deployment the fresh preflight verifies:
 
 - exact Twitch Worker and D1 identity;
 - normal five-minute cadence;
@@ -53,7 +71,7 @@ Immediately before deployment the preflight verifies:
 
 ## Bounded canary behavior
 
-The exact trigger still requires:
+The exact trigger requires:
 
 - provider `twitch`;
 - positive attempt number;
@@ -64,15 +82,15 @@ The exact trigger still requires:
 - a 23-25 hour window;
 - confirmation `RUN_TWITCH_CATEGORY_CAPTURE_CANARY`.
 
-The wrapper disables category capture at the exact `until` timestamp. The monitor/finalizer runs every two hours, so binding cleanup and the normal-config rollback may occur up to two hours after exact capture expiry. Final acceptance must verify no payload after the expiry grace boundary.
+The wrapper disables category capture at the exact `until` timestamp. The monitor/finalizer runs every two hours, so binding cleanup and normal-config rollback may occur up to two hours after exact capture expiry. Final acceptance must verify no payload after the expiry grace boundary.
 
 ## Hard boundaries
 
-This amendment does not:
+This fix does not:
 
-- create the Twitch trigger;
-- contact production from a pull request;
-- deploy a Worker from a pull request;
+- change the trigger file;
+- contact production from the pull request;
+- deploy a Worker from the pull request;
 - mutate D1;
 - change normal Twitch configuration;
 - change Kick;
@@ -81,4 +99,4 @@ This amendment does not:
 - authorize permanent category capture;
 - authorize cross-provider identity or combined rankings.
 
-The next gate is a separate exact one-file Twitch trigger. Its main-branch start job must pass the fresh read-only preflight before any Worker deployment.
+The next gate is an exact one-file attempt 2 trigger. Its start job must reach the start boundary, pass the fresh read-only preflight, and only then deploy the bounded Twitch canary.
