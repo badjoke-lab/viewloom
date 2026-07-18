@@ -11,7 +11,7 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
 runner_path = Path('scripts/run-12a4-twitch-category-capture-canary-execution.mjs')
 runner = runner_path.read_text()
 
-old_run_command = """function runCommand(command, args) {
+old_run_command = r"""function runCommand(command, args) {
   const result = spawnSync(command, args, {
     cwd: process.cwd(),
     encoding: 'utf8',
@@ -24,7 +24,7 @@ old_run_command = """function runCommand(command, args) {
   }
 }
 """
-new_run_command = """function runCommand(command, args) {
+new_run_command = r"""function runCommand(command, args) {
   const result = spawnSync(command, args, {
     cwd: process.cwd(),
     encoding: 'utf8',
