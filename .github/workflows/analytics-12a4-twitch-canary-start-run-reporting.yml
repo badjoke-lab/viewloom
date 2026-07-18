@@ -6,6 +6,10 @@ on:
       - Analytics 12A4 Twitch Category Capture Canary Execution
     types:
       - completed
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a4-twitch-category-capture-canary-run-report-request.json'
 
 permissions:
   actions: read
@@ -13,8 +17,45 @@ permissions:
   issues: write
 
 jobs:
+  locate:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REQUEST_PATH: docs/audits/12a4-twitch-category-capture-canary-run-report-request.json
+    steps:
+      - uses: actions/checkout@v4
+      - name: Locate exact execution run
+        shell: bash
+        run: |
+          source_sha=$(jq -r '.sourceSha' "$REQUEST_PATH")
+          attempt=$(jq -r '.attempt' "$REQUEST_PATH")
+          gh api "repos/$GITHUB_REPOSITORY/actions/workflows/analytics-12a4-twitch-category-capture-canary-execution.yml/runs?branch=main&per_page=20" > /tmp/viewloom-twitch-runs.json
+          jq --arg sha "$source_sha" '.workflow_runs | map(select(.head_sha == $sha)) | .[0] // empty' /tmp/viewloom-twitch-runs.json > /tmp/viewloom-twitch-run.json
+          run_id=$(jq -r '.id // empty' /tmp/viewloom-twitch-run.json)
+          test -n "$run_id"
+          {
+            echo '## Twitch category canary execution run located'
+            echo
+            echo "- Workflow run: $run_id"
+            echo "- Trigger attempt: $attempt"
+            echo "- Status: $(jq -r '.status' /tmp/viewloom-twitch-run.json)"
+            echo "- Conclusion: $(jq -r '.conclusion // "pending"' /tmp/viewloom-twitch-run.json)"
+            echo "- Source event: $(jq -r '.event' /tmp/viewloom-twitch-run.json)"
+            echo "- Source SHA: $(jq -r '.head_sha' /tmp/viewloom-twitch-run.json)"
+            echo "- Created at: $(jq -r '.created_at' /tmp/viewloom-twitch-run.json)"
+            echo "- Updated at: $(jq -r '.updated_at' /tmp/viewloom-twitch-run.json)"
+            echo "- Run URL: $(jq -r '.html_url' /tmp/viewloom-twitch-run.json)"
+            echo '- Provider: Twitch only'
+            echo '- Fresh read-only preflight required before deploy: yes'
+            echo '- Permanent category enablement: not authorized'
+            echo '- Kick start: not authorized'
+          } > /tmp/viewloom-twitch-run-located.md
+          gh issue comment 519 --repo "$GITHUB_REPOSITORY" --body-file /tmp/viewloom-twitch-run-located.md
+
   report:
-    if: github.event.workflow_run.head_branch == 'main'
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
