@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-start-cancel-request-v1",
+  "status": "requested",
+  "provider": "twitch",
+  "attempt": 1,
+  "targetRunId": 29624622275,
+  "targetSourceSha": "62d24460d4250aca89c72916d9fade42c09f9503",
+  "reason": "fresh_preflight_completed_before_scheduled_start_wait",
+  "trackingIssue": 519,
+  "cloudflareOperationAuthorized": false,
+  "d1OperationAuthorized": false,
+  "permanentRuntimeCaptureAuthorized": false
+}
