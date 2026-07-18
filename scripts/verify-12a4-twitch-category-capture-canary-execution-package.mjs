@@ -9,8 +9,10 @@ const packageContract = json('docs/audits/12a4-twitch-category-capture-canary-pa
 const storageContract = json('docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json')
 const gate = json('docs/audits/12a2-current-gate-state.json')
 const kickEvidence = json('docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json')
+const trigger = json(contract.workflow.triggerPath)
 const workflow = read(contract.workflow.path)
 const runner = read(contract.evidence.runner)
+const waitRunner = read(contract.evidence.startWaitRunner)
 const storageRunner = read(contract.evidence.freshPreflightRunner)
 const inspector = read(contract.evidence.triggerInspector)
 const fixture = read('scripts/test-12a4-twitch-category-capture-canary-execution.mjs')
@@ -27,6 +29,7 @@ assert.equal(contract.acceptedPackage.provider, 'twitch')
 assert.equal(contract.acceptedPackage.committedDisabled, true)
 assert.equal(contract.acceptedPackage.minimumObservationHours, 24)
 
+assert.equal(contract.workflow.triggerMayBePresentButUnchangedInFixPr, true)
 assert.equal(contract.workflow.pullRequestValidationOnly, true)
 assert.equal(contract.workflow.productionExecutionFromPackagePr, false)
 assert.equal(contract.workflow.workflowDispatchProductionAllowed, false)
@@ -42,22 +45,37 @@ assert.equal(contract.trigger.exactExecutionPackageMergeSha, '5c302c8b674edd1d13
 assert.equal(contract.trigger.storagePreflightContract, 'docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json')
 assert.equal(contract.trigger.storagePreflightStatusRequired, 'accepted')
 assert.equal(contract.trigger.acceptedBaselinePreflightIdentityRequired, true)
+assert.equal(contract.trigger.startBoundaryWaitBeforeFreshPreflightRequired, true)
+assert.equal(contract.trigger.startBoundaryWaitMaximumHours, 3)
 assert.equal(contract.trigger.freshReadOnlyPreflightInStartJobRequired, true)
 assert.deepEqual(contract.trigger.freshReadOnlyPreflightMethods.cloudflareApi, ['GET'])
 assert.deepEqual(contract.trigger.freshReadOnlyPreflightMethods.d1, ['SELECT'])
+assert.equal(contract.trigger.freshReadOnlyPreflightMustCompleteAfterStartBoundary, true)
 assert.equal(contract.trigger.freshReadOnlyPreflightMustCompleteBeforeDeploy, true)
 assert.equal(contract.trigger.oneFileTriggerPrRequired, true)
 assert.equal(Object.hasOwn(contract.trigger, 'maximumPreflightAgeMinutesAtStart'), false)
 
+assert.deepEqual(contract.start.mandatoryOrder, [
+  'inspect exact trigger',
+  'wait for exact start boundary',
+  'create ephemeral read-only request',
+  'run fresh read-only production preflight',
+  'copy fresh evidence into start artifact',
+  'deploy bounded Twitch canary',
+])
+assert.equal(contract.start.waitRunner, 'scripts/wait-12a4-twitch-category-capture-canary-start.mjs')
+assert.equal(contract.start.waitBeforeEphemeralRequest, true)
+assert.equal(contract.start.waitBeforeFreshPreflight, true)
+assert.equal(contract.start.waitBeforeDeploy, true)
 assert.equal(contract.start.ephemeralRequestOnly, true)
 assert.equal(contract.start.ephemeralRequestCommitted, false)
 assert.equal(contract.start.freshPreflightEvidenceIncludedInStartArtifact, true)
 assert.equal(contract.start.generatedConfigOnly, true)
 assert.equal(contract.start.committedCanaryConfigMutated, false)
 assert.equal(contract.start.postDeployVerificationFailureRollsBack, true)
+assert.equal(contract.evidence.startWaitRunner, 'scripts/wait-12a4-twitch-category-capture-canary-start.mjs')
 assert.equal(contract.evidence.freshPreflightRunner, 'scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs')
 assert.equal(contract.evidence.freshPreflightArtifactFile, 'fresh-storage-preflight.json')
-assert.equal(contract.evidence.separateReadOnlyAcceptancePrRequired, false)
 assert.equal(contract.evidence.acceptedBaselineEvidenceStillPinned, true)
 
 assert.equal(contract.monitor.frequency, 'every two hours')
@@ -81,9 +99,7 @@ assert.equal(storageContract.acceptance.pr, 599)
 assert.equal(storageContract.acceptance.mergeSha, '785a271a7b95808e01478b9fb3846028229faa24')
 assert.equal(storageContract.acceptance.allReadOnlyGatesPass, true)
 assert.equal(storageContract.acceptance.productionMutationPerformed, false)
-
 assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v20')
-assert.equal(gate.currentWorkstream.phase, '12A-4-15')
 assert.equal(gate.currentWorkstream.acceptedTwitchCanaryPackage, true)
 assert.equal(gate.currentWorkstream.acceptedTwitchCanaryExecutionPackage, true)
 assert.equal(gate.currentWorkstream.acceptedTwitchStoragePreflight, true)
@@ -93,38 +109,61 @@ assert.equal(gate.categoryCapture.twitchCanaryAutomaticallyAuthorized, false)
 assert.equal(kickEvidence.outcome, 'accepted')
 assert.equal(kickEvidence.gates.canaryBindingsAbsent, true)
 
-assert.equal(contract.acceptance.pr, 591)
-assert.equal(contract.acceptance.mergeSha, '5c302c8b674edd1d13ab5a467465ed60d0fb96c5')
-assert.equal(contract.acceptance.mergeShaRecorded, true)
-assert.equal(contract.acceptance.triggerPresent, false)
-assert.equal(contract.acceptance.productionRuntimeCaptureStarted, false)
-assert.equal(contract.acceptance.productionWorkerDeployed, false)
-assert.equal(contract.acceptance.remoteD1OperationPerformed, false)
-assert.equal(contract.acceptance.inlineFreshPreflightAmendmentPendingPrAcceptance, true)
+assert.equal(trigger.status, 'armed')
+assert.equal(trigger.provider, 'twitch')
+assert.equal(trigger.attempt, 1)
+assert.equal(trigger.packagePr, 590)
+assert.equal(trigger.executionPackagePr, 591)
+assert.equal(trigger.storagePreflightPr, 599)
+assert.equal(trigger.storagePreflightMergeSha, storageContract.acceptance.mergeSha)
+assert.equal(trigger.storagePreflightObservedAt, storageContract.observedAt)
+assert.equal(trigger.storagePreflightEvidenceDigest, storageContract.evidence.digest)
 
-assert.equal(fs.existsSync(contract.workflow.triggerPath), false)
-assert.equal(fs.existsSync(contract.trigger.storagePreflightContract), true)
+assert.equal(contract.attempt1Cancellation.triggerPr, 604)
+assert.equal(contract.attempt1Cancellation.triggerMergeSha, '62d24460d4250aca89c72916d9fade42c09f9503')
+assert.equal(contract.attempt1Cancellation.workflowRunId, 29624622275)
+assert.equal(contract.attempt1Cancellation.workflowJobId, 88026455393)
+assert.equal(contract.attempt1Cancellation.artifactId, 8423630417)
+assert.equal(contract.attempt1Cancellation.artifactDigest, 'sha256:13891b14e96a9efcfc13298e7579c653d271c27269e397389dcacf60f2787777')
+assert.equal(contract.attempt1Cancellation.freshPreflightPassed, true)
+assert.equal(contract.attempt1Cancellation.startStepCancelledBeforeBoundary, true)
+assert.equal(contract.attempt1Cancellation.startEvidencePresent, false)
+assert.equal(contract.attempt1Cancellation.workerDeploymentPerformed, false)
+assert.equal(contract.attempt1Cancellation.runtimeCaptureStarted, false)
+assert.equal(contract.attempt1Cancellation.cancellationPr, 608)
+assert.equal(contract.acceptance.inlineFreshPreflightAmendmentPr, 602)
+assert.equal(contract.acceptance.inlineFreshPreflightAmendmentMergeSha, '7d47357409cd9d181e408a30b842e713f4e20880')
+assert.equal(contract.acceptance.startOrderFixPendingPrAcceptance, true)
+
 assert.match(workflow, /^\s*pull_request:/m)
 assert.match(workflow, /^\s*workflow_dispatch:/m)
 assert.match(workflow, /^\s*push:/m)
 assert.match(workflow, /^\s*schedule:/m)
 assert.ok(workflow.includes("cron: '47 */2 * * *'"))
-assert.ok(workflow.includes('docs/audits/12a4-twitch-category-capture-canary-trigger.json'))
-assert.ok(workflow.includes("needs.inspect-trigger.outputs.action == 'start'"))
+assert.ok(workflow.includes('Wait for exact start boundary'))
+assert.ok(workflow.includes('wait-12a4-twitch-category-capture-canary-start.mjs'))
 assert.ok(workflow.includes('Create ephemeral read-only preflight request'))
-assert.ok(workflow.includes('Run fresh read-only production preflight'))
-assert.ok(workflow.includes('run-12a4-twitch-category-capture-canary-storage-preflight.mjs'))
-assert.ok(workflow.includes('fresh-storage-preflight.json'))
+assert.ok(workflow.includes('Run fresh read-only production preflight after start boundary'))
 assert.ok(workflow.includes('Start bounded Twitch category canary'))
-assert.ok(workflow.indexOf('Run fresh read-only production preflight') < workflow.indexOf('Start bounded Twitch category canary'))
+const waitIndex = workflow.indexOf('Wait for exact start boundary')
+const requestIndex = workflow.indexOf('Create ephemeral read-only preflight request')
+const freshIndex = workflow.indexOf('Run fresh read-only production preflight after start boundary')
+const startIndex = workflow.indexOf('Start bounded Twitch category canary')
+assert.ok(waitIndex >= 0 && waitIndex < requestIndex)
+assert.ok(requestIndex < freshIndex)
+assert.ok(freshIndex < startIndex)
+assert.ok(workflow.includes('fresh-storage-preflight.json'))
 assert.ok(workflow.includes('CLOUDFLARE_API_TOKEN'))
 assert.ok(workflow.includes('CLOUDFLARE_ACCOUNT_ID'))
-assert.ok(workflow.includes('workerDeploymentAuthorized'))
-assert.ok(workflow.includes('"workerDeploymentAuthorized": false'))
-assert.ok(workflow.includes('"d1MutationAuthorized": false'))
-assert.ok(workflow.includes('"triggerCreationAuthorized": false'))
-assert.ok(workflow.includes('"runtimeCaptureAuthorized": false'))
 assert.equal(workflow.includes('workers/collector-kick/wrangler.toml'), false)
+
+for (const fragment of [
+  'export function evaluateStartWait',
+  'start_wait_exceeds_limit',
+  'trigger_expired_before_wait',
+  'trigger_expired_while_waiting',
+  'Math.min(remaining, 60_000)',
+]) assert.ok(waitRunner.includes(fragment), `wait runner missing ${fragment}`)
 
 for (const fragment of [
   'export function projectTwitchStorage',
@@ -135,7 +174,6 @@ for (const fragment of [
   'export function canaryBindingsFromSettings',
   'export function bindingsMatchTrigger',
   'export function canaryBindingsAbsent',
-  'fetchAllD1Databases',
   'productionRuntimeCaptureAuthorizedBeyondCanary: false',
   'permanentEnablementAuthorized: false',
   'kickStartAuthorized: false',
@@ -153,49 +191,47 @@ for (const fragment of [
 ]) assert.ok(storageRunner.includes(fragment), `storage runner missing ${fragment}`)
 
 for (const fragment of [
-  "const CONFIRMATION = 'RUN_TWITCH_CATEGORY_CAPTURE_CANARY'",
-  "trigger.provider === 'twitch'",
-  'loadStoragePreflight(executionContract)',
-  'fresh read-only preflight required in start job',
-  'fresh read-only preflight before deploy',
+  'start boundary wait required before fresh preflight',
+  'fresh read-only preflight after start boundary',
   'acceptedBaselinePreflightPinned: true',
-  'freshReadOnlyPreflightRequiredBeforeDeploy: true',
+  'startBoundaryWaitRequiredBeforeFreshPreflight: true',
+  'freshReadOnlyPreflightRequiredAfterStartBoundary: true',
 ]) assert.ok(inspector.includes(fragment), `inspector missing ${fragment}`)
-assert.equal(inspector.includes('storage preflight fresh at start'), false)
 
 for (const fragment of [
-  "assert.equal(absent.action, 'noop')",
-  'pushWithOldAcceptedBaseline',
-  'oldAcceptedBaselineIdentityAccepted: true',
-  'inlineFreshPreflightRequired: true',
-  "failure.name === 'storage preflight present'",
-  "failure.name === 'storage preflight digest identity'",
-  "failure.name === 'fresh read-only preflight required in start job'",
-  'assert.equal(acceptedStorage.projectedNinetyDaySizeMb, 438.7)',
-  'assert.equal(canaryBindingsAbsent(normalBindings), true)',
+  'evaluateStartWait',
+  'waitBeforeStart',
+  'waitAtStart',
+  'waitAfterStart',
+  'waitTooLong',
+  "waitTooLong.failure.name, 'start_wait_exceeds_limit'",
+  "waitExpired.failure.name, 'trigger_expired_before_wait'",
+  "invalidStart.failure.name, 'invalid_start_at'",
+  "invalidWindow.failure.name, 'invalid_window'",
+  'startBoundaryWaitRequired: true',
+  'inlineFreshPreflightRequiredAfterStartBoundary: true',
 ]) assert.ok(fixture.includes(fragment), `fixture missing ${fragment}`)
 
 assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(normalConfig), false)
 assert.ok(canaryConfig.includes('CATEGORY_CAPTURE_CANARY_ENABLED = "false"'))
 assert.equal(/\nCATEGORY_CAPTURE_ENABLED\s*=/.test(canaryConfig), false)
-assert.ok(note.includes('fresh read-only preflight'))
-assert.ok(note.includes('accepted baseline evidence'))
-assert.ok(note.includes('before any Worker deployment'))
-assert.ok(note.includes('Cloudflare `GET` and D1 `SELECT`'))
+assert.ok(note.includes('Attempt 1 was cancelled before the scheduled boundary'))
+assert.ok(note.includes('artifact `8423630417`'))
+assert.ok(note.includes('Worker deployment: no'))
+assert.ok(note.includes('wait until the exact `startAt` boundary'))
+assert.ok(note.includes('The next gate is an exact one-file attempt 2 trigger'))
 
 console.log(JSON.stringify({
   ok: true,
   status: contract.status,
   provider: 'twitch',
-  acceptedExecutionPr: contract.acceptance.pr,
-  acceptedExecutionMergeSha: contract.acceptance.mergeSha,
-  triggerPresent: false,
-  acceptedBaselinePreflightPinned: true,
-  freshReadOnlyPreflightInStartJobRequired: true,
-  freshPreflightBeforeDeployVerified: true,
-  productionExecutionFromPullRequest: false,
-  monitorFrequency: contract.monitor.frequency,
+  armedAttempt: trigger.attempt,
+  attempt1CancelledBeforeDeploy: true,
+  startBoundaryWaitRequired: true,
+  freshPreflightAfterStartBoundaryRequired: true,
+  workflowOrderVerified: true,
   providerStorageLimitMb: contract.hardStops.projectedNinetyDaySizeMbMax,
   accountHeadroomMinMb: contract.hardStops.projectedAccountWideHeadroomMbMin,
+  productionExecutionFromPullRequest: false,
   permanentRuntimeCaptureAuthorized: false,
 }, null, 2))

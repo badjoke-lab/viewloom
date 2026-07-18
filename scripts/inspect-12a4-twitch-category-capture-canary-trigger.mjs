@@ -35,9 +35,24 @@ export function inspectTwitchCanaryTrigger({
   check('accepted execution package', executionContract.status === 'accepted', executionContract.status)
   check('execution merge identity recorded', executionContract.acceptance?.mergeShaRecorded === true, executionContract.acceptance)
   check(
+    'start boundary wait required before fresh preflight',
+    executionContract.trigger.startBoundaryWaitBeforeFreshPreflightRequired === true,
+    executionContract.trigger.startBoundaryWaitBeforeFreshPreflightRequired,
+  )
+  check(
+    'start boundary wait limit',
+    executionContract.trigger.startBoundaryWaitMaximumHours === 3,
+    executionContract.trigger.startBoundaryWaitMaximumHours,
+  )
+  check(
     'fresh read-only preflight required in start job',
     executionContract.trigger.freshReadOnlyPreflightInStartJobRequired === true,
     executionContract.trigger.freshReadOnlyPreflightInStartJobRequired,
+  )
+  check(
+    'fresh read-only preflight after start boundary',
+    executionContract.trigger.freshReadOnlyPreflightMustCompleteAfterStartBoundary === true,
+    executionContract.trigger.freshReadOnlyPreflightMustCompleteAfterStartBoundary,
   )
   check(
     'fresh read-only preflight before deploy',
@@ -95,6 +110,8 @@ export function inspectTwitchCanaryTrigger({
     storagePreflightObservedAt: trigger.storagePreflightObservedAt,
     storagePreflightEvidenceDigest: trigger.storagePreflightEvidenceDigest,
     acceptedBaselinePreflightPinned: true,
+    startBoundaryWaitRequiredBeforeFreshPreflight: true,
+    freshReadOnlyPreflightRequiredAfterStartBoundary: true,
     freshReadOnlyPreflightRequiredBeforeDeploy: true,
     failures: action === 'reject' ? [{ name: 'trigger expired before start event', actual: now.toISOString() }] : [],
   }
