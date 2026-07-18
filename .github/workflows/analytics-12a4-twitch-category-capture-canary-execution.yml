@@ -12,9 +12,10 @@ on:
       - 'scripts/inspect-12a4-twitch-category-capture-canary-trigger.mjs'
       - 'scripts/run-12a4-twitch-category-capture-canary-execution.mjs'
       - 'scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs'
+      - 'scripts/wait-12a4-twitch-category-capture-canary-start.mjs'
       - 'scripts/test-12a4-twitch-category-capture-canary-execution.mjs'
       - 'scripts/verify-12a4-twitch-category-capture-canary-execution-package.mjs'
-      - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-development-policy-active-twitch-canary.mjs'
       - 'workers/collector-twitch/src/entry-category-canary.ts'
       - 'workers/collector-twitch/wrangler.category-canary.toml'
   workflow_dispatch:
@@ -48,10 +49,10 @@ jobs:
         run: node scripts/check-12a4-twitch-category-capture-canary-execution-package-scope.mjs
       - name: Verify dormant execution contract
         run: node scripts/verify-12a4-twitch-category-capture-canary-execution-package.mjs
-      - name: Verify trigger, storage, binding, and rollback fixtures
+      - name: Verify trigger, wait, storage, binding, and rollback fixtures
         run: node scripts/test-12a4-twitch-category-capture-canary-execution.mjs
-      - name: Verify canonical development policy
-        run: node scripts/verify-development-policy.mjs
+      - name: Verify canonical development policy with armed Twitch trigger
+        run: node scripts/verify-development-policy-active-twitch-canary.mjs
       - name: Bundle normal Twitch collector without deploying
         run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.toml
       - name: Bundle disabled Twitch canary collector without deploying
@@ -62,11 +63,12 @@ jobs:
           {
             echo '## ViewLoom Twitch canary execution package'
             echo
-            echo '- Trigger present in package PR: no'
+            echo '- Armed trigger changed by this package PR: no'
             echo '- Production execution from package PR: no'
             echo '- Provider: Twitch only'
             echo '- Accepted baseline evidence identity: required'
-            echo '- Fresh read-only preflight in start job: required'
+            echo '- Exact start boundary reached before fresh preflight: required'
+            echo '- Fresh read-only preflight after wait: required'
             echo '- Fresh preflight methods: Cloudflare GET and D1 SELECT only'
             echo '- Wrapper expiry: exact'
             echo '- Monitor/finalizer schedule: every two hours'
@@ -128,6 +130,8 @@ jobs:
         uses: ./.github/actions/setup-node-pnpm
       - name: Require accepted exact trigger
         run: node scripts/inspect-12a4-twitch-category-capture-canary-trigger.mjs --event push --require-armed
+      - name: Wait for exact start boundary
+        run: node scripts/wait-12a4-twitch-category-capture-canary-start.mjs
       - name: Create ephemeral read-only preflight request
         run: |
           cat > "$REQUEST_PATH" <<'EOF'
@@ -152,7 +156,7 @@ jobs:
             "runtimeCaptureAuthorized": false
           }
           EOF
-      - name: Run fresh read-only production preflight
+      - name: Run fresh read-only production preflight after start boundary
         id: fresh_preflight
         run: |
           node scripts/run-12a4-twitch-category-capture-canary-storage-preflight.mjs
