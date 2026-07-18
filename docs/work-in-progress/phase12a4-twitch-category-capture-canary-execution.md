@@ -1,102 +1,122 @@
-# 12A-4-16 Twitch category capture canary execution with start-boundary fresh preflight
+# 12A-4-17 Twitch category capture bounded canary observation
 
 ## Status
 
-Accepted dormant execution package with a start-order fix under review. Attempt 1 was cancelled before the scheduled boundary and before any Worker deployment.
+Attempt 2 started successfully after the exact start boundary and a fresh read-only production preflight. The bounded Twitch-only category canary is active for the accepted window from `2026-07-18T02:30:00.000Z` through `2026-07-19T02:30:00.000Z`.
 
-The exact trigger currently records attempt 1, but its execution run is cancelled and no production category capture is active. A separate exact one-file update will arm attempt 2 only after this fix is accepted.
+Permanent category capture remains unauthorized. Kick is unchanged. The next gate is bounded observation followed by expiry finalization and rollback verification.
+
+## Accepted attempt 2 start evidence
+
+- source SHA: `21b62f250a1ddb6952623d718ca27ebc11f83c1d`;
+- workflow run: `29625794630`;
+- start job: `88029850124`;
+- artifact: `8424232005` / `analytics-12a4-twitch-category-canary-start-attempt-2`;
+- artifact size: `2338` bytes;
+- artifact digest: `sha256:039e1d260473f5aa72b67eac119b8175e2d9d9be9676c822d0021989e584b038`;
+- execution outcome: `started`;
+- canary deployment exit code: `0`.
+
+The artifact contains exactly two sanitized JSON evidence files:
+
+- `fresh-storage-preflight.json`;
+- `evidence-start-attempt-2.json`.
+
+It contains no credentials, channel identities, or raw payload rows.
+
+## Verified mandatory ordering
+
+The start job completed in the required order:
+
+1. exact trigger inspection;
+2. exact start-boundary wait;
+3. ephemeral read-only request creation;
+4. fresh Cloudflare `GET` / D1 `SELECT` preflight;
+5. bounded Twitch canary deployment;
+6. sanitized evidence upload.
+
+The exact timestamps prove the ordering:
+
+- boundary reached: `2026-07-18T02:30:01.978Z`;
+- fresh preflight observed: `2026-07-18T02:30:02.030Z`;
+- deployment evidence observed: `2026-07-18T02:30:19.053Z`.
+
+## Fresh read-only preflight acceptance
+
+The fresh preflight outcome was `accepted_candidate` with digest `sha256:2ad41e149c2ded1f95148f44c6cb6ea6b4a55fce7d54bce373414e1ea2b5de49`.
+
+All required gates passed:
+
+- provider storage: pass;
+- account-wide storage: pass;
+- required schema: pass;
+- provider leakage: `0` rows, pass;
+- canary/permanent binding absence before deployment: pass;
+- latest normal Twitch snapshot: present, authenticated, non-empty, and fresh, pass;
+- all read-only gates: pass.
+
+Storage evidence at the boundary:
+
+- Twitch current size: `319.8 MB`;
+- projected Twitch 90-day size: `368.12 MB`;
+- projected Twitch headroom: `81.88 MB`;
+- account current size: `3672.69 MB`;
+- projected account-wide headroom: `886.99 MB`.
+
+The preflight performed no production mutation, created no trigger, and started no runtime capture by itself.
+
+## Bounded deployment state
+
+The post-deploy service identity remained:
+
+- service: `viewloom-collector-twitch`;
+- database: `b77221fe-80a3-4749-bc0e-d3ad54003dcf`;
+- cadence: `*/5 * * * *`.
+
+Only the temporary canary bindings were added:
+
+- enabled: `true`;
+- provider: `twitch`;
+- started at: `2026-07-18T02:30:00.000Z`;
+- until: `2026-07-19T02:30:00.000Z`;
+- attempt: `2`.
+
+The direct permanent `CATEGORY_CAPTURE_ENABLED` flag remains absent. No rollback was required at start.
 
 ## Attempt 1 safe cancellation
 
 Attempt 1 used trigger PR #604 and main SHA `62d24460d4250aca89c72916d9fade42c09f9503`.
 
-The execution run was:
+- workflow run: `29624622275`;
+- start job: `88026455393`;
+- artifact: `8423630417`;
+- conclusion: cancelled before deployment.
 
-- workflow run `29624622275`;
-- start job `88026455393`;
-- artifact `8423630417`;
-- artifact digest `sha256:13891b14e96a9efcfc13298e7579c653d271c27269e397389dcacf60f2787777`.
+Its fresh preflight occurred before the scheduled wait, so the run was cancelled while waiting. The artifact contains preflight evidence only and proves that no Worker deployment, D1 mutation, or runtime category capture occurred.
 
-The fresh read-only preflight passed at `2026-07-18T01:09:16.159Z`, but the workflow then waited for the scheduled start inside the deployment runner. That ordering could make a previously fresh snapshot older than the 20-minute threshold by deployment time.
-
-The run was cancelled while still waiting. The artifact contains `fresh-storage-preflight.json` only. It contains no start evidence, no successful deployment result, and no active binding evidence.
-
-Confirmed boundaries:
-
-- Worker deployment: no;
-- runtime category capture: no;
-- D1 mutation: no;
-- permanent `CATEGORY_CAPTURE_ENABLED`: absent;
-- Kick change: no.
-
-## Corrected mandatory order
-
-The start job order is now fixed:
-
-1. inspect the exact one-file Twitch trigger and accepted package identities;
-2. wait until the exact `startAt` boundary, with a maximum wait of three hours;
-3. create the ephemeral read-only preflight request;
-4. run the accepted storage-preflight runner against current production state;
-5. require all fresh read-only gates to pass;
-6. copy the sanitized fresh evidence into the start artifact;
-7. only then deploy the bounded Twitch canary.
-
-A wait failure or fresh-preflight failure stops the job before any Worker deployment.
-
-## Accepted baseline and fresh production evidence
-
-The accepted baseline evidence remains pinned by exact PR, merge SHA, observation timestamp, and evidence digest. It proves that the read-only observation path, schema checks, provider separation, binding checks, snapshot checks, storage projection, and evidence sanitization were accepted.
-
-The deploy decision is made by a new same-job observation after the exact start boundary. It uses only:
-
-- Cloudflare `GET` requests;
-- D1 `SELECT` statements.
-
-The ephemeral request is not committed and authorizes no deployment by itself, D1 mutation, trigger creation, or permanent runtime capture.
-
-Immediately before deployment the fresh preflight verifies:
-
-- exact Twitch Worker and D1 identity;
-- normal five-minute cadence;
-- current Twitch D1 size;
-- current account-wide D1 total;
-- projected Twitch 90-day size at or below `440 MB`;
-- projected Twitch headroom at or above `10 MB`;
-- projected account-wide headroom at or above `500 MB`;
-- required category schema tables;
-- provider leakage exactly `0`;
-- temporary canary bindings absent;
-- permanent direct `CATEGORY_CAPTURE_ENABLED` absent;
-- latest normal Twitch snapshot fresh, authenticated, and non-empty.
-
-## Bounded canary behavior
-
-The exact trigger requires:
-
-- provider `twitch`;
-- positive attempt number;
-- accepted package PR #590 and merge SHA;
-- accepted execution package PR #591 and merge SHA;
-- accepted baseline storage-preflight PR #599 and merge SHA;
-- exact baseline observation timestamp and evidence digest;
-- a 23-25 hour window;
-- confirmation `RUN_TWITCH_CATEGORY_CAPTURE_CANARY`.
-
-The wrapper disables category capture at the exact `until` timestamp. The monitor/finalizer runs every two hours, so binding cleanup and normal-config rollback may occur up to two hours after exact capture expiry. Final acceptance must verify no payload after the expiry grace boundary.
+PR #609 corrected the order before attempt 2 was armed by PR #610.
 
 ## Hard boundaries
 
-This fix does not:
+This acceptance does not authorize:
 
-- change the trigger file;
-- contact production from the pull request;
-- deploy a Worker from the pull request;
-- mutate D1;
-- change normal Twitch configuration;
-- change Kick;
-- change cadence or retention;
-- backfill data;
-- authorize permanent category capture;
-- authorize cross-provider identity or combined rankings.
+- production runtime capture beyond the exact canary window;
+- permanent category enablement;
+- Kick category capture or Kick configuration changes;
+- cadence or retention changes;
+- backfill;
+- category analytics UI;
+- cross-provider category identity, totals, or rankings.
 
-The next gate is an exact one-file attempt 2 trigger. Its start job must reach the start boundary, pass the fresh read-only preflight, and only then deploy the bounded Twitch canary.
+## Next gate
+
+Observe the bounded Twitch canary through the accepted window. Final acceptance requires exact workflow/job/artifact evidence for:
+
+- provider leakage remaining zero;
+- category capture limited to Twitch;
+- normal snapshot health and cadence remaining intact;
+- bounded storage and execution behavior;
+- automatic expiry and removal of temporary canary bindings;
+- no category payload after the accepted expiry grace boundary;
+- permanent category enablement remaining absent;
+- Kick remaining unchanged.
