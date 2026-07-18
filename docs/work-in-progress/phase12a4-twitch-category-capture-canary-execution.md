@@ -17,6 +17,8 @@ The fresh read-only preflight uses only:
 - Cloudflare `GET` requests;
 - D1 `SELECT` statements.
 
+The boundary is Cloudflare `GET` and D1 `SELECT` only.
+
 It uses an ephemeral request created inside the GitHub Actions job. The request is not committed to the repository and authorizes no deployment, D1 mutation, trigger creation, or permanent runtime capture.
 
 ## Mandatory order
