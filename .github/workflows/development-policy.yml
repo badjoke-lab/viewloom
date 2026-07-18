@@ -11,6 +11,7 @@ on:
       - 'apps/web/docs/**'
       - 'apps/web/public/launch-assets/**'
       - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-development-policy-active-twitch-canary.mjs'
       - 'scripts/verify-12a4-twitch-category-capture-canary-trigger-package.mjs'
       - 'scripts/verify-r12c1-launch-copy-package.mjs'
       - 'scripts/verify-r12c2-launch-assets-package.mjs'
@@ -27,6 +28,7 @@ on:
       - 'apps/web/docs/**'
       - 'apps/web/public/launch-assets/**'
       - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-development-policy-active-twitch-canary.mjs'
       - 'scripts/verify-12a4-twitch-category-capture-canary-trigger-package.mjs'
       - 'scripts/verify-r12c1-launch-copy-package.mjs'
       - 'scripts/verify-r12c2-launch-assets-package.mjs'
@@ -48,7 +50,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Detect exact Twitch trigger change
+      - name: Detect exact or active Twitch trigger
         id: trigger_scope
         shell: bash
         env:
@@ -69,12 +71,26 @@ jobs:
           else
             echo 'exact=false' >> "$GITHUB_OUTPUT"
           fi
+          if [ -f "$trigger" ]; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+          fi
       - name: Verify development policy
-        if: steps.trigger_scope.outputs.exact != 'true'
+        if: steps.trigger_scope.outputs.exact != 'true' && steps.trigger_scope.outputs.present != 'true'
         shell: bash
         run: |
           set +e
           node scripts/verify-development-policy.mjs > development-policy.log 2>&1
+          status=$?
+          cat development-policy.log
+          exit $status
+      - name: Verify development policy with armed Twitch canary
+        if: steps.trigger_scope.outputs.exact != 'true' && steps.trigger_scope.outputs.present == 'true'
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-development-policy-active-twitch-canary.mjs > development-policy.log 2>&1
           status=$?
           cat development-policy.log
           exit $status
