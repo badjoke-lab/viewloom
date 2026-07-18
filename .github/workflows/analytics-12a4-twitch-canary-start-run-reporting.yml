@@ -1,0 +1,53 @@
+name: Analytics 12A4 Twitch Canary Run Reporting
+
+on:
+  workflow_run:
+    workflows:
+      - Analytics 12A4 Twitch Category Capture Canary Execution
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+jobs:
+  report:
+    if: github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
+      SOURCE_RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+      SOURCE_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+      SOURCE_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      SOURCE_EVENT: ${{ github.event.workflow_run.event }}
+      SOURCE_URL: ${{ github.event.workflow_run.html_url }}
+    steps:
+      - name: Collect artifact metadata
+        shell: bash
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID/artifacts?per_page=100" \
+            --jq '.artifacts[] | "- Artifact: \(.id) / \(.name) / \(.size_in_bytes) bytes / expired=\(.expired)"' \
+            > /tmp/viewloom-twitch-run-artifacts.md
+      - name: Report exact run to Issue 519
+        shell: bash
+        run: |
+          {
+            echo '## Twitch category canary execution workflow completed'
+            echo
+            echo "- Workflow run: $SOURCE_RUN_ID"
+            echo "- Run attempt: $SOURCE_RUN_ATTEMPT"
+            echo "- Conclusion: $SOURCE_RUN_CONCLUSION"
+            echo "- Source event: $SOURCE_EVENT"
+            echo "- Source SHA: $SOURCE_HEAD_SHA"
+            echo "- Run URL: $SOURCE_URL"
+            echo '- Provider: Twitch only'
+            echo '- Permanent category enablement: not authorized'
+            echo '- Kick start: not authorized'
+            echo
+            cat /tmp/viewloom-twitch-run-artifacts.md
+          } > /tmp/viewloom-twitch-run-report.md
+          gh issue comment 519 --repo "$GITHUB_REPOSITORY" --body-file /tmp/viewloom-twitch-run-report.md
