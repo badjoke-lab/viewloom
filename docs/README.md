@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Last updated: 2026-07-18
+Last updated: 2026-07-19
 
 ## Current execution state
 
@@ -10,19 +10,15 @@ Phase 12A Analytics Capture Foundation active
 12A-0 through 12A-3 complete
 12A-4 category source, storage, schema, and execution-cost gates accepted
 Kick bounded canary completed, rolled back, accepted, and retired
-Twitch canary package accepted PR #590
-Twitch execution package accepted PR #591 and PR #592
-Twitch storage preflight accepted PR #599 and finalized PR #600
-Twitch start-order fix accepted PR #609
-Twitch monitor parser fix accepted PR #613
-Twitch attempt 3 exact trigger accepted PR #614
-Twitch attempt 3 start run: 29631153598 / artifact: 8425765411
-Twitch attempt 3 first monitor: 29634222309 / artifact: 8426512098
-canonical gate 12A-4-17 Twitch attempt 3 active; first checkpoint passed
-exact Twitch trigger current yes
-fresh Twitch start preflight accepted yes
-Twitch bounded category capture active yes
+Twitch bounded canary completed, rolled back, accepted, and retired
+Twitch finalizer run: 29677847983 / artifact: 8439540426
+Twitch post-rollback acceptance run: 29683729428 / artifact: 8441534201
+Twitch category payload after expiry grace: 0 rows
+canonical gate 12A-4-18 provider canaries accepted and retired
+exact Twitch trigger current no
+Twitch bounded category capture active no
 permanent category capture flag present no
+permanent runtime category capture authorized no
 ```
 
 ## Read first
@@ -40,7 +36,8 @@ permanent category capture flag present no
 11. `docs/audits/12a4-twitch-category-capture-canary-execution-contract.json`
 12. `docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json`
 13. `docs/audits/12a4-twitch-category-capture-canary-storage-preflight-evidence.json`
-14. `docs/work-in-progress/phase12a4-twitch-category-capture-canary-storage-preflight.md`
+14. `docs/audits/12a4-twitch-category-capture-canary-post-rollback-acceptance-contract.json`
+15. `docs/audits/12a4-twitch-category-capture-canary-attempt-3-final-evidence.json`
 
 ## Current category evidence chain
 
@@ -57,9 +54,11 @@ permanent category capture flag present no
 - Accepted final Kick post-rollback evidence: `docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json`
 - Accepted and retired cleanup chain: `docs/audits/12a4-kick-canary-expiry-binding-cleanup-contract.json`
 - Accepted dormant Twitch package: `docs/audits/12a4-twitch-category-capture-canary-package-contract.json`
-- Accepted Twitch execution package and active bounded attempt 3: `docs/audits/12a4-twitch-category-capture-canary-execution-contract.json`
+- Accepted and retired Twitch execution package: `docs/audits/12a4-twitch-category-capture-canary-execution-contract.json`
 - Accepted Twitch storage preflight: `docs/audits/12a4-twitch-category-capture-canary-storage-preflight-contract.json`
 - Frozen Twitch storage evidence: `docs/audits/12a4-twitch-category-capture-canary-storage-preflight-evidence.json`
+- Accepted Twitch post-rollback contract: `docs/audits/12a4-twitch-category-capture-canary-post-rollback-acceptance-contract.json`
+- Accepted final Twitch evidence: `docs/audits/12a4-twitch-category-capture-canary-attempt-3-final-evidence.json`
 
 ## Permanent product and operations records
 
@@ -69,19 +68,20 @@ permanent category capture flag present no
 
 ## Current gate
 
-The canonical gate is 12A-4-17. Twitch attempt 3 reached its exact start boundary, passed a same-job read-only production preflight, and deployed the bounded canary. Start run `29631153598` produced artifact `8425765411`. The first scheduled monitor run `29634222309` produced artifact `8426512098` and passed with 163 Twitch dictionary rows, 30 category payload rows, zero provider leakage, 370.03 MB projected 90-day Twitch size, 79.97 MB provider headroom, and 864.75 MB projected account-wide headroom.
+The canonical gate is 12A-4-18. Both provider-separated bounded category canaries completed their observation windows, returned to normal configurations, passed post-expiry acceptance, and retired their production execution paths.
 
-The bounded window ends at `2026-07-19T05:15:00.000Z`. Scheduled checkpoints and the exact-expiry wrapper remain active. Final acceptance requires normal-config rollback, absent canary bindings, zero provider leakage, no post-grace category payload, and fresh authenticated non-empty normal Twitch collection. Permanent runtime category capture is not authorized.
+The final Twitch evidence records 434 dictionary rows, 287 category-bearing snapshots inside the bounded window, zero category-bearing snapshots after the ten-minute grace boundary, zero provider leakage, and a fresh real non-empty normal snapshot with 300 streams. Projected Twitch 90-day size is 372.64 MB, provider headroom is 77.36 MB, and projected account-wide headroom is 777.09 MB.
+
+Permanent runtime category capture is not authorized. Historical category rows are retained as accepted evidence; no bounded canary is active.
 
 ## Invariants
 
 - Twitch and Kick remain separate.
-- The active capture is Twitch attempt 3 only and is bounded by the exact trigger window.
-- Normal collector configuration does not contain `CATEGORY_CAPTURE_ENABLED`.
-- Kick category capture is inactive and its production execution path is retired.
-- Twitch attempt 3 has no permanent category flag.
-- Scheduled monitoring must hard-stop and restore the normal Twitch config on a failed gate.
-- Final rollback and post-expiry observation are still pending.
+- No bounded category canary is active.
+- Normal collector configurations do not contain `CATEGORY_CAPTURE_ENABLED`.
+- Kick and Twitch canary production execution paths are retired.
+- No permanent category flag was introduced.
+- Normal Twitch cadence remains five minutes.
 - No new cron, backfill, retention expansion, category UI, cross-provider category identity, or combined category rankings are authorized.
 - Missing, partial, stale, empty, error, and demo states remain distinct.
 
