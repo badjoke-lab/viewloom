@@ -1,0 +1,44 @@
+name: Reconcile 12A4 Category Gate V22
+
+on:
+  push:
+    branches:
+      - agent/finalize-category-gate-v22
+    paths:
+      - 'scripts/reconcile-12a4-category-gate-v22.mjs'
+      - '.github/workflows/reconcile-12a4-category-gate-v22.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reconcile-12a4-category-gate-v22
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/finalize-category-gate-v22
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Reconcile canonical gate
+        run: node scripts/reconcile-12a4-category-gate-v22.mjs
+      - name: Validate canonical JSON
+        run: node -e "const fs=require('node:fs'); const g=JSON.parse(fs.readFileSync('docs/audits/12a2-current-gate-state.json','utf8')); if(g.schemaVersion!=='viewloom-12a2-current-gate-state-v22') process.exit(1);"
+      - name: Commit generated canonical gate
+        run: |
+          if git diff --quiet -- docs/audits/12a2-current-gate-state.json; then
+            echo 'Canonical gate already reconciled.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/audits/12a2-current-gate-state.json
+          git commit -m 'Advance canonical category gate to v22'
+          git push origin HEAD:agent/finalize-category-gate-v22
