@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-final-acceptance-v1",
+  "status": "accepted_and_rolled_back",
+  "provider": "twitch",
+  "attempt": 3,
+  "sourceWorkflowRunId": 29677847983,
+  "sourceWorkflowJobId": 88168491392,
+  "sourceArtifactId": 8439540426,
+  "sourceArtifactDigest": "sha256:57fd3e7bec159aacd41f527a43a2b910db27b9c5cb2d369d9127ee9b5cb9a542",
+  "observedAt": "2026-07-19T07:17:35.330Z",
+  "startAt": "2026-07-18T05:15:00.000Z",
+  "until": "2026-07-19T05:15:00.000Z",
+  "outcome": "finalized",
+  "rollbackExitCode": 0,
+  "canaryBindingsAbsentAfterRollback": true,
+  "permanentCategoryCaptureFlagPresent": false,
+  "providerLeakageRows": 0,
+  "postRollbackCategoryObservedSamples": 0,
+  "postRollbackCategoryMissingSamples": 0,
+  "normalSnapshot": {
+    "bucketMinute": "2026-07-19T07:15:00.000Z",
+    "collectedAt": "2026-07-19T07:16:01.350Z",
+    "streamCount": 300,
+    "totalViewers": 1041684,
+    "sourceMode": "real",
+    "authenticated": true,
+    "nonempty": true
+  },
+  "finalCategoryDictionaryRows": 434,
+  "finalCategoryPayloadRows": 302,
+  "storage": {
+    "providerCurrentMb": 322.75,
+    "projectedNinetyDaySizeMb": 371.07,
+    "projectedProviderHeadroomMb": 78.93,
+    "projectedAccountWideHeadroomMb": 801.95,
+    "pass": true
+  },
+  "cadence": "*/5 * * * *",
+  "hardStop": false,
+  "kickChanged": false,
+  "permanentRuntimeCaptureAuthorized": false,
+  "permanentEnablementAuthorized": false
+}
