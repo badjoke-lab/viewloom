@@ -1,36 +1,32 @@
-# 12A-4-18 Twitch category capture canary post-rollback read-only acceptance
+# 12A-4-18 Twitch category capture canary post-rollback acceptance
 
-## Purpose
+## Result
 
-Freeze a final sanitized proof that the bounded Twitch category canary ended, the normal Twitch configuration was restored, all exact canary bindings disappeared, permanent category capture was not enabled, and normal five-minute Twitch snapshots continued after expiry.
+The bounded Twitch category canary completed and the final post-rollback read-only acceptance passed.
 
-The scheduled finalizer already completed successfully in workflow run `29677847983`, job `88168491392`, artifact `8439540426`. That artifact proves rollback deployment and binding removal, but its category count is lifetime-wide. This independent read-only gate adds the missing time-bounded proof that no category-bearing snapshot was written after the ten-minute post-expiry grace boundary.
+Accepted evidence:
 
-## Execution model
+- finalizer run `29677847983`, job `88168491392`, artifact `8439540426`;
+- read-only acceptance run `29683729428`, job `88185314749`, artifact `8441534201`;
+- exact canary bindings absent;
+- permanent `CATEGORY_CAPTURE_ENABLED` absent;
+- Twitch category payload rows after the ten-minute post-expiry grace boundary: `0`;
+- provider leakage rows: `0`;
+- fresh real non-empty normal Twitch snapshot after expiry: `300` streams;
+- projected Twitch 90-day size: `372.64 MB`;
+- projected Twitch headroom: `77.36 MB`;
+- projected account-wide headroom: `777.09 MB`;
+- Kick changed: no;
+- cadence, retention, backfill, UI, and cross-provider behavior changed: no.
 
-The package performs production observation only after the exact attempt-3 window has expired. The post-expiry probe is strictly read-only:
+## Production boundary
 
-- Cloudflare API: `GET` only
-- D1: aggregate and latest-row `SELECT` only
-- Worker deployment or rollback: none
-- Trigger or canonical gate mutation: none
-- Kick change: none
-- Permanent category enablement: none
+The final acceptance probe used Cloudflare `GET` and D1 `SELECT` only. It performed no Worker deployment, rollback, D1 write, migration, trigger mutation, or runtime flag mutation.
 
-## Required final evidence
+The consumed Twitch trigger and scheduled execution path were already retired. PR #620 retires the temporary post-rollback acceptance workflow and its probe/verifier scripts after freezing the accepted evidence.
 
-Acceptance requires all of the following:
+## Remaining closeout
 
-1. the exact attempt-3 trigger window has expired;
-2. all bounded Twitch canary bindings are absent;
-3. no direct permanent `CATEGORY_CAPTURE_ENABLED` binding exists;
-4. the required Twitch D1 category tables remain present;
-5. Twitch dictionary rows and category-bearing snapshots inside the bounded window remain present;
-6. provider leakage remains zero across dictionary, snapshot, and rollup tables;
-7. no category-bearing snapshot exists after the ten-minute post-expiry grace boundary;
-8. a fresh, real, non-empty normal Twitch snapshot exists after expiry;
-9. projected Twitch and account-wide D1 storage remain inside the accepted limits.
+The canonical current-gate JSON still describes the active-canary checkpoint. A separate versioned gate advancement must preserve the complete canonical structure while replacing that transient state with the accepted-and-retired Twitch result.
 
-## Operational sequence
-
-This package does not repeat the successful finalizer rollback. It only polls the resulting normal state and D1 evidence. After a successful artifact is frozen, a separate closeout change must advance the canonical gate, retire the consumed Twitch trigger and temporary production workflows, close stale attempt-2 acceptance PR #612, and close Issue #519. Permanent category capture remains a separate decision and is not authorized here.
+Permanent category capture remains unauthorized. Issue #519 must remain open until the canonical gate and documentation index are advanced coherently.
