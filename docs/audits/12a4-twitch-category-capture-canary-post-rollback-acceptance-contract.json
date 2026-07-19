@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-post-rollback-acceptance-v1",
+  "schemaVersion": "viewloom-12a4-twitch-category-capture-canary-post-rollback-acceptance-v2",
   "workstream": "12A-4-18 Twitch category capture canary post-rollback read-only acceptance",
-  "status": "prepared",
+  "status": "accepted_and_retired",
   "trackingIssue": 519,
   "provider": "twitch",
   "acceptedInputs": {
@@ -27,6 +27,7 @@
     "attempt": 3,
     "startAt": "2026-07-18T05:15:00.000Z",
     "until": "2026-07-19T05:15:00.000Z",
+    "graceUntil": "2026-07-19T05:25:00.000Z",
     "packagePr": 590,
     "packageMergeSha": "e798df275b2fad0601b2e9ef89c76a6a30f1d038",
     "executionPackagePr": 591,
@@ -34,6 +35,7 @@
     "triggerPr": 614,
     "triggerMergeSha": "7726934cb8dc39f2e6706f8a6250989f897a831f",
     "confirmation": "RUN_TWITCH_CATEGORY_CAPTURE_CANARY",
+    "expired": true,
     "retiredFromMain": true
   },
   "acceptedFinalizer": {
@@ -51,27 +53,23 @@
     "providerLeakageRows": 0,
     "kickChanged": false
   },
-  "observation": {
-    "mode": "read_only_pull_request_or_manual_probe",
-    "preExpiryOutcome": "not_ready",
-    "pollIntervalSeconds": 30,
-    "pollAttempts": 120,
-    "postExpiryGraceMinutes": 10,
-    "latestSnapshotFreshnessMinutesMax": 20,
-    "minimumTwitchDictionaryRows": 1,
-    "minimumCategoryPayloadRowsInCanaryWindow": 1,
-    "maximumCategoryPayloadRowsAfterGrace": 0,
-    "maximumProviderLeakageRows": 0,
-    "projectedNinetyDaySizeMbMax": 440,
-    "projectedProviderHeadroomMbMin": 10,
-    "projectedAccountWideHeadroomMbMin": 500,
-    "requireTriggerExpired": true,
-    "requireCanaryBindingsAbsent": true,
-    "requirePermanentDirectFlagAbsent": true,
-    "requireFreshNormalSnapshotAfterExpiry": true,
-    "requireRealNormalSnapshot": true,
-    "requireNonemptyNormalSnapshot": true,
-    "requireNoCategoryPayloadAfterGrace": true
+  "acceptance": {
+    "pr": 619,
+    "mergeSha": "651ed2e8093a9db02cbfe18af88d9b2ecef6c919",
+    "workflowRunId": 29683729428,
+    "workflowJobId": 88185314749,
+    "artifactId": 8441534201,
+    "artifactDigest": "sha256:5fe51863f0a250dbbc55f07d0ee5c6a1772c704a63162c2d53eec0f7c4ed5418",
+    "observedAt": "2026-07-19T10:54:56.213Z",
+    "outcome": "accepted",
+    "categoryPayloadRowsAfterGrace": 0,
+    "canaryBindingsAbsent": true,
+    "permanentDirectFlagAbsent": true,
+    "providerLeakageRows": 0,
+    "freshRealNonemptyNormalSnapshotAfterExpiry": true,
+    "storagePass": true,
+    "kickChanged": false,
+    "productionMutationPerformed": false
   },
   "readOnlyBoundary": {
     "cloudflareApiMethods": [
@@ -93,23 +91,18 @@
     "crossProviderCategoryIdentityAllowed": false,
     "combinedProviderCategoryRankingAllowed": false
   },
-  "evidence": {
-    "artifactName": "analytics-12a4-twitch-category-canary-post-rollback-readonly-acceptance-attempt-3",
-    "artifactPath": "artifacts/12a4-twitch-category-canary-post-rollback-acceptance/evidence.json",
-    "sanitizedJsonOnly": true,
-    "rawPayloadRowsReturned": false,
-    "channelIdentitiesReturned": false,
-    "credentialsReturned": false
+  "retirement": {
+    "pr": 620,
+    "acceptanceWorkflowRetired": true,
+    "scopeVerifierRetired": true,
+    "productionProbeRetired": true,
+    "packageVerifierRetired": true,
+    "triggerRetired": true,
+    "scheduledExecutionRetired": true,
+    "cloudflareCredentialReferencesRetired": true,
+    "canonicalGateAdvanced": false
   },
-  "pullRequestBoundary": {
-    "productionWrite": false,
-    "productionDeployment": false,
-    "productionRollback": false,
-    "triggerMutation": false,
-    "gateStateMutation": false,
-    "permanentRuntimeEnablement": false,
-    "kickChange": false
-  },
-  "acceptance": null,
-  "nextGateOnAcceptance": "freeze final Twitch rollback evidence, advance the canonical gate, retire the consumed Twitch trigger and production execution paths, and keep permanent category capture unauthorized"
+  "permanentRuntimeCaptureAuthorized": false,
+  "permanentCategoryCaptureAuthorized": false,
+  "nextGate": "advance the complete canonical gate from the active Twitch canary state to accepted-and-retired while preserving permanent category capture as unauthorized"
 }

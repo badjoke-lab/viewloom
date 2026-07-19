@@ -34,7 +34,7 @@ requireFiles([
   'docs/audits/12a4-twitch-category-capture-canary-attempt-3-initial-checkpoint-evidence.json',
   'docs/audits/12a4-twitch-category-capture-canary-attempt-3-final-evidence.json',
   'docs/audits/12a4-twitch-category-capture-canary-post-rollback-acceptance-contract.json',
-  '.github/workflows/analytics-12a4-twitch-category-capture-canary-post-rollback-acceptance.yml',
+  'docs/work-in-progress/phase12a4-twitch-category-capture-canary-post-rollback-acceptance.md',
   'workers/collector-twitch/wrangler.toml',
   'workers/collector-twitch/wrangler.category-canary.toml',
   'workers/collector-kick/wrangler.toml',
@@ -50,6 +50,7 @@ for (const fragment of [
   'production deployment deliberate and observable',
 ]) assert.ok(policy.includes(fragment), `development policy missing: ${fragment}`)
 
+// The canonical gate remains v21 until the separate complete-structure closeout PR.
 const gate = json('docs/audits/12a2-current-gate-state.json')
 assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v21')
 assert.equal(gate.status, '12a4_twitch_canary_attempt3_active_initial_checkpoint_accepted')
@@ -82,40 +83,84 @@ assert.deepEqual(gate.openBlockers, [
 
 const start = json('docs/audits/12a4-twitch-category-capture-canary-attempt-3-start-evidence.json')
 const checkpoint = json('docs/audits/12a4-twitch-category-capture-canary-attempt-3-initial-checkpoint-evidence.json')
-const finalizer = json('docs/audits/12a4-twitch-category-capture-canary-attempt-3-final-evidence.json')
+const finalEvidence = json('docs/audits/12a4-twitch-category-capture-canary-attempt-3-final-evidence.json')
 const acceptance = json('docs/audits/12a4-twitch-category-capture-canary-post-rollback-acceptance-contract.json')
+
 assert.equal(start.outcome, 'started')
 assert.equal(start.attempt, 3)
 assert.equal(start.gates.permanentEnablementAuthorized, false)
 assert.equal(checkpoint.outcome, 'checkpoint_pass')
 assert.equal(checkpoint.queryEvidence.providerLeakageRows, 0)
 assert.equal(checkpoint.gates.hardStop, false)
-assert.equal(finalizer.status, 'accepted_and_rolled_back')
-assert.equal(finalizer.sourceWorkflowRunId, 29677847983)
-assert.equal(finalizer.sourceWorkflowJobId, 88168491392)
-assert.equal(finalizer.sourceArtifactId, 8439540426)
-assert.equal(finalizer.outcome, 'finalized')
-assert.equal(finalizer.rollbackExitCode, 0)
-assert.equal(finalizer.canaryBindingsAbsentAfterRollback, true)
-assert.equal(finalizer.permanentCategoryCaptureFlagPresent, false)
-assert.equal(finalizer.providerLeakageRows, 0)
-assert.equal(finalizer.normalSnapshot.sourceMode, 'real')
-assert.equal(finalizer.normalSnapshot.authenticated, true)
-assert.equal(finalizer.normalSnapshot.nonempty, true)
-assert.equal(finalizer.storage.pass, true)
-assert.equal(finalizer.kickChanged, false)
-assert.equal(finalizer.permanentRuntimeCaptureAuthorized, false)
-assert.equal(acceptance.status, 'prepared')
+
+assert.equal(finalEvidence.schemaVersion, 'viewloom-12a4-twitch-category-capture-canary-final-evidence-v2')
+assert.equal(finalEvidence.status, 'accepted_and_retired')
+assert.equal(finalEvidence.provider, 'twitch')
+assert.equal(finalEvidence.attempt, 3)
+assert.equal(finalEvidence.acceptancePr, 619)
+assert.equal(finalEvidence.acceptanceMergeSha, '651ed2e8093a9db02cbfe18af88d9b2ecef6c919')
+assert.equal(finalEvidence.acceptanceWorkflowRunId, 29683729428)
+assert.equal(finalEvidence.acceptanceWorkflowJobId, 88185314749)
+assert.equal(finalEvidence.acceptanceArtifactId, 8441534201)
+assert.equal(finalEvidence.outcome, 'accepted')
+assert.equal(finalEvidence.trigger.expired, true)
+assert.equal(finalEvidence.trigger.retiredFromMain, true)
+assert.equal(finalEvidence.finalizer.rollbackExitCode, 0)
+assert.equal(finalEvidence.finalizer.rollbackPass, true)
+assert.equal(finalEvidence.serviceBindings.canaryBindingsAbsent, true)
+assert.equal(finalEvidence.serviceBindings.permanentCategoryCaptureEnabledPresent, false)
+assert.equal(finalEvidence.data.categoryPayloadRowsInCanaryWindow > 0, true)
+assert.equal(finalEvidence.data.categoryPayloadRowsAfterGrace, 0)
+assert.equal(finalEvidence.data.providerLeakageRows, 0)
+assert.equal(finalEvidence.data.latestNormalSnapshotAfterExpiry.sourceMode, 'real')
+assert.equal(finalEvidence.data.latestNormalSnapshotAfterExpiry.streamCount > 0, true)
+assert.equal(finalEvidence.storage.pass, true)
+assert.equal(finalEvidence.gates.readOnly, true)
+assert.equal(finalEvidence.gates.noCategoryPayloadAfterGrace, true)
+assert.equal(finalEvidence.gates.providerLeakageZero, true)
+assert.equal(finalEvidence.gates.freshRealNonemptyNormalSnapshotAfterExpiry, true)
+assert.equal(finalEvidence.productionRuntimeCaptureAuthorized, false)
+assert.equal(finalEvidence.permanentCategoryCaptureAuthorized, false)
+assert.equal(finalEvidence.kickChanged, false)
+assert.equal(finalEvidence.cadenceChanged, false)
+assert.equal(finalEvidence.retentionChanged, false)
+assert.equal(finalEvidence.backfillPerformed, false)
+assert.equal(finalEvidence.uiChanged, false)
+assert.equal(finalEvidence.crossProviderBehaviorChanged, false)
+
+assert.equal(acceptance.schemaVersion, 'viewloom-12a4-twitch-category-capture-canary-post-rollback-acceptance-v2')
+assert.equal(acceptance.status, 'accepted_and_retired')
 assert.equal(acceptance.provider, 'twitch')
-assert.equal(acceptance.acceptedFinalizer.artifactId, finalizer.sourceArtifactId)
+assert.equal(acceptance.acceptedFinalizer.artifactId, 8439540426)
+assert.equal(acceptance.acceptedTrigger.expired, true)
 assert.equal(acceptance.acceptedTrigger.retiredFromMain, true)
-assert.equal(acceptance.observation.requireNoCategoryPayloadAfterGrace, true)
+assert.equal(acceptance.acceptance.pr, 619)
+assert.equal(acceptance.acceptance.workflowRunId, 29683729428)
+assert.equal(acceptance.acceptance.artifactId, 8441534201)
+assert.equal(acceptance.acceptance.categoryPayloadRowsAfterGrace, 0)
+assert.equal(acceptance.acceptance.canaryBindingsAbsent, true)
+assert.equal(acceptance.acceptance.permanentDirectFlagAbsent, true)
+assert.equal(acceptance.acceptance.providerLeakageRows, 0)
+assert.equal(acceptance.acceptance.freshRealNonemptyNormalSnapshotAfterExpiry, true)
+assert.equal(acceptance.acceptance.storagePass, true)
+assert.equal(acceptance.acceptance.productionMutationPerformed, false)
+assert.equal(acceptance.retirement.pr, 620)
+assert.equal(acceptance.retirement.acceptanceWorkflowRetired, true)
+assert.equal(acceptance.retirement.productionProbeRetired, true)
+assert.equal(acceptance.retirement.canonicalGateAdvanced, false)
 assert.deepEqual(acceptance.readOnlyBoundary.cloudflareApiMethods, ['GET'])
 assert.deepEqual(acceptance.readOnlyBoundary.d1Statements, ['SELECT'])
-assert.equal(Object.values(acceptance.pullRequestBoundary).every((value) => value === false), true)
+assert.equal(acceptance.permanentRuntimeCaptureAuthorized, false)
+assert.equal(acceptance.permanentCategoryCaptureAuthorized, false)
 
-assert.equal(exists('docs/audits/12a4-twitch-category-capture-canary-trigger.json'), false)
-assert.equal(exists('.github/workflows/analytics-12a4-twitch-category-capture-canary-execution.yml'), false)
+for (const retiredPath of [
+  'docs/audits/12a4-twitch-category-capture-canary-trigger.json',
+  '.github/workflows/analytics-12a4-twitch-category-capture-canary-execution.yml',
+  '.github/workflows/analytics-12a4-twitch-category-capture-canary-post-rollback-acceptance.yml',
+  'scripts/check-12a4-twitch-category-capture-canary-post-rollback-acceptance-scope.mjs',
+  'scripts/run-12a4-twitch-category-capture-canary-post-rollback-acceptance.mjs',
+  'scripts/verify-12a4-twitch-category-capture-canary-post-rollback-acceptance-package.mjs',
+]) assert.equal(exists(retiredPath), false, `${retiredPath}: must be retired`)
 
 for (const workflowPath of [
   '.github/workflows/analytics-12a4-kick-category-capture-canary-execution.yml',
@@ -130,11 +175,6 @@ for (const workflowPath of [
   assert.equal(workflow.includes('CLOUDFLARE_ACCOUNT_ID'), false, `${workflowPath}: Cloudflare account reference must be absent`)
 }
 
-const acceptanceWorkflow = read('.github/workflows/analytics-12a4-twitch-category-capture-canary-post-rollback-acceptance.yml')
-assert.equal(/^\s*push:/m.test(acceptanceWorkflow), false)
-assert.equal(/^\s*schedule:/m.test(acceptanceWorkflow), false)
-assert.ok(acceptanceWorkflow.includes('Run production read-only Twitch post-rollback acceptance probe'))
-
 const twitchConfig = read('workers/collector-twitch/wrangler.toml')
 const twitchCanaryConfig = read('workers/collector-twitch/wrangler.category-canary.toml')
 const kickConfig = read('workers/collector-kick/wrangler.toml')
@@ -148,11 +188,14 @@ assert.notEqual(twitchConfig.match(/database_id = "([^"]+)"/)?.[1], kickConfig.m
 
 console.log(JSON.stringify({
   ok: true,
-  phase: '12A-4-18 post-rollback acceptance prepared',
-  canonicalGatePendingFinalAcceptance: true,
-  finalizerRollbackAccepted: true,
+  phase: '12A-4-18 final Twitch evidence accepted; canonical v22 pending',
+  acceptanceRunId: finalEvidence.acceptanceWorkflowRunId,
+  categoryPayloadRowsAfterGrace: finalEvidence.data.categoryPayloadRowsAfterGrace,
+  canaryBindingsAbsent: finalEvidence.serviceBindings.canaryBindingsAbsent,
   exactTwitchTriggerCurrent: false,
   twitchExecutionWorkflowRetired: true,
+  twitchAcceptanceWorkflowRetired: true,
   permanentRuntimeCaptureAuthorized: false,
+  canonicalGatePendingFinalAcceptance: true,
   kickChanged: false,
 }, null, 2))
