@@ -23,10 +23,10 @@ Accepted evidence:
 
 The final acceptance probe used Cloudflare `GET` and D1 `SELECT` only. It performed no Worker deployment, rollback, D1 write, migration, trigger mutation, or runtime flag mutation.
 
-The consumed Twitch trigger and scheduled execution path were already retired. PR #620 retires the temporary post-rollback acceptance workflow and its probe/verifier scripts after freezing the accepted evidence.
+The consumed Twitch trigger, scheduled execution path, temporary post-rollback workflow, and probe/verifier scripts are retired.
 
-## Remaining closeout
+## Canonical closeout
 
-The canonical current-gate JSON still describes the active-canary checkpoint. A separate versioned gate advancement must preserve the complete canonical structure while replacing that transient state with the accepted-and-retired Twitch result.
+The canonical gate is advanced to v22 / phase 12A-4-18. Both provider-separated canaries are accepted and retired. Runtime category capture is inactive, the permanent category flag is absent, and `runtime_category_capture_not_authorized` remains the only open blocker.
 
-Permanent category capture remains unauthorized. Issue #519 must remain open until the canonical gate and documentation index are advanced coherently.
+Issue #519 can close with permanent category capture explicitly left for a separate product and operational decision.

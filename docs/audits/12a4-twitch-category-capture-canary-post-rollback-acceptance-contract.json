@@ -93,6 +93,7 @@
   },
   "retirement": {
     "pr": 620,
+    "mergeSha": "4bc053e451ebfee237080fa024c59443316a27b9",
     "acceptanceWorkflowRetired": true,
     "scopeVerifierRetired": true,
     "productionProbeRetired": true,
@@ -100,9 +101,11 @@
     "triggerRetired": true,
     "scheduledExecutionRetired": true,
     "cloudflareCredentialReferencesRetired": true,
-    "canonicalGateAdvanced": false
+    "canonicalGateAdvanced": true,
+    "canonicalGateSchemaVersion": "viewloom-12a2-current-gate-state-v22",
+    "canonicalGatePhase": "12A-4-18"
   },
   "permanentRuntimeCaptureAuthorized": false,
   "permanentCategoryCaptureAuthorized": false,
-  "nextGate": "advance the complete canonical gate from the active Twitch canary state to accepted-and-retired while preserving permanent category capture as unauthorized"
+  "nextGate": "permanent category capture remains unauthorized and requires a separate explicit product and operational decision"
 }
