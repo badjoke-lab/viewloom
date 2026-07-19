@@ -4,6 +4,7 @@ import { join } from 'node:path'
 const dist = join(process.cwd(), 'dist')
 const measurementId = 'G-YHX7HS1VBK'
 const tagUrl = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
+const projectHubUrl = 'https://badjoke-lab.com/'
 const verificationToken = process.env.VITE_GSC_VERIFICATION_TOKEN?.trim()
 
 if (!existsSync(dist)) throw new Error('dist directory is missing.')
@@ -37,6 +38,10 @@ for (const path of htmlFiles(dist)) {
     )
   }
 
+  if (!html.includes(`href="${projectHubUrl}"`) && !html.includes(`href='${projectHubUrl}'`)) {
+    html = injectProjectHubLink(html)
+  }
+
   if (html !== original) {
     writeFileSync(path, html)
     normalized += 1
@@ -44,7 +49,7 @@ for (const path of htmlFiles(dist)) {
 }
 
 writeDeploymentMetadata()
-console.log(`Normalized built head metadata in ${normalized} HTML file(s).`)
+console.log(`Normalized built head metadata and project links in ${normalized} HTML file(s).`)
 
 function htmlFiles(directory) {
   const result = []
@@ -59,6 +64,19 @@ function htmlFiles(directory) {
 function injectBeforeHeadClose(html, markup) {
   if (!/<\/head>/i.test(html)) throw new Error('Built HTML is missing a closing head tag.')
   return html.replace(/<\/head>/i, `${markup}\n</head>`)
+}
+
+function injectProjectHubLink(html) {
+  const link = `<a href="${projectHubUrl}">BadJoke-Lab project hub</a>`
+  const footerNavigation = /(<footer\b[\s\S]*?<nav\b[^>]*>)/i
+  if (footerNavigation.test(html)) return html.replace(footerNavigation, `$1${link}`)
+  if (/<\/footer>/i.test(html)) {
+    return html.replace(/<\/footer>/i, `<p class="footer-project-hub">${link}</p></footer>`)
+  }
+  if (/<\/body>/i.test(html)) {
+    return html.replace(/<\/body>/i, `<footer class="footer footer-project-hub"><nav aria-label="Project network">${link}</nav></footer>\n</body>`)
+  }
+  throw new Error('Built HTML is missing a footer and closing body tag.')
 }
 
 function googleTagMarkup() {
