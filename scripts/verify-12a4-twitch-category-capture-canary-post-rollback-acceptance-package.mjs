@@ -5,7 +5,7 @@ const read = (file) => readFileSync(file, 'utf8')
 const json = (file) => JSON.parse(read(file))
 const contract = json('docs/audits/12a4-twitch-category-capture-canary-post-rollback-acceptance-contract.json')
 const gate = json(contract.acceptedInputs.currentGatePath)
-const trigger = json(contract.acceptedInputs.triggerPath)
+const trigger = contract.acceptedTrigger
 const workflow = read('.github/workflows/analytics-12a4-twitch-category-capture-canary-post-rollback-acceptance.yml')
 const runner = read('scripts/run-12a4-twitch-category-capture-canary-post-rollback-acceptance.mjs')
 const scope = read('scripts/check-12a4-twitch-category-capture-canary-post-rollback-acceptance-scope.mjs')
@@ -22,6 +22,7 @@ assert.equal(contract.acceptedInputs.monitorParserFixPr, 613)
 assert.equal(contract.acceptedInputs.triggerPr, 614)
 assert.equal(contract.acceptedInputs.triggerMergeSha, '7726934cb8dc39f2e6706f8a6250989f897a831f')
 assert.equal(contract.acceptedInputs.initialAcceptancePr, 617)
+assert.equal(contract.acceptedInputs.triggerPath, undefined)
 assert.equal(contract.acceptedFinalizer.workflowRunId, 29677847983)
 assert.equal(contract.acceptedFinalizer.workflowJobId, 88168491392)
 assert.equal(contract.acceptedFinalizer.artifactId, 8439540426)
@@ -47,6 +48,7 @@ assert.equal(gate.categoryCapture.runtimeCaptureAuthorized, false)
 assert.equal(gate.categoryCapture.twitchCanaryObservationActive, true)
 assert.equal(gate.currentWorkstream.finalRollbackPending, true)
 assert.equal(trigger.status, 'armed')
+assert.equal(trigger.retiredFromMain, true)
 assert.equal(trigger.provider, 'twitch')
 assert.equal(trigger.attempt, 3)
 assert.equal(trigger.startAt, '2026-07-18T05:15:00.000Z')
@@ -73,6 +75,7 @@ assert.equal(runner.includes('INSERT INTO'), false)
 assert.equal(runner.includes('UPDATE '), false)
 assert.ok(scope.includes("'apps/'"))
 assert.ok(scope.includes("'workers/'"))
+assert.ok(scope.includes("'scripts/verify-development-policy.mjs'"))
 assert.ok(doc.includes('ten-minute post-expiry grace boundary'))
 assert.ok(doc.includes('normal five-minute Twitch snapshots'))
 assert.ok(doc.includes('Kick change: none'))
@@ -82,6 +85,7 @@ console.log(JSON.stringify({
   phase: '12A-4-18 prepared',
   provider: contract.provider,
   triggerAttempt: trigger.attempt,
+  triggerRetiredFromMain: true,
   finalizerRunId: contract.acceptedFinalizer.workflowRunId,
   preExpiryOutcome: contract.observation.preExpiryOutcome,
   productionMutationAuthorized: false,
