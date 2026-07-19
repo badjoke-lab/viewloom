@@ -15,7 +15,7 @@ const REQUIRED_TABLES = [
 
 async function execute() {
   const contract = json('docs/audits/12a4-twitch-category-capture-canary-post-rollback-acceptance-contract.json')
-  const trigger = json(contract.acceptedInputs.triggerPath)
+  const trigger = contract.acceptedTrigger
   const outputDir = path.resolve(process.env.OUTPUT_DIR ?? 'artifacts/12a4-twitch-category-canary-post-rollback-acceptance')
   const normalConfigPath = path.resolve('workers/collector-twitch/wrangler.toml')
   const normalConfig = fs.readFileSync(normalConfigPath, 'utf8')
@@ -38,6 +38,7 @@ async function execute() {
       packageMergeSha: trigger.packageMergeSha,
       executionPackageMergeSha: trigger.executionPackageMergeSha,
       triggerMergeSha: contract.acceptedInputs.triggerMergeSha,
+      retiredFromMain: trigger.retiredFromMain,
     },
     finalizer: contract.acceptedFinalizer,
     polling: {
