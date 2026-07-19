@@ -1,42 +1,41 @@
 # ViewLoom current execution schedule
 
 Status: source of truth  
-Last updated: 2026-07-18
+Last updated: 2026-07-19
 
 ```text
 Phase 12A Analytics Capture Foundation active
 12A-0 through 12A-3 complete
 12A-4 source/storage/schema/cost gates complete
 Kick bounded canary complete and retired
-Twitch attempt 3 active
-Start 2026-07-18 14:15 JST
-Expiry 2026-07-19 14:15 JST
-Start run 29631153598 success
-First monitor run 29634222309 success
+Twitch bounded canary complete and retired
+Finalizer run 29677847983 success
+Post-rollback acceptance run 29683729428 success
 Provider leakage 0
-Permanent CATEGORY_CAPTURE_ENABLED present no
-Final rollback pending yes
+Post-grace category payload rows 0
+Permanent category flag present no
+Final rollback pending no
+Runtime category capture active no
 ```
 
-## Active sequence
+## Completed sequence
 
-1. Continue the existing two-hour scheduled Twitch checkpoints.
-2. Hard-stop and restore normal Twitch config if storage, bindings, leakage, or collector health fails.
-3. Enforce exact capture expiry at `2026-07-19T05:15:00.000Z`.
-4. Restore the normal Twitch config and verify canary bindings are absent.
-5. Observe the post-expiry grace boundary and prove no new category payload.
-6. Freeze final sanitized evidence and retire the Twitch execution trigger and schedule.
-7. Consider permanent enablement only in a later, separate decision.
+1. Started Twitch attempt 3 at the exact boundary after a fresh read-only production preflight.
+2. Observed the bounded canary with storage, binding, leakage, and collector-health gates.
+3. Enforced exact capture expiry at `2026-07-19T05:15:00.000Z`.
+4. Restored the normal Twitch config and removed all canary bindings.
+5. Proved zero category payload rows after the `2026-07-19T05:25:00.000Z` grace boundary.
+6. Confirmed fresh real non-empty normal Twitch collection, zero provider leakage, and passing storage headroom.
+7. Froze final sanitized evidence and retired the trigger, schedule, and temporary acceptance paths.
+8. Advanced the canonical gate to 12A-4-18.
 
-## Stop conditions
+## Current operating state
 
-- Provider leakage exceeds zero.
-- Projected Twitch 90-day size exceeds 440 MB.
-- Provider headroom falls below 10 MB.
-- Projected account-wide headroom falls below 500 MB.
-- Attempt-3 bindings do not match.
-- The permanent direct category flag appears.
-- Normal collection is replaced by a category failure.
+- Normal Twitch cadence remains five minutes.
+- Twitch and Kick canary bindings are absent.
+- Permanent category capture is absent and unauthorized.
+- Historical canary data is retained as evidence.
+- No category-capture production workflow remains active.
 
 ## Deferred
 
