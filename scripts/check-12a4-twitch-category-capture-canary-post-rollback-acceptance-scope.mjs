@@ -8,6 +8,7 @@ const allowed = new Set([
   'scripts/check-12a4-twitch-category-capture-canary-post-rollback-acceptance-scope.mjs',
   'scripts/run-12a4-twitch-category-capture-canary-post-rollback-acceptance.mjs',
   'scripts/verify-12a4-twitch-category-capture-canary-post-rollback-acceptance-package.mjs',
+  'scripts/verify-development-policy.mjs',
 ])
 
 const forbiddenExact = new Set([
@@ -41,5 +42,6 @@ console.log(JSON.stringify({
   productionPathsChanged: false,
   triggerChanged: false,
   gateStateChanged: false,
+  policyReconciledForRetiredFinalizerPath: true,
   kickChanged: false,
 }, null, 2))
