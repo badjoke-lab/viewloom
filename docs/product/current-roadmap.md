@@ -1,7 +1,7 @@
 # ViewLoom current roadmap
 
 Status: source of truth  
-Last updated: 2026-07-18
+Last updated: 2026-07-19
 
 ## Current position
 
@@ -15,16 +15,17 @@ ViewLoom is a production Twitch/Kick observation site with provider-separated co
 - 12A-4 category source audit, storage design, migration, disabled runtime, schema apply, and bounded execution-cost acceptance.
 - Kick provider-specific bounded canary, rollback, post-expiry acceptance, and production-path retirement.
 - Twitch dormant package, execution package, read-only storage preflight, start-order fix, and monitor parser fix.
-- Twitch attempt 3 exact trigger and same-job start preflight.
-- Twitch attempt 3 first scheduled checkpoint.
+- Twitch attempt 3 exact trigger, same-job start preflight, bounded observation, exact-expiry rollback, post-grace acceptance, and production-path retirement.
 
-### Current gate: 12A-4-17 Twitch attempt 3 bounded observation
+### Current gate: 12A-4-18 provider canaries accepted and retired
 
-Attempt 3 is active from `2026-07-18T05:15:00.000Z` through `2026-07-19T05:15:00.000Z`. Start run `29631153598` and first monitor run `29634222309` passed. Provider leakage is zero, storage and account headroom gates pass, the permanent category flag is absent, and Kick is unchanged.
+Both provider-separated bounded canaries completed. Twitch final acceptance records zero category payload rows after the ten-minute grace boundary, zero provider leakage, absent canary and permanent bindings, a fresh real non-empty normal snapshot, and passing provider/account storage gates.
 
-### Next gate: final Twitch rollback acceptance
+Runtime category capture is inactive. Historical category rows remain as accepted evidence. Permanent category capture is not authorized.
 
-Continue scheduled checkpoints. At or after exact expiry, restore the normal Twitch config and prove canary bindings are absent, no category payload appears after the grace boundary, provider leakage remains zero, normal Twitch collection is fresh/authenticated/non-empty, and the production execution path can be retired.
+### Next decision
+
+Any permanent category-capture proposal must be a new explicit product and operational decision. It must not inherit authorization from the completed canaries.
 
 ## Hard boundaries
 
@@ -40,5 +41,6 @@ Continue scheduled checkpoints. At or after exact expiry, restore the normal Twi
 - `docs/audits/12a2-current-gate-state.json`
 - `docs/audits/12a4-twitch-category-capture-canary-attempt-3-start-evidence.json`
 - `docs/audits/12a4-twitch-category-capture-canary-attempt-3-initial-checkpoint-evidence.json`
-- `docs/audits/12a4-twitch-category-capture-canary-execution-contract.json`
-- `docs/work-in-progress/phase12a4-twitch-category-capture-canary-execution.md`
+- `docs/audits/12a4-twitch-category-capture-canary-attempt-3-final-evidence.json`
+- `docs/audits/12a4-twitch-category-capture-canary-post-rollback-acceptance-contract.json`
+- `docs/work-in-progress/phase12a4-twitch-category-capture-canary-post-rollback-acceptance.md`
