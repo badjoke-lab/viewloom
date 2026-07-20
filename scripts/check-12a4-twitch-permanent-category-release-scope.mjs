@@ -6,6 +6,7 @@ const triggerPath = 'docs/audits/12a4-twitch-permanent-category-release-trigger.
 const allowed = new Set([
   '.github/workflows/analytics-12a4-twitch-permanent-category-release.yml',
   '.github/workflows/development-policy.yml',
+  '.github/workflows/public-surface-inventory.yml',
   'docs/audits/12a4-twitch-permanent-category-release-contract.json',
   'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md',
   'scripts/check-12a4-twitch-permanent-category-release-scope.mjs',
@@ -53,4 +54,5 @@ console.log(JSON.stringify({
   remoteD1OperationFromPullRequest: false,
   productionActivationFromPullRequest: false,
   permanentRolloutPolicyRoutingFixed: true,
+  publicInventoryPolicyRoutingFixed: true,
 }, null, 2))
