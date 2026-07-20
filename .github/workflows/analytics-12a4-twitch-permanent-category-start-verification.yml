@@ -1,0 +1,63 @@
+name: Analytics 12A4 Twitch Permanent Category Start Verification
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.github/workflows/analytics-12a4-twitch-permanent-category-start-verification.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-start:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      OUTPUT_DIR: artifacts/12a4-twitch-permanent-category-start-verification
+      MODE: observe
+      START_AT: '2026-07-20T11:40:00.000Z'
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Wait until two expected five-minute snapshots can exist
+        run: |
+          node --input-type=module <<'NODE'
+          const target = Date.parse('2026-07-20T11:52:00.000Z')
+          while (Date.now() < target) {
+            await new Promise((resolve) => setTimeout(resolve, Math.min(target - Date.now(), 60_000)))
+          }
+          NODE
+      - id: observe
+        name: Run read-only production observation
+        continue-on-error: true
+        run: node scripts/run-12a4-twitch-permanent-category-observer.mjs
+      - name: Upload sanitized observation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-twitch-permanent-category-start-verification
+          path: artifacts/12a4-twitch-permanent-category-start-verification/**/*.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Require accepted permanent-category start state
+        if: always()
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+          const file = 'artifacts/12a4-twitch-permanent-category-start-verification/evidence-observe.json'
+          if (!fs.existsSync(file)) throw new Error('observation_evidence_missing')
+          const evidence = JSON.parse(fs.readFileSync(file, 'utf8'))
+          console.log(JSON.stringify({
+            outcome: evidence.outcome,
+            bindings: evidence.bindings,
+            data: evidence.data,
+            gates: evidence.gates,
+            error: evidence.error,
+          }, null, 2))
+          if (evidence.outcome !== 'accepted') process.exit(1)
+          NODE
