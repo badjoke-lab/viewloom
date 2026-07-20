@@ -2,7 +2,7 @@
 
 ## Status
 
-PR #625 prepares the Twitch-only permanent category capture package. The package is validation-only: Twitch permanent runtime capture is not deployed or active, and Kick remains unauthorized.
+PR #625 prepares the Twitch-only permanent category capture package. The package is validation-only: Twitch permanent runtime capture is not deployed or active, and Kick remains unauthorized. It does not deploy a Worker.
 
 ## Package contents
 
