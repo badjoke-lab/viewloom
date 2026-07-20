@@ -54,13 +54,22 @@ for (const fragment of [
   'Kick permanent implementation authorized no',
   'Existing Worker cadence */5 * * * * unchanged',
 ]) assert.ok(schedule.includes(fragment), `schedule missing: ${fragment}`)
-for (const fragment of [
+
+const acceptedPackageWip = [
   '# 12A-4-20 Twitch permanent category capture package accepted',
   'PR #625 is merged',
   'Twitch permanent runtime capture is still inactive',
   'Validation run: `29721764872`',
   'Kick implementation authorized: no',
-]) assert.ok(wip.includes(fragment), `WIP missing: ${fragment}`)
+].every((fragment) => wip.includes(fragment))
+const releasePackageWip = [
+  '# 12A-4-21 Twitch permanent category release package candidate',
+  'Production release from PR #627: no',
+  'Exact one-file trigger present: no',
+  'Twitch runtime active: no',
+  'Kick implementation authorized: no',
+].every((fragment) => wip.includes(fragment))
+assert.equal(acceptedPackageWip || releasePackageWip, true, 'WIP must describe the accepted package or the authorized dormant release candidate')
 
 assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v24')
 assert.equal(gate.status, '12a4_twitch_permanent_category_package_accepted_deployment_pending')
@@ -134,6 +143,7 @@ assert.notEqual(toml(permanent, 'database_id'), toml(kick, 'database_id'))
 console.log(JSON.stringify({
   ok: true,
   phase: gate.currentWorkstream.phase,
+  activeWip: releasePackageWip ? '12A-4-21-release-package-candidate' : '12A-4-20-package-accepted',
   trackingIssue: 623,
   packageAccepted: true,
   packagePr: 625,

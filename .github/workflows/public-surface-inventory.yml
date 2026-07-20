@@ -14,6 +14,7 @@ on:
       - 'docs/README.md'
       - 'scripts/verify-public-surface-inventory.mjs'
       - 'scripts/verify-development-policy.mjs'
+      - 'scripts/verify-category-rollout-policy.mjs'
       - '.github/workflows/**'
   push:
     branches: [main]
@@ -21,7 +22,11 @@ on:
       - 'apps/web/**'
       - 'docs/audits/public-surface-*.json'
       - 'docs/audits/public-surface-inventory.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/README.md'
       - 'scripts/verify-public-surface-inventory.mjs'
+      - 'scripts/verify-category-rollout-policy.mjs'
       - '.github/workflows/public-surface-inventory.yml'
 
 concurrency:
@@ -38,7 +43,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Detect permanent category rollout
+        id: category_gate
+        run: |
+          rollout=$(node -p "require('./docs/audits/12a2-current-gate-state.json').permanentCategoryCaptureRolloutDecision?.status === 'accepted' ? 'true' : 'false'")
+          echo "permanent_rollout=$rollout" >> "$GITHUB_OUTPUT"
+      - name: Verify current category rollout policy
+        if: steps.category_gate.outputs.permanent_rollout == 'true'
+        run: node scripts/verify-category-rollout-policy.mjs
       - name: Verify development policy
+        if: steps.category_gate.outputs.permanent_rollout != 'true'
         run: node scripts/verify-development-policy.mjs
       - name: Verify public surface inventory
         run: node scripts/verify-public-surface-inventory.mjs

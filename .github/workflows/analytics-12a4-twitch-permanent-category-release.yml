@@ -1,0 +1,174 @@
+name: Analytics 12A4 Twitch Permanent Category Release
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.github/workflows/analytics-12a4-twitch-permanent-category-release.yml'
+      - 'docs/audits/12a4-twitch-permanent-category-release-contract.json'
+      - 'docs/audits/12a4-twitch-permanent-category-release-trigger.json'
+      - 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md'
+      - 'scripts/check-12a4-twitch-permanent-category-release-scope.mjs'
+      - 'scripts/inspect-12a4-twitch-permanent-category-release-trigger.mjs'
+      - 'scripts/run-12a4-twitch-permanent-category-observer.mjs'
+      - 'scripts/run-12a4-twitch-permanent-category-release.mjs'
+      - 'scripts/test-12a4-twitch-permanent-category-release.mjs'
+      - 'scripts/verify-12a4-twitch-permanent-category-release-package.mjs'
+      - 'scripts/verify-12a4-twitch-permanent-category-release-trigger.mjs'
+      - 'scripts/verify-category-rollout-policy.mjs'
+      - 'scripts/wait-12a4-twitch-permanent-category-release-start.mjs'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a4-twitch-permanent-category-release-trigger.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-twitch-permanent-category-release-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    outputs:
+      trigger_present: ${{ steps.scope.outputs.trigger_present }}
+      exact_trigger: ${{ steps.scope.outputs.exact_trigger }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: scope
+        name: Classify package or exact trigger
+        shell: bash
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+        run: |
+          trigger='docs/audits/12a4-twitch-permanent-category-release-trigger.json'
+          if [ -f "$trigger" ]; then
+            echo 'trigger_present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'trigger_present=false' >> "$GITHUB_OUTPUT"
+          fi
+          if [ -n "$GITHUB_BASE_REF" ]; then
+            merge_base=$(git merge-base HEAD "origin/$GITHUB_BASE_REF")
+            changed=$(git diff --name-only "$merge_base...HEAD")
+          elif [[ "$GITHUB_EVENT_BEFORE" =~ ^[0-9a-fA-F]{40}$ ]] && [[ ! "$GITHUB_EVENT_BEFORE" =~ ^0+$ ]]; then
+            changed=$(git diff --name-only "$GITHUB_EVENT_BEFORE...HEAD")
+          else
+            changed=$(git diff --name-only HEAD^...HEAD)
+          fi
+          count=$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l | tr -d ' ')
+          if [ "$count" = '1' ] && [ "$changed" = "$trigger" ]; then
+            echo 'exact_trigger=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'exact_trigger=false' >> "$GITHUB_OUTPUT"
+          fi
+
+  verify-package:
+    needs: classify
+    if: github.event_name != 'push' && needs.classify.outputs.trigger_present != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify dormant release package scope
+        run: node scripts/check-12a4-twitch-permanent-category-release-scope.mjs
+      - name: Run release package fixtures
+        run: node scripts/test-12a4-twitch-permanent-category-release.mjs
+      - name: Verify release package contract
+        run: node scripts/verify-12a4-twitch-permanent-category-release-package.mjs
+      - name: Verify current category rollout policy
+        run: node scripts/verify-category-rollout-policy.mjs
+      - name: Verify collector typecheck
+        run: pnpm typecheck:collectors
+      - name: Bundle normal Twitch collector without publishing
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.toml
+      - name: Bundle permanent Twitch collector without publishing
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.category-permanent.toml
+
+  verify-trigger:
+    needs: classify
+    if: github.event_name != 'workflow_dispatch' && needs.classify.outputs.exact_trigger == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify exact one-file Twitch release trigger
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+        run: node scripts/verify-12a4-twitch-permanent-category-release-trigger.mjs
+
+  inspect-trigger:
+    needs: [classify, verify-trigger]
+    if: github.event_name == 'push' && needs.classify.outputs.exact_trigger == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      action: ${{ steps.inspect.outputs.action }}
+      start_at: ${{ steps.inspect.outputs.start_at }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - id: inspect
+        name: Inspect accepted exact release trigger
+        run: node scripts/inspect-12a4-twitch-permanent-category-release-trigger.mjs --event push --require-armed
+
+  release:
+    needs: inspect-trigger
+    if: github.event_name == 'push' && needs.inspect-trigger.outputs.action == 'start'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      OUTPUT_DIR: artifacts/12a4-twitch-permanent-category-release
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Wait for exact release start boundary
+        run: node scripts/wait-12a4-twitch-permanent-category-release-start.mjs
+      - id: release
+        name: Run preflight and verify the Twitch category release start
+        run: node scripts/run-12a4-twitch-permanent-category-release.mjs
+      - name: Upload sanitized release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-twitch-permanent-category-release-start
+          path: artifacts/12a4-twitch-permanent-category-release/**/*.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Publish release summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom Twitch permanent category release start'
+            echo
+            echo '- Provider: Twitch only'
+            echo '- Fresh read-only preflight before release: required'
+            echo '- Release outcome: `${{ steps.release.outputs.outcome }}`'
+            echo '- Release started at: `${{ steps.release.outputs.activation_started_at }}`'
+            echo '- Two category-bearing snapshots required: yes'
+            echo '- Automatic normal-config restoration on failed verification: yes'
+            echo '- Kick change: no'
+            echo '- Existing Worker schedule remains five minutes'
+            echo '- No new Worker schedule'
+          } >> "$GITHUB_STEP_SUMMARY"
