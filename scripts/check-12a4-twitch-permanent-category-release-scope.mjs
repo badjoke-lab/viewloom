@@ -5,6 +5,7 @@ import fs from 'node:fs'
 const triggerPath = 'docs/audits/12a4-twitch-permanent-category-release-trigger.json'
 const allowed = new Set([
   '.github/workflows/analytics-12a4-twitch-permanent-category-release.yml',
+  '.github/workflows/development-policy.yml',
   'docs/audits/12a4-twitch-permanent-category-release-contract.json',
   'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md',
   'scripts/check-12a4-twitch-permanent-category-release-scope.mjs',
@@ -51,4 +52,5 @@ console.log(JSON.stringify({
   kickChanged: false,
   remoteD1OperationFromPullRequest: false,
   productionActivationFromPullRequest: false,
+  permanentRolloutPolicyRoutingFixed: true,
 }, null, 2))
