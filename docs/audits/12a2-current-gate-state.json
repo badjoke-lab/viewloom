@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v24",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v25",
   "workstream": "12A-4 provider-specific category capture foundation",
-  "status": "12a4_twitch_permanent_category_package_accepted_deployment_pending",
+  "status": "12a4_twitch_permanent_category_release_package_accepted_trigger_pending",
   "intradayFoundation": {
     "designPr": 494,
     "migrationPr": 499,
@@ -315,7 +315,9 @@
     "kickPermanentRuntimeCaptureActive": false,
     "retentionExpansionAuthorized": false,
     "categoryUiAuthorized": false,
-    "twitchPermanentPackageAccepted": true
+    "twitchPermanentPackageAccepted": true,
+    "twitchPermanentReleasePackageAccepted": true,
+    "twitchPermanentExactReleaseTriggerAccepted": false
   },
   "closedBlockers": [
     "category_source_unverified",
@@ -353,8 +355,8 @@
     "kick_permanent_category_capture_not_authorized"
   ],
   "currentWorkstream": {
-    "phase": "12A-4-20",
-    "name": "Twitch permanent category capture package accepted; deployment pending",
+    "phase": "12A-4-21",
+    "name": "Twitch permanent category release package accepted; exact trigger pending",
     "trackingIssue": 623,
     "acceptedSchemaEvidence": true,
     "acceptedCostEvidence": true,
@@ -407,9 +409,15 @@
     "packageAccepted": true,
     "exactDeploymentTriggerCurrent": false,
     "rollbackConfigAccepted": true,
-    "observerAccepted": true
+    "observerAccepted": true,
+    "releasePackagePr": 627,
+    "releasePackageAcceptancePr": 628,
+    "releasePackageAccepted": true,
+    "exactReleaseTriggerCurrent": false,
+    "initialConsecutiveCategorySnapshotsRequired": 2,
+    "automaticRollbackRequired": true
   },
-  "nextWorkstream": "prepare the separate exact 12A-4-21 Twitch deployment package; run a fresh read-only production preflight before deployment, verify two consecutive category-bearing real non-empty snapshots, retain rollback to the normal config, and do not change Kick",
+  "nextWorkstream": "create the separate exact one-file Twitch permanent category release trigger with a start boundary inside three hours; the main workflow must run fresh read-only preflight before release, verify two category-bearing snapshots, and restore normal config on failure",
   "kickCategoryCaptureCanaryInitialAcceptance": {
     "status": "accepted_initial_checkpoint_observation_completed",
     "pr": 579,
@@ -588,6 +596,23 @@
     "packageAccepted": true,
     "productionDeploymentIncluded": false,
     "runtimeCaptureStarted": false,
+    "remoteD1OperationPerformed": false,
+    "kickChanged": false
+  },
+  "twitchPermanentCategoryReleasePackage": {
+    "status": "accepted",
+    "trackingIssue": 623,
+    "packagePr": 627,
+    "packageCandidateHeadSha": "b1250cfd16996556eb99582dbd10599d667fb730",
+    "packageMergeSha": "312f2c4d54dc4f881aa35e58140bd504b1b2229c",
+    "acceptancePr": 628,
+    "workflowRunId": 29723684031,
+    "workflowJobId": 88291928546,
+    "contract": "docs/audits/12a4-twitch-permanent-category-release-contract.json",
+    "evidence": "docs/audits/12a4-twitch-permanent-category-release-package-acceptance.json",
+    "exactTriggerPresent": false,
+    "productionRuntimeCaptureStarted": false,
+    "productionWorkerPublished": false,
     "remoteD1OperationPerformed": false,
     "kickChanged": false
   }

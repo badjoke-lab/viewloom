@@ -10,14 +10,19 @@ const files = {
   schedule: 'docs/product/current-schedule.md',
   gate: 'docs/audits/12a2-current-gate-state.json',
   wip: 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md',
-  packageContract: 'docs/audits/12a4-twitch-permanent-category-capture-package-contract.json',
-  packageAcceptance: 'docs/audits/12a4-twitch-permanent-category-capture-package-acceptance.json',
+  implementationContract: 'docs/audits/12a4-twitch-permanent-category-capture-package-contract.json',
+  implementationAcceptance: 'docs/audits/12a4-twitch-permanent-category-capture-package-acceptance.json',
+  releaseContract: 'docs/audits/12a4-twitch-permanent-category-release-contract.json',
+  releaseAcceptance: 'docs/audits/12a4-twitch-permanent-category-release-package-acceptance.json',
+  releaseTrigger: 'docs/audits/12a4-twitch-permanent-category-release-trigger.json',
   policy: 'docs/operations/development-and-deployment-policy.md',
   normalTwitch: 'workers/collector-twitch/wrangler.toml',
   permanentTwitch: 'workers/collector-twitch/wrangler.category-permanent.toml',
   kick: 'workers/collector-kick/wrangler.toml',
 }
-for (const path of Object.values(files)) assert.equal(existsSync(path), true, `${path}: missing`)
+for (const [name, path] of Object.entries(files)) {
+  if (name !== 'releaseTrigger') assert.equal(existsSync(path), true, `${path}: missing`)
+}
 
 const spec = read(files.spec)
 const plan = read(files.plan)
@@ -25,8 +30,11 @@ const roadmap = read(files.roadmap)
 const schedule = read(files.schedule)
 const wip = read(files.wip)
 const gate = json(files.gate)
-const contract = json(files.packageContract)
-const acceptance = json(files.packageAcceptance)
+const implementationContract = json(files.implementationContract)
+const implementationAcceptance = json(files.implementationAcceptance)
+const releaseContract = json(files.releaseContract)
+const releaseAcceptance = json(files.releaseAcceptance)
+const triggerPresent = existsSync(files.releaseTrigger)
 
 for (const fragment of [
   'Decision PR: #624',
@@ -42,89 +50,98 @@ for (const fragment of [
   'A temporary GitHub Actions observation schedule is allowed, but no new Worker cron is allowed',
 ]) assert.ok(plan.includes(fragment), `plan missing: ${fragment}`)
 for (const fragment of [
-  'Current gate: 12A-4-20 Twitch permanent package accepted, deployment pending',
-  'Next gate: 12A-4-21 exact Twitch production deployment',
-  'Runtime category capture is still inactive',
-  'Kick permanent category capture is not authorized',
+  'Current gate: 12A-4-21 Twitch release package accepted, exact trigger pending',
+  'Current action: exact Twitch release trigger',
+  'runtime category capture remains inactive',
+  'Kick remains unauthorized',
 ]) assert.ok(roadmap.includes(fragment), `roadmap missing: ${fragment}`)
 for (const fragment of [
-  '12A-4-20 Twitch permanent implementation package accepted',
+  '12A-4-21 Twitch permanent release package accepted',
   'Twitch permanent runtime active no',
   'Exact release trigger current no',
   'Kick permanent implementation authorized no',
   'Existing Worker cadence */5 * * * * unchanged',
 ]) assert.ok(schedule.includes(fragment), `schedule missing: ${fragment}`)
-
-const acceptedPackageWip = [
-  '# 12A-4-20 Twitch permanent category capture package accepted',
-  'PR #625 is merged',
-  'Twitch permanent runtime capture is still inactive',
-  'Validation run: `29721764872`',
+for (const fragment of [
+  '# 12A-4-21 Twitch permanent category release package accepted',
+  'PR #627 is merged and accepted by PR #628',
+  'Twitch permanent runtime capture remains inactive',
+  'Validation run: `29723684031`',
   'Kick implementation authorized: no',
-].every((fragment) => wip.includes(fragment))
-const releasePackageWip = [
-  '# 12A-4-21 Twitch permanent category release package candidate',
-  'Production release from PR #627: no',
-  'Exact one-file trigger present: no',
-  'Twitch runtime active: no',
-  'Kick implementation authorized: no',
-].every((fragment) => wip.includes(fragment))
-assert.equal(acceptedPackageWip || releasePackageWip, true, 'WIP must describe the accepted package or the authorized dormant release candidate')
+]) assert.ok(wip.includes(fragment), `WIP missing: ${fragment}`)
 
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v24')
-assert.equal(gate.status, '12a4_twitch_permanent_category_package_accepted_deployment_pending')
-assert.equal(gate.currentWorkstream.phase, '12A-4-20')
-assert.equal(gate.currentWorkstream.name, 'Twitch permanent category capture package accepted; deployment pending')
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v25')
+assert.equal(gate.status, '12a4_twitch_permanent_category_release_package_accepted_trigger_pending')
+assert.equal(gate.currentWorkstream.phase, '12A-4-21')
+assert.equal(gate.currentWorkstream.name, 'Twitch permanent category release package accepted; exact trigger pending')
 assert.equal(gate.currentWorkstream.trackingIssue, 623)
-assert.equal(gate.currentWorkstream.packagePr, 625)
-assert.equal(gate.currentWorkstream.packageAcceptancePr, 626)
-assert.equal(gate.currentWorkstream.packageAccepted, true)
+assert.equal(gate.currentWorkstream.releasePackagePr, 627)
+assert.equal(gate.currentWorkstream.releasePackageAcceptancePr, 628)
+assert.equal(gate.currentWorkstream.releasePackageAccepted, true)
 assert.equal(gate.currentWorkstream.productionExecutionIncluded, false)
-assert.equal(gate.currentWorkstream.runtimeCaptureAuthorized, true)
 assert.equal(gate.currentWorkstream.runtimeCaptureStarted, false)
+assert.equal(gate.currentWorkstream.runtimeCaptureAuthorized, true)
 assert.equal(gate.currentWorkstream.twitchPermanentCaptureAuthorized, true)
 assert.equal(gate.currentWorkstream.twitchPermanentCaptureActive, false)
 assert.equal(gate.currentWorkstream.kickPermanentCaptureAuthorized, false)
-assert.equal(gate.currentWorkstream.exactDeploymentTriggerCurrent, false)
-assert.equal(gate.currentWorkstream.rollbackConfigAccepted, true)
-assert.equal(gate.currentWorkstream.observerAccepted, true)
+assert.equal(gate.currentWorkstream.exactReleaseTriggerCurrent, false)
+assert.equal(gate.currentWorkstream.freshReadOnlyPreflightRequired, true)
+assert.equal(gate.currentWorkstream.initialConsecutiveCategorySnapshotsRequired, 2)
+assert.equal(gate.currentWorkstream.automaticRollbackRequired, true)
 assert.equal(gate.currentWorkstream.categoryUiAuthorized, false)
 assert.deepEqual(gate.openBlockers, [
   'twitch_permanent_category_capture_not_deployed',
   'twitch_permanent_category_capture_observation_not_accepted',
   'kick_permanent_category_capture_not_authorized',
 ])
-assert.ok(gate.closedBlockers.includes('twitch_permanent_category_capture_not_implemented'))
 
-const packageState = gate.twitchPermanentCategoryCapturePackage
-assert.equal(packageState.status, 'accepted')
-assert.equal(packageState.packagePr, 625)
-assert.equal(packageState.packageCandidateHeadSha, 'e975d1b886736efac8d7d6ca8872f533fb249aed')
-assert.equal(packageState.packageMergeSha, '66f2b544e22dafc52e76d684cc2844c734eb8c09')
-assert.equal(packageState.acceptancePr, 626)
-assert.equal(packageState.workflowRunId, 29721764872)
-assert.equal(packageState.workflowJobId, 88286067503)
-assert.equal(packageState.artifactId, 8452621374)
-assert.equal(packageState.artifactDigest, 'sha256:08f2ad41f4b0a72835060553d23aa685bcdd101e8e503a4bd3c1f91e200411fa')
-assert.equal(packageState.productionDeploymentIncluded, false)
-assert.equal(packageState.runtimeCaptureStarted, false)
-assert.equal(packageState.remoteD1OperationPerformed, false)
-assert.equal(packageState.kickChanged, false)
+const releaseState = gate.twitchPermanentCategoryReleasePackage
+assert.equal(releaseState.status, 'accepted')
+assert.equal(releaseState.packagePr, 627)
+assert.equal(releaseState.packageCandidateHeadSha, 'b1250cfd16996556eb99582dbd10599d667fb730')
+assert.equal(releaseState.packageMergeSha, '312f2c4d54dc4f881aa35e58140bd504b1b2229c')
+assert.equal(releaseState.acceptancePr, 628)
+assert.equal(releaseState.workflowRunId, 29723684031)
+assert.equal(releaseState.workflowJobId, 88291928546)
+assert.equal(releaseState.exactTriggerPresent, false)
+assert.equal(releaseState.productionRuntimeCaptureStarted, false)
+assert.equal(releaseState.productionWorkerPublished, false)
+assert.equal(releaseState.remoteD1OperationPerformed, false)
+assert.equal(releaseState.kickChanged, false)
 
-assert.equal(contract.status, 'accepted')
-assert.equal(contract.acceptance.pr, 626)
-assert.equal(contract.acceptance.packagePr, 625)
-assert.equal(contract.acceptance.packageMergeSha, acceptance.packageMergeSha)
-assert.equal(contract.acceptance.workflowRunId, acceptance.packageWorkflowRunId)
-assert.equal(contract.acceptance.workflowJobId, acceptance.packageWorkflowJobId)
-assert.equal(contract.acceptance.artifactId, acceptance.packageArtifactId)
-assert.equal(contract.acceptance.productionRuntimeCaptureStarted, false)
-assert.equal(contract.acceptance.productionWorkerDeployed, false)
-assert.equal(contract.acceptance.remoteD1OperationPerformed, false)
-assert.equal(contract.acceptance.kickChanged, false)
-assert.equal(acceptance.status, 'accepted')
-assert.equal(acceptance.acceptancePr, 626)
-assert.equal(Object.values(acceptance.productionBoundary).every((value) => value === false), true)
+assert.equal(implementationContract.status, 'accepted')
+assert.equal(implementationContract.acceptance.pr, 626)
+assert.equal(implementationAcceptance.status, 'accepted')
+assert.equal(releaseContract.status, 'accepted')
+assert.equal(releaseContract.acceptance.pr, 628)
+assert.equal(releaseContract.acceptance.releasePackagePr, 627)
+assert.equal(releaseContract.acceptance.mergeSha, releaseAcceptance.releasePackageMergeSha)
+assert.equal(releaseContract.acceptance.workflowRunId, releaseAcceptance.validationWorkflowRunId)
+assert.equal(releaseContract.acceptance.workflowJobId, releaseAcceptance.validationWorkflowJobId)
+assert.equal(releaseContract.acceptance.triggerPresent, false)
+assert.equal(releaseContract.acceptance.productionRuntimeCaptureStarted, false)
+assert.equal(releaseContract.acceptance.productionWorkerPublished, false)
+assert.equal(releaseContract.acceptance.remoteD1OperationPerformed, false)
+assert.equal(releaseContract.acceptance.kickChanged, false)
+assert.equal(releaseAcceptance.status, 'accepted')
+assert.equal(releaseAcceptance.acceptancePr, 628)
+assert.equal(Object.values(releaseAcceptance.productionBoundary).every((value) => value === false), true)
+
+if (triggerPresent) {
+  const trigger = json(files.releaseTrigger)
+  assert.equal(trigger.schemaVersion, releaseContract.trigger.schemaVersion)
+  assert.equal(trigger.status, 'armed')
+  assert.equal(trigger.provider, 'twitch')
+  assert.equal(trigger.oneTime, true)
+  assert.equal(trigger.confirmation, releaseContract.trigger.confirmation)
+  assert.equal(trigger.implementationPr, 625)
+  assert.equal(trigger.implementationMergeSha, '66f2b544e22dafc52e76d684cc2844c734eb8c09')
+  assert.equal(trigger.acceptancePr, 626)
+  assert.equal(trigger.acceptanceMergeSha, '3bf0b407d27eac9de1f8b2480a223d244f3f1a30')
+  assert.equal(trigger.releasePackagePr, 627)
+  assert.equal(trigger.releasePackageMergeSha, '312f2c4d54dc4f881aa35e58140bd504b1b2229c')
+  assert.equal(Number.isFinite(Date.parse(trigger.startAt)), true)
+}
 
 const normal = read(files.normalTwitch)
 const permanent = read(files.permanentTwitch)
@@ -143,13 +160,11 @@ assert.notEqual(toml(permanent, 'database_id'), toml(kick, 'database_id'))
 console.log(JSON.stringify({
   ok: true,
   phase: gate.currentWorkstream.phase,
-  activeWip: releasePackageWip ? '12A-4-21-release-package-candidate' : '12A-4-20-package-accepted',
   trackingIssue: 623,
-  packageAccepted: true,
-  packagePr: 625,
-  acceptancePr: 626,
+  implementationPackageAccepted: true,
+  releasePackageAccepted: true,
+  exactReleaseTriggerPresent: triggerPresent,
   twitchRuntimeActive: false,
-  exactReleaseTriggerCurrent: false,
   kickAuthorized: false,
-  nextPhase: '12A-4-21',
+  nextAction: 'exact-one-file-release-trigger',
 }, null, 2))

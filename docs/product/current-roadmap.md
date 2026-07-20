@@ -17,16 +17,17 @@ ViewLoom is a production Twitch/Kick observation site with provider-separated co
 - Twitch bounded canary, rollback, post-expiry acceptance, and production-path retirement.
 - 12A-4-19 permanent category product and operational decision: Twitch-first, provider-separated rollout.
 - 12A-4-20 Twitch permanent-category implementation package, rollback config, read-only observer, fixtures, typecheck, and dry-run bundle acceptance.
+- 12A-4-21 dormant Twitch release package with exact-trigger validation, fresh preflight ordering, initial snapshot verification, and automatic restoration acceptance.
 
-### Current gate: 12A-4-20 Twitch permanent package accepted, deployment pending
+### Current gate: 12A-4-21 Twitch release package accepted, exact trigger pending
 
-The Twitch permanent-category package is accepted. It preserves the existing Twitch Worker, Twitch D1 database, and five-minute cron; the current category-disabled configuration remains the rollback target.
+The Twitch permanent-category implementation and dormant release package are accepted. The release workflow is present, but the exact one-file trigger is absent and runtime category capture remains inactive.
 
-Runtime category capture is still inactive. No permanent production binding has been deployed. Kick remains unauthorized and unchanged.
+Kick remains unauthorized and unchanged. The normal category-disabled Twitch configuration remains the active production and rollback configuration.
 
-### Next gate: 12A-4-21 exact Twitch production deployment
+### Current action: exact Twitch release trigger
 
-Prepare a separate exact deployment package. Its production job must run a fresh Cloudflare GET / D1 SELECT preflight, stop on any failed storage, schema, leakage, freshness, identity, or binding gate, deploy only the accepted Twitch configuration, verify two consecutive real non-empty category-bearing snapshots, and retain immediate rollback to the normal config.
+Create one separate trigger file pinned to the accepted release-package merge SHA and a start boundary inside the three-hour runner limit. The main workflow must run the fresh Cloudflare GET / D1 SELECT preflight before any release, stop on a failed gate, verify two consecutive real non-empty category-bearing snapshots after release, and restore the normal config automatically on failure.
 
 ### Following gates
 
@@ -37,13 +38,13 @@ Prepare a separate exact deployment package. Its production job must run a fresh
 
 ## Hard boundaries
 
-- Twitch permanent implementation is accepted; Twitch runtime capture is not active yet.
+- Twitch implementation and release packages are accepted; Twitch runtime capture is not active yet.
 - Kick permanent category capture is not authorized.
 - Twitch and Kick remain separate data products and databases.
 - Cross-provider category identity and combined category rankings are not allowed.
-- No new Worker cron, backfill, or raw-retention expansion is authorized.
+- No new Worker schedule, backfill, or raw-retention expansion is authorized.
 - Category analytics UI remains deferred until stable accumulation gates pass.
-- Free-tier safety, fresh preflight, and tested rollback take precedence over feature breadth.
+- Free-tier safety, fresh preflight, two-snapshot verification, and tested restoration take precedence over feature breadth.
 
 ## Source of truth
 
@@ -52,4 +53,6 @@ Prepare a separate exact deployment package. Its production job must run a fresh
 - `docs/product/current-schedule.md`
 - `docs/audits/12a2-current-gate-state.json`
 - `docs/audits/12a4-twitch-permanent-category-capture-package-acceptance.json`
+- `docs/audits/12a4-twitch-permanent-category-release-contract.json`
+- `docs/audits/12a4-twitch-permanent-category-release-package-acceptance.json`
 - `docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md`

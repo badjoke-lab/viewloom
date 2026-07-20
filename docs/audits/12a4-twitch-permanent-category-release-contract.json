@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-twitch-permanent-category-release-v1",
   "workstream": "12A-4-21 Twitch permanent category exact release package",
-  "status": "prepared",
+  "status": "accepted",
   "trackingIssue": 623,
   "provider": "twitch",
   "packagePr": 627,
@@ -58,8 +58,12 @@
   "freshPreflight": {
     "runner": "scripts/run-12a4-twitch-permanent-category-observer.mjs",
     "mode": "preflight",
-    "cloudflareApiMethods": ["GET"],
-    "d1Statements": ["SELECT"],
+    "cloudflareApiMethods": [
+      "GET"
+    ],
+    "d1Statements": [
+      "SELECT"
+    ],
     "permanentFlagMustBeAbsent": true,
     "obsoleteCanaryBindingsMustBeAbsent": true,
     "providerLeakageRowsMax": 0,
@@ -125,6 +129,25 @@
     "categoryUiChanged": false,
     "crossProviderBehaviorChanged": false
   },
-  "acceptance": null,
-  "nextGate": "accept this dormant release package, advance the canonical gate, then merge a separate exact one-file trigger after choosing a start boundary within three hours"
+  "acceptance": {
+    "pr": 628,
+    "releasePackagePr": 627,
+    "releasePackageCandidateHeadSha": "b1250cfd16996556eb99582dbd10599d667fb730",
+    "mergeSha": "312f2c4d54dc4f881aa35e58140bd504b1b2229c",
+    "workflowRunId": 29723684031,
+    "workflowJobId": 88291928546,
+    "dormantPackageScopePass": true,
+    "releaseFixturePass": true,
+    "releaseContractPass": true,
+    "categoryRolloutPolicyPass": true,
+    "collectorTypecheckPass": true,
+    "normalTwitchDryRunBundlePass": true,
+    "permanentTwitchDryRunBundlePass": true,
+    "triggerPresent": false,
+    "productionRuntimeCaptureStarted": false,
+    "productionWorkerPublished": false,
+    "remoteD1OperationPerformed": false,
+    "kickChanged": false
+  },
+  "nextGate": "create a separate exact one-file Twitch release trigger with the accepted release-package merge SHA and a start boundary inside three hours"
 }

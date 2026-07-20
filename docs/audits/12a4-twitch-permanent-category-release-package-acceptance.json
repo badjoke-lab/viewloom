@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-permanent-category-release-package-acceptance-v1",
+  "workstream": "12A-4-21 Twitch permanent category release package acceptance",
+  "status": "accepted",
+  "trackingIssue": 623,
+  "provider": "twitch",
+  "releasePackagePr": 627,
+  "releasePackageCandidateHeadSha": "b1250cfd16996556eb99582dbd10599d667fb730",
+  "releasePackageMergeSha": "312f2c4d54dc4f881aa35e58140bd504b1b2229c",
+  "validationWorkflowRunId": 29723684031,
+  "validationWorkflowJobId": 88291928546,
+  "acceptedChecks": {
+    "dormantPackageScope": true,
+    "releaseFixtures": true,
+    "releaseContract": true,
+    "categoryRolloutPolicy": true,
+    "collectorTypecheck": true,
+    "normalTwitchDryRunBundle": true,
+    "permanentTwitchDryRunBundle": true,
+    "developmentPolicy": true,
+    "publicSurfaceInventory": true,
+    "webBuild": true,
+    "webChecks": true
+  },
+  "productionBoundary": {
+    "exactTriggerCreated": false,
+    "workerPublished": false,
+    "remoteD1OperationPerformed": false,
+    "productionBindingChanged": false,
+    "runtimeCaptureStarted": false,
+    "kickChanged": false,
+    "cadenceChanged": false,
+    "newWorkerScheduleAdded": false,
+    "backfillPerformed": false,
+    "retentionChanged": false,
+    "categoryUiChanged": false,
+    "crossProviderBehaviorChanged": false
+  },
+  "acceptancePr": 628,
+  "nextGate": "advance the canonical gate to release-package accepted and prepare a separate exact one-file Twitch release trigger with a start boundary inside three hours"
+}

@@ -7,7 +7,9 @@ on:
     types: [opened, reopened, synchronize]
     paths:
       - '.github/workflows/analytics-12a4-twitch-permanent-category-release.yml'
+      - 'docs/audits/12a2-current-gate-state.json'
       - 'docs/audits/12a4-twitch-permanent-category-release-contract.json'
+      - 'docs/audits/12a4-twitch-permanent-category-release-package-acceptance.json'
       - 'docs/audits/12a4-twitch-permanent-category-release-trigger.json'
       - 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md'
       - 'scripts/check-12a4-twitch-permanent-category-release-scope.mjs'
@@ -37,17 +39,30 @@ jobs:
     outputs:
       trigger_present: ${{ steps.scope.outputs.trigger_present }}
       exact_trigger: ${{ steps.scope.outputs.exact_trigger }}
+      gate_schema: ${{ steps.scope.outputs.gate_schema }}
+      candidate: ${{ steps.scope.outputs.candidate }}
+      accepted: ${{ steps.scope.outputs.accepted }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - id: scope
-        name: Classify package or exact trigger
+        name: Classify package lifecycle or exact trigger
         shell: bash
         env:
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
         run: |
           trigger='docs/audits/12a4-twitch-permanent-category-release-trigger.json'
+          schema=$(node -p "require('./docs/audits/12a2-current-gate-state.json').schemaVersion")
+          echo "gate_schema=$schema" >> "$GITHUB_OUTPUT"
+          if [ "$schema" = 'viewloom-12a2-current-gate-state-v24' ]; then
+            echo 'candidate=true' >> "$GITHUB_OUTPUT"
+            echo 'accepted=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'candidate=false' >> "$GITHUB_OUTPUT"
+            test "$schema" = 'viewloom-12a2-current-gate-state-v25'
+            echo 'accepted=true' >> "$GITHUB_OUTPUT"
+          fi
           if [ -f "$trigger" ]; then
             echo 'trigger_present=true' >> "$GITHUB_OUTPUT"
           else
@@ -70,7 +85,7 @@ jobs:
 
   verify-package:
     needs: classify
-    if: github.event_name != 'push' && needs.classify.outputs.trigger_present != 'true'
+    if: github.event_name != 'push' && needs.classify.outputs.candidate == 'true' && needs.classify.outputs.trigger_present != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -94,9 +109,27 @@ jobs:
       - name: Bundle permanent Twitch collector without publishing
         run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.category-permanent.toml
 
+  verify-accepted:
+    needs: classify
+    if: github.event_name != 'push' && needs.classify.outputs.accepted == 'true' && needs.classify.outputs.trigger_present != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify accepted release-package state
+        run: node scripts/verify-category-rollout-policy.mjs
+      - name: Verify collector typecheck
+        run: pnpm typecheck:collectors
+      - name: Bundle normal Twitch collector without publishing
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.toml
+      - name: Bundle permanent Twitch collector without publishing
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.category-permanent.toml
+
   verify-trigger:
     needs: classify
-    if: github.event_name != 'workflow_dispatch' && needs.classify.outputs.exact_trigger == 'true'
+    if: github.event_name != 'workflow_dispatch' && needs.classify.outputs.accepted == 'true' && needs.classify.outputs.exact_trigger == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -113,7 +146,7 @@ jobs:
 
   inspect-trigger:
     needs: [classify, verify-trigger]
-    if: github.event_name == 'push' && needs.classify.outputs.exact_trigger == 'true'
+    if: github.event_name == 'push' && needs.classify.outputs.accepted == 'true' && needs.classify.outputs.exact_trigger == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
