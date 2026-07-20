@@ -63,12 +63,9 @@ jobs:
         shell: bash
         run: |
           schema=$(node -p "require('./docs/audits/12a2-current-gate-state.json').schemaVersion")
+          rollout=$(node -p "require('./docs/audits/12a2-current-gate-state.json').permanentCategoryCaptureRolloutDecision?.status === 'accepted' ? 'true' : 'false'")
           echo "schema=$schema" >> "$GITHUB_OUTPUT"
-          if [ "$schema" = 'viewloom-12a2-current-gate-state-v23' ]; then
-            echo 'permanent_rollout=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'permanent_rollout=false' >> "$GITHUB_OUTPUT"
-          fi
+          echo "permanent_rollout=$rollout" >> "$GITHUB_OUTPUT"
       - name: Detect exact or active Twitch trigger
         id: trigger_scope
         if: steps.category_gate.outputs.permanent_rollout != 'true'
