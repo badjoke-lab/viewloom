@@ -1,8 +1,9 @@
 {
   "schemaVersion": "viewloom-12a4-twitch-permanent-category-observation-v1",
   "workstream": "12A-4-22 Twitch permanent category minimum observation",
-  "status": "prepared",
+  "status": "candidate",
   "trackingIssue": 623,
+  "packagePr": 632,
   "provider": "twitch",
   "startAcceptance": "docs/audits/12a4-twitch-permanent-category-start-acceptance.json",
   "startAt": "2026-07-20T11:40:00.000Z",
