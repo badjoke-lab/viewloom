@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-twitch-permanent-category-observation-v1",
   "workstream": "12A-4-22 Twitch permanent category minimum observation",
-  "status": "candidate",
+  "status": "active",
   "trackingIssue": 623,
   "packagePr": 632,
   "provider": "twitch",
@@ -15,8 +15,12 @@
     "schedule": "17 * * * *",
     "temporaryGitHubSchedule": true,
     "newWorkerCronAdded": false,
-    "cloudflareApiMethods": ["GET"],
-    "d1Statements": ["SELECT"],
+    "cloudflareApiMethods": [
+      "GET"
+    ],
+    "d1Statements": [
+      "SELECT"
+    ],
     "artifactName": "analytics-12a4-twitch-permanent-category-observation",
     "retentionDays": 30
   },
