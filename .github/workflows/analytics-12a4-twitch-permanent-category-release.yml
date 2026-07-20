@@ -1,0 +1,17 @@
+name: Analytics 12A4 Twitch Permanent Category Release
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate package boundary
+        run: echo 'Validation only; no production change from this pull request.'
