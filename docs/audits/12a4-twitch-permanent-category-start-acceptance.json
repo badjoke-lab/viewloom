@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-permanent-category-start-acceptance-v1",
+  "status": "accepted",
+  "provider": "twitch",
+  "trackingIssue": 623,
+  "releaseTriggerPr": 630,
+  "releaseTriggerMergeSha": "3c262530fa234800a426dadb20148ee4f2219309",
+  "releaseStartAt": "2026-07-20T11:40:00.000Z",
+  "verification": {
+    "method": "independent_read_only_production_observation",
+    "pullRequest": 631,
+    "workflowRunId": 29739415464,
+    "workflowJobId": 88342486922,
+    "artifactId": 8459811639,
+    "artifactDigest": "sha256:40362301ce22eb6da23443db5ee2238dd13711118c3d6b1ecee2ebbd6fe4132e",
+    "evidenceDigest": "sha256:0f2fa71dfdc5fce9149b4dc44e864e1eea407dd4ce86969f915ad3f3ea762a46",
+    "observedAt": "2026-07-20T11:46:02.963Z",
+    "outcome": "accepted",
+    "readOnly": true
+  },
+  "runtime": {
+    "serviceName": "viewloom-collector-twitch",
+    "databaseName": "vl_twitch_hot",
+    "collectorCron": "*/5 * * * *",
+    "permanentFlagPresent": true,
+    "permanentFlagValue": "true",
+    "permanentCaptureEnabled": true,
+    "obsoleteCanaryBindingsPresent": false,
+    "categoryContractVersion": "category-source-v1"
+  },
+  "initialObservation": {
+    "twitchDictionaryRows": 448,
+    "categoryPayloadRowsSinceStart": 2,
+    "normalPayloadRowsSinceStart": 0,
+    "providerLeakageRows": 0,
+    "collectorErrorRunsSinceStart": 0,
+    "latestBucketMinute": "2026-07-20T11:45:00.000Z",
+    "latestCollectedAt": "2026-07-20T11:45:34.506Z",
+    "latestStreamCount": 300,
+    "latestTotalViewers": 680566,
+    "latestSourceMode": "real",
+    "latestSnapshotFreshnessMinutes": 0.47
+  },
+  "storage": {
+    "providerCurrentMb": 326.09,
+    "accountCurrentMb": 3830.81,
+    "projectedNinetyDaySizeMb": 374.41,
+    "projectedProviderHeadroomMb": 75.59,
+    "projectedAccountWideSizeMb": 3879.13,
+    "projectedAccountWideHeadroomMb": 728.87,
+    "providerPass": true,
+    "accountPass": true
+  },
+  "gates": {
+    "exactIdentity": true,
+    "cadencePass": true,
+    "storagePass": true,
+    "schemaPass": true,
+    "providerLeakagePass": true,
+    "bindingsPass": true,
+    "latestSnapshotFreshnessPass": true,
+    "latestSnapshotRealPass": true,
+    "latestSnapshotNonemptyPass": true,
+    "categorySnapshotPass": true
+  },
+  "boundaries": {
+    "kickChanged": false,
+    "newWorkerCronAdded": false,
+    "cadenceChanged": false,
+    "backfillPerformed": false,
+    "retentionChanged": false,
+    "categoryUiChanged": false,
+    "crossProviderBehaviorChanged": false
+  },
+  "nextGate": "minimum 24-hour Twitch-only permanent category observation ending no earlier than 2026-07-21T11:40:00.000Z"
+}
