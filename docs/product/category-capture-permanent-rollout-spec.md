@@ -2,7 +2,7 @@
 
 Status: source of truth  
 Tracking issue: #623  
-Decision PR: pending
+Decision PR: #624
 
 ## Purpose
 
