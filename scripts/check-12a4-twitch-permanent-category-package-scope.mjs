@@ -9,6 +9,7 @@ const allowed = new Set([
   'scripts/run-12a4-twitch-permanent-category-observer.mjs',
   'scripts/test-12a4-twitch-permanent-category-capture.mjs',
   'scripts/verify-12a4-twitch-permanent-category-package.mjs',
+  'scripts/verify-category-rollout-policy.mjs',
   'workers/collector-twitch/wrangler.category-permanent.toml',
 ])
 const forbidden = [
