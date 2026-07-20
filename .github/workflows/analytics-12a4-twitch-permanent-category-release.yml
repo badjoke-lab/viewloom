@@ -127,3 +127,48 @@ jobs:
       - id: inspect
         name: Inspect accepted exact release trigger
         run: node scripts/inspect-12a4-twitch-permanent-category-release-trigger.mjs --event push --require-armed
+
+  release:
+    needs: inspect-trigger
+    if: github.event_name == 'push' && needs.inspect-trigger.outputs.action == 'start'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      OUTPUT_DIR: artifacts/12a4-twitch-permanent-category-release
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Wait for exact release start boundary
+        run: node scripts/wait-12a4-twitch-permanent-category-release-start.mjs
+      - id: release
+        name: Run preflight and verify the Twitch category release start
+        run: node scripts/run-12a4-twitch-permanent-category-release.mjs
+      - name: Upload sanitized release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-twitch-permanent-category-release-start
+          path: artifacts/12a4-twitch-permanent-category-release/**/*.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Publish release summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom Twitch permanent category release start'
+            echo
+            echo '- Provider: Twitch only'
+            echo '- Fresh read-only preflight before release: required'
+            echo '- Release outcome: `${{ steps.release.outputs.outcome }}`'
+            echo '- Release started at: `${{ steps.release.outputs.activation_started_at }}`'
+            echo '- Two category-bearing snapshots required: yes'
+            echo '- Automatic normal-config restoration on failed verification: yes'
+            echo '- Kick change: no'
+            echo '- Existing Worker cron: five minutes'
+            echo '- New Worker cron: no'
+          } >> "$GITHUB_STEP_SUMMARY"
