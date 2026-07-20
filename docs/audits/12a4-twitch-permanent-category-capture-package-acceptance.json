@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-permanent-category-capture-package-acceptance-v1",
+  "workstream": "12A-4-20 Twitch permanent category capture package acceptance",
+  "status": "accepted",
+  "trackingIssue": 623,
+  "provider": "twitch",
+  "packagePr": 625,
+  "packageCandidateHeadSha": "e975d1b886736efac8d7d6ca8872f533fb249aed",
+  "packageMergeSha": "66f2b544e22dafc52e76d684cc2844c734eb8c09",
+  "packageWorkflowRunId": 29721764872,
+  "packageWorkflowJobId": 88286067503,
+  "packageArtifactId": 8452621374,
+  "packageArtifactDigest": "sha256:08f2ad41f4b0a72835060553d23aa685bcdd101e8e503a4bd3c1f91e200411fa",
+  "acceptedChecks": {
+    "exactScope": true,
+    "configurationAndSourceFixtures": true,
+    "packageContract": true,
+    "categoryRolloutPolicy": true,
+    "collectorTypecheck": true,
+    "normalTwitchDryRunBundle": true,
+    "permanentCategoryTwitchDryRunBundle": true,
+    "developmentPolicy": true,
+    "collectorChecks": true,
+    "deploymentWorkflowContract": true,
+    "webBuild": true,
+    "webChecks": true
+  },
+  "package": {
+    "permanentConfig": "workers/collector-twitch/wrangler.category-permanent.toml",
+    "rollbackConfig": "workers/collector-twitch/wrangler.toml",
+    "readOnlyObserver": "scripts/run-12a4-twitch-permanent-category-observer.mjs",
+    "contract": "docs/audits/12a4-twitch-permanent-category-capture-package-contract.json"
+  },
+  "productionBoundary": {
+    "workerDeployed": false,
+    "remoteD1OperationPerformed": false,
+    "productionBindingChanged": false,
+    "runtimeCaptureStarted": false,
+    "normalTwitchConfigChanged": false,
+    "kickChanged": false,
+    "cadenceChanged": false,
+    "newWorkerCronAdded": false,
+    "backfillPerformed": false,
+    "retentionChanged": false,
+    "categoryUiChanged": false,
+    "crossProviderBehaviorChanged": false
+  },
+  "acceptancePr": 626,
+  "nextGate": "advance the canonical gate to 12A-4-20 accepted and prepare a separate exact 12A-4-21 Twitch deployment package with fresh read-only preflight, post-deploy verification, and rollback"
+}
