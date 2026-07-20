@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-permanent-category-observation-v1",
+  "workstream": "12A-4-22 Twitch permanent category minimum observation",
+  "status": "active",
+  "trackingIssue": 623,
+  "packagePr": 632,
+  "provider": "twitch",
+  "startAcceptance": "docs/audits/12a4-twitch-permanent-category-start-acceptance.json",
+  "startAt": "2026-07-20T11:40:00.000Z",
+  "minimumEndAt": "2026-07-21T11:40:00.000Z",
+  "warningEndAt": "2026-07-22T11:40:00.000Z",
+  "collectorCron": "*/5 * * * *",
+  "monitor": {
+    "workflow": ".github/workflows/analytics-12a4-twitch-permanent-category-observation.yml",
+    "schedule": "17 * * * *",
+    "temporaryGitHubSchedule": true,
+    "newWorkerCronAdded": false,
+    "cloudflareApiMethods": [
+      "GET"
+    ],
+    "d1Statements": [
+      "SELECT"
+    ],
+    "artifactName": "analytics-12a4-twitch-permanent-category-observation",
+    "retentionDays": 30
+  },
+  "healthyGates": {
+    "permanentFlagMustBeTrue": true,
+    "obsoleteCanaryBindingsMustBeAbsent": true,
+    "providerLeakageRowsMax": 0,
+    "latestSnapshotFreshnessMinutesMax": 20,
+    "latestSnapshotMustBeReal": true,
+    "latestSnapshotMustBeNonempty": true,
+    "projectedNinetyDaySizeMbMax": 440,
+    "projectedProviderHeadroomMbMin": 10,
+    "projectedAccountWideHeadroomMbMin": 500,
+    "minimumCategoryCoverageRatio": 0.95,
+    "warningCategoryCoverageRatio": 0.98,
+    "warningCollectorErrorRunsMax": 0,
+    "hardStopCollectorErrorRunsMin": 3
+  },
+  "hardStops": [
+    "permanent flag absent or false",
+    "obsolete canary binding present",
+    "provider leakage above zero",
+    "storage safety gate failed",
+    "latest Twitch snapshot stale, non-real, or empty",
+    "category snapshot coverage below 0.80 after the initial grace window",
+    "three or more collector error runs since permanent activation"
+  ],
+  "warnings": [
+    "category snapshot coverage below 0.98",
+    "one or more collector error runs since permanent activation"
+  ],
+  "rollback": {
+    "automaticOnHardStop": true,
+    "config": "workers/collector-twitch/wrangler.toml",
+    "permanentFlagMustBeAbsentAfterRollback": true,
+    "normalSnapshotMustRecover": true,
+    "providerLeakageMustRemainZero": true
+  },
+  "acceptance": {
+    "minimumHours": 24,
+    "extendToHoursOnWarning": 48,
+    "finalReadOnlyEvidenceRequired": true,
+    "triggerAndMonitorRetirementRequired": true,
+    "kickAuthorizationIncluded": false,
+    "categoryUiAuthorizationIncluded": false
+  },
+  "boundaries": {
+    "kickChanged": false,
+    "cadenceChanged": false,
+    "newWorkerCronAdded": false,
+    "backfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "categoryUiAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  }
+}

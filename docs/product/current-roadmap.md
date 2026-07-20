@@ -13,38 +13,32 @@ ViewLoom is a production Twitch/Kick observation site with provider-separated co
 
 - 12A-0 through 12A-3 collection, retention, rollup, and intraday foundations.
 - 12A-4 category source audit, storage design, migration, disabled runtime, schema apply, and bounded execution-cost acceptance.
-- Kick provider-specific bounded canary, rollback, post-expiry acceptance, and production-path retirement.
-- Twitch bounded canary, rollback, post-expiry acceptance, and production-path retirement.
-- 12A-4-19 permanent category product and operational decision: Twitch-first, provider-separated rollout.
-- 12A-4-20 Twitch permanent-category implementation package, rollback config, read-only observer, fixtures, typecheck, and dry-run bundle acceptance.
-- 12A-4-21 dormant Twitch release package with exact-trigger validation, fresh preflight ordering, initial snapshot verification, and automatic restoration acceptance.
+- Provider-specific Kick and Twitch bounded canaries, rollback acceptance, and execution-path retirement.
+- 12A-4-19 permanent rollout decision: Twitch-first and provider-separated.
+- 12A-4-20 Twitch permanent implementation package acceptance.
+- 12A-4-21 exact Twitch release package and initial production start acceptance.
 
-### Current gate: 12A-4-21 Twitch release package accepted, exact trigger pending
+### Current gate: 12A-4-22 Twitch permanent observation active
 
-The Twitch permanent-category implementation and dormant release package are accepted. The release workflow is present, but the exact one-file trigger is absent and runtime category capture remains inactive.
+Twitch permanent category capture started at 2026-07-20 20:40 JST. Initial read-only verification accepted the permanent flag, two category-bearing snapshots, zero provider leakage, real non-empty fresh collection, and all storage gates.
 
-Kick remains unauthorized and unchanged. The normal category-disabled Twitch configuration remains the active production and rollback configuration.
-
-### Current action: exact Twitch release trigger
-
-Create one separate trigger file pinned to the accepted release-package merge SHA and a start boundary inside the three-hour runner limit. The main workflow must run the fresh Cloudflare GET / D1 SELECT preflight before any release, stop on a failed gate, verify two consecutive real non-empty category-bearing snapshots after release, and restore the normal config automatically on failure.
+The minimum 24-hour Twitch-only observation is active until no earlier than 2026-07-21 20:40 JST. A warning extends observation to 48 hours. A hard stop restores the normal category-disabled Twitch configuration automatically.
 
 ### Following gates
 
-1. 12A-4-22 minimum 24-hour observation, extended to 48 hours on warning.
-2. 12A-4-23 Twitch acceptance or rollback closeout.
-3. 12A-4-24 separate Kick decision.
-4. 12A-5 seven-day stable accumulation followed by provider-specific category UI.
+1. 12A-4-23 Twitch acceptance or rollback closeout and temporary-path retirement.
+2. 12A-4-24 separate Kick decision.
+3. 12A-5 seven stable days before provider-specific category UI.
 
 ## Hard boundaries
 
-- Twitch implementation and release packages are accepted; Twitch runtime capture is not active yet.
-- Kick permanent category capture is not authorized.
+- Twitch permanent category capture is active; Kick permanent category capture is not authorized.
 - Twitch and Kick remain separate data products and databases.
+- The existing five-minute Worker cron remains unchanged; the hourly observer is a temporary GitHub Actions schedule only.
 - Cross-provider category identity and combined category rankings are not allowed.
-- No new Worker schedule, backfill, or raw-retention expansion is authorized.
+- No backfill or raw-retention expansion is authorized.
 - Category analytics UI remains deferred until stable accumulation gates pass.
-- Free-tier safety, fresh preflight, two-snapshot verification, and tested restoration take precedence over feature breadth.
+- Free-tier safety, read-only observation, and automatic restoration take precedence over feature breadth.
 
 ## Source of truth
 
@@ -52,7 +46,6 @@ Create one separate trigger file pinned to the accepted release-package merge SH
 - `docs/product/category-capture-permanent-rollout-plan.md`
 - `docs/product/current-schedule.md`
 - `docs/audits/12a2-current-gate-state.json`
-- `docs/audits/12a4-twitch-permanent-category-capture-package-acceptance.json`
-- `docs/audits/12a4-twitch-permanent-category-release-contract.json`
-- `docs/audits/12a4-twitch-permanent-category-release-package-acceptance.json`
+- `docs/audits/12a4-twitch-permanent-category-start-acceptance.json`
+- `docs/audits/12a4-twitch-permanent-category-observation-contract.json`
 - `docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md`
