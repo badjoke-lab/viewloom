@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-permanent-category-capture-package-v1",
+  "workstream": "12A-4-20 Twitch permanent category capture implementation package",
+  "status": "prepared",
+  "trackingIssue": 623,
+  "packagePr": 625,
+  "provider": "twitch",
+  "acceptedDecision": {
+    "decisionPr": 624,
+    "decisionMergeSha": "db5738f4ed59d409bc3a0c6c0ed7aaa3fafdf45e",
+    "canonicalGate": "docs/audits/12a2-current-gate-state.json",
+    "requiredGateSchemaVersion": "viewloom-12a2-current-gate-state-v23",
+    "requiredGatePhase": "12A-4-19",
+    "specification": "docs/product/category-capture-permanent-rollout-spec.md",
+    "implementationPlan": "docs/product/category-capture-permanent-rollout-plan.md"
+  },
+  "package": {
+    "normalConfig": "workers/collector-twitch/wrangler.toml",
+    "permanentConfig": "workers/collector-twitch/wrangler.category-permanent.toml",
+    "collectorEntry": "workers/collector-twitch/src/entry.ts",
+    "collectorImplementation": "workers/collector-twitch/src/index-category.ts",
+    "categoryContract": "workers/shared/category-capture.ts",
+    "categoryRollup": "workers/shared/category-intraday-rollup.ts",
+    "readOnlyObserver": "scripts/run-12a4-twitch-permanent-category-observer.mjs",
+    "fixture": "scripts/test-12a4-twitch-permanent-category-capture.mjs",
+    "scopeVerifier": "scripts/check-12a4-twitch-permanent-category-package-scope.mjs",
+    "packageVerifier": "scripts/verify-12a4-twitch-permanent-category-package.mjs",
+    "workflow": ".github/workflows/analytics-12a4-twitch-permanent-category-package.yml"
+  },
+  "runtimeContract": {
+    "serviceName": "viewloom-collector-twitch",
+    "databaseName": "vl_twitch_hot",
+    "databaseBinding": "DB_TWITCH_HOT",
+    "provider": "twitch",
+    "categoryContractVersion": "category-source-v1",
+    "categoryFlag": "CATEGORY_CAPTURE_ENABLED",
+    "categoryFlagValue": "true",
+    "collectorCron": "*/5 * * * *",
+    "newWorkerCronAuthorized": false,
+    "normalConfigRemainsRollbackTarget": true,
+    "kickConfigurationChanged": false
+  },
+  "implementationRequirements": {
+    "twitchSourceId": "game_id",
+    "twitchSourceName": "game_name",
+    "categoryPayloadIdsRequired": true,
+    "categoryPayloadRefsRequired": true,
+    "dictionaryUpsertRequired": true,
+    "categoryIntradayRollupRequired": true,
+    "categoryFailureMustNotReplaceSnapshotWrite": true,
+    "existingStreamCoverageUnchanged": true,
+    "existingRetentionUnchanged": true,
+    "backfillPerformed": false,
+    "categoryUiIncluded": false,
+    "crossProviderIdentityAllowed": false,
+    "combinedProviderRankingAllowed": false
+  },
+  "readOnlyPreflight": {
+    "cloudflareApiMethods": ["GET"],
+    "d1Statements": ["SELECT"],
+    "latestSnapshotFreshnessMinutesMax": 20,
+    "projectedNinetyDaySizeMbMax": 440,
+    "projectedProviderHeadroomMbMin": 10,
+    "projectedAccountWideHeadroomMbMin": 500,
+    "providerLeakageRowsMax": 0,
+    "requiredTables": [
+      "minute_snapshots",
+      "provider_category_dictionary",
+      "streamer_intraday_rollups",
+      "intraday_rollup_status"
+    ],
+    "normalPreflightRequiresPermanentFlagAbsent": true,
+    "observationRequiresPermanentFlagPresent": true,
+    "obsoleteCanaryBindingsMustBeAbsent": true,
+    "productionMutationAllowed": false
+  },
+  "observation": {
+    "minimumHours": 24,
+    "warningExtensionHours": 48,
+    "initialConsecutiveCategorySnapshotsRequired": 2,
+    "missingCategorySnapshotsHardStop": 3,
+    "staleOrEmptyNormalSnapshotsHardStop": 2,
+    "providerLeakageRowsMax": 0,
+    "temporaryGitHubScheduleAllowed": true,
+    "newWorkerCronAllowed": false,
+    "automaticKickStart": false
+  },
+  "rollback": {
+    "config": "workers/collector-twitch/wrangler.toml",
+    "schemaRollbackRequired": false,
+    "historicalCategoryRowsDeleted": false,
+    "normalFiveMinuteCollectionMustRecover": true,
+    "permanentFlagMustBeAbsentAfterRollback": true,
+    "providerLeakageMustRemainZero": true,
+    "sanitizedEvidenceRequired": true
+  },
+  "pullRequestBoundary": {
+    "productionDeployment": false,
+    "remoteD1Operation": false,
+    "productionBindingMutation": false,
+    "normalTwitchConfigMutation": false,
+    "kickMutation": false,
+    "collectorCadenceChange": false,
+    "newWorkerCron": false,
+    "backfill": false,
+    "retentionExpansion": false,
+    "categoryUi": false,
+    "crossProviderBehavior": false,
+    "exactDeploymentTriggerIncluded": false
+  },
+  "acceptance": null,
+  "nextGate": "accept this validation-only package, advance the canonical gate to 12A-4-20, and prepare a separate exact Twitch deployment package with fresh read-only preflight and rollback"
+}

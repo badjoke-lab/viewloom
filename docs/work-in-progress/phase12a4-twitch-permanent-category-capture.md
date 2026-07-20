@@ -1,23 +1,48 @@
-# 12A-4-19 Twitch permanent category capture decision
+# 12A-4-20 Twitch permanent category capture implementation package
 
 ## Status
 
-Twitch permanent category capture is authorized for implementation but is not yet implemented, deployed, or active. Kick permanent category capture remains unauthorized.
+PR #625 prepares the Twitch-only permanent category capture package. The package is validation-only: Twitch permanent runtime capture is not deployed or active, and Kick remains unauthorized. It does not deploy a Worker.
 
-## Accepted direction
+## Package contents
 
-- Use the existing Twitch five-minute collector and Twitch D1 database.
-- Reuse the accepted category schema and `category-source-v1` contract.
-- Add no Worker cron, backfill, retention expansion, category UI, or cross-provider behavior.
-- Require a fresh read-only production preflight before deployment.
-- Observe Twitch for at least 24 hours and up to 48 hours when warnings require more evidence.
-- Roll back immediately on leakage, storage, collector-health, binding, or provider-boundary hard stops.
-- Consider Kick only after Twitch final acceptance in a separate explicit decision.
-- Require seven stable days before category UI work.
+- Explicit Twitch permanent configuration: `workers/collector-twitch/wrangler.category-permanent.toml`.
+- Existing category-disabled normal configuration retained as rollback target: `workers/collector-twitch/wrangler.toml`.
+- Existing `game_id` / `game_name` extraction, `category-source-v1` payload, dictionary upsert, and category intraday rollups reused without changing stream coverage.
+- Standalone read-only preflight/observation/rollback probe using Cloudflare `GET` and D1 `SELECT` only.
+- Storage, binding, provider leakage, freshness, real/non-empty snapshot, and category continuity gates.
+- Exact package scope enforcement, fixtures, verifier, dry-run Worker bundling, and category rollout policy validation.
 
-## Current work
+## Pull request boundary
 
-Prepare Phase 12A-4-20: the Twitch-only permanent capture implementation package. That package must be validation-only in its PR and must not deploy from the implementation PR.
+PR #625 does not:
+
+- deploy a Worker;
+- mutate remote D1;
+- change the production Twitch configuration or bindings;
+- change Kick;
+- change the five-minute Worker cron;
+- add a new Worker cron;
+- backfill data or expand retention;
+- add category UI;
+- add cross-provider identity, totals, or rankings;
+- include the exact production deployment trigger.
+
+## Required acceptance
+
+The latest package HEAD must pass:
+
+1. exact scope verification;
+2. permanent configuration and source-contract fixtures;
+3. package contract verification;
+4. category rollout policy verification;
+5. Twitch collector typecheck;
+6. normal Twitch Worker dry-run bundle;
+7. permanent-category Twitch Worker dry-run bundle.
+
+## Next gate
+
+After this package is accepted and merged, advance the canonical gate to record 12A-4-20 accepted. Then prepare a separate 12A-4-21 exact deployment package that runs a fresh read-only production preflight before any deployment and retains the normal configuration as rollback.
 
 ## Source documents
 
@@ -28,10 +53,10 @@ Prepare Phase 12A-4-20: the Twitch-only permanent capture implementation package
 - `docs/audits/12a2-current-gate-state.json`
 - `docs/operations/development-and-deployment-policy.md`
 
-## Hard boundaries
+## Current authorization
 
-Twitch active now: no.  
 Twitch implementation authorized: yes.  
+Twitch runtime active: no.  
 Kick implementation authorized: no.  
 Public category UI authorized: no.  
 Backfill authorized: no.  

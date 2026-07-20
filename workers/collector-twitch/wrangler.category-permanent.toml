@@ -1,0 +1,24 @@
+name = "viewloom-collector-twitch"
+main = "src/entry.ts"
+compatibility_date = "2026-05-18"
+
+# Accepted implementation package only. This file must not be deployed from its
+# pull request. Production deployment requires a separate exact trigger, a fresh
+# read-only preflight, post-deploy verification, and an explicit rollback path.
+[vars]
+INTRADAY_GENERATION_ENABLED = "true"
+CATEGORY_CAPTURE_ENABLED = "true"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+# Required secrets remain unchanged:
+#   TWITCH_CLIENT_ID
+#   TWITCH_CLIENT_SECRET
+# Optional manual route token remains unchanged:
+#   TWITCH_INGEST_TOKEN
+
+[[d1_databases]]
+binding = "DB_TWITCH_HOT"
+database_name = "vl_twitch_hot"
+database_id = "b77221fe-80a3-4749-bc0e-d3ad54003dcf"

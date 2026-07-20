@@ -59,11 +59,19 @@ for (const fragment of [
   'Every category PR must read and cite',
 ]) assert.ok(schedule.includes(fragment), `schedule missing: ${fragment}`)
 
-for (const fragment of [
+const decisionWip = [
   'Twitch permanent category capture is authorized for implementation but is not yet implemented, deployed, or active',
   'Prepare Phase 12A-4-20',
   'Kick implementation authorized: no',
-]) assert.ok(wip.includes(fragment), `active WIP missing: ${fragment}`)
+].every((fragment) => wip.includes(fragment))
+const packageCandidateWip = [
+  '# 12A-4-20 Twitch permanent category capture implementation package',
+  'PR #625 prepares the Twitch-only permanent category capture package',
+  'does not deploy a Worker',
+  'Twitch runtime active: no',
+  'Kick implementation authorized: no',
+].every((fragment) => wip.includes(fragment))
+assert.equal(decisionWip || packageCandidateWip, true, 'active WIP must describe the current decision or the authorized package candidate')
 
 assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v23')
 assert.equal(gate.status, '12a4_twitch_permanent_category_capture_authorized_pending_implementation')
@@ -133,6 +141,7 @@ console.log(JSON.stringify({
   phase: gate.currentWorkstream.phase,
   trackingIssue: gate.currentWorkstream.trackingIssue,
   decisionPr: gate.currentWorkstream.decisionPr,
+  activeWip: packageCandidateWip ? '12A-4-20-package-candidate' : '12A-4-19-decision',
   twitchImplementationAuthorized: true,
   twitchRuntimeActive: false,
   kickAuthorized: false,
