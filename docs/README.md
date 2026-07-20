@@ -8,9 +8,10 @@ Last updated: 2026-07-20
 ```text
 Phase 12A Analytics Capture Foundation active
 Provider-separated Kick and Twitch canaries accepted and retired
-canonical gate 12A-4-19 Twitch permanent capture authorized; implementation pending
-Twitch permanent implementation authorized yes
+canonical gate 12A-4-20 Twitch permanent package accepted; production activation pending
+Twitch permanent package accepted yes
 Twitch permanent category capture active no
+Exact release trigger current no
 Kick permanent implementation authorized no
 normal Twitch cadence */5 * * * *
 new Worker cron authorized no
@@ -29,10 +30,12 @@ cross-provider identity or combined ranking authorized no
 5. `docs/product/current-schedule.md`
 6. `docs/audits/12a2-current-gate-state.json`
 7. `docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md`
-8. `docs/audits/12a4-category-source-audit-evidence.json`
-9. `docs/audits/12a4-category-storage-budget-evidence.json`
-10. `docs/audits/12a4-twitch-category-capture-canary-attempt-3-final-evidence.json`
-11. `docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json`
+8. `docs/audits/12a4-twitch-permanent-category-capture-package-contract.json`
+9. `docs/audits/12a4-twitch-permanent-category-capture-package-acceptance.json`
+10. `docs/audits/12a4-category-source-audit-evidence.json`
+11. `docs/audits/12a4-category-storage-budget-evidence.json`
+12. `docs/audits/12a4-twitch-category-capture-canary-attempt-3-final-evidence.json`
+13. `docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json`
 
 ## Current category evidence chain
 
@@ -44,23 +47,25 @@ cross-provider identity or combined ranking authorized no
 - Final Twitch canary evidence: `docs/audits/12a4-twitch-category-capture-canary-attempt-3-final-evidence.json`
 - Permanent rollout specification: `docs/product/category-capture-permanent-rollout-spec.md`
 - Permanent rollout plan: `docs/product/category-capture-permanent-rollout-plan.md`
+- Accepted Twitch package contract: `docs/audits/12a4-twitch-permanent-category-capture-package-contract.json`
+- Accepted Twitch package evidence: `docs/audits/12a4-twitch-permanent-category-capture-package-acceptance.json`
 
 ## Current gate
 
-The canonical gate is 12A-4-19. Completed provider-separated canaries justify a Twitch-first permanent rollout. Twitch implementation is authorized, but no permanent runtime capture is active yet.
+The canonical gate is 12A-4-20. The Twitch permanent-category implementation package, rollback config, read-only observer, fixtures, typecheck, and normal/permanent dry-run bundles are accepted. No permanent runtime capture is active yet.
 
-The next deliverable is a Twitch-only implementation package. It must preserve the existing five-minute Worker cron, use the accepted category schema and contract, include rollback and fresh preflight paths, and perform no production deployment from its implementation PR.
+The next deliverable is a separate exact Twitch production release package. It must run a fresh read-only preflight, stop before activation on any failed gate, activate only the accepted Twitch configuration, verify two consecutive category-bearing real non-empty snapshots, and retain immediate restoration of the normal configuration.
 
 Kick remains unauthorized pending Twitch final acceptance and a separate explicit decision. Category UI, backfill, retention expansion, cross-provider identity, and combined rankings remain unauthorized.
 
 ## Invariants
 
 - Twitch and Kick remain separate.
-- Twitch implementation authorization does not authorize Kick.
-- Runtime capture remains inactive until exact deployment acceptance.
+- Accepted Twitch implementation does not authorize Kick.
+- Runtime capture remains inactive until exact release acceptance.
 - Normal collector cadence remains five minutes.
 - No new Worker cron, backfill, retention expansion, category UI, cross-provider category identity, or combined category ranking is authorized.
-- Every category PR must cite the current specification, plan, roadmap, schedule, gate, and development policy.
+- Every category PR must cite the current specification, plan, roadmap, schedule, gate, active WIP, package contract, and development policy.
 - Missing, partial, stale, empty, error, and demo states remain distinct.
 
 ## Documentation governance

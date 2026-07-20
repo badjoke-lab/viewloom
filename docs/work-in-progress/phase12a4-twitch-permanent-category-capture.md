@@ -1,48 +1,43 @@
-# 12A-4-20 Twitch permanent category capture implementation package
+# 12A-4-20 Twitch permanent category capture package accepted
 
 ## Status
 
-PR #625 prepares the Twitch-only permanent category capture package. The package is validation-only: Twitch permanent runtime capture is not deployed or active, and Kick remains unauthorized. It does not deploy a Worker.
+PR #625 is merged and its Twitch-only permanent category capture package is accepted by PR #626. Twitch permanent runtime capture is still inactive. Kick remains unauthorized and unchanged.
 
-## Package contents
+## Accepted package
 
-- Explicit Twitch permanent configuration: `workers/collector-twitch/wrangler.category-permanent.toml`.
-- Existing category-disabled normal configuration retained as rollback target: `workers/collector-twitch/wrangler.toml`.
-- Existing `game_id` / `game_name` extraction, `category-source-v1` payload, dictionary upsert, and category intraday rollups reused without changing stream coverage.
-- Standalone read-only preflight/observation/rollback probe using Cloudflare `GET` and D1 `SELECT` only.
-- Storage, binding, provider leakage, freshness, real/non-empty snapshot, and category continuity gates.
-- Exact package scope enforcement, fixtures, verifier, dry-run Worker bundling, and category rollout policy validation.
+- Package PR: #625.
+- Package merge: `66f2b544e22dafc52e76d684cc2844c734eb8c09`.
+- Accepted candidate HEAD: `e975d1b886736efac8d7d6ca8872f533fb249aed`.
+- Validation run: `29721764872`.
+- Validation job: `88286067503`.
+- Diagnostics artifact: `8452621374`.
+- Artifact digest: `sha256:08f2ad41f4b0a72835060553d23aa685bcdd101e8e503a4bd3c1f91e200411fa`.
+- Acceptance evidence: `docs/audits/12a4-twitch-permanent-category-capture-package-acceptance.json`.
 
-## Pull request boundary
+The accepted package includes the explicit Twitch permanent-category configuration, category-disabled rollback configuration, read-only preflight/observation probe, exact scope gate, fixtures, contract verifier, collector typecheck, and normal/permanent dry-run Worker bundles.
 
-PR #625 does not:
+## Current production state
 
-- deploy a Worker;
-- mutate remote D1;
-- change the production Twitch configuration or bindings;
-- change Kick;
-- change the five-minute Worker cron;
-- add a new Worker cron;
-- backfill data or expand retention;
-- add category UI;
-- add cross-provider identity, totals, or rankings;
-- include the exact production deployment trigger.
-
-## Required acceptance
-
-The latest package HEAD must pass:
-
-1. exact scope verification;
-2. permanent configuration and source-contract fixtures;
-3. package contract verification;
-4. category rollout policy verification;
-5. Twitch collector typecheck;
-6. normal Twitch Worker dry-run bundle;
-7. permanent-category Twitch Worker dry-run bundle.
+- Twitch permanent category capture active: no.
+- Permanent production flag present: no.
+- Exact release trigger present: no.
+- Normal Twitch five-minute collection continues.
+- Kick change: no.
+- Remote D1 mutation by PR #625 or #626: no.
 
 ## Next gate
 
-After this package is accepted and merged, advance the canonical gate to record 12A-4-20 accepted. Then prepare a separate 12A-4-21 exact deployment package that runs a fresh read-only production preflight before any deployment and retains the normal configuration as rollback.
+Prepare Phase 12A-4-21 as a separate exact Twitch production release package. It must:
+
+1. pin the accepted package and acceptance identities;
+2. run a fresh read-only production preflight;
+3. stop before activation on any failed storage, schema, identity, binding, leakage, freshness, real/non-empty snapshot, or provider-separation gate;
+4. activate only the accepted Twitch permanent-category configuration;
+5. verify the permanent flag and absence of obsolete canary bindings;
+6. verify two consecutive real, non-empty, category-bearing snapshots;
+7. retain immediate restoration of the normal Twitch configuration;
+8. start the minimum 24-hour observation without changing Kick.
 
 ## Source documents
 
@@ -51,11 +46,12 @@ After this package is accepted and merged, advance the canonical gate to record 
 - `docs/product/current-roadmap.md`
 - `docs/product/current-schedule.md`
 - `docs/audits/12a2-current-gate-state.json`
+- `docs/audits/12a4-twitch-permanent-category-capture-package-contract.json`
 - `docs/operations/development-and-deployment-policy.md`
 
-## Current authorization
+## Hard boundaries
 
-Twitch implementation authorized: yes.  
+Twitch package accepted: yes.  
 Twitch runtime active: no.  
 Kick implementation authorized: no.  
 Public category UI authorized: no.  

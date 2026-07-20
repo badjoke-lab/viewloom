@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-twitch-permanent-category-capture-package-v1",
   "workstream": "12A-4-20 Twitch permanent category capture implementation package",
-  "status": "prepared",
+  "status": "accepted",
   "trackingIssue": 623,
   "packagePr": 625,
   "provider": "twitch",
@@ -56,8 +56,12 @@
     "combinedProviderRankingAllowed": false
   },
   "readOnlyPreflight": {
-    "cloudflareApiMethods": ["GET"],
-    "d1Statements": ["SELECT"],
+    "cloudflareApiMethods": [
+      "GET"
+    ],
+    "d1Statements": [
+      "SELECT"
+    ],
     "latestSnapshotFreshnessMinutesMax": 20,
     "projectedNinetyDaySizeMbMax": 440,
     "projectedProviderHeadroomMbMin": 10,
@@ -108,6 +112,26 @@
     "crossProviderBehavior": false,
     "exactDeploymentTriggerIncluded": false
   },
-  "acceptance": null,
-  "nextGate": "accept this validation-only package, advance the canonical gate to 12A-4-20, and prepare a separate exact Twitch deployment package with fresh read-only preflight and rollback"
+  "acceptance": {
+    "pr": 626,
+    "packagePr": 625,
+    "packageCandidateHeadSha": "e975d1b886736efac8d7d6ca8872f533fb249aed",
+    "packageMergeSha": "66f2b544e22dafc52e76d684cc2844c734eb8c09",
+    "workflowRunId": 29721764872,
+    "workflowJobId": 88286067503,
+    "artifactId": 8452621374,
+    "artifactDigest": "sha256:08f2ad41f4b0a72835060553d23aa685bcdd101e8e503a4bd3c1f91e200411fa",
+    "exactScopePass": true,
+    "fixturePass": true,
+    "packageContractPass": true,
+    "categoryRolloutPolicyPass": true,
+    "collectorTypecheckPass": true,
+    "normalTwitchDryRunBundlePass": true,
+    "permanentCategoryTwitchDryRunBundlePass": true,
+    "productionRuntimeCaptureStarted": false,
+    "productionWorkerDeployed": false,
+    "remoteD1OperationPerformed": false,
+    "kickChanged": false
+  },
+  "nextGate": "prepare a separate exact 12A-4-21 Twitch production deployment package with fresh read-only preflight, two consecutive category-bearing snapshot verification, 24-48 hour observation, and rollback"
 }

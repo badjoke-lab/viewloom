@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v23",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v24",
   "workstream": "12A-4 provider-specific category capture foundation",
-  "status": "12a4_twitch_permanent_category_capture_authorized_pending_implementation",
+  "status": "12a4_twitch_permanent_category_package_accepted_deployment_pending",
   "intradayFoundation": {
     "designPr": 494,
     "migrationPr": 499,
@@ -314,7 +314,8 @@
     "kickPermanentRuntimeCaptureAuthorized": false,
     "kickPermanentRuntimeCaptureActive": false,
     "retentionExpansionAuthorized": false,
-    "categoryUiAuthorized": false
+    "categoryUiAuthorized": false,
+    "twitchPermanentPackageAccepted": true
   },
   "closedBlockers": [
     "category_source_unverified",
@@ -343,17 +344,17 @@
     "twitch_category_capture_canary_not_executed",
     "twitch_category_capture_final_observation_not_accepted",
     "twitch_category_capture_canary_rollback_not_verified",
-    "runtime_category_capture_not_authorized"
+    "runtime_category_capture_not_authorized",
+    "twitch_permanent_category_capture_not_implemented"
   ],
   "openBlockers": [
-    "twitch_permanent_category_capture_not_implemented",
     "twitch_permanent_category_capture_not_deployed",
     "twitch_permanent_category_capture_observation_not_accepted",
     "kick_permanent_category_capture_not_authorized"
   ],
   "currentWorkstream": {
-    "phase": "12A-4-19",
-    "name": "Twitch permanent category capture authorized; implementation pending",
+    "phase": "12A-4-20",
+    "name": "Twitch permanent category capture package accepted; deployment pending",
     "trackingIssue": 623,
     "acceptedSchemaEvidence": true,
     "acceptedCostEvidence": true,
@@ -400,9 +401,15 @@
     "minimumObservationHours": 24,
     "warningObservationHours": 48,
     "stableAccumulationDaysBeforeUi": 7,
-    "categoryUiAuthorized": false
+    "categoryUiAuthorized": false,
+    "packagePr": 625,
+    "packageAcceptancePr": 626,
+    "packageAccepted": true,
+    "exactDeploymentTriggerCurrent": false,
+    "rollbackConfigAccepted": true,
+    "observerAccepted": true
   },
-  "nextWorkstream": "prepare the Twitch-only permanent category capture implementation package with tests, rollback configuration, fresh read-only preflight, and temporary observation tooling; do not deploy from the implementation PR and do not change Kick",
+  "nextWorkstream": "prepare the separate exact 12A-4-21 Twitch deployment package; run a fresh read-only production preflight before deployment, verify two consecutive category-bearing real non-empty snapshots, retain rollback to the normal config, and do not change Kick",
   "kickCategoryCaptureCanaryInitialAcceptance": {
     "status": "accepted_initial_checkpoint_observation_completed",
     "pr": 579,
@@ -561,5 +568,27 @@
     "twitchWarningObservationHours": 48,
     "stableAccumulationDaysBeforeUi": 7,
     "rollbackRequiredOnHardStop": true
+  },
+  "twitchPermanentCategoryCapturePackage": {
+    "status": "accepted",
+    "trackingIssue": 623,
+    "packagePr": 625,
+    "packageCandidateHeadSha": "e975d1b886736efac8d7d6ca8872f533fb249aed",
+    "packageMergeSha": "66f2b544e22dafc52e76d684cc2844c734eb8c09",
+    "acceptancePr": 626,
+    "workflowRunId": 29721764872,
+    "workflowJobId": 88286067503,
+    "artifactId": 8452621374,
+    "artifactDigest": "sha256:08f2ad41f4b0a72835060553d23aa685bcdd101e8e503a4bd3c1f91e200411fa",
+    "contract": "docs/audits/12a4-twitch-permanent-category-capture-package-contract.json",
+    "evidence": "docs/audits/12a4-twitch-permanent-category-capture-package-acceptance.json",
+    "permanentConfig": "workers/collector-twitch/wrangler.category-permanent.toml",
+    "rollbackConfig": "workers/collector-twitch/wrangler.toml",
+    "readOnlyObserver": "scripts/run-12a4-twitch-permanent-category-observer.mjs",
+    "packageAccepted": true,
+    "productionDeploymentIncluded": false,
+    "runtimeCaptureStarted": false,
+    "remoteD1OperationPerformed": false,
+    "kickChanged": false
   }
 }
