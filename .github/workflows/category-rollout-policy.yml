@@ -1,0 +1,55 @@
+name: Category rollout policy
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/product/category-capture-permanent-rollout-spec.md'
+      - 'docs/product/category-capture-permanent-rollout-plan.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/audits/12a2-current-gate-state.json'
+      - 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md'
+      - 'docs/operations/development-and-deployment-policy.md'
+      - 'workers/collector-twitch/**'
+      - 'workers/collector-kick/**'
+      - 'db/d1/**'
+      - 'apps/web/**'
+      - 'scripts/verify-category-rollout-policy.mjs'
+      - '.github/workflows/category-rollout-policy.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/product/category-capture-permanent-rollout-spec.md'
+      - 'docs/product/category-capture-permanent-rollout-plan.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/audits/12a2-current-gate-state.json'
+      - 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md'
+      - 'docs/operations/development-and-deployment-policy.md'
+      - 'workers/collector-twitch/**'
+      - 'workers/collector-kick/**'
+      - 'db/d1/**'
+      - 'apps/web/**'
+      - 'scripts/verify-category-rollout-policy.mjs'
+      - '.github/workflows/category-rollout-policy.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify current category rollout contract
+        run: node scripts/verify-category-rollout-policy.mjs

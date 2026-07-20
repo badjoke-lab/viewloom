@@ -8,10 +8,14 @@ on:
       - 'CONTRIBUTING.md'
       - 'README.md'
       - 'docs/**'
+      - 'workers/collector-twitch/**'
+      - 'workers/collector-kick/**'
+      - 'db/d1/**'
       - 'apps/web/docs/**'
       - 'apps/web/public/launch-assets/**'
       - 'scripts/verify-development-policy.mjs'
       - 'scripts/verify-development-policy-active-twitch-canary.mjs'
+      - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-12a4-twitch-category-capture-canary-trigger-package.mjs'
       - 'scripts/verify-r12c1-launch-copy-package.mjs'
       - 'scripts/verify-r12c2-launch-assets-package.mjs'
@@ -25,10 +29,14 @@ on:
       - 'CONTRIBUTING.md'
       - 'README.md'
       - 'docs/**'
+      - 'workers/collector-twitch/**'
+      - 'workers/collector-kick/**'
+      - 'db/d1/**'
       - 'apps/web/docs/**'
       - 'apps/web/public/launch-assets/**'
       - 'scripts/verify-development-policy.mjs'
       - 'scripts/verify-development-policy-active-twitch-canary.mjs'
+      - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-12a4-twitch-category-capture-canary-trigger-package.mjs'
       - 'scripts/verify-r12c1-launch-copy-package.mjs'
       - 'scripts/verify-r12c2-launch-assets-package.mjs'
@@ -50,8 +58,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Detect current category gate
+        id: category_gate
+        shell: bash
+        run: |
+          schema=$(node -p "require('./docs/audits/12a2-current-gate-state.json').schemaVersion")
+          echo "schema=$schema" >> "$GITHUB_OUTPUT"
+          if [ "$schema" = 'viewloom-12a2-current-gate-state-v23' ]; then
+            echo 'permanent_rollout=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'permanent_rollout=false' >> "$GITHUB_OUTPUT"
+          fi
       - name: Detect exact or active Twitch trigger
         id: trigger_scope
+        if: steps.category_gate.outputs.permanent_rollout != 'true'
         shell: bash
         env:
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
@@ -76,8 +96,11 @@ jobs:
           else
             echo 'present=false' >> "$GITHUB_OUTPUT"
           fi
+      - name: Verify permanent category rollout policy
+        if: steps.category_gate.outputs.permanent_rollout == 'true'
+        run: node scripts/verify-category-rollout-policy.mjs | tee development-policy.log
       - name: Verify development policy
-        if: steps.trigger_scope.outputs.exact != 'true' && steps.trigger_scope.outputs.present != 'true'
+        if: steps.category_gate.outputs.permanent_rollout != 'true' && steps.trigger_scope.outputs.exact != 'true' && steps.trigger_scope.outputs.present != 'true'
         shell: bash
         run: |
           set +e
@@ -86,7 +109,7 @@ jobs:
           cat development-policy.log
           exit $status
       - name: Verify development policy with armed Twitch canary
-        if: steps.trigger_scope.outputs.exact != 'true' && steps.trigger_scope.outputs.present == 'true'
+        if: steps.category_gate.outputs.permanent_rollout != 'true' && steps.trigger_scope.outputs.exact != 'true' && steps.trigger_scope.outputs.present == 'true'
         shell: bash
         run: |
           set +e
@@ -95,11 +118,10 @@ jobs:
           cat development-policy.log
           exit $status
       - name: Verify exact Twitch trigger package
-        if: steps.trigger_scope.outputs.exact == 'true'
+        if: steps.category_gate.outputs.permanent_rollout != 'true' && steps.trigger_scope.outputs.exact == 'true'
         env:
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
-        run: |
-          node scripts/verify-12a4-twitch-category-capture-canary-trigger-package.mjs | tee development-policy.log
+        run: node scripts/verify-12a4-twitch-category-capture-canary-trigger-package.mjs | tee development-policy.log
       - name: Verify R12C-1 launch copy package
         run: node scripts/verify-r12c1-launch-copy-package.mjs
       - name: Verify R12C-2 launch asset package

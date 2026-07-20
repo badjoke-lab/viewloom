@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v22",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v23",
   "workstream": "12A-4 provider-specific category capture foundation",
-  "status": "12a4_provider_canaries_accepted_and_retired",
+  "status": "12a4_twitch_permanent_category_capture_authorized_pending_implementation",
   "intradayFoundation": {
     "designPr": 494,
     "migrationPr": 499,
@@ -288,7 +288,7 @@
     "twitchStoragePreflightFreshForStart": true,
     "twitchExactTriggerAccepted": true,
     "twitchCanaryExecuted": true,
-    "runtimeCaptureAuthorized": false,
+    "runtimeCaptureAuthorized": true,
     "runtimeCaptureStarted": false,
     "categoryCaptureFlagPresent": false,
     "productionCategoryRowsPresent": true,
@@ -307,7 +307,14 @@
     "twitchCanaryObservationActive": false,
     "twitchCanaryFinalAcceptanceAccepted": true,
     "twitchCanaryRollbackVerified": true,
-    "twitchCanaryProductionPathRetired": true
+    "twitchCanaryProductionPathRetired": true,
+    "authorizationScope": "twitch_only",
+    "twitchPermanentRuntimeCaptureAuthorized": true,
+    "twitchPermanentRuntimeCaptureActive": false,
+    "kickPermanentRuntimeCaptureAuthorized": false,
+    "kickPermanentRuntimeCaptureActive": false,
+    "retentionExpansionAuthorized": false,
+    "categoryUiAuthorized": false
   },
   "closedBlockers": [
     "category_source_unverified",
@@ -335,15 +342,19 @@
     "twitch_category_capture_exact_trigger_not_accepted",
     "twitch_category_capture_canary_not_executed",
     "twitch_category_capture_final_observation_not_accepted",
-    "twitch_category_capture_canary_rollback_not_verified"
-  ],
-  "openBlockers": [
+    "twitch_category_capture_canary_rollback_not_verified",
     "runtime_category_capture_not_authorized"
   ],
+  "openBlockers": [
+    "twitch_permanent_category_capture_not_implemented",
+    "twitch_permanent_category_capture_not_deployed",
+    "twitch_permanent_category_capture_observation_not_accepted",
+    "kick_permanent_category_capture_not_authorized"
+  ],
   "currentWorkstream": {
-    "phase": "12A-4-18",
-    "name": "Provider-separated category canaries accepted and retired",
-    "trackingIssue": 519,
+    "phase": "12A-4-19",
+    "name": "Twitch permanent category capture authorized; implementation pending",
+    "trackingIssue": 623,
     "acceptedSchemaEvidence": true,
     "acceptedCostEvidence": true,
     "acceptedEnablementDecision": true,
@@ -370,15 +381,28 @@
     "twitchStorageObservationExecutionRetired": true,
     "productionExecutionIncluded": false,
     "runtimeCaptureStarted": false,
-    "runtimeCaptureAuthorized": false,
+    "runtimeCaptureAuthorized": true,
     "boundedCanaryCaptureActive": false,
     "finalRollbackPending": false,
     "crossProviderAnalyticsAllowed": false,
     "acceptedTwitchCanaryFinalEvidence": true,
     "twitchCanaryExecutionRetired": true,
-    "twitchCanaryRollbackVerified": true
+    "twitchCanaryRollbackVerified": true,
+    "decisionPr": 624,
+    "implementationSpecAccepted": true,
+    "implementationPlanAccepted": true,
+    "authorizationScope": "twitch_only",
+    "twitchPermanentCaptureAuthorized": true,
+    "twitchPermanentCaptureActive": false,
+    "kickPermanentCaptureAuthorized": false,
+    "existingFiveMinuteCronPreserved": true,
+    "freshReadOnlyPreflightRequired": true,
+    "minimumObservationHours": 24,
+    "warningObservationHours": 48,
+    "stableAccumulationDaysBeforeUi": 7,
+    "categoryUiAuthorized": false
   },
-  "nextWorkstream": "provider-separated canary evaluation is complete; permanent category capture remains unauthorized and requires a separate explicit product and operational decision",
+  "nextWorkstream": "prepare the Twitch-only permanent category capture implementation package with tests, rollback configuration, fresh read-only preflight, and temporary observation tooling; do not deploy from the implementation PR and do not change Kick",
   "kickCategoryCaptureCanaryInitialAcceptance": {
     "status": "accepted_initial_checkpoint_observation_completed",
     "pr": 579,
@@ -512,5 +536,30 @@
     "productionExecutionPathsRetired": true,
     "kickChanged": false,
     "permanentRuntimeCaptureAuthorized": false
+  },
+  "permanentCategoryCaptureRolloutDecision": {
+    "status": "accepted",
+    "trackingIssue": 623,
+    "decisionPr": 624,
+    "specification": "docs/product/category-capture-permanent-rollout-spec.md",
+    "implementationPlan": "docs/product/category-capture-permanent-rollout-plan.md",
+    "activeWip": "docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md",
+    "authorizationScope": "twitch_only",
+    "twitchPermanentCaptureAuthorized": true,
+    "twitchRuntimeCaptureActive": false,
+    "kickPermanentCaptureAuthorized": false,
+    "kickAutomaticStartAuthorized": false,
+    "existingCollectorCronRequired": "*/5 * * * *",
+    "newWorkerCronAuthorized": false,
+    "backfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "categoryUiAuthorized": false,
+    "crossProviderIdentityAllowed": false,
+    "combinedProviderRankingAllowed": false,
+    "freshReadOnlyPreflightRequired": true,
+    "twitchMinimumObservationHours": 24,
+    "twitchWarningObservationHours": 48,
+    "stableAccumulationDaysBeforeUi": 7,
+    "rollbackRequiredOnHardStop": true
   }
 }

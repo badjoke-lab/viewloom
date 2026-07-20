@@ -1,42 +1,55 @@
 # ViewLoom current execution schedule
 
 Status: source of truth  
-Last updated: 2026-07-19
+Last updated: 2026-07-20
 
 ```text
 Phase 12A Analytics Capture Foundation active
 12A-0 through 12A-3 complete
-12A-4 source/storage/schema/cost gates complete
-Kick bounded canary complete and retired
-Twitch bounded canary complete and retired
-Finalizer run 29677847983 success
-Post-rollback acceptance run 29683729428 success
-Provider leakage 0
-Post-grace category payload rows 0
-Permanent category flag present no
-Final rollback pending no
-Runtime category capture active no
+Provider-separated Kick and Twitch canaries complete and retired
+12A-4-19 permanent rollout decision accepted
+Twitch permanent implementation authorized yes
+Twitch permanent runtime active no
+Kick permanent implementation authorized no
+Existing Worker cadence */5 * * * * unchanged
+Backfill no
+Retention expansion no
+Category UI no
+Cross-provider category identity or ranking no
 ```
 
-## Completed sequence
+## Active sequence
 
-1. Started Twitch attempt 3 at the exact boundary after a fresh read-only production preflight.
-2. Observed the bounded canary with storage, binding, leakage, and collector-health gates.
-3. Enforced exact capture expiry at `2026-07-19T05:15:00.000Z`.
-4. Restored the normal Twitch config and removed all canary bindings.
-5. Proved zero category payload rows after the `2026-07-19T05:25:00.000Z` grace boundary.
-6. Confirmed fresh real non-empty normal Twitch collection, zero provider leakage, and passing storage headroom.
-7. Froze final sanitized evidence and retired the trigger, schedule, and temporary acceptance paths.
-8. Advanced the canonical gate to 12A-4-18.
+1. Build Phase 12A-4-20 Twitch-only implementation package.
+2. Verify extraction, storage, provider separation, rollback, and disabled Kick fixtures.
+3. Accept the package without production deployment from the implementation PR.
+4. Create a separate exact Twitch deployment trigger.
+5. Run a fresh Cloudflare GET / D1 SELECT preflight immediately before deployment.
+6. Deploy only when every gate passes.
+7. Require two consecutive real, non-empty, category-bearing five-minute snapshots.
+8. Observe for at least 24 hours; extend to 48 hours on warning.
+9. Accept and retire temporary paths, or roll back and freeze failure evidence.
+10. Consider Kick in a separate explicit decision.
+11. Require seven stable days before category UI work.
+
+## Twitch hard stops
+
+- Provider leakage greater than zero.
+- Projected Twitch 90-day size greater than 440 MB.
+- Twitch provider headroom below 10 MB.
+- Projected account-wide D1 headroom below 500 MB.
+- Normal collection stale, non-real, or empty for two consecutive expected cycles.
+- Category payload absent for three consecutive otherwise successful snapshots after deployment.
+- Repeated collector or D1 failures caused by category capture.
+- Unexpected Kick configuration, binding, data, or behavior change.
 
 ## Current operating state
 
-- Normal Twitch cadence remains five minutes.
-- Twitch and Kick canary bindings are absent.
-- Permanent category capture is absent and unauthorized.
-- Historical canary data is retained as evidence.
-- No category-capture production workflow remains active.
+- Normal Twitch and Kick five-minute collection continues.
+- Permanent category capture is not currently active.
+- Historical canary category rows remain accepted evidence.
+- No category-capture deployment or observation workflow is currently active.
 
-## Deferred
+## Mandatory references
 
-Permanent category capture, category UI, backfill, retention expansion, cross-provider category identity, and combined Twitch/Kick rankings remain unauthorized.
+Every category PR must read and cite the permanent rollout specification, rollout plan, current roadmap, current schedule, canonical gate, and development policy.
