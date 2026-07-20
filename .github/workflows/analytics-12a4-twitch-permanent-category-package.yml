@@ -1,0 +1,77 @@
+name: Analytics 12A4 Twitch Permanent Category Package
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - '.github/workflows/analytics-12a4-twitch-permanent-category-package.yml'
+      - 'docs/audits/12a4-twitch-permanent-category-capture-package-contract.json'
+      - 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md'
+      - 'scripts/check-12a4-twitch-permanent-category-package-scope.mjs'
+      - 'scripts/run-12a4-twitch-permanent-category-observer.mjs'
+      - 'scripts/test-12a4-twitch-permanent-category-capture.mjs'
+      - 'scripts/verify-12a4-twitch-permanent-category-package.mjs'
+      - 'workers/collector-twitch/wrangler.category-permanent.toml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-twitch-permanent-category-package-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify exact Twitch permanent category package scope
+        run: node scripts/check-12a4-twitch-permanent-category-package-scope.mjs
+      - name: Run Twitch permanent category package fixtures
+        run: node scripts/test-12a4-twitch-permanent-category-capture.mjs
+      - name: Verify Twitch permanent category package contract
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-12a4-twitch-permanent-category-package.mjs 2>&1 | tee twitch-permanent-category-package.log
+      - name: Verify current category rollout contract
+        run: node scripts/verify-category-rollout-policy.mjs
+      - name: Verify collector typecheck
+        run: pnpm typecheck:collectors
+      - name: Bundle normal Twitch collector without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.toml
+      - name: Bundle permanent-category Twitch collector without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-twitch/wrangler.category-permanent.toml
+      - name: Upload package diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-twitch-permanent-category-package-diagnostics
+          path: twitch-permanent-category-package.log
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Publish package summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom 12A-4-20 Twitch permanent category package'
+            echo
+            echo '- Provider: Twitch only'
+            echo '- Existing Worker cron: five minutes, unchanged'
+            echo '- Permanent package config: explicit and provider-scoped'
+            echo '- Normal config retained as rollback target: yes'
+            echo '- Read-only preflight/observer: Cloudflare GET and D1 SELECT only'
+            echo '- Production deployment from this PR: no'
+            echo '- Production binding change from this PR: no'
+            echo '- Kick change: no'
+            echo '- Backfill or retention expansion: no'
+            echo '- Category UI or cross-provider behavior: no'
+            echo '- Exact production deployment trigger included: no'
+          } >> "$GITHUB_STEP_SUMMARY"
