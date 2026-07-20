@@ -13,6 +13,7 @@ const allowed = new Set([
   'scripts/run-12a4-twitch-permanent-category-release.mjs',
   'scripts/test-12a4-twitch-permanent-category-release.mjs',
   'scripts/verify-12a4-twitch-permanent-category-release-package.mjs',
+  'scripts/verify-12a4-twitch-permanent-category-release-trigger.mjs',
   'scripts/verify-category-rollout-policy.mjs',
   'scripts/wait-12a4-twitch-permanent-category-release-start.mjs',
 ])
