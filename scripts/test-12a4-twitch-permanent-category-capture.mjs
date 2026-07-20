@@ -41,13 +41,13 @@ for (const fragment of [
   'categoryName: categoryName || null',
   'encodeCategorySnapshot(input.items, input.hasMore)',
   'writeCategoryDictionary(',
-  'categoryContractVersion',
-  'categoryIds',
-  'categoryRefs',
 ]) assert.ok(implementation.includes(fragment), `implementation missing ${fragment}`)
 
 for (const fragment of [
   "export const CATEGORY_CONTRACT_VERSION = 'category-source-v1'",
+  'categoryContractVersion',
+  'categoryIds',
+  'categoryRefs',
   'ON CONFLICT(provider, category_id) DO UPDATE SET',
   'dictionary.set(id, name)',
   'categoryRefs.push(ref)',
