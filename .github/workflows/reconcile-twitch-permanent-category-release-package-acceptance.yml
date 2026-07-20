@@ -1,0 +1,49 @@
+name: Reconcile Twitch permanent category release package acceptance
+
+on:
+  push:
+    branches:
+      - agent/accept-twitch-permanent-category-release-package
+    paths:
+      - '.github/workflows/reconcile-twitch-permanent-category-release-package-acceptance.yml'
+      - 'scripts/reconcile-twitch-permanent-category-release-package-acceptance.mjs'
+      - 'docs/audits/12a4-twitch-permanent-category-release-package-acceptance.json'
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Reconcile release package acceptance
+        run: |
+          version=$(node -p "require('./docs/audits/12a2-current-gate-state.json').schemaVersion")
+          if [ "$version" = 'viewloom-12a2-current-gate-state-v24' ]; then
+            node scripts/reconcile-twitch-permanent-category-release-package-acceptance.mjs
+          else
+            test "$version" = 'viewloom-12a2-current-gate-state-v25'
+          fi
+      - name: Validate generated state
+        run: |
+          node -e "const g=require('./docs/audits/12a2-current-gate-state.json'); if(g.schemaVersion!=='viewloom-12a2-current-gate-state-v25'||g.currentWorkstream.phase!=='12A-4-21') process.exit(1)"
+          node -e "const c=require('./docs/audits/12a4-twitch-permanent-category-release-contract.json'); if(c.status!=='accepted'||c.acceptance.pr!==628) process.exit(1)"
+          git diff --check
+      - name: Commit generated state
+        run: |
+          if git diff --quiet; then
+            echo 'No generated changes.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/audits/12a2-current-gate-state.json docs/audits/12a4-twitch-permanent-category-release-contract.json
+          git commit -m 'Advance Twitch category release gate to 12A-4-21'
+          git push origin HEAD:agent/accept-twitch-permanent-category-release-package
