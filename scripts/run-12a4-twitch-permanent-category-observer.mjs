@@ -87,7 +87,7 @@ export async function runObserver(options = {}) {
   const outputDir = path.resolve(options.outputDir ?? process.env.OUTPUT_DIR ?? 'artifacts/12a4-twitch-permanent-category')
   fs.mkdirSync(outputDir, { recursive: true })
   const evidence = {
-    schemaVersion: 'viewloom-12a4-twitch-permanent-category-readonly-evidence-v1',
+    schemaVersion: 'viewloom-12a4-twitch-permanent-category-readonly-evidence-v2',
     provider: 'twitch',
     mode,
     observedAt: new Date().toISOString(),
@@ -103,8 +103,10 @@ export async function runObserver(options = {}) {
       collectorErrorRunsSinceStart: null,
       latestSnapshot: null,
       latestCategorySnapshot: null,
+      latestNormalSnapshot: null,
       minutesSinceLatestSnapshot: null,
       minutesSinceLatestCategorySnapshot: null,
+      minutesSinceLatestNormalSnapshot: null,
     },
     gates: {
       readOnly: true,
@@ -118,6 +120,7 @@ export async function runObserver(options = {}) {
       latestSnapshotRealPass: false,
       latestSnapshotNonemptyPass: false,
       categorySnapshotPass: mode !== 'observe',
+      rollbackNormalSnapshotPass: mode !== 'rollback',
       productionMutationAuthorized: false,
       kickMutationAuthorized: false,
     },
@@ -171,6 +174,7 @@ SELECT COUNT(*) AS normal_payload_rows_since_start FROM minute_snapshots WHERE p
 SELECT COUNT(*) AS collector_error_runs_since_start FROM collector_runs WHERE provider = 'twitch' AND run_at >= '${startAt}' AND status = 'error';
 SELECT bucket_minute, collected_at, stream_count, total_viewers, source_mode, json_extract(payload_json, '$.categoryContractVersion') AS category_contract_version FROM minute_snapshots WHERE provider = 'twitch' ORDER BY bucket_minute DESC LIMIT 1;
 SELECT bucket_minute AS category_bucket_minute, collected_at AS category_collected_at, stream_count AS category_stream_count, total_viewers AS category_total_viewers, source_mode AS category_source_mode FROM minute_snapshots WHERE provider = 'twitch' AND collected_at >= '${startAt}' AND json_extract(payload_json, '$.categoryContractVersion') = 'category-source-v1' ORDER BY bucket_minute DESC LIMIT 1;
+SELECT bucket_minute AS normal_bucket_minute, collected_at AS normal_collected_at, stream_count AS normal_stream_count, total_viewers AS normal_total_viewers, source_mode AS normal_source_mode FROM minute_snapshots WHERE provider = 'twitch' AND collected_at >= '${startAt}' AND json_extract(payload_json, '$.categoryContractVersion') IS NULL ORDER BY bucket_minute DESC LIMIT 1;
 `.trim())
       evidence.data.twitchDictionaryRows = numberFromRows(rows, 'twitch_dictionary_rows')
       evidence.data.providerLeakageRows = numberFromRows(rows, 'provider_leakage_rows')
@@ -179,8 +183,10 @@ SELECT bucket_minute AS category_bucket_minute, collected_at AS category_collect
       evidence.data.collectorErrorRunsSinceStart = numberFromRows(rows, 'collector_error_runs_since_start')
       evidence.data.latestSnapshot = rows.find((row) => Object.hasOwn(row, 'bucket_minute')) ?? null
       evidence.data.latestCategorySnapshot = rows.find((row) => Object.hasOwn(row, 'category_bucket_minute')) ?? null
+      evidence.data.latestNormalSnapshot = rows.find((row) => Object.hasOwn(row, 'normal_bucket_minute')) ?? null
       evidence.data.minutesSinceLatestSnapshot = minutesSince(evidence.data.latestSnapshot?.collected_at ?? evidence.data.latestSnapshot?.bucket_minute)
       evidence.data.minutesSinceLatestCategorySnapshot = minutesSince(evidence.data.latestCategorySnapshot?.category_collected_at ?? evidence.data.latestCategorySnapshot?.category_bucket_minute)
+      evidence.data.minutesSinceLatestNormalSnapshot = minutesSince(evidence.data.latestNormalSnapshot?.normal_collected_at ?? evidence.data.latestNormalSnapshot?.normal_bucket_minute)
       evidence.gates.providerLeakagePass = evidence.data.providerLeakageRows === 0
       evidence.gates.latestSnapshotFreshnessPass = Number.isFinite(evidence.data.minutesSinceLatestSnapshot)
         && evidence.data.minutesSinceLatestSnapshot <= contract.readOnlyPreflight.latestSnapshotFreshnessMinutesMax
@@ -192,6 +198,13 @@ SELECT bucket_minute AS category_bucket_minute, collected_at AS category_collect
         && Number(evidence.data.latestCategorySnapshot?.category_stream_count) > 0
         && Number.isFinite(evidence.data.minutesSinceLatestCategorySnapshot)
         && evidence.data.minutesSinceLatestCategorySnapshot <= contract.readOnlyPreflight.latestSnapshotFreshnessMinutesMax
+      )
+      evidence.gates.rollbackNormalSnapshotPass = mode !== 'rollback' || (
+        Number(evidence.data.normalPayloadRowsSinceStart) >= 1
+        && evidence.data.latestNormalSnapshot?.normal_source_mode === 'real'
+        && Number(evidence.data.latestNormalSnapshot?.normal_stream_count) > 0
+        && Number.isFinite(evidence.data.minutesSinceLatestNormalSnapshot)
+        && evidence.data.minutesSinceLatestNormalSnapshot <= contract.readOnlyPreflight.latestSnapshotFreshnessMinutesMax
       )
     }
 
@@ -206,6 +219,7 @@ SELECT bucket_minute AS category_bucket_minute, collected_at AS category_collect
       evidence.gates.latestSnapshotRealPass,
       evidence.gates.latestSnapshotNonemptyPass,
       evidence.gates.categorySnapshotPass,
+      evidence.gates.rollbackNormalSnapshotPass,
     ]
     evidence.outcome = required.every(Boolean) ? 'accepted' : 'rejected'
   } catch (error) {
