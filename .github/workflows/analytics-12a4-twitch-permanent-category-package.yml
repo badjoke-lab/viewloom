@@ -7,12 +7,15 @@ on:
     types: [opened, reopened, synchronize]
     paths:
       - '.github/workflows/analytics-12a4-twitch-permanent-category-package.yml'
+      - 'docs/audits/12a2-current-gate-state.json'
       - 'docs/audits/12a4-twitch-permanent-category-capture-package-contract.json'
+      - 'docs/audits/12a4-twitch-permanent-category-capture-package-acceptance.json'
       - 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md'
       - 'scripts/check-12a4-twitch-permanent-category-package-scope.mjs'
       - 'scripts/run-12a4-twitch-permanent-category-observer.mjs'
       - 'scripts/test-12a4-twitch-permanent-category-capture.mjs'
       - 'scripts/verify-12a4-twitch-permanent-category-package.mjs'
+      - 'scripts/verify-category-rollout-policy.mjs'
       - 'workers/collector-twitch/wrangler.category-permanent.toml'
 
 permissions:
@@ -32,17 +35,31 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
+      - name: Detect package lifecycle
+        id: lifecycle
+        run: |
+          schema=$(node -p "require('./docs/audits/12a2-current-gate-state.json').schemaVersion")
+          echo "schema=$schema" >> "$GITHUB_OUTPUT"
+          if [ "$schema" = 'viewloom-12a2-current-gate-state-v23' ]; then
+            echo 'candidate=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'candidate=false' >> "$GITHUB_OUTPUT"
+            test "$schema" = 'viewloom-12a2-current-gate-state-v24'
+          fi
       - name: Verify exact Twitch permanent category package scope
+        if: steps.lifecycle.outputs.candidate == 'true'
         run: node scripts/check-12a4-twitch-permanent-category-package-scope.mjs
       - name: Run Twitch permanent category package fixtures
+        if: steps.lifecycle.outputs.candidate == 'true'
         run: node scripts/test-12a4-twitch-permanent-category-capture.mjs
       - name: Verify Twitch permanent category package contract
+        if: steps.lifecycle.outputs.candidate == 'true'
         shell: bash
         run: |
           set -o pipefail
           node scripts/verify-12a4-twitch-permanent-category-package.mjs 2>&1 | tee twitch-permanent-category-package.log
       - name: Verify current category rollout contract
-        run: node scripts/verify-category-rollout-policy.mjs
+        run: node scripts/verify-category-rollout-policy.mjs | tee category-rollout-policy.log
       - name: Verify collector typecheck
         run: pnpm typecheck:collectors
       - name: Bundle normal Twitch collector without deploying
@@ -54,15 +71,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: analytics-12a4-twitch-permanent-category-package-diagnostics
-          path: twitch-permanent-category-package.log
+          path: |
+            twitch-permanent-category-package.log
+            category-rollout-policy.log
           if-no-files-found: warn
           retention-days: 7
       - name: Publish package summary
         if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4-20 Twitch permanent category package'
+            echo '## ViewLoom Twitch permanent category package'
             echo
+            echo "- Canonical schema: ${{ steps.lifecycle.outputs.schema }}"
             echo '- Provider: Twitch only'
             echo '- Existing Worker cron: five minutes, unchanged'
             echo '- Permanent package config: explicit and provider-scoped'
@@ -73,5 +93,5 @@ jobs:
             echo '- Kick change: no'
             echo '- Backfill or retention expansion: no'
             echo '- Category UI or cross-provider behavior: no'
-            echo '- Exact production deployment trigger included: no'
+            echo '- Exact production release trigger included: no'
           } >> "$GITHUB_STEP_SUMMARY"
