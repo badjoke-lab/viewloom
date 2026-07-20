@@ -169,6 +169,6 @@ jobs:
             echo '- Two category-bearing snapshots required: yes'
             echo '- Automatic normal-config restoration on failed verification: yes'
             echo '- Kick change: no'
-            echo '- Existing Worker cron: five minutes'
-            echo '- New Worker cron: no'
+            echo '- Existing Worker schedule remains five minutes'
+            echo '- No new Worker schedule'
           } >> "$GITHUB_STEP_SUMMARY"
