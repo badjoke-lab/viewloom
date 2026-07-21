@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v26",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v27",
   "workstream": "12A-4 provider-specific category capture foundation",
-  "status": "12a4_twitch_permanent_category_capture_active_observation_pending",
+  "status": "12a4_twitch_permanent_category_capture_accepted",
   "intradayFoundation": {
     "designPr": 494,
     "migrationPr": 499,
@@ -317,7 +317,8 @@
     "categoryUiAuthorized": false,
     "twitchPermanentPackageAccepted": true,
     "twitchPermanentReleasePackageAccepted": true,
-    "twitchPermanentExactReleaseTriggerAccepted": true
+    "twitchPermanentExactReleaseTriggerAccepted": true,
+    "twitchPermanentObservationAccepted": true
   },
   "closedBlockers": [
     "category_source_unverified",
@@ -348,15 +349,15 @@
     "twitch_category_capture_canary_rollback_not_verified",
     "runtime_category_capture_not_authorized",
     "twitch_permanent_category_capture_not_implemented",
-    "twitch_permanent_category_capture_not_deployed"
+    "twitch_permanent_category_capture_not_deployed",
+    "twitch_permanent_category_capture_observation_not_accepted"
   ],
   "openBlockers": [
-    "twitch_permanent_category_capture_observation_not_accepted",
     "kick_permanent_category_capture_not_authorized"
   ],
   "currentWorkstream": {
-    "phase": "12A-4-22",
-    "name": "Twitch permanent category capture active; minimum observation in progress",
+    "phase": "12A-4-23",
+    "name": "Twitch permanent category capture accepted",
     "trackingIssue": 623,
     "acceptedSchemaEvidence": true,
     "acceptedCostEvidence": true,
@@ -428,9 +429,13 @@
     "observationActive": true,
     "observationMinimumEndAt": "2026-07-21T11:40:00.000Z",
     "observationWarningEndAt": "2026-07-22T11:40:00.000Z",
-    "automaticRollbackOnObservationHardStop": true
+    "automaticRollbackOnObservationHardStop": true,
+    "twitchPermanentObservationAccepted": true,
+    "observationScheduleCurrent": false,
+    "warningExtensionRequired": false,
+    "rollbackRequired": false
   },
-  "nextWorkstream": "complete the minimum 24-hour Twitch-only permanent category observation, extend to 48 hours on warning, then accept or restore the normal Twitch config and retire temporary observation paths",
+  "nextWorkstream": "12A-4-24 separate Kick permanent category decision; keep category UI unauthorized until seven stable Twitch days are accepted",
   "kickCategoryCaptureCanaryInitialAcceptance": {
     "status": "accepted_initial_checkpoint_observation_completed",
     "pr": 579,
@@ -669,6 +674,29 @@
     "newWorkerCronAdded": false,
     "automaticRollbackOnHardStop": true,
     "finalAcceptancePending": true,
+    "kickChanged": false
+  },
+  "twitchPermanentCategoryFinalAcceptance": {
+    "status": "accepted",
+    "trackingIssue": 623,
+    "provider": "twitch",
+    "evidence": "docs/audits/12a4-twitch-permanent-category-final-acceptance.json",
+    "verificationPr": 633,
+    "workflowRunId": 29827696569,
+    "workflowJobId": 88624752189,
+    "artifactId": 8493912964,
+    "artifactDigest": "sha256:f590eed7e83f0a44f5b817a15c71501df163f5a4f6360f8901e42e1d2202bd85",
+    "observedAt": "2026-07-21T11:51:02.829Z",
+    "expectedCategoryRows": 290,
+    "observedCategoryRows": 291,
+    "categoryCoverageRatio": 1,
+    "collectorErrorRunsSinceStart": 0,
+    "providerLeakageRows": 0,
+    "projectedNinetyDaySizeMb": 378.59,
+    "projectedProviderHeadroomMb": 71.41,
+    "projectedAccountWideHeadroomMb": 626.08,
+    "warningExtensionRequired": false,
+    "rollbackRequired": false,
     "kickChanged": false
   }
 }

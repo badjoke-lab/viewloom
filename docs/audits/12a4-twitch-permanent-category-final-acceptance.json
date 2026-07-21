@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "viewloom-12a4-twitch-permanent-category-final-acceptance-v1",
+  "status": "accepted",
+  "trackingIssue": 623,
+  "provider": "twitch",
+  "startAt": "2026-07-20T11:40:00.000Z",
+  "observedAt": "2026-07-21T11:51:02.829Z",
+  "minimumObservationHours": 24,
+  "minimumReached": true,
+  "warningExtensionRequired": false,
+  "rollbackRequired": false,
+  "source": {
+    "verificationPr": 633,
+    "workflowRunId": 29827696569,
+    "workflowJobId": 88624752189,
+    "artifactId": 8493912964,
+    "artifactDigest": "sha256:f590eed7e83f0a44f5b817a15c71501df163f5a4f6360f8901e42e1d2202bd85"
+  },
+  "bindings": {
+    "permanentCaptureEnabled": true,
+    "obsoleteCanaryBindingsPresent": false
+  },
+  "data": {
+    "expectedCategoryRows": 290,
+    "observedCategoryRows": 291,
+    "categoryCoverageRatio": 1,
+    "providerLeakageRows": 0,
+    "collectorErrorRunsSinceStart": 0,
+    "latestSnapshot": {
+      "bucketMinute": "2026-07-21T11:50:00.000Z",
+      "collectedAt": "2026-07-21T11:50:42.346Z",
+      "streamCount": 300,
+      "totalViewers": 720450,
+      "sourceMode": "real",
+      "categoryContractVersion": "category-source-v1",
+      "freshnessMinutes": 0.34
+    }
+  },
+  "storage": {
+    "projectedNinetyDaySizeMb": 378.59,
+    "projectedProviderHeadroomMb": 71.41,
+    "projectedAccountWideHeadroomMb": 626.08
+  },
+  "gates": {
+    "readOnly": true,
+    "exactIdentity": true,
+    "cadencePass": true,
+    "storagePass": true,
+    "schemaPass": true,
+    "providerLeakagePass": true,
+    "bindingsPass": true,
+    "latestSnapshotFreshnessPass": true,
+    "latestSnapshotRealPass": true,
+    "latestSnapshotNonemptyPass": true,
+    "categorySnapshotPass": true,
+    "hardStops": [],
+    "warnings": []
+  },
+  "boundaries": {
+    "kickAuthorized": false,
+    "kickChanged": false,
+    "categoryUiAuthorized": false,
+    "backfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "newWorkerCronAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  },
+  "nextGate": "separate Kick permanent category decision; seven stable days are still required before provider-specific category UI"
+}
