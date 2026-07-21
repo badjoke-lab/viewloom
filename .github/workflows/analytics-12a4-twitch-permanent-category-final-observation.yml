@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   final-observation:
@@ -20,6 +21,7 @@ jobs:
       START_AT: '2026-07-20T11:40:00.000Z'
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup repository toolchain
@@ -31,6 +33,42 @@ jobs:
           node scripts/evaluate-12a4-twitch-permanent-category-observation.mjs \
             --evidence "$OUTPUT_DIR/evidence-observe.json" \
             --output "$OUTPUT_DIR/evaluation.json"
+      - name: Publish sanitized evaluation summary
+        run: |
+          node --input-type=module <<'NODE' > "$RUNNER_TEMP/final-observation-comment.md"
+          import fs from 'node:fs'
+          const evidence = JSON.parse(fs.readFileSync(process.env.OUTPUT_DIR + '/evidence-observe.json', 'utf8'))
+          const evaluation = JSON.parse(fs.readFileSync(process.env.OUTPUT_DIR + '/evaluation.json', 'utf8'))
+          const summary = {
+            observedAt: evidence.observedAt,
+            outcome: evidence.outcome,
+            classification: evaluation.classification,
+            minimumReached: evaluation.minimumReached,
+            warningEndReached: evaluation.warningEndReached,
+            permanentCaptureEnabled: evaluation.permanentCaptureEnabled,
+            obsoleteCanaryBindingsPresent: evidence.bindings?.obsoleteCanaryBindingsPresent,
+            providerLeakageRows: evaluation.providerLeakageRows,
+            projectedNinetyDaySizeMb: evaluation.storage?.projectedNinetyDaySizeMb,
+            projectedProviderHeadroomMb: evaluation.storage?.projectedProviderHeadroomMb,
+            projectedAccountWideHeadroomMb: evaluation.storage?.projectedAccountWideHeadroomMb,
+            latestSnapshot: evaluation.latestSnapshot,
+            minutesSinceLatestSnapshot: evidence.data?.minutesSinceLatestSnapshot,
+            expectedCategoryRows: evaluation.expectedCategoryRows,
+            observedCategoryRows: evaluation.observedCategoryRows,
+            categoryCoverageRatio: evaluation.categoryCoverageRatio,
+            collectorErrorRunsSinceStart: evaluation.collectorErrorRunsSinceStart,
+            hardStops: evaluation.hardStops,
+            warnings: evaluation.warnings,
+            rollbackRequired: evaluation.rollbackRequired,
+            kickChanged: evaluation.kickChanged,
+            gates: evaluation.gates,
+          }
+          console.log('## Final Twitch permanent-category observation\n')
+          console.log('```json')
+          console.log(JSON.stringify(summary, null, 2))
+          console.log('```')
+          NODE
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file "$RUNNER_TEMP/final-observation-comment.md"
       - name: Upload sanitized final evidence
         if: always()
         uses: actions/upload-artifact@v4
