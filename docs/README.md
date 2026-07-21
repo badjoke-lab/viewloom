@@ -8,7 +8,7 @@ Last updated: 2026-07-20
 ```text
 Phase 12A Analytics Capture Foundation active
 Provider-separated Kick and Twitch canaries accepted and retired
-canonical gate 12A-4-22 Twitch permanent observation active
+canonical gate 12A-4-23 Twitch permanent category capture accepted
 Twitch permanent implementation package accepted yes
 Twitch permanent release start accepted yes
 Twitch permanent category capture active yes
@@ -47,7 +47,7 @@ cross-provider identity or combined ranking authorized no
 
 ## Current gate
 
-The canonical gate is 12A-4-22. Twitch permanent category capture is active on the existing five-minute collector and passed initial start verification. The minimum 24-hour Twitch-only observation is active.
+The canonical gate is 12A-4-23. Twitch permanent category capture is active and accepted after the minimum 24-hour observation.
 
 The temporary hourly GitHub Actions observer performs Cloudflare GET and D1 SELECT checks. A hard stop restores the normal category-disabled Twitch configuration and verifies normal snapshot recovery. No new Worker cron exists.
 
@@ -68,3 +68,5 @@ Kick remains unauthorized pending Twitch final acceptance and a separate explici
 - Current status belongs in roadmap, schedule, gate state, and the active WIP file.
 - Historical implementation files remain in the repository but must not be presented as current.
 - Production workflows require explicit contracts, sanitized evidence, and retirement steps.
+
+- Final Twitch permanent-category acceptance: `docs/audits/12a4-twitch-permanent-category-final-acceptance.json`
