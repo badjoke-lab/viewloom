@@ -1,18 +1,39 @@
+export type HeatmapCategoryOption = {
+  id: string
+  name: string
+  streamCount: number
+  totalViewers: number
+}
+
+export type HeatmapCategoryFilterState =
+  | 'all'
+  | 'selected'
+  | 'unknown_category'
+  | 'category_unavailable'
+
+export type HeatmapCategoryCoverageState = 'observed' | 'partial' | 'unavailable'
+
+export type HeatmapCategoryFilter = {
+  implementationState: 'hidden'
+  publicExposureAuthorized: false
+  contractVersion: string | null
+  available: boolean
+  coverageState: HeatmapCategoryCoverageState
+  selectedCategory: string
+  state: HeatmapCategoryFilterState
+  filterBeforeTopN: true
+  requestedTop: number | null
+  observedItems: number
+  missingItems: number
+  dictionaryMissingItems: number
+  availableCategories: HeatmapCategoryOption[]
+}
+
 export type TwitchHeatmapApiResponse = {
   ok: boolean
   provider: string
-  latest: {
-    provider: string
-    bucket_minute: string
-    collected_at: string
-    covered_pages: number
-    has_more: number
-    stream_count: number
-    total_viewers: number
-    payload_json: string
-    source_mode: string
-  } | null
-  status: {
+  state?: string
+  status?: {
     provider: string
     status: string
     last_attempt_at: string | null
@@ -26,8 +47,21 @@ export type TwitchHeatmapApiResponse = {
     covered_pages: number
     has_more: number
     updated_at: string
+  } | string | null
+  latest: {
+    provider: string
+    bucket_minute: string
+    collected_at: string
+    covered_pages: number
+    has_more: number
+    stream_count: number
+    total_viewers: number
+    payload_json: string
+    source_mode: string
   } | null
   items?: HeatmapItem[]
+  availableCategories?: HeatmapCategoryOption[]
+  categoryFilter?: HeatmapCategoryFilter
   bucketMinutes?: number | null
   expectedBucketMinutes?: number | null
   activityAvailable?: boolean
@@ -47,6 +81,8 @@ export type HeatmapItem = {
   activityAvailable?: boolean
   activitySampled?: boolean
   activityUnavailableReason?: string
+  categoryId?: string | null
+  categoryName?: string | null
 }
 
 export type TwitchHeatmapPayload = {
