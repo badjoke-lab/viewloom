@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "viewloom-12a4-kick-permanent-category-decision-v1",
+  "status": "accepted_for_guarded_implementation",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 634,
+  "provider": "kick",
+  "decision": {
+    "implementationAuthorized": true,
+    "runtimeActive": false,
+    "productionDeploymentAuthorizedFromImplementationPr": false,
+    "freshReadOnlyPreflightRequired": true,
+    "separatePackageAcceptanceRequired": true,
+    "separateExactReleaseTriggerRequired": true,
+    "initialConsecutiveCategorySnapshotsRequired": 2,
+    "minimumObservationHours": 24,
+    "warningObservationHours": 48,
+    "automaticRollbackOnHardStopRequired": true
+  },
+  "runtime": {
+    "worker": "viewloom-collector-kick",
+    "normalConfig": "workers/collector-kick/wrangler.toml",
+    "permanentConfigPlanned": "workers/collector-kick/wrangler.category-permanent.toml",
+    "rollbackConfig": "workers/collector-kick/wrangler.toml",
+    "existingCron": "*/5 * * * *",
+    "newWorkerCronAuthorized": false,
+    "existingD1Required": true,
+    "categoryContractVersion": "category-source-v1"
+  },
+  "preflight": {
+    "readOnly": true,
+    "cloudflareGetAllowed": true,
+    "d1SelectAllowed": true,
+    "providerLeakageMaximum": 0,
+    "projectedNinetyDaySizeMaximumMb": 440,
+    "providerHeadroomMinimumMb": 10,
+    "accountWideHeadroomMinimumMb": 500,
+    "latestSnapshotMustBeFresh": true,
+    "latestSnapshotMustBeReal": true,
+    "latestSnapshotMustBeNonempty": true,
+    "obsoleteCanaryBindingsAllowed": false,
+    "collectorErrorStateAllowed": false
+  },
+  "rollback": {
+    "target": "workers/collector-kick/wrangler.toml",
+    "normalSnapshotRecoveryProofRequired": true,
+    "providerLeakageMustRemainZero": true,
+    "temporaryPathsMustBeRetired": true
+  },
+  "boundaries": {
+    "twitchChangeAuthorized": false,
+    "backfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "publicCategoryUiAuthorized": false,
+    "crossProviderIdentityAuthorized": false,
+    "crossProviderTotalsAuthorized": false,
+    "crossProviderRankingsAuthorized": false
+  },
+  "mandatoryReferences": [
+    "docs/product/category-capture-permanent-rollout-spec.md",
+    "docs/product/category-capture-permanent-rollout-plan.md",
+    "docs/product/current-roadmap.md",
+    "docs/product/current-schedule.md",
+    "docs/audits/12a2-current-gate-state.json",
+    "docs/work-in-progress/phase12a4-category-parallel-execution.md",
+    "docs/operations/development-and-deployment-policy.md"
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-heatmap-category-filter-hidden-decision-v1",
+  "status": "accepted_hidden_implementation_only",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 635,
+  "provider": "twitch",
+  "feature": "heatmap_category_filter",
+  "authorization": {
+    "hiddenImplementationAuthorized": true,
+    "publicExposureAuthorized": false,
+    "publicNavigationAuthorized": false,
+    "defaultRouteControlAuthorized": false,
+    "disabledFeatureFlagOrNonPublicRouteRequired": true,
+    "separatePublicCutoverPrRequired": true
+  },
+  "dataContract": {
+    "providerCategoryIdField": "game_id",
+    "categoryNameRequired": true,
+    "availableCategoryOptionsRequired": true,
+    "defaultSelection": "all",
+    "filterBeforeTopN": true,
+    "topNOptions": [20, 50, 100],
+    "providerSpecificUrlStateRequired": true,
+    "crossProviderStateSharingAllowed": false
+  },
+  "heatmapSemantics": {
+    "area": "viewers",
+    "color": "momentum",
+    "activity": "secondary_signal",
+    "unfilteredFallbackRequired": true
+  },
+  "requiredStates": [
+    "loading",
+    "ok",
+    "empty",
+    "partial",
+    "stale",
+    "demo",
+    "unknown_category",
+    "category_unavailable",
+    "error"
+  ],
+  "requiredValidation": [
+    "api_contract",
+    "unit",
+    "web_build",
+    "web_checks",
+    "heatmap_browser",
+    "mobile",
+    "keyboard",
+    "accessibility",
+    "data_truth",
+    "regression"
+  ],
+  "publicGate": {
+    "twitchPermanentStartAt": "2026-07-20T11:40:00.000Z",
+    "minimumStableDays": 7,
+    "earliestAuditAt": "2026-07-27T11:40:00.000Z",
+    "readOnlyAccumulationAuditRequired": true,
+    "hiddenImplementationAcceptanceRequired": true,
+    "separatePublicCutoverPrRequired": true
+  },
+  "boundaries": {
+    "collectorChangeAuthorized": false,
+    "workerCronChangeAuthorized": false,
+    "backfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "kickUiImplementationAuthorized": false,
+    "kickDataChangeAuthorized": false,
+    "crossProviderIdentityAuthorized": false,
+    "crossProviderTotalsAuthorized": false,
+    "crossProviderRankingsAuthorized": false
+  },
+  "mandatoryReferences": [
+    "docs/product/category-capture-permanent-rollout-spec.md",
+    "docs/product/category-capture-permanent-rollout-plan.md",
+    "docs/product/current-roadmap.md",
+    "docs/product/current-schedule.md",
+    "docs/audits/12a2-current-gate-state.json",
+    "docs/work-in-progress/phase12a4-category-parallel-execution.md",
+    "docs/operations/development-and-deployment-policy.md"
+  ]
+}
