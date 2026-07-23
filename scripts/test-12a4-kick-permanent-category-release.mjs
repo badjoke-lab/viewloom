@@ -109,7 +109,7 @@ assert.equal(tooLate.failure.name, 'release_start_too_stale')
 
 const acceptedEvidence = {
   triggerPass: true,
-  preflight: { outcome: 'accepted' },
+  preflight: { outcome: 'accepted', data: { collectorErrorRunsSinceStart: 0 } },
   permanentDeploymentExitCode: 0,
   initialObservation: {
     outcome: 'accepted',
@@ -117,10 +117,14 @@ const acceptedEvidence = {
   },
   gates: { twitchChanged: false },
 }
-assert.equal(requiredReleaseGates(acceptedEvidence).length, 8)
+assert.equal(requiredReleaseGates(acceptedEvidence).length, 9)
 assert.equal(releaseAccepted(acceptedEvidence), true)
 assert.equal(releaseAccepted({ ...acceptedEvidence, permanentDeploymentExitCode: 1 }), false)
 assert.equal(releaseAccepted({ ...acceptedEvidence, gates: { twitchChanged: true } }), false)
+assert.equal(releaseAccepted({
+  ...acceptedEvidence,
+  preflight: { outcome: 'accepted', data: { collectorErrorRunsSinceStart: 1 } },
+}), false)
 assert.equal(releaseAccepted({
   ...acceptedEvidence,
   initialObservation: { ...acceptedEvidence.initialObservation, gates: { ...acceptedEvidence.initialObservation.gates, categorySnapshotPass: false } },
@@ -147,6 +151,7 @@ console.log(JSON.stringify({
   pushStartVerified: true,
   identityMismatchesRejected: true,
   exactStartWaitVerified: true,
+  recentCollectorErrorGateVerified: true,
   releaseAcceptanceGatesVerified: true,
   rollbackNormalSnapshotProofRequired: true,
   twitchBoundaryVerified: true,
