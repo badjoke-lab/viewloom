@@ -82,6 +82,9 @@
     "latestNormalSnapshotFreshnessMinutesMax": 20,
     "latestNormalSnapshotMustBeReal": true,
     "latestNormalSnapshotMustBeNonempty": true,
+    "collectorHealthEvidenceMode": "latest_snapshot_fresh_real_nonempty_proxy",
+    "collectorErrorHistoryPersisted": false,
+    "collectorHealthProxyMustPass": true,
     "failureStopsBeforeDeployment": true
   },
   "deployment": {
