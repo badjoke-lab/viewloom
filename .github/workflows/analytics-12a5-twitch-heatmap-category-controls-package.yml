@@ -1,0 +1,64 @@
+name: Analytics 12A5 Twitch Heatmap Category Controls Package
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json'
+      - 'apps/web/src/features/twitch-heatmap/model.ts'
+      - 'apps/web/src/features/twitch-heatmap/category-preview-controls.ts'
+      - 'apps/web/src/live/twitch-heatmap.ts'
+      - 'scripts/verify-12a5-twitch-heatmap-category-controls-package.mjs'
+      - '.github/workflows/analytics-12a5-twitch-heatmap-category-controls-package.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a5-twitch-heatmap-category-controls-package-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Parse package verifier
+        run: node --check scripts/verify-12a5-twitch-heatmap-category-controls-package.mjs
+      - name: Verify hidden controls and public boundaries
+        run: node scripts/verify-12a5-twitch-heatmap-category-controls-package.mjs
+      - name: Verify current category rollout policy
+        run: node scripts/verify-category-rollout-policy.mjs
+      - name: Typecheck web
+        run: pnpm typecheck:web
+      - name: Build web
+        run: pnpm build:web
+      - name: Verify production HTML still has no category controls
+        run: |
+          test -f apps/web/dist/twitch/heatmap/index.html
+          ! grep -q 'categoryPreview' apps/web/dist/twitch/heatmap/index.html
+          ! grep -q 'heatmap-category-preview-controls' apps/web/dist/twitch/heatmap/index.html
+          ! grep -q 'data-category-preview-select' apps/web/dist/twitch/heatmap/index.html
+          test -f apps/web/dist/kick/heatmap/index.html
+          ! grep -q 'categoryPreview' apps/web/dist/kick/heatmap/index.html
+          ! grep -q 'data-category-preview-select' apps/web/dist/kick/heatmap/index.html
+      - name: Publish package summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom hidden Twitch Heatmap category controls package'
+            echo
+            echo '- Hidden entry: categoryPreview=1'
+            echo '- Provider: Twitch only'
+            echo '- Public navigation or normal HTML controls: no'
+            echo '- Default category: All categories'
+            echo '- Top values: 20 / 50 / 100'
+            echo '- URL state: provider-specific'
+            echo '- Mobile and keyboard behavior: included'
+            echo '- Existing unfiltered Heatmap fallback: preserved'
+            echo '- Collector, Worker config, Kick, backfill, retention: unchanged'
+          } >> "$GITHUB_STEP_SUMMARY"
