@@ -1,4 +1,11 @@
 import {
+  buildCategoryPreviewEndpoint,
+  categoryPreviewMessage,
+  installCategoryPreviewControls,
+  readCategoryPreviewState,
+  syncCategoryPreviewControls,
+} from '../features/twitch-heatmap/category-preview-controls'
+import {
   destroyCanvasScene,
   renderCanvasScene,
 } from '../features/twitch-heatmap/canvas-scene'
@@ -52,8 +59,14 @@ const HEATMAP_RUNTIME_CSS = `
 
 export async function hydrateTwitchHeatmap(): Promise<void> {
   const provider = heatmapProvider()
+  const categoryPreview = readCategoryPreviewState(provider.key)
   ensureRuntimeStyles()
   ensureHeatmapAutoRefresh()
+  installCategoryPreviewControls({
+    provider: provider.key,
+    state: categoryPreview,
+    onChange: () => { void hydrateTwitchHeatmap() },
+  })
 
   const stage = document.querySelector<HTMLElement>('.chart-placeholder--heatmap')
   if (!stage) return
@@ -64,13 +77,26 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
   stage.innerHTML = renderRuntimeState('Loading latest snapshot', `Reading the latest stored ${provider.label} Heatmap snapshot.`)
 
   try {
-    const response = await fetch(provider.endpoint, {
+    const endpoint = buildCategoryPreviewEndpoint(provider.endpoint, provider.key, categoryPreview)
+    const response = await fetch(endpoint, {
       headers: { accept: 'application/json' },
       cache: 'no-store',
     })
     if (!response.ok) throw new Error(`API ${response.status}`)
 
     const data = normalizeHeatmapResponse(await response.json(), provider)
+    syncCategoryPreviewControls({
+      state: categoryPreview,
+      filter: data.categoryFilter,
+      availableCategories: data.availableCategories,
+    })
+
+    const previewMessage = categoryPreview.enabled ? categoryPreviewMessage(data.categoryFilter) : null
+    if (previewMessage) {
+      stage.innerHTML = renderRuntimeState(previewMessage.title, previewMessage.body)
+      return
+    }
+
     if (!data.latest) {
       stage.innerHTML = renderRuntimeState(`No ${provider.label} snapshot yet`, `${provider.storageLabel} is connected, but no latest snapshot is available.`)
       return
@@ -78,14 +104,24 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
     const latest = data.latest
 
     const payload = parsePayload(latest.payload_json)
-    const items = payload.items
+    const responseItems = Array.isArray(data.items) ? data.items : []
+    const rawItems = responseItems.length > 0 || categoryPreview.enabled ? responseItems : payload.items
+    const items = rawItems
       .map(normalizeHeatmapItem)
       .filter((item): item is HeatmapItem => item !== null)
       .sort((a, b) => b.viewers - a.viewers || a.channelLogin.localeCompare(b.channelLogin))
 
     if (items.length === 0) {
-      stage.innerHTML = renderRuntimeState('No live records in this snapshot', 'The data path responded successfully, but the latest stored snapshot contains no valid live stream records.')
+      const selectedCategory = data.categoryFilter?.selectedCategory ?? categoryPreview.category
+      const categoryEmpty = categoryPreview.enabled && data.categoryFilter?.state === 'selected'
+      stage.innerHTML = categoryEmpty
+        ? renderRuntimeState('No live streams in this category', `The latest real Twitch snapshot has no qualifying live streams for category “${selectedCategory}” inside the selected Top ${categoryPreview.top} preview.`)
+        : renderRuntimeState('No live records in this snapshot', 'The data path responded successfully, but the latest stored snapshot contains no valid live stream records.')
       return
+    }
+
+    if (selectedStreamLogin && !items.some((item) => item.channelLogin === selectedStreamLogin)) {
+      selectedStreamLogin = null
     }
 
     renderCanvasScene({
@@ -145,6 +181,7 @@ function normalizeHeatmapResponse(raw: unknown, provider: HeatmapProvider): Twit
   return {
     ok: record.state !== 'error',
     provider: provider.key,
+    state: stringValue(record.state),
     latest: items.length > 0 || record.state !== 'not_ready'
       ? {
           provider: provider.key,
@@ -191,6 +228,8 @@ function normalizeHeatmapItem(raw: unknown): HeatmapItem | null {
     activityAvailable: optionalBoolean(raw.activityAvailable),
     activitySampled: optionalBoolean(raw.activitySampled),
     activityUnavailableReason: stringValue(raw.activityUnavailableReason) || undefined,
+    categoryId: stringValue(raw.categoryId) || null,
+    categoryName: stringValue(raw.categoryName) || null,
   }
 }
 
