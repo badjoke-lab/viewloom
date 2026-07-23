@@ -11,7 +11,7 @@ export function requiredReleaseGates(evidence) {
   return [
     evidence.triggerPass,
     evidence.preflight?.outcome === 'accepted',
-    evidence.preflight?.data?.collectorErrorRunsSinceStart === 0,
+    evidence.preflight?.gates?.collectorHealthPass === true,
     evidence.permanentDeploymentExitCode === 0,
     evidence.initialObservation?.outcome === 'accepted',
     evidence.initialObservation?.gates?.bindingsPass === true,
@@ -85,8 +85,8 @@ async function executeRelease() {
       startAt: evidence.preflightWindowStartAt,
     })
     if (evidence.preflight.outcome !== 'accepted') throw new Error('fresh_preflight_rejected')
-    if (evidence.preflight.data?.collectorErrorRunsSinceStart !== 0) {
-      throw new Error(`recent_collector_errors:${evidence.preflight.data?.collectorErrorRunsSinceStart}`)
+    if (evidence.preflight.gates?.collectorHealthPass !== true) {
+      throw new Error('collector_health_proxy_rejected')
     }
 
     evidence.activationStartedAt = new Date().toISOString()
@@ -108,6 +108,7 @@ async function executeRelease() {
         categoryPayloadRowsSinceStart: observed.data?.categoryPayloadRowsSinceStart ?? null,
         providerLeakageRows: observed.data?.providerLeakageRows ?? null,
         minutesSinceLatestCategorySnapshot: observed.data?.minutesSinceLatestCategorySnapshot ?? null,
+        collectorHealthPass: observed.gates?.collectorHealthPass ?? false,
         gates: observed.gates,
         error: observed.error,
       })
@@ -140,7 +141,8 @@ async function executeRelease() {
     triggerPass: evidence.triggerPass,
     preflightWindowStartAt: evidence.preflightWindowStartAt,
     preflightOutcome: evidence.preflight?.outcome ?? null,
-    preflightCollectorErrors: evidence.preflight?.data?.collectorErrorRunsSinceStart ?? null,
+    preflightCollectorHealthPass: evidence.preflight?.gates?.collectorHealthPass ?? false,
+    preflightCollectorHealthProxy: evidence.preflight?.data?.collectorHealthProxy ?? null,
     deploymentExitCode: evidence.permanentDeploymentExitCode,
     observationAttempts: evidence.observationAttempts.length,
     initialObservationOutcome: evidence.initialObservation?.outcome ?? null,
@@ -173,6 +175,7 @@ async function rollback(evidence, contract, outputDir) {
       outcome: observed.outcome,
       normalPayloadRowsSinceStart: observed.data?.normalPayloadRowsSinceStart ?? null,
       providerLeakageRows: observed.data?.providerLeakageRows ?? null,
+      collectorHealthPass: observed.gates?.collectorHealthPass ?? false,
       gates: observed.gates,
       error: observed.error,
     })
@@ -185,6 +188,7 @@ async function rollback(evidence, contract, outputDir) {
   evidence.rollback.pass = evidence.rollback.deploymentExitCode === 0
     && evidence.rollback.finalObservation?.outcome === 'accepted'
     && evidence.rollback.finalObservation?.gates?.bindingsPass === true
+    && evidence.rollback.finalObservation?.gates?.collectorHealthPass === true
     && evidence.rollback.finalObservation?.gates?.rollbackNormalSnapshotPass === true
     && evidence.rollback.finalObservation?.gates?.providerLeakagePass === true
   if (evidence.rollback.pass) evidence.gates.productionRuntimeCaptureStarted = false
