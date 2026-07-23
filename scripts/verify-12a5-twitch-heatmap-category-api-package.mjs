@@ -17,16 +17,37 @@ const decision = json(decisionPath)
 const gate = json(gatePath)
 const api = read(apiPath)
 
-assert.equal(contract.status, 'candidate')
+assert.ok(['candidate', 'accepted'].includes(contract.status))
 assert.equal(contract.trackingIssue, 635)
 assert.equal(contract.provider, 'twitch')
 assert.equal(contract.acceptedDecision.requiredGateSchemaVersion, 'viewloom-12a2-current-gate-state-v28')
 assert.equal(contract.acceptedDecision.requiredGatePhase, '12A-4-24')
-assert.equal(gate.schemaVersion, contract.acceptedDecision.requiredGateSchemaVersion)
-assert.equal(gate.currentWorkstream.phase, contract.acceptedDecision.requiredGatePhase)
+assert.equal(gate.currentWorkstream.phase, '12A-4-24')
 assert.equal(gate.currentWorkstream.twitchHeatmapCategoryFilterHiddenImplementationAuthorized, true)
 assert.equal(gate.currentWorkstream.twitchHeatmapCategoryFilterPublicExposureAuthorized, false)
 assert.equal(gate.currentWorkstream.categoryUiPublicExposureAuthorized, false)
+
+if (contract.status === 'candidate') {
+  assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v28')
+  assert.equal(contract.acceptance, undefined)
+} else {
+  assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v29')
+  assert.equal(gate.categoryCapture.twitchHeatmapCategoryApiPackageAccepted, true)
+  assert.equal(gate.currentWorkstream.twitchHeatmapCategoryApiPackageAccepted, true)
+  assert.equal(contract.acceptance.packagePr, 638)
+  assert.equal(contract.acceptance.packageCandidateHeadSha, '1bf0ca4e8c26a26084e574db381606ea11ee9934')
+  assert.equal(contract.acceptance.packageMergeSha, '5b466e3e440324bbd6b19d60aa3acaed0d1d95e8')
+  assert.equal(contract.acceptance.workflowRunId, 30003251337)
+  assert.equal(contract.acceptance.workflowJobId, 89193154092)
+  assert.equal(contract.acceptance.apiStaticContractPass, true)
+  assert.equal(contract.acceptance.categoryRolloutPolicyPass, true)
+  assert.equal(contract.acceptance.webTypecheckPass, true)
+  assert.equal(contract.acceptance.webBuildPass, true)
+  assert.equal(contract.acceptance.webChecksPass, true)
+  assert.equal(contract.acceptance.publicExposureEnabled, false)
+  assert.equal(contract.acceptance.collectorChanged, false)
+  assert.equal(contract.acceptance.kickChanged, false)
+}
 
 assert.equal(decision.status, 'accepted_hidden_implementation_only')
 assert.equal(decision.authorization.hiddenImplementationAuthorized, true)
@@ -55,14 +76,10 @@ for (const fragment of [
   "'category_unavailable'",
   'requestedTop === null ? categoryFilteredItems : categoryFilteredItems.slice(0, requestedTop)',
   "requestedCategory === 'all'",
-  'existing unfiltered',
-]) {
-  if (fragment === 'existing unfiltered') continue
-  assert.ok(api.includes(fragment), `API missing: ${fragment}`)
-}
+]) assert.ok(api.includes(fragment), `API missing: ${fragment}`)
 
-const filterIndex = api.indexOf("const categoryFilteredItems")
-const topIndex = api.indexOf("categoryFilteredItems.slice(0, requestedTop)")
+const filterIndex = api.indexOf('const categoryFilteredItems')
+const topIndex = api.indexOf('categoryFilteredItems.slice(0, requestedTop)')
 assert.ok(filterIndex >= 0 && topIndex > filterIndex, 'category filtering must occur before Top N slicing')
 assert.ok(api.includes("categoryFilterState === 'unknown_category'\n        ? []"), 'unknown categories must not fall back to false real data')
 assert.ok(api.includes("categoryFilterState === 'category_unavailable' && requestedCategory !== 'all'\n          ? []"), 'unavailable requested categories must not fall back to false real data')
@@ -79,6 +96,7 @@ assert.equal(contract.validation.webChecksRequired, true)
 console.log(JSON.stringify({
   ok: true,
   phase: contract.workstream,
+  lifecycle: contract.status,
   trackingIssue: contract.trackingIssue,
   provider: contract.provider,
   hiddenImplementationAuthorized: true,
@@ -89,5 +107,5 @@ console.log(JSON.stringify({
   unfilteredCompatibilityPreserved: true,
   collectorChanged: false,
   kickChanged: false,
-  nextAction: 'accept-api-package-before-hidden-controls',
+  nextAction: contract.status === 'accepted' ? 'implement-hidden-controls' : 'accept-api-package-before-hidden-controls',
 }, null, 2))
