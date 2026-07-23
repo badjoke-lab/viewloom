@@ -57,10 +57,10 @@ for (const fragment of [
   "const PREVIEW_VALUE = '1'",
   "provider === 'twitch'",
   "url.searchParams.get(PREVIEW_PARAM) === PREVIEW_VALUE",
-  "const DEFAULT_TOP = 50",
+  'const DEFAULT_TOP = 50',
   'const TOP_VALUES = [20, 50, 100] as const',
   "'<option value=\"all\">All categories</option>'",
-  'data-hidden-preview',
+  "root.dataset.hiddenPreview = 'true'",
   'aria-label="Twitch category preview"',
   'aria-live="polite"',
   ':focus-visible',
@@ -106,7 +106,7 @@ for (const html of [twitchHtml, kickHtml]) {
 assert.equal(kickHtml.includes('Category preview'), false)
 
 const previewGateIndex = controls.indexOf("provider === 'twitch'")
-const insertIndex = controls.indexOf("root.id = ROOT_ID")
+const insertIndex = controls.indexOf('root.id = ROOT_ID')
 assert.ok(previewGateIndex >= 0 && insertIndex > previewGateIndex, 'Twitch-only preview gate must precede control insertion')
 
 console.log(JSON.stringify({
