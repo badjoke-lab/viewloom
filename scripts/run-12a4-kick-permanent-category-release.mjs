@@ -5,10 +5,13 @@ import { fileURLToPath } from 'node:url'
 import { inspectReleaseTrigger } from './inspect-12a4-kick-permanent-category-release-trigger.mjs'
 import { evaluateReleaseStartWait } from './wait-12a4-kick-permanent-category-release-start.mjs'
 
+const PREFLIGHT_LOOKBACK_MS = 30 * 60 * 1000
+
 export function requiredReleaseGates(evidence) {
   return [
     evidence.triggerPass,
     evidence.preflight?.outcome === 'accepted',
+    evidence.preflight?.data?.collectorErrorRunsSinceStart === 0,
     evidence.permanentDeploymentExitCode === 0,
     evidence.initialObservation?.outcome === 'accepted',
     evidence.initialObservation?.gates?.bindingsPass === true,
@@ -38,6 +41,7 @@ async function executeRelease() {
     trigger: sanitizeTrigger(trigger),
     triggerPass: false,
     wait: null,
+    preflightWindowStartAt: null,
     preflight: null,
     activationStartedAt: null,
     permanentDeploymentExitCode: null,
@@ -74,12 +78,16 @@ async function executeRelease() {
     evidence.wait = evaluateReleaseStartWait(trigger)
     if (!evidence.wait.ok || evidence.wait.waitMs !== 0) throw new Error('release_start_boundary_not_reached')
 
+    evidence.preflightWindowStartAt = new Date(Date.now() - PREFLIGHT_LOOKBACK_MS).toISOString()
     evidence.preflight = runObserver({
       mode: 'preflight',
       outputDir: path.join(outputDir, 'preflight'),
-      startAt: trigger.startAt,
+      startAt: evidence.preflightWindowStartAt,
     })
     if (evidence.preflight.outcome !== 'accepted') throw new Error('fresh_preflight_rejected')
+    if (evidence.preflight.data?.collectorErrorRunsSinceStart !== 0) {
+      throw new Error(`recent_collector_errors:${evidence.preflight.data?.collectorErrorRunsSinceStart}`)
+    }
 
     evidence.activationStartedAt = new Date().toISOString()
     const deployed = deploy(contract.acceptedPackage.permanentConfig)
@@ -130,7 +138,9 @@ async function executeRelease() {
     evidencePath,
     outcome: evidence.outcome,
     triggerPass: evidence.triggerPass,
+    preflightWindowStartAt: evidence.preflightWindowStartAt,
     preflightOutcome: evidence.preflight?.outcome ?? null,
+    preflightCollectorErrors: evidence.preflight?.data?.collectorErrorRunsSinceStart ?? null,
     deploymentExitCode: evidence.permanentDeploymentExitCode,
     observationAttempts: evidence.observationAttempts.length,
     initialObservationOutcome: evidence.initialObservation?.outcome ?? null,
