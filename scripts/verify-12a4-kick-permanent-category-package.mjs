@@ -31,16 +31,39 @@ const fixture = read(contract.package.fixture)
 const toml = (source, key) => source.match(new RegExp(`^${key}\\s*=\\s*"([^"]+)"$`, 'm'))?.[1] ?? null
 const cron = (source) => source.match(/crons\s*=\s*\[\s*"([^"]+)"\s*\]/)?.[1] ?? null
 
-assert.equal(contract.status, 'candidate')
+assert.ok(['candidate', 'accepted'].includes(contract.status))
 assert.equal(contract.provider, 'kick')
 assert.equal(contract.trackingIssue, 634)
 assert.equal(contract.acceptedDecision.requiredGateSchemaVersion, 'viewloom-12a2-current-gate-state-v28')
 assert.equal(contract.acceptedDecision.requiredGatePhase, '12A-4-24')
-assert.equal(gate.schemaVersion, contract.acceptedDecision.requiredGateSchemaVersion)
-assert.equal(gate.currentWorkstream.phase, contract.acceptedDecision.requiredGatePhase)
+assert.equal(gate.currentWorkstream.phase, '12A-4-24')
 assert.equal(gate.currentWorkstream.kickPermanentCaptureAuthorized, true)
 assert.equal(gate.currentWorkstream.kickPermanentCaptureActive, false)
 assert.equal(gate.currentWorkstream.categoryUiPublicExposureAuthorized, false)
+
+if (contract.status === 'candidate') {
+  assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v28')
+  assert.equal(contract.acceptance, undefined)
+} else {
+  assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v29')
+  assert.equal(gate.categoryCapture.kickPermanentPackageAccepted, true)
+  assert.equal(gate.currentWorkstream.kickPermanentPackageAccepted, true)
+  assert.equal(contract.acceptance.packagePr, 637)
+  assert.equal(contract.acceptance.packageCandidateHeadSha, 'dc32533a02eca6586202a995d37ea0cddd2a4688')
+  assert.equal(contract.acceptance.packageMergeSha, 'b4012ebddb9ec33c50b6298c882f0f1a4ee16be0')
+  assert.equal(contract.acceptance.workflowRunId, 30003489805)
+  assert.equal(contract.acceptance.workflowJobId, 89193908765)
+  assert.equal(contract.acceptance.fixturePass, true)
+  assert.equal(contract.acceptance.packageContractPass, true)
+  assert.equal(contract.acceptance.categoryRolloutPolicyPass, true)
+  assert.equal(contract.acceptance.collectorTypecheckPass, true)
+  assert.equal(contract.acceptance.normalKickDryRunBundlePass, true)
+  assert.equal(contract.acceptance.permanentCategoryKickDryRunBundlePass, true)
+  assert.equal(contract.acceptance.productionRuntimeCaptureStarted, false)
+  assert.equal(contract.acceptance.productionWorkerDeployed, false)
+  assert.equal(contract.acceptance.remoteD1OperationPerformed, false)
+  assert.equal(contract.acceptance.twitchChanged, false)
+}
 
 assert.equal(decision.status, 'accepted_for_guarded_implementation')
 assert.equal(decision.trackingIssue, 634)
@@ -89,6 +112,7 @@ assert.equal(contract.rollback.config, contract.package.normalConfig)
 console.log(JSON.stringify({
   ok: true,
   phase: contract.workstream,
+  lifecycle: contract.status,
   trackingIssue: contract.trackingIssue,
   provider: contract.provider,
   canonicalGate: gate.schemaVersion,
@@ -99,5 +123,5 @@ console.log(JSON.stringify({
   remoteD1OperationIncluded: false,
   twitchChanged: false,
   publicCategoryUiChanged: false,
-  nextAction: 'accept-package-before-release-package',
+  nextAction: contract.status === 'accepted' ? 'prepare-release-package-and-fresh-preflight' : 'accept-package-before-release-package',
 }, null, 2))
