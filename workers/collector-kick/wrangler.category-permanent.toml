@@ -1,0 +1,26 @@
+name = "viewloom-collector-kick"
+main = "src/entry.ts"
+compatibility_date = "2026-05-18"
+
+# Guarded implementation package only. This file must not be deployed from its
+# pull request. Production deployment requires an accepted package, a separate
+# exact release trigger, a fresh read-only preflight, two category-bearing
+# snapshots, bounded observation, and the normal-config rollback path.
+[vars]
+INTRADAY_GENERATION_ENABLED = "true"
+CATEGORY_CAPTURE_ENABLED = "true"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+# Existing Kick secrets and optional credentials remain unchanged:
+#   KICK_INGEST_TOKEN
+#   KICK_CLIENT_ID
+#   KICK_CLIENT_SECRET
+#   KICK_ACCESS_TOKEN
+#   KICK_USE_AUTHENTICATED_CHANNEL_READS
+
+[[d1_databases]]
+binding = "DB_KICK_HOT"
+database_name = "vl_kick_hot"
+database_id = "ed1e082f-85ac-4dd0-a44e-5d3e200667d5"
