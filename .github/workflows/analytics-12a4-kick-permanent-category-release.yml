@@ -1,0 +1,180 @@
+name: Analytics 12A4 Kick Permanent Category Release
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a4-kick-permanent-category-release.yml'
+      - 'docs/audits/12a2-current-gate-state.json'
+      - 'docs/audits/12a4-kick-permanent-category-release-contract.json'
+      - 'docs/audits/12a4-kick-permanent-category-release-trigger.json'
+      - 'scripts/inspect-12a4-kick-permanent-category-release-trigger.mjs'
+      - 'scripts/wait-12a4-kick-permanent-category-release-start.mjs'
+      - 'scripts/run-12a4-kick-permanent-category-release.mjs'
+      - 'scripts/run-12a4-kick-permanent-category-observer.mjs'
+      - 'scripts/test-12a4-kick-permanent-category-release.mjs'
+      - 'scripts/verify-12a4-kick-permanent-category-release-package.mjs'
+      - 'workers/collector-kick/wrangler.category-permanent.toml'
+      - 'workers/collector-kick/wrangler.toml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a4-kick-permanent-category-release-trigger.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a4-kick-permanent-category-release-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    outputs:
+      trigger_present: ${{ steps.trigger.outputs.present }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: trigger
+        name: Detect exact Kick release trigger
+        run: |
+          if test -f docs/audits/12a4-kick-permanent-category-release-trigger.json; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+          fi
+
+  verify-package:
+    needs: classify
+    if: github.event_name != 'push' && needs.classify.outputs.trigger_present != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Parse release package scripts
+        run: |
+          node --check scripts/inspect-12a4-kick-permanent-category-release-trigger.mjs
+          node --check scripts/wait-12a4-kick-permanent-category-release-start.mjs
+          node --check scripts/run-12a4-kick-permanent-category-release.mjs
+          node --check scripts/test-12a4-kick-permanent-category-release.mjs
+          node --check scripts/verify-12a4-kick-permanent-category-release-package.mjs
+      - name: Run release package fixtures
+        run: node scripts/test-12a4-kick-permanent-category-release.mjs
+      - name: Verify release package contract and boundaries
+        run: node scripts/verify-12a4-kick-permanent-category-release-package.mjs
+      - name: Verify current category rollout policy
+        run: node scripts/verify-category-rollout-policy.mjs
+      - name: Verify collector typecheck
+        run: pnpm typecheck:collectors
+      - name: Bundle normal Kick rollback collector without publishing
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-kick/wrangler.toml
+      - name: Bundle permanent-category Kick collector without publishing
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-kick/wrangler.category-permanent.toml
+
+  inspect-production:
+    needs: classify
+    if: github.event_name == 'pull_request' && needs.classify.outputs.trigger_present != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      OUTPUT_DIR: artifacts/12a4-kick-permanent-category-release/preflight
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Run fresh read-only Kick production preflight
+        run: |
+          START_AT="$(date -u -d '30 minutes ago' '+%Y-%m-%dT%H:%M:%S.000Z')"
+          MODE=preflight START_AT="$START_AT" node scripts/run-12a4-kick-permanent-category-observer.mjs
+      - name: Verify recent Kick collector errors are zero
+        run: |
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs'
+          const evidence = JSON.parse(fs.readFileSync('artifacts/12a4-kick-permanent-category-release/preflight/evidence-preflight.json', 'utf8'))
+          if (evidence.outcome !== 'accepted') throw new Error(`preflight_rejected:${evidence.error ?? 'unknown'}`)
+          if (evidence.data?.collectorErrorRunsSinceStart !== 0) {
+            throw new Error(`recent_collector_errors:${evidence.data?.collectorErrorRunsSinceStart}`)
+          }
+          NODE
+      - name: Upload sanitized Kick preflight evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-kick-permanent-category-release-preflight
+          path: artifacts/12a4-kick-permanent-category-release/preflight/*.json
+          if-no-files-found: error
+          retention-days: 30
+
+  validate-trigger:
+    needs: classify
+    if: github.event_name == 'pull_request' && needs.classify.outputs.trigger_present == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate exact one-file Kick release trigger without production authorization
+        run: node scripts/inspect-12a4-kick-permanent-category-release-trigger.mjs --event pull_request
+
+  inspect-trigger:
+    needs: classify
+    if: github.event_name == 'push' && needs.classify.outputs.trigger_present == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      action: ${{ steps.inspect.outputs.action }}
+      start_at: ${{ steps.inspect.outputs.start_at }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - id: inspect
+        name: Verify exact one-file Kick release trigger
+        run: node scripts/inspect-12a4-kick-permanent-category-release-trigger.mjs --event push --require-armed
+
+  release:
+    needs: [classify, inspect-trigger]
+    if: github.event_name == 'push' && needs.inspect-trigger.outputs.action == 'start'
+    runs-on: ubuntu-latest
+    timeout-minutes: 220
+    env:
+      OUTPUT_DIR: artifacts/12a4-kick-permanent-category-release
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Wait for exact Kick release start boundary
+        run: node scripts/wait-12a4-kick-permanent-category-release-start.mjs
+      - name: Run preflight and verify the Kick category release start
+        run: node scripts/run-12a4-kick-permanent-category-release.mjs
+      - name: Upload sanitized Kick release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a4-kick-permanent-category-release-start
+          path: artifacts/12a4-kick-permanent-category-release/**/*.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish release summary
+        if: always()
+        run: |
+          {
+            echo '## ViewLoom Kick permanent category release'
+            echo
+            echo '- Provider: Kick only'
+            echo '- Fresh preflight before publish: required'
+            echo '- Initial category snapshots: two consecutive'
+            echo '- Failure behavior: restore normal Kick config and verify recovery'
+            echo '- Existing Worker cron: five minutes'
+            echo '- New Worker cron: no'
+            echo '- Twitch change: no'
+            echo '- Public category UI change: no'
+          } >> "$GITHUB_STEP_SUMMARY"
