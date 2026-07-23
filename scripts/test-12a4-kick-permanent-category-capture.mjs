@@ -40,7 +40,7 @@ for (const fragment of [
   'stripCategorySourceFields(items)',
   'writeCategoryDictionary(',
   "env.DB_KICK_HOT,\n        'kick'",
-  'categoryContractVersion',
+  '...encoded.payloadFields',
 ]) assert.ok(implementation.includes(fragment), `implementation missing ${fragment}`)
 
 for (const fragment of [
