@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v28",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v29",
   "workstream": "12A-4 provider-specific category capture foundation",
-  "status": "12a4_kick_permanent_rollout_and_hidden_twitch_filter_authorized",
+  "status": "12a4_parallel_implementation_packages_accepted",
   "intradayFoundation": {
     "designPr": 494,
     "migrationPr": 499,
@@ -324,7 +324,10 @@
     "twitchHeatmapCategoryFilterHiddenImplementationAuthorized": true,
     "twitchHeatmapCategoryFilterPublicExposureAuthorized": false,
     "twitchStableAccumulationStartAt": "2026-07-20T11:40:00.000Z",
-    "twitchStableAccumulationEarliestAuditAt": "2026-07-27T11:40:00.000Z"
+    "twitchStableAccumulationEarliestAuditAt": "2026-07-27T11:40:00.000Z",
+    "kickPermanentPackageAccepted": true,
+    "twitchHeatmapCategoryApiPackageAccepted": true,
+    "twitchHeatmapCategoryHiddenControlsAccepted": false
   },
   "closedBlockers": [
     "category_source_unverified",
@@ -357,19 +360,20 @@
     "twitch_permanent_category_capture_not_implemented",
     "twitch_permanent_category_capture_not_deployed",
     "twitch_permanent_category_capture_observation_not_accepted",
-    "kick_permanent_category_capture_not_authorized"
+    "kick_permanent_category_capture_not_authorized",
+    "kick_permanent_category_capture_not_implemented"
   ],
   "openBlockers": [
-    "kick_permanent_category_capture_not_implemented",
+    "kick_permanent_category_capture_release_package_not_accepted",
     "kick_permanent_category_capture_not_deployed",
     "kick_permanent_category_capture_observation_not_accepted",
     "twitch_category_ui_seven_day_accumulation_not_accepted",
-    "twitch_heatmap_category_filter_hidden_implementation_not_accepted",
+    "twitch_heatmap_category_filter_hidden_controls_not_accepted",
     "twitch_heatmap_category_filter_public_exposure_not_authorized"
   ],
   "currentWorkstream": {
     "phase": "12A-4-24",
-    "name": "Kick permanent rollout and hidden Twitch Heatmap category filter in parallel",
+    "name": "Parallel implementation packages accepted; Kick release and hidden Twitch controls next",
     "trackingIssue": 623,
     "acceptedSchemaEvidence": true,
     "acceptedCostEvidence": true,
@@ -453,9 +457,13 @@
     "categoryUiPublicExposureAuthorized": false,
     "twitchHeatmapCategoryFilterHiddenImplementationAuthorized": true,
     "twitchHeatmapCategoryFilterPublicExposureAuthorized": false,
-    "publicCategoryUiEarliestAuditAt": "2026-07-27T11:40:00.000Z"
+    "publicCategoryUiEarliestAuditAt": "2026-07-27T11:40:00.000Z",
+    "kickPermanentPackageAccepted": true,
+    "kickReleasePackageAccepted": false,
+    "twitchHeatmapCategoryApiPackageAccepted": true,
+    "twitchHeatmapCategoryHiddenControlsAccepted": false
   },
-  "nextWorkstream": "run Kick preflight and implementation package while building the hidden Twitch Heatmap category filter; public Twitch exposure waits for the seven-day audit and a separate cutover PR",
+  "nextWorkstream": "prepare the Kick release package and fresh preflight while implementing hidden Twitch Heatmap category controls; public Twitch exposure remains blocked until the seven-day audit and separate cutover PR",
   "kickCategoryCaptureCanaryInitialAcceptance": {
     "status": "accepted_initial_checkpoint_observation_completed",
     "pr": 579,
@@ -733,7 +741,10 @@
         "exactReleaseTriggerRequired": true,
         "minimumObservationHours": 24,
         "warningObservationHours": 48,
-        "automaticRollbackRequired": true
+        "automaticRollbackRequired": true,
+        "packageAccepted": true,
+        "packagePr": 637,
+        "packageMergeSha": "b4012ebddb9ec33c50b6298c882f0f1a4ee16be0"
       },
       "twitchHeatmapCategoryFilter": {
         "trackingIssue": 635,
@@ -741,7 +752,11 @@
         "publicExposureAuthorized": false,
         "hiddenFeatureFlagOrNonPublicRouteRequired": true,
         "earliestAccumulationAuditAt": "2026-07-27T11:40:00.000Z",
-        "separatePublicCutoverPrRequired": true
+        "separatePublicCutoverPrRequired": true,
+        "apiPackageAccepted": true,
+        "apiPackagePr": 638,
+        "apiPackageMergeSha": "5b466e3e440324bbd6b19d60aa3acaed0d1d95e8",
+        "hiddenControlsAccepted": false
       }
     },
     "boundaries": {
@@ -777,5 +792,38 @@
     "separatePublicCutoverPrRequired": true,
     "collectorChangeAuthorized": false,
     "kickChangeAuthorized": false
+  },
+  "categoryParallelPackageAcceptance": {
+    "status": "accepted",
+    "phase": "12A-4-24",
+    "parentTrackingIssue": 623,
+    "kick": {
+      "trackingIssue": 634,
+      "contract": "docs/audits/12a4-kick-permanent-category-capture-package-contract.json",
+      "packagePr": 637,
+      "packageCandidateHeadSha": "dc32533a02eca6586202a995d37ea0cddd2a4688",
+      "packageMergeSha": "b4012ebddb9ec33c50b6298c882f0f1a4ee16be0",
+      "workflowRunId": 30003489805,
+      "workflowJobId": 89193908765,
+      "packageAccepted": true,
+      "runtimeActive": false,
+      "productionWorkerPublished": false,
+      "remoteD1OperationPerformed": false,
+      "twitchChanged": false
+    },
+    "twitchHiddenApi": {
+      "trackingIssue": 635,
+      "contract": "docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json",
+      "packagePr": 638,
+      "packageCandidateHeadSha": "1bf0ca4e8c26a26084e574db381606ea11ee9934",
+      "packageMergeSha": "5b466e3e440324bbd6b19d60aa3acaed0d1d95e8",
+      "workflowRunId": 30003251337,
+      "workflowJobId": 89193154092,
+      "apiPackageAccepted": true,
+      "hiddenControlsAccepted": false,
+      "publicExposureAuthorized": false,
+      "collectorChanged": false,
+      "kickChanged": false
+    }
   }
 }
