@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-heatmap-category-filter-hidden-package-v1",
+  "workstream": "12A-5A hidden Twitch Heatmap category-filter API package",
+  "status": "candidate",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 635,
+  "provider": "twitch",
+  "acceptedDecision": {
+    "contract": "docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json",
+    "canonicalGate": "docs/audits/12a2-current-gate-state.json",
+    "requiredGateSchemaVersion": "viewloom-12a2-current-gate-state-v28",
+    "requiredGatePhase": "12A-4-24",
+    "specification": "docs/product/category-capture-permanent-rollout-spec.md",
+    "implementationPlan": "docs/product/category-capture-permanent-rollout-plan.md",
+    "roadmap": "docs/product/current-roadmap.md",
+    "schedule": "docs/product/current-schedule.md",
+    "activeWip": "docs/work-in-progress/phase12a4-category-parallel-execution.md"
+  },
+  "package": {
+    "api": "apps/web/functions/api/twitch-heatmap.ts",
+    "verifier": "scripts/verify-12a5-twitch-heatmap-category-api-package.mjs",
+    "workflow": ".github/workflows/analytics-12a5-twitch-heatmap-category-api-package.yml"
+  },
+  "apiContract": {
+    "providerCategoryIdField": "game_id",
+    "categoryContractVersion": "category-source-v1",
+    "defaultSelection": "all",
+    "categoryQueryParameter": "category",
+    "topQueryParameter": "top",
+    "allowedTopValues": [20, 50, 100],
+    "filterBeforeTopN": true,
+    "availableCategoriesRequired": true,
+    "categoryIdPerItemRequired": true,
+    "categoryNamePerItemRequired": true,
+    "unknownCategoryStateRequired": true,
+    "categoryUnavailableStateRequired": true,
+    "dictionaryContinuityReported": true,
+    "unfilteredCompatibilityPreserved": true
+  },
+  "hiddenBoundary": {
+    "publicExposureAuthorized": false,
+    "publicNavigationAuthorized": false,
+    "normalHeatmapControlAuthorized": false,
+    "uiChangeIncluded": false,
+    "collectorChangeIncluded": false,
+    "workerConfigChangeIncluded": false,
+    "kickChangeIncluded": false,
+    "backfillIncluded": false,
+    "retentionExpansionIncluded": false,
+    "crossProviderBehaviorIncluded": false
+  },
+  "validation": {
+    "webTypecheckRequired": true,
+    "webBuildRequired": true,
+    "webChecksRequired": true,
+    "apiStaticContractRequired": true,
+    "existingHeatmapFallbackRequired": true
+  },
+  "nextGate": "accept the hidden Twitch Heatmap category API package, then implement hidden controls and browser/mobile/accessibility behavior without public exposure"
+}
