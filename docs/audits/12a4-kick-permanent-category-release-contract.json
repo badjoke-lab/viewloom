@@ -5,7 +5,7 @@
   "parentTrackingIssue": 623,
   "trackingIssue": 634,
   "provider": "kick",
-  "packagePr": 0,
+  "packagePr": 641,
   "acceptedPackage": {
     "implementationPr": 637,
     "implementationCandidateHeadSha": "dc32533a02eca6586202a995d37ea0cddd2a4688",
@@ -52,7 +52,7 @@
     "implementationMergeSha": "b4012ebddb9ec33c50b6298c882f0f1a4ee16be0",
     "acceptancePr": 639,
     "acceptanceMergeSha": "662765a2444ba741e49b66aeab4ea0787e56d5e5",
-    "releasePackagePr": 0,
+    "releasePackagePr": 641,
     "releasePackageMergeShaRequired": true,
     "startAtRequired": true,
     "maximumStartDelayHours": 3,
