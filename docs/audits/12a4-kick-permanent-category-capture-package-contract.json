@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-kick-permanent-category-capture-package-v1",
   "workstream": "12A-4-24A Kick permanent category capture implementation package",
-  "status": "candidate",
+  "status": "accepted",
   "parentTrackingIssue": 623,
   "trackingIssue": 634,
   "provider": "kick",
@@ -109,5 +109,23 @@
     "crossProviderBehavior": false,
     "exactDeploymentTriggerIncluded": false
   },
-  "nextGate": "accept this package, then prepare a separate Kick release package with fresh read-only preflight, exact trigger, two category-bearing snapshots, 24-48 hour observation, and rollback"
+  "acceptance": {
+    "packagePr": 637,
+    "packageCandidateHeadSha": "dc32533a02eca6586202a995d37ea0cddd2a4688",
+    "packageMergeSha": "b4012ebddb9ec33c50b6298c882f0f1a4ee16be0",
+    "workflowRunId": 30003489805,
+    "workflowJobId": 89193908765,
+    "fixturePass": true,
+    "packageContractPass": true,
+    "categoryRolloutPolicyPass": true,
+    "collectorTypecheckPass": true,
+    "normalKickDryRunBundlePass": true,
+    "permanentCategoryKickDryRunBundlePass": true,
+    "productionRuntimeCaptureStarted": false,
+    "productionWorkerDeployed": false,
+    "remoteD1OperationPerformed": false,
+    "twitchChanged": false,
+    "publicCategoryUiChanged": false
+  },
+  "nextGate": "prepare and accept a separate Kick release package with fresh read-only preflight, exact trigger, two category-bearing snapshots, 24-48 hour observation, and rollback"
 }

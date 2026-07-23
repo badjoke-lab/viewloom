@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-heatmap-category-filter-hidden-package-v1",
   "workstream": "12A-5A hidden Twitch Heatmap category-filter API package",
-  "status": "candidate",
+  "status": "accepted",
   "parentTrackingIssue": 623,
   "trackingIssue": 635,
   "provider": "twitch",
@@ -56,5 +56,22 @@
     "apiStaticContractRequired": true,
     "existingHeatmapFallbackRequired": true
   },
-  "nextGate": "accept the hidden Twitch Heatmap category API package, then implement hidden controls and browser/mobile/accessibility behavior without public exposure"
+  "acceptance": {
+    "packagePr": 638,
+    "packageCandidateHeadSha": "1bf0ca4e8c26a26084e574db381606ea11ee9934",
+    "packageMergeSha": "5b466e3e440324bbd6b19d60aa3acaed0d1d95e8",
+    "workflowRunId": 30003251337,
+    "workflowJobId": 89193154092,
+    "apiStaticContractPass": true,
+    "categoryRolloutPolicyPass": true,
+    "webTypecheckPass": true,
+    "webBuildPass": true,
+    "webChecksPass": true,
+    "publicExposureEnabled": false,
+    "publicNavigationChanged": false,
+    "normalHeatmapControlChanged": false,
+    "collectorChanged": false,
+    "kickChanged": false
+  },
+  "nextGate": "implement and accept hidden desktop/mobile category controls and browser/accessibility behavior without public exposure"
 }
