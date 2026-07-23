@@ -8,6 +8,7 @@ const CATEGORY_SAFETY_BYTES = 48.32 * MB
 const PROVIDER_LIMIT_BYTES = 450 * MB
 const ACCOUNT_LIMIT_BYTES = 4608 * MB
 const REQUIRED_TABLES = [
+  'collector_status',
   'minute_snapshots',
   'provider_category_dictionary',
   'streamer_intraday_rollups',
@@ -101,6 +102,7 @@ export async function runObserver(options = {}) {
       categoryPayloadRowsSinceStart: null,
       normalPayloadRowsSinceStart: null,
       collectorErrorRunsSinceStart: null,
+      collectorStatus: null,
       latestSnapshot: null,
       latestCategorySnapshot: null,
       latestNormalSnapshot: null,
@@ -155,7 +157,7 @@ export async function runObserver(options = {}) {
         ? evidence.bindings.permanentCaptureEnabled === true
         : evidence.bindings.permanentFlagPresent === false)
 
-    const tables = runD1Select(normalConfigPath, databaseName, `SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('minute_snapshots','provider_category_dictionary','streamer_intraday_rollups','intraday_rollup_status') ORDER BY name;`)
+    const tables = runD1Select(normalConfigPath, databaseName, `SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('collector_status','minute_snapshots','provider_category_dictionary','streamer_intraday_rollups','intraday_rollup_status') ORDER BY name;`)
     evidence.schema.observedTables = tables.map((row) => String(row.name ?? '')).filter(Boolean)
     evidence.schema.missingTables = REQUIRED_TABLES.filter((name) => !evidence.schema.observedTables.includes(name))
     evidence.gates.schemaPass = evidence.schema.missingTables.length === 0
@@ -171,7 +173,8 @@ SELECT (
 ) AS provider_leakage_rows;
 SELECT COUNT(*) AS category_payload_rows_since_start FROM minute_snapshots WHERE provider = 'kick' AND collected_at >= '${startAt}' AND json_extract(payload_json, '$.categoryContractVersion') = 'category-source-v1';
 SELECT COUNT(*) AS normal_payload_rows_since_start FROM minute_snapshots WHERE provider = 'kick' AND collected_at >= '${startAt}' AND json_extract(payload_json, '$.categoryContractVersion') IS NULL;
-SELECT COUNT(*) AS collector_error_runs_since_start FROM collector_runs WHERE provider = 'kick' AND run_at >= '${startAt}' AND status = 'error';
+SELECT COUNT(*) AS collector_error_runs_since_start FROM collector_status WHERE provider = 'kick' AND last_failure_at IS NOT NULL AND last_failure_at >= '${startAt}' AND (last_success_at IS NULL OR last_failure_at > last_success_at OR status IN ('failing', 'error'));
+SELECT status AS collector_status, last_attempt_at AS collector_last_attempt_at, last_success_at AS collector_last_success_at, last_failure_at AS collector_last_failure_at FROM collector_status WHERE provider = 'kick' LIMIT 1;
 SELECT bucket_minute, collected_at, stream_count, total_viewers, source_mode, json_extract(payload_json, '$.categoryContractVersion') AS category_contract_version FROM minute_snapshots WHERE provider = 'kick' ORDER BY bucket_minute DESC LIMIT 1;
 SELECT bucket_minute AS category_bucket_minute, collected_at AS category_collected_at, stream_count AS category_stream_count, total_viewers AS category_total_viewers, source_mode AS category_source_mode FROM minute_snapshots WHERE provider = 'kick' AND collected_at >= '${startAt}' AND json_extract(payload_json, '$.categoryContractVersion') = 'category-source-v1' ORDER BY bucket_minute DESC LIMIT 1;
 SELECT bucket_minute AS normal_bucket_minute, collected_at AS normal_collected_at, stream_count AS normal_stream_count, total_viewers AS normal_total_viewers, source_mode AS normal_source_mode FROM minute_snapshots WHERE provider = 'kick' AND collected_at >= '${startAt}' AND json_extract(payload_json, '$.categoryContractVersion') IS NULL ORDER BY bucket_minute DESC LIMIT 1;
@@ -181,6 +184,7 @@ SELECT bucket_minute AS normal_bucket_minute, collected_at AS normal_collected_a
       evidence.data.categoryPayloadRowsSinceStart = numberFromRows(rows, 'category_payload_rows_since_start')
       evidence.data.normalPayloadRowsSinceStart = numberFromRows(rows, 'normal_payload_rows_since_start')
       evidence.data.collectorErrorRunsSinceStart = numberFromRows(rows, 'collector_error_runs_since_start')
+      evidence.data.collectorStatus = rows.find((row) => Object.hasOwn(row, 'collector_status')) ?? null
       evidence.data.latestSnapshot = rows.find((row) => Object.hasOwn(row, 'bucket_minute')) ?? null
       evidence.data.latestCategorySnapshot = rows.find((row) => Object.hasOwn(row, 'category_bucket_minute')) ?? null
       evidence.data.latestNormalSnapshot = rows.find((row) => Object.hasOwn(row, 'normal_bucket_minute')) ?? null
