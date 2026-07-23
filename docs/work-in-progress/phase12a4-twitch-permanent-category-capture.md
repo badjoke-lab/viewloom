@@ -1,5 +1,8 @@
 # 12A-4-23 Twitch permanent category capture accepted
 
+Status: completed historical work record  
+Superseded as active WIP by: `docs/work-in-progress/phase12a4-category-parallel-execution.md`
+
 ## Status
 
 Twitch permanent category capture is active and accepted after the minimum 24-hour observation. The final read-only evaluation classified the rollout as eligible for acceptance with no warnings and no hard stops.
@@ -20,16 +23,14 @@ Twitch permanent category capture is active and accepted after the minimum 24-ho
 - Warning extension: not required.
 - Rollback: not required.
 
-## Current production state
+## Accepted production state
 
 - Twitch permanent category capture active: yes.
 - Existing five-minute Worker cron unchanged.
-- Kick permanent category capture authorized: no.
-- Category UI authorized: no.
 - Backfill authorized: no.
 - Retention expansion authorized: no.
 - Cross-provider identity or ranking authorized: no.
 
-## Next gate
+## Superseding gate
 
-A separate Kick decision may be considered. Provider-specific category UI remains deferred until seven stable Twitch days are accepted.
+The current work is no longer tracked in this file. Kick permanent rollout and hidden Twitch Heatmap category-filter implementation are tracked in `docs/work-in-progress/phase12a4-category-parallel-execution.md` under the current 12A-4-24 decision.
