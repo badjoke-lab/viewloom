@@ -12,6 +12,7 @@ const permanent = fs.readFileSync('workers/collector-kick/wrangler.category-perm
 const twitch = fs.readFileSync('workers/collector-twitch/wrangler.category-permanent.toml', 'utf8')
 const entry = fs.readFileSync('workers/collector-kick/src/entry.ts', 'utf8')
 const implementation = fs.readFileSync('workers/collector-kick/src/index-category.ts', 'utf8')
+const official = fs.readFileSync('workers/collector-kick/src/official-livestreams.ts', 'utf8')
 const category = fs.readFileSync('workers/shared/category-capture.ts', 'utf8')
 
 const toml = (source, key) => source.match(new RegExp(`^${key}\\s*=\\s*"([^"]+)"$`, 'm'))?.[1] ?? null
@@ -35,14 +36,22 @@ for (const fragment of [
 ]) assert.ok(entry.includes(fragment), `entry missing ${fragment}`)
 
 for (const fragment of [
+  'encodeCategorySnapshot(items, !acceptedPrimarySource)',
+  'stripCategorySourceFields(items)',
+  'writeCategoryDictionary(',
+  "env.DB_KICK_HOT,\n        'kick'",
+  'categoryContractVersion',
+]) assert.ok(implementation.includes(fragment), `implementation missing ${fragment}`)
+
+for (const fragment of [
   'categoryProviderId?: string | null',
   'categoryName?: string | null',
-  'const category = record(raw.category) ? raw.category : null',
-  'categoryProviderId:',
-  'categoryName:',
-  'encodeCategorySnapshot(',
-  'writeCategoryDictionary(',
-]) assert.ok(implementation.includes(fragment), `implementation missing ${fragment}`)
+  'const category = asRecord(raw.category)',
+  'const categoryProviderId = asIdentifier(category?.id)',
+  'const categoryName = asText(category?.name)',
+  'categoryProviderId: categoryProviderId || null',
+  'categoryName: categoryName || null',
+]) assert.ok(official.includes(fragment), `official mapping missing ${fragment}`)
 
 for (const fragment of [
   "export const CATEGORY_CONTRACT_VERSION = 'category-source-v1'",
@@ -84,7 +93,7 @@ console.log(JSON.stringify({
   provider: 'kick',
   permanentConfigMatchesNormalIdentity: true,
   fiveMinuteCronPreserved: true,
-  categorySourceMappingPresent: true,
+  officialCategorySourceMappingPresent: true,
   dictionaryAndPayloadContractPresent: true,
   storageGatesVerified: true,
   bindingGatesVerified: true,
