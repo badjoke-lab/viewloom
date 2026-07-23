@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "viewloom-12a4-kick-permanent-category-capture-package-v1",
+  "workstream": "12A-4-24A Kick permanent category capture implementation package",
+  "status": "candidate",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 634,
+  "provider": "kick",
+  "acceptedDecision": {
+    "contract": "docs/audits/12a4-kick-permanent-category-decision-contract.json",
+    "canonicalGate": "docs/audits/12a2-current-gate-state.json",
+    "requiredGateSchemaVersion": "viewloom-12a2-current-gate-state-v28",
+    "requiredGatePhase": "12A-4-24",
+    "specification": "docs/product/category-capture-permanent-rollout-spec.md",
+    "implementationPlan": "docs/product/category-capture-permanent-rollout-plan.md",
+    "roadmap": "docs/product/current-roadmap.md",
+    "schedule": "docs/product/current-schedule.md",
+    "activeWip": "docs/work-in-progress/phase12a4-category-parallel-execution.md"
+  },
+  "package": {
+    "normalConfig": "workers/collector-kick/wrangler.toml",
+    "permanentConfig": "workers/collector-kick/wrangler.category-permanent.toml",
+    "collectorEntry": "workers/collector-kick/src/entry.ts",
+    "collectorImplementation": "workers/collector-kick/src/index-category.ts",
+    "categoryContract": "workers/shared/category-capture.ts",
+    "categoryRollup": "workers/shared/category-intraday-rollup.ts",
+    "readOnlyObserver": "scripts/run-12a4-kick-permanent-category-observer.mjs",
+    "fixture": "scripts/test-12a4-kick-permanent-category-capture.mjs",
+    "packageVerifier": "scripts/verify-12a4-kick-permanent-category-package.mjs",
+    "workflow": ".github/workflows/analytics-12a4-kick-permanent-category-package.yml"
+  },
+  "runtimeContract": {
+    "serviceName": "viewloom-collector-kick",
+    "databaseName": "vl_kick_hot",
+    "databaseBinding": "DB_KICK_HOT",
+    "provider": "kick",
+    "categorySourceId": "category.id",
+    "categorySourceName": "category.name",
+    "categoryContractVersion": "category-source-v1",
+    "categoryFlag": "CATEGORY_CAPTURE_ENABLED",
+    "categoryFlagValue": "true",
+    "collectorCron": "*/5 * * * *",
+    "newWorkerCronAuthorized": false,
+    "normalConfigRemainsRollbackTarget": true,
+    "twitchConfigurationChanged": false
+  },
+  "implementationRequirements": {
+    "categoryPayloadIdsRequired": true,
+    "categoryPayloadRefsRequired": true,
+    "dictionaryUpsertRequired": true,
+    "categoryIntradayRollupRequired": true,
+    "categoryFailureMustNotReplaceSnapshotWrite": true,
+    "existingStreamCoverageUnchanged": true,
+    "existingRetentionUnchanged": true,
+    "backfillPerformed": false,
+    "categoryUiIncluded": false,
+    "crossProviderIdentityAllowed": false,
+    "combinedProviderRankingAllowed": false
+  },
+  "readOnlyPreflight": {
+    "cloudflareApiMethods": ["GET"],
+    "d1Statements": ["SELECT"],
+    "latestSnapshotFreshnessMinutesMax": 20,
+    "projectedNinetyDaySizeMbMax": 440,
+    "projectedProviderHeadroomMbMin": 10,
+    "projectedAccountWideHeadroomMbMin": 500,
+    "providerLeakageRowsMax": 0,
+    "requiredTables": [
+      "minute_snapshots",
+      "provider_category_dictionary",
+      "streamer_intraday_rollups",
+      "intraday_rollup_status"
+    ],
+    "normalPreflightRequiresPermanentFlagAbsent": true,
+    "observationRequiresPermanentFlagPresent": true,
+    "obsoleteCanaryBindingsMustBeAbsent": true,
+    "productionMutationAllowed": false
+  },
+  "observation": {
+    "minimumHours": 24,
+    "warningExtensionHours": 48,
+    "initialConsecutiveCategorySnapshotsRequired": 2,
+    "missingCategorySnapshotsHardStop": 3,
+    "staleOrEmptyNormalSnapshotsHardStop": 2,
+    "providerLeakageRowsMax": 0,
+    "temporaryGitHubScheduleAllowed": true,
+    "newWorkerCronAllowed": false,
+    "automaticTwitchStart": false
+  },
+  "rollback": {
+    "config": "workers/collector-kick/wrangler.toml",
+    "schemaRollbackRequired": false,
+    "historicalCategoryRowsDeleted": false,
+    "normalFiveMinuteCollectionMustRecover": true,
+    "permanentFlagMustBeAbsentAfterRollback": true,
+    "providerLeakageMustRemainZero": true,
+    "sanitizedEvidenceRequired": true
+  },
+  "pullRequestBoundary": {
+    "productionDeployment": false,
+    "remoteD1Operation": false,
+    "productionBindingMutation": false,
+    "normalKickConfigMutation": false,
+    "twitchMutation": false,
+    "collectorCadenceChange": false,
+    "newWorkerCron": false,
+    "backfill": false,
+    "retentionExpansion": false,
+    "categoryUi": false,
+    "crossProviderBehavior": false,
+    "exactDeploymentTriggerIncluded": false
+  },
+  "nextGate": "accept this package, then prepare a separate Kick release package with fresh read-only preflight, exact trigger, two category-bearing snapshots, 24-48 hour observation, and rollback"
+}
