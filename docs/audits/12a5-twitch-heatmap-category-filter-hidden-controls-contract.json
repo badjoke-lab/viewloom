@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-heatmap-category-filter-hidden-controls-v1",
+  "workstream": "12A-5A hidden Twitch Heatmap category control package",
+  "status": "candidate",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 635,
+  "provider": "twitch",
+  "acceptedInputs": {
+    "canonicalGate": "docs/audits/12a2-current-gate-state.json",
+    "requiredGateSchemaVersion": "viewloom-12a2-current-gate-state-v29",
+    "requiredGatePhase": "12A-4-24",
+    "decisionContract": "docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json",
+    "apiPackageContract": "docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json",
+    "apiPackagePr": 638,
+    "apiPackageMergeSha": "5b466e3e440324bbd6b19d60aa3acaed0d1d95e8",
+    "specification": "docs/product/category-capture-permanent-rollout-spec.md",
+    "implementationPlan": "docs/product/category-capture-permanent-rollout-plan.md",
+    "roadmap": "docs/product/current-roadmap.md",
+    "schedule": "docs/product/current-schedule.md",
+    "activeWip": "docs/work-in-progress/phase12a4-category-parallel-execution.md"
+  },
+  "package": {
+    "model": "apps/web/src/features/twitch-heatmap/model.ts",
+    "controls": "apps/web/src/features/twitch-heatmap/category-preview-controls.ts",
+    "runtime": "apps/web/src/live/twitch-heatmap.ts",
+    "verifier": "scripts/verify-12a5-twitch-heatmap-category-controls-package.mjs",
+    "workflow": ".github/workflows/analytics-12a5-twitch-heatmap-category-controls-package.yml"
+  },
+  "hiddenEntry": {
+    "queryParameter": "categoryPreview",
+    "queryValue": "1",
+    "twitchOnly": true,
+    "publicNavigationAdded": false,
+    "normalHtmlControlAdded": false,
+    "defaultRouteExposure": false,
+    "publicExposureAuthorized": false
+  },
+  "controls": {
+    "categoryLabel": "Category preview",
+    "defaultCategory": "all",
+    "allCategoriesLabel": "All categories",
+    "topValues": [20, 50, 100],
+    "defaultTop": 50,
+    "categoryQueryParameter": "category",
+    "topQueryParameter": "top",
+    "providerSpecificUrlState": true,
+    "keyboardAccessible": true,
+    "mobileResponsive": true,
+    "liveStatusRegion": true
+  },
+  "dataTruth": {
+    "apiPackageRequired": true,
+    "filterBeforeTopN": true,
+    "states": [
+      "loading",
+      "ok",
+      "empty",
+      "partial",
+      "stale",
+      "demo",
+      "unknown_category",
+      "category_unavailable",
+      "error"
+    ],
+    "unknownCategoryMustNotFallbackToFalseReal": true,
+    "unavailableSelectedCategoryMustNotFallbackToFalseReal": true,
+    "allCategoriesPreservesUnfilteredCompatibility": true,
+    "existingUnfilteredHeatmapFallbackRequired": true
+  },
+  "heatmapSemantics": {
+    "area": "viewers",
+    "color": "momentum",
+    "activity": "secondary_signal",
+    "categoryMetadataDoesNotChangeLayoutWeight": true
+  },
+  "validation": {
+    "staticContractRequired": true,
+    "webTypecheckRequired": true,
+    "webBuildRequired": true,
+    "webChecksRequired": true,
+    "mobileCssRequired": true,
+    "focusVisibleRequired": true,
+    "normalRouteControlAbsenceRequired": true,
+    "kickControlAbsenceRequired": true
+  },
+  "pullRequestBoundary": {
+    "publicNavigation": false,
+    "normalHtmlControl": false,
+    "defaultRouteExposure": false,
+    "publicFeatureFlagEnabled": false,
+    "collectorChange": false,
+    "workerConfigChange": false,
+    "kickChange": false,
+    "backfill": false,
+    "retentionExpansion": false,
+    "crossProviderBehavior": false
+  },
+  "publicGate": {
+    "earliestAuditAt": "2026-07-27T11:40:00.000Z",
+    "sevenDayAccumulationAuditRequired": true,
+    "separatePublicCutoverPrRequired": true
+  },
+  "nextGate": "accept the complete hidden control package while keeping public exposure disabled, then run the seven-day accumulation audit before any public cutover"
+}
