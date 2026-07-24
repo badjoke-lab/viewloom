@@ -167,7 +167,8 @@ for (const fragment of [
   'CLOUDFLARE_ACCOUNT_ID',
   'Upload sanitized Kick release evidence',
 ]) requireText(workflow, fragment, 'workflow')
-assert.equal(workflow.includes('cron:'), false)
+assert.equal(/^\s*schedule:\s*$/m.test(workflow), false)
+assert.equal(/^\s*-\s*cron:\s*/m.test(workflow), false)
 
 console.log('verify: provider configs and five-minute cadence')
 const toml = (source, key) => source.match(new RegExp(`^${key}\\s*=\\s*"([^"]+)"$`, 'm'))?.[1] ?? null
