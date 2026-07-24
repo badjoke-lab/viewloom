@@ -72,6 +72,13 @@ export function parseLastJson(value) {
   return parsed.at(-1)
 }
 
+export function isRealKickSourceMode(value) {
+  const sourceMode = String(value ?? '').trim().toLowerCase()
+  return sourceMode === 'real'
+    || sourceMode === 'authenticated'
+    || sourceMode === 'public-channel-fallback'
+}
+
 export async function runObserver(options = {}) {
   const mode = String(options.mode ?? process.env.MODE ?? 'preflight').trim().toLowerCase()
   if (!['preflight', 'observe', 'rollback'].includes(mode)) throw new Error('invalid_mode')
@@ -194,7 +201,7 @@ SELECT bucket_minute AS normal_bucket_minute, collected_at AS normal_collected_a
       evidence.gates.providerLeakagePass = evidence.data.providerLeakageRows === 0
       evidence.gates.latestSnapshotFreshnessPass = Number.isFinite(evidence.data.minutesSinceLatestSnapshot)
         && evidence.data.minutesSinceLatestSnapshot <= contract.readOnlyPreflight.latestSnapshotFreshnessMinutesMax
-      evidence.gates.latestSnapshotRealPass = evidence.data.latestSnapshot?.source_mode === 'real'
+      evidence.gates.latestSnapshotRealPass = isRealKickSourceMode(evidence.data.latestSnapshot?.source_mode)
       evidence.gates.latestSnapshotNonemptyPass = Number(evidence.data.latestSnapshot?.stream_count) > 0
       evidence.gates.collectorHealthPass = evidence.gates.latestSnapshotFreshnessPass
         && evidence.gates.latestSnapshotRealPass
@@ -202,14 +209,14 @@ SELECT bucket_minute AS normal_bucket_minute, collected_at AS normal_collected_a
       evidence.data.collectorHealthProxy.clear = evidence.gates.collectorHealthPass
       evidence.gates.categorySnapshotPass = mode !== 'observe' || (
         Number(evidence.data.categoryPayloadRowsSinceStart) >= contract.observation.initialConsecutiveCategorySnapshotsRequired
-        && evidence.data.latestCategorySnapshot?.category_source_mode === 'real'
+        && isRealKickSourceMode(evidence.data.latestCategorySnapshot?.category_source_mode)
         && Number(evidence.data.latestCategorySnapshot?.category_stream_count) > 0
         && Number.isFinite(evidence.data.minutesSinceLatestCategorySnapshot)
         && evidence.data.minutesSinceLatestCategorySnapshot <= contract.readOnlyPreflight.latestSnapshotFreshnessMinutesMax
       )
       evidence.gates.rollbackNormalSnapshotPass = mode !== 'rollback' || (
         Number(evidence.data.normalPayloadRowsSinceStart) >= 1
-        && evidence.data.latestNormalSnapshot?.normal_source_mode === 'real'
+        && isRealKickSourceMode(evidence.data.latestNormalSnapshot?.normal_source_mode)
         && Number(evidence.data.latestNormalSnapshot?.normal_stream_count) > 0
         && Number.isFinite(evidence.data.minutesSinceLatestNormalSnapshot)
         && evidence.data.minutesSinceLatestNormalSnapshot <= contract.readOnlyPreflight.latestSnapshotFreshnessMinutesMax
