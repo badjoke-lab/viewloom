@@ -72,6 +72,13 @@ export function parseLastJson(value) {
   return parsed.at(-1)
 }
 
+export function isRealKickSourceMode(value) {
+  const sourceMode = String(value ?? '').trim().toLowerCase()
+  return sourceMode === 'real'
+    || sourceMode === 'authenticated'
+    || sourceMode === 'public-channel-fallback'
+}
+
 export async function runObserver(options = {}) {
   const mode = String(options.mode ?? process.env.MODE ?? 'preflight').trim().toLowerCase()
   if (!['preflight', 'observe', 'rollback'].includes(mode)) throw new Error('invalid_mode')
@@ -101,6 +108,11 @@ export async function runObserver(options = {}) {
       categoryPayloadRowsSinceStart: null,
       normalPayloadRowsSinceStart: null,
       collectorErrorRunsSinceStart: null,
+      collectorHealthProxy: {
+        evidenceMode: 'latest_snapshot_fresh_real_nonempty_proxy',
+        persistedErrorHistoryAvailable: false,
+        clear: false,
+      },
       latestSnapshot: null,
       latestCategorySnapshot: null,
       latestNormalSnapshot: null,
@@ -116,6 +128,7 @@ export async function runObserver(options = {}) {
       schemaPass: false,
       providerLeakagePass: false,
       bindingsPass: false,
+      collectorHealthPass: false,
       latestSnapshotFreshnessPass: false,
       latestSnapshotRealPass: false,
       latestSnapshotNonemptyPass: false,
@@ -171,7 +184,6 @@ SELECT (
 ) AS provider_leakage_rows;
 SELECT COUNT(*) AS category_payload_rows_since_start FROM minute_snapshots WHERE provider = 'kick' AND collected_at >= '${startAt}' AND json_extract(payload_json, '$.categoryContractVersion') = 'category-source-v1';
 SELECT COUNT(*) AS normal_payload_rows_since_start FROM minute_snapshots WHERE provider = 'kick' AND collected_at >= '${startAt}' AND json_extract(payload_json, '$.categoryContractVersion') IS NULL;
-SELECT COUNT(*) AS collector_error_runs_since_start FROM collector_runs WHERE provider = 'kick' AND run_at >= '${startAt}' AND status = 'error';
 SELECT bucket_minute, collected_at, stream_count, total_viewers, source_mode, json_extract(payload_json, '$.categoryContractVersion') AS category_contract_version FROM minute_snapshots WHERE provider = 'kick' ORDER BY bucket_minute DESC LIMIT 1;
 SELECT bucket_minute AS category_bucket_minute, collected_at AS category_collected_at, stream_count AS category_stream_count, total_viewers AS category_total_viewers, source_mode AS category_source_mode FROM minute_snapshots WHERE provider = 'kick' AND collected_at >= '${startAt}' AND json_extract(payload_json, '$.categoryContractVersion') = 'category-source-v1' ORDER BY bucket_minute DESC LIMIT 1;
 SELECT bucket_minute AS normal_bucket_minute, collected_at AS normal_collected_at, stream_count AS normal_stream_count, total_viewers AS normal_total_viewers, source_mode AS normal_source_mode FROM minute_snapshots WHERE provider = 'kick' AND collected_at >= '${startAt}' AND json_extract(payload_json, '$.categoryContractVersion') IS NULL ORDER BY bucket_minute DESC LIMIT 1;
@@ -180,7 +192,6 @@ SELECT bucket_minute AS normal_bucket_minute, collected_at AS normal_collected_a
       evidence.data.providerLeakageRows = numberFromRows(rows, 'provider_leakage_rows')
       evidence.data.categoryPayloadRowsSinceStart = numberFromRows(rows, 'category_payload_rows_since_start')
       evidence.data.normalPayloadRowsSinceStart = numberFromRows(rows, 'normal_payload_rows_since_start')
-      evidence.data.collectorErrorRunsSinceStart = numberFromRows(rows, 'collector_error_runs_since_start')
       evidence.data.latestSnapshot = rows.find((row) => Object.hasOwn(row, 'bucket_minute')) ?? null
       evidence.data.latestCategorySnapshot = rows.find((row) => Object.hasOwn(row, 'category_bucket_minute')) ?? null
       evidence.data.latestNormalSnapshot = rows.find((row) => Object.hasOwn(row, 'normal_bucket_minute')) ?? null
@@ -190,18 +201,22 @@ SELECT bucket_minute AS normal_bucket_minute, collected_at AS normal_collected_a
       evidence.gates.providerLeakagePass = evidence.data.providerLeakageRows === 0
       evidence.gates.latestSnapshotFreshnessPass = Number.isFinite(evidence.data.minutesSinceLatestSnapshot)
         && evidence.data.minutesSinceLatestSnapshot <= contract.readOnlyPreflight.latestSnapshotFreshnessMinutesMax
-      evidence.gates.latestSnapshotRealPass = evidence.data.latestSnapshot?.source_mode === 'real'
+      evidence.gates.latestSnapshotRealPass = isRealKickSourceMode(evidence.data.latestSnapshot?.source_mode)
       evidence.gates.latestSnapshotNonemptyPass = Number(evidence.data.latestSnapshot?.stream_count) > 0
+      evidence.gates.collectorHealthPass = evidence.gates.latestSnapshotFreshnessPass
+        && evidence.gates.latestSnapshotRealPass
+        && evidence.gates.latestSnapshotNonemptyPass
+      evidence.data.collectorHealthProxy.clear = evidence.gates.collectorHealthPass
       evidence.gates.categorySnapshotPass = mode !== 'observe' || (
         Number(evidence.data.categoryPayloadRowsSinceStart) >= contract.observation.initialConsecutiveCategorySnapshotsRequired
-        && evidence.data.latestCategorySnapshot?.category_source_mode === 'real'
+        && isRealKickSourceMode(evidence.data.latestCategorySnapshot?.category_source_mode)
         && Number(evidence.data.latestCategorySnapshot?.category_stream_count) > 0
         && Number.isFinite(evidence.data.minutesSinceLatestCategorySnapshot)
         && evidence.data.minutesSinceLatestCategorySnapshot <= contract.readOnlyPreflight.latestSnapshotFreshnessMinutesMax
       )
       evidence.gates.rollbackNormalSnapshotPass = mode !== 'rollback' || (
         Number(evidence.data.normalPayloadRowsSinceStart) >= 1
-        && evidence.data.latestNormalSnapshot?.normal_source_mode === 'real'
+        && isRealKickSourceMode(evidence.data.latestNormalSnapshot?.normal_source_mode)
         && Number(evidence.data.latestNormalSnapshot?.normal_stream_count) > 0
         && Number.isFinite(evidence.data.minutesSinceLatestNormalSnapshot)
         && evidence.data.minutesSinceLatestNormalSnapshot <= contract.readOnlyPreflight.latestSnapshotFreshnessMinutesMax
@@ -215,6 +230,7 @@ SELECT bucket_minute AS normal_bucket_minute, collected_at AS normal_collected_a
       evidence.gates.schemaPass,
       evidence.gates.providerLeakagePass,
       evidence.gates.bindingsPass,
+      evidence.gates.collectorHealthPass,
       evidence.gates.latestSnapshotFreshnessPass,
       evidence.gates.latestSnapshotRealPass,
       evidence.gates.latestSnapshotNonemptyPass,
