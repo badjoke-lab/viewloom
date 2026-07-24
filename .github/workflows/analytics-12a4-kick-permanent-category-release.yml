@@ -59,6 +59,7 @@ jobs:
           node --check scripts/inspect-12a4-kick-permanent-category-release-trigger.mjs
           node --check scripts/wait-12a4-kick-permanent-category-release-start.mjs
           node --check scripts/run-12a4-kick-permanent-category-release.mjs
+          node --check scripts/run-12a4-kick-permanent-category-observer.mjs
           node --check scripts/test-12a4-kick-permanent-category-release.mjs
           node --check scripts/verify-12a4-kick-permanent-category-release-package.mjs
       - name: Run release package fixtures
@@ -91,14 +92,17 @@ jobs:
         run: |
           START_AT="$(date -u -d '30 minutes ago' '+%Y-%m-%dT%H:%M:%S.000Z')"
           MODE=preflight START_AT="$START_AT" node scripts/run-12a4-kick-permanent-category-observer.mjs
-      - name: Verify recent Kick collector errors are zero
+      - name: Verify Kick collector health proxy passed
         run: |
           node --input-type=module - <<'NODE'
           import fs from 'node:fs'
           const evidence = JSON.parse(fs.readFileSync('artifacts/12a4-kick-permanent-category-release/preflight/evidence-preflight.json', 'utf8'))
           if (evidence.outcome !== 'accepted') throw new Error(`preflight_rejected:${evidence.error ?? 'unknown'}`)
-          if (evidence.data?.collectorErrorRunsSinceStart !== 0) {
-            throw new Error(`recent_collector_errors:${evidence.data?.collectorErrorRunsSinceStart}`)
+          if (evidence.gates?.collectorHealthPass !== true || evidence.data?.collectorHealthProxy?.clear !== true) {
+            throw new Error(`collector_health_proxy_rejected:${JSON.stringify({
+              gate: evidence.gates?.collectorHealthPass ?? null,
+              proxy: evidence.data?.collectorHealthProxy ?? null,
+            })}`)
           }
           NODE
       - name: Upload sanitized Kick preflight evidence
