@@ -77,6 +77,9 @@ assert.equal(contract.workflow.temporaryObservationScheduleIncluded, false)
 assert.equal(contract.acceptance, null)
 assert.equal(Object.values(contract.pullRequestBoundary).every((value) => value === false), true)
 assert.equal(contract.freshPreflight.failureStopsBeforeDeployment, true)
+assert.equal(contract.freshPreflight.collectorHealthEvidenceMode, 'latest_snapshot_fresh_real_nonempty_proxy')
+assert.equal(contract.freshPreflight.collectorErrorHistoryPersisted, false)
+assert.equal(contract.freshPreflight.collectorHealthProxyMustPass, true)
 assert.equal(contract.initialVerification.consecutiveCategorySnapshotsRequired, 2)
 assert.equal(contract.initialVerification.rollbackOnFailure, true)
 assert.equal(contract.rollback.normalSnapshotMustRecover, true)
@@ -99,12 +102,14 @@ for (const fragment of [
   'Math.min(remaining, 60_000)',
 ]) requireText(waitRunner, fragment, 'start wait')
 
-console.log('verify: read-only observer and collector health')
+console.log('verify: read-only observer and collector health proxy')
 for (const fragment of [
   "schemaVersion: 'viewloom-12a4-kick-permanent-category-readonly-evidence-v1'",
-  "'collector_status'",
-  "FROM collector_status WHERE provider = 'kick'",
-  'collector_error_runs_since_start',
+  'export function isRealKickSourceMode',
+  "sourceMode === 'authenticated'",
+  "sourceMode === 'public-channel-fallback'",
+  'collectorHealthProxy',
+  'collectorHealthPass',
   'latestNormalSnapshot',
   'rollbackNormalSnapshotPass',
   'normal_payload_rows_since_start',
@@ -122,7 +127,8 @@ for (const fragment of [
   'export function requiredReleaseGates',
   'export function releaseAccepted',
   'PREFLIGHT_LOOKBACK_MS',
-  'recent_collector_errors',
+  'collector_health_proxy_rejected',
+  'collectorHealthPass',
   "mode: 'preflight'",
   "mode: 'observe'",
   "mode: 'rollback'",
@@ -137,7 +143,8 @@ for (const fragment of [
   'pullRequestValidationOnly: true',
   'pushStartVerified: true',
   'identityMismatchesRejected: true',
-  'recentCollectorErrorGateVerified: true',
+  'kickSourceModesVerified: true',
+  'collectorHealthProxyGateVerified: true',
   'rollbackNormalSnapshotProofRequired: true',
   'twitchBoundaryVerified: true',
 ]) requireText(fixture, fragment, 'release fixture')
@@ -151,7 +158,8 @@ for (const fragment of [
   "github.event_name != 'push' && needs.classify.outputs.trigger_present != 'true'",
   "github.event_name == 'push' && needs.inspect-trigger.outputs.action == 'start'",
   'Run fresh read-only Kick production preflight',
-  'Verify recent Kick collector errors are zero',
+  'Verify Kick collector health proxy passed',
+  'collectorHealthProxy?.clear',
   'Verify exact one-file Kick release trigger',
   'Wait for exact Kick release start boundary',
   'Run preflight and verify the Kick category release start',
@@ -189,7 +197,7 @@ console.log(JSON.stringify({
   pullRequestValidationOnly: true,
   pullRequestReadOnlyPreflight: true,
   freshPreflightBeforeRelease: true,
-  recentCollectorErrorGate: true,
+  collectorHealthProxyGate: true,
   consecutiveCategorySnapshotsRequired: 2,
   automaticRollbackRequired: true,
   twitchChanged: false,
