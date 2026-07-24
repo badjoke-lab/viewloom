@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { inspectReleaseTrigger } from './inspect-12a4-kick-permanent-category-release-trigger.mjs'
+import { isRealKickSourceMode } from './run-12a4-kick-permanent-category-observer.mjs'
 import { releaseAccepted, requiredReleaseGates } from './run-12a4-kick-permanent-category-release.mjs'
 import { evaluateReleaseStartWait } from './wait-12a4-kick-permanent-category-release-start.mjs'
 
@@ -107,9 +108,20 @@ const tooLate = evaluateReleaseStartWait(trigger, new Date('2026-07-23T15:30:00.
 assert.equal(tooLate.ok, false)
 assert.equal(tooLate.failure.name, 'release_start_too_stale')
 
+assert.equal(isRealKickSourceMode('real'), true)
+assert.equal(isRealKickSourceMode('authenticated'), true)
+assert.equal(isRealKickSourceMode('public-channel-fallback'), true)
+assert.equal(isRealKickSourceMode('empty-authenticated'), false)
+assert.equal(isRealKickSourceMode('empty-public-channel-fallback'), false)
+assert.equal(isRealKickSourceMode('demo'), false)
+
 const acceptedEvidence = {
   triggerPass: true,
-  preflight: { outcome: 'accepted', data: { collectorErrorRunsSinceStart: 0 } },
+  preflight: {
+    outcome: 'accepted',
+    gates: { collectorHealthPass: true },
+    data: { collectorHealthProxy: { clear: true } },
+  },
   permanentDeploymentExitCode: 0,
   initialObservation: {
     outcome: 'accepted',
@@ -123,7 +135,11 @@ assert.equal(releaseAccepted({ ...acceptedEvidence, permanentDeploymentExitCode:
 assert.equal(releaseAccepted({ ...acceptedEvidence, gates: { twitchChanged: true } }), false)
 assert.equal(releaseAccepted({
   ...acceptedEvidence,
-  preflight: { outcome: 'accepted', data: { collectorErrorRunsSinceStart: 1 } },
+  preflight: {
+    outcome: 'accepted',
+    gates: { collectorHealthPass: false },
+    data: { collectorHealthProxy: { clear: false } },
+  },
 }), false)
 assert.equal(releaseAccepted({
   ...acceptedEvidence,
@@ -137,6 +153,7 @@ assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=\s*"true"/.test(permanent), true)
 assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(normal), false)
 assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=\s*"true"/.test(twitch), true)
 assert.ok(observer.includes("schemaVersion: 'viewloom-12a4-kick-permanent-category-readonly-evidence-v1'"))
+assert.ok(observer.includes('isRealKickSourceMode'))
 assert.ok(observer.includes('latestNormalSnapshot'))
 assert.ok(observer.includes('rollbackNormalSnapshotPass'))
 assert.ok(observer.includes('normal_payload_rows_since_start'))
@@ -151,7 +168,8 @@ console.log(JSON.stringify({
   pushStartVerified: true,
   identityMismatchesRejected: true,
   exactStartWaitVerified: true,
-  recentCollectorErrorGateVerified: true,
+  kickSourceModesVerified: true,
+  collectorHealthProxyGateVerified: true,
   releaseAcceptanceGatesVerified: true,
   rollbackNormalSnapshotProofRequired: true,
   twitchBoundaryVerified: true,
