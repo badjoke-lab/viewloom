@@ -2,8 +2,8 @@ node:internal/modules/run_main:123
     triggerUncaughtException(
     ^
 
-AssertionError [ERR_ASSERTION]: schedule missing: Canonical target 12A-4-24 parallel execution
-    at file:///home/runner/work/viewloom/viewloom/scripts/verify-category-rollout-policy.mjs:80:11
+AssertionError [ERR_ASSERTION]: active WIP missing: Earliest audit: `2026-07-27T11:40:00.000Z`
+    at file:///home/runner/work/viewloom/viewloom/scripts/verify-category-rollout-policy.mjs:87:11
     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
