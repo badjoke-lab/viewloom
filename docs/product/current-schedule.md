@@ -1,17 +1,17 @@
 # ViewLoom current execution schedule
 
 Status: source of truth  
-Last updated: 2026-07-23
+Last updated: 2026-07-25
 
 ```text
 Phase 12A Analytics Capture Foundation active
-Canonical target 12A-4-24 parallel execution
+Canonical target 12A-4-24 exact Kick release and Twitch seven-day audit
 Twitch permanent category capture accepted and active yes
 Kick permanent implementation package accepted yes
-Kick permanent release package accepted no
+Kick permanent release package accepted yes
 Kick permanent runtime active no
 Twitch Heatmap hidden category API package accepted yes
-Twitch Heatmap hidden control package accepted no
+Twitch Heatmap hidden control package accepted yes
 Twitch Heatmap public category-filter exposure authorized no
 Twitch seven-day audit earliest 2026-07-27T11:40:00Z
 Existing Twitch Worker cadence */5 * * * * unchanged
@@ -31,41 +31,37 @@ The two tracks proceed in parallel. Every PR must identify its track and cite th
 Completed:
 
 1. 12A-4-24 documentation, decision contracts, canonical authorization, and policy synchronization merged in PR #636.
-2. Kick permanent configuration and normal rollback configuration added in PR #637.
-3. Extraction, dictionary, payload, provider-separation, fixture, package-contract, collector-typecheck, normal dry-run, and permanent dry-run gates passed.
-4. Implementation package accepted without production publish or remote D1 mutation.
+2. Kick permanent configuration and normal rollback configuration added and accepted through PR #637 and PR #639.
+3. Dormant release package merged in PR #641.
+4. Release fixtures, package verification, collector typecheck, normal/permanent dry-run, and fresh read-only production preflight passed.
+5. Release package canonical acceptance frozen in PR #642 without production publish or remote D1 mutation.
 
 Next:
 
-1. Prepare a separate dormant release package bound to PR #637 merge `b4012ebddb9ec33c50b6298c882f0f1a4ee16be0`.
-2. Run a fresh read-only Kick production preflight using Cloudflare GET and D1 SELECT only.
-3. Accept the release package without publishing production.
-4. Create an exact one-file trigger on main only after the fresh preflight passes.
-5. Publish only `workers/collector-kick/wrangler.category-permanent.toml`.
-6. Verify two consecutive real, non-empty, fresh, category-bearing Kick snapshots.
-7. Observe for at least 24 hours.
-8. Extend to 48 hours on warning; restore normal Kick configuration immediately on a hard stop.
-9. Freeze final evidence, accept or roll back Kick, and retire all temporary paths.
+1. Create an exact one-file trigger on main using accepted release merge `7afb81bb9098104107860e9fe6c920c7380964ad` and a start boundary no more than three hours ahead.
+2. Re-run the fresh read-only Kick production preflight immediately before deployment.
+3. Publish only `workers/collector-kick/wrangler.category-permanent.toml`.
+4. Verify two consecutive real, non-empty, fresh, category-bearing Kick snapshots.
+5. Observe for at least 24 hours.
+6. Extend to 48 hours on warning; restore normal Kick configuration immediately on a hard stop.
+7. Freeze final evidence, accept or roll back Kick, and retire all temporary paths.
 
 ## Track B — hidden Twitch Heatmap category filter
 
 Completed:
 
-1. Twitch Heatmap API now returns provider-specific category ID, name, and available-category options through PR #638.
-2. `category-source-v1` IDs/refs are decoded and dictionary names are resolved.
-3. Hidden `category` and `top=20|50|100` query handling applies category filtering before Top N.
-4. `all`, `selected`, `unknown_category`, and `category_unavailable` API states are accepted.
-5. Public navigation, normal visible controls, collector, Kick, backfill, and retention remain unchanged.
+1. Twitch Heatmap API category contract accepted through PR #638 and PR #639.
+2. Hidden Twitch-only controls, `All categories` default, Top 20/50/100, URL restoration, truthful states, mobile layout, focus-visible behavior, and aria-live status added in PR #640.
+3. Production HTML still exposes no category control and public navigation remains unchanged.
+4. Complete hidden control package accepted canonically in PR #642.
 
 Next:
 
-1. Implement hidden or feature-flagged controls using the accepted PR #638 API contract.
-2. Add `All categories` as the default visible state inside the hidden implementation.
-3. Persist selection in Twitch-specific URL state.
-4. Present loading, empty, partial, stale, demo, unknown-category, category-unavailable, and error states.
-5. Add desktop, mobile, keyboard, accessibility, browser, and regression tests.
-6. Preserve the existing unfiltered Heatmap as fallback.
-7. Accept the complete hidden control package independently of public exposure.
+1. Keep the hidden controls non-public and preserve the existing unfiltered Heatmap fallback.
+2. At or after `2026-07-27T11:40:00Z`, run the seven-day accumulation audit.
+3. Verify collector errors, provider leakage, freshness, real/non-empty state, category and dictionary continuity, bounded growth, and storage headroom.
+4. Authorize a separate public cutover PR only if every audit gate passes.
+5. Otherwise keep the feature hidden and record the failed or extended gate.
 
 ## Twitch seven-day accumulation gate
 
@@ -77,7 +73,7 @@ At or after `2026-07-27T11:40:00Z` / 2026-07-27 20:40 JST:
 4. authorize a separate public cutover PR only if every gate passes;
 5. otherwise keep the feature hidden and record the failed or extended gate.
 
-The seven-day boundary blocks public exposure only. It does not block hidden implementation or Kick rollout work.
+The seven-day boundary blocks public exposure only. It does not block Kick rollout work.
 
 ## Public Twitch cutover
 

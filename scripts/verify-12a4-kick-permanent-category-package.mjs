@@ -45,7 +45,7 @@ if (contract.status === 'candidate') {
   assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v28')
   assert.equal(contract.acceptance, undefined)
 } else {
-  assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v29')
+  assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v30')
   assert.equal(gate.categoryCapture.kickPermanentPackageAccepted, true)
   assert.equal(gate.currentWorkstream.kickPermanentPackageAccepted, true)
   assert.equal(contract.acceptance.packagePr, 637)
@@ -123,5 +123,5 @@ console.log(JSON.stringify({
   remoteD1OperationIncluded: false,
   twitchChanged: false,
   publicCategoryUiChanged: false,
-  nextAction: contract.status === 'accepted' ? 'prepare-release-package-and-fresh-preflight' : 'accept-package-before-release-package',
+  nextAction: contract.status === 'accepted' ? 'release-package-accepted-await-exact-trigger' : 'accept-package-before-release-package',
 }, null, 2))
