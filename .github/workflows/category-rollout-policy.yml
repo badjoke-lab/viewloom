@@ -7,6 +7,7 @@ on:
       - '.github/workflows/category-rollout-policy.yml'
       - '.github/workflows/apply-category-package-acceptance-v30.yml'
       - 'scripts/apply-12a4-category-package-acceptance-v30.mjs'
+      - 'scripts/fix-category-acceptance-verifiers-v30.mjs'
       - 'docs/audits/12a4-category-package-acceptance-staging.json'
 
 concurrency:
@@ -29,12 +30,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Parse one-shot updater
-        run: node --check scripts/apply-12a4-category-package-acceptance-v30.mjs
+      - name: Parse one-shot updaters
+        run: |
+          node --check scripts/apply-12a4-category-package-acceptance-v30.mjs
+          node --check scripts/fix-category-acceptance-verifiers-v30.mjs
       - name: Apply canonical package acceptance
         run: |
           node scripts/apply-12a4-category-package-acceptance-v30.mjs
-          sed -i 's/Canonical target 12A-4-24 parallel execution/Canonical target 12A-4-24 exact Kick release and Twitch seven-day audit/' scripts/verify-category-rollout-policy.mjs
+          node scripts/fix-category-acceptance-verifiers-v30.mjs
       - name: Verify canonical rollout policy
         run: |
           set +e
@@ -65,6 +68,7 @@ jobs:
           rm -f \
             .github/workflows/apply-category-package-acceptance-v30.yml \
             scripts/apply-12a4-category-package-acceptance-v30.mjs \
+            scripts/fix-category-acceptance-verifiers-v30.mjs \
             docs/audits/12a4-category-package-acceptance-staging.json \
             docs/audits/12a4-category-package-acceptance-verifier-failure.txt
           cat > .github/workflows/category-rollout-policy.yml <<'WORKFLOW'
