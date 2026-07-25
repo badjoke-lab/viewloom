@@ -34,7 +34,20 @@ jobs:
       - name: Apply canonical package acceptance
         run: node scripts/apply-12a4-category-package-acceptance-v30.mjs
       - name: Verify canonical rollout policy
-        run: node scripts/verify-category-rollout-policy.mjs
+        run: |
+          set +e
+          node scripts/verify-category-rollout-policy.mjs > /tmp/category-policy-verifier.log 2>&1
+          status=$?
+          cat /tmp/category-policy-verifier.log
+          if test "$status" -ne 0; then
+            cp /tmp/category-policy-verifier.log docs/audits/12a4-category-package-acceptance-verifier-failure.txt
+            git config user.name github-actions[bot]
+            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+            git add docs/audits/12a4-category-package-acceptance-verifier-failure.txt
+            git commit -m "Capture category acceptance verifier failure"
+            git push origin HEAD:agent/accept-category-parallel-packages-v30
+            exit "$status"
+          fi
       - name: Verify accepted Kick implementation package
         run: node scripts/verify-12a4-kick-permanent-category-package.mjs
       - name: Verify accepted hidden Twitch API package
@@ -50,7 +63,8 @@ jobs:
           rm -f \
             .github/workflows/apply-category-package-acceptance-v30.yml \
             scripts/apply-12a4-category-package-acceptance-v30.mjs \
-            docs/audits/12a4-category-package-acceptance-staging.json
+            docs/audits/12a4-category-package-acceptance-staging.json \
+            docs/audits/12a4-category-package-acceptance-verifier-failure.txt
           cat > .github/workflows/category-rollout-policy.yml <<'WORKFLOW'
           name: Category rollout policy
 
