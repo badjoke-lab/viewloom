@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Download and summarize sanitized release evidence
+      - name: Download and extract final release verdict
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -29,6 +29,5 @@ jobs:
           mkdir -p /tmp/evidence
           unzip -q /tmp/evidence.zip -d /tmp/evidence
           find /tmp/evidence -type f -name '*.json' -print0 | sort -z | while IFS= read -r -d '' file; do
-            echo "FILE=${file#/tmp/evidence/}"
-            jq -c '{schemaVersion,provider,mode,observedAt,outcome,status,identity,storage,bindings,data:{kickDictionaryRows:.data.kickDictionaryRows,providerLeakageRows:.data.providerLeakageRows,categoryPayloadRowsSinceStart:.data.categoryPayloadRowsSinceStart,normalPayloadRowsSinceStart:.data.normalPayloadRowsSinceStart,collectorHealthProxy:.data.collectorHealthProxy,latestSnapshot:.data.latestSnapshot,latestCategorySnapshot:.data.latestCategorySnapshot,latestNormalSnapshot:.data.latestNormalSnapshot},gates,deploy,observations,rollback,twitch}' "$file"
+            jq -c --arg file "${file#/tmp/evidence/}" '{file:$file,schemaVersion,observedAt,outcome,identity,bindings,latest:{bucket:.data.latestSnapshot.bucket_minute,collectedAt:.data.latestSnapshot.collected_at,streams:.data.latestSnapshot.stream_count,viewers:.data.latestSnapshot.total_viewers,sourceMode:.data.latestSnapshot.source_mode,contract:.data.latestSnapshot.category_contract_version,categoryBucket:.data.latestCategorySnapshot.category_bucket_minute,categoryStreams:.data.latestCategorySnapshot.category_stream_count,categoryViewers:.data.latestCategorySnapshot.category_total_viewers,categorySourceMode:.data.latestCategorySnapshot.category_source_mode},counts:{dictionary:.data.kickDictionaryRows,leakage:.data.providerLeakageRows,categorySinceStart:.data.categoryPayloadRowsSinceStart,normalSinceStart:.data.normalPayloadRowsSinceStart},gates,deploy,observations,rollback,twitch}' "$file"
           done
