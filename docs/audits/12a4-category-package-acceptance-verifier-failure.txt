@@ -2,16 +2,21 @@ node:internal/modules/run_main:123
     triggerUncaughtException(
     ^
 
-AssertionError [ERR_ASSERTION]: active WIP missing: Earliest audit: `2026-07-27T11:40:00.000Z`
-    at file:///home/runner/work/viewloom/viewloom/scripts/verify-category-rollout-policy.mjs:87:11
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ '7afb81bb9098104107860e9fe6c920c7380964ad'
+- '${RELEASE_PACKAGE_MERGE}'
+
+    at file:///home/runner/work/viewloom/viewloom/scripts/verify-category-rollout-policy.mjs:201:8
     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
-  generatedMessage: false,
+  generatedMessage: true,
   code: 'ERR_ASSERTION',
-  actual: false,
-  expected: true,
-  operator: '==',
+  actual: '7afb81bb9098104107860e9fe6c920c7380964ad',
+  expected: '${RELEASE_PACKAGE_MERGE}',
+  operator: 'strictEqual',
   diff: 'simple'
 }
 
