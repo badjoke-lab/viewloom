@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Download and print sanitized release evidence
+      - name: Download and summarize sanitized release evidence
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -28,4 +28,7 @@ jobs:
             -o /tmp/evidence.zip
           mkdir -p /tmp/evidence
           unzip -q /tmp/evidence.zip -d /tmp/evidence
-          find /tmp/evidence -type f -maxdepth 2 -print -exec sh -c 'echo "--- $1"; cat "$1"' _ {} \;
+          find /tmp/evidence -type f -name '*.json' -print0 | sort -z | while IFS= read -r -d '' file; do
+            echo "FILE=${file#/tmp/evidence/}"
+            jq -c '{schemaVersion,provider,mode,observedAt,outcome,status,identity,storage,bindings,data:{kickDictionaryRows:.data.kickDictionaryRows,providerLeakageRows:.data.providerLeakageRows,categoryPayloadRowsSinceStart:.data.categoryPayloadRowsSinceStart,normalPayloadRowsSinceStart:.data.normalPayloadRowsSinceStart,collectorHealthProxy:.data.collectorHealthProxy,latestSnapshot:.data.latestSnapshot,latestCategorySnapshot:.data.latestCategorySnapshot,latestNormalSnapshot:.data.latestNormalSnapshot},gates,deploy,observations,rollback,twitch}' "$file"
+          done
