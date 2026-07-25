@@ -9,6 +9,10 @@ on:
       - 'scripts/apply-12a4-category-package-acceptance-v30.mjs'
       - 'scripts/fix-category-acceptance-verifiers-v30.mjs'
       - 'docs/audits/12a4-category-package-acceptance-staging.json'
+      - 'docs/audits/12a4-kick-permanent-category-capture-package-contract.json'
+      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
+      - 'docs/audits/12a4-kick-permanent-category-capture-package-contract.json'
+      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
 
 concurrency:
   group: category-acceptance-v30-${{ github.event.pull_request.number }}
