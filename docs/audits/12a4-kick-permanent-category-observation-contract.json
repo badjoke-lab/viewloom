@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "viewloom-12a4-kick-permanent-category-observation-v1",
+  "workstream": "12A-4-24C Kick permanent category minimum observation",
+  "status": "active",
+  "trackingIssue": 634,
+  "provider": "kick",
+  "startAcceptance": "docs/audits/12a4-kick-permanent-category-start-acceptance.json",
+  "startAt": "2026-07-25T07:10:00.000Z",
+  "minimumEndAt": "2026-07-26T07:10:00.000Z",
+  "warningEndAt": "2026-07-27T07:10:00.000Z",
+  "collectorCron": "*/5 * * * *",
+  "monitor": {
+    "workflow": ".github/workflows/analytics-12a4-kick-permanent-category-observation.yml",
+    "schedule": "37 * * * *",
+    "temporaryGitHubSchedule": true,
+    "newWorkerCronAdded": false,
+    "cloudflareApiMethods": ["GET"],
+    "d1Statements": ["SELECT"],
+    "artifactName": "analytics-12a4-kick-permanent-category-observation",
+    "retentionDays": 30
+  },
+  "healthyGates": {
+    "permanentFlagMustBeTrue": true,
+    "obsoleteCanaryBindingsMustBeAbsent": true,
+    "providerLeakageRowsMax": 0,
+    "latestSnapshotFreshnessMinutesMax": 20,
+    "latestSnapshotMustBeReal": true,
+    "latestSnapshotMustBeNonempty": true,
+    "minimumCategoryPayloadRowsSinceStart": 2,
+    "projectedNinetyDaySizeMbMax": 440,
+    "projectedProviderHeadroomMbMin": 10,
+    "projectedAccountWideHeadroomMbMin": 500
+  },
+  "hardStops": [
+    "permanent flag absent or false",
+    "obsolete canary binding present",
+    "provider leakage above zero",
+    "storage safety gate failed",
+    "latest Kick snapshot stale, non-real, or empty",
+    "category-bearing Kick snapshot absent",
+    "collector health proxy failed"
+  ],
+  "rollback": {
+    "automaticOnHardStop": true,
+    "config": "workers/collector-kick/wrangler.toml",
+    "permanentFlagMustBeAbsentAfterRollback": true,
+    "normalSnapshotMustRecover": true,
+    "providerLeakageMustRemainZero": true
+  },
+  "acceptance": {
+    "minimumHours": 24,
+    "extendToHoursOnWarning": 48,
+    "finalReadOnlyEvidenceRequired": true,
+    "triggerAndMonitorRetirementRequired": true,
+    "twitchAuthorizationIncluded": false,
+    "categoryUiAuthorizationIncluded": false
+  },
+  "boundaries": {
+    "twitchChanged": false,
+    "cadenceChanged": false,
+    "newWorkerCronAdded": false,
+    "backfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "categoryUiAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  }
+}
