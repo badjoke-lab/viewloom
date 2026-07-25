@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-heatmap-category-filter-hidden-controls-v1",
   "workstream": "12A-5A hidden Twitch Heatmap category control package",
-  "status": "candidate",
+  "status": "accepted",
   "parentTrackingIssue": 623,
   "trackingIssue": 635,
   "provider": "twitch",
@@ -39,7 +39,11 @@
     "categoryLabel": "Category preview",
     "defaultCategory": "all",
     "allCategoriesLabel": "All categories",
-    "topValues": [20, 50, 100],
+    "topValues": [
+      20,
+      50,
+      100
+    ],
     "defaultTop": 50,
     "categoryQueryParameter": "category",
     "topQueryParameter": "top",
@@ -100,5 +104,23 @@
     "sevenDayAccumulationAuditRequired": true,
     "separatePublicCutoverPrRequired": true
   },
-  "nextGate": "accept the complete hidden control package while keeping public exposure disabled, then run the seven-day accumulation audit before any public cutover"
+  "nextGate": "run the seven-day Twitch accumulation audit at or after 2026-07-27T11:40:00.000Z while public exposure remains disabled; use a separate public cutover PR only after acceptance",
+  "acceptance": {
+    "canonicalAcceptancePr": 642,
+    "packagePr": 640,
+    "packageCandidateHeadSha": "dd480ffd380c9928329a9d5db1c02f47e87f4fb8",
+    "packageMergeSha": "aecd4a10ca0da3146c23e5841412603e1e4416dd",
+    "workflowRunId": 30005758951,
+    "workflowJobId": 89201237079,
+    "staticContractPass": true,
+    "categoryRolloutPolicyPass": true,
+    "webTypecheckPass": true,
+    "webBuildPass": true,
+    "productionHtmlControlAbsencePass": true,
+    "publicExposureEnabled": false,
+    "publicNavigationChanged": false,
+    "normalHeatmapControlChanged": false,
+    "collectorChanged": false,
+    "kickChanged": false
+  }
 }

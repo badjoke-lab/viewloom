@@ -24,15 +24,15 @@ const runtime = read(contract.package.runtime)
 const twitchHtml = read(twitchHtmlPath)
 const kickHtml = read(kickHtmlPath)
 
-assert.equal(contract.status, 'candidate')
+assert.equal(contract.status, 'accepted')
 assert.equal(contract.provider, 'twitch')
 assert.equal(contract.trackingIssue, 635)
 assert.equal(contract.acceptedInputs.requiredGateSchemaVersion, 'viewloom-12a2-current-gate-state-v29')
 assert.equal(contract.acceptedInputs.requiredGatePhase, '12A-4-24')
-assert.equal(gate.schemaVersion, contract.acceptedInputs.requiredGateSchemaVersion)
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v30')
 assert.equal(gate.currentWorkstream.phase, contract.acceptedInputs.requiredGatePhase)
 assert.equal(gate.currentWorkstream.twitchHeatmapCategoryApiPackageAccepted, true)
-assert.equal(gate.currentWorkstream.twitchHeatmapCategoryHiddenControlsAccepted, false)
+assert.equal(gate.currentWorkstream.twitchHeatmapCategoryHiddenControlsAccepted, true)
 assert.equal(gate.currentWorkstream.twitchHeatmapCategoryFilterPublicExposureAuthorized, false)
 assert.equal(decision.status, 'accepted_hidden_implementation_only')
 assert.equal(decision.authorization.hiddenImplementationAuthorized, true)
@@ -40,6 +40,15 @@ assert.equal(decision.authorization.publicExposureAuthorized, false)
 assert.equal(apiPackage.status, 'accepted')
 assert.equal(apiPackage.acceptance.packagePr, 638)
 assert.equal(apiPackage.acceptance.packageMergeSha, contract.acceptedInputs.apiPackageMergeSha)
+assert.equal(contract.acceptance.canonicalAcceptancePr, 642)
+assert.equal(contract.acceptance.packagePr, 640)
+assert.equal(contract.acceptance.packageCandidateHeadSha, 'dd480ffd380c9928329a9d5db1c02f47e87f4fb8')
+assert.equal(contract.acceptance.packageMergeSha, 'aecd4a10ca0da3146c23e5841412603e1e4416dd')
+assert.equal(contract.acceptance.workflowRunId, 30005758951)
+assert.equal(contract.acceptance.workflowJobId, 89201237079)
+assert.equal(contract.acceptance.publicExposureEnabled, false)
+assert.equal(contract.acceptance.collectorChanged, false)
+assert.equal(contract.acceptance.kickChanged, false)
 
 for (const fragment of [
   'HeatmapCategoryOption',
@@ -124,5 +133,5 @@ console.log(JSON.stringify({
   mobileResponsive: true,
   keyboardAccessible: true,
   existingUnfilteredFallbackPreserved: true,
-  nextAction: 'accept-hidden-controls-before-seven-day-audit',
+  nextAction: 'run-seven-day-audit-before-public-cutover',
 }, null, 2))

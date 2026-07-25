@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-kick-permanent-category-release-v1",
   "workstream": "12A-4-24B Kick permanent category exact release package",
-  "status": "prepared",
+  "status": "accepted",
   "parentTrackingIssue": 623,
   "trackingIssue": 634,
   "provider": "kick",
@@ -13,7 +13,7 @@
     "acceptancePr": 639,
     "acceptanceMergeSha": "662765a2444ba741e49b66aeab4ea0787e56d5e5",
     "canonicalGate": "docs/audits/12a2-current-gate-state.json",
-    "requiredGateSchemaVersion": "viewloom-12a2-current-gate-state-v29",
+    "requiredGateSchemaVersion": "viewloom-12a2-current-gate-state-v30",
     "requiredGatePhase": "12A-4-24",
     "packageContract": "docs/audits/12a4-kick-permanent-category-capture-package-contract.json",
     "permanentConfig": "workers/collector-kick/wrangler.category-permanent.toml",
@@ -71,8 +71,12 @@
   "freshPreflight": {
     "runner": "scripts/run-12a4-kick-permanent-category-observer.mjs",
     "mode": "preflight",
-    "cloudflareApiMethods": ["GET"],
-    "d1Statements": ["SELECT"],
+    "cloudflareApiMethods": [
+      "GET"
+    ],
+    "d1Statements": [
+      "SELECT"
+    ],
     "permanentFlagMustBeAbsent": true,
     "obsoleteCanaryBindingsMustBeAbsent": true,
     "providerLeakageRowsMax": 0,
@@ -143,6 +147,22 @@
     "categoryUiChanged": false,
     "crossProviderBehaviorChanged": false
   },
-  "acceptance": null,
-  "nextGate": "accept this dormant release package and its fresh read-only preflight, then create a separate exact one-file Kick release trigger with the accepted release-package merge SHA and a start boundary inside three hours"
+  "acceptance": {
+    "pr": 642,
+    "mergeSha": "7afb81bb9098104107860e9fe6c920c7380964ad",
+    "packagePr": 641,
+    "packageCandidateHeadSha": "92df448997078fc9d33b962221a81611b1b1adb9",
+    "packageMergeSha": "7afb81bb9098104107860e9fe6c920c7380964ad",
+    "workflowRunId": 30089007295,
+    "verifyPackageJobId": 89467818501,
+    "inspectProductionJobId": 89467818503,
+    "packageVerificationPass": true,
+    "freshReadOnlyPreflightPass": true,
+    "collectorHealthProxyPass": true,
+    "productionRuntimeCaptureStarted": false,
+    "productionWorkerPublished": false,
+    "remoteD1OperationPerformed": false,
+    "twitchChanged": false
+  },
+  "nextGate": "create a separate exact one-file Kick release trigger using merge 7afb81bb9098104107860e9fe6c920c7380964ad and a start boundary no more than three hours ahead"
 }

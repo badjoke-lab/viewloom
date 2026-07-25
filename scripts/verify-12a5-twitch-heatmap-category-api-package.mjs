@@ -31,7 +31,7 @@ if (contract.status === 'candidate') {
   assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v28')
   assert.equal(contract.acceptance, undefined)
 } else {
-  assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v29')
+  assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v30')
   assert.equal(gate.categoryCapture.twitchHeatmapCategoryApiPackageAccepted, true)
   assert.equal(gate.currentWorkstream.twitchHeatmapCategoryApiPackageAccepted, true)
   assert.equal(contract.acceptance.packagePr, 638)
@@ -107,5 +107,5 @@ console.log(JSON.stringify({
   unfilteredCompatibilityPreserved: true,
   collectorChanged: false,
   kickChanged: false,
-  nextAction: contract.status === 'accepted' ? 'implement-hidden-controls' : 'accept-api-package-before-hidden-controls',
+  nextAction: contract.status === 'accepted' ? 'hidden-controls-accepted-await-seven-day-audit' : 'accept-api-package-before-hidden-controls',
 }, null, 2))
