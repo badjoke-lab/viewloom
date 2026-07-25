@@ -39,20 +39,7 @@ jobs:
           node scripts/apply-12a4-category-package-acceptance-v30.mjs
           node scripts/fix-category-acceptance-verifiers-v30.mjs
       - name: Verify canonical rollout policy
-        run: |
-          set +e
-          node scripts/verify-category-rollout-policy.mjs > /tmp/category-policy-verifier.log 2>&1
-          status=$?
-          cat /tmp/category-policy-verifier.log
-          if test "$status" -ne 0; then
-            cp /tmp/category-policy-verifier.log docs/audits/12a4-category-package-acceptance-verifier-failure.txt
-            git config user.name github-actions[bot]
-            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-            git add docs/audits/12a4-category-package-acceptance-verifier-failure.txt
-            git commit -m "Capture category acceptance verifier failure"
-            git push origin HEAD:agent/accept-category-parallel-packages-v30
-            exit "$status"
-          fi
+        run: node scripts/verify-category-rollout-policy.mjs
       - name: Verify accepted Kick implementation package
         run: node scripts/verify-12a4-kick-permanent-category-package.mjs
       - name: Verify accepted hidden Twitch API package
@@ -63,89 +50,32 @@ jobs:
         run: node scripts/test-12a4-kick-permanent-category-release.mjs
       - name: Verify accepted hidden Twitch controls
         run: node scripts/verify-12a5-twitch-heatmap-category-controls-package.mjs
-      - name: Restore read-only policy workflow and publish acceptance commit
+      - name: Publish canonical acceptance files
         run: |
           rm -f \
-            .github/workflows/apply-category-package-acceptance-v30.yml \
             scripts/apply-12a4-category-package-acceptance-v30.mjs \
             scripts/fix-category-acceptance-verifiers-v30.mjs \
             docs/audits/12a4-category-package-acceptance-staging.json \
             docs/audits/12a4-category-package-acceptance-verifier-failure.txt
-          cat > .github/workflows/category-rollout-policy.yml <<'WORKFLOW'
-          name: Category rollout policy
-
-          on:
-            workflow_dispatch:
-            pull_request:
-              branches: [main]
-              paths:
-                - 'docs/product/category-capture-permanent-rollout-spec.md'
-                - 'docs/product/category-capture-permanent-rollout-plan.md'
-                - 'docs/product/current-roadmap.md'
-                - 'docs/product/current-schedule.md'
-                - 'docs/audits/12a2-current-gate-state.json'
-                - 'docs/audits/12a4-kick-permanent-category-decision-contract.json'
-                - 'docs/audits/12a4-kick-permanent-category-capture-package-contract.json'
-                - 'docs/audits/12a4-kick-permanent-category-release-contract.json'
-                - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json'
-                - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
-                - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json'
-                - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
-                - 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md'
-                - 'docs/operations/development-and-deployment-policy.md'
-                - 'workers/collector-twitch/**'
-                - 'workers/collector-kick/**'
-                - 'db/d1/**'
-                - 'apps/web/**'
-                - 'scripts/verify-category-rollout-policy.mjs'
-                - '.github/workflows/category-rollout-policy.yml'
-            push:
-              branches: [main]
-              paths:
-                - 'docs/product/category-capture-permanent-rollout-spec.md'
-                - 'docs/product/category-capture-permanent-rollout-plan.md'
-                - 'docs/product/current-roadmap.md'
-                - 'docs/product/current-schedule.md'
-                - 'docs/audits/12a2-current-gate-state.json'
-                - 'docs/audits/12a4-kick-permanent-category-decision-contract.json'
-                - 'docs/audits/12a4-kick-permanent-category-capture-package-contract.json'
-                - 'docs/audits/12a4-kick-permanent-category-release-contract.json'
-                - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json'
-                - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
-                - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json'
-                - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
-                - 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md'
-                - 'docs/operations/development-and-deployment-policy.md'
-                - 'workers/collector-twitch/**'
-                - 'workers/collector-kick/**'
-                - 'db/d1/**'
-                - 'apps/web/**'
-                - 'scripts/verify-category-rollout-policy.mjs'
-                - '.github/workflows/category-rollout-policy.yml'
-
-          concurrency:
-            group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-            cancel-in-progress: true
-
-          permissions:
-            contents: read
-
-          jobs:
-            verify:
-              runs-on: ubuntu-latest
-              timeout-minutes: 10
-              steps:
-                - uses: actions/checkout@v4
-                - uses: actions/setup-node@v4
-                  with:
-                    node-version: 22
-                - name: Verify current category rollout contract
-                  run: node scripts/verify-category-rollout-policy.mjs
-          WORKFLOW
-          sed -i 's/^          //' .github/workflows/category-rollout-policy.yml
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -A
+          git add -- \
+            docs/audits/12a2-current-gate-state.json \
+            docs/audits/12a4-kick-permanent-category-release-contract.json \
+            docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json \
+            docs/product/current-roadmap.md \
+            docs/product/current-schedule.md \
+            docs/work-in-progress/phase12a4-category-parallel-execution.md \
+            scripts/verify-category-rollout-policy.mjs \
+            scripts/verify-12a4-kick-permanent-category-package.mjs \
+            scripts/verify-12a5-twitch-heatmap-category-api-package.mjs \
+            scripts/verify-12a4-kick-permanent-category-release-package.mjs \
+            scripts/verify-12a5-twitch-heatmap-category-controls-package.mjs
+          git add -A -- \
+            scripts/apply-12a4-category-package-acceptance-v30.mjs \
+            scripts/fix-category-acceptance-verifiers-v30.mjs \
+            docs/audits/12a4-category-package-acceptance-staging.json \
+            docs/audits/12a4-category-package-acceptance-verifier-failure.txt
           git diff --cached --stat
           git diff --cached --quiet && { echo 'acceptance updater produced no diff' >&2; exit 1; }
           git commit -m "Accept Kick release and hidden Twitch controls"
