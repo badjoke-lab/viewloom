@@ -12,6 +12,14 @@ const replacements = [
     'Earliest audit: `2026-07-27T11:40:00.000Z`',
     'Run the seven-day accumulation audit at or after `2026-07-27T11:40:00.000Z`',
   ],
+  [
+    "'${RELEASE_PACKAGE_MERGE}'",
+    "'7afb81bb9098104107860e9fe6c920c7380964ad'",
+  ],
+  [
+    "'${CONTROLS_PACKAGE_MERGE}'",
+    "'aecd4a10ca0da3146c23e5841412603e1e4416dd'",
+  ],
 ]
 
 for (const [before, after] of replacements) {
