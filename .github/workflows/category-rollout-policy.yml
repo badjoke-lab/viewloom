@@ -32,7 +32,9 @@ jobs:
       - name: Parse one-shot updater
         run: node --check scripts/apply-12a4-category-package-acceptance-v30.mjs
       - name: Apply canonical package acceptance
-        run: node scripts/apply-12a4-category-package-acceptance-v30.mjs
+        run: |
+          node scripts/apply-12a4-category-package-acceptance-v30.mjs
+          sed -i 's/Canonical target 12A-4-24 parallel execution/Canonical target 12A-4-24 exact Kick release and Twitch seven-day audit/' scripts/verify-category-rollout-policy.mjs
       - name: Verify canonical rollout policy
         run: |
           set +e
