@@ -1,16 +1,16 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Last updated: 2026-07-23
+Last updated: 2026-07-26
 
 ## Current execution state
 
 ```text
 Phase 12A Analytics Capture Foundation active
-canonical target 12A-4-24 category parallel execution
+canonical target 12A-4-24 Kick accepted; Twitch seven-day audit next
 Twitch permanent category capture accepted and active yes
 Kick permanent implementation authorized yes
-Kick permanent runtime active no
+Kick permanent runtime active yes
 Twitch Heatmap hidden category-filter implementation authorized yes
 Twitch Heatmap public category-filter exposure authorized no
 Twitch seven-day audit earliest 2026-07-27T11:40:00Z
@@ -34,6 +34,7 @@ cross-provider identity or combined ranking authorized no
 8. `docs/audits/12a4-kick-permanent-category-decision-contract.json`
 9. `docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json`
 10. `docs/audits/12a4-twitch-permanent-category-final-acceptance.json`
+11. `docs/audits/12a4-kick-permanent-category-final-acceptance.json`
 
 ## Current category evidence and decision chain
 
@@ -42,12 +43,13 @@ cross-provider identity or combined ranking authorized no
 - Twitch permanent implementation, release, production start, and final observation are accepted.
 - Final Twitch permanent-category acceptance: `docs/audits/12a4-twitch-permanent-category-final-acceptance.json`.
 - Kick permanent rollout authorization: `docs/audits/12a4-kick-permanent-category-decision-contract.json`.
+- Final Kick permanent-category acceptance: `docs/audits/12a4-kick-permanent-category-final-acceptance.json`.
 - Hidden Twitch Heatmap filter authorization: `docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json`.
 - Active parallel execution record: `docs/work-in-progress/phase12a4-category-parallel-execution.md`.
 
 ## Current gate
 
-The canonical target is 12A-4-24. Twitch permanent category capture is accepted and active. Kick permanent capture implementation and guarded rollout are authorized, but Kick runtime remains inactive until package acceptance, fresh preflight, and an exact release trigger.
+The canonical target is 12A-4-24. Twitch and Kick permanent category capture are accepted and active on their existing five-minute collectors. Kick completed its minimum 24-hour observation without warning or rollback, and the temporary hourly monitor is retired.
 
 The Twitch Heatmap category filter may be implemented and tested behind a disabled feature flag or non-public route. Public navigation and normal production exposure remain unauthorized until the seven-day Twitch accumulation audit at or after 2026-07-27 20:40 JST and a separate public cutover PR.
 

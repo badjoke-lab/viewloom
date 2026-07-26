@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "viewloom-12a4-kick-permanent-category-final-acceptance-v1",
+  "status": "accepted",
+  "trackingIssue": 634,
+  "provider": "kick",
+  "startAt": "2026-07-25T07:10:00.000Z",
+  "observedAt": "2026-07-26T07:55:58.650Z",
+  "minimumObservationHours": 24,
+  "minimumReached": true,
+  "warningExtensionRequired": false,
+  "rollbackRequired": false,
+  "source": {
+    "acceptancePr": 648,
+    "workflowRunId": 30193672205,
+    "workflowJobId": 89771280558,
+    "artifactId": 8629415129,
+    "artifactDigest": "sha256:280bff0acf2a4190fb7678e5150499290b396eb89fb0ac80b27f1dea3116b14a"
+  },
+  "bindings": {
+    "permanentCaptureEnabled": true,
+    "obsoleteCanaryBindingsPresent": false
+  },
+  "data": {
+    "expectedCategoryRows": 298,
+    "observedCategoryRows": 298,
+    "categoryCoverageRatio": 1,
+    "kickDictionaryRows": 261,
+    "providerLeakageRows": 0,
+    "collectorHealthProxyClear": true,
+    "latestSnapshot": {
+      "bucketMinute": "2026-07-26T07:55:00.000Z",
+      "collectedAt": "2026-07-26T07:55:18.404Z",
+      "streamCount": 100,
+      "totalViewers": 263851,
+      "sourceMode": "authenticated",
+      "categoryContractVersion": "category-source-v1",
+      "freshnessMinutes": 0.67
+    }
+  },
+  "storage": {
+    "providerCurrentMb": 321.36,
+    "accountCurrentMb": 3680.09,
+    "projectedNinetyDaySizeMb": 369.68,
+    "projectedProviderHeadroomMb": 80.32,
+    "projectedAccountWideHeadroomMb": 879.59
+  },
+  "gates": {
+    "readOnly": true,
+    "exactIdentity": true,
+    "cadencePass": true,
+    "storagePass": true,
+    "schemaPass": true,
+    "providerLeakagePass": true,
+    "bindingsPass": true,
+    "collectorHealthPass": true,
+    "latestSnapshotFreshnessPass": true,
+    "latestSnapshotRealPass": true,
+    "latestSnapshotNonemptyPass": true,
+    "categorySnapshotPass": true,
+    "rollbackNormalSnapshotPass": true,
+    "hardStops": [],
+    "warnings": []
+  },
+  "boundaries": {
+    "twitchChanged": false,
+    "cadenceChanged": false,
+    "newWorkerCronAdded": false,
+    "backfillPerformed": false,
+    "retentionChanged": false,
+    "categoryUiChanged": false,
+    "crossProviderBehaviorChanged": false
+  },
+  "nextGate": "Twitch seven-day accumulation audit at or after 2026-07-27T11:40:00.000Z; public category-filter cutover remains separate and unauthorized"
+}

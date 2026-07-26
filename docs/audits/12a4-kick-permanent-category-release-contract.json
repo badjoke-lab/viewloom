@@ -164,5 +164,13 @@
     "remoteD1OperationPerformed": false,
     "twitchChanged": false
   },
-  "nextGate": "create a separate exact one-file Kick release trigger using merge 7afb81bb9098104107860e9fe6c920c7380964ad and a start boundary no more than three hours ahead"
+  "nextGate": "completed: production start and minimum 24-hour observation accepted in PR #648; temporary observation workflow retired",
+  "finalAcceptance": {
+    "pr": 648,
+    "evidence": "docs/audits/12a4-kick-permanent-category-final-acceptance.json",
+    "workflowRunId": 30193672205,
+    "workflowJobId": 89771280558,
+    "artifactId": 8629415129,
+    "rollbackRequired": false
+  }
 }
