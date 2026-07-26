@@ -1,11 +1,10 @@
 name: Category rollout policy
 
 on:
+  workflow_dispatch:
   pull_request:
     branches: [main]
     paths:
-      - '.github/workflows/category-rollout-policy.yml'
-      - 'scripts/apply-12a4-kick-final-acceptance-v31.mjs'
       - 'docs/product/category-capture-permanent-rollout-spec.md'
       - 'docs/product/category-capture-permanent-rollout-plan.md'
       - 'docs/product/current-roadmap.md'
@@ -22,63 +21,53 @@ on:
       - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
       - 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md'
       - 'docs/operations/development-and-deployment-policy.md'
+      - 'workers/collector-twitch/**'
+      - 'workers/collector-kick/**'
+      - 'db/d1/**'
+      - 'apps/web/**'
+      - 'scripts/verify-category-rollout-policy.mjs'
+      - '.github/workflows/category-rollout-policy.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/product/category-capture-permanent-rollout-spec.md'
+      - 'docs/product/category-capture-permanent-rollout-plan.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/audits/12a2-current-gate-state.json'
+      - 'docs/audits/12a4-kick-permanent-category-decision-contract.json'
+      - 'docs/audits/12a4-kick-permanent-category-capture-package-contract.json'
+      - 'docs/audits/12a4-kick-permanent-category-release-contract.json'
+      - 'docs/audits/12a4-kick-permanent-category-observation-contract.json'
+      - 'docs/audits/12a4-kick-permanent-category-final-acceptance.json'
+      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json'
+      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
+      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json'
+      - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
+      - 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md'
+      - 'docs/operations/development-and-deployment-policy.md'
+      - 'workers/collector-twitch/**'
+      - 'workers/collector-kick/**'
+      - 'db/d1/**'
+      - 'apps/web/**'
+      - 'scripts/verify-category-rollout-policy.mjs'
+      - '.github/workflows/category-rollout-policy.yml'
 
 concurrency:
-  group: kick-final-acceptance-v31-${{ github.event.pull_request.number }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  apply:
-    if: github.head_ref == 'agent/accept-kick-permanent-category-observation'
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: agent/accept-kick-permanent-category-observation
-          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Parse bounded updater
-        run: node --check scripts/apply-12a4-kick-final-acceptance-v31.mjs
-      - name: Apply canonical Kick acceptance
-        run: node scripts/apply-12a4-kick-final-acceptance-v31.mjs
-      - name: Verify canonical rollout policy
+      - name: Verify current category rollout contract
         run: node scripts/verify-category-rollout-policy.mjs
-      - name: Verify final acceptance evidence
-        run: |
-          node --input-type=module - <<'NODE'
-          import fs from 'node:fs'
-          const evidence = JSON.parse(fs.readFileSync('docs/audits/12a4-kick-permanent-category-final-acceptance.json', 'utf8'))
-          if (evidence.status !== 'accepted') throw new Error('final_acceptance_not_accepted')
-          if (evidence.minimumReached !== true) throw new Error('minimum_not_reached')
-          if (evidence.data.observedCategoryRows !== 298) throw new Error('unexpected_observed_rows')
-          if (evidence.data.providerLeakageRows !== 0) throw new Error('provider_leakage')
-          if (evidence.warningExtensionRequired !== false) throw new Error('warning_extension_required')
-          if (evidence.rollbackRequired !== false) throw new Error('rollback_required')
-          NODE
-      - name: Publish canonical acceptance files
-        run: |
-          rm -f scripts/apply-12a4-kick-final-acceptance-v31.mjs
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -- \
-            docs/README.md \
-            docs/audits/12a2-current-gate-state.json \
-            docs/audits/12a4-kick-permanent-category-decision-contract.json \
-            docs/audits/12a4-kick-permanent-category-release-contract.json \
-            docs/audits/12a4-kick-permanent-category-observation-contract.json \
-            docs/audits/12a4-kick-permanent-category-final-acceptance.json \
-            docs/product/current-roadmap.md \
-            docs/product/current-schedule.md \
-            docs/work-in-progress/phase12a4-category-parallel-execution.md \
-            scripts/verify-category-rollout-policy.mjs
-          git add -A -- scripts/apply-12a4-kick-final-acceptance-v31.mjs
-          git diff --cached --stat
-          git diff --cached --quiet && { echo 'acceptance updater produced no diff' >&2; exit 1; }
-          git commit -m "Accept Kick permanent category capture"
-          git push origin HEAD:agent/accept-kick-permanent-category-observation
