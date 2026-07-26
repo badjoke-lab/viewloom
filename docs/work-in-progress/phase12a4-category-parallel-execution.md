@@ -2,9 +2,9 @@
 
 ## Status
 
-Twitch permanent category capture is accepted and active. Both next-stage packages are now accepted canonically in PR #642:
+Twitch and Kick permanent category capture are accepted and active. The hidden Twitch controls remain accepted but non-public:
 
-- Track A: Kick dormant permanent-category release package from PR #641 is accepted; the separate exact one-file release trigger is next under Issue #634.
+- Track A: Kick permanent category capture completed release, initial verification, minimum 24-hour observation, and final acceptance in PR #648; the temporary hourly monitor is retired.
 - Track B: hidden Twitch Heatmap category controls from PR #640 are accepted; the seven-day accumulation audit is next under Issue #635.
 
 Public Twitch category-filter exposure remains unauthorized until the seven-day Twitch accumulation audit and a separate public cutover PR.
@@ -41,17 +41,20 @@ Public Twitch category-filter exposure remains unauthorized until the seven-day 
 - Fresh read-only preflight: passed.
 - Production publish from package or acceptance PR: no.
 - Remote D1 mutation from package or acceptance PR: no.
-- Kick production runtime active: no.
+- Kick production runtime active: yes.
+- Final acceptance PR: #648.
+- Final observation run/job/artifact: `30193672205` / `89771280558` / `8629415129`.
+- Final category-bearing snapshots: 298.
+- Final provider leakage: 0.
+- Warning extension required: no.
+- Rollback required: no.
 - Twitch changed: no.
 
 ### Immediate work order
 
-1. Create a separate exact one-file trigger using accepted merge `7afb81bb9098104107860e9fe6c920c7380964ad` and a start time no more than three hours ahead.
-2. Re-run the fresh read-only preflight immediately before publish.
-3. Publish only the accepted Kick permanent config.
-4. Verify two consecutive real, non-empty, fresh, category-bearing Kick snapshots.
-5. Observe for at least 24 hours, extend to 48 hours on warning, or roll back on a hard stop.
-6. Freeze final evidence and retire temporary paths.
+1. Track complete. Keep Kick permanent capture active on the existing five-minute collector.
+2. Preserve provider separation and the normal config as an available rollback target.
+3. Kick category UI remains unauthorized until separate Kick stable-accumulation and UI evidence is accepted.
 
 ### Hard boundary
 
@@ -109,4 +112,6 @@ The audit must pass while public exposure remains disabled. Twitch evidence cann
 - `docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json`
 - `docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json`
 - `docs/audits/12a4-twitch-permanent-category-final-acceptance.json`
+- `docs/audits/12a4-kick-permanent-category-final-acceptance.json`
 - `docs/operations/development-and-deployment-policy.md`
+

@@ -1,12 +1,12 @@
 {
   "schemaVersion": "viewloom-12a4-kick-permanent-category-decision-v1",
-  "status": "accepted_for_guarded_implementation",
+  "status": "accepted_and_active",
   "parentTrackingIssue": 623,
   "trackingIssue": 634,
   "provider": "kick",
   "decision": {
     "implementationAuthorized": true,
-    "runtimeActive": false,
+    "runtimeActive": true,
     "productionDeploymentAuthorizedFromImplementationPr": false,
     "freshReadOnlyPreflightRequired": true,
     "separatePackageAcceptanceRequired": true,
@@ -63,5 +63,12 @@
     "docs/audits/12a2-current-gate-state.json",
     "docs/work-in-progress/phase12a4-category-parallel-execution.md",
     "docs/operations/development-and-deployment-policy.md"
-  ]
+  ],
+  "finalAcceptance": {
+    "status": "accepted",
+    "pr": 648,
+    "evidence": "docs/audits/12a4-kick-permanent-category-final-acceptance.json",
+    "warningExtensionRequired": false,
+    "rollbackRequired": false
+  }
 }

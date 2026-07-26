@@ -1,15 +1,15 @@
 # ViewLoom current execution schedule
 
 Status: source of truth  
-Last updated: 2026-07-25
+Last updated: 2026-07-26
 
 ```text
 Phase 12A Analytics Capture Foundation active
-Canonical target 12A-4-24 exact Kick release and Twitch seven-day audit
+Canonical target 12A-4-24 Kick accepted; Twitch seven-day audit next
 Twitch permanent category capture accepted and active yes
 Kick permanent implementation package accepted yes
 Kick permanent release package accepted yes
-Kick permanent runtime active no
+Kick permanent runtime active yes
 Twitch Heatmap hidden category API package accepted yes
 Twitch Heatmap hidden control package accepted yes
 Twitch Heatmap public category-filter exposure authorized no
@@ -35,16 +35,16 @@ Completed:
 3. Dormant release package merged in PR #641.
 4. Release fixtures, package verification, collector typecheck, normal/permanent dry-run, and fresh read-only production preflight passed.
 5. Release package canonical acceptance frozen in PR #642 without production publish or remote D1 mutation.
+6. Exact release trigger PR #643 started production capture at `2026-07-25T07:10:00Z`.
+7. Initial two category-bearing snapshots passed; PR #645 froze start evidence and began guarded observation.
+8. Post-minimum run `30193672205` passed all gates with 298 category snapshots, zero leakage, and no rollback.
+9. Final acceptance is frozen in PR #648 and the temporary hourly monitor is retired.
 
 Next:
 
-1. Create an exact one-file trigger on main using accepted release merge `7afb81bb9098104107860e9fe6c920c7380964ad` and a start boundary no more than three hours ahead.
-2. Re-run the fresh read-only Kick production preflight immediately before deployment.
-3. Publish only `workers/collector-kick/wrangler.category-permanent.toml`.
-4. Verify two consecutive real, non-empty, fresh, category-bearing Kick snapshots.
-5. Observe for at least 24 hours.
-6. Extend to 48 hours on warning; restore normal Kick configuration immediately on a hard stop.
-7. Freeze final evidence, accept or roll back Kick, and retire all temporary paths.
+1. Track complete: Kick permanent category capture is accepted and active.
+2. Preserve the existing five-minute cadence and provider separation.
+3. Do not add Kick category UI without separate stable-accumulation and UI authorization evidence.
 
 ## Track B — hidden Twitch Heatmap category filter
 
@@ -118,3 +118,4 @@ Every category PR must read and cite:
 6. `docs/work-in-progress/phase12a4-category-parallel-execution.md`;
 7. the relevant decision and package contracts;
 8. `docs/operations/development-and-deployment-policy.md`.
+

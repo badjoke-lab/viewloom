@@ -1,7 +1,7 @@
 # ViewLoom current roadmap
 
 Status: source of truth  
-Last updated: 2026-07-25
+Last updated: 2026-07-26
 
 ## Current position
 
@@ -18,12 +18,13 @@ ViewLoom is a production Twitch/Kick observation site with provider-separated co
 - 12A-5A hidden Twitch Heatmap category API package accepted in PR #638.
 - Kick dormant release package accepted in PR #641 and frozen canonically in PR #642.
 - Hidden Twitch Heatmap category controls accepted from PR #640 and frozen canonically in PR #642 without public exposure.
+- Kick permanent category capture started through PR #643, completed the minimum 24-hour observation, and was accepted in PR #648 without rollback.
 
-### Current gate: exact Kick release and Twitch seven-day audit
+### Current gate: Twitch seven-day accumulation audit
 
 Twitch permanent category capture remains active and accepted on the existing five-minute collector. The hidden category controls are complete and accepted, but remain available only through the non-public exact query `categoryPreview=1`.
 
-The Kick permanent implementation and dormant release package are accepted. Kick runtime remains inactive until a separate exact one-file trigger is merged with the accepted PR #641 merge identity and a bounded start time.
+Kick permanent category capture is accepted and active on the existing five-minute collector. Final evidence recorded 298 category-bearing snapshots, zero provider leakage, fresh authenticated data, safe storage headroom, and no rollback.
 
 The earliest Twitch seven-day audit boundary is `2026-07-27T11:40:00Z` / 2026-07-27 20:40 JST.
 
@@ -31,12 +32,10 @@ The earliest Twitch seven-day audit boundary is `2026-07-27T11:40:00Z` / 2026-07
 
 #### Track A — Kick
 
-1. Create a separate exact one-file trigger using accepted release-package merge `7afb81bb9098104107860e9fe6c920c7380964ad` and a start time no more than three hours ahead.
-2. Run a fresh read-only production preflight immediately before publish.
-3. Publish only the accepted Kick permanent config.
-4. Verify two consecutive real, non-empty, fresh, category-bearing Kick snapshots.
-5. Observe for at least 24 hours, extending to 48 hours on warning.
-6. Final acceptance or verified rollback and temporary-path retirement.
+1. Final acceptance: PR #648.
+2. Final observation: run `30193672205`, job `89771280558`, artifact `8629415129`.
+3. Kick permanent capture remains active; the temporary hourly observation workflow is retired.
+4. No Kick category UI is authorized by this acceptance.
 
 #### Track B — Twitch hidden filter
 
@@ -48,11 +47,10 @@ The earliest Twitch seven-day audit boundary is `2026-07-27T11:40:00Z` / 2026-07
 
 ### Following gates
 
-1. Kick exact release, initial verification, observation, and acceptance or rollback.
-2. 12A-5B Twitch seven-day accumulation audit at or after 2026-07-27 20:40 JST.
-3. 12A-5C public Twitch Heatmap category-filter cutover.
-4. Kick category UI only after separate Kick acceptance and Kick stable accumulation evidence.
-5. Provider-specific Day Flow category views, then category history.
+1. 12A-5B Twitch seven-day accumulation audit at or after 2026-07-27 20:40 JST.
+2. 12A-5C public Twitch Heatmap category-filter cutover.
+3. Kick category UI only after separate Kick stable-accumulation and UI authorization evidence.
+4. Provider-specific Day Flow category views, then category history.
 
 ## Hard boundaries
 
@@ -79,4 +77,6 @@ The earliest Twitch seven-day audit boundary is `2026-07-27T11:40:00Z` / 2026-07
 - `docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json`
 - `docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json`
 - `docs/audits/12a4-twitch-permanent-category-final-acceptance.json`
+- `docs/audits/12a4-kick-permanent-category-final-acceptance.json`
 - `docs/work-in-progress/phase12a4-category-parallel-execution.md`
+

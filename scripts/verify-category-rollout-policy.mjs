@@ -16,6 +16,8 @@ const files = {
   kickDecision: 'docs/audits/12a4-kick-permanent-category-decision-contract.json',
   kickPackage: 'docs/audits/12a4-kick-permanent-category-capture-package-contract.json',
   kickRelease: 'docs/audits/12a4-kick-permanent-category-release-contract.json',
+  kickObservation: 'docs/audits/12a4-kick-permanent-category-observation-contract.json',
+  kickFinalAcceptance: 'docs/audits/12a4-kick-permanent-category-final-acceptance.json',
   hiddenTwitchDecision: 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json',
   hiddenTwitchPackage: 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json',
   hiddenTwitchControls: 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json',
@@ -40,6 +42,8 @@ const twitchAcceptance = json(files.twitchAcceptance)
 const kickDecision = json(files.kickDecision)
 const kickPackage = json(files.kickPackage)
 const kickRelease = json(files.kickRelease)
+const kickObservation = json(files.kickObservation)
+const kickFinalAcceptance = json(files.kickFinalAcceptance)
 const hiddenTwitchDecision = json(files.hiddenTwitchDecision)
 const hiddenTwitchPackage = json(files.hiddenTwitchPackage)
 const hiddenTwitchControls = json(files.hiddenTwitchControls)
@@ -66,11 +70,13 @@ for (const fragment of [
   '12A-5A hidden Twitch Heatmap category API package accepted in PR #638.',
   'Kick dormant release package accepted in PR #641',
   'Hidden Twitch Heatmap category controls accepted from PR #640',
+  'Kick permanent category capture started through PR #643',
   'The earliest Twitch seven-day audit boundary is `2026-07-27T11:40:00Z`',
 ]) assert.ok(roadmap.includes(fragment), `roadmap missing: ${fragment}`)
 
 for (const fragment of [
-  'Canonical target 12A-4-24 exact Kick release and Twitch seven-day audit',
+  'Canonical target 12A-4-24 Kick accepted; Twitch seven-day audit next',
+  'Kick permanent runtime active yes',
   'Kick permanent implementation package accepted yes',
   'Kick permanent release package accepted yes',
   'Twitch Heatmap hidden category API package accepted yes',
@@ -82,21 +88,22 @@ for (const fragment of [
 for (const fragment of [
   '# 12A-4-24 category parallel execution',
   'Dormant release package PR: #641.',
+  'Final acceptance PR: #648.',
   'Hidden controls package PR: #640.',
   'Run the seven-day accumulation audit at or after `2026-07-27T11:40:00.000Z`',
 ]) assert.ok(activeWip.includes(fragment), `active WIP missing: ${fragment}`)
 assert.ok(historicalWip.includes('Status: completed historical work record'))
 assert.ok(historicalWip.includes('Superseded as active WIP by'))
 
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v30')
-assert.equal(gate.status, '12a4_release_and_hidden_controls_packages_accepted')
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v31')
+assert.equal(gate.status, '12a4_kick_permanent_category_capture_accepted')
 assert.equal(gate.currentWorkstream.phase, '12A-4-24')
 assert.equal(gate.currentWorkstream.trackingIssue, 623)
 assert.equal(gate.currentWorkstream.kickTrackingIssue, 634)
 assert.equal(gate.currentWorkstream.twitchHiddenUiTrackingIssue, 635)
 assert.equal(gate.currentWorkstream.twitchPermanentCaptureActive, true)
 assert.equal(gate.currentWorkstream.kickPermanentCaptureAuthorized, true)
-assert.equal(gate.currentWorkstream.kickPermanentCaptureActive, false)
+assert.equal(gate.currentWorkstream.kickPermanentCaptureActive, true)
 assert.equal(gate.currentWorkstream.kickPermanentPackageAccepted, true)
 assert.equal(gate.currentWorkstream.kickReleasePackageAccepted, true)
 assert.equal(gate.currentWorkstream.twitchHeatmapCategoryFilterHiddenImplementationAuthorized, true)
@@ -110,7 +117,7 @@ assert.equal(gate.currentWorkstream.observationScheduleCurrent, false)
 
 assert.equal(gate.categoryCapture.twitchPermanentRuntimeCaptureActive, true)
 assert.equal(gate.categoryCapture.kickPermanentRuntimeCaptureAuthorized, true)
-assert.equal(gate.categoryCapture.kickPermanentRuntimeCaptureActive, false)
+assert.equal(gate.categoryCapture.kickPermanentRuntimeCaptureActive, true)
 assert.equal(gate.categoryCapture.kickPermanentPackageAccepted, true)
 assert.equal(gate.categoryCapture.twitchHeatmapCategoryApiPackageAccepted, true)
 assert.equal(gate.categoryCapture.twitchHeatmapCategoryHiddenControlsAccepted, true)
@@ -130,8 +137,6 @@ assert.ok(gate.closedBlockers.includes('kick_permanent_category_capture_not_impl
 assert.ok(gate.closedBlockers.includes('kick_permanent_category_capture_release_package_not_accepted'))
 assert.ok(gate.closedBlockers.includes('twitch_heatmap_category_filter_hidden_controls_not_accepted'))
 assert.deepEqual(gate.openBlockers, [
-  'kick_permanent_category_capture_not_deployed',
-  'kick_permanent_category_capture_observation_not_accepted',
   'twitch_category_ui_seven_day_accumulation_not_accepted',
   'twitch_heatmap_category_filter_public_exposure_not_authorized',
 ])
@@ -139,7 +144,7 @@ assert.deepEqual(gate.openBlockers, [
 assert.equal(gate.categoryParallelExecutionDecision.status, 'accepted')
 assert.equal(gate.categoryParallelExecutionDecision.tracks.kickPermanentCapture.packageAccepted, true)
 assert.equal(gate.categoryParallelExecutionDecision.tracks.kickPermanentCapture.packagePr, 637)
-assert.equal(gate.categoryParallelExecutionDecision.tracks.kickPermanentCapture.runtimeActive, false)
+assert.equal(gate.categoryParallelExecutionDecision.tracks.kickPermanentCapture.runtimeActive, true)
 assert.equal(gate.categoryParallelExecutionDecision.tracks.kickPermanentCapture.releasePackageAccepted, true)
 assert.equal(gate.categoryParallelExecutionDecision.tracks.kickPermanentCapture.releasePackagePr, 641)
 assert.equal(gate.categoryParallelExecutionDecision.tracks.twitchHeatmapCategoryFilter.apiPackageAccepted, true)
@@ -154,7 +159,7 @@ assert.equal(gate.categoryParallelExecutionDecision.boundaries.retentionExpansio
 assert.equal(gate.categoryParallelPackageAcceptance.status, 'accepted')
 assert.equal(gate.categoryParallelPackageAcceptance.kick.packagePr, 637)
 assert.equal(gate.categoryParallelPackageAcceptance.kick.workflowRunId, 30003489805)
-assert.equal(gate.categoryParallelPackageAcceptance.kick.runtimeActive, false)
+assert.equal(gate.categoryParallelPackageAcceptance.kick.runtimeActive, true)
 assert.equal(gate.categoryParallelPackageAcceptance.kick.releasePackageAccepted, true)
 assert.equal(gate.categoryParallelPackageAcceptance.kick.releasePackagePr, 641)
 assert.equal(gate.categoryParallelPackageAcceptance.kick.twitchChanged, false)
@@ -165,9 +170,9 @@ assert.equal(gate.categoryParallelPackageAcceptance.twitchHiddenApi.hiddenContro
 assert.equal(gate.categoryParallelPackageAcceptance.canonicalAcceptance.acceptancePr, 642)
 assert.equal(gate.categoryParallelPackageAcceptance.twitchHiddenApi.publicExposureAuthorized, false)
 
-assert.equal(kickDecision.status, 'accepted_for_guarded_implementation')
+assert.equal(kickDecision.status, 'accepted_and_active')
 assert.equal(kickDecision.decision.implementationAuthorized, true)
-assert.equal(kickDecision.decision.runtimeActive, false)
+assert.equal(kickDecision.decision.runtimeActive, true)
 assert.equal(kickDecision.decision.freshReadOnlyPreflightRequired, true)
 assert.equal(kickDecision.decision.separateExactReleaseTriggerRequired, true)
 assert.equal(kickDecision.runtime.existingCron, '*/5 * * * *')
@@ -201,6 +206,14 @@ assert.equal(kickRelease.acceptance.pr, 642)
 assert.equal(kickRelease.acceptance.mergeSha, '7afb81bb9098104107860e9fe6c920c7380964ad')
 assert.equal(kickRelease.acceptance.freshReadOnlyPreflightPass, true)
 assert.equal(kickRelease.acceptance.productionWorkerPublished, false)
+assert.equal(kickObservation.status, 'accepted_and_retired')
+assert.equal(kickObservation.monitor.temporaryGitHubSchedule, false)
+assert.equal(kickFinalAcceptance.status, 'accepted')
+assert.equal(kickFinalAcceptance.minimumReached, true)
+assert.equal(kickFinalAcceptance.data.observedCategoryRows, 298)
+assert.equal(kickFinalAcceptance.data.providerLeakageRows, 0)
+assert.equal(kickFinalAcceptance.warningExtensionRequired, false)
+assert.equal(kickFinalAcceptance.rollbackRequired, false)
 assert.equal(hiddenTwitchControls.status, 'accepted')
 assert.equal(hiddenTwitchControls.acceptance.canonicalAcceptancePr, 642)
 assert.equal(hiddenTwitchControls.acceptance.packagePr, 640)
@@ -214,7 +227,7 @@ assert.equal(twitchAcceptance.data.collectorErrorRunsSinceStart, 0)
 assert.equal(twitchAcceptance.warningExtensionRequired, false)
 assert.equal(twitchAcceptance.rollbackRequired, false)
 
-for (const path of [files.kickDecision, files.kickPackage, files.kickRelease, files.hiddenTwitchDecision, files.hiddenTwitchPackage, files.hiddenTwitchControls, files.activeWip]) {
+for (const path of [files.kickDecision, files.kickPackage, files.kickRelease, files.kickObservation, files.kickFinalAcceptance, files.hiddenTwitchDecision, files.hiddenTwitchPackage, files.hiddenTwitchControls, files.activeWip]) {
   assert.ok(workflow.includes(`'${path}'`), `policy workflow missing path: ${path}`)
 }
 
@@ -245,12 +258,13 @@ console.log(JSON.stringify({
   twitchHiddenUiTrackingIssue: 635,
   twitchRuntimeActive: true,
   kickPackageAccepted: true,
-  kickRuntimeActive: false,
+  kickRuntimeActive: true,
   twitchHiddenApiPackageAccepted: true,
   twitchHiddenControlsAccepted: true,
   kickReleasePackageAccepted: true,
   publicTwitchFilterAuthorized: false,
   earliestPublicAuditAt: '2026-07-27T11:40:00.000Z',
   newWorkerCronAdded: false,
-  nextAction: 'kick-exact-release-and-twitch-seven-day-audit',
+  nextAction: 'twitch-seven-day-audit',
 }, null, 2))
+

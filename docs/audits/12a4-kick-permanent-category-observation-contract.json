@@ -1,7 +1,7 @@
 {
   "schemaVersion": "viewloom-12a4-kick-permanent-category-observation-v1",
   "workstream": "12A-4-24C Kick permanent category minimum observation",
-  "status": "active",
+  "status": "accepted_and_retired",
   "trackingIssue": 634,
   "provider": "kick",
   "startAcceptance": "docs/audits/12a4-kick-permanent-category-start-acceptance.json",
@@ -12,12 +12,17 @@
   "monitor": {
     "workflow": ".github/workflows/analytics-12a4-kick-permanent-category-observation.yml",
     "schedule": "37 * * * *",
-    "temporaryGitHubSchedule": true,
+    "temporaryGitHubSchedule": false,
     "newWorkerCronAdded": false,
-    "cloudflareApiMethods": ["GET"],
-    "d1Statements": ["SELECT"],
+    "cloudflareApiMethods": [
+      "GET"
+    ],
+    "d1Statements": [
+      "SELECT"
+    ],
     "artifactName": "analytics-12a4-kick-permanent-category-observation",
-    "retentionDays": 30
+    "retentionDays": 30,
+    "retiredByPr": 648
   },
   "healthyGates": {
     "permanentFlagMustBeTrue": true,
@@ -53,7 +58,16 @@
     "finalReadOnlyEvidenceRequired": true,
     "triggerAndMonitorRetirementRequired": true,
     "twitchAuthorizationIncluded": false,
-    "categoryUiAuthorizationIncluded": false
+    "categoryUiAuthorizationIncluded": false,
+    "finalAcceptance": "docs/audits/12a4-kick-permanent-category-final-acceptance.json",
+    "finalAcceptancePr": 648,
+    "minimumReached": true,
+    "warningExtensionRequired": false,
+    "rollbackRequired": false,
+    "workflowRunId": 30193672205,
+    "workflowJobId": 89771280558,
+    "artifactId": 8629415129,
+    "artifactDigest": "sha256:280bff0acf2a4190fb7678e5150499290b396eb89fb0ac80b27f1dea3116b14a"
   },
   "boundaries": {
     "twitchChanged": false,
