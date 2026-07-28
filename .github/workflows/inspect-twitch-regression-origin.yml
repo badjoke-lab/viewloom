@@ -1,0 +1,38 @@
+name: Inspect Twitch Regression Origin
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/inspect-twitch-regression-origin.yml'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Inspect Actions around Twitch normal-config deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          runs_url="${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs?created=2026-07-23T11:30:00Z..2026-07-23T11:36:30Z&per_page=100"
+          runs="$(curl --fail-with-body --silent --show-error \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$runs_url")"
+          echo "$runs" | jq -c '.workflow_runs[] | {id,name,event,status,conclusion,head_branch,head_sha,run_number,created_at,updated_at,html_url}'
+          for run_id in $(echo "$runs" | jq -r '.workflow_runs[].id'); do
+            echo "RUN_DETAIL ${run_id}"
+            curl --fail-with-body --silent --show-error \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" \
+              | jq -c '.jobs[] | {id,name,status,conclusion,started_at,completed_at,steps:[.steps[]? | {name,status,conclusion}]}'
+          done
