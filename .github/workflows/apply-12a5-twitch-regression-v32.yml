@@ -1,0 +1,53 @@
+name: Apply 12A5 Twitch Regression V32
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-12a5-twitch-regression-v32.yml'
+      - 'scripts/apply-12a5-twitch-regression-v32.mjs'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-12a5-twitch-regression-v32-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: github.head_ref == 'agent/twitch-permanent-category-recovery-package'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/twitch-permanent-category-recovery-package
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse bounded updater
+        run: node --check scripts/apply-12a5-twitch-regression-v32.mjs
+      - name: Apply canonical Twitch regression state
+        run: node scripts/apply-12a5-twitch-regression-v32.mjs
+      - name: Verify category rollout policy
+        run: node scripts/verify-category-rollout-policy.mjs
+      - name: Verify provider-scoped collector deployment
+        run: node scripts/verify-12a2-collector-worker-deploy.mjs
+      - name: Verify Twitch recovery package
+        run: node scripts/verify-12a5-twitch-permanent-category-recovery-package.mjs
+      - name: Publish canonical regression files
+        run: |
+          rm -f scripts/apply-12a5-twitch-regression-v32.mjs
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -- \
+            docs/audits/12a2-current-gate-state.json \
+            scripts/verify-category-rollout-policy.mjs \
+            scripts/verify-12a2-collector-worker-deploy.mjs
+          git add -A -- scripts/apply-12a5-twitch-regression-v32.mjs
+          git diff --cached --stat
+          git diff --cached --quiet && { echo 'canonical updater produced no diff' >&2; exit 1; }
+          git commit -m 'Record Twitch category regression and recovery gate'
+          git push origin HEAD:agent/twitch-permanent-category-recovery-package
