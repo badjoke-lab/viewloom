@@ -91,7 +91,7 @@ assert.match(normalKick, /^name = "viewloom-collector-kick"$/m)
 assert.match(normalKick, /binding = "DB_KICK_HOT"/)
 assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(normalKick), false)
 assert.match(permanentKick, /^CATEGORY_CAPTURE_ENABLED = "true"$/m)
-assert.equal(gate.categoryCapture.twitchPermanentRuntimeCaptureActive, true)
+assert.equal(gate.categoryCapture.twitchPermanentRuntimeCaptureActive, false)
 assert.equal(gate.categoryCapture.kickPermanentRuntimeCaptureActive, true)
 
 const temp = mkdtempSync(path.join(os.tmpdir(), 'viewloom-deploy-plan-'))
@@ -116,7 +116,7 @@ try {
   const manualValues = readFileSync(manualOutput, 'utf8')
   assert.ok(manualValues.includes('deploy_twitch=true'))
   assert.ok(manualValues.includes('deploy_kick=false'))
-  assert.ok(manualValues.includes('twitch_config=workers/collector-twitch/wrangler.category-permanent.toml'))
+  assert.ok(manualValues.includes('twitch_config=workers/collector-twitch/wrangler.toml'))
 } finally {
   rmSync(temp, { recursive: true, force: true })
 }
@@ -126,7 +126,7 @@ console.log(JSON.stringify({
   contract: contract.schemaVersion,
   providerScoped: true,
   pullRequestDeploy: false,
-  twitchActiveConfig: 'workers/collector-twitch/wrangler.category-permanent.toml',
+  twitchCanonicalConfig: 'workers/collector-twitch/wrangler.toml',
   kickActiveConfig: 'workers/collector-kick/wrangler.category-permanent.toml',
   regressionBlocked: true,
 }, null, 2))
