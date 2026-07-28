@@ -8,6 +8,7 @@ on:
       - 'scripts/apply-12a5-twitch-regression-v32.mjs'
       - 'scripts/verify-12a5-twitch-permanent-category-recovery-package.mjs'
       - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
 
 permissions:
   contents: write
