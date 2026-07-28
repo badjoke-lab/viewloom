@@ -16,6 +16,7 @@ ViewLoom is a production Twitch/Kick observation site with provider-separated co
 - 12A-4-20 through 12A-4-23: Twitch permanent implementation, release, initial observation, and initial acceptance.
 - 12A-4-24A Kick permanent-category implementation package accepted in PR #637.
 - 12A-5A hidden Twitch Heatmap category API package accepted in PR #638.
+- Kick dormant release package accepted in PR #641 and frozen canonically in PR #642.
 - Hidden Twitch Heatmap category controls accepted from PR #640 and frozen canonically in PR #642 without public exposure.
 - Kick permanent category capture started through PR #643, completed the minimum 24-hour observation, and was accepted in PR #648 without rollback.
 - The first Twitch seven-day audit was executed read-only in PR #651 and correctly rejected after detecting a production configuration regression.
