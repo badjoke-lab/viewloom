@@ -1,0 +1,43 @@
+name: Inspect PR 653 Main Push
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/inspect-pr653-main-push.yml'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Verify package merge performed no collector deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: 698c99aa543e9d4ee9d0e710c88ade52171f4d79
+        run: |
+          set -euo pipefail
+          runs="$(curl --fail-with-body --silent --show-error \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${TARGET_SHA}&per_page=100")"
+          deploy_run="$(echo "$runs" | jq -c '[.workflow_runs[] | select(.name == "Deploy Collector Workers" and .event == "push")][0]')"
+          test "$deploy_run" != null
+          echo "$deploy_run"
+          run_id="$(echo "$deploy_run" | jq -r '.id')"
+          jobs="$(curl --fail-with-body --silent --show-error \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100")"
+          echo "$jobs" | jq -c '.jobs[] | {id,name,status,conclusion,steps:[.steps[]? | {name,status,conclusion}]}'
+          test "$(echo "$jobs" | jq -r '[.jobs[] | select(.name == "verify" and .conclusion == "success")] | length')" -eq 1
+          test "$(echo "$jobs" | jq -r '[.jobs[] | select(.name == "plan" and .conclusion == "success")] | length')" -eq 1
+          test "$(echo "$jobs" | jq -r '[.jobs[] | select(.name == "deploy-twitch" and .conclusion == "skipped")] | length')" -eq 1
+          test "$(echo "$jobs" | jq -r '[.jobs[] | select(.name == "deploy-kick" and .conclusion == "skipped")] | length')" -eq 1
+          test "$(echo "$jobs" | jq -r '[.jobs[] | select(.name == "verify-remote-schema" and .conclusion == "skipped")] | length')" -eq 1
