@@ -64,9 +64,11 @@ for (const fragment of [
   'Verify two consecutive Twitch category snapshots',
   'Restore normal Twitch configuration on recovery failure',
   'Verify normal Twitch recovery after rollback',
-  'RUN_TWITCH_PERMANENT_CATEGORY_RECOVERY',
   'workers/collector-twitch/wrangler.category-permanent.toml',
   'workers/collector-twitch/wrangler.toml',
+  'MODE=preflight',
+  'MODE=observe',
+  'MODE=rollback',
 ]) assert.ok(workflow.includes(fragment), `recovery workflow missing: ${fragment}`)
 
 assert.equal(workflow.includes('workers/collector-kick/wrangler'), false)
@@ -76,9 +78,13 @@ assert.equal(workflow.includes('workflow_dispatch:'), false)
 assert.equal(workflow.includes('pull_request_target:'), false)
 assert.equal(workflow.includes('git push'), false)
 
-for (const fragment of ['MODE=preflight', 'MODE=observe', 'MODE=rollback', 'provider = \'twitch\'', 'category-source-v1']) {
-  assert.ok(observer.includes(fragment), `observer missing: ${fragment}`)
-}
+for (const fragment of [
+  'process.env.MODE',
+  "['preflight', 'observe', 'rollback']",
+  "provider = 'twitch'",
+  'category-source-v1',
+]) assert.ok(observer.includes(fragment), `observer missing: ${fragment}`)
+
 assert.match(permanent, /^name = "viewloom-collector-twitch"$/m)
 assert.match(permanent, /^CATEGORY_CAPTURE_ENABLED = "true"$/m)
 assert.match(permanent, /crons = \["\*\/5 \* \* \* \*"\]/)
