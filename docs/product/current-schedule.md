@@ -61,8 +61,8 @@ Required order:
 
 1. Correct canonical state to Twitch recovery required and invalidate the original seven-day clock.
 2. Accept provider-scoped collector deployment planning so Twitch and Kick changes deploy independently.
-3. Accept the dormant Twitch recovery package without production deployment.
-4. Create a separate exact one-file recovery trigger with a bounded start time.
+3. Dormant Twitch recovery package accepted through PR #653 and PR #654 without production deployment.
+4. Create a separate exact one-file recovery trigger using accepted package merge `698c99aa543e9d4ee9d0e710c88ade52171f4d79` and a bounded start time.
 5. Immediately before deployment, run a fresh read-only Twitch preflight.
 6. Deploy only `workers/collector-twitch/wrangler.category-permanent.toml`.
 7. Verify the permanent binding and two consecutive real, non-empty, fresh, category-bearing Twitch snapshots.
