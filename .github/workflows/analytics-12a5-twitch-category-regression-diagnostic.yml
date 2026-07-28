@@ -1,0 +1,36 @@
+name: Analytics 12A5 Twitch Category Regression Diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/run-12a5-twitch-category-regression-diagnostic.mjs'
+      - '.github/workflows/analytics-12a5-twitch-category-regression-diagnostic.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OUTPUT_DIR: artifacts/12a5-twitch-category-regression-diagnostic
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Parse diagnostic
+        run: node --check scripts/run-12a5-twitch-category-regression-diagnostic.mjs
+      - name: Run read-only regression diagnostic
+        run: node scripts/run-12a5-twitch-category-regression-diagnostic.mjs
+      - name: Upload sanitized diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a5-twitch-category-regression-diagnostic
+          path: artifacts/12a5-twitch-category-regression-diagnostic/*.json
+          if-no-files-found: error
+          retention-days: 30
