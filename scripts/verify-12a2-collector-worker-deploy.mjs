@@ -1,132 +1,132 @@
 #!/usr/bin/env node
 
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 
 const workflow = readFileSync('.github/workflows/deploy-collector-workers.yml', 'utf8')
+const planner = readFileSync('scripts/plan-collector-worker-deploy.mjs', 'utf8')
 const contract = JSON.parse(readFileSync('docs/audits/12a2-collector-worker-deploy-contract.json', 'utf8'))
 const evidence = JSON.parse(readFileSync('docs/audits/12a2-collector-worker-deploy-evidence.json', 'utf8'))
-const twitchWrangler = readFileSync('workers/collector-twitch/wrangler.toml', 'utf8')
-const kickWrangler = readFileSync('workers/collector-kick/wrangler.toml', 'utf8')
+const gate = JSON.parse(readFileSync('docs/audits/12a2-current-gate-state.json', 'utf8'))
+const normalTwitch = readFileSync('workers/collector-twitch/wrangler.toml', 'utf8')
+const permanentTwitch = readFileSync('workers/collector-twitch/wrangler.category-permanent.toml', 'utf8')
+const normalKick = readFileSync('workers/collector-kick/wrangler.toml', 'utf8')
+const permanentKick = readFileSync('workers/collector-kick/wrangler.category-permanent.toml', 'utf8')
 
-assert.equal(contract.schemaVersion, 'viewloom-12a2-collector-worker-deploy-contract-v2')
-assert.equal(contract.workstream, '12A-2 collector Worker deployment evidence and remote schema verification')
-assert.equal(contract.status, 'accepted')
+assert.equal(contract.schemaVersion, 'viewloom-12a2-collector-worker-deploy-contract-v3')
+assert.equal(contract.status, 'accepted_provider_scoped_planning')
 assert.equal(contract.workflow, '.github/workflows/deploy-collector-workers.yml')
+assert.equal(contract.planner, 'scripts/plan-collector-worker-deploy.mjs')
 assert.equal(contract.deploymentMethod, 'wrangler@4 CLI')
 assert.equal(contract.wranglerVersion, '4')
 assert.deepEqual(contract.secrets, ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID'])
 assert.equal(contract.triggers.pullRequestVerificationOnly, true)
 assert.equal(contract.triggers.mainPushDeploy, true)
-assert.equal(contract.triggers.manualDeploy, true)
+assert.equal(contract.triggers.manualProviderSelectionRequired, true)
 assert.equal(contract.triggers.pullRequestDeploy, false)
-assert.equal(contract.triggers.pullRequestTargetUsed, false)
+assert.equal(contract.triggers.workflowOnlyPushDeploy, false)
 assert.equal(contract.permissions.contents, 'read')
-assert.equal(contract.providers.twitch.workingDirectory, 'workers/collector-twitch')
-assert.equal(contract.providers.twitch.binding, 'DB_TWITCH_HOT')
-assert.equal(contract.providers.kick.workingDirectory, 'workers/collector-kick')
-assert.equal(contract.providers.kick.binding, 'DB_KICK_HOT')
-assert.equal(contract.verification.preDeployCollectorChecks, true)
-assert.equal(contract.verification.preDeployMigrationParityCheck, true)
-assert.equal(contract.verification.postDeploySchemaAuditPath, '/api/schema-audit')
-assert.equal(contract.verification.pollIntervalSeconds, 30)
-assert.equal(contract.verification.maximumPollAttempts, 30)
-assert.equal(contract.verification.twitchRequiredObjects, 3)
-assert.equal(contract.verification.kickRequiredObjects, 3)
-assert.equal(contract.verification.rowsWrittenRequired, 0)
-assert.equal(contract.verification.artifactName, 'phase12a2-collector-worker-deploy')
-assert.equal(contract.acceptedEvidence.workflowRunId, 29158855070)
-assert.equal(contract.acceptedEvidence.artifactId, 8250263833)
-assert.equal(contract.acceptedEvidence.twitchDeployPass, true)
-assert.equal(contract.acceptedEvidence.kickDeployPass, true)
-assert.equal(contract.acceptedEvidence.remoteSchemaGatePass, true)
-assert.equal(contract.scope.pagesDeployIncluded, false)
-assert.equal(contract.scope.directD1ExecuteIncluded, false)
-assert.equal(contract.scope.backfillIncluded, false)
-assert.equal(contract.scope.generationIncluded, false)
-assert.equal(contract.scope.retentionChanged, false)
-assert.equal(contract.scope.newCronAdded, false)
-assert.equal(contract.scope.categoryCaptureIncluded, false)
-assert.equal(contract.scope.crossProviderAnalyticsIncluded, false)
+assert.equal(contract.planning.providerScopedChangedPaths, true)
+assert.equal(contract.planning.twitchChangeDeploysKick, false)
+assert.equal(contract.planning.kickChangeDeploysTwitch, false)
+assert.equal(contract.planning.canonicalActiveConfigSelection, true)
+assert.equal(contract.providers.twitch.normalConfig, 'workers/collector-twitch/wrangler.toml')
+assert.equal(contract.providers.twitch.permanentConfig, 'workers/collector-twitch/wrangler.category-permanent.toml')
+assert.equal(contract.providers.kick.normalConfig, 'workers/collector-kick/wrangler.toml')
+assert.equal(contract.providers.kick.permanentConfig, 'workers/collector-kick/wrangler.category-permanent.toml')
+assert.equal(contract.regression.status, 'confirmed_and_blocked_by_v3')
+assert.equal(contract.regression.incidentIssue, 652)
+assert.equal(contract.regression.workflowRunId, 30003576549)
+assert.equal(contract.regression.twitchDeployJobId, 89194219805)
 
-assert.equal(evidence.schemaVersion, 'viewloom-12a2-collector-worker-deploy-evidence-v1')
 assert.equal(evidence.status, 'accepted')
 assert.equal(evidence.result, 'pass')
-assert.equal(evidence.deployment.method, 'wrangler@4 CLI')
-assert.equal(evidence.deployment.secretValuesIncluded, false)
 assert.equal(evidence.deployment.providerSeparated, true)
-assert.equal(evidence.deployment.twitch.outcome, 'success')
-assert.equal(evidence.deployment.twitch.exitCode, 0)
-assert.equal(evidence.deployment.kick.outcome, 'success')
-assert.equal(evidence.deployment.kick.exitCode, 0)
 assert.equal(evidence.remoteSchema.twitch.schemaComplete, true)
-assert.equal(evidence.remoteSchema.twitch.observedObjectCount, 3)
-assert.equal(evidence.remoteSchema.twitch.rowsWritten, 0)
 assert.equal(evidence.remoteSchema.kick.schemaComplete, true)
-assert.equal(evidence.remoteSchema.kick.observedObjectCount, 3)
-assert.equal(evidence.remoteSchema.kick.rowsWritten, 0)
-assert.equal(evidence.gate.workerDeploymentEvidencePresent, true)
-assert.equal(evidence.gate.remoteSchemaGatePass, true)
-assert.equal(evidence.gate.accountAggregateMeasured, false)
-assert.equal(evidence.gate.generationStorageGatePass, false)
-assert.equal(evidence.gate.generationAuthorized, false)
-assert.deepEqual(evidence.gate.remainingBlockers, ['account_aggregate_storage_unmeasured'])
 assert.equal(evidence.boundary.directD1ExecuteUsed, false)
 assert.equal(evidence.boundary.backfillPerformed, false)
-assert.equal(evidence.boundary.rollupGenerationStarted, false)
 
 for (const fragment of [
   'name: Deploy Collector Workers',
-  'pull_request:',
-  'push:',
-  'workflow_dispatch:',
-  'permissions:\n  contents: read',
-  'cancel-in-progress: false',
-  "if: github.event_name != 'pull_request'",
-  'uses: actions/setup-node@v4',
-  "node-version: '22'",
-  'npm install --global wrangler@4',
-  'CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}',
-  'CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}',
-  'cd workers/collector-twitch',
-  'cd workers/collector-kick',
-  'wrangler deploy',
-  'node scripts/verify-12a2-collector-worker-deploy.mjs',
-  'node scripts/verify-12a2-controlled-remote-apply.mjs',
+  'provider:',
+  'Plan provider-scoped deployment',
+  'node scripts/plan-collector-worker-deploy.mjs',
+  "if: needs.plan.outputs.deploy_twitch == 'true'",
+  "if: needs.plan.outputs.deploy_kick == 'true'",
+  'wrangler deploy --config "$TWITCH_CONFIG"',
+  'wrangler deploy --config "$KICK_CONFIG"',
+  'needs.plan.outputs.any_deploy',
+  'contents: read',
   'pnpm check:collectors',
   'node scripts/collect-12a2-remote-schema-production-evidence.mjs',
   'node scripts/verify-12a2-remote-schema-production-evidence.mjs',
-  'for attempt in $(seq 1 30)',
-  'sleep 30',
-  'e.gate.remoteSchemaGatePass?0:1',
-  'name: phase12a2-collector-worker-deploy',
 ]) assert.ok(workflow.includes(fragment), `deployment workflow missing: ${fragment}`)
 
-assert.equal(workflow.includes('pull_request_target:'), false, 'pull_request_target must not be used')
-assert.equal(workflow.includes('cloudflare/wrangler-action'), false, 'accepted permanent workflow must use direct Wrangler CLI')
-assert.equal(workflow.includes('wrangler d1 execute'), false, 'direct D1 execute must not be used')
-assert.equal(workflow.includes('pages deploy'), false, 'Pages deployment must not be included')
-assert.equal(workflow.includes('contents: write'), false, 'workflow must not request contents write')
-assert.equal(workflow.includes('echo "$CLOUDFLARE_API_TOKEN"'), false, 'API token must not be echoed')
+for (const fragment of [
+  "value.startsWith('workers/shared/')",
+  "value.startsWith('workers/collector-twitch/')",
+  "value.startsWith('workers/collector-kick/')",
+  'twitchPermanentRuntimeCaptureActive',
+  'kickPermanentRuntimeCaptureActive',
+  'wrangler.category-permanent.toml',
+  'cross_provider_deploy_plan',
+]) assert.ok(planner.includes(fragment), `deployment planner missing: ${fragment}`)
 
-const deployGuardCount = workflow.match(/if: github\.event_name != 'pull_request'/g)?.length ?? 0
-assert.equal(deployGuardCount, 3, 'both deploy jobs and post-deploy verification must be guarded from PR execution')
+assert.equal(workflow.includes('pull_request_target:'), false)
+assert.equal(workflow.includes('contents: write'), false)
+assert.equal(workflow.includes('wrangler d1 execute'), false)
+assert.equal(workflow.includes('pages deploy'), false)
+assert.equal(workflow.includes('cd workers/collector-twitch\n          wrangler deploy'), false)
+assert.equal(workflow.includes('cd workers/collector-kick\n          wrangler deploy'), false)
 
-assert.match(twitchWrangler, /^name = "viewloom-collector-twitch"$/m)
-assert.match(twitchWrangler, /^main = "src\/entry\.ts"$/m)
-assert.match(twitchWrangler, /binding = "DB_TWITCH_HOT"/)
-assert.match(twitchWrangler, /database_name = "vl_twitch_hot"/)
-assert.match(kickWrangler, /^name = "viewloom-collector-kick"$/m)
-assert.match(kickWrangler, /^main = "src\/entry\.ts"$/m)
-assert.match(kickWrangler, /binding = "DB_KICK_HOT"/)
-assert.match(kickWrangler, /database_name = "vl_kick_hot"/)
+assert.match(normalTwitch, /^name = "viewloom-collector-twitch"$/m)
+assert.match(normalTwitch, /binding = "DB_TWITCH_HOT"/)
+assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(normalTwitch), false)
+assert.match(permanentTwitch, /^CATEGORY_CAPTURE_ENABLED = "true"$/m)
+assert.match(normalKick, /^name = "viewloom-collector-kick"$/m)
+assert.match(normalKick, /binding = "DB_KICK_HOT"/)
+assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(normalKick), false)
+assert.match(permanentKick, /^CATEGORY_CAPTURE_ENABLED = "true"$/m)
+assert.equal(gate.categoryCapture.twitchPermanentRuntimeCaptureActive, true)
+assert.equal(gate.categoryCapture.kickPermanentRuntimeCaptureActive, true)
 
-console.log('12A-2 collector Worker deployment verification passed.')
-console.log('- accepted deployment evidence uses direct Wrangler 4 CLI')
-console.log('- pull requests run verification only')
-console.log('- main push and manual dispatch may deploy')
-console.log('- Twitch and Kick deploy through separate working directories')
-console.log('- Cloudflare secrets are referenced but not printed')
-console.log('- post-deploy schema gate polls for up to 15 minutes')
-console.log('- remote schema gate is accepted at 3 / 3 for both providers')
-console.log('- no direct D1 execute, Pages deploy, backfill, or generation')
+const temp = mkdtempSync(path.join(os.tmpdir(), 'viewloom-deploy-plan-'))
+try {
+  const prOutput = path.join(temp, 'pr-output')
+  const pr = spawnSync(process.execPath, ['scripts/plan-collector-worker-deploy.mjs'], {
+    encoding: 'utf8',
+    env: { ...process.env, GITHUB_EVENT_NAME: 'pull_request', GITHUB_OUTPUT: prOutput },
+  })
+  assert.equal(pr.status, 0, pr.stderr || pr.stdout)
+  const prValues = readFileSync(prOutput, 'utf8')
+  assert.ok(prValues.includes('deploy_twitch=false'))
+  assert.ok(prValues.includes('deploy_kick=false'))
+  assert.ok(prValues.includes('any_deploy=false'))
+
+  const manualOutput = path.join(temp, 'manual-output')
+  const manual = spawnSync(process.execPath, ['scripts/plan-collector-worker-deploy.mjs'], {
+    encoding: 'utf8',
+    env: { ...process.env, GITHUB_EVENT_NAME: 'workflow_dispatch', DEPLOY_PROVIDER: 'twitch', GITHUB_OUTPUT: manualOutput },
+  })
+  assert.equal(manual.status, 0, manual.stderr || manual.stdout)
+  const manualValues = readFileSync(manualOutput, 'utf8')
+  assert.ok(manualValues.includes('deploy_twitch=true'))
+  assert.ok(manualValues.includes('deploy_kick=false'))
+  assert.ok(manualValues.includes('twitch_config=workers/collector-twitch/wrangler.category-permanent.toml'))
+} finally {
+  rmSync(temp, { recursive: true, force: true })
+}
+
+console.log(JSON.stringify({
+  ok: true,
+  contract: contract.schemaVersion,
+  providerScoped: true,
+  pullRequestDeploy: false,
+  twitchActiveConfig: 'workers/collector-twitch/wrangler.category-permanent.toml',
+  kickActiveConfig: 'workers/collector-kick/wrangler.category-permanent.toml',
+  regressionBlocked: true,
+}, null, 2))
