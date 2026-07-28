@@ -6,6 +6,8 @@ on:
     paths:
       - '.github/workflows/apply-12a5-twitch-regression-v32.yml'
       - 'scripts/apply-12a5-twitch-regression-v32.mjs'
+      - 'scripts/verify-12a5-twitch-permanent-category-recovery-package.mjs'
+      - 'docs/product/current-roadmap.md'
 
 permissions:
   contents: write
