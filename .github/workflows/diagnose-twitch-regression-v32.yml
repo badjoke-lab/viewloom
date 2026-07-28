@@ -1,0 +1,39 @@
+name: Diagnose Twitch Regression V32
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnose-twitch-regression-v32.yml'
+      - 'scripts/apply-12a5-twitch-regression-v32.mjs'
+      - 'scripts/verify-category-rollout-policy.mjs'
+      - 'scripts/verify-12a2-collector-worker-deploy.mjs'
+      - 'scripts/verify-12a5-twitch-permanent-category-recovery-package.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply canonical transform in workspace only
+        run: node scripts/apply-12a5-twitch-regression-v32.mjs
+      - name: Diagnose category policy verifier
+        run: |
+          set +e
+          node scripts/verify-category-rollout-policy.mjs > category-policy.log 2>&1
+          status=$?
+          cat category-policy.log
+          exit $status
+      - name: Diagnose deployment verifier
+        if: always()
+        run: node scripts/verify-12a2-collector-worker-deploy.mjs
+      - name: Diagnose recovery package verifier
+        if: always()
+        run: node scripts/verify-12a5-twitch-permanent-category-recovery-package.mjs
