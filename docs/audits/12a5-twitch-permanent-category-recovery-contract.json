@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-permanent-category-recovery-v1",
+  "status": "ready_for_dormant_package_validation",
+  "parentTrackingIssue": 635,
+  "trackingIssue": 652,
+  "provider": "twitch",
+  "incidentEvidence": "docs/audits/12a5-twitch-seven-day-accumulation-audit-rejection.json",
+  "deploymentProtectionContract": "docs/audits/12a2-collector-worker-deploy-contract.json",
+  "acceptedComponents": {
+    "permanentConfig": "workers/collector-twitch/wrangler.category-permanent.toml",
+    "normalRollbackConfig": "workers/collector-twitch/wrangler.toml",
+    "observer": "scripts/run-12a4-twitch-permanent-category-observer.mjs",
+    "serviceName": "viewloom-collector-twitch",
+    "databaseName": "vl_twitch_hot",
+    "collectorCron": "*/5 * * * *",
+    "categoryContractVersion": "category-source-v1"
+  },
+  "workflow": {
+    "path": ".github/workflows/analytics-12a5-twitch-permanent-category-recovery.yml",
+    "triggerPath": "docs/audits/12a5-twitch-permanent-category-recovery-trigger.json",
+    "packagePullRequestValidationOnly": true,
+    "packagePullRequestProductionDeployment": false,
+    "productionEvent": "push of a separately accepted exact one-file trigger to main",
+    "workflowDispatchProductionAllowed": false,
+    "newWorkerCronAdded": false
+  },
+  "trigger": {
+    "schemaVersion": "viewloom-12a5-twitch-permanent-category-recovery-trigger-v1",
+    "status": "armed",
+    "provider": "twitch",
+    "oneTime": true,
+    "confirmation": "RUN_TWITCH_PERMANENT_CATEGORY_RECOVERY",
+    "packagePrRequired": true,
+    "packageMergeShaRequired": true,
+    "startAtRequired": true,
+    "maximumStartDelayHours": 3,
+    "oneFileTriggerPrRequired": true
+  },
+  "preflight": {
+    "readOnly": true,
+    "cloudflareApiMethods": ["GET"],
+    "d1Statements": ["SELECT"],
+    "permanentFlagMustBeAbsent": true,
+    "obsoleteCanaryBindingsMustBeAbsent": true,
+    "providerLeakageRowsMax": 0,
+    "latestNormalSnapshotFreshnessMinutesMax": 20,
+    "latestNormalSnapshotMustBeReal": true,
+    "latestNormalSnapshotMustBeNonempty": true,
+    "projectedNinetyDaySizeMbMax": 440,
+    "projectedProviderHeadroomMbMin": 10,
+    "projectedAccountWideHeadroomMbMin": 500,
+    "failureStopsBeforeDeployment": true
+  },
+  "deployment": {
+    "provider": "twitch",
+    "config": "workers/collector-twitch/wrangler.category-permanent.toml",
+    "permanentFlag": "CATEGORY_CAPTURE_ENABLED",
+    "permanentFlagValue": "true",
+    "existingCronPreserved": true,
+    "kickConfigReferenced": false
+  },
+  "verification": {
+    "observerMode": "observe",
+    "consecutiveCategorySnapshotsRequired": 2,
+    "pollIntervalSeconds": 60,
+    "pollAttempts": 20,
+    "permanentFlagMustBeTrue": true,
+    "obsoleteCanaryBindingsMustBeAbsent": true,
+    "latestSnapshotMustBeReal": true,
+    "latestSnapshotMustBeNonempty": true,
+    "latestSnapshotMustBeFresh": true,
+    "latestSnapshotMustContainCategoryContract": true,
+    "providerLeakageRowsMax": 0,
+    "storageGateMustPass": true
+  },
+  "rollback": {
+    "automaticOnFailure": true,
+    "config": "workers/collector-twitch/wrangler.toml",
+    "observerMode": "rollback",
+    "permanentFlagMustBeAbsent": true,
+    "normalSnapshotMustRecover": true,
+    "providerLeakageMustRemainZero": true,
+    "kickMustRemainUnchanged": true
+  },
+  "evidence": {
+    "preflightArtifactName": "analytics-12a5-twitch-permanent-category-recovery-preflight",
+    "recoveryArtifactName": "analytics-12a5-twitch-permanent-category-recovery-start",
+    "artifactDirectory": "artifacts/12a5-twitch-permanent-category-recovery",
+    "sanitizedJsonOnly": true,
+    "credentialsIncluded": false,
+    "rawPayloadRowsIncluded": false
+  },
+  "boundaries": {
+    "kickChangeAuthorized": false,
+    "d1MutationAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "newWorkerCronAuthorized": false,
+    "backfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "publicCategoryUiAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  },
+  "postRecovery": {
+    "canonicalAcceptanceRequired": true,
+    "newStableAccumulationStartRequired": true,
+    "newSevenDayAuditRequired": true,
+    "publicCutoverAutomaticallyAuthorized": false,
+    "separatePublicCutoverPrRequired": true
+  }
+}
