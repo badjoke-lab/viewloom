@@ -9,8 +9,10 @@ on:
       - 'workers/shared/**'
       - 'workers/collector-twitch/**'
       - 'workers/collector-kick/**'
+      - 'scripts/plan-collector-worker-deploy.mjs'
       - 'scripts/verify-12a2-controlled-remote-apply.mjs'
       - 'scripts/verify-12a2-collector-worker-deploy.mjs'
+      - 'docs/audits/12a2-current-gate-state.json'
       - 'docs/audits/12a2-collector-worker-deploy-contract.json'
       - 'docs/audits/12a2-collector-worker-deploy-evidence.json'
       - 'docs/operations/12a2-collector-worker-deploy-acceptance-*.md'
@@ -22,7 +24,18 @@ on:
       - 'workers/shared/**'
       - 'workers/collector-twitch/**'
       - 'workers/collector-kick/**'
+      - 'scripts/plan-collector-worker-deploy.mjs'
+      - 'docs/audits/12a2-current-gate-state.json'
   workflow_dispatch:
+    inputs:
+      provider:
+        description: Provider to deploy using its canonical active configuration
+        required: true
+        type: choice
+        options:
+          - twitch
+          - kick
+          - both
 
 permissions:
   contents: read
@@ -50,9 +63,35 @@ jobs:
       - name: Typecheck and verify collectors
         run: pnpm check:collectors
 
-  deploy-twitch:
-    if: github.event_name != 'pull_request'
+  plan:
     needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      deploy_twitch: ${{ steps.plan.outputs.deploy_twitch }}
+      deploy_kick: ${{ steps.plan.outputs.deploy_kick }}
+      any_deploy: ${{ steps.plan.outputs.any_deploy }}
+      twitch_config: ${{ steps.plan.outputs.twitch_config }}
+      kick_config: ${{ steps.plan.outputs.kick_config }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - id: plan
+        name: Plan provider-scoped deployment
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+          DEPLOY_PROVIDER: ${{ inputs.provider }}
+        run: node scripts/plan-collector-worker-deploy.mjs
+
+  deploy-twitch:
+    if: needs.plan.outputs.deploy_twitch == 'true'
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -74,18 +113,17 @@ jobs:
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
 
-      - name: Deploy Twitch collector
+      - name: Deploy Twitch collector from canonical active configuration
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          cd workers/collector-twitch
-          wrangler deploy
+          TWITCH_CONFIG: ${{ needs.plan.outputs.twitch_config }}
+        run: wrangler deploy --config "$TWITCH_CONFIG"
 
   deploy-kick:
-    if: github.event_name != 'pull_request'
-    needs: verify
+    if: needs.plan.outputs.deploy_kick == 'true'
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -107,18 +145,22 @@ jobs:
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
 
-      - name: Deploy Kick collector
+      - name: Deploy Kick collector from canonical active configuration
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          cd workers/collector-kick
-          wrangler deploy
+          KICK_CONFIG: ${{ needs.plan.outputs.kick_config }}
+        run: wrangler deploy --config "$KICK_CONFIG"
 
   verify-remote-schema:
-    if: github.event_name != 'pull_request'
+    if: >-
+      always() &&
+      needs.plan.outputs.any_deploy == 'true' &&
+      (needs.deploy-twitch.result == 'success' || needs.deploy-twitch.result == 'skipped') &&
+      (needs.deploy-kick.result == 'success' || needs.deploy-kick.result == 'skipped')
     needs:
+      - plan
       - deploy-twitch
       - deploy-kick
     runs-on: ubuntu-latest
@@ -161,8 +203,10 @@ jobs:
             echo '## ViewLoom Collector Worker Deployment'
             echo
             echo '- Deployment method: Wrangler 4 CLI'
-            echo '- Twitch Worker deploy requested: yes'
-            echo '- Kick Worker deploy requested: yes'
+            echo "- Twitch Worker deployed: ${{ needs.plan.outputs.deploy_twitch }}"
+            echo "- Twitch canonical config: ${{ needs.plan.outputs.twitch_config }}"
+            echo "- Kick Worker deployed: ${{ needs.plan.outputs.deploy_kick }}"
+            echo "- Kick canonical config: ${{ needs.plan.outputs.kick_config }}"
             if [ -f "$ARTIFACT_DIR/schema-evidence.json" ]; then
               echo "- Twitch schema complete: $(jq -r '.providers.twitch.schemaComplete' "$ARTIFACT_DIR/schema-evidence.json")"
               echo "- Twitch observed objects: $(jq -r '.providers.twitch.observedObjectCount' "$ARTIFACT_DIR/schema-evidence.json")/3"
@@ -172,6 +216,7 @@ jobs:
             else
               echo '- Remote schema evidence: missing'
             fi
+            echo '- Cross-provider deployment: blocked by changed-path planning'
             echo '- Backfill: none'
             echo '- Runtime generation: none'
           } >> "$GITHUB_STEP_SUMMARY"
