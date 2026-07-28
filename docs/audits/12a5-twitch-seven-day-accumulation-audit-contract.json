@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-seven-day-accumulation-audit-v1",
+  "status": "ready_for_readonly_execution",
+  "parentTrackingIssue": 635,
+  "trackingIssue": 650,
+  "provider": "twitch",
+  "feature": "heatmap_category_filter",
+  "window": {
+    "startAt": "2026-07-20T11:40:00.000Z",
+    "minimumStableDays": 7,
+    "earliestAuditAt": "2026-07-27T11:40:00.000Z"
+  },
+  "runtime": {
+    "serviceName": "viewloom-collector-twitch",
+    "databaseName": "vl_twitch_hot",
+    "collectorCron": "*/5 * * * *",
+    "categoryContractVersion": "category-source-v1"
+  },
+  "thresholds": {
+    "minimumCategorySnapshotRows": 2016,
+    "minimumCategoryCoverageRatio": 0.995,
+    "maximumGapMinutes": 10.01,
+    "minimumCategoryReferenceCoverageRatio": 0.995,
+    "latestSnapshotFreshnessMinutesMax": 20,
+    "providerProjectedNinetyDaySizeMbMax": 440,
+    "providerHeadroomMbMin": 10,
+    "accountWideHeadroomMbMin": 500,
+    "collectorErrorRunsMax": 0,
+    "providerLeakageRowsMax": 0,
+    "unresolvedCategoryIdsMax": 0,
+    "invalidCategoryRefsMax": 0
+  },
+  "hiddenImplementation": {
+    "apiPackagePr": 638,
+    "controlsPackagePr": 640,
+    "canonicalAcceptancePr": 642,
+    "accepted": true,
+    "entry": "categoryPreview=1",
+    "publicExposureAuthorized": false,
+    "publicNavigationAuthorized": false,
+    "normalRouteControlAuthorized": false,
+    "unfilteredFallbackRequired": true
+  },
+  "audit": {
+    "cloudflareApiMethods": ["GET"],
+    "d1Statements": ["SELECT", "WITH"],
+    "sanitizedJsonOnly": true,
+    "artifactName": "analytics-12a5-twitch-seven-day-accumulation-audit",
+    "publicCutoverOnPass": false,
+    "separatePublicCutoverPrRequired": true
+  },
+  "requiredGates": [
+    "minimum elapsed seven days",
+    "permanent binding true and obsolete canary bindings absent",
+    "provider identity and five-minute cadence unchanged",
+    "category-bearing snapshot coverage at least 99.5 percent",
+    "maximum observed snapshot gap no greater than ten minutes",
+    "all category-bearing payloads structurally valid, real, and non-empty",
+    "category reference coverage at least 99.5 percent",
+    "zero invalid category references",
+    "zero unresolved observed category ids",
+    "dictionary names and contract versions complete",
+    "zero Twitch collector error runs",
+    "zero provider leakage",
+    "latest snapshot fresh, real, non-empty, and category-bearing",
+    "provider and account storage headroom accepted",
+    "hidden implementation accepted while public exposure remains disabled"
+  ],
+  "boundaries": {
+    "productionMutationAuthorized": false,
+    "collectorChangeAuthorized": false,
+    "workerCronChangeAuthorized": false,
+    "d1MutationAuthorized": false,
+    "backfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "kickChangeAuthorized": false,
+    "publicExposureAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  },
+  "nextGate": "if and only if the sanitized audit evidence is accepted, freeze it canonically and create a separate Twitch-only public cutover PR"
+}
