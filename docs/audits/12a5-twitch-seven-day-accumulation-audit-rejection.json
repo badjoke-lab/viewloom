@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-seven-day-accumulation-audit-rejection-v1",
+  "status": "rejected_production_regression",
+  "trackingIssue": 650,
+  "recoveryIssue": 652,
+  "provider": "twitch",
+  "feature": "heatmap_category_filter",
+  "observedAt": "2026-07-28T11:51:59.062Z",
+  "window": {
+    "acceptedStartAt": "2026-07-20T11:40:00.000Z",
+    "earliestAuditAt": "2026-07-27T11:40:00.000Z",
+    "elapsedHours": 192.2,
+    "originalStabilityClockValid": false
+  },
+  "source": {
+    "auditPr": 651,
+    "auditRunId": 30356480145,
+    "auditJobId": 90265761664,
+    "auditArtifactId": 8687010041,
+    "auditArtifactDigest": "sha256:5189ca12386aa202fc2b9872d23d2e60f7ea5359863b4a4d4ec2ca38595010c8",
+    "diagnosticRunId": 30357344189,
+    "diagnosticJobId": 90268510286,
+    "diagnosticArtifactId": 8687336938,
+    "diagnosticArtifactDigest": "sha256:0b8bb8d9f19184910eb4d5486d4c2ec7b54c319428e51e340e4c93aff7ba9fce"
+  },
+  "regression": {
+    "lastCategoryBucket": "2026-07-23T11:35:00.000Z",
+    "firstNormalBucket": "2026-07-23T11:40:00.000Z",
+    "cloudflareWorkerModifiedAt": "2026-07-23T11:33:53.256999Z",
+    "permanentCaptureEnabledAtAudit": false,
+    "obsoleteCanaryBindingsPresent": false,
+    "rootCause": "provider-unscoped shared deployment workflow applied the normal Twitch config during a Kick-only collector change",
+    "sourcePr": 637,
+    "sourceCommit": "b4012ebddb9ec33c50b6298c882f0f1a4ee16be0",
+    "workflowRunId": 30003576549,
+    "workflowName": "Deploy Collector Workers",
+    "twitchDeployJobId": 89194219805
+  },
+  "data": {
+    "totalSnapshotRows": 2228,
+    "categorySnapshotRows": 790,
+    "expectedCategorySlots": 2307,
+    "categoryCoverageRatio": 0.342436,
+    "categoryReferenceCoverageRatio": 0.996458,
+    "invalidCategoryRefs": 0,
+    "unresolvedCategoryIds": 0,
+    "dictionaryRows": 964,
+    "providerLeakageRows": 0,
+    "collectorErrorRuns": 5,
+    "latestSnapshot": {
+      "bucketMinute": "2026-07-28T11:50:00.000Z",
+      "collectedAt": "2026-07-28T11:50:09.703Z",
+      "streamCount": 299,
+      "totalViewers": 644557,
+      "sourceMode": "real",
+      "categoryContractVersion": null,
+      "freshnessMinutes": 1.96
+    }
+  },
+  "storage": {
+    "providerCurrentMb": 332.68,
+    "projectedNinetyDaySizeMb": 381,
+    "projectedProviderHeadroomMb": 69,
+    "accountCurrentMb": 3857.72,
+    "projectedAccountWideHeadroomMb": 701.96,
+    "providerPass": true,
+    "accountPass": true
+  },
+  "gates": {
+    "auditBoundaryReached": true,
+    "identityPass": true,
+    "cadencePass": true,
+    "schemaPass": true,
+    "bindingPass": false,
+    "storagePass": true,
+    "minimumCategoryRowsPass": false,
+    "categoryCoveragePass": false,
+    "categoryContinuityPass": false,
+    "categoryPayloadStructurePass": true,
+    "categoryReferenceCoveragePass": true,
+    "categoryReferenceValidityPass": true,
+    "dictionaryResolutionPass": true,
+    "collectorErrorsPass": false,
+    "providerLeakagePass": true,
+    "latestSnapshotFreshnessPass": true,
+    "latestSnapshotRealPass": true,
+    "latestSnapshotNonemptyPass": true,
+    "latestSnapshotCategoryPass": false,
+    "hiddenImplementationAccepted": true,
+    "publicExposureStillDisabled": true
+  },
+  "decision": {
+    "publicCutoverAuthorized": false,
+    "recoveryRequired": true,
+    "newSevenDayClockRequired": true,
+    "backfillAuthorized": false,
+    "kickChangeAuthorized": false
+  }
+}
