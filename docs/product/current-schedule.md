@@ -9,6 +9,8 @@ Canonical target 12A-5B-R1 Twitch permanent-category recovery
 Twitch permanent category capture active no
 Twitch recovery required yes
 Original Twitch seven-day clock valid no
+Kick permanent implementation package accepted yes
+Kick permanent release package accepted yes
 Kick permanent runtime active yes
 Twitch Heatmap hidden category API package accepted yes
 Twitch Heatmap hidden control package accepted yes
