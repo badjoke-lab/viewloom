@@ -1,8 +1,9 @@
 {
-  "schemaVersion": "viewloom-12a2-collector-worker-deploy-contract-v2",
-  "workstream": "12A-2 collector Worker deployment evidence and remote schema verification",
-  "status": "accepted",
+  "schemaVersion": "viewloom-12a2-collector-worker-deploy-contract-v3",
+  "workstream": "12A-2 collector Worker deployment evidence and provider-scoped runtime protection",
+  "status": "accepted_provider_scoped_planning",
   "workflow": ".github/workflows/deploy-collector-workers.yml",
+  "planner": "scripts/plan-collector-worker-deploy.mjs",
   "deploymentMethod": "wrangler@4 CLI",
   "wranglerVersion": "4",
   "secrets": [
@@ -13,22 +14,38 @@
     "pullRequestVerificationOnly": true,
     "mainPushDeploy": true,
     "manualDeploy": true,
+    "manualProviderSelectionRequired": true,
     "pullRequestDeploy": false,
-    "pullRequestTargetUsed": false
+    "pullRequestTargetUsed": false,
+    "workflowOnlyPushDeploy": false
   },
   "permissions": {
     "contents": "read"
+  },
+  "planning": {
+    "providerScopedChangedPaths": true,
+    "sharedWorkerChangeDeploysBoth": true,
+    "twitchChangeDeploysKick": false,
+    "kickChangeDeploysTwitch": false,
+    "canonicalActiveConfigSelection": true,
+    "normalConfigUsedWhenPermanentInactive": true,
+    "permanentConfigUsedWhenPermanentActive": true,
+    "canonicalGate": "docs/audits/12a2-current-gate-state.json"
   },
   "providers": {
     "twitch": {
       "worker": "viewloom-collector-twitch",
       "workingDirectory": "workers/collector-twitch",
+      "normalConfig": "workers/collector-twitch/wrangler.toml",
+      "permanentConfig": "workers/collector-twitch/wrangler.category-permanent.toml",
       "binding": "DB_TWITCH_HOT",
       "databaseName": "vl_twitch_hot"
     },
     "kick": {
       "worker": "viewloom-collector-kick",
       "workingDirectory": "workers/collector-kick",
+      "normalConfig": "workers/collector-kick/wrangler.toml",
+      "permanentConfig": "workers/collector-kick/wrangler.category-permanent.toml",
       "binding": "DB_KICK_HOT",
       "databaseName": "vl_kick_hot"
     }
@@ -45,21 +62,29 @@
     "artifactName": "phase12a2-collector-worker-deploy"
   },
   "acceptedEvidence": {
-    "workflowRunId": 29158855070,
-    "artifactId": 8250263833,
-    "artifactDigest": "sha256:de3bb82932e4fc88b3460076353a8df884b570a650e15136cba566f30d9ba0cd",
-    "twitchDeployPass": true,
-    "kickDeployPass": true,
+    "historicalWorkflowRunId": 29158855070,
+    "historicalArtifactId": 8250263833,
+    "historicalArtifactDigest": "sha256:de3bb82932e4fc88b3460076353a8df884b570a650e15136cba566f30d9ba0cd",
     "remoteSchemaGatePass": true
+  },
+  "regression": {
+    "status": "confirmed_and_blocked_by_v3",
+    "incidentIssue": 652,
+    "sourcePr": 637,
+    "sourceCommit": "b4012ebddb9ec33c50b6298c882f0f1a4ee16be0",
+    "workflowRunId": 30003576549,
+    "twitchDeployJobId": 89194219805,
+    "cloudflareModifiedAt": "2026-07-23T11:33:53.256999Z",
+    "lastCategorySnapshotAt": "2026-07-23T11:35:00.000Z",
+    "firstNormalSnapshotAt": "2026-07-23T11:40:00.000Z",
+    "cause": "Kick collector path change triggered unconditional normal-config Twitch deployment"
   },
   "scope": {
     "pagesDeployIncluded": false,
     "directD1ExecuteIncluded": false,
     "backfillIncluded": false,
-    "generationIncluded": false,
     "retentionChanged": false,
     "newCronAdded": false,
-    "categoryCaptureIncluded": false,
     "crossProviderAnalyticsIncluded": false
   }
 }
