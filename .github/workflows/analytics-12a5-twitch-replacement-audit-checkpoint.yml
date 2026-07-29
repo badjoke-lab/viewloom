@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint.yml'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-package-contract.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-package-acceptance.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger-contract.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger.json'
       - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
@@ -99,19 +100,19 @@ jobs:
           test -f apps/web/dist/kick/heatmap/index.html
           ! grep -q 'categoryPreview' apps/web/dist/kick/heatmap/index.html
           ! grep -q 'data-category-preview-select' apps/web/dist/kick/heatmap/index.html
-      - name: Summarize dormant checkpoint boundary
+      - name: Summarize accepted checkpoint boundary
         run: |
           {
             echo '## Twitch replacement audit checkpoint package'
             echo
+            echo '- Package PR / acceptance PR: `#665` / `#666`'
             echo '- Mode: `checkpoint` only'
             echo '- Exact start: `2026-07-29T05:30:00Z`'
             echo '- End: latest completed five-minute boundary capped at `2026-08-05T05:30:00Z`'
-            echo '- Accepted runner repair: `#663` / `#664`'
-            echo '- Production credentials or execution on package PR: no'
+            echo '- Production credentials or execution on package/acceptance PRs: no'
             echo '- New Worker cron: no'
             echo '- Worker/D1/Kick/public UI mutation: no'
-            echo '- Separate package acceptance and one-file trigger required: yes'
+            echo '- Next branch: `work-659-twitch-replacement-audit-checkpoint-trigger`'
           } >> "$GITHUB_STEP_SUMMARY"
 
   validate-trigger:

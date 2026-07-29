@@ -27,22 +27,24 @@ Kick permanent category capture active
 Replacement stability start 2026-07-29T05:30:00.000Z
 Earliest replacement audit 2026-08-05T05:30:00.000Z
 Replacement audit issue #659
-Dormant replacement audit package accepted PR #661 / acceptance PR #662
-Runner repair accepted PR #663 / acceptance PR #664
-Current branch work-659-twitch-replacement-audit-checkpoint-package
+Dormant runner package accepted PR #661 / #662
+Runner repair accepted PR #663 / #664
+Checkpoint package accepted PR #665 / #666
+Current branch work-659-twitch-replacement-audit-checkpoint-trigger
 Twitch Heatmap public category-filter exposure unauthorized
 ```
 
 ## Current work order
 
-1. Create and verify `work-659-twitch-replacement-audit-checkpoint-package`.
-2. Accept checkpoint execution separately before any production read-only run.
-3. Freeze sanitized checkpoint evidence as diagnostic only.
-4. Start Heatmap Canvas responsibility separation after checkpoint-package priority is secured.
-5. Add a hidden/disabled Canvas scene after module-split acceptance.
-6. Address #148 Day Flow/Battle Lines provider parity.
-7. Execute #659 final mode only at or after the accepted boundary.
-8. Use a later separate PR for public category-filter cutover.
+1. Add the exact one-file checkpoint trigger on `work-659-twitch-replacement-audit-checkpoint-trigger`.
+2. Validate package PR #665 and merge SHA `317675ea9a6256eb61bf36f8ec9d7a51ffdfff2a` identity.
+3. Merge the trigger only after validation; production checkpoint execution occurs only on main push.
+4. Freeze sanitized checkpoint evidence and exact run/job/artifact/digest identities.
+5. Retire the trigger and temporary execution path after evidence freeze.
+6. Start Heatmap Canvas responsibility separation after checkpoint priority is secured.
+7. Address #148 provider parity.
+8. Execute #659 final mode only at or after the accepted boundary.
+9. Use a later separate PR for public category-filter cutover.
 
 ## Change classification
 
@@ -56,17 +58,17 @@ Every change must declare one primary responsibility:
 - retirement/cleanup;
 - unrelated product work.
 
-Do not combine package implementation, production execution, and acceptance in one PR.
+Do not combine package implementation, production execution, evidence acceptance, and retirement in one PR.
 
 ## Current boundaries
 
 - Preserve both provider-specific permanent category configurations and five-minute cadences.
 - Do not mutate Kick from Twitch-only work.
-- Do not change D1 schema, backfill, retention, or provider identity rules.
-- The accepted runner repair performed no production credentials, Cloudflare/D1 execution, or runtime change.
-- Do not expose the hidden Twitch category filter before #659 is accepted and a separate cutover PR passes.
-- Checkpoint mode never accepts #659 or authorizes public UI.
-- Heatmap Canvas work changes renderer/interaction only unless a later explicit contract authorizes more.
+- Do not change D1 schema, backfill, retention, provider identity, or cross-provider rules.
+- The accepted checkpoint package is checkpoint-only, Cloudflare GET, and D1 SELECT/WITH.
+- Trigger PRs add only the exact trigger file and do not execute production before merge.
+- Do not expose the hidden Twitch category filter before #659 final acceptance and a separate cutover PR.
+- Checkpoint mode never accepts #659, guarantees final acceptance, authorizes mutation, or authorizes public UI.
 - Existing unfiltered Heatmap remains the fallback.
 
 ## Branch and merge policy
@@ -76,25 +78,19 @@ Do not combine package implementation, production execution, and acceptance in o
 - Use one PR per responsibility.
 - Keep scope allowlists explicit.
 - Only the latest candidate HEAD is authoritative.
-- Use a Preview branch only when real Cloudflare runtime validation is necessary.
 - Freeze sanitized evidence on `main` before advancing a gate.
 
 ## Required validation
 
-Run workstream-specific checks. For governance and category changes, run at minimum:
+For checkpoint/category governance work, run:
 
 ```bash
+node scripts/verify-12a5-twitch-replacement-audit-checkpoint-package.mjs
 node scripts/verify-development-policy.mjs
 node scripts/verify-category-rollout-policy.mjs
-```
-
-For checkpoint-package work, also run:
-
-```bash
-node scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs
 node scripts/test-12a5-twitch-replacement-seven-day-audit.mjs
 ```
 
 For web changes, also run affected build, typecheck, browser, mobile, accessibility, provider-separation, and data-truth gates.
 
-PR validation jobs must not require production credentials. Production credentials belong only in an already-accepted bounded execution workflow.
+PR validation jobs must not use production credentials. Production credentials belong only in an already-accepted bounded execution workflow whose job is blocked on a validated main-push trigger.

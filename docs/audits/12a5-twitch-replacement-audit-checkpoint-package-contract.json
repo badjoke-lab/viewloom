@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-package-v1",
-  "status": "ready_for_validation",
+  "status": "accepted",
   "phase": "12A-5B-R2",
   "parentTrackingIssue": 623,
   "hiddenUiTrackingIssue": 635,
@@ -85,15 +85,16 @@
     "temporaryTriggerRetirementRequired": true
   },
   "acceptance": {
-    "packagePr": null,
-    "packageCandidateHeadSha": null,
-    "packageMergeSha": null,
-    "acceptancePr": null,
-    "validationRunId": null,
-    "validationJobId": null,
+    "packagePr": 665,
+    "packageCandidateHeadSha": "3e5022f9d3d84cd7b5a75549c0deb69c73e201ca",
+    "packageMergeSha": "317675ea9a6256eb61bf36f8ec9d7a51ffdfff2a",
+    "acceptancePr": 666,
+    "validationRunId": 30476596379,
+    "validationJobId": 90659857133,
     "productionExecutionPerformed": false,
     "publicExposureEnabled": false,
     "kickChanged": false
   },
-  "nextGate": "accept this checkpoint execution package in a separate PR, then add the exact one-file trigger in a separate PR and execute checkpoint mode once"
+  "acceptanceRecord": "docs/audits/12a5-twitch-replacement-audit-checkpoint-package-acceptance.json",
+  "nextGate": "add the exact one-file checkpoint trigger in a separate PR and execute checkpoint mode once after merge"
 }
