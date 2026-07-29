@@ -5,11 +5,11 @@ Tracking issue: #659
 Parent issue: #623  
 Hidden UI issue: #635  
 Canonical start: `2026-07-29T05:30:00.000Z`  
-Earliest execution: `2026-08-05T05:30:00.000Z`
+Earliest final execution: `2026-08-05T05:30:00.000Z`
 
 ## Purpose
 
-Define the accepted dormant read-only package, accepted runner repair, checkpoint behavior, final execution, evidence, acceptance, and failure handling for the replacement Twitch seven-day category accumulation audit.
+Define the accepted dormant read-only runner, accepted runner repair, accepted checkpoint execution package, exact trigger, diagnostic checkpoint evidence, final execution, evidence acceptance, and failure handling for the replacement Twitch seven-day category accumulation audit.
 
 The audit decides only whether the hidden Twitch Heatmap category filter is eligible for a later separate public-cutover PR. It does not expose UI.
 
@@ -19,119 +19,135 @@ The audit decides only whether the hidden Twitch Heatmap category filter is elig
 - Recovery run/job/artifact: `30423637234` / `90485345119` / `8713465427`.
 - Recovery acceptance PR: #657.
 - Canonical synchronization: PR #658 / commit `e1fea3f6626a4df3e8b950dcacad3c678683ccc8`.
-- Permanent Twitch binding: present.
-- Existing cadence: `*/5 * * * *`.
+- Permanent Twitch binding present.
+- Existing Twitch and Kick cadence: `*/5 * * * *`.
 - Provider leakage at recovery: zero.
 - Kick change at recovery: none.
+- Public category-filter exposure: unauthorized.
 
-## Accepted dormant package
+## Accepted dormant runner
 
-- Package PR: #661.
-- Package candidate head: `9d593116e2cccc40dc27bc42b3be55d647e3d3ae`.
-- Package merge: `1cab151ce243e1ec58091bfd309f65671e1f41c7`.
-- Validation run/job: `30455002204` / `90586212618`.
+- Source package PR: #661.
 - Package acceptance PR: #662.
-- Contract: `docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json`.
-- Acceptance: `docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json`.
-- Window semantics: half-open.
 - Exact window: `[2026-07-29T05:30:00Z, 2026-08-05T05:30:00Z)`.
 - Expected five-minute slots: 2016.
-- Production execution included: no.
-- Public category-filter exposure authorized: no.
+- Window semantics: half-open.
+- Checkpoint mode: diagnostic and non-authorizing.
+- Final mode: prohibited before the exact boundary.
+- Production execution in package/acceptance PRs: none.
 
 ## Accepted runner repair
 
-Pre-execution review found defect `sqlite_cte_scope_cross_statement` in the accepted dormant runner.
-
-The original query defined CTE `scoped` in one SQL statement and referenced it from a later independent statement used to enumerate observed slots. SQLite CTE scope ends with the defining statement, so production checkpoint execution would have failed before evidence completion.
-
-No production checkpoint or final audit executed before detection.
+Pre-execution review found `sqlite_cte_scope_cross_statement`. The original query defined CTE `scoped` in one SQL statement and referenced it from a later independent statement. SQLite CTE scope ends with the defining statement, so production execution would have failed before slot evidence completion.
 
 Accepted repair:
 
 - repair PR #663;
-- repair candidate head `d171a74e4e6f1e8e9af60324088744d4ce50ee9e`;
 - repair merge `ab33afa4d6195532652791be2380a1fa9a278491`;
 - validation run/job `30475011149` / `90654426211`;
 - repair acceptance PR #664;
-- export a pure SQL builder for direct regression inspection;
-- enumerate observed category slots directly from `minute_snapshots`;
-- retain `provider = 'twitch'`, exact half-open window predicates, and `category-source-v1`;
-- require every SQL statement to start with `SELECT` or `WITH`;
-- prohibit any later statement from using `FROM scoped`;
-- preserve the exact 2016-slot window, checkpoint/final semantics, thresholds, evidence schema, and non-authorizing boundaries;
-- use no production credentials or Cloudflare/D1 execution in the repair or acceptance PRs.
+- observed-slot enumeration reads `minute_snapshots` directly;
+- no later statement uses `FROM scoped`;
+- all D1 statements remain SELECT/WITH;
+- exact window, 2016 final slots, checkpoint/final semantics, thresholds, and evidence shape remain unchanged;
+- no production checkpoint/final execution occurred before or during repair acceptance.
 
-The runner repair is accepted on main. Checkpoint-package work may proceed, but production checkpoint execution remains blocked until a separate bounded checkpoint execution path is accepted.
+## Accepted checkpoint execution package
 
-## Package boundary
+Checkpoint package PR: #665.  
+Checkpoint package merge: `317675ea9a6256eb61bf36f8ec9d7a51ffdfff2a`.  
+Checkpoint package validation: run `30476596379`, job `90659857133`.  
+Checkpoint package acceptance PR: #666.  
+Current branch: `work-659-twitch-replacement-audit-checkpoint-trigger`.
 
-The accepted package and repair remain dormant and read-only.
+Package authorities:
 
-Allowed:
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-package-contract.json`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-package-acceptance.json`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger-contract.json`
+- `.github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint.yml`
+- `scripts/verify-12a5-twitch-replacement-audit-checkpoint-package.mjs`
 
-- repository validation;
-- Cloudflare `GET` only through a separately accepted execution path;
-- D1 `SELECT` and read-only CTEs only through a separately accepted execution path;
-- public HTTP/HTML checks;
-- sanitized JSON artifact generation;
-- fixture/unit/static verification;
-- Wrangler dry-run if no publish occurs.
+Accepted behavior:
 
-Forbidden:
+- mode is checkpoint only;
+- checkpoint end is the latest completed five-minute boundary capped at final end;
+- package/acceptance PRs use no production credentials and perform no production execution;
+- trigger must be an exact one-file PR and must bind to package PR #665 and merge SHA `317675ea9a6256eb61bf36f8ec9d7a51ffdfff2a`;
+- workflow has no schedule or workflow_dispatch entry;
+- production execution starts only from the exact trigger-file push to main;
+- Cloudflare calls are GET only;
+- D1 statements are SELECT/WITH only;
+- sanitized JSON artifact is required;
+- Worker deployment, D1 mutation, binding/secret mutation, cadence/new cron, backfill, retention, Kick change, public UI, final mode, and cross-provider behavior are unauthorized.
 
-- Worker deployment;
-- D1 writes or schema changes;
-- binding or secret changes;
-- cron/cadence changes;
-- backfill or retention changes;
-- public category UI exposure;
-- Kick changes;
-- cross-provider data or identity behavior.
+## Exact checkpoint trigger
+
+The next PR must add only:
+
+`docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger.json`
+
+Required shape:
+
+```json
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-trigger-v1",
+  "status": "armed",
+  "provider": "twitch",
+  "mode": "checkpoint",
+  "oneTime": true,
+  "confirmation": "RUN_TWITCH_REPLACEMENT_AUDIT_CHECKPOINT",
+  "packagePr": 665,
+  "packageMergeSha": "317675ea9a6256eb61bf36f8ec9d7a51ffdfff2a",
+  "startAt": "<accepted exact timestamp>"
+}
+```
+
+The trigger PR validates identity but does not execute production checkpoint mode before merge. The merged trigger must be within the contract’s allowed past skew and maximum future delay.
 
 ## Window identity
 
-The only valid start is `2026-07-29T05:30:00.000Z`.
+The only valid accumulation start is `2026-07-29T05:30:00.000Z`.
 
-The final audit must reject:
+Checkpoint mode uses:
 
-- an earlier historical start;
-- an inferred start from the first row when it differs from the accepted boundary;
-- a window shorter than seven elapsed days;
-- a future or unverified boundary;
-- replacement of missing slots with interpolated data.
+- the accepted start;
+- latest completed five-minute boundary at execution time;
+- an end never later than `2026-08-05T05:30:00.000Z`.
+
+Final mode uses the exact accepted full window and rejects execution before the final boundary.
+
+Missing slots are reported exactly and are never interpolated.
 
 ## Required evidence
 
 ### Slot continuity
 
-- expected five-minute slots across the complete accepted window;
-- observed category-bearing slots;
-- exact missing-slot timestamps;
-- duplicates or invalid/out-of-window buckets;
+- expected and observed five-minute slots;
+- exact missing timestamps;
+- duplicates and invalid/out-of-window buckets;
 - coverage ratio;
 - maximum consecutive missing slots;
-- explicit bounded-gap decision.
+- bounded-gap decision.
 
 ### Payload and category integrity
 
 - real, non-empty, fresh snapshots;
 - `category-source-v1` continuity;
-- stream count and viewer totals for the latest snapshot;
-- category-bearing row count;
+- stream/viewer totals;
+- category-bearing rows;
 - valid category references;
-- zero unresolved observed category IDs;
-- dictionary names present where required;
-- bounded dictionary growth.
+- unresolved observed category IDs;
+- dictionary names and contract state.
 
 ### Runtime and provider integrity
 
-- permanent binding present and value true;
+- permanent Twitch binding present;
 - obsolete canary bindings absent;
-- collector cadence unchanged;
-- acceptable collector-error history;
+- five-minute cadence unchanged;
+- collector-error history within threshold;
 - provider leakage zero;
-- Kick configuration/runtime baseline unchanged.
+- Kick permanent configuration/runtime baseline unchanged.
 
 ### Storage
 
@@ -140,88 +156,48 @@ The final audit must reject:
 - provider headroom at or above 10 MB;
 - projected account-wide D1 headroom at or above 500 MB.
 
-### Public-surface containment
+### Public containment
 
-- normal public Twitch Heatmap has no category control before cutover;
-- public navigation does not expose the hidden entry;
-- Kick public pages expose no Twitch category control;
-- existing unfiltered Heatmap fallback remains usable.
+- normal Twitch Heatmap contains no public category control;
+- public navigation contains no hidden entry;
+- Kick pages contain no Twitch category control;
+- existing unfiltered Heatmap remains usable.
 
-## Checkpoint package and mode
+## Checkpoint semantics
 
-Current branch: `work-659-twitch-replacement-audit-checkpoint-package`.
+Checkpoint evidence is diagnostic.
 
-The checkpoint package must:
+A checkpoint:
 
-- add a separate bounded execution workflow and exact trigger contract;
-- use checkpoint mode only;
-- use no production credentials on the package PR;
-- add no Worker cron;
-- validate the accepted package and runner-repair identities;
-- validate the exact accepted start and latest completed five-minute boundary capped at the final end;
-- preserve read-only statements and sanitized evidence shape;
-- verify public containment and Kick baseline;
-- require a separate checkpoint-path acceptance record before production read-only execution.
-
-A checkpoint may run before the final boundary only after checkpoint-package and execution-path acceptance.
-
-It must:
-
-- use the accepted start and latest completed five-minute boundary capped at the final end;
-- report current slot coverage, exact gaps, and hard stops;
-- remain read-only;
-- run only through a separately accepted bounded execution path;
-- never mark the seven-day audit accepted;
-- never authorize public UI;
-- never add a Worker cron;
-- produce sanitized output when retained.
-
-Checkpoint evidence is diagnostic. A checkpoint cannot accept #659 or authorize public UI. A healthy checkpoint does not guarantee final acceptance, and a failed checkpoint does not authorize automatic mutation.
+- may run before the final boundary only through the accepted trigger path;
+- never accepts #659;
+- never authorizes public UI;
+- never guarantees final acceptance;
+- never authorizes automatic mutation after failure;
+- must freeze workflow/job/artifact/digest and sanitized evidence;
+- must be followed by trigger/path retirement after its bounded purpose.
 
 ## Final mode
 
 Final mode:
 
 - is prohibited before `2026-08-05T05:30:00.000Z`;
-- requires accepted runner repair and a separately accepted final execution path;
-- uses the exact accepted half-open 2016-slot window;
-- requires every final hard gate;
+- uses the exact 2016-slot half-open window;
 - performs no deployment or D1 mutation;
-- requires a separate evidence-acceptance PR after execution;
-- never exposes UI by itself.
-
-## Acceptance
-
-Final acceptance requires every hard gate to pass or an explicitly documented bounded gap that the accepted policy permits without inventing data.
-
-Accepted evidence must record:
-
-- source package, repair, and execution identities;
-- workflow run and job;
-- artifact ID and digest;
-- exact observation time;
-- accepted start/end;
-- slot counts and gaps;
-- payload/reference/dictionary result;
-- binding/cadence/errors/leakage result;
-- storage result;
-- public-surface containment;
-- Kick unchanged;
-- public cutover still unauthorized.
-
-A passing audit does not itself expose the feature.
+- requires separate evidence acceptance;
+- does not expose UI by itself.
 
 ## Failure
 
-On failure:
+On checkpoint or final failure:
 
-- perform no deployment because the audit is read-only;
+- perform no mutation;
 - keep the hidden UI non-public;
 - record the exact failed gate and sanitized evidence;
 - preserve the existing unfiltered Heatmap;
-- decide separately whether collector recovery work is required;
+- decide recovery work separately;
 - do not reset the clock without a separately verified recovery event.
 
 ## Retirement
 
-Temporary checkpoint/final execution paths must be retired after their bounded purpose, unless an accepted follow-up contract explicitly retains a reusable read-only verifier. The repaired dormant runner and pure tests may remain only while they are current authorities for #659.
+The one-time checkpoint trigger and temporary execution path must be retired after evidence freeze unless an accepted follow-up contract explicitly retains a reusable read-only verifier. The dormant runner and pure tests may remain while current for #659.
