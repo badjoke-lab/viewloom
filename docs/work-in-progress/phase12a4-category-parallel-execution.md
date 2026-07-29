@@ -7,6 +7,9 @@ Twitch and Kick permanent category capture are accepted and active. The guarded 
 - Replacement stability start: `2026-07-29T05:30:00.000Z`.
 - Earliest replacement audit: `2026-08-05T05:30:00.000Z`.
 - Replacement audit issue: #659.
+- Dormant audit package: PR #661, merge `1cab151ce243e1ec58091bfd309f65671e1f41c7`.
+- Package validation: run `30455002204`, job `90586212618`, success.
+- Package acceptance: PR #662.
 - Public Twitch category-filter exposure: unauthorized.
 - Existing provider cadences: `*/5 * * * *`.
 
@@ -14,11 +17,18 @@ Twitch and Kick permanent category capture are accepted and active. The guarded 
 
 ### 1. Replacement audit readiness
 
-- Freeze the audit specification.
-- Build the dormant read-only #659 audit package.
-- Verify exact window identity, expected slots, bounded gaps, category contract/reference/dictionary continuity, errors, binding, leakage, freshness, storage, public-surface absence, and Kick immutability.
-- Produce sanitized artifacts only.
-- Add no production trigger until a separately accepted package requires it.
+Completed:
+
+- Audit specification frozen.
+- Fixed half-open window package implemented and accepted.
+- Exact 2016-slot identity, missing-slot timestamps, duplicate/invalid buckets, maximum consecutive gaps, category contract/reference/dictionary continuity, errors, binding, leakage, freshness, storage, public-surface absence, and Kick baseline are implemented.
+- Package PR used no production credentials or mutation.
+
+Next:
+
+- Create and accept `work-659-twitch-replacement-audit-checkpoint-package`.
+- Keep the checkpoint execution workflow separate from the accepted dormant package.
+- Do not execute final mode before the exact boundary.
 
 ### 2. Bounded checkpoints
 
@@ -26,6 +36,8 @@ Twitch and Kick permanent category capture are accepted and active. The guarded 
 - Remain read-only and non-authorizing.
 - Do not add a Worker cron.
 - Do not reset the accepted start.
+- Use an exact bounded trigger and sanitized artifact.
+- A checkpoint cannot accept #659 or authorize public UI.
 
 ### 3. Heatmap Canvas work
 
@@ -33,16 +45,18 @@ Twitch and Kick permanent category capture are accepted and active. The guarded 
 - PR-2: hidden/disabled Canvas scene with camera/redraw/hit-test architecture.
 - Preserve current API, provider separation, unfiltered fallback, and hidden category controls.
 - No production renderer cutover before final validation.
+- PR-1 may start after the checkpoint package is secured.
 
 ### 4. Provider parity #148
 
-- Begin only after the #659 package candidate is complete.
+- The #659 package prerequisite is complete.
+- Begin targeted parity work after checkpoint-package priority is secured.
 - Align Day Flow and Battle Lines product skeletons and states.
 - No collector, cadence, D1, retention, category authorization, or cross-provider change.
 
 ### 5. Final boundary
 
-At or after `2026-08-05T05:30:00.000Z`, execute #659 read-only, freeze evidence, and accept or reject the complete replacement window. A passing audit does not expose UI.
+At or after `2026-08-05T05:30:00.000Z`, execute #659 final mode read-only, freeze evidence, and accept or reject the complete replacement window. A passing audit does not expose UI.
 
 ## Recovery result retained
 
@@ -57,7 +71,7 @@ At or after `2026-08-05T05:30:00.000Z`, execute #659 read-only, freeze evidence,
 
 - Twitch and Kick remain provider-separated.
 - No new Worker cron, D1 schema update, backfill, or retention expansion.
-- No public Twitch category UI before accepted #659 evidence and separate cutover.
+- No public Twitch category UI before accepted #659 final evidence and separate cutover.
 - Existing unfiltered Heatmap remains the production fallback.
 - No Heatmap Canvas cutover before independent final validation.
 - Historical rejected evidence cannot authorize release.
@@ -75,6 +89,8 @@ Before each branch and before merge, read current-main versions of:
 - `docs/product/category-capture-permanent-rollout-spec.md`
 - `docs/product/category-capture-permanent-rollout-plan.md`
 - `docs/product/twitch-replacement-seven-day-audit-spec.md`
+- `docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json`
+- `docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json`
 - the affected feature specification and implementation plan
 - relevant immutable acceptance/evidence records
 
