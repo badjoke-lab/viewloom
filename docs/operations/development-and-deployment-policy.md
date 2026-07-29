@@ -2,169 +2,132 @@
 
 Status: source of truth
 
-This document defines how ViewLoom changes are developed, verified, previewed, merged, deployed, and reported. It applies to human contributors, AI agents, scripts, and future automation.
+This document defines how ViewLoom changes are developed, verified, previewed, merged, deployed, and reported. It applies to human contributors, AI agents, scripts, and automation.
 
 ## 1. Goals
 
-The workflow must satisfy all of the following:
+The workflow must:
 
 - keep development speed high;
+- keep source-of-truth documents current;
 - avoid unnecessary Cloudflare Pages builds;
-- avoid duplicated or obsolete GitHub Actions runs;
+- avoid obsolete GitHub Actions work;
 - preserve complete final verification;
 - keep production deployment deliberate and observable;
-- prevent unfinished work from being reported as complete or deployed.
-
-The strategy is to reduce repeated deployment and verification work, not to reduce implementation speed or final quality.
+- prevent unfinished work from being reported as complete or deployed;
+- preserve provider separation and data truth.
 
 ## 2. Source-of-truth hierarchy
 
-1. This document is the canonical operating policy.
-2. `AGENTS.md` is the mandatory short entry point for automated contributors.
-3. `CONTRIBUTING.md` is the human-facing execution guide.
-4. `.github/pull_request_template.md` records compliance for each pull request.
-5. `scripts/verify-development-policy.mjs` verifies the repository-side policy contract.
+1. This policy is the canonical operating policy.
+2. `AGENTS.md` is the mandatory automated-contributor entry point.
+3. `docs/README.md` is the current documentation map.
+4. `docs/product/current-roadmap.md`, `docs/product/current-schedule.md`, and `docs/audits/12a2-current-gate-state.json` define current position and authorization.
+5. The affected feature specification and implementation plan define intended behavior.
+6. The active WIP defines the current bounded execution sequence.
+7. `CONTRIBUTING.md` and `.github/pull_request_template.md` enforce the workflow.
+8. Verification scripts enforce repository-side contracts.
 
-When duplicated wording conflicts, this document wins.
+When duplicated wording conflicts, the current roadmap, schedule, canonical gate, affected live specification, active WIP, and this policy must be reconciled before implementation proceeds. Historical evidence does not override current authorization.
 
-## 3. Branch classes
+## 3. Mandatory freshness protocol
+
+Before creating a branch:
+
+1. fetch current `main`;
+2. record the current-main SHA;
+3. read `AGENTS.md` and `docs/README.md`;
+4. read current roadmap, current schedule, canonical gate, affected specification/plan, active WIP, and relevant evidence;
+5. compare the proposed work with the exact next branch, entry conditions, and stop rules.
+
+Before marking a PR ready or merging:
+
+1. fetch current `main` again;
+2. reread the same current documents;
+3. confirm no newer source-of-truth change supersedes the candidate;
+4. update documentation first if the repository state or plan changed;
+5. record the SHA and documents in the PR.
+
+Cached chat summaries, old handoffs, branch-local historical copies, and memory are not authorization.
+
+## 4. Branch classes
 
 ### `work-*`
 
-Use for normal implementation, repair, refactoring, tests, and documentation.
+Use for implementation, repair, refactoring, tests, audits, checkpoints, and documentation.
 
-Rules:
-
-- Cloudflare Preview must not be required or intentionally triggered.
-- Targeted checks may run during iteration.
-- Full browser and full repository gates are reserved for the completed candidate HEAD unless a failure requires earlier diagnosis.
+- Cloudflare Preview must not be intentionally triggered unless required.
+- Run targeted checks during iteration.
+- Reserve complete browser/repository gates for the latest completed candidate.
 - A work branch is not a public release candidate.
-
-Examples:
-
-```text
-work-369
-work-history-battle-archive
-work-heatmap-repair
-```
 
 ### `preview-*`
 
-Use only when a deployable Cloudflare Preview is necessary for final public-runtime validation.
+Use only when a deployable Cloudflare Preview is necessary for final runtime validation.
 
-Rules:
-
-- Create it from an already completed and locally/CI-verified candidate HEAD.
+- Create from a completed, verified candidate.
 - Do not continue ordinary development on the preview branch.
 - Prefer one Preview deployment per candidate.
-- If the candidate changes materially, return to the work branch, complete the change, and produce a new final preview candidate.
-
-Examples:
-
-```text
-preview-369
-preview-history-battle-archive
-```
+- Material changes return to the work branch.
 
 ### `main`
 
-`main` is the production branch.
-
-Rules:
+`main` is production.
 
 - Merge only completed candidates.
-- A merge may trigger the production deployment.
-- Production status must be verified separately from GitHub merge status.
+- A merge may trigger production deployment.
+- Verify production separately from GitHub merge status.
 - A merged PR is not automatically a verified production release.
 
-## 4. Commit policy
+## 5. Commit policy
 
-The normal unit is one logical change, not one file.
+The unit is one logical change.
 
-Required behavior:
+- Group related implementation, tests, contracts, styles, and docs.
+- Avoid one-file-per-commit development.
+- Avoid incomplete intermediate pushes used only to move files.
+- When connector limits force multiple branch commits, squash merge the PR.
+- Never use deployment-skip markers to hide a production change that must deploy.
 
-- group related implementation, tests, styles, contracts, and docs into coherent commits;
-- avoid one-file-per-commit development;
-- avoid pushing incomplete intermediate states solely to move files between tools;
-- use Git tree/commit operations or local batching when available;
-- when tool limitations force multiple branch commits, use `[CF-Pages-Skip]` where appropriate and squash merge the PR so `main` receives one logical commit;
-- never use `[CF-Pages-Skip]` to hide a production change that must deploy.
+## 6. Verification stages
 
-## 5. Verification stages
+### Stage A — iteration
 
-### Stage A: iteration checks
+Run the smallest checks that detect current errors: focused typecheck, contract, unit/data-shape, build target, or browser reproduction.
 
-Run the smallest checks that can detect errors in the current change.
+### Stage B — completed candidate
 
-Typical checks:
+Run all required checks for the affected feature and shared contracts on the latest candidate HEAD, including as applicable:
 
-- typecheck for the affected package;
-- focused contract test;
-- affected unit or data-shape test;
-- affected build target;
-- one focused browser reproduction when diagnosing a browser-only failure.
+- web typecheck and production build;
+- provider separation and coverage;
+- feature contract and deep links;
+- desktop/mobile browser;
+- keyboard/accessibility;
+- fallback and data truth;
+- shared shell/middleware regression.
 
-Do not repeatedly run every browser suite after every small edit.
+Superseded results do not count.
 
-### Stage B: completed candidate checks
+### Stage C — optional Preview
 
-Before the candidate is considered ready, run all required checks for the affected feature and shared contracts.
+Use only when local/CI validation cannot adequately prove Cloudflare runtime behavior, bindings, routing, retained data rendering, headers, or responsive smoke behavior.
 
-This includes, where applicable:
+### Stage D — production verification
 
-- full web typecheck;
-- production build;
-- shared provider separation and coverage contracts;
-- feature contract checks;
-- deep-link checks;
-- desktop and mobile browser gates;
-- regression checks for shared shells or middleware.
+After merge:
 
-Only the latest candidate HEAD is authoritative. Superseded results do not count.
+- confirm production deployment completed;
+- confirm the expected commit deployed;
+- run relevant public API/UI smoke checks;
+- verify responsive behavior for UI changes;
+- report production completion only after checks pass.
 
-### Stage C: optional Preview validation
+## 7. GitHub Actions concurrency
 
-Use a `preview-*` branch only when final behavior cannot be validated adequately through local preview and CI fixtures.
+Supersedable pull-request workflows must use a same-PR concurrency group and `cancel-in-progress: true`, unless a documented execution contract requires otherwise.
 
-Preview validation may include:
-
-- real Cloudflare Pages runtime behavior;
-- Functions routing and bindings;
-- real retained data rendering;
-- headers, redirects, and canonical URLs;
-- desktop and mobile smoke checks.
-
-### Stage D: production verification
-
-After merging to `main`:
-
-- confirm the production deployment completed;
-- confirm the expected commit is deployed;
-- run the relevant public API and UI smoke checks;
-- verify desktop and mobile behavior when the change affects responsive UI;
-- report deployment as complete only after these checks pass.
-
-## 6. GitHub Actions concurrency
-
-Pull-request workflows that can be superseded must use:
-
-```yaml
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-```
-
-Purpose:
-
-- stop obsolete runs when a new commit reaches the same PR;
-- avoid wasting runner time on a candidate that can no longer be merged;
-- keep only the newest candidate result authoritative.
-
-A workflow may use a more specific concurrency group when necessary, but it must preserve same-PR cancellation unless there is a documented reason not to.
-
-## 7. Cloudflare Pages repository policy
-
-Required dashboard configuration:
+## 8. Cloudflare Pages repository policy
 
 ```text
 Production branch: main
@@ -173,60 +136,30 @@ Preview branch include rule: preview-*
 Preview branch exclude rule: work-*
 ```
 
-Recommended build watch includes:
+Build watch paths must match the current build graph. Documentation and internal evidence should not trigger Pages unless consumed by the build. Dashboard state must be verified separately and never inferred from repository content.
 
-```text
-apps/web/**
-package.json
-pnpm-lock.yaml
-pnpm-workspace.yaml
-shared packages or configuration required by the web build
-```
-
-Recommended ignored changes:
-
-```text
-docs/**
-planning-only files
-mock/reference images not consumed by the build
-internal audit notes
-```
-
-The exact watch paths must match the current build graph. Do not exclude a file that changes the generated site.
-
-Dashboard settings are external state and cannot be proven by repository content alone. Record the latest manual verification below.
-
-### Cloudflare settings verification record
-
-```text
-Last verified: pending
-Verified by: pending
-Production branch main: pending
-work-* excluded from Preview: pending
-preview-* included for Preview: pending
-Build watch paths reviewed: pending
-```
-
-These fields must not be marked complete without checking the Cloudflare dashboard.
-
-## 8. Pull request policy
+## 9. Pull request policy
 
 Each PR must state:
 
-- what changed;
-- what did not change;
-- affected providers and storage paths;
-- whether DB, collector, cron, retention, or bindings changed;
-- targeted checks run;
-- final candidate checks run;
-- whether Preview was required;
-- whether production verification is still pending.
+- what changed and why;
+- current-main SHA read;
+- current roadmap phase and schedule window;
+- affected specification/plan and active WIP;
+- exact entry condition and stop rule;
+- provider/storage paths affected;
+- whether DB, collector, cron, retention, backfill, bindings, public UI, or runtime changed;
+- targeted and final checks;
+- Preview requirement;
+- production verification state;
+- documentation updated or retired;
+- exact next branch after merge.
 
 Feature work and operating-policy work should remain separate unless one cannot function without the other.
 
-## 9. Deployment and completion language
+## 10. Deployment and completion language
 
-Use precise states:
+Use exact states:
 
 ```text
 implemented on branch
@@ -237,64 +170,48 @@ production deployment detected
 production smoke checks passing
 ```
 
-Do not collapse these into one claim.
+Do not claim `live`, `fully deployed`, `production complete`, or `publicly fixed` before corresponding verification.
 
-Forbidden before verification:
-
-```text
-live
-fully deployed
-production complete
-publicly fixed
-```
-
-A feature can be merged but not yet deployed. A deployment can complete but still fail smoke checks.
-
-## 10. Provider separation remains mandatory
-
-Workflow optimization must never weaken ViewLoom's data rules.
+## 11. Provider separation and data truth
 
 - Twitch and Kick remain separate.
-- No combined rankings or totals are introduced.
 - Provider-specific database access remains isolated.
+- No combined rankings, totals, or automatic category identity mapping.
 - Coverage remains bounded and explicitly non-provider-wide.
-- Final checks must include affected provider-separation contracts.
+- Missing, partial, stale, empty, error, demo, unknown, and unavailable states must not be collapsed into false real data.
+- Final checks include affected provider-separation and data-truth contracts.
 
-## 11. Exception handling
+## 12. Exception handling
 
-An exception is allowed only when documented in the PR.
+An exception must be documented in the PR with:
 
-The exception record must include:
-
-- rule being bypassed;
+- rule bypassed;
 - reason;
-- expected cost or risk;
+- cost/risk;
 - compensating verification;
-- whether the exception is temporary;
-- follow-up required.
+- temporary/permanent status;
+- follow-up.
 
-Urgency alone is not enough to silently bypass the policy.
+Urgency alone is not enough.
 
-## 12. Standard execution sequence
+## 13. Standard execution sequence
 
 ```text
-1. Read this policy.
-2. Create a work-* branch from current main.
-3. Implement in logical batches.
-4. Run targeted iteration checks.
-5. Complete the candidate.
-6. Run required final CI/browser gates on the latest HEAD.
-7. Create preview-* only when Cloudflare runtime validation is necessary.
-8. Merge to main using the repository's selected merge method.
-9. Verify production deployment and smoke checks.
-10. Report the exact final state.
+1. Fetch current main and record its SHA.
+2. Read current roadmap, schedule, gate, affected specification/plan, active WIP, and this policy.
+3. Repair stale/conflicting source-of-truth documents before implementation.
+4. Create a work-* branch from current main.
+5. Implement in logical batches.
+6. Run targeted iteration checks.
+7. Complete the candidate.
+8. Fetch current main again and reread governing documents.
+9. Run final CI/browser/data-truth gates on the latest HEAD.
+10. Create preview-* only when runtime validation is necessary.
+11. Merge using the repository-selected method.
+12. Verify production deployment and smoke checks.
+13. Report exact final state and exact next branch/stop rule.
 ```
 
-## 13. Current transition rule
+## 14. Current transition rule
 
-Existing branches created before this policy may continue, but before merge they must:
-
-- incorporate the current `main` policy commit;
-- use the final-candidate verification sequence;
-- avoid additional unnecessary Preview deployments;
-- state any tool-forced multi-commit history and use squash merge when appropriate.
+Existing branches may continue only if they incorporate the current policy state before merge, reread current authorities, use final-candidate verification, and document any tool-forced multi-commit history.
