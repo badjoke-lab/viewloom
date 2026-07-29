@@ -10,45 +10,48 @@ Twitch and Kick permanent category capture are accepted and active. The guarded 
 - Dormant audit package: PR #661, merge `1cab151ce243e1ec58091bfd309f65671e1f41c7`.
 - Package validation: run `30455002204`, job `90586212618`, success.
 - Package acceptance: PR #662, merge `3f15d18ee3f7b31a71b10ff6f192eead404da92b`.
-- Current defect: `sqlite_cte_scope_cross_statement`.
-- Current branch: `work-659-twitch-replacement-audit-runner-query-fix`.
+- Runner repair: PR #663, merge `ab33afa4d6195532652791be2380a1fa9a278491`.
+- Runner repair validation: run `30475011149`, job `90654426211`, success.
+- Runner repair acceptance: PR #664.
+- Current branch: `work-659-twitch-replacement-audit-checkpoint-package`.
 - Public Twitch category-filter exposure: unauthorized.
 - Existing provider cadences: `*/5 * * * *`.
 
 ## Current work order
 
-### 1. Runner repair before checkpoint execution
+### 1. Bounded checkpoint package
 
-Pre-execution review found that the accepted runner defined CTE `scoped` in one SQL statement and referenced it from a later independent statement. SQLite CTE scope ends with the defining statement, so production checkpoint execution would fail while enumerating observed slots.
+The accepted dormant runner now:
+
+- exports a pure SQL builder;
+- enumerates observed category slots directly from `minute_snapshots`;
+- retains the exact Twitch provider, half-open window, and `category-source-v1` predicates;
+- requires every statement to begin with `SELECT` or `WITH`;
+- has no later statement using `FROM scoped`;
+- preserves 2016 final slots, checkpoint/final semantics, thresholds, and sanitized evidence shape.
 
 No production checkpoint or final audit has executed.
 
-Required repair:
-
-- export a pure SQL builder;
-- enumerate observed category slots directly from `minute_snapshots`;
-- retain exact Twitch provider, half-open window, and `category-source-v1` predicates;
-- require every statement to begin with `SELECT` or `WITH`;
-- verify no later statement uses `FROM scoped`;
-- preserve 2016 final slots, checkpoint/final semantics, thresholds, and sanitized evidence shape;
-- perform no Cloudflare/D1 execution or runtime mutation.
-
 Next:
 
-1. Validate and merge `work-659-twitch-replacement-audit-runner-query-fix`.
-2. Freeze a separate repair acceptance record.
-3. Resume `work-659-twitch-replacement-audit-checkpoint-package` only after repair acceptance.
+1. Create and validate `work-659-twitch-replacement-audit-checkpoint-package`.
+2. Add a bounded checkpoint execution workflow and exact trigger contract.
+3. Add no Worker cron and use no production credentials on the package PR.
+4. Validate accepted package and repair identities, exact start, capped completed boundary, read-only statements, evidence shape, public containment, and Kick baseline.
+5. Freeze a separate checkpoint-path acceptance record before production read-only execution.
 
-### 2. Bounded checkpoints
+### 2. Bounded checkpoint execution
 
-After repair acceptance:
+After checkpoint-path acceptance:
 
-- create and separately accept the bounded checkpoint package;
+- execute checkpoint mode only through the accepted bounded path;
 - detect loss of binding, stale/missing category payloads, leakage, collector errors, unresolved IDs, or storage hard stops;
 - remain read-only and non-authorizing;
 - add no Worker cron;
 - do not reset the accepted start;
 - use an exact bounded trigger and sanitized artifact;
+- freeze workflow/job/artifact/digest identities;
+- retire the one-time trigger/path after its bounded purpose unless an accepted contract retains it;
 - never accept #659 or authorize public UI.
 
 ### 3. Heatmap Canvas work
@@ -57,12 +60,11 @@ After repair acceptance:
 - PR-2: hidden/disabled Canvas scene with camera/redraw/hit-test architecture.
 - Preserve current API, provider separation, unfiltered fallback, and hidden category controls.
 - No production renderer cutover before final validation.
-- PR-1 may start after runner repair and checkpoint-package priority are secured.
+- PR-1 may start after checkpoint-package priority is secured.
 
 ### 4. Provider parity #148
 
-- The dormant #659 package prerequisite is complete.
-- Begin targeted parity work after runner repair and checkpoint-package priority are secured.
+- Begin targeted parity work after checkpoint-package priority is secured.
 - Align Day Flow and Battle Lines product skeletons and states.
 - No collector, cadence, D1, retention, category authorization, or cross-provider change.
 
@@ -83,7 +85,7 @@ At or after `2026-08-05T05:30:00.000Z`, execute #659 final mode read-only, freez
 
 - Twitch and Kick remain provider-separated.
 - No new Worker cron, D1 schema update, backfill, or retention expansion.
-- Runner repair changes only dormant query construction and pure tests.
+- The accepted runner repair changed only dormant query construction and pure tests.
 - No public Twitch category UI before accepted #659 final evidence and separate cutover.
 - Existing unfiltered Heatmap remains the production fallback.
 - No Heatmap Canvas cutover before independent final validation.
@@ -104,7 +106,8 @@ Before each branch and before merge, read current-main versions of:
 - `docs/product/twitch-replacement-seven-day-audit-spec.md`
 - `docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json`
 - `docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json`
-- `docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json` while repair is active
+- `docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json`
+- `docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-acceptance.json`
 - the affected feature specification and implementation plan
 - relevant immutable acceptance/evidence records
 
