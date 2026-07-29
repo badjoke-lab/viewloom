@@ -14,6 +14,10 @@ Kick permanent category capture active yes
 Replacement Twitch stability start 2026-07-29T05:30:00.000Z
 Replacement Twitch seven-day audit earliest 2026-08-05T05:30:00.000Z
 Replacement audit issue #659
+Dormant replacement audit package accepted yes
+Package PR #661
+Package acceptance PR #662
+Next branch work-659-twitch-replacement-audit-checkpoint-package
 Twitch Heatmap hidden category implementation accepted yes
 Twitch Heatmap public category-filter exposure authorized no
 Existing Twitch cadence */5 * * * *
@@ -35,9 +39,11 @@ Read the following from current `main`, in this order:
 5. `docs/product/category-capture-permanent-rollout-spec.md`
 6. `docs/product/category-capture-permanent-rollout-plan.md`
 7. `docs/product/twitch-replacement-seven-day-audit-spec.md`
-8. `docs/work-in-progress/phase12a4-category-parallel-execution.md`
-9. the specification and plan for the feature being changed
-10. the relevant immutable acceptance/evidence records
+8. `docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json`
+9. `docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json`
+10. `docs/work-in-progress/phase12a4-category-parallel-execution.md`
+11. the specification and plan for the feature being changed
+12. the relevant immutable acceptance/evidence records
 
 For Heatmap Canvas work, also read:
 
@@ -48,7 +54,9 @@ For Heatmap Canvas work, also read:
 
 Twitch and Kick permanent category capture are accepted and active on their existing five-minute collectors.
 
-The guarded Twitch recovery began at `2026-07-29T05:30:00.000Z`, passed the final read-only preflight and two-snapshot verification, and was accepted in PR #657. The replacement seven-day accumulation window is active. The earliest read-only audit is `2026-08-05T05:30:00.000Z` under #659.
+The guarded Twitch recovery began at `2026-07-29T05:30:00.000Z`, passed the final read-only preflight and two-snapshot verification, and was accepted in PR #657. The replacement seven-day accumulation window is active. The earliest final audit is `2026-08-05T05:30:00.000Z` under #659.
+
+The dormant #659 package was implemented in PR #661 and accepted through PR #662. It fixes the audit window as `[2026-07-29T05:30:00Z, 2026-08-05T05:30:00Z)`, requires 2016 five-minute slots, and keeps checkpoint mode diagnostic and final mode boundary-gated.
 
 The original Twitch accumulation clock is invalid. Public navigation and normal production exposure for the Twitch category filter remain unauthorized.
 
@@ -58,11 +66,11 @@ The period before 2026-08-05 is active development time, not a freeze.
 
 Allowed order:
 
-1. complete the dormant read-only #659 audit package;
-2. add bounded read-only accumulation checkpoints;
+1. create and accept the bounded read-only checkpoint execution package;
+2. execute checkpoint mode only through the accepted path and freeze sanitized diagnostic evidence;
 3. perform Heatmap Canvas PR-1 responsibility separation with no behavior change;
-4. add a Canvas scene only behind a hidden route or disabled flag;
-5. inspect and fix #148 Day Flow/Battle Lines provider parity after the audit package candidate is complete.
+4. add a Canvas scene only behind a hidden route or disabled flag after PR-1 acceptance;
+5. inspect and fix #148 Day Flow/Battle Lines provider parity; the audit-package prerequisite is complete.
 
 These tasks must not change either collector cadence, D1 schema, backfill, retention, Kick runtime from Twitch-only work, provider identity rules, or public category-filter exposure.
 
@@ -75,6 +83,9 @@ These tasks must not change either collector cadence, D1 schema, backfill, reten
 - Recovery acceptance and execution-path retirement: PR #657.
 - Canonical v33 synchronization: PR #658 and commit `e1fea3f6626a4df3e8b950dcacad3c678683ccc8`.
 - Replacement audit: Issue #659.
+- Replacement audit package: PR #661, merge `1cab151ce243e1ec58091bfd309f65671e1f41c7`.
+- Replacement package validation: run `30455002204`, job `90586212618`.
+- Replacement package acceptance: PR #662 and `docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json`.
 - Hidden Twitch Heatmap filter: Issue #635, API PR #638, controls PR #640, canonical acceptance PR #642.
 - Kick permanent category final acceptance: PR #648.
 
@@ -85,7 +96,8 @@ These tasks must not change either collector cadence, D1 schema, backfill, reten
 - No new Worker cron, D1 schema mutation, backfill, or retention expansion is authorized.
 - Existing unfiltered Heatmap remains the production fallback.
 - Missing, partial, stale, empty, error, demo, unknown-category, and unavailable states remain distinct.
-- A passing audit does not itself expose public UI; a separate cutover PR is required.
+- A checkpoint never accepts #659 or exposes public UI.
+- A passing final audit does not itself expose public UI; a separate cutover PR is required.
 
 ## Documentation governance
 

@@ -38,35 +38,43 @@ The valid replacement window starts at `2026-07-29T05:30:00.000Z`. The earliest 
 
 ### Track A — #659 read-only audit package
 
-Before the boundary:
+Completed:
 
-1. freeze `docs/product/twitch-replacement-seven-day-audit-spec.md`;
-2. create `work-659-twitch-replacement-audit-package`;
-3. implement a dormant read-only package and verifier;
-4. compute expected five-minute slots from the exact accepted start;
-5. require explicit bounded-gap accounting and no fake interpolation;
-6. verify category contract/reference/dictionary continuity;
-7. verify collector errors, permanent binding, leakage, freshness, and storage gates;
-8. verify hidden controls remain absent from normal public Twitch and Kick surfaces;
-9. produce sanitized JSON artifacts only;
-10. perform no production change.
+1. froze `docs/product/twitch-replacement-seven-day-audit-spec.md`;
+2. implemented the dormant package in PR #661;
+3. fixed the exact half-open window and 2016 five-minute slots;
+4. implemented explicit missing-slot accounting with no fake interpolation;
+5. implemented category contract/reference/dictionary continuity gates;
+6. implemented collector errors, permanent binding, leakage, freshness, storage, public-surface containment, and Kick baseline gates;
+7. added sanitized JSON output, pure slot tests, and package CI;
+8. accepted the package through PR #662;
+9. performed no production change or public exposure.
+
+Next before the boundary:
+
+1. create `work-659-twitch-replacement-audit-checkpoint-package`;
+2. keep execution separate from the accepted dormant package;
+3. require an exact bounded trigger and checkpoint mode only;
+4. run read-only Cloudflare GET, D1 SELECT/WITH, and public-surface checks;
+5. freeze sanitized diagnostic evidence;
+6. keep checkpoint evidence non-authorizing and add no Worker cron.
 
 At or after the boundary:
 
-1. run the accepted package;
+1. execute final mode through a separately accepted exact path;
 2. freeze exact run/job/artifact/digest identities;
-3. accept or reject the complete window;
+3. accept or reject the complete 2016-slot window;
 4. keep public UI disabled.
 
 ### Track B — bounded checkpoints
 
 Checkpoints may run before the final audit to detect a hard stop early.
 
-They must be read-only, bounded, provider-specific, non-authorizing, and must not add a Worker cron. A checkpoint cannot replace final #659 evidence.
+They must be read-only, bounded, provider-specific, non-authorizing, separately accepted, and must not add a Worker cron. A checkpoint cannot replace final #659 evidence or reset the accepted clock.
 
 ### Track C — Heatmap Canvas redesign
 
-This work may proceed while accumulation continues.
+This work may proceed while accumulation continues after checkpoint-package priority is secured.
 
 PR order:
 
@@ -79,7 +87,7 @@ Canvas work must preserve current APIs, the unfiltered fallback, provider separa
 
 ### Track D — provider UI parity #148
 
-After the audit package candidate is complete:
+The audit-package prerequisite is complete. After checkpoint-package priority is secured:
 
 - compare Twitch/Kick Day Flow and Battle Lines skeletons;
 - align controls, chart/detail/KPI ordering, state handling, and Data Status links;
@@ -88,7 +96,7 @@ After the audit package candidate is complete:
 
 ## 12A-5C — public Twitch filter cutover
 
-Only after accepted #659 evidence:
+Only after accepted #659 final evidence:
 
 - use a separate PR;
 - expose the category control on Twitch Heatmap only;

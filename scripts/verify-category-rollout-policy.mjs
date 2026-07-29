@@ -13,6 +13,8 @@ const files = {
   spec: 'docs/product/category-capture-permanent-rollout-spec.md',
   plan: 'docs/product/category-capture-permanent-rollout-plan.md',
   auditSpec: 'docs/product/twitch-replacement-seven-day-audit-spec.md',
+  auditPackage: 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json',
+  auditPackageAcceptance: 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json',
   heatmapSpec: 'docs/product/heatmap-canvas-redesign-spec.md',
   heatmapPlan: 'docs/product/heatmap-canvas-implementation-plan.md',
   roadmap: 'docs/product/current-roadmap.md',
@@ -25,6 +27,10 @@ const files = {
   kickAcceptance: 'docs/audits/12a4-kick-permanent-category-final-acceptance.json',
   activeWip: 'docs/work-in-progress/phase12a4-category-parallel-execution.md',
   workflow: '.github/workflows/category-rollout-policy.yml',
+  auditWorkflow: '.github/workflows/analytics-12a5-twitch-replacement-seven-day-audit-package.yml',
+  auditRunner: 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs',
+  auditTest: 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs',
+  auditVerifier: 'scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs',
   normalTwitch: 'workers/collector-twitch/wrangler.toml',
   permanentTwitch: 'workers/collector-twitch/wrangler.category-permanent.toml',
   normalKick: 'workers/collector-kick/wrangler.toml',
@@ -49,24 +55,26 @@ const roadmap = read(files.roadmap)
 const schedule = read(files.schedule)
 const activeWip = read(files.activeWip)
 const workflow = read(files.workflow)
+const auditWorkflow = read(files.auditWorkflow)
 
 for (const [name, source, fragments] of [
   ['AGENTS', agents, [
     'Current phase: 12A-5B-R2 replacement Twitch seven-day accumulation',
     'Read these from the current `main` branch before starting work and reread them before merging:',
-    'docs/product/twitch-replacement-seven-day-audit-spec.md',
-    'docs/product/heatmap-canvas-redesign-spec.md',
+    'docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json',
+    'work-659-twitch-replacement-audit-checkpoint-package',
   ]],
   ['CONTRIBUTING', contributing, [
     'Required reading and freshness rule',
     'Current-main SHA',
-    'Build and verify the dormant read-only #659 audit package.',
+    'Create and verify `work-659-twitch-replacement-audit-checkpoint-package`.',
+    'Checkpoint mode never accepts #659 or authorizes public UI.',
   ]],
   ['docs index', docsIndex, [
     'Canonical gate viewloom-12a2-current-gate-state-v33',
-    'Work allowed before the audit boundary',
-    'Replacement audit issue #659',
-    'Heatmap Canvas work',
+    'Dormant replacement audit package accepted yes',
+    'Package acceptance PR #662',
+    'Next branch work-659-twitch-replacement-audit-checkpoint-package',
   ]],
   ['development policy', policy, [
     'Mandatory freshness protocol',
@@ -87,13 +95,15 @@ for (const [name, source, fragments] of [
   ]],
   ['category plan', plan, [
     'Current phase 12A-5B-R2 — replacement accumulation and parallel safe work',
-    'Track A — #659 read-only audit package',
+    'implemented the dormant package in PR #661',
+    'work-659-twitch-replacement-audit-checkpoint-package',
     'Track C — Heatmap Canvas redesign',
-    'Track D — provider UI parity #148',
   ]],
   ['audit spec', auditSpec, [
     'Tracking issue: #659',
-    'The only valid start is `2026-07-29T05:30:00.000Z`',
+    'Accepted dormant package',
+    'Package acceptance PR: #662.',
+    'A checkpoint cannot accept #659 or authorize public UI.',
     'A passing audit does not itself expose the feature',
   ]],
   ['heatmap spec', heatmapSpec, [
@@ -108,19 +118,20 @@ for (const [name, source, fragments] of [
   ]],
   ['roadmap', roadmap, [
     'Active deliverables before 2026-08-05',
-    'Track A — replacement audit readiness',
+    'Create and accept `work-659-twitch-replacement-audit-checkpoint-package`.',
+    'The #659 package prerequisite is complete',
     'Track B — Heatmap Canvas redesign',
-    'Track C — provider UI parity',
   ]],
   ['schedule', schedule, [
-    '2026-07-30 through 2026-07-31 — #659 package first',
-    '2026-08-01 through 2026-08-04 — checkpoints and independent product work',
+    'Dormant replacement audit package accepted yes',
+    'Package acceptance PR #662',
+    'Next branch work-659-twitch-replacement-audit-checkpoint-package',
     '2026-08-05 at or after 05:30 UTC / 14:30 JST',
   ]],
   ['active WIP', activeWip, [
     '# 12A-5B-R2 replacement Twitch accumulation and pre-audit parallel work',
-    'Replacement audit issue: #659.',
-    'Heatmap Canvas work',
+    'Package acceptance: PR #662.',
+    'work-659-twitch-replacement-audit-checkpoint-package',
     'Provider parity #148',
   ]],
 ]) {
@@ -132,6 +143,8 @@ for (const [name, source, fragments] of [
 const gate = json(files.gate)
 const recovery = json(files.recovery)
 const recoveryAcceptance = json(files.recoveryAcceptance)
+const auditPackage = json(files.auditPackage)
+const auditPackageAcceptance = json(files.auditPackageAcceptance)
 const hiddenDecision = json(files.hiddenDecision)
 const hiddenControls = json(files.hiddenControls)
 const kickAcceptance = json(files.kickAcceptance)
@@ -174,6 +187,29 @@ assert.equal(recoveryAcceptance.boundaries.d1MutationPerformed, false)
 assert.equal(recoveryAcceptance.boundaries.cadenceChanged, false)
 assert.equal(recoveryAcceptance.boundaries.publicCategoryUiAuthorized, false)
 
+assert.equal(auditPackage.status, 'accepted_dormant')
+assert.equal(auditPackage.phase, '12A-5B-R2')
+assert.equal(auditPackage.trackingIssue, 659)
+assert.equal(auditPackage.window.startAt, '2026-07-29T05:30:00.000Z')
+assert.equal(auditPackage.window.endExclusiveAt, '2026-08-05T05:30:00.000Z')
+assert.equal(auditPackage.window.expectedFinalSlots, 2016)
+assert.equal(auditPackage.modes.checkpoint.authorizesAuditAcceptance, false)
+assert.equal(auditPackage.modes.checkpoint.authorizesPublicCutover, false)
+assert.equal(auditPackage.acceptance.acceptancePr, 662)
+assert.equal(auditPackage.acceptance.packagePr, 661)
+assert.equal(auditPackage.acceptance.packageMergeSha, '1cab151ce243e1ec58091bfd309f65671e1f41c7')
+assert.equal(auditPackage.acceptance.workflowRunId, 30455002204)
+assert.equal(auditPackage.acceptance.workflowJobId, 90586212618)
+assert.equal(auditPackage.acceptance.productionExecutionPerformed, false)
+assert.equal(auditPackage.acceptance.publicExposureEnabled, false)
+assert.equal(auditPackage.acceptance.kickChanged, false)
+assert.equal(auditPackageAcceptance.status, 'accepted')
+assert.equal(auditPackageAcceptance.acceptancePr, 662)
+assert.equal(auditPackageAcceptance.packagePr, 661)
+assert.equal(auditPackageAcceptance.validation.conclusion, 'success')
+assert.equal(auditPackageAcceptance.acceptedCapabilities.checkpointModeAuthorizing, false)
+assert.equal(Object.values(auditPackageAcceptance.boundaries).every((value) => value === false), true)
+
 assert.equal(hiddenDecision.authorization.publicExposureAuthorized, false)
 assert.equal(hiddenDecision.publicGate.earliestAuditAt, '2026-08-05T05:30:00.000Z')
 assert.equal(hiddenControls.acceptance.publicExposureEnabled, false)
@@ -187,7 +223,6 @@ const normalKick = read(files.normalKick)
 const permanentKick = read(files.permanentKick)
 const toml = (source, key) => source.match(new RegExp(`^${key}\\s*=\\s*"([^"]+)"$`, 'm'))?.[1] ?? null
 const cron = (source) => source.match(/crons\s*=\s*\[\s*"([^"]+)"\s*\]/)?.[1] ?? null
-
 assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(normalTwitch), false)
 assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=\s*"true"/.test(permanentTwitch), true)
 assert.equal(/CATEGORY_CAPTURE_ENABLED\s*=/.test(normalKick), false)
@@ -216,6 +251,8 @@ for (const path of [
   'docs/audits/12a2-current-gate-state.json',
   'docs/audits/12a5-twitch-permanent-category-recovery-contract.json',
   'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json',
+  'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json',
+  'docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json',
   'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json',
   'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json',
   'docs/work-in-progress/phase12a4-category-parallel-execution.md',
@@ -224,12 +261,22 @@ for (const path of [
   'workers/collector-kick/**',
   'db/d1/**',
   'apps/web/**',
+  'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs',
+  'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs',
+  'scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs',
   'scripts/verify-category-rollout-policy.mjs',
+  'scripts/verify-development-policy.mjs',
+  '.github/workflows/analytics-12a5-twitch-replacement-seven-day-audit-package.yml',
   '.github/workflows/category-rollout-policy.yml',
 ]) {
   assert.equal(workflowPathCount(path), 2, `workflow must watch ${path} on pull_request and push`)
 }
 assert.ok(workflow.includes('cancel-in-progress: true'))
+assert.ok(auditWorkflow.includes('Package status: accepted dormant'))
+assert.ok(auditWorkflow.includes('work-659-twitch-replacement-audit-checkpoint-package'))
+assert.equal(auditWorkflow.includes('CLOUDFLARE_API_TOKEN'), false)
+assert.equal(auditWorkflow.includes('CLOUDFLARE_ACCOUNT_ID'), false)
+assert.equal(auditWorkflow.includes('contents: write'), false)
 
 console.log(JSON.stringify({
   ok: true,
@@ -237,11 +284,13 @@ console.log(JSON.stringify({
   canonicalGate: gate.schemaVersion,
   replacementStartAt: gate.currentWorkstream.twitchStableAccumulationStartAt,
   earliestAuditAt: gate.currentWorkstream.twitchStableAccumulationEarliestAuditAt,
+  auditPackageAccepted: true,
+  auditPackageAcceptancePr: 662,
   twitchRuntimeActive: true,
   kickRuntimeActive: true,
   publicTwitchFilterAuthorized: false,
   nextBranches: [
-    'work-659-twitch-replacement-audit-package',
+    'work-659-twitch-replacement-audit-checkpoint-package',
     'work-heatmap-canvas-module-split',
     'work-heatmap-canvas-scene',
     'work-148-provider-parity',

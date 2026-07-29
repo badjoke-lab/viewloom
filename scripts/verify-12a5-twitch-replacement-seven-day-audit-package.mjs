@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 
 const files = {
   contract: 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json',
+  packageAcceptance: 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json',
   specification: 'docs/product/twitch-replacement-seven-day-audit-spec.md',
   runner: 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs',
   test: 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs',
@@ -21,13 +22,14 @@ const files = {
   kickRollback: 'workers/collector-kick/wrangler.toml',
 }
 
-for (const path of Object.values(files)) {
-  assert.equal(existsSync(path), true, `${path}: missing`)
+for (const file of Object.values(files)) {
+  assert.equal(existsSync(file), true, `${file}: missing`)
 }
 
-const read = (path) => readFileSync(path, 'utf8')
-const json = (path) => JSON.parse(read(path))
+const read = (file) => readFileSync(file, 'utf8')
+const json = (file) => JSON.parse(read(file))
 const contract = json(files.contract)
+const packageAcceptance = json(files.packageAcceptance)
 const gate = json(files.gate)
 const recoveryAcceptance = json(files.recoveryAcceptance)
 const hiddenDecision = json(files.hiddenDecision)
@@ -46,13 +48,14 @@ const kickPermanent = read(files.kickPermanent)
 const kickRollback = read(files.kickRollback)
 
 assert.equal(contract.schemaVersion, 'viewloom-12a5-twitch-replacement-seven-day-audit-package-v1')
-assert.equal(contract.status, 'ready_for_dormant_package_validation')
+assert.equal(contract.status, 'accepted_dormant')
 assert.equal(contract.phase, '12A-5B-R2')
 assert.equal(contract.parentTrackingIssue, 623)
 assert.equal(contract.hiddenUiTrackingIssue, 635)
 assert.equal(contract.trackingIssue, 659)
 assert.equal(contract.provider, 'twitch')
 assert.equal(contract.governingMainSha, '0f692d122b5320ffbad8eea413b6c8b945f47dc2')
+assert.equal(contract.packageAcceptance, files.packageAcceptance)
 assert.equal(contract.window.semantics, 'half_open')
 assert.equal(contract.window.startAt, '2026-07-29T05:30:00.000Z')
 assert.equal(contract.window.endExclusiveAt, '2026-08-05T05:30:00.000Z')
@@ -80,10 +83,50 @@ assert.equal(contract.package.separateExecutionTriggerRequired, true)
 assert.equal(contract.acceptanceBoundary.passingFinalAuditExposesUi, false)
 assert.equal(contract.acceptanceBoundary.separateEvidenceAcceptancePrRequired, true)
 assert.equal(contract.acceptanceBoundary.separatePublicCutoverPrRequired, true)
-assert.equal(Object.values(contract.readOnlyBoundary).every((value) => {
-  if (Array.isArray(value)) return true
-  return value === false
-}), true)
+assert.equal(Object.values(contract.readOnlyBoundary).every((value) => Array.isArray(value) || value === false), true)
+
+for (const [name, expected] of Object.entries({
+  acceptancePr: 662,
+  packagePr: 661,
+  packageCandidateHeadSha: '9d593116e2cccc40dc27bc42b3be55d647e3d3ae',
+  packageMergeSha: '1cab151ce243e1ec58091bfd309f65671e1f41c7',
+  workflowRunId: 30455002204,
+  workflowJobId: 90586212618,
+  packageVerifierPass: true,
+  windowAndSlotTestsPass: true,
+  categoryPolicyPass: true,
+  developmentPolicyPass: true,
+  webTypecheckPass: true,
+  webBuildPass: true,
+  publicCategoryControlsAbsentPass: true,
+  productionExecutionPerformed: false,
+  publicExposureEnabled: false,
+  kickChanged: false,
+})) {
+  assert.equal(contract.acceptance[name], expected, `contract acceptance mismatch: ${name}`)
+}
+
+assert.equal(packageAcceptance.schemaVersion, 'viewloom-12a5-twitch-replacement-seven-day-audit-package-acceptance-v1')
+assert.equal(packageAcceptance.status, 'accepted')
+assert.equal(packageAcceptance.phase, contract.phase)
+assert.equal(packageAcceptance.acceptancePr, contract.acceptance.acceptancePr)
+assert.equal(packageAcceptance.packagePr, contract.acceptance.packagePr)
+assert.equal(packageAcceptance.packageCandidateHeadSha, contract.acceptance.packageCandidateHeadSha)
+assert.equal(packageAcceptance.packageMergeSha, contract.acceptance.packageMergeSha)
+assert.equal(packageAcceptance.validation.workflowRunId, contract.acceptance.workflowRunId)
+assert.equal(packageAcceptance.validation.workflowJobId, contract.acceptance.workflowJobId)
+assert.equal(packageAcceptance.validation.conclusion, 'success')
+assert.equal(Object.values(packageAcceptance.validation).every((value) => value === true || value === 'success' || Number.isInteger(value)), true)
+assert.equal(packageAcceptance.window.semantics, contract.window.semantics)
+assert.equal(packageAcceptance.window.startAt, contract.window.startAt)
+assert.equal(packageAcceptance.window.endExclusiveAt, contract.window.endExclusiveAt)
+assert.equal(packageAcceptance.window.expectedFinalSlots, contract.window.expectedFinalSlots)
+assert.equal(packageAcceptance.acceptedCapabilities.checkpointModeImplemented, true)
+assert.equal(packageAcceptance.acceptedCapabilities.checkpointModeAuthorizing, false)
+assert.equal(packageAcceptance.acceptedCapabilities.finalModeImplemented, true)
+assert.equal(packageAcceptance.acceptedCapabilities.finalBeforeBoundaryRejected, true)
+assert.equal(Object.values(packageAcceptance.boundaries).every((value) => value === false), true)
+assert.ok(packageAcceptance.nextGate.includes('bounded read-only checkpoint execution package'))
 
 assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v33')
 assert.equal(gate.currentWorkstream.phase, '12A-5B-R2')
@@ -116,7 +159,9 @@ assert.equal(hiddenControls.acceptance.publicExposureEnabled, false)
 for (const fragment of [
   'The only valid start is `2026-07-29T05:30:00.000Z`',
   'replacement of missing slots with interpolated data',
-  'A checkpoint may run before the final boundary.',
+  'Accepted dormant package',
+  'Package acceptance PR: #662.',
+  'A checkpoint cannot accept #659 or authorize public UI.',
   'A passing audit does not itself expose the feature.',
 ]) {
   assert.ok(specification.includes(fragment), `specification missing: ${fragment}`)
@@ -143,12 +188,9 @@ for (const fragment of [
 ]) {
   assert.ok(runner.includes(fragment), `runner missing: ${fragment}`)
 }
-assert.equal(runner.includes('wrangler@4 deploy'), false)
-assert.equal(runner.includes('git push'), false)
-assert.equal(runner.includes('INSERT INTO'), false)
-assert.equal(runner.includes('UPDATE '), false)
-assert.equal(runner.includes('DELETE FROM'), false)
-assert.equal(runner.includes('ALTER TABLE'), false)
+for (const forbidden of ['wrangler@4 deploy', 'git push', 'INSERT INTO', 'UPDATE ', 'DELETE FROM', 'ALTER TABLE']) {
+  assert.equal(runner.includes(forbidden), false, `runner forbidden fragment: ${forbidden}`)
+}
 
 for (const fragment of [
   'expectedFinalSlots, 2016',
@@ -169,19 +211,24 @@ for (const fragment of [
 ]) {
   assert.ok(workflow.includes(fragment), `workflow missing: ${fragment}`)
 }
-assert.equal(workflow.includes('workflow_dispatch:'), false)
-assert.equal(workflow.includes('CLOUDFLARE_API_TOKEN'), false)
-assert.equal(workflow.includes('CLOUDFLARE_ACCOUNT_ID'), false)
-assert.equal(workflow.includes('wrangler@4 deploy'), false)
-assert.equal(workflow.includes('git push'), false)
-assert.equal(workflow.includes('contents: write'), false)
+for (const forbidden of [
+  'workflow_dispatch:',
+  'CLOUDFLARE_API_TOKEN',
+  'CLOUDFLARE_ACCOUNT_ID',
+  'wrangler@4 deploy',
+  'git push',
+  'contents: write',
+]) {
+  assert.equal(workflow.includes(forbidden), false, `workflow forbidden fragment: ${forbidden}`)
+}
 
 for (const source of [roadmap, schedule, activeWip]) {
   assert.ok(source.includes('#659'))
   assert.ok(source.includes('2026-08-05T05:30:00.000Z'))
+  assert.ok(source.includes('#661'))
+  assert.ok(source.includes('#662'))
+  assert.ok(source.includes('work-659-twitch-replacement-audit-checkpoint-package'))
 }
-assert.ok(schedule.includes('Create `work-659-twitch-replacement-audit-package`.'))
-assert.ok(schedule.includes('Prepare a bounded read-only checkpoint path; do not add a Worker cron.'))
 
 const toml = (source, key) => source.match(new RegExp(`^${key}\\s*=\\s*"([^"]+)"$`, 'm'))?.[1] ?? null
 const cron = (source) => source.match(/crons\s*=\s*\[\s*"([^"]+)"\s*\]/)?.[1] ?? null
@@ -201,12 +248,14 @@ console.log(JSON.stringify({
   ok: true,
   phase: contract.phase,
   trackingIssue: contract.trackingIssue,
-  governingMainSha: contract.governingMainSha,
+  packagePr: contract.acceptance.packagePr,
+  acceptancePr: contract.acceptance.acceptancePr,
+  packageMergeSha: contract.acceptance.packageMergeSha,
   window: contract.window,
-  packageDormant: true,
+  packageAcceptedDormant: true,
   readOnly: true,
-  pullRequestCredentials: false,
+  checkpointNonAuthorizing: true,
   publicExposureAuthorized: false,
   productionExecutionIncluded: false,
-  separateExecutionTriggerRequired: true,
+  nextBranch: 'work-659-twitch-replacement-audit-checkpoint-package',
 }, null, 2))

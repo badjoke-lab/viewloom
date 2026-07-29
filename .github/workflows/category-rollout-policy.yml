@@ -26,6 +26,8 @@ on:
       - 'docs/audits/12a5-twitch-seven-day-accumulation-audit-rejection.json'
       - 'docs/audits/12a5-twitch-permanent-category-recovery-contract.json'
       - 'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json'
+      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
+      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json'
@@ -36,7 +38,12 @@ on:
       - 'workers/collector-kick/**'
       - 'db/d1/**'
       - 'apps/web/**'
+      - 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs'
+      - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
+      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/analytics-12a5-twitch-replacement-seven-day-audit-package.yml'
       - '.github/workflows/category-rollout-policy.yml'
   push:
     branches: [main]
@@ -62,6 +69,8 @@ on:
       - 'docs/audits/12a5-twitch-seven-day-accumulation-audit-rejection.json'
       - 'docs/audits/12a5-twitch-permanent-category-recovery-contract.json'
       - 'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json'
+      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
+      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json'
@@ -72,7 +81,12 @@ on:
       - 'workers/collector-kick/**'
       - 'db/d1/**'
       - 'apps/web/**'
+      - 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs'
+      - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
+      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/analytics-12a5-twitch-replacement-seven-day-audit-package.yml'
       - '.github/workflows/category-rollout-policy.yml'
 
 concurrency:
