@@ -42,7 +42,7 @@ for (const fragment of [
 
 for (const fragment of [
   'Required reading and freshness rule',
-  'Every PR must record the current-main SHA',
+  'Every PR must record the Current-main SHA',
   'If the documents disagree',
 ]) assert.ok(contributing.includes(fragment), `CONTRIBUTING missing: ${fragment}`)
 
