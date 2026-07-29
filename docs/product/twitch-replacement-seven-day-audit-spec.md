@@ -139,7 +139,7 @@ It must:
 - never add a Worker cron;
 - produce sanitized output when retained.
 
-Checkpoint evidence is diagnostic. A healthy checkpoint does not guarantee final acceptance, and a failed checkpoint does not authorize automatic mutation.
+Checkpoint evidence is diagnostic. A checkpoint cannot accept #659 or authorize public UI. A healthy checkpoint does not guarantee final acceptance, and a failed checkpoint does not authorize automatic mutation.
 
 ## Final mode
 
