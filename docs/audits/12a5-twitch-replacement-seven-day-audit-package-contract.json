@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-replacement-seven-day-audit-package-v1",
-  "status": "ready_for_dormant_package_validation",
+  "status": "accepted_dormant",
   "phase": "12A-5B-R2",
   "parentTrackingIssue": 623,
   "hiddenUiTrackingIssue": 635,
@@ -11,6 +11,7 @@
   "specification": "docs/product/twitch-replacement-seven-day-audit-spec.md",
   "canonicalGate": "docs/audits/12a2-current-gate-state.json",
   "recoveryAcceptance": "docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json",
+  "packageAcceptance": "docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json",
   "window": {
     "semantics": "half_open",
     "startAt": "2026-07-29T05:30:00.000Z",
@@ -109,5 +110,22 @@
     "separatePublicCutoverPrRequired": true,
     "temporaryExecutionPathRetirementRequired": true
   },
-  "nextGate": "accept the dormant package, then create a separate bounded read-only checkpoint execution path; execute final mode only at or after 2026-08-05T05:30:00.000Z"
+  "acceptance": {
+    "packagePr": 661,
+    "packageCandidateHeadSha": "9d593116e2cccc40dc27bc42b3be55d647e3d3ae",
+    "packageMergeSha": "1cab151ce243e1ec58091bfd309f65671e1f41c7",
+    "workflowRunId": 30455002204,
+    "workflowJobId": 90586212618,
+    "packageVerifierPass": true,
+    "windowAndSlotTestsPass": true,
+    "categoryPolicyPass": true,
+    "developmentPolicyPass": true,
+    "webTypecheckPass": true,
+    "webBuildPass": true,
+    "publicCategoryControlsAbsentPass": true,
+    "productionExecutionPerformed": false,
+    "publicExposureEnabled": false,
+    "kickChanged": false
+  },
+  "nextGate": "create and separately accept a bounded read-only checkpoint execution package; checkpoint evidence is diagnostic only; execute final mode only at or after 2026-08-05T05:30:00.000Z"
 }
