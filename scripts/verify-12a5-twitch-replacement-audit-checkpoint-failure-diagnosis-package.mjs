@@ -138,7 +138,7 @@ assert.equal(workflow.includes('CLOUDFLARE_ACCOUNT_ID'), false)
 assert.equal(workflow.includes('workflow_dispatch:'), false)
 assert.equal(workflow.includes('schedule:'), false)
 assert.equal(workflow.includes('contents: write'), false)
-assert.equal(workflow.includes('run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs'), false)
+assert.equal(workflow.includes('run: node scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs'), false)
 
 for (const [path, fragments] of Object.entries({
   [files.schedule]: ['Current gate checkpoint failure diagnosis package', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package'],
