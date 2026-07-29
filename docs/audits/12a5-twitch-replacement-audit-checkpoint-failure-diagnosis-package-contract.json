@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-v1",
+  "status": "ready_for_validation",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "governingMainSha": "8e2a18c6644f516989e304c9ba35dcb05d2e9c2b",
+  "sourceEvidence": {
+    "path": "docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json",
+    "checkpointRunId": 30478338654,
+    "checkpointJobId": 90665697236,
+    "artifactId": 8734980337,
+    "artifactDigest": "sha256:4f87868471e297b5b6904d9e8ee6c15c8a2e45f4e16edef0647e2ee4d3f0086b"
+  },
+  "questions": {
+    "missingBucketCause": true,
+    "missingBucketsStillAbsent": true,
+    "collectorRunsAroundGap": true,
+    "nullReferenceDistributionByBucket": true,
+    "nullReferenceDistributionByChannel": true,
+    "nullReferenceTrendAfterCheckpoint": true,
+    "sourceVsNormalizationAttribution": true,
+    "recoveryAndClockDecision": false
+  },
+  "fixedWindows": {
+    "gapContextStartAt": "2026-07-29T06:50:00.000Z",
+    "gapContextEndExclusiveAt": "2026-07-29T08:00:00.000Z",
+    "checkpointStartAt": "2026-07-29T05:30:00.000Z",
+    "checkpointEndExclusiveAt": "2026-07-29T18:20:00.000Z",
+    "missingBuckets": [
+      "2026-07-29T07:20:00.000Z",
+      "2026-07-29T07:25:00.000Z",
+      "2026-07-29T07:30:00.000Z"
+    ]
+  },
+  "staticCodeAttribution": {
+    "collectorPath": "workers/collector-twitch/src/index-category.ts",
+    "encoderPath": "workers/shared/category-capture.ts",
+    "helixFields": ["game_id", "game_name"],
+    "nullReferenceCondition": "categoryProviderId or categoryName is empty after trim",
+    "sourceFieldsStrippedBeforePersistence": true,
+    "postPersistenceIdVsNameDistinctionPossible": false,
+    "persistenceReindexingAfterEncoding": false
+  },
+  "execution": {
+    "runner": "scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs",
+    "verifier": "scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.mjs",
+    "workflow": ".github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.yml",
+    "artifactName": "analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis",
+    "outputDirectory": "artifacts/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis/run",
+    "productionExecutionIncludedOnPackagePr": false,
+    "productionCredentialsUsedOnPackagePr": false,
+    "separateExecutionPathAcceptanceRequired": true
+  },
+  "readOnlyBoundary": {
+    "d1Statements": ["SELECT", "WITH"],
+    "workerDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "bindingMutationAuthorized": false,
+    "secretMutationAuthorized": false,
+    "collectorChangeAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "newWorkerCronAuthorized": false,
+    "backfillAuthorized": false,
+    "thresholdChangeAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "kickChangeAuthorized": false,
+    "publicExposureAuthorized": false,
+    "finalModeAuthorized": false,
+    "clockResetAuthorized": false
+  },
+  "requiredOutputs": [
+    "exact_missing_bucket_presence",
+    "collector_runs_gap_context",
+    "snapshots_gap_context",
+    "null_refs_by_bucket",
+    "null_refs_top_channels",
+    "null_ref_checkpoint_summary",
+    "null_ref_post_checkpoint_summary",
+    "current_collector_status",
+    "static_code_attribution",
+    "diagnostic_limitations"
+  ],
+  "acceptance": {
+    "packagePr": null,
+    "packageCandidateHeadSha": null,
+    "packageMergeSha": null,
+    "acceptancePr": null,
+    "validationRunId": null,
+    "validationJobId": null,
+    "productionExecutionPerformed": false
+  },
+  "nextGate": "accept this read-only diagnosis package, then create a separately accepted one-time diagnosis execution path"
+}
