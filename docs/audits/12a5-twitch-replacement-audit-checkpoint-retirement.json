@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-retirement-v1",
+  "status": "retired_on_merge",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "checkpointOutcome": "checkpoint_failed",
+  "evidencePr": 669,
+  "evidence": "docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json",
+  "execution": {
+    "triggerPr": 667,
+    "triggerMergeSha": "ee8125ecd12f7ec620af13fd78d9a3c3c7e18f98",
+    "workflowRunId": 30478338654,
+    "checkpointJobId": 90665697236,
+    "artifactId": 8734980337,
+    "artifactDigest": "sha256:4f87868471e297b5b6904d9e8ee6c15c8a2e45f4e16edef0647e2ee4d3f0086b"
+  },
+  "retiredPaths": [
+    "docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger.json",
+    ".github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint.yml",
+    ".github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint-reporter.yml"
+  ],
+  "retainedAuthorities": [
+    "docs/audits/12a5-twitch-replacement-audit-checkpoint-package-contract.json",
+    "docs/audits/12a5-twitch-replacement-audit-checkpoint-package-acceptance.json",
+    "docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger-contract.json",
+    "docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json",
+    "scripts/run-12a5-twitch-replacement-seven-day-audit.mjs",
+    "scripts/test-12a5-twitch-replacement-seven-day-audit.mjs",
+    "scripts/verify-12a5-twitch-replacement-audit-checkpoint-package.mjs"
+  ],
+  "boundaries": {
+    "rerunAuthorized": false,
+    "automaticRecoveryAuthorized": false,
+    "automaticClockResetAuthorized": false,
+    "workerDeploymentPerformed": false,
+    "d1MutationPerformed": false,
+    "cadenceChanged": false,
+    "newWorkerCronAdded": false,
+    "backfillPerformed": false,
+    "retentionChanged": false,
+    "kickChanged": false,
+    "publicCategoryUiChanged": false,
+    "publicCategoryUiAuthorized": false
+  },
+  "nextGate": "Create and separately accept a read-only checkpoint-failure diagnosis package. Do not rerun the checkpoint or reset the stability clock without a separately verified recovery decision."
+}

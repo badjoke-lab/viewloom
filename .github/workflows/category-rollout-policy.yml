@@ -4,37 +4,28 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [main]
-    paths:
+    paths: &category_paths
       - 'AGENTS.md'
       - 'CONTRIBUTING.md'
       - 'docs/README.md'
       - '.github/pull_request_template.md'
-      - 'docs/product/category-capture-permanent-rollout-spec.md'
-      - 'docs/product/category-capture-permanent-rollout-plan.md'
-      - 'docs/product/twitch-replacement-seven-day-audit-spec.md'
-      - 'docs/product/heatmap-canvas-redesign-spec.md'
-      - 'docs/product/heatmap-canvas-implementation-plan.md'
       - 'docs/product/current-roadmap.md'
       - 'docs/product/current-schedule.md'
+      - 'docs/product/twitch-replacement-seven-day-audit-spec.md'
+      - 'docs/product/category-capture-permanent-rollout-spec.md'
+      - 'docs/product/category-capture-permanent-rollout-plan.md'
       - 'docs/audits/12a2-current-gate-state.json'
-      - 'docs/audits/12a2-collector-worker-deploy-contract.json'
-      - 'docs/audits/12a4-kick-permanent-category-decision-contract.json'
-      - 'docs/audits/12a4-kick-permanent-category-capture-package-contract.json'
-      - 'docs/audits/12a4-kick-permanent-category-release-contract.json'
-      - 'docs/audits/12a4-kick-permanent-category-observation-contract.json'
       - 'docs/audits/12a4-kick-permanent-category-final-acceptance.json'
-      - 'docs/audits/12a5-twitch-seven-day-accumulation-audit-rejection.json'
-      - 'docs/audits/12a5-twitch-permanent-category-recovery-contract.json'
       - 'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json'
       - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json'
       - 'docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-acceptance.json'
-      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json'
-      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
-      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-package-contract.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-package-acceptance.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger-contract.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json'
+      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-*.json'
       - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
-      - 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md'
       - 'docs/operations/development-and-deployment-policy.md'
       - 'workers/collector-twitch/**'
       - 'workers/collector-kick/**'
@@ -42,58 +33,13 @@ on:
       - 'apps/web/**'
       - 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs'
       - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
-      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs'
-      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs'
+      - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-development-policy.mjs'
-      - '.github/workflows/analytics-12a5-twitch-replacement-seven-day-audit-package.yml'
       - '.github/workflows/category-rollout-policy.yml'
   push:
     branches: [main]
-    paths:
-      - 'AGENTS.md'
-      - 'CONTRIBUTING.md'
-      - 'docs/README.md'
-      - '.github/pull_request_template.md'
-      - 'docs/product/category-capture-permanent-rollout-spec.md'
-      - 'docs/product/category-capture-permanent-rollout-plan.md'
-      - 'docs/product/twitch-replacement-seven-day-audit-spec.md'
-      - 'docs/product/heatmap-canvas-redesign-spec.md'
-      - 'docs/product/heatmap-canvas-implementation-plan.md'
-      - 'docs/product/current-roadmap.md'
-      - 'docs/product/current-schedule.md'
-      - 'docs/audits/12a2-current-gate-state.json'
-      - 'docs/audits/12a2-collector-worker-deploy-contract.json'
-      - 'docs/audits/12a4-kick-permanent-category-decision-contract.json'
-      - 'docs/audits/12a4-kick-permanent-category-capture-package-contract.json'
-      - 'docs/audits/12a4-kick-permanent-category-release-contract.json'
-      - 'docs/audits/12a4-kick-permanent-category-observation-contract.json'
-      - 'docs/audits/12a4-kick-permanent-category-final-acceptance.json'
-      - 'docs/audits/12a5-twitch-seven-day-accumulation-audit-rejection.json'
-      - 'docs/audits/12a5-twitch-permanent-category-recovery-contract.json'
-      - 'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-acceptance.json'
-      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json'
-      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
-      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json'
-      - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
-      - 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md'
-      - 'docs/operations/development-and-deployment-policy.md'
-      - 'workers/collector-twitch/**'
-      - 'workers/collector-kick/**'
-      - 'db/d1/**'
-      - 'apps/web/**'
-      - 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs'
-      - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
-      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs'
-      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs'
-      - 'scripts/verify-category-rollout-policy.mjs'
-      - 'scripts/verify-development-policy.mjs'
-      - '.github/workflows/analytics-12a5-twitch-replacement-seven-day-audit-package.yml'
-      - '.github/workflows/category-rollout-policy.yml'
+    paths: *category_paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -111,5 +57,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Verify checkpoint evidence and retirement
+        run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs
       - name: Verify current category rollout contract
         run: node scripts/verify-category-rollout-policy.mjs
+      - name: Verify current development policy
+        run: node scripts/verify-development-policy.mjs
