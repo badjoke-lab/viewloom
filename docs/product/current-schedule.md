@@ -1,7 +1,7 @@
 # ViewLoom current execution schedule
 
 Status: source of truth  
-Last updated: 2026-07-29
+Last updated: 2026-07-30
 
 ```text
 Phase 12A Analytics Capture Foundation active
@@ -15,9 +15,10 @@ Replacement audit issue #659
 Dormant replacement audit package accepted yes
 Package PR #661
 Package acceptance PR #662
-Current gate runner repair sqlite_cte_scope_cross_statement
-Current branch work-659-twitch-replacement-audit-runner-query-fix
-Checkpoint package blocked until runner repair acceptance
+Runner repair PR #663
+Runner repair acceptance PR #664
+Current gate bounded checkpoint execution package
+Current branch work-659-twitch-replacement-audit-checkpoint-package
 Twitch Heatmap public category-filter exposure authorized no
 Existing Twitch Worker cadence */5 * * * * unchanged
 Existing Kick Worker cadence */5 * * * * unchanged
@@ -50,52 +51,45 @@ Cross-provider category identity or ranking no
 - Production execution in package and acceptance PRs: none.
 - Public category controls in production build: absent.
 
-## Current repair gate
+### Runner repair
 
-Pre-execution review found `sqlite_cte_scope_cross_statement` in the accepted runner.
-
-The first SQL statement defined CTE `scoped`, while a later independent statement attempted `FROM scoped`. SQLite CTE scope ends with the defining statement, so checkpoint execution would fail during observed-slot enumeration.
-
-Current response:
-
-1. Repair branch: `work-659-twitch-replacement-audit-runner-query-fix`.
-2. Export a pure SQL builder.
-3. Read slot rows directly from `minute_snapshots` with the exact Twitch provider, half-open window, and `category-source-v1` predicate.
-4. Test that every statement begins with `SELECT` or `WITH` and no later statement references `scoped`.
-5. Merge only after repair, package, category-policy, development-policy, build, and public-control-absence checks pass.
-6. Freeze a separate repair acceptance record.
-7. Resume `work-659-twitch-replacement-audit-checkpoint-package` only after repair acceptance.
-
-No production checkpoint or final audit has executed. No Cloudflare/D1 credentials are used by the repair PR.
+- Defect: `sqlite_cte_scope_cross_statement`.
+- Repair PR: #663; candidate head `d171a74e4e6f1e8e9af60324088744d4ce50ee9e`; merge `ab33afa4d6195532652791be2380a1fa9a278491`.
+- Validation run/job: `30475011149` / `90654426211`.
+- Acceptance PR: #664.
+- Slot enumeration reads `minute_snapshots` directly.
+- No later statement references CTE `scoped`.
+- Exact 2016-slot identity and checkpoint/final semantics preserved.
+- No production checkpoint/final execution, Cloudflare/D1 mutation, Worker change, cadence change, Kick change, or public UI change.
 
 ## Execution window through 2026-08-05
 
-### Immediate — runner repair
-
-1. Validate `work-659-twitch-replacement-audit-runner-query-fix`.
-2. Confirm pure SQL statement-scope regression coverage.
-3. Confirm exact 2016-slot and checkpoint/final semantics are unchanged.
-4. Confirm no Worker deployment, D1 execution/mutation, cadence change, Kick change, or public UI change.
-5. Merge the repair through a squash PR.
-6. Create `work-659-twitch-replacement-audit-runner-query-fix-acceptance` and freeze repair identities.
-
-Stop rule: checkpoint package and production read-only execution remain blocked until repair acceptance is on main.
-
-### After repair acceptance — checkpoint package
+### Immediate — checkpoint package
 
 1. Create `work-659-twitch-replacement-audit-checkpoint-package`.
-2. Add a separate bounded checkpoint execution workflow and exact trigger contract.
+2. Add a bounded checkpoint execution workflow and exact trigger contract.
 3. Use checkpoint mode only.
-4. Add no Worker cron; execution must be bounded and explicit.
-5. Freeze sanitized diagnostic evidence after the path is separately accepted.
-6. Do not treat checkpoint evidence as #659 acceptance or public-cutover authorization.
+4. Add no Worker cron; execution must be explicit and one-time/bounded.
+5. Validate source package, accepted repair, exact start, capped completed boundary, read-only statements, evidence shape, public containment, and Kick baseline.
+6. Merge only after package, category-policy, development-policy, build, and public-control-absence checks pass.
+7. Freeze a separate checkpoint-path acceptance record before production read-only execution.
+
+Stop rule: production checkpoint execution remains blocked until the checkpoint package and execution path are accepted on `main`.
+
+### After checkpoint-path acceptance — diagnostic run
+
+1. Execute checkpoint mode through the accepted bounded path.
+2. Freeze exact workflow/job/artifact/digest and sanitized diagnostic evidence.
+3. Report current slot coverage, missing timestamps, maximum consecutive gaps, payload/reference/dictionary state, binding/cadence/errors/leakage, storage gates, public containment, and Kick unchanged.
+4. Do not treat checkpoint evidence as #659 acceptance or public-cutover authorization.
+5. Retire the one-time trigger or execution path after its bounded purpose unless an accepted contract retains it.
 
 ### Independent product work after checkpoint priority is secured
 
 1. Start `work-heatmap-canvas-module-split`.
 2. Complete responsibility separation with no public behavior change.
 3. Add `work-heatmap-canvas-scene` only after module-split acceptance; keep it hidden or disabled.
-4. Inspect #148 and apply targeted Day Flow/Battle Lines provider-parity fixes.
+4. Inspect and fix provider UI parity gaps from #148.
 5. Reread current roadmap, schedule, gate, affected specs, and active WIP before each branch and merge.
 
 ### 2026-08-05 at or after 05:30 UTC / 14:30 JST
@@ -108,7 +102,7 @@ Stop rule: checkpoint package and production read-only execution remain blocked 
 
 ## Hard stops
 
-- runner repair not accepted;
+- checkpoint package or execution path not accepted;
 - permanent Twitch binding absent;
 - category-bearing collection stale or stopped;
 - provider leakage above zero;
@@ -134,9 +128,10 @@ Every branch and PR must read current-main versions of:
 7. `docs/product/twitch-replacement-seven-day-audit-spec.md`;
 8. `docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json`;
 9. `docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json`;
-10. `docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json` while repair is active;
-11. the affected feature specification and plan;
-12. `docs/work-in-progress/phase12a4-category-parallel-execution.md`;
-13. relevant immutable acceptance/evidence records.
+10. `docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json`;
+11. `docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-acceptance.json`;
+12. the affected feature specification and plan;
+13. `docs/work-in-progress/phase12a4-category-parallel-execution.md`;
+14. relevant immutable acceptance/evidence records.
 
 The PR must record the current-main SHA read. If these documents conflict, documentation repair precedes implementation.
