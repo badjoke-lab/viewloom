@@ -100,11 +100,13 @@
     "crossProviderBehavior": false
   },
   "publicGate": {
-    "earliestAuditAt": "2026-07-27T11:40:00.000Z",
+    "earliestAuditAt": "2026-08-05T05:30:00.000Z",
     "sevenDayAccumulationAuditRequired": true,
-    "separatePublicCutoverPrRequired": true
+    "separatePublicCutoverPrRequired": true,
+    "recoveryStartAt": "2026-07-29T05:30:00.000Z",
+    "recoveryAcceptancePr": 657
   },
-  "nextGate": "run the seven-day Twitch accumulation audit at or after 2026-07-27T11:40:00.000Z while public exposure remains disabled; use a separate public cutover PR only after acceptance",
+  "nextGate": "run the replacement seven-day Twitch accumulation audit at or after 2026-08-05T05:30:00.000Z while public exposure remains disabled; use a separate public cutover PR only after acceptance",
   "acceptance": {
     "canonicalAcceptancePr": 642,
     "packagePr": 640,

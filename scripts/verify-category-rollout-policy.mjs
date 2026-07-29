@@ -78,39 +78,41 @@ for (const fragment of [
   'Hidden Twitch Heatmap category controls accepted from PR #640',
   'Kick permanent category capture started through PR #643',
   'The first Twitch seven-day audit was executed read-only in PR #651',
-  'Twitch permanent category capture is **not currently active**',
+  'Twitch permanent category capture was recovered through PR #655 and accepted in PR #657',
 ]) assert.ok(roadmap.includes(fragment), `roadmap missing: ${fragment}`)
 
 for (const fragment of [
-  'Canonical target 12A-5B-R1 Twitch permanent-category recovery',
-  'Twitch permanent category capture active no',
+  'Canonical target 12A-5B-R2 replacement Twitch seven-day accumulation audit',
+  'Twitch permanent category capture active yes',
+  'Twitch recovery required no',
   'Original Twitch seven-day clock valid no',
+  'Replacement Twitch seven-day clock active yes',
   'Kick permanent runtime active yes',
   'Kick permanent implementation package accepted yes',
   'Kick permanent release package accepted yes',
   'Twitch Heatmap hidden category API package accepted yes',
   'Twitch Heatmap hidden control package accepted yes',
   'Twitch Heatmap public category-filter exposure authorized no',
-  'Deploy only `workers/collector-twitch/wrangler.category-permanent.toml`.',
+  'Replacement Twitch seven-day audit earliest 2026-08-05T05:30:00.000Z',
 ]) assert.ok(schedule.includes(fragment), `schedule missing: ${fragment}`)
 
 for (const fragment of [
-  '# 12A-5B-R1 Twitch permanent-category recovery',
-  '## Confirmed root cause',
+  '# 12A-5B-R2 replacement Twitch seven-day accumulation',
+  '## Recovery result',
   'Final acceptance PR: #648.',
-  'Hidden controls package PR: #640.',
+  'Recovery acceptance and execution-path retirement PR: #657.',
   'The original seven-day stability clock is invalid',
 ]) assert.ok(activeWip.includes(fragment), `active WIP missing: ${fragment}`)
 assert.ok(historicalWip.includes('Status: completed historical work record'))
 assert.ok(historicalWip.includes('Superseded as active WIP by'))
 
-assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v32')
-assert.equal(gate.status, '12a5_twitch_permanent_category_capture_regressed_recovery_required')
-assert.equal(gate.currentWorkstream.phase, '12A-5B-R1')
+assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v33')
+assert.equal(gate.status, '12a5_twitch_permanent_category_capture_recovered_seven_day_accumulation_active')
+assert.equal(gate.currentWorkstream.phase, '12A-5B-R2')
 assert.equal(gate.currentWorkstream.trackingIssue, 623)
 assert.equal(gate.currentWorkstream.kickTrackingIssue, 634)
 assert.equal(gate.currentWorkstream.twitchHiddenUiTrackingIssue, 635)
-assert.equal(gate.currentWorkstream.twitchPermanentCaptureActive, false)
+assert.equal(gate.currentWorkstream.twitchPermanentCaptureActive, true)
 assert.equal(gate.currentWorkstream.kickPermanentCaptureAuthorized, true)
 assert.equal(gate.currentWorkstream.kickPermanentCaptureActive, true)
 assert.equal(gate.currentWorkstream.kickPermanentPackageAccepted, true)
@@ -119,12 +121,12 @@ assert.equal(gate.currentWorkstream.twitchHeatmapCategoryFilterHiddenImplementat
 assert.equal(gate.currentWorkstream.twitchHeatmapCategoryApiPackageAccepted, true)
 assert.equal(gate.currentWorkstream.twitchHeatmapCategoryHiddenControlsAccepted, true)
 assert.equal(gate.currentWorkstream.twitchHeatmapCategoryFilterPublicExposureAuthorized, false)
-assert.equal(gate.currentWorkstream.publicCategoryUiEarliestAuditAt, null)
+assert.equal(gate.currentWorkstream.publicCategoryUiEarliestAuditAt, '2026-08-05T05:30:00.000Z')
 assert.equal(gate.currentWorkstream.existingFiveMinuteCronPreserved, true)
 assert.equal(gate.currentWorkstream.observationActive, false)
 assert.equal(gate.currentWorkstream.observationScheduleCurrent, false)
 
-assert.equal(gate.categoryCapture.twitchPermanentRuntimeCaptureActive, false)
+assert.equal(gate.categoryCapture.twitchPermanentRuntimeCaptureActive, true)
 assert.equal(gate.categoryCapture.kickPermanentRuntimeCaptureAuthorized, true)
 assert.equal(gate.categoryCapture.kickPermanentRuntimeCaptureActive, true)
 assert.equal(gate.categoryCapture.kickPermanentPackageAccepted, true)
@@ -146,14 +148,16 @@ assert.ok(gate.closedBlockers.includes('kick_permanent_category_capture_not_impl
 assert.ok(gate.closedBlockers.includes('kick_permanent_category_capture_release_package_not_accepted'))
 assert.ok(gate.closedBlockers.includes('twitch_heatmap_category_filter_hidden_controls_not_accepted'))
 assert.deepEqual(gate.openBlockers, [
-  'twitch_permanent_category_capture_regression_not_recovered',
   'twitch_category_ui_seven_day_accumulation_not_accepted',
   'twitch_heatmap_category_filter_public_exposure_not_authorized',
 ])
-assert.equal(gate.currentWorkstream.twitchRecoveryRequired, true)
+assert.ok(gate.closedBlockers.includes('twitch_permanent_category_capture_regression_not_recovered'))
+assert.equal(gate.currentWorkstream.twitchRecoveryRequired, false)
 assert.equal(gate.currentWorkstream.twitchRecoveryTrackingIssue, 652)
-assert.equal(gate.currentWorkstream.twitchStableAccumulationResetRequired, true)
-assert.equal(gate.twitchPermanentCategoryRegression.status, 'confirmed_recovery_required')
+assert.equal(gate.currentWorkstream.twitchStableAccumulationResetRequired, false)
+assert.equal(gate.currentWorkstream.twitchStableAccumulationStartAt, '2026-07-29T05:30:00.000Z')
+assert.equal(gate.currentWorkstream.twitchStableAccumulationEarliestAuditAt, '2026-08-05T05:30:00.000Z')
+assert.equal(gate.twitchPermanentCategoryRegression.status, 'recovered')
 assert.equal(gate.twitchPermanentCategoryRegression.deploymentWorkflowRunId, 30003576549)
 assert.equal(gate.twitchPermanentCategoryRegression.deploymentJobId, 89194219805)
 assert.equal(gate.twitchPermanentCategoryRegression.originalSevenDayClockValid, false)
@@ -173,9 +177,12 @@ assert.equal(gate.currentWorkstream.twitchRecoveryPackageAccepted, true)
 assert.equal(gate.currentWorkstream.twitchRecoveryPackagePr, 653)
 assert.equal(gate.currentWorkstream.twitchRecoveryPackageAcceptancePr, 654)
 assert.equal(gate.currentWorkstream.exactTwitchRecoveryTriggerCurrent, false)
-assert.equal(gate.twitchPermanentCategoryRecoveryPackage.status, 'accepted_dormant')
+assert.equal(gate.twitchPermanentCategoryRecoveryPackage.status, 'accepted_executed_and_retired')
 assert.equal(gate.twitchPermanentCategoryRecoveryPackage.mainPushBothDeploymentsSkipped, true)
-assert.equal(gate.twitchPermanentCategoryRecoveryPackage.runtimeActive, false)
+assert.equal(gate.twitchPermanentCategoryRecoveryPackage.runtimeActive, true)
+assert.equal(gate.twitchPermanentCategoryRecoveryPackage.acceptancePr, 657)
+assert.equal(gate.twitchPermanentCategoryRecoveryPackage.triggerRetired, true)
+assert.equal(gate.twitchPermanentCategoryRecoveryPackage.workflowRetired, true)
 assert.equal(gate.twitchPermanentCategoryRecoveryPackage.kickChanged, false)
 
 assert.equal(gate.categoryParallelExecutionDecision.status, 'accepted')
@@ -226,7 +233,7 @@ assert.equal(kickPackage.acceptance.twitchChanged, false)
 assert.equal(hiddenTwitchDecision.status, 'accepted_hidden_implementation_only')
 assert.equal(hiddenTwitchDecision.authorization.hiddenImplementationAuthorized, true)
 assert.equal(hiddenTwitchDecision.authorization.publicExposureAuthorized, false)
-assert.equal(hiddenTwitchDecision.publicGate.earliestAuditAt, '2026-07-27T11:40:00.000Z')
+assert.equal(hiddenTwitchDecision.publicGate.earliestAuditAt, '2026-08-05T05:30:00.000Z')
 assert.equal(Object.values(hiddenTwitchDecision.boundaries).every((value) => value === false), true)
 
 assert.equal(hiddenTwitchPackage.status, 'accepted')
@@ -293,16 +300,16 @@ console.log(JSON.stringify({
   parentTrackingIssue: 623,
   kickTrackingIssue: 634,
   twitchHiddenUiTrackingIssue: 635,
-  twitchRuntimeActive: false,
-  twitchRecoveryRequired: true,
+  twitchRuntimeActive: true,
+  twitchRecoveryRequired: false,
   kickPackageAccepted: true,
   kickRuntimeActive: true,
   twitchHiddenApiPackageAccepted: true,
   twitchHiddenControlsAccepted: true,
   kickReleasePackageAccepted: true,
   publicTwitchFilterAuthorized: false,
-  earliestPublicAuditAt: null,
+  earliestPublicAuditAt: '2026-08-05T05:30:00.000Z',
   newWorkerCronAdded: false,
-  nextAction: 'twitch-permanent-category-recovery',
+  nextAction: 'replacement-twitch-seven-day-accumulation-audit',
 }, null, 2))
 

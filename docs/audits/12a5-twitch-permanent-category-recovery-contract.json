@@ -22,11 +22,14 @@
     "packagePullRequestProductionDeployment": false,
     "productionEvent": "push of a separately accepted exact one-file trigger to main",
     "workflowDispatchProductionAllowed": false,
-    "newWorkerCronAdded": false
+    "newWorkerCronAdded": false,
+    "retired": true,
+    "retiredByPr": 657,
+    "productionEventCompleted": true
   },
   "trigger": {
     "schemaVersion": "viewloom-12a5-twitch-permanent-category-recovery-trigger-v1",
-    "status": "armed",
+    "status": "retired",
     "provider": "twitch",
     "oneTime": true,
     "confirmation": "RUN_TWITCH_PERMANENT_CATEGORY_RECOVERY",
@@ -34,12 +37,19 @@
     "packageMergeShaRequired": true,
     "startAtRequired": true,
     "maximumStartDelayHours": 3,
-    "oneFileTriggerPrRequired": true
+    "oneFileTriggerPrRequired": true,
+    "triggerPr": 655,
+    "triggerMergeSha": "40ab1cf6eb4ff4117c4ab6d69e2e5b8cb631b7e4",
+    "startAt": "2026-07-29T05:30:00.000Z"
   },
   "preflight": {
     "readOnly": true,
-    "cloudflareApiMethods": ["GET"],
-    "d1Statements": ["SELECT"],
+    "cloudflareApiMethods": [
+      "GET"
+    ],
+    "d1Statements": [
+      "SELECT"
+    ],
     "permanentFlagMustBeAbsent": true,
     "obsoleteCanaryBindingsMustBeAbsent": true,
     "providerLeakageRowsMax": 0,
@@ -101,8 +111,8 @@
     "crossProviderBehaviorAuthorized": false
   },
   "postRecovery": {
-    "canonicalAcceptanceRequired": true,
-    "newStableAccumulationStartRequired": true,
+    "canonicalAcceptanceRequired": false,
+    "newStableAccumulationStartRequired": false,
     "newSevenDayAuditRequired": true,
     "publicCutoverAutomaticallyAuthorized": false,
     "separatePublicCutoverPrRequired": true
@@ -124,10 +134,25 @@
     "mainPushTwitchDeployJobId": 90279758863,
     "mainPushKickDeployJobId": 90279759176,
     "mainPushBothDeploymentsSkipped": true,
-    "productionRuntimeCaptureStarted": false,
-    "productionWorkerPublished": false,
+    "productionRuntimeCaptureStarted": true,
+    "productionWorkerPublished": true,
     "remoteD1MutationPerformed": false,
     "kickChanged": false,
-    "publicExposureEnabled": false
-  }
+    "publicExposureEnabled": false,
+    "triggerPr": 655,
+    "triggerMergeSha": "40ab1cf6eb4ff4117c4ab6d69e2e5b8cb631b7e4",
+    "recoveryRunId": 30423637234,
+    "recoveryJobId": 90485345119,
+    "recoveryArtifactId": 8713465427,
+    "recoveryArtifactDigest": "sha256:5d910123497abbded3400eb89253e51d14083f11dc8aa814cb9071f17048161f",
+    "canonicalAcceptancePr": 657,
+    "canonicalAcceptanceMergeSha": "5565640b26a0fe8e896e5c47eb054b3363f50463",
+    "canonicalAcceptanceEvidence": "docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json",
+    "verifiedRecoveryStartAt": "2026-07-29T05:30:00.000Z",
+    "earliestSevenDayAuditAt": "2026-08-05T05:30:00.000Z",
+    "rollbackRequired": false,
+    "triggerRetired": true,
+    "workflowRetired": true
+  },
+  "lifecycleStatus": "executed_accepted_and_retired"
 }

@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a2-current-gate-state-v32",
+  "schemaVersion": "viewloom-12a2-current-gate-state-v33",
   "workstream": "12A-4 provider-specific category capture foundation",
-  "status": "12a5_twitch_permanent_category_capture_regressed_recovery_required",
+  "status": "12a5_twitch_permanent_category_capture_recovered_seven_day_accumulation_active",
   "intradayFoundation": {
     "designPr": 494,
     "migrationPr": 499,
@@ -310,7 +310,7 @@
     "twitchCanaryProductionPathRetired": true,
     "authorizationScope": "parallel_kick_rollout_and_hidden_twitch_filter",
     "twitchPermanentRuntimeCaptureAuthorized": true,
-    "twitchPermanentRuntimeCaptureActive": false,
+    "twitchPermanentRuntimeCaptureActive": true,
     "kickPermanentRuntimeCaptureAuthorized": true,
     "kickPermanentRuntimeCaptureActive": true,
     "retentionExpansionAuthorized": false,
@@ -323,8 +323,8 @@
     "categoryUiPublicExposureAuthorized": false,
     "twitchHeatmapCategoryFilterHiddenImplementationAuthorized": true,
     "twitchHeatmapCategoryFilterPublicExposureAuthorized": false,
-    "twitchStableAccumulationStartAt": null,
-    "twitchStableAccumulationEarliestAuditAt": null,
+    "twitchStableAccumulationStartAt": "2026-07-29T05:30:00.000Z",
+    "twitchStableAccumulationEarliestAuditAt": "2026-08-05T05:30:00.000Z",
     "kickPermanentPackageAccepted": true,
     "twitchHeatmapCategoryApiPackageAccepted": true,
     "twitchHeatmapCategoryHiddenControlsAccepted": true,
@@ -333,7 +333,12 @@
     "closedRegressionCauses": [
       "provider_unscoped_collector_deployment_planning"
     ],
-    "twitchRecoveryPackageAccepted": true
+    "twitchRecoveryPackageAccepted": true,
+    "twitchRecoveryAccepted": true,
+    "twitchRecoveryAcceptancePr": 657,
+    "twitchRecoveryAcceptanceMergeSha": "5565640b26a0fe8e896e5c47eb054b3363f50463",
+    "twitchRecoveryAcceptanceEvidence": "docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json",
+    "twitchSevenDayAccumulationActive": true
   },
   "closedBlockers": [
     "category_source_unverified",
@@ -371,16 +376,16 @@
     "kick_permanent_category_capture_release_package_not_accepted",
     "twitch_heatmap_category_filter_hidden_controls_not_accepted",
     "kick_permanent_category_capture_not_deployed",
-    "kick_permanent_category_capture_observation_not_accepted"
+    "kick_permanent_category_capture_observation_not_accepted",
+    "twitch_permanent_category_capture_regression_not_recovered"
   ],
   "openBlockers": [
-    "twitch_permanent_category_capture_regression_not_recovered",
     "twitch_category_ui_seven_day_accumulation_not_accepted",
     "twitch_heatmap_category_filter_public_exposure_not_authorized"
   ],
   "currentWorkstream": {
-    "phase": "12A-5B-R1",
-    "name": "Twitch permanent category capture regressed; guarded recovery required",
+    "phase": "12A-5B-R2",
+    "name": "Twitch permanent category capture recovered; seven-day stability accumulation active",
     "trackingIssue": 623,
     "acceptedSchemaEvidence": true,
     "acceptedCostEvidence": true,
@@ -420,7 +425,7 @@
     "implementationPlanAccepted": true,
     "authorizationScope": "parallel_kick_rollout_and_hidden_twitch_filter",
     "twitchPermanentCaptureAuthorized": true,
-    "twitchPermanentCaptureActive": false,
+    "twitchPermanentCaptureActive": true,
     "kickPermanentCaptureAuthorized": true,
     "existingFiveMinuteCronPreserved": true,
     "freshReadOnlyPreflightRequired": true,
@@ -464,7 +469,7 @@
     "categoryUiPublicExposureAuthorized": false,
     "twitchHeatmapCategoryFilterHiddenImplementationAuthorized": true,
     "twitchHeatmapCategoryFilterPublicExposureAuthorized": false,
-    "publicCategoryUiEarliestAuditAt": null,
+    "publicCategoryUiEarliestAuditAt": "2026-08-05T05:30:00.000Z",
     "kickPermanentPackageAccepted": true,
     "kickReleasePackageAccepted": true,
     "twitchHeatmapCategoryApiPackageAccepted": true,
@@ -475,16 +480,23 @@
     "kickWarningExtensionRequired": false,
     "kickRollbackRequired": false,
     "kickFinalAcceptancePr": 648,
-    "twitchRecoveryRequired": true,
+    "twitchRecoveryRequired": false,
     "twitchRecoveryTrackingIssue": 652,
-    "twitchStableAccumulationResetRequired": true,
+    "twitchStableAccumulationResetRequired": false,
     "twitchRecoveryPackageAccepted": true,
     "twitchRecoveryPackagePr": 653,
     "twitchRecoveryPackageAcceptancePr": 654,
     "twitchRecoveryPackageMergeSha": "698c99aa543e9d4ee9d0e710c88ade52171f4d79",
-    "exactTwitchRecoveryTriggerCurrent": false
+    "exactTwitchRecoveryTriggerCurrent": false,
+    "twitchRecoveryAccepted": true,
+    "twitchRecoveryAcceptancePr": 657,
+    "twitchRecoveryAcceptanceMergeSha": "5565640b26a0fe8e896e5c47eb054b3363f50463",
+    "twitchRecoveryAcceptanceEvidence": "docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json",
+    "twitchRecoveryStartedAt": "2026-07-29T05:30:00.000Z",
+    "twitchStableAccumulationStartAt": "2026-07-29T05:30:00.000Z",
+    "twitchStableAccumulationEarliestAuditAt": "2026-08-05T05:30:00.000Z"
   },
-  "nextWorkstream": "create a separate exact one-file Twitch recovery trigger using accepted package merge 698c99aa543e9d4ee9d0e710c88ade52171f4d79 and a start boundary no more than three hours ahead",
+  "nextWorkstream": "run the replacement read-only Twitch seven-day accumulation audit at or after 2026-08-05T05:30:00.000Z; keep public category-filter exposure unauthorized until a separate accepted cutover PR",
   "kickCategoryCaptureCanaryInitialAcceptance": {
     "status": "accepted_initial_checkpoint_observation_completed",
     "pr": 579,
@@ -779,7 +791,7 @@
         "hiddenImplementationAuthorized": true,
         "publicExposureAuthorized": false,
         "hiddenFeatureFlagOrNonPublicRouteRequired": true,
-        "earliestAccumulationAuditAt": null,
+        "earliestAccumulationAuditAt": "2026-08-05T05:30:00.000Z",
         "separatePublicCutoverPrRequired": true,
         "apiPackageAccepted": true,
         "apiPackagePr": 638,
@@ -788,7 +800,9 @@
         "hiddenControlsPr": 640,
         "hiddenControlsMergeSha": "aecd4a10ca0da3146c23e5841412603e1e4416dd",
         "hiddenControlsAcceptancePr": 642,
-        "recoveryRequired": true
+        "recoveryRequired": false,
+        "stableAccumulationActive": true,
+        "stableAccumulationStartAt": "2026-07-29T05:30:00.000Z"
       }
     },
     "boundaries": {
@@ -820,7 +834,7 @@
     "contract": "docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json",
     "hiddenImplementationAuthorized": true,
     "publicExposureAuthorized": false,
-    "earliestAccumulationAuditAt": "2026-07-27T11:40:00.000Z",
+    "earliestAccumulationAuditAt": "2026-08-05T05:30:00.000Z",
     "separatePublicCutoverPrRequired": true,
     "collectorChangeAuthorized": false,
     "kickChangeAuthorized": false
@@ -927,7 +941,7 @@
     "twitchChanged": false
   },
   "twitchPermanentCategoryRegression": {
-    "status": "confirmed_recovery_required",
+    "status": "recovered",
     "trackingIssue": 652,
     "auditIssue": 650,
     "auditPr": 651,
@@ -948,10 +962,14 @@
     "originalSevenDayClockValid": false,
     "providerLeakageRows": 0,
     "publicExposureAuthorized": false,
-    "kickChanged": false
+    "kickChanged": false,
+    "recoveryAcceptancePr": 657,
+    "recoveryAcceptanceMergeSha": "5565640b26a0fe8e896e5c47eb054b3363f50463",
+    "recoveryAcceptanceEvidence": "docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json",
+    "recoveredAt": "2026-07-29T05:30:00.000Z"
   },
   "twitchPermanentCategoryRecoveryPackage": {
-    "status": "accepted_dormant",
+    "status": "accepted_executed_and_retired",
     "trackingIssue": 652,
     "packagePr": 653,
     "packageAcceptancePr": 654,
@@ -971,10 +989,48 @@
     "mainPushTwitchDeployJobId": 90279758863,
     "mainPushKickDeployJobId": 90279759176,
     "mainPushBothDeploymentsSkipped": true,
-    "runtimeActive": false,
-    "productionWorkerPublished": false,
+    "runtimeActive": true,
+    "productionWorkerPublished": true,
     "remoteD1MutationPerformed": false,
     "kickChanged": false,
-    "publicExposureEnabled": false
+    "publicExposureEnabled": false,
+    "triggerPr": 655,
+    "triggerMergeSha": "40ab1cf6eb4ff4117c4ab6d69e2e5b8cb631b7e4",
+    "recoveryRunId": 30423637234,
+    "recoveryJobId": 90485345119,
+    "recoveryArtifactId": 8713465427,
+    "recoveryArtifactDigest": "sha256:5d910123497abbded3400eb89253e51d14083f11dc8aa814cb9071f17048161f",
+    "acceptancePr": 657,
+    "acceptanceMergeSha": "5565640b26a0fe8e896e5c47eb054b3363f50463",
+    "acceptanceEvidence": "docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json",
+    "startAt": "2026-07-29T05:30:00.000Z",
+    "earliestSevenDayAuditAt": "2026-08-05T05:30:00.000Z",
+    "rollbackRequired": false,
+    "triggerRetired": true,
+    "workflowRetired": true
+  },
+  "twitchPermanentCategoryRecoveryAcceptance": {
+    "status": "accepted",
+    "provider": "twitch",
+    "trackingIssue": 652,
+    "acceptancePr": 657,
+    "acceptanceMergeSha": "5565640b26a0fe8e896e5c47eb054b3363f50463",
+    "evidence": "docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json",
+    "workflowRunId": 30423637234,
+    "workflowJobId": 90485345119,
+    "artifactId": 8713465427,
+    "artifactDigest": "sha256:5d910123497abbded3400eb89253e51d14083f11dc8aa814cb9071f17048161f",
+    "startAt": "2026-07-29T05:30:00.000Z",
+    "earliestSevenDayAuditAt": "2026-08-05T05:30:00.000Z",
+    "finalReadOnlyPreflightPassed": true,
+    "twitchOnlyPermanentConfigDeployed": true,
+    "consecutiveCategorySnapshotsObserved": 2,
+    "permanentBindingPresent": true,
+    "existingFiveMinuteCronPreserved": true,
+    "providerLeakageRows": 0,
+    "storageGatesPassed": true,
+    "rollbackRequired": false,
+    "kickChanged": false,
+    "publicExposureAuthorized": false
   }
 }

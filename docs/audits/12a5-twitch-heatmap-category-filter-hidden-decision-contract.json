@@ -19,7 +19,11 @@
     "availableCategoryOptionsRequired": true,
     "defaultSelection": "all",
     "filterBeforeTopN": true,
-    "topNOptions": [20, 50, 100],
+    "topNOptions": [
+      20,
+      50,
+      100
+    ],
     "providerSpecificUrlStateRequired": true,
     "crossProviderStateSharingAllowed": false
   },
@@ -53,12 +57,14 @@
     "regression"
   ],
   "publicGate": {
-    "twitchPermanentStartAt": "2026-07-20T11:40:00.000Z",
+    "twitchPermanentStartAt": "2026-07-29T05:30:00.000Z",
     "minimumStableDays": 7,
-    "earliestAuditAt": "2026-07-27T11:40:00.000Z",
+    "earliestAuditAt": "2026-08-05T05:30:00.000Z",
     "readOnlyAccumulationAuditRequired": true,
     "hiddenImplementationAcceptanceRequired": true,
-    "separatePublicCutoverPrRequired": true
+    "separatePublicCutoverPrRequired": true,
+    "originalStartInvalidatedByRegression": true,
+    "recoveryAcceptancePr": 657
   },
   "boundaries": {
     "collectorChangeAuthorized": false,
