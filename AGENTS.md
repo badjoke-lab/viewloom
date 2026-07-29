@@ -12,9 +12,10 @@ Kick permanent category capture: active
 Replacement Twitch stability start: 2026-07-29T05:30:00.000Z
 Earliest replacement audit: 2026-08-05T05:30:00.000Z
 Replacement audit issue: #659
-Dormant replacement audit package: accepted from PR #661 through PR #662
-Runner repair: accepted through PR #663 and acceptance PR #664
-Current branch: work-659-twitch-replacement-audit-checkpoint-package
+Dormant runner package: accepted PR #661 / #662
+Runner repair: accepted PR #663 / #664
+Checkpoint package: accepted PR #665 / #666
+Current branch: work-659-twitch-replacement-audit-checkpoint-trigger
 Twitch Heatmap public category-filter exposure: unauthorized
 Existing Twitch cadence: */5 * * * *
 Existing Kick cadence: */5 * * * *
@@ -36,42 +37,44 @@ Current #659 authorities include:
 
 - `docs/product/twitch-replacement-seven-day-audit-spec.md`
 - `docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json`
-- `docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json`
-- `docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json`
 - `docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-acceptance.json`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-package-contract.json`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-package-acceptance.json`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger-contract.json`
 - `docs/work-in-progress/phase12a4-category-parallel-execution.md`
 
 Do not rely on a cached handoff, an old chat summary, or a historical acceptance file when current `main` differs. The current roadmap, schedule, canonical gate, affected specification, and active WIP determine authorization.
 
 ## Current execution order
 
-1. Create and validate `work-659-twitch-replacement-audit-checkpoint-package`.
-2. Accept the bounded checkpoint execution path separately before any production read-only run.
-3. Execute checkpoint mode only through that accepted path and freeze sanitized diagnostic evidence.
-4. Begin Heatmap Canvas PR-1: `work-heatmap-canvas-module-split`, with no user-visible behavior change, after checkpoint-package priority is secured.
-5. Add the Canvas scene only behind a hidden route or disabled feature flag after PR-1 acceptance.
-6. Inspect and fix provider UI parity gaps from #148.
-7. At or after `2026-08-05T05:30:00.000Z`, execute #659 final mode and freeze the result.
-8. Keep public category-filter exposure disabled until an accepted final audit and a separate cutover PR.
+1. Create `work-659-twitch-replacement-audit-checkpoint-trigger`.
+2. Add only the exact accepted trigger file, bound to package PR #665 and merge `317675ea9a6256eb61bf36f8ec9d7a51ffdfff2a`.
+3. Merge only after trigger identity validation passes; production checkpoint execution occurs only on main push.
+4. Freeze sanitized checkpoint evidence and run/job/artifact/digest identities.
+5. Retire the one-time trigger and temporary execution path after evidence freeze.
+6. Start Heatmap Canvas module split after checkpoint priority is secured.
+7. Address #148 provider UI parity.
+8. At or after `2026-08-05T05:30:00.000Z`, execute #659 final mode and freeze the result.
+9. Keep public category-filter exposure disabled until accepted final evidence and a separate cutover PR.
 
 ## Production safety
 
 - `main` is production; do not push directly.
 - Use `work-*` branches and one PR per responsibility.
-- Package PRs do not use production credentials or execute production mutation.
-- The accepted runner repair performed no Cloudflare/D1 execution and changed no runtime configuration.
-- Production read-only execution requires a separately accepted bounded path.
+- Trigger PRs add only the exact trigger file.
+- Package and acceptance PRs do not use production credentials or execute production access.
+- Checkpoint execution is Cloudflare GET and D1 SELECT/WITH only.
 - Checkpoint evidence is diagnostic, does not accept #659, and does not authorize public UI.
 - Twitch and Kick bindings, rows, routes, options, and outputs remain separate.
-- No new Worker cron, cadence change, D1 schema mutation, backfill, retention expansion, cross-provider identity, or combined category ranking.
-- Heatmap Canvas work must not change collector behavior or expose the hidden category filter.
-- Existing unfiltered Heatmap remains the production fallback until a separately accepted cutover.
+- No Worker deployment, new cron, cadence change, D1 schema mutation, backfill, retention expansion, Kick mutation, cross-provider identity, or combined ranking.
+- Existing unfiltered Heatmap remains the production fallback.
 
 ## Validation
 
-Run affected targeted checks during iteration, then all feature and shared gates on the latest candidate HEAD. At minimum for governance/category work:
+Run affected targeted checks during iteration, then all feature and shared gates on the latest candidate HEAD. At minimum for checkpoint/category governance work:
 
 ```bash
+node scripts/verify-12a5-twitch-replacement-audit-checkpoint-package.mjs
 node scripts/verify-development-policy.mjs
 node scripts/verify-category-rollout-policy.mjs
 ```
