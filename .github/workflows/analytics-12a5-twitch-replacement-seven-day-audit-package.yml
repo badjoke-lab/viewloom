@@ -9,6 +9,7 @@ on:
       - 'docs/README.md'
       - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
       - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json'
+      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json'
       - 'docs/product/twitch-replacement-seven-day-audit-spec.md'
       - 'docs/product/category-capture-permanent-rollout-plan.md'
       - 'docs/product/current-roadmap.md'
@@ -22,6 +23,7 @@ on:
       - 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs'
       - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
       - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs'
+      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-development-policy.mjs'
       - 'workers/collector-twitch/wrangler.category-permanent.toml'
@@ -38,6 +40,7 @@ on:
       - 'docs/README.md'
       - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
       - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json'
+      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json'
       - 'docs/product/twitch-replacement-seven-day-audit-spec.md'
       - 'docs/product/category-capture-permanent-rollout-plan.md'
       - 'docs/product/current-roadmap.md'
@@ -51,6 +54,7 @@ on:
       - 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs'
       - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
       - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs'
+      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-development-policy.mjs'
       - 'workers/collector-twitch/wrangler.category-permanent.toml'
@@ -75,13 +79,16 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Parse dormant replacement audit package
+      - name: Parse dormant package and runner repair
         run: |
           node --check scripts/run-12a5-twitch-replacement-seven-day-audit.mjs
           node --check scripts/test-12a5-twitch-replacement-seven-day-audit.mjs
           node --check scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs
+          node --check scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs
       - name: Verify dormant replacement audit package
         run: node scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs
+      - name: Verify replacement audit runner SQL repair
+        run: node scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs
       - name: Test exact replacement audit window and slot accounting
         run: node scripts/test-12a5-twitch-replacement-seven-day-audit.mjs
       - name: Verify current category rollout policy
@@ -101,21 +108,19 @@ jobs:
           test -f apps/web/dist/kick/heatmap/index.html
           ! grep -q 'categoryPreview' apps/web/dist/kick/heatmap/index.html
           ! grep -q 'data-category-preview-select' apps/web/dist/kick/heatmap/index.html
-      - name: Summarize accepted dormant package boundary
+      - name: Summarize runner repair boundary
         run: |
           {
-            echo '## Twitch replacement seven-day audit package'
+            echo '## Twitch replacement audit runner repair'
             echo
-            echo '- Package status: accepted dormant'
-            echo '- Package PR / acceptance PR: `#661` / `#662`'
-            echo '- Package merge: `1cab151ce243e1ec58091bfd309f65671e1f41c7`'
+            echo '- Accepted package PR / acceptance PR: `#661` / `#662`'
+            echo '- Defect: `sqlite_cte_scope_cross_statement`'
+            echo '- Repair branch: `work-659-twitch-replacement-audit-runner-query-fix`'
+            echo '- Slot query reads `minute_snapshots` directly: yes'
+            echo '- Later statements reference CTE `scoped`: no'
             echo '- Window: `[2026-07-29T05:30:00Z, 2026-08-05T05:30:00Z)`'
             echo '- Expected five-minute slots: `2016`'
-            echo '- Checkpoint mode authorizes audit or public UI: no'
-            echo '- Final mode before boundary: prohibited'
-            echo '- Production credentials on package PR: no'
-            echo '- Worker or D1 mutation: no'
-            echo '- Public category-filter exposure: no'
-            echo '- Kick change: no'
-            echo '- Next branch: `work-659-twitch-replacement-audit-checkpoint-package`'
+            echo '- Production credentials or D1 execution on repair PR: no'
+            echo '- Worker/cadence/Kick/public UI change: no'
+            echo '- Checkpoint package blocked until separate repair acceptance: yes'
           } >> "$GITHUB_STEP_SUMMARY"

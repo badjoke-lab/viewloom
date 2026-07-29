@@ -19,22 +19,25 @@ ViewLoom is a production Twitch/Kick observation site with provider-separated co
 - The fixed-window dormant replacement audit package was implemented in PR #661 and accepted through PR #662.
 - Package validation run `30455002204` / job `90586212618` passed exact 2016-slot tests, current policy checks, web typecheck/build, and public-control absence checks.
 
-### Current gate: replacement Twitch seven-day accumulation
+### Current gate: repair accepted audit runner before checkpoint execution
 
 The replacement Twitch stability clock started at `2026-07-29T05:30:00.000Z`. The earliest replacement final audit is `2026-08-05T05:30:00.000Z` under Issue #659.
 
-Public Twitch Heatmap category-filter exposure remains unauthorized. The original clock is invalid and cannot be used as release evidence.
+Pre-execution review found defect `sqlite_cte_scope_cross_statement`: the accepted runner defined CTE `scoped` in one SQL statement and referenced it from a later independent statement. SQLite CTE scope ends with the defining statement, so checkpoint execution would fail during observed-slot enumeration.
+
+No checkpoint or final production execution occurred. Public Twitch Heatmap category-filter exposure remains unauthorized.
 
 ## Active deliverables before 2026-08-05
 
 ### Track A — replacement audit readiness
 
-1. Keep the accepted dormant package fixed to `[2026-07-29T05:30:00Z, 2026-08-05T05:30:00Z)` and 2016 five-minute slots.
-2. Create and accept `work-659-twitch-replacement-audit-checkpoint-package`.
-3. Execute bounded checkpoint mode only through that separately accepted path.
-4. Freeze sanitized checkpoint evidence that reports current slot continuity, exact gaps, binding, leakage, errors, dictionary resolution, storage, and public-surface containment.
-5. Keep checkpoint evidence diagnostic; it cannot accept #659 or authorize UI.
-6. At or after `2026-08-05T05:30:00.000Z`, run final mode and freeze the result canonically.
+1. Validate and merge `work-659-twitch-replacement-audit-runner-query-fix`.
+2. Require direct `minute_snapshots` slot enumeration and a pure SQL statement-scope regression test.
+3. Freeze a separate runner-repair acceptance record.
+4. Resume `work-659-twitch-replacement-audit-checkpoint-package` only after repair acceptance.
+5. Execute bounded checkpoint mode only through a separately accepted path.
+6. Keep checkpoint evidence diagnostic; it cannot accept #659 or authorize UI.
+7. At or after `2026-08-05T05:30:00.000Z`, run final mode and freeze the result canonically.
 
 ### Track B — Heatmap Canvas redesign
 
@@ -46,7 +49,7 @@ Public Twitch Heatmap category-filter exposure remains unauthorized. The origina
 
 ### Track C — provider UI parity
 
-1. The #659 package prerequisite is complete; Issue #148 may be inspected after checkpoint-package work is secured.
+1. The #659 package prerequisite is complete; Issue #148 may be inspected after runner repair and checkpoint-package priority are secured.
 2. Align Twitch/Kick Day Flow and Battle Lines page skeletons, controls, state handling, and Data Status navigation.
 3. Keep allowed provider differences limited to color, copy, data volume, source mode, and limitation notes.
 4. Do not change collectors, cadence, D1 schema, category authorization, or cross-provider behavior.
@@ -59,12 +62,13 @@ Public Twitch Heatmap category-filter exposure remains unauthorized. The origina
 
 ## Following gates
 
-1. Bounded read-only checkpoint package and diagnostic evidence.
-2. 12A-5B-R2 replacement Twitch seven-day final audit (#659).
-3. 12A-5C public Twitch Heatmap category-filter cutover only after accepted final evidence.
-4. Heatmap Canvas production cutover only after its independent final validation.
-5. Kick category UI only after separate Kick-specific evidence and authorization.
-6. Provider-specific Day Flow category views, then category history.
+1. Runner query repair and separate repair acceptance.
+2. Bounded read-only checkpoint package and diagnostic evidence.
+3. 12A-5B-R2 replacement Twitch seven-day final audit (#659).
+4. 12A-5C public Twitch Heatmap category-filter cutover only after accepted final evidence.
+5. Heatmap Canvas production cutover only after its independent final validation.
+6. Kick category UI only after separate Kick-specific evidence and authorization.
+7. Provider-specific Day Flow category views, then category history.
 
 ## Hard boundaries
 
@@ -72,6 +76,7 @@ Public Twitch Heatmap category-filter exposure remains unauthorized. The origina
 - Existing Worker cadence remains `*/5 * * * *` for both providers.
 - No new Worker cron, D1 schema mutation, backfill, or retention expansion.
 - Cross-provider category identity, mapping, totals, or combined rankings are prohibited.
+- Runner repair performs no Cloudflare/D1 execution and changes no runtime configuration.
 - Checkpoints are read-only and non-authorizing.
 - Hidden Twitch controls remain non-public until #659 final evidence and a separate cutover PR are accepted.
 - Existing unfiltered Heatmap remains the fallback until public cutover acceptance.
@@ -86,6 +91,7 @@ Public Twitch Heatmap category-filter exposure remains unauthorized. The origina
 - `docs/product/twitch-replacement-seven-day-audit-spec.md`
 - `docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json`
 - `docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json`
+- `docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json`
 - `docs/product/heatmap-canvas-redesign-spec.md`
 - `docs/product/heatmap-canvas-implementation-plan.md`
 - `docs/work-in-progress/phase12a4-category-parallel-execution.md`

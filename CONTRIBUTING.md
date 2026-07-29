@@ -28,25 +28,31 @@ Replacement stability start 2026-07-29T05:30:00.000Z
 Earliest replacement audit 2026-08-05T05:30:00.000Z
 Replacement audit issue #659
 Dormant replacement audit package accepted PR #661 / acceptance PR #662
+Runner repair active sqlite_cte_scope_cross_statement
+Current repair branch work-659-twitch-replacement-audit-runner-query-fix
+Checkpoint package blocked until repair acceptance
 Twitch Heatmap public category-filter exposure unauthorized
 ```
 
 ## Current work order
 
-1. Create and verify `work-659-twitch-replacement-audit-checkpoint-package`.
-2. Accept checkpoint execution separately before any production read-only run.
-3. Freeze sanitized checkpoint evidence as diagnostic only.
-4. Start Heatmap Canvas responsibility separation.
-5. Add a hidden/disabled Canvas scene after module-split acceptance.
-6. Address #148 Day Flow/Battle Lines provider parity; its package prerequisite is complete.
-7. Execute #659 final mode only at or after the accepted boundary.
-8. Use a later separate PR for public category-filter cutover.
+1. Validate and merge `work-659-twitch-replacement-audit-runner-query-fix`.
+2. Freeze a separate runner-repair acceptance record.
+3. Create and verify `work-659-twitch-replacement-audit-checkpoint-package` only after repair acceptance.
+4. Accept checkpoint execution separately before any production read-only run.
+5. Freeze sanitized checkpoint evidence as diagnostic only.
+6. Start Heatmap Canvas responsibility separation after checkpoint-package priority is secured.
+7. Add a hidden/disabled Canvas scene after module-split acceptance.
+8. Address #148 Day Flow/Battle Lines provider parity.
+9. Execute #659 final mode only at or after the accepted boundary.
+10. Use a later separate PR for public category-filter cutover.
 
 ## Change classification
 
 Every change must declare one primary responsibility:
 
 - documentation/contract;
+- dormant runner repair;
 - read-only audit or checkpoint package;
 - implementation/refactor package;
 - one-time production trigger;
@@ -61,6 +67,7 @@ Do not combine package implementation, production execution, and acceptance in o
 - Preserve both provider-specific permanent category configurations and five-minute cadences.
 - Do not mutate Kick from Twitch-only work.
 - Do not change D1 schema, backfill, retention, or provider identity rules.
+- Runner repair performs no production credentials, Cloudflare/D1 execution, or runtime change.
 - Do not expose the hidden Twitch category filter before #659 is accepted and a separate cutover PR passes.
 - Checkpoint mode never accepts #659 or authorizes public UI.
 - Heatmap Canvas work changes renderer/interaction only unless a later explicit contract authorizes more.
@@ -83,6 +90,13 @@ Run workstream-specific checks. For governance and category changes, run at mini
 ```bash
 node scripts/verify-development-policy.mjs
 node scripts/verify-category-rollout-policy.mjs
+```
+
+Runner repair also requires:
+
+```bash
+node scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs
+node scripts/test-12a5-twitch-replacement-seven-day-audit.mjs
 ```
 
 For web changes, also run the affected build, typecheck, browser, mobile, accessibility, provider-separation, and data-truth gates.

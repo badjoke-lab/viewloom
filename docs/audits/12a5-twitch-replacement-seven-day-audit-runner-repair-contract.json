@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-seven-day-audit-runner-repair-v1",
+  "status": "ready_for_validation",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "governingMainSha": "3f15d18ee3f7b31a71b10ff6f192eead404da92b",
+  "acceptedPackagePr": 661,
+  "acceptedPackageAcceptancePr": 662,
+  "defect": {
+    "code": "sqlite_cte_scope_cross_statement",
+    "runner": "scripts/run-12a5-twitch-replacement-seven-day-audit.mjs",
+    "description": "The first SQL statement defines CTE scoped, while a later independent statement selects from scoped. SQLite CTE scope ends with the defining statement, so production checkpoint execution would fail during observed-slot enumeration.",
+    "productionExecutionOccurred": false,
+    "checkpointEvidenceProduced": false,
+    "finalAuditExecuted": false
+  },
+  "repair": {
+    "exportSqlBuilder": true,
+    "slotEnumerationReadsMinuteSnapshotsDirectly": true,
+    "allStatementsRemainSelectOrWith": true,
+    "fixedHalfOpenWindowPreserved": true,
+    "expectedFinalSlotsPreserved": 2016,
+    "checkpointFinalModeSemanticsPreserved": true,
+    "productionMutationAdded": false
+  },
+  "validation": {
+    "syntaxRequired": true,
+    "pureSqlScopeTestRequired": true,
+    "existingWindowAndSlotTestsRequired": true,
+    "packageVerifierRequired": true,
+    "categoryPolicyRequired": true,
+    "developmentPolicyRequired": true,
+    "webBuildRequired": true,
+    "publicCategoryControlsAbsentRequired": true
+  },
+  "boundaries": {
+    "productionCredentialsAllowedOnPullRequest": false,
+    "workerDeploymentAuthorized": false,
+    "d1ExecutionAuthorized": false,
+    "d1MutationAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "newWorkerCronAuthorized": false,
+    "backfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "kickChangeAuthorized": false,
+    "publicCategoryUiAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  },
+  "nextGate": "merge the dormant runner repair after CI, freeze a separate repair acceptance record, then resume work-659-twitch-replacement-audit-checkpoint-package"
+}
