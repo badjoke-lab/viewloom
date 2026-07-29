@@ -15,7 +15,7 @@ Before creating a branch, fetch current `main` and read:
 
 Reread the same current documents before marking a PR ready or merging it. Do not use a cached summary when repository documents have changed. If the documents disagree with the repository or each other, repair the source-of-truth documents before implementation continues.
 
-Every PR must record the current-main SHA that was read and the governing documents used.
+Every PR must record the Current-main SHA that was read and the governing documents used.
 
 ## Current state
 
