@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-seven-day-audit-package-acceptance-v1",
+  "status": "accepted",
+  "phase": "12A-5B-R2",
+  "parentTrackingIssue": 623,
+  "hiddenUiTrackingIssue": 635,
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "packagePr": 661,
+  "packageCandidateHeadSha": "9d593116e2cccc40dc27bc42b3be55d647e3d3ae",
+  "packageMergeSha": "1cab151ce243e1ec58091bfd309f65671e1f41c7",
+  "validation": {
+    "workflowRunId": 30455002204,
+    "workflowJobId": 90586212618,
+    "conclusion": "success",
+    "packageVerifierPass": true,
+    "windowAndSlotTestsPass": true,
+    "categoryPolicyPass": true,
+    "developmentPolicyPass": true,
+    "webTypecheckPass": true,
+    "webBuildPass": true,
+    "publicCategoryControlsAbsentPass": true
+  },
+  "window": {
+    "semantics": "half_open",
+    "startAt": "2026-07-29T05:30:00.000Z",
+    "endExclusiveAt": "2026-08-05T05:30:00.000Z",
+    "expectedFinalSlots": 2016
+  },
+  "acceptedCapabilities": {
+    "checkpointModeImplemented": true,
+    "checkpointModeAuthorizing": false,
+    "finalModeImplemented": true,
+    "finalBeforeBoundaryRejected": true,
+    "missingSlotTimestampsReported": true,
+    "duplicateBucketsReported": true,
+    "invalidBucketsReported": true,
+    "maximumConsecutiveMissingSlotsReported": true,
+    "categoryPayloadAndReferenceGatesImplemented": true,
+    "dictionaryResolutionGatesImplemented": true,
+    "bindingCadenceLeakageStorageGatesImplemented": true,
+    "publicSurfaceContainmentImplemented": true,
+    "kickBaselineVerificationImplemented": true
+  },
+  "boundaries": {
+    "productionExecutionIncluded": false,
+    "productionCredentialsUsedOnPullRequest": false,
+    "workerDeploymentPerformed": false,
+    "d1MutationPerformed": false,
+    "bindingOrSecretMutationPerformed": false,
+    "cadenceChanged": false,
+    "newWorkerCronAdded": false,
+    "backfillPerformed": false,
+    "retentionChanged": false,
+    "kickChanged": false,
+    "publicCategoryUiChanged": false,
+    "publicCategoryUiAuthorized": false,
+    "crossProviderBehaviorChanged": false
+  },
+  "nextGate": "Create and separately accept a bounded read-only checkpoint execution package. Checkpoint evidence is diagnostic only. Final mode remains prohibited before 2026-08-05T05:30:00.000Z, and a passing final audit still requires separate evidence acceptance and public cutover PRs."
+}
