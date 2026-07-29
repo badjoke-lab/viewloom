@@ -2,161 +2,121 @@
 
 Status: source of truth  
 Tracking issue: #623  
-Kick rollout issue: #634  
 Hidden Twitch filter issue: #635  
-Initial decision PR: #624
+Replacement audit issue: #659
 
 ## Outcome
 
-Complete permanent provider-separated category capture and the first provider-specific category filter without changing five-minute collector cadence, adding backfill, expanding retention, or combining Twitch and Kick.
+Maintain permanent provider-separated category capture, complete the replacement Twitch seven-day audit, and release the first public provider-specific category filter only through a separate accepted cutover.
 
-The current work is parallel:
-
-- Track A: guarded Kick permanent-category rollout;
-- Track B: hidden Twitch Heatmap category-filter implementation;
-- public Twitch exposure remains blocked until the seven-day Twitch accumulation audit and a separate public cutover PR.
+Collector cadence remains five minutes. No backfill, retention expansion, D1 schema update, new Worker cron, or cross-provider identity/ranking is part of this plan.
 
 ## Completed phases
 
-### Phase 12A-4-19 — Twitch-first decision and contract
+### 12A-4-19 through 12A-4-23 — Twitch permanent launch and initial acceptance
 
-Accepted the permanent capture specification, provider boundaries, rollback rules, and mandatory documentation references.
+The permanent Twitch package, exact release, initial verification, minimum observation, final acceptance, and temporary-path retirement completed.
 
-### Phase 12A-4-20 — Twitch implementation package
+### 12A-4-24 — Kick permanent rollout and hidden Twitch filter
 
-Accepted the Twitch permanent configuration, category-disabled rollback configuration, read-only preflight, and observation tooling.
+- Kick permanent implementation, release, observation, and final acceptance completed through PR #648.
+- Hidden Twitch Heatmap API and controls completed through PRs #638, #640, and #642 without public exposure.
 
-### Phase 12A-4-21 — exact Twitch deployment
+### 12A-5B-R1 — Twitch regression and guarded recovery
 
-Accepted the exact trigger, fresh preflight, production publish, deployed identity, and two consecutive category-bearing Twitch snapshots.
+- The original seven-day audit in PR #651 detected a production regression and was rejected.
+- Provider-scoped deployment protection and a dormant recovery package were accepted in PRs #653 and #654.
+- PR #655 triggered Twitch-only recovery.
+- Run `30423637234` passed final read-only preflight, permanent-config deployment, and two-snapshot verification.
+- PR #657 froze acceptance and retired the one-time recovery paths.
+- PR #658 synchronized canonical v33.
+- The original clock remains invalid.
 
-### Phase 12A-4-22 — Twitch 24-hour observation
+## Current phase 12A-5B-R2 — replacement accumulation and parallel safe work
 
-Observed Twitch for the minimum 24 hours with no warning or hard stop.
+The valid replacement window starts at `2026-07-29T05:30:00.000Z`. The earliest audit is `2026-08-05T05:30:00.000Z`.
 
-### Phase 12A-4-23 — Twitch final acceptance
+### Track A — #659 read-only audit package
 
-Accepted Twitch permanent category capture with 291 observed category snapshots against 290 expected, 100% coverage, zero collector errors, zero leakage, and passing storage and freshness gates. Temporary release and observation paths were retired.
+Before the boundary:
 
-## Current phase 12A-4-24 — parallel Kick rollout and hidden Twitch filter
+1. freeze `docs/product/twitch-replacement-seven-day-audit-spec.md`;
+2. create `work-659-twitch-replacement-audit-package`;
+3. implement a dormant read-only package and verifier;
+4. compute expected five-minute slots from the exact accepted start;
+5. require explicit bounded-gap accounting and no fake interpolation;
+6. verify category contract/reference/dictionary continuity;
+7. verify collector errors, permanent binding, leakage, freshness, and storage gates;
+8. verify hidden controls remain absent from normal public Twitch and Kick surfaces;
+9. produce sanitized JSON artifacts only;
+10. perform no production change.
 
-This phase authorizes two separate workstreams. Each PR must identify its track and must not silently cross into the other track.
+At or after the boundary:
 
-## Track A — Kick permanent category capture
+1. run the accepted package;
+2. freeze exact run/job/artifact/digest identities;
+3. accept or reject the complete window;
+4. keep public UI disabled.
 
-### 12A-4-24A — decision and package preparation
+### Track B — bounded checkpoints
 
-- accept the Kick-only permanent rollout decision contract;
-- run a fresh read-only Kick preflight;
-- prepare an explicit Kick permanent-category configuration;
-- preserve the current Kick configuration as rollback;
-- test category extraction, dictionary writes, payloads, provider separation, and rollback;
-- validate collector typecheck and normal/permanent dry-run bundles;
-- perform no production deployment from the implementation PR.
+Checkpoints may run before the final audit to detect a hard stop early.
 
-### 12A-4-24B — exact Kick release package
+They must be read-only, bounded, provider-specific, non-authorizing, and must not add a Worker cron. A checkpoint cannot replace final #659 evidence.
 
-After the implementation package is accepted:
+### Track C — Heatmap Canvas redesign
 
-1. create a separate dormant release package;
-2. require a fresh Cloudflare GET / D1 SELECT preflight;
-3. stop on any storage, leakage, identity, schema, freshness, or provider failure;
-4. use an exact one-file trigger on main;
-5. publish only the accepted Kick-scoped configuration;
-6. verify two consecutive real, non-empty, category-bearing Kick snapshots;
-7. restore normal Kick configuration and verify recovery on failure.
+This work may proceed while accumulation continues.
 
-### 12A-4-24C — Kick 24–48 hour observation
+PR order:
 
-Observe for at least 24 hours. Extend to 48 hours on a warning without a hard stop.
+1. `work-heatmap-canvas-module-split`: separate current responsibilities with no public behavior change.
+2. `work-heatmap-canvas-scene`: add Canvas layers, camera state, redraw, hit testing, and overlay behind a hidden route/disabled flag.
+3. later interaction and LOD PRs after the first two are accepted.
+4. production cutover only after independent final browser/mobile/accessibility/data-truth validation.
 
-Check:
+Canvas work must preserve current APIs, the unfiltered fallback, provider separation, and hidden category status.
 
-- latest Kick snapshot freshness, source mode, stream count, and viewer total;
-- category-bearing snapshot continuity;
-- Kick dictionary growth;
-- provider leakage;
-- current and projected Kick D1 size;
-- provider and account-wide headroom;
-- collector and D1 errors;
-- Twitch configuration, data, API, and runtime immutability.
+### Track D — provider UI parity #148
 
-A temporary GitHub Actions schedule is permitted. A new Worker cron is not.
+After the audit package candidate is complete:
 
-### 12A-4-24D — Kick acceptance or rollback closeout
+- compare Twitch/Kick Day Flow and Battle Lines skeletons;
+- align controls, chart/detail/KPI ordering, state handling, and Data Status links;
+- preserve honest provider-specific data/source/limitation differences;
+- do not alter collectors, cadence, category gates, D1 schema, or cross-provider behavior.
 
-On success:
+## 12A-5C — public Twitch filter cutover
 
-- freeze sanitized final evidence;
-- record workflow, job, artifact, digest, package, trigger, and deployment identities;
-- advance canonical state to Kick permanent category capture accepted;
-- retire all temporary trigger and observation paths.
+Only after accepted #659 evidence:
 
-On failure:
-
-- restore normal category-disabled Kick configuration;
-- prove normal five-minute collection recovered;
-- prove permanent Kick category capture stopped;
-- prove provider leakage remains zero;
-- freeze failure and rollback evidence.
-
-## Track B — hidden Twitch Heatmap category filter
-
-### 12A-5A — hidden implementation package
-
-This work may proceed immediately and in parallel with Track A.
-
-- extend the Twitch Heatmap API contract with category ID, category name, and available-category options;
-- add `All categories` as the default;
-- filter before Top 20 / 50 / 100 selection and layout;
-- preserve tile semantics and unfiltered fallback;
-- persist Twitch category selection in URL state;
-- implement explicit loading, empty, partial, stale, demo, unknown-category, and unavailable states;
-- add desktop, mobile, keyboard, accessibility, API-contract, browser, and regression coverage;
-- keep the feature behind a disabled flag or non-public route;
-- add no public navigation or default-route exposure.
-
-### 12A-5B — seven-day Twitch accumulation audit
-
-At or after `2026-07-27T11:40:00Z`, run a read-only audit covering:
-
-- category-bearing snapshot continuity since `2026-07-20T11:40:00Z`;
-- collector errors;
-- provider leakage;
-- category dictionary continuity and bounded growth;
-- snapshot freshness and real/non-empty state;
-- projected Twitch and account-wide storage headroom;
-- public UI still disabled during the audit.
-
-### 12A-5C — public Twitch filter cutover
-
-Public exposure requires both the accumulation audit and hidden implementation package to be accepted. Use a separate PR to:
-
-- enable the production flag or normal route;
+- use a separate PR;
 - expose the category control on Twitch Heatmap only;
-- retain the unfiltered fallback;
-- verify production browser, mobile, accessibility, and data-truth behavior;
-- leave Kick UI unchanged.
+- retain `All categories` and the unfiltered fallback;
+- expose no Kick category UI;
+- run production browser, mobile, keyboard, accessibility, fallback, and data-truth checks;
+- record exact build and deployed identities.
 
 ## Future provider UI sequence
 
-After each provider has its own accepted permanent capture and stable accumulation evidence:
+After provider-specific evidence and authorization:
 
-1. provider-specific Heatmap category filter;
-2. provider-specific Day Flow category views;
-3. provider-specific category history.
+1. Heatmap category filter;
+2. Day Flow category views;
+3. category history.
 
-Shared components are allowed. Shared provider identity, totals, rankings, or automatic mapping are not.
+## Pull request boundaries and freshness
 
-## Pull request boundaries
+Each PR must state:
 
-Each category PR must state:
-
-- the exact phase and track;
-- the provider affected;
-- the mandatory source documents read;
+- exact phase and track;
+- current-main SHA read;
+- current roadmap, schedule, gate, affected specification/plan, and active WIP read;
+- provider and paths affected;
 - whether Worker config, D1, cron, retention, backfill, API, hidden UI, public UI, routes, navigation, or bindings change;
-- exact validation and production evidence;
-- rollback behavior;
+- targeted and final validation;
+- production and rollback boundary;
 - public-exposure state;
-- temporary paths that must later be retired.
+- exact next branch and stop rule.
+
+If source-of-truth documents are stale or disagree, update them before implementation.
