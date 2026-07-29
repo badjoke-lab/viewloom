@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-permanent-category-recovery-trigger-v1",
+  "status": "armed",
+  "provider": "twitch",
+  "oneTime": true,
+  "confirmation": "RUN_TWITCH_PERMANENT_CATEGORY_RECOVERY",
+  "packagePr": 653,
+  "packageMergeSha": "698c99aa543e9d4ee9d0e710c88ade52171f4d79",
+  "startAt": "2026-07-29T05:30:00.000Z"
+}
