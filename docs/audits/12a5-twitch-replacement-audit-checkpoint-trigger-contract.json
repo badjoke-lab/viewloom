@@ -1,11 +1,12 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-trigger-contract-v1",
-  "status": "ready_for_validation",
+  "status": "accepted",
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
   "mode": "checkpoint",
   "packageContract": "docs/audits/12a5-twitch-replacement-audit-checkpoint-package-contract.json",
+  "packageAcceptance": "docs/audits/12a5-twitch-replacement-audit-checkpoint-package-acceptance.json",
   "trigger": {
     "path": "docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger.json",
     "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-trigger-v1",
@@ -30,9 +31,9 @@
   },
   "acceptedPackageIdentity": {
     "required": true,
-    "packagePr": null,
-    "packageMergeSha": null,
-    "acceptancePr": null
+    "packagePr": 665,
+    "packageMergeSha": "317675ea9a6256eb61bf36f8ec9d7a51ffdfff2a",
+    "acceptancePr": 666
   },
   "executionBoundary": {
     "event": "push_to_main_with_exact_trigger_path",
@@ -57,5 +58,5 @@
     "publicCutoverAuthorized": false,
     "triggerRetirementRequired": true
   },
-  "nextGate": "after package acceptance, add the exact one-file trigger with the accepted package PR and merge SHA"
+  "nextGate": "add the exact one-file trigger with package PR 665 and merge SHA 317675ea9a6256eb61bf36f8ec9d7a51ffdfff2a"
 }
