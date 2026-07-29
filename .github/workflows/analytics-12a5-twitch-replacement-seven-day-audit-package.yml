@@ -1,0 +1,94 @@
+name: Analytics 12A5 Twitch Replacement Seven-Day Audit Package
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
+      - 'docs/product/twitch-replacement-seven-day-audit-spec.md'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/audits/12a2-current-gate-state.json'
+      - 'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json'
+      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json'
+      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
+      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json'
+      - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
+      - 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs'
+      - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
+      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs'
+      - 'scripts/verify-category-rollout-policy.mjs'
+      - 'scripts/verify-development-policy.mjs'
+      - 'workers/collector-twitch/wrangler.category-permanent.toml'
+      - 'workers/collector-twitch/wrangler.toml'
+      - 'workers/collector-kick/wrangler.category-permanent.toml'
+      - 'workers/collector-kick/wrangler.toml'
+      - '.github/workflows/analytics-12a5-twitch-replacement-seven-day-audit-package.yml'
+      - '.github/workflows/category-rollout-policy.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
+      - 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs'
+      - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
+      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs'
+      - '.github/workflows/analytics-12a5-twitch-replacement-seven-day-audit-package.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a5-twitch-replacement-seven-day-audit-package-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Parse dormant replacement audit package
+        run: |
+          node --check scripts/run-12a5-twitch-replacement-seven-day-audit.mjs
+          node --check scripts/test-12a5-twitch-replacement-seven-day-audit.mjs
+          node --check scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs
+      - name: Verify dormant replacement audit package
+        run: node scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs
+      - name: Test exact replacement audit window and slot accounting
+        run: node scripts/test-12a5-twitch-replacement-seven-day-audit.mjs
+      - name: Verify current category rollout policy
+        run: node scripts/verify-category-rollout-policy.mjs
+      - name: Verify current development policy
+        run: node scripts/verify-development-policy.mjs
+      - name: Typecheck web
+        run: pnpm typecheck:web
+      - name: Build web
+        run: pnpm build:web
+      - name: Verify production build still contains no public category controls
+        run: |
+          test -f apps/web/dist/twitch/heatmap/index.html
+          ! grep -q 'categoryPreview' apps/web/dist/twitch/heatmap/index.html
+          ! grep -q 'heatmap-category-preview-controls' apps/web/dist/twitch/heatmap/index.html
+          ! grep -q 'data-category-preview-select' apps/web/dist/twitch/heatmap/index.html
+          test -f apps/web/dist/kick/heatmap/index.html
+          ! grep -q 'categoryPreview' apps/web/dist/kick/heatmap/index.html
+          ! grep -q 'data-category-preview-select' apps/web/dist/kick/heatmap/index.html
+      - name: Summarize dormant package boundary
+        run: |
+          {
+            echo '## Twitch replacement seven-day audit package'
+            echo
+            echo '- Package mode: dormant validation only'
+            echo '- Governing main SHA: `0f692d122b5320ffbad8eea413b6c8b945f47dc2`'
+            echo '- Window: `[2026-07-29T05:30:00Z, 2026-08-05T05:30:00Z)`'
+            echo '- Expected five-minute slots: `2016`'
+            echo '- Accepted hidden API/controls contracts checked by the current package verifier'
+            echo '- Historical v28/v29 acceptance verifiers are not rerun against canonical v33'
+            echo '- Production credentials on PR: no'
+            echo '- Worker or D1 mutation: no'
+            echo '- Public category-filter exposure: no'
+            echo '- Kick change: no'
+            echo '- Separate checkpoint/final execution trigger required: yes'
+          } >> "$GITHUB_STEP_SUMMARY"

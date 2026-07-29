@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-seven-day-audit-package-v1",
+  "status": "ready_for_dormant_package_validation",
+  "phase": "12A-5B-R2",
+  "parentTrackingIssue": 623,
+  "hiddenUiTrackingIssue": 635,
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "feature": "heatmap_category_filter",
+  "governingMainSha": "0f692d122b5320ffbad8eea413b6c8b945f47dc2",
+  "specification": "docs/product/twitch-replacement-seven-day-audit-spec.md",
+  "canonicalGate": "docs/audits/12a2-current-gate-state.json",
+  "recoveryAcceptance": "docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json",
+  "window": {
+    "semantics": "half_open",
+    "startAt": "2026-07-29T05:30:00.000Z",
+    "endExclusiveAt": "2026-08-05T05:30:00.000Z",
+    "minimumStableDays": 7,
+    "cadenceMinutes": 5,
+    "expectedFinalSlots": 2016,
+    "originalWindowValid": false
+  },
+  "runtime": {
+    "twitchServiceName": "viewloom-collector-twitch",
+    "twitchDatabaseName": "vl_twitch_hot",
+    "twitchPermanentConfig": "workers/collector-twitch/wrangler.category-permanent.toml",
+    "twitchRollbackConfig": "workers/collector-twitch/wrangler.toml",
+    "kickServiceName": "viewloom-collector-kick",
+    "kickDatabaseName": "vl_kick_hot",
+    "kickPermanentConfig": "workers/collector-kick/wrangler.category-permanent.toml",
+    "kickRollbackConfig": "workers/collector-kick/wrangler.toml",
+    "collectorCron": "*/5 * * * *",
+    "categoryContractVersion": "category-source-v1"
+  },
+  "thresholds": {
+    "minimumCategoryCoverageRatio": 0.995,
+    "maximumMissingSlots": 10,
+    "maximumConsecutiveMissingSlots": 2,
+    "minimumCategoryReferenceCoverageRatio": 0.995,
+    "latestSnapshotFreshnessMinutesMax": 20,
+    "providerProjectedNinetyDaySizeMbMax": 440,
+    "providerHeadroomMbMin": 10,
+    "accountWideHeadroomMbMin": 500,
+    "providerCapacityMb": 450,
+    "accountCapacityMb": 4608,
+    "additionalNinetyDayCategoryMb": 48.32,
+    "collectorErrorRunsMax": 0,
+    "providerLeakageRowsMax": 0,
+    "unresolvedCategoryIdsMax": 0,
+    "invalidCategoryRefsMax": 0,
+    "dictionaryEmptyNamesMax": 0,
+    "dictionaryContractMismatchesMax": 0
+  },
+  "modes": {
+    "checkpoint": {
+      "allowedBeforeFinalBoundary": true,
+      "authorizesAuditAcceptance": false,
+      "authorizesPublicCutover": false,
+      "endExclusive": "latest completed five-minute boundary capped at final end"
+    },
+    "final": {
+      "allowedBeforeFinalBoundary": false,
+      "requiresExactFullWindow": true,
+      "authorizesAuditAcceptanceOnly": true,
+      "authorizesPublicCutover": false
+    }
+  },
+  "publicSurface": {
+    "baseUrl": "https://vl.badjoke-lab.com",
+    "twitchHeatmapPath": "/twitch/heatmap/",
+    "kickHeatmapPath": "/kick/heatmap/",
+    "forbiddenPublicFragments": [
+      "categoryPreview",
+      "heatmap-category-preview-controls",
+      "data-category-preview-select"
+    ],
+    "unfilteredFallbackRequired": true
+  },
+  "package": {
+    "runner": "scripts/run-12a5-twitch-replacement-seven-day-audit.mjs",
+    "test": "scripts/test-12a5-twitch-replacement-seven-day-audit.mjs",
+    "verifier": "scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs",
+    "workflow": ".github/workflows/analytics-12a5-twitch-replacement-seven-day-audit-package.yml",
+    "artifactName": "analytics-12a5-twitch-replacement-seven-day-audit",
+    "sanitizedJsonOnly": true,
+    "productionExecutionIncluded": false,
+    "productionCredentialsUsedOnPullRequest": false,
+    "separateExecutionTriggerRequired": true
+  },
+  "readOnlyBoundary": {
+    "cloudflareApiMethods": ["GET"],
+    "d1Statements": ["SELECT", "WITH"],
+    "workerDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "bindingMutationAuthorized": false,
+    "secretMutationAuthorized": false,
+    "collectorChangeAuthorized": false,
+    "workerCronChangeAuthorized": false,
+    "newWorkerCronAuthorized": false,
+    "backfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "kickChangeAuthorized": false,
+    "publicExposureAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  },
+  "acceptanceBoundary": {
+    "passingFinalAuditExposesUi": false,
+    "separateEvidenceAcceptancePrRequired": true,
+    "separatePublicCutoverPrRequired": true,
+    "temporaryExecutionPathRetirementRequired": true
+  },
+  "nextGate": "accept the dormant package, then create a separate bounded read-only checkpoint execution path; execute final mode only at or after 2026-08-05T05:30:00.000Z"
+}
