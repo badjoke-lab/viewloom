@@ -200,8 +200,35 @@ assert.equal(toml(permanentTwitch, 'database_id'), toml(normalTwitch, 'database_
 assert.equal(toml(permanentKick, 'database_id'), toml(normalKick, 'database_id'))
 assert.notEqual(toml(normalTwitch, 'database_id'), toml(normalKick, 'database_id'))
 
-assert.ok(workflow.includes("'docs/**'"))
-assert.ok(workflow.includes("'scripts/verify-category-rollout-policy.mjs'"))
+const workflowPathCount = (path) => workflow.split(`- '${path}'`).length - 1
+for (const path of [
+  'AGENTS.md',
+  'CONTRIBUTING.md',
+  'docs/README.md',
+  '.github/pull_request_template.md',
+  'docs/product/category-capture-permanent-rollout-spec.md',
+  'docs/product/category-capture-permanent-rollout-plan.md',
+  'docs/product/twitch-replacement-seven-day-audit-spec.md',
+  'docs/product/heatmap-canvas-redesign-spec.md',
+  'docs/product/heatmap-canvas-implementation-plan.md',
+  'docs/product/current-roadmap.md',
+  'docs/product/current-schedule.md',
+  'docs/audits/12a2-current-gate-state.json',
+  'docs/audits/12a5-twitch-permanent-category-recovery-contract.json',
+  'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json',
+  'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json',
+  'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json',
+  'docs/work-in-progress/phase12a4-category-parallel-execution.md',
+  'docs/operations/development-and-deployment-policy.md',
+  'workers/collector-twitch/**',
+  'workers/collector-kick/**',
+  'db/d1/**',
+  'apps/web/**',
+  'scripts/verify-category-rollout-policy.mjs',
+  '.github/workflows/category-rollout-policy.yml',
+]) {
+  assert.equal(workflowPathCount(path), 2, `workflow must watch ${path} on pull_request and push`)
+}
 assert.ok(workflow.includes('cancel-in-progress: true'))
 
 console.log(JSON.stringify({
