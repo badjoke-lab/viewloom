@@ -5,78 +5,82 @@ Last updated: 2026-07-29
 
 ## Current position
 
-ViewLoom is a production Twitch/Kick observation site with provider-separated collectors, D1 storage, public data-status surfaces, Heatmap, Day Flow, Battle Lines, History & Trends, and channel pages.
+ViewLoom is a production Twitch/Kick observation site with provider-separated collectors, D1 storage, public Data Status surfaces, Heatmap, Day Flow, Battle Lines, History & Trends, and channel pages.
 
 ## Current milestone: 12A — free-tier long-run hardening
 
 ### Completed
 
-- Provider-separated Kick and Twitch bounded category canaries, rollback, final acceptance, and execution-path retirement.
-- Twitch permanent category capture initially launched and passed its first observation gate.
-- Kick permanent category capture completed its minimum observation and was accepted in PR #648.
-- The first Twitch seven-day audit in PR #651 correctly rejected a production configuration regression.
-- Provider-scoped collector deployment protection and the dormant Twitch recovery package were accepted in PR #653 and PR #654.
-- The guarded Twitch-only recovery was triggered by PR #655, succeeded in run `30423637234`, and was accepted and retired in PR #657.
-
-- 12A-4-24A Kick permanent-category implementation package accepted in PR #637.
-- 12A-5A hidden Twitch Heatmap category API package accepted in PR #638.
-- Kick dormant release package accepted in PR #641 and frozen canonically in PR #642.
-- Hidden Twitch Heatmap category controls accepted from PR #640 and frozen canonically in PR #642 without public exposure.
-- Kick permanent category capture started through PR #643, completed the minimum 24-hour observation, and was accepted in PR #648 without rollback.
-- The first Twitch seven-day audit was executed read-only in PR #651 and correctly rejected after detecting a production configuration regression.
+- Twitch and Kick permanent category capture accepted on their existing five-minute collectors.
+- Hidden Twitch Heatmap category API and controls accepted without public exposure.
+- The original Twitch seven-day audit correctly rejected a production configuration regression.
+- Guarded Twitch recovery was triggered by PR #655, verified in run `30423637234`, accepted in PR #657, and synchronized in PR #658.
+- Canonical state is `viewloom-12a2-current-gate-state-v33`.
 
 ### Current gate: replacement Twitch seven-day accumulation
 
-Kick permanent category capture remains accepted and active on the existing five-minute collector.
+The replacement Twitch stability clock started at `2026-07-29T05:30:00.000Z`. The earliest replacement audit is `2026-08-05T05:30:00.000Z` under Issue #659.
 
-Twitch permanent category capture was recovered through PR #655 and accepted in PR #657. The permanent binding is active, two consecutive real and non-empty category-bearing snapshots passed, provider leakage remained zero, storage gates passed, rollback was not required, and Kick was unchanged.
+Public Twitch Heatmap category-filter exposure remains unauthorized. The original clock is invalid and cannot be used as release evidence.
 
-The replacement stability clock started at `2026-07-29T05:30:00.000Z`. The earliest replacement read-only seven-day audit is `2026-08-05T05:30:00.000Z`.
+## Active deliverables before 2026-08-05
 
-The original clock that began on 2026-07-20 remains invalid. Public Twitch Heatmap category-filter exposure remains unauthorized.
+### Track A — replacement audit readiness
 
-### Active deliverables
+1. Freeze the #659 audit specification.
+2. Build a dormant read-only audit package before the boundary.
+3. Verify exact window identity, expected five-minute slots, bounded-gap accounting, category contract/reference continuity, collector errors, permanent binding, leakage, freshness, storage headroom, and hidden-public-surface state.
+4. Add bounded read-only checkpoints so a broken accumulation window is detected before the final day.
+5. Keep checkpoints non-mutating and do not treat them as final audit acceptance.
+6. At or after `2026-08-05T05:30:00.000Z`, run #659 and freeze the result canonically.
 
-#### Track A — Kick
+### Track B — Heatmap Canvas redesign
 
-1. Preserve the accepted Kick permanent configuration and five-minute cadence.
-2. Do not deploy or mutate Kick from Twitch-only work.
-3. Do not add Kick category UI without separate evidence and authorization.
+1. Accept the Canvas/Camera/LOD specification and implementation plan.
+2. PR-1: split current Heatmap responsibilities without changing public behavior.
+3. PR-2: add Canvas scene, camera state, redraw, world-coordinate hit testing, and overlay architecture behind a hidden route or disabled flag.
+4. Do not cut over the production renderer before browser, mobile, accessibility, and data-truth acceptance.
+5. Do not expose the hidden category filter as part of Canvas work.
 
-#### Track B — Twitch hidden filter
+### Track C — provider UI parity
 
-1. Accumulate uninterrupted category-bearing Twitch snapshots from `2026-07-29T05:30:00.000Z`.
-2. Run the replacement read-only seven-day audit at or after `2026-08-05T05:30:00.000Z`.
-3. Verify cadence, permanent binding, coverage, reference resolution, zero leakage, errors, freshness, and storage headroom.
-4. Keep hidden controls non-public throughout the audit.
-5. Only after accepted audit evidence, use a separate public cutover PR.
+1. After the #659 package candidate is ready, inspect Issue #148.
+2. Align Twitch/Kick Day Flow and Battle Lines page skeletons, controls, state handling, and Data Status navigation.
+3. Keep allowed provider differences limited to color, copy, data volume, source mode, and limitation notes.
+4. Do not change collectors, cadence, D1 schema, category authorization, or cross-provider behavior.
 
-### Following gates
+### Track D — Kick preservation
 
-1. 12A-5B-R2 replacement Twitch seven-day accumulation audit.
+- Preserve the accepted Kick permanent configuration and five-minute cadence.
+- Do not deploy or change Kick from Twitch-only audit, Heatmap, or parity work.
+- No Kick category UI is authorized by the Twitch audit.
+
+## Following gates
+
+1. 12A-5B-R2 replacement Twitch seven-day audit (#659).
 2. 12A-5C public Twitch Heatmap category-filter cutover only after accepted audit evidence.
-3. Kick category UI only after separate Kick stable-accumulation and UI authorization evidence.
-4. Provider-specific Day Flow category views, then category history.
+3. Heatmap Canvas production cutover only after its independent final validation.
+4. Kick category UI only after separate Kick-specific evidence and authorization.
+5. Provider-specific Day Flow category views, then category history.
 
 ## Hard boundaries
 
 - Twitch and Kick remain separate data products, databases, collectors, options, URL state, and results.
-- Cross-provider category identity, mapping, totals, and combined rankings are not allowed.
 - Existing Worker cadence remains `*/5 * * * *` for both providers.
-- No new Worker cron, backfill, or retention expansion is authorized.
-- Twitch audit work must not mutate Kick.
-- Hidden Twitch controls must not become public before the replacement seven-day audit and separate cutover acceptance.
+- No new Worker cron, D1 schema mutation, backfill, or retention expansion.
+- Cross-provider category identity, mapping, totals, or combined rankings are prohibited.
+- Hidden Twitch controls remain non-public until #659 and a separate cutover PR are accepted.
 - Existing unfiltered Heatmap remains the fallback until public cutover acceptance.
+- Canvas work is renderer/interaction work and does not authorize collector or public-category changes.
 
 ## Source of truth
 
-- `docs/product/category-capture-permanent-rollout-spec.md`
-- `docs/product/category-capture-permanent-rollout-plan.md`
 - `docs/product/current-schedule.md`
 - `docs/audits/12a2-current-gate-state.json`
-- `docs/audits/12a5-twitch-permanent-category-recovery-contract.json`
-- `docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json`
-- `docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json`
-- `docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json`
-- `docs/audits/12a4-kick-permanent-category-final-acceptance.json`
+- `docs/product/category-capture-permanent-rollout-spec.md`
+- `docs/product/category-capture-permanent-rollout-plan.md`
+- `docs/product/twitch-replacement-seven-day-audit-spec.md`
+- `docs/product/heatmap-canvas-redesign-spec.md`
+- `docs/product/heatmap-canvas-implementation-plan.md`
 - `docs/work-in-progress/phase12a4-category-parallel-execution.md`
+- `docs/operations/development-and-deployment-policy.md`

@@ -2,54 +2,73 @@
 
 Canonical project state is indexed in `docs/README.md`.
 
+## Current state
+
 ```text
-Current phase: Phase 12A Analytics Capture Foundation
-12A-0 through 12A-3: complete
-12A-4 category source audit: accepted PR #513
-12A-4 category storage design: accepted PR #514
-12A-4 migration and disabled runtime: accepted through PR #518
-12A-4 read-only production preflight: accepted PR #523
-12A-4 Twitch and Kick category schemas: complete and audited PR #545
-Schema execution/recovery triggers: retired
-Current workstream: 12A-4-5 bounded provider-separated category execution-cost probe design
-CATEGORY_CAPTURE_ENABLED: absent
-Category runtime capture started: no
+Current phase: 12A-5B-R2 replacement Twitch seven-day accumulation
+Canonical gate: viewloom-12a2-current-gate-state-v33
+Twitch permanent category capture: active
+Kick permanent category capture: active
+Replacement Twitch stability start: 2026-07-29T05:30:00.000Z
+Earliest replacement audit: 2026-08-05T05:30:00.000Z
+Replacement audit issue: #659
+Twitch Heatmap public category-filter exposure: unauthorized
+Existing Twitch cadence: */5 * * * *
+Existing Kick cadence: */5 * * * *
 ```
 
-## Permanent authorities
+## Mandatory current authorities
 
-- `docs/product/current-roadmap.md`
-- `docs/product/current-schedule.md`
-- `docs/audits/12a2-current-gate-state.json`
-- `docs/audits/12a4-category-schema-recovery-audit-evidence.json`
-- `docs/audits/12a4-category-execution-cost-probe-contract.json`
-- `docs/work-in-progress/phase12a4-category-execution-cost-probe.md`
-- `docs/operations/development-and-deployment-policy.md`
+Read these from the current `main` branch before starting work and reread them before merging:
 
-## Current execution rule
+1. `docs/README.md`
+2. `docs/product/current-roadmap.md`
+3. `docs/product/current-schedule.md`
+4. `docs/audits/12a2-current-gate-state.json`
+5. the affected feature specification and implementation plan
+6. the active work-in-progress record
+7. `docs/operations/development-and-deployment-policy.md`
 
-Do not reapply either provider schema. The only current implementation target is a bounded provider-separated execution-cost probe package. It must use reserved identifiers, run Twitch before Kick, clean one provider completely before the next starts, verify zero remaining rows, and leave category capture disabled.
+Current feature authorities include:
+
+- `docs/product/category-capture-permanent-rollout-spec.md`
+- `docs/product/category-capture-permanent-rollout-plan.md`
+- `docs/product/twitch-replacement-seven-day-audit-spec.md`
+- `docs/product/heatmap-canvas-redesign-spec.md`
+- `docs/product/heatmap-canvas-implementation-plan.md`
+- `docs/work-in-progress/phase12a4-category-parallel-execution.md`
+
+Do not rely on a cached handoff, an old chat summary, or a historical acceptance file when current `main` differs. The current roadmap, schedule, canonical gate, affected specification, and active WIP determine authorization.
+
+## Current execution order
+
+1. Complete the dormant read-only package for replacement audit #659.
+2. Add bounded read-only checkpoints that can detect a broken accumulation window before 2026-08-05.
+3. Begin Heatmap Canvas PR-1: module/responsibility split with no user-visible behavior change.
+4. Add the Canvas scene only behind a hidden route or disabled feature flag.
+5. Inspect and fix provider UI parity gaps from #148 only after the audit package candidate is complete.
+6. At or after `2026-08-05T05:30:00.000Z`, execute #659 read-only and freeze the result.
+7. Keep public category-filter exposure disabled until an accepted audit and a separate cutover PR.
 
 ## Production safety
 
 - `main` is production.
 - No direct push to `main`.
-- One PR per responsibility.
-- Package PRs do not use production credentials or execute production work.
-- Production execution requires a separate one-file trigger PR.
-- Acceptance uses exact push SHA and sanitized artifact evidence.
-- Twitch/Kick bindings and outputs remain separate.
-- No new cron, backfill, retention expansion, cross-provider identity, or combined category rankings.
-- Temporary Workers must be deleted and return HTTP 404.
+- Use `work-*` for ordinary work and one PR per responsibility.
+- Package PRs do not use production credentials or execute production mutation.
+- Production execution requires a separately accepted exact trigger where the contract requires one.
+- Twitch and Kick bindings, rows, routes, options, and outputs remain separate.
+- No new Worker cron, cadence change, D1 schema mutation, backfill, retention expansion, cross-provider identity, or combined category ranking.
+- Heatmap Canvas work must not change collector behavior or expose the hidden category filter.
+- Existing unfiltered Heatmap remains the production fallback until a separately accepted cutover.
 
 ## Validation
 
-At minimum:
+Run the affected targeted checks during iteration, then all feature and shared gates on the latest candidate HEAD. At minimum for governance/category work:
 
 ```bash
 node scripts/verify-development-policy.mjs
-pnpm build
-pnpm typecheck
+node scripts/verify-category-rollout-policy.mjs
 ```
 
-Also run the workstream-specific scope, package, fixture, evidence, and Wrangler dry-run gates.
+Run web build, typecheck, browser, mobile, accessibility, and data-truth gates when the affected scope requires them.

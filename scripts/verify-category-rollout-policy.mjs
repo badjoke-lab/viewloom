@@ -5,275 +5,181 @@ const read = (path) => readFileSync(path, 'utf8')
 const json = (path) => JSON.parse(read(path))
 
 const files = {
+  agents: 'AGENTS.md',
+  contributing: 'CONTRIBUTING.md',
+  docsIndex: 'docs/README.md',
+  policy: 'docs/operations/development-and-deployment-policy.md',
+  prTemplate: '.github/pull_request_template.md',
   spec: 'docs/product/category-capture-permanent-rollout-spec.md',
   plan: 'docs/product/category-capture-permanent-rollout-plan.md',
+  auditSpec: 'docs/product/twitch-replacement-seven-day-audit-spec.md',
+  heatmapSpec: 'docs/product/heatmap-canvas-redesign-spec.md',
+  heatmapPlan: 'docs/product/heatmap-canvas-implementation-plan.md',
   roadmap: 'docs/product/current-roadmap.md',
   schedule: 'docs/product/current-schedule.md',
   gate: 'docs/audits/12a2-current-gate-state.json',
-  deployContract: 'docs/audits/12a2-collector-worker-deploy-contract.json',
-  twitchAuditRejection: 'docs/audits/12a5-twitch-seven-day-accumulation-audit-rejection.json',
-  twitchRecovery: 'docs/audits/12a5-twitch-permanent-category-recovery-contract.json',
+  recovery: 'docs/audits/12a5-twitch-permanent-category-recovery-contract.json',
+  recoveryAcceptance: 'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json',
+  hiddenDecision: 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json',
+  hiddenControls: 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json',
+  kickAcceptance: 'docs/audits/12a4-kick-permanent-category-final-acceptance.json',
   activeWip: 'docs/work-in-progress/phase12a4-category-parallel-execution.md',
-  historicalTwitchWip: 'docs/work-in-progress/phase12a4-twitch-permanent-category-capture.md',
-  twitchAcceptance: 'docs/audits/12a4-twitch-permanent-category-final-acceptance.json',
-  kickDecision: 'docs/audits/12a4-kick-permanent-category-decision-contract.json',
-  kickPackage: 'docs/audits/12a4-kick-permanent-category-capture-package-contract.json',
-  kickRelease: 'docs/audits/12a4-kick-permanent-category-release-contract.json',
-  kickObservation: 'docs/audits/12a4-kick-permanent-category-observation-contract.json',
-  kickFinalAcceptance: 'docs/audits/12a4-kick-permanent-category-final-acceptance.json',
-  hiddenTwitchDecision: 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json',
-  hiddenTwitchPackage: 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json',
-  hiddenTwitchControls: 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json',
-  policyWorkflow: '.github/workflows/category-rollout-policy.yml',
+  workflow: '.github/workflows/category-rollout-policy.yml',
   normalTwitch: 'workers/collector-twitch/wrangler.toml',
   permanentTwitch: 'workers/collector-twitch/wrangler.category-permanent.toml',
   normalKick: 'workers/collector-kick/wrangler.toml',
   permanentKick: 'workers/collector-kick/wrangler.category-permanent.toml',
 }
 
-for (const path of Object.values(files)) assert.equal(existsSync(path), true, `${path}: missing`)
+for (const path of Object.values(files)) {
+  assert.equal(existsSync(path), true, `${path}: missing`)
+}
 
+const agents = read(files.agents)
+const contributing = read(files.contributing)
+const docsIndex = read(files.docsIndex)
+const policy = read(files.policy)
+const prTemplate = read(files.prTemplate)
 const spec = read(files.spec)
 const plan = read(files.plan)
+const auditSpec = read(files.auditSpec)
+const heatmapSpec = read(files.heatmapSpec)
+const heatmapPlan = read(files.heatmapPlan)
 const roadmap = read(files.roadmap)
 const schedule = read(files.schedule)
 const activeWip = read(files.activeWip)
-const historicalWip = read(files.historicalTwitchWip)
-const workflow = read(files.policyWorkflow)
+const workflow = read(files.workflow)
+
+for (const [name, source, fragments] of [
+  ['AGENTS', agents, [
+    'Current phase: 12A-5B-R2 replacement Twitch seven-day accumulation',
+    'Read these from the current `main` branch before starting work and reread them before merging:',
+    'docs/product/twitch-replacement-seven-day-audit-spec.md',
+    'docs/product/heatmap-canvas-redesign-spec.md',
+  ]],
+  ['CONTRIBUTING', contributing, [
+    'Required reading and freshness rule',
+    'Current-main SHA',
+    'Build and verify the dormant read-only #659 audit package.',
+  ]],
+  ['docs index', docsIndex, [
+    'Canonical gate viewloom-12a2-current-gate-state-v33',
+    'Work allowed before the audit boundary',
+    'Replacement audit issue #659',
+    'Heatmap Canvas work',
+  ]],
+  ['development policy', policy, [
+    'Mandatory freshness protocol',
+    'Cached chat summaries',
+    'Fetch current main and record its SHA',
+    'Repair stale/conflicting source-of-truth documents before implementation',
+  ]],
+  ['PR template', prTemplate, [
+    'Current-main SHA read:',
+    'I fetched current `main` before creating this branch',
+    'No newer source-of-truth change supersedes this candidate',
+  ]],
+  ['category spec', spec, [
+    'Replacement Twitch stability start: `2026-07-29T05:30:00.000Z`',
+    'Earliest replacement read-only audit: `2026-08-05T05:30:00.000Z`',
+    'The seven-day gate blocks public exposure, not hidden implementation work.',
+    'Heatmap Canvas boundary',
+  ]],
+  ['category plan', plan, [
+    'Current phase 12A-5B-R2 — replacement accumulation and parallel safe work',
+    'Track A — #659 read-only audit package',
+    'Track C — Heatmap Canvas redesign',
+    'Track D — provider UI parity #148',
+  ]],
+  ['audit spec', auditSpec, [
+    'Tracking issue: #659',
+    'The only valid start is `2026-07-29T05:30:00.000Z`',
+    'A passing audit does not itself expose the feature',
+  ]],
+  ['heatmap spec', heatmapSpec, [
+    'Canvas scene, camera state, redraw',
+    'Do not expose the hidden category filter',
+    'world-coordinate hit testing',
+  ]],
+  ['heatmap plan', heatmapPlan, [
+    'work-heatmap-canvas-module-split',
+    'work-heatmap-canvas-scene',
+    'No Canvas production cutover occurs before the audit boundary',
+  ]],
+  ['roadmap', roadmap, [
+    'Active deliverables before 2026-08-05',
+    'Track A — replacement audit readiness',
+    'Track B — Heatmap Canvas redesign',
+    'Track C — provider UI parity',
+  ]],
+  ['schedule', schedule, [
+    '2026-07-30 through 2026-07-31 — #659 package first',
+    '2026-08-01 through 2026-08-04 — checkpoints and independent product work',
+    '2026-08-05 at or after 05:30 UTC / 14:30 JST',
+  ]],
+  ['active WIP', activeWip, [
+    '# 12A-5B-R2 replacement Twitch accumulation and pre-audit parallel work',
+    'Replacement audit issue: #659.',
+    'Heatmap Canvas work',
+    'Provider parity #148',
+  ]],
+]) {
+  for (const fragment of fragments) {
+    assert.ok(source.includes(fragment), `${name} missing: ${fragment}`)
+  }
+}
+
 const gate = json(files.gate)
-const deployContract = json(files.deployContract)
-const twitchAuditRejection = json(files.twitchAuditRejection)
-const twitchRecovery = json(files.twitchRecovery)
-const twitchAcceptance = json(files.twitchAcceptance)
-const kickDecision = json(files.kickDecision)
-const kickPackage = json(files.kickPackage)
-const kickRelease = json(files.kickRelease)
-const kickObservation = json(files.kickObservation)
-const kickFinalAcceptance = json(files.kickFinalAcceptance)
-const hiddenTwitchDecision = json(files.hiddenTwitchDecision)
-const hiddenTwitchPackage = json(files.hiddenTwitchPackage)
-const hiddenTwitchControls = json(files.hiddenTwitchControls)
-
-for (const fragment of [
-  'Twitch permanent category capture is active and accepted',
-  'Kick permanent category capture: implementation and guarded rollout authorized',
-  'Twitch Heatmap category filter: hidden implementation and testing authorized',
-  'The seven-day gate blocks public exposure, not hidden implementation work',
-  'Twitch and Kick remain separate data products',
-  'preserve the existing `*/5 * * * *` Worker cron',
-]) assert.ok(spec.includes(fragment), `spec missing: ${fragment}`)
-
-for (const fragment of [
-  'Current phase 12A-4-24 — parallel Kick rollout and hidden Twitch filter',
-  'Track A — Kick permanent category capture',
-  'Track B — hidden Twitch Heatmap category filter',
-  '12A-5B — seven-day Twitch accumulation audit',
-  '12A-5C — public Twitch filter cutover',
-]) assert.ok(plan.includes(fragment), `plan missing: ${fragment}`)
-
-for (const fragment of [
-  '12A-4-24A Kick permanent-category implementation package accepted in PR #637.',
-  '12A-5A hidden Twitch Heatmap category API package accepted in PR #638.',
-  'Kick dormant release package accepted in PR #641',
-  'Hidden Twitch Heatmap category controls accepted from PR #640',
-  'Kick permanent category capture started through PR #643',
-  'The first Twitch seven-day audit was executed read-only in PR #651',
-  'Twitch permanent category capture was recovered through PR #655 and accepted in PR #657',
-]) assert.ok(roadmap.includes(fragment), `roadmap missing: ${fragment}`)
-
-for (const fragment of [
-  'Canonical target 12A-5B-R2 replacement Twitch seven-day accumulation audit',
-  'Twitch permanent category capture active yes',
-  'Twitch recovery required no',
-  'Original Twitch seven-day clock valid no',
-  'Replacement Twitch seven-day clock active yes',
-  'Kick permanent runtime active yes',
-  'Kick permanent implementation package accepted yes',
-  'Kick permanent release package accepted yes',
-  'Twitch Heatmap hidden category API package accepted yes',
-  'Twitch Heatmap hidden control package accepted yes',
-  'Twitch Heatmap public category-filter exposure authorized no',
-  'Replacement Twitch seven-day audit earliest 2026-08-05T05:30:00.000Z',
-]) assert.ok(schedule.includes(fragment), `schedule missing: ${fragment}`)
-
-for (const fragment of [
-  '# 12A-5B-R2 replacement Twitch seven-day accumulation',
-  '## Recovery result',
-  'Final acceptance PR: #648.',
-  'Recovery acceptance and execution-path retirement PR: #657.',
-  'The original seven-day stability clock is invalid',
-]) assert.ok(activeWip.includes(fragment), `active WIP missing: ${fragment}`)
-assert.ok(historicalWip.includes('Status: completed historical work record'))
-assert.ok(historicalWip.includes('Superseded as active WIP by'))
+const recovery = json(files.recovery)
+const recoveryAcceptance = json(files.recoveryAcceptance)
+const hiddenDecision = json(files.hiddenDecision)
+const hiddenControls = json(files.hiddenControls)
+const kickAcceptance = json(files.kickAcceptance)
 
 assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v33')
 assert.equal(gate.status, '12a5_twitch_permanent_category_capture_recovered_seven_day_accumulation_active')
 assert.equal(gate.currentWorkstream.phase, '12A-5B-R2')
-assert.equal(gate.currentWorkstream.trackingIssue, 623)
-assert.equal(gate.currentWorkstream.kickTrackingIssue, 634)
-assert.equal(gate.currentWorkstream.twitchHiddenUiTrackingIssue, 635)
 assert.equal(gate.currentWorkstream.twitchPermanentCaptureActive, true)
-assert.equal(gate.currentWorkstream.kickPermanentCaptureAuthorized, true)
 assert.equal(gate.currentWorkstream.kickPermanentCaptureActive, true)
-assert.equal(gate.currentWorkstream.kickPermanentPackageAccepted, true)
-assert.equal(gate.currentWorkstream.kickReleasePackageAccepted, true)
-assert.equal(gate.currentWorkstream.twitchHeatmapCategoryFilterHiddenImplementationAuthorized, true)
-assert.equal(gate.currentWorkstream.twitchHeatmapCategoryApiPackageAccepted, true)
-assert.equal(gate.currentWorkstream.twitchHeatmapCategoryHiddenControlsAccepted, true)
-assert.equal(gate.currentWorkstream.twitchHeatmapCategoryFilterPublicExposureAuthorized, false)
-assert.equal(gate.currentWorkstream.publicCategoryUiEarliestAuditAt, '2026-08-05T05:30:00.000Z')
+assert.equal(gate.currentWorkstream.twitchRecoveryRequired, false)
 assert.equal(gate.currentWorkstream.existingFiveMinuteCronPreserved, true)
-assert.equal(gate.currentWorkstream.observationActive, false)
-assert.equal(gate.currentWorkstream.observationScheduleCurrent, false)
-
+assert.equal(gate.currentWorkstream.twitchStableAccumulationStartAt, '2026-07-29T05:30:00.000Z')
+assert.equal(gate.currentWorkstream.twitchStableAccumulationEarliestAuditAt, '2026-08-05T05:30:00.000Z')
+assert.equal(gate.currentWorkstream.twitchHeatmapCategoryFilterPublicExposureAuthorized, false)
 assert.equal(gate.categoryCapture.twitchPermanentRuntimeCaptureActive, true)
-assert.equal(gate.categoryCapture.kickPermanentRuntimeCaptureAuthorized, true)
 assert.equal(gate.categoryCapture.kickPermanentRuntimeCaptureActive, true)
-assert.equal(gate.categoryCapture.kickPermanentPackageAccepted, true)
-assert.equal(gate.categoryCapture.twitchHeatmapCategoryApiPackageAccepted, true)
-assert.equal(gate.categoryCapture.twitchHeatmapCategoryHiddenControlsAccepted, true)
-assert.equal(gate.categoryCapture.kickReleasePackageAccepted, true)
-assert.equal(gate.categoryCapture.categoryUiAuthorized, false)
-assert.equal(gate.categoryCapture.categoryUiImplementationAuthorized, true)
 assert.equal(gate.categoryCapture.categoryUiPublicExposureAuthorized, false)
-assert.equal(gate.categoryCapture.twitchHeatmapCategoryFilterPublicExposureAuthorized, false)
 assert.equal(gate.categoryCapture.newCronAuthorized, false)
 assert.equal(gate.categoryCapture.backfillAuthorized, false)
 assert.equal(gate.categoryCapture.retentionExpansionAuthorized, false)
 assert.equal(gate.categoryCapture.crossProviderIdentityAllowed, false)
 assert.equal(gate.categoryCapture.combinedProviderRankingAllowed, false)
-
-assert.ok(gate.closedBlockers.includes('kick_permanent_category_capture_not_authorized'))
-assert.ok(gate.closedBlockers.includes('kick_permanent_category_capture_not_implemented'))
-assert.ok(gate.closedBlockers.includes('kick_permanent_category_capture_release_package_not_accepted'))
-assert.ok(gate.closedBlockers.includes('twitch_heatmap_category_filter_hidden_controls_not_accepted'))
 assert.deepEqual(gate.openBlockers, [
   'twitch_category_ui_seven_day_accumulation_not_accepted',
   'twitch_heatmap_category_filter_public_exposure_not_authorized',
 ])
 assert.ok(gate.closedBlockers.includes('twitch_permanent_category_capture_regression_not_recovered'))
-assert.equal(gate.currentWorkstream.twitchRecoveryRequired, false)
-assert.equal(gate.currentWorkstream.twitchRecoveryTrackingIssue, 652)
-assert.equal(gate.currentWorkstream.twitchStableAccumulationResetRequired, false)
-assert.equal(gate.currentWorkstream.twitchStableAccumulationStartAt, '2026-07-29T05:30:00.000Z')
-assert.equal(gate.currentWorkstream.twitchStableAccumulationEarliestAuditAt, '2026-08-05T05:30:00.000Z')
-assert.equal(gate.twitchPermanentCategoryRegression.status, 'recovered')
-assert.equal(gate.twitchPermanentCategoryRegression.deploymentWorkflowRunId, 30003576549)
-assert.equal(gate.twitchPermanentCategoryRegression.deploymentJobId, 89194219805)
-assert.equal(gate.twitchPermanentCategoryRegression.originalSevenDayClockValid, false)
-assert.equal(gate.twitchPermanentCategoryRegression.publicExposureAuthorized, false)
-assert.equal(deployContract.schemaVersion, 'viewloom-12a2-collector-worker-deploy-contract-v3')
-assert.equal(deployContract.planning.kickChangeDeploysTwitch, false)
-assert.equal(twitchAuditRejection.status, 'rejected_production_regression')
-assert.equal(twitchAuditRejection.decision.publicCutoverAuthorized, false)
-assert.ok(['ready_for_dormant_package_validation', 'accepted'].includes(twitchRecovery.status))
-assert.equal(twitchRecovery.trackingIssue, 652)
-assert.equal(twitchRecovery.status, 'accepted')
-assert.equal(twitchRecovery.acceptance.packagePr, 653)
-assert.equal(twitchRecovery.acceptance.packageMergeSha, '698c99aa543e9d4ee9d0e710c88ade52171f4d79')
-assert.equal(twitchRecovery.acceptance.mainPushBothDeploymentsSkipped, true)
-assert.equal(gate.categoryCapture.twitchRecoveryPackageAccepted, true)
-assert.equal(gate.currentWorkstream.twitchRecoveryPackageAccepted, true)
-assert.equal(gate.currentWorkstream.twitchRecoveryPackagePr, 653)
-assert.equal(gate.currentWorkstream.twitchRecoveryPackageAcceptancePr, 654)
-assert.equal(gate.currentWorkstream.exactTwitchRecoveryTriggerCurrent, false)
-assert.equal(gate.twitchPermanentCategoryRecoveryPackage.status, 'accepted_executed_and_retired')
-assert.equal(gate.twitchPermanentCategoryRecoveryPackage.mainPushBothDeploymentsSkipped, true)
-assert.equal(gate.twitchPermanentCategoryRecoveryPackage.runtimeActive, true)
-assert.equal(gate.twitchPermanentCategoryRecoveryPackage.acceptancePr, 657)
-assert.equal(gate.twitchPermanentCategoryRecoveryPackage.triggerRetired, true)
-assert.equal(gate.twitchPermanentCategoryRecoveryPackage.workflowRetired, true)
-assert.equal(gate.twitchPermanentCategoryRecoveryPackage.kickChanged, false)
 
-assert.equal(gate.categoryParallelExecutionDecision.status, 'accepted')
-assert.equal(gate.categoryParallelExecutionDecision.tracks.kickPermanentCapture.packageAccepted, true)
-assert.equal(gate.categoryParallelExecutionDecision.tracks.kickPermanentCapture.packagePr, 637)
-assert.equal(gate.categoryParallelExecutionDecision.tracks.kickPermanentCapture.runtimeActive, true)
-assert.equal(gate.categoryParallelExecutionDecision.tracks.kickPermanentCapture.releasePackageAccepted, true)
-assert.equal(gate.categoryParallelExecutionDecision.tracks.kickPermanentCapture.releasePackagePr, 641)
-assert.equal(gate.categoryParallelExecutionDecision.tracks.twitchHeatmapCategoryFilter.apiPackageAccepted, true)
-assert.equal(gate.categoryParallelExecutionDecision.tracks.twitchHeatmapCategoryFilter.apiPackagePr, 638)
-assert.equal(gate.categoryParallelExecutionDecision.tracks.twitchHeatmapCategoryFilter.hiddenControlsAccepted, true)
-assert.equal(gate.categoryParallelExecutionDecision.tracks.twitchHeatmapCategoryFilter.hiddenControlsPr, 640)
-assert.equal(gate.categoryParallelExecutionDecision.tracks.twitchHeatmapCategoryFilter.publicExposureAuthorized, false)
-assert.equal(gate.categoryParallelExecutionDecision.boundaries.newWorkerCronAuthorized, false)
-assert.equal(gate.categoryParallelExecutionDecision.boundaries.backfillAuthorized, false)
-assert.equal(gate.categoryParallelExecutionDecision.boundaries.retentionExpansionAuthorized, false)
+assert.equal(recovery.status, 'accepted')
+assert.equal(recovery.acceptance.publicExposureEnabled, false)
+assert.equal(recovery.acceptance.kickChanged, false)
+assert.equal(recoveryAcceptance.status, 'accepted')
+assert.equal(recoveryAcceptance.startAt, '2026-07-29T05:30:00.000Z')
+assert.equal(recoveryAcceptance.earliestSevenDayAuditAt, '2026-08-05T05:30:00.000Z')
+assert.equal(recoveryAcceptance.gates.finalReadOnlyPreflightPass, true)
+assert.equal(recoveryAcceptance.gates.twoConsecutiveCategorySnapshotsPass, true)
+assert.equal(recoveryAcceptance.gates.rollbackRequired, false)
+assert.equal(recoveryAcceptance.boundaries.kickChanged, false)
+assert.equal(recoveryAcceptance.boundaries.d1MutationPerformed, false)
+assert.equal(recoveryAcceptance.boundaries.cadenceChanged, false)
+assert.equal(recoveryAcceptance.boundaries.publicCategoryUiAuthorized, false)
 
-assert.equal(gate.categoryParallelPackageAcceptance.status, 'accepted')
-assert.equal(gate.categoryParallelPackageAcceptance.kick.packagePr, 637)
-assert.equal(gate.categoryParallelPackageAcceptance.kick.workflowRunId, 30003489805)
-assert.equal(gate.categoryParallelPackageAcceptance.kick.runtimeActive, true)
-assert.equal(gate.categoryParallelPackageAcceptance.kick.releasePackageAccepted, true)
-assert.equal(gate.categoryParallelPackageAcceptance.kick.releasePackagePr, 641)
-assert.equal(gate.categoryParallelPackageAcceptance.kick.twitchChanged, false)
-assert.equal(gate.categoryParallelPackageAcceptance.twitchHiddenApi.packagePr, 638)
-assert.equal(gate.categoryParallelPackageAcceptance.twitchHiddenApi.workflowRunId, 30003251337)
-assert.equal(gate.categoryParallelPackageAcceptance.twitchHiddenApi.hiddenControlsAccepted, true)
-assert.equal(gate.categoryParallelPackageAcceptance.twitchHiddenApi.hiddenControlsPr, 640)
-assert.equal(gate.categoryParallelPackageAcceptance.canonicalAcceptance.acceptancePr, 642)
-assert.equal(gate.categoryParallelPackageAcceptance.twitchHiddenApi.publicExposureAuthorized, false)
-
-assert.equal(kickDecision.status, 'accepted_and_active')
-assert.equal(kickDecision.decision.implementationAuthorized, true)
-assert.equal(kickDecision.decision.runtimeActive, true)
-assert.equal(kickDecision.decision.freshReadOnlyPreflightRequired, true)
-assert.equal(kickDecision.decision.separateExactReleaseTriggerRequired, true)
-assert.equal(kickDecision.runtime.existingCron, '*/5 * * * *')
-assert.equal(Object.values(kickDecision.boundaries).every((value) => value === false), true)
-
-assert.equal(kickPackage.status, 'accepted')
-assert.equal(kickPackage.acceptance.packagePr, 637)
-assert.equal(kickPackage.acceptance.packageMergeSha, 'b4012ebddb9ec33c50b6298c882f0f1a4ee16be0')
-assert.equal(kickPackage.acceptance.workflowRunId, 30003489805)
-assert.equal(kickPackage.acceptance.workflowJobId, 89193908765)
-assert.equal(kickPackage.acceptance.productionRuntimeCaptureStarted, false)
-assert.equal(kickPackage.acceptance.twitchChanged, false)
-
-assert.equal(hiddenTwitchDecision.status, 'accepted_hidden_implementation_only')
-assert.equal(hiddenTwitchDecision.authorization.hiddenImplementationAuthorized, true)
-assert.equal(hiddenTwitchDecision.authorization.publicExposureAuthorized, false)
-assert.equal(hiddenTwitchDecision.publicGate.earliestAuditAt, '2026-08-05T05:30:00.000Z')
-assert.equal(Object.values(hiddenTwitchDecision.boundaries).every((value) => value === false), true)
-
-assert.equal(hiddenTwitchPackage.status, 'accepted')
-assert.equal(hiddenTwitchPackage.acceptance.packagePr, 638)
-assert.equal(hiddenTwitchPackage.acceptance.packageMergeSha, '5b466e3e440324bbd6b19d60aa3acaed0d1d95e8')
-assert.equal(hiddenTwitchPackage.acceptance.workflowRunId, 30003251337)
-assert.equal(hiddenTwitchPackage.acceptance.workflowJobId, 89193154092)
-assert.equal(hiddenTwitchPackage.acceptance.publicExposureEnabled, false)
-assert.equal(hiddenTwitchPackage.acceptance.collectorChanged, false)
-assert.equal(hiddenTwitchPackage.acceptance.kickChanged, false)
-
-assert.equal(kickRelease.status, 'accepted')
-assert.equal(kickRelease.acceptance.pr, 642)
-assert.equal(kickRelease.acceptance.mergeSha, '7afb81bb9098104107860e9fe6c920c7380964ad')
-assert.equal(kickRelease.acceptance.freshReadOnlyPreflightPass, true)
-assert.equal(kickRelease.acceptance.productionWorkerPublished, false)
-assert.equal(kickObservation.status, 'accepted_and_retired')
-assert.equal(kickObservation.monitor.temporaryGitHubSchedule, false)
-assert.equal(kickFinalAcceptance.status, 'accepted')
-assert.equal(kickFinalAcceptance.minimumReached, true)
-assert.equal(kickFinalAcceptance.data.observedCategoryRows, 298)
-assert.equal(kickFinalAcceptance.data.providerLeakageRows, 0)
-assert.equal(kickFinalAcceptance.warningExtensionRequired, false)
-assert.equal(kickFinalAcceptance.rollbackRequired, false)
-assert.equal(hiddenTwitchControls.status, 'accepted')
-assert.equal(hiddenTwitchControls.acceptance.canonicalAcceptancePr, 642)
-assert.equal(hiddenTwitchControls.acceptance.packagePr, 640)
-assert.equal(hiddenTwitchControls.acceptance.packageMergeSha, 'aecd4a10ca0da3146c23e5841412603e1e4416dd')
-assert.equal(hiddenTwitchControls.acceptance.publicExposureEnabled, false)
-
-assert.equal(twitchAcceptance.status, 'accepted')
-assert.equal(twitchAcceptance.data.observedCategoryRows, 291)
-assert.equal(twitchAcceptance.data.providerLeakageRows, 0)
-assert.equal(twitchAcceptance.data.collectorErrorRunsSinceStart, 0)
-assert.equal(twitchAcceptance.warningExtensionRequired, false)
-assert.equal(twitchAcceptance.rollbackRequired, false)
-
-for (const path of [files.deployContract, files.twitchAuditRejection, files.twitchRecovery, files.kickDecision, files.kickPackage, files.kickRelease, files.kickObservation, files.kickFinalAcceptance, files.hiddenTwitchDecision, files.hiddenTwitchPackage, files.hiddenTwitchControls, files.activeWip]) {
-  assert.ok(workflow.includes(`'${path}'`), `policy workflow missing path: ${path}`)
-}
+assert.equal(hiddenDecision.authorization.publicExposureAuthorized, false)
+assert.equal(hiddenDecision.publicGate.earliestAuditAt, '2026-08-05T05:30:00.000Z')
+assert.equal(hiddenControls.acceptance.publicExposureEnabled, false)
+assert.equal(kickAcceptance.status, 'accepted')
+assert.equal(kickAcceptance.rollbackRequired, false)
+assert.equal(kickAcceptance.data.providerLeakageRows, 0)
 
 const normalTwitch = read(files.normalTwitch)
 const permanentTwitch = read(files.permanentTwitch)
@@ -294,22 +200,50 @@ assert.equal(toml(permanentTwitch, 'database_id'), toml(normalTwitch, 'database_
 assert.equal(toml(permanentKick, 'database_id'), toml(normalKick, 'database_id'))
 assert.notEqual(toml(normalTwitch, 'database_id'), toml(normalKick, 'database_id'))
 
+const workflowPathCount = (path) => workflow.split(`- '${path}'`).length - 1
+for (const path of [
+  'AGENTS.md',
+  'CONTRIBUTING.md',
+  'docs/README.md',
+  '.github/pull_request_template.md',
+  'docs/product/category-capture-permanent-rollout-spec.md',
+  'docs/product/category-capture-permanent-rollout-plan.md',
+  'docs/product/twitch-replacement-seven-day-audit-spec.md',
+  'docs/product/heatmap-canvas-redesign-spec.md',
+  'docs/product/heatmap-canvas-implementation-plan.md',
+  'docs/product/current-roadmap.md',
+  'docs/product/current-schedule.md',
+  'docs/audits/12a2-current-gate-state.json',
+  'docs/audits/12a5-twitch-permanent-category-recovery-contract.json',
+  'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json',
+  'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json',
+  'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json',
+  'docs/work-in-progress/phase12a4-category-parallel-execution.md',
+  'docs/operations/development-and-deployment-policy.md',
+  'workers/collector-twitch/**',
+  'workers/collector-kick/**',
+  'db/d1/**',
+  'apps/web/**',
+  'scripts/verify-category-rollout-policy.mjs',
+  '.github/workflows/category-rollout-policy.yml',
+]) {
+  assert.equal(workflowPathCount(path), 2, `workflow must watch ${path} on pull_request and push`)
+}
+assert.ok(workflow.includes('cancel-in-progress: true'))
+
 console.log(JSON.stringify({
   ok: true,
   phase: gate.currentWorkstream.phase,
-  parentTrackingIssue: 623,
-  kickTrackingIssue: 634,
-  twitchHiddenUiTrackingIssue: 635,
+  canonicalGate: gate.schemaVersion,
+  replacementStartAt: gate.currentWorkstream.twitchStableAccumulationStartAt,
+  earliestAuditAt: gate.currentWorkstream.twitchStableAccumulationEarliestAuditAt,
   twitchRuntimeActive: true,
-  twitchRecoveryRequired: false,
-  kickPackageAccepted: true,
   kickRuntimeActive: true,
-  twitchHiddenApiPackageAccepted: true,
-  twitchHiddenControlsAccepted: true,
-  kickReleasePackageAccepted: true,
   publicTwitchFilterAuthorized: false,
-  earliestPublicAuditAt: '2026-08-05T05:30:00.000Z',
-  newWorkerCronAdded: false,
-  nextAction: 'replacement-twitch-seven-day-accumulation-audit',
+  nextBranches: [
+    'work-659-twitch-replacement-audit-package',
+    'work-heatmap-canvas-module-split',
+    'work-heatmap-canvas-scene',
+    'work-148-provider-parity',
+  ],
 }, null, 2))
-

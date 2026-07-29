@@ -1,76 +1,81 @@
-# 12A-5B-R2 replacement Twitch seven-day accumulation
+# 12A-5B-R2 replacement Twitch accumulation and pre-audit parallel work
 
 ## Status
 
-Kick permanent category capture is accepted and active. Twitch permanent category capture was recovered, verified, accepted, and is active again.
+Twitch and Kick permanent category capture are accepted and active. The guarded Twitch recovery was accepted in PR #657 and canonical state is v33.
 
-- Recovery trigger PR: #655.
-- Recovery acceptance and execution-path retirement PR: #657.
-- Recovery run/job/artifact: `30423637234` / `90485345119` / `8713465427`.
 - Replacement stability start: `2026-07-29T05:30:00.000Z`.
 - Earliest replacement audit: `2026-08-05T05:30:00.000Z`.
+- Replacement audit issue: #659.
+- Public Twitch category-filter exposure: unauthorized.
+- Existing provider cadences: `*/5 * * * *`.
 
-Public Twitch category-filter exposure remains unauthorized. The original seven-day stability clock is invalid; only the replacement clock above is current.
+## Current work order
 
-## Recovery result
+### 1. Replacement audit readiness
 
-- Final preflight was read-only and passed.
-- Only `workers/collector-twitch/wrangler.category-permanent.toml` was deployed.
-- Two consecutive real, non-empty, fresh category-bearing snapshots passed.
-- `CATEGORY_CAPTURE_ENABLED=true` is present.
-- Existing cadence remains `*/5 * * * *`.
-- Provider leakage is zero.
-- Storage gates passed.
-- Rollback was not required.
-- Kick was unchanged.
-- Trigger and production recovery workflow were retired in PR #657.
+- Freeze the audit specification.
+- Build the dormant read-only #659 audit package.
+- Verify exact window identity, expected slots, bounded gaps, category contract/reference/dictionary continuity, errors, binding, leakage, freshness, storage, public-surface absence, and Kick immutability.
+- Produce sanitized artifacts only.
+- Add no production trigger until a separately accepted package requires it.
 
-## Track A — Kick permanent capture
+### 2. Bounded checkpoints
 
-- Final acceptance PR: #648.
-- Permanent config: `workers/collector-kick/wrangler.category-permanent.toml`.
-- Runtime active: yes.
-- Existing cadence: `*/5 * * * *`.
-- Twitch-only work must not deploy, mutate, or otherwise change Kick.
+- Detect loss of binding, stale/missing category payloads, leakage, collector errors, unresolved IDs, or storage hard stops before the final day.
+- Remain read-only and non-authorizing.
+- Do not add a Worker cron.
+- Do not reset the accepted start.
 
-## Track B — replacement Twitch accumulation
+### 3. Heatmap Canvas work
 
-1. Accumulate category-bearing snapshots continuously from `2026-07-29T05:30:00.000Z`.
-2. Keep the permanent Twitch binding and existing five-minute cadence unchanged.
-3. At or after `2026-08-05T05:30:00.000Z`, run the replacement read-only seven-day accumulation audit.
-4. Verify expected slots, real/non-empty/fresh snapshots, category references, collector errors, zero leakage, and storage headroom.
-5. Freeze accepted evidence in canonical state.
-6. Keep hidden controls non-public until a separate public cutover PR is accepted.
+- PR-1: module/responsibility split, no public behavior change.
+- PR-2: hidden/disabled Canvas scene with camera/redraw/hit-test architecture.
+- Preserve current API, provider separation, unfiltered fallback, and hidden category controls.
+- No production renderer cutover before final validation.
 
-## Recovery history retained
+### 4. Provider parity #148
 
-- Rejected audit issue: #650.
-- Recovery tracking issue: #652.
-- Root-cause workflow run/job: `30003576549` / `89194219805`.
-- Last category snapshot before regression: `2026-07-23T11:35:00.000Z`.
-- First category-disabled snapshot: `2026-07-23T11:40:00.000Z`.
-- The original clock remains invalid and cannot authorize public UI.
+- Begin only after the #659 package candidate is complete.
+- Align Day Flow and Battle Lines product skeletons and states.
+- No collector, cadence, D1, retention, category authorization, or cross-provider change.
+
+### 5. Final boundary
+
+At or after `2026-08-05T05:30:00.000Z`, execute #659 read-only, freeze evidence, and accept or reject the complete replacement window. A passing audit does not expose UI.
+
+## Recovery result retained
+
+- Trigger PR: #655.
+- Recovery run/job/artifact: `30423637234` / `90485345119` / `8713465427`.
+- Acceptance and execution-path retirement: PR #657.
+- Canonical synchronization: PR #658 / commit `e1fea3f6626a4df3e8b950dcacad3c678683ccc8`.
+- Permanent binding present; two real/non-empty/fresh category-bearing snapshots passed.
+- Cadence unchanged; leakage zero; storage gates passed; rollback not required; Kick unchanged.
 
 ## Shared boundaries
 
 - Twitch and Kick remain provider-separated.
-- Existing cadence remains `*/5 * * * *` for both providers.
-- No new Worker cron, D1 schema mutation, backfill, or retention expansion.
-- No cross-provider identity, mapping, totals, or rankings.
-- No public Twitch category UI before accepted replacement audit and separate cutover.
-- Existing unfiltered Heatmap remains the fallback.
+- No new Worker cron, D1 schema update, backfill, or retention expansion.
+- No public Twitch category UI before accepted #659 evidence and separate cutover.
+- Existing unfiltered Heatmap remains the production fallback.
+- No Heatmap Canvas cutover before independent final validation.
+- Historical rejected evidence cannot authorize release.
 
 ## Mandatory source documents
 
-- `docs/product/category-capture-permanent-rollout-spec.md`
-- `docs/product/category-capture-permanent-rollout-plan.md`
+Before each branch and before merge, read current-main versions of:
+
+- `AGENTS.md`
+- `docs/README.md`
+- `docs/operations/development-and-deployment-policy.md`
 - `docs/product/current-roadmap.md`
 - `docs/product/current-schedule.md`
 - `docs/audits/12a2-current-gate-state.json`
-- `docs/audits/12a5-twitch-permanent-category-recovery-contract.json`
-- `docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json`
-- `docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json`
-- `docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json`
-- `docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json`
-- `docs/audits/12a4-kick-permanent-category-final-acceptance.json`
-- `docs/operations/development-and-deployment-policy.md`
+- `docs/product/category-capture-permanent-rollout-spec.md`
+- `docs/product/category-capture-permanent-rollout-plan.md`
+- `docs/product/twitch-replacement-seven-day-audit-spec.md`
+- the affected feature specification and implementation plan
+- relevant immutable acceptance/evidence records
+
+Record the current-main SHA in the PR. Repair stale or conflicting documents before implementation continues.
