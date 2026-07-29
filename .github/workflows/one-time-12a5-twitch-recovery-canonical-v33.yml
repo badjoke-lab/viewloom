@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/one-time-12a5-twitch-recovery-canonical-v33.yml'
       - 'scripts/apply-12a5-twitch-recovery-canonical-v33.mjs'
+      - 'scripts/patch-12a5-twitch-recovery-policy-fragments.mjs'
   push:
     branches: [main]
     paths:
@@ -28,10 +29,14 @@ jobs:
           fetch-depth: 0
 
       - name: Verify synchronizer syntax
-        run: node --check scripts/apply-12a5-twitch-recovery-canonical-v33.mjs
+        run: |
+          node --check scripts/apply-12a5-twitch-recovery-canonical-v33.mjs
+          node --check scripts/patch-12a5-twitch-recovery-policy-fragments.mjs
 
       - name: Apply canonical recovery acceptance
-        run: node scripts/apply-12a5-twitch-recovery-canonical-v33.mjs
+        run: |
+          node scripts/apply-12a5-twitch-recovery-canonical-v33.mjs
+          node scripts/patch-12a5-twitch-recovery-policy-fragments.mjs
 
       - name: Verify category rollout policy
         run: node scripts/verify-category-rollout-policy.mjs
@@ -61,6 +66,7 @@ jobs:
       - name: Retire one-time synchronizer
         run: |
           rm scripts/apply-12a5-twitch-recovery-canonical-v33.mjs
+          rm scripts/patch-12a5-twitch-recovery-policy-fragments.mjs
           rm .github/workflows/one-time-12a5-twitch-recovery-canonical-v33.yml
 
       - name: Verify bounded diff
@@ -77,6 +83,7 @@ jobs:
           docs/product/current-schedule.md
           docs/work-in-progress/phase12a4-category-parallel-execution.md
           scripts/apply-12a5-twitch-recovery-canonical-v33.mjs
+          scripts/patch-12a5-twitch-recovery-policy-fragments.mjs
           scripts/verify-category-rollout-policy.mjs
           EOF
           diff -u /tmp/expected.txt /tmp/actual.txt
