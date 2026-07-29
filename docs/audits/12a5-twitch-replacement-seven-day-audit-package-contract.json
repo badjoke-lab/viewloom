@@ -111,6 +111,7 @@
     "temporaryExecutionPathRetirementRequired": true
   },
   "acceptance": {
+    "acceptancePr": 662,
     "packagePr": 661,
     "packageCandidateHeadSha": "9d593116e2cccc40dc27bc42b3be55d647e3d3ae",
     "packageMergeSha": "1cab151ce243e1ec58091bfd309f65671e1f41c7",
