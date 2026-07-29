@@ -62,7 +62,7 @@ for (const [path, fragments] of Object.entries({
   'CONTRIBUTING.md': ['Checkpoint run 30478338654 failed', 'No checkpoint rerun or threshold relaxation.'],
   'docs/README.md': ['Checkpoint outcome failed', '248 null refs'],
   'docs/product/current-roadmap.md': ['### Current gate: checkpoint failure diagnosis', '0.994524'],
-  'docs/product/current-schedule.md': ['Current gate checkpoint failure diagnosis package', 'No threshold relaxation'],
+  'docs/product/current-schedule.md': ['Current gate checkpoint failure diagnosis package', 'no threshold relaxation'],
   'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Checkpoint execution and result', '## Current gate: failure diagnosis'],
   'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['completed read-only and failed', 'No threshold relaxation'],
 })) {
