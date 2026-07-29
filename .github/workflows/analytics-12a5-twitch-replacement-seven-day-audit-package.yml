@@ -85,7 +85,7 @@ jobs:
           node --check scripts/test-12a5-twitch-replacement-seven-day-audit.mjs
           node --check scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs
           node --check scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs
-      - name: Verify accepted dormant replacement audit package
+      - name: Verify dormant replacement audit package
         run: node scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs
       - name: Verify replacement audit runner SQL repair
         run: node scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs
