@@ -5,8 +5,15 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/README.md'
+      - '.github/pull_request_template.md'
       - 'docs/product/category-capture-permanent-rollout-spec.md'
       - 'docs/product/category-capture-permanent-rollout-plan.md'
+      - 'docs/product/twitch-replacement-seven-day-audit-spec.md'
+      - 'docs/product/heatmap-canvas-redesign-spec.md'
+      - 'docs/product/heatmap-canvas-implementation-plan.md'
       - 'docs/product/current-roadmap.md'
       - 'docs/product/current-schedule.md'
       - 'docs/audits/12a2-current-gate-state.json'
@@ -18,6 +25,7 @@ on:
       - 'docs/audits/12a4-kick-permanent-category-final-acceptance.json'
       - 'docs/audits/12a5-twitch-seven-day-accumulation-audit-rejection.json'
       - 'docs/audits/12a5-twitch-permanent-category-recovery-contract.json'
+      - 'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json'
@@ -33,8 +41,15 @@ on:
   push:
     branches: [main]
     paths:
+      - 'AGENTS.md'
+      - 'CONTRIBUTING.md'
+      - 'docs/README.md'
+      - '.github/pull_request_template.md'
       - 'docs/product/category-capture-permanent-rollout-spec.md'
       - 'docs/product/category-capture-permanent-rollout-plan.md'
+      - 'docs/product/twitch-replacement-seven-day-audit-spec.md'
+      - 'docs/product/heatmap-canvas-redesign-spec.md'
+      - 'docs/product/heatmap-canvas-implementation-plan.md'
       - 'docs/product/current-roadmap.md'
       - 'docs/product/current-schedule.md'
       - 'docs/audits/12a2-current-gate-state.json'
@@ -46,6 +61,7 @@ on:
       - 'docs/audits/12a4-kick-permanent-category-final-acceptance.json'
       - 'docs/audits/12a5-twitch-seven-day-accumulation-audit-rejection.json'
       - 'docs/audits/12a5-twitch-permanent-category-recovery-contract.json'
+      - 'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json'
