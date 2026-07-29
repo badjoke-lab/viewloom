@@ -1,10 +1,11 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-retirement-v1",
-  "status": "retirement_pending_merge",
+  "status": "retired_on_merge",
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
   "checkpointOutcome": "checkpoint_failed",
+  "evidencePr": 669,
   "evidence": "docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json",
   "execution": {
     "triggerPr": 667,
