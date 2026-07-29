@@ -3,89 +3,66 @@
 Status: source of truth  
 Last updated: 2026-07-30
 
-## Current position
-
-ViewLoom is a production Twitch/Kick observation site with provider-separated collectors, D1 storage, public Data Status surfaces, Heatmap, Day Flow, Battle Lines, History & Trends, and channel pages.
-
 ## Current milestone: 12A — free-tier long-run hardening
 
 ### Completed
 
 - Twitch and Kick permanent category capture accepted on their existing five-minute collectors.
-- Hidden Twitch Heatmap category API and controls accepted without public exposure.
-- Guarded Twitch recovery accepted in PR #657 and synchronized in PR #658.
-- Canonical state remains `viewloom-12a2-current-gate-state-v33`.
-- Dormant replacement audit package accepted through PRs #661 and #662.
-- Runner defect `sqlite_cte_scope_cross_statement` repaired in PR #663 and accepted in PR #664 before any production checkpoint/final execution.
-- Checkpoint package PR #665 merged as `317675ea9a6256eb61bf36f8ec9d7a51ffdfff2a`.
-- Checkpoint package validation run/job `30476596379` / `90659857133` passed trigger absence, package verifier, accepted repair, 2016-slot tests, category/development policies, web typecheck/build, and public-control absence.
-- Checkpoint package acceptance PR #666 freezes the checkpoint-only path and exact trigger contract.
+- Guarded Twitch recovery accepted in PR #657 and canonical state synchronized to v33.
+- Dormant replacement runner accepted through PRs #661/#662.
+- SQL scope defect repaired through PRs #663/#664 before production execution.
+- Bounded checkpoint package accepted through PRs #665/#666.
+- Exact trigger PR #667 merged and checkpoint run `30478338654` executed read-only.
+- Sanitized checkpoint artifact `8734980337` was produced.
 
-### Current gate: exact checkpoint trigger
+### Current gate: checkpoint failure diagnosis
 
-Current branch: `work-659-twitch-replacement-audit-checkpoint-trigger`.
+The checkpoint failed three contractual data gates:
 
-The accepted package can execute only checkpoint mode, only after the exact one-file trigger reaches main. It uses Cloudflare GET and D1 SELECT/WITH only, adds no Worker cron, performs no deployment or mutation, preserves Kick, and cannot accept #659 or expose public UI.
+1. slot coverage `0.980519 < 0.995`;
+2. three consecutive missing slots at `2026-07-29T07:20Z`, `07:25Z`, and `07:30Z`, exceeding the maximum of two;
+3. category-reference coverage `0.994524 < 0.995`, with 248 null references among 45,287 stream references.
 
-## Active deliverables before 2026-08-05
+All runtime safety gates passed: read-only execution, exact start, identities, five-minute cadence, schema, permanent bindings, storage, public containment, zero provider leakage, fresh real latest snapshot, and Kick unchanged.
 
-### Track A — diagnostic checkpoint
+The one-time trigger, execution workflow, and reporter are retired. Public category-filter exposure remains unauthorized.
 
-1. Add only `docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger.json` in the exact trigger PR.
-2. Bind the trigger to package PR #665 and merge SHA `317675ea9a6256eb61bf36f8ec9d7a51ffdfff2a`.
-3. Merge only after trigger identity validation passes; no production execution occurs on the PR.
-4. On main push, execute checkpoint mode once at the exact `startAt`.
-5. Freeze sanitized workflow/job/artifact/digest evidence.
-6. Retire the trigger and temporary path after evidence freeze.
-7. Keep checkpoint evidence diagnostic and non-authorizing.
+## Active deliverable
 
-### Track B — Heatmap Canvas redesign
+Create and separately accept `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package`.
 
-1. Start PR-1 `work-heatmap-canvas-module-split` only after checkpoint execution/evidence priority is secured.
-2. Split current Heatmap responsibilities without public behavior change.
-3. Add Canvas scene/camera/redraw/hit-test only behind a hidden route or disabled flag after PR-1 acceptance.
-4. Do not cut over production renderer before independent browser/mobile/accessibility/data-truth acceptance.
-5. Do not expose the hidden category filter as part of Canvas work.
+The diagnosis must remain read-only and determine:
 
-### Track C — provider UI parity
+- the exact cause and surrounding collector state for the three missing buckets;
+- whether those buckets can appear without backfill or mutation;
+- the per-snapshot/per-stream distribution of the 248 null category references;
+- whether null refs are upstream absence, normalization loss, or collection-path loss;
+- whether recovery and a new verified clock are required.
 
-1. Inspect Issue #148 after checkpoint priority is secured.
-2. Align Twitch/Kick Day Flow and Battle Lines page skeletons, controls, state handling, and Data Status navigation.
-3. Keep allowed provider differences limited to color, copy, data volume, source mode, and limitation notes.
-4. Do not change collectors, cadence, D1 schema, category authorization, or cross-provider behavior.
+## Final-audit status
 
-## Final boundary
+`2026-08-05T05:30:00Z` remains the earliest calendar boundary, but final execution is blocked until the diagnosis and a separate decision are accepted. The checkpoint failure cannot be ignored, rerun away, or repaired by relaxing thresholds.
 
-At or after `2026-08-05T05:30:00.000Z`:
+## Parallel work
 
-1. execute #659 final mode read-only over the exact 2016-slot window;
-2. freeze exact evidence identities;
-3. accept or reject the replacement window in a separate PR;
-4. keep public category controls hidden;
-5. require a separate 12A-5C cutover PR after accepted final evidence.
+Heatmap Canvas module split and #148 provider parity may resume only after checkpoint evidence/retirement is merged and diagnosis priority is secured. They must not touch collector behavior, cadence, category authorization, or Kick runtime.
 
 ## Hard boundaries
 
-- Twitch and Kick remain separate products, databases, collectors, APIs, options, URL state, and results.
-- Existing Worker cadence remains `*/5 * * * *` for both providers.
-- No new Worker cron, D1 schema mutation, backfill, or retention expansion.
-- Cross-provider category identity, mapping, totals, or combined rankings are prohibited.
-- Checkpoint workflow is read-only and checkpoint-only.
-- A checkpoint does not accept #659, guarantee final acceptance, authorize mutation, or expose public UI.
-- Existing unfiltered Heatmap remains the fallback.
-- Canvas work is renderer/interaction work and does not authorize collector/category changes.
+- no checkpoint rerun;
+- no threshold relaxation;
+- no invented/backfilled rows;
+- no automatic recovery or clock reset;
+- no Worker deployment, new cron, cadence, D1 schema, retention, Kick, or cross-provider change;
+- no public category-filter exposure;
+- existing unfiltered Heatmap remains the fallback.
 
 ## Source of truth
 
 - `docs/product/current-schedule.md`
 - `docs/audits/12a2-current-gate-state.json`
 - `docs/product/twitch-replacement-seven-day-audit-spec.md`
-- `docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json`
-- `docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-acceptance.json`
-- `docs/audits/12a5-twitch-replacement-audit-checkpoint-package-contract.json`
-- `docs/audits/12a5-twitch-replacement-audit-checkpoint-package-acceptance.json`
-- `docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger-contract.json`
-- `docs/product/heatmap-canvas-redesign-spec.md`
-- `docs/product/heatmap-canvas-implementation-plan.md`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json`
 - `docs/work-in-progress/phase12a4-category-parallel-execution.md`
 - `docs/operations/development-and-deployment-policy.md`
