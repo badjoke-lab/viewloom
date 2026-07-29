@@ -411,9 +411,17 @@ function buildIdentity({ twitchPermanent, twitchRollback, kickPermanent, kickRol
 }
 
 function queryTwitchWindow({ configPath, databaseName, startAt, endExclusiveAt }) {
+  return runD1Select(
+    configPath,
+    databaseName,
+    buildTwitchWindowSql({ startAt, endExclusiveAt }),
+  )
+}
+
+export function buildTwitchWindowSql({ startAt, endExclusiveAt }) {
   const start = sqlText(startAt)
   const end = sqlText(endExclusiveAt)
-  return runD1Select(configPath, databaseName, `
+  return `
 WITH scoped AS (
   SELECT
     bucket_minute,
@@ -441,8 +449,11 @@ SELECT
   SUM(CASE WHEN category_contract_version = 'category-source-v1' AND item_count = ref_count THEN 1 ELSE 0 END) AS aligned_category_rows
 FROM scoped;
 SELECT bucket_minute AS observed_bucket_minute
-FROM scoped
-WHERE category_contract_version = 'category-source-v1'
+FROM minute_snapshots
+WHERE provider = 'twitch'
+  AND bucket_minute >= '${start}'
+  AND bucket_minute < '${end}'
+  AND json_extract(payload_json, '$.categoryContractVersion') = 'category-source-v1'
 ORDER BY bucket_minute;
 SELECT COUNT(*) AS collector_error_runs
 FROM collector_runs
@@ -514,7 +525,7 @@ FROM minute_snapshots
 WHERE provider = 'twitch'
 ORDER BY bucket_minute DESC
 LIMIT 1;
-`.trim())
+`.trim()
 }
 
 function populateData(evidence, rows, window, contract) {

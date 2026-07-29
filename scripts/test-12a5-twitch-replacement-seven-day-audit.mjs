@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import {
   analyzeSlots,
+  buildTwitchWindowSql,
   determineOutcome,
   resolveAuditWindow,
 } from './run-12a5-twitch-replacement-seven-day-audit.mjs'
@@ -9,6 +10,20 @@ import {
 const contract = JSON.parse(
   fs.readFileSync('docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json', 'utf8'),
 )
+
+const windowSql = buildTwitchWindowSql({
+  startAt: contract.window.startAt,
+  endExclusiveAt: contract.window.endExclusiveAt,
+})
+const statements = windowSql.split(';').map((statement) => statement.trim()).filter(Boolean)
+assert.equal(statements.every((statement) => /^(SELECT|WITH)\b/i.test(statement)), true)
+const slotStatement = statements.find((statement) => statement.includes('observed_bucket_minute'))
+assert.ok(slotStatement)
+assert.ok(slotStatement.includes('FROM minute_snapshots'))
+assert.ok(slotStatement.includes("provider = 'twitch'"))
+assert.ok(slotStatement.includes("json_extract(payload_json, '$.categoryContractVersion') = 'category-source-v1'"))
+assert.equal(slotStatement.includes('FROM scoped'), false)
+assert.equal(statements.slice(1).some((statement) => statement.includes('FROM scoped')), false)
 
 const finalWindow = resolveAuditWindow(
   contract,
@@ -115,6 +130,7 @@ console.log(JSON.stringify({
   ok: true,
   expectedFinalSlots: finalWindow.expectedSlots,
   checkpointExpectedSlots: checkpointWindow.expectedSlots,
+  sqlStatementScopeSafe: true,
   missingSlotAccounting: true,
   checkpointNonAuthorizing: true,
   finalRequiresBoundary: true,
