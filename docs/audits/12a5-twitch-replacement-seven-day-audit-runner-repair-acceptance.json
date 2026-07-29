@@ -1,10 +1,10 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-replacement-seven-day-audit-runner-repair-acceptance-v1",
-  "status": "candidate",
+  "status": "accepted",
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
-  "acceptancePr": 0,
+  "acceptancePr": 664,
   "repairPr": 663,
   "repairCandidateHeadSha": "d171a74e4e6f1e8e9af60324088744d4ce50ee9e",
   "repairMergeSha": "ab33afa4d6195532652791be2380a1fa9a278491",
