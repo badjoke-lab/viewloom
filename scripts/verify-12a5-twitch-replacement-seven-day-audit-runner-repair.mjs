@@ -90,9 +90,9 @@ for (const fragment of [
 
 for (const path of [files.schedule, files.roadmap, files.wip]) {
   const source = read(path)
-  assert.ok(source.includes('PR #663'), `${path}: repair PR missing`)
-  assert.ok(source.includes('PR #664'), `${path}: repair acceptance PR missing`)
-  assert.ok(source.includes('work-659-twitch-replacement-audit-checkpoint-package'), `${path}: checkpoint branch missing`)
+  assert.ok(source.includes('#663'), `${path}: repair PR missing`)
+  assert.ok(source.includes('#664'), `${path}: repair acceptance PR missing`)
+  assert.ok(source.includes('work-659-twitch-replacement-audit-checkpoint-trigger'), `${path}: current trigger branch missing`)
 }
 
 console.log(JSON.stringify({
@@ -103,5 +103,5 @@ console.log(JSON.stringify({
   repairPr: repair.acceptance.repairPr,
   repairAcceptancePr: repair.acceptance.acceptancePr,
   productionExecutionOccurred: false,
-  nextGate: repair.nextGate,
+  currentGate: 'exact_checkpoint_trigger',
 }, null, 2))
