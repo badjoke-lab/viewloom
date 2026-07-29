@@ -13,6 +13,7 @@ Replacement Twitch stability start: 2026-07-29T05:30:00.000Z
 Earliest replacement audit: 2026-08-05T05:30:00.000Z
 Replacement audit issue: #659
 Dormant replacement audit package: accepted from PR #661 through PR #662
+Runner repair: sqlite_cte_scope_cross_statement / validation active
 Twitch Heatmap public category-filter exposure: unauthorized
 Existing Twitch cadence: */5 * * * *
 Existing Kick cadence: */5 * * * *
@@ -37,6 +38,7 @@ Current feature authorities include:
 - `docs/product/twitch-replacement-seven-day-audit-spec.md`
 - `docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json`
 - `docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json`
+- `docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json`
 - `docs/product/heatmap-canvas-redesign-spec.md`
 - `docs/product/heatmap-canvas-implementation-plan.md`
 - `docs/work-in-progress/phase12a4-category-parallel-execution.md`
@@ -45,13 +47,15 @@ Do not rely on a cached handoff, an old chat summary, or a historical acceptance
 
 ## Current execution order
 
-1. Create and accept `work-659-twitch-replacement-audit-checkpoint-package`.
-2. Execute bounded read-only checkpoint mode only through a separate accepted path; freeze sanitized diagnostic evidence.
-3. Begin Heatmap Canvas PR-1: `work-heatmap-canvas-module-split`, with no user-visible behavior change.
-4. Add the Canvas scene only behind a hidden route or disabled feature flag after PR-1 acceptance.
-5. Inspect and fix provider UI parity gaps from #148; the audit package prerequisite is complete.
-6. At or after `2026-08-05T05:30:00.000Z`, execute #659 final mode and freeze the result.
-7. Keep public category-filter exposure disabled until an accepted final audit and a separate cutover PR.
+1. Validate and merge `work-659-twitch-replacement-audit-runner-query-fix`.
+2. Freeze a separate runner-repair acceptance record.
+3. Resume `work-659-twitch-replacement-audit-checkpoint-package` only after repair acceptance.
+4. Execute bounded read-only checkpoint mode only through a separate accepted path; freeze sanitized diagnostic evidence.
+5. Begin Heatmap Canvas PR-1: `work-heatmap-canvas-module-split`, with no user-visible behavior change.
+6. Add the Canvas scene only behind a hidden route or disabled feature flag after PR-1 acceptance.
+7. Inspect and fix provider UI parity gaps from #148.
+8. At or after `2026-08-05T05:30:00.000Z`, execute #659 final mode and freeze the result.
+9. Keep public category-filter exposure disabled until an accepted final audit and a separate cutover PR.
 
 ## Production safety
 
@@ -59,6 +63,7 @@ Do not rely on a cached handoff, an old chat summary, or a historical acceptance
 - No direct push to `main`.
 - Use `work-*` for ordinary work and one PR per responsibility.
 - Package PRs do not use production credentials or execute production mutation.
+- Runner repair performs no Cloudflare/D1 execution and changes no runtime configuration.
 - Production read-only execution requires a separately accepted bounded path where the contract requires one.
 - Checkpoint evidence is diagnostic, does not accept #659, and does not authorize public UI.
 - Twitch and Kick bindings, rows, routes, options, and outputs remain separate.
