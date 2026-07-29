@@ -9,7 +9,7 @@ Earliest execution: `2026-08-05T05:30:00.000Z`
 
 ## Purpose
 
-Define the accepted dormant read-only package, checkpoint behavior, final execution, evidence, acceptance, and failure handling for the replacement Twitch seven-day category accumulation audit.
+Define the accepted dormant read-only package, runner repair, checkpoint behavior, final execution, evidence, acceptance, and failure handling for the replacement Twitch seven-day category accumulation audit.
 
 The audit decides only whether the hidden Twitch Heatmap category filter is eligible for a later separate public-cutover PR. It does not expose UI.
 
@@ -39,17 +39,37 @@ The audit decides only whether the hidden Twitch Heatmap category filter is elig
 - Production execution included: no.
 - Public category-filter exposure authorized: no.
 
-The next package is a separate bounded read-only checkpoint execution path. It must not modify the accepted runner or convert checkpoint evidence into final acceptance.
+## Runner repair before checkpoint execution
+
+Pre-execution review found defect `sqlite_cte_scope_cross_statement` in the accepted dormant runner.
+
+The original query defined CTE `scoped` in one SQL statement and referenced it from a later independent statement used to enumerate observed slots. SQLite CTE scope ends with the defining statement, so production checkpoint execution would fail before evidence completion.
+
+No production checkpoint or final audit executed before detection.
+
+Repair requirements:
+
+- branch `work-659-twitch-replacement-audit-runner-query-fix`;
+- export a pure SQL builder for direct regression inspection;
+- enumerate observed category slots directly from `minute_snapshots`;
+- retain `provider = 'twitch'`, exact half-open window predicates, and `category-source-v1`;
+- require every SQL statement to start with `SELECT` or `WITH`;
+- prohibit any later statement from using `FROM scoped`;
+- preserve the exact 2016-slot window, checkpoint/final semantics, thresholds, evidence schema, and non-authorizing boundaries;
+- use no production credentials or Cloudflare/D1 execution in the repair PR;
+- freeze a separate repair acceptance record before checkpoint-package work resumes.
+
+The checkpoint execution package is blocked until this repair is accepted on main.
 
 ## Package boundary
 
-The accepted package is dormant and read-only.
+The accepted package and its repair remain dormant and read-only.
 
 Allowed:
 
 - repository validation;
-- Cloudflare `GET`;
-- D1 `SELECT` and read-only CTEs;
+- Cloudflare `GET` only through a separately accepted execution path;
+- D1 `SELECT` and read-only CTEs only through a separately accepted execution path;
 - public HTTP/HTML checks;
 - sanitized JSON artifact generation;
 - fixture/unit/static verification;
@@ -126,7 +146,7 @@ The final audit must reject:
 
 ## Checkpoint mode
 
-A checkpoint may run before the final boundary.
+A checkpoint may run before the final boundary only after runner repair acceptance and separate checkpoint-package acceptance.
 
 It must:
 
@@ -146,6 +166,7 @@ Checkpoint evidence is diagnostic. A checkpoint cannot accept #659 or authorize 
 Final mode:
 
 - is prohibited before `2026-08-05T05:30:00.000Z`;
+- requires accepted runner repair and a separately accepted final execution path;
 - uses the exact accepted half-open 2016-slot window;
 - requires every final hard gate;
 - performs no deployment or D1 mutation;
@@ -158,7 +179,7 @@ Final acceptance requires every hard gate to pass or an explicitly documented bo
 
 Accepted evidence must record:
 
-- source package PR and merge;
+- source package, repair, and execution identities;
 - workflow run and job;
 - artifact ID and digest;
 - exact observation time;
@@ -186,4 +207,4 @@ On failure:
 
 ## Retirement
 
-Temporary checkpoint/final execution paths must be retired after their bounded purpose, unless an accepted follow-up contract explicitly retains a reusable read-only verifier. The dormant runner and pure tests may remain only while they are current authorities for #659.
+Temporary repair/checkpoint/final execution paths must be retired after their bounded purpose, unless an accepted follow-up contract explicitly retains a reusable read-only verifier. The repaired dormant runner and pure tests may remain only while they are current authorities for #659.
