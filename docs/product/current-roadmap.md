@@ -20,6 +20,7 @@ ViewLoom is a production Twitch/Kick observation site with provider-separated co
 - Hidden Twitch Heatmap category controls accepted from PR #640 and frozen canonically in PR #642 without public exposure.
 - Kick permanent category capture started through PR #643, completed the minimum 24-hour observation, and was accepted in PR #648 without rollback.
 - The first Twitch seven-day audit was executed read-only in PR #651 and correctly rejected after detecting a production configuration regression.
+- The dormant Twitch recovery package and provider-scoped deployment protection were accepted through PR #653 and PR #654 without production deployment.
 
 ### Current gate: recover Twitch permanent category capture
 
@@ -45,7 +46,7 @@ The original Twitch seven-day accumulation clock is invalid. A new clock begins 
 1. Freeze the rejected audit and confirmed regression evidence from Issue #650.
 2. Fix the shared collector deployment workflow so provider-specific changes cannot deploy the other provider.
 3. Select normal or permanent deployment configs from the canonical provider runtime state.
-4. Prepare and accept a dormant Twitch-only recovery package under Issue #652.
+4. Dormant Twitch-only recovery package accepted in PR #653 and PR #654; create the separate exact one-file recovery trigger next.
 5. Run a fresh read-only production preflight, then deploy only the accepted Twitch permanent config through a separate exact trigger.
 6. Verify permanent binding, two consecutive real/non-empty/fresh category-bearing snapshots, zero leakage, safe storage headroom, unchanged cadence, and no Kick mutation.
 7. Restart the seven-day stability clock from the verified recovery start.

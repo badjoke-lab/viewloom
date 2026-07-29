@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-permanent-category-recovery-v1",
-  "status": "ready_for_dormant_package_validation",
+  "status": "accepted",
   "parentTrackingIssue": 635,
   "trackingIssue": 652,
   "provider": "twitch",
@@ -106,5 +106,28 @@
     "newSevenDayAuditRequired": true,
     "publicCutoverAutomaticallyAuthorized": false,
     "separatePublicCutoverPrRequired": true
+  },
+  "acceptance": {
+    "packagePr": 653,
+    "packageMergeSha": "698c99aa543e9d4ee9d0e710c88ade52171f4d79",
+    "packageValidationRunId": 30360346312,
+    "packageVerificationJobId": 90278746118,
+    "readOnlyPreflightJobId": 90278745948,
+    "preflightArtifactId": 8688570859,
+    "preflightArtifactDigest": "sha256:3a1b3b2a0121b767a2de981f794ab45d6a08fcac7aef43efe99fcaa0dd4864cc",
+    "providerScopedDeployValidationRunId": 30360346437,
+    "providerScopedDeployVerifyJobId": 90278745524,
+    "providerScopedDeployPlanJobId": 90278826865,
+    "mainPushDeployRunId": 30360738542,
+    "mainPushDeployVerifyJobId": 90279611584,
+    "mainPushDeployPlanJobId": 90279690301,
+    "mainPushTwitchDeployJobId": 90279758863,
+    "mainPushKickDeployJobId": 90279759176,
+    "mainPushBothDeploymentsSkipped": true,
+    "productionRuntimeCaptureStarted": false,
+    "productionWorkerPublished": false,
+    "remoteD1MutationPerformed": false,
+    "kickChanged": false,
+    "publicExposureEnabled": false
   }
 }

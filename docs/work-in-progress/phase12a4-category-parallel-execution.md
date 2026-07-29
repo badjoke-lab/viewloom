@@ -85,8 +85,8 @@ Twitch recovery must not deploy, mutate, or otherwise change Kick configuration,
 
 1. Freeze the rejected audit evidence and canonical regression state.
 2. Accept the provider-scoped shared deployment fix.
-3. Accept a dormant Twitch-only recovery workflow with no trigger in its package PR.
-4. Create a separate exact one-file trigger after package acceptance.
+3. Dormant Twitch-only recovery workflow accepted through PR #653 and PR #654; no trigger or production deployment was included.
+4. Create a separate exact one-file trigger using accepted package merge `698c99aa543e9d4ee9d0e710c88ade52171f4d79`.
 5. Run fresh read-only preflight immediately before deployment.
 6. Deploy only the Twitch permanent config.
 7. Require two consecutive real, non-empty, fresh, category-bearing snapshots and the permanent binding.
