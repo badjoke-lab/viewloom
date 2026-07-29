@@ -1,6 +1,11 @@
 name: One-time 12A5 Twitch Recovery Canonical V33
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-time-12a5-twitch-recovery-canonical-v33.yml'
+      - 'scripts/apply-12a5-twitch-recovery-canonical-v33.mjs'
   push:
     branches: [main]
     paths:
@@ -10,7 +15,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: one-time-12a5-twitch-recovery-canonical-v33
+  group: one-time-12a5-twitch-recovery-canonical-v33-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -77,6 +82,7 @@ jobs:
           diff -u /tmp/expected.txt /tmp/actual.txt
 
       - name: Commit synchronized canonical state
+        if: github.event_name == 'push'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
