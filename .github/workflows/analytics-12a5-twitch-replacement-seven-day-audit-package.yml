@@ -62,10 +62,6 @@ jobs:
         run: node scripts/verify-category-rollout-policy.mjs
       - name: Verify current development policy
         run: node scripts/verify-development-policy.mjs
-      - name: Verify hidden Twitch category API package
-        run: node scripts/verify-12a5-twitch-heatmap-category-api-package.mjs
-      - name: Verify hidden Twitch category controls package
-        run: node scripts/verify-12a5-twitch-heatmap-category-controls-package.mjs
       - name: Typecheck web
         run: pnpm typecheck:web
       - name: Build web
@@ -88,6 +84,8 @@ jobs:
             echo '- Governing main SHA: `0f692d122b5320ffbad8eea413b6c8b945f47dc2`'
             echo '- Window: `[2026-07-29T05:30:00Z, 2026-08-05T05:30:00Z)`'
             echo '- Expected five-minute slots: `2016`'
+            echo '- Accepted hidden API/controls contracts checked by the current package verifier'
+            echo '- Historical v28/v29 acceptance verifiers are not rerun against canonical v33'
             echo '- Production credentials on PR: no'
             echo '- Worker or D1 mutation: no'
             echo '- Public category-filter exposure: no'
