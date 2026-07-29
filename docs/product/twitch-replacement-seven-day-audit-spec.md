@@ -9,7 +9,7 @@ Earliest execution: `2026-08-05T05:30:00.000Z`
 
 ## Purpose
 
-Define the dormant read-only package, checkpoint behavior, final execution, evidence, acceptance, and failure handling for the replacement Twitch seven-day category accumulation audit.
+Define the accepted dormant read-only package, checkpoint behavior, final execution, evidence, acceptance, and failure handling for the replacement Twitch seven-day category accumulation audit.
 
 The audit decides only whether the hidden Twitch Heatmap category filter is eligible for a later separate public-cutover PR. It does not expose UI.
 
@@ -24,9 +24,26 @@ The audit decides only whether the hidden Twitch Heatmap category filter is elig
 - Provider leakage at recovery: zero.
 - Kick change at recovery: none.
 
+## Accepted dormant package
+
+- Package PR: #661.
+- Package candidate head: `9d593116e2cccc40dc27bc42b3be55d647e3d3ae`.
+- Package merge: `1cab151ce243e1ec58091bfd309f65671e1f41c7`.
+- Validation run/job: `30455002204` / `90586212618`.
+- Package acceptance PR: #662.
+- Contract: `docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json`.
+- Acceptance: `docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json`.
+- Window semantics: half-open.
+- Exact window: `[2026-07-29T05:30:00Z, 2026-08-05T05:30:00Z)`.
+- Expected five-minute slots: 2016.
+- Production execution included: no.
+- Public category-filter exposure authorized: no.
+
+The next package is a separate bounded read-only checkpoint execution path. It must not modify the accepted runner or convert checkpoint evidence into final acceptance.
+
 ## Package boundary
 
-The package PR must be dormant and read-only.
+The accepted package is dormant and read-only.
 
 Allowed:
 
@@ -68,8 +85,9 @@ The final audit must reject:
 - expected five-minute slots across the complete accepted window;
 - observed category-bearing slots;
 - exact missing-slot timestamps;
-- duplicates or out-of-order buckets;
+- duplicates or invalid/out-of-window buckets;
 - coverage ratio;
+- maximum consecutive missing slots;
 - explicit bounded-gap decision.
 
 ### Payload and category integrity
@@ -90,7 +108,7 @@ The final audit must reject:
 - collector cadence unchanged;
 - acceptable collector-error history;
 - provider leakage zero;
-- Kick configuration/runtime unchanged.
+- Kick configuration/runtime baseline unchanged.
 
 ### Storage
 
@@ -112,13 +130,27 @@ A checkpoint may run before the final boundary.
 
 It must:
 
-- use the accepted start and current partial end;
-- report current slot coverage and hard stops;
+- use the accepted start and latest completed five-minute boundary capped at the final end;
+- report current slot coverage, exact gaps, and hard stops;
 - remain read-only;
+- run only through a separately accepted bounded execution path;
 - never mark the seven-day audit accepted;
 - never authorize public UI;
 - never add a Worker cron;
 - produce sanitized output when retained.
+
+Checkpoint evidence is diagnostic. A healthy checkpoint does not guarantee final acceptance, and a failed checkpoint does not authorize automatic mutation.
+
+## Final mode
+
+Final mode:
+
+- is prohibited before `2026-08-05T05:30:00.000Z`;
+- uses the exact accepted half-open 2016-slot window;
+- requires every final hard gate;
+- performs no deployment or D1 mutation;
+- requires a separate evidence-acceptance PR after execution;
+- never exposes UI by itself.
 
 ## Acceptance
 
@@ -154,4 +186,4 @@ On failure:
 
 ## Retirement
 
-Temporary audit execution paths must be retired after final evidence is accepted or rejected, unless the accepted follow-up contract explicitly retains a reusable read-only verifier.
+Temporary checkpoint/final execution paths must be retired after their bounded purpose, unless an accepted follow-up contract explicitly retains a reusable read-only verifier. The dormant runner and pure tests may remain only while they are current authorities for #659.
