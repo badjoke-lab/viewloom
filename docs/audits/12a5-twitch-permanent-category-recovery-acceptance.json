@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-permanent-category-recovery-acceptance-v1",
+  "status": "accepted",
+  "provider": "twitch",
+  "trackingIssue": 652,
+  "triggerPr": 655,
+  "triggerMergeSha": "40ab1cf6eb4ff4117c4ab6d69e2e5b8cb631b7e4",
+  "packagePr": 653,
+  "packageMergeSha": "698c99aa543e9d4ee9d0e710c88ade52171f4d79",
+  "startAt": "2026-07-29T05:30:00.000Z",
+  "earliestSevenDayAuditAt": "2026-08-05T05:30:00.000Z",
+  "source": {
+    "workflowRunId": 30423637234,
+    "workflowJobId": 90485345119,
+    "artifactId": 8713465427,
+    "artifactDigest": "sha256:5d910123497abbded3400eb89253e51d14083f11dc8aa814cb9071f17048161f"
+  },
+  "preflight": {
+    "observedAt": "2026-07-29T05:30:06.734Z",
+    "outcome": "accepted",
+    "readOnly": true,
+    "permanentFlagPresentBeforeDeploy": false,
+    "obsoleteCanaryBindingsPresent": false,
+    "cadence": "*/5 * * * *",
+    "providerLeakageRows": 0,
+    "latestNormalSnapshot": {
+      "bucketMinute": "2026-07-29T05:25:00.000Z",
+      "collectedAt": "2026-07-29T05:26:00.011Z",
+      "streamCount": 300,
+      "totalViewers": 578104,
+      "sourceMode": "real",
+      "freshnessMinutes": 4.11
+    },
+    "storage": {
+      "providerCurrentMb": 330.52,
+      "projectedNinetyDaySizeMb": 378.84,
+      "projectedProviderHeadroomMb": 71.16,
+      "accountCurrentMb": 3901.61,
+      "projectedAccountWideHeadroomMb": 658.07
+    }
+  },
+  "verification": {
+    "observedAt": "2026-07-29T05:36:42.849Z",
+    "outcome": "accepted",
+    "permanentFlagPresent": true,
+    "permanentFlagValue": "true",
+    "obsoleteCanaryBindingsPresent": false,
+    "categoryPayloadRowsSinceStart": 2,
+    "collectorErrorRunsSinceStart": 0,
+    "providerLeakageRows": 0,
+    "twitchDictionaryRows": 986,
+    "latestSnapshot": {
+      "bucketMinute": "2026-07-29T05:35:00.000Z",
+      "collectedAt": "2026-07-29T05:35:59.518Z",
+      "streamCount": 300,
+      "totalViewers": 576255,
+      "sourceMode": "real",
+      "categoryContractVersion": "category-source-v1",
+      "freshnessMinutes": 0.72
+    },
+    "storage": {
+      "providerCurrentMb": 330.61,
+      "projectedNinetyDaySizeMb": 378.93,
+      "projectedProviderHeadroomMb": 71.07,
+      "accountCurrentMb": 3901.68,
+      "projectedAccountWideHeadroomMb": 658
+    }
+  },
+  "gates": {
+    "finalReadOnlyPreflightPass": true,
+    "exactIdentityPass": true,
+    "cadencePass": true,
+    "storagePass": true,
+    "schemaPass": true,
+    "providerLeakagePass": true,
+    "permanentBindingPass": true,
+    "latestSnapshotFreshnessPass": true,
+    "latestSnapshotRealPass": true,
+    "latestSnapshotNonemptyPass": true,
+    "twoConsecutiveCategorySnapshotsPass": true,
+    "rollbackRequired": false,
+    "rollbackOccurred": false
+  },
+  "boundaries": {
+    "kickChanged": false,
+    "d1MutationPerformed": false,
+    "cadenceChanged": false,
+    "newWorkerCronAdded": false,
+    "backfillPerformed": false,
+    "retentionChanged": false,
+    "publicCategoryUiChanged": false,
+    "publicCategoryUiAuthorized": false,
+    "crossProviderBehaviorChanged": false
+  },
+  "nextGate": "Run the new read-only Twitch seven-day accumulation audit at or after 2026-08-05T05:30:00.000Z. Public category-filter exposure remains unauthorized until a separate accepted cutover PR."
+}
