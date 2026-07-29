@@ -7,54 +7,49 @@ Last updated: 2026-07-30
 
 ### Completed
 
-- Twitch and Kick permanent category capture accepted on their existing five-minute collectors.
-- Guarded Twitch recovery accepted in PR #657 and canonical state synchronized to v33.
-- Dormant replacement runner accepted through PRs #661/#662.
-- SQL scope defect repaired through PRs #663/#664 before production execution.
-- Bounded checkpoint package accepted through PRs #665/#666.
-- Exact trigger PR #667 merged and checkpoint run `30478338654` executed read-only.
-- Sanitized checkpoint artifact `8734980337` was produced.
+- Twitch and Kick permanent category capture accepted on five-minute collectors.
+- Twitch recovery and v33 canonical synchronization completed.
+- Dormant replacement runner, SQL-scope repair, checkpoint package, and checkpoint execution path accepted.
+- Checkpoint run `30478338654` executed read-only and failed three data gates.
+- Checkpoint evidence was frozen and the temporary path retired.
+- Failure diagnosis package PR #670 merged as `7f8e2d5adeec187a194aefc8fb2b239d05c5318a`.
+- Package validation run/job `30481973791` / `90678071929` passed all static, policy, build, and public-containment checks.
+- Failure diagnosis package acceptance PR #671 freezes the read-only query set and limitations.
 
-### Current gate: checkpoint failure diagnosis
+### Current gate: one-time diagnosis execution package
 
-The checkpoint failed three contractual data gates:
+Current branch:
 
-1. slot coverage `0.980519 < 0.995`;
-2. three consecutive missing slots at `2026-07-29T07:20Z`, `07:25Z`, and `07:30Z`, exceeding the maximum of two;
-3. category-reference coverage `0.994524 < 0.995`, with 248 null references among 45,287 stream references.
+`work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package`
 
-All runtime safety gates passed: read-only execution, exact start, identities, five-minute cadence, schema, permanent bindings, storage, public containment, zero provider leakage, fresh real latest snapshot, and Kick unchanged.
-
-The one-time trigger, execution workflow, and reporter are retired. Public category-filter exposure remains unauthorized.
+The accepted diagnosis runner can determine missing-bucket presence, collector-run and snapshot context, null references by bucket/channel, post-checkpoint trends, and current collector status. It cannot distinguish empty Helix `game_id` from empty `game_name` after persistence because both source fields are stripped after categoryRef encoding.
 
 ## Active deliverable
 
-Create and separately accept `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package`.
+Create and separately accept a bounded diagnosis execution package that:
 
-The diagnosis must remain read-only and determine:
+- runs the accepted diagnosis runner once;
+- uses D1 `SELECT` / `WITH` only;
+- uses no production credentials on the package PR;
+- requires a later exact one-file trigger;
+- uploads sanitized evidence;
+- performs no checkpoint rerun, mutation, threshold change, recovery decision, clock reset, final mode, Kick change, or public UI change.
 
-- the exact cause and surrounding collector state for the three missing buckets;
-- whether those buckets can appear without backfill or mutation;
-- the per-snapshot/per-stream distribution of the 248 null category references;
-- whether null refs are upstream absence, normalization loss, or collection-path loss;
-- whether recovery and a new verified clock are required.
+## Following gates
 
-## Final-audit status
-
-`2026-08-05T05:30:00Z` remains the earliest calendar boundary, but final execution is blocked until the diagnosis and a separate decision are accepted. The checkpoint failure cannot be ignored, rerun away, or repaired by relaxing thresholds.
-
-## Parallel work
-
-Heatmap Canvas module split and #148 provider parity may resume only after checkpoint evidence/retirement is merged and diagnosis priority is secured. They must not touch collector behavior, cadence, category authorization, or Kick runtime.
+1. execution-package acceptance;
+2. exact diagnosis trigger;
+3. one-time read-only diagnosis execution;
+4. evidence freeze and temporary-path retirement;
+5. separate recovery/no-recovery and stability-clock decision;
+6. final audit only after that decision and the calendar boundary;
+7. separate public cutover only after accepted final evidence.
 
 ## Hard boundaries
 
-- no checkpoint rerun;
-- no threshold relaxation;
-- no invented/backfilled rows;
-- no automatic recovery or clock reset;
-- no Worker deployment, new cron, cadence, D1 schema, retention, Kick, or cross-provider change;
-- no public category-filter exposure;
+- no checkpoint rerun or threshold relaxation;
+- no interpolation, backfill, row invention, or automatic clock reset;
+- no Worker deployment, new cron, cadence, D1 schema, retention, Kick, final mode, cross-provider behavior, or public category UI;
 - existing unfiltered Heatmap remains the fallback.
 
 ## Source of truth
@@ -64,5 +59,7 @@ Heatmap Canvas module split and #148 provider parity may resume only after check
 - `docs/product/twitch-replacement-seven-day-audit-spec.md`
 - `docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json`
 - `docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-contract.json`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json`
 - `docs/work-in-progress/phase12a4-category-parallel-execution.md`
 - `docs/operations/development-and-deployment-policy.md`
