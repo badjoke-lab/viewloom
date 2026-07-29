@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-evidence-v1",
+  "status": "checkpoint_failed",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "mode": "checkpoint",
+  "observedAt": "2026-07-29T18:20:00.140Z",
+  "trigger": {
+    "pr": 667,
+    "mergeSha": "ee8125ecd12f7ec620af13fd78d9a3c3c7e18f98",
+    "startAt": "2026-07-29T18:20:00.000Z",
+    "packagePr": 665,
+    "packageMergeSha": "317675ea9a6256eb61bf36f8ec9d7a51ffdfff2a",
+    "packageAcceptancePr": 666
+  },
+  "execution": {
+    "workflowRunId": 30478338654,
+    "workflowRunAttempt": 1,
+    "workflowConclusion": "failure",
+    "checkpointJobId": 90665697236,
+    "checkpointJobConclusion": "failure",
+    "artifactId": 8734980337,
+    "artifactName": "analytics-12a5-twitch-replacement-audit-checkpoint",
+    "artifactDigest": "sha256:4f87868471e297b5b6904d9e8ee6c15c8a2e45f4e16edef0647e2ee4d3f0086b",
+    "evidenceJsonSha256": "041f942501f1740f2ea0f3c7a77b04aeea0d084906af0faf625f370c01178f6f",
+    "evidenceJsonBytes": 5698,
+    "error": null
+  },
+  "window": {
+    "semantics": "half_open",
+    "startAt": "2026-07-29T05:30:00.000Z",
+    "endExclusiveAt": "2026-07-29T18:20:00.000Z",
+    "finalEndExclusiveAt": "2026-08-05T05:30:00.000Z",
+    "elapsedHoursAtObservation": 12.83,
+    "expectedSlots": 154,
+    "expectedFinalSlots": 2016
+  },
+  "slotContinuity": {
+    "observedDistinctSlots": 151,
+    "coverageRatio": 0.980519,
+    "minimumCoverageRatio": 0.995,
+    "missingSlotCount": 3,
+    "maximumMissingSlots": 10,
+    "maximumConsecutiveMissingSlots": 3,
+    "maximumAllowedConsecutiveMissingSlots": 2,
+    "missingSlots": [
+      "2026-07-29T07:20:00.000Z",
+      "2026-07-29T07:25:00.000Z",
+      "2026-07-29T07:30:00.000Z"
+    ],
+    "duplicateSlotCount": 0,
+    "invalidBucketCount": 0,
+    "firstObservedSlot": "2026-07-29T05:30:00.000Z",
+    "latestObservedSlot": "2026-07-29T18:15:00.000Z"
+  },
+  "categoryIntegrity": {
+    "totalSnapshotRows": 151,
+    "categorySnapshotRows": 151,
+    "categoryRealRows": 151,
+    "categoryNonemptyRows": 151,
+    "structuredCategoryRows": 151,
+    "alignedCategoryRows": 151,
+    "totalCategoryRefs": 45287,
+    "presentCategoryRefs": 45039,
+    "missingCategoryRefs": 248,
+    "invalidCategoryRefs": 0,
+    "categoryReferenceCoverageRatio": 0.994524,
+    "minimumCategoryReferenceCoverageRatio": 0.995,
+    "distinctObservedCategoryIds": 290,
+    "unresolvedCategoryIds": 0,
+    "dictionaryRows": 1058,
+    "dictionaryEmptyNames": 0,
+    "dictionaryContractMismatches": 0,
+    "interpretation": "Missing category references are null entries in per-stream categoryRefs. They are not invalid indices and are not unresolved dictionary IDs."
+  },
+  "latestSnapshot": {
+    "bucketMinute": "2026-07-29T18:15:00.000Z",
+    "collectedAt": "2026-07-29T18:15:50.638Z",
+    "freshnessMinutes": 4.65,
+    "streamCount": 300,
+    "totalViewers": 1364092,
+    "sourceMode": "real",
+    "categoryContractVersion": "category-source-v1",
+    "categoryIdCount": 78,
+    "categoryRefCount": 300,
+    "itemCount": 300
+  },
+  "runtimeIntegrity": {
+    "readOnly": true,
+    "exactWindowStartPass": true,
+    "windowEndPass": true,
+    "expectedSlotIdentityPass": true,
+    "twitchIdentityPass": true,
+    "kickIdentityPass": true,
+    "cadencePass": true,
+    "schemaPass": true,
+    "twitchPermanentBindingPass": true,
+    "kickPermanentBaselinePass": true,
+    "collectorErrorRuns": 0,
+    "twitchProviderLeakageRows": 0,
+    "kickProviderLeakageRows": 0,
+    "publicSurfaceContainmentPass": true,
+    "publicExposureStillUnauthorized": true,
+    "productionMutationUnauthorized": true,
+    "checkpointNonAuthorizing": true
+  },
+  "storage": {
+    "providerCurrentMb": 336.49,
+    "accountCurrentMb": 3945.97,
+    "projectedNinetyDaySizeMb": 384.81,
+    "projectedProviderHeadroomMb": 65.19,
+    "projectedAccountWideSizeMb": 3994.29,
+    "projectedAccountWideHeadroomMb": 613.71,
+    "providerPass": true,
+    "accountPass": true
+  },
+  "failedHardStops": [
+    "slotCoveragePass",
+    "consecutiveMissingSlotsPass",
+    "categoryReferenceCoveragePass"
+  ],
+  "decision": {
+    "checkpointAccepted": false,
+    "auditAccepted": false,
+    "publicCutoverAuthorized": false,
+    "productionMutationPerformed": false,
+    "kickMutationPerformed": false,
+    "automaticRecoveryAuthorized": false,
+    "automaticClockResetAuthorized": false,
+    "nextGate": "Freeze and retire the bounded checkpoint path, then create a separate read-only failure-diagnosis package for the three consecutive missing slots and null category references."
+  }
+}
