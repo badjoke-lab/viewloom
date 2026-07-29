@@ -3,28 +3,24 @@ name: Analytics 12A5 Twitch Replacement Seven-Day Audit Package
 on:
   pull_request:
     branches: [main]
-    paths:
+    paths: &audit_paths
       - 'AGENTS.md'
       - 'CONTRIBUTING.md'
       - 'docs/README.md'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-acceptance.json'
       - 'docs/product/twitch-replacement-seven-day-audit-spec.md'
-      - 'docs/product/category-capture-permanent-rollout-plan.md'
       - 'docs/product/current-roadmap.md'
       - 'docs/product/current-schedule.md'
       - 'docs/audits/12a2-current-gate-state.json'
-      - 'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json'
-      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json'
-      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
-      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json'
+      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
+      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-acceptance.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-package-contract.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-package-acceptance.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json'
       - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
       - 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs'
       - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
-      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs'
-      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs'
+      - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-development-policy.mjs'
       - 'workers/collector-twitch/wrangler.category-permanent.toml'
@@ -35,36 +31,7 @@ on:
       - '.github/workflows/category-rollout-policy.yml'
   push:
     branches: [main]
-    paths:
-      - 'AGENTS.md'
-      - 'CONTRIBUTING.md'
-      - 'docs/README.md'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-acceptance.json'
-      - 'docs/product/twitch-replacement-seven-day-audit-spec.md'
-      - 'docs/product/category-capture-permanent-rollout-plan.md'
-      - 'docs/product/current-roadmap.md'
-      - 'docs/product/current-schedule.md'
-      - 'docs/audits/12a2-current-gate-state.json'
-      - 'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json'
-      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json'
-      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-package-contract.json'
-      - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-controls-contract.json'
-      - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
-      - 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs'
-      - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
-      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs'
-      - 'scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs'
-      - 'scripts/verify-category-rollout-policy.mjs'
-      - 'scripts/verify-development-policy.mjs'
-      - 'workers/collector-twitch/wrangler.category-permanent.toml'
-      - 'workers/collector-twitch/wrangler.toml'
-      - 'workers/collector-kick/wrangler.category-permanent.toml'
-      - 'workers/collector-kick/wrangler.toml'
-      - '.github/workflows/analytics-12a5-twitch-replacement-seven-day-audit-package.yml'
-      - '.github/workflows/category-rollout-policy.yml'
+    paths: *audit_paths
 
 permissions:
   contents: read
@@ -74,23 +41,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify-package:
+  verify-current-gate:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Parse dormant package and accepted runner repair
+      - name: Parse current read-only runner and retirement verifier
         run: |
           node --check scripts/run-12a5-twitch-replacement-seven-day-audit.mjs
           node --check scripts/test-12a5-twitch-replacement-seven-day-audit.mjs
-          node --check scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs
-          node --check scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs
-      - name: Verify dormant replacement audit package
-        run: node scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs
-      - name: Verify replacement audit runner SQL repair
-        run: node scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs
+          node --check scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs
+      - name: Verify failed checkpoint evidence and retired path
+        run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs
       - name: Test exact replacement audit window and slot accounting
         run: node scripts/test-12a5-twitch-replacement-seven-day-audit.mjs
       - name: Verify current category rollout policy
@@ -110,20 +74,17 @@ jobs:
           test -f apps/web/dist/kick/heatmap/index.html
           ! grep -q 'categoryPreview' apps/web/dist/kick/heatmap/index.html
           ! grep -q 'data-category-preview-select' apps/web/dist/kick/heatmap/index.html
-      - name: Summarize accepted runner repair boundary
+      - name: Summarize checkpoint failure gate
         run: |
           {
-            echo '## Twitch replacement audit runner repair'
+            echo '## Twitch replacement checkpoint result'
             echo
-            echo '- Accepted package PR / acceptance PR: `#661` / `#662`'
-            echo '- Repair PR / acceptance PR: `#663` / `#664`'
-            echo '- Repair validation run / job: `30475011149` / `90654426211`'
-            echo '- Defect: `sqlite_cte_scope_cross_statement`'
-            echo '- Slot query reads `minute_snapshots` directly: yes'
-            echo '- Later statements reference CTE `scoped`: no'
-            echo '- Window: `[2026-07-29T05:30:00Z, 2026-08-05T05:30:00Z)`'
-            echo '- Expected five-minute slots: `2016`'
-            echo '- Production credentials or D1 execution in repair/acceptance PRs: no'
-            echo '- Worker/cadence/Kick/public UI change: no'
-            echo '- Next branch: `work-659-twitch-replacement-audit-checkpoint-package`'
+            echo '- Run / job / artifact: `30478338654` / `90665697236` / `8734980337`'
+            echo '- Outcome: `checkpoint_failed`'
+            echo '- Failed gates: slot coverage, consecutive missing slots, category reference coverage'
+            echo '- Missing buckets: `07:20`, `07:25`, `07:30` UTC'
+            echo '- Missing category refs: `248`'
+            echo '- Trigger/workflow/reporter retired: yes'
+            echo '- Public category filter authorized: no'
+            echo '- Next branch: `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package`'
           } >> "$GITHUB_STEP_SUMMARY"
