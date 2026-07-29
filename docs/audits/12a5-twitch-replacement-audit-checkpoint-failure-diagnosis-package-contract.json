@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-v1",
-  "status": "ready_for_validation",
+  "status": "accepted",
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
@@ -81,14 +81,15 @@
     "static_code_attribution",
     "diagnostic_limitations"
   ],
+  "acceptanceRecord": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json",
   "acceptance": {
-    "packagePr": null,
-    "packageCandidateHeadSha": null,
-    "packageMergeSha": null,
-    "acceptancePr": null,
-    "validationRunId": null,
-    "validationJobId": null,
+    "packagePr": 670,
+    "packageCandidateHeadSha": "4cb52b9cb11eb5b27a7f93eaa0e14838ab686039",
+    "packageMergeSha": "7f8e2d5adeec187a194aefc8fb2b239d05c5318a",
+    "acceptancePr": 671,
+    "validationRunId": 30481973791,
+    "validationJobId": 90678071929,
     "productionExecutionPerformed": false
   },
-  "nextGate": "accept this read-only diagnosis package, then create a separately accepted one-time diagnosis execution path"
+  "nextGate": "create and separately accept a one-time read-only diagnosis execution package before production diagnosis"
 }
