@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-trigger-contract-v1",
+  "status": "ready_for_validation",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "mode": "checkpoint",
+  "packageContract": "docs/audits/12a5-twitch-replacement-audit-checkpoint-package-contract.json",
+  "trigger": {
+    "path": "docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger.json",
+    "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-trigger-v1",
+    "status": "armed",
+    "provider": "twitch",
+    "mode": "checkpoint",
+    "oneTime": true,
+    "confirmation": "RUN_TWITCH_REPLACEMENT_AUDIT_CHECKPOINT",
+    "maximumStartDelayHours": 3,
+    "allowedPastSkewMinutes": 10,
+    "requiredFields": [
+      "schemaVersion",
+      "status",
+      "provider",
+      "mode",
+      "oneTime",
+      "confirmation",
+      "packagePr",
+      "packageMergeSha",
+      "startAt"
+    ]
+  },
+  "acceptedPackageIdentity": {
+    "required": true,
+    "packagePr": null,
+    "packageMergeSha": null,
+    "acceptancePr": null
+  },
+  "executionBoundary": {
+    "event": "push_to_main_with_exact_trigger_path",
+    "workflowDispatchAuthorized": false,
+    "scheduleAuthorized": false,
+    "newWorkerCronAuthorized": false,
+    "auditMode": "checkpoint",
+    "finalModeAuthorized": false,
+    "cloudflareApiMethods": ["GET"],
+    "d1Statements": ["SELECT", "WITH"],
+    "workerDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "bindingMutationAuthorized": false,
+    "kickChangeAuthorized": false,
+    "publicExposureAuthorized": false
+  },
+  "afterExecution": {
+    "sanitizedArtifactRequired": true,
+    "workflowJobArtifactDigestFreezeRequired": true,
+    "checkpointEvidenceDiagnosticOnly": true,
+    "auditAcceptanceAuthorized": false,
+    "publicCutoverAuthorized": false,
+    "triggerRetirementRequired": true
+  },
+  "nextGate": "after package acceptance, add the exact one-file trigger with the accepted package PR and merge SHA"
+}

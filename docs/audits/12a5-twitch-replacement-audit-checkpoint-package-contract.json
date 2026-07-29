@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-package-v1",
+  "status": "ready_for_validation",
+  "phase": "12A-5B-R2",
+  "parentTrackingIssue": 623,
+  "hiddenUiTrackingIssue": 635,
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "mode": "checkpoint",
+  "governingMainSha": "0d591c0085bab421ab9d4b6369a775bdcfd6ae8b",
+  "sourcePackage": {
+    "packagePr": 661,
+    "acceptancePr": 662,
+    "packageMergeSha": "1cab151ce243e1ec58091bfd309f65671e1f41c7"
+  },
+  "acceptedRunnerRepair": {
+    "repairPr": 663,
+    "acceptancePr": 664,
+    "repairCandidateHeadSha": "d171a74e4e6f1e8e9af60324088744d4ce50ee9e",
+    "repairMergeSha": "ab33afa4d6195532652791be2380a1fa9a278491",
+    "validationRunId": 30475011149,
+    "validationJobId": 90654426211
+  },
+  "window": {
+    "semantics": "half_open",
+    "startAt": "2026-07-29T05:30:00.000Z",
+    "finalEndExclusiveAt": "2026-08-05T05:30:00.000Z",
+    "checkpointEnd": "latest_completed_five_minute_boundary_capped_at_final_end",
+    "expectedFinalSlots": 2016
+  },
+  "execution": {
+    "workflow": ".github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint.yml",
+    "runner": "scripts/run-12a5-twitch-replacement-seven-day-audit.mjs",
+    "verifier": "scripts/verify-12a5-twitch-replacement-audit-checkpoint-package.mjs",
+    "triggerContract": "docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger-contract.json",
+    "trigger": "docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger.json",
+    "artifactName": "analytics-12a5-twitch-replacement-audit-checkpoint",
+    "outputDirectory": "artifacts/12a5-twitch-replacement-audit-checkpoint/run",
+    "auditMode": "checkpoint",
+    "oneTime": true,
+    "explicitPushTriggerOnly": true,
+    "newWorkerCronAdded": false,
+    "productionExecutionIncludedOnPackagePr": false,
+    "productionCredentialsUsedOnPackagePr": false
+  },
+  "requiredValidation": {
+    "sourcePackageAccepted": true,
+    "runnerRepairAccepted": true,
+    "exactStartPreserved": true,
+    "completedBoundaryCapped": true,
+    "readOnlySqlEnforced": true,
+    "cloudflareGetOnly": true,
+    "sanitizedEvidenceOnly": true,
+    "publicContainmentChecked": true,
+    "kickBaselineChecked": true,
+    "categoryPolicyRequired": true,
+    "developmentPolicyRequired": true,
+    "webTypecheckRequired": true,
+    "webBuildRequired": true,
+    "publicCategoryControlsAbsentRequired": true
+  },
+  "readOnlyBoundary": {
+    "cloudflareApiMethods": ["GET"],
+    "d1Statements": ["SELECT", "WITH"],
+    "workerDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "bindingMutationAuthorized": false,
+    "secretMutationAuthorized": false,
+    "collectorChangeAuthorized": false,
+    "workerCronChangeAuthorized": false,
+    "newWorkerCronAuthorized": false,
+    "backfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "kickChangeAuthorized": false,
+    "publicExposureAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  },
+  "checkpointBoundary": {
+    "authorizesAuditAcceptance": false,
+    "authorizesPublicCutover": false,
+    "healthyCheckpointGuaranteesFinalAcceptance": false,
+    "failedCheckpointAuthorizesMutation": false,
+    "separatePathAcceptanceRequired": true,
+    "separateEvidenceFreezeRequired": true,
+    "temporaryTriggerRetirementRequired": true
+  },
+  "acceptance": {
+    "packagePr": null,
+    "packageCandidateHeadSha": null,
+    "packageMergeSha": null,
+    "acceptancePr": null,
+    "validationRunId": null,
+    "validationJobId": null,
+    "productionExecutionPerformed": false,
+    "publicExposureEnabled": false,
+    "kickChanged": false
+  },
+  "nextGate": "accept this checkpoint execution package in a separate PR, then add the exact one-file trigger in a separate PR and execute checkpoint mode once"
+}
