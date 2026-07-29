@@ -9,7 +9,7 @@ Earliest execution: `2026-08-05T05:30:00.000Z`
 
 ## Purpose
 
-Define the accepted dormant read-only package, runner repair, checkpoint behavior, final execution, evidence, acceptance, and failure handling for the replacement Twitch seven-day category accumulation audit.
+Define the accepted dormant read-only package, accepted runner repair, checkpoint behavior, final execution, evidence, acceptance, and failure handling for the replacement Twitch seven-day category accumulation audit.
 
 The audit decides only whether the hidden Twitch Heatmap category filter is eligible for a later separate public-cutover PR. It does not expose UI.
 
@@ -39,31 +39,34 @@ The audit decides only whether the hidden Twitch Heatmap category filter is elig
 - Production execution included: no.
 - Public category-filter exposure authorized: no.
 
-## Runner repair before checkpoint execution
+## Accepted runner repair
 
 Pre-execution review found defect `sqlite_cte_scope_cross_statement` in the accepted dormant runner.
 
-The original query defined CTE `scoped` in one SQL statement and referenced it from a later independent statement used to enumerate observed slots. SQLite CTE scope ends with the defining statement, so production checkpoint execution would fail before evidence completion.
+The original query defined CTE `scoped` in one SQL statement and referenced it from a later independent statement used to enumerate observed slots. SQLite CTE scope ends with the defining statement, so production checkpoint execution would have failed before evidence completion.
 
 No production checkpoint or final audit executed before detection.
 
-Repair requirements:
+Accepted repair:
 
-- branch `work-659-twitch-replacement-audit-runner-query-fix`;
+- repair PR #663;
+- repair candidate head `d171a74e4e6f1e8e9af60324088744d4ce50ee9e`;
+- repair merge `ab33afa4d6195532652791be2380a1fa9a278491`;
+- validation run/job `30475011149` / `90654426211`;
+- repair acceptance PR #664;
 - export a pure SQL builder for direct regression inspection;
 - enumerate observed category slots directly from `minute_snapshots`;
 - retain `provider = 'twitch'`, exact half-open window predicates, and `category-source-v1`;
 - require every SQL statement to start with `SELECT` or `WITH`;
 - prohibit any later statement from using `FROM scoped`;
 - preserve the exact 2016-slot window, checkpoint/final semantics, thresholds, evidence schema, and non-authorizing boundaries;
-- use no production credentials or Cloudflare/D1 execution in the repair PR;
-- freeze a separate repair acceptance record before checkpoint-package work resumes.
+- use no production credentials or Cloudflare/D1 execution in the repair or acceptance PRs.
 
-The checkpoint execution package is blocked until this repair is accepted on main.
+The runner repair is accepted on main. Checkpoint-package work may proceed, but production checkpoint execution remains blocked until a separate bounded checkpoint execution path is accepted.
 
 ## Package boundary
 
-The accepted package and its repair remain dormant and read-only.
+The accepted package and repair remain dormant and read-only.
 
 Allowed:
 
@@ -144,9 +147,23 @@ The final audit must reject:
 - Kick public pages expose no Twitch category control;
 - existing unfiltered Heatmap fallback remains usable.
 
-## Checkpoint mode
+## Checkpoint package and mode
 
-A checkpoint may run before the final boundary only after runner repair acceptance and separate checkpoint-package acceptance.
+Current branch: `work-659-twitch-replacement-audit-checkpoint-package`.
+
+The checkpoint package must:
+
+- add a separate bounded execution workflow and exact trigger contract;
+- use checkpoint mode only;
+- use no production credentials on the package PR;
+- add no Worker cron;
+- validate the accepted package and runner-repair identities;
+- validate the exact accepted start and latest completed five-minute boundary capped at the final end;
+- preserve read-only statements and sanitized evidence shape;
+- verify public containment and Kick baseline;
+- require a separate checkpoint-path acceptance record before production read-only execution.
+
+A checkpoint may run before the final boundary only after checkpoint-package and execution-path acceptance.
 
 It must:
 
@@ -207,4 +224,4 @@ On failure:
 
 ## Retirement
 
-Temporary repair/checkpoint/final execution paths must be retired after their bounded purpose, unless an accepted follow-up contract explicitly retains a reusable read-only verifier. The repaired dormant runner and pure tests may remain only while they are current authorities for #659.
+Temporary checkpoint/final execution paths must be retired after their bounded purpose, unless an accepted follow-up contract explicitly retains a reusable read-only verifier. The repaired dormant runner and pure tests may remain only while they are current authorities for #659.

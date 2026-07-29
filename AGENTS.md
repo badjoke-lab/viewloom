@@ -13,7 +13,8 @@ Replacement Twitch stability start: 2026-07-29T05:30:00.000Z
 Earliest replacement audit: 2026-08-05T05:30:00.000Z
 Replacement audit issue: #659
 Dormant replacement audit package: accepted from PR #661 through PR #662
-Runner repair: sqlite_cte_scope_cross_statement / validation active
+Runner repair: accepted through PR #663 and acceptance PR #664
+Current branch: work-659-twitch-replacement-audit-checkpoint-package
 Twitch Heatmap public category-filter exposure: unauthorized
 Existing Twitch cadence: */5 * * * *
 Existing Kick cadence: */5 * * * *
@@ -21,7 +22,7 @@ Existing Kick cadence: */5 * * * *
 
 ## Mandatory current authorities
 
-Read these from the current `main` branch before starting work and reread them before merging:
+Read these from current `main` before starting work and reread them before merging:
 
 1. `docs/README.md`
 2. `docs/product/current-roadmap.md`
@@ -31,40 +32,35 @@ Read these from the current `main` branch before starting work and reread them b
 6. the active work-in-progress record
 7. `docs/operations/development-and-deployment-policy.md`
 
-Current feature authorities include:
+Current #659 authorities include:
 
-- `docs/product/category-capture-permanent-rollout-spec.md`
-- `docs/product/category-capture-permanent-rollout-plan.md`
 - `docs/product/twitch-replacement-seven-day-audit-spec.md`
 - `docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json`
 - `docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json`
 - `docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-contract.json`
-- `docs/product/heatmap-canvas-redesign-spec.md`
-- `docs/product/heatmap-canvas-implementation-plan.md`
+- `docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-acceptance.json`
 - `docs/work-in-progress/phase12a4-category-parallel-execution.md`
 
 Do not rely on a cached handoff, an old chat summary, or a historical acceptance file when current `main` differs. The current roadmap, schedule, canonical gate, affected specification, and active WIP determine authorization.
 
 ## Current execution order
 
-1. Validate and merge `work-659-twitch-replacement-audit-runner-query-fix`.
-2. Freeze a separate runner-repair acceptance record.
-3. Resume `work-659-twitch-replacement-audit-checkpoint-package` only after repair acceptance.
-4. Execute bounded read-only checkpoint mode only through a separate accepted path; freeze sanitized diagnostic evidence.
-5. Begin Heatmap Canvas PR-1: `work-heatmap-canvas-module-split`, with no user-visible behavior change.
-6. Add the Canvas scene only behind a hidden route or disabled feature flag after PR-1 acceptance.
-7. Inspect and fix provider UI parity gaps from #148.
-8. At or after `2026-08-05T05:30:00.000Z`, execute #659 final mode and freeze the result.
-9. Keep public category-filter exposure disabled until an accepted final audit and a separate cutover PR.
+1. Create and validate `work-659-twitch-replacement-audit-checkpoint-package`.
+2. Accept the bounded checkpoint execution path separately before any production read-only run.
+3. Execute checkpoint mode only through that accepted path and freeze sanitized diagnostic evidence.
+4. Begin Heatmap Canvas PR-1: `work-heatmap-canvas-module-split`, with no user-visible behavior change, after checkpoint-package priority is secured.
+5. Add the Canvas scene only behind a hidden route or disabled feature flag after PR-1 acceptance.
+6. Inspect and fix provider UI parity gaps from #148.
+7. At or after `2026-08-05T05:30:00.000Z`, execute #659 final mode and freeze the result.
+8. Keep public category-filter exposure disabled until an accepted final audit and a separate cutover PR.
 
 ## Production safety
 
-- `main` is production.
-- No direct push to `main`.
-- Use `work-*` for ordinary work and one PR per responsibility.
+- `main` is production; do not push directly.
+- Use `work-*` branches and one PR per responsibility.
 - Package PRs do not use production credentials or execute production mutation.
-- Runner repair performs no Cloudflare/D1 execution and changes no runtime configuration.
-- Production read-only execution requires a separately accepted bounded path where the contract requires one.
+- The accepted runner repair performed no Cloudflare/D1 execution and changed no runtime configuration.
+- Production read-only execution requires a separately accepted bounded path.
 - Checkpoint evidence is diagnostic, does not accept #659, and does not authorize public UI.
 - Twitch and Kick bindings, rows, routes, options, and outputs remain separate.
 - No new Worker cron, cadence change, D1 schema mutation, backfill, retention expansion, cross-provider identity, or combined category ranking.
@@ -73,11 +69,11 @@ Do not rely on a cached handoff, an old chat summary, or a historical acceptance
 
 ## Validation
 
-Run the affected targeted checks during iteration, then all feature and shared gates on the latest candidate HEAD. At minimum for governance/category work:
+Run affected targeted checks during iteration, then all feature and shared gates on the latest candidate HEAD. At minimum for governance/category work:
 
 ```bash
 node scripts/verify-development-policy.mjs
 node scripts/verify-category-rollout-policy.mjs
 ```
 
-Run web build, typecheck, browser, mobile, accessibility, and data-truth gates when the affected scope requires them.
+Run web build, typecheck, browser, mobile, accessibility, provider-separation, and data-truth gates when the affected scope requires them.
