@@ -89,7 +89,7 @@ jobs:
         run: node scripts/verify-12a5-twitch-replacement-seven-day-audit-package.mjs
       - name: Verify replacement audit runner SQL repair
         run: node scripts/verify-12a5-twitch-replacement-seven-day-audit-runner-repair.mjs
-      - name: Test exact replacement audit window, SQL scope, and slot accounting
+      - name: Test exact replacement audit window and slot accounting
         run: node scripts/test-12a5-twitch-replacement-seven-day-audit.mjs
       - name: Verify current category rollout policy
         run: node scripts/verify-category-rollout-policy.mjs
