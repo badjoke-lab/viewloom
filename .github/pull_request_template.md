@@ -3,17 +3,19 @@
 - What changed:
 - Why:
 
-## Governing documents
+## Governing documents and freshness
 
+- Current-main SHA read:
+- Current-main fetched at:
 - Roadmap phase:
 - Schedule window:
-- Program plan:
-- Accepted baseline specification:
-- Active/future permanent specification:
+- Canonical gate/schema:
+- Affected specification:
 - Implementation plan:
-- Active working note, if any:
+- Active working note:
 - Relevant audit/acceptance records:
-- Predecessor merge and explicit continuation:
+- Entry condition:
+- Stop rule:
 - Exact next branch after merge:
 - Documentation updated or retired:
 
@@ -22,30 +24,34 @@
 - Providers affected: Twitch / Kick / both / neither
 - DB or binding changes: yes / no
 - Collector or cron changes: yes / no
+- D1 schema changes: yes / no
+- Backfill changes: yes / no
 - Retention changes: yes / no
 - Output-schema changes: yes / no
 - Cloudflare runtime changes: yes / no
+- Public UI exposure changes: yes / no
 - Layout/responsive/accessibility changes: yes / no
-- Localization route/catalog/SEO changes: yes / no
+- Cross-provider behavior changes: yes / no
 
 ## Development policy
 
-- [ ] I read the development/deployment policy and addendum.
-- [ ] I read documentation governance and `docs/README.md`.
-- [ ] I read the current roadmap, schedule, and program plan.
-- [ ] I compared the schedule with actual branches/PRs.
-- [ ] I confirmed the predecessor merge report and explicit continuation.
-- [ ] The schedule places this exact branch next, or this PR updates documents before implementation.
-- [ ] I reread the affected specifications, plan, working note, and audit records.
+- [ ] I fetched current `main` before creating this branch and recorded the SHA above.
+- [ ] I read `AGENTS.md` and `docs/README.md`.
+- [ ] I read the current roadmap, schedule, canonical gate, affected specification/plan, active WIP, and development policy.
+- [ ] I compared the schedule with actual branches, PRs, and production state.
+- [ ] The schedule authorizes this exact branch, or this PR repairs documents before implementation.
+- [ ] I reread current-main authorities before marking this PR ready.
+- [ ] No newer source-of-truth change supersedes this candidate.
 - [ ] Ordinary work used a `work-*` branch.
-- [ ] Related changes were grouped logically; connector-forced commits will be squash merged.
+- [ ] Related changes are grouped logically; connector-forced commits will be squash merged.
 - [ ] Unnecessary Cloudflare Preview was not requested.
 - [ ] Targeted checks were used during iteration.
-- [ ] Complete required checks were run on the latest candidate head.
+- [ ] Complete required checks ran on the latest candidate HEAD.
 - [ ] Superseded CI was not treated as authoritative.
 - [ ] Twitch and Kick remain separated.
-- [ ] The active working note was updated.
+- [ ] Missing/partial/stale/empty/error/demo/unknown/unavailable states remain honest.
 - [ ] No later phase began before its entry condition.
+- [ ] The active working note and current schedule remain accurate.
 
 ## Verification
 
@@ -79,14 +85,14 @@ Preview validation:
 - [ ] Production deployment is still pending after merge.
 - [ ] Production deployment was verified separately.
 - [ ] Production smoke checks passed.
-- [ ] Required manual visual/localization acceptance passed.
+- [ ] Required manual visual/accessibility acceptance passed.
 - [ ] Permanent specifications describe final behavior.
-- [ ] Roadmap, schedule, program plan, and affected implementation plan are current.
-- [ ] Completed temporary notes were deleted and unlinked.
+- [ ] Roadmap, schedule, gate, active WIP, and affected plan are current.
+- [ ] Completed temporary notes/workflows/triggers were retired when required.
 - [ ] The exact next branch and stop rule are recorded.
 
-Do not mark production or visual/localization acceptance before the public deployment and required checks pass.
+Do not mark production or public acceptance before deployment and required checks pass.
 
 ## Exceptions
 
-Document any policy or governance exception, reason, risk, compensating verification, temporary status, and follow-up. Write `None` when there is no exception.
+Document any policy/governance exception, reason, risk, compensating verification, temporary status, and follow-up. Write `None` when there is no exception.
