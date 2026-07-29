@@ -1,74 +1,96 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Last updated: 2026-07-26
+Last updated: 2026-07-29
 
 ## Current execution state
 
 ```text
 Phase 12A Analytics Capture Foundation active
-canonical target 12A-4-24 Kick accepted; Twitch seven-day audit next
-Twitch permanent category capture accepted and active yes
-Kick permanent implementation authorized yes
-Kick permanent runtime active yes
-Twitch Heatmap hidden category-filter implementation authorized yes
+Canonical target 12A-5B-R2 replacement Twitch seven-day accumulation
+Canonical gate viewloom-12a2-current-gate-state-v33
+Twitch permanent category capture active yes
+Kick permanent category capture active yes
+Replacement Twitch stability start 2026-07-29T05:30:00.000Z
+Replacement Twitch seven-day audit earliest 2026-08-05T05:30:00.000Z
+Replacement audit issue #659
+Twitch Heatmap hidden category implementation accepted yes
 Twitch Heatmap public category-filter exposure authorized no
-Twitch seven-day audit earliest 2026-07-27T11:40:00Z
-existing Twitch cadence */5 * * * *
-existing Kick cadence */5 * * * *
-new Worker cron authorized no
-backfill authorized no
-retention expansion authorized no
-cross-provider identity or combined ranking authorized no
+Existing Twitch cadence */5 * * * *
+Existing Kick cadence */5 * * * *
+New Worker cron authorized no
+Backfill authorized no
+Retention expansion authorized no
+Cross-provider identity or combined ranking authorized no
 ```
 
 ## Read first
 
+Read the following from current `main`, in this order:
+
 1. `docs/operations/development-and-deployment-policy.md`
-2. `docs/product/category-capture-permanent-rollout-spec.md`
-3. `docs/product/category-capture-permanent-rollout-plan.md`
-4. `docs/product/current-roadmap.md`
-5. `docs/product/current-schedule.md`
-6. `docs/audits/12a2-current-gate-state.json`
-7. `docs/work-in-progress/phase12a4-category-parallel-execution.md`
-8. `docs/audits/12a4-kick-permanent-category-decision-contract.json`
-9. `docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json`
-10. `docs/audits/12a4-twitch-permanent-category-final-acceptance.json`
-11. `docs/audits/12a4-kick-permanent-category-final-acceptance.json`
+2. `docs/product/current-roadmap.md`
+3. `docs/product/current-schedule.md`
+4. `docs/audits/12a2-current-gate-state.json`
+5. `docs/product/category-capture-permanent-rollout-spec.md`
+6. `docs/product/category-capture-permanent-rollout-plan.md`
+7. `docs/product/twitch-replacement-seven-day-audit-spec.md`
+8. `docs/work-in-progress/phase12a4-category-parallel-execution.md`
+9. the specification and plan for the feature being changed
+10. the relevant immutable acceptance/evidence records
 
-## Current category evidence and decision chain
+For Heatmap Canvas work, also read:
 
-- Source and storage evidence remain accepted and provider separated.
-- Final Kick and Twitch bounded-canary evidence remains historical accepted evidence.
-- Twitch permanent implementation, release, production start, and final observation are accepted.
-- Final Twitch permanent-category acceptance: `docs/audits/12a4-twitch-permanent-category-final-acceptance.json`.
-- Kick permanent rollout authorization: `docs/audits/12a4-kick-permanent-category-decision-contract.json`.
-- Final Kick permanent-category acceptance: `docs/audits/12a4-kick-permanent-category-final-acceptance.json`.
-- Hidden Twitch Heatmap filter authorization: `docs/audits/12a5-twitch-heatmap-category-filter-hidden-decision-contract.json`.
-- Active parallel execution record: `docs/work-in-progress/phase12a4-category-parallel-execution.md`.
+- `docs/product/heatmap-canvas-redesign-spec.md`
+- `docs/product/heatmap-canvas-implementation-plan.md`
 
 ## Current gate
 
-The canonical target is 12A-4-24. Twitch and Kick permanent category capture are accepted and active on their existing five-minute collectors. Kick completed its minimum 24-hour observation without warning or rollback, and the temporary hourly monitor is retired.
+Twitch and Kick permanent category capture are accepted and active on their existing five-minute collectors.
 
-The Twitch Heatmap category filter may be implemented and tested behind a disabled feature flag or non-public route. Public navigation and normal production exposure remain unauthorized until the seven-day Twitch accumulation audit at or after 2026-07-27 20:40 JST and a separate public cutover PR.
+The guarded Twitch recovery began at `2026-07-29T05:30:00.000Z`, passed the final read-only preflight and two-snapshot verification, and was accepted in PR #657. The replacement seven-day accumulation window is active. The earliest read-only audit is `2026-08-05T05:30:00.000Z` under #659.
+
+The original Twitch accumulation clock is invalid. Public navigation and normal production exposure for the Twitch category filter remain unauthorized.
+
+## Work allowed before the audit boundary
+
+The period before 2026-08-05 is active development time, not a freeze.
+
+Allowed order:
+
+1. complete the dormant read-only #659 audit package;
+2. add bounded read-only accumulation checkpoints;
+3. perform Heatmap Canvas PR-1 responsibility separation with no behavior change;
+4. add a Canvas scene only behind a hidden route or disabled flag;
+5. inspect and fix #148 Day Flow/Battle Lines provider parity after the audit package candidate is complete.
+
+These tasks must not change either collector cadence, D1 schema, backfill, retention, Kick runtime from Twitch-only work, provider identity rules, or public category-filter exposure.
+
+## Current evidence and decision chain
+
+- Original rejected audit: Issue #650 and PR #651.
+- Recovery package: PRs #653 and #654.
+- Recovery trigger: PR #655.
+- Recovery run/job/artifact: `30423637234` / `90485345119` / `8713465427`.
+- Recovery acceptance and execution-path retirement: PR #657.
+- Canonical v33 synchronization: PR #658 and commit `e1fea3f6626a4df3e8b950dcacad3c678683ccc8`.
+- Replacement audit: Issue #659.
+- Hidden Twitch Heatmap filter: Issue #635, API PR #638, controls PR #640, canonical acceptance PR #642.
+- Kick permanent category final acceptance: PR #648.
 
 ## Invariants
 
-- Twitch and Kick remain separate data products, databases, collectors, APIs, options, URL state, and results.
-- Twitch acceptance does not supply Kick production or UI evidence.
+- Twitch and Kick remain separate products, databases, collectors, APIs, options, URL state, and results.
 - Existing collector cadence remains five minutes for both providers.
-- No new Worker cron, backfill, or retention expansion is authorized.
-- Hidden Twitch UI implementation must not become public before the gate.
-- Existing unfiltered Heatmap remains the fallback until public cutover acceptance.
-- Cross-provider category identity, mapping, totals, and combined rankings are prohibited.
-- Missing, partial, stale, empty, error, demo, unknown-category, and unavailable states remain distinct where applicable.
+- No new Worker cron, D1 schema mutation, backfill, or retention expansion is authorized.
+- Existing unfiltered Heatmap remains the production fallback.
+- Missing, partial, stale, empty, error, demo, unknown-category, and unavailable states remain distinct.
+- A passing audit does not itself expose public UI; a separate cutover PR is required.
 
 ## Documentation governance
 
-- Every category PR must read and cite the current specification, rollout plan, roadmap, schedule, canonical gate, active WIP, relevant decision contract, and development policy.
-- Accepted evidence is immutable except when replaced by later exact-identity acceptance.
-- Current status belongs in roadmap, schedule, gate state, and the active WIP file.
-- Historical implementation and WIP files must not be presented as current authorization.
-- Production workflows require explicit contracts, sanitized evidence, rollback, and retirement steps.
-- Hidden UI acceptance and public UI exposure are separate gates.
+- Before every task and again before merge, read current-main roadmap, schedule, gate, affected specification/plan, active WIP, and development policy.
+- Record the current-main SHA and governing documents in the PR.
+- If current documents conflict or are stale, update them before implementation proceeds.
+- Historical evidence is immutable but does not override current authorization.
+- Current status belongs in roadmap, schedule, canonical gate, active WIP, and the relevant live specification/plan.
