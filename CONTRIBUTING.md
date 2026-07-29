@@ -27,18 +27,20 @@ Kick permanent category capture active
 Replacement stability start 2026-07-29T05:30:00.000Z
 Earliest replacement audit 2026-08-05T05:30:00.000Z
 Replacement audit issue #659
+Dormant replacement audit package accepted PR #661 / acceptance PR #662
 Twitch Heatmap public category-filter exposure unauthorized
 ```
 
 ## Current work order
 
-1. Build and verify the dormant read-only #659 audit package.
-2. Add bounded read-only accumulation checkpoints.
-3. Start Heatmap Canvas responsibility separation.
-4. Add a hidden/disabled Canvas scene without production cutover.
-5. Address #148 Day Flow/Battle Lines provider parity after the audit package is ready.
-6. Execute #659 only at or after the accepted boundary.
-7. Use a later separate PR for public category-filter cutover.
+1. Create and verify `work-659-twitch-replacement-audit-checkpoint-package`.
+2. Accept checkpoint execution separately before any production read-only run.
+3. Freeze sanitized checkpoint evidence as diagnostic only.
+4. Start Heatmap Canvas responsibility separation.
+5. Add a hidden/disabled Canvas scene after module-split acceptance.
+6. Address #148 Day Flow/Battle Lines provider parity; its package prerequisite is complete.
+7. Execute #659 final mode only at or after the accepted boundary.
+8. Use a later separate PR for public category-filter cutover.
 
 ## Change classification
 
@@ -60,6 +62,7 @@ Do not combine package implementation, production execution, and acceptance in o
 - Do not mutate Kick from Twitch-only work.
 - Do not change D1 schema, backfill, retention, or provider identity rules.
 - Do not expose the hidden Twitch category filter before #659 is accepted and a separate cutover PR passes.
+- Checkpoint mode never accepts #659 or authorizes public UI.
 - Heatmap Canvas work changes renderer/interaction only unless a later explicit contract authorizes more.
 - Existing unfiltered Heatmap remains the fallback.
 
