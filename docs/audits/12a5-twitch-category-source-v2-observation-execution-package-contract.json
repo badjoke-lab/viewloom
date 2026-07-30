@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-execution-package-v1",
+  "status": "candidate_ready_for_validation",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "packageIdentity": {
+    "packagePr": 685,
+    "productionExecutionPerformed": false
+  },
+  "governingMainSha": "03426af2e678400baa04848d745768ccfbded738",
+  "acceptedCandidate": {
+    "packagePr": 682,
+    "packageMergeSha": "2ae91cbf6b07616dcadc60894a832ace089c39fa",
+    "acceptancePr": 684,
+    "contractVersion": "category-source-v2-candidate",
+    "packageContract": "docs/audits/12a5-twitch-category-source-v2-completeness-package-contract.json",
+    "packageAcceptance": "docs/audits/12a5-twitch-category-source-v2-completeness-package-acceptance.json"
+  },
+  "executionFiles": {
+    "generator": "scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs",
+    "runner": "scripts/run-12a5-twitch-category-source-v2-observation.mjs",
+    "candidateConfig": "execution-packages/twitch-category-source-v2-observation/wrangler.toml",
+    "canonicalRollbackConfig": "workers/collector-twitch/wrangler.category-permanent.toml",
+    "workflow": ".github/workflows/analytics-12a5-twitch-category-source-v2-observation-execution.yml",
+    "triggerContract": "docs/audits/12a5-twitch-category-source-v2-observation-trigger-contract.json",
+    "trigger": "docs/audits/12a5-twitch-category-source-v2-observation-trigger.json"
+  },
+  "sourceIdentity": {
+    "activeCategoryCollectorBlob": "2b3bd54b92e26f802c05048160ed293b0b4e9d43",
+    "activeEntryBlob": "26be160414bfe38ebf8ce61660f8478b570454b6",
+    "acceptedCandidateBlob": "57df5b3e12a27587a6345a3bf2a6155d3dd669e5",
+    "generatedDirectory": "workers/collector-twitch/.generated-v2-observation",
+    "activeFilesModifiedByGenerator": false
+  },
+  "deploymentBoundary": {
+    "workerName": "viewloom-collector-twitch",
+    "candidateFlag": "CATEGORY_SOURCE_V2_OBSERVATION_ENABLED",
+    "candidateFlagValue": "true",
+    "categoryCaptureRemainsEnabled": true,
+    "intradayGenerationRemainsEnabled": true,
+    "cron": "*/5 * * * *",
+    "newCronAdded": false,
+    "databaseName": "vl_twitch_hot",
+    "databaseId": "b77221fe-80a3-4749-bc0e-d3ad54003dcf",
+    "kickChanged": false,
+    "canonicalRollbackRequired": true,
+    "canonicalRollbackConfig": "workers/collector-twitch/wrangler.category-permanent.toml"
+  },
+  "observationGate": {
+    "requiredConsecutiveSnapshots": 2,
+    "bucketMinutes": 5,
+    "maximumObservationMinutes": 16,
+    "pollIntervalSeconds": 30,
+    "requiredSourceMode": "real",
+    "nonEmptyRequired": true,
+    "freshnessMinutes": 20,
+    "requiredContractVersion": "category-source-v2-candidate",
+    "requiredStateEncoding": "2bit-hex-v1",
+    "stateCountMustEqualStreamCount": true,
+    "categoryRefCountMustEqualStreamCount": true,
+    "presentRefsMustEqualBothPresent": true,
+    "nullRefsMustEqualNonBothPresent": true,
+    "invalidRefsAllowed": 0,
+    "unresolvedCategoryIdsAllowed": 0,
+    "payloadProvider": "twitch"
+  },
+  "timeoutEnvelopeMinutes": {
+    "setupAndGeneration": 5,
+    "candidateDeploy": 8,
+    "observation": 16,
+    "canonicalRollback": 8,
+    "artifactUpload": 5,
+    "buffer": 2,
+    "requiredMaximum": 44,
+    "jobTimeout": 50,
+    "jobTimeoutGreaterThanRequiredMaximum": true
+  },
+  "startBoundary": {
+    "executeImmediatelyAfterExactTriggerMerge": true,
+    "startAtFieldAllowed": false,
+    "preStartSleepAllowed": false,
+    "longInJobWaitAllowed": false,
+    "boundedObservationPollingAllowed": true
+  },
+  "directD1Boundary": {
+    "statements": ["SELECT", "WITH"],
+    "insert": false,
+    "update": false,
+    "delete": false,
+    "alter": false,
+    "backfill": false
+  },
+  "packagePrBoundary": {
+    "productionCredentialsUsed": false,
+    "productionExecutionPerformed": false,
+    "candidateDeploymentPerformed": false,
+    "canonicalRollbackPerformed": false,
+    "workerDeploymentPerformed": false,
+    "d1MutationPerformed": false,
+    "schemaMutationPerformed": false,
+    "bindingMutationPerformed": false,
+    "cadenceChanged": false,
+    "retentionChanged": false,
+    "kickChanged": false,
+    "semanticMappingAuthorized": false,
+    "stabilityClockStartAuthorized": false,
+    "finalModeAuthorized": false,
+    "publicCategoryUiAuthorized": false
+  },
+  "requiredValidation": [
+    "generate_from_exact_active_blobs",
+    "generated_worker_typescript_compile",
+    "wrangler_dry_run_bundle",
+    "v1_default_and_rollback_path_preserved",
+    "execution_package_not_watched_by_normal_deploy",
+    "candidate_config_same_worker_database_and_cron",
+    "no_new_cron",
+    "no_kick_import_or_binding",
+    "timeout_envelope_pass",
+    "immediate_start_no_prestart_sleep",
+    "bounded_two_snapshot_observation",
+    "canonical_rollback_in_finally",
+    "direct_d1_select_with_only",
+    "package_pr_production_jobs_skipped",
+    "collector_and_web_typecheck",
+    "web_build",
+    "public_category_controls_absent"
+  ],
+  "nextGate": "separately accept the execution package before adding an exact immediate trigger"
+}
