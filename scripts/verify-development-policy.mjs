@@ -8,48 +8,34 @@ const required = [
   'docs/operations/development-and-deployment-policy.md',
   'docs/product/current-roadmap.md', 'docs/product/current-schedule.md',
   'docs/product/twitch-replacement-seven-day-audit-spec.md',
-  'docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json',
-  'docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json',
-  'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-contract.json',
-  'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json',
-  'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-contract.json',
-  'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-acceptance.json',
-  'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger-contract.json',
+  'docs/work-in-progress/phase12a4-category-parallel-execution.md',
+  'docs/audits/12a2-current-gate-state.json',
   'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence.json',
   'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-retirement.json',
-  'docs/work-in-progress/phase12a4-category-parallel-execution.md',
-  'docs/audits/12a2-current-gate-state.json', '.github/pull_request_template.md',
+  'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json',
+  '.github/pull_request_template.md',
 ]
 for (const path of required) assert.equal(existsSync(path), true, `${path}: missing`)
 for (const path of [
-  'docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger.json',
-  '.github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint.yml',
-  '.github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint-reporter.yml',
   'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json',
   '.github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution.yml',
   '.github/workflows/analytics-12a5-twitch-checkpoint-failure-diagnosis-reporter.yml',
-]) assert.equal(existsSync(path), false, `${path}: temporary execution path must be retired`)
+]) assert.equal(existsSync(path), false, `${path}: retired path returned`)
 
 const gate = json('docs/audits/12a2-current-gate-state.json')
-const checkpointEvidence = json('docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json')
-const checkpointRetirement = json('docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json')
-const queryContract = json('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-contract.json')
-const queryAcceptance = json('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json')
-const executionContract = json('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-contract.json')
-const executionAcceptance = json('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-acceptance.json')
-const triggerContract = json('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger-contract.json')
-const diagnosisEvidence = json('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence.json')
-const diagnosisRetirement = json('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-retirement.json')
+const evidence = json('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence.json')
+const retirement = json('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-retirement.json')
+const decision = json('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json')
 
 for (const [path, fragments] of Object.entries({
-  'AGENTS.md': ['Mandatory current authorities', 'Diagnosis evidence: frozen', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision'],
-  'CONTRIBUTING.md': ['Required reading and freshness rule', 'Current-main SHA', 'Diagnosis evidence frozen and temporary path retired'],
-  'docs/README.md': ['Diagnosis evidence frozen', 'Current-main documents, not cached chat summaries'],
+  'AGENTS.md': ['Mandatory authorities', 'Diagnosis decision: recovery required'],
+  'CONTRIBUTING.md': ['Required reading and freshness rule', 'Current-main SHA'],
+  'docs/README.md': ['Current-main documents and the diagnosis decision', 'Original stability clock valid no'],
   'docs/operations/development-and-deployment-policy.md': ['Mandatory freshness protocol', 'Cached chat summaries', '`main` is production'],
-  'docs/product/current-roadmap.md': ['### Current gate: checkpoint-failure diagnosis decision', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision'],
-  'docs/product/current-schedule.md': ['Current gate separate diagnosis decision', 'no automatic recovery or clock reset'],
-  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: separate diagnosis decision', 'Diagnosis evidence is non-authorizing'],
-  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['checkpoint-failure diagnosis decision', 'No automatic recovery or clock reset.'],
+  'docs/product/current-roadmap.md': ['### Current gate: Twitch category-source completeness v2 recovery package', 'work-659-twitch-category-source-v2-completeness-recovery-package'],
+  'docs/product/current-schedule.md': ['Current gate category-source-v2 completeness recovery package', 'no production execution on the dormant package PR'],
+  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: Twitch category-source-v2 completeness recovery package', 'No new stability start'],
+  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['category-source-v2 completeness recovery package', 'No checkpoint rerun'],
   '.github/pull_request_template.md': ['Current-main SHA read:', 'No newer source-of-truth change supersedes this candidate'],
 })) {
   const source = read(path)
@@ -65,60 +51,31 @@ assert.equal(gate.currentWorkstream.twitchHeatmapCategoryFilterPublicExposureAut
 assert.equal(gate.categoryCapture.newCronAuthorized, false)
 assert.equal(gate.categoryCapture.backfillAuthorized, false)
 assert.equal(gate.categoryCapture.retentionExpansionAuthorized, false)
-assert.equal(checkpointEvidence.status, 'checkpoint_failed')
-assert.equal(checkpointEvidence.execution.workflowRunId, 30478338654)
-assert.deepEqual(checkpointEvidence.failedHardStops, ['slotCoveragePass', 'consecutiveMissingSlotsPass', 'categoryReferenceCoveragePass'])
-assert.equal(checkpointEvidence.decision.auditAccepted, false)
-assert.equal(checkpointEvidence.decision.publicCutoverAuthorized, false)
-assert.equal(checkpointEvidence.decision.automaticRecoveryAuthorized, false)
-assert.equal(checkpointEvidence.decision.automaticClockResetAuthorized, false)
-assert.equal(checkpointRetirement.boundaries.rerunAuthorized, false)
-assert.equal(checkpointRetirement.boundaries.workerDeploymentPerformed, false)
-assert.equal(checkpointRetirement.boundaries.d1MutationPerformed, false)
-assert.equal(checkpointRetirement.boundaries.kickChanged, false)
-assert.equal(checkpointRetirement.boundaries.publicCategoryUiAuthorized, false)
-assert.equal(queryContract.status, 'accepted')
-assert.equal(queryContract.acceptance.packagePr, 670)
-assert.equal(queryAcceptance.status, 'accepted')
-assert.equal(queryAcceptance.acceptancePr, 671)
-assert.deepEqual(queryContract.readOnlyBoundary.d1Statements, ['SELECT', 'WITH'])
-assert.equal(executionContract.status, 'accepted')
-assert.equal(executionContract.acceptance.packagePr, 672)
-assert.equal(executionContract.acceptance.acceptancePr, 673)
-assert.equal(executionAcceptance.status, 'accepted')
-assert.equal(triggerContract.status, 'accepted')
-assert.equal(triggerContract.acceptedPackageIdentity.packagePr, 672)
-assert.equal(triggerContract.acceptedPackageIdentity.acceptancePr, 673)
-assert.deepEqual(triggerContract.executionBoundary.d1Statements, ['SELECT', 'WITH'])
-assert.equal(diagnosisEvidence.schemaVersion, 'viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-summary-v1')
-assert.equal(diagnosisEvidence.status, 'diagnosis_complete')
-assert.equal(diagnosisEvidence.sourceArtifact.workflowRunId, 30541697022)
-assert.equal(diagnosisEvidence.sourceArtifact.runAttempt, 2)
-assert.equal(diagnosisEvidence.sourceArtifact.diagnoseJobId, 90942773349)
-assert.equal(diagnosisEvidence.sourceArtifact.artifactId, 8767937513)
-assert.equal(diagnosisEvidence.missingBucketDiagnosis.exactRowsPresent.length, 0)
-assert.equal(diagnosisEvidence.categoryReferenceDiagnosis.checkpoint.coverageRatio, 0.994524)
-assert.equal(diagnosisEvidence.categoryReferenceDiagnosis.postCheckpoint.coverageRatio, 0.994236)
-assert.equal(diagnosisEvidence.currentCollectorStatus.status, 'ok')
-assert.equal(diagnosisRetirement.status, 'retired_on_merge')
-assert.equal(diagnosisRetirement.execution.workflowRunId, 30541697022)
-assert.equal(diagnosisRetirement.execution.runAttempt, 2)
-assert.equal(diagnosisRetirement.execution.diagnoseJobId, 90942773349)
-assert.equal(diagnosisRetirement.execution.artifactId, 8767937513)
-assert.equal(diagnosisRetirement.cancelledAttempt.diagnoseJobId, 90867816146)
-assert.equal(diagnosisRetirement.boundaries.diagnosisEvidenceOnly, true)
-for (const [key, value] of Object.entries(diagnosisRetirement.boundaries)) {
-  if (key === 'diagnosisEvidenceOnly') continue
-  assert.equal(value, false, `diagnosis retirement boundary ${key} must remain false`)
+
+assert.equal(evidence.status, 'diagnosis_complete')
+assert.equal(retirement.status, 'retired_on_merge')
+assert.equal(decision.status, 'recovery_required')
+assert.equal(decision.decision.originalReplacementWindowValid, false)
+assert.equal(decision.decision.recoveryRequired, true)
+assert.equal(decision.decision.historicalBackfillAuthorized, false)
+assert.equal(decision.decision.thresholdRelaxationAuthorized, false)
+assert.equal(decision.decision.automaticClockResetAuthorized, false)
+assert.equal(decision.decision.finalAuditAuthorized, false)
+assert.equal(decision.decision.publicCutoverAuthorized, false)
+assert.equal(decision.clockRule.oldWindowRetired, true)
+assert.equal(decision.clockRule.newStartAt, null)
+assert.equal(decision.requiredRecovery.semanticConstraints.kickMayBeChanged, false)
+assert.equal(decision.requiredRecovery.semanticConstraints.publicUiMayBeChanged, false)
+assert.equal(decision.boundaries.decisionOnly, true)
+for (const [key, value] of Object.entries(decision.boundaries)) {
+  if (key === 'decisionOnly') continue
+  assert.equal(value, false, `decision boundary ${key} must be false`)
 }
 
 console.log(JSON.stringify({
   ok: true,
   policy: 'current-main-source-of-truth-freshness',
-  phase: gate.currentWorkstream.phase,
-  checkpointOutcome: checkpointEvidence.status,
-  diagnosisStatus: diagnosisEvidence.status,
-  diagnosisPathRetired: true,
-  currentBranch: 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision',
+  decision: decision.status,
+  nextBranch: 'work-659-twitch-category-source-v2-completeness-recovery-package',
   publicCategoryFilterAuthorized: false,
 }, null, 2))
