@@ -1,13 +1,19 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-execution-package-v1",
-  "status": "candidate_ready_for_validation",
+  "status": "accepted",
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
   "packageIdentity": {
     "packagePr": 685,
+    "packageCandidateHeadSha": "b0931fa5a22a825f599bb576b4507473f1dc6731",
+    "packageMergeSha": "0a8f2931524d08dae42dee302df24a30da544949",
+    "acceptancePr": 686,
+    "validationRunId": 30570462889,
+    "validationJobId": 90965620950,
     "productionExecutionPerformed": false
   },
+  "acceptanceRecord": "docs/audits/12a5-twitch-category-source-v2-observation-execution-package-acceptance.json",
   "governingMainSha": "03426af2e678400baa04848d745768ccfbded738",
   "acceptedCandidate": {
     "packagePr": 682,
@@ -127,5 +133,5 @@
     "web_build",
     "public_category_controls_absent"
   ],
-  "nextGate": "separately accept the execution package before adding an exact immediate trigger"
+  "nextGate": "add an exact one-file immediate trigger for the accepted execution package"
 }
