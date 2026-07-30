@@ -27,5 +27,6 @@
 ## Boundaries
 
 - No checkpoint rerun, backfill, row invention, threshold relaxation, synthetic category mapping, or automatic clock reset.
-- No Kick, public UI, cadence, retention, or cross-provider change.
+- No Kick, cadence, retention, or cross-provider change.
+- No public category UI.
 - Existing unfiltered Heatmap remains the fallback.
