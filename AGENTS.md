@@ -48,7 +48,8 @@ Current-main documents override cached handoffs, chat summaries, and historical 
 
 - `main` is production; no direct push.
 - D1 diagnosis is `SELECT` / `WITH` only.
-- No checkpoint rerun, threshold relaxation, interpolation, backfill, or clock reset.
+- Do not rerun the checkpoint.
+- No threshold relaxation, interpolation, backfill, or clock reset.
 - No Worker deployment, new cron, cadence change, D1 mutation, retention change, Kick mutation, final mode, cross-provider behavior, or public category UI.
 - Existing unfiltered Heatmap remains the fallback.
 
