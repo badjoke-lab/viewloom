@@ -5,54 +5,53 @@ Tracking issue: #659
 
 ## Current authority
 
-The original replacement window beginning `2026-07-29T05:30:00.000Z` is invalid and retired. No new stability start or earliest final-audit time is authorized yet.
+The original replacement window is invalid and retired. No new stability start or earliest final-audit time is authorized.
 
-Decision authority:
+- Diagnosis decision: recovery required.
+- Dormant completeness package accepted in package PR #682 and package acceptance PR #684.
+- Package merge: `2ae91cbf6b07616dcadc60894a832ace089c39fa`.
+- Validation run/job: `30567807300` / `90956596848`.
 
-- `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json`
+## Accepted dormant contract
 
-## Evidence chain
-
-- Checkpoint run `30478338654` failed: slot coverage 151/154, three consecutive missing buckets, category-reference coverage `0.994524`.
-- Diagnosis run `30541697022` attempt 2, job `90942773349`, artifact `8767937513` succeeded read-only.
-- Post-checkpoint category-reference coverage was `0.994236`, still below the accepted `0.995` requirement.
-- Diagnosis evidence and temporary-path retirement merged in PR #680.
-
-## Accepted decision
-
-- The three historical missing rows are permanently absent and may not be recreated.
-- The original seven-day window cannot pass the accepted maximum-consecutive-gap rule.
-- Continued category-reference coverage below `0.995` prevents final mode.
-- Persisted v1 rows cannot distinguish empty Twitch `game_id` from empty `game_name`.
-- Recovery is required; backfill, threshold relaxation, synthetic category mapping, and automatic clock reset are not authorized.
-
-## Current gate: Twitch category-source-v2 completeness recovery package
-
-Current branch:
-
-`work-659-twitch-category-source-v2-completeness-recovery-package`
-
-The dormant package must preserve exact pre-strip source completeness for each Twitch item using:
+`category-source-v2-candidate` distinguishes:
 
 - `both_present`;
 - `both_empty`;
 - `provider_id_only`;
 - `category_name_only`.
 
-It must emit compact state evidence, source-state counts, valid refs, partial-pair counts, both-empty counts, provider leakage, storage impact, and execution cost. It must not execute production changes on the package PR and must not alter Kick or public UI.
+Only `both_present` receives a category reference. The accepted package is dormant, adds no production binding, and accepts no semantic mapping.
+
+## Current gate: Twitch-only category-source-v2 execution package
+
+Current branch:
+
+`work-659-twitch-category-source-v2-completeness-execution-package`
+
+The execution package must:
+
+- integrate the accepted candidate behind a Twitch-only disabled-by-default flag;
+- preserve current v1 as default and exact rollback path;
+- add no Kick import or configuration;
+- define an exact one-time trigger and prohibit in-job long sleeps;
+- set job timeout greater than the bounded execution, evidence, upload, and rollback envelope;
+- require two consecutive real/nonempty/fresh v2 snapshots;
+- collect source-state counts, provider separation, leakage, storage, and execution-cost evidence;
+- use no production credentials or execution on the execution-package PR;
+- require package acceptance before an exact trigger.
 
 ## Following gates
 
-1. dormant implementation and package validation;
-2. separate acceptance and Twitch-only execution;
-3. two consecutive real/nonempty/fresh post-activation snapshots;
-4. separate semantic and new-clock decision;
+1. execution package and separate acceptance;
+2. exact Twitch-only trigger and bounded execution;
+3. two consecutive v2 snapshot evidence and temporary-path retirement;
+4. semantic and new-clock decision;
 5. seven stable days from the accepted new start;
 6. final audit and separate public cutover.
 
 ## Prohibited responses
 
-- checkpoint rerun, historical backfill, row invention, threshold relaxation, or automatic clock reset;
-- mapping missing source fields to a synthetic category without separate acceptance;
-- Worker/D1/binding/cadence/retention/Kick mutation on the dormant package PR;
-- final mode or public category-filter exposure.
+- production execution before package acceptance and exact trigger;
+- checkpoint rerun, historical backfill, row invention, threshold relaxation, synthetic category mapping, or automatic clock reset;
+- Kick, cadence, retention, cross-provider, final-mode, or public category-filter change.
