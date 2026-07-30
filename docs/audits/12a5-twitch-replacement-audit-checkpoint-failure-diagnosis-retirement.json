@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-retirement-v1",
-  "status": "awaiting_evidence",
+  "status": "retired_on_merge",
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
@@ -11,15 +11,27 @@
     "startAt": "2026-07-30T13:15:00.000Z"
   },
   "execution": {
-    "workflowRunId": null,
-    "diagnoseJobId": null,
-    "workflowConclusion": null,
-    "diagnoseConclusion": null,
-    "artifactId": null,
-    "artifactDigest": null,
-    "evidenceJsonSha256": null
+    "workflowRunId": 30541697022,
+    "runAttempt": 2,
+    "diagnoseJobId": 90942773349,
+    "workflowConclusion": "success",
+    "diagnoseConclusion": "success",
+    "artifactId": 8767937513,
+    "artifactDigest": "sha256:02cedcb6c23c6792b55c96bb4326bc24ba8d7a79880df634d8a1f98e29d02ac5",
+    "sourceEvidenceJsonSha256": "372dc6c434830ec1ce3630b4146b29510010f0602c1a49b1b0d2fc038842236c"
+  },
+  "cancelledAttempt": {
+    "runAttempt": 1,
+    "diagnoseJobId": 90867816146,
+    "diagnoseConclusion": "cancelled",
+    "diagnosisRunnerExecuted": false,
+    "artifactProduced": false,
+    "runnerStartedAt": "2026-07-30T12:14:19Z",
+    "cancelledAt": "2026-07-30T13:14:31Z",
+    "cause": "60-minute job timeout expired during the in-job wait, approximately 29 seconds before startAt"
   },
   "evidencePath": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence.json",
+  "evidenceSchemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-summary-v1",
   "retiredPaths": [
     "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json",
     ".github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution.yml",
@@ -44,5 +56,5 @@
     "finalModeAuthorized": false,
     "publicCategoryUiAuthorized": false
   },
-  "nextGate": "freeze diagnosis evidence, retire temporary paths, then make a separate recovery/no-recovery and stability-clock decision"
+  "nextGate": "make a separate recovery/no-recovery and stability-clock decision from the frozen diagnosis evidence"
 }
