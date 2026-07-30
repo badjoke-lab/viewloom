@@ -1,13 +1,19 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-category-source-v2-completeness-package-v1",
-  "status": "candidate_ready_for_validation",
+  "status": "accepted",
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
   "packageIdentity": {
     "packagePr": 682,
+    "packageCandidateHeadSha": "403cc85ae04670c18cbd783f52e131cdf79f4eb3",
+    "packageMergeSha": "2ae91cbf6b07616dcadc60894a832ace089c39fa",
+    "acceptancePr": 684,
+    "validationRunId": 30567807300,
+    "validationJobId": 90956596848,
     "productionExecutionPerformed": false
   },
+  "acceptanceRecord": "docs/audits/12a5-twitch-category-source-v2-completeness-package-acceptance.json",
   "governingMainSha": "9974539eadbc3388c9f9369168d305ca58771fe2",
   "governingDecision": {
     "path": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json",
@@ -74,5 +80,5 @@
     "web_typecheck_and_build",
     "public_category_controls_absent"
   ],
-  "nextGate": "separately accept the dormant package before creating any Twitch-only execution package"
+  "nextGate": "create and separately accept a bounded Twitch-only category-source-v2 execution package"
 }
