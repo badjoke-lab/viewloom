@@ -4,6 +4,10 @@
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
+  "packageIdentity": {
+    "packagePr": 682,
+    "productionExecutionPerformed": false
+  },
   "governingMainSha": "9974539eadbc3388c9f9369168d305ca58771fe2",
   "governingDecision": {
     "path": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json",
