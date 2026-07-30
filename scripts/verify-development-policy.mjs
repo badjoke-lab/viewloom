@@ -47,8 +47,8 @@ for (const [path, fragments] of Object.entries({
   'docs/README.md': ['Diagnosis evidence frozen', 'Current-main documents, not cached chat summaries'],
   'docs/operations/development-and-deployment-policy.md': ['Mandatory freshness protocol', 'Cached chat summaries', '`main` is production'],
   'docs/product/current-roadmap.md': ['### Current gate: checkpoint-failure diagnosis decision', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision'],
-  'docs/product/current-schedule.md': ['Current gate separate diagnosis decision', 'no automatic clock reset'],
-  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: separate diagnosis decision', 'Diagnosis evidence does not decide recovery'],
+  'docs/product/current-schedule.md': ['Current gate separate diagnosis decision', 'no automatic recovery or clock reset'],
+  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: separate diagnosis decision', 'Diagnosis evidence is non-authorizing'],
   'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['checkpoint-failure diagnosis decision', 'No automatic recovery or clock reset.'],
   '.github/pull_request_template.md': ['Current-main SHA read:', 'No newer source-of-truth change supersedes this candidate'],
 })) {
@@ -90,9 +90,22 @@ assert.equal(triggerContract.status, 'accepted')
 assert.equal(triggerContract.acceptedPackageIdentity.packagePr, 672)
 assert.equal(triggerContract.acceptedPackageIdentity.acceptancePr, 673)
 assert.deepEqual(triggerContract.executionBoundary.d1Statements, ['SELECT', 'WITH'])
+assert.equal(diagnosisEvidence.schemaVersion, 'viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-summary-v1')
 assert.equal(diagnosisEvidence.status, 'diagnosis_complete')
-assert.equal(diagnosisEvidence.error, null)
+assert.equal(diagnosisEvidence.sourceArtifact.workflowRunId, 30541697022)
+assert.equal(diagnosisEvidence.sourceArtifact.runAttempt, 2)
+assert.equal(diagnosisEvidence.sourceArtifact.diagnoseJobId, 90942773349)
+assert.equal(diagnosisEvidence.sourceArtifact.artifactId, 8767937513)
+assert.equal(diagnosisEvidence.missingBucketDiagnosis.exactRowsPresent.length, 0)
+assert.equal(diagnosisEvidence.categoryReferenceDiagnosis.checkpoint.coverageRatio, 0.994524)
+assert.equal(diagnosisEvidence.categoryReferenceDiagnosis.postCheckpoint.coverageRatio, 0.994236)
+assert.equal(diagnosisEvidence.currentCollectorStatus.status, 'ok')
 assert.equal(diagnosisRetirement.status, 'retired_on_merge')
+assert.equal(diagnosisRetirement.execution.workflowRunId, 30541697022)
+assert.equal(diagnosisRetirement.execution.runAttempt, 2)
+assert.equal(diagnosisRetirement.execution.diagnoseJobId, 90942773349)
+assert.equal(diagnosisRetirement.execution.artifactId, 8767937513)
+assert.equal(diagnosisRetirement.cancelledAttempt.diagnoseJobId, 90867816146)
 assert.equal(diagnosisRetirement.boundaries.diagnosisEvidenceOnly, true)
 for (const [key, value] of Object.entries(diagnosisRetirement.boundaries)) {
   if (key === 'diagnosisEvidenceOnly') continue
