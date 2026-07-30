@@ -48,7 +48,8 @@ Kick cadence */5 * * * * unchanged
 
 ## Hard stops
 
-- no checkpoint rerun or threshold relaxation;
+- no checkpoint rerun;
+- no threshold relaxation;
 - no interpolation, backfill, row invention, or automatic clock reset;
 - no Worker deployment, new cron, cadence, D1 mutation, retention, Kick, final mode, cross-provider behavior, or public category UI;
 - no production diagnosis before separate execution-package acceptance and exact trigger.
