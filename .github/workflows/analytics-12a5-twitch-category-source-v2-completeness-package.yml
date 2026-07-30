@@ -8,11 +8,13 @@ on:
       - 'scripts/test-12a5-twitch-category-source-v2-completeness-candidate.mjs'
       - 'scripts/verify-12a5-twitch-category-source-v2-completeness-package.mjs'
       - 'docs/audits/12a5-twitch-category-source-v2-completeness-package-contract.json'
+      - 'docs/audits/12a5-twitch-category-source-v2-completeness-package-acceptance.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json'
       - 'docs/product/current-roadmap.md'
       - 'docs/product/current-schedule.md'
       - 'docs/product/twitch-replacement-seven-day-audit-spec.md'
       - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
+      - 'docs/README.md'
       - 'AGENTS.md'
       - 'CONTRIBUTING.md'
       - 'workers/collector-twitch/**'
@@ -26,6 +28,7 @@ on:
       - 'scripts/test-12a5-twitch-category-source-v2-completeness-candidate.mjs'
       - 'scripts/verify-12a5-twitch-category-source-v2-completeness-package.mjs'
       - 'docs/audits/12a5-twitch-category-source-v2-completeness-package-contract.json'
+      - 'docs/audits/12a5-twitch-category-source-v2-completeness-package-acceptance.json'
       - '.github/workflows/analytics-12a5-twitch-category-source-v2-completeness-package.yml'
 
 permissions:
@@ -51,7 +54,7 @@ jobs:
         run: pnpm exec tsc --target ES2022 --module ES2022 --moduleResolution Bundler --strict --noEmit workers/shared/category-capture-v2-candidate.ts
       - name: Run candidate unit and capacity tests
         run: node scripts/test-12a5-twitch-category-source-v2-completeness-candidate.mjs
-      - name: Verify dormant package boundary
+      - name: Verify accepted dormant package
         run: node scripts/verify-12a5-twitch-category-source-v2-completeness-package.mjs
       - name: Verify governing recovery decision
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.mjs
@@ -59,7 +62,7 @@ jobs:
         run: node scripts/verify-category-rollout-policy.mjs
       - name: Verify development policy
         run: node scripts/verify-development-policy.mjs
-      - name: Verify active collectors remain unchanged and candidate-free
+      - name: Verify active collectors remain candidate-free
         run: |
           ! grep -R "category-capture-v2-candidate\|encodeCategorySourceCompletenessV2Candidate" workers/collector-twitch workers/collector-kick
           ! grep -R "CATEGORY_SOURCE_V2\|category-source-v2-candidate" workers/collector-twitch/*.toml workers/collector-kick/*.toml
@@ -78,16 +81,16 @@ jobs:
           test -f apps/web/dist/kick/heatmap/index.html
           ! grep -q 'categoryPreview' apps/web/dist/kick/heatmap/index.html
           ! grep -q 'data-category-preview-select' apps/web/dist/kick/heatmap/index.html
-      - name: Summarize dormant package
+      - name: Summarize accepted dormant package
         run: |
           {
-            echo '## Twitch category-source-v2 completeness candidate'
+            echo '## Accepted Twitch category-source-v2 completeness package'
             echo
+            echo '- Package / acceptance: `#682` / `#684`'
             echo '- Contract: `category-source-v2-candidate`'
-            echo '- States: both_present / both_empty / provider_id_only / category_name_only'
-            echo '- Encoding: 2 bits/item, 75 bytes maximum for 300 items before hex representation'
-            echo '- Active collector import: no'
-            echo '- Production binding or execution: no'
+            echo '- Capacity: 300 items, 348-byte overhead under 400-byte limit'
+            echo '- Active collector import or production binding: no'
+            echo '- Production activation or semantic mapping accepted: no'
             echo '- Kick, cadence, D1 schema, retention, public UI: unchanged'
-            echo '- Next gate: separate dormant-package acceptance'
+            echo '- Next gate: bounded Twitch-only execution package'
           } >> "$GITHUB_STEP_SUMMARY"

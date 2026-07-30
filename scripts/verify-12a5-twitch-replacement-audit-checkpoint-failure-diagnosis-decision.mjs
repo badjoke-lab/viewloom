@@ -5,7 +5,6 @@ const decisionPath = 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failu
 const evidencePath = 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence.json'
 const retirementPath = 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-retirement.json'
 for (const path of [decisionPath, evidencePath, retirementPath]) assert.equal(existsSync(path), true, `${path}: missing`)
-
 const json = (path) => JSON.parse(readFileSync(path, 'utf8'))
 const decision = json(decisionPath)
 const evidence = json(evidencePath)
@@ -33,7 +32,6 @@ assert.equal(decision.findings.postCheckpointCategoryReferenceCoverage, 0.994236
 assert.equal(decision.findings.minimumCategoryReferenceCoverageRequired, 0.995)
 assert.equal(decision.findings.postCheckpointCoverageRecovered, false)
 assert.equal(decision.findings.persistedSourceCauseDistinguishable, false)
-
 assert.equal(decision.decision.checkpointAccepted, false)
 assert.equal(decision.decision.originalReplacementWindowValid, false)
 assert.equal(decision.decision.originalStabilityClockMayContinue, false)
@@ -49,13 +47,7 @@ assert.equal(decision.decision.clockRestartPendingAcceptedRecovery, true)
 assert.equal(decision.requiredRecovery.name, 'twitch_category_source_completeness_v2_observation')
 assert.equal(decision.requiredRecovery.contractVersion, 'category-source-v2-candidate')
 assert.deepEqual(decision.requiredRecovery.requiredPerItemStates, ['both_present', 'both_empty', 'provider_id_only', 'category_name_only'])
-assert.equal(decision.requiredRecovery.semanticConstraints.bothEmptyMayBeMappedToSyntheticCategoryWithoutSeparateAcceptance, false)
-assert.equal(decision.requiredRecovery.semanticConstraints.partialPairMayBeTreatedAsObservedCategory, false)
-assert.equal(decision.requiredRecovery.semanticConstraints.missingHistoricalRowsMayBeRecreated, false)
-assert.equal(decision.requiredRecovery.semanticConstraints.existingCategorySourceV1RowsMayBeRewritten, false)
-assert.equal(decision.requiredRecovery.semanticConstraints.kickMayBeChanged, false)
-assert.equal(decision.requiredRecovery.semanticConstraints.publicUiMayBeChanged, false)
-
+for (const value of Object.values(decision.requiredRecovery.semanticConstraints)) assert.equal(value, false)
 assert.equal(decision.clockRule.oldStartAt, '2026-07-29T05:30:00.000Z')
 assert.equal(decision.clockRule.oldEarliestAuditAt, '2026-08-05T05:30:00.000Z')
 assert.equal(decision.clockRule.oldWindowRetired, true)
@@ -68,24 +60,11 @@ for (const [key, value] of Object.entries(decision.boundaries)) {
   assert.equal(value, false, `decision boundary ${key} must be false`)
 }
 
-for (const [path, fragments] of Object.entries({
-  'AGENTS.md': ['Diagnosis decision: recovery required', 'work-659-twitch-category-source-v2-completeness-recovery-package'],
-  'CONTRIBUTING.md': ['Diagnosis decision recovery required', 'No checkpoint rerun'],
-  'docs/README.md': ['Diagnosis decision recovery required', 'Original stability clock valid no'],
-  'docs/product/current-roadmap.md': ['### Current gate: Twitch category-source completeness v2 recovery package', 'category-source-v2-candidate'],
-  'docs/product/current-schedule.md': ['Current gate category-source-v2 completeness recovery package', 'Original stability clock valid no'],
-  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: Twitch category-source-v2 completeness recovery package', 'original replacement window'],
-  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['category-source-v2 completeness recovery package', 'No public category UI'],
-})) {
-  const source = readFileSync(path, 'utf8')
-  for (const fragment of fragments) assert.ok(source.includes(fragment), `${path} missing: ${fragment}`)
-}
-
 console.log(JSON.stringify({
   ok: true,
   status: decision.status,
   recoveryRequired: decision.decision.recoveryRequired,
   oldWindowRetired: decision.clockRule.oldWindowRetired,
-  nextGate: decision.nextGate,
+  recoveryContract: decision.requiredRecovery.contractVersion,
   publicCategoryUiAuthorized: false,
 }, null, 2))
