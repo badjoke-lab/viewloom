@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-v1",
-  "status": "ready_for_validation",
+  "status": "accepted",
   "phase": "12A-5B-R2",
   "parentTrackingIssue": 623,
   "hiddenUiTrackingIssue": 635,
@@ -73,13 +73,14 @@
     "retentionDays": 30,
     "digestFreezeRequired": true
   },
+  "acceptanceRecord": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-acceptance.json",
   "acceptance": {
-    "packagePr": null,
-    "packageCandidateHeadSha": null,
-    "packageMergeSha": null,
-    "acceptancePr": null,
-    "validationRunId": null,
-    "validationJobId": null,
+    "packagePr": 672,
+    "packageCandidateHeadSha": "c496963f03611be4e9b957e6bf99d15f0d97bad4",
+    "packageMergeSha": "02ece37cc70de4faa5251600a465d4e68d058f29",
+    "acceptancePr": 673,
+    "validationRunId": 30539504888,
+    "validationJobId": 90860798797,
     "productionExecutionPerformed": false
   },
   "afterExecution": {
@@ -93,5 +94,5 @@
     "auditAcceptanceAuthorized": false,
     "publicCutoverAuthorized": false
   },
-  "nextGate": "accept this dormant one-time diagnosis execution package before adding an exact one-file trigger"
+  "nextGate": "add the exact one-file diagnosis trigger with package PR 672, merge SHA 02ece37cc70de4faa5251600a465d4e68d058f29, and acceptance PR 673"
 }
