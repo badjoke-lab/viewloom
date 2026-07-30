@@ -24,6 +24,8 @@ on:
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger-contract.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-contract.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-*.json'
       - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
       - 'docs/operations/development-and-deployment-policy.md'
@@ -33,9 +35,12 @@ on:
       - 'apps/web/**'
       - 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs'
       - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
+      - 'scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs'
+      - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.mjs'
       - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-development-policy.mjs'
+      - '.github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.yml'
       - '.github/workflows/category-rollout-policy.yml'
   push:
     branches: [main]
@@ -59,6 +64,8 @@ jobs:
           node-version: 22
       - name: Verify checkpoint evidence and retirement
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs
+      - name: Verify accepted checkpoint-failure diagnosis package
+        run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.mjs
       - name: Verify current category rollout contract
         run: node scripts/verify-category-rollout-policy.mjs
       - name: Verify current development policy
