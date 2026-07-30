@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger-contract-v1",
+  "status": "ready_for_validation",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "mode": "checkpoint_failure_diagnosis",
+  "packageContract": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-contract.json",
+  "trigger": {
+    "path": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json",
+    "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger-v1",
+    "status": "armed",
+    "provider": "twitch",
+    "mode": "checkpoint_failure_diagnosis",
+    "oneTime": true,
+    "confirmation": "RUN_TWITCH_CHECKPOINT_FAILURE_DIAGNOSIS",
+    "maximumStartDelayHours": 3,
+    "allowedPastSkewMinutes": 10,
+    "requiredFields": [
+      "schemaVersion",
+      "status",
+      "provider",
+      "mode",
+      "oneTime",
+      "confirmation",
+      "packagePr",
+      "packageMergeSha",
+      "acceptancePr",
+      "startAt"
+    ]
+  },
+  "acceptedPackageIdentity": {
+    "required": true,
+    "packagePr": null,
+    "packageMergeSha": null,
+    "acceptancePr": null
+  },
+  "executionBoundary": {
+    "event": "push_to_main_with_exact_trigger_path",
+    "workflowDispatchAuthorized": false,
+    "scheduleAuthorized": false,
+    "newWorkerCronAuthorized": false,
+    "diagnosisRunner": "scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs",
+    "cloudflareApiMethods": [],
+    "d1Statements": ["SELECT", "WITH"],
+    "workerDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "bindingMutationAuthorized": false,
+    "schemaMutationAuthorized": false,
+    "cadenceMutationAuthorized": false,
+    "retentionMutationAuthorized": false,
+    "kickChangeAuthorized": false,
+    "crossProviderBehaviorAuthorized": false,
+    "finalModeAuthorized": false,
+    "publicExposureAuthorized": false
+  },
+  "afterExecution": {
+    "sanitizedArtifactRequired": true,
+    "workflowJobArtifactDigestFreezeRequired": true,
+    "diagnosisEvidenceOnly": true,
+    "checkpointRerunAuthorized": false,
+    "automaticRecoveryAuthorized": false,
+    "automaticClockResetAuthorized": false,
+    "auditAcceptanceAuthorized": false,
+    "publicCutoverAuthorized": false,
+    "triggerRetirementRequired": true,
+    "workflowRetirementRequired": true
+  },
+  "nextGate": "after package acceptance, add the exact one-file diagnosis trigger with the accepted package PR, merge SHA, and acceptance PR"
+}

@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-v1",
+  "status": "ready_for_validation",
+  "phase": "12A-5B-R2",
+  "parentTrackingIssue": 623,
+  "hiddenUiTrackingIssue": 635,
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "mode": "checkpoint_failure_diagnosis",
+  "governingMainSha": "2e6600a17dbb5f4a3729fe2f8d340e77eca49c23",
+  "acceptedDiagnosisPackage": {
+    "packagePr": 670,
+    "packageCandidateHeadSha": "4cb52b9cb11eb5b27a7f93eaa0e14838ab686039",
+    "packageMergeSha": "7f8e2d5adeec187a194aefc8fb2b239d05c5318a",
+    "acceptancePr": 671,
+    "acceptanceMergeSha": "2e6600a17dbb5f4a3729fe2f8d340e77eca49c23",
+    "validationRunId": 30481973791,
+    "validationJobId": 90678071929
+  },
+  "sourceCheckpoint": {
+    "workflowRunId": 30478338654,
+    "checkpointJobId": 90665697236,
+    "artifactId": 8734980337,
+    "artifactDigest": "sha256:4f87868471e297b5b6904d9e8ee6c15c8a2e45f4e16edef0647e2ee4d3f0086b",
+    "evidenceJsonSha256": "041f942501f1740f2ea0f3c7a77b04aeea0d084906af0faf625f370c01178f6f"
+  },
+  "execution": {
+    "workflow": ".github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution.yml",
+    "runner": "scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs",
+    "verifier": "scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package.mjs",
+    "triggerContract": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger-contract.json",
+    "triggerPath": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json",
+    "event": "push_to_main_with_exact_trigger_path",
+    "oneTime": true,
+    "productionExecutionIncludedOnPackagePr": false,
+    "productionCredentialsUsedOnPackagePr": false,
+    "separateAcceptanceRequired": true,
+    "separateExactTriggerRequired": true,
+    "workflowDispatchAuthorized": false,
+    "scheduleAuthorized": false,
+    "newWorkerCronAuthorized": false
+  },
+  "readOnlyBoundary": {
+    "cloudflareApiMethods": [],
+    "d1Statements": ["SELECT", "WITH"],
+    "workerDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "bindingMutationAuthorized": false,
+    "schemaMutationAuthorized": false,
+    "cadenceMutationAuthorized": false,
+    "retentionMutationAuthorized": false,
+    "kickChangeAuthorized": false,
+    "crossProviderBehaviorAuthorized": false,
+    "finalModeAuthorized": false,
+    "publicExposureAuthorized": false
+  },
+  "requiredOutputs": [
+    "exact_missing_bucket_presence",
+    "collector_runs_gap_context",
+    "snapshots_gap_context",
+    "null_refs_by_bucket",
+    "null_refs_top_channels",
+    "null_ref_checkpoint_summary",
+    "null_ref_post_checkpoint_summary",
+    "current_collector_status",
+    "static_code_attribution",
+    "diagnostic_limitations"
+  ],
+  "artifact": {
+    "name": "analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis",
+    "path": "artifacts/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis/run/evidence.json",
+    "sanitized": true,
+    "retentionDays": 30,
+    "digestFreezeRequired": true
+  },
+  "acceptance": {
+    "packagePr": null,
+    "packageCandidateHeadSha": null,
+    "packageMergeSha": null,
+    "acceptancePr": null,
+    "validationRunId": null,
+    "validationJobId": null,
+    "productionExecutionPerformed": false
+  },
+  "afterExecution": {
+    "evidenceFreezeRequired": true,
+    "triggerRetirementRequired": true,
+    "workflowRetirementRequired": true,
+    "diagnosisIsNonAuthorizing": true,
+    "checkpointRerunAuthorized": false,
+    "automaticRecoveryAuthorized": false,
+    "automaticClockResetAuthorized": false,
+    "auditAcceptanceAuthorized": false,
+    "publicCutoverAuthorized": false
+  },
+  "nextGate": "accept this dormant one-time diagnosis execution package before adding an exact one-file trigger"
+}
