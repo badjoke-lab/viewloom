@@ -18,9 +18,11 @@ on:
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-*.json'
+      - 'docs/audits/12a5-twitch-category-source-v2-completeness-*.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-*.json'
       - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
       - 'docs/operations/development-and-deployment-policy.md'
+      - 'workers/shared/category-capture-v2-candidate.ts'
       - 'workers/collector-twitch/**'
       - 'workers/collector-kick/**'
       - 'db/d1/**'
@@ -29,10 +31,13 @@ on:
       - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
       - 'scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs'
       - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-*.mjs'
+      - 'scripts/test-12a5-twitch-category-source-v2-completeness-candidate.mjs'
+      - 'scripts/verify-12a5-twitch-category-source-v2-completeness-package.mjs'
       - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-development-policy.mjs'
       - '.github/workflows/analytics-12a5-twitch-checkpoint-failure-diagnosis-*.yml'
+      - '.github/workflows/analytics-12a5-twitch-category-source-v2-completeness-*.yml'
       - '.github/workflows/category-rollout-policy.yml'
   push:
     branches: [main]
@@ -62,6 +67,8 @@ jobs:
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence-retirement.mjs
       - name: Verify diagnosis recovery decision
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.mjs
+      - name: Verify dormant category source v2 package
+        run: node scripts/verify-12a5-twitch-category-source-v2-completeness-package.mjs
       - name: Verify current category rollout contract
         run: node scripts/verify-category-rollout-policy.mjs
       - name: Verify current development policy
