@@ -42,7 +42,9 @@
 ## Shared boundaries
 
 - D1 queries are `SELECT` / `WITH` only.
-- No checkpoint rerun, threshold relaxation, interpolation, backfill, row invention, or clock reset.
+- No checkpoint rerun.
+- No threshold relaxation, interpolation, backfill, or row invention.
+- No automatic recovery or clock reset.
 - No Worker deployment, new cron, cadence, D1 mutation, retention, Kick, final mode, or cross-provider change.
 - No public category UI.
 - Existing unfiltered Heatmap remains the fallback.
