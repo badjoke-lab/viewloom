@@ -72,9 +72,32 @@ assert.equal(checkpointEvidence.categoryIntegrity.invalidCategoryRefs, 0)
 assert.equal(checkpointEvidence.categoryIntegrity.unresolvedCategoryIds, 0)
 assert.equal(checkpointEvidence.decision.publicCutoverAuthorized, false)
 assert.equal(checkpointRetirement.boundaries.rerunAuthorized, false)
+
+assert.equal(diagnosisEvidence.schemaVersion, 'viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-summary-v1')
 assert.equal(diagnosisEvidence.status, 'diagnosis_complete')
-assert.equal(diagnosisEvidence.error, null)
+assert.equal(diagnosisEvidence.sourceArtifact.workflowRunId, 30541697022)
+assert.equal(diagnosisEvidence.sourceArtifact.runAttempt, 2)
+assert.equal(diagnosisEvidence.sourceArtifact.diagnoseJobId, 90942773349)
+assert.equal(diagnosisEvidence.sourceArtifact.artifactId, 8767937513)
+assert.equal(diagnosisEvidence.sourceArtifact.artifactDigest, 'sha256:02cedcb6c23c6792b55c96bb4326bc24ba8d7a79880df634d8a1f98e29d02ac5')
+assert.equal(diagnosisEvidence.sourceArtifact.sourceEvidenceJsonSha256, '372dc6c434830ec1ce3630b4146b29510010f0602c1a49b1b0d2fc038842236c')
+assert.deepEqual(diagnosisEvidence.missingBucketDiagnosis.exactRowsPresent, [])
+assert.equal(diagnosisEvidence.categoryReferenceDiagnosis.checkpoint.null_category_refs, 248)
+assert.equal(diagnosisEvidence.categoryReferenceDiagnosis.checkpoint.coverageRatio, 0.994524)
+assert.equal(diagnosisEvidence.categoryReferenceDiagnosis.postCheckpoint.coverageRatio, 0.994236)
+assert.equal(diagnosisEvidence.staticCodeAttribution.postPersistenceIdVsNameDistinctionPossible, false)
+assert.equal(diagnosisEvidence.decisionBoundary.diagnosisEvidenceOnly, true)
+assert.equal(diagnosisEvidence.decisionBoundary.publicCategoryUiAuthorized, false)
+
 assert.equal(diagnosisRetirement.status, 'retired_on_merge')
+assert.equal(diagnosisRetirement.execution.workflowRunId, diagnosisEvidence.sourceArtifact.workflowRunId)
+assert.equal(diagnosisRetirement.execution.runAttempt, diagnosisEvidence.sourceArtifact.runAttempt)
+assert.equal(diagnosisRetirement.execution.diagnoseJobId, diagnosisEvidence.sourceArtifact.diagnoseJobId)
+assert.equal(diagnosisRetirement.execution.artifactId, diagnosisEvidence.sourceArtifact.artifactId)
+assert.equal(diagnosisRetirement.execution.artifactDigest, diagnosisEvidence.sourceArtifact.artifactDigest)
+assert.equal(diagnosisRetirement.execution.sourceEvidenceJsonSha256, diagnosisEvidence.sourceArtifact.sourceEvidenceJsonSha256)
+assert.equal(diagnosisRetirement.cancelledAttempt.diagnosisRunnerExecuted, false)
+assert.equal(diagnosisRetirement.cancelledAttempt.artifactProduced, false)
 assert.equal(diagnosisRetirement.boundaries.diagnosisEvidenceOnly, true)
 assert.equal(diagnosisRetirement.boundaries.automaticRecoveryAuthorized, false)
 assert.equal(diagnosisRetirement.boundaries.automaticClockResetAuthorized, false)
@@ -99,7 +122,7 @@ assert.ok(encoder.includes('stripCategorySourceFields'))
 for (const [path, fragments] of Object.entries({
   'docs/product/current-schedule.md': ['Current gate separate diagnosis decision', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision'],
   'docs/product/current-roadmap.md': ['### Current gate: checkpoint-failure diagnosis decision', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision'],
-  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: separate diagnosis decision', 'Diagnosis evidence does not decide recovery'],
+  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: separate diagnosis decision', 'Diagnosis evidence is non-authorizing'],
   'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['checkpoint-failure diagnosis decision', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision'],
 })) {
   const source = read(path)
@@ -112,6 +135,7 @@ console.log(JSON.stringify({
   sourceCheckpointFailed: true,
   diagnosisQueryPackageAccepted: true,
   diagnosisStatus: diagnosisEvidence.status,
+  diagnosisRunAttempt: diagnosisEvidence.sourceArtifact.runAttempt,
   diagnosisPathRetired: true,
   nextGate: 'separate diagnosis decision',
 }, null, 2))
