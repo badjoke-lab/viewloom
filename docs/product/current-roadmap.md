@@ -8,49 +8,53 @@ Last updated: 2026-07-31
 ### Completed
 
 - Twitch and Kick permanent category capture remain active on five-minute collectors.
-- Checkpoint and diagnosis evidence are frozen; the old replacement window is retired.
+- Checkpoint and diagnosis evidence are frozen; the original replacement window is retired.
 - Recovery decision PR #681 requires source-completeness observation before a new clock.
-- Dormant `category-source-v2-candidate` package accepted PR #682 / #684.
-- Validation run/job `30567807300` / `90956596848` passed compile, four-state encoding, capacity, collector/web typecheck, build, deployment skip, and public containment.
-- Capacity evidence: 300 items, 150 packed hex characters, v1 comparable 1465 bytes, v2 candidate 1813 bytes, overhead 348 bytes under the 400-byte limit.
+- Dormant candidate package accepted in PRs #682/#684.
+- Bounded Twitch-only observation execution package accepted in PRs #685/#686.
+- Execution-package validation run/job `30570462889` / `90965620950` passed exact-source generation, generated-worker compile, Wrangler dry-run, 44-minute maximum envelope under a 50-minute job timeout, rollback verification, collector/web typecheck, build, public containment, and production-job skip.
 
-### Current gate: Twitch-only category-source-v2 execution package
+### Current gate: exact immediate Twitch category-source-v2 observation trigger
 
 Current branch:
 
-`work-659-twitch-category-source-v2-completeness-execution-package`
+`work-659-twitch-category-source-v2-observation-trigger`
 
-## Accepted package
+## Accepted execution package
 
-- Contract version: `category-source-v2-candidate`.
-- States: `both_present`, `both_empty`, `provider_id_only`, `category_name_only`.
-- Only `both_present` items receive category references and dictionary entries.
-- Active Twitch/Kick collectors still do not import the candidate.
-- No production binding, execution, semantic mapping, clock start, or public UI was accepted.
+- Candidate contract: `category-source-v2-candidate`.
+- Execution package/acceptance: PRs #685/#686.
+- Package merge: `0a8f2931524d08dae42dee302df24a30da544949`.
+- Execution begins immediately after a later exact one-file trigger; `startAt` and pre-start sleep are forbidden.
+- Observation is bounded to 16 minutes and requires two consecutive real, non-empty, fresh v2 snapshots.
+- Canonical v1 rollback is mandatory in `finally`.
+- Direct D1 statements are `SELECT` / `WITH` only.
+- Package and acceptance PRs performed no production deployment or observation.
 
 ## Active deliverable
 
-Create a bounded Twitch-only execution package that:
+Add exactly one trigger file that:
 
-- integrates the accepted candidate behind a new Twitch-only disabled-by-default flag;
-- preserves the current v1 path as the default and rollback path;
-- adds no Kick import or binding;
-- defines exact activation, two-consecutive-snapshot evidence, rollback, storage, and provider-separation gates;
-- performs no production execution on the execution-package PR;
-- requires separate execution-package acceptance and an exact trigger.
+- binds to package PR #685, merge `0a8f2931524d08dae42dee302df24a30da544949`, and acceptance PR #686;
+- uses mode `category_source_v2_observation`;
+- sets `executeImmediately: true`;
+- contains no `startAt`;
+- changes no other file.
+
+The pull-request event validates identity only and skips production observation. The main-push event executes the accepted observation once.
 
 ## Following gates
 
-1. execution package;
-2. separate execution-package acceptance and exact Twitch-only trigger;
-3. two consecutive real/nonempty/fresh v2 snapshots;
-4. semantic and new-clock decision;
-5. seven stable days from the accepted new start;
-6. final audit and separate public cutover.
+1. exact one-file trigger and bounded execution;
+2. sanitized evidence freeze and temporary-path retirement;
+3. semantic and new-clock decision;
+4. seven stable days from the accepted new start;
+5. final audit and separate public cutover.
 
 ## Hard boundaries
 
-- No production execution before a separately accepted execution package and exact trigger.
+- No long in-job wait or future `startAt`.
+- No production execution before the exact accepted trigger.
 - No checkpoint rerun, backfill, threshold relaxation, synthetic category mapping, or automatic clock reset.
 - No Kick, cadence, retention, cross-provider, final-mode, or public-UI change.
 - Existing unfiltered Heatmap remains the fallback.
