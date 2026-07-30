@@ -68,13 +68,50 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - id: diagnosis-trigger
+        name: Detect exact checkpoint-failure diagnosis trigger
+        run: |
+          path='docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json'
+          if test -f "$path"; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+          fi
       - name: Verify checkpoint evidence and retirement
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs
       - name: Verify accepted checkpoint-failure diagnosis query package
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.mjs
-      - name: Verify accepted checkpoint-failure diagnosis execution package
+      - name: Verify accepted checkpoint-failure diagnosis execution package before trigger
+        if: steps.diagnosis-trigger.outputs.present != 'true'
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package.mjs
-      - name: Verify current category rollout contract
+      - name: Verify current category rollout contract before trigger
+        if: steps.diagnosis-trigger.outputs.present != 'true'
         run: node scripts/verify-category-rollout-policy.mjs
-      - name: Verify current development policy
+      - name: Verify current development policy before trigger
+        if: steps.diagnosis-trigger.outputs.present != 'true'
         run: node scripts/verify-development-policy.mjs
+      - name: Verify exact one-file checkpoint-failure diagnosis trigger
+        if: steps.diagnosis-trigger.outputs.present == 'true'
+        run: |
+          if test '${{ github.event_name }}' = 'pull_request'; then
+            git fetch --no-tags --depth=1 origin main
+            changed="$(git diff --name-only origin/main...HEAD)"
+            test "$changed" = 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json'
+          fi
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs'
+          const packageContract = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-contract.json', 'utf8'))
+          const packageAcceptance = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-acceptance.json', 'utf8'))
+          const triggerContract = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger-contract.json', 'utf8'))
+          const trigger = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json', 'utf8'))
+          if (packageContract.status !== 'accepted' || packageAcceptance.status !== 'accepted' || triggerContract.status !== 'accepted') throw new Error('diagnosis_package_not_accepted')
+          if (trigger.schemaVersion !== triggerContract.trigger.schemaVersion) throw new Error('trigger_schema_mismatch')
+          if (trigger.status !== 'armed' || trigger.provider !== 'twitch' || trigger.mode !== 'checkpoint_failure_diagnosis' || trigger.oneTime !== true) throw new Error('trigger_identity_invalid')
+          if (trigger.confirmation !== 'RUN_TWITCH_CHECKPOINT_FAILURE_DIAGNOSIS') throw new Error('trigger_confirmation_invalid')
+          if (trigger.packagePr !== 672 || trigger.packageMergeSha !== '02ece37cc70de4faa5251600a465d4e68d058f29' || trigger.acceptancePr !== 673) throw new Error('accepted_package_identity_mismatch')
+          if (trigger.packagePr !== packageContract.acceptance.packagePr || trigger.packageMergeSha !== packageContract.acceptance.packageMergeSha || trigger.acceptancePr !== packageContract.acceptance.acceptancePr) throw new Error('package_contract_identity_mismatch')
+          if (trigger.packagePr !== triggerContract.acceptedPackageIdentity.packagePr || trigger.packageMergeSha !== triggerContract.acceptedPackageIdentity.packageMergeSha || trigger.acceptancePr !== triggerContract.acceptedPackageIdentity.acceptancePr) throw new Error('trigger_contract_identity_mismatch')
+          const start = Date.parse(String(trigger.startAt ?? ''))
+          const now = Date.now()
+          if (!Number.isFinite(start) || start < now - 10 * 60_000 || start > now + 3 * 3_600_000) throw new Error('trigger_start_out_of_bounds')
+          NODE
