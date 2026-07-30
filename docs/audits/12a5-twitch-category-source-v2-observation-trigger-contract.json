@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-trigger-contract-v1",
+  "status": "requires_execution_package_acceptance",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "mode": "category_source_v2_observation",
+  "oneTime": true,
+  "acceptedCandidateIdentity": {
+    "packagePr": 682,
+    "packageMergeSha": "2ae91cbf6b07616dcadc60894a832ace089c39fa",
+    "acceptancePr": 684
+  },
+  "executionPackageIdentity": {
+    "packagePr": 685,
+    "packageMergeSha": null,
+    "acceptancePr": null
+  },
+  "trigger": {
+    "path": "docs/audits/12a5-twitch-category-source-v2-observation-trigger.json",
+    "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-trigger-v1",
+    "status": "armed",
+    "confirmation": "RUN_TWITCH_CATEGORY_SOURCE_V2_OBSERVATION",
+    "executeImmediately": true,
+    "startAtAllowed": false,
+    "exactOneFilePrRequired": true
+  },
+  "executionBoundary": {
+    "candidateDeployAllowedAfterAcceptanceAndTrigger": true,
+    "canonicalRollbackRequired": true,
+    "maximumObservationMinutes": 16,
+    "jobTimeoutMinutes": 50,
+    "newCronAllowed": false,
+    "directD1Statements": ["SELECT", "WITH"],
+    "kickChanged": false,
+    "semanticMappingAuthorized": false,
+    "stabilityClockStartAuthorized": false,
+    "finalModeAuthorized": false,
+    "publicCategoryUiAuthorized": false
+  },
+  "nextGate": "accept the execution package, then arm this contract with accepted package identity"
+}
