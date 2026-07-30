@@ -17,7 +17,9 @@ Govern the replacement Twitch category accumulation audit without exposing publi
 - Diagnosis query package/acceptance completed through PRs #670/#671.
 - Diagnosis execution package/acceptance completed through PRs #672/#673.
 - Exact diagnosis trigger PR #678 merged as `ccb05bce0622a23e211c2c1eadc23052377d302e`.
-- Sanitized diagnosis evidence is frozen and the temporary diagnosis path is retired.
+- Diagnosis attempt 1 was cancelled before the runner executed because the 60-minute job timeout expired during the in-job wait.
+- The same accepted diagnosis job was retried as run attempt 2 after `startAt` had passed; the wait became zero, the read-only runner completed, and sanitized evidence was uploaded.
+- The evidence/retirement PR freezes the result and removes the trigger, execution workflow, and temporary reporter.
 
 ## Checkpoint execution and result
 
@@ -28,20 +30,34 @@ Govern the replacement Twitch category accumulation audit without exposing publi
 
 ## Frozen diagnosis evidence
 
-Authority:
+Authorities:
 
 - `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence.json`
 - `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-retirement.json`
 
 Execution identity:
 
-- run/job/artifact: `PENDING_DIAGNOSIS_IDENTIFIERS`;
-- artifact digest: `PENDING_DIAGNOSIS_ARTIFACT_DIGEST`;
-- evidence JSON SHA-256: `PENDING_DIAGNOSIS_EVIDENCE_SHA256`.
+- run/attempt/job/artifact: `30541697022` / `2` / `90942773349` / `8767937513`;
+- artifact digest: `sha256:02cedcb6c23c6792b55c96bb4326bc24ba8d7a79880df634d8a1f98e29d02ac5`;
+- source evidence JSON SHA-256: `372dc6c434830ec1ce3630b4146b29510010f0602c1a49b1b0d2fc038842236c`.
 
-The evidence records exact missing-row presence, collector-run and snapshot context, null refs by bucket/channel, checkpoint and post-checkpoint summaries, current collector status, source-code attribution, and persistence limitations.
+Attempt 1 identity:
 
-Diagnosis evidence does not decide recovery. It does not accept #659, authorize a checkpoint rerun, relax thresholds, reset the stability clock, enter final mode, or expose public UI.
+- diagnose job `90867816146`;
+- cancelled before the diagnosis runner;
+- no evidence artifact.
+
+Decision-relevant findings:
+
+- the three missing snapshot rows and collector-run rows are absent from retained data;
+- `07:15` and `07:35` collector runs are both `ok` and no explicit failure row exists for the three missing buckets;
+- checkpoint coverage was `0.994524` and post-checkpoint coverage was `0.994236` through `2026-07-30T16:55:00Z`;
+- post-checkpoint coverage was lower by `0.000288`, not improved above the `0.995` requirement;
+- null refs are concentrated by channel: top 3 account for 113/248 and top 10 for 188/248;
+- persisted payloads prove a required category source field was empty but cannot distinguish empty Helix `game_id` from empty `game_name`;
+- current collector status at diagnosis time was `ok`.
+
+Diagnosis evidence is non-authorizing. It does not accept #659, authorize a checkpoint rerun, relax thresholds, reset the stability clock, enter final mode, or expose public UI.
 
 ## Current gate: separate diagnosis decision
 
@@ -51,12 +67,10 @@ Current branch:
 
 The decision PR must determine:
 
-- whether the three missing rows were permanently absent;
-- whether collector-run context identifies a bounded cause;
-- whether null refs are expected upstream-empty values or a collector defect;
-- whether post-checkpoint behavior is stable;
-- whether recovery is required;
-- whether the accepted start remains valid or a new clock rule is required.
+- whether the missing rows require a recovery action or only a bounded clock rule;
+- whether null refs represent expected upstream-empty category values or a collector defect;
+- whether continued coverage below `0.995` requires recovery before a final audit;
+- whether the accepted start remains valid, must restart, or needs another bounded rule.
 
 The decision PR is evidence-only and performs no production mutation.
 
