@@ -94,8 +94,10 @@ jobs:
         if: steps.diagnosis-trigger.outputs.present == 'true'
         run: |
           if test '${{ github.event_name }}' = 'pull_request'; then
-            git fetch --no-tags --depth=1 origin main
-            changed="$(git diff --name-only origin/main...HEAD)"
+            base='${{ github.event.pull_request.base.sha }}'
+            head='${{ github.event.pull_request.head.sha }}'
+            git fetch --no-tags --depth=1 origin "$base" "$head"
+            changed="$(git diff --name-only "$base" "$head")"
             test "$changed" = 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json'
           fi
           node --input-type=module - <<'NODE'
