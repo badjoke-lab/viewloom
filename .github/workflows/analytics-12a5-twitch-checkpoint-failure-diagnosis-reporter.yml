@@ -1,0 +1,58 @@
+name: Analytics 12A5 Twitch Checkpoint Failure Diagnosis Reporter
+
+on:
+  workflow_run:
+    workflows:
+      - Analytics 12A5 Twitch Checkpoint Failure Diagnosis Execution
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+jobs:
+  report:
+    if: github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Report diagnosis run identity to issue 659
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run = context.payload.workflow_run
+            const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: run.id,
+              per_page: 100,
+            })
+            const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: run.id,
+              per_page: 100,
+            })
+            const diagnose = jobs.find((job) => job.name === 'diagnose') ?? null
+            const artifact = artifacts.find((item) => item.name === 'analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis') ?? null
+            const body = [
+              '## Twitch checkpoint-failure diagnosis execution completed',
+              '',
+              `- workflow run: \`${run.id}\``,
+              `- workflow conclusion: \`${run.conclusion}\``,
+              `- head SHA: \`${run.head_sha}\``,
+              `- diagnose job: \`${diagnose?.id ?? 'not-found'}\``,
+              `- diagnose conclusion: \`${diagnose?.conclusion ?? 'not-found'}\``,
+              `- artifact: \`${artifact?.id ?? 'not-found'}\``,
+              `- artifact digest: \`${artifact?.digest ?? 'not-found'}\``,
+              '',
+              'This comment records identifiers only. The artifact must be downloaded and reviewed before any diagnosis or recovery decision.',
+            ].join('\n')
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 659,
+              body,
+            })
