@@ -15,13 +15,6 @@ on:
       - 'docs/product/category-capture-permanent-rollout-spec.md'
       - 'docs/product/category-capture-permanent-rollout-plan.md'
       - 'docs/audits/12a2-current-gate-state.json'
-      - 'docs/audits/12a4-kick-permanent-category-final-acceptance.json'
-      - 'docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
-      - 'docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-acceptance.json'
-      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-package-contract.json'
-      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-package-acceptance.json'
-      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-trigger-contract.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-contract.json'
@@ -29,7 +22,8 @@ on:
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-contract.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-acceptance.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger-contract.json'
-      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-retirement.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-*.json'
       - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
       - 'docs/operations/development-and-deployment-policy.md'
@@ -41,12 +35,11 @@ on:
       - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
       - 'scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs'
       - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.mjs'
-      - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package.mjs'
+      - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence-retirement.mjs'
       - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-development-policy.mjs'
-      - '.github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.yml'
-      - '.github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution.yml'
+      - '.github/workflows/analytics-12a5-twitch-checkpoint-failure-diagnosis-evidence-retirement.yml'
       - '.github/workflows/category-rollout-policy.yml'
   push:
     branches: [main]
@@ -68,52 +61,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - id: diagnosis-trigger
-        name: Detect exact checkpoint-failure diagnosis trigger
-        run: |
-          path='docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json'
-          if test -f "$path"; then
-            echo 'present=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'present=false' >> "$GITHUB_OUTPUT"
-          fi
-      - name: Verify checkpoint evidence and retirement
+      - name: Verify original checkpoint evidence and retirement
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs
       - name: Verify accepted checkpoint-failure diagnosis query package
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.mjs
-      - name: Verify accepted checkpoint-failure diagnosis execution package before trigger
-        if: steps.diagnosis-trigger.outputs.present != 'true'
-        run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package.mjs
-      - name: Verify current category rollout contract before trigger
-        if: steps.diagnosis-trigger.outputs.present != 'true'
+      - name: Verify diagnosis evidence and retired execution path
+        run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence-retirement.mjs
+      - name: Verify current category rollout contract
         run: node scripts/verify-category-rollout-policy.mjs
-      - name: Verify current development policy before trigger
-        if: steps.diagnosis-trigger.outputs.present != 'true'
+      - name: Verify current development policy
         run: node scripts/verify-development-policy.mjs
-      - name: Verify exact one-file checkpoint-failure diagnosis trigger
-        if: steps.diagnosis-trigger.outputs.present == 'true'
-        run: |
-          if test '${{ github.event_name }}' = 'pull_request'; then
-            base='${{ github.event.pull_request.base.sha }}'
-            head='${{ github.event.pull_request.head.sha }}'
-            git fetch --no-tags --depth=1 origin "$base" "$head"
-            changed="$(git diff --name-only "$base" "$head")"
-            test "$changed" = 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json'
-          fi
-          node --input-type=module - <<'NODE'
-          import fs from 'node:fs'
-          const packageContract = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-contract.json', 'utf8'))
-          const packageAcceptance = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-acceptance.json', 'utf8'))
-          const triggerContract = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger-contract.json', 'utf8'))
-          const trigger = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json', 'utf8'))
-          if (packageContract.status !== 'accepted' || packageAcceptance.status !== 'accepted' || triggerContract.status !== 'accepted') throw new Error('diagnosis_package_not_accepted')
-          if (trigger.schemaVersion !== triggerContract.trigger.schemaVersion) throw new Error('trigger_schema_mismatch')
-          if (trigger.status !== 'armed' || trigger.provider !== 'twitch' || trigger.mode !== 'checkpoint_failure_diagnosis' || trigger.oneTime !== true) throw new Error('trigger_identity_invalid')
-          if (trigger.confirmation !== 'RUN_TWITCH_CHECKPOINT_FAILURE_DIAGNOSIS') throw new Error('trigger_confirmation_invalid')
-          if (trigger.packagePr !== 672 || trigger.packageMergeSha !== '02ece37cc70de4faa5251600a465d4e68d058f29' || trigger.acceptancePr !== 673) throw new Error('accepted_package_identity_mismatch')
-          if (trigger.packagePr !== packageContract.acceptance.packagePr || trigger.packageMergeSha !== packageContract.acceptance.packageMergeSha || trigger.acceptancePr !== packageContract.acceptance.acceptancePr) throw new Error('package_contract_identity_mismatch')
-          if (trigger.packagePr !== triggerContract.acceptedPackageIdentity.packagePr || trigger.packageMergeSha !== triggerContract.acceptedPackageIdentity.packageMergeSha || trigger.acceptancePr !== triggerContract.acceptedPackageIdentity.acceptancePr) throw new Error('trigger_contract_identity_mismatch')
-          const start = Date.parse(String(trigger.startAt ?? ''))
-          const now = Date.now()
-          if (!Number.isFinite(start) || start < now - 10 * 60_000 || start > now + 3 * 3_600_000) throw new Error('trigger_start_out_of_bounds')
-          NODE
