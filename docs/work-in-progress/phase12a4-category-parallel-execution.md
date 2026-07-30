@@ -30,5 +30,6 @@
 - No production execution before a separately accepted execution package and exact trigger.
 - No Kick import or binding.
 - No checkpoint rerun, backfill, threshold relaxation, synthetic category mapping, or automatic clock reset.
-- No cadence, retention, cross-provider, final-mode, or public-UI change.
+- No cadence, retention, cross-provider, or final-mode change.
+- No public category UI.
 - Existing unfiltered Heatmap remains the fallback.
