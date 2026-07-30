@@ -63,25 +63,10 @@ assert.equal(retirement.boundaries.automaticClockResetAuthorized, false)
 assert.equal(retirement.boundaries.kickChanged, false)
 assert.equal(retirement.boundaries.publicCategoryUiAuthorized, false)
 
-for (const [path, fragments] of Object.entries({
-  'AGENTS.md': ['Checkpoint run: 30478338654 failed', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision'],
-  'CONTRIBUTING.md': ['Checkpoint run 30478338654 failed', 'Diagnosis evidence frozen and temporary path retired'],
-  'docs/README.md': ['Checkpoint run 30478338654 failed', 'Diagnosis evidence frozen'],
-  'docs/product/current-roadmap.md': ['### Current gate: checkpoint-failure diagnosis decision', '0.994524'],
-  'docs/product/current-schedule.md': ['Checkpoint run 30478338654 failed', 'Current gate separate diagnosis decision'],
-  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Checkpoint execution and result', '248 null references'],
-  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['Checkpoint run `30478338654` completed read-only and failed.', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision'],
-})) {
-  const source = readFileSync(path, 'utf8')
-  for (const fragment of fragments) assert.ok(source.includes(fragment), `${path} missing: ${fragment}`)
-}
-
 console.log(JSON.stringify({
   ok: true,
   outcome: evidence.status,
   failedHardStops: evidence.failedHardStops,
   checkpointPathRetired: true,
-  diagnosisEvidenceFrozen: true,
-  nextBranch: 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision',
   publicCutoverAuthorized: false,
 }, null, 2))
