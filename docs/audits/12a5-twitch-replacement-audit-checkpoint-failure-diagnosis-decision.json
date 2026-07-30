@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision-v1",
+  "status": "recovery_required",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "feature": "heatmap_category_filter",
+  "governingMainSha": "ab478ecabf487ce75ab66b6ea0df5494e85551be",
+  "evidence": {
+    "summary": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence.json",
+    "retirement": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-retirement.json",
+    "workflowRunId": 30541697022,
+    "runAttempt": 2,
+    "diagnoseJobId": 90942773349,
+    "artifactId": 8767937513,
+    "artifactDigest": "sha256:02cedcb6c23c6792b55c96bb4326bc24ba8d7a79880df634d8a1f98e29d02ac5",
+    "sourceEvidenceJsonSha256": "372dc6c434830ec1ce3630b4146b29510010f0602c1a49b1b0d2fc038842236c"
+  },
+  "findings": {
+    "missingRowsPermanentlyAbsent": true,
+    "missingBuckets": [
+      "2026-07-29T07:20:00.000Z",
+      "2026-07-29T07:25:00.000Z",
+      "2026-07-29T07:30:00.000Z"
+    ],
+    "maximumConsecutiveMissingSlotsObserved": 3,
+    "maximumConsecutiveMissingSlotsAllowed": 2,
+    "explicitCollectorFailureRowsForGap": 0,
+    "surroundingCollectorRunsOk": true,
+    "checkpointCategoryReferenceCoverage": 0.994524,
+    "postCheckpointCategoryReferenceCoverage": 0.994236,
+    "minimumCategoryReferenceCoverageRequired": 0.995,
+    "postCheckpointCoverageRecovered": false,
+    "postCheckpointCoverageDelta": -0.000288,
+    "nullRefsChannelConcentrated": true,
+    "topTenNullRefShare": 0.758065,
+    "currentCollectorStatusOk": true,
+    "persistedSourceCauseDistinguishable": false
+  },
+  "decision": {
+    "checkpointAccepted": false,
+    "originalReplacementWindowValid": false,
+    "originalStabilityClockMayContinue": false,
+    "finalAuditAuthorized": false,
+    "publicCutoverAuthorized": false,
+    "recoveryRequired": true,
+    "historicalBackfillRequired": false,
+    "historicalBackfillAuthorized": false,
+    "thresholdRelaxationAuthorized": false,
+    "automaticClockResetAuthorized": false,
+    "clockRestartPendingAcceptedRecovery": true
+  },
+  "requiredRecovery": {
+    "name": "twitch_category_source_completeness_v2_observation",
+    "goal": "preserve and measure the exact source-completeness reason before category source fields are stripped",
+    "contractVersion": "category-source-v2-candidate",
+    "requiredPerItemStates": [
+      "both_present",
+      "both_empty",
+      "provider_id_only",
+      "category_name_only"
+    ],
+    "requiredOutputs": [
+      "per_snapshot_source_state_counts",
+      "compact_per_item_source_state_encoding",
+      "partial_pair_count",
+      "both_empty_count",
+      "valid_category_reference_count",
+      "provider_separation_and_leakage_evidence",
+      "storage_and_execution_cost_evidence"
+    ],
+    "semanticConstraints": {
+      "bothEmptyMayBeMappedToSyntheticCategoryWithoutSeparateAcceptance": false,
+      "partialPairMayBeTreatedAsObservedCategory": false,
+      "missingHistoricalRowsMayBeRecreated": false,
+      "existingCategorySourceV1RowsMayBeRewritten": false,
+      "kickMayBeChanged": false,
+      "publicUiMayBeChanged": false
+    },
+    "productionSequence": [
+      "implement_and_test_dormant_v2_candidate",
+      "accept_bounded_execution_package",
+      "execute_provider_scoped_twitch_only_activation",
+      "freeze_two_consecutive_real_nonempty_fresh_snapshots",
+      "observe_source_state_distribution_without_public_ui",
+      "make_separate_semantic_and_clock_start_decision"
+    ]
+  },
+  "clockRule": {
+    "oldStartAt": "2026-07-29T05:30:00.000Z",
+    "oldEarliestAuditAt": "2026-08-05T05:30:00.000Z",
+    "oldWindowRetired": true,
+    "newStartAt": null,
+    "newEarliestAuditAt": null,
+    "startCondition": "after accepted Twitch-only v2 activation and accepted consecutive real, nonempty, fresh post-activation snapshots",
+    "minimumStableDaysAfterNewStart": 7
+  },
+  "boundaries": {
+    "decisionOnly": true,
+    "workerDeploymentPerformed": false,
+    "d1MutationPerformed": false,
+    "schemaMutationPerformed": false,
+    "bindingMutationPerformed": false,
+    "cadenceChanged": false,
+    "retentionChanged": false,
+    "kickChanged": false,
+    "crossProviderBehaviorChanged": false,
+    "finalModeAuthorized": false,
+    "publicCategoryUiAuthorized": false
+  },
+  "nextGate": "create and separately accept a Twitch-only category-source-v2 completeness observation recovery package"
+}
