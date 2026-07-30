@@ -12,8 +12,10 @@ Checkpoint path: retired
 Diagnosis query package: accepted PR #670 / #671
 Diagnosis execution package: accepted PR #672 / #673
 Diagnosis trigger: PR #678 / ccb05bce0622a23e211c2c1eadc23052377d302e
+Diagnosis attempt 1: cancelled before runner, no artifact
+Diagnosis attempt 2: success run 30541697022 / job 90942773349 / artifact 8767937513
 Diagnosis evidence: frozen
-Diagnosis execution path: retired
+Diagnosis execution path: retired on evidence PR merge
 Current branch: work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision
 Twitch Heatmap public category-filter exposure: unauthorized
 Twitch cadence: */5 * * * *
@@ -31,16 +33,16 @@ Before starting a branch and again before merge, read current-main versions of:
 5. `docs/product/twitch-replacement-seven-day-audit-spec.md`
 6. frozen checkpoint evidence and retirement
 7. diagnosis query/execution package contracts and acceptances
-8. diagnosis evidence and retirement
+8. diagnosis evidence summary and retirement
 9. the active WIP, affected feature specification/plan, and development policy.
 
 Current-main documents override cached handoffs, chat summaries, and historical package states.
 
 ## Current execution order
 
-1. Merge the diagnosis evidence/retirement PR after all frozen identifiers and evidence are verified.
+1. Merge the diagnosis evidence/retirement PR after all frozen identifiers and evidence gates pass.
 2. Create `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision`.
-3. Decide separately whether the evidence requires recovery, no recovery, or a new stability clock.
+3. Decide separately whether the evidence requires recovery, no recovery, a stability-clock restart, or another bounded rule.
 4. Do not mutate production in the decision PR.
 5. If recovery is required, package and accept it separately before execution.
 6. If no recovery is required, fix the accepted final-audit boundary separately.
