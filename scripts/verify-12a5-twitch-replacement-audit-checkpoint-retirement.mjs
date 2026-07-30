@@ -10,7 +10,6 @@ const retiredPaths = [
 ]
 for (const path of [evidencePath, retirementPath]) assert.equal(existsSync(path), true, `${path}: missing`)
 for (const path of retiredPaths) assert.equal(existsSync(path), false, `${path}: must be retired`)
-
 const json = (path) => JSON.parse(readFileSync(path, 'utf8'))
 const evidence = json(evidencePath)
 const retirement = json(retirementPath)
@@ -65,16 +64,24 @@ assert.equal(retirement.boundaries.kickChanged, false)
 assert.equal(retirement.boundaries.publicCategoryUiAuthorized, false)
 
 for (const [path, fragments] of Object.entries({
-  'AGENTS.md': ['Checkpoint run: 30478338654 failed', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger'],
-  'CONTRIBUTING.md': ['Checkpoint run 30478338654 failed', 'No checkpoint rerun or threshold relaxation.'],
-  'docs/README.md': ['Checkpoint run 30478338654 failed', '248 null refs'],
-  'docs/product/current-roadmap.md': ['### Current gate: exact diagnosis trigger', '0.994524'],
-  'docs/product/current-schedule.md': ['Checkpoint run 30478338654 failed', 'Current gate exact one-file diagnosis trigger'],
+  'AGENTS.md': ['Checkpoint run: 30478338654 failed', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision'],
+  'CONTRIBUTING.md': ['Checkpoint run 30478338654 failed', 'Diagnosis evidence frozen and temporary path retired'],
+  'docs/README.md': ['Checkpoint run 30478338654 failed', 'Diagnosis evidence frozen'],
+  'docs/product/current-roadmap.md': ['### Current gate: checkpoint-failure diagnosis decision', '0.994524'],
+  'docs/product/current-schedule.md': ['Checkpoint run 30478338654 failed', 'Current gate separate diagnosis decision'],
   'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Checkpoint execution and result', '248 null references'],
-  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['Checkpoint run `30478338654` completed read-only and failed.', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger'],
+  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['Checkpoint run `30478338654` completed read-only and failed.', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision'],
 })) {
   const source = readFileSync(path, 'utf8')
   for (const fragment of fragments) assert.ok(source.includes(fragment), `${path} missing: ${fragment}`)
 }
 
-console.log(JSON.stringify({ ok: true, outcome: evidence.status, failedHardStops: evidence.failedHardStops, triggerRetired: true, executionWorkflowRetired: true, reporterRetired: true, diagnosisQueryPackageAccepted: true, diagnosisExecutionPackageAccepted: true, nextBranch: 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger', publicCutoverAuthorized: false }, null, 2))
+console.log(JSON.stringify({
+  ok: true,
+  outcome: evidence.status,
+  failedHardStops: evidence.failedHardStops,
+  checkpointPathRetired: true,
+  diagnosisEvidenceFrozen: true,
+  nextBranch: 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision',
+  publicCutoverAuthorized: false,
+}, null, 2))
