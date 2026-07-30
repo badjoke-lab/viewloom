@@ -73,13 +73,13 @@ assert.equal(retirement.boundaries.kickChanged, false)
 assert.equal(retirement.boundaries.publicCategoryUiAuthorized, false)
 
 for (const [path, fragments] of Object.entries({
-  'AGENTS.md': ['Checkpoint outcome: failed', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package'],
+  'AGENTS.md': ['Checkpoint run: 30478338654 failed', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package'],
   'CONTRIBUTING.md': ['Checkpoint run 30478338654 failed', 'No checkpoint rerun or threshold relaxation.'],
   'docs/README.md': ['Checkpoint outcome failed', '248 null refs'],
-  'docs/product/current-roadmap.md': ['### Current gate: checkpoint failure diagnosis', '0.994524'],
-  'docs/product/current-schedule.md': ['Checkpoint run 30478338654', 'Current gate checkpoint failure diagnosis package'],
+  'docs/product/current-roadmap.md': ['### Current gate: one-time diagnosis execution package', '0.994524'],
+  'docs/product/current-schedule.md': ['Checkpoint run 30478338654', 'Current gate one-time diagnosis execution package'],
   'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Checkpoint execution and result', '248 null references'],
-  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['Checkpoint run `30478338654` completed read-only and failed.', 'Current branch after retirement'],
+  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['Checkpoint run `30478338654` completed read-only and failed.', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package'],
 })) {
   const source = readFileSync(path, 'utf8')
   for (const fragment of fragments) assert.ok(source.includes(fragment), `${path} missing: ${fragment}`)
@@ -92,6 +92,7 @@ console.log(JSON.stringify({
   triggerRetired: true,
   executionWorkflowRetired: true,
   reporterRetired: true,
-  nextBranch: 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package',
+  diagnosisPackageAccepted: true,
+  nextBranch: 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package',
   publicCutoverAuthorized: false,
 }, null, 2))

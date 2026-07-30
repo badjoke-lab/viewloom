@@ -14,6 +14,7 @@ on:
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-contract.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json'
       - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
       - 'scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs'
       - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.mjs'
@@ -77,8 +78,9 @@ jobs:
       - name: Summarize diagnosis package boundary
         run: |
           {
-            echo '## Twitch replacement checkpoint failure diagnosis package'
+            echo '## Accepted Twitch checkpoint-failure diagnosis package'
             echo
+            echo '- Package PR / acceptance PR: `#670` / `#671`'
             echo '- Source checkpoint run: `30478338654`'
             echo '- Missing buckets: `07:20`, `07:25`, `07:30` UTC'
             echo '- Missing category refs: `248`'
@@ -86,5 +88,5 @@ jobs:
             echo '- Package PR production credentials or execution: no'
             echo '- Mutation, rerun, threshold change, clock reset, final mode: no'
             echo '- Public category filter authorized: no'
-            echo '- Separate execution-path acceptance required: yes'
+            echo '- Next gate: separately accepted one-time diagnosis execution package'
           } >> "$GITHUB_STEP_SUMMARY"

@@ -16,85 +16,65 @@ Govern the replacement Twitch category accumulation audit without exposing publi
 - SQL scope repair accepted through PRs #663/#664.
 - Bounded checkpoint package accepted through PRs #665/#666.
 - Exact trigger PR #667 merged as `ee8125ecd12f7ec620af13fd78d9a3c3c7e18f98`.
+- Checkpoint run `30478338654` failed and evidence/retirement was merged in PR #669.
+- Failure diagnosis package PR #670 merged as `7f8e2d5adeec187a194aefc8fb2b239d05c5318a`.
+- Failure diagnosis package acceptance PR #671 freezes the read-only query set and diagnostic limitations.
 
 ## Checkpoint execution and result
 
-Checkpoint run/job/artifact:
+Failed hard stops:
 
-- run `30478338654`;
-- job `90665697236`;
-- artifact `8734980337`;
-- artifact digest `sha256:4f87868471e297b5b6904d9e8ee6c15c8a2e45f4e16edef0647e2ee4d3f0086b`;
-- evidence JSON SHA-256 `041f942501f1740f2ea0f3c7a77b04aeea0d084906af0faf625f370c01178f6f`.
+- slot coverage 151/154 = `0.980519`, required `0.995`;
+- three consecutive missing slots at `07:20`, `07:25`, `07:30` UTC, allowed maximum two;
+- category-reference coverage 45,039/45,287 = `0.994524`, with 248 null references.
 
-The checkpoint executed read-only over `[2026-07-29T05:30:00Z, 2026-07-29T18:20:00Z)` and failed.
+The null refs are not invalid indices and are not unresolved dictionary IDs. Runtime safety, bindings, cadence, storage, public containment, latest real/fresh snapshot, zero leakage, and Kick baseline passed.
 
-### Failed hard stops
-
-1. `slotCoveragePass`
-   - expected 154 slots;
-   - observed 151;
-   - coverage `0.980519` below required `0.995`.
-2. `consecutiveMissingSlotsPass`
-   - missing `2026-07-29T07:20:00Z`, `07:25:00Z`, `07:30:00Z`;
-   - maximum consecutive missing slots 3, above allowed 2.
-3. `categoryReferenceCoveragePass`
-   - 45,039 present references of 45,287 total;
-   - 248 null references;
-   - coverage `0.994524` below required `0.995`.
-
-The 248 missing references are `null` entries in per-stream `categoryRefs`. They are not invalid indices: `invalidCategoryRefs = 0`. They are not unresolved dictionary IDs: `unresolvedCategoryIds = 0`.
-
-### Passed gates
-
-- read-only execution;
-- exact accumulation start and checkpoint end;
-- Twitch/Kick identity and five-minute cadence;
-- required schema and permanent bindings;
-- storage thresholds;
-- public-surface containment;
-- payload structure, real/non-empty category rows, dictionary presence/names/contract/resolution;
-- collector errors zero;
-- provider leakage zero;
-- latest snapshot real, non-empty, category-bearing, and fresh;
-- Kick unchanged;
-- public category UI unauthorized;
-- no production mutation.
-
-## Evidence and retirement
+## Accepted diagnosis package
 
 Authorities:
 
-- `docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json`
-- `docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-contract.json`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json`
+- `scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs`
 
-The one-time trigger, checkpoint execution workflow, and temporary reporter are retired. The failed checkpoint cannot be rerun automatically.
+Accepted outputs:
 
-## Current gate: failure diagnosis
+- exact presence of the three missing bucket rows;
+- collector run history and snapshots around `06:50–08:00 UTC`;
+- null refs by bucket and channel;
+- checkpoint and post-checkpoint null-ref summaries;
+- current collector status;
+- static attribution from Helix `game_id` / `game_name` through the category encoder;
+- explicit limitation that persisted payloads cannot distinguish which source field was empty because category source fields are stripped after encoding.
 
-Current branch after evidence retirement:
+The accepted package performs no production diagnosis. D1 statements are `SELECT` / `WITH` only.
 
-`work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package`
+## Current gate: one-time failure-diagnosis execution package
 
-The diagnosis package must remain read-only and answer:
+Current branch:
 
-- why the three consecutive minute buckets are absent;
-- whether late natural writes can restore them without backfill;
-- which snapshot/stream rows contain the 248 null refs;
-- whether null refs originate upstream, in normalization, or in persistence;
-- whether a verified recovery and new clock are required.
+`work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package`
+
+The execution package must:
+
+- bind to package PR #670, merge `7f8e2d5adeec187a194aefc8fb2b239d05c5318a`, and acceptance PR #671;
+- add a bounded one-time workflow and exact trigger contract;
+- use no production credentials or production access on the package PR;
+- require a later exact one-file trigger;
+- run the accepted diagnosis runner once;
+- upload sanitized evidence;
+- remain non-authorizing and mutation-free.
 
 ## Prohibited responses to checkpoint failure
 
-- rerunning the same checkpoint to seek a better result;
-- relaxing the accepted thresholds;
-- interpolating or inventing missing buckets;
-- unauthorized backfill;
-- automatic Worker/config mutation;
-- automatic stability-clock reset;
-- treating the calendar final boundary as authorization to execute final mode;
-- exposing public category controls.
+- checkpoint rerun or threshold relaxation;
+- interpolation, backfill, or invented rows;
+- automatic Worker/config mutation or stability-clock reset;
+- final mode before an accepted diagnosis decision;
+- Kick or cross-provider changes;
+- public category-filter exposure.
 
 ## Final mode
 
-`2026-08-05T05:30:00Z` remains the earliest calendar boundary, but final execution now additionally requires an accepted failure diagnosis and decision. A final audit never exposes UI by itself; a later separate cutover PR remains required.
+`2026-08-05T05:30:00Z` remains the earliest calendar boundary, but final execution additionally requires accepted diagnosis evidence and a separate recovery/no-recovery decision. A final audit never exposes UI by itself; a later separate cutover PR remains required.

@@ -1,54 +1,54 @@
-# 12A-5B-R2 replacement Twitch accumulation and checkpoint failure diagnosis
+# 12A-5B-R2 replacement Twitch checkpoint-failure diagnosis execution
 
 ## Status
 
 - Twitch and Kick permanent category capture remain active on five-minute cadences.
 - Canonical runtime gate remains v33.
 - Checkpoint run `30478338654` completed read-only and failed.
-- Evidence: `docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json`.
-- One-time trigger, execution workflow, and reporter are retired.
-- Current branch after retirement: `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package`.
+- Trigger, checkpoint workflow, and reporter are retired.
+- Failure diagnosis package PR #670 merged as `7f8e2d5adeec187a194aefc8fb2b239d05c5318a`.
+- Diagnosis package validation run/job: `30481973791` / `90678071929`.
+- Diagnosis package acceptance PR: #671.
+- Current branch: `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package`.
 - Public Twitch category-filter exposure remains unauthorized.
 
 ## Failed checkpoint gates
 
 - Slot coverage: 151/154 = `0.980519`, required `0.995`.
-- Consecutive gap: three buckets at `07:20`, `07:25`, `07:30` UTC, allowed maximum two.
-- Category-reference coverage: 45,039/45,287 = `0.994524`, required `0.995`.
-- Missing category refs: 248 null entries.
-- Invalid refs: 0.
-- Unresolved dictionary IDs: 0.
+- Three consecutive missing buckets: `07:20`, `07:25`, `07:30` UTC.
+- Category-reference coverage: 45,039/45,287 = `0.994524`, with 248 null refs.
+- Invalid refs and unresolved dictionary IDs: 0.
 
-## Passed safety/runtime gates
+## Accepted diagnosis scope
 
-Read-only mode, exact start, provider identities, five-minute cadence, schema, permanent bindings, storage, public containment, collector error count, provider leakage, latest real/fresh/non-empty category snapshot, and Kick baseline all passed.
+- exact presence of missing bucket rows;
+- collector-run and snapshot context around the gap;
+- null refs by bucket and channel;
+- checkpoint and post-checkpoint null-ref summaries;
+- current collector status;
+- static attribution from Helix `game_id` / `game_name` through the encoder;
+- persisted-data limitation recorded explicitly.
 
 ## Current work order
 
-1. Merge the evidence and retirement PR.
-2. Create a read-only checkpoint-failure diagnosis package.
-3. Accept the diagnosis path separately before any production query.
-4. Diagnose missing buckets and null references without mutation.
-5. Freeze diagnosis evidence and make a separate recovery/no-recovery decision.
-6. Do not rerun checkpoint or final mode until that decision is accepted.
-
-## Diagnosis questions
-
-- Did the collector fail, skip, overlap, or write late around 07:20–07:30 UTC?
-- Are the three buckets permanently absent?
-- Which snapshot rows and stream positions contain null category refs?
-- Are null refs concentrated in specific times/categories/stream records?
-- Did Twitch omit category IDs, did normalization lose them, or did persistence lose them?
-- Does a verified recovery require a new stability clock?
+1. Merge package acceptance PR #671.
+2. Create and separately validate a one-time diagnosis execution package.
+3. Accept that execution package before any production query.
+4. Add an exact trigger in a separate PR and run diagnosis once.
+5. Freeze sanitized diagnosis evidence and retire the temporary path.
+6. Make a separate recovery/no-recovery and stability-clock decision.
+7. Keep final mode and public UI blocked until the decision is accepted.
 
 ## Shared boundaries
 
+- D1 queries are `SELECT` / `WITH` only.
+- No checkpoint rerun.
 - No threshold relaxation, interpolation, backfill, or row invention.
-- No Worker deployment, cron/cadence, D1 schema, retention, Kick, or cross-provider change.
 - No automatic recovery or clock reset.
+- No Worker deployment, new cron, cadence, D1 mutation, retention, Kick, final mode, or cross-provider change.
 - No public category UI.
 - Existing unfiltered Heatmap remains the fallback.
 
 ## Mandatory source documents
 
-Before every branch and merge, read current main roadmap, schedule, canonical gate, audit specification, checkpoint evidence, retirement record, active WIP, development policy, and the affected feature specification/plan.
+Before every branch and merge, read current-main roadmap, schedule, canonical gate, audit specification, checkpoint evidence, retirement record, diagnosis package contract/acceptance, active WIP, development policy, and affected feature specification/plan.

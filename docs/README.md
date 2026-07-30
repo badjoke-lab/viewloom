@@ -15,7 +15,8 @@ Earliest calendar final boundary 2026-08-05T05:30:00.000Z
 Checkpoint run 30478338654
 Checkpoint outcome failed
 Trigger/execution/reporter retired yes
-Current branch work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package
+Failure diagnosis package accepted PR #670 / #671
+Current branch work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package
 Public Twitch category-filter exposure authorized no
 ```
 
@@ -28,9 +29,10 @@ Public Twitch category-filter exposure authorized no
 5. `docs/product/twitch-replacement-seven-day-audit-spec.md`
 6. `docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json`
 7. `docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json`
-8. `docs/work-in-progress/phase12a4-category-parallel-execution.md`
-9. the affected feature specification and plan
-10. relevant immutable package/acceptance records
+8. `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-contract.json`
+9. `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json`
+10. `docs/work-in-progress/phase12a4-category-parallel-execution.md`
+11. the affected feature specification and plan
 
 ## Current gate
 
@@ -42,7 +44,7 @@ The checkpoint executed read-only at `2026-07-29T18:20:00Z` and failed three acc
 
 The null refs are not invalid indices and are not unresolved dictionary IDs. Runtime identities, cadence, bindings, storage, public containment, latest real/fresh category snapshot, provider leakage, and Kick baseline passed.
 
-The trigger, checkpoint workflow, and reporter are retired. The current gate is a separately accepted read-only failure-diagnosis package. Public category controls remain hidden.
+The checkpoint trigger, execution workflow, and reporter are retired. The read-only failure-diagnosis package from PR #670 is accepted by PR #671. The current gate is a separately accepted one-time diagnosis execution package. Public category controls remain hidden.
 
 ## Evidence chain
 
@@ -57,20 +59,24 @@ The trigger, checkpoint workflow, and reporter are retired. The current gate is 
 - Evidence JSON SHA-256: `041f942501f1740f2ea0f3c7a77b04aeea0d084906af0faf625f370c01178f6f`.
 - Evidence: `docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json`.
 - Retirement: `docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json`.
+- Failure diagnosis package: PR #670; merge `7f8e2d5adeec187a194aefc8fb2b239d05c5318a`.
+- Failure diagnosis package acceptance: PR #671.
 
 ## Current order
 
-1. Merge checkpoint evidence and retirement.
-2. Create/accept a read-only failure-diagnosis package.
-3. Diagnose the three missing buckets and 248 null refs.
-4. Freeze diagnosis evidence.
-5. Make a separate recovery/no-recovery and clock decision.
-6. Keep final mode and public cutover blocked until that decision is accepted.
+1. Merge diagnosis package acceptance PR #671.
+2. Create and separately accept `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package`.
+3. Add a bounded one-time workflow and exact trigger contract without using production credentials on the package PR.
+4. Add an exact one-file trigger in another PR and run the accepted read-only diagnosis once.
+5. Freeze sanitized diagnosis evidence and retire the temporary path.
+6. Make a separate recovery/no-recovery and stability-clock decision.
+7. Keep final mode and public cutover blocked until that decision is accepted.
 
 ## Invariants
 
-- No rerun, threshold relaxation, interpolation, backfill, or automatic clock reset.
+- No checkpoint rerun, threshold relaxation, interpolation, backfill, or automatic clock reset.
+- Diagnosis is D1 `SELECT` / `WITH` only.
 - No Worker deployment, new cron, cadence, D1 schema, retention, Kick, or cross-provider change.
 - Existing unfiltered Heatmap remains the production fallback.
-- A checkpoint never accepts #659 or authorizes public UI.
+- A checkpoint or diagnosis never accepts #659 or authorizes public UI by itself.
 - Current-main documents, not cached chat summaries, determine authorization.
