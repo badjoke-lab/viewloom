@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution.yml'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-contract.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-acceptance.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger-contract.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-contract.json'
@@ -71,13 +72,13 @@ jobs:
         uses: ./.github/actions/setup-node-pnpm
       - name: Confirm exact diagnosis trigger is absent
         run: test ! -f docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json
-      - name: Parse diagnosis execution package and accepted runner
+      - name: Parse accepted diagnosis execution package and runner
         run: |
           node --check scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs
           node --check scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package.mjs
           node --check scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.mjs
           node --check scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs
-      - name: Verify dormant diagnosis execution package
+      - name: Verify accepted diagnosis execution package
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package.mjs
       - name: Verify accepted diagnosis query package
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.mjs
@@ -100,18 +101,19 @@ jobs:
           test -f apps/web/dist/kick/heatmap/index.html
           ! grep -q 'categoryPreview' apps/web/dist/kick/heatmap/index.html
           ! grep -q 'data-category-preview-select' apps/web/dist/kick/heatmap/index.html
-      - name: Summarize dormant diagnosis execution boundary
+      - name: Summarize accepted diagnosis execution boundary
         run: |
           {
-            echo '## Twitch checkpoint-failure diagnosis execution package'
+            echo '## Accepted Twitch checkpoint-failure diagnosis execution package'
             echo
-            echo '- Accepted diagnosis query package: `#670` / `#671`'
-            echo '- Production trigger present on package PR: no'
-            echo '- Production credentials or queries on package PR: no'
-            echo '- D1 execution after acceptance and exact trigger: `SELECT` / `WITH` only'
+            echo '- Query package / acceptance: `#670` / `#671`'
+            echo '- Execution package / acceptance: `#672` / `#673`'
+            echo '- Production trigger present on acceptance PR: no'
+            echo '- Production credentials or queries on package/acceptance PRs: no'
+            echo '- D1 execution after exact trigger: `SELECT` / `WITH` only'
             echo '- Worker/D1/Kick/public UI mutation: no'
             echo '- Checkpoint rerun, threshold relaxation, recovery, clock reset, final mode: no'
-            echo '- Separate package acceptance and exact one-file trigger required: yes'
+            echo '- Next gate: exact one-file diagnosis trigger'
           } >> "$GITHUB_STEP_SUMMARY"
 
   validate-trigger:
