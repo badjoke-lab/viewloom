@@ -11,28 +11,30 @@ Phase 12A-5B-R2 replacement Twitch accumulation
 Canonical gate viewloom-12a2-current-gate-state-v33
 Checkpoint run 30478338654 failed
 Checkpoint path retired
-Failure diagnosis package accepted PR #670 / #671
-Current branch work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package
+Diagnosis query package accepted PR #670 / #671
+Diagnosis execution package accepted PR #672 / #673
+Current branch work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger
 Public Twitch category-filter exposure unauthorized
 ```
 
 ## Current work order
 
-1. Merge diagnosis package acceptance PR #671.
-2. Create and separately accept the one-time read-only diagnosis execution package.
-3. Add an exact one-file trigger in a separate PR and execute the accepted diagnosis once.
-4. Freeze sanitized diagnosis evidence and retire the temporary execution path.
-5. Make a separate recovery/no-recovery and stability-clock decision.
-6. Keep final mode and public cutover blocked until that decision is accepted.
+1. Merge execution package acceptance PR #673.
+2. Add exactly one diagnosis trigger file using package PR #672, merge `02ece37cc70de4faa5251600a465d4e68d058f29`, and acceptance PR #673.
+3. Validate trigger identity on the PR while production diagnosis remains skipped.
+4. Merge the trigger and execute the accepted read-only diagnosis once.
+5. Freeze sanitized evidence and retire the trigger/workflow.
+6. Make a separate recovery/no-recovery and stability-clock decision.
+7. Keep final mode and public cutover blocked until that decision is accepted.
 
 ## Current boundaries
 
 - No checkpoint rerun or threshold relaxation.
 - No interpolation, backfill, or invented historical rows.
 - No automatic recovery or clock reset.
-- No Worker deployment, new cron, cadence, D1 schema, retention, Kick, or cross-provider change.
-- Diagnostic production access is D1 `SELECT` / `WITH` only and requires a separately accepted execution package and exact trigger.
-- Package PRs must not use production credentials or execute production queries.
+- No Worker deployment, new cron, cadence, D1 schema, retention, Kick, cross-provider, final-mode, or public-UI change.
+- Diagnostic production access is D1 `SELECT` / `WITH` only and requires the accepted execution package and exact trigger.
+- The trigger PR must change only the exact trigger file and must not execute production diagnosis.
 - Existing unfiltered Heatmap remains the fallback.
 
 ## Change classification
@@ -42,6 +44,7 @@ Use one PR per responsibility: package, acceptance, exact trigger, execution, ev
 ## Required validation
 
 ```bash
+node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package.mjs
 node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.mjs
 node scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs
 node scripts/verify-development-policy.mjs
