@@ -9,9 +9,14 @@ Current phase: 12A-5B-R2 replacement Twitch seven-day accumulation
 Canonical gate: viewloom-12a2-current-gate-state-v33
 Checkpoint run: 30478338654 failed
 Checkpoint path: retired
-Failure diagnosis query package: accepted PR #670 / #671
-Failure diagnosis execution package: accepted PR #672 / #673
-Current branch: work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger
+Diagnosis query package: accepted PR #670 / #671
+Diagnosis execution package: accepted PR #672 / #673
+Diagnosis trigger: PR #678 / ccb05bce0622a23e211c2c1eadc23052377d302e
+Diagnosis attempt 1: cancelled before runner, no artifact
+Diagnosis attempt 2: success run 30541697022 / job 90942773349 / artifact 8767937513
+Diagnosis evidence: frozen
+Diagnosis execution path: retired on evidence PR merge
+Current branch: work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision
 Twitch Heatmap public category-filter exposure: unauthorized
 Twitch cadence: */5 * * * *
 Kick cadence: */5 * * * *
@@ -26,38 +31,37 @@ Before starting a branch and again before merge, read current-main versions of:
 3. `docs/product/current-schedule.md`
 4. `docs/audits/12a2-current-gate-state.json`
 5. `docs/product/twitch-replacement-seven-day-audit-spec.md`
-6. `docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json`
-7. `docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json`
-8. diagnosis query package contract/acceptance
-9. diagnosis execution package contract/acceptance and trigger contract
-10. the active WIP, affected feature specification/plan, and development policy.
+6. frozen checkpoint evidence and retirement
+7. diagnosis query/execution package contracts and acceptances
+8. diagnosis evidence summary and retirement
+9. the active WIP, affected feature specification/plan, and development policy.
 
 Current-main documents override cached handoffs, chat summaries, and historical package states.
 
 ## Current execution order
 
-1. Merge execution package acceptance PR #673.
-2. Create `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger`.
-3. Add exactly one trigger file using package PR #672, merge `02ece37cc70de4faa5251600a465d4e68d058f29`, and acceptance PR #673.
-4. Validate trigger identity on the PR; production diagnosis must remain skipped there.
-5. Squash merge the exact trigger and run the accepted read-only diagnosis once.
-6. Freeze sanitized evidence and retire trigger/workflow in a separate PR.
-7. Make a separate recovery/no-recovery and stability-clock decision.
-8. Keep final mode and public category UI blocked until that decision is accepted.
+1. Merge the diagnosis evidence/retirement PR after all frozen identifiers and evidence gates pass.
+2. Create `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision`.
+3. Decide separately whether the evidence requires recovery, no recovery, a stability-clock restart, or another bounded rule.
+4. Do not mutate production in the decision PR.
+5. If recovery is required, package and accept it separately before execution.
+6. If no recovery is required, fix the accepted final-audit boundary separately.
+7. Keep final mode and public category UI blocked until accepted final evidence and a separate cutover PR.
 
 ## Production safety
 
 - `main` is production; no direct push.
-- D1 diagnosis is `SELECT` / `WITH` only.
+- Diagnosis evidence does not decide recovery.
 - Do not rerun the checkpoint.
-- No threshold relaxation, interpolation, backfill, or clock reset.
+- No automatic recovery or stability-clock reset.
+- No threshold relaxation, interpolation, backfill, or row invention.
 - No Worker deployment, new cron, cadence change, D1 mutation, retention change, Kick mutation, final mode, cross-provider behavior, or public category UI.
 - Existing unfiltered Heatmap remains the fallback.
 
 ## Validation
 
 ```bash
-node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package.mjs
+node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence-retirement.mjs
 node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package.mjs
 node scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs
 node scripts/verify-development-policy.mjs

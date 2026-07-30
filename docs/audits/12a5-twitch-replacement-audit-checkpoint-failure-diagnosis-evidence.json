@@ -1,0 +1,156 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-summary-v1",
+  "status": "diagnosis_complete",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "observedAt": "2026-07-30T16:55:54.381Z",
+  "sourceArtifact": {
+    "workflowRunId": 30541697022,
+    "runAttempt": 2,
+    "diagnoseJobId": 90942773349,
+    "artifactId": 8767937513,
+    "artifactDigest": "sha256:02cedcb6c23c6792b55c96bb4326bc24ba8d7a79880df634d8a1f98e29d02ac5",
+    "sourceEvidenceJsonSha256": "372dc6c434830ec1ce3630b4146b29510010f0602c1a49b1b0d2fc038842236c",
+    "normalization": "decision_summary_derived_from_sanitized_artifact"
+  },
+  "sourceCheckpoint": {
+    "workflowRunId": 30478338654,
+    "checkpointJobId": 90665697236,
+    "artifactId": 8734980337,
+    "artifactDigest": "sha256:4f87868471e297b5b6904d9e8ee6c15c8a2e45f4e16edef0647e2ee4d3f0086b"
+  },
+  "window": {
+    "gapContextStartAt": "2026-07-29T06:50:00.000Z",
+    "gapContextEndExclusiveAt": "2026-07-29T08:00:00.000Z",
+    "checkpointStartAt": "2026-07-29T05:30:00.000Z",
+    "checkpointEndExclusiveAt": "2026-07-29T18:20:00.000Z",
+    "missingBuckets": [
+      "2026-07-29T07:20:00.000Z",
+      "2026-07-29T07:25:00.000Z",
+      "2026-07-29T07:30:00.000Z"
+    ],
+    "postCheckpointEndExclusiveAt": "2026-07-30T16:55:00.000Z"
+  },
+  "missingBucketDiagnosis": {
+    "exactRowsPresent": [],
+    "missingBuckets": [
+      "2026-07-29T07:20:00.000Z",
+      "2026-07-29T07:25:00.000Z",
+      "2026-07-29T07:30:00.000Z"
+    ],
+    "previousRecordedRun": {
+      "run_at": "2026-07-29T07:16:00.273Z",
+      "bucket_minute": "2026-07-29T07:15:00.000Z",
+      "status": "ok",
+      "sanitized_error": null,
+      "stream_count": 300,
+      "total_viewers": 417377,
+      "covered_pages": 3,
+      "has_more": 1
+    },
+    "nextRecordedRun": {
+      "run_at": "2026-07-29T07:35:58.828Z",
+      "bucket_minute": "2026-07-29T07:35:00.000Z",
+      "status": "ok",
+      "sanitized_error": null,
+      "stream_count": 300,
+      "total_viewers": 429473,
+      "covered_pages": 3,
+      "has_more": 1
+    },
+    "contextRunCount": 11,
+    "contextRunsAllOk": true,
+    "explicitFailureRowsForMissingBuckets": 0,
+    "finding": "the three snapshot rows and collector-run rows are permanently absent from the retained database; surrounding runs are successful"
+  },
+  "categoryReferenceDiagnosis": {
+    "checkpoint": {
+      "snapshot_rows": 151,
+      "total_category_refs": 45287,
+      "present_category_refs": 45039,
+      "null_category_refs": 248,
+      "first_bucket": "2026-07-29T05:30:00.000Z",
+      "latest_bucket": "2026-07-29T18:15:00.000Z",
+      "first_collected_at": "2026-07-29T05:30:59.633Z",
+      "latest_collected_at": "2026-07-29T18:15:50.638Z",
+      "coverageRatio": 0.994524,
+      "nullRatio": 0.005476
+    },
+    "postCheckpoint": {
+      "snapshot_rows": 269,
+      "total_category_refs": 80675,
+      "present_category_refs": 80210,
+      "null_category_refs": 465,
+      "first_bucket": "2026-07-29T18:20:00.000Z",
+      "latest_bucket": "2026-07-30T16:50:00.000Z",
+      "first_collected_at": "2026-07-29T18:20:49.794Z",
+      "latest_collected_at": "2026-07-30T16:50:25.749Z",
+      "coverageRatio": 0.994236,
+      "nullRatio": 0.005764
+    },
+    "coverageDeltaPostMinusCheckpoint": -0.000288,
+    "topChannels": [
+      {"channel_login":"gronkhtv","display_name":"GronkhTV","null_ref_occurrences":44,"affected_buckets":44,"first_affected_bucket":"2026-07-29T09:45:00.000Z","latest_affected_bucket":"2026-07-29T13:20:00.000Z","peak_viewers":1117,"summed_viewers":44254},
+      {"channel_login":"slwalekop","display_name":"slwalekoP","null_ref_occurrences":39,"affected_buckets":39,"first_affected_bucket":"2026-07-29T06:35:00.000Z","latest_affected_bucket":"2026-07-29T11:20:00.000Z","peak_viewers":832,"summed_viewers":24789},
+      {"channel_login":"hiiragitsurugi","display_name":"柊ツルギ","null_ref_occurrences":30,"affected_buckets":30,"first_affected_bucket":"2026-07-29T13:55:00.000Z","latest_affected_bucket":"2026-07-29T16:20:00.000Z","peak_viewers":7704,"summed_viewers":149734},
+      {"channel_login":"zubarefff_7052449","display_name":"ZUBAREFFF_7052449","null_ref_occurrences":17,"affected_buckets":17,"first_affected_bucket":"2026-07-29T07:40:00.000Z","latest_affected_bucket":"2026-07-29T09:00:00.000Z","peak_viewers":671,"summed_viewers":10831},
+      {"channel_login":"treputin_lord_22846","display_name":"Treputin_Lord_22846","null_ref_occurrences":11,"affected_buckets":11,"first_affected_bucket":"2026-07-29T05:35:00.000Z","latest_affected_bucket":"2026-07-29T06:25:00.000Z","peak_viewers":722,"summed_viewers":6818},
+      {"channel_login":"anarabduiaev_40854","display_name":"anarabduIaev_40854","null_ref_occurrences":10,"affected_buckets":10,"first_affected_bucket":"2026-07-29T07:40:00.000Z","latest_affected_bucket":"2026-07-29T08:25:00.000Z","peak_viewers":690,"summed_viewers":6633},
+      {"channel_login":"treputin_lord_4429955","display_name":"Treputin_Lord_4429955","null_ref_occurrences":10,"affected_buckets":10,"first_affected_bucket":"2026-07-29T08:25:00.000Z","latest_affected_bucket":"2026-07-29T09:10:00.000Z","peak_viewers":649,"summed_viewers":6337},
+      {"channel_login":"khanasadi","display_name":"KhanAsadi","null_ref_occurrences":9,"affected_buckets":9,"first_affected_bucket":"2026-07-29T05:30:00.000Z","latest_affected_bucket":"2026-07-29T06:10:00.000Z","peak_viewers":2523,"summed_viewers":20753},
+      {"channel_login":"staryuuki","display_name":"Staryuuki","null_ref_occurrences":9,"affected_buckets":9,"first_affected_bucket":"2026-07-29T05:30:00.000Z","latest_affected_bucket":"2026-07-29T06:10:00.000Z","peak_viewers":1482,"summed_viewers":12704},
+      {"channel_login":"anarabduilaev_36511","display_name":"anarabduIlaev_36511","null_ref_occurrences":9,"affected_buckets":9,"first_affected_bucket":"2026-07-29T09:15:00.000Z","latest_affected_bucket":"2026-07-29T09:55:00.000Z","peak_viewers":676,"summed_viewers":5910}
+    ],
+    "concentration": {
+      "top3Occurrences": 113,
+      "top3Share": 0.455645,
+      "top5Occurrences": 141,
+      "top5Share": 0.568548,
+      "top10Occurrences": 188,
+      "top10Share": 0.758065,
+      "allCheckpointNullOccurrencesAccountedFor": true
+    },
+    "finding": "null category references are channel-concentrated and persisted after the checkpoint; post-checkpoint coverage is slightly lower, not improved"
+  },
+  "currentCollectorStatus": {
+    "provider": "twitch",
+    "status": "ok",
+    "last_attempt_at": "2026-07-30T16:55:25.611Z",
+    "last_success_at": "2026-07-30T16:55:25.611Z",
+    "last_failure_at": "2026-07-30T06:05:25.383Z",
+    "sanitized_last_error": null,
+    "latest_bucket_minute": "2026-07-30T16:55:00.000Z",
+    "latest_collected_at": "2026-07-30T16:55:25.611Z",
+    "latest_stream_count": 300,
+    "latest_total_viewers": 1259882,
+    "covered_pages": 3,
+    "has_more": 1,
+    "updated_at": "2026-07-30T16:55:25.611Z"
+  },
+  "staticCodeAttribution": {
+    "collectorPath": "workers/collector-twitch/src/index-category.ts",
+    "encoderPath": "workers/shared/category-capture.ts",
+    "helixFields": ["game_id", "game_name"],
+    "nullReferenceCondition": "categoryProviderId or categoryName is empty after trim",
+    "sourceFieldsStrippedBeforePersistence": true,
+    "persistenceReindexingAfterEncoding": false,
+    "postPersistenceIdVsNameDistinctionPossible": false
+  },
+  "diagnosticLimitations": [
+    "Stored items omit categoryProviderId and categoryName after categoryRefs are encoded.",
+    "A persisted null categoryRef proves at least one required source field was empty, but cannot distinguish empty game_id from empty game_name.",
+    "Read-only diagnosis cannot recreate permanently absent minute snapshots or recover source fields that were not persisted.",
+    "This diagnosis does not accept Issue #659, authorize a rerun, relax thresholds, reset the stability clock, or authorize public UI."
+  ],
+  "decisionBoundary": {
+    "diagnosisEvidenceOnly": true,
+    "checkpointRerunAuthorized": false,
+    "thresholdRelaxationAuthorized": false,
+    "automaticRecoveryAuthorized": false,
+    "automaticClockResetAuthorized": false,
+    "auditAccepted": false,
+    "finalModeAuthorized": false,
+    "publicCategoryUiAuthorized": false
+  }
+}

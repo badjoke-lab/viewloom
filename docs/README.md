@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Last updated: 2026-07-30
+Last updated: 2026-07-31
 
 ## Current execution state
 
@@ -10,13 +10,15 @@ Phase 12A-5B-R2 replacement Twitch accumulation
 Canonical gate viewloom-12a2-current-gate-state-v33
 Twitch permanent category capture active yes
 Kick permanent category capture active yes
-Replacement stability start 2026-07-29T05:30:00.000Z
-Earliest calendar final boundary 2026-08-05T05:30:00.000Z
 Checkpoint run 30478338654 failed
 Checkpoint path retired yes
-Failure diagnosis query package accepted PR #670 / #671
-Failure diagnosis execution package accepted PR #672 / #673
-Current branch work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger
+Diagnosis query package accepted PR #670 / #671
+Diagnosis execution package accepted PR #672 / #673
+Diagnosis attempt 1 cancelled before runner
+Diagnosis attempt 2 success run 30541697022
+Diagnosis evidence frozen yes
+Diagnosis execution path retired on merge
+Current branch work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision
 Public Twitch category-filter exposure authorized no
 ```
 
@@ -27,48 +29,48 @@ Public Twitch category-filter exposure authorized no
 3. `docs/product/current-schedule.md`
 4. `docs/audits/12a2-current-gate-state.json`
 5. `docs/product/twitch-replacement-seven-day-audit-spec.md`
-6. frozen checkpoint evidence and retirement record
-7. diagnosis query package contract/acceptance
-8. diagnosis execution package contract/acceptance and trigger contract
-9. active WIP
-10. the affected feature specification and plan
+6. frozen checkpoint evidence and retirement
+7. diagnosis query/execution contracts and acceptances
+8. `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence.json`
+9. `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-retirement.json`
+10. active WIP and affected feature specification/plan
+
+## Frozen chain
+
+- Checkpoint run/job/artifact: `30478338654` / `90665697236` / `8734980337`.
+- Checkpoint failure: 151/154 slots, three missing buckets, 45,039/45,287 category refs, 248 null refs.
+- Query package/acceptance: PRs #670/#671.
+- Execution package/acceptance: PRs #672/#673.
+- Trigger PR/merge: #678 / `ccb05bce0622a23e211c2c1eadc23052377d302e`.
+- Attempt 1 diagnose job: `90867816146`, cancelled before runner, no artifact.
+- Successful run/attempt/job/artifact: `30541697022` / `2` / `90942773349` / `8767937513`.
+- Artifact digest: `sha256:02cedcb6c23c6792b55c96bb4326bc24ba8d7a79880df634d8a1f98e29d02ac5`.
+- Source evidence JSON SHA-256: `372dc6c434830ec1ce3630b4146b29510010f0602c1a49b1b0d2fc038842236c`.
 
 ## Current gate
 
-The checkpoint failed slot coverage, consecutive-gap, and category-reference gates. Frozen values remain 151/154 (`0.980519`), three missing buckets at `07:20`, `07:25`, `07:30` UTC, and 45,039/45,287 category refs (`0.994524`) with 248 null refs.
+The diagnosis summary is frozen and the exact trigger, one-time execution workflow, and temporary reporter are retired by the evidence/retirement PR. The next gate is a separate checkpoint-failure diagnosis decision.
 
-The read-only query package is accepted through PRs #670/#671. The one-time execution package is accepted through PRs #672/#673. The current gate is an exact one-file diagnosis trigger. The trigger must identify package PR #672, merge `02ece37cc70de4faa5251600a465d4e68d058f29`, and acceptance PR #673. Production diagnosis remains skipped on the trigger PR and can run only after its main merge.
+The decision must determine, without production mutation:
 
-## Evidence chain
+- whether permanently absent rows require recovery, a clock restart, or a bounded exception rule;
+- whether null refs are concentrated upstream-empty observations or a collector defect;
+- whether post-checkpoint coverage below `0.995` requires recovery;
+- whether the original replacement stability clock remains valid.
 
-- Recovery acceptance: PR #657; canonical v33 sync: PR #658.
-- Runner package/acceptance/repair: PRs #661–#664.
-- Checkpoint package/acceptance/trigger: PRs #665–#667.
-- Checkpoint run/job/artifact: `30478338654` / `90665697236` / `8734980337`.
-- Artifact digest: `sha256:4f87868471e297b5b6904d9e8ee6c15c8a2e45f4e16edef0647e2ee4d3f0086b`.
-- Evidence JSON SHA-256: `041f942501f1740f2ea0f3c7a77b04aeea0d084906af0faf625f370c01178f6f`.
-- Checkpoint evidence/retirement: PR #669.
-- Diagnosis query package/acceptance: PRs #670/#671.
-- Diagnosis execution package: PR #672; merge `02ece37cc70de4faa5251600a465d4e68d058f29`.
-- Diagnosis execution package acceptance: PR #673.
-- Package validation run/job: `30539504888` / `90860798797`.
+Diagnosis evidence itself does not decide recovery, accept #659, authorize final mode, or expose public category controls.
 
 ## Current order
 
-1. Merge execution package acceptance PR #673.
-2. Create `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger`.
-3. Add exactly one trigger file with the accepted package identity and a bounded `startAt`.
-4. Confirm trigger validation succeeds and production diagnosis is skipped on the PR.
-5. Squash merge the trigger and execute the read-only diagnosis once.
-6. Freeze sanitized evidence and retire the trigger/workflow.
-7. Make a separate recovery/no-recovery and stability-clock decision.
-8. Keep final mode and public cutover blocked until that decision is accepted.
+1. Merge the evidence/retirement PR after all dedicated gates pass.
+2. Create `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision`.
+3. Freeze a separate recovery/no-recovery and stability-clock decision.
+4. Package any required recovery separately.
+5. Keep final mode and public cutover blocked until later accepted gates.
 
 ## Invariants
 
 - No checkpoint rerun, threshold relaxation, interpolation, backfill, or automatic clock reset.
-- Diagnosis is D1 `SELECT` / `WITH` only.
 - No Worker deployment, new cron, cadence, D1 schema, retention, Kick, cross-provider, final-mode, or public-UI change.
 - Existing unfiltered Heatmap remains the production fallback.
-- A diagnosis never accepts #659 or authorizes public UI by itself.
 - Current-main documents, not cached chat summaries, determine authorization.
