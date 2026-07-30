@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-source-v2-completeness-package-v1",
+  "status": "candidate_ready_for_validation",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "governingMainSha": "9974539eadbc3388c9f9369168d305ca58771fe2",
+  "governingDecision": {
+    "path": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json",
+    "status": "recovery_required",
+    "requiredRecovery": "twitch_category_source_completeness_v2_observation",
+    "contractVersion": "category-source-v2-candidate"
+  },
+  "candidate": {
+    "implementation": "workers/shared/category-capture-v2-candidate.ts",
+    "test": "scripts/test-12a5-twitch-category-source-v2-completeness-candidate.mjs",
+    "contractVersion": "category-source-v2-candidate",
+    "stateEncoding": "2bit-hex-v1",
+    "requiredStates": [
+      "both_present",
+      "both_empty",
+      "provider_id_only",
+      "category_name_only"
+    ],
+    "stateCodes": {
+      "both_present": 0,
+      "both_empty": 1,
+      "provider_id_only": 2,
+      "category_name_only": 3
+    },
+    "categoryReferenceRule": "only both_present items receive category references and dictionary entries",
+    "semanticMappingPerformed": false
+  },
+  "capacityBoundary": {
+    "maximumItemsPerSnapshot": 300,
+    "bitsPerItem": 2,
+    "maximumPackedBytes": 75,
+    "maximumPackedHexCharacters": 150,
+    "maximumCandidatePayloadOverheadBytesAgainstComparableV1": 400,
+    "d1SchemaChangeRequired": false,
+    "retentionChangeRequired": false
+  },
+  "dormantBoundary": {
+    "importedByActiveTwitchCollector": false,
+    "importedByActiveKickCollector": false,
+    "productionBindingAdded": false,
+    "productionEnvironmentFlagAdded": false,
+    "productionCredentialsUsedOnPackagePr": false,
+    "productionExecutionPerformed": false,
+    "workerDeploymentPerformed": false,
+    "d1MutationPerformed": false,
+    "schemaMutationPerformed": false,
+    "cadenceChanged": false,
+    "retentionChanged": false,
+    "kickChanged": false,
+    "crossProviderBehaviorChanged": false,
+    "publicCategoryUiAuthorized": false
+  },
+  "requiredValidation": [
+    "candidate_typescript_compile",
+    "four_state_classification",
+    "two_bit_round_trip",
+    "deterministic_encoding",
+    "partial_pairs_remain_null_refs",
+    "no_source_fields_in_output",
+    "300_item_capacity_boundary",
+    "active_collectors_do_not_import_candidate",
+    "production_bindings_unchanged",
+    "provider_separation_unchanged",
+    "web_typecheck_and_build",
+    "public_category_controls_absent"
+  ],
+  "nextGate": "separately accept the dormant package before creating any Twitch-only execution package"
+}
