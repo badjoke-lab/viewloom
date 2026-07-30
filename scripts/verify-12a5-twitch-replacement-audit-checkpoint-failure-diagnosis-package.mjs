@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 
 const files = {
   contract: 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-contract.json',
+  acceptance: 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json',
   checkpointEvidence: 'docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json',
   retirement: 'docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json',
   runner: 'scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs',
@@ -19,6 +20,7 @@ for (const path of Object.values(files)) assert.equal(existsSync(path), true, `$
 const read = (path) => readFileSync(path, 'utf8')
 const json = (path) => JSON.parse(read(path))
 const contract = json(files.contract)
+const acceptance = json(files.acceptance)
 const checkpointEvidence = json(files.checkpointEvidence)
 const retirement = json(files.retirement)
 const runner = read(files.runner)
@@ -27,7 +29,7 @@ const collector = read(files.collector)
 const encoder = read(files.encoder)
 
 assert.equal(contract.schemaVersion, 'viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-v1')
-assert.equal(contract.status, 'ready_for_validation')
+assert.equal(contract.status, 'accepted')
 assert.equal(contract.phase, '12A-5B-R2')
 assert.equal(contract.trackingIssue, 659)
 assert.equal(contract.provider, 'twitch')
@@ -66,9 +68,39 @@ assert.deepEqual(contract.requiredOutputs, [
   'static_code_attribution',
   'diagnostic_limitations',
 ])
-assert.equal(contract.acceptance.packagePr, null)
-assert.equal(contract.acceptance.acceptancePr, null)
+assert.equal(contract.acceptanceRecord, files.acceptance)
+assert.equal(contract.acceptance.packagePr, 670)
+assert.equal(contract.acceptance.packageCandidateHeadSha, '4cb52b9cb11eb5b27a7f93eaa0e14838ab686039')
+assert.equal(contract.acceptance.packageMergeSha, '7f8e2d5adeec187a194aefc8fb2b239d05c5318a')
+assert.equal(contract.acceptance.acceptancePr, 671)
+assert.equal(contract.acceptance.validationRunId, 30481973791)
+assert.equal(contract.acceptance.validationJobId, 90678071929)
 assert.equal(contract.acceptance.productionExecutionPerformed, false)
+
+assert.equal(acceptance.schemaVersion, 'viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance-v1')
+assert.equal(acceptance.status, 'accepted')
+assert.equal(acceptance.phase, contract.phase)
+assert.equal(acceptance.trackingIssue, contract.trackingIssue)
+assert.equal(acceptance.provider, contract.provider)
+assert.equal(acceptance.acceptancePr, 671)
+assert.equal(acceptance.packagePr, contract.acceptance.packagePr)
+assert.equal(acceptance.packageCandidateHeadSha, contract.acceptance.packageCandidateHeadSha)
+assert.equal(acceptance.packageMergeSha, contract.acceptance.packageMergeSha)
+assert.equal(acceptance.validation.workflowRunId, contract.acceptance.validationRunId)
+assert.equal(acceptance.validation.workflowJobId, contract.acceptance.validationJobId)
+assert.equal(acceptance.validation.conclusion, 'success')
+assert.equal(Object.values(acceptance.validation).every((value) => value === true || value === 'success' || Number.isInteger(value)), true)
+assert.equal(acceptance.acceptedCapabilities.readOnlyDiagnosisRunner, true)
+assert.equal(acceptance.acceptedCapabilities.separateExecutionPathRequired, true)
+assert.equal(acceptance.boundaries.productionExecutionPerformed, false)
+assert.equal(acceptance.boundaries.productionCredentialsUsedOnPackagePr, false)
+assert.equal(acceptance.boundaries.checkpointRerunAuthorized, false)
+assert.equal(acceptance.boundaries.d1MutationPerformed, false)
+assert.equal(acceptance.boundaries.thresholdRelaxationAuthorized, false)
+assert.equal(acceptance.boundaries.clockResetAuthorized, false)
+assert.equal(acceptance.boundaries.kickChanged, false)
+assert.equal(acceptance.boundaries.finalModeAuthorized, false)
+assert.equal(acceptance.boundaries.publicCategoryUiAuthorized, false)
 
 assert.equal(checkpointEvidence.status, 'checkpoint_failed')
 assert.equal(checkpointEvidence.execution.workflowRunId, contract.sourceEvidence.checkpointRunId)
@@ -125,6 +157,7 @@ assert.ok(encoder.includes('stripCategorySourceFields'))
 
 for (const fragment of [
   'name: Analytics 12A5 Twitch Replacement Audit Checkpoint Failure Diagnosis Package',
+  "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json",
   'Verify checkpoint failure diagnosis package',
   'Verify failed checkpoint evidence and retired path',
   'Verify current category rollout policy',
@@ -141,10 +174,10 @@ assert.equal(workflow.includes('contents: write'), false)
 assert.equal(workflow.includes('run: node scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs'), false)
 
 for (const [path, fragments] of Object.entries({
-  [files.schedule]: ['Current gate checkpoint failure diagnosis package', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package'],
-  [files.roadmap]: ['### Current gate: checkpoint failure diagnosis', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package'],
-  [files.spec]: ['## Current gate: failure diagnosis', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package'],
-  [files.wip]: ['checkpoint failure diagnosis', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package'],
+  [files.schedule]: ['Current gate one-time diagnosis execution package', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package'],
+  [files.roadmap]: ['### Current gate: one-time diagnosis execution package', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package'],
+  [files.spec]: ['## Current gate: one-time failure-diagnosis execution package', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package'],
+  [files.wip]: ['one-time diagnosis execution package', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package'],
 })) {
   const source = read(path)
   for (const fragment of fragments) assert.ok(source.includes(fragment), `${path} missing: ${fragment}`)
@@ -154,7 +187,7 @@ console.log(JSON.stringify({
   ok: true,
   phase: contract.phase,
   sourceCheckpointFailed: true,
-  diagnosisPackageReady: true,
+  diagnosisPackageAccepted: true,
   productionExecutionIncluded: false,
   sourceFieldLossLimitationRecorded: true,
   nextGate: contract.nextGate,
