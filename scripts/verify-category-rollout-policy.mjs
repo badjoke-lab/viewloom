@@ -80,12 +80,23 @@ assert.equal(triggerContract.status, 'accepted')
 assert.equal(triggerContract.acceptedPackageIdentity.packagePr, 672)
 assert.equal(triggerContract.acceptedPackageIdentity.acceptancePr, 673)
 assert.deepEqual(triggerContract.executionBoundary.d1Statements, ['SELECT', 'WITH'])
+assert.equal(diagnosisEvidence.schemaVersion, 'viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-summary-v1')
 assert.equal(diagnosisEvidence.status, 'diagnosis_complete')
 assert.equal(diagnosisEvidence.provider, 'twitch')
-assert.equal(diagnosisEvidence.error, null)
+assert.equal(diagnosisEvidence.sourceArtifact.workflowRunId, 30541697022)
+assert.equal(diagnosisEvidence.sourceArtifact.runAttempt, 2)
+assert.equal(diagnosisEvidence.sourceArtifact.artifactId, 8767937513)
+assert.equal(diagnosisEvidence.missingBucketDiagnosis.exactRowsPresent.length, 0)
+assert.equal(diagnosisEvidence.categoryReferenceDiagnosis.checkpoint.coverageRatio, 0.994524)
+assert.equal(diagnosisEvidence.categoryReferenceDiagnosis.postCheckpoint.coverageRatio, 0.994236)
+assert.equal(diagnosisEvidence.currentCollectorStatus.status, 'ok')
 assert.equal(diagnosisRetirement.status, 'retired_on_merge')
 assert.equal(diagnosisRetirement.sourceTrigger.pr, 678)
 assert.equal(diagnosisRetirement.sourceTrigger.mergeSha, 'ccb05bce0622a23e211c2c1eadc23052377d302e')
+assert.equal(diagnosisRetirement.execution.workflowRunId, 30541697022)
+assert.equal(diagnosisRetirement.execution.diagnoseJobId, 90942773349)
+assert.equal(diagnosisRetirement.execution.artifactId, 8767937513)
+assert.equal(diagnosisRetirement.cancelledAttempt.diagnoseJobId, 90867816146)
 assert.equal(diagnosisRetirement.boundaries.diagnosisEvidenceOnly, true)
 for (const [key, value] of Object.entries(diagnosisRetirement.boundaries)) {
   if (key === 'diagnosisEvidenceOnly') continue
@@ -97,8 +108,8 @@ for (const [path, fragments] of Object.entries({
   'CONTRIBUTING.md': ['Diagnosis evidence frozen and temporary path retired', 'No automatic recovery or stability-clock reset.'],
   'docs/README.md': ['Diagnosis evidence frozen', 'Current branch work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision'],
   'docs/product/current-roadmap.md': ['### Current gate: checkpoint-failure diagnosis decision', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision'],
-  'docs/product/current-schedule.md': ['Current gate separate diagnosis decision', 'no automatic clock reset'],
-  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: separate diagnosis decision', 'Diagnosis evidence does not decide recovery'],
+  'docs/product/current-schedule.md': ['Current gate separate diagnosis decision', 'no automatic recovery or clock reset'],
+  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: separate diagnosis decision', 'Diagnosis evidence is non-authorizing'],
   'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['checkpoint-failure diagnosis decision', 'No public category UI'],
 })) {
   const source = read(path)
