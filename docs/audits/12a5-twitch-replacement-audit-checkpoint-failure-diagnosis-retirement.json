@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-retirement-v1",
+  "status": "awaiting_evidence",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "mode": "checkpoint_failure_diagnosis",
+  "sourceTrigger": {
+    "pr": 678,
+    "mergeSha": "ccb05bce0622a23e211c2c1eadc23052377d302e",
+    "startAt": "2026-07-30T13:15:00.000Z"
+  },
+  "execution": {
+    "workflowRunId": null,
+    "diagnoseJobId": null,
+    "workflowConclusion": null,
+    "diagnoseConclusion": null,
+    "artifactId": null,
+    "artifactDigest": null,
+    "evidenceJsonSha256": null
+  },
+  "evidencePath": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence.json",
+  "retiredPaths": [
+    "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json",
+    ".github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution.yml",
+    ".github/workflows/analytics-12a5-twitch-checkpoint-failure-diagnosis-reporter.yml"
+  ],
+  "boundaries": {
+    "diagnosisEvidenceOnly": true,
+    "checkpointRerunAuthorized": false,
+    "automaticRecoveryAuthorized": false,
+    "automaticClockResetAuthorized": false,
+    "auditAcceptanceAuthorized": false,
+    "workerDeploymentPerformed": false,
+    "d1MutationPerformed": false,
+    "schemaMutationPerformed": false,
+    "bindingMutationPerformed": false,
+    "cadenceChanged": false,
+    "retentionChanged": false,
+    "thresholdRelaxationAuthorized": false,
+    "backfillAuthorized": false,
+    "kickChanged": false,
+    "crossProviderBehaviorChanged": false,
+    "finalModeAuthorized": false,
+    "publicCategoryUiAuthorized": false
+  },
+  "nextGate": "freeze diagnosis evidence, retire temporary paths, then make a separate recovery/no-recovery and stability-clock decision"
+}
