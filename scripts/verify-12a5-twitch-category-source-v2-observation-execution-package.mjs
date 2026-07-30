@@ -154,7 +154,7 @@ for (const fragment of [
   'needs.classify.outputs.trigger_present == \'true\'',
   'Run bounded Twitch category-source-v2 observation',
   'Upload Twitch category-source-v2 observation evidence',
-  'production observation skipped on package PR',
+  'Production observation skipped on package PR',
 ]) assert.ok(workflow.includes(fragment), `workflow missing: ${fragment}`)
 assert.equal(workflow.includes('workflow_dispatch:'), false)
 assert.equal(workflow.includes('schedule:'), false)
