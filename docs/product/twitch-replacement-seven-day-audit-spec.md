@@ -20,7 +20,7 @@ Govern the replacement Twitch category accumulation audit without exposing publi
 - Failure diagnosis package PR #670 merged as `7f8e2d5adeec187a194aefc8fb2b239d05c5318a`.
 - Failure diagnosis package acceptance PR #671 freezes the read-only query set and diagnostic limitations.
 
-## Checkpoint failure
+## Checkpoint execution and result
 
 Failed hard stops:
 
@@ -50,7 +50,7 @@ Accepted outputs:
 
 The accepted package performs no production diagnosis. D1 statements are `SELECT` / `WITH` only.
 
-## Current gate: one-time diagnosis execution package
+## Current gate: one-time failure-diagnosis execution package
 
 Current branch:
 
@@ -66,7 +66,7 @@ The execution package must:
 - upload sanitized evidence;
 - remain non-authorizing and mutation-free.
 
-## Prohibited responses
+## Prohibited responses to checkpoint failure
 
 - checkpoint rerun or threshold relaxation;
 - interpolation, backfill, or invented rows;
