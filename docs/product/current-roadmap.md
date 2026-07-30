@@ -9,42 +9,41 @@ Last updated: 2026-07-30
 
 - Twitch and Kick permanent category capture accepted on five-minute collectors.
 - Twitch recovery and v33 canonical synchronization completed.
-- Dormant replacement runner, SQL-scope repair, checkpoint package, and checkpoint execution path accepted.
 - Checkpoint run `30478338654` executed read-only and failed three data gates.
-- Frozen checkpoint result: slot coverage 151/154 = `0.980519`; three consecutive missing buckets at `07:20`, `07:25`, `07:30` UTC; category-reference coverage 45,039/45,287 = `0.994524`, with 248 null refs.
-- Checkpoint evidence was frozen and the temporary path retired.
-- Failure diagnosis package PR #670 merged as `7f8e2d5adeec187a194aefc8fb2b239d05c5318a`.
-- Package validation run/job `30481973791` / `90678071929` passed all static, policy, build, and public-containment checks.
-- Failure diagnosis package acceptance PR #671 freezes the read-only query set and limitations.
+- Frozen result: slot coverage 151/154 = `0.980519`; missing buckets `07:20`, `07:25`, `07:30` UTC; category-reference coverage 45,039/45,287 = `0.994524`, with 248 null refs.
+- Checkpoint evidence was frozen and the temporary checkpoint path retired.
+- Diagnosis query package/acceptance completed in PRs #670/#671.
+- Diagnosis execution package PR #672 merged as `02ece37cc70de4faa5251600a465d4e68d058f29`.
+- Execution package validation run/job `30539504888` / `90860798797` passed trigger-absence, package, policy, typecheck, build, and public-containment gates.
+- Execution package acceptance PR #673 freezes the exact package identity and trigger contract.
 
-### Current gate: one-time diagnosis execution package
+### Current gate: exact diagnosis trigger
 
 Current branch:
 
-`work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package`
-
-The accepted diagnosis runner can determine missing-bucket presence, collector-run and snapshot context, null references by bucket/channel, post-checkpoint trends, and current collector status. It cannot distinguish empty Helix `game_id` from empty `game_name` after persistence because both source fields are stripped after categoryRef encoding.
+`work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger`
 
 ## Active deliverable
 
-Create and separately accept a bounded diagnosis execution package that:
+Add exactly one trigger file that:
 
-- runs the accepted diagnosis runner once;
-- uses D1 `SELECT` / `WITH` only;
-- uses no production credentials on the package PR;
-- requires a later exact one-file trigger;
-- uploads sanitized evidence;
-- performs no checkpoint rerun, mutation, threshold change, recovery decision, clock reset, final mode, Kick change, or public UI change.
+- uses package PR #672;
+- uses package merge `02ece37cc70de4faa5251600a465d4e68d058f29`;
+- uses acceptance PR #673;
+- sets a bounded exact `startAt`;
+- passes trigger validation on the PR while production diagnosis remains skipped;
+- performs no other file change.
+
+After trigger merge, run the accepted diagnosis runner once, upload sanitized evidence, freeze run/job/artifact/digest, and retire trigger/workflow in a separate PR.
 
 ## Following gates
 
-1. execution-package acceptance;
-2. exact diagnosis trigger;
-3. one-time read-only diagnosis execution;
-4. evidence freeze and temporary-path retirement;
-5. separate recovery/no-recovery and stability-clock decision;
-6. final audit only after that decision and the calendar boundary;
-7. separate public cutover only after accepted final evidence.
+1. exact diagnosis trigger;
+2. one-time read-only diagnosis execution;
+3. evidence freeze and temporary-path retirement;
+4. separate recovery/no-recovery and stability-clock decision;
+5. final audit only after that decision and the calendar boundary;
+6. separate public cutover only after accepted final evidence.
 
 ## Hard boundaries
 
@@ -55,12 +54,9 @@ Create and separately accept a bounded diagnosis execution package that:
 
 ## Source of truth
 
-- `docs/product/current-schedule.md`
-- `docs/audits/12a2-current-gate-state.json`
-- `docs/product/twitch-replacement-seven-day-audit-spec.md`
-- `docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json`
-- `docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json`
-- `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-contract.json`
-- `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json`
-- `docs/work-in-progress/phase12a4-category-parallel-execution.md`
-- `docs/operations/development-and-deployment-policy.md`
+- current schedule and audit specification;
+- canonical v33 gate;
+- frozen checkpoint evidence and retirement;
+- diagnosis query package contract/acceptance;
+- diagnosis execution package contract/acceptance and trigger contract;
+- active WIP and development policy.

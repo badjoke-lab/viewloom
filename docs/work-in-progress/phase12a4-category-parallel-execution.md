@@ -1,15 +1,16 @@
-# 12A-5B-R2 replacement Twitch checkpoint-failure diagnosis execution
+# 12A-5B-R2 replacement Twitch checkpoint-failure diagnosis trigger
 
 ## Status
 
 - Twitch and Kick permanent category capture remain active on five-minute cadences.
 - Canonical runtime gate remains v33.
 - Checkpoint run `30478338654` completed read-only and failed.
-- Trigger, checkpoint workflow, and reporter are retired.
-- Failure diagnosis package PR #670 merged as `7f8e2d5adeec187a194aefc8fb2b239d05c5318a`.
-- Diagnosis package validation run/job: `30481973791` / `90678071929`.
-- Diagnosis package acceptance PR: #671.
-- Current branch: `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package`.
+- Checkpoint trigger/workflow/reporter are retired.
+- Diagnosis query package/acceptance: PRs #670/#671.
+- Diagnosis execution package PR #672 merged as `02ece37cc70de4faa5251600a465d4e68d058f29`.
+- Execution package validation run/job: `30539504888` / `90860798797`.
+- Execution package acceptance PR: #673.
+- Current branch: `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger`.
 - Public Twitch category-filter exposure remains unauthorized.
 
 ## Failed checkpoint gates
@@ -19,23 +20,23 @@
 - Category-reference coverage: 45,039/45,287 = `0.994524`, with 248 null refs.
 - Invalid refs and unresolved dictionary IDs: 0.
 
-## Accepted diagnosis scope
+## Accepted diagnosis execution identity
 
-- exact presence of missing bucket rows;
-- collector-run and snapshot context around the gap;
-- null refs by bucket and channel;
-- checkpoint and post-checkpoint null-ref summaries;
-- current collector status;
-- static attribution from Helix `game_id` / `game_name` through the encoder;
-- persisted-data limitation recorded explicitly.
+- package PR #672;
+- package candidate head `c496963f03611be4e9b957e6bf99d15f0d97bad4`;
+- package merge `02ece37cc70de4faa5251600a465d4e68d058f29`;
+- acceptance PR #673;
+- D1 statements `SELECT` / `WITH` only;
+- sanitized artifact required;
+- package and acceptance PR production execution: none.
 
 ## Current work order
 
-1. Merge package acceptance PR #671.
-2. Create and separately validate a one-time diagnosis execution package.
-3. Accept that execution package before any production query.
-4. Add an exact trigger in a separate PR and run diagnosis once.
-5. Freeze sanitized diagnosis evidence and retire the temporary path.
+1. Merge execution package acceptance PR #673.
+2. Add exactly one trigger file with package PR #672, package merge `02ece37cc70de4faa5251600a465d4e68d058f29`, acceptance PR #673, and a bounded exact `startAt`.
+3. Validate the trigger on the PR; production diagnosis remains skipped.
+4. Merge the trigger and execute the accepted diagnosis once.
+5. Freeze sanitized diagnosis evidence and retire trigger/workflow.
 6. Make a separate recovery/no-recovery and stability-clock decision.
 7. Keep final mode and public UI blocked until the decision is accepted.
 
@@ -51,4 +52,4 @@
 
 ## Mandatory source documents
 
-Before every branch and merge, read current-main roadmap, schedule, canonical gate, audit specification, checkpoint evidence, retirement record, diagnosis package contract/acceptance, active WIP, development policy, and affected feature specification/plan.
+Before every branch and merge, read current-main roadmap, schedule, canonical gate, audit specification, checkpoint evidence, retirement record, diagnosis query package contract/acceptance, diagnosis execution package contract/acceptance and trigger contract, active WIP, development policy, and affected feature specification/plan.

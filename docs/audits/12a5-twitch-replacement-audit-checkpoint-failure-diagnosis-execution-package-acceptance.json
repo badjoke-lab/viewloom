@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-acceptance-v1",
+  "status": "accepted",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "mode": "checkpoint_failure_diagnosis",
+  "packagePr": 672,
+  "packageCandidateHeadSha": "c496963f03611be4e9b957e6bf99d15f0d97bad4",
+  "packageMergeSha": "02ece37cc70de4faa5251600a465d4e68d058f29",
+  "acceptancePr": 673,
+  "validation": {
+    "workflowRunId": 30539504888,
+    "workflowJobId": 90860798797,
+    "conclusion": "success",
+    "triggerAbsent": true,
+    "productionDiagnosisSkipped": true,
+    "executionPackageVerifierPassed": true,
+    "acceptedDiagnosisPackageVerifierPassed": true,
+    "checkpointRetirementVerifierPassed": true,
+    "categoryPolicyPassed": true,
+    "developmentPolicyPassed": true,
+    "typecheckPassed": true,
+    "buildPassed": true,
+    "publicCategoryControlsAbsent": true
+  },
+  "acceptedCapabilities": {
+    "oneTimeReadOnlyDiagnosisWorkflow": true,
+    "exactTriggerContract": true,
+    "sanitizedEvidenceArtifact": true,
+    "d1SelectWithOnly": true,
+    "separateExactTriggerRequired": true
+  },
+  "boundaries": {
+    "productionExecutionPerformed": false,
+    "productionCredentialsUsedOnPackagePr": false,
+    "checkpointRerunAuthorized": false,
+    "workerDeploymentPerformed": false,
+    "d1MutationPerformed": false,
+    "schemaMutationPerformed": false,
+    "bindingMutationPerformed": false,
+    "cadenceChanged": false,
+    "retentionChanged": false,
+    "thresholdRelaxationAuthorized": false,
+    "backfillAuthorized": false,
+    "clockResetAuthorized": false,
+    "kickChanged": false,
+    "crossProviderBehaviorChanged": false,
+    "finalModeAuthorized": false,
+    "publicCategoryUiAuthorized": false
+  },
+  "nextGate": "add the exact one-file diagnosis trigger with package PR 672, merge SHA 02ece37cc70de4faa5251600a465d4e68d058f29, and acceptance PR 673"
+}

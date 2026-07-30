@@ -42,11 +42,7 @@ assert.equal(contract.fixedWindows.gapContextStartAt, '2026-07-29T06:50:00.000Z'
 assert.equal(contract.fixedWindows.gapContextEndExclusiveAt, '2026-07-29T08:00:00.000Z')
 assert.equal(contract.fixedWindows.checkpointStartAt, '2026-07-29T05:30:00.000Z')
 assert.equal(contract.fixedWindows.checkpointEndExclusiveAt, '2026-07-29T18:20:00.000Z')
-assert.deepEqual(contract.fixedWindows.missingBuckets, [
-  '2026-07-29T07:20:00.000Z',
-  '2026-07-29T07:25:00.000Z',
-  '2026-07-29T07:30:00.000Z',
-])
+assert.deepEqual(contract.fixedWindows.missingBuckets, ['2026-07-29T07:20:00.000Z', '2026-07-29T07:25:00.000Z', '2026-07-29T07:30:00.000Z'])
 assert.equal(contract.staticCodeAttribution.nullReferenceCondition, 'categoryProviderId or categoryName is empty after trim')
 assert.equal(contract.staticCodeAttribution.sourceFieldsStrippedBeforePersistence, true)
 assert.equal(contract.staticCodeAttribution.postPersistenceIdVsNameDistinctionPossible, false)
@@ -56,18 +52,7 @@ assert.equal(contract.execution.productionCredentialsUsedOnPackagePr, false)
 assert.equal(contract.execution.separateExecutionPathAcceptanceRequired, true)
 assert.deepEqual(contract.readOnlyBoundary.d1Statements, ['SELECT', 'WITH'])
 assert.equal(Object.values(contract.readOnlyBoundary).every((value) => Array.isArray(value) || value === false), true)
-assert.deepEqual(contract.requiredOutputs, [
-  'exact_missing_bucket_presence',
-  'collector_runs_gap_context',
-  'snapshots_gap_context',
-  'null_refs_by_bucket',
-  'null_refs_top_channels',
-  'null_ref_checkpoint_summary',
-  'null_ref_post_checkpoint_summary',
-  'current_collector_status',
-  'static_code_attribution',
-  'diagnostic_limitations',
-])
+assert.deepEqual(contract.requiredOutputs, ['exact_missing_bucket_presence', 'collector_runs_gap_context', 'snapshots_gap_context', 'null_refs_by_bucket', 'null_refs_top_channels', 'null_ref_checkpoint_summary', 'null_ref_post_checkpoint_summary', 'current_collector_status', 'static_code_attribution', 'diagnostic_limitations'])
 assert.equal(contract.acceptanceRecord, files.acceptance)
 assert.equal(contract.acceptance.packagePr, 670)
 assert.equal(contract.acceptance.packageCandidateHeadSha, '4cb52b9cb11eb5b27a7f93eaa0e14838ab686039')
@@ -118,31 +103,10 @@ for (const fragment of [
   "const GAP_END = '2026-07-29T08:00:00.000Z'",
   "const CHECKPOINT_START = '2026-07-29T05:30:00.000Z'",
   "const CHECKPOINT_END = '2026-07-29T18:20:00.000Z'",
-  'exactMissingBucketPresence',
-  'collectorRunsGapContext',
-  'snapshotsGapContext',
-  'nullRefsByBucket',
-  'nullRefsTopChannels',
-  'checkpointNullRefSummary',
-  'postCheckpointNullRefSummary',
-  'currentCollectorStatus',
-  "ref.type = 'null'",
-  "json_extract(m.payload_json, '$.items[' || ref.key || '].channelLogin')",
-  "if (statements.some((part) => !/^(SELECT|WITH)\\b/i.test(part)))",
-  "throw new Error('non_select_statement_rejected')",
-  "'wrangler@4'",
-  "'--remote'",
-  "'--json'",
+  'exactMissingBucketPresence', 'collectorRunsGapContext', 'snapshotsGapContext', 'nullRefsByBucket', 'nullRefsTopChannels', 'checkpointNullRefSummary', 'postCheckpointNullRefSummary', 'currentCollectorStatus',
+  "ref.type = 'null'", "json_extract(m.payload_json, '$.items[' || ref.key || '].channelLogin')", "if (statements.some((part) => !/^(SELECT|WITH)\\b/i.test(part)))", "throw new Error('non_select_statement_rejected')", "'wrangler@4'", "'--remote'", "'--json'",
 ]) assert.ok(runner.includes(fragment), `runner missing: ${fragment}`)
-
-for (const forbidden of [
-  'wrangler@4 deploy',
-  'INSERT INTO',
-  'UPDATE ',
-  'DELETE FROM',
-  'ALTER TABLE',
-  'AUDIT_MODE=final',
-]) assert.equal(runner.includes(forbidden), false, `runner forbidden fragment: ${forbidden}`)
+for (const forbidden of ['wrangler@4 deploy', 'INSERT INTO', 'UPDATE ', 'DELETE FROM', 'ALTER TABLE', 'AUDIT_MODE=final']) assert.equal(runner.includes(forbidden), false, `runner forbidden fragment: ${forbidden}`)
 
 assert.ok(collector.includes('game_id?: string'))
 assert.ok(collector.includes('game_name?: string'))
@@ -157,14 +121,8 @@ assert.ok(encoder.includes('stripCategorySourceFields'))
 
 for (const fragment of [
   'name: Analytics 12A5 Twitch Replacement Audit Checkpoint Failure Diagnosis Package',
-  "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json",
-  'Verify checkpoint failure diagnosis package',
-  'Verify failed checkpoint evidence and retired path',
-  'Verify current category rollout policy',
-  'Verify current development policy',
-  'Typecheck web',
-  'Build web',
-  'Verify production build still contains no public category controls',
+  'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json',
+  'Verify checkpoint failure diagnosis package', 'Verify failed checkpoint evidence and retired path', 'Verify current category rollout policy', 'Verify current development policy', 'Typecheck web', 'Build web', 'Verify production build still contains no public category controls',
 ]) assert.ok(workflow.includes(fragment), `workflow missing: ${fragment}`)
 assert.equal(workflow.includes('CLOUDFLARE_API_TOKEN'), false)
 assert.equal(workflow.includes('CLOUDFLARE_ACCOUNT_ID'), false)
@@ -174,21 +132,13 @@ assert.equal(workflow.includes('contents: write'), false)
 assert.equal(workflow.includes('run: node scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs'), false)
 
 for (const [path, fragments] of Object.entries({
-  [files.schedule]: ['Current gate one-time diagnosis execution package', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package'],
-  [files.roadmap]: ['### Current gate: one-time diagnosis execution package', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package'],
-  [files.spec]: ['## Current gate: one-time failure-diagnosis execution package', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package'],
-  [files.wip]: ['one-time diagnosis execution package', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package'],
+  [files.schedule]: ['Current gate exact one-file diagnosis trigger', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger'],
+  [files.roadmap]: ['### Current gate: exact diagnosis trigger', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger'],
+  [files.spec]: ['## Current gate: exact failure-diagnosis trigger', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger'],
+  [files.wip]: ['replacement Twitch checkpoint-failure diagnosis trigger', 'work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger'],
 })) {
   const source = read(path)
   for (const fragment of fragments) assert.ok(source.includes(fragment), `${path} missing: ${fragment}`)
 }
 
-console.log(JSON.stringify({
-  ok: true,
-  phase: contract.phase,
-  sourceCheckpointFailed: true,
-  diagnosisPackageAccepted: true,
-  productionExecutionIncluded: false,
-  sourceFieldLossLimitationRecorded: true,
-  nextGate: contract.nextGate,
-}, null, 2))
+console.log(JSON.stringify({ ok: true, phase: contract.phase, sourceCheckpointFailed: true, diagnosisQueryPackageAccepted: true, diagnosisExecutionPackageAccepted: true, productionExecutionIncluded: false, sourceFieldLossLimitationRecorded: true, nextGate: 'exact one-file diagnosis trigger', }, null, 2))

@@ -14,11 +14,11 @@ Govern the replacement Twitch category accumulation audit without exposing publi
 - Recovery accepted in PR #657; canonical state synchronized in PR #658.
 - Dormant runner accepted through PRs #661/#662.
 - SQL scope repair accepted through PRs #663/#664.
-- Bounded checkpoint package accepted through PRs #665/#666.
-- Exact trigger PR #667 merged as `ee8125ecd12f7ec620af13fd78d9a3c3c7e18f98`.
-- Checkpoint run `30478338654` failed and evidence/retirement was merged in PR #669.
-- Failure diagnosis package PR #670 merged as `7f8e2d5adeec187a194aefc8fb2b239d05c5318a`.
-- Failure diagnosis package acceptance PR #671 freezes the read-only query set and diagnostic limitations.
+- Checkpoint package/acceptance/trigger completed through PRs #665–#667.
+- Checkpoint run `30478338654` failed; evidence and retirement merged in PR #669.
+- Diagnosis query package/acceptance completed through PRs #670/#671.
+- Diagnosis execution package PR #672 merged as `02ece37cc70de4faa5251600a465d4e68d058f29`.
+- Execution package acceptance PR #673 fixes the package identity, validation run/job, and exact trigger contract.
 
 ## Checkpoint execution and result
 
@@ -30,41 +30,46 @@ Failed hard stops:
 
 The null refs are not invalid indices and are not unresolved dictionary IDs. Runtime safety, bindings, cadence, storage, public containment, latest real/fresh snapshot, zero leakage, and Kick baseline passed.
 
-## Accepted diagnosis package
+## Accepted diagnosis scope
+
+The accepted read-only runner returns missing-bucket presence, collector-run and snapshot context, null refs by bucket/channel, checkpoint and post-checkpoint summaries, current collector status, static source attribution, and persisted-data limitations.
+
+Persisted payloads cannot distinguish empty Helix `game_id` from empty `game_name` because category source fields are stripped after `categoryRefs` are encoded.
+
+## Accepted diagnosis execution package
 
 Authorities:
 
-- `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-contract.json`
-- `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-package-acceptance.json`
-- `scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-contract.json`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-acceptance.json`
+- `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger-contract.json`
+- `.github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution.yml`
 
-Accepted outputs:
+Accepted identity:
 
-- exact presence of the three missing bucket rows;
-- collector run history and snapshots around `06:50–08:00 UTC`;
-- null refs by bucket and channel;
-- checkpoint and post-checkpoint null-ref summaries;
-- current collector status;
-- static attribution from Helix `game_id` / `game_name` through the category encoder;
-- explicit limitation that persisted payloads cannot distinguish which source field was empty because category source fields are stripped after encoding.
+- package PR #672;
+- package candidate head `c496963f03611be4e9b957e6bf99d15f0d97bad4`;
+- package merge `02ece37cc70de4faa5251600a465d4e68d058f29`;
+- validation run/job `30539504888` / `90860798797`;
+- acceptance PR #673.
 
-The accepted package performs no production diagnosis. D1 statements are `SELECT` / `WITH` only.
+The package and acceptance PRs performed no production diagnosis. Trigger was absent; production job was skipped. D1 statements are `SELECT` / `WITH` only.
 
-## Current gate: one-time failure-diagnosis execution package
+## Current gate: exact failure-diagnosis trigger
 
 Current branch:
 
-`work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package`
+`work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger`
 
-The execution package must:
+The trigger PR must:
 
-- bind to package PR #670, merge `7f8e2d5adeec187a194aefc8fb2b239d05c5318a`, and acceptance PR #671;
-- add a bounded one-time workflow and exact trigger contract;
-- use no production credentials or production access on the package PR;
-- require a later exact one-file trigger;
-- run the accepted diagnosis runner once;
-- upload sanitized evidence;
-- remain non-authorizing and mutation-free.
+- add only `docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json`;
+- identify package PR #672, merge `02ece37cc70de4faa5251600a465d4e68d058f29`, and acceptance PR #673;
+- use schema `viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger-v1`;
+- use confirmation `RUN_TWITCH_CHECKPOINT_FAILURE_DIAGNOSIS`;
+- set a bounded exact `startAt`;
+- pass trigger validation on the PR while production diagnosis remains skipped;
+- run diagnosis once only after main merge.
 
 ## Prohibited responses to checkpoint failure
 
