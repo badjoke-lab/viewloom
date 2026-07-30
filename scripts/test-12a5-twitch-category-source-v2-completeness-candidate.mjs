@@ -58,8 +58,9 @@ try {
   assert.equal(encoded.missingItems, 3)
   assert.equal(encoded.partialPairItems, 2)
   assert.equal(encoded.coverageState, 'missing_from_source')
-  assert.equal(JSON.stringify(encoded).includes('categoryProviderId'), false)
-  assert.equal(JSON.stringify(encoded).includes('categoryName'), false)
+  const encodedKeys = collectObjectKeys(encoded)
+  assert.equal(encodedKeys.has('categoryProviderId'), false)
+  assert.equal(encodedKeys.has('categoryName'), false)
 
   const empty = candidate.encodeCategorySourceCompletenessV2Candidate([])
   assert.equal(empty.coverageState, 'unavailable')
@@ -122,4 +123,17 @@ try {
   }, null, 2))
 } finally {
   rmSync(temp, { recursive: true, force: true })
+}
+
+function collectObjectKeys(value, keys = new Set()) {
+  if (Array.isArray(value)) {
+    for (const item of value) collectObjectKeys(item, keys)
+    return keys
+  }
+  if (!value || typeof value !== 'object') return keys
+  for (const [key, nested] of Object.entries(value)) {
+    keys.add(key)
+    collectObjectKeys(nested, keys)
+  }
+  return keys
 }
