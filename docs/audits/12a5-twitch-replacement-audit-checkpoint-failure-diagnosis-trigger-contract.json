@@ -1,11 +1,12 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger-contract-v1",
-  "status": "ready_for_validation",
+  "status": "accepted",
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
   "mode": "checkpoint_failure_diagnosis",
   "packageContract": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-contract.json",
+  "packageAcceptance": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution-package-acceptance.json",
   "trigger": {
     "path": "docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json",
     "schemaVersion": "viewloom-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger-v1",
@@ -31,9 +32,9 @@
   },
   "acceptedPackageIdentity": {
     "required": true,
-    "packagePr": null,
-    "packageMergeSha": null,
-    "acceptancePr": null
+    "packagePr": 672,
+    "packageMergeSha": "02ece37cc70de4faa5251600a465d4e68d058f29",
+    "acceptancePr": 673
   },
   "executionBoundary": {
     "event": "push_to_main_with_exact_trigger_path",
@@ -66,5 +67,5 @@
     "triggerRetirementRequired": true,
     "workflowRetirementRequired": true
   },
-  "nextGate": "after package acceptance, add the exact one-file diagnosis trigger with the accepted package PR, merge SHA, and acceptance PR"
+  "nextGate": "add the exact one-file diagnosis trigger with package PR 672, merge SHA 02ece37cc70de4faa5251600a465d4e68d058f29, and acceptance PR 673"
 }
