@@ -13,14 +13,16 @@ Checkpoint run 30478338654 failed
 Checkpoint path retired
 Diagnosis query package accepted PR #670 / #671
 Diagnosis execution package accepted PR #672 / #673
-Diagnosis evidence frozen and temporary path retired
+Diagnosis attempt 1 cancelled before runner
+Diagnosis attempt 2 success run 30541697022
+Diagnosis evidence frozen and temporary path retired on merge
 Current branch work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision
 Public Twitch category-filter exposure unauthorized
 ```
 
 ## Current work order
 
-1. Merge the evidence/retirement PR after artifact and digest verification.
+1. Merge the evidence/retirement PR after artifact identity, evidence summary, policy, typecheck, build, and public-containment gates pass.
 2. Create a separate diagnosis-decision PR.
 3. Decide recovery, no recovery, and stability-clock treatment from frozen evidence only.
 4. Do not mutate production or expose UI in the decision PR.
