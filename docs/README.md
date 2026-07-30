@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Last updated: 2026-07-30
+Last updated: 2026-07-31
 
 ## Current execution state
 
@@ -14,9 +14,10 @@ Checkpoint run 30478338654 failed
 Checkpoint path retired yes
 Diagnosis query package accepted PR #670 / #671
 Diagnosis execution package accepted PR #672 / #673
-Diagnosis trigger PR #678
+Diagnosis attempt 1 cancelled before runner
+Diagnosis attempt 2 success run 30541697022
 Diagnosis evidence frozen yes
-Diagnosis execution path retired yes
+Diagnosis execution path retired on merge
 Current branch work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision
 Public Twitch category-filter exposure authorized no
 ```
@@ -41,27 +42,27 @@ Public Twitch category-filter exposure authorized no
 - Query package/acceptance: PRs #670/#671.
 - Execution package/acceptance: PRs #672/#673.
 - Trigger PR/merge: #678 / `ccb05bce0622a23e211c2c1eadc23052377d302e`.
-- Diagnosis execution identifiers: `PENDING_DIAGNOSIS_IDENTIFIERS`.
-- Diagnosis evidence SHA-256: `PENDING_DIAGNOSIS_EVIDENCE_SHA256`.
+- Attempt 1 diagnose job: `90867816146`, cancelled before runner, no artifact.
+- Successful run/attempt/job/artifact: `30541697022` / `2` / `90942773349` / `8767937513`.
+- Artifact digest: `sha256:02cedcb6c23c6792b55c96bb4326bc24ba8d7a79880df634d8a1f98e29d02ac5`.
+- Source evidence JSON SHA-256: `372dc6c434830ec1ce3630b4146b29510010f0602c1a49b1b0d2fc038842236c`.
 
 ## Current gate
 
-Diagnosis evidence is frozen and the exact trigger, one-time execution workflow, and temporary reporter are retired. The next gate is a separate checkpoint-failure diagnosis decision.
+The diagnosis summary is frozen and the exact trigger, one-time execution workflow, and temporary reporter are retired by the evidence/retirement PR. The next gate is a separate checkpoint-failure diagnosis decision.
 
 The decision must determine, without production mutation:
 
-- whether the three missing rows were permanently absent or only unavailable to the checkpoint query;
-- whether collector-run history identifies a bounded operational cause;
-- whether null refs are concentrated in stable upstream-empty channels or indicate a collector defect;
-- whether post-checkpoint null-ref behavior is stable or worsening;
-- whether recovery is required;
-- whether the original replacement stability clock remains valid, must restart, or needs another bounded rule.
+- whether permanently absent rows require recovery, a clock restart, or a bounded exception rule;
+- whether null refs are concentrated upstream-empty observations or a collector defect;
+- whether post-checkpoint coverage below `0.995` requires recovery;
+- whether the original replacement stability clock remains valid.
 
 Diagnosis evidence itself does not decide recovery, accept #659, authorize final mode, or expose public category controls.
 
 ## Current order
 
-1. Merge the evidence/retirement PR after replacing pending identifiers with verified values.
+1. Merge the evidence/retirement PR after all dedicated gates pass.
 2. Create `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-decision`.
 3. Freeze a separate recovery/no-recovery and stability-clock decision.
 4. Package any required recovery separately.
