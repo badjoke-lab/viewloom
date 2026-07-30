@@ -11,6 +11,7 @@ Last updated: 2026-07-30
 - Twitch recovery and v33 canonical synchronization completed.
 - Dormant replacement runner, SQL-scope repair, checkpoint package, and checkpoint execution path accepted.
 - Checkpoint run `30478338654` executed read-only and failed three data gates.
+- Frozen checkpoint result: slot coverage 151/154 = `0.980519`; three consecutive missing buckets at `07:20`, `07:25`, `07:30` UTC; category-reference coverage 45,039/45,287 = `0.994524`, with 248 null refs.
 - Checkpoint evidence was frozen and the temporary path retired.
 - Failure diagnosis package PR #670 merged as `7f8e2d5adeec187a194aefc8fb2b239d05c5318a`.
 - Package validation run/job `30481973791` / `90678071929` passed all static, policy, build, and public-containment checks.
