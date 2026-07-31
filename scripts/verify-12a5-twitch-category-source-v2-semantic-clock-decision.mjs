@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 
 const paths = {
   decision: 'docs/audits/12a5-twitch-category-source-v2-semantic-clock-decision.json',
+  clockAcceptance: 'docs/audits/12a5-twitch-category-source-v2-stability-clock-acceptance.json',
   evidence: 'docs/audits/12a5-twitch-category-source-v2-observation-success-evidence.json',
   executionRetirement: 'docs/audits/12a5-twitch-category-source-v2-observation-execution-path-retirement.json',
   v1: 'workers/shared/category-capture.ts',
@@ -11,7 +12,16 @@ const paths = {
   kickConfig: 'workers/collector-kick/wrangler.category-permanent.toml',
   auditContract: 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json',
 }
-for (const path of Object.values(paths)) assert.equal(existsSync(path), true, `${path}: missing`)
+for (const path of [
+  paths.decision,
+  paths.evidence,
+  paths.executionRetirement,
+  paths.v1,
+  paths.v2,
+  paths.twitchConfig,
+  paths.kickConfig,
+  paths.auditContract,
+]) assert.equal(existsSync(path), true, `${path}: missing`)
 for (const path of [
   'docs/audits/12a5-twitch-category-source-v2-observation-trigger.json',
   '.github/workflows/analytics-12a5-twitch-category-source-v2-observation-execution.yml',
@@ -28,6 +38,7 @@ const executionRetirement = json(paths.executionRetirement)
 const v1 = read(paths.v1)
 const v2 = read(paths.v2)
 const auditContract = json(paths.auditContract)
+const clockAcceptancePresent = existsSync(paths.clockAcceptance)
 
 assert.equal(decision.schemaVersion, 'viewloom-12a5-twitch-category-source-v2-semantic-clock-decision-v1')
 assert.equal(decision.status, 'candidate')
@@ -114,11 +125,23 @@ const end = Date.parse(clock.proposedEndExclusiveAt)
 assert.equal(start % (5 * 60 * 1000), 0)
 assert.equal(end % (5 * 60 * 1000), 0)
 assert.equal((end - start) / (5 * 60 * 1000), clock.expectedSlots)
-assert.ok(Date.now() < start, 'proposed_start_must_remain_future_during_candidate_validation')
 
-assert.equal(auditContract.status, 'accepted_dormant')
-assert.equal(auditContract.window.originalWindowValid, false)
-assert.notEqual(auditContract.window.startAt, clock.proposedStartAt)
+if (clockAcceptancePresent) {
+  const acceptance = json(paths.clockAcceptance)
+  assert.equal(acceptance.status, 'accepted_on_merge')
+  assert.equal(acceptance.semanticDecisionPr, 699)
+  assert.equal(acceptance.window.startAt, clock.proposedStartAt)
+  assert.equal(acceptance.window.endExclusiveAt, clock.proposedEndExclusiveAt)
+  assert.equal(auditContract.status, 'accepted_active')
+  assert.equal(auditContract.window.originalWindowValid, true)
+  assert.equal(auditContract.window.startAt, clock.proposedStartAt)
+  assert.equal(auditContract.window.endExclusiveAt, clock.proposedEndExclusiveAt)
+  assert.equal(auditContract.stabilityClockAcceptance, paths.clockAcceptance)
+} else {
+  assert.equal(auditContract.status, 'accepted_dormant')
+  assert.equal(auditContract.window.originalWindowValid, false)
+  assert.notEqual(auditContract.window.startAt, clock.proposedStartAt)
+}
 assert.equal(auditContract.runtime.categoryContractVersion, 'category-source-v1')
 assert.equal(auditContract.readOnlyBoundary.publicExposureAuthorized, false)
 assert.equal(auditContract.acceptanceBoundary.passingFinalAuditExposesUi, false)
@@ -142,6 +165,7 @@ console.log(JSON.stringify({
   proposedStartAt: clock.proposedStartAt,
   proposedEndExclusiveAt: clock.proposedEndExclusiveAt,
   expectedSlots: clock.expectedSlots,
+  clockAcceptancePresent,
   clockAuthorizedByCandidate: clock.newClockAuthorizedByThisCandidate,
   finalModeAuthorized: false,
   publicCategoryUiAuthorized: false,

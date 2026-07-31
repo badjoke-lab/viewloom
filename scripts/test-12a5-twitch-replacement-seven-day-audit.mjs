@@ -28,25 +28,25 @@ assert.equal(statements.slice(1).some((statement) => statement.includes('FROM sc
 const finalWindow = resolveAuditWindow(
   contract,
   'final',
-  '2026-08-05T05:30:00.000Z',
+  '2026-08-07T17:00:00.000Z',
 )
-assert.equal(finalWindow.startAt, '2026-07-29T05:30:00.000Z')
-assert.equal(finalWindow.endExclusiveAt, '2026-08-05T05:30:00.000Z')
+assert.equal(finalWindow.startAt, '2026-07-31T17:00:00.000Z')
+assert.equal(finalWindow.endExclusiveAt, '2026-08-07T17:00:00.000Z')
 assert.equal(finalWindow.expectedSlots, 2016)
 assert.equal(finalWindow.expectedFinalSlots, 2016)
 
 assert.throws(
-  () => resolveAuditWindow(contract, 'final', '2026-08-05T05:29:59.999Z'),
+  () => resolveAuditWindow(contract, 'final', '2026-08-07T16:59:59.999Z'),
   /final_audit_boundary_not_reached/,
 )
 
 const checkpointWindow = resolveAuditWindow(
   contract,
   'checkpoint',
-  '2026-07-30T05:37:42.000Z',
+  '2026-08-01T05:07:42.000Z',
 )
-assert.equal(checkpointWindow.endExclusiveAt, '2026-07-30T05:35:00.000Z')
-assert.equal(checkpointWindow.expectedSlots, 289)
+assert.equal(checkpointWindow.endExclusiveAt, '2026-08-01T05:05:00.000Z')
+assert.equal(checkpointWindow.expectedSlots, 145)
 
 const allSlots = []
 for (
@@ -92,7 +92,7 @@ assert.deepEqual(duplicate.duplicateSlots[0], { slot: allSlots[42], count: 2 })
 const invalid = analyzeSlots(
   finalWindow.startAt,
   finalWindow.endExclusiveAt,
-  [...allSlots, 'not-a-time', '2026-08-05T05:30:00.000Z'],
+  [...allSlots, 'not-a-time', '2026-08-07T17:00:00.000Z'],
 )
 assert.equal(invalid.invalidBucketCount, 2)
 

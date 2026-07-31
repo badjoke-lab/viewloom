@@ -12,6 +12,8 @@ on:
       - 'docs/product/current-schedule.md'
       - 'docs/audits/12a2-current-gate-state.json'
       - 'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json'
+      - 'docs/audits/12a5-twitch-category-source-v2-semantic-clock-decision.json'
+      - 'docs/audits/12a5-twitch-category-source-v2-stability-clock-acceptance.json'
       - 'docs/audits/12a5-twitch-replacement-seven-day-audit-runner-repair-acceptance.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-package-contract.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-package-acceptance.json'
@@ -20,6 +22,7 @@ on:
       - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
       - 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs'
       - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
+      - 'scripts/verify-12a5-twitch-category-source-v2-stability-clock-acceptance.mjs'
       - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-development-policy.mjs'
@@ -48,13 +51,16 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Parse current read-only runner and retirement verifier
+      - name: Parse current read-only runner and clock verifier
         run: |
           node --check scripts/run-12a5-twitch-replacement-seven-day-audit.mjs
           node --check scripts/test-12a5-twitch-replacement-seven-day-audit.mjs
+          node --check scripts/verify-12a5-twitch-category-source-v2-stability-clock-acceptance.mjs
           node --check scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs
       - name: Verify failed checkpoint evidence and retired path
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs
+      - name: Verify accepted revised stability clock
+        run: node scripts/verify-12a5-twitch-category-source-v2-stability-clock-acceptance.mjs
       - name: Test exact replacement audit window and slot accounting
         run: node scripts/test-12a5-twitch-replacement-seven-day-audit.mjs
       - name: Verify current category rollout policy
@@ -74,17 +80,19 @@ jobs:
           test -f apps/web/dist/kick/heatmap/index.html
           ! grep -q 'categoryPreview' apps/web/dist/kick/heatmap/index.html
           ! grep -q 'data-category-preview-select' apps/web/dist/kick/heatmap/index.html
-      - name: Summarize checkpoint failure gate
+      - name: Summarize active revised stability clock
         run: |
           {
-            echo '## Twitch replacement checkpoint result'
+            echo '## Twitch replacement seven-day stability clock'
             echo
-            echo '- Run / job / artifact: `30478338654` / `90665697236` / `8734980337`'
-            echo '- Outcome: `checkpoint_failed`'
-            echo '- Failed gates: slot coverage, consecutive missing slots, category reference coverage'
-            echo '- Missing buckets: `07:20`, `07:25`, `07:30` UTC'
-            echo '- Missing category refs: `248`'
-            echo '- Trigger/workflow/reporter retired: yes'
+            echo '- Semantic decision: PR #699 / `ec4792712c24c5e1ed05cfa8a0ba5e600e748b8e`'
+            echo '- Clock acceptance: PR #700'
+            echo '- Window: `[2026-07-31T17:00:00Z, 2026-08-07T17:00:00Z)`'
+            echo '- JST: `2026-08-01 02:00` to `2026-08-08 02:00`'
+            echo '- Expected five-minute slots: `2016`'
+            echo '- Manual action at start boundary: no'
+            echo '- Existing Twitch collector continues: yes'
+            echo '- Worker/D1/binding/cadence/Kick/domain change: no'
             echo '- Public category filter authorized: no'
-            echo '- Next branch: `work-659-twitch-replacement-audit-checkpoint-failure-diagnosis-package`'
+            echo '- Final mode before end boundary: prohibited'
           } >> "$GITHUB_STEP_SUMMARY"
