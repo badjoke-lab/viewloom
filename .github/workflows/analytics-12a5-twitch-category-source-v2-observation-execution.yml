@@ -13,6 +13,8 @@ on:
       - 'docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-contract.json'
       - 'docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-acceptance.json'
       - 'docs/audits/12a5-twitch-category-source-v2-observation-rerun-trigger-contract.json'
+      - 'docs/audits/12a5-twitch-category-source-v2-observation-success-evidence.json'
+      - 'docs/audits/12a5-twitch-category-source-v2-observation-evidence-retirement.json'
       - 'docs/audits/12a5-twitch-category-source-v2-completeness-package-contract.json'
       - 'docs/audits/12a5-twitch-category-source-v2-completeness-package-acceptance.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json'
@@ -21,6 +23,7 @@ on:
       - 'scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs'
       - 'scripts/verify-12a5-twitch-category-source-v2-observation-recovery-package.mjs'
       - 'scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs'
+      - 'scripts/verify-12a5-twitch-category-source-v2-observation-success-evidence.mjs'
       - 'execution-packages/twitch-category-source-v2-observation/wrangler.toml'
       - 'workers/shared/category-capture-v2-candidate.ts'
       - 'workers/collector-twitch/src/index-category.ts'
@@ -82,6 +85,7 @@ jobs:
           node --check scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs
           node --check scripts/verify-12a5-twitch-category-source-v2-observation-recovery-package.mjs
           node --check scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs
+          node --check scripts/verify-12a5-twitch-category-source-v2-observation-success-evidence.mjs
       - name: Generate exact-source observation worker
         run: node scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs
       - name: Compile generated observation worker
@@ -92,6 +96,8 @@ jobs:
         run: node scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs
       - name: Verify failed observation evidence and corrected recovery package
         run: node scripts/verify-12a5-twitch-category-source-v2-observation-recovery-package.mjs
+      - name: Verify successful observation evidence and trigger retirement
+        run: node scripts/verify-12a5-twitch-category-source-v2-observation-success-evidence.mjs
       - name: Verify accepted dormant candidate package
         run: node scripts/verify-12a5-twitch-category-source-v2-completeness-package.mjs
       - name: Verify governing recovery decision
@@ -118,20 +124,22 @@ jobs:
       - name: Remove generated worker
         if: always()
         run: rm -rf workers/collector-twitch/.generated-v2-observation
-      - name: Summarize corrected recovery boundary
+      - name: Summarize evidence freeze boundary
         run: |
           {
-            echo '## Twitch category-source-v2 observation recovery package'
+            echo '## Twitch category-source-v2 observation evidence freeze'
             echo
             echo '- Original package / acceptance: `#685` / `#686`'
             echo '- Failed production observation: run `30608982443`'
             echo '- Corrected package / acceptance: `#692` / `#693`'
-            echo '- Generated Worker remains under `workers/collector-twitch/.generated-v2-observation`'
-            echo '- Evidence remains under `artifacts/12a5-twitch-category-source-v2-observation/run`'
+            echo '- Successful production observation: run `30620512044` / job `91123756273`'
+            echo '- Two consecutive real, non-empty, fresh v2 snapshots accepted'
+            echo '- Canonical v1 rollback succeeded'
+            echo '- Consumed trigger retired on merge'
             echo '- Production observation skipped on package and acceptance PRs'
             echo '- Production observation skipped on this PR'
-            echo '- Separate exact rerun trigger remains required'
-            echo '- Canonical v1 rollback remains mandatory'
+            echo '- Temporary execution path retirement remains separate'
+            echo '- Semantic mapping, new clock, final mode, and public UI remain unauthorized'
           } >> "$GITHUB_STEP_SUMMARY"
 
   validate-trigger:
