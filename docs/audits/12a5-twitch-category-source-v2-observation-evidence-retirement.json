@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-evidence-retirement-v1",
+  "status": "evidence_frozen_trigger_retired",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "sourceEvidence": "docs/audits/12a5-twitch-category-source-v2-observation-success-evidence.json",
+  "execution": {
+    "workflowRunId": 30620512044,
+    "observeJobId": 91123756273,
+    "artifactId": 8789385200,
+    "artifactDigest": "sha256:dfff17be40f9766c5d4cc4ead6eada761e00ba760b7ce133fce0e9b4f427fc10",
+    "evidenceJsonSha256": "e2ceb0ce88dab1f03fd374004488fda9381f223a5dde6d139686c06218ce6bbe",
+    "conclusion": "success"
+  },
+  "retirement": {
+    "consumedTriggerPath": "docs/audits/12a5-twitch-category-source-v2-observation-trigger.json",
+    "consumedTriggerRetiredOnMerge": true,
+    "temporaryExecutionPathRetirementPending": true,
+    "temporaryWorkflow": ".github/workflows/analytics-12a5-twitch-category-source-v2-observation-execution.yml",
+    "temporaryRunner": "scripts/run-12a5-twitch-category-source-v2-observation.mjs",
+    "temporaryGenerator": "scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs",
+    "temporaryConfig": "execution-packages/twitch-category-source-v2-observation/wrangler.toml"
+  },
+  "acceptedResult": {
+    "twoConsecutiveSnapshots": true,
+    "stateIntegrityPass": true,
+    "dictionaryResolutionPass": true,
+    "providerSeparationPass": true,
+    "freshnessPass": true,
+    "canonicalRollbackSucceeded": true
+  },
+  "pendingDecisions": {
+    "temporaryExecutionPathRetirement": true,
+    "semanticMapping": true,
+    "newStabilityClock": true,
+    "finalMode": true,
+    "publicCategoryUi": true
+  },
+  "authorizedNow": {
+    "semanticMapping": false,
+    "newStabilityClock": false,
+    "finalMode": false,
+    "publicCategoryUi": false,
+    "kickChange": false,
+    "cadenceChange": false,
+    "retentionChange": false,
+    "backfill": false
+  },
+  "nextGate": "merge this evidence freeze and trigger retirement, then retire the temporary execution path in a separate package"
+}
