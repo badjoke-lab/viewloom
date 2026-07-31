@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "viewloom-primary-domain-cutover-v1",
+  "status": "candidate",
+  "primaryOrigin": "https://viewloom.net",
+  "primaryHost": "viewloom.net",
+  "redirects": [
+    {
+      "fromHost": "www.viewloom.net",
+      "toOrigin": "https://viewloom.net",
+      "status": 301,
+      "preservePathAndQuery": true
+    },
+    {
+      "fromHost": "vl.badjoke-lab.com",
+      "toOrigin": "https://viewloom.net",
+      "status": 301,
+      "preservePathAndQuery": true
+    }
+  ],
+  "publicMetadata": {
+    "canonical": "https://viewloom.net",
+    "openGraph": "https://viewloom.net",
+    "twitterImages": "https://viewloom.net",
+    "structuredData": "https://viewloom.net",
+    "sitemap": "https://viewloom.net/sitemap.xml",
+    "robotsSitemap": "https://viewloom.net/sitemap.xml"
+  },
+  "deployment": {
+    "provider": "cloudflare-pages",
+    "repoControlledHostRedirect": true,
+    "buildNormalizationRequired": true,
+    "domainBindingAssumption": "viewloom.net and www.viewloom.net are already attached to the existing Pages project"
+  },
+  "independentFromStabilityAudit": true,
+  "unchanged": {
+    "twitchCollector": true,
+    "kickCollector": true,
+    "fiveMinuteCadence": true,
+    "d1Schema": true,
+    "retention": true,
+    "categoryStabilityClock": true,
+    "publicCategoryUi": true
+  }
+}

@@ -45,7 +45,7 @@ jobs:
         working-directory: apps/web
         run: |
           set -o pipefail
-          node scripts/public-readiness-audit.mjs 2>&1 | tee /tmp/public-readiness-audit.log
+          node scripts/run-public-readiness-audit.mjs 2>&1 | tee /tmp/public-readiness-audit.log
       - name: Verify linked changelog data
         working-directory: apps/web
         run: test -f dist/data/changelog.json
@@ -66,7 +66,9 @@ jobs:
             .schema == "viewloom-deployment-v1" and
             .environment == "local" and
             .branch == null and
-            .commit_sha == null
+            .commit_sha == null and
+            .primary_origin == "https://viewloom.net" and
+            .canonical_host == "viewloom.net"
           ' dist/deployment.json > /dev/null
       - name: Publish audit summary
         if: always()

@@ -3,9 +3,12 @@ import { join } from 'node:path'
 
 const root = process.cwd()
 const failures = []
+const primaryOrigin = 'https://viewloom.net'
+const legacyOrigins = ['https://vl.badjoke-lab.com', 'https://www.viewloom.net']
 const check = (value, message) => { if (!value) failures.push(message) }
 const load = (path) => JSON.parse(readFileSync(join(root, path), 'utf8'))
 const exists = (path) => existsSync(join(root, path))
+const normalizeOrigin = (source) => legacyOrigins.reduce((value, origin) => value.replaceAll(origin, primaryOrigin), source)
 
 const manifest = load('docs/audits/public-surface-inventory.json')
 check(manifest.schema === 'viewloom-public-surface-inventory-v1', 'manifest schema mismatch')
@@ -59,7 +62,7 @@ check(routes.filter((route) => route.profile === 'static_legal').length === 5, '
 
 const vite = readFileSync(join(root, 'apps/web/vite.config.ts'), 'utf8')
 const sitemap = readFileSync(join(root, 'apps/web/public/sitemap.xml'), 'utf8')
-const sitemapRoutes = new Set([...sitemap.matchAll(/<loc>https:\/\/vl\.badjoke-lab\.com([^<]*)<\/loc>/g)].map((match) => normalizeRoute(match[1] || '/')))
+const sitemapRoutes = new Set([...sitemap.matchAll(/<loc>https:\/\/viewloom\.net([^<]*)<\/loc>/g)].map((match) => normalizeRoute(match[1] || '/')))
 
 for (const route of routes) {
   check(exists(route.source), `${route.id}: source missing ${route.source}`)
@@ -74,7 +77,7 @@ for (const route of routes) {
   if (route.route !== '*') {
     const relative = route.source.replace(/^apps\/web\//, '')
     check(vite.includes(`'${relative}'`) || vite.includes(`"${relative}"`), `${route.id}: not a Vite input`)
-    const html = readFileSync(join(root, route.source), 'utf8')
+    const html = normalizeOrigin(readFileSync(join(root, route.source), 'utf8'))
     check(decode(tag(html, 'title')) === route.title, `${route.id}: title mismatch`)
     check(link(html, 'canonical') === route.canonical, `${route.id}: canonical mismatch`)
     const robots = meta(html, 'name', 'robots') || 'index,follow'
@@ -129,6 +132,7 @@ console.log('- Phase 12 exact-SHA production acceptance is complete')
 console.log('- five R12A legal/support routes remain production accepted and resolved')
 console.log('- Twitch and Kick bindings remain separate')
 console.log('- historical P8B evidence remains locked separately')
+console.log(`- primary public origin is ${primaryOrigin}`)
 
 function tag(html, name) { return html.match(new RegExp(`<${name}\\b[^>]*>([\\s\\S]*?)<\\/${name}>`, 'i'))?.[1]?.trim() ?? '' }
 function attr(source, name) { return source.match(new RegExp(`\\b${name}=["']([^"']*)["']`, 'i'))?.[1] ?? '' }
