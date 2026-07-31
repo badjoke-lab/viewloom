@@ -17,6 +17,7 @@ on:
       - 'scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs'
       - 'scripts/run-12a5-twitch-category-source-v2-observation.mjs'
       - 'scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs'
+      - 'scripts/verify-12a5-twitch-category-source-v2-observation-recovery-package.mjs'
       - 'execution-packages/twitch-category-source-v2-observation/wrangler.toml'
       - 'workers/shared/category-capture-v2-candidate.ts'
       - 'workers/collector-twitch/src/index-category.ts'
@@ -76,14 +77,17 @@ jobs:
           node --check scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs
           node --check scripts/run-12a5-twitch-category-source-v2-observation.mjs
           node --check scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs
+          node --check scripts/verify-12a5-twitch-category-source-v2-observation-recovery-package.mjs
       - name: Generate exact-source observation worker
         run: node scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs
       - name: Compile generated observation worker
         run: pnpm exec tsc --target ES2022 --module ES2022 --moduleResolution Bundler --strict --skipLibCheck --noEmit --types @cloudflare/workers-types workers/collector-twitch/.generated-v2-observation/entry.ts
       - name: Bundle observation worker without deployment
         run: pnpm dlx wrangler@4 deploy --dry-run --outdir artifacts/12a5-twitch-category-source-v2-observation/dry-run --config execution-packages/twitch-category-source-v2-observation/wrangler.toml
-      - name: Verify accepted bounded execution package and recovery correction
+      - name: Verify accepted bounded execution package
         run: node scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs
+      - name: Verify failed observation evidence and corrected recovery package
+        run: node scripts/verify-12a5-twitch-category-source-v2-observation-recovery-package.mjs
       - name: Verify accepted dormant candidate package
         run: node scripts/verify-12a5-twitch-category-source-v2-completeness-package.mjs
       - name: Verify governing recovery decision
@@ -110,7 +114,7 @@ jobs:
       - name: Remove generated worker
         if: always()
         run: rm -rf workers/collector-twitch/.generated-v2-observation
-      - name: Summarize accepted execution boundary
+      - name: Summarize corrected recovery boundary
         run: |
           {
             echo '## Twitch category-source-v2 observation recovery package'
