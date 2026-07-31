@@ -7,6 +7,14 @@ on:
       - 'apps/web/**'
       - 'docs/audits/primary-domain-cutover.json'
       - 'docs/audits/public-surface-routes-*.json'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/primary-domain-production-smoke.yml'
+      - 'apps/web/**'
+      - 'docs/audits/primary-domain-cutover.json'
+      - 'docs/audits/public-surface-routes-*.json'
   workflow_dispatch:
   schedule:
     - cron: '17 3 * * 1'
@@ -16,6 +24,7 @@ permissions:
 
 jobs:
   verify-production-domain:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
