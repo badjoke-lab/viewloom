@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-failure-evidence-v1",
+  "status": "observation_failed_before_candidate_deployment",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "observedAt": "2026-07-31T06:13:22.873Z",
+  "trigger": {
+    "pr": 689,
+    "mergeSha": "d4a55ac3960dff978dfabd5ee77307477ab5268d",
+    "executeImmediately": true,
+    "startAtPresent": false
+  },
+  "execution": {
+    "workflowId": 323959988,
+    "workflowRunId": 30608982443,
+    "workflowRunNumber": 7,
+    "runAttempt": 1,
+    "runConclusion": "failure",
+    "createdAt": "2026-07-31T06:12:51Z",
+    "updatedAt": "2026-07-31T06:13:34Z",
+    "classifyJobId": 91087334223,
+    "validateTriggerJobId": 91087347736,
+    "observeJobId": 91087362002,
+    "observeJobConclusion": "failure"
+  },
+  "artifact": {
+    "id": 8784691101,
+    "name": "analytics-12a5-twitch-category-source-v2-observation",
+    "sizeBytes": 1979,
+    "digest": "sha256:a4244d7f20021ce799cee7a4beace3ce85117381669ef3833e5fb8b02ef24fa6",
+    "evidenceJsonSha256": "3625aa33c07aab3b8098a44a31a4a23545d283212c372b61296c20683b779391",
+    "expiresAt": "2026-08-30T06:13:31Z"
+  },
+  "preflight": {
+    "latestBucketMinute": "2026-07-31T06:10:00.000Z",
+    "latestCollectedAt": "2026-07-31T06:10:27.809Z",
+    "streamCount": 300,
+    "sourceMode": "real",
+    "categoryContractVersion": "category-source-v1",
+    "payloadProvider": "twitch",
+    "collectorStatus": "ok"
+  },
+  "failure": {
+    "stage": "candidate_deployment",
+    "candidateDeploymentAttempted": true,
+    "candidateDeploymentSucceeded": false,
+    "candidateWorkerActivated": false,
+    "observationStarted": false,
+    "polls": 0,
+    "snapshots": 0,
+    "errorCode": "generated_entry_point_not_found",
+    "error": "Wrangler could not find ../../workers/collector-twitch/.generated-v2-observation/entry.ts because the observe job exported OUTPUT_DIR=artifacts/12a5-twitch-category-source-v2-observation/run into the generator."
+  },
+  "rollback": {
+    "attempted": true,
+    "success": true,
+    "config": "workers/collector-twitch/wrangler.category-permanent.toml",
+    "worker": "viewloom-collector-twitch",
+    "cron": "*/5 * * * *",
+    "versionId": "ccca4cf4-0b0e-42e5-8c47-39d17c05f02a"
+  },
+  "decision": {
+    "observationAccepted": false,
+    "correctedPackageRequired": true,
+    "automaticRerunAuthorized": false,
+    "semanticMappingAuthorized": false,
+    "stabilityClockStartAuthorized": false,
+    "finalModeAuthorized": false,
+    "publicCategoryUiAuthorized": false
+  },
+  "boundaries": {
+    "kickChanged": false,
+    "twitchCadenceChanged": false,
+    "kickCadenceChanged": false,
+    "retentionChanged": false,
+    "backfillPerformed": false,
+    "crossProviderIdentityAllowed": false,
+    "combinedProviderRankingAllowed": false
+  }
+}
