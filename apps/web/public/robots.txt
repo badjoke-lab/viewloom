@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://viewloom.net/sitemap.xml
+Sitemap: https://www.viewloom.net/sitemap.xml
