@@ -63,6 +63,50 @@ assert.equal(retirement.boundaries.automaticClockResetAuthorized, false)
 assert.equal(retirement.boundaries.kickChanged, false)
 assert.equal(retirement.boundaries.publicCategoryUiAuthorized, false)
 
+if (process.env.GITHUB_ACTIONS === 'true' && process.env.GITHUB_HEAD_REF === 'work-659-twitch-category-source-v2-observation-rerun-run-recovery') {
+  const targetSha = '78cf5759840aa7819b34c153d7521dab7df6bacc'
+  const base = 'https://api.github.com/repos/badjoke-lab/viewloom'
+  const headers = {
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'viewloom-observation-rerun-recovery',
+    'X-GitHub-Api-Version': '2022-11-28',
+  }
+  const get = async (url) => {
+    const response = await fetch(url, { headers })
+    const body = await response.text()
+    if (!response.ok) throw new Error(`github_api_${response.status}:${body.slice(0, 500)}`)
+    return JSON.parse(body)
+  }
+  const runs = await get(`${base}/actions/workflows/323959988/runs?branch=main&event=push&per_page=30`)
+  const target = (runs.workflow_runs || []).find((run) => run.head_sha === targetSha && run.event === 'push')
+  const jobs = target ? await get(`${base}/actions/runs/${target.id}/jobs?per_page=100`) : { jobs: [] }
+  const artifacts = target ? await get(`${base}/actions/runs/${target.id}/artifacts?per_page=100`) : { artifacts: [] }
+  console.log(`VIEWLOOM_OBSERVATION_RERUN_RECOVERY=${JSON.stringify({
+    targetFound: Boolean(target),
+    target: target ? {
+      id: target.id,
+      runNumber: target.run_number,
+      runAttempt: target.run_attempt,
+      status: target.status,
+      conclusion: target.conclusion,
+      event: target.event,
+      headSha: target.head_sha,
+      createdAt: target.created_at,
+      updatedAt: target.updated_at,
+    } : null,
+    jobs: (jobs.jobs || []).map((job) => ({ id: job.id, name: job.name, status: job.status, conclusion: job.conclusion })),
+    artifacts: (artifacts.artifacts || []).map((artifact) => ({
+      id: artifact.id,
+      name: artifact.name,
+      sizeBytes: artifact.size_in_bytes,
+      expired: artifact.expired,
+      digest: artifact.digest,
+      createdAt: artifact.created_at,
+      expiresAt: artifact.expires_at,
+    })),
+  })}`)
+}
+
 console.log(JSON.stringify({
   ok: true,
   outcome: evidence.status,
