@@ -37,6 +37,7 @@ on:
       - 'scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs'
       - 'scripts/run-12a5-twitch-category-source-v2-observation.mjs'
       - 'scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs'
+      - 'scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs'
       - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-development-policy.mjs'
@@ -63,6 +64,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - id: observation_trigger
+        name: Detect exact Twitch category-source-v2 observation trigger
+        run: |
+          path='docs/audits/12a5-twitch-category-source-v2-observation-trigger.json'
+          if test -f "$path"; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+          fi
       - name: Verify original checkpoint evidence and retirement
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs
       - name: Verify accepted diagnosis query package
@@ -73,9 +83,23 @@ jobs:
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.mjs
       - name: Verify accepted dormant category source v2 package
         run: node scripts/verify-12a5-twitch-category-source-v2-completeness-package.mjs
-      - name: Verify bounded category source v2 observation execution package
+      - name: Verify bounded category source v2 observation execution package before trigger
+        if: steps.observation_trigger.outputs.present != 'true'
         run: node scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs
-      - name: Verify current category rollout contract
+      - name: Verify current category rollout contract before trigger
+        if: steps.observation_trigger.outputs.present != 'true'
         run: node scripts/verify-category-rollout-policy.mjs
-      - name: Verify current development policy
+      - name: Verify current development policy before trigger
+        if: steps.observation_trigger.outputs.present != 'true'
         run: node scripts/verify-development-policy.mjs
+      - name: Verify exact one-file immediate observation trigger
+        if: steps.observation_trigger.outputs.present == 'true'
+        run: |
+          if test '${{ github.event_name }}' = 'pull_request'; then
+            base='${{ github.event.pull_request.base.sha }}'
+            head='${{ github.event.pull_request.head.sha }}'
+            git fetch --no-tags --depth=1 origin "$base" "$head"
+            changed="$(git diff --name-only "$base" "$head")"
+            test "$changed" = 'docs/audits/12a5-twitch-category-source-v2-observation-trigger.json'
+          fi
+          node scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs
