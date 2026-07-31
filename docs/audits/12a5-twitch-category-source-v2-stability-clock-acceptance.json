@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-source-v2-stability-clock-acceptance-v1",
+  "status": "accepted_on_merge",
+  "phase": "12A-5B-R2",
+  "parentTrackingIssue": 623,
+  "hiddenUiTrackingIssue": 635,
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "acceptancePr": 700,
+  "semanticDecisionPr": 699,
+  "semanticDecisionMergeSha": "ec4792712c24c5e1ed05cfa8a0ba5e600e748b8e",
+  "semanticDecision": "docs/audits/12a5-twitch-category-source-v2-semantic-clock-decision.json",
+  "auditContract": "docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json",
+  "window": {
+    "semantics": "half_open",
+    "startAt": "2026-07-31T17:00:00.000Z",
+    "endExclusiveAt": "2026-08-07T17:00:00.000Z",
+    "timezoneDisplay": "2026-08-01 02:00 JST to 2026-08-08 02:00 JST",
+    "minimumStableDays": 7,
+    "cadenceMinutes": 5,
+    "expectedFinalSlots": 2016,
+    "retroactiveStartAllowed": false,
+    "dataBeforeStartExcluded": true
+  },
+  "activation": {
+    "clockStartsAutomaticallyAtBoundary": true,
+    "manualOperatorActionAtStartRequired": false,
+    "existingTwitchCollectorContinues": true,
+    "newWorkflowAtStartRequired": false,
+    "newCronRequired": false,
+    "checkpointExecutionRequiredAtStart": false,
+    "firstExpectedBucketMinute": "2026-07-31T17:00:00.000Z"
+  },
+  "acceptedSemantics": {
+    "identityScope": "provider_scoped",
+    "identityKey": ["provider", "categoryProviderId"],
+    "bothPresentCreatesReference": true,
+    "incompletePairCreatesReference": false,
+    "syntheticMappingAllowed": false,
+    "nameOnlyIdentityAllowed": false,
+    "crossProviderIdentityAllowed": false,
+    "combinedProviderRankingAllowed": false
+  },
+  "boundaries": {
+    "workerDeploymentPerformed": false,
+    "d1MutationPerformed": false,
+    "bindingOrSecretMutationPerformed": false,
+    "cadenceChanged": false,
+    "newWorkerCronAdded": false,
+    "backfillPerformed": false,
+    "retentionChanged": false,
+    "kickChanged": false,
+    "publicCategoryUiChanged": false,
+    "publicCategoryUiAuthorized": false,
+    "domainChanged": false,
+    "finalModeAuthorizedBeforeEnd": false
+  },
+  "nextGate": "Allow the existing five-minute Twitch collector to accumulate only buckets at or after 2026-07-31T17:00:00.000Z. Run final read-only mode only at or after 2026-08-07T17:00:00.000Z, then freeze and separately accept the evidence. Domain migration and public category UI remain separate later work."
+}
