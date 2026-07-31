@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-trigger-contract-v1",
-  "status": "requires_execution_package_acceptance",
+  "status": "accepted",
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
@@ -13,8 +13,9 @@
   },
   "executionPackageIdentity": {
     "packagePr": 685,
-    "packageMergeSha": null,
-    "acceptancePr": null
+    "packageMergeSha": "0a8f2931524d08dae42dee302df24a30da544949",
+    "acceptancePr": 686,
+    "acceptanceRecord": "docs/audits/12a5-twitch-category-source-v2-observation-execution-package-acceptance.json"
   },
   "trigger": {
     "path": "docs/audits/12a5-twitch-category-source-v2-observation-trigger.json",
@@ -38,5 +39,5 @@
     "finalModeAuthorized": false,
     "publicCategoryUiAuthorized": false
   },
-  "nextGate": "accept the execution package, then arm this contract with accepted package identity"
+  "nextGate": "add exactly one accepted immediate trigger file and merge it to main"
 }

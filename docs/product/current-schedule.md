@@ -8,33 +8,37 @@ Phase 12A-5B-R2 Twitch category source completeness recovery
 Canonical runtime gate viewloom-12a2-current-gate-state-v33
 Diagnosis decision recovery required
 Original stability clock valid no
-Package accepted PR #682 / #684
-Current gate Twitch-only category-source-v2 execution package
-Current branch work-659-twitch-category-source-v2-completeness-execution-package
+Dormant package accepted PR #682 / #684
+Observation execution package accepted PR #685 / #686
+Current gate exact immediate Twitch category-source-v2 observation trigger
+Current branch work-659-twitch-category-source-v2-observation-trigger
 Public Twitch category-filter exposure authorized no
 Twitch cadence */5 * * * * unchanged
 Kick cadence */5 * * * * unchanged
 ```
 
-## Accepted dormant package
+## Accepted observation execution package
 
-- Package/acceptance: PR #682 / #684.
-- Package merge: `2ae91cbf6b07616dcadc60894a832ace089c39fa`.
-- Validation run/job: `30567807300` / `90956596848`.
-- Capacity: 300 items, 150 packed hex characters, 348-byte overhead against comparable v1, accepted maximum 400 bytes.
-- Candidate remains unimported by active collectors and has no production binding.
+- Package/acceptance: PR #685 / #686.
+- Package candidate head / merge: `b0931fa5a22a825f599bb576b4507473f1dc6731` / `0a8f2931524d08dae42dee302df24a30da544949`.
+- Validation run/job: `30570462889` / `90965620950`.
+- Observation: maximum 16 minutes, two consecutive real/non-empty/fresh v2 snapshots.
+- Timeout: 44-minute required maximum inside a 50-minute job.
+- Start: immediate after exact trigger merge; `startAt` and pre-start sleep forbidden.
+- Rollback: canonical v1 deploy required in `finally`.
 
 ## Immediate order
 
-1. Create `work-659-twitch-category-source-v2-completeness-execution-package`.
-2. Add a Twitch-only disabled-by-default integration and preserve v1 as default/rollback.
-3. Define exact trigger, two-consecutive-snapshot evidence, rollback, storage, and provider-separation gates.
-4. Use no production credentials or execution on the execution-package PR.
-5. Accept the execution package separately before an exact trigger.
-6. Keep the new stability clock, final audit, and public UI blocked.
+1. Create `work-659-twitch-category-source-v2-observation-trigger` from current `main`.
+2. Add exactly one accepted trigger file with package PR #685, merge `0a8f2931524d08dae42dee302df24a30da544949`, and acceptance PR #686.
+3. Keep `startAt` absent and merge the one-file PR to begin observation immediately.
+4. Record run/job/artifact/digest and freeze sanitized evidence.
+5. Retire the trigger and temporary execution path separately.
+6. Keep semantic mapping, the new stability clock, final audit, and public UI blocked pending later decisions.
 
 ## Hard stops
 
-- No production execution before a separately accepted execution package and exact trigger.
+- No production observation before the accepted exact one-file trigger is merged.
+- No manual dispatch, schedule, pre-start sleep, or long in-job wait.
 - No checkpoint rerun, backfill, threshold relaxation, synthetic category mapping, or automatic clock reset.
 - No Kick, cadence, retention, cross-provider, final-mode, or public-UI change.
