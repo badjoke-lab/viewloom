@@ -1,0 +1,59 @@
+name: Primary Domain Production Smoke
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/primary-domain-production-smoke.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-production-domain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify apex response and canonical metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          body="$(mktemp)"
+          headers="$(mktemp)"
+          status="$(curl --silent --show-error --max-time 30 --dump-header "$headers" --output "$body" --write-out '%{http_code}' https://viewloom.net/)"
+          test "$status" = "200"
+          grep -Fq '<link rel="canonical" href="https://viewloom.net/"' "$body"
+          grep -Fq 'content="https://viewloom.net/"' "$body"
+
+      - name: Verify www redirect preserves path and query
+        shell: bash
+        run: |
+          set -euo pipefail
+          headers="$(mktemp)"
+          status="$(curl --silent --show-error --max-time 30 --dump-header "$headers" --output /dev/null --write-out '%{http_code}' 'https://www.viewloom.net/twitch/history/?from=domain-smoke')"
+          test "$status" = "301"
+          tr -d '\r' < "$headers" | grep -Fqi 'location: https://viewloom.net/twitch/history/?from=domain-smoke'
+
+      - name: Verify legacy subdomain redirect preserves path and query
+        shell: bash
+        run: |
+          set -euo pipefail
+          headers="$(mktemp)"
+          status="$(curl --silent --show-error --max-time 30 --dump-header "$headers" --output /dev/null --write-out '%{http_code}' 'https://vl.badjoke-lab.com/kick/day-flow/?from=domain-smoke')"
+          test "$status" = "301"
+          tr -d '\r' < "$headers" | grep -Fqi 'location: https://viewloom.net/kick/day-flow/?from=domain-smoke'
+
+      - name: Verify robots and sitemap use the apex origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          robots="$(curl --silent --show-error --fail --max-time 30 https://viewloom.net/robots.txt)"
+          sitemap="$(curl --silent --show-error --fail --max-time 30 https://viewloom.net/sitemap.xml)"
+          grep -Fq 'Sitemap: https://viewloom.net/sitemap.xml' <<< "$robots"
+          grep -Fq '<loc>https://viewloom.net/</loc>' <<< "$sitemap"
+          if grep -Fq 'https://vl.badjoke-lab.com' <<< "$sitemap"; then
+            echo 'Legacy canonical origin remains in sitemap' >&2
+            exit 1
+          fi
