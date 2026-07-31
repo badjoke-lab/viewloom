@@ -63,6 +63,44 @@ assert.equal(retirement.boundaries.automaticClockResetAuthorized, false)
 assert.equal(retirement.boundaries.kickChanged, false)
 assert.equal(retirement.boundaries.publicCategoryUiAuthorized, false)
 
+if (process.env.GITHUB_ACTIONS === 'true' && process.env.GITHUB_HEAD_REF === 'work-659-observation-run-id-recovery') {
+  const targetSha = 'd4a55ac3960dff978dfabd5ee77307477ab5268d'
+  const endpoint = 'https://api.github.com/repos/badjoke-lab/viewloom/actions/workflows/323959988/runs?branch=main&event=push&per_page=20'
+  const response = await fetch(endpoint, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'viewloom-observation-run-id-recovery',
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+  })
+  const body = await response.text()
+  console.log(`VIEWLOOM_OBSERVATION_RUN_API_STATUS=${response.status}`)
+  if (!response.ok) {
+    console.log(`VIEWLOOM_OBSERVATION_RUN_API_BODY=${body.slice(0, 1000)}`)
+  } else {
+    const payload = JSON.parse(body)
+    const runs = Array.isArray(payload.workflow_runs) ? payload.workflow_runs : []
+    const target = runs.find((run) => run.head_sha === targetSha && run.event === 'push')
+    console.log(`VIEWLOOM_OBSERVATION_RUN_RECOVERY=${JSON.stringify({
+      targetFound: Boolean(target),
+      target: target ? {
+        id: target.id,
+        runNumber: target.run_number,
+        runAttempt: target.run_attempt,
+        status: target.status,
+        conclusion: target.conclusion,
+        event: target.event,
+        headSha: target.head_sha,
+        createdAt: target.created_at,
+        updatedAt: target.updated_at,
+        jobsUrl: target.jobs_url,
+        artifactsUrl: target.artifacts_url,
+      } : null,
+      observedRuns: runs.map((run) => ({ id: run.id, runNumber: run.run_number, event: run.event, headSha: run.head_sha, conclusion: run.conclusion })),
+    })}`)
+  }
+}
+
 console.log(JSON.stringify({
   ok: true,
   outcome: evidence.status,
