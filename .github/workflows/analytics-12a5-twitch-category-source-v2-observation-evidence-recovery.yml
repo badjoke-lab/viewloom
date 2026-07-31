@@ -6,8 +6,6 @@ on:
     paths:
       - '.github/workflows/analytics-12a5-twitch-category-source-v2-observation-evidence-recovery.yml'
       - 'docs/audits/12a5-twitch-category-source-v2-observation-evidence-recovery-trigger.json'
-      - '.github/workflows/category-rollout-policy.yml'
-      - '.github/workflows/development-policy.yml'
   push:
     branches: [main]
     paths:
@@ -48,8 +46,6 @@ jobs:
             changed="$(git diff --name-only "$base" "$head" | sort)"
             expected="$(printf '%s\n' \
               '.github/workflows/analytics-12a5-twitch-category-source-v2-observation-evidence-recovery.yml' \
-              '.github/workflows/category-rollout-policy.yml' \
-              '.github/workflows/development-policy.yml' \
               'docs/audits/12a5-twitch-category-source-v2-observation-evidence-recovery-trigger.json' | sort)"
             test "$changed" = "$expected"
           fi
@@ -66,7 +62,7 @@ jobs:
       TARGET_ARTIFACT: analytics-12a5-twitch-category-source-v2-observation
     steps:
       - uses: actions/checkout@v4
-      - name: Discover completed production observation identities
+      - name: Discover production observation run, job, and artifact
         id: discover
         shell: bash
         run: |
@@ -101,7 +97,7 @@ jobs:
           mkdir -p recovered
           gh run download '${{ steps.discover.outputs.run_id }}' --repo "$GITHUB_REPOSITORY" --name "$TARGET_ARTIFACT" --dir recovered
           test -f recovered/evidence.json
-      - name: Build evidence identity report
+      - name: Build sanitized evidence report
         shell: bash
         env:
           RUN_ID: ${{ steps.discover.outputs.run_id }}
@@ -116,59 +112,40 @@ jobs:
           import fs from 'node:fs'
           import crypto from 'node:crypto'
           const raw = fs.readFileSync('recovered/evidence.json', 'utf8')
-          const evidence = JSON.parse(raw)
-          if (evidence.schemaVersion !== 'viewloom-12a5-twitch-category-source-v2-observation-v1') throw new Error('evidence_schema_invalid')
-          if (evidence.trackingIssue !== 659 || evidence.provider !== 'twitch') throw new Error('evidence_identity_invalid')
-          const sha256 = crypto.createHash('sha256').update(raw).digest('hex')
-          const snapshots = Array.isArray(evidence.observation?.snapshots) ? evidence.observation.snapshots : []
-          const rows = snapshots.length === 0
-            ? '- none'
-            : snapshots.map((row) => `- \`${row.bucket_minute}\`: streams=${row.stream_count}, both_present=${row.both_present}, both_empty=${row.both_empty}, provider_id_only=${row.provider_id_only}, category_name_only=${row.category_name_only}, null_refs=${row.null_ref_count}, unresolved=${row.unresolved_category_ids}, bytes=${row.payload_bytes}`).join('\n')
+          const e = JSON.parse(raw)
+          if (e.schemaVersion !== 'viewloom-12a5-twitch-category-source-v2-observation-v1' || e.trackingIssue !== 659 || e.provider !== 'twitch') throw new Error('evidence_identity_invalid')
+          const digest = crypto.createHash('sha256').update(raw).digest('hex')
+          const snapshots = Array.isArray(e.observation?.snapshots) ? e.observation.snapshots : []
+          const rows = snapshots.length ? snapshots.map((r) => `- \`${r.bucket_minute}\`: streams=${r.stream_count}, both_present=${r.both_present}, both_empty=${r.both_empty}, provider_id_only=${r.provider_id_only}, category_name_only=${r.category_name_only}, null_refs=${r.null_ref_count}, unresolved=${r.unresolved_category_ids}, bytes=${r.payload_bytes}`).join('\n') : '- none'
           const report = `<!-- viewloom-12a5-twitch-category-source-v2-observation-evidence-recovered-v1 -->
           ## Twitch category-source-v2 observation evidence recovered
-
-          ### Execution identity
 
           - Workflow run / attempt: \`${process.env.RUN_ID}\` / \`${process.env.RUN_ATTEMPT}\`
           - Workflow conclusion: \`${process.env.RUN_CONCLUSION}\`
           - Observe job / conclusion: \`${process.env.OBSERVE_JOB_ID}\` / \`${process.env.OBSERVE_CONCLUSION}\`
           - Head SHA: \`${process.env.TARGET_SHA}\`
-          - Artifact ID: \`${process.env.ARTIFACT_ID}\`
-          - Artifact name: \`${process.env.TARGET_ARTIFACT}\`
-          - Artifact digest: \`${process.env.ARTIFACT_DIGEST}\`
-          - Evidence JSON SHA-256: \`${sha256}\`
+          - Artifact ID / digest: \`${process.env.ARTIFACT_ID}\` / \`${process.env.ARTIFACT_DIGEST}\`
+          - Evidence JSON SHA-256: \`${digest}\`
+          - Status: \`${e.status}\`
+          - Candidate deployment attempted / success: \`${e.candidateDeployment?.attempted}\` / \`${e.candidateDeployment?.success}\`
+          - Polls: \`${e.observation?.polls}\`
+          - Consecutive snapshot / state integrity / dictionary / provider separation / freshness: \`${e.observation?.consecutiveSnapshotPass}\` / \`${e.observation?.stateIntegrityPass}\` / \`${e.observation?.dictionaryResolutionPass}\` / \`${e.observation?.providerSeparationPass}\` / \`${e.observation?.freshnessPass}\`
+          - Canonical rollback attempted / success: \`${e.rollback?.attempted}\` / \`${e.rollback?.success}\`
+          - Error: \`${e.error ?? 'none'}\`
 
-          ### Sanitized evidence summary
-
-          - Status: \`${evidence.status}\`
-          - Observed at: \`${evidence.observedAt}\`
-          - Candidate deployment attempted / success: \`${evidence.candidateDeployment?.attempted}\` / \`${evidence.candidateDeployment?.success}\`
-          - Polls: \`${evidence.observation?.polls}\`
-          - Consecutive real non-empty snapshot pass: \`${evidence.observation?.consecutiveSnapshotPass}\`
-          - State integrity pass: \`${evidence.observation?.stateIntegrityPass}\`
-          - Dictionary resolution pass: \`${evidence.observation?.dictionaryResolutionPass}\`
-          - Provider separation pass: \`${evidence.observation?.providerSeparationPass}\`
-          - Freshness pass: \`${evidence.observation?.freshnessPass}\`
-          - Canonical rollback attempted / success: \`${evidence.rollback?.attempted}\` / \`${evidence.rollback?.success}\`
-          - Error: \`${evidence.error ?? 'none'}\`
-
-          ### Consecutive snapshot evidence
+          ### Consecutive snapshots
 
           ${rows}
 
           ### Authorization boundary
 
-          - Semantic mapping authorized: \`${evidence.decision?.semanticMappingAuthorized}\`
-          - Stability clock start authorized: \`${evidence.decision?.stabilityClockStartAuthorized}\`
-          - Final mode authorized: \`${evidence.decision?.finalModeAuthorized}\`
-          - Public category UI authorized: \`${evidence.decision?.publicCategoryUiAuthorized}\`
+          - Semantic mapping / new clock / final mode / public category UI: \`${e.decision?.semanticMappingAuthorized}\` / \`${e.decision?.stabilityClockStartAuthorized}\` / \`${e.decision?.finalModeAuthorized}\` / \`${e.decision?.publicCategoryUiAuthorized}\`
 
-          This report only recovers identities and sanitized evidence from the already completed main-push run. It performs no Worker deployment, D1 query or mutation, rollback, cadence change, Kick change, semantic decision, clock start, final-mode transition, or public UI change.
+          This is a read-only recovery of the already completed run. It performs no Worker deployment, D1 access, rollback, cadence or Kick change, semantic decision, clock start, final-mode transition, or public UI change.
           `
           fs.writeFileSync('report.md', report.replace(/^          /gm, ''))
           NODE
-      - name: Report recovered evidence to tracking issue
-        shell: bash
+      - name: Report evidence identities to Issue 659
         run: gh issue comment 659 --repo "$GITHUB_REPOSITORY" --body-file report.md
       - name: Upload recovered evidence and report
         uses: actions/upload-artifact@v4
