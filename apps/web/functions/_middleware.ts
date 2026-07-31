@@ -6,13 +6,23 @@ import { enrichHistoryStreamerDailyStats } from './_history-streamer-daily-stats
 import { enrichKickFeatureResponse } from './_kick-feature-coverage'
 import { enrichTwitchFeatureResponse } from './_twitch-feature-coverage'
 
+const PRIMARY_HOST = 'viewloom.net'
+const REDIRECT_HOSTS = new Set(['www.viewloom.net', 'vl.badjoke-lab.com'])
 const HISTORY_ROUTES = new Set(['/api/history'])
 const KICK_FEATURE_ROUTES = new Set(['/api/kick-heatmap', '/api/kick-day-flow', '/api/kick-battle-lines'])
 const TWITCH_FEATURE_ROUTES = new Set(['/api/twitch-heatmap', '/api/day-flow', '/api/battle-lines', '/api/history'])
 
 export const onRequest: PagesFunction<Env> = async ({ request, next, env }) => {
+  const url = new URL(request.url)
+  if (REDIRECT_HOSTS.has(url.hostname)) {
+    url.protocol = 'https:'
+    url.hostname = PRIMARY_HOST
+    url.port = ''
+    return Response.redirect(url.toString(), 301)
+  }
+
   const response = await next()
-  const pathname = new URL(request.url).pathname.replace(/\/$/, '')
+  const pathname = url.pathname.replace(/\/$/, '')
   if (KICK_FEATURE_ROUTES.has(pathname)) return enrichKickFeatureResponse(env, response)
   if (TWITCH_FEATURE_ROUTES.has(pathname)) {
     const coveredResponse = await enrichTwitchFeatureResponse(env, response)
