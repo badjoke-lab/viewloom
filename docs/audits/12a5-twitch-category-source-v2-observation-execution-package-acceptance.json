@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-execution-package-acceptance-v1",
+  "status": "draft",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "packagePr": 685,
+  "acceptancePr": null
+}
