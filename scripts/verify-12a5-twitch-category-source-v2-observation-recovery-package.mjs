@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'node:fs'
 const files = {
   failure: 'docs/audits/12a5-twitch-category-source-v2-observation-failure-evidence.json',
   recovery: 'docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-contract.json',
+  acceptance: 'docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-acceptance.json',
   trigger: 'docs/audits/12a5-twitch-category-source-v2-observation-trigger.json',
   workflow: '.github/workflows/analytics-12a5-twitch-category-source-v2-observation-execution.yml',
   generator: 'scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs',
@@ -25,6 +26,7 @@ const read = (file) => readFileSync(file, 'utf8')
 const json = (file) => JSON.parse(read(file))
 const failure = json(files.failure)
 const recovery = json(files.recovery)
+const acceptance = json(files.acceptance)
 const workflow = read(files.workflow)
 const generator = read(files.generator)
 const runner = read(files.runner)
@@ -80,17 +82,23 @@ assert.equal(failure.decision.publicCategoryUiAuthorized, false)
 for (const value of Object.values(failure.boundaries)) assert.equal(value, false)
 
 assert.equal(recovery.schemaVersion, 'viewloom-12a5-twitch-category-source-v2-observation-recovery-package-v1')
-assert.equal(recovery.status, 'candidate')
+assert.equal(recovery.status, 'accepted')
 assert.equal(recovery.phase, failure.phase)
 assert.equal(recovery.trackingIssue, failure.trackingIssue)
 assert.equal(recovery.provider, failure.provider)
 assert.equal(recovery.packageIdentity.packagePr, 692)
+assert.equal(recovery.packageIdentity.packageCandidateHeadSha, '7efa0b682d182fced55bc8f96c928daaef58ca24')
+assert.equal(recovery.packageIdentity.packageMergeSha, '19e2d5b44a0088dce046b8e34f028efebf1d7d24')
 assert.equal(recovery.packageIdentity.baseSha, failure.trigger.mergeSha)
+assert.equal(recovery.packageIdentity.acceptancePr, 693)
+assert.equal(recovery.packageIdentity.validationRunId, 30619716971)
+assert.equal(recovery.packageIdentity.validationJobId, 91121126929)
 assert.equal(recovery.packageIdentity.sourceFailureRunId, failure.execution.workflowRunId)
 assert.equal(recovery.packageIdentity.sourceFailureObserveJobId, failure.execution.observeJobId)
 assert.equal(recovery.packageIdentity.sourceFailureArtifactId, failure.artifact.id)
 assert.equal(recovery.packageIdentity.productionExecutionPerformedByPackagePr, false)
 assert.equal(recovery.sourceEvidence, files.failure)
+assert.equal(recovery.acceptanceRecord, files.acceptance)
 assert.equal(recovery.defect.code, 'generator_output_directory_overridden_by_observe_job')
 assert.equal(recovery.defect.generatorDefaultDirectory, 'workers/collector-twitch/.generated-v2-observation')
 assert.equal(recovery.defect.acceptedWranglerEntryPoint, '../../workers/collector-twitch/.generated-v2-observation/entry.ts')
@@ -100,9 +108,16 @@ assert.equal(recovery.correction.generatorDefaultDirectoryPreserved, 'workers/co
 for (const key of ['wranglerConfigChanged', 'generatorChanged', 'candidateSourceChanged', 'canonicalRollbackConfigChanged']) {
   assert.equal(recovery.correction[key], false, `${key}: must remain false`)
 }
-assert.equal(Object.values(recovery.validationRequired).every((value) => value === true), true)
+assert.equal(recovery.validation.conclusion, 'success')
+assert.equal(recovery.validation.workflowRunId, 30619716971)
+assert.equal(recovery.validation.workflowJobId, 91121126929)
+for (const [key, value] of Object.entries(recovery.validation)) {
+  if (['conclusion', 'workflowRunId', 'workflowJobId'].includes(key)) continue
+  assert.equal(value, true, `${key}: validation must pass`)
+}
 assert.equal(recovery.rerunBoundary.packagePrCanExecuteProduction, false)
 assert.equal(recovery.rerunBoundary.acceptancePrRequired, true)
+assert.equal(recovery.rerunBoundary.acceptanceCompleted, true)
 assert.equal(recovery.rerunBoundary.newExactOneFileTriggerRequired, true)
 assert.equal(recovery.rerunBoundary.automaticRerunAuthorized, false)
 assert.equal(recovery.rerunBoundary.startAtAllowed, false)
@@ -113,6 +128,40 @@ assert.equal(recovery.unchangedBoundaries.twitchCron, '*/5 * * * *')
 assert.equal(recovery.unchangedBoundaries.kickCron, '*/5 * * * *')
 for (const key of ['kickChanged', 'retentionChanged', 'backfillAuthorized', 'crossProviderIdentityAllowed', 'combinedProviderRankingAllowed', 'semanticMappingAuthorized', 'stabilityClockStartAuthorized', 'finalModeAuthorized', 'publicCategoryUiAuthorized']) {
   assert.equal(recovery.unchangedBoundaries[key], false, `${key}: must remain false`)
+}
+
+assert.equal(acceptance.schemaVersion, 'viewloom-12a5-twitch-category-source-v2-observation-recovery-package-acceptance-v1')
+assert.equal(acceptance.status, 'accepted')
+assert.equal(acceptance.phase, recovery.phase)
+assert.equal(acceptance.trackingIssue, recovery.trackingIssue)
+assert.equal(acceptance.provider, recovery.provider)
+assert.equal(acceptance.acceptancePr, recovery.packageIdentity.acceptancePr)
+assert.equal(acceptance.packagePr, recovery.packageIdentity.packagePr)
+assert.equal(acceptance.packageCandidateHeadSha, recovery.packageIdentity.packageCandidateHeadSha)
+assert.equal(acceptance.packageMergeSha, recovery.packageIdentity.packageMergeSha)
+assert.equal(acceptance.sourceFailure.workflowRunId, failure.execution.workflowRunId)
+assert.equal(acceptance.sourceFailure.observeJobId, failure.execution.observeJobId)
+assert.equal(acceptance.sourceFailure.artifactId, failure.artifact.id)
+assert.equal(acceptance.sourceFailure.artifactDigest, failure.artifact.digest)
+assert.equal(acceptance.sourceFailure.evidenceJsonSha256, failure.artifact.evidenceJsonSha256)
+assert.equal(acceptance.sourceFailure.candidateActivated, false)
+assert.equal(acceptance.sourceFailure.snapshots, 0)
+assert.equal(acceptance.sourceFailure.canonicalRollbackSucceeded, true)
+assert.equal(acceptance.validation.workflowRunId, recovery.validation.workflowRunId)
+assert.equal(acceptance.validation.workflowJobId, recovery.validation.workflowJobId)
+assert.equal(acceptance.validation.conclusion, 'success')
+for (const [key, value] of Object.entries(acceptance.validation)) {
+  if (['conclusion', 'workflowRunId', 'workflowJobId'].includes(key)) continue
+  assert.equal(value, true, `${key}: acceptance validation must pass`)
+}
+for (const value of Object.values(acceptance.acceptedCorrection)) assert.equal(value, true)
+assert.equal(acceptance.acceptedBoundary.newExactOneFileTriggerRequired, true)
+assert.equal(acceptance.acceptedBoundary.startAtAllowed, false)
+assert.equal(acceptance.acceptedBoundary.preStartSleepAllowed, false)
+assert.equal(acceptance.acceptedBoundary.maximumObservationMinutes, 16)
+assert.equal(acceptance.acceptedBoundary.canonicalRollbackRequired, true)
+for (const key of ['automaticRerunAuthorized', 'semanticMappingAuthorized', 'stabilityClockStartAuthorized', 'finalModeAuthorized', 'publicCategoryUiAuthorized', 'kickChanged', 'cadenceChanged', 'retentionChanged', 'backfillAuthorized']) {
+  assert.equal(acceptance.acceptedBoundary[key], false, `${key}: must remain false`)
 }
 
 assert.ok(generator.includes("const OUTPUT_DIR = process.env.OUTPUT_DIR || 'workers/collector-twitch/.generated-v2-observation'"))
@@ -139,6 +188,9 @@ console.log(JSON.stringify({
   ok: true,
   status: recovery.status,
   packagePr: recovery.packageIdentity.packagePr,
+  acceptancePr: recovery.packageIdentity.acceptancePr,
+  validationRunId: recovery.validation.workflowRunId,
+  validationJobId: recovery.validation.workflowJobId,
   failedRunId: failure.execution.workflowRunId,
   observeJobId: failure.execution.observeJobId,
   artifactId: failure.artifact.id,
