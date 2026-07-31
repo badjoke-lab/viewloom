@@ -5,57 +5,48 @@ Tracking issue: #659
 
 ## Current authority
 
-The original replacement window is invalid and retired. No new stability start or earliest final-audit time is authorized.
+The original replacement window is invalid and retired. Source completeness has now been demonstrated, but no new stability start or earliest final-audit time is authorized yet.
 
-- Diagnosis decision: recovery required.
-- Dormant completeness package accepted in PR #682 / #684.
-- Bounded observation execution package accepted in PR #685 / #686.
-- Execution package merge: `0a8f2931524d08dae42dee302df24a30da544949`.
-- Execution-package validation run/job: `30570462889` / `90965620950`.
+- Corrected observation package: PR #692 / #693.
+- Exact rerun trigger: PR #695.
+- Successful run/job/artifact: `30620512044` / `91123756273` / `8789385200`.
+- Evidence freeze: PR #697.
+- Temporary execution path retirement: PR #698.
 
-## Accepted observation contract
+## Accepted observation evidence
 
-The accepted package:
+The bounded Twitch-only observation produced two consecutive real, non-empty, fresh `category-source-v2-candidate` snapshots:
 
-- generates an exact-source Twitch-only temporary Worker;
-- preserves v1 as the canonical default and rollback path;
-- enables `category-source-v2-candidate` only in the temporary observation config;
-- requires two consecutive real, non-empty, fresh snapshots;
-- polls for at most 16 minutes;
-- requires canonical rollback in `finally`;
-- limits direct D1 statements to `SELECT` / `WITH`;
-- uses a 50-minute job for a statically bounded 44-minute maximum envelope;
-- forbids `startAt`, pre-start sleep, manual dispatch, and schedules.
+- `2026-07-31T09:40:00Z`: 300 streams, 300 `bothPresent`, 84 category IDs, zero incomplete or unresolved states;
+- `2026-07-31T09:45:00Z`: 300 streams, 300 `bothPresent`, 85 category IDs, zero incomplete or unresolved states.
 
-## Current gate: exact immediate Twitch category-source-v2 observation trigger
+State integrity, dictionary resolution, provider separation, freshness, candidate deployment, and canonical v1 rollback all passed. Twitch and Kick remain on separate five-minute collectors.
+
+## Current gate: semantic handling and new stability-clock decision
 
 Current branch:
 
-`work-659-twitch-category-source-v2-observation-trigger`
+`work-659-twitch-category-source-v2-semantic-clock-decision`
 
-The trigger PR must:
+The decision must:
 
-- change exactly `docs/audits/12a5-twitch-category-source-v2-observation-trigger.json`;
-- use schema `viewloom-12a5-twitch-category-source-v2-observation-trigger-v1`;
-- set `status: armed`, `provider: twitch`, `mode: category_source_v2_observation`, `oneTime: true`, and `executeImmediately: true`;
-- use confirmation `RUN_TWITCH_CATEGORY_SOURCE_V2_OBSERVATION`;
-- bind package PR #685, package merge `0a8f2931524d08dae42dee302df24a30da544949`, and acceptance PR #686;
-- contain no `startAt`;
-- perform no production observation on the pull-request event;
-- start observation only after merge to `main`.
+- define how the demonstrated source-state branches are interpreted without synthetic mapping;
+- decide whether semantic handling is accepted;
+- decide whether a new seven-day stability clock is authorized;
+- set an exact start only through explicit acceptance;
+- leave final mode and public category UI unauthorized;
+- preserve Kick separation, cadence, retention, and the unfiltered public fallback.
 
 ## Following gates
 
-1. exact Twitch-only trigger and bounded execution;
-2. two consecutive v2 snapshot evidence;
-3. freeze run/job/artifact/digest and retire the trigger and temporary execution path;
-4. semantic and new-clock decision;
-5. seven stable days from the accepted new start;
-6. final audit and separate public cutover.
+1. semantic and new-clock decision;
+2. seven stable days from the accepted start, if authorized;
+3. final audit;
+4. separate final-mode decision;
+5. separate public cutover.
 
 ## Prohibited responses
 
-- production observation before the accepted exact trigger merge;
-- manual dispatch, schedule, pre-start sleep, or long in-job wait;
-- checkpoint rerun, historical backfill, row invention, threshold relaxation, synthetic category mapping, or automatic clock reset;
+- observation rerun or recreation of the retired temporary execution path without a new governed sequence;
+- historical backfill, row invention, threshold relaxation, synthetic mapping, or automatic clock reset;
 - Kick, cadence, retention, cross-provider, final-mode, or public category-filter change.
