@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-recovery-package-v1",
+  "status": "candidate",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "packageIdentity": {
+    "packagePr": 692,
+    "baseSha": "d4a55ac3960dff978dfabd5ee77307477ab5268d",
+    "sourceFailureRunId": 30608982443,
+    "sourceFailureObserveJobId": 91087362002,
+    "sourceFailureArtifactId": 8784691101,
+    "productionExecutionPerformedByPackagePr": false
+  },
+  "sourceEvidence": "docs/audits/12a5-twitch-category-source-v2-observation-failure-evidence.json",
+  "defect": {
+    "code": "generator_output_directory_overridden_by_observe_job",
+    "workflowFile": ".github/workflows/analytics-12a5-twitch-category-source-v2-observation-execution.yml",
+    "generatorDefaultDirectory": "workers/collector-twitch/.generated-v2-observation",
+    "acceptedWranglerEntryPoint": "../../workers/collector-twitch/.generated-v2-observation/entry.ts",
+    "incorrectObserveJobEnvironment": "OUTPUT_DIR=artifacts/12a5-twitch-category-source-v2-observation/run",
+    "effect": "The child generator inherited the evidence directory and did not create the accepted Wrangler entry point."
+  },
+  "correction": {
+    "removeObserveJobOutputDirEnvironment": true,
+    "runnerDefaultEvidenceDirectoryPreserved": "artifacts/12a5-twitch-category-source-v2-observation/run",
+    "generatorDefaultDirectoryPreserved": "workers/collector-twitch/.generated-v2-observation",
+    "wranglerConfigChanged": false,
+    "generatorChanged": false,
+    "candidateSourceChanged": false,
+    "canonicalRollbackConfigChanged": false
+  },
+  "validationRequired": {
+    "consumedTriggerRetired": true,
+    "productionObservationSkippedOnPullRequest": true,
+    "generatedWorkerCompiled": true,
+    "wranglerDryRunBundled": true,
+    "boundedPackageVerified": true,
+    "collectorTypecheck": true,
+    "webTypecheck": true,
+    "webBuild": true,
+    "publicCategoryControlsAbsent": true
+  },
+  "rerunBoundary": {
+    "packagePrCanExecuteProduction": false,
+    "acceptancePrRequired": true,
+    "newExactOneFileTriggerRequired": true,
+    "automaticRerunAuthorized": false,
+    "startAtAllowed": false,
+    "preStartSleepAllowed": false,
+    "maximumObservationMinutes": 16,
+    "canonicalRollbackRequired": true
+  },
+  "unchangedBoundaries": {
+    "twitchCron": "*/5 * * * *",
+    "kickCron": "*/5 * * * *",
+    "kickChanged": false,
+    "retentionChanged": false,
+    "backfillAuthorized": false,
+    "crossProviderIdentityAllowed": false,
+    "combinedProviderRankingAllowed": false,
+    "semanticMappingAuthorized": false,
+    "stabilityClockStartAuthorized": false,
+    "finalModeAuthorized": false,
+    "publicCategoryUiAuthorized": false
+  },
+  "nextGate": "validate PR #692, merge the corrected package, then create a separate acceptance PR before any exact rerun trigger"
+}
