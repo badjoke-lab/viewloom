@@ -1,38 +1,36 @@
-# 12A-5B-R2 exact Twitch category-source-v2 observation trigger
+# Phase 12A-4 category parallel execution
 
-## Status
+Status: active WIP  
+Tracking issue: #659
 
-- Twitch and Kick permanent category capture remain active on five-minute cadences.
-- Diagnosis decision: recovery required; original stability window retired.
-- Dormant package accepted: PR #682 / #684.
-- Observation execution package accepted: PR #685 / #686.
-- Execution-package validation run/job: `30570462889` / `90965620950`.
-- Current branch: `work-659-twitch-category-source-v2-observation-trigger`.
-- Public Twitch category-filter exposure remains unauthorized.
+## Current position
 
-## Accepted execution package
+- Twitch and Kick permanent category capture are active and provider-separated on the existing five-minute cadences.
+- The original Twitch replacement stability window is invalid and retired.
+- Corrected category-source-v2 observation completed successfully in run `30620512044`.
+- Two consecutive complete Twitch snapshots passed every accepted source-completeness gate.
+- Canonical v1 rollback succeeded.
+- Evidence is frozen in PR #697.
+- The exact trigger and temporary production execution path are retired in PR #698.
 
-- Temporary Worker source is generated from exact active/candidate blobs.
-- Candidate config keeps the canonical Worker name, Twitch D1 binding, category capture, intraday generation, and five-minute cron.
-- Observation requires two consecutive real, non-empty, fresh v2 snapshots within 16 minutes.
-- Canonical v1 rollback runs in `finally`.
-- Job timeout 50 minutes exceeds the 44-minute static maximum envelope.
-- `startAt`, pre-start sleep, manual dispatch, and schedules are forbidden.
+## Current gate
 
-## Current work order
+Semantic handling and new seven-day Twitch stability-clock decision.
 
-1. Add exactly one accepted trigger file.
-2. Bind it to package PR #685, merge `0a8f2931524d08dae42dee302df24a30da544949`, and acceptance PR #686.
-3. Keep `executeImmediately: true` and omit `startAt`.
-4. Merge the exact one-file PR to start the bounded observation.
-5. Freeze evidence and retire the trigger and temporary execution path separately.
-6. Decide semantic handling and the new stability clock separately.
+Current branch:
 
-## Boundaries
+`work-659-twitch-category-source-v2-semantic-clock-decision`
 
-- No production observation before the exact accepted trigger is merged.
-- No Kick import or binding.
-- No checkpoint rerun, backfill, threshold relaxation, synthetic category mapping, or automatic clock reset.
-- No cadence, retention, cross-provider, or final-mode change.
-- No public category UI.
-- Existing unfiltered Heatmap remains the fallback.
+## Decision questions
+
+1. How should `bothPresent`, `bothEmpty`, `providerIdOnly`, and `categoryNameOnly` be interpreted without inventing a cross-provider or synthetic category identity?
+2. Does the demonstrated `bothPresent=300` / zero-incomplete result authorize the accepted semantic path?
+3. Is a new seven-day Twitch stability clock authorized?
+4. What exact start is accepted, if authorization is granted?
+
+## Required boundaries
+
+- No observation rerun, recreated temporary execution path, checkpoint rerun, backfill, threshold relaxation, or automatic clock reset.
+- No Kick, cadence, retention, cross-provider identity, combined ranking, final-mode, or public category UI change.
+- No public category UI; the unfiltered Heatmap remains the fallback.
+- A new clock, final audit, final mode, and public cutover each require separate acceptance.
