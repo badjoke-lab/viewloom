@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-source-v2-semantic-clock-decision-v1",
+  "status": "candidate",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "decisionPr": 699,
+  "governingMainSha": "998326831f46beada768070ac88024697171db47",
+  "evidence": {
+    "successEvidence": "docs/audits/12a5-twitch-category-source-v2-observation-success-evidence.json",
+    "executionPathRetirement": "docs/audits/12a5-twitch-category-source-v2-observation-execution-path-retirement.json",
+    "workflowRunId": 30620512044,
+    "observeJobId": 91123756273,
+    "artifactId": 8789385200,
+    "twoConsecutiveCompleteSnapshots": true,
+    "canonicalRollbackSucceeded": true
+  },
+  "semanticDecision": {
+    "status": "accepted_on_decision_merge",
+    "canonicalProductionContractVersion": "category-source-v1",
+    "diagnosticContractVersion": "category-source-v2-candidate",
+    "identityScope": "provider_scoped",
+    "identityKey": ["provider", "categoryProviderId"],
+    "displayNameSource": "latest_nonempty_name_observed_for_same_provider_and_categoryProviderId",
+    "stateHandling": {
+      "both_present": {
+        "eligibleForCategoryReference": true,
+        "dictionaryWriteAllowed": true,
+        "categoryReference": "provider_scoped_id_reference"
+      },
+      "both_empty": {
+        "eligibleForCategoryReference": false,
+        "dictionaryWriteAllowed": false,
+        "categoryReference": null,
+        "coverageTreatment": "missing_from_source"
+      },
+      "provider_id_only": {
+        "eligibleForCategoryReference": false,
+        "dictionaryWriteAllowed": false,
+        "categoryReference": null,
+        "coverageTreatment": "incomplete_source_pair"
+      },
+      "category_name_only": {
+        "eligibleForCategoryReference": false,
+        "dictionaryWriteAllowed": false,
+        "categoryReference": null,
+        "coverageTreatment": "incomplete_source_pair"
+      }
+    },
+    "syntheticMappingAllowed": false,
+    "nameOnlyIdentityAllowed": false,
+    "crossProviderIdentityAllowed": false,
+    "combinedProviderRankingAllowed": false,
+    "providerIdReuseAcrossProvidersAllowed": true,
+    "thresholdRelaxationAllowed": false,
+    "productionCodeChangeRequired": false,
+    "reason": "The canonical v1 encoder already emits references only when provider ID and name are both present, and the accepted v2 observation demonstrated both_present=300 with zero incomplete states in two consecutive Twitch snapshots."
+  },
+  "clockDecision": {
+    "status": "proposed_for_separate_acceptance",
+    "newClockAuthorizedByThisCandidate": false,
+    "proposedStartAt": "2026-07-31T13:00:00.000Z",
+    "proposedEndExclusiveAt": "2026-08-07T13:00:00.000Z",
+    "timezoneDisplay": "2026-07-31 22:00 JST to 2026-08-07 22:00 JST",
+    "semantics": "half_open",
+    "minimumStableDays": 7,
+    "cadenceMinutes": 5,
+    "expectedSlots": 2016,
+    "retroactiveStartAllowed": false,
+    "decisionAndAcceptanceMustMergeBeforeStart": true,
+    "dataBeforeStartExcluded": true,
+    "automaticResetAllowed": false,
+    "checkpointBeforeEndAuthorizesAcceptance": false,
+    "finalAuditBeforeEndAllowed": false,
+    "separateAcceptancePrRequired": true
+  },
+  "unchangedRuntime": {
+    "twitchConfig": "workers/collector-twitch/wrangler.category-permanent.toml",
+    "kickConfig": "workers/collector-kick/wrangler.category-permanent.toml",
+    "twitchCron": "*/5 * * * *",
+    "kickCron": "*/5 * * * *",
+    "workerDeploymentRequired": false,
+    "d1MutationRequired": false,
+    "bindingChangeRequired": false,
+    "retentionChangeRequired": false,
+    "backfillRequired": false
+  },
+  "stillUnauthorized": {
+    "clockStart": true,
+    "finalAuditAcceptance": true,
+    "finalMode": true,
+    "publicCategoryUi": true,
+    "kickChange": true,
+    "cadenceChange": true,
+    "retentionChange": true,
+    "backfill": true
+  },
+  "nextGate": "validate and merge this semantic decision candidate, then separately accept the exact new clock before 2026-07-31T13:00:00.000Z"
+}
