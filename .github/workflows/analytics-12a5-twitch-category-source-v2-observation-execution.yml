@@ -124,6 +124,7 @@ jobs:
             echo '- Corrected package: `#692`'
             echo '- Generated Worker remains under `workers/collector-twitch/.generated-v2-observation`'
             echo '- Evidence remains under `artifacts/12a5-twitch-category-source-v2-observation/run`'
+            echo '- Production observation skipped on package and acceptance PRs'
             echo '- Production observation skipped on this PR'
             echo '- Separate acceptance and exact trigger remain required'
             echo '- Canonical v1 rollback remains mandatory'
