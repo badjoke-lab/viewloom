@@ -15,9 +15,7 @@ on:
       - 'docs/product/category-capture-permanent-rollout-spec.md'
       - 'docs/product/category-capture-permanent-rollout-plan.md'
       - 'docs/audits/12a2-current-gate-state.json'
-      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-evidence.json'
-      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-retirement.json'
-      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-*.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-*.json'
       - 'docs/audits/12a5-twitch-category-source-v2-*.json'
       - 'docs/audits/12a5-twitch-heatmap-category-filter-hidden-*.json'
       - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
@@ -31,19 +29,17 @@ on:
       - 'scripts/run-12a5-twitch-replacement-seven-day-audit.mjs'
       - 'scripts/test-12a5-twitch-replacement-seven-day-audit.mjs'
       - 'scripts/run-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis.mjs'
-      - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-*.mjs'
+      - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-*.mjs'
       - 'scripts/test-12a5-twitch-category-source-v2-completeness-candidate.mjs'
       - 'scripts/verify-12a5-twitch-category-source-v2-completeness-package.mjs'
       - 'scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs'
       - 'scripts/run-12a5-twitch-category-source-v2-observation.mjs'
-      - 'scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs'
-      - 'scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs'
-      - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs'
+      - 'scripts/verify-12a5-twitch-category-source-v2-observation-*.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-development-policy.mjs'
-      - '.github/workflows/analytics-12a5-twitch-checkpoint-failure-diagnosis-*.yml'
-      - '.github/workflows/analytics-12a5-twitch-category-source-v2-*.yml'
+      - '.github/workflows/analytics-12a5-twitch-*.yml'
       - '.github/workflows/category-rollout-policy.yml'
+      - '.github/workflows/development-policy.yml'
   push:
     branches: [main]
     paths: *category_paths
@@ -64,15 +60,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - id: observation_trigger
-        name: Detect exact Twitch category-source-v2 observation trigger
-        run: |
-          path='docs/audits/12a5-twitch-category-source-v2-observation-trigger.json'
-          if test -f "$path"; then
-            echo 'present=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'present=false' >> "$GITHUB_OUTPUT"
-          fi
       - name: Verify original checkpoint evidence and retirement
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-retirement.mjs
       - name: Verify accepted diagnosis query package
@@ -83,23 +70,11 @@ jobs:
         run: node scripts/verify-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.mjs
       - name: Verify accepted dormant category source v2 package
         run: node scripts/verify-12a5-twitch-category-source-v2-completeness-package.mjs
-      - name: Verify bounded category source v2 observation execution package before trigger
-        if: steps.observation_trigger.outputs.present != 'true'
-        run: node scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs
-      - name: Verify current category rollout contract before trigger
-        if: steps.observation_trigger.outputs.present != 'true'
+      - name: Verify successful category source v2 observation evidence
+        run: node scripts/verify-12a5-twitch-category-source-v2-observation-success-evidence.mjs
+      - name: Verify temporary observation execution path retirement
+        run: node scripts/verify-12a5-twitch-category-source-v2-observation-execution-path-retirement.mjs
+      - name: Verify current category rollout contract
         run: node scripts/verify-category-rollout-policy.mjs
-      - name: Verify current development policy before trigger
-        if: steps.observation_trigger.outputs.present != 'true'
+      - name: Verify current development policy
         run: node scripts/verify-development-policy.mjs
-      - name: Verify exact one-file immediate observation trigger
-        if: steps.observation_trigger.outputs.present == 'true'
-        run: |
-          if test '${{ github.event_name }}' = 'pull_request'; then
-            base='${{ github.event.pull_request.base.sha }}'
-            head='${{ github.event.pull_request.head.sha }}'
-            git fetch --no-tags --depth=1 origin "$base" "$head"
-            changed="$(git diff --name-only "$base" "$head")"
-            test "$changed" = 'docs/audits/12a5-twitch-category-source-v2-observation-trigger.json'
-          fi
-          node scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs
