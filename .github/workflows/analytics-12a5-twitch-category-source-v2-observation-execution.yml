@@ -9,6 +9,8 @@ on:
       - 'docs/audits/12a5-twitch-category-source-v2-observation-execution-package-acceptance.json'
       - 'docs/audits/12a5-twitch-category-source-v2-observation-trigger-contract.json'
       - 'docs/audits/12a5-twitch-category-source-v2-observation-trigger.json'
+      - 'docs/audits/12a5-twitch-category-source-v2-observation-failure-evidence.json'
+      - 'docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-contract.json'
       - 'docs/audits/12a5-twitch-category-source-v2-completeness-package-contract.json'
       - 'docs/audits/12a5-twitch-category-source-v2-completeness-package-acceptance.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json'
@@ -80,7 +82,7 @@ jobs:
         run: pnpm exec tsc --target ES2022 --module ES2022 --moduleResolution Bundler --strict --skipLibCheck --noEmit --types @cloudflare/workers-types workers/collector-twitch/.generated-v2-observation/entry.ts
       - name: Bundle observation worker without deployment
         run: pnpm dlx wrangler@4 deploy --dry-run --outdir artifacts/12a5-twitch-category-source-v2-observation/dry-run --config execution-packages/twitch-category-source-v2-observation/wrangler.toml
-      - name: Verify accepted bounded execution package
+      - name: Verify accepted bounded execution package and recovery correction
         run: node scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs
       - name: Verify accepted dormant candidate package
         run: node scripts/verify-12a5-twitch-category-source-v2-completeness-package.mjs
@@ -111,17 +113,16 @@ jobs:
       - name: Summarize accepted execution boundary
         run: |
           {
-            echo '## Accepted Twitch category-source-v2 observation execution package'
+            echo '## Twitch category-source-v2 observation recovery package'
             echo
-            echo '- Package / acceptance: `#685` / `#686`'
-            echo '- Immediate execution after a later exact trigger: yes'
-            echo '- Pre-start sleep and startAt: forbidden'
-            echo '- Observation polling: maximum 16 minutes'
-            echo '- Job timeout: 50 minutes; static maximum envelope: 44 minutes'
-            echo '- Canonical v1 rollback in finally: required'
-            echo '- Normal collector deploy workflow watches this package: no'
-            echo '- Production observation skipped on package and acceptance PRs'
-            echo '- Next gate: exact one-file immediate trigger'
+            echo '- Original package / acceptance: `#685` / `#686`'
+            echo '- Failed production observation: run `30608982443`'
+            echo '- Corrected package: `#692`'
+            echo '- Generated Worker remains under `workers/collector-twitch/.generated-v2-observation`'
+            echo '- Evidence remains under `artifacts/12a5-twitch-category-source-v2-observation/run`'
+            echo '- Production observation skipped on this PR'
+            echo '- Separate acceptance and exact trigger remain required'
+            echo '- Canonical v1 rollback remains mandatory'
           } >> "$GITHUB_STEP_SUMMARY"
 
   validate-trigger:
@@ -155,7 +156,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 50
     env:
-      OUTPUT_DIR: artifacts/12a5-twitch-category-source-v2-observation/run
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
