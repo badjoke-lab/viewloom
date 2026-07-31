@@ -3,8 +3,8 @@ import { join } from 'node:path'
 
 const root = process.cwd()
 const failures = []
-const primaryOrigin = 'https://viewloom.net'
-const legacyOrigins = ['https://vl.badjoke-lab.com', 'https://www.viewloom.net']
+const primaryOrigin = 'https://www.viewloom.net'
+const legacyOrigins = ['https://vl.badjoke-lab.com', 'https://viewloom.net']
 const check = (value, message) => { if (!value) failures.push(message) }
 const load = (path) => JSON.parse(readFileSync(join(root, path), 'utf8'))
 const exists = (path) => existsSync(join(root, path))
@@ -62,7 +62,7 @@ check(routes.filter((route) => route.profile === 'static_legal').length === 5, '
 
 const vite = readFileSync(join(root, 'apps/web/vite.config.ts'), 'utf8')
 const sitemap = readFileSync(join(root, 'apps/web/public/sitemap.xml'), 'utf8')
-const sitemapRoutes = new Set([...sitemap.matchAll(/<loc>https:\/\/viewloom\.net([^<]*)<\/loc>/g)].map((match) => normalizeRoute(match[1] || '/')))
+const sitemapRoutes = new Set([...sitemap.matchAll(/<loc>https:\/\/www\.viewloom\.net([^<]*)<\/loc>/g)].map((match) => normalizeRoute(match[1] || '/')))
 
 for (const route of routes) {
   check(exists(route.source), `${route.id}: source missing ${route.source}`)
