@@ -8,12 +8,13 @@ Last updated: 2026-07-31
 ```text
 Phase 12A-5B-R2 Twitch category source completeness recovery
 Canonical runtime gate viewloom-12a2-current-gate-state-v33
-Diagnosis decision recovery required
 Original stability clock valid no
-Dormant v2 package accepted PR #682 / #684
-Observation execution package accepted PR #685 / #686
-Current gate exact immediate Twitch category-source-v2 observation trigger
-Current branch work-659-twitch-category-source-v2-observation-trigger
+Corrected observation package accepted PR #692 / #693
+Successful Twitch v2 observation PR #695 / run 30620512044 / job 91123756273
+Evidence frozen PR #697
+Temporary execution path retired PR #698
+Current gate semantic handling and new seven-day stability-clock decision
+Current branch work-659-twitch-category-source-v2-semantic-clock-decision
 Public Twitch category-filter exposure authorized no
 ```
 
@@ -24,38 +25,36 @@ Public Twitch category-filter exposure authorized no
 3. `docs/product/current-schedule.md`
 4. `docs/audits/12a2-current-gate-state.json`
 5. diagnosis decision/evidence/retirement
-6. `docs/audits/12a5-twitch-category-source-v2-completeness-package-contract.json`
-7. `docs/audits/12a5-twitch-category-source-v2-completeness-package-acceptance.json`
-8. `docs/audits/12a5-twitch-category-source-v2-observation-execution-package-contract.json`
-9. `docs/audits/12a5-twitch-category-source-v2-observation-execution-package-acceptance.json`
-10. `docs/audits/12a5-twitch-category-source-v2-observation-trigger-contract.json`
-11. `docs/product/twitch-replacement-seven-day-audit-spec.md`
-12. active WIP and affected feature specification/plan
+6. corrected observation recovery package contract/acceptance
+7. `docs/audits/12a5-twitch-category-source-v2-observation-success-evidence.json`
+8. `docs/audits/12a5-twitch-category-source-v2-observation-evidence-retirement.json`
+9. `docs/audits/12a5-twitch-category-source-v2-observation-execution-path-retirement.json`
+10. `docs/product/twitch-replacement-seven-day-audit-spec.md`
+11. active WIP and affected feature specification/plan
 
-## Accepted observation execution package
+## Accepted observation result
 
-- Package PR / acceptance PR: #685 / #686.
-- Package candidate head / merge: `b0931fa5a22a825f599bb576b4507473f1dc6731` / `0a8f2931524d08dae42dee302df24a30da544949`.
-- Validation run/job: `30570462889` / `90965620950`.
-- The package generates a temporary Twitch-only v2 observation Worker from exact accepted blobs.
-- The trigger executes immediately after merge and forbids `startAt`, pre-start sleep, manual dispatch, and schedules.
-- Observation polling is bounded to 16 minutes and requires two consecutive real, non-empty, fresh v2 snapshots.
-- Canonical v1 rollback runs in `finally`; the 50-minute job timeout exceeds the accepted 44-minute maximum envelope.
-- Package and acceptance PRs performed no production execution and exposed no public category controls.
+- Trigger PR / merge: #695 / `78cf5759840aa7819b34c153d7521dab7df6bacc`.
+- Run / observe job / artifact: `30620512044` / `91123756273` / `8789385200`.
+- Artifact digest: `sha256:dfff17be40f9766c5d4cc4ead6eada761e00ba760b7ce133fce0e9b4f427fc10`.
+- Evidence SHA-256: `e2ceb0ce88dab1f03fd374004488fda9381f223a5dde6d139686c06218ce6bbe`.
+- Two consecutive real, non-empty, fresh v2 snapshots each contained 300 streams and 300 valid category references.
+- All integrity, dictionary, provider-separation, and freshness gates passed.
+- Canonical v1 rollback succeeded at the unchanged five-minute cadence.
+- The trigger and one-time execution workflow, runner, generator, trigger verifier, and Wrangler config are retired.
 
 ## Current order
 
-1. Create `work-659-twitch-category-source-v2-observation-trigger`.
-2. Add exactly `docs/audits/12a5-twitch-category-source-v2-observation-trigger.json` with accepted package identity and no `startAt`.
-3. Merge the exact one-file PR to start the bounded production observation immediately.
-4. Freeze run/job/artifact/digest evidence and retire the trigger and temporary execution path separately.
-5. Decide semantic handling and the new stability clock separately.
+1. Decide semantic handling from frozen evidence without synthetic mapping or threshold relaxation.
+2. Decide whether to authorize a new seven-day Twitch stability clock.
+3. If accepted, freeze an exact start time and collect seven stable days.
+4. Run a separate final audit before any final-mode or public category-filter change.
 
 ## Invariants
 
-- No production observation before the accepted exact one-file trigger is merged.
-- No checkpoint rerun, backfill, threshold relaxation, synthetic category mapping, or automatic clock reset.
-- Twitch/Kick remain separated on the existing five-minute cadences.
+- No observation rerun or automatic clock reset.
+- Twitch/Kick remain separated on existing five-minute cadences.
+- No backfill, retention expansion, cross-provider identity, or combined ranking.
 - Public category controls remain unauthorized.
 - Existing unfiltered Heatmap remains the fallback.
 - Current-main documents and accepted contracts override cached handoffs.
