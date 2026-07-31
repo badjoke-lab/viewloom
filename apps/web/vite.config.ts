@@ -1,6 +1,22 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 
 const GA4_MEASUREMENT_ID = 'G-YHX7HS1VBK'
+const PRIMARY_ORIGIN = 'https://viewloom.net'
+const LEGACY_ORIGINS = ['https://vl.badjoke-lab.com', 'https://www.viewloom.net']
+
+function primaryDomainPlugin(): Plugin {
+  return {
+    name: 'viewloom-primary-domain',
+    enforce: 'pre',
+    transformIndexHtml(html) {
+      let normalized = html
+      for (const legacyOrigin of LEGACY_ORIGINS) {
+        normalized = normalized.replaceAll(legacyOrigin, PRIMARY_ORIGIN)
+      }
+      return normalized
+    },
+  }
+}
 
 function googleSiteVerificationPlugin(mode: string): Plugin {
   const env = loadEnv(mode, process.cwd(), '')
@@ -44,7 +60,7 @@ function escapeHtmlAttribute(value: string): string {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [googleSiteVerificationPlugin(mode), googleTagPlugin()],
+  plugins: [primaryDomainPlugin(), googleSiteVerificationPlugin(mode), googleTagPlugin()],
   server: {
     port: 4173,
   },
