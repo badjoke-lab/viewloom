@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-routes-v1",
-  "version": 2,
+  "version": 3,
   "group": "portal",
   "routes": [
     {
@@ -10,7 +10,7 @@
       "profile": "portal",
       "source": "apps/web/index.html",
       "title": "ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts",
-      "canonical": "https://vl.badjoke-lab.com/",
+      "canonical": "https://viewloom.net/",
       "robots": "index,follow",
       "sitemap": true,
       "apis": [
@@ -25,7 +25,7 @@
       "profile": "static_content",
       "source": "apps/web/about/index.html",
       "title": "About — ViewLoom",
-      "canonical": "https://vl.badjoke-lab.com/about/",
+      "canonical": "https://viewloom.net/about/",
       "robots": "index,follow",
       "sitemap": true,
       "apis": []
@@ -37,7 +37,7 @@
       "profile": "static_content",
       "source": "apps/web/support/index.html",
       "title": "Support — ViewLoom",
-      "canonical": "https://vl.badjoke-lab.com/support/",
+      "canonical": "https://viewloom.net/support/",
       "robots": "index,follow",
       "sitemap": true,
       "apis": []
@@ -49,7 +49,7 @@
       "profile": "changelog",
       "source": "apps/web/changelog/index.html",
       "title": "Changelog — ViewLoom",
-      "canonical": "https://vl.badjoke-lab.com/changelog/",
+      "canonical": "https://viewloom.net/changelog/",
       "robots": "index,follow",
       "sitemap": true,
       "apis": [{ "path": "/data/changelog.json", "binding": "static" }]
@@ -61,7 +61,7 @@
       "profile": "static_legal",
       "source": "apps/web/contact/index.html",
       "title": "Contact — ViewLoom",
-      "canonical": "https://vl.badjoke-lab.com/contact/",
+      "canonical": "https://viewloom.net/contact/",
       "robots": "index,follow",
       "sitemap": true,
       "apis": []
@@ -73,7 +73,7 @@
       "profile": "static_legal",
       "source": "apps/web/terms/index.html",
       "title": "Terms — ViewLoom",
-      "canonical": "https://vl.badjoke-lab.com/terms/",
+      "canonical": "https://viewloom.net/terms/",
       "robots": "index,follow",
       "sitemap": true,
       "apis": []
@@ -85,7 +85,7 @@
       "profile": "static_legal",
       "source": "apps/web/privacy/index.html",
       "title": "Privacy — ViewLoom",
-      "canonical": "https://vl.badjoke-lab.com/privacy/",
+      "canonical": "https://viewloom.net/privacy/",
       "robots": "index,follow",
       "sitemap": true,
       "apis": []
@@ -97,7 +97,7 @@
       "profile": "static_legal",
       "source": "apps/web/refund-policy/index.html",
       "title": "Refund Policy — ViewLoom",
-      "canonical": "https://vl.badjoke-lab.com/refund-policy/",
+      "canonical": "https://viewloom.net/refund-policy/",
       "robots": "index,follow",
       "sitemap": true,
       "apis": []
@@ -109,7 +109,7 @@
       "profile": "static_legal",
       "source": "apps/web/commercial-disclosure/index.html",
       "title": "Commercial Disclosure — ViewLoom",
-      "canonical": "https://vl.badjoke-lab.com/commercial-disclosure/",
+      "canonical": "https://viewloom.net/commercial-disclosure/",
       "robots": "index,follow",
       "sitemap": true,
       "apis": []
