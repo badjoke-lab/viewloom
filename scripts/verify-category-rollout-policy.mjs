@@ -3,41 +3,38 @@ import { existsSync, readFileSync } from 'node:fs'
 
 const read = (path) => readFileSync(path, 'utf8')
 const json = (path) => JSON.parse(read(path))
-const paths = {
+const required = {
   gate: 'docs/audits/12a2-current-gate-state.json',
-  evidence: 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-evidence.json',
-  retirement: 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-retirement.json',
-  decision: 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json',
-  packageContract: 'docs/audits/12a5-twitch-category-source-v2-completeness-package-contract.json',
-  packageAcceptance: 'docs/audits/12a5-twitch-category-source-v2-completeness-package-acceptance.json',
-  observationContract: 'docs/audits/12a5-twitch-category-source-v2-observation-execution-package-contract.json',
-  observationAcceptance: 'docs/audits/12a5-twitch-category-source-v2-observation-execution-package-acceptance.json',
-  triggerContract: 'docs/audits/12a5-twitch-category-source-v2-observation-trigger-contract.json',
+  diagnosisDecision: 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json',
+  dormantContract: 'docs/audits/12a5-twitch-category-source-v2-completeness-package-contract.json',
+  recoveryContract: 'docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-contract.json',
+  recoveryAcceptance: 'docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-acceptance.json',
+  successEvidence: 'docs/audits/12a5-twitch-category-source-v2-observation-success-evidence.json',
+  evidenceRetirement: 'docs/audits/12a5-twitch-category-source-v2-observation-evidence-retirement.json',
+  executionRetirement: 'docs/audits/12a5-twitch-category-source-v2-observation-execution-path-retirement.json',
+  successVerifier: 'scripts/verify-12a5-twitch-category-source-v2-observation-success-evidence.mjs',
+  retirementVerifier: 'scripts/verify-12a5-twitch-category-source-v2-observation-execution-path-retirement.mjs',
 }
-for (const path of [...Object.values(paths),
-  'scripts/verify-12a5-twitch-category-source-v2-completeness-package.mjs',
-  'scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs',
-  'workers/collector-twitch/wrangler.toml',
-  'workers/collector-twitch/wrangler.category-permanent.toml',
-  'workers/collector-kick/wrangler.toml',
-  'workers/collector-kick/wrangler.category-permanent.toml',
-]) assert.equal(existsSync(path), true, `${path}: missing`)
-for (const path of [
-  'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-trigger.json',
-  '.github/workflows/analytics-12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-execution.yml',
-  '.github/workflows/analytics-12a5-twitch-checkpoint-failure-diagnosis-reporter.yml',
-  'docs/audits/12a5-twitch-category-source-v2-observation-trigger.json',
-]) assert.equal(existsSync(path), false, `${path}: retired or not-yet-authorized path present`)
+for (const path of Object.values(required)) assert.equal(existsSync(path), true, `${path}: missing`)
 
-const gate = json(paths.gate)
-const evidence = json(paths.evidence)
-const retirement = json(paths.retirement)
-const decision = json(paths.decision)
-const packageContract = json(paths.packageContract)
-const packageAcceptance = json(paths.packageAcceptance)
-const observationContract = json(paths.observationContract)
-const observationAcceptance = json(paths.observationAcceptance)
-const triggerContract = json(paths.triggerContract)
+const forbidden = [
+  'docs/audits/12a5-twitch-category-source-v2-observation-trigger.json',
+  '.github/workflows/analytics-12a5-twitch-category-source-v2-observation-execution.yml',
+  'scripts/run-12a5-twitch-category-source-v2-observation.mjs',
+  'scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs',
+  'scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs',
+  'execution-packages/twitch-category-source-v2-observation/wrangler.toml',
+]
+for (const path of forbidden) assert.equal(existsSync(path), false, `${path}: retired execution path present`)
+
+const gate = json(required.gate)
+const diagnosis = json(required.diagnosisDecision)
+const dormant = json(required.dormantContract)
+const recovery = json(required.recoveryContract)
+const acceptance = json(required.recoveryAcceptance)
+const evidence = json(required.successEvidence)
+const evidenceRetirement = json(required.evidenceRetirement)
+const executionRetirement = json(required.executionRetirement)
 
 assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v33')
 assert.equal(gate.currentWorkstream.twitchPermanentCaptureActive, true)
@@ -49,59 +46,38 @@ assert.equal(gate.categoryCapture.backfillAuthorized, false)
 assert.equal(gate.categoryCapture.retentionExpansionAuthorized, false)
 assert.equal(gate.categoryCapture.crossProviderIdentityAllowed, false)
 assert.equal(gate.categoryCapture.combinedProviderRankingAllowed, false)
-
-assert.equal(evidence.status, 'diagnosis_complete')
-assert.equal(evidence.categoryReferenceDiagnosis.checkpoint.coverageRatio, 0.994524)
-assert.equal(evidence.categoryReferenceDiagnosis.postCheckpoint.coverageRatio, 0.994236)
-assert.equal(retirement.status, 'retired_on_merge')
-assert.equal(decision.status, 'recovery_required')
-assert.equal(decision.decision.originalReplacementWindowValid, false)
-assert.equal(decision.decision.recoveryRequired, true)
-assert.equal(decision.decision.publicCutoverAuthorized, false)
-assert.equal(decision.clockRule.oldWindowRetired, true)
-assert.equal(decision.clockRule.newStartAt, null)
-
-assert.equal(packageContract.status, 'accepted')
-assert.equal(packageContract.packageIdentity.packagePr, 682)
-assert.equal(packageContract.packageIdentity.acceptancePr, 684)
-assert.equal(packageContract.packageIdentity.packageMergeSha, '2ae91cbf6b07616dcadc60894a832ace089c39fa')
-assert.equal(packageAcceptance.status, 'accepted')
-assert.equal(packageAcceptance.validation.conclusion, 'success')
-assert.equal(packageAcceptance.acceptedCapabilities.productionActivationAccepted, false)
-
-assert.equal(observationContract.status, 'accepted')
-assert.equal(observationContract.packageIdentity.packagePr, 685)
-assert.equal(observationContract.packageIdentity.packageMergeSha, '0a8f2931524d08dae42dee302df24a30da544949')
-assert.equal(observationContract.packageIdentity.acceptancePr, 686)
-assert.equal(observationContract.packageIdentity.validationRunId, 30570462889)
-assert.equal(observationContract.packageIdentity.validationJobId, 90965620950)
-assert.equal(observationContract.packageIdentity.productionExecutionPerformed, false)
-assert.equal(observationContract.startBoundary.startAtFieldAllowed, false)
-assert.equal(observationContract.startBoundary.preStartSleepAllowed, false)
-assert.equal(observationContract.timeoutEnvelopeMinutes.requiredMaximum, 44)
-assert.equal(observationContract.timeoutEnvelopeMinutes.jobTimeout, 50)
-assert.ok(observationContract.timeoutEnvelopeMinutes.jobTimeout > observationContract.timeoutEnvelopeMinutes.requiredMaximum)
-assert.equal(observationAcceptance.status, 'accepted')
-assert.equal(observationAcceptance.packagePr, 685)
-assert.equal(observationAcceptance.acceptancePr, 686)
-assert.equal(observationAcceptance.validation.conclusion, 'success')
-for (const value of Object.values(observationAcceptance.boundaries)) assert.equal(value, false)
-assert.equal(triggerContract.status, 'accepted')
-assert.equal(triggerContract.executionPackageIdentity.packagePr, 685)
-assert.equal(triggerContract.executionPackageIdentity.packageMergeSha, '0a8f2931524d08dae42dee302df24a30da544949')
-assert.equal(triggerContract.executionPackageIdentity.acceptancePr, 686)
-assert.equal(triggerContract.trigger.executeImmediately, true)
-assert.equal(triggerContract.trigger.startAtAllowed, false)
-assert.equal(triggerContract.trigger.exactOneFilePrRequired, true)
+assert.equal(diagnosis.status, 'recovery_required')
+assert.equal(diagnosis.clockRule.oldWindowRetired, true)
+assert.equal(diagnosis.clockRule.newStartAt, null)
+assert.equal(dormant.status, 'accepted')
+assert.equal(recovery.status, 'accepted')
+assert.equal(recovery.packageIdentity.packagePr, 692)
+assert.equal(recovery.packageIdentity.acceptancePr, 693)
+assert.equal(acceptance.status, 'accepted')
+assert.equal(acceptance.validation.conclusion, 'success')
+assert.equal(evidence.status, 'observation_accepted')
+assert.equal(evidence.execution.workflowRunId, 30620512044)
+assert.equal(evidence.execution.observeJobId, 91123756273)
+assert.equal(evidence.artifact.id, 8789385200)
+assert.equal(evidence.observation.snapshots.length, 2)
+for (const gateName of ['consecutiveSnapshotPass', 'stateIntegrityPass', 'dictionaryResolutionPass', 'providerSeparationPass', 'freshnessPass']) {
+  assert.equal(evidence.observation[gateName], true, `${gateName}: must pass`)
+}
+assert.equal(evidence.rollback.success, true)
+assert.equal(evidenceRetirement.status, 'evidence_frozen_execution_path_retired')
+assert.equal(evidenceRetirement.retirement.temporaryExecutionPathRetirementPending, false)
+assert.equal(executionRetirement.status, 'retired_on_merge')
+assert.equal(executionRetirement.retirementPr, 698)
+for (const value of Object.values(executionRetirement.authorization)) assert.equal(value, false)
 
 for (const [path, fragments] of Object.entries({
-  'AGENTS.md': ['Observation execution package accepted: PR #685 / #686', 'work-659-twitch-category-source-v2-observation-trigger'],
-  'CONTRIBUTING.md': ['Observation execution package accepted PR #685 / #686', 'Current gate exact immediate Twitch category-source-v2 observation trigger'],
-  'docs/README.md': ['Observation execution package accepted PR #685 / #686', 'Current gate exact immediate Twitch category-source-v2 observation trigger'],
-  'docs/product/current-roadmap.md': ['### Current gate: exact immediate Twitch category-source-v2 observation trigger', 'work-659-twitch-category-source-v2-observation-trigger'],
-  'docs/product/current-schedule.md': ['Current gate exact immediate Twitch category-source-v2 observation trigger', 'Observation execution package accepted PR #685 / #686'],
-  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: exact immediate Twitch category-source-v2 observation trigger', 'acceptance PR #686'],
-  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['exact Twitch category-source-v2 observation trigger', 'Observation execution package accepted: PR #685 / #686'],
+  'AGENTS.md': ['Temporary observation execution path retired: PR #698', 'Current gate: semantic handling and new seven-day stability-clock decision'],
+  'CONTRIBUTING.md': ['Temporary execution path retired PR #698', 'Current gate semantic handling and new seven-day stability-clock decision'],
+  'docs/README.md': ['Temporary execution path retired PR #698', 'Current gate semantic handling and new seven-day stability-clock decision'],
+  'docs/product/current-roadmap.md': ['### Current gate: semantic handling and new seven-day stability-clock decision', 'work-659-twitch-category-source-v2-semantic-clock-decision'],
+  'docs/product/current-schedule.md': ['Current gate semantic handling and new seven-day stability-clock decision', 'Successful Twitch v2 observation run 30620512044'],
+  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: semantic handling and new stability-clock decision', 'Temporary execution path retirement: PR #698'],
+  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['Semantic handling and new seven-day Twitch stability-clock decision', 'temporary production execution path are retired in PR #698'],
 })) {
   const source = read(path)
   for (const fragment of fragments) assert.ok(source.includes(fragment), `${path} missing: ${fragment}`)
@@ -125,9 +101,10 @@ assert.equal(kickPermanent.includes('CATEGORY_SOURCE_V2'), false)
 
 console.log(JSON.stringify({
   ok: true,
-  observationPackageStatus: observationContract.status,
-  packagePr: observationContract.packageIdentity.packagePr,
-  acceptancePr: observationContract.packageIdentity.acceptancePr,
-  nextBranch: 'work-659-twitch-category-source-v2-observation-trigger',
+  observationStatus: evidence.status,
+  executionPathStatus: executionRetirement.status,
+  nextBranch: 'work-659-twitch-category-source-v2-semantic-clock-decision',
+  semanticMappingAuthorized: false,
+  stabilityClockStartAuthorized: false,
   publicTwitchFilterAuthorized: false,
 }, null, 2))
