@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-rerun-trigger-contract-v1",
+  "status": "accepted",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "sourceFailure": {
+    "workflowRunId": 30608982443,
+    "observeJobId": 91087362002,
+    "artifactId": 8784691101,
+    "candidateActivated": false,
+    "canonicalRollbackSucceeded": true
+  },
+  "correctedPackageIdentity": {
+    "packagePr": 692,
+    "packageCandidateHeadSha": "7efa0b682d182fced55bc8f96c928daaef58ca24",
+    "packageMergeSha": "19e2d5b44a0088dce046b8e34f028efebf1d7d24",
+    "acceptancePr": 693,
+    "acceptanceMergeSha": "e2091765dc4d6350da1ca5d8484e559d3bba1cd6",
+    "validationRunId": 30619716971,
+    "validationJobId": 91121126929
+  },
+  "trigger": {
+    "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-trigger-v1",
+    "status": "armed",
+    "confirmation": "RERUN_TWITCH_CATEGORY_SOURCE_V2_OBSERVATION_AFTER_RECOVERY",
+    "executeImmediately": true,
+    "startAtAllowed": false,
+    "exactOneFilePrRequired": true,
+    "packagePr": 692,
+    "packageMergeSha": "19e2d5b44a0088dce046b8e34f028efebf1d7d24",
+    "acceptancePr": 693
+  },
+  "executionBoundary": {
+    "provider": "twitch",
+    "maximumObservationMinutes": 16,
+    "jobTimeoutMinutes": 50,
+    "canonicalRollbackRequired": true,
+    "directD1Statements": ["SELECT", "WITH"],
+    "newCronAllowed": false,
+    "kickChangeAllowed": false,
+    "retentionChangeAllowed": false,
+    "backfillAllowed": false,
+    "semanticMappingAllowed": false,
+    "stabilityClockStartAllowed": false,
+    "finalModeAllowed": false,
+    "publicCategoryUiAllowed": false
+  },
+  "nextGate": "create and merge one exact trigger file bound to corrected package PR #692 and acceptance PR #693"
+}
