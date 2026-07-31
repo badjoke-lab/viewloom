@@ -1,0 +1,66 @@
+name: Primary Domain Live One Shot
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/primary-domain-live-one-shot.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-live-domain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify live host routing and canonical metadata
+        shell: bash
+        run: |
+          set -uo pipefail
+          failures=0
+
+          probe() {
+            local label="$1" url="$2" body="$3" headers="$4"
+            local status
+            status="$(curl --silent --show-error --max-time 30 --dump-header "$headers" --output "$body" --write-out '%{http_code}' "$url")" || status="curl-error"
+            echo "===== ${label} ====="
+            echo "URL: ${url}"
+            echo "STATUS: ${status}"
+            tr -d '\r' < "$headers" | sed -n '1,20p'
+            echo 'BODY PREFIX:'
+            head -c 800 "$body" || true
+            echo
+            printf '%s' "$status"
+          }
+
+          www_body="$(mktemp)"; www_headers="$(mktemp)"
+          www_status="$(probe www https://www.viewloom.net/ "$www_body" "$www_headers" | tee /dev/stderr | tail -n 1)"
+          [[ "$www_status" == '200' ]] || { echo "WWW_STATUS_MISMATCH=${www_status}" >&2; failures=$((failures+1)); }
+          grep -Fq 'https://www.viewloom.net/' "$www_body" || { echo 'WWW_CANONICAL_MISSING' >&2; failures=$((failures+1)); }
+          ! grep -Fq 'https://vl.badjoke-lab.com' "$www_body" || { echo 'WWW_LEGACY_ORIGIN_PRESENT' >&2; failures=$((failures+1)); }
+
+          apex_body="$(mktemp)"; apex_headers="$(mktemp)"
+          apex_status="$(probe apex https://viewloom.net/ "$apex_body" "$apex_headers" | tee /dev/stderr | tail -n 1)"
+          apex_location="$(tr -d '\r' < "$apex_headers" | awk 'BEGIN{IGNORECASE=1} /^location:/{sub(/^location:[[:space:]]*/, ""); print; exit}')"
+          [[ "$apex_status" == '301' ]] || { echo "APEX_STATUS_MISMATCH=${apex_status}" >&2; failures=$((failures+1)); }
+          [[ "$apex_location" == 'https://www.viewloom.net' || "$apex_location" == 'https://www.viewloom.net/' ]] || { echo "APEX_LOCATION_MISMATCH=${apex_location}" >&2; failures=$((failures+1)); }
+
+          legacy_body="$(mktemp)"; legacy_headers="$(mktemp)"
+          legacy_status="$(probe legacy 'https://vl.badjoke-lab.com/kick/day-flow/?from=live-smoke' "$legacy_body" "$legacy_headers" | tee /dev/stderr | tail -n 1)"
+          legacy_location="$(tr -d '\r' < "$legacy_headers" | awk 'BEGIN{IGNORECASE=1} /^location:/{sub(/^location:[[:space:]]*/, ""); print; exit}')"
+          [[ "$legacy_status" == '301' ]] || { echo "LEGACY_STATUS_MISMATCH=${legacy_status}" >&2; failures=$((failures+1)); }
+          [[ "$legacy_location" == 'https://www.viewloom.net/kick/day-flow/?from=live-smoke' ]] || { echo "LEGACY_LOCATION_MISMATCH=${legacy_location}" >&2; failures=$((failures+1)); }
+
+          robots_body="$(mktemp)"; robots_headers="$(mktemp)"
+          robots_status="$(probe robots https://www.viewloom.net/robots.txt "$robots_body" "$robots_headers" | tee /dev/stderr | tail -n 1)"
+          [[ "$robots_status" == '200' ]] || { echo "ROBOTS_STATUS_MISMATCH=${robots_status}" >&2; failures=$((failures+1)); }
+          grep -Fq 'Sitemap: https://www.viewloom.net/sitemap.xml' "$robots_body" || { echo 'ROBOTS_SITEMAP_MISMATCH' >&2; failures=$((failures+1)); }
+
+          sitemap_body="$(mktemp)"; sitemap_headers="$(mktemp)"
+          sitemap_status="$(probe sitemap https://www.viewloom.net/sitemap.xml "$sitemap_body" "$sitemap_headers" | tee /dev/stderr | tail -n 1)"
+          [[ "$sitemap_status" == '200' ]] || { echo "SITEMAP_STATUS_MISMATCH=${sitemap_status}" >&2; failures=$((failures+1)); }
+          grep -Fq '<loc>https://www.viewloom.net/</loc>' "$sitemap_body" || { echo 'SITEMAP_PRIMARY_MISSING' >&2; failures=$((failures+1)); }
+          ! grep -Fq 'https://vl.badjoke-lab.com' "$sitemap_body" || { echo 'SITEMAP_LEGACY_ORIGIN_PRESENT' >&2; failures=$((failures+1)); }
+
+          echo "FAILURES=${failures}"
+          test "$failures" -eq 0
