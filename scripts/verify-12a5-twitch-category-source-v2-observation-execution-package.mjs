@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 
 const files = {
   contract: 'docs/audits/12a5-twitch-category-source-v2-observation-execution-package-contract.json',
+  acceptance: 'docs/audits/12a5-twitch-category-source-v2-observation-execution-package-acceptance.json',
   triggerContract: 'docs/audits/12a5-twitch-category-source-v2-observation-trigger-contract.json',
   trigger: 'docs/audits/12a5-twitch-category-source-v2-observation-trigger.json',
   acceptedPackage: 'docs/audits/12a5-twitch-category-source-v2-completeness-package-contract.json',
@@ -21,11 +22,12 @@ for (const [key, file] of Object.entries(files)) {
   if (key === 'trigger') continue
   assert.equal(existsSync(file), true, `${file}: missing`)
 }
-assert.equal(existsSync(files.trigger), false, `${files.trigger}: exact trigger must be absent on package PR`)
+assert.equal(existsSync(files.trigger), false, `${files.trigger}: exact trigger must remain absent before the trigger PR`)
 
 const read = (file) => readFileSync(file, 'utf8')
 const json = (file) => JSON.parse(read(file))
 const contract = json(files.contract)
+const acceptance = json(files.acceptance)
 const triggerContract = json(files.triggerContract)
 const acceptedPackage = json(files.acceptedPackage)
 const acceptedAcceptance = json(files.acceptedPackageAcceptance)
@@ -38,12 +40,18 @@ const workflow = read(files.workflow)
 const normalDeployWorkflow = read(files.normalDeployWorkflow)
 
 assert.equal(contract.schemaVersion, 'viewloom-12a5-twitch-category-source-v2-observation-execution-package-v1')
-assert.equal(contract.status, 'candidate_ready_for_validation')
+assert.equal(contract.status, 'accepted')
 assert.equal(contract.phase, '12A-5B-R2')
 assert.equal(contract.trackingIssue, 659)
 assert.equal(contract.provider, 'twitch')
 assert.equal(contract.packageIdentity.packagePr, 685)
+assert.equal(contract.packageIdentity.packageCandidateHeadSha, 'b0931fa5a22a825f599bb576b4507473f1dc6731')
+assert.equal(contract.packageIdentity.packageMergeSha, '0a8f2931524d08dae42dee302df24a30da544949')
+assert.equal(contract.packageIdentity.acceptancePr, 686)
+assert.equal(contract.packageIdentity.validationRunId, 30570462889)
+assert.equal(contract.packageIdentity.validationJobId, 90965620950)
 assert.equal(contract.packageIdentity.productionExecutionPerformed, false)
+assert.equal(contract.acceptanceRecord, files.acceptance)
 assert.equal(contract.governingMainSha, '03426af2e678400baa04848d745768ccfbded738')
 assert.equal(contract.acceptedCandidate.packagePr, 682)
 assert.equal(contract.acceptedCandidate.packageMergeSha, '2ae91cbf6b07616dcadc60894a832ace089c39fa')
@@ -53,6 +61,43 @@ assert.equal(acceptedPackage.packageIdentity.packagePr, contract.acceptedCandida
 assert.equal(acceptedPackage.packageIdentity.acceptancePr, contract.acceptedCandidate.acceptancePr)
 assert.equal(acceptedAcceptance.status, 'accepted')
 assert.equal(decision.status, 'recovery_required')
+
+assert.equal(acceptance.schemaVersion, 'viewloom-12a5-twitch-category-source-v2-observation-execution-package-acceptance-v1')
+assert.equal(acceptance.status, 'accepted')
+assert.equal(acceptance.phase, contract.phase)
+assert.equal(acceptance.trackingIssue, contract.trackingIssue)
+assert.equal(acceptance.provider, contract.provider)
+assert.equal(acceptance.acceptancePr, contract.packageIdentity.acceptancePr)
+assert.equal(acceptance.packagePr, contract.packageIdentity.packagePr)
+assert.equal(acceptance.packageCandidateHeadSha, contract.packageIdentity.packageCandidateHeadSha)
+assert.equal(acceptance.packageMergeSha, contract.packageIdentity.packageMergeSha)
+assert.equal(acceptance.validation.workflowRunId, contract.packageIdentity.validationRunId)
+assert.equal(acceptance.validation.workflowJobId, contract.packageIdentity.validationJobId)
+assert.equal(acceptance.validation.conclusion, 'success')
+for (const key of [
+  'exactTriggerAbsent', 'executionScriptsParsed', 'generatedWorkerCompiled',
+  'wranglerDryRunBundled', 'boundedPackageVerified', 'acceptedDormantPackageVerified',
+  'recoveryDecisionVerified', 'categoryRolloutPolicyVerified', 'developmentPolicyVerified',
+  'collectorTypecheck', 'webTypecheck', 'webBuild', 'publicCategoryControlsAbsent',
+  'productionObservationSkippedOnPullRequest',
+]) assert.equal(acceptance.validation[key], true, `validation ${key} must pass`)
+assert.equal(acceptance.acceptedCapabilities.boundedTwitchObservationPackage, true)
+assert.equal(acceptance.acceptedCapabilities.immediateExactTriggerRequired, true)
+assert.equal(acceptance.acceptedCapabilities.startAtForbidden, true)
+assert.equal(acceptance.acceptedCapabilities.preStartSleepForbidden, true)
+assert.equal(acceptance.acceptedCapabilities.twoConsecutiveSnapshotsRequired, true)
+assert.equal(acceptance.acceptedCapabilities.canonicalRollbackRequired, true)
+assert.equal(acceptance.acceptedCapabilities.timeoutEnvelopeAccepted, true)
+assert.equal(acceptance.acceptedCapabilities.directD1ReadOnly, true)
+assert.equal(acceptance.acceptedCapabilities.separateExactTriggerRequired, true)
+assert.equal(acceptance.acceptedCapabilities.semanticMappingAccepted, false)
+assert.equal(acceptance.acceptedCapabilities.stabilityClockStartAccepted, false)
+assert.equal(acceptance.acceptedCapabilities.finalModeAccepted, false)
+assert.equal(acceptance.acceptedCapabilities.publicCategoryUiAccepted, false)
+assert.equal(acceptance.timeoutEvidenceMinutes.requiredMaximum, 44)
+assert.equal(acceptance.timeoutEvidenceMinutes.jobTimeout, 50)
+assert.equal(acceptance.timeoutEvidenceMinutes.jobTimeoutGreaterThanRequiredMaximum, true)
+for (const value of Object.values(acceptance.boundaries)) assert.equal(value, false)
 
 assert.equal(contract.sourceIdentity.activeCategoryCollectorBlob, '2b3bd54b92e26f802c05048160ed293b0b4e9d43')
 assert.equal(contract.sourceIdentity.activeEntryBlob, '26be160414bfe38ebf8ce61660f8478b570454b6')
@@ -87,10 +132,11 @@ assert.equal(envelope.jobTimeout, 50)
 assert.ok(envelope.jobTimeout > envelope.requiredMaximum)
 assert.equal(envelope.jobTimeoutGreaterThanRequiredMaximum, true)
 
-assert.equal(triggerContract.status, 'requires_execution_package_acceptance')
+assert.equal(triggerContract.status, 'accepted')
 assert.equal(triggerContract.executionPackageIdentity.packagePr, 685)
-assert.equal(triggerContract.executionPackageIdentity.packageMergeSha, null)
-assert.equal(triggerContract.executionPackageIdentity.acceptancePr, null)
+assert.equal(triggerContract.executionPackageIdentity.packageMergeSha, '0a8f2931524d08dae42dee302df24a30da544949')
+assert.equal(triggerContract.executionPackageIdentity.acceptancePr, 686)
+assert.equal(triggerContract.executionPackageIdentity.acceptanceRecord, files.acceptance)
 assert.equal(triggerContract.trigger.executeImmediately, true)
 assert.equal(triggerContract.trigger.startAtAllowed, false)
 assert.equal(triggerContract.trigger.exactOneFilePrRequired, true)
@@ -104,22 +150,22 @@ for (const fragment of [
   "activeIndex: '2b3bd54b92e26f802c05048160ed293b0b4e9d43'",
   "activeEntry: '26be160414bfe38ebf8ce61660f8478b570454b6'",
   "candidate: '57df5b3e12a27587a6345a3bf2a6155d3dd669e5'",
-  "CATEGORY_SOURCE_V2_OBSERVATION_ENABLED",
-  "encodeCategorySourceCompletenessV2Candidate(input.items, input.hasMore)",
-  "encodeCategorySnapshot(input.items, input.hasMore)",
-  "activeSourceModified: false",
+  'CATEGORY_SOURCE_V2_OBSERVATION_ENABLED',
+  'encodeCategorySourceCompletenessV2Candidate(input.items, input.hasMore)',
+  'encodeCategorySnapshot(input.items, input.hasMore)',
+  'activeSourceModified: false',
 ]) assert.ok(generator.includes(fragment), `generator missing: ${fragment}`)
 
 for (const fragment of [
-  "const MAX_OBSERVATION_MS = 16 * 60_000",
-  "const POLL_INTERVAL_MS = 30_000",
-  "runWranglerDeploy(CANDIDATE_CONFIG)",
-  "runWranglerDeploy(ROLLBACK_CONFIG)",
-  "finally",
-  "two_consecutive_v2_snapshots_missing",
-  "category-source-v2-candidate",
-  "2bit-hex-v1",
-  "if (statements.some((part) => !/^(SELECT|WITH)\\b/i.test(part)))",
+  'const MAX_OBSERVATION_MS = 16 * 60_000',
+  'const POLL_INTERVAL_MS = 30_000',
+  'runWranglerDeploy(CANDIDATE_CONFIG)',
+  'runWranglerDeploy(ROLLBACK_CONFIG)',
+  'finally',
+  'two_consecutive_v2_snapshots_missing',
+  'category-source-v2-candidate',
+  '2bit-hex-v1',
+  'if (statements.some((part) => !/^(SELECT|WITH)\\b/i.test(part)))',
   "throw new Error('non_select_statement_rejected')",
 ]) assert.ok(runner.includes(fragment), `runner missing: ${fragment}`)
 for (const forbidden of ['START_AT', 'startAt', 'INSERT INTO', 'UPDATE ', 'DELETE FROM', 'ALTER TABLE', 'wrangler d1 execute --command INSERT']) {
@@ -151,10 +197,10 @@ for (const fragment of [
   'name: Analytics 12A5 Twitch Category Source V2 Observation Execution',
   'timeout-minutes: 50',
   "github.event_name == 'push'",
-  'needs.classify.outputs.trigger_present == \'true\'',
+  "needs.classify.outputs.trigger_present == 'true'",
   'Run bounded Twitch category-source-v2 observation',
   'Upload Twitch category-source-v2 observation evidence',
-  'Production observation skipped on package PR',
+  'Production observation skipped on package and acceptance PRs',
 ]) assert.ok(workflow.includes(fragment), `workflow missing: ${fragment}`)
 assert.equal(workflow.includes('workflow_dispatch:'), false)
 assert.equal(workflow.includes('schedule:'), false)
@@ -162,12 +208,12 @@ assert.equal(workflow.includes('Wait for exact'), false)
 assert.equal(workflow.includes('START_AT'), false)
 
 for (const [file, fragments] of Object.entries({
-  'docs/product/current-roadmap.md': ['Twitch-only category-source-v2 execution package', 'work-659-twitch-category-source-v2-completeness-execution-package'],
-  'docs/product/current-schedule.md': ['Current gate Twitch-only category-source-v2 execution package', 'Package accepted PR #682 / #684'],
-  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['Twitch-only category-source-v2 execution package', 'prohibit in-job long sleeps'],
-  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['Twitch-only category-source-v2 execution package', 'Execution-package PR uses no production credentials or execution'],
-  'AGENTS.md': ['Package accepted: PR #682 / #684', 'work-659-twitch-category-source-v2-completeness-execution-package'],
-  'CONTRIBUTING.md': ['Package accepted PR #682 / #684', 'No production execution before a separately accepted execution package'],
+  'docs/product/current-roadmap.md': ['exact immediate Twitch category-source-v2 observation trigger', 'work-659-twitch-category-source-v2-observation-trigger'],
+  'docs/product/current-schedule.md': ['Observation execution package accepted PR #685 / #686', 'Current gate exact immediate Twitch category-source-v2 observation trigger'],
+  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['exact immediate Twitch category-source-v2 observation trigger', 'acceptance PR #686'],
+  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['exact Twitch category-source-v2 observation trigger', 'Observation execution package accepted: PR #685 / #686'],
+  'AGENTS.md': ['Observation execution package accepted: PR #685 / #686', 'work-659-twitch-category-source-v2-observation-trigger'],
+  'CONTRIBUTING.md': ['Observation execution package accepted PR #685 / #686', 'No production observation before the accepted exact one-file trigger is merged'],
 })) {
   const source = read(file)
   for (const fragment of fragments) assert.ok(source.includes(fragment), `${file} missing: ${fragment}`)
@@ -177,6 +223,9 @@ console.log(JSON.stringify({
   ok: true,
   status: contract.status,
   packagePr: contract.packageIdentity.packagePr,
+  acceptancePr: contract.packageIdentity.acceptancePr,
+  validationRunId: contract.packageIdentity.validationRunId,
+  validationJobId: contract.packageIdentity.validationJobId,
   jobTimeoutMinutes: envelope.jobTimeout,
   requiredMaximumMinutes: envelope.requiredMaximum,
   immediateStart: true,

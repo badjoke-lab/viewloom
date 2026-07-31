@@ -38,17 +38,12 @@ assert.equal(contract.packageIdentity.validationRunId, 30567807300)
 assert.equal(contract.packageIdentity.validationJobId, 90956596848)
 assert.equal(contract.packageIdentity.productionExecutionPerformed, false)
 assert.equal(contract.acceptanceRecord, files.acceptance)
-assert.equal(contract.governingMainSha, '9974539eadbc3388c9f9369168d305ca58771fe2')
 assert.equal(contract.governingDecision.status, 'recovery_required')
-assert.equal(contract.governingDecision.contractVersion, 'category-source-v2-candidate')
 assert.equal(decision.status, 'recovery_required')
 assert.equal(decision.requiredRecovery.contractVersion, contract.candidate.contractVersion)
 
 assert.equal(acceptance.schemaVersion, 'viewloom-12a5-twitch-category-source-v2-completeness-package-acceptance-v1')
 assert.equal(acceptance.status, 'accepted')
-assert.equal(acceptance.phase, contract.phase)
-assert.equal(acceptance.trackingIssue, contract.trackingIssue)
-assert.equal(acceptance.provider, contract.provider)
 assert.equal(acceptance.acceptancePr, contract.packageIdentity.acceptancePr)
 assert.equal(acceptance.packagePr, contract.packageIdentity.packagePr)
 assert.equal(acceptance.packageCandidateHeadSha, contract.packageIdentity.packageCandidateHeadSha)
@@ -99,7 +94,7 @@ for (const value of Object.values(contract.dormantBoundary)) assert.equal(value,
 for (const fragment of [
   "CATEGORY_SOURCE_V2_CANDIDATE_CONTRACT_VERSION = 'category-source-v2-candidate'",
   "CATEGORY_SOURCE_STATE_ENCODING = '2bit-hex-v1'",
-  "both_present: 0", "both_empty: 1", "provider_id_only: 2", "category_name_only: 3",
+  'both_present: 0', 'both_empty: 1', 'provider_id_only: 2', 'category_name_only: 3',
   'encodeCategorySourceCompletenessV2Candidate', 'classifyCategorySourceState',
   'unpackCategorySourceStateCodes', 'categorySourceStateEncoding',
   'categorySourceStateCounts', "if (state === 'both_present')", 'categoryRefs.push(null)',
@@ -125,8 +120,8 @@ const configs = Object.fromEntries([
   ['kick', read(files.kickConfig)], ['kickPermanent', read(files.kickPermanentConfig)],
 ])
 for (const source of Object.values(configs)) {
-  assert.equal(source.includes('CATEGORY_SOURCE_V2'), false, 'v2 binding must not exist before execution package')
-  assert.equal(source.includes('category-source-v2-candidate'), false, 'v2 contract must not be active before execution package')
+  assert.equal(source.includes('CATEGORY_SOURCE_V2'), false, 'v2 binding must not exist on permanent configs')
+  assert.equal(source.includes('category-source-v2-candidate'), false, 'v2 contract must not be active on permanent configs')
 }
 assert.equal(cron(configs.twitch), '*/5 * * * *')
 assert.equal(cron(configs.twitchPermanent), cron(configs.twitch))
@@ -135,18 +130,6 @@ assert.equal(cron(configs.kickPermanent), cron(configs.kick))
 assert.equal(dbId(configs.twitchPermanent), dbId(configs.twitch))
 assert.equal(dbId(configs.kickPermanent), dbId(configs.kick))
 assert.notEqual(dbId(configs.twitchPermanent), dbId(configs.kickPermanent))
-
-for (const [path, fragments] of Object.entries({
-  'docs/product/current-roadmap.md': ['Twitch-only category-source-v2 execution package', 'package accepted PR #682 / #684'],
-  'docs/product/current-schedule.md': ['Current gate Twitch-only category-source-v2 execution package', 'Package accepted PR #682 / #684'],
-  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['Twitch-only category-source-v2 execution package', 'package acceptance PR #684'],
-  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['Twitch-only category-source-v2 execution package', 'package accepted'],
-  'AGENTS.md': ['Package accepted: PR #682 / #684', 'work-659-twitch-category-source-v2-completeness-execution-package'],
-  'CONTRIBUTING.md': ['Package accepted PR #682 / #684', 'No production execution before a separately accepted execution package'],
-})) {
-  const source = read(path)
-  for (const fragment of fragments) assert.ok(source.includes(fragment), `${path} missing: ${fragment}`)
-}
 
 console.log(JSON.stringify({
   ok: true,

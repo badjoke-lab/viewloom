@@ -11,8 +11,9 @@ Canonical runtime gate viewloom-12a2-current-gate-state-v33
 Diagnosis decision recovery required
 Original stability clock valid no
 Dormant v2 package accepted PR #682 / #684
-Current gate Twitch-only category-source-v2 execution package
-Current branch work-659-twitch-category-source-v2-completeness-execution-package
+Observation execution package accepted PR #685 / #686
+Current gate exact immediate Twitch category-source-v2 observation trigger
+Current branch work-659-twitch-category-source-v2-observation-trigger
 Public Twitch category-filter exposure authorized no
 ```
 
@@ -25,30 +26,34 @@ Public Twitch category-filter exposure authorized no
 5. diagnosis decision/evidence/retirement
 6. `docs/audits/12a5-twitch-category-source-v2-completeness-package-contract.json`
 7. `docs/audits/12a5-twitch-category-source-v2-completeness-package-acceptance.json`
-8. `docs/product/twitch-replacement-seven-day-audit-spec.md`
-9. active WIP and affected feature specification/plan
+8. `docs/audits/12a5-twitch-category-source-v2-observation-execution-package-contract.json`
+9. `docs/audits/12a5-twitch-category-source-v2-observation-execution-package-acceptance.json`
+10. `docs/audits/12a5-twitch-category-source-v2-observation-trigger-contract.json`
+11. `docs/product/twitch-replacement-seven-day-audit-spec.md`
+12. active WIP and affected feature specification/plan
 
-## Accepted dormant package
+## Accepted observation execution package
 
-- Package PR / acceptance PR: #682 / #684.
-- Package merge: `2ae91cbf6b07616dcadc60894a832ace089c39fa`.
-- Validation run/job: `30567807300` / `90956596848`.
-- Candidate contract: `category-source-v2-candidate`.
-- Four states: `both_present`, `both_empty`, `provider_id_only`, `category_name_only`.
-- Capacity evidence: 300 items, 150 packed hex characters, v1 comparable 1465 bytes, v2 candidate 1813 bytes, overhead 348 bytes under the 400-byte limit.
-- Active Twitch/Kick collectors remain candidate-free; no production binding or execution was accepted.
+- Package PR / acceptance PR: #685 / #686.
+- Package candidate head / merge: `b0931fa5a22a825f599bb576b4507473f1dc6731` / `0a8f2931524d08dae42dee302df24a30da544949`.
+- Validation run/job: `30570462889` / `90965620950`.
+- The package generates a temporary Twitch-only v2 observation Worker from exact accepted blobs.
+- The trigger executes immediately after merge and forbids `startAt`, pre-start sleep, manual dispatch, and schedules.
+- Observation polling is bounded to 16 minutes and requires two consecutive real, non-empty, fresh v2 snapshots.
+- Canonical v1 rollback runs in `finally`; the 50-minute job timeout exceeds the accepted 44-minute maximum envelope.
+- Package and acceptance PRs performed no production execution and exposed no public category controls.
 
 ## Current order
 
-1. Create `work-659-twitch-category-source-v2-completeness-execution-package`.
-2. Add a Twitch-only disabled-by-default integration while preserving v1 as default and rollback.
-3. Define an exact trigger, bounded timeout envelope, two-consecutive-snapshot evidence, rollback, storage, and provider-separation gates.
-4. Accept the execution package separately before an exact trigger.
-5. Freeze post-activation evidence and decide semantic handling/new clock separately.
+1. Create `work-659-twitch-category-source-v2-observation-trigger`.
+2. Add exactly `docs/audits/12a5-twitch-category-source-v2-observation-trigger.json` with accepted package identity and no `startAt`.
+3. Merge the exact one-file PR to start the bounded production observation immediately.
+4. Freeze run/job/artifact/digest evidence and retire the trigger and temporary execution path separately.
+5. Decide semantic handling and the new stability clock separately.
 
 ## Invariants
 
-- No production execution before a separately accepted execution package and exact trigger.
+- No production observation before the accepted exact one-file trigger is merged.
 - No checkpoint rerun, backfill, threshold relaxation, synthetic category mapping, or automatic clock reset.
 - Twitch/Kick remain separated on the existing five-minute cadences.
 - Public category controls remain unauthorized.
