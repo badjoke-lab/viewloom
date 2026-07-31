@@ -11,6 +11,8 @@ on:
       - 'docs/audits/12a5-twitch-category-source-v2-observation-trigger.json'
       - 'docs/audits/12a5-twitch-category-source-v2-observation-failure-evidence.json'
       - 'docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-contract.json'
+      - 'docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-acceptance.json'
+      - 'docs/audits/12a5-twitch-category-source-v2-observation-rerun-trigger-contract.json'
       - 'docs/audits/12a5-twitch-category-source-v2-completeness-package-contract.json'
       - 'docs/audits/12a5-twitch-category-source-v2-completeness-package-acceptance.json'
       - 'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json'
@@ -18,6 +20,7 @@ on:
       - 'scripts/run-12a5-twitch-category-source-v2-observation.mjs'
       - 'scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs'
       - 'scripts/verify-12a5-twitch-category-source-v2-observation-recovery-package.mjs'
+      - 'scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs'
       - 'execution-packages/twitch-category-source-v2-observation/wrangler.toml'
       - 'workers/shared/category-capture-v2-candidate.ts'
       - 'workers/collector-twitch/src/index-category.ts'
@@ -78,6 +81,7 @@ jobs:
           node --check scripts/run-12a5-twitch-category-source-v2-observation.mjs
           node --check scripts/verify-12a5-twitch-category-source-v2-observation-execution-package.mjs
           node --check scripts/verify-12a5-twitch-category-source-v2-observation-recovery-package.mjs
+          node --check scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs
       - name: Generate exact-source observation worker
         run: node scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs
       - name: Compile generated observation worker
@@ -121,12 +125,12 @@ jobs:
             echo
             echo '- Original package / acceptance: `#685` / `#686`'
             echo '- Failed production observation: run `30608982443`'
-            echo '- Corrected package: `#692`'
+            echo '- Corrected package / acceptance: `#692` / `#693`'
             echo '- Generated Worker remains under `workers/collector-twitch/.generated-v2-observation`'
             echo '- Evidence remains under `artifacts/12a5-twitch-category-source-v2-observation/run`'
             echo '- Production observation skipped on package and acceptance PRs'
             echo '- Production observation skipped on this PR'
-            echo '- Separate acceptance and exact trigger remain required'
+            echo '- Separate exact rerun trigger remains required'
             echo '- Canonical v1 rollback remains mandatory'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -137,21 +141,26 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Validate accepted execution package and exact immediate trigger
+      - name: Validate corrected accepted package and exact immediate rerun trigger
         run: |
           node --input-type=module - <<'NODE'
           import fs from 'node:fs'
-          const packageContract = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-category-source-v2-observation-execution-package-contract.json', 'utf8'))
-          const triggerContract = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-category-source-v2-observation-trigger-contract.json', 'utf8'))
+          const recoveryContract = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-contract.json', 'utf8'))
+          const recoveryAcceptance = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-acceptance.json', 'utf8'))
+          const rerunContract = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-category-source-v2-observation-rerun-trigger-contract.json', 'utf8'))
           const trigger = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-category-source-v2-observation-trigger.json', 'utf8'))
-          if (packageContract.status !== 'accepted') throw new Error('execution_package_not_accepted')
-          if (triggerContract.status !== 'accepted') throw new Error('trigger_contract_not_accepted')
-          if (trigger.schemaVersion !== triggerContract.trigger.schemaVersion) throw new Error('trigger_schema_mismatch')
+          if (recoveryContract.status !== 'accepted') throw new Error('recovery_package_not_accepted')
+          if (recoveryAcceptance.status !== 'accepted') throw new Error('recovery_acceptance_not_accepted')
+          if (rerunContract.status !== 'accepted') throw new Error('rerun_trigger_contract_not_accepted')
+          if (recoveryContract.packageIdentity.packagePr !== recoveryAcceptance.packagePr || recoveryContract.packageIdentity.packageMergeSha !== recoveryAcceptance.packageMergeSha || recoveryContract.packageIdentity.acceptancePr !== recoveryAcceptance.acceptancePr) throw new Error('recovery_acceptance_identity_mismatch')
+          if (rerunContract.correctedPackageIdentity.packagePr !== recoveryContract.packageIdentity.packagePr || rerunContract.correctedPackageIdentity.packageMergeSha !== recoveryContract.packageIdentity.packageMergeSha || rerunContract.correctedPackageIdentity.acceptancePr !== recoveryContract.packageIdentity.acceptancePr) throw new Error('rerun_contract_identity_mismatch')
+          if (trigger.schemaVersion !== rerunContract.trigger.schemaVersion) throw new Error('trigger_schema_mismatch')
           if (trigger.status !== 'armed' || trigger.provider !== 'twitch' || trigger.mode !== 'category_source_v2_observation' || trigger.oneTime !== true) throw new Error('trigger_identity_invalid')
-          if (trigger.confirmation !== triggerContract.trigger.confirmation || trigger.executeImmediately !== true) throw new Error('trigger_confirmation_invalid')
+          if (trigger.confirmation !== rerunContract.trigger.confirmation || trigger.executeImmediately !== true) throw new Error('trigger_confirmation_invalid')
           if ('startAt' in trigger) throw new Error('start_at_forbidden')
-          if (trigger.packagePr !== packageContract.packageIdentity.packagePr || trigger.packageMergeSha !== packageContract.packageIdentity.packageMergeSha || trigger.acceptancePr !== packageContract.packageIdentity.acceptancePr) throw new Error('package_identity_mismatch')
+          if (trigger.packagePr !== recoveryContract.packageIdentity.packagePr || trigger.packageMergeSha !== recoveryContract.packageIdentity.packageMergeSha || trigger.acceptancePr !== recoveryContract.packageIdentity.acceptancePr) throw new Error('corrected_package_identity_mismatch')
           NODE
+          node scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs
 
   observe:
     if: github.event_name == 'push' && needs.classify.outputs.trigger_present == 'true'
