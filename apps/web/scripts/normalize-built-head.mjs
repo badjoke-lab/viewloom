@@ -5,6 +5,8 @@ const dist = join(process.cwd(), 'dist')
 const measurementId = 'G-YHX7HS1VBK'
 const tagUrl = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
 const projectHubUrl = 'https://badjoke-lab.com/'
+const primaryOrigin = 'https://viewloom.net'
+const legacyOrigins = ['https://vl.badjoke-lab.com', 'https://www.viewloom.net']
 const verificationToken = process.env.VITE_GSC_VERIFICATION_TOKEN?.trim()
 
 if (!existsSync(dist)) throw new Error('dist directory is missing.')
@@ -13,6 +15,8 @@ let normalized = 0
 for (const path of htmlFiles(dist)) {
   let html = readFileSync(path, 'utf8')
   const original = html
+
+  html = normalizePrimaryOrigin(html)
 
   if (!html.includes(tagUrl)) {
     html = injectBeforeHeadClose(html, googleTagMarkup())
@@ -42,6 +46,10 @@ for (const path of htmlFiles(dist)) {
     html = injectProjectHubLink(html)
   }
 
+  for (const legacyOrigin of legacyOrigins) {
+    if (html.includes(legacyOrigin)) throw new Error(`${path}: legacy public origin remained after normalization: ${legacyOrigin}`)
+  }
+
   if (html !== original) {
     writeFileSync(path, html)
     normalized += 1
@@ -49,7 +57,7 @@ for (const path of htmlFiles(dist)) {
 }
 
 writeDeploymentMetadata()
-console.log(`Normalized built head metadata and project links in ${normalized} HTML file(s).`)
+console.log(`Normalized built head metadata, primary origin, and project links in ${normalized} HTML file(s).`)
 
 function htmlFiles(directory) {
   const result = []
@@ -59,6 +67,14 @@ function htmlFiles(directory) {
     else if (entry.isFile() && entry.name.endsWith('.html')) result.push(path)
   }
   return result
+}
+
+function normalizePrimaryOrigin(html) {
+  let normalizedHtml = html
+  for (const legacyOrigin of legacyOrigins) {
+    normalizedHtml = normalizedHtml.replaceAll(legacyOrigin, primaryOrigin)
+  }
+  return normalizedHtml
 }
 
 function injectBeforeHeadClose(html, markup) {
@@ -97,6 +113,8 @@ function writeDeploymentMetadata() {
     branch,
     commit_sha: commitSha,
     pages_url: pagesUrl,
+    primary_origin: primaryOrigin,
+    canonical_host: 'viewloom.net',
   }
   writeFileSync(join(dist, 'deployment.json'), `${JSON.stringify(payload, null, 2)}\n`)
 }
