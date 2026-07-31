@@ -8,53 +8,50 @@ Last updated: 2026-07-31
 ### Completed
 
 - Twitch and Kick permanent category capture remain active on five-minute collectors.
-- Checkpoint and diagnosis evidence are frozen; the old replacement window is retired.
-- Recovery decision PR #681 requires source-completeness observation before a new clock.
-- Dormant `category-source-v2-candidate` package accepted PR #682 / #684.
-- Bounded Twitch-only observation execution package accepted PR #685 / #686.
-- Execution-package validation run/job `30570462889` / `90965620950` passed exact-source generation, compile, Wrangler dry-run, package/policy verification, collector/web typecheck, build, deployment skip, and public containment.
-- The accepted timeout envelope is 44 minutes maximum inside a 50-minute job; no `startAt` or pre-start sleep is allowed.
+- The original replacement window is invalid and retired.
+- Corrected Twitch category-source-v2 observation package accepted in PR #692 / #693.
+- Exact rerun trigger merged in PR #695.
+- Production run `30620512044`, observe job `91123756273`, and artifact `8789385200` succeeded.
+- Two consecutive real, non-empty, fresh v2 snapshots passed state integrity, dictionary resolution, provider separation, and freshness.
+- Canonical v1 rollback succeeded.
+- Evidence frozen in PR #697.
+- Consumed trigger and temporary execution path retired in PR #698.
 
-### Current gate: exact immediate Twitch category-source-v2 observation trigger
+### Current gate: semantic handling and new seven-day stability-clock decision
 
 Current branch:
 
-`work-659-twitch-category-source-v2-observation-trigger`
+`work-659-twitch-category-source-v2-semantic-clock-decision`
 
-## Accepted execution package
+## Accepted evidence
 
-- Package PR / acceptance PR: #685 / #686.
-- Package merge: `0a8f2931524d08dae42dee302df24a30da544949`.
-- Exact trigger must be a one-file PR and must execute immediately after merge.
-- Two consecutive real, non-empty, fresh v2 snapshots are required.
-- Canonical v1 rollback is mandatory in `finally`.
-- Direct D1 statements are limited to `SELECT` / `WITH`.
-- No semantic mapping, new stability clock, final mode, or public category UI is accepted.
+- Snapshot buckets: `2026-07-31T09:40:00Z` and `2026-07-31T09:45:00Z`.
+- Each snapshot: 300 streams, 300 present category references, zero null/invalid/unresolved/incomplete states.
+- Category IDs: 84 then 85.
+- Candidate and canonical deployments retained the existing `*/5 * * * *` cadence.
+- The evidence demonstrates complete source states; it does not itself authorize semantic mapping, a new clock, final mode, or public UI.
 
 ## Active deliverable
 
-Create the exact trigger PR that:
+Create a separate decision PR that:
 
-- changes only `docs/audits/12a5-twitch-category-source-v2-observation-trigger.json`;
-- uses the accepted trigger schema, confirmation, package PR, package merge SHA, and acceptance PR;
-- sets `status` to `armed`, `oneTime` to `true`, and `executeImmediately` to `true`;
-- contains no `startAt`;
-- performs no production execution on the pull-request event;
-- starts the bounded observation only after merge to `main`.
+- interprets the demonstrated source-state completeness without inventing mappings;
+- decides whether semantic handling is accepted;
+- decides whether a new seven-day Twitch stability clock is authorized;
+- freezes an exact start only when authorization is explicit;
+- preserves Kick separation, five-minute cadences, retention, and the public fallback;
+- performs no final-mode or public category-filter change.
 
 ## Following gates
 
-1. exact Twitch-only trigger and bounded observation;
-2. two consecutive v2 snapshot evidence;
-3. freeze run/job/artifact/digest and retire the trigger and temporary execution path;
-4. semantic and new-clock decision;
-5. seven stable days from the accepted new start;
-6. final audit and separate public cutover.
+1. semantic and new-clock decision;
+2. seven stable days from an explicitly accepted start;
+3. final audit;
+4. separate final-mode decision;
+5. separate public cutover.
 
 ## Hard boundaries
 
-- No production observation before the accepted exact one-file trigger is merged.
-- No manual dispatch, schedule, pre-start sleep, or long in-job wait.
-- No checkpoint rerun, backfill, threshold relaxation, synthetic category mapping, or automatic clock reset.
+- No observation rerun, historical backfill, threshold relaxation, synthetic mapping, or automatic clock reset.
 - No Kick, cadence, retention, cross-provider, final-mode, or public-UI change.
 - Existing unfiltered Heatmap remains the fallback.
