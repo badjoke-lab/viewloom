@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-evidence-recovery-trigger-v1",
+  "status": "armed",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "targetWorkflowId": 323959988,
+  "targetWorkflowFile": "analytics-12a5-twitch-category-source-v2-observation-execution.yml",
+  "targetHeadSha": "d4a55ac3960dff978dfabd5ee77307477ab5268d",
+  "targetEvent": "push",
+  "oneTime": true,
+  "readOnly": true,
+  "issueWriteOnly": true
+}
