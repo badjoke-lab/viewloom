@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-execution-path-retirement-v1",
+  "status": "retired_on_merge",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "retirementPr": 698,
+  "baseSha": "b8bf65ca6ce3c9c6e2f79e93b090fa6d4158bd34",
+  "sourceEvidence": "docs/audits/12a5-twitch-category-source-v2-observation-success-evidence.json",
+  "sourceEvidenceFreezePr": 697,
+  "sourceEvidenceFreezeMergeSha": "b8bf65ca6ce3c9c6e2f79e93b090fa6d4158bd34",
+  "execution": {
+    "workflowRunId": 30620512044,
+    "observeJobId": 91123756273,
+    "artifactId": 8789385200,
+    "artifactDigest": "sha256:dfff17be40f9766c5d4cc4ead6eada761e00ba760b7ce133fce0e9b4f427fc10",
+    "evidenceJsonSha256": "e2ceb0ce88dab1f03fd374004488fda9381f223a5dde6d139686c06218ce6bbe",
+    "conclusion": "success",
+    "canonicalRollbackSucceeded": true
+  },
+  "retiredPaths": [
+    ".github/workflows/analytics-12a5-twitch-category-source-v2-observation-execution.yml",
+    "scripts/run-12a5-twitch-category-source-v2-observation.mjs",
+    "scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs",
+    "scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs",
+    "execution-packages/twitch-category-source-v2-observation/wrangler.toml"
+  ],
+  "retainedAuditPaths": [
+    "docs/audits/12a5-twitch-category-source-v2-observation-failure-evidence.json",
+    "docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-contract.json",
+    "docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-acceptance.json",
+    "docs/audits/12a5-twitch-category-source-v2-observation-rerun-trigger-contract.json",
+    "docs/audits/12a5-twitch-category-source-v2-observation-success-evidence.json",
+    "docs/audits/12a5-twitch-category-source-v2-observation-evidence-retirement.json",
+    "scripts/verify-12a5-twitch-category-source-v2-observation-success-evidence.mjs"
+  ],
+  "runtimeAfterRetirement": {
+    "canonicalTwitchConfig": "workers/collector-twitch/wrangler.category-permanent.toml",
+    "twitchCron": "*/5 * * * *",
+    "kickCron": "*/5 * * * *",
+    "categorySourceV2ObservationEnabled": false,
+    "productionObservationWorkflowPresent": false,
+    "exactObservationTriggerPresent": false
+  },
+  "authorization": {
+    "rerunAuthorized": false,
+    "semanticMappingAuthorized": false,
+    "stabilityClockStartAuthorized": false,
+    "finalModeAuthorized": false,
+    "publicCategoryUiAuthorized": false,
+    "kickChangeAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "retentionChangeAuthorized": false,
+    "backfillAuthorized": false
+  },
+  "nextGate": "decide semantic handling and a new seven-day Twitch stability clock in a separate decision PR"
+}
