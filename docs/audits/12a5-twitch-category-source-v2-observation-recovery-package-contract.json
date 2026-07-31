@@ -1,18 +1,24 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-recovery-package-v1",
-  "status": "candidate",
+  "status": "accepted",
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
   "packageIdentity": {
     "packagePr": 692,
+    "packageCandidateHeadSha": "7efa0b682d182fced55bc8f96c928daaef58ca24",
+    "packageMergeSha": "19e2d5b44a0088dce046b8e34f028efebf1d7d24",
     "baseSha": "d4a55ac3960dff978dfabd5ee77307477ab5268d",
+    "acceptancePr": 693,
+    "validationRunId": 30619716971,
+    "validationJobId": 91121126929,
     "sourceFailureRunId": 30608982443,
     "sourceFailureObserveJobId": 91087362002,
     "sourceFailureArtifactId": 8784691101,
     "productionExecutionPerformedByPackagePr": false
   },
   "sourceEvidence": "docs/audits/12a5-twitch-category-source-v2-observation-failure-evidence.json",
+  "acceptanceRecord": "docs/audits/12a5-twitch-category-source-v2-observation-recovery-package-acceptance.json",
   "defect": {
     "code": "generator_output_directory_overridden_by_observe_job",
     "workflowFile": ".github/workflows/analytics-12a5-twitch-category-source-v2-observation-execution.yml",
@@ -30,12 +36,16 @@
     "candidateSourceChanged": false,
     "canonicalRollbackConfigChanged": false
   },
-  "validationRequired": {
+  "validation": {
+    "conclusion": "success",
+    "workflowRunId": 30619716971,
+    "workflowJobId": 91121126929,
     "consumedTriggerRetired": true,
     "productionObservationSkippedOnPullRequest": true,
     "generatedWorkerCompiled": true,
     "wranglerDryRunBundled": true,
     "boundedPackageVerified": true,
+    "failureEvidenceAndRecoveryPackageVerified": true,
     "collectorTypecheck": true,
     "webTypecheck": true,
     "webBuild": true,
@@ -44,6 +54,7 @@
   "rerunBoundary": {
     "packagePrCanExecuteProduction": false,
     "acceptancePrRequired": true,
+    "acceptanceCompleted": true,
     "newExactOneFileTriggerRequired": true,
     "automaticRerunAuthorized": false,
     "startAtAllowed": false,
@@ -64,5 +75,5 @@
     "finalModeAuthorized": false,
     "publicCategoryUiAuthorized": false
   },
-  "nextGate": "validate PR #692, merge the corrected package, then create a separate acceptance PR before any exact rerun trigger"
+  "nextGate": "merge acceptance PR #693, then create a separate exact one-file immediate rerun trigger"
 }
