@@ -36,7 +36,7 @@ for (const [path, fragments] of Object.entries({
   'docs/operations/development-and-deployment-policy.md': ['Mandatory freshness protocol', 'Cached chat summaries', '`main` is production'],
   'docs/product/current-roadmap.md': ['### Current gate: semantic handling and new seven-day stability-clock decision', 'work-659-twitch-category-source-v2-semantic-clock-decision'],
   'docs/product/current-schedule.md': ['Current gate semantic handling and new seven-day stability-clock decision', 'No observation rerun'],
-  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: semantic handling and new stability-clock decision', 'No new stability start'],
+  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: semantic handling and new stability-clock decision', 'no new stability start'],
   'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['Semantic handling and new seven-day Twitch stability-clock decision', 'No public category UI'],
   '.github/pull_request_template.md': ['Current-main SHA read:', 'No newer source-of-truth change supersedes this candidate'],
 })) {
