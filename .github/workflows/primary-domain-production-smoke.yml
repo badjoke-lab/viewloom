@@ -16,44 +16,84 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Verify apex response and canonical metadata
+      - name: Diagnose and verify all production hosts
         shell: bash
         run: |
-          set -euo pipefail
-          body="$(mktemp)"
-          headers="$(mktemp)"
-          status="$(curl --silent --show-error --max-time 30 --dump-header "$headers" --output "$body" --write-out '%{http_code}' https://viewloom.net/)"
-          test "$status" = "200"
-          grep -Fq '<link rel="canonical" href="https://viewloom.net/"' "$body"
-          grep -Fq 'content="https://viewloom.net/"' "$body"
+          set -uo pipefail
+          failures=0
 
-      - name: Verify www redirect preserves path and query
-        shell: bash
-        run: |
-          set -euo pipefail
-          headers="$(mktemp)"
-          status="$(curl --silent --show-error --max-time 30 --dump-header "$headers" --output /dev/null --write-out '%{http_code}' 'https://www.viewloom.net/twitch/history/?from=domain-smoke')"
-          test "$status" = "301"
-          tr -d '\r' < "$headers" | grep -Fqi 'location: https://viewloom.net/twitch/history/?from=domain-smoke'
+          request() {
+            local label="$1"
+            local url="$2"
+            local body="$3"
+            local headers="$4"
+            local status
+            status="$(curl --silent --show-error --max-time 30 --dump-header "$headers" --output "$body" --write-out '%{http_code}' "$url")" || status="curl-error"
+            echo "===== ${label} ====="
+            echo "URL: ${url}"
+            echo "STATUS: ${status}"
+            echo "HEADERS:"
+            tr -d '\r' < "$headers" | sed -n '1,20p'
+            echo "BODY PREFIX:"
+            head -c 500 "$body" || true
+            echo
+            printf '%s' "$status"
+          }
 
-      - name: Verify legacy subdomain redirect preserves path and query
-        shell: bash
-        run: |
-          set -euo pipefail
-          headers="$(mktemp)"
-          status="$(curl --silent --show-error --max-time 30 --dump-header "$headers" --output /dev/null --write-out '%{http_code}' 'https://vl.badjoke-lab.com/kick/day-flow/?from=domain-smoke')"
-          test "$status" = "301"
-          tr -d '\r' < "$headers" | grep -Fqi 'location: https://viewloom.net/kick/day-flow/?from=domain-smoke'
-
-      - name: Verify robots and sitemap use the apex origin
-        shell: bash
-        run: |
-          set -euo pipefail
-          robots="$(curl --silent --show-error --fail --max-time 30 https://viewloom.net/robots.txt)"
-          sitemap="$(curl --silent --show-error --fail --max-time 30 https://viewloom.net/sitemap.xml)"
-          grep -Fq 'Sitemap: https://viewloom.net/sitemap.xml' <<< "$robots"
-          grep -Fq '<loc>https://viewloom.net/</loc>' <<< "$sitemap"
-          if grep -Fq 'https://vl.badjoke-lab.com' <<< "$sitemap"; then
-            echo 'Legacy canonical origin remains in sitemap' >&2
-            exit 1
+          apex_body="$(mktemp)"
+          apex_headers="$(mktemp)"
+          apex_status="$(request apex https://viewloom.net/ "$apex_body" "$apex_headers" | tee /dev/stderr | tail -n 1)"
+          if [[ "$apex_status" != "200" ]]; then
+            echo "APEX_STATUS_MISMATCH=${apex_status}" >&2
+            failures=$((failures + 1))
           fi
+          if ! grep -Fq 'https://viewloom.net/' "$apex_body"; then
+            echo 'APEX_CANONICAL_ORIGIN_MISSING' >&2
+            failures=$((failures + 1))
+          fi
+          if grep -Fq 'https://vl.badjoke-lab.com' "$apex_body"; then
+            echo 'APEX_LEGACY_ORIGIN_PRESENT' >&2
+            failures=$((failures + 1))
+          fi
+
+          for spec in \
+            'www|https://www.viewloom.net/twitch/history/?from=domain-smoke|https://viewloom.net/twitch/history/?from=domain-smoke' \
+            'legacy|https://vl.badjoke-lab.com/kick/day-flow/?from=domain-smoke|https://viewloom.net/kick/day-flow/?from=domain-smoke'
+          do
+            IFS='|' read -r label url expected_location <<< "$spec"
+            body="$(mktemp)"
+            headers="$(mktemp)"
+            status="$(request "$label" "$url" "$body" "$headers" | tee /dev/stderr | tail -n 1)"
+            location="$(tr -d '\r' < "$headers" | awk 'BEGIN{IGNORECASE=1} /^location:/{sub(/^location:[[:space:]]*/, ""); print; exit}')"
+            if [[ "$status" != "301" ]]; then
+              echo "${label^^}_STATUS_MISMATCH=${status}" >&2
+              failures=$((failures + 1))
+            fi
+            if [[ "$location" != "$expected_location" ]]; then
+              echo "${label^^}_LOCATION_MISMATCH=${location}" >&2
+              failures=$((failures + 1))
+            fi
+          done
+
+          robots_body="$(mktemp)"
+          robots_headers="$(mktemp)"
+          robots_status="$(request robots https://viewloom.net/robots.txt "$robots_body" "$robots_headers" | tee /dev/stderr | tail -n 1)"
+          if [[ "$robots_status" != "200" ]] || ! grep -Fq 'Sitemap: https://viewloom.net/sitemap.xml' "$robots_body"; then
+            echo 'ROBOTS_PRIMARY_SITEMAP_MISMATCH' >&2
+            failures=$((failures + 1))
+          fi
+
+          sitemap_body="$(mktemp)"
+          sitemap_headers="$(mktemp)"
+          sitemap_status="$(request sitemap https://viewloom.net/sitemap.xml "$sitemap_body" "$sitemap_headers" | tee /dev/stderr | tail -n 1)"
+          if [[ "$sitemap_status" != "200" ]] || ! grep -Fq '<loc>https://viewloom.net/</loc>' "$sitemap_body"; then
+            echo 'SITEMAP_APEX_ENTRY_MISMATCH' >&2
+            failures=$((failures + 1))
+          fi
+          if grep -Fq 'https://vl.badjoke-lab.com' "$sitemap_body"; then
+            echo 'SITEMAP_LEGACY_ORIGIN_PRESENT' >&2
+            failures=$((failures + 1))
+          fi
+
+          echo "FAILURES=${failures}"
+          test "$failures" -eq 0
