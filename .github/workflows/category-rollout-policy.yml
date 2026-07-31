@@ -32,9 +32,8 @@ on:
       - 'scripts/verify-12a5-twitch-replacement-audit-checkpoint-*.mjs'
       - 'scripts/test-12a5-twitch-category-source-v2-completeness-candidate.mjs'
       - 'scripts/verify-12a5-twitch-category-source-v2-completeness-package.mjs'
-      - 'scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs'
-      - 'scripts/run-12a5-twitch-category-source-v2-observation.mjs'
       - 'scripts/verify-12a5-twitch-category-source-v2-observation-*.mjs'
+      - 'scripts/verify-12a5-twitch-category-source-v2-semantic-clock-decision.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-development-policy.mjs'
       - '.github/workflows/analytics-12a5-twitch-*.yml'
@@ -74,6 +73,8 @@ jobs:
         run: node scripts/verify-12a5-twitch-category-source-v2-observation-success-evidence.mjs
       - name: Verify temporary observation execution path retirement
         run: node scripts/verify-12a5-twitch-category-source-v2-observation-execution-path-retirement.mjs
+      - name: Verify semantic and new clock decision
+        run: node scripts/verify-12a5-twitch-category-source-v2-semantic-clock-decision.mjs
       - name: Verify current category rollout contract
         run: node scripts/verify-category-rollout-policy.mjs
       - name: Verify current development policy
