@@ -2,8 +2,8 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
 const read = (path) => readFileSync(path, 'utf8')
-const primaryOrigin = 'https://viewloom.net'
-const legacyOrigins = ['https://vl.badjoke-lab.com', 'https://www.viewloom.net']
+const primaryOrigin = 'https://www.viewloom.net'
+const legacyOrigins = ['https://vl.badjoke-lab.com', 'https://viewloom.net']
 
 const packageJson = JSON.parse(read('package.json'))
 const vite = read('vite.config.ts')
@@ -24,10 +24,10 @@ assert.ok(normalizer.includes(`const primaryOrigin = '${primaryOrigin}'`))
 for (const origin of legacyOrigins) assert.ok(normalizer.includes(origin))
 assert.ok(normalizer.includes('normalizePrimaryOrigin(html)'))
 assert.ok(normalizer.includes('legacy public origin remained after normalization'))
-assert.ok(normalizer.includes("canonical_host: 'viewloom.net'"))
+assert.ok(normalizer.includes("canonical_host: 'www.viewloom.net'"))
 
-assert.ok(middleware.includes("const PRIMARY_HOST = 'viewloom.net'"))
-assert.ok(middleware.includes("new Set(['www.viewloom.net', 'vl.badjoke-lab.com'])"))
+assert.ok(middleware.includes("const PRIMARY_HOST = 'www.viewloom.net'"))
+assert.ok(middleware.includes("new Set(['viewloom.net', 'vl.badjoke-lab.com'])"))
 assert.ok(middleware.includes('Response.redirect(url.toString(), 301)'))
 assert.ok(middleware.indexOf('REDIRECT_HOSTS.has(url.hostname)') < middleware.indexOf('const response = await next()'))
 
