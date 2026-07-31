@@ -1,8 +1,33 @@
 {
   "schemaVersion": "viewloom-primary-domain-cutover-v2",
-  "status": "candidate",
+  "status": "complete",
+  "result": "pass",
   "primaryOrigin": "https://www.viewloom.net",
   "primaryHost": "www.viewloom.net",
+  "implementation": {
+    "pullRequest": 702,
+    "mergeCommit": "13ae998487c0d95782231646312fffbf0bac7f8c"
+  },
+  "productionAcceptance": {
+    "verifiedAt": "2026-07-31T16:02:37Z",
+    "workflowRun": 30645462675,
+    "workflowJob": 91205619845,
+    "temporaryVerificationPullRequest": 703,
+    "finalFailures": 0,
+    "checks": {
+      "wwwHomeHttp200": true,
+      "wwwCanonicalMetadata": true,
+      "wwwOpenGraphOrigin": true,
+      "apexHttp301ToWww": true,
+      "legacySubdomainHttp301ToWww": true,
+      "legacyPathAndQueryPreserved": true,
+      "robotsHttp200": true,
+      "robotsAdvertisesWwwSitemap": true,
+      "sitemapHttp200": true,
+      "sitemapUsesWwwOrigin": true,
+      "legacyOriginAbsentFromSitemap": true
+    }
+  },
   "redirects": [
     {
       "fromHost": "viewloom.net",
@@ -31,7 +56,7 @@
     "provider": "cloudflare-pages",
     "repoControlledHostRedirect": true,
     "buildNormalizationRequired": true,
-    "domainBindingAssumption": "www.viewloom.net is attached to the existing Pages project; viewloom.net remains a registrar-owned redirect to www"
+    "domainBinding": "www.viewloom.net serves the Pages application; viewloom.net remains a registrar-owned redirect to www"
   },
   "independentFromStabilityAudit": true,
   "unchanged": {
