@@ -1,0 +1,180 @@
+name: Analytics 12A5 Twitch Category Source V2 Observation Evidence Recovery
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a5-twitch-category-source-v2-observation-evidence-recovery.yml'
+      - 'docs/audits/12a5-twitch-category-source-v2-observation-evidence-recovery-trigger.json'
+      - '.github/workflows/category-rollout-policy.yml'
+      - '.github/workflows/development-policy.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a5-twitch-category-source-v2-observation-evidence-recovery-trigger.json'
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+concurrency:
+  group: analytics-12a5-twitch-category-source-v2-observation-evidence-recovery-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate exact read-only recovery package
+        shell: bash
+        run: |
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs'
+          const trigger = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-category-source-v2-observation-evidence-recovery-trigger.json', 'utf8'))
+          if (trigger.schemaVersion !== 'viewloom-12a5-twitch-category-source-v2-observation-evidence-recovery-trigger-v1') throw new Error('schema_invalid')
+          if (trigger.status !== 'armed' || trigger.phase !== '12A-5B-R2' || trigger.trackingIssue !== 659) throw new Error('identity_invalid')
+          if (trigger.targetWorkflowId !== 323959988 || trigger.targetWorkflowFile !== 'analytics-12a5-twitch-category-source-v2-observation-execution.yml') throw new Error('workflow_identity_invalid')
+          if (trigger.targetHeadSha !== 'd4a55ac3960dff978dfabd5ee77307477ab5268d' || trigger.targetEvent !== 'push') throw new Error('target_run_identity_invalid')
+          if (trigger.oneTime !== true || trigger.readOnly !== true || trigger.issueWriteOnly !== true) throw new Error('boundary_invalid')
+          NODE
+          if test '${{ github.event_name }}' = 'pull_request'; then
+            base='${{ github.event.pull_request.base.sha }}'
+            head='${{ github.event.pull_request.head.sha }}'
+            changed="$(git diff --name-only "$base" "$head" | sort)"
+            expected="$(printf '%s\n' \
+              '.github/workflows/analytics-12a5-twitch-category-source-v2-observation-evidence-recovery.yml' \
+              '.github/workflows/category-rollout-policy.yml' \
+              '.github/workflows/development-policy.yml' \
+              'docs/audits/12a5-twitch-category-source-v2-observation-evidence-recovery-trigger.json' | sort)"
+            test "$changed" = "$expected"
+          fi
+
+  recover:
+    if: github.event_name == 'push'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_SHA: d4a55ac3960dff978dfabd5ee77307477ab5268d
+      TARGET_WORKFLOW: analytics-12a5-twitch-category-source-v2-observation-execution.yml
+      TARGET_ARTIFACT: analytics-12a5-twitch-category-source-v2-observation
+    steps:
+      - uses: actions/checkout@v4
+      - name: Discover completed production observation identities
+        id: discover
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "/repos/$GITHUB_REPOSITORY/actions/workflows/$TARGET_WORKFLOW/runs?branch=main&event=push&per_page=100" > /tmp/runs.json
+          run_id="$(jq -r --arg sha "$TARGET_SHA" '[.workflow_runs[] | select(.head_sha == $sha and .event == "push")] | sort_by(.created_at) | last | .id // empty' /tmp/runs.json)"
+          test -n "$run_id"
+          gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/jobs?per_page=100" > /tmp/jobs.json
+          gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100" > /tmp/artifacts.json
+          run_conclusion="$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .conclusion // "unknown"' /tmp/runs.json)"
+          run_attempt="$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .run_attempt // 1' /tmp/runs.json)"
+          observe_job_id="$(jq -r '[.jobs[] | select(.name == "observe")] | last | .id // empty' /tmp/jobs.json)"
+          observe_conclusion="$(jq -r '[.jobs[] | select(.name == "observe")] | last | .conclusion // "not-found"' /tmp/jobs.json)"
+          artifact_id="$(jq -r --arg name "$TARGET_ARTIFACT" '[.artifacts[] | select(.name == $name)] | last | .id // empty' /tmp/artifacts.json)"
+          artifact_digest="$(jq -r --arg name "$TARGET_ARTIFACT" '[.artifacts[] | select(.name == $name)] | last | .digest // "not-reported"' /tmp/artifacts.json)"
+          artifact_expired="$(jq -r --arg name "$TARGET_ARTIFACT" '[.artifacts[] | select(.name == $name)] | last | .expired // true' /tmp/artifacts.json)"
+          test -n "$observe_job_id"
+          test -n "$artifact_id"
+          test "$artifact_expired" = 'false'
+          {
+            echo "run_id=$run_id"
+            echo "run_conclusion=$run_conclusion"
+            echo "run_attempt=$run_attempt"
+            echo "observe_job_id=$observe_job_id"
+            echo "observe_conclusion=$observe_conclusion"
+            echo "artifact_id=$artifact_id"
+            echo "artifact_digest=$artifact_digest"
+          } >> "$GITHUB_OUTPUT"
+      - name: Download original sanitized evidence artifact
+        shell: bash
+        run: |
+          mkdir -p recovered
+          gh run download '${{ steps.discover.outputs.run_id }}' --repo "$GITHUB_REPOSITORY" --name "$TARGET_ARTIFACT" --dir recovered
+          test -f recovered/evidence.json
+      - name: Build evidence identity report
+        shell: bash
+        env:
+          RUN_ID: ${{ steps.discover.outputs.run_id }}
+          RUN_CONCLUSION: ${{ steps.discover.outputs.run_conclusion }}
+          RUN_ATTEMPT: ${{ steps.discover.outputs.run_attempt }}
+          OBSERVE_JOB_ID: ${{ steps.discover.outputs.observe_job_id }}
+          OBSERVE_CONCLUSION: ${{ steps.discover.outputs.observe_conclusion }}
+          ARTIFACT_ID: ${{ steps.discover.outputs.artifact_id }}
+          ARTIFACT_DIGEST: ${{ steps.discover.outputs.artifact_digest }}
+        run: |
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs'
+          import crypto from 'node:crypto'
+          const raw = fs.readFileSync('recovered/evidence.json', 'utf8')
+          const evidence = JSON.parse(raw)
+          if (evidence.schemaVersion !== 'viewloom-12a5-twitch-category-source-v2-observation-v1') throw new Error('evidence_schema_invalid')
+          if (evidence.trackingIssue !== 659 || evidence.provider !== 'twitch') throw new Error('evidence_identity_invalid')
+          const sha256 = crypto.createHash('sha256').update(raw).digest('hex')
+          const snapshots = Array.isArray(evidence.observation?.snapshots) ? evidence.observation.snapshots : []
+          const rows = snapshots.length === 0
+            ? '- none'
+            : snapshots.map((row) => `- \`${row.bucket_minute}\`: streams=${row.stream_count}, both_present=${row.both_present}, both_empty=${row.both_empty}, provider_id_only=${row.provider_id_only}, category_name_only=${row.category_name_only}, null_refs=${row.null_ref_count}, unresolved=${row.unresolved_category_ids}, bytes=${row.payload_bytes}`).join('\n')
+          const report = `<!-- viewloom-12a5-twitch-category-source-v2-observation-evidence-recovered-v1 -->
+          ## Twitch category-source-v2 observation evidence recovered
+
+          ### Execution identity
+
+          - Workflow run / attempt: \`${process.env.RUN_ID}\` / \`${process.env.RUN_ATTEMPT}\`
+          - Workflow conclusion: \`${process.env.RUN_CONCLUSION}\`
+          - Observe job / conclusion: \`${process.env.OBSERVE_JOB_ID}\` / \`${process.env.OBSERVE_CONCLUSION}\`
+          - Head SHA: \`${process.env.TARGET_SHA}\`
+          - Artifact ID: \`${process.env.ARTIFACT_ID}\`
+          - Artifact name: \`${process.env.TARGET_ARTIFACT}\`
+          - Artifact digest: \`${process.env.ARTIFACT_DIGEST}\`
+          - Evidence JSON SHA-256: \`${sha256}\`
+
+          ### Sanitized evidence summary
+
+          - Status: \`${evidence.status}\`
+          - Observed at: \`${evidence.observedAt}\`
+          - Candidate deployment attempted / success: \`${evidence.candidateDeployment?.attempted}\` / \`${evidence.candidateDeployment?.success}\`
+          - Polls: \`${evidence.observation?.polls}\`
+          - Consecutive real non-empty snapshot pass: \`${evidence.observation?.consecutiveSnapshotPass}\`
+          - State integrity pass: \`${evidence.observation?.stateIntegrityPass}\`
+          - Dictionary resolution pass: \`${evidence.observation?.dictionaryResolutionPass}\`
+          - Provider separation pass: \`${evidence.observation?.providerSeparationPass}\`
+          - Freshness pass: \`${evidence.observation?.freshnessPass}\`
+          - Canonical rollback attempted / success: \`${evidence.rollback?.attempted}\` / \`${evidence.rollback?.success}\`
+          - Error: \`${evidence.error ?? 'none'}\`
+
+          ### Consecutive snapshot evidence
+
+          ${rows}
+
+          ### Authorization boundary
+
+          - Semantic mapping authorized: \`${evidence.decision?.semanticMappingAuthorized}\`
+          - Stability clock start authorized: \`${evidence.decision?.stabilityClockStartAuthorized}\`
+          - Final mode authorized: \`${evidence.decision?.finalModeAuthorized}\`
+          - Public category UI authorized: \`${evidence.decision?.publicCategoryUiAuthorized}\`
+
+          This report only recovers identities and sanitized evidence from the already completed main-push run. It performs no Worker deployment, D1 query or mutation, rollback, cadence change, Kick change, semantic decision, clock start, final-mode transition, or public UI change.
+          `
+          fs.writeFileSync('report.md', report.replace(/^          /gm, ''))
+          NODE
+      - name: Report recovered evidence to tracking issue
+        shell: bash
+        run: gh issue comment 659 --repo "$GITHUB_REPOSITORY" --body-file report.md
+      - name: Upload recovered evidence and report
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a5-twitch-category-source-v2-observation-evidence-recovery
+          path: |
+            recovered/evidence.json
+            report.md
+          retention-days: 30
