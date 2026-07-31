@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-category-source-v2-observation-evidence-retirement-v1",
-  "status": "evidence_frozen_trigger_retired",
+  "status": "evidence_frozen_execution_path_retired",
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
@@ -16,11 +16,16 @@
   "retirement": {
     "consumedTriggerPath": "docs/audits/12a5-twitch-category-source-v2-observation-trigger.json",
     "consumedTriggerRetiredOnMerge": true,
-    "temporaryExecutionPathRetirementPending": true,
-    "temporaryWorkflow": ".github/workflows/analytics-12a5-twitch-category-source-v2-observation-execution.yml",
-    "temporaryRunner": "scripts/run-12a5-twitch-category-source-v2-observation.mjs",
-    "temporaryGenerator": "scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs",
-    "temporaryConfig": "execution-packages/twitch-category-source-v2-observation/wrangler.toml"
+    "temporaryExecutionPathRetirementPending": false,
+    "executionPathRetirementPr": 698,
+    "executionPathRetirementContract": "docs/audits/12a5-twitch-category-source-v2-observation-execution-path-retirement.json",
+    "retiredPaths": [
+      ".github/workflows/analytics-12a5-twitch-category-source-v2-observation-execution.yml",
+      "scripts/run-12a5-twitch-category-source-v2-observation.mjs",
+      "scripts/build-12a5-twitch-category-source-v2-observation-worker.mjs",
+      "scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs",
+      "execution-packages/twitch-category-source-v2-observation/wrangler.toml"
+    ]
   },
   "acceptedResult": {
     "twoConsecutiveSnapshots": true,
@@ -31,7 +36,7 @@
     "canonicalRollbackSucceeded": true
   },
   "pendingDecisions": {
-    "temporaryExecutionPathRetirement": true,
+    "temporaryExecutionPathRetirement": false,
     "semanticMapping": true,
     "newStabilityClock": true,
     "finalMode": true,
@@ -47,5 +52,5 @@
     "retentionChange": false,
     "backfill": false
   },
-  "nextGate": "merge this evidence freeze and trigger retirement, then retire the temporary execution path in a separate package"
+  "nextGate": "decide semantic handling and a new seven-day Twitch stability clock in a separate decision PR"
 }
