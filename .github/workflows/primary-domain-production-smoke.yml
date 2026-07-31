@@ -1,0 +1,109 @@
+name: Primary Domain Production Smoke
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/primary-domain-production-smoke.yml'
+      - 'apps/web/**'
+      - 'docs/audits/primary-domain-cutover.json'
+      - 'docs/audits/public-surface-routes-*.json'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/primary-domain-production-smoke.yml'
+      - 'apps/web/**'
+      - 'docs/audits/primary-domain-cutover.json'
+      - 'docs/audits/public-surface-routes-*.json'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-production-domain:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Diagnose and verify all production hosts
+        shell: bash
+        run: |
+          set -uo pipefail
+          failures=0
+
+          request() {
+            local label="$1"
+            local url="$2"
+            local body="$3"
+            local headers="$4"
+            local status
+            status="$(curl --silent --show-error --max-time 30 --dump-header "$headers" --output "$body" --write-out '%{http_code}' "$url")" || status="curl-error"
+            echo "===== ${label} ====="
+            echo "URL: ${url}"
+            echo "STATUS: ${status}"
+            tr -d '\r' < "$headers" | sed -n '1,20p'
+            echo "BODY PREFIX:"
+            head -c 500 "$body" || true
+            echo
+            printf '%s' "$status"
+          }
+
+          www_body="$(mktemp)"
+          www_headers="$(mktemp)"
+          www_status="$(request www https://www.viewloom.net/ "$www_body" "$www_headers" | tee /dev/stderr | tail -n 1)"
+          if [[ "$www_status" != "200" ]]; then
+            echo "WWW_STATUS_MISMATCH=${www_status}" >&2
+            failures=$((failures + 1))
+          fi
+          if ! grep -Fq 'https://www.viewloom.net/' "$www_body"; then
+            echo 'WWW_CANONICAL_ORIGIN_MISSING' >&2
+            failures=$((failures + 1))
+          fi
+          if grep -Fq 'https://vl.badjoke-lab.com' "$www_body"; then
+            echo 'WWW_LEGACY_ORIGIN_PRESENT' >&2
+            failures=$((failures + 1))
+          fi
+
+          apex_body="$(mktemp)"
+          apex_headers="$(mktemp)"
+          apex_status="$(request apex https://viewloom.net/ "$apex_body" "$apex_headers" | tee /dev/stderr | tail -n 1)"
+          apex_location="$(tr -d '\r' < "$apex_headers" | awk 'BEGIN{IGNORECASE=1} /^location:/{sub(/^location:[[:space:]]*/, ""); print; exit}')"
+          if [[ "$apex_status" != "301" ]] || [[ "$apex_location" != "https://www.viewloom.net" && "$apex_location" != "https://www.viewloom.net/" ]]; then
+            echo "APEX_REDIRECT_MISMATCH=${apex_status}:${apex_location}" >&2
+            failures=$((failures + 1))
+          fi
+
+          legacy_body="$(mktemp)"
+          legacy_headers="$(mktemp)"
+          legacy_status="$(request legacy 'https://vl.badjoke-lab.com/kick/day-flow/?from=domain-smoke' "$legacy_body" "$legacy_headers" | tee /dev/stderr | tail -n 1)"
+          legacy_location="$(tr -d '\r' < "$legacy_headers" | awk 'BEGIN{IGNORECASE=1} /^location:/{sub(/^location:[[:space:]]*/, ""); print; exit}')"
+          if [[ "$legacy_status" != "301" ]] || [[ "$legacy_location" != 'https://www.viewloom.net/kick/day-flow/?from=domain-smoke' ]]; then
+            echo "LEGACY_REDIRECT_MISMATCH=${legacy_status}:${legacy_location}" >&2
+            failures=$((failures + 1))
+          fi
+
+          robots_body="$(mktemp)"
+          robots_headers="$(mktemp)"
+          robots_status="$(request robots https://www.viewloom.net/robots.txt "$robots_body" "$robots_headers" | tee /dev/stderr | tail -n 1)"
+          if [[ "$robots_status" != "200" ]] || ! grep -Fq 'Sitemap: https://www.viewloom.net/sitemap.xml' "$robots_body"; then
+            echo 'ROBOTS_PRIMARY_SITEMAP_MISMATCH' >&2
+            failures=$((failures + 1))
+          fi
+
+          sitemap_body="$(mktemp)"
+          sitemap_headers="$(mktemp)"
+          sitemap_status="$(request sitemap https://www.viewloom.net/sitemap.xml "$sitemap_body" "$sitemap_headers" | tee /dev/stderr | tail -n 1)"
+          if [[ "$sitemap_status" != "200" ]] || ! grep -Fq '<loc>https://www.viewloom.net/</loc>' "$sitemap_body"; then
+            echo 'SITEMAP_PRIMARY_ENTRY_MISMATCH' >&2
+            failures=$((failures + 1))
+          fi
+          if grep -Fq 'https://vl.badjoke-lab.com' "$sitemap_body"; then
+            echo 'SITEMAP_LEGACY_ORIGIN_PRESENT' >&2
+            failures=$((failures + 1))
+          fi
+
+          echo "FAILURES=${failures}"
+          test "$failures" -eq 0

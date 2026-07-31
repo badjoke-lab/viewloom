@@ -1,8 +1,8 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 
 const GA4_MEASUREMENT_ID = 'G-YHX7HS1VBK'
-const PRIMARY_ORIGIN = 'https://viewloom.net'
-const LEGACY_ORIGINS = ['https://vl.badjoke-lab.com', 'https://www.viewloom.net']
+const PRIMARY_ORIGIN = 'https://www.viewloom.net'
+const LEGACY_ORIGINS = ['https://vl.badjoke-lab.com', 'https://viewloom.net']
 
 function primaryDomainPlugin(): Plugin {
   return {

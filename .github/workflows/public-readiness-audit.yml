@@ -67,8 +67,8 @@ jobs:
             .environment == "local" and
             .branch == null and
             .commit_sha == null and
-            .primary_origin == "https://viewloom.net" and
-            .canonical_host == "viewloom.net"
+            .primary_origin == "https://www.viewloom.net" and
+            .canonical_host == "www.viewloom.net"
           ' dist/deployment.json > /dev/null
       - name: Publish audit summary
         if: always()

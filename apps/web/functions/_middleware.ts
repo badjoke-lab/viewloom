@@ -6,8 +6,8 @@ import { enrichHistoryStreamerDailyStats } from './_history-streamer-daily-stats
 import { enrichKickFeatureResponse } from './_kick-feature-coverage'
 import { enrichTwitchFeatureResponse } from './_twitch-feature-coverage'
 
-const PRIMARY_HOST = 'viewloom.net'
-const REDIRECT_HOSTS = new Set(['www.viewloom.net', 'vl.badjoke-lab.com'])
+const PRIMARY_HOST = 'www.viewloom.net'
+const REDIRECT_HOSTS = new Set(['viewloom.net', 'vl.badjoke-lab.com'])
 const HISTORY_ROUTES = new Set(['/api/history'])
 const KICK_FEATURE_ROUTES = new Set(['/api/kick-heatmap', '/api/kick-day-flow', '/api/kick-battle-lines'])
 const TWITCH_FEATURE_ROUTES = new Set(['/api/twitch-heatmap', '/api/day-flow', '/api/battle-lines', '/api/history'])

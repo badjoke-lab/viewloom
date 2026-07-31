@@ -5,8 +5,8 @@ const dist = join(process.cwd(), 'dist')
 const measurementId = 'G-YHX7HS1VBK'
 const tagUrl = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
 const projectHubUrl = 'https://badjoke-lab.com/'
-const primaryOrigin = 'https://viewloom.net'
-const legacyOrigins = ['https://vl.badjoke-lab.com', 'https://www.viewloom.net']
+const primaryOrigin = 'https://www.viewloom.net'
+const legacyOrigins = ['https://vl.badjoke-lab.com', 'https://viewloom.net']
 const verificationToken = process.env.VITE_GSC_VERIFICATION_TOKEN?.trim()
 
 if (!existsSync(dist)) throw new Error('dist directory is missing.')
@@ -114,7 +114,7 @@ function writeDeploymentMetadata() {
     commit_sha: commitSha,
     pages_url: pagesUrl,
     primary_origin: primaryOrigin,
-    canonical_host: 'viewloom.net',
+    canonical_host: 'www.viewloom.net',
   }
   writeFileSync(join(dist, 'deployment.json'), `${JSON.stringify(payload, null, 2)}\n`)
 }

@@ -1,35 +1,37 @@
 {
-  "schemaVersion": "viewloom-primary-domain-cutover-v1",
+  "schemaVersion": "viewloom-primary-domain-cutover-v2",
   "status": "candidate",
-  "primaryOrigin": "https://viewloom.net",
-  "primaryHost": "viewloom.net",
+  "primaryOrigin": "https://www.viewloom.net",
+  "primaryHost": "www.viewloom.net",
   "redirects": [
     {
-      "fromHost": "www.viewloom.net",
-      "toOrigin": "https://viewloom.net",
+      "fromHost": "viewloom.net",
+      "toOrigin": "https://www.viewloom.net",
       "status": 301,
-      "preservePathAndQuery": true
+      "preservePathAndQuery": false,
+      "owner": "spaceship-url-redirect"
     },
     {
       "fromHost": "vl.badjoke-lab.com",
-      "toOrigin": "https://viewloom.net",
+      "toOrigin": "https://www.viewloom.net",
       "status": 301,
-      "preservePathAndQuery": true
+      "preservePathAndQuery": true,
+      "owner": "cloudflare-pages-middleware"
     }
   ],
   "publicMetadata": {
-    "canonical": "https://viewloom.net",
-    "openGraph": "https://viewloom.net",
-    "twitterImages": "https://viewloom.net",
-    "structuredData": "https://viewloom.net",
-    "sitemap": "https://viewloom.net/sitemap.xml",
-    "robotsSitemap": "https://viewloom.net/sitemap.xml"
+    "canonical": "https://www.viewloom.net",
+    "openGraph": "https://www.viewloom.net",
+    "twitterImages": "https://www.viewloom.net",
+    "structuredData": "https://www.viewloom.net",
+    "sitemap": "https://www.viewloom.net/sitemap.xml",
+    "robotsSitemap": "https://www.viewloom.net/sitemap.xml"
   },
   "deployment": {
     "provider": "cloudflare-pages",
     "repoControlledHostRedirect": true,
     "buildNormalizationRequired": true,
-    "domainBindingAssumption": "viewloom.net and www.viewloom.net are already attached to the existing Pages project"
+    "domainBindingAssumption": "www.viewloom.net is attached to the existing Pages project; viewloom.net remains a registrar-owned redirect to www"
   },
   "independentFromStabilityAudit": true,
   "unchanged": {
