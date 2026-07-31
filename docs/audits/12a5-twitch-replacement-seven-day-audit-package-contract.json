@@ -1,25 +1,27 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-replacement-seven-day-audit-package-v1",
-  "status": "accepted_dormant",
+  "status": "accepted_active",
   "phase": "12A-5B-R2",
   "parentTrackingIssue": 623,
   "hiddenUiTrackingIssue": 635,
   "trackingIssue": 659,
   "provider": "twitch",
   "feature": "heatmap_category_filter",
-  "governingMainSha": "0f692d122b5320ffbad8eea413b6c8b945f47dc2",
+  "governingMainSha": "ec4792712c24c5e1ed05cfa8a0ba5e600e748b8e",
   "specification": "docs/product/twitch-replacement-seven-day-audit-spec.md",
   "canonicalGate": "docs/audits/12a2-current-gate-state.json",
   "recoveryAcceptance": "docs/audits/12a5-twitch-permanent-category-recovery-acceptance.json",
   "packageAcceptance": "docs/audits/12a5-twitch-replacement-seven-day-audit-package-acceptance.json",
+  "semanticDecision": "docs/audits/12a5-twitch-category-source-v2-semantic-clock-decision.json",
+  "stabilityClockAcceptance": "docs/audits/12a5-twitch-category-source-v2-stability-clock-acceptance.json",
   "window": {
     "semantics": "half_open",
-    "startAt": "2026-07-29T05:30:00.000Z",
-    "endExclusiveAt": "2026-08-05T05:30:00.000Z",
+    "startAt": "2026-07-31T17:00:00.000Z",
+    "endExclusiveAt": "2026-08-07T17:00:00.000Z",
     "minimumStableDays": 7,
     "cadenceMinutes": 5,
     "expectedFinalSlots": 2016,
-    "originalWindowValid": false
+    "originalWindowValid": true
   },
   "runtime": {
     "twitchServiceName": "viewloom-collector-twitch",
@@ -128,5 +130,16 @@
     "publicExposureEnabled": false,
     "kickChanged": false
   },
-  "nextGate": "create and separately accept a bounded read-only checkpoint execution package; checkpoint evidence is diagnostic only; execute final mode only at or after 2026-08-05T05:30:00.000Z"
+  "stabilityClock": {
+    "status": "accepted_on_pr_700_merge",
+    "semanticDecisionPr": 699,
+    "semanticDecisionMergeSha": "ec4792712c24c5e1ed05cfa8a0ba5e600e748b8e",
+    "acceptancePr": 700,
+    "startsAutomaticallyAtBoundary": true,
+    "manualOperatorActionAtStartRequired": false,
+    "existingCollectorContinues": true,
+    "firstExpectedBucketMinute": "2026-07-31T17:00:00.000Z",
+    "domainChangeIncluded": false
+  },
+  "nextGate": "Accumulate the accepted half-open window from 2026-07-31T17:00:00.000Z through 2026-08-07T17:00:00.000Z using the existing five-minute Twitch collector. Final read-only mode is prohibited before the end boundary. Domain migration and public category UI remain separate later work."
 }
