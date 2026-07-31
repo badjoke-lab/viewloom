@@ -17,6 +17,7 @@ on:
       - 'scripts/verify-development-policy-active-twitch-canary.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-12a4-twitch-category-capture-canary-trigger-package.mjs'
+      - 'scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs'
       - 'scripts/verify-r12c1-launch-copy-package.mjs'
       - 'scripts/verify-r12c2-launch-assets-package.mjs'
       - 'scripts/verify-r12c3-release-candidate.mjs'
@@ -38,6 +39,7 @@ on:
       - 'scripts/verify-development-policy-active-twitch-canary.mjs'
       - 'scripts/verify-category-rollout-policy.mjs'
       - 'scripts/verify-12a4-twitch-category-capture-canary-trigger-package.mjs'
+      - 'scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs'
       - 'scripts/verify-r12c1-launch-copy-package.mjs'
       - 'scripts/verify-r12c2-launch-assets-package.mjs'
       - 'scripts/verify-r12c3-release-candidate.mjs'
@@ -66,9 +68,19 @@ jobs:
           rollout=$(node -p "require('./docs/audits/12a2-current-gate-state.json').permanentCategoryCaptureRolloutDecision?.status === 'accepted' ? 'true' : 'false'")
           echo "schema=$schema" >> "$GITHUB_OUTPUT"
           echo "permanent_rollout=$rollout" >> "$GITHUB_OUTPUT"
+      - name: Detect exact category-source-v2 observation trigger
+        id: observation_trigger
+        shell: bash
+        run: |
+          trigger='docs/audits/12a5-twitch-category-source-v2-observation-trigger.json'
+          if [ -f "$trigger" ]; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+          fi
       - name: Detect exact or active Twitch trigger
         id: trigger_scope
-        if: steps.category_gate.outputs.permanent_rollout != 'true'
+        if: steps.category_gate.outputs.permanent_rollout != 'true' && steps.observation_trigger.outputs.present != 'true'
         shell: bash
         env:
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
@@ -94,10 +106,21 @@ jobs:
             echo 'present=false' >> "$GITHUB_OUTPUT"
           fi
       - name: Verify permanent category rollout policy
-        if: steps.category_gate.outputs.permanent_rollout == 'true'
+        if: steps.category_gate.outputs.permanent_rollout == 'true' && steps.observation_trigger.outputs.present != 'true'
         run: node scripts/verify-category-rollout-policy.mjs | tee development-policy.log
+      - name: Verify exact one-file category-source-v2 observation trigger
+        if: steps.observation_trigger.outputs.present == 'true'
+        shell: bash
+        run: |
+          if test '${{ github.event_name }}' = 'pull_request'; then
+            base='${{ github.event.pull_request.base.sha }}'
+            head='${{ github.event.pull_request.head.sha }}'
+            changed="$(git diff --name-only "$base" "$head")"
+            test "$changed" = 'docs/audits/12a5-twitch-category-source-v2-observation-trigger.json'
+          fi
+          node scripts/verify-12a5-twitch-category-source-v2-observation-trigger.mjs | tee development-policy.log
       - name: Verify development policy
-        if: steps.category_gate.outputs.permanent_rollout != 'true' && steps.trigger_scope.outputs.exact != 'true' && steps.trigger_scope.outputs.present != 'true'
+        if: steps.category_gate.outputs.permanent_rollout != 'true' && steps.observation_trigger.outputs.present != 'true' && steps.trigger_scope.outputs.exact != 'true' && steps.trigger_scope.outputs.present != 'true'
         shell: bash
         run: |
           set +e
@@ -106,7 +129,7 @@ jobs:
           cat development-policy.log
           exit $status
       - name: Verify development policy with armed Twitch canary
-        if: steps.category_gate.outputs.permanent_rollout != 'true' && steps.trigger_scope.outputs.exact != 'true' && steps.trigger_scope.outputs.present == 'true'
+        if: steps.category_gate.outputs.permanent_rollout != 'true' && steps.observation_trigger.outputs.present != 'true' && steps.trigger_scope.outputs.exact != 'true' && steps.trigger_scope.outputs.present == 'true'
         shell: bash
         run: |
           set +e
@@ -115,7 +138,7 @@ jobs:
           cat development-policy.log
           exit $status
       - name: Verify exact Twitch trigger package
-        if: steps.category_gate.outputs.permanent_rollout != 'true' && steps.trigger_scope.outputs.exact == 'true'
+        if: steps.category_gate.outputs.permanent_rollout != 'true' && steps.observation_trigger.outputs.present != 'true' && steps.trigger_scope.outputs.exact == 'true'
         env:
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
         run: node scripts/verify-12a4-twitch-category-capture-canary-trigger-package.mjs | tee development-policy.log
