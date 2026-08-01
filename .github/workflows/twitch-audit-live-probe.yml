@@ -1,0 +1,42 @@
+name: Twitch Audit Live Probe
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/twitch-audit-live-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe live Twitch status and data APIs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for spec in \
+            'status|https://www.viewloom.net/api/twitch-status' \
+            'heatmap|https://www.viewloom.net/api/twitch-heatmap' \
+            'history|https://www.viewloom.net/api/history'
+          do
+            IFS='|' read -r label url <<< "$spec"
+            body="$(mktemp)"
+            headers="$(mktemp)"
+            status="$(curl --silent --show-error --max-time 30 --dump-header "$headers" --output "$body" --write-out '%{http_code}' "$url")"
+            echo "===== ${label} ====="
+            echo "URL=${url}"
+            echo "HTTP_STATUS=${status}"
+            tr -d '\r' < "$headers" | sed -n '1,20p'
+            test "$status" = '200'
+            jq -e . "$body" >/dev/null
+            echo 'TOP_LEVEL:'
+            jq -c 'if type=="object" then keys else {type:type,length:length} end' "$body"
+            echo 'AUDIT_RELEVANT_FIELDS:'
+            jq -c '.. | objects | with_entries(select(.key | test("status|time|timestamp|bucket|captured|updated|latest|count|coverage|missing|cadence|fresh|snapshot"; "i"))) | select(length > 0)' "$body" | head -n 120 || true
+            echo 'BODY_PREFIX:'
+            head -c 12000 "$body"
+            echo
+          done
