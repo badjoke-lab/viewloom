@@ -36,7 +36,7 @@ ORDER BY latest_bucket DESC;
 "
 ```
 
-The result must be reviewed before cleanup. `fixture` rows are test data. Real or fallback collection may use source modes such as `authenticated`, `official-livestreams`, `public-channel-fallback`, or their explicitly empty variants, depending on the collector contract in force.
+The result must be reviewed before cleanup. `fixture` rows are test data. Current real/fallback rows use collector-defined non-fixture modes such as `authenticated`, `public-channel-fallback`, or an explicitly empty fallback mode. Official-livestreams coverage is recorded in collector metadata even when the persisted row mode is `authenticated`.
 
 ## Remove only fixture rows
 
