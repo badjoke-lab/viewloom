@@ -1,57 +1,54 @@
 # ViewLoom current roadmap
 
 Status: source of truth  
-Last updated: 2026-07-31
+Last updated: 2026-08-02
 
 ## Current milestone: 12A — free-tier long-run hardening
 
 ### Completed
 
-- Twitch and Kick permanent category capture remain active on five-minute collectors.
-- The original replacement window is invalid and retired.
-- Corrected Twitch category-source-v2 observation package accepted in PR #692 / #693.
-- Exact rerun trigger merged in PR #695.
-- Production run `30620512044`, observe job `91123756273`, and artifact `8789385200` succeeded.
-- Two consecutive real, non-empty, fresh v2 snapshots passed state integrity, dictionary resolution, provider separation, and freshness.
-- Canonical v1 rollback succeeded.
-- Evidence frozen in PR #697.
-- Consumed trigger and temporary execution path retired in PR #698.
+- Twitch and Kick permanent category capture remain active and provider-separated on unchanged five-minute collectors.
+- Corrected Twitch category-source-v2 observation completed successfully in run `30620512044` and was frozen in PR #697.
+- Temporary observation execution paths were retired in PR #698.
+- Provider-scoped semantic handling was accepted in PR #699 / merge `ec4792712c24c5e1ed05cfa8a0ba5e600e748b8e`.
+- The revised seven-day stability clock was accepted in PR #700 / merge `d2316f10ba970818a47605a76a9ee9f235c517a4`.
 
-### Current gate: semantic handling and new seven-day stability-clock decision
+### Current gate: active seven-day Twitch stability accumulation
 
-Current branch:
+Accepted half-open window:
 
-`work-659-twitch-category-source-v2-semantic-clock-decision`
+```text
+start: 2026-07-31T17:00:00.000Z (2026-08-01 02:00 JST)
+end-exclusive: 2026-08-07T17:00:00.000Z (2026-08-08 02:00 JST)
+cadence: 5 minutes
+expected slots: 2016
+```
 
-## Accepted evidence
+The existing Twitch collector continues unchanged. The clock required no start workflow, new cron, Worker deployment, checkpoint, D1 mutation, binding change, or operator action.
 
-- Snapshot buckets: `2026-07-31T09:40:00Z` and `2026-07-31T09:45:00Z`.
-- Each snapshot: 300 streams, 300 present category references, zero null/invalid/unresolved/incomplete states.
-- Category IDs: 84 then 85.
-- Candidate and canonical deployments retained the existing `*/5 * * * *` cadence.
-- The evidence demonstrates complete source states; it does not itself authorize semantic mapping, a new clock, final mode, or public UI.
+## Accepted semantics
+
+- Identity is provider-scoped: `(provider, categoryProviderId)`.
+- Only complete provider-ID/name pairs create a category reference and dictionary entry.
+- Incomplete pairs remain null coverage.
+- Synthetic, name-only, and cross-provider mappings are prohibited.
+- Combined-provider category rankings remain prohibited.
 
 ## Active deliverable
 
-Create a separate decision PR that:
-
-- interprets the demonstrated source-state completeness without inventing mappings;
-- decides whether semantic handling is accepted;
-- decides whether a new seven-day Twitch stability clock is authorized;
-- freezes an exact start only when authorization is explicit;
-- preserves Kick separation, five-minute cadences, retention, and the public fallback;
-- performs no final-mode or public category-filter change.
+Accumulate the accepted window without changing runtime behavior. At or after the end boundary, execute the governed final read-only audit and freeze the result for separate acceptance.
 
 ## Following gates
 
-1. semantic and new-clock decision;
-2. seven stable days from an explicitly accepted start;
-3. final audit;
+1. complete the accepted seven-day window;
+2. final read-only audit for all 2016 expected slots;
+3. final evidence freeze and separate acceptance;
 4. separate final-mode decision;
-5. separate public cutover.
+5. separate public category-filter cutover.
 
 ## Hard boundaries
 
-- No observation rerun, historical backfill, threshold relaxation, synthetic mapping, or automatic clock reset.
-- No Kick, cadence, retention, cross-provider, final-mode, or public-UI change.
+- No final audit or final mode before `2026-08-07T17:00:00.000Z`.
+- No observation rerun, checkpoint rerun, historical backfill, threshold relaxation, synthetic mapping, or clock reset.
+- No Kick, cadence, retention, cross-provider, final-mode, or public-UI change during accumulation.
 - Existing unfiltered Heatmap remains the fallback.
