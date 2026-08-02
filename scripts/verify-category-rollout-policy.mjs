@@ -109,7 +109,7 @@ assert.equal(audit.window.endExclusiveAt, clock.window.endExclusiveAt)
 assert.equal(audit.window.expectedFinalSlots, 2016)
 assert.equal(audit.stabilityClock.acceptancePr, 700)
 assert.equal(audit.stabilityClock.startsAutomaticallyAtBoundary, true)
-assert.equal(audit.publicSurface.publicExposureEnabled, false)
+assert.equal(audit.readOnlyBoundary.publicExposureAuthorized, false)
 
 for (const [path, fragments] of Object.entries({
   'AGENTS.md': ['Revised stability clock accepted: PR #700', 'Current gate: accumulate with the existing Twitch collector until the end boundary'],
