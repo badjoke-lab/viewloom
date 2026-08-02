@@ -1,0 +1,49 @@
+name: Verify Data Status Production
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify live feature labels
+        shell: bash
+        run: |
+          set -euo pipefail
+          urls=(
+            /twitch/heatmap/
+            /twitch/day-flow/
+            /twitch/battle-lines/
+            /twitch/history/
+            /kick/heatmap/
+            /kick/day-flow/
+            /kick/battle-lines/
+            /kick/history/
+          )
+          failures=0
+          for path in "${urls[@]}"; do
+            url="https://www.viewloom.net${path}"
+            body="$(mktemp)"
+            status="$(curl --silent --show-error --location --max-time 30 --output "$body" --write-out '%{http_code}' "$url")"
+            echo "${path} HTTP=${status}"
+            if [[ "$status" != "200" ]]; then
+              echo "ERROR: ${path} returned ${status}"
+              failures=$((failures + 1))
+              continue
+            fi
+            if ! grep -Fq '>Data Status</a>' "$body"; then
+              echo "ERROR: ${path} does not expose the Data Status feature-tab label"
+              failures=$((failures + 1))
+            fi
+            if [[ "$path" == */history/ ]] && ! grep -Fq '>Open Data Status</a>' "$body"; then
+              echo "ERROR: ${path} does not expose the Open Data Status action"
+              failures=$((failures + 1))
+            fi
+          done
+          echo "FAILURES=${failures}"
+          test "$failures" -eq 0
