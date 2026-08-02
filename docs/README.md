@@ -32,9 +32,11 @@ Public Twitch category-filter exposure authorized no
 10. `docs/product/twitch-replacement-seven-day-audit-spec.md`
 11. active WIP and affected feature specification/plan
 
-## Accepted permanent product specifications
+## Accepted permanent product records
 
 - `docs/product/local-watchlist-spec.md`
+- `docs/product/watchlist-v1-implementation-plan.md`
+- `docs/operations/watchlist-production-acceptance-2026-06-25.md`
 
 ## Accepted observation result
 
