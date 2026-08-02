@@ -122,7 +122,25 @@ If real channel collection fails or configured channels are offline, call:
 POST /insert-fixture
 ```
 
-for storage-path validation.
+for storage-path validation only. Do not use fixture rows as evidence of real production collection.
+
+## Production fixture removal
+
+Before describing Kick production data as real, remove validation fixtures with the provider-scoped procedure in:
+
+```text
+docs/operations/kick-fixture-removal-runbook.md
+```
+
+The required deletion predicate is intentionally narrow:
+
+```sql
+DELETE FROM minute_snapshots
+WHERE provider = 'kick'
+  AND source_mode = 'fixture';
+```
+
+Do not delete all Kick rows, do not touch Twitch storage, and do not replace an unhealthy collector with new fixtures.
 
 ## Runtime contract
 
