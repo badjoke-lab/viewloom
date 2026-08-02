@@ -91,7 +91,7 @@ POST /insert-fixture
 
 Use `POST /collect` for real configured channel polling.
 
-Use `POST /insert-fixture` only when real channels are offline or you need to validate the D1 storage path quickly.
+Use `POST /insert-fixture` only when real channels are offline or you need to validate the D1 storage path quickly. Fixture insertion is not production-completion evidence.
 
 ## Optional direct SQL fixture
 
@@ -108,6 +108,24 @@ After either fixture insertion or real collection, these endpoints should stop r
 - `/api/kick-battle-lines`
 - `/api/kick-history`
 
+## Remove fixture rows before production acceptance
+
+Use the complete procedure in:
+
+```text
+docs/operations/kick-fixture-removal-runbook.md
+```
+
+The production-safe SQL is:
+
+```sql
+DELETE FROM minute_snapshots
+WHERE provider = 'kick'
+  AND source_mode = 'fixture';
+```
+
+Run the source-mode inventory and post-delete verification from the runbook. Never broaden the deletion to all Kick rows or the whole table. If no real rows survive, expose an honest empty state and repair collection instead of reinserting fixtures.
+
 ## Current repository-side completion target
 
 Before touching Cloudflare, repository should contain:
@@ -118,6 +136,7 @@ Before touching Cloudflare, repository should contain:
 - `workers/collector-kick/src/index.ts`
 - `workers/collector-kick/wrangler.toml`
 - `workers/collector-kick/README.md`
+- `docs/operations/kick-fixture-removal-runbook.md`
 - Kick API readers prepared for `DB_KICK_HOT`
 
 ## Verification SQL
@@ -132,6 +151,21 @@ Expected after one successful fixture or collection:
 
 ```text
 kick | 1+
+```
+
+For production acceptance, also require:
+
+```sql
+SELECT COUNT(*) AS remaining_fixture_rows
+FROM minute_snapshots
+WHERE provider = 'kick'
+  AND source_mode = 'fixture';
+```
+
+Expected:
+
+```text
+0
 ```
 
 ## What remains outside Cloudflare setup

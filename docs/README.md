@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Last updated: 2026-07-31
+Last updated: 2026-08-02
 
 ## Current execution state
 
@@ -32,6 +32,12 @@ Public Twitch category-filter exposure authorized no
 10. `docs/product/twitch-replacement-seven-day-audit-spec.md`
 11. active WIP and affected feature specification/plan
 
+## Accepted permanent product records
+
+- `docs/product/local-watchlist-spec.md`
+- `docs/product/watchlist-v1-implementation-plan.md`
+- `docs/operations/watchlist-production-acceptance-2026-06-25.md`
+
 ## Accepted observation result
 
 - Trigger PR / merge: #695 / `78cf5759840aa7819b34c153d7521dab7df6bacc`.
@@ -49,6 +55,10 @@ Public Twitch category-filter exposure authorized no
 2. Decide whether to authorize a new seven-day Twitch stability clock.
 3. If accepted, freeze an exact start time and collect seven stable days.
 4. Run a separate final audit before any final-mode or public category-filter change.
+
+## Operational runbooks
+
+- `docs/operations/kick-fixture-removal-runbook.md` — inspect and remove only Kick `source_mode=fixture` validation rows before production acceptance.
 
 ## Invariants
 
