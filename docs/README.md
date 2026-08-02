@@ -6,15 +6,15 @@ Last updated: 2026-08-02
 ## Current execution state
 
 ```text
-Phase 12A-5B-R2 Twitch category source completeness recovery
+Phase 12A-5B-R2 Twitch category seven-day stability accumulation
 Canonical runtime gate viewloom-12a2-current-gate-state-v33
-Original stability clock valid no
-Corrected observation package accepted PR #692 / #693
-Successful Twitch v2 observation PR #695 / run 30620512044 / job 91123756273
-Evidence frozen PR #697
-Temporary execution path retired PR #698
-Current gate semantic handling and new seven-day stability-clock decision
-Current branch work-659-twitch-category-source-v2-semantic-clock-decision
+Semantic handling accepted PR #699 / merge ec4792712c24c5e1ed05cfa8a0ba5e600e748b8e
+Revised stability clock accepted PR #700 / merge d2316f10ba970818a47605a76a9ee9f235c517a4
+Accepted window [2026-07-31T17:00:00.000Z, 2026-08-07T17:00:00.000Z)
+JST window 2026-08-01 02:00 to 2026-08-08 02:00
+Expected five-minute slots 2016
+Current gate active accumulation on the unchanged Twitch collector
+Manual start action required no
 Public Twitch category-filter exposure authorized no
 ```
 
@@ -24,10 +24,10 @@ Public Twitch category-filter exposure authorized no
 2. `docs/product/current-roadmap.md`
 3. `docs/product/current-schedule.md`
 4. `docs/audits/12a2-current-gate-state.json`
-5. diagnosis decision/evidence/retirement
-6. corrected observation recovery package contract/acceptance
-7. `docs/audits/12a5-twitch-category-source-v2-observation-success-evidence.json`
-8. `docs/audits/12a5-twitch-category-source-v2-observation-evidence-retirement.json`
+5. `docs/audits/12a5-twitch-category-source-v2-semantic-clock-decision.json`
+6. `docs/audits/12a5-twitch-category-source-v2-stability-clock-acceptance.json`
+7. `docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json`
+8. `docs/audits/12a5-twitch-category-source-v2-observation-success-evidence.json`
 9. `docs/audits/12a5-twitch-category-source-v2-observation-execution-path-retirement.json`
 10. `docs/product/twitch-replacement-seven-day-audit-spec.md`
 11. active WIP and affected feature specification/plan
@@ -38,23 +38,20 @@ Public Twitch category-filter exposure authorized no
 - `docs/product/watchlist-v1-implementation-plan.md`
 - `docs/operations/watchlist-production-acceptance-2026-06-25.md`
 
-## Accepted observation result
+## Accepted Twitch category decisions
 
-- Trigger PR / merge: #695 / `78cf5759840aa7819b34c153d7521dab7df6bacc`.
-- Run / observe job / artifact: `30620512044` / `91123756273` / `8789385200`.
-- Artifact digest: `sha256:dfff17be40f9766c5d4cc4ead6eada761e00ba760b7ce133fce0e9b4f427fc10`.
-- Evidence SHA-256: `e2ceb0ce88dab1f03fd374004488fda9381f223a5dde6d139686c06218ce6bbe`.
-- Two consecutive real, non-empty, fresh v2 snapshots each contained 300 streams and 300 valid category references.
-- All integrity, dictionary, provider-separation, and freshness gates passed.
-- Canonical v1 rollback succeeded at the unchanged five-minute cadence.
-- The trigger and one-time execution workflow, runner, generator, trigger verifier, and Wrangler config are retired.
+- The successful v2 observation remains frozen under run/job/artifact `30620512044` / `91123756273` / `8789385200`.
+- PR #699 accepted provider-scoped semantics without synthetic, name-only, or cross-provider mapping.
+- PR #700 accepted a half-open seven-day window from `2026-07-31T17:00:00.000Z` through `2026-08-07T17:00:00.000Z`.
+- The existing five-minute collector continues unchanged; no start workflow, new cron, deployment, checkpoint, D1 mutation, binding change, or operator action was required.
+- Final read-only mode remains prohibited before the end boundary.
 
 ## Current order
 
-1. Decide semantic handling from frozen evidence without synthetic mapping or threshold relaxation.
-2. Decide whether to authorize a new seven-day Twitch stability clock.
-3. If accepted, freeze an exact start time and collect seven stable days.
-4. Run a separate final audit before any final-mode or public category-filter change.
+1. Accumulate only buckets at or after the accepted start using the unchanged Twitch collector.
+2. Preserve collector, D1 schema, bindings, cadence, retention, category semantics, Kick separation, and public fallback.
+3. At or after `2026-08-07T17:00:00.000Z`, run the governed final read-only audit for all 2016 expected slots.
+4. Freeze and separately accept evidence before final-mode or public category-filter decisions.
 
 ## Operational runbooks
 
@@ -62,9 +59,9 @@ Public Twitch category-filter exposure authorized no
 
 ## Invariants
 
-- No observation rerun or automatic clock reset.
+- No observation rerun, checkpoint rerun, historical backfill, threshold relaxation, synthetic mapping, or clock reset.
 - Twitch/Kick remain separated on existing five-minute cadences.
-- No backfill, retention expansion, cross-provider identity, or combined ranking.
+- No retention expansion, cross-provider identity, or combined ranking.
 - Public category controls remain unauthorized.
 - Existing unfiltered Heatmap remains the fallback.
 - Current-main documents and accepted contracts override cached handoffs.

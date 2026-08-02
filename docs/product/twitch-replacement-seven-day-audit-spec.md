@@ -5,48 +5,46 @@ Tracking issue: #659
 
 ## Current authority
 
-The original replacement window is invalid and retired. Source completeness has now been demonstrated, but no new stability start or earliest final-audit time is authorized yet.
+Provider-scoped semantic handling and the revised stability clock are accepted.
 
 - Corrected observation package: PR #692 / #693.
-- Exact rerun trigger: PR #695.
 - Successful run/job/artifact: `30620512044` / `91123756273` / `8789385200`.
-- Evidence freeze: PR #697.
-- Temporary execution path retirement: PR #698.
+- Evidence freeze and temporary execution-path retirement: PR #697 / #698.
+- Semantic decision: PR #699 / merge `ec4792712c24c5e1ed05cfa8a0ba5e600e748b8e`.
+- Stability-clock acceptance: PR #700 / merge `d2316f10ba970818a47605a76a9ee9f235c517a4`.
 
-## Accepted observation evidence
+## Accepted semantics
 
-The bounded Twitch-only observation produced two consecutive real, non-empty, fresh `category-source-v2-candidate` snapshots:
+- Category identity is `(provider, categoryProviderId)`.
+- Only `both_present` source pairs create a category reference and dictionary entry.
+- `both_empty`, `provider_id_only`, and `category_name_only` remain null references and count as missing or incomplete source coverage.
+- Synthetic, name-only, and cross-provider mapping is prohibited.
+- Combined-provider category ranking is prohibited.
 
-- `2026-07-31T09:40:00Z`: 300 streams, 300 `bothPresent`, 84 category IDs, zero incomplete or unresolved states;
-- `2026-07-31T09:45:00Z`: 300 streams, 300 `bothPresent`, 85 category IDs, zero incomplete or unresolved states.
+## Current gate: active stability accumulation
 
-State integrity, dictionary resolution, provider separation, freshness, candidate deployment, and canonical v1 rollback all passed. Twitch and Kick remain on separate five-minute collectors.
+Accepted half-open window:
 
-## Current gate: semantic handling and new stability-clock decision
+```text
+start: 2026-07-31T17:00:00.000Z
+end-exclusive: 2026-08-07T17:00:00.000Z
+JST: 2026-08-01 02:00 to 2026-08-08 02:00
+cadence: 5 minutes
+expected slots: 2016
+first expected bucket: 2026-07-31T17:00:00.000Z
+```
 
-Current branch:
+Activation is passive: the existing Twitch collector continues normally. No start-time workflow, new cron, Worker deployment, checkpoint, D1 mutation, binding change, retention change, Kick change, domain change, or operator action is required.
 
-`work-659-twitch-category-source-v2-semantic-clock-decision`
+## Final audit gate
 
-The decision must:
+Final read-only mode is prohibited before `2026-08-07T17:00:00.000Z`. At or after the end boundary, the governed audit must evaluate all 2016 expected slots, continuity, category-reference coverage, dictionary integrity, freshness, provider leakage, permanent bindings, collector health, and storage safety.
 
-- define how the demonstrated source-state branches are interpreted without synthetic mapping;
-- decide whether semantic handling is accepted;
-- decide whether a new seven-day stability clock is authorized;
-- set an exact start only through explicit acceptance;
-- leave final mode and public category UI unauthorized;
-- preserve Kick separation, cadence, retention, and the unfiltered public fallback.
-
-## Following gates
-
-1. semantic and new-clock decision;
-2. seven stable days from the accepted start, if authorized;
-3. final audit;
-4. separate final-mode decision;
-5. separate public cutover.
+Final evidence must be frozen and separately accepted. Passing the audit does not automatically expose the category filter; final mode and public cutover remain separate decisions.
 
 ## Prohibited responses
 
-- observation rerun or recreation of the retired temporary execution path without a new governed sequence;
-- historical backfill, row invention, threshold relaxation, synthetic mapping, or automatic clock reset;
-- Kick, cadence, retention, cross-provider, final-mode, or public category-filter change.
+- observation rerun, checkpoint rerun, or recreation of retired temporary execution paths without a new governed sequence;
+- historical backfill, row invention, threshold relaxation, synthetic mapping, or clock reset;
+- final audit before the end boundary;
+- Kick, cadence, retention, cross-provider, final-mode, or public category-filter change during accumulation.
