@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "viewloom-data-status-label-parity-v1",
+  "status": "candidate",
+  "scope": [
+    "twitch/heatmap",
+    "twitch/day-flow",
+    "twitch/battle-lines",
+    "twitch/history",
+    "kick/heatmap",
+    "kick/day-flow",
+    "kick/battle-lines",
+    "kick/history"
+  ],
+  "label": "Data Status",
+  "historyActionLabel": "Open Data Status",
+  "unchanged": {
+    "collectors": true,
+    "d1": true,
+    "cadence": true,
+    "retention": true,
+    "categoryCapture": true,
+    "categoryUiExposure": true,
+    "twitchStabilityClock": true
+  }
+}
