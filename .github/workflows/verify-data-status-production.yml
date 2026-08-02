@@ -11,7 +11,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify live feature labels
+      - name: Verify live feature labels after deployment
         shell: bash
         run: |
           set -euo pipefail
@@ -25,25 +25,30 @@ jobs:
             /kick/battle-lines/
             /kick/history/
           )
-          failures=0
-          for path in "${urls[@]}"; do
-            url="https://www.viewloom.net${path}"
-            body="$(mktemp)"
-            status="$(curl --silent --show-error --location --max-time 30 --output "$body" --write-out '%{http_code}' "$url")"
-            echo "${path} HTTP=${status}"
-            if [[ "$status" != "200" ]]; then
-              echo "ERROR: ${path} returned ${status}"
-              failures=$((failures + 1))
-              continue
+
+          for attempt in {1..12}; do
+            failures=0
+            echo "===== attempt ${attempt} ====="
+            for path in "${urls[@]}"; do
+              url="https://www.viewloom.net${path}?production-check=${GITHUB_SHA}-${attempt}"
+              body="$(mktemp)"
+              status="$(curl --silent --show-error --location --max-time 30 --header 'Cache-Control: no-cache' --output "$body" --write-out '%{http_code}' "$url")"
+              echo "${path} HTTP=${status}"
+              if [[ "$status" != "200" ]]; then
+                failures=$((failures + 1))
+                continue
+              fi
+              grep -Fq '>Data Status</a>' "$body" || failures=$((failures + 1))
+              if [[ "$path" == */history/ ]]; then
+                grep -Fq '>Open Data Status</a>' "$body" || failures=$((failures + 1))
+              fi
+            done
+            echo "FAILURES=${failures}"
+            if [[ "$failures" -eq 0 ]]; then
+              exit 0
             fi
-            if ! grep -Fq '>Data Status</a>' "$body"; then
-              echo "ERROR: ${path} does not expose the Data Status feature-tab label"
-              failures=$((failures + 1))
-            fi
-            if [[ "$path" == */history/ ]] && ! grep -Fq '>Open Data Status</a>' "$body"; then
-              echo "ERROR: ${path} does not expose the Open Data Status action"
-              failures=$((failures + 1))
-            fi
+            sleep 10
           done
-          echo "FAILURES=${failures}"
-          test "$failures" -eq 0
+
+          echo 'Production did not expose the merged labels within the bounded verification window.'
+          exit 1
