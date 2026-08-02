@@ -2,39 +2,38 @@
 
 ## Required reading and freshness rule
 
-Before creating a branch and again before merge, fetch current `main` and read `AGENTS.md`, the docs index, current roadmap, current schedule, canonical runtime gate, diagnosis records, corrected observation package/acceptance, successful observation evidence, evidence retirement, execution-path retirement, affected specification/plan, active WIP, and development policy. Record the current-main SHA in every PR.
+Before creating a branch and again before merge, fetch current `main` and read `AGENTS.md`, the docs index, current roadmap, current schedule, canonical runtime gate, semantic decision, revised stability-clock acceptance, seven-day audit contract, successful observation evidence, execution-path retirement, affected specification/plan, active WIP, and development policy. Record the current-main SHA in every PR.
 
 ## Current state
 
 ```text
-Phase 12A-5B-R2 Twitch category source completeness recovery
-Original stability clock invalid and retired
-Corrected observation package accepted PR #692 / #693
-Successful observation PR #695 / run 30620512044 / job 91123756273
-Evidence frozen PR #697
-Temporary execution path retired PR #698
-Current gate semantic handling and new seven-day stability-clock decision
-Current branch work-659-twitch-category-source-v2-semantic-clock-decision
+Phase 12A-5B-R2 Twitch category seven-day stability accumulation
+Semantic handling accepted PR #699 / merge ec4792712c24c5e1ed05cfa8a0ba5e600e748b8e
+Revised stability clock accepted PR #700 / merge d2316f10ba970818a47605a76a9ee9f235c517a4
+Window [2026-07-31T17:00:00.000Z, 2026-08-07T17:00:00.000Z)
+JST 2026-08-01 02:00 to 2026-08-08 02:00
+Expected slots 2016
+Current gate active accumulation on the unchanged five-minute Twitch collector
 Public Twitch category-filter exposure unauthorized
 ```
 
 ## Accepted result
 
-Two consecutive real, non-empty, fresh Twitch v2 snapshots passed all integrity, dictionary, provider-separation, and freshness gates. Canonical v1 rollback succeeded. The exact trigger and all one-time production execution paths are retired.
+Provider-scoped semantic handling is accepted. Only complete provider-ID/name pairs create references; incomplete pairs remain null coverage. The revised seven-day clock began automatically at the accepted boundary through normal collector operation. No start-time workflow or operator action was required.
 
 ## Current work order
 
-1. Produce a separate semantic and clock decision from the frozen evidence.
-2. Do not invent mappings, relax thresholds, backfill, or reset the clock automatically.
-3. If a new clock is accepted, freeze its exact start in the decision record and require seven stable days before final audit.
-4. Keep final mode and public category UI blocked until separate acceptance.
+1. Preserve the collector, D1 schema, bindings, cadence, retention, and category semantics during accumulation.
+2. Do not run final mode before `2026-08-07T17:00:00.000Z`.
+3. At or after the boundary, run the governed final read-only audit for 2016 expected slots.
+4. Freeze and separately accept evidence before final-mode or public category UI decisions.
 
 ## Current boundaries
 
-- No observation rerun or recreation of the retired execution path without a new governed package and trigger sequence.
-- No Kick, cadence, retention, cross-provider, final-mode, or public-UI change.
+- No observation rerun, checkpoint rerun, backfill, threshold relaxation, synthetic mapping, or clock reset.
+- No Kick, cadence, retention, cross-provider, final-mode, or public-UI change during the active window.
 - Existing unfiltered Heatmap remains the fallback.
 
 ## Change classification
 
-Use one PR per responsibility: evidence freeze, execution-path retirement, semantic/clock decision, stability-window evidence, final audit, or public cutover.
+Use one PR per responsibility: stability-window source-of-truth synchronization, final audit package, final evidence freeze, final acceptance, final-mode decision, or public cutover.
