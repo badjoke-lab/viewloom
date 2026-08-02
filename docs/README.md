@@ -32,6 +32,10 @@ Public Twitch category-filter exposure authorized no
 10. `docs/product/twitch-replacement-seven-day-audit-spec.md`
 11. active WIP and affected feature specification/plan
 
+## Accepted permanent product specifications
+
+- `docs/product/local-watchlist-spec.md`
+
 ## Accepted observation result
 
 - Trigger PR / merge: #695 / `78cf5759840aa7819b34c153d7521dab7df6bacc`.
