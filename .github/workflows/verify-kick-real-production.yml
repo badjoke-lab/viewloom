@@ -1,0 +1,66 @@
+name: Verify Kick Real Production
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe live Kick APIs read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          endpoints=(
+            'status|https://www.viewloom.net/api/kick-status'
+            'heatmap|https://www.viewloom.net/api/kick-heatmap'
+            'day-flow|https://www.viewloom.net/api/kick-day-flow'
+            'battle-lines|https://www.viewloom.net/api/kick-battle-lines'
+            'history|https://www.viewloom.net/api/kick-history'
+          )
+
+          failures=0
+          for spec in "${endpoints[@]}"; do
+            IFS='|' read -r label url <<< "$spec"
+            body="$(mktemp)"
+            status="$(curl --silent --show-error --max-time 30 --header 'Cache-Control: no-cache' --output "$body" --write-out '%{http_code}' "${url}?production-check=${GITHUB_SHA}")"
+            echo "===== ${label} ====="
+            echo "HTTP_STATUS=${status}"
+            if [[ "$status" != "200" ]]; then
+              failures=$((failures + 1))
+              continue
+            fi
+            if ! jq -e . "$body" >/dev/null; then
+              failures=$((failures + 1))
+              continue
+            fi
+            echo 'SUMMARY:'
+            jq -c '{
+              provider:(.provider // .platform // null),
+              source:(.source // null),
+              sourceMode:(.sourceMode // .source_mode // .latest.source_mode // .collectorStatus.source_mode // null),
+              state:(.state // .status // null),
+              updatedAt:(.updatedAt // .generatedAt // .lastUpdated // .collectorStatus.updated_at // null),
+              latestBucket:(.payloadBucketMinute // .latest.bucket_minute // .collectorStatus.latest_bucket_minute // null),
+              itemCount:(if (.items|type)=="array" then (.items|length) else null end),
+              bandCount:(if (.bands|type)=="array" then (.bands|length) else null end),
+              lineCount:(if (.lines|type)=="array" then (.lines|length) else null end),
+              dailyCount:(if (.daily|type)=="array" then (.daily|length) else null end)
+            }' "$body"
+
+            if jq -e '[.. | objects | (.provider? // .platform? // empty)] | any(. == "twitch")' "$body" >/dev/null; then
+              echo 'ERROR: Twitch provider value found in Kick API payload'
+              failures=$((failures + 1))
+            fi
+            if jq -e '[.. | objects | (.sourceMode? // .source_mode? // empty)] | any(. == "fixture")' "$body" >/dev/null; then
+              echo 'ERROR: fixture source mode found in live Kick API payload'
+              failures=$((failures + 1))
+            fi
+          done
+
+          echo "FAILURES=${failures}"
+          test "$failures" -eq 0
