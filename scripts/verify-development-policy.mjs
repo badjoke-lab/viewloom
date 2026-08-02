@@ -13,7 +13,9 @@ const required = [
   'docs/product/twitch-replacement-seven-day-audit-spec.md',
   'docs/work-in-progress/phase12a4-category-parallel-execution.md',
   'docs/audits/12a2-current-gate-state.json',
-  'docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json',
+  'docs/audits/12a5-twitch-category-source-v2-semantic-clock-decision.json',
+  'docs/audits/12a5-twitch-category-source-v2-stability-clock-acceptance.json',
+  'docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json',
   'docs/audits/12a5-twitch-category-source-v2-observation-success-evidence.json',
   'docs/audits/12a5-twitch-category-source-v2-observation-evidence-retirement.json',
   'docs/audits/12a5-twitch-category-source-v2-observation-execution-path-retirement.json',
@@ -30,14 +32,14 @@ for (const path of [
 ]) assert.equal(existsSync(path), false, `${path}: retired execution path present`)
 
 for (const [path, fragments] of Object.entries({
-  'AGENTS.md': ['Mandatory authorities', 'Temporary observation execution path retired: PR #698', 'work-659-twitch-category-source-v2-semantic-clock-decision'],
-  'CONTRIBUTING.md': ['Required reading and freshness rule', 'Temporary execution path retired PR #698', 'Current gate semantic handling and new seven-day stability-clock decision'],
-  'docs/README.md': ['Temporary execution path retired PR #698', 'Current-main documents and accepted contracts'],
+  'AGENTS.md': ['Mandatory authorities', 'Revised stability clock accepted: PR #700', 'Current gate: accumulate with the existing Twitch collector until the end boundary'],
+  'CONTRIBUTING.md': ['Required reading and freshness rule', 'Revised stability clock accepted PR #700', 'Current gate active accumulation on the unchanged five-minute Twitch collector'],
+  'docs/README.md': ['Revised stability clock accepted PR #700', 'Current gate active accumulation on the unchanged Twitch collector', 'Current-main documents and accepted contracts'],
   'docs/operations/development-and-deployment-policy.md': ['Mandatory freshness protocol', 'Cached chat summaries', '`main` is production'],
-  'docs/product/current-roadmap.md': ['### Current gate: semantic handling and new seven-day stability-clock decision', 'work-659-twitch-category-source-v2-semantic-clock-decision'],
-  'docs/product/current-schedule.md': ['Current gate semantic handling and new seven-day stability-clock decision', 'No observation rerun'],
-  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: semantic handling and new stability-clock decision', 'no new stability start'],
-  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['Semantic handling and new seven-day Twitch stability-clock decision', 'No public category UI'],
+  'docs/product/current-roadmap.md': ['### Current gate: active seven-day Twitch stability accumulation', 'expected slots: 2016'],
+  'docs/product/current-schedule.md': ['Current gate active accumulation on existing Twitch collector', 'Expected slots 2016'],
+  'docs/product/twitch-replacement-seven-day-audit-spec.md': ['## Current gate: active stability accumulation', 'Final read-only mode is prohibited before `2026-08-07T17:00:00.000Z`'],
+  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['Active seven-day Twitch stability accumulation', 'The unfiltered Heatmap remains the fallback'],
   '.github/pull_request_template.md': ['Current-main SHA read:', 'No newer source-of-truth change supersedes this candidate'],
 })) {
   const source = read(path)
@@ -45,12 +47,15 @@ for (const [path, fragments] of Object.entries({
 }
 
 const gate = json('docs/audits/12a2-current-gate-state.json')
-const decision = json('docs/audits/12a5-twitch-replacement-audit-checkpoint-failure-diagnosis-decision.json')
+const semantic = json('docs/audits/12a5-twitch-category-source-v2-semantic-clock-decision.json')
+const clock = json('docs/audits/12a5-twitch-category-source-v2-stability-clock-acceptance.json')
+const audit = json('docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json')
 const evidence = json('docs/audits/12a5-twitch-category-source-v2-observation-success-evidence.json')
 const evidenceRetirement = json('docs/audits/12a5-twitch-category-source-v2-observation-evidence-retirement.json')
 const executionRetirement = json('docs/audits/12a5-twitch-category-source-v2-observation-execution-path-retirement.json')
 
 assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v33')
+assert.equal(gate.status, '12a5_twitch_permanent_category_capture_recovered_seven_day_accumulation_active')
 assert.equal(gate.currentWorkstream.phase, '12A-5B-R2')
 assert.equal(gate.currentWorkstream.twitchPermanentCaptureActive, true)
 assert.equal(gate.currentWorkstream.kickPermanentCaptureActive, true)
@@ -59,12 +64,43 @@ assert.equal(gate.currentWorkstream.twitchHeatmapCategoryFilterPublicExposureAut
 assert.equal(gate.categoryCapture.newCronAuthorized, false)
 assert.equal(gate.categoryCapture.backfillAuthorized, false)
 assert.equal(gate.categoryCapture.retentionExpansionAuthorized, false)
-assert.equal(decision.status, 'recovery_required')
-assert.equal(decision.clockRule.oldWindowRetired, true)
-assert.equal(decision.clockRule.newStartAt, null)
-assert.equal(decision.decision.automaticClockResetAuthorized, false)
-assert.equal(decision.decision.finalAuditAuthorized, false)
-assert.equal(decision.decision.publicCutoverAuthorized, false)
+
+assert.equal(semantic.schemaVersion, 'viewloom-12a5-twitch-category-source-v2-semantic-clock-decision-v1')
+assert.equal(semantic.decisionPr, 699)
+assert.equal(semantic.semanticDecision.status, 'accepted_on_decision_merge')
+assert.equal(semantic.semanticDecision.identityScope, 'provider_scoped')
+assert.equal(semantic.semanticDecision.syntheticMappingAllowed, false)
+assert.equal(semantic.semanticDecision.nameOnlyIdentityAllowed, false)
+assert.equal(semantic.semanticDecision.crossProviderIdentityAllowed, false)
+assert.equal(semantic.semanticDecision.combinedProviderRankingAllowed, false)
+
+assert.equal(clock.status, 'accepted_on_merge')
+assert.equal(clock.acceptancePr, 700)
+assert.equal(clock.semanticDecisionPr, 699)
+assert.equal(clock.window.semantics, 'half_open')
+assert.equal(clock.window.startAt, '2026-07-31T17:00:00.000Z')
+assert.equal(clock.window.endExclusiveAt, '2026-08-07T17:00:00.000Z')
+assert.equal(clock.window.cadenceMinutes, 5)
+assert.equal(clock.window.expectedFinalSlots, 2016)
+assert.equal(clock.activation.clockStartsAutomaticallyAtBoundary, true)
+assert.equal(clock.activation.manualOperatorActionAtStartRequired, false)
+assert.equal(clock.activation.existingTwitchCollectorContinues, true)
+assert.equal(clock.activation.newWorkflowAtStartRequired, false)
+assert.equal(clock.activation.checkpointExecutionRequiredAtStart, false)
+assert.equal(clock.boundaries.workerDeploymentPerformed, false)
+assert.equal(clock.boundaries.d1MutationPerformed, false)
+assert.equal(clock.boundaries.cadenceChanged, false)
+assert.equal(clock.boundaries.kickChanged, false)
+assert.equal(clock.boundaries.publicCategoryUiAuthorized, false)
+assert.equal(clock.boundaries.finalModeAuthorizedBeforeEnd, false)
+
+assert.equal(audit.status, 'accepted_active')
+assert.equal(audit.window.startAt, clock.window.startAt)
+assert.equal(audit.window.endExclusiveAt, clock.window.endExclusiveAt)
+assert.equal(audit.window.expectedFinalSlots, 2016)
+assert.equal(audit.stabilityClock.acceptancePr, 700)
+assert.equal(audit.stabilityClock.startsAutomaticallyAtBoundary, true)
+assert.equal(audit.publicSurface.publicExposureEnabled, false)
 
 assert.equal(evidence.status, 'observation_accepted')
 assert.equal(evidence.execution.workflowRunId, 30620512044)
@@ -75,9 +111,6 @@ for (const gateName of ['consecutiveSnapshotPass', 'stateIntegrityPass', 'dictio
   assert.equal(evidence.observation[gateName], true, `${gateName}: must pass`)
 }
 assert.equal(evidence.rollback.success, true)
-for (const key of ['semanticMappingAuthorized', 'stabilityClockStartAuthorized', 'finalModeAuthorized', 'publicCategoryUiAuthorized']) {
-  assert.equal(evidence.decision[key], false, `${key}: must remain false`)
-}
 assert.equal(evidenceRetirement.status, 'evidence_frozen_execution_path_retired')
 assert.equal(evidenceRetirement.retirement.temporaryExecutionPathRetirementPending, false)
 assert.equal(executionRetirement.status, 'retired_on_merge')
@@ -87,10 +120,12 @@ for (const value of Object.values(executionRetirement.authorization)) assert.equ
 console.log(JSON.stringify({
   ok: true,
   policy: 'current-main-source-of-truth-freshness',
-  observationStatus: evidence.status,
-  executionPathStatus: executionRetirement.status,
-  nextBranch: 'work-659-twitch-category-source-v2-semantic-clock-decision',
-  semanticMappingAuthorized: false,
-  stabilityClockStartAuthorized: false,
-  publicCategoryFilterAuthorized: false,
+  gateStatus: gate.status,
+  semanticStatus: semantic.semanticDecision.status,
+  stabilityClockStatus: clock.status,
+  windowStart: clock.window.startAt,
+  windowEndExclusive: clock.window.endExclusiveAt,
+  expectedFinalSlots: clock.window.expectedFinalSlots,
+  finalModeAuthorizedBeforeEnd: clock.boundaries.finalModeAuthorizedBeforeEnd,
+  publicCategoryFilterAuthorized: clock.boundaries.publicCategoryUiAuthorized,
 }, null, 2))
