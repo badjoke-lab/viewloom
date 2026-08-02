@@ -100,7 +100,7 @@ assert.equal(audit.window.endExclusiveAt, clock.window.endExclusiveAt)
 assert.equal(audit.window.expectedFinalSlots, 2016)
 assert.equal(audit.stabilityClock.acceptancePr, 700)
 assert.equal(audit.stabilityClock.startsAutomaticallyAtBoundary, true)
-assert.equal(audit.publicSurface.publicExposureEnabled, false)
+assert.equal(audit.readOnlyBoundary.publicExposureAuthorized, false)
 
 assert.equal(evidence.status, 'observation_accepted')
 assert.equal(evidence.execution.workflowRunId, 30620512044)
