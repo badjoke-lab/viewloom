@@ -2,7 +2,7 @@
 
 ## Production origin
 
-`https://vl.badjoke-lab.com`
+`https://www.viewloom.net`
 
 ## Rules
 
@@ -25,7 +25,7 @@ Example deep link:
 
 Canonical page:
 
-`https://vl.badjoke-lab.com/twitch/day-flow/`
+`https://www.viewloom.net/twitch/day-flow/`
 
 Feature-specific parameter allowlists and stable ordering are added by the following deep-link work.
 
@@ -34,3 +34,5 @@ Feature-specific parameter allowlists and stable ordering are added by the follo
 `src/navigation/url-contract.ts` defines the production origin and public file, route, and provider mapping.
 
 `verify-canonical-url-contract.mjs` checks every public HTML page and fails CI when metadata is missing, duplicated, inconsistent, or assigned to the wrong provider route.
+
+`verify-primary-origin-source-contract.mjs` prevents the retired public origin from returning outside the explicit legacy redirect compatibility sources.

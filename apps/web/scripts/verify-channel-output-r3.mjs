@@ -96,7 +96,7 @@ function transpileSources() {
 
 async function verifyExactChannelOutputs() {
   const payload = channelPayloadFixture()
-  const twitchUrl = 'https://vl.badjoke-lab.com/twitch/channel/?id=Alpha&name=Ignored&period=7d&view=report#selected'
+  const twitchUrl = 'https://www.viewloom.net/twitch/channel/?id=Alpha&name=Ignored&period=7d&view=report#selected'
   const twitchModule = await loadChannelModule('twitch', twitchUrl, 'twitch')
   const twitchContext = twitchModule.buildContext(payload)
 
@@ -239,7 +239,7 @@ async function verifyExactChannelOutputs() {
   )
   assert.equal(twitchModule.filename(twitchContext, 'csv'), 'viewloom-twitch-channel-alpha-7d.csv')
 
-  const kickUrl = 'https://vl.badjoke-lab.com/kick/channel/?id=Alpha&period=7d&view=report#selected'
+  const kickUrl = 'https://www.viewloom.net/kick/channel/?id=Alpha&period=7d&view=report#selected'
   const kickModule = await loadChannelModule('kick', kickUrl, 'kick')
   const kickContext = kickModule.buildContext(payload)
   const expectedKickFull = expectedFull

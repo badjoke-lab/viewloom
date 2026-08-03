@@ -162,13 +162,13 @@ async function verifyExactHistoryOutputs() {
     },
   }
 
-  const currentUrl = 'https://vl.badjoke-lab.com/twitch/history/?period=30d#selected'
+  const currentUrl = 'https://www.viewloom.net/twitch/history/?period=30d#selected'
   const model = modelModule.historyExportModel(payload, 'twitch', currentUrl)
   const expectedModel = {
     schema: 'viewloom-history-export-v1',
     project: 'ViewLoom',
     provider: 'twitch',
-    view_url: 'https://vl.badjoke-lab.com/twitch/history/?period=30d',
+    view_url: 'https://www.viewloom.net/twitch/history/?period=30d',
     period: {
       from: '2026-06-20',
       to: '2026-06-22',
@@ -256,7 +256,7 @@ async function verifyExactHistoryOutputs() {
     'Viewer-minutes context: 12,346 observed',
     'Data state: Partial · Source: Real observed data',
     'Coverage note: observed ViewLoom data; not a provider-wide total.',
-    'https://vl.badjoke-lab.com/twitch/history/?period=30d',
+    'https://www.viewloom.net/twitch/history/?period=30d',
   ].join('\n')
   assert.equal(reportState.historyReportText(payload, 'twitch', currentUrl), expectedTwitchReport)
 

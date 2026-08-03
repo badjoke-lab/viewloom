@@ -22,7 +22,7 @@ All public HTML pages must keep a complete metadata set:
 
 ## Canonical rules
 
-- Canonical URLs must use `https://vl.badjoke-lab.com`.
+- Canonical URLs must use `https://www.viewloom.net`.
 - Canonical URLs must match the public page path.
 - Directory pages must keep trailing slashes.
 - `og:url` must match the canonical URL.

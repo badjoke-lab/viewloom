@@ -189,7 +189,7 @@ async function verifyWatchlist(browser, data, viewport) {
   check(await page.locator('[data-watchlist-empty]').isVisible(), `${provider} hosted empty state is missing.`)
   check(await page.title() === `${provider === 'twitch' ? 'Twitch' : 'Kick'} Local Watchlist — ViewLoom`, `${provider} title mismatch.`)
   check(await page.locator('meta[name="robots"]').getAttribute('content') === 'noindex,follow', `${provider} robots mismatch.`)
-  check(await page.locator('link[rel="canonical"]').getAttribute('href') === `https://vl.badjoke-lab.com${route}`, `${provider} canonical mismatch.`)
+  check(await page.locator('link[rel="canonical"]').getAttribute('href') === `https://www.viewloom.net${route}`, `${provider} canonical mismatch.`)
 
   await setStoredDocument(page, provider, data.entries)
   calls.length = 0

@@ -7,7 +7,15 @@ on:
       - 'apps/web/**/*.html'
       - 'apps/web/src/navigation/url-contract.ts'
       - 'apps/web/scripts/verify-canonical-url-contract.mjs'
+      - 'apps/web/scripts/verify-primary-origin-source-contract.mjs'
       - 'apps/web/docs/canonical-url-contract.md'
+      - 'scripts/collect-12a0-capacity-baseline.mjs'
+      - 'scripts/collect-12a2-binding-size-production-evidence.mjs'
+      - 'scripts/collect-12a2-remote-schema-production-evidence.mjs'
+      - '.github/workflows/analytics-12a0-capacity-baseline.yml'
+      - '.github/workflows/analytics-12a2-binding-size-production.yml'
+      - '.github/workflows/analytics-12a2-remote-schema-production.yml'
+      - '.github/workflows/deploy-collector-workers.yml'
       - '.github/actions/setup-node-pnpm/action.yml'
       - '.github/workflows/canonical-url-checks.yml'
   push:
@@ -17,7 +25,15 @@ on:
       - 'apps/web/**/*.html'
       - 'apps/web/src/navigation/url-contract.ts'
       - 'apps/web/scripts/verify-canonical-url-contract.mjs'
+      - 'apps/web/scripts/verify-primary-origin-source-contract.mjs'
       - 'apps/web/docs/canonical-url-contract.md'
+      - 'scripts/collect-12a0-capacity-baseline.mjs'
+      - 'scripts/collect-12a2-binding-size-production-evidence.mjs'
+      - 'scripts/collect-12a2-remote-schema-production-evidence.mjs'
+      - '.github/workflows/analytics-12a0-capacity-baseline.yml'
+      - '.github/workflows/analytics-12a2-binding-size-production.yml'
+      - '.github/workflows/analytics-12a2-remote-schema-production.yml'
+      - '.github/workflows/deploy-collector-workers.yml'
       - '.github/actions/setup-node-pnpm/action.yml'
       - '.github/workflows/canonical-url-checks.yml'
 
@@ -36,3 +52,6 @@ jobs:
       - name: Verify canonical URL contract
         working-directory: apps/web
         run: node scripts/verify-canonical-url-contract.mjs
+      - name: Verify primary origin source contract
+        working-directory: apps/web
+        run: node scripts/verify-primary-origin-source-contract.mjs

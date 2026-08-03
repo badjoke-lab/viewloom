@@ -1,8 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
 
-const origin = (process.env.R12B2_ORIGIN || 'https://vl.badjoke-lab.com').replace(/\/$/, '')
-const canonicalOrigin = (process.env.R12B2_CANONICAL_ORIGIN || 'https://vl.badjoke-lab.com').replace(/\/$/, '')
+const origin = (process.env.R12B2_ORIGIN || 'https://www.viewloom.net').replace(/\/$/, '')
+const canonicalOrigin = (process.env.R12B2_CANONICAL_ORIGIN || 'https://www.viewloom.net').replace(/\/$/, '')
 const out = process.env.R12B2_ARTIFACT_DIR || 'artifacts/r12b2-refund-disclosure'
 const routes = ['/support/', '/refund-policy/', '/commercial-disclosure/', '/contact/']
 const viewports = [

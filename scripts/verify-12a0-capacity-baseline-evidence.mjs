@@ -6,13 +6,18 @@ import { resolve } from 'node:path'
 
 const evidencePath = resolve(process.argv[2] || 'artifacts/12a0-capacity-baseline/evidence.json')
 const evidence = JSON.parse(readFileSync(evidencePath, 'utf8'))
+const isFrozenPreCutoverEvidence = evidencePath.endsWith('/docs/audits/12a0-current-data-capacity-baseline.json')
 
 assert.equal(evidence.schemaVersion, 'viewloom-12a0-capacity-baseline-v1')
 assert.equal(evidence.workstream, '12A-0 current data and capacity baseline')
 assert.equal(evidence.evidenceMode, 'read-only-production-observation')
 assert.equal(evidence.providerSeparated, true)
 assert.equal(evidence.runtimeChanged, false)
-assert.match(evidence.origin, /^https:\/\/vl\.badjoke-lab\.com\/?$/)
+if (isFrozenPreCutoverEvidence) {
+  assert.match(evidence.origin, /^https:\/\/vl\.badjoke-lab\.com\/?$/)
+} else {
+  assert.match(evidence.origin, /^https:\/\/www\.viewloom\.net\/?$/)
+}
 assert.ok(Number.isFinite(Date.parse(evidence.generatedAt)), 'generatedAt must be an ISO timestamp')
 
 const expected = {
@@ -171,6 +176,7 @@ assert.ok(Array.isArray(evidence.limitations) && evidence.limitations.length >= 
 console.log('12A-0 capacity baseline evidence verification passed.')
 console.log(`- generatedAt: ${evidence.generatedAt}`)
 console.log(`- origin: ${evidence.origin}`)
+console.log(`- originContract: ${isFrozenPreCutoverEvidence ? 'frozen_pre_cutover' : 'current_primary'}`)
 console.log(`- Twitch raw rows: ${evidence.providers.twitch.storage.rawRows}`)
 console.log(`- Kick raw rows: ${evidence.providers.kick.storage.rawRows}`)
 console.log(`- Twitch observed rollup days: ${evidence.providers.twitch.storage.dailyRollupObservedDays}`)

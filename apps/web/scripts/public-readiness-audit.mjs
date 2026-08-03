@@ -5,7 +5,7 @@ const root = process.cwd()
 const repoRoot = resolve(root, '../..')
 const dist = join(root, 'dist')
 const artifactDir = join(root, 'artifacts', 'public-readiness')
-const origin = 'https://vl.badjoke-lab.com'
+const origin = 'https://www.viewloom.net'
 const routeFiles = [
   'docs/audits/public-surface-routes-portal.json',
   'docs/audits/public-surface-routes-twitch.json',

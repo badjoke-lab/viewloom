@@ -8,7 +8,7 @@ const sourcePath = join(directory, 'public-readiness-audit.mjs')
 const temporaryPath = join(directory, '.public-readiness-audit-primary-domain.mjs')
 
 const source = readFileSync(sourcePath, 'utf8')
-  .replaceAll('https://vl.badjoke-lab.com', 'https://www.viewloom.net')
+  .replaceAll('https://www.viewloom.net', 'https://www.viewloom.net')
   .replaceAll('vl\\.badjoke-lab\\.com', 'www\\.viewloom\\.net')
 
 writeFileSync(temporaryPath, source)

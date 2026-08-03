@@ -1,4 +1,4 @@
-export const VIEWLOOM_ORIGIN = 'https://vl.badjoke-lab.com' as const
+export const VIEWLOOM_ORIGIN = 'https://www.viewloom.net' as const
 
 export type ViewLoomProvider = 'portal' | 'twitch' | 'kick'
 

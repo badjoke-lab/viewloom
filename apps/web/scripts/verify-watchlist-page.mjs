@@ -33,7 +33,7 @@ verifyStyles()
 console.log('Watchlist W3B evidence UI and Channel entry-point verification passed.')
 
 function verifyRoute(source, provider, name) {
-  const canonical = `https://vl.badjoke-lab.com/${provider}/watchlist/`
+  const canonical = `https://www.viewloom.net/${provider}/watchlist/`
   const expectedTabs = [
     `/${provider}/heatmap/`,
     `/${provider}/day-flow/`,

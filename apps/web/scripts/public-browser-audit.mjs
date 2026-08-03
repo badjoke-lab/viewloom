@@ -5,7 +5,7 @@ import { chromium } from 'playwright'
 const webRoot = process.cwd()
 const repoRoot = resolve(webRoot, '../..')
 const outputRoot = '/tmp/public-browser-audit'
-const productionOrigin = stripOrigin(process.env.P8B_PRODUCTION_ORIGIN || 'https://vl.badjoke-lab.com')
+const productionOrigin = stripOrigin(process.env.P8B_PRODUCTION_ORIGIN || 'https://www.viewloom.net')
 const localOrigin = stripOrigin(process.env.P8B_LOCAL_ORIGIN || 'http://127.0.0.1:4173')
 const candidateHead = process.env.GITHUB_HEAD_SHA || process.env.GITHUB_SHA || null
 

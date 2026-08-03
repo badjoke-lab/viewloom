@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
 
-const origin = (process.env.R12B1_ORIGIN || 'https://vl.badjoke-lab.com').replace(/\/$/, '')
+const origin = (process.env.R12B1_ORIGIN || 'https://www.viewloom.net').replace(/\/$/, '')
 const out = process.env.R12B1_ARTIFACT_DIR || 'artifacts/r12b1-support-transition'
 const paymentLink = 'https://buy.stripe.com/6oUcMYeRh0Na2oX3cDcIE03'
 const scenarios = [

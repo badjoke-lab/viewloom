@@ -7,7 +7,7 @@ import {
   waitReady,
 } from './watchlist-shell-browser-fixture.mjs'
 
-const origin = strip(process.env.WATCHLIST_PRODUCTION_URL || 'https://vl.badjoke-lab.com')
+const origin = strip(process.env.WATCHLIST_PRODUCTION_URL || 'https://www.viewloom.net')
 const expectedBranch = process.env.WATCHLIST_EXPECTED_BRANCH || 'main'
 const expectedSha = process.env.WATCHLIST_ACCEPTED_SHA || 'f3e0ee8741e96015c5440df167574b8002fccc0d'
 const logPath = '/tmp/watchlist-w5b.log'

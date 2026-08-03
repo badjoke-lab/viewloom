@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { performance } from 'node:perf_hooks'
 
-const ORIGIN = process.env.VIEWLOOM_ORIGIN || 'https://vl.badjoke-lab.com'
+const ORIGIN = process.env.VIEWLOOM_ORIGIN || 'https://www.viewloom.net'
 const OUTPUT = resolve(process.argv[2] || 'artifacts/12a0-capacity-baseline/evidence.json')
 const TIMING_SAMPLES = positiveInt(process.env.TIMING_SAMPLES, 5)
 const REQUEST_TIMEOUT_MS = positiveInt(process.env.REQUEST_TIMEOUT_MS, 30_000)

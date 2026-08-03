@@ -2,7 +2,7 @@ import { writeFileSync } from 'node:fs'
 import { chromium } from 'playwright'
 
 const previewBaseUrl = process.env.HISTORY_PREVIEW_URL ?? 'https://fix-history-usability-pass.viewloom.pages.dev'
-const productionBaseUrl = process.env.HISTORY_PRODUCTION_URL ?? 'https://vl.badjoke-lab.com'
+const productionBaseUrl = process.env.HISTORY_PRODUCTION_URL ?? 'https://www.viewloom.net'
 const today = new Date().toISOString().slice(0, 10)
 const diagnostics = []
 
