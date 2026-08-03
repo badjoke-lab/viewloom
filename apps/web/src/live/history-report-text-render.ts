@@ -15,15 +15,44 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
   const mount = ensureMount()
   const preview = mount.querySelector<HTMLElement>('[data-history-report-preview]')
   const copyButton = mount.querySelector<HTMLButtonElement>('[data-history-report-copy]')
-  const nativeShareButton = mount.querySelector<HTMLButtonElement>('[data-history-report-share-native]')
   const status = mount.querySelector<HTMLElement>('[data-history-report-status]')
   const count = mount.querySelector<HTMLElement>('[data-history-report-count]')
   const modeButtons = mount.querySelectorAll<HTMLButtonElement>('[data-history-report-mode]')
-  if (!preview || !copyButton || !nativeShareButton || !status || !count || !modeButtons.length) return
+  if (!preview || !copyButton || !status || !count || !modeButtons.length) return
 
+  let nativeShareButton = ensureNativeShareButton(mount, copyButton)
   const texts: Record<HistoryReportMode, string> = {
     report: historyReportText(payload, provider, location.href),
     post: historyShortPostText(payload, provider, location.href),
+  }
+
+  const syncNativeShare = (mode: HistoryReportMode): void => {
+    nativeShareButton = ensureNativeShareButton(mount, copyButton)
+    nativeShareButton.textContent = mode === 'post' ? 'Share short post' : 'Share report'
+    const supported = typeof navigator.share === 'function'
+    nativeShareButton.hidden = !supported
+    nativeShareButton.disabled = !supported
+    nativeShareButton.onclick = async () => {
+      if (!navigator.share) {
+        status.textContent = 'Native sharing is unavailable. Use the copy action instead.'
+        return
+      }
+      nativeShareButton.disabled = true
+      status.textContent = 'Opening share sheet…'
+      try {
+        await navigator.share({
+          title: `ViewLoom — ${provider === 'kick' ? 'Kick' : 'Twitch'} History & Trends`,
+          text: texts[mode],
+        })
+        status.textContent = 'Share sheet opened.'
+      } catch (error) {
+        status.textContent = error instanceof DOMException && error.name === 'AbortError'
+          ? 'Sharing cancelled.'
+          : 'Native sharing was unavailable. Use the copy action instead.'
+      } finally {
+        nativeShareButton.disabled = false
+      }
+    }
   }
 
   const applyMode = (mode: HistoryReportMode): void => {
@@ -35,11 +64,11 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
     })
     preview.textContent = texts[mode]
     copyButton.textContent = mode === 'post' ? 'Copy short post' : 'Copy report'
-    nativeShareButton.textContent = mode === 'post' ? 'Share short post' : 'Share report'
     count.textContent = mode === 'post'
       ? `${historyShortPostLength(texts.post)} / 280 characters`
       : `${texts.report.split('\n').length} lines`
     status.textContent = mode === 'post' ? 'Short post ready.' : 'Full report ready.'
+    syncNativeShare(mode)
   }
 
   modeButtons.forEach((button) => {
@@ -68,32 +97,20 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
     }
   }
 
-  nativeShareButton.hidden = typeof navigator.share !== 'function'
-  nativeShareButton.disabled = typeof navigator.share !== 'function'
-  nativeShareButton.onclick = async () => {
-    const mode: HistoryReportMode = mount.dataset.historyReportActiveMode === 'post' ? 'post' : 'report'
-    if (!navigator.share) {
-      status.textContent = 'Native sharing is unavailable. Use the copy action instead.'
-      return
-    }
-    nativeShareButton.disabled = true
-    status.textContent = 'Opening share sheet…'
-    try {
-      await navigator.share({
-        title: `ViewLoom — ${provider === 'kick' ? 'Kick' : 'Twitch'} History & Trends`,
-        text: texts[mode],
-      })
-      status.textContent = 'Share sheet opened.'
-    } catch (error) {
-      status.textContent = error instanceof DOMException && error.name === 'AbortError'
-        ? 'Sharing cancelled.'
-        : 'Native sharing was unavailable. Use the copy action instead.'
-    } finally {
-      nativeShareButton.disabled = false
-    }
-  }
-
   applyMode(mount.dataset.historyReportActiveMode === 'post' ? 'post' : 'report')
+}
+
+function ensureNativeShareButton(mount: HTMLElement, copyButton: HTMLButtonElement): HTMLButtonElement {
+  const existing = mount.querySelector<HTMLButtonElement>('[data-history-report-share-native]')
+  if (existing) return existing
+  const button = document.createElement('button')
+  button.className = 'button button--paper'
+  button.type = 'button'
+  button.dataset.historyReportShareNative = ''
+  button.disabled = true
+  button.textContent = 'Share report'
+  copyButton.insertAdjacentElement('afterend', button)
+  return button
 }
 
 function ensureMount(): HTMLElement {
