@@ -67,7 +67,7 @@ export function mountProviderHome(platform: Platform): void {
         <div class="data-strip__cell"><small>Observed</small><span id="home-strip-observed">Loading…</span></div>
         <div class="data-strip__cell"><small>Coverage</small><span id="home-strip-coverage">${topLimit}</span></div>
         <div class="data-strip__cell"><small>Source</small><span id="home-strip-source">Loading…</span></div>
-        <a class="provider-home-status__link" href="${base}status/">Open Status →</a>
+        <a class="provider-home-status__link" href="${base}status/">Open Data Status →</a>
         <div class="provider-home-status__note" id="home-status-note">Loading the ${name} observation summary.</div>
       </section>
 
