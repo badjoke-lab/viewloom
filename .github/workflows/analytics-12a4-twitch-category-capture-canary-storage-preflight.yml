@@ -22,8 +22,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: analytics-12a4-twitch-category-capture-canary-storage-preflight-acceptance-${{ github.event.pull_request.number }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify-acceptance-candidate:
