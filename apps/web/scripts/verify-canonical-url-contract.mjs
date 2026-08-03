@@ -65,7 +65,7 @@ for (const page of contract.PUBLIC_PAGE_CONTRACTS) {
     try {
       const parsed = new URL(value)
       assert(parsed.protocol === 'https:', `${page.file}: ${label} must use HTTPS.`)
-      assert(parsed.hostname === 'vl.badjoke-lab.com', `${page.file}: ${label} must use vl.badjoke-lab.com.`)
+      assert(parsed.hostname === 'www.viewloom.net', `${page.file}: ${label} must use www.viewloom.net.`)
       assert(parsed.port === '', `${page.file}: ${label} must not include a port.`)
       assert(parsed.username === '' && parsed.password === '', `${page.file}: ${label} must not include credentials.`)
       assert(parsed.search === '', `${page.file}: ${label} must not include query state.`)
