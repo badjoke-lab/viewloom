@@ -19,6 +19,11 @@ async function check(browser, provider, viewport) {
   const context = await browser.newContext({ viewport, isMobile: viewport.width < 500 })
   await context.addInitScript(() => {
     window.__viewloomCopiedText = ''
+    window.__viewloomSharedData = null
+    Object.defineProperty(navigator, 'share', {
+      configurable: true,
+      value: async (data) => { window.__viewloomSharedData = data },
+    })
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
       value: { writeText: async (text) => { window.__viewloomCopiedText = String(text) } },
@@ -41,8 +46,11 @@ async function check(browser, provider, viewport) {
   await page.goto(`${base}/${provider}/history/?period=30d&metric=viewer_minutes&day=2026-06-10&sort=rising&limit=50`, { waitUntil: 'domcontentloaded' })
   await page.waitForFunction(() => {
     const button = document.querySelector('[data-history-report-copy]')
+    const shareButton = document.querySelector('[data-history-report-share-native]')
     const preview = document.querySelector('[data-history-report-preview]')
-    return button && !button.hasAttribute('disabled') && preview?.textContent?.includes('Observed days: 12 of 13')
+    return button && !button.hasAttribute('disabled')
+      && shareButton && !shareButton.hasAttribute('disabled') && !shareButton.hasAttribute('hidden')
+      && preview?.textContent?.includes('Observed days: 12 of 13')
   })
   await openReport(page)
 
@@ -68,6 +76,7 @@ async function check(browser, provider, viewport) {
   assert(shortPost?.includes('Coverage: 12/13 days observed'), `${provider} short post coverage is incorrect.`)
   assert(shortPost?.includes('not provider-wide.'), `${provider} short post limitation is absent.`)
   assert((await page.locator('[data-history-report-count]').textContent()) === `${shortLength} / 280 characters`, `${provider} short-post count is incorrect.`)
+  assert((await page.locator('[data-history-report-share-native]').textContent()) === 'Share short post', `${provider} native-share label did not follow report mode.`)
   assert(calls[provider] === callsBeforeModeSwitch, `${provider} report mode switch caused another History request.`)
 
   const shortUrl = new URL(shortPost?.split('\n').at(-1) ?? '')
@@ -83,9 +92,18 @@ async function check(browser, provider, viewport) {
   assert(copied === shortPost, `${provider} copied short post differs from the preview.`)
   assert(calls[provider] === callsBeforeCopy, `${provider} copying caused another History request.`)
 
+  const callsBeforeShare = calls[provider]
+  await page.locator('[data-history-report-share-native]').click()
+  await page.waitForFunction(() => document.querySelector('[data-history-report-status]')?.textContent === 'Share sheet opened.')
+  const shared = await page.evaluate(() => window.__viewloomSharedData)
+  assert(shared?.title === `ViewLoom — ${providerLabel} History & Trends`, `${provider} native-share title is incorrect.`)
+  assert(shared?.text === shortPost, `${provider} native-share text differs from the active preview.`)
+  assert(calls[provider] === callsBeforeShare, `${provider} native sharing caused another History request.`)
+
   await page.locator('[data-history-report-mode="report"]').click()
   await page.waitForFunction(() => document.querySelector('[data-history-report-preview]')?.textContent?.startsWith('ViewLoom —'))
   assert((await page.locator('[data-history-report-preview]').textContent()) === fullPreview, `${provider} full report was not restored.`)
+  assert((await page.locator('[data-history-report-share-native]').textContent()) === 'Share report', `${provider} native-share label did not restore full-report mode.`)
 
   const other = provider === 'twitch' ? 'kick' : 'twitch'
   assert(calls[other] === 0, `${provider} report crossed provider endpoints.`)
