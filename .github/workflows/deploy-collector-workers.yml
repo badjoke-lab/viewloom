@@ -166,7 +166,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      VIEWLOOM_PRODUCTION_ORIGIN: https://vl.badjoke-lab.com
+      VIEWLOOM_PRODUCTION_ORIGIN: https://www.viewloom.net
       ARTIFACT_DIR: artifacts/12a2-collector-worker-deploy
     steps:
       - uses: actions/checkout@v4
