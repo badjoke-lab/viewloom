@@ -13,8 +13,10 @@ const statePath = 'src/live/history-report-text-state.ts'
 const socialPath = 'src/live/history-report-social.ts'
 const renderPath = 'src/live/history-report-text-render.ts'
 const nativeSharePath = 'src/live/history-native-share.ts'
+const highlightsPath = 'src/live/history-period-highlights.ts'
 const entryPath = 'src/live/history-report-text.ts'
 const stylePath = 'src/history-report-text.css'
+const highlightsStylePath = 'src/history-period-highlights.css'
 const registrationPath = 'src/live/history-default-day.ts'
 const browserPath = 'scripts/history-report-text-browser.mjs'
 const workflowPath = '../../.github/workflows/history-report-text.yml'
@@ -26,8 +28,10 @@ for (const path of [
   socialPath,
   renderPath,
   nativeSharePath,
+  highlightsPath,
   entryPath,
   stylePath,
+  highlightsStylePath,
   registrationPath,
   browserPath,
   workflowPath,
@@ -42,8 +46,10 @@ if (existsSync(join(root, contractPath))) {
     'coverageState: missing',
     'compact short-post mode',
     '280 Unicode code points',
-    'Copying, native sharing, or switching text mode must not make another API request',
+    'Copying, native sharing, switching text mode, or rendering Period highlights must not make another API request',
     'hide the native share action when the browser does not expose the Web Share API',
+    'Period highlights',
+    'retained-period highlight feed',
     'Twitch/Kick combined totals',
   ]) requireFragment(contractPath, source, fragment)
 }
@@ -111,8 +117,38 @@ if (existsSync(join(root, nativeSharePath))) {
   forbidPattern(nativeSharePath, source, 'combined-provider calculation', /twitch\s*\+\s*kick|kick\s*\+\s*twitch/i)
 }
 
+if (existsSync(join(root, highlightsPath))) {
+  const source = read(highlightsPath)
+  for (const fragment of [
+    'renderHistoryPeriodHighlights',
+    'data-history-period-highlights',
+    'data-history-period-highlight="',
+    'historyReportCoverage(payload)',
+    'topMetricDay(payload, metric)',
+    'metricTopStreamer(payload, metric)',
+    "metric === 'viewer_minutes'",
+    "['period', 'from', 'to', 'metric']",
+    'Missing values are not inferred.',
+    '`/${provider}/day-flow/${suffix}`',
+    '`/${provider}/battle-lines/${suffix}`',
+  ]) requireFragment(highlightsPath, source, fragment)
+  forbidPattern(highlightsPath, source, 'new API request', /\bfetch\s*\(/)
+  forbidPattern(highlightsPath, source, 'combined-provider calculation', /twitch\s*\+\s*kick|kick\s*\+\s*twitch/i)
+  forbidPattern(highlightsPath, source, 'category implementation', /category(Id|Name|Key)|category[_-](id|name|key)/i)
+}
+
 if (existsSync(join(root, stylePath))) {
   requireFragment(stylePath, read(stylePath), 'grid-template-columns:repeat(6,minmax(0,1fr))')
+}
+
+if (existsSync(join(root, highlightsStylePath))) {
+  const source = read(highlightsStylePath)
+  for (const fragment of [
+    '.history-period-highlights__grid',
+    'grid-template-columns:repeat(4,minmax(0,1fr))',
+    '@media(max-width:760px)',
+    'grid-template-columns:1fr',
+  ]) requireFragment(highlightsStylePath, source, fragment)
 }
 
 if (existsSync(join(root, browserPath))) {
@@ -123,6 +159,9 @@ if (existsSync(join(root, browserPath))) {
     'Share sheet opened.',
     'native sharing caused another History request',
     'browser fixture did not expose the Web Share API',
+    'data-history-period-highlights',
+    'period highlights caused another History request',
+    'period highlights crossed provider endpoints',
   ]) requireFragment(browserPath, source, fragment)
 }
 
@@ -130,7 +169,9 @@ if (existsSync(join(root, entryPath))) {
   const source = read(entryPath)
   for (const fragment of [
     "import '../history-report-text.css'",
+    "import { renderHistoryPeriodHighlights } from './history-period-highlights'",
     'installHistoryReportPayloadCapture(schedule)',
+    'renderHistoryPeriodHighlights(payload)',
     'renderHistoryReport(payload)',
   ]) requireFragment(entryPath, source, fragment)
 }
