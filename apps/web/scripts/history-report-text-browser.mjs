@@ -114,6 +114,7 @@ async function check(browser, provider, viewport) {
 
   await page.locator('[data-history-report-mode="report"]').click()
   await page.waitForFunction(() => document.querySelector('[data-history-report-preview]')?.textContent?.startsWith('ViewLoom —'))
+  await page.waitForFunction(() => document.querySelector('[data-history-report-share-native]')?.textContent === 'Share report')
   assert((await page.locator('[data-history-report-preview]').textContent()) === fullPreview, `${provider} full report was not restored.`)
   assert((await page.locator('[data-history-report-share-native]').textContent()) === 'Share report', `${provider} native-share label did not restore full-report mode.`)
 
