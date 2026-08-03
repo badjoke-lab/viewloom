@@ -6,7 +6,7 @@ on:
       production_origin:
         description: Production origin
         required: false
-        default: https://vl.badjoke-lab.com
+        default: https://www.viewloom.net
   pull_request:
     branches:
       - main
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      VIEWLOOM_PRODUCTION_ORIGIN: ${{ inputs.production_origin || 'https://vl.badjoke-lab.com' }}
+      VIEWLOOM_PRODUCTION_ORIGIN: ${{ inputs.production_origin || 'https://www.viewloom.net' }}
       ARTIFACT_DIR: artifacts/12a2-remote-schema
     steps:
       - uses: actions/checkout@v4
