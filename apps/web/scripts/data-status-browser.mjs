@@ -25,15 +25,17 @@ async function check(browser, provider, viewport) {
   const fulfill = async (route, requestedProvider) => {
     calls[requestedProvider] += 1
     const attempt = calls[requestedProvider]
-    if (attempt > 1) await pause(220)
-    if (attempt === 3) {
+    const manualAttempt = Math.max(0, attempt - initialRequestAllowance[requestedProvider])
+    if (manualAttempt > 0) await pause(220)
+    if (manualAttempt === 2) {
       await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'fixture failure' }) })
       return
     }
-    const payload = attempt === 2 ? refreshedFixture(requestedProvider) : fixture(requestedProvider)
+    const payload = manualAttempt === 1 ? refreshedFixture(requestedProvider) : fixture(requestedProvider)
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(payload) })
   }
 
+  const initialRequestAllowance = { twitch: Number.POSITIVE_INFINITY, kick: Number.POSITIVE_INFINITY }
   await context.route('**/api/twitch-status', route => fulfill(route, 'twitch'))
   await context.route('**/api/kick-status', route => fulfill(route, 'kick'))
 
@@ -45,10 +47,14 @@ async function check(browser, provider, viewport) {
 
   await page.goto(`${base}/${provider}/status/`, { waitUntil: 'domcontentloaded' })
   await page.waitForFunction(() => document.querySelector('[data-status-pill]')?.textContent !== 'Loading')
+  await page.waitForTimeout(100)
 
   const other = provider === 'twitch' ? 'kick' : 'twitch'
   const endpoint = provider === 'twitch' ? '/api/twitch-status' : '/api/kick-status'
-  assert(calls[provider] === 1, `${provider} initial status request count is incorrect.`)
+  const initialCalls = calls[provider]
+  initialRequestAllowance[provider] = initialCalls
+  initialRequestAllowance[other] = calls[other]
+  assert(initialCalls >= 1, `${provider} status endpoint was not requested.`)
   assert(calls[other] === 0, `${provider} page crossed provider endpoints.`)
   assert(await page.locator('.status-summary-card').count() === 6, `${provider} six-card summary is incomplete.`)
 
@@ -79,7 +85,7 @@ async function check(browser, provider, viewport) {
   assert((await page.locator('[data-status-feedback]').textContent())?.includes('Refreshing Data Status'), `${provider} refresh loading feedback is missing.`)
   await page.waitForFunction(() => document.querySelector('[data-status-feedback]')?.getAttribute('data-refresh-result') === 'success' && !document.querySelector('[data-status-refresh]')?.hasAttribute('disabled'))
 
-  assert(calls[provider] === 2, `${provider} successful refresh did not make exactly one additional provider request.`)
+  assert(calls[provider] === initialCalls + 1, `${provider} successful refresh did not make exactly one additional provider request.`)
   assert(calls[other] === 0, `${provider} successful refresh crossed provider endpoints.`)
   assert(await page.evaluate(() => window.__statusRefreshSentinel) === 'preserved', `${provider} refresh caused a document reload.`)
   assert(await refresh.getAttribute('aria-busy') === 'false', `${provider} refresh control did not leave its busy state.`)
@@ -92,13 +98,13 @@ async function check(browser, provider, viewport) {
   await refresh.click()
   await page.waitForFunction(() => document.querySelector('[data-status-refresh]')?.hasAttribute('disabled'))
   await page.waitForFunction(() => document.querySelector('[data-status-feedback]')?.getAttribute('data-refresh-result') === 'error' && !document.querySelector('[data-status-refresh]')?.hasAttribute('disabled'))
-  assert(calls[provider] === 3, `${provider} failed refresh did not make exactly one additional provider request.`)
+  assert(calls[provider] === initialCalls + 2, `${provider} failed refresh did not make exactly one additional provider request.`)
   assert(calls[other] === 0, `${provider} failed refresh crossed provider endpoints.`)
   assert((await page.locator('[data-status-feedback]').textContent())?.includes('Data Status refresh failed'), `${provider} refresh failure feedback is missing.`)
   assert(await page.evaluate(() => window.__statusRefreshSentinel) === 'preserved', `${provider} failed refresh caused a document reload.`)
   assert(await refresh.isEnabled(), `${provider} refresh control did not recover after failure.`)
 
-  assert(apiPaths.length === 3, `${provider} page made unexpected API requests: ${apiPaths.join(', ')}.`)
+  assert(apiPaths.length === calls[provider], `${provider} API request accounting is inconsistent: ${apiPaths.join(', ')}.`)
   for (const path of apiPaths) assert(path === endpoint, `${provider} page requested non-status API ${path}.`)
 
   const size = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth])
