@@ -116,3 +116,4 @@ jobs:
           name: phase11-cancellation-patch
           path: artifacts/phase11-cancellation-patch/
           if-no-files-found: error
+          include-hidden-files: true
