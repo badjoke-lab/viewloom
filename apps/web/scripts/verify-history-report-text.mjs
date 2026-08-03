@@ -12,6 +12,7 @@ const contractPath = 'docs/history-report-text-contract.md'
 const statePath = 'src/live/history-report-text-state.ts'
 const socialPath = 'src/live/history-report-social.ts'
 const renderPath = 'src/live/history-report-text-render.ts'
+const nativeSharePath = 'src/live/history-native-share.ts'
 const entryPath = 'src/live/history-report-text.ts'
 const stylePath = 'src/history-report-text.css'
 const registrationPath = 'src/live/history-default-day.ts'
@@ -24,6 +25,7 @@ for (const path of [
   statePath,
   socialPath,
   renderPath,
+  nativeSharePath,
   entryPath,
   stylePath,
   registrationPath,
@@ -82,20 +84,31 @@ if (existsSync(join(root, renderPath))) {
     'data-history-report',
     'data-history-report-preview',
     'data-history-report-copy',
-    'data-history-report-share-native',
     'data-history-report-mode',
     'data-history-report-count',
     'historyShortPostText',
     'historyShortPostLength',
     'navigator.clipboard?.writeText',
-    "typeof navigator.share !== 'function'",
-    'await navigator.share({',
-    'Share sheet opened.',
-    'Sharing cancelled.',
     'selectPreview(preview)',
     'Current provider view',
   ]) requireFragment(renderPath, source, fragment)
   forbidPattern(renderPath, source, 'new API request', /\bfetch\s*\(/)
+}
+
+if (existsSync(join(root, nativeSharePath))) {
+  const source = read(nativeSharePath)
+  for (const fragment of [
+    'data-history-report-share-native',
+    "typeof navigator.share === 'function'",
+    'await navigator.share({',
+    'preview.textContent',
+    'Share sheet opened.',
+    'Sharing cancelled.',
+    'MutationObserver',
+    'insertAdjacentElement',
+  ]) requireFragment(nativeSharePath, source, fragment)
+  forbidPattern(nativeSharePath, source, 'new API request', /\bfetch\s*\(/)
+  forbidPattern(nativeSharePath, source, 'combined-provider calculation', /twitch\s*\+\s*kick|kick\s*\+\s*twitch/i)
 }
 
 if (existsSync(join(root, stylePath))) {
@@ -109,6 +122,7 @@ if (existsSync(join(root, browserPath))) {
     'data-history-report-share-native',
     'Share sheet opened.',
     'native sharing caused another History request',
+    'browser fixture did not expose the Web Share API',
   ]) requireFragment(browserPath, source, fragment)
 }
 
@@ -122,7 +136,9 @@ if (existsSync(join(root, entryPath))) {
 }
 
 if (existsSync(join(root, registrationPath))) {
-  requireFragment(registrationPath, read(registrationPath), "import './history-report-text'")
+  const source = read(registrationPath)
+  requireFragment(registrationPath, source, "import './history-report-text'")
+  requireFragment(registrationPath, source, "import './history-native-share'")
 }
 
 if (failures.length) {
