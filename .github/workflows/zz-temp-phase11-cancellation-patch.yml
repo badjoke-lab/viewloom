@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: temporary-phase11-cancellation-patch-${{ github.event.pull_request.number || github.ref }}
@@ -27,31 +27,37 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: fix/phase11-latest-head-cancellation-gaps
-          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: Apply event-safe latest-head cancellation contracts
+      - name: Build event-safe latest-head cancellation files
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
+          import shutil
 
-          generic = """concurrency:
-            group: ${{ github.event_name == 'pull_request' && format('{0}-pr-{1}', github.workflow, github.event.pull_request.number) || format('{0}-{1}-{2}', github.workflow, github.event_name, github.ref) }}
-            cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-          """
-          pull_request_only = """concurrency:
-            group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-            cancel-in-progress: true
-          """
-          deploy = """concurrency:
-            group: ${{ github.event_name == 'pull_request' && format('{0}-pr-{1}', github.workflow, github.event.pull_request.number) || 'viewloom-collector-worker-production-deploy' }}
-            cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-          """
+          expression_open = '$' + '{{'
+          expression_close = '}' + '}'
+
+          generic = (
+            "concurrency:\n"
+            "  group: " + expression_open + " github.event_name == 'pull_request' && format('{0}-pr-{1}', github.workflow, github.event.pull_request.number) || format('{0}-{1}-{2}', github.workflow, github.event_name, github.ref) " + expression_close + "\n"
+            "  cancel-in-progress: " + expression_open + " github.event_name == 'pull_request' " + expression_close + "\n"
+          )
+          pull_request_only = (
+            "concurrency:\n"
+            "  group: " + expression_open + " github.workflow " + expression_close + "-" + expression_open + " github.event.pull_request.number || github.ref " + expression_close + "\n"
+            "  cancel-in-progress: true\n"
+          )
+          deploy = (
+            "concurrency:\n"
+            "  group: " + expression_open + " github.event_name == 'pull_request' && format('{0}-pr-{1}', github.workflow, github.event.pull_request.number) || 'viewloom-collector-worker-production-deploy' " + expression_close + "\n"
+            "  cancel-in-progress: " + expression_open + " github.event_name == 'pull_request' " + expression_close + "\n"
+          )
 
           replacements = {
             '.github/workflows/analytics-12a3-execution-cost-probe.yml': generic,
@@ -63,13 +69,19 @@ jobs:
             '.github/workflows/primary-domain-production-smoke.yml': generic,
           }
 
+          concurrency_pattern = re.compile(r'^concurrency:\s*\n(?:^[ \t][^\n]*\n)+', re.MULTILINE)
           for filename, block in replacements.items():
             path = Path(filename)
             source = path.read_text()
             if re.search(r'(?m)^concurrency:\s*$', source):
-              updated = re.sub(r'(?ms)^concurrency:\s*\n(?:^[ \t]+.*\n)+', block + '\n', source, count=1)
+              updated, count = concurrency_pattern.subn(block + '\n', source, count=1)
+              if count != 1:
+                raise SystemExit(f'{filename}: expected one concurrency block, found {count}')
             else:
-              updated = source.replace('\njobs:\n', '\n' + block + '\njobs:\n', 1)
+              marker = '\njobs:\n'
+              if marker not in source:
+                raise SystemExit(f'{filename}: jobs marker missing')
+              updated = source.replace(marker, '\n' + block + '\njobs:\n', 1)
             if updated == source:
               raise SystemExit(f'{filename}: concurrency patch made no change')
             path.write_text(updated)
@@ -84,21 +96,23 @@ jobs:
           source = source.replace("      cancelInProgress: cancelsInProgress,\n", "      cancelInProgress: cancelsInProgress,\n      value: cancellationValue,\n", 1)
           measure.write_text(source)
 
-          Path('.github/workflows/zz-temp-phase11-cancellation-patch.yml').unlink()
+          artifact_root = Path('artifacts/phase11-cancellation-patch')
+          for filename in [*replacements.keys(), str(measure)]:
+            source_path = Path(filename)
+            destination = artifact_root / filename
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source_path, destination)
           PY
 
       - name: Verify measured cancellation gap is zero
         run: |
-          node scripts/measure-phase11-ci-ownership.mjs /tmp/phase11-ci-ownership.json
-          node scripts/verify-phase11-ci-ownership.mjs /tmp/phase11-ci-ownership.json
-          jq -e '.counts.workflowsMissingLatestHeadCancellation == 0' /tmp/phase11-ci-ownership.json > /dev/null
-          jq -r '.missingLatestHeadCancellation[]?' /tmp/phase11-ci-ownership.json
+          node scripts/measure-phase11-ci-ownership.mjs artifacts/phase11-cancellation-patch/ci-ownership.json
+          node scripts/verify-phase11-ci-ownership.mjs artifacts/phase11-cancellation-patch/ci-ownership.json
+          jq -e '.counts.workflowsMissingLatestHeadCancellation == 0' artifacts/phase11-cancellation-patch/ci-ownership.json > /dev/null
+          test "$(find artifacts/phase11-cancellation-patch/.github/workflows -type f | wc -l | tr -d ' ')" = '7'
 
-      - name: Commit patched workflows
-        shell: bash
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .github/workflows scripts/measure-phase11-ci-ownership.mjs
-          git commit -m 'Close Phase 11 latest-head cancellation gaps'
-          git push origin HEAD:fix/phase11-latest-head-cancellation-gaps
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase11-cancellation-patch
+          path: artifacts/phase11-cancellation-patch/
+          if-no-files-found: error
