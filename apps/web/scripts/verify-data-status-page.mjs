@@ -84,7 +84,9 @@ for (const fragment of ['.status-summary-grid', 'repeat(6,minmax(0,1fr))', '.sta
 
 for (const fragment of [
   'window.__statusRefreshSentinel',
-  'calls[provider] === 2',
+  'const initialCalls = calls[provider]',
+  'calls[provider] === initialCalls + 1',
+  'calls[provider] === initialCalls + 2',
   'refresh caused a document reload',
   'refresh control did not enter its busy state',
   'Status generated',
