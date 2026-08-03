@@ -1,0 +1,99 @@
+name: Patch primary origin runtime contracts
+
+on:
+  push:
+    branches:
+      - fix-primary-origin-runtime-contracts
+    paths:
+      - '.github/workflows/patch-primary-origin-runtime-contracts.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-primary-origin-runtime-contracts
+          fetch-depth: 0
+      - name: Synchronize primary origin sources
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs')
+          const path = require('node:path')
+
+          const oldOrigin = 'https://vl.badjoke-lab.com'
+          const primaryOrigin = 'https://www.viewloom.net'
+          const allowedExtensions = new Set(['.html', '.ts', '.js', '.mjs', '.json', '.xml', '.txt'])
+          const changed = []
+
+          function updateFile(file) {
+            const source = fs.readFileSync(file, 'utf8')
+            if (!source.includes(oldOrigin)) return
+            const updated = source.replaceAll(oldOrigin, primaryOrigin)
+            fs.writeFileSync(file, updated)
+            changed.push(file)
+          }
+
+          function walk(directory) {
+            for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+              const target = path.join(directory, entry.name)
+              if (entry.isDirectory()) {
+                if (entry.name !== 'node_modules' && entry.name !== 'dist') walk(target)
+                continue
+              }
+              if (!entry.isFile() || !allowedExtensions.has(path.extname(entry.name))) continue
+              if (target === path.join('apps', 'web', 'vite.config.ts')) continue
+              updateFile(target)
+            }
+          }
+
+          walk(path.join('apps', 'web'))
+
+          const operationalFiles = [
+            '.github/workflows/analytics-12a0-capacity-baseline.yml',
+            '.github/workflows/analytics-12a2-binding-size-production.yml',
+            '.github/workflows/analytics-12a2-remote-schema-production.yml',
+            '.github/workflows/deploy-collector-workers.yml',
+            'scripts/collect-12a0-capacity-baseline.mjs',
+            'scripts/collect-12a2-binding-size-production-evidence.mjs',
+            'scripts/collect-12a2-remote-schema-production-evidence.mjs',
+          ]
+          for (const file of operationalFiles) updateFile(file)
+
+          if (changed.length === 0) throw new Error('No primary-origin changes were applied')
+
+          const unexpected = []
+          function verifyDirectory(directory) {
+            for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+              const target = path.join(directory, entry.name)
+              if (entry.isDirectory()) {
+                if (entry.name !== 'node_modules' && entry.name !== 'dist') verifyDirectory(target)
+                continue
+              }
+              if (!entry.isFile() || !allowedExtensions.has(path.extname(entry.name))) continue
+              if (target === path.join('apps', 'web', 'vite.config.ts')) continue
+              if (fs.readFileSync(target, 'utf8').includes(oldOrigin)) unexpected.push(target)
+            }
+          }
+          verifyDirectory(path.join('apps', 'web'))
+          for (const file of operationalFiles) {
+            if (fs.readFileSync(file, 'utf8').includes(oldOrigin)) unexpected.push(file)
+          }
+          if (unexpected.length) throw new Error(`Unexpected legacy origins remain: ${unexpected.join(', ')}`)
+
+          console.log(JSON.stringify({ changedCount: changed.length, changed }, null, 2))
+          NODE
+      - name: Commit synchronized origin contracts
+        run: |
+          if git diff --quiet; then
+            echo 'No changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/web .github/workflows/analytics-12a0-capacity-baseline.yml .github/workflows/analytics-12a2-binding-size-production.yml .github/workflows/analytics-12a2-remote-schema-production.yml .github/workflows/deploy-collector-workers.yml scripts/collect-12a0-capacity-baseline.mjs scripts/collect-12a2-binding-size-production-evidence.mjs scripts/collect-12a2-remote-schema-production-evidence.mjs
+          git commit -m 'Synchronize primary origin runtime contracts'
+          git push origin HEAD:fix-primary-origin-runtime-contracts
