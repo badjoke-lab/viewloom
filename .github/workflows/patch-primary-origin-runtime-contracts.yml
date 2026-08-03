@@ -6,9 +6,16 @@ on:
       - fix-primary-origin-runtime-contracts
     paths:
       - '.github/workflows/patch-primary-origin-runtime-contracts.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/patch-primary-origin-runtime-contracts.yml'
 
 permissions:
   contents: write
+
+concurrency:
+  group: patch-primary-origin-runtime-contracts
+  cancel-in-progress: false
 
 jobs:
   patch:
@@ -32,8 +39,7 @@ jobs:
           function updateFile(file) {
             const source = fs.readFileSync(file, 'utf8')
             if (!source.includes(oldOrigin)) return
-            const updated = source.replaceAll(oldOrigin, primaryOrigin)
-            fs.writeFileSync(file, updated)
+            fs.writeFileSync(file, source.replaceAll(oldOrigin, primaryOrigin))
             changed.push(file)
           }
 
@@ -62,8 +68,6 @@ jobs:
             'scripts/collect-12a2-remote-schema-production-evidence.mjs',
           ]
           for (const file of operationalFiles) updateFile(file)
-
-          if (changed.length === 0) throw new Error('No primary-origin changes were applied')
 
           const unexpected = []
           function verifyDirectory(directory) {
