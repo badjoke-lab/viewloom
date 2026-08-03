@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   verify-production-domain:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' || github.head_ref == 'verify-primary-origin-production-717'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
