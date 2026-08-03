@@ -6,9 +6,11 @@ const failures = []
 const files = {
   contract: 'docs/history-report-export-h4-contract.md',
   render: 'src/live/history-report-text-render.ts',
+  nativeShare: 'src/live/history-native-share.ts',
   share: 'src/live/history-share-card.ts',
   export: 'src/live/history-export.ts',
   entry: 'src/live/history-report-text.ts',
+  registration: 'src/live/history-default-day.ts',
   style: 'src/history-report-text.css',
   shareStyle: 'src/history-share-card.css',
   browser: 'scripts/history-report-export-h4-browser.mjs',
@@ -25,8 +27,8 @@ if (existsSync(join(root, files.contract))) {
   const source = read(files.contract)
   for (const fragment of [
     'One top-level `Report & Export` surface',
-    'Copy, Preview share card, Download PNG, Download CSV, Download JSON',
-    'hidden by default',
+    'Copy, Share through device, Preview share card, Download PNG, Download CSV, Download JSON',
+    'hidden when the Web Share API is unavailable',
     'must not issue another History API request',
     'viewloom-history-export-v1',
     'No History API, D1 schema, collector, cron, retention',
@@ -54,9 +56,23 @@ if (existsSync(join(root, files.render))) {
   let position = -1
   for (const fragment of ordered) {
     const next = source.indexOf(fragment)
-    if (next <= position) failures.push(`${files.render}: action order is not Copy / Preview / PNG / CSV / JSON`)
+    if (next <= position) failures.push(`${files.render}: base action order is not Copy / Preview / PNG / CSV / JSON`)
     position = next
   }
+}
+
+if (existsSync(join(root, files.nativeShare))) {
+  const source = read(files.nativeShare)
+  for (const fragment of [
+    'data-history-report-share-native',
+    'copyButton.insertAdjacentElement(\'afterend\', button)',
+    "typeof navigator.share === 'function'",
+    'preview.textContent',
+    'await navigator.share({',
+    'Share sheet opened.',
+    'Sharing cancelled.',
+  ]) need(files.nativeShare, source, fragment)
+  forbid(files.nativeShare, source, 'new API request', /\bfetch\s*\(/)
 }
 
 if (existsSync(join(root, files.share))) {
@@ -83,20 +99,32 @@ if (existsSync(join(root, files.entry))) {
   for (const fragment of ['renderHistoryReport(payload)', 'renderHistoryShareCard(payload)', 'renderHistoryExport(payload)', 'installHistoryReportPayloadCapture(schedule)']) need(files.entry, source, fragment)
 }
 
+if (existsSync(join(root, files.registration))) {
+  need(files.registration, read(files.registration), "import './history-native-share'")
+}
+
 if (existsSync(join(root, files.style))) {
   const source = read(files.style)
-  for (const fragment of ['.history-publish-actions', 'grid-template-columns:repeat(5', '.history-publish-statuses', '.history-share__preview[hidden]', '@media(max-width:760px)']) need(files.style, source, fragment)
+  for (const fragment of ['.history-publish-actions', 'grid-template-columns:repeat(6', '.history-publish-statuses', '.history-share__preview[hidden]', '@media(max-width:760px)']) need(files.style, source, fragment)
 }
 
 if (existsSync(join(root, files.browser))) {
   const source = read(files.browser)
-  for (const fragment of ['one top-level workspace', 'Preview share card', 'History API was fetched again', 'horizontal overflow']) need(files.browser, source, fragment)
+  for (const fragment of [
+    'one top-level workspace',
+    'Share report',
+    'Preview share card',
+    'nativeShareHidden',
+    'History API was fetched again',
+    'horizontal overflow',
+  ]) need(files.browser, source, fragment)
 }
 
 for (const path of [files.workflow, files.browserWorkflow]) {
   if (!existsSync(join(root, path))) continue
   const source = read(path)
   for (const fragment of ['concurrency:', 'group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}', 'cancel-in-progress: true']) need(path, source, fragment)
+  need(path, source, 'apps/web/src/live/history-native-share.ts')
 }
 
 if (existsSync(join(root, files.browserWorkflow))) {

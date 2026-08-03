@@ -48,20 +48,26 @@ async function check(browser, provider, viewport) {
       && json && !json.hasAttribute('disabled')
   })
   await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'report')
+  await page.waitForFunction(() => document.querySelector('[data-history-report-share-native]'))
 
-  const structure = await page.evaluate(() => ({
-    reportBlocks: document.querySelectorAll('.history-report-block').length,
-    shareBlocks: document.querySelectorAll('.history-share-block').length,
-    exportBlocks: document.querySelectorAll('.history-export-block').length,
-    workspaces: document.querySelectorAll('[data-history-report][data-history-share][data-history-export]').length,
-    labels: Array.from(document.querySelectorAll('.history-publish-actions button')).map((button) => button.textContent?.trim()),
-    previewHidden: document.querySelector('[data-history-share-preview]')?.hasAttribute('hidden'),
-    rendered: document.querySelector('[data-history-share-card]')?.getAttribute('data-share-rendered'),
-  }))
+  const structure = await page.evaluate(() => {
+    const nativeShare = document.querySelector('[data-history-report-share-native]')
+    return {
+      reportBlocks: document.querySelectorAll('.history-report-block').length,
+      shareBlocks: document.querySelectorAll('.history-share-block').length,
+      exportBlocks: document.querySelectorAll('.history-export-block').length,
+      workspaces: document.querySelectorAll('[data-history-report][data-history-share][data-history-export]').length,
+      labels: Array.from(document.querySelectorAll('.history-publish-actions button')).map((button) => button.textContent?.trim()),
+      nativeShareHidden: nativeShare instanceof HTMLButtonElement ? nativeShare.hidden : null,
+      previewHidden: document.querySelector('[data-history-share-preview]')?.hasAttribute('hidden'),
+      rendered: document.querySelector('[data-history-share-card]')?.getAttribute('data-share-rendered'),
+    }
+  })
 
   assert(structure.reportBlocks === 1 && structure.workspaces === 1, `${provider}: Report & Export is not one top-level workspace.`)
   assert(structure.shareBlocks === 0 && structure.exportBlocks === 0, `${provider}: legacy top-level Share or Export blocks remain.`)
-  assert(JSON.stringify(structure.labels) === JSON.stringify(['Copy report', 'Preview share card', 'Download PNG', 'Download CSV', 'Download JSON']), `${provider}: unified action order is incorrect.`)
+  assert(JSON.stringify(structure.labels) === JSON.stringify(['Copy report', 'Share report', 'Preview share card', 'Download PNG', 'Download CSV', 'Download JSON']), `${provider}: unified action order is incorrect.`)
+  assert(structure.nativeShareHidden === true, `${provider}: native Share must be hidden when Web Share is unavailable.`)
   assert(structure.previewHidden === true && structure.rendered !== 'true', `${provider}: share preview was not deferred.`)
 
   const providerCalls = calls[provider]
@@ -91,7 +97,7 @@ const browser = await chromium.launch({ headless: true })
 try {
   await check(browser, 'twitch', { width: 1440, height: 1100 })
   await check(browser, 'kick', { width: 390, height: 844 })
-  console.log('History Report & Export H4 browser gate passed: one top-level workspace, Preview share card on demand, no repeated History API request, and no horizontal overflow.')
+  console.log('History Report & Export H4 browser gate passed: one top-level six-action workspace, native Share hidden when unsupported, Preview share card on demand, no repeated History API request, and no horizontal overflow.')
 } finally {
   await browser.close()
 }

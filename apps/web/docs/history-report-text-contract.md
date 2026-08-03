@@ -21,7 +21,9 @@ It must:
 - state that the figures are observed ViewLoom data and are not provider-wide totals;
 - keep Twitch and Kick text, endpoints, names, and links separate;
 - support keyboard, touch, and clipboard fallback behavior;
-- render a readable preview before copying;
+- open the native device share sheet when supported without another History API request;
+- hide the native share action when the browser does not expose the Web Share API;
+- render a readable preview before copying or sharing;
 - provide both a full report and a compact short-post mode.
 
 ## Short-post mode
@@ -34,17 +36,18 @@ Short-post mode must:
 - retain only `period`, `from`, `to`, and `metric` query parameters in its share URL;
 - omit selected-day, ranking-sort, and ranking-limit state;
 - remain at or below 280 Unicode code points;
-- switch and copy without another History API request.
+- switch, copy, and share without another History API request.
 
 ## Truth rules
 
 - A daily row with `coverageState: missing` is not an observed day.
 - A date absent from the returned daily rows is missing when it lies inside the returned UTC period.
 - Missing or unavailable values are omitted or described as unavailable; they are never inferred as zero.
-- Partial, poor, demo, and in-progress coverage remains visible in copied text.
+- Partial, poor, demo, and in-progress coverage remains visible in copied and shared text.
 - The full report link reflects the current provider-specific History view.
 - The short-post link reflects the current period and metric without unrelated UI state.
-- Copying or switching text mode must not make another API request.
+- Copying, native sharing, or switching text mode must not make another API request.
+- Cancelling the device share sheet is not treated as a data or application error.
 
 ## Non-goals
 
