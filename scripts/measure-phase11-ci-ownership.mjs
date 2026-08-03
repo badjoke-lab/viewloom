@@ -15,7 +15,8 @@ const workflows = files.map((file) => {
   const hasSchedule = /(^|\n)\s{0,2}schedule:\s*(\n|$)/.test(source)
   const hasDispatch = /(^|\n)\s{0,2}workflow_dispatch:\s*(\n|$)/.test(source)
   const hasConcurrency = /(^|\n)concurrency:\s*(\n|$)/.test(source)
-  const cancelsInProgress = /cancel-in-progress:\s*true/.test(source)
+  const cancellationValue = lines.find((line) => /^  cancel-in-progress:\s*/.test(line))?.replace(/^  cancel-in-progress:\s*/, '').trim() || ''
+  const cancelsInProgress = cancellationValue === 'true' || /^\$\{\{.*github\.event_name.*pull_request.*\}\}$/.test(cancellationValue)
   const pathEntries = lines.filter((line) => /^\s+-\s+['"][^'"]+['"]\s*$/.test(line)).map((line) => line.trim().replace(/^-\s+/, '').replace(/^['"]|['"]$/g, ''))
   const stepNames = lines.filter((line) => /^\s+-\s+name:\s*/.test(line)).map((line) => line.replace(/^\s+-\s+name:\s*/, '').trim())
   const jobNames = lines.filter((line) => /^\s{2}[A-Za-z0-9_-]+:\s*$/.test(line)).map((line) => line.trim().slice(0, -1)).filter((name) => !['pull_request', 'push', 'schedule', 'workflow_dispatch', 'paths', 'branches'].includes(name))
@@ -32,6 +33,7 @@ const workflows = files.map((file) => {
     concurrency: {
       present: hasConcurrency,
       cancelInProgress: cancelsInProgress,
+      value: cancellationValue,
     },
     pathEntries,
     jobs: [...new Set(jobNames)],
