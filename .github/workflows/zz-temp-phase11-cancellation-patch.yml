@@ -1,0 +1,94 @@
+name: Temporary Phase 11 Cancellation Patch
+
+on:
+  push:
+    branches:
+      - fix/phase11-latest-head-cancellation-gaps
+    paths:
+      - '.github/workflows/zz-temp-phase11-cancellation-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/phase11-latest-head-cancellation-gaps
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Apply event-safe latest-head cancellation contracts
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          generic = """concurrency:
+            group: ${{ github.event_name == 'pull_request' && format('{0}-pr-{1}', github.workflow, github.event.pull_request.number) || format('{0}-{1}-{2}', github.workflow, github.event_name, github.ref) }}
+            cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+          """
+          pull_request_only = """concurrency:
+            group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+            cancel-in-progress: true
+          """
+          deploy = """concurrency:
+            group: ${{ github.event_name == 'pull_request' && format('{0}-pr-{1}', github.workflow, github.event.pull_request.number) || 'viewloom-collector-worker-production-deploy' }}
+            cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+          """
+
+          replacements = {
+            '.github/workflows/analytics-12a3-execution-cost-probe.yml': generic,
+            '.github/workflows/analytics-12a3-generator-enablement.yml': generic,
+            '.github/workflows/analytics-12a3-postmerge-acceptance.yml': generic,
+            '.github/workflows/analytics-12a4-twitch-canary-start-cancel.yml': generic,
+            '.github/workflows/analytics-12a4-twitch-category-capture-canary-storage-preflight.yml': pull_request_only,
+            '.github/workflows/deploy-collector-workers.yml': deploy,
+            '.github/workflows/primary-domain-production-smoke.yml': generic,
+          }
+
+          for filename, block in replacements.items():
+            path = Path(filename)
+            source = path.read_text()
+            if re.search(r'(?m)^concurrency:\s*$', source):
+              updated = re.sub(r'(?ms)^concurrency:\s*\n(?:^[ \t]+.*\n)+', block + '\n', source, count=1)
+            else:
+              updated = source.replace('\njobs:\n', '\n' + block + '\njobs:\n', 1)
+            if updated == source:
+              raise SystemExit(f'{filename}: concurrency patch made no change')
+            path.write_text(updated)
+
+          measure = Path('scripts/measure-phase11-ci-ownership.mjs')
+          source = measure.read_text()
+          old = "  const cancelsInProgress = /cancel-in-progress:\\s*true/.test(source)\n"
+          new = "  const cancellationValue = lines.find((line) => /^  cancel-in-progress:\\s*/.test(line))?.replace(/^  cancel-in-progress:\\s*/, '').trim() || ''\n  const cancelsInProgress = cancellationValue === 'true' || /^\\$\\{\\{.*github\\.event_name.*pull_request.*\\}\\}$/.test(cancellationValue)\n"
+          if old not in source:
+            raise SystemExit('measure-phase11-ci-ownership: expected cancellation parser not found')
+          source = source.replace(old, new, 1)
+          source = source.replace("      cancelInProgress: cancelsInProgress,\n", "      cancelInProgress: cancelsInProgress,\n      value: cancellationValue,\n", 1)
+          measure.write_text(source)
+
+          Path('.github/workflows/zz-temp-phase11-cancellation-patch.yml').unlink()
+          PY
+
+      - name: Verify measured cancellation gap is zero
+        run: |
+          node scripts/measure-phase11-ci-ownership.mjs /tmp/phase11-ci-ownership.json
+          node scripts/verify-phase11-ci-ownership.mjs /tmp/phase11-ci-ownership.json
+          jq -e '.counts.workflowsMissingLatestHeadCancellation == 0' /tmp/phase11-ci-ownership.json > /dev/null
+          jq -r '.missingLatestHeadCancellation[]?' /tmp/phase11-ci-ownership.json
+
+      - name: Commit patched workflows
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows scripts/measure-phase11-ci-ownership.mjs
+          git commit -m 'Close Phase 11 latest-head cancellation gaps'
+          git push origin HEAD:fix/phase11-latest-head-cancellation-gaps
