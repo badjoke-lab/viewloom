@@ -6,7 +6,7 @@ const webRoot = resolve(process.cwd())
 const repoRoot = resolve(webRoot, '..', '..')
 const legacyOrigin = 'https://vl.badjoke-lab.com'
 const primaryOrigin = 'https://www.viewloom.net'
-const scannedExtensions = new Set(['.html', '.ts', '.js', '.mjs', '.json', '.xml', '.txt'])
+const scannedExtensions = new Set(['.html', '.ts', '.js', '.mjs', '.json', '.xml', '.txt', '.md'])
 
 const intentionalLegacyFiles = new Set([
   resolve(webRoot, 'vite.config.ts'),
@@ -16,6 +16,7 @@ const intentionalLegacyFiles = new Set([
 ])
 
 const requiredPrimaryFiles = [
+  resolve(webRoot, 'docs/canonical-url-contract.md'),
   resolve(webRoot, 'functions/api/_middleware.ts'),
   resolve(webRoot, 'src/navigation/url-contract.ts'),
   resolve(repoRoot, 'scripts/collect-12a0-capacity-baseline.mjs'),
