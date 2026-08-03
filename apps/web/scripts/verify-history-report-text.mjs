@@ -129,8 +129,8 @@ if (existsSync(join(root, highlightsPath))) {
     "metric === 'viewer_minutes'",
     "['period', 'from', 'to', 'metric']",
     'Missing values are not inferred.',
-    '`/${provider}/day-flow/${suffix}`',
-    '`/${provider}/battle-lines/${suffix}`',
+    'href="/${provider}/day-flow/${suffix}"',
+    'href="/${provider}/battle-lines/${suffix}"',
   ]) requireFragment(highlightsPath, source, fragment)
   forbidPattern(highlightsPath, source, 'new API request', /\bfetch\s*\(/)
   forbidPattern(highlightsPath, source, 'combined-provider calculation', /twitch\s*\+\s*kick|kick\s*\+\s*twitch/i)
