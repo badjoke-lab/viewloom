@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: List legacy origin references
+      - name: List legacy origin references and consumers
         shell: bash
         run: |
           set -euo pipefail
@@ -38,3 +38,10 @@ jobs:
             --include='*.txt' \
             'https://vl\.badjoke-lab\.com' apps/web | sort || true
           echo 'MATCHED_FILES_END'
+
+          echo 'URL_CONTRACT_CONSUMERS_BEGIN'
+          grep -RIn \
+            --exclude-dir=node_modules \
+            --exclude-dir=.git \
+            -E 'VIEWLOOM_ORIGIN|canonicalUrl\(|PRODUCTION_ORIGIN' . || true
+          echo 'URL_CONTRACT_CONSUMERS_END'
