@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { chromium } from 'playwright'
 
-const origin = process.env.HISTORY_H7_ORIGIN || 'https://vl.badjoke-lab.com'
+const origin = process.env.HISTORY_H7_ORIGIN || 'https://www.viewloom.net'
 const out = resolve(process.env.HISTORY_H7_DIAGNOSTIC_DIR || 'artifacts/history-ui-h7-keyboard-diagnostic')
 mkdirSync(out, { recursive: true })
 

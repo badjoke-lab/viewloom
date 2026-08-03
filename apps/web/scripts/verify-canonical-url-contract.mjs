@@ -32,7 +32,7 @@ const transpiled = ts.transpileModule(contractSource, {
 const moduleUrl = `data:text/javascript;base64,${Buffer.from(transpiled).toString('base64')}`
 const contract = await import(moduleUrl)
 
-assert(contract.VIEWLOOM_ORIGIN === 'https://vl.badjoke-lab.com', 'Canonical origin must remain https://vl.badjoke-lab.com.')
+assert(contract.VIEWLOOM_ORIGIN === 'https://www.viewloom.net', 'Canonical origin must remain https://www.viewloom.net.')
 assert(contract.normalizeCanonicalPathname('/twitch/day-flow?date=2026-06-18#chart') === '/twitch/day-flow/', 'Canonical path normalization must remove query and hash state.')
 assert(contract.normalizeCanonicalPathname('kick/history') === '/kick/history/', 'Canonical path normalization must add leading and trailing slashes.')
 assert(contract.providerForPathname('/twitch/history/?period=30d') === 'twitch', 'Twitch route provider detection failed.')

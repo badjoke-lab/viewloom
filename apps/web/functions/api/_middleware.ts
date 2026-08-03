@@ -1,4 +1,4 @@
-const PRODUCTION_ORIGIN = 'https://vl.badjoke-lab.com'
+const PRODUCTION_ORIGIN = 'https://www.viewloom.net'
 const PREVIEW_ROUTES = new Set(['/api/day-flow', '/api/kick-day-flow'])
 
 export const onRequest: PagesFunction = async ({ request, next }) => {

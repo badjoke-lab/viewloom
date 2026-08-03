@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 
-const origin = process.env.VIEWLOOM_PRODUCTION_ORIGIN || 'https://vl.badjoke-lab.com'
+const origin = process.env.VIEWLOOM_PRODUCTION_ORIGIN || 'https://www.viewloom.net'
 const url = `${origin.replace(/\/$/, '')}/api/data-audit`
 const output = resolve(process.argv[2] || 'artifacts/12a2-binding-size/evidence.json')
 const budget = JSON.parse(readFileSync('docs/audits/12a2-intraday-rollup-budget-evidence.json', 'utf8'))

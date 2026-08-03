@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 
 const root = process.cwd()
-const origin = 'https://vl.badjoke-lab.com'
+const origin = 'https://www.viewloom.net'
 const failures = []
 
 const pages = [
@@ -87,9 +87,9 @@ for (const page of pages) {
 
   requireFragment(path, source, '<meta property="og:site_name" content="ViewLoom"')
   requireFragment(path, source, `<meta property="og:type" content="${type}"`)
-  requireFragment(path, source, '<meta property="og:image" content="https://vl.badjoke-lab.com/og/viewloom.svg"')
+  requireFragment(path, source, '<meta property="og:image" content="https://www.viewloom.net/og/viewloom.svg"')
   requireFragment(path, source, '<meta name="twitter:card" content="summary_large_image"')
-  requireFragment(path, source, '<meta name="twitter:image" content="https://vl.badjoke-lab.com/og/viewloom.svg"')
+  requireFragment(path, source, '<meta name="twitter:image" content="https://www.viewloom.net/og/viewloom.svg"')
 }
 
 if (failures.length > 0) {

@@ -260,8 +260,8 @@ async function ready(page, metric) {
 async function assertPublicIdentity(page, provider) {
   const label = provider === 'kick' ? 'Kick' : 'Twitch'
   check((await page.title()).includes(label) && (await page.title()).includes('History'), `${provider}: public title mismatch.`)
-  check(await page.locator('link[rel="canonical"]').getAttribute('href') === `https://vl.badjoke-lab.com/${provider}/history/`, `${provider}: canonical URL mismatch.`)
-  check(await page.locator('meta[property="og:url"]').getAttribute('content') === `https://vl.badjoke-lab.com/${provider}/history/`, `${provider}: og:url mismatch.`)
+  check(await page.locator('link[rel="canonical"]').getAttribute('href') === `https://www.viewloom.net/${provider}/history/`, `${provider}: canonical URL mismatch.`)
+  check(await page.locator('meta[property="og:url"]').getAttribute('content') === `https://www.viewloom.net/${provider}/history/`, `${provider}: og:url mismatch.`)
 }
 
 async function assertLayout(page, label) {

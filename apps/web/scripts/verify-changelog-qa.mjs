@@ -111,7 +111,7 @@ function verifyPage() {
   const page = readFileSync(join(root, pagePath), 'utf8')
   for (const fragment of [
     '<title>Changelog — ViewLoom</title>',
-    '<link rel="canonical" href="https://vl.badjoke-lab.com/changelog/"',
+    '<link rel="canonical" href="https://www.viewloom.net/changelog/"',
     'data-changelog-state="loading"',
     'class="site-frame"',
     'class="masthead"',
