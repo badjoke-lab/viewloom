@@ -3,6 +3,7 @@ import './history-peak-archive'
 import './history-battle-archive'
 import './history-calendar-heat'
 import './history-report-text'
+import './history-native-share'
 
 const startedWithExplicitDay = new URLSearchParams(location.search).has('day')
 let pending = !startedWithExplicitDay
