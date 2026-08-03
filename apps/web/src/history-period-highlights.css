@@ -1,0 +1,15 @@
+.history-period-highlights-block{margin-top:0;min-width:0}
+.history-period-highlights{overflow:hidden;border-color:var(--line-strong);background:var(--surface)}
+.history-period-highlights__grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:14px}
+.history-period-highlight{display:grid;align-content:start;gap:8px;min-width:0;border:1px solid var(--line);border-radius:4px;padding:14px;background:var(--surface-raised)}
+.history-period-highlight--high{border-color:color-mix(in srgb,var(--accent) 48%,var(--line))}
+.history-period-highlight--coverage{border-style:dashed}
+.history-period-highlight__eyebrow{color:var(--muted);font:750 .66rem/1.35 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.history-period-highlight strong{color:var(--text);font-size:1rem;line-height:1.35;overflow-wrap:anywhere}
+.history-period-highlight p{margin:0;color:var(--muted);font-size:.78rem;line-height:1.55;overflow-wrap:anywhere}
+.history-period-highlight__links{display:flex;gap:12px;flex-wrap:wrap;margin-top:2px;padding-top:9px;border-top:1px solid var(--line)}
+.history-period-highlight__links a,.history-period-highlights__foot a{color:var(--accent);font:750 .7rem/1.35 var(--mono);text-decoration:none}
+.history-period-highlight__links a:hover,.history-period-highlight__links a:focus-visible,.history-period-highlights__foot a:hover,.history-period-highlights__foot a:focus-visible{text-decoration:underline;outline:none}
+.history-period-highlights__foot{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid var(--line);padding:11px 14px;color:var(--muted);font-size:.73rem;line-height:1.45}
+@media(max-width:1100px){.history-period-highlights__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.history-period-highlights__grid{grid-template-columns:1fr;padding:11px}.history-period-highlight{padding:13px}.history-period-highlights__foot{align-items:flex-start;display:grid;gap:7px;padding:10px 11px}}

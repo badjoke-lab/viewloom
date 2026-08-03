@@ -1,6 +1,7 @@
 import '../history-report-text.css'
 import '../history-share-card.css'
 import '../history-export.css'
+import { renderHistoryPeriodHighlights } from './history-period-highlights'
 import { renderHistoryReport } from './history-report-text-render'
 import { renderHistoryShareCard } from './history-share-card'
 import { renderHistoryExport } from './history-export'
@@ -14,6 +15,7 @@ let scheduled = false
 function render(): void {
   const payload = historyReportPayload()
   if (!payload) return
+  renderHistoryPeriodHighlights(payload)
   renderHistoryReport(payload)
   renderHistoryShareCard(payload)
   renderHistoryExport(payload)
