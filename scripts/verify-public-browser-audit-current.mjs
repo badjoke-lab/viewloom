@@ -112,7 +112,7 @@ assert.equal(audit.window.startAt, clock.window.startAt)
 assert.equal(audit.window.endExclusiveAt, clock.window.endExclusiveAt)
 assert.equal(audit.window.expectedFinalSlots, 2016)
 assert.equal(audit.runtime.collectorCron, '*/5 * * * *')
-assert.equal(audit.publicSurface.publicExposureEnabled, false)
+assert.equal(audit.acceptance.publicExposureEnabled, false)
 
 console.log('Current public-state handoff verification passed.')
 console.log('- Phase 12 and R12A production acceptance remain complete')
