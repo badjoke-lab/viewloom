@@ -1,0 +1,40 @@
+name: Audit legacy origin public surfaces
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/audit-legacy-origin-public-surfaces.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: List legacy origin references
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'LEGACY_ORIGIN_MATCHES_BEGIN'
+          grep -RIn \
+            --include='*.html' \
+            --include='*.ts' \
+            --include='*.js' \
+            --include='*.json' \
+            --include='*.xml' \
+            --include='*.txt' \
+            'https://vl\.badjoke-lab\.com' apps/web || true
+          echo 'LEGACY_ORIGIN_MATCHES_END'
+
+          echo 'MATCHED_FILES_BEGIN'
+          grep -RIl \
+            --include='*.html' \
+            --include='*.ts' \
+            --include='*.js' \
+            --include='*.json' \
+            --include='*.xml' \
+            --include='*.txt' \
+            'https://vl\.badjoke-lab\.com' apps/web | sort || true
+          echo 'MATCHED_FILES_END'
