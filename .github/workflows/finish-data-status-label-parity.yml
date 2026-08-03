@@ -1,0 +1,56 @@
+name: Finish Data Status label parity
+
+on:
+  push:
+    branches:
+      - agent/finish-data-status-label-parity
+    paths:
+      - .github/workflows/finish-data-status-label-parity.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/finish-data-status-label-parity
+          fetch-depth: 0
+      - name: Replace residual labels
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs')
+
+          const replacements = [
+            ['apps/web/twitch/index.html', 'href="/twitch/status/">Status</a>', 'href="/twitch/status/">Data Status</a>'],
+            ['apps/web/kick/index.html', 'href="/kick/status/">Status</a>', 'href="/kick/status/">Data Status</a>'],
+            ['apps/web/twitch/channel/index.html', 'href="/twitch/status/">Status</a>', 'href="/twitch/status/">Data Status</a>'],
+            ['apps/web/kick/channel/index.html', 'href="/kick/status/">Status</a>', 'href="/kick/status/">Data Status</a>'],
+            ['apps/web/twitch/watchlist/index.html', 'href="/twitch/status/">Status</a>', 'href="/twitch/status/">Data Status</a>'],
+            ['apps/web/kick/watchlist/index.html', 'href="/kick/status/">Status</a>', 'href="/kick/status/">Data Status</a>'],
+            ['apps/web/src/provider-home-shell.ts', 'Open Status →', 'Open Data Status →'],
+          ]
+
+          for (const [path, from, to] of replacements) {
+            const source = fs.readFileSync(path, 'utf8')
+            if (!source.includes(from) && !source.includes(to)) {
+              throw new Error(`${path}: expected label not found`)
+            }
+            const updated = source.replaceAll(from, to)
+            fs.writeFileSync(path, updated)
+            if (!updated.includes(to)) throw new Error(`${path}: replacement failed`)
+          }
+          NODE
+      - name: Commit label parity
+        run: |
+          if git diff --quiet; then
+            echo 'No label changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/web/twitch/index.html apps/web/kick/index.html apps/web/twitch/channel/index.html apps/web/kick/channel/index.html apps/web/twitch/watchlist/index.html apps/web/kick/watchlist/index.html apps/web/src/provider-home-shell.ts
+          git commit -m 'Finish Data Status label parity'
+          git push origin HEAD:agent/finish-data-status-label-parity
