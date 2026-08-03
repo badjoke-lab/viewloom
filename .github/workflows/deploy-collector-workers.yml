@@ -41,8 +41,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: viewloom-collector-worker-production-deploy
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('{0}-pr-{1}', github.workflow, github.event.pull_request.number) || 'viewloom-collector-worker-production-deploy' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   verify:
