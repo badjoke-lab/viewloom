@@ -122,8 +122,8 @@ function ensureMount(): HTMLElement {
 function placeBlock(block: HTMLElement | null): void {
   if (!block) return
   const peakBlock = document.querySelector<HTMLElement>('.history-peak-events-block')
-  if (peakBlock && peakBlock.previousElementSibling !== block) {
-    peakBlock.insertAdjacentElement('beforebegin', block)
+  if (peakBlock) {
+    if (peakBlock.previousElementSibling !== block) peakBlock.insertAdjacentElement('beforebegin', block)
     return
   }
   const columns = document.querySelector<HTMLElement>('[data-history-columns]')
