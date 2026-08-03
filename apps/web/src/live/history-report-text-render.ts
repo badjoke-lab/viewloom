@@ -20,39 +20,9 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
   const modeButtons = mount.querySelectorAll<HTMLButtonElement>('[data-history-report-mode]')
   if (!preview || !copyButton || !status || !count || !modeButtons.length) return
 
-  let nativeShareButton = ensureNativeShareButton(mount, copyButton)
   const texts: Record<HistoryReportMode, string> = {
     report: historyReportText(payload, provider, location.href),
     post: historyShortPostText(payload, provider, location.href),
-  }
-
-  const syncNativeShare = (mode: HistoryReportMode): void => {
-    nativeShareButton = ensureNativeShareButton(mount, copyButton)
-    nativeShareButton.textContent = mode === 'post' ? 'Share short post' : 'Share report'
-    const supported = typeof navigator.share === 'function'
-    nativeShareButton.hidden = !supported
-    nativeShareButton.disabled = !supported
-    nativeShareButton.onclick = async () => {
-      if (!navigator.share) {
-        status.textContent = 'Native sharing is unavailable. Use the copy action instead.'
-        return
-      }
-      nativeShareButton.disabled = true
-      status.textContent = 'Opening share sheet…'
-      try {
-        await navigator.share({
-          title: `ViewLoom — ${provider === 'kick' ? 'Kick' : 'Twitch'} History & Trends`,
-          text: texts[mode],
-        })
-        status.textContent = 'Share sheet opened.'
-      } catch (error) {
-        status.textContent = error instanceof DOMException && error.name === 'AbortError'
-          ? 'Sharing cancelled.'
-          : 'Native sharing was unavailable. Use the copy action instead.'
-      } finally {
-        nativeShareButton.disabled = false
-      }
-    }
   }
 
   const applyMode = (mode: HistoryReportMode): void => {
@@ -68,7 +38,6 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
       ? `${historyShortPostLength(texts.post)} / 280 characters`
       : `${texts.report.split('\n').length} lines`
     status.textContent = mode === 'post' ? 'Short post ready.' : 'Full report ready.'
-    syncNativeShare(mode)
   }
 
   modeButtons.forEach((button) => {
@@ -100,19 +69,6 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
   applyMode(mount.dataset.historyReportActiveMode === 'post' ? 'post' : 'report')
 }
 
-function ensureNativeShareButton(mount: HTMLElement, copyButton: HTMLButtonElement): HTMLButtonElement {
-  const existing = mount.querySelector<HTMLButtonElement>('[data-history-report-share-native]')
-  if (existing) return existing
-  const button = document.createElement('button')
-  button.className = 'button button--paper'
-  button.type = 'button'
-  button.dataset.historyReportShareNative = ''
-  button.disabled = true
-  button.textContent = 'Share report'
-  copyButton.insertAdjacentElement('afterend', button)
-  return button
-}
-
 function ensureMount(): HTMLElement {
   const existing = document.querySelector<HTMLElement>('[data-history-report]')
   if (existing) return existing
@@ -125,7 +81,7 @@ function ensureMount(): HTMLElement {
       <div class="surface__head"><strong>Prepare the current period view</strong><small>Observed data only</small></div>
       <div class="surface__body history-report__body">
         <div class="history-publish-intro">
-          <p>Copy a full report or compact post, share it through the current device, preview a share card only when needed, or download the retained daily data.</p>
+          <p>Copy a full report or compact post, preview a share card only when needed, or download the retained daily data.</p>
           <span>All outputs reuse the current provider response.</span>
         </div>
         <div class="history-report__mode" role="group" aria-label="Report text format">
@@ -136,7 +92,6 @@ function ensureMount(): HTMLElement {
         <pre class="history-report__preview" data-history-report-preview tabindex="0">Loading report text…</pre>
         <div class="history-publish-actions" aria-label="Report and export actions">
           <button class="button button--paper" type="button" data-history-report-copy disabled>Copy report</button>
-          <button class="button button--paper" type="button" data-history-report-share-native disabled>Share report</button>
           <button class="button" type="button" data-history-share-toggle aria-expanded="false" aria-controls="history-share-preview">Preview share card</button>
           <button class="button" type="button" data-history-share-download disabled>Download PNG</button>
           <button class="button" type="button" data-history-export-csv disabled>Download CSV</button>
