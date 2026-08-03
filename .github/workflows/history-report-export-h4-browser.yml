@@ -6,6 +6,8 @@ on:
     paths:
       - 'apps/web/src/live/history-report-text.ts'
       - 'apps/web/src/live/history-report-text-render.ts'
+      - 'apps/web/src/live/history-native-share.ts'
+      - 'apps/web/src/live/history-default-day.ts'
       - 'apps/web/src/live/history-share-card.ts'
       - 'apps/web/src/live/history-export.ts'
       - 'apps/web/src/history-report-text.css'
