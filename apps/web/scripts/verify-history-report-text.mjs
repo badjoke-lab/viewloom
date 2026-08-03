@@ -40,7 +40,8 @@ if (existsSync(join(root, contractPath))) {
     'coverageState: missing',
     'compact short-post mode',
     '280 Unicode code points',
-    'Copying or switching text mode must not make another API request',
+    'Copying, native sharing, or switching text mode must not make another API request',
+    'hide the native share action when the browser does not expose the Web Share API',
     'Twitch/Kick combined totals',
   ]) requireFragment(contractPath, source, fragment)
 }
@@ -81,15 +82,34 @@ if (existsSync(join(root, renderPath))) {
     'data-history-report',
     'data-history-report-preview',
     'data-history-report-copy',
+    'data-history-report-share-native',
     'data-history-report-mode',
     'data-history-report-count',
     'historyShortPostText',
     'historyShortPostLength',
     'navigator.clipboard?.writeText',
+    "typeof navigator.share !== 'function'",
+    'await navigator.share({',
+    'Share sheet opened.',
+    'Sharing cancelled.',
     'selectPreview(preview)',
     'Current provider view',
   ]) requireFragment(renderPath, source, fragment)
   forbidPattern(renderPath, source, 'new API request', /\bfetch\s*\(/)
+}
+
+if (existsSync(join(root, stylePath))) {
+  requireFragment(stylePath, read(stylePath), 'grid-template-columns:repeat(6,minmax(0,1fr))')
+}
+
+if (existsSync(join(root, browserPath))) {
+  const source = read(browserPath)
+  for (const fragment of [
+    '__viewloomSharedData',
+    'data-history-report-share-native',
+    'Share sheet opened.',
+    'native sharing caused another History request',
+  ]) requireFragment(browserPath, source, fragment)
 }
 
 if (existsSync(join(root, entryPath))) {
