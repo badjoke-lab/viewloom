@@ -23,12 +23,22 @@ type StatusPayload = {
   storage?: { database?: string; binding?: string }
 }
 
+type StatusRequestReason = 'initial' | 'manual'
+
 const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
 const endpoint = provider === 'kick' ? '/api/kick-status' : '/api/twitch-status'
+let requestInFlight = false
 
-void hydrateStatus()
+window.addEventListener('viewloom:status-refresh', () => { void hydrateStatus('manual') })
+void hydrateStatus('initial')
 
-async function hydrateStatus(): Promise<void> {
+async function hydrateStatus(reason: StatusRequestReason): Promise<void> {
+  if (requestInFlight) return
+  requestInFlight = true
+  window.dispatchEvent(new CustomEvent('viewloom:status-loading', {
+    detail: { provider, endpoint, reason },
+  }))
+
   try {
     const response = await fetch(endpoint, { headers: { accept: 'application/json' }, cache: 'no-store' })
     if (!response.ok) throw new Error(`status api returned ${response.status}`)
@@ -37,8 +47,17 @@ async function hydrateStatus(): Promise<void> {
     renderFacts(payload)
     renderBoard(payload)
     renderFeatures(payload)
+    window.dispatchEvent(new CustomEvent('viewloom:status-refreshed', {
+      detail: { provider, endpoint, reason, completedAt: new Date().toISOString() },
+    }))
   } catch (error) {
-    renderError(error instanceof Error ? error.message : String(error))
+    const message = error instanceof Error ? error.message : String(error)
+    renderError(message)
+    window.dispatchEvent(new CustomEvent('viewloom:status-error', {
+      detail: { provider, endpoint, reason, message },
+    }))
+  } finally {
+    requestInFlight = false
   }
 }
 
