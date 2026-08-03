@@ -12,6 +12,7 @@ const intentionalLegacyFiles = new Set([
   resolve(webRoot, 'vite.config.ts'),
   resolve(webRoot, 'scripts/normalize-built-head.mjs'),
   resolve(webRoot, 'scripts/verify-primary-domain-cutover.mjs'),
+  resolve(webRoot, 'scripts/verify-primary-origin-source-contract.mjs'),
 ])
 
 const requiredPrimaryFiles = [
