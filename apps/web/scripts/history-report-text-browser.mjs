@@ -20,9 +20,9 @@ async function check(browser, provider, viewport) {
   await context.addInitScript(() => {
     window.__viewloomCopiedText = ''
     window.__viewloomSharedData = null
-    Object.defineProperty(navigator, 'share', {
+    Object.defineProperty(Navigator.prototype, 'share', {
       configurable: true,
-      value: async (data) => { window.__viewloomSharedData = data },
+      value: async function (data) { window.__viewloomSharedData = data },
     })
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
@@ -46,13 +46,25 @@ async function check(browser, provider, viewport) {
   await page.goto(`${base}/${provider}/history/?period=30d&metric=viewer_minutes&day=2026-06-10&sort=rising&limit=50`, { waitUntil: 'domcontentloaded' })
   await page.waitForFunction(() => {
     const button = document.querySelector('[data-history-report-copy]')
-    const shareButton = document.querySelector('[data-history-report-share-native]')
     const preview = document.querySelector('[data-history-report-preview]')
-    return button && !button.hasAttribute('disabled')
-      && shareButton && !shareButton.hasAttribute('disabled') && !shareButton.hasAttribute('hidden')
-      && preview?.textContent?.includes('Observed days: 12 of 13')
+    return button && !button.hasAttribute('disabled') && preview?.textContent?.includes('Observed days: 12 of 13')
   })
   await openReport(page)
+  await page.waitForFunction(() => document.querySelector('[data-history-report-share-native]'))
+
+  const shareState = await page.evaluate(() => {
+    const button = document.querySelector('[data-history-report-share-native]')
+    return {
+      present: button instanceof HTMLButtonElement,
+      hidden: button instanceof HTMLButtonElement ? button.hidden : null,
+      disabled: button instanceof HTMLButtonElement ? button.disabled : null,
+      supported: typeof navigator.share === 'function',
+    }
+  })
+  assert(shareState.present, `${provider} native-share action is absent.`)
+  assert(shareState.supported, `${provider} browser fixture did not expose the Web Share API.`)
+  assert(shareState.hidden === false, `${provider} native-share action is hidden despite Web Share support.`)
+  assert(shareState.disabled === false, `${provider} native-share action is disabled despite Web Share support.`)
 
   const fullPreview = await page.locator('[data-history-report-preview]').textContent()
   const providerLabel = provider === 'twitch' ? 'Twitch' : 'Kick'
