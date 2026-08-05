@@ -156,9 +156,9 @@ function installModeKeyboardNavigation(
 
     event.preventDefault()
     event.stopPropagation()
-    const next = ordered[nextIndex]
-    applyMode(next.dataset.historyReportMode === 'post' ? 'post' : 'report')
-    next.focus({ preventScroll: true })
+    const mode: HistoryReportMode = ordered[nextIndex].dataset.historyReportMode === 'post' ? 'post' : 'report'
+    applyMode(mode)
+    focusCurrentMode(mode)
   }
 
   const keyup: EventListener = (rawEvent) => {
@@ -169,8 +169,10 @@ function installModeKeyboardNavigation(
 
     event.preventDefault()
     event.stopPropagation()
-    const active = group.querySelector<HTMLButtonElement>('[data-history-report-mode][aria-pressed="true"]')
-    active?.focus({ preventScroll: true })
+    const mode: HistoryReportMode = document.querySelector<HTMLElement>('[data-history-report]')?.dataset.historyReportActiveMode === 'post'
+      ? 'post'
+      : 'report'
+    focusCurrentMode(mode)
   }
 
   keyboardHandlers.set(group, { keydown, keyup })
@@ -183,6 +185,12 @@ function modeButtonTarget(event: KeyboardEvent, group: HTMLElement): HTMLButtonE
     ? event.target.closest<HTMLButtonElement>('[data-history-report-mode]')
     : null
   return target && group.contains(target) ? target : null
+}
+
+function focusCurrentMode(mode: HistoryReportMode): void {
+  const selector = `[data-history-report-mode="${mode}"]`
+  document.querySelector<HTMLButtonElement>(selector)?.focus({ preventScroll: true })
+  queueMicrotask(() => document.querySelector<HTMLButtonElement>(selector)?.focus({ preventScroll: true }))
 }
 
 function selectPreview(preview: HTMLElement): void {
