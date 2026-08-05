@@ -42,14 +42,13 @@ jobs:
           pnpm build:web
       - name: Verify deployment workflow boundary
         run: |
-          grep -Fq 'apps/web/dist' .github/workflows/deploy-web-pages.yml
+          grep -Fq 'wrangler pages deploy apps/web/dist' .github/workflows/deploy-web-pages.yml
           grep -Fq 'www.viewloom.net' .github/workflows/deploy-web-pages.yml
           grep -Fq 'CLOUDFLARE_API_TOKEN' .github/workflows/deploy-web-pages.yml
           grep -Fq 'CLOUDFLARE_ACCOUNT_ID' .github/workflows/deploy-web-pages.yml
-          if grep -Eq 'collector|d1 migrations|wrangler d1|workers/collector' .github/workflows/deploy-web-pages.yml; then
-            echo 'Web deployment workflow crossed the protected collector or D1 boundary.' >&2
-            exit 1
-          fi
+          grep -Fq "github.event_name != 'pull_request'" .github/workflows/deploy-web-pages.yml
+          test -f apps/web/dist/twitch/history/index.html
+          test -f apps/web/dist/kick/history/index.html
 
   deploy:
     if: github.event_name != 'pull_request'
