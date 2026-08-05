@@ -12,6 +12,10 @@ import {
 
 const CARD_WIDTH = 1200
 const CARD_HEIGHT = 630
+let shareCardKeyboardInstalled = false
+let pendingShareToggleFocus = false
+let shareFocusRestoreFrame: number | null = null
+let shareFocusRestoreToken = 0
 
 export function renderHistoryShareCard(payload: HistoryReportPayload): void {
   const provider: HistoryReportProvider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
@@ -100,12 +104,7 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
     else if (!open) status.textContent = `${metricLabel(metric)} share card available on demand.`
   }
 
-  canvas.onkeydown = (event) => {
-    if (event.key !== 'Escape' || mount.dataset.historyShareOpen !== 'true') return
-    event.preventDefault()
-    setOpen(false)
-    toggle.focus()
-  }
+  installShareCardKeyboardNavigation()
 
   toggle.disabled = false
   toggle.onclick = () => setOpen(mount.dataset.historyShareOpen !== 'true')
@@ -133,6 +132,82 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
   }
 
   setOpen(mount.dataset.historyShareOpen === 'true')
+  restoreShareToggleFocus()
+}
+
+function installShareCardKeyboardNavigation(): void {
+  if (shareCardKeyboardInstalled) return
+  shareCardKeyboardInstalled = true
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return
+    const canvas = event.target instanceof Element
+      ? event.target.closest<HTMLCanvasElement>('[data-history-share-card]')
+      : null
+    const mount = canvas?.closest<HTMLElement>('[data-history-share]')
+    if (!canvas || !mount || mount.dataset.historyShareOpen !== 'true') return
+
+    event.preventDefault()
+    event.stopPropagation()
+    pendingShareToggleFocus = true
+    closeCurrentShareCardPreview(mount, canvas)
+    restoreShareToggleFocus()
+  }, true)
+
+  document.addEventListener('keyup', (event) => {
+    if (event.key !== 'Escape' || !pendingShareToggleFocus) return
+    event.preventDefault()
+    event.stopPropagation()
+    restoreShareToggleFocus()
+  }, true)
+}
+
+function closeCurrentShareCardPreview(mount: HTMLElement, canvas: HTMLCanvasElement): void {
+  mount.dataset.historyShareOpen = 'false'
+  const preview = mount.querySelector<HTMLElement>('[data-history-share-preview]')
+  const toggle = mount.querySelector<HTMLButtonElement>('[data-history-share-toggle]')
+  const status = mount.querySelector<HTMLElement>('[data-history-share-status]')
+  if (preview) preview.hidden = true
+  if (toggle) {
+    toggle.setAttribute('aria-expanded', 'false')
+    toggle.textContent = 'Preview share card'
+  }
+  if (status) {
+    const metric = canvas.dataset.shareMetric === 'peak_viewers' ? 'peak_viewers' : 'viewer_minutes'
+    status.textContent = `${metricLabel(metric)} share card available on demand.`
+  }
+}
+
+function restoreShareToggleFocus(): void {
+  if (!pendingShareToggleFocus) return
+  const token = ++shareFocusRestoreToken
+  if (shareFocusRestoreFrame != null) cancelAnimationFrame(shareFocusRestoreFrame)
+  let attempts = 0
+  let stableFrames = 0
+
+  const focus = (): void => {
+    if (token !== shareFocusRestoreToken || !pendingShareToggleFocus) return
+    const mount = document.querySelector<HTMLElement>('[data-history-share]')
+    const toggle = mount?.querySelector<HTMLButtonElement>('[data-history-share-toggle]')
+    if (mount?.dataset.historyShareOpen === 'false' && toggle) {
+      if (document.activeElement !== toggle) toggle.focus()
+      stableFrames = document.activeElement === toggle ? stableFrames + 1 : 0
+    } else {
+      stableFrames = 0
+    }
+
+    attempts += 1
+    if (stableFrames >= 15) {
+      pendingShareToggleFocus = false
+      shareFocusRestoreFrame = null
+      return
+    }
+    if (attempts < 60) shareFocusRestoreFrame = requestAnimationFrame(focus)
+    else shareFocusRestoreFrame = null
+  }
+
+  queueMicrotask(focus)
+  shareFocusRestoreFrame = requestAnimationFrame(focus)
 }
 
 type CardModel = {
