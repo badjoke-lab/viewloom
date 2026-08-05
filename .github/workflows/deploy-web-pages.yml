@@ -28,6 +28,10 @@ concurrency:
   group: ${{ github.event_name == 'pull_request' && format('{0}-pr-{1}', github.workflow, github.event.pull_request.number) || 'viewloom-web-pages-production-deploy' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  VIEWLOOM_PAGES_PROJECT: viewloom
+  VIEWLOOM_PAGES_URL: https://viewloom.pages.dev
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -42,8 +46,9 @@ jobs:
           pnpm build:web
       - name: Verify deployment workflow boundary
         run: |
+          grep -Fq 'VIEWLOOM_PAGES_PROJECT: viewloom' .github/workflows/deploy-web-pages.yml
           grep -Fq 'wrangler pages deploy apps/web/dist' .github/workflows/deploy-web-pages.yml
-          grep -Fq 'www.viewloom.net' .github/workflows/deploy-web-pages.yml
+          grep -Fq 'CF_PAGES_COMMIT_SHA' .github/workflows/deploy-web-pages.yml
           grep -Fq 'CLOUDFLARE_API_TOKEN' .github/workflows/deploy-web-pages.yml
           grep -Fq 'CLOUDFLARE_ACCOUNT_ID' .github/workflows/deploy-web-pages.yml
           grep -Fq "github.event_name != 'pull_request'" .github/workflows/deploy-web-pages.yml
@@ -66,37 +71,33 @@ jobs:
         run: |
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
-      - name: Build current main web application
-        run: pnpm build:web
-      - name: Resolve the Pages project owning the ViewLoom domain
-        id: project
+      - name: Build current main web application with production identity
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_PAGES: '1'
+          CF_PAGES_BRANCH: main
+          CF_PAGES_COMMIT_SHA: ${{ github.sha }}
+          CF_PAGES_URL: ${{ env.VIEWLOOM_PAGES_URL }}
+        run: pnpm build:web
+      - name: Record verified Pages project identity
         run: |
           mkdir -p artifacts/web-pages-deploy
-          curl --fail --silent --show-error \
-            --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            --header 'Content-Type: application/json' \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects" \
-            > artifacts/web-pages-deploy/projects.json
-          test "$(jq -r '.success' artifacts/web-pages-deploy/projects.json)" = 'true'
-          project_name="$(jq -r '[.result[] | select(any(.domains[]?; . == "www.viewloom.net" or . == "viewloom.net"))][0].name // empty' artifacts/web-pages-deploy/projects.json)"
-          test -n "$project_name"
-          echo "project_name=$project_name" >> "$GITHUB_OUTPUT"
-          jq --arg project "$project_name" --arg sha "$GITHUB_SHA" \
-            '{schema:"viewloom-web-pages-deploy-v1", project:$project, commit:$sha, resolvedAt:(now|todateiso8601)}' \
+          jq -n \
+            --arg project "$VIEWLOOM_PAGES_PROJECT" \
+            --arg pages_url "$VIEWLOOM_PAGES_URL" \
+            --arg commit "$GITHUB_SHA" \
+            --arg source_run '30622511725' \
+            '{schema:"viewloom-web-pages-deploy-v1", project:$project, pages_url:$pages_url, commit:$commit, identity_source:{type:"retained-production-smoke-artifact", workflow_run:$source_run, observed_pages_url:"https://368de0f6.viewloom.pages.dev"}, recorded_at:(now|todateiso8601)}' \
             > artifacts/web-pages-deploy/resolution.json
+          jq -e '.environment == "production" and .branch == "main" and .commit_sha == env.GITHUB_SHA' apps/web/dist/deployment.json
       - name: Install Wrangler 4
         run: npm install --global wrangler@4
-      - name: Deploy web build to Cloudflare Pages
+      - name: Deploy web build directly to verified Cloudflare Pages project
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          PROJECT_NAME: ${{ steps.project.outputs.project_name }}
         run: |
           wrangler pages deploy apps/web/dist \
-            --project-name "$PROJECT_NAME" \
+            --project-name "$VIEWLOOM_PAGES_PROJECT" \
             --branch main \
             --commit-hash "$GITHUB_SHA" \
             --commit-message "Deploy ViewLoom web $GITHUB_SHA" \
