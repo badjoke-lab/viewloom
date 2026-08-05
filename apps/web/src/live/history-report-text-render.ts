@@ -49,6 +49,8 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
     preview.textContent = texts[mode]
     preview.setAttribute('aria-label', mode === 'post' ? 'Short post preview' : 'Full report preview')
     copyButton.textContent = mode === 'post' ? 'Copy short post' : 'Copy report'
+    const nativeShareButton = mount.querySelector<HTMLButtonElement>('[data-history-report-share-native]')
+    if (nativeShareButton) nativeShareButton.textContent = mode === 'post' ? 'Share short post' : 'Share report'
     count.textContent = mode === 'post'
       ? `${historyShortPostLength(texts.post)} / 280 characters`
       : `${texts.report.split('\n').length} lines`
