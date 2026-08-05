@@ -134,8 +134,8 @@ function installModeKeyboardNavigation(
 
       event.preventDefault()
       const next = ordered[nextIndex]
-      next.focus()
       applyMode(next.dataset.historyReportMode === 'post' ? 'post' : 'report')
+      next.focus({ preventScroll: true })
     }
   })
 }
