@@ -25,7 +25,7 @@ try {
   verifyDeferredFeatureBehavior()
   transpileSources()
   await verifyExactHistoryOutputs()
-  console.log('History output R2 preservation verification passed.')
+  console.log('History output R2 preservation verification passed with accessible export feedback.')
 } finally {
   rmSync(tempDir, { recursive: true, force: true })
 }
@@ -54,7 +54,10 @@ function verifyDeferredFeatureBehavior() {
     'anchor.click()',
     'anchor.remove()',
     'window.setTimeout(() => URL.revokeObjectURL(url), 1000)',
-    "status.textContent = success",
+    'status.textContent = `Preparing ${format.toUpperCase()}…`',
+    'await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))',
+    'status.textContent = `${format.toUpperCase()} downloaded as ${filename}.`',
+    'status.textContent = `${format.toUpperCase()} download failed in this browser.`',
   ]) assert.ok(exportSource.includes(fragment), `History download behavior changed: ${fragment}`)
 
   assert.ok(!exportSource.includes('downloadTextFile('), 'History must not adopt shared download transport in R2')
