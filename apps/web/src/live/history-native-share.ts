@@ -39,6 +39,7 @@ function syncNativeShare(): void {
   const mode = mount.dataset.historyReportActiveMode === 'post' ? 'post' : 'report'
   const supported = typeof navigator.share === 'function'
   const label = mode === 'post' ? 'Share short post' : 'Share report'
+  const previewText = preview.textContent
 
   if (button.textContent !== label) button.textContent = label
   if (button.hidden === supported) button.hidden = !supported
@@ -56,7 +57,7 @@ function syncNativeShare(): void {
     }
 
     const currentPreview = document.querySelector<HTMLElement>('[data-history-report-preview]')
-    const text = currentPreview?.textContent ?? ''
+    const text = currentPreview?.textContent ?? previewText ?? ''
     if (!text.trim()) {
       setReportActionStatus('Report text is not ready yet.')
       return
