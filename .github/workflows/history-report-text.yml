@@ -10,6 +10,8 @@ on:
       - 'apps/web/src/live/history-report-text*.ts'
       - 'apps/web/src/live/history-report-social.ts'
       - 'apps/web/src/live/history-native-share.ts'
+      - 'apps/web/src/live/history-share-card.ts'
+      - 'apps/web/src/live/history-export*.ts'
       - 'apps/web/src/live/history-period-highlights.ts'
       - 'apps/web/src/live/history-default-day.ts'
       - 'apps/web/scripts/verify-history-report-text.mjs'
