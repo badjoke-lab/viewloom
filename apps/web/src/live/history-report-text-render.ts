@@ -10,6 +10,8 @@ import {
 
 type HistoryReportMode = 'report' | 'post'
 
+const keyboardHandlers = new WeakMap<HTMLElement, EventListener>()
+
 export function renderHistoryReport(payload: HistoryReportPayload): void {
   const provider: HistoryReportProvider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
   const mount = ensureMount()
@@ -44,7 +46,7 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
   modeButtons.forEach((button) => {
     button.onclick = () => applyMode(button.dataset.historyReportMode === 'post' ? 'post' : 'report')
   })
-  installModeKeyboardNavigation(modeButtons, applyMode)
+  installModeKeyboardNavigation(mount, applyMode)
 
   copyButton.disabled = false
   copyButton.onclick = async () => {
@@ -119,27 +121,42 @@ function ensureMount(): HTMLElement {
 }
 
 function installModeKeyboardNavigation(
-  buttons: NodeListOf<HTMLButtonElement>,
+  mount: HTMLElement,
   applyMode: (mode: HistoryReportMode) => void,
 ): void {
-  const ordered = Array.from(buttons)
-  ordered.forEach((button, index) => {
-    button.onkeydown = (event) => {
-      let nextIndex: number | null = null
-      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % ordered.length
-      else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + ordered.length) % ordered.length
-      else if (event.key === 'Home') nextIndex = 0
-      else if (event.key === 'End') nextIndex = ordered.length - 1
-      if (nextIndex == null) return
+  const group = mount.querySelector<HTMLElement>('.history-report__mode')
+  if (!group) return
 
-      event.preventDefault()
-      event.stopPropagation()
-      const next = ordered[nextIndex]
-      applyMode(next.dataset.historyReportMode === 'post' ? 'post' : 'report')
-      next.focus({ preventScroll: true })
-      requestAnimationFrame(() => next.focus({ preventScroll: true }))
-    }
-  })
+  const previous = keyboardHandlers.get(group)
+  if (previous) group.removeEventListener('keydown', previous, true)
+
+  const handler: EventListener = (rawEvent) => {
+    const event = rawEvent as KeyboardEvent
+    const target = event.target instanceof Element
+      ? event.target.closest<HTMLButtonElement>('[data-history-report-mode]')
+      : null
+    if (!target || !group.contains(target)) return
+
+    const ordered = Array.from(group.querySelectorAll<HTMLButtonElement>('[data-history-report-mode]'))
+    const index = ordered.indexOf(target)
+    if (index < 0) return
+
+    let nextIndex: number | null = null
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % ordered.length
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + ordered.length) % ordered.length
+    else if (event.key === 'Home') nextIndex = 0
+    else if (event.key === 'End') nextIndex = ordered.length - 1
+    if (nextIndex == null) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    const next = ordered[nextIndex]
+    applyMode(next.dataset.historyReportMode === 'post' ? 'post' : 'report')
+    next.focus({ preventScroll: true })
+  }
+
+  keyboardHandlers.set(group, handler)
+  group.addEventListener('keydown', handler, true)
 }
 
 function selectPreview(preview: HTMLElement): void {
