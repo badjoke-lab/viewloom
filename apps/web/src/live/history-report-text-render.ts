@@ -10,7 +10,13 @@ import {
 
 type HistoryReportMode = 'report' | 'post'
 
-const keyboardHandlers = new WeakMap<HTMLElement, EventListener>()
+type KeyboardHandlers = {
+  keydown: EventListener
+  keyup: EventListener
+}
+
+const keyboardHandlers = new WeakMap<HTMLElement, KeyboardHandlers>()
+const navigationKeys = new Set(['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'])
 
 export function renderHistoryReport(payload: HistoryReportPayload): void {
   const provider: HistoryReportProvider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
@@ -128,25 +134,25 @@ function installModeKeyboardNavigation(
   if (!group) return
 
   const previous = keyboardHandlers.get(group)
-  if (previous) group.removeEventListener('keydown', previous, true)
+  if (previous) {
+    group.removeEventListener('keydown', previous.keydown, true)
+    group.removeEventListener('keyup', previous.keyup, true)
+  }
 
-  const handler: EventListener = (rawEvent) => {
+  const keydown: EventListener = (rawEvent) => {
     const event = rawEvent as KeyboardEvent
-    const target = event.target instanceof Element
-      ? event.target.closest<HTMLButtonElement>('[data-history-report-mode]')
-      : null
-    if (!target || !group.contains(target)) return
+    const target = modeButtonTarget(event, group)
+    if (!target || !navigationKeys.has(event.key)) return
 
     const ordered = Array.from(group.querySelectorAll<HTMLButtonElement>('[data-history-report-mode]'))
     const index = ordered.indexOf(target)
     if (index < 0) return
 
-    let nextIndex: number | null = null
+    let nextIndex = index
     if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % ordered.length
     else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + ordered.length) % ordered.length
     else if (event.key === 'Home') nextIndex = 0
     else if (event.key === 'End') nextIndex = ordered.length - 1
-    if (nextIndex == null) return
 
     event.preventDefault()
     event.stopPropagation()
@@ -155,8 +161,28 @@ function installModeKeyboardNavigation(
     next.focus({ preventScroll: true })
   }
 
-  keyboardHandlers.set(group, handler)
-  group.addEventListener('keydown', handler, true)
+  const keyup: EventListener = (rawEvent) => {
+    const event = rawEvent as KeyboardEvent
+    if (!navigationKeys.has(event.key)) return
+    const target = modeButtonTarget(event, group)
+    if (!target) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    const active = group.querySelector<HTMLButtonElement>('[data-history-report-mode][aria-pressed="true"]')
+    active?.focus({ preventScroll: true })
+  }
+
+  keyboardHandlers.set(group, { keydown, keyup })
+  group.addEventListener('keydown', keydown, true)
+  group.addEventListener('keyup', keyup, true)
+}
+
+function modeButtonTarget(event: KeyboardEvent, group: HTMLElement): HTMLButtonElement | null {
+  const target = event.target instanceof Element
+    ? event.target.closest<HTMLButtonElement>('[data-history-report-mode]')
+    : null
+  return target && group.contains(target) ? target : null
 }
 
 function selectPreview(preview: HTMLElement): void {
