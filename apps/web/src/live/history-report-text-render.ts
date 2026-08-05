@@ -175,6 +175,7 @@ function restorePendingKeyboardFocus(): void {
   const token = ++focusRestoreToken
   if (focusRestoreFrame != null) cancelAnimationFrame(focusRestoreFrame)
   let attempts = 0
+  let stableFrames = 0
 
   const focus = (): void => {
     if (token !== focusRestoreToken || pendingKeyboardFocus !== mode) return
@@ -182,15 +183,19 @@ function restorePendingKeyboardFocus(): void {
     const selector = `[data-history-report-mode="${mode}"]`
     const button = currentMount?.querySelector<HTMLButtonElement>(selector)
     if (currentMount?.dataset.historyReportActiveMode === mode && button) {
-      button.focus({ preventScroll: true })
-      if (document.activeElement === button) {
-        pendingKeyboardFocus = null
-        focusRestoreFrame = null
-        return
-      }
+      if (document.activeElement !== button) button.focus({ preventScroll: true })
+      stableFrames = document.activeElement === button ? stableFrames + 1 : 0
+    } else {
+      stableFrames = 0
     }
+
     attempts += 1
-    if (attempts < 8) focusRestoreFrame = requestAnimationFrame(focus)
+    if (stableFrames >= 15) {
+      pendingKeyboardFocus = null
+      focusRestoreFrame = null
+      return
+    }
+    if (attempts < 60) focusRestoreFrame = requestAnimationFrame(focus)
     else focusRestoreFrame = null
   }
 
