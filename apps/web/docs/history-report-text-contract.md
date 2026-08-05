@@ -19,12 +19,28 @@ They must:
 - include total observed viewer-minutes, peak, top streamer, and biggest rise only when available;
 - label real, demo, partial, and unavailable states honestly;
 - state that the figures are observed ViewLoom data and are not provider-wide totals;
-- keep Twitch and Kick text, endpoints, names, and links separate;
+- keep Twitch and Kick text, endpoints, names, links, and filenames separate;
 - support keyboard, touch, and clipboard fallback behavior;
 - open the native device share sheet when supported without another History API request;
 - hide the native share action when the browser does not expose the Web Share API;
 - render a readable preview before copying or sharing;
 - provide both a full report and a compact short-post mode.
+
+## Output accessibility
+
+The `Report & Export` workspace must:
+
+- keep Full report and Short post operable by click, touch, Tab, Enter, and Space;
+- support Arrow Left, Arrow Right, Arrow Up, Arrow Down, Home, and End for moving focus and switching between the two report modes;
+- keep the focused mode, `aria-pressed` state, active preview, copy label, share label, and character or line count synchronized;
+- associate Copy, native Share, PNG, CSV, and JSON controls with the status region that reports their result;
+- expose separate atomic polite status regions for report actions, share-card actions, and export actions;
+- announce action preparation, completion, cancellation, fallback, and failure without moving focus unexpectedly;
+- expose the report preview as a keyboard-focusable named region;
+- expose the generated share-card canvas as an image with a text equivalent covering provider, period, metric, leading streamer, primary value, and coverage limitations;
+- allow Escape from the focused share-card preview to close it and return focus to the Preview share card control;
+- use the current canonical `www.viewloom.net` origin in generated share-card text;
+- complete all output actions without another History API request or other-provider endpoint call.
 
 ## Period highlights
 
@@ -60,11 +76,12 @@ Short-post mode must:
 - A daily row with `coverageState: missing` is not an observed day.
 - A date absent from the returned daily rows is missing when it lies inside the returned UTC period.
 - Missing or unavailable values are omitted or described as unavailable; they are never inferred as zero.
-- Partial, poor, demo, and in-progress coverage remains visible in copied, shared, and highlighted output.
+- Partial, poor, demo, and in-progress coverage remains visible in copied, shared, highlighted, and share-card output.
 - The full report link reflects the current provider-specific History view.
 - The short-post and Period highlights links reflect the current period and metric without unrelated UI state.
-- Copying, native sharing, switching text mode, or rendering Period highlights must not make another API request.
+- Copying, native sharing, switching text mode, rendering Period highlights, previewing or downloading PNG, and downloading CSV or JSON must not make another API request.
 - Cancelling the device share sheet is not treated as a data or application error.
+- A successful native-share promise is announced as completed; opening the browser share UI alone is not asserted as the final outcome.
 
 ## Non-goals
 
@@ -73,7 +90,7 @@ This feature does not add or change:
 - database tables or migrations;
 - collectors, cron schedules, retention, or bindings;
 - History API routes or query volume;
-- image or social-card generation;
+- share-card data generation or image dimensions;
 - automated publishing;
 - Twitch/Kick combined totals or comparisons;
 - category capture, category semantics, or hidden category UI;
