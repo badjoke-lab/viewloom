@@ -17,6 +17,9 @@ type KeyboardHandlers = {
 
 const keyboardHandlers = new WeakMap<HTMLElement, KeyboardHandlers>()
 const navigationKeys = new Set(['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'])
+let pendingKeyboardFocus: HistoryReportMode | null = null
+let focusRestoreFrame: number | null = null
+let focusRestoreToken = 0
 
 export function renderHistoryReport(payload: HistoryReportPayload): void {
   const provider: HistoryReportProvider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
@@ -77,6 +80,7 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
   }
 
   applyMode(mount.dataset.historyReportActiveMode === 'post' ? 'post' : 'report')
+  restorePendingKeyboardFocus()
 }
 
 function ensureMount(): HTMLElement {
@@ -157,8 +161,9 @@ function installModeKeyboardNavigation(
     event.preventDefault()
     event.stopPropagation()
     const mode: HistoryReportMode = ordered[nextIndex].dataset.historyReportMode === 'post' ? 'post' : 'report'
+    pendingKeyboardFocus = mode
     applyMode(mode)
-    focusCurrentMode(mode)
+    restorePendingKeyboardFocus()
   }
 
   const keyup: EventListener = (rawEvent) => {
@@ -169,10 +174,7 @@ function installModeKeyboardNavigation(
 
     event.preventDefault()
     event.stopPropagation()
-    const mode: HistoryReportMode = document.querySelector<HTMLElement>('[data-history-report]')?.dataset.historyReportActiveMode === 'post'
-      ? 'post'
-      : 'report'
-    focusCurrentMode(mode)
+    restorePendingKeyboardFocus()
   }
 
   keyboardHandlers.set(group, { keydown, keyup })
@@ -187,10 +189,34 @@ function modeButtonTarget(event: KeyboardEvent, group: HTMLElement): HTMLButtonE
   return target && group.contains(target) ? target : null
 }
 
-function focusCurrentMode(mode: HistoryReportMode): void {
-  const selector = `[data-history-report-mode="${mode}"]`
-  document.querySelector<HTMLButtonElement>(selector)?.focus({ preventScroll: true })
-  queueMicrotask(() => document.querySelector<HTMLButtonElement>(selector)?.focus({ preventScroll: true }))
+function restorePendingKeyboardFocus(): void {
+  const mode = pendingKeyboardFocus
+  if (!mode) return
+
+  const token = ++focusRestoreToken
+  if (focusRestoreFrame != null) cancelAnimationFrame(focusRestoreFrame)
+  let attempts = 0
+
+  const focus = (): void => {
+    if (token !== focusRestoreToken || pendingKeyboardFocus !== mode) return
+    const currentMount = document.querySelector<HTMLElement>('[data-history-report]')
+    const selector = `[data-history-report-mode="${mode}"]`
+    const button = currentMount?.querySelector<HTMLButtonElement>(selector)
+    if (currentMount?.dataset.historyReportActiveMode === mode && button) {
+      button.focus({ preventScroll: true })
+      if (document.activeElement === button) {
+        pendingKeyboardFocus = null
+        focusRestoreFrame = null
+        return
+      }
+    }
+    attempts += 1
+    if (attempts < 8) focusRestoreFrame = requestAnimationFrame(focus)
+    else focusRestoreFrame = null
+  }
+
+  queueMicrotask(focus)
+  focusRestoreFrame = requestAnimationFrame(focus)
 }
 
 function selectPreview(preview: HTMLElement): void {
