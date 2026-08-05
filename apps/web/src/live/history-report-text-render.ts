@@ -10,13 +10,8 @@ import {
 
 type HistoryReportMode = 'report' | 'post'
 
-type KeyboardHandlers = {
-  keydown: EventListener
-  keyup: EventListener
-}
-
-const keyboardHandlers = new WeakMap<HTMLElement, KeyboardHandlers>()
 const navigationKeys = new Set(['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'])
+let keyboardNavigationInstalled = false
 let pendingKeyboardFocus: HistoryReportMode | null = null
 let focusRestoreFrame: number | null = null
 let focusRestoreToken = 0
@@ -55,7 +50,7 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
   modeButtons.forEach((button) => {
     button.onclick = () => applyMode(button.dataset.historyReportMode === 'post' ? 'post' : 'report')
   })
-  installModeKeyboardNavigation(mount, applyMode)
+  installModeKeyboardNavigation()
 
   copyButton.disabled = false
   copyButton.onclick = async () => {
@@ -130,23 +125,15 @@ function ensureMount(): HTMLElement {
   return block.querySelector<HTMLElement>('[data-history-report]')!
 }
 
-function installModeKeyboardNavigation(
-  mount: HTMLElement,
-  applyMode: (mode: HistoryReportMode) => void,
-): void {
-  const group = mount.querySelector<HTMLElement>('.history-report__mode')
-  if (!group) return
+function installModeKeyboardNavigation(): void {
+  if (keyboardNavigationInstalled) return
+  keyboardNavigationInstalled = true
 
-  const previous = keyboardHandlers.get(group)
-  if (previous) {
-    group.removeEventListener('keydown', previous.keydown, true)
-    group.removeEventListener('keyup', previous.keyup, true)
-  }
-
-  const keydown: EventListener = (rawEvent) => {
-    const event = rawEvent as KeyboardEvent
-    const target = modeButtonTarget(event, group)
+  document.addEventListener('keydown', (event) => {
+    const target = modeButtonTarget(event)
     if (!target || !navigationKeys.has(event.key)) return
+    const group = target.closest<HTMLElement>('.history-report__mode')
+    if (!group) return
 
     const ordered = Array.from(group.querySelectorAll<HTMLButtonElement>('[data-history-report-mode]'))
     const index = ordered.indexOf(target)
@@ -160,33 +147,25 @@ function installModeKeyboardNavigation(
 
     event.preventDefault()
     event.stopPropagation()
-    const mode: HistoryReportMode = ordered[nextIndex].dataset.historyReportMode === 'post' ? 'post' : 'report'
+    const next = ordered[nextIndex]
+    const mode: HistoryReportMode = next.dataset.historyReportMode === 'post' ? 'post' : 'report'
     pendingKeyboardFocus = mode
-    applyMode(mode)
+    next.click()
     restorePendingKeyboardFocus()
-  }
+  }, true)
 
-  const keyup: EventListener = (rawEvent) => {
-    const event = rawEvent as KeyboardEvent
-    if (!navigationKeys.has(event.key)) return
-    const target = modeButtonTarget(event, group)
-    if (!target) return
-
+  document.addEventListener('keyup', (event) => {
+    if (!navigationKeys.has(event.key) || !modeButtonTarget(event)) return
     event.preventDefault()
     event.stopPropagation()
     restorePendingKeyboardFocus()
-  }
-
-  keyboardHandlers.set(group, { keydown, keyup })
-  group.addEventListener('keydown', keydown, true)
-  group.addEventListener('keyup', keyup, true)
+  }, true)
 }
 
-function modeButtonTarget(event: KeyboardEvent, group: HTMLElement): HTMLButtonElement | null {
-  const target = event.target instanceof Element
+function modeButtonTarget(event: KeyboardEvent): HTMLButtonElement | null {
+  return event.target instanceof Element
     ? event.target.closest<HTMLButtonElement>('[data-history-report-mode]')
     : null
-  return target && group.contains(target) ? target : null
 }
 
 function restorePendingKeyboardFocus(): void {
