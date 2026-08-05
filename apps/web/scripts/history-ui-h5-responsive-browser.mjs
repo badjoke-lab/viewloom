@@ -96,6 +96,8 @@ async function keyboardState(page) {
     chartReady: document.querySelector('.history-stage')?.getAttribute('data-history-chart-ready') ?? '',
     keyboardActive: document.querySelector('.history-stage')?.getAttribute('data-history-keyboard-active') ?? '',
     activeKeyboard: document.activeElement?.hasAttribute('data-history-chart-keyboard-target') ?? false,
+    activeTag: document.activeElement?.tagName ?? '',
+    activeId: document.activeElement?.id ?? '',
   }))
 }
 
@@ -117,26 +119,25 @@ async function assertSkipEntry(page, label) {
 }
 
 async function focusStableKeyboard(page) {
-  await page.waitForFunction(async () => {
-    const keyboard = document.querySelector('[data-history-chart-keyboard-target]')
-    if (!(keyboard instanceof HTMLButtonElement)) return false
-    keyboard.focus()
-    await new Promise((resolveFrame) => requestAnimationFrame(() => requestAnimationFrame(resolveFrame)))
-    return keyboard.isConnected
-      && document.querySelector('[data-history-chart-keyboard-target]') === keyboard
-      && document.activeElement === keyboard
-  })
+  const keyboard = page.locator('[data-history-chart-keyboard-target]')
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    await keyboard.focus()
+    await page.waitForTimeout(75)
+    const stable = await page.evaluate(() => {
+      const current = document.querySelector('[data-history-chart-keyboard-target]')
+      return current instanceof HTMLButtonElement
+        && current.isConnected
+        && document.activeElement === current
+    })
+    if (stable) return
+  }
+  throw new Error(`History chart keyboard control did not retain focus; state=${JSON.stringify(await keyboardState(page))}`)
 }
 
 async function pressKeyboardDay(page, key, targetDay, label) {
   let lastError = null
   for (let attempt = 0; attempt < 3; attempt += 1) {
     await focusStableKeyboard(page)
-    assert.equal(
-      await page.evaluate(() => document.activeElement?.hasAttribute('data-history-chart-keyboard-target') ?? false),
-      true,
-      `${label}: chart keyboard control lost focus before ${key}`,
-    )
     await page.keyboard.press(key)
     try {
       await page.waitForFunction((value) => new URL(location.href).searchParams.get('day') === value
