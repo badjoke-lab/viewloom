@@ -95,6 +95,7 @@ async function keyboardState(page) {
     keyboardDay: document.querySelector('[data-history-chart-keyboard-target]')?.getAttribute('data-history-keyboard-day') ?? '',
     chartReady: document.querySelector('.history-stage')?.getAttribute('data-history-chart-ready') ?? '',
     keyboardActive: document.querySelector('.history-stage')?.getAttribute('data-history-keyboard-active') ?? '',
+    activeKeyboard: document.activeElement?.hasAttribute('data-history-chart-keyboard-target') ?? false,
   }))
 }
 
@@ -131,7 +132,12 @@ async function pressKeyboardDay(page, key, targetDay, label) {
   let lastError = null
   for (let attempt = 0; attempt < 3; attempt += 1) {
     await focusStableKeyboard(page)
-    await page.locator('[data-history-chart-keyboard-target]').press(key)
+    assert.equal(
+      await page.evaluate(() => document.activeElement?.hasAttribute('data-history-chart-keyboard-target') ?? false),
+      true,
+      `${label}: chart keyboard control lost focus before ${key}`,
+    )
+    await page.keyboard.press(key)
     try {
       await page.waitForFunction((value) => new URL(location.href).searchParams.get('day') === value
         && document.querySelector('[data-history-day][aria-current="date"]')?.getAttribute('data-history-day') === value
