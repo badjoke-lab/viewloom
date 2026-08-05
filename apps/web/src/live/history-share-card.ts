@@ -56,7 +56,7 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
     missingDays: coverage.missingDays,
     attentionDays: coverage.attentionDays,
     dataLabel: source === 'demo' || state === 'demo' ? 'DEMO DATA' : `${humanLabel(state || 'observed')} DATA`,
-    linkLabel: `vl.badjoke-lab.com/${provider}/history/`,
+    linkLabel: `www.viewloom.net/${provider}/history/`,
   }
 
   canvas.width = CARD_WIDTH
@@ -71,6 +71,11 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
   canvas.dataset.shareHeight = String(CARD_HEIGHT)
   canvas.dataset.shareTopStreamer = model.topStreamer
   canvas.dataset.sharePrimaryValue = model.primaryValue
+  const description = shareCardDescription(model)
+  canvas.setAttribute('role', 'img')
+  canvas.setAttribute('aria-label', description)
+  canvas.textContent = description
+  canvas.tabIndex = 0
 
   const draw = (): boolean => {
     const context = canvas.getContext('2d')
@@ -93,6 +98,13 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
     toggle.textContent = open ? 'Hide share card' : 'Preview share card'
     if (open && draw()) status.textContent = `${metricLabel(metric)} share card ready.`
     else if (!open) status.textContent = `${metricLabel(metric)} share card available on demand.`
+  }
+
+  canvas.onkeydown = (event) => {
+    if (event.key !== 'Escape' || mount.dataset.historyShareOpen !== 'true') return
+    event.preventDefault()
+    setOpen(false)
+    toggle.focus()
   }
 
   toggle.disabled = false
@@ -276,11 +288,11 @@ function ensureMount(): HTMLElement {
       <div class="surface__body history-share__body">
         <p>The card keeps the current provider, period, metric, and coverage limits. No additional data request is made.</p>
         <div class="history-share__actions">
-          <button class="button" type="button" data-history-share-toggle aria-expanded="false" aria-controls="history-share-preview-fallback">Preview share card</button>
-          <button class="button button--paper" type="button" data-history-share-download disabled>Download PNG</button>
-          <span data-history-share-status aria-live="polite">Share card available on demand.</span>
+          <button class="button" type="button" data-history-share-toggle aria-expanded="false" aria-controls="history-share-preview-fallback" aria-describedby="history-share-status">Preview share card</button>
+          <button class="button button--paper" type="button" data-history-share-download aria-describedby="history-share-status" disabled>Download PNG</button>
+          <span id="history-share-status" data-history-share-status role="status" aria-live="polite" aria-atomic="true">Share card available on demand.</span>
         </div>
-        <div id="history-share-preview-fallback" class="history-share__preview" data-history-share-preview hidden><canvas width="1200" height="630" data-history-share-card aria-label="History share-card preview"></canvas></div>
+        <div id="history-share-preview-fallback" class="history-share__preview" data-history-share-preview hidden><canvas width="1200" height="630" data-history-share-card role="img" tabindex="0" aria-label="History share-card preview">History share-card preview</canvas></div>
       </div>
     </section>`
 
@@ -298,6 +310,18 @@ function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Canvas returned no PNG.')), 'image/png')
   })
+}
+
+function shareCardDescription(model: CardModel): string {
+  const providerLabel = model.provider === 'kick' ? 'Kick' : 'Twitch'
+  return [
+    `ViewLoom ${providerLabel} History share card.`,
+    `${metricLabel(model.metric)} for ${model.periodLabel} UTC.`,
+    `${model.topLabel}: ${model.topStreamer}, ${model.topStreamerValue}.`,
+    `${model.primaryLabel}: ${model.primaryValue}. ${model.primaryDetail}.`,
+    `Coverage ${model.observedDays} of ${model.totalDays} days; ${model.missingDays} missing and ${model.attentionDays} partial or stale.`,
+    `${model.dataLabel}. Observed ViewLoom data, not provider-wide.`,
+  ].join(' ')
 }
 
 function periodParts(payload: HistoryReportPayload): { from: string; to: string; label: string } {
