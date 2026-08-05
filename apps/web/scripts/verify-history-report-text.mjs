@@ -13,6 +13,8 @@ const statePath = 'src/live/history-report-text-state.ts'
 const socialPath = 'src/live/history-report-social.ts'
 const renderPath = 'src/live/history-report-text-render.ts'
 const nativeSharePath = 'src/live/history-native-share.ts'
+const shareCardPath = 'src/live/history-share-card.ts'
+const exportPath = 'src/live/history-export.ts'
 const highlightsPath = 'src/live/history-period-highlights.ts'
 const entryPath = 'src/live/history-report-text.ts'
 const stylePath = 'src/history-report-text.css'
@@ -28,6 +30,8 @@ for (const path of [
   socialPath,
   renderPath,
   nativeSharePath,
+  shareCardPath,
+  exportPath,
   highlightsPath,
   entryPath,
   stylePath,
@@ -46,8 +50,12 @@ if (existsSync(join(root, contractPath))) {
     'coverageState: missing',
     'compact short-post mode',
     '280 Unicode code points',
-    'Copying, native sharing, switching text mode, or rendering Period highlights must not make another API request',
+    'Copying, native sharing, switching text mode, rendering Period highlights, previewing or downloading PNG, and downloading CSV or JSON must not make another API request',
     'hide the native share action when the browser does not expose the Web Share API',
+    'Arrow Left, Arrow Right, Arrow Up, Arrow Down, Home, and End',
+    'separate atomic polite status regions',
+    'allow Escape from the focused share-card preview',
+    'current canonical `www.viewloom.net` origin',
     'Period highlights',
     'retained-period highlight feed',
     'Twitch/Kick combined totals',
@@ -97,6 +105,16 @@ if (existsSync(join(root, renderPath))) {
     'navigator.clipboard?.writeText',
     'selectPreview(preview)',
     'Current provider view',
+    'installModeKeyboardNavigation',
+    "event.key === 'ArrowRight'",
+    "event.key === 'ArrowLeft'",
+    "event.key === 'Home'",
+    "event.key === 'End'",
+    'aria-controls="history-report-preview"',
+    'role="status" aria-live="polite" aria-atomic="true"',
+    'aria-describedby="history-report-status"',
+    'aria-describedby="history-share-status"',
+    'aria-describedby="history-export-status"',
   ]) requireFragment(renderPath, source, fragment)
   forbidPattern(renderPath, source, 'new API request', /\bfetch\s*\(/)
 }
@@ -108,13 +126,48 @@ if (existsSync(join(root, nativeSharePath))) {
     "typeof navigator.share === 'function'",
     'await navigator.share({',
     'preview.textContent',
-    'Share sheet opened.',
+    'Share completed.',
     'Sharing cancelled.',
+    "button.setAttribute('aria-describedby', 'history-report-status')",
     'MutationObserver',
     'insertAdjacentElement',
   ]) requireFragment(nativeSharePath, source, fragment)
   forbidPattern(nativeSharePath, source, 'new API request', /\bfetch\s*\(/)
   forbidPattern(nativeSharePath, source, 'combined-provider calculation', /twitch\s*\+\s*kick|kick\s*\+\s*twitch/i)
+}
+
+if (existsSync(join(root, shareCardPath))) {
+  const source = read(shareCardPath)
+  for (const fragment of [
+    'shareCardDescription(model)',
+    "canvas.setAttribute('role', 'img')",
+    "canvas.setAttribute('aria-label', description)",
+    'canvas.textContent = description',
+    'canvas.tabIndex = 0',
+    "event.key !== 'Escape'",
+    'toggle.focus()',
+    'www.viewloom.net/${provider}/history/',
+    'Observed ViewLoom data, not provider-wide.',
+    'aria-describedby="history-share-status"',
+    'role="status" aria-live="polite" aria-atomic="true"',
+  ]) requireFragment(shareCardPath, source, fragment)
+  forbidPattern(shareCardPath, source, 'new API request', /\bfetch\s*\(/)
+  forbidPattern(shareCardPath, source, 'retired share-card origin', /vl\.badjoke-lab\.com/)
+  forbidPattern(shareCardPath, source, 'combined-provider calculation', /twitch\s*\+\s*kick|kick\s*\+\s*twitch/i)
+}
+
+if (existsSync(join(root, exportPath))) {
+  const source = read(exportPath)
+  for (const fragment of [
+    'runDownload(',
+    'Preparing ${format.toUpperCase()}…',
+    '${format.toUpperCase()} downloaded as ${filename}.',
+    '${format.toUpperCase()} download failed in this browser.',
+    'aria-describedby="history-export-status"',
+    'role="status" aria-live="polite" aria-atomic="true"',
+  ]) requireFragment(exportPath, source, fragment)
+  forbidPattern(exportPath, source, 'new API request', /\bfetch\s*\(/)
+  forbidPattern(exportPath, source, 'combined-provider calculation', /twitch\s*\+\s*kick|kick\s*\+\s*twitch/i)
 }
 
 if (existsSync(join(root, highlightsPath))) {
@@ -156,9 +209,16 @@ if (existsSync(join(root, browserPath))) {
   for (const fragment of [
     '__viewloomSharedData',
     'data-history-report-share-native',
-    'Share sheet opened.',
+    'Share completed.',
     'native sharing caused another History request',
     'browser fixture did not expose the Web Share API',
+    'ArrowRight',
+    'history report mode keyboard focus did not move',
+    'role=status semantics are incomplete',
+    'share-card accessible description is incomplete',
+    'share-card Escape did not return focus',
+    'CSV export caused another History request',
+    'JSON export caused another History request',
     'data-history-period-highlights',
     'period highlights caused another History request',
     'period highlights crossed provider endpoints',
@@ -182,10 +242,19 @@ if (existsSync(join(root, registrationPath))) {
   requireFragment(registrationPath, source, "import './history-native-share'")
 }
 
+for (const [path, fragments] of [
+  [workflowPath, ["'apps/web/src/live/history-share-card.ts'", "'apps/web/src/live/history-export*.ts'"]],
+  [browserWorkflowPath, ["'apps/web/src/live/history-share-card.ts'", "'apps/web/src/live/history-export*.ts'"]],
+]) {
+  if (!existsSync(join(root, path))) continue
+  const source = read(path)
+  for (const fragment of fragments) requireFragment(path, source, fragment)
+}
+
 if (failures.length) {
   console.error('History report text verification failed:')
   for (const failure of failures) console.error(`- ${failure}`)
   process.exit(1)
 }
 
-console.log('History report text verification passed.')
+console.log('History report text verification passed with output accessibility contracts.')

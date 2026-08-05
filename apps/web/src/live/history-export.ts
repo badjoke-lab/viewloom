@@ -3,6 +3,8 @@ import { historyExportModel } from './history-export-model'
 import { historyExportCsv, historyExportJson } from './history-export-serialize'
 import { buildOutputFilename } from '../shared/output/filename.js'
 
+type ExportFormat = 'csv' | 'json'
+
 export function renderHistoryExport(payload: HistoryReportPayload): void {
   const provider: HistoryReportProvider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
   const model = historyExportModel(payload, provider, location.href)
@@ -22,27 +24,33 @@ export function renderHistoryExport(payload: HistoryReportPayload): void {
 
   csvButton.disabled = false
   jsonButton.disabled = false
-  csvButton.onclick = () => downloadText(
-    historyExportCsv(model),
-    historyExportFilename(provider, model.period.from, model.period.to, 'csv'),
-    'text/csv;charset=utf-8',
-    status,
-    'CSV downloaded.',
-  )
-  jsonButton.onclick = () => downloadText(
-    historyExportJson(model),
-    historyExportFilename(provider, model.period.from, model.period.to, 'json'),
-    'application/json;charset=utf-8',
-    status,
-    'JSON downloaded.',
-  )
+  csvButton.onclick = () => {
+    void runDownload(
+      csvButton,
+      'csv',
+      historyExportCsv(model),
+      historyExportFilename(provider, model.period.from, model.period.to, 'csv'),
+      'text/csv;charset=utf-8',
+      status,
+    )
+  }
+  jsonButton.onclick = () => {
+    void runDownload(
+      jsonButton,
+      'json',
+      historyExportJson(model),
+      historyExportFilename(provider, model.period.from, model.period.to, 'json'),
+      'application/json;charset=utf-8',
+      status,
+    )
+  }
 }
 
 export function historyExportFilename(
   provider: HistoryReportProvider,
   from: string,
   to: string,
-  extension: 'csv' | 'json',
+  extension: ExportFormat,
 ): string {
   return buildOutputFilename(['viewloom', provider, 'history', from, to], extension)
 }
@@ -60,10 +68,10 @@ function ensureMount(): HTMLElement {
       <div class="surface__body history-export__body">
         <p>CSV contains normalized UTC daily rows. JSON preserves the structured current view and coverage limits.</p>
         <div class="history-export__actions">
-          <button class="button button--paper" type="button" data-history-export-csv disabled>Download CSV</button>
-          <button class="button" type="button" data-history-export-json disabled>Download JSON</button>
+          <button class="button button--paper" type="button" data-history-export-csv aria-describedby="history-export-status" disabled>Download CSV</button>
+          <button class="button" type="button" data-history-export-json aria-describedby="history-export-status" disabled>Download JSON</button>
         </div>
-        <span data-history-export-status aria-live="polite">Waiting for retained History data…</span>
+        <span id="history-export-status" data-history-export-status role="status" aria-live="polite" aria-atomic="true">Waiting for retained History data…</span>
       </div>
     </section>`
 
@@ -77,13 +85,28 @@ function ensureMount(): HTMLElement {
   return block.querySelector<HTMLElement>('[data-history-export]')!
 }
 
-function downloadText(
+async function runDownload(
+  button: HTMLButtonElement,
+  format: ExportFormat,
   text: string,
   filename: string,
   type: string,
   status: HTMLElement,
-  success: string,
-): void {
+): Promise<void> {
+  button.disabled = true
+  status.textContent = `Preparing ${format.toUpperCase()}…`
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+  try {
+    downloadText(text, filename, type)
+    status.textContent = `${format.toUpperCase()} downloaded as ${filename}.`
+  } catch {
+    status.textContent = `${format.toUpperCase()} download failed in this browser.`
+  } finally {
+    button.disabled = false
+  }
+}
+
+function downloadText(text: string, filename: string, type: string): void {
   const blob = new Blob([text], { type })
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
@@ -93,7 +116,6 @@ function downloadText(
   anchor.click()
   anchor.remove()
   window.setTimeout(() => URL.revokeObjectURL(url), 1000)
-  status.textContent = success
 }
 
 function metricLabel(metric: 'viewer_minutes' | 'peak_viewers'): string {

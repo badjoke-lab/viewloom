@@ -39,7 +39,10 @@ if (existsSync(join(root, renderPath))) {
     'data-history-share-card',
     'data-history-share-download',
     'canvas.toBlob',
-    "anchor.download = `viewloom-${provider}-history-${period.from}-${period.to}.png`",
+    'anchor.download = `viewloom-${card.provider}-history-${card.period.from}-${card.period.to}.png`',
+    'installShareCardActions()',
+    'downloadCurrentShareCard(mount)',
+    'currentShareMount()',
     'Observed ViewLoom data · not provider-wide · independent and unofficial',
     'renderHistoryShareCard',
   ]) requireFragment(renderPath, source, fragment)
@@ -63,4 +66,4 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log('History share-card verification passed.')
+console.log('History share-card verification passed with current-DOM action delegation.')

@@ -10,6 +10,12 @@ import {
 
 type HistoryReportMode = 'report' | 'post'
 
+const navigationKeys = new Set(['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'])
+let keyboardNavigationInstalled = false
+let pendingKeyboardFocus: HistoryReportMode | null = null
+let focusRestoreFrame: number | null = null
+let focusRestoreToken = 0
+
 export function renderHistoryReport(payload: HistoryReportPayload): void {
   const provider: HistoryReportProvider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
   const mount = ensureMount()
@@ -25,7 +31,15 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
     post: historyShortPostText(payload, provider, location.href),
   }
 
+  const setActionStatus = (message: string): void => {
+    mount.dataset.historyReportActionStatus = message
+    const currentStatus = document.querySelector<HTMLElement>('[data-history-report-status]')
+    if (currentStatus) currentStatus.textContent = message
+  }
+
   const applyMode = (mode: HistoryReportMode): void => {
+    const previousMode: HistoryReportMode = mount.dataset.historyReportActiveMode === 'post' ? 'post' : 'report'
+    if (previousMode !== mode) delete mount.dataset.historyReportActionStatus
     mount.dataset.historyReportActiveMode = mode
     modeButtons.forEach((button) => {
       const active = button.dataset.historyReportMode === mode
@@ -33,40 +47,46 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
       button.setAttribute('aria-pressed', String(active))
     })
     preview.textContent = texts[mode]
+    preview.setAttribute('aria-label', mode === 'post' ? 'Short post preview' : 'Full report preview')
     copyButton.textContent = mode === 'post' ? 'Copy short post' : 'Copy report'
+    const nativeShareButton = mount.querySelector<HTMLButtonElement>('[data-history-report-share-native]')
+    if (nativeShareButton) nativeShareButton.textContent = mode === 'post' ? 'Share short post' : 'Share report'
     count.textContent = mode === 'post'
       ? `${historyShortPostLength(texts.post)} / 280 characters`
       : `${texts.report.split('\n').length} lines`
-    status.textContent = mode === 'post' ? 'Short post ready.' : 'Full report ready.'
+    status.textContent = mount.dataset.historyReportActionStatus
+      ?? (mode === 'post' ? 'Short post ready.' : 'Full report ready.')
   }
 
   modeButtons.forEach((button) => {
     button.onclick = () => applyMode(button.dataset.historyReportMode === 'post' ? 'post' : 'report')
   })
+  installModeKeyboardNavigation()
 
   copyButton.disabled = false
   copyButton.onclick = async () => {
     const mode: HistoryReportMode = mount.dataset.historyReportActiveMode === 'post' ? 'post' : 'report'
     const text = texts[mode]
     copyButton.disabled = true
-    status.textContent = 'Copying…'
+    setActionStatus('Copying…')
     try {
       if (!navigator.clipboard?.writeText) {
         selectPreview(preview)
-        status.textContent = `${mode === 'post' ? 'Short post' : 'Report'} selected. Use your browser copy command.`
+        setActionStatus(`${mode === 'post' ? 'Short post' : 'Report'} selected. Use your browser copy command.`)
         return
       }
       await navigator.clipboard.writeText(text)
-      status.textContent = mode === 'post' ? 'Short post copied.' : 'Report text copied.'
+      setActionStatus(mode === 'post' ? 'Short post copied.' : 'Report text copied.')
     } catch {
       selectPreview(preview)
-      status.textContent = 'Automatic copy was unavailable. The visible text is selected.'
+      setActionStatus('Automatic copy was unavailable. The visible text is selected.')
     } finally {
       copyButton.disabled = false
     }
   }
 
   applyMode(mount.dataset.historyReportActiveMode === 'post' ? 'post' : 'report')
+  restorePendingKeyboardFocus()
 }
 
 function ensureMount(): HTMLElement {
@@ -85,25 +105,25 @@ function ensureMount(): HTMLElement {
           <span>All outputs reuse the current provider response.</span>
         </div>
         <div class="history-report__mode" role="group" aria-label="Report text format">
-          <button type="button" class="active" data-history-report-mode="report" aria-pressed="true">Full report</button>
-          <button type="button" data-history-report-mode="post" aria-pressed="false">Short post</button>
+          <button type="button" class="active" data-history-report-mode="report" aria-pressed="true" aria-controls="history-report-preview">Full report</button>
+          <button type="button" data-history-report-mode="post" aria-pressed="false" aria-controls="history-report-preview">Short post</button>
           <span data-history-report-count>Loading…</span>
         </div>
-        <pre class="history-report__preview" data-history-report-preview tabindex="0">Loading report text…</pre>
+        <pre id="history-report-preview" class="history-report__preview" data-history-report-preview tabindex="0" aria-label="Full report preview">Loading report text…</pre>
         <div class="history-publish-actions" aria-label="Report and export actions">
-          <button class="button button--paper" type="button" data-history-report-copy disabled>Copy report</button>
-          <button class="button" type="button" data-history-share-toggle aria-expanded="false" aria-controls="history-share-preview">Preview share card</button>
-          <button class="button" type="button" data-history-share-download disabled>Download PNG</button>
-          <button class="button" type="button" data-history-export-csv disabled>Download CSV</button>
-          <button class="button" type="button" data-history-export-json disabled>Download JSON</button>
+          <button class="button button--paper" type="button" data-history-report-copy aria-describedby="history-report-status" disabled>Copy report</button>
+          <button class="button" type="button" data-history-share-toggle aria-expanded="false" aria-controls="history-share-preview" aria-describedby="history-share-status">Preview share card</button>
+          <button class="button" type="button" data-history-share-download aria-describedby="history-share-status" disabled>Download PNG</button>
+          <button class="button" type="button" data-history-export-csv aria-describedby="history-export-status" disabled>Download CSV</button>
+          <button class="button" type="button" data-history-export-json aria-describedby="history-export-status" disabled>Download JSON</button>
         </div>
-        <div class="history-publish-statuses" aria-live="polite">
-          <span data-history-report-status>Waiting for retained History data…</span>
-          <span data-history-share-status>Share card available on demand.</span>
-          <span data-history-export-status>Waiting for retained History data…</span>
+        <div class="history-publish-statuses">
+          <span id="history-report-status" data-history-report-status role="status" aria-live="polite" aria-atomic="true">Waiting for retained History data…</span>
+          <span id="history-share-status" data-history-share-status role="status" aria-live="polite" aria-atomic="true">Share card available on demand.</span>
+          <span id="history-export-status" data-history-export-status role="status" aria-live="polite" aria-atomic="true">Waiting for retained History data…</span>
         </div>
         <div id="history-share-preview" class="history-share__preview" data-history-share-preview hidden>
-          <canvas width="1200" height="630" data-history-share-card aria-label="History share-card preview"></canvas>
+          <canvas width="1200" height="630" data-history-share-card role="img" aria-label="History share-card preview">History share-card preview</canvas>
         </div>
       </div>
     </section>`
@@ -114,6 +134,84 @@ function ensureMount(): HTMLElement {
   else if (columns) columns.insertAdjacentElement('afterend', block)
   else document.querySelector<HTMLElement>('.history-page')?.append(block)
   return block.querySelector<HTMLElement>('[data-history-report]')!
+}
+
+function installModeKeyboardNavigation(): void {
+  if (keyboardNavigationInstalled) return
+  keyboardNavigationInstalled = true
+
+  document.addEventListener('keydown', (event) => {
+    const target = modeButtonTarget(event)
+    if (!target || !navigationKeys.has(event.key)) return
+    const group = target.closest<HTMLElement>('.history-report__mode')
+    if (!group) return
+
+    const ordered = Array.from(group.querySelectorAll<HTMLButtonElement>('[data-history-report-mode]'))
+    const index = ordered.indexOf(target)
+    if (index < 0) return
+
+    let nextIndex = index
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % ordered.length
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + ordered.length) % ordered.length
+    else if (event.key === 'Home') nextIndex = 0
+    else if (event.key === 'End') nextIndex = ordered.length - 1
+
+    event.preventDefault()
+    event.stopPropagation()
+    const next = ordered[nextIndex]
+    const mode: HistoryReportMode = next.dataset.historyReportMode === 'post' ? 'post' : 'report'
+    pendingKeyboardFocus = mode
+    next.click()
+    restorePendingKeyboardFocus()
+  }, true)
+
+  document.addEventListener('keyup', (event) => {
+    if (!navigationKeys.has(event.key) || !modeButtonTarget(event)) return
+    event.preventDefault()
+    event.stopPropagation()
+    restorePendingKeyboardFocus()
+  }, true)
+}
+
+function modeButtonTarget(event: KeyboardEvent): HTMLButtonElement | null {
+  return event.target instanceof Element
+    ? event.target.closest<HTMLButtonElement>('[data-history-report-mode]')
+    : null
+}
+
+function restorePendingKeyboardFocus(): void {
+  const mode = pendingKeyboardFocus
+  if (!mode) return
+
+  const token = ++focusRestoreToken
+  if (focusRestoreFrame != null) cancelAnimationFrame(focusRestoreFrame)
+  let attempts = 0
+  let stableFrames = 0
+
+  const focus = (): void => {
+    if (token !== focusRestoreToken || pendingKeyboardFocus !== mode) return
+    const currentMount = document.querySelector<HTMLElement>('[data-history-report]')
+    const selector = `[data-history-report-mode="${mode}"]`
+    const button = currentMount?.querySelector<HTMLButtonElement>(selector)
+    if (currentMount?.dataset.historyReportActiveMode === mode && button) {
+      if (document.activeElement !== button) button.focus({ preventScroll: true })
+      stableFrames = document.activeElement === button ? stableFrames + 1 : 0
+    } else {
+      stableFrames = 0
+    }
+
+    attempts += 1
+    if (stableFrames >= 15) {
+      pendingKeyboardFocus = null
+      focusRestoreFrame = null
+      return
+    }
+    if (attempts < 60) focusRestoreFrame = requestAnimationFrame(focus)
+    else focusRestoreFrame = null
+  }
+
+  queueMicrotask(focus)
+  focusRestoreFrame = requestAnimationFrame(focus)
 }
 
 function selectPreview(preview: HTMLElement): void {

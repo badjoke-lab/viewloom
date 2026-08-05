@@ -13,6 +13,12 @@ import {
 const CARD_WIDTH = 1200
 const CARD_HEIGHT = 630
 
+let shareCardActionsInstalled = false
+let currentCard: { model: CardModel; period: { from: string; to: string }; provider: HistoryReportProvider } | null = null
+let pendingShareToggleFocus = false
+let shareFocusRestoreFrame: number | null = null
+let shareFocusRestoreToken = 0
+
 export function renderHistoryShareCard(payload: HistoryReportPayload): void {
   const provider: HistoryReportProvider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
   const mount = ensureMount()
@@ -56,71 +62,202 @@ export function renderHistoryShareCard(payload: HistoryReportPayload): void {
     missingDays: coverage.missingDays,
     attentionDays: coverage.attentionDays,
     dataLabel: source === 'demo' || state === 'demo' ? 'DEMO DATA' : `${humanLabel(state || 'observed')} DATA`,
-    linkLabel: `vl.badjoke-lab.com/${provider}/history/`,
+    linkLabel: `www.viewloom.net/${provider}/history/`,
   }
 
+  currentCard = { model, period: { from: period.from, to: period.to }, provider }
+  describeCanvas(canvas, model)
+  installShareCardActions()
+
+  toggle.disabled = false
+  button.disabled = false
+  const setOpen = (open: boolean): void => setShareOpen(mount, open)
+  setOpen(mount.dataset.historyShareOpen === 'true')
+  restoreShareToggleFocus()
+}
+
+function installShareCardActions(): void {
+  if (shareCardActionsInstalled) return
+  shareCardActionsInstalled = true
+
+  document.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null
+    const toggle = target?.closest<HTMLButtonElement>('[data-history-share-toggle]')
+    if (toggle) {
+      const mount = shareMountFor(toggle)
+      if (!mount) return
+      event.preventDefault()
+      setShareOpen(mount, mount.dataset.historyShareOpen !== 'true')
+      return
+    }
+
+    const download = target?.closest<HTMLButtonElement>('[data-history-share-download]')
+    if (!download) return
+    const mount = shareMountFor(download)
+    if (!mount) return
+    event.preventDefault()
+    void downloadCurrentShareCard(mount)
+  }, true)
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return
+    const canvas = event.target instanceof Element
+      ? event.target.closest<HTMLCanvasElement>('[data-history-share-card]')
+      : null
+    const mount = canvas ? shareMountFor(canvas) : null
+    if (!canvas || !mount || mount.dataset.historyShareOpen !== 'true') return
+
+    event.preventDefault()
+    event.stopPropagation()
+    pendingShareToggleFocus = true
+    setShareOpen(mount, false)
+    restoreShareToggleFocus()
+  }, true)
+
+  document.addEventListener('keyup', (event) => {
+    if (event.key !== 'Escape' || !pendingShareToggleFocus) return
+    event.preventDefault()
+    event.stopPropagation()
+    restoreShareToggleFocus()
+  }, true)
+}
+
+function shareMountFor(node: Element): HTMLElement | null {
+  return node.closest<HTMLElement>('[data-history-report][data-history-share]')
+    ?? node.closest<HTMLElement>('[data-history-share]')
+}
+
+function currentShareMount(): HTMLElement | null {
+  return document.querySelector<HTMLElement>('[data-history-report][data-history-share]')
+    ?? document.querySelector<HTMLElement>('.history-report-block [data-history-share]')
+    ?? document.querySelector<HTMLElement>('[data-history-share]')
+}
+
+function setShareOpen(mount: HTMLElement, open: boolean): void {
+  const preview = mount.querySelector<HTMLElement>('[data-history-share-preview]')
+  const toggle = mount.querySelector<HTMLButtonElement>('[data-history-share-toggle]')
+  const metric = currentCard?.model.metric ?? 'viewer_minutes'
+
+  mount.dataset.historyShareOpen = String(open)
+  if (preview) preview.hidden = !open
+  if (toggle) {
+    toggle.setAttribute('aria-expanded', String(open))
+    toggle.textContent = open ? 'Hide share card' : 'Preview share card'
+  }
+
+  if (open) {
+    if (drawCurrentShareCard(mount)) setShareStatus(mount, `${metricLabel(metric)} share card ready.`)
+  } else {
+    setShareStatus(mount, `${metricLabel(metric)} share card available on demand.`)
+  }
+}
+
+function drawCurrentShareCard(mount: HTMLElement): boolean {
+  const card = currentCard
+  const canvas = mount.querySelector<HTMLCanvasElement>('[data-history-share-card]')
+  if (!card || !canvas) return false
+
+  describeCanvas(canvas, card.model)
+  const context = canvas.getContext('2d')
+  if (!context) {
+    const button = mount.querySelector<HTMLButtonElement>('[data-history-share-download]')
+    const toggle = mount.querySelector<HTMLButtonElement>('[data-history-share-toggle]')
+    if (button) button.disabled = true
+    if (toggle) toggle.disabled = true
+    setShareStatus(mount, 'Share-card preview is unavailable in this browser.')
+    return false
+  }
+
+  context.clearRect(0, 0, CARD_WIDTH, CARD_HEIGHT)
+  drawCard(context, card.model)
+  canvas.dataset.shareRendered = 'true'
+  return true
+}
+
+async function downloadCurrentShareCard(mount: HTMLElement): Promise<void> {
+  const card = currentCard
+  const button = mount.querySelector<HTMLButtonElement>('[data-history-share-download]')
+  if (!card || !button || button.disabled) return
+
+  button.disabled = true
+  setShareStatus(mount, 'Preparing PNG…')
+  try {
+    if (!drawCurrentShareCard(mount)) return
+    const canvas = mount.querySelector<HTMLCanvasElement>('[data-history-share-card]')
+    if (!canvas) throw new Error('Share-card canvas is unavailable.')
+    const blob = await canvasBlob(canvas)
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `viewloom-${card.provider}-history-${card.period.from}-${card.period.to}.png`
+    document.body.append(anchor)
+    anchor.click()
+    anchor.remove()
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+    setShareStatus(currentShareMount() ?? mount, `${metricLabel(card.model.metric)} PNG downloaded.`)
+  } catch {
+    setShareStatus(currentShareMount() ?? mount, 'PNG generation failed in this browser.')
+  } finally {
+    const currentButton = (currentShareMount() ?? mount).querySelector<HTMLButtonElement>('[data-history-share-download]')
+    if (currentButton) currentButton.disabled = false
+  }
+}
+
+function setShareStatus(mount: HTMLElement, message: string): void {
+  const status = mount.querySelector<HTMLElement>('[data-history-share-status]')
+  if (status) status.textContent = message
+}
+
+function describeCanvas(canvas: HTMLCanvasElement, model: CardModel): void {
   canvas.width = CARD_WIDTH
   canvas.height = CARD_HEIGHT
-  canvas.dataset.shareProvider = provider
-  canvas.dataset.shareMetric = metric
-  canvas.dataset.shareObserved = String(coverage.observedDays)
-  canvas.dataset.shareTotal = String(coverage.totalDays)
-  canvas.dataset.shareMissing = String(coverage.missingDays)
-  canvas.dataset.shareAttention = String(coverage.attentionDays)
+  canvas.dataset.shareProvider = model.provider
+  canvas.dataset.shareMetric = model.metric
+  canvas.dataset.shareObserved = String(model.observedDays)
+  canvas.dataset.shareTotal = String(model.totalDays)
+  canvas.dataset.shareMissing = String(model.missingDays)
+  canvas.dataset.shareAttention = String(model.attentionDays)
   canvas.dataset.shareWidth = String(CARD_WIDTH)
   canvas.dataset.shareHeight = String(CARD_HEIGHT)
   canvas.dataset.shareTopStreamer = model.topStreamer
   canvas.dataset.sharePrimaryValue = model.primaryValue
+  const description = shareCardDescription(model)
+  canvas.setAttribute('role', 'img')
+  canvas.setAttribute('aria-label', description)
+  canvas.textContent = description
+  canvas.tabIndex = 0
+}
 
-  const draw = (): boolean => {
-    const context = canvas.getContext('2d')
-    if (!context) {
-      button.disabled = true
-      toggle.disabled = true
-      status.textContent = 'Share-card preview is unavailable in this browser.'
-      return false
+function restoreShareToggleFocus(): void {
+  if (!pendingShareToggleFocus) return
+  const token = ++shareFocusRestoreToken
+  if (shareFocusRestoreFrame != null) cancelAnimationFrame(shareFocusRestoreFrame)
+  let attempts = 0
+  let stableFrames = 0
+
+  const focus = (): void => {
+    if (token !== shareFocusRestoreToken || !pendingShareToggleFocus) return
+    const mount = currentShareMount()
+    const toggle = mount?.querySelector<HTMLButtonElement>('[data-history-share-toggle]')
+    if (mount?.dataset.historyShareOpen === 'false' && toggle) {
+      if (document.activeElement !== toggle) toggle.focus()
+      stableFrames = document.activeElement === toggle ? stableFrames + 1 : 0
+    } else {
+      stableFrames = 0
     }
-    context.clearRect(0, 0, CARD_WIDTH, CARD_HEIGHT)
-    drawCard(context, model)
-    canvas.dataset.shareRendered = 'true'
-    return true
-  }
 
-  const setOpen = (open: boolean): void => {
-    mount.dataset.historyShareOpen = String(open)
-    preview.hidden = !open
-    toggle.setAttribute('aria-expanded', String(open))
-    toggle.textContent = open ? 'Hide share card' : 'Preview share card'
-    if (open && draw()) status.textContent = `${metricLabel(metric)} share card ready.`
-    else if (!open) status.textContent = `${metricLabel(metric)} share card available on demand.`
-  }
-
-  toggle.disabled = false
-  toggle.onclick = () => setOpen(mount.dataset.historyShareOpen !== 'true')
-  button.disabled = false
-  button.onclick = async () => {
-    button.disabled = true
-    status.textContent = 'Preparing PNG…'
-    try {
-      if (!draw()) return
-      const blob = await canvasBlob(canvas)
-      const url = URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = `viewloom-${provider}-history-${period.from}-${period.to}.png`
-      document.body.append(anchor)
-      anchor.click()
-      anchor.remove()
-      window.setTimeout(() => URL.revokeObjectURL(url), 1000)
-      status.textContent = `${metricLabel(metric)} PNG downloaded.`
-    } catch {
-      status.textContent = 'PNG generation failed in this browser.'
-    } finally {
-      button.disabled = false
+    attempts += 1
+    if (stableFrames >= 15) {
+      pendingShareToggleFocus = false
+      shareFocusRestoreFrame = null
+      return
     }
+    if (attempts < 60) shareFocusRestoreFrame = requestAnimationFrame(focus)
+    else shareFocusRestoreFrame = null
   }
 
-  setOpen(mount.dataset.historyShareOpen === 'true')
+  queueMicrotask(focus)
+  shareFocusRestoreFrame = requestAnimationFrame(focus)
 }
 
 type CardModel = {
@@ -264,7 +401,8 @@ function truncate(context: CanvasRenderingContext2D, value: string, maxWidth: nu
 }
 
 function ensureMount(): HTMLElement {
-  const existing = document.querySelector<HTMLElement>('[data-history-share]')
+  const existing = document.querySelector<HTMLElement>('[data-history-report][data-history-share]')
+    ?? document.querySelector<HTMLElement>('[data-history-share]')
   if (existing) return existing
 
   const block = document.createElement('div')
@@ -276,11 +414,11 @@ function ensureMount(): HTMLElement {
       <div class="surface__body history-share__body">
         <p>The card keeps the current provider, period, metric, and coverage limits. No additional data request is made.</p>
         <div class="history-share__actions">
-          <button class="button" type="button" data-history-share-toggle aria-expanded="false" aria-controls="history-share-preview-fallback">Preview share card</button>
-          <button class="button button--paper" type="button" data-history-share-download disabled>Download PNG</button>
-          <span data-history-share-status aria-live="polite">Share card available on demand.</span>
+          <button class="button" type="button" data-history-share-toggle aria-expanded="false" aria-controls="history-share-preview-fallback" aria-describedby="history-share-status">Preview share card</button>
+          <button class="button button--paper" type="button" data-history-share-download aria-describedby="history-share-status" disabled>Download PNG</button>
+          <span id="history-share-status" data-history-share-status role="status" aria-live="polite" aria-atomic="true">Share card available on demand.</span>
         </div>
-        <div id="history-share-preview-fallback" class="history-share__preview" data-history-share-preview hidden><canvas width="1200" height="630" data-history-share-card aria-label="History share-card preview"></canvas></div>
+        <div id="history-share-preview-fallback" class="history-share__preview" data-history-share-preview hidden><canvas width="1200" height="630" data-history-share-card role="img" tabindex="0" aria-label="History share-card preview">History share-card preview</canvas></div>
       </div>
     </section>`
 
@@ -298,6 +436,18 @@ function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Canvas returned no PNG.')), 'image/png')
   })
+}
+
+function shareCardDescription(model: CardModel): string {
+  const providerLabel = model.provider === 'kick' ? 'Kick' : 'Twitch'
+  return [
+    `ViewLoom ${providerLabel} History share card.`,
+    `${metricLabel(model.metric)} for ${model.periodLabel} UTC.`,
+    `${model.topLabel}: ${model.topStreamer}, ${model.topStreamerValue}.`,
+    `${model.primaryLabel}: ${model.primaryValue}. ${model.primaryDetail}.`,
+    `Coverage ${model.observedDays} of ${model.totalDays} days; ${model.missingDays} missing and ${model.attentionDays} partial or stale.`,
+    `${model.dataLabel}. Observed ViewLoom data, not provider-wide.`,
+  ].join(' ')
 }
 
 function periodParts(payload: HistoryReportPayload): { from: string; to: string; label: string } {

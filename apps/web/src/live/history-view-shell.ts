@@ -180,11 +180,14 @@ function installHistoryViewShell(page: HTMLElement): void {
     selectors.forEach((selector) => {
       const node = page.querySelector<HTMLElement>(selector)
       if (!node || node === panel) return
-      if (includeRules) {
+      const alreadyHome = node.parentElement === panel
+      if (includeRules && !alreadyHome) {
         const previous = node.previousElementSibling
-        if (previous instanceof HTMLElement && previous.classList.contains('rule-title')) panel.append(previous)
+        if (previous instanceof HTMLElement && previous.classList.contains('rule-title') && previous.parentElement !== panel) {
+          panel.append(previous)
+        }
       }
-      panel.append(node)
+      if (!alreadyHome) panel.append(node)
     })
   }
 }
