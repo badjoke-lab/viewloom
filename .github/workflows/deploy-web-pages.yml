@@ -1,0 +1,110 @@
+name: Deploy Web Pages
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/deploy-web-pages.yml'
+      - 'apps/web/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/deploy-web-pages.yml'
+      - 'apps/web/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('{0}-pr-{1}', github.workflow, github.event.pull_request.number) || 'viewloom-web-pages-production-deploy' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Typecheck and build web application
+        run: |
+          pnpm --filter @viewloom/web typecheck
+          pnpm build:web
+      - name: Verify deployment workflow boundary
+        run: |
+          grep -Fq 'apps/web/dist' .github/workflows/deploy-web-pages.yml
+          grep -Fq 'www.viewloom.net' .github/workflows/deploy-web-pages.yml
+          grep -Fq 'CLOUDFLARE_API_TOKEN' .github/workflows/deploy-web-pages.yml
+          grep -Fq 'CLOUDFLARE_ACCOUNT_ID' .github/workflows/deploy-web-pages.yml
+          if grep -Eq 'collector|d1 migrations|wrangler d1|workers/collector' .github/workflows/deploy-web-pages.yml; then
+            echo 'Web deployment workflow crossed the protected collector or D1 boundary.' >&2
+            exit 1
+          fi
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Require Cloudflare deployment secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+      - name: Build current main web application
+        run: pnpm build:web
+      - name: Resolve the Pages project owning the ViewLoom domain
+        id: project
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          mkdir -p artifacts/web-pages-deploy
+          curl --fail --silent --show-error \
+            --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            --header 'Content-Type: application/json' \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects" \
+            > artifacts/web-pages-deploy/projects.json
+          test "$(jq -r '.success' artifacts/web-pages-deploy/projects.json)" = 'true'
+          project_name="$(jq -r '[.result[] | select(any(.domains[]?; . == "www.viewloom.net" or . == "viewloom.net"))][0].name // empty' artifacts/web-pages-deploy/projects.json)"
+          test -n "$project_name"
+          echo "project_name=$project_name" >> "$GITHUB_OUTPUT"
+          jq --arg project "$project_name" --arg sha "$GITHUB_SHA" \
+            '{schema:"viewloom-web-pages-deploy-v1", project:$project, commit:$sha, resolvedAt:(now|todateiso8601)}' \
+            > artifacts/web-pages-deploy/resolution.json
+      - name: Install Wrangler 4
+        run: npm install --global wrangler@4
+      - name: Deploy web build to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PROJECT_NAME: ${{ steps.project.outputs.project_name }}
+        run: |
+          wrangler pages deploy apps/web/dist \
+            --project-name "$PROJECT_NAME" \
+            --branch main \
+            --commit-hash "$GITHUB_SHA" \
+            --commit-message "Deploy ViewLoom web $GITHUB_SHA" \
+            | tee artifacts/web-pages-deploy/wrangler.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-pages-deploy-evidence
+          path: artifacts/web-pages-deploy/
+          if-no-files-found: warn
