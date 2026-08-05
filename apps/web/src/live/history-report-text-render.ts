@@ -33,6 +33,7 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
       button.setAttribute('aria-pressed', String(active))
     })
     preview.textContent = texts[mode]
+    preview.setAttribute('aria-label', mode === 'post' ? 'Short post preview' : 'Full report preview')
     copyButton.textContent = mode === 'post' ? 'Copy short post' : 'Copy report'
     count.textContent = mode === 'post'
       ? `${historyShortPostLength(texts.post)} / 280 characters`
@@ -43,6 +44,7 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
   modeButtons.forEach((button) => {
     button.onclick = () => applyMode(button.dataset.historyReportMode === 'post' ? 'post' : 'report')
   })
+  installModeKeyboardNavigation(modeButtons, applyMode)
 
   copyButton.disabled = false
   copyButton.onclick = async () => {
@@ -85,25 +87,25 @@ function ensureMount(): HTMLElement {
           <span>All outputs reuse the current provider response.</span>
         </div>
         <div class="history-report__mode" role="group" aria-label="Report text format">
-          <button type="button" class="active" data-history-report-mode="report" aria-pressed="true">Full report</button>
-          <button type="button" data-history-report-mode="post" aria-pressed="false">Short post</button>
+          <button type="button" class="active" data-history-report-mode="report" aria-pressed="true" aria-controls="history-report-preview">Full report</button>
+          <button type="button" data-history-report-mode="post" aria-pressed="false" aria-controls="history-report-preview">Short post</button>
           <span data-history-report-count>Loading…</span>
         </div>
-        <pre class="history-report__preview" data-history-report-preview tabindex="0">Loading report text…</pre>
+        <pre id="history-report-preview" class="history-report__preview" data-history-report-preview tabindex="0" aria-label="Full report preview">Loading report text…</pre>
         <div class="history-publish-actions" aria-label="Report and export actions">
-          <button class="button button--paper" type="button" data-history-report-copy disabled>Copy report</button>
-          <button class="button" type="button" data-history-share-toggle aria-expanded="false" aria-controls="history-share-preview">Preview share card</button>
-          <button class="button" type="button" data-history-share-download disabled>Download PNG</button>
-          <button class="button" type="button" data-history-export-csv disabled>Download CSV</button>
-          <button class="button" type="button" data-history-export-json disabled>Download JSON</button>
+          <button class="button button--paper" type="button" data-history-report-copy aria-describedby="history-report-status" disabled>Copy report</button>
+          <button class="button" type="button" data-history-share-toggle aria-expanded="false" aria-controls="history-share-preview" aria-describedby="history-share-status">Preview share card</button>
+          <button class="button" type="button" data-history-share-download aria-describedby="history-share-status" disabled>Download PNG</button>
+          <button class="button" type="button" data-history-export-csv aria-describedby="history-export-status" disabled>Download CSV</button>
+          <button class="button" type="button" data-history-export-json aria-describedby="history-export-status" disabled>Download JSON</button>
         </div>
-        <div class="history-publish-statuses" aria-live="polite">
-          <span data-history-report-status>Waiting for retained History data…</span>
-          <span data-history-share-status>Share card available on demand.</span>
-          <span data-history-export-status>Waiting for retained History data…</span>
+        <div class="history-publish-statuses">
+          <span id="history-report-status" data-history-report-status role="status" aria-live="polite" aria-atomic="true">Waiting for retained History data…</span>
+          <span id="history-share-status" data-history-share-status role="status" aria-live="polite" aria-atomic="true">Share card available on demand.</span>
+          <span id="history-export-status" data-history-export-status role="status" aria-live="polite" aria-atomic="true">Waiting for retained History data…</span>
         </div>
         <div id="history-share-preview" class="history-share__preview" data-history-share-preview hidden>
-          <canvas width="1200" height="630" data-history-share-card aria-label="History share-card preview"></canvas>
+          <canvas width="1200" height="630" data-history-share-card role="img" aria-label="History share-card preview">History share-card preview</canvas>
         </div>
       </div>
     </section>`
@@ -114,6 +116,28 @@ function ensureMount(): HTMLElement {
   else if (columns) columns.insertAdjacentElement('afterend', block)
   else document.querySelector<HTMLElement>('.history-page')?.append(block)
   return block.querySelector<HTMLElement>('[data-history-report]')!
+}
+
+function installModeKeyboardNavigation(
+  buttons: NodeListOf<HTMLButtonElement>,
+  applyMode: (mode: HistoryReportMode) => void,
+): void {
+  const ordered = Array.from(buttons)
+  ordered.forEach((button, index) => {
+    button.onkeydown = (event) => {
+      let nextIndex: number | null = null
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % ordered.length
+      else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + ordered.length) % ordered.length
+      else if (event.key === 'Home') nextIndex = 0
+      else if (event.key === 'End') nextIndex = ordered.length - 1
+      if (nextIndex == null) return
+
+      event.preventDefault()
+      const next = ordered[nextIndex]
+      next.focus()
+      applyMode(next.dataset.historyReportMode === 'post' ? 'post' : 'report')
+    }
+  })
 }
 
 function selectPreview(preview: HTMLElement): void {
