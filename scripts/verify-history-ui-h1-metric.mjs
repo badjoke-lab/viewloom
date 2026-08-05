@@ -88,7 +88,7 @@ need('apps/web/src/live/history-report-social.ts', [
   'Highest peak:',
 ])
 need('apps/web/src/live/history-share-card.ts', [
-  'canvas.dataset.shareMetric = metric',
+  'canvas.dataset.shareMetric = model.metric',
   'canvas.dataset.sharePrimaryValue = model.primaryValue',
   'Metric: ${metricLabel(model.metric)}',
   'TOP BY ${metricLabel(metric).toUpperCase()}',
