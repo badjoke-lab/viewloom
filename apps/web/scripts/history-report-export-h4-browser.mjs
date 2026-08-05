@@ -12,7 +12,9 @@ const evidence = {
   scenarios: [],
   result: 'running',
 }
+
 mkdirSync(artifactDir, { recursive: true })
+saveEvidence()
 
 function saveEvidence() {
   writeFileSync(resolve(artifactDir, 'history-report-export-h4-evidence.json'), `${JSON.stringify(evidence, null, 2)}\n`)
@@ -35,30 +37,32 @@ async function check(browser, provider, viewport) {
   const calls = { twitch: 0, kick: 0 }
   const scenario = { provider, viewport, calls, checkpoints: [], result: 'running' }
   evidence.scenarios.push(scenario)
-  const context = await browser.newContext({ viewport, isMobile: viewport.width < 500 })
-  await context.addInitScript(() => {
-    window.__viewloomCopiedText = ''
-    Object.defineProperty(navigator, 'clipboard', {
-      configurable: true,
-      value: { writeText: async (text) => { window.__viewloomCopiedText = String(text) } },
-    })
-  })
-  await installRoutes(context, calls)
+  saveEvidence()
 
-  const page = await context.newPage()
+  let context
+  let page
   try {
+    context = await browser.newContext({ viewport, isMobile: viewport.width < 500 })
+    await context.addInitScript(() => {
+      window.__viewloomCopiedText = ''
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: { writeText: async (text) => { window.__viewloomCopiedText = String(text) } },
+      })
+    })
+    await installRoutes(context, calls)
+    page = await context.newPage()
+
     await page.goto(`${base}/${provider}/history/?view=report&period=30d&metric=viewer_minutes`, { waitUntil: 'domcontentloaded' })
     await page.waitForFunction(() => {
       const workspace = document.querySelector('[data-history-report][data-history-share][data-history-export]')
-      const copy = document.querySelector('[data-history-report-copy]')
-      const png = document.querySelector('[data-history-share-download]')
-      const csv = document.querySelector('[data-history-export-csv]')
-      const json = document.querySelector('[data-history-export-json]')
-      return workspace
-        && copy && !copy.hasAttribute('disabled')
-        && png && !png.hasAttribute('disabled')
-        && csv && !csv.hasAttribute('disabled')
-        && json && !json.hasAttribute('disabled')
+      const controls = [
+        document.querySelector('[data-history-report-copy]'),
+        document.querySelector('[data-history-share-download]'),
+        document.querySelector('[data-history-export-csv]'),
+        document.querySelector('[data-history-export-json]'),
+      ]
+      return workspace && controls.every((control) => control && !control.hasAttribute('disabled'))
     })
     await page.waitForFunction(() => document.querySelector('.history-page')?.getAttribute('data-history-view') === 'report')
     await page.waitForFunction(() => document.querySelector('[data-history-report-share-native]'))
@@ -75,51 +79,37 @@ async function check(browser, provider, viewport) {
         nativeShareSupported: typeof navigator.share === 'function',
         previewHidden: document.querySelector('[data-history-share-preview]')?.hasAttribute('hidden'),
         rendered: document.querySelector('[data-history-share-card]')?.getAttribute('data-share-rendered'),
-        reportStatus: document.querySelector('[data-history-report-status]')?.textContent,
-        shareStatus: document.querySelector('[data-history-share-status]')?.textContent,
       }
     })
     scenario.checkpoints.push({ name: 'structure', value: structure })
     saveEvidence()
 
-    assert(structure.reportBlocks === 1 && structure.workspaces === 1, `${provider}: Report & Export is not one top-level workspace.`)
+    assert(structure.reportBlocks === 1 && structure.workspaces === 1, `${provider}: one top-level workspace was not retained.`)
     assert(structure.shareBlocks === 0 && structure.exportBlocks === 0, `${provider}: legacy top-level Share or Export blocks remain.`)
     assert(JSON.stringify(structure.labels) === JSON.stringify(['Copy report', 'Share report', 'Preview share card', 'Download PNG', 'Download CSV', 'Download JSON']), `${provider}: unified action order is incorrect: ${JSON.stringify(structure.labels)}.`)
-    assert(structure.nativeShareSupported === false && structure.nativeShareHidden === true, `${provider}: native Share support/visibility is incorrect: ${JSON.stringify({ supported: structure.nativeShareSupported, hidden: structure.nativeShareHidden })}.`)
-    assert(structure.previewHidden === true && structure.rendered !== 'true', `${provider}: share preview was not deferred.`)
+    assert(structure.nativeShareHidden === !structure.nativeShareSupported, `${provider}: nativeShareHidden does not match Web Share support: ${JSON.stringify(structure)}.`)
+    assert(structure.previewHidden === true && structure.rendered !== 'true', `${provider}: Preview share card was not deferred.`)
 
     const providerCalls = calls[provider]
     await page.locator('[data-history-report-mode="post"]').click()
     await page.waitForFunction(() => document.querySelector('[data-history-report-preview]')?.textContent?.includes('History snapshot'))
-    scenario.checkpoints.push({ name: 'post-mode', value: await page.evaluate(() => ({
-      preview: document.querySelector('[data-history-report-preview]')?.textContent,
-      status: document.querySelector('[data-history-report-status]')?.textContent,
-      activeMode: document.querySelector('[data-history-report]')?.getAttribute('data-history-report-active-mode'),
-    })) })
-    saveEvidence()
     assert(calls[provider] === providerCalls, `${provider}: History API was fetched again while switching text mode.`)
 
     await page.locator('[data-history-report-copy]').click()
     await page.waitForFunction(() => document.querySelector('[data-history-report-status]')?.textContent === 'Short post copied.')
-    scenario.checkpoints.push({ name: 'copy', value: await page.evaluate(() => ({
-      status: document.querySelector('[data-history-report-status]')?.textContent,
-      copied: window.__viewloomCopiedText,
-    })) })
-    saveEvidence()
     assert(calls[provider] === providerCalls, `${provider}: History API was fetched again while copying.`)
 
     await page.locator('[data-history-share-toggle]').click()
     await page.waitForFunction(() => document.querySelector('[data-history-share-card]')?.getAttribute('data-share-rendered') === 'true')
-    const previewState = await page.evaluate(() => ({
-      visible: (() => {
-        const node = document.querySelector('[data-history-share-preview]')
-        return node instanceof HTMLElement && !node.hidden && getComputedStyle(node).display !== 'none' && node.getClientRects().length > 0
-      })(),
-      hidden: document.querySelector('[data-history-share-preview]')?.hasAttribute('hidden'),
-      expanded: document.querySelector('[data-history-share-toggle]')?.getAttribute('aria-expanded'),
-      rendered: document.querySelector('[data-history-share-card]')?.getAttribute('data-share-rendered'),
-      status: document.querySelector('[data-history-share-status]')?.textContent,
-    }))
+    const previewState = await page.evaluate(() => {
+      const node = document.querySelector('[data-history-share-preview]')
+      return {
+        visible: node instanceof HTMLElement && !node.hidden && getComputedStyle(node).display !== 'none' && node.getClientRects().length > 0,
+        hidden: node?.hasAttribute('hidden'),
+        expanded: document.querySelector('[data-history-share-toggle]')?.getAttribute('aria-expanded'),
+        rendered: document.querySelector('[data-history-share-card]')?.getAttribute('data-share-rendered'),
+      }
+    })
     scenario.checkpoints.push({ name: 'preview-open', value: previewState })
     saveEvidence()
     assert(previewState.visible === true, `${provider}: Preview share card did not open: ${JSON.stringify(previewState)}.`)
@@ -137,19 +127,21 @@ async function check(browser, provider, viewport) {
   } catch (error) {
     scenario.result = 'fail'
     scenario.error = error instanceof Error ? error.message : String(error)
-    scenario.checkpoints.push({ name: 'failure-dom', value: await page.evaluate(() => ({
-      activeMode: document.querySelector('[data-history-report]')?.getAttribute('data-history-report-active-mode'),
-      reportStatus: document.querySelector('[data-history-report-status]')?.textContent,
-      shareStatus: document.querySelector('[data-history-share-status]')?.textContent,
-      previewHidden: document.querySelector('[data-history-share-preview]')?.hasAttribute('hidden'),
-      expanded: document.querySelector('[data-history-share-toggle]')?.getAttribute('aria-expanded'),
-      rendered: document.querySelector('[data-history-share-card]')?.getAttribute('data-share-rendered'),
-      labels: Array.from(document.querySelectorAll('.history-publish-actions button')).map((button) => button.textContent?.trim()),
-    })) })
+    if (page) {
+      scenario.checkpoints.push({ name: 'failure-dom', value: await page.evaluate(() => ({
+        activeMode: document.querySelector('[data-history-report]')?.getAttribute('data-history-report-active-mode'),
+        reportStatus: document.querySelector('[data-history-report-status]')?.textContent,
+        shareStatus: document.querySelector('[data-history-share-status]')?.textContent,
+        previewHidden: document.querySelector('[data-history-share-preview]')?.hasAttribute('hidden'),
+        expanded: document.querySelector('[data-history-share-toggle]')?.getAttribute('aria-expanded'),
+        rendered: document.querySelector('[data-history-share-card]')?.getAttribute('data-share-rendered'),
+        labels: Array.from(document.querySelectorAll('.history-publish-actions button')).map((button) => button.textContent?.trim()),
+      })) })
+    }
     saveEvidence()
     throw error
   } finally {
-    await context.close()
+    await context?.close()
   }
 }
 
@@ -159,7 +151,7 @@ try {
   await check(browser, 'kick', { width: 390, height: 844 })
   evidence.result = 'pass'
   saveEvidence()
-  console.log('History Report & Export H4 browser gate passed: one top-level six-action workspace, native Share hidden when unsupported, Preview share card on demand, no repeated History API request, and no horizontal overflow.')
+  console.log('History Report & Export H4 browser gate passed: one top-level workspace, Share report visibility follows Web Share support, Preview share card on demand, no repeated History API request, and no horizontal overflow.')
 } catch (error) {
   evidence.result = 'fail'
   evidence.error = error instanceof Error ? error.message : String(error)
