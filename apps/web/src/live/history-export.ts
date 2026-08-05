@@ -24,22 +24,26 @@ export function renderHistoryExport(payload: HistoryReportPayload): void {
 
   csvButton.disabled = false
   jsonButton.disabled = false
-  csvButton.onclick = () => runDownload(
-    csvButton,
-    'csv',
-    historyExportCsv(model),
-    historyExportFilename(provider, model.period.from, model.period.to, 'csv'),
-    'text/csv;charset=utf-8',
-    status,
-  )
-  jsonButton.onclick = () => runDownload(
-    jsonButton,
-    'json',
-    historyExportJson(model),
-    historyExportFilename(provider, model.period.from, model.period.to, 'json'),
-    'application/json;charset=utf-8',
-    status,
-  )
+  csvButton.onclick = () => {
+    void runDownload(
+      csvButton,
+      'csv',
+      historyExportCsv(model),
+      historyExportFilename(provider, model.period.from, model.period.to, 'csv'),
+      'text/csv;charset=utf-8',
+      status,
+    )
+  }
+  jsonButton.onclick = () => {
+    void runDownload(
+      jsonButton,
+      'json',
+      historyExportJson(model),
+      historyExportFilename(provider, model.period.from, model.period.to, 'json'),
+      'application/json;charset=utf-8',
+      status,
+    )
+  }
 }
 
 export function historyExportFilename(
@@ -81,16 +85,17 @@ function ensureMount(): HTMLElement {
   return block.querySelector<HTMLElement>('[data-history-export]')!
 }
 
-function runDownload(
+async function runDownload(
   button: HTMLButtonElement,
   format: ExportFormat,
   text: string,
   filename: string,
   type: string,
   status: HTMLElement,
-): void {
+): Promise<void> {
   button.disabled = true
   status.textContent = `Preparing ${format.toUpperCase()}…`
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
   try {
     downloadText(text, filename, type)
     status.textContent = `${format.toUpperCase()} downloaded as ${filename}.`
