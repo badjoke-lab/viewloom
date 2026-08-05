@@ -1,0 +1,87 @@
+name: History Production Acceptance
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/history-production-acceptance.yml'
+      - 'apps/web/scripts/history-production-acceptance.mjs'
+      - 'apps/web/scripts/history-battle-archive-fixture.mjs'
+      - 'apps/web/src/live/history-report-text*.ts'
+      - 'apps/web/src/live/history-native-share.ts'
+      - 'apps/web/src/live/history-share-card.ts'
+      - 'apps/web/src/live/history-export*.ts'
+      - 'apps/web/src/live/history-view-shell.ts'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/history-production-acceptance.yml'
+      - 'apps/web/scripts/history-production-acceptance.mjs'
+      - 'apps/web/scripts/history-battle-archive-fixture.mjs'
+      - 'apps/web/src/live/history-report-text*.ts'
+      - 'apps/web/src/live/history-native-share.ts'
+      - 'apps/web/src/live/history-share-card.ts'
+      - 'apps/web/src/live/history-export*.ts'
+      - 'apps/web/src/live/history-view-shell.ts'
+  schedule:
+    - cron: '37 3 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify production acceptance script syntax and retained contract
+        run: |
+          node --check apps/web/scripts/history-production-acceptance.mjs
+          grep -Fq 'https://www.viewloom.net' apps/web/scripts/history-production-acceptance.mjs
+          grep -Fq "provider: 'twitch'" apps/web/scripts/history-production-acceptance.mjs
+          grep -Fq "provider: 'kick'" apps/web/scripts/history-production-acceptance.mjs
+          grep -Fq 'data-history-report-share-native' apps/web/scripts/history-production-acceptance.mjs
+          grep -Fq 'data-history-share-card' apps/web/scripts/history-production-acceptance.mjs
+          grep -Fq 'Coverage 12 of 13 days' apps/web/scripts/history-production-acceptance.mjs
+          grep -Fq 'output actions added a production History API request' apps/web/scripts/history-production-acceptance.mjs
+
+  production:
+    if: github.event_name != 'pull_request'
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        working-directory: apps/web
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+      - name: Verify deployed Twitch and Kick History output accessibility
+        working-directory: apps/web
+        env:
+          HISTORY_PRODUCTION_BASE_URL: https://www.viewloom.net
+          HISTORY_PRODUCTION_ARTIFACT_DIR: artifacts/history-production-acceptance
+          HISTORY_PRODUCTION_MAX_ATTEMPTS: 20
+          HISTORY_PRODUCTION_RETRY_MS: 15000
+          HISTORY_PRODUCTION_EXPECTED_MAIN_SHA: ${{ github.sha }}
+        run: node scripts/history-production-acceptance.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: history-production-acceptance
+          path: apps/web/artifacts/history-production-acceptance/
+          if-no-files-found: warn
