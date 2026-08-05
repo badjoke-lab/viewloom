@@ -133,9 +133,10 @@ function installModeKeyboardNavigation(
       if (nextIndex == null) return
 
       event.preventDefault()
+      event.stopPropagation()
       const next = ordered[nextIndex]
       applyMode(next.dataset.historyReportMode === 'post' ? 'post' : 'report')
-      next.focus({ preventScroll: true })
+      requestAnimationFrame(() => next.focus({ preventScroll: true }))
     }
   })
 }
