@@ -31,7 +31,15 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
     post: historyShortPostText(payload, provider, location.href),
   }
 
+  const setActionStatus = (message: string): void => {
+    mount.dataset.historyReportActionStatus = message
+    const currentStatus = document.querySelector<HTMLElement>('[data-history-report-status]')
+    if (currentStatus) currentStatus.textContent = message
+  }
+
   const applyMode = (mode: HistoryReportMode): void => {
+    const previousMode: HistoryReportMode = mount.dataset.historyReportActiveMode === 'post' ? 'post' : 'report'
+    if (previousMode !== mode) delete mount.dataset.historyReportActionStatus
     mount.dataset.historyReportActiveMode = mode
     modeButtons.forEach((button) => {
       const active = button.dataset.historyReportMode === mode
@@ -44,7 +52,8 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
     count.textContent = mode === 'post'
       ? `${historyShortPostLength(texts.post)} / 280 characters`
       : `${texts.report.split('\n').length} lines`
-    status.textContent = mode === 'post' ? 'Short post ready.' : 'Full report ready.'
+    status.textContent = mount.dataset.historyReportActionStatus
+      ?? (mode === 'post' ? 'Short post ready.' : 'Full report ready.')
   }
 
   modeButtons.forEach((button) => {
@@ -57,18 +66,18 @@ export function renderHistoryReport(payload: HistoryReportPayload): void {
     const mode: HistoryReportMode = mount.dataset.historyReportActiveMode === 'post' ? 'post' : 'report'
     const text = texts[mode]
     copyButton.disabled = true
-    status.textContent = 'Copying…'
+    setActionStatus('Copying…')
     try {
       if (!navigator.clipboard?.writeText) {
         selectPreview(preview)
-        status.textContent = `${mode === 'post' ? 'Short post' : 'Report'} selected. Use your browser copy command.`
+        setActionStatus(`${mode === 'post' ? 'Short post' : 'Report'} selected. Use your browser copy command.`)
         return
       }
       await navigator.clipboard.writeText(text)
-      status.textContent = mode === 'post' ? 'Short post copied.' : 'Report text copied.'
+      setActionStatus(mode === 'post' ? 'Short post copied.' : 'Report text copied.')
     } catch {
       selectPreview(preview)
-      status.textContent = 'Automatic copy was unavailable. The visible text is selected.'
+      setActionStatus('Automatic copy was unavailable. The visible text is selected.')
     } finally {
       copyButton.disabled = false
     }
