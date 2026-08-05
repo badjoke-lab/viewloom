@@ -44,6 +44,7 @@ function syncNativeShare(): void {
   if (button.hidden === supported) button.hidden = !supported
   if (!sharing && button.disabled === supported) button.disabled = !supported
   button.dataset.historyNativeShareReady = String(supported)
+  button.setAttribute('aria-describedby', 'history-report-status')
 
   button.onclick = async () => {
     if (!navigator.share) {
@@ -65,7 +66,7 @@ function syncNativeShare(): void {
         title: `ViewLoom — ${providerLabel} History & Trends`,
         text,
       })
-      status.textContent = 'Share sheet opened.'
+      status.textContent = 'Share completed.'
     } catch (error) {
       status.textContent = error instanceof DOMException && error.name === 'AbortError'
         ? 'Sharing cancelled.'
@@ -88,6 +89,7 @@ function ensureButton(mount: HTMLElement, copyButton: HTMLButtonElement): HTMLBu
   button.dataset.historyReportShareNative = ''
   button.hidden = true
   button.disabled = true
+  button.setAttribute('aria-describedby', 'history-report-status')
   button.textContent = 'Share report'
   copyButton.insertAdjacentElement('afterend', button)
   return button
