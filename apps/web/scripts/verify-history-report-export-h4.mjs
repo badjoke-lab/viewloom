@@ -45,6 +45,9 @@ if (existsSync(join(root, files.render))) {
     'data-history-share-preview hidden',
     'data-history-export-csv',
     'data-history-export-json',
+    'history-report-status',
+    'history-share-status',
+    'history-export-status',
   ]) need(files.render, source, fragment)
   const ordered = [
     'data-history-report-copy',
@@ -69,10 +72,12 @@ if (existsSync(join(root, files.nativeShare))) {
     "typeof navigator.share === 'function'",
     'preview.textContent',
     'await navigator.share({',
-    'Share sheet opened.',
+    'Share completed.',
     'Sharing cancelled.',
+    "button.setAttribute('aria-describedby', 'history-report-status')",
   ]) need(files.nativeShare, source, fragment)
   forbid(files.nativeShare, source, 'new API request', /\bfetch\s*\(/)
+  forbid(files.nativeShare, source, 'obsolete share-opened status', /Share sheet opened\./)
 }
 
 if (existsSync(join(root, files.share))) {
@@ -84,13 +89,22 @@ if (existsSync(join(root, files.share))) {
     'canvas.dataset.shareRendered',
     'setOpen(mount.dataset.historyShareOpen',
     'canvas.toBlob',
+    'shareCardDescription(model)',
+    "event.key !== 'Escape'",
   ]) need(files.share, source, fragment)
   forbid(files.share, source, 'new API request', /\bfetch\s*\(/)
 }
 
 if (existsSync(join(root, files.export))) {
   const source = read(files.export)
-  for (const fragment of ['data-history-export-csv', 'data-history-export-json', 'historyExportCsv(model)', 'historyExportJson(model)']) need(files.export, source, fragment)
+  for (const fragment of [
+    'data-history-export-csv',
+    'data-history-export-json',
+    'historyExportCsv(model)',
+    'historyExportJson(model)',
+    'Preparing ${format.toUpperCase()}…',
+    '${format.toUpperCase()} downloaded as ${filename}.',
+  ]) need(files.export, source, fragment)
   forbid(files.export, source, 'new API request', /\bfetch\s*\(/)
 }
 
@@ -142,4 +156,4 @@ if (failures.length) {
   failures.forEach((failure) => console.error(`- ${failure}`))
   process.exit(1)
 }
-console.log('History Report & Export H4 verification passed.')
+console.log('History Report & Export H4 verification passed with accessibility status contracts.')
