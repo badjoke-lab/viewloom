@@ -94,6 +94,60 @@ async function check(browser, provider, viewport) {
   await openReport(page)
   await page.waitForFunction(() => document.querySelector('[data-history-report-share-native]'))
 
+  const accessibilityState = await page.evaluate(() => {
+    const statusIds = ['history-report-status', 'history-share-status', 'history-export-status']
+    const actionDescriptions = [
+      ['[data-history-report-copy]', 'history-report-status'],
+      ['[data-history-report-share-native]', 'history-report-status'],
+      ['[data-history-share-toggle]', 'history-share-status'],
+      ['[data-history-share-download]', 'history-share-status'],
+      ['[data-history-export-csv]', 'history-export-status'],
+      ['[data-history-export-json]', 'history-export-status'],
+    ]
+    return {
+      statuses: statusIds.map((id) => {
+        const node = document.getElementById(id)
+        return {
+          id,
+          role: node?.getAttribute('role'),
+          live: node?.getAttribute('aria-live'),
+          atomic: node?.getAttribute('aria-atomic'),
+        }
+      }),
+      described: actionDescriptions.map(([selector, expected]) => ({
+        selector,
+        expected,
+        actual: document.querySelector(selector)?.getAttribute('aria-describedby'),
+      })),
+      controls: Array.from(document.querySelectorAll('[data-history-report-mode]')).map((node) => node.getAttribute('aria-controls')),
+      previewId: document.querySelector('[data-history-report-preview]')?.id,
+      previewLabel: document.querySelector('[data-history-report-preview]')?.getAttribute('aria-label'),
+    }
+  })
+  assert(accessibilityState.statuses.every((entry) => entry.role === 'status' && entry.live === 'polite' && entry.atomic === 'true'), `${provider} role=status semantics are incomplete.`)
+  assert(accessibilityState.described.every((entry) => entry.actual === entry.expected), `${provider} output action status association is incomplete.`)
+  assert(accessibilityState.controls.every((value) => value === 'history-report-preview'), `${provider} report mode controls do not name the preview.`)
+  assert(accessibilityState.previewId === 'history-report-preview', `${provider} report preview id is absent.`)
+  assert(accessibilityState.previewLabel === 'Full report preview', `${provider} full-report preview label is incorrect.`)
+
+  const callsBeforeKeyboard = calls[provider]
+  const fullModeButton = page.locator('[data-history-report-mode="report"]')
+  const postModeButton = page.locator('[data-history-report-mode="post"]')
+  await fullModeButton.focus()
+  await fullModeButton.press('ArrowRight')
+  await page.waitForFunction(() => document.querySelector('[data-history-report-mode="post"]')?.getAttribute('aria-pressed') === 'true')
+  const keyboardPostState = await page.evaluate(() => ({
+    activeMode: document.activeElement?.getAttribute('data-history-report-mode'),
+    previewLabel: document.querySelector('[data-history-report-preview]')?.getAttribute('aria-label'),
+  }))
+  assert(keyboardPostState.activeMode === 'post', `${provider} history report mode keyboard focus did not move.`)
+  assert(keyboardPostState.previewLabel === 'Short post preview', `${provider} keyboard mode switch did not rename the preview.`)
+  await postModeButton.press('Home')
+  await page.waitForFunction(() => document.querySelector('[data-history-report-mode="report"]')?.getAttribute('aria-pressed') === 'true')
+  const keyboardReportFocus = await page.evaluate(() => document.activeElement?.getAttribute('data-history-report-mode'))
+  assert(keyboardReportFocus === 'report', `${provider} Home did not return report-mode focus.`)
+  assert(calls[provider] === callsBeforeKeyboard, `${provider} keyboard report mode switch caused another History request.`)
+
   const shareState = await page.evaluate(() => {
     const button = document.querySelector('[data-history-report-share-native]')
     return {
@@ -148,7 +202,7 @@ async function check(browser, provider, viewport) {
 
   const callsBeforeShare = calls[provider]
   await page.locator('[data-history-report-share-native]').click()
-  await page.waitForFunction(() => document.querySelector('[data-history-report-status]')?.textContent === 'Share sheet opened.')
+  await page.waitForFunction(() => document.querySelector('[data-history-report-status]')?.textContent === 'Share completed.')
   const shared = await page.evaluate(() => window.__viewloomSharedData)
   assert(shared?.title === `ViewLoom — ${providerLabel} History & Trends`, `${provider} native-share title is incorrect.`)
   assert(shared?.text === shortPost, `${provider} native-share text differs from the active preview.`)
@@ -159,6 +213,58 @@ async function check(browser, provider, viewport) {
   await page.waitForFunction(() => document.querySelector('[data-history-report-share-native]')?.textContent === 'Share report')
   assert((await page.locator('[data-history-report-preview]').textContent()) === fullPreview, `${provider} full report was not restored.`)
   assert((await page.locator('[data-history-report-share-native]').textContent()) === 'Share report', `${provider} native-share label did not restore full-report mode.`)
+
+  const callsBeforeCard = calls[provider]
+  const shareToggle = page.locator('[data-history-share-toggle]')
+  await shareToggle.click()
+  await page.waitForFunction(() => document.querySelector('[data-history-share-card]')?.getAttribute('data-share-rendered') === 'true')
+  const shareCardState = await page.evaluate(() => {
+    const canvas = document.querySelector('[data-history-share-card]')
+    return {
+      role: canvas?.getAttribute('role'),
+      tabIndex: canvas instanceof HTMLElement ? canvas.tabIndex : null,
+      label: canvas?.getAttribute('aria-label') ?? '',
+      fallback: canvas?.textContent ?? '',
+      expanded: document.querySelector('[data-history-share-toggle]')?.getAttribute('aria-expanded'),
+      hidden: document.querySelector('[data-history-share-preview]')?.hasAttribute('hidden'),
+    }
+  })
+  assert(shareCardState.role === 'img' && shareCardState.tabIndex === 0, `${provider} share-card image semantics are incomplete.`)
+  assert(shareCardState.label.includes(`ViewLoom ${providerLabel} History share card.`), `${provider} share-card accessible description is incomplete.`)
+  assert(shareCardState.label.includes('Coverage 12 of 13 days'), `${provider} share-card accessible description lacks coverage.`)
+  assert(shareCardState.label.includes('Observed ViewLoom data, not provider-wide.'), `${provider} share-card accessible description lacks limitation.`)
+  assert(!shareCardState.label.includes(`ViewLoom ${otherLabel} History`), `${provider} share-card accessible description crossed providers.`)
+  assert(shareCardState.fallback === shareCardState.label, `${provider} share-card fallback text differs from its accessible name.`)
+  assert(shareCardState.expanded === 'true' && shareCardState.hidden === false, `${provider} share-card preview did not open.`)
+  assert(calls[provider] === callsBeforeCard, `${provider} share-card preview caused another History request.`)
+  await page.locator('[data-history-share-card]').focus()
+  await page.locator('[data-history-share-card]').press('Escape')
+  const shareCardClosed = await page.evaluate(() => ({
+    expanded: document.querySelector('[data-history-share-toggle]')?.getAttribute('aria-expanded'),
+    hidden: document.querySelector('[data-history-share-preview]')?.hasAttribute('hidden'),
+    focused: document.activeElement?.hasAttribute('data-history-share-toggle'),
+  }))
+  assert(shareCardClosed.expanded === 'false' && shareCardClosed.hidden === true && shareCardClosed.focused === true, `${provider} share-card Escape did not return focus.`)
+
+  const callsBeforeCsv = calls[provider]
+  const [csvDownload] = await Promise.all([
+    page.waitForEvent('download'),
+    page.locator('[data-history-export-csv]').click(),
+  ])
+  await page.waitForFunction(() => document.querySelector('[data-history-export-status]')?.textContent?.startsWith('CSV downloaded as '))
+  const csvFilename = csvDownload.suggestedFilename()
+  assert(csvFilename.startsWith(`viewloom-${provider}-history-`) && csvFilename.endsWith('.csv'), `${provider} CSV filename is incorrect.`)
+  assert(calls[provider] === callsBeforeCsv, `${provider} CSV export caused another History request.`)
+
+  const callsBeforeJson = calls[provider]
+  const [jsonDownload] = await Promise.all([
+    page.waitForEvent('download'),
+    page.locator('[data-history-export-json]').click(),
+  ])
+  await page.waitForFunction(() => document.querySelector('[data-history-export-status]')?.textContent?.startsWith('JSON downloaded as '))
+  const jsonFilename = jsonDownload.suggestedFilename()
+  assert(jsonFilename.startsWith(`viewloom-${provider}-history-`) && jsonFilename.endsWith('.json'), `${provider} JSON filename is incorrect.`)
+  assert(calls[provider] === callsBeforeJson, `${provider} JSON export caused another History request.`)
 
   const other = provider === 'twitch' ? 'kick' : 'twitch'
   assert(calls[other] === 0, `${provider} report crossed provider endpoints.`)
@@ -188,7 +294,7 @@ const browser = await chromium.launch({ headless: true })
 try {
   await check(browser, 'twitch', { width: 1440, height: 1100 })
   await check(browser, 'kick', { width: 390, height: 844 })
-  console.log('History report text browser gate passed with provider-separated period highlights.')
+  console.log('History report browser gate passed with output accessibility and provider-separated period highlights.')
 } finally {
   await browser.close()
 }
