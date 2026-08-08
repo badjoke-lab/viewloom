@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-heatmap-category-hidden-revalidation-v1",
+  "status": "ready_for_validation",
+  "phase": "12A-5B-R2",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 635,
+  "provider": "twitch",
+  "feature": "heatmap_category_filter",
+  "decision": {
+    "contract": "docs/audits/12a5-twitch-category-final-mode-decision.json",
+    "mergeSha": "70cd79800edbdd2ff6d0cd65193bfb874917d0f4",
+    "hiddenRevalidationAuthorized": true,
+    "publicCutoverAuthorized": false
+  },
+  "target": {
+    "origin": "https://www.viewloom.net",
+    "normalRoute": "/twitch/heatmap/",
+    "hiddenRoute": "/twitch/heatmap/?categoryPreview=1",
+    "kickControlRoute": "/kick/heatmap/?categoryPreview=1",
+    "hiddenEntry": "categoryPreview=1"
+  },
+  "requiredChecks": {
+    "desktopHiddenControls": true,
+    "mobileHiddenControls": true,
+    "normalRouteStillUnfiltered": true,
+    "kickNeverEnablesTwitchControls": true,
+    "realTwitchApi": true,
+    "categoryContractAvailable": true,
+    "categoryOptionsNonempty": true,
+    "filterBeforeTopN": true,
+    "categorySelection": true,
+    "top20": true,
+    "top50": true,
+    "keyboardFocus": true,
+    "accessibleLabels": true,
+    "unknownCategoryState": true,
+    "noHorizontalOverflow": true,
+    "providerSeparation": true,
+    "publicExposureFlagFalse": true
+  },
+  "boundary": {
+    "readOnly": true,
+    "collectorMutationAuthorized": false,
+    "workerDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "bindingChangeAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "retentionChangeAuthorized": false,
+    "backfillAuthorized": false,
+    "kickCategoryUiAuthorized": false,
+    "publicTwitchCategoryUiAuthorized": false,
+    "defaultRouteExposureAuthorized": false,
+    "publicNavigationAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  },
+  "execution": {
+    "script": "apps/web/scripts/twitch-category-hidden-production-revalidation.mjs",
+    "workflow": ".github/workflows/analytics-12a5-twitch-category-hidden-production-revalidation.yml",
+    "artifactName": "analytics-12a5-twitch-category-hidden-production-revalidation",
+    "productionOnPullRequest": false,
+    "productionOnMainPush": true
+  },
+  "nextGate": "Merge the verified package, run the production read-only browser revalidation from main, then freeze and separately accept exact run/job/artifact evidence before any public cutover."
+}
