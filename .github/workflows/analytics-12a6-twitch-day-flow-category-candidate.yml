@@ -13,6 +13,7 @@ on:
       - 'apps/web/scripts/day-flow-category-core.test.mjs'
       - 'apps/web/scripts/day-flow-category-preview-browser.mjs'
       - 'apps/web/scripts/verify-production-source.mjs'
+      - 'scripts/verify-quality-u10d-analysis-coherence.mjs'
       - 'scripts/verify-quality-u10g-architecture.mjs'
       - 'scripts/verify-12a6-twitch-day-flow-category-candidate.mjs'
       - '.github/workflows/analytics-12a6-twitch-day-flow-category-candidate.yml'
@@ -34,26 +35,20 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.17.1
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-
       - name: Verify accepted candidate boundary
         run: node scripts/verify-12a6-twitch-day-flow-category-candidate.mjs
-
       - name: Verify per-snapshot category projection
         run: node apps/web/scripts/day-flow-category-core.test.mjs
-
       - name: Verify implementation PR scope
         if: github.event_name == 'pull_request'
         env:
@@ -63,22 +58,16 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(apps/web/functions/api/day-flow\.ts|apps/web/functions/api/day-flow-category-core\.(mjs|d\.mts)|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-twitch-entry\.ts|apps/web/twitch/day-flow/index\.html|apps/web/scripts/day-flow-category-core\.test\.mjs|apps/web/scripts/day-flow-category-preview-browser\.mjs|apps/web/scripts/verify-production-source\.mjs|scripts/verify-quality-u10g-architecture\.mjs|scripts/verify-12a6-twitch-day-flow-category-candidate\.mjs|\.github/workflows/analytics-12a6-twitch-day-flow-category-candidate\.yml)$'
+          allowed='^(apps/web/functions/api/day-flow\.ts|apps/web/functions/api/day-flow-category-core\.(mjs|d\.mts)|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-twitch-entry\.ts|apps/web/twitch/day-flow/index\.html|apps/web/scripts/day-flow-category-core\.test\.mjs|apps/web/scripts/day-flow-category-preview-browser\.mjs|apps/web/scripts/verify-production-source\.mjs|scripts/verify-quality-u10d-analysis-coherence\.mjs|scripts/verify-quality-u10g-architecture\.mjs|scripts/verify-12a6-twitch-day-flow-category-candidate\.mjs|\.github/workflows/analytics-12a6-twitch-day-flow-category-candidate\.yml)$'
           for path in "${changed[@]}"; do
-            if ! [[ "$path" =~ $allowed ]]; then
-              echo "Unexpected candidate change: $path" >&2
-              exit 1
-            fi
+            if ! [[ "$path" =~ $allowed ]]; then echo "Unexpected candidate change: $path" >&2; exit 1; fi
           done
-
       - name: Typecheck web application and Pages functions
         run: |
           pnpm --filter @viewloom/web typecheck:app
           pnpm --filter @viewloom/web typecheck:functions
-
       - name: Build web candidate
         run: pnpm build:web
-
       - name: Start local candidate preview
         run: |
           pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/dayflow-category-preview.log 2>&1 &
@@ -89,15 +78,12 @@ jobs:
           done
           cat /tmp/dayflow-category-preview.log
           exit 1
-
       - name: Install Playwright
         working-directory: apps/web
         run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
-
       - name: Install Chromium
         working-directory: apps/web
         run: npx playwright install --with-deps chromium
-
       - name: Verify hidden Twitch browser candidate and Kick isolation
         working-directory: apps/web
         env:
@@ -106,7 +92,6 @@ jobs:
           set -o pipefail
           mkdir -p /tmp/dayflow-category-browser
           node scripts/day-flow-category-preview-browser.mjs 2>&1 | tee /tmp/dayflow-category-browser/browser.log
-
       - name: Upload browser diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -116,7 +101,6 @@ jobs:
             /tmp/dayflow-category-browser/**
             /tmp/dayflow-category-preview.log
           if-no-files-found: warn
-
       - name: Publish candidate boundary
         if: always()
         run: |
