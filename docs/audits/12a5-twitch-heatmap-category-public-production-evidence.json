@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-public-production-acceptance-evidence-v1",
+  "status": "accepted",
+  "origin": "https://www.viewloom.net",
+  "provider": "twitch",
+  "feature": "heatmap_category_filter",
+  "deploymentCommit": "b006f45d0676c9ff3e05e5d6727458e43802de53",
+  "startedAt": "2026-08-08T06:33:08.023Z",
+  "completedAt": "2026-08-08T06:33:16.954Z",
+  "acceptedAttempt": 1,
+  "scenarios": [
+    {
+      "name": "twitch-public-desktop",
+      "viewport": { "width": 1440, "height": 1000 },
+      "status": "pass",
+      "requests": [
+        "https://www.viewloom.net/api/twitch-heatmap?category=all&top=50",
+        "https://www.viewloom.net/api/twitch-heatmap?category=509658&top=50",
+        "https://www.viewloom.net/api/twitch-heatmap?category=509658&top=20"
+      ],
+      "checks": {
+        "categoryOptions": 94,
+        "initialItems": 50,
+        "selectedCategory": "509658",
+        "selectedItems": 45,
+        "top20Items": 20,
+        "keyboard": true,
+        "geometry": { "width": 1440, "scrollWidth": 1440, "overflow": false }
+      }
+    },
+    {
+      "name": "twitch-public-mobile",
+      "viewport": { "width": 390, "height": 844 },
+      "status": "pass",
+      "requests": [
+        "https://www.viewloom.net/api/twitch-heatmap?category=all&top=50"
+      ],
+      "checks": {
+        "categoryOptions": 94,
+        "geometry": { "width": 390, "scrollWidth": 390, "overflow": false }
+      }
+    },
+    {
+      "name": "twitch-public-unknown-category",
+      "viewport": { "width": 820, "height": 900 },
+      "status": "pass",
+      "requests": [
+        "https://www.viewloom.net/api/twitch-heatmap?category=__viewloom_unknown_category__&top=20"
+      ],
+      "checks": {
+        "state": "unknown_category",
+        "itemCount": 0,
+        "uiTitle": "Unknown Twitch category"
+      }
+    },
+    {
+      "name": "kick-public-control-isolation",
+      "viewport": { "width": 390, "height": 844 },
+      "status": "pass",
+      "requests": [
+        "https://www.viewloom.net/api/kick-heatmap"
+      ],
+      "checks": {
+        "itemCount": 100,
+        "geometry": { "width": 390, "scrollWidth": 390, "overflow": false }
+      }
+    }
+  ],
+  "failures": [],
+  "publicTwitchCategoryUiActive": true,
+  "kickCategoryUiEnabled": false,
+  "productionMutationPerformed": false
+}
