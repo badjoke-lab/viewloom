@@ -25,11 +25,11 @@ const sitemapPath = join(dist, 'sitemap.xml')
 const robotsPath = join(dist, 'robots.txt')
 const sitemap = existsSync(sitemapPath) ? readFileSync(sitemapPath, 'utf8') : ''
 const robots = existsSync(robotsPath) ? readFileSync(robotsPath, 'utf8') : ''
-const sitemapRoutes = new Set([...sitemap.matchAll(/<loc>https:\/\/vl\.badjoke-lab\.com([^<]*)<\/loc>/g)].map((match) => normalizeRoute(match[1] || '/')))
+const sitemapRoutes = new Set([...sitemap.matchAll(/<loc>https:\/\/www\.viewloom\.net([^<]*)<\/loc>/g)].map((match) => normalizeRoute(match[1] || '/')))
 
 if (!sitemap) error('sitemap', 'dist/sitemap.xml is missing.')
 if (!robots) warning('robots', 'dist/robots.txt is missing.')
-else if (!/sitemap:\s*https:\/\/vl\.badjoke-lab\.com\/sitemap\.xml/i.test(robots)) warning('robots', 'robots.txt does not advertise the canonical sitemap URL.')
+else if (!/sitemap:\s*https:\/\/www\.viewloom\.net\/sitemap\.xml/i.test(robots)) warning('robots', 'robots.txt does not advertise the canonical sitemap URL.')
 
 for (const page of pages) auditPage(page)
 
