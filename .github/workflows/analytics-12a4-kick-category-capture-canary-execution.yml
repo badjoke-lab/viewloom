@@ -1,70 +1,31 @@
 name: Analytics 12A4 Kick Category Capture Canary Execution Retired
 
+# Historical retired execution record. Frozen evidence, contracts, and verifier
+# scripts remain in the repository; this Actions entry point is archival only.
 on:
-  pull_request:
-    branches: [main]
-    types: [opened, reopened, synchronize]
-    paths:
-      - '.github/workflows/analytics-12a4-kick-category-capture-canary-execution.yml'
-      - 'docs/audits/12a2-current-gate-state.json'
-      - 'docs/audits/12a4-kick-category-capture-canary-execution-contract.json'
-      - 'docs/audits/12a4-kick-category-capture-canary-trigger.json'
-      - 'docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json'
-      - 'docs/work-in-progress/phase12a4-kick-category-capture-canary-execution.md'
-      - 'scripts/check-12a4-kick-category-capture-canary-execution-package-scope.mjs'
-      - 'scripts/inspect-12a4-kick-category-capture-canary-trigger.mjs'
-      - 'scripts/run-12a4-kick-category-capture-canary-execution.mjs'
-      - 'scripts/test-12a4-kick-category-capture-canary-execution.mjs'
-      - 'scripts/verify-12a4-kick-category-capture-canary-execution-package.mjs'
-      - 'scripts/verify-development-policy.mjs'
-      - 'workers/collector-kick/src/entry-category-canary.ts'
-      - 'workers/collector-kick/wrangler.category-canary.toml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: analytics-12a4-kick-category-capture-canary-execution-retired-${{ github.event.pull_request.number || github.ref }}
+  group: analytics-12a4-kick-category-capture-canary-execution-retired-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  verify-retired-package:
+  historical-record:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - name: Verify retirement scope
-        if: github.event_name == 'pull_request'
-        run: node scripts/check-12a4-kick-category-capture-canary-execution-package-scope.mjs
-      - name: Verify accepted and retired execution package
-        run: node scripts/verify-12a4-kick-category-capture-canary-execution-package.mjs
-      - name: Verify trigger, phase, storage, and binding fixtures
-        run: node scripts/test-12a4-kick-category-capture-canary-execution.mjs
-      - name: Verify canonical development policy
-        run: node scripts/verify-development-policy.mjs
-      - name: Bundle normal Kick collector without deploying
-        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-kick/wrangler.toml
-      - name: Bundle disabled Kick canary collector without deploying
-        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/collector-kick/wrangler.category-canary.toml
       - name: Publish retirement summary
-        if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4 Kick category canary execution retired'
+            echo '## ViewLoom 12A-4 Kick category canary execution — retired record'
             echo
             echo '- Final read-only artifact: 8399137444'
-            echo '- Canary bindings absent: yes'
-            echo '- Permanent category flag present: no'
-            echo '- Exact trigger status: consumed and retired'
-            echo '- Push production start: removed'
-            echo '- Hourly scheduled monitor/finalizer: removed'
+            echo '- Historical contracts/verifiers remain in the repository'
+            echo '- Exact trigger: consumed and retired'
+            echo '- Automatic PR gate: retired'
             echo '- Production jobs: removed'
-            echo '- Cloudflare credentials referenced: no'
-            echo '- Worker deployment: dry-run only'
+            echo '- Cloudflare credentials: no'
             echo '- Twitch automatic start: no'
           } >> "$GITHUB_STEP_SUMMARY"
