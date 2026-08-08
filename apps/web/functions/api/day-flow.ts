@@ -1,4 +1,5 @@
 import type { Env } from '../_db/env'
+import { projectDayFlowCategory } from './day-flow-category-core.mjs'
 
 type RangeMode = 'today' | 'rolling24h' | 'yesterday' | 'date'
 type MetricMode = 'volume' | 'share'
@@ -12,12 +13,25 @@ type SnapshotRow = {
   source_mode: string
 }
 
+type CategoryRow = {
+  category_id: string
+  category_name: string
+  contract_version: string
+}
+
 type Item = {
   channelLogin?: string
   displayName?: string
   title?: string
   url?: string
   viewers?: number
+}
+
+type StreamValues = {
+  name: string
+  title: string
+  url: string
+  values: number[]
 }
 
 type Band = {
@@ -46,6 +60,7 @@ type Band = {
 
 const TOP_DEFAULT = 20
 const NO_ACTIVITY: string | null = null
+const CATEGORY_CONTRACT_VERSION = 'category-source-v1'
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const url = new URL(request.url)
@@ -53,6 +68,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const bucketSize = normalizeBucket(url.searchParams.get('bucket'))
   const valueMode = normalizeMetric(url.searchParams.get('metric') ?? url.searchParams.get('mode'))
   const period = buildPeriod(url)
+  const categoryCandidateRequested = url.searchParams.has('category')
+  const requestedCategory = normalizeCategory(url.searchParams.get('category'))
 
   try {
     const result = await env.DB_TWITCH_HOT.prepare(`
@@ -61,9 +78,29 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       WHERE provider = ? AND bucket_minute >= ? AND bucket_minute <= ?
       ORDER BY bucket_minute ASC
     `).bind('twitch', period.windowStart, period.windowEnd).all<SnapshotRow>()
+    const rows = result.results ?? []
 
-    return Response.json(buildPayload(result.results ?? [], period, topN, bucketSize, valueMode), {
-      headers: { 'cache-control': period.rangeMode === 'today' || period.rangeMode === 'rolling24h' ? 'no-store' : 'public, max-age=300' },
+    // Keep the normal Day Flow route on the exact pre-category code path.
+    if (!categoryCandidateRequested) {
+      return Response.json(buildPayload(rows, period, topN, bucketSize, valueMode), {
+        headers: { 'cache-control': period.rangeMode === 'today' || period.rangeMode === 'rolling24h' ? 'no-store' : 'public, max-age=300' },
+      })
+    }
+
+    const dictionary = await env.DB_TWITCH_HOT.prepare(`
+      SELECT category_id, category_name, contract_version
+      FROM provider_category_dictionary
+      WHERE provider = ?
+      ORDER BY category_name COLLATE NOCASE, category_id
+    `).bind('twitch').all<CategoryRow>()
+    const categoryNames = new Map(
+      (dictionary.results ?? [])
+        .filter((row) => row.contract_version === CATEGORY_CONTRACT_VERSION)
+        .map((row) => [row.category_id, row.category_name]),
+    )
+
+    return Response.json(buildCategoryCandidatePayload(rows, period, topN, bucketSize, valueMode, requestedCategory, categoryNames), {
+      headers: { 'cache-control': 'no-store' },
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Day Flow API failed.'
@@ -88,6 +125,25 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       totalViewersByBucket: [],
       bands: [],
       activity: { available: false, note: 'Activity unavailable because the API request failed.' },
+      ...(categoryCandidateRequested ? {
+        categoryFilter: {
+          implementationState: 'hidden_candidate',
+          publicExposureAuthorized: false,
+          contractVersion: null,
+          selectedCategory: requestedCategory,
+          state: 'category_unavailable',
+          coverageState: 'unavailable',
+          filterBeforeTopN: true,
+          membershipEvaluation: 'per_observed_snapshot',
+          latestCategoryBackProjectionAllowed: false,
+          fullShareDenominator: 'all_observed_twitch_viewers_per_bucket',
+          topFocusShareDenominator: 'displayed_selected_category_top_n_viewers_per_bucket',
+          availableCategories: [],
+          bucketCoverage: [],
+          coverageCounts: { observed: 0, partial: 0, unavailable: 0 },
+        },
+        availableCategories: [],
+      } : {}),
       error: { code: 'day_flow_api_error', message },
     }, { status: 500 })
   }
@@ -97,7 +153,7 @@ function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod
   const buckets = buildBuckets(period.windowStart, period.windowEnd, bucketSize)
   const bucketIndex = new Map(buckets.map((bucket, index) => [bucket, index]))
   const totals = Array<number>(buckets.length).fill(0)
-  const streams = new Map<string, { name: string; title: string; url: string; values: number[] }>()
+  const streams = new Map<string, StreamValues>()
   let demoRows = 0
   let lastUpdated = rows.at(-1)?.collected_at ?? new Date().toISOString()
 
@@ -123,13 +179,109 @@ function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod
     }
   }
 
+  return finishPayload({ rows, period, topN, bucketSize, valueMode, buckets, totals, streams, demoRows, lastUpdated })
+}
+
+function buildCategoryCandidatePayload(
+  rows: SnapshotRow[],
+  period: ReturnType<typeof buildPeriod>,
+  topN: 10 | 20 | 50,
+  bucketSize: BucketSize,
+  valueMode: MetricMode,
+  requestedCategory: string,
+  categoryNames: Map<string, string>,
+) {
+  const buckets = buildBuckets(period.windowStart, period.windowEnd, bucketSize)
+  const projection = projectDayFlowCategory({
+    rows,
+    buckets,
+    bucketSize,
+    selectedCategory: requestedCategory,
+    categoryNames,
+  })
+  const streams = new Map<string, StreamValues>(projection.streams.map((stream) => [stream.id, {
+    name: stream.name,
+    title: stream.title,
+    url: stream.url,
+    values: stream.values,
+  }]))
+  const demoRows = rows.filter((row) => row.source_mode === 'demo').length
+  const lastUpdated = rows.at(-1)?.collected_at ?? new Date().toISOString()
+  const base = finishPayload({
+    rows,
+    period,
+    topN,
+    bucketSize,
+    valueMode,
+    buckets,
+    totals: projection.totals,
+    streams,
+    demoRows,
+    lastUpdated,
+    suppressOthers: projection.categoryFilter.state === 'unknown_category' || projection.categoryFilter.state === 'category_unavailable',
+  })
+  const counts = projection.categoryFilter.coverageCounts
+  const stateLabel = projection.categoryFilter.state.replaceAll('_', ' ')
+
+  return {
+    ...base,
+    note: 'ViewLoom hidden Twitch Day Flow category candidate generated from existing observed minute snapshots.',
+    coverageNote: `${base.coverageNote} Category ${stateLabel}; category bucket coverage observed=${counts.observed}, partial=${counts.partial}, unavailable=${counts.unavailable}.`,
+    partialNote: projection.categoryFilter.coverageState === 'partial'
+      ? 'Category metadata is partial for part of this Day Flow window. Missing category metadata is not interpreted as zero category viewers.'
+      : projection.categoryFilter.coverageState === 'unavailable'
+        ? 'Category metadata is unavailable for this Day Flow window. No selected-category zero is inferred.'
+        : base.partialNote,
+    categoryFilter: {
+      implementationState: 'hidden_candidate',
+      publicExposureAuthorized: false,
+      ...projection.categoryFilter,
+    },
+    availableCategories: projection.categoryFilter.availableCategories,
+    notes: [
+      'category_candidate=true',
+      'category_implementation_state=hidden_candidate',
+      'category_public_exposure=false',
+      `category_selected=${requestedCategory}`,
+      `category_filter_state=${projection.categoryFilter.state}`,
+      `category_coverage_state=${projection.categoryFilter.coverageState}`,
+      'category_membership=per_observed_snapshot',
+      'category_latest_back_projection=false',
+      'category_filter_before_top_n=true',
+      'category_full_share_denominator=all_observed_twitch_viewers_per_bucket',
+      'category_top_focus_share_denominator=displayed_selected_category_top_n_viewers_per_bucket',
+      `category_bucket_observed=${counts.observed}`,
+      `category_bucket_partial=${counts.partial}`,
+      `category_bucket_unavailable=${counts.unavailable}`,
+    ],
+  }
+}
+
+function finishPayload(options: {
+  rows: SnapshotRow[]
+  period: ReturnType<typeof buildPeriod>
+  topN: 10 | 20 | 50
+  bucketSize: BucketSize
+  valueMode: MetricMode
+  buckets: string[]
+  totals: number[]
+  streams: Map<string, StreamValues>
+  demoRows: number
+  lastUpdated: string
+  suppressOthers?: boolean
+}) {
+  const { rows, period, topN, bucketSize, valueMode, buckets, totals, streams, demoRows, lastUpdated, suppressOthers = false } = options
   const ranked = [...streams.entries()]
     .map(([id, stream]) => toBand(id, stream, buckets, totals, bucketSize))
     .sort((a, b) => b.totalViewerMinutes - a.totalViewerMinutes)
   const topBands = ranked.slice(0, topN)
   const topIds = new Set(topBands.map((band) => band.streamerId))
   const others = buildOthersBand(streams, topIds, buckets, totals, bucketSize)
-  const bands = others.totalViewerMinutes > 0 || topBands.length > 0 ? [...topBands, others] : topBands
+  const bands = suppressOthers
+    ? []
+    : others.totalViewerMinutes > 0 || topBands.length > 0
+      ? [...topBands, others]
+      : topBands
   const nonZeroBuckets = totals.filter((value) => value > 0).length
   const source = demoRows > 0 && demoRows >= Math.max(1, rows.length / 2) ? 'demo' : 'api'
   const state = rows.length === 0 ? 'empty' : nonZeroBuckets < Math.max(1, Math.ceil(buckets.length * 0.2)) ? 'partial' : 'ok'
@@ -189,7 +341,7 @@ function buildPayload(rows: SnapshotRow[], period: ReturnType<typeof buildPeriod
   }
 }
 
-function toBand(id: string, stream: { name: string; title: string; url: string; values: number[] }, buckets: string[], totals: number[], bucketSize: BucketSize): Band {
+function toBand(id: string, stream: StreamValues, buckets: string[], totals: number[], bucketSize: BucketSize): Band {
   const peakViewers = Math.max(0, ...stream.values)
   const observedIndexes = stream.values.map((value, index) => value > 0 ? index : -1).filter((index) => index >= 0)
   const totalViewerMinutes = stream.values.reduce((sum, value) => sum + value * bucketSize, 0)
@@ -305,6 +457,11 @@ function normalizeMetric(value: unknown): MetricMode {
 
 function normalizeDate(value: string | null): string {
   return /^\d{4}-\d{2}-\d{2}$/.test(value ?? '') ? String(value) : new Date().toISOString().slice(0, 10)
+}
+
+function normalizeCategory(value: string | null): string {
+  const normalized = value?.trim() ?? ''
+  return !normalized || normalized.toLowerCase() === 'all' ? 'all' : normalized.slice(0, 160)
 }
 
 function safeNumber(value: unknown): number {
