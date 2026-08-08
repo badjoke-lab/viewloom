@@ -1,47 +1,25 @@
-name: Analytics 12A4 Kick Schema Recovery Archive
+name: Analytics 12A4 Kick Schema Recovery Archive Retired
 
+# Historical Kick schema-recovery archive. Frozen triggers/evidence remain in
+# the repository; this Actions entry point is archival only.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - '.github/workflows/analytics-12a4-kick-category-schema-recovery.yml'
-      - 'docs/audits/12a4-kick-category-schema-recovery-trigger.json'
-      - 'docs/audits/12a4-category-schema-recovery-audit-evidence.json'
-      - 'docs/audits/12a2-current-gate-state.json'
-      - 'scripts/verify-development-policy.mjs'
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: analytics-12a4-kick-schema-recovery-archive-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  verify-retired-state:
+  historical-record:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - name: Verify consumed Kick recovery and final schemas
-        shell: bash
-        run: |
-          set -euo pipefail
-          [[ $(jq -r '.status' docs/audits/12a4-kick-category-schema-recovery-trigger.json) == 'consumed_and_retired' ]]
-          [[ $(jq -r '.retired' docs/audits/12a4-kick-category-schema-recovery-trigger.json) == 'true' ]]
-          [[ $(jq -r '.providers.twitch.schemaState' docs/audits/12a4-category-schema-recovery-audit-evidence.json) == 'complete' ]]
-          [[ $(jq -r '.providers.kick.schemaState' docs/audits/12a4-category-schema-recovery-audit-evidence.json) == 'complete' ]]
-          node scripts/verify-development-policy.mjs
       - name: Publish archive boundary
         run: |
           {
-            echo '## 12A-4 Kick recovery archive'
+            echo '## 12A-4 Kick schema recovery — retired record'
             echo
-            echo '- Kick recovery trigger: retired'
-            echo '- Twitch execution in Kick recovery: none'
-            echo '- Kick schema: complete'
-            echo '- Category capture: disabled'
+            echo '- Historical recovery trigger/evidence remain in the repository'
+            echo '- Kick schema was accepted complete'
+            echo '- Automatic PR gate: retired'
+            echo '- Production execution: no'
+            echo '- Category capture authorization from this workflow: no'
           } >> "$GITHUB_STEP_SUMMARY"
