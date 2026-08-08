@@ -8,6 +8,7 @@ on:
       - 'apps/web/functions/api/day-flow-category-core.mjs'
       - 'apps/web/functions/api/day-flow-category-core.d.mts'
       - 'apps/web/src/live/day-flow-category-preview-entry.ts'
+      - 'apps/web/src/live/day-flow-twitch-entry.ts'
       - 'apps/web/twitch/day-flow/index.html'
       - 'apps/web/scripts/day-flow-category-core.test.mjs'
       - 'apps/web/scripts/day-flow-category-preview-browser.mjs'
@@ -60,7 +61,7 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(apps/web/functions/api/day-flow\.ts|apps/web/functions/api/day-flow-category-core\.(mjs|d\.mts)|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/twitch/day-flow/index\.html|apps/web/scripts/day-flow-category-core\.test\.mjs|apps/web/scripts/day-flow-category-preview-browser\.mjs|scripts/verify-12a6-twitch-day-flow-category-candidate\.mjs|\.github/workflows/analytics-12a6-twitch-day-flow-category-candidate\.yml)$'
+          allowed='^(apps/web/functions/api/day-flow\.ts|apps/web/functions/api/day-flow-category-core\.(mjs|d\.mts)|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-twitch-entry\.ts|apps/web/twitch/day-flow/index\.html|apps/web/scripts/day-flow-category-core\.test\.mjs|apps/web/scripts/day-flow-category-preview-browser\.mjs|scripts/verify-12a6-twitch-day-flow-category-candidate\.mjs|\.github/workflows/analytics-12a6-twitch-day-flow-category-candidate\.yml)$'
           for path in "${changed[@]}"; do
             if ! [[ "$path" =~ $allowed ]]; then
               echo "Unexpected candidate change: $path" >&2
@@ -126,6 +127,7 @@ jobs:
             echo '- Full Share denominator: all observed Twitch viewers'
             echo '- Top Focus Share denominator: displayed Top N'
             echo '- Coverage gaps: observed / partial / unavailable'
+            echo '- Twitch bootstrap: preview boundary before shell hydration'
             echo '- Normal-route category controls: no'
             echo '- Kick category controls: no'
             echo '- Public cutover authorization: no'
