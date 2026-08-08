@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-final-retirement-v1",
+  "status": "retired_on_merge",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "finalOutcome": "accepted",
+  "acceptance": "docs/audits/12a5-twitch-replacement-audit-final-acceptance.json",
+  "evidence": "docs/audits/12a5-twitch-replacement-audit-final-evidence.json",
+  "execution": {
+    "triggerPr": 735,
+    "triggerMergeSha": "ccef802fc33a045b13c420331b64ef352b430e6c",
+    "workflowRunId": 31241374639,
+    "finalJobId": 93063011226,
+    "artifactId": 9017123435,
+    "artifactDigest": "sha256:fc876b48c35c928661ec55449cd3fd73e58057c9b1b1f1260cc13513a2172401"
+  },
+  "retiredPaths": [
+    "docs/audits/12a5-twitch-replacement-audit-final-trigger.json",
+    ".github/workflows/analytics-12a5-twitch-replacement-audit-final.yml"
+  ],
+  "retainedAuthorities": [
+    "docs/audits/12a5-twitch-replacement-audit-final-execution-package-contract.json",
+    "docs/audits/12a5-twitch-replacement-audit-final-trigger-contract.json",
+    "docs/audits/12a5-twitch-replacement-audit-final-evidence.json",
+    "docs/audits/12a5-twitch-replacement-audit-final-acceptance.json",
+    "scripts/run-12a5-twitch-replacement-seven-day-audit.mjs",
+    "scripts/test-12a5-twitch-replacement-seven-day-audit.mjs",
+    "scripts/verify-12a5-twitch-replacement-audit-final-execution-package.mjs"
+  ],
+  "boundaries": {
+    "rerunAuthorized": false,
+    "automaticClockResetAuthorized": false,
+    "workerDeploymentPerformed": false,
+    "d1MutationPerformed": false,
+    "bindingChanged": false,
+    "cadenceChanged": false,
+    "retentionChanged": false,
+    "backfillPerformed": false,
+    "kickChanged": false,
+    "publicCategoryUiChanged": false,
+    "publicCategoryUiAuthorized": false
+  },
+  "nextGate": "Use the frozen accepted evidence in a separate final-mode decision."
+}
