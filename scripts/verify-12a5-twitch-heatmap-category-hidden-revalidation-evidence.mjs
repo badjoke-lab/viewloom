@@ -58,6 +58,7 @@ assert.equal(decision.authorization.hiddenTwitchFilterRevalidationAuthorized, tr
 assert.equal(decision.authorization.publicTwitchCategoryUiAuthorized, false)
 
 assert.equal(acceptance.status, 'accepted_on_merge')
+assert.equal(acceptance.acceptancePr, 739)
 assert.equal(acceptance.package.pr, 738)
 assert.equal(acceptance.package.mergeSha, 'fadfa77f57b1373ac52e01e4cc0dda0ec3541973')
 assert.equal(acceptance.execution.workflowRunId, 31242140146)
@@ -86,6 +87,7 @@ for (const key of [
 
 console.log(JSON.stringify({
   status: 'pass',
+  acceptancePr: acceptance.acceptancePr,
   scenarios: evidence.scenarios.length,
   categoryOptions: hidden.checks.categoryOptions,
   selectedCategory: hidden.checks.selectedCategory,
