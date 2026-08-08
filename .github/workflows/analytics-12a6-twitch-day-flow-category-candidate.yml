@@ -99,7 +99,20 @@ jobs:
         working-directory: apps/web
         env:
           DAYFLOW_CATEGORY_ORIGIN: http://127.0.0.1:4173
-        run: node scripts/day-flow-category-preview-browser.mjs
+        run: |
+          set -o pipefail
+          mkdir -p /tmp/dayflow-category-browser
+          node scripts/day-flow-category-preview-browser.mjs 2>&1 | tee /tmp/dayflow-category-browser/browser.log
+
+      - name: Upload browser diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a6-twitch-day-flow-category-candidate-browser
+          path: |
+            /tmp/dayflow-category-browser/**
+            /tmp/dayflow-category-preview.log
+          if-no-files-found: warn
 
       - name: Publish candidate boundary
         if: always()
