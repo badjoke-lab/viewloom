@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-replacement-audit-final-trigger-contract-v1",
-  "status": "candidate",
+  "status": "accepted",
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
@@ -16,8 +16,8 @@
     "executeNotBefore": "2026-08-07T17:00:00.000Z"
   },
   "acceptedPackageIdentity": {
-    "packagePr": null,
-    "packageMergeSha": null
+    "packagePr": 733,
+    "packageMergeSha": "8ac77609d09e91c65e03b7a9a79c37f8f6b5f79d"
   },
   "readOnlyBoundary": {
     "cloudflareApiMethods": ["GET"],
@@ -35,5 +35,5 @@
     "thresholdChangeAuthorized": false,
     "clockResetAuthorized": false
   },
-  "nextGate": "A separate acceptance PR must set this contract to accepted and freeze the final execution package PR and merge SHA before the one-file trigger may be created."
+  "nextGate": "After this acceptance is merged, create only the exact one-file final trigger pinned to PR #733 merge 8ac77609d09e91c65e03b7a9a79c37f8f6b5f79d."
 }

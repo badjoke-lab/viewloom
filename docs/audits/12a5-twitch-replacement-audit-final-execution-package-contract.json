@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-replacement-audit-final-execution-package-v1",
-  "status": "ready_for_validation",
+  "status": "accepted",
   "phase": "12A-5B-R2",
   "parentTrackingIssue": 623,
   "hiddenUiTrackingIssue": 635,
@@ -65,11 +65,11 @@
     "temporaryExecutionPathRetirementRequired": true
   },
   "acceptance": {
-    "packagePr": null,
-    "packageCandidateHeadSha": null,
-    "packageMergeSha": null,
-    "validationRunId": null,
-    "validationJobId": null
+    "packagePr": 733,
+    "packageCandidateHeadSha": "c94f1f15dfeb1140aae4c081d77c225338d81833",
+    "packageMergeSha": "8ac77609d09e91c65e03b7a9a79c37f8f6b5f79d",
+    "validationRunId": 31241124423,
+    "validationJobId": 93062137308
   },
-  "nextGate": "Validate this dormant final execution package without production credentials or execution, then separately accept its exact identity before creating the one-file final trigger."
+  "nextGate": "Create the exact one-file final trigger only after this acceptance is merged to main; passing the final audit still requires separate evidence freeze and acceptance."
 }
