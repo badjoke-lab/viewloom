@@ -1,7 +1,7 @@
 name: Analytics 12A4 Kick Canary Expiry Binding Cleanup Retired
 
-# Historical retired cleanup record. This is manual-only so its exact old PR
-# scope contract cannot block unrelated current development.
+# Historical retired cleanup record. Accepted contracts, evidence, and verifier
+# scripts remain in the repository; this Actions entry point is archival only.
 on:
   workflow_dispatch:
 
@@ -13,31 +13,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify-retired-cleanup:
+  historical-record:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - name: Verify accepted and retired cleanup package
-        run: node scripts/verify-12a4-kick-canary-expiry-binding-cleanup-package.mjs
-      - name: Bundle canonical normal Kick collector without deploying
-        run: pnpm dlx wrangler@4 deploy --dry-run --outdir artifacts/12a4-kick-canary-expiry-binding-cleanup/dry-run --config workers/collector-kick/wrangler.toml
       - name: Publish retirement summary
-        if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4 Kick expired binding cleanup retired'
+            echo '## ViewLoom 12A-4 Kick expired binding cleanup — retired record'
             echo
             echo '- Cleanup package: PR #586'
             echo '- Exact trigger: PR #587'
+            echo '- Historical contracts/verifiers remain in the repository'
             echo '- Automatic PR gate: retired'
             echo '- Production push trigger: removed'
             echo '- Production deployment job: removed'
-            echo '- Cloudflare credentials referenced: no'
-            echo '- Worker deployment: dry-run only'
+            echo '- Cloudflare credentials: no'
             echo '- Trigger rearm authorized: no'
           } >> "$GITHUB_STEP_SUMMARY"
