@@ -1,51 +1,25 @@
-name: Analytics 12A4 Category Schema Apply Archive
+name: Analytics 12A4 Category Schema Apply Archive Retired
 
+# Historical controlled schema-apply execution archive. Accepted triggers,
+# evidence, contracts, and verifier scripts remain; this entry point is archival.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - '.github/workflows/analytics-12a4-category-controlled-schema-apply-execution.yml'
-      - 'docs/audits/12a4-category-controlled-schema-apply-trigger.json'
-      - 'docs/audits/12a4-category-schema-recovery-audit-evidence.json'
-      - 'docs/audits/12a2-current-gate-state.json'
-      - 'docs/work-in-progress/phase12a4-category-execution-cost-probe.md'
-      - 'scripts/verify-development-policy.mjs'
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: analytics-12a4-category-schema-apply-archive-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  verify-retired-state:
+  historical-record:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - name: Verify consumed trigger and accepted schemas
-        shell: bash
-        run: |
-          set -euo pipefail
-          [[ $(jq -r '.status' docs/audits/12a4-category-controlled-schema-apply-trigger.json) == 'consumed_and_retired' ]]
-          [[ $(jq -r '.retired' docs/audits/12a4-category-controlled-schema-apply-trigger.json) == 'true' ]]
-          [[ $(jq -r '.providers.twitch.schemaState' docs/audits/12a4-category-schema-recovery-audit-evidence.json) == 'complete' ]]
-          [[ $(jq -r '.providers.kick.schemaState' docs/audits/12a4-category-schema-recovery-audit-evidence.json) == 'complete' ]]
-          node scripts/verify-12a4-category-schema-recovery-audit-evidence.mjs \
-            docs/audits/12a4-category-schema-recovery-audit-evidence.json --require-pass
-          node scripts/verify-development-policy.mjs
       - name: Publish archive boundary
         run: |
           {
-            echo '## 12A-4 schema execution archive'
+            echo '## 12A-4 category schema apply — retired record'
             echo
-            echo '- Production trigger: retired'
-            echo '- Twitch schema: complete'
-            echo '- Kick schema: complete'
-            echo '- Category capture: disabled'
-            echo '- Cloudflare credentials: not used'
+            echo '- Historical trigger/evidence remain in the repository'
+            echo '- Twitch schema: accepted complete'
+            echo '- Kick schema: accepted complete'
+            echo '- Automatic PR gate: retired'
+            echo '- Production execution: no'
           } >> "$GITHUB_STEP_SUMMARY"

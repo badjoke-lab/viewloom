@@ -1,21 +1,23 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Last updated: 2026-08-02
+Last updated: 2026-08-08
 
 ## Current execution state
 
 ```text
-Phase 12A-5B-R2 Twitch category seven-day stability accumulation
-Canonical runtime gate viewloom-12a2-current-gate-state-v33
-Semantic handling accepted PR #699 / merge ec4792712c24c5e1ed05cfa8a0ba5e600e748b8e
-Revised stability clock accepted PR #700 / merge d2316f10ba970818a47605a76a9ee9f235c517a4
-Accepted window [2026-07-31T17:00:00.000Z, 2026-08-07T17:00:00.000Z)
-JST window 2026-08-01 02:00 to 2026-08-08 02:00
-Expected five-minute slots 2016
-Current gate active accumulation on the unchanged Twitch collector
-Manual start action required no
-Public Twitch category-filter exposure authorized no
+Phase 12A-5B-R2 Twitch category stability + Heatmap public rollout complete
+Historical runtime gate viewloom-12a2-current-gate-state-v33 retained
+Final audit accepted PR #736
+Final-mode decision accepted PR #737
+Hidden production revalidation accepted PR #739
+Public cutover PR #740
+Mobile overflow repair PR #741
+Accepted production SHA b006f45d0676c9ff3e05e5d6727458e43802de53
+Pages deploy run 31244148642 success
+Public production acceptance run 31244148651 success
+Twitch public category-filter exposure active
+Kick category UI unauthorized
 ```
 
 ## Read first
@@ -23,14 +25,16 @@ Public Twitch category-filter exposure authorized no
 1. `docs/operations/development-and-deployment-policy.md`
 2. `docs/product/current-roadmap.md`
 3. `docs/product/current-schedule.md`
-4. `docs/audits/12a2-current-gate-state.json`
-5. `docs/audits/12a5-twitch-category-source-v2-semantic-clock-decision.json`
-6. `docs/audits/12a5-twitch-category-source-v2-stability-clock-acceptance.json`
-7. `docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json`
-8. `docs/audits/12a5-twitch-category-source-v2-observation-success-evidence.json`
-9. `docs/audits/12a5-twitch-category-source-v2-observation-execution-path-retirement.json`
-10. `docs/product/twitch-replacement-seven-day-audit-spec.md`
-11. active WIP and affected feature specification/plan
+4. `docs/audits/12a2-current-gate-state.json` — immutable historical accumulation gate
+5. `docs/audits/12a5-twitch-replacement-audit-final-evidence.json`
+6. `docs/audits/12a5-twitch-replacement-audit-final-acceptance.json`
+7. `docs/audits/12a5-twitch-category-final-mode-decision.json`
+8. `docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-evidence.json`
+9. `docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-acceptance.json`
+10. `docs/audits/12a5-twitch-heatmap-category-public-cutover-decision.json`
+11. `docs/audits/12a5-twitch-heatmap-category-public-production-evidence.json`
+12. `docs/audits/12a5-twitch-heatmap-category-public-cutover-acceptance.json`
+13. affected feature specification/plan and current WIP/handoff
 
 ## Accepted permanent product records
 
@@ -38,20 +42,23 @@ Public Twitch category-filter exposure authorized no
 - `docs/product/watchlist-v1-implementation-plan.md`
 - `docs/operations/watchlist-production-acceptance-2026-06-25.md`
 
-## Accepted Twitch category decisions
+## Accepted Twitch category rollout
 
-- The successful v2 observation remains frozen under run/job/artifact `30620512044` / `91123756273` / `8789385200`.
-- PR #699 accepted provider-scoped semantics without synthetic, name-only, or cross-provider mapping.
-- PR #700 accepted a half-open seven-day window from `2026-07-31T17:00:00.000Z` through `2026-08-07T17:00:00.000Z`.
-- The existing five-minute collector continues unchanged; no start workflow, new cron, deployment, checkpoint, D1 mutation, binding change, or operator action was required.
-- Final read-only mode remains prohibited before the end boundary.
+- The final seven-day audit accepted `2016 / 2016` expected slots with coverage `1.0`, zero missing buckets, zero consecutive missing buckets, category-reference coverage `0.995353`, zero unresolved category IDs, and zero Twitch/Kick leakage.
+- PR #737 authorized hidden Twitch Heatmap filter revalidation only.
+- Five hidden production scenarios passed and were accepted in PR #739.
+- PR #740 exposed Category + Top on the normal `/twitch/heatmap/` route.
+- The first deployed public candidate was correctly rejected for mobile overflow `474 / 390`.
+- PR #741 repaired only the intrinsic width of the public controls.
+- Accepted production SHA `b006f45d0676c9ff3e05e5d6727458e43802de53` deployed successfully in run `31244148642`.
+- Public production acceptance run `31244148651` passed all four scenarios, including 390px mobile with `scrollWidth=390` and Kick isolation.
 
 ## Current order
 
-1. Accumulate only buckets at or after the accepted start using the unchanged Twitch collector.
-2. Preserve collector, D1 schema, bindings, cadence, retention, category semantics, Kick separation, and public fallback.
-3. At or after `2026-08-07T17:00:00.000Z`, run the governed final read-only audit for all 2016 expected slots.
-4. Freeze and separately accept evidence before final-mode or public category-filter decisions.
+1. Freeze and preserve the accepted public rollout evidence/provenance.
+2. Close completed issues #659 and #635 after the closeout PR merges.
+3. Keep parent category program #623 open.
+4. Require separate authorization for Day Flow category UI, History category UI, and Kick category UI.
 
 ## Operational runbooks
 
@@ -59,9 +66,10 @@ Public Twitch category-filter exposure authorized no
 
 ## Invariants
 
-- No observation rerun, checkpoint rerun, historical backfill, threshold relaxation, synthetic mapping, or clock reset.
+- Provider-scoped identity remains `(provider, categoryProviderId)`.
+- Synthetic, name-only, and cross-provider category mapping remain prohibited.
+- No combined-provider category totals or rankings.
 - Twitch/Kick remain separated on existing five-minute cadences.
-- No retention expansion, cross-provider identity, or combined ranking.
-- Public category controls remain unauthorized.
-- Existing unfiltered Heatmap remains the fallback.
+- No retention expansion, category backfill, or implicit D1/binding change from this rollout.
+- Public Twitch Heatmap category controls are accepted; Kick, Day Flow, and History category controls are not authorized by that acceptance.
 - Current-main documents and accepted contracts override cached handoffs.

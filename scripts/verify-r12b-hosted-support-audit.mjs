@@ -17,7 +17,7 @@ for (const route of ['/support/', '/refund-policy/', '/commercial-disclosure/', 
   assert.equal(page.status, 200, `${route}: expected HTTP 200`)
   assert.ok(page.title?.includes('ViewLoom'), `${route}: ViewLoom title missing`)
   assert.ok(page.h1, `${route}: h1 missing`)
-  assert.equal(page.canonical, `https://vl.badjoke-lab.com${route}`, `${route}: canonical mismatch`)
+  assert.equal(page.canonical, `https://www.viewloom.net${route}`, `${route}: canonical mismatch`)
 }
 
 for (const scenario of evidence.scenarios) {

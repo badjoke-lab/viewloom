@@ -13,6 +13,12 @@ const requireText = (path, fragments) => {
   const source = read(path)
   for (const fragment of fragments) if (!source.includes(fragment)) issues.push(`${path}: missing ${fragment}`)
 }
+const forbidText = (path, fragments) => {
+  requireFile(path)
+  if (!existsSync(join(root, path))) return
+  const source = read(path)
+  for (const fragment of fragments) if (source.includes(fragment)) issues.push(`${path}: retired replay path present: ${fragment}`)
+}
 
 for (const path of [
   'docs/product/history-ui-repair-spec.md',
@@ -51,6 +57,8 @@ for (const path of [
   'docs/work-in-progress/p9h7-acceptance.md',
 ]) if (existsSync(join(root, path))) issues.push(`completed temporary note still exists: ${path}`)
 
+// Preserve the exact historical hosted acceptance implementation and evidence
+// verifier so the original Phase 9 result remains reproducible from source.
 requireText('apps/web/scripts/history-ui-h7-hosted-acceptance.mjs', [
   "schema: 'viewloom-history-ui-h7-hosted-acceptance-v1'",
   "phase: 'P9H7'",
@@ -65,14 +73,27 @@ requireText('scripts/verify-history-ui-h7-evidence.mjs', [
   'viewloom-history-ui-h7-hosted-acceptance-v1',
   'assert.equal(evidence.scenarios.length, 5)',
 ])
+
+// P9H7 is now a permanent historical evidence gate. Later accepted History
+// work owns the live production surface, so replaying the old hosted UI
+// acceptance against current production is explicitly prohibited here.
 requireText('.github/workflows/history-ui-h7-acceptance.yml', [
   'name: History UI P9H7 Acceptance',
+  'P9H7 is permanent Phase 9 evidence',
+  'workflow_dispatch:',
+  'repository:',
+  'Verify P9H7 permanent repository contract',
+  'Hosted Preview/production replay jobs are retired.',
+  'Current History production behavior is governed by later History acceptance workflows.',
+  'cancel-in-progress: true',
+])
+forbidText('.github/workflows/history-ui-h7-acceptance.yml', [
   'premerge-production-baseline:',
   'Run P9H7 pre-merge production baseline',
   'history-ui-h7-premerge-production-baseline',
   'Run P9H7 production acceptance',
   'history-ui-h7-production-acceptance',
-  'cancel-in-progress: true',
+  'HISTORY_H7_ORIGIN:',
 ])
 
 if (existsSync(join(root, 'apps/web/scripts/history-ui-h7-preview-trigger.json'))) {
@@ -91,5 +112,6 @@ if (issues.length) {
 }
 console.log('History UI P9H7 permanent verification passed.')
 console.log('- production acceptance remains permanently recorded')
-console.log('- later roadmap phases do not rewrite Phase 9 evidence')
-console.log('- Twitch and Kick acceptance remains separated')
+console.log('- hosted replay jobs are retired and cannot rewrite Phase 9 evidence')
+console.log('- later History acceptance owns current production behavior')
+console.log('- Twitch and Kick historical acceptance remains separated')

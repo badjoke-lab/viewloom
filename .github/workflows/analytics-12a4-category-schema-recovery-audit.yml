@@ -1,49 +1,25 @@
-name: Analytics 12A4 Category Schema Audit Archive
+name: Analytics 12A4 Category Schema Audit Archive Retired
 
+# Historical post-apply audit archive. Frozen evidence and verifier scripts remain
+# in the repository; this Actions entry point is archival only.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - '.github/workflows/analytics-12a4-category-schema-recovery-audit.yml'
-      - 'docs/audits/12a4-category-schema-recovery-audit-trigger.json'
-      - 'docs/audits/12a4-category-schema-recovery-audit-evidence.json'
-      - 'docs/audits/12a2-current-gate-state.json'
-      - 'scripts/verify-development-policy.mjs'
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: analytics-12a4-category-schema-audit-archive-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  verify-retired-state:
+  historical-record:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - name: Verify accepted post-apply audit
-        shell: bash
-        run: |
-          set -euo pipefail
-          [[ $(jq -r '.status' docs/audits/12a4-category-schema-recovery-audit-trigger.json) == 'consumed_and_retired' ]]
-          [[ $(jq -r '.retired' docs/audits/12a4-category-schema-recovery-audit-trigger.json) == 'true' ]]
-          node scripts/verify-12a4-category-schema-recovery-audit-evidence.mjs \
-            docs/audits/12a4-category-schema-recovery-audit-evidence.json --require-pass
-          [[ $(jq -r '.providers.twitch.schemaState' docs/audits/12a4-category-schema-recovery-audit-evidence.json) == 'complete' ]]
-          [[ $(jq -r '.providers.kick.schemaState' docs/audits/12a4-category-schema-recovery-audit-evidence.json) == 'complete' ]]
-          node scripts/verify-development-policy.mjs
       - name: Publish archive boundary
         run: |
           {
-            echo '## 12A-4 post-apply audit archive'
+            echo '## 12A-4 category schema audit — retired record'
             echo
+            echo '- Historical audit evidence remains in the repository'
+            echo '- Provider schemas were accepted complete / complete'
+            echo '- Automatic PR gate: retired'
             echo '- Production read-only trigger: retired'
-            echo '- Provider schemas: complete / complete'
-            echo '- D1 writes during final audit: zero'
-            echo '- Category capture: disabled'
+            echo '- D1 writes from this workflow: none'
           } >> "$GITHUB_STEP_SUMMARY"

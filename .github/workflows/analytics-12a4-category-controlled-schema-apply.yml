@@ -1,69 +1,26 @@
-name: Analytics 12A4 Category Controlled Schema Apply Design Accepted
+name: Analytics 12A4 Category Controlled Schema Apply Design Accepted Retired
 
+# Historical accepted design record. Its contracts, fixtures, and verifier
+# scripts remain available; this Actions entry point is archival only.
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/analytics-12a4-category-controlled-schema-apply.yml'
-      - 'docs/audits/12a4-category-controlled-schema-apply-contract.json'
-      - 'docs/audits/12a4-category-controlled-schema-apply-execution-contract.json'
-      - 'scripts/test-12a4-category-controlled-schema-apply.py'
-      - 'scripts/verify-12a4-category-controlled-schema-apply.mjs'
-      - 'scripts/verify-development-policy.mjs'
-      - 'workers/shared/category-schema.ts'
-      - 'workers/category-schema-apply/**'
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: analytics-12a4-category-controlled-schema-apply-design-accepted-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  verify-accepted-design:
+  historical-record:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Verify accepted controlled schema apply design
-        run: node scripts/verify-12a4-category-controlled-schema-apply.mjs
-
-      - name: Verify canonical development policy
-        run: node scripts/verify-development-policy.mjs
-
-      - name: Preserve local absent, apply, no-op, and partial-schema fixtures
-        run: python scripts/test-12a4-category-controlled-schema-apply.py
-
-      - name: Bundle Twitch temporary schema Worker without deploying
-        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-schema-apply/wrangler.twitch.toml
-
-      - name: Bundle Kick temporary schema Worker without deploying
-        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-schema-apply/wrangler.kick.toml
-
       - name: Publish accepted-design boundary
-        if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4 Controlled Schema Apply Design'
+            echo '## ViewLoom 12A-4 Controlled Schema Apply Design — retired record'
             echo
             echo '- Design accepted on main: PR #528'
             echo '- Design merge SHA: 21be04c8532d9b20ec22f29af6658a2d926b78a1'
-            echo '- Current work: separate execution package'
-            echo '- Production execution from this workflow: no'
+            echo '- Historical contracts/verifiers remain in the repository'
+            echo '- Automatic PR gate: retired'
+            echo '- Production execution: no'
             echo '- Remote D1 schema apply: no'
-            echo '- Category runtime capture: disabled'
-            echo '- Wrangler validation: dry-run only'
           } >> "$GITHUB_STEP_SUMMARY"
