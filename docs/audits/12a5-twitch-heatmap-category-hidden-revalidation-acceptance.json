@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-heatmap-category-hidden-revalidation-acceptance-v1",
+  "status": "accepted_on_merge",
+  "phase": "12A-5B-R2",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 635,
+  "provider": "twitch",
+  "feature": "heatmap_category_filter",
+  "package": {
+    "pr": 738,
+    "mergeSha": "fadfa77f57b1373ac52e01e4cc0dda0ec3541973",
+    "contract": "docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-contract.json"
+  },
+  "execution": {
+    "workflowRunId": 31242140146,
+    "contractJobId": 93064776764,
+    "productionJobId": 93064805414,
+    "artifactId": 9017371935,
+    "artifactName": "analytics-12a5-twitch-category-hidden-production-revalidation",
+    "artifactDigest": "sha256:85dc948e33e052b22961ff12581f7924d854452f0ffeb99b5053a57adf9120b1",
+    "sourceEvidenceJsonSha256": "116c49d3cfb12e31778712bf855f829091e72fe167f586de411db1e4b8341108",
+    "observedAt": "2026-08-08T05:39:55.506Z"
+  },
+  "acceptedResult": {
+    "scenarioCount": 5,
+    "passedScenarioCount": 5,
+    "failureCount": 0,
+    "normalTwitchItemCount": 300,
+    "hiddenDesktopCategoryOptions": 96,
+    "hiddenDesktopInitialItems": 50,
+    "selectedCategory": "263490",
+    "selectedCategoryItems": 14,
+    "top20Items": 14,
+    "mobileCategoryOptions": 96,
+    "unknownCategoryState": "unknown_category",
+    "unknownCategoryItems": 0,
+    "kickItemCount": 100,
+    "desktopOverflow": false,
+    "mobileOverflow": false,
+    "kickMobileOverflow": false,
+    "keyboardPass": true,
+    "providerSeparationPass": true,
+    "normalRoutePublicControlsAbsent": true,
+    "hiddenApiPublicExposureFlagFalse": true
+  },
+  "authorization": {
+    "hiddenRevalidationAcceptedOnMerge": true,
+    "publicCutoverDecisionAuthorized": true,
+    "publicTwitchCategoryUiAuthorized": false,
+    "kickCategoryUiAuthorized": false,
+    "collectorChangeAuthorized": false,
+    "workerDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "bindingChangeAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "retentionChangeAuthorized": false,
+    "backfillAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  },
+  "acceptancePr": null,
+  "nextGate": "Make a separate public-cutover decision and implementation PR. Do not expose Twitch category controls from this evidence-acceptance PR."
+}
