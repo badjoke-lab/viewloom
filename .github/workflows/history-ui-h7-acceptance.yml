@@ -1,23 +1,11 @@
 name: History UI P9H7 Acceptance
 
+# P9H7 is permanent Phase 9 evidence. Later accepted History work changed the
+# live publishing surface, so replaying the old hosted acceptance against the
+# current production UI would incorrectly rewrite a historical gate. Keep the
+# repository/evidence contract active; retire hosted Preview/production reruns.
 on:
   workflow_dispatch:
-    inputs:
-      hosted_origin:
-        description: Hosted origin to verify
-        required: true
-        default: https://www.viewloom.net
-      expected_environment:
-        description: Expected deployment environment
-        required: true
-        default: production
-      expected_branch:
-        description: Expected deployed branch
-        required: true
-        default: main
-      expected_sha:
-        description: Exact deployed SHA
-        required: true
   pull_request:
     paths:
       - 'README.md'
@@ -36,16 +24,6 @@ on:
       - 'scripts/verify-history-ui-h7-evidence.mjs'
       - 'scripts/verify-development-policy.mjs'
       - '.github/workflows/history-ui-h7-acceptance.yml'
-  push:
-    branches:
-      - preview-history-ui-h7-acceptance
-      - main
-    paths:
-      - 'apps/web/scripts/history-ui-h7-hosted-acceptance.mjs'
-      - 'apps/web/scripts/history-ui-h7-preview-trigger.json'
-      - 'scripts/verify-history-ui-h7-acceptance.mjs'
-      - 'scripts/verify-history-ui-h7-evidence.mjs'
-      - '.github/workflows/history-ui-h7-acceptance.yml'
 
 permissions:
   contents: read
@@ -56,7 +34,6 @@ concurrency:
 
 jobs:
   repository:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -76,7 +53,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Verify P9H7 script syntax
+      - name: Verify P9H7 permanent evidence syntax
         run: |
           node --check apps/web/scripts/history-ui-h7-hosted-acceptance.mjs
           node --check scripts/verify-history-ui-h7-acceptance.mjs
@@ -85,7 +62,7 @@ jobs:
       - name: Verify development policy
         run: node scripts/verify-development-policy.mjs
 
-      - name: Verify P9H7 repository contract
+      - name: Verify P9H7 permanent repository contract
         run: node scripts/verify-history-ui-h7-acceptance.mjs
 
       - name: Typecheck web application
@@ -94,183 +71,13 @@ jobs:
       - name: Build web application
         run: pnpm build:web
 
-  premerge-production-baseline:
-    if: github.event_name == 'pull_request'
-    needs: repository
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      HISTORY_H7_ORIGIN: https://www.viewloom.net
-      HISTORY_H7_EXPECTED_ENVIRONMENT: production
-      HISTORY_H7_EXPECTED_BRANCH: main
-      HISTORY_H7_EXPECTED_SHA: ${{ github.event.pull_request.base.sha }}
-      HISTORY_H7_ARTIFACT_DIR: /tmp/history-ui-h7-premerge-production
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.17.1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Verify P9H7 script syntax
+      - name: Publish permanent-evidence boundary
         run: |
-          node --check apps/web/scripts/history-ui-h7-hosted-acceptance.mjs
-          node --check scripts/verify-history-ui-h7-acceptance.mjs
-          node --check scripts/verify-history-ui-h7-evidence.mjs
-
-      - name: Verify development policy
-        run: node scripts/verify-development-policy.mjs
-
-      - name: Verify P9H7 repository contract
-        run: node scripts/verify-history-ui-h7-acceptance.mjs
-
-      - name: Install Playwright
-        working-directory: apps/web
-        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
-
-      - name: Install Chromium
-        working-directory: apps/web
-        run: npx playwright install --with-deps chromium
-
-      - name: Run P9H7 pre-merge production baseline
-        working-directory: apps/web
-        run: node scripts/history-ui-h7-hosted-acceptance.mjs
-
-      - name: Verify pre-merge production evidence
-        run: node scripts/verify-history-ui-h7-evidence.mjs /tmp/history-ui-h7-premerge-production/history-ui-h7-evidence.json production main "$HISTORY_H7_EXPECTED_SHA"
-
-      - name: Upload P9H7 pre-merge production artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: history-ui-h7-premerge-production-baseline
-          path: /tmp/history-ui-h7-premerge-production/**
-          if-no-files-found: warn
-
-  preview:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/preview-history-ui-h7-acceptance'
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      HISTORY_H7_ORIGIN: https://preview-history-ui-h7-acceptance.viewloom.pages.dev
-      HISTORY_H7_EXPECTED_ENVIRONMENT: preview
-      HISTORY_H7_EXPECTED_BRANCH: preview-history-ui-h7-acceptance
-      HISTORY_H7_EXPECTED_SHA: ${{ github.sha }}
-      HISTORY_H7_ARTIFACT_DIR: /tmp/history-ui-h7-preview
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.17.1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Verify development policy
-        run: node scripts/verify-development-policy.mjs
-
-      - name: Verify P9H7 repository contract
-        run: node scripts/verify-history-ui-h7-acceptance.mjs
-
-      - name: Install Playwright
-        working-directory: apps/web
-        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
-
-      - name: Install Chromium
-        working-directory: apps/web
-        run: npx playwright install --with-deps chromium
-
-      - name: Run P9H7 hosted Preview acceptance
-        working-directory: apps/web
-        run: node scripts/history-ui-h7-hosted-acceptance.mjs
-
-      - name: Verify Preview evidence
-        run: node scripts/verify-history-ui-h7-evidence.mjs /tmp/history-ui-h7-preview/history-ui-h7-evidence.json preview preview-history-ui-h7-acceptance "$GITHUB_SHA"
-
-      - name: Upload P9H7 Preview artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: history-ui-h7-preview-acceptance
-          path: /tmp/history-ui-h7-preview/**
-          if-no-files-found: warn
-
-  production:
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      HISTORY_H7_ORIGIN: ${{ inputs.hosted_origin || 'https://www.viewloom.net' }}
-      HISTORY_H7_EXPECTED_ENVIRONMENT: ${{ inputs.expected_environment || 'production' }}
-      HISTORY_H7_EXPECTED_BRANCH: ${{ inputs.expected_branch || 'main' }}
-      HISTORY_H7_EXPECTED_SHA: ${{ inputs.expected_sha || github.sha }}
-      HISTORY_H7_ARTIFACT_DIR: /tmp/history-ui-h7-production
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.17.1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Verify P9H7 script syntax
-        run: |
-          node --check apps/web/scripts/history-ui-h7-hosted-acceptance.mjs
-          node --check scripts/verify-history-ui-h7-acceptance.mjs
-          node --check scripts/verify-history-ui-h7-evidence.mjs
-
-      - name: Verify development policy
-        run: node scripts/verify-development-policy.mjs
-
-      - name: Verify P9H7 repository contract
-        run: node scripts/verify-history-ui-h7-acceptance.mjs
-
-      - name: Install Playwright
-        working-directory: apps/web
-        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
-
-      - name: Install Chromium
-        working-directory: apps/web
-        run: npx playwright install --with-deps chromium
-
-      - name: Run P9H7 production acceptance
-        working-directory: apps/web
-        run: node scripts/history-ui-h7-hosted-acceptance.mjs
-
-      - name: Verify production evidence
-        run: node scripts/verify-history-ui-h7-evidence.mjs /tmp/history-ui-h7-production/history-ui-h7-evidence.json "$HISTORY_H7_EXPECTED_ENVIRONMENT" "$HISTORY_H7_EXPECTED_BRANCH" "$HISTORY_H7_EXPECTED_SHA"
-
-      - name: Upload P9H7 production artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: history-ui-h7-production-acceptance
-          path: /tmp/history-ui-h7-production/**
-          if-no-files-found: warn
+          {
+            echo '## History UI P9H7 permanent acceptance'
+            echo
+            echo '- Phase 9 production acceptance remains permanently recorded.'
+            echo '- Later roadmap phases do not rewrite Phase 9 evidence.'
+            echo '- Hosted Preview/production replay jobs are retired.'
+            echo '- Current History production behavior is governed by later History acceptance workflows.'
+          } >> "$GITHUB_STEP_SUMMARY"
