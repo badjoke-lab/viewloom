@@ -1,0 +1,111 @@
+name: Analytics 12A5 Twitch Category Hidden Production Revalidation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a5-twitch-category-hidden-production-revalidation.yml'
+      - 'docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-contract.json'
+      - 'docs/audits/12a5-twitch-category-final-mode-decision.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-final-evidence.json'
+      - 'apps/web/scripts/twitch-category-hidden-production-revalidation.mjs'
+      - 'apps/web/src/features/twitch-heatmap/category-preview-controls.ts'
+      - 'apps/web/src/live/twitch-heatmap.ts'
+      - 'apps/web/functions/api/twitch-heatmap.ts'
+      - 'scripts/verify-12a5-twitch-category-final-mode-decision.mjs'
+      - 'scripts/verify-12a5-twitch-heatmap-category-controls-package.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a5-twitch-category-hidden-production-revalidation.yml'
+      - 'docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-contract.json'
+      - 'apps/web/scripts/twitch-category-hidden-production-revalidation.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a5-twitch-category-hidden-production-revalidation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify revalidation contract and final-mode authority
+        run: |
+          node --check apps/web/scripts/twitch-category-hidden-production-revalidation.mjs
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs'
+          const contract = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-contract.json', 'utf8'))
+          const decision = JSON.parse(fs.readFileSync('docs/audits/12a5-twitch-category-final-mode-decision.json', 'utf8'))
+          if (contract.status !== 'ready_for_validation') throw new Error('revalidation_contract_status_invalid')
+          if (contract.provider !== 'twitch' || contract.feature !== 'heatmap_category_filter') throw new Error('revalidation_contract_identity_invalid')
+          if (contract.decision.mergeSha !== '70cd79800edbdd2ff6d0cd65193bfb874917d0f4') throw new Error('final_mode_decision_merge_mismatch')
+          if (decision.authorization?.hiddenTwitchFilterRevalidationAuthorized !== true) throw new Error('hidden_revalidation_not_authorized')
+          if (decision.authorization?.publicTwitchCategoryUiAuthorized !== false) throw new Error('public_cutover_must_remain_unauthorized')
+          if (contract.execution.productionOnPullRequest !== false || contract.execution.productionOnMainPush !== true) throw new Error('production_execution_boundary_invalid')
+          if (contract.target.hiddenEntry !== 'categoryPreview=1') throw new Error('hidden_entry_changed')
+          for (const [key, value] of Object.entries(contract.boundary)) {
+            if (key === 'readOnly') {
+              if (value !== true) throw new Error('revalidation_must_be_read_only')
+            } else if (value !== false) {
+              throw new Error(`boundary_${key}_must_remain_false`)
+            }
+          }
+          for (const [key, value] of Object.entries(contract.requiredChecks)) {
+            if (value !== true) throw new Error(`required_check_${key}_not_enabled`)
+          }
+          NODE
+          node scripts/verify-12a5-twitch-category-final-mode-decision.mjs
+          node scripts/verify-12a5-twitch-heatmap-category-controls-package.mjs
+      - name: Typecheck and build web
+        run: |
+          pnpm typecheck:web
+          pnpm build:web
+      - name: Verify normal production HTML still has no public category controls
+        run: |
+          test -f apps/web/dist/twitch/heatmap/index.html
+          ! grep -q 'categoryPreview' apps/web/dist/twitch/heatmap/index.html
+          ! grep -q 'heatmap-category-preview-controls' apps/web/dist/twitch/heatmap/index.html
+          ! grep -q 'data-category-preview-select' apps/web/dist/twitch/heatmap/index.html
+          test -f apps/web/dist/kick/heatmap/index.html
+          ! grep -q 'categoryPreview' apps/web/dist/kick/heatmap/index.html
+          ! grep -q 'data-category-preview-select' apps/web/dist/kick/heatmap/index.html
+
+  production:
+    if: github.event_name == 'push'
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      OUTPUT_DIR: artifacts/12a5-twitch-category-hidden-production-revalidation
+      VIEWLOOM_ORIGIN: https://www.viewloom.net
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - id: browser
+        name: Revalidate hidden Twitch category filter against production
+        continue-on-error: true
+        run: node apps/web/scripts/twitch-category-hidden-production-revalidation.mjs
+      - name: Upload production revalidation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a5-twitch-category-hidden-production-revalidation
+          path: artifacts/12a5-twitch-category-hidden-production-revalidation/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Fail after evidence upload when production revalidation rejects
+        if: steps.browser.outcome != 'success'
+        run: exit 1
