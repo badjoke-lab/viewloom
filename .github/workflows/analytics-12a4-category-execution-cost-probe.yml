@@ -1,30 +1,15 @@
-name: Analytics 12A4 Category Execution Cost Probe Package
+name: Analytics 12A4 Category Execution Cost Probe Package Retired
 
+# Historical 12A4 package retained for auditability. It is no longer a current
+# pull-request gate after the accepted 12A5 Twitch category rollout.
 on:
-  pull_request:
-    branches: [main]
-    types: [opened, reopened, synchronize]
-    paths:
-      - '.github/workflows/analytics-12a4-category-execution-cost-probe.yml'
-      - 'docs/audits/12a2-current-gate-state.json'
-      - 'docs/audits/12a4-category-execution-cost-probe-contract.json'
-      - 'docs/audits/12a4-category-execution-cost-probe-package-contract.json'
-      - 'docs/audits/12a4-category-schema-recovery-audit-evidence.json'
-      - 'scripts/check-12a4-category-execution-cost-probe-package-scope.mjs'
-      - 'scripts/collect-12a4-category-execution-cost-probe-evidence.mjs'
-      - 'scripts/test-12a4-category-execution-cost-probe-evidence.mjs'
-      - 'scripts/test-12a4-category-execution-cost-probe.py'
-      - 'scripts/verify-12a4-category-execution-cost-probe-evidence.mjs'
-      - 'scripts/verify-12a4-category-execution-cost-probe.mjs'
-      - 'scripts/verify-development-policy.mjs'
-      - 'workers/category-cost-probe/**'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: analytics-12a4-category-cost-probe-package-${{ github.event.pull_request.number || github.ref }}
+  group: analytics-12a4-category-cost-probe-package-retired-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -43,10 +28,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Verify original package branch scope
-        if: github.event_name == 'pull_request' && hashFiles('docs/audits/12a4-category-execution-cost-probe-execution-contract.json') == ''
-        run: node scripts/check-12a4-category-execution-cost-probe-package-scope.mjs
-
       - name: Verify accepted bounded execution-cost package
         run: node scripts/verify-12a4-category-execution-cost-probe.mjs
 
@@ -56,29 +37,21 @@ jobs:
       - name: Verify sanitized success and failure evidence fixtures
         run: node scripts/test-12a4-category-execution-cost-probe-evidence.mjs
 
-      - name: Verify canonical development policy
-        run: node scripts/verify-development-policy.mjs
-
       - name: Bundle Twitch bounded probe Worker without deploying
         run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-cost-probe/wrangler.twitch.toml
 
       - name: Bundle Kick bounded probe Worker without deploying
         run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-cost-probe/wrangler.kick.toml
 
-      - name: Publish accepted package boundary
+      - name: Publish retired package boundary
         if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4-5 Accepted Category Execution-Cost Probe Package'
+            echo '## ViewLoom 12A-4-5 Category Execution-Cost Probe Package — historical record'
             echo
             echo '- Tracking issue: #519'
             echo '- Package acceptance: PR #547'
-            echo '- Provider order: Twitch then Kick'
-            echo '- Reserved probe identifiers only: yes'
-            echo '- Cleanup in finally: yes'
-            echo '- Success/failure evidence fixtures: yes'
-            echo '- Twitch Worker deployment: dry-run only'
-            echo '- Kick Worker deployment: dry-run only'
+            echo '- Automatic PR gate: retired after the accepted 12A5 rollout'
             echo '- Production execution from this workflow: no'
             echo '- Cloudflare credentials used: no'
             echo '- Category capture enablement: no'
