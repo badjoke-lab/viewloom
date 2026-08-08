@@ -1,24 +1,15 @@
 name: Analytics 12A4 Kick Canary Expiry Binding Cleanup Retired
 
+# Historical retired cleanup record. This is manual-only so its exact old PR
+# scope contract cannot block unrelated current development.
 on:
-  pull_request:
-    branches: [main]
-    types: [opened, reopened, synchronize]
-    paths:
-      - '.github/workflows/analytics-12a4-kick-canary-expiry-binding-cleanup.yml'
-      - 'docs/audits/12a4-kick-canary-expiry-binding-cleanup-contract.json'
-      - 'docs/audits/12a4-kick-canary-expiry-binding-cleanup-trigger.json'
-      - 'docs/work-in-progress/phase12a4-kick-canary-expiry-binding-cleanup.md'
-      - 'scripts/check-12a4-kick-canary-expiry-binding-cleanup-scope.mjs'
-      - 'scripts/verify-12a4-kick-canary-expiry-binding-cleanup-package.mjs'
-      - 'scripts/verify-development-policy.mjs'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: analytics-12a4-kick-canary-expiry-binding-cleanup-retired-${{ github.event.pull_request.number || github.ref }}
+  group: analytics-12a4-kick-canary-expiry-binding-cleanup-retired-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -31,13 +22,8 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify retirement scope
-        if: github.event_name == 'pull_request'
-        run: node scripts/check-12a4-kick-canary-expiry-binding-cleanup-scope.mjs
       - name: Verify accepted and retired cleanup package
         run: node scripts/verify-12a4-kick-canary-expiry-binding-cleanup-package.mjs
-      - name: Verify canonical development policy
-        run: node scripts/verify-development-policy.mjs
       - name: Bundle canonical normal Kick collector without deploying
         run: pnpm dlx wrangler@4 deploy --dry-run --outdir artifacts/12a4-kick-canary-expiry-binding-cleanup/dry-run --config workers/collector-kick/wrangler.toml
       - name: Publish retirement summary
@@ -48,12 +34,10 @@ jobs:
             echo
             echo '- Cleanup package: PR #586'
             echo '- Exact trigger: PR #587'
-            echo '- Canary bindings absent in final read-only evidence: yes'
-            echo '- Permanent category flag present: no'
+            echo '- Automatic PR gate: retired'
             echo '- Production push trigger: removed'
             echo '- Production deployment job: removed'
             echo '- Cloudflare credentials referenced: no'
             echo '- Worker deployment: dry-run only'
             echo '- Trigger rearm authorized: no'
-            echo '- Twitch change: no'
           } >> "$GITHUB_STEP_SUMMARY"
