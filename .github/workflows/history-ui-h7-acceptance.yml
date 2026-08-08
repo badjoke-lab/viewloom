@@ -6,7 +6,7 @@ on:
       hosted_origin:
         description: Hosted origin to verify
         required: true
-        default: https://vl.badjoke-lab.com
+        default: https://www.viewloom.net
       expected_environment:
         description: Expected deployment environment
         required: true
@@ -100,7 +100,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      HISTORY_H7_ORIGIN: https://vl.badjoke-lab.com
+      HISTORY_H7_ORIGIN: https://www.viewloom.net
       HISTORY_H7_EXPECTED_ENVIRONMENT: production
       HISTORY_H7_EXPECTED_BRANCH: main
       HISTORY_H7_EXPECTED_SHA: ${{ github.event.pull_request.base.sha }}
@@ -218,7 +218,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      HISTORY_H7_ORIGIN: ${{ inputs.hosted_origin || 'https://vl.badjoke-lab.com' }}
+      HISTORY_H7_ORIGIN: ${{ inputs.hosted_origin || 'https://www.viewloom.net' }}
       HISTORY_H7_EXPECTED_ENVIRONMENT: ${{ inputs.expected_environment || 'production' }}
       HISTORY_H7_EXPECTED_BRANCH: ${{ inputs.expected_branch || 'main' }}
       HISTORY_H7_EXPECTED_SHA: ${{ inputs.expected_sha || github.sha }}
