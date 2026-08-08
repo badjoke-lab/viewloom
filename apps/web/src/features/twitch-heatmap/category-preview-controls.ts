@@ -6,7 +6,6 @@ import type {
 const PREVIEW_PARAM = 'categoryPreview'
 const CATEGORY_PARAM = 'category'
 const TOP_PARAM = 'top'
-const PREVIEW_VALUE = '1'
 const TOP_VALUES = [20, 50, 100] as const
 const DEFAULT_TOP = 50
 const ROOT_ID = 'heatmap-category-preview-controls'
@@ -20,7 +19,7 @@ export type CategoryPreviewState = {
 
 export function readCategoryPreviewState(provider: 'twitch' | 'kick'): CategoryPreviewState {
   const url = new URL(window.location.href)
-  const enabled = provider === 'twitch' && url.searchParams.get(PREVIEW_PARAM) === PREVIEW_VALUE
+  const enabled = provider === 'twitch'
   const rawCategory = url.searchParams.get(CATEGORY_PARAM)?.trim() || 'all'
   const rawTop = Number(url.searchParams.get(TOP_PARAM))
   return {
@@ -62,34 +61,34 @@ export function installCategoryPreviewControls(options: {
     root = document.createElement('div')
     root.id = ROOT_ID
     root.className = 'heatmap-control-dock__group heatmap-category-preview'
-    root.dataset.hiddenPreview = 'true'
+    root.dataset.categoryFilter = 'public'
     root.innerHTML = `
-      <span class="heatmap-control-dock__label">Category preview</span>
+      <span class="heatmap-control-dock__label">Category</span>
       <div class="heatmap-category-preview__fields">
         <label>
           <span>Category</span>
-          <select data-category-preview-select aria-label="Twitch category preview"></select>
+          <select data-category-preview-select aria-label="Twitch category"></select>
         </label>
         <label>
           <span>Top</span>
-          <select data-category-preview-top aria-label="Twitch category preview maximum streams">
+          <select data-category-preview-top aria-label="Twitch maximum streams">
             ${TOP_VALUES.map((value) => `<option value="${value}">Top ${value}</option>`).join('')}
           </select>
         </label>
       </div>
-      <span class="heatmap-category-preview__status" role="status" aria-live="polite">Hidden preview · public exposure disabled</span>
+      <span class="heatmap-category-preview__status" role="status" aria-live="polite">Loading category data</span>
     `
     const mapGroup = dock.querySelector('.heatmap-control-dock__map')
     dock.insertBefore(root, mapGroup)
 
     root.querySelector<HTMLSelectElement>('[data-category-preview-select]')?.addEventListener('change', (event) => {
       const select = event.currentTarget as HTMLSelectElement
-      updatePreviewUrl({ category: select.value })
+      updateCategoryUrl({ category: select.value })
       options.onChange()
     })
     root.querySelector<HTMLSelectElement>('[data-category-preview-top]')?.addEventListener('change', (event) => {
       const select = event.currentTarget as HTMLSelectElement
-      updatePreviewUrl({ top: Number(select.value) })
+      updateCategoryUrl({ top: Number(select.value) })
       options.onChange()
     })
   }
@@ -128,7 +127,7 @@ export function syncCategoryPreviewControls(options: {
   if (!status) return
   const filter = options.filter
   if (!filter) {
-    status.textContent = 'Hidden preview · loading category contract'
+    status.textContent = 'Loading category data'
     return
   }
   const suffix = filter.coverageState === 'partial'
@@ -136,7 +135,7 @@ export function syncCategoryPreviewControls(options: {
     : filter.coverageState === 'unavailable'
       ? ' · category metadata unavailable'
       : ' · category metadata observed'
-  status.textContent = `Hidden preview · ${filter.state.replaceAll('_', ' ')}${suffix} · public exposure disabled`
+  status.textContent = `${filter.state.replaceAll('_', ' ')}${suffix}`
 }
 
 export function categoryPreviewMessage(filter: HeatmapCategoryFilter | undefined): { title: string; body: string } | null {
@@ -150,15 +149,15 @@ export function categoryPreviewMessage(filter: HeatmapCategoryFilter | undefined
   if (filter.state === 'category_unavailable' && filter.selectedCategory !== 'all') {
     return {
       title: 'Category data unavailable',
-      body: 'The latest Twitch snapshot does not contain an accepted category contract. The public unfiltered Heatmap remains unchanged.',
+      body: 'The latest Twitch snapshot does not contain an accepted category contract. Select All categories to use the unfiltered Heatmap fallback.',
     }
   }
   return null
 }
 
-function updatePreviewUrl(next: { category?: string; top?: number }): void {
+function updateCategoryUrl(next: { category?: string; top?: number }): void {
   const url = new URL(window.location.href)
-  url.searchParams.set(PREVIEW_PARAM, PREVIEW_VALUE)
+  url.searchParams.delete(PREVIEW_PARAM)
   if (next.category !== undefined) {
     const category = next.category.trim() || 'all'
     url.searchParams.set(CATEGORY_PARAM, category)
@@ -176,7 +175,7 @@ function ensureStyles(): void {
   style.textContent = `
     .heatmap-category-preview {
       align-items: center;
-      border: 1px dashed rgba(148, 163, 184, .38);
+      border: 1px solid rgba(148, 163, 184, .34);
       border-radius: 14px;
       padding: 12px;
       background: rgba(15, 23, 42, .48);
