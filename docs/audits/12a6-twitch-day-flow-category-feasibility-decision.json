@@ -4,7 +4,7 @@
   "phase": "12A-6",
   "parentTrackingIssue": 623,
   "trackingIssue": 743,
-  "decisionPr": null,
+  "decisionPr": 744,
   "provider": "twitch",
   "surface": "day_flow",
   "decision": "authorize_hidden_twitch_day_flow_category_candidate",
