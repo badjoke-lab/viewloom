@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-final-trigger-contract-v1",
+  "status": "candidate",
+  "phase": "12A-5B-R2",
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "mode": "final",
+  "trigger": {
+    "path": "docs/audits/12a5-twitch-replacement-audit-final-trigger.json",
+    "schemaVersion": "viewloom-12a5-twitch-replacement-audit-final-trigger-v1",
+    "status": "armed",
+    "provider": "twitch",
+    "mode": "final",
+    "oneTime": true,
+    "confirmation": "RUN_TWITCH_REPLACEMENT_FINAL_READ_ONLY_AUDIT",
+    "executeNotBefore": "2026-08-07T17:00:00.000Z"
+  },
+  "acceptedPackageIdentity": {
+    "packagePr": null,
+    "packageMergeSha": null
+  },
+  "readOnlyBoundary": {
+    "cloudflareApiMethods": ["GET"],
+    "d1Statements": ["SELECT", "WITH"],
+    "workerDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "bindingMutationAuthorized": false,
+    "secretMutationAuthorized": false,
+    "collectorChangeAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "retentionChangeAuthorized": false,
+    "backfillAuthorized": false,
+    "kickChangeAuthorized": false,
+    "publicExposureAuthorized": false,
+    "thresholdChangeAuthorized": false,
+    "clockResetAuthorized": false
+  },
+  "nextGate": "A separate acceptance PR must set this contract to accepted and freeze the final execution package PR and merge SHA before the one-file trigger may be created."
+}
