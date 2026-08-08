@@ -27,6 +27,11 @@ for (const fragment of [
   'All categories',
   "url.searchParams.delete(PREVIEW_PARAM)",
   'window.history.replaceState',
+  '.heatmap-category-preview__fields select {',
+  'width: 100%;',
+  'min-width: 0;',
+  'max-width: 100%;',
+  'grid-template-columns: minmax(0, 1fr);',
 ]) assert.ok(controls.includes(fragment), `controls missing: ${fragment}`)
 for (const forbidden of ['Hidden preview', 'public exposure disabled', 'data-hidden-preview']) {
   assert.equal(controls.includes(forbidden), false, `controls still hidden-only: ${forbidden}`)
@@ -56,6 +61,7 @@ console.log(JSON.stringify({
   defaultCategory: decision.publicBehavior.defaultCategory,
   defaultTop: decision.publicBehavior.defaultTop,
   topValues: decision.publicBehavior.allowedTopValues,
+  mobileIntrinsicWidthConstrained: true,
   publicTwitchCategoryUiAuthorized: true,
   kickCategoryUiAuthorized: false,
 }, null, 2))
