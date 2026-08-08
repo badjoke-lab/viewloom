@@ -39,18 +39,36 @@ async function runNormalTwitch() {
 
 async function runHiddenTwitchDesktop() {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } })
+  const browserEvents = []
   page.__scenario = 'hidden-twitch-desktop'
+  page.on('pageerror', (error) => browserEvents.push({ type: 'pageerror', text: error.stack || error.message }))
+  page.on('console', (message) => {
+    if (message.type() === 'error' || message.type() === 'warning') browserEvents.push({ type: message.type(), text: message.text() })
+  })
   await installRoutes(page)
   await page.goto(`${origin}/twitch/day-flow/?categoryPreview=1&category=100&auto=off`, { waitUntil: 'domcontentloaded' })
   await page.waitForSelector('#dayflow-category-preview-controls')
   await page.waitForSelector('.dayflow-stage svg')
-  await page.waitForFunction(() => document.querySelector('[data-dayflow-category-preview-select]')?.value === '100')
-  assert.equal(await page.locator('[data-dayflow-category-preview-select]').inputValue(), '100')
+  await page.waitForTimeout(1200)
+  const initialState = await page.evaluate(() => {
+    const select = document.querySelector('[data-dayflow-category-preview-select]')
+    return {
+      url: location.href,
+      value: select?.value ?? null,
+      options: select ? [...select.options].map((option) => ({ value: option.value, text: option.textContent })) : [],
+      status: document.querySelector('.dayflow-category-preview__status')?.textContent ?? null,
+      rootState: document.getElementById('dayflow-category-preview-controls')?.dataset.dayflowCategoryPreview ?? null,
+      coverageStrip: document.querySelector('.dayflow-category-coverage-strip')?.innerHTML ?? null,
+      stageText: document.querySelector('.dayflow-stage')?.textContent?.trim().slice(0, 240) ?? null,
+    }
+  })
+  const initialRequests = requests.filter((request) => request.scenario === 'hidden-twitch-desktop')
+  console.log(JSON.stringify({ diagnostic: 'hidden-twitch-desktop-initial-sync', initialState, initialRequests, browserEvents }, null, 2))
+  assert.equal(initialState.value, '100', `hidden category did not sync to 100: ${JSON.stringify({ initialState, initialRequests, browserEvents })}`)
   assert.match(await page.locator('.dayflow-category-preview__status').innerText(), /observed/i)
   await page.waitForSelector('.dayflow-category-coverage-strip .is-partial')
   await page.waitForSelector('.dayflow-category-coverage-strip .is-unavailable')
-  const firstRequests = requests.filter((request) => request.scenario === 'hidden-twitch-desktop')
-  assert.ok(firstRequests.some((request) => request.category === '100'), 'hidden Twitch API request must carry selected category')
+  assert.ok(initialRequests.some((request) => request.category === '100'), 'hidden Twitch API request must carry selected category')
 
   await page.selectOption('[data-dayflow-category-preview-select]', '200')
   await page.waitForFunction(() => new URL(location.href).searchParams.get('category') === '200')
