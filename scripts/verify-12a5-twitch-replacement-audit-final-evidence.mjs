@@ -45,7 +45,8 @@ assert.deepEqual(evidence.warnings, [])
 assert.deepEqual(evidence.hardStops, [])
 for (const [name, value] of Object.entries(evidence.gates)) assert.equal(value, true, `evidence gate ${name}: must be true`)
 
-assert.equal(acceptance.status, 'candidate')
+assert.equal(acceptance.status, 'accepted_on_merge')
+assert.equal(acceptance.acceptancePr, 736)
 assert.equal(acceptance.provider, 'twitch')
 assert.equal(acceptance.mode, 'final')
 assert.equal(acceptance.package.executionPackagePr, 733)
@@ -83,6 +84,7 @@ for (const value of Object.values(retirement.boundaries)) assert.equal(value, fa
 
 console.log(JSON.stringify({
   status: 'pass',
+  acceptancePr: acceptance.acceptancePr,
   auditStatus: evidence.status,
   expectedSlots: evidence.data.slotAnalysis.expectedSlots,
   observedSlots: evidence.data.slotAnalysis.observedDistinctSlots,
