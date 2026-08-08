@@ -1,0 +1,39 @@
+name: Analytics 12A5 Twitch Category Hidden Revalidation Evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a5-twitch-category-hidden-revalidation-evidence.yml'
+      - '.github/workflows/analytics-12a5-twitch-category-hidden-production-revalidation.yml'
+      - 'docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-evidence.json'
+      - 'docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-acceptance.json'
+      - 'docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-contract.json'
+      - 'scripts/verify-12a5-twitch-heatmap-category-hidden-revalidation-evidence.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a5-twitch-category-hidden-revalidation-evidence.yml'
+      - 'docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-evidence.json'
+      - 'docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-acceptance.json'
+      - 'scripts/verify-12a5-twitch-heatmap-category-hidden-revalidation-evidence.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a5-twitch-category-hidden-revalidation-evidence-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify frozen production revalidation evidence
+        run: |
+          node --check scripts/verify-12a5-twitch-heatmap-category-hidden-revalidation-evidence.mjs
+          node scripts/verify-12a5-twitch-heatmap-category-hidden-revalidation-evidence.mjs
+      - name: Verify one-time production revalidation workflow is retired
+        run: test ! -f .github/workflows/analytics-12a5-twitch-category-hidden-production-revalidation.yml

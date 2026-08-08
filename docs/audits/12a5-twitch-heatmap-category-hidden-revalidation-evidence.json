@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-category-hidden-production-revalidation-evidence-v1",
+  "observedAt": "2026-08-08T05:39:55.506Z",
+  "origin": "https://www.viewloom.net",
+  "status": "pass",
+  "scenarios": [
+    {
+      "name": "twitch-normal-desktop",
+      "viewport": { "width": 1440, "height": 1000 },
+      "requests": ["https://www.viewloom.net/api/twitch-heatmap"],
+      "checks": {
+        "itemCount": 300,
+        "state": "live",
+        "categoryImplementation": "hidden",
+        "geometry": { "width": 1440, "scrollWidth": 1440, "overflow": false }
+      },
+      "status": "pass"
+    },
+    {
+      "name": "twitch-hidden-desktop",
+      "viewport": { "width": 1440, "height": 1000 },
+      "requests": [
+        "https://www.viewloom.net/api/twitch-heatmap?category=all&top=50",
+        "https://www.viewloom.net/api/twitch-heatmap?category=263490&top=50",
+        "https://www.viewloom.net/api/twitch-heatmap?category=263490&top=20"
+      ],
+      "checks": {
+        "initialItems": 50,
+        "categoryOptions": 96,
+        "categoryCoverageState": "partial",
+        "selectedCategory": "263490",
+        "selectedItems": 14,
+        "top20Items": 14,
+        "keyboard": true,
+        "geometry": { "width": 1440, "scrollWidth": 1440, "overflow": false }
+      },
+      "status": "pass"
+    },
+    {
+      "name": "twitch-hidden-mobile",
+      "viewport": { "width": 390, "height": 844 },
+      "requests": ["https://www.viewloom.net/api/twitch-heatmap?category=all&top=50"],
+      "checks": {
+        "categoryOptions": 96,
+        "geometry": { "width": 390, "scrollWidth": 390, "overflow": false }
+      },
+      "status": "pass"
+    },
+    {
+      "name": "twitch-hidden-unknown-category",
+      "viewport": { "width": 820, "height": 900 },
+      "requests": ["https://www.viewloom.net/api/twitch-heatmap?category=__viewloom_unknown_category__&top=20"],
+      "checks": {
+        "state": "unknown_category",
+        "itemCount": 0,
+        "uiTitle": "Unknown Twitch category"
+      },
+      "status": "pass"
+    },
+    {
+      "name": "kick-preview-query-control",
+      "viewport": { "width": 390, "height": 844 },
+      "requests": ["https://www.viewloom.net/api/kick-heatmap"],
+      "checks": {
+        "itemCount": 100,
+        "state": "live",
+        "geometry": { "width": 390, "scrollWidth": 390, "overflow": false }
+      },
+      "status": "pass"
+    }
+  ],
+  "failures": [],
+  "publicCutoverAuthorized": false,
+  "productionMutationPerformed": false
+}
