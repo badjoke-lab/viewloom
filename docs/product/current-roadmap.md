@@ -1,54 +1,59 @@
 # ViewLoom current roadmap
 
 Status: source of truth  
-Last updated: 2026-08-02
+Last updated: 2026-08-08
 
 ## Current milestone: 12A — free-tier long-run hardening
 
 ### Completed
 
 - Twitch and Kick permanent category capture remain active and provider-separated on unchanged five-minute collectors.
-- Corrected Twitch category-source-v2 observation completed successfully in run `30620512044` and was frozen in PR #697.
-- Temporary observation execution paths were retired in PR #698.
-- Provider-scoped semantic handling was accepted in PR #699 / merge `ec4792712c24c5e1ed05cfa8a0ba5e600e748b8e`.
-- The revised seven-day stability clock was accepted in PR #700 / merge `d2316f10ba970818a47605a76a9ee9f235c517a4`.
+- Provider-scoped semantic handling was accepted in PR #699.
+- The accepted Twitch stability window completed from `2026-07-31T17:00:00.000Z` through `2026-08-07T17:00:00.000Z`.
+- The governed final read-only audit passed all `2016 / 2016` expected slots with zero missing, duplicate, or invalid buckets and was frozen in PR #736.
+- Final category-reference coverage was `0.995353`, unresolved category IDs were `0`, collector error runs were `0`, and Twitch/Kick provider leakage was `0`.
+- The separate final-mode decision in PR #737 authorized hidden Twitch Heatmap category-filter revalidation only.
+- Production hidden-filter revalidation passed all five desktop/mobile/provider-separation scenarios and was frozen in PR #739 / merge `ef4f2ba3ea5bbbb739ac8d6941dad074fa05591d`.
 
-### Current gate: active seven-day Twitch stability accumulation
+## Current gate: Twitch Heatmap category-filter public cutover
 
-Accepted half-open window:
+The final audit and hidden production revalidation are accepted. The current work is the separate Twitch-only public cutover.
 
-```text
-start: 2026-07-31T17:00:00.000Z (2026-08-01 02:00 JST)
-end-exclusive: 2026-08-07T17:00:00.000Z (2026-08-08 02:00 JST)
-cadence: 5 minutes
-expected slots: 2016
-```
+Public behavior authorized by `docs/audits/12a5-twitch-heatmap-category-public-cutover-decision.json`:
 
-The existing Twitch collector continues unchanged. The clock required no start workflow, new cron, Worker deployment, checkpoint, D1 mutation, binding change, or operator action.
+- expose Category and Top controls on the normal Twitch Heatmap route;
+- default to `All categories` and `Top 50`;
+- allow Top `20`, `50`, and `100`;
+- filter by provider category before Top-N slicing;
+- preserve `category` and `top` in the URL;
+- accept old `categoryPreview=1` links without requiring that parameter;
+- preserve explicit unknown/unavailable states and the unfiltered fallback when category metadata is unavailable.
 
 ## Accepted semantics
 
-- Identity is provider-scoped: `(provider, categoryProviderId)`.
+- Identity remains provider-scoped: `(provider, categoryProviderId)`.
 - Only complete provider-ID/name pairs create a category reference and dictionary entry.
 - Incomplete pairs remain null coverage.
-- Synthetic, name-only, and cross-provider mappings are prohibited.
+- Synthetic, name-only, and cross-provider mappings remain prohibited.
 - Combined-provider category rankings remain prohibited.
 
 ## Active deliverable
 
-Accumulate the accepted window without changing runtime behavior. At or after the end boundary, execute the governed final read-only audit and freeze the result for separate acceptance.
+Deploy the Twitch-only public category-filter cutover through the existing main-to-Cloudflare-Pages path, run production browser acceptance on the normal route, and freeze exact deployment and browser evidence.
 
 ## Following gates
 
-1. complete the accepted seven-day window;
-2. final read-only audit for all 2016 expected slots;
-3. final evidence freeze and separate acceptance;
-4. separate final-mode decision;
-5. separate public category-filter cutover.
+1. merge the Twitch-only public cutover candidate;
+2. deploy it through the controlled Pages workflow;
+3. verify normal Twitch desktop/mobile category controls, URL state, real filtering, fallback, and provider separation in production;
+4. freeze and accept public-cutover production evidence;
+5. close the Twitch Heatmap category-filter rollout issues;
+6. consider Day Flow and History category views separately; Kick category UI remains a separate decision.
 
 ## Hard boundaries
 
-- No final audit or final mode before `2026-08-07T17:00:00.000Z`.
-- No observation rerun, checkpoint rerun, historical backfill, threshold relaxation, synthetic mapping, or clock reset.
-- No Kick, cadence, retention, cross-provider, final-mode, or public-UI change during accumulation.
-- Existing unfiltered Heatmap remains the fallback.
+- No Kick category UI in this cutover.
+- No collector, Worker, D1 schema/data, binding, cadence, retention, or backfill change.
+- No synthetic or cross-provider category mapping, totals, or rankings.
+- The existing provider-separated collection paths remain unchanged.
+- Public navigation outside the Twitch Heatmap page is not added by this cutover.
