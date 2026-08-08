@@ -14,8 +14,8 @@ export type HeatmapCategoryFilterState =
 export type HeatmapCategoryCoverageState = 'observed' | 'partial' | 'unavailable'
 
 export type HeatmapCategoryFilter = {
-  implementationState: 'hidden'
-  publicExposureAuthorized: false
+  implementationState: 'hidden' | 'public'
+  publicExposureAuthorized: boolean
   contractVersion: string | null
   available: boolean
   coverageState: HeatmapCategoryCoverageState
