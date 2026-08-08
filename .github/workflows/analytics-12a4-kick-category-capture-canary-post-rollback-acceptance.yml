@@ -1,7 +1,7 @@
 name: Analytics 12A4 Kick Category Capture Canary Post-Rollback Acceptance Retired
 
-# Historical retired acceptance record. Keep it manually inspectable without
-# applying its v19-era exact scope contract to current pull requests.
+# Historical retired acceptance record. Its frozen evidence and verifier scripts
+# are preserved; this Actions entry point is manual-only and archival.
 on:
   workflow_dispatch:
 
@@ -13,30 +13,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify-retired-acceptance:
+  historical-record:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - name: Verify accepted and retired post-rollback package
-        run: node scripts/verify-12a4-kick-category-capture-canary-post-rollback-acceptance-package.mjs
-      - name: Verify current public handoff state
-        run: node scripts/verify-public-browser-audit-current.mjs
       - name: Publish retirement summary
-        if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4-12 Kick post-rollback acceptance retired'
+            echo '## ViewLoom 12A-4-12 Kick post-rollback acceptance — retired record'
             echo
             echo '- Final artifact: 8399137444'
             echo '- Outcome: accepted'
             echo '- Frozen evidence: docs/audits/12a4-kick-category-capture-canary-post-rollback-evidence.json'
+            echo '- Historical contracts/verifiers remain in the repository'
             echo '- Automatic PR gate: retired'
             echo '- Production read-only probe job: removed'
-            echo '- Cloudflare credentials referenced: no'
+            echo '- Cloudflare credentials: no'
             echo '- D1 or Worker production call: no'
           } >> "$GITHUB_STEP_SUMMARY"
