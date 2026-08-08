@@ -1,7 +1,8 @@
 name: Analytics 12A4 Category Execution Cost Probe Package Retired
 
-# Historical 12A4 package retained for auditability. It is no longer a current
-# pull-request gate after the accepted 12A5 Twitch category rollout.
+# Historical 12A4 package retained for auditability. The accepted evidence,
+# contracts, and verifier scripts remain in the repository; this Actions entry
+# point is manual-only and performs no production or current-gate validation.
 on:
   workflow_dispatch:
 
@@ -13,46 +14,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify-package:
+  historical-record:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Verify accepted bounded execution-cost package
-        run: node scripts/verify-12a4-category-execution-cost-probe.mjs
-
-      - name: Verify local SQLite first-pass, no-op, failure, and cleanup fixture
-        run: python scripts/test-12a4-category-execution-cost-probe.py
-
-      - name: Verify sanitized success and failure evidence fixtures
-        run: node scripts/test-12a4-category-execution-cost-probe-evidence.mjs
-
-      - name: Bundle Twitch bounded probe Worker without deploying
-        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-cost-probe/wrangler.twitch.toml
-
-      - name: Bundle Kick bounded probe Worker without deploying
-        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/category-cost-probe/wrangler.kick.toml
-
       - name: Publish retired package boundary
-        if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4-5 Category Execution-Cost Probe Package — historical record'
+            echo '## ViewLoom 12A-4-5 Category Execution-Cost Probe Package — retired record'
             echo
             echo '- Tracking issue: #519'
             echo '- Package acceptance: PR #547'
-            echo '- Automatic PR gate: retired after the accepted 12A5 rollout'
-            echo '- Production execution from this workflow: no'
-            echo '- Cloudflare credentials used: no'
+            echo '- Historical contracts/verifiers remain in the repository'
+            echo '- Automatic PR gate: retired'
+            echo '- Production execution: no'
+            echo '- Cloudflare credentials: no'
             echo '- Category capture enablement: no'
           } >> "$GITHUB_STEP_SUMMARY"
