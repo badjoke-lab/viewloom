@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-audit-final-execution-package-v1",
+  "status": "ready_for_validation",
+  "phase": "12A-5B-R2",
+  "parentTrackingIssue": 623,
+  "hiddenUiTrackingIssue": 635,
+  "trackingIssue": 659,
+  "provider": "twitch",
+  "mode": "final",
+  "governingMainSha": "fa726f52cf9258ac08773a3ae7b17a669320af9e",
+  "sourceAuditPackage": {
+    "contract": "docs/audits/12a5-twitch-replacement-seven-day-audit-package-contract.json",
+    "packagePr": 661,
+    "acceptancePr": 662,
+    "packageMergeSha": "1cab151ce243e1ec58091bfd309f65671e1f41c7"
+  },
+  "acceptedSemantics": {
+    "semanticDecisionPr": 699,
+    "semanticDecisionMergeSha": "ec4792712c24c5e1ed05cfa8a0ba5e600e748b8e",
+    "stabilityClockAcceptancePr": 700
+  },
+  "window": {
+    "semantics": "half_open",
+    "startAt": "2026-07-31T17:00:00.000Z",
+    "endExclusiveAt": "2026-08-07T17:00:00.000Z",
+    "expectedSlots": 2016,
+    "cadenceMinutes": 5
+  },
+  "execution": {
+    "runner": "scripts/run-12a5-twitch-replacement-seven-day-audit.mjs",
+    "workflow": ".github/workflows/analytics-12a5-twitch-replacement-audit-final.yml",
+    "verifier": "scripts/verify-12a5-twitch-replacement-audit-final-execution-package.mjs",
+    "triggerContract": "docs/audits/12a5-twitch-replacement-audit-final-trigger-contract.json",
+    "trigger": "docs/audits/12a5-twitch-replacement-audit-final-trigger.json",
+    "artifactName": "analytics-12a5-twitch-replacement-audit-final",
+    "outputPath": "artifacts/12a5-twitch-replacement-audit-final/run/evidence.json",
+    "productionCredentialsUsedOnPackagePullRequest": false,
+    "productionExecutionOnPackagePullRequest": false,
+    "separateAcceptancePrRequired": true,
+    "exactOneFileTriggerRequired": true
+  },
+  "readOnlyBoundary": {
+    "cloudflareApiMethods": ["GET"],
+    "d1Statements": ["SELECT", "WITH"],
+    "workerDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "bindingMutationAuthorized": false,
+    "secretMutationAuthorized": false,
+    "collectorChangeAuthorized": false,
+    "workerCronChangeAuthorized": false,
+    "newWorkerCronAuthorized": false,
+    "backfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "kickChangeAuthorized": false,
+    "publicExposureAuthorized": false,
+    "crossProviderBehaviorAuthorized": false,
+    "thresholdChangeAuthorized": false,
+    "clockResetAuthorized": false
+  },
+  "acceptanceBoundary": {
+    "passingFinalAuditExposesUi": false,
+    "separateEvidenceAcceptancePrRequired": true,
+    "separateFinalModeDecisionRequired": true,
+    "separatePublicCutoverPrRequired": true,
+    "temporaryExecutionPathRetirementRequired": true
+  },
+  "acceptance": {
+    "packagePr": null,
+    "packageCandidateHeadSha": null,
+    "packageMergeSha": null,
+    "validationRunId": null,
+    "validationJobId": null
+  },
+  "nextGate": "Validate this dormant final execution package without production credentials or execution, then separately accept its exact identity before creating the one-file final trigger."
+}
