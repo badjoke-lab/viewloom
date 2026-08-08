@@ -12,6 +12,8 @@ on:
       - 'apps/web/twitch/day-flow/index.html'
       - 'apps/web/scripts/day-flow-category-core.test.mjs'
       - 'apps/web/scripts/day-flow-category-preview-browser.mjs'
+      - 'apps/web/scripts/verify-production-source.mjs'
+      - 'scripts/verify-quality-u10g-architecture.mjs'
       - 'scripts/verify-12a6-twitch-day-flow-category-candidate.mjs'
       - '.github/workflows/analytics-12a6-twitch-day-flow-category-candidate.yml'
 
@@ -61,7 +63,7 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(apps/web/functions/api/day-flow\.ts|apps/web/functions/api/day-flow-category-core\.(mjs|d\.mts)|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-twitch-entry\.ts|apps/web/twitch/day-flow/index\.html|apps/web/scripts/day-flow-category-core\.test\.mjs|apps/web/scripts/day-flow-category-preview-browser\.mjs|scripts/verify-12a6-twitch-day-flow-category-candidate\.mjs|\.github/workflows/analytics-12a6-twitch-day-flow-category-candidate\.yml)$'
+          allowed='^(apps/web/functions/api/day-flow\.ts|apps/web/functions/api/day-flow-category-core\.(mjs|d\.mts)|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-twitch-entry\.ts|apps/web/twitch/day-flow/index\.html|apps/web/scripts/day-flow-category-core\.test\.mjs|apps/web/scripts/day-flow-category-preview-browser\.mjs|apps/web/scripts/verify-production-source\.mjs|scripts/verify-quality-u10g-architecture\.mjs|scripts/verify-12a6-twitch-day-flow-category-candidate\.mjs|\.github/workflows/analytics-12a6-twitch-day-flow-category-candidate\.yml)$'
           for path in "${changed[@]}"; do
             if ! [[ "$path" =~ $allowed ]]; then
               echo "Unexpected candidate change: $path" >&2
