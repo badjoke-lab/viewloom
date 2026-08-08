@@ -85,6 +85,6 @@
     "crossProviderBehaviorAuthorized": false,
     "combinedProviderRankingAuthorized": false
   },
-  "acceptancePr": null,
+  "acceptancePr": 742,
   "nextGate": "Close the Twitch seven-day audit and Twitch Heatmap category-filter rollout. Keep parent category work open for separately approved Day Flow, History, and Kick category UI decisions."
 }
