@@ -6,7 +6,7 @@ on:
       production_origin:
         description: Production origin
         required: false
-        default: https://vl.badjoke-lab.com
+        default: https://www.viewloom.net
       expected_sha:
         description: Exact deployed main SHA to accept
         required: false
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
-      WATCHLIST_PRODUCTION_URL: ${{ inputs.production_origin || 'https://vl.badjoke-lab.com' }}
+      WATCHLIST_PRODUCTION_URL: ${{ inputs.production_origin || 'https://www.viewloom.net' }}
       WATCHLIST_EXPECTED_BRANCH: main
       WATCHLIST_ACCEPTED_SHA: ${{ inputs.expected_sha || github.event.pull_request.base.sha || github.sha }}
     steps:
