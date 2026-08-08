@@ -48,6 +48,7 @@ assert.equal(evidence.kickCategoryUiEnabled, false)
 assert.equal(evidence.productionMutationPerformed, false)
 
 assert.equal(acceptance.status, 'accepted_on_merge')
+assert.equal(acceptance.acceptancePr, 742)
 assert.equal(acceptance.implementation.cutoverPr, 740)
 assert.equal(acceptance.implementation.cutoverMergeSha, '6193d2f6ad8d9263519d90bddd575d6db4a07283')
 assert.equal(acceptance.implementation.mobileOverflowRepairPr, 741)
@@ -76,6 +77,7 @@ assert.equal(acceptance.authorization.historyCategoryUiAuthorized, false)
 
 console.log(JSON.stringify({
   status: 'pass',
+  acceptancePr: acceptance.acceptancePr,
   acceptedProductionSha: acceptance.implementation.acceptedProductionSha,
   publicScenarios: evidence.scenarios.length,
   mobileWidth: mobile.checks.geometry.width,
