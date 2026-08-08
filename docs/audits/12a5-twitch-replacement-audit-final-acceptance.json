@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a5-twitch-replacement-audit-final-acceptance-v1",
-  "status": "candidate",
+  "status": "accepted_on_merge",
   "phase": "12A-5B-R2",
   "trackingIssue": 659,
   "provider": "twitch",
@@ -59,6 +59,6 @@
     "backfillAuthorized": false,
     "crossProviderBehaviorAuthorized": false
   },
-  "acceptancePr": null,
+  "acceptancePr": 736,
   "nextGate": "Make a separate final-mode decision from this frozen evidence. Do not expose the hidden Twitch Heatmap category filter from the evidence-acceptance PR."
 }
