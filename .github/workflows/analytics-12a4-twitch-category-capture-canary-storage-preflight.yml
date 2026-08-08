@@ -1,7 +1,8 @@
 name: Analytics 12A4 Twitch Category Canary Storage Preflight Acceptance Retired
 
-# Historical storage-preflight acceptance. The exact old candidate-scope gate
-# is preserved in its scripts/evidence but is no longer a current PR gate.
+# Historical 12A4 storage-preflight acceptance. Its original contracts,
+# evidence, and verifier scripts remain available; this Actions entry point no
+# longer evaluates the current gate or unrelated pull requests.
 on:
   workflow_dispatch:
 
@@ -13,29 +14,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify-acceptance-candidate:
+  historical-record:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - name: Verify accepted evidence candidate
-        run: node scripts/verify-12a4-twitch-category-capture-canary-storage-preflight-package.mjs
-      - name: Verify parser and read-only fixtures
-        run: node scripts/test-12a4-twitch-category-capture-canary-storage-preflight.mjs
       - name: Publish retired acceptance summary
-        if: always()
         run: |
           {
-            echo '## ViewLoom 12A-4-15 Twitch storage preflight acceptance — historical record'
+            echo '## ViewLoom 12A-4-15 Twitch storage preflight — retired record'
             echo
             echo '- Accepted observation run: 29598193753'
+            echo '- Accepted observation job: 87943655515'
             echo '- Evidence artifact: 8413901173'
-            echo '- All original read-only gates: pass'
+            echo '- Historical contracts/verifiers remain in the repository'
+            echo '- Original read-only gates: accepted'
             echo '- Production observation paths: retired'
             echo '- Automatic PR gate: retired'
-            echo '- Current Twitch category rollout authority: separate 12A5 evidence chain'
+            echo '- Current Twitch category authority: separate 12A5 evidence chain'
           } >> "$GITHUB_STEP_SUMMARY"
