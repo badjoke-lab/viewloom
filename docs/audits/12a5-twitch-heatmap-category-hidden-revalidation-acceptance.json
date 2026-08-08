@@ -57,6 +57,6 @@
     "backfillAuthorized": false,
     "crossProviderBehaviorAuthorized": false
   },
-  "acceptancePr": null,
+  "acceptancePr": 739,
   "nextGate": "Make a separate public-cutover decision and implementation PR. Do not expose Twitch category controls from this evidence-acceptance PR."
 }
