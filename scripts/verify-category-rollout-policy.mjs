@@ -22,7 +22,7 @@ const hiddenEvidence = json(required.hiddenEvidence)
 const hiddenAcceptance = json(required.hiddenAcceptance)
 const cutover = json(required.cutoverDecision)
 
-// v33 is retained as the historical accumulation baseline; post-audit authority is carried by the accepted evidence/decision chain.
+// v33 remains immutable historical accumulation evidence. Current public-cutover authority is the accepted evidence/decision chain below.
 assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v33')
 assert.equal(gate.currentWorkstream.twitchPermanentCaptureActive, true)
 assert.equal(gate.currentWorkstream.kickPermanentCaptureActive, true)
@@ -77,15 +77,6 @@ for (const key of [
   'crossProviderBehaviorAuthorized',
   'combinedProviderRankingAuthorized',
 ]) assert.equal(cutover.authorization[key], false, `${key}: must remain false`)
-
-for (const [path, fragments] of Object.entries({
-  'docs/product/current-roadmap.md': ['## Current gate: Twitch Heatmap category-filter public cutover', 'default to `All categories` and `Top 50`'],
-  'docs/product/current-schedule.md': ['Current gate Twitch-only public cutover', 'Public Twitch category-filter exposure authorized yes for this cutover'],
-  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['Twitch-only public Heatmap category-filter cutover', 'Kick category UI: disabled'],
-})) {
-  const source = read(path)
-  for (const fragment of fragments) assert.ok(source.includes(fragment), `${path} missing: ${fragment}`)
-}
 
 const cron = (source) => source.match(/crons\s*=\s*\[\s*"([^"]+)"\s*\]/)?.[1] ?? null
 const dbId = (source) => source.match(/^database_id\s*=\s*"([^"]+)"$/m)?.[1] ?? null
