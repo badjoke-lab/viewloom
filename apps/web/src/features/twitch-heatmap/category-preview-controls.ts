@@ -175,6 +175,8 @@ function ensureStyles(): void {
   style.textContent = `
     .heatmap-category-preview {
       align-items: center;
+      min-width: 0;
+      max-width: 100%;
       border: 1px solid rgba(148, 163, 184, .34);
       border-radius: 14px;
       padding: 12px;
@@ -185,38 +187,52 @@ function ensureStyles(): void {
       flex-wrap: wrap;
       gap: 10px;
       align-items: end;
+      min-width: 0;
+      max-width: 100%;
     }
     .heatmap-category-preview__fields label {
       display: grid;
       gap: 5px;
-      min-width: min(260px, 100%);
+      min-width: 0;
+      max-width: 100%;
       color: var(--muted);
       font-size: .76rem;
     }
     .heatmap-category-preview__fields select {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
       min-height: 42px;
       border: 1px solid rgba(148, 163, 184, .34);
       border-radius: 10px;
       padding: 0 36px 0 12px;
       background: rgba(7, 16, 30, .96);
       color: var(--text);
+      text-overflow: ellipsis;
     }
     .heatmap-category-preview__fields select:focus-visible {
       outline: 2px solid currentColor;
       outline-offset: 2px;
     }
     .heatmap-category-preview__status {
+      min-width: 0;
+      max-width: 100%;
+      overflow-wrap: anywhere;
       color: var(--muted);
       font-size: .75rem;
     }
     @media (max-width: 760px) {
       .heatmap-category-preview,
       .heatmap-category-preview__fields,
-      .heatmap-category-preview__fields label {
+      .heatmap-category-preview__fields label,
+      .heatmap-category-preview__fields select {
         width: 100%;
+        min-width: 0;
+        max-width: 100%;
       }
       .heatmap-category-preview__fields {
         display: grid;
+        grid-template-columns: minmax(0, 1fr);
       }
     }
   `
