@@ -25,7 +25,7 @@ try {
   check(await page.title() === 'Twitch Local Watchlist — ViewLoom', 'Twitch Watchlist title is wrong.')
   check(await page.locator('meta[name="robots"]').getAttribute('content') === 'noindex,follow', 'Twitch Watchlist robots metadata is wrong.')
   check(await page.locator('link[rel="canonical"]').getAttribute('href') === 'https://www.viewloom.net/twitch/watchlist/', 'Twitch Watchlist canonical is wrong.')
-  check(await page.locator('.feature-tabs a').allTextContents().then((values) => values.join('|')) === 'Heatmap|Day Flow|Battle Lines|History|Status', 'Primary feature tabs changed.')
+  check(await page.locator('.feature-tabs a').allTextContents().then((values) => values.join('|')) === 'Heatmap|Day Flow|Battle Lines|History|Data Status', 'Primary feature tabs changed.')
   check(await page.locator('[data-watchlist-empty]').isVisible(), 'Empty Watchlist state is not visible.')
   check((await page.locator('[data-watchlist-empty]').innerText()).includes('No channels saved in this browser.'), 'Required empty-state wording is missing.')
   check(calls.api.length === 0, `Empty Watchlist issued API requests: ${JSON.stringify(calls.api)}`)
@@ -59,7 +59,7 @@ try {
   stored = await readStoredDocument(page, 'twitch')
   check(stored.entries.map((entry) => entry.channelId).join('|') === 'alpha|beta_channel', 'Move down did not persist the Twitch order.')
   await page.waitForFunction(() => document.activeElement?.matches('[data-watchlist-entry="beta_channel"] h2') ?? false)
-  check(calls.api.length === 0, 'Task-local reorder made a feature-data request.')
+  check(calls.api.length === 0, 'Task-local reorder made feature-data requests.')
 
   clearApiCalls(calls)
   await page.reload({ waitUntil: 'domcontentloaded' })

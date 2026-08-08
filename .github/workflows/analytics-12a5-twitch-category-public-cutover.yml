@@ -1,0 +1,73 @@
+name: Analytics 12A5 Twitch Category Public Cutover
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a5-twitch-category-public-cutover.yml'
+      - 'docs/audits/12a5-twitch-heatmap-category-public-cutover-decision.json'
+      - 'docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-acceptance.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-final-acceptance.json'
+      - 'apps/web/src/features/twitch-heatmap/category-preview-controls.ts'
+      - 'apps/web/src/features/twitch-heatmap/model.ts'
+      - 'apps/web/src/live/twitch-heatmap.ts'
+      - 'apps/web/functions/api/twitch-heatmap.ts'
+      - 'scripts/verify-12a5-twitch-heatmap-category-public-cutover.mjs'
+      - 'scripts/verify-category-rollout-policy.mjs'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/work-in-progress/phase12a4-category-parallel-execution.md'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a5-twitch-category-public-cutover.yml'
+      - 'docs/audits/12a5-twitch-heatmap-category-public-cutover-decision.json'
+      - 'apps/web/src/features/twitch-heatmap/category-preview-controls.ts'
+      - 'apps/web/src/features/twitch-heatmap/model.ts'
+      - 'apps/web/functions/api/twitch-heatmap.ts'
+      - 'scripts/verify-12a5-twitch-heatmap-category-public-cutover.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a5-twitch-category-public-cutover-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify accepted public-cutover decision and implementation
+        run: |
+          node --check scripts/verify-12a5-twitch-heatmap-category-public-cutover.mjs
+          node scripts/verify-12a5-twitch-heatmap-category-public-cutover.mjs
+          node scripts/verify-category-rollout-policy.mjs
+      - name: Typecheck and build web
+        run: |
+          pnpm typecheck:web
+          pnpm build:web
+      - name: Verify Kick remains without category control source exposure
+        run: |
+          test -f apps/web/dist/kick/heatmap/index.html
+          ! grep -q 'data-category-preview-select' apps/web/dist/kick/heatmap/index.html
+          ! grep -q 'Twitch category' apps/web/dist/kick/heatmap/index.html
+      - name: Summarize public cutover boundary
+        run: |
+          {
+            echo '## Twitch Heatmap category public cutover'
+            echo
+            echo '- Provider: Twitch only'
+            echo '- Normal route controls: authorized'
+            echo '- Default: All categories / Top 50'
+            echo '- Top choices: 20 / 50 / 100'
+            echo '- Filter order: category before Top N'
+            echo '- Legacy categoryPreview=1 links: compatible, no longer required'
+            echo '- Kick category UI: disabled'
+            echo '- Collector / D1 / cadence / retention changes: none'
+            echo '- Production acceptance after deployment: required'
+          } >> "$GITHUB_STEP_SUMMARY"
