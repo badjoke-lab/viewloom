@@ -8,6 +8,7 @@ const decision = json(decisionPath)
 const api = read('apps/web/functions/api/day-flow.ts')
 const core = read('apps/web/functions/api/day-flow-category-core.mjs')
 const preview = read('apps/web/src/live/day-flow-category-preview-entry.ts')
+const twitchEntry = read('apps/web/src/live/day-flow-twitch-entry.ts')
 const twitchHtml = read('apps/web/twitch/day-flow/index.html')
 const kickHtml = read('apps/web/kick/day-flow/index.html')
 const shell = read('apps/web/src/live/day-flow-current-shell-entry.ts')
@@ -17,6 +18,7 @@ const kickWrangler = read('workers/collector-kick/wrangler.toml')
 for (const path of [
   'apps/web/functions/api/day-flow-category-core.mjs',
   'apps/web/functions/api/day-flow-category-core.d.mts',
+  'apps/web/src/live/day-flow-twitch-entry.ts',
   'apps/web/scripts/day-flow-category-core.test.mjs',
   'apps/web/scripts/day-flow-category-preview-browser.mjs',
 ]) assert.equal(existsSync(path), true, `${path}: missing`)
@@ -73,10 +75,17 @@ for (const fragment of [
   "url.searchParams.set(PREVIEW_PARAM, '1')",
 ]) assert.ok(preview.includes(fragment), `hidden preview entry missing: ${fragment}`)
 
-const previewScript = '<script type="module" src="/src/live/day-flow-category-preview-entry.ts"></script>'
-const shellScript = '<script type="module" src="/src/live/day-flow-current-shell-entry.ts"></script>'
-assert.ok(twitchHtml.includes(previewScript), 'Twitch Day Flow must load hidden preview entry')
-assert.ok(twitchHtml.indexOf(previewScript) < twitchHtml.indexOf(shellScript), 'preview fetch guard must load before Day Flow shell')
+const previewImport = "import './day-flow-category-preview-entry'"
+const shellImport = "void import('./day-flow-current-shell-entry')"
+assert.ok(twitchEntry.includes(previewImport), 'Twitch Day Flow bootstrap must import preview boundary')
+assert.ok(twitchEntry.includes(shellImport), 'Twitch Day Flow bootstrap must dynamically import existing shell')
+assert.ok(twitchEntry.indexOf(previewImport) < twitchEntry.indexOf(shellImport), 'preview boundary must evaluate before shell hydration')
+
+const twitchBootstrapScript = '<script type="module" src="/src/live/day-flow-twitch-entry.ts"></script>'
+assert.ok(twitchHtml.includes(twitchBootstrapScript), 'Twitch Day Flow must load serialized Twitch bootstrap')
+assert.equal(twitchHtml.includes('/src/live/day-flow-category-preview-entry.ts'), false, 'Twitch HTML must not race preview as a separate module script')
+assert.equal(twitchHtml.includes('/src/live/day-flow-current-shell-entry.ts'), false, 'Twitch HTML must not race shell as a separate module script')
+assert.equal(kickHtml.includes('day-flow-twitch-entry.ts'), false, 'Kick must not load Twitch Day Flow bootstrap')
 assert.equal(kickHtml.includes('day-flow-category-preview-entry.ts'), false, 'Kick must not load Twitch category preview entry')
 assert.equal(kickHtml.includes('dayflow-category-preview-controls'), false, 'Kick static HTML must not contain Twitch category controls')
 
@@ -84,6 +93,7 @@ assert.equal(kickHtml.includes('dayflow-category-preview-controls'), false, 'Kic
 assert.ok(shell.includes("if (state.scope === 'full') return globalShareAt(band, index)"))
 assert.ok(shell.includes('const denominator = nonOthers(payload).slice(0, state.top).reduce'))
 assert.equal(shell.includes('categoryPreview'), false, 'existing shell should remain category-agnostic')
+assert.equal(shell.includes('dayflow-category-preview'), false, 'existing shell should remain preview-agnostic')
 
 for (const key of [
   'collectorChangeAuthorized',
@@ -109,6 +119,7 @@ console.log(JSON.stringify({
   decisionPr: 744,
   normalRouteUsesLegacyPath: true,
   hiddenCandidate: true,
+  serializedTwitchBootstrap: true,
   membership: 'per_observed_snapshot',
   fullShareGlobal: true,
   coverageGapStates: ['observed', 'partial', 'unavailable'],
