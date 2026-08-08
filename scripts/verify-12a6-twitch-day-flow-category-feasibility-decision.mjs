@@ -15,6 +15,7 @@ assert.equal(decision.schemaVersion, 'viewloom-12a6-twitch-day-flow-category-fea
 assert.equal(decision.status, 'accepted_on_merge')
 assert.equal(decision.parentTrackingIssue, 623)
 assert.equal(decision.trackingIssue, 743)
+assert.equal(decision.decisionPr, 744)
 assert.equal(decision.provider, 'twitch')
 assert.equal(decision.surface, 'day_flow')
 assert.equal(decision.decision, 'authorize_hidden_twitch_day_flow_category_candidate')
@@ -116,6 +117,7 @@ assert.equal(cron(kickWrangler), '*/5 * * * *')
 
 console.log(JSON.stringify({
   status: 'pass',
+  decisionPr: decision.decisionPr,
   decision: decision.decision,
   provider: decision.provider,
   categoryMembership: decision.categorySemantics.membershipEvaluation,
