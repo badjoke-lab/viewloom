@@ -1,0 +1,176 @@
+{
+  "schemaVersion": "viewloom-12a5-twitch-replacement-seven-day-audit-evidence-v1",
+  "status": "accepted",
+  "mode": "final",
+  "provider": "twitch",
+  "feature": "heatmap_category_filter",
+  "trackingIssue": 659,
+  "parentTrackingIssue": 623,
+  "hiddenUiTrackingIssue": 635,
+  "observedAt": "2026-08-08T05:18:50.680Z",
+  "governingMainSha": "ec4792712c24c5e1ed05cfa8a0ba5e600e748b8e",
+  "window": {
+    "semantics": "half_open",
+    "startAt": "2026-07-31T17:00:00.000Z",
+    "endExclusiveAt": "2026-08-07T17:00:00.000Z",
+    "finalEndExclusiveAt": "2026-08-07T17:00:00.000Z",
+    "expectedSlots": 2016,
+    "expectedFinalSlots": 2016,
+    "elapsedHoursAtObservation": 180.31
+  },
+  "identity": {
+    "twitch": {
+      "serviceName": "viewloom-collector-twitch",
+      "databaseName": "vl_twitch_hot",
+      "databaseId": "b77221fe-80a3-4749-bc0e-d3ad54003dcf",
+      "cadence": "*/5 * * * *",
+      "rollbackDatabaseId": "b77221fe-80a3-4749-bc0e-d3ad54003dcf",
+      "rollbackCadence": "*/5 * * * *"
+    },
+    "kick": {
+      "serviceName": "viewloom-collector-kick",
+      "databaseName": "vl_kick_hot",
+      "databaseId": "ed1e082f-85ac-4dd0-a44e-5d3e200667d5",
+      "cadence": "*/5 * * * *",
+      "rollbackDatabaseId": "ed1e082f-85ac-4dd0-a44e-5d3e200667d5",
+      "rollbackCadence": "*/5 * * * *"
+    }
+  },
+  "bindings": {
+    "twitch": {
+      "permanentCaptureEnabled": true,
+      "obsoleteCanaryBindingsPresent": false
+    },
+    "kick": {
+      "permanentCaptureEnabled": true,
+      "obsoleteCanaryBindingsPresent": false
+    }
+  },
+  "schema": {
+    "requiredTables": [
+      "minute_snapshots",
+      "provider_category_dictionary",
+      "collector_runs",
+      "collector_status"
+    ],
+    "observedTables": [
+      "collector_runs",
+      "collector_status",
+      "minute_snapshots",
+      "provider_category_dictionary"
+    ],
+    "missingTables": []
+  },
+  "storage": {
+    "providerCurrentMb": 337.51,
+    "accountCurrentMb": 3714.96,
+    "projectedNinetyDaySizeMb": 385.83,
+    "projectedProviderHeadroomMb": 64.17,
+    "projectedAccountWideSizeMb": 3763.28,
+    "projectedAccountWideHeadroomMb": 844.72,
+    "providerPass": true,
+    "accountPass": true
+  },
+  "publicSurface": {
+    "twitchForbiddenFragments": [],
+    "kickForbiddenFragments": [],
+    "twitchHtmlNonempty": true,
+    "kickHtmlNonempty": true,
+    "pass": true
+  },
+  "data": {
+    "totalSnapshotRows": 2016,
+    "categorySnapshotRows": 2016,
+    "categoryRealRows": 2016,
+    "categoryNonemptyRows": 2016,
+    "structuredCategoryRows": 2016,
+    "alignedCategoryRows": 2016,
+    "slotAnalysis": {
+      "expectedSlots": 2016,
+      "observedDistinctSlots": 2016,
+      "missingSlots": [],
+      "missingSlotCount": 0,
+      "duplicateSlots": [],
+      "duplicateSlotCount": 0,
+      "invalidBucketMinutes": [],
+      "invalidBucketCount": 0,
+      "maximumConsecutiveMissingSlots": 0,
+      "coverageRatio": 1,
+      "firstObservedSlot": "2026-07-31T17:00:00.000Z",
+      "latestObservedSlot": "2026-08-07T16:55:00.000Z"
+    },
+    "collectorErrorRuns": 0,
+    "twitchProviderLeakageRows": 0,
+    "kickProviderLeakageRows": 0,
+    "dictionaryRows": 1950,
+    "dictionaryEmptyNames": 0,
+    "dictionaryContractMismatches": 0,
+    "distinctObservedCategoryIds": 1244,
+    "unresolvedCategoryIds": 0,
+    "totalCategoryRefs": 604524,
+    "presentCategoryRefs": 601715,
+    "missingCategoryRefs": 2809,
+    "invalidCategoryRefs": 0,
+    "categoryReferenceCoverageRatio": 0.995353,
+    "latestSnapshot": {
+      "bucketMinute": "2026-08-08T05:15:00.000Z",
+      "collectedAt": "2026-08-08T05:16:01.659Z",
+      "streamCount": 300,
+      "totalViewers": 930178,
+      "sourceMode": "real",
+      "categoryContractVersion": "category-source-v1",
+      "categoryIdCount": 92,
+      "categoryRefCount": 300,
+      "itemCount": 300
+    },
+    "latestSnapshotFreshnessMinutes": 2.97
+  },
+  "gates": {
+    "readOnly": true,
+    "exactWindowStartPass": true,
+    "windowEndPass": true,
+    "auditBoundaryReached": true,
+    "minimumElapsedDaysPass": true,
+    "expectedSlotIdentityPass": true,
+    "twitchIdentityPass": true,
+    "kickIdentityPass": true,
+    "cadencePass": true,
+    "schemaPass": true,
+    "twitchPermanentBindingPass": true,
+    "kickPermanentBaselinePass": true,
+    "storagePass": true,
+    "publicSurfaceContainmentPass": true,
+    "slotCoveragePass": true,
+    "missingSlotsPass": true,
+    "consecutiveMissingSlotsPass": true,
+    "duplicateSlotsPass": true,
+    "invalidBucketMinutesPass": true,
+    "categoryPayloadStructurePass": true,
+    "categoryRealPass": true,
+    "categoryNonemptyPass": true,
+    "categoryReferenceCoveragePass": true,
+    "categoryReferenceValidityPass": true,
+    "dictionaryPresencePass": true,
+    "dictionaryNamePass": true,
+    "dictionaryContractPass": true,
+    "dictionaryResolutionPass": true,
+    "collectorErrorsPass": true,
+    "twitchProviderLeakagePass": true,
+    "kickProviderLeakagePass": true,
+    "latestSnapshotFreshnessPass": true,
+    "latestSnapshotRealPass": true,
+    "latestSnapshotNonemptyPass": true,
+    "latestSnapshotCategoryPass": true,
+    "publicExposureStillUnauthorized": true,
+    "productionMutationUnauthorized": true,
+    "checkpointNonAuthorizing": true,
+    "finalDoesNotExposeUi": true
+  },
+  "warnings": [],
+  "hardStops": [],
+  "outcome": "accepted_for_separate_evidence_pr",
+  "publicCutoverAuthorized": false,
+  "productionMutationPerformed": false,
+  "kickMutationPerformed": false,
+  "error": null
+}
