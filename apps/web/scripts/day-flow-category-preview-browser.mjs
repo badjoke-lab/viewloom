@@ -11,71 +11,44 @@ try {
   await runHiddenTwitchMobile()
   await runUnknownCategory()
   await runKickIsolation()
-  console.log(JSON.stringify({
-    status: 'pass',
-    normalTwitchNonExposure: true,
-    hiddenTwitchCategorySelection: true,
-    categoryCoverageVisible: true,
-    mobileOverflow: false,
-    unknownCategoryExplicit: true,
-    kickIsolation: true,
-    requests,
-  }, null, 2))
+  console.log(JSON.stringify({ status: 'pass', requests }, null, 2))
 } finally {
   await browser.close()
 }
 
 async function runNormalTwitch() {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } })
+  page.__scenario = 'normal-twitch'
   await installRoutes(page)
   await page.goto(`${origin}/twitch/day-flow/?auto=off`, { waitUntil: 'domcontentloaded' })
   await page.waitForSelector('.dayflow-stage svg')
-  assert.equal(await page.locator('#dayflow-category-preview-controls').count(), 0, 'normal Twitch route must not expose category controls')
-  const normalRequests = requests.filter((request) => request.scenario === 'normal-twitch')
-  assert.ok(normalRequests.length >= 1)
-  assert.equal(normalRequests.some((request) => request.category !== null), false, 'normal Twitch API request must not carry category')
+  assert.equal(await page.locator('#dayflow-category-preview-controls').count(), 0)
+  const seen = requests.filter((request) => request.scenario === 'normal-twitch')
+  assert.ok(seen.length >= 1)
+  assert.equal(seen.some((request) => request.category !== null), false)
   await page.close()
 }
 
 async function runHiddenTwitchDesktop() {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } })
-  const browserEvents = []
   page.__scenario = 'hidden-twitch-desktop'
-  page.on('pageerror', (error) => browserEvents.push({ type: 'pageerror', text: error.stack || error.message }))
-  page.on('console', (message) => {
-    if (message.type() === 'error' || message.type() === 'warning') browserEvents.push({ type: message.type(), text: message.text() })
-  })
   await installRoutes(page)
   await page.goto(`${origin}/twitch/day-flow/?categoryPreview=1&category=100&auto=off`, { waitUntil: 'domcontentloaded' })
   await page.waitForSelector('#dayflow-category-preview-controls')
   await page.waitForSelector('.dayflow-stage svg')
-  await page.waitForTimeout(1200)
-  const initialState = await page.evaluate(() => {
-    const select = document.querySelector('[data-dayflow-category-preview-select]')
-    return {
-      url: location.href,
-      value: select?.value ?? null,
-      options: select ? [...select.options].map((option) => ({ value: option.value, text: option.textContent })) : [],
-      status: document.querySelector('.dayflow-category-preview__status')?.textContent ?? null,
-      rootState: document.getElementById('dayflow-category-preview-controls')?.dataset.dayflowCategoryPreview ?? null,
-      coverageStrip: document.querySelector('.dayflow-category-coverage-strip')?.innerHTML ?? null,
-      stageText: document.querySelector('.dayflow-stage')?.textContent?.trim().slice(0, 240) ?? null,
-    }
-  })
-  const initialRequests = requests.filter((request) => request.scenario === 'hidden-twitch-desktop')
-  console.log(JSON.stringify({ diagnostic: 'hidden-twitch-desktop-initial-sync', initialState, initialRequests, browserEvents }, null, 2))
-  assert.equal(initialState.value, '100', `hidden category did not sync to 100: ${JSON.stringify({ initialState, initialRequests, browserEvents })}`)
+  await page.waitForFunction(() => document.querySelector('[data-dayflow-category-preview-select]')?.value === '100')
   assert.match(await page.locator('.dayflow-category-preview__status').innerText(), /observed/i)
   await page.waitForSelector('.dayflow-category-coverage-strip .is-partial')
   await page.waitForSelector('.dayflow-category-coverage-strip .is-unavailable')
-  assert.ok(initialRequests.some((request) => request.category === '100'), 'hidden Twitch API request must carry selected category')
+  const initial = requests.filter((request) => request.scenario === 'hidden-twitch-desktop')
+  assert.ok(initial.some((request) => request.category === '100'))
 
   await page.selectOption('[data-dayflow-category-preview-select]', '200')
   await page.waitForFunction(() => new URL(location.href).searchParams.get('category') === '200')
   await page.waitForFunction(() => document.querySelector('[data-dayflow-category-preview-select]')?.value === '200')
-  const afterSelect = requests.filter((request) => request.scenario === 'hidden-twitch-desktop')
-  assert.ok(afterSelect.some((request) => request.category === '200'), 'changing category must refresh the candidate API request')
-  assert.equal(new URL(page.url()).searchParams.get('categoryPreview'), '1', 'shell URL sync must preserve preview flag')
+  const after = requests.filter((request) => request.scenario === 'hidden-twitch-desktop')
+  assert.ok(after.some((request) => request.category === '200'))
+  assert.equal(new URL(page.url()).searchParams.get('categoryPreview'), '1')
   await page.close()
 }
 
@@ -84,11 +57,36 @@ async function runHiddenTwitchMobile() {
   page.__scenario = 'hidden-twitch-mobile'
   await installRoutes(page)
   await page.goto(`${origin}/twitch/day-flow/?categoryPreview=1&category=100&auto=off`, { waitUntil: 'domcontentloaded' })
-  await page.waitForSelector('#dayflow-category-preview-controls')
+  await page.waitForSelector('#dayflow-category-preview-controls', { state: 'attached' })
   await page.waitForSelector('.dayflow-stage svg')
-  const geometry = await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth }))
-  assert.equal(geometry.width, 390)
-  assert.ok(geometry.scrollWidth <= geometry.width, `hidden Day Flow controls overflow mobile viewport: ${geometry.scrollWidth}/${geometry.width}`)
+  await page.waitForFunction(() => document.querySelector('[data-dayflow-category-preview-select]')?.value === '100')
+  const geometry = await page.evaluate(() => {
+    const root = document.getElementById('dayflow-category-preview-controls')
+    const select = document.querySelector('[data-dayflow-category-preview-select]')
+    const toolbar = document.querySelector('.dayflow-toolbar')
+    const inspect = (element) => {
+      if (!element) return null
+      const rect = element.getBoundingClientRect()
+      const style = getComputedStyle(element)
+      return {
+        x: rect.x, y: rect.y, width: rect.width, height: rect.height,
+        display: style.display, visibility: style.visibility, opacity: style.opacity,
+        overflow: style.overflow, position: style.position,
+      }
+    }
+    return {
+      viewportWidth: innerWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      root: inspect(root),
+      select: inspect(select),
+      toolbar: inspect(toolbar),
+    }
+  })
+  console.log(JSON.stringify({ diagnostic: 'hidden-twitch-mobile-geometry', geometry }, null, 2))
+  assert.equal(geometry.viewportWidth, 390)
+  assert.ok(geometry.root && geometry.root.width > 0 && geometry.root.height > 0, `hidden category control has no mobile box: ${JSON.stringify(geometry)}`)
+  assert.equal(geometry.root.display === 'none' || geometry.root.visibility === 'hidden' || geometry.root.opacity === '0', false, `hidden category control is not visibly rendered: ${JSON.stringify(geometry)}`)
+  assert.ok(geometry.scrollWidth <= geometry.viewportWidth, `hidden Day Flow controls overflow mobile viewport: ${geometry.scrollWidth}/${geometry.viewportWidth}`)
   await page.close()
 }
 
@@ -99,7 +97,6 @@ async function runUnknownCategory() {
   await page.goto(`${origin}/twitch/day-flow/?categoryPreview=1&category=999999&auto=off`, { waitUntil: 'domcontentloaded' })
   await page.waitForSelector('#dayflow-category-preview-controls')
   await page.waitForFunction(() => /unknown twitch category/i.test(document.querySelector('.dayflow-category-preview__status')?.textContent || ''))
-  assert.match(await page.locator('.dayflow-category-preview__status').innerText(), /Unknown Twitch category/)
   await page.close()
 }
 
@@ -109,17 +106,17 @@ async function runKickIsolation() {
   await installRoutes(page)
   await page.goto(`${origin}/kick/day-flow/?categoryPreview=1&category=100&auto=off`, { waitUntil: 'domcontentloaded' })
   await page.waitForSelector('.dayflow-stage svg')
-  assert.equal(await page.locator('#dayflow-category-preview-controls').count(), 0, 'Kick must not receive Twitch category controls')
-  const kickRequests = requests.filter((request) => request.scenario === 'kick-isolation')
-  assert.ok(kickRequests.length >= 1)
-  assert.equal(kickRequests.some((request) => request.category !== null), false, 'Kick Day Flow request must not receive category param')
+  assert.equal(await page.locator('#dayflow-category-preview-controls').count(), 0)
+  const seen = requests.filter((request) => request.scenario === 'kick-isolation')
+  assert.ok(seen.length >= 1)
+  assert.equal(seen.some((request) => request.category !== null), false)
   const geometry = await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth }))
-  assert.ok(geometry.scrollWidth <= geometry.width, `Kick mobile overflow: ${geometry.scrollWidth}/${geometry.width}`)
+  assert.ok(geometry.scrollWidth <= geometry.width)
   await page.close()
 }
 
 async function installRoutes(page) {
-  const scenario = page.__scenario || 'normal-twitch'
+  const scenario = page.__scenario || 'unknown'
   await page.route('**/api/day-flow?**', async (route) => {
     const url = new URL(route.request().url())
     const category = url.searchParams.get('category')
@@ -137,25 +134,12 @@ function normalPayload(platform = 'twitch') {
   const buckets = times()
   const totals = [100, 120, 90]
   return {
-    ok: true,
-    source: 'api',
-    platform,
-    state: 'ok',
-    status: 'Fresh',
-    lastUpdated: buckets[2],
-    selectedDate: '2026-08-08',
-    bucketSize: 5,
-    topN: 20,
-    valueMode: 'volume',
-    rangeMode: 'today',
-    windowStart: buckets[0],
-    windowEnd: buckets[2],
-    buckets,
+    ok: true, source: 'api', platform, state: 'ok', status: 'Fresh', lastUpdated: buckets[2], selectedDate: '2026-08-08',
+    bucketSize: 5, topN: 20, valueMode: 'volume', rangeMode: 'today', windowStart: buckets[0], windowEnd: buckets[2], buckets,
     totalViewersByBucket: totals,
     bands: [band('alpha', 'ALPHA', [30, 40, 35], totals), band('beta', 'BETA', [20, 25, 15], totals), band('others', 'Others', [50, 55, 40], totals, true)],
     summary: { peakLeader: 'ALPHA', longestDominance: 'ALPHA', biggestRise: 'ALPHA', highestActivity: null },
-    detailPanelSource: { defaultStreamerId: 'alpha', streamers: [] },
-    activity: { available: false, note: 'Activity unavailable.' },
+    detailPanelSource: { defaultStreamerId: 'alpha', streamers: [] }, activity: { available: false, note: 'Activity unavailable.' },
   }
 }
 
@@ -170,48 +154,27 @@ function candidatePayload(category) {
     { bucket: times()[1], state: 'partial', observedRows: 0, partialRows: 1, unavailableRows: 0, totalRows: 1 },
     { bucket: times()[2], state: 'unavailable', observedRows: 0, partialRows: 0, unavailableRows: 1, totalRows: 1 },
   ]
-  const filter = {
-    implementationState: 'hidden_candidate',
-    publicExposureAuthorized: false,
-    contractVersion: 'category-source-v1',
-    selectedCategory: category,
-    state: category === 'all' ? 'all' : category === '100' || category === '200' ? 'selected' : 'unknown_category',
-    coverageState: 'partial',
-    filterBeforeTopN: true,
-    membershipEvaluation: 'per_observed_snapshot',
-    latestCategoryBackProjectionAllowed: false,
-    fullShareDenominator: 'all_observed_twitch_viewers_per_bucket',
-    topFocusShareDenominator: 'displayed_selected_category_top_n_viewers_per_bucket',
-    availableCategories: options,
-    bucketCoverage: coverage,
-    coverageCounts: { observed: 1, partial: 1, unavailable: 1 },
+  const categoryFilter = {
+    implementationState: 'hidden_candidate', publicExposureAuthorized: false, contractVersion: 'category-source-v1', selectedCategory: category,
+    state: category === 'all' ? 'all' : category === '100' || category === '200' ? 'selected' : 'unknown_category', coverageState: 'partial',
+    filterBeforeTopN: true, membershipEvaluation: 'per_observed_snapshot', latestCategoryBackProjectionAllowed: false,
+    fullShareDenominator: 'all_observed_twitch_viewers_per_bucket', topFocusShareDenominator: 'displayed_selected_category_top_n_viewers_per_bucket',
+    availableCategories: options, bucketCoverage: coverage, coverageCounts: { observed: 1, partial: 1, unavailable: 1 },
   }
-  if (category === '999999') return { ...base, bands: [], categoryFilter: filter, availableCategories: options }
-  if (category === '100') {
-    return { ...base, bands: [band('alpha', 'ALPHA', [30, 0, 35], base.totalViewersByBucket), band('others', 'Others', [70, 120, 55], base.totalViewersByBucket, true)], categoryFilter: filter, availableCategories: options }
-  }
-  if (category === '200') {
-    return { ...base, bands: [band('beta', 'BETA', [20, 25, 0], base.totalViewersByBucket), band('alpha', 'ALPHA', [0, 40, 0], base.totalViewersByBucket), band('others', 'Others', [80, 55, 90], base.totalViewersByBucket, true)], categoryFilter: filter, availableCategories: options }
-  }
-  return { ...base, categoryFilter: filter, availableCategories: options }
+  if (category === '999999') return { ...base, bands: [], categoryFilter, availableCategories: options }
+  if (category === '100') return { ...base, bands: [band('alpha', 'ALPHA', [30, 0, 35], base.totalViewersByBucket), band('others', 'Others', [70, 120, 55], base.totalViewersByBucket, true)], categoryFilter, availableCategories: options }
+  if (category === '200') return { ...base, bands: [band('beta', 'BETA', [20, 25, 0], base.totalViewersByBucket), band('alpha', 'ALPHA', [0, 40, 0], base.totalViewersByBucket), band('others', 'Others', [80, 55, 90], base.totalViewersByBucket, true)], categoryFilter, availableCategories: options }
+  return { ...base, categoryFilter, availableCategories: options }
 }
 
 function band(id, name, values, totals, isOthers = false) {
   const peak = Math.max(...values)
   return {
-    streamerId: id,
-    name,
-    title: `${name} title`,
-    url: `https://www.twitch.tv/${id}`,
-    isOthers,
-    totalViewerMinutes: values.reduce((sum, value) => sum + value * 5, 0),
-    peakViewers: peak,
+    streamerId: id, name, title: `${name} title`, url: `https://www.twitch.tv/${id}`, isOthers,
+    totalViewerMinutes: values.reduce((sum, value) => sum + value * 5, 0), peakViewers: peak,
     avgViewers: Math.round(values.reduce((sum, value) => sum + value, 0) / Math.max(1, values.filter(Boolean).length)),
-    peakShare: Math.max(...values.map((value, index) => totals[index] ? value / totals[index] : 0)),
-    biggestRiseBucket: times()[1],
-    biggestRiseValue: Math.max(0, values[1] - values[0]),
-    firstSeen: times()[0],
-    lastSeen: times()[2],
+    peakShare: Math.max(...values.map((value, index) => totals[index] ? value / totals[index] : 0)), biggestRiseBucket: times()[1],
+    biggestRiseValue: Math.max(0, values[1] - values[0]), firstSeen: times()[0], lastSeen: times()[2],
     buckets: values.map((viewers, index) => ({ viewers, share: totals[index] ? viewers / totals[index] : 0, activity: 0, activityAvailable: false, peak: viewers === peak && viewers > 0, rise: false })),
   }
 }
