@@ -11,6 +11,8 @@ const required = {
   hiddenEvidence: 'docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-evidence.json',
   hiddenAcceptance: 'docs/audits/12a5-twitch-heatmap-category-hidden-revalidation-acceptance.json',
   cutoverDecision: 'docs/audits/12a5-twitch-heatmap-category-public-cutover-decision.json',
+  publicEvidence: 'docs/audits/12a5-twitch-heatmap-category-public-production-evidence.json',
+  cutoverAcceptance: 'docs/audits/12a5-twitch-heatmap-category-public-cutover-acceptance.json',
 }
 for (const path of Object.values(required)) assert.equal(existsSync(path), true, `${path}: missing`)
 
@@ -21,8 +23,10 @@ const finalDecision = json(required.finalDecision)
 const hiddenEvidence = json(required.hiddenEvidence)
 const hiddenAcceptance = json(required.hiddenAcceptance)
 const cutover = json(required.cutoverDecision)
+const publicEvidence = json(required.publicEvidence)
+const cutoverAcceptance = json(required.cutoverAcceptance)
 
-// v33 remains immutable historical accumulation evidence. Current public-cutover authority is the accepted evidence/decision chain below.
+// v33 remains the immutable accumulation baseline. Current authority is the accepted audit/revalidation/cutover evidence chain.
 assert.equal(gate.schemaVersion, 'viewloom-12a2-current-gate-state-v33')
 assert.equal(gate.currentWorkstream.twitchPermanentCaptureActive, true)
 assert.equal(gate.currentWorkstream.kickPermanentCaptureActive, true)
@@ -64,8 +68,34 @@ assert.equal(cutover.publicBehavior.defaultTop, 50)
 assert.deepEqual(cutover.publicBehavior.allowedTopValues, [20, 50, 100])
 assert.equal(cutover.publicBehavior.filterBeforeTopN, true)
 assert.equal(cutover.authorization.publicTwitchCategoryUiAuthorized, true)
-assert.equal(cutover.authorization.defaultRouteExposureAuthorized, true)
 assert.equal(cutover.authorization.kickCategoryUiAuthorized, false)
+
+assert.equal(publicEvidence.status, 'accepted')
+assert.equal(publicEvidence.origin, 'https://www.viewloom.net')
+assert.equal(publicEvidence.deploymentCommit, 'b006f45d0676c9ff3e05e5d6727458e43802de53')
+assert.equal(publicEvidence.acceptedAttempt, 1)
+assert.equal(publicEvidence.scenarios.length, 4)
+assert.deepEqual(publicEvidence.failures, [])
+assert.equal(publicEvidence.publicTwitchCategoryUiActive, true)
+assert.equal(publicEvidence.kickCategoryUiEnabled, false)
+assert.equal(publicEvidence.productionMutationPerformed, false)
+for (const scenario of publicEvidence.scenarios) assert.equal(scenario.status, 'pass', `${scenario.name}: must pass`)
+
+assert.equal(cutoverAcceptance.status, 'accepted_on_merge')
+assert.equal(cutoverAcceptance.implementation.cutoverPr, 740)
+assert.equal(cutoverAcceptance.implementation.cutoverMergeSha, '6193d2f6ad8d9263519d90bddd575d6db4a07283')
+assert.equal(cutoverAcceptance.implementation.mobileOverflowRepairPr, 741)
+assert.equal(cutoverAcceptance.implementation.acceptedProductionSha, 'b006f45d0676c9ff3e05e5d6727458e43802de53')
+assert.equal(cutoverAcceptance.acceptedDeployment.workflowRunId, 31244148642)
+assert.equal(cutoverAcceptance.acceptedDeployment.deployJobId, 93069879125)
+assert.equal(cutoverAcceptance.acceptedProductionBrowser.workflowRunId, 31244148651)
+assert.equal(cutoverAcceptance.acceptedProductionBrowser.productionJobId, 93069877735)
+assert.equal(cutoverAcceptance.acceptedProductionBrowser.passedScenarioCount, 4)
+assert.equal(cutoverAcceptance.acceptedProductionBrowser.failureCount, 0)
+assert.equal(cutoverAcceptance.acceptedBehavior.mobileOverflow, false)
+assert.equal(cutoverAcceptance.authorization.publicTwitchCategoryUiAccepted, true)
+assert.equal(cutoverAcceptance.authorization.twitchHeatmapCategoryRolloutComplete, true)
+assert.equal(cutoverAcceptance.authorization.kickCategoryUiAuthorized, false)
 for (const key of [
   'collectorChangeAuthorized',
   'workerDeploymentAuthorized',
@@ -76,7 +106,16 @@ for (const key of [
   'backfillAuthorized',
   'crossProviderBehaviorAuthorized',
   'combinedProviderRankingAuthorized',
-]) assert.equal(cutover.authorization[key], false, `${key}: must remain false`)
+]) assert.equal(cutoverAcceptance.authorization[key], false, `${key}: must remain false`)
+
+for (const [path, fragments] of Object.entries({
+  'docs/product/current-roadmap.md': ['## Current gate: post-rollout category program handoff', 'PR #741 fixed only the intrinsic mobile control width'],
+  'docs/product/current-schedule.md': ['Twitch public category filter active yes', 'Public production acceptance run 31244148651 success'],
+  'docs/work-in-progress/phase12a4-category-parallel-execution.md': ['Status: completed for Twitch Heatmap public rollout', 'Public browser acceptance run `31244148651` passed'],
+})) {
+  const source = read(path)
+  for (const fragment of fragments) assert.ok(source.includes(fragment), `${path} missing: ${fragment}`)
+}
 
 const cron = (source) => source.match(/crons\s*=\s*\[\s*"([^"]+)"\s*\]/)?.[1] ?? null
 const dbId = (source) => source.match(/^database_id\s*=\s*"([^"]+)"$/m)?.[1] ?? null
@@ -98,6 +137,8 @@ console.log(JSON.stringify({
   finalSlots: finalEvidence.data.slotAnalysis.observedDistinctSlots,
   categoryReferenceCoverage: finalEvidence.data.categoryReferenceCoverageRatio,
   hiddenProductionScenarios: hiddenEvidence.scenarios.length,
-  publicTwitchFilterAuthorized: cutover.authorization.publicTwitchCategoryUiAuthorized,
-  kickCategoryUiAuthorized: cutover.authorization.kickCategoryUiAuthorized,
+  publicProductionScenarios: publicEvidence.scenarios.length,
+  acceptedProductionSha: cutoverAcceptance.implementation.acceptedProductionSha,
+  publicTwitchFilterAccepted: cutoverAcceptance.authorization.publicTwitchCategoryUiAccepted,
+  kickCategoryUiAuthorized: cutoverAcceptance.authorization.kickCategoryUiAuthorized,
 }, null, 2))
