@@ -1,0 +1,57 @@
+name: Analytics 12A5 Twitch Replacement Audit Final Evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a5-twitch-replacement-audit-final-evidence.yml'
+      - '.github/workflows/analytics-12a5-twitch-replacement-audit-final.yml'
+      - 'docs/audits/12a5-twitch-replacement-audit-final-trigger.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-final-evidence.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-final-acceptance.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-final-retirement.json'
+      - 'scripts/verify-12a5-twitch-replacement-audit-final-evidence.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a5-twitch-replacement-audit-final-evidence.yml'
+      - 'docs/audits/12a5-twitch-replacement-audit-final-evidence.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-final-acceptance.json'
+      - 'docs/audits/12a5-twitch-replacement-audit-final-retirement.json'
+      - 'scripts/verify-12a5-twitch-replacement-audit-final-evidence.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a5-twitch-replacement-audit-final-evidence-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify frozen final evidence and retired one-time path
+        run: |
+          node --check scripts/verify-12a5-twitch-replacement-audit-final-evidence.mjs
+          node scripts/verify-12a5-twitch-replacement-audit-final-evidence.mjs
+      - name: Verify one-time trigger and production execution workflow are absent
+        run: |
+          test ! -f docs/audits/12a5-twitch-replacement-audit-final-trigger.json
+          test ! -f .github/workflows/analytics-12a5-twitch-replacement-audit-final.yml
+      - name: Summarize accepted final evidence boundary
+        run: |
+          {
+            echo '## Accepted Twitch replacement final audit evidence'
+            echo
+            echo '- Final audit run: `31241374639`'
+            echo '- Final audit job: `93063011226`'
+            echo '- Artifact: `9017123435`'
+            echo '- Expected / observed slots: `2016 / 2016`'
+            echo '- Missing / duplicate / invalid slots: `0 / 0 / 0`'
+            echo '- Category-reference coverage: `0.995353`'
+            echo '- Public category UI authorization: `false`'
+            echo '- One-time final trigger and production execution workflow: retired'
+          } >> "$GITHUB_STEP_SUMMARY"
