@@ -7,6 +7,7 @@ on:
       - '.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation.yml'
       - 'docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-contract.json'
       - 'apps/web/scripts/twitch-day-flow-category-hidden-production-revalidation.mjs'
+      - 'apps/web/scripts/normalize-built-head.mjs'
       - 'apps/web/src/live/day-flow-category-preview-entry.ts'
       - 'apps/web/src/live/day-flow-twitch-entry.ts'
       - 'apps/web/functions/api/day-flow.ts'
@@ -19,10 +20,10 @@ on:
       - '.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation.yml'
       - 'docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-contract.json'
       - 'apps/web/scripts/twitch-day-flow-category-hidden-production-revalidation.mjs'
+      - 'apps/web/scripts/normalize-built-head.mjs'
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
   group: analytics-12a6-twitch-day-flow-category-hidden-production-revalidation-${{ github.event.pull_request.number || github.ref }}
@@ -47,10 +48,11 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation\.yml|docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-contract\.json|apps/web/scripts/twitch-day-flow-category-hidden-production-revalidation\.mjs)$'
+          allowed='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation\.yml|docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-contract\.json|apps/web/scripts/normalize-built-head\.mjs)$'
+          test "${#changed[@]}" -eq 3
           for file in "${changed[@]}"; do
             if ! [[ "$file" =~ $allowed ]]; then
-              echo "Unexpected production-revalidation package change: $file" >&2
+              echo "Unexpected production-path correction change: $file" >&2
               exit 1
             fi
           done
@@ -66,18 +68,30 @@ jobs:
           const api = read('apps/web/functions/api/day-flow.ts')
           const twitchHtml = read('apps/web/twitch/day-flow/index.html')
           const kickHtml = read('apps/web/kick/day-flow/index.html')
+          const normalize = read('apps/web/scripts/normalize-built-head.mjs')
 
-          if (contract.status !== 'ready_for_validation') throw new Error('revalidation_contract_status_invalid')
-          if (contract.parentTrackingIssue !== 623 || contract.trackingIssue !== 747) throw new Error('tracking_identity_invalid')
+          if (contract.schemaVersion !== 'viewloom-12a6-twitch-day-flow-category-hidden-production-revalidation-v2') throw new Error('revalidation_contract_schema_invalid')
+          if (contract.status !== 'ready_for_validation' || contract.phase !== '12A-6-R2') throw new Error('revalidation_contract_status_invalid')
+          if (contract.parentTrackingIssue !== 623 || contract.trackingIssue !== 747 || contract.productionPathCorrectionIssue !== 753) throw new Error('tracking_identity_invalid')
           if (contract.provider !== 'twitch' || contract.feature !== 'day_flow_category_filter') throw new Error('feature_identity_invalid')
-          if (contract.candidate.implementationPr !== 746) throw new Error('candidate_pr_mismatch')
-          if (contract.candidate.mergeSha !== '2abc28b6d81d5e970b7c6ecb7cde1010ce295834') throw new Error('candidate_merge_mismatch')
-          if (contract.candidate.implementationState !== 'hidden_candidate') throw new Error('candidate_state_changed')
-          if (contract.candidate.publicCutoverAuthorized !== false) throw new Error('public_cutover_must_remain_unauthorized')
-          if (contract.acceptedBaselineDeployment.deployWorkflowRun !== 31303214749) throw new Error('baseline_deploy_run_mismatch')
-          if (contract.acceptedBaselineDeployment.sourceSha !== contract.candidate.mergeSha) throw new Error('baseline_source_mismatch')
-          if (contract.target.hiddenEntry !== 'categoryPreview=1' || contract.target.validationDate !== '2026-08-08') throw new Error('production_target_changed')
+          if (contract.candidate.implementationPr !== 746 || contract.candidate.mergeSha !== '2abc28b6d81d5e970b7c6ecb7cde1010ce295834') throw new Error('candidate_identity_mismatch')
+          if (contract.candidate.implementationState !== 'hidden_candidate' || contract.candidate.publicCutoverAuthorized !== false) throw new Error('candidate_boundary_changed')
+
+          const path = contract.acceptedProductionPath
+          if (path.mode !== 'cloudflare_pages_git_integration') throw new Error('production_path_mode_invalid')
+          if (path.evidenceIssue !== 751 || path.evidencePr !== 752) throw new Error('production_path_evidence_issue_invalid')
+          if (path.evidenceMainSha !== '480cb3e8d6a15773fe7561960a7a5c2c9f2806e8') throw new Error('production_path_evidence_sha_invalid')
+          if (path.workflowRun !== 31304322090 || path.job !== 93222156388 || path.artifactId !== 9035470757) throw new Error('production_path_evidence_identity_invalid')
+          if (path.artifactDigest !== 'sha256:f3c3c550f3a9d5200f4d2d8e730de5c36152daa5af8e37798d5c3f17d7ca8fd0') throw new Error('production_path_evidence_digest_invalid')
+          if (path.observedAttempt !== 13 || path.observedPagesUrl !== 'https://5ccd2914.viewloom.pages.dev') throw new Error('production_path_observation_invalid')
+          if (path.credentialFree !== true || path.manualWranglerRequired !== false) throw new Error('production_path_boundary_invalid')
+          if (contract.manualDeploymentPath.status !== 'fail_closed_external_auth_blocked' || contract.manualDeploymentPath.acceptedAsProductionAuthority !== false) throw new Error('manual_path_must_not_be_authority')
+
+          if (contract.target.hiddenEntry !== 'categoryPreview=1' || contract.target.rangeParam !== 'rangeMode=date' || contract.target.validationDate !== '2026-08-08') throw new Error('production_target_changed')
           if (contract.execution.productionOnPullRequest !== false || contract.execution.productionOnMainPush !== true) throw new Error('execution_boundary_invalid')
+          if (!contract.execution.productionSourceIdentity.includes('deployment.json')) throw new Error('exact_source_identity_missing')
+          if (!contract.execution.deploymentPathIdentity.includes('Issue #751 / PR #752')) throw new Error('git_integration_authority_missing')
+          if (!normalize.includes('Governed production revalidation source touch for Issue #753')) throw new Error('git_integration_trigger_touch_missing')
 
           for (const [key, value] of Object.entries(contract.boundary)) {
             if (key === 'readOnly') {
@@ -155,40 +169,21 @@ jobs:
       OUTPUT_DIR: artifacts/12a6-twitch-day-flow-category-hidden-production-revalidation
       VIEWLOOM_ORIGIN: https://www.viewloom.net
       DAYFLOW_VALIDATION_DATE: '2026-08-08'
+      EXPECTED_PRODUCTION_SHA: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
-      - name: Resolve matching successful Pages deployment
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Record confirmed production deployment path authority
         run: |
           set -euo pipefail
           mkdir -p "$OUTPUT_DIR"
-          found=''
-          for attempt in $(seq 1 90); do
-            response=$(curl -fsSL \
-              -H "Authorization: Bearer $GH_TOKEN" \
-              -H 'Accept: application/vnd.github+json' \
-              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/deploy-web-pages.yml/runs?branch=main&event=push&per_page=30")
-            row=$(jq -c --arg sha "$GITHUB_SHA" '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last // empty' <<<"$response")
-            if [[ -n "$row" ]]; then
-              status=$(jq -r '.status' <<<"$row")
-              conclusion=$(jq -r '.conclusion // ""' <<<"$row")
-              if [[ "$status" == 'completed' && "$conclusion" == 'success' ]]; then
-                found="$row"
-                break
-              fi
-              if [[ "$status" == 'completed' && "$conclusion" != 'success' ]]; then
-                echo "Matching Deploy Web Pages run failed: $row" >&2
-                exit 1
-              fi
-            fi
-            sleep 5
-          done
-          test -n "$found"
-          printf '%s\n' "$found" | jq '{id,name,head_sha,status,conclusion,run_number,event,created_at,updated_at,html_url}' > "$OUTPUT_DIR/deploy-run.json"
-          deploy_run_id=$(jq -r '.id' <<<"$found")
-          echo "DEPLOY_RUN_ID=$deploy_run_id" >> "$GITHUB_ENV"
-          echo "EXPECTED_PRODUCTION_SHA=$GITHUB_SHA" >> "$GITHUB_ENV"
+          jq -n \
+            --arg schema 'viewloom-12a6-production-path-authority-v1' \
+            --arg mode 'cloudflare_pages_git_integration' \
+            --arg expected "$GITHUB_SHA" \
+            --arg authority_sha '480cb3e8d6a15773fe7561960a7a5c2c9f2806e8' \
+            --arg artifact_digest 'sha256:f3c3c550f3a9d5200f4d2d8e730de5c36152daa5af8e37798d5c3f17d7ca8fd0' \
+            '{schema:$schema, mode:$mode, expected_production_sha:$expected, authority:{issue:751, pr:752, main_sha:$authority_sha, workflow_run:31304322090, job:93222156388, artifact_id:9035470757, artifact_digest:$artifact_digest, observed_attempt:13, credential_free:true}, manual_deploy_required:false, recorded_at:(now|todateiso8601)}' \
+            > "$OUTPUT_DIR/production-path-authority.json"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
