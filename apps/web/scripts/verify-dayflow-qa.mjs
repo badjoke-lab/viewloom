@@ -30,51 +30,73 @@ function assertNear(label, actual, expected, epsilon = 0.0001) {
 
 const dayFlowPages = ['twitch/day-flow/index.html', 'kick/day-flow/index.html']
 const entryPath = 'src/live/day-flow-current-shell-entry.ts'
+const twitchEntryPath = 'src/live/day-flow-twitch-entry.ts'
 const layoutSummaryPath = 'src/live/day-flow-layout-summary.ts'
 const layoutSummaryCssPath = 'src/dayflow-layout-summary.css'
 const contractPath = 'docs/dayflow-qa-contract.md'
 
-for (const path of [...dayFlowPages, entryPath, layoutSummaryPath, layoutSummaryCssPath, contractPath]) requireFile(path)
+for (const path of [...dayFlowPages, entryPath, twitchEntryPath, layoutSummaryPath, layoutSummaryCssPath, contractPath]) requireFile(path)
+
+const commonPageFragments = [
+  '/src/dayflow-layout-summary.css',
+  'class="dayflow-layout-shell is-wide"',
+  'data-dayflow-layout-shell',
+  'data-dayflow-layout-current="wide"',
+  'data-dayflow-layout="split"',
+  'data-dayflow-layout="wide"',
+  'class="dayflow-stage"',
+  'data-dayflow-time-focus',
+  'data-dayflow-detail',
+  'data-dayflow-summary',
+  'data-dayflow-coverage',
+  'data-dayflow-metric="volume"',
+  'data-dayflow-metric="share"',
+  'data-dayflow-scope="full"',
+  'data-dayflow-scope="topFocus"',
+  'data-dayflow-top="10"',
+  'data-dayflow-top="20"',
+  'data-dayflow-top="50"',
+  'data-dayflow-bucket="5"',
+  'data-dayflow-bucket="10"',
+  'data-dayflow-range="today"',
+  'data-dayflow-range="yesterday"',
+  'data-dayflow-range="rolling24h"',
+  'data-dayflow-range="date"',
+  'data-dayflow-date',
+  'data-dayflow-auto',
+  'data-dayflow-refresh',
+  'Field scale · leadership · movement',
+]
 
 for (const path of dayFlowPages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
-  for (const fragment of [
-    '/src/live/day-flow-current-shell-entry.ts',
-    '/src/dayflow-layout-summary.css',
-    'class="dayflow-layout-shell is-wide"',
-    'data-dayflow-layout-shell',
-    'data-dayflow-layout-current="wide"',
-    'data-dayflow-layout="split"',
-    'data-dayflow-layout="wide"',
-    'class="dayflow-stage"',
-    'data-dayflow-time-focus',
-    'data-dayflow-detail',
-    'data-dayflow-summary',
-    'data-dayflow-coverage',
-    'data-dayflow-metric="volume"',
-    'data-dayflow-metric="share"',
-    'data-dayflow-scope="full"',
-    'data-dayflow-scope="topFocus"',
-    'data-dayflow-top="10"',
-    'data-dayflow-top="20"',
-    'data-dayflow-top="50"',
-    'data-dayflow-bucket="5"',
-    'data-dayflow-bucket="10"',
-    'data-dayflow-range="today"',
-    'data-dayflow-range="yesterday"',
-    'data-dayflow-range="rolling24h"',
-    'data-dayflow-range="date"',
-    'data-dayflow-date',
-    'data-dayflow-auto',
-    'data-dayflow-refresh',
-    'Field scale · leadership · movement',
-  ]) requireFragment(path, source, fragment)
-  const primaryEntryCount = (source.match(/day-flow-current-shell-entry\.ts/g) ?? []).length
-  assertEqual(`${path} primary feature entry count`, primaryEntryCount, 1)
+  for (const fragment of commonPageFragments) requireFragment(path, source, fragment)
+
+  const isTwitch = path.startsWith('twitch/')
+  const expectedEntry = isTwitch ? '/src/live/day-flow-twitch-entry.ts' : '/src/live/day-flow-current-shell-entry.ts'
+  const expectedEntryPattern = isTwitch ? /day-flow-twitch-entry\.ts/g : /day-flow-current-shell-entry\.ts/g
+  requireFragment(path, source, expectedEntry)
+  assertEqual(`${path} primary feature entry count`, (source.match(expectedEntryPattern) ?? []).length, 1)
+
+  if (isTwitch) {
+    assertEqual(`${path} direct shared-controller script count`, (source.match(/<script[^>]+day-flow-current-shell-entry\.ts/g) ?? []).length, 0)
+  } else {
+    assertEqual(`${path} Twitch bootstrap count`, (source.match(/day-flow-twitch-entry\.ts/g) ?? []).length, 0)
+  }
+
   forbidPattern(path, source, 'secondary Day Flow layout-summary entry', /<script[^>]+day-flow-layout-summary\.ts/)
   forbidPattern(path, source, 'static legacy Day Flow SVG', /<svg viewBox="0 0 1210 620"/)
   forbidPattern(path, source, 'static Stream tile labels', /data-name="Stream [A-Z]"|>Stream [A-Z]</)
   forbidPattern(path, source, 'old visible-top share copy', /Share of visible top/i)
+}
+
+if (existsSync(join(root, twitchEntryPath))) {
+  const source = read(twitchEntryPath)
+  for (const fragment of [
+    "import './day-flow-category-preview-entry'",
+    "void import('./day-flow-current-shell-entry')",
+  ]) requireFragment(twitchEntryPath, source, fragment)
+  assertEqual('Twitch Day Flow shared-controller import count', (source.match(/day-flow-current-shell-entry/g) ?? []).length, 1)
 }
 
 if (existsSync(join(root, entryPath))) {
@@ -198,7 +220,6 @@ if (existsSync(join(root, contractPath))) {
   ]) requireFragment(contractPath, source, fragment)
 }
 
-// Executable behavior fixtures. These guard calculations, not UI copy.
 const fixture = {
   buckets: ['2026-06-13T00:00:00.000Z', '2026-06-13T00:05:00.000Z', '2026-06-13T00:10:00.000Z'],
   bands: [
@@ -257,4 +278,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom Day Flow QA verification passed for ${dayFlowPages.length} pages, one controller owner, Wide default, Split compatibility, expanded summary, and executable calculation fixtures.`)
+console.log(`ViewLoom Day Flow QA verification passed for ${dayFlowPages.length} pages, one provider entry/controller owner, Wide default, Split compatibility, expanded summary, and executable calculation fixtures.`)
