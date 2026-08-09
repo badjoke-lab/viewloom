@@ -48,9 +48,18 @@ jobs:
           set -euo pipefail
           grep -Fq 'Governed no-op source touch for Issue #751' apps/web/scripts/normalize-built-head.mjs
           grep -Fq 'https://www.viewloom.net/deployment.json' .github/workflows/verify-cloudflare-pages-git-integration.yml
-          ! grep -q 'CLOUDFLARE_API_TOKEN' .github/workflows/verify-cloudflare-pages-git-integration.yml
-          ! grep -q 'CLOUDFLARE_ACCOUNT_ID' .github/workflows/verify-cloudflare-pages-git-integration.yml
-          ! grep -q 'wrangler pages deploy' .github/workflows/verify-cloudflare-pages-git-integration.yml
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs'
+          const source = fs.readFileSync('.github/workflows/verify-cloudflare-pages-git-integration.yml', 'utf8')
+          const forbidden = [
+            'CLOUDFLARE_API_' + 'TOKEN',
+            'CLOUDFLARE_ACCOUNT_' + 'ID',
+            'wrangler pages ' + 'deploy',
+          ]
+          for (const fragment of forbidden) {
+            if (source.includes(fragment)) throw new Error(`credential_or_mutation_boundary_violation:${fragment}`)
+          }
+          NODE
       - name: Typecheck and build unchanged product
         run: |
           pnpm --filter @viewloom/web typecheck
