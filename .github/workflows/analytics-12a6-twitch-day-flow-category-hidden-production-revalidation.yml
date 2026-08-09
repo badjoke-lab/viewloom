@@ -1,0 +1,213 @@
+name: Analytics 12A6 Twitch Day Flow Category Hidden Production Revalidation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation.yml'
+      - 'docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-contract.json'
+      - 'apps/web/scripts/twitch-day-flow-category-hidden-production-revalidation.mjs'
+      - 'apps/web/src/live/day-flow-category-preview-entry.ts'
+      - 'apps/web/src/live/day-flow-twitch-entry.ts'
+      - 'apps/web/functions/api/day-flow.ts'
+      - 'apps/web/scripts/verify-dayflow-qa.mjs'
+      - 'apps/web/scripts/verify-production-source.mjs'
+      - 'scripts/verify-quality-u10d-analysis-coherence.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation.yml'
+      - 'docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-contract.json'
+      - 'apps/web/scripts/twitch-day-flow-category-hidden-production-revalidation.mjs'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: analytics-12a6-twitch-day-flow-category-hidden-production-revalidation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify package scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          allowed='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation\.yml|docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-contract\.json|apps/web/scripts/twitch-day-flow-category-hidden-production-revalidation\.mjs)$'
+          for file in "${changed[@]}"; do
+            if ! [[ "$file" =~ $allowed ]]; then
+              echo "Unexpected production-revalidation package change: $file" >&2
+              exit 1
+            fi
+          done
+      - name: Verify read-only revalidation contract and accepted hidden candidate
+        run: |
+          node --check apps/web/scripts/twitch-day-flow-category-hidden-production-revalidation.mjs
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs'
+          const read = (p) => fs.readFileSync(p, 'utf8')
+          const contract = JSON.parse(read('docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-contract.json'))
+          const preview = read('apps/web/src/live/day-flow-category-preview-entry.ts')
+          const bootstrap = read('apps/web/src/live/day-flow-twitch-entry.ts')
+          const api = read('apps/web/functions/api/day-flow.ts')
+          const twitchHtml = read('apps/web/twitch/day-flow/index.html')
+          const kickHtml = read('apps/web/kick/day-flow/index.html')
+
+          if (contract.status !== 'ready_for_validation') throw new Error('revalidation_contract_status_invalid')
+          if (contract.parentTrackingIssue !== 623 || contract.trackingIssue !== 747) throw new Error('tracking_identity_invalid')
+          if (contract.provider !== 'twitch' || contract.feature !== 'day_flow_category_filter') throw new Error('feature_identity_invalid')
+          if (contract.candidate.implementationPr !== 746) throw new Error('candidate_pr_mismatch')
+          if (contract.candidate.mergeSha !== '2abc28b6d81d5e970b7c6ecb7cde1010ce295834') throw new Error('candidate_merge_mismatch')
+          if (contract.candidate.implementationState !== 'hidden_candidate') throw new Error('candidate_state_changed')
+          if (contract.candidate.publicCutoverAuthorized !== false) throw new Error('public_cutover_must_remain_unauthorized')
+          if (contract.acceptedBaselineDeployment.deployWorkflowRun !== 31303214749) throw new Error('baseline_deploy_run_mismatch')
+          if (contract.acceptedBaselineDeployment.sourceSha !== contract.candidate.mergeSha) throw new Error('baseline_source_mismatch')
+          if (contract.target.hiddenEntry !== 'categoryPreview=1' || contract.target.validationDate !== '2026-08-08') throw new Error('production_target_changed')
+          if (contract.execution.productionOnPullRequest !== false || contract.execution.productionOnMainPush !== true) throw new Error('execution_boundary_invalid')
+
+          for (const [key, value] of Object.entries(contract.boundary)) {
+            if (key === 'readOnly') {
+              if (value !== true) throw new Error('revalidation_must_be_read_only')
+            } else if (value !== false) {
+              throw new Error(`boundary_${key}_must_remain_false`)
+            }
+          }
+          for (const [key, value] of Object.entries(contract.requiredChecks)) {
+            if (value !== true) throw new Error(`required_check_${key}_not_enabled`)
+          }
+
+          for (const fragment of [
+            "const enabled = provider === 'twitch' && initialUrl.searchParams.get(PREVIEW_PARAM) === '1'",
+            "root.dataset.dayflowCategoryPreview = 'hidden'",
+            'aria-label="Twitch Day Flow category preview"',
+            "filter.implementationState !== 'hidden_candidate'",
+            'filter.publicExposureAuthorized !== false',
+            "filter.state === 'unknown_category'",
+            "state === 'category_unavailable'",
+            'Category metadata unavailable',
+            'no zero inferred',
+            'window.history.replaceState',
+          ]) if (!preview.includes(fragment)) throw new Error(`preview_contract_missing:${fragment}`)
+
+          for (const fragment of [
+            "import './day-flow-category-preview-entry'",
+            "void import('./day-flow-current-shell-entry')",
+            "categoryPreviewRoot.style.flex = '0 0 100%'",
+            "categoryPreviewRoot.style.width = '100%'",
+          ]) if (!bootstrap.includes(fragment)) throw new Error(`bootstrap_contract_missing:${fragment}`)
+
+          for (const fragment of [
+            "implementationState: 'hidden_candidate'",
+            'publicExposureAuthorized: false',
+            'filterBeforeTopN: true',
+            "membershipEvaluation: 'per_observed_snapshot'",
+            'latestCategoryBackProjectionAllowed: false',
+            "fullShareDenominator: 'all_observed_twitch_viewers_per_bucket'",
+            "topFocusShareDenominator: 'displayed_selected_category_top_n_viewers_per_bucket'",
+            'availableCategories',
+            'bucketCoverage',
+          ]) if (!api.includes(fragment)) throw new Error(`api_contract_missing:${fragment}`)
+
+          if (!twitchHtml.includes('/src/live/day-flow-twitch-entry.ts')) throw new Error('twitch_bootstrap_missing')
+          if (twitchHtml.includes('dayflow-category-preview-controls')) throw new Error('hidden_controls_statically_public_on_twitch')
+          if (!kickHtml.includes('/src/live/day-flow-current-shell-entry.ts')) throw new Error('kick_shared_controller_missing')
+          if (kickHtml.includes('/src/live/day-flow-twitch-entry.ts') || kickHtml.includes('dayflow-category-preview-controls')) throw new Error('kick_inherited_twitch_preview')
+          NODE
+      - name: Verify retained Day Flow boundaries
+        working-directory: apps/web
+        run: |
+          node scripts/verify-production-source.mjs
+          node scripts/verify-dayflow-qa.mjs
+          cd ../..
+          node scripts/verify-quality-u10d-analysis-coherence.mjs
+      - name: Typecheck and build web
+        run: |
+          pnpm --filter @viewloom/web typecheck:app
+          pnpm --filter @viewloom/web typecheck:functions
+          pnpm build:web
+      - name: Verify built normal routes contain no static category controls
+        run: |
+          test -f apps/web/dist/twitch/day-flow/index.html
+          test -f apps/web/dist/kick/day-flow/index.html
+          ! grep -q 'dayflow-category-preview-controls' apps/web/dist/twitch/day-flow/index.html
+          ! grep -q 'dayflow-category-preview-controls' apps/web/dist/kick/day-flow/index.html
+
+  production:
+    if: github.event_name == 'push'
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      OUTPUT_DIR: artifacts/12a6-twitch-day-flow-category-hidden-production-revalidation
+      VIEWLOOM_ORIGIN: https://www.viewloom.net
+      DAYFLOW_VALIDATION_DATE: '2026-08-08'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve matching successful Pages deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUTPUT_DIR"
+          found=''
+          for attempt in $(seq 1 90); do
+            response=$(curl -fsSL \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'Accept: application/vnd.github+json' \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/deploy-web-pages.yml/runs?branch=main&event=push&per_page=30")
+            row=$(jq -c --arg sha "$GITHUB_SHA" '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last // empty' <<<"$response")
+            if [[ -n "$row" ]]; then
+              status=$(jq -r '.status' <<<"$row")
+              conclusion=$(jq -r '.conclusion // ""' <<<"$row")
+              if [[ "$status" == 'completed' && "$conclusion" == 'success' ]]; then
+                found="$row"
+                break
+              fi
+              if [[ "$status" == 'completed' && "$conclusion" != 'success' ]]; then
+                echo "Matching Deploy Web Pages run failed: $row" >&2
+                exit 1
+              fi
+            fi
+            sleep 5
+          done
+          test -n "$found"
+          printf '%s\n' "$found" | jq '{id,name,head_sha,status,conclusion,run_number,event,created_at,updated_at,html_url}' > "$OUTPUT_DIR/deploy-run.json"
+          deploy_run_id=$(jq -r '.id' <<<"$found")
+          echo "DEPLOY_RUN_ID=$deploy_run_id" >> "$GITHUB_ENV"
+          echo "EXPECTED_PRODUCTION_SHA=$GITHUB_SHA" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - id: browser
+        name: Revalidate hidden Twitch Day Flow category candidate against production
+        continue-on-error: true
+        run: node apps/web/scripts/twitch-day-flow-category-hidden-production-revalidation.mjs
+      - name: Upload production revalidation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a6-twitch-day-flow-category-hidden-production-revalidation
+          path: artifacts/12a6-twitch-day-flow-category-hidden-production-revalidation/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Fail after evidence upload when production revalidation rejects
+        if: steps.browser.outcome != 'success'
+        run: exit 1
