@@ -29,6 +29,23 @@ Exact next branch after U10G: `work-quality-u10h-acceptance`
 - Twitch and Kick continue using separate routes and endpoints.
 - APIs, D1 schemas, bindings, collectors, cron, retention, output schemas, and localization runtime remain unchanged.
 
+## Post-U10G authorized Twitch Day Flow category boundary
+
+PR #758 later authorized a public Twitch-only Day Flow Category control. Issue #759 records the architecture alignment required after that authorization. This does not reopen the general U10G permission to replace browser globals.
+
+The retained architecture contract now recognizes exactly one provider-specific exception:
+
+- only the Twitch Day Flow bootstrap may load `day-flow-category-preview-entry.ts` before the shared Day Flow controller;
+- that boundary may wrap `window.fetch` only to add the selected `category` to same-origin `/api/day-flow` requests and must delegate every other request unchanged;
+- that boundary may wrap `history.replaceState` only to retain the Twitch Day Flow `category` URL state on the current pathname and remove the retired `categoryPreview` parameter after public interaction;
+- `URLSearchParams.prototype.get` must never be replaced;
+- Kick Day Flow and both Battle Lines routes must retain native `fetch`, `history.replaceState`, and `URLSearchParams.prototype.get` identities;
+- the shared Day Flow controller remains the only request/state/controller owner and still contains the single feature `fetch(` call;
+- initial load must still produce exactly one provider-correct Day Flow request and zero cross-provider requests;
+- the public category boundary must expose `data-dayflow-category-preview="public"`, remain Twitch-only, and must not authorize another provider, route, or feature to install a similar wrapper.
+
+This is a scoped compatibility boundary for the already-authorized public Twitch Category filter, not a general relaxation of U10G.
+
 ## Evidence
 
 ```text
@@ -43,4 +60,4 @@ Digest: sha256:787b17923ee24ff5ca2ba546759a8a9846002fdd0c428e6180d9ea9c68dd2644
 
 ## Change boundary
 
-U10G consolidated browser-side feature ownership and retired obsolete compatibility/hotfix entries. It did not authorize new user-facing features, APIs, storage, bindings, collectors, cron, retention, output fields, localization runtime, provider combination, or production acceptance.
+U10G consolidated browser-side feature ownership and retired obsolete compatibility/hotfix entries. It did not authorize new user-facing features, APIs, storage, bindings, collectors, cron, retention, output fields, localization runtime, provider combination, or production acceptance. The later #758/#759 Twitch Day Flow category boundary is limited to the explicit exception above and does not alter those infrastructure or provider-separation boundaries.
