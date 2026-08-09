@@ -26,7 +26,7 @@ for (const path of ['apps/web/twitch/day-flow/index.html','apps/web/kick/day-flo
   const html=read(path)
   assert.ok(html.includes('class="dayflow-layout-shell is-wide" data-dayflow-layout-shell data-dayflow-layout-current="wide"'))
   assert.ok(html.includes('<button data-dayflow-layout="split" aria-pressed="false">Split</button><button class="active" data-dayflow-layout="wide" aria-pressed="true">Wide</button>'))
-  if (path.startsWith('twitch/')) {
+  if (path.includes('/twitch/')) {
     assert.ok(html.includes('/src/live/day-flow-twitch-entry.ts'),'Twitch Day Flow bootstrap missing')
     assert.equal(html.includes('/src/live/day-flow-current-shell-entry.ts'),false,'Twitch HTML must not create a second Day Flow controller entry')
   } else {
