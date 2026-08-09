@@ -1,0 +1,64 @@
+name: Analytics 12A6 Twitch Day Flow Category Hidden Revalidation Evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-revalidation-evidence.yml'
+      - '.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation.yml'
+      - 'docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-evidence.json'
+      - 'docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-acceptance.json'
+      - 'scripts/verify-12a6-twitch-day-flow-category-hidden-production-revalidation-evidence.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-revalidation-evidence.yml'
+      - '.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation.yml'
+      - 'docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-evidence.json'
+      - 'docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-acceptance.json'
+      - 'scripts/verify-12a6-twitch-day-flow-category-hidden-production-revalidation-evidence.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a6-twitch-day-flow-category-hidden-revalidation-evidence-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify evidence-acceptance scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          allowed='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-revalidation-evidence\.yml|\.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation\.yml|docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-evidence\.json|docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-acceptance\.json|scripts/verify-12a6-twitch-day-flow-category-hidden-production-revalidation-evidence\.mjs)$'
+          for file in "${changed[@]}"; do
+            [[ "$file" =~ $allowed ]] || { echo "Unexpected evidence-acceptance change: $file" >&2; exit 1; }
+          done
+      - name: Verify frozen hidden production evidence
+        run: node scripts/verify-12a6-twitch-day-flow-category-hidden-production-revalidation-evidence.mjs
+      - name: Verify retained public boundaries
+        working-directory: apps/web
+        run: |
+          node scripts/verify-production-source.mjs
+          node scripts/verify-dayflow-qa.mjs
+          cd ../..
+          node scripts/verify-quality-u10d-analysis-coherence.mjs
+      - name: Typecheck and build unchanged product
+        run: |
+          pnpm --filter @viewloom/web typecheck:app
+          pnpm --filter @viewloom/web typecheck:functions
+          pnpm build:web
