@@ -19,6 +19,8 @@ on:
       - 'apps/web/kick/battle-lines/index.html'
       - 'apps/web/src/live/day-flow-current-shell-entry.ts'
       - 'apps/web/src/live/day-flow-layout-summary.ts'
+      - 'apps/web/src/live/day-flow-twitch-entry.ts'
+      - 'apps/web/src/live/day-flow-category-preview-entry.ts'
       - 'apps/web/src/live/battle-lines-current-shell-entry.ts'
       - 'apps/web/src/live/battle-lines-layout.ts'
       - 'apps/web/src/navigation/battle-lines-deep-link-bridge.ts'
