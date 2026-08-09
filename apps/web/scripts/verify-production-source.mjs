@@ -67,16 +67,24 @@ for (const path of removedHeatmapFiles) if (existsSync(join(root,path))) failure
 if (existsSync(join(root,'src/mock-cutover.css'))) failures.push('src/mock-cutover.css: must not exist')
 if (existsSync(join(root,'src/mock-cutover.ts'))) failures.push('src/mock-cutover.ts: must not exist')
 
-// Twitch Day Flow uses a provider-specific bootstrap only to serialize the hidden
-// category-preview boundary before the existing single Day Flow controller.
+// Twitch Day Flow uses a provider-specific bootstrap so the Twitch-only public
+// category layer installs before the existing single shared Day Flow controller.
 if (existsSync(join(root,'src/live/day-flow-twitch-entry.ts'))) {
   const source = read('src/live/day-flow-twitch-entry.ts')
   requireFragments('src/live/day-flow-twitch-entry.ts',source,["import './day-flow-category-preview-entry'","void import('./day-flow-current-shell-entry')"])
-  if (source.indexOf("import './day-flow-category-preview-entry'") > source.indexOf("void import('./day-flow-current-shell-entry')")) failures.push('src/live/day-flow-twitch-entry.ts: preview boundary must run before Day Flow shell')
+  if (source.indexOf("import './day-flow-category-preview-entry'") > source.indexOf("void import('./day-flow-current-shell-entry')")) failures.push('src/live/day-flow-twitch-entry.ts: Twitch category layer must run before Day Flow shell')
 }
 if (existsSync(join(root,'src/live/day-flow-category-preview-entry.ts'))) {
   const source = read('src/live/day-flow-category-preview-entry.ts')
-  requireFragments('src/live/day-flow-category-preview-entry.ts',source,["provider === 'twitch' && initialUrl.searchParams.get(PREVIEW_PARAM) === '1'",'if (enabled) {'])
+  requireFragments('src/live/day-flow-category-preview-entry.ts',source,[
+    "const enabled = provider === 'twitch'",
+    "root.dataset.dayflowCategoryPreview = 'public'",
+    'aria-label="Twitch Day Flow category"',
+    "filter.implementationState !== 'public'",
+    'filter.publicExposureAuthorized !== true',
+    'if (enabled) {',
+  ])
+  if (source.includes("initialUrl.searchParams.get(PREVIEW_PARAM) === '1'")) failures.push('src/live/day-flow-category-preview-entry.ts: public Twitch category UI must not require categoryPreview=1')
 }
 
 if (failures.length) { console.error('ViewLoom production source verification failed:'); for (const failure of failures) console.error(`- ${failure}`); process.exit(1) }

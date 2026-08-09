@@ -80,7 +80,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     `).bind('twitch', period.windowStart, period.windowEnd).all<SnapshotRow>()
     const rows = result.results ?? []
 
-    // Keep the normal Day Flow route on the exact pre-category code path.
+    // Retain the category-agnostic API fallback for callers that omit category.
+    // The public Twitch Day Flow UI always supplies category state itself.
     if (!categoryCandidateRequested) {
       return Response.json(buildPayload(rows, period, topN, bucketSize, valueMode), {
         headers: { 'cache-control': period.rangeMode === 'today' || period.rangeMode === 'rolling24h' ? 'no-store' : 'public, max-age=300' },
@@ -127,8 +128,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       activity: { available: false, note: 'Activity unavailable because the API request failed.' },
       ...(categoryCandidateRequested ? {
         categoryFilter: {
-          implementationState: 'hidden_candidate',
-          publicExposureAuthorized: false,
+          implementationState: 'public',
+          publicExposureAuthorized: true,
           contractVersion: null,
           selectedCategory: requestedCategory,
           state: 'category_unavailable',
@@ -225,7 +226,7 @@ function buildCategoryCandidatePayload(
 
   return {
     ...base,
-    note: 'ViewLoom hidden Twitch Day Flow category candidate generated from existing observed minute snapshots.',
+    note: 'ViewLoom public Twitch Day Flow category filter generated from existing observed minute snapshots.',
     coverageNote: `${base.coverageNote} Category ${stateLabel}; category bucket coverage observed=${counts.observed}, partial=${counts.partial}, unavailable=${counts.unavailable}.`,
     partialNote: projection.categoryFilter.coverageState === 'partial'
       ? 'Category metadata is partial for part of this Day Flow window. Missing category metadata is not interpreted as zero category viewers.'
@@ -233,15 +234,15 @@ function buildCategoryCandidatePayload(
         ? 'Category metadata is unavailable for this Day Flow window. No selected-category zero is inferred.'
         : base.partialNote,
     categoryFilter: {
-      implementationState: 'hidden_candidate',
-      publicExposureAuthorized: false,
+      implementationState: 'public',
+      publicExposureAuthorized: true,
       ...projection.categoryFilter,
     },
     availableCategories: projection.categoryFilter.availableCategories,
     notes: [
-      'category_candidate=true',
-      'category_implementation_state=hidden_candidate',
-      'category_public_exposure=false',
+      'category_filter=true',
+      'category_implementation_state=public',
+      'category_public_exposure=true',
       `category_selected=${requestedCategory}`,
       `category_filter_state=${projection.categoryFilter.state}`,
       `category_coverage_state=${projection.categoryFilter.coverageState}`,
