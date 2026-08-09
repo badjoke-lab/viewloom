@@ -1,0 +1,117 @@
+name: Verify Cloudflare Pages Git Integration
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/scripts/normalize-built-head.mjs'
+      - '.github/workflows/verify-cloudflare-pages-git-integration.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/scripts/normalize-built-head.mjs'
+      - '.github/workflows/verify-cloudflare-pages-git-integration.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-cloudflare-pages-git-integration-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify probe scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          allowed='^(apps/web/scripts/normalize-built-head\.mjs|\.github/workflows/verify-cloudflare-pages-git-integration\.yml)$'
+          test "${#changed[@]}" -eq 2
+          for file in "${changed[@]}"; do
+            [[ "$file" =~ $allowed ]] || { echo "Unexpected Git-integration probe change: $file" >&2; exit 1; }
+          done
+      - name: Verify no-op touch and credential-free probe boundary
+        run: |
+          set -euo pipefail
+          grep -Fq 'Governed no-op source touch for Issue #751' apps/web/scripts/normalize-built-head.mjs
+          grep -Fq 'https://www.viewloom.net/deployment.json' .github/workflows/verify-cloudflare-pages-git-integration.yml
+          ! grep -q 'CLOUDFLARE_API_TOKEN' .github/workflows/verify-cloudflare-pages-git-integration.yml
+          ! grep -q 'CLOUDFLARE_ACCOUNT_ID' .github/workflows/verify-cloudflare-pages-git-integration.yml
+          ! grep -q 'wrangler pages deploy' .github/workflows/verify-cloudflare-pages-git-integration.yml
+      - name: Typecheck and build unchanged product
+        run: |
+          pnpm --filter @viewloom/web typecheck
+          pnpm build:web
+
+  production-probe:
+    if: github.event_name == 'push'
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Poll primary production for exact Git SHA
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+          ORIGIN: https://www.viewloom.net
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/pages-git-integration-probe
+          success=false
+          for attempt in $(seq 1 90); do
+            observed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            if curl -fsS --max-time 20 "$ORIGIN/deployment.json?gitProbe=$GITHUB_RUN_ID-$attempt" -o /tmp/deployment.json; then
+              cp /tmp/deployment.json artifacts/pages-git-integration-probe/last-deployment.json
+              observed_sha=$(jq -r '.commit_sha // ""' /tmp/deployment.json)
+              jq -n \
+                --arg schema 'viewloom-pages-git-integration-probe-v1' \
+                --arg expected "$EXPECTED_SHA" \
+                --arg observed "$observed_sha" \
+                --arg observed_at "$observed_at" \
+                --argjson attempt "$attempt" \
+                --slurpfile deployment /tmp/deployment.json \
+                '{schema:$schema, expected_sha:$expected, observed_sha:$observed, observed_at:$observed_at, attempt:$attempt, deployment:$deployment[0]}' \
+                > artifacts/pages-git-integration-probe/probe.json
+              if [[ "$observed_sha" == "$EXPECTED_SHA" ]] \
+                && [[ "$(jq -r '.environment // ""' /tmp/deployment.json)" == 'production' ]] \
+                && [[ "$(jq -r '.branch // ""' /tmp/deployment.json)" == 'main' ]]; then
+                success=true
+                break
+              fi
+            else
+              jq -n \
+                --arg schema 'viewloom-pages-git-integration-probe-v1' \
+                --arg expected "$EXPECTED_SHA" \
+                --arg observed_at "$observed_at" \
+                --argjson attempt "$attempt" \
+                '{schema:$schema, expected_sha:$expected, observed_sha:null, observed_at:$observed_at, attempt:$attempt, fetch_error:true}' \
+                > artifacts/pages-git-integration-probe/probe.json
+            fi
+            sleep 5
+          done
+          if [[ "$success" != true ]]; then
+            echo "Cloudflare Pages Git integration did not publish exact main SHA $EXPECTED_SHA" >&2
+            cat artifacts/pages-git-integration-probe/probe.json >&2
+            exit 1
+          fi
+          cat artifacts/pages-git-integration-probe/probe.json
+      - name: Upload Git-integration probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-pages-git-integration-probe
+          path: artifacts/pages-git-integration-probe/
+          if-no-files-found: error
+          retention-days: 30
