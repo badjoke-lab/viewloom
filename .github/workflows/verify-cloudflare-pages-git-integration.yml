@@ -58,12 +58,8 @@ jobs:
           for (const fragment of forbidden) {
             if (source.includes(fragment)) throw new Error(`credential_or_mutation_boundary_violation:${fragment}`)
           }
-          if (!source.includes('observed_sha')) throw new Error('exact_sha_observation_missing')
-          if (!source.includes("environment')\" == 'production'".replace("environment')", "environment // \\\"\\\"' /tmp/deployment.json)\""))) {
-            // Structural guard is checked below with simpler immutable fragments.
-          }
           for (const fragment of [
-            "observed_sha=\$(jq -r '.commit_sha // \"\"' /tmp/deployment.json)",
+            "observed_sha=$(jq -r '.commit_sha // \"\"' /tmp/deployment.json)",
             "== 'production'",
             "== 'main'",
             'cloudflare-pages-git-integration-probe',
