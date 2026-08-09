@@ -87,7 +87,7 @@ assert.equal(hiddenAcceptance.authorization.publicTwitchDayFlowCategoryUiAuthori
 for (const fragment of [
   "const enabled = provider === 'twitch'",
   "root.dataset.dayflowCategoryPreview = 'public'",
-  '>Category</label>',
+  '<label class="toolbar-label" for="dayflow-category-preview-select">Category</label>',
   'aria-label="Twitch Day Flow category"',
   "filter.implementationState !== 'public'",
   'filter.publicExposureAuthorized !== true',
