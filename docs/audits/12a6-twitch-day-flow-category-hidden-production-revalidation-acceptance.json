@@ -85,6 +85,6 @@
     "crossProviderBehaviorAuthorized": false,
     "cloudflareCredentialMutationAuthorized": false
   },
-  "acceptancePr": 0,
+  "acceptancePr": 756,
   "nextGate": "Make a separate Twitch Day Flow public-cutover decision. Do not expose normal-route Twitch category controls from this evidence-acceptance PR."
 }
