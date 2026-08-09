@@ -79,7 +79,7 @@
     "combinedProviderRankingAuthorized": false,
     "cloudflareCredentialMutationAuthorized": false
   },
-  "publicCutoverPr": 0,
+  "publicCutoverPr": 758,
   "productionAcceptanceRequired": true,
   "nextGate": "Merge the Twitch-only public cutover, let confirmed Pages Git integration publish the exact main SHA, run dedicated public production acceptance, freeze exact acceptance evidence, and only then close the Day Flow category rollout."
 }
