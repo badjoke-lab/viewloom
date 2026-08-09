@@ -37,6 +37,7 @@ const EVENT_NAME = 'viewloom:dayflow-category-payload'
 const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
 const initialUrl = new URL(window.location.href)
 const enabled = provider === 'twitch'
+const legacyPreviewAtLoad = initialUrl.searchParams.get(PREVIEW_PARAM) === '1'
 let selectedCategory = normalizeCategory(initialUrl.searchParams.get(CATEGORY_PARAM))
 let publicInteractionSeen = false
 let lastPayload: CategoryPayload | null = null
@@ -63,6 +64,7 @@ function preservePublicUrlState(): void {
     const next = new URL(String(url), window.location.origin)
     if (next.pathname === window.location.pathname) {
       next.searchParams.set(CATEGORY_PARAM, selectedCategory)
+      if (legacyPreviewAtLoad && !publicInteractionSeen) next.searchParams.set(PREVIEW_PARAM, '1')
       if (publicInteractionSeen) next.searchParams.delete(PREVIEW_PARAM)
       return originalReplaceState(data, unused, `${next.pathname}${next.search}${next.hash}`)
     }
@@ -109,6 +111,8 @@ function installControls(): void {
     </div>
     <span class="dayflow-category-preview__status" role="status" aria-live="polite">Loading category coverage…</span>
   `
+  const label = root.querySelector<HTMLLabelElement>('label[for="dayflow-category-preview-select"]')
+  if (label) label.style.textTransform = 'none'
   toolbar.insertBefore(root, toolbar.firstChild)
 
   const select = root.querySelector<HTMLSelectElement>('[data-dayflow-category-preview-select]')
