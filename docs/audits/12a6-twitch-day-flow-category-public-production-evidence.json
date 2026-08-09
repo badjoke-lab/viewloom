@@ -1,0 +1,134 @@
+{
+  "schemaVersion": "viewloom-12a6-twitch-day-flow-category-public-production-evidence-v1",
+  "observedAt": "2026-08-09T13:23:47.389Z",
+  "origin": "https://www.viewloom.net",
+  "expectedProductionSha": "18347cdcb6af3248a44c62f8f56b7932b459cb96",
+  "validationDate": "2026-08-08",
+  "deployment": {
+    "schema": "viewloom-deployment-v1",
+    "generated_at": "2026-08-09T13:22:38.012Z",
+    "environment": "production",
+    "branch": "main",
+    "commit_sha": "18347cdcb6af3248a44c62f8f56b7932b459cb96",
+    "pages_url": "https://556f7241.viewloom.pages.dev",
+    "primary_origin": "https://www.viewloom.net",
+    "canonical_host": "www.viewloom.net",
+    "propagationAttempts": 2
+  },
+  "status": "pass",
+  "scenarios": [
+    {
+      "name": "twitch-public-fixed-day-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "requests": [
+        "https://www.viewloom.net/api/day-flow?metric=volume&top=20&bucket=5&rangeMode=date&date=2026-08-08&category=all",
+        "https://www.viewloom.net/api/day-flow?metric=volume&top=20&bucket=5&rangeMode=date&date=2026-08-08&category=509658"
+      ],
+      "checks": {
+        "categoryOptions": 413,
+        "selectedCategory": "509658",
+        "selectedBandCount": 21,
+        "coverageCounts": {
+          "observed": 96,
+          "partial": 192,
+          "unavailable": 0
+        },
+        "globalTotalsPreserved": true,
+        "pageGeometry": {
+          "width": 1440,
+          "scrollWidth": 1440,
+          "overflow": false
+        }
+      },
+      "status": "pass"
+    },
+    {
+      "name": "twitch-public-fixed-day-mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "requests": [
+        "https://www.viewloom.net/api/day-flow?metric=volume&top=20&bucket=5&rangeMode=date&date=2026-08-08&category=all"
+      ],
+      "checks": {
+        "box": {
+          "x": 14,
+          "y": 652.9375,
+          "width": 362,
+          "height": 194
+        },
+        "pageGeometry": {
+          "width": 390,
+          "scrollWidth": 390,
+          "overflow": false
+        },
+        "coverageCounts": {
+          "observed": 96,
+          "partial": 192,
+          "unavailable": 0
+        }
+      },
+      "status": "pass"
+    },
+    {
+      "name": "twitch-public-legacy-preview-compatibility",
+      "viewport": {
+        "width": 1024,
+        "height": 800
+      },
+      "requests": [
+        "https://www.viewloom.net/api/day-flow?metric=volume&top=20&bucket=5&rangeMode=date&date=2026-08-08&category=all",
+        "https://www.viewloom.net/api/day-flow?metric=volume&top=20&bucket=5&rangeMode=date&date=2026-08-08&category=509658"
+      ],
+      "checks": {
+        "selectedCategory": "509658",
+        "legacyParameterRemoved": true
+      },
+      "status": "pass"
+    },
+    {
+      "name": "twitch-public-unknown-category",
+      "viewport": {
+        "width": 1024,
+        "height": 800
+      },
+      "requests": [
+        "https://www.viewloom.net/api/day-flow?metric=volume&top=20&bucket=5&rangeMode=date&date=2026-08-08&category=__viewloom_unknown_category__"
+      ],
+      "checks": {
+        "state": "unknown_category",
+        "bandCount": 0,
+        "statusText": "Unknown Twitch category · coverage 96 observed / 192 partial / 0 unavailable buckets"
+      },
+      "status": "pass"
+    },
+    {
+      "name": "kick-public-cutover-isolation",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "requests": [
+        "https://www.viewloom.net/api/kick-day-flow?metric=volume&top=20&bucket=5&rangeMode=date&date=2026-08-08"
+      ],
+      "checks": {
+        "bucketCount": 288,
+        "bandCount": 21,
+        "pageGeometry": {
+          "width": 390,
+          "scrollWidth": 390,
+          "overflow": false
+        }
+      },
+      "status": "pass"
+    }
+  ],
+  "failures": [],
+  "publicTwitchDayFlowCategoryUiActive": true,
+  "kickCategoryUiEnabled": false,
+  "productionMutationPerformed": false
+}
