@@ -20,11 +20,12 @@
   },
   "target": {
     "origin": "https://www.viewloom.net",
-    "normalRoute": "/twitch/day-flow/?range=date&date=2026-08-08&auto=off",
-    "hiddenRoute": "/twitch/day-flow/?categoryPreview=1&category=all&range=date&date=2026-08-08&auto=off",
-    "unknownCategoryRoute": "/twitch/day-flow/?categoryPreview=1&category=__viewloom_unknown_category__&range=date&date=2026-08-08&auto=off",
-    "kickControlRoute": "/kick/day-flow/?categoryPreview=1&category=all&range=date&date=2026-08-08&auto=off",
+    "normalRoute": "/twitch/day-flow/?rangeMode=date&date=2026-08-08&auto=off",
+    "hiddenRoute": "/twitch/day-flow/?categoryPreview=1&category=all&rangeMode=date&date=2026-08-08&auto=off",
+    "unknownCategoryRoute": "/twitch/day-flow/?categoryPreview=1&category=__viewloom_unknown_category__&rangeMode=date&date=2026-08-08&auto=off",
+    "kickControlRoute": "/kick/day-flow/?categoryPreview=1&category=all&rangeMode=date&date=2026-08-08&auto=off",
     "hiddenEntry": "categoryPreview=1",
+    "rangeParam": "rangeMode=date",
     "validationDate": "2026-08-08"
   },
   "requiredChecks": {
