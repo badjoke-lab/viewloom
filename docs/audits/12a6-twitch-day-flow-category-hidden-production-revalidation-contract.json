@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "viewloom-12a6-twitch-day-flow-category-hidden-production-revalidation-v1",
+  "status": "ready_for_validation",
+  "phase": "12A-6-R1",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 747,
+  "provider": "twitch",
+  "feature": "day_flow_category_filter",
+  "candidate": {
+    "implementationIssue": 745,
+    "implementationPr": 746,
+    "mergeSha": "2abc28b6d81d5e970b7c6ecb7cde1010ce295834",
+    "implementationState": "hidden_candidate",
+    "publicCutoverAuthorized": false
+  },
+  "acceptedBaselineDeployment": {
+    "sourceSha": "2abc28b6d81d5e970b7c6ecb7cde1010ce295834",
+    "deployWorkflowRun": 31303214749,
+    "conclusion": "success"
+  },
+  "target": {
+    "origin": "https://www.viewloom.net",
+    "normalRoute": "/twitch/day-flow/?range=date&date=2026-08-08&auto=off",
+    "hiddenRoute": "/twitch/day-flow/?categoryPreview=1&category=all&range=date&date=2026-08-08&auto=off",
+    "unknownCategoryRoute": "/twitch/day-flow/?categoryPreview=1&category=__viewloom_unknown_category__&range=date&date=2026-08-08&auto=off",
+    "kickControlRoute": "/kick/day-flow/?categoryPreview=1&category=all&range=date&date=2026-08-08&auto=off",
+    "hiddenEntry": "categoryPreview=1",
+    "validationDate": "2026-08-08"
+  },
+  "requiredChecks": {
+    "productionSourcePropagation": true,
+    "exactPagesDeployRunResolution": true,
+    "normalRouteStillUnfiltered": true,
+    "desktopHiddenControls": true,
+    "mobileHiddenControls": true,
+    "realTwitchApi": true,
+    "categoryOptionsNonempty": true,
+    "filterBeforeTopN": true,
+    "perObservedSnapshotMembership": true,
+    "latestCategoryBackProjectionForbidden": true,
+    "categorySelection": true,
+    "globalFullShareTotalsPreserved": true,
+    "topFocusDenominatorPreserved": true,
+    "coverageDisclosure": true,
+    "unknownCategoryState": true,
+    "urlStatePersistence": true,
+    "accessibleLabel": true,
+    "noHorizontalOverflow": true,
+    "kickIsolation": true,
+    "providerSeparation": true,
+    "publicExposureFlagFalse": true
+  },
+  "boundary": {
+    "readOnly": true,
+    "collectorMutationAuthorized": false,
+    "workerDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "schemaChangeAuthorized": false,
+    "bindingChangeAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "retentionChangeAuthorized": false,
+    "backfillAuthorized": false,
+    "thresholdRelaxationAuthorized": false,
+    "historyCategoryUiAuthorized": false,
+    "kickCategoryUiAuthorized": false,
+    "publicTwitchDayFlowCategoryUiAuthorized": false,
+    "defaultRouteExposureAuthorized": false,
+    "publicNavigationAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  },
+  "execution": {
+    "script": "apps/web/scripts/twitch-day-flow-category-hidden-production-revalidation.mjs",
+    "workflow": ".github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation.yml",
+    "artifactName": "analytics-12a6-twitch-day-flow-category-hidden-production-revalidation",
+    "productionOnPullRequest": false,
+    "productionOnMainPush": true,
+    "productionSourceIdentity": "deployment.json commit_sha must equal the main push SHA",
+    "deployRunIdentity": "matching successful Deploy Web Pages push run for the same main SHA"
+  },
+  "nextGate": "Merge only the read-only validation package, execute production revalidation from main after the matching Pages deployment succeeds and propagates, then freeze and separately accept exact run/job/artifact evidence before any public Day Flow category cutover decision."
+}
