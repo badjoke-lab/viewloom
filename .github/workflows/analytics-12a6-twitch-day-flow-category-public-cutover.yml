@@ -6,10 +6,15 @@ on:
     paths:
       - '.github/workflows/analytics-12a6-twitch-day-flow-category-public-cutover.yml'
       - '.github/workflows/analytics-12a6-twitch-day-flow-category-candidate.yml'
+      - '.github/workflows/quality-u10g-architecture.yml'
       - 'docs/audits/12a6-twitch-day-flow-category-public-cutover-decision.json'
+      - 'docs/work-in-progress/u10g-architecture.md'
       - 'scripts/verify-12a6-twitch-day-flow-category-public-cutover.mjs'
+      - 'scripts/verify-quality-u10g-architecture.mjs'
+      - 'scripts/verify-quality-u10g-browser-evidence.mjs'
       - 'apps/web/scripts/twitch-day-flow-category-public-production-acceptance.mjs'
       - 'apps/web/scripts/verify-production-source.mjs'
+      - 'apps/web/scripts/quality-u10g-architecture-browser.mjs'
       - 'apps/web/functions/api/day-flow.ts'
       - 'apps/web/src/live/day-flow-category-preview-entry.ts'
       - 'apps/web/src/live/day-flow-twitch-entry.ts'
@@ -18,10 +23,15 @@ on:
     paths:
       - '.github/workflows/analytics-12a6-twitch-day-flow-category-public-cutover.yml'
       - '.github/workflows/analytics-12a6-twitch-day-flow-category-candidate.yml'
+      - '.github/workflows/quality-u10g-architecture.yml'
       - 'docs/audits/12a6-twitch-day-flow-category-public-cutover-decision.json'
+      - 'docs/work-in-progress/u10g-architecture.md'
       - 'scripts/verify-12a6-twitch-day-flow-category-public-cutover.mjs'
+      - 'scripts/verify-quality-u10g-architecture.mjs'
+      - 'scripts/verify-quality-u10g-browser-evidence.mjs'
       - 'apps/web/scripts/twitch-day-flow-category-public-production-acceptance.mjs'
       - 'apps/web/scripts/verify-production-source.mjs'
+      - 'apps/web/scripts/quality-u10g-architecture-browser.mjs'
       - 'apps/web/functions/api/day-flow.ts'
       - 'apps/web/src/live/day-flow-category-preview-entry.ts'
       - 'apps/web/src/live/day-flow-twitch-entry.ts'
@@ -43,7 +53,7 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify public-cutover scope
+      - name: Verify public-cutover or U10G-maintenance scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -52,11 +62,22 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-public-cutover\.yml|\.github/workflows/analytics-12a6-twitch-day-flow-category-candidate\.yml|docs/audits/12a6-twitch-day-flow-category-public-cutover-decision\.json|scripts/verify-12a6-twitch-day-flow-category-public-cutover\.mjs|apps/web/scripts/twitch-day-flow-category-public-production-acceptance\.mjs|apps/web/scripts/verify-production-source\.mjs|apps/web/functions/api/day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-twitch-entry\.ts)$'
-          test "${#changed[@]}" -eq 9
-          for file in "${changed[@]}"; do
-            [[ "$file" =~ $allowed ]] || { echo "Unexpected public-cutover change: $file" >&2; exit 1; }
-          done
+          cutover='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-public-cutover\.yml|\.github/workflows/analytics-12a6-twitch-day-flow-category-candidate\.yml|docs/audits/12a6-twitch-day-flow-category-public-cutover-decision\.json|scripts/verify-12a6-twitch-day-flow-category-public-cutover\.mjs|apps/web/scripts/twitch-day-flow-category-public-production-acceptance\.mjs|apps/web/scripts/verify-production-source\.mjs|apps/web/functions/api/day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-twitch-entry\.ts)$'
+          maintenance='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-public-cutover\.yml|\.github/workflows/quality-u10g-architecture\.yml|docs/work-in-progress/u10g-architecture\.md|scripts/verify-quality-u10g-architecture\.mjs|scripts/verify-quality-u10g-browser-evidence\.mjs|apps/web/scripts/quality-u10g-architecture-browser\.mjs|apps/web/src/live/day-flow-twitch-entry\.ts)$'
+          exact_scope() {
+            local expected="$1"
+            local regex="$2"
+            [[ "${#changed[@]}" -eq "$expected" ]] || return 1
+            for file in "${changed[@]}"; do [[ "$file" =~ $regex ]] || return 1; done
+          }
+          if exact_scope 9 "$cutover"; then
+            echo 'Validated original public-cutover scope.'
+          elif exact_scope 7 "$maintenance"; then
+            echo 'Validated bounded U10G public-category maintenance scope.'
+          else
+            echo 'Unexpected public-cutover/U10G maintenance scope.' >&2
+            exit 1
+          fi
       - name: Verify accepted public-cutover decision
         run: node scripts/verify-12a6-twitch-day-flow-category-public-cutover.mjs
       - name: Verify retained category projection semantics
