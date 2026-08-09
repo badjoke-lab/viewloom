@@ -141,7 +141,7 @@ for (const key of [
   'crossProviderBehaviorAuthorized',
   'cloudflareCredentialMutationAuthorized',
 ]) assert.equal(acceptance.authorization[key], false, `${key}: must remain false`)
-assert.equal(acceptance.acceptancePr, 0)
+assert.equal(acceptance.acceptancePr, 756)
 
 console.log(JSON.stringify({
   status: 'pass',
