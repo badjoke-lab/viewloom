@@ -76,7 +76,7 @@ for (const key of [
   'thresholdRelaxationAuthorized', 'crossProviderBehaviorAuthorized', 'combinedProviderRankingAuthorized',
   'cloudflareCredentialMutationAuthorized',
 ]) assert.equal(decision.authorization[key], false, `${key}: must remain false`)
-assert.equal(decision.publicCutoverPr, 0)
+assert.equal(decision.publicCutoverPr, 758)
 assert.equal(decision.productionAcceptanceRequired, true)
 
 assert.equal(hiddenAcceptance.status, 'accepted_on_merge')
