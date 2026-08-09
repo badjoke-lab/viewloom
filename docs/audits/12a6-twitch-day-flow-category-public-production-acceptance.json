@@ -95,6 +95,6 @@
     "combinedProviderRankingAuthorized": false,
     "cloudflareCredentialMutationAuthorized": false
   },
-  "acceptancePr": 0,
+  "acceptancePr": 764,
   "nextGate": "Close Twitch Day Flow public rollout and make a separate Twitch History category decision. Do not infer History UI or Kick category authorization from Day Flow acceptance."
 }
