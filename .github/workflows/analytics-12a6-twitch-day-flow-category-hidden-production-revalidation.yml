@@ -97,7 +97,7 @@ jobs:
             "filter.implementationState !== 'hidden_candidate'",
             'filter.publicExposureAuthorized !== false',
             "filter.state === 'unknown_category'",
-            "filter.state === 'category_unavailable'",
+            "state === 'category_unavailable'",
             'Category metadata unavailable',
             'no zero inferred',
             'window.history.replaceState',
