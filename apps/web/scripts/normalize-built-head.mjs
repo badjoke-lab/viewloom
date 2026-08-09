@@ -1,6 +1,9 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+// Governed no-op source touch for Issue #751: this comment intentionally changes
+// an apps/web source path without changing generated product behavior, allowing
+// the production probe to determine whether Cloudflare Pages Git integration is active.
 const dist = join(process.cwd(), 'dist')
 const measurementId = 'G-YHX7HS1VBK'
 const tagUrl = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
