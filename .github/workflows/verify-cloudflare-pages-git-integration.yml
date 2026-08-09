@@ -29,7 +29,7 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify probe scope
+      - name: Verify retained production-path scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -38,12 +38,11 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(apps/web/scripts/normalize-built-head\.mjs|\.github/workflows/verify-cloudflare-pages-git-integration\.yml)$'
-          test "${#changed[@]}" -eq 2
+          allowed='^(apps/web/scripts/normalize-built-head\.mjs|\.github/workflows/verify-cloudflare-pages-git-integration\.yml|\.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation\.yml|docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-contract\.json)$'
           for file in "${changed[@]}"; do
-            [[ "$file" =~ $allowed ]] || { echo "Unexpected Git-integration probe change: $file" >&2; exit 1; }
+            [[ "$file" =~ $allowed ]] || { echo "Unexpected retained Git-integration verification change: $file" >&2; exit 1; }
           done
-      - name: Verify no-op touch and credential-free probe boundary
+      - name: Verify credential-free exact-SHA boundary
         run: |
           set -euo pipefail
           grep -Fq 'Governed no-op source touch for Issue #751' apps/web/scripts/normalize-built-head.mjs
@@ -58,6 +57,14 @@ jobs:
           ]
           for (const fragment of forbidden) {
             if (source.includes(fragment)) throw new Error(`credential_or_mutation_boundary_violation:${fragment}`)
+          }
+          for (const fragment of [
+            "observed_sha=$(jq -r '.commit_sha // \"\"' /tmp/deployment.json)",
+            "== 'production'",
+            "== 'main'",
+            'cloudflare-pages-git-integration-probe',
+          ]) {
+            if (!source.includes(fragment)) throw new Error(`retained_exact_sha_fragment_missing:${fragment}`)
           }
           NODE
       - name: Typecheck and build unchanged product

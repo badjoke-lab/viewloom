@@ -1,9 +1,10 @@
 {
-  "schemaVersion": "viewloom-12a6-twitch-day-flow-category-hidden-production-revalidation-v1",
+  "schemaVersion": "viewloom-12a6-twitch-day-flow-category-hidden-production-revalidation-v2",
   "status": "ready_for_validation",
-  "phase": "12A-6-R1",
+  "phase": "12A-6-R2",
   "parentTrackingIssue": 623,
   "trackingIssue": 747,
+  "productionPathCorrectionIssue": 753,
   "provider": "twitch",
   "feature": "day_flow_category_filter",
   "candidate": {
@@ -13,10 +14,27 @@
     "implementationState": "hidden_candidate",
     "publicCutoverAuthorized": false
   },
-  "acceptedBaselineDeployment": {
-    "sourceSha": "2abc28b6d81d5e970b7c6ecb7cde1010ce295834",
-    "deployWorkflowRun": 31303214749,
-    "conclusion": "success"
+  "acceptedProductionPath": {
+    "mode": "cloudflare_pages_git_integration",
+    "evidenceIssue": 751,
+    "evidencePr": 752,
+    "evidenceMainSha": "480cb3e8d6a15773fe7561960a7a5c2c9f2806e8",
+    "workflowRun": 31304322090,
+    "job": 93222156388,
+    "artifactId": 9035470757,
+    "artifactDigest": "sha256:f3c3c550f3a9d5200f4d2d8e730de5c36152daa5af8e37798d5c3f17d7ca8fd0",
+    "observedAttempt": 13,
+    "observedPagesUrl": "https://5ccd2914.viewloom.pages.dev",
+    "credentialFree": true,
+    "manualWranglerRequired": false
+  },
+  "manualDeploymentPath": {
+    "workflow": ".github/workflows/deploy-web-pages.yml",
+    "status": "fail_closed_external_auth_blocked",
+    "falseGreenFixedByIssue": 749,
+    "falseGreenFixedByPr": 750,
+    "cloudflareErrorCode": 10000,
+    "acceptedAsProductionAuthority": false
   },
   "target": {
     "origin": "https://www.viewloom.net",
@@ -29,8 +47,9 @@
     "validationDate": "2026-08-08"
   },
   "requiredChecks": {
+    "confirmedGitIntegrationPath": true,
+    "exactPrimaryOriginProductionIdentity": true,
     "productionSourcePropagation": true,
-    "exactPagesDeployRunResolution": true,
     "normalRouteStillUnfiltered": true,
     "desktopHiddenControls": true,
     "mobileHiddenControls": true,
@@ -67,7 +86,8 @@
     "publicTwitchDayFlowCategoryUiAuthorized": false,
     "defaultRouteExposureAuthorized": false,
     "publicNavigationAuthorized": false,
-    "crossProviderBehaviorAuthorized": false
+    "crossProviderBehaviorAuthorized": false,
+    "cloudflareCredentialMutationAuthorized": false
   },
   "execution": {
     "script": "apps/web/scripts/twitch-day-flow-category-hidden-production-revalidation.mjs",
@@ -75,8 +95,9 @@
     "artifactName": "analytics-12a6-twitch-day-flow-category-hidden-production-revalidation",
     "productionOnPullRequest": false,
     "productionOnMainPush": true,
-    "productionSourceIdentity": "deployment.json commit_sha must equal the main push SHA",
-    "deployRunIdentity": "matching successful Deploy Web Pages push run for the same main SHA"
+    "productionSourceIdentity": "primary-origin deployment.json must report the exact main push SHA, environment=production, branch=main",
+    "deploymentPathIdentity": "confirmed Cloudflare Pages Git integration from Issue #751 / PR #752; a successful manual Deploy Web Pages run is neither required nor accepted as source-of-truth",
+    "gitIntegrationTriggerPath": "apps/web/scripts/normalize-built-head.mjs behavior-neutral source touch"
   },
-  "nextGate": "Merge only the read-only validation package, execute production revalidation from main after the matching Pages deployment succeeds and propagates, then freeze and separately accept exact run/job/artifact evidence before any public Day Flow category cutover decision."
+  "nextGate": "Merge only the corrected read-only validation package, let the confirmed Git integration publish that exact main SHA, execute the hidden production revalidation against the primary origin, then freeze and separately accept exact run/job/artifact evidence before any public Day Flow category cutover decision."
 }
