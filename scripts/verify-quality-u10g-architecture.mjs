@@ -53,6 +53,7 @@ assert.ok(twitchEntry.includes(controllerImport),'Twitch bootstrap missing singl
 assert.ok(twitchEntry.indexOf(categoryImport)<twitchEntry.indexOf(controllerImport),'public category boundary must initialize before controller hydration')
 for (const fragment of [
   "const enabled = provider === 'twitch'",
+  "const legacyPreviewAtLoad = initialUrl.searchParams.get(PREVIEW_PARAM) === '1'",
   "root.dataset.dayflowCategoryPreview = 'public'",
   "filter.implementationState !== 'public'",
   'filter.publicExposureAuthorized !== true',
@@ -62,9 +63,10 @@ for (const fragment of [
   'if (next.pathname === window.location.pathname)',
   'requestUrl.searchParams.set(CATEGORY_PARAM, selectedCategory)',
   'next.searchParams.set(CATEGORY_PARAM, selectedCategory)',
+  "if (legacyPreviewAtLoad && !publicInteractionSeen) next.searchParams.set(PREVIEW_PARAM, '1')",
   'if (publicInteractionSeen) next.searchParams.delete(PREVIEW_PARAM)',
 ]) assert.ok(categoryBoundary.includes(fragment),`public Twitch category boundary missing ${fragment}`)
-assert.equal(categoryBoundary.includes("initialUrl.searchParams.get(PREVIEW_PARAM) === '1'"),false,'public category boundary must not require categoryPreview=1')
+assert.equal(categoryBoundary.includes("const enabled = provider === 'twitch' && initialUrl.searchParams.get(PREVIEW_PARAM) === '1'"),false,'public category boundary must not require categoryPreview=1')
 assert.equal(categoryBoundary.includes('URLSearchParams.prototype.get ='),false,'public category boundary must not replace URLSearchParams.prototype.get')
 
 const dayMain=read('apps/web/src/live/day-flow-current-shell-entry.ts')
@@ -114,6 +116,7 @@ for (const fragment of ['name: Quality U10G Architecture','Verify U10G repositor
 console.log('U10G architecture repository verification passed.')
 console.log('- one Day Flow controller remains authoritative per provider route')
 console.log('- Twitch public category boundary is explicitly scoped to same-origin Day Flow fetch/history coordination')
+console.log('- legacy categoryPreview=1 is preserved only as URL compatibility until public Category interaction')
 console.log('- Kick Day Flow and both Battle Lines routes retain native browser identities')
 console.log('- URLSearchParams.prototype.get remains native on every route')
 console.log('- Battle Lines architecture and provider separation retained')

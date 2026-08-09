@@ -86,17 +86,21 @@ assert.equal(hiddenAcceptance.authorization.publicTwitchDayFlowCategoryUiAuthori
 
 for (const fragment of [
   "const enabled = provider === 'twitch'",
+  "const legacyPreviewAtLoad = initialUrl.searchParams.get(PREVIEW_PARAM) === '1'",
   "root.dataset.dayflowCategoryPreview = 'public'",
   '<label class="toolbar-label" for="dayflow-category-preview-select">Category</label>',
+  "label.style.textTransform = 'none'",
   'aria-label="Twitch Day Flow category"',
   "filter.implementationState !== 'public'",
   'filter.publicExposureAuthorized !== true',
+  "if (legacyPreviewAtLoad && !publicInteractionSeen) next.searchParams.set(PREVIEW_PARAM, '1')",
+  'if (publicInteractionSeen) next.searchParams.delete(PREVIEW_PARAM)',
   'url.searchParams.delete(PREVIEW_PARAM)',
   "requestUrl.searchParams.set(CATEGORY_PARAM, selectedCategory)",
   'no zero inferred',
   'Unknown Twitch category',
 ]) assert.ok(categoryEntry.includes(fragment), `public category entry missing: ${fragment}`)
-assert.equal(categoryEntry.includes("initialUrl.searchParams.get(PREVIEW_PARAM) === '1'"), false, 'public UI must not require categoryPreview=1')
+assert.equal(categoryEntry.includes("const enabled = provider === 'twitch' && initialUrl.searchParams.get(PREVIEW_PARAM) === '1'"), false, 'public UI must not require categoryPreview=1')
 
 for (const fragment of [
   "import './day-flow-category-preview-entry'",

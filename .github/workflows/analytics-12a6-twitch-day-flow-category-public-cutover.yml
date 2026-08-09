@@ -53,7 +53,7 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify public-cutover or U10G-maintenance scope
+      - name: Verify public-cutover, U10G-maintenance, or compatibility-hotfix scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -64,6 +64,7 @@ jobs:
           printf '%s\n' "${changed[@]}"
           cutover='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-public-cutover\.yml|\.github/workflows/analytics-12a6-twitch-day-flow-category-candidate\.yml|docs/audits/12a6-twitch-day-flow-category-public-cutover-decision\.json|scripts/verify-12a6-twitch-day-flow-category-public-cutover\.mjs|apps/web/scripts/twitch-day-flow-category-public-production-acceptance\.mjs|apps/web/scripts/verify-production-source\.mjs|apps/web/functions/api/day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-twitch-entry\.ts)$'
           maintenance='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-public-cutover\.yml|\.github/workflows/quality-u10g-architecture\.yml|docs/work-in-progress/u10g-architecture\.md|scripts/verify-quality-u10g-architecture\.mjs|scripts/verify-quality-u10g-browser-evidence\.mjs|apps/web/scripts/quality-u10g-architecture-browser\.mjs|apps/web/src/live/day-flow-twitch-entry\.ts)$'
+          compatibility='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-public-cutover\.yml|scripts/verify-12a6-twitch-day-flow-category-public-cutover\.mjs|scripts/verify-quality-u10g-architecture\.mjs|apps/web/scripts/verify-production-source\.mjs|apps/web/src/live/day-flow-category-preview-entry\.ts)$'
           exact_scope() {
             local expected="$1"
             local regex="$2"
@@ -74,8 +75,10 @@ jobs:
             echo 'Validated original public-cutover scope.'
           elif exact_scope 7 "$maintenance"; then
             echo 'Validated bounded U10G public-category maintenance scope.'
+          elif exact_scope 5 "$compatibility"; then
+            echo 'Validated bounded public-category compatibility hotfix scope.'
           else
-            echo 'Unexpected public-cutover/U10G maintenance scope.' >&2
+            echo 'Unexpected public-cutover/U10G/compatibility scope.' >&2
             exit 1
           fi
       - name: Verify accepted public-cutover decision

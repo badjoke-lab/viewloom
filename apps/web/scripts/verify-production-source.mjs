@@ -78,13 +78,17 @@ if (existsSync(join(root,'src/live/day-flow-category-preview-entry.ts'))) {
   const source = read('src/live/day-flow-category-preview-entry.ts')
   requireFragments('src/live/day-flow-category-preview-entry.ts',source,[
     "const enabled = provider === 'twitch'",
+    "const legacyPreviewAtLoad = initialUrl.searchParams.get(PREVIEW_PARAM) === '1'",
     "root.dataset.dayflowCategoryPreview = 'public'",
     'aria-label="Twitch Day Flow category"',
     "filter.implementationState !== 'public'",
     'filter.publicExposureAuthorized !== true',
+    "if (legacyPreviewAtLoad && !publicInteractionSeen) next.searchParams.set(PREVIEW_PARAM, '1')",
+    'if (publicInteractionSeen) next.searchParams.delete(PREVIEW_PARAM)',
     'if (enabled) {',
   ])
-  if (source.includes("initialUrl.searchParams.get(PREVIEW_PARAM) === '1'")) failures.push('src/live/day-flow-category-preview-entry.ts: public Twitch category UI must not require categoryPreview=1')
+  const hiddenEnableGate = "const enabled = provider === 'twitch' && initialUrl.searchParams.get(PREVIEW_PARAM) === '1'"
+  if (source.includes(hiddenEnableGate)) failures.push('src/live/day-flow-category-preview-entry.ts: public Twitch category UI must not require categoryPreview=1')
 }
 
 if (failures.length) { console.error('ViewLoom production source verification failed:'); for (const failure of failures) console.error(`- ${failure}`); process.exit(1) }
