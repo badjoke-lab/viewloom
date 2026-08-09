@@ -9,6 +9,7 @@ on:
       - 'docs/audits/12a6-twitch-day-flow-category-public-cutover-decision.json'
       - 'scripts/verify-12a6-twitch-day-flow-category-public-cutover.mjs'
       - 'apps/web/scripts/twitch-day-flow-category-public-production-acceptance.mjs'
+      - 'apps/web/scripts/verify-production-source.mjs'
       - 'apps/web/functions/api/day-flow.ts'
       - 'apps/web/src/live/day-flow-category-preview-entry.ts'
       - 'apps/web/src/live/day-flow-twitch-entry.ts'
@@ -20,6 +21,7 @@ on:
       - 'docs/audits/12a6-twitch-day-flow-category-public-cutover-decision.json'
       - 'scripts/verify-12a6-twitch-day-flow-category-public-cutover.mjs'
       - 'apps/web/scripts/twitch-day-flow-category-public-production-acceptance.mjs'
+      - 'apps/web/scripts/verify-production-source.mjs'
       - 'apps/web/functions/api/day-flow.ts'
       - 'apps/web/src/live/day-flow-category-preview-entry.ts'
       - 'apps/web/src/live/day-flow-twitch-entry.ts'
@@ -50,8 +52,8 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-public-cutover\.yml|\.github/workflows/analytics-12a6-twitch-day-flow-category-candidate\.yml|docs/audits/12a6-twitch-day-flow-category-public-cutover-decision\.json|scripts/verify-12a6-twitch-day-flow-category-public-cutover\.mjs|apps/web/scripts/twitch-day-flow-category-public-production-acceptance\.mjs|apps/web/functions/api/day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-twitch-entry\.ts)$'
-          test "${#changed[@]}" -eq 8
+          allowed='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-public-cutover\.yml|\.github/workflows/analytics-12a6-twitch-day-flow-category-candidate\.yml|docs/audits/12a6-twitch-day-flow-category-public-cutover-decision\.json|scripts/verify-12a6-twitch-day-flow-category-public-cutover\.mjs|apps/web/scripts/twitch-day-flow-category-public-production-acceptance\.mjs|apps/web/scripts/verify-production-source\.mjs|apps/web/functions/api/day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-twitch-entry\.ts)$'
+          test "${#changed[@]}" -eq 9
           for file in "${changed[@]}"; do
             [[ "$file" =~ $allowed ]] || { echo "Unexpected public-cutover change: $file" >&2; exit 1; }
           done
