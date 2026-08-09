@@ -165,7 +165,7 @@ for (const key of [
   'combinedProviderRankingAuthorized',
   'cloudflareCredentialMutationAuthorized',
 ]) assert.equal(acceptance.authorization[key], false, `${key}: must remain false`)
-assert.equal(acceptance.acceptancePr, 0)
+assert.equal(acceptance.acceptancePr, 764)
 
 console.log(JSON.stringify({
   status: 'pass',
