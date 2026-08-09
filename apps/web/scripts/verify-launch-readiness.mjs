@@ -74,7 +74,7 @@ const requiredLogs = [
 const liveEntryByPage = new Map([
   ['twitch/heatmap/index.html', '/src/live/heatmap-current-shell-entry.ts'],
   ['kick/heatmap/index.html', '/src/live/heatmap-current-shell-entry.ts'],
-  ['twitch/day-flow/index.html', '/src/live/day-flow-current-shell-entry.ts'],
+  ['twitch/day-flow/index.html', '/src/live/day-flow-twitch-entry.ts'],
   ['kick/day-flow/index.html', '/src/live/day-flow-current-shell-entry.ts'],
   ['twitch/battle-lines/index.html', '/src/live/battle-lines-current-shell-entry.ts'],
   ['kick/battle-lines/index.html', '/src/live/battle-lines-current-shell-entry.ts'],
