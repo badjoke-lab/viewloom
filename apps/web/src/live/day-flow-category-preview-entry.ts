@@ -23,7 +23,7 @@ type CategoryFilter = {
   coverageCounts?: { observed?: number; partial?: number; unavailable?: number }
 }
 
-type CandidatePayload = {
+type CategoryPayload = {
   categoryFilter?: CategoryFilter
   availableCategories?: CategoryOption[]
 }
@@ -36,40 +36,40 @@ const EVENT_NAME = 'viewloom:dayflow-category-payload'
 
 const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
 const initialUrl = new URL(window.location.href)
-const enabled = provider === 'twitch' && initialUrl.searchParams.get(PREVIEW_PARAM) === '1'
+const enabled = provider === 'twitch'
 let selectedCategory = normalizeCategory(initialUrl.searchParams.get(CATEGORY_PARAM))
-let lastPayload: CandidatePayload | null = null
+let publicInteractionSeen = false
+let lastPayload: CategoryPayload | null = null
 let overlayQueued = false
 
 if (enabled) {
   installStyles()
-  preservePreviewUrlState()
+  preservePublicUrlState()
   interceptDayFlowFetch()
   installControls()
   observeStage()
   window.addEventListener(EVENT_NAME, ((event: Event) => {
-    const payload = (event as CustomEvent<CandidatePayload>).detail
+    const payload = (event as CustomEvent<CategoryPayload>).detail
     lastPayload = payload
     syncControls(payload)
     queueCoverageOverlay()
   }) as EventListener)
 }
 
-function preservePreviewUrlState(): void {
+function preservePublicUrlState(): void {
   const originalReplaceState = window.history.replaceState.bind(window.history)
   window.history.replaceState = ((data: unknown, unused: string, url?: string | URL | null) => {
     if (url == null) return originalReplaceState(data, unused, url)
     const next = new URL(String(url), window.location.origin)
     if (next.pathname === window.location.pathname) {
-      next.searchParams.set(PREVIEW_PARAM, '1')
       next.searchParams.set(CATEGORY_PARAM, selectedCategory)
+      if (publicInteractionSeen) next.searchParams.delete(PREVIEW_PARAM)
       return originalReplaceState(data, unused, `${next.pathname}${next.search}${next.hash}`)
     }
     return originalReplaceState(data, unused, url)
   }) as History['replaceState']
 
   const current = new URL(window.location.href)
-  current.searchParams.set(PREVIEW_PARAM, '1')
   current.searchParams.set(CATEGORY_PARAM, selectedCategory)
   originalReplaceState(window.history.state, '', `${current.pathname}${current.search}${current.hash}`)
 }
@@ -85,8 +85,8 @@ function interceptDayFlowFetch(): void {
     requestUrl.searchParams.set(CATEGORY_PARAM, selectedCategory)
     const nextInput = input instanceof Request ? new Request(requestUrl.toString(), input) : requestUrl.toString()
     const response = await originalFetch(nextInput, init)
-    void response.clone().json().then((payload: CandidatePayload) => {
-      window.dispatchEvent(new CustomEvent<CandidatePayload>(EVENT_NAME, { detail: payload }))
+    void response.clone().json().then((payload: CategoryPayload) => {
+      window.dispatchEvent(new CustomEvent<CategoryPayload>(EVENT_NAME, { detail: payload }))
     }).catch(() => undefined)
     return response
   }) as typeof window.fetch
@@ -99,11 +99,11 @@ function installControls(): void {
   const root = document.createElement('div')
   root.id = ROOT_ID
   root.className = 'control-stack dayflow-category-preview'
-  root.dataset.dayflowCategoryPreview = 'hidden'
+  root.dataset.dayflowCategoryPreview = 'public'
   root.innerHTML = `
-    <label class="toolbar-label" for="dayflow-category-preview-select">Category · preview</label>
+    <label class="toolbar-label" for="dayflow-category-preview-select">Category</label>
     <div class="control-group dayflow-category-preview__control">
-      <select id="dayflow-category-preview-select" data-dayflow-category-preview-select aria-label="Twitch Day Flow category preview">
+      <select id="dayflow-category-preview-select" data-dayflow-category-preview-select aria-label="Twitch Day Flow category">
         <option value="all">All categories</option>
       </select>
     </div>
@@ -115,9 +115,10 @@ function installControls(): void {
   if (select) {
     select.value = selectedCategory
     select.addEventListener('change', () => {
+      publicInteractionSeen = true
       selectedCategory = normalizeCategory(select.value)
       const url = new URL(window.location.href)
-      url.searchParams.set(PREVIEW_PARAM, '1')
+      url.searchParams.delete(PREVIEW_PARAM)
       url.searchParams.set(CATEGORY_PARAM, selectedCategory)
       window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
       document.querySelector<HTMLButtonElement>('[data-dayflow-refresh]')?.click()
@@ -125,9 +126,9 @@ function installControls(): void {
   }
 }
 
-function syncControls(payload: CandidatePayload): void {
+function syncControls(payload: CategoryPayload): void {
   const filter = payload.categoryFilter
-  if (!filter || filter.implementationState !== 'hidden_candidate' || filter.publicExposureAuthorized !== false) return
+  if (!filter || filter.implementationState !== 'public' || filter.publicExposureAuthorized !== true) return
   const root = document.getElementById(ROOT_ID)
   if (!root) return
   const select = root.querySelector<HTMLSelectElement>('[data-dayflow-category-preview-select]')
@@ -177,7 +178,7 @@ function queueCoverageOverlay(): void {
   })
 }
 
-function renderCoverageOverlay(payload: CandidatePayload | null): void {
+function renderCoverageOverlay(payload: CategoryPayload | null): void {
   const stage = document.querySelector<HTMLElement>('.dayflow-stage')
   if (!stage) return
   stage.querySelector('.dayflow-category-coverage-strip')?.remove()
