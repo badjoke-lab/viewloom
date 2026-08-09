@@ -8,7 +8,7 @@ const out = resolve(process.env.QUALITY_U10G_ARTIFACT_DIR ?? 'artifacts/quality-
 mkdirSync(out, { recursive: true })
 
 const evidence = {
-  schema: 'viewloom-quality-u10g-architecture-browser-v1',
+  schema: 'viewloom-quality-u10g-architecture-browser-v2',
   phase: 'U10G',
   candidateHead: process.env.GITHUB_HEAD_SHA ?? process.env.GITHUB_SHA ?? null,
   checkpoint: 'start',
@@ -40,8 +40,9 @@ try {
 
 async function auditDayFlow(provider, width, mode) {
   const id = `${provider}-day-flow-${mode}-${width}`
+  const expectsCategoryBoundary = provider === 'twitch'
   evidence.checkpoint = id
-  const { context, requests, crossRequests } = await dayFlowContext(provider, width)
+  const { context, requests, crossRequests, categoryRequests } = await dayFlowContext(provider, width)
   const page = await context.newPage()
   const path = mode === 'mobile-fallback' ? `/${provider}/day-flow/?layout=split` : `/${provider}/day-flow/`
   await page.goto(`${base}${path}`, { waitUntil: 'domcontentloaded' })
@@ -51,9 +52,22 @@ async function auditDayFlow(provider, width, mode) {
   const initial = await architectureSnapshot(page, 'day-flow')
   assert.equal(requests.value, 1, `${id}: Day Flow issued ${requests.value} feature requests`)
   assert.equal(crossRequests.value, 0, `${id}: Day Flow crossed provider endpoint`)
-  assert.equal(initial.fetchSame, true, `${id}: global fetch was replaced\n${initial.fetchReplacementStack ?? ''}`)
-  assert.equal(initial.replaceStateSame, true, `${id}: history.replaceState was replaced\n${initial.replaceStateReplacementStack ?? ''}`)
-  assert.equal(initial.urlGetSame, true, `${id}: URLSearchParams.get was replaced\n${initial.urlGetReplacementStack ?? ''}`)
+  assert.equal(categoryRequests.value, expectsCategoryBoundary ? 1 : 0, `${id}: category request boundary changed`)
+  if (expectsCategoryBoundary) {
+    assert.equal(initial.fetchSame, false, `${id}: authorized Twitch Day Flow fetch wrapper was not installed`)
+    assert.equal(initial.replaceStateSame, false, `${id}: authorized Twitch Day Flow history wrapper was not installed`)
+    assert.equal(initial.urlGetSame, true, `${id}: URLSearchParams.get was replaced\n${initial.urlGetReplacementStack ?? ''}`)
+    assert.equal(initial.categoryControlPresent, true, `${id}: public Category control missing`)
+    assert.equal(initial.categoryControlPublic, true, `${id}: Category control is not marked public`)
+    assert.equal(initial.categoryParam, 'all', `${id}: default public category URL state changed`)
+  } else {
+    assert.equal(initial.fetchSame, true, `${id}: Kick Day Flow replaced global fetch\n${initial.fetchReplacementStack ?? ''}`)
+    assert.equal(initial.replaceStateSame, true, `${id}: Kick Day Flow replaced history.replaceState\n${initial.replaceStateReplacementStack ?? ''}`)
+    assert.equal(initial.urlGetSame, true, `${id}: Kick Day Flow replaced URLSearchParams.get\n${initial.urlGetReplacementStack ?? ''}`)
+    assert.equal(initial.categoryControlPresent, false, `${id}: Kick exposed Twitch Category control`)
+    assert.equal(initial.categoryControlPublic, false, `${id}: Kick exposed public Twitch Category marker`)
+    assert.equal(initial.categoryParam, null, `${id}: Kick emitted category URL state`)
+  }
   assert.ok(initial.summaryCards >= 5, `${id}: enhanced summary did not render from primary payload`)
   assert.ok(initial.horizontalOverflow <= 2, `${id}: horizontal overflow ${initial.horizontalOverflow}`)
 
@@ -68,7 +82,7 @@ async function auditDayFlow(provider, width, mode) {
     assert.equal(initial.layoutRequested, 'split', `${id}: requested split state was lost`)
   }
 
-  evidence.scenarios.push({ id, feature: 'day-flow', provider, width, mode, requests: requests.value, crossRequests: crossRequests.value, initial })
+  evidence.scenarios.push({ id, feature: 'day-flow', provider, width, mode, requests: requests.value, crossRequests: crossRequests.value, categoryRequests: categoryRequests.value, initial })
   await page.screenshot({ path: resolve(out, `${id}.png`), fullPage: true })
   await context.close()
 }
@@ -91,6 +105,8 @@ async function auditBattle(provider, width, mode) {
   assert.equal(initial.fetchSame, true, `${id}: global fetch was replaced\n${initial.fetchReplacementStack ?? ''}`)
   assert.equal(initial.replaceStateSame, true, `${id}: history.replaceState was replaced\n${initial.replaceStateReplacementStack ?? ''}`)
   assert.equal(initial.urlGetSame, true, `${id}: URLSearchParams.get was replaced\n${initial.urlGetReplacementStack ?? ''}`)
+  assert.equal(initial.categoryControlPresent, false, `${id}: Battle Lines exposed Day Flow Category control`)
+  assert.equal(initial.categoryParam, null, `${id}: Battle Lines emitted Day Flow category state`)
   assert.equal(initial.selectedIndex, '1', `${id}: selected bucket was not resolved`)
   assert.equal(initial.timeParam, '2026-06-29T00:05:00.000Z', `${id}: canonical time missing`)
   assert.equal(initial.pointParam, null, `${id}: legacy point remained in canonical URL`)
@@ -120,6 +136,8 @@ async function architectureSnapshot(page, feature) {
       ? document.querySelector('[data-dayflow-layout-shell]')
       : document.querySelector('[data-battle-layout-shell]')
     const params = new URLSearchParams(location.search)
+    const categoryControl = document.querySelector('[data-dayflow-category-preview-select]')
+    const categoryRoot = document.getElementById('dayflow-category-preview-controls')
     return {
       fetchSame: native.fetchReplaced === false,
       replaceStateSame: native.replaceStateReplaced === false,
@@ -127,6 +145,9 @@ async function architectureSnapshot(page, feature) {
       fetchReplacementStack: native.fetchReplacementStack,
       replaceStateReplacementStack: native.replaceStateReplacementStack,
       urlGetReplacementStack: native.urlGetReplacementStack,
+      categoryControlPresent: categoryControl !== null,
+      categoryControlPublic: categoryRoot?.dataset.dayflowCategoryPreview === 'public',
+      categoryParam: params.get('category'),
       layoutCurrent: shell?.getAttribute(featureName === 'day-flow' ? 'data-dayflow-layout-current' : 'data-battle-layout-current'),
       layoutRequested: shell?.getAttribute(featureName === 'day-flow' ? 'data-dayflow-layout-requested' : 'data-battle-layout-requested'),
       summaryCards: document.querySelectorAll('.dayflow-summary-stat').length,
@@ -188,17 +209,23 @@ async function dayFlowContext(provider, width) {
   const context = await baseContext(width)
   const requests = { value: 0 }
   const crossRequests = { value: 0 }
+  const categoryRequests = { value: 0 }
   await context.route('**/api/kick-day-flow*', (route) => {
     if (provider === 'kick') { requests.value += 1; return replyJson(route, dayFlowPayload('kick')) }
     crossRequests.value += 1
     return route.abort()
   })
   await context.route('**/api/day-flow*', (route) => {
-    if (provider === 'twitch') { requests.value += 1; return replyJson(route, dayFlowPayload('twitch')) }
+    if (provider === 'twitch') {
+      requests.value += 1
+      const url = new URL(route.request().url())
+      if (url.searchParams.get('category') === 'all') categoryRequests.value += 1
+      return replyJson(route, dayFlowPayload('twitch'))
+    }
     crossRequests.value += 1
     return route.abort()
   })
-  return { context, requests, crossRequests }
+  return { context, requests, crossRequests, categoryRequests }
 }
 
 async function battleContext(provider, width) {
