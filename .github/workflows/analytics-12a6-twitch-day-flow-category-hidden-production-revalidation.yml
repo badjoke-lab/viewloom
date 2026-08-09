@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation.yml'
+      - '.github/workflows/verify-cloudflare-pages-git-integration.yml'
       - 'docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-contract.json'
       - 'apps/web/scripts/twitch-day-flow-category-hidden-production-revalidation.mjs'
       - 'apps/web/scripts/normalize-built-head.mjs'
@@ -48,8 +49,8 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation\.yml|docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-contract\.json|apps/web/scripts/normalize-built-head\.mjs)$'
-          test "${#changed[@]}" -eq 3
+          allowed='^(\.github/workflows/analytics-12a6-twitch-day-flow-category-hidden-production-revalidation\.yml|\.github/workflows/verify-cloudflare-pages-git-integration\.yml|docs/audits/12a6-twitch-day-flow-category-hidden-production-revalidation-contract\.json|apps/web/scripts/normalize-built-head\.mjs)$'
+          test "${#changed[@]}" -eq 4
           for file in "${changed[@]}"; do
             if ! [[ "$file" =~ $allowed ]]; then
               echo "Unexpected production-path correction change: $file" >&2
