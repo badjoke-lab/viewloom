@@ -93,7 +93,7 @@ for (const fragment of [
   'filter.publicExposureAuthorized !== true',
   'url.searchParams.delete(PREVIEW_PARAM)',
   "requestUrl.searchParams.set(CATEGORY_PARAM, selectedCategory)",
-  'Missing category metadata is not interpreted as zero category viewers',
+  'no zero inferred',
   'Unknown Twitch category',
 ]) assert.ok(categoryEntry.includes(fragment), `public category entry missing: ${fragment}`)
 assert.equal(categoryEntry.includes("initialUrl.searchParams.get(PREVIEW_PARAM) === '1'"), false, 'public UI must not require categoryPreview=1')
