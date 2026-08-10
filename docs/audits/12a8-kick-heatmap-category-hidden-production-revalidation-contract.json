@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-production-revalidation-v1",
+  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-production-revalidation-v2",
   "status": "ready_for_validation",
-  "phase": "12A-8-R1",
+  "phase": "12A-8-R2",
   "parentTrackingIssue": 623,
   "trackingIssue": 770,
   "provider": "kick",
@@ -11,8 +11,43 @@
     "apiPackagePr": 771,
     "controlsPackagePr": 772,
     "controlsMergeSha": "555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0",
+    "hiddenRevalidationPackagePr": 775,
+    "hiddenRevalidationPackageMergeSha": "7fe53d986f7bbe4e96285cc89f423513bf4cb19a",
     "hiddenRevalidationAuthorized": true,
     "publicCutoverAuthorized": false
+  },
+  "failedExactSourceAttempt": {
+    "workflowRun": 31367864808,
+    "productionJob": 93390150802,
+    "expectedSha": "7fe53d986f7bbe4e96285cc89f423513bf4cb19a",
+    "failureStage": "exact_production_source_gate",
+    "browserExecuted": false,
+    "artifactId": 9055060750,
+    "artifactDigest": "sha256:ae4c563da44d898faa24dcdd8e143b9a7a1cec3040ceb38c6955cd2685a08f41",
+    "finalObservedSha": "555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0",
+    "observedProductCandidateSha": true,
+    "expectedValidationPackageShaObserved": false,
+    "productFailureEstablished": false
+  },
+  "acceptedProductionPath": {
+    "mode": "cloudflare_pages_git_integration",
+    "evidenceIssue": 751,
+    "evidencePr": 752,
+    "evidenceMainSha": "480cb3e8d6a15773fe7561960a7a5c2c9f2806e8",
+    "workflowRun": 31304322090,
+    "job": 93222156388,
+    "artifactId": 9035470757,
+    "artifactDigest": "sha256:f3c3c550f3a9d5200f4d2d8e730de5c36152daa5af8e37798d5c3f17d7ca8fd0",
+    "observedAttempt": 13,
+    "observedPagesUrl": "https://5ccd2914.viewloom.pages.dev",
+    "credentialFree": true,
+    "manualWranglerRequired": false
+  },
+  "sourceTrigger": {
+    "path": "apps/web/scripts/normalize-built-head.mjs",
+    "behaviorNeutral": true,
+    "purpose": "ensure the recovery merge SHA enters the confirmed Cloudflare Pages Git integration build path",
+    "requiredMarker": "Governed Kick Heatmap hidden production revalidation source touch for Issue #770"
   },
   "target": {
     "origin": "https://www.viewloom.net",
@@ -71,8 +106,9 @@
     "productionOnPullRequest": false,
     "productionOnMainPush": true,
     "productionWaitsForExactWorkflowSha": true,
+    "productionAuthority": "Cloudflare Pages Git integration proven by Issue #751 / PR #752; primary-origin deployment.json exact-SHA identity",
     "screenshotsRetained": true,
     "evidenceJsonRetained": true
   },
-  "nextGate": "Merge the verified revalidation package, require exact-SHA production propagation and all five read-only browser scenarios to pass, freeze the resulting run/job/artifact/evidence, then make a separate public-cutover decision."
+  "nextGate": "Merge the bounded production-source recovery package, require the recovery merge SHA to appear on primary production, run all five read-only hidden Kick browser scenarios, freeze and separately accept the resulting run/job/artifact/evidence, then make a separate public-cutover decision."
 }
