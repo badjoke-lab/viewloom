@@ -5,17 +5,18 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a8-kick-category-hidden-production-evidence.yml'
-      - '.github/workflows/analytics-12a8-kick-category-hidden-production-revalidation.yml'
+      - '.github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation.yml'
       - 'docs/audits/12a8-kick-heatmap-category-hidden-production-evidence.json'
       - 'docs/audits/12a8-kick-heatmap-category-hidden-production-acceptance.json'
-      - 'docs/audits/12a8-kick-heatmap-category-hidden-production-revalidation-contract.json'
+      - 'docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract.json'
       - 'scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs'
   push:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a8-kick-category-hidden-production-evidence.yml'
-      - 'docs/audits/12a8-kick-heatmap-category-hidden-production-evidence.json'
+      - '.github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation.yml'
       - 'docs/audits/12a8-kick-heatmap-category-hidden-production-acceptance.json'
+      - 'docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract.json'
       - 'scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs'
 
 permissions:
@@ -31,9 +32,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Verify frozen Kick hidden production evidence
+      - name: Verify superseded Kick hidden production evidence state
         run: |
           node --check scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs
           node scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs
-      - name: Verify one-time production revalidation workflow is retired
-        run: test ! -f .github/workflows/analytics-12a8-kick-category-hidden-production-revalidation.yml
+      - name: Verify visual revalidation gate is restored
+        run: |
+          test -f .github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation.yml
+          test -f apps/web/scripts/kick-category-hidden-visual-revalidation.mjs
