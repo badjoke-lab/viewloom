@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "viewloom-12a8-kick-heatmap-category-api-package-v1",
+  "workstream": "12A-8 hidden Kick Heatmap category API package",
+  "status": "candidate",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 770,
+  "provider": "kick",
+  "acceptedDecision": {
+    "contract": "docs/audits/12a8-kick-heatmap-category-feasibility-decision.json",
+    "decisionPr": 769,
+    "requiredDecision": "authorize_hidden_kick_heatmap_category_candidate",
+    "canonicalGate": "docs/audits/12a2-current-gate-state.json",
+    "permanentCaptureAcceptancePr": 648
+  },
+  "package": {
+    "api": "apps/web/functions/api/kick-heatmap.ts",
+    "verifier": "scripts/verify-12a8-kick-heatmap-category-api-package.mjs",
+    "workflow": ".github/workflows/analytics-12a8-kick-heatmap-category-api-package.yml"
+  },
+  "apiContract": {
+    "categoryContractVersion": "category-source-v1",
+    "categoryQueryParameter": "category",
+    "topQueryParameter": "top",
+    "allowedTopValues": [20, 50, 100],
+    "defaultSelection": "all",
+    "filterBeforeTopN": true,
+    "providerDictionary": "kick",
+    "availableCategoriesRequired": true,
+    "categoryIdPerItemRequired": true,
+    "categoryNamePerItemRequired": true,
+    "unknownCategoryStateRequired": true,
+    "categoryUnavailableStateRequired": true,
+    "coverageStates": ["observed", "partial", "unavailable"],
+    "sourceModeReported": true,
+    "targetSourceReported": true,
+    "unfilteredCompatibilityPreserved": true
+  },
+  "momentumContract": {
+    "baseMetric": "viewer_delta",
+    "selectedCategoryRequiresCurrentMembership": true,
+    "selectedCategoryPreviousMembershipMustMatch": true,
+    "incompatiblePreviousObservationReturnsUnavailable": true,
+    "crossCategoryDeltaProhibited": true
+  },
+  "sourceBoundary": {
+    "primaryCategorySourceMode": "official-livestreams",
+    "fallbackSourceMayNotInventCategory": true,
+    "partialMetadataMustRemainVisible": true,
+    "missingMetadataMayNotCountAsZeroCategoryViewers": true
+  },
+  "hiddenBoundary": {
+    "implementationState": "hidden",
+    "publicExposureAuthorized": false,
+    "uiChangeIncluded": false,
+    "collectorChangeIncluded": false,
+    "workerConfigChangeIncluded": false,
+    "d1MutationIncluded": false,
+    "schemaChangeIncluded": false,
+    "cadenceChangeIncluded": false,
+    "retentionChangeIncluded": false,
+    "backfillIncluded": false,
+    "credentialChangeIncluded": false,
+    "twitchRuntimeChangeIncluded": false,
+    "crossProviderBehaviorIncluded": false
+  },
+  "validation": {
+    "decisionVerifierRequired": true,
+    "apiStaticContractRequired": true,
+    "categoryRolloutPolicyRequired": true,
+    "webTypecheckRequired": true,
+    "webBuildRequired": true
+  },
+  "nextGate": "accept the hidden Kick Heatmap category API package, then implement categoryPreview=1 controls and browser/mobile/provider-isolation validation on a separate branch before any public cutover decision"
+}
