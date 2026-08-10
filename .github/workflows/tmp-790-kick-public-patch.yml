@@ -1,0 +1,109 @@
+name: TMP 790 Kick Public Patch
+
+on:
+  push:
+    branches: [feature/790-kick-heatmap-category-public-cutover]
+    paths:
+      - '.github/workflows/tmp-790-kick-public-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/790-kick-heatmap-category-public-cutover
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply exact bounded public-cutover patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(text, old, new, label):
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected 1 match, got {count}')
+              return text.replace(old, new, 1)
+
+          def replace_count(text, old, new, expected, label):
+              count = text.count(old)
+              if count != expected:
+                  raise SystemExit(f'{label}: expected {expected} matches, got {count}')
+              return text.replace(old, new)
+
+          # Promote Kick API exposure metadata only; data semantics stay untouched.
+          path = Path('apps/web/functions/api/kick-heatmap.ts')
+          text = path.read_text()
+          text = replace_count(text, "implementationState: 'hidden'", "implementationState: 'public'", 3, 'api implementationState')
+          text = replace_count(text, 'publicExposureAuthorized: false', 'publicExposureAuthorized: true', 3, 'api publicExposureAuthorized')
+          text = replace_once(text,
+              "? `${items.length} visible of ${allItems.length} normalized Kick streams from latest observed snapshot. Category candidate remains hidden.`",
+              "? `${items.length} visible of ${allItems.length} normalized Kick streams from latest observed snapshot.`",
+              'live coverage note')
+          text = replace_once(text,
+              "? `${items.length} visible of ${allItems.length} normalized Kick streams, but latest snapshot is stale. Category candidate remains hidden.`",
+              "? `${items.length} visible of ${allItems.length} normalized Kick streams, but latest snapshot is stale.`",
+              'stale coverage note')
+          text = replace_once(text, "'category_filter_public_exposure=false'", "'category_filter_public_exposure=true'", 'api exposure note')
+          path.write_text(text)
+
+          # Freeze hidden API package verification against the repaired hidden product SHA.
+          path = Path('scripts/verify-12a8-kick-heatmap-category-api-package.mjs')
+          text = path.read_text()
+          text = replace_once(text, "import assert from 'node:assert/strict'\n", "import assert from 'node:assert/strict'\nimport { execFileSync } from 'node:child_process'\n", 'api verifier import')
+          text = replace_once(text, 'const api = read(apiPath)', "const api = execFileSync('git', ['show', 'b921f15b127f13d7ad8a7f52976e4715d08919c1:apps/web/functions/api/kick-heatmap.ts'], { encoding: 'utf8' })", 'api verifier historical source')
+          path.write_text(text)
+
+          # Freeze hidden controls package verification against the repaired hidden product SHA.
+          path = Path('scripts/verify-12a8-kick-heatmap-category-controls-package.mjs')
+          text = path.read_text()
+          text = replace_once(text, "import assert from 'node:assert/strict'\n", "import assert from 'node:assert/strict'\nimport { execFileSync } from 'node:child_process'\n", 'controls verifier import')
+          text = replace_once(text, 'const controls = read(contract.package.controls)', "const controls = execFileSync('git', ['show', 'b921f15b127f13d7ad8a7f52976e4715d08919c1:apps/web/src/features/twitch-heatmap/category-preview-controls.ts'], { encoding: 'utf8' })", 'controls verifier historical source')
+          path.write_text(text)
+
+          # Existing Twitch public verifier must recognize the third valid state: Kick public.
+          path = Path('scripts/verify-12a5-twitch-heatmap-category-public-cutover.mjs')
+          text = path.read_text()
+          old = """const kickHiddenCandidate = controls.includes(\"provider === 'kick' && url.searchParams.get(PREVIEW_PARAM) === '1'\")\nif (kickHiddenCandidate) {\n  assert.ok(controls.includes(\"provider === 'twitch' || (provider === 'kick' && url.searchParams.get(PREVIEW_PARAM) === '1')\"))\n  assert.ok(controls.includes(\"root.dataset.categoryFilter = options.provider === 'kick' ? 'hidden' : 'public'\"))\n  assert.ok(controls.includes(\"if (provider === 'kick') url.searchParams.set(PREVIEW_PARAM, '1')\"))\n  assert.ok(controls.includes('else url.searchParams.delete(PREVIEW_PARAM)'))\n  assert.ok(controls.includes('if (!options.state.enabled)'))\n} else {\n  assert.ok(controls.includes(\"const enabled = provider === 'twitch'\"))\n  assert.ok(controls.includes(\"if (!options.state.enabled || options.provider !== 'twitch')\"))\n  assert.ok(controls.includes('url.searchParams.delete(PREVIEW_PARAM)'))\n}\n"""
+          new = """const kickPublicCategory = controls.includes(\"const enabled = provider === 'twitch' || provider === 'kick'\")\n  && controls.includes(\"root.dataset.categoryFilter = 'public'\")\nconst kickHiddenCandidate = controls.includes(\"provider === 'kick' && url.searchParams.get(PREVIEW_PARAM) === '1'\")\nif (kickPublicCategory) {\n  assert.ok(controls.includes('url.searchParams.delete(PREVIEW_PARAM)'))\n  assert.ok(controls.includes('if (!options.state.enabled)'))\n} else if (kickHiddenCandidate) {\n  assert.ok(controls.includes(\"provider === 'twitch' || (provider === 'kick' && url.searchParams.get(PREVIEW_PARAM) === '1')\"))\n  assert.ok(controls.includes(\"root.dataset.categoryFilter = options.provider === 'kick' ? 'hidden' : 'public'\"))\n  assert.ok(controls.includes(\"if (provider === 'kick') url.searchParams.set(PREVIEW_PARAM, '1')\"))\n  assert.ok(controls.includes('else url.searchParams.delete(PREVIEW_PARAM)'))\n  assert.ok(controls.includes('if (!options.state.enabled)'))\n} else {\n  assert.ok(controls.includes(\"const enabled = provider === 'twitch'\"))\n  assert.ok(controls.includes(\"if (!options.state.enabled || options.provider !== 'twitch')\"))\n  assert.ok(controls.includes('url.searchParams.delete(PREVIEW_PARAM)'))\n}\n"""
+          text = replace_once(text, old, new, 'twitch verifier Kick state block')
+          path.write_text(text)
+
+          # Historical hidden package workflows need full history for git-show verification.
+          for filename in [
+              '.github/workflows/analytics-12a8-kick-heatmap-category-api-package.yml',
+              '.github/workflows/analytics-12a8-kick-heatmap-category-controls-package.yml',
+          ]:
+              path = Path(filename)
+              text = path.read_text()
+              text = replace_once(text, '      - uses: actions/checkout@v4\n', '      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0\n', f'{filename} checkout depth')
+              text = text.replace('hidden Kick category API contract and accepted decision boundary', 'historical hidden Kick category API contract and accepted decision boundary')
+              text = text.replace('hidden Kick controls and public boundaries', 'historical hidden Kick controls and current public boundaries')
+              text = text.replace('- Public category controls: no', '- Historical hidden API exposure: retained; current public state is verified separately')
+              text = text.replace('- Public Kick category exposure: not authorized', '- Historical hidden controls retained; current public authorization is verified separately')
+              path.write_text(text)
+          PY
+
+          git diff --check
+          git diff --stat
+      - name: Commit bounded patch
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            apps/web/functions/api/kick-heatmap.ts \
+            scripts/verify-12a8-kick-heatmap-category-api-package.mjs \
+            scripts/verify-12a8-kick-heatmap-category-controls-package.mjs \
+            scripts/verify-12a5-twitch-heatmap-category-public-cutover.mjs \
+            .github/workflows/analytics-12a8-kick-heatmap-category-api-package.yml \
+            .github/workflows/analytics-12a8-kick-heatmap-category-controls-package.yml
+          git diff --cached --quiet && { echo 'No patch changes produced' >&2; exit 1; }
+          git commit -m 'Promote Kick Heatmap category runtime to public'
+          git push origin HEAD:feature/790-kick-heatmap-category-public-cutover
