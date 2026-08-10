@@ -23,11 +23,13 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
       - name: Parse package verifier
         run: node --check scripts/verify-12a8-kick-heatmap-category-api-package.mjs
-      - name: Verify hidden Kick category API contract and accepted decision boundary
+      - name: Verify historical hidden Kick category API contract and accepted decision boundary
         run: node scripts/verify-12a8-kick-heatmap-category-api-package.mjs
       - name: Verify current category rollout policy
         run: node scripts/verify-category-rollout-policy.mjs
@@ -50,7 +52,7 @@ jobs:
             echo '- Fallback without usable metadata: partial/unavailable, never inferred'
             echo '- Filter before Top N: yes'
             echo '- Selected-category momentum: compatible same-category observations only'
-            echo '- Public category controls: no'
+            echo '- Historical hidden API exposure: retained; current public state is verified separately'
             echo '- UI change: no'
             echo '- Twitch runtime change: no'
             echo '- Collector / Worker / D1 / cadence / retention / backfill / credentials: unchanged'

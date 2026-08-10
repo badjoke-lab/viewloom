@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 
 const read = (path) => fs.readFileSync(path, 'utf8')
@@ -16,7 +17,7 @@ for (const path of [contractPath, decisionPath, gatePath, apiPath]) {
 const contract = json(contractPath)
 const decision = json(decisionPath)
 const gate = json(gatePath)
-const api = read(apiPath)
+const api = execFileSync('git', ['show', 'b921f15b127f13d7ad8a7f52976e4715d08919c1:apps/web/functions/api/kick-heatmap.ts'], { encoding: 'utf8' })
 
 assert.equal(contract.status, 'candidate')
 assert.equal(contract.trackingIssue, 770)

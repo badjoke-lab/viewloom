@@ -59,8 +59,8 @@ type PreviousObservation = {
 }
 
 type CategoryFilter = {
-  implementationState: 'hidden'
-  publicExposureAuthorized: false
+  implementationState: 'public'
+  publicExposureAuthorized: true
   contractVersion: string | null
   available: boolean
   coverageState: CategoryCoverageState
@@ -204,8 +204,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     const age = Date.now() - new Date(updatedAt).getTime()
     const state: KickHeatmapState = allItems.length === 0 ? 'empty' : age > runtime.staleAfterMinutes * 60 * 1000 ? 'stale' : 'live'
     const categoryFilter: CategoryFilter = {
-      implementationState: 'hidden',
-      publicExposureAuthorized: false,
+      implementationState: 'public',
+      publicExposureAuthorized: true,
       contractVersion: parsed.categoryContractVersion,
       available: categoryAvailable,
       coverageState: categoryCoverageState,
@@ -222,9 +222,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       momentumScope: categoryFilterState === 'selected' ? 'selected_category_compatible_observations' : 'stream',
     }
     const note = state === 'live'
-      ? `${items.length} visible of ${allItems.length} normalized Kick streams from latest observed snapshot. Category candidate remains hidden.`
+      ? `${items.length} visible of ${allItems.length} normalized Kick streams from latest observed snapshot.`
       : state === 'stale'
-        ? `${items.length} visible of ${allItems.length} normalized Kick streams, but latest snapshot is stale. Category candidate remains hidden.`
+        ? `${items.length} visible of ${allItems.length} normalized Kick streams, but latest snapshot is stale.`
         : 'Latest Kick snapshot exists but has no usable normalized streams.'
 
     return jsonPayload({
@@ -259,7 +259,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
         `category_selected=${requestedCategory}`,
         `category_filter_before_top_n=true`,
         `category_requested_top=${requestedTop ?? 'none'}`,
-        'category_filter_public_exposure=false',
+        'category_filter_public_exposure=true',
       ],
     })
   } catch (error) {
@@ -435,8 +435,8 @@ function streamBase(raw: unknown): { id: string; name: string; title: string; vi
 
 function unavailableCategoryFilter(category: string, top: number | null): CategoryFilter {
   return {
-    implementationState: 'hidden',
-    publicExposureAuthorized: false,
+    implementationState: 'public',
+    publicExposureAuthorized: true,
     contractVersion: null,
     available: false,
     coverageState: 'unavailable',

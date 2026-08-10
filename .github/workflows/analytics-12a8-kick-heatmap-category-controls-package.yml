@@ -25,11 +25,13 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
       - name: Parse package verifier
         run: node --check scripts/verify-12a8-kick-heatmap-category-controls-package.mjs
-      - name: Verify hidden Kick controls and public boundaries
+      - name: Verify historical hidden Kick controls and current public boundaries
         run: node scripts/verify-12a8-kick-heatmap-category-controls-package.mjs
       - name: Verify Kick category API package and accepted decision boundary
         run: node scripts/verify-12a8-kick-heatmap-category-api-package.mjs
@@ -65,5 +67,5 @@ jobs:
             echo '- Selected-category incompatible momentum: neutral tile + N/A + inspector Unavailable'
             echo '- Mobile and keyboard behavior: included'
             echo '- Collector / Worker / D1 / cadence / retention / backfill / credentials: unchanged'
-            echo '- Public Kick category exposure: not authorized'
+            echo '- Historical hidden controls retained; current public authorization is verified separately'
           } >> "$GITHUB_STEP_SUMMARY"

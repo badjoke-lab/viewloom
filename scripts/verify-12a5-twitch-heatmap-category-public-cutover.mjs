@@ -38,8 +38,13 @@ const providerAwareLabels = controls.includes("const providerLabel = options.pro
   && controls.includes('aria-label="${providerLabel} maximum streams"')
 assert.ok(staticTwitchLabels || providerAwareLabels, 'Twitch category accessibility labels must remain available')
 
+const kickPublicCategory = controls.includes("const enabled = provider === 'twitch' || provider === 'kick'")
+  && controls.includes("root.dataset.categoryFilter = 'public'")
 const kickHiddenCandidate = controls.includes("provider === 'kick' && url.searchParams.get(PREVIEW_PARAM) === '1'")
-if (kickHiddenCandidate) {
+if (kickPublicCategory) {
+  assert.ok(controls.includes('url.searchParams.delete(PREVIEW_PARAM)'))
+  assert.ok(controls.includes('if (!options.state.enabled)'))
+} else if (kickHiddenCandidate) {
   assert.ok(controls.includes("provider === 'twitch' || (provider === 'kick' && url.searchParams.get(PREVIEW_PARAM) === '1')"))
   assert.ok(controls.includes("root.dataset.categoryFilter = options.provider === 'kick' ? 'hidden' : 'public'"))
   assert.ok(controls.includes("if (provider === 'kick') url.searchParams.set(PREVIEW_PARAM, '1')"))
