@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-production-revalidation-v1",
+  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-production-revalidation-v2",
   "status": "ready_for_validation",
   "phase": "12A-8-R1",
   "parentTrackingIssue": 623,
@@ -11,6 +11,8 @@
     "apiPackagePr": 771,
     "controlsPackagePr": 772,
     "controlsMergeSha": "555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0",
+    "productionSourceAuthority": "exact_controls_product_sha",
+    "productionExpectedProductSha": "555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0",
     "hiddenRevalidationAuthorized": true,
     "publicCutoverAuthorized": false
   },
@@ -70,9 +72,10 @@
     "artifactName": "analytics-12a8-kick-category-hidden-production-revalidation",
     "productionOnPullRequest": false,
     "productionOnMainPush": true,
-    "productionWaitsForExactWorkflowSha": true,
+    "productionWaitsForExactProductSha": true,
+    "validationPackageNeedNotBeProductionDeployed": true,
     "screenshotsRetained": true,
     "evidenceJsonRetained": true
   },
-  "nextGate": "Merge the verified revalidation package, require exact-SHA production propagation and all five read-only browser scenarios to pass, freeze the resulting run/job/artifact/evidence, then make a separate public-cutover decision."
+  "nextGate": "Merge the verified source-authority correction, require production deployment.json to equal the exact controls product SHA 555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0, run all five read-only browser scenarios against that exact product, freeze the resulting run/job/artifact/evidence, then make a separate public-cutover decision."
 }
