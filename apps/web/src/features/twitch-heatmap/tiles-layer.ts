@@ -27,6 +27,7 @@ const MOMENTUM_SCALE = 0.18
 const ACTIVITY_SCALE = 0.25
 const TITLE_COLOR = 'rgba(255,255,255,0.97)'
 const META_COLOR = 'rgba(226,232,240,0.74)'
+const MOMENTUM_UNAVAILABLE_COLOR = 'rgba(203,213,225,0.62)'
 
 export function drawTilesLayer(
   ctx: CanvasRenderingContext2D,
@@ -174,7 +175,9 @@ function drawBottomRows(
     return
   }
 
-  const momentum = formatSignedPercent(node.momentum)
+  const momentumAvailable = node.momentumAvailable !== false
+  const momentum = momentumAvailable ? formatSignedPercent(node.momentum) : 'N/A'
+  const momentumFill = momentumAvailable ? momentumColor(node.momentum) : MOMENTUM_UNAVAILABLE_COLOR
   const viewerWidth = ctx.measureText(viewers).width
   const momentumWidth = ctx.measureText(momentum).width
   const availableGap = 7 / camera.scale
@@ -182,7 +185,7 @@ function drawBottomRows(
   if (viewerWidth + momentumWidth + availableGap <= innerWidth) {
     ctx.fillStyle = 'rgba(255,255,255,0.96)'
     ctx.fillText(viewers, bounds.x + padding, baseline)
-    ctx.fillStyle = momentumColor(node.momentum)
+    ctx.fillStyle = momentumFill
     ctx.fillText(momentum, bounds.x + padding + innerWidth - momentumWidth, baseline)
     return
   }
@@ -190,7 +193,7 @@ function drawBottomRows(
   ctx.fillStyle = 'rgba(255,255,255,0.96)'
   ctx.fillText(fitText(ctx, viewers, innerWidth), bounds.x + padding, baseline)
   const upperBaseline = baseline - metricSize - lineGap
-  ctx.fillStyle = momentumColor(node.momentum)
+  ctx.fillStyle = momentumFill
   ctx.fillText(fitText(ctx, momentum, innerWidth), bounds.x + padding, upperBaseline)
 }
 
@@ -324,8 +327,13 @@ function trimSeparators(value: string): string {
 }
 
 function getTileFillStyle(node: HeatmapSceneNode): string {
-  const strength = momentumStrength(node.momentum)
   const activity = activityStrength(node.activity)
+  if (node.momentumAvailable === false) {
+    const lightness = 18 + activity * 1.5
+    return `hsl(220 10% ${lightness.toFixed(1)}%)`
+  }
+
+  const strength = momentumStrength(node.momentum)
   const lift = activity * 1.8
 
   if (node.momentum > FLAT_MOMENTUM_THRESHOLD) {
