@@ -7,12 +7,14 @@ on:
       - '.github/workflows/analytics-12a8-kick-category-hidden-production-revalidation.yml'
       - 'docs/audits/12a8-kick-heatmap-category-hidden-production-revalidation-contract.json'
       - 'apps/web/scripts/kick-category-hidden-production-revalidation.mjs'
+      - 'apps/web/scripts/normalize-built-head.mjs'
   push:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a8-kick-category-hidden-production-revalidation.yml'
       - 'docs/audits/12a8-kick-heatmap-category-hidden-production-revalidation-contract.json'
       - 'apps/web/scripts/kick-category-hidden-production-revalidation.mjs'
+      - 'apps/web/scripts/normalize-built-head.mjs'
 
 permissions:
   contents: read
@@ -31,7 +33,7 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify exact revalidation package scope
+      - name: Verify exact production-source recovery scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -40,32 +42,53 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(\.github/workflows/analytics-12a8-kick-category-hidden-production-revalidation\.yml|docs/audits/12a8-kick-heatmap-category-hidden-production-revalidation-contract\.json|apps/web/scripts/kick-category-hidden-production-revalidation\.mjs)$'
+          allowed='^(\.github/workflows/analytics-12a8-kick-category-hidden-production-revalidation\.yml|docs/audits/12a8-kick-heatmap-category-hidden-production-revalidation-contract\.json|apps/web/scripts/normalize-built-head\.mjs)$'
           test "${#changed[@]}" -eq 3
           for path in "${changed[@]}"; do
-            [[ "$path" =~ $allowed ]] || { echo "Unexpected revalidation package change: $path" >&2; exit 1; }
+            [[ "$path" =~ $allowed ]] || { echo "Unexpected production-source recovery change: $path" >&2; exit 1; }
           done
       - name: Verify revalidation authority and read-only boundary
         run: |
           node --check apps/web/scripts/kick-category-hidden-production-revalidation.mjs
           node --input-type=module - <<'NODE'
           import fs from 'node:fs'
-          const json = (path) => JSON.parse(fs.readFileSync(path, 'utf8'))
+          const read = (path) => fs.readFileSync(path, 'utf8')
+          const json = (path) => JSON.parse(read(path))
           const contract = json('docs/audits/12a8-kick-heatmap-category-hidden-production-revalidation-contract.json')
           const decision = json('docs/audits/12a8-kick-heatmap-category-feasibility-decision.json')
           const api = json('docs/audits/12a8-kick-heatmap-category-api-package-contract.json')
           const controls = json('docs/audits/12a8-kick-heatmap-category-hidden-controls-contract.json')
+          const normalize = read('apps/web/scripts/normalize-built-head.mjs')
 
-          if (contract.status !== 'ready_for_validation') throw new Error('revalidation_contract_status_invalid')
+          if (contract.schemaVersion !== 'viewloom-12a8-kick-heatmap-category-hidden-production-revalidation-v2') throw new Error('revalidation_contract_schema_invalid')
+          if (contract.status !== 'ready_for_validation' || contract.phase !== '12A-8-R2') throw new Error('revalidation_contract_status_invalid')
           if (contract.provider !== 'kick' || contract.feature !== 'heatmap_category_filter') throw new Error('revalidation_identity_invalid')
-          if (contract.authority.decisionPr !== 769 || contract.authority.apiPackagePr !== 771 || contract.authority.controlsPackagePr !== 772) throw new Error('authority_chain_mismatch')
+          if (contract.authority.decisionPr !== 769 || contract.authority.apiPackagePr !== 771 || contract.authority.controlsPackagePr !== 772 || contract.authority.hiddenRevalidationPackagePr !== 775) throw new Error('authority_chain_mismatch')
           if (contract.authority.controlsMergeSha !== '555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0') throw new Error('controls_merge_sha_mismatch')
+          if (contract.authority.hiddenRevalidationPackageMergeSha !== '7fe53d986f7bbe4e96285cc89f423513bf4cb19a') throw new Error('revalidation_package_merge_sha_mismatch')
           if (contract.authority.hiddenRevalidationAuthorized !== true || contract.authority.publicCutoverAuthorized !== false) throw new Error('authorization_boundary_invalid')
           if (decision.decision !== 'authorize_hidden_kick_heatmap_category_candidate') throw new Error('decision_contract_mismatch')
           if (decision.authorization.hiddenCandidateImplementationAuthorized !== true || decision.authorization.publicExposureAuthorized !== false) throw new Error('decision_authorization_changed')
           if (api.provider !== 'kick' || api.apiContract.filterBeforeTopN !== true || api.hiddenBoundary.publicExposureAuthorized !== false) throw new Error('api_package_boundary_changed')
           if (controls.provider !== 'kick' || controls.hiddenEntry.kickOnlyHiddenGate !== true || controls.hiddenEntry.publicKickExposureAuthorized !== false) throw new Error('controls_package_boundary_changed')
+
+          const failed = contract.failedExactSourceAttempt
+          if (failed.workflowRun !== 31367864808 || failed.productionJob !== 93390150802) throw new Error('failed_source_run_identity_invalid')
+          if (failed.expectedSha !== '7fe53d986f7bbe4e96285cc89f423513bf4cb19a') throw new Error('failed_expected_sha_invalid')
+          if (failed.failureStage !== 'exact_production_source_gate' || failed.browserExecuted !== false) throw new Error('failed_source_stage_invalid')
+          if (failed.artifactId !== 9055060750 || failed.artifactDigest !== 'sha256:ae4c563da44d898faa24dcdd8e143b9a7a1cec3040ceb38c6955cd2685a08f41') throw new Error('failed_source_artifact_identity_invalid')
+          if (failed.finalObservedSha !== '555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0' || failed.observedProductCandidateSha !== true || failed.expectedValidationPackageShaObserved !== false || failed.productFailureEstablished !== false) throw new Error('failed_source_observation_invalid')
+
+          const path = contract.acceptedProductionPath
+          if (path.mode !== 'cloudflare_pages_git_integration' || path.evidenceIssue !== 751 || path.evidencePr !== 752) throw new Error('production_path_authority_invalid')
+          if (path.evidenceMainSha !== '480cb3e8d6a15773fe7561960a7a5c2c9f2806e8' || path.workflowRun !== 31304322090 || path.job !== 93222156388 || path.artifactId !== 9035470757) throw new Error('production_path_evidence_identity_invalid')
+          if (path.artifactDigest !== 'sha256:f3c3c550f3a9d5200f4d2d8e730de5c36152daa5af8e37798d5c3f17d7ca8fd0') throw new Error('production_path_evidence_digest_invalid')
+          if (path.observedAttempt !== 13 || path.observedPagesUrl !== 'https://5ccd2914.viewloom.pages.dev' || path.credentialFree !== true || path.manualWranglerRequired !== false) throw new Error('production_path_boundary_invalid')
+
+          if (contract.sourceTrigger.path !== 'apps/web/scripts/normalize-built-head.mjs' || contract.sourceTrigger.behaviorNeutral !== true) throw new Error('source_trigger_contract_invalid')
+          if (!normalize.includes(contract.sourceTrigger.requiredMarker)) throw new Error('source_trigger_marker_missing')
           if (contract.execution.productionOnPullRequest !== false || contract.execution.productionOnMainPush !== true || contract.execution.productionWaitsForExactWorkflowSha !== true) throw new Error('production_execution_boundary_invalid')
+          if (!contract.execution.productionAuthority.includes('Issue #751 / PR #752')) throw new Error('production_authority_copy_missing')
           if (contract.target.hiddenEntry !== 'categoryPreview=1') throw new Error('hidden_entry_changed')
           for (const [key, value] of Object.entries(contract.requiredChecks)) if (value !== true) throw new Error(`required_check_${key}_not_enabled`)
           for (const [key, value] of Object.entries(contract.boundary)) {
@@ -106,13 +129,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Wait for exact main SHA on primary production
+      - name: Wait for exact recovery main SHA on primary production
         run: |
           set -euo pipefail
           mkdir -p "$OUTPUT_DIR"
           success=false
           for attempt in $(seq 1 90); do
-            if curl -fsS --max-time 20 "$VIEWLOOM_ORIGIN/deployment.json?kickCategoryRevalidation=$GITHUB_RUN_ID-$attempt" -o /tmp/deployment.json; then
+            if curl -fsS --max-time 20 "$VIEWLOOM_ORIGIN/deployment.json?kickCategoryRecovery=$GITHUB_RUN_ID-$attempt" -o /tmp/deployment.json; then
               cp /tmp/deployment.json "$OUTPUT_DIR/last-deployment.json"
               observed_sha=$(jq -r '.commit_sha // ""' /tmp/deployment.json)
               environment=$(jq -r '.environment // ""' /tmp/deployment.json)
@@ -126,7 +149,7 @@ jobs:
             sleep 5
           done
           if [[ "$success" != true ]]; then
-            echo "Primary production did not publish exact validation SHA $EXPECTED_SHA" >&2
+            echo "Primary production did not publish exact recovery SHA $EXPECTED_SHA" >&2
             test -f "$OUTPUT_DIR/last-deployment.json" && cat "$OUTPUT_DIR/last-deployment.json" >&2
             exit 1
           fi
