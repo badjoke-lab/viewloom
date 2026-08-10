@@ -34,7 +34,7 @@ jobs:
       - name: Verify Kick Heatmap category feasibility decision
         run: node scripts/verify-12a8-kick-heatmap-category-feasibility-decision.mjs
 
-      - name: Verify decision-only PR scope
+      - name: Verify decision-only or verifier-compatibility PR scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -43,14 +43,24 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(docs/audits/12a8-kick-heatmap-category-feasibility-decision\.json|scripts/verify-12a8-kick-heatmap-category-feasibility-decision\.mjs|\.github/workflows/analytics-12a8-kick-heatmap-category-decision\.yml)$'
-          for path in "${changed[@]}"; do
-            if ! [[ "$path" =~ $allowed ]]; then
-              echo "Unexpected non-decision change: $path" >&2
-              exit 1
-            fi
-          done
-          test "${#changed[@]}" -eq 3
+          decision='^(docs/audits/12a8-kick-heatmap-category-feasibility-decision\.json|scripts/verify-12a8-kick-heatmap-category-feasibility-decision\.mjs|\.github/workflows/analytics-12a8-kick-heatmap-category-decision\.yml)$'
+          compatibility='^(scripts/verify-12a8-kick-heatmap-category-feasibility-decision\.mjs|\.github/workflows/analytics-12a8-kick-heatmap-category-decision\.yml)$'
+          exact_scope() {
+            local expected="$1"
+            local regex="$2"
+            test "${#changed[@]}" -eq "$expected" || return 1
+            for path in "${changed[@]}"; do
+              [[ "$path" =~ $regex ]] || return 1
+            done
+          }
+          if exact_scope 3 "$decision"; then
+            echo 'Validated original decision-only scope.'
+          elif exact_scope 2 "$compatibility"; then
+            echo 'Validated bounded verifier-compatibility scope.'
+          else
+            echo 'Unexpected Kick category decision scope.' >&2
+            exit 1
+          fi
 
       - name: Publish decision boundary
         if: always()
@@ -65,6 +75,7 @@ jobs:
             echo '- Fallback source without usable category metadata: category unavailable; never inferred'
             echo '- Filter ordering: category before Top N'
             echo '- Selected-category momentum: compare only compatible same-category observations'
+            echo '- Decision evidence API: frozen sourceMainSha, not mutable current runtime'
             echo '- Existing normal Kick Heatmap: unchanged and unfiltered'
             echo '- Public Kick category controls: not authorized'
             echo '- Kick Day Flow / Battle Lines / History category UI: not authorized'
