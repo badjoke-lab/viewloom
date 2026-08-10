@@ -1,0 +1,39 @@
+name: Analytics 12A8 Kick Category Hidden Production Evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a8-kick-category-hidden-production-evidence.yml'
+      - '.github/workflows/analytics-12a8-kick-category-hidden-production-revalidation.yml'
+      - 'docs/audits/12a8-kick-heatmap-category-hidden-production-evidence.json'
+      - 'docs/audits/12a8-kick-heatmap-category-hidden-production-acceptance.json'
+      - 'docs/audits/12a8-kick-heatmap-category-hidden-production-revalidation-contract.json'
+      - 'scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a8-kick-category-hidden-production-evidence.yml'
+      - 'docs/audits/12a8-kick-heatmap-category-hidden-production-evidence.json'
+      - 'docs/audits/12a8-kick-heatmap-category-hidden-production-acceptance.json'
+      - 'scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a8-kick-category-hidden-production-evidence-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify frozen Kick hidden production evidence
+        run: |
+          node --check scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs
+          node scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs
+      - name: Verify one-time production revalidation workflow is retired
+        run: test ! -f .github/workflows/analytics-12a8-kick-category-hidden-production-revalidation.yml

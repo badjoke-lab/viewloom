@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "viewloom-12a8-kick-category-hidden-production-revalidation-evidence-v1",
+  "observedAt": "2026-08-10T08:10:16.445Z",
+  "origin": "https://www.viewloom.net",
+  "expectedSha": "555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0",
+  "deployment": {
+    "schema": "viewloom-deployment-v1",
+    "generated_at": "2026-08-10T08:02:39.103Z",
+    "environment": "production",
+    "branch": "main",
+    "commit_sha": "555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0",
+    "pages_url": "https://403141bd.viewloom.pages.dev",
+    "primary_origin": "https://www.viewloom.net",
+    "canonical_host": "www.viewloom.net"
+  },
+  "status": "pass",
+  "scenarios": [
+    {
+      "name": "kick-normal-desktop",
+      "viewport": { "width": 1440, "height": 1000 },
+      "requests": ["https://www.viewloom.net/api/kick-heatmap"],
+      "checks": {
+        "state": "live",
+        "itemCount": 100,
+        "categoryImplementation": "hidden",
+        "categoryCoverageState": "observed",
+        "geometry": { "width": 1440, "scrollWidth": 1440, "overflow": false }
+      },
+      "status": "pass"
+    },
+    {
+      "name": "kick-hidden-desktop",
+      "viewport": { "width": 1440, "height": 1000 },
+      "requests": [
+        "https://www.viewloom.net/api/kick-heatmap?category=all&top=50",
+        "https://www.viewloom.net/api/kick-heatmap?category=15&top=50",
+        "https://www.viewloom.net/api/kick-heatmap?category=15&top=20"
+      ],
+      "checks": {
+        "categoryOptions": 25,
+        "categoryCoverageState": "observed",
+        "selectedCategory": "15",
+        "selectedItems": 16,
+        "unavailableMomentumItems": 1,
+        "top20Items": 16,
+        "keyboard": true,
+        "geometry": { "width": 1440, "scrollWidth": 1440, "overflow": false }
+      },
+      "status": "pass"
+    },
+    {
+      "name": "kick-hidden-mobile",
+      "viewport": { "width": 390, "height": 844 },
+      "requests": ["https://www.viewloom.net/api/kick-heatmap?category=all&top=50"],
+      "checks": {
+        "categoryOptions": 25,
+        "categoryCoverageState": "observed",
+        "geometry": { "width": 390, "scrollWidth": 390, "overflow": false },
+        "controls": {
+          "root": { "left": 14, "right": 376, "width": 362 },
+          "category": { "left": 27, "right": 363, "width": 336 },
+          "top": { "left": 27, "right": 363, "width": 336 },
+          "viewport": 390
+        }
+      },
+      "status": "pass"
+    },
+    {
+      "name": "kick-hidden-unknown-category",
+      "viewport": { "width": 820, "height": 900 },
+      "requests": ["https://www.viewloom.net/api/kick-heatmap?category=__viewloom_unknown_category__&top=20"],
+      "checks": {
+        "state": "unknown_category",
+        "itemCount": 0,
+        "uiTitle": "Unknown Kick category",
+        "geometry": { "width": 820, "scrollWidth": 820, "overflow": false }
+      },
+      "status": "pass"
+    },
+    {
+      "name": "twitch-public-isolation",
+      "viewport": { "width": 390, "height": 844 },
+      "requests": ["https://www.viewloom.net/api/twitch-heatmap?category=all&top=50"],
+      "checks": {
+        "itemCount": 50,
+        "categoryControls": 1,
+        "geometry": { "width": 390, "scrollWidth": 390, "overflow": false }
+      },
+      "status": "pass"
+    }
+  ],
+  "failures": [],
+  "publicCutoverAuthorized": false,
+  "productionMutationPerformed": false
+}
