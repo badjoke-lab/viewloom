@@ -1,0 +1,73 @@
+name: Analytics 12A7 Twitch History Category Decision
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'docs/audits/12a7-twitch-history-category-feasibility-decision.json'
+      - 'scripts/verify-12a7-twitch-history-category-feasibility-decision.mjs'
+      - '.github/workflows/analytics-12a7-twitch-history-category-decision.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a7-twitch-history-category-decision-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout decision head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify History category feasibility decision
+        run: node scripts/verify-12a7-twitch-history-category-feasibility-decision.mjs
+
+      - name: Verify decision-only PR scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          allowed='^(docs/audits/12a7-twitch-history-category-feasibility-decision\.json|scripts/verify-12a7-twitch-history-category-feasibility-decision\.mjs|\.github/workflows/analytics-12a7-twitch-history-category-decision\.yml)$'
+          for path in "${changed[@]}"; do
+            if ! [[ "$path" =~ $allowed ]]; then
+              echo "Unexpected non-decision change: $path" >&2
+              exit 1
+            fi
+          done
+          test "${#changed[@]}" -eq 3
+
+      - name: Publish decision boundary
+        if: always()
+        run: |
+          {
+            echo '## Twitch History category feasibility decision'
+            echo
+            echo '- Decision: reject category-aware Twitch History on current accepted data'
+            echo '- Existing unfiltered History: required fallback and unchanged'
+            echo '- Exact category source: observation-time minute snapshot categoryRefs/categoryIds'
+            echo '- Exact Twitch snapshot retention: 30 days'
+            echo '- Existing History custom range: up to 90 days'
+            echo '- 90-day category intraday data: dominant category per streamer/hour only'
+            echo '- Non-dominant hourly category contributions: not retained'
+            echo '- Intraday streamer selection: unfiltered daily Top 600 before category use'
+            echo '- Latest-category back-projection / synthetic mapping / zero-filling: prohibited'
+            echo '- Hidden History category candidate: not authorized'
+            echo '- Collector / D1 / cadence / retention / backfill change: not authorized'
+            echo '- Kick category UI: not authorized by this decision'
+          } >> "$GITHUB_STEP_SUMMARY"
