@@ -83,6 +83,6 @@
     "crossProviderBehaviorAuthorized": false,
     "combinedProviderRankingAuthorized": false
   },
-  "acceptancePr": null,
+  "acceptancePr": 778,
   "nextGate": "Make a separate Kick Heatmap public-cutover decision. Do not expose normal-route Kick category controls from this evidence-acceptance PR, and do not authorize Kick Day Flow, Battle Lines, or History category UI automatically."
 }
