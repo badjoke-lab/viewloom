@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-visual-correction-v3",
-  "status": "repaired_product_pending_validation_descendant_revalidation",
-  "phase": "12A-8-R5",
+  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-visual-correction-v4",
+  "status": "repaired_product_pending_single_source_revalidation",
+  "phase": "12A-8-R6",
   "parentTrackingIssue": 623,
   "trackingIssue": 780,
   "provider": "kick",
@@ -15,36 +15,46 @@
     "humanVisualDesktopPassed": true,
     "humanVisualMobilePassed": true
   },
-  "firstRepairValidationAttempt": {
-    "workflowRun": 31370065098,
-    "productionJob": 93396942797,
-    "artifactId": 9055717263,
-    "artifactDigest": "sha256:daf27c93d55fe67339343c3c0f570f4c8d03b4ca759af5ff850fe50a404641d2",
-    "productSha": "b921f15b127f13d7ad8a7f52976e4715d08919c1",
-    "desktopLayoutPassed": true,
-    "mobileLayoutPassed": true,
-    "twitchPublicControlsPreserved": true,
-    "failureStage": "normal_kick_response_wait_assumption",
-    "productFailureEstablished": false
-  },
-  "secondRepairValidationAttempt": {
-    "workflowRun": 31370886449,
-    "productionJob": 93399474953,
-    "artifactId": 9056024352,
-    "artifactDigest": "sha256:6972f9f7cf9f65ef946006bff8c3d97c9bb0947f8c790191532ef4427b995b80",
-    "initialExpectedProductSha": "b921f15b127f13d7ad8a7f52976e4715d08919c1",
-    "observedValidationOnlyDeploymentSha": "49d4f430e780419588768cf6e69a900a03c79569",
-    "allBrowserScenariosPassed": true,
-    "scenarioCount": 4,
-    "browserFailureCount": 0,
-    "failureStage": "deployment_sha_advanced_to_validation_only_descendant",
-    "productFailureEstablished": false,
-    "validationHarnessFailureEstablished": true,
-    "desktopLayoutPassed": true,
-    "mobileLayoutPassed": true,
-    "normalKickRemainedHidden": true,
-    "twitchPublicControlsPreserved": true
-  },
+  "validationHistory": [
+    {
+      "workflowRun": 31370065098,
+      "productionJob": 93396942797,
+      "artifactId": 9055717263,
+      "artifactDigest": "sha256:daf27c93d55fe67339343c3c0f570f4c8d03b4ca759af5ff850fe50a404641d2",
+      "productSha": "b921f15b127f13d7ad8a7f52976e4715d08919c1",
+      "desktopLayoutPassed": true,
+      "mobileLayoutPassed": true,
+      "failureStage": "normal_kick_response_wait_assumption",
+      "productFailureEstablished": false
+    },
+    {
+      "workflowRun": 31370886449,
+      "productionJob": 93399474953,
+      "artifactId": 9056024352,
+      "artifactDigest": "sha256:6972f9f7cf9f65ef946006bff8c3d97c9bb0947f8c790191532ef4427b995b80",
+      "allBrowserScenariosPassed": true,
+      "scenarioCount": 4,
+      "browserFailureCount": 0,
+      "failureStage": "deployment_sha_advanced_to_validation_only_descendant",
+      "productFailureEstablished": false
+    },
+    {
+      "workflowRun": 31371416146,
+      "productionJob": 93401125358,
+      "artifactId": 9056232516,
+      "artifactDigest": "sha256:ff98d96a2e039111defa8b8dfc7ccb1d57400ba8fe0ad447ada2d8c781ef415a",
+      "expectedValidationSha": "19f4a5d0ce83b8044e33e67fff072691c939017c",
+      "workflowExactSourceGatePassed": true,
+      "allBrowserScenariosPassed": true,
+      "scenarioCount": 4,
+      "browserFailureCount": 0,
+      "scriptDuplicateSourceFetchObservedSha": "49d4f430e780419588768cf6e69a900a03c79569",
+      "failureStage": "duplicate_deployment_fetch_edge_staleness",
+      "productFailureEstablished": false,
+      "browserFailureEstablished": false,
+      "duplicateSourceCheckFailureEstablished": true
+    }
+  ],
   "validationDescendantAuthority": {
     "productSha": "b921f15b127f13d7ad8a7f52976e4715d08919c1",
     "productRuntimeChangedAfterProductSha": false,
@@ -55,9 +65,19 @@
       "scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs"
     ],
     "requiredChangedPathCount": 4,
-    "rule": "The deployed validation SHA may differ from the repaired product SHA only when git diff from the product SHA contains exactly the four listed validation/governance paths and no product runtime path.",
     "deploymentIdentity": "current validation main SHA",
     "productIdentity": "b921f15b127f13d7ad8a7f52976e4715d08919c1"
+  },
+  "singleSourceEvidenceAuthority": {
+    "workflowSourceGate": "Confirm exact validation-only main SHA on primary production",
+    "authoritativeFile": "artifacts/12a8-kick-category-hidden-visual-revalidation/last-deployment.json",
+    "producedImmediatelyBeforeBrowserExecution": true,
+    "scriptNetworkRefetchAllowed": false,
+    "scriptMustReadAuthoritativeFile": true,
+    "scriptMustVerifyExpectedSha": true,
+    "scriptMustVerifyEnvironmentProduction": true,
+    "scriptMustVerifyBranchMain": true,
+    "reason": "Avoid contradictory deployment identity caused by a second CDN/edge fetch after the workflow already established the exact SHA."
   },
   "requiredBrowserChecks": {
     "statusInsideRoot": true,
@@ -77,6 +97,7 @@
     "productSha": "b921f15b127f13d7ad8a7f52976e4715d08919c1",
     "expectedDeploymentSha": "github.sha",
     "requireValidationOnlyAncestry": true,
+    "deploymentEvidenceSource": "workflow-produced last-deployment.json",
     "productionOnPullRequest": false,
     "productionOnMainPush": true,
     "screenshotsRequired": true,
@@ -100,5 +121,5 @@
     "credentialChangeAuthorized": false,
     "crossProviderBehaviorAuthorized": false
   },
-  "nextGate": "Merge the validation-deployment authority correction, prove the merge is a validation-only descendant of repaired product SHA b921f15b127f13d7ad8a7f52976e4715d08919c1, require that exact validation SHA on primary production immediately before browser execution, rerun all four browser scenarios, manually review retained screenshots, then freeze and separately accept corrected evidence before reopening public cutover."
+  "nextGate": "Merge the single-source evidence correction, prove the merge remains a validation-only descendant of repaired product SHA b921f15b127f13d7ad8a7f52976e4715d08919c1, require the exact validation SHA on primary production once, pass that exact deployment evidence file into the browser script, require all four scenarios to pass, manually review retained screenshots, then freeze and separately accept corrected evidence before reopening public cutover."
 }
