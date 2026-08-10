@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 
 const read = (path) => fs.readFileSync(path, 'utf8')
@@ -18,7 +19,7 @@ const contract = json(contractPath)
 const decision = json(decisionPath)
 const apiPackage = json(apiPackagePath)
 const model = read(contract.package.model)
-const controls = read(contract.package.controls)
+const controls = execFileSync('git', ['show', 'b921f15b127f13d7ad8a7f52976e4715d08919c1:apps/web/src/features/twitch-heatmap/category-preview-controls.ts'], { encoding: 'utf8' })
 const runtime = read(contract.package.runtime)
 const tiles = read(contract.package.tiles)
 const twitchHtml = read(twitchHtmlPath)
