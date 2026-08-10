@@ -1,0 +1,32 @@
+name: Analytics 12A8 Kick Heatmap Category Public Cutover Decision
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a8-kick-heatmap-category-public-cutover-decision.json'
+      - 'scripts/verify-12a8-kick-heatmap-category-public-cutover-decision.mjs'
+      - '.github/workflows/analytics-12a8-kick-heatmap-category-public-cutover-decision.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify public cutover decision
+        run: node scripts/verify-12a8-kick-heatmap-category-public-cutover-decision.mjs
+      - name: Verify retained hidden production evidence
+        run: node scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs
+      - name: Verify rollout policy
+        run: node scripts/verify-category-rollout-policy.mjs
+      - name: Typecheck web
+        run: pnpm typecheck:web
+      - name: Build web
+        run: pnpm build:web
