@@ -174,13 +174,13 @@ for (const fragment of [
   'DB_KICK_HOT.prepare',
   'FROM minute_snapshots',
   'WHERE provider = ?',
-  ".bind('kick', fromIso, toIso, MAX_ROWS)",
+  ".bind('kick', range.start.toISOString(), range.end.toISOString()).all<Row>()",
   'payload_json',
   'total_viewers',
   'const MAX_ROWS = 1600',
-  'const buckets = buildBuckets(fromIso, toIso, bucketMinutes)',
-  'const viewerMinutes = entry.values.reduce',
-  'const avg = samples[index] > 0 ? Math.round(sums[index] / samples[index]) : 0',
+  'const bucketLabels = buckets(range.start, range.end, bucketSize)',
+  'totalViewerMinutes: viewers.reduce((sum, value) => sum + value * bucketSize, 0)',
+  'const viewers = acc.sums.map((sum, index) => acc.counts[index] > 0 ? Math.round(sum / acc.counts[index]) : 0)',
 ]) assert.ok(kickDayFlow.includes(fragment), `Kick Day Flow feasibility basis missing: ${fragment}`)
 
 // The accepted collector writes observation-time category refs into the same
