@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-visual-correction-v1",
+  "status": "repair_required",
+  "phase": "12A-8-R3",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 780,
+  "provider": "kick",
+  "feature": "heatmap_category_filter",
+  "supersedesAcceptancePr": 778,
+  "historicalEvidence": {
+    "workflowRun": 31368780619,
+    "productionJob": 93393053863,
+    "artifactId": 9055232142,
+    "artifactDigest": "sha256:ad543f9433626e4c4c7b74a6da8813a97c633ae7c9753f6ca72bc6e588317f34",
+    "productSha": "555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0",
+    "automatedScenariosPassed": 5,
+    "automatedFailures": 0,
+    "humanVisualAcceptancePassed": false
+  },
+  "observedDefect": {
+    "screenshot": "screenshots/kick-hidden-desktop.png",
+    "viewport": { "width": 1440, "height": 1000 },
+    "description": "The category status text crowds or overlaps the adjacent MAP metadata region after selecting a real category.",
+    "untestedBoundary": "The previous browser gate checked page overflow but did not compare control/status/map bounding rectangles."
+  },
+  "requiredRepair": {
+    "categoryStatusContainedByCategoryRoot": true,
+    "categoryStatusPlacedOnDedicatedRow": true,
+    "categoryStatusDoesNotOverlapCategoryFields": true,
+    "categoryStatusDoesNotOverlapAdjacentMapGroup": true,
+    "desktopCategoryRootDoesNotEscapeViewport": true,
+    "mobile390LayoutPreserved": true,
+    "normalKickRouteStillHasNoCategoryControls": true,
+    "twitchPublicCategoryBehaviorPreserved": true
+  },
+  "requiredBrowserChecks": {
+    "statusInsideRoot": true,
+    "statusDoesNotOverlapFields": true,
+    "statusDoesNotOverlapMapGroup": true,
+    "categoryFieldsInsideRoot": true,
+    "rootDoesNotOverlapMapGroup": true,
+    "desktopNoHorizontalOverflow": true,
+    "mobile390NoHorizontalOverflow": true,
+    "normalKickControlCountZero": true,
+    "twitchPublicControlCountOne": true
+  },
+  "productionValidation": {
+    "workflow": ".github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation.yml",
+    "script": "apps/web/scripts/kick-category-hidden-visual-revalidation.mjs",
+    "expectedSource": "exact visual-repair merge SHA",
+    "productionOnPullRequest": false,
+    "productionOnMainPush": true,
+    "screenshotsRequired": true,
+    "evidenceJsonRequired": true
+  },
+  "authorization": {
+    "publicCutoverDecisionAuthorized": false,
+    "publicKickCategoryUiAuthorized": false,
+    "kickDayFlowCategoryUiAuthorized": false,
+    "kickBattleLinesCategoryUiAuthorized": false,
+    "kickHistoryCategoryUiAuthorized": false,
+    "twitchRuntimeSemanticChangeAuthorized": false,
+    "collectorChangeAuthorized": false,
+    "workerDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "schemaChangeAuthorized": false,
+    "bindingChangeAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "retentionChangeAuthorized": false,
+    "backfillAuthorized": false,
+    "credentialChangeAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  },
+  "nextGate": "Merge a bounded visual repair, require the repair merge SHA on primary production, run desktop and 390px visual geometry checks, manually review retained screenshots, then freeze and separately accept corrected evidence before reopening public cutover."
+}
