@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-visual-correction-v4",
-  "status": "repaired_product_pending_single_source_revalidation",
-  "phase": "12A-8-R6",
+  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-visual-correction-v5",
+  "status": "corrected_visual_evidence_accepted",
+  "phase": "12A-8-R7",
   "parentTrackingIssue": 623,
   "trackingIssue": 780,
   "provider": "kick",
@@ -48,36 +48,43 @@
       "allBrowserScenariosPassed": true,
       "scenarioCount": 4,
       "browserFailureCount": 0,
-      "scriptDuplicateSourceFetchObservedSha": "49d4f430e780419588768cf6e69a900a03c79569",
       "failureStage": "duplicate_deployment_fetch_edge_staleness",
       "productFailureEstablished": false,
       "browserFailureEstablished": false,
       "duplicateSourceCheckFailureEstablished": true
+    },
+    {
+      "workflowRun": 31371899291,
+      "contractJob": 93402501132,
+      "productionJob": 93402574458,
+      "artifactId": 9056407163,
+      "artifactDigest": "sha256:8efd05de170ec91c04e0bce5c7a16c3ab323cbb54f217d53f167ceb45cbd33af",
+      "expectedValidationSha": "67fee8ba326f088422c85a61738f0251e9cd3c8d",
+      "workflowExactSourceGatePassed": true,
+      "singleSourceDeploymentEvidencePassed": true,
+      "allBrowserScenariosPassed": true,
+      "scenarioCount": 4,
+      "browserFailureCount": 0,
+      "desktopLayoutPassed": true,
+      "mobile390LayoutPassed": true,
+      "desktopHumanVisualReviewPassed": true,
+      "mobileHumanVisualReviewPassed": true,
+      "normalKickRemainedHidden": true,
+      "twitchPublicControlsPreserved": true,
+      "productFailureEstablished": false,
+      "accepted": true
     }
   ],
-  "validationDescendantAuthority": {
-    "productSha": "b921f15b127f13d7ad8a7f52976e4715d08919c1",
-    "productRuntimeChangedAfterProductSha": false,
-    "allowedChangedPathsFromProductSha": [
-      ".github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation.yml",
-      "apps/web/scripts/kick-category-hidden-visual-revalidation.mjs",
-      "docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract.json",
-      "scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs"
-    ],
-    "requiredChangedPathCount": 4,
-    "deploymentIdentity": "current validation main SHA",
-    "productIdentity": "b921f15b127f13d7ad8a7f52976e4715d08919c1"
-  },
-  "singleSourceEvidenceAuthority": {
-    "workflowSourceGate": "Confirm exact validation-only main SHA on primary production",
-    "authoritativeFile": "artifacts/12a8-kick-category-hidden-visual-revalidation/last-deployment.json",
-    "producedImmediatelyBeforeBrowserExecution": true,
-    "scriptNetworkRefetchAllowed": false,
-    "scriptMustReadAuthoritativeFile": true,
-    "scriptMustVerifyExpectedSha": true,
-    "scriptMustVerifyEnvironmentProduction": true,
-    "scriptMustVerifyBranchMain": true,
-    "reason": "Avoid contradictory deployment identity caused by a second CDN/edge fetch after the workflow already established the exact SHA."
+  "acceptedEvidence": {
+    "file": "docs/audits/12a8-kick-heatmap-category-hidden-corrected-visual-production-evidence.json",
+    "workflowRun": 31371899291,
+    "artifactId": 9056407163,
+    "evidenceJsonSha256": "d342a42e90414717fb245754648aad4d522973f6d4a1abd6c1f3f2b1807dd526",
+    "deploymentJsonSha256": "ef3d7d4f4f953523cce0ff6838ba35c286c00b59b93702f7a2cb8f23426dbd14",
+    "desktopScreenshotSha256": "e1e37bbe2b392a4f6bd62c6531762ed1cea5f3eee0f027255aec6b854a0df5fc",
+    "mobileScreenshotSha256": "a0c9b5dc51dde3ce65e15af6c491e89a736c0620c8c8af5f0c4bed53edb20cfe",
+    "validationDeploymentSha": "67fee8ba326f088422c85a61738f0251e9cd3c8d",
+    "repairedProductSha": "b921f15b127f13d7ad8a7f52976e4715d08919c1"
   },
   "requiredBrowserChecks": {
     "statusInsideRoot": true,
@@ -91,20 +98,13 @@
     "normalKickCategoryAndTopQueryAbsent": true,
     "twitchPublicControlCountOne": true
   },
-  "productionValidation": {
-    "workflow": ".github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation.yml",
-    "script": "apps/web/scripts/kick-category-hidden-visual-revalidation.mjs",
-    "productSha": "b921f15b127f13d7ad8a7f52976e4715d08919c1",
-    "expectedDeploymentSha": "github.sha",
-    "requireValidationOnlyAncestry": true,
-    "deploymentEvidenceSource": "workflow-produced last-deployment.json",
-    "productionOnPullRequest": false,
-    "productionOnMainPush": true,
-    "screenshotsRequired": true,
-    "evidenceJsonRequired": true
+  "retirement": {
+    "oneShotVisualRevalidationWorkflowConsumed": true,
+    "oneShotVisualRevalidationWorkflowRetiredOnAcceptance": true,
+    "permanentEvidenceVerifierRetained": true
   },
   "authorization": {
-    "publicCutoverDecisionAuthorized": false,
+    "publicCutoverDecisionAuthorized": true,
     "publicKickCategoryUiAuthorized": false,
     "kickDayFlowCategoryUiAuthorized": false,
     "kickBattleLinesCategoryUiAuthorized": false,
@@ -121,5 +121,5 @@
     "credentialChangeAuthorized": false,
     "crossProviderBehaviorAuthorized": false
   },
-  "nextGate": "Merge the single-source evidence correction, prove the merge remains a validation-only descendant of repaired product SHA b921f15b127f13d7ad8a7f52976e4715d08919c1, require the exact validation SHA on primary production once, pass that exact deployment evidence file into the browser script, require all four scenarios to pass, manually review retained screenshots, then freeze and separately accept corrected evidence before reopening public cutover."
+  "nextGate": "Open a separate Kick Heatmap public-category cutover decision. Hidden acceptance does not itself expose public controls."
 }
