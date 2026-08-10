@@ -37,7 +37,7 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify exact visual-correction scope
+      - name: Verify visual-correction or bounded harness-correction scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -46,9 +46,22 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(\.github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation\.yml|\.github/workflows/analytics-12a8-kick-category-hidden-production-evidence\.yml|apps/web/src/features/twitch-heatmap/category-preview-controls\.ts|apps/web/scripts/kick-category-hidden-visual-revalidation\.mjs|docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract\.json|docs/audits/12a8-kick-heatmap-category-hidden-production-acceptance\.json|scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence\.mjs)$'
-          test "${#changed[@]}" -eq 7
-          for path in "${changed[@]}"; do [[ "$path" =~ $allowed ]] || { echo "Unexpected visual correction change: $path" >&2; exit 1; }; done
+          visual='^(\.github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation\.yml|\.github/workflows/analytics-12a8-kick-category-hidden-production-evidence\.yml|apps/web/src/features/twitch-heatmap/category-preview-controls\.ts|apps/web/scripts/kick-category-hidden-visual-revalidation\.mjs|docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract\.json|docs/audits/12a8-kick-heatmap-category-hidden-production-acceptance\.json|scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence\.mjs)$'
+          harness='^(\.github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation\.yml|apps/web/scripts/kick-category-hidden-visual-revalidation\.mjs|docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract\.json)$'
+          exact_scope() {
+            local expected="$1"
+            local regex="$2"
+            test "${#changed[@]}" -eq "$expected" || return 1
+            for path in "${changed[@]}"; do [[ "$path" =~ $regex ]] || return 1; done
+          }
+          if exact_scope 7 "$visual"; then
+            echo 'Validated original seven-file visual correction scope.'
+          elif exact_scope 3 "$harness"; then
+            echo 'Validated bounded three-file test-harness correction scope.'
+          else
+            echo 'Unexpected visual correction scope.' >&2
+            exit 1
+          fi
       - name: Verify supersession and visual repair contract
         run: |
           node --check apps/web/scripts/kick-category-hidden-visual-revalidation.mjs
@@ -56,6 +69,7 @@ jobs:
           node --input-type=module - <<'NODE'
           import fs from 'node:fs'
           const controls = fs.readFileSync('apps/web/src/features/twitch-heatmap/category-preview-controls.ts', 'utf8')
+          const script = fs.readFileSync('apps/web/scripts/kick-category-hidden-visual-revalidation.mjs', 'utf8')
           const contract = JSON.parse(fs.readFileSync('docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract.json', 'utf8'))
           for (const fragment of [
             'display: grid;',
@@ -66,9 +80,25 @@ jobs:
             'line-height: 1.35;',
             '@media (max-width: 760px)',
           ]) if (!controls.includes(fragment)) throw new Error(`visual_repair_css_missing:${fragment}`)
-          if (contract.status !== 'repair_required' || contract.trackingIssue !== 780) throw new Error('visual_correction_contract_invalid')
+          if (contract.schemaVersion !== 'viewloom-12a8-kick-heatmap-category-hidden-visual-correction-v2') throw new Error('visual_correction_contract_schema_invalid')
+          if (contract.status !== 'repaired_product_pending_test_harness_revalidation' || contract.trackingIssue !== 780) throw new Error('visual_correction_contract_invalid')
+          if (contract.repair?.productSha !== 'b921f15b127f13d7ad8a7f52976e4715d08919c1') throw new Error('repaired_product_sha_invalid')
+          if (contract.firstRepairValidationAttempt?.workflowRun !== 31370065098 || contract.firstRepairValidationAttempt?.productionJob !== 93396942797) throw new Error('first_repair_attempt_identity_invalid')
+          if (contract.firstRepairValidationAttempt?.artifactId !== 9055717263 || contract.firstRepairValidationAttempt?.artifactDigest !== 'sha256:daf27c93d55fe67339343c3c0f570f4c8d03b4ca759af5ff850fe50a404641d2') throw new Error('first_repair_artifact_identity_invalid')
+          if (contract.firstRepairValidationAttempt?.desktopLayoutPassed !== true || contract.firstRepairValidationAttempt?.mobileLayoutPassed !== true) throw new Error('repaired_layout_not_proven')
+          if (contract.firstRepairValidationAttempt?.desktopHumanVisualReviewPassed !== true || contract.firstRepairValidationAttempt?.mobileHumanVisualReviewPassed !== true) throw new Error('repaired_visual_review_not_proven')
+          if (contract.firstRepairValidationAttempt?.failureStage !== 'normal_kick_response_wait_assumption' || contract.firstRepairValidationAttempt?.productFailureEstablished !== false || contract.firstRepairValidationAttempt?.testHarnessFailureEstablished !== true) throw new Error('harness_failure_classification_invalid')
+          if (contract.testHarnessCorrection?.productRuntimeChange !== false || contract.testHarnessCorrection?.pinnedProductSha !== 'b921f15b127f13d7ad8a7f52976e4715d08919c1' || contract.testHarnessCorrection?.normalKickApiResponseRequired !== false) throw new Error('harness_correction_boundary_invalid')
+          if (contract.productionValidation?.pinnedProductSha !== 'b921f15b127f13d7ad8a7f52976e4715d08919c1') throw new Error('production_validation_source_invalid')
           for (const [key, value] of Object.entries(contract.requiredBrowserChecks)) if (value !== true) throw new Error(`browser_check_${key}_not_required`)
           if (contract.authorization.publicCutoverDecisionAuthorized !== false || contract.authorization.publicKickCategoryUiAuthorized !== false) throw new Error('public_authorization_must_be_closed')
+          if (script.includes("const api = page.waitForResponse((r) => endpoint(r.url(), '/api/kick-heatmap'))\n    const nav = await page.goto(`${ORIGIN}/kick/heatmap/`")) throw new Error('normal_kick_response_wait_still_required')
+          for (const fragment of [
+            "await page.goto(`${ORIGIN}/kick/heatmap/`",
+            "page.locator('#heatmap-category-preview-controls').count() === 0",
+            "!url.searchParams.has('category')",
+            "!url.searchParams.has('top')",
+          ]) if (!script.includes(fragment)) throw new Error(`harness_correction_missing:${fragment}`)
           NODE
           node scripts/verify-12a8-kick-heatmap-category-controls-package.mjs
           node scripts/verify-12a5-twitch-heatmap-category-public-cutover.mjs
@@ -91,19 +121,19 @@ jobs:
     env:
       OUTPUT_DIR: artifacts/12a8-kick-category-hidden-visual-revalidation
       VIEWLOOM_ORIGIN: https://www.viewloom.net
-      EXPECTED_SHA: ${{ github.sha }}
+      EXPECTED_SHA: b921f15b127f13d7ad8a7f52976e4715d08919c1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Wait for exact repaired product SHA on primary production
+      - name: Confirm exact repaired product SHA on primary production
         run: |
           set -euo pipefail
           mkdir -p "$OUTPUT_DIR"
           success=false
-          for attempt in $(seq 1 90); do
-            if curl -fsS --max-time 20 "$VIEWLOOM_ORIGIN/deployment.json?kickVisualRepair=$GITHUB_RUN_ID-$attempt" -o /tmp/deployment.json; then
+          for attempt in $(seq 1 30); do
+            if curl -fsS --max-time 20 "$VIEWLOOM_ORIGIN/deployment.json?kickVisualHarness=$GITHUB_RUN_ID-$attempt" -o /tmp/deployment.json; then
               cp /tmp/deployment.json "$OUTPUT_DIR/last-deployment.json"
               observed_sha=$(jq -r '.commit_sha // ""' /tmp/deployment.json)
               environment=$(jq -r '.environment // ""' /tmp/deployment.json)
@@ -114,7 +144,7 @@ jobs:
             sleep 5
           done
           if [[ "$success" != true ]]; then
-            echo "Primary production did not publish exact repaired product SHA $EXPECTED_SHA" >&2
+            echo "Primary production does not expose exact repaired product SHA $EXPECTED_SHA" >&2
             test -f "$OUTPUT_DIR/last-deployment.json" && cat "$OUTPUT_DIR/last-deployment.json" >&2
             exit 1
           fi
@@ -123,7 +153,7 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - id: browser
-        name: Verify repaired hidden Kick desktop and mobile layout
+        name: Revalidate repaired hidden Kick layout with corrected harness
         continue-on-error: true
         run: node apps/web/scripts/kick-category-hidden-visual-revalidation.mjs
       - name: Upload visual revalidation evidence
