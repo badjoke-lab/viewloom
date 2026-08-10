@@ -1,0 +1,183 @@
+name: Analytics 12A8 Kick Category Hidden Production Revalidation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a8-kick-category-hidden-production-revalidation.yml'
+      - 'docs/audits/12a8-kick-heatmap-category-hidden-production-revalidation-contract.json'
+      - 'docs/audits/12a8-kick-heatmap-category-feasibility-decision.json'
+      - 'docs/audits/12a8-kick-heatmap-category-hidden-controls-contract.json'
+      - 'apps/web/scripts/kick-category-hidden-production-revalidation.mjs'
+      - 'apps/web/functions/api/kick-heatmap.ts'
+      - 'apps/web/src/features/twitch-heatmap/category-preview-controls.ts'
+      - 'apps/web/src/features/twitch-heatmap/model.ts'
+      - 'apps/web/src/features/twitch-heatmap/renderer/tiles-layer.ts'
+      - 'apps/web/src/live/twitch-heatmap.ts'
+      - 'scripts/verify-12a8-kick-heatmap-category-feasibility-decision.mjs'
+      - 'scripts/verify-12a8-kick-heatmap-category-api-package.mjs'
+      - 'scripts/verify-12a8-kick-heatmap-category-controls-package.mjs'
+      - 'scripts/verify-12a5-twitch-heatmap-category-public-cutover.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a8-kick-category-hidden-production-revalidation.yml'
+      - 'docs/audits/12a8-kick-heatmap-category-hidden-production-revalidation-contract.json'
+      - 'apps/web/scripts/kick-category-hidden-production-revalidation.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a8-kick-category-hidden-production-revalidation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify revalidation contract and accepted hidden implementation
+        run: |
+          node --check apps/web/scripts/kick-category-hidden-production-revalidation.mjs
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs'
+          const read = (p) => fs.readFileSync(p, 'utf8')
+          const json = (p) => JSON.parse(read(p))
+          const contract = json('docs/audits/12a8-kick-heatmap-category-hidden-production-revalidation-contract.json')
+          const decision = json('docs/audits/12a8-kick-heatmap-category-feasibility-decision.json')
+          const hidden = json('docs/audits/12a8-kick-heatmap-category-hidden-controls-contract.json')
+          const controls = read('apps/web/src/features/twitch-heatmap/category-preview-controls.ts')
+          const runtime = read('apps/web/src/live/twitch-heatmap.ts')
+          const api = read('apps/web/functions/api/kick-heatmap.ts')
+          const tiles = read('apps/web/src/features/twitch-heatmap/renderer/tiles-layer.ts')
+
+          if (contract.status !== 'ready_for_validation') throw new Error('revalidation_contract_status_invalid')
+          if (contract.provider !== 'kick' || contract.feature !== 'heatmap_category_filter') throw new Error('revalidation_identity_invalid')
+          if (contract.parentTrackingIssue !== 623 || contract.trackingIssue !== 770) throw new Error('revalidation_issue_identity_invalid')
+          if (contract.decision?.mergeSha !== '7e10fab59ea8342bdaa111110f40eb64608b5174') throw new Error('kick_category_decision_merge_mismatch')
+          if (contract.acceptedImplementation?.controlsMergeSha !== '555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0') throw new Error('hidden_controls_merge_mismatch')
+          if (contract.execution?.productionOnPullRequest !== false || contract.execution?.productionOnMainPush !== true) throw new Error('production_execution_boundary_invalid')
+          if (contract.target?.hiddenEntry !== 'categoryPreview=1') throw new Error('hidden_entry_changed')
+          if (decision.authorization?.hiddenCandidateImplementationAuthorized !== true) throw new Error('hidden_candidate_not_authorized')
+          if (decision.authorization?.publicExposureAuthorized !== false) throw new Error('public_kick_cutover_must_remain_unauthorized')
+          if (hidden.status !== 'candidate' || hidden.provider !== 'kick' || hidden.trackingIssue !== 770) throw new Error('hidden_controls_contract_identity_invalid')
+          if (hidden.validation?.productionHiddenBrowserRevalidationRequiredBeforePublicCutover !== true) throw new Error('hidden_production_revalidation_not_required')
+
+          for (const [key, value] of Object.entries(contract.boundary)) {
+            if (key === 'readOnly') {
+              if (value !== true) throw new Error('revalidation_must_be_read_only')
+            } else if (value !== false) {
+              throw new Error(`boundary_${key}_must_remain_false`)
+            }
+          }
+          for (const [key, value] of Object.entries(contract.requiredChecks)) {
+            if (value !== true) throw new Error(`required_check_${key}_not_enabled`)
+          }
+
+          for (const fragment of [
+            "provider === 'twitch' || (provider === 'kick' && url.searchParams.get(PREVIEW_PARAM) === '1')",
+            "root.dataset.categoryFilter = options.provider === 'kick' ? 'hidden' : 'public'",
+            "if (provider === 'kick') url.searchParams.set(PREVIEW_PARAM, '1')",
+            "const providerLabel = options.provider === 'kick' ? 'Kick' : 'Twitch'",
+            'window.history.replaceState',
+          ]) if (!controls.includes(fragment)) throw new Error(`current_controls_missing:${fragment}`)
+
+          for (const fragment of [
+            'readCategoryPreviewState(provider.key)',
+            'buildCategoryPreviewEndpoint(provider.endpoint, provider.key, categoryPreview)',
+            'installCategoryPreviewControls',
+            'syncCategoryPreviewControls',
+            'momentumAvailable: optionalBoolean(raw.momentumAvailable)',
+            "item.momentumAvailable === false ? 'Unavailable'",
+          ]) if (!runtime.includes(fragment)) throw new Error(`current_runtime_missing:${fragment}`)
+
+          for (const fragment of [
+            "implementationState: 'hidden'",
+            'publicExposureAuthorized: false',
+            'filterBeforeTopN: true',
+            "momentumScope: categoryFilterState === 'selected' ? 'selected_category_compatible_observations' : 'stream'",
+            "WHERE provider = ?",
+            ".bind('kick')",
+          ]) if (!api.includes(fragment)) throw new Error(`current_kick_api_missing:${fragment}`)
+
+          for (const fragment of [
+            "const momentum = momentumAvailable ? formatSignedPercent(node.momentum) : 'N/A'",
+            'if (node.momentumAvailable === false)',
+          ]) if (!tiles.includes(fragment)) throw new Error(`current_tiles_missing:${fragment}`)
+          NODE
+
+          node scripts/verify-12a8-kick-heatmap-category-feasibility-decision.mjs
+          node scripts/verify-12a8-kick-heatmap-category-api-package.mjs
+          node scripts/verify-12a8-kick-heatmap-category-controls-package.mjs
+          node scripts/verify-12a5-twitch-heatmap-category-public-cutover.mjs
+          node scripts/verify-category-rollout-policy.mjs
+
+      - name: Verify exact three-file revalidation package scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          allowed='^(\.github/workflows/analytics-12a8-kick-category-hidden-production-revalidation\.yml|docs/audits/12a8-kick-heatmap-category-hidden-production-revalidation-contract\.json|apps/web/scripts/kick-category-hidden-production-revalidation\.mjs)$'
+          test "${#changed[@]}" -eq 3
+          for file in "${changed[@]}"; do
+            [[ "$file" =~ $allowed ]] || { echo "Unexpected hidden production revalidation change: $file" >&2; exit 1; }
+          done
+
+      - name: Typecheck and build web
+        run: |
+          pnpm typecheck:web
+          pnpm build:web
+
+      - name: Verify normal public HTML does not expose hidden Kick controls
+        run: |
+          test -f apps/web/dist/kick/heatmap/index.html
+          ! grep -q 'categoryPreview' apps/web/dist/kick/heatmap/index.html
+          ! grep -q 'heatmap-category-preview-controls' apps/web/dist/kick/heatmap/index.html
+          ! grep -q 'data-category-preview-select' apps/web/dist/kick/heatmap/index.html
+          test -f apps/web/dist/twitch/heatmap/index.html
+          ! grep -q 'categoryPreview' apps/web/dist/twitch/heatmap/index.html
+
+  production:
+    if: github.event_name == 'push'
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      OUTPUT_DIR: artifacts/12a8-kick-category-hidden-production-revalidation
+      VIEWLOOM_ORIGIN: https://www.viewloom.net
+      EXPECTED_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - id: browser
+        name: Revalidate hidden Kick category filter against exact production SHA
+        continue-on-error: true
+        run: node apps/web/scripts/kick-category-hidden-production-revalidation.mjs
+      - name: Upload production revalidation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a8-kick-category-hidden-production-revalidation
+          path: artifacts/12a8-kick-category-hidden-production-revalidation/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Fail after evidence upload when production revalidation rejects
+        if: steps.browser.outcome != 'success'
+        run: exit 1
