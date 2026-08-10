@@ -5,12 +5,14 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation.yml'
+      - 'apps/web/scripts/kick-category-hidden-visual-revalidation.mjs'
       - 'docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract.json'
       - 'scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs'
   push:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation.yml'
+      - 'apps/web/scripts/kick-category-hidden-visual-revalidation.mjs'
       - 'docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract.json'
       - 'scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs'
 
@@ -34,7 +36,7 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify exact deployment-authority correction scope
+      - name: Verify exact single-source evidence correction scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -43,9 +45,9 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(\.github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation\.yml|docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract\.json|scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence\.mjs)$'
-          test "${#changed[@]}" -eq 3
-          for path in "${changed[@]}"; do [[ "$path" =~ $allowed ]] || { echo "Unexpected deployment-authority change: $path" >&2; exit 1; }; done
+          allowed='^(\.github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation\.yml|apps/web/scripts/kick-category-hidden-visual-revalidation\.mjs|docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract\.json|scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence\.mjs)$'
+          test "${#changed[@]}" -eq 4
+          for path in "${changed[@]}"; do [[ "$path" =~ $allowed ]] || { echo "Unexpected single-source evidence change: $path" >&2; exit 1; }; done
       - name: Verify validation-only ancestry from repaired product
         run: |
           set -euo pipefail
@@ -121,7 +123,7 @@ jobs:
             exit 1
           fi
       - id: browser
-        name: Revalidate repaired hidden Kick layout on bounded validation descendant
+        name: Revalidate repaired hidden Kick layout using exact deployment evidence
         continue-on-error: true
         run: node apps/web/scripts/kick-category-hidden-visual-revalidation.mjs
       - name: Upload visual revalidation evidence
