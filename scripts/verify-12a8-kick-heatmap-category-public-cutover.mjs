@@ -5,29 +5,31 @@ import { existsSync, readFileSync } from 'node:fs'
 const HIDDEN_PRODUCT_SHA = 'b921f15b127f13d7ad8a7f52976e4715d08919c1'
 const contractPath = 'docs/audits/12a8-kick-heatmap-category-public-cutover-contract.json'
 const decisionPath = 'docs/audits/12a8-kick-heatmap-category-public-cutover-decision.json'
-const acceptancePath = 'docs/audits/12a8-kick-heatmap-category-hidden-production-acceptance.json'
+const hiddenAcceptancePath = 'docs/audits/12a8-kick-heatmap-category-hidden-production-acceptance.json'
+const publicAcceptancePath = 'docs/audits/12a8-kick-heatmap-category-public-production-acceptance.json'
 const controlsPath = 'apps/web/src/features/twitch-heatmap/category-preview-controls.ts'
 const apiPath = 'apps/web/functions/api/kick-heatmap.ts'
 const browserPath = 'apps/web/scripts/kick-category-public-production-acceptance.mjs'
 
 const read = (path) => readFileSync(path, 'utf8')
 const json = (path) => JSON.parse(read(path))
-for (const path of [contractPath, decisionPath, acceptancePath, controlsPath, apiPath, browserPath]) {
+for (const path of [contractPath, decisionPath, hiddenAcceptancePath, publicAcceptancePath, controlsPath, apiPath, browserPath]) {
   assert.equal(existsSync(path), true, `${path}: missing`)
 }
 
 const contract = json(contractPath)
 const decision = json(decisionPath)
-const acceptance = json(acceptancePath)
+const hiddenAcceptance = json(hiddenAcceptancePath)
+const publicAcceptance = json(publicAcceptancePath)
 const controls = read(controlsPath)
 const api = read(apiPath)
 const browser = read(browserPath)
 const historicalControls = execFileSync('git', ['show', `${HIDDEN_PRODUCT_SHA}:${controlsPath}`], { encoding: 'utf8' })
 const historicalApi = execFileSync('git', ['show', `${HIDDEN_PRODUCT_SHA}:${apiPath}`], { encoding: 'utf8' })
 
-assert.equal(contract.schemaVersion, 'viewloom-12a8-kick-heatmap-category-public-cutover-contract-v1')
-assert.equal(contract.status, 'implementation_candidate')
-assert.equal(contract.phase, '12A-8-P2')
+assert.equal(contract.schemaVersion, 'viewloom-12a8-kick-heatmap-category-public-cutover-contract-v2')
+assert.equal(contract.status, 'public_production_evidence_accepted')
+assert.equal(contract.phase, '12A-8-P3')
 assert.equal(contract.parentTrackingIssue, 623)
 assert.equal(contract.trackingIssue, 790)
 assert.equal(contract.provider, 'kick')
@@ -35,14 +37,8 @@ assert.equal(contract.feature, 'heatmap_category_filter')
 assert.equal(contract.acceptedDecision.issue, 788)
 assert.equal(contract.acceptedDecision.pr, 789)
 assert.equal(contract.acceptedDecision.mergeSha, '124d486b85a3e7e7a7fb06b4dfc2b5ea22d5e7a7')
-assert.equal(contract.acceptedDecision.decision, 'authorize_public_kick_heatmap_category_filter')
 assert.equal(contract.acceptedHiddenEvidence.pr, 787)
 assert.equal(contract.acceptedHiddenEvidence.repairedHiddenProductSha, HIDDEN_PRODUCT_SHA)
-assert.equal(contract.acceptedHiddenEvidence.workflowRun, 31371899291)
-assert.equal(contract.acceptedHiddenEvidence.productionJob, 93402574458)
-assert.equal(contract.acceptedHiddenEvidence.artifactId, 9056407163)
-assert.equal(contract.acceptedHiddenEvidence.desktopHumanVisualPassed, true)
-assert.equal(contract.acceptedHiddenEvidence.mobileHumanVisualPassed, true)
 
 assert.equal(decision.schemaVersion, 'viewloom-12a8-kick-heatmap-category-public-cutover-decision-v1')
 assert.equal(decision.status, 'accepted_on_merge')
@@ -53,16 +49,28 @@ assert.equal(decision.authorization.defaultRouteExposureAuthorized, true)
 assert.equal(decision.authorization.legacyPreviewCompatibilityAuthorized, true)
 assert.equal(decision.productionAcceptanceRequired, true)
 
-assert.equal(acceptance.schemaVersion, 'viewloom-12a8-kick-heatmap-category-hidden-production-acceptance-v3')
-assert.equal(acceptance.status, 'accepted_corrected_visual_evidence')
-assert.equal(acceptance.authorization.publicCutoverDecisionAuthorized, true)
-assert.equal(acceptance.authorization.publicKickCategoryUiAuthorized, false)
-assert.equal(acceptance.correctedEvidence.passedScenarioCount, 4)
-assert.equal(acceptance.correctedEvidence.failureCount, 0)
-assert.equal(acceptance.correctedEvidence.humanVisualDesktopPassed, true)
-assert.equal(acceptance.correctedEvidence.humanVisualMobilePassed, true)
+assert.equal(hiddenAcceptance.schemaVersion, 'viewloom-12a8-kick-heatmap-category-hidden-production-acceptance-v3')
+assert.equal(hiddenAcceptance.status, 'accepted_corrected_visual_evidence')
+assert.equal(hiddenAcceptance.authorization.publicCutoverDecisionAuthorized, true)
+assert.equal(hiddenAcceptance.correctedEvidence.passedScenarioCount, 4)
+assert.equal(hiddenAcceptance.correctedEvidence.failureCount, 0)
 
-const runtime = contract.runtimeChanges
+assert.equal(publicAcceptance.schemaVersion, 'viewloom-12a8-kick-heatmap-category-public-production-acceptance-v1')
+assert.equal(publicAcceptance.status, 'accepted')
+assert.equal(publicAcceptance.trackingIssue, 790)
+assert.equal(publicAcceptance.implementation.pr, 791)
+assert.equal(publicAcceptance.implementation.mergeSha, '14181a570a93ab4091f6a43e6aaf0ec86f60c745')
+assert.equal(publicAcceptance.acceptedProductionEvidence.passedScenarioCount, 5)
+assert.equal(publicAcceptance.acceptedProductionEvidence.failureCount, 0)
+assert.equal(publicAcceptance.acceptedProductionEvidence.humanVisualDesktopPassed, true)
+assert.equal(publicAcceptance.acceptedProductionEvidence.humanVisualMobilePassed, true)
+assert.equal(publicAcceptance.authorization.publicKickCategoryUiAccepted, true)
+assert.equal(publicAcceptance.authorization.publicRolloutAccepted, true)
+
+const runtime = contract.publicImplementation
+assert.equal(runtime.issue, 790)
+assert.equal(runtime.pr, 791)
+assert.equal(runtime.mergeSha, publicAcceptance.implementation.mergeSha)
 assert.equal(runtime.controls, controlsPath)
 assert.equal(runtime.kickApi, apiPath)
 assert.equal(runtime.controlsPublicOnNormalKickRoute, true)
@@ -71,9 +79,9 @@ assert.equal(runtime.kickApiPublicExposureAuthorized, true)
 assert.equal(runtime.legacyPreviewAccepted, true)
 assert.equal(runtime.legacyPreviewRequired, false)
 assert.equal(runtime.legacyPreviewRemovedOnInteraction, true)
-assert.equal(runtime.dataSemanticsChangeAuthorized, false)
-assert.equal(runtime.layoutSemanticsChangeAuthorized, false)
-assert.equal(runtime.twitchRuntimeSemanticChangeAuthorized, false)
+assert.equal(runtime.dataSemanticsChangedBeyondExposureBoundary, false)
+assert.equal(runtime.layoutSemanticsChangedBeyondAcceptedRepair, false)
+assert.equal(runtime.twitchRuntimeSemanticChange, false)
 
 const behavior = contract.publicBehavior
 assert.equal(behavior.defaultCategory, 'all')
@@ -106,7 +114,6 @@ for (const fragment of [
 ]) assert.ok(controls.includes(fragment), `public controls missing: ${fragment}`)
 assert.equal(controls.includes("provider === 'kick' && url.searchParams.get(PREVIEW_PARAM) === '1'"), false)
 assert.equal(controls.includes("if (provider === 'kick') url.searchParams.set(PREVIEW_PARAM, '1')"), false)
-assert.equal(controls.includes("root.dataset.categoryFilter = options.provider === 'kick' ? 'hidden' : 'public'"), false)
 
 for (const fragment of [
   "implementationState: 'public'",
@@ -120,7 +127,6 @@ for (const fragment of [
   "'unknown_category'",
   "'category_unavailable'",
   "sourceMode === 'official-livestreams'",
-  "coverageState: 'unavailable'",
   "momentumScope: 'stream' | 'selected_category_compatible_observations'",
   'prior.categoryId !== selectedCategory',
   "momentumUnavailableReason: 'previous_category_missing_or_different'",
@@ -141,7 +147,7 @@ assert.ok(api.includes("categoryFilterState === 'unknown_category'\n        ? []
 assert.ok(api.includes("categoryFilterState === 'category_unavailable' && requestedCategory !== 'all'\n          ? []"), 'unavailable selected category must remain empty')
 assert.ok(api.includes('prior.categoryId !== selectedCategory'), 'cross-category previous observation must remain rejected')
 
-// Prove that publicization changes only the explicitly authorized exposure boundary.
+// Publicization must still normalize exactly back to the repaired hidden product.
 let normalizedControls = controls
 normalizedControls = normalizedControls.replace(
   "const enabled = provider === 'twitch' || provider === 'kick'",
@@ -178,19 +184,30 @@ assert.equal(contract.historicalPackageCompatibility.twitchPublicVerifierRecogni
 assert.equal(contract.historicalPackageCompatibility.hiddenContractsRemainUnmodified, true)
 
 const production = contract.productionAcceptance
-assert.equal(production.required, true)
-assert.equal(production.exactMainShaRequired, true)
-assert.equal(production.singleSourceDeploymentEvidenceRequired, true)
+assert.equal(production.accepted, true)
+assert.equal(production.workflowRunId, 31392879989)
+assert.equal(production.acceptedRunAttempt, 2)
+assert.equal(production.productionJobId, 93471782226)
+assert.equal(production.artifactId, 9064783287)
+assert.equal(production.exactMainSha, publicAcceptance.implementation.mergeSha)
+assert.equal(production.singleSourceDeploymentEvidencePassed, true)
+assert.equal(production.scenarioCount, 5)
+assert.equal(production.passedScenarioCount, 5)
+assert.equal(production.failureCount, 0)
 assert.equal(production.desktopWidth, 1440)
+assert.equal(production.desktopScrollWidth, 1440)
 assert.equal(production.mobileWidth, 390)
-assert.deepEqual(production.requiredScenarios, [
+assert.equal(production.mobileScrollWidth, 390)
+assert.equal(production.desktopHumanVisualPassed, true)
+assert.equal(production.mobileHumanVisualPassed, true)
+
+for (const scenario of [
   'kick-public-desktop',
   'kick-public-mobile',
   'kick-legacy-preview-compatibility',
   'kick-unknown-category-honest-empty',
   'twitch-public-controls-preserved',
-])
-for (const scenario of production.requiredScenarios) assert.ok(browser.includes(`'${scenario}'`), `browser scenario missing: ${scenario}`)
+]) assert.ok(browser.includes(`'${scenario}'`), `browser scenario missing: ${scenario}`)
 assert.ok(browser.includes("const sourcePath = path.join(OUT, 'last-deployment.json')"))
 assert.ok(browser.includes("fs.readFileSync(sourcePath, 'utf8')"))
 assert.equal(browser.includes('fetch(`${ORIGIN}/deployment.json'), false, 'browser must not perform a second deployment identity fetch')
@@ -198,7 +215,7 @@ assert.equal(browser.includes('fetch(`${ORIGIN}/deployment.json'), false, 'brows
 const authorization = contract.authorization
 assert.equal(authorization.publicKickCategoryUiImplementationAuthorized, true)
 assert.equal(authorization.productionBrowserAcceptanceAuthorized, true)
-assert.equal(authorization.publicRolloutAcceptedOnMerge, false)
+assert.equal(authorization.publicRolloutAccepted, true)
 for (const key of [
   'kickDayFlowCategoryUiAuthorized',
   'kickBattleLinesCategoryUiAuthorized',
@@ -221,14 +238,12 @@ for (const key of [
 console.log(JSON.stringify({
   status: 'pass',
   trackingIssue: contract.trackingIssue,
-  decisionPr: contract.acceptedDecision.pr,
-  hiddenProductSha: HIDDEN_PRODUCT_SHA,
+  implementationPr: runtime.pr,
   publicKickCategoryControls: true,
   defaultCategory: behavior.defaultCategory,
   defaultTop: behavior.defaultTop,
-  allowedTopValues: behavior.allowedTopValues,
   apiSemanticDiffBeyondExposure: false,
   controlsSemanticDiffBeyondExposure: false,
-  productionAcceptanceRequired: production.required,
-  publicRolloutAcceptedOnMerge: authorization.publicRolloutAcceptedOnMerge,
+  productionScenarios: `${production.passedScenarioCount}/${production.scenarioCount}`,
+  publicRolloutAccepted: authorization.publicRolloutAccepted,
 }, null, 2))

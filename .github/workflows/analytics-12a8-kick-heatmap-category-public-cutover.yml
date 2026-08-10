@@ -8,7 +8,10 @@ on:
       - 'apps/web/src/features/twitch-heatmap/category-preview-controls.ts'
       - 'apps/web/scripts/kick-category-public-production-acceptance.mjs'
       - 'docs/audits/12a8-kick-heatmap-category-public-cutover-contract.json'
+      - 'docs/audits/12a8-kick-heatmap-category-public-production-evidence.json'
+      - 'docs/audits/12a8-kick-heatmap-category-public-production-acceptance.json'
       - 'scripts/verify-12a8-kick-heatmap-category-public-cutover.mjs'
+      - 'scripts/verify-12a8-kick-heatmap-category-public-production-evidence.mjs'
       - 'scripts/verify-12a8-kick-heatmap-category-api-package.mjs'
       - 'scripts/verify-12a8-kick-heatmap-category-controls-package.mjs'
       - 'scripts/verify-12a5-twitch-heatmap-category-public-cutover.mjs'
@@ -22,7 +25,10 @@ on:
       - 'apps/web/src/features/twitch-heatmap/category-preview-controls.ts'
       - 'apps/web/scripts/kick-category-public-production-acceptance.mjs'
       - 'docs/audits/12a8-kick-heatmap-category-public-cutover-contract.json'
+      - 'docs/audits/12a8-kick-heatmap-category-public-production-evidence.json'
+      - 'docs/audits/12a8-kick-heatmap-category-public-production-acceptance.json'
       - 'scripts/verify-12a8-kick-heatmap-category-public-cutover.mjs'
+      - 'scripts/verify-12a8-kick-heatmap-category-public-production-evidence.mjs'
       - 'scripts/verify-12a8-kick-heatmap-category-api-package.mjs'
       - 'scripts/verify-12a8-kick-heatmap-category-controls-package.mjs'
       - 'scripts/verify-12a5-twitch-heatmap-category-public-cutover.mjs'
@@ -35,13 +41,10 @@ permissions:
 
 concurrency:
   group: analytics-12a8-kick-heatmap-category-public-cutover-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
-env:
-  HIDDEN_PRODUCT_SHA: b921f15b127f13d7ad8a7f52976e4715d08919c1
+  cancel-in-progress: true
 
 jobs:
-  contract:
+  verify:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -50,7 +53,7 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify exact public-cutover implementation scope
+      - name: Verify exact public evidence-acceptance scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -59,20 +62,24 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(apps/web/functions/api/kick-heatmap\.ts|apps/web/src/features/twitch-heatmap/category-preview-controls\.ts|apps/web/scripts/kick-category-public-production-acceptance\.mjs|docs/audits/12a8-kick-heatmap-category-public-cutover-contract\.json|scripts/verify-12a8-kick-heatmap-category-public-cutover\.mjs|scripts/verify-12a8-kick-heatmap-category-api-package\.mjs|scripts/verify-12a8-kick-heatmap-category-controls-package\.mjs|scripts/verify-12a5-twitch-heatmap-category-public-cutover\.mjs|\.github/workflows/analytics-12a8-kick-heatmap-category-api-package\.yml|\.github/workflows/analytics-12a8-kick-heatmap-category-controls-package\.yml|\.github/workflows/analytics-12a8-kick-heatmap-category-public-cutover\.yml)$'
-          test "${#changed[@]}" -eq 11
+          allowed='^(\.github/workflows/analytics-12a8-kick-heatmap-category-public-cutover\.yml|docs/audits/12a8-kick-heatmap-category-public-cutover-contract\.json|docs/audits/12a8-kick-heatmap-category-public-production-evidence\.json|docs/audits/12a8-kick-heatmap-category-public-production-acceptance\.json|scripts/verify-12a8-kick-heatmap-category-public-cutover\.mjs|scripts/verify-12a8-kick-heatmap-category-public-production-evidence\.mjs)$'
+          test "${#changed[@]}" -eq 6
           for path in "${changed[@]}"; do
-            [[ "$path" =~ $allowed ]] || { echo "Unexpected Kick public-cutover change: $path" >&2; exit 1; }
+            [[ "$path" =~ $allowed ]] || { echo "Unexpected Kick public evidence-acceptance change: $path" >&2; exit 1; }
           done
       - name: Verify accepted corrected hidden evidence remains authoritative
         run: node scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs
       - name: Verify accepted public-cutover decision
         run: node scripts/verify-12a8-kick-heatmap-category-public-cutover-decision.mjs
-      - name: Verify bounded public runtime implementation
+      - name: Verify bounded public runtime remains unchanged
         run: |
           node --check scripts/verify-12a8-kick-heatmap-category-public-cutover.mjs
           node --check apps/web/scripts/kick-category-public-production-acceptance.mjs
           node scripts/verify-12a8-kick-heatmap-category-public-cutover.mjs
+      - name: Verify accepted Kick public category production evidence
+        run: |
+          node --check scripts/verify-12a8-kick-heatmap-category-public-production-evidence.mjs
+          node scripts/verify-12a8-kick-heatmap-category-public-production-evidence.mjs
       - name: Verify historical hidden API package
         run: node scripts/verify-12a8-kick-heatmap-category-api-package.mjs
       - name: Verify historical hidden controls package
@@ -89,69 +96,3 @@ jobs:
         run: |
           test -f apps/web/dist/kick/heatmap/index.html
           ! grep -q 'categoryPreview=1' apps/web/dist/kick/heatmap/index.html
-
-  production:
-    if: github.event_name == 'push'
-    needs: contract
-    runs-on: ubuntu-latest
-    timeout-minutes: 50
-    env:
-      OUTPUT_DIR: artifacts/12a8-kick-category-public-production-acceptance
-      VIEWLOOM_ORIGIN: https://www.viewloom.net
-      EXPECTED_SHA: ${{ github.sha }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Verify accepted decision and bounded public runtime
-        run: |
-          node scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs
-          node scripts/verify-12a8-kick-heatmap-category-public-cutover-decision.mjs
-          node scripts/verify-12a8-kick-heatmap-category-public-cutover.mjs
-          node scripts/verify-12a5-twitch-heatmap-category-public-cutover.mjs
-      - name: Install Playwright
-        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Confirm exact public-cutover main SHA on primary production
-        run: |
-          set -euo pipefail
-          mkdir -p "$OUTPUT_DIR"
-          success=false
-          for attempt in $(seq 1 90); do
-            if curl -fsS --max-time 20 "$VIEWLOOM_ORIGIN/deployment.json?kickCategoryPublic=$GITHUB_RUN_ID-$attempt" -o /tmp/deployment.json; then
-              cp /tmp/deployment.json "$OUTPUT_DIR/last-deployment.json"
-              observed_sha=$(jq -r '.commit_sha // ""' /tmp/deployment.json)
-              environment=$(jq -r '.environment // ""' /tmp/deployment.json)
-              branch=$(jq -r '.branch // ""' /tmp/deployment.json)
-              printf 'attempt=%s expected=%s observed=%s environment=%s branch=%s\n' "$attempt" "$EXPECTED_SHA" "$observed_sha" "$environment" "$branch"
-              if [[ "$observed_sha" == "$EXPECTED_SHA" && "$environment" == 'production' && "$branch" == 'main' ]]; then
-                success=true
-                break
-              fi
-            fi
-            sleep 5
-          done
-          if [[ "$success" != true ]]; then
-            echo "Primary production did not publish exact Kick public-cutover SHA $EXPECTED_SHA" >&2
-            test -f "$OUTPUT_DIR/last-deployment.json" && cat "$OUTPUT_DIR/last-deployment.json" >&2
-            exit 1
-          fi
-      - id: browser
-        name: Validate public Kick category controls on production
-        continue-on-error: true
-        run: node apps/web/scripts/kick-category-public-production-acceptance.mjs
-      - name: Upload public Kick category evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: analytics-12a8-kick-category-public-production-acceptance
-          path: artifacts/12a8-kick-category-public-production-acceptance/
-          if-no-files-found: error
-          retention-days: 30
-      - name: Fail after evidence upload when public acceptance rejects
-        if: steps.browser.outcome != 'success'
-        run: exit 1
