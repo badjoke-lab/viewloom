@@ -20,6 +20,7 @@ const apiPackage = json(apiPackagePath)
 const model = read(contract.package.model)
 const controls = read(contract.package.controls)
 const runtime = read(contract.package.runtime)
+const tiles = read(contract.package.tiles)
 const twitchHtml = read(twitchHtmlPath)
 const kickHtml = read(kickHtmlPath)
 
@@ -82,6 +83,15 @@ for (const fragment of [
   'categoryName: stringValue(raw.categoryName) || null',
 ]) assert.ok(runtime.includes(fragment), `runtime missing: ${fragment}`)
 
+for (const fragment of [
+  "const MOMENTUM_UNAVAILABLE_COLOR = 'rgba(203,213,225,0.62)'",
+  "const momentumAvailable = node.momentumAvailable !== false",
+  "const momentum = momentumAvailable ? formatSignedPercent(node.momentum) : 'N/A'",
+  'const momentumFill = momentumAvailable ? momentumColor(node.momentum) : MOMENTUM_UNAVAILABLE_COLOR',
+  'if (node.momentumAvailable === false)',
+  'return `hsl(220 10% ${lightness.toFixed(1)}%)`',
+]) assert.ok(tiles.includes(fragment), `tiles missing: ${fragment}`)
+
 assert.equal(contract.hiddenEntry.queryParameter, 'categoryPreview')
 assert.equal(contract.hiddenEntry.queryValue, '1')
 assert.equal(contract.hiddenEntry.kickOnlyHiddenGate, true)
@@ -95,9 +105,11 @@ assert.equal(contract.controls.twitchLegacyPreviewParameterRemovedOnInteraction,
 assert.equal(contract.dataTruth.availableCategoriesPreservedThroughSharedResponseAdapter, true)
 assert.equal(contract.dataTruth.categoryFilterPreservedThroughSharedResponseAdapter, true)
 assert.equal(contract.dataTruth.selectedCategoryMomentumUnavailableStatePreserved, true)
+assert.equal(contract.dataTruth.selectedCategoryMomentumUnavailableTilePresentation, 'neutral_na_not_flat_zero')
 assert.equal(contract.providerBoundary.normalKickRouteControlAbsenceRequired, true)
 assert.equal(contract.providerBoundary.twitchPublicCategoryControlsRemainEnabled, true)
 assert.equal(contract.providerBoundary.crossProviderRequestsAllowed, false)
+assert.equal(contract.validation.unavailableMomentumTileRenderingRequired, true)
 
 for (const html of [twitchHtml, kickHtml]) {
   assert.equal(html.includes('categoryPreview'), false, 'public HTML must not expose hidden preview query')
@@ -126,6 +138,7 @@ console.log(JSON.stringify({
   allCategoriesDefault: true,
   topValues: contract.controls.topValues,
   momentumUnavailableStatePreserved: true,
+  momentumUnavailableTilePresentation: contract.dataTruth.selectedCategoryMomentumUnavailableTilePresentation,
   mobileResponsive: true,
   keyboardAccessible: true,
   nextAction: 'merge-api-then-retarget-controls-and-run-hidden-production-revalidation',
