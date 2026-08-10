@@ -64,7 +64,7 @@ for (const fragment of [
   "sourceMode === 'official-livestreams'",
   "coverageState: 'unavailable'",
   "momentumScope: 'stream' | 'selected_category_compatible_observations'",
-  'previous.categoryId !== selectedCategory',
+  'prior.categoryId !== selectedCategory',
   "momentumUnavailableReason: 'previous_category_missing_or_different'",
   'requestedTop === null ? categoryFilteredItems : categoryFilteredItems.slice(0, requestedTop)',
   "requestedCategory === 'all'",
@@ -79,7 +79,7 @@ assert.ok(api.includes("categoryFilterState === 'unknown_category'\n        ? []
 assert.ok(api.includes("categoryFilterState === 'category_unavailable' && requestedCategory !== 'all'\n          ? []"), 'unavailable selected categories must not silently fall back to All')
 assert.ok(api.includes("const acceptedPrimarySource = sourceMode === 'official-livestreams'"), 'official livestreams must remain the accepted primary category source')
 assert.ok(api.includes("!acceptedPrimarySource || categoryMissingItems > 0 || dictionaryMissingItems > 0"), 'fallback or missing metadata must remain partial')
-assert.ok(api.includes('previous.categoryId !== selectedCategory'), 'selected-category momentum must reject cross-category previous observations')
+assert.ok(api.includes('prior.categoryId !== selectedCategory'), 'selected-category momentum must reject cross-category previous observations')
 assert.ok(api.includes("'cache-control': 'no-store'"), 'no-store API response behavior must remain')
 
 assert.equal(contract.hiddenBoundary.implementationState, 'hidden')
