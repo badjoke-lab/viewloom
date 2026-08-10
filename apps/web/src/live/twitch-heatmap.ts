@@ -91,7 +91,7 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
       availableCategories: data.availableCategories,
     })
 
-    const previewMessage = categoryPreview.enabled ? categoryPreviewMessage(data.categoryFilter) : null
+    const previewMessage = categoryPreview.enabled ? categoryPreviewMessage(data.categoryFilter, provider.key) : null
     if (previewMessage) {
       stage.innerHTML = renderRuntimeState(previewMessage.title, previewMessage.body)
       return
@@ -115,7 +115,7 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
       const selectedCategory = data.categoryFilter?.selectedCategory ?? categoryPreview.category
       const categoryEmpty = categoryPreview.enabled && data.categoryFilter?.state === 'selected'
       stage.innerHTML = categoryEmpty
-        ? renderRuntimeState('No live streams in this category', `The latest real Twitch snapshot has no qualifying live streams for category “${selectedCategory}” inside the selected Top ${categoryPreview.top} preview.`)
+        ? renderRuntimeState('No live streams in this category', `The latest real ${provider.label} snapshot has no qualifying live streams for category “${selectedCategory}” inside the selected Top ${categoryPreview.top} view.`)
         : renderRuntimeState('No live records in this snapshot', 'The data path responded successfully, but the latest stored snapshot contains no valid live stream records.')
       return
     }
@@ -177,6 +177,12 @@ function normalizeHeatmapResponse(raw: unknown, provider: HeatmapProvider): Twit
   const updatedAt = stringValue(record.updatedAt ?? record.updated_at) || new Date().toISOString()
   const totalViewers = items.reduce((sum, item) => sum + item.viewers, 0)
   const notes = Array.isArray(record.notes) ? record.notes.map(String) : []
+  const availableCategories = Array.isArray(record.availableCategories)
+    ? record.availableCategories as NonNullable<TwitchHeatmapApiResponse['availableCategories']>
+    : undefined
+  const categoryFilter = isRecord(record.categoryFilter)
+    ? record.categoryFilter as unknown as NonNullable<TwitchHeatmapApiResponse['categoryFilter']>
+    : undefined
 
   return {
     ok: record.state !== 'error',
@@ -197,6 +203,8 @@ function normalizeHeatmapResponse(raw: unknown, provider: HeatmapProvider): Twit
       : null,
     status: null,
     items,
+    availableCategories,
+    categoryFilter,
   }
 }
 
@@ -221,6 +229,8 @@ function normalizeHeatmapItem(raw: unknown): HeatmapItem | null {
     displayName,
     viewers,
     momentum: signedNumericValue(raw.momentum),
+    momentumAvailable: optionalBoolean(raw.momentumAvailable),
+    momentumUnavailableReason: stringValue(raw.momentumUnavailableReason) || undefined,
     activity: signedNumericValue(raw.activity),
     title: stringValue(raw.title ?? raw.streamTitle ?? raw.gameName) || undefined,
     url: stringValue(raw.url) || undefined,
@@ -243,7 +253,7 @@ function syncSelectedStreamBridge(
   setText('#heatmap-detail-body', item.title || `${item.channelLogin} is selected in the latest observed snapshot.`)
   setText('#heatmap-detail-viewers', item.viewers.toLocaleString())
   setText('#heatmap-detail-share', `${(share * 100).toFixed(2)}%`)
-  setText('#heatmap-detail-momentum', formatSignedPercent(item.momentum))
+  setText('#heatmap-detail-momentum', item.momentumAvailable === false ? 'Unavailable' : formatSignedPercent(item.momentum))
   setText('#heatmap-detail-activity', item.activityAvailable === false ? 'Unavailable' : formatPercent(item.activity))
 
   const link = document.querySelector<HTMLAnchorElement>('#heatmap-detail-link')

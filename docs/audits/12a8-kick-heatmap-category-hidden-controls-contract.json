@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-controls-v1",
+  "workstream": "12A-8 hidden Kick Heatmap category controls package",
+  "status": "candidate",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 770,
+  "provider": "kick",
+  "acceptedInputs": {
+    "decisionContract": "docs/audits/12a8-kick-heatmap-category-feasibility-decision.json",
+    "decisionPr": 769,
+    "apiPackageContract": "docs/audits/12a8-kick-heatmap-category-api-package-contract.json",
+    "apiPackagePr": 771,
+    "apiPackageMustMergeBeforeControls": true
+  },
+  "package": {
+    "model": "apps/web/src/features/twitch-heatmap/model.ts",
+    "controls": "apps/web/src/features/twitch-heatmap/category-preview-controls.ts",
+    "runtime": "apps/web/src/live/twitch-heatmap.ts",
+    "tiles": "apps/web/src/features/twitch-heatmap/tiles-layer.ts",
+    "verifier": "scripts/verify-12a8-kick-heatmap-category-controls-package.mjs",
+    "workflow": ".github/workflows/analytics-12a8-kick-heatmap-category-controls-package.yml"
+  },
+  "hiddenEntry": {
+    "queryParameter": "categoryPreview",
+    "queryValue": "1",
+    "kickOnlyHiddenGate": true,
+    "twitchPublicBehaviorPreserved": true,
+    "publicNavigationAdded": false,
+    "normalKickHtmlControlAdded": false,
+    "defaultKickRouteExposure": false,
+    "publicKickExposureAuthorized": false
+  },
+  "controls": {
+    "categoryLabel": "Category",
+    "defaultCategory": "all",
+    "allCategoriesLabel": "All categories",
+    "topValues": [20, 50, 100],
+    "defaultTop": 50,
+    "categoryQueryParameter": "category",
+    "topQueryParameter": "top",
+    "kickPreviewParameterPersistedOnInteraction": true,
+    "twitchLegacyPreviewParameterRemovedOnInteraction": true,
+    "keyboardAccessible": true,
+    "mobileResponsive": true,
+    "liveStatusRegion": true
+  },
+  "dataTruth": {
+    "apiPackageRequired": true,
+    "filterBeforeTopN": true,
+    "unknownCategoryMustBeExplicit": true,
+    "unavailableSelectedCategoryMustBeExplicit": true,
+    "allCategoriesPreservesUnfilteredCompatibility": true,
+    "availableCategoriesPreservedThroughSharedResponseAdapter": true,
+    "categoryFilterPreservedThroughSharedResponseAdapter": true,
+    "selectedCategoryMomentumUnavailableStatePreserved": true,
+    "selectedCategoryMomentumUnavailableTilePresentation": "neutral_na_not_flat_zero"
+  },
+  "providerBoundary": {
+    "kickHiddenControlsOnlyWithPreview": true,
+    "normalKickRouteControlAbsenceRequired": true,
+    "twitchPublicCategoryControlsRemainEnabled": true,
+    "twitchCategoryApiUnchanged": true,
+    "providerSpecificCopyRequired": true,
+    "crossProviderRequestsAllowed": false
+  },
+  "validation": {
+    "staticContractRequired": true,
+    "apiPackageVerifierRequired": true,
+    "decisionVerifierRequired": true,
+    "categoryRolloutPolicyRequired": true,
+    "webTypecheckRequired": true,
+    "webBuildRequired": true,
+    "mobileCssRequired": true,
+    "focusVisibleRequired": true,
+    "unavailableMomentumTileRenderingRequired": true,
+    "normalRouteControlAbsenceRequired": true,
+    "productionHiddenBrowserRevalidationRequiredBeforePublicCutover": true
+  },
+  "pullRequestBoundary": {
+    "publicNavigation": false,
+    "normalKickHtmlControl": false,
+    "defaultKickRouteExposure": false,
+    "publicFeatureFlagEnabled": false,
+    "collectorChange": false,
+    "workerConfigChange": false,
+    "d1Mutation": false,
+    "schemaChange": false,
+    "cadenceChange": false,
+    "retentionExpansion": false,
+    "backfill": false,
+    "credentialChange": false,
+    "twitchApiChange": false,
+    "crossProviderBehavior": false
+  },
+  "nextGate": "after API package #771 is merged, retarget this stacked package to main, pass static/type/build gates, merge hidden controls, then run a separate deployed hidden Kick production browser revalidation before any public cutover decision"
+}

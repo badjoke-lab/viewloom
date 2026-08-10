@@ -74,6 +74,8 @@ export type HeatmapItem = {
   displayName: string
   viewers: number
   momentum: number
+  momentumAvailable?: boolean
+  momentumUnavailableReason?: string
   activity: number
   title?: string
   url?: string
