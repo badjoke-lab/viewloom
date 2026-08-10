@@ -19,6 +19,7 @@ on:
       - 'apps/web/scripts/kick-category-hidden-visual-revalidation.mjs'
       - 'docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract.json'
       - 'docs/audits/12a8-kick-heatmap-category-hidden-production-acceptance.json'
+      - 'scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence.mjs'
 
 permissions:
   contents: read
@@ -47,7 +48,7 @@ jobs:
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
           visual='^(\.github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation\.yml|\.github/workflows/analytics-12a8-kick-category-hidden-production-evidence\.yml|apps/web/src/features/twitch-heatmap/category-preview-controls\.ts|apps/web/scripts/kick-category-hidden-visual-revalidation\.mjs|docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract\.json|docs/audits/12a8-kick-heatmap-category-hidden-production-acceptance\.json|scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence\.mjs)$'
-          harness='^(\.github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation\.yml|apps/web/scripts/kick-category-hidden-visual-revalidation\.mjs|docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract\.json)$'
+          harness='^(\.github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation\.yml|apps/web/scripts/kick-category-hidden-visual-revalidation\.mjs|docs/audits/12a8-kick-heatmap-category-hidden-visual-correction-contract\.json|scripts/verify-12a8-kick-heatmap-category-hidden-production-evidence\.mjs)$'
           exact_scope() {
             local expected="$1"
             local regex="$2"
@@ -56,8 +57,8 @@ jobs:
           }
           if exact_scope 7 "$visual"; then
             echo 'Validated original seven-file visual correction scope.'
-          elif exact_scope 3 "$harness"; then
-            echo 'Validated bounded three-file test-harness correction scope.'
+          elif exact_scope 4 "$harness"; then
+            echo 'Validated bounded four-file test-harness correction scope.'
           else
             echo 'Unexpected visual correction scope.' >&2
             exit 1
