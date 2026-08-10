@@ -21,7 +21,7 @@ export type CategoryPreviewState = {
 
 export function readCategoryPreviewState(provider: HeatmapProviderKey): CategoryPreviewState {
   const url = new URL(window.location.href)
-  const enabled = provider === 'twitch' || (provider === 'kick' && url.searchParams.get(PREVIEW_PARAM) === '1')
+  const enabled = provider === 'twitch' || provider === 'kick'
   const rawCategory = url.searchParams.get(CATEGORY_PARAM)?.trim() || 'all'
   const rawTop = Number(url.searchParams.get(TOP_PARAM))
   return {
@@ -64,7 +64,7 @@ export function installCategoryPreviewControls(options: {
     root = document.createElement('div')
     root.id = ROOT_ID
     root.className = 'heatmap-control-dock__group heatmap-category-preview'
-    root.dataset.categoryFilter = options.provider === 'kick' ? 'hidden' : 'public'
+    root.dataset.categoryFilter = 'public'
     root.innerHTML = `
       <span class="heatmap-control-dock__label">Category</span>
       <div class="heatmap-category-preview__fields">
@@ -95,7 +95,7 @@ export function installCategoryPreviewControls(options: {
       options.onChange()
     })
   } else {
-    root.dataset.categoryFilter = options.provider === 'kick' ? 'hidden' : 'public'
+    root.dataset.categoryFilter = 'public'
   }
 
   const top = root.querySelector<HTMLSelectElement>('[data-category-preview-top]')
@@ -163,8 +163,7 @@ export function categoryPreviewMessage(filter: HeatmapCategoryFilter | undefined
 
 function updateCategoryUrl(provider: HeatmapProviderKey, next: { category?: string; top?: number }): void {
   const url = new URL(window.location.href)
-  if (provider === 'kick') url.searchParams.set(PREVIEW_PARAM, '1')
-  else url.searchParams.delete(PREVIEW_PARAM)
+  url.searchParams.delete(PREVIEW_PARAM)
   if (next.category !== undefined) {
     const category = next.category.trim() || 'all'
     url.searchParams.set(CATEGORY_PARAM, category)
