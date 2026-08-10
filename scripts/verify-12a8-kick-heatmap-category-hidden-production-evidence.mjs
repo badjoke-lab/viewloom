@@ -63,14 +63,47 @@ for (const key of [
   'combinedProviderRankingAuthorized',
 ]) assert.equal(acceptance.authorization[key], false, `${key}: must remain false`)
 
-assert.equal(correction.schemaVersion, 'viewloom-12a8-kick-heatmap-category-hidden-visual-correction-v1')
-assert.equal(correction.status, 'repair_required')
+assert.equal(correction.schemaVersion, 'viewloom-12a8-kick-heatmap-category-hidden-visual-correction-v2')
+assert.equal(correction.status, 'repaired_product_pending_test_harness_revalidation')
 assert.equal(correction.parentTrackingIssue, 623)
 assert.equal(correction.trackingIssue, 780)
 assert.equal(correction.supersedesAcceptancePr, 778)
-assert.equal(correction.requiredBrowserChecks.statusInsideRoot, true)
-assert.equal(correction.requiredBrowserChecks.statusDoesNotOverlapFields, true)
-assert.equal(correction.requiredBrowserChecks.statusDoesNotOverlapMapGroup, true)
+assert.equal(correction.repair.pr, 782)
+assert.equal(correction.repair.productSha, 'b921f15b127f13d7ad8a7f52976e4715d08919c1')
+assert.equal(correction.repair.categoryStatusContainedByCategoryRoot, true)
+assert.equal(correction.repair.categoryStatusDoesNotOverlapCategoryFields, true)
+assert.equal(correction.repair.categoryStatusDoesNotOverlapAdjacentMapGroup, true)
+assert.equal(correction.firstRepairValidationAttempt.workflowRun, 31370065098)
+assert.equal(correction.firstRepairValidationAttempt.productionJob, 93396942797)
+assert.equal(correction.firstRepairValidationAttempt.artifactId, 9055717263)
+assert.equal(correction.firstRepairValidationAttempt.artifactDigest, 'sha256:daf27c93d55fe67339343c3c0f570f4c8d03b4ca759af5ff850fe50a404641d2')
+assert.equal(correction.firstRepairValidationAttempt.productSha, 'b921f15b127f13d7ad8a7f52976e4715d08919c1')
+assert.equal(correction.firstRepairValidationAttempt.exactProductionShaObserved, true)
+assert.equal(correction.firstRepairValidationAttempt.desktopLayoutPassed, true)
+assert.equal(correction.firstRepairValidationAttempt.desktopHumanVisualReviewPassed, true)
+assert.equal(correction.firstRepairValidationAttempt.mobileLayoutPassed, true)
+assert.equal(correction.firstRepairValidationAttempt.mobileHumanVisualReviewPassed, true)
+assert.equal(correction.firstRepairValidationAttempt.twitchPublicControlsPreserved, true)
+assert.equal(correction.firstRepairValidationAttempt.failedScenario, 'kick-normal-remains-hidden')
+assert.equal(correction.firstRepairValidationAttempt.failureStage, 'normal_kick_response_wait_assumption')
+assert.equal(correction.firstRepairValidationAttempt.productFailureEstablished, false)
+assert.equal(correction.firstRepairValidationAttempt.testHarnessFailureEstablished, true)
+assert.equal(correction.testHarnessCorrection.productRuntimeChange, false)
+assert.equal(correction.testHarnessCorrection.pinnedProductSha, 'b921f15b127f13d7ad8a7f52976e4715d08919c1')
+assert.equal(correction.testHarnessCorrection.normalKickApiResponseRequired, false)
+assert.equal(correction.productionValidation.pinnedProductSha, 'b921f15b127f13d7ad8a7f52976e4715d08919c1')
+for (const key of [
+  'statusInsideRoot',
+  'statusDoesNotOverlapFields',
+  'statusDoesNotOverlapMapGroup',
+  'categoryFieldsInsideRoot',
+  'rootDoesNotOverlapMapGroup',
+  'desktopNoHorizontalOverflow',
+  'mobile390NoHorizontalOverflow',
+  'normalKickControlCountZero',
+  'normalKickCategoryAndTopQueryAbsent',
+  'twitchPublicControlCountOne',
+]) assert.equal(correction.requiredBrowserChecks[key], true, `${key}: must remain true`)
 assert.equal(correction.authorization.publicCutoverDecisionAuthorized, false)
 assert.equal(correction.authorization.publicKickCategoryUiAuthorized, false)
 
@@ -81,6 +114,11 @@ console.log(JSON.stringify({
   humanVisualAcceptancePassed: false,
   supersededAcceptancePr: acceptance.supersededAcceptancePr,
   correctionIssue: acceptance.trackingIssue,
+  repairedProductSha: correction.repair.productSha,
+  firstRepairDesktopPassed: correction.firstRepairValidationAttempt.desktopLayoutPassed,
+  firstRepairMobilePassed: correction.firstRepairValidationAttempt.mobileLayoutPassed,
+  remainingFailureClass: correction.firstRepairValidationAttempt.failureStage,
+  productFailureEstablished: false,
   publicCutoverDecisionAuthorized: false,
   visualRevalidationWorkflowRestored: true,
 }, null, 2))
