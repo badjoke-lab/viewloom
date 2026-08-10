@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-visual-correction-v1",
-  "status": "repair_required",
-  "phase": "12A-8-R3",
+  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-visual-correction-v2",
+  "status": "repaired_product_pending_test_harness_revalidation",
+  "phase": "12A-8-R4",
   "parentTrackingIssue": 623,
   "trackingIssue": 780,
   "provider": "kick",
@@ -23,7 +23,9 @@
     "description": "The category status text crowds or overlaps the adjacent MAP metadata region after selecting a real category.",
     "untestedBoundary": "The previous browser gate checked page overflow but did not compare control/status/map bounding rectangles."
   },
-  "requiredRepair": {
+  "repair": {
+    "pr": 782,
+    "productSha": "b921f15b127f13d7ad8a7f52976e4715d08919c1",
     "categoryStatusContainedByCategoryRoot": true,
     "categoryStatusPlacedOnDedicatedRow": true,
     "categoryStatusDoesNotOverlapCategoryFields": true,
@@ -32,6 +34,49 @@
     "mobile390LayoutPreserved": true,
     "normalKickRouteStillHasNoCategoryControls": true,
     "twitchPublicCategoryBehaviorPreserved": true
+  },
+  "firstRepairValidationAttempt": {
+    "workflowRun": 31370065098,
+    "productionJob": 93396942797,
+    "artifactId": 9055717263,
+    "artifactDigest": "sha256:daf27c93d55fe67339343c3c0f570f4c8d03b4ca759af5ff850fe50a404641d2",
+    "productSha": "b921f15b127f13d7ad8a7f52976e4715d08919c1",
+    "exactProductionShaObserved": true,
+    "desktopLayoutPassed": true,
+    "desktopHumanVisualReviewPassed": true,
+    "desktopGeometry": {
+      "viewportWidth": 1440,
+      "scrollWidth": 1440,
+      "categoryRoot": { "left": 339.96875, "right": 652.171875, "top": 419.171875, "bottom": 617.546875, "width": 312.203125, "height": 198.375 },
+      "fields": { "left": 419.390625, "right": 639.171875, "top": 432.171875, "bottom": 564.171875, "width": 219.78125, "height": 132 },
+      "status": { "left": 419.390625, "right": 639.171875, "top": 572.171875, "bottom": 604.546875, "width": 219.78125, "height": 32.375 },
+      "map": { "left": 670.171875, "right": 1404, "top": 501.359375, "bottom": 535.359375, "width": 733.828125, "height": 34 }
+    },
+    "mobileLayoutPassed": true,
+    "mobileHumanVisualReviewPassed": true,
+    "mobileGeometry": {
+      "viewportWidth": 390,
+      "scrollWidth": 390,
+      "categoryRoot": { "left": 14, "right": 376, "width": 362 },
+      "fields": { "left": 27, "right": 363, "width": 336 },
+      "status": { "left": 27, "right": 363, "width": 336 }
+    },
+    "twitchPublicControlsPreserved": true,
+    "failedScenario": "kick-normal-remains-hidden",
+    "failureStage": "normal_kick_response_wait_assumption",
+    "failureMessage": "page.waitForResponse timed out while the scenario only needed to prove hidden controls and category/top query parameters were absent",
+    "productFailureEstablished": false,
+    "testHarnessFailureEstablished": true
+  },
+  "testHarnessCorrection": {
+    "productRuntimeChange": false,
+    "pinnedProductSha": "b921f15b127f13d7ad8a7f52976e4715d08919c1",
+    "normalKickApiResponseRequired": false,
+    "normalKickControlCountRequired": 0,
+    "normalKickTwitchApiRequestsAllowed": false,
+    "normalKickCategoryOrTopQueryAllowed": false,
+    "normalKickPageGeometryStillChecked": true,
+    "purpose": "Remove an unrelated API-response requirement from the normal-route hidden-control assertion without changing the repaired product."
   },
   "requiredBrowserChecks": {
     "statusInsideRoot": true,
@@ -42,12 +87,14 @@
     "desktopNoHorizontalOverflow": true,
     "mobile390NoHorizontalOverflow": true,
     "normalKickControlCountZero": true,
+    "normalKickCategoryAndTopQueryAbsent": true,
     "twitchPublicControlCountOne": true
   },
   "productionValidation": {
     "workflow": ".github/workflows/analytics-12a8-kick-category-hidden-visual-revalidation.yml",
     "script": "apps/web/scripts/kick-category-hidden-visual-revalidation.mjs",
-    "expectedSource": "exact visual-repair merge SHA",
+    "expectedSource": "exact repaired product SHA b921f15b127f13d7ad8a7f52976e4715d08919c1",
+    "pinnedProductSha": "b921f15b127f13d7ad8a7f52976e4715d08919c1",
     "productionOnPullRequest": false,
     "productionOnMainPush": true,
     "screenshotsRequired": true,
@@ -71,5 +118,5 @@
     "credentialChangeAuthorized": false,
     "crossProviderBehaviorAuthorized": false
   },
-  "nextGate": "Merge a bounded visual repair, require the repair merge SHA on primary production, run desktop and 390px visual geometry checks, manually review retained screenshots, then freeze and separately accept corrected evidence before reopening public cutover."
+  "nextGate": "Merge the bounded test-harness correction, rerun production validation against the already-deployed exact repaired product SHA b921f15b127f13d7ad8a7f52976e4715d08919c1, require all four scenarios to pass, manually review retained desktop/mobile screenshots again, then freeze and separately accept corrected evidence before reopening public cutover."
 }
