@@ -7,6 +7,9 @@ import { join } from 'node:path'
 // Governed production revalidation source touch for Issue #753: behavior remains
 // unchanged; this source-path commit ensures the confirmed Git integration publishes
 // the exact main SHA that the read-only #747 production revalidation will verify.
+// Governed Kick Heatmap hidden production revalidation source touch for Issue #770:
+// behavior remains unchanged; this source-path commit ensures the recovery merge SHA
+// enters the confirmed Pages Git integration path before the read-only browser gate.
 const dist = join(process.cwd(), 'dist')
 const measurementId = 'G-YHX7HS1VBK'
 const tagUrl = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
