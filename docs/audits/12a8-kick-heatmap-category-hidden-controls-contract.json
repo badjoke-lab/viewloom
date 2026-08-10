@@ -16,6 +16,7 @@
     "model": "apps/web/src/features/twitch-heatmap/model.ts",
     "controls": "apps/web/src/features/twitch-heatmap/category-preview-controls.ts",
     "runtime": "apps/web/src/live/twitch-heatmap.ts",
+    "tiles": "apps/web/src/features/twitch-heatmap/tiles-layer.ts",
     "verifier": "scripts/verify-12a8-kick-heatmap-category-controls-package.mjs",
     "workflow": ".github/workflows/analytics-12a8-kick-heatmap-category-controls-package.yml"
   },
@@ -51,7 +52,8 @@
     "allCategoriesPreservesUnfilteredCompatibility": true,
     "availableCategoriesPreservedThroughSharedResponseAdapter": true,
     "categoryFilterPreservedThroughSharedResponseAdapter": true,
-    "selectedCategoryMomentumUnavailableStatePreserved": true
+    "selectedCategoryMomentumUnavailableStatePreserved": true,
+    "selectedCategoryMomentumUnavailableTilePresentation": "neutral_na_not_flat_zero"
   },
   "providerBoundary": {
     "kickHiddenControlsOnlyWithPreview": true,
@@ -70,6 +72,7 @@
     "webBuildRequired": true,
     "mobileCssRequired": true,
     "focusVisibleRequired": true,
+    "unavailableMomentumTileRenderingRequired": true,
     "normalRouteControlAbsenceRequired": true,
     "productionHiddenBrowserRevalidationRequiredBeforePublicCutover": true
   },
