@@ -1,11 +1,16 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 
 const read = (path) => readFileSync(path, 'utf8')
 const json = (path) => JSON.parse(read(path))
 
 const decision = json('docs/audits/12a8-kick-heatmap-category-feasibility-decision.json')
-const api = read('apps/web/functions/api/kick-heatmap.ts')
+const api = execFileSync(
+  'git',
+  ['show', `${decision.evidenceBasis.sourceMainSha}:apps/web/functions/api/kick-heatmap.ts`],
+  { encoding: 'utf8' },
+)
 const collector = read('workers/collector-kick/src/index-category.ts')
 const official = read('workers/collector-kick/src/official-livestreams.ts')
 const capture = read('workers/shared/category-capture.ts')
@@ -128,8 +133,9 @@ for (const key of [
   'combinedProviderRankingAuthorized',
 ]) assert.equal(decision.authorization[key], false, `${key}: must remain false`)
 
-// Current Kick Heatmap is deliberately category-blind and reads the latest two
-// Kick snapshots for current state + viewer-delta momentum.
+// Verify the exact pre-candidate API captured by the accepted decision rather
+// than today's mutable runtime. This keeps the permanent decision evidence
+// valid after the decision-authorized hidden candidate starts changing the API.
 for (const fragment of [
   'FROM minute_snapshots',
   "WHERE provider = ?",
@@ -211,6 +217,7 @@ console.log(JSON.stringify({
   decision: decision.decision,
   provider: decision.provider,
   surface: decision.surface,
+  evidenceSourceMainSha: decision.evidenceBasis.sourceMainSha,
   hiddenCandidateAuthorized: decision.authorization.hiddenCandidateImplementationAuthorized,
   publicExposureAuthorized: decision.authorization.publicExposureAuthorized,
   primaryCategorySourceMode: decision.sourceModeBoundary.primaryCategorySourceMode,
