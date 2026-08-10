@@ -20,12 +20,9 @@ assert.deepEqual(decision.publicBehavior.allowedTopValues, [20, 50, 100])
 for (const fragment of [
   "const TOP_VALUES = [20, 50, 100] as const",
   'const DEFAULT_TOP = 50',
-  "const enabled = provider === 'twitch'",
+  "provider === 'twitch'",
   '<span class="heatmap-control-dock__label">Category</span>',
-  'aria-label="Twitch category"',
-  'aria-label="Twitch maximum streams"',
   'All categories',
-  "url.searchParams.delete(PREVIEW_PARAM)",
   'window.history.replaceState',
   '.heatmap-category-preview__fields select {',
   'width: 100%;',
@@ -33,6 +30,27 @@ for (const fragment of [
   'max-width: 100%;',
   'grid-template-columns: minmax(0, 1fr);',
 ]) assert.ok(controls.includes(fragment), `controls missing: ${fragment}`)
+
+const staticTwitchLabels = controls.includes('aria-label="Twitch category"')
+  && controls.includes('aria-label="Twitch maximum streams"')
+const providerAwareLabels = controls.includes("const providerLabel = options.provider === 'kick' ? 'Kick' : 'Twitch'")
+  && controls.includes('aria-label="${providerLabel} category"')
+  && controls.includes('aria-label="${providerLabel} maximum streams"')
+assert.ok(staticTwitchLabels || providerAwareLabels, 'Twitch category accessibility labels must remain available')
+
+const kickHiddenCandidate = controls.includes("provider === 'kick' && url.searchParams.get(PREVIEW_PARAM) === '1'")
+if (kickHiddenCandidate) {
+  assert.ok(controls.includes("provider === 'twitch' || (provider === 'kick' && url.searchParams.get(PREVIEW_PARAM) === '1')"))
+  assert.ok(controls.includes("root.dataset.categoryFilter = options.provider === 'kick' ? 'hidden' : 'public'"))
+  assert.ok(controls.includes("if (provider === 'kick') url.searchParams.set(PREVIEW_PARAM, '1')"))
+  assert.ok(controls.includes('else url.searchParams.delete(PREVIEW_PARAM)'))
+  assert.ok(controls.includes('if (!options.state.enabled)'))
+} else {
+  assert.ok(controls.includes("const enabled = provider === 'twitch'"))
+  assert.ok(controls.includes("if (!options.state.enabled || options.provider !== 'twitch')"))
+  assert.ok(controls.includes('url.searchParams.delete(PREVIEW_PARAM)'))
+}
+
 for (const forbidden of ['Hidden preview', 'public exposure disabled', 'data-hidden-preview']) {
   assert.equal(controls.includes(forbidden), false, `controls still hidden-only: ${forbidden}`)
 }
@@ -53,7 +71,6 @@ assert.ok(runtime.includes('syncCategoryPreviewControls'))
 
 const kickSource = read('apps/web/src/live/twitch-heatmap.ts')
 assert.ok(kickSource.includes("key: 'kick'"))
-assert.ok(controls.includes("if (!options.state.enabled || options.provider !== 'twitch')"))
 
 console.log(JSON.stringify({
   status: 'pass',
@@ -63,5 +80,6 @@ console.log(JSON.stringify({
   topValues: decision.publicBehavior.allowedTopValues,
   mobileIntrinsicWidthConstrained: true,
   publicTwitchCategoryUiAuthorized: true,
-  kickCategoryUiAuthorized: false,
+  kickPublicCategoryUiAuthorized: false,
+  kickHiddenCandidateCompatible: kickHiddenCandidate,
 }, null, 2))
