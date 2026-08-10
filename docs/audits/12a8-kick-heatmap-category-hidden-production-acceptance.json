@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-production-acceptance-v1",
-  "status": "accepted_on_merge",
+  "status": "superseded_for_visual_qa",
   "phase": "12A-8-R2",
   "parentTrackingIssue": 623,
   "trackingIssue": 770,
@@ -33,9 +33,9 @@
     "primaryOrigin": "https://www.viewloom.net"
   },
   "acceptedResult": {
-    "scenarioCount": 5,
-    "passedScenarioCount": 5,
-    "failureCount": 0,
+    "automatedScenarioCount": 5,
+    "automatedPassedScenarioCount": 5,
+    "automatedFailureCount": 0,
     "normalKickItemCount": 100,
     "hiddenDesktopCategoryOptions": 25,
     "hiddenDesktopCategoryCoverageState": "observed",
@@ -52,7 +52,7 @@
     "unknownCategoryState": "unknown_category",
     "unknownCategoryItems": 0,
     "twitchIsolationItemCount": 50,
-    "desktopOverflow": false,
+    "desktopPageOverflow": false,
     "mobileOverflow": false,
     "unknownCategoryOverflow": false,
     "twitchMobileOverflow": false,
@@ -61,11 +61,26 @@
     "normalRoutePublicControlsAbsent": true,
     "hiddenApiPublicExposureFlagFalse": true,
     "filterBeforeTopNPass": true,
-    "selectedCategoryMomentumHonestyPass": true
+    "selectedCategoryMomentumHonestyPass": true,
+    "elementNonOverlapWasTested": false
+  },
+  "visualQa": {
+    "status": "rejected",
+    "reviewedAfterPr": 778,
+    "supersededByIssue": 780,
+    "supersededPublicDecisionIssue": 779,
+    "supersededPublicDecisionPr": 781,
+    "defect": "desktop_category_status_crowds_or_overlaps_adjacent_map_metadata",
+    "affectedScenario": "kick-hidden-desktop",
+    "affectedScreenshot": "screenshots/kick-hidden-desktop.png",
+    "pageOverflowMetricWasInsufficient": true,
+    "requiredNewAssertion": "DOMRect non-overlap between category status/group content and adjacent MAP label/value/group",
+    "newProductionEvidenceRequired": true
   },
   "authorization": {
-    "hiddenRevalidationAcceptedOnMerge": true,
-    "publicCutoverDecisionAuthorized": true,
+    "historicalAutomatedEvidenceRetained": true,
+    "hiddenRevalidationAccepted": false,
+    "publicCutoverDecisionAuthorized": false,
     "publicKickCategoryUiAuthorized": false,
     "kickDayFlowCategoryUiAuthorized": false,
     "kickBattleLinesCategoryUiAuthorized": false,
@@ -84,5 +99,5 @@
     "combinedProviderRankingAuthorized": false
   },
   "acceptancePr": 778,
-  "nextGate": "Make a separate Kick Heatmap public-cutover decision. Do not expose normal-route Kick category controls from this evidence-acceptance PR, and do not authorize Kick Day Flow, Battle Lines, or History category UI automatically."
+  "nextGate": "Issue #780 must correct the hidden Kick desktop Category/MAP control layout and produce new exact-product-SHA production browser evidence with explicit DOMRect non-overlap assertions and screenshot review. Public cutover remains blocked until a new evidence acceptance supersedes this record."
 }
