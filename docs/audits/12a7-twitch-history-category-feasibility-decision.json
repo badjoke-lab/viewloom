@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "viewloom-12a7-twitch-history-category-feasibility-decision-v1",
+  "status": "accepted_on_merge",
+  "phase": "12A-7",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 765,
+  "provider": "twitch",
+  "surface": "history",
+  "decision": "reject_twitch_history_category_surface_on_current_data",
+  "evidenceBasis": {
+    "sourceMainSha": "014f50f650e9de282cec9d94ea60285c87c9bc57",
+    "historyApi": "apps/web/functions/api/history.ts",
+    "acceptedCategoryReference": "apps/web/functions/api/twitch-heatmap.ts",
+    "permanentCollectorEntry": "workers/collector-twitch/src/entry.ts",
+    "permanentCollectorConfig": "workers/collector-twitch/wrangler.category-permanent.toml",
+    "categoryIntradayGenerator": "workers/shared/category-intraday-rollup.ts",
+    "categoryIntradaySql": "workers/shared/category-intraday-sql.ts",
+    "snapshotRetention": "db/d1/005_retention_cleanup.sql",
+    "categoryContractVersion": "category-source-v1",
+    "acceptedReplacementAuditIssue": 659,
+    "acceptedReplacementAuditStart": "2026-07-31T17:00:00.000Z",
+    "acceptedReplacementAuditEndExclusive": "2026-08-07T17:00:00.000Z",
+    "newCollectionRequiredForCurrentSurface": true,
+    "newStorageOrRetentionRequiredForCurrentSurface": true
+  },
+  "currentHistorySemantics": {
+    "maximumCustomRangeDays": 90,
+    "primarySourcePreference": "daily_rollups_then_minute_snapshots",
+    "dailyRollupsRetainCategoryMembership": false,
+    "unfilteredHistoryMustRemainBackwardCompatible": true,
+    "previousPeriodComparisonIsPartOfExistingDerivedHistory": true
+  },
+  "currentCategoryData": {
+    "snapshotMembershipEvaluation": "per_observed_snapshot",
+    "snapshotCategoryIdentity": "provider_scoped_category_id",
+    "snapshotCategoryRefsAlignedToStreamItems": true,
+    "snapshotRetentionDays": 30,
+    "dailyRollupRetentionDays": 180,
+    "intradayCategoryRetentionDays": 90,
+    "permanentCategoryCaptureEnabled": true,
+    "permanentIntradayGenerationEnabled": true
+  },
+  "intradayCompressionLimits": {
+    "streamerSelectionBasis": "unfiltered_daily_viewer_minutes_rank",
+    "retainedStreamerCap": 600,
+    "categoryRepresentation": "dominant_category_per_streamer_per_hour",
+    "dominantCategoryRanking": "sample_count_desc_then_viewer_minutes_desc_then_category_id",
+    "nonDominantCategoryContributionsPreserved": false,
+    "categorySpecificFilterBeforeStreamerCapRecoverable": false,
+    "exactCategoryViewerMinutesRecoverableForAllCategories": false,
+    "exactCategoryPeakViewersRecoverableForAllCategories": false
+  },
+  "rejectionReasons": [
+    "Existing daily_rollups power long-range History but retain no category membership.",
+    "Exact observation-time categoryRefs/categoryIds exist in minute_snapshots, but Twitch minute snapshots are retained for 30 days while History accepts custom ranges up to 90 days and derives previous-period comparisons.",
+    "The 90-day streamer_intraday_rollups category payload is intentionally lossy: it retains only one dominant category per streamer per hour and discards non-dominant category contributions for that hour.",
+    "Intraday streamer selection is capped after unfiltered daily ranking, so an exact selected-category filter-before-ranking result cannot be reconstructed for streamers outside that retained set.",
+    "Treating missing historical category contributions as zero, back-projecting a latest category, or presenting dominant-hour compression as exact category viewer-minutes would violate the accepted honesty boundaries."
+  ],
+  "prohibitedFallbacks": {
+    "latestCategoryBackProjectionAllowed": false,
+    "syntheticMappingAllowed": false,
+    "nameOnlyIdentityAllowed": false,
+    "missingCategoryMetadataMeansZeroViewers": false,
+    "dominantHourlyCategoryMayBePresentedAsExactSnapshotMembership": false,
+    "thresholdRelaxationAllowed": false,
+    "historicalBackfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "crossProviderIdentityAllowed": false,
+    "crossProviderTotalsAllowed": false,
+    "combinedProviderRankingAllowed": false
+  },
+  "authorization": {
+    "hiddenHistoryCategoryCandidateAuthorized": false,
+    "historyApiCategoryParameterAuthorized": false,
+    "historyCategoryControlsAuthorized": false,
+    "defaultRoutePublicExposureAuthorized": false,
+    "kickCategoryUiAuthorized": false,
+    "collectorChangeAuthorized": false,
+    "workerCollectorDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "d1SchemaChangeAuthorized": false,
+    "bindingChangeAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "retentionChangeAuthorized": false,
+    "backfillAuthorized": false,
+    "thresholdRelaxationAuthorized": false,
+    "crossProviderBehaviorAuthorized": false,
+    "combinedProviderRankingAuthorized": false
+  },
+  "futureReconsiderationRequirements": [
+    "A separately accepted History-grade category rollup must preserve every selected-category contribution needed for the advertised metric, not only a dominant hourly category.",
+    "Category filtering must occur before category-specific ranking/capping, or the retained data must prove that omitted streamers cannot affect the requested ranking.",
+    "The retained category-aware history window must support the advertised period and any previous-period comparison without latest-category backprojection or hidden backfill.",
+    "Coverage and missing-category metadata must remain explicit at the History aggregation grain.",
+    "Any new storage, retention, backfill, collector, or D1 change requires its own governed decision and evidence before this History decision can be revisited."
+  ],
+  "fallback": {
+    "existingUnfilteredHistory": "required_and_unchanged",
+    "categoryHistoryState": "not_authorized",
+    "userFacingApproximationAuthorized": false
+  },
+  "nextGate": "Close the Twitch History category gate as rejected on current accepted data. Parent #623 may proceed only to a separate provider-scoped decision, such as Kick category UI, while unfiltered Twitch History remains the fallback."
+}
