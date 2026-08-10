@@ -181,7 +181,11 @@ function ensureStyles(): void {
   style.id = STYLE_ID
   style.textContent = `
     .heatmap-category-preview {
-      align-items: center;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: start;
+      column-gap: 12px;
+      row-gap: 8px;
       min-width: 0;
       max-width: 100%;
       border: 1px solid rgba(148, 163, 184, .34);
@@ -189,7 +193,14 @@ function ensureStyles(): void {
       padding: 12px;
       background: rgba(15, 23, 42, .48);
     }
+    .heatmap-category-preview > .heatmap-control-dock__label {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      align-self: start;
+    }
     .heatmap-category-preview__fields {
+      grid-column: 2;
+      grid-row: 1;
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
@@ -222,17 +233,32 @@ function ensureStyles(): void {
       outline-offset: 2px;
     }
     .heatmap-category-preview__status {
+      grid-column: 2;
+      grid-row: 2;
+      display: block;
       min-width: 0;
+      width: 100%;
       max-width: 100%;
       overflow-wrap: anywhere;
       color: var(--muted);
       font-size: .75rem;
+      line-height: 1.35;
     }
     @media (max-width: 760px) {
+      .heatmap-category-preview {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .heatmap-category-preview > .heatmap-control-dock__label,
+      .heatmap-category-preview__fields,
+      .heatmap-category-preview__status {
+        grid-column: 1;
+        grid-row: auto;
+      }
       .heatmap-category-preview,
       .heatmap-category-preview__fields,
       .heatmap-category-preview__fields label,
-      .heatmap-category-preview__fields select {
+      .heatmap-category-preview__fields select,
+      .heatmap-category-preview__status {
         width: 100%;
         min-width: 0;
         max-width: 100%;
