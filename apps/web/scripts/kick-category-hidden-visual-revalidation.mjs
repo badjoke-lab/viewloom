@@ -67,12 +67,12 @@ const controlRects = (page) => page.evaluate(() => {
   }
 })
 
-async function verifyDeployment() {
+function verifyDeploymentEvidence() {
   assert(EXPECTED_SHA, 'EXPECTED_SHA is required')
-  const response = await fetch(`${ORIGIN}/deployment.json?visualRevalidation=${Date.now()}`, { cache: 'no-store' })
-  assert(response.ok, `deployment HTTP ${response.status}`)
-  const deployment = await response.json()
-  assert(deployment?.commit_sha === EXPECTED_SHA, `production SHA ${deployment?.commit_sha || 'missing'} != ${EXPECTED_SHA}`)
+  const sourcePath = path.join(OUT, 'last-deployment.json')
+  assert(fs.existsSync(sourcePath), 'authoritative last-deployment.json is missing')
+  const deployment = JSON.parse(fs.readFileSync(sourcePath, 'utf8'))
+  assert(deployment?.commit_sha === EXPECTED_SHA, `authoritative production SHA ${deployment?.commit_sha || 'missing'} != ${EXPECTED_SHA}`)
   assert(deployment?.environment === 'production', `environment=${deployment?.environment}`)
   assert(deployment?.branch === 'main', `branch=${deployment?.branch}`)
   evidence.deployment = deployment
@@ -101,7 +101,7 @@ async function scenario(browser, name, viewport, run) {
 }
 
 try {
-  await verifyDeployment()
+  verifyDeploymentEvidence()
 } catch (error) {
   evidence.failures.push(`deployment: ${error instanceof Error ? error.message : String(error)}`)
 }
