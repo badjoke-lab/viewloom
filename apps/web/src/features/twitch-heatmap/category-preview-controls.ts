@@ -11,15 +11,17 @@ const DEFAULT_TOP = 50
 const ROOT_ID = 'heatmap-category-preview-controls'
 const STYLE_ID = 'heatmap-category-preview-style'
 
+type HeatmapProviderKey = 'twitch' | 'kick'
+
 export type CategoryPreviewState = {
   enabled: boolean
   category: string
   top: number
 }
 
-export function readCategoryPreviewState(provider: 'twitch' | 'kick'): CategoryPreviewState {
+export function readCategoryPreviewState(provider: HeatmapProviderKey): CategoryPreviewState {
   const url = new URL(window.location.href)
-  const enabled = provider === 'twitch'
+  const enabled = provider === 'twitch' || (provider === 'kick' && url.searchParams.get(PREVIEW_PARAM) === '1')
   const rawCategory = url.searchParams.get(CATEGORY_PARAM)?.trim() || 'all'
   const rawTop = Number(url.searchParams.get(TOP_PARAM))
   return {
@@ -31,7 +33,7 @@ export function readCategoryPreviewState(provider: 'twitch' | 'kick'): CategoryP
 
 export function buildCategoryPreviewEndpoint(
   endpoint: string,
-  provider: 'twitch' | 'kick',
+  provider: HeatmapProviderKey,
   state = readCategoryPreviewState(provider),
 ): string {
   if (!state.enabled) return endpoint
@@ -42,12 +44,12 @@ export function buildCategoryPreviewEndpoint(
 }
 
 export function installCategoryPreviewControls(options: {
-  provider: 'twitch' | 'kick'
+  provider: HeatmapProviderKey
   state: CategoryPreviewState
   onChange: () => void
 }): void {
   const existing = document.getElementById(ROOT_ID)
-  if (!options.state.enabled || options.provider !== 'twitch') {
+  if (!options.state.enabled) {
     existing?.remove()
     return
   }
@@ -55,23 +57,24 @@ export function installCategoryPreviewControls(options: {
   ensureStyles()
   const dock = document.querySelector<HTMLElement>('.heatmap-control-dock')
   if (!dock) return
+  const providerLabel = options.provider === 'kick' ? 'Kick' : 'Twitch'
 
   let root = existing
   if (!root) {
     root = document.createElement('div')
     root.id = ROOT_ID
     root.className = 'heatmap-control-dock__group heatmap-category-preview'
-    root.dataset.categoryFilter = 'public'
+    root.dataset.categoryFilter = options.provider === 'kick' ? 'hidden' : 'public'
     root.innerHTML = `
       <span class="heatmap-control-dock__label">Category</span>
       <div class="heatmap-category-preview__fields">
         <label>
           <span>Category</span>
-          <select data-category-preview-select aria-label="Twitch category"></select>
+          <select data-category-preview-select aria-label="${providerLabel} category"></select>
         </label>
         <label>
           <span>Top</span>
-          <select data-category-preview-top aria-label="Twitch maximum streams">
+          <select data-category-preview-top aria-label="${providerLabel} maximum streams">
             ${TOP_VALUES.map((value) => `<option value="${value}">Top ${value}</option>`).join('')}
           </select>
         </label>
@@ -83,14 +86,16 @@ export function installCategoryPreviewControls(options: {
 
     root.querySelector<HTMLSelectElement>('[data-category-preview-select]')?.addEventListener('change', (event) => {
       const select = event.currentTarget as HTMLSelectElement
-      updateCategoryUrl({ category: select.value })
+      updateCategoryUrl(options.provider, { category: select.value })
       options.onChange()
     })
     root.querySelector<HTMLSelectElement>('[data-category-preview-top]')?.addEventListener('change', (event) => {
       const select = event.currentTarget as HTMLSelectElement
-      updateCategoryUrl({ top: Number(select.value) })
+      updateCategoryUrl(options.provider, { top: Number(select.value) })
       options.onChange()
     })
+  } else {
+    root.dataset.categoryFilter = options.provider === 'kick' ? 'hidden' : 'public'
   }
 
   const top = root.querySelector<HTMLSelectElement>('[data-category-preview-top]')
@@ -138,26 +143,28 @@ export function syncCategoryPreviewControls(options: {
   status.textContent = `${filter.state.replaceAll('_', ' ')}${suffix}`
 }
 
-export function categoryPreviewMessage(filter: HeatmapCategoryFilter | undefined): { title: string; body: string } | null {
+export function categoryPreviewMessage(filter: HeatmapCategoryFilter | undefined, provider: HeatmapProviderKey): { title: string; body: string } | null {
   if (!filter) return null
+  const providerLabel = provider === 'kick' ? 'Kick' : 'Twitch'
   if (filter.state === 'unknown_category') {
     return {
-      title: 'Unknown Twitch category',
+      title: `Unknown ${providerLabel} category`,
       body: `The selected category ID “${filter.selectedCategory}” is not present in the latest provider-specific options.`,
     }
   }
   if (filter.state === 'category_unavailable' && filter.selectedCategory !== 'all') {
     return {
       title: 'Category data unavailable',
-      body: 'The latest Twitch snapshot does not contain an accepted category contract. Select All categories to use the unfiltered Heatmap fallback.',
+      body: `The latest ${providerLabel} snapshot does not contain usable accepted category metadata. Select All categories to use the unfiltered Heatmap fallback.`,
     }
   }
   return null
 }
 
-function updateCategoryUrl(next: { category?: string; top?: number }): void {
+function updateCategoryUrl(provider: HeatmapProviderKey, next: { category?: string; top?: number }): void {
   const url = new URL(window.location.href)
-  url.searchParams.delete(PREVIEW_PARAM)
+  if (provider === 'kick') url.searchParams.set(PREVIEW_PARAM, '1')
+  else url.searchParams.delete(PREVIEW_PARAM)
   if (next.category !== undefined) {
     const category = next.category.trim() || 'all'
     url.searchParams.set(CATEGORY_PARAM, category)
