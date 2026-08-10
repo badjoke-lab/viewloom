@@ -4,7 +4,7 @@
   "phase": "12A-7",
   "parentTrackingIssue": 623,
   "trackingIssue": 765,
-  "decisionPr": null,
+  "decisionPr": 767,
   "provider": "twitch",
   "surface": "history",
   "decision": "authorize_hidden_twitch_history_category_candidate_with_raw_coverage_boundary",
