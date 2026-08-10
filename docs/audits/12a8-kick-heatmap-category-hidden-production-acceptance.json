@@ -1,9 +1,10 @@
 {
-  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-production-acceptance-v1",
-  "status": "accepted_on_merge",
-  "phase": "12A-8-R2",
+  "schemaVersion": "viewloom-12a8-kick-heatmap-category-hidden-production-acceptance-v2",
+  "status": "superseded_visual_revalidation_required",
+  "phase": "12A-8-R3",
   "parentTrackingIssue": 623,
-  "trackingIssue": 770,
+  "trackingIssue": 780,
+  "originalTrackingIssue": 770,
   "provider": "kick",
   "feature": "heatmap_category_filter",
   "package": {
@@ -13,10 +14,11 @@
     "controlsProductSha": "555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0",
     "revalidationPackagePr": 775,
     "sourceAuthorityCorrectionPr": 776,
+    "prematureAcceptancePr": 778,
     "validationWorkflowSha": "0ec449c3fce573a9e1826526033b8826698ac890",
     "contract": "docs/audits/12a8-kick-heatmap-category-hidden-production-revalidation-contract.json"
   },
-  "execution": {
+  "historicalAutomatedEvidence": {
     "workflowRunId": 31368780619,
     "contractJobId": 93392869297,
     "productionJobId": 93393053863,
@@ -26,46 +28,28 @@
     "sourceEvidenceJsonSha256": "d7a540d8ff25fa4843406606513d3708b8d420b0dff43338d694146d1cfdcde5",
     "sourceDeploymentJsonSha256": "4679bc87c6214441e99be8cd7c346bb15a95c82327fe53094082e818a0462963",
     "observedAt": "2026-08-10T08:10:16.445Z",
-    "productionSourceAuthority": "exact_controls_product_sha",
     "expectedProductSha": "555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0",
     "observedProductSha": "555e30a754f4dee74e8ebe21fb59f85ef2b5a4b0",
     "pagesUrl": "https://403141bd.viewloom.pages.dev",
-    "primaryOrigin": "https://www.viewloom.net"
-  },
-  "acceptedResult": {
     "scenarioCount": 5,
     "passedScenarioCount": 5,
     "failureCount": 0,
-    "normalKickItemCount": 100,
-    "hiddenDesktopCategoryOptions": 25,
-    "hiddenDesktopCategoryCoverageState": "observed",
-    "selectedCategory": "15",
-    "selectedCategoryItems": 16,
-    "selectedCategoryUnavailableMomentumItems": 1,
-    "top20Items": 16,
-    "mobileCategoryOptions": 25,
-    "mobileViewportWidth": 390,
-    "mobileScrollWidth": 390,
-    "mobileControlRootWidth": 362,
-    "mobileCategoryControlWidth": 336,
-    "mobileTopControlWidth": 336,
-    "unknownCategoryState": "unknown_category",
-    "unknownCategoryItems": 0,
-    "twitchIsolationItemCount": 50,
-    "desktopOverflow": false,
-    "mobileOverflow": false,
-    "unknownCategoryOverflow": false,
-    "twitchMobileOverflow": false,
-    "keyboardPass": true,
-    "providerSeparationPass": true,
-    "normalRoutePublicControlsAbsent": true,
-    "hiddenApiPublicExposureFlagFalse": true,
-    "filterBeforeTopNPass": true,
-    "selectedCategoryMomentumHonestyPass": true
+    "automatedAssertionsPassed": true,
+    "humanVisualAcceptancePassed": false
+  },
+  "supersession": {
+    "issue": 780,
+    "reason": "human_visual_qa_desktop_category_status_overlap",
+    "sourceArtifactId": 9055232142,
+    "sourceScreenshot": "screenshots/kick-hidden-desktop.png",
+    "observedDefect": "The selected-category status text crowds or overlaps the adjacent MAP metadata region on the retained 1440px desktop production screenshot.",
+    "missingAutomatedGate": "desktop rectangle non-overlap between category status, category fields, and adjacent MAP group",
+    "historicalEvidenceRetained": true,
+    "historicalAutomatedPassRevokedAsAcceptanceAuthority": true
   },
   "authorization": {
-    "hiddenRevalidationAcceptedOnMerge": true,
-    "publicCutoverDecisionAuthorized": true,
+    "hiddenRevalidationAcceptedOnMerge": false,
+    "publicCutoverDecisionAuthorized": false,
     "publicKickCategoryUiAuthorized": false,
     "kickDayFlowCategoryUiAuthorized": false,
     "kickBattleLinesCategoryUiAuthorized": false,
@@ -83,6 +67,6 @@
     "crossProviderBehaviorAuthorized": false,
     "combinedProviderRankingAuthorized": false
   },
-  "acceptancePr": 778,
-  "nextGate": "Make a separate Kick Heatmap public-cutover decision. Do not expose normal-route Kick category controls from this evidence-acceptance PR, and do not authorize Kick Day Flow, Battle Lines, or History category UI automatically."
+  "supersededAcceptancePr": 778,
+  "nextGate": "Complete Issue #780: repair the hidden Kick desktop category-control layout, add rectangle non-overlap browser assertions, deploy the exact repaired product SHA, rerun production validation, freeze corrected evidence, and separately accept it before reopening any public-cutover decision."
 }
