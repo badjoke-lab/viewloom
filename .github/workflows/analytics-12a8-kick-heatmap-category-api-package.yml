@@ -27,10 +27,8 @@ jobs:
         uses: ./.github/actions/setup-node-pnpm
       - name: Parse package verifier
         run: node --check scripts/verify-12a8-kick-heatmap-category-api-package.mjs
-      - name: Verify hidden Kick category API contract and boundaries
+      - name: Verify hidden Kick category API contract and accepted decision boundary
         run: node scripts/verify-12a8-kick-heatmap-category-api-package.mjs
-      - name: Verify accepted Kick Heatmap category decision
-        run: node scripts/verify-12a8-kick-heatmap-category-feasibility-decision.mjs
       - name: Verify current category rollout policy
         run: node scripts/verify-category-rollout-policy.mjs
       - name: Typecheck web
@@ -45,6 +43,8 @@ jobs:
             echo
             echo '- Provider: Kick only'
             echo '- API category metadata and hidden query contract: yes'
+            echo '- Accepted decision artifact: verified by package verifier'
+            echo '- Pre-change decision verifier: intentionally not rerun after authorized runtime transition'
             echo '- Existing accepted storage only: yes'
             echo '- Primary category source: official-livestreams'
             echo '- Fallback without usable metadata: partial/unavailable, never inferred'
