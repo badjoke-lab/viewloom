@@ -156,13 +156,25 @@ try {
   })
 
   await scenario(browser, 'kick-normal-remains-hidden', { width: 1440, height: 1000 }, async ({ page, record, requests }) => {
-    const api = page.waitForResponse((r) => endpoint(r.url(), '/api/kick-heatmap'))
     const nav = await page.goto(`${ORIGIN}/kick/heatmap/`, { waitUntil: 'domcontentloaded', timeout: 45000 })
     assert(nav?.ok(), `normal Kick HTTP ${nav?.status()}`)
-    await api
+    await page.waitForTimeout(2000)
     assert(await page.locator('#heatmap-category-preview-controls').count() === 0, 'normal Kick exposed hidden controls')
     assert(!requests.some((url) => endpoint(url, '/api/twitch-heatmap')), 'normal Kick crossed Twitch API')
-    record.checks = { categoryControls: 0, geometry: await pageOverflow(page) }
+    const kickRequests = requests.filter((url) => endpoint(url, '/api/kick-heatmap'))
+    for (const requestUrl of kickRequests) {
+      const url = new URL(requestUrl)
+      assert(!url.searchParams.has('category'), `normal Kick sent category query: ${requestUrl}`)
+      assert(!url.searchParams.has('top'), `normal Kick sent top query: ${requestUrl}`)
+    }
+    const geometry = await pageOverflow(page)
+    assert(!geometry.overflow, `normal Kick desktop overflow ${geometry.scrollWidth}/${geometry.width}`)
+    record.checks = {
+      categoryControls: 0,
+      kickRequestCount: kickRequests.length,
+      categoryQueryCount: 0,
+      geometry,
+    }
   })
 
   await scenario(browser, 'twitch-public-controls-preserved', { width: 390, height: 844 }, async ({ page, record, requests }) => {
