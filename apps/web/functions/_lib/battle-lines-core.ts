@@ -415,6 +415,7 @@ function scoreBattle(a: BattleLine, b: BattleLine, metric: BattleMetric, maxView
     )
     if (categoryIneligible) {
       currentRun = 0
+      previousRawLeader = null
       continue
     }
     eligibleCount += 1
@@ -540,6 +541,15 @@ function buildReversalEvents(battle: BattleModel, lines: BattleLine[]): BattleEv
   for (let index = 0; index < Math.min(a.points.length, b.points.length); index += 1) {
     const av = a.points[index].value
     const bv = b.points[index].value
+    const categoryBoundary = a.points[index].state === 'outside_category'
+      || a.points[index].state === 'category_unavailable'
+      || b.points[index].state === 'outside_category'
+      || b.points[index].state === 'category_unavailable'
+    if (categoryBoundary) {
+      previousLeaderId = null
+      previousGap = null
+      continue
+    }
     if (av === null || bv === null || av === bv) continue
     const leader = av > bv ? a : b
     const passed = av > bv ? b : a
