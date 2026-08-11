@@ -1,0 +1,477 @@
+name: TMP 809 Build Kick Day Flow Public Cutover Package
+
+on:
+  push:
+    branches: [work-809-kick-day-flow-public-cutover]
+    paths:
+      - '.github/workflows/tmp-809-build-public-cutover-package.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work-809-kick-day-flow-public-cutover
+          fetch-depth: 0
+      - name: Build bounded public cutover package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('apps/web/scripts/verify-production-source.mjs')
+          s = p.read_text()
+          s = s.replace('// Kick Day Flow now uses its own provider bootstrap too, but the shared category\n// layer must remain inert unless categoryPreview=1 is present.', '// Kick Day Flow uses the same provider bootstrap; Category is now public on both providers.')
+          s = s.replace("'src/live/day-flow-kick-entry.ts: hidden Kick category boundary must install before Day Flow shell'", "'src/live/day-flow-kick-entry.ts: public Kick category layer must install before Day Flow shell'")
+          s = s.replace("\"const publicProvider = provider === 'twitch'\",", "\"const publicProvider = provider === 'twitch' || provider === 'kick'\",")
+          s = s.replace("    \"if (publicProvider) return filter.implementationState === 'public' && filter.publicExposureAuthorized === true\",\n    \"return legacyPreviewAtLoad && filter.implementationState === 'hidden_candidate' && filter.publicExposureAuthorized === false\",", "    \"return filter.implementationState === 'public' && filter.publicExposureAuthorized === true\",")
+          p.write_text(s)
+          PY
+
+          cat > scripts/verify-12a9-kick-day-flow-category-candidate.mjs <<'EOF'
+          import assert from 'node:assert/strict'
+          import { execFileSync } from 'node:child_process'
+          import { readFileSync } from 'node:fs'
+
+          const HIDDEN_SHA = '27b3cca084d62d8badd512c068be415c6865965e'
+          const show = (path) => execFileSync('git', ['show', `${HIDDEN_SHA}:${path}`], { encoding: 'utf8' })
+          const decision = JSON.parse(readFileSync('docs/audits/12a9-kick-day-flow-category-feasibility-decision.json', 'utf8'))
+          const core = show('apps/web/functions/api/day-flow-category-core.mjs')
+          const coreTypes = show('apps/web/functions/api/day-flow-category-core.d.mts')
+          const kickApi = show('apps/web/functions/api/kick-day-flow.ts')
+          const controls = show('apps/web/src/live/day-flow-category-preview-entry.ts')
+          const kickEntry = show('apps/web/src/live/day-flow-kick-entry.ts')
+          const kickPage = show('apps/web/kick/day-flow/index.html')
+          const twitchApi = show('apps/web/functions/api/day-flow.ts')
+
+          assert.equal(decision.decision, 'authorize_hidden_kick_day_flow_category_candidate')
+          assert.equal(decision.authorization?.hiddenCandidateImplementationAuthorized, true)
+          assert.equal(decision.authorization?.defaultRoutePublicExposureAuthorized, false)
+          assert.equal(decision.candidateContract?.previewParameter, 'categoryPreview=1')
+
+          assert.match(core, /provider = 'twitch'/)
+          assert.match(core, /bucketAggregation = 'max'/)
+          assert.match(core, /bucketAggregation === 'average'/)
+          assert.match(core, /`all_observed_\$\{provider\}_viewers_per_bucket`/)
+          assert.match(coreTypes, /provider\?: 'twitch' \| 'kick'/)
+          assert.match(coreTypes, /bucketAggregation\?: 'max' \| 'average'/)
+
+          assert.match(kickApi, /url\.searchParams\.has\('category'\)/)
+          assert.match(kickApi, /\.bind\('kick'\)\.all<CategoryRow>/)
+          assert.match(kickApi, /provider: 'kick'/)
+          assert.match(kickApi, /bucketAggregation: 'average'/)
+          assert.match(kickApi, /implementationState: 'hidden_candidate'/)
+          assert.match(kickApi, /publicExposureAuthorized: false/)
+          assert.match(kickApi, /if \(!categoryCandidateRequested\)/)
+          assert.match(kickApi, /requestedCategory === 'all'\s*\? built/)
+          assert.match(kickApi, /if \(filterState !== 'selected'\) \{/)
+          assert.match(kickApi, /const others = makeGlobalOthers\(\[\], labels, totals, bucketSize\)/)
+          assert.match(kickApi, /return \{ bands, streamers: \[\], totals, observed \}/)
+          assert.match(kickApi, /all_observed_kick_viewers_per_bucket/)
+          assert.match(kickApi, /displayed_selected_category_top_n_viewers_per_bucket/)
+          assert.doesNotMatch(kickApi, /DB_TWITCH_HOT/)
+
+          assert.match(controls, /const publicProvider = provider === 'twitch'/)
+          assert.doesNotMatch(controls, /provider === 'twitch' \|\| provider === 'kick'/)
+          assert.match(controls, /const enabled = publicProvider \|\| legacyPreviewAtLoad/)
+          assert.match(controls, /return legacyPreviewAtLoad && filter\.implementationState === 'hidden_candidate' && filter\.publicExposureAuthorized === false/)
+          assert.match(kickEntry, /import '\.\/day-flow-category-preview-entry'/)
+          assert.match(kickPage, /src="\/src\/live\/day-flow-kick-entry\.ts"/)
+          assert.match(twitchApi, /implementationState: 'public'/)
+          assert.match(twitchApi, /publicExposureAuthorized: true/)
+
+          console.log(JSON.stringify({
+            status: 'pass',
+            historicalAuthoritySha: HIDDEN_SHA,
+            trackingIssue: 795,
+            repairIssue: 801,
+            provider: 'kick',
+            surface: 'day_flow',
+            implementationState: 'hidden_candidate',
+            publicExposureAuthorized: false,
+            historicalVerifier: true,
+            kickBucketAggregation: 'average',
+            filterBeforeTopN: true,
+            zeroMatchGlobalOthersPreserved: true,
+          }, null, 2))
+          EOF
+
+          cat > .github/workflows/analytics-12a9-kick-day-flow-category-candidate.yml <<'EOF'
+          name: Analytics 12A9 Kick Day Flow Historical Category Candidate
+
+          on:
+            workflow_dispatch:
+            pull_request:
+              branches: [main]
+              paths:
+                - 'scripts/verify-12a9-kick-day-flow-category-candidate.mjs'
+                - '.github/workflows/analytics-12a9-kick-day-flow-category-candidate.yml'
+
+          permissions:
+            contents: read
+
+          jobs:
+            verify-historical-candidate:
+              runs-on: ubuntu-latest
+              timeout-minutes: 20
+              steps:
+                - uses: actions/checkout@v4
+                  with:
+                    fetch-depth: 0
+                - uses: actions/setup-node@v4
+                  with:
+                    node-version: 22
+                - name: Verify accepted hidden candidate at fixed authority SHA
+                  run: node scripts/verify-12a9-kick-day-flow-category-candidate.mjs
+                - name: Verify shared projection semantics remain valid
+                  run: node apps/web/scripts/day-flow-category-core.test.mjs
+                - name: Publish historical boundary
+                  if: always()
+                  run: |
+                    {
+                      echo '## Kick Day Flow historical hidden candidate'
+                      echo
+                      echo '- Fixed hidden product authority: 27b3cca084d62d8badd512c068be415c6865965e'
+                      echo '- Current public runtime is intentionally not evaluated as hidden candidate state.'
+                      echo '- Hidden candidate remains auditable after public cutover.'
+                    } >> "$GITHUB_STEP_SUMMARY"
+          EOF
+
+          cat > scripts/verify-12a9-kick-day-flow-category-public-cutover.mjs <<'EOF'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+
+          const read = (path) => readFileSync(path, 'utf8')
+          const json = (path) => JSON.parse(read(path))
+          const decision = json('docs/audits/12a9-kick-day-flow-category-public-cutover-decision.json')
+          const acceptance = json('docs/audits/12a9-kick-day-flow-category-post-repair-production-revalidation-acceptance.json')
+          const api = read('apps/web/functions/api/kick-day-flow.ts')
+          const controls = read('apps/web/src/live/day-flow-category-preview-entry.ts')
+          const kickPage = read('apps/web/kick/day-flow/index.html')
+          const twitchApi = read('apps/web/functions/api/day-flow.ts')
+          const candidateVerifier = read('scripts/verify-12a9-kick-day-flow-category-candidate.mjs')
+          const productionVerifier = read('apps/web/scripts/verify-production-source.mjs')
+
+          assert.equal(decision.schemaVersion, 'viewloom-12a9-kick-day-flow-category-public-cutover-decision-v1')
+          assert.equal(decision.status, 'accepted_on_merge')
+          assert.equal(decision.trackingIssue, 807)
+          assert.equal(decision.decision, 'authorize_public_kick_day_flow_category_filter')
+          assert.equal(decision.authorization.publicKickDayFlowCategoryUiAuthorized, true)
+          assert.equal(decision.authorization.defaultRouteExposureAuthorized, true)
+          assert.equal(decision.productionAcceptanceRequired, true)
+          assert.equal(decision.publicBehavior.defaultCategory, 'all')
+          assert.equal(decision.publicBehavior.existingTopDefault, 20)
+          assert.deepEqual(decision.publicBehavior.existingAllowedTopValues, [10, 20, 50])
+          assert.equal(decision.publicBehavior.existingBucketDefaultMinutes, 5)
+          assert.deepEqual(decision.publicBehavior.existingAllowedBucketMinutes, [5, 10])
+          assert.equal(decision.publicBehavior.legacyCategoryPreviewParameterAccepted, true)
+          assert.equal(decision.publicBehavior.legacyCategoryPreviewParameterRequired, false)
+          assert.equal(decision.publicBehavior.legacyCategoryPreviewParameterRemovedAfterPublicControlInteraction, true)
+          assert.equal(decision.publicBehavior.falseEmptyWhenGlobalObservationsExistForbidden, true)
+
+          assert.equal(acceptance.status, 'accepted_on_merge')
+          assert.equal(acceptance.acceptanceIssue, 805)
+          assert.equal(acceptance.acceptancePr, 806)
+          assert.equal(acceptance.acceptedResult.scenarioCount, 5)
+          assert.equal(acceptance.acceptedResult.passedScenarioCount, 5)
+          assert.equal(acceptance.acceptedResult.failureCount, 0)
+          assert.equal(acceptance.acceptedResult.unknownCategoryState, 'unknown_category')
+          assert.equal(acceptance.acceptedResult.unknownCategorySelectedBandCount, 0)
+          assert.equal(acceptance.acceptedResult.unknownCategoryGlobalOthersCount, 1)
+          assert.equal(acceptance.acceptedResult.unknownCategoryChartRendered, true)
+          assert.equal(acceptance.acceptedResult.unknownCategoryFalseNoObservedCopyAbsent, true)
+
+          for (const fragment of [
+            "const categoryCandidateRequested = url.searchParams.has('category')",
+            "const requestedCategory = normalizeCategory(url.searchParams.get('category'))",
+            "if (!categoryCandidateRequested)",
+            "provider: 'kick'",
+            "bucketAggregation: 'average'",
+            "requestedCategory === 'all'",
+            "implementationState: 'public'",
+            'publicExposureAuthorized: true',
+            'all_observed_kick_viewers_per_bucket',
+            'displayed_selected_category_top_n_viewers_per_bucket',
+            "if (filterState !== 'selected') {",
+            'const others = makeGlobalOthers([], labels, totals, bucketSize)',
+            'return { bands, streamers: [], totals, observed }',
+          ]) assert.ok(api.includes(fragment), `public Kick API boundary missing: ${fragment}`)
+          assert.ok(!api.includes("implementationState: 'hidden_candidate'"), 'current Kick API still claims hidden candidate')
+          assert.ok(!api.includes('category_public_exposure=false'), 'current Kick API still claims category_public_exposure=false')
+          assert.ok(!api.includes('DB_TWITCH_HOT'), 'Kick API crossed into Twitch DB binding')
+
+          for (const fragment of [
+            "const publicProvider = provider === 'twitch' || provider === 'kick'",
+            'const enabled = publicProvider || legacyPreviewAtLoad',
+            "const apiPath = provider === 'kick' ? '/api/kick-day-flow' : '/api/day-flow'",
+            "if (legacyPreviewAtLoad && !publicInteractionSeen) next.searchParams.set(PREVIEW_PARAM, '1')",
+            'if (publicInteractionSeen) next.searchParams.delete(PREVIEW_PARAM)',
+            "return filter.implementationState === 'public' && filter.publicExposureAuthorized === true",
+          ]) assert.ok(controls.includes(fragment), `public controls boundary missing: ${fragment}`)
+          assert.ok(kickPage.includes('data-dayflow-top="10"'))
+          assert.ok(kickPage.includes('class="active" data-dayflow-top="20"'))
+          assert.ok(kickPage.includes('data-dayflow-top="50"'))
+          assert.ok(kickPage.includes('class="active" data-dayflow-bucket="5"'))
+          assert.ok(kickPage.includes('data-dayflow-bucket="10"'))
+          assert.ok(twitchApi.includes("implementationState: 'public'"))
+          assert.ok(twitchApi.includes('publicExposureAuthorized: true'))
+          assert.ok(candidateVerifier.includes("const HIDDEN_SHA = '27b3cca084d62d8badd512c068be415c6865965e'"))
+          assert.ok(candidateVerifier.includes('historicalVerifier: true'))
+          assert.ok(productionVerifier.includes("const publicProvider = provider === 'twitch' || provider === 'kick'"))
+
+          for (const key of [
+            'kickHeatmapSemanticChangeAuthorized','kickBattleLinesCategoryUiAuthorized','kickHistoryCategoryUiAuthorized',
+            'twitchRuntimeSemanticChangeAuthorized','collectorChangeAuthorized','workerDeploymentAuthorized',
+            'd1MutationAuthorized','d1SchemaChangeAuthorized','bindingChangeAuthorized','cadenceChangeAuthorized',
+            'retentionChangeAuthorized','backfillAuthorized','thresholdRelaxationAuthorized','credentialChangeAuthorized',
+            'crossProviderBehaviorAuthorized','combinedProviderRankingAuthorized',
+          ]) assert.equal(decision.authorization[key], false, `${key}: must remain false`)
+
+          console.log(JSON.stringify({
+            status: 'pass', trackingIssue: 809, decisionIssue: 807, hiddenAcceptancePr: 806,
+            provider: 'kick', surface: 'day_flow', implementationState: 'public', publicExposureAuthorized: true,
+            defaultCategory: 'all', top: { default: 20, allowed: [10,20,50] }, bucket: { default: 5, allowed: [5,10] },
+            productionAcceptanceRequired: true,
+          }, null, 2))
+          EOF
+
+          cat > apps/web/scripts/kick-day-flow-category-public-production-acceptance.mjs <<'EOF'
+          import fs from 'node:fs'
+          import path from 'node:path'
+          import { chromium } from 'playwright'
+
+          const ORIGIN = process.env.VIEWLOOM_ORIGIN || 'https://www.viewloom.net'
+          const EXPECTED_SHA = process.env.EXPECTED_PRODUCTION_SHA || ''
+          const OUT = process.env.OUTPUT_DIR || 'artifacts/12a9-kick-day-flow-category-public-production-acceptance'
+          const VALIDATION_DATE = process.env.DAYFLOW_VALIDATION_DATE || '2026-08-10'
+          const screenshots = path.join(OUT, 'screenshots')
+          fs.mkdirSync(screenshots, { recursive: true })
+          const evidence = { schemaVersion:'viewloom-12a9-kick-day-flow-category-public-production-evidence-v1', observedAt:new Date().toISOString(), origin:ORIGIN, expectedProductionSha:EXPECTED_SHA || null, validationDate:VALIDATION_DATE, deployment:null, status:'running', scenarios:[], failures:[], publicKickDayFlowCategoryUiActive:false, twitchPublicBoundaryPreserved:false, productionMutationPerformed:false }
+          const assert = (condition, message) => { if (!condition) throw new Error(message) }
+          const endpoint = (url, pathname) => { try { return new URL(url).pathname === pathname } catch { return false } }
+          const responseJson = async (response) => { const data = await response.json(); assert(data && typeof data === 'object', `invalid JSON from ${response.url()}`); return data }
+          const geometry = (page) => page.evaluate(() => ({ width:innerWidth, scrollWidth:document.documentElement.scrollWidth, overflow:document.documentElement.scrollWidth > innerWidth + 1 }))
+          const arraysEqual = (a,b) => Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v,i)=>Number(v)===Number(b[i]))
+          const rectsOverlap = (a,b) => !!a && !!b && Math.max(0,Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x))>1 && Math.max(0,Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y))>1
+
+          function verifyDeployment() {
+            assert(EXPECTED_SHA, 'EXPECTED_PRODUCTION_SHA is required')
+            const file = path.join(OUT, 'last-deployment.json')
+            assert(fs.existsSync(file), `missing deployment authority ${file}`)
+            const deployment = JSON.parse(fs.readFileSync(file,'utf8'))
+            assert(deployment.commit_sha === EXPECTED_SHA, `deployment SHA ${deployment.commit_sha} != ${EXPECTED_SHA}`)
+            assert(deployment.environment === 'production', `environment=${deployment.environment}`)
+            assert(deployment.branch === 'main', `branch=${deployment.branch}`)
+            evidence.deployment = deployment
+          }
+          async function scenario(browser, name, viewport, run) {
+            const context = await browser.newContext({ viewport })
+            const page = await context.newPage()
+            const requests=[]
+            page.on('request', req=>{ const url=req.url(); if(url.includes('/api/day-flow')||url.includes('/api/kick-day-flow')) requests.push(url) })
+            const record={name,viewport,requests,checks:{}}; evidence.scenarios.push(record)
+            try { await run({page,record,requests}); record.status='pass' } catch(error) { record.status='fail'; record.error=error instanceof Error?error.message:String(error); evidence.failures.push(`${name}: ${record.error}`) } finally { await context.close() }
+          }
+
+          let browser
+          try {
+            verifyDeployment()
+            browser = await chromium.launch({headless:true})
+
+            await scenario(browser,'kick-public-fixed-day-desktop',{width:1440,height:1000},async({page,record,requests})=>{
+              const initialApi = page.waitForResponse(r=>endpoint(r.url(),'/api/kick-day-flow') && new URL(r.url()).searchParams.get('category')==='all')
+              const nav=await page.goto(`${ORIGIN}/kick/day-flow/?rangeMode=date&date=${VALIDATION_DATE}&auto=off`,{waitUntil:'domcontentloaded',timeout:45000}); assert(nav?.ok(),`HTTP ${nav?.status()}`)
+              const initial=await responseJson(await initialApi)
+              const root=page.locator('#dayflow-category-preview-controls'); await root.waitFor({state:'visible',timeout:30000}); await page.waitForSelector('.dayflow-stage svg',{timeout:30000})
+              assert(initial.platform==='kick','not Kick payload'); assert(initial.categoryFilter?.implementationState==='public','Kick implementation not public'); assert(initial.categoryFilter?.publicExposureAuthorized===true,'Kick exposure flag false'); assert(initial.categoryFilter?.selectedCategory==='all','default category not all')
+              assert(initial.categoryFilter?.filterBeforeTopN===true,'filter-before-top-n false'); assert(initial.categoryFilter?.membershipEvaluation==='per_observed_snapshot','membership mismatch'); assert(initial.categoryFilter?.latestCategoryBackProjectionAllowed===false,'backprojection allowed')
+              assert(initial.categoryFilter?.fullShareDenominator==='all_observed_kick_viewers_per_bucket','full denominator mismatch'); assert(initial.categoryFilter?.topFocusShareDenominator==='displayed_selected_category_top_n_viewers_per_bucket','top-focus denominator mismatch')
+              const direct = await fetch(`${ORIGIN}/api/kick-day-flow?rangeMode=date&date=${VALIDATION_DATE}&bucket=5&top=20&metric=volume`); assert(direct.ok,`direct no-category HTTP ${direct.status}`); const unfiltered=await direct.json(); assert(unfiltered.categoryFilter==null,'no-category fallback returned category metadata'); assert(arraysEqual(unfiltered.totalViewersByBucket,initial.totalViewersByBucket),'category=all changed totals')
+              assert(Array.isArray(unfiltered.bands)&&Array.isArray(initial.bands)&&unfiltered.bands.length===initial.bands.length,'category=all changed band count')
+              const categories=initial.categoryFilter?.availableCategories??initial.availableCategories??[]; assert(categories.length>0,'no category options'); const option=categories.find(x=>x?.id&&Number(x?.viewerMinutes??0)>0)??categories.find(x=>x?.id); assert(option?.id,'no selectable category')
+              assert(new URL(page.url()).searchParams.get('category')==='all','normal URL missing category=all'); assert(!new URL(page.url()).searchParams.has('categoryPreview'),'normal URL contains preview')
+              const selectedApi=page.waitForResponse(r=>endpoint(r.url(),'/api/kick-day-flow')&&new URL(r.url()).searchParams.get('category')===String(option.id)); await root.locator('[data-dayflow-category-preview-select]').selectOption(String(option.id)); const selected=await responseJson(await selectedApi)
+              assert(selected.categoryFilter?.state==='selected','selection state mismatch'); assert(arraysEqual(initial.totalViewersByBucket,selected.totalViewersByBucket),'selection changed global totals'); assert(selected.bands.some(b=>!b?.isOthers),'selected streamers absent'); assert(selected.bands.some(b=>b?.isOthers),'global Others absent')
+              const box=await root.boundingBox(); const siblings=await page.locator('.dayflow-toolbar > *:not(#dayflow-category-preview-controls)').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}}).filter(r=>r.width&&r.height)); const overlaps=siblings.filter(x=>rectsOverlap(box,x)); assert(overlaps.length===0,`toolbar overlap ${JSON.stringify(overlaps)}`)
+              assert(!requests.some(u=>endpoint(u,'/api/day-flow')),'Kick crossed into Twitch API'); const g=await geometry(page); assert(!g.overflow,`desktop overflow ${g.scrollWidth}/${g.width}`)
+              record.checks={categoryOptions:categories.length,selectedCategory:option.id,selectedBandCount:selected.bands.length,globalTotalsPreserved:true,toolbarOverlapCount:overlaps.length,pageGeometry:g,topDefault:20,bucketDefault:5}; await page.screenshot({path:path.join(screenshots,'kick-public-fixed-day-desktop.png'),fullPage:true})
+            })
+
+            await scenario(browser,'kick-public-fixed-day-mobile',{width:390,height:844},async({page,record,requests})=>{
+              const api=page.waitForResponse(r=>endpoint(r.url(),'/api/kick-day-flow')&&new URL(r.url()).searchParams.get('category')==='all'); const nav=await page.goto(`${ORIGIN}/kick/day-flow/?rangeMode=date&date=${VALIDATION_DATE}&auto=off`,{waitUntil:'domcontentloaded',timeout:45000}); assert(nav?.ok(),`HTTP ${nav?.status()}`); const json=await responseJson(await api)
+              const root=page.locator('#dayflow-category-preview-controls'); await root.waitFor({state:'visible',timeout:30000}); assert(json.categoryFilter?.implementationState==='public'&&json.categoryFilter?.publicExposureAuthorized===true,'mobile public metadata mismatch'); const box=await root.boundingBox(); assert(box&&box.width>0,'no mobile control box'); assert(box.x>=-1&&box.x+box.width<=391,`control outside viewport ${JSON.stringify(box)}`); assert(!requests.some(u=>endpoint(u,'/api/day-flow')),'mobile crossed into Twitch API'); const g=await geometry(page); assert(!g.overflow,`mobile overflow ${g.scrollWidth}/${g.width}`); record.checks={box,pageGeometry:g}; await page.screenshot({path:path.join(screenshots,'kick-public-fixed-day-mobile.png'),fullPage:true})
+            })
+
+            await scenario(browser,'kick-public-legacy-preview-compatibility',{width:1024,height:800},async({page,record})=>{
+              const api=page.waitForResponse(r=>endpoint(r.url(),'/api/kick-day-flow')&&new URL(r.url()).searchParams.get('category')==='all'); const nav=await page.goto(`${ORIGIN}/kick/day-flow/?categoryPreview=1&category=all&rangeMode=date&date=${VALIDATION_DATE}&auto=off`,{waitUntil:'domcontentloaded',timeout:45000}); assert(nav?.ok(),`HTTP ${nav?.status()}`); const initial=await responseJson(await api); assert(initial.categoryFilter?.implementationState==='public','legacy link not public'); assert(new URL(page.url()).searchParams.get('categoryPreview')==='1','legacy preview not accepted')
+              const root=page.locator('#dayflow-category-preview-controls'); await root.waitFor({state:'visible',timeout:30000}); const categories=initial.categoryFilter?.availableCategories??[]; const option=categories.find(x=>x?.id&&Number(x?.viewerMinutes??0)>0)??categories.find(x=>x?.id); assert(option?.id,'legacy no selectable category'); const selectedApi=page.waitForResponse(r=>endpoint(r.url(),'/api/kick-day-flow')&&new URL(r.url()).searchParams.get('category')===String(option.id)); await root.locator('[data-dayflow-category-preview-select]').selectOption(String(option.id)); await responseJson(await selectedApi); const u=new URL(page.url()); assert(!u.searchParams.has('categoryPreview'),'preview not removed after public interaction'); assert(u.searchParams.get('category')===String(option.id),'category state lost'); assert(u.searchParams.get('rangeMode')==='date'&&u.searchParams.get('date')===VALIDATION_DATE,'range/date state lost'); record.checks={legacyParameterRemoved:true,selectedCategory:option.id}
+            })
+
+            await scenario(browser,'kick-public-unknown-category',{width:1024,height:800},async({page,record,requests})=>{
+              const unknown='__viewloom_unknown_category__'; const api=page.waitForResponse(r=>endpoint(r.url(),'/api/kick-day-flow')&&new URL(r.url()).searchParams.get('category')===unknown); const nav=await page.goto(`${ORIGIN}/kick/day-flow/?category=${encodeURIComponent(unknown)}&rangeMode=date&date=${VALIDATION_DATE}&auto=off`,{waitUntil:'domcontentloaded',timeout:45000}); assert(nav?.ok(),`HTTP ${nav?.status()}`); const json=await responseJson(await api); const root=page.locator('#dayflow-category-preview-controls'); await root.waitFor({state:'visible',timeout:30000}); assert(json.categoryFilter?.state==='unknown_category',`state=${json.categoryFilter?.state}`); assert(json.categoryFilter?.implementationState==='public'&&json.categoryFilter?.publicExposureAuthorized===true,'unknown public metadata mismatch'); const selectedBands=(json.bands??[]).filter(b=>!b?.isOthers); const globalOthers=(json.bands??[]).filter(b=>b?.isOthers); assert(selectedBands.length===0,`unknown selected bands=${selectedBands.length}`); assert(globalOthers.length===1,`unknown global Others=${globalOthers.length}`); assert(json.state!=='empty'&&json.status!=='empty',`false empty ${json.state}/${json.status}`); assert((json.totalViewersByBucket??[]).some(v=>Number(v)>0),'global totals missing'); await page.waitForSelector('.dayflow-stage svg[data-dayflow-chart]',{timeout:30000}); const body=await page.locator('body').innerText(); assert(!body.includes('No observed Day Flow snapshots for this window.'),'false no-observed copy present'); const status=await root.locator('.dayflow-category-preview__status').innerText(); assert(/Unknown Kick category/i.test(status),`status=${status}`); assert(!requests.some(u=>endpoint(u,'/api/day-flow')),'unknown crossed into Twitch API'); record.checks={state:json.categoryFilter.state,overallState:json.state,selectedBandCount:0,globalOthersCount:1,chartRendered:true,falseNoObservedCopyAbsent:true,statusText:status}; await page.screenshot({path:path.join(screenshots,'kick-public-unknown-category.png'),fullPage:true})
+            })
+
+            await scenario(browser,'twitch-public-isolation',{width:1024,height:800},async({page,record,requests})=>{
+              const api=page.waitForResponse(r=>endpoint(r.url(),'/api/day-flow')&&new URL(r.url()).searchParams.get('category')==='all'); const nav=await page.goto(`${ORIGIN}/twitch/day-flow/?rangeMode=date&date=${VALIDATION_DATE}&auto=off`,{waitUntil:'domcontentloaded',timeout:45000}); assert(nav?.ok(),`HTTP ${nav?.status()}`); const json=await responseJson(await api); const root=page.locator('#dayflow-category-preview-controls'); await root.waitFor({state:'visible',timeout:30000}); assert(json.platform==='twitch','not Twitch'); assert(json.categoryFilter?.implementationState==='public'&&json.categoryFilter?.publicExposureAuthorized===true,'Twitch public boundary changed'); assert(!requests.some(u=>endpoint(u,'/api/kick-day-flow')),'Twitch crossed into Kick API'); record.checks={publicControls:true,providerIsolation:true}; await page.screenshot({path:path.join(screenshots,'twitch-public-isolation.png'),fullPage:true})
+            })
+
+            evidence.publicKickDayFlowCategoryUiActive = evidence.scenarios.slice(0,4).every(s=>s.status==='pass')
+            evidence.twitchPublicBoundaryPreserved = evidence.scenarios.find(s=>s.name==='twitch-public-isolation')?.status==='pass'
+            evidence.status=evidence.failures.length?'fail':'pass'
+          } catch(error) { evidence.failures.push(`fatal: ${error instanceof Error?error.message:String(error)}`); evidence.status='fail' } finally { if(browser) await browser.close(); fs.writeFileSync(path.join(OUT,'evidence.json'),JSON.stringify(evidence,null,2)+'\n'); console.log(JSON.stringify(evidence,null,2)); if(evidence.status!=='pass') process.exitCode=1 }
+          EOF
+
+          cat > .github/workflows/analytics-12a9-kick-day-flow-category-public-cutover.yml <<'EOF'
+          name: Analytics 12A9 Kick Day Flow Category Public Cutover
+
+          on:
+            pull_request:
+              branches: [main]
+              paths:
+                - '.github/workflows/analytics-12a9-kick-day-flow-category-public-cutover.yml'
+                - '.github/workflows/analytics-12a9-kick-day-flow-category-candidate.yml'
+                - 'scripts/verify-12a9-kick-day-flow-category-public-cutover.mjs'
+                - 'scripts/verify-12a9-kick-day-flow-category-candidate.mjs'
+                - 'apps/web/scripts/kick-day-flow-category-public-production-acceptance.mjs'
+                - 'apps/web/scripts/verify-production-source.mjs'
+                - 'apps/web/functions/api/kick-day-flow.ts'
+                - 'apps/web/src/live/day-flow-category-preview-entry.ts'
+            push:
+              branches: [main]
+              paths:
+                - '.github/workflows/analytics-12a9-kick-day-flow-category-public-cutover.yml'
+                - '.github/workflows/analytics-12a9-kick-day-flow-category-candidate.yml'
+                - 'scripts/verify-12a9-kick-day-flow-category-public-cutover.mjs'
+                - 'scripts/verify-12a9-kick-day-flow-category-candidate.mjs'
+                - 'apps/web/scripts/kick-day-flow-category-public-production-acceptance.mjs'
+                - 'apps/web/scripts/verify-production-source.mjs'
+                - 'apps/web/functions/api/kick-day-flow.ts'
+                - 'apps/web/src/live/day-flow-category-preview-entry.ts'
+
+          permissions:
+            contents: read
+
+          concurrency:
+            group: analytics-12a9-kick-day-flow-category-public-cutover-${{ github.event.pull_request.number || github.ref }}
+            cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+          jobs:
+            verify:
+              runs-on: ubuntu-latest
+              timeout-minutes: 35
+              steps:
+                - uses: actions/checkout@v4
+                  with:
+                    fetch-depth: 0
+                - name: Setup repository toolchain
+                  uses: ./.github/actions/setup-node-pnpm
+                - name: Verify exact eight-file public cutover scope
+                  if: github.event_name == 'pull_request'
+                  env:
+                    BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                    HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+                  run: |
+                    set -euo pipefail
+                    mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+                    printf '%s\n' "${changed[@]}"
+                    allowed='^(\.github/workflows/analytics-12a9-kick-day-flow-category-public-cutover\.yml|\.github/workflows/analytics-12a9-kick-day-flow-category-candidate\.yml|scripts/verify-12a9-kick-day-flow-category-public-cutover\.mjs|scripts/verify-12a9-kick-day-flow-category-candidate\.mjs|apps/web/scripts/kick-day-flow-category-public-production-acceptance\.mjs|apps/web/scripts/verify-production-source\.mjs|apps/web/functions/api/kick-day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts)$'
+                    test "${#changed[@]}" -eq 8
+                    for f in "${changed[@]}"; do [[ "$f" =~ $allowed ]] || { echo "Unexpected #809 change: $f" >&2; exit 1; }; done
+                - name: Verify corrected hidden evidence remains authoritative
+                  run: node scripts/verify-12a9-kick-day-flow-category-post-repair-production-revalidation-evidence.mjs
+                - name: Verify historical hidden candidate remains auditable
+                  run: node scripts/verify-12a9-kick-day-flow-category-candidate.mjs
+                - name: Verify authorized public cutover
+                  run: node scripts/verify-12a9-kick-day-flow-category-public-cutover.mjs
+                - name: Verify shared category projection
+                  run: node apps/web/scripts/day-flow-category-core.test.mjs
+                - name: Verify retained production and Day Flow contracts
+                  working-directory: apps/web
+                  run: |
+                    node scripts/verify-production-source.mjs
+                    node scripts/verify-dayflow-qa.mjs
+                    node scripts/verify-launch-readiness.mjs
+                - name: Typecheck and build web
+                  run: |
+                    pnpm typecheck:web
+                    pnpm build:web
+                - name: Verify provider pages after build
+                  run: |
+                    test -f apps/web/dist/kick/day-flow/index.html
+                    test -f apps/web/dist/twitch/day-flow/index.html
+                    grep -Fq '/assets/' apps/web/dist/kick/day-flow/index.html
+                    grep -Fq '/assets/' apps/web/dist/twitch/day-flow/index.html
+
+            production-acceptance:
+              if: github.event_name == 'push'
+              needs: verify
+              runs-on: ubuntu-latest
+              timeout-minutes: 45
+              env:
+                OUTPUT_DIR: artifacts/12a9-kick-day-flow-category-public-production-acceptance
+                VIEWLOOM_ORIGIN: https://www.viewloom.net
+                DAYFLOW_VALIDATION_DATE: '2026-08-10'
+                EXPECTED_PRODUCTION_SHA: ${{ github.sha }}
+              steps:
+                - uses: actions/checkout@v4
+                  with:
+                    fetch-depth: 0
+                - id: source
+                  name: Wait for exact public implementation SHA through Pages Git integration
+                  continue-on-error: true
+                  run: |
+                    set -euo pipefail
+                    mkdir -p "$OUTPUT_DIR"
+                    ok=false
+                    for attempt in $(seq 1 90); do
+                      if curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "$VIEWLOOM_ORIGIN/deployment.json?kickDayFlowPublic=$GITHUB_RUN_ID-$attempt" -o "$OUTPUT_DIR/last-deployment.json"; then
+                        sha=$(jq -r '.commit_sha // ""' "$OUTPUT_DIR/last-deployment.json")
+                        env=$(jq -r '.environment // ""' "$OUTPUT_DIR/last-deployment.json")
+                        branch=$(jq -r '.branch // ""' "$OUTPUT_DIR/last-deployment.json")
+                        if [[ "$sha" == "$EXPECTED_PRODUCTION_SHA" && "$env" == production && "$branch" == main ]]; then ok=true; break; fi
+                      fi
+                      sleep 5
+                    done
+                    [[ "$ok" == true ]]
+                - uses: actions/setup-node@v4
+                  if: steps.source.outcome == 'success'
+                  with:
+                    node-version: 22
+                - name: Install Playwright
+                  if: steps.source.outcome == 'success'
+                  run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+                - name: Install Chromium
+                  if: steps.source.outcome == 'success'
+                  run: npx playwright install --with-deps chromium
+                - id: browser
+                  name: Accept public Kick Day Flow category cutover in production
+                  if: steps.source.outcome == 'success'
+                  continue-on-error: true
+                  run: node apps/web/scripts/kick-day-flow-category-public-production-acceptance.mjs
+                - name: Upload public production acceptance evidence
+                  if: always()
+                  uses: actions/upload-artifact@v4
+                  with:
+                    name: analytics-12a9-kick-day-flow-category-public-production-acceptance
+                    path: artifacts/12a9-kick-day-flow-category-public-production-acceptance/
+                    if-no-files-found: error
+                    retention-days: 30
+                - name: Fail after evidence upload when exact source or browser rejects
+                  if: steps.source.outcome != 'success' || steps.browser.outcome != 'success'
+                  run: exit 1
+          EOF
+
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add .github/workflows/analytics-12a9-kick-day-flow-category-candidate.yml \
+                  .github/workflows/analytics-12a9-kick-day-flow-category-public-cutover.yml \
+                  scripts/verify-12a9-kick-day-flow-category-candidate.mjs \
+                  scripts/verify-12a9-kick-day-flow-category-public-cutover.mjs \
+                  apps/web/scripts/verify-production-source.mjs \
+                  apps/web/scripts/kick-day-flow-category-public-production-acceptance.mjs
+          git commit -m 'Add Kick Day Flow public cutover gates'
+          git push origin HEAD:work-809-kick-day-flow-public-cutover
