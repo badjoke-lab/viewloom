@@ -1,0 +1,59 @@
+name: TMP 809 Patch Kick Day Flow Public Cutover
+
+on:
+  push:
+    branches:
+      - work-809-kick-day-flow-public-cutover
+    paths:
+      - '.github/workflows/tmp-809-patch-kick-day-flow-public-cutover.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work-809-kick-day-flow-public-cutover
+      - name: Apply exact public cutover runtime patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          controls = Path('apps/web/src/live/day-flow-category-preview-entry.ts')
+          text = controls.read_text()
+          replacements = [
+            ("const publicProvider = provider === 'twitch'", "const publicProvider = provider === 'twitch' || provider === 'kick'", 1),
+          ]
+          for old, new, expected in replacements:
+            count = text.count(old)
+            assert count == expected, f'controls replacement count {count} != {expected}: {old}'
+            text = text.replace(old, new)
+          controls.write_text(text)
+
+          api = Path('apps/web/functions/api/kick-day-flow.ts')
+          text = api.read_text()
+          replacements = [
+            ("`ViewLoom hidden Kick Day Flow category candidate · ${categoryState}.`", "`ViewLoom Kick Day Flow category · ${categoryState}.`", 1),
+            ("implementationState: 'hidden_candidate'", "implementationState: 'public'", 2),
+            ("publicExposureAuthorized: false", "publicExposureAuthorized: true", 2),
+            ("'category_implementation_state=hidden_candidate'", "'category_implementation_state=public'", 2),
+            ("'category_public_exposure=false'", "'category_public_exposure=true'", 2),
+          ]
+          for old, new, expected in replacements:
+            count = text.count(old)
+            assert count == expected, f'api replacement count {count} != {expected}: {old}'
+            text = text.replace(old, new)
+          assert 'hidden Kick Day Flow category candidate' not in text
+          api.write_text(text)
+          PY
+      - name: Commit exact public runtime cutover
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/web/src/live/day-flow-category-preview-entry.ts apps/web/functions/api/kick-day-flow.ts
+          git diff --cached --check
+          git commit -m "Expose accepted Kick Day Flow category controls publicly"
+          git push origin HEAD:work-809-kick-day-flow-public-cutover
