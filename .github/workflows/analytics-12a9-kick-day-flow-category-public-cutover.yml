@@ -9,7 +9,6 @@ on:
       - 'scripts/verify-12a9-kick-day-flow-category-public-cutover.mjs'
       - 'scripts/verify-12a9-kick-day-flow-category-candidate.mjs'
       - 'apps/web/scripts/kick-day-flow-category-public-production-acceptance.mjs'
-      - 'apps/web/scripts/verify-production-source.mjs'
       - 'apps/web/functions/api/kick-day-flow.ts'
       - 'apps/web/src/live/day-flow-category-preview-entry.ts'
   push:
@@ -20,7 +19,6 @@ on:
       - 'scripts/verify-12a9-kick-day-flow-category-public-cutover.mjs'
       - 'scripts/verify-12a9-kick-day-flow-category-candidate.mjs'
       - 'apps/web/scripts/kick-day-flow-category-public-production-acceptance.mjs'
-      - 'apps/web/scripts/verify-production-source.mjs'
       - 'apps/web/functions/api/kick-day-flow.ts'
       - 'apps/web/src/live/day-flow-category-preview-entry.ts'
 
@@ -41,7 +39,7 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify exact eight-file public cutover scope
+      - name: Verify exact seven-file public cutover scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -50,8 +48,8 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(\.github/workflows/analytics-12a9-kick-day-flow-category-public-cutover\.yml|\.github/workflows/analytics-12a9-kick-day-flow-category-candidate\.yml|scripts/verify-12a9-kick-day-flow-category-public-cutover\.mjs|scripts/verify-12a9-kick-day-flow-category-candidate\.mjs|apps/web/scripts/kick-day-flow-category-public-production-acceptance\.mjs|apps/web/scripts/verify-production-source\.mjs|apps/web/functions/api/kick-day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts)$'
-          test "${#changed[@]}" -eq 8
+          allowed='^(\.github/workflows/analytics-12a9-kick-day-flow-category-public-cutover\.yml|\.github/workflows/analytics-12a9-kick-day-flow-category-candidate\.yml|scripts/verify-12a9-kick-day-flow-category-public-cutover\.mjs|scripts/verify-12a9-kick-day-flow-category-candidate\.mjs|apps/web/scripts/kick-day-flow-category-public-production-acceptance\.mjs|apps/web/functions/api/kick-day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts)$'
+          test "${#changed[@]}" -eq 7
           for file in "${changed[@]}"; do
             [[ "$file" =~ $allowed ]] || { echo "Unexpected #809 public cutover change: $file" >&2; exit 1; }
           done
