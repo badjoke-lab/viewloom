@@ -7,16 +7,17 @@ on:
       - '.github/workflows/analytics-12a9-kick-day-flow-category-hidden-production-revalidation.yml'
       - 'docs/audits/12a9-kick-day-flow-category-hidden-production-revalidation-contract.json'
       - 'apps/web/scripts/kick-day-flow-category-hidden-production-revalidation.mjs'
+      - 'apps/web/scripts/normalize-built-head.mjs'
   push:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a9-kick-day-flow-category-hidden-production-revalidation.yml'
       - 'docs/audits/12a9-kick-day-flow-category-hidden-production-revalidation-contract.json'
       - 'apps/web/scripts/kick-day-flow-category-hidden-production-revalidation.mjs'
+      - 'apps/web/scripts/normalize-built-head.mjs'
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
   group: analytics-12a9-kick-day-flow-category-hidden-production-revalidation-${{ github.event.pull_request.number || github.ref }}
@@ -27,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - name: Checkout revalidation package
+      - name: Checkout recovery package
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -36,7 +37,7 @@ jobs:
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Verify three-file package scope
+      - name: Verify four-file recovery scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -45,19 +46,21 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(\.github/workflows/analytics-12a9-kick-day-flow-category-hidden-production-revalidation\.yml|docs/audits/12a9-kick-day-flow-category-hidden-production-revalidation-contract\.json|apps/web/scripts/kick-day-flow-category-hidden-production-revalidation\.mjs)$'
-          test "${#changed[@]}" -eq 3
+          allowed='^(\.github/workflows/analytics-12a9-kick-day-flow-category-hidden-production-revalidation\.yml|docs/audits/12a9-kick-day-flow-category-hidden-production-revalidation-contract\.json|apps/web/scripts/kick-day-flow-category-hidden-production-revalidation\.mjs|apps/web/scripts/normalize-built-head\.mjs)$'
+          test "${#changed[@]}" -eq 4
           for file in "${changed[@]}"; do
-            [[ "$file" =~ $allowed ]] || { echo "Unexpected production-revalidation change: $file" >&2; exit 1; }
+            [[ "$file" =~ $allowed ]] || { echo "Unexpected production-path recovery change: $file" >&2; exit 1; }
           done
 
-      - name: Verify read-only contract and retained candidate boundary
+      - name: Verify recovered production authority and retained candidate boundary
         run: |
           node --check apps/web/scripts/kick-day-flow-category-hidden-production-revalidation.mjs
           node --input-type=module - <<'NODE'
           import fs from 'node:fs'
           const read = (p) => fs.readFileSync(p, 'utf8')
           const contract = JSON.parse(read('docs/audits/12a9-kick-day-flow-category-hidden-production-revalidation-contract.json'))
+          const browser = read('apps/web/scripts/kick-day-flow-category-hidden-production-revalidation.mjs')
+          const normalize = read('apps/web/scripts/normalize-built-head.mjs')
           const api = read('apps/web/functions/api/kick-day-flow.ts')
           const controls = read('apps/web/src/live/day-flow-category-preview-entry.ts')
           const kickEntry = read('apps/web/src/live/day-flow-kick-entry.ts')
@@ -66,19 +69,32 @@ jobs:
           const twitchEntry = read('apps/web/src/live/day-flow-twitch-entry.ts')
 
           const productSha = '98c7e61056e2b6385f7ea31ea72af4d8ea2f8d48'
-          if (contract.status !== 'ready_for_validation') throw new Error('revalidation_contract_status_invalid')
-          if (contract.parentTrackingIssue !== 623 || contract.trackingIssue !== 797) throw new Error('tracking_identity_invalid')
+          if (contract.schemaVersion !== 'viewloom-12a9-kick-day-flow-category-hidden-production-revalidation-contract-v2') throw new Error('revalidation_contract_version_invalid')
+          if (contract.status !== 'ready_for_recovery_validation') throw new Error('revalidation_contract_status_invalid')
+          if (contract.parentTrackingIssue !== 623 || contract.trackingIssue !== 797 || contract.recoveryIssue !== 799) throw new Error('tracking_identity_invalid')
           if (contract.provider !== 'kick' || contract.feature !== 'day_flow_category_filter') throw new Error('feature_identity_invalid')
           if (contract.candidate.decisionIssue !== 793 || contract.candidate.decisionPr !== 794) throw new Error('decision_identity_invalid')
           if (contract.candidate.implementationIssue !== 795 || contract.candidate.implementationPr !== 796) throw new Error('implementation_identity_invalid')
           if (contract.candidate.mergeSha !== productSha) throw new Error('candidate_product_sha_mismatch')
           if (contract.candidate.implementationState !== 'hidden_candidate' || contract.candidate.publicCutoverAuthorized !== false) throw new Error('candidate_state_invalid')
-          if (contract.productionAuthority.expectedProductSha !== productSha) throw new Error('production_authority_product_sha_mismatch')
-          if (contract.productionAuthority.primaryOrigin !== 'https://www.viewloom.net') throw new Error('production_origin_changed')
-          if (contract.productionAuthority.validationPackageShaIsProductAuthority !== false) throw new Error('validation_package_must_not_be_product_authority')
-          if (contract.productionAuthority.singleDeploymentEvidenceSourceRequired !== true) throw new Error('single_deployment_source_required')
+
+          const failed = contract.failedAttempt
+          if (failed.validationPr !== 798 || failed.validationMergeSha !== '67d716a1714a5a42ec127ba6a4d16e67940fad7d') throw new Error('failed_attempt_identity_invalid')
+          if (failed.workflowRun !== 31469820123 || failed.contractJob !== 93710464554 || failed.productionJob !== 93710560540) throw new Error('failed_attempt_run_identity_invalid')
+          if (failed.browserExecuted !== false || failed.productFailureEstablished !== false) throw new Error('failed_attempt_misclassified')
+          if (failed.matchingManualDeployRun !== 31469245987 || failed.matchingManualDeployConclusion !== 'failure') throw new Error('manual_deploy_failure_not_frozen')
+          if (failed.classification !== 'manual_wrangler_deploy_success_was_incorrectly_required') throw new Error('failed_attempt_classification_changed')
+
+          const authority = contract.productionAuthority
+          if (authority.expectedProductSha !== productSha) throw new Error('product_authority_sha_mismatch')
+          if (authority.primaryOrigin !== 'https://www.viewloom.net') throw new Error('production_origin_changed')
+          if (authority.deploymentSha !== 'recovery_merge_sha' || authority.deploymentShaMayDifferFromProductSha !== true) throw new Error('deployment_authority_not_separated')
+          if (authority.validationPackageShaIsProductAuthority !== false) throw new Error('validation_package_became_product_authority')
+          if (authority.manualDeployWorkflowIsAuthority !== false || authority.pagesGitIntegrationIsAuthority !== true) throw new Error('pages_git_authority_invalid')
+          if (authority.singleDeploymentEvidenceSourceRequired !== true || authority.browserNetworkRefetchOfDeploymentIdentityAllowed !== false) throw new Error('single_source_boundary_invalid')
+          if (authority.productRuntimeEquivalenceRequired !== true) throw new Error('product_runtime_equivalence_not_required')
           if (contract.execution.productionOnPullRequest !== false || contract.execution.productionOnMainPush !== true) throw new Error('execution_boundary_invalid')
-          if (contract.execution.readOnlyBrowser !== true || contract.execution.evidenceUploadOnFailure !== true || contract.execution.screenshotsRequired !== true) throw new Error('evidence_execution_contract_invalid')
+          if (contract.execution.readOnlyBrowser !== true || contract.execution.evidenceUploadOnFailure !== true || contract.execution.screenshotsRequired !== true || contract.execution.sourceTouchBehaviorNeutral !== true) throw new Error('evidence_execution_contract_invalid')
 
           for (const [key, value] of Object.entries(contract.requiredChecks)) {
             if (value !== true) throw new Error(`required_check_${key}_not_enabled`)
@@ -90,6 +106,16 @@ jobs:
               throw new Error(`boundary_${key}_must_remain_false`)
             }
           }
+
+          for (const fragment of [
+            'PRODUCT_AUTHORITY_SHA',
+            'EXPECTED_DEPLOYMENT_SHA',
+            'expectedProductSha: PRODUCT_AUTHORITY_SHA',
+            'expectedDeploymentSha: EXPECTED_DEPLOYMENT_SHA',
+            'deployment?.commit_sha === EXPECTED_DEPLOYMENT_SHA',
+          ]) if (!browser.includes(fragment)) throw new Error(`browser_provenance_missing:${fragment}`)
+          if (browser.includes('EXPECTED_PRODUCT_SHA')) throw new Error('browser_retained_conflated_product_deployment_sha')
+          if (!normalize.includes('Issue #799') || !normalize.includes('product authority remains the #796 merge SHA')) throw new Error('recovery_source_touch_missing')
 
           for (const fragment of [
             "const categoryCandidateRequested = url.searchParams.has('category')",
@@ -116,10 +142,8 @@ jobs:
           if (!kickEntry.includes("import('./day-flow-current-shell-entry')")) throw new Error('kick_current_shell_import_missing')
           if (!kickHtml.includes('/src/live/day-flow-kick-entry.ts')) throw new Error('kick_provider_entry_missing')
           if (kickHtml.includes('dayflow-category-preview-controls')) throw new Error('kick_hidden_controls_statically_exposed')
-
           if (!twitchEntry.includes("import './day-flow-category-preview-entry'")) throw new Error('twitch_public_category_entry_missing')
-          if (!twitchApi.includes("implementationState: 'public'")) throw new Error('twitch_public_state_missing')
-          if (!twitchApi.includes('publicExposureAuthorized: true')) throw new Error('twitch_public_authorization_missing')
+          if (!twitchApi.includes("implementationState: 'public'") || !twitchApi.includes('publicExposureAuthorized: true')) throw new Error('twitch_public_boundary_changed')
           NODE
 
       - name: Verify candidate and shared projection contracts
@@ -139,18 +163,19 @@ jobs:
           ! grep -q 'dayflow-category-preview-controls' apps/web/dist/kick/day-flow/index.html
           ! grep -q 'dayflow-category-preview-controls' apps/web/dist/twitch/day-flow/index.html
 
-      - name: Publish contract boundary
+      - name: Publish recovered authority boundary
         if: always()
         run: |
           {
-            echo '## Kick Day Flow hidden production revalidation contract'
+            echo '## Kick Day Flow hidden production revalidation recovery'
             echo
             echo '- Product authority: 98c7e61056e2b6385f7ea31ea72af4d8ea2f8d48'
-            echo '- Validation package SHA is not product authority'
+            echo '- Recovery merge SHA: deployment identity only'
+            echo '- Authority: Cloudflare Pages Git integration / primary deployment.json'
+            echo '- Manual Deploy Web Pages success: not required'
+            echo '- Browser consumes one workflow-produced deployment identity file'
             echo '- PR: contract/static/type/build only'
-            echo '- Main push: read-only production browser revalidation'
-            echo '- Evidence: 5 scenarios + screenshots + evidence.json'
-            echo '- Deployment identity: one workflow-produced deployment.json source'
+            echo '- Main push: same five read-only production scenarios'
             echo '- Public Kick Day Flow category cutover: still unauthorized'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -163,71 +188,106 @@ jobs:
       OUTPUT_DIR: artifacts/12a9-kick-day-flow-category-hidden-production-revalidation
       VIEWLOOM_ORIGIN: https://www.viewloom.net
       DAYFLOW_VALIDATION_DATE: '2026-08-10'
-      EXPECTED_PRODUCT_SHA: 98c7e61056e2b6385f7ea31ea72af4d8ea2f8d48
+      PRODUCT_AUTHORITY_SHA: 98c7e61056e2b6385f7ea31ea72af4d8ea2f8d48
+      EXPECTED_DEPLOYMENT_SHA: ${{ github.sha }}
     steps:
-      - name: Checkout validation package
+      - name: Checkout recovery deployment source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Resolve successful Pages deployment for exact product SHA
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Prove recovery deployment is product-runtime equivalent
         run: |
           set -euo pipefail
           mkdir -p "$OUTPUT_DIR"
-          found=''
-          for attempt in $(seq 1 90); do
-            response=$(curl -fsSL \
-              -H "Authorization: Bearer $GH_TOKEN" \
-              -H 'Accept: application/vnd.github+json' \
-              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/deploy-web-pages.yml/runs?branch=main&event=push&per_page=50")
-            row=$(jq -c --arg sha "$EXPECTED_PRODUCT_SHA" '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last // empty' <<<"$response")
-            if [[ -n "$row" ]]; then
-              status=$(jq -r '.status' <<<"$row")
-              conclusion=$(jq -r '.conclusion // ""' <<<"$row")
-              if [[ "$status" == 'completed' && "$conclusion" == 'success' ]]; then
-                found="$row"
-                break
-              fi
-              if [[ "$status" == 'completed' && "$conclusion" != 'success' ]]; then
-                echo "Matching Deploy Web Pages run failed: $row" >&2
-                exit 1
-              fi
-            fi
-            sleep 5
+          mapfile -t changed < <(git diff --name-only "$PRODUCT_AUTHORITY_SHA" "$EXPECTED_DEPLOYMENT_SHA")
+          printf '%s\n' "${changed[@]}" | tee "$OUTPUT_DIR/product-to-deployment-files.txt"
+          allowed='^(\.github/workflows/analytics-12a9-kick-day-flow-category-hidden-production-revalidation\.yml|docs/audits/12a9-kick-day-flow-category-hidden-production-revalidation-contract\.json|apps/web/scripts/kick-day-flow-category-hidden-production-revalidation\.mjs|apps/web/scripts/normalize-built-head\.mjs)$'
+          test "${#changed[@]}" -eq 4
+          for file in "${changed[@]}"; do
+            [[ "$file" =~ $allowed ]] || { echo "Product runtime drift detected between authority and deployment: $file" >&2; exit 1; }
           done
-          test -n "$found"
-          printf '%s\n' "$found" | jq '{id,name,head_sha,status,conclusion,run_number,event,created_at,updated_at,html_url}' > "$OUTPUT_DIR/deploy-run.json"
-          echo "DEPLOY_RUN_ID=$(jq -r '.id' <<<"$found")" >> "$GITHUB_ENV"
+          git diff "$PRODUCT_AUTHORITY_SHA" "$EXPECTED_DEPLOYMENT_SHA" -- apps/web/scripts/normalize-built-head.mjs > "$OUTPUT_DIR/normalize-source-touch.diff"
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs'
+          const diff = fs.readFileSync(process.env.OUTPUT_DIR + '/normalize-source-touch.diff', 'utf8')
+          const changedLines = diff.split('\n').filter((line) => /^[+-][^+-]/.test(line))
+          if (!changedLines.length) throw new Error('normalize_source_touch_diff_missing')
+          for (const line of changedLines) {
+            if (!line.includes('Issue #799') && !line.includes('unchanged; this source-path commit ensures Pages Git integration publishes the') && !line.includes('recovery deployment SHA while product authority remains the #796 merge SHA.')) {
+              throw new Error(`normalize_source_touch_not_comment_only:${line}`)
+            }
+          }
+          NODE
 
-      - name: Wait for exact product SHA on primary production
+      - id: source
+        name: Wait for recovery SHA through Pages Git integration
+        continue-on-error: true
         run: |
           set -euo pipefail
-          accepted=''
+          success=false
           for attempt in $(seq 1 90); do
-            payload=$(curl -fsSL -H 'Cache-Control: no-cache' "$VIEWLOOM_ORIGIN/deployment.json?sourceCheck=$(date +%s%N)" || true)
-            if [[ -n "$payload" ]] && jq -e --arg sha "$EXPECTED_PRODUCT_SHA" '.commit_sha == $sha and .environment == "production" and .branch == "main"' <<<"$payload" >/dev/null 2>&1; then
-              accepted="$payload"
-              break
+            observed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            if curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "$VIEWLOOM_ORIGIN/deployment.json?kickDayFlowRecovery=$GITHUB_RUN_ID-$attempt" -o /tmp/deployment.json; then
+              cp /tmp/deployment.json "$OUTPUT_DIR/last-deployment.json"
+              observed_sha=$(jq -r '.commit_sha // ""' /tmp/deployment.json)
+              jq -n \
+                --arg schema 'viewloom-12a9-kick-day-flow-production-source-probe-v1' \
+                --arg product "$PRODUCT_AUTHORITY_SHA" \
+                --arg expected "$EXPECTED_DEPLOYMENT_SHA" \
+                --arg observed "$observed_sha" \
+                --arg observed_at "$observed_at" \
+                --argjson attempt "$attempt" \
+                --slurpfile deployment /tmp/deployment.json \
+                '{schema:$schema,product_authority_sha:$product,expected_deployment_sha:$expected,observed_deployment_sha:$observed,observed_at:$observed_at,attempt:$attempt,deployment:$deployment[0]}' \
+                > "$OUTPUT_DIR/source-probe.json"
+              if [[ "$observed_sha" == "$EXPECTED_DEPLOYMENT_SHA" ]] \
+                && [[ "$(jq -r '.environment // ""' /tmp/deployment.json)" == 'production' ]] \
+                && [[ "$(jq -r '.branch // ""' /tmp/deployment.json)" == 'main' ]]; then
+                success=true
+                break
+              fi
+            else
+              jq -n \
+                --arg schema 'viewloom-12a9-kick-day-flow-production-source-probe-v1' \
+                --arg product "$PRODUCT_AUTHORITY_SHA" \
+                --arg expected "$EXPECTED_DEPLOYMENT_SHA" \
+                --arg observed_at "$observed_at" \
+                --argjson attempt "$attempt" \
+                '{schema:$schema,product_authority_sha:$product,expected_deployment_sha:$expected,observed_deployment_sha:null,observed_at:$observed_at,attempt:$attempt,fetch_error:true}' \
+                > "$OUTPUT_DIR/source-probe.json"
             fi
             sleep 5
           done
-          test -n "$accepted"
-          printf '%s\n' "$accepted" | jq '.' > "$OUTPUT_DIR/last-deployment.json"
-          jq '{commit_sha,environment,branch,pages_url,observed_at}' "$OUTPUT_DIR/last-deployment.json" || cat "$OUTPUT_DIR/last-deployment.json"
+          if [[ "$success" != true ]]; then
+            jq -n \
+              --arg schema 'viewloom-12a9-kick-day-flow-production-path-failure-v1' \
+              --arg product "$PRODUCT_AUTHORITY_SHA" \
+              --arg expected "$EXPECTED_DEPLOYMENT_SHA" \
+              --slurpfile probe "$OUTPUT_DIR/source-probe.json" \
+              '{schema:$schema,product_authority_sha:$product,expected_deployment_sha:$expected,product_failure_established:false,classification:"pages_git_integration_exact_sha_not_observed",last_probe:$probe[0]}' \
+              > "$OUTPUT_DIR/production-path-failure.json"
+            exit 1
+          fi
+          jq '.' "$OUTPUT_DIR/source-probe.json"
 
       - name: Setup Node.js
+        if: steps.source.outcome == 'success'
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Install Playwright
+        if: steps.source.outcome == 'success'
         run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
 
       - name: Install Chromium
+        if: steps.source.outcome == 'success'
         run: npx playwright install --with-deps chromium
 
       - id: browser
         name: Revalidate hidden Kick Day Flow category candidate against production
+        if: steps.source.outcome == 'success'
         continue-on-error: true
         run: node apps/web/scripts/kick-day-flow-category-hidden-production-revalidation.mjs
 
@@ -240,6 +300,6 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Fail after evidence upload when production revalidation rejects
-        if: steps.browser.outcome != 'success'
+      - name: Fail after evidence upload when source or browser rejects
+        if: steps.source.outcome != 'success' || steps.browser.outcome != 'success'
         run: exit 1
