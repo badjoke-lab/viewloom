@@ -31,11 +31,12 @@ function assertNear(label, actual, expected, epsilon = 0.0001) {
 const dayFlowPages = ['twitch/day-flow/index.html', 'kick/day-flow/index.html']
 const entryPath = 'src/live/day-flow-current-shell-entry.ts'
 const twitchEntryPath = 'src/live/day-flow-twitch-entry.ts'
+const kickEntryPath = 'src/live/day-flow-kick-entry.ts'
 const layoutSummaryPath = 'src/live/day-flow-layout-summary.ts'
 const layoutSummaryCssPath = 'src/dayflow-layout-summary.css'
 const contractPath = 'docs/dayflow-qa-contract.md'
 
-for (const path of [...dayFlowPages, entryPath, twitchEntryPath, layoutSummaryPath, layoutSummaryCssPath, contractPath]) requireFile(path)
+for (const path of [...dayFlowPages, entryPath, twitchEntryPath, kickEntryPath, layoutSummaryPath, layoutSummaryCssPath, contractPath]) requireFile(path)
 
 const commonPageFragments = [
   '/src/dayflow-layout-summary.css',
@@ -73,8 +74,8 @@ for (const path of dayFlowPages.filter((path) => existsSync(join(root, path)))) 
   for (const fragment of commonPageFragments) requireFragment(path, source, fragment)
 
   const isTwitch = path.startsWith('twitch/')
-  const expectedEntry = isTwitch ? '/src/live/day-flow-twitch-entry.ts' : '/src/live/day-flow-current-shell-entry.ts'
-  const expectedEntryPattern = isTwitch ? /day-flow-twitch-entry\.ts/g : /day-flow-current-shell-entry\.ts/g
+  const expectedEntry = isTwitch ? '/src/live/day-flow-twitch-entry.ts' : '/src/live/day-flow-kick-entry.ts'
+  const expectedEntryPattern = isTwitch ? /day-flow-twitch-entry\.ts/g : /day-flow-kick-entry\.ts/g
   requireFragment(path, source, expectedEntry)
   assertEqual(`${path} primary feature entry count`, (source.match(expectedEntryPattern) ?? []).length, 1)
 
@@ -82,6 +83,7 @@ for (const path of dayFlowPages.filter((path) => existsSync(join(root, path)))) 
     assertEqual(`${path} direct shared-controller script count`, (source.match(/<script[^>]+day-flow-current-shell-entry\.ts/g) ?? []).length, 0)
   } else {
     assertEqual(`${path} Twitch bootstrap count`, (source.match(/day-flow-twitch-entry\.ts/g) ?? []).length, 0)
+    assertEqual(`${path} direct shared-controller script count`, (source.match(/<script[^>]+day-flow-current-shell-entry\.ts/g) ?? []).length, 0)
   }
 
   forbidPattern(path, source, 'secondary Day Flow layout-summary entry', /<script[^>]+day-flow-layout-summary\.ts/)
@@ -97,6 +99,17 @@ if (existsSync(join(root, twitchEntryPath))) {
     "void import('./day-flow-current-shell-entry')",
   ]) requireFragment(twitchEntryPath, source, fragment)
   assertEqual('Twitch Day Flow shared-controller import count', (source.match(/day-flow-current-shell-entry/g) ?? []).length, 1)
+}
+
+if (existsSync(join(root, kickEntryPath))) {
+  const source = read(kickEntryPath)
+  for (const fragment of [
+    "import './day-flow-category-preview-entry'",
+    "void import('./day-flow-current-shell-entry')",
+    "const categoryRoot = document.getElementById('dayflow-category-preview-controls')",
+  ]) requireFragment(kickEntryPath, source, fragment)
+  assertEqual('Kick Day Flow shared-controller import count', (source.match(/day-flow-current-shell-entry/g) ?? []).length, 1)
+  assertEqual('Kick Day Flow category-boundary import count', (source.match(/day-flow-category-preview-entry/g) ?? []).length, 1)
 }
 
 if (existsSync(join(root, entryPath))) {

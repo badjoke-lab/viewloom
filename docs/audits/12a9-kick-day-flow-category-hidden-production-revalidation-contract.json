@@ -1,9 +1,10 @@
 {
-  "schemaVersion": "viewloom-12a9-kick-day-flow-category-hidden-production-revalidation-contract-v1",
-  "status": "ready_for_validation",
+  "schemaVersion": "viewloom-12a9-kick-day-flow-category-hidden-production-revalidation-contract-v2",
+  "status": "ready_for_recovery_validation",
   "phase": "12A-9",
   "parentTrackingIssue": 623,
   "trackingIssue": 797,
+  "recoveryIssue": 799,
   "provider": "kick",
   "feature": "day_flow_category_filter",
   "candidate": {
@@ -15,15 +16,45 @@
     "implementationState": "hidden_candidate",
     "publicCutoverAuthorized": false
   },
+  "failedAttempt": {
+    "validationPr": 798,
+    "validationMergeSha": "67d716a1714a5a42ec127ba6a4d16e67940fad7d",
+    "workflowRun": 31469820123,
+    "contractJob": 93710464554,
+    "productionJob": 93710560540,
+    "contractConclusion": "success",
+    "productionConclusion": "failure",
+    "failedStep": "Resolve successful Pages deployment for exact product SHA",
+    "matchingManualDeployRun": 31469245987,
+    "matchingManualDeployConclusion": "failure",
+    "browserExecuted": false,
+    "productFailureEstablished": false,
+    "classification": "manual_wrangler_deploy_success_was_incorrectly_required"
+  },
   "productionAuthority": {
-    "type": "exact_product_sha_on_primary_origin",
+    "type": "accepted_product_sha_plus_exact_git_integration_deployment_sha",
     "expectedProductSha": "98c7e61056e2b6385f7ea31ea72af4d8ea2f8d48",
     "primaryOrigin": "https://www.viewloom.net",
     "deploymentIdentityPath": "/deployment.json",
     "requiredEnvironment": "production",
     "requiredBranch": "main",
+    "deploymentSha": "recovery_merge_sha",
+    "deploymentShaMayDifferFromProductSha": true,
     "validationPackageShaIsProductAuthority": false,
-    "singleDeploymentEvidenceSourceRequired": true
+    "manualDeployWorkflowIsAuthority": false,
+    "pagesGitIntegrationIsAuthority": true,
+    "singleDeploymentEvidenceSourceRequired": true,
+    "browserNetworkRefetchOfDeploymentIdentityAllowed": false,
+    "productRuntimeEquivalenceRequired": true,
+    "allowedRecoveryDifferenceFromFailedValidation": [
+      ".github/workflows/analytics-12a9-kick-day-flow-category-hidden-production-revalidation.yml",
+      "apps/web/scripts/kick-day-flow-category-hidden-production-revalidation.mjs",
+      "apps/web/scripts/normalize-built-head.mjs",
+      "apps/web/scripts/verify-production-source.mjs",
+      "apps/web/scripts/verify-dayflow-qa.mjs",
+      "apps/web/scripts/verify-launch-readiness.mjs",
+      "docs/audits/12a9-kick-day-flow-category-hidden-production-revalidation-contract.json"
+    ]
   },
   "target": {
     "hiddenEntry": "categoryPreview=1",
@@ -37,7 +68,8 @@
     "productionOnMainPush": true,
     "readOnlyBrowser": true,
     "evidenceUploadOnFailure": true,
-    "screenshotsRequired": true
+    "screenshotsRequired": true,
+    "sourceTouchBehaviorNeutral": true
   },
   "requiredChecks": {
     "normalKickRouteCategoryFree": true,
@@ -82,6 +114,6 @@
     "crossProviderMapping": false,
     "combinedProviderRanking": false
   },
-  "successNextGate": "Freeze successful evidence and exact provenance in a separate acceptance PR before any Kick Day Flow public-cutover decision.",
+  "successNextGate": "Freeze successful evidence, product authority, deployment authority, and screenshots in a separate acceptance PR before any Kick Day Flow public-cutover decision.",
   "failureNextGate": "Keep public exposure unauthorized, retain failure evidence, and repair only the proven product or validation defect before rerunning the same bounded scenarios."
 }

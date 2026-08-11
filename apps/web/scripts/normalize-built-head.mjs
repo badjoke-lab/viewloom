@@ -7,6 +7,9 @@ import { join } from 'node:path'
 // Governed production revalidation source touch for Issue #753: behavior remains
 // unchanged; this source-path commit ensures the confirmed Git integration publishes
 // the exact main SHA that the read-only #747 production revalidation will verify.
+// Governed production revalidation source touch for Issue #799: behavior remains
+// unchanged; this source-path commit ensures Pages Git integration publishes the
+// recovery deployment SHA while product authority remains the #796 merge SHA.
 const dist = join(process.cwd(), 'dist')
 const measurementId = 'G-YHX7HS1VBK'
 const tagUrl = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
