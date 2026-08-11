@@ -1,0 +1,96 @@
+name: Analytics 12A10 Kick Battle Lines Category Candidate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a10-kick-battle-lines-category-candidate.yml'
+      - 'scripts/verify-12a10-kick-battle-lines-category-candidate.mjs'
+      - 'apps/web/scripts/verify-kick-battle-lines-category-candidate.mjs'
+      - 'apps/web/functions/_lib/battle-lines-core.ts'
+      - 'apps/web/functions/_lib/battle-lines-category.ts'
+      - 'apps/web/functions/api/kick-battle-lines.ts'
+      - 'apps/web/src/live/battle-lines-current-shell-entry.ts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a10-kick-battle-lines-category-candidate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify exact seven-file candidate scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          allowed='^(\.github/workflows/analytics-12a10-kick-battle-lines-category-candidate\.yml|scripts/verify-12a10-kick-battle-lines-category-candidate\.mjs|apps/web/scripts/verify-kick-battle-lines-category-candidate\.mjs|apps/web/functions/_lib/battle-lines-core\.ts|apps/web/functions/_lib/battle-lines-category\.ts|apps/web/functions/api/kick-battle-lines\.ts|apps/web/src/live/battle-lines-current-shell-entry\.ts)$'
+          test "${#changed[@]}" -eq 7
+          for file in "${changed[@]}"; do
+            [[ "$file" =~ $allowed ]] || { echo "Unexpected hidden candidate change: $file" >&2; exit 1; }
+          done
+      - name: Verify accepted decision authority and hidden candidate source contract
+        run: node scripts/verify-12a10-kick-battle-lines-category-candidate.mjs
+      - name: Run Battle Lines base fixtures
+        working-directory: apps/web
+        run: node scripts/verify-battle-lines-core.mjs
+      - name: Run category point-state and scoring fixtures
+        working-directory: apps/web
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/12a10-kick-battle-lines-category-candidate
+          node scripts/verify-kick-battle-lines-category-candidate.mjs 2>&1 | tee artifacts/12a10-kick-battle-lines-category-candidate/fixture.log
+      - name: Upload category fixture diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a10-kick-battle-lines-category-candidate-diagnostics
+          path: apps/web/artifacts/12a10-kick-battle-lines-category-candidate/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Verify retained architecture contracts
+        run: |
+          node scripts/verify-quality-u10g-architecture.mjs
+          node scripts/verify-quality-u10d-analysis-coherence.mjs
+      - name: Verify normal production source remains bounded
+        working-directory: apps/web
+        run: node scripts/verify-production-source.mjs
+      - name: Typecheck and build web
+        run: |
+          pnpm typecheck:web
+          pnpm build:web
+      - name: Publish hidden candidate boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick Battle Lines hidden Category candidate'
+            echo
+            echo '- Decision authority: #813 / PR #814'
+            echo '- Activation: Kick categoryPreview=1 only'
+            echo '- Normal Kick Battle Lines route: category-free'
+            echo '- Category filter: before candidate Top N and Recommended Battle scoring'
+            echo '- Candidate rank: category-qualified viewer-minutes'
+            echo '- Point states: observed / outside_category / category_unavailable / offline / not_observed / missing'
+            echo '- outside_category and category_unavailable: never zero/offline/missing; excluded from category missing penalty'
+            echo '- Unknown category: zero category lines/battles; no synthetic global substitution'
+            echo '- Existing Top: 3 / 5 / 10, default 5'
+            echo '- Existing metrics: Viewers / Indexed'
+            echo '- Global fetch/history/URLSearchParams.get wrappers: none'
+            echo '- Public exposure: unauthorized'
+            echo '- Next gate after merge: exact-production hidden browser revalidation'
+          } >> "$GITHUB_STEP_SUMMARY"

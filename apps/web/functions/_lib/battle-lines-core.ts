@@ -1,7 +1,7 @@
 export type BattleMetric = 'viewers' | 'indexed'
 export type BattleBucket = '5m' | '10m'
 export type RequestedBattleBucket = '1m' | BattleBucket
-export type BattlePointState = 'observed' | 'offline' | 'not_observed' | 'missing'
+export type BattlePointState = 'observed' | 'offline' | 'not_observed' | 'missing' | 'outside_category' | 'category_unavailable'
 export type BattlePageState = 'live' | 'partial' | 'stale' | 'empty' | 'demo' | 'error'
 export type BattlePeriodMode = 'today' | 'yesterday' | 'date' | 'custom'
 
@@ -19,6 +19,7 @@ export type BattleSourceItem = {
   title?: string
   url?: string
   viewers: number
+  pointState?: 'outside_category' | 'category_unavailable'
 }
 
 export type BattleSourceRow = {
@@ -113,12 +114,14 @@ export type BuildBattlePayloadOptions = {
   period: BattlePeriod
   now?: Date
   sampleIntervalMinutes?: number
+  categoryScoped?: boolean
 }
 
 type StreamAccumulator = {
   item: BattleSourceItem
   values: Array<number | null>
   present: Set<number>
+  explicitStates: Map<number, BattlePointState>
   first: number | null
   last: number | null
 }
@@ -215,19 +218,29 @@ export function buildBattleLinesPayload(rows: BattleSourceRow[], options: BuildB
         title: rawItem.title ?? '',
         url: rawItem.url ?? '',
         viewers: safeViewerCount(rawItem.viewers),
+        pointState: rawItem.pointState,
       }
       const entry: StreamAccumulator = streams.get(id) ?? {
         item,
         values: timeline.map<number | null>(() => null),
         present: new Set<number>(),
+        explicitStates: new Map<number, BattlePointState>(),
         first: null,
         last: null,
       }
       entry.item = { ...entry.item, ...item }
-      entry.values[index] = Math.max(entry.values[index] ?? 0, item.viewers)
-      entry.present.add(index)
       entry.first = entry.first === null ? index : Math.min(entry.first, index)
       entry.last = entry.last === null ? index : Math.max(entry.last, index)
+      if (item.pointState) {
+        if (!entry.present.has(index)) {
+          const current = entry.explicitStates.get(index)
+          if (!current || item.pointState === 'category_unavailable') entry.explicitStates.set(index, item.pointState)
+        }
+      } else {
+        entry.values[index] = Math.max(entry.values[index] ?? 0, item.viewers)
+        entry.present.add(index)
+        entry.explicitStates.delete(index)
+      }
       streams.set(id, entry)
     }
   }
@@ -237,7 +250,7 @@ export function buildBattleLinesPayload(rows: BattleSourceRow[], options: BuildB
     .filter((line) => line.viewerMinutes > 0)
     .sort((a, b) => b.viewerMinutes - a.viewerMinutes)
   const lines = allLines.slice(0, options.top)
-  const battles = scoreBattles(lines, options.metric)
+  const battles = scoreBattles(lines, options.metric, Boolean(options.categoryScoped))
   const primaryBattle = battles[0] ?? null
   const secondaryBattles = battles.slice(1, 4)
   const reversals = primaryBattle ? buildReversalEvents(primaryBattle, lines) : []
@@ -300,12 +313,16 @@ export function buildBattleLinesPayload(rows: BattleSourceRow[], options: BuildB
     feed: events,
     notes: [
       'All lines share the same UTC bucket timeline.',
-      'Missing, not_observed, and offline points stay explicit and are never returned as observed values.',
+      options.categoryScoped
+        ? 'Missing, not_observed, offline, outside_category, and category_unavailable points stay explicit and are never returned as observed values.'
+        : 'Missing, not_observed, and offline points stay explicit and are never returned as observed values.',
       'Recommended Battle is stable across Viewers and Indexed because pair scoring uses raw observed viewers.',
       'Activity / heat fusion is unavailable and is not included in the recommendation score.',
     ],
     contract: {
-      linePointStates: ['observed', 'missing', 'not_observed', 'offline'] as BattlePointState[],
+      linePointStates: (options.categoryScoped
+        ? ['observed', 'missing', 'not_observed', 'offline', 'outside_category', 'category_unavailable']
+        : ['observed', 'missing', 'not_observed', 'offline']) as BattlePointState[],
       requiredBattleFields: ['id', 'pair', 'score', 'currentLeaderId', 'currentGap', 'gapTrend', 'scoreInputs'],
       requiredLineFields: ['id', 'name', 'viewerMinutes', 'peakViewers', 'latestViewers', 'points'],
     },
@@ -323,7 +340,7 @@ function makeLine(
   const peakViewers = observedValues.length > 0 ? Math.max(...observedValues) : 0
   const points = timeline.map((bucket, index): BattlePoint => {
     const raw = entry.values[index]
-    const state = pointState(raw, index, entry.present, observedBuckets, entry.first, entry.last)
+    const state = pointState(raw, index, entry.present, entry.explicitStates, observedBuckets, entry.first, entry.last)
     const viewers = state === 'observed' && raw !== null ? raw : null
     const value = viewers === null ? null : metric === 'indexed' && peakViewers > 0 ? round((viewers / peakViewers) * 100, 2) : viewers
     return { bucket, time: bucket.slice(11, 16), viewers, value, state }
@@ -348,35 +365,39 @@ function pointState(
   raw: number | null,
   index: number,
   present: Set<number>,
+  explicitStates: Map<number, BattlePointState>,
   observedBuckets: Set<number>,
   first: number | null,
   last: number | null,
 ): BattlePointState {
   if (!observedBuckets.has(index)) return 'not_observed'
+  const explicit = explicitStates.get(index)
+  if (explicit === 'outside_category' || explicit === 'category_unavailable') return explicit
   if (present.has(index)) return raw !== null && raw > 0 ? 'observed' : 'offline'
   if (first !== null && last !== null && index >= first && index <= last) return 'missing'
   return 'offline'
 }
 
-function scoreBattles(lines: BattleLine[], metric: BattleMetric): BattleModel[] {
+function scoreBattles(lines: BattleLine[], metric: BattleMetric, categoryScoped = false): BattleModel[] {
   const output: BattleModel[] = []
   const maxViewerMinutes = Math.max(1, ...lines.map((line) => line.viewerMinutes))
   for (let aIndex = 0; aIndex < lines.length; aIndex += 1) {
     for (let bIndex = aIndex + 1; bIndex < lines.length; bIndex += 1) {
-      const battle = scoreBattle(lines[aIndex], lines[bIndex], metric, maxViewerMinutes)
+      const battle = scoreBattle(lines[aIndex], lines[bIndex], metric, maxViewerMinutes, categoryScoped)
       if (battle.overlapCount > 0) output.push(battle)
     }
   }
   return output.sort((a, b) => b.score - a.score).slice(0, 6)
 }
 
-function scoreBattle(a: BattleLine, b: BattleLine, metric: BattleMetric, maxViewerMinutes: number): BattleModel {
+function scoreBattle(a: BattleLine, b: BattleLine, metric: BattleMetric, maxViewerMinutes: number, categoryScoped = false): BattleModel {
   let overlapCount = 0
   let currentRun = 0
   let longestRun = 0
   let recentOverlap = 0
   let closenessTotal = 0
   let missingCount = 0
+  let eligibleCount = 0
   let previousRawLeader: string | null = null
   let reversalCount = 0
   let latestReversalIndex: number | null = null
@@ -384,6 +405,20 @@ function scoreBattle(a: BattleLine, b: BattleLine, metric: BattleMetric, maxView
   const recentStart = Math.max(0, a.points.length - 12)
 
   for (let index = 0; index < Math.min(a.points.length, b.points.length); index += 1) {
+    const aState = a.points[index].state
+    const bState = b.points[index].state
+    const categoryIneligible = categoryScoped && (
+      aState === 'outside_category'
+      || aState === 'category_unavailable'
+      || bState === 'outside_category'
+      || bState === 'category_unavailable'
+    )
+    if (categoryIneligible) {
+      currentRun = 0
+      previousRawLeader = null
+      continue
+    }
+    eligibleCount += 1
     const av = a.points[index].viewers
     const bv = b.points[index].viewers
     if (av === null || bv === null) {
@@ -406,7 +441,9 @@ function scoreBattle(a: BattleLine, b: BattleLine, metric: BattleMetric, maxView
     if (leader) previousRawLeader = leader
   }
 
-  const totalPoints = Math.max(a.points.length, b.points.length, 1)
+  const totalPoints = categoryScoped
+    ? Math.max(eligibleCount, 1)
+    : Math.max(a.points.length, b.points.length, 1)
   const closeness = overlapCount > 0 ? closenessTotal / overlapCount : 0
   const overlapContinuity = longestRun / totalPoints
   const recentReversal = latestReversalIndex === null ? 0 : Math.max(0, 1 - ((totalPoints - 1 - latestReversalIndex) / 12))
@@ -504,6 +541,15 @@ function buildReversalEvents(battle: BattleModel, lines: BattleLine[]): BattleEv
   for (let index = 0; index < Math.min(a.points.length, b.points.length); index += 1) {
     const av = a.points[index].value
     const bv = b.points[index].value
+    const categoryBoundary = a.points[index].state === 'outside_category'
+      || a.points[index].state === 'category_unavailable'
+      || b.points[index].state === 'outside_category'
+      || b.points[index].state === 'category_unavailable'
+    if (categoryBoundary) {
+      previousLeaderId = null
+      previousGap = null
+      continue
+    }
     if (av === null || bv === null || av === bv) continue
     const leader = av > bv ? a : b
     const passed = av > bv ? b : a
