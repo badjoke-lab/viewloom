@@ -255,7 +255,7 @@ function installStyles(): void {
     .dayflow-category-coverage-strip span{min-width:0;background:transparent}
     .dayflow-category-coverage-strip .is-partial{background:rgba(251,191,36,.72)}
     .dayflow-category-coverage-strip .is-unavailable{background:repeating-linear-gradient(135deg,rgba(251,113,133,.75) 0 3px,rgba(251,113,133,.2) 3px 6px)}
-    @media(max-width:760px){.dayflow-category-preview{flex:1 1 100%;width:100%}.dayflow-category-preview__status{max-width:none}.dayflow-category-preview__control{width:100%}}
+    @media(max-width:760px){.dayflow-category-preview{flex:1 1 100%;width:100%}.dayflow-category-preview__status{max-width:none}.dayflow-category-preview__control{width:100%}.dayflow-category-preview__control select{min-height:44px}}
   `
   document.head.appendChild(style)
 }
