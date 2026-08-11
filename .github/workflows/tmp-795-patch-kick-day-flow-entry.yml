@@ -1,0 +1,38 @@
+name: TMP 795 Patch Kick Day Flow Entry
+
+on:
+  push:
+    branches:
+      - work-795-kick-day-flow-category-candidate
+    paths:
+      - '.github/workflows/tmp-795-patch-kick-day-flow-entry.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work-795-kick-day-flow-category-candidate
+      - name: Patch Kick Day Flow provider entry
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('apps/web/kick/day-flow/index.html')
+          text = path.read_text()
+          old = '<script type="module" src="/src/live/day-flow-current-shell-entry.ts"></script>'
+          new = '<script type="module" src="/src/live/day-flow-kick-entry.ts"></script>'
+          assert text.count(old) == 1, f'expected one legacy Day Flow entry, got {text.count(old)}'
+          path.write_text(text.replace(old, new))
+          PY
+      - name: Commit exact patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/web/kick/day-flow/index.html
+          git diff --cached --check
+          git commit -m "Route Kick Day Flow through hidden candidate entry"
+          git push origin HEAD:work-795-kick-day-flow-category-candidate
