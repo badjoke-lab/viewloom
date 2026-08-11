@@ -69,7 +69,6 @@ try {
     await page.waitForTimeout(300)
     assert(json.platform === 'kick', 'normal payload not Kick')
     assert(json.categoryFilter == null, 'normal route returned categoryFilter')
-    assert(!document, '')
     const controlCount = await page.locator('[data-battle-category-preview]').count()
     assert(controlCount === 0, `normal route exposed ${controlCount} Category controls`)
     assert(requests.length >= 1, 'normal route made no Battle Lines request')
