@@ -232,7 +232,11 @@ function buildSelectedCategory(
   observed: number,
   filterState: 'all' | 'selected' | 'unknown_category' | 'category_unavailable',
 ): Built {
-  if (filterState !== 'selected') return { bands: [], streamers: [], totals, observed }
+  if (filterState !== 'selected') {
+    const others = makeGlobalOthers([], labels, totals, bucketSize)
+    const bands = others.totalViewerMinutes > 0 ? [others] : []
+    return { bands, streamers: [], totals, observed }
+  }
   const ranked = projectedStreams.map((projected) => {
     const nonZero = projected.values.map((value, index) => value > 0 ? index : -1).filter((index) => index >= 0)
     return makeBand(
