@@ -16,7 +16,7 @@ const liveEntryContracts = [
   { path:'twitch/heatmap/index.html', entry:'/src/live/heatmap-current-shell-entry.ts' },
   { path:'kick/heatmap/index.html', entry:'/src/live/heatmap-current-shell-entry.ts' },
   { path:'twitch/day-flow/index.html', entry:'/src/live/day-flow-twitch-entry.ts' },
-  { path:'kick/day-flow/index.html', entry:'/src/live/day-flow-current-shell-entry.ts' },
+  { path:'kick/day-flow/index.html', entry:'/src/live/day-flow-kick-entry.ts' },
   { path:'twitch/battle-lines/index.html', entry:'/src/live/battle-lines-current-shell-entry.ts' },
   { path:'kick/battle-lines/index.html', entry:'/src/live/battle-lines-current-shell-entry.ts' },
   { path:'twitch/history/index.html', entry:'/src/live/history-current-shell-entry.ts' },
@@ -30,7 +30,7 @@ const requiredShellFragments = ['<span class="brand-mark">VL</span>','class="mas
 const requiredSourceFiles = [
   'vite.config.ts','src/mock-site.css','src/mock-site.ts','src/static-page.ts','src/legal-page.css','src/shared-shell.ts','src/changelog-page.ts','src/changelog-page.css',
   'src/live/heatmap-current-shell-entry.ts','src/live/twitch-heatmap.ts','src/live/heatmap-layout.ts','src/features/twitch-heatmap/canvas-scene.ts',
-  'src/live/day-flow-current-shell-entry.ts','src/live/day-flow-twitch-entry.ts','src/live/day-flow-category-preview-entry.ts',
+  'src/live/day-flow-current-shell-entry.ts','src/live/day-flow-twitch-entry.ts','src/live/day-flow-kick-entry.ts','src/live/day-flow-category-preview-entry.ts',
   'src/live/battle-lines-current-shell-entry.ts','src/live/history-current-shell-entry.ts','src/live/status-current-shell-entry.ts',
 ]
 const forbiddenGlobalPatterns = [
@@ -67,28 +67,40 @@ for (const path of removedHeatmapFiles) if (existsSync(join(root,path))) failure
 if (existsSync(join(root,'src/mock-cutover.css'))) failures.push('src/mock-cutover.css: must not exist')
 if (existsSync(join(root,'src/mock-cutover.ts'))) failures.push('src/mock-cutover.ts: must not exist')
 
-// Twitch Day Flow uses a provider-specific bootstrap so the Twitch-only public
+// Twitch Day Flow uses a provider-specific bootstrap so the public Twitch
 // category layer installs before the existing single shared Day Flow controller.
 if (existsSync(join(root,'src/live/day-flow-twitch-entry.ts'))) {
   const source = read('src/live/day-flow-twitch-entry.ts')
   requireFragments('src/live/day-flow-twitch-entry.ts',source,["import './day-flow-category-preview-entry'","void import('./day-flow-current-shell-entry')"])
   if (source.indexOf("import './day-flow-category-preview-entry'") > source.indexOf("void import('./day-flow-current-shell-entry')")) failures.push('src/live/day-flow-twitch-entry.ts: Twitch category layer must run before Day Flow shell')
 }
+
+// Kick Day Flow now uses its own provider bootstrap too, but the shared category
+// layer must remain inert unless categoryPreview=1 is present.
+if (existsSync(join(root,'src/live/day-flow-kick-entry.ts'))) {
+  const source = read('src/live/day-flow-kick-entry.ts')
+  requireFragments('src/live/day-flow-kick-entry.ts',source,["import './day-flow-category-preview-entry'","void import('./day-flow-current-shell-entry')","const categoryRoot = document.getElementById('dayflow-category-preview-controls')"])
+  if (source.indexOf("import './day-flow-category-preview-entry'") > source.indexOf("void import('./day-flow-current-shell-entry')")) failures.push('src/live/day-flow-kick-entry.ts: hidden Kick category boundary must install before Day Flow shell')
+}
+
 if (existsSync(join(root,'src/live/day-flow-category-preview-entry.ts'))) {
   const source = read('src/live/day-flow-category-preview-entry.ts')
   requireFragments('src/live/day-flow-category-preview-entry.ts',source,[
-    "const enabled = provider === 'twitch'",
     "const legacyPreviewAtLoad = initialUrl.searchParams.get(PREVIEW_PARAM) === '1'",
-    "root.dataset.dayflowCategoryPreview = 'public'",
-    'aria-label="Twitch Day Flow category"',
-    "filter.implementationState !== 'public'",
-    'filter.publicExposureAuthorized !== true',
+    "const publicProvider = provider === 'twitch'",
+    'const enabled = publicProvider || legacyPreviewAtLoad',
+    "const apiPath = provider === 'kick' ? '/api/kick-day-flow' : '/api/day-flow'",
+    "root.dataset.dayflowCategoryPreview = publicProvider ? 'public' : 'hidden'",
+    'aria-label="${providerLabel} Day Flow category"',
+    "if (publicProvider) return filter.implementationState === 'public' && filter.publicExposureAuthorized === true",
+    "return legacyPreviewAtLoad && filter.implementationState === 'hidden_candidate' && filter.publicExposureAuthorized === false",
     "if (legacyPreviewAtLoad && !publicInteractionSeen) next.searchParams.set(PREVIEW_PARAM, '1')",
     'if (publicInteractionSeen) next.searchParams.delete(PREVIEW_PARAM)',
+    "else next.searchParams.set(PREVIEW_PARAM, '1')",
     'if (enabled) {',
   ])
-  const hiddenEnableGate = "const enabled = provider === 'twitch' && initialUrl.searchParams.get(PREVIEW_PARAM) === '1'"
-  if (source.includes(hiddenEnableGate)) failures.push('src/live/day-flow-category-preview-entry.ts: public Twitch category UI must not require categoryPreview=1')
+  const hiddenTwitchEnableGate = "const enabled = provider === 'twitch' && initialUrl.searchParams.get(PREVIEW_PARAM) === '1'"
+  if (source.includes(hiddenTwitchEnableGate)) failures.push('src/live/day-flow-category-preview-entry.ts: public Twitch category UI must not require categoryPreview=1')
 }
 
 if (failures.length) { console.error('ViewLoom production source verification failed:'); for (const failure of failures) console.error(`- ${failure}`); process.exit(1) }
