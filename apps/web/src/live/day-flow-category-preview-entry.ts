@@ -39,7 +39,7 @@ const providerLabel = provider === 'kick' ? 'Kick' : 'Twitch'
 const apiPath = provider === 'kick' ? '/api/kick-day-flow' : '/api/day-flow'
 const initialUrl = new URL(window.location.href)
 const legacyPreviewAtLoad = initialUrl.searchParams.get(PREVIEW_PARAM) === '1'
-const publicProvider = provider === 'twitch'
+const publicProvider = provider === 'twitch' || provider === 'kick'
 const enabled = publicProvider || legacyPreviewAtLoad
 let selectedCategory = normalizeCategory(initialUrl.searchParams.get(CATEGORY_PARAM))
 let publicInteractionSeen = false
