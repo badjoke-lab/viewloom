@@ -35,9 +35,12 @@ const STYLE_ID = 'dayflow-category-preview-style'
 const EVENT_NAME = 'viewloom:dayflow-category-payload'
 
 const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
+const providerLabel = provider === 'kick' ? 'Kick' : 'Twitch'
+const apiPath = provider === 'kick' ? '/api/kick-day-flow' : '/api/day-flow'
 const initialUrl = new URL(window.location.href)
-const enabled = provider === 'twitch'
 const legacyPreviewAtLoad = initialUrl.searchParams.get(PREVIEW_PARAM) === '1'
+const publicProvider = provider === 'twitch'
+const enabled = publicProvider || legacyPreviewAtLoad
 let selectedCategory = normalizeCategory(initialUrl.searchParams.get(CATEGORY_PARAM))
 let publicInteractionSeen = false
 let lastPayload: CategoryPayload | null = null
@@ -45,7 +48,7 @@ let overlayQueued = false
 
 if (enabled) {
   installStyles()
-  preservePublicUrlState()
+  preserveCategoryUrlState()
   interceptDayFlowFetch()
   installControls()
   observeStage()
@@ -57,15 +60,19 @@ if (enabled) {
   }) as EventListener)
 }
 
-function preservePublicUrlState(): void {
+function preserveCategoryUrlState(): void {
   const originalReplaceState = window.history.replaceState.bind(window.history)
   window.history.replaceState = ((data: unknown, unused: string, url?: string | URL | null) => {
     if (url == null) return originalReplaceState(data, unused, url)
     const next = new URL(String(url), window.location.origin)
     if (next.pathname === window.location.pathname) {
       next.searchParams.set(CATEGORY_PARAM, selectedCategory)
-      if (legacyPreviewAtLoad && !publicInteractionSeen) next.searchParams.set(PREVIEW_PARAM, '1')
-      if (publicInteractionSeen) next.searchParams.delete(PREVIEW_PARAM)
+      if (publicProvider) {
+        if (legacyPreviewAtLoad && !publicInteractionSeen) next.searchParams.set(PREVIEW_PARAM, '1')
+        if (publicInteractionSeen) next.searchParams.delete(PREVIEW_PARAM)
+      } else {
+        next.searchParams.set(PREVIEW_PARAM, '1')
+      }
       return originalReplaceState(data, unused, `${next.pathname}${next.search}${next.hash}`)
     }
     return originalReplaceState(data, unused, url)
@@ -73,6 +80,7 @@ function preservePublicUrlState(): void {
 
   const current = new URL(window.location.href)
   current.searchParams.set(CATEGORY_PARAM, selectedCategory)
+  if (!publicProvider) current.searchParams.set(PREVIEW_PARAM, '1')
   originalReplaceState(window.history.state, '', `${current.pathname}${current.search}${current.hash}`)
 }
 
@@ -80,7 +88,7 @@ function interceptDayFlowFetch(): void {
   const originalFetch = window.fetch.bind(window)
   window.fetch = (async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const requestUrl = toUrl(input)
-    if (!requestUrl || requestUrl.origin !== window.location.origin || requestUrl.pathname !== '/api/day-flow') {
+    if (!requestUrl || requestUrl.origin !== window.location.origin || requestUrl.pathname !== apiPath) {
       return originalFetch(input, init)
     }
 
@@ -101,11 +109,11 @@ function installControls(): void {
   const root = document.createElement('div')
   root.id = ROOT_ID
   root.className = 'control-stack dayflow-category-preview'
-  root.dataset.dayflowCategoryPreview = 'public'
+  root.dataset.dayflowCategoryPreview = publicProvider ? 'public' : 'hidden'
   root.innerHTML = `
     <label class="toolbar-label" for="dayflow-category-preview-select">Category</label>
     <div class="control-group dayflow-category-preview__control">
-      <select id="dayflow-category-preview-select" data-dayflow-category-preview-select aria-label="Twitch Day Flow category">
+      <select id="dayflow-category-preview-select" data-dayflow-category-preview-select aria-label="${providerLabel} Day Flow category">
         <option value="all">All categories</option>
       </select>
     </div>
@@ -119,10 +127,11 @@ function installControls(): void {
   if (select) {
     select.value = selectedCategory
     select.addEventListener('change', () => {
-      publicInteractionSeen = true
+      if (publicProvider) publicInteractionSeen = true
       selectedCategory = normalizeCategory(select.value)
       const url = new URL(window.location.href)
-      url.searchParams.delete(PREVIEW_PARAM)
+      if (publicProvider) url.searchParams.delete(PREVIEW_PARAM)
+      else url.searchParams.set(PREVIEW_PARAM, '1')
       url.searchParams.set(CATEGORY_PARAM, selectedCategory)
       window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
       document.querySelector<HTMLButtonElement>('[data-dayflow-refresh]')?.click()
@@ -132,7 +141,7 @@ function installControls(): void {
 
 function syncControls(payload: CategoryPayload): void {
   const filter = payload.categoryFilter
-  if (!filter || filter.implementationState !== 'public' || filter.publicExposureAuthorized !== true) return
+  if (!filter || !acceptedImplementationState(filter)) return
   const root = document.getElementById(ROOT_ID)
   if (!root) return
   const select = root.querySelector<HTMLSelectElement>('[data-dayflow-category-preview-select]')
@@ -160,10 +169,15 @@ function syncControls(payload: CategoryPayload): void {
     const partial = counts.partial ?? 0
     const unavailable = counts.unavailable ?? 0
     const state = filter.state ?? 'category_unavailable'
-    if (state === 'unknown_category') status.textContent = `Unknown Twitch category · coverage ${observed} observed / ${partial} partial / ${unavailable} unavailable buckets`
+    if (state === 'unknown_category') status.textContent = `Unknown ${providerLabel} category · coverage ${observed} observed / ${partial} partial / ${unavailable} unavailable buckets`
     else if (state === 'category_unavailable') status.textContent = `Category metadata unavailable · ${unavailable} unavailable buckets · no zero inferred`
     else status.textContent = `${state === 'all' ? 'All categories' : 'Selected category'} · ${observed} observed / ${partial} partial / ${unavailable} unavailable buckets`
   }
+}
+
+function acceptedImplementationState(filter: CategoryFilter): boolean {
+  if (publicProvider) return filter.implementationState === 'public' && filter.publicExposureAuthorized === true
+  return legacyPreviewAtLoad && filter.implementationState === 'hidden_candidate' && filter.publicExposureAuthorized === false
 }
 
 function observeStage(): void {
