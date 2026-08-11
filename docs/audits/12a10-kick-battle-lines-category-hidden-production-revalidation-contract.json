@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "viewloom-12a10-kick-battle-lines-category-hidden-production-revalidation-contract-v1",
+  "status": "ready_for_validation",
+  "phase": "12A-10-R1",
+  "parentTrackingIssue": 623,
+  "decisionIssue": 813,
+  "implementationIssue": 815,
+  "trackingIssue": 817,
+  "provider": "kick",
+  "feature": "battle_lines_category_filter",
+  "productAuthority": {
+    "implementationPr": 816,
+    "sha": "a802e7fe1e964180904c72744b7228c549a54660",
+    "implementationState": "hidden_candidate",
+    "publicExposureAuthorized": false
+  },
+  "productionAuthority": {
+    "mode": "cloudflare_pages_git_integration",
+    "primaryOrigin": "https://www.viewloom.net",
+    "identityEndpoint": "/deployment.json",
+    "deploymentSha": "validation_package_merge_sha",
+    "deploymentShaMayDifferFromProductSha": true,
+    "productRuntimeEquivalenceRequired": true,
+    "singleDeploymentEvidenceSourceRequired": true,
+    "browserNetworkRefetchOfDeploymentIdentityAllowed": false,
+    "allowedDifferenceFromProductAuthority": [
+      ".github/workflows/analytics-12a10-kick-battle-lines-category-hidden-production-revalidation.yml",
+      "docs/audits/12a10-kick-battle-lines-category-hidden-production-revalidation-contract.json",
+      "apps/web/scripts/kick-battle-lines-category-hidden-production-revalidation.mjs"
+    ]
+  },
+  "validationDate": "2026-08-10",
+  "requiredScenarios": [
+    "kick-normal-fixed-day-desktop",
+    "kick-hidden-fixed-day-desktop",
+    "kick-hidden-fixed-day-mobile",
+    "kick-hidden-unknown-category",
+    "kick-hidden-point-state-contract",
+    "twitch-battle-lines-isolation"
+  ],
+  "hiddenSemantics": {
+    "activation": "categoryPreview=1",
+    "defaultCategory": "all",
+    "implementationState": "hidden_candidate",
+    "publicExposureAuthorized": false,
+    "categoryFilterBeforeCandidateCompaction": true,
+    "categoryFilterBeforeTopN": true,
+    "categoryFilterBeforeRecommendedBattleScoring": true,
+    "candidateRankingMetric": "category_qualified_viewer_minutes",
+    "pointStates": ["observed", "outside_category", "category_unavailable", "offline", "not_observed", "missing"],
+    "outsideCategoryNeverZeroFilled": true,
+    "categoryUnavailableNeverZeroFilled": true,
+    "outsideCategoryExcludedFromMissingPenalty": true,
+    "categoryUnavailableExcludedFromMissingPenalty": true,
+    "unknownCategoryState": "unknown_category",
+    "unknownCategoryReturnsLines": false,
+    "unknownCategoryReturnsBattles": false,
+    "unknownCategoryMaySubstituteGlobalLines": false,
+    "repositoryFixtureAuthority": "apps/web/scripts/verify-kick-battle-lines-category-candidate.mjs"
+  },
+  "boundary": {
+    "readOnly": true,
+    "publicExposureAuthorized": false,
+    "kickHistoryCategoryUiAuthorized": false,
+    "twitchSemanticChangeAuthorized": false,
+    "collectorChangeAuthorized": false,
+    "workerDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "schemaChangeAuthorized": false,
+    "bindingChangeAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "retentionChangeAuthorized": false,
+    "backfillAuthorized": false,
+    "thresholdRelaxationAuthorized": false,
+    "credentialChangeAuthorized": false,
+    "crossProviderBehaviorAuthorized": false,
+    "combinedProviderRankingAuthorized": false
+  }
+}
