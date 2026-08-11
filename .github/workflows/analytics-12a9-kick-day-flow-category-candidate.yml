@@ -1,17 +1,10 @@
-name: Analytics 12A9 Kick Day Flow Category Candidate
+name: Analytics 12A9 Kick Day Flow Historical Category Candidate
 
 on:
   workflow_dispatch:
   pull_request:
     branches: [main]
     paths:
-      - 'apps/web/functions/api/day-flow-category-core.mjs'
-      - 'apps/web/functions/api/day-flow-category-core.d.mts'
-      - 'apps/web/functions/api/kick-day-flow.ts'
-      - 'apps/web/src/live/day-flow-category-preview-entry.ts'
-      - 'apps/web/src/live/day-flow-kick-entry.ts'
-      - 'apps/web/kick/day-flow/index.html'
-      - 'apps/web/scripts/day-flow-category-core.test.mjs'
       - 'scripts/verify-12a9-kick-day-flow-category-candidate.mjs'
       - '.github/workflows/analytics-12a9-kick-day-flow-category-candidate.yml'
 
@@ -19,99 +12,31 @@ permissions:
   contents: read
 
 concurrency:
-  group: analytics-12a9-kick-day-flow-category-candidate-${{ github.event.pull_request.number || github.ref }}
+  group: analytics-12a9-kick-day-flow-historical-category-candidate-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  verify:
+  verify-historical-candidate:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
-      - name: Checkout candidate head
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Verify accepted decision and hidden boundary
-        run: |
-          node --check scripts/verify-12a9-kick-day-flow-category-candidate.mjs
-          node scripts/verify-12a9-kick-day-flow-category-candidate.mjs
-
-      - name: Verify shared projection semantics
-        run: |
-          node --check apps/web/functions/api/day-flow-category-core.mjs
-          node apps/web/scripts/day-flow-category-core.test.mjs
-
-      - name: Verify candidate or bounded repair PR scope
-        if: github.event_name == 'pull_request'
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          set -euo pipefail
-          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
-          printf '%s\n' "${changed[@]}"
-
-          initial_allowed='^(apps/web/functions/api/day-flow-category-core\.mjs|apps/web/functions/api/day-flow-category-core\.d\.mts|apps/web/functions/api/kick-day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-kick-entry\.ts|apps/web/kick/day-flow/index\.html|apps/web/scripts/day-flow-category-core\.test\.mjs|scripts/verify-12a9-kick-day-flow-category-candidate\.mjs|\.github/workflows/analytics-12a9-kick-day-flow-category-candidate\.yml)$'
-          repair_allowed='^(apps/web/functions/api/kick-day-flow\.ts|scripts/verify-12a9-kick-day-flow-category-candidate\.mjs|\.github/workflows/analytics-12a9-kick-day-flow-category-candidate\.yml)$'
-
-          if [[ "${#changed[@]}" -eq 9 ]]; then
-            for path in "${changed[@]}"; do
-              [[ "$path" =~ $initial_allowed ]] || { echo "Unexpected initial Kick Day Flow candidate change: $path" >&2; exit 1; }
-            done
-            echo 'scope_mode=initial_nine_file_candidate'
-          elif [[ "${#changed[@]}" -eq 3 ]]; then
-            for path in "${changed[@]}"; do
-              [[ "$path" =~ $repair_allowed ]] || { echo "Unexpected bounded Kick Day Flow repair change: $path" >&2; exit 1; }
-            done
-            required=(
-              'apps/web/functions/api/kick-day-flow.ts'
-              'scripts/verify-12a9-kick-day-flow-category-candidate.mjs'
-              '.github/workflows/analytics-12a9-kick-day-flow-category-candidate.yml'
-            )
-            for path in "${required[@]}"; do
-              printf '%s\n' "${changed[@]}" | grep -Fxq "$path" || { echo "Missing bounded repair file: $path" >&2; exit 1; }
-            done
-            echo 'scope_mode=issue_801_three_file_repair'
-          else
-            echo "Kick Day Flow candidate scope must be the initial 9-file package or bounded 3-file #801 repair; got ${#changed[@]} files" >&2
-            exit 1
-          fi
-
-      - name: Install dependencies
-        run: |
-          corepack enable
-          pnpm install --no-frozen-lockfile
-
-      - name: Typecheck web
-        run: pnpm typecheck:web
-
-      - name: Build web
-        run: pnpm build:web
-
-      - name: Publish candidate boundary
+      - name: Verify accepted hidden candidate at fixed authority SHA
+        run: node scripts/verify-12a9-kick-day-flow-category-candidate.mjs
+      - name: Verify shared projection semantics remain valid
+        run: node apps/web/scripts/day-flow-category-core.test.mjs
+      - name: Publish historical boundary
         if: always()
         run: |
           {
-            echo '## Kick Day Flow hidden category candidate'
+            echo '## Kick Day Flow historical hidden candidate'
             echo
-            echo '- Activation: categoryPreview=1 only'
-            echo '- Normal Kick route: category-free and existing unfiltered API path preserved'
-            echo '- Category identity: (kick, categoryProviderId)'
-            echo '- Membership: per observed snapshot; no latest-category backprojection'
-            echo '- Bucket aggregation: existing Kick average-observed-viewers semantics'
-            echo '- Ranking: selected-category viewer-minutes before Top N'
-            echo '- Full Share: all observed Kick viewers per bucket'
-            echo '- Top Focus Share: displayed selected-category Top N viewers per bucket'
-            echo '- Full Others: global observed Kick remainder outside displayed selected-category Top N'
-            echo '- Zero-match category: no selected bands; global observed Kick context remains as Others'
-            echo '- Twitch Day Flow: public behavior remains on existing provider boundary'
-            echo '- Public Kick Day Flow category exposure: not authorized by this candidate'
-            echo '- Collector / Worker / D1 / schema / cadence / retention / backfill: unchanged'
+            echo '- Fixed hidden product authority: 27b3cca084d62d8badd512c068be415c6865965e'
+            echo '- Current public runtime is intentionally not evaluated as hidden candidate state.'
+            echo '- Hidden candidate remains auditable after public cutover.'
           } >> "$GITHUB_STEP_SUMMARY"
