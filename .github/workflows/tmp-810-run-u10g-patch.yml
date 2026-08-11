@@ -1,0 +1,28 @@
+name: TMP 810 Run U10G Patch
+
+on:
+  push:
+    branches: [work-809-kick-day-flow-public-cutover]
+    paths:
+      - '.github/workflows/tmp-810-run-u10g-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work-809-kick-day-flow-public-cutover
+          fetch-depth: 0
+      - name: Apply bounded U10G follow-up
+        run: python3 scripts/tmp-810-patch-u10g.py
+      - name: Commit bounded U10G follow-up
+        run: |
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add docs/work-in-progress/u10g-architecture.md scripts/verify-quality-u10g-architecture.mjs apps/web/scripts/quality-u10g-architecture-browser.mjs scripts/verify-quality-u10g-browser-evidence.mjs
+          git commit -m 'Align U10G with public Kick Day Flow category boundary'
+          git push origin HEAD:work-809-kick-day-flow-public-cutover
