@@ -3,22 +3,25 @@ import { canonicalBattleLinesTime, readBattleLinesSelection } from '../navigatio
 
 type Metric = 'viewers' | 'indexed'
 type RangeMode = 'today' | 'yesterday' | 'date'
-type PointState = 'observed' | 'offline' | 'not_observed' | 'missing'
+type PointState = 'observed' | 'offline' | 'not_observed' | 'missing' | 'outside_category' | 'category_unavailable'
 type GapTrend = 'closing' | 'widening' | 'steady' | 'unavailable'
 type Point = { bucket: string; time: string; viewers: number | null; value: number | null; state: PointState }
 type Line = { id: string; streamerId?: string; name: string; displayName?: string; title?: string; url?: string; peakViewers: number; latestViewers: number | null; latestValue: number | null; viewerMinutes: number; points: Point[] }
 type Battle = { id: string; pair: [string, string]; streamerAId: string; streamerBId: string; streamerAName: string; streamerBName: string; score: number; overlapCount: number; longestRun: number; reversalCount: number; recentOverlap: number; missingPenalty: number; currentIndex: number | null; currentBucket: string | null; currentLeaderId: string | null; currentLeaderName: string | null; currentGap: number | null; previousGap: number | null; gapTrend: GapTrend; latestReversalAt: string | null }
 type BattleEvent = { id: string; type: 'reversal' | 'rapid_rise' | 'gap_collapse' | 'peak'; battleId: string; pair: [string, string]; time: string; bucket: string; index: number; title: string; summary: string; passer?: string; passed?: string; gapBefore?: number; gapAfter?: number; delta?: number; streamerId?: string }
 type Coverage = { expectedBuckets: number; observedBuckets: number; missingBuckets: number; missingRatio: number }
+type CategoryOption = { id?: string; name?: string; streamCount?: number; viewerMinutes?: number; peakViewers?: number; observedBuckets?: number }
+type CategoryFilter = { implementationState?: string; publicExposureAuthorized?: boolean; selectedCategory?: string; state?: 'all' | 'selected' | 'unknown_category' | 'category_unavailable'; coverageState?: 'observed' | 'partial' | 'unavailable'; availableCategories?: CategoryOption[]; coverageCounts?: { observed?: number; partial?: number; unavailable?: number } }
 type WindowContract = { mode: string; selectedDate: string; from: string; to: string; isLive: boolean }
-type Payload = { platform: string; state: string; status: string; source: string; updatedAt: string; generatedAt: string; top: number; requestedBucket: string; bucket: '5m' | '10m'; metric: Metric; valueMode: Metric; metricNote: string; granularityNote: string; timeline: string[]; coverage: Coverage; window: WindowContract; lines: Line[]; primaryBattle: Battle | null; recommendedBattle: Battle | null; secondaryBattles: Battle[]; battles: Battle[]; events: BattleEvent[]; reversals: BattleEvent[]; feed: BattleEvent[]; error?: { message?: string } }
-type State = { metric: Metric; top: 3 | 5 | 10; bucket: '5m' | '10m'; range: RangeMode; date: string; selectedBattleId: string | null; selectedLineId: string | null; selectedIndex: number; requestedTime: string | null; legacyPoint: number; manualBattle: boolean; followLatest: boolean; dragging: boolean; layout: BattleLayoutMode; layoutInUrl: boolean }
+type Payload = { platform: string; state: string; status: string; source: string; updatedAt: string; generatedAt: string; top: number; requestedBucket: string; bucket: '5m' | '10m'; metric: Metric; valueMode: Metric; metricNote: string; granularityNote: string; timeline: string[]; coverage: Coverage; window: WindowContract; lines: Line[]; primaryBattle: Battle | null; recommendedBattle: Battle | null; secondaryBattles: Battle[]; battles: Battle[]; events: BattleEvent[]; reversals: BattleEvent[]; feed: BattleEvent[]; categoryFilter?: CategoryFilter; availableCategories?: CategoryOption[]; error?: { message?: string } }
+type State = { metric: Metric; top: 3 | 5 | 10; bucket: '5m' | '10m'; range: RangeMode; date: string; category: string; selectedBattleId: string | null; selectedLineId: string | null; selectedIndex: number; requestedTime: string | null; legacyPoint: number; manualBattle: boolean; followLatest: boolean; dragging: boolean; layout: BattleLayoutMode; layoutInUrl: boolean }
 type PairSnapshot = { leaderName: string | null; gap: number | null; trend: GapTrend }
 type MarkerCandidate = { index: number; value: number; text: string; color: string; priority: number }
 
 const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
 const endpoint = provider === 'kick' ? '/api/kick-battle-lines' : '/api/battle-lines'
 const params = new URLSearchParams(location.search)
+const categoryPreviewEnabled = provider === 'kick' && params.get('categoryPreview') === '1'
 const selection = readBattleLinesSelection(params)
 const todayUtc = new Date().toISOString().slice(0, 10)
 const state: State = {
@@ -27,6 +30,7 @@ const state: State = {
   bucket: params.get('bucket') === '10m' ? '10m' : '5m',
   range: parseRange(params.get('range')),
   date: validDate(params.get('date')) ?? todayUtc,
+  category: normalizeCategory(params.get('category')),
   selectedBattleId: params.get('battle'),
   selectedLineId: params.get('stream'),
   selectedIndex: selection.point,
@@ -44,6 +48,7 @@ let autoTimer = 0
 const BATTLE_LINES_TIMEOUT_MS = 12_000
 
 initializeBattleLinesLayoutHost()
+if (categoryPreviewEnabled) installCategoryPreviewControl()
 wireControls()
 syncControls()
 void hydrate()
@@ -139,6 +144,7 @@ async function hydrate(options: { preserveBattle?: boolean; preserveTime?: boole
   try {
     const query = new URLSearchParams({ metric: state.metric, top: String(state.top), bucket: state.bucket, range: state.range })
     if (state.range === 'date') query.set('date', state.date)
+    if (categoryPreviewEnabled) query.set('category', state.category)
     const response = await fetchBattleLinesResponse(`${endpoint}?${query}`)
     const next = await response.json() as Payload
     if (serial !== requestSerial) return
@@ -146,6 +152,7 @@ async function hydrate(options: { preserveBattle?: boolean; preserveTime?: boole
     const previousBattle = options.preserveBattle && state.manualBattle ? state.selectedBattleId : null
     const previousBucket = options.preserveTime && payload && state.selectedIndex >= 0 ? payload.timeline[state.selectedIndex] : null
     payload = next
+    if (categoryPreviewEnabled) syncCategoryPreview(next)
     const battles = next.battles ?? []
     const recommended = recommendedBattleFor(next)
     if (previousBattle && battles.some((battle) => battle.id === previousBattle)) {
@@ -552,6 +559,84 @@ function syncControls(): void {
   if (recommended) recommended.disabled = !state.manualBattle
 }
 
+function installCategoryPreviewControl(): void {
+  if (!categoryPreviewEnabled || document.querySelector('[data-battle-category-preview]')) return
+  const controls = document.querySelector<HTMLElement>('.battle-controls')
+  if (!controls) return
+  installCategoryPreviewStyles()
+  const root = document.createElement('div')
+  root.className = 'battle-control battle-category-preview'
+  root.dataset.battleCategoryPreview = 'hidden'
+  root.innerHTML = `<label for="battle-category-preview-select">Category</label><div class="battle-control__row"><select id="battle-category-preview-select" data-battle-category-preview-select aria-label="Kick Battle Lines category"><option value="all">All categories</option></select></div><small data-battle-category-preview-status role="status" aria-live="polite">Loading category coverage…</small>`
+  controls.insertBefore(root, controls.firstChild)
+  root.querySelector<HTMLSelectElement>('[data-battle-category-preview-select]')?.addEventListener('change', (event) => {
+    const select = event.currentTarget as HTMLSelectElement
+    state.category = normalizeCategory(select.value)
+    state.manualBattle = false
+    state.selectedBattleId = null
+    state.selectedLineId = null
+    state.followLatest = true
+    state.selectedIndex = -1
+    syncUrl()
+    void hydrate()
+  })
+}
+
+function syncCategoryPreview(data: Payload): void {
+  if (!categoryPreviewEnabled) return
+  const root = document.querySelector<HTMLElement>('[data-battle-category-preview]')
+  const filter = data.categoryFilter
+  if (!root || !filter || filter.implementationState !== 'hidden_candidate' || filter.publicExposureAuthorized !== false) return
+  state.category = normalizeCategory(filter.selectedCategory ?? state.category)
+  const select = root.querySelector<HTMLSelectElement>('[data-battle-category-preview-select]')
+  const categories = filter.availableCategories ?? data.availableCategories ?? []
+  if (select) {
+    select.innerHTML = ['<option value="all">All categories</option>', ...categories.map((category) => `<option value="${escapeAttr(String(category.id ?? ''))}">${escapeHtml(categoryLabel(category))}</option>`)].join('')
+    if (state.category !== 'all' && !categories.some((category) => category.id === state.category)) {
+      const option = document.createElement('option')
+      option.value = state.category
+      option.textContent = filter.state === 'unknown_category' ? `Unknown category · ${state.category}` : `Unavailable category · ${state.category}`
+      select.appendChild(option)
+    }
+    select.value = state.category
+  }
+  const counts = filter.coverageCounts ?? {}
+  const observed = counts.observed ?? 0
+  const partial = counts.partial ?? 0
+  const unavailable = counts.unavailable ?? 0
+  const status = root.querySelector<HTMLElement>('[data-battle-category-preview-status]')
+  if (status) {
+    if (filter.state === 'unknown_category') status.textContent = `Unknown Kick category · ${observed} observed / ${partial} partial / ${unavailable} unavailable buckets`
+    else if (filter.state === 'category_unavailable') status.textContent = `Category metadata unavailable · ${observed} observed / ${partial} partial / ${unavailable} unavailable buckets · no zero inferred`
+    else status.textContent = `${filter.state === 'all' ? 'All categories' : 'Selected category'} · ${observed} observed / ${partial} partial / ${unavailable} unavailable buckets`
+  }
+}
+
+function categoryLabel(category: CategoryOption): string {
+  const name = String(category.name ?? category.id ?? 'Category')
+  const viewerMinutes = Math.max(0, Number(category.viewerMinutes ?? 0))
+  return `${name} · ${compactCategoryValue(viewerMinutes)} viewer-min`
+}
+
+function compactCategoryValue(value: number): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`
+  return String(Math.round(value))
+}
+
+function normalizeCategory(value: string | null): string {
+  const normalized = value?.trim() ?? ''
+  return !normalized || normalized.toLowerCase() === 'all' ? 'all' : normalized.slice(0, 160)
+}
+
+function installCategoryPreviewStyles(): void {
+  if (document.getElementById('battle-category-preview-style')) return
+  const style = document.createElement('style')
+  style.id = 'battle-category-preview-style'
+  style.textContent = `.battle-category-preview{min-width:0}.battle-category-preview select{min-width:220px;max-width:min(360px,100%);min-height:34px;border:1px solid var(--line-strong);background:var(--surface);color:var(--text);padding:7px 30px 7px 10px}.battle-category-preview small{display:block;max-width:360px;margin-top:5px;color:var(--muted);font:600 10px/1.35 var(--mono)}@media(max-width:760px){.battle-category-preview{width:100%}.battle-category-preview .battle-control__row,.battle-category-preview select{width:100%;max-width:none}.battle-category-preview select{min-height:44px}.battle-category-preview small{max-width:none}}`
+  document.head.appendChild(style)
+}
+
 function setPressed(selector: string, key: string, value: string): void {
   document.querySelectorAll<HTMLButtonElement>(selector).forEach((button) => {
     const active = button.dataset[key] === value
@@ -562,6 +647,10 @@ function setPressed(selector: string, key: string, value: string): void {
 
 function syncUrl(): void {
   const next = new URLSearchParams()
+  if (categoryPreviewEnabled) {
+    next.set('categoryPreview', '1')
+    next.set('category', state.category)
+  }
   if (state.layoutInUrl) next.set('layout', state.layout)
   if (state.metric !== 'viewers') next.set('metric', state.metric)
   if (state.top !== 5) next.set('top', String(state.top))
