@@ -1,0 +1,92 @@
+name: Analytics 12A9 Kick Day Flow Category Post-Repair Production Evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a9-kick-day-flow-category-post-repair-production-evidence.yml'
+      - '.github/workflows/analytics-12a9-kick-day-flow-category-post-repair-production-revalidation.yml'
+      - 'docs/audits/12a9-kick-day-flow-category-post-repair-production-revalidation-evidence.json'
+      - 'docs/audits/12a9-kick-day-flow-category-post-repair-production-revalidation-acceptance.json'
+      - 'scripts/verify-12a9-kick-day-flow-category-post-repair-production-revalidation-evidence.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a9-kick-day-flow-category-post-repair-production-evidence.yml'
+      - '.github/workflows/analytics-12a9-kick-day-flow-category-post-repair-production-revalidation.yml'
+      - 'docs/audits/12a9-kick-day-flow-category-post-repair-production-revalidation-evidence.json'
+      - 'docs/audits/12a9-kick-day-flow-category-post-repair-production-revalidation-acceptance.json'
+      - 'scripts/verify-12a9-kick-day-flow-category-post-repair-production-revalidation-evidence.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a9-kick-day-flow-category-post-repair-production-evidence-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact five-file evidence-acceptance scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          allowed='^(\.github/workflows/analytics-12a9-kick-day-flow-category-post-repair-production-evidence\.yml|\.github/workflows/analytics-12a9-kick-day-flow-category-post-repair-production-revalidation\.yml|docs/audits/12a9-kick-day-flow-category-post-repair-production-revalidation-evidence\.json|docs/audits/12a9-kick-day-flow-category-post-repair-production-revalidation-acceptance\.json|scripts/verify-12a9-kick-day-flow-category-post-repair-production-revalidation-evidence\.mjs)$'
+          test "${#changed[@]}" -eq 5
+          for file in "${changed[@]}"; do
+            [[ "$file" =~ $allowed ]] || { echo "Unexpected corrected evidence-acceptance change: $file" >&2; exit 1; }
+          done
+
+      - name: Verify frozen corrected production evidence
+        run: node scripts/verify-12a9-kick-day-flow-category-post-repair-production-revalidation-evidence.mjs
+
+      - name: Verify retained hidden candidate and provider boundaries
+        run: |
+          node scripts/verify-12a9-kick-day-flow-category-candidate.mjs
+          node apps/web/scripts/day-flow-category-core.test.mjs
+
+      - name: Verify retained production, Day Flow, and launch contracts
+        working-directory: apps/web
+        run: |
+          node scripts/verify-production-source.mjs
+          node scripts/verify-dayflow-qa.mjs
+          node scripts/verify-launch-readiness.mjs
+
+      - name: Typecheck and build unchanged product
+        run: |
+          pnpm typecheck:web
+          pnpm build:web
+
+      - name: Publish accepted corrected evidence boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick Day Flow corrected hidden production evidence'
+            echo
+            echo '- Corrected repaired product SHA: 27b3cca084d62d8badd512c068be415c6865965e'
+            echo '- Validation deployment SHA: 7db7b2b71c6424f0bbaa20d1965933e9407cd19c'
+            echo '- Production run: 31473190849'
+            echo '- Artifact: 9094188971'
+            echo '- Scenarios: 5 / 5 pass'
+            echo '- Unknown category: live global field, selected streams=0, Others=1, false no-observed copy absent'
+            echo '- Human visual acceptance: pass'
+            echo '- Pre-repair automated evidence retained but superseded as acceptance authority'
+            echo '- One-shot post-repair production workflow: retired'
+            echo '- Public Kick Day Flow Category UI: still unauthorized'
+            echo '- Next authority: separate public-cutover decision only'
+          } >> "$GITHUB_STEP_SUMMARY"

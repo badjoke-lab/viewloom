@@ -1,0 +1,168 @@
+{
+  "schemaVersion": "viewloom-12a9-kick-day-flow-category-post-repair-production-revalidation-evidence-v1",
+  "observedAt": "2026-08-11T08:27:40.073Z",
+  "origin": "https://www.viewloom.net",
+  "expectedProductSha": "27b3cca084d62d8badd512c068be415c6865965e",
+  "expectedDeploymentSha": "7db7b2b71c6424f0bbaa20d1965933e9407cd19c",
+  "deployWorkflowRun": null,
+  "validationDate": "2026-08-10",
+  "deployment": {
+    "schema": "viewloom-deployment-v1",
+    "generated_at": "2026-08-11T08:26:27.389Z",
+    "environment": "production",
+    "branch": "main",
+    "commit_sha": "7db7b2b71c6424f0bbaa20d1965933e9407cd19c",
+    "pages_url": "https://3b29b6c9.viewloom.pages.dev",
+    "primary_origin": "https://www.viewloom.net",
+    "canonical_host": "www.viewloom.net"
+  },
+  "status": "pass",
+  "scenarios": [
+    {
+      "name": "kick-normal-fixed-day-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "requests": [
+        "https://www.viewloom.net/api/kick-day-flow?metric=volume&top=20&bucket=5&rangeMode=date&date=2026-08-10"
+      ],
+      "checks": {
+        "rangeMode": "date",
+        "selectedDate": "2026-08-10",
+        "bucketCount": 288,
+        "bandCount": 21,
+        "categoryControls": 0,
+        "categoryQuerySent": false,
+        "pageGeometry": {
+          "width": 1440,
+          "scrollWidth": 1440,
+          "overflow": false
+        }
+      },
+      "status": "pass"
+    },
+    {
+      "name": "kick-hidden-fixed-day-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "requests": [
+        "https://www.viewloom.net/api/kick-day-flow?metric=volume&top=20&bucket=5&rangeMode=date&date=2026-08-10&category=all",
+        "https://www.viewloom.net/api/kick-day-flow?metric=volume&top=20&bucket=5&rangeMode=date&date=2026-08-10&category=15"
+      ],
+      "checks": {
+        "rangeMode": "date",
+        "selectedDate": "2026-08-10",
+        "categoryOptions": 127,
+        "selectedCategory": "15",
+        "selectedBandCount": 21,
+        "coverageCounts": {
+          "observed": 288,
+          "partial": 0,
+          "unavailable": 0
+        },
+        "globalTotalsPreserved": true,
+        "fullShareDenominator": "all_observed_kick_viewers_per_bucket",
+        "topFocusShareDenominator": "displayed_selected_category_top_n_viewers_per_bucket",
+        "rootBox": {
+          "x": 24,
+          "y": 451.3125,
+          "width": 1392,
+          "height": 84
+        },
+        "toolbarOverlapCount": 0,
+        "pageGeometry": {
+          "width": 1440,
+          "scrollWidth": 1440,
+          "overflow": false
+        }
+      },
+      "status": "pass"
+    },
+    {
+      "name": "kick-hidden-fixed-day-mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "requests": [
+        "https://www.viewloom.net/api/kick-day-flow?metric=volume&top=20&bucket=5&rangeMode=date&date=2026-08-10&category=all"
+      ],
+      "checks": {
+        "rangeMode": "date",
+        "selectedDate": "2026-08-10",
+        "box": {
+          "x": 14,
+          "y": 652.9375,
+          "width": 362,
+          "height": 194
+        },
+        "pageGeometry": {
+          "width": 390,
+          "scrollWidth": 390,
+          "overflow": false
+        },
+        "coverageCounts": {
+          "observed": 288,
+          "partial": 0,
+          "unavailable": 0
+        }
+      },
+      "status": "pass"
+    },
+    {
+      "name": "kick-hidden-unknown-category",
+      "viewport": {
+        "width": 1024,
+        "height": 800
+      },
+      "requests": [
+        "https://www.viewloom.net/api/kick-day-flow?metric=volume&top=20&bucket=5&rangeMode=date&date=2026-08-10&category=__viewloom_unknown_kick_category__"
+      ],
+      "checks": {
+        "rangeMode": "date",
+        "selectedDate": "2026-08-10",
+        "state": "unknown_category",
+        "overallState": "live",
+        "overallStatus": "live",
+        "selectedBandCount": 0,
+        "globalOthersCount": 1,
+        "chartRendered": true,
+        "falseNoObservedCopyAbsent": true,
+        "globalContextPresent": true,
+        "statusText": "Unknown Kick category · coverage 288 observed / 0 partial / 0 unavailable buckets",
+        "pageGeometry": {
+          "width": 1024,
+          "scrollWidth": 1024,
+          "overflow": false
+        }
+      },
+      "status": "pass"
+    },
+    {
+      "name": "twitch-public-day-flow-isolation",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "requests": [
+        "https://www.viewloom.net/api/day-flow?metric=volume&top=20&bucket=5&rangeMode=date&date=2026-08-10&category=all"
+      ],
+      "checks": {
+        "implementationState": "public",
+        "publicExposureAuthorized": true,
+        "pageGeometry": {
+          "width": 390,
+          "scrollWidth": 390,
+          "overflow": false
+        }
+      },
+      "status": "pass"
+    }
+  ],
+  "failures": [],
+  "publicCutoverAuthorized": false,
+  "productionMutationPerformed": false
+}
