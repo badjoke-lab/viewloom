@@ -44,9 +44,7 @@ jobs:
           for file in "${changed[@]}"; do
             [[ "$file" =~ $allowed ]] || { echo "Unexpected hidden candidate change: $file" >&2; exit 1; }
           done
-      - name: Verify accepted feasibility decision
-        run: node scripts/verify-12a10-kick-battle-lines-category-feasibility-decision.mjs
-      - name: Verify hidden candidate source contract
+      - name: Verify accepted decision authority and hidden candidate source contract
         run: node scripts/verify-12a10-kick-battle-lines-category-candidate.mjs
       - name: Run Battle Lines base fixtures
         working-directory: apps/web
@@ -71,6 +69,7 @@ jobs:
           {
             echo '## Kick Battle Lines hidden Category candidate'
             echo
+            echo '- Decision authority: #813 / PR #814'
             echo '- Activation: Kick categoryPreview=1 only'
             echo '- Normal Kick Battle Lines route: category-free'
             echo '- Category filter: before candidate Top N and Recommended Battle scoring'
