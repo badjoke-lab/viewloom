@@ -163,7 +163,7 @@ export function projectKickBattleLinesCategory(options: {
 
   const bucketCoverage: BattleCategoryBucketCoverage[] = bucketStats.map((stats, index) => ({
     bucket: timeline[index],
-    state: coverageState(stats),
+    state: bucketCoverageState(stats),
     observedRows: stats.observed,
     partialRows: stats.partial,
     unavailableRows: stats.unavailable,
@@ -314,7 +314,7 @@ function summarizeCategories(categories: Map<string, CategoryAccumulator>): Batt
     .sort((a, b) => b.viewerMinutes - a.viewerMinutes || b.peakViewers - a.peakViewers || a.name.localeCompare(b.name))
 }
 
-function coverageState(stats: { rows: number; observed: number; partial: number; unavailable: number }): BattleCategoryCoverageState {
+function bucketCoverageState(stats: { rows: number; observed: number; partial: number; unavailable: number }): BattleCategoryCoverageState {
   if (stats.rows === 0 || stats.unavailable === stats.rows) return 'unavailable'
   if (stats.partial > 0 || stats.unavailable > 0) return 'partial'
   return 'observed'
