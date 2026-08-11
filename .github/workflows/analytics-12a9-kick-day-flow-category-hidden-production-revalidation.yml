@@ -9,6 +9,7 @@ on:
       - 'apps/web/scripts/kick-day-flow-category-hidden-production-revalidation.mjs'
       - 'apps/web/scripts/normalize-built-head.mjs'
       - 'apps/web/scripts/verify-production-source.mjs'
+      - 'apps/web/scripts/verify-dayflow-qa.mjs'
   push:
     branches: [main]
     paths:
@@ -17,6 +18,7 @@ on:
       - 'apps/web/scripts/kick-day-flow-category-hidden-production-revalidation.mjs'
       - 'apps/web/scripts/normalize-built-head.mjs'
       - 'apps/web/scripts/verify-production-source.mjs'
+      - 'apps/web/scripts/verify-dayflow-qa.mjs'
 
 permissions:
   contents: read
@@ -39,7 +41,7 @@ jobs:
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Verify five-file recovery scope
+      - name: Verify six-file recovery scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -48,8 +50,8 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(\.github/workflows/analytics-12a9-kick-day-flow-category-hidden-production-revalidation\.yml|docs/audits/12a9-kick-day-flow-category-hidden-production-revalidation-contract\.json|apps/web/scripts/kick-day-flow-category-hidden-production-revalidation\.mjs|apps/web/scripts/normalize-built-head\.mjs|apps/web/scripts/verify-production-source\.mjs)$'
-          test "${#changed[@]}" -eq 5
+          allowed='^(\.github/workflows/analytics-12a9-kick-day-flow-category-hidden-production-revalidation\.yml|docs/audits/12a9-kick-day-flow-category-hidden-production-revalidation-contract\.json|apps/web/scripts/kick-day-flow-category-hidden-production-revalidation\.mjs|apps/web/scripts/normalize-built-head\.mjs|apps/web/scripts/verify-production-source\.mjs|apps/web/scripts/verify-dayflow-qa\.mjs)$'
+          test "${#changed[@]}" -eq 6
           for file in "${changed[@]}"; do
             [[ "$file" =~ $allowed ]] || { echo "Unexpected production-path recovery change: $file" >&2; exit 1; }
           done
@@ -58,6 +60,7 @@ jobs:
         run: |
           node --check apps/web/scripts/kick-day-flow-category-hidden-production-revalidation.mjs
           node --check apps/web/scripts/verify-production-source.mjs
+          node --check apps/web/scripts/verify-dayflow-qa.mjs
           node --input-type=module - <<'NODE'
           import fs from 'node:fs'
           const read = (p) => fs.readFileSync(p, 'utf8')
@@ -65,6 +68,7 @@ jobs:
           const browser = read('apps/web/scripts/kick-day-flow-category-hidden-production-revalidation.mjs')
           const normalize = read('apps/web/scripts/normalize-built-head.mjs')
           const productionVerifier = read('apps/web/scripts/verify-production-source.mjs')
+          const dayFlowVerifier = read('apps/web/scripts/verify-dayflow-qa.mjs')
           const api = read('apps/web/functions/api/kick-day-flow.ts')
           const controls = read('apps/web/src/live/day-flow-category-preview-entry.ts')
           const kickEntry = read('apps/web/src/live/day-flow-kick-entry.ts')
@@ -97,28 +101,23 @@ jobs:
           if (authority.manualDeployWorkflowIsAuthority !== false || authority.pagesGitIntegrationIsAuthority !== true) throw new Error('pages_git_authority_invalid')
           if (authority.singleDeploymentEvidenceSourceRequired !== true || authority.browserNetworkRefetchOfDeploymentIdentityAllowed !== false) throw new Error('single_source_boundary_invalid')
           if (authority.productRuntimeEquivalenceRequired !== true) throw new Error('product_runtime_equivalence_not_required')
-          if (!Array.isArray(authority.allowedRecoveryDifferenceFromFailedValidation) || authority.allowedRecoveryDifferenceFromFailedValidation.length !== 5 || !authority.allowedRecoveryDifferenceFromFailedValidation.includes('apps/web/scripts/verify-production-source.mjs')) throw new Error('recovery_difference_allowlist_invalid')
+          if (!Array.isArray(authority.allowedRecoveryDifferenceFromFailedValidation) || authority.allowedRecoveryDifferenceFromFailedValidation.length !== 6) throw new Error('recovery_difference_allowlist_invalid')
+          for (const expected of ['apps/web/scripts/verify-production-source.mjs','apps/web/scripts/verify-dayflow-qa.mjs']) {
+            if (!authority.allowedRecoveryDifferenceFromFailedValidation.includes(expected)) throw new Error(`recovery_allowlist_missing:${expected}`)
+          }
           if (contract.execution.productionOnPullRequest !== false || contract.execution.productionOnMainPush !== true) throw new Error('execution_boundary_invalid')
           if (contract.execution.readOnlyBrowser !== true || contract.execution.evidenceUploadOnFailure !== true || contract.execution.screenshotsRequired !== true || contract.execution.sourceTouchBehaviorNeutral !== true) throw new Error('evidence_execution_contract_invalid')
 
-          for (const [key, value] of Object.entries(contract.requiredChecks)) {
-            if (value !== true) throw new Error(`required_check_${key}_not_enabled`)
-          }
+          for (const [key, value] of Object.entries(contract.requiredChecks)) if (value !== true) throw new Error(`required_check_${key}_not_enabled`)
           for (const [key, value] of Object.entries(contract.boundary)) {
             if (key === 'readOnly') {
               if (value !== true) throw new Error('revalidation_must_be_read_only')
-            } else if (value !== false) {
-              throw new Error(`boundary_${key}_must_remain_false`)
-            }
+            } else if (value !== false) throw new Error(`boundary_${key}_must_remain_false`)
           }
 
-          for (const fragment of [
-            'PRODUCT_AUTHORITY_SHA',
-            'EXPECTED_DEPLOYMENT_SHA',
-            'expectedProductSha: PRODUCT_AUTHORITY_SHA',
-            'expectedDeploymentSha: EXPECTED_DEPLOYMENT_SHA',
-            'deployment?.commit_sha === EXPECTED_DEPLOYMENT_SHA',
-          ]) if (!browser.includes(fragment)) throw new Error(`browser_provenance_missing:${fragment}`)
+          for (const fragment of ['PRODUCT_AUTHORITY_SHA','EXPECTED_DEPLOYMENT_SHA','expectedProductSha: PRODUCT_AUTHORITY_SHA','expectedDeploymentSha: EXPECTED_DEPLOYMENT_SHA','deployment?.commit_sha === EXPECTED_DEPLOYMENT_SHA']) {
+            if (!browser.includes(fragment)) throw new Error(`browser_provenance_missing:${fragment}`)
+          }
           if (browser.includes('EXPECTED_PRODUCT_SHA')) throw new Error('browser_retained_conflated_product_deployment_sha')
           if (!normalize.includes('Issue #799') || !normalize.includes('product authority remains the #796 merge SHA')) throw new Error('recovery_source_touch_missing')
 
@@ -129,6 +128,13 @@ jobs:
             "root.dataset.dayflowCategoryPreview = publicProvider ? 'public' : 'hidden'",
             "return legacyPreviewAtLoad && filter.implementationState === 'hidden_candidate' && filter.publicExposureAuthorized === false",
           ]) if (!productionVerifier.includes(fragment)) throw new Error(`production_verifier_compatibility_missing:${fragment}`)
+
+          for (const fragment of [
+            "const kickEntryPath = 'src/live/day-flow-kick-entry.ts'",
+            "isTwitch ? '/src/live/day-flow-twitch-entry.ts' : '/src/live/day-flow-kick-entry.ts'",
+            "assertEqual('Kick Day Flow shared-controller import count'",
+            "assertEqual('Kick Day Flow category-boundary import count'",
+          ]) if (!dayFlowVerifier.includes(fragment)) throw new Error(`dayflow_qa_compatibility_missing:${fragment}`)
 
           for (const fragment of [
             "const categoryCandidateRequested = url.searchParams.has('category')",
@@ -164,9 +170,11 @@ jobs:
           node scripts/verify-12a9-kick-day-flow-category-candidate.mjs
           node apps/web/scripts/day-flow-category-core.test.mjs
 
-      - name: Verify production source compatibility
+      - name: Verify retained production and Day Flow QA contracts
         working-directory: apps/web
-        run: node scripts/verify-production-source.mjs
+        run: |
+          node scripts/verify-production-source.mjs
+          node scripts/verify-dayflow-qa.mjs
 
       - name: Typecheck and build web
         run: |
@@ -190,7 +198,7 @@ jobs:
             echo '- Recovery merge SHA: deployment identity only'
             echo '- Authority: Cloudflare Pages Git integration / primary deployment.json'
             echo '- Manual Deploy Web Pages success: not required'
-            echo '- Production verifier updated only for accepted provider-specific Day Flow bootstrap'
+            echo '- Production + Day Flow QA verifiers only aligned to accepted provider bootstraps'
             echo '- Browser consumes one workflow-produced deployment identity file'
             echo '- PR: contract/static/type/build only'
             echo '- Main push: same five read-only production scenarios'
@@ -220,8 +228,8 @@ jobs:
           mkdir -p "$OUTPUT_DIR"
           mapfile -t changed < <(git diff --name-only "$PRODUCT_AUTHORITY_SHA" "$EXPECTED_DEPLOYMENT_SHA")
           printf '%s\n' "${changed[@]}" | tee "$OUTPUT_DIR/product-to-deployment-files.txt"
-          allowed='^(\.github/workflows/analytics-12a9-kick-day-flow-category-hidden-production-revalidation\.yml|docs/audits/12a9-kick-day-flow-category-hidden-production-revalidation-contract\.json|apps/web/scripts/kick-day-flow-category-hidden-production-revalidation\.mjs|apps/web/scripts/normalize-built-head\.mjs|apps/web/scripts/verify-production-source\.mjs)$'
-          test "${#changed[@]}" -eq 5
+          allowed='^(\.github/workflows/analytics-12a9-kick-day-flow-category-hidden-production-revalidation\.yml|docs/audits/12a9-kick-day-flow-category-hidden-production-revalidation-contract\.json|apps/web/scripts/kick-day-flow-category-hidden-production-revalidation\.mjs|apps/web/scripts/normalize-built-head\.mjs|apps/web/scripts/verify-production-source\.mjs|apps/web/scripts/verify-dayflow-qa\.mjs)$'
+          test "${#changed[@]}" -eq 6
           for file in "${changed[@]}"; do
             [[ "$file" =~ $allowed ]] || { echo "Product runtime drift detected between authority and deployment: $file" >&2; exit 1; }
           done
