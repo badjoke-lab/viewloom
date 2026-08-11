@@ -38,6 +38,10 @@ assert.match(kickApi, /implementationState: 'hidden_candidate'/)
 assert.match(kickApi, /publicExposureAuthorized: false/)
 assert.match(kickApi, /if \(!categoryCandidateRequested\)/)
 assert.match(kickApi, /requestedCategory === 'all'\s*\? built/)
+assert.match(kickApi, /if \(filterState !== 'selected'\) \{/)
+assert.match(kickApi, /const others = makeGlobalOthers\(\[\], labels, totals, bucketSize\)/)
+assert.match(kickApi, /const bands = others\.totalViewerMinutes > 0 \? \[others\] : \[\]/)
+assert.match(kickApi, /return \{ bands, streamers: \[\], totals, observed \}/)
 assert.match(kickApi, /makeGlobalOthers/)
 assert.match(kickApi, /all_observed_kick_viewers_per_bucket/)
 assert.match(kickApi, /displayed_selected_category_top_n_viewers_per_bucket/)
@@ -74,6 +78,7 @@ for (const forbidden of [
 console.log(JSON.stringify({
   status: 'pass',
   trackingIssue: 795,
+  repairIssue: 801,
   decisionIssue: 793,
   provider: 'kick',
   surface: 'day_flow',
@@ -84,5 +89,7 @@ console.log(JSON.stringify({
   kickBucketAggregation: 'average',
   filterBeforeTopN: true,
   perObservedSnapshotMembership: true,
+  zeroMatchSelectedBandsInferred: false,
+  zeroMatchGlobalOthersPreserved: true,
   collectorWorkerD1ChangesAuthorized: false,
 }, null, 2))

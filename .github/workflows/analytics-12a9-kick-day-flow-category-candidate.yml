@@ -48,7 +48,7 @@ jobs:
           node --check apps/web/functions/api/day-flow-category-core.mjs
           node apps/web/scripts/day-flow-category-core.test.mjs
 
-      - name: Verify candidate-only PR scope
+      - name: Verify candidate or bounded repair PR scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -57,11 +57,32 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(apps/web/functions/api/day-flow-category-core\.mjs|apps/web/functions/api/day-flow-category-core\.d\.mts|apps/web/functions/api/kick-day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-kick-entry\.ts|apps/web/kick/day-flow/index\.html|apps/web/scripts/day-flow-category-core\.test\.mjs|scripts/verify-12a9-kick-day-flow-category-candidate\.mjs|\.github/workflows/analytics-12a9-kick-day-flow-category-candidate\.yml)$'
-          test "${#changed[@]}" -eq 9
-          for path in "${changed[@]}"; do
-            [[ "$path" =~ $allowed ]] || { echo "Unexpected Kick Day Flow candidate change: $path" >&2; exit 1; }
-          done
+
+          initial_allowed='^(apps/web/functions/api/day-flow-category-core\.mjs|apps/web/functions/api/day-flow-category-core\.d\.mts|apps/web/functions/api/kick-day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-kick-entry\.ts|apps/web/kick/day-flow/index\.html|apps/web/scripts/day-flow-category-core\.test\.mjs|scripts/verify-12a9-kick-day-flow-category-candidate\.mjs|\.github/workflows/analytics-12a9-kick-day-flow-category-candidate\.yml)$'
+          repair_allowed='^(apps/web/functions/api/kick-day-flow\.ts|scripts/verify-12a9-kick-day-flow-category-candidate\.mjs|\.github/workflows/analytics-12a9-kick-day-flow-category-candidate\.yml)$'
+
+          if [[ "${#changed[@]}" -eq 9 ]]; then
+            for path in "${changed[@]}"; do
+              [[ "$path" =~ $initial_allowed ]] || { echo "Unexpected initial Kick Day Flow candidate change: $path" >&2; exit 1; }
+            done
+            echo 'scope_mode=initial_nine_file_candidate'
+          elif [[ "${#changed[@]}" -eq 3 ]]; then
+            for path in "${changed[@]}"; do
+              [[ "$path" =~ $repair_allowed ]] || { echo "Unexpected bounded Kick Day Flow repair change: $path" >&2; exit 1; }
+            done
+            required=(
+              'apps/web/functions/api/kick-day-flow.ts'
+              'scripts/verify-12a9-kick-day-flow-category-candidate.mjs'
+              '.github/workflows/analytics-12a9-kick-day-flow-category-candidate.yml'
+            )
+            for path in "${required[@]}"; do
+              printf '%s\n' "${changed[@]}" | grep -Fxq "$path" || { echo "Missing bounded repair file: $path" >&2; exit 1; }
+            done
+            echo 'scope_mode=issue_801_three_file_repair'
+          else
+            echo "Kick Day Flow candidate scope must be the initial 9-file package or bounded 3-file #801 repair; got ${#changed[@]} files" >&2
+            exit 1
+          fi
 
       - name: Install dependencies
         run: |
@@ -89,6 +110,7 @@ jobs:
             echo '- Full Share: all observed Kick viewers per bucket'
             echo '- Top Focus Share: displayed selected-category Top N viewers per bucket'
             echo '- Full Others: global observed Kick remainder outside displayed selected-category Top N'
+            echo '- Zero-match category: no selected bands; global observed Kick context remains as Others'
             echo '- Twitch Day Flow: public behavior remains on existing provider boundary'
             echo '- Public Kick Day Flow category exposure: not authorized by this candidate'
             echo '- Collector / Worker / D1 / schema / cadence / retention / backfill: unchanged'
