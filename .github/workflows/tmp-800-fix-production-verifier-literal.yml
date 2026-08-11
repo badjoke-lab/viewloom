@@ -1,0 +1,38 @@
+name: TMP 800 Fix Production Verifier Literal
+
+on:
+  push:
+    branches:
+      - work-799-kick-day-flow-production-path-recovery
+    paths:
+      - '.github/workflows/tmp-800-fix-production-verifier-literal.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work-799-kick-day-flow-production-path-recovery
+      - name: Fix provider-aware preview branch verifier literal
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('apps/web/scripts/verify-production-source.mjs')
+          text = path.read_text()
+          old = '    "else next.searchParams.set(PREVIEW_PARAM, \'1\')",\n'
+          new = '    "if (publicProvider) {",\n    "next.searchParams.set(PREVIEW_PARAM, \'1\')",\n'
+          assert text.count(old) == 1, f'expected one stale literal, got {text.count(old)}'
+          path.write_text(text.replace(old, new))
+          PY
+      - name: Commit verifier-only correction
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/web/scripts/verify-production-source.mjs
+          git diff --cached --check
+          git commit -m "Fix provider-aware preview branch source verification"
+          git push origin HEAD:work-799-kick-day-flow-production-path-recovery
