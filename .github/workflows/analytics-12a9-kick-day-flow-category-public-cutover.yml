@@ -11,6 +11,10 @@ on:
       - 'apps/web/scripts/kick-day-flow-category-public-production-acceptance.mjs'
       - 'apps/web/functions/api/kick-day-flow.ts'
       - 'apps/web/src/live/day-flow-category-preview-entry.ts'
+      - 'docs/work-in-progress/u10g-architecture.md'
+      - 'scripts/verify-quality-u10g-architecture.mjs'
+      - 'apps/web/scripts/quality-u10g-architecture-browser.mjs'
+      - 'scripts/verify-quality-u10g-browser-evidence.mjs'
   push:
     branches: [main]
     paths:
@@ -21,6 +25,10 @@ on:
       - 'apps/web/scripts/kick-day-flow-category-public-production-acceptance.mjs'
       - 'apps/web/functions/api/kick-day-flow.ts'
       - 'apps/web/src/live/day-flow-category-preview-entry.ts'
+      - 'docs/work-in-progress/u10g-architecture.md'
+      - 'scripts/verify-quality-u10g-architecture.mjs'
+      - 'apps/web/scripts/quality-u10g-architecture-browser.mjs'
+      - 'scripts/verify-quality-u10g-browser-evidence.mjs'
 
 permissions:
   contents: read
@@ -39,7 +47,7 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify exact seven-file public cutover scope
+      - name: Verify exact eleven-file public cutover scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -48,8 +56,8 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(\.github/workflows/analytics-12a9-kick-day-flow-category-public-cutover\.yml|\.github/workflows/analytics-12a9-kick-day-flow-category-candidate\.yml|scripts/verify-12a9-kick-day-flow-category-public-cutover\.mjs|scripts/verify-12a9-kick-day-flow-category-candidate\.mjs|apps/web/scripts/kick-day-flow-category-public-production-acceptance\.mjs|apps/web/functions/api/kick-day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts)$'
-          test "${#changed[@]}" -eq 7
+          allowed='^(\.github/workflows/analytics-12a9-kick-day-flow-category-public-cutover\.yml|\.github/workflows/analytics-12a9-kick-day-flow-category-candidate\.yml|scripts/verify-12a9-kick-day-flow-category-public-cutover\.mjs|scripts/verify-12a9-kick-day-flow-category-candidate\.mjs|apps/web/scripts/kick-day-flow-category-public-production-acceptance\.mjs|apps/web/functions/api/kick-day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts|docs/work-in-progress/u10g-architecture\.md|scripts/verify-quality-u10g-architecture\.mjs|apps/web/scripts/quality-u10g-architecture-browser\.mjs|scripts/verify-quality-u10g-browser-evidence\.mjs)$'
+          test "${#changed[@]}" -eq 11
           for file in "${changed[@]}"; do
             [[ "$file" =~ $allowed ]] || { echo "Unexpected #809 public cutover change: $file" >&2; exit 1; }
           done
@@ -61,6 +69,8 @@ jobs:
         run: node scripts/verify-12a9-kick-day-flow-category-public-cutover.mjs
       - name: Verify shared category projection
         run: node apps/web/scripts/day-flow-category-core.test.mjs
+      - name: Verify retained U10G architecture contract
+        run: node scripts/verify-quality-u10g-architecture.mjs
       - name: Verify retained production and Day Flow contracts
         working-directory: apps/web
         run: |
