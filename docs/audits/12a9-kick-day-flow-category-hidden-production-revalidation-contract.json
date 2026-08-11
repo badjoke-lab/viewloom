@@ -52,6 +52,7 @@
       "apps/web/scripts/normalize-built-head.mjs",
       "apps/web/scripts/verify-production-source.mjs",
       "apps/web/scripts/verify-dayflow-qa.mjs",
+      "apps/web/scripts/verify-launch-readiness.mjs",
       "docs/audits/12a9-kick-day-flow-category-hidden-production-revalidation-contract.json"
     ]
   },
