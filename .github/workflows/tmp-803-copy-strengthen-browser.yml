@@ -1,0 +1,65 @@
+name: TMP 803 Copy And Strengthen Browser Evidence
+
+on:
+  push:
+    branches:
+      - work-803-kick-day-flow-post-repair-production-revalidation
+    paths:
+      - '.github/workflows/tmp-803-copy-strengthen-browser.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work-803-kick-day-flow-post-repair-production-revalidation
+      - name: Copy retained five-scenario browser and strengthen unknown-category honesty
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source = Path('apps/web/scripts/kick-day-flow-category-hidden-production-revalidation.mjs')
+          target = Path('apps/web/scripts/kick-day-flow-category-post-repair-production-revalidation.mjs')
+          assert source.exists(), 'retained hidden production browser script missing'
+          assert not target.exists(), 'post-repair browser script already exists'
+          text = source.read_text()
+          replacements = [
+            (
+              "const OUT = process.env.OUTPUT_DIR || 'artifacts/12a9-kick-day-flow-category-hidden-production-revalidation'",
+              "const OUT = process.env.OUTPUT_DIR || 'artifacts/12a9-kick-day-flow-category-post-repair-production-revalidation'",
+              1,
+            ),
+            (
+              "schemaVersion: 'viewloom-12a9-kick-day-flow-category-hidden-production-revalidation-evidence-v1'",
+              "schemaVersion: 'viewloom-12a9-kick-day-flow-category-post-repair-production-revalidation-evidence-v1'",
+              1,
+            ),
+            (
+              "      assert(Array.isArray(json.bands) && json.bands.length === 0, `unknown Kick category returned ${json.bands?.length} bands`)\n      assert(Array.isArray(json.totalViewersByBucket) && json.totalViewersByBucket.some((value) => Number(value) > 0), 'unknown Kick category lost global viewer context')\n      const statusText = await root.locator('.dayflow-category-preview__status').innerText()\n      assert(/Unknown Kick category/i.test(statusText), `unknown Kick category status copy=${statusText}`)\n",
+              "      const bands = Array.isArray(json.bands) ? json.bands : []\n      const selectedBands = bands.filter((band) => !band?.isOthers)\n      const globalOthers = bands.filter((band) => band?.isOthers)\n      assert(selectedBands.length === 0, `unknown Kick category inferred ${selectedBands.length} selected streamer bands`)\n      assert(globalOthers.length === 1, `unknown Kick category global Others count=${globalOthers.length}`)\n      assert(json.state !== 'empty' && json.status !== 'empty', `unknown Kick category collapsed observed window to ${json.state}/${json.status}`)\n      assert(Array.isArray(json.totalViewersByBucket) && json.totalViewersByBucket.some((value) => Number(value) > 0), 'unknown Kick category lost global viewer context')\n      await page.waitForSelector('.dayflow-stage svg[data-dayflow-chart]', { timeout: 30000 })\n      const bodyText = await page.locator('body').innerText()\n      assert(!bodyText.includes('No observed Day Flow snapshots for this window.'), 'unknown Kick category still renders false no-observed-snapshots copy')\n      const statusText = await root.locator('.dayflow-category-preview__status').innerText()\n      assert(/Unknown Kick category/i.test(statusText), `unknown Kick category status copy=${statusText}`)\n",
+              1,
+            ),
+            (
+              "      record.checks = { rangeMode: json.rangeMode, selectedDate: json.selectedDate, state: json.categoryFilter?.state, bandCount: json.bands.length, globalContextPresent: true, statusText, pageGeometry }\n",
+              "      record.checks = { rangeMode: json.rangeMode, selectedDate: json.selectedDate, state: json.categoryFilter?.state, overallState: json.state, overallStatus: json.status, selectedBandCount: selectedBands.length, globalOthersCount: globalOthers.length, chartRendered: true, falseNoObservedCopyAbsent: true, globalContextPresent: true, statusText, pageGeometry }\n",
+              1,
+            ),
+          ]
+          for old, new, expected in replacements:
+            count = text.count(old)
+            assert count == expected, f'replacement count {count} != {expected}: {old[:120]}'
+            text = text.replace(old, new)
+          assert "json.bands.length === 0" not in text, 'stale unknown all-band zero assertion remains'
+          target.write_text(text)
+          PY
+      - name: Commit copied browser evidence script
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/web/scripts/kick-day-flow-category-post-repair-production-revalidation.mjs
+          git diff --cached --check
+          git commit -m "Strengthen repaired Kick Day Flow production browser evidence"
+          git push origin HEAD:work-803-kick-day-flow-post-repair-production-revalidation
