@@ -1,0 +1,40 @@
+name: TMP 801 Fix Unknown Category Global Context
+
+on:
+  push:
+    branches:
+      - fix-801-kick-day-flow-category-observation-state
+    paths:
+      - '.github/workflows/tmp-801-fix-unknown-category-global-context.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-801-kick-day-flow-category-observation-state
+      - name: Preserve global Others for zero-match category states
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('apps/web/functions/api/kick-day-flow.ts')
+          text = path.read_text()
+          old = """  if (filterState !== 'selected') return { bands: [], streamers: [], totals, observed }\n"""
+          new = """  if (filterState !== 'selected') {\n    const others = makeGlobalOthers([], labels, totals, bucketSize)\n    const bands = others.totalViewerMinutes > 0 ? [others] : []\n    return { bands, streamers: [], totals, observed }\n  }\n"""
+          count = text.count(old)
+          assert count == 1, f'expected one zero-match category return, got {count}'
+          text = text.replace(old, new)
+          path.write_text(text)
+          PY
+      - name: Commit exact product fix
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/web/functions/api/kick-day-flow.ts
+          git diff --cached --check
+          git commit -m "Preserve Kick Day Flow global context for zero-match categories"
+          git push origin HEAD:fix-801-kick-day-flow-category-observation-state
