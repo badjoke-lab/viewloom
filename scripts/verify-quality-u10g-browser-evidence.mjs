@@ -25,21 +25,12 @@ for (const provider of ['twitch', 'kick']) {
 
     if (scenario.feature === 'day-flow') {
       assert.ok(scenario.initial.summaryCards >= 5, `${scenario.id}: summary missing`)
-      if (provider === 'twitch') {
-        assert.equal(scenario.categoryRequests, 1, `${scenario.id}: Twitch category request missing`)
-        assert.equal(scenario.initial.fetchSame, false, `${scenario.id}: authorized Twitch fetch wrapper missing`)
-        assert.equal(scenario.initial.replaceStateSame, false, `${scenario.id}: authorized Twitch history wrapper missing`)
-        assert.equal(scenario.initial.categoryControlPresent, true, `${scenario.id}: public Twitch Category control missing`)
-        assert.equal(scenario.initial.categoryControlPublic, true, `${scenario.id}: Twitch Category control not marked public`)
-        assert.equal(scenario.initial.categoryParam, 'all', `${scenario.id}: Twitch category URL state changed`)
-      } else {
-        assert.equal(scenario.categoryRequests, 0, `${scenario.id}: Kick issued category request`)
-        assert.equal(scenario.initial.fetchSame, true, `${scenario.id}: Kick fetch identity changed`)
-        assert.equal(scenario.initial.replaceStateSame, true, `${scenario.id}: Kick replaceState identity changed`)
-        assert.equal(scenario.initial.categoryControlPresent, false, `${scenario.id}: Kick exposed Category control`)
-        assert.equal(scenario.initial.categoryControlPublic, false, `${scenario.id}: Kick exposed public Category marker`)
-        assert.equal(scenario.initial.categoryParam, null, `${scenario.id}: Kick emitted category URL state`)
-      }
+      assert.equal(scenario.categoryRequests, 1, `${scenario.id}: provider category request missing`)
+      assert.equal(scenario.initial.fetchSame, false, `${scenario.id}: authorized Day Flow fetch wrapper missing`)
+      assert.equal(scenario.initial.replaceStateSame, false, `${scenario.id}: authorized Day Flow history wrapper missing`)
+      assert.equal(scenario.initial.categoryControlPresent, true, `${scenario.id}: public Category control missing`)
+      assert.equal(scenario.initial.categoryControlPublic, true, `${scenario.id}: Category control not marked public`)
+      assert.equal(scenario.initial.categoryParam, 'all', `${scenario.id}: category URL state changed`)
     }
 
     if (scenario.feature === 'battle-lines') {
@@ -57,6 +48,6 @@ for (const provider of ['twitch', 'kick']) {
 console.log('U10G browser evidence verification passed.')
 console.log('- 8 Twitch/Kick Day Flow and Battle Lines architecture scenarios')
 console.log('- one feature request per initial load and zero cross-provider requests')
-console.log('- Twitch Day Flow alone carries the authorized public category fetch/history wrapper')
-console.log('- Kick Day Flow and both Battle Lines routes retain native fetch/history identities')
+console.log('- Twitch and Kick Day Flow carry separately authorized provider-correct public category fetch/history wrappers')
+console.log('- both Battle Lines routes retain native fetch/history identities')
 console.log('- URLSearchParams.get identity is native on all routes')

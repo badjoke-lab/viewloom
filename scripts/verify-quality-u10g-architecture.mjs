@@ -9,6 +9,7 @@ const required = [
   'apps/web/src/live/day-flow-current-shell-entry.ts',
   'apps/web/src/live/day-flow-layout-summary.ts',
   'apps/web/src/live/day-flow-twitch-entry.ts',
+  'apps/web/src/live/day-flow-kick-entry.ts',
   'apps/web/src/live/day-flow-category-preview-entry.ts',
   'apps/web/src/live/battle-lines-current-shell-entry.ts',
   'apps/web/src/live/battle-lines-layout.ts',
@@ -30,42 +31,48 @@ for (const fragment of [
   'Day Flow has one request/state/controller owner per provider route.',
   'Battle Lines has one request/state/controller owner per provider route.',
   'No feature coordination code replaces `window.fetch`, `history.replaceState`, or `URLSearchParams.prototype.get`.',
-  'Post-U10G authorized Twitch Day Flow category boundary',
-  'only the Twitch Day Flow bootstrap may load `day-flow-category-preview-entry.ts` before the shared Day Flow controller',
+  'Post-U10G authorized provider-separated Day Flow category boundary',
+  'the Twitch and Kick Day Flow provider bootstraps may load `day-flow-category-preview-entry.ts` before the shared Day Flow controller',
   '`URLSearchParams.prototype.get` must never be replaced',
-  'This is a scoped compatibility boundary for the already-authorized public Twitch Category filter, not a general relaxation of U10G.',
+  'This is a scoped compatibility boundary for separately authorized public Twitch and Kick Day Flow Category filters, not a general relaxation of U10G.',
 ]) assert.ok(note.includes(fragment),`U10G note missing ${fragment}`)
 
 const twitchHtml=read('apps/web/twitch/day-flow/index.html')
 const kickHtml=read('apps/web/kick/day-flow/index.html')
 assert.equal((twitchHtml.match(/day-flow-twitch-entry\.ts/g)??[]).length,1,'Twitch Day Flow must have one provider bootstrap entry')
 assert.equal((twitchHtml.match(/day-flow-current-shell-entry\.ts/g)??[]).length,0,'Twitch HTML must not race the controller beside its bootstrap')
-assert.equal((kickHtml.match(/day-flow-current-shell-entry\.ts/g)??[]).length,1,'Kick Day Flow primary entry count changed')
+assert.equal((kickHtml.match(/day-flow-kick-entry\.ts/g)??[]).length,1,'Kick Day Flow must have one provider bootstrap entry')
+assert.equal((kickHtml.match(/day-flow-current-shell-entry\.ts/g)??[]).length,0,'Kick HTML must not race the controller beside its bootstrap')
 assert.equal(kickHtml.includes('day-flow-twitch-entry.ts'),false,'Kick must not load Twitch Day Flow bootstrap')
 for (const html of [twitchHtml,kickHtml]) assert.equal(html.includes('day-flow-layout-summary.ts'),false,'secondary Day Flow entry remains')
 
 const twitchEntry=read('apps/web/src/live/day-flow-twitch-entry.ts')
+const kickEntry=read('apps/web/src/live/day-flow-kick-entry.ts')
 const categoryBoundary=read('apps/web/src/live/day-flow-category-preview-entry.ts')
 const categoryImport="import './day-flow-category-preview-entry'"
 const controllerImport="void import('./day-flow-current-shell-entry')"
 assert.ok(twitchEntry.includes(categoryImport),'Twitch bootstrap missing public category boundary')
 assert.ok(twitchEntry.includes(controllerImport),'Twitch bootstrap missing single Day Flow controller')
-assert.ok(twitchEntry.indexOf(categoryImport)<twitchEntry.indexOf(controllerImport),'public category boundary must initialize before controller hydration')
+assert.ok(twitchEntry.indexOf(categoryImport)<twitchEntry.indexOf(controllerImport),'Twitch public category boundary must initialize before controller hydration')
+assert.ok(kickEntry.includes(categoryImport),'Kick bootstrap missing public category boundary')
+assert.ok(kickEntry.includes(controllerImport),'Kick bootstrap missing single Day Flow controller')
+assert.ok(kickEntry.indexOf(categoryImport)<kickEntry.indexOf(controllerImport),'Kick public category boundary must initialize before controller hydration')
 for (const fragment of [
-  "const enabled = provider === 'twitch'",
+  "const publicProvider = provider === 'twitch' || provider === 'kick'",
+  'const enabled = publicProvider || legacyPreviewAtLoad',
   "const legacyPreviewAtLoad = initialUrl.searchParams.get(PREVIEW_PARAM) === '1'",
-  "root.dataset.dayflowCategoryPreview = 'public'",
-  "filter.implementationState !== 'public'",
-  'filter.publicExposureAuthorized !== true',
+  "root.dataset.dayflowCategoryPreview = publicProvider ? 'public' : 'hidden'",
+  "filter.implementationState === 'public' && filter.publicExposureAuthorized === true",
   'window.fetch =',
   'window.history.replaceState =',
-  "requestUrl.origin !== window.location.origin || requestUrl.pathname !== '/api/day-flow'",
+  "const apiPath = provider === 'kick' ? '/api/kick-day-flow' : '/api/day-flow'",
+  'requestUrl.origin !== window.location.origin || requestUrl.pathname !== apiPath',
   'if (next.pathname === window.location.pathname)',
   'requestUrl.searchParams.set(CATEGORY_PARAM, selectedCategory)',
   'next.searchParams.set(CATEGORY_PARAM, selectedCategory)',
   "if (legacyPreviewAtLoad && !publicInteractionSeen) next.searchParams.set(PREVIEW_PARAM, '1')",
   'if (publicInteractionSeen) next.searchParams.delete(PREVIEW_PARAM)',
-]) assert.ok(categoryBoundary.includes(fragment),`public Twitch category boundary missing ${fragment}`)
+]) assert.ok(categoryBoundary.includes(fragment),`public provider Day Flow category boundary missing ${fragment}`)
 assert.equal(categoryBoundary.includes("const enabled = provider === 'twitch' && initialUrl.searchParams.get(PREVIEW_PARAM) === '1'"),false,'public category boundary must not require categoryPreview=1')
 assert.equal(categoryBoundary.includes('URLSearchParams.prototype.get ='),false,'public category boundary must not replace URLSearchParams.prototype.get')
 
@@ -76,12 +83,10 @@ assert.equal((dayMain.match(/fetch\(`/g)??[]).length,1,'Day Flow must have one f
 for (const forbidden of ['new MutationObserver','window.fetch =','window.history.replaceState =','URLSearchParams.prototype.get =']) { assert.equal(dayMain.includes(forbidden),false,`Day Flow primary owner contains ${forbidden}`); assert.equal(dayHelper.includes(forbidden),false,`Day Flow helper contains ${forbidden}`) }
 for (const forbidden of ['fetch(','setInterval(','addEventListener(']) assert.equal(dayHelper.includes(forbidden),false,`Day Flow helper owns runtime state: ${forbidden}`)
 
-// PR #758 authorizes exactly one bounded provider-specific compatibility layer:
-// Twitch Day Flow may wrap fetch/history before the shared controller hydrates.
-// The browser gate must prove that the wrapper appears only on Twitch Day Flow,
-// issues one provider-correct request, preserves URLSearchParams.get identity,
-// and leaves Kick/Battle Lines on native browser identities.
-for (const forbidden of ['URLSearchParams.prototype.get =','/api/kick-day-flow','/api/battle-lines','/api/kick-battle-lines']) assert.equal(categoryBoundary.includes(forbidden),false,`public Twitch category boundary exceeds scope: ${forbidden}`)
+// PR #758 and #808 authorize the same bounded provider-specific compatibility layer on Day Flow only.
+// The browser gate must prove one provider-correct request, native URLSearchParams.get,
+// and native browser identities on both Battle Lines routes.
+for (const forbidden of ['URLSearchParams.prototype.get =','/api/battle-lines','/api/kick-battle-lines']) assert.equal(categoryBoundary.includes(forbidden),false,`public Day Flow category boundary exceeds scope: ${forbidden}`)
 
 const battleMain=read('apps/web/src/live/battle-lines-current-shell-entry.ts')
 const battleLayout=read('apps/web/src/live/battle-lines-layout.ts')
@@ -102,7 +107,7 @@ for (const fragment of [
   "await auditBattle(provider, 1440, 'direct-time')",
   "await auditBattle(provider, 390, 'legacy-point')",
   'assert.equal(evidence.scenarios.length, 8)',
-  "const expectsCategoryBoundary = provider === 'twitch'",
+  "const expectsCategoryBoundary = provider === 'twitch' || provider === 'kick'",
   "installValueReplacementTrap(globalThis, 'fetch', replacementStatus, 'fetchReplaced')",
   "installValueReplacementTrap(Object.getPrototypeOf(history), 'replaceState', replacementStatus, 'replaceStateReplaced')",
   "installValueReplacementTrap(URLSearchParams.prototype, 'get', replacementStatus, 'urlGetReplaced')",
@@ -115,8 +120,8 @@ for (const fragment of ['name: Quality U10G Architecture','Verify U10G repositor
 
 console.log('U10G architecture repository verification passed.')
 console.log('- one Day Flow controller remains authoritative per provider route')
-console.log('- Twitch public category boundary is explicitly scoped to same-origin Day Flow fetch/history coordination')
+console.log('- Twitch and Kick public category boundaries are scoped to provider-correct same-origin Day Flow fetch/history coordination')
 console.log('- legacy categoryPreview=1 is preserved only as URL compatibility until public Category interaction')
-console.log('- Kick Day Flow and both Battle Lines routes retain native browser identities')
+console.log('- both Battle Lines routes retain native browser identities')
 console.log('- URLSearchParams.prototype.get remains native on every route')
 console.log('- Battle Lines architecture and provider separation retained')
