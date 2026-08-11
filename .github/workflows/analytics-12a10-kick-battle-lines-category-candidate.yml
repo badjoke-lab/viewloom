@@ -51,7 +51,18 @@ jobs:
         run: node scripts/verify-battle-lines-core.mjs
       - name: Run category point-state and scoring fixtures
         working-directory: apps/web
-        run: node scripts/verify-kick-battle-lines-category-candidate.mjs
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/12a10-kick-battle-lines-category-candidate
+          node scripts/verify-kick-battle-lines-category-candidate.mjs 2>&1 | tee artifacts/12a10-kick-battle-lines-category-candidate/fixture.log
+      - name: Upload category fixture diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analytics-12a10-kick-battle-lines-category-candidate-diagnostics
+          path: apps/web/artifacts/12a10-kick-battle-lines-category-candidate/
+          if-no-files-found: warn
+          retention-days: 7
       - name: Verify retained architecture contracts
         run: |
           node scripts/verify-quality-u10g-architecture.mjs
