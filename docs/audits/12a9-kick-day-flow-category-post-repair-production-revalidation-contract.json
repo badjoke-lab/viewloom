@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "viewloom-12a9-kick-day-flow-category-post-repair-production-revalidation-contract-v1",
+  "status": "ready_for_validation",
+  "phase": "12A-9",
+  "parentTrackingIssue": 623,
+  "revalidationIssue": 797,
+  "repairIssue": 801,
+  "trackingIssue": 803,
+  "provider": "kick",
+  "feature": "day_flow_category_filter",
+  "productAuthority": {
+    "repairPr": 802,
+    "sha": "27b3cca084d62d8badd512c068be415c6865965e",
+    "implementationState": "hidden_candidate",
+    "publicCutoverAuthorized": false
+  },
+  "preRepairEvidence": {
+    "workflowRun": 31471759777,
+    "artifactId": 9093633104,
+    "artifactDigest": "sha256:5752bc774f3bb1e65be434c8908d4fa8774a75ff96f861d00539273e77e94f44",
+    "automatedStatus": "pass",
+    "accepted": false,
+    "visualDefect": "unknown_category_rendered_false_empty_and_no_observed_snapshots_copy",
+    "observedBuckets": 288,
+    "partialBuckets": 0,
+    "unavailableBuckets": 0
+  },
+  "productionAuthority": {
+    "type": "repaired_product_sha_plus_exact_git_integration_validation_deployment_sha",
+    "primaryOrigin": "https://www.viewloom.net",
+    "deploymentIdentityPath": "/deployment.json",
+    "requiredEnvironment": "production",
+    "requiredBranch": "main",
+    "deploymentSha": "validation_package_merge_sha",
+    "deploymentShaMayDifferFromProductSha": true,
+    "manualDeployWorkflowIsAuthority": false,
+    "pagesGitIntegrationIsAuthority": true,
+    "singleDeploymentEvidenceSourceRequired": true,
+    "browserNetworkRefetchOfDeploymentIdentityAllowed": false,
+    "productRuntimeEquivalenceRequired": true,
+    "allowedDifferenceFromProductAuthority": [
+      ".github/workflows/analytics-12a9-kick-day-flow-category-post-repair-production-revalidation.yml",
+      "apps/web/scripts/kick-day-flow-category-post-repair-production-revalidation.mjs",
+      "docs/audits/12a9-kick-day-flow-category-post-repair-production-revalidation-contract.json"
+    ]
+  },
+  "target": {
+    "hiddenEntry": "categoryPreview=1",
+    "categoryParameter": "category",
+    "validationDate": "2026-08-10",
+    "desktopViewport": "1440x1000",
+    "mobileViewport": "390x844"
+  },
+  "requiredScenarios": [
+    "kick-normal-fixed-day-desktop",
+    "kick-hidden-fixed-day-desktop",
+    "kick-hidden-fixed-day-mobile",
+    "kick-hidden-unknown-category",
+    "twitch-public-day-flow-isolation"
+  ],
+  "strengthenedUnknownCategoryChecks": {
+    "categoryStateUnknown": true,
+    "zeroSelectedStreamerBands": true,
+    "oneGlobalOthersWhenGlobalTotalsObserved": true,
+    "overallStateNotEmptyWhenGlobalObservationsExist": true,
+    "overallStatusNotEmptyWhenGlobalObservationsExist": true,
+    "globalTotalsRemainObserved": true,
+    "chartRemainsRendered": true,
+    "falseNoObservedCopyForbidden": true,
+    "explicitUnknownCategoryStatusRequired": true
+  },
+  "execution": {
+    "productionOnPullRequest": false,
+    "productionOnMainPush": true,
+    "readOnlyBrowser": true,
+    "evidenceUploadOnFailure": true,
+    "screenshotsRequired": true
+  },
+  "boundary": {
+    "readOnly": true,
+    "publicKickDayFlowCategoryExposure": false,
+    "kickBattleLinesCategoryUi": false,
+    "kickHistoryCategoryUi": false,
+    "twitchSemanticChange": false,
+    "collectorChange": false,
+    "workerDeploymentChange": false,
+    "d1Mutation": false,
+    "d1SchemaChange": false,
+    "bindingChange": false,
+    "cadenceChange": false,
+    "retentionChange": false,
+    "backfill": false,
+    "thresholdRelaxation": false,
+    "credentialChange": false,
+    "syntheticMapping": false,
+    "nameOnlyMapping": false,
+    "crossProviderMapping": false,
+    "combinedProviderRanking": false
+  },
+  "successNextGate": "Freeze corrected production evidence, repaired product authority, validation deployment authority, and screenshots in a separate acceptance PR before closing #801/#797 or opening any public-cutover decision.",
+  "failureNextGate": "Keep public exposure unauthorized, retain failure evidence, and repair only the proven defect before rerunning the same five scenarios."
+}
