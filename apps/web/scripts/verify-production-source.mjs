@@ -96,7 +96,8 @@ if (existsSync(join(root,'src/live/day-flow-category-preview-entry.ts'))) {
     "return legacyPreviewAtLoad && filter.implementationState === 'hidden_candidate' && filter.publicExposureAuthorized === false",
     "if (legacyPreviewAtLoad && !publicInteractionSeen) next.searchParams.set(PREVIEW_PARAM, '1')",
     'if (publicInteractionSeen) next.searchParams.delete(PREVIEW_PARAM)',
-    "else next.searchParams.set(PREVIEW_PARAM, '1')",
+    "if (publicProvider) {",
+    "next.searchParams.set(PREVIEW_PARAM, '1')",
     'if (enabled) {',
   ])
   const hiddenTwitchEnableGate = "const enabled = provider === 'twitch' && initialUrl.searchParams.get(PREVIEW_PARAM) === '1'"
