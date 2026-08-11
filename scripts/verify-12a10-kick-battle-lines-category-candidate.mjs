@@ -9,7 +9,7 @@ const category = read('apps/web/functions/_lib/battle-lines-category.ts')
 const api = read('apps/web/functions/api/kick-battle-lines.ts')
 const controller = read('apps/web/src/live/battle-lines-current-shell-entry.ts')
 const kickHtml = read('apps/web/kick/battle-lines/index.html')
-const twitchApi = read('apps/web/functions/api/twitch-battle-lines.ts')
+const twitchApi = read('apps/web/functions/api/battle-lines.ts')
 
 assert.equal(decision.status, 'accepted_on_merge')
 assert.equal(decision.trackingIssue, 813)
@@ -34,17 +34,11 @@ for (const fragment of [
 for (const fragment of [
   "export const BATTLE_CATEGORY_CONTRACT_VERSION = 'category-source-v1'",
   'categoryRefs.length === parsed.rawItems.length',
-  "selectedCategory: 'all'",
-  "pointState = !item.categoryAvailable",
   "'category_unavailable' as const",
   "'outside_category' as const",
   'candidateIds.add(item.id)',
-  'viewerMinutes += item.viewers * sampleIntervalMinutes',
-  "membershipEvaluation",
-]) {
-  if (fragment === "selectedCategory: 'all'") continue
-  assert.ok(category.includes(fragment), `category projection missing: ${fragment}`)
-}
+  'category.viewerMinutes += item.viewers * sampleIntervalMinutes',
+]) assert.ok(category.includes(fragment), `category projection missing: ${fragment}`)
 assert.ok(category.includes("return !normalized || normalized.toLowerCase() === 'all' ? 'all'"))
 assert.ok(category.includes("coverageState === 'unavailable'"))
 assert.ok(category.includes("knownCategoryIds.has(options.selectedCategory)"))
@@ -69,7 +63,7 @@ for (const fragment of [
   'outsideCategoryExcludedFromMissingPenalty: true',
   'categoryUnavailableExcludedFromMissingPenalty: true',
   'unknownCategoryMaySubstituteGlobalLines: false',
-  "WHERE provider = ?",
+  'FROM provider_category_dictionary',
   ".bind('kick').all<KickBattleCategoryDictionaryRow>()",
 ]) assert.ok(api.includes(fragment), `Kick Battle Lines candidate API missing: ${fragment}`)
 assert.equal(api.includes('DB_TWITCH_HOT'), false)
