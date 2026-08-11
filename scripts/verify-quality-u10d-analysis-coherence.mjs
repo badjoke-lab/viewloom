@@ -10,6 +10,8 @@ const required = [
   'apps/web/src/live/day-flow-current-shell-entry.ts',
   'apps/web/src/live/day-flow-layout-summary.ts',
   'apps/web/src/live/day-flow-twitch-entry.ts',
+  'apps/web/src/live/day-flow-kick-entry.ts',
+  'apps/web/src/live/day-flow-category-preview-entry.ts',
   'apps/web/src/live/battle-lines-current-shell-entry.ts',
   'apps/web/src/live/battle-lines-layout.ts',
   'apps/web/src/navigation/battle-lines-deep-link-bridge.ts',
@@ -30,15 +32,22 @@ for (const path of ['apps/web/twitch/day-flow/index.html','apps/web/kick/day-flo
     assert.ok(html.includes('/src/live/day-flow-twitch-entry.ts'),'Twitch Day Flow bootstrap missing')
     assert.equal(html.includes('/src/live/day-flow-current-shell-entry.ts'),false,'Twitch HTML must not create a second Day Flow controller entry')
   } else {
-    assert.ok(html.includes('/src/live/day-flow-current-shell-entry.ts'),'Kick Day Flow controller entry missing')
+    assert.ok(html.includes('/src/live/day-flow-kick-entry.ts'),'Kick Day Flow bootstrap missing')
+    assert.equal(html.includes('/src/live/day-flow-current-shell-entry.ts'),false,'Kick HTML must not create a second Day Flow controller entry')
     assert.equal(html.includes('/src/live/day-flow-twitch-entry.ts'),false,'Kick must not load Twitch bootstrap')
   }
   assert.equal(html.includes('/src/live/day-flow-layout-summary.ts'),false,`${path}: duplicate Day Flow entry remains`)
 }
+
+const categoryImport="import './day-flow-category-preview-entry'"
+const controllerImport="void import('./day-flow-current-shell-entry')"
 const twitchEntry=read('apps/web/src/live/day-flow-twitch-entry.ts')
-assert.ok(twitchEntry.includes("import './day-flow-category-preview-entry'"))
-assert.ok(twitchEntry.includes("void import('./day-flow-current-shell-entry')"))
-assert.ok(twitchEntry.indexOf("import './day-flow-category-preview-entry'")<twitchEntry.indexOf("void import('./day-flow-current-shell-entry')"),'Twitch preview setup must precede the single shared Day Flow controller')
+const kickEntry=read('apps/web/src/live/day-flow-kick-entry.ts')
+for (const [provider, entry] of [['Twitch', twitchEntry], ['Kick', kickEntry]]) {
+  assert.ok(entry.includes(categoryImport),`${provider} Day Flow category bootstrap missing`)
+  assert.ok(entry.includes(controllerImport),`${provider} Day Flow shared controller bootstrap missing`)
+  assert.ok(entry.indexOf(categoryImport)<entry.indexOf(controllerImport),`${provider} category setup must precede the single shared Day Flow controller`)
+}
 
 const dayFlow=read('apps/web/src/live/day-flow-layout-summary.ts')
 for (const fragment of ['export function normalizeDayFlowLayout','export function applyDayFlowLayout','export function renderEnhancedDayFlowSummary',"return 'wide'"]) assert.ok(dayFlow.includes(fragment),`Day Flow helper missing ${fragment}`)
@@ -47,6 +56,11 @@ const dayFlowShell=read('apps/web/src/live/day-flow-current-shell-entry.ts')
 for (const fragment of ["from './day-flow-layout-summary'",'layout: DayFlowLayoutMode','layoutInUrl: boolean','applyDayFlowLayout(state.layout)','renderEnhancedDayFlowSummary(target, payload)',"if (state.layoutInUrl) params.set('layout', state.layout)"]) assert.ok(dayFlowShell.includes(fragment),`Day Flow primary owner missing ${fragment}`)
 assert.equal((dayFlowShell.match(/fetch\(`/g)??[]).length,1,'Day Flow primary owner should contain one feature request call')
 assert.equal(dayFlowShell.includes('new MutationObserver'),false)
+
+const categoryBoundary=read('apps/web/src/live/day-flow-category-preview-entry.ts')
+assert.ok(categoryBoundary.includes("const publicProvider = provider === 'twitch' || provider === 'kick'"),'Day Flow public provider boundary missing')
+assert.ok(categoryBoundary.includes("const apiPath = provider === 'kick' ? '/api/kick-day-flow' : '/api/day-flow'"),'provider-correct Day Flow endpoint boundary missing')
+assert.equal(categoryBoundary.includes('URLSearchParams.prototype.get ='),false,'Day Flow category layer must not replace URLSearchParams.prototype.get')
 
 const battle=read('apps/web/src/live/battle-lines-current-shell-entry.ts')
 for (const fragment of ['function recommendedBattleFor(data: Payload): Battle | null','data.recommendedBattle ?? data.primaryBattle ?? data.battles[0] ?? null','const recommended = payload ? recommendedBattleFor(payload) : null','state.selectedBattleId = recommended?.id ?? null',"battle.id === recommendedBattleFor(data)?.id && !state.manualBattle","target.dataset.battleRecommendationOwner = data.recommendedBattle ? 'recommendedBattle'",'data-battle-selected-index="${selectedIndex}"','target.dataset.battleSelectedTime = data.timeline[index] ??','state.manualBattle = state.selectedBattleId !== recommendedBattleFor(data)?.id',"from './battle-lines-layout'","from '../navigation/battle-lines-deep-link-bridge'",'fetchBattleLinesResponse(','canonicalBattleLinesTime(','renderBattleLinesSplitRail()']) assert.ok(battle.includes(fragment),`Battle Lines missing ${fragment}`)
@@ -87,6 +101,6 @@ const workflow=read('.github/workflows/quality-u10d-analysis-coherence.yml')
 for (const fragment of ['name: Quality U10D Analysis Coherence','Run U10D browser acceptance','Verify U10D browser evidence','cancel-in-progress: true']) assert.ok(workflow.includes(fragment))
 console.log('Completed U10D analysis coherence verification passed.')
 console.log('- Day Flow layout and summary remain owned by the single shared controller')
-console.log('- Twitch hidden bootstrap serializes candidate setup without adding a second controller')
+console.log('- Twitch and Kick provider bootstraps serialize authorized Category setup without adding a second controller')
 console.log('- Battle Lines recommendation and selected-time ownership remain permanent')
-console.log('- U10G consolidation remains compatible with U10D evidence')
+console.log('- U10G provider-separated public Day Flow boundary remains compatible with retained U10D evidence')

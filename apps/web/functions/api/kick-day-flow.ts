@@ -101,7 +101,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       ...base,
       note: requestedCategory === 'all'
         ? base.note
-        : `ViewLoom hidden Kick Day Flow category candidate · ${categoryState}.`,
+        : `ViewLoom Kick Day Flow category · ${categoryState}.`,
       coverageNote: `${base.coverageNote} Category ${categoryState}; category bucket coverage observed=${counts.observed}, partial=${counts.partial}, unavailable=${counts.unavailable}.`,
       partialNote: projection.categoryFilter.coverageState === 'partial'
         ? 'Category metadata is partial for part of this Kick Day Flow window. Missing category metadata is not interpreted as zero category viewers.'
@@ -109,16 +109,16 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
           ? 'Category metadata is unavailable for this Kick Day Flow window. No selected-category zero is inferred.'
           : base.partialNote,
       categoryFilter: {
-        implementationState: 'hidden_candidate',
-        publicExposureAuthorized: false,
+        implementationState: 'public',
+        publicExposureAuthorized: true,
         ...projection.categoryFilter,
       },
       availableCategories: projection.categoryFilter.availableCategories,
       notes: [
         ...base.notes,
         'category_filter=true',
-        'category_implementation_state=hidden_candidate',
-        'category_public_exposure=false',
+        'category_implementation_state=public',
+        'category_public_exposure=true',
         `category_selected=${requestedCategory}`,
         `category_filter_state=${projection.categoryFilter.state}`,
         `category_coverage_state=${projection.categoryFilter.coverageState}`,
@@ -344,8 +344,8 @@ function withUnavailableCategory(base: Record<string, any>, requestedCategory: s
   return {
     ...base,
     categoryFilter: {
-      implementationState: 'hidden_candidate',
-      publicExposureAuthorized: false,
+      implementationState: 'public',
+      publicExposureAuthorized: true,
       contractVersion: null,
       selectedCategory: requestedCategory,
       state: 'category_unavailable',
@@ -363,7 +363,7 @@ function withUnavailableCategory(base: Record<string, any>, requestedCategory: s
       coverageCounts: { observed: 0, partial: 0, unavailable: 0 },
     },
     availableCategories: [],
-    notes: [...(Array.isArray(base.notes) ? base.notes : []), 'category_implementation_state=hidden_candidate', 'category_public_exposure=false'],
+    notes: [...(Array.isArray(base.notes) ? base.notes : []), 'category_implementation_state=public', 'category_public_exposure=true'],
   }
 }
 

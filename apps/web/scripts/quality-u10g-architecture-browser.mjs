@@ -40,7 +40,7 @@ try {
 
 async function auditDayFlow(provider, width, mode) {
   const id = `${provider}-day-flow-${mode}-${width}`
-  const expectsCategoryBoundary = provider === 'twitch'
+  const expectsCategoryBoundary = provider === 'twitch' || provider === 'kick'
   evidence.checkpoint = id
   const { context, requests, crossRequests, categoryRequests } = await dayFlowContext(provider, width)
   const page = await context.newPage()
@@ -54,8 +54,8 @@ async function auditDayFlow(provider, width, mode) {
   assert.equal(crossRequests.value, 0, `${id}: Day Flow crossed provider endpoint`)
   assert.equal(categoryRequests.value, expectsCategoryBoundary ? 1 : 0, `${id}: category request boundary changed`)
   if (expectsCategoryBoundary) {
-    assert.equal(initial.fetchSame, false, `${id}: authorized Twitch Day Flow fetch wrapper was not installed`)
-    assert.equal(initial.replaceStateSame, false, `${id}: authorized Twitch Day Flow history wrapper was not installed`)
+    assert.equal(initial.fetchSame, false, `${id}: authorized provider Day Flow fetch wrapper was not installed`)
+    assert.equal(initial.replaceStateSame, false, `${id}: authorized provider Day Flow history wrapper was not installed`)
     assert.equal(initial.urlGetSame, true, `${id}: URLSearchParams.get was replaced\n${initial.urlGetReplacementStack ?? ''}`)
     assert.equal(initial.categoryControlPresent, true, `${id}: public Category control missing`)
     assert.equal(initial.categoryControlPublic, true, `${id}: Category control is not marked public`)
@@ -211,7 +211,12 @@ async function dayFlowContext(provider, width) {
   const crossRequests = { value: 0 }
   const categoryRequests = { value: 0 }
   await context.route('**/api/kick-day-flow*', (route) => {
-    if (provider === 'kick') { requests.value += 1; return replyJson(route, dayFlowPayload('kick')) }
+    if (provider === 'kick') {
+      requests.value += 1
+      const url = new URL(route.request().url())
+      if (url.searchParams.get('category') === 'all') categoryRequests.value += 1
+      return replyJson(route, dayFlowPayload('kick'))
+    }
     crossRequests.value += 1
     return route.abort()
   })
