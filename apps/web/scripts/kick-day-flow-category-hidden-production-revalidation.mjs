@@ -3,7 +3,8 @@ import path from 'node:path'
 import { chromium } from 'playwright'
 
 const ORIGIN = process.env.VIEWLOOM_ORIGIN || 'https://www.viewloom.net'
-const EXPECTED_PRODUCT_SHA = process.env.EXPECTED_PRODUCT_SHA || ''
+const PRODUCT_AUTHORITY_SHA = process.env.PRODUCT_AUTHORITY_SHA || ''
+const EXPECTED_DEPLOYMENT_SHA = process.env.EXPECTED_DEPLOYMENT_SHA || ''
 const DEPLOY_RUN_ID = process.env.DEPLOY_RUN_ID || ''
 const OUT = process.env.OUTPUT_DIR || 'artifacts/12a9-kick-day-flow-category-hidden-production-revalidation'
 const VALIDATION_DATE = process.env.DAYFLOW_VALIDATION_DATE || '2026-08-10'
@@ -14,7 +15,8 @@ const evidence = {
   schemaVersion: 'viewloom-12a9-kick-day-flow-category-hidden-production-revalidation-evidence-v1',
   observedAt: new Date().toISOString(),
   origin: ORIGIN,
-  expectedProductSha: EXPECTED_PRODUCT_SHA || null,
+  expectedProductSha: PRODUCT_AUTHORITY_SHA || null,
+  expectedDeploymentSha: EXPECTED_DEPLOYMENT_SHA || null,
   deployWorkflowRun: DEPLOY_RUN_ID || null,
   validationDate: VALIDATION_DATE,
   deployment: null,
@@ -52,11 +54,12 @@ const rectsOverlap = (a, b) => {
 }
 
 function verifyDeploymentIdentity() {
-  assert(EXPECTED_PRODUCT_SHA, 'EXPECTED_PRODUCT_SHA is required')
+  assert(PRODUCT_AUTHORITY_SHA, 'PRODUCT_AUTHORITY_SHA is required')
+  assert(EXPECTED_DEPLOYMENT_SHA, 'EXPECTED_DEPLOYMENT_SHA is required')
   const deploymentPath = path.join(OUT, 'last-deployment.json')
   assert(fs.existsSync(deploymentPath), `workflow deployment evidence missing: ${deploymentPath}`)
   const deployment = JSON.parse(fs.readFileSync(deploymentPath, 'utf8'))
-  assert(deployment?.commit_sha === EXPECTED_PRODUCT_SHA, `deployment commit ${deployment?.commit_sha} != ${EXPECTED_PRODUCT_SHA}`)
+  assert(deployment?.commit_sha === EXPECTED_DEPLOYMENT_SHA, `deployment commit ${deployment?.commit_sha} != ${EXPECTED_DEPLOYMENT_SHA}`)
   assert(deployment?.environment === 'production', `deployment environment=${deployment?.environment}`)
   assert(deployment?.branch === 'main', `deployment branch=${deployment?.branch}`)
   evidence.deployment = deployment
@@ -313,6 +316,7 @@ try {
   console.log(JSON.stringify({
     status: evidence.status,
     expectedProductSha: evidence.expectedProductSha,
+    expectedDeploymentSha: evidence.expectedDeploymentSha,
     deployWorkflowRun: evidence.deployWorkflowRun,
     deployment: evidence.deployment,
     failures: evidence.failures,
