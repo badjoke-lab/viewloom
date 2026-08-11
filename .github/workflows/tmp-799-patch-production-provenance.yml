@@ -1,0 +1,80 @@
+name: TMP 799 Patch Production Provenance
+
+on:
+  push:
+    branches:
+      - work-799-kick-day-flow-production-path-recovery
+    paths:
+      - '.github/workflows/tmp-799-patch-production-provenance.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work-799-kick-day-flow-production-path-recovery
+      - name: Separate product and deployment provenance
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          browser = Path('apps/web/scripts/kick-day-flow-category-hidden-production-revalidation.mjs')
+          text = browser.read_text()
+          replacements = [
+            (
+              "const EXPECTED_PRODUCT_SHA = process.env.EXPECTED_PRODUCT_SHA || ''",
+              "const PRODUCT_AUTHORITY_SHA = process.env.PRODUCT_AUTHORITY_SHA || ''\nconst EXPECTED_DEPLOYMENT_SHA = process.env.EXPECTED_DEPLOYMENT_SHA || ''",
+              1,
+            ),
+            (
+              "  expectedProductSha: EXPECTED_PRODUCT_SHA || null,",
+              "  expectedProductSha: PRODUCT_AUTHORITY_SHA || null,\n  expectedDeploymentSha: EXPECTED_DEPLOYMENT_SHA || null,",
+              1,
+            ),
+            (
+              "  assert(EXPECTED_PRODUCT_SHA, 'EXPECTED_PRODUCT_SHA is required')",
+              "  assert(PRODUCT_AUTHORITY_SHA, 'PRODUCT_AUTHORITY_SHA is required')\n  assert(EXPECTED_DEPLOYMENT_SHA, 'EXPECTED_DEPLOYMENT_SHA is required')",
+              1,
+            ),
+            (
+              "  assert(deployment?.commit_sha === EXPECTED_PRODUCT_SHA, `deployment commit ${deployment?.commit_sha} != ${EXPECTED_PRODUCT_SHA}`)",
+              "  assert(deployment?.commit_sha === EXPECTED_DEPLOYMENT_SHA, `deployment commit ${deployment?.commit_sha} != ${EXPECTED_DEPLOYMENT_SHA}`)",
+              1,
+            ),
+            (
+              "    expectedProductSha: evidence.expectedProductSha,\n    deployWorkflowRun: evidence.deployWorkflowRun,",
+              "    expectedProductSha: evidence.expectedProductSha,\n    expectedDeploymentSha: evidence.expectedDeploymentSha,\n    deployWorkflowRun: evidence.deployWorkflowRun,",
+              1,
+            ),
+          ]
+          for old, new, expected in replacements:
+            count = text.count(old)
+            assert count == expected, f'browser replacement count {count} != {expected}: {old}'
+            text = text.replace(old, new)
+          assert 'EXPECTED_PRODUCT_SHA' not in text, 'retired EXPECTED_PRODUCT_SHA remains'
+          browser.write_text(text)
+
+          normalize = Path('apps/web/scripts/normalize-built-head.mjs')
+          text = normalize.read_text()
+          anchor = "// the exact main SHA that the read-only #747 production revalidation will verify.\n"
+          addition = (
+            "// Governed production revalidation source touch for Issue #799: behavior remains\n"
+            "// unchanged; this source-path commit ensures Pages Git integration publishes the\n"
+            "// recovery deployment SHA while product authority remains the #796 merge SHA.\n"
+          )
+          assert text.count(anchor) == 1, f'normalize anchor count={text.count(anchor)}'
+          assert 'Issue #799' not in text, 'Issue #799 source touch already present'
+          normalize.write_text(text.replace(anchor, anchor + addition))
+          PY
+      - name: Commit exact provenance-only patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/web/scripts/kick-day-flow-category-hidden-production-revalidation.mjs apps/web/scripts/normalize-built-head.mjs
+          git diff --cached --check
+          git commit -m "Separate Kick Day Flow product and deployment provenance"
+          git push origin HEAD:work-799-kick-day-flow-production-path-recovery
