@@ -1,0 +1,61 @@
+name: TMP 800 Align Day Flow QA
+
+on:
+  push:
+    branches:
+      - work-799-kick-day-flow-production-path-recovery
+    paths:
+      - '.github/workflows/tmp-800-align-dayflow-qa.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work-799-kick-day-flow-production-path-recovery
+      - name: Align Day Flow QA with provider-specific bootstraps
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('apps/web/scripts/verify-dayflow-qa.mjs')
+          text = path.read_text()
+          replacements = [
+            (
+              "const twitchEntryPath = 'src/live/day-flow-twitch-entry.ts'\n",
+              "const twitchEntryPath = 'src/live/day-flow-twitch-entry.ts'\nconst kickEntryPath = 'src/live/day-flow-kick-entry.ts'\n",
+            ),
+            (
+              "for (const path of [...dayFlowPages, entryPath, twitchEntryPath, layoutSummaryPath, layoutSummaryCssPath, contractPath]) requireFile(path)\n",
+              "for (const path of [...dayFlowPages, entryPath, twitchEntryPath, kickEntryPath, layoutSummaryPath, layoutSummaryCssPath, contractPath]) requireFile(path)\n",
+            ),
+            (
+              "  const expectedEntry = isTwitch ? '/src/live/day-flow-twitch-entry.ts' : '/src/live/day-flow-current-shell-entry.ts'\n  const expectedEntryPattern = isTwitch ? /day-flow-twitch-entry\\.ts/g : /day-flow-current-shell-entry\\.ts/g\n",
+              "  const expectedEntry = isTwitch ? '/src/live/day-flow-twitch-entry.ts' : '/src/live/day-flow-kick-entry.ts'\n  const expectedEntryPattern = isTwitch ? /day-flow-twitch-entry\\.ts/g : /day-flow-kick-entry\\.ts/g\n",
+            ),
+            (
+              "  } else {\n    assertEqual(`${path} Twitch bootstrap count`, (source.match(/day-flow-twitch-entry\\.ts/g) ?? []).length, 0)\n  }\n",
+              "  } else {\n    assertEqual(`${path} Twitch bootstrap count`, (source.match(/day-flow-twitch-entry\\.ts/g) ?? []).length, 0)\n    assertEqual(`${path} direct shared-controller script count`, (source.match(/<script[^>]+day-flow-current-shell-entry\\.ts/g) ?? []).length, 0)\n  }\n",
+            ),
+            (
+              "if (existsSync(join(root, twitchEntryPath))) {\n  const source = read(twitchEntryPath)\n  for (const fragment of [\n    \"import './day-flow-category-preview-entry'\",\n    \"void import('./day-flow-current-shell-entry')\",\n  ]) requireFragment(twitchEntryPath, source, fragment)\n  assertEqual('Twitch Day Flow shared-controller import count', (source.match(/day-flow-current-shell-entry/g) ?? []).length, 1)\n}\n\n",
+              "if (existsSync(join(root, twitchEntryPath))) {\n  const source = read(twitchEntryPath)\n  for (const fragment of [\n    \"import './day-flow-category-preview-entry'\",\n    \"void import('./day-flow-current-shell-entry')\",\n  ]) requireFragment(twitchEntryPath, source, fragment)\n  assertEqual('Twitch Day Flow shared-controller import count', (source.match(/day-flow-current-shell-entry/g) ?? []).length, 1)\n}\n\nif (existsSync(join(root, kickEntryPath))) {\n  const source = read(kickEntryPath)\n  for (const fragment of [\n    \"import './day-flow-category-preview-entry'\",\n    \"void import('./day-flow-current-shell-entry')\",\n    \"const categoryRoot = document.getElementById('dayflow-category-preview-controls')\",\n  ]) requireFragment(kickEntryPath, source, fragment)\n  assertEqual('Kick Day Flow shared-controller import count', (source.match(/day-flow-current-shell-entry/g) ?? []).length, 1)\n  assertEqual('Kick Day Flow category-boundary import count', (source.match(/day-flow-category-preview-entry/g) ?? []).length, 1)\n}\n\n",
+            ),
+          ]
+          for old, new in replacements:
+            count = text.count(old)
+            assert count == 1, f'expected one occurrence, got {count}: {old[:100]}'
+            text = text.replace(old, new)
+          path.write_text(text)
+          PY
+      - name: Commit QA verifier-only correction
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/web/scripts/verify-dayflow-qa.mjs
+          git diff --cached --check
+          git commit -m "Align Day Flow QA with Kick provider bootstrap"
+          git push origin HEAD:work-799-kick-day-flow-production-path-recovery
