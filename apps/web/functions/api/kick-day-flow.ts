@@ -1,9 +1,11 @@
 import type { Env } from '../_db/env'
+import { projectDayFlowCategory } from './day-flow-category-core.mjs'
 
 type State = 'not_ready' | 'empty' | 'partial' | 'stale' | 'live' | 'error'
 type Metric = 'volume' | 'share'
 type RangeMode = 'today' | 'rolling24h' | 'yesterday' | 'date'
 type Row = { bucket_minute: string; collected_at: string; total_viewers: number; payload_json: string; source_mode: string }
+type CategoryRow = { category_id: string; category_name: string; contract_version: string }
 type Stream = { id: string; name: string; title: string; url: string; viewers: number }
 type Acc = { stream: Stream; sums: number[]; counts: number[]; firstSeen: string | null; lastSeen: string | null }
 type Band = {
@@ -23,9 +25,12 @@ type Band = {
   buckets: Array<{ viewers: number; share: number; activity: number; activityAvailable: boolean; peak: boolean; rise: boolean }>
 }
 
+type Built = { bands: Band[]; streamers: ReturnType<typeof streamer>[]; totals: number[]; observed: number }
+
 const MINUTE = 60 * 1000
 const STALE_AFTER_MS = 10 * MINUTE
 const MAX_ROWS = 1600
+const CATEGORY_CONTRACT_VERSION = 'category-source-v1'
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const url = new URL(request.url)
@@ -35,6 +40,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const valueMode: Metric = url.searchParams.get('metric') === 'share' || url.searchParams.get('mode') === 'share' ? 'share' : 'volume'
   const range = getRange(url, now)
   const bucketLabels = buckets(range.start, range.end, bucketSize)
+  const categoryCandidateRequested = url.searchParams.has('category')
+  const requestedCategory = normalizeCategory(url.searchParams.get('category'))
 
   try {
     const result = await env.DB_KICK_HOT.prepare(`
@@ -47,7 +54,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
     const rows = result.results ?? []
     if (rows.length === 0) {
-      return json(empty('empty', 'No Kick snapshots exist in the selected Day Flow window.', 'No observed Kick snapshots exist for this Day Flow window.', '', now.toISOString(), range, bucketSize, topN, valueMode, bucketLabels))
+      const base = empty('empty', 'No Kick snapshots exist in the selected Day Flow window.', 'No observed Kick snapshots exist for this Day Flow window.', '', now.toISOString(), range, bucketSize, topN, valueMode, bucketLabels)
+      return json(categoryCandidateRequested ? withUnavailableCategory(base, requestedCategory) : base)
     }
 
     const built = build(rows, bucketLabels, bucketSize, topN)
@@ -57,44 +65,126 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     const coverageMode = str(meta?.coverageMode) || 'unknown'
     const lastUpdated = latest?.collected_at || latest?.bucket_minute || now.toISOString()
     const stale = isLiveRange(range.mode) && Date.now() - parseTime(lastUpdated).getTime() > STALE_AFTER_MS
-    const state = getState(built.bands.length > 0, stale, built.observed, bucketLabels.length)
-    const partialNote = state === 'partial' ? `Only ${built.observed}/${bucketLabels.length} Day Flow buckets have observed Kick samples in this window.` : ''
+
+    if (!categoryCandidateRequested) {
+      return json(responsePayload({ built, stale, range, bucketSize, topN, valueMode, targetSource, coverageMode, lastUpdated }))
+    }
+
+    const dictionary = await env.DB_KICK_HOT.prepare(`
+      SELECT category_id, category_name, contract_version
+      FROM provider_category_dictionary
+      WHERE provider = ?
+      ORDER BY category_name COLLATE NOCASE, category_id
+    `).bind('kick').all<CategoryRow>()
+    const categoryNames = new Map(
+      (dictionary.results ?? [])
+        .filter((row) => row.contract_version === CATEGORY_CONTRACT_VERSION)
+        .map((row) => [row.category_id, row.category_name]),
+    )
+    const projection = projectDayFlowCategory({
+      rows,
+      buckets: bucketLabels,
+      bucketSize,
+      selectedCategory: requestedCategory,
+      categoryNames,
+      provider: 'kick',
+      bucketAggregation: 'average',
+    })
+    const categoryBuilt = requestedCategory === 'all'
+      ? built
+      : buildSelectedCategory(projection.streams, projection.totals, bucketLabels, bucketSize, topN, built.observed, projection.categoryFilter.state)
+    const base = responsePayload({ built: categoryBuilt, stale, range, bucketSize, topN, valueMode, targetSource, coverageMode, lastUpdated })
+    const counts = projection.categoryFilter.coverageCounts
+    const categoryState = projection.categoryFilter.state.replaceAll('_', ' ')
 
     return json({
-      ok: true,
-      source: 'api',
-      platform: 'kick',
-      state,
-      status: state,
-      note: note(state, built.bands.length),
-      coverageNote: `${built.observed}/${bucketLabels.length} buckets contain observed Kick snapshots.`,
-      partialNote,
-      lastUpdated,
-      selectedDate: range.selectedDate,
-      bucketSize,
-      topN,
-      valueMode,
-      targetSource,
-      coverageMode,
-      rangeMode: range.mode,
-      windowStart: range.start.toISOString(),
-      windowEnd: range.end.toISOString(),
-      isRolling: range.isRolling,
-      buckets: bucketLabels,
-      totalViewersByBucket: built.totals,
-      bands: built.bands,
-      summary: summarize(built.bands),
-      detailPanelSource: { defaultStreamerId: built.streamers[0]?.streamerId ?? null, streamers: built.streamers },
-      activity: { available: false, note: 'Kick activity data is not connected yet. Day Flow bands use observed viewer counts only.' },
-      notes: ['storage=DB_KICK_HOT', `target_source=${targetSource}`, `coverage_mode=${coverageMode}`],
+      ...base,
+      note: requestedCategory === 'all'
+        ? base.note
+        : `ViewLoom hidden Kick Day Flow category candidate · ${categoryState}.`,
+      coverageNote: `${base.coverageNote} Category ${categoryState}; category bucket coverage observed=${counts.observed}, partial=${counts.partial}, unavailable=${counts.unavailable}.`,
+      partialNote: projection.categoryFilter.coverageState === 'partial'
+        ? 'Category metadata is partial for part of this Kick Day Flow window. Missing category metadata is not interpreted as zero category viewers.'
+        : projection.categoryFilter.coverageState === 'unavailable'
+          ? 'Category metadata is unavailable for this Kick Day Flow window. No selected-category zero is inferred.'
+          : base.partialNote,
+      categoryFilter: {
+        implementationState: 'hidden_candidate',
+        publicExposureAuthorized: false,
+        ...projection.categoryFilter,
+      },
+      availableCategories: projection.categoryFilter.availableCategories,
+      notes: [
+        ...base.notes,
+        'category_filter=true',
+        'category_implementation_state=hidden_candidate',
+        'category_public_exposure=false',
+        `category_selected=${requestedCategory}`,
+        `category_filter_state=${projection.categoryFilter.state}`,
+        `category_coverage_state=${projection.categoryFilter.coverageState}`,
+        'category_membership=per_observed_snapshot',
+        'category_latest_back_projection=false',
+        'category_filter_before_top_n=true',
+        'category_bucket_aggregation=average_observed_stream_viewers',
+        'category_full_share_denominator=all_observed_kick_viewers_per_bucket',
+        'category_top_focus_share_denominator=displayed_selected_category_top_n_viewers_per_bucket',
+        `category_bucket_observed=${counts.observed}`,
+        `category_bucket_partial=${counts.partial}`,
+        `category_bucket_unavailable=${counts.unavailable}`,
+      ],
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    return json(empty('error', 'Kick Day Flow API could not read observed snapshots.', message, '', now.toISOString(), range, bucketSize, topN, valueMode, bucketLabels), 500)
+    const base = empty('error', 'Kick Day Flow API could not read observed snapshots.', message, '', now.toISOString(), range, bucketSize, topN, valueMode, bucketLabels)
+    return json(categoryCandidateRequested ? withUnavailableCategory(base, requestedCategory) : base, 500)
   }
 }
 
-function build(rows: Row[], labels: string[], bucketSize: 5 | 10, topN: number): { bands: Band[]; streamers: ReturnType<typeof streamer>[]; totals: number[]; observed: number } {
+function responsePayload(options: {
+  built: Built
+  stale: boolean
+  range: ReturnType<typeof getRange>
+  bucketSize: 5 | 10
+  topN: number
+  valueMode: Metric
+  targetSource: string
+  coverageMode: string
+  lastUpdated: string
+}): Record<string, any> {
+  const { built, stale, range, bucketSize, topN, valueMode, targetSource, coverageMode, lastUpdated } = options
+  const state = getState(built.bands.length > 0, stale, built.observed, built.totals.length)
+  const partialNote = state === 'partial' ? `Only ${built.observed}/${built.totals.length} Day Flow buckets have observed Kick samples in this window.` : ''
+  return {
+    ok: true,
+    source: 'api',
+    platform: 'kick',
+    state,
+    status: state,
+    note: note(state, built.bands.length),
+    coverageNote: `${built.observed}/${built.totals.length} buckets contain observed Kick snapshots.`,
+    partialNote,
+    lastUpdated,
+    selectedDate: range.selectedDate,
+    bucketSize,
+    topN,
+    valueMode,
+    targetSource,
+    coverageMode,
+    rangeMode: range.mode,
+    windowStart: range.start.toISOString(),
+    windowEnd: range.end.toISOString(),
+    isRolling: range.isRolling,
+    buckets: buckets(range.start, range.end, bucketSize),
+    totalViewersByBucket: built.totals,
+    bands: built.bands,
+    summary: summarize(built.bands),
+    detailPanelSource: { defaultStreamerId: built.streamers[0]?.streamerId ?? null, streamers: built.streamers },
+    activity: { available: false, note: 'Kick activity data is not connected yet. Day Flow bands use observed viewer counts only.' },
+    notes: ['storage=DB_KICK_HOT', `target_source=${targetSource}`, `coverage_mode=${coverageMode}`],
+  }
+}
+
+function build(rows: Row[], labels: string[], bucketSize: 5 | 10, topN: number): Built {
   const indexByLabel = new Map(labels.map((label, index) => [label, index]))
   const streams = new Map<string, Acc>()
   const totalSums = labels.map(() => 0)
@@ -133,6 +223,34 @@ function build(rows: Row[], labels: string[], bucketSize: 5 | 10, topN: number):
   return { bands, streamers: topBands.map(streamer), totals, observed: observed.size }
 }
 
+function buildSelectedCategory(
+  projectedStreams: Array<{ id: string; name: string; title: string; url: string; values: number[] }>,
+  totals: number[],
+  labels: string[],
+  bucketSize: 5 | 10,
+  topN: number,
+  observed: number,
+  filterState: 'all' | 'selected' | 'unknown_category' | 'category_unavailable',
+): Built {
+  if (filterState !== 'selected') return { bands: [], streamers: [], totals, observed }
+  const ranked = projectedStreams.map((projected) => {
+    const nonZero = projected.values.map((value, index) => value > 0 ? index : -1).filter((index) => index >= 0)
+    return makeBand(
+      { id: projected.id, name: projected.name, title: projected.title, url: projected.url, viewers: 0 },
+      projected.values,
+      labels,
+      totals,
+      bucketSize,
+      nonZero.length ? labels[nonZero[0]] : null,
+      nonZero.length ? labels[nonZero[nonZero.length - 1]] : null,
+    )
+  }).filter((band) => band.totalViewerMinutes > 0).sort((a, b) => b.totalViewerMinutes - a.totalViewerMinutes)
+  const topBands = ranked.slice(0, topN)
+  const others = makeGlobalOthers(topBands, labels, totals, bucketSize)
+  const bands = others.totalViewerMinutes > 0 || topBands.length > 0 ? [...topBands, others] : topBands
+  return { bands, streamers: topBands.map(streamer), totals, observed }
+}
+
 function makeBand(stream: Stream, viewers: number[], labels: string[], totals: number[], bucketSize: 5 | 10, firstSeen: string | null, lastSeen: string | null): Band {
   const peak = Math.max(0, ...viewers)
   const nonZero = viewers.filter((value) => value > 0)
@@ -158,6 +276,11 @@ function makeBand(stream: Stream, viewers: number[], labels: string[], totals: n
 function makeOthers(bands: Band[], labels: string[], totals: number[], bucketSize: 5 | 10): Band {
   const viewers = labels.map((_, index) => bands.reduce((sum, band) => sum + band.buckets[index].viewers, 0))
   return { ...makeBand({ id: 'others', name: 'Others', title: 'Observed Kick streams outside the selected Top N.', url: '', viewers: 0 }, viewers, labels, totals, bucketSize, null, null), isOthers: true }
+}
+
+function makeGlobalOthers(topBands: Band[], labels: string[], totals: number[], bucketSize: 5 | 10): Band {
+  const viewers = labels.map((_, index) => Math.max(0, (totals[index] ?? 0) - topBands.reduce((sum, band) => sum + (band.buckets[index]?.viewers ?? 0), 0)))
+  return { ...makeBand({ id: 'others', name: 'Others', title: 'All other observed Kick viewers outside the displayed selected-category Top N.', url: '', viewers: 0 }, viewers, labels, totals, bucketSize, null, null), isOthers: true }
 }
 
 function summarize(bands: Band[]): { peakLeader: string | null; longestDominance: string | null; biggestRise: string | null; highestActivity: null } {
@@ -209,8 +332,35 @@ function streamer(band: Band) {
   return { streamerId: band.streamerId, name: band.name, title: band.title, url: band.url, peakViewers: band.peakViewers, avgViewers: band.avgViewers, viewerMinutes: band.totalViewerMinutes, peakShare: band.peakShare, biggestRiseTime: band.biggestRiseBucket, biggestRiseValue: band.biggestRiseValue, firstSeen: band.firstSeen, lastSeen: band.lastSeen }
 }
 
-function empty(state: State, noteText: string, coverageNote: string, partialNote: string, lastUpdated: string, range: ReturnType<typeof getRange>, bucketSize: 5 | 10, topN: number, valueMode: Metric, labels: string[]): Record<string, unknown> {
+function empty(state: State, noteText: string, coverageNote: string, partialNote: string, lastUpdated: string, range: ReturnType<typeof getRange>, bucketSize: 5 | 10, topN: number, valueMode: Metric, labels: string[]): Record<string, any> {
   return { ok: state !== 'error', source: 'api', platform: 'kick', state, status: state, note: noteText, coverageNote, partialNote, lastUpdated, selectedDate: range.selectedDate, bucketSize, topN, valueMode, targetSource: 'unknown', coverageMode: 'unknown', rangeMode: range.mode, windowStart: range.start.toISOString(), windowEnd: range.end.toISOString(), isRolling: range.isRolling, buckets: labels, totalViewersByBucket: labels.map(() => 0), bands: [] as Band[], summary: { peakLeader: null, longestDominance: null, biggestRise: null, highestActivity: null }, detailPanelSource: { defaultStreamerId: null as string | null, streamers: [] as ReturnType<typeof streamer>[] }, activity: { available: false, note: 'Kick activity data is not connected yet.' }, notes: ['storage=DB_KICK_HOT', 'target_source=unknown', 'coverage_mode=unknown'] }
+}
+
+function withUnavailableCategory(base: Record<string, any>, requestedCategory: string): Record<string, any> {
+  return {
+    ...base,
+    categoryFilter: {
+      implementationState: 'hidden_candidate',
+      publicExposureAuthorized: false,
+      contractVersion: null,
+      selectedCategory: requestedCategory,
+      state: 'category_unavailable',
+      coverageState: 'unavailable',
+      observedItems: 0,
+      missingItems: 0,
+      dictionaryMissingItems: 0,
+      filterBeforeTopN: true,
+      membershipEvaluation: 'per_observed_snapshot',
+      latestCategoryBackProjectionAllowed: false,
+      fullShareDenominator: 'all_observed_kick_viewers_per_bucket',
+      topFocusShareDenominator: 'displayed_selected_category_top_n_viewers_per_bucket',
+      availableCategories: [],
+      bucketCoverage: [],
+      coverageCounts: { observed: 0, partial: 0, unavailable: 0 },
+    },
+    availableCategories: [],
+    notes: [...(Array.isArray(base.notes) ? base.notes : []), 'category_implementation_state=hidden_candidate', 'category_public_exposure=false'],
+  }
 }
 
 function getRange(url: URL, now: Date): { selectedDate: string; mode: RangeMode; start: Date; end: Date; isRolling: boolean } {
@@ -238,6 +388,7 @@ function floor(value: string, bucketSize: 5 | 10): string { return floorDate(par
 function floorDate(date: Date, bucketSize: 5 | 10): Date { const copy = new Date(date); copy.setUTCMinutes(Math.floor(copy.getUTCMinutes() / bucketSize) * bucketSize, 0, 0); return copy }
 function parseTime(value: string): Date { return new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : `${value}Z`) }
 function top(value: string | null): number { const parsed = Number(value); return parsed === 10 || parsed === 20 || parsed === 50 ? parsed : 20 }
+function normalizeCategory(value: string | null): string { const normalized = value?.trim() ?? ''; return !normalized || normalized.toLowerCase() === 'all' ? 'all' : normalized.slice(0, 160) }
 function validDate(value: string | null): string | null { return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null }
 function shift(date: string, days: number): string { const parsed = new Date(`${date}T00:00:00.000Z`); parsed.setUTCDate(parsed.getUTCDate() + days); return parsed.toISOString().slice(0, 10) }
 function isLiveRange(mode: RangeMode): boolean { return mode === 'today' || mode === 'rolling24h' }

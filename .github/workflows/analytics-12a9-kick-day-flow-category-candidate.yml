@@ -1,0 +1,95 @@
+name: Analytics 12A9 Kick Day Flow Category Candidate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/api/day-flow-category-core.mjs'
+      - 'apps/web/functions/api/day-flow-category-core.d.mts'
+      - 'apps/web/functions/api/kick-day-flow.ts'
+      - 'apps/web/src/live/day-flow-category-preview-entry.ts'
+      - 'apps/web/src/live/day-flow-kick-entry.ts'
+      - 'apps/web/kick/day-flow/index.html'
+      - 'apps/web/scripts/day-flow-category-core.test.mjs'
+      - 'scripts/verify-12a9-kick-day-flow-category-candidate.mjs'
+      - '.github/workflows/analytics-12a9-kick-day-flow-category-candidate.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a9-kick-day-flow-category-candidate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout candidate head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify accepted decision and hidden boundary
+        run: |
+          node --check scripts/verify-12a9-kick-day-flow-category-candidate.mjs
+          node scripts/verify-12a9-kick-day-flow-category-candidate.mjs
+
+      - name: Verify shared projection semantics
+        run: |
+          node --check apps/web/functions/api/day-flow-category-core.mjs
+          node apps/web/scripts/day-flow-category-core.test.mjs
+
+      - name: Verify candidate-only PR scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          allowed='^(apps/web/functions/api/day-flow-category-core\.mjs|apps/web/functions/api/day-flow-category-core\.d\.mts|apps/web/functions/api/kick-day-flow\.ts|apps/web/src/live/day-flow-category-preview-entry\.ts|apps/web/src/live/day-flow-kick-entry\.ts|apps/web/kick/day-flow/index\.html|apps/web/scripts/day-flow-category-core\.test\.mjs|scripts/verify-12a9-kick-day-flow-category-candidate\.mjs|\.github/workflows/analytics-12a9-kick-day-flow-category-candidate\.yml)$'
+          test "${#changed[@]}" -eq 9
+          for path in "${changed[@]}"; do
+            [[ "$path" =~ $allowed ]] || { echo "Unexpected Kick Day Flow candidate change: $path" >&2; exit 1; }
+          done
+
+      - name: Install dependencies
+        run: |
+          corepack enable
+          pnpm install --no-frozen-lockfile
+
+      - name: Typecheck web
+        run: pnpm typecheck:web
+
+      - name: Build web
+        run: pnpm build:web
+
+      - name: Publish candidate boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick Day Flow hidden category candidate'
+            echo
+            echo '- Activation: categoryPreview=1 only'
+            echo '- Normal Kick route: category-free and existing unfiltered API path preserved'
+            echo '- Category identity: (kick, categoryProviderId)'
+            echo '- Membership: per observed snapshot; no latest-category backprojection'
+            echo '- Bucket aggregation: existing Kick average-observed-viewers semantics'
+            echo '- Ranking: selected-category viewer-minutes before Top N'
+            echo '- Full Share: all observed Kick viewers per bucket'
+            echo '- Top Focus Share: displayed selected-category Top N viewers per bucket'
+            echo '- Full Others: global observed Kick remainder outside displayed selected-category Top N'
+            echo '- Twitch Day Flow: public behavior remains on existing provider boundary'
+            echo '- Public Kick Day Flow category exposure: not authorized by this candidate'
+            echo '- Collector / Worker / D1 / schema / cadence / retention / backfill: unchanged'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -36,6 +36,8 @@ export function projectDayFlowCategory(options: {
   bucketSize: 5 | 10
   selectedCategory: string
   categoryNames: Map<string, string>
+  provider?: 'twitch' | 'kick'
+  bucketAggregation?: 'max' | 'average'
 }): {
   totals: number[]
   streams: DayFlowProjectedStream[]
@@ -50,7 +52,7 @@ export function projectDayFlowCategory(options: {
     filterBeforeTopN: true
     membershipEvaluation: 'per_observed_snapshot'
     latestCategoryBackProjectionAllowed: false
-    fullShareDenominator: 'all_observed_twitch_viewers_per_bucket'
+    fullShareDenominator: `all_observed_${'twitch' | 'kick'}_viewers_per_bucket`
     topFocusShareDenominator: 'displayed_selected_category_top_n_viewers_per_bucket'
     availableCategories: DayFlowCategoryOption[]
     bucketCoverage: DayFlowCategoryBucketCoverage[]
