@@ -36,8 +36,9 @@ const rows = [
 ]
 
 const all = projectDayFlowCategory({ rows, buckets, bucketSize: 5, selectedCategory: 'all', categoryNames })
-assert.deepEqual(all.totals, [100, 120, 90], 'global bucket totals must remain unchanged')
+assert.deepEqual(all.totals, [100, 120, 90], 'default Twitch global bucket totals must remain unchanged')
 assert.equal(all.categoryFilter.state, 'all')
+assert.equal(all.categoryFilter.fullShareDenominator, 'all_observed_twitch_viewers_per_bucket')
 assert.equal(all.streams.find((value) => value.id === 'alpha')?.values[0], 30)
 assert.equal(all.streams.find((value) => value.id === 'alpha')?.values[1], 40)
 assert.equal(all.streams.find((value) => value.id === 'alpha')?.values[2], 35)
@@ -46,7 +47,7 @@ assert.equal(all.categoryFilter.coverageState, 'partial')
 
 const gameA = projectDayFlowCategory({ rows, buckets, bucketSize: 5, selectedCategory: '100', categoryNames })
 assert.equal(gameA.categoryFilter.state, 'selected')
-assert.deepEqual(gameA.totals, [100, 120, 90], 'selected category must keep the global denominator')
+assert.deepEqual(gameA.totals, [100, 120, 90], 'selected Twitch category must keep the global denominator')
 assert.deepEqual(gameA.streams.find((value) => value.id === 'alpha')?.values, [30, 0, 35], 'latest category must not be projected backward or forward')
 assert.equal(gameA.streams.some((value) => value.id === 'beta'), false)
 
@@ -68,7 +69,7 @@ const unavailableRows = [{
 const unavailable = projectDayFlowCategory({ rows: unavailableRows, buckets: [buckets[0]], bucketSize: 5, selectedCategory: '100', categoryNames })
 assert.equal(unavailable.categoryFilter.state, 'category_unavailable')
 assert.equal(unavailable.categoryFilter.bucketCoverage[0].state, 'unavailable')
-assert.deepEqual(unavailable.totals, [70], 'unavailable category metadata must not erase global context')
+assert.deepEqual(unavailable.totals, [70], 'unavailable Twitch category metadata must not erase global context')
 assert.deepEqual(unavailable.streams, [], 'unavailable metadata must not be inferred as a category match')
 
 const unknown = projectDayFlowCategory({ rows, buckets, bucketSize: 5, selectedCategory: '999999', categoryNames })
@@ -81,10 +82,56 @@ const maxRows = [
 ]
 const maxProjection = projectDayFlowCategory({ rows: maxRows, buckets: [buckets[0]], bucketSize: 5, selectedCategory: '100', categoryNames })
 assert.deepEqual(maxProjection.totals, [110])
-assert.deepEqual(maxProjection.streams[0].values, [35], 'category projection must preserve existing max-within-bucket aggregation')
+assert.deepEqual(maxProjection.streams[0].values, [35], 'default Twitch projection must preserve max-within-bucket aggregation')
+
+const kickStream = (slug, viewers) => ({ slug, username: slug, viewers, title: `${slug} kick title` })
+const kickRows = [
+  {
+    bucket_minute: '2026-08-08T00:01:00.000Z',
+    total_viewers: 999,
+    payload_json: payload([kickStream('kick-alpha', 20), kickStream('kick-beta', 10)], ['100', '200'], [0, 1]),
+  },
+  {
+    bucket_minute: '2026-08-08T00:04:00.000Z',
+    total_viewers: 999,
+    payload_json: payload([kickStream('kick-alpha', 40), kickStream('kick-beta', 30)], ['100', '200'], [0, 1]),
+  },
+]
+const kickAll = projectDayFlowCategory({
+  rows: kickRows,
+  buckets: [buckets[0]],
+  bucketSize: 5,
+  selectedCategory: 'all',
+  categoryNames,
+  provider: 'kick',
+  bucketAggregation: 'average',
+})
+assert.deepEqual(kickAll.totals, [50], 'Kick totals must average observed per-snapshot stream sums, matching existing Kick Day Flow')
+assert.deepEqual(kickAll.streams.find((value) => value.id === 'kick-alpha')?.values, [30], 'Kick stream values must average observations within the bucket')
+assert.equal(kickAll.streams.find((value) => value.id === 'kick-alpha')?.url, 'https://kick.com/kick-alpha')
+assert.equal(kickAll.categoryFilter.fullShareDenominator, 'all_observed_kick_viewers_per_bucket')
+assert.equal(kickAll.categoryFilter.topFocusShareDenominator, 'displayed_selected_category_top_n_viewers_per_bucket')
+
+const kickSelected = projectDayFlowCategory({
+  rows: kickRows,
+  buckets: [buckets[0]],
+  bucketSize: 5,
+  selectedCategory: '100',
+  categoryNames,
+  provider: 'kick',
+  bucketAggregation: 'average',
+})
+assert.deepEqual(kickSelected.totals, [50], 'selected Kick category must preserve global all-Kick denominator')
+assert.deepEqual(kickSelected.streams.map((value) => [value.id, value.values]), [['kick-alpha', [30]]])
+assert.equal(kickSelected.categoryFilter.filterBeforeTopN, true)
+assert.equal(kickSelected.categoryFilter.membershipEvaluation, 'per_observed_snapshot')
+assert.equal(kickSelected.categoryFilter.latestCategoryBackProjectionAllowed, false)
 
 console.log(JSON.stringify({
   status: 'pass',
+  twitchDefaultMaxPreserved: true,
+  kickAverageProjection: true,
+  kickProviderUrls: true,
   globalTotalsPreserved: true,
   perSnapshotCategorySwitch: true,
   partialCoverageDisclosed: true,
