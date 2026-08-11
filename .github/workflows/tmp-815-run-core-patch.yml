@@ -1,0 +1,28 @@
+name: TMP 815 Run Battle Lines Core Patch
+
+on:
+  push:
+    branches: [work-815-kick-battle-lines-category-candidate]
+    paths:
+      - '.github/workflows/tmp-815-run-core-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work-815-kick-battle-lines-category-candidate
+          fetch-depth: 0
+      - name: Apply category-scoped Battle Lines core patch
+        run: python3 scripts/tmp-815-patch-core.py
+      - name: Commit core patch
+        run: |
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add apps/web/functions/_lib/battle-lines-core.ts
+          git commit -m 'Add Battle Lines category-scoped point states'
+          git push origin HEAD:work-815-kick-battle-lines-category-candidate
