@@ -1,8 +1,18 @@
 const CATEGORY_CONTRACT_VERSION = 'category-source-v1'
 
-export function projectDayFlowCategory({ rows, buckets, bucketSize, selectedCategory, categoryNames }) {
+export function projectDayFlowCategory({
+  rows,
+  buckets,
+  bucketSize,
+  selectedCategory,
+  categoryNames,
+  provider = 'twitch',
+  bucketAggregation = 'max',
+}) {
   const bucketIndex = new Map(buckets.map((bucket, index) => [bucket, index]))
   const totals = Array(buckets.length).fill(0)
+  const totalSums = Array(buckets.length).fill(0)
+  const totalCounts = Array(buckets.length).fill(0)
   const allStreams = new Map()
   const selectedStreams = new Map()
   const categoryStreams = new Map()
@@ -17,12 +27,19 @@ export function projectDayFlowCategory({ rows, buckets, bucketSize, selectedCate
     const index = bucketIndex.get(bucket)
     if (index == null) continue
 
-    totals[index] = Math.max(totals[index] ?? 0, safeViewer(row.total_viewers))
+    const parsed = parsePayload(row.payload_json)
+    const normalized = normalizeItems(parsed.rawItems, provider)
+    if (bucketAggregation === 'average') {
+      if (normalized.length > 0) {
+        totalSums[index] += normalized.reduce((sum, item) => sum + item.viewers, 0)
+        totalCounts[index] += 1
+      }
+    } else {
+      totals[index] = Math.max(totals[index] ?? 0, safeViewer(row.total_viewers))
+    }
     bucketStats[index].rows += 1
 
-    const parsed = parsePayload(row.payload_json)
-    const normalized = normalizeItems(parsed.rawItems)
-    for (const item of normalized) updateStream(allStreams, item, index, buckets.length)
+    for (const item of normalized) updateStream(allStreams, item, index, buckets.length, bucketAggregation)
 
     const contractAvailable = parsed.categoryContractVersion === CATEGORY_CONTRACT_VERSION
       && parsed.categoryRefs.length === parsed.rawItems.length
@@ -50,14 +67,20 @@ export function projectDayFlowCategory({ rows, buckets, bucketSize, selectedCate
       }
 
       observedItems += 1
-      updateCategoryStream(categoryStreams, categoryId, categoryName, item, index, buckets.length)
+      updateCategoryStream(categoryStreams, categoryId, categoryName, item, index, buckets.length, bucketAggregation)
       if (selectedCategory !== 'all' && categoryId === selectedCategory) {
-        updateStream(selectedStreams, item, index, buckets.length)
+        updateStream(selectedStreams, item, index, buckets.length, bucketAggregation)
       }
     }
 
     if (rowPartial) bucketStats[index].partial += 1
     else bucketStats[index].observed += 1
+  }
+
+  if (bucketAggregation === 'average') {
+    for (let index = 0; index < totals.length; index += 1) {
+      totals[index] = totalCounts[index] > 0 ? Math.round(totalSums[index] / totalCounts[index]) : 0
+    }
   }
 
   const bucketCoverage = bucketStats.map((stats, index) => ({
@@ -68,7 +91,7 @@ export function projectDayFlowCategory({ rows, buckets, bucketSize, selectedCate
     unavailableRows: stats.unavailable,
     totalRows: stats.rows,
   }))
-  const availableCategories = summarizeCategories(categoryStreams, bucketSize)
+  const availableCategories = summarizeCategories(categoryStreams, bucketSize, bucketAggregation)
   const categoryBuckets = bucketCoverage.filter((bucket) => bucket.state !== 'unavailable').length
   const filterState = selectedCategory === 'all'
     ? 'all'
@@ -78,9 +101,9 @@ export function projectDayFlowCategory({ rows, buckets, bucketSize, selectedCate
         ? 'selected'
         : 'unknown_category'
   const streams = selectedCategory === 'all'
-    ? [...allStreams.entries()].map(toStreamRecord)
+    ? [...allStreams.entries()].map((entry) => toStreamRecord(entry, bucketAggregation))
     : filterState === 'selected'
-      ? [...selectedStreams.entries()].map(toStreamRecord)
+      ? [...selectedStreams.entries()].map((entry) => toStreamRecord(entry, bucketAggregation))
       : []
   const aggregateCoverage = aggregateCoverageState(bucketCoverage)
 
@@ -98,7 +121,7 @@ export function projectDayFlowCategory({ rows, buckets, bucketSize, selectedCate
       filterBeforeTopN: true,
       membershipEvaluation: 'per_observed_snapshot',
       latestCategoryBackProjectionAllowed: false,
-      fullShareDenominator: 'all_observed_twitch_viewers_per_bucket',
+      fullShareDenominator: `all_observed_${provider}_viewers_per_bucket`,
       topFocusShareDenominator: 'displayed_selected_category_top_n_viewers_per_bucket',
       availableCategories,
       bucketCoverage,
@@ -125,45 +148,67 @@ export function parsePayload(payloadJson) {
   }
 }
 
-function normalizeItems(rawItems) {
+function normalizeItems(rawItems, provider) {
   const result = []
   rawItems.forEach((raw, rawIndex) => {
     if (!raw || typeof raw !== 'object') return
-    const id = slug(string(raw.channelLogin ?? raw.id ?? raw.login ?? raw.user_login ?? raw.name))
-    const viewers = safeViewer(raw.viewers ?? raw.viewer_count ?? raw.viewerCount)
+    const channel = raw.channel && typeof raw.channel === 'object' ? raw.channel : {}
+    const live = raw.livestream && typeof raw.livestream === 'object' ? raw.livestream : {}
+    const identity = provider === 'kick'
+      ? raw.channelLogin ?? raw.slug ?? raw.username ?? raw.user_slug ?? channel.slug ?? channel.username ?? channel.name
+      : raw.channelLogin ?? raw.id ?? raw.login ?? raw.user_login ?? raw.name
+    const id = slug(string(identity))
+    const viewers = safeViewer(provider === 'kick'
+      ? raw.viewers ?? raw.viewer_count ?? raw.viewerCount ?? live.viewer_count
+      : raw.viewers ?? raw.viewer_count ?? raw.viewerCount)
     if (!id || viewers <= 0) return
-    result.push({
-      rawIndex,
-      id,
-      name: string(raw.displayName ?? raw.name ?? raw.user_name ?? raw.channelLogin ?? id) || id,
-      title: string(raw.title ?? raw.streamTitle ?? raw.gameName),
-      url: string(raw.url) || `https://www.twitch.tv/${id}`,
-      viewers,
-    })
+    const name = provider === 'kick'
+      ? string(raw.displayName ?? raw.name ?? raw.username ?? channel.displayName ?? channel.name ?? channel.username ?? id) || id
+      : string(raw.displayName ?? raw.name ?? raw.user_name ?? raw.channelLogin ?? id) || id
+    const title = provider === 'kick'
+      ? string(raw.title ?? raw.session_title ?? raw.stream_title ?? live.session_title)
+      : string(raw.title ?? raw.streamTitle ?? raw.gameName)
+    const url = string(raw.url) || (provider === 'kick' ? `https://kick.com/${id}` : `https://www.twitch.tv/${id}`)
+    result.push({ rawIndex, id, name, title, url, viewers })
   })
   return result
 }
 
-function updateStream(map, item, index, bucketCount) {
+function updateStream(map, item, index, bucketCount, bucketAggregation) {
   const entry = map.get(item.id) ?? {
     name: item.name,
     title: item.title,
     url: item.url,
     values: Array(bucketCount).fill(0),
+    sums: Array(bucketCount).fill(0),
+    counts: Array(bucketCount).fill(0),
   }
-  entry.values[index] = Math.max(entry.values[index] ?? 0, item.viewers)
+  entry.name = item.name
+  entry.title = item.title
+  entry.url = item.url
+  if (bucketAggregation === 'average') {
+    entry.sums[index] += item.viewers
+    entry.counts[index] += 1
+  } else {
+    entry.values[index] = Math.max(entry.values[index] ?? 0, item.viewers)
+  }
   map.set(item.id, entry)
 }
 
-function updateCategoryStream(categoryStreams, categoryId, categoryName, item, index, bucketCount) {
+function streamValues(stream, bucketAggregation) {
+  if (bucketAggregation !== 'average') return stream.values
+  return stream.sums.map((sum, index) => stream.counts[index] > 0 ? Math.round(sum / stream.counts[index]) : 0)
+}
+
+function updateCategoryStream(categoryStreams, categoryId, categoryName, item, index, bucketCount, bucketAggregation) {
   const category = categoryStreams.get(categoryId) ?? { id: categoryId, name: categoryName, streams: new Map() }
-  updateStream(category.streams, item, index, bucketCount)
+  updateStream(category.streams, item, index, bucketCount, bucketAggregation)
   categoryStreams.set(categoryId, category)
 }
 
-function summarizeCategories(categoryStreams, bucketSize) {
+function summarizeCategories(categoryStreams, bucketSize, bucketAggregation) {
   return [...categoryStreams.values()].map((category) => {
-    const streams = [...category.streams.values()]
+    const streams = [...category.streams.values()].map((stream) => ({ ...stream, values: streamValues(stream, bucketAggregation) }))
     const bucketCount = streams[0]?.values.length ?? 0
     const totals = Array.from({ length: bucketCount }, (_, index) => streams.reduce((sum, stream) => sum + (stream.values[index] ?? 0), 0))
     return {
@@ -190,8 +235,14 @@ function aggregateCoverageState(bucketCoverage) {
   return 'observed'
 }
 
-function toStreamRecord([id, stream]) {
-  return { id, ...stream }
+function toStreamRecord([id, stream], bucketAggregation) {
+  return {
+    id,
+    name: stream.name,
+    title: stream.title,
+    url: stream.url,
+    values: streamValues(stream, bucketAggregation),
+  }
 }
 
 function floorToBucket(iso, bucketSize) {
