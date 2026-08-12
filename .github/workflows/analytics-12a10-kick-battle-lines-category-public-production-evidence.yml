@@ -1,0 +1,98 @@
+name: Analytics 12A10 Kick Battle Lines Category Public Production Evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a10-kick-battle-lines-category-public-production-evidence.yml'
+      - '.github/workflows/analytics-12a10-kick-battle-lines-category-public-cutover.yml'
+      - 'docs/audits/12a10-kick-battle-lines-category-public-production-evidence.json'
+      - 'docs/audits/12a10-kick-battle-lines-category-public-production-acceptance.json'
+      - 'scripts/verify-12a10-kick-battle-lines-category-public-production-evidence.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a10-kick-battle-lines-category-public-production-evidence.yml'
+      - '.github/workflows/analytics-12a10-kick-battle-lines-category-public-cutover.yml'
+      - 'docs/audits/12a10-kick-battle-lines-category-public-production-evidence.json'
+      - 'docs/audits/12a10-kick-battle-lines-category-public-production-acceptance.json'
+      - 'scripts/verify-12a10-kick-battle-lines-category-public-production-evidence.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a10-kick-battle-lines-public-production-evidence-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify exact five-file public evidence acceptance scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          allowed='^(\.github/workflows/analytics-12a10-kick-battle-lines-category-public-production-evidence\.yml|\.github/workflows/analytics-12a10-kick-battle-lines-category-public-cutover\.yml|docs/audits/12a10-kick-battle-lines-category-public-production-evidence\.json|docs/audits/12a10-kick-battle-lines-category-public-production-acceptance\.json|scripts/verify-12a10-kick-battle-lines-category-public-production-evidence\.mjs)$'
+          test "${#changed[@]}" -eq 5
+          for file in "${changed[@]}"; do
+            [[ "$file" =~ $allowed ]] || { echo "Unexpected public evidence acceptance change: $file" >&2; exit 1; }
+          done
+      - name: Verify frozen public production evidence
+        run: node scripts/verify-12a10-kick-battle-lines-category-public-production-evidence.mjs
+      - name: Verify retained public and historical candidate authorities
+        run: |
+          node scripts/verify-12a10-kick-battle-lines-category-public-cutover.mjs
+          node scripts/verify-12a10-kick-battle-lines-category-candidate.mjs
+      - name: Run retained Battle Lines fixtures
+        working-directory: apps/web
+        run: |
+          node scripts/verify-battle-lines-core.mjs
+          node scripts/verify-kick-battle-lines-category-candidate.mjs
+      - name: Verify retained architecture and production boundaries
+        run: |
+          node scripts/verify-quality-u10g-architecture.mjs
+          node scripts/verify-quality-u10d-analysis-coherence.mjs
+          cd apps/web
+          node scripts/verify-production-source.mjs
+      - name: Verify U10G browser/evidence syntax
+        run: |
+          node --check apps/web/scripts/quality-u10g-architecture-browser.mjs
+          node --check scripts/verify-quality-u10g-browser-evidence.mjs
+      - name: Typecheck and build unchanged product
+        run: |
+          pnpm typecheck:web
+          pnpm build:web
+      - name: Publish permanent public acceptance boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick Battle Lines public Category production evidence'
+            echo
+            echo '- Public product/deployment SHA: 2e81a04718885fedb993a39b28dc1655f6660f3a'
+            echo '- Production run: 31615910629'
+            echo '- Production job: 94179111662'
+            echo '- Artifact: 9149490130'
+            echo '- Scenarios: 6 / 6 pass'
+            echo '- Public desktop: 127 category options; selected category 15; 5 lines / 6 battles'
+            echo '- Production point states: 121 outside_category points observed'
+            echo '- 390px mobile: no overflow; Category touch target 44px'
+            echo '- Legacy categoryPreview=1 compatibility: pass; removed after public Category interaction'
+            echo '- Unknown category: 0 category lines / 0 battles with 288 observed buckets retained'
+            echo '- Twitch Battle Lines: category-free and provider-isolated'
+            echo '- Human visual acceptance: pass'
+            echo '- Consumed one-shot public cutover workflow: retired'
+            echo '- Kick Battle Lines Category: fully public accepted'
+            echo '- Kick History Category: not authorized; separate decision required'
+          } >> "$GITHUB_STEP_SUMMARY"
