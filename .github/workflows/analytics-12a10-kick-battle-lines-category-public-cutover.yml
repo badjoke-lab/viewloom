@@ -5,9 +5,9 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a10-kick-battle-lines-category-public-cutover.yml'
+      - '.github/workflows/analytics-12a10-kick-battle-lines-category-candidate.yml'
       - 'scripts/verify-12a10-kick-battle-lines-category-public-cutover.mjs'
       - 'scripts/verify-12a10-kick-battle-lines-category-candidate.mjs'
-      - 'scripts/verify-12a10-kick-battle-lines-category-hidden-production-evidence.mjs'
       - 'apps/web/scripts/kick-battle-lines-category-public-production-acceptance.mjs'
       - 'apps/web/functions/api/kick-battle-lines.ts'
       - 'apps/web/src/live/battle-lines-current-shell-entry.ts'
@@ -15,9 +15,9 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a10-kick-battle-lines-category-public-cutover.yml'
+      - '.github/workflows/analytics-12a10-kick-battle-lines-category-candidate.yml'
       - 'scripts/verify-12a10-kick-battle-lines-category-public-cutover.mjs'
       - 'scripts/verify-12a10-kick-battle-lines-category-candidate.mjs'
-      - 'scripts/verify-12a10-kick-battle-lines-category-hidden-production-evidence.mjs'
       - 'apps/web/scripts/kick-battle-lines-category-public-production-acceptance.mjs'
       - 'apps/web/functions/api/kick-battle-lines.ts'
       - 'apps/web/src/live/battle-lines-current-shell-entry.ts'
@@ -48,17 +48,15 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(\.github/workflows/analytics-12a10-kick-battle-lines-category-public-cutover\.yml|scripts/verify-12a10-kick-battle-lines-category-public-cutover\.mjs|scripts/verify-12a10-kick-battle-lines-category-candidate\.mjs|scripts/verify-12a10-kick-battle-lines-category-hidden-production-evidence\.mjs|apps/web/scripts/kick-battle-lines-category-public-production-acceptance\.mjs|apps/web/functions/api/kick-battle-lines\.ts|apps/web/src/live/battle-lines-current-shell-entry\.ts)$'
+          allowed='^(\.github/workflows/analytics-12a10-kick-battle-lines-category-public-cutover\.yml|\.github/workflows/analytics-12a10-kick-battle-lines-category-candidate\.yml|scripts/verify-12a10-kick-battle-lines-category-public-cutover\.mjs|scripts/verify-12a10-kick-battle-lines-category-candidate\.mjs|apps/web/scripts/kick-battle-lines-category-public-production-acceptance\.mjs|apps/web/functions/api/kick-battle-lines\.ts|apps/web/src/live/battle-lines-current-shell-entry\.ts)$'
           test "${#changed[@]}" -eq 7
           for file in "${changed[@]}"; do
             [[ "$file" =~ $allowed ]] || { echo "Unexpected public cutover change: $file" >&2; exit 1; }
           done
       - name: Verify public cutover authority and runtime
         run: node scripts/verify-12a10-kick-battle-lines-category-public-cutover.mjs
-      - name: Verify historical hidden authorities remain auditable
-        run: |
-          node scripts/verify-12a10-kick-battle-lines-category-candidate.mjs
-          node scripts/verify-12a10-kick-battle-lines-category-hidden-production-evidence.mjs
+      - name: Verify accepted hidden candidate remains historically auditable
+        run: node scripts/verify-12a10-kick-battle-lines-category-candidate.mjs
       - name: Run retained Battle Lines fixtures
         working-directory: apps/web
         run: |
@@ -92,6 +90,7 @@ jobs:
             echo '- Top: 3 / 5 / 10, default 5; metrics Viewers / Indexed; display buckets 5m / 10m'
             echo '- Mobile Category touch target: >=44px'
             echo '- Twitch Battle Lines Category controls: absent'
+            echo '- Hidden candidate audit reads accepted SHA a802e7fe1e964180904c72744b7228c549a54660'
             echo '- Exact-production public browser acceptance after merge: required'
           } >> "$GITHUB_STEP_SUMMARY"
 
