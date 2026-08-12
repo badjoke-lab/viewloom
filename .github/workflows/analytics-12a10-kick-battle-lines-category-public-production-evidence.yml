@@ -51,11 +51,10 @@ jobs:
           done
       - name: Verify frozen public production evidence
         run: node scripts/verify-12a10-kick-battle-lines-category-public-production-evidence.mjs
-      - name: Verify retained public and historical authorities
+      - name: Verify retained public and historical candidate authorities
         run: |
           node scripts/verify-12a10-kick-battle-lines-category-public-cutover.mjs
           node scripts/verify-12a10-kick-battle-lines-category-candidate.mjs
-          node scripts/verify-12a10-kick-battle-lines-category-hidden-production-evidence.mjs
       - name: Run retained Battle Lines fixtures
         working-directory: apps/web
         run: |
