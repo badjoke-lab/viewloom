@@ -1,0 +1,29 @@
+name: TMP 823 Kick Battle Lines Public Cutover
+
+on:
+  push:
+    branches: [work-823-kick-battle-lines-category-public-cutover]
+    paths:
+      - '.github/workflows/tmp-823-public-cutover.yml'
+      - 'scripts/tmp-823-public-cutover.py'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work-823-kick-battle-lines-category-public-cutover
+      - name: Apply bounded public cutover patch
+        run: python scripts/tmp-823-public-cutover.py
+      - name: Commit public cutover runtime
+        run: |
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add apps/web/functions/api/kick-battle-lines.ts apps/web/src/live/battle-lines-current-shell-entry.ts
+          git diff --cached --quiet && exit 0
+          git commit -m 'Expose Kick Battle Lines category controls publicly'
+          git push origin HEAD:work-823-kick-battle-lines-category-public-cutover
