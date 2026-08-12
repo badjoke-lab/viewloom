@@ -106,7 +106,8 @@ async function auditBattle(provider, width, mode) {
   assert.equal(initial.replaceStateSame, true, `${id}: history.replaceState was replaced\n${initial.replaceStateReplacementStack ?? ''}`)
   assert.equal(initial.urlGetSame, true, `${id}: URLSearchParams.get was replaced\n${initial.urlGetReplacementStack ?? ''}`)
   assert.equal(initial.categoryControlPresent, false, `${id}: Battle Lines exposed Day Flow Category control`)
-  assert.equal(initial.categoryParam, null, `${id}: Battle Lines emitted Day Flow category state`)
+  const expectedCategoryParam = provider === 'kick' ? 'all' : null
+  assert.equal(initial.categoryParam, expectedCategoryParam, `${id}: Battle Lines category URL state mismatch`)
   assert.equal(initial.selectedIndex, '1', `${id}: selected bucket was not resolved`)
   assert.equal(initial.timeParam, '2026-06-29T00:05:00.000Z', `${id}: canonical time missing`)
   assert.equal(initial.pointParam, null, `${id}: legacy point remained in canonical URL`)

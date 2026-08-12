@@ -1,15 +1,18 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 
+const HIDDEN_SHA = 'a802e7fe1e964180904c72744b7228c549a54660'
 const read = (path) => readFileSync(path, 'utf8')
+const readAt = (sha, path) => execFileSync('git', ['show', `${sha}:${path}`], { encoding: 'utf8' })
 const json = (path) => JSON.parse(read(path))
 const decision = json('docs/audits/12a10-kick-battle-lines-category-feasibility-decision.json')
-const core = read('apps/web/functions/_lib/battle-lines-core.ts')
-const category = read('apps/web/functions/_lib/battle-lines-category.ts')
-const api = read('apps/web/functions/api/kick-battle-lines.ts')
-const controller = read('apps/web/src/live/battle-lines-current-shell-entry.ts')
-const kickHtml = read('apps/web/kick/battle-lines/index.html')
-const twitchApi = read('apps/web/functions/api/battle-lines.ts')
+const core = readAt(HIDDEN_SHA, 'apps/web/functions/_lib/battle-lines-core.ts')
+const category = readAt(HIDDEN_SHA, 'apps/web/functions/_lib/battle-lines-category.ts')
+const api = readAt(HIDDEN_SHA, 'apps/web/functions/api/kick-battle-lines.ts')
+const controller = readAt(HIDDEN_SHA, 'apps/web/src/live/battle-lines-current-shell-entry.ts')
+const kickHtml = readAt(HIDDEN_SHA, 'apps/web/kick/battle-lines/index.html')
+const twitchApi = readAt(HIDDEN_SHA, 'apps/web/functions/api/battle-lines.ts')
 
 assert.equal(decision.status, 'accepted_on_merge')
 assert.equal(decision.trackingIssue, 813)
@@ -116,4 +119,6 @@ console.log(JSON.stringify({
   categoryFilterBeforeTopAndScoring: true,
   pointStates: ['observed', 'outside_category', 'category_unavailable', 'offline', 'not_observed', 'missing'],
   nativeBrowserGlobalsPreserved: true,
+  historicalVerifier: true,
+  hiddenAuthoritySha: HIDDEN_SHA,
 }, null, 2))

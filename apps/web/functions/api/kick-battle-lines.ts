@@ -131,8 +131,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       targetSource: str(meta?.targetSource) || 'unknown',
       coverageMode: str(meta?.coverageMode) || 'unknown',
       categoryFilter: {
-        implementationState: 'hidden_candidate',
-        publicExposureAuthorized: false,
+        implementationState: 'public',
+        publicExposureAuthorized: true,
         contractVersion: projection.contractRows > 0 ? BATTLE_CATEGORY_CONTRACT_VERSION : null,
         selectedCategory: requestedCategory,
         state: projection.state,
@@ -174,8 +174,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         requestedCategory === 'all'
           ? `${compacted.candidateCount} unfiltered candidate streams reduced to the requested Top ${top}; category=all preserves the exact unfiltered fallback.`
           : `${projection.candidateCount} category-qualified candidate streams entered Battle Lines before Top ${top} and Recommended Battle scoring.`,
-        'category_implementation_state=hidden_candidate',
-        'category_public_exposure=false',
+        'category_implementation_state=public',
+        'category_public_exposure=true',
         `category_selected=${requestedCategory}`,
         `category_filter_state=${projection.state}`,
         `category_coverage_state=${projection.coverageState}`,
@@ -209,8 +209,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       error: { code: 'kick_battle_lines_api_error', message },
       ...(categoryCandidateRequested ? {
         categoryFilter: {
-          implementationState: 'hidden_candidate',
-          publicExposureAuthorized: false,
+          implementationState: 'public',
+          publicExposureAuthorized: true,
           selectedCategory: requestedCategory,
           state: 'category_unavailable',
           coverageState: 'unavailable',

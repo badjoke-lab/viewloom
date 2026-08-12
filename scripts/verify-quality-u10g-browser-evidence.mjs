@@ -34,10 +34,11 @@ for (const provider of ['twitch', 'kick']) {
     }
 
     if (scenario.feature === 'battle-lines') {
+      const expectedCategoryParam = provider === 'kick' ? 'all' : null
       assert.equal(scenario.initial.fetchSame, true, `${scenario.id}: Battle Lines fetch identity changed`)
       assert.equal(scenario.initial.replaceStateSame, true, `${scenario.id}: Battle Lines replaceState identity changed`)
       assert.equal(scenario.initial.categoryControlPresent, false, `${scenario.id}: Battle Lines exposed Day Flow Category control`)
-      assert.equal(scenario.initial.categoryParam, null, `${scenario.id}: Battle Lines emitted Day Flow category state`)
+      assert.equal(scenario.initial.categoryParam, expectedCategoryParam, `${scenario.id}: Battle Lines category URL state mismatch`)
       assert.equal(scenario.initial.selectedIndex, '1', `${scenario.id}: selected index changed`)
       assert.equal(scenario.initial.timeParam, '2026-06-29T00:05:00.000Z', `${scenario.id}: canonical time changed`)
       assert.equal(scenario.initial.pointParam, null, `${scenario.id}: legacy point remained`)
@@ -49,5 +50,5 @@ console.log('U10G browser evidence verification passed.')
 console.log('- 8 Twitch/Kick Day Flow and Battle Lines architecture scenarios')
 console.log('- one feature request per initial load and zero cross-provider requests')
 console.log('- Twitch and Kick Day Flow carry separately authorized provider-correct public category fetch/history wrappers')
-console.log('- both Battle Lines routes retain native fetch/history identities')
+console.log('- Battle Lines retain native fetch/history identities; Twitch category state is null and Kick public category state defaults to all')
 console.log('- URLSearchParams.get identity is native on all routes')
