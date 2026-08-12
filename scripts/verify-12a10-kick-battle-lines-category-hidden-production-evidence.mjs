@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict'
-import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 
@@ -16,17 +15,15 @@ for (const path of [evidencePath, acceptancePath, apiPath, controllerPath, decis
 }
 assert.equal(existsSync(oneShotWorkflow), false, `${oneShotWorkflow}: consumed one-shot workflow must be retired`)
 
-const HIDDEN_SHA = 'a802e7fe1e964180904c72744b7228c549a54660'
 const read = (path) => readFileSync(path, 'utf8')
-const readAt = (sha, path) => execFileSync('git', ['show', `${sha}:${path}`], { encoding: 'utf8' })
 const json = (path) => JSON.parse(read(path))
 const sha256 = (path) => createHash('sha256').update(readFileSync(path)).digest('hex')
 
 const evidence = json(evidencePath)
 const acceptance = json(acceptancePath)
 const decision = json(decisionPath)
-const api = readAt(HIDDEN_SHA, apiPath)
-const controller = readAt(HIDDEN_SHA, controllerPath)
+const api = read(apiPath)
+const controller = read(controllerPath)
 
 assert.equal(sha256(evidencePath), 'c71dc2adcadf8f70dd891a41dd31347c427d52878e600455e3c548764085866b')
 assert.equal(evidence.schemaVersion, 'viewloom-12a10-kick-battle-lines-category-hidden-production-evidence-v1')
@@ -229,6 +226,4 @@ console.log(JSON.stringify({
   mobileTouchTargetPx: result.mobileCategoryTouchTargetPx,
   publicCutoverAuthorized: authorization.publicKickBattleLinesCategoryUiAuthorized,
   oneShotProductionWorkflowRetired: true,
-  historicalRuntimeVerifier: true,
-  hiddenAuthoritySha: HIDDEN_SHA,
 }, null, 2))
