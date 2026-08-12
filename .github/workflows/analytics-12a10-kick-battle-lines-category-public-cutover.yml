@@ -8,6 +8,7 @@ on:
       - '.github/workflows/analytics-12a10-kick-battle-lines-category-candidate.yml'
       - 'scripts/verify-12a10-kick-battle-lines-category-public-cutover.mjs'
       - 'scripts/verify-12a10-kick-battle-lines-category-candidate.mjs'
+      - 'scripts/verify-quality-u10g-browser-evidence.mjs'
       - 'apps/web/scripts/kick-battle-lines-category-public-production-acceptance.mjs'
       - 'apps/web/scripts/quality-u10g-architecture-browser.mjs'
       - 'apps/web/functions/api/kick-battle-lines.ts'
@@ -19,6 +20,7 @@ on:
       - '.github/workflows/analytics-12a10-kick-battle-lines-category-candidate.yml'
       - 'scripts/verify-12a10-kick-battle-lines-category-public-cutover.mjs'
       - 'scripts/verify-12a10-kick-battle-lines-category-candidate.mjs'
+      - 'scripts/verify-quality-u10g-browser-evidence.mjs'
       - 'apps/web/scripts/kick-battle-lines-category-public-production-acceptance.mjs'
       - 'apps/web/scripts/quality-u10g-architecture-browser.mjs'
       - 'apps/web/functions/api/kick-battle-lines.ts'
@@ -41,7 +43,7 @@ jobs:
           fetch-depth: 0
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-      - name: Verify exact eight-file public cutover scope
+      - name: Verify exact nine-file public cutover scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -50,8 +52,8 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          allowed='^(\.github/workflows/analytics-12a10-kick-battle-lines-category-public-cutover\.yml|\.github/workflows/analytics-12a10-kick-battle-lines-category-candidate\.yml|scripts/verify-12a10-kick-battle-lines-category-public-cutover\.mjs|scripts/verify-12a10-kick-battle-lines-category-candidate\.mjs|apps/web/scripts/kick-battle-lines-category-public-production-acceptance\.mjs|apps/web/scripts/quality-u10g-architecture-browser\.mjs|apps/web/functions/api/kick-battle-lines\.ts|apps/web/src/live/battle-lines-current-shell-entry\.ts)$'
-          test "${#changed[@]}" -eq 8
+          allowed='^(\.github/workflows/analytics-12a10-kick-battle-lines-category-public-cutover\.yml|\.github/workflows/analytics-12a10-kick-battle-lines-category-candidate\.yml|scripts/verify-12a10-kick-battle-lines-category-public-cutover\.mjs|scripts/verify-12a10-kick-battle-lines-category-candidate\.mjs|scripts/verify-quality-u10g-browser-evidence\.mjs|apps/web/scripts/kick-battle-lines-category-public-production-acceptance\.mjs|apps/web/scripts/quality-u10g-architecture-browser\.mjs|apps/web/functions/api/kick-battle-lines\.ts|apps/web/src/live/battle-lines-current-shell-entry\.ts)$'
+          test "${#changed[@]}" -eq 9
           for file in "${changed[@]}"; do
             [[ "$file" =~ $allowed ]] || { echo "Unexpected public cutover change: $file" >&2; exit 1; }
           done
@@ -74,6 +76,7 @@ jobs:
         run: |
           node --check apps/web/scripts/kick-battle-lines-category-public-production-acceptance.mjs
           node --check apps/web/scripts/quality-u10g-architecture-browser.mjs
+          node --check scripts/verify-quality-u10g-browser-evidence.mjs
       - name: Typecheck and build web
         run: |
           pnpm typecheck:web
@@ -95,7 +98,7 @@ jobs:
             echo '- Mobile Category touch target: >=44px'
             echo '- Twitch Battle Lines Category controls: absent'
             echo '- Hidden candidate audit reads accepted SHA a802e7fe1e964180904c72744b7228c549a54660'
-            echo '- U10G browser: Twitch category URL remains null; Kick public Battle Lines defaults to category=all'
+            echo '- U10G browser/evidence: Twitch category URL remains null; Kick public Battle Lines defaults to category=all'
             echo '- Exact-production public browser acceptance after merge: required'
           } >> "$GITHUB_STEP_SUMMARY"
 
