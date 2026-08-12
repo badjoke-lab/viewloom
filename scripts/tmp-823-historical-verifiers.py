@@ -6,7 +6,7 @@ candidate_path = Path('scripts/verify-12a10-kick-battle-lines-category-candidate
 candidate = candidate_path.read_text()
 if "import { execFileSync } from 'node:child_process'" not in candidate:
     candidate = candidate.replace("import assert from 'node:assert/strict'\n", "import assert from 'node:assert/strict'\nimport { execFileSync } from 'node:child_process'\n")
-candidate = candidate.replace("const read = (path) => readFileSync(path, 'utf8')\n", f"const HIDDEN_SHA = '{HIDDEN_SHA}'\nconst read = (path) => readFileSync(path, 'utf8')\nconst readAt = (sha, path) => execFileSync('git', ['show', `\\${{sha}}:\\${{path}}`], {{ encoding: 'utf8' }})\n")
+candidate = candidate.replace("const read = (path) => readFileSync(path, 'utf8')\n", f"const HIDDEN_SHA = '{HIDDEN_SHA}'\nconst read = (path) => readFileSync(path, 'utf8')\nconst readAt = (sha, path) => execFileSync('git', ['show', `${{sha}}:${{path}}`], {{ encoding: 'utf8' }})\n")
 for var, path in [
     ('core', 'apps/web/functions/_lib/battle-lines-core.ts'),
     ('category', 'apps/web/functions/_lib/battle-lines-category.ts'),
@@ -31,7 +31,7 @@ evidence_path = Path('scripts/verify-12a10-kick-battle-lines-category-hidden-pro
 evidence = evidence_path.read_text()
 if "import { execFileSync } from 'node:child_process'" not in evidence:
     evidence = evidence.replace("import assert from 'node:assert/strict'\n", "import assert from 'node:assert/strict'\nimport { execFileSync } from 'node:child_process'\n")
-evidence = evidence.replace("const read = (path) => readFileSync(path, 'utf8')\n", f"const HIDDEN_SHA = '{HIDDEN_SHA}'\nconst read = (path) => readFileSync(path, 'utf8')\nconst readAt = (sha, path) => execFileSync('git', ['show', `\\${{sha}}:\\${{path}}`], {{ encoding: 'utf8' }})\n")
+evidence = evidence.replace("const read = (path) => readFileSync(path, 'utf8')\n", f"const HIDDEN_SHA = '{HIDDEN_SHA}'\nconst read = (path) => readFileSync(path, 'utf8')\nconst readAt = (sha, path) => execFileSync('git', ['show', `${{sha}}:${{path}}`], {{ encoding: 'utf8' }})\n")
 for var, path in [
     ('api', 'apps/web/functions/api/kick-battle-lines.ts'),
     ('controller', 'apps/web/src/live/battle-lines-current-shell-entry.ts'),
