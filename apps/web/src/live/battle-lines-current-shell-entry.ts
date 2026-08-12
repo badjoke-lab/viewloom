@@ -21,7 +21,9 @@ type MarkerCandidate = { index: number; value: number; text: string; color: stri
 const provider = document.body.dataset.provider === 'kick' ? 'kick' : 'twitch'
 const endpoint = provider === 'kick' ? '/api/kick-battle-lines' : '/api/battle-lines'
 const params = new URLSearchParams(location.search)
-const categoryPreviewEnabled = provider === 'kick' && params.get('categoryPreview') === '1'
+const legacyCategoryPreviewRequested = provider === 'kick' && params.get('categoryPreview') === '1'
+const categoryControlsEnabled = provider === 'kick'
+let retainLegacyCategoryPreview = legacyCategoryPreviewRequested
 const selection = readBattleLinesSelection(params)
 const todayUtc = new Date().toISOString().slice(0, 10)
 const state: State = {
@@ -48,7 +50,7 @@ let autoTimer = 0
 const BATTLE_LINES_TIMEOUT_MS = 12_000
 
 initializeBattleLinesLayoutHost()
-if (categoryPreviewEnabled) installCategoryPreviewControl()
+if (categoryControlsEnabled) installCategoryPreviewControl()
 wireControls()
 syncControls()
 void hydrate()
@@ -144,7 +146,7 @@ async function hydrate(options: { preserveBattle?: boolean; preserveTime?: boole
   try {
     const query = new URLSearchParams({ metric: state.metric, top: String(state.top), bucket: state.bucket, range: state.range })
     if (state.range === 'date') query.set('date', state.date)
-    if (categoryPreviewEnabled) query.set('category', state.category)
+    if (categoryControlsEnabled) query.set('category', state.category)
     const response = await fetchBattleLinesResponse(`${endpoint}?${query}`)
     const next = await response.json() as Payload
     if (serial !== requestSerial) return
@@ -152,7 +154,7 @@ async function hydrate(options: { preserveBattle?: boolean; preserveTime?: boole
     const previousBattle = options.preserveBattle && state.manualBattle ? state.selectedBattleId : null
     const previousBucket = options.preserveTime && payload && state.selectedIndex >= 0 ? payload.timeline[state.selectedIndex] : null
     payload = next
-    if (categoryPreviewEnabled) syncCategoryPreview(next)
+    if (categoryControlsEnabled) syncCategoryPreview(next)
     const battles = next.battles ?? []
     const recommended = recommendedBattleFor(next)
     if (previousBattle && battles.some((battle) => battle.id === previousBattle)) {
@@ -560,17 +562,18 @@ function syncControls(): void {
 }
 
 function installCategoryPreviewControl(): void {
-  if (!categoryPreviewEnabled || document.querySelector('[data-battle-category-preview]')) return
+  if (!categoryControlsEnabled || document.querySelector('[data-battle-category-preview]')) return
   const controls = document.querySelector<HTMLElement>('.battle-controls')
   if (!controls) return
   installCategoryPreviewStyles()
   const root = document.createElement('div')
   root.className = 'battle-control battle-category-preview'
-  root.dataset.battleCategoryPreview = 'hidden'
+  root.dataset.battleCategoryPreview = 'public'
   root.innerHTML = `<label for="battle-category-preview-select">Category</label><div class="battle-control__row"><select id="battle-category-preview-select" data-battle-category-preview-select aria-label="Kick Battle Lines category"><option value="all">All categories</option></select></div><small data-battle-category-preview-status role="status" aria-live="polite">Loading category coverage…</small>`
   controls.insertBefore(root, controls.firstChild)
   root.querySelector<HTMLSelectElement>('[data-battle-category-preview-select]')?.addEventListener('change', (event) => {
     const select = event.currentTarget as HTMLSelectElement
+    retainLegacyCategoryPreview = false
     state.category = normalizeCategory(select.value)
     state.manualBattle = false
     state.selectedBattleId = null
@@ -583,10 +586,10 @@ function installCategoryPreviewControl(): void {
 }
 
 function syncCategoryPreview(data: Payload): void {
-  if (!categoryPreviewEnabled) return
+  if (!categoryControlsEnabled) return
   const root = document.querySelector<HTMLElement>('[data-battle-category-preview]')
   const filter = data.categoryFilter
-  if (!root || !filter || filter.implementationState !== 'hidden_candidate' || filter.publicExposureAuthorized !== false) return
+  if (!root || !filter || filter.implementationState !== 'public' || filter.publicExposureAuthorized !== true) return
   state.category = normalizeCategory(filter.selectedCategory ?? state.category)
   const select = root.querySelector<HTMLSelectElement>('[data-battle-category-preview-select]')
   const categories = filter.availableCategories ?? data.availableCategories ?? []
@@ -647,8 +650,8 @@ function setPressed(selector: string, key: string, value: string): void {
 
 function syncUrl(): void {
   const next = new URLSearchParams()
-  if (categoryPreviewEnabled) {
-    next.set('categoryPreview', '1')
+  if (categoryControlsEnabled) {
+    if (retainLegacyCategoryPreview) next.set('categoryPreview', '1')
     next.set('category', state.category)
   }
   if (state.layoutInUrl) next.set('layout', state.layout)
