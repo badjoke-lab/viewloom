@@ -254,3 +254,18 @@ ON CONFLICT(provider, day) DO UPDATE SET
   contract_version = excluded.contract_version,
   updated_at = excluded.updated_at
 `
+
+export const HISTORY_CATEGORY_RETENTION_DELETE_DAILY_SQL = `
+DELETE FROM history_category_daily
+WHERE provider = ? AND day < date('now', ?)
+`
+
+export const HISTORY_CATEGORY_RETENTION_DELETE_STREAMER_SQL = `
+DELETE FROM history_category_streamer_daily
+WHERE provider = ? AND day < date('now', ?)
+`
+
+export const HISTORY_CATEGORY_RETENTION_DELETE_STATUS_SQL = `
+DELETE FROM history_category_day_status
+WHERE provider = ? AND day < date('now', ?)
+`
