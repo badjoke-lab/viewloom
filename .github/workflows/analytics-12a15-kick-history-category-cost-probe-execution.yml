@@ -117,6 +117,7 @@ jobs:
             echo '- Probe day: current UTC day only'
             echo '- Target aggregate rows before probe: must be zero'
             echo '- Probe cleanup: mandatory; post rows must be zero'
+            echo '- Temporary Worker cleanup: service-name based from deploy attempt until confirmed 404'
             echo '- Production execution on this package PR/merge: no'
             echo '- Permanent generator enablement: no'
             echo '- Trigger: separate exact one-file PR'
@@ -182,13 +183,32 @@ jobs:
           stage='initialize'
           url=''
           PROBE_TOKEN=''
-          deployed=false
+          cleanup_may_be_required=false
           post_delete_status=-1
           probe_day=$(date -u +%F)
 
           read_json_or_null() {
             local path="$1"
             if [[ -f "$path" ]]; then cat "$path"; else printf 'null'; fi
+          }
+
+          delete_worker_until_absent() {
+            local delete_response=''
+            for attempt in $(seq 1 12); do
+              delete_response=$(curl -sS -X DELETE \
+                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                -H 'Content-Type: application/json' \
+                "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service" 2>/dev/null || true)
+              printf '%s' "$delete_response" > "$raw/delete-response.json"
+              post_delete_status=$(curl -sS -o /dev/null -w '%{http_code}' \
+                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service" 2>/dev/null || printf '000')
+              if [[ "$post_delete_status" == '404' ]]; then
+                return 0
+              fi
+              sleep 2
+            done
+            return 1
           }
 
           write_failure_evidence() {
@@ -211,20 +231,15 @@ jobs:
 
           failure_handler() {
             set +e
-            if [[ "$deployed" == 'true' && -n "$url" && -n "$PROBE_TOKEN" ]]; then
-              curl -sS -o "$raw/post-failure.json" -w '%{http_code}' -X POST \
-                -H "Authorization: Bearer $PROBE_TOKEN" \
-                -H 'Content-Type: application/json' \
-                --data "{\"day\":\"$probe_day\"}" \
-                "$url/inspect" > "$raw/post-failure.status" 2>/dev/null
-              curl -sS -X DELETE \
-                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-                -H 'Content-Type: application/json' \
-                "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service" \
-                > "$raw/delete-response.json" 2>/dev/null
-              post_delete_status=$(curl -sS -o /dev/null -w '%{http_code}' \
-                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-                "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
+            if [[ "$cleanup_may_be_required" == 'true' ]]; then
+              if [[ -n "$url" && -n "$PROBE_TOKEN" ]]; then
+                curl -sS -o "$raw/post-failure.json" -w '%{http_code}' -X POST \
+                  -H "Authorization: Bearer $PROBE_TOKEN" \
+                  -H 'Content-Type: application/json' \
+                  --data "{\"day\":\"$probe_day\"}" \
+                  "$url/inspect" > "$raw/post-failure.status" 2>/dev/null || true
+              fi
+              delete_worker_until_absent || true
             fi
             write_failure_evidence
           }
@@ -240,10 +255,10 @@ jobs:
           cp workers/history-category-aggregate-cost-probe/wrangler.kick.toml "$config"
           sed -i "s|main = \"src/index.ts\"|main = \"$GITHUB_WORKSPACE/workers/history-category-aggregate-cost-probe/src/index.ts\"|" "$config"
           PROBE_TOKEN=$(openssl rand -hex 32)
+          cleanup_may_be_required=true
           pnpm dlx wrangler@4 deploy --config "$config" > "$raw/deploy.log" 2>&1
-          deployed=true
-          printf '%s' "$PROBE_TOKEN" | pnpm dlx wrangler@4 secret put PROBE_TOKEN --config "$config" >> "$raw/deploy.log" 2>&1
           url=$(grep -Eo 'https://[^ ]+workers.dev' "$raw/deploy.log" | tail -1)
+          printf '%s' "$PROBE_TOKEN" | pnpm dlx wrangler@4 secret put PROBE_TOKEN --config "$config" >> "$raw/deploy.log" 2>&1
           test -n "$url"
 
           stage='pre_inspect'
@@ -322,16 +337,9 @@ jobs:
           [[ $(jq -r '.providerLeakageRows // -1' "$raw/post.json") == '0' ]]
 
           stage='delete_temporary_worker'
-          delete_response=$(curl -sS -X DELETE \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            -H 'Content-Type: application/json' \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
-          [[ $(jq -r '.success // false' <<<"$delete_response") == 'true' ]]
-          deployed=false
-          post_delete_status=$(curl -sS -o /dev/null -w '%{http_code}' \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
+          delete_worker_until_absent
           [[ "$post_delete_status" == '404' ]]
+          cleanup_may_be_required=false
 
           stage='freeze_success_evidence'
           trap - ERR
