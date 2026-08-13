@@ -1,0 +1,146 @@
+{
+  "schemaVersion": "viewloom-12a14-kick-history-category-schema-final-acceptance-v1",
+  "status": "accepted",
+  "phase": "12A-14",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 844,
+  "provider": "kick",
+  "migration": "db/d1/006_history_category_aggregate.sql",
+  "history": {
+    "initialPackagePr": 834,
+    "initialPackageHeadSha": "e960043884f348b68d810591eaca1d9892fe5ccf",
+    "initialTriggerPr": 837,
+    "initialFailedRunId": 31670411266,
+    "initialFailedJobId": 94353742254,
+    "cleanDiagnosisRunId": 31670727423,
+    "cleanDiagnosisRunAttempt": 1,
+    "cleanDiagnosisJobId": 94354713607,
+    "cleanDiagnosisArtifactId": 9169595791,
+    "cleanDiagnosisArtifactDigest": "sha256:3c961dc551376791619a5399eb125103ab1c9328b78ad2706399cae83c1c9938",
+    "cleanDiagnosisConclusion": "all_five_objects_absent_no_partial_schema",
+    "repairPackagePr": 841,
+    "repairPackageHeadSha": "9f99423355e0fb81938dbd0fc0a02437e8cb7ab9",
+    "retryTriggerPr": 843
+  },
+  "productionRetry": {
+    "mainSha": "3a86ce414e4dcfd95d15b0e3bc6e93534c461ec7",
+    "workflowRunId": 31671344704,
+    "contractJobId": 94356427047,
+    "productionJobId": 94356487028,
+    "workflowConclusion": "success",
+    "artifactId": 9170134736,
+    "artifactName": "phase12a14-kick-history-category-schema-apply",
+    "artifactDigest": "sha256:82cd5669e6ed4354d555620c71005ac8f80ff74c3a2f0ad4b1e136594c82cbf5",
+    "firstApply": {
+      "tableStageStatementCount": 3,
+      "indexStageStatementCount": 2,
+      "totalStatementCount": 5,
+      "workerWallMs": 1434
+    },
+    "secondApply": {
+      "statementCount": 0,
+      "requiredReason": "already-complete"
+    },
+    "preApply": {
+      "latestSnapshotCollectedAt": "2026-08-13T05:40:37.698Z",
+      "databaseSizeBytes": 341716992
+    },
+    "artifactSerializationGap": {
+      "postCollectedAtMissing": true,
+      "postDatabaseSizeMissing": true,
+      "databaseSizeDeltaSentinel": -1,
+      "acceptedDirectlyFromRetryArtifact": false,
+      "resolvedByIndependentPostApplyReadOnlyRevalidation": true
+    },
+    "aggregateRowsAfter": 0,
+    "providerLeakageRowsAfter": 0,
+    "temporaryWorkerDeleted": true,
+    "postDeleteHttpStatus": 404
+  },
+  "postApplyReadOnlyRevalidation": {
+    "sourceWorkflowRunId": 31670727423,
+    "runAttempt": 2,
+    "productionJobId": 94359547621,
+    "artifactId": 9170185311,
+    "artifactName": "phase12a14-kick-history-schema-readonly-diagnosis",
+    "artifactDigest": "sha256:cc83ac7b7e82b2afba9afd1a5cd52846b94bf6696ac8c7885e36e3ecb9c81b9c",
+    "readOnly": true,
+    "schema": {
+      "presentObjects": [
+        "history_category_daily",
+        "history_category_day_status",
+        "history_category_streamer_daily",
+        "idx_history_category_daily_category_day",
+        "idx_history_category_streamer_category_day"
+      ],
+      "complete": true,
+      "absent": false,
+      "partial": false
+    },
+    "aggregateRows": {
+      "daily": 0,
+      "streamerDaily": 0,
+      "dayStatus": 0,
+      "total": 0
+    },
+    "providerLeakageRows": 0,
+    "latestSnapshot": {
+      "bucketMinute": "2026-08-13T06:00:00.000Z",
+      "collectedAt": "2026-08-13T06:00:40.134Z",
+      "streamCount": 100,
+      "totalViewers": 348964,
+      "sourceMode": "authenticated"
+    },
+    "databaseSizeBytes": 341827584,
+    "databaseSizeDeltaFromRetryPreApplyBytes": 110592,
+    "emptySchemaSizeIncreaseLimitBytes": 5242880,
+    "sizeGatePass": true,
+    "queryMetrics": {
+      "statements": 5,
+      "durationMs": 3.743,
+      "rowsRead": 17056,
+      "rowsWritten": 0,
+      "changes": 0
+    },
+    "originalTemporaryWorkerPostCleanupHttpStatus": 404,
+    "diagnosticTemporaryWorkerPostDeleteHttpStatus": 404
+  },
+  "gates": {
+    "exactRepairPackageIdentityPass": true,
+    "exactRetryTriggerIdentityPass": true,
+    "tableThenIndexStagePass": true,
+    "firstApplyFiveStatementsPass": true,
+    "secondApplyZeroStatementsPass": true,
+    "schemaCompletePass": true,
+    "schemaNotPartialPass": true,
+    "aggregateRowsZeroPass": true,
+    "providerLeakageZeroPass": true,
+    "naturalSnapshotContinuityPass": true,
+    "emptySchemaSizeIncreasePass": true,
+    "temporaryWorkerCleanupPass": true,
+    "postApplyReadOnlyRevalidationPass": true,
+    "productionSchemaAcceptancePass": true
+  },
+  "boundaries": {
+    "aggregateGeneratorEnabled": false,
+    "collectorChanged": false,
+    "newCronAdded": false,
+    "backfillPerformed": false,
+    "rawRetentionChanged": false,
+    "historyApiCategoryEnabled": false,
+    "historyCategoryUiEnabled": false,
+    "twitchChanged": false,
+    "crossProviderBehaviorChanged": false
+  },
+  "authorization": {
+    "kickHistoryCategoryAggregateSchemaAccepted": true,
+    "schemaApplyExecutionPathMustRetire": true,
+    "aggregateGeneratorDesignAuthorizedNext": true,
+    "aggregateGeneratorProductionEnablementAuthorized": false,
+    "historyApiCategoryAuthorized": false,
+    "historyCategoryUiAuthorized": false,
+    "publicCutoverAuthorized": false,
+    "twitchRolloutAuthorized": false
+  },
+  "nextGate": "Design and locally verify the Kick-only History category aggregate generator and execution-cost probe using the existing maintenance window. Do not enable generation in production until that separate gate is accepted."
+}
