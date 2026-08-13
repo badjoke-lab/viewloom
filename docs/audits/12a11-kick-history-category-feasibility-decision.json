@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "viewloom-12a11-kick-history-category-feasibility-decision-v1",
+  "status": "accepted_on_merge",
+  "phase": "12A-11",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 827,
+  "provider": "kick",
+  "surface": "history",
+  "decision": "reject_kick_history_category_surface_on_current_data",
+  "evidenceBasis": {
+    "sourceMainSha": "1c98de3065ca3bdc1bd7d99a6ea6502b8513886b",
+    "historyApi": "apps/web/functions/api/kick-history.ts",
+    "categoryCore": "apps/web/functions/api/day-flow-category-core.mjs",
+    "permanentCollectorEntry": "workers/collector-kick/src/index-category.ts",
+    "twitchHistoryPrecedent": "docs/audits/12a7-twitch-history-category-feasibility-decision.json",
+    "categoryContractVersion": "category-source-v1"
+  },
+  "currentHistorySemantics": {
+    "maximumCustomRangeDays": 90,
+    "primarySourcePreference": "daily_rollups_then_minute_snapshots",
+    "dailyRollupsRetainCategoryMembership": false,
+    "unfilteredHistoryMustRemainBackwardCompatible": true,
+    "previousPeriodComparisonIsPartOfExistingDerivedHistory": true
+  },
+  "currentCategoryData": {
+    "snapshotMembershipEvaluation": "per_observed_snapshot",
+    "snapshotCategoryIdentity": "provider_scoped_category_id",
+    "snapshotCategoryRefsAlignedToStreamItems": true,
+    "snapshotRetentionDays": 60,
+    "dailyRollupRetentionDays": 180,
+    "permanentCategoryCaptureEnabled": true
+  },
+  "dailyRollupLimits": {
+    "topStreamerFields": [
+      "streamerId",
+      "displayName",
+      "viewerMinutes",
+      "peakViewers",
+      "observedMinutes",
+      "rankByViewerMinutes",
+      "rankByPeak"
+    ],
+    "categoryIdentityPreserved": false,
+    "categoryContributionPreserved": false,
+    "categorySpecificFilterBeforeRankingRecoverable": false,
+    "exactCategoryViewerMinutesRecoverableForAllAdvertisedHistoryRanges": false,
+    "exactCategoryPeakViewersRecoverableForAllAdvertisedHistoryRanges": false
+  },
+  "rejectionReasons": [
+    "Current Kick History advertises custom ranges up to 90 days and computes a previous-period comparison as part of the existing derived History contract.",
+    "Exact observation-time Kick category membership exists in retained raw snapshots, but those minute_snapshots are deleted after 60 days.",
+    "The 180-day daily_rollups that support long-range History do not preserve category identity or selected-category contribution in top_streamers_json.",
+    "A 90-day selected-category current period cannot be reconstructed exactly after the oldest 30 days have left raw retention; its previous-period comparison can require category-aware history across up to 180 days.",
+    "Using latest category state, synthetic/name-only mapping, zero-filling unavailable category history, hidden backfill, retention expansion, or provider mixing would change the accepted data semantics and is not authorized by this decision."
+  ],
+  "prohibitedFallbacks": {
+    "latestCategoryBackProjectionAllowed": false,
+    "syntheticMappingAllowed": false,
+    "nameOnlyIdentityAllowed": false,
+    "missingCategoryMetadataMeansZeroViewers": false,
+    "thresholdRelaxationAllowed": false,
+    "historicalBackfillAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "crossProviderIdentityAllowed": false,
+    "crossProviderTotalsAllowed": false,
+    "combinedProviderRankingAllowed": false
+  },
+  "authorization": {
+    "hiddenHistoryCategoryCandidateAuthorized": false,
+    "historyApiCategoryParameterAuthorized": false,
+    "historyCategoryControlsAuthorized": false,
+    "defaultRoutePublicExposureAuthorized": false,
+    "collectorChangeAuthorized": false,
+    "workerCollectorDeploymentAuthorized": false,
+    "d1MutationAuthorized": false,
+    "d1SchemaChangeAuthorized": false,
+    "bindingChangeAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "retentionChangeAuthorized": false,
+    "backfillAuthorized": false,
+    "thresholdRelaxationAuthorized": false,
+    "credentialChangeAuthorized": false,
+    "crossProviderBehaviorAuthorized": false,
+    "combinedProviderRankingAuthorized": false,
+    "twitchRuntimeSemanticChangeAuthorized": false
+  },
+  "fallback": {
+    "existingUnfilteredHistory": "required_and_unchanged",
+    "categoryHistoryState": "not_authorized",
+    "userFacingApproximationAuthorized": false
+  },
+  "futureReconsiderationRequirements": [
+    "Introduce a separately governed History-grade Kick category aggregate that preserves every selected-category contribution before category-specific ranking or capping.",
+    "Retain category-aware History data long enough to cover the advertised current period plus the full previous-period comparison window.",
+    "Preserve provider-scoped observation-time category identity rather than projecting a latest category state backward.",
+    "Expose explicit category coverage and missing-data metadata and never coerce unavailable category history to zero.",
+    "Accumulate any new History-grade category data forward; do not create a hidden historical backfill under this decision."
+  ],
+  "nextGate": "No Kick History category runtime, API parameter, hidden candidate, or UI. A separate data/storage decision is required before reconsideration."
+}
