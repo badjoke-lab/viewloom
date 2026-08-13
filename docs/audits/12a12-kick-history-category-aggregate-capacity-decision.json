@@ -173,7 +173,7 @@
     "decisionReserveMb": 10.89,
     "authorizedDesignBudgetMbMax": 60,
     "projectedKickSizeAtDesignBudgetMbMax": 429.68,
-    "projectedKickHeadroomAtDesignBudgetMbMin": 20.32,
+    "projectedKickHeadroomAtDesignBudgetMbMin": 10.32,
     "projectedAccountWideHeadroomAtDesignBudgetMbMin": 819.59,
     "providerSizeGatePass": true,
     "providerHeadroomGatePass": true,
