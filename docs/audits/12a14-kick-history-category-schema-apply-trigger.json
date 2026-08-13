@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "viewloom-12a14-kick-history-category-schema-apply-trigger-v1",
+  "status": "armed_for_one_time_main_push",
+  "trackingIssue": 835,
+  "provider": "kick",
+  "packagePr": 834,
+  "expectedPackageHeadSha": "e960043884f348b68d810591eaca1d9892fe5ccf",
+  "acceptedSchemaBenchmarkPr": 832,
+  "confirmation": "APPLY_KICK_HISTORY_CATEGORY_AGGREGATE_SCHEMA_ONLY",
+  "oneTime": true,
+  "productionAction": "apply_empty_history_category_aggregate_schema_only",
+  "boundaries": {
+    "aggregateGeneratorEnabled": false,
+    "collectorChanged": false,
+    "newCron": false,
+    "backfill": false,
+    "retentionChanged": false,
+    "historyApiCategoryEnabled": false,
+    "historyCategoryUiEnabled": false,
+    "twitchChanged": false,
+    "crossProviderBehaviorChanged": false
+  }
+}
