@@ -48,7 +48,7 @@ jobs:
       - name: Verify local schema fixtures
         run: python3 scripts/test-12a14-kick-history-category-schema-apply.py
 
-      - name: Verify package-only PR scope
+      - name: Verify PR scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -57,6 +57,26 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
+          trigger='docs/audits/12a14-kick-history-category-schema-apply-trigger.json'
+          workflow='.github/workflows/analytics-12a14-kick-history-category-schema-apply.yml'
+
+          if [[ "${#changed[@]}" -eq 1 && "${changed[0]}" == "$trigger" ]]; then
+            test -f "$TRIGGER_FILE"
+            [[ $(jq -r '.status' "$TRIGGER_FILE") == 'armed_for_one_time_main_push' ]]
+            [[ $(jq -r '.confirmation' "$TRIGGER_FILE") == 'APPLY_KICK_HISTORY_CATEGORY_AGGREGATE_SCHEMA_ONLY' ]]
+            [[ $(jq -r '.oneTime' "$TRIGGER_FILE") == 'true' ]]
+            [[ $(jq -r '.provider' "$TRIGGER_FILE") == 'kick' ]]
+            [[ $(jq -r '.packagePr' "$TRIGGER_FILE") == '834' ]]
+            [[ $(jq -r '.expectedPackageHeadSha' "$TRIGGER_FILE") == 'e960043884f348b68d810591eaca1d9892fe5ccf' ]]
+            [[ $(jq -r '.acceptedSchemaBenchmarkPr' "$TRIGGER_FILE") == '832' ]]
+            exit 0
+          fi
+
+          if [[ "${#changed[@]}" -eq 1 && "${changed[0]}" == "$workflow" ]]; then
+            echo 'Accepted workflow-only trigger-scope maintenance; package verifier and dry-run still run in this job.'
+            exit 0
+          fi
+
           allowed='^(workers/shared/history-category-schema\.ts|workers/history-category-schema-apply/src/index\.ts|workers/history-category-schema-apply/wrangler\.kick\.toml|docs/audits/12a14-kick-history-category-schema-apply-contract\.json|scripts/verify-12a14-kick-history-category-schema-apply-package\.mjs|scripts/test-12a14-kick-history-category-schema-apply\.py|\.github/workflows/analytics-12a14-kick-history-category-schema-apply\.yml)$'
           for path in "${changed[@]}"; do
             if ! [[ "$path" =~ $allowed ]]; then
