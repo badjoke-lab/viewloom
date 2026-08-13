@@ -1,0 +1,87 @@
+name: Analytics 12A15 Kick History Category Aggregate Generator
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'workers/shared/history-category-aggregate-sql.ts'
+      - 'workers/shared/history-category-aggregate.ts'
+      - 'workers/history-category-aggregate-cost-probe/**'
+      - 'scripts/test-12a15-kick-history-category-aggregate.py'
+      - 'scripts/verify-12a15-kick-history-category-aggregate-generator.mjs'
+      - 'docs/audits/12a15-kick-history-category-aggregate-generator-contract.json'
+      - '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify generator package contract
+        run: node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
+
+      - name: Run deterministic exact SQL fixtures
+        run: python3 scripts/test-12a15-kick-history-category-aggregate.py
+
+      - name: Verify exact dormant package scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          allowed='^(workers/shared/history-category-aggregate-sql\.ts|workers/shared/history-category-aggregate\.ts|workers/history-category-aggregate-cost-probe/src/index\.ts|workers/history-category-aggregate-cost-probe/wrangler\.kick\.toml|scripts/test-12a15-kick-history-category-aggregate\.py|scripts/verify-12a15-kick-history-category-aggregate-generator\.mjs|docs/audits/12a15-kick-history-category-aggregate-generator-contract\.json|\.github/workflows/analytics-12a15-kick-history-category-aggregate-generator\.yml)$'
+          for path in "${changed[@]}"; do
+            if ! [[ "$path" =~ $allowed ]]; then
+              echo "Unexpected generator-package change: $path" >&2
+              exit 1
+            fi
+          done
+          test "${#changed[@]}" -eq 8
+
+      - name: Typecheck Workers and preserve collector contracts
+        run: |
+          pnpm typecheck:collectors
+          pnpm verify:collectors
+
+      - name: Bundle temporary cost probe without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/history-category-aggregate-cost-probe/wrangler.kick.toml
+
+      - name: Verify retained architecture and web build
+        run: |
+          node scripts/verify-quality-u10g-architecture.mjs
+          node scripts/verify-quality-u10d-analysis-coherence.mjs
+          pnpm typecheck:web
+          pnpm build:web
+
+      - name: Publish dormant boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick History category aggregate generator package'
+            echo
+            echo '- Provider: Kick only'
+            echo '- Category identity: observation-time category-source-v1 refs/ids'
+            echo '- Daily category peak: concurrent snapshot category sum, never sum of streamer peaks'
+            echo '- Stored Top-K: none'
+            echo '- Hard caps: 300 categories / 1000 category-streamer rows per day'
+            echo '- Missing category metadata: fail closed'
+            echo '- Overflow: fail closed'
+            echo '- Start-day boundary: required; pre-activation generation forbidden'
+            echo '- Retention: 180 days'
+            echo '- Maintenance window: existing window only; new cron: no'
+            echo '- Permanent collector integration: no'
+            echo '- Temporary cost-probe production execution: no'
+            echo '- Cost-probe production trigger: separate later gate'
+          } >> "$GITHUB_STEP_SUMMARY"
