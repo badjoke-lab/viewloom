@@ -1,0 +1,83 @@
+name: Analytics 12A12 Kick History Category Aggregate Capacity Decision
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'docs/audits/12a12-kick-history-category-aggregate-capacity-decision.json'
+      - 'scripts/verify-12a12-kick-history-category-aggregate-capacity-decision.mjs'
+      - '.github/workflows/analytics-12a12-kick-history-category-aggregate-capacity-decision.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a12-kick-history-category-aggregate-capacity-decision-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout decision head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify Kick History category aggregate capacity decision
+        run: node scripts/verify-12a12-kick-history-category-aggregate-capacity-decision.mjs
+
+      - name: Verify decision-only PR scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          allowed='^(docs/audits/12a12-kick-history-category-aggregate-capacity-decision\.json|scripts/verify-12a12-kick-history-category-aggregate-capacity-decision\.mjs|\.github/workflows/analytics-12a12-kick-history-category-aggregate-capacity-decision\.yml)$'
+          for path in "${changed[@]}"; do
+            if ! [[ "$path" =~ $allowed ]]; then
+              echo "Unexpected non-decision change: $path" >&2
+              exit 1
+            fi
+          done
+          test "${#changed[@]}" -eq 3
+
+      - name: Verify retained architecture and production boundaries
+        run: |
+          node scripts/verify-quality-u10g-architecture.mjs
+          node scripts/verify-quality-u10d-analysis-coherence.mjs
+          cd apps/web
+          node scripts/verify-production-source.mjs
+
+      - name: Typecheck and build web
+        run: |
+          pnpm typecheck:web
+          pnpm build:web
+
+      - name: Publish decision boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick History category aggregate capacity decision'
+            echo
+            echo '- Decision: accept a bounded, exact-when-available, forward-only Kick History category aggregate design'
+            echo '- History-grade retention: 180 days'
+            echo '- Exact logical grain: category/day totals plus category/day/streamer contributions plus day status'
+            echo '- Daily capacity boundary: at most 300 category rows and 1000 streamer-category rows'
+            echo '- Overflow behavior: reject the whole day as unavailable_overflow; never truncate or expose partial rows'
+            echo '- Concurrent category peak: max of the category viewer sum at one observed snapshot, not a sum of streamer peaks'
+            echo '- Conservative storage proxy: about 49.11 MB with accepted 20% safety; implementation budget <= 60 MB'
+            echo '- Kick projected size at the 60 MB budget: 429.68 MB; provider headroom: 10.32 MB'
+            echo '- Account-wide headroom at the 60 MB budget: 819.59 MB'
+            echo '- Next gate: repository-only migration candidate plus deterministic local benchmark'
+            echo '- Production schema/D1/collector/runtime/API/UI change: not authorized'
+            echo '- Twitch rollout or semantic change: not authorized'
+          } >> "$GITHUB_STEP_SUMMARY"
