@@ -1,0 +1,258 @@
+name: Analytics 12A14 Kick History Category Schema Apply
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a14-kick-history-category-schema-apply.yml'
+      - 'docs/audits/12a14-kick-history-category-schema-apply-contract.json'
+      - 'scripts/verify-12a14-kick-history-category-schema-apply-package.mjs'
+      - 'scripts/test-12a14-kick-history-category-schema-apply.py'
+      - 'workers/shared/history-category-schema.ts'
+      - 'workers/history-category-schema-apply/**'
+      - 'docs/audits/12a14-kick-history-category-schema-apply-trigger.json'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a14-kick-history-category-schema-apply-trigger.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: analytics-12a14-kick-history-category-schema-apply-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+env:
+  TRIGGER_FILE: docs/audits/12a14-kick-history-category-schema-apply-trigger.json
+  ARTIFACT_DIR: artifacts/12a14-kick-history-category-schema-apply
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify package
+        run: node scripts/verify-12a14-kick-history-category-schema-apply-package.mjs
+
+      - name: Verify local schema fixtures
+        run: python3 scripts/test-12a14-kick-history-category-schema-apply.py
+
+      - name: Verify package-only PR scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          allowed='^(workers/shared/history-category-schema\.ts|workers/history-category-schema-apply/src/index\.ts|workers/history-category-schema-apply/wrangler\.kick\.toml|docs/audits/12a14-kick-history-category-schema-apply-contract\.json|scripts/verify-12a14-kick-history-category-schema-apply-package\.mjs|scripts/test-12a14-kick-history-category-schema-apply\.py|\.github/workflows/analytics-12a14-kick-history-category-schema-apply\.yml)$'
+          for path in "${changed[@]}"; do
+            if ! [[ "$path" =~ $allowed ]]; then
+              echo "Unexpected package change: $path" >&2
+              exit 1
+            fi
+          done
+          test "${#changed[@]}" -eq 7
+
+      - name: Bundle temporary Kick Worker without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/history-category-schema-apply/wrangler.kick.toml
+
+      - name: Verify retained architecture and web build
+        run: |
+          node scripts/verify-quality-u10g-architecture.mjs
+          node scripts/verify-quality-u10d-analysis-coherence.mjs
+          pnpm typecheck:web
+          pnpm build:web
+
+      - name: Publish package boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick History category schema apply package'
+            echo
+            echo '- Provider: Kick only'
+            echo '- Migration: db/d1/006_history_category_aggregate.sql'
+            echo '- DDL statements: 5'
+            echo '- Temporary worker deploy in PR: no'
+            echo '- Production D1 mutation in PR: no'
+            echo '- Aggregate generator: disabled / unavailable'
+            echo '- Trigger present: ${{ hashFiles(env.TRIGGER_FILE) != '' }}'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  production-schema-apply:
+    needs: contract
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact one-time trigger and accepted package
+        run: |
+          set -euo pipefail
+          test -f "$TRIGGER_FILE"
+          [[ $(jq -r '.status' "$TRIGGER_FILE") == 'armed_for_one_time_main_push' ]]
+          [[ $(jq -r '.confirmation' "$TRIGGER_FILE") == 'APPLY_KICK_HISTORY_CATEGORY_AGGREGATE_SCHEMA_ONLY' ]]
+          [[ $(jq -r '.oneTime' "$TRIGGER_FILE") == 'true' ]]
+          [[ $(jq -r '.provider' "$TRIGGER_FILE") == 'kick' ]]
+          [[ $(jq -r '.acceptedSchemaBenchmarkPr' "$TRIGGER_FILE") == '832' ]]
+          package_number=$(jq -r '.packagePr' "$TRIGGER_FILE")
+          package=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/$package_number")
+          [[ $(jq -r '.merged_at // empty' <<<"$package") != '' ]]
+          [[ $(jq -r '.head.sha' <<<"$package") == $(jq -r '.expectedPackageHeadSha' "$TRIGGER_FILE") ]]
+          package_merge=$(jq -r '.merge_commit_sha' <<<"$package")
+          git cat-file -e "$package_merge^{commit}"
+          git merge-base --is-ancestor "$package_merge" HEAD
+          node scripts/verify-12a14-kick-history-category-schema-apply-package.mjs
+
+      - name: Execute controlled Kick-only schema apply
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR/raw"
+          service='viewloom-history-category-schema-apply-kick'
+          raw="$ARTIFACT_DIR/raw"
+          config="$raw/wrangler.kick.toml"
+          cp workers/history-category-schema-apply/wrangler.kick.toml "$config"
+          sed -i "s|main = \"src/index.ts\"|main = \"$GITHUB_WORKSPACE/workers/history-category-schema-apply/src/index.ts\"|" "$config"
+          APPLY_TOKEN=$(openssl rand -hex 32)
+          export APPLY_TOKEN
+          url=''
+          deployed=false
+
+          cleanup() {
+            if [[ "$deployed" == 'true' ]]; then
+              curl -sS -X DELETE \
+                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                -H 'Content-Type: application/json' \
+                "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service" \
+                > "$raw/delete-response.json" || true
+            fi
+          }
+          trap cleanup EXIT
+
+          existing=$(curl -sS -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
+          [[ "$existing" == '404' ]]
+
+          pnpm dlx wrangler@4 deploy --config "$config" > "$raw/deploy.log" 2>&1
+          deployed=true
+          printf '%s' "$APPLY_TOKEN" | pnpm dlx wrangler@4 secret put APPLY_TOKEN --config "$config" >> "$raw/deploy.log" 2>&1
+          url=$(grep -Eo 'https://[^ ]+workers.dev' "$raw/deploy.log" | tail -1)
+          test -n "$url"
+
+          for attempt in $(seq 1 40); do
+            status=$(curl -sS -o "$raw/pre.json" -w '%{http_code}' -X POST \
+              -H "Authorization: Bearer $APPLY_TOKEN" "$url/inspect" || true)
+            if [[ "$status" == '200' && $(jq -r '.ok // false' "$raw/pre.json") == 'true' ]]; then break; fi
+            sleep 5
+          done
+          [[ $(jq -r '.state.schema.absent // false' "$raw/pre.json") == 'true' ]]
+          [[ $(jq -r '.state.schema.partial // true' "$raw/pre.json") == 'false' ]]
+          [[ $(jq -r '.state.aggregateRows.total // -1' "$raw/pre.json") == '0' ]]
+          [[ $(jq -r '.state.providerLeakageRows // -1' "$raw/pre.json") == '0' ]]
+          pre_collected=$(jq -r '.state.operational.latestSnapshot.collected_at // empty' "$raw/pre.json")
+          test -n "$pre_collected"
+          node -e "const t=Date.parse(process.argv[1]); if(!Number.isFinite(t)||Date.now()-t>20*60*1000) process.exit(1)" "$pre_collected"
+          pre_size=$(jq -r '.state.databaseSizeBytes // empty' "$raw/pre.json")
+
+          first_status=$(curl -sS -o "$raw/first.json" -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer $APPLY_TOKEN" \
+            -H 'x-viewloom-confirm: APPLY_KICK_HISTORY_CATEGORY_AGGREGATE_SCHEMA_ONLY' \
+            "$url/apply")
+          [[ "$first_status" == '200' ]]
+          [[ $(jq -r '.ok // false' "$raw/first.json") == 'true' ]]
+          [[ $(jq -r '.apply.applied // false' "$raw/first.json") == 'true' ]]
+          [[ $(jq -r '.apply.metrics.statementCount // -1' "$raw/first.json") == '5' ]]
+          [[ $(jq -r '.post.aggregateRows.total // -1' "$raw/first.json") == '0' ]]
+          first_wall=$(jq -r '.workerWallMs // 999999' "$raw/first.json")
+          [[ "$first_wall" -le 15000 ]]
+
+          second_status=$(curl -sS -o "$raw/second.json" -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer $APPLY_TOKEN" \
+            -H 'x-viewloom-confirm: APPLY_KICK_HISTORY_CATEGORY_AGGREGATE_SCHEMA_ONLY' \
+            "$url/apply")
+          [[ "$second_status" == '200' ]]
+          [[ $(jq -r '.ok // false' "$raw/second.json") == 'true' ]]
+          [[ $(jq -r '.apply.reason // empty' "$raw/second.json") == 'already-complete' ]]
+          [[ $(jq -r '.apply.metrics.statementCount // -1' "$raw/second.json") == '0' ]]
+
+          fresh=false
+          for attempt in $(seq 1 90); do
+            status=$(curl -sS -o "$raw/post-candidate.json" -w '%{http_code}' -X POST \
+              -H "Authorization: Bearer $APPLY_TOKEN" "$url/inspect" || true)
+            if [[ "$status" == '200' ]]; then
+              candidate=$(jq -r '.state.operational.latestSnapshot.collected_at // empty' "$raw/post-candidate.json")
+              if [[ -n "$candidate" && "$candidate" != "$pre_collected" ]]; then
+                cp "$raw/post-candidate.json" "$raw/post.json"
+                fresh=true
+                break
+              fi
+            fi
+            sleep 10
+          done
+          [[ "$fresh" == 'true' ]]
+          [[ $(jq -r '.state.schema.complete // false' "$raw/post.json") == 'true' ]]
+          [[ $(jq -r '.state.aggregateRows.total // -1' "$raw/post.json") == '0' ]]
+          [[ $(jq -r '.state.providerLeakageRows // -1' "$raw/post.json") == '0' ]]
+          post_size=$(jq -r '.state.databaseSizeBytes // empty' "$raw/post.json")
+          if [[ -n "$pre_size" && -n "$post_size" ]]; then
+            delta=$((post_size-pre_size))
+            [[ "$delta" -ge 0 && "$delta" -le 5242880 ]]
+          else
+            delta=-1
+          fi
+
+          cleanup
+          deployed=false
+          trap - EXIT
+          delete_status=$(curl -sS -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
+          [[ "$delete_status" == '404' ]]
+
+          jq -n \
+            --arg schemaVersion 'viewloom-12a14-kick-history-category-schema-apply-evidence-v1' \
+            --arg headSha "$GITHUB_SHA" \
+            --arg preCollected "$pre_collected" \
+            --arg postCollected "$(jq -r '.state.operational.latestSnapshot.collected_at' "$raw/post.json")" \
+            --argjson firstStatements "$(jq -r '.apply.metrics.statementCount' "$raw/first.json")" \
+            --argjson secondStatements "$(jq -r '.apply.metrics.statementCount' "$raw/second.json")" \
+            --argjson workerWallMs "$first_wall" \
+            --argjson preSize "${pre_size:-null}" \
+            --argjson postSize "${post_size:-null}" \
+            --argjson sizeDelta "$delta" \
+            --argjson postDeleteHttpStatus "$delete_status" \
+            '{schemaVersion:$schemaVersion,status:"pass",provider:"kick",headSha:$headSha,preCollectedAt:$preCollected,postCollectedAt:$postCollected,firstApplyStatementCount:$firstStatements,secondApplyStatementCount:$secondStatements,firstApplyWorkerWallMs:$workerWallMs,preDatabaseSizeBytes:$preSize,postDatabaseSizeBytes:$postSize,databaseSizeDeltaBytes:$sizeDelta,aggregateRowsAfter:0,providerLeakageRowsAfter:0,temporaryWorkerDeleted:true,postDeleteHttpStatus:$postDeleteHttpStatus,boundaries:{aggregateGeneratorEnabled:false,collectorChanged:false,newCron:false,backfill:false,retentionChanged:false,twitchChanged:false}}' \
+            > "$ARTIFACT_DIR/evidence.json"
+
+      - name: Upload sanitized evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a14-kick-history-category-schema-apply
+          path: artifacts/12a14-kick-history-category-schema-apply/evidence.json
+          retention-days: 30
+          if-no-files-found: error
