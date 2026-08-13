@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "viewloom-12a13-kick-history-category-aggregate-benchmark-v1",
+  "status": "measured",
+  "trackingIssue": 831,
+  "provider": "kick",
+  "migration": "db/d1/006_history_category_aggregate.sql",
+  "benchmark": {
+    "engine": "sqlite3",
+    "pageSizeBytes": 4096,
+    "retentionDays": 180,
+    "categoryRowCapPerDay": 300,
+    "streamerCategoryRowCapPerDay": 1000,
+    "safetyMarginPct": 20,
+    "designBudgetMiB": 60.0,
+    "baselineFileBytes": 8192,
+    "emptySchemaFileBytes": 40960,
+    "candidateFileBytes": 43622400,
+    "incrementalBytes": 43614208,
+    "incrementalMiB": 41.59,
+    "incrementalMiBWithSafety": 49.91,
+    "designBudgetHeadroomMiB": 10.09,
+    "designBudgetPass": true
+  },
+  "maximumRows": {
+    "historyCategoryDaily": 54000,
+    "historyCategoryStreamerDaily": 180000,
+    "historyCategoryDayStatus": 180,
+    "total": 234180
+  },
+  "measuredRows": {
+    "historyCategoryDaily": 54000,
+    "historyCategoryStreamerDaily": 180000,
+    "historyCategoryDayStatus": 180
+  },
+  "rowCountPass": true,
+  "migrationIdempotency": {
+    "firstPassFileBytes": 40960,
+    "secondPassFileBytes": 40960,
+    "secondPassFileByteDelta": 0,
+    "schemaStable": true,
+    "schema": {
+      "tables": [
+        "history_category_daily",
+        "history_category_day_status",
+        "history_category_streamer_daily"
+      ],
+      "indexes": [
+        "idx_history_category_daily_category_day",
+        "idx_history_category_streamer_category_day"
+      ]
+    }
+  },
+  "queryPlans": {
+    "categoryDailyRange": [
+      "SEARCH history_category_daily USING INDEX idx_history_category_daily_category_day (provider=? AND category_id=? AND day>? AND day<?)"
+    ],
+    "streamerPeriodRanking": [
+      "SEARCH history_category_streamer_daily USING INDEX idx_history_category_streamer_category_day (provider=? AND category_id=? AND day>? AND day<?)",
+      "USE TEMP B-TREE FOR GROUP BY",
+      "USE TEMP B-TREE FOR ORDER BY"
+    ]
+  },
+  "queryPlanPass": {
+    "categoryDailyRange": true,
+    "streamerPeriodRanking": true
+  },
+  "overflowFixture": {
+    "candidateCategoryRows": 301,
+    "candidateStreamerCategoryRows": 1001,
+    "persistedCategoryRows": 0,
+    "persistedStreamerCategoryRows": 0,
+    "coverageState": "unavailable_overflow",
+    "pass": true
+  },
+  "providerSeparationFixture": {
+    "kickRows": 1,
+    "twitchRows": 1,
+    "totalRows": 2,
+    "sameCategoryIdCollidesAcrossProviders": false,
+    "pass": true,
+    "twitchRolloutAuthorized": false
+  },
+  "freeStrongProjection": {
+    "acceptedKickProjectedMiB": 369.68,
+    "acceptedProviderCeilingMiB": 440,
+    "acceptedProviderHeadroomMinMiB": 10,
+    "acceptedAccountHeadroomMiB": 879.59,
+    "acceptedAccountHeadroomMinMiB": 500,
+    "measuredProjectedKickMiB": 419.59,
+    "measuredProviderHeadroomMiB": 20.41,
+    "measuredAccountHeadroomMiB": 829.68
+  },
+  "semantics": {
+    "categoryFilterBeforeRankingRequired": true,
+    "preRankedTopKStored": false,
+    "concurrentCategoryPeakRequired": true,
+    "wholeDayOverflowFailClosed": true,
+    "partialOverflowRowsExposed": false,
+    "forwardOnly": true,
+    "backfill": false,
+    "rawRetentionChanged": false,
+    "newCron": false
+  },
+  "authorization": {
+    "repositoryMigrationCandidate": true,
+    "productionSchemaApply": false,
+    "productionD1Mutation": false,
+    "collectorGeneration": false,
+    "workerDeployment": false,
+    "historyApiCategoryParameter": false,
+    "historyCategoryUi": false,
+    "twitchRollout": false,
+    "crossProviderRanking": false
+  }
+}
