@@ -1,0 +1,222 @@
+{
+  "schemaVersion": "viewloom-12a12-kick-history-category-aggregate-capacity-decision-v1",
+  "status": "accepted_on_merge",
+  "phase": "12A-12",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 829,
+  "provider": "kick",
+  "surface": "history",
+  "decision": "accept_bounded_forward_only_history_category_aggregate_design",
+  "evidenceBasis": {
+    "sourceMainSha": "3441ebe59975007ec773db6c0709f36a84342650",
+    "currentHistoryDecision": "docs/audits/12a11-kick-history-category-feasibility-decision.json",
+    "capacityBaseline": "docs/audits/12a0-current-data-capacity-baseline.json",
+    "categoryStorageBenchmark": "docs/audits/12a4-category-storage-budget-evidence.json",
+    "kickPermanentCategoryAcceptance": "docs/audits/12a4-kick-permanent-category-final-acceptance.json",
+    "kickPermanentCategoryObservationContract": "docs/audits/12a4-kick-permanent-category-observation-contract.json",
+    "kickHistoryApi": "apps/web/functions/api/kick-history.ts",
+    "historyBuilder": "apps/web/functions/_history/builders.ts",
+    "kickCollector": "workers/collector-kick/src/index-category.ts",
+    "categoryCaptureCore": "workers/shared/category-capture.ts",
+    "categoryContractVersion": "category-source-v1"
+  },
+  "currentAcceptedConstraints": {
+    "snapshotItemCap": 100,
+    "snapshotsPerDay": 288,
+    "rawRetentionDays": 60,
+    "historyRangeDaysMax": 90,
+    "previousPeriodComparisonRequired": true,
+    "historyGradeRetentionDaysRequired": 180,
+    "kickProjectedNinetyDaySizeMb": 369.68,
+    "kickProjectedProviderHeadroomMb": 80.32,
+    "kickProjectedAccountWideHeadroomMb": 879.59,
+    "projectedProviderSizeMbMax": 440,
+    "projectedProviderHeadroomMbMin": 10,
+    "projectedAccountWideHeadroomMbMin": 500,
+    "rawRetentionChangeAllowed": false,
+    "newCronAllowed": false,
+    "backfillAllowed": false
+  },
+  "requiredHistorySemantics": {
+    "providerScopedCategoryIdentity": "(kick, categoryProviderId)",
+    "membershipEvaluation": "per_observed_snapshot",
+    "categoryFilterBeforeStreamerRankingAndCaps": true,
+    "dailyCategoryViewerMinutesRequired": true,
+    "dailyCategoryConcurrentPeakViewersRequired": true,
+    "dailyStreamerCategoryViewerMinutesRequired": true,
+    "dailyStreamerCategoryPeakViewersRequired": true,
+    "periodStreamerRankingAfterCategorySelectionRequired": true,
+    "coverageMustDistinguishObservedPartialUnavailable": true,
+    "missingCategoryMetadataMeansZeroViewers": false,
+    "latestCategoryBackProjectionAllowed": false,
+    "syntheticOrNameOnlyMappingAllowed": false,
+    "crossProviderIdentityAllowed": false,
+    "combinedProviderRankingAllowed": false
+  },
+  "rejectedDesigns": {
+    "rawSnapshotsOnly": {
+      "decision": "rejected",
+      "reason": "Kick raw snapshots retain exact observation-time category membership for only 60 days, shorter than the required 180-day current-plus-previous History window."
+    },
+    "existingDailyRollups": {
+      "decision": "rejected",
+      "reason": "daily_rollups do not preserve category identity or category-specific streamer contributions."
+    },
+    "existingEmbeddedHourlyCategory": {
+      "decision": "rejected_for_history_authority",
+      "reason": "The accepted embedded-hourly model preserves bounded hourly dominant-category evidence, not every exact category contribution needed for filter-before-ranking History."
+    },
+    "unboundedStreamerCategoryRows": {
+      "decision": "rejected",
+      "maximumPairObservationsPerDay": 28800,
+      "maximumPairDayRowsAt180Days": 5184000,
+      "reason": "Retaining every potential pair without a hard fail-closed bound is incompatible with the existing Free Strong storage model."
+    },
+    "preRankedOrTopKPerCategory": {
+      "decision": "rejected",
+      "reason": "Any per-day Top K truncation can remove a streamer that becomes a period Top streamer after aggregating an arbitrary selected range."
+    }
+  },
+  "selectedDesign": {
+    "name": "bounded_exact_category_daily_sparse",
+    "storageLocation": "existing_provider_specific_kick_d1",
+    "forwardOnly": true,
+    "retentionDays": 180,
+    "newCron": false,
+    "rawRetentionChanged": false,
+    "backfill": false,
+    "tables": {
+      "history_category_daily": {
+        "logicalPrimaryKey": ["provider", "day", "category_id"],
+        "requiredFields": [
+          "provider",
+          "day",
+          "category_id",
+          "total_viewer_minutes",
+          "peak_viewers",
+          "observed_snapshots",
+          "source_mode",
+          "contract_version",
+          "updated_at"
+        ],
+        "purpose": "Exact selected-category day totals and concurrent category peak. peak_viewers is the maximum sum of viewers in that category at one observed snapshot, never a sum of per-streamer peaks."
+      },
+      "history_category_streamer_daily": {
+        "logicalPrimaryKey": ["provider", "day", "category_id", "streamer_id"],
+        "requiredFields": [
+          "provider",
+          "day",
+          "category_id",
+          "streamer_id",
+          "display_name",
+          "viewer_minutes",
+          "peak_viewers",
+          "observed_minutes",
+          "sample_count",
+          "contract_version",
+          "updated_at"
+        ],
+        "purpose": "All retained contributors for a complete day so period ranking is computed after category selection. No Top K is stored."
+      },
+      "history_category_day_status": {
+        "logicalPrimaryKey": ["provider", "day"],
+        "requiredFields": [
+          "provider",
+          "day",
+          "candidate_category_rows",
+          "candidate_streamer_category_rows",
+          "category_row_cap",
+          "streamer_category_row_cap",
+          "source_snapshots",
+          "observed_category_items",
+          "missing_category_items",
+          "coverage_state",
+          "source_mode",
+          "contract_version",
+          "updated_at"
+        ],
+        "purpose": "Fail-closed day authority and category coverage."
+      }
+    },
+    "hardDailyCaps": {
+      "categoryRows": 300,
+      "streamerCategoryRows": 1000,
+      "capIsRankingOrSampling": false,
+      "overflowPolicy": "reject_entire_day_as_unavailable_no_partial_rows",
+      "overflowCoverageState": "unavailable_overflow",
+      "partialRowsMayBeExposed": false,
+      "reason": "A hard capacity cap is allowed only as a fail-closed availability boundary. It must never selectively truncate category or streamer contributions."
+    },
+    "generationSemantics": {
+      "input": "category-source-v1 minute_snapshots while the complete day is still inside 60-day raw retention",
+      "sampleWeightMode": "existing_history_daily_rollup_5m",
+      "categoryViewerMinutes": "sum category viewers at each retained snapshot multiplied by the accepted five-minute History rollup weight",
+      "categoryPeakViewers": "maximum concurrent selected-category viewer sum across retained snapshots",
+      "streamerViewerMinutes": "sum streamer viewers for snapshots where that streamer has the selected provider-scoped category",
+      "streamerPeakViewers": "maximum streamer viewers while in the selected category",
+      "ranking": "query category first, aggregate all complete retained contributor rows across the selected period, then rank/cap",
+      "coverage": "if category metadata is missing, source coverage is partial, generation is incomplete, or a daily hard cap is exceeded, persist status and fail closed rather than inventing zero-valued contributions",
+      "rerun": "same-day regeneration must be idempotent; if a later rerun discovers overflow, previously generated category and contributor rows for that day must be removed before status becomes unavailable_overflow"
+    }
+  },
+  "capacityProof": {
+    "method": "Use the already accepted 12A-4 separate-hourly SQLite benchmark as a conservative row-size proxy because that row shape includes provider/day/streamer/category text, metrics, contract metadata, a primary key, and a category/day index. The proxy already includes the accepted 20 percent safety margin.",
+    "proxySourceRows90dKick": 432000,
+    "proxySourceIncrementalMb90dWithSafety": 90.58,
+    "proxyBytesPerRowWithSafetyApprox": 220,
+    "retentionDays": 180,
+    "maximumStreamerCategoryRows": 180000,
+    "maximumCategoryRows": 54000,
+    "maximumStatusRows": 180,
+    "maximumIncrementalRows": 234180,
+    "projectedIncrementalMbWithSafetyApprox": 49.11,
+    "decisionReserveMb": 10.89,
+    "authorizedDesignBudgetMbMax": 60,
+    "projectedKickSizeAtDesignBudgetMbMax": 429.68,
+    "projectedKickHeadroomAtDesignBudgetMbMin": 10.32,
+    "projectedAccountWideHeadroomAtDesignBudgetMbMin": 819.59,
+    "providerSizeGatePass": true,
+    "providerHeadroomGatePass": true,
+    "accountHeadroomGatePass": true,
+    "note": "The 60 MB design budget is a hard later implementation gate, not permission to consume the full reserve. A later local benchmark and production cost probe must remain at or below it."
+  },
+  "sharedSchemaAssessment": {
+    "shapeReusableForTwitchLater": true,
+    "providerSpecificCapsRequired": true,
+    "twitchRolloutAuthorized": false,
+    "twitchSchemaMutationAuthorized": false,
+    "twitchRuntimeChangeAuthorized": false,
+    "reason": "The logical keys and fail-closed coverage model are provider-independent, but Twitch has a different snapshot cap, raw retention, storage baseline, and capacity budget and therefore requires its own later decision."
+  },
+  "authorization": {
+    "designAccepted": true,
+    "repositoryMigrationCandidateAuthorizedNext": true,
+    "localDeterministicBenchmarkRequiredNext": true,
+    "productionSchemaApplyAuthorized": false,
+    "productionD1MutationAuthorized": false,
+    "collectorGenerationAuthorized": false,
+    "workerDeploymentAuthorized": false,
+    "bindingChangeAuthorized": false,
+    "newCronAuthorized": false,
+    "rawRetentionChangeAuthorized": false,
+    "backfillAuthorized": false,
+    "historyApiCategoryParameterAuthorized": false,
+    "hiddenHistoryCategoryCandidateAuthorized": false,
+    "historyCategoryControlsAuthorized": false,
+    "publicCutoverAuthorized": false,
+    "thresholdRelaxationAuthorized": false,
+    "twitchRolloutAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  },
+  "requiredLaterGates": [
+    "Repository-only migration candidate for the three bounded tables and provider/category/day indexes; no remote apply.",
+    "Deterministic local SQLite benchmark proving the exact selected schema stays at or below the 60 MB incremental design budget with the daily fail-closed caps.",
+    "Controlled production schema-apply gate with preservation and idempotency evidence.",
+    "Bounded generator package that reuses existing maintenance scheduling, proves exact category concurrent peaks and filter-before-ranking contributions, and writes status before exposing data.",
+    "Production execution-cost probe and storage remeasurement before generator enablement.",
+    "Forward-only accumulation evidence long enough to demonstrate useful observed coverage and the daily overflow rate without backfill.",
+    "Hidden Kick History category API/UI candidate with mixed raw/aggregate boundary tests and no unfiltered History regression.",
+    "Separate public-cutover decision and exact-production acceptance."
+  ],
+  "nextGate": "Create a repository-only migration and deterministic benchmark package for the bounded exact Kick History category aggregate. Do not apply it remotely or change runtime in that gate."
+}
