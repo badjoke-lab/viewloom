@@ -1,0 +1,94 @@
+name: Analytics 12A13 Kick History Category Aggregate Benchmark
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'db/d1/006_history_category_aggregate.sql'
+      - 'scripts/measure-12a13-kick-history-category-aggregate.py'
+      - 'docs/audits/12a13-kick-history-category-aggregate-benchmark-contract.json'
+      - 'docs/audits/12a13-kick-history-category-aggregate-benchmark-evidence.json'
+      - 'scripts/verify-12a13-kick-history-category-aggregate-benchmark.mjs'
+      - '.github/workflows/analytics-12a13-kick-history-category-aggregate-benchmark.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a13-kick-history-category-aggregate-benchmark-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout package head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify migration and exact benchmark
+        run: node scripts/verify-12a13-kick-history-category-aggregate-benchmark.mjs
+
+      - name: Verify package-only PR scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          allowed='^(db/d1/006_history_category_aggregate\.sql|scripts/measure-12a13-kick-history-category-aggregate\.py|docs/audits/12a13-kick-history-category-aggregate-benchmark-contract\.json|docs/audits/12a13-kick-history-category-aggregate-benchmark-evidence\.json|scripts/verify-12a13-kick-history-category-aggregate-benchmark\.mjs|\.github/workflows/analytics-12a13-kick-history-category-aggregate-benchmark\.yml)$'
+          for path in "${changed[@]}"; do
+            if ! [[ "$path" =~ $allowed ]]; then
+              echo "Unexpected non-package change: $path" >&2
+              exit 1
+            fi
+          done
+          test "${#changed[@]}" -eq 6
+
+      - name: Verify retained architecture and production boundaries
+        run: |
+          node scripts/verify-quality-u10g-architecture.mjs
+          node scripts/verify-quality-u10d-analysis-coherence.mjs
+          cd apps/web
+          node scripts/verify-production-source.mjs
+
+      - name: Typecheck and build web
+        run: |
+          pnpm typecheck:web
+          pnpm build:web
+
+      - name: Publish package boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick History category aggregate schema benchmark'
+            echo
+            echo '- Repository migration candidate: db/d1/006_history_category_aggregate.sql'
+            echo '- Production schema apply: not authorized'
+            echo '- Retention design: 180 days'
+            echo '- Hard complete-day bounds: 300 category rows + 1000 streamer-category rows'
+            echo '- Maximum retained rows: 234,180'
+            echo '- Measured exact-schema increment: 41.59 MiB'
+            echo '- With accepted 20% safety: 49.91 MiB'
+            echo '- 60 MiB design-budget headroom: 10.09 MiB'
+            echo '- Measured projected Kick size: 419.59 MiB; provider headroom: 20.41 MiB'
+            echo '- Measured account-wide headroom: 829.68 MiB'
+            echo '- Overflow: whole day unavailable_overflow, zero partial aggregate rows'
+            echo '- Category/day range indexes: verified by SQLite query plan'
+            echo '- Migration second pass: schema stable, zero file-size delta'
+            echo '- Collector/runtime/API/UI/Twitch rollout: not authorized'
+            echo '- Next gate: separately controlled production schema-apply package'
+          } >> "$GITHUB_STEP_SUMMARY"
