@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "viewloom-12a13-kick-history-category-aggregate-benchmark-contract-v1",
+  "status": "candidate_accepted_on_merge",
+  "phase": "12A-13",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 831,
+  "provider": "kick",
+  "sourceDecision": {
+    "path": "docs/audits/12a12-kick-history-category-aggregate-capacity-decision.json",
+    "decisionPr": 830,
+    "decisionMergeSha": "9bba1bb5011204998419817bed8b39df6dd8d5de",
+    "decision": "accept_bounded_forward_only_history_category_aggregate_design"
+  },
+  "package": {
+    "migration": "db/d1/006_history_category_aggregate.sql",
+    "benchmark": "scripts/measure-12a13-kick-history-category-aggregate.py",
+    "evidence": "docs/audits/12a13-kick-history-category-aggregate-benchmark-evidence.json",
+    "verifier": "scripts/verify-12a13-kick-history-category-aggregate-benchmark.mjs",
+    "workflow": ".github/workflows/analytics-12a13-kick-history-category-aggregate-benchmark.yml"
+  },
+  "schema": {
+    "tables": [
+      "history_category_daily",
+      "history_category_streamer_daily",
+      "history_category_day_status"
+    ],
+    "indexes": [
+      "idx_history_category_daily_category_day",
+      "idx_history_category_streamer_category_day"
+    ],
+    "providerScoped": true,
+    "categoryContractVersion": "category-source-v1",
+    "automaticBootstrapAuthorized": false,
+    "remoteApplyAuthorized": false
+  },
+  "hardBounds": {
+    "retentionDays": 180,
+    "categoryRowsPerDay": 300,
+    "streamerCategoryRowsPerDay": 1000,
+    "maximumCategoryRows": 54000,
+    "maximumStreamerCategoryRows": 180000,
+    "maximumStatusRows": 180,
+    "maximumRowsTotal": 234180,
+    "capsAreRankingOrSampling": false,
+    "overflowPolicy": "reject_entire_day_as_unavailable_overflow",
+    "partialOverflowRowsMayBeExposed": false
+  },
+  "benchmarkGate": {
+    "pageSizeBytes": 4096,
+    "safetyMarginPct": 20,
+    "incrementalMiBWithSafetyMax": 60,
+    "categoryDailyRangeMustUseIndex": "idx_history_category_daily_category_day",
+    "streamerPeriodRangeMustUseIndex": "idx_history_category_streamer_category_day",
+    "migrationSecondPassFileByteDeltaMax": 0,
+    "migrationSchemaMustRemainStableOnSecondPass": true,
+    "providerSeparationRequired": true,
+    "overflowFixtureRequired": true
+  },
+  "freeStrongGate": {
+    "acceptedKickProjectedMiB": 369.68,
+    "acceptedProviderCeilingMiB": 440,
+    "acceptedProviderHeadroomMinMiB": 10,
+    "acceptedAccountHeadroomMiB": 879.59,
+    "acceptedAccountHeadroomMinMiB": 500,
+    "thresholdRelaxationAllowed": false
+  },
+  "semantics": {
+    "categoryIdentity": "(provider, category_id)",
+    "categoryFilterBeforeRankingRequired": true,
+    "preRankedTopKStored": false,
+    "categoryDailyPeakDefinition": "maximum concurrent selected-category viewer sum across one observed snapshot",
+    "sumOfStreamerPeaksAllowedAsCategoryPeak": false,
+    "wholeDayOverflowFailClosed": true,
+    "missingCategoryMetadataMeansZero": false,
+    "latestCategoryBackProjectionAllowed": false,
+    "syntheticNameOnlyMappingAllowed": false,
+    "forwardOnly": true,
+    "backfill": false,
+    "rawRetentionChanged": false,
+    "newCron": false
+  },
+  "authorization": {
+    "repositoryMigrationCandidate": true,
+    "localBenchmark": true,
+    "productionSchemaApply": false,
+    "productionD1Mutation": false,
+    "collectorGeneration": false,
+    "workerDeployment": false,
+    "bindingChange": false,
+    "cadenceChange": false,
+    "retentionChange": false,
+    "backfill": false,
+    "historyApiCategoryParameter": false,
+    "historyCategoryUi": false,
+    "hiddenCandidate": false,
+    "publicCutover": false,
+    "twitchRollout": false,
+    "crossProviderRanking": false
+  },
+  "nextGate": "Separate controlled production schema-apply design and execution package. No generator or History category candidate may begin from this gate alone."
+}
