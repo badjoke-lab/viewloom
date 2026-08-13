@@ -24,12 +24,20 @@ raw_items AS (
       json_extract(j.value, '$.viewerCount')
     ) AS INTEGER) AS viewers,
     json_extract(s.payload_json, '$.categoryContractVersion') AS category_contract_version,
+    json_type(
+      s.payload_json,
+      '$.categoryRefs[' || CAST(j.key AS TEXT) || ']'
+    ) AS category_ref_type,
     CAST(json_extract(
       s.payload_json,
       '$.categoryRefs[' || CAST(j.key AS TEXT) || ']'
     ) AS INTEGER) AS category_ref,
     CASE
       WHEN json_extract(s.payload_json, '$.categoryContractVersion') = '${CATEGORY_CONTRACT_VERSION}'
+       AND json_type(
+         s.payload_json,
+         '$.categoryRefs[' || CAST(j.key AS TEXT) || ']'
+       ) = 'integer'
        AND CAST(json_extract(
          s.payload_json,
          '$.categoryRefs[' || CAST(j.key AS TEXT) || ']'
@@ -54,6 +62,7 @@ accepted AS (
   SELECT *
   FROM valid
   WHERE category_contract_version = '${CATEGORY_CONTRACT_VERSION}'
+    AND category_ref_type = 'integer'
     AND category_ref IS NOT NULL
     AND category_ref >= 0
     AND category_id IS NOT NULL
@@ -95,6 +104,10 @@ WITH raw_items AS (
       json_extract(j.value, '$.viewer_count'),
       json_extract(j.value, '$.viewerCount')
     ) AS INTEGER) AS viewers,
+    json_type(
+      m.payload_json,
+      '$.categoryRefs[' || CAST(j.key AS TEXT) || ']'
+    ) AS category_ref_type,
     CAST(json_extract(
       m.payload_json,
       '$.categoryRefs[' || CAST(j.key AS TEXT) || ']'
@@ -113,6 +126,7 @@ accepted AS (
     ) AS TEXT) AS category_id
   FROM raw_items
   WHERE category_contract_version = '${CATEGORY_CONTRACT_VERSION}'
+    AND category_ref_type = 'integer'
     AND category_ref IS NOT NULL
     AND category_ref >= 0
     AND viewers > 0
@@ -180,6 +194,10 @@ WITH raw_items AS (
       json_extract(j.value, '$.viewer_count'),
       json_extract(j.value, '$.viewerCount')
     ) AS INTEGER) AS viewers,
+    json_type(
+      m.payload_json,
+      '$.categoryRefs[' || CAST(j.key AS TEXT) || ']'
+    ) AS category_ref_type,
     CAST(json_extract(
       m.payload_json,
       '$.categoryRefs[' || CAST(j.key AS TEXT) || ']'
@@ -199,6 +217,7 @@ accepted AS (
     ) AS TEXT) AS category_id
   FROM raw_items
   WHERE category_contract_version = '${CATEGORY_CONTRACT_VERSION}'
+    AND category_ref_type = 'integer'
     AND category_ref IS NOT NULL
     AND category_ref >= 0
     AND streamer_id IS NOT NULL
