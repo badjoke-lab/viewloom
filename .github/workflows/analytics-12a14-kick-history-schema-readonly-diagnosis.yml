@@ -1,213 +1,28 @@
-name: Analytics 12A14 Kick History Schema Readonly Diagnosis
+name: Analytics 12A14 Kick History Schema Readonly Diagnosis Accepted Retired
 
+# Historical record only. Attempt 1 proved the failed apply left a clean absent
+# schema; attempt 2 independently revalidated the completed production schema.
+# No production diagnosis deployment remains active.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - '.github/workflows/analytics-12a14-kick-history-schema-readonly-diagnosis.yml'
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/analytics-12a14-kick-history-schema-readonly-diagnosis.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
-  actions: read
-
-concurrency:
-  group: analytics-12a14-kick-history-schema-readonly-diagnosis-${{ github.ref }}
-  cancel-in-progress: false
-
-env:
-  ARTIFACT_DIR: artifacts/12a14-kick-history-schema-readonly-diagnosis
 
 jobs:
-  contract:
+  historical-record:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - name: Verify exact recovery-only scope
-        if: github.event_name == 'pull_request'
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      - name: Publish diagnosis history
         run: |
-          set -euo pipefail
-          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
-          printf '%s\n' "${changed[@]}"
-          test "${#changed[@]}" -eq 1
-          [[ "${changed[0]}" == '.github/workflows/analytics-12a14-kick-history-schema-readonly-diagnosis.yml' ]]
-      - name: Verify read-only recovery boundary
-        run: |
-          set -euo pipefail
-          file='.github/workflows/analytics-12a14-kick-history-schema-readonly-diagnosis.yml'
-          ! grep -nE '(/apply|APPLY_KICK_HISTORY_CATEGORY_AGGREGATE_SCHEMA_ONLY|d1 execute|INSERT INTO|UPDATE |DELETE FROM|ALTER TABLE|CREATE TABLE|CREATE INDEX|DROP TABLE|DROP INDEX)' "$file"
-          grep -n 'url/inspect' "$file"
-          grep -n 'failedRunId.*31670411266' "$file"
-          grep -n 'failedJobId.*94353742254' "$file"
-          node scripts/verify-12a14-kick-history-category-schema-apply-package.mjs
-          python3 scripts/test-12a14-kick-history-category-schema-apply.py
-      - name: Bundle diagnosis Worker without deploying
-        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/history-category-schema-apply/wrangler.kick.toml
-      - name: Verify retained architecture and web build
-        run: |
-          node scripts/verify-quality-u10g-architecture.mjs
-          node scripts/verify-quality-u10d-analysis-coherence.mjs
-          pnpm typecheck:web
-          pnpm build:web
-
-  production-readonly-diagnosis:
-    needs: contract
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-      - name: Verify failed-run recovery authority
-        run: |
-          set -euo pipefail
-          git merge-base --is-ancestor dab9d8762edb671e6bdc5ce58e9ced7be7836ae7 HEAD
-          test -f docs/audits/12a14-kick-history-category-schema-apply-trigger.json
-          [[ $(jq -r '.packagePr' docs/audits/12a14-kick-history-category-schema-apply-trigger.json) == '834' ]]
-          [[ $(jq -r '.expectedPackageHeadSha' docs/audits/12a14-kick-history-category-schema-apply-trigger.json) == 'e960043884f348b68d810591eaca1d9892fe5ccf' ]]
-      - name: Run read-only production diagnosis
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$ARTIFACT_DIR/raw"
-          raw="$ARTIFACT_DIR/raw"
-          evidence="$ARTIFACT_DIR/evidence.json"
-          original_service='viewloom-history-category-schema-apply-kick'
-          diagnostic_service='viewloom-history-category-schema-diagnose-kick'
-          failedRunId=31670411266
-          failedJobId=94353742254
-          stage='initialize'
-          deployed=false
-          original_status=-1
-          original_post_cleanup_status=-1
-          diagnostic_post_delete_status=-1
-
-          write_failure() {
-            jq -n \
-              --arg schemaVersion 'viewloom-12a14-kick-history-schema-readonly-diagnosis-v1' \
-              --arg status 'diagnostic_failed' \
-              --arg stage "$stage" \
-              --arg headSha "$GITHUB_SHA" \
-              --argjson failedRunId "$failedRunId" \
-              --argjson failedJobId "$failedJobId" \
-              --argjson originalServicePreStatus "$original_status" \
-              --argjson originalServicePostCleanupStatus "$original_post_cleanup_status" \
-              --argjson diagnosticServicePostDeleteStatus "$diagnostic_post_delete_status" \
-              '{schemaVersion:$schemaVersion,status:$status,failedAtStage:$stage,headSha:$headSha,failedRunId:$failedRunId,failedJobId:$failedJobId,originalTemporaryWorker:{preHttpStatus:$originalServicePreStatus,postCleanupHttpStatus:$originalServicePostCleanupStatus},diagnosticTemporaryWorker:{postDeleteHttpStatus:$diagnosticServicePostDeleteStatus},boundaries:{d1Mutation:false,schemaApply:false,aggregateWrites:false,backfill:false,collectorChanged:false,retentionChanged:false,twitchChanged:false}}' > "$evidence"
-          }
-          cleanup() {
-            set +e
-            if [[ "$deployed" == 'true' ]]; then
-              curl -sS -X DELETE \
-                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-                -H 'Content-Type: application/json' \
-                "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$diagnostic_service" \
-                > "$raw/diagnostic-delete.json"
-              diagnostic_post_delete_status=$(curl -sS -o /dev/null -w '%{http_code}' \
-                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-                "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$diagnostic_service")
-            fi
-            write_failure
-          }
-          trap cleanup ERR
-
-          stage='inspect_original_temporary_worker'
-          original_status=$(curl -sS -o "$raw/original-service.json" -w '%{http_code}' \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$original_service")
-          [[ "$original_status" == '200' || "$original_status" == '404' ]]
-
-          stage='verify_diagnostic_worker_absent'
-          diagnostic_pre_status=$(curl -sS -o /dev/null -w '%{http_code}' \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$diagnostic_service")
-          [[ "$diagnostic_pre_status" == '404' ]]
-
-          stage='deploy_diagnostic_worker'
-          config="$raw/wrangler.kick.toml"
-          cp workers/history-category-schema-apply/wrangler.kick.toml "$config"
-          sed -i 's/name = "viewloom-history-category-schema-apply-kick"/name = "viewloom-history-category-schema-diagnose-kick"/' "$config"
-          sed -i "s|main = \"src/index.ts\"|main = \"$GITHUB_WORKSPACE/workers/history-category-schema-apply/src/index.ts\"|" "$config"
-          APPLY_TOKEN=$(openssl rand -hex 32)
-          pnpm dlx wrangler@4 deploy --config "$config" > "$raw/deploy.log" 2>&1
-          deployed=true
-          printf '%s' "$APPLY_TOKEN" | pnpm dlx wrangler@4 secret put APPLY_TOKEN --config "$config" >> "$raw/deploy.log" 2>&1
-          url=$(grep -Eo 'https://[^ ]+workers.dev' "$raw/deploy.log" | tail -1)
-          test -n "$url"
-
-          stage='read_only_inspect'
-          inspected=false
-          for attempt in $(seq 1 40); do
-            status=$(curl -sS -o "$raw/inspect.json" -w '%{http_code}' -X POST \
-              -H "Authorization: Bearer $APPLY_TOKEN" "$url/inspect" || true)
-            if [[ "$status" == '200' && $(jq -r '.ok // false' "$raw/inspect.json") == 'true' ]]; then
-              inspected=true
-              break
-            fi
-            sleep 5
-          done
-          [[ "$inspected" == 'true' ]]
-
-          stage='cleanup_diagnostic_worker'
-          delete_response=$(curl -sS -X DELETE \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            -H 'Content-Type: application/json' \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$diagnostic_service")
-          [[ $(jq -r '.success // false' <<<"$delete_response") == 'true' ]]
-          deployed=false
-          diagnostic_post_delete_status=$(curl -sS -o /dev/null -w '%{http_code}' \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$diagnostic_service")
-          [[ "$diagnostic_post_delete_status" == '404' ]]
-
-          stage='cleanup_original_worker_if_needed'
-          if [[ "$original_status" == '200' ]]; then
-            original_delete=$(curl -sS -X DELETE \
-              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-              -H 'Content-Type: application/json' \
-              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$original_service")
-            [[ $(jq -r '.success // false' <<<"$original_delete") == 'true' ]]
-          fi
-          original_post_cleanup_status=$(curl -sS -o /dev/null -w '%{http_code}' \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$original_service")
-          [[ "$original_post_cleanup_status" == '404' ]]
-
-          stage='freeze_read_only_evidence'
-          jq -n \
-            --arg schemaVersion 'viewloom-12a14-kick-history-schema-readonly-diagnosis-v1' \
-            --arg status 'observed' \
-            --arg headSha "$GITHUB_SHA" \
-            --argjson failedRunId "$failedRunId" \
-            --argjson failedJobId "$failedJobId" \
-            --argjson originalServicePreStatus "$original_status" \
-            --argjson originalServicePostCleanupStatus "$original_post_cleanup_status" \
-            --argjson diagnosticServicePostDeleteStatus "$diagnostic_post_delete_status" \
-            --argjson inspect "$(cat "$raw/inspect.json")" \
-            '{schemaVersion:$schemaVersion,status:$status,headSha:$headSha,failedRunId:$failedRunId,failedJobId:$failedJobId,originalTemporaryWorker:{preHttpStatus:$originalServicePreStatus,postCleanupHttpStatus:$originalServicePostCleanupStatus},diagnosticTemporaryWorker:{postDeleteHttpStatus:$diagnosticServicePostDeleteStatus},schema:$inspect.state.schema,aggregateRows:$inspect.state.aggregateRows,providerLeakageRows:$inspect.state.providerLeakageRows,latestSnapshot:$inspect.state.operational.latestSnapshot,databaseSizeBytes:$inspect.state.databaseSizeBytes,queryMetrics:$inspect.state.query,boundaries:{d1Mutation:false,schemaApply:false,aggregateWrites:false,backfill:false,collectorChanged:false,retentionChanged:false,twitchChanged:false}}' > "$evidence"
-          trap - ERR
-      - name: Upload sanitized diagnosis
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: phase12a14-kick-history-schema-readonly-diagnosis
-          path: artifacts/12a14-kick-history-schema-readonly-diagnosis/evidence.json
-          retention-days: 30
-          if-no-files-found: error
+          {
+            echo '## Kick History schema diagnosis — accepted / retired'
+            echo
+            echo '- Source run: 31670727423'
+            echo '- Attempt 1 artifact: 9169595791 — schema absent / partial=false before repaired retry'
+            echo '- Attempt 2 artifact: 9170185311 — schema complete / aggregate rows 0 / leakage 0 after repaired retry'
+            echo '- Attempt 2 latest Kick snapshot: 2026-08-13T06:00:40.134Z / 100 streams / authenticated'
+            echo '- Attempt 2 D1 size: 341827584 bytes'
+            echo '- Diagnostic Worker: deleted / 404'
+            echo '- Production diagnosis execution path: retired'
+          } >> "$GITHUB_STEP_SUMMARY"
