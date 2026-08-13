@@ -51,6 +51,8 @@ jobs:
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
           trigger='docs/audits/12a15-kick-history-category-cost-probe-trigger.json'
+          verifier='scripts/verify-12a15-kick-history-category-cost-probe-execution-package.mjs'
+          workflow='.github/workflows/analytics-12a15-kick-history-category-cost-probe-execution.yml'
 
           if [[ "${#changed[@]}" -eq 1 && "${changed[0]}" == "$trigger" ]]; then
             test -f "$TRIGGER_FILE"
@@ -63,6 +65,19 @@ jobs:
             [[ $(jq -r '.executionPackagePr' "$TRIGGER_FILE") =~ ^[0-9]+$ ]]
             [[ $(jq -r '.expectedExecutionPackageHeadSha' "$TRIGGER_FILE") =~ ^[0-9a-f]{40}$ ]]
             exit 0
+          fi
+
+          if [[ "${#changed[@]}" -eq 2 ]]; then
+            maintenance=true
+            for path in "${changed[@]}"; do
+              if [[ "$path" != "$verifier" && "$path" != "$workflow" ]]; then
+                maintenance=false
+              fi
+            done
+            if [[ "$maintenance" == 'true' ]]; then
+              echo 'Accepted lifecycle-maintenance scope: verifier + workflow only.'
+              exit 0
+            fi
           fi
 
           allowed='^(docs/audits/12a15-kick-history-category-cost-probe-execution-contract\.json|scripts/verify-12a15-kick-history-category-cost-probe-execution-package\.mjs|\.github/workflows/analytics-12a15-kick-history-category-cost-probe-execution\.yml)$'
