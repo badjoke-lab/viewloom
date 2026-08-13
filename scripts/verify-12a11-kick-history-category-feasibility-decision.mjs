@@ -84,8 +84,6 @@ assert.equal(decision.fallback.userFacingApproximationAuthorized, false)
 assert.ok(decision.rejectionReasons.length >= 5)
 assert.ok(decision.futureReconsiderationRequirements.length >= 5)
 
-// Existing Kick History advertises 90 days, prefers category-blind daily rollups,
-// retains previous-period comparison, and has no category parameter today.
 for (const fragment of [
   'dayCount(period.from, period.to) > 90',
   'const previous = previousPeriod(period.from, period.to)',
@@ -97,7 +95,6 @@ for (const fragment of [
 ]) assert.ok(historyApi.includes(fragment), `Kick History API missing evidence fragment: ${fragment}`)
 assert.equal(historyApi.includes("searchParams.get('category')"), false)
 
-// Accepted raw category contract is provider-scoped and evaluated per observation.
 for (const fragment of [
   "const CATEGORY_CONTRACT_VERSION = 'category-source-v1'",
   'categoryIds',
@@ -106,8 +103,6 @@ for (const fragment of [
   'latestCategoryBackProjectionAllowed: false',
 ]) assert.ok(categoryCore.includes(fragment), `Category core missing evidence fragment: ${fragment}`)
 
-// Kick Free Strong retention: exact raw category snapshots last 60 days, while
-// category-blind daily rollups last 180 days.
 for (const fragment of [
   "unixepoch('now', '-60 days')",
   "unixepoch('now', '-180 days')",
@@ -115,13 +110,10 @@ for (const fragment of [
   'DELETE FROM daily_rollups',
 ]) assert.ok(collector.includes(fragment), `Kick retention evidence missing: ${fragment}`)
 
-// Long-range daily-rollup top streamer payload does not retain category identity
-// or contribution. Capture the top_json CTE window rather than scanning the whole
-// collector, which legitimately contains category fields for raw snapshots.
 const topJsonStart = collector.indexOf('top_json AS (')
 assert.ok(topJsonStart >= 0, 'Kick rollup top_json CTE missing')
-const topJsonEnd = collector.indexOf('INSERT INTO daily_rollups', topJsonStart)
-assert.ok(topJsonEnd > topJsonStart, 'Kick rollup INSERT boundary missing')
+const topJsonEnd = collector.indexOf('peak AS (', topJsonStart)
+assert.ok(topJsonEnd > topJsonStart, 'Kick rollup top_json CTE boundary missing')
 const topJsonWindow = collector.slice(topJsonStart, topJsonEnd)
 for (const fragment of [
   "'streamerId'",
@@ -130,10 +122,10 @@ for (const fragment of [
   "'peakViewers'",
   "'observedMinutes'",
   "'rankByViewerMinutes'",
+  "'rankByPeak'",
 ]) assert.ok(topJsonWindow.includes(fragment), `Kick rollup field missing: ${fragment}`)
 assert.equal(/categoryProviderId|categoryIds|categoryRefs|category_id|category_name/.test(topJsonWindow), false, 'Kick daily rollup unexpectedly preserves category identity; decision must be revisited')
 
-// Provider precedent remains fail-closed on long-range History category semantics.
 assert.equal(twitchPrecedent.decision, 'reject_twitch_history_category_surface_on_current_data')
 
 console.log('Kick History category feasibility decision verified: current accepted data cannot support exact advertised long-range category History; unfiltered Kick History remains required and unchanged.')
