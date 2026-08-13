@@ -55,6 +55,12 @@ export const HISTORY_CATEGORY_SCHEMA_OBJECTS = [
   'history_category_day_status',
 ] as const
 
+const HISTORY_CATEGORY_TABLE_OBJECTS = [
+  'history_category_daily',
+  'history_category_streamer_daily',
+  'history_category_day_status',
+] as const
+
 export type HistoryCategorySchemaState = {
   presentObjects: string[]
   complete: boolean
@@ -76,7 +82,10 @@ export type HistoryCategorySchemaApplyResult = {
   applied: boolean
   reason: 'applied' | 'already-complete' | 'partial-schema-stop'
   pre: HistoryCategorySchemaState
+  afterTables?: HistoryCategorySchemaState
   post: HistoryCategorySchemaState
+  tableStageStatementCount?: number
+  indexStageStatementCount?: number
   metrics: HistoryCategorySchemaApplyMetrics
 }
 
@@ -125,18 +134,39 @@ export async function applyHistoryCategorySchemaControlled(
     }
   }
 
-  const results = await db.batch(
-    HISTORY_CATEGORY_SCHEMA_STATEMENTS.map((statement) => db.prepare(statement)),
-  )
+  const tableStatements = HISTORY_CATEGORY_SCHEMA_STATEMENTS.filter((statement) => /^CREATE TABLE\b/.test(statement.trim()))
+  const indexStatements = HISTORY_CATEGORY_SCHEMA_STATEMENTS.filter((statement) => /^CREATE INDEX\b/.test(statement.trim()))
+  if (tableStatements.length !== 3 || indexStatements.length !== 2) {
+    throw new Error('history_category_schema_statement_partition_invalid')
+  }
+
+  // D1 may validate dependent statements before an entire batch is committed.
+  // Create all independent tables first, verify them, then create their indexes.
+  const tableResults = await db.batch(tableStatements.map((statement) => db.prepare(statement)))
+  const afterTables = await inspectHistoryCategorySchema(db)
+  const presentAfterTables = new Set(afterTables.presentObjects)
+  if (
+    afterTables.complete
+    || HISTORY_CATEGORY_TABLE_OBJECTS.some((name) => !presentAfterTables.has(name))
+    || afterTables.presentObjects.some((name) => name.startsWith('idx_history_category_'))
+  ) {
+    throw new Error('history_category_schema_table_stage_incomplete')
+  }
+
+  const indexResults = await db.batch(indexStatements.map((statement) => db.prepare(statement)))
   const post = await inspectHistoryCategorySchema(db)
   if (!post.complete) throw new Error('history_category_schema_apply_incomplete')
 
+  const results = [...tableResults, ...indexResults]
   return {
     attempted: true,
     applied: true,
     reason: 'applied',
     pre,
+    afterTables,
     post,
+    tableStageStatementCount: tableResults.length,
+    indexStageStatementCount: indexResults.length,
     metrics: summarizeMetrics(results),
   }
 }
