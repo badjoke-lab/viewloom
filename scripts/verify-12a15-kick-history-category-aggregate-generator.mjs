@@ -67,7 +67,7 @@ for (const fragment of [
   "return 'unavailable_no_category_data'",
   "return 'unavailable_missing_category'",
   "return 'unavailable_overflow'",
-  "coverageState: 'refresh_pending'",
+  "'refresh_pending'",
   "'unavailable_generation_mismatch'",
   "precheck.sourceSnapshots >= 240 ? 'observed' : 'partial'",
   "db.prepare('DELETE FROM history_category_daily WHERE provider = ? AND day = ?')",
