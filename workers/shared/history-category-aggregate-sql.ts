@@ -44,7 +44,7 @@ raw_items AS (
        ) AS INTEGER) >= 0
       THEN CAST(json_extract(
         s.payload_json,
-        '$.categoryIds[' || CAST(json_extract(
+        '$.categoryIds[' || CAST(CAST(json_extract(
           s.payload_json,
           '$.categoryRefs[' || CAST(j.key AS TEXT) || ']'
         ) AS INTEGER) AS TEXT) || ']'
@@ -53,15 +53,17 @@ raw_items AS (
     END AS category_id
   FROM source s, json_each(s.payload_json, '$.items') j
 ),
-valid AS (
+observed AS (
   SELECT *
   FROM raw_items
-  WHERE streamer_id IS NOT NULL AND streamer_id != '' AND viewers > 0
+  WHERE viewers > 0
 ),
 accepted AS (
   SELECT *
-  FROM valid
-  WHERE category_contract_version = '${CATEGORY_CONTRACT_VERSION}'
+  FROM observed
+  WHERE streamer_id IS NOT NULL
+    AND streamer_id != ''
+    AND category_contract_version = '${CATEGORY_CONTRACT_VERSION}'
     AND category_ref_type = 'integer'
     AND category_ref IS NOT NULL
     AND category_ref >= 0
@@ -70,9 +72,9 @@ accepted AS (
 )
 SELECT
   (SELECT COUNT(*) FROM source) AS source_snapshots,
-  (SELECT COUNT(*) FROM valid) AS valid_stream_items,
+  (SELECT COUNT(*) FROM observed) AS valid_stream_items,
   (SELECT COUNT(*) FROM accepted) AS category_observed_items,
-  (SELECT COUNT(*) FROM valid) - (SELECT COUNT(*) FROM accepted) AS category_missing_items,
+  (SELECT COUNT(*) FROM observed) - (SELECT COUNT(*) FROM accepted) AS category_missing_items,
   (SELECT COUNT(*) FROM (SELECT DISTINCT category_id FROM accepted)) AS candidate_category_rows,
   (SELECT COUNT(*) FROM (SELECT DISTINCT category_id, streamer_id FROM accepted)) AS candidate_streamer_category_rows,
   CASE
