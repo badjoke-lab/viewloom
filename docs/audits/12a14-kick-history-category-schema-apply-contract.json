@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "viewloom-12a14-kick-history-category-schema-apply-contract-v1",
+  "status": "design_package_candidate_no_production_trigger",
+  "phase": "12A-14",
+  "parentTrackingIssue": 623,
+  "trackingIssue": 833,
+  "provider": "kick",
+  "acceptedAuthority": {
+    "capacityDecisionPr": 830,
+    "schemaBenchmarkPr": 832,
+    "acceptedMainSha": "f9ff71e29c2770f3cb11168fe8a331e1a63ee12f",
+    "decision": "docs/audits/12a12-kick-history-category-aggregate-capacity-decision.json",
+    "benchmark": "docs/audits/12a13-kick-history-category-aggregate-benchmark-evidence.json"
+  },
+  "migration": {
+    "file": "db/d1/006_history_category_aggregate.sql",
+    "runtimeModule": "workers/shared/history-category-schema.ts",
+    "statementCount": 5,
+    "tableCount": 3,
+    "indexCount": 2,
+    "secondPassStatementCountMax": 0,
+    "partialSchemaPolicy": "stop_without_applying"
+  },
+  "temporaryWorker": {
+    "source": "workers/history-category-schema-apply/src/index.ts",
+    "config": "workers/history-category-schema-apply/wrangler.kick.toml",
+    "name": "viewloom-history-category-schema-apply-kick",
+    "databaseName": "vl_kick_hot",
+    "provider": "kick",
+    "confirmation": "APPLY_KICK_HISTORY_CATEGORY_AGGREGATE_SCHEMA_ONLY",
+    "bearerTokenRequired": true,
+    "collectorRouteAvailable": false,
+    "scheduledHandlerAvailable": false,
+    "aggregateGenerationAvailable": false
+  },
+  "requiredPreconditions": [
+    "exact_main_and_package_identity",
+    "accepted_12a12_decision_present",
+    "accepted_12a13_benchmark_present",
+    "migration_runtime_parity",
+    "temporary_worker_name_unoccupied",
+    "kick_binding_matches_vl_kick_hot",
+    "history_category_schema_completely_absent",
+    "provider_leakage_rows_zero",
+    "latest_kick_snapshot_present_and_fresh",
+    "aggregate_rows_zero"
+  ],
+  "requiredSequence": [
+    "verify_exact_main_and_accepted_package",
+    "deploy_temporary_kick_worker",
+    "inspect_absent_pre_state",
+    "apply_exact_five_statement_schema_once",
+    "repeat_apply_and_require_already_complete_zero_statements",
+    "wait_for_new_natural_kick_snapshot",
+    "inspect_complete_zero_row_post_state",
+    "delete_temporary_worker",
+    "require_post_delete_http_404",
+    "freeze_sanitized_evidence"
+  ],
+  "acceptanceThresholds": {
+    "schemaApplyStatements": 5,
+    "secondPassStatementCountMax": 0,
+    "schemaApplyWorkerWallMsMax": 15000,
+    "emptySchemaSizeIncreaseBytesMax": 5242880,
+    "latestSnapshotFreshnessMinutesMax": 20,
+    "providerLeakageRowsMax": 0,
+    "aggregateRowsMax": 0,
+    "temporaryWorkersRetained": false,
+    "postDeleteHttpStatus": 404
+  },
+  "stopConditions": [
+    "main_or_package_identity_mismatch",
+    "migration_parity_mismatch",
+    "temporary_worker_name_occupied",
+    "provider_binding_mismatch",
+    "pre_schema_partial",
+    "pre_schema_unexpectedly_complete_without_accepted_apply_evidence",
+    "preexisting_aggregate_rows",
+    "provider_leakage_detected",
+    "schema_apply_incomplete",
+    "first_apply_statement_count_not_five",
+    "second_pass_executes_any_statement",
+    "post_aggregate_rows_nonzero",
+    "empty_schema_size_increase_exceeds_threshold",
+    "latest_snapshot_missing_or_stale",
+    "temporary_worker_delete_failure",
+    "temporary_worker_still_reachable"
+  ],
+  "failurePolicy": {
+    "doNotDropAppliedSchema": true,
+    "doNotWriteAggregateRows": true,
+    "doNotBackfill": true,
+    "doNotChangeRetention": true,
+    "doNotChangeCollector": true,
+    "deleteTemporaryWorkerEvenOnFailure": true,
+    "preserveSanitizedFailureEvidence": true,
+    "requireSeparateRecoveryDecisionAfterPartialApply": true
+  },
+  "evidencePrivacy": {
+    "rawSnapshotPayloadIncluded": false,
+    "channelIdentitiesIncluded": false,
+    "credentialsIncluded": false,
+    "cloudflareAccountIdIncluded": false,
+    "databaseIdIncluded": false,
+    "deploymentLogsIncluded": false
+  },
+  "authorization": {
+    "designPackageAuthorized": true,
+    "separateOneTimeTriggerAuthorizedAfterPackageAcceptance": true,
+    "productionApplyArmedNow": false,
+    "productionSchemaApplyExecutedNow": false,
+    "aggregateGeneratorAuthorized": false,
+    "collectorChangeAuthorized": false,
+    "newCronAuthorized": false,
+    "rawRetentionChangeAuthorized": false,
+    "backfillAuthorized": false,
+    "historyApiCategoryAuthorized": false,
+    "historyCategoryUiAuthorized": false,
+    "twitchSchemaApplyAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  },
+  "nextGate": "After this package is accepted on main, add exactly one trigger JSON pinned to the accepted package head SHA."
+}
