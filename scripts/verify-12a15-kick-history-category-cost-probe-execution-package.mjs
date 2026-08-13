@@ -107,7 +107,21 @@ for (const fragment of [
   'Upload sanitized cost evidence',
 ]) assert.ok(workflow.includes(fragment), `execution workflow boundary missing: ${fragment}`)
 
-assert.equal(existsSync(contract.trigger.file), false, 'execution package must not include/arm the production trigger')
+if (existsSync(contract.trigger.file)) {
+  const trigger = json(contract.trigger.file)
+  assert.ok(
+    ['armed_for_one_time_main_push', 'consumed_success_retired'].includes(trigger.status),
+    `unexpected trigger lifecycle status: ${trigger.status}`,
+  )
+  assert.equal(trigger.provider, 'kick')
+  assert.equal(trigger.oneTime, true)
+  assert.equal(trigger.confirmation, 'RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_PROBE')
+  assert.equal(trigger.acceptedGeneratorPackagePr, 847)
+  assert.equal(trigger.expectedGeneratorPackageHeadSha, '011edd9a90e7691a5514bd0fa6111f10c80ede30')
+  assert.ok(Number.isInteger(trigger.executionPackagePr) && trigger.executionPackagePr > 0)
+  assert.match(String(trigger.expectedExecutionPackageHeadSha ?? ''), /^[0-9a-f]{40}$/)
+}
+
 assert.equal(kickEntry.includes('maybeGenerateKickHistoryCategoryAggregates'), false, 'permanent generator must remain unintegrated')
 assert.equal(kickConfig.includes('HISTORY_CATEGORY'), false, 'permanent generator runtime flag must remain absent')
 assert.equal(kickConfig.includes('crons = ["*/5 * * * *"]'), true, 'existing Kick collector cadence must remain unchanged')
@@ -129,4 +143,4 @@ for (const key of [
 assert.equal(contract.authorization.repositoryExecutionPackageAuthorized, true)
 assert.equal(contract.authorization.separateOneTimeTriggerAuthorizedAfterPackageAcceptance, true)
 
-console.log('Kick History category cost-probe execution package verified: production remains unarmed, exact generator package is pinned, current-day zero-row preconditions and mandatory cleanup are enforced, failure evidence is retained, and permanent runtime/Twitch boundaries remain closed.')
+console.log('Kick History category cost-probe execution package verified: exact generator package is pinned; trigger lifecycle is accepted only when exact one-time metadata is present; current-day zero-row preconditions and cleanup are enforced; permanent runtime/Twitch boundaries remain closed.')
