@@ -52,6 +52,7 @@ jobs:
 
           maintenance_12a17=(
             '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+            '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
             '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
             'docs/audits/12a17-kick-history-category-probe-read-path-contract.json'
             'scripts/test-12a17-kick-history-category-probe-read-path.mjs'
