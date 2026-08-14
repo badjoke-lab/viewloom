@@ -2,7 +2,6 @@ import {
   HISTORY_CATEGORY_ROW_CAP,
   HISTORY_CATEGORY_STREAMER_ROW_CAP,
   cleanupKickHistoryCategoryProbeDay,
-  precheckKickHistoryCategoryDay,
   refreshKickHistoryCategoryAggregateDay,
 } from '../../shared/history-category-aggregate'
 
@@ -41,7 +40,7 @@ export default {
       try {
         const body = await optionalJson(request)
         const day = normalizeProbeDay(body?.day)
-        return out({ ok: true, ...(await inspect(env.DB, day)), boundaries: boundaries() })
+        return out({ ok: true, ...(await inspectPreconditions(env.DB, day)), boundaries: boundaries() })
       } catch (error) {
         return out({ ok: false, error: sanitizeError(error), boundaries: boundaries() }, 400)
       }
@@ -70,29 +69,31 @@ export default {
 
 async function runProbe(db: D1Database, day: string) {
   const startedAt = Date.now()
-  const pre = await inspect(db, day)
+
+  // Cheap fail-closed state checks happen before the generator is allowed to
+  // perform its single authoritative raw category precheck. This inspection
+  // never parses minute_snapshots.payload_json.
+  const pre = await inspectPreconditions(db, day)
   const preconditions = {
     schemaComplete: pre.schema.complete,
     targetAggregateRowsZero: pre.aggregateRows.total === 0,
     providerLeakageZero: pre.providerLeakageRows === 0,
-    sourceSnapshotsPresent: pre.precheck.sourceSnapshots > 0,
-    categoryMetadataComplete: pre.precheck.categoryMissingItems === 0 && pre.precheck.categoryObservedItems > 0,
-    categoryRowsWithinCap: pre.precheck.candidateCategoryRows <= HISTORY_CATEGORY_ROW_CAP,
-    streamerCategoryRowsWithinCap: pre.precheck.candidateStreamerCategoryRows <= HISTORY_CATEGORY_STREAMER_ROW_CAP,
     latestSnapshotPresent: Boolean(pre.latestSnapshot?.collected_at),
   }
   if (!Object.values(preconditions).every(Boolean)) {
     return {
       ok: false,
-      schemaVersion: 'viewloom-12a15-kick-history-category-aggregate-cost-probe-result-v1',
+      schemaVersion: 'viewloom-12a17-kick-history-category-aggregate-cost-model-result-v1',
       provider: 'kick',
       day,
-      stage: 'precondition',
+      stage: 'cheap_precondition',
       preconditions,
+      categoryPreconditions: null,
       pre,
       operation: null,
       post: pre,
       boundaries: boundaries(),
+      rawCategoryQueryPaths: 0,
       workerWallMs: round(Date.now() - startedAt, 2),
     }
   }
@@ -101,11 +102,15 @@ async function runProbe(db: D1Database, day: string) {
   let operationError: string | null = null
   let cleanup: Awaited<ReturnType<typeof cleanupKickHistoryCategoryProbeDay>> | null = null
   let cleanupError: string | null = null
-  let during: Awaited<ReturnType<typeof inspect>> | null = null
+  let during: Awaited<ReturnType<typeof inspectAggregateState>> | null = null
 
   try {
+    // refreshKickHistoryCategoryAggregateDay owns the one authoritative raw
+    // precheck and performs it before refresh_pending or aggregate writes.
+    // Its two exact aggregate INSERT statements are the only other raw
+    // category scans in this candidate: 1 precheck + 2 inserts = 3 paths.
     operation = await refreshKickHistoryCategoryAggregateDay(db, day, { startDay: day })
-    during = await inspect(db, day)
+    during = await inspectAggregateState(db, day)
   } catch (error) {
     operationError = sanitizeError(error)
   } finally {
@@ -116,29 +121,45 @@ async function runProbe(db: D1Database, day: string) {
     }
   }
 
-  const post = await inspect(db, day)
+  const post = await inspectAggregateState(db, day)
+  const categoryPreconditions = {
+    sourceSnapshotsPresent: (operation?.precheck.sourceSnapshots ?? 0) > 0,
+    categoryMetadataComplete:
+      (operation?.precheck.categoryMissingItems ?? -1) === 0
+      && (operation?.precheck.categoryObservedItems ?? 0) > 0,
+    categoryRowsWithinCap:
+      (operation?.precheck.candidateCategoryRows ?? Number.POSITIVE_INFINITY) <= HISTORY_CATEGORY_ROW_CAP,
+    streamerCategoryRowsWithinCap:
+      (operation?.precheck.candidateStreamerCategoryRows ?? Number.POSITIVE_INFINITY)
+        <= HISTORY_CATEGORY_STREAMER_ROW_CAP,
+  }
   const checks = {
     preconditionsPassed: Object.values(preconditions).every(Boolean),
+    categoryPreconditionsPassed: Object.values(categoryPreconditions).every(Boolean),
     operationSucceeded: operationError === null,
     aggregateRowsAuthoritative: operation?.aggregateRowsAuthoritative === true,
-    generatedCategoryRowsMatchPrecheck: operation?.generatedCategoryRows === pre.precheck.candidateCategoryRows,
-    generatedStreamerRowsMatchPrecheck: operation?.generatedStreamerCategoryRows === pre.precheck.candidateStreamerCategoryRows,
-    duringDailyRowsMatch: during?.aggregateRows.daily === pre.precheck.candidateCategoryRows,
-    duringStreamerRowsMatch: during?.aggregateRows.streamerDaily === pre.precheck.candidateStreamerCategoryRows,
+    generatedCategoryRowsMatchPrecheck:
+      operation?.generatedCategoryRows === operation?.precheck.candidateCategoryRows,
+    generatedStreamerRowsMatchPrecheck:
+      operation?.generatedStreamerCategoryRows === operation?.precheck.candidateStreamerCategoryRows,
+    duringDailyRowsMatch:
+      during?.aggregateRows.daily === operation?.precheck.candidateCategoryRows,
+    duringStreamerRowsMatch:
+      during?.aggregateRows.streamerDaily === operation?.precheck.candidateStreamerCategoryRows,
     duringStatusRowPresent: during?.aggregateRows.dayStatus === 1,
     cleanupSucceeded: cleanupError === null,
     postTargetRowsZero: post.aggregateRows.total === 0,
-    providerLeakageZero: post.providerLeakageRows === 0,
     permanentGeneratorStillDisabled: true,
   }
   const ok = Object.values(checks).every(Boolean)
   return {
     ok,
-    schemaVersion: 'viewloom-12a15-kick-history-category-aggregate-cost-probe-result-v1',
+    schemaVersion: 'viewloom-12a17-kick-history-category-aggregate-cost-model-result-v1',
     provider: 'kick',
     day,
     stage: ok ? 'complete' : 'operation_or_cleanup',
     preconditions,
+    categoryPreconditions,
     checks,
     pre,
     operation,
@@ -147,6 +168,15 @@ async function runProbe(db: D1Database, day: string) {
     cleanup,
     cleanupError,
     post,
+    rawCategoryQueryPaths: 3,
+    rawCategoryQueryPathBreakdown: {
+      generatorPrecheck: 1,
+      categoryDailyInsert: 1,
+      streamerCategoryDailyInsert: 1,
+      preInspect: 0,
+      duringInspect: 0,
+      postInspect: 0,
+    },
     operationDatabaseSizeDeltaBytes: sizeDelta(pre.query.sizeAfter, during?.query.sizeAfter ?? null),
     cleanupDatabaseSizeDeltaBytes: sizeDelta(during?.query.sizeAfter ?? null, post.query.sizeAfter),
     boundaries: boundaries(),
@@ -154,8 +184,27 @@ async function runProbe(db: D1Database, day: string) {
   }
 }
 
-async function inspect(db: D1Database, day: string) {
-  const precheck = await precheckKickHistoryCategoryDay(db, day)
+async function inspectPreconditions(db: D1Database, day: string) {
+  const aggregate = await inspectAggregateState(db, day)
+  const latestResult = await db.prepare(`
+    SELECT bucket_minute, collected_at, stream_count, total_viewers, source_mode
+    FROM minute_snapshots
+    WHERE provider = 'kick'
+    ORDER BY bucket_minute DESC
+    LIMIT 1
+  `).all()
+  const leakageResult = await db.prepare("SELECT COUNT(*) AS count FROM minute_snapshots WHERE provider != 'kick'").all()
+  const rawStateMeta = summarizeMeta([latestResult, leakageResult])
+
+  return {
+    ...aggregate,
+    latestSnapshot: rows(latestResult)[0] ?? null,
+    providerLeakageRows: integer(firstValue(leakageResult, 'count')),
+    query: combineMeta(aggregate.query, rawStateMeta),
+  }
+}
+
+async function inspectAggregateState(db: D1Database, day: string) {
   const schemaResult = await db.prepare(`
     SELECT name
     FROM sqlite_master
@@ -187,24 +236,11 @@ async function inspect(db: D1Database, day: string) {
     dayStatus = integer(firstValue(statusResult, 'count'))
   }
 
-  const latestResult = await db.prepare(`
-    SELECT bucket_minute, collected_at, stream_count, total_viewers, source_mode
-    FROM minute_snapshots
-    WHERE provider = 'kick'
-    ORDER BY bucket_minute DESC
-    LIMIT 1
-  `).all()
-  const leakageResult = await db.prepare("SELECT COUNT(*) AS count FROM minute_snapshots WHERE provider != 'kick'").all()
-  results.push(latestResult, leakageResult)
-
   return {
     provider: 'kick',
     day,
     schema,
-    precheck,
     aggregateRows: { daily, streamerDaily, dayStatus, total: daily + streamerDaily + dayStatus },
-    latestSnapshot: rows(latestResult)[0] ?? null,
-    providerLeakageRows: integer(firstValue(leakageResult, 'count')),
     query: summarizeMeta(results),
   }
 }
@@ -255,6 +291,17 @@ function summarizeMeta(results: D1Result<unknown>[]): MetaSummary {
   }
   summary.durationMs = round(summary.durationMs, 3)
   return summary
+}
+
+function combineMeta(first: MetaSummary, second: MetaSummary): MetaSummary {
+  return {
+    statements: first.statements + second.statements,
+    durationMs: round(first.durationMs + second.durationMs, 3),
+    rowsRead: first.rowsRead + second.rowsRead,
+    rowsWritten: first.rowsWritten + second.rowsWritten,
+    changes: first.changes + second.changes,
+    sizeAfter: second.sizeAfter ?? first.sizeAfter,
+  }
 }
 
 function sizeDelta(before: number | null, after: number | null): number | null {
