@@ -69,10 +69,6 @@ export default {
 
 async function runProbe(db: D1Database, day: string) {
   const startedAt = Date.now()
-
-  // Cheap fail-closed state checks happen before the generator is allowed to
-  // perform its single authoritative raw category precheck. This inspection
-  // never parses minute_snapshots.payload_json.
   const pre = await inspectPreconditions(db, day)
   const preconditions = {
     schemaComplete: pre.schema.complete,
@@ -83,7 +79,7 @@ async function runProbe(db: D1Database, day: string) {
   if (!Object.values(preconditions).every(Boolean)) {
     return {
       ok: false,
-      schemaVersion: 'viewloom-12a17-kick-history-category-aggregate-cost-model-result-v1',
+      schemaVersion: 'viewloom-12a18-kick-history-category-aggregate-cost-model-result-v1',
       provider: 'kick',
       day,
       stage: 'cheap_precondition',
@@ -105,10 +101,6 @@ async function runProbe(db: D1Database, day: string) {
   let during: Awaited<ReturnType<typeof inspectAggregateState>> | null = null
 
   try {
-    // refreshKickHistoryCategoryAggregateDay owns the one authoritative raw
-    // precheck and performs it before refresh_pending or aggregate writes.
-    // Its two exact aggregate INSERT statements are the only other raw
-    // category scans in this candidate: 1 precheck + 2 inserts = 3 paths.
     operation = await refreshKickHistoryCategoryAggregateDay(db, day, { startDay: day })
     during = await inspectAggregateState(db, day)
   } catch (error) {
@@ -154,7 +146,7 @@ async function runProbe(db: D1Database, day: string) {
   const ok = Object.values(checks).every(Boolean)
   return {
     ok,
-    schemaVersion: 'viewloom-12a17-kick-history-category-aggregate-cost-model-result-v1',
+    schemaVersion: 'viewloom-12a18-kick-history-category-aggregate-cost-model-result-v1',
     provider: 'kick',
     day,
     stage: ok ? 'complete' : 'operation_or_cleanup',
@@ -177,6 +169,7 @@ async function runProbe(db: D1Database, day: string) {
       duringInspect: 0,
       postInspect: 0,
     },
+    providerLeakageCheck: 'indexed_exists_ranges',
     operationDatabaseSizeDeltaBytes: sizeDelta(pre.query.sizeAfter, during?.query.sizeAfter ?? null),
     cleanupDatabaseSizeDeltaBytes: sizeDelta(during?.query.sizeAfter ?? null, post.query.sizeAfter),
     boundaries: boundaries(),
@@ -193,7 +186,19 @@ async function inspectPreconditions(db: D1Database, day: string) {
     ORDER BY bucket_minute DESC
     LIMIT 1
   `).all()
-  const leakageResult = await db.prepare("SELECT COUNT(*) AS count FROM minute_snapshots WHERE provider != 'kick'").all()
+  const leakageResult = await db.prepare(`
+    SELECT CASE
+      WHEN EXISTS (
+        SELECT 1 FROM minute_snapshots
+        WHERE provider < 'kick'
+        LIMIT 1
+      ) OR EXISTS (
+        SELECT 1 FROM minute_snapshots
+        WHERE provider > 'kick'
+        LIMIT 1
+      ) THEN 1 ELSE 0
+    END AS count
+  `).all()
   const rawStateMeta = summarizeMeta([latestResult, leakageResult])
 
   return {
