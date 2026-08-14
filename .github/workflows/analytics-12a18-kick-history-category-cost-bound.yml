@@ -1,0 +1,90 @@
+name: Analytics 12A18 Kick History Category Cost Bound
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'workers/shared/history-category-aggregate-sql.ts'
+      - 'workers/history-category-aggregate-cost-probe/src/index.ts'
+      - 'docs/audits/12a18-kick-history-category-cost-bound-contract.json'
+      - 'scripts/test-12a18-kick-history-category-cost-bound.py'
+      - 'scripts/verify-12a18-kick-history-category-cost-bound.mjs'
+      - '.github/workflows/analytics-12a18-kick-history-category-cost-bound.yml'
+      - '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
+      - '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
+      - '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify exact nine-file scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          expected=(
+            '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+            '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
+            '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
+            '.github/workflows/analytics-12a18-kick-history-category-cost-bound.yml'
+            'docs/audits/12a18-kick-history-category-cost-bound-contract.json'
+            'scripts/test-12a18-kick-history-category-cost-bound.py'
+            'scripts/verify-12a18-kick-history-category-cost-bound.mjs'
+            'workers/history-category-aggregate-cost-probe/src/index.ts'
+            'workers/shared/history-category-aggregate-sql.ts'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+      - name: Verify cost-bound contract
+        run: node scripts/verify-12a18-kick-history-category-cost-bound.mjs
+      - name: Run logical cost-bound and leakage query-plan model
+        run: python3 scripts/test-12a18-kick-history-category-cost-bound.py
+      - name: Revalidate predecessor semantics
+        run: |
+          node scripts/verify-12a17-kick-history-category-probe-read-path.mjs
+          # Do not run the old 12A17 deterministic test here: it intentionally
+          # asserts the exact provider != kick COUNT implementation that 12A18
+          # replaces with bounded provider-range EXISTS checks. 12A18's own
+          # deterministic fixture above owns that successor invariant.
+          node scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs
+          python3 scripts/test-12a16-kick-history-category-read-cost.py
+          node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
+          python3 scripts/test-12a15-kick-history-category-aggregate.py
+      - name: Typecheck, dry-run and build
+        run: |
+          pnpm typecheck:collectors
+          pnpm verify:collectors
+          pnpm dlx wrangler@4 deploy --dry-run --config workers/history-category-aggregate-cost-probe/wrangler.kick.toml
+          pnpm typecheck:web
+          pnpm build:web
+      - name: Publish repository-only boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick History category cost bound — repository gate'
+            echo
+            echo '- Max input: 288 snapshots/day × 100 streams = 28,800 items'
+            echo '- Raw category paths: 3'
+            echo '- Precheck item aggregation passes: 1'
+            echo '- Provider leakage: indexed zero/nonzero EXISTS'
+            echo '- Logical base touches: 89,884'
+            echo '- 25% safety: 112,355'
+            echo '- Repository model ceiling: 125,000'
+            echo '- Production rows-read gate: 250,000 (unchanged)'
+            echo '- Model is remote D1 evidence: no'
+            echo '- Production probe: unauthorized'
+            echo '- Permanent generator: unauthorized'
+          } >> "$GITHUB_STEP_SUMMARY"

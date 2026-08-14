@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "viewloom-12a18-kick-history-category-cost-bound-v1",
+  "status": "repository_cost_bound_candidate_no_production_execution",
+  "phase": "12A-18",
+  "trackingIssue": 862,
+  "parentOptimizationIssue": 858,
+  "parentIssue": 623,
+  "provider": "kick",
+  "authority": {
+    "failedProductionRun": 31769000044,
+    "failedRowsRead": 843288,
+    "rowsReadMaximum": 250000,
+    "failureFreezePr": 857,
+    "indexedRangePr": 859,
+    "probeReadPathPr": 861,
+    "productionExecutionPathRetiredPr": 856
+  },
+  "inputBounds": {
+    "collectorCadenceMinutes": 5,
+    "snapshotsPerFullDayMax": 288,
+    "streamsPerSnapshotMax": 100,
+    "streamItemsPerFullDayMax": 28800,
+    "categoryRowsPerDayMax": 300,
+    "streamerCategoryRowsPerDayMax": 1000,
+    "dayStatusRowsMax": 1,
+    "rawRetentionDays": 60
+  },
+  "precheck": {
+    "itemAggregationPasses": 1,
+    "acceptedPredicateSemanticsChanged": false,
+    "candidateCategoryIdentity": "distinct category_id",
+    "candidateStreamerCategoryIdentity": "distinct json_array(category_id, streamer_id)",
+    "sourceRangeUsesExistingProviderBucketIndex": true,
+    "oldAcceptedCteScalarRescansRetained": false
+  },
+  "providerLeakage": {
+    "oldQuery": "SELECT COUNT(*) FROM minute_snapshots WHERE provider != 'kick'",
+    "newDecision": "zero_or_nonzero_only",
+    "newQueries": [
+      "EXISTS provider < kick",
+      "EXISTS provider > kick"
+    ],
+    "normalizedLeakageValue": "0_or_1",
+    "exactForeignProviderRowCountRequired": false,
+    "providerFirstIndexAvailable": true
+  },
+  "logicalCostModel": {
+    "kind": "repository_logical_touch_upper_bound_not_d1_rows_read",
+    "rawCategoryPaths": 3,
+    "rawItemTouches": 86400,
+    "rawSnapshotRangeTouches": 864,
+    "maxAggregateStateTouches": 1301,
+    "maxCleanupTouches": 1301,
+    "schemaObjectTouches": 15,
+    "latestSnapshotTouches": 1,
+    "providerLeakageExistenceTouches": 2,
+    "baseLogicalTouches": 89884,
+    "safetyMarginPct": 25,
+    "logicalTouchesWithSafety": 112355,
+    "repositoryModelCeiling": 125000,
+    "acceptedProductionRowsReadMaximum": 250000,
+    "headroomToProductionMaximum": 137645,
+    "explicitLimitations": [
+      "SQLite/D1 internal JSON, DISTINCT, GROUP BY and temp-btree work may not map one-to-one to rows_read",
+      "this model is not remote D1 evidence",
+      "this model cannot authorize production execution by itself"
+    ]
+  },
+  "semantics": {
+    "observationTimeCategoryIdentityPreserved": true,
+    "concurrentCategoryPeakPreserved": true,
+    "allStreamerCategoryContributionsPreserved": true,
+    "missingMetadataFailClosePreserved": true,
+    "overflowFailClosePreserved": true,
+    "forwardOnlyStartBoundaryPreserved": true,
+    "cleanupToZeroPreserved": true,
+    "providerSeparated": true
+  },
+  "acceptance": {
+    "rowsReadThresholdRelaxed": false,
+    "rowsReadMaximum": 250000,
+    "repositoryLogicalModelAcceptedByThisPr": false,
+    "newProductionProbeAuthorized": false,
+    "permanentGeneratorEnablementAuthorized": false,
+    "collectorIntegrationAuthorized": false,
+    "collectorDeploymentAuthorized": false,
+    "newCronAuthorized": false,
+    "backfillAuthorized": false,
+    "rawRetentionChangeAuthorized": false,
+    "historyApiCategoryAuthorized": false,
+    "historyCategoryUiAuthorized": false,
+    "twitchRolloutAuthorized": false,
+    "crossProviderBehaviorAuthorized": false,
+    "nextGate": "separate decision on whether repository headroom justifies a new fail-hard one-time production measurement"
+  }
+}
