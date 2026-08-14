@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "viewloom-12a15-kick-history-category-cost-probe-trigger-v1",
+  "status": "armed_for_one_time_main_push",
+  "trackingIssue": 848,
+  "provider": "kick",
+  "acceptedGeneratorPackagePr": 847,
+  "expectedGeneratorPackageHeadSha": "011edd9a90e7691a5514bd0fa6111f10c80ede30",
+  "executionPackagePr": 849,
+  "expectedExecutionPackageHeadSha": "ab99777dacaa1826d2a38a78a28add07586e571e",
+  "acceptedSchemaAcceptancePr": 845,
+  "confirmation": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_PROBE",
+  "oneTime": true,
+  "productionAction": "run_current_utc_day_cost_probe_then_cleanup_all_probe_rows",
+  "boundaries": {
+    "permanentGeneratorEnabled": false,
+    "collectorChanged": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChanged": false,
+    "historyApiCategoryEnabled": false,
+    "historyCategoryUiEnabled": false,
+    "twitchChanged": false,
+    "crossProviderBehaviorChanged": false
+  }
+}
