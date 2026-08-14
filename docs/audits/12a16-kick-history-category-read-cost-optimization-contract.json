@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "viewloom-12a16-kick-history-category-read-cost-optimization-v1",
+  "status": "repository_optimization_candidate_no_production_execution",
+  "phase": "12A-16",
+  "trackingIssue": 858,
+  "parentIssue": 623,
+  "provider": "kick",
+  "authority": {
+    "failedCostProbeIssue": 848,
+    "failureFreezePr": 857,
+    "productionRun": 31769000044,
+    "productionJob": 94670847874,
+    "measuredRowsRead": 843288,
+    "acceptedRowsReadMaximum": 250000,
+    "productionExecutionPathRetiredPr": 856
+  },
+  "baseSchemaAuthority": {
+    "path": "db/kick/migrations/0001_kick_hot_schema.sql",
+    "table": "minute_snapshots",
+    "primaryKey": ["provider", "bucket_minute"],
+    "rangeIndex": "idx_minute_snapshots_provider_bucket",
+    "rangeIndexColumns": ["provider", "bucket_minute"],
+    "additionalIndexRequired": false,
+    "bucketMinuteWriter": "floorMinute(date).toISOString()",
+    "rawRetentionDays": 60,
+    "collectorCadenceMinutes": 5
+  },
+  "problem": {
+    "oldPredicate": "provider = ? AND substr(bucket_minute, 1, 10) = ?",
+    "oldPlanBoundary": "provider equality only",
+    "reason": "Applying substr() to bucket_minute prevents the existing composite key/index from constraining the UTC day as a bucket_minute range."
+  },
+  "candidate": {
+    "boundsCte": "SELECT ? AS provider, ? AS day",
+    "predicate": "m.provider = b.provider AND m.bucket_minute >= (b.day || 'T00:00:00.000Z') AND m.bucket_minute < (date(b.day, '+1 day') || 'T00:00:00.000Z')",
+    "bindCountChanged": false,
+    "queryPaths": [
+      "HISTORY_CATEGORY_PRECHECK_SQL",
+      "HISTORY_CATEGORY_INSERT_DAILY_SQL",
+      "HISTORY_CATEGORY_INSERT_STREAMER_DAILY_SQL"
+    ],
+    "expectedPlanBoundary": "provider equality plus bucket_minute lower/upper range",
+    "semanticChangeAuthorized": false,
+    "schemaChange": false
+  },
+  "deterministicBenchmark": {
+    "retainedDays": 60,
+    "snapshotsPerFullDay": 288,
+    "retainedKickSnapshots": 17280,
+    "targetFullDaySnapshots": 288,
+    "baseCandidateReductionFactorFullDay": 60,
+    "productionObservedTargetSnapshots": 51,
+    "baseCandidateReductionFactorProductionObservedDayApprox": 338.823529,
+    "requirements": [
+      "old and optimized predicates return exactly the same target-day snapshot keys",
+      "old plan constrains provider but not bucket_minute range",
+      "optimized plan constrains provider and both bucket_minute bounds",
+      "optimized plan uses the existing provider/bucket index",
+      "adjacent UTC days and another provider are excluded",
+      "source TypeScript contains no substr(bucket_minute) History category day filter",
+      "existing two-value provider/day bind order remains unchanged"
+    ]
+  },
+  "acceptance": {
+    "rowsReadThresholdRelaxed": false,
+    "rowsReadMaximum": 250000,
+    "permanentGeneratorEnablementAuthorized": false,
+    "newProductionProbeAuthorized": false,
+    "collectorIntegrationAuthorized": false,
+    "collectorDeploymentAuthorized": false,
+    "newCronAuthorized": false,
+    "backfillAuthorized": false,
+    "rawRetentionChangeAuthorized": false,
+    "historyApiCategoryAuthorized": false,
+    "historyCategoryUiAuthorized": false,
+    "twitchRolloutAuthorized": false,
+    "crossProviderBehaviorAuthorized": false,
+    "nextGate": "remove_probe_only_duplicate_category_prechecks_and_model_total_probe_read_path_before_any_new_production_authorization"
+  }
+}

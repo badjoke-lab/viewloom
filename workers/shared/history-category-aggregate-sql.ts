@@ -1,10 +1,15 @@
 import { CATEGORY_CONTRACT_VERSION } from './category-capture'
 
 export const HISTORY_CATEGORY_PRECHECK_SQL = `
-WITH source AS (
-  SELECT bucket_minute, payload_json, source_mode
-  FROM minute_snapshots
-  WHERE provider = ? AND substr(bucket_minute, 1, 10) = ?
+WITH bounds AS (
+  SELECT ? AS provider, ? AS day
+),
+source AS (
+  SELECT m.bucket_minute, m.payload_json, m.source_mode
+  FROM minute_snapshots m, bounds b
+  WHERE m.provider = b.provider
+    AND m.bucket_minute >= (b.day || 'T00:00:00.000Z')
+    AND m.bucket_minute < (date(b.day, '+1 day') || 'T00:00:00.000Z')
 ),
 raw_items AS (
   SELECT
@@ -97,7 +102,10 @@ INSERT INTO history_category_daily (
   contract_version,
   updated_at
 )
-WITH raw_items AS (
+WITH bounds AS (
+  SELECT ? AS provider, ? AS day
+),
+raw_items AS (
   SELECT
     m.bucket_minute,
     m.payload_json,
@@ -115,8 +123,10 @@ WITH raw_items AS (
       '$.categoryRefs[' || CAST(j.key AS TEXT) || ']'
     ) AS INTEGER) AS category_ref,
     json_extract(m.payload_json, '$.categoryContractVersion') AS category_contract_version
-  FROM minute_snapshots m, json_each(m.payload_json, '$.items') j
-  WHERE m.provider = ? AND substr(m.bucket_minute, 1, 10) = ?
+  FROM minute_snapshots m, bounds b, json_each(m.payload_json, '$.items') j
+  WHERE m.provider = b.provider
+    AND m.bucket_minute >= (b.day || 'T00:00:00.000Z')
+    AND m.bucket_minute < (date(b.day, '+1 day') || 'T00:00:00.000Z')
 ),
 accepted AS (
   SELECT
@@ -174,7 +184,10 @@ INSERT INTO history_category_streamer_daily (
   contract_version,
   updated_at
 )
-WITH raw_items AS (
+WITH bounds AS (
+  SELECT ? AS provider, ? AS day
+),
+raw_items AS (
   SELECT
     m.payload_json,
     LOWER(REPLACE(COALESCE(
@@ -205,8 +218,10 @@ WITH raw_items AS (
       '$.categoryRefs[' || CAST(j.key AS TEXT) || ']'
     ) AS INTEGER) AS category_ref,
     json_extract(m.payload_json, '$.categoryContractVersion') AS category_contract_version
-  FROM minute_snapshots m, json_each(m.payload_json, '$.items') j
-  WHERE m.provider = ? AND substr(m.bucket_minute, 1, 10) = ?
+  FROM minute_snapshots m, bounds b, json_each(m.payload_json, '$.items') j
+  WHERE m.provider = b.provider
+    AND m.bucket_minute >= (b.day || 'T00:00:00.000Z')
+    AND m.bucket_minute < (date(b.day, '+1 day') || 'T00:00:00.000Z')
 ),
 accepted AS (
   SELECT

@@ -1,0 +1,85 @@
+name: Analytics 12A16 Kick History Category Read Cost Optimization
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'workers/shared/history-category-aggregate-sql.ts'
+      - 'docs/audits/12a16-kick-history-category-read-cost-optimization-contract.json'
+      - 'scripts/test-12a16-kick-history-category-read-cost.py'
+      - 'scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs'
+      - '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
+      - '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact six-file scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          expected=(
+            '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+            '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
+            'docs/audits/12a16-kick-history-category-read-cost-optimization-contract.json'
+            'scripts/test-12a16-kick-history-category-read-cost.py'
+            'scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs'
+            'workers/shared/history-category-aggregate-sql.ts'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do
+            printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
+          done
+
+      - name: Verify contract and permanent-runtime boundary
+        run: node scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs
+
+      - name: Run deterministic 60-day query-plan benchmark
+        run: python3 scripts/test-12a16-kick-history-category-read-cost.py
+
+      - name: Revalidate exact generator semantics
+        run: |
+          node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
+          python3 scripts/test-12a15-kick-history-category-aggregate.py
+          pnpm typecheck:collectors
+          pnpm verify:collectors
+
+      - name: Verify retained architecture and web build
+        run: |
+          node scripts/verify-quality-u10g-architecture.mjs
+          node scripts/verify-quality-u10d-analysis-coherence.mjs
+          pnpm typecheck:web
+          pnpm build:web
+
+      - name: Publish optimization boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick History category read-cost optimization — repository gate'
+            echo
+            echo '- Failed production measurement: 843,288 rows read > 250,000 limit'
+            echo '- Existing index: provider + bucket_minute'
+            echo '- Candidate: UTC day lower/upper bucket_minute range'
+            echo '- New index/schema: no'
+            echo '- Bind count / aggregate semantics: unchanged'
+            echo '- Legacy 12A15 scope guard: maintenance-compatible'
+            echo '- Production probe: unauthorized'
+            echo '- Permanent generator: unauthorized'
+            echo '- Next gate: remove probe-only duplicate raw prechecks and model total read path'
+          } >> "$GITHUB_STEP_SUMMARY"
