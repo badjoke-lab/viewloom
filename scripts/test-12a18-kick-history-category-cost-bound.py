@@ -61,14 +61,14 @@ def main():
         ON minute_snapshots(provider, bucket_minute DESC);
     ''')
     for i in range(60 * SNAPSHOTS):
-        db.execute('INSERT INTO minute_snapshots VALUES (?,?,?)', ('kick', f'2026-01-{1 + i // SNAPSHOTS:02d}T00:{i % 60:02d}:00.000Z', '{}'))
+        db.execute('INSERT INTO minute_snapshots VALUES (?,?,?)', ('kick', f'k{i:08d}', '{}'))
     db.commit()
     assert db.execute(LEAKAGE_SQL).fetchone()[0] == 0
 
-    db.execute("INSERT INTO minute_snapshots VALUES ('aaa','2026-08-14T00:00:00.000Z','{}')")
+    db.execute("INSERT INTO minute_snapshots VALUES ('aaa','foreign-low','{}')")
     assert db.execute(LEAKAGE_SQL).fetchone()[0] == 1
     db.execute("DELETE FROM minute_snapshots WHERE provider='aaa'")
-    db.execute("INSERT INTO minute_snapshots VALUES ('zzz','2026-08-14T00:00:00.000Z','{}')")
+    db.execute("INSERT INTO minute_snapshots VALUES ('zzz','foreign-high','{}')")
     assert db.execute(LEAKAGE_SQL).fetchone()[0] == 1
 
     p = plan(db, LEAKAGE_SQL)
