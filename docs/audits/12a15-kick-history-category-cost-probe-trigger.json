@@ -1,7 +1,8 @@
 {
   "schemaVersion": "viewloom-12a15-kick-history-category-cost-probe-trigger-v1",
-  "status": "armed_for_one_time_main_push",
+  "status": "consumed_performance_failed_retired",
   "trackingIssue": 848,
+  "closeoutIssue": 855,
   "provider": "kick",
   "acceptedGeneratorPackagePr": 847,
   "expectedGeneratorPackageHeadSha": "011edd9a90e7691a5514bd0fa6111f10c80ede30",
@@ -10,7 +11,19 @@
   "acceptedSchemaAcceptancePr": 845,
   "confirmation": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_PROBE",
   "oneTime": true,
-  "productionAction": "run_current_utc_day_cost_probe_then_cleanup_all_probe_rows",
+  "productionAction": "retired_no_further_execution",
+  "consumedBy": {
+    "triggerPr": 854,
+    "productionHeadSha": "d6f1888668bed64d15031b6d9fb6a7c6bdbc6753",
+    "productionRun": 31769000044,
+    "productionJob": 94670847874,
+    "artifactId": 9207424532,
+    "artifactDigest": "sha256:bb4395e82d276d9de941cd553b6105d54e906f284de7636cb71b6f06cf550cad",
+    "result": "performance_failed_cleanup_safe",
+    "failedMetric": "totalProbeRowsRead",
+    "measured": 843288,
+    "maximum": 250000
+  },
   "boundaries": {
     "permanentGeneratorEnabled": false,
     "collectorChanged": false,
@@ -20,6 +33,7 @@
     "historyApiCategoryEnabled": false,
     "historyCategoryUiEnabled": false,
     "twitchChanged": false,
-    "crossProviderBehaviorChanged": false
+    "crossProviderBehaviorChanged": false,
+    "newProductionProbeAuthorized": false
   }
 }
