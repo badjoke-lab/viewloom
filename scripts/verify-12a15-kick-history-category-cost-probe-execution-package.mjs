@@ -101,11 +101,29 @@ for (const fragment of [
   '[[ "$total_rows_written" -le 5000 ]]',
   '[[ "$total_changes" -le 3000 ]]',
   '[[ "$size_delta" -le 1048576 ]]',
-  "post_delete_status=$(curl",
+  'delete_worker_until_absent() {',
+  'cleanup_may_be_required=true',
+  'if [[ "$cleanup_may_be_required" == \'true\' ]]',
+  'delete_worker_until_absent || true',
+  'delete_worker_until_absent',
   '[[ "$post_delete_status" == \'404\' ]]',
+  'cleanup_may_be_required=false',
   'write_failure_evidence',
   'Upload sanitized cost evidence',
 ]) assert.ok(workflow.includes(fragment), `execution workflow boundary missing: ${fragment}`)
+assert.equal(
+  workflow.includes('if [[ "$deployed" == \'true\' && -n "$url" && -n "$PROBE_TOKEN" ]]'),
+  false,
+  'worker deletion must not depend on URL/token availability after a deploy attempt',
+)
+assert.ok(
+  workflow.indexOf('cleanup_may_be_required=true') < workflow.indexOf('pnpm dlx wrangler@4 deploy --config "$config"'),
+  'cleanup responsibility must be armed before deployment is attempted',
+)
+assert.ok(
+  workflow.lastIndexOf('cleanup_may_be_required=false') > workflow.lastIndexOf('[[ "$post_delete_status" == \'404\' ]]'),
+  'cleanup responsibility may be cleared only after confirmed Worker absence',
+)
 
 if (existsSync(contract.trigger.file)) {
   const trigger = json(contract.trigger.file)
@@ -143,4 +161,4 @@ for (const key of [
 assert.equal(contract.authorization.repositoryExecutionPackageAuthorized, true)
 assert.equal(contract.authorization.separateOneTimeTriggerAuthorizedAfterPackageAcceptance, true)
 
-console.log('Kick History category cost-probe execution package verified: exact generator package is pinned; trigger lifecycle is accepted only when exact one-time metadata is present; current-day zero-row preconditions and cleanup are enforced; permanent runtime/Twitch boundaries remain closed.')
+console.log('Kick History category cost-probe execution package verified: exact generator package is pinned; trigger lifecycle is accepted only with exact one-time metadata; current-day probe/cleanup gates are retained; cleanup responsibility is armed before deploy and remains active until the temporary Worker is confirmed absent; permanent runtime/Twitch boundaries remain closed.')
