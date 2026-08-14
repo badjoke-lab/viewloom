@@ -9,6 +9,7 @@ on:
       - 'scripts/test-12a16-kick-history-category-read-cost.py'
       - 'scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs'
       - '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
+      - '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
 
 permissions:
   contents: read
@@ -25,7 +26,7 @@ jobs:
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Verify exact five-file scope
+      - name: Verify exact six-file scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -34,6 +35,7 @@ jobs:
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
           expected=(
+            '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
             '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
             'docs/audits/12a16-kick-history-category-read-cost-optimization-contract.json'
             'scripts/test-12a16-kick-history-category-read-cost.py'
@@ -76,6 +78,7 @@ jobs:
             echo '- Candidate: UTC day lower/upper bucket_minute range'
             echo '- New index/schema: no'
             echo '- Bind count / aggregate semantics: unchanged'
+            echo '- Legacy 12A15 scope guard: maintenance-compatible'
             echo '- Production probe: unauthorized'
             echo '- Permanent generator: unauthorized'
             echo '- Next gate: remove probe-only duplicate raw prechecks and model total read path'
