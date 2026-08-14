@@ -15,6 +15,10 @@ on:
       - 'docs/audits/12a16-kick-history-category-read-cost-optimization-contract.json'
       - 'scripts/test-12a16-kick-history-category-read-cost.py'
       - 'scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs'
+      - '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
+      - 'docs/audits/12a17-kick-history-category-probe-read-path-contract.json'
+      - 'scripts/test-12a17-kick-history-category-probe-read-path.mjs'
+      - 'scripts/verify-12a17-kick-history-category-probe-read-path.mjs'
 
 permissions:
   contents: read
@@ -37,7 +41,7 @@ jobs:
       - name: Run deterministic exact SQL fixtures
         run: python3 scripts/test-12a15-kick-history-category-aggregate.py
 
-      - name: Verify dormant package or bounded 12A16 maintenance scope
+      - name: Verify dormant package or bounded maintenance scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -46,7 +50,28 @@ jobs:
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
 
-          maintenance_expected=(
+          maintenance_12a17=(
+            '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+            '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
+            'docs/audits/12a17-kick-history-category-probe-read-path-contract.json'
+            'scripts/test-12a17-kick-history-category-probe-read-path.mjs'
+            'scripts/verify-12a17-kick-history-category-probe-read-path.mjs'
+            'workers/history-category-aggregate-cost-probe/src/index.ts'
+          )
+          if [[ "${#changed[@]}" -eq "${#maintenance_12a17[@]}" ]]; then
+            maintenance=true
+            for path in "${maintenance_12a17[@]}"; do
+              if ! printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; then
+                maintenance=false
+              fi
+            done
+            if [[ "$maintenance" == 'true' ]]; then
+              echo 'Accepted 12A17 bounded probe read-path maintenance scope.'
+              exit 0
+            fi
+          fi
+
+          maintenance_12a16=(
             '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
             '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
             'docs/audits/12a16-kick-history-category-read-cost-optimization-contract.json'
@@ -54,9 +79,9 @@ jobs:
             'scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs'
             'workers/shared/history-category-aggregate-sql.ts'
           )
-          if [[ "${#changed[@]}" -eq "${#maintenance_expected[@]}" ]]; then
+          if [[ "${#changed[@]}" -eq "${#maintenance_12a16[@]}" ]]; then
             maintenance=true
-            for path in "${maintenance_expected[@]}"; do
+            for path in "${maintenance_12a16[@]}"; do
               if ! printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; then
                 maintenance=false
               fi
@@ -109,5 +134,6 @@ jobs:
             echo '- Maintenance window: existing window only; new cron: no'
             echo '- Permanent collector integration: no'
             echo '- Temporary cost-probe production execution: retired / no new authorization'
-            echo '- 12A16 read-cost maintenance: repository-only'
+            echo '- 12A16 indexed range: retained'
+            echo '- 12A17 probe read-path model: repository-only'
           } >> "$GITHUB_STEP_SUMMARY"
