@@ -13,9 +13,6 @@ source AS (
 ),
 raw_items AS (
   SELECT
-    s.bucket_minute,
-    s.payload_json,
-    s.source_mode,
     LOWER(REPLACE(COALESCE(
       json_extract(j.value, '$.channelLogin'),
       json_extract(j.value, '$.slug'),
@@ -63,31 +60,60 @@ observed AS (
   FROM raw_items
   WHERE viewers > 0
 ),
-accepted AS (
-  SELECT *
+item_stats AS (
+  SELECT
+    COUNT(*) AS valid_stream_items,
+    COALESCE(SUM(CASE WHEN
+      streamer_id IS NOT NULL
+      AND streamer_id != ''
+      AND category_contract_version = '${CATEGORY_CONTRACT_VERSION}'
+      AND category_ref_type = 'integer'
+      AND category_ref IS NOT NULL
+      AND category_ref >= 0
+      AND category_id IS NOT NULL
+      AND category_id != ''
+      THEN 1 ELSE 0 END), 0) AS category_observed_items,
+    COUNT(DISTINCT CASE WHEN
+      streamer_id IS NOT NULL
+      AND streamer_id != ''
+      AND category_contract_version = '${CATEGORY_CONTRACT_VERSION}'
+      AND category_ref_type = 'integer'
+      AND category_ref IS NOT NULL
+      AND category_ref >= 0
+      AND category_id IS NOT NULL
+      AND category_id != ''
+      THEN category_id END) AS candidate_category_rows,
+    COUNT(DISTINCT CASE WHEN
+      streamer_id IS NOT NULL
+      AND streamer_id != ''
+      AND category_contract_version = '${CATEGORY_CONTRACT_VERSION}'
+      AND category_ref_type = 'integer'
+      AND category_ref IS NOT NULL
+      AND category_ref >= 0
+      AND category_id IS NOT NULL
+      AND category_id != ''
+      THEN json_array(category_id, streamer_id) END) AS candidate_streamer_category_rows
   FROM observed
-  WHERE streamer_id IS NOT NULL
-    AND streamer_id != ''
-    AND category_contract_version = '${CATEGORY_CONTRACT_VERSION}'
-    AND category_ref_type = 'integer'
-    AND category_ref IS NOT NULL
-    AND category_ref >= 0
-    AND category_id IS NOT NULL
-    AND category_id != ''
+),
+source_stats AS (
+  SELECT
+    COUNT(*) AS source_snapshots,
+    CASE
+      WHEN COUNT(DISTINCT source_mode) = 1 THEN COALESCE(MIN(source_mode), 'unknown')
+      WHEN COUNT(*) > 0 THEN 'mixed'
+      ELSE 'unknown'
+    END AS source_mode
+  FROM source
 )
 SELECT
-  (SELECT COUNT(*) FROM source) AS source_snapshots,
-  (SELECT COUNT(*) FROM observed) AS valid_stream_items,
-  (SELECT COUNT(*) FROM accepted) AS category_observed_items,
-  (SELECT COUNT(*) FROM observed) - (SELECT COUNT(*) FROM accepted) AS category_missing_items,
-  (SELECT COUNT(*) FROM (SELECT DISTINCT category_id FROM accepted)) AS candidate_category_rows,
-  (SELECT COUNT(*) FROM (SELECT DISTINCT category_id, streamer_id FROM accepted)) AS candidate_streamer_category_rows,
-  CASE
-    WHEN (SELECT COUNT(DISTINCT source_mode) FROM source) = 1
-      THEN COALESCE((SELECT MIN(source_mode) FROM source), 'unknown')
-    WHEN (SELECT COUNT(*) FROM source) > 0 THEN 'mixed'
-    ELSE 'unknown'
-  END AS source_mode
+  source_stats.source_snapshots,
+  item_stats.valid_stream_items,
+  item_stats.category_observed_items,
+  item_stats.valid_stream_items - item_stats.category_observed_items AS category_missing_items,
+  item_stats.candidate_category_rows,
+  item_stats.candidate_streamer_category_rows,
+  source_stats.source_mode
+FROM source_stats, item_stats
 `
 
 export const HISTORY_CATEGORY_INSERT_DAILY_SQL = `
