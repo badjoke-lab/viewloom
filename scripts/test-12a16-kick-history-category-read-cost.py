@@ -19,12 +19,15 @@ ORDER BY bucket_minute
 '''
 
 NEW_SQL = '''
-SELECT bucket_minute
-FROM minute_snapshots
-WHERE provider = ?1
-  AND bucket_minute >= (?2 || 'T00:00:00.000Z')
-  AND bucket_minute < (date(?2, '+1 day') || 'T00:00:00.000Z')
-ORDER BY bucket_minute
+WITH bounds AS (
+  SELECT ? AS provider, ? AS day
+)
+SELECT m.bucket_minute
+FROM minute_snapshots m, bounds b
+WHERE m.provider = b.provider
+  AND m.bucket_minute >= (b.day || 'T00:00:00.000Z')
+  AND m.bucket_minute < (date(b.day, '+1 day') || 'T00:00:00.000Z')
+ORDER BY m.bucket_minute
 '''
 
 
@@ -50,8 +53,9 @@ def main() -> None:
 
     assert 'substr(bucket_minute, 1, 10)' not in source
     assert 'substr(m.bucket_minute, 1, 10)' not in source
-    assert source.count("bucket_minute >= (?2 || 'T00:00:00.000Z')") == 3
-    assert source.count("bucket_minute < (date(?2, '+1 day') || 'T00:00:00.000Z')") == 3
+    assert source.count('SELECT ? AS provider, ? AS day') == 3
+    assert source.count("m.bucket_minute >= (b.day || 'T00:00:00.000Z')") == 3
+    assert source.count("m.bucket_minute < (date(b.day, '+1 day') || 'T00:00:00.000Z')") == 3
 
     db = sqlite3.connect(':memory:')
     db.executescript('''
