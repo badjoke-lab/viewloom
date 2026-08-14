@@ -1,10 +1,16 @@
 import { CATEGORY_CONTRACT_VERSION } from './category-capture'
 
+const HISTORY_CATEGORY_DAY_RANGE = `
+  provider = ?1
+  AND bucket_minute >= (?2 || 'T00:00:00.000Z')
+  AND bucket_minute < (date(?2, '+1 day') || 'T00:00:00.000Z')
+`
+
 export const HISTORY_CATEGORY_PRECHECK_SQL = `
 WITH source AS (
   SELECT bucket_minute, payload_json, source_mode
   FROM minute_snapshots
-  WHERE provider = ? AND substr(bucket_minute, 1, 10) = ?
+  WHERE ${HISTORY_CATEGORY_DAY_RANGE}
 ),
 raw_items AS (
   SELECT
@@ -116,7 +122,10 @@ WITH raw_items AS (
     ) AS INTEGER) AS category_ref,
     json_extract(m.payload_json, '$.categoryContractVersion') AS category_contract_version
   FROM minute_snapshots m, json_each(m.payload_json, '$.items') j
-  WHERE m.provider = ? AND substr(m.bucket_minute, 1, 10) = ?
+  WHERE
+    m.provider = ?1
+    AND m.bucket_minute >= (?2 || 'T00:00:00.000Z')
+    AND m.bucket_minute < (date(?2, '+1 day') || 'T00:00:00.000Z')
 ),
 accepted AS (
   SELECT
@@ -206,7 +215,10 @@ WITH raw_items AS (
     ) AS INTEGER) AS category_ref,
     json_extract(m.payload_json, '$.categoryContractVersion') AS category_contract_version
   FROM minute_snapshots m, json_each(m.payload_json, '$.items') j
-  WHERE m.provider = ? AND substr(m.bucket_minute, 1, 10) = ?
+  WHERE
+    m.provider = ?1
+    AND m.bucket_minute >= (?2 || 'T00:00:00.000Z')
+    AND m.bucket_minute < (date(?2, '+1 day') || 'T00:00:00.000Z')
 ),
 accepted AS (
   SELECT
