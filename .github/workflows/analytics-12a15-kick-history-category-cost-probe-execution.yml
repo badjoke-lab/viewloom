@@ -1,35 +1,25 @@
-name: Analytics 12A15 Kick History Category Cost Probe Execution
+name: Analytics 12A15 Kick History Category Cost Probe Retired
 
 on:
   pull_request:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a15-kick-history-category-cost-probe-execution.yml'
-      - 'docs/audits/12a15-kick-history-category-cost-probe-execution-contract.json'
       - 'scripts/verify-12a15-kick-history-category-cost-probe-execution-package.mjs'
       - 'docs/audits/12a15-kick-history-category-cost-probe-trigger.json'
-  push:
-    branches: [main]
-    paths:
-      - 'docs/audits/12a15-kick-history-category-cost-probe-trigger.json'
+      - 'docs/audits/12a15-kick-history-category-cost-probe-production-failure.json'
 
 permissions:
   contents: read
-  actions: read
-  pull-requests: read
 
 concurrency:
-  group: analytics-12a15-kick-history-category-cost-probe-${{ github.event.pull_request.number || github.ref }}
+  group: analytics-12a15-kick-history-category-cost-probe-retired-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
-env:
-  TRIGGER_FILE: docs/audits/12a15-kick-history-category-cost-probe-trigger.json
-  ARTIFACT_DIR: artifacts/12a15-kick-history-category-cost-probe
-
 jobs:
-  contract:
+  retired-contract:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -38,11 +28,10 @@ jobs:
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Verify execution package
+      - name: Verify retired execution package
         run: node scripts/verify-12a15-kick-history-category-cost-probe-execution-package.mjs
 
       - name: Verify PR scope
-        if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -50,331 +39,54 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          trigger='docs/audits/12a15-kick-history-category-cost-probe-trigger.json'
-          verifier='scripts/verify-12a15-kick-history-category-cost-probe-execution-package.mjs'
-          workflow='.github/workflows/analytics-12a15-kick-history-category-cost-probe-execution.yml'
 
-          if [[ "${#changed[@]}" -eq 1 && "${changed[0]}" == "$trigger" ]]; then
-            test -f "$TRIGGER_FILE"
-            [[ $(jq -r '.status' "$TRIGGER_FILE") == 'armed_for_one_time_main_push' ]]
-            [[ $(jq -r '.provider' "$TRIGGER_FILE") == 'kick' ]]
-            [[ $(jq -r '.oneTime' "$TRIGGER_FILE") == 'true' ]]
-            [[ $(jq -r '.confirmation' "$TRIGGER_FILE") == 'RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_PROBE' ]]
-            [[ $(jq -r '.acceptedGeneratorPackagePr' "$TRIGGER_FILE") == '847' ]]
-            [[ $(jq -r '.expectedGeneratorPackageHeadSha' "$TRIGGER_FILE") == '011edd9a90e7691a5514bd0fa6111f10c80ede30' ]]
-            [[ $(jq -r '.executionPackagePr' "$TRIGGER_FILE") =~ ^[0-9]+$ ]]
-            [[ $(jq -r '.expectedExecutionPackageHeadSha' "$TRIGGER_FILE") =~ ^[0-9a-f]{40}$ ]]
-            exit 0
-          fi
+          workflow='.github/workflows/analytics-12a15-kick-history-category-cost-probe-execution.yml'
+          verifier='scripts/verify-12a15-kick-history-category-cost-probe-execution-package.mjs'
+          trigger='docs/audits/12a15-kick-history-category-cost-probe-trigger.json'
+          evidence='docs/audits/12a15-kick-history-category-cost-probe-production-failure.json'
 
           if [[ "${#changed[@]}" -eq 2 ]]; then
-            maintenance=true
-            for path in "${changed[@]}"; do
-              if [[ "$path" != "$verifier" && "$path" != "$workflow" ]]; then
-                maintenance=false
-              fi
-            done
-            if [[ "$maintenance" == 'true' ]]; then
-              echo 'Accepted lifecycle-maintenance scope: verifier + workflow only.'
+            if printf '%s\n' "${changed[@]}" | grep -Fxq "$workflow" \
+              && printf '%s\n' "${changed[@]}" | grep -Fxq "$verifier"; then
+              echo 'Accepted retirement maintenance scope: workflow + verifier.'
+              exit 0
+            fi
+            if printf '%s\n' "${changed[@]}" | grep -Fxq "$trigger" \
+              && printf '%s\n' "${changed[@]}" | grep -Fxq "$evidence"; then
+              [[ $(jq -r '.status' "$trigger") == 'consumed_performance_failed_retired' ]]
+              [[ $(jq -r '.status' "$evidence") == 'performance_failed_cleanup_safe' ]]
+              [[ $(jq -r '.productionRun' "$evidence") == '31769000044' ]]
+              [[ $(jq -r '.productionJob' "$evidence") == '94670847874' ]]
+              [[ $(jq -r '.artifactId' "$evidence") == '9207424532' ]]
+              [[ $(jq -r '.measured.totalProbeRowsRead' "$evidence") == '843288' ]]
+              [[ $(jq -r '.thresholds.totalProbeRowsReadMax' "$evidence") == '250000' ]]
               exit 0
             fi
           fi
 
-          allowed='^(docs/audits/12a15-kick-history-category-cost-probe-execution-contract\.json|scripts/verify-12a15-kick-history-category-cost-probe-execution-package\.mjs|\.github/workflows/analytics-12a15-kick-history-category-cost-probe-execution\.yml)$'
-          for path in "${changed[@]}"; do
-            if ! [[ "$path" =~ $allowed ]]; then
-              echo "Unexpected execution-package change: $path" >&2
-              exit 1
-            fi
-          done
-          test "${#changed[@]}" -eq 3
+          echo 'Unexpected retired 12A15 scope.' >&2
+          exit 1
 
-      - name: Revalidate accepted generator package and exact SQL fixtures
+      - name: Revalidate generator semantics and permanent-runtime boundary
         run: |
           node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
           python3 scripts/test-12a15-kick-history-category-aggregate.py
           pnpm typecheck:collectors
           pnpm verify:collectors
-
-      - name: Bundle temporary cost probe without deploying
-        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/history-category-aggregate-cost-probe/wrangler.kick.toml
-
-      - name: Verify retained architecture and web build
-        run: |
-          node scripts/verify-quality-u10g-architecture.mjs
-          node scripts/verify-quality-u10d-analysis-coherence.mjs
           pnpm typecheck:web
           pnpm build:web
 
-      - name: Publish dormant execution boundary
+      - name: Publish retirement boundary
         if: always()
         run: |
           {
-            echo '## Kick History category aggregate production cost probe — execution package'
+            echo '## Kick History category aggregate cost probe — retired execution path'
             echo
-            echo '- Accepted generator package: PR #847 / head 011edd9a90e7691a5514bd0fa6111f10c80ede30'
-            echo '- Temporary Worker: Kick only'
-            echo '- Probe day: current UTC day only'
-            echo '- Target aggregate rows before probe: must be zero'
-            echo '- Probe cleanup: mandatory; post rows must be zero'
-            echo '- Temporary Worker cleanup: service-name based from deploy attempt until confirmed 404'
-            echo '- Production execution on this package PR/merge: no'
-            echo '- Permanent generator enablement: no'
-            echo '- Trigger: separate exact one-file PR'
+            echo '- Production execution path: retired'
+            echo '- Cloudflare credentials reachable from this workflow: no'
+            echo '- Accepted production run: none'
+            echo '- Observed run 31769000044: performance failure; cleanup safe'
+            echo '- Measured rows read: 843,288 > 250,000 limit'
+            echo '- Permanent generator enablement: unauthorized'
+            echo '- Next gate: read-cost optimization before any new production probe'
           } >> "$GITHUB_STEP_SUMMARY"
-
-  production-cost-probe:
-    needs: contract
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    env:
-      GH_TOKEN: ${{ github.token }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-
-      - name: Verify exact trigger and accepted packages
-        run: |
-          set -euo pipefail
-          test -f "$TRIGGER_FILE"
-          [[ $(jq -r '.status' "$TRIGGER_FILE") == 'armed_for_one_time_main_push' ]]
-          [[ $(jq -r '.provider' "$TRIGGER_FILE") == 'kick' ]]
-          [[ $(jq -r '.oneTime' "$TRIGGER_FILE") == 'true' ]]
-          [[ $(jq -r '.confirmation' "$TRIGGER_FILE") == 'RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_PROBE' ]]
-          [[ $(jq -r '.acceptedGeneratorPackagePr' "$TRIGGER_FILE") == '847' ]]
-          [[ $(jq -r '.expectedGeneratorPackageHeadSha' "$TRIGGER_FILE") == '011edd9a90e7691a5514bd0fa6111f10c80ede30' ]]
-
-          generator=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/847")
-          [[ $(jq -r '.merged_at // empty' <<<"$generator") != '' ]]
-          [[ $(jq -r '.head.sha' <<<"$generator") == '011edd9a90e7691a5514bd0fa6111f10c80ede30' ]]
-          generator_merge=$(jq -r '.merge_commit_sha' <<<"$generator")
-          git cat-file -e "$generator_merge^{commit}"
-          git merge-base --is-ancestor "$generator_merge" HEAD
-
-          execution_number=$(jq -r '.executionPackagePr' "$TRIGGER_FILE")
-          execution=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/$execution_number")
-          [[ $(jq -r '.merged_at // empty' <<<"$execution") != '' ]]
-          [[ $(jq -r '.head.sha' <<<"$execution") == $(jq -r '.expectedExecutionPackageHeadSha' "$TRIGGER_FILE") ]]
-          execution_merge=$(jq -r '.merge_commit_sha' <<<"$execution")
-          git cat-file -e "$execution_merge^{commit}"
-          git merge-base --is-ancestor "$execution_merge" HEAD
-
-          ! grep -q 'maybeGenerateKickHistoryCategoryAggregates' workers/collector-kick/src/entry.ts
-          ! grep -q 'HISTORY_CATEGORY' workers/collector-kick/wrangler.toml
-          node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
-          node scripts/verify-12a15-kick-history-category-cost-probe-execution-package.mjs
-
-      - name: Execute bounded current-day cost probe
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          mkdir -p "$ARTIFACT_DIR/raw"
-          raw="$ARTIFACT_DIR/raw"
-          evidence="$ARTIFACT_DIR/evidence.json"
-          service='viewloom-history-category-aggregate-cost-probe-kick'
-          config="$raw/wrangler.kick.toml"
-          stage='initialize'
-          url=''
-          PROBE_TOKEN=''
-          cleanup_may_be_required=false
-          post_delete_status=-1
-          probe_day=$(date -u +%F)
-
-          read_json_or_null() {
-            local path="$1"
-            if [[ -f "$path" ]]; then cat "$path"; else printf 'null'; fi
-          }
-
-          delete_worker_until_absent() {
-            local delete_response=''
-            for attempt in $(seq 1 12); do
-              delete_response=$(curl -sS -X DELETE \
-                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-                -H 'Content-Type: application/json' \
-                "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service" 2>/dev/null || true)
-              printf '%s' "$delete_response" > "$raw/delete-response.json"
-              post_delete_status=$(curl -sS -o /dev/null -w '%{http_code}' \
-                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-                "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service" 2>/dev/null || printf '000')
-              if [[ "$post_delete_status" == '404' ]]; then
-                return 0
-              fi
-              sleep 2
-            done
-            return 1
-          }
-
-          write_failure_evidence() {
-            local pre_json probe_json post_json
-            pre_json=$(read_json_or_null "$raw/pre.json")
-            probe_json=$(read_json_or_null "$raw/probe.json")
-            post_json=$(read_json_or_null "$raw/post-failure.json")
-            jq -n \
-              --arg schemaVersion 'viewloom-12a15-kick-history-category-cost-probe-evidence-v1' \
-              --arg status 'failure' \
-              --arg failedAtStage "$stage" \
-              --arg headSha "$GITHUB_SHA" \
-              --arg probeDay "$probe_day" \
-              --argjson postDeleteHttpStatus "$post_delete_status" \
-              --argjson pre "$pre_json" \
-              --argjson probe "$probe_json" \
-              --argjson postFailure "$post_json" \
-              '{schemaVersion:$schemaVersion,status:$status,provider:"kick",failedAtStage:$failedAtStage,headSha:$headSha,probeDay:$probeDay,pre:{schema:($pre.schema // null),aggregateRows:($pre.aggregateRows // null),precheck:($pre.precheck // null),latestSnapshot:($pre.latestSnapshot // null),providerLeakageRows:($pre.providerLeakageRows // null)},probeResult:($probe // null),postFailure:{aggregateRows:($postFailure.aggregateRows // null),providerLeakageRows:($postFailure.providerLeakageRows // null)},temporaryWorkerDeleted:($postDeleteHttpStatus==404),postDeleteHttpStatus:$postDeleteHttpStatus,boundaries:{permanentGeneratorEnabled:false,collectorChanged:false,newCron:false,backfill:false,rawRetentionChanged:false,historyApiCategoryEnabled:false,historyCategoryUiEnabled:false,twitchChanged:false}}' > "$evidence"
-          }
-
-          failure_handler() {
-            set +e
-            if [[ "$cleanup_may_be_required" == 'true' ]]; then
-              if [[ -n "$url" && -n "$PROBE_TOKEN" ]]; then
-                curl -sS -o "$raw/post-failure.json" -w '%{http_code}' -X POST \
-                  -H "Authorization: Bearer $PROBE_TOKEN" \
-                  -H 'Content-Type: application/json' \
-                  --data "{\"day\":\"$probe_day\"}" \
-                  "$url/inspect" > "$raw/post-failure.status" 2>/dev/null || true
-              fi
-              delete_worker_until_absent || true
-            fi
-            write_failure_evidence
-          }
-          trap failure_handler ERR
-
-          stage='verify_temporary_worker_absent'
-          existing=$(curl -sS -o /dev/null -w '%{http_code}' \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
-          [[ "$existing" == '404' ]]
-
-          stage='deploy_temporary_worker'
-          cp workers/history-category-aggregate-cost-probe/wrangler.kick.toml "$config"
-          sed -i "s|main = \"src/index.ts\"|main = \"$GITHUB_WORKSPACE/workers/history-category-aggregate-cost-probe/src/index.ts\"|" "$config"
-          PROBE_TOKEN=$(openssl rand -hex 32)
-          cleanup_may_be_required=true
-          pnpm dlx wrangler@4 deploy --config "$config" > "$raw/deploy.log" 2>&1
-          url=$(grep -Eo 'https://[^ ]+workers.dev' "$raw/deploy.log" | tail -1)
-          printf '%s' "$PROBE_TOKEN" | pnpm dlx wrangler@4 secret put PROBE_TOKEN --config "$config" >> "$raw/deploy.log" 2>&1
-          test -n "$url"
-
-          stage='pre_inspect'
-          inspected=false
-          for attempt in $(seq 1 40); do
-            status=$(curl -sS -o "$raw/pre.json" -w '%{http_code}' -X POST \
-              -H "Authorization: Bearer $PROBE_TOKEN" \
-              -H 'Content-Type: application/json' \
-              --data "{\"day\":\"$probe_day\"}" \
-              "$url/inspect" || true)
-            if [[ "$status" == '200' && $(jq -r '.ok // false' "$raw/pre.json") == 'true' ]]; then inspected=true; break; fi
-            sleep 5
-          done
-          [[ "$inspected" == 'true' ]]
-          [[ $(jq -r '.schema.complete // false' "$raw/pre.json") == 'true' ]]
-          [[ $(jq -r '.aggregateRows.total // -1' "$raw/pre.json") == '0' ]]
-          [[ $(jq -r '.providerLeakageRows // -1' "$raw/pre.json") == '0' ]]
-          [[ $(jq -r '.precheck.sourceSnapshots // 0' "$raw/pre.json") -gt 0 ]]
-          [[ $(jq -r '.precheck.categoryObservedItems // 0' "$raw/pre.json") -gt 0 ]]
-          [[ $(jq -r '.precheck.categoryMissingItems // -1' "$raw/pre.json") == '0' ]]
-          [[ $(jq -r '.precheck.candidateCategoryRows // 999999' "$raw/pre.json") -le 300 ]]
-          [[ $(jq -r '.precheck.candidateStreamerCategoryRows // 999999' "$raw/pre.json") -le 1000 ]]
-          latest_collected=$(jq -r '.latestSnapshot.collected_at // empty' "$raw/pre.json")
-          latest_source=$(jq -r '.latestSnapshot.source_mode // empty' "$raw/pre.json")
-          latest_streams=$(jq -r '.latestSnapshot.stream_count // 0' "$raw/pre.json")
-          test -n "$latest_collected"
-          [[ "$latest_streams" -gt 0 ]]
-          [[ "$latest_source" != 'demo' && "$latest_source" != 'fixture' && "$latest_source" != 'unconfigured' ]]
-          node -e "const t=Date.parse(process.argv[1]); if(!Number.isFinite(t)||Date.now()-t>20*60*1000) process.exit(1)" "$latest_collected"
-          pre_size=$(jq -r '.query.sizeAfter // empty' "$raw/pre.json")
-          [[ "$pre_size" =~ ^[0-9]+$ ]]
-
-          stage='run_probe'
-          probe_status=$(curl -sS -o "$raw/probe.json" -w '%{http_code}' -X POST \
-            -H "Authorization: Bearer $PROBE_TOKEN" \
-            -H 'x-viewloom-confirm: RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_PROBE' \
-            -H 'Content-Type: application/json' \
-            --data "{\"day\":\"$probe_day\"}" \
-            "$url/probe")
-          [[ "$probe_status" == '200' ]]
-          [[ $(jq -r '.ok // false' "$raw/probe.json") == 'true' ]]
-          [[ $(jq -r '.checks.aggregateRowsAuthoritative // false' "$raw/probe.json") == 'true' ]]
-          [[ $(jq -r '.checks.generatedCategoryRowsMatchPrecheck // false' "$raw/probe.json") == 'true' ]]
-          [[ $(jq -r '.checks.generatedStreamerRowsMatchPrecheck // false' "$raw/probe.json") == 'true' ]]
-          [[ $(jq -r '.checks.cleanupSucceeded // false' "$raw/probe.json") == 'true' ]]
-          [[ $(jq -r '.checks.postTargetRowsZero // false' "$raw/probe.json") == 'true' ]]
-          [[ $(jq -r '.checks.providerLeakageZero // false' "$raw/probe.json") == 'true' ]]
-
-          generator_statements=$(jq '[.operation.precheck.meta.statements,.operation.pendingWrite.statements,.operation.writeBatch.statements,(.operation.recoveryBatch.statements // 0)] | add' "$raw/probe.json")
-          total_statements=$(jq '[.pre.precheck.meta.statements,.pre.query.statements,.operation.precheck.meta.statements,.operation.pendingWrite.statements,.operation.writeBatch.statements,(.operation.recoveryBatch.statements // 0),.during.precheck.meta.statements,.during.query.statements,.cleanup.statements,.post.precheck.meta.statements,.post.query.statements] | add' "$raw/probe.json")
-          total_rows_read=$(jq '[.pre.precheck.meta.rowsRead,.pre.query.rowsRead,.operation.precheck.meta.rowsRead,.operation.pendingWrite.rowsRead,.operation.writeBatch.rowsRead,(.operation.recoveryBatch.rowsRead // 0),.during.precheck.meta.rowsRead,.during.query.rowsRead,.cleanup.rowsRead,.post.precheck.meta.rowsRead,.post.query.rowsRead] | add' "$raw/probe.json")
-          total_rows_written=$(jq '[.pre.precheck.meta.rowsWritten,.pre.query.rowsWritten,.operation.precheck.meta.rowsWritten,.operation.pendingWrite.rowsWritten,.operation.writeBatch.rowsWritten,(.operation.recoveryBatch.rowsWritten // 0),.during.precheck.meta.rowsWritten,.during.query.rowsWritten,.cleanup.rowsWritten,.post.precheck.meta.rowsWritten,.post.query.rowsWritten] | add' "$raw/probe.json")
-          total_changes=$(jq '[.pre.precheck.meta.changes,.pre.query.changes,.operation.precheck.meta.changes,.operation.pendingWrite.changes,.operation.writeBatch.changes,(.operation.recoveryBatch.changes // 0),.during.precheck.meta.changes,.during.query.changes,.cleanup.changes,.post.precheck.meta.changes,.post.query.changes] | add' "$raw/probe.json")
-          probe_wall=$(jq -r '.workerWallMs // 999999' "$raw/probe.json")
-          post_size=$(jq -r '.post.query.sizeAfter // empty' "$raw/probe.json")
-          [[ "$post_size" =~ ^[0-9]+$ ]]
-          size_delta=$((post_size-pre_size))
-
-          [[ "$generator_statements" -le 7 ]]
-          [[ "$total_statements" -le 40 ]]
-          [[ "$total_rows_read" -le 250000 ]]
-          [[ "$total_rows_written" -le 5000 ]]
-          [[ "$total_changes" -le 3000 ]]
-          node -e "const v=Number(process.argv[1]); if(!Number.isFinite(v)||v>20000) process.exit(1)" "$probe_wall"
-          [[ "$size_delta" -le 1048576 ]]
-
-          stage='post_cleanup_inspect'
-          post_status=$(curl -sS -o "$raw/post.json" -w '%{http_code}' -X POST \
-            -H "Authorization: Bearer $PROBE_TOKEN" \
-            -H 'Content-Type: application/json' \
-            --data "{\"day\":\"$probe_day\"}" \
-            "$url/inspect")
-          [[ "$post_status" == '200' ]]
-          [[ $(jq -r '.ok // false' "$raw/post.json") == 'true' ]]
-          [[ $(jq -r '.aggregateRows.total // -1' "$raw/post.json") == '0' ]]
-          [[ $(jq -r '.providerLeakageRows // -1' "$raw/post.json") == '0' ]]
-
-          stage='delete_temporary_worker'
-          delete_worker_until_absent
-          [[ "$post_delete_status" == '404' ]]
-          cleanup_may_be_required=false
-
-          stage='freeze_success_evidence'
-          trap - ERR
-          jq -n \
-            --arg schemaVersion 'viewloom-12a15-kick-history-category-cost-probe-evidence-v1' \
-            --arg headSha "$GITHUB_SHA" \
-            --arg probeDay "$probe_day" \
-            --arg latestCollected "$latest_collected" \
-            --arg latestSource "$latest_source" \
-            --argjson latestStreams "$latest_streams" \
-            --argjson sourceSnapshots "$(jq -r '.precheck.sourceSnapshots' "$raw/pre.json")" \
-            --argjson categoryObservedItems "$(jq -r '.precheck.categoryObservedItems' "$raw/pre.json")" \
-            --argjson categoryMissingItems "$(jq -r '.precheck.categoryMissingItems' "$raw/pre.json")" \
-            --argjson candidateCategoryRows "$(jq -r '.precheck.candidateCategoryRows' "$raw/pre.json")" \
-            --argjson candidateStreamerCategoryRows "$(jq -r '.precheck.candidateStreamerCategoryRows' "$raw/pre.json")" \
-            --arg coverageState "$(jq -r '.operation.coverageState' "$raw/probe.json")" \
-            --argjson generatedCategoryRows "$(jq -r '.operation.generatedCategoryRows' "$raw/probe.json")" \
-            --argjson generatedStreamerCategoryRows "$(jq -r '.operation.generatedStreamerCategoryRows' "$raw/probe.json")" \
-            --argjson generatorStatements "$generator_statements" \
-            --argjson totalProbeStatements "$total_statements" \
-            --argjson totalProbeRowsRead "$total_rows_read" \
-            --argjson totalProbeRowsWritten "$total_rows_written" \
-            --argjson totalProbeChanges "$total_changes" \
-            --argjson workerWallMs "$probe_wall" \
-            --argjson preDatabaseSizeBytes "$pre_size" \
-            --argjson postCleanupDatabaseSizeBytes "$post_size" \
-            --argjson databaseSizeIncreaseAfterCleanupBytes "$size_delta" \
-            --argjson postDeleteHttpStatus "$post_delete_status" \
-            '{schemaVersion:$schemaVersion,status:"pass",provider:"kick",headSha:$headSha,probeDay:$probeDay,latestSnapshot:{collectedAt:$latestCollected,streamCount:$latestStreams,sourceMode:$latestSource},precheck:{sourceSnapshots:$sourceSnapshots,categoryObservedItems:$categoryObservedItems,categoryMissingItems:$categoryMissingItems,candidateCategoryRows:$candidateCategoryRows,candidateStreamerCategoryRows:$candidateStreamerCategoryRows},operation:{coverageState:$coverageState,generatedCategoryRows:$generatedCategoryRows,generatedStreamerCategoryRows:$generatedStreamerCategoryRows,generatorStatements:$generatorStatements},cost:{totalProbeStatements:$totalProbeStatements,totalProbeRowsRead:$totalProbeRowsRead,totalProbeRowsWritten:$totalProbeRowsWritten,totalProbeChanges:$totalProbeChanges,workerWallMs:$workerWallMs,preDatabaseSizeBytes:$preDatabaseSizeBytes,postCleanupDatabaseSizeBytes:$postCleanupDatabaseSizeBytes,databaseSizeIncreaseAfterCleanupBytes:$databaseSizeIncreaseAfterCleanupBytes},postCleanup:{aggregateRows:0,providerLeakageRows:0},temporaryWorkerDeleted:true,postDeleteHttpStatus:$postDeleteHttpStatus,boundaries:{permanentGeneratorEnabled:false,collectorChanged:false,newCron:false,backfill:false,rawRetentionChanged:false,historyApiCategoryEnabled:false,historyCategoryUiEnabled:false,twitchChanged:false,crossProviderBehaviorChanged:false}}' > "$evidence"
-
-      - name: Upload sanitized cost evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: phase12a15-kick-history-category-cost-probe
-          path: artifacts/12a15-kick-history-category-cost-probe/evidence.json
-          retention-days: 30
-          if-no-files-found: error
