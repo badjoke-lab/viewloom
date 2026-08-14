@@ -10,6 +10,11 @@ on:
       - 'scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs'
       - '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
       - '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+      - 'workers/history-category-aggregate-cost-probe/src/index.ts'
+      - 'docs/audits/12a17-kick-history-category-probe-read-path-contract.json'
+      - 'scripts/test-12a17-kick-history-category-probe-read-path.mjs'
+      - 'scripts/verify-12a17-kick-history-category-probe-read-path.mjs'
+      - '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
 
 permissions:
   contents: read
@@ -26,7 +31,7 @@ jobs:
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Verify exact six-file scope
+      - name: Verify exact 12A16 or bounded 12A17 successor scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -34,7 +39,30 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          expected=(
+
+          successor_12a17=(
+            '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+            '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
+            '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
+            'docs/audits/12a17-kick-history-category-probe-read-path-contract.json'
+            'scripts/test-12a17-kick-history-category-probe-read-path.mjs'
+            'scripts/verify-12a17-kick-history-category-probe-read-path.mjs'
+            'workers/history-category-aggregate-cost-probe/src/index.ts'
+          )
+          if [[ "${#changed[@]}" -eq "${#successor_12a17[@]}" ]]; then
+            successor=true
+            for path in "${successor_12a17[@]}"; do
+              if ! printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; then
+                successor=false
+              fi
+            done
+            if [[ "$successor" == 'true' ]]; then
+              echo 'Accepted bounded 12A17 successor maintenance scope.'
+              exit 0
+            fi
+          fi
+
+          expected_12a16=(
             '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
             '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
             'docs/audits/12a16-kick-history-category-read-cost-optimization-contract.json'
@@ -42,8 +70,8 @@ jobs:
             'scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs'
             'workers/shared/history-category-aggregate-sql.ts'
           )
-          test "${#changed[@]}" -eq "${#expected[@]}"
-          for path in "${expected[@]}"; do
+          test "${#changed[@]}" -eq "${#expected_12a16[@]}"
+          for path in "${expected_12a16[@]}"; do
             printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
           done
 
@@ -78,8 +106,7 @@ jobs:
             echo '- Candidate: UTC day lower/upper bucket_minute range'
             echo '- New index/schema: no'
             echo '- Bind count / aggregate semantics: unchanged'
-            echo '- Legacy 12A15 scope guard: maintenance-compatible'
+            echo '- 12A17 successor maintenance: repository-only'
             echo '- Production probe: unauthorized'
             echo '- Permanent generator: unauthorized'
-            echo '- Next gate: remove probe-only duplicate raw prechecks and model total read path'
           } >> "$GITHUB_STEP_SUMMARY"
