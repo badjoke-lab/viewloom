@@ -61,6 +61,7 @@ jobs:
             done
             if [[ "$successor" == 'true' ]]; then
               echo 'Accepted bounded 12A18 successor cost-model scope.'
+              echo 'SUCCESSOR_12A18=true' >> "$GITHUB_ENV"
               exit 0
             fi
           fi
@@ -83,7 +84,13 @@ jobs:
         run: node scripts/verify-12a17-kick-history-category-probe-read-path.mjs
 
       - name: Run deterministic raw-path model
-        run: node scripts/test-12a17-kick-history-category-probe-read-path.mjs
+        run: |
+          if [[ "${SUCCESSOR_12A18:-false}" == 'true' ]]; then
+            echo '12A18 intentionally supersedes the old exact provider-leakage COUNT assertion; run the bounded EXISTS/query-plan model instead.'
+            python3 scripts/test-12a18-kick-history-category-cost-bound.py
+          else
+            node scripts/test-12a17-kick-history-category-probe-read-path.mjs
+          fi
 
       - name: Revalidate indexed range and exact generator semantics
         run: |
@@ -120,6 +127,7 @@ jobs:
             echo '- 250,000 rows-read gate: unchanged'
             echo '- 12A15/12A16 predecessor guards: successor-compatible'
             echo '- 12A18 successor cost model: repository-only'
+            echo '- 12A18 leakage decision: indexed zero/nonzero EXISTS'
             echo '- Production probe: unauthorized'
             echo '- Permanent generator: unauthorized'
           } >> "$GITHUB_STEP_SUMMARY"
