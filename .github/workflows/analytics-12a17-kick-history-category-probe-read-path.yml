@@ -1,0 +1,94 @@
+name: Analytics 12A17 Kick History Category Probe Read Path
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'workers/history-category-aggregate-cost-probe/src/index.ts'
+      - 'docs/audits/12a17-kick-history-category-probe-read-path-contract.json'
+      - 'scripts/test-12a17-kick-history-category-probe-read-path.mjs'
+      - 'scripts/verify-12a17-kick-history-category-probe-read-path.mjs'
+      - '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
+      - '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
+      - '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact seven-file scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          expected=(
+            '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+            '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
+            '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
+            'docs/audits/12a17-kick-history-category-probe-read-path-contract.json'
+            'scripts/test-12a17-kick-history-category-probe-read-path.mjs'
+            'scripts/verify-12a17-kick-history-category-probe-read-path.mjs'
+            'workers/history-category-aggregate-cost-probe/src/index.ts'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do
+            printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
+          done
+
+      - name: Verify contract and permanent-runtime boundary
+        run: node scripts/verify-12a17-kick-history-category-probe-read-path.mjs
+
+      - name: Run deterministic raw-path model
+        run: node scripts/test-12a17-kick-history-category-probe-read-path.mjs
+
+      - name: Revalidate indexed range and exact generator semantics
+        run: |
+          node scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs
+          python3 scripts/test-12a16-kick-history-category-read-cost.py
+          node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
+          python3 scripts/test-12a15-kick-history-category-aggregate.py
+
+      - name: Typecheck and bundle dormant probe without deploying
+        run: |
+          pnpm typecheck:collectors
+          pnpm verify:collectors
+          pnpm dlx wrangler@4 deploy --dry-run --config workers/history-category-aggregate-cost-probe/wrangler.kick.toml
+
+      - name: Verify retained architecture and web build
+        run: |
+          node scripts/verify-quality-u10g-architecture.mjs
+          node scripts/verify-quality-u10d-analysis-coherence.mjs
+          pnpm typecheck:web
+          pnpm build:web
+
+      - name: Publish repository-only boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick History category probe read-path model — repository gate'
+            echo
+            echo '- Historical raw category query paths: 8'
+            echo '- Candidate raw category query paths: 3'
+            echo '- Reduction: 5 paths / 62.5%'
+            echo '- Generator authoritative precheck: 1'
+            echo '- Aggregate INSERT raw scans: 2'
+            echo '- During/post raw category parsing: 0'
+            echo '- 250,000 rows-read gate: unchanged'
+            echo '- 12A15/12A16 predecessor guards: successor-compatible'
+            echo '- Production probe: unauthorized'
+            echo '- Permanent generator: unauthorized'
+          } >> "$GITHUB_STEP_SUMMARY"

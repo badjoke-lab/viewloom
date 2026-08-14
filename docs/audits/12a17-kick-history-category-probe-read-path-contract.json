@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "viewloom-12a17-kick-history-category-probe-read-path-v1",
+  "status": "repository_cost_model_candidate_no_production_execution",
+  "phase": "12A-17",
+  "trackingIssue": 860,
+  "parentOptimizationIssue": 858,
+  "parentIssue": 623,
+  "provider": "kick",
+  "authority": {
+    "failedProductionRun": 31769000044,
+    "failedRowsRead": 843288,
+    "rowsReadMaximum": 250000,
+    "failureFreezePr": 857,
+    "rangeOptimizationPr": 859,
+    "productionExecutionPathRetiredPr": 856
+  },
+  "historicalProbeModel": {
+    "externalPreInspectRawPrecheck": 1,
+    "probePreInspectRawPrecheck": 1,
+    "generatorRawPrecheck": 1,
+    "probeDuringInspectRawPrecheck": 1,
+    "probePostInspectRawPrecheck": 1,
+    "externalPostInspectRawPrecheck": 1,
+    "categoryDailyInsertRawScan": 1,
+    "streamerCategoryInsertRawScan": 1,
+    "rawCategoryQueryPaths": 8
+  },
+  "candidateProbeModel": {
+    "externalInspectRawPrecheck": 0,
+    "probePreInspectRawPrecheck": 0,
+    "generatorRawPrecheck": 1,
+    "probeDuringInspectRawPrecheck": 0,
+    "probePostInspectRawPrecheck": 0,
+    "categoryDailyInsertRawScan": 1,
+    "streamerCategoryInsertRawScan": 1,
+    "rawCategoryQueryPaths": 3,
+    "rawCategoryPathReductionCount": 5,
+    "rawCategoryPathReductionPct": 62.5,
+    "categoryPrecheckAuthority": "refreshKickHistoryCategoryAggregateDay_internal_precheck",
+    "cheapPreWriteChecks": [
+      "schema_complete",
+      "target_aggregate_rows_zero",
+      "provider_leakage_zero",
+      "latest_snapshot_present"
+    ],
+    "generatorReturnedPrecheckUsedForValidation": true,
+    "duringInspectParsesRawCategoryPayload": false,
+    "postInspectParsesRawCategoryPayload": false
+  },
+  "semantics": {
+    "permanentGeneratorChanged": false,
+    "generatorOwnPrecheckPreserved": true,
+    "precheckBeforeRefreshPendingWritePreserved": true,
+    "observationTimeCategoryIdentityPreserved": true,
+    "concurrentCategoryPeakPreserved": true,
+    "allStreamerCategoryContributionsPreserved": true,
+    "categoryRowCap": 300,
+    "streamerCategoryRowCap": 1000,
+    "cleanupToZeroRequired": true,
+    "providerSeparated": true
+  },
+  "acceptance": {
+    "rowsReadThresholdRelaxed": false,
+    "rowsReadMaximum": 250000,
+    "repositoryCostModelAcceptedByThisPr": false,
+    "newProductionProbeAuthorized": false,
+    "permanentGeneratorEnablementAuthorized": false,
+    "collectorIntegrationAuthorized": false,
+    "collectorDeploymentAuthorized": false,
+    "newCronAuthorized": false,
+    "backfillAuthorized": false,
+    "rawRetentionChangeAuthorized": false,
+    "historyApiCategoryAuthorized": false,
+    "historyCategoryUiAuthorized": false,
+    "twitchRolloutAuthorized": false,
+    "crossProviderBehaviorAuthorized": false,
+    "nextGate": "measure_candidate_state_query_and_three_raw_path_cost_with_repository_benchmark_before_any_new_production_authorization"
+  }
+}
