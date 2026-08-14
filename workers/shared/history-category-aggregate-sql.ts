@@ -282,8 +282,6 @@ ON CONFLICT(provider, day) DO UPDATE SET
   candidate_streamer_category_rows = excluded.candidate_streamer_category_rows,
   category_row_cap = excluded.category_row_cap,
   streamer_category_row_cap = excluded.streamer_category_row_cap,
-  category_row_cap = excluded.category_row_cap,
-  streamer_category_row_cap = excluded.streamer_category_row_cap,
   source_snapshots = excluded.source_snapshots,
   observed_category_items = excluded.observed_category_items,
   missing_category_items = excluded.missing_category_items,
