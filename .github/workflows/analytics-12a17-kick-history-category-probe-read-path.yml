@@ -9,6 +9,7 @@ on:
       - 'scripts/test-12a17-kick-history-category-probe-read-path.mjs'
       - 'scripts/verify-12a17-kick-history-category-probe-read-path.mjs'
       - '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
+      - '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
       - '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
 
 permissions:
@@ -26,7 +27,7 @@ jobs:
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Verify exact six-file scope
+      - name: Verify exact seven-file scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -36,6 +37,7 @@ jobs:
           printf '%s\n' "${changed[@]}"
           expected=(
             '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+            '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
             '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
             'docs/audits/12a17-kick-history-category-probe-read-path-contract.json'
             'scripts/test-12a17-kick-history-category-probe-read-path.mjs'
@@ -86,6 +88,7 @@ jobs:
             echo '- Aggregate INSERT raw scans: 2'
             echo '- During/post raw category parsing: 0'
             echo '- 250,000 rows-read gate: unchanged'
+            echo '- 12A15/12A16 predecessor guards: successor-compatible'
             echo '- Production probe: unauthorized'
             echo '- Permanent generator: unauthorized'
           } >> "$GITHUB_STEP_SUMMARY"
