@@ -31,7 +31,8 @@
     "reason": "Applying substr() to bucket_minute prevents the existing composite key/index from constraining the UTC day as a bucket_minute range."
   },
   "candidate": {
-    "predicate": "provider = ?1 AND bucket_minute >= (?2 || 'T00:00:00.000Z') AND bucket_minute < (date(?2, '+1 day') || 'T00:00:00.000Z')",
+    "boundsCte": "SELECT ? AS provider, ? AS day",
+    "predicate": "m.provider = b.provider AND m.bucket_minute >= (b.day || 'T00:00:00.000Z') AND m.bucket_minute < (date(b.day, '+1 day') || 'T00:00:00.000Z')",
     "bindCountChanged": false,
     "queryPaths": [
       "HISTORY_CATEGORY_PRECHECK_SQL",
@@ -56,7 +57,8 @@
       "optimized plan constrains provider and both bucket_minute bounds",
       "optimized plan uses the existing provider/bucket index",
       "adjacent UTC days and another provider are excluded",
-      "source TypeScript contains no substr(bucket_minute) History category day filter"
+      "source TypeScript contains no substr(bucket_minute) History category day filter",
+      "existing two-value provider/day bind order remains unchanged"
     ]
   },
   "acceptance": {
