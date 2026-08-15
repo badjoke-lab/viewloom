@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "viewloom-12a20-kick-history-category-reprobe-execution-contract-v1",
+  "status": "dormant_one_shot_package_no_execution_on_package_merge",
+  "phase": "12A-20",
+  "trackingIssue": 866,
+  "parentDecisionIssue": 864,
+  "authorizationPr": 865,
+  "authorizationHeadSha": "4b274da37a62e027a06f4e5d4f5d5a67b8247c3f",
+  "authorizationMergeSha": "fbb6c2b3d44533aeab7618c715a96323201fc0b3",
+  "parentOptimizationIssue": 858,
+  "parentIssue": 623,
+  "provider": "kick",
+  "previousProductionTruth": {
+    "run": 31769000044,
+    "status": "performance_failed_cleanup_safe",
+    "rowsRead": 843288,
+    "rowsReadMaximum": 250000,
+    "cleanupSucceeded": true,
+    "residualAggregateRows": 0,
+    "temporaryWorkerFinalHttpStatus": 404
+  },
+  "repositoryModel": {
+    "sourcePhase": "12A-18",
+    "rawCategoryPaths": 3,
+    "baseLogicalTouches": 89884,
+    "logicalTouchesWith25PctSafety": 112355,
+    "repositoryModelCeiling": 125000,
+    "isRemoteD1Evidence": false
+  },
+  "execution": {
+    "packageMergeExecutesProduction": false,
+    "requiresSeparateOneFileTriggerPr": true,
+    "triggerStatus": "armed_for_one_time_main_push",
+    "triggerConfirmation": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE",
+    "currentUtcDayOnly": true,
+    "exactPackageHeadPinRequired": true,
+    "temporaryAuthenticatedWorkerOnly": true,
+    "temporaryWorkerService": "viewloom-history-category-aggregate-cost-reprobe-kick",
+    "acceptedRowsReadMaximum": 250000,
+    "thresholdFailureMustExitNonZero": true,
+    "errTrapAllowed": false,
+    "originalFailureCodePreserved": true,
+    "cleanupFinallyEquivalent": true,
+    "cleanupFailureStillDeletesWorker": true,
+    "postCleanupAggregateRowsRequired": 0,
+    "postDeleteHttpStatusRequired": 404,
+    "sanitizedEvidenceOnly": true,
+    "rawDeployLogsUploaded": false,
+    "oneShotAuthorityRetiredAfterMeasurementRequired": true
+  },
+  "retainedBoundaries": {
+    "permanentGeneratorEnablementAuthorized": false,
+    "collectorIntegrationAuthorized": false,
+    "newCronAuthorized": false,
+    "backfillAuthorized": false,
+    "rawRetentionChangeAuthorized": false,
+    "historyApiCategoryAuthorized": false,
+    "historyCategoryUiAuthorized": false,
+    "twitchRolloutAuthorized": false,
+    "crossProviderBehaviorAuthorized": false,
+    "rowsReadThresholdRelaxationAuthorized": false
+  },
+  "packageFiles": [
+    ".github/workflows/analytics-12a20-kick-history-category-reprobe-execution.yml",
+    "docs/audits/12a20-kick-history-category-reprobe-execution-contract.json",
+    "scripts/run-12a20-kick-history-category-reprobe.sh",
+    "scripts/verify-12a20-kick-history-category-reprobe-execution.mjs"
+  ],
+  "futureTriggerFile": "docs/audits/12a20-kick-history-category-reprobe-trigger.json",
+  "acceptance": {
+    "productionExecutedByThisPr": false,
+    "productionExecutionAuthorizedBeforeSeparateTriggerMerge": false,
+    "nextGate": "merge dormant exact-head package, then create a separate one-file trigger pinned to the accepted package PR and head SHA"
+  }
+}
