@@ -9,6 +9,7 @@ CONFIRM='RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE'
 PROBE_DAY="$(date -u +%F)"
 URL=''
 PROBE_TOKEN=''
+DEPLOY_ATTEMPTED=false
 DEPLOYED=false
 POST_DELETE_STATUS=-1
 STAGE='initialize'
@@ -46,6 +47,7 @@ main() {
   sed -i "s|name = \"viewloom-history-category-aggregate-cost-probe-kick\"|name = \"$SERVICE\"|" "$config" || return 15
   PROBE_TOKEN=$(openssl rand -hex 32) || return 16
   local deploy_log="$RAW/deploy.log"
+  DEPLOY_ATTEMPTED=true
   pnpm dlx wrangler@4 deploy --config "$config" >"$deploy_log" 2>&1 || return 17
   DEPLOYED=true
   printf '%s' "$PROBE_TOKEN" | pnpm dlx wrangler@4 secret put PROBE_TOKEN --config "$config" >>"$deploy_log" 2>&1 || return 18
@@ -128,15 +130,17 @@ cleanup() {
   local rc=0
   STAGE='cleanup'
 
-  if [[ "$DEPLOYED" == 'true' ]]; then
-    if [[ -n "$URL" && -n "$PROBE_TOKEN" ]]; then
-      inspect "$RAW/post-cleanup.json" || rc=51
-      if [[ -f "$RAW/post-cleanup.json" ]]; then
-        jq -e '.aggregateRows.total == 0' "$RAW/post-cleanup.json" >/dev/null || rc=52
-        jq -e '.providerLeakageRows == 0' "$RAW/post-cleanup.json" >/dev/null || rc=53
+  if [[ "$DEPLOY_ATTEMPTED" == 'true' ]]; then
+    if [[ "$DEPLOYED" == 'true' ]]; then
+      if [[ -n "$URL" && -n "$PROBE_TOKEN" ]]; then
+        inspect "$RAW/post-cleanup.json" || rc=51
+        if [[ -f "$RAW/post-cleanup.json" ]]; then
+          jq -e '.aggregateRows.total == 0' "$RAW/post-cleanup.json" >/dev/null || rc=52
+          jq -e '.providerLeakageRows == 0' "$RAW/post-cleanup.json" >/dev/null || rc=53
+        fi
+      else
+        rc=54
       fi
-    else
-      rc=54
     fi
 
     local delete_response
