@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "viewloom-12a21-kick-history-category-reprobe-errexit-repair-v1",
+  "status": "repository_only_repair_no_production_execution",
+  "phase": "12A-21",
+  "provider": "kick",
+  "previousPackagePr": 867,
+  "previousPackageHeadSha": "b4dcb598542b8e148ca90955d56513d161dcc2da",
+  "previousPackageMergeSha": "9b374d5837e300e3f685114067979d7d7d540775",
+  "staleTriggerPr": 869,
+  "staleTriggerHeadSha": "72ff452527355dbc7502320175620655e1cdbf40",
+  "defect": {
+    "pattern": "main || MAIN_RC=$?",
+    "bashBehavior": "A function invoked as the left side of an OR-list does not get reliable errexit behavior for ordinary failing commands in its body, so set -e cannot be used as the fail-hard mechanism there.",
+    "risk": "precondition or integrity checks inside main can fail and later commands can continue, potentially allowing a false-green result",
+    "productionExecutedWhileDiscovering": false
+  },
+  "repair": {
+    "strategy": "replace implicit errexit dependence inside main with explicit command-by-command failure returns while preserving unconditional cleanup and original main failure-code precedence",
+    "errTrapAllowed": false,
+    "exitTrapAllowed": false,
+    "thresholdRowsReadMaximum": 250000,
+    "cleanupStillMandatory": true,
+    "postCleanupAggregateRowsRequired": 0,
+    "postDeleteHttpStatusRequired": 404,
+    "newTriggerRequiredAfterRepair": true,
+    "oldTriggerMustNotMerge": true
+  },
+  "retainedBoundaries": {
+    "productionExecutionAuthorizedByThisRepair": false,
+    "permanentGeneratorEnablementAuthorized": false,
+    "collectorIntegrationAuthorized": false,
+    "newCronAuthorized": false,
+    "backfillAuthorized": false,
+    "rawRetentionChangeAuthorized": false,
+    "historyApiCategoryAuthorized": false,
+    "historyCategoryUiAuthorized": false,
+    "twitchRolloutAuthorized": false,
+    "crossProviderBehaviorAuthorized": false,
+    "rowsReadThresholdRelaxationAuthorized": false
+  }
+}
