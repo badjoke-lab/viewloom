@@ -2,6 +2,8 @@
   "schemaVersion": "viewloom-12a21-kick-history-category-reprobe-errexit-repair-v1",
   "status": "repository_only_repair_no_production_execution",
   "phase": "12A-21",
+  "trackingIssue": 873,
+  "parentProgramIssue": 872,
   "provider": "kick",
   "previousPackagePr": 867,
   "previousPackageHeadSha": "b4dcb598542b8e148ca90955d56513d161dcc2da",
@@ -16,6 +18,10 @@
   },
   "repair": {
     "strategy": "replace implicit errexit dependence inside main with explicit command-by-command failure returns while preserving unconditional cleanup and original main failure-code precedence",
+    "implicitErrexitRelianceAllowed": false,
+    "explicitFailureReturnsRequired": true,
+    "deterministicMockRegressionRequired": true,
+    "originalFailureStagePreserved": true,
     "errTrapAllowed": false,
     "exitTrapAllowed": false,
     "thresholdRowsReadMaximum": 250000,
@@ -23,6 +29,7 @@
     "postCleanupAggregateRowsRequired": 0,
     "postDeleteHttpStatusRequired": 404,
     "newTriggerRequiredAfterRepair": true,
+    "newTriggerPackagePhase": "12A-21",
     "oldTriggerMustNotMerge": true
   },
   "retainedBoundaries": {
