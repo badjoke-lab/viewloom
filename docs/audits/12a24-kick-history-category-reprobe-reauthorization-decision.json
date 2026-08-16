@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "viewloom-12a24-kick-history-category-reprobe-reauthorization-decision-v1",
+  "status": "repository_only_decision_no_production_execution",
+  "phase": "12A-24",
+  "provider": "kick",
+  "trackingIssue": 880,
+  "parentProgramIssue": 872,
+  "sourceMainSha": "fdd6aeafc232ff4cd1e14580fc61cc7372cbd3f8",
+  "decision": "yes_authorize_exactly_one_new_dormant_measurement_package_only",
+  "rationale": [
+    "The latest replacement production attempt did not produce rows-read evidence because it failed before cost measurement.",
+    "The exact cause was a deterministic runner/Worker confirmation-header mismatch, not an aggregate cost result.",
+    "The mismatch is repaired and protected by a permanent static equality verifier in 12A-23.",
+    "The previous completed production measurement remains 843288 rows read against a 250000 maximum, so a valid new production measurement is still required before any permanent-generator decision can be considered.",
+    "The repository logical-touch model remains non-production evidence and cannot replace a real D1 measurement."
+  ],
+  "acceptedInputs": {
+    "historicalCompletedPerformance": {
+      "rowsRead": 843288,
+      "rowsReadMaximum": 250000,
+      "result": "FAIL"
+    },
+    "incompleteReplacementAttempt": {
+      "productionHeadSha": "273a3b6ceea48a858ece75651ea1c597365aa08c",
+      "run": 31959926240,
+      "exitCode": 32,
+      "failedAtStage": "run_probe",
+      "costMeasurementCompleted": false,
+      "cleanupSafe": true
+    },
+    "failureAcceptance": {
+      "pr": 877,
+      "mergeSha": "0d96dddb19f1c0cc8c6ff8d4ef0de21534ac0e36",
+      "audit": "docs/audits/12a22-kick-history-category-reprobe-production-failure.json"
+    },
+    "rootCauseRepair": {
+      "issue": 878,
+      "pr": 879,
+      "headSha": "06d5d6789e9bb2d3bf66adf31730ef8bf314e2db",
+      "mergeSha": "fdd6aeafc232ff4cd1e14580fc61cc7372cbd3f8",
+      "audit": "docs/audits/12a23-kick-history-category-reprobe-confirmation-root-cause.json",
+      "confirmationValuesMatch": true,
+      "productionWorkflowStillRetired": true
+    },
+    "repositoryModel": {
+      "logicalTouchesWith25PctSafety": 112355,
+      "repositoryCeiling": 125000,
+      "isRemoteD1Evidence": false
+    }
+  },
+  "authorizedNextWork": {
+    "createExactlyOneNewDormantExecutionPackage": true,
+    "newPackageMustUseNewAuthority": true,
+    "reuseConsumedTrigger876": false,
+    "directlyRestoreRetired12A20Workflow": false,
+    "packageMergeExecutesProduction": false,
+    "separateExactOneFileTriggerRequired": true,
+    "triggerMergeRequiresLaterExplicitProductionAuthorization": true,
+    "currentUtcDayOnly": true,
+    "providerKickOnly": true,
+    "rowsReadMaximum": 250000,
+    "failHardExitCodeAndStageRequired": true,
+    "cleanupFinallyEquivalentRequired": true,
+    "postCleanupAggregateRowsRequired": 0,
+    "postCleanupProviderLeakageRowsRequired": 0,
+    "postDeleteHttpStatusRequired": 404,
+    "sanitizedEvidenceOnly": true,
+    "futureProbeHttpStatusRequired": true,
+    "futureProbeErrorMaximumCharacters": 120
+  },
+  "notAuthorized": {
+    "productionExecution": true,
+    "newTriggerMerge": true,
+    "permanentGeneratorEnablement": true,
+    "collectorIntegration": true,
+    "newCron": true,
+    "backfill": true,
+    "rawRetentionChange": true,
+    "historyCategoryApi": true,
+    "historyCategoryUi": true,
+    "twitchRollout": true,
+    "crossProviderBehavior": true,
+    "rowsReadThresholdRelaxation": true
+  },
+  "acceptance": {
+    "decisionPrMustBeRepositoryOnly": true,
+    "decisionPrMustNotAddProductionCapableWorkflow": true,
+    "decisionPrMustNotAddTrigger": true,
+    "nextGate": "open_new_dormant_execution_package_issue_after_this_decision_is_merged"
+  }
+}
