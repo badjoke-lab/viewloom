@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a20-kick-history-category-reprobe-execution-contract-v1",
-  "status": "dormant_one_shot_package_no_execution_on_package_merge",
+  "status": "dormant_one_shot_package_repaired_no_execution_on_package_merge",
   "phase": "12A-20",
   "trackingIssue": 866,
   "parentDecisionIssue": 864,
@@ -8,7 +8,10 @@
   "authorizationHeadSha": "4b274da37a62e027a06f4e5d4f5d5a67b8247c3f",
   "authorizationMergeSha": "fbb6c2b3d44533aeab7618c715a96323201fc0b3",
   "parentOptimizationIssue": 858,
-  "parentIssue": 623,
+  "parentProgramIssue": 872,
+  "repairIssue": 873,
+  "repairPhase": "12A-21",
+  "repairAuditFile": "docs/audits/12a21-kick-history-category-reprobe-errexit-repair.json",
   "provider": "kick",
   "previousProductionTruth": {
     "run": 31769000044,
@@ -30,6 +33,7 @@
   "execution": {
     "packageMergeExecutesProduction": false,
     "requiresSeparateOneFileTriggerPr": true,
+    "requiredTriggerPackagePhase": "12A-21",
     "triggerStatus": "armed_for_one_time_main_push",
     "triggerConfirmation": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE",
     "currentUtcDayOnly": true,
@@ -38,8 +42,12 @@
     "temporaryWorkerService": "viewloom-history-category-aggregate-cost-reprobe-kick",
     "acceptedRowsReadMaximum": 250000,
     "thresholdFailureMustExitNonZero": true,
+    "implicitErrexitInsideCapturedMainAllowed": false,
+    "explicitFailureReturnsRequired": true,
     "errTrapAllowed": false,
+    "exitTrapAllowed": false,
     "originalFailureCodePreserved": true,
+    "originalFailureStagePreserved": true,
     "cleanupFinallyEquivalent": true,
     "cleanupFailureStillDeletesWorker": true,
     "postCleanupAggregateRowsRequired": 0,
@@ -49,6 +57,7 @@
     "oneShotAuthorityRetiredAfterMeasurementRequired": true
   },
   "retainedBoundaries": {
+    "productionExecutionAuthorizedByPackageMerge": false,
     "permanentGeneratorEnablementAuthorized": false,
     "collectorIntegrationAuthorized": false,
     "newCronAuthorized": false,
@@ -63,13 +72,15 @@
   "packageFiles": [
     ".github/workflows/analytics-12a20-kick-history-category-reprobe-execution.yml",
     "docs/audits/12a20-kick-history-category-reprobe-execution-contract.json",
+    "docs/audits/12a21-kick-history-category-reprobe-errexit-repair.json",
     "scripts/run-12a20-kick-history-category-reprobe.sh",
     "scripts/verify-12a20-kick-history-category-reprobe-execution.mjs"
   ],
   "futureTriggerFile": "docs/audits/12a20-kick-history-category-reprobe-trigger.json",
+  "supersededTriggerPr": 869,
   "acceptance": {
     "productionExecutedByThisPr": false,
     "productionExecutionAuthorizedBeforeSeparateTriggerMerge": false,
-    "nextGate": "merge dormant exact-head package, then create a separate one-file trigger pinned to the accepted package PR and head SHA"
+    "nextGate": "merge repaired exact-head package, then create a new separate one-file trigger with executionPackagePhase 12A-21 pinned to the repaired package PR and exact head SHA"
   }
 }
