@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "viewloom-12a23-kick-history-category-reprobe-confirmation-root-cause-v1",
+  "status": "repository_root_cause_confirmed_repair_only",
+  "phase": "12A-23",
+  "provider": "kick",
+  "trackingIssue": 878,
+  "parentProgramIssue": 872,
+  "acceptedFailureEvidence": "docs/audits/12a22-kick-history-category-reprobe-production-failure.json",
+  "productionReference": {
+    "headSha": "273a3b6ceea48a858ece75651ea1c597365aa08c",
+    "run": 31959926240,
+    "productionJob": 95196294113,
+    "exitCode": 32,
+    "failedAtStage": "run_probe",
+    "costMeasurementCompleted": false,
+    "sanitizedEvidenceCapturedExactHttpStatus": false
+  },
+  "rootCause": {
+    "classification": "confirmation_header_contract_mismatch",
+    "certainty": "deterministic_from_exact_production_code",
+    "workerFile": "workers/history-category-aggregate-cost-probe/src/index.ts",
+    "runnerFile": "scripts/run-12a20-kick-history-category-reprobe.sh",
+    "workerConfirmationAtProductionHead": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_PROBE",
+    "runnerConfirmationAtProductionHead": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE",
+    "valuesMatchedAtProductionHead": false,
+    "workerMismatchBehavior": {
+      "httpStatus": 409,
+      "error": "confirmation_required",
+      "occursBeforeRunProbe": true
+    },
+    "reasoning": [
+      "The runner reached exit 32 rather than exit 31, so curl completed and returned a non-200 HTTP status.",
+      "The exact production Worker checks x-viewloom-confirm before parsing the probe body or entering runProbe.",
+      "The exact production runner sent a different confirmation value, so the Worker necessarily took the 409 confirmation_required branch."
+    ]
+  },
+  "repair": {
+    "workerContractValue": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_PROBE",
+    "runnerConfirmationAfterRepair": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_PROBE",
+    "requireStaticEqualityCheck": true,
+    "futureSanitizedProbeHttpStatus": true,
+    "futureSanitizedProbeErrorMaximumCharacters": 120,
+    "rawProbeResponseRetained": false,
+    "rawDeployLogsRetained": false,
+    "privateArtifactsDeleted": true,
+    "failHardExitSemanticsChanged": false,
+    "cleanupBoundaryChanged": false,
+    "rowsReadMaximum": 250000
+  },
+  "authorization": {
+    "repositoryRepairAuthorized": true,
+    "productionWorkflowReenabled": false,
+    "newProductionProbeAuthorized": false,
+    "newTriggerAuthorized": false,
+    "permanentGeneratorEnablementAuthorized": false,
+    "historyApiCategoryAuthorized": false,
+    "historyCategoryUiAuthorized": false,
+    "twitchRolloutAuthorized": false,
+    "crossProviderBehaviorAuthorized": false,
+    "thresholdRelaxationAuthorized": false
+  },
+  "retainedBoundaries": {
+    "permanentGeneratorEnabled": false,
+    "collectorChanged": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChanged": false,
+    "historyApiCategoryEnabled": false,
+    "historyCategoryUiEnabled": false,
+    "twitchChanged": false,
+    "crossProviderBehaviorChanged": false
+  },
+  "nextGate": "separate_decision_required_before_any_new_one_shot_production_measurement"
+}
