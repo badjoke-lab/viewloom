@@ -59,16 +59,8 @@ jobs:
           pnpm typecheck:web
           pnpm build:web
 
-      - name: Verify production surface remains retired
-        run: |
-          set -euo pipefail
-          retired='.github/workflows/analytics-12a20-kick-history-category-reprobe-execution.yml'
-          ! grep -Eq '^[[:space:]]+push:' "$retired"
-          ! grep -q 'production-reprobe:' "$retired"
-          ! grep -q 'CLOUDFLARE_API_TOKEN' "$retired"
-          ! grep -q 'CLOUDFLARE_ACCOUNT_ID' "$retired"
-          ! grep -q 'actions/upload-artifact' "$retired"
-          ! test -f docs/audits/12a25-kick-history-category-reprobe-trigger.json
+      - name: Verify retired execution contract
+        run: node scripts/verify-12a22-kick-history-category-reprobe-failure.mjs
 
       - name: Publish decision boundary
         if: always()
@@ -80,7 +72,7 @@ jobs:
             echo '- Production execution: not authorized'
             echo '- New trigger merge: not authorized'
             echo '- Old #876 trigger: consumed and retired'
-            echo '- Retired 12A20/12A21 production workflow: remains retired'
+            echo '- Retired 12A20/12A21 execution contract: remains retired'
             echo '- Historical completed measurement: 843,288 rows read / 250,000 max = FAIL'
             echo '- Replacement run 31959926240: cost not measured; confirmation mismatch repaired'
             echo '- Runner/Worker confirmation equality: enforced'
