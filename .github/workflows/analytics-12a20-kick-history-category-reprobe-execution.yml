@@ -1,35 +1,23 @@
-name: Analytics 12A20 Kick History Category Re-probe Execution
+name: Analytics 12A20/12A21 Kick History Category Re-probe Retired
 
 on:
   pull_request:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a20-kick-history-category-reprobe-execution.yml'
-      - 'docs/audits/12a20-kick-history-category-reprobe-execution-contract.json'
-      - 'docs/audits/12a21-kick-history-category-reprobe-errexit-repair.json'
-      - 'scripts/run-12a20-kick-history-category-reprobe.sh'
-      - 'scripts/verify-12a20-kick-history-category-reprobe-execution.mjs'
       - 'docs/audits/12a20-kick-history-category-reprobe-trigger.json'
-  push:
-    branches: [main]
-    paths:
-      - 'docs/audits/12a20-kick-history-category-reprobe-trigger.json'
+      - 'docs/audits/12a22-kick-history-category-reprobe-production-failure.json'
+      - 'scripts/verify-12a22-kick-history-category-reprobe-failure.mjs'
 
 permissions:
   contents: read
-  actions: read
-  pull-requests: read
 
 concurrency:
-  group: analytics-12a20-kick-history-category-reprobe-${{ github.event.pull_request.number || github.ref }}
+  group: analytics-12a20-kick-history-category-reprobe-retired-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
-env:
-  TRIGGER_FILE: docs/audits/12a20-kick-history-category-reprobe-trigger.json
-  ARTIFACT_DIR: artifacts/12a20-kick-history-category-reprobe
-
 jobs:
-  contract:
+  retired-contract:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -40,11 +28,10 @@ jobs:
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Verify 12A20/12A21 package
-        run: node scripts/verify-12a20-kick-history-category-reprobe-execution.mjs
+      - name: Verify 12A22 failure freeze and authority retirement
+        run: node scripts/verify-12a22-kick-history-category-reprobe-failure.mjs
 
-      - name: Verify exact repaired-package or trigger scope
-        if: github.event_name == 'pull_request'
+      - name: Verify exact acceptance scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -52,33 +39,18 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          trigger='docs/audits/12a20-kick-history-category-reprobe-trigger.json'
-
-          if [[ "${#changed[@]}" -eq 1 && "${changed[0]}" == "$trigger" ]]; then
-            test -f "$trigger"
-            [[ $(jq -r '.status' "$trigger") == 'armed_for_one_time_main_push' ]]
-            [[ $(jq -r '.provider' "$trigger") == 'kick' ]]
-            [[ $(jq -r '.oneTime' "$trigger") == 'true' ]]
-            [[ $(jq -r '.confirmation' "$trigger") == 'RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE' ]]
-            [[ $(jq -r '.executionPackagePhase' "$trigger") == '12A-21' ]]
-            [[ $(jq -r '.executionPackagePr' "$trigger") =~ ^[0-9]+$ ]]
-            [[ $(jq -r '.expectedExecutionPackageHeadSha' "$trigger") =~ ^[0-9a-f]{40}$ ]]
-            exit 0
-          fi
-
           expected=(
             '.github/workflows/analytics-12a20-kick-history-category-reprobe-execution.yml'
-            'docs/audits/12a20-kick-history-category-reprobe-execution-contract.json'
-            'docs/audits/12a21-kick-history-category-reprobe-errexit-repair.json'
-            'scripts/run-12a20-kick-history-category-reprobe.sh'
-            'scripts/verify-12a20-kick-history-category-reprobe-execution.mjs'
+            'docs/audits/12a20-kick-history-category-reprobe-trigger.json'
+            'docs/audits/12a22-kick-history-category-reprobe-production-failure.json'
+            'scripts/verify-12a22-kick-history-category-reprobe-failure.mjs'
           )
           test "${#changed[@]}" -eq "${#expected[@]}"
           for path in "${expected[@]}"; do
             printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
           done
 
-      - name: Revalidate repository cost gates
+      - name: Revalidate retained repository cost and runtime boundaries
         run: |
           node scripts/verify-12a19-kick-history-category-reprobe-authorization-decision.mjs
           node scripts/verify-12a18-kick-history-category-cost-bound.mjs
@@ -88,109 +60,27 @@ jobs:
           python3 scripts/test-12a16-kick-history-category-read-cost.py
           node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
           python3 scripts/test-12a15-kick-history-category-aggregate.py
-
-      - name: Verify fail-hard runner syntax and boundaries
-        run: |
-          bash -n scripts/run-12a20-kick-history-category-reprobe.sh
-          ! grep -Eq '^[[:space:]]*trap[[:space:]]' scripts/run-12a20-kick-history-category-reprobe.sh
-          grep -F 'MAIN_FAILED_STAGE="$STAGE"' scripts/run-12a20-kick-history-category-reprobe.sh
-          grep -F 'cleanup || CLEANUP_RC=$?' scripts/run-12a20-kick-history-category-reprobe.sh
-          grep -F '[[ "$existing" == '\''404'\'' ]] || return 12' scripts/run-12a20-kick-history-category-reprobe.sh
-          grep -F 'jq -e '\''.schema.complete == true'\'' "$RAW/pre.json" >/dev/null || return 22' scripts/run-12a20-kick-history-category-reprobe.sh
-          grep -F 'if (( total_rows_read > 250000 )); then' scripts/run-12a20-kick-history-category-reprobe.sh
-          grep -F 'return 42' scripts/run-12a20-kick-history-category-reprobe.sh
-          grep -F '[[ "$POST_DELETE_STATUS" == "404" ]]' scripts/run-12a20-kick-history-category-reprobe.sh
-
-      - name: Bundle temporary Worker without deploying
-        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/history-category-aggregate-cost-probe/wrangler.kick.toml
-
-      - name: Typecheck, collector checks and web build
-        run: |
           pnpm typecheck:collectors
           pnpm verify:collectors
           pnpm typecheck:web
           pnpm build:web
 
-      - name: Publish dormant repaired-package boundary
+      - name: Publish retirement boundary
         if: always()
         run: |
           {
-            echo '## Kick History category re-probe — repaired dormant execution package'
+            echo '## Kick History category re-probe — consumed and retired'
             echo
-            echo '- Prior production truth: 843,288 rows read / 250,000 max = FAIL'
-            echo '- 12A18 repository safety model: 112,355 logical touches (not D1 evidence)'
-            echo '- 12A21 false-green repair: explicit command failure returns'
-            echo '- Captured-main implicit errexit dependence: forbidden'
-            echo '- Current raw category paths: 3'
-            echo '- Threshold: 250,000 rows read, unchanged'
-            echo '- ERR/EXIT trap: forbidden'
-            echo '- Main failure code and failure stage: preserved through cleanup'
-            echo '- Cleanup and Worker deletion: mandatory'
-            echo '- Final temporary Worker status: 404 required'
-            echo '- Production execution on this package PR/merge: no'
-            echo '- Production trigger: new exact one-file PR pinned to 12A-21 package only'
+            echo '- Production run: 31959926240'
+            echo '- Production head: 273a3b6ceea48a858ece75651ea1c597365aa08c'
+            echo '- Result: probe response failure before cost measurement (exit 32)'
+            echo '- Performance determination: not measured'
+            echo '- Cleanup: safe; aggregate rows 0; leakage 0; Worker final 404'
+            echo '- Production execution path: retired'
+            echo '- Cloudflare credentials reachable from this workflow: no'
+            echo '- Push trigger: none'
+            echo '- Automatic rerun: unauthorized'
+            echo '- Rows-read threshold remains 250,000; no relaxation'
+            echo '- Permanent generator / History category API/UI / Twitch: unauthorized'
+            echo '- Next gate: repository-first diagnosis of the non-200 probe response'
           } >> "$GITHUB_STEP_SUMMARY"
-
-  production-reprobe:
-    needs: contract
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    env:
-      GH_TOKEN: ${{ github.token }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-
-      - name: Verify exact repaired one-shot authority
-        run: |
-          set -euo pipefail
-          test -f "$TRIGGER_FILE"
-          [[ $(jq -r '.status' "$TRIGGER_FILE") == 'armed_for_one_time_main_push' ]]
-          [[ $(jq -r '.provider' "$TRIGGER_FILE") == 'kick' ]]
-          [[ $(jq -r '.oneTime' "$TRIGGER_FILE") == 'true' ]]
-          [[ $(jq -r '.confirmation' "$TRIGGER_FILE") == 'RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE' ]]
-          [[ $(jq -r '.executionPackagePhase' "$TRIGGER_FILE") == '12A-21' ]]
-
-          execution_number=$(jq -r '.executionPackagePr' "$TRIGGER_FILE")
-          expected_head=$(jq -r '.expectedExecutionPackageHeadSha' "$TRIGGER_FILE")
-          [[ "$execution_number" =~ ^[0-9]+$ ]]
-          [[ "$expected_head" =~ ^[0-9a-f]{40}$ ]]
-
-          execution=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/$execution_number")
-          [[ $(jq -r '.merged_at // empty' <<<"$execution") != '' ]]
-          [[ $(jq -r '.head.sha' <<<"$execution") == "$expected_head" ]]
-          execution_merge=$(jq -r '.merge_commit_sha' <<<"$execution")
-          git cat-file -e "$execution_merge^{commit}"
-          git merge-base --is-ancestor "$execution_merge" HEAD
-
-          mapfile -t execution_files < <(gh api --paginate "/repos/$GITHUB_REPOSITORY/pulls/$execution_number/files" --jq '.[].filename')
-          printf '%s\n' "${execution_files[@]}" | grep -Fxq 'docs/audits/12a21-kick-history-category-reprobe-errexit-repair.json'
-          printf '%s\n' "${execution_files[@]}" | grep -Fxq 'scripts/run-12a20-kick-history-category-reprobe.sh'
-          printf '%s\n' "${execution_files[@]}" | grep -Fxq 'scripts/verify-12a20-kick-history-category-reprobe-execution.mjs'
-
-          authorization=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/865")
-          [[ $(jq -r '.merged_at // empty' <<<"$authorization") != '' ]]
-          [[ $(jq -r '.head.sha' <<<"$authorization") == '4b274da37a62e027a06f4e5d4f5d5a67b8247c3f' ]]
-
-          ! grep -q 'maybeGenerateKickHistoryCategoryAggregates' workers/collector-kick/src/entry.ts
-          ! grep -q 'HISTORY_CATEGORY' workers/collector-kick/wrangler.toml
-          node scripts/verify-12a20-kick-history-category-reprobe-execution.mjs
-
-      - name: Execute one-shot current-day production re-probe
-        run: bash scripts/run-12a20-kick-history-category-reprobe.sh
-
-      - name: Upload sanitized evidence only
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: phase12a20-kick-history-category-reprobe
-          path: artifacts/12a20-kick-history-category-reprobe/evidence.json
-          retention-days: 30
-          if-no-files-found: error
