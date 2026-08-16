@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "viewloom-12a22-kick-history-category-reprobe-failure-v1",
+  "status": "probe_response_failed_cleanup_safe",
+  "phase": "12A-22",
+  "provider": "kick",
+  "parentProgramIssue": 872,
+  "executionIssue": 870,
+  "acceptanceIssue": 871,
+  "repairedExecutionPackage": {
+    "pr": 874,
+    "headSha": "5742bb393486176cf2a2fdf813f2847b869cb0b5",
+    "mergeSha": "1bd6959818d7e1ad2079d935c382156c68c7384e",
+    "phase": "12A-21"
+  },
+  "consumedTrigger": {
+    "pr": 876,
+    "headSha": "6ae0e3ad6981d4c4bac1061b8113602ffc9987a0"
+  },
+  "production": {
+    "headSha": "273a3b6ceea48a858ece75651ea1c597365aa08c",
+    "run": 31959926240,
+    "contractJob": 95196241530,
+    "productionJob": 95196294113,
+    "artifactId": 9266967900,
+    "artifactDigest": "sha256:d9e4dd7387e5ea24a76ddf52eeb5b56f2a539e90914871b36a58cfb81669348a",
+    "evidenceJsonSha256": "b79c74ba9d0bf0dfbf559afdbbaa3d247e59f49d84cbbf5e6473f6de049a1f08",
+    "probeDay": "2026-08-16"
+  },
+  "result": {
+    "workflowConclusion": "failure",
+    "contractConclusion": "success",
+    "productionJobConclusion": "failure",
+    "status": "failure",
+    "exitCode": 32,
+    "failedAtStage": "run_probe",
+    "classification": "probe_http_non_200_before_cost_measurement",
+    "costMeasurementCompleted": false,
+    "rowsReadMeasured": false,
+    "rowsRead": null,
+    "thresholdComparisonAvailable": false,
+    "performanceDetermination": "not_measured"
+  },
+  "pre": {
+    "schemaComplete": true,
+    "aggregateRows": 0,
+    "providerLeakageRows": 0,
+    "latestSnapshotMinute": "2026-08-16T16:50:00.000Z",
+    "sourceMode": "authenticated"
+  },
+  "cleanup": {
+    "exitCode": 0,
+    "aggregateRows": 0,
+    "providerLeakageRows": 0,
+    "temporaryWorkerDeleted": true,
+    "postDeleteHttpStatus": 404,
+    "safetyAccepted": true
+  },
+  "diagnosisBoundary": {
+    "exactProbeHttpStatusCaptured": false,
+    "probeResponseBodyRetained": false,
+    "rawDeployLogsRetained": false,
+    "sanitizedEvidenceOnly": true,
+    "automaticProductionRerunAuthorized": false,
+    "reason": "The fail-hard runner returned 32 because /probe did not return HTTP 200. The sanitized artifact intentionally did not retain the exact non-200 status or raw response body, so this evidence cannot establish a more specific remote cause."
+  },
+  "historicalContext": {
+    "previousProductionRowsRead": 843288,
+    "previousRowsReadMaximum": 250000,
+    "previousPerformanceResult": "FAIL",
+    "repositoryLogicalTouchesWith25PctSafety": 112355,
+    "repositoryModelIsRemoteD1Evidence": false
+  },
+  "acceptance": {
+    "measurementAcceptedAsCompleted": false,
+    "performanceAccepted": false,
+    "performanceDetermination": "not_measured",
+    "cleanupSafetyAccepted": true,
+    "oneShotAuthorityConsumed": true,
+    "oneShotAuthorityMustRetire": true,
+    "newProductionProbeAuthorized": false,
+    "permanentGeneratorEnablementAuthorized": false,
+    "historyApiCategoryAuthorized": false,
+    "historyCategoryUiAuthorized": false,
+    "twitchRolloutAuthorized": false,
+    "crossProviderBehaviorAuthorized": false,
+    "nextGate": "diagnose_probe_non_200_repository_first_before_any_new_production_measurement_authorization"
+  },
+  "retainedBoundaries": {
+    "permanentGeneratorEnabled": false,
+    "collectorChanged": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChanged": false,
+    "historyApiCategoryEnabled": false,
+    "historyCategoryUiEnabled": false,
+    "twitchChanged": false,
+    "crossProviderBehaviorChanged": false,
+    "rowsReadThresholdRelaxed": false
+  }
+}
