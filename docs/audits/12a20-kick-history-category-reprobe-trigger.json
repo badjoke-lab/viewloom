@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "viewloom-12a20-kick-history-category-reprobe-trigger-v2",
+  "status": "armed_for_one_time_main_push",
+  "provider": "kick",
+  "oneTime": true,
+  "confirmation": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE",
+  "executionPackagePhase": "12A-21",
+  "executionPackagePr": 874,
+  "expectedExecutionPackageHeadSha": "5742bb393486176cf2a2fdf813f2847b869cb0b5",
+  "executionPackageMergeSha": "1bd6959818d7e1ad2079d935c382156c68c7384e",
+  "trackingIssue": 875,
+  "executionIssue": 870,
+  "parentProgramIssue": 872,
+  "supersedesTriggerPr": 869,
+  "previousProductionTruth": {
+    "rowsRead": 843288,
+    "rowsReadMaximum": 250000,
+    "result": "FAIL"
+  },
+  "executionBoundary": {
+    "currentUtcDayOnly": true,
+    "mergeExecutesProduction": true,
+    "productionAuthorizedByPreparation": false,
+    "acceptedRowsReadMaximum": 250000,
+    "thresholdRelaxationAuthorized": false
+  }
+}
