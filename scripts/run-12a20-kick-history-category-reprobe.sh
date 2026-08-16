@@ -5,12 +5,14 @@ ARTIFACT_DIR="${ARTIFACT_DIR:-artifacts/12a20-kick-history-category-reprobe}"
 EVIDENCE="$ARTIFACT_DIR/evidence.json"
 RAW="$ARTIFACT_DIR/private"
 SERVICE='viewloom-history-category-aggregate-cost-reprobe-kick'
-CONFIRM='RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE'
+CONFIRM='RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_PROBE'
 PROBE_DAY="$(date -u +%F)"
 URL=''
 PROBE_TOKEN=''
 DEPLOY_ATTEMPTED=false
 DEPLOYED=false
+PROBE_HTTP_STATUS=-1
+PROBE_ERROR=''
 POST_DELETE_STATUS=-1
 STAGE='initialize'
 MAIN_RC=0
@@ -84,6 +86,11 @@ main() {
     -H 'Content-Type: application/json' \
     --data "{\"day\":\"$PROBE_DAY\"}" \
     "$URL/probe") || return 31
+  PROBE_HTTP_STATUS="$probe_status"
+  if [[ -f "$RAW/probe.json" ]]; then
+    PROBE_ERROR=$(jq -r 'if (.error | type) == "string" then .error else "" end' "$RAW/probe.json" 2>/dev/null || true)
+    PROBE_ERROR="${PROBE_ERROR:0:120}"
+  fi
   [[ "$probe_status" == '200' ]] || return 32
   jq -e '.ok == true' "$RAW/probe.json" >/dev/null || return 33
   jq -e '.rawCategoryQueryPaths == 3' "$RAW/probe.json" >/dev/null || return 34
@@ -174,14 +181,16 @@ write_evidence() {
     --arg failedAtStage "$failed_stage" \
     --arg headSha "$GITHUB_SHA" \
     --arg probeDay "$PROBE_DAY" \
+    --arg probeError "$PROBE_ERROR" \
     --argjson exitCode "$final_rc" \
     --argjson cleanupExitCode "$CLEANUP_RC" \
+    --argjson probeHttpStatus "$PROBE_HTTP_STATUS" \
     --argjson postDeleteHttpStatus "$POST_DELETE_STATUS" \
     --argjson metrics "$metrics" \
     --argjson pre "$pre" \
     --argjson probe "$probe" \
     --argjson post "$post" \
-    '{schemaVersion:$schemaVersion,status:$status,provider:"kick",headSha:$headSha,probeDay:$probeDay,exitCode:$exitCode,cleanupExitCode:$cleanupExitCode,failedAtStage:(if $failedAtStage == "" then null else $failedAtStage end),cost:$metrics,pre:{schemaComplete:($pre.schema.complete // null),aggregateRows:($pre.aggregateRows.total // null),providerLeakageRows:($pre.providerLeakageRows // null),latestSnapshotMinute:($pre.latestSnapshot.bucket_minute // null),sourceMode:($pre.latestSnapshot.source_mode // null)},probe:{rawCategoryQueryPaths:($probe.rawCategoryQueryPaths // null),coverageState:($probe.operation.coverageState // null),candidateCategoryRows:($probe.operation.precheck.candidateCategoryRows // null),candidateStreamerCategoryRows:($probe.operation.precheck.candidateStreamerCategoryRows // null),generatedCategoryRows:($probe.operation.generatedCategoryRows // null),generatedStreamerCategoryRows:($probe.operation.generatedStreamerCategoryRows // null),cleanupSucceeded:($probe.checks.cleanupSucceeded // null)},postCleanup:{aggregateRows:($post.aggregateRows.total // null),providerLeakageRows:($post.providerLeakageRows // null)},temporaryWorkerDeleted:($postDeleteHttpStatus==404),postDeleteHttpStatus:$postDeleteHttpStatus,thresholds:{rowsReadMaximum:250000,rowsWrittenMaximum:5000,changesMaximum:3000,statementsMaximum:40,workerWallMsMaximum:20000,sizeIncreaseMaximumBytes:1048576},boundaries:{permanentGeneratorEnabled:false,collectorChanged:false,newCron:false,backfill:false,rawRetentionChanged:false,historyApiCategoryEnabled:false,historyCategoryUiEnabled:false,twitchChanged:false,crossProviderBehaviorChanged:false}}' > "$EVIDENCE"
+    '{schemaVersion:$schemaVersion,status:$status,provider:"kick",headSha:$headSha,probeDay:$probeDay,exitCode:$exitCode,cleanupExitCode:$cleanupExitCode,failedAtStage:(if $failedAtStage == "" then null else $failedAtStage end),cost:$metrics,probeTransport:{httpStatus:(if $probeHttpStatus < 0 then null else $probeHttpStatus end),error:(if $probeError == "" then null else $probeError end)},pre:{schemaComplete:($pre.schema.complete // null),aggregateRows:($pre.aggregateRows.total // null),providerLeakageRows:($pre.providerLeakageRows // null),latestSnapshotMinute:($pre.latestSnapshot.bucket_minute // null),sourceMode:($pre.latestSnapshot.source_mode // null)},probe:{rawCategoryQueryPaths:($probe.rawCategoryQueryPaths // null),coverageState:($probe.operation.coverageState // null),candidateCategoryRows:($probe.operation.precheck.candidateCategoryRows // null),candidateStreamerCategoryRows:($probe.operation.precheck.candidateStreamerCategoryRows // null),generatedCategoryRows:($probe.operation.generatedCategoryRows // null),generatedStreamerCategoryRows:($probe.operation.generatedStreamerCategoryRows // null),cleanupSucceeded:($probe.checks.cleanupSucceeded // null)},postCleanup:{aggregateRows:($post.aggregateRows.total // null),providerLeakageRows:($post.providerLeakageRows // null)},temporaryWorkerDeleted:($postDeleteHttpStatus==404),postDeleteHttpStatus:$postDeleteHttpStatus,thresholds:{rowsReadMaximum:250000,rowsWrittenMaximum:5000,changesMaximum:3000,statementsMaximum:40,workerWallMsMaximum:20000,sizeIncreaseMaximumBytes:1048576},boundaries:{permanentGeneratorEnabled:false,collectorChanged:false,newCron:false,backfill:false,rawRetentionChanged:false,historyApiCategoryEnabled:false,historyCategoryUiEnabled:false,twitchChanged:false,crossProviderBehaviorChanged:false}}' > "$EVIDENCE"
 }
 
 main || {

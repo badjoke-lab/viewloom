@@ -1,0 +1,101 @@
+name: Analytics 12A23 Kick History Re-probe Confirmation Root Cause
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a23-kick-history-category-reprobe-confirmation-root-cause.yml'
+      - 'docs/audits/12a23-kick-history-category-reprobe-confirmation-root-cause.json'
+      - 'scripts/run-12a20-kick-history-category-reprobe.sh'
+      - 'scripts/verify-12a23-kick-history-category-reprobe-confirmation-root-cause.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a23-kick-history-reprobe-confirmation-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  repository-repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact 12A23 root cause and repair
+        run: node scripts/verify-12a23-kick-history-category-reprobe-confirmation-root-cause.mjs
+
+      - name: Verify exact repair scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          expected=(
+            '.github/workflows/analytics-12a23-kick-history-category-reprobe-confirmation-root-cause.yml'
+            'docs/audits/12a23-kick-history-category-reprobe-confirmation-root-cause.json'
+            'scripts/run-12a20-kick-history-category-reprobe.sh'
+            'scripts/verify-12a23-kick-history-category-reprobe-confirmation-root-cause.mjs'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do
+            printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
+          done
+
+      - name: Verify runner syntax and retained fail-hard boundaries
+        run: |
+          bash -n scripts/run-12a20-kick-history-category-reprobe.sh
+          ! grep -Eq '^[[:space:]]*trap[[:space:]]' scripts/run-12a20-kick-history-category-reprobe.sh
+          grep -F "CONFIRM='RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_PROBE'" scripts/run-12a20-kick-history-category-reprobe.sh
+          grep -F 'PROBE_HTTP_STATUS="$probe_status"' scripts/run-12a20-kick-history-category-reprobe.sh
+          grep -F 'PROBE_ERROR="${PROBE_ERROR:0:120}"' scripts/run-12a20-kick-history-category-reprobe.sh
+          grep -F '[[ "$probe_status" == '\''200'\'' ]] || return 32' scripts/run-12a20-kick-history-category-reprobe.sh
+          grep -F 'cleanup || CLEANUP_RC=$?' scripts/run-12a20-kick-history-category-reprobe.sh
+          grep -F 'if (( total_rows_read > 250000 )); then' scripts/run-12a20-kick-history-category-reprobe.sh
+          grep -F '[[ "$POST_DELETE_STATUS" == "404" ]]' scripts/run-12a20-kick-history-category-reprobe.sh
+
+      - name: Revalidate accepted failure and retired production surface
+        run: |
+          node scripts/verify-12a22-kick-history-category-reprobe-failure.mjs
+          ! grep -Eq '^[[:space:]]+push:' .github/workflows/analytics-12a20-kick-history-category-reprobe-execution.yml
+          ! grep -q 'production-reprobe:' .github/workflows/analytics-12a20-kick-history-category-reprobe-execution.yml
+          ! grep -q 'CLOUDFLARE_API_TOKEN' .github/workflows/analytics-12a20-kick-history-category-reprobe-execution.yml
+          ! grep -q 'CLOUDFLARE_ACCOUNT_ID' .github/workflows/analytics-12a20-kick-history-category-reprobe-execution.yml
+
+      - name: Revalidate repository cost/runtime boundaries
+        run: |
+          node scripts/verify-12a18-kick-history-category-cost-bound.mjs
+          python3 scripts/test-12a18-kick-history-category-cost-bound.py
+          node scripts/verify-12a17-kick-history-category-probe-read-path.mjs
+          node scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs
+          python3 scripts/test-12a16-kick-history-category-read-cost.py
+          pnpm typecheck:collectors
+          pnpm verify:collectors
+          pnpm typecheck:web
+          pnpm build:web
+
+      - name: Publish repository-only repair boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick History re-probe confirmation mismatch — repository repair'
+            echo
+            echo '- Production run 31959926240 failed before cost measurement at exit 32'
+            echo '- Exact root cause: runner confirmation value differed from Worker contract'
+            echo '- Worker contract: RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_PROBE'
+            echo '- Repaired runner: exact Worker contract value'
+            echo '- Static equality verifier: required'
+            echo '- Future sanitized failure evidence: numeric HTTP status + bounded error only'
+            echo '- Raw response/deploy logs: not retained'
+            echo '- Production workflow: remains retired'
+            echo '- New production probe/trigger: unauthorized'
+            echo '- Rows-read hard maximum: 250,000 unchanged'
+          } >> "$GITHUB_STEP_SUMMARY"
