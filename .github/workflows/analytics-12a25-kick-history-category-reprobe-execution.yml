@@ -1,0 +1,209 @@
+name: Analytics 12A25 Kick History Category Re-probe Execution
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a25-kick-history-category-reprobe-execution.yml'
+      - 'docs/audits/12a25-kick-history-category-reprobe-execution-contract.json'
+      - 'scripts/verify-12a25-kick-history-category-reprobe-execution-package.mjs'
+      - 'docs/audits/12a25-kick-history-category-reprobe-trigger.json'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a25-kick-history-category-reprobe-trigger.json'
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: analytics-12a25-kick-history-category-reprobe-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify 12A25 dormant execution package
+        run: node scripts/verify-12a25-kick-history-category-reprobe-execution-package.mjs
+
+      - name: Verify exact package or future-trigger scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          trigger='docs/audits/12a25-kick-history-category-reprobe-trigger.json'
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+
+          if [[ -f "$trigger" ]]; then
+            test "${#changed[@]}" -eq 1
+            test "${changed[0]}" = "$trigger"
+            node - <<'NODE'
+          const fs = require('fs')
+          const t = JSON.parse(fs.readFileSync('docs/audits/12a25-kick-history-category-reprobe-trigger.json', 'utf8'))
+          if (t.schemaVersion !== 'viewloom-12a25-kick-history-category-reprobe-trigger-v1') throw new Error('trigger schema')
+          if (t.status !== 'armed_for_one_time_main_push') throw new Error('trigger status')
+          if (t.provider !== 'kick' || t.oneTime !== true) throw new Error('trigger provider/oneTime')
+          if (t.confirmation !== 'RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE_12A25') throw new Error('trigger confirmation')
+          if (t.executionPackagePhase !== '12A-25') throw new Error('trigger package phase')
+          if (!Number.isInteger(t.executionPackagePr) || t.executionPackagePr <= 0) throw new Error('trigger package PR')
+          if (!/^[0-9a-f]{40}$/.test(t.expectedExecutionPackageHeadSha)) throw new Error('trigger package head')
+          NODE
+          else
+            expected=(
+              '.github/workflows/analytics-12a25-kick-history-category-reprobe-execution.yml'
+              'docs/audits/12a25-kick-history-category-reprobe-execution-contract.json'
+              'scripts/verify-12a25-kick-history-category-reprobe-execution-package.mjs'
+            )
+            test "${#changed[@]}" -eq "${#expected[@]}"
+            for path in "${expected[@]}"; do
+              printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
+            done
+            ! test -f "$trigger"
+          fi
+
+      - name: Revalidate decision, failure, repair and cost boundaries
+        run: |
+          node scripts/verify-12a24-kick-history-category-reprobe-reauthorization-decision.mjs
+          node scripts/verify-12a23-kick-history-category-reprobe-confirmation-root-cause.mjs
+          node scripts/verify-12a22-kick-history-category-reprobe-failure.mjs
+          node scripts/verify-12a18-kick-history-category-cost-bound.mjs
+          python3 scripts/test-12a18-kick-history-category-cost-bound.py
+          node scripts/verify-12a17-kick-history-category-probe-read-path.mjs
+          node scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs
+          python3 scripts/test-12a16-kick-history-category-read-cost.py
+
+      - name: Verify fail-hard runner and repaired confirmation contract
+        run: |
+          bash -n scripts/run-12a20-kick-history-category-reprobe.sh
+          node scripts/verify-12a23-kick-history-category-reprobe-confirmation-root-cause.mjs
+          ! grep -Eq '^[[:space:]]*trap[[:space:]]' scripts/run-12a20-kick-history-category-reprobe.sh
+          grep -F 'if (( total_rows_read > 250000 )); then' scripts/run-12a20-kick-history-category-reprobe.sh
+          grep -F 'cleanup || CLEANUP_RC=$?' scripts/run-12a20-kick-history-category-reprobe.sh
+          grep -F '[[ "$POST_DELETE_STATUS" == "404" ]]' scripts/run-12a20-kick-history-category-reprobe.sh
+          grep -F 'PROBE_HTTP_STATUS="$probe_status"' scripts/run-12a20-kick-history-category-reprobe.sh
+          grep -F 'PROBE_ERROR="${PROBE_ERROR:0:120}"' scripts/run-12a20-kick-history-category-reprobe.sh
+
+      - name: Bundle temporary Worker without deploying
+        run: pnpm dlx wrangler@4 deploy --dry-run --config workers/history-category-aggregate-cost-probe/wrangler.kick.toml
+
+      - name: Typecheck, collector checks and web build
+        run: |
+          pnpm typecheck:collectors
+          pnpm verify:collectors
+          pnpm typecheck:web
+          pnpm build:web
+
+      - name: Publish dormant package boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick History category re-probe — 12A25 dormant package'
+            echo
+            echo '- Package merge executes production: no'
+            echo '- Future trigger file included in package: no'
+            echo '- Production job on package PR: skipped by event gate'
+            echo '- Old #876 trigger and 12A20/12A21 execution authority: retired'
+            echo '- Worker/runner confirmation: statically equal'
+            echo '- Rows-read hard maximum: 250,000 unchanged'
+            echo '- Future evidence: sanitized HTTP status + bounded error classification'
+            echo '- Separate one-file trigger required after package acceptance'
+            echo '- Future trigger merge still requires explicit production authorization'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  production-reprobe:
+    needs: contract
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ARTIFACT_DIR: artifacts/12a25-kick-history-category-reprobe
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Validate exact one-time trigger
+        id: trigger
+        run: |
+          set -euo pipefail
+          node - <<'NODE' >> "$GITHUB_OUTPUT"
+          const fs = require('fs')
+          const t = JSON.parse(fs.readFileSync('docs/audits/12a25-kick-history-category-reprobe-trigger.json', 'utf8'))
+          if (t.schemaVersion !== 'viewloom-12a25-kick-history-category-reprobe-trigger-v1') throw new Error('trigger schema')
+          if (t.status !== 'armed_for_one_time_main_push') throw new Error('trigger status')
+          if (t.provider !== 'kick' || t.oneTime !== true) throw new Error('trigger provider/oneTime')
+          if (t.confirmation !== 'RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE_12A25') throw new Error('trigger confirmation')
+          if (t.executionPackagePhase !== '12A-25') throw new Error('trigger package phase')
+          if (!Number.isInteger(t.executionPackagePr) || t.executionPackagePr <= 0) throw new Error('trigger package PR')
+          if (!/^[0-9a-f]{40}$/.test(t.expectedExecutionPackageHeadSha)) throw new Error('trigger package head')
+          console.log(`package_pr=${t.executionPackagePr}`)
+          console.log(`package_head=${t.expectedExecutionPackageHeadSha}`)
+          NODE
+
+      - name: Verify exact merged package authority
+        env:
+          PACKAGE_PR: ${{ steps.trigger.outputs.package_pr }}
+          PACKAGE_HEAD: ${{ steps.trigger.outputs.package_head }}
+        run: |
+          set -euo pipefail
+          pr_json=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PACKAGE_PR")
+          test "$(jq -r '.state' <<<"$pr_json")" = 'closed'
+          test "$(jq -r '.merged_at // empty' <<<"$pr_json")" != ''
+          test "$(jq -r '.base.ref' <<<"$pr_json")" = 'main'
+          test "$(jq -r '.head.sha' <<<"$pr_json")" = "$PACKAGE_HEAD"
+          git merge-base --is-ancestor "$PACKAGE_HEAD" "$GITHUB_SHA"
+
+          mapfile -t files < <(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PACKAGE_PR/files" --jq '.[].filename')
+          expected=(
+            '.github/workflows/analytics-12a25-kick-history-category-reprobe-execution.yml'
+            'docs/audits/12a25-kick-history-category-reprobe-execution-contract.json'
+            'scripts/verify-12a25-kick-history-category-reprobe-execution-package.mjs'
+          )
+          test "${#files[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do
+            printf '%s\n' "${files[@]}" | grep -Fxq "$path"
+          done
+
+          decision=$(gh api "repos/$GITHUB_REPOSITORY/pulls/881")
+          test "$(jq -r '.head.sha' <<<"$decision")" = 'c16b15d5c93a6265be67af5e5b77881b048ca2b5'
+          test "$(jq -r '.merge_commit_sha' <<<"$decision")" = '0a02ebdb9c928abe026f9ddc63af961612f3b503'
+          git merge-base --is-ancestor '0a02ebdb9c928abe026f9ddc63af961612f3b503' "$GITHUB_SHA"
+
+      - name: Revalidate repaired package and retired predecessor authority
+        run: |
+          node scripts/verify-12a25-kick-history-category-reprobe-execution-package.mjs
+          node scripts/verify-12a24-kick-history-category-reprobe-reauthorization-decision.mjs
+          node scripts/verify-12a23-kick-history-category-reprobe-confirmation-root-cause.mjs
+          node scripts/verify-12a22-kick-history-category-reprobe-failure.mjs
+
+      - name: Execute one-shot current-day Kick production re-probe
+        run: bash scripts/run-12a20-kick-history-category-reprobe.sh
+
+      - name: Upload sanitized one-shot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a25-kick-history-category-reprobe
+          path: artifacts/12a25-kick-history-category-reprobe/evidence.json
+          if-no-files-found: error
+          retention-days: 30
