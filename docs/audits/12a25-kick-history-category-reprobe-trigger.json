@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "viewloom-12a25-kick-history-category-reprobe-trigger-v1",
+  "status": "armed_for_one_time_main_push",
+  "provider": "kick",
+  "oneTime": true,
+  "confirmation": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE_12A25",
+  "executionPackagePhase": "12A-25",
+  "executionPackagePr": 883,
+  "expectedExecutionPackageHeadSha": "cb236ba838f173a3fd0fcc9b10e441e56f4a28e0",
+  "executionPackageMergeSha": "3de3af43f037eba7d22e4e1a479474cee19cf33a",
+  "trackingIssue": 884,
+  "parentProgramIssue": 872,
+  "packageIssue": 882,
+  "authorization": {
+    "preparationAuthorized": true,
+    "productionExecutionAuthorized": false,
+    "mergeAuthorized": false,
+    "mustRemainDraftUntilExplicitProductionAuthorization": true
+  },
+  "productionBoundary": {
+    "currentUtcDayOnly": true,
+    "providerKickOnly": true,
+    "rowsReadMaximum": 250000,
+    "thresholdRelaxationAuthorized": false,
+    "permanentGeneratorEnablementAuthorized": false,
+    "historyCategoryApiAuthorized": false,
+    "historyCategoryUiAuthorized": false,
+    "twitchRolloutAuthorized": false,
+    "crossProviderBehaviorAuthorized": false
+  }
+}
