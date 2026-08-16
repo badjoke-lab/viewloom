@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "viewloom-12a25-kick-history-category-reprobe-execution-contract-v1",
+  "status": "dormant_new_authority_no_execution_on_package_merge",
+  "phase": "12A-25",
+  "provider": "kick",
+  "trackingIssue": 882,
+  "parentProgramIssue": 872,
+  "decision": {
+    "issue": 880,
+    "pr": 881,
+    "headSha": "c16b15d5c93a6265be67af5e5b77881b048ca2b5",
+    "mergeSha": "0a02ebdb9c928abe026f9ddc63af961612f3b503",
+    "phase": "12A-24",
+    "value": "yes_authorize_exactly_one_new_dormant_measurement_package_only"
+  },
+  "acceptedEvidence": {
+    "historicalCompletedPerformance": {
+      "rowsRead": 843288,
+      "rowsReadMaximum": 250000,
+      "result": "FAIL"
+    },
+    "incompleteReplacementAttempt": {
+      "run": 31959926240,
+      "productionHeadSha": "273a3b6ceea48a858ece75651ea1c597365aa08c",
+      "exitCode": 32,
+      "failedAtStage": "run_probe",
+      "costMeasurementCompleted": false,
+      "cleanupExitCode": 0,
+      "postCleanupAggregateRows": 0,
+      "postCleanupProviderLeakageRows": 0,
+      "postDeleteHttpStatus": 404
+    },
+    "failureAcceptancePr": 877,
+    "failureAcceptanceMergeSha": "0d96dddb19f1c0cc8c6ff8d4ef0de21534ac0e36",
+    "rootCauseRepairPr": 879,
+    "rootCauseRepairMergeSha": "fdd6aeafc232ff4cd1e14580fc61cc7372cbd3f8",
+    "rootCause": "confirmation_header_contract_mismatch",
+    "repositoryLogicalTouchesWith25PctSafety": 112355,
+    "repositoryCeiling": 125000,
+    "repositoryModelIsRemoteD1Evidence": false
+  },
+  "implementation": {
+    "runner": "scripts/run-12a20-kick-history-category-reprobe.sh",
+    "worker": "workers/history-category-aggregate-cost-probe/src/index.ts",
+    "workerProbeConfirmation": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_PROBE",
+    "executionTriggerConfirmation": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE_12A25",
+    "workflow": ".github/workflows/analytics-12a25-kick-history-category-reprobe-execution.yml",
+    "verifier": "scripts/verify-12a25-kick-history-category-reprobe-execution-package.mjs",
+    "futureTriggerFile": "docs/audits/12a25-kick-history-category-reprobe-trigger.json"
+  },
+  "execution": {
+    "packageMergeExecutesProduction": false,
+    "productionJobReachableBeforeFutureTriggerMerge": false,
+    "requiresSeparateOneFileTriggerPr": true,
+    "futureTriggerMustPinExecutionPackagePr": true,
+    "futureTriggerMustPinExactPackageHeadSha": true,
+    "futureTriggerMergeRequiresLaterExplicitProductionAuthorization": true,
+    "currentUtcDayOnly": true,
+    "providerKickOnly": true,
+    "acceptedRowsReadMaximum": 250000,
+    "rowsWrittenMaximum": 5000,
+    "changesMaximum": 3000,
+    "statementsMaximum": 40,
+    "workerWallMsMaximum": 20000,
+    "sizeIncreaseMaximumBytes": 1048576,
+    "failHardExitCodeAndStageRequired": true,
+    "errTrapAllowed": false,
+    "exitTrapAllowed": false,
+    "cleanupFinallyEquivalent": true,
+    "postCleanupAggregateRowsRequired": 0,
+    "postCleanupProviderLeakageRowsRequired": 0,
+    "postDeleteHttpStatusRequired": 404,
+    "runnerWorkerConfirmationEqualityRequired": true,
+    "sanitizedEvidenceOnly": true,
+    "probeHttpStatusIncludedInSanitizedEvidence": true,
+    "probeErrorMaximumCharacters": 120,
+    "rawProbeResponseUploaded": false,
+    "rawDeployLogsUploaded": false,
+    "oneShotAuthorityMustRetireAfterMeasurement": true
+  },
+  "packageFiles": [
+    ".github/workflows/analytics-12a25-kick-history-category-reprobe-execution.yml",
+    "docs/audits/12a25-kick-history-category-reprobe-execution-contract.json",
+    "scripts/verify-12a25-kick-history-category-reprobe-execution-package.mjs"
+  ],
+  "retainedBoundaries": {
+    "permanentGeneratorEnabled": false,
+    "collectorChanged": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChanged": false,
+    "historyApiCategoryEnabled": false,
+    "historyCategoryUiEnabled": false,
+    "twitchChanged": false,
+    "crossProviderBehaviorChanged": false,
+    "rowsReadThresholdRelaxed": false
+  },
+  "acceptance": {
+    "packagePrContainsTrigger": false,
+    "packagePrExecutesProduction": false,
+    "packageMergeExecutesProduction": false,
+    "nextGate": "prepare_exact_one_file_12a25_trigger_after_package_is_merged_and_accepted"
+  }
+}
