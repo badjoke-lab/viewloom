@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a20-kick-history-category-reprobe-trigger-v2",
-  "status": "armed_for_one_time_main_push",
+  "status": "consumed_probe_response_failed_retired",
   "provider": "kick",
   "oneTime": true,
   "confirmation": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE",
@@ -10,8 +10,25 @@
   "executionPackageMergeSha": "1bd6959818d7e1ad2079d935c382156c68c7384e",
   "trackingIssue": 875,
   "executionIssue": 870,
+  "acceptanceIssue": 871,
   "parentProgramIssue": 872,
   "supersedesTriggerPr": 869,
+  "productionAction": "retired_no_further_execution",
+  "consumedBy": {
+    "triggerPr": 876,
+    "triggerHeadSha": "6ae0e3ad6981d4c4bac1061b8113602ffc9987a0",
+    "productionHeadSha": "273a3b6ceea48a858ece75651ea1c597365aa08c",
+    "productionRun": 31959926240,
+    "contractJob": 95196241530,
+    "productionJob": 95196294113,
+    "artifactId": 9266967900,
+    "artifactDigest": "sha256:d9e4dd7387e5ea24a76ddf52eeb5b56f2a539e90914871b36a58cfb81669348a",
+    "evidenceJsonSha256": "b79c74ba9d0bf0dfbf559afdbbaa3d247e59f49d84cbbf5e6473f6de049a1f08",
+    "result": "probe_response_failed_cleanup_safe",
+    "exitCode": 32,
+    "failedAtStage": "run_probe",
+    "costMeasurementCompleted": false
+  },
   "previousProductionTruth": {
     "rowsRead": 843288,
     "rowsReadMaximum": 250000,
@@ -19,9 +36,10 @@
   },
   "executionBoundary": {
     "currentUtcDayOnly": true,
-    "mergeExecutesProduction": true,
+    "mergeExecutesProduction": false,
     "productionAuthorizedByPreparation": false,
     "acceptedRowsReadMaximum": 250000,
-    "thresholdRelaxationAuthorized": false
+    "thresholdRelaxationAuthorized": false,
+    "newProductionProbeAuthorized": false
   }
 }
