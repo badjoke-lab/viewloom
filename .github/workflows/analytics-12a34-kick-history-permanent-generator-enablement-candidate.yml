@@ -52,7 +52,7 @@ jobs:
             printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
           done
 
-      - name: Verify fail-closed 12A34 candidate and 12A33 authority linkage
+      - name: Verify fail-closed 12A34 candidate and prior accepted authority linkage
         run: node scripts/verify-12a34-kick-history-permanent-generator-enablement-candidate.mjs
 
       - name: Verify PR deploy planner remains no-op
@@ -72,9 +72,8 @@ jobs:
           grep -Fxq 'deploy_kick=false' /tmp/12a34-plan-output
           grep -Fxq 'any_deploy=false' /tmp/12a34-plan-output
 
-      - name: Revalidate accepted evidence and generator semantics
+      - name: Revalidate invariant production cost and generator semantics
         run: |
-          node scripts/verify-12a32-kick-history-disabled-runtime-production-deployment-acceptance.mjs
           node scripts/verify-12a26-kick-history-category-reprobe-pass.mjs
           node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
           python3 scripts/test-12a15-kick-history-category-aggregate.py
@@ -131,6 +130,6 @@ jobs:
             echo '- PR deploy planner: no-op required'
             echo '- Candidate merge/deploy authorized: no'
             echo '- Production generator enablement authorized: no'
-            echo '- 12A33 authority is validated by the 12A34 verifier without replaying its pre-candidate config-absence assertion'
+            echo '- 12A33/12A32 authority and acceptance linkage are validated by the 12A34 verifier without replaying their pre-candidate config-absence assertions'
             echo '- Later execution transformation: pin UTC execution-day startDay + set enable=true + rerun exact gates'
           } >> "$GITHUB_STEP_SUMMARY"
