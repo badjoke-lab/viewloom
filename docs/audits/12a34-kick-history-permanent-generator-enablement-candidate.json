@@ -1,19 +1,31 @@
 {
-  "schemaVersion": "viewloom-12a34-kick-history-permanent-generator-enablement-candidate-v1",
+  "schemaVersion": "viewloom-12a34-kick-history-permanent-generator-enablement-execution-v1",
   "phase": "12A-34",
-  "status": "draft_fail_closed_candidate_not_authorized_for_merge",
+  "status": "draft_execution_ready_candidate_validating",
   "provider": "kick",
-  "trackingIssue": 908,
+  "trackingIssue": 912,
+  "preparationIssue": 908,
   "decisionIssue": 906,
   "decisionPr": 907,
   "decisionHeadSha": "b1f65977d034f1f0a05ed41b883f33010f57def1",
   "decisionMergeSha": "33d83a0f7eacfa1ef6c37010d6e0a6923d239a49",
+  "executionContractIssue": 910,
+  "executionContractPr": 911,
+  "executionContractMergeSha": "a5aced34f1145647f26ff979afe1601fd59a9be8",
+  "candidatePr": 909,
+  "execution": {
+    "utcStartDay": "2026-08-17",
+    "historyCategoryGenerationEnabled": "true",
+    "historyCategoryStartDayPresent": true,
+    "startDayPinnedToExecutionUtcCalendarDay": true,
+    "preActivationDaysIneligible": true
+  },
   "candidateConfig": {
     "path": "workers/collector-kick/wrangler.category-permanent.toml",
-    "historyCategoryGenerationEnabled": "false",
-    "historyCategoryStartDayPresent": false,
-    "failClosed": true,
-    "productionGenerationWouldStartIfMergedAsPrepared": false
+    "historyCategoryGenerationEnabled": "true",
+    "historyCategoryStartDay": "2026-08-17",
+    "historyCategoryStartDayPresent": true,
+    "productionGenerationWouldStartIfMerged": true
   },
   "fixedSemantics": {
     "kickOnly": true,
@@ -26,21 +38,17 @@
     "preActivationDaysIneligible": true,
     "rowsReadMaximum": 250000
   },
-  "laterExecutionTransformation": {
-    "required": true,
-    "pinStartDayToExecutionUtcCalendarDay": true,
-    "setHistoryCategoryGenerationEnabledToTrue": true,
-    "rerunCandidateValidationAfterTransformation": true,
-    "exactTransformedHeadMustBeFrozenBeforeMerge": true
-  },
-  "deploymentBoundary": {
-    "prMustRemainDraft": true,
-    "prValidationMayRunCollectorDeployWorkflow": true,
+  "executionBoundary": {
+    "prMustRemainDraftWhileValidating": true,
+    "exactFourFileScopeRequired": true,
     "pullRequestPlannerMustDeployKick": false,
     "pullRequestPlannerMustDeployTwitch": false,
-    "candidateMergeAuthorized": false,
-    "productionDeployAuthorized": false,
-    "productionGeneratorEnableAuthorized": false
+    "exactTransformedHeadMustBeFrozenInIssue912BeforeReady": true,
+    "readyAllowedOnlyAfterAllApplicableCiGreen": true,
+    "mergeOnlyFrozenExactHead": true,
+    "mainPushExpectedToDeployKick": true,
+    "mainPushExpectedToDeployTwitch": false,
+    "postDeployAcceptanceIssue": 913
   },
   "forbiddenChanges": {
     "newCron": false,
@@ -58,6 +66,9 @@
     "rowsReadMaximum": 250000,
     "disabledRuntimeDeploymentRun": 32029471351,
     "disabledRuntimeAcceptanceRun": 32030345735,
-    "disabledRuntimeAcceptanceMainSha": "cc3a68409458462b5e3d8afbe721f6d21354f7f2"
+    "disabledRuntimeAcceptanceMainSha": "cc3a68409458462b5e3d8afbe721f6d21354f7f2",
+    "preparedCandidateRun": 32031563867,
+    "preparedDeployValidationRun": 32031563625,
+    "executionContractRun": 32031955100
   }
 }
