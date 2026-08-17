@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "viewloom-12a26-kick-history-category-reprobe-production-pass-v1",
+  "phase": "12A-26",
+  "status": "production_pass_cleanup_safe_authority_retired",
+  "provider": "kick",
+  "performanceDetermination": "PASS",
+  "production": {
+    "pr": 885,
+    "triggerHeadSha": "05055c195cba0b4259a7fd21db84cec8fdb87fbb",
+    "headSha": "33819c2ceff36c819d727d0399f85bbd789ba920",
+    "run": 31987877725,
+    "probeDay": "2026-08-17"
+  },
+  "sourceArtifact": {
+    "id": 9274330562,
+    "name": "phase12a25-kick-history-category-reprobe",
+    "digest": "sha256:3885386abd9e9c6f5c578766529aabcf689cd30b95ee342bafebe687ef8d4580",
+    "sanitizedEvidenceOnly": true
+  },
+  "result": {
+    "exitCode": 0,
+    "cleanupExitCode": 0,
+    "failedAtStage": null,
+    "probeTransport": {
+      "httpStatus": 200,
+      "error": null
+    },
+    "cost": {
+      "rowsRead": 16117,
+      "rowsWritten": 1164,
+      "changes": 583,
+      "statements": 24,
+      "wallMs": 2178,
+      "sizeDelta": 0
+    }
+  },
+  "pre": {
+    "schemaComplete": true,
+    "aggregateRows": 0,
+    "providerLeakageRows": 0,
+    "latestSnapshotMinute": "2026-08-17T02:20:00.000Z",
+    "sourceMode": "authenticated"
+  },
+  "probe": {
+    "rawCategoryQueryPaths": 3,
+    "coverageState": "partial",
+    "candidateCategoryRows": 55,
+    "candidateStreamerCategoryRows": 235,
+    "generatedCategoryRows": 55,
+    "generatedStreamerCategoryRows": 235,
+    "cleanupSucceeded": true
+  },
+  "postCleanup": {
+    "aggregateRows": 0,
+    "providerLeakageRows": 0
+  },
+  "temporaryWorkerDeleted": true,
+  "postDeleteHttpStatus": 404,
+  "thresholds": {
+    "rowsReadMaximum": 250000,
+    "rowsWrittenMaximum": 5000,
+    "changesMaximum": 3000,
+    "statementsMaximum": 40,
+    "workerWallMsMaximum": 20000,
+    "sizeIncreaseMaximumBytes": 1048576
+  },
+  "retirement": {
+    "issue": 887,
+    "pr": 888,
+    "mainSha": "3918d5bfc0eacb5d8ab7960231d0726b7812645d",
+    "productionPushRunsOnRetirementSha": 0,
+    "triggerConsumed": true,
+    "newProductionProbeAuthorized": false
+  },
+  "historicalContext": {
+    "previousCompletedRowsRead": 843288,
+    "previousCompletedResult": "FAIL",
+    "previousCompletedRowsReadMaximum": 250000,
+    "repositoryLogicalTouchesWith25PctSafety": 112355,
+    "repositoryModelIsRemoteD1Evidence": false
+  },
+  "boundaries": {
+    "permanentGeneratorEnabled": false,
+    "collectorChanged": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChanged": false,
+    "historyApiCategoryEnabled": false,
+    "historyCategoryUiEnabled": false,
+    "twitchChanged": false,
+    "crossProviderBehaviorChanged": false,
+    "thresholdRelaxed": false
+  }
+}
