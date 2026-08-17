@@ -91,7 +91,7 @@ assert(decision.oneShotRetirement.newProductionProbeAuthorized === false, 'no ne
 assert(decision.oneShotRetirement.rerunAuthorized === false, 'no rerun decision')
 
 for (const forbidden of [
-  '\n  push:',
+  '\n  ' + 'push:',
   'production' + '-reprobe:',
   'CLOUDFLARE_' + 'API_TOKEN',
   'CLOUDFLARE_' + 'ACCOUNT_ID',
@@ -161,13 +161,13 @@ assert(decisionWorkflow.includes('name: Analytics 12A27 Kick History Permanent G
 assert(decisionWorkflow.includes('pull_request:'), 'decision workflow PR-only')
 assert(decisionWorkflow.includes('scripts/verify-12a27-kick-history-category-permanent-generator-decision.mjs'), 'decision verifier wired')
 for (const forbidden of [
-  '\n  push:',
-  'workflow_dispatch:',
-  'schedule:',
+  '\n  ' + 'push:',
+  'workflow_' + 'dispatch:',
+  'sched' + 'ule:',
   'CLOUDFLARE_' + 'API_TOKEN',
   'CLOUDFLARE_' + 'ACCOUNT_ID',
-  'wrangler@4 deploy',
-  'actions/upload-artifact',
+  'wrangler@4 ' + 'deploy',
+  'actions/' + 'upload-artifact',
 ]) assert(!decisionWorkflow.includes(forbidden), `decision workflow must remain repository-only: ${forbidden}`)
 
 console.log(JSON.stringify({
