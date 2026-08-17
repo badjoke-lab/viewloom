@@ -1,0 +1,136 @@
+name: Analytics 12A34 Kick History Permanent Generator Enablement Candidate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a34-kick-history-permanent-generator-enablement-candidate.yml'
+      - 'docs/audits/12a34-kick-history-permanent-generator-enablement-candidate.json'
+      - 'scripts/verify-12a34-kick-history-permanent-generator-enablement-candidate.mjs'
+      - 'workers/collector-kick/wrangler.category-permanent.toml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a34-kick-history-generator-candidate-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Require Draft PR state
+        env:
+          IS_DRAFT: ${{ github.event.pull_request.draft }}
+        run: test "$IS_DRAFT" = 'true'
+
+      - name: Verify exact 12A34 candidate scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          expected=(
+            '.github/workflows/analytics-12a34-kick-history-permanent-generator-enablement-candidate.yml'
+            'docs/audits/12a34-kick-history-permanent-generator-enablement-candidate.json'
+            'scripts/verify-12a34-kick-history-permanent-generator-enablement-candidate.mjs'
+            'workers/collector-kick/wrangler.category-permanent.toml'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do
+            printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
+          done
+
+      - name: Verify fail-closed 12A34 candidate
+        run: node scripts/verify-12a34-kick-history-permanent-generator-enablement-candidate.mjs
+
+      - name: Verify PR deploy planner remains no-op
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          : > /tmp/12a34-plan-output
+          GITHUB_EVENT_NAME=pull_request \
+          GITHUB_EVENT_BEFORE='' \
+          GITHUB_SHA="$HEAD_SHA" \
+          GITHUB_OUTPUT=/tmp/12a34-plan-output \
+          DEPLOY_PROVIDER='' \
+          node scripts/plan-collector-worker-deploy.mjs > /tmp/12a34-plan.json
+          cat /tmp/12a34-plan.json
+          grep -Fxq 'deploy_twitch=false' /tmp/12a34-plan-output
+          grep -Fxq 'deploy_kick=false' /tmp/12a34-plan-output
+          grep -Fxq 'any_deploy=false' /tmp/12a34-plan-output
+
+      - name: Revalidate accepted evidence and generator semantics
+        run: |
+          node scripts/verify-12a33-kick-history-permanent-generator-enablement-decision.mjs
+          node scripts/verify-12a32-kick-history-disabled-runtime-production-deployment-acceptance.mjs
+          node scripts/verify-12a26-kick-history-category-reprobe-pass.mjs
+          node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
+          python3 scripts/test-12a15-kick-history-category-aggregate.py
+          pnpm typecheck:collectors
+          pnpm verify:collectors
+
+      - name: Verify prepared config remains disabled and startDay absent
+        run: |
+          set -euo pipefail
+          config='workers/collector-kick/wrangler.category-permanent.toml'
+          grep -Fxq 'INTRADAY_GENERATION_ENABLED = "true"' "$config"
+          grep -Fxq 'CATEGORY_CAPTURE_ENABLED = "true"' "$config"
+          grep -Fxq 'HISTORY_CATEGORY_GENERATION_ENABLED = "false"' "$config"
+          grep -Fxq 'crons = ["*/5 * * * *"]' "$config"
+          ! grep -Fq 'HISTORY_CATEGORY_START_DAY' "$config"
+          test "$(grep -Fc 'HISTORY_CATEGORY_GENERATION_ENABLED' "$config")" -eq 1
+
+      - name: Bundle Kick collector without deploying
+        run: |
+          mkdir -p artifacts/12a34-kick
+          cd workers/collector-kick
+          pnpm dlx wrangler@4 deploy --config wrangler.category-permanent.toml --dry-run --outdir ../../artifacts/12a34-kick
+
+      - name: Verify PR-only candidate workflow
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('.github/workflows/analytics-12a34-kick-history-permanent-generator-enablement-candidate.yml').read_text()
+          forbidden = [
+              '\n  ' + 'push:',
+              'workflow_' + 'dispatch:',
+              'sched' + 'ule:',
+              'CLOUDFLARE_' + 'API_TOKEN',
+              'CLOUDFLARE_' + 'ACCOUNT_ID',
+              'wrangler ' + 'deploy --config wrangler.category-permanent.toml',
+              'HISTORY_CATEGORY_' + 'GENERATION_ENABLED = "true"',
+              'HISTORY_CATEGORY_' + 'START_DAY =',
+          ]
+          for token in forbidden:
+              if token in text:
+                  raise SystemExit(f'production-capable candidate surface: {token}')
+          PY
+
+      - name: Publish candidate boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick History Category — 12A34 fail-closed enablement candidate'
+            echo
+            echo '- PR must remain Draft: yes'
+            echo '- Prepared History generation flag: false'
+            echo '- Production startDay pinned: no'
+            echo '- PR deploy planner: no-op required'
+            echo '- Candidate merge/deploy authorized: no'
+            echo '- Production generator enablement authorized: no'
+            echo '- Later execution transformation: pin UTC execution-day startDay + set enable=true + rerun exact gates'
+          } >> "$GITHUB_STEP_SUMMARY"
