@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "viewloom-12a36-kick-history-generator-production-enable-deployment-verification-v1",
+  "phase": "12A-36",
+  "status": "deployment_verification_candidate",
+  "provider": "kick",
+  "executionIssue": 912,
+  "postEnableAcceptanceIssue": 913,
+  "executionUtcStartDay": "2026-08-17",
+  "candidate": {
+    "pr": 909,
+    "exactTransformedHead": "c05b6f3946984099d60545c1e357164d1047f2d7",
+    "productionMergeSha": "6a86db8ab202bbedcb33bef06890397ce5302245",
+    "changedFiles": 4
+  },
+  "deployment": {
+    "run": 32040573449,
+    "verifyJob": 95419035625,
+    "planJob": 95419119723,
+    "deployKickJob": 95419137695,
+    "deployTwitchJob": 95419138595,
+    "remoteSchemaJob": 95419179213,
+    "artifactId": 9291879783,
+    "artifactDigest": "sha256:fd8851c0d306efd5685e64719c08ea0e1d0fcf7aa1427c493c966bef80572ee7",
+    "workerVersion": "cd3dd287-17e0-4fac-bd92-58ac02f33379",
+    "kickDeploySucceeded": true,
+    "twitchDeploySkipped": true,
+    "remoteSchemaSucceeded": true
+  },
+  "activeConfig": {
+    "historyCategoryGenerationEnabled": "true",
+    "historyCategoryStartDay": "2026-08-17",
+    "cron": "*/5 * * * *",
+    "intradayGenerationEnabled": "true",
+    "categoryCaptureEnabled": "true"
+  },
+  "liveVerification": {
+    "endpointOrigin": "https://viewloom-collector-kick.badjoke-lab.workers.dev",
+    "methods": ["GET"],
+    "healthPath": "/health",
+    "statusPath": "/status",
+    "mustPassInAcceptanceCi": true
+  },
+  "costGuard": {
+    "acceptedRun": 31987877725,
+    "rowsRead": 16117,
+    "rowsReadMaximum": 250000
+  },
+  "boundaries": {
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "historyApiUiCutover": false,
+    "twitchRollout": false,
+    "crossProviderChange": false,
+    "thresholdRelaxation": false,
+    "manualGenerationForAcceptance": false
+  },
+  "closeout": {
+    "executionMayCloseAfterDeploymentAndLiveHealthPass": true,
+    "firstNaturalGenerationStillRequiredForIssue913": true,
+    "firstNaturalGenerationMaintenanceWindowsUtc": ["00:20-00:24", "12:20-12:24"]
+  }
+}
