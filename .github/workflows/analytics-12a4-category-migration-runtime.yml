@@ -32,9 +32,9 @@ jobs:
           from pathlib import Path
           text = Path('.github/workflows/analytics-12a4-category-migration-runtime.yml').read_text()
           forbidden = [
-              "workers/collector-kick/src/entry.ts",
-              "workers/collector-twitch/src/entry.ts",
-              "workers/shared/category-capture.ts",
+              "workers/collector-kick/" + "src/entry.ts",
+              "workers/collector-twitch/" + "src/entry.ts",
+              "workers/shared/category-" + "capture.ts",
               "workflow_" + "dispatch:",
               "\n  " + "push:",
               "sched" + "ule:",
