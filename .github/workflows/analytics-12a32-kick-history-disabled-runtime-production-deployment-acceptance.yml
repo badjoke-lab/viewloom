@@ -142,7 +142,7 @@ jobs:
               'CLOUDFLARE_' + 'ACCOUNT_ID',
               'wrangler ' + 'deploy',
               'wrangler@4 ' + 'deploy',
-              'HISTORY_CATEGORY_GENERATION_ENABLED=true',
+              'HISTORY_CATEGORY_' + 'GENERATION_ENABLED=true',
           ]
           for token in forbidden:
               if token in text:
