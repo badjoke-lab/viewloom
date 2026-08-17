@@ -1,0 +1,165 @@
+name: Analytics 12A36 Kick History Generator Production Enable Deployment Verification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a36-kick-history-generator-production-enable-deployment-verification.yml'
+      - 'docs/audits/12a36-kick-history-generator-production-enable-deployment-verification.json'
+      - 'scripts/verify-12a36-kick-history-generator-production-enable-deployment-verification.mjs'
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: analytics-12a36-kick-history-generator-production-enable-deployment-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  verification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact repository-only verification scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          expected=(
+            '.github/workflows/analytics-12a36-kick-history-generator-production-enable-deployment-verification.yml'
+            'docs/audits/12a36-kick-history-generator-production-enable-deployment-verification.json'
+            'scripts/verify-12a36-kick-history-generator-production-enable-deployment-verification.mjs'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do
+            printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
+          done
+
+      - name: Verify canonical 12A36 deployment evidence contract
+        run: node scripts/verify-12a36-kick-history-generator-production-enable-deployment-verification.mjs
+
+      - name: Re-audit exact merged candidate and deployment evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          api='https://api.github.com/repos/badjoke-lab/viewloom'
+          auth=(-H "Authorization: Bearer $GH_TOKEN" -H 'X-GitHub-Api-Version: 2022-11-28')
+
+          curl -fsSL "${auth[@]}" "$api/pulls/909" > /tmp/pr909.json
+          jq -e '.state == "closed" and .merged == true' /tmp/pr909.json
+          jq -e '.head.sha == "c05b6f3946984099d60545c1e357164d1047f2d7"' /tmp/pr909.json
+          jq -e '.merge_commit_sha == "6a86db8ab202bbedcb33bef06890397ce5302245"' /tmp/pr909.json
+          jq -e '.changed_files == 4' /tmp/pr909.json
+
+          curl -fsSL "${auth[@]}" "$api/actions/runs/32040573449" > /tmp/deploy-run.json
+          jq -e '.name == "Deploy Collector Workers"' /tmp/deploy-run.json
+          jq -e '.event == "push" and .status == "completed" and .conclusion == "success"' /tmp/deploy-run.json
+          jq -e '.head_sha == "6a86db8ab202bbedcb33bef06890397ce5302245"' /tmp/deploy-run.json
+
+          curl -fsSL "${auth[@]}" "$api/actions/runs/32040573449/jobs?per_page=100" > /tmp/deploy-jobs.json
+          jq -e 'any(.jobs[]; .id == 95419035625 and .name == "verify" and .conclusion == "success")' /tmp/deploy-jobs.json
+          jq -e 'any(.jobs[]; .id == 95419119723 and .name == "plan" and .conclusion == "success")' /tmp/deploy-jobs.json
+          jq -e 'any(.jobs[]; .id == 95419137695 and .name == "deploy-kick" and .conclusion == "success")' /tmp/deploy-jobs.json
+          jq -e 'any(.jobs[]; .id == 95419138595 and .name == "deploy-twitch" and .conclusion == "skipped")' /tmp/deploy-jobs.json
+          jq -e 'any(.jobs[]; .id == 95419179213 and .name == "verify-remote-schema" and .conclusion == "success")' /tmp/deploy-jobs.json
+
+          curl -fsSL "${auth[@]}" "$api/actions/runs/32040573449/artifacts?per_page=100" > /tmp/deploy-artifacts.json
+          jq -e 'any(.artifacts[]; .id == 9291879783 and .name == "phase12a2-collector-worker-deploy" and .expired == false and .digest == "sha256:fd8851c0d306efd5685e64719c08ea0e1d0fcf7aa1427c493c966bef80572ee7")' /tmp/deploy-artifacts.json
+
+      - name: Verify active canonical production config
+        run: |
+          set -euo pipefail
+          config='workers/collector-kick/wrangler.category-permanent.toml'
+          grep -Fxq 'INTRADAY_GENERATION_ENABLED = "true"' "$config"
+          grep -Fxq 'CATEGORY_CAPTURE_ENABLED = "true"' "$config"
+          grep -Fxq 'HISTORY_CATEGORY_GENERATION_ENABLED = "true"' "$config"
+          grep -Fxq 'HISTORY_CATEGORY_START_DAY = "2026-08-17"' "$config"
+          grep -Fxq 'crons = ["*/5 * * * *"]' "$config"
+          test "$(grep -Fc 'HISTORY_CATEGORY_GENERATION_ENABLED' "$config")" -eq 1
+          test "$(grep -Fc 'HISTORY_CATEGORY_START_DAY' "$config")" -eq 1
+
+      - name: Read-only live health and status verification
+        run: |
+          set -euo pipefail
+          origin='https://viewloom-collector-kick.badjoke-lab.workers.dev'
+          curl -fsS --retry 3 --retry-delay 2 "$origin/health" -o /tmp/kick-health.json
+          curl -fsS --retry 3 --retry-delay 2 "$origin/status" -o /tmp/kick-status.json
+
+          jq -e '.ok == true and .provider == "kick" and .storage == "DB_KICK_HOT"' /tmp/kick-health.json
+          jq -e '.ok == true and .provider == "kick"' /tmp/kick-status.json
+          jq -e '(.storage | type == "string") and (.storage | contains("DB_KICK_HOT"))' /tmp/kick-status.json
+          jq -e '(.rows | type == "number") and .rows >= 0' /tmp/kick-status.json
+          jq -e '.lastCollectionResult != null' /tmp/kick-status.json
+          jq -e '(.lastCollectionResult.bucket_minute | type == "string") and (.lastCollectionResult.bucket_minute | length > 0)' /tmp/kick-status.json
+          jq -e '(.sourceMode | type == "string") and (.sourceMode | length > 0)' /tmp/kick-status.json
+
+          {
+            echo '## Live Kick collector after History generator enablement'
+            echo
+            echo "- health ok: $(jq -r '.ok' /tmp/kick-health.json)"
+            echo "- status ok: $(jq -r '.ok' /tmp/kick-status.json)"
+            echo "- source mode: $(jq -r '.sourceMode' /tmp/kick-status.json)"
+            echo "- latest bucket: $(jq -r '.lastCollectionResult.bucket_minute' /tmp/kick-status.json)"
+            echo "- written stream count: $(jq -r '.writtenStreamCount' /tmp/kick-status.json)"
+            echo '- methods used: GET only'
+            echo '- History generator configured: true'
+            echo '- History startDay: 2026-08-17'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Revalidate production cost and generator invariants
+        run: |
+          node scripts/verify-12a26-kick-history-category-reprobe-pass.mjs
+          node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
+          python3 scripts/test-12a15-kick-history-category-aggregate.py
+          node scripts/verify-collector-contracts.mjs
+          pnpm typecheck:collectors
+
+      - name: Verify repository-only workflow has no production mutation surface
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('.github/workflows/analytics-12a36-kick-history-generator-production-enable-deployment-verification.yml').read_text()
+          forbidden = [
+              '\n  ' + 'push:',
+              'workflow_' + 'dispatch:',
+              'sched' + 'ule:',
+              'CLOUDFLARE_' + 'API_TOKEN',
+              'CLOUDFLARE_' + 'ACCOUNT_ID',
+              'wrangler ' + 'deploy',
+              'wrangler@4 ' + 'deploy',
+          ]
+          for token in forbidden:
+              if token in text:
+                  raise SystemExit(f'production-capable verification surface: {token}')
+          PY
+
+      - name: Publish deployment verification boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick History Category — 12A36 production enable deployment verification'
+            echo
+            echo '- production main: 6a86db8ab202bbedcb33bef06890397ce5302245'
+            echo '- deployment run: 32040573449'
+            echo '- Worker version: cd3dd287-17e0-4fac-bd92-58ac02f33379'
+            echo '- Kick deploy: success'
+            echo '- Twitch deploy: skipped'
+            echo '- remote schema: success'
+            echo '- History generator: true'
+            echo '- History startDay: 2026-08-17'
+            echo '- live health/status: must pass'
+            echo '- first natural bounded generation: still pending #913'
+          } >> "$GITHUB_STEP_SUMMARY"
