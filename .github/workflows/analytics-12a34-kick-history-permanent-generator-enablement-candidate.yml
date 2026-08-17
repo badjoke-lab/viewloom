@@ -1,4 +1,4 @@
-name: Analytics 12A34 Kick History Permanent Generator Enablement Candidate
+name: Analytics 12A34 Kick History Permanent Generator Enablement Execution Candidate
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: analytics-12a34-kick-history-generator-candidate-${{ github.event.pull_request.number }}
+  group: analytics-12a34-kick-history-generator-execution-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
@@ -28,12 +28,12 @@ jobs:
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Require Draft PR state
+      - name: Require Draft PR state while validating transformed head
         env:
           IS_DRAFT: ${{ github.event.pull_request.draft }}
         run: test "$IS_DRAFT" = 'true'
 
-      - name: Verify exact 12A34 candidate scope
+      - name: Verify exact transformed four-file scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -52,7 +52,7 @@ jobs:
             printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
           done
 
-      - name: Verify fail-closed 12A34 candidate and prior accepted authority linkage
+      - name: Verify execution-ready 12A34 candidate and accepted authority chain
         run: node scripts/verify-12a34-kick-history-permanent-generator-enablement-candidate.mjs
 
       - name: Verify PR deploy planner remains no-op
@@ -80,16 +80,18 @@ jobs:
           pnpm typecheck:collectors
           pnpm verify:collectors
 
-      - name: Verify prepared config remains disabled and startDay absent
+      - name: Verify transformed production config exact values
         run: |
           set -euo pipefail
           config='workers/collector-kick/wrangler.category-permanent.toml'
           grep -Fxq 'INTRADAY_GENERATION_ENABLED = "true"' "$config"
           grep -Fxq 'CATEGORY_CAPTURE_ENABLED = "true"' "$config"
-          grep -Fxq 'HISTORY_CATEGORY_GENERATION_ENABLED = "false"' "$config"
+          grep -Fxq 'HISTORY_CATEGORY_GENERATION_ENABLED = "true"' "$config"
+          grep -Fxq 'HISTORY_CATEGORY_START_DAY = "2026-08-17"' "$config"
           grep -Fxq 'crons = ["*/5 * * * *"]' "$config"
-          ! grep -Fq 'HISTORY_CATEGORY_START_DAY' "$config"
           test "$(grep -Fc 'HISTORY_CATEGORY_GENERATION_ENABLED' "$config")" -eq 1
+          test "$(grep -Fc 'HISTORY_CATEGORY_START_DAY' "$config")" -eq 1
+          ! grep -Fxq 'HISTORY_CATEGORY_GENERATION_ENABLED = "false"' "$config"
 
       - name: Bundle Kick collector without deploying
         run: |
@@ -97,7 +99,7 @@ jobs:
           cd workers/collector-kick
           pnpm dlx wrangler@4 deploy --config wrangler.category-permanent.toml --dry-run --outdir ../../artifacts/12a34-kick
 
-      - name: Verify PR-only candidate workflow
+      - name: Verify PR-only execution validation workflow
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -109,27 +111,27 @@ jobs:
               'sched' + 'ule:',
               'CLOUDFLARE_' + 'API_TOKEN',
               'CLOUDFLARE_' + 'ACCOUNT_ID',
-              'wrangler ' + 'deploy --config wrangler.category-permanent.toml',
-              'HISTORY_CATEGORY_' + 'GENERATION_ENABLED = "true"',
-              'HISTORY_CATEGORY_' + 'START_DAY =',
           ]
           for token in forbidden:
               if token in text:
-                  raise SystemExit(f'production-capable candidate surface: {token}')
+                  raise SystemExit(f'production-capable PR validation surface: {token}')
+          for line in text.splitlines():
+              if 'wrangler@4 deploy' in line and '--dry-run' not in line:
+                  raise SystemExit(f'non-dry-run Wrangler deploy in PR workflow: {line}')
           PY
 
-      - name: Publish candidate boundary
+      - name: Publish execution candidate boundary
         if: always()
         run: |
           {
-            echo '## Kick History Category — 12A34 fail-closed enablement candidate'
+            echo '## Kick History Category — 12A34 execution-ready candidate'
             echo
-            echo '- PR must remain Draft: yes'
-            echo '- Prepared History generation flag: false'
-            echo '- Production startDay pinned: no'
+            echo '- PR remains Draft during transformed validation: yes'
+            echo '- Execution UTC startDay: 2026-08-17'
+            echo '- History generation flag: true'
             echo '- PR deploy planner: no-op required'
-            echo '- Candidate merge/deploy authorized: no'
-            echo '- Production generator enablement authorized: no'
-            echo '- 12A33/12A32 authority and acceptance linkage are validated by the 12A34 verifier without replaying their pre-candidate config-absence assertions'
-            echo '- Later execution transformation: pin UTC execution-day startDay + set enable=true + rerun exact gates'
+            echo '- Production deploy from this PR workflow: no'
+            echo '- Exact transformed head must be frozen in #912 before Ready: yes'
+            echo '- Main merge after freeze is expected to deploy Kick only'
+            echo '- API/UI/Twitch/backfill/new cron/raw-retention changes: none'
           } >> "$GITHUB_STEP_SUMMARY"
