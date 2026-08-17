@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "viewloom-12a32-kick-history-disabled-runtime-production-deployment-acceptance-v1",
+  "phase": "12A-32",
+  "status": "production_deployment_pass_generator_still_disabled",
+  "provider": "kick",
+  "trackingIssue": 904,
+  "executionIssue": 903,
+  "candidate": {
+    "pr": 898,
+    "headSha": "6b4e95da258476ba104e4e3598ae5793f9153dcd",
+    "merged": true,
+    "productionMainSha": "acdb274ee03887d3247fb9498acda85fabfebcd5",
+    "changedFiles": 4
+  },
+  "decisionAuthority": {
+    "issue": 901,
+    "pr": 902,
+    "decisionHeadSha": "95542a624fabf0b88a6abdceec9c4a3510a44670",
+    "decisionMergeSha": "49a54557940968b9b13c0f74c72a59d90994b6c9"
+  },
+  "deployment": {
+    "workflow": "Deploy Collector Workers",
+    "runId": 32029471351,
+    "runConclusion": "success",
+    "verifyJobId": 95385985029,
+    "verifyResult": "success",
+    "planJobId": 95386043376,
+    "planResult": "success",
+    "deployKickJobId": 95386092161,
+    "deployKickResult": "success",
+    "deployTwitchJobId": 95386093460,
+    "deployTwitchResult": "skipped",
+    "remoteSchemaJobId": 95386158294,
+    "remoteSchemaResult": "success",
+    "deployKick": true,
+    "deployTwitch": false,
+    "providerScoped": true,
+    "canonicalKickConfig": "workers/collector-kick/wrangler.category-permanent.toml",
+    "workerName": "viewloom-collector-kick",
+    "workerUrl": "https://viewloom-collector-kick.badjoke-lab.workers.dev",
+    "workerVersionId": "3f37e4dc-e888-4b88-8706-c5ef8d5b676a",
+    "schedule": "*/5 * * * *"
+  },
+  "deployedBindings": {
+    "database": "DB_KICK_HOT / vl_kick_hot",
+    "intradayGenerationEnabled": "true",
+    "categoryCaptureEnabled": "true",
+    "historyCategoryGenerationEnabledPresent": false,
+    "historyCategoryStartDayPresent": false,
+    "historyCategoryGeneratorEnabled": false
+  },
+  "artifact": {
+    "id": 9288336433,
+    "name": "phase12a2-collector-worker-deploy",
+    "digest": "sha256:8a70143ea598d7ac4d9920a3b367e8faa141b52f62079b6bc13026faa4b592cc",
+    "sizeBytes": 867
+  },
+  "remoteSchemaEvidence": {
+    "observedAt": "2026-08-17T12:22:34.189Z",
+    "productionGeneratedAt": "2026-08-17T12:22:34.157Z",
+    "origin": "https://www.viewloom.net",
+    "path": "/api/schema-audit",
+    "mode": "read-only-schema-probe",
+    "readOnly": true,
+    "kickSchemaComplete": true,
+    "kickObservedObjectCount": 3,
+    "kickExpectedObjectCount": 3,
+    "kickRowsRead": 31,
+    "kickRowsWritten": 0,
+    "kickDatabaseSizeBytes": 344473600,
+    "twitchSchemaComplete": true,
+    "twitchObservedObjectCount": 3,
+    "twitchExpectedObjectCount": 3,
+    "twitchRowsWritten": 0,
+    "remoteSchemaGatePass": true,
+    "migrationApplyPerformedByProbe": false,
+    "backfillPerformedByProbe": false,
+    "generationStartedByProbe": false
+  },
+  "liveReadOnlyAcceptance": {
+    "healthEndpoint": "https://viewloom-collector-kick.badjoke-lab.workers.dev/health",
+    "statusEndpoint": "https://viewloom-collector-kick.badjoke-lab.workers.dev/status",
+    "method": "GET",
+    "requiredHealthOk": true,
+    "requiredProvider": "kick",
+    "requiredStorage": "DB_KICK_HOT",
+    "requiredStatusOk": true,
+    "requiredLatestCollection": true,
+    "performedByAcceptanceCi": true,
+    "mutatesProduction": false
+  },
+  "boundaries": {
+    "historyCategoryGeneratorEnabled": false,
+    "productionStartDayConfigured": false,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChanged": false,
+    "historyCategoryApiEnabled": false,
+    "historyCategoryUiEnabled": false,
+    "twitchRuntimeDeployed": false,
+    "crossProviderBehaviorChanged": false,
+    "thresholdRelaxed": false,
+    "newProductionCostProbeExecuted": false
+  },
+  "acceptance": {
+    "deploymentPass": true,
+    "generatorStillDisabled": true,
+    "safeToOpenIndependentGeneratorEnableDecision": true,
+    "generatorEnableAuthorizedByThisAcceptance": false
+  }
+}
