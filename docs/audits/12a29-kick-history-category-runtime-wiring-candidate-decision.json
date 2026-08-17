@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "viewloom-12a29-kick-history-category-runtime-wiring-candidate-decision-v1",
+  "status": "repository_only_draft_candidate_preparation_authorized_no_deployment",
+  "phase": "12A-29",
+  "provider": "kick",
+  "trackingIssue": 895,
+  "sourceMainSha": "c1c753de71275f857bd68654839bd7debeb6abb6",
+  "decision": "yes_prepare_exactly_one_draft_disabled_runtime_wiring_candidate_only",
+  "acceptedPackage": {
+    "issue": 893,
+    "pr": 894,
+    "headSha": "2e332037e15c9d92bfe38f74f55113927ddae812",
+    "mergeMainSha": "c1c753de71275f857bd68654839bd7debeb6abb6",
+    "contract": "docs/audits/12a28-kick-history-category-permanent-generator-integration-package.json",
+    "adapter": "workers/dormant/history-category-aggregate-integration.ts",
+    "collectorDeployPushRunsOnMerge": 0
+  },
+  "acceptedProductionEvidence": {
+    "audit": "docs/audits/12a26-kick-history-category-reprobe-production-pass.json",
+    "run": 31987877725,
+    "rowsRead": 16117,
+    "rowsReadMaximum": 250000,
+    "result": "PASS"
+  },
+  "deploymentCoupling": {
+    "workflow": ".github/workflows/deploy-collector-workers.yml",
+    "planner": "scripts/plan-collector-worker-deploy.mjs",
+    "mainPushCollectorKickPathTriggersWorkflow": true,
+    "mainPushSharedPathTriggersWorkflow": true,
+    "pullRequestPlannerDeploysTwitch": false,
+    "pullRequestPlannerDeploysKick": false,
+    "candidatePrCanBeValidatedWithoutProductionDeploy": true,
+    "candidateMergeWouldBeProductionDeploymentAction": true
+  },
+  "authorizedNextWork": {
+    "createExactlyOneDraftRuntimeWiringCandidate": true,
+    "candidateMustBeDraft": true,
+    "candidateMustRemainDraftAfterCi": true,
+    "candidateKickOnly": true,
+    "candidateDisabledByDefault": true,
+    "candidateMayImportDormantAdapterIntoKickCollector": true,
+    "candidateMayAddDisabledRuntimeConfigSupport": true,
+    "candidateMayCommitEnabledTrue": false,
+    "candidateMayCommitProductionStartDay": false,
+    "candidateMayAddNewCron": false,
+    "candidateMayBackfill": false,
+    "candidateMayChangeRawRetention": false,
+    "candidateMayExposeHistoryCategoryApi": false,
+    "candidateMayExposeHistoryCategoryUi": false,
+    "candidateMayChangeTwitch": false,
+    "candidateMayChangeCrossProviderBehavior": false,
+    "candidateMergeAuthorized": false,
+    "productionCollectorDeploymentAuthorized": false,
+    "permanentGeneratorProductionEnablementAuthorized": false,
+    "laterExplicitProductionDeploymentDecisionRequired": true
+  },
+  "fixedRuntimeSemantics": {
+    "bucketMinutes": 5,
+    "retentionDays": 180,
+    "categoryRowCapPerDay": 300,
+    "streamerCategoryRowCapPerDay": 1000,
+    "explicitStartDayRequiredBeforeEnablement": true,
+    "preActivationDaysEligible": false,
+    "reuseExistingCron": "*/5 * * * *",
+    "reuseExistingMaintenanceWindow": true
+  },
+  "notAuthorized": {
+    "candidateReadyTransition": true,
+    "candidateMerge": true,
+    "productionCollectorDeployment": true,
+    "productionGeneratorEnablement": true,
+    "productionStartDayConfiguration": true,
+    "newCron": true,
+    "backfill": true,
+    "rawRetentionChange": true,
+    "historyCategoryApi": true,
+    "historyCategoryUi": true,
+    "publicCutover": true,
+    "twitchRollout": true,
+    "crossProviderBehavior": true,
+    "thresholdRelaxation": true,
+    "newProductionProbe": true,
+    "productionRerun": true
+  },
+  "acceptance": {
+    "decisionPrMustChangeExactlyThreeRepositoryOnlyFiles": true,
+    "decisionPrMustNotTouchCollectorOrWrangler": true,
+    "decisionWorkflowMustBePullRequestOnly": true,
+    "nextGate": "prepare_one_draft_disabled_runtime_wiring_candidate_and_leave_unmerged"
+  }
+}
