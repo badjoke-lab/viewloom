@@ -32,9 +32,9 @@ jobs:
           from pathlib import Path
           text = Path('.github/workflows/analytics-12a4-kick-permanent-category-package.yml').read_text()
           forbidden = [
-              "workers/collector-kick/src/**",
-              "workers/shared/category-capture.ts",
-              "workers/shared/category-intraday-rollup.ts",
+              "workers/collector-kick/" + "src/**",
+              "workers/shared/category-" + "capture.ts",
+              "workers/shared/category-intraday-" + "rollup.ts",
               "workflow_" + "dispatch:",
               "\n  " + "push:",
               "sched" + "ule:",
