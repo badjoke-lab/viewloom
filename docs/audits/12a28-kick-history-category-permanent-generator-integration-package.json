@@ -23,7 +23,7 @@
     "postDeleteHttpStatus": 404
   },
   "integration": {
-    "module": "workers/shared/history-category-aggregate-integration.ts",
+    "module": "workers/dormant/history-category-aggregate-integration.ts",
     "version": "kick-history-category-aggregate-integration-v1",
     "delegatesTo": "workers/shared/history-category-aggregate.ts",
     "provider": "kick",
@@ -42,7 +42,9 @@
     "containsFetchHandler": false,
     "containsDirectSqlExecution": false,
     "containsDeploymentPath": false,
-    "currentRuntimeImportIncluded": false
+    "currentRuntimeImportIncluded": false,
+    "collectorDeployWorkflowPathMatchedOnMainPush": false,
+    "packageSpecificTypecheckRequired": true
   },
   "currentRuntimeBoundary": {
     "collectorEntry": "workers/collector-kick/src/entry.ts",
@@ -54,7 +56,8 @@
     "historyCategoryRuntimeConfigPresent": false,
     "existingCron": "*/5 * * * *",
     "cronMayChangeInPackage": false,
-    "packageMergeChangesProductionRuntime": false
+    "packageMergeChangesProductionRuntime": false,
+    "packageMergeTriggersCollectorDeployWorkflow": false
   },
   "retainedGeneratorSemantics": {
     "sourceContract": "docs/audits/12a15-kick-history-category-aggregate-generator-contract.json",
@@ -90,11 +93,13 @@
       ".github/workflows/analytics-12a28-kick-history-category-permanent-generator-integration-package.yml",
       "docs/audits/12a28-kick-history-category-permanent-generator-integration-package.json",
       "scripts/verify-12a28-kick-history-category-permanent-generator-integration-package.mjs",
-      "workers/shared/history-category-aggregate-integration.ts"
+      "workers/dormant/history-category-aggregate-integration.ts"
     ],
     "dedicatedVerifierRequired": true,
+    "packageSpecificTypecheckRequired": true,
     "existingGeneratorFixturesRequired": true,
     "collectorAndWranglerMustRemainUnchanged": true,
+    "collectorDeployWorkflowMustNotRunOnPackageMerge": true,
     "productionCapableWorkflowForbidden": true,
     "nextGate": "open_separate_permanent_generator_runtime_enablement_decision_after_package_acceptance"
   }
