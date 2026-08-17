@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "viewloom-12a34-kick-history-permanent-generator-enablement-candidate-v1",
+  "phase": "12A-34",
+  "status": "draft_fail_closed_candidate_not_authorized_for_merge",
+  "provider": "kick",
+  "trackingIssue": 908,
+  "decisionIssue": 906,
+  "decisionPr": 907,
+  "decisionHeadSha": "b1f65977d034f1f0a05ed41b883f33010f57def1",
+  "decisionMergeSha": "33d83a0f7eacfa1ef6c37010d6e0a6923d239a49",
+  "candidateConfig": {
+    "path": "workers/collector-kick/wrangler.category-permanent.toml",
+    "historyCategoryGenerationEnabled": "false",
+    "historyCategoryStartDayPresent": false,
+    "failClosed": true,
+    "productionGenerationWouldStartIfMergedAsPrepared": false
+  },
+  "fixedSemantics": {
+    "kickOnly": true,
+    "bucketMinutes": 5,
+    "aggregateRetentionDays": 180,
+    "categoryRowCapPerDay": 300,
+    "streamerCategoryRowCapPerDay": 1000,
+    "cron": "*/5 * * * *",
+    "maintenanceWindowsUtc": ["00:20-00:24", "12:20-12:24"],
+    "preActivationDaysIneligible": true,
+    "rowsReadMaximum": 250000
+  },
+  "laterExecutionTransformation": {
+    "required": true,
+    "pinStartDayToExecutionUtcCalendarDay": true,
+    "setHistoryCategoryGenerationEnabledToTrue": true,
+    "rerunCandidateValidationAfterTransformation": true,
+    "exactTransformedHeadMustBeFrozenBeforeMerge": true
+  },
+  "deploymentBoundary": {
+    "prMustRemainDraft": true,
+    "prValidationMayRunCollectorDeployWorkflow": true,
+    "pullRequestPlannerMustDeployKick": false,
+    "pullRequestPlannerMustDeployTwitch": false,
+    "candidateMergeAuthorized": false,
+    "productionDeployAuthorized": false,
+    "productionGeneratorEnableAuthorized": false
+  },
+  "forbiddenChanges": {
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "historyApiUiCutover": false,
+    "twitchChange": false,
+    "crossProviderChange": false,
+    "thresholdRelaxation": false,
+    "newProductionCostProbe": false
+  },
+  "acceptedEvidence": {
+    "costRun": 31987877725,
+    "rowsRead": 16117,
+    "rowsReadMaximum": 250000,
+    "disabledRuntimeDeploymentRun": 32029471351,
+    "disabledRuntimeAcceptanceRun": 32030345735,
+    "disabledRuntimeAcceptanceMainSha": "cc3a68409458462b5e3d8afbe721f6d21354f7f2"
+  }
+}
