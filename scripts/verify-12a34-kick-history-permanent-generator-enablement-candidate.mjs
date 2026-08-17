@@ -36,7 +36,8 @@ expect(config.includes('HISTORY_CATEGORY_GENERATION_ENABLED = "false"'), 'Histor
 expect(!config.includes('HISTORY_CATEGORY_START_DAY'), 'History startDay must be absent')
 expect(config.includes('crons = ["*/5 * * * *"]'), 'cron unchanged')
 expect(entry.includes("env.HISTORY_CATEGORY_GENERATION_ENABLED === 'true'"), 'strict runtime true check')
-expect(entry.includes('startDay: env.HISTORY_CATEGORY_START_DAY'), 'runtime startDay wiring')
+expect(entry.includes("const historyCategoryStartDay = env.HISTORY_CATEGORY_START_DAY?.trim() ?? ''"), 'runtime startDay normalization')
+expect(entry.includes('startDay: historyCategoryStartDay'), 'runtime startDay forwarding')
 
 const semantics = contract.fixedSemantics
 expect(semantics.kickOnly === true, 'Kick only')
