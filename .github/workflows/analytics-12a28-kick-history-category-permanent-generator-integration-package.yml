@@ -7,7 +7,7 @@ on:
       - '.github/workflows/analytics-12a28-kick-history-category-permanent-generator-integration-package.yml'
       - 'docs/audits/12a28-kick-history-category-permanent-generator-integration-package.json'
       - 'scripts/verify-12a28-kick-history-category-permanent-generator-integration-package.mjs'
-      - 'workers/shared/history-category-aggregate-integration.ts'
+      - 'workers/dormant/history-category-aggregate-integration.ts'
 
 permissions:
   contents: read
@@ -40,7 +40,7 @@ jobs:
             '.github/workflows/analytics-12a28-kick-history-category-permanent-generator-integration-package.yml'
             'docs/audits/12a28-kick-history-category-permanent-generator-integration-package.json'
             'scripts/verify-12a28-kick-history-category-permanent-generator-integration-package.mjs'
-            'workers/shared/history-category-aggregate-integration.ts'
+            'workers/dormant/history-category-aggregate-integration.ts'
           )
           test "${#changed[@]}" -eq "${#expected[@]}"
           for path in "${expected[@]}"; do
@@ -49,6 +49,13 @@ jobs:
 
       - name: Verify dormant permanent integration package
         run: node scripts/verify-12a28-kick-history-category-permanent-generator-integration-package.mjs
+
+      - name: Typecheck dormant integration adapter
+        run: >-
+          pnpm exec tsc --noEmit --target ES2022 --module ESNext --moduleResolution Bundler
+          --moduleDetection force --strict --resolveJsonModule --esModuleInterop --isolatedModules
+          --skipLibCheck --lib ES2022,DOM,DOM.Iterable --types @cloudflare/workers-types
+          workers/dormant/history-category-aggregate-integration.ts
 
       - name: Revalidate decision, production PASS and generator semantics
         run: |
@@ -109,7 +116,8 @@ jobs:
             echo '## Kick History Category — 12A28 dormant integration package'
             echo
             echo '- Provider: Kick only'
-            echo '- Integration adapter: repository-only; not imported by current collector'
+            echo '- Integration adapter: workers/dormant; not imported by current collector'
+            echo '- Collector deploy workflow path matched on package merge: no'
             echo '- Fixed bucket: 5 minutes'
             echo '- Aggregate retention: 180 days'
             echo '- Category row cap/day: 300'
