@@ -5,9 +5,10 @@ const contractPath = 'docs/audits/12a28-kick-history-category-permanent-generato
 const decisionPath = 'docs/audits/12a27-kick-history-category-permanent-generator-decision.json'
 const passPath = 'docs/audits/12a26-kick-history-category-reprobe-production-pass.json'
 const generatorContractPath = 'docs/audits/12a15-kick-history-category-aggregate-generator-contract.json'
-const integrationPath = 'workers/shared/history-category-aggregate-integration.ts'
+const integrationPath = 'workers/dormant/history-category-aggregate-integration.ts'
 const collectorEntryPath = 'workers/collector-kick/src/entry.ts'
 const kickWranglerPath = 'workers/collector-kick/wrangler.toml'
+const deployWorkflowPath = '.github/workflows/deploy-collector-workers.yml'
 const workflowPath = '.github/workflows/analytics-12a28-kick-history-category-permanent-generator-integration-package.yml'
 
 const read = (path) => fs.readFileSync(path, 'utf8')
@@ -21,6 +22,7 @@ const generatorContract = json(generatorContractPath)
 const integration = read(integrationPath)
 const collectorEntry = read(collectorEntryPath)
 const kickWrangler = read(kickWranglerPath)
+const deployWorkflow = read(deployWorkflowPath)
 const workflow = read(workflowPath)
 
 assert(contract.schemaVersion === 'viewloom-12a28-kick-history-category-permanent-generator-integration-package-v1', 'contract schema')
@@ -112,6 +114,8 @@ assert(pkg.containsFetchHandler === false, 'fetch handler forbidden')
 assert(pkg.containsDirectSqlExecution === false, 'direct SQL forbidden')
 assert(pkg.containsDeploymentPath === false, 'deploy path forbidden')
 assert(pkg.currentRuntimeImportIncluded === false, 'runtime import forbidden')
+assert(pkg.collectorDeployWorkflowPathMatchedOnMainPush === false, 'adapter must avoid collector deploy path')
+assert(pkg.packageSpecificTypecheckRequired === true, 'adapter-specific typecheck required')
 
 for (const fragment of [
   "HISTORY_CATEGORY_BUCKET_MINUTES",
@@ -132,6 +136,7 @@ for (const fragment of [
   "streamerCategoryRowCap: HISTORY_CATEGORY_STREAMER_ROW_CAP",
   "bucketMinutes: HISTORY_CATEGORY_BUCKET_MINUTES",
 ]) assert(integration.includes(fragment), `integration fragment missing: ${fragment}`)
+assert(integration.includes("from '../shared/history-category-aggregate'"), 'dormant adapter must delegate to shared audited generator')
 
 for (const forbidden of [
   'process.env',
@@ -158,6 +163,7 @@ assert(runtime.historyCategoryRuntimeConfigPresent === false, 'History runtime c
 assert(runtime.existingCron === '*/5 * * * *', 'existing cron contract')
 assert(runtime.cronMayChangeInPackage === false, 'cron change boundary')
 assert(runtime.packageMergeChangesProductionRuntime === false, 'package merge runtime boundary')
+assert(runtime.packageMergeTriggersCollectorDeployWorkflow === false, 'package merge collector deploy boundary')
 
 for (const fragment of [
   'history-category-aggregate-integration',
@@ -166,6 +172,12 @@ for (const fragment of [
 ]) assert(!collectorEntry.includes(fragment), `current collector must remain unwired: ${fragment}`)
 assert(!kickWrangler.includes('HISTORY_CATEGORY'), 'Kick wrangler History Category config must remain absent')
 assert(kickWrangler.includes('crons = ["*/5 * * * *"]'), 'existing Kick cron must remain unchanged')
+
+assert(deployWorkflow.includes("- 'workers/shared/**'"), 'collector deploy workflow shared trigger expected')
+assert(deployWorkflow.includes("- 'workers/collector-twitch/**'"), 'collector deploy Twitch trigger expected')
+assert(deployWorkflow.includes("- 'workers/collector-kick/**'"), 'collector deploy Kick trigger expected')
+assert(!deployWorkflow.includes("workers/dormant/**"), 'dormant adapter path must not trigger collector deploy workflow')
+assert(!deployWorkflow.includes(integrationPath), 'exact dormant adapter path must not trigger collector deploy workflow')
 
 const semantics = contract.retainedGeneratorSemantics
 assert(semantics.sourceContract === generatorContractPath, 'generator semantics linkage')
@@ -189,18 +201,22 @@ const expectedFiles = [
   '.github/workflows/analytics-12a28-kick-history-category-permanent-generator-integration-package.yml',
   'docs/audits/12a28-kick-history-category-permanent-generator-integration-package.json',
   'scripts/verify-12a28-kick-history-category-permanent-generator-integration-package.mjs',
-  'workers/shared/history-category-aggregate-integration.ts',
+  'workers/dormant/history-category-aggregate-integration.ts',
 ]
 assert(JSON.stringify(contract.acceptance.exactChangedFiles) === JSON.stringify(expectedFiles), 'exact package file contract')
 assert(contract.acceptance.dedicatedVerifierRequired === true, 'dedicated verifier')
+assert(contract.acceptance.packageSpecificTypecheckRequired === true, 'package-specific typecheck')
 assert(contract.acceptance.existingGeneratorFixturesRequired === true, 'existing generator fixtures')
 assert(contract.acceptance.collectorAndWranglerMustRemainUnchanged === true, 'collector/wrangler unchanged')
+assert(contract.acceptance.collectorDeployWorkflowMustNotRunOnPackageMerge === true, 'collector deploy must not run on package merge')
 assert(contract.acceptance.productionCapableWorkflowForbidden === true, 'production workflow forbidden')
 assert(contract.acceptance.nextGate === 'open_separate_permanent_generator_runtime_enablement_decision_after_package_acceptance', 'next gate')
 
 assert(workflow.includes('name: Analytics 12A28 Kick History Permanent Generator Integration Package'), 'workflow name')
 assert(workflow.includes('pull_request:'), 'workflow PR-only event')
 assert(workflow.includes('scripts/verify-12a28-kick-history-category-permanent-generator-integration-package.mjs'), 'package verifier wired')
+assert(workflow.includes(integrationPath), 'dormant integration path must be in package workflow')
+assert(workflow.includes('pnpm exec tsc'), 'package-specific TypeScript check must be wired')
 for (const forbidden of [
   '\n  ' + 'push:',
   'workflow_' + 'dispatch:',
@@ -221,6 +237,7 @@ console.log(JSON.stringify({
   collectorRuntimeWired: false,
   kickRuntimeConfigPresent: false,
   packageMergeChangesProductionRuntime: runtime.packageMergeChangesProductionRuntime,
+  packageMergeTriggersCollectorDeployWorkflow: runtime.packageMergeTriggersCollectorDeployWorkflow,
   runtimeEnablementAuthorized: contract.authorization.permanentGeneratorRuntimeEnablementAuthorized,
   nextGate: contract.acceptance.nextGate,
 }, null, 2))
