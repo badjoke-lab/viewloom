@@ -2,13 +2,14 @@ name = "viewloom-collector-kick"
 main = "src/entry.ts"
 compatibility_date = "2026-05-18"
 
-# Guarded implementation package only. This file must not be deployed from its
-# pull request. Production deployment requires an accepted package, a separate
-# exact release trigger, a fresh read-only preflight, two category-bearing
-# snapshots, bounded observation, and the normal-config rollback path.
+# Production-enable execution candidate for #912. Keep this pull request Draft
+# while exact transformed validation runs. Merge only the frozen transformed
+# head after all gates are green.
 [vars]
 INTRADAY_GENERATION_ENABLED = "true"
 CATEGORY_CAPTURE_ENABLED = "true"
+HISTORY_CATEGORY_GENERATION_ENABLED = "true"
+HISTORY_CATEGORY_START_DAY = "2026-08-17"
 
 [triggers]
 crons = ["*/5 * * * *"]
