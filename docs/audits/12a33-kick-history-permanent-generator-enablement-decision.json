@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "viewloom-12a33-kick-history-permanent-generator-enablement-decision-v1",
+  "phase": "12A-33",
+  "status": "go_prepare_enablement_candidate_only",
+  "provider": "kick",
+  "trackingIssue": 906,
+  "decision": "GO",
+  "authorizedNow": {
+    "prepareOneEnablementCandidate": true,
+    "productionConfigMutation": false,
+    "productionDeploy": false,
+    "permanentGeneratorEnable": false,
+    "historyApiUiCutover": false,
+    "twitchRollout": false
+  },
+  "acceptedPrerequisites": {
+    "costRun": 31987877725,
+    "rowsRead": 16117,
+    "rowsReadMaximum": 250000,
+    "costResult": "PASS",
+    "disabledRuntimeCandidatePr": 898,
+    "disabledRuntimeProductionMainSha": "acdb274ee03887d3247fb9498acda85fabfebcd5",
+    "deploymentRun": 32029471351,
+    "deploymentResult": "success",
+    "acceptancePr": 905,
+    "acceptanceHeadSha": "409b77584980cdc1f1f522fbedea6ac52806cd04",
+    "acceptanceMainSha": "cc3a68409458462b5e3d8afbe721f6d21354f7f2",
+    "acceptanceRun": 32030345735,
+    "acceptanceJob": 95388719806,
+    "liveHealthAccepted": true,
+    "liveStatusAccepted": true,
+    "generatorStillDisabled": true
+  },
+  "currentProductionConfig": {
+    "path": "workers/collector-kick/wrangler.category-permanent.toml",
+    "intradayGenerationEnabled": true,
+    "categoryCaptureEnabled": true,
+    "historyCategoryGenerationEnabledPresent": false,
+    "historyCategoryStartDayPresent": false,
+    "cron": "*/5 * * * *"
+  },
+  "candidateRequirements": {
+    "kickOnly": true,
+    "historyCategoryGenerationEnabledValueAtExecution": "true",
+    "historyCategoryStartDayRule": "pin_to_utc_calendar_day_of_later_authorized_production_enablement_execution",
+    "startDayPinnedByDecision": false,
+    "preActivationDaysIneligible": true,
+    "newCron": false,
+    "backfill": false,
+    "rawRetentionChange": false,
+    "historyApiUiCutover": false,
+    "twitchChange": false,
+    "crossProviderChange": false,
+    "rowsReadMaximum": 250000,
+    "categoryRowCapPerDay": 300,
+    "streamerCategoryRowCapPerDay": 1000,
+    "bucketMinutes": 5,
+    "aggregateRetentionDays": 180,
+    "maintenanceWindowsUtc": ["00:20-00:24", "12:20-12:24"]
+  },
+  "executionBoundary": {
+    "decisionPrExecutesProduction": false,
+    "candidatePreparationExecutesProduction": false,
+    "candidateMergeAuthorizedByDecision": false,
+    "productionEnablementRequiresLaterIndependentExecutionGate": true,
+    "startDayMustBeFrozenImmediatelyBeforeThatExecution": true
+  }
+}
