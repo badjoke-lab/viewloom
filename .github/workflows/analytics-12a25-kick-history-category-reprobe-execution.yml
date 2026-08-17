@@ -38,10 +38,19 @@ jobs:
           set -euo pipefail
           workflow='.github/workflows/analytics-12a25-kick-history-category-reprobe-execution.yml'
           ! grep -Eq '^[[:space:]]*push:' "$workflow"
-          ! grep -Fq 'production-reprobe:' "$workflow"
-          ! grep -Fq 'CLOUDFLARE_API_TOKEN' "$workflow"
-          ! grep -Fq 'CLOUDFLARE_ACCOUNT_ID' "$workflow"
-          ! grep -Fq 'run-12a20-kick-history-category-reprobe.sh' "$workflow"
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('.github/workflows/analytics-12a25-kick-history-category-reprobe-execution.yml').read_text()
+          forbidden = [
+              'production' + '-reprobe:',
+              'CLOUDFLARE_' + 'API_TOKEN',
+              'CLOUDFLARE_' + 'ACCOUNT_ID',
+              'run-12a20-' + 'kick-history-category-reprobe.sh',
+          ]
+          for token in forbidden:
+              if token in text:
+                  raise SystemExit(f'production surface remains: {token}')
+          PY
 
       - name: Publish retirement boundary
         if: always()
