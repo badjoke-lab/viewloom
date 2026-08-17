@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "viewloom-12a31-kick-history-disabled-runtime-production-deployment-decision-v1",
+  "phase": "12A-31",
+  "provider": "kick",
+  "trackingIssue": 901,
+  "sourceMainSha": "09784eb48d026242c6ca43631aecd503b8765a95",
+  "status": "deployment_candidate_accepted_execution_still_requires_explicit_instruction",
+  "decision": "yes_exact_disabled_runtime_candidate_is_eligible_for_one_production_deployment",
+  "candidate": {
+    "pr": 898,
+    "headSha": "6b4e95da258476ba104e4e3598ae5793f9153dcd",
+    "baseMainSha": "09784eb48d026242c6ca43631aecd503b8765a95",
+    "mustRemainDraftUntilExecutionInstruction": true,
+    "exactChangedFileCount": 4,
+    "wranglerChanged": false,
+    "activeHistoryCategoryRuntimeConfigCommitted": false,
+    "disabledByDefault": true,
+    "categoryCaptureAlsoRequired": true,
+    "missingOrNonTrueEnableMeansDisabled": true,
+    "missingStartDayCannotGenerate": true
+  },
+  "validationEvidence": {
+    "dedicatedCandidateRun": 31996004510,
+    "dedicatedCandidateConclusion": "success",
+    "collectorDeploymentPrRun": 31996004545,
+    "collectorDeploymentPrConclusion": "success",
+    "prDeployTwitch": "skipped",
+    "prDeployKick": "skipped",
+    "allApplicableCiGreen": true
+  },
+  "acceptedProductionCostEvidence": {
+    "runId": 31987877725,
+    "rowsRead": 16117,
+    "rowsReadMaximum": 250000,
+    "rowsWritten": 1164,
+    "changes": 583,
+    "statements": 24,
+    "workerWallMs": 2178,
+    "postCleanupAggregateRows": 0,
+    "leakageRows": 0,
+    "temporaryWorkerFinalHttpStatus": 404,
+    "canonicalEvidence": "docs/audits/12a26-kick-history-category-reprobe-production-pass.json"
+  },
+  "deploymentBoundary": {
+    "mainMergeOfCandidateTriggersProductionCollectorDeployment": true,
+    "decisionPrMergeTriggersProductionCollectorDeployment": false,
+    "decisionPrContainsCollectorPathChanges": false,
+    "decisionPrContainsCloudflareCredentials": false,
+    "decisionPrContainsDeployCommand": false,
+    "productionDeploymentExecutionAuthorizedByThisDecisionArtifactAlone": false,
+    "explicitOperatorExecutionInstructionStillRequired": true,
+    "executionMustUseExactCandidateHead": true,
+    "executionMustReauditCurrentMainAndCiFirst": true,
+    "expectedProductionDeployProvider": "kick",
+    "twitchDeploymentMustRemainUnselected": true
+  },
+  "stillUnauthorized": {
+    "historyCategoryGenerationEnablement": true,
+    "productionHistoryCategoryStartDayConfiguration": true,
+    "newCron": true,
+    "backfill": true,
+    "rawRetentionChange": true,
+    "historyCategoryApi": true,
+    "historyCategoryUi": true,
+    "publicCutover": true,
+    "twitchRollout": true,
+    "crossProviderBehavior": true,
+    "rowsReadThresholdRelaxation": true,
+    "newProductionCostProbe": true,
+    "productionCostRerun": true
+  },
+  "executionAcceptance": {
+    "markCandidateReadyOnlyAfterExplicitExecutionInstruction": true,
+    "mergeOnlyExactCandidateHead": true,
+    "followMainPushDeployWorkflow": true,
+    "kickDeployMustSucceed": true,
+    "twitchDeployMustBeSkipped": true,
+    "historyGeneratorMustRemainDisabled": true,
+    "freezeDeploymentEvidenceAfterward": true,
+    "nextGate": "explicit_operator_execution_instruction_for_exact_pr_898_head_then_production_deployment_acceptance"
+  }
+}
