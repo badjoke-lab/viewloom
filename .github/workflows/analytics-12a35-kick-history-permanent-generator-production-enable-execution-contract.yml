@@ -1,0 +1,141 @@
+name: Analytics 12A35 Kick History Permanent Generator Production Enable Execution Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a35-kick-history-permanent-generator-production-enable-execution-contract.yml'
+      - 'docs/audits/12a35-kick-history-permanent-generator-production-enable-execution-contract.json'
+      - 'scripts/verify-12a35-kick-history-permanent-generator-production-enable-execution-contract.mjs'
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: analytics-12a35-kick-history-generator-execution-contract-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact repository-only contract scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          expected=(
+            '.github/workflows/analytics-12a35-kick-history-permanent-generator-production-enable-execution-contract.yml'
+            'docs/audits/12a35-kick-history-permanent-generator-production-enable-execution-contract.json'
+            'scripts/verify-12a35-kick-history-permanent-generator-production-enable-execution-contract.mjs'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do
+            printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
+          done
+
+      - name: Verify dormant 12A35 execution contract
+        run: node scripts/verify-12a35-kick-history-permanent-generator-production-enable-execution-contract.mjs
+
+      - name: Re-audit prepared Draft PR and successful validation runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          api='https://api.github.com/repos/badjoke-lab/viewloom'
+          auth=(-H "Authorization: Bearer $GH_TOKEN" -H 'X-GitHub-Api-Version: 2022-11-28')
+
+          curl -fsSL "${auth[@]}" "$api/pulls/909" > /tmp/pr909.json
+          jq -e '.state == "open" and .draft == true and .merged == false' /tmp/pr909.json
+          jq -e '.head.sha == "af48cd079e859bff05671dfcfc6102311f26932c"' /tmp/pr909.json
+          jq -e '.changed_files == 4' /tmp/pr909.json
+
+          curl -fsSL "${auth[@]}" "$api/pulls/909/files?per_page=100" > /tmp/pr909-files.json
+          test "$(jq 'length' /tmp/pr909-files.json)" -eq 4
+          expected=(
+            '.github/workflows/analytics-12a34-kick-history-permanent-generator-enablement-candidate.yml'
+            'docs/audits/12a34-kick-history-permanent-generator-enablement-candidate.json'
+            'scripts/verify-12a34-kick-history-permanent-generator-enablement-candidate.mjs'
+            'workers/collector-kick/wrangler.category-permanent.toml'
+          )
+          mapfile -t actual < <(jq -r '.[].filename' /tmp/pr909-files.json | sort)
+          mapfile -t wanted < <(printf '%s\n' "${expected[@]}" | sort)
+          test "${actual[*]}" = "${wanted[*]}"
+
+          curl -fsSL "${auth[@]}" "$api/actions/runs/32031563867" > /tmp/12a34-run.json
+          jq -e '.status == "completed" and .conclusion == "success" and .head_sha == "af48cd079e859bff05671dfcfc6102311f26932c"' /tmp/12a34-run.json
+
+          curl -fsSL "${auth[@]}" "$api/actions/runs/32031563625" > /tmp/deploy-validation-run.json
+          jq -e '.status == "completed" and .conclusion == "success" and .event == "pull_request" and .head_sha == "af48cd079e859bff05671dfcfc6102311f26932c"' /tmp/deploy-validation-run.json
+          curl -fsSL "${auth[@]}" "$api/actions/runs/32031563625/jobs?per_page=100" > /tmp/deploy-validation-jobs.json
+          jq -e 'any(.jobs[]; .name == "verify" and .conclusion == "success")' /tmp/deploy-validation-jobs.json
+          jq -e 'any(.jobs[]; .name == "plan" and .conclusion == "success")' /tmp/deploy-validation-jobs.json
+          jq -e 'any(.jobs[]; .name == "deploy-kick" and .conclusion == "skipped")' /tmp/deploy-validation-jobs.json
+          jq -e 'any(.jobs[]; .name == "deploy-twitch" and .conclusion == "skipped")' /tmp/deploy-validation-jobs.json
+          jq -e 'any(.jobs[]; .name == "verify-remote-schema" and .conclusion == "skipped")' /tmp/deploy-validation-jobs.json
+
+      - name: Verify exact prepared candidate config remains false and startDay absent
+        run: |
+          set -euo pipefail
+          raw='https://raw.githubusercontent.com/badjoke-lab/viewloom/af48cd079e859bff05671dfcfc6102311f26932c/workers/collector-kick/wrangler.category-permanent.toml'
+          curl -fsSL "$raw" -o /tmp/prepared-kick.toml
+          grep -Fxq 'HISTORY_CATEGORY_GENERATION_ENABLED = "false"' /tmp/prepared-kick.toml
+          ! grep -Fq 'HISTORY_CATEGORY_START_DAY' /tmp/prepared-kick.toml
+          grep -Fxq 'crons = ["*/5 * * * *"]' /tmp/prepared-kick.toml
+
+      - name: Revalidate invariant production cost and accepted disabled runtime deployment
+        run: |
+          node scripts/verify-12a26-kick-history-category-reprobe-pass.mjs
+          node scripts/verify-12a32-kick-history-disabled-runtime-production-deployment-acceptance.mjs
+          pnpm typecheck:collectors
+
+      - name: Verify repository-only dormant contract workflow
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('.github/workflows/analytics-12a35-kick-history-permanent-generator-production-enable-execution-contract.yml').read_text()
+          forbidden = [
+              '\n  ' + 'push:',
+              'workflow_' + 'dispatch:',
+              'sched' + 'ule:',
+              'CLOUDFLARE_' + 'API_TOKEN',
+              'CLOUDFLARE_' + 'ACCOUNT_ID',
+              'wrangler ' + 'deploy',
+              'wrangler@4 ' + 'deploy',
+              'HISTORY_CATEGORY_' + 'GENERATION_ENABLED = "true"',
+              'HISTORY_CATEGORY_' + 'START_DAY = "',
+          ]
+          for token in forbidden:
+              if token in text:
+                  raise SystemExit(f'armed production surface in dormant contract workflow: {token}')
+          PY
+
+      - name: Publish dormant execution boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick History Category — 12A35 dormant production-enable execution contract'
+            echo
+            echo '- Prepared candidate: PR #909 head af48cd079e859bff05671dfcfc6102311f26932c'
+            echo '- Prepared History flag: false'
+            echo '- Prepared startDay: absent'
+            echo '- UTC execution day preselected: no'
+            echo '- Candidate transformed now: no'
+            echo '- Candidate Ready/merged now: no'
+            echo '- Production generator enabled now: no'
+            echo '- Future execution must determine UTC day, transform within exact four-file scope, rerun all gates, freeze exact transformed head, then execute separately'
+          } >> "$GITHUB_STEP_SUMMARY"
