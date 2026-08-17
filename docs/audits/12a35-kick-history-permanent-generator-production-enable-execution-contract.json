@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "viewloom-12a35-kick-history-permanent-generator-production-enable-execution-contract-v1",
+  "phase": "12A-35",
+  "status": "dormant_execution_contract_not_armed",
+  "provider": "kick",
+  "trackingIssue": 910,
+  "preparedCandidate": {
+    "pr": 909,
+    "headSha": "af48cd079e859bff05671dfcfc6102311f26932c",
+    "stateRequired": "open_draft_unmerged",
+    "changedFiles": 4,
+    "contractPhase": "12A-34",
+    "preparedHistoryCategoryGenerationEnabled": "false",
+    "preparedHistoryCategoryStartDayPresent": false,
+    "dedicatedValidationRun": 32031563867,
+    "genericDeployValidationRun": 32031563625,
+    "pullRequestDeployKick": false,
+    "pullRequestDeployTwitch": false
+  },
+  "acceptedPrerequisites": {
+    "costRun": 31987877725,
+    "rowsRead": 16117,
+    "rowsReadMaximum": 250000,
+    "costResult": "PASS",
+    "disabledRuntimeDeploymentRun": 32029471351,
+    "disabledRuntimeAcceptanceRun": 32030345735,
+    "disabledRuntimeAcceptanceMainSha": "cc3a68409458462b5e3d8afbe721f6d21354f7f2",
+    "enablementDecisionPr": 907,
+    "enablementDecisionHeadSha": "b1f65977d034f1f0a05ed41b883f33010f57def1",
+    "enablementDecisionMainSha": "33d83a0f7eacfa1ef6c37010d6e0a6923d239a49"
+  },
+  "futureExecution": {
+    "explicitProductionEnableInstructionRequired": true,
+    "executionUtcCalendarDay": null,
+    "transformedCandidateHeadSha": null,
+    "transformationPerformed": false,
+    "readyTransitionPerformed": false,
+    "mergePerformed": false,
+    "productionDeployPerformed": false,
+    "generatorEnablePerformed": false
+  },
+  "atomicTransformation": {
+    "workingPr": 909,
+    "mustRemainDraftDuringTransformationValidation": true,
+    "exactChangedFilesMustRemain": 4,
+    "setHistoryCategoryGenerationEnabledFrom": "false",
+    "setHistoryCategoryGenerationEnabledTo": "true",
+    "addHistoryCategoryStartDay": true,
+    "startDaySource": "utc_calendar_day_at_actual_authorized_execution_time",
+    "reusePreselectedOrStaleStartDay": false,
+    "transformExisting12A34ContractVerifierAndPrOnlyWorkflow": true,
+    "freezeExactTransformedHeadBeforeReady": true
+  },
+  "requiredPreMergeValidation": {
+    "strictRuntimeTrueCheck": true,
+    "exactStartDayForwarding": true,
+    "costPassRevalidated": true,
+    "rowsReadMaximum": 250000,
+    "generatorSemanticsAndFixtures": true,
+    "collectorChecks": true,
+    "wranglerDryRunOnly": true,
+    "genericPullRequestDeployPlannerNoOp": true,
+    "allApplicableCiGreen": true
+  },
+  "requiredProductionExecution": {
+    "mergeOnlyFrozenTransformedHead": true,
+    "providerSelection": "kick_only",
+    "deployKickRequired": "success",
+    "deployTwitchRequired": "skipped",
+    "remoteSchemaRequired": "success",
+    "productionHealthReadOnlyCheck": true,
+    "productionStatusReadOnlyCheck": true,
+    "firstBoundedHistoryGenerationEvidenceRequired": true,
+    "preActivationRowsAllowed": false,
+    "acceptanceRequiredBeforeHistoryApiUi": true
+  },
+  "failureHandling": {
+    "freezeActualFailure": true,
+    "historyApiUiMustRemainDisabled": true,
+    "backfillForbidden": true,
+    "thresholdRelaxationForbidden": true,
+    "restoreOrRetainDisabledHistoryGeneratorBeforeProceeding": true
+  },
+  "stillUnauthorized": {
+    "transformPreparedCandidateNow": true,
+    "markCandidateReadyNow": true,
+    "mergeCandidateNow": true,
+    "productionDeployNow": true,
+    "productionGeneratorEnableNow": true,
+    "newCron": true,
+    "backfill": true,
+    "rawRetentionChange": true,
+    "historyApiUiCutover": true,
+    "twitchRollout": true,
+    "crossProviderBehavior": true,
+    "thresholdRelaxation": true,
+    "newProductionCostProbe": true
+  }
+}
