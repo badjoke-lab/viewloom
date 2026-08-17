@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a25-kick-history-category-reprobe-execution.yml'
+      - 'docs/audits/12a25-kick-history-category-reprobe-trigger.json'
+      - 'docs/audits/12a26-kick-history-category-reprobe-production-pass.json'
+      - 'scripts/verify-12a26-kick-history-category-reprobe-pass.mjs'
 
 permissions:
   contents: read
@@ -14,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  retired-surface:
+  retired-acceptance:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -22,7 +25,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify exact workflow-only retirement scope
+      - name: Verify exact 12A26 PASS acceptance scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -30,10 +33,21 @@ jobs:
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
           printf '%s\n' "${changed[@]}"
-          test "${#changed[@]}" -eq 1
-          test "${changed[0]}" = '.github/workflows/analytics-12a25-kick-history-category-reprobe-execution.yml'
+          expected=(
+            '.github/workflows/analytics-12a25-kick-history-category-reprobe-execution.yml'
+            'docs/audits/12a25-kick-history-category-reprobe-trigger.json'
+            'docs/audits/12a26-kick-history-category-reprobe-production-pass.json'
+            'scripts/verify-12a26-kick-history-category-reprobe-pass.mjs'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do
+            printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
+          done
 
-      - name: Verify production surface is absent
+      - name: Verify canonical PASS and consumed authority
+        run: node scripts/verify-12a26-kick-history-category-reprobe-pass.mjs
+
+      - name: Verify production surface remains absent
         run: |
           set -euo pipefail
           workflow='.github/workflows/analytics-12a25-kick-history-category-reprobe-execution.yml'
@@ -52,19 +66,20 @@ jobs:
                   raise SystemExit(f'production surface remains: {token}')
           PY
 
-      - name: Publish retirement boundary
+      - name: Publish PASS closeout boundary
         if: always()
         run: |
           {
-            echo '## Kick History category re-probe — 12A25 production surface retired'
+            echo '## Kick History category re-probe — 12A26 PASS frozen'
             echo
             echo '- Production run: 31987877725'
             echo '- Production head: 33819c2ceff36c819d727d0399f85bbd789ba920'
             echo '- Result: PASS; rows_read 16,117 <= 250,000'
             echo '- Cleanup: aggregate rows 0; leakage 0; Worker final 404'
-            echo '- Push trigger: none'
+            echo '- Trigger: consumed and retired'
+            echo '- Production push trigger: none'
             echo '- Production job: none'
-            echo '- Cloudflare credentials reachable from this workflow: no'
+            echo '- New production probe authority: none'
             echo '- Permanent generator / History category API/UI / Twitch: still unauthorized'
-            echo '- Next: freeze canonical PASS evidence and mark trigger consumed'
+            echo '- Next gate: separate permanent-generator authorization decision'
           } >> "$GITHUB_STEP_SUMMARY"
