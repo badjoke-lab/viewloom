@@ -61,18 +61,17 @@ jobs:
       - name: Verify repository-only decision surface
         run: |
           set -euo pipefail
-          workflow='.github/workflows/analytics-12a27-kick-history-category-permanent-generator-decision.yml'
-          ! grep -Eq '^[[:space:]]*push:' "$workflow"
-          ! grep -Eq '^[[:space:]]*workflow_dispatch:' "$workflow"
-          ! grep -Eq '^[[:space:]]*schedule:' "$workflow"
           python3 - <<'PY'
           from pathlib import Path
           text = Path('.github/workflows/analytics-12a27-kick-history-category-permanent-generator-decision.yml').read_text()
           forbidden = [
+              '\n  ' + 'push:',
+              '\n  workflow_' + 'dispatch:',
+              '\n  sched' + 'ule:',
               'CLOUDFLARE_' + 'API_TOKEN',
               'CLOUDFLARE_' + 'ACCOUNT_ID',
-              'wrangler@4 deploy',
-              'actions/upload-artifact',
+              'wrangler@4 ' + 'deploy',
+              'actions/' + 'upload-artifact',
           ]
           for token in forbidden:
               if token in text:
