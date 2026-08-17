@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a25-kick-history-category-reprobe-trigger-v1",
-  "status": "armed_for_one_time_main_push",
+  "status": "consumed_pass_retired",
   "provider": "kick",
   "oneTime": true,
   "confirmation": "RUN_KICK_HISTORY_CATEGORY_AGGREGATE_COST_REPROBE_12A25",
@@ -13,9 +13,33 @@
   "packageIssue": 882,
   "authorization": {
     "preparationAuthorized": true,
-    "productionExecutionAuthorized": false,
-    "mergeAuthorized": false,
-    "mustRemainDraftUntilExplicitProductionAuthorization": true
+    "productionExecutionAuthorized": true,
+    "productionExecutionDecisionIssue": 886,
+    "mergeAuthorized": true,
+    "executedPr": 885,
+    "executedTriggerHeadSha": "05055c195cba0b4259a7fd21db84cec8fdb87fbb",
+    "productionMergeSha": "33819c2ceff36c819d727d0399f85bbd789ba920",
+    "productionRun": 31987877725,
+    "consumed": true,
+    "newProductionProbeAuthorized": false,
+    "rerunAuthorized": false
+  },
+  "executionResult": {
+    "status": "pass",
+    "rowsRead": 16117,
+    "rowsReadMaximum": 250000,
+    "cleanupExitCode": 0,
+    "postCleanupAggregateRows": 0,
+    "postCleanupProviderLeakageRows": 0,
+    "temporaryWorkerDeleted": true,
+    "postDeleteHttpStatus": 404
+  },
+  "retirement": {
+    "issue": 887,
+    "pr": 888,
+    "mainSha": "3918d5bfc0eacb5d8ab7960231d0726b7812645d",
+    "workflowProductionSurfaceRetired": true,
+    "newProductionProbeAuthorized": false
   },
   "productionBoundary": {
     "currentUtcDayOnly": true,
