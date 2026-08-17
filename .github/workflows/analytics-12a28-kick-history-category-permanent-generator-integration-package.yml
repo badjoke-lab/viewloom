@@ -1,0 +1,124 @@
+name: Analytics 12A28 Kick History Permanent Generator Integration Package
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a28-kick-history-category-permanent-generator-integration-package.yml'
+      - 'docs/audits/12a28-kick-history-category-permanent-generator-integration-package.json'
+      - 'scripts/verify-12a28-kick-history-category-permanent-generator-integration-package.mjs'
+      - 'workers/shared/history-category-aggregate-integration.ts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a28-kick-history-permanent-generator-package-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact 12A28 package scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          printf '%s\n' "${changed[@]}"
+          expected=(
+            '.github/workflows/analytics-12a28-kick-history-category-permanent-generator-integration-package.yml'
+            'docs/audits/12a28-kick-history-category-permanent-generator-integration-package.json'
+            'scripts/verify-12a28-kick-history-category-permanent-generator-integration-package.mjs'
+            'workers/shared/history-category-aggregate-integration.ts'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do
+            printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
+          done
+
+      - name: Verify dormant permanent integration package
+        run: node scripts/verify-12a28-kick-history-category-permanent-generator-integration-package.mjs
+
+      - name: Revalidate decision, production PASS and generator semantics
+        run: |
+          node scripts/verify-12a27-kick-history-category-permanent-generator-decision.mjs
+          node scripts/verify-12a26-kick-history-category-reprobe-pass.mjs
+          node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
+          python3 scripts/test-12a15-kick-history-category-aggregate.py
+          pnpm typecheck:collectors
+          pnpm verify:collectors
+          pnpm typecheck:web
+          pnpm build:web
+
+      - name: Verify current collector and runtime config remain unwired
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          entry = Path('workers/collector-kick/src/entry.ts').read_text()
+          wrangler = Path('workers/collector-kick/wrangler.toml').read_text()
+          forbidden_entry = [
+              'history-category-aggregate-' + 'integration',
+              'maybeRunKickHistoryCategoryPermanent' + 'Integration',
+              'maybeGenerateKickHistoryCategory' + 'Aggregates',
+          ]
+          for token in forbidden_entry:
+              if token in entry:
+                  raise SystemExit(f'current collector unexpectedly wired: {token}')
+          if 'HISTORY_' + 'CATEGORY' in wrangler:
+              raise SystemExit('Kick runtime History Category config unexpectedly present')
+          if 'crons = ["*/5 * * * *"]' not in wrangler:
+              raise SystemExit('existing Kick cron changed')
+          PY
+
+      - name: Verify PR-only package workflow
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('.github/workflows/analytics-12a28-kick-history-category-permanent-generator-integration-package.yml').read_text()
+          forbidden = [
+              '\n  ' + 'push:',
+              'workflow_' + 'dispatch:',
+              'sched' + 'ule:',
+              'CLOUDFLARE_' + 'API_TOKEN',
+              'CLOUDFLARE_' + 'ACCOUNT_ID',
+              'wrangler@4 ' + 'deploy',
+              'actions/' + 'upload-artifact',
+          ]
+          for token in forbidden:
+              if token in text:
+                  raise SystemExit(f'production-capable package workflow surface: {token}')
+          PY
+
+      - name: Publish dormant package boundary
+        if: always()
+        run: |
+          {
+            echo '## Kick History Category — 12A28 dormant integration package'
+            echo
+            echo '- Provider: Kick only'
+            echo '- Integration adapter: repository-only; not imported by current collector'
+            echo '- Fixed bucket: 5 minutes'
+            echo '- Aggregate retention: 180 days'
+            echo '- Category row cap/day: 300'
+            echo '- Streamer-category row cap/day: 1,000'
+            echo '- Forward-only explicit startDay: required'
+            echo '- New cron/backfill/raw-retention change: none'
+            echo '- Current Kick cron: unchanged'
+            echo '- Package merge changes production runtime: no'
+            echo '- Runtime enablement/deployment: still unauthorized'
+            echo '- History Category API/UI and Twitch: still unauthorized'
+            echo '- Next gate after package acceptance: separate runtime-enablement decision'
+          } >> "$GITHUB_STEP_SUMMARY"
