@@ -5,8 +5,12 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a37-kick-history-first-natural-generation-observation.yml'
-      - 'docs/audits/12a37-kick-history-first-natural-generation-observation-contract.json'
       - 'scripts/verify-12a37-kick-history-first-natural-generation-observation.mjs'
+      - 'docs/audits/12a37-kick-history-first-natural-generation-observation-trigger.json'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a37-kick-history-first-natural-generation-observation-trigger.json'
   workflow_dispatch:
 
 permissions:
@@ -36,13 +40,43 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
-          expected=(
-            '.github/workflows/analytics-12a37-kick-history-first-natural-generation-observation.yml'
-            'docs/audits/12a37-kick-history-first-natural-generation-observation-contract.json'
-            'scripts/verify-12a37-kick-history-first-natural-generation-observation.mjs'
-          )
-          test "${#changed[@]}" -eq "${#expected[@]}"
-          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+          trigger='docs/audits/12a37-kick-history-first-natural-generation-observation-trigger.json'
+          workflow='.github/workflows/analytics-12a37-kick-history-first-natural-generation-observation.yml'
+          verifier='scripts/verify-12a37-kick-history-first-natural-generation-observation.mjs'
+          if [[ "${#changed[@]}" -eq 2 ]]; then
+            printf '%s\n' "${changed[@]}" | grep -Fxq "$workflow"
+            printf '%s\n' "${changed[@]}" | grep -Fxq "$verifier"
+          elif [[ "${#changed[@]}" -eq 1 ]]; then
+            [[ "${changed[0]}" == "$trigger" ]]
+          else
+            printf 'unexpected 12A37 PR scope:\n%s\n' "${changed[*]}" >&2
+            exit 41
+          fi
+      - name: Validate one-time trigger identity
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          EXPECTED_SOURCE_MAIN: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+          trigger='docs/audits/12a37-kick-history-first-natural-generation-observation-trigger.json'
+          if [[ ! -f "$trigger" ]]; then
+            echo 'trigger file absent; trigger-surface package only'
+            exit 0
+          fi
+          node - <<'NODE'
+          const fs = require('fs')
+          const trigger = JSON.parse(fs.readFileSync('docs/audits/12a37-kick-history-first-natural-generation-observation-trigger.json','utf8'))
+          const expected = process.env.EXPECTED_SOURCE_MAIN
+          const assert = (v,m) => { if (!v) throw new Error(m) }
+          assert(trigger.schemaVersion === 'viewloom-12a37-kick-history-first-natural-generation-observation-trigger-v1','schema')
+          assert(trigger.phase === '12A-37','phase')
+          assert(trigger.issue === 913,'issue')
+          assert(trigger.provider === 'kick','provider')
+          assert(trigger.sourceMainSha === expected,'source main mismatch')
+          assert(trigger.executeReadOnlyObservation === true,'execution flag')
+          assert(trigger.executionCount === 1,'execution count')
+          for (const key of ['manualGeneratorInvocation','backfill','deployment','dataMutation']) assert(trigger.boundaries?.[key] === false, `forbidden boundary ${key}`)
+          NODE
       - name: Revalidate accepted cost, generator semantics and active config
         run: |
           node - <<'NODE'
@@ -60,7 +94,7 @@ jobs:
 
   observe-production:
     needs: contract
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:

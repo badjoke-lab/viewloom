@@ -2,6 +2,7 @@ import fs from 'node:fs'
 
 const contractPath = 'docs/audits/12a37-kick-history-first-natural-generation-observation-contract.json'
 const workflowPath = '.github/workflows/analytics-12a37-kick-history-first-natural-generation-observation.yml'
+const triggerPath = 'docs/audits/12a37-kick-history-first-natural-generation-observation-trigger.json'
 
 const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'))
 const workflow = fs.readFileSync(workflowPath, 'utf8')
@@ -30,12 +31,16 @@ assert(contract.acceptedProduction.rowsReadMaximum === 250000, 'rows read thresh
 
 assert(workflow.includes('workflow_dispatch:'), 'workflow dispatch missing')
 assert(workflow.includes('pull_request:'), 'PR contract gate missing')
+assert(workflow.includes('push:'), 'one-time push trigger surface missing')
+assert(workflow.includes(triggerPath), 'one-time trigger path missing')
+assert(workflow.includes("github.event_name == 'workflow_dispatch' || github.event_name == 'push'"), 'observation event gate missing')
 assert(workflow.includes('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}'), 'Cloudflare token wiring missing')
 assert(workflow.includes('CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}'), 'Cloudflare account wiring missing')
 assert(workflow.includes('d1 execute vl_kick_hot --remote'), 'remote D1 command missing')
 assert(workflow.includes("START_DAY: '2026-08-17'"), 'start day env missing')
 assert(workflow.includes("ROWS_READ_MAX: '250000'"), 'rows-read max missing')
 assert(workflow.includes('actions/upload-artifact@v4'), 'evidence upload missing')
+assert(workflow.includes('sourceMainSha'), 'trigger source-main validation missing')
 
 const forbidden = [
   /wrangler@4\s+deploy/i,
@@ -54,4 +59,4 @@ for (const table of ['history_category_day_status', 'history_category_daily', 'h
   assert(workflow.includes(table), `missing query target ${table}`)
 }
 
-console.log('12A-37 read-only observation contract verified')
+console.log('12A-37 read-only observation contract and one-time trigger surface verified')
