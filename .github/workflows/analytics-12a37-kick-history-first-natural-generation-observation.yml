@@ -45,7 +45,13 @@ jobs:
           for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
       - name: Revalidate accepted cost, generator semantics and active config
         run: |
-          node scripts/verify-12a26-kick-history-category-reprobe-production-pass.mjs
+          node - <<'NODE'
+          const fs = require('fs')
+          const pass = JSON.parse(fs.readFileSync('docs/audits/12a26-kick-history-category-reprobe-production-pass.json', 'utf8'))
+          if (pass.performanceDetermination !== 'PASS') throw new Error('canonical cost determination is not PASS')
+          if (pass.result?.cost?.rowsRead !== 16117) throw new Error('canonical rows_read changed')
+          if (pass.thresholds?.rowsReadMaximum !== 250000) throw new Error('canonical rows_read maximum changed')
+          NODE
           node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
           python3 scripts/test-12a15-kick-history-category-aggregate.py
           grep -F 'HISTORY_CATEGORY_GENERATION_ENABLED = "true"' workers/collector-kick/wrangler.category-permanent.toml
