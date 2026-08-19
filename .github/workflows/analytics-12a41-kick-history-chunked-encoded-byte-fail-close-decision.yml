@@ -43,7 +43,23 @@ jobs:
 
       - name: Revalidate accepted local prototype
         run: |
-          python3 scripts/benchmark-12a40-kick-history-chunked-contributors.py --check docs/audits/12a40-kick-history-chunked-contributor-benchmark-evidence.json
+          set -euo pipefail
+          python3 scripts/benchmark-12a40-kick-history-chunked-contributors.py --output /tmp/12a40-recheck.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          canonical = json.loads(Path('docs/audits/12a40-kick-history-chunked-contributor-benchmark-evidence.json').read_text())
+          recheck = json.loads(Path('/tmp/12a40-recheck.json').read_text())
+          assert recheck['status'] == 'PASS'
+          assert recheck['winner']['chunkSize'] == 128
+          assert recheck['stableBenchmarkSignatureSha256'] == canonical['stableBenchmarkSignatureSha256']
+          assert recheck['measurements'][2]['maximumEncodedBytesPerDay'] == 47196
+          assert recheck['measurements'][2]['incrementalMiBWithSafety'] == 30.05
+          assert recheck['measurements'][2]['projectedKickMiB'] == 399.73
+          assert recheck['theoreticalSourceMaximumStress']['measurements']['128']['encodedBytes'] == 1275301
+          assert recheck['theoreticalSourceMaximumStress']['requiresEncodedByteFailCloseBeforeProduction'] is True
+          PY
           node scripts/verify-12a40-kick-history-chunked-contributor-benchmark.mjs
 
       - name: Verify repository-only boundary
