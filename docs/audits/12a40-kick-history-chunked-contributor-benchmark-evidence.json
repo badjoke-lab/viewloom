@@ -1,0 +1,134 @@
+{
+  "schemaVersion": "viewloom-12a40-kick-history-chunked-contributor-benchmark-v1",
+  "phase": "12A-40",
+  "issue": 922,
+  "provider": "kick",
+  "status": "PASS",
+  "engine": {"name": "sqlite3", "version": "3.46.1", "pageSizeBytes": 4096},
+  "prototypeSchema": "docs/prototypes/12a40-kick-history-chunked-contributors.sql",
+  "retentionDays": 180,
+  "storageFixture": {
+    "categoryRowsPerDay": 300,
+    "logicalStreamerCategoryContributorsPerDay": 1108,
+    "basis": "Observed 1108-pair failure cardinality combined conservatively with the accepted 300-category/day boundary."
+  },
+  "acceptedBaseline": {
+    "acceptedKickProjectedMiB": 369.68,
+    "providerCeilingMiB": 440.0,
+    "providerHeadroomMinMiB": 10.0,
+    "acceptedAccountHeadroomMiB": 879.59,
+    "accountHeadroomMinMiB": 500.0,
+    "designBudgetMiB": 60.0,
+    "safetyMarginPct": 20,
+    "snapshotItemCap": 100,
+    "snapshotsPerDay": 288
+  },
+  "logicalFixtures": {
+    "1000": {
+      "32": {"logicalPairs": 1000, "categories": 300, "physicalChunkRows": 317, "recoveredLogicalPairs": 1000, "encodedBytes": 42215, "maximumEncodedChunkBytes": 1374, "noContributorLoss": true},
+      "64": {"logicalPairs": 1000, "categories": 300, "physicalChunkRows": 308, "recoveredLogicalPairs": 1000, "encodedBytes": 42206, "maximumEncodedChunkBytes": 2724, "noContributorLoss": true},
+      "128": {"logicalPairs": 1000, "categories": 300, "physicalChunkRows": 304, "recoveredLogicalPairs": 1000, "encodedBytes": 42202, "maximumEncodedChunkBytes": 5444, "noContributorLoss": true}
+    },
+    "1066": {
+      "32": {"logicalPairs": 1066, "categories": 300, "physicalChunkRows": 318, "recoveredLogicalPairs": 1066, "encodedBytes": 45047, "maximumEncodedChunkBytes": 1374, "noContributorLoss": true},
+      "64": {"logicalPairs": 1066, "categories": 300, "physicalChunkRows": 309, "recoveredLogicalPairs": 1066, "encodedBytes": 45038, "maximumEncodedChunkBytes": 2724, "noContributorLoss": true},
+      "128": {"logicalPairs": 1066, "categories": 300, "physicalChunkRows": 304, "recoveredLogicalPairs": 1066, "encodedBytes": 45033, "maximumEncodedChunkBytes": 5444, "noContributorLoss": true}
+    },
+    "1108": {
+      "32": {"logicalPairs": 1108, "categories": 300, "physicalChunkRows": 319, "recoveredLogicalPairs": 1108, "encodedBytes": 46865, "maximumEncodedChunkBytes": 1374, "noContributorLoss": true},
+      "64": {"logicalPairs": 1108, "categories": 300, "physicalChunkRows": 309, "recoveredLogicalPairs": 1108, "encodedBytes": 46855, "maximumEncodedChunkBytes": 2724, "noContributorLoss": true},
+      "128": {"logicalPairs": 1108, "categories": 300, "physicalChunkRows": 304, "recoveredLogicalPairs": 1108, "encodedBytes": 46850, "maximumEncodedChunkBytes": 5444, "noContributorLoss": true}
+    }
+  },
+  "measurements": [
+    {
+      "chunkSize": 32,
+      "emptySchemaFileBytes": 36864,
+      "candidateFileBytes": 28319744,
+      "incrementalBytes": 28282880,
+      "incrementalMiB": 26.97,
+      "incrementalMiBWithSafety": 32.37,
+      "categoryRows180d": 54000,
+      "physicalChunkRows180d": 57420,
+      "maximumPhysicalChunkRowsPerDay": 319,
+      "maximumEncodedChunkBytes": 1406,
+      "maximumEncodedBytesPerDay": 47211,
+      "totalEncodedBytes180d": 8463794,
+      "selectedCategoryExpandedRows30d": 18270,
+      "selectedCategoryPeriodResultRows": 609,
+      "queryPlan": ["SEARCH history_category_streamer_daily_chunks_v2 USING INDEX idx_history_category_streamer_chunks_v2_category_day (provider=? AND category_id=? AND day>? AND day<?)"],
+      "queryWallMsMedianInformational": 80.819,
+      "projectedKickMiB": 402.05,
+      "providerHeadroomMiB": 37.95,
+      "accountHeadroomMiB": 847.22,
+      "gates": {"exactResultEquivalence": true, "noContributorLoss": true, "physicalRowsPerDayWithin1000": true, "storageBudgetWithin60MiB": true, "providerProjectedSizeWithin440MiB": true, "providerHeadroomAtLeast10MiB": true, "accountHeadroomAtLeast500MiB": true, "indexedProviderCategoryDayRange": true},
+      "pass": true
+    },
+    {
+      "chunkSize": 64,
+      "emptySchemaFileBytes": 36864,
+      "candidateFileBytes": 28192768,
+      "incrementalBytes": 28155904,
+      "incrementalMiB": 26.85,
+      "incrementalMiBWithSafety": 32.22,
+      "categoryRows180d": 54000,
+      "physicalChunkRows180d": 55620,
+      "maximumPhysicalChunkRowsPerDay": 309,
+      "maximumEncodedChunkBytes": 2788,
+      "maximumEncodedBytesPerDay": 47201,
+      "totalEncodedBytes180d": 8461994,
+      "selectedCategoryExpandedRows30d": 18270,
+      "selectedCategoryPeriodResultRows": 609,
+      "queryPlan": ["SEARCH history_category_streamer_daily_chunks_v2 USING INDEX idx_history_category_streamer_chunks_v2_category_day (provider=? AND category_id=? AND day>? AND day<?)"],
+      "queryWallMsMedianInformational": 97.164,
+      "projectedKickMiB": 401.9,
+      "providerHeadroomMiB": 38.1,
+      "accountHeadroomMiB": 847.37,
+      "gates": {"exactResultEquivalence": true, "noContributorLoss": true, "physicalRowsPerDayWithin1000": true, "storageBudgetWithin60MiB": true, "providerProjectedSizeWithin440MiB": true, "providerHeadroomAtLeast10MiB": true, "accountHeadroomAtLeast500MiB": true, "indexedProviderCategoryDayRange": true},
+      "pass": true
+    },
+    {
+      "chunkSize": 128,
+      "emptySchemaFileBytes": 36864,
+      "candidateFileBytes": 26292224,
+      "incrementalBytes": 26255360,
+      "incrementalMiB": 25.04,
+      "incrementalMiBWithSafety": 30.05,
+      "categoryRows180d": 54000,
+      "physicalChunkRows180d": 54720,
+      "maximumPhysicalChunkRowsPerDay": 304,
+      "maximumEncodedChunkBytes": 5471,
+      "maximumEncodedBytesPerDay": 47196,
+      "totalEncodedBytes180d": 8461094,
+      "selectedCategoryExpandedRows30d": 18270,
+      "selectedCategoryPeriodResultRows": 609,
+      "queryPlan": ["SEARCH history_category_streamer_daily_chunks_v2 USING INDEX idx_history_category_streamer_chunks_v2_category_day (provider=? AND category_id=? AND day>? AND day<?)"],
+      "queryWallMsMedianInformational": 85.66,
+      "projectedKickMiB": 399.73,
+      "providerHeadroomMiB": 40.27,
+      "accountHeadroomMiB": 849.54,
+      "gates": {"exactResultEquivalence": true, "noContributorLoss": true, "physicalRowsPerDayWithin1000": true, "storageBudgetWithin60MiB": true, "providerProjectedSizeWithin440MiB": true, "providerHeadroomAtLeast10MiB": true, "accountHeadroomAtLeast500MiB": true, "indexedProviderCategoryDayRange": true},
+      "pass": true
+    }
+  ],
+  "winner": {
+    "chunkSize": 128,
+    "selectionRule": "Smallest 20%-safety-adjusted 180-day incremental storage among candidates passing every hard gate; physical rows/day is tie-breaker.",
+    "productionAuthorized": false
+  },
+  "theoreticalSourceMaximumStress": {
+    "logicalPairsPerDay": 28800,
+    "derivation": "accepted snapshotItemCap 100 * snapshotsPerDay 288",
+    "measurements": {
+      "32": {"logicalPairs": 28800, "categories": 300, "physicalChunkRows": 1093, "recoveredLogicalPairs": 28800, "encodedBytes": 1275971, "maximumEncodedChunkBytes": 1502, "noContributorLoss": true, "projectedEncodedPayloadMiB180d": 219.03},
+      "64": {"logicalPairs": 28800, "categories": 300, "physicalChunkRows": 547, "recoveredLogicalPairs": 28800, "encodedBytes": 1275425, "maximumEncodedChunkBytes": 2968, "noContributorLoss": true, "projectedEncodedPayloadMiB180d": 218.94},
+      "128": {"logicalPairs": 28800, "categories": 300, "physicalChunkRows": 423, "recoveredLogicalPairs": 28800, "encodedBytes": 1275301, "maximumEncodedChunkBytes": 5880, "noContributorLoss": true, "projectedEncodedPayloadMiB180d": 218.92}
+    },
+    "requiresEncodedByteFailCloseBeforeProduction": true,
+    "reason": "Chunking bounds physical rows but does not erase logical payload bytes. A separate encoded-byte/day fail-closed boundary is required before any production schema/runtime proposal."
+  },
+  "semantics": {"lossless": true, "topK": false, "sampling": false, "categoryFilterBeforePeriodRanking": true, "canonicalContributorOrdering": "streamer_id_ascending_before_chunking", "allSelectedChunksExpandedBeforeRanking": true},
+  "nextGate": "repository_only_chunked_schema_query_candidate_decision_with_encoded_byte_fail_close",
+  "authorizations": {"productionSchemaChange": false, "productionD1Read": false, "productionD1Mutation": false, "productionGeneratorChange": false, "productionDeployment": false, "backfill": false, "historyCategoryApiUiCutover": false, "twitchRollout": false, "thresholdRelaxation": false},
+  "stableBenchmarkSignatureSha256": "b6cc5e9f0922c7ec6fb438ae438eb14756162949a0ec3a8306640f447fde8de5"
+}
