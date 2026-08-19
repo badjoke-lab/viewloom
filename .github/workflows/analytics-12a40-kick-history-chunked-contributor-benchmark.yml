@@ -1,0 +1,79 @@
+name: Analytics 12A40 Kick History Chunked Contributor Benchmark
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a40-kick-history-chunked-contributor-benchmark.yml'
+      - 'docs/prototypes/12a40-kick-history-chunked-contributors.sql'
+      - 'docs/audits/12a40-kick-history-chunked-contributor-benchmark-evidence.json'
+      - 'scripts/benchmark-12a40-kick-history-chunked-contributors.py'
+      - 'scripts/verify-12a40-kick-history-chunked-contributor-benchmark.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact prototype scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          expected=(
+            '.github/workflows/analytics-12a40-kick-history-chunked-contributor-benchmark.yml'
+            'docs/prototypes/12a40-kick-history-chunked-contributors.sql'
+            'docs/audits/12a40-kick-history-chunked-contributor-benchmark-evidence.json'
+            'scripts/benchmark-12a40-kick-history-chunked-contributors.py'
+            'scripts/verify-12a40-kick-history-chunked-contributor-benchmark.mjs'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+
+      - name: Verify committed benchmark evidence
+        run: node scripts/verify-12a40-kick-history-chunked-contributor-benchmark.mjs
+
+      - name: Re-run deterministic local SQLite benchmark
+        run: |
+          python3 scripts/benchmark-12a40-kick-history-chunked-contributors.py --output /tmp/12a40-runtime-evidence.json
+          node scripts/verify-12a40-kick-history-chunked-contributor-benchmark.mjs /tmp/12a40-runtime-evidence.json
+
+      - name: Verify source failure and Decision chain
+        run: |
+          node scripts/verify-12a38-kick-history-first-natural-generation-acceptance-failure.mjs
+          node scripts/verify-12a39-kick-history-streamer-category-overflow-remediation-decision.mjs
+
+      - name: Verify no production/schema/runtime surface
+        run: |
+          set -euo pipefail
+          git diff --exit-code "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- db/d1 workers apps packages
+          file='.github/workflows/analytics-12a40-kick-history-chunked-contributor-benchmark.yml'
+          ! grep -Eq '^  (push|workflow_dispatch|schedule):' "$file"
+          secrets_needle='sec''rets.'
+          remote_needle='--re''mote'
+          d1_needle='d1'' execute'
+          deploy_needle='wrangler@4'' deploy'
+          ! grep -Fq "$secrets_needle" "$file"
+          ! grep -Fq "$remote_needle" "$file"
+          ! grep -Fq "$d1_needle" "$file"
+          ! grep -Fq "$deploy_needle" "$file"
+
+      - name: Upload runtime benchmark evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a40-kick-history-chunked-contributor-runtime-benchmark
+          path: /tmp/12a40-runtime-evidence.json
+          if-no-files-found: error
+          retention-days: 30
