@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "viewloom-12a41-kick-history-chunked-encoded-byte-fail-close-decision-v1",
+  "phase": "12A-41",
+  "issue": 924,
+  "provider": "kick",
+  "status": "candidate_go_production_forbidden",
+  "decision": "GO",
+  "sourceMainSha": "7f13d974f387fdad23f6a1efb6334025702122ce",
+  "acceptedPrototype": {
+    "phase": "12A-40",
+    "evidence": "docs/audits/12a40-kick-history-chunked-contributor-benchmark-evidence.json",
+    "stableBenchmarkSignatureSha256": "b6cc5e9f0922c7ec6fb438ae438eb14756162949a0ec3a8306640f447fde8de5",
+    "winnerChunkSize": 128,
+    "exactResultEquivalence": true,
+    "noContributorLoss": true,
+    "topK": false,
+    "sampling": false,
+    "retentionDays": 180,
+    "measuredIncrementalMiBWithSafety": 30.05,
+    "projectedKickMiB": 399.73,
+    "providerHeadroomMiB": 40.27,
+    "accountHeadroomMiB": 849.54,
+    "maximumPhysicalChunkRowsPerDayMeasured": 304,
+    "maximumEncodedBytesPerDayMeasured": 47196,
+    "maximumEncodedChunkBytesMeasured": 5471
+  },
+  "acceptedCapacityConstraints": {
+    "designBudgetMiBMaximum": 60,
+    "providerProjectedSizeMiBMaximum": 440,
+    "providerHeadroomMiBMinimum": 10,
+    "accountHeadroomMiBMinimum": 500,
+    "categoryRowsPerDayMaximum": 300,
+    "physicalContributorStorageRowsPerDayMaximum": 1000,
+    "rawRetentionChangeAllowed": false,
+    "newCronAllowed": false,
+    "backfillAllowed": false
+  },
+  "theoreticalStressFinding": {
+    "logicalPairsPerDay": 28800,
+    "derivation": "100 accepted snapshot items * 288 five-minute snapshots/day",
+    "chunkSize": 128,
+    "physicalChunkRowsPerDay": 423,
+    "encodedBytesPerDay": 1275301,
+    "projectedEncodedPayloadMiB180d": 218.92,
+    "physicalRowBudgetAloneIsSufficient": false,
+    "encodedByteFailCloseRequired": true
+  },
+  "selectedCandidateContract": {
+    "contractVersion": "category-source-v2-chunked",
+    "chunkSize": 128,
+    "canonicalContributorTuple": [
+      "streamer_id",
+      "display_name",
+      "viewer_minutes",
+      "peak_viewers",
+      "observed_minutes",
+      "sample_count"
+    ],
+    "canonicalEncoding": {
+      "format": "utf8_json_array_of_contributor_tuples",
+      "ensureAscii": false,
+      "jsonSeparators": [",", ":"],
+      "contributorOrdering": "streamer_id_ascending_before_chunking",
+      "chunkIndexing": "zero_based_after_canonical_ordering",
+      "encodedByteDefinition": "utf8_byte_length_of_each_canonical_chunk_json_summed_for_the_complete_provider_day"
+    },
+    "hardDailyBounds": {
+      "categoryRows": 300,
+      "physicalContributorChunkRows": 1000,
+      "encodedContributorBytes": 47196,
+      "encodedContributorBytesBasis": "Exact maximum encoded bytes/day measured by the accepted 12A-40 128-contributor benchmark across the conservative 180-day fixture using 300 category rows/day and 1108 logical contributors/day. The bound is not rounded upward.",
+      "capIsRankingOrSampling": false
+    },
+    "requiredStatusFields": [
+      "candidate_category_rows",
+      "logical_streamer_category_contributors",
+      "physical_contributor_chunk_rows",
+      "contributor_encoded_bytes",
+      "category_row_cap",
+      "physical_contributor_row_budget",
+      "contributor_encoded_bytes_cap",
+      "coverage_state",
+      "source_mode",
+      "contract_version",
+      "updated_at"
+    ],
+    "failCloseStates": {
+      "categoryRowsExceeded": "unavailable_overflow",
+      "physicalChunkRowsExceeded": "unavailable_overflow",
+      "encodedContributorBytesExceeded": "unavailable_encoded_bytes_overflow"
+    },
+    "failCloseRule": "Precompute the complete day. If any hard daily bound is exceeded, persist only authoritative day status and expose no category or contributor aggregate rows for that day.",
+    "historyReadSemantics": "Select provider/category/day chunks first, expand every contributor tuple from every selected chunk, aggregate all selected days by streamer, then rank/cap. Missing or fail-closed days remain unavailable rather than zero.",
+    "forwardOnly": true,
+    "retentionDays": 180,
+    "backfill": false,
+    "latestCategoryBackprojection": false,
+    "providerMixing": false
+  },
+  "decisionRationale": {
+    "why128": "12A-40 measured the smallest safety-adjusted 180-day storage at chunk size 128 while preserving exact results and all contributors.",
+    "why47196BytesPerDay": "It is the accepted benchmark's measured maximum for the conservative fixture that includes the real 1108-pair overflow shape. Using the measured maximum unchanged repairs the observed representation failure without consuming unmeasured capacity headroom.",
+    "whyNotHigher": "A higher boundary would require a new deterministic local storage benchmark before it could be justified under the existing Free Strong limits.",
+    "whyNotLogicalPairCap": "Logical contributor cardinality must remain complete. Truncating logical pairs would violate filter-before-ranking exactness."
+  },
+  "nextGate": {
+    "name": "repository_only_concrete_chunked_schema_generator_query_candidate",
+    "required": [
+      "Concrete repository-only migration candidate adding contributor_encoded_bytes_cap status authority without remote apply.",
+      "Generator candidate that computes all logical contributions, canonicalizes/chunks them at 128, measures encoded bytes before persistence, and fails closed above 47196 bytes/day.",
+      "Query candidate that expands all selected chunks before period ranking.",
+      "Deterministic fixtures covering 47196-byte PASS and 47197-byte FAIL boundaries, 1108 and 1066 logical-pair shapes, provider isolation, idempotency, and 180-day retention.",
+      "Local SQLite storage benchmark proving the concrete candidate remains within the accepted 60 MiB / 440 MiB / headroom gates."
+    ]
+  },
+  "authorizations": {
+    "repositoryOnlyConcreteCandidateNext": true,
+    "localDeterministicTestsNext": true,
+    "localStorageBenchmarkNext": true,
+    "productionSchemaApply": false,
+    "productionD1Read": false,
+    "productionD1Mutation": false,
+    "productionGeneratorChange": false,
+    "productionDeployment": false,
+    "manualGeneration": false,
+    "backfill": false,
+    "cronChange": false,
+    "rawRetentionChange": false,
+    "historyCategoryApiUiCutover": false,
+    "twitchRollout": false,
+    "crossProviderChange": false,
+    "newProductionCostProbe": false,
+    "thresholdRelaxation": false
+  }
+}
