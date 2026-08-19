@@ -1,0 +1,79 @@
+name: Analytics 12A39 Kick History Streamer Category Overflow Remediation Decision
+
+on:
+  pull_request:
+    branches:
+      - main
+      - acceptance/913-kick-history-failure-freeze
+    paths:
+      - '.github/workflows/analytics-12a39-kick-history-streamer-category-overflow-remediation-decision.yml'
+      - 'docs/audits/12a39-kick-history-streamer-category-overflow-remediation-decision.json'
+      - 'scripts/verify-12a39-kick-history-streamer-category-overflow-remediation-decision.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact Decision scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          expected=(
+            '.github/workflows/analytics-12a39-kick-history-streamer-category-overflow-remediation-decision.yml'
+            'docs/audits/12a39-kick-history-streamer-category-overflow-remediation-decision.json'
+            'scripts/verify-12a39-kick-history-streamer-category-overflow-remediation-decision.mjs'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+
+      - name: Verify 12A39 Decision
+        run: node scripts/verify-12a39-kick-history-streamer-category-overflow-remediation-decision.mjs
+
+      - name: Revalidate 12A38 failure evidence
+        run: node scripts/verify-12a38-kick-history-first-natural-generation-acceptance-failure.mjs
+
+      - name: Revalidate legacy exact semantics and real source bound
+        run: |
+          node - <<'NODE'
+          const fs = require('fs')
+          const d = JSON.parse(fs.readFileSync('docs/audits/12a12-kick-history-category-aggregate-capacity-decision.json','utf8'))
+          const req = d.requiredHistorySemantics
+          const selected = d.selectedDesign
+          if (d.currentAcceptedConstraints.snapshotItemCap !== 100) throw new Error('snapshot item cap changed')
+          if (d.currentAcceptedConstraints.snapshotsPerDay !== 288) throw new Error('snapshots/day changed')
+          if (req.categoryFilterBeforeStreamerRankingAndCaps !== true) throw new Error('filter-before-ranking missing')
+          if (req.dailyStreamerCategoryViewerMinutesRequired !== true || req.dailyStreamerCategoryPeakViewersRequired !== true) throw new Error('streamer exact metrics missing')
+          if (selected.hardDailyCaps.streamerCategoryRows !== 1000) throw new Error('legacy 1000 bound changed')
+          if (selected.hardDailyCaps.capIsRankingOrSampling !== false) throw new Error('legacy cap semantics changed')
+          if (d.rejectedDesigns.preRankedOrTopKPerCategory.decision !== 'rejected') throw new Error('Top K rejection changed')
+          NODE
+
+      - name: Verify no production or public execution surface
+        run: |
+          set -euo pipefail
+          file='.github/workflows/analytics-12a39-kick-history-streamer-category-overflow-remediation-decision.yml'
+          ! grep -Eq '^  (push|workflow_dispatch|schedule):' "$file"
+          secrets_needle='sec''rets.'
+          d1_needle='d1'' execute'
+          deploy_needle='wrangler@4'' deploy'
+          ! grep -Fq "$secrets_needle" "$file"
+          ! grep -Fq "$d1_needle" "$file"
+          ! grep -Fq "$deploy_needle" "$file"
+
+      - name: Verify current runtime and schema are untouched
+        run: |
+          git diff --exit-code "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- workers db apps packages
