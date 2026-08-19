@@ -1,0 +1,130 @@
+name: Analytics 12A37 Kick History First Natural Generation Observation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a37-kick-history-first-natural-generation-observation.yml'
+      - 'docs/audits/12a37-kick-history-first-natural-generation-observation-contract.json'
+      - 'scripts/verify-12a37-kick-history-first-natural-generation-observation.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-12a37-kick-history-first-natural-generation-observation-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify read-only observation contract
+        run: node scripts/verify-12a37-kick-history-first-natural-generation-observation.mjs
+      - name: Verify exact package scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          expected=(
+            '.github/workflows/analytics-12a37-kick-history-first-natural-generation-observation.yml'
+            'docs/audits/12a37-kick-history-first-natural-generation-observation-contract.json'
+            'scripts/verify-12a37-kick-history-first-natural-generation-observation.mjs'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+      - name: Revalidate accepted cost, generator semantics and active config
+        run: |
+          node - <<'NODE'
+          const fs = require('fs')
+          const pass = JSON.parse(fs.readFileSync('docs/audits/12a26-kick-history-category-reprobe-production-pass.json', 'utf8'))
+          if (pass.performanceDetermination !== 'PASS') throw new Error('canonical cost determination is not PASS')
+          if (pass.result?.cost?.rowsRead !== 16117) throw new Error('canonical rows_read changed')
+          if (pass.thresholds?.rowsReadMaximum !== 250000) throw new Error('canonical rows_read maximum changed')
+          NODE
+          node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
+          python3 scripts/test-12a15-kick-history-category-aggregate.py
+          grep -F 'HISTORY_CATEGORY_GENERATION_ENABLED = "true"' workers/collector-kick/wrangler.category-permanent.toml
+          grep -F 'HISTORY_CATEGORY_START_DAY = "2026-08-17"' workers/collector-kick/wrangler.category-permanent.toml
+          grep -F 'crons = ["*/5 * * * *"]' workers/collector-kick/wrangler.category-permanent.toml
+
+  observe-production:
+    needs: contract
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      START_DAY: '2026-08-17'
+      ROWS_READ_MAX: '250000'
+      ARTIFACT_DIR: artifacts/12a37-kick-history-first-natural-generation-observation
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Run bounded SELECT-only production observation
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR/raw"
+          remote_select() {
+            local label="$1" sql="$2"
+            [[ "$sql" =~ ^SELECT[[:space:]] ]] || return 91
+            pnpm dlx wrangler@4 d1 execute vl_kick_hot --remote --config workers/collector-kick/wrangler.category-permanent.toml --command "$sql" --json > "$ARTIFACT_DIR/raw/$label.json"
+            jq -e 'type == "array" and length >= 1 and .[0].success == true' "$ARTIFACT_DIR/raw/$label.json" >/dev/null
+          }
+          remote_select status "SELECT provider, day, candidate_category_rows, candidate_streamer_category_rows, category_row_cap, streamer_category_row_cap, source_snapshots, observed_category_items, missing_category_items, coverage_state, source_mode, contract_version, updated_at FROM history_category_day_status WHERE provider = 'kick' AND day >= '$START_DAY' ORDER BY day ASC;"
+          remote_select daily_counts "SELECT provider, day, COUNT(*) AS row_count FROM history_category_daily WHERE provider = 'kick' AND day >= '$START_DAY' GROUP BY provider, day ORDER BY day ASC;"
+          remote_select streamer_counts "SELECT provider, day, COUNT(*) AS row_count FROM history_category_streamer_daily WHERE provider = 'kick' AND day >= '$START_DAY' GROUP BY provider, day ORDER BY day ASC;"
+          remote_select preactivation "SELECT 'history_category_day_status' AS table_name, COUNT(*) AS row_count FROM history_category_day_status WHERE day < '$START_DAY' UNION ALL SELECT 'history_category_daily', COUNT(*) FROM history_category_daily WHERE day < '$START_DAY' UNION ALL SELECT 'history_category_streamer_daily', COUNT(*) FROM history_category_streamer_daily WHERE day < '$START_DAY';"
+          remote_select leakage "SELECT 'history_category_day_status' AS table_name, COUNT(*) AS row_count FROM history_category_day_status WHERE provider <> 'kick' UNION ALL SELECT 'history_category_daily', COUNT(*) FROM history_category_daily WHERE provider <> 'kick' UNION ALL SELECT 'history_category_streamer_daily', COUNT(*) FROM history_category_streamer_daily WHERE provider <> 'kick';"
+          node - <<'NODE'
+          const fs = require('fs'), path = require('path')
+          const dir = process.env.ARTIFACT_DIR, startDay = process.env.START_DAY, maxRowsRead = Number(process.env.ROWS_READ_MAX)
+          const read = n => JSON.parse(fs.readFileSync(path.join(dir, 'raw', `${n}.json`), 'utf8'))[0]
+          const statusQ=read('status'), dailyQ=read('daily_counts'), streamerQ=read('streamer_counts'), preQ=read('preactivation'), leakQ=read('leakage')
+          const queries=[statusQ,dailyQ,streamerQ,preQ,leakQ]
+          const rowsRead=queries.reduce((n,q)=>n+Number(q.meta?.rows_read||0),0), rowsWritten=queries.reduce((n,q)=>n+Number(q.meta?.rows_written||0),0), changes=queries.reduce((n,q)=>n+Number(q.meta?.changes||0),0)
+          const statusRows=statusQ.results||[], daily=new Map((dailyQ.results||[]).map(r=>[r.day,Number(r.row_count)])), streamer=new Map((streamerQ.results||[]).map(r=>[r.day,Number(r.row_count)]))
+          const preactivation=Object.fromEntries((preQ.results||[]).map(r=>[r.table_name,Number(r.row_count)])), leakage=Object.fromEntries((leakQ.results||[]).map(r=>[r.table_name,Number(r.row_count)]))
+          const requiredDays=['2026-08-17','2026-08-18'], required=requiredDays.map(day=>statusRows.find(r=>r.day===day)).filter(Boolean), authoritative=statusRows.filter(r=>r.coverage_state==='observed'||r.coverage_state==='partial')
+          const natural=t=>{const d=new Date(t);return Number.isFinite(d.getTime())&&([0,12].includes(d.getUTCHours()))&&d.getUTCMinutes()>=20&&d.getUTCMinutes()<25}
+          const checks={
+            requiredDaysPresent:required.length===2,
+            requiredDaysAuthoritative:required.length===2&&required.every(r=>r.coverage_state==='observed'||r.coverage_state==='partial'),
+            noPreactivationRows:Object.values(preactivation).every(v=>v===0),
+            noProviderLeakage:Object.values(leakage).every(v=>v===0),
+            capsRespected:statusRows.every(r=>Number(r.candidate_category_rows)<=300&&Number(r.candidate_streamer_category_rows)<=1000&&Number(r.category_row_cap)===300&&Number(r.streamer_category_row_cap)===1000),
+            authoritativeCountsMatch:authoritative.every(r=>daily.get(r.day)===Number(r.candidate_category_rows)&&streamer.get(r.day)===Number(r.candidate_streamer_category_rows)),
+            naturalWindowRefreshObserved:required.some(r=>natural(r.updated_at)),
+            observationReadOnly:rowsWritten===0&&changes===0,
+            observationRowsReadWithinGuard:rowsRead<=maxRowsRead
+          }
+          const pass=Object.values(checks).every(Boolean)
+          const evidence={schemaVersion:'viewloom-12a37-kick-history-first-natural-generation-observation-evidence-v1',phase:'12A-37',status:pass?'pass':'failure',provider:'kick',observedAt:new Date().toISOString(),startDay,firstEligibleWindow:'2026-08-18T00:20:00Z/2026-08-18T00:24:59Z',evidenceSemantics:'post-window read-only materialized-state observation; status rows may have been refreshed by later natural maintenance windows',requiredDays,statusRows,dailyCounts:Object.fromEntries(daily),streamerDailyCounts:Object.fromEntries(streamer),preactivationRows:preactivation,providerLeakageRows:leakage,queryCost:{rowsRead,rowsWritten,changes,rowsReadMaximum:maxRowsRead},checks,boundaries:{manualGeneration:false,backfill:false,deployment:false,dataMutation:false}}
+          fs.writeFileSync(path.join(dir,'evidence.json'),JSON.stringify(evidence,null,2)+'\n')
+          console.log(JSON.stringify({status:evidence.status,checks,rowsRead,statusRows:statusRows.length},null,2))
+          if(!pass) process.exit(42)
+          NODE
+      - name: Publish observation summary
+        if: always()
+        run: |
+          if [[ -f "$ARTIFACT_DIR/evidence.json" ]]; then jq '{status,observedAt,startDay,requiredDays,statusRows,dailyCounts,streamerDailyCounts,preactivationRows,providerLeakageRows,queryCost,checks,boundaries}' "$ARTIFACT_DIR/evidence.json" >> "$GITHUB_STEP_SUMMARY"; fi
+      - name: Upload sanitized read-only evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a37-kick-history-first-natural-generation-observation
+          path: artifacts/12a37-kick-history-first-natural-generation-observation/evidence.json
+          if-no-files-found: error
+          retention-days: 30

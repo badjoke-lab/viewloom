@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "viewloom-12a37-kick-history-first-natural-generation-observation-contract-v1",
+  "phase": "12A-37",
+  "status": "armed_read_only_observation",
+  "issue": 913,
+  "sourceMainSha": "7bedfffbb8a8649878cc4959620e7220363eba52",
+  "provider": "kick",
+  "database": {
+    "name": "vl_kick_hot",
+    "binding": "DB_KICK_HOT",
+    "id": "ed1e082f-85ac-4dd0-a44e-5d3e200667d5"
+  },
+  "startDay": "2026-08-17",
+  "acceptedProduction": {
+    "generatorEnabled": true,
+    "cron": "*/5 * * * *",
+    "categoryRowCapPerDay": 300,
+    "streamerCategoryRowCapPerDay": 1000,
+    "rowsReadMaximum": 250000,
+    "workerVersion": "cd3dd287-17e0-4fac-bd92-58ac02f33379",
+    "deploymentRun": 32040573449
+  },
+  "observation": {
+    "remote": true,
+    "readOnly": true,
+    "manualGeneratorInvocation": false,
+    "backfill": false,
+    "workerDeployment": false,
+    "collectorDeployment": false,
+    "queryTargets": [
+      "history_category_day_status",
+      "history_category_daily",
+      "history_category_streamer_daily"
+    ],
+    "requiredChecks": [
+      "status_rows_at_or_after_start_day",
+      "daily_counts_at_or_after_start_day",
+      "streamer_daily_counts_at_or_after_start_day",
+      "zero_rows_before_start_day",
+      "zero_provider_leakage",
+      "row_caps_respected",
+      "authoritative_status_counts_match_materialized_counts",
+      "rows_read_observation_bounded"
+    ]
+  },
+  "boundaries": {
+    "historyApiUiCutover": false,
+    "twitchRollout": false,
+    "crossProviderChange": false,
+    "newCron": false,
+    "rawRetentionChange": false,
+    "thresholdRelaxation": false,
+    "newCostProbe": false
+  }
+}
