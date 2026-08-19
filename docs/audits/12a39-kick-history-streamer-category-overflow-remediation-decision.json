@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "viewloom-12a39-kick-history-streamer-category-overflow-remediation-decision-v1",
+  "phase": "12A-39",
+  "issue": 920,
+  "provider": "kick",
+  "status": "prototype_go_production_forbidden",
+  "decision": "GO",
+  "sourceFailure": {
+    "phase": "12A-38",
+    "formalDetermination": "FAIL",
+    "sourceMainSha": "971b26ca4982253683a1781b37ee3df8536bcfe0",
+    "observationRunId": 32206729876,
+    "artifactId": 9349382835,
+    "artifactDigest": "sha256:cf8ef86a3793d8cca028d2fafcddd0ea2c7dae4e549e45471af5d58a54309900",
+    "days": {
+      "2026-08-17": {
+        "candidateCategoryRows": 125,
+        "candidateStreamerCategoryRows": 1108,
+        "streamerCategoryRowCap": 1000,
+        "coverageState": "unavailable_overflow"
+      },
+      "2026-08-18": {
+        "candidateCategoryRows": 136,
+        "candidateStreamerCategoryRows": 1066,
+        "streamerCategoryRowCap": 1000,
+        "coverageState": "unavailable_overflow"
+      }
+    }
+  },
+  "acceptedSemanticConstraints": {
+    "sourceDecisionPr": 830,
+    "categoryFilterBeforeStreamerRanking": true,
+    "exactCategoryViewerMinutes": true,
+    "exactConcurrentCategoryPeak": true,
+    "exactPerStreamerCategoryViewerMinutes": true,
+    "exactPerStreamerCategoryPeak": true,
+    "observationTimeProviderCategoryIdentity": true,
+    "explicitCoverageAuthority": true,
+    "forwardOnly": true,
+    "retentionDays": 180,
+    "topKTruncationAllowed": false,
+    "samplingAllowed": false,
+    "latestCategoryBackprojectionAllowed": false,
+    "providerMixingAllowed": false,
+    "hiddenBackfillAllowed": false,
+    "raiseLegacyStreamerCategoryRowCapAllowed": false
+  },
+  "rejectedOptions": [
+    {
+      "option": "keep_one_physical_row_per_day_category_streamer_under_legacy_1000_bound",
+      "reason": "Real complete-day production cardinality already exceeds 1000 without missing category items."
+    },
+    {
+      "option": "raise_legacy_1000_bound",
+      "reason": "Forbidden shortcut; it changes the accepted capacity contract instead of fixing representation."
+    },
+    {
+      "option": "top_k_or_sample_contributors",
+      "reason": "Violates exact filter-before-ranking semantics from PR #830."
+    },
+    {
+      "option": "single_unbounded_contributor_blob_per_category_day",
+      "reason": "Potential row-size and JSON expansion risk must be bounded before adoption."
+    }
+  ],
+  "selectedPrototype": {
+    "representation": "lossless_chunked_category_day_contributors",
+    "purpose": "Decouple complete logical contributor cardinality from one-row-per-pair physical storage while preserving every contributor exactly.",
+    "categoryDailyLayer": "unchanged_in_prototype",
+    "candidateChunkTable": "history_category_streamer_daily_chunks_v2",
+    "candidatePrimaryKey": [
+      "provider",
+      "day",
+      "category_id",
+      "chunk_index"
+    ],
+    "chunkPayload": {
+      "encoding": "canonical_json_array",
+      "ordering": "streamer_id_ascending_before_chunking",
+      "requiredContributorFields": [
+        "streamerId",
+        "displayName",
+        "viewerMinutes",
+        "peakViewers",
+        "observedMinutes",
+        "sampleCount"
+      ],
+      "lossless": true,
+      "duplicateStreamerWithinCategoryDayAllowed": false
+    },
+    "prototypeChunkSizes": [32, 64, 128],
+    "productionChunkSizeChosen": false,
+    "historyReadSemantics": "Select provider/category/day chunks first, expand every contributor from every selected chunk, aggregate per streamer across selected days, then rank/cap period results.",
+    "statusModelRequirement": "Keep logical candidate streamer-category count separate from physical chunk row count; do not silently reinterpret the legacy 1000 logical-row contract."
+  },
+  "requiredLocalPrototypeBenchmark": {
+    "remoteD1": false,
+    "productionDataRead": false,
+    "fixtures": [
+      "legacy_boundary_1000_pairs",
+      "observed_failure_shape_1108_pairs",
+      "observed_failure_shape_1066_pairs",
+      "category_boundary_300",
+      "multi_day_period_filter_before_ranking",
+      "duplicate_streamer_across_categories",
+      "display_name_unicode_and_json_escaping"
+    ],
+    "measureForEachChunkSize": [
+      "physical_chunk_rows_per_day",
+      "maximum_contributors_per_chunk",
+      "maximum_encoded_chunk_bytes",
+      "total_encoded_bytes_per_day",
+      "sqlite_file_size_delta_at_180_days",
+      "query_plan_for_provider_category_day_range",
+      "expanded_rows_for_period_query",
+      "period_query_wall_time_local",
+      "exact_result_equivalence_to_normalized_reference_table"
+    ],
+    "hardGates": {
+      "exactResultEquivalence": true,
+      "noContributorLoss": true,
+      "noTopK": true,
+      "noSampling": true,
+      "physicalContributorStorageRowsPerDayMaximum": 1000,
+      "incrementalStorageBudgetMiBMaximum": 60,
+      "providerProjectedSizeMiBMaximum": 440,
+      "providerHeadroomMiBMinimum": 10,
+      "accountHeadroomMiBMinimum": 500
+    },
+    "notes": "The 1000 gate applies only as a conservative maximum on physical contributor-storage rows in the prototype. Logical contributor cardinality is recorded separately and must never be truncated to satisfy it. No production schema semantics change is authorized by this Decision."
+  },
+  "nextGateIfPrototypePasses": "repository_only_chunked_schema_query_candidate_decision",
+  "authorizations": {
+    "repositoryLocalPrototype": true,
+    "deterministicLocalBenchmark": true,
+    "productionSchemaChange": false,
+    "productionGeneratorChange": false,
+    "productionD1Mutation": false,
+    "productionD1Read": false,
+    "productionDeployment": false,
+    "manualGeneration": false,
+    "backfill": false,
+    "cronChange": false,
+    "rawRetentionChange": false,
+    "historyCategoryApiUiCutover": false,
+    "twitchRollout": false,
+    "crossProviderChange": false,
+    "newProductionCostProbe": false,
+    "thresholdRelaxation": false
+  }
+}
