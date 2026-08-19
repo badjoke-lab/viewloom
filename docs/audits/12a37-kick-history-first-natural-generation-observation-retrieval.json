@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "viewloom-12a37-kick-history-first-natural-generation-observation-retrieval-v1",
+  "phase": "12A-37",
+  "issue": 913,
+  "provider": "kick",
+  "sourceMainSha": "971b26ca4982253683a1781b37ee3df8536bcfe0",
+  "executeReadOnlyObservation": true,
+  "reason": "Retrieve inspectable production D1 evidence through same-repository PR Actions because the available GitHub connector cannot enumerate push-triggered workflow runs.",
+  "boundaries": {
+    "manualGeneratorInvocation": false,
+    "backfill": false,
+    "deployment": false,
+    "dataMutation": false,
+    "historyApiUiCutover": false,
+    "twitchRollout": false,
+    "crossProviderChange": false,
+    "thresholdRelaxation": false
+  }
+}
