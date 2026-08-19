@@ -67,6 +67,9 @@ jobs:
           set -euo pipefail
           file='.github/workflows/analytics-12a38-kick-history-first-natural-generation-acceptance-failure.yml'
           ! grep -Eq '^  (push|workflow_dispatch|schedule):' "$file"
-          ! grep -Fq 'CLOUDFLARE_API_TOKEN' "$file"
-          ! grep -Fq 'CLOUDFLARE_ACCOUNT_ID' "$file"
-          ! grep -Fq 'd1 execute' "$file"
+          secrets_needle='sec''rets.'
+          d1_needle='d1'' execute'
+          deploy_needle='wrangler@4'' deploy'
+          ! grep -Fq "$secrets_needle" "$file"
+          ! grep -Fq "$d1_needle" "$file"
+          ! grep -Fq "$deploy_needle" "$file"
