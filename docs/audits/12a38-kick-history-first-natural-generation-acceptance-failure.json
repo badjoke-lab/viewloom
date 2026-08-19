@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "viewloom-12a38-kick-history-first-natural-generation-acceptance-failure-v1",
+  "phase": "12A-38",
+  "issue": 913,
+  "provider": "kick",
+  "formalDetermination": "FAIL",
+  "reason": "streamer_category_candidate_overflow_fail_closed",
+  "sourceMainSha": "971b26ca4982253683a1781b37ee3df8536bcfe0",
+  "productionEnablement": {
+    "startDay": "2026-08-17",
+    "generatorEnabled": true,
+    "categoryRowCapPerDay": 300,
+    "streamerCategoryRowCapPerDay": 1000,
+    "rowsReadMaximum": 250000,
+    "cron": "*/5 * * * *",
+    "workerVersion": "cd3dd287-17e0-4fac-bd92-58ac02f33379"
+  },
+  "observation": {
+    "retrievalPr": 918,
+    "retrievalPrHead": "b5421d3f876ddb597d486175dcc1076c0e8c64f5",
+    "retrievalPrMerged": false,
+    "runId": 32206729876,
+    "contractJobId": 95931320130,
+    "contractJobResult": "success",
+    "observationJobId": 95931365965,
+    "observationJobResult": "failure",
+    "artifactId": 9349382835,
+    "artifactDigest": "sha256:cf8ef86a3793d8cca028d2fafcddd0ea2c7dae4e549e45471af5d58a54309900",
+    "observedAt": "2026-08-19T01:56:56.210Z",
+    "readOnly": true,
+    "queryCost": {
+      "rowsRead": 431,
+      "rowsWritten": 0,
+      "changes": 0,
+      "rowsReadMaximum": 250000
+    }
+  },
+  "statusRows": [
+    {
+      "provider": "kick",
+      "day": "2026-08-17",
+      "candidateCategoryRows": 125,
+      "candidateStreamerCategoryRows": 1108,
+      "categoryRowCap": 300,
+      "streamerCategoryRowCap": 1000,
+      "sourceSnapshots": 288,
+      "observedCategoryItems": 28800,
+      "missingCategoryItems": 0,
+      "coverageState": "unavailable_overflow",
+      "sourceMode": "authenticated",
+      "contractVersion": "category-source-v1",
+      "updatedAt": "2026-08-18T12:20:37.002Z"
+    },
+    {
+      "provider": "kick",
+      "day": "2026-08-18",
+      "candidateCategoryRows": 136,
+      "candidateStreamerCategoryRows": 1066,
+      "categoryRowCap": 300,
+      "streamerCategoryRowCap": 1000,
+      "sourceSnapshots": 288,
+      "observedCategoryItems": 28700,
+      "missingCategoryItems": 0,
+      "coverageState": "unavailable_overflow",
+      "sourceMode": "mixed",
+      "contractVersion": "category-source-v1",
+      "updatedAt": "2026-08-19T00:20:57.073Z"
+    },
+    {
+      "provider": "kick",
+      "day": "2026-08-19",
+      "candidateCategoryRows": 24,
+      "candidateStreamerCategoryRows": 116,
+      "categoryRowCap": 300,
+      "streamerCategoryRowCap": 1000,
+      "sourceSnapshots": 5,
+      "observedCategoryItems": 500,
+      "missingCategoryItems": 0,
+      "coverageState": "partial",
+      "sourceMode": "authenticated",
+      "contractVersion": "category-source-v1",
+      "updatedAt": "2026-08-19T00:20:55.606Z"
+    }
+  ],
+  "materializedCounts": {
+    "historyCategoryDaily": { "2026-08-19": 24 },
+    "historyCategoryStreamerDaily": { "2026-08-19": 116 }
+  },
+  "preactivationRows": {
+    "historyCategoryDayStatus": 0,
+    "historyCategoryDaily": 0,
+    "historyCategoryStreamerDaily": 0
+  },
+  "providerLeakageRows": {
+    "historyCategoryDayStatus": 0,
+    "historyCategoryDaily": 0,
+    "historyCategoryStreamerDaily": 0
+  },
+  "checks": {
+    "requiredDaysPresent": true,
+    "requiredDaysAuthoritative": false,
+    "noPreactivationRows": true,
+    "noProviderLeakage": true,
+    "capsRespected": false,
+    "authoritativeCountsMatch": true,
+    "naturalWindowRefreshObserved": true,
+    "observationReadOnly": true,
+    "observationRowsReadWithinGuard": true
+  },
+  "rootCause": {
+    "precheckSemantics": "candidateStreamerCategoryRows counts all distinct accepted (category_id, streamer_id) pairs observed for the day",
+    "materializationSemantics": "streamer daily aggregation groups all accepted rows by category_id and streamer_id without truncation",
+    "failCloseBehavior": "candidate streamer-category cardinality above 1000 produces unavailable_overflow and materializes no authoritative day rows",
+    "categoryCapExceeded": false,
+    "streamerCategoryCapExceeded": true
+  },
+  "boundaries": {
+    "raiseStreamerCategoryCap": false,
+    "relaxAcceptance": false,
+    "manualGeneration": false,
+    "backfill": false,
+    "newCostProbe": false,
+    "cronChange": false,
+    "rawRetentionChange": false,
+    "historyApiUiCutover": false,
+    "twitchRollout": false,
+    "crossProviderChange": false
+  },
+  "nextGate": "separate_bounded_streamer_category_overflow_remediation_decision"
+}
