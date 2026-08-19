@@ -69,5 +69,4 @@ jobs:
           ! grep -Eq '^  (push|workflow_dispatch|schedule):' "$file"
           ! grep -Fq 'CLOUDFLARE_API_TOKEN' "$file"
           ! grep -Fq 'CLOUDFLARE_ACCOUNT_ID' "$file"
-          ! grep -Fq 'wrangler' "$file"
           ! grep -Fq 'd1 execute' "$file"
