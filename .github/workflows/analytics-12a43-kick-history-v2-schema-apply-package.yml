@@ -69,7 +69,7 @@ jobs:
 
       - name: Typecheck and bundle temporary Worker without deploying
         run: |
-          pnpm exec tsc --noEmit --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,WebWorker --types @cloudflare/workers-types workers/history-category-v2-schema-apply/src/index.ts workers/history-category-v2-schema-apply/src/schema.ts
+          pnpm exec tsc --noEmit --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022 --types @cloudflare/workers-types workers/history-category-v2-schema-apply/src/index.ts workers/history-category-v2-schema-apply/src/schema.ts
           pnpm dlx wrangler@4 deploy --dry-run --config workers/history-category-v2-schema-apply/wrangler.kick.toml
 
       - name: Revalidate accepted v2 candidate
