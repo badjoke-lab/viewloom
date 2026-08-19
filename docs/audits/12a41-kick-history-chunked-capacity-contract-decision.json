@@ -1,0 +1,179 @@
+{
+  "schemaVersion": "viewloom-12a41-kick-history-chunked-capacity-contract-decision-v1",
+  "phase": "12A-41",
+  "issue": 924,
+  "provider": "kick",
+  "status": "candidate_contract_go_production_forbidden",
+  "decision": "GO",
+  "sourceMainSha": "7f13d974f387fdad23f6a1efb6334025702122ce",
+  "sourceChain": {
+    "failurePhase": "12A-38",
+    "remediationDecisionPhase": "12A-39",
+    "prototypeBenchmarkPhase": "12A-40",
+    "prototypeBenchmarkRunId": 32208724956,
+    "prototypeBenchmarkJobId": 95936961712,
+    "prototypeBenchmarkArtifactId": 9349985693,
+    "prototypeBenchmarkArtifactDigest": "sha256:714bc059d7c67651c480d03e7688b91a4b20faad2f54ec607b4a0d3f390e3523",
+    "stableBenchmarkSignatureSha256": "b6cc5e9f0922c7ec6fb438ae438eb14756162949a0ec3a8306640f447fde8de5"
+  },
+  "selectedContract": {
+    "contractVersionCandidate": "category-source-v2-chunked",
+    "chunkSize": 128,
+    "canonicalContributorTuple": {
+      "encoding": "canonical_json_array",
+      "orderingBeforeChunking": "streamer_id_ascending",
+      "positions": {
+        "0": "streamerId",
+        "1": "displayName",
+        "2": "viewerMinutes",
+        "3": "peakViewers",
+        "4": "observedMinutes",
+        "5": "sampleCount"
+      },
+      "lossless": true,
+      "topK": false,
+      "sampling": false
+    },
+    "dailyCapacity": {
+      "categoryRowsMaximum": 300,
+      "physicalContributorChunkRowsMaximum": 522,
+      "contributorEncodedBytesMaximum": 131072,
+      "contributorEncodedBytesMaximumKiB": 128,
+      "logicalStreamerCategoryContributorsMaximum": null,
+      "logicalContributorPolicy": "No logical Top-K cap. Preserve every logical contributor unless the complete day fails closed on category-row, physical-chunk-row, or encoded-byte capacity.",
+      "physicalChunkBoundDerivation": {
+        "snapshotItemCap": 100,
+        "snapshotsPerDay": 288,
+        "maximumLogicalPairObservationsPerDay": 28800,
+        "categoryRowsMaximum": 300,
+        "chunkSize": 128,
+        "formula": "(categoryRowsMaximum - 1) + ceil((maximumLogicalPairObservationsPerDay - (categoryRowsMaximum - 1)) / chunkSize)",
+        "result": 522
+      }
+    },
+    "statusFields": [
+      "candidate_category_rows",
+      "logical_streamer_category_contributors",
+      "physical_contributor_chunk_rows",
+      "contributor_encoded_bytes",
+      "category_row_cap",
+      "physical_contributor_chunk_row_cap",
+      "contributor_encoded_bytes_cap",
+      "source_snapshots",
+      "observed_category_items",
+      "missing_category_items",
+      "coverage_state",
+      "source_mode",
+      "contract_version",
+      "updated_at"
+    ],
+    "failCloseStates": {
+      "categoryRowsExceeded": "unavailable_category_overflow",
+      "physicalContributorChunkRowsExceeded": "unavailable_chunk_row_overflow",
+      "contributorEncodedBytesExceeded": "unavailable_encoded_overflow",
+      "generationMismatch": "unavailable_generation_mismatch"
+    },
+    "overflowBehavior": {
+      "wholeDayFailClosed": true,
+      "partialCategoryRowsExposed": false,
+      "partialContributorChunksExposed": false,
+      "statusPersisted": true,
+      "previousAuthoritativeRowsRemovedBeforeUnavailableStatus": true
+    },
+    "historyReadSemantics": {
+      "filterOrder": [
+        "provider",
+        "category_id",
+        "day_range"
+      ],
+      "expandAllSelectedChunks": true,
+      "aggregateAcrossSelectedPeriodByStreamer": true,
+      "rankAfterCategoryFilterAndPeriodAggregation": true,
+      "periodTopKOnlyAfterExactAggregation": true,
+      "missingAsZero": false
+    },
+    "rolloutSemantics": {
+      "forwardOnly": true,
+      "backfill": false,
+      "legacyUnavailableDaysRemainHistorical": true,
+      "productionV2StartDayChosenLater": true,
+      "v1RowsRewrittenByThisDecision": false
+    }
+  },
+  "capacityEvidence": {
+    "jointWorstCaseMethod": "Populate 180 days with the accepted 300 category rows/day, the derived source-maximum 522 contributor chunk rows/day, and the selected encoded-byte budget every day, then VACUUM SQLite and apply the accepted 20 percent safety margin.",
+    "selected128KiB": {
+      "encodedBytesPerDay": 131072,
+      "categoryRowsPerDay": 300,
+      "physicalContributorChunkRowsPerDay": 522,
+      "retentionDays": 180,
+      "rawIncrementalMiB": 44.98046875,
+      "incrementalMiBWithSafety": 53.9765625,
+      "designBudgetMiBMaximum": 60,
+      "projectedKickMiB": 423.6565625,
+      "providerCeilingMiB": 440,
+      "providerHeadroomMiB": 16.3434375,
+      "providerHeadroomMiBMinimum": 10,
+      "accountHeadroomMiB": 825.6134375,
+      "accountHeadroomMiBMinimum": 500,
+      "pass": true
+    },
+    "rejected144KiB": {
+      "encodedBytesPerDay": 147456,
+      "rawIncrementalMiB": 47.76953125,
+      "incrementalMiBWithSafety": 57.3234375,
+      "projectedKickMiB": 427.0034375,
+      "providerHeadroomMiB": 12.9965625,
+      "accountHeadroomMiB": 822.2665625,
+      "technicalGatePass": true,
+      "selected": false,
+      "reason": "Passes deterministic local gates but leaves materially less local-to-D1 implementation margin than 128 KiB; the stricter 128 KiB boundary is selected."
+    },
+    "rejected160KiB": {
+      "encodedBytesPerDay": 163840,
+      "rawIncrementalMiB": 51.11328125,
+      "incrementalMiBWithSafety": 61.3359375,
+      "projectedKickMiB": 431.0159375,
+      "providerHeadroomMiB": 8.9840625,
+      "accountHeadroomMiB": 818.2540625,
+      "designBudgetPass": false,
+      "providerHeadroomPass": false,
+      "selected": false,
+      "reason": "Fails the accepted 60 MiB design budget and 10 MiB minimum provider headroom gate."
+    }
+  },
+  "semanticConstraintsPreserved": {
+    "providerScopedObservationTimeCategoryIdentity": true,
+    "exactCategoryViewerMinutes": true,
+    "exactConcurrentCategoryPeak": true,
+    "exactPerStreamerCategoryViewerMinutes": true,
+    "exactPerStreamerCategoryPeak": true,
+    "categoryFilterBeforePeriodRanking": true,
+    "explicitCoverageAuthority": true,
+    "retentionDays": 180,
+    "topKTruncation": false,
+    "sampling": false,
+    "latestCategoryBackprojection": false,
+    "providerMixing": false
+  },
+  "nextGate": "repository_only_chunked_migration_generator_query_candidate_with_local_tests",
+  "authorizations": {
+    "repositoryOnlyConcreteCandidate": true,
+    "localDeterministicTests": true,
+    "localDeterministicBenchmark": true,
+    "productionSchemaApply": false,
+    "productionD1Read": false,
+    "productionD1Mutation": false,
+    "productionGeneratorChange": false,
+    "productionDeployment": false,
+    "manualGeneration": false,
+    "backfill": false,
+    "cronChange": false,
+    "rawRetentionChange": false,
+    "historyCategoryApiUiCutover": false,
+    "twitchRollout": false,
+    "crossProviderChange": false,
+    "newProductionCostProbe": false,
+    "thresholdRelaxation": false
+  }
+}
