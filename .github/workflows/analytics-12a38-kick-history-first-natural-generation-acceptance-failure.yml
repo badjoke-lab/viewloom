@@ -1,0 +1,73 @@
+name: Analytics 12A38 Kick History First Natural Generation Acceptance Failure
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a38-kick-history-first-natural-generation-acceptance-failure.yml'
+      - 'docs/audits/12a38-kick-history-first-natural-generation-acceptance-failure.json'
+      - 'scripts/verify-12a38-kick-history-first-natural-generation-acceptance-failure.mjs'
+      - '.github/workflows/analytics-12a37-kick-history-first-natural-generation-observation.yml'
+      - 'scripts/verify-12a37-kick-history-first-natural-generation-observation.mjs'
+      - 'docs/audits/12a37-kick-history-first-natural-generation-observation-trigger.json'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact failure-freeze scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          expected=(
+            '.github/workflows/analytics-12a37-kick-history-first-natural-generation-observation.yml'
+            '.github/workflows/analytics-12a38-kick-history-first-natural-generation-acceptance-failure.yml'
+            'docs/audits/12a37-kick-history-first-natural-generation-observation-trigger.json'
+            'docs/audits/12a38-kick-history-first-natural-generation-acceptance-failure.json'
+            'scripts/verify-12a37-kick-history-first-natural-generation-observation.mjs'
+            'scripts/verify-12a38-kick-history-first-natural-generation-acceptance-failure.mjs'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+
+      - name: Verify canonical FAIL evidence and retirement
+        run: node scripts/verify-12a38-kick-history-first-natural-generation-acceptance-failure.mjs
+
+      - name: Verify generator fail-close semantics remain unchanged
+        run: |
+          grep -F "candidateStreamerCategoryRows > streamerCategoryRowCap" workers/shared/history-category-aggregate.ts
+          grep -F "return 'unavailable_overflow'" workers/shared/history-category-aggregate.ts
+          grep -F 'GROUP BY category_id, streamer_id' workers/shared/history-category-aggregate-sql.ts
+          grep -F 'COUNT(DISTINCT CASE WHEN' workers/shared/history-category-aggregate-sql.ts
+          node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
+          python3 scripts/test-12a15-kick-history-category-aggregate.py
+
+      - name: Verify active production config is not mutated by this package
+        run: |
+          grep -F 'HISTORY_CATEGORY_GENERATION_ENABLED = "true"' workers/collector-kick/wrangler.category-permanent.toml
+          grep -F 'HISTORY_CATEGORY_START_DAY = "2026-08-17"' workers/collector-kick/wrangler.category-permanent.toml
+          grep -F 'crons = ["*/5 * * * *"]' workers/collector-kick/wrangler.category-permanent.toml
+
+      - name: Verify this gate has no production execution surface
+        run: |
+          set -euo pipefail
+          file='.github/workflows/analytics-12a38-kick-history-first-natural-generation-acceptance-failure.yml'
+          ! grep -Eq '^  (push|workflow_dispatch|schedule):' "$file"
+          ! grep -Fq 'CLOUDFLARE_API_TOKEN' "$file"
+          ! grep -Fq 'CLOUDFLARE_ACCOUNT_ID' "$file"
+          ! grep -Fq 'wrangler' "$file"
+          ! grep -Fq 'd1 execute' "$file"
