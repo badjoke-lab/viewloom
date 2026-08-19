@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "viewloom-12a42-kick-history-chunked-v2-candidate-benchmark-v1",
+  "phase": "12A-42",
+  "issue": 926,
+  "provider": "kick",
+  "status": "PASS",
+  "schemaCandidate": "docs/prototypes/12a42-kick-history-chunked-v2-candidate.sql",
+  "generatorQueryCandidate": "workers/dormant/history-category-chunked-v2-candidate.ts",
+  "fixedContract": {
+    "chunkSize": 128,
+    "categoryRowCap": 300,
+    "physicalChunkRowBudget": 1000,
+    "encodedBytesCap": 47196,
+    "retentionDays": 180
+  },
+  "fixtures": {
+    "encodedByteBoundaryPass": {
+      "encodedBytes": 47196,
+      "physicalChunks": 3,
+      "coverageState": "observed"
+    },
+    "encodedByteBoundaryFail": {
+      "encodedBytes": 47197,
+      "physicalChunks": 3,
+      "coverageState": "unavailable_encoded_bytes_overflow"
+    },
+    "categoryOverflow": {
+      "candidateCategoryRows": 301,
+      "coverageState": "unavailable_overflow"
+    },
+    "physicalChunkOverflow": {
+      "physicalChunks": 1001,
+      "coverageState": "unavailable_overflow"
+    },
+    "observedPairShapes": {
+      "1066": {
+        "logicalPairs": 1066,
+        "physicalChunks": 304,
+        "encodedBytes": 45033,
+        "noContributorLoss": true
+      },
+      "1108": {
+        "logicalPairs": 1108,
+        "physicalChunks": 304,
+        "encodedBytes": 46850,
+        "noContributorLoss": true
+      }
+    },
+    "duplicatePair": {
+      "duplicateRejected": true,
+      "coverageState": "unavailable_generation_mismatch"
+    }
+  },
+  "measurement": {
+    "emptySchemaFileBytes": 36864,
+    "candidateFileBytes": 26296320,
+    "incrementalBytes": 26259456,
+    "incrementalMiB": 25.04,
+    "incrementalMiBWithSafety": 30.05,
+    "categoryRows180d": 54000,
+    "physicalChunkRows180d": 54720,
+    "maximumPhysicalChunkRowsPerDay": 304,
+    "maximumEncodedBytesPerDay": 47196,
+    "totalEncodedBytes180d": 8461094,
+    "selectedCategoryPeriodResultRows": 609,
+    "queryPlan": [
+      "SEARCH history_category_streamer_daily_chunks_v2 USING INDEX idx_history_category_streamer_chunks_v2_category_day (provider=? AND category_id=? AND day>? AND day<?)"
+    ],
+    "projectedKickMiB": 399.73,
+    "providerHeadroomMiB": 40.27,
+    "accountHeadroomMiB": 849.54,
+    "gates": {
+      "exactResultEquivalence": true,
+      "providerIsolation": true,
+      "idempotentReplacement": true,
+      "retentionOldRowRemoved": true,
+      "physicalRowsPerDayWithin1000": true,
+      "encodedBytesPerDayWithin47196": true,
+      "storageBudgetWithin60MiB": true,
+      "providerProjectedSizeWithin440MiB": true,
+      "providerHeadroomAtLeast10MiB": true,
+      "accountHeadroomAtLeast500MiB": true,
+      "indexedProviderCategoryDayRange": true
+    },
+    "pass": true
+  },
+  "semantics": {
+    "lossless": true,
+    "topK": false,
+    "sampling": false,
+    "categoryFilterBeforePeriodRanking": true,
+    "allSelectedChunksExpandedBeforeRanking": true,
+    "forwardOnly": true,
+    "backfill": false
+  },
+  "authorizations": {
+    "productionSchemaApply": false,
+    "productionD1Read": false,
+    "productionD1Mutation": false,
+    "productionGeneratorChange": false,
+    "productionDeployment": false,
+    "historyCategoryApiUiCutover": false,
+    "twitchRollout": false,
+    "newProductionCostProbe": false,
+    "thresholdRelaxation": false
+  },
+  "stableBenchmarkSignatureSha256": "2db007d3881152ffdbe7dbcff1c69b02ff24b24b09ffbd315e35e54ac0845c63"
+}
