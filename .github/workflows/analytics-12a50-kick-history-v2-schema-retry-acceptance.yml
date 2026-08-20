@@ -1,0 +1,178 @@
+name: Analytics 12A50 Kick History V2 Schema Retry Acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a50-kick-history-v2-schema-retry-acceptance.yml'
+      - 'docs/audits/12a50-kick-history-v2-schema-retry-acceptance-contract.json'
+      - 'scripts/verify-12a50-kick-history-v2-schema-retry-acceptance.mjs'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_HEAD_SHA: b0366eb1b1b2268ef75bb2a5d29251f6097ef574
+      SOURCE_WORKFLOW_NAME: Analytics 12A49 Kick History V2 Schema Apply Retry
+      SOURCE_ARTIFACT_NAME: phase12a49-kick-history-v2-schema-apply-retry
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify repository-only acceptance contract
+        run: node scripts/verify-12a50-kick-history-v2-schema-retry-acceptance.mjs
+
+      - name: Verify exact three-file PR scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          expected=(
+            '.github/workflows/analytics-12a50-kick-history-v2-schema-retry-acceptance.yml'
+            'docs/audits/12a50-kick-history-v2-schema-retry-acceptance-contract.json'
+            'scripts/verify-12a50-kick-history-v2-schema-retry-acceptance.mjs'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+
+      - name: Resolve exact retry run and classify source evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/12a50 /tmp/12a50-source
+          run_id=''
+          run_status=''
+          run_conclusion=''
+          for attempt in $(seq 1 120); do
+            runs=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$SOURCE_HEAD_SHA&event=push&per_page=100")
+            run_id=$(jq -r --arg name "$SOURCE_WORKFLOW_NAME" '.workflow_runs | map(select(.name == $name)) | sort_by(.id) | last | .id // empty' <<<"$runs")
+            if [[ -n "$run_id" ]]; then
+              run_status=$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .status' <<<"$runs")
+              run_conclusion=$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .conclusion // empty' <<<"$runs")
+              [[ "$run_status" == 'completed' ]] && break
+            fi
+            sleep 10
+          done
+          test -n "$run_id"
+          [[ "$run_status" == 'completed' ]]
+
+          jobs=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/jobs?per_page=100")
+          contract_job_id=$(jq -r '.jobs[] | select(.name == "contract") | .id // empty' <<<"$jobs")
+          contract_conclusion=$(jq -r '.jobs[] | select(.name == "contract") | .conclusion // empty' <<<"$jobs")
+          production_job_id=$(jq -r '.jobs[] | select(.name == "production-schema-retry") | .id // empty' <<<"$jobs")
+          production_conclusion=$(jq -r '.jobs[] | select(.name == "production-schema-retry") | .conclusion // empty' <<<"$jobs")
+          failed_steps=$(jq -c '[.jobs[] | select(.name == "production-schema-retry") | .steps[]? | select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | {name,number,status,conclusion}]' <<<"$jobs")
+          test -n "$contract_job_id"
+          test -n "$production_job_id"
+
+          artifacts=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100")
+          artifact_id=$(jq -r --arg name "$SOURCE_ARTIFACT_NAME" '.artifacts[]? | select(.name == $name) | .id // empty' <<<"$artifacts")
+          artifact_digest=$(jq -r --arg name "$SOURCE_ARTIFACT_NAME" '.artifacts[]? | select(.name == $name) | .digest // empty' <<<"$artifacts")
+          artifact_found=false
+          source_status=''
+          failed_at_stage=''
+          first_statements=null
+          second_statements=null
+          v1_complete=null
+          v2_complete=null
+          v2_rows=null
+          leakage_rows=null
+          worker_deleted=null
+          post_delete_status=null
+          pre_collected=''
+          post_collected=''
+          size_delta=null
+          first_wall=null
+
+          if [[ -n "$artifact_id" ]]; then
+            artifact_found=true
+            gh api -H 'Accept: application/vnd.github+json' "/repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > /tmp/source.zip
+            unzip -q /tmp/source.zip -d /tmp/12a50-source
+            evidence=$(find /tmp/12a50-source -type f -name evidence.json -print -quit || true)
+            if [[ -n "$evidence" ]]; then
+              source_status=$(jq -r '.status // empty' "$evidence")
+              failed_at_stage=$(jq -r '.failedAtStage // empty' "$evidence")
+              first_statements=$(jq -r '.firstApplyStatementCount // null' "$evidence")
+              second_statements=$(jq -r '.secondApplyStatementCount // null' "$evidence")
+              v1_complete=$(jq -r '.v1SchemaCompleteAfter // null' "$evidence")
+              v2_complete=$(jq -r '.v2SchemaCompleteAfter // null' "$evidence")
+              v2_rows=$(jq -r '.v2AggregateRowsAfter // null' "$evidence")
+              leakage_rows=$(jq -r '.providerLeakageRowsAfter // null' "$evidence")
+              worker_deleted=$(jq -r '.temporaryWorkerDeleted // null' "$evidence")
+              post_delete_status=$(jq -r '.postDeleteHttpStatus // null' "$evidence")
+              pre_collected=$(jq -r '.preCollectedAt // empty' "$evidence")
+              post_collected=$(jq -r '.postCollectedAt // empty' "$evidence")
+              size_delta=$(jq -r '.databaseSizeDeltaBytes // null' "$evidence")
+              first_wall=$(jq -r '.firstApplyWorkerWallMs // null' "$evidence")
+            fi
+          fi
+
+          classification='SOURCE_RUN_FAILED_NO_ARTIFACT'
+          if [[ "$run_conclusion" == 'success' && "$contract_conclusion" == 'success' && "$production_conclusion" == 'success' && "$source_status" == 'pass' ]]; then
+            [[ "$first_statements" == '5' ]]
+            [[ "$second_statements" == '0' ]]
+            [[ "$v1_complete" == 'true' ]]
+            [[ "$v2_complete" == 'true' ]]
+            [[ "$v2_rows" == '0' ]]
+            [[ "$leakage_rows" == '0' ]]
+            [[ "$worker_deleted" == 'true' ]]
+            [[ "$post_delete_status" == '404' ]]
+            test -n "$pre_collected"
+            test -n "$post_collected"
+            [[ "$pre_collected" != "$post_collected" ]]
+            [[ "$size_delta" -ge 0 && "$size_delta" -le 5242880 ]]
+            [[ "$first_wall" -ge 0 && "$first_wall" -le 15000 ]]
+            classification='PASS'
+          elif [[ "$artifact_found" == 'true' && "$source_status" == 'failure' ]]; then
+            test -n "$failed_at_stage"
+            classification='SOURCE_RUN_FAILED'
+          fi
+
+          jq -n \
+            --arg schemaVersion 'viewloom-12a50-kick-history-v2-schema-retry-acceptance-evidence-v1' \
+            --arg classification "$classification" \
+            --arg sourceHeadSha "$SOURCE_HEAD_SHA" \
+            --argjson runId "$run_id" \
+            --arg runConclusion "$run_conclusion" \
+            --argjson contractJobId "$contract_job_id" \
+            --arg contractConclusion "$contract_conclusion" \
+            --argjson productionJobId "$production_job_id" \
+            --arg productionConclusion "$production_conclusion" \
+            --argjson failedSteps "$failed_steps" \
+            --argjson artifactFound "$artifact_found" \
+            --argjson artifactId "${artifact_id:-null}" \
+            --arg artifactDigest "$artifact_digest" \
+            --arg sourceEvidenceStatus "$source_status" \
+            --arg failedAtStage "$failed_at_stage" \
+            --argjson firstStatements "$first_statements" \
+            --argjson secondStatements "$second_statements" \
+            --argjson v1Complete "$v1_complete" \
+            --argjson v2Complete "$v2_complete" \
+            --argjson v2Rows "$v2_rows" \
+            --argjson leakageRows "$leakage_rows" \
+            --argjson workerDeleted "$worker_deleted" \
+            --argjson postDeleteStatus "$post_delete_status" \
+            --arg preCollected "$pre_collected" \
+            --arg postCollected "$post_collected" \
+            --argjson sizeDelta "$size_delta" \
+            --argjson firstWall "$first_wall" \
+            '{schemaVersion:$schemaVersion,status:$classification,provider:"kick",sourceHeadSha:$sourceHeadSha,productionRunId:$runId,runConclusion:$runConclusion,contractJobId:$contractJobId,contractConclusion:$contractConclusion,productionSchemaRetryJobId:$productionJobId,productionConclusion:$productionConclusion,failedSteps:$failedSteps,sourceArtifactFound:$artifactFound,sourceArtifactId:$artifactId,sourceArtifactDigest:$artifactDigest,sourceEvidenceStatus:$sourceEvidenceStatus,failedAtStage:$failedAtStage,firstApplyStatementCount:$firstStatements,secondApplyStatementCount:$secondStatements,firstApplyWorkerWallMs:$firstWall,v1SchemaCompleteAfter:$v1Complete,v2SchemaCompleteAfter:$v2Complete,v2AggregateRowsAfter:$v2Rows,providerLeakageRowsAfter:$leakageRows,temporaryWorkerDeleted:$workerDeleted,postDeleteHttpStatus:$postDeleteStatus,preCollectedAt:$preCollected,postCollectedAt:$postCollected,databaseSizeDeltaBytes:$sizeDelta,boundaries:{githubActionsReadOnly:true,productionRetry:false,cloudflareAccess:false,d1Access:false}}' \
+            > artifacts/12a50/evidence.json
+          cat artifacts/12a50/evidence.json
+
+      - name: Upload sanitized acceptance evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a50-kick-history-v2-schema-retry-acceptance
+          path: artifacts/12a50/evidence.json
+          retention-days: 30
+          if-no-files-found: error
