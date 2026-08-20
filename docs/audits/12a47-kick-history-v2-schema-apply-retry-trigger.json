@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "viewloom-12a47-kick-history-v2-schema-apply-retry-trigger-v1",
+  "status": "armed_for_one_time_main_push",
+  "provider": "kick",
+  "oneTime": true,
+  "confirmation": "APPLY_KICK_HISTORY_CATEGORY_V2_SCHEMA_ONLY",
+  "sourceMainSha": "4929fad320c9e32c2284fc51968dd6715b8c8d3f",
+  "retryOfRunId": 32332864208,
+  "diagnosisRunId": 32333818009,
+  "diagnosisArtifactId": 9393922941,
+  "diagnosisClassification": "SAFE_RETRY_ABSENT",
+  "acceptedCandidatePr": 927,
+  "acceptedPackagePr": 929,
+  "repairPackagePr": 939,
+  "expectedRepairPackageHeadSha": "e89db7417928eb2b232759f0d9d2700fbf11471e",
+  "expectedRepairPackageMergeSha": "4929fad320c9e32c2284fc51968dd6715b8c8d3f",
+  "mutations": {
+    "productionSchemaExecution": true,
+    "productionD1Mutation": true
+  },
+  "forbidden": {
+    "v2GeneratorWiring": false,
+    "v1GeneratorDisablement": false,
+    "collectorChange": false,
+    "collectorDeployment": false,
+    "manualGeneration": false,
+    "backfill": false,
+    "cronChange": false,
+    "rawRetentionChange": false,
+    "historyCategoryApiUiCutover": false,
+    "twitchRollout": false,
+    "crossProviderChange": false,
+    "newProductionCostProbe": false,
+    "thresholdRelaxation": false
+  }
+}
