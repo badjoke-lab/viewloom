@@ -1,0 +1,165 @@
+name: Analytics 12A49 Kick History V2 Schema Apply Retry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a49-kick-history-v2-schema-apply-retry.yml'
+      - 'docs/audits/12a49-kick-history-v2-schema-retry-gate-fix-contract.json'
+      - 'docs/audits/12a49-kick-history-v2-preinspect-root-cause.json'
+      - 'scripts/run-12a49-kick-history-v2-schema-apply-retry.sh'
+      - 'scripts/verify-12a49-kick-history-v2-schema-retry-gate-fix.mjs'
+      - 'scripts/verify-12a49-kick-history-v2-schema-apply-retry-trigger.mjs'
+      - 'docs/audits/12a49-kick-history-v2-schema-apply-retry-trigger.json'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/12a49-kick-history-v2-schema-apply-retry-trigger.json'
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: analytics-12a49-kick-history-v2-schema-apply-retry-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+env:
+  TRIGGER_FILE: docs/audits/12a49-kick-history-v2-schema-apply-retry-trigger.json
+  ROOT_CAUSE_FILE: docs/audits/12a49-kick-history-v2-preinspect-root-cause.json
+  ARTIFACT_DIR: artifacts/12a49-kick-history-v2-schema-apply-retry
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify corrected package or trigger
+        run: |
+          set -euo pipefail
+          if [[ -f "$TRIGGER_FILE" ]]; then
+            node scripts/verify-12a49-kick-history-v2-schema-apply-retry-trigger.mjs "$TRIGGER_FILE"
+            VIEWLOOM_ALLOW_12A49_TRIGGER=true node scripts/verify-12a49-kick-history-v2-schema-retry-gate-fix.mjs
+          else
+            node scripts/verify-12a49-kick-history-v2-schema-retry-gate-fix.mjs
+          fi
+
+      - name: Verify exact PR scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          package_expected=(
+            '.github/workflows/analytics-12a49-kick-history-v2-schema-apply-retry.yml'
+            'docs/audits/12a49-kick-history-v2-schema-retry-gate-fix-contract.json'
+            'docs/audits/12a49-kick-history-v2-preinspect-root-cause.json'
+            'scripts/run-12a49-kick-history-v2-schema-apply-retry.sh'
+            'scripts/verify-12a49-kick-history-v2-schema-retry-gate-fix.mjs'
+            'scripts/verify-12a49-kick-history-v2-schema-apply-retry-trigger.mjs'
+          )
+          if [[ "${#changed[@]}" -eq 1 && "${changed[0]}" == "$TRIGGER_FILE" ]]; then
+            node scripts/verify-12a49-kick-history-v2-schema-apply-retry-trigger.mjs "$TRIGGER_FILE"
+          else
+            test "${#changed[@]}" -eq "${#package_expected[@]}"
+            for path in "${package_expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+            test ! -e "$TRIGGER_FILE"
+          fi
+
+      - name: Prove jq boolean fallback regression and corrected gate
+        run: |
+          set -euo pipefail
+          [[ $(jq -nr 'false // true') == 'true' ]]
+          printf '%s\n' '{"state":{"v2Schema":{"partial":false}}}' > /tmp/partial-false.json
+          jq -e '.state.v2Schema.partial == false' /tmp/partial-false.json >/dev/null
+          ! grep -Fq '.state.v2Schema.partial // true' scripts/run-12a49-kick-history-v2-schema-apply-retry.sh
+          grep -Fq '.state.v2Schema.partial == false' scripts/run-12a49-kick-history-v2-schema-apply-retry.sh
+          bash -n scripts/run-12a49-kick-history-v2-schema-apply-retry.sh
+
+      - name: Revalidate accepted root cause and schema package locally
+        run: |
+          set -euo pipefail
+          [[ $(jq -r '.status' "$ROOT_CAUSE_FILE") == 'PROVEN' ]]
+          [[ $(jq -r '.sourceRetry.runId' "$ROOT_CAUSE_FILE") == '32335017572' ]]
+          [[ $(jq -r '.sourceRetry.artifactId' "$ROOT_CAUSE_FILE") == '9394373002' ]]
+          [[ $(jq -r '.observedFailureInspect.ok' "$ROOT_CAUSE_FILE") == 'true' ]]
+          [[ $(jq -r '.observedFailureInspect.v2SchemaAbsent' "$ROOT_CAUSE_FILE") == 'true' ]]
+          [[ $(jq -r '.observedFailureInspect.v2SchemaPartial' "$ROOT_CAUSE_FILE") == 'false' ]]
+          [[ $(jq -r '.observedFailureInspect.v2AggregateRows' "$ROOT_CAUSE_FILE") == '0' ]]
+          [[ $(jq -r '.observedFailureInspect.providerLeakageRows' "$ROOT_CAUSE_FILE") == '0' ]]
+          [[ $(jq -r '.observedFailureInspect.postDeleteHttpStatus' "$ROOT_CAUSE_FILE") == '404' ]]
+          python3 scripts/test-12a43-kick-history-v2-schema-apply.py
+          pnpm exec tsc --noEmit --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022 --types @cloudflare/workers-types workers/history-category-v2-schema-apply/src/index.ts workers/history-category-v2-schema-apply/src/schema.ts
+          pnpm dlx wrangler@4 deploy --dry-run --config workers/history-category-v2-schema-apply/wrangler.kick.toml
+
+      - name: Revalidate accepted v2 benchmark and unchanged v1 runtime
+        run: |
+          set -euo pipefail
+          node scripts/verify-12a42-kick-history-chunked-v2-candidate.mjs
+          grep -F 'candidateStreamerCategoryRows > streamerCategoryRowCap' workers/shared/history-category-aggregate.ts
+          grep -F 'HISTORY_CATEGORY_GENERATION_ENABLED = "true"' workers/collector-kick/wrangler.category-permanent.toml
+          grep -F 'HISTORY_CATEGORY_START_DAY = "2026-08-17"' workers/collector-kick/wrangler.category-permanent.toml
+          grep -F 'crons = ["*/5 * * * *"]' workers/collector-kick/wrangler.category-permanent.toml
+
+  production-schema-retry:
+    needs: contract
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ARTIFACT_DIR: artifacts/12a49-kick-history-v2-schema-apply-retry
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact one-file corrected retry trigger
+        run: |
+          set -euo pipefail
+          test -f "$TRIGGER_FILE"
+          mapfile -t changed < <(git diff --name-only "${{ github.event.before }}" "$GITHUB_SHA")
+          test "${#changed[@]}" -eq 1
+          [[ "${changed[0]}" == "$TRIGGER_FILE" ]]
+          node scripts/verify-12a49-kick-history-v2-schema-apply-retry-trigger.mjs "$TRIGGER_FILE"
+          [[ $(jq -r '.sourceMainSha' "$TRIGGER_FILE") == '${{ github.event.before }}' ]]
+          [[ $(jq -r '.retryOfRunId' "$TRIGGER_FILE") == '32335017572' ]]
+          [[ $(jq -r '.rootCauseArtifactId' "$TRIGGER_FILE") == '9394373002' ]]
+          [[ $(jq -r '.rootCause' "$TRIGGER_FILE") == 'jq_false_falls_through_alternative_operator' ]]
+          corrected_number=$(jq -r '.correctedPackagePr' "$TRIGGER_FILE")
+          corrected=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/$corrected_number")
+          [[ $(jq -r '.merged_at // empty' <<<"$corrected") != '' ]]
+          [[ $(jq -r '.head.sha' <<<"$corrected") == $(jq -r '.expectedCorrectedPackageHeadSha' "$TRIGGER_FILE") ]]
+          corrected_merge=$(jq -r '.merge_commit_sha' <<<"$corrected")
+          [[ "$corrected_merge" == $(jq -r '.expectedCorrectedPackageMergeSha' "$TRIGGER_FILE") ]]
+          git cat-file -e "$corrected_merge^{commit}"
+          git merge-base --is-ancestor "$corrected_merge" HEAD
+          VIEWLOOM_ALLOW_12A49_TRIGGER=true node scripts/verify-12a49-kick-history-v2-schema-retry-gate-fix.mjs
+
+      - name: Execute corrected controlled Kick-only v2 schema apply retry
+        shell: bash
+        run: bash scripts/run-12a49-kick-history-v2-schema-apply-retry.sh
+
+      - name: Upload stage-aware sanitized corrected retry evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a49-kick-history-v2-schema-apply-retry
+          path: artifacts/12a49-kick-history-v2-schema-apply-retry/evidence.json
+          retention-days: 30
+          if-no-files-found: error
