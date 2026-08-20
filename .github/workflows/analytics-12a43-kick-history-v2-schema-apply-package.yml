@@ -7,6 +7,7 @@ on:
       - '.github/workflows/analytics-12a43-kick-history-v2-schema-apply-package.yml'
       - 'docs/audits/12a43-kick-history-v2-schema-apply-package-contract.json'
       - 'scripts/verify-12a43-kick-history-v2-schema-apply-package.mjs'
+      - 'scripts/verify-12a44-kick-history-v2-schema-apply-trigger.mjs'
       - 'scripts/test-12a43-kick-history-v2-schema-apply.py'
       - 'workers/history-category-v2-schema-apply/**'
       - 'docs/audits/12a43-kick-history-v2-schema-apply-trigger.json'
@@ -40,13 +41,20 @@ jobs:
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Verify package
-        run: node scripts/verify-12a43-kick-history-v2-schema-apply-package.mjs
+      - name: Verify package or trigger candidate
+        run: |
+          set -euo pipefail
+          if [[ -f "$TRIGGER_FILE" ]]; then
+            node scripts/verify-12a44-kick-history-v2-schema-apply-trigger.mjs "$TRIGGER_FILE"
+            VIEWLOOM_ALLOW_12A43_TRIGGER=true node scripts/verify-12a43-kick-history-v2-schema-apply-package.mjs
+          else
+            node scripts/verify-12a43-kick-history-v2-schema-apply-package.mjs
+          fi
 
       - name: Verify local schema fixtures
         run: python3 scripts/test-12a43-kick-history-v2-schema-apply.py
 
-      - name: Verify package-only PR scope
+      - name: Verify PR scope
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -54,7 +62,7 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
-          expected=(
+          package_expected=(
             '.github/workflows/analytics-12a43-kick-history-v2-schema-apply-package.yml'
             'docs/audits/12a43-kick-history-v2-schema-apply-package-contract.json'
             'scripts/verify-12a43-kick-history-v2-schema-apply-package.mjs'
@@ -63,9 +71,32 @@ jobs:
             'workers/history-category-v2-schema-apply/src/schema.ts'
             'workers/history-category-v2-schema-apply/wrangler.kick.toml'
           )
-          test "${#changed[@]}" -eq "${#expected[@]}"
-          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
-          test ! -e "$TRIGGER_FILE"
+          repair_expected=(
+            '.github/workflows/analytics-12a43-kick-history-v2-schema-apply-package.yml'
+            'scripts/verify-12a43-kick-history-v2-schema-apply-package.mjs'
+            'scripts/verify-12a44-kick-history-v2-schema-apply-trigger.mjs'
+          )
+          matches_exact() {
+            local -n expected_ref=$1
+            [[ "${#changed[@]}" -eq "${#expected_ref[@]}" ]] || return 1
+            for path in "${expected_ref[@]}"; do
+              printf '%s\n' "${changed[@]}" | grep -Fxq "$path" || return 1
+            done
+          }
+          if [[ -f "$TRIGGER_FILE" ]]; then
+            test "${#changed[@]}" -eq 1
+            [[ "${changed[0]}" == "$TRIGGER_FILE" ]]
+            node scripts/verify-12a44-kick-history-v2-schema-apply-trigger.mjs "$TRIGGER_FILE"
+          else
+            if matches_exact package_expected; then
+              :
+            elif matches_exact repair_expected; then
+              :
+            else
+              printf 'unexpected 12A43/12A44 PR scope:\n%s\n' "${changed[@]}" >&2
+              exit 1
+            fi
+          fi
 
       - name: Typecheck and bundle temporary Worker without deploying
         run: |
@@ -116,19 +147,17 @@ jobs:
           mapfile -t changed < <(git diff --name-only "${{ github.event.before }}" "$GITHUB_SHA")
           test "${#changed[@]}" -eq 1
           [[ "${changed[0]}" == "$TRIGGER_FILE" ]]
-          [[ $(jq -r '.status' "$TRIGGER_FILE") == 'armed_for_one_time_main_push' ]]
-          [[ $(jq -r '.confirmation' "$TRIGGER_FILE") == 'APPLY_KICK_HISTORY_CATEGORY_V2_SCHEMA_ONLY' ]]
-          [[ $(jq -r '.oneTime' "$TRIGGER_FILE") == 'true' ]]
-          [[ $(jq -r '.provider' "$TRIGGER_FILE") == 'kick' ]]
-          [[ $(jq -r '.acceptedCandidatePr' "$TRIGGER_FILE") == '927' ]]
+          node scripts/verify-12a44-kick-history-v2-schema-apply-trigger.mjs "$TRIGGER_FILE"
+          [[ $(jq -r '.sourceMainSha' "$TRIGGER_FILE") == '${{ github.event.before }}' ]]
           package_number=$(jq -r '.packagePr' "$TRIGGER_FILE")
           package=$(gh api "/repos/$GITHUB_REPOSITORY/pulls/$package_number")
           [[ $(jq -r '.merged_at // empty' <<<"$package") != '' ]]
           [[ $(jq -r '.head.sha' <<<"$package") == $(jq -r '.expectedPackageHeadSha' "$TRIGGER_FILE") ]]
           package_merge=$(jq -r '.merge_commit_sha' <<<"$package")
+          [[ "$package_merge" == $(jq -r '.expectedPackageMergeSha' "$TRIGGER_FILE") ]]
           git cat-file -e "$package_merge^{commit}"
           git merge-base --is-ancestor "$package_merge" HEAD
-          node scripts/verify-12a43-kick-history-v2-schema-apply-package.mjs
+          VIEWLOOM_ALLOW_12A43_TRIGGER=true node scripts/verify-12a43-kick-history-v2-schema-apply-package.mjs
 
       - name: Execute controlled Kick-only v2 schema apply
         shell: bash
