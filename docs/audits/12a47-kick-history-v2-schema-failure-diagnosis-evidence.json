@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "viewloom-12a47-kick-history-v2-schema-failure-diagnosis-evidence-v1",
+  "status": "ACCEPTED",
+  "provider": "kick",
+  "classification": "SAFE_RETRY_ABSENT",
+  "sourceFailedExecution": {
+    "runId": 32332864208,
+    "contractJobId": 96316706583,
+    "productionJobId": 96316884149,
+    "mergeSha": "1c02df8525e579cea8dd0008a6003ec3d575b61a"
+  },
+  "diagnosis": {
+    "issue": 936,
+    "pr": 937,
+    "mergeSha": "20f0c7e1e43e88a829a038d048bb5b55be4efd41",
+    "runId": 32333818009,
+    "jobId": 96319374525,
+    "artifactId": 9393922941,
+    "artifactDigest": "sha256:e83fe79d4ade568f90fa788acd18650a8eee07aef69f783dfdc6a246b64391fe"
+  },
+  "productionState": {
+    "v1Schema": {
+      "complete": true,
+      "presentTables": [
+        "history_category_daily",
+        "history_category_day_status",
+        "history_category_streamer_daily"
+      ]
+    },
+    "v2Schema": {
+      "absent": true,
+      "partial": false,
+      "complete": false,
+      "presentTables": [],
+      "presentIndexes": [],
+      "totalRows": 0
+    },
+    "temporaryWorker": {
+      "serviceHttpStatus": 404,
+      "deleted": true
+    }
+  },
+  "diagnosisQueryMetrics": {
+    "rowsRead": 31,
+    "rowsWritten": 0,
+    "changes": 0
+  },
+  "conclusion": {
+    "failedRunAppliedAnyV2Ddl": false,
+    "cleanAbsentForControlledRetry": true,
+    "blindIdenticalRerunAuthorized": false,
+    "repairBeforeRetryRequired": true
+  }
+}
