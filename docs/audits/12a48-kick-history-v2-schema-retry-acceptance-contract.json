@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "viewloom-12a48-kick-history-v2-schema-retry-acceptance-contract-v1",
+  "phase": "12A-48",
+  "issue": 943,
+  "provider": "kick",
+  "source": {
+    "executionIssue": 942,
+    "triggerPr": 941,
+    "triggerHeadSha": "82458d1374fbe5f211e9c1f766744358414546f3",
+    "productionMergeSha": "fc5634130be59e3d86056781793a8550055725d3",
+    "workflowName": "Analytics 12A47 Kick History V2 Schema Apply Retry",
+    "artifactName": "phase12a47-kick-history-v2-schema-apply-retry"
+  },
+  "successRequirements": {
+    "firstApplyStatementCount": 5,
+    "secondApplyStatementCount": 0,
+    "v1SchemaCompleteAfter": true,
+    "v2SchemaCompleteAfter": true,
+    "v2AggregateRowsAfter": 0,
+    "providerLeakageRowsAfter": 0,
+    "freshNaturalSnapshot": true,
+    "temporaryWorkerDeleted": true,
+    "postDeleteHttpStatus": 404,
+    "maxDatabaseSizeDeltaBytes": 5242880
+  },
+  "boundaries": {
+    "githubActionsReadOnly": true,
+    "cloudflareAccess": false,
+    "d1Access": false,
+    "workerMutation": false,
+    "schemaMutation": false,
+    "productionRetry": false,
+    "generatorRuntimeChange": false,
+    "manualGeneration": false,
+    "backfill": false,
+    "cronRetentionChange": false,
+    "apiUiCutover": false,
+    "twitchCrossProviderChange": false,
+    "costProbe": false,
+    "thresholdRelaxation": false
+  }
+}
