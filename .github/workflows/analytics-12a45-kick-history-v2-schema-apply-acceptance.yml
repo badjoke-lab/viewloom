@@ -44,86 +44,104 @@ jobs:
           test "${#changed[@]}" -eq "${#expected[@]}"
           for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
 
-      - name: Resolve exact production push run and evidence
+      - name: Resolve exact production push run and diagnose evidence
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p artifacts/12a45
-          run_id=''
-          for attempt in $(seq 1 120); do
-            runs=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$SOURCE_HEAD_SHA&event=push&per_page=100")
-            run_id=$(jq -r --arg name "$SOURCE_WORKFLOW_NAME" '.workflow_runs | map(select(.name == $name)) | sort_by(.id) | last | .id // empty' <<<"$runs")
-            if [[ -n "$run_id" ]]; then
-              status=$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .status' <<<"$runs")
-              conclusion=$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .conclusion // empty' <<<"$runs")
-              if [[ "$status" == 'completed' ]]; then
-                [[ "$conclusion" == 'success' ]]
-                break
-              fi
-            fi
-            sleep 10
-          done
+
+          runs=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$SOURCE_HEAD_SHA&event=push&per_page=100")
+          run_id=$(jq -r --arg name "$SOURCE_WORKFLOW_NAME" '.workflow_runs | map(select(.name == $name)) | sort_by(.id) | last | .id // empty' <<<"$runs")
           test -n "$run_id"
+          run_status=$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .status' <<<"$runs")
+          run_conclusion=$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .conclusion // empty' <<<"$runs")
+          [[ "$run_status" == 'completed' ]]
 
           jobs=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/jobs?per_page=100")
           contract_job_id=$(jq -r '.jobs[] | select(.name == "contract") | .id // empty' <<<"$jobs")
           contract_conclusion=$(jq -r '.jobs[] | select(.name == "contract") | .conclusion // empty' <<<"$jobs")
           production_job_id=$(jq -r '.jobs[] | select(.name == "production-schema-apply") | .id // empty' <<<"$jobs")
           production_conclusion=$(jq -r '.jobs[] | select(.name == "production-schema-apply") | .conclusion // empty' <<<"$jobs")
-          test -n "$contract_job_id"
-          test -n "$production_job_id"
-          [[ "$contract_conclusion" == 'success' ]]
-          [[ "$production_conclusion" == 'success' ]]
+          failed_steps=$(jq -c '[.jobs[] | select(.name == "production-schema-apply") | .steps[]? | select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | {name,number,status,conclusion}]' <<<"$jobs")
+          completed_steps=$(jq -c '[.jobs[] | select(.name == "production-schema-apply") | .steps[]? | {name,number,status,conclusion}]' <<<"$jobs")
 
           artifacts=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100")
-          artifact_id=$(jq -r --arg name "$SOURCE_ARTIFACT_NAME" '.artifacts[] | select(.name == $name) | .id // empty' <<<"$artifacts")
-          artifact_digest=$(jq -r --arg name "$SOURCE_ARTIFACT_NAME" '.artifacts[] | select(.name == $name) | .digest // empty' <<<"$artifacts")
-          test -n "$artifact_id"
-          gh api -H 'Accept: application/vnd.github+json' "/repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > /tmp/source.zip
-          rm -rf /tmp/source-artifact
-          mkdir -p /tmp/source-artifact
-          unzip -q /tmp/source.zip -d /tmp/source-artifact
-          evidence=$(find /tmp/source-artifact -type f -name evidence.json -print -quit)
-          test -n "$evidence"
+          artifact_id=$(jq -r --arg name "$SOURCE_ARTIFACT_NAME" '.artifacts[]? | select(.name == $name) | .id // empty' <<<"$artifacts")
+          artifact_digest=$(jq -r --arg name "$SOURCE_ARTIFACT_NAME" '.artifacts[]? | select(.name == $name) | .digest // empty' <<<"$artifacts")
+          artifact_found=false
+          source_evidence_status=''
+          first_statements=null
+          second_statements=null
+          v1_complete=null
+          v2_complete=null
+          v2_rows=null
+          leakage_rows=null
+          worker_deleted=null
+          post_delete_status=null
+          pre_collected=''
+          post_collected=''
+          size_delta=null
 
-          [[ $(jq -r '.status' "$evidence") == 'pass' ]]
-          [[ $(jq -r '.headSha' "$evidence") == "$SOURCE_HEAD_SHA" ]]
-          [[ $(jq -r '.firstApplyStatementCount' "$evidence") == '5' ]]
-          [[ $(jq -r '.secondApplyStatementCount' "$evidence") == '0' ]]
-          [[ $(jq -r '.v1SchemaCompleteAfter' "$evidence") == 'true' ]]
-          [[ $(jq -r '.v2SchemaCompleteAfter' "$evidence") == 'true' ]]
-          [[ $(jq -r '.v2AggregateRowsAfter' "$evidence") == '0' ]]
-          [[ $(jq -r '.providerLeakageRowsAfter' "$evidence") == '0' ]]
-          [[ $(jq -r '.temporaryWorkerDeleted' "$evidence") == 'true' ]]
-          [[ $(jq -r '.postDeleteHttpStatus' "$evidence") == '404' ]]
-          pre_collected=$(jq -r '.preCollectedAt // empty' "$evidence")
-          post_collected=$(jq -r '.postCollectedAt // empty' "$evidence")
-          test -n "$pre_collected"
-          test -n "$post_collected"
-          [[ "$pre_collected" != "$post_collected" ]]
-          size_delta=$(jq -r '.databaseSizeDeltaBytes' "$evidence")
-          [[ "$size_delta" -ge 0 && "$size_delta" -le 5242880 ]]
-          [[ $(jq -r '.boundaries.v1GeneratorChanged' "$evidence") == 'false' ]]
-          [[ $(jq -r '.boundaries.v2GeneratorEnabled' "$evidence") == 'false' ]]
-          [[ $(jq -r '.boundaries.collectorChanged' "$evidence") == 'false' ]]
-          [[ $(jq -r '.boundaries.newCron' "$evidence") == 'false' ]]
-          [[ $(jq -r '.boundaries.backfill' "$evidence") == 'false' ]]
-          [[ $(jq -r '.boundaries.retentionChanged' "$evidence") == 'false' ]]
-          [[ $(jq -r '.boundaries.twitchChanged' "$evidence") == 'false' ]]
+          if [[ -n "$artifact_id" ]]; then
+            artifact_found=true
+            gh api -H 'Accept: application/vnd.github+json' "/repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > /tmp/source.zip
+            rm -rf /tmp/source-artifact
+            mkdir -p /tmp/source-artifact
+            unzip -q /tmp/source.zip -d /tmp/source-artifact
+            evidence=$(find /tmp/source-artifact -type f -name evidence.json -print -quit || true)
+            if [[ -n "$evidence" ]]; then
+              source_evidence_status=$(jq -r '.status // empty' "$evidence")
+              first_statements=$(jq -r '.firstApplyStatementCount // null' "$evidence")
+              second_statements=$(jq -r '.secondApplyStatementCount // null' "$evidence")
+              v1_complete=$(jq -r '.v1SchemaCompleteAfter // null' "$evidence")
+              v2_complete=$(jq -r '.v2SchemaCompleteAfter // null' "$evidence")
+              v2_rows=$(jq -r '.v2AggregateRowsAfter // null' "$evidence")
+              leakage_rows=$(jq -r '.providerLeakageRowsAfter // null' "$evidence")
+              worker_deleted=$(jq -r '.temporaryWorkerDeleted // null' "$evidence")
+              post_delete_status=$(jq -r '.postDeleteHttpStatus // null' "$evidence")
+              pre_collected=$(jq -r '.preCollectedAt // empty' "$evidence")
+              post_collected=$(jq -r '.postCollectedAt // empty' "$evidence")
+              size_delta=$(jq -r '.databaseSizeDeltaBytes // null' "$evidence")
+            fi
+          fi
+
+          diagnostic_status='SOURCE_RUN_FAILED'
+          if [[ "$run_conclusion" == 'success' && "$contract_conclusion" == 'success' && "$production_conclusion" == 'success' ]]; then
+            diagnostic_status='SOURCE_RUN_SUCCESS'
+          fi
 
           jq -n \
-            --arg schemaVersion 'viewloom-12a45-kick-history-v2-schema-apply-acceptance-evidence-v1' \
-            --argjson runId "$run_id" \
-            --argjson contractJobId "$contract_job_id" \
-            --argjson productionJobId "$production_job_id" \
-            --argjson sourceArtifactId "$artifact_id" \
-            --arg sourceArtifactDigest "$artifact_digest" \
+            --arg schemaVersion 'viewloom-12a45-kick-history-v2-schema-apply-diagnostic-v1' \
+            --arg status "$diagnostic_status" \
             --arg sourceHeadSha "$SOURCE_HEAD_SHA" \
+            --argjson productionRunId "$run_id" \
+            --arg runStatus "$run_status" \
+            --arg runConclusion "$run_conclusion" \
+            --argjson contractJobId "${contract_job_id:-null}" \
+            --arg contractConclusion "$contract_conclusion" \
+            --argjson productionSchemaApplyJobId "${production_job_id:-null}" \
+            --arg productionConclusion "$production_conclusion" \
+            --argjson failedSteps "$failed_steps" \
+            --argjson completedSteps "$completed_steps" \
+            --argjson sourceArtifactFound "$artifact_found" \
+            --argjson sourceArtifactId "${artifact_id:-null}" \
+            --arg sourceArtifactDigest "$artifact_digest" \
+            --arg sourceEvidenceStatus "$source_evidence_status" \
+            --argjson firstApplyStatementCount "$first_statements" \
+            --argjson secondApplyStatementCount "$second_statements" \
+            --argjson v1SchemaCompleteAfter "$v1_complete" \
+            --argjson v2SchemaCompleteAfter "$v2_complete" \
+            --argjson v2AggregateRowsAfter "$v2_rows" \
+            --argjson providerLeakageRowsAfter "$leakage_rows" \
+            --argjson temporaryWorkerDeleted "$worker_deleted" \
+            --argjson postDeleteHttpStatus "$post_delete_status" \
             --arg preCollectedAt "$pre_collected" \
             --arg postCollectedAt "$post_collected" \
-            --argjson sizeDelta "$size_delta" \
-            '{schemaVersion:$schemaVersion,status:"PASS",provider:"kick",sourceHeadSha:$sourceHeadSha,productionRunId:$runId,contractJobId:$contractJobId,productionSchemaApplyJobId:$productionJobId,sourceArtifactId:$sourceArtifactId,sourceArtifactDigest:$sourceArtifactDigest,firstApplyStatementCount:5,secondApplyStatementCount:0,v1SchemaCompleteAfter:true,v2SchemaCompleteAfter:true,v2AggregateRowsAfter:0,providerLeakageRowsAfter:0,preCollectedAt:$preCollectedAt,postCollectedAt:$postCollectedAt,databaseSizeDeltaBytes:$sizeDelta,temporaryWorkerDeleted:true,postDeleteHttpStatus:404,boundaries:{v1GeneratorChanged:false,v2GeneratorEnabled:false,collectorChanged:false,newCron:false,backfill:false,retentionChanged:false,twitchChanged:false}}' \
+            --argjson databaseSizeDeltaBytes "$size_delta" \
+            '{schemaVersion:$schemaVersion,status:$status,provider:"kick",sourceHeadSha:$sourceHeadSha,productionRunId:$productionRunId,runStatus:$runStatus,runConclusion:$runConclusion,contractJobId:$contractJobId,contractConclusion:$contractConclusion,productionSchemaApplyJobId:$productionSchemaApplyJobId,productionConclusion:$productionConclusion,failedSteps:$failedSteps,completedSteps:$completedSteps,sourceArtifactFound:$sourceArtifactFound,sourceArtifactId:$sourceArtifactId,sourceArtifactDigest:$sourceArtifactDigest,sourceEvidenceStatus:$sourceEvidenceStatus,firstApplyStatementCount:$firstApplyStatementCount,secondApplyStatementCount:$secondApplyStatementCount,v1SchemaCompleteAfter:$v1SchemaCompleteAfter,v2SchemaCompleteAfter:$v2SchemaCompleteAfter,v2AggregateRowsAfter:$v2AggregateRowsAfter,providerLeakageRowsAfter:$providerLeakageRowsAfter,temporaryWorkerDeleted:$temporaryWorkerDeleted,postDeleteHttpStatus:$postDeleteHttpStatus,preCollectedAt:$preCollectedAt,postCollectedAt:$postCollectedAt,databaseSizeDeltaBytes:$databaseSizeDeltaBytes,boundaries:{diagnosticOnly:true,productionRerun:false,cloudflareAccess:false,d1Access:false,workerDeploy:false,schemaApply:false}}' \
             > artifacts/12a45/evidence.json
+
+          cat artifacts/12a45/evidence.json
 
       - name: Upload sanitized acceptance evidence
         uses: actions/upload-artifact@v4
