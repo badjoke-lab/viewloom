@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "viewloom-12a46-kick-history-v2-schema-failure-diagnosis-contract-v1",
+  "phase": "12A-46",
+  "issue": 936,
+  "provider": "kick",
+  "status": "read_only_production_diagnosis",
+  "failedExecution": {
+    "triggerPr": 933,
+    "triggerHeadSha": "dfef01fef5511052225d79ea0b0847228a611eee",
+    "mergeSha": "1c02df8525e579cea8dd0008a6003ec3d575b61a",
+    "runId": 32332864208,
+    "contractJobId": 96316706583,
+    "productionJobId": 96316884149
+  },
+  "expectedV1Tables": [
+    "history_category_daily",
+    "history_category_streamer_daily",
+    "history_category_day_status"
+  ],
+  "expectedV2Objects": {
+    "tables": [
+      "history_category_daily_v2",
+      "history_category_streamer_daily_chunks_v2",
+      "history_category_day_status_v2"
+    ],
+    "indexes": [
+      "idx_history_category_daily_v2_category_day",
+      "idx_history_category_streamer_chunks_v2_category_day"
+    ]
+  },
+  "temporaryWorkerService": "viewloom-history-category-v2-schema-apply-kick",
+  "allowed": {
+    "d1SelectOnly": true,
+    "cloudflareServiceGetOnly": true,
+    "githubMetadataRead": true
+  },
+  "forbidden": {
+    "ddl": true,
+    "dmlMutation": true,
+    "workerDeploy": true,
+    "workerDelete": true,
+    "schemaApply": true,
+    "productionRerun": true,
+    "secretPut": true,
+    "generatorRuntimeChange": true,
+    "manualGeneration": true,
+    "backfill": true,
+    "cronChange": true,
+    "retentionChange": true,
+    "historyCategoryApiUiCutover": true,
+    "twitchRollout": true,
+    "newProductionCostProbe": true,
+    "thresholdRelaxation": true
+  },
+  "classifications": [
+    "SAFE_RETRY_ABSENT",
+    "PARTIAL_SCHEMA_RECOVERY_REQUIRED",
+    "POST_APPLY_ACCEPTANCE_REQUIRED",
+    "UNEXPECTED_V2_ROWS_STOP"
+  ]
+}

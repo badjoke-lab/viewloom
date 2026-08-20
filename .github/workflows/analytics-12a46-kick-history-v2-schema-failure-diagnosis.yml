@@ -1,0 +1,224 @@
+name: Analytics 12A46 Kick History V2 Schema Failure Diagnosis
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a46-kick-history-v2-schema-failure-diagnosis.yml'
+      - 'docs/audits/12a46-kick-history-v2-schema-failure-diagnosis-contract.json'
+      - 'scripts/verify-12a46-kick-history-v2-schema-failure-diagnosis.mjs'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ARTIFACT_DIR: artifacts/12a46-kick-history-v2-schema-failure-diagnosis
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify diagnosis contract
+        run: node scripts/verify-12a46-kick-history-v2-schema-failure-diagnosis.mjs
+
+      - name: Verify exact three-file PR scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          expected=(
+            '.github/workflows/analytics-12a46-kick-history-v2-schema-failure-diagnosis.yml'
+            'docs/audits/12a46-kick-history-v2-schema-failure-diagnosis-contract.json'
+            'scripts/verify-12a46-kick-history-v2-schema-failure-diagnosis.mjs'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+
+      - name: Read production schema state without mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR" /tmp/12a46
+          config='workers/history-category-v2-schema-apply/wrangler.kick.toml'
+          schema_sql="SELECT type, name FROM sqlite_master WHERE name IN ('history_category_daily','history_category_streamer_daily','history_category_day_status','history_category_daily_v2','history_category_streamer_daily_chunks_v2','history_category_day_status_v2','idx_history_category_daily_v2_category_day','idx_history_category_streamer_chunks_v2_category_day') ORDER BY type, name;"
+          pnpm dlx wrangler@4 d1 execute vl_kick_hot --remote --config "$config" --command "$schema_sql" --json > /tmp/12a46/schema.json
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path('/tmp/12a46/schema.json').read_text())
+          items = payload if isinstance(payload, list) else [payload]
+          results = []
+          metrics = {'rows_read': 0, 'rows_written': 0, 'changes': 0}
+          for item in items:
+              if not isinstance(item, dict):
+                  continue
+              if isinstance(item.get('results'), list):
+                  results.extend(item['results'])
+              meta = item.get('meta') or {}
+              for key in metrics:
+                  value = meta.get(key, 0)
+                  if isinstance(value, (int, float)):
+                      metrics[key] += int(value)
+          names = sorted({str(row.get('name')) for row in results if isinstance(row, dict) and row.get('name')})
+          types = {str(row.get('name')): str(row.get('type')) for row in results if isinstance(row, dict) and row.get('name')}
+          state = {'names': names, 'types': types, 'metrics': metrics}
+          Path('/tmp/12a46/schema-state.json').write_text(json.dumps(state, sort_keys=True))
+          PY
+
+          for table in history_category_daily_v2 history_category_streamer_daily_chunks_v2 history_category_day_status_v2; do
+            if python3 - "$table" <<'PY'
+          import json, sys
+          from pathlib import Path
+          state = json.loads(Path('/tmp/12a46/schema-state.json').read_text())
+          raise SystemExit(0 if sys.argv[1] in state['names'] else 1)
+          PY
+            then
+              pnpm dlx wrangler@4 d1 execute vl_kick_hot --remote --config "$config" --command "SELECT COUNT(*) AS row_count FROM $table;" --json > "/tmp/12a46/count-$table.json"
+            fi
+          done
+
+          service='viewloom-history-category-v2-schema-apply-kick'
+          service_status=$(curl -sS -o /tmp/12a46/service.json -w '%{http_code}' \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$service")
+
+          SERVICE_STATUS="$service_status" python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          v1 = [
+              'history_category_daily',
+              'history_category_streamer_daily',
+              'history_category_day_status',
+          ]
+          v2_tables = [
+              'history_category_daily_v2',
+              'history_category_streamer_daily_chunks_v2',
+              'history_category_day_status_v2',
+          ]
+          v2_indexes = [
+              'idx_history_category_daily_v2_category_day',
+              'idx_history_category_streamer_chunks_v2_category_day',
+          ]
+          expected_v2 = v2_tables + v2_indexes
+          state = json.loads(Path('/tmp/12a46/schema-state.json').read_text())
+          names = set(state['names'])
+          metrics = dict(state['metrics'])
+          counts = {}
+
+          def parse_wrangle(path):
+              payload = json.loads(Path(path).read_text())
+              items = payload if isinstance(payload, list) else [payload]
+              rows = []
+              local = {'rows_read': 0, 'rows_written': 0, 'changes': 0}
+              for item in items:
+                  if not isinstance(item, dict):
+                      continue
+                  if isinstance(item.get('results'), list):
+                      rows.extend(item['results'])
+                  meta = item.get('meta') or {}
+                  for key in local:
+                      value = meta.get(key, 0)
+                      if isinstance(value, (int, float)):
+                          local[key] += int(value)
+              return rows, local
+
+          for table in v2_tables:
+              path = Path(f'/tmp/12a46/count-{table}.json')
+              if not path.exists():
+                  counts[table] = None
+                  continue
+              rows, local = parse_wrangle(path)
+              counts[table] = int(rows[0].get('row_count', -1)) if rows else -1
+              for key in metrics:
+                  metrics[key] += local[key]
+
+          present_v1 = sorted(name for name in v1 if name in names)
+          present_v2_tables = sorted(name for name in v2_tables if name in names)
+          present_v2_indexes = sorted(name for name in v2_indexes if name in names)
+          present_v2 = present_v2_tables + present_v2_indexes
+          v1_complete = len(present_v1) == len(v1)
+          v2_absent = len(present_v2) == 0
+          v2_complete = len(present_v2) == len(expected_v2)
+          v2_partial = not v2_absent and not v2_complete
+          existing_rows = [value for value in counts.values() if isinstance(value, int) and value >= 0]
+          total_v2_rows = sum(existing_rows)
+
+          if not v1_complete:
+              classification = 'V1_SCHEMA_INCOMPLETE_STOP'
+          elif v2_absent:
+              classification = 'SAFE_RETRY_ABSENT'
+          elif v2_partial:
+              classification = 'PARTIAL_SCHEMA_RECOVERY_REQUIRED'
+          elif total_v2_rows > 0:
+              classification = 'UNEXPECTED_V2_ROWS_STOP'
+          else:
+              classification = 'POST_APPLY_ACCEPTANCE_REQUIRED'
+
+          evidence = {
+              'schemaVersion': 'viewloom-12a46-kick-history-v2-schema-failure-diagnosis-evidence-v1',
+              'status': 'OBSERVED',
+              'provider': 'kick',
+              'failedExecution': {
+                  'runId': 32332864208,
+                  'contractJobId': 96316706583,
+                  'productionJobId': 96316884149,
+              },
+              'v1': {
+                  'expectedTables': v1,
+                  'presentTables': present_v1,
+                  'complete': v1_complete,
+              },
+              'v2': {
+                  'expectedTables': v2_tables,
+                  'expectedIndexes': v2_indexes,
+                  'presentTables': present_v2_tables,
+                  'presentIndexes': present_v2_indexes,
+                  'absent': v2_absent,
+                  'partial': v2_partial,
+                  'complete': v2_complete,
+                  'tableRows': counts,
+                  'totalRows': total_v2_rows,
+              },
+              'temporaryWorker': {
+                  'serviceHttpStatus': int(os.environ['SERVICE_STATUS']),
+                  'deleted': os.environ['SERVICE_STATUS'] == '404',
+              },
+              'queryMetrics': metrics,
+              'classification': classification,
+              'boundaries': {
+                  'selectOnly': True,
+                  'productionRerun': False,
+                  'd1Mutation': False,
+                  'workerDeploy': False,
+                  'workerDelete': False,
+                  'schemaApply': False,
+              },
+          }
+          Path('artifacts/12a46-kick-history-v2-schema-failure-diagnosis/evidence.json').write_text(json.dumps(evidence, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(evidence, indent=2, sort_keys=True))
+          if metrics['rows_written'] != 0 or metrics['changes'] != 0:
+              raise SystemExit('read-only diagnosis unexpectedly reported writes/changes')
+          PY
+
+      - name: Upload sanitized diagnosis evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a46-kick-history-v2-schema-failure-diagnosis
+          path: artifacts/12a46-kick-history-v2-schema-failure-diagnosis/evidence.json
+          retention-days: 30
+          if-no-files-found: error
