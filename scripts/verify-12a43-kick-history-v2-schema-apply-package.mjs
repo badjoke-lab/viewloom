@@ -8,6 +8,7 @@ const workerPath = 'workers/history-category-v2-schema-apply/src/index.ts'
 const wranglerPath = 'workers/history-category-v2-schema-apply/wrangler.kick.toml'
 const workflowPath = '.github/workflows/analytics-12a43-kick-history-v2-schema-apply-package.yml'
 const triggerPath = 'docs/audits/12a43-kick-history-v2-schema-apply-trigger.json'
+const allowTrigger = process.env.VIEWLOOM_ALLOW_12A43_TRIGGER === 'true'
 
 const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'))
 const evidence = JSON.parse(fs.readFileSync(evidencePath, 'utf8'))
@@ -39,7 +40,8 @@ assert(contract.schemaPackage.secondApplyStatements === 0, 'second apply stateme
 assert(contract.schemaPackage.confirmation === 'APPLY_KICK_HISTORY_CATEGORY_V2_SCHEMA_ONLY', 'confirmation mismatch')
 assert(contract.triggerModel.triggerPresentInPackage === false, 'package must not contain trigger')
 assert(contract.triggerModel.packageMergeExecutesProduction === false, 'package merge must not execute production')
-assert(!fs.existsSync(triggerPath), 'trigger file must not exist in package')
+if (allowTrigger) assert(fs.existsSync(triggerPath), 'trigger file must exist when trigger revalidation is enabled')
+else assert(!fs.existsSync(triggerPath), 'trigger file must not exist in package')
 
 const expectedObjects = [
   'history_category_daily_v2',
@@ -85,7 +87,8 @@ assert(workflow.includes("docs/audits/12a43-kick-history-v2-schema-apply-trigger
 assert(workflow.includes("github.event_name == 'push'"), 'dormant production job condition missing')
 assert(workflow.includes('APPLY_KICK_HISTORY_CATEGORY_V2_SCHEMA_ONLY'), 'workflow confirmation mismatch')
 assert(workflow.includes('workers/history-category-v2-schema-apply/wrangler.kick.toml'), 'workflow worker config mismatch')
-assert(workflow.includes('if: github.event_name == \'pull_request\''), 'PR package guard missing')
+assert(workflow.includes("if: github.event_name == 'pull_request'"), 'PR package guard missing')
+assert(workflow.includes('verify-12a44-kick-history-v2-schema-apply-trigger.mjs'), 'trigger verifier wiring missing')
 
 for (const [key, value] of Object.entries(contract.authorizations)) {
   if (key === 'packageMerge') assert(value === true, 'package merge must be the only current authorization')
