@@ -1,6 +1,6 @@
 {
   "schemaVersion": "viewloom-12a49-kick-history-v2-schema-apply-retry-trigger-v1",
-  "status": "armed_for_one_time_main_push",
+  "status": "consumed_pass_retired",
   "provider": "kick",
   "oneTime": true,
   "confirmation": "APPLY_KICK_HISTORY_CATEGORY_V2_SCHEMA_ONLY",
@@ -14,8 +14,32 @@
   "expectedCorrectedPackageHeadSha": "d852dc712ab84d05c751a746765b44d87ad7a371",
   "expectedCorrectedPackageMergeSha": "ba3435901a1d2055f4106aa12932d0e714b999e1",
   "mutations": {
-    "productionSchemaExecution": true,
-    "productionD1Mutation": true
+    "productionSchemaExecution": false,
+    "productionD1Mutation": false
+  },
+  "execution": {
+    "executionIssue": 949,
+    "triggerPr": 948,
+    "triggerHeadSha": "88f60b8aaa53cd0e60b3a4f72470064e29e26386",
+    "productionMergeSha": "b0366eb1b1b2268ef75bb2a5d29251f6097ef574",
+    "productionRunId": 32395881830,
+    "contractJobId": 96512465189,
+    "productionSchemaRetryJobId": 96512575673,
+    "artifactId": 9416698952,
+    "artifactDigest": "sha256:9cb2bc7d7304593232090a248d2c94d351acc465a1337c7d196ca43ace12e9b0",
+    "result": "pass",
+    "firstApplyStatementCount": 5,
+    "secondApplyStatementCount": 0,
+    "v1SchemaCompleteAfter": true,
+    "v2SchemaCompleteAfter": true,
+    "v2AggregateRowsAfter": 0,
+    "providerLeakageRowsAfter": 0,
+    "temporaryWorkerDeleted": true,
+    "postDeleteHttpStatus": 404,
+    "retirementIssue": 953,
+    "retirementPr": 954,
+    "retirementMergeSha": "826c41d6138f529b207f74cc4b784da0a8d65b30",
+    "acceptanceIssue": 951
   },
   "forbidden": {
     "v2GeneratorWiring": false,
