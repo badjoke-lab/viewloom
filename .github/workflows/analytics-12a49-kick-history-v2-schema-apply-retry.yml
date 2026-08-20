@@ -33,10 +33,15 @@ jobs:
           set -euo pipefail
           trigger='docs/audits/12a49-kick-history-v2-schema-apply-retry-trigger.json'
           test -f "$trigger"
-          [[ $(jq -r '.status' "$trigger") == 'armed_for_one_time_main_push' ]]
+          [[ $(jq -r '.status' "$trigger") == 'consumed_pass_retired' ]]
           [[ $(jq -r '.provider' "$trigger") == 'kick' ]]
           [[ $(jq -r '.sourceMainSha' "$trigger") == 'ba3435901a1d2055f4106aa12932d0e714b999e1' ]]
           [[ $(jq -r '.expectedCorrectedPackageMergeSha' "$trigger") == 'ba3435901a1d2055f4106aa12932d0e714b999e1' ]]
+          [[ $(jq -r '.mutations.productionSchemaExecution' "$trigger") == 'false' ]]
+          [[ $(jq -r '.mutations.productionD1Mutation' "$trigger") == 'false' ]]
+          [[ $(jq -r '.execution.productionRunId' "$trigger") == '32395881830' ]]
+          [[ $(jq -r '.execution.artifactId' "$trigger") == '9416698952' ]]
+          [[ $(jq -r '.execution.retirementMergeSha' "$trigger") == '826c41d6138f529b207f74cc4b784da0a8d65b30' ]]
 
       - name: Verify retired workflow has no production execution surface
         shell: bash
