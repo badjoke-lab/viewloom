@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "viewloom-12a49-kick-history-v2-preinspect-root-cause-v1",
+  "status": "PROVEN",
+  "provider": "kick",
+  "sourceRetry": {
+    "executionIssue": 942,
+    "triggerPr": 941,
+    "productionMergeSha": "fc5634130be59e3d86056781793a8550055725d3",
+    "runId": 32335017572,
+    "contractJobId": 96322782545,
+    "productionJobId": 96323119972,
+    "artifactId": 9394373002,
+    "artifactDigest": "sha256:3fe700a3dd9bd44b457c5d24726af65713444d951e9fa0a513c39f3703c416e9",
+    "failedAtStage": "pre_inspect"
+  },
+  "observedFailureInspect": {
+    "ok": true,
+    "error": null,
+    "v1SchemaComplete": true,
+    "v2SchemaAbsent": true,
+    "v2SchemaPartial": false,
+    "v2AggregateRows": 0,
+    "providerLeakageRows": 0,
+    "databaseSizeBytes": 344952832,
+    "latestCollectedAt": "2026-08-20T05:15:09.007Z",
+    "temporaryWorkerDeleted": true,
+    "postDeleteHttpStatus": 404
+  },
+  "badGate": {
+    "expression": ".state.v2Schema.partial // true",
+    "expectedShellValue": "false",
+    "jqSemantics": "The alternative operator // selects the right-hand value when the left-hand value is null or false.",
+    "demonstration": "false // true => true",
+    "effect": "A legitimate partial=false state is deterministically converted to true and rejected."
+  },
+  "correctGate": {
+    "expression": ".state.v2Schema.partial == false",
+    "commandShape": "jq -e '.state.v2Schema.partial == false'",
+    "preservesBooleanFalse": true
+  },
+  "conclusion": {
+    "workerInspectBroken": false,
+    "d1Unavailable": false,
+    "schemaPartial": false,
+    "schemaAppliedBeforeFailure": false,
+    "gateBug": true,
+    "safeToPrepareCorrectedRetry": true,
+    "blindIdenticalRerun": false
+  }
+}
