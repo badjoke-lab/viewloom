@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "viewloom-12a49-kick-history-v2-schema-apply-retry-trigger-v1",
+  "status": "armed_for_one_time_main_push",
+  "provider": "kick",
+  "oneTime": true,
+  "confirmation": "APPLY_KICK_HISTORY_CATEGORY_V2_SCHEMA_ONLY",
+  "sourceMainSha": "ba3435901a1d2055f4106aa12932d0e714b999e1",
+  "retryOfRunId": 32335017572,
+  "rootCauseArtifactId": 9394373002,
+  "rootCause": "jq_false_falls_through_alternative_operator",
+  "acceptedCandidatePr": 927,
+  "acceptedPackagePr": 929,
+  "correctedPackagePr": 946,
+  "expectedCorrectedPackageHeadSha": "d852dc712ab84d05c751a746765b44d87ad7a371",
+  "expectedCorrectedPackageMergeSha": "ba3435901a1d2055f4106aa12932d0e714b999e1",
+  "mutations": {
+    "productionSchemaExecution": true,
+    "productionD1Mutation": true
+  },
+  "forbidden": {
+    "v2GeneratorWiring": false,
+    "v1GeneratorDisablement": false,
+    "collectorChange": false,
+    "collectorDeployment": false,
+    "manualGeneration": false,
+    "backfill": false,
+    "cronChange": false,
+    "rawRetentionChange": false,
+    "historyCategoryApiUiCutover": false,
+    "twitchRollout": false,
+    "crossProviderChange": false,
+    "newProductionCostProbe": false,
+    "thresholdRelaxation": false
+  }
+}
