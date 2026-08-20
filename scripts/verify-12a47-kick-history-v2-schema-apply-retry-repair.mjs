@@ -5,6 +5,7 @@ const contractPath = 'docs/audits/12a47-kick-history-v2-schema-apply-retry-repai
 const diagnosisPath = 'docs/audits/12a47-kick-history-v2-schema-failure-diagnosis-evidence.json'
 const workflowPath = '.github/workflows/analytics-12a47-kick-history-v2-schema-apply-retry.yml'
 const triggerPath = 'docs/audits/12a47-kick-history-v2-schema-apply-retry-trigger.json'
+const allowTrigger = process.env.VIEWLOOM_ALLOW_12A47_TRIGGER === 'true'
 const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'))
 const diagnosis = JSON.parse(fs.readFileSync(diagnosisPath, 'utf8'))
 const workflow = fs.readFileSync(workflowPath, 'utf8')
@@ -27,12 +28,13 @@ assert(contract.acceptedDiagnosis.rowsWritten === 0 && contract.acceptedDiagnosi
 assert(contract.acceptedPackage.pr === 929, 'accepted package mismatch')
 assert(contract.acceptedPackage.confirmation === 'APPLY_KICK_HISTORY_CATEGORY_V2_SCHEMA_ONLY', 'confirmation mismatch')
 assert(contract.acceptedPackage.firstApplyStatements === 5 && contract.acceptedPackage.secondApplyStatements === 0, 'statement contract mismatch')
-assert(contract.repair.triggerPresentInRepairPackage === false, 'repair package must not contain trigger')
+assert(contract.repair.triggerPresentInRepairPackage === false, 'repair package contract must remain trigger-free')
 assert(contract.repair.packageMergeExecutesProduction === false, 'repair merge must not execute production')
 assert(contract.repair.stageAwareFailureEvidence === true, 'failure evidence hardening missing')
 assert(contract.repair.schemaSemanticsChanged === false, 'schema semantics must not change')
 assert(contract.repair.workerRuntimeChanged === false, 'worker runtime must not change')
-assert(!fs.existsSync(triggerPath), '12A47 trigger must be absent from repair package')
+if (!allowTrigger) assert(!fs.existsSync(triggerPath), '12A47 trigger must be absent from repair package')
+else assert(fs.existsSync(triggerPath), 'explicit trigger revalidation requires trigger file')
 
 assert(diagnosis.schemaVersion === 'viewloom-12a47-kick-history-v2-schema-failure-diagnosis-evidence-v1', 'diagnosis schema mismatch')
 assert(diagnosis.status === 'ACCEPTED', 'diagnosis not accepted')
