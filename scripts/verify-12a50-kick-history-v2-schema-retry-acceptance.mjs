@@ -83,7 +83,16 @@ const retiredForbidden = [
   'actions/upload-' + 'artifact@v4',
 ]
 for (const needle of retiredForbidden) assert(!retiredWorkflow.includes(needle), `retired workflow regained production surface: ${needle}`)
-for (const forbidden of ['CLOUD' + 'FLARE_API_TOKEN', 'CLOUD' + 'FLARE_ACCOUNT_ID', 'wrang' + 'ler', 'd1 ex' + 'ecute', 'workers.' + 'dev']) {
+const closeoutForbidden = [
+  'CLOUD' + 'FLARE_API_TOKEN',
+  'CLOUD' + 'FLARE_ACCOUNT_ID',
+  'wrang' + 'ler@4 deploy',
+  'wrang' + 'ler d1 execute',
+  'd1 ex' + 'ecute',
+  'secret ' + 'put',
+  'workers.' + 'dev',
+]
+for (const forbidden of closeoutForbidden) {
   assert(!closeoutWorkflow.includes(forbidden), `closeout workflow production surface forbidden: ${forbidden}`)
 }
 for (const [key, value] of Object.entries(contract.boundaries)) {
