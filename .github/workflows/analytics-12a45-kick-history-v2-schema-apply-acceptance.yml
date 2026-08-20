@@ -1,0 +1,134 @@
+name: Analytics 12A45 Kick History V2 Schema Apply Acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a45-kick-history-v2-schema-apply-acceptance.yml'
+      - 'docs/audits/12a45-kick-history-v2-schema-apply-acceptance-contract.json'
+      - 'scripts/verify-12a45-kick-history-v2-schema-apply-acceptance.mjs'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_HEAD_SHA: 1c02df8525e579cea8dd0008a6003ec3d575b61a
+      SOURCE_WORKFLOW_NAME: Analytics 12A43 Kick History V2 Schema Apply Package
+      SOURCE_ARTIFACT_NAME: phase12a43-kick-history-v2-schema-apply
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify repository-only acceptance contract
+        run: node scripts/verify-12a45-kick-history-v2-schema-apply-acceptance.mjs
+
+      - name: Verify exact three-file PR scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          expected=(
+            '.github/workflows/analytics-12a45-kick-history-v2-schema-apply-acceptance.yml'
+            'docs/audits/12a45-kick-history-v2-schema-apply-acceptance-contract.json'
+            'scripts/verify-12a45-kick-history-v2-schema-apply-acceptance.mjs'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+
+      - name: Resolve exact production push run and evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/12a45
+          run_id=''
+          for attempt in $(seq 1 120); do
+            runs=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$SOURCE_HEAD_SHA&event=push&per_page=100")
+            run_id=$(jq -r --arg name "$SOURCE_WORKFLOW_NAME" '.workflow_runs | map(select(.name == $name)) | sort_by(.id) | last | .id // empty' <<<"$runs")
+            if [[ -n "$run_id" ]]; then
+              status=$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .status' <<<"$runs")
+              conclusion=$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .conclusion // empty' <<<"$runs")
+              if [[ "$status" == 'completed' ]]; then
+                [[ "$conclusion" == 'success' ]]
+                break
+              fi
+            fi
+            sleep 10
+          done
+          test -n "$run_id"
+
+          jobs=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/jobs?per_page=100")
+          contract_job_id=$(jq -r '.jobs[] | select(.name == "contract") | .id // empty' <<<"$jobs")
+          contract_conclusion=$(jq -r '.jobs[] | select(.name == "contract") | .conclusion // empty' <<<"$jobs")
+          production_job_id=$(jq -r '.jobs[] | select(.name == "production-schema-apply") | .id // empty' <<<"$jobs")
+          production_conclusion=$(jq -r '.jobs[] | select(.name == "production-schema-apply") | .conclusion // empty' <<<"$jobs")
+          test -n "$contract_job_id"
+          test -n "$production_job_id"
+          [[ "$contract_conclusion" == 'success' ]]
+          [[ "$production_conclusion" == 'success' ]]
+
+          artifacts=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100")
+          artifact_id=$(jq -r --arg name "$SOURCE_ARTIFACT_NAME" '.artifacts[] | select(.name == $name) | .id // empty' <<<"$artifacts")
+          artifact_digest=$(jq -r --arg name "$SOURCE_ARTIFACT_NAME" '.artifacts[] | select(.name == $name) | .digest // empty' <<<"$artifacts")
+          test -n "$artifact_id"
+          gh api -H 'Accept: application/vnd.github+json' "/repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > /tmp/source.zip
+          rm -rf /tmp/source-artifact
+          mkdir -p /tmp/source-artifact
+          unzip -q /tmp/source.zip -d /tmp/source-artifact
+          evidence=$(find /tmp/source-artifact -type f -name evidence.json -print -quit)
+          test -n "$evidence"
+
+          [[ $(jq -r '.status' "$evidence") == 'pass' ]]
+          [[ $(jq -r '.headSha' "$evidence") == "$SOURCE_HEAD_SHA" ]]
+          [[ $(jq -r '.firstApplyStatementCount' "$evidence") == '5' ]]
+          [[ $(jq -r '.secondApplyStatementCount' "$evidence") == '0' ]]
+          [[ $(jq -r '.v1SchemaCompleteAfter' "$evidence") == 'true' ]]
+          [[ $(jq -r '.v2SchemaCompleteAfter' "$evidence") == 'true' ]]
+          [[ $(jq -r '.v2AggregateRowsAfter' "$evidence") == '0' ]]
+          [[ $(jq -r '.providerLeakageRowsAfter' "$evidence") == '0' ]]
+          [[ $(jq -r '.temporaryWorkerDeleted' "$evidence") == 'true' ]]
+          [[ $(jq -r '.postDeleteHttpStatus' "$evidence") == '404' ]]
+          pre_collected=$(jq -r '.preCollectedAt // empty' "$evidence")
+          post_collected=$(jq -r '.postCollectedAt // empty' "$evidence")
+          test -n "$pre_collected"
+          test -n "$post_collected"
+          [[ "$pre_collected" != "$post_collected" ]]
+          size_delta=$(jq -r '.databaseSizeDeltaBytes' "$evidence")
+          [[ "$size_delta" -ge 0 && "$size_delta" -le 5242880 ]]
+          [[ $(jq -r '.boundaries.v1GeneratorChanged' "$evidence") == 'false' ]]
+          [[ $(jq -r '.boundaries.v2GeneratorEnabled' "$evidence") == 'false' ]]
+          [[ $(jq -r '.boundaries.collectorChanged' "$evidence") == 'false' ]]
+          [[ $(jq -r '.boundaries.newCron' "$evidence") == 'false' ]]
+          [[ $(jq -r '.boundaries.backfill' "$evidence") == 'false' ]]
+          [[ $(jq -r '.boundaries.retentionChanged' "$evidence") == 'false' ]]
+          [[ $(jq -r '.boundaries.twitchChanged' "$evidence") == 'false' ]]
+
+          jq -n \
+            --arg schemaVersion 'viewloom-12a45-kick-history-v2-schema-apply-acceptance-evidence-v1' \
+            --argjson runId "$run_id" \
+            --argjson contractJobId "$contract_job_id" \
+            --argjson productionJobId "$production_job_id" \
+            --argjson sourceArtifactId "$artifact_id" \
+            --arg sourceArtifactDigest "$artifact_digest" \
+            --arg sourceHeadSha "$SOURCE_HEAD_SHA" \
+            --arg preCollectedAt "$pre_collected" \
+            --arg postCollectedAt "$post_collected" \
+            --argjson sizeDelta "$size_delta" \
+            '{schemaVersion:$schemaVersion,status:"PASS",provider:"kick",sourceHeadSha:$sourceHeadSha,productionRunId:$runId,contractJobId:$contractJobId,productionSchemaApplyJobId:$productionJobId,sourceArtifactId:$sourceArtifactId,sourceArtifactDigest:$sourceArtifactDigest,firstApplyStatementCount:5,secondApplyStatementCount:0,v1SchemaCompleteAfter:true,v2SchemaCompleteAfter:true,v2AggregateRowsAfter:0,providerLeakageRowsAfter:0,preCollectedAt:$preCollectedAt,postCollectedAt:$postCollectedAt,databaseSizeDeltaBytes:$sizeDelta,temporaryWorkerDeleted:true,postDeleteHttpStatus:404,boundaries:{v1GeneratorChanged:false,v2GeneratorEnabled:false,collectorChanged:false,newCron:false,backfill:false,retentionChanged:false,twitchChanged:false}}' \
+            > artifacts/12a45/evidence.json
+
+      - name: Upload sanitized acceptance evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12a45-kick-history-v2-schema-apply-acceptance
+          path: artifacts/12a45/evidence.json
+          retention-days: 30
+          if-no-files-found: error
