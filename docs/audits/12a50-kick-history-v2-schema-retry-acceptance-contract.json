@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "viewloom-12a50-kick-history-v2-schema-retry-acceptance-contract-v1",
+  "phase": "12A-50",
+  "issue": 951,
+  "provider": "kick",
+  "source": {
+    "executionIssue": 949,
+    "triggerPr": 948,
+    "triggerHeadSha": "88f60b8aaa53cd0e60b3a4f72470064e29e26386",
+    "preExecutionMainSha": "ba3435901a1d2055f4106aa12932d0e714b999e1",
+    "productionMergeSha": "b0366eb1b1b2268ef75bb2a5d29251f6097ef574",
+    "productionRunId": 32395881830,
+    "sourceArtifactId": 9416698952,
+    "sourceArtifactDigest": "sha256:9cb2bc7d7304593232090a248d2c94d351acc465a1337c7d196ca43ace12e9b0"
+  },
+  "retirement": {
+    "issue": 953,
+    "pr": 954,
+    "mergeSha": "826c41d6138f529b207f74cc4b784da0a8d65b30",
+    "executionSurfaceRetired": true
+  },
+  "requiredPass": {
+    "firstApplyStatementCount": 5,
+    "secondApplyStatementCount": 0,
+    "v1SchemaCompleteAfter": true,
+    "v2SchemaCompleteAfter": true,
+    "v2AggregateRowsAfter": 0,
+    "providerLeakageRowsAfter": 0,
+    "freshNaturalSnapshot": true,
+    "temporaryWorkerDeleted": true,
+    "postDeleteHttpStatus": 404,
+    "maxDatabaseSizeDeltaBytes": 5242880,
+    "triggerLifecycle": "consumed_pass_retired"
+  },
+  "closeout": {
+    "canonicalEvidencePath": "docs/audits/12a50-kick-history-v2-schema-retry-acceptance-evidence.json",
+    "triggerPath": "docs/audits/12a49-kick-history-v2-schema-apply-retry-trigger.json",
+    "retiredWorkflowPath": ".github/workflows/analytics-12a49-kick-history-v2-schema-apply-retry.yml",
+    "productionRetryAfterMerge": false,
+    "nextAutomaticAction": false
+  },
+  "boundaries": {
+    "repositoryOnly": true,
+    "githubActionsReadOnly": true,
+    "cloudflareAccess": false,
+    "d1Access": false,
+    "workerMutation": false,
+    "schemaMutation": false,
+    "productionRetry": false,
+    "generatorRuntimeChange": false,
+    "manualGeneration": false,
+    "backfill": false,
+    "cronRetentionChange": false,
+    "apiUiCutover": false,
+    "twitchCrossProviderChange": false,
+    "costProbe": false,
+    "thresholdRelaxation": false
+  }
+}
