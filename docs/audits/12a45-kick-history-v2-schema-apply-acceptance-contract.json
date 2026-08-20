@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "viewloom-12a45-kick-history-v2-schema-apply-acceptance-contract-v1",
+  "phase": "12A-45",
+  "issue": 934,
+  "provider": "kick",
+  "status": "awaiting_read_only_github_evidence",
+  "productionTrigger": {
+    "pr": 933,
+    "triggerHeadSha": "dfef01fef5511052225d79ea0b0847228a611eee",
+    "mergeSha": "1c02df8525e579cea8dd0008a6003ec3d575b61a",
+    "workflowName": "Analytics 12A43 Kick History V2 Schema Apply Package",
+    "artifactName": "phase12a43-kick-history-v2-schema-apply"
+  },
+  "requiredEvidence": {
+    "pushRunConclusion": "success",
+    "productionSchemaApplyJobConclusion": "success",
+    "firstApplyStatementCount": 5,
+    "secondApplyStatementCount": 0,
+    "v1SchemaCompleteAfter": true,
+    "v2SchemaCompleteAfter": true,
+    "v2AggregateRowsAfter": 0,
+    "providerLeakageRowsAfter": 0,
+    "freshNaturalSnapshotRequired": true,
+    "temporaryWorkerDeleted": true,
+    "postDeleteHttpStatus": 404,
+    "maxDatabaseSizeDeltaBytes": 5242880
+  },
+  "boundaries": {
+    "githubActionsReadOnly": true,
+    "cloudflareSecrets": false,
+    "productionD1Read": false,
+    "productionD1Write": false,
+    "workerDeploy": false,
+    "schemaApply": false,
+    "generatorRuntimeChange": false,
+    "v2GeneratorEnable": false,
+    "v1GeneratorDisable": false,
+    "manualGeneration": false,
+    "backfill": false,
+    "cronChange": false,
+    "retentionChange": false,
+    "historyCategoryApiUiCutover": false,
+    "twitchRollout": false,
+    "newProductionCostProbe": false,
+    "thresholdRelaxation": false
+  }
+}
