@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "viewloom-12a43-kick-history-v2-schema-apply-package-contract-v1",
+  "phase": "12A-43",
+  "issue": 928,
+  "provider": "kick",
+  "status": "package_ready_production_not_armed",
+  "sourceMainSha": "102f3ce25d1bc277cc380ff8350a54c55bc0b17a",
+  "acceptedCandidate": {
+    "issue": 926,
+    "pr": 927,
+    "mergeSha": "102f3ce25d1bc277cc380ff8350a54c55bc0b17a",
+    "evidence": "docs/audits/12a42-kick-history-chunked-v2-candidate-benchmark-evidence.json",
+    "benchmarkSignatureSha256": "2db007d3881152ffdbe7dbcff1c69b02ff24b24b09ffbd315e35e54ac0845c63",
+    "chunkSize": 128,
+    "categoryRowCap": 300,
+    "physicalChunkRowBudget": 1000,
+    "encodedBytesCap": 47196,
+    "retentionDays": 180,
+    "incrementalMiBWithSafety": 30.05,
+    "projectedKickMiB": 399.73,
+    "providerHeadroomMiB": 40.27
+  },
+  "schemaPackage": {
+    "workerDirectory": "workers/history-category-v2-schema-apply",
+    "serviceName": "viewloom-history-category-v2-schema-apply-kick",
+    "binding": "DB",
+    "databaseName": "vl_kick_hot",
+    "confirmation": "APPLY_KICK_HISTORY_CATEGORY_V2_SCHEMA_ONLY",
+    "schemaModule": "workers/history-category-v2-schema-apply/src/schema.ts",
+    "tableStatements": 3,
+    "indexStatements": 2,
+    "firstApplyStatements": 5,
+    "secondApplyStatements": 0,
+    "objects": [
+      "history_category_daily_v2",
+      "history_category_streamer_daily_chunks_v2",
+      "history_category_day_status_v2",
+      "idx_history_category_daily_v2_category_day",
+      "idx_history_category_streamer_chunks_v2_category_day"
+    ],
+    "routes": [
+      "GET /health",
+      "POST /inspect",
+      "POST /apply"
+    ]
+  },
+  "preconditions": {
+    "v1SchemaMustRemainComplete": true,
+    "v2SchemaMustBeCompletelyAbsentOrAlreadyComplete": true,
+    "partialV2SchemaStopsWithoutDdl": true,
+    "preexistingV2AggregateRowsStop": true,
+    "latestNaturalKickSnapshotRequired": true,
+    "providerLeakageRowsMustBeZero": true
+  },
+  "postconditions": {
+    "v1SchemaMustRemainComplete": true,
+    "v2SchemaMustBeComplete": true,
+    "v2AggregateRowsMustRemainZero": true,
+    "providerLeakageRowsMustBeZero": true,
+    "secondPassAlreadyCompleteZeroStatements": true,
+    "newNaturalKickSnapshotRequiredByExecutionGate": true,
+    "temporaryWorkerDeletionRequired": true,
+    "postDeleteHttp404Required": true
+  },
+  "triggerModel": {
+    "triggerPath": "docs/audits/12a43-kick-history-v2-schema-apply-trigger.json",
+    "triggerPresentInPackage": false,
+    "packageMergeExecutesProduction": false,
+    "laterTriggerMustBeExactlyOneFile": true,
+    "laterTriggerMustPinPackagePrAndExactHead": true
+  },
+  "sanitizedEvidence": {
+    "rawPayloadsAllowed": false,
+    "channelIdentitiesAllowed": false,
+    "credentialsAllowed": false,
+    "accountIdAllowed": false,
+    "databaseIdAllowed": false,
+    "deployLogsAllowed": false,
+    "allowed": [
+      "run and job identifiers",
+      "package and trigger SHAs",
+      "schema object state",
+      "statement counts",
+      "query and worker metrics",
+      "database size before/after/delta",
+      "aggregate row counts",
+      "provider leakage count",
+      "snapshot timestamps and aggregate stream_count/total_viewers/source_mode",
+      "temporary worker deletion and final HTTP status"
+    ]
+  },
+  "authorizations": {
+    "packageMerge": true,
+    "productionSchemaExecution": false,
+    "productionD1Mutation": false,
+    "v2GeneratorWiring": false,
+    "v1GeneratorDisablement": false,
+    "collectorChange": false,
+    "productionCollectorDeployment": false,
+    "manualGeneration": false,
+    "backfill": false,
+    "cronChange": false,
+    "rawRetentionChange": false,
+    "historyCategoryApiUiCutover": false,
+    "twitchRollout": false,
+    "crossProviderChange": false,
+    "newProductionCostProbe": false,
+    "thresholdRelaxation": false
+  },
+  "nextGate": "separate_exact_one_file_production_schema_trigger_pinned_to_accepted_package"
+}
