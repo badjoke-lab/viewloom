@@ -1,5 +1,11 @@
 import collector from './index'
-import { auditTwitchLocationEvidence, type TwitchLocationEvidenceInput } from './location-evidence-audit'
+import {
+  auditTwitchLocationEvidence,
+  extractProfileLocationCandidates,
+  extractTagLocationCandidates,
+  extractTitleLocationCandidates,
+  type TwitchLocationEvidenceInput,
+} from './location-evidence-audit'
 import { categoryCaptureEnabled } from '../../shared/category-capture'
 import { maybeGenerateCategoryIntradayRollups } from '../../shared/category-intraday-rollup'
 import { maybeApplyIntradaySchema } from '../../shared/intraday-schema'
@@ -17,6 +23,10 @@ type Env = {
   CATEGORY_CAPTURE_ENABLED?: string
 }
 
+type AuditStream = TwitchLocationEvidenceInput & {
+  userLogin?: string
+}
+
 type TwitchTokenResponse = {
   access_token?: string
 }
@@ -24,6 +34,7 @@ type TwitchTokenResponse = {
 type TwitchStreamsResponse = {
   data?: Array<{
     user_id?: string
+    user_login?: string
     title?: unknown
     tags?: unknown
     language?: unknown
@@ -44,6 +55,7 @@ const LOCATION_AUDIT_PATH = '/audit/location-evidence'
 const LOCATION_AUDIT_PAGE_SIZE = 100
 const LOCATION_AUDIT_MAX_PAGES = 3
 const LOCATION_AUDIT_PREVIEW_HOST = /^(?:[a-f0-9]{8}|audit-pr-\d+)-viewloom-collector-twitch\.[a-z0-9-]+\.workers\.dev$/i
+const CANDIDATE_SOURCE_TEXT_LIMIT = 240
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -104,7 +116,7 @@ async function runLocationEvidenceAudit(env: Env) {
   if (!clientId || !clientSecret) throw new Error('twitch_credentials_missing')
 
   const accessToken = await getAppAccessToken(clientId, clientSecret)
-  const streams: TwitchLocationEvidenceInput[] = []
+  const streams: AuditStream[] = []
   let cursor = ''
   let coveredPages = 0
   let hasMore = false
@@ -126,6 +138,7 @@ async function runLocationEvidenceAudit(env: Env) {
     const pageItems = Array.isArray(data.data) ? data.data : []
     streams.push(...pageItems.map((stream) => ({
       userId: String(stream.user_id ?? '').trim(),
+      userLogin: String(stream.user_login ?? '').trim(),
       title: stream.title,
       tags: stream.tags,
       language: stream.language,
@@ -141,10 +154,12 @@ async function runLocationEvidenceAudit(env: Env) {
   }
 
   const profileAudit = await fetchProfileDescriptions(clientId, accessToken, streams)
-  const enrichedStreams = streams.map((stream) => ({
+  const enrichedStreams: AuditStream[] = streams.map((stream) => ({
     ...stream,
     profileDescription: profileAudit.descriptions.get(String(stream.userId ?? '').trim()) ?? '',
   }))
+  const audit = auditTwitchLocationEvidence(enrichedStreams)
+  const candidateEvidence = buildCandidateEvidence(enrichedStreams)
 
   return {
     provider: 'twitch',
@@ -169,9 +184,69 @@ async function runLocationEvidenceAudit(env: Env) {
       rawTagsStored: false,
       rawLanguageStored: false,
       rawProfileDescriptionStored: false,
+      candidateEvidenceArtifactOnly: true,
     },
-    audit: auditTwitchLocationEvidence(enrichedStreams),
+    audit,
+    candidateEvidence,
   }
+}
+
+function buildCandidateEvidence(streams: AuditStream[]) {
+  const records = []
+
+  for (const stream of streams) {
+    const profileCandidates = extractProfileLocationCandidates(stream.profileDescription)
+    const titleResult = extractTitleLocationCandidates(stream.title)
+    const tagCandidates = extractTagLocationCandidates(stream.tags)
+    if (profileCandidates.length === 0 && titleResult.candidates.length === 0 && tagCandidates.length === 0) continue
+
+    const sources = []
+    if (profileCandidates.length > 0) {
+      sources.push({
+        source: 'account_profile',
+        sourceText: boundedText(stream.profileDescription),
+        candidates: profileCandidates,
+      })
+    }
+    if (titleResult.candidates.length > 0) {
+      sources.push({
+        source: 'stream_title',
+        sourceText: boundedText(stream.title),
+        candidates: titleResult.candidates,
+      })
+    }
+    if (tagCandidates.length > 0) {
+      sources.push({
+        source: 'stream_tag',
+        sourceText: matchedLocationTags(stream.tags),
+        candidates: tagCandidates,
+      })
+    }
+
+    records.push({
+      userId: String(stream.userId ?? '').trim(),
+      userLogin: String(stream.userLogin ?? '').trim(),
+      sources,
+    })
+  }
+
+  return {
+    scope: 'candidate_matches_only',
+    rawNonCandidateStreamsIncluded: false,
+    recordCount: records.length,
+    records,
+  }
+}
+
+function matchedLocationTags(tags: unknown): string[] {
+  if (!Array.isArray(tags)) return []
+  return tags
+    .filter((tag) => extractTagLocationCandidates([tag]).length > 0)
+    .map((tag) => boundedText(tag))
+}
+
+function boundedText(value: unknown): string {
+  return String(value ?? '').trim().slice(0, CANDIDATE_SOURCE_TEXT_LIMIT)
 }
 
 async function fetchProfileDescriptions(
