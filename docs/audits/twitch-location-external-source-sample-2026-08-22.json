@@ -1,0 +1,258 @@
+{
+  "schemaVersion": "viewloom-twitch-location-external-source-sample-v1",
+  "status": "measured",
+  "provider": "twitch",
+  "observedAt": "2026-08-21T16:25:30.961Z",
+  "reviewDate": "2026-08-22",
+  "scope": "top_ranked_native_candidate_unknown_users",
+  "sampleSize": 20,
+  "policy": {
+    "languageUsedForPlacement": false,
+    "candidateOnlyPlacementAllowed": false,
+    "organizationPlacementAllowed": false,
+    "eventBroadcastPlacementAllowed": false,
+    "birthplacePlacementAllowed": false,
+    "eventVenuePlacementAllowed": false,
+    "organizationHeadquartersPlacementAllowed": false,
+    "nationalityPlacementAllowed": false,
+    "supportedTwitchSocialLinksApiAvailable": false,
+    "unsupportedTwitchInternalGraphqlAllowedForPersistentAcquisition": false,
+    "officialExternalAndManualReviewRemainSeparate": true
+  },
+  "sourceAcquisition": {
+    "helixProfileDescription": "supported",
+    "helixSocialLinks": "not_supported",
+    "publicAboutOrOfficialExternalReview": "bounded_manual_review_only",
+    "socialLinksApiReference": "https://discuss.dev.twitch.com/t/how-to-get-user-panel-data-blog-twitter-link/55835"
+  },
+  "nativeProbe": {
+    "streamCount": 300,
+    "profileUsersRequested": 300,
+    "profileUsersReturned": 300,
+    "profileDescriptionsPresent": 277,
+    "profileCandidateStreams": 1,
+    "titleCandidateStreams": 0,
+    "tagCandidateStreams": 2,
+    "anyCandidateStreams": 3,
+    "candidateYield": 0.01,
+    "acceptedCountryStreams": 0,
+    "acceptedCityStreams": 0,
+    "unknownStreams": 297
+  },
+  "sampleResult": {
+    "strictOfficialExternalAccepted": 1,
+    "strictOfficialExternalYield": 0.05,
+    "nonPersonBroadcastChannels": 5,
+    "nonPersonBroadcastRate": 0.25,
+    "birthplaceOnlyRejected": 1,
+    "noExplicitSupportedOfficialLocation": 13,
+    "unaccepted": 19,
+    "decision": "do_not_promote_external_profile_acquisition_to_persistent_pipeline_yet"
+  },
+  "records": [
+    {
+      "observedRank": 1,
+      "userLogin": "dota2ti",
+      "entityKind": "event_broadcast",
+      "placementEligible": false,
+      "reviewOutcome": "event_broadcast_not_home_base",
+      "twitchAboutUrl": "https://www.twitch.tv/dota2ti/about",
+      "references": [
+        "https://blog.twitch.tv/en/2013/08/06/watch-the-international-on-twitch-ab87fe2f9363/"
+      ]
+    },
+    {
+      "observedRank": 2,
+      "userLogin": "dota2ti_ru",
+      "entityKind": "event_broadcast",
+      "placementEligible": false,
+      "reviewOutcome": "event_broadcast_not_home_base",
+      "twitchAboutUrl": "https://www.twitch.tv/dota2ti_ru/about",
+      "references": [
+        "https://t.me/dota2ti_ru"
+      ]
+    },
+    {
+      "observedRank": 3,
+      "userLogin": "callofduty",
+      "entityKind": "event_broadcast",
+      "placementEligible": false,
+      "reviewOutcome": "official_broadcast_channel_not_person",
+      "twitchAboutUrl": "https://www.twitch.tv/callofduty/about",
+      "references": [
+        "https://callofdutyleague.com/en-us/news/major-i-what-you-need-to-know"
+      ]
+    },
+    {
+      "observedRank": 4,
+      "userLogin": "caedrel",
+      "entityKind": "unknown",
+      "placementEligible": false,
+      "reviewOutcome": "no_explicit_supported_official_location_evidence",
+      "twitchAboutUrl": "https://www.twitch.tv/caedrel/about",
+      "references": []
+    },
+    {
+      "observedRank": 5,
+      "userLogin": "ohnepixel",
+      "entityKind": "unknown",
+      "placementEligible": false,
+      "reviewOutcome": "no_explicit_supported_official_geographic_location_evidence",
+      "twitchAboutUrl": "https://www.twitch.tv/ohnepixel/about",
+      "references": []
+    },
+    {
+      "observedRank": 6,
+      "userLogin": "ramzes",
+      "entityKind": "unknown",
+      "placementEligible": false,
+      "reviewOutcome": "no_explicit_supported_official_location_evidence",
+      "twitchAboutUrl": "https://www.twitch.tv/ramzes/about",
+      "references": []
+    },
+    {
+      "observedRank": 7,
+      "userLogin": "kamet0",
+      "entityKind": "unknown",
+      "placementEligible": false,
+      "reviewOutcome": "organization_headquarters_not_personal_location",
+      "twitchAboutUrl": "https://www.twitch.tv/kamet0/about",
+      "references": []
+    },
+    {
+      "observedRank": 8,
+      "userLogin": "anarabdullaev",
+      "entityKind": "unknown",
+      "placementEligible": false,
+      "reviewOutcome": "no_explicit_supported_official_location_evidence",
+      "twitchAboutUrl": "https://www.twitch.tv/anarabdullaev/about",
+      "references": []
+    },
+    {
+      "observedRank": 9,
+      "userLogin": "indegnasen0706",
+      "entityKind": "unknown",
+      "placementEligible": false,
+      "reviewOutcome": "no_explicit_supported_official_location_evidence",
+      "twitchAboutUrl": "https://www.twitch.tv/indegnasen0706/about",
+      "references": []
+    },
+    {
+      "observedRank": 10,
+      "userLogin": "fps_shaka",
+      "entityKind": "person",
+      "placementEligible": false,
+      "reviewOutcome": "birthplace_only_not_home_or_current_location",
+      "twitchAboutUrl": "https://www.twitch.tv/fps_shaka/about",
+      "references": [
+        "https://prtimes.jp/main/html/rd/p/000000093.000041650.html"
+      ]
+    },
+    {
+      "observedRank": 11,
+      "userLogin": "drakeoffc",
+      "entityKind": "unknown",
+      "placementEligible": false,
+      "reviewOutcome": "no_explicit_supported_official_location_evidence",
+      "twitchAboutUrl": "https://www.twitch.tv/drakeoffc/about",
+      "references": []
+    },
+    {
+      "observedRank": 12,
+      "userLogin": "shadowkekw",
+      "entityKind": "unknown",
+      "placementEligible": false,
+      "reviewOutcome": "no_explicit_supported_official_location_evidence",
+      "twitchAboutUrl": "https://www.twitch.tv/shadowkekw/about",
+      "references": []
+    },
+    {
+      "observedRank": 13,
+      "userLogin": "chopperinho",
+      "entityKind": "unknown",
+      "placementEligible": false,
+      "reviewOutcome": "no_explicit_supported_official_location_evidence",
+      "twitchAboutUrl": "https://www.twitch.tv/chopperinho/about",
+      "references": []
+    },
+    {
+      "observedRank": 14,
+      "userLogin": "eslcs",
+      "entityKind": "event_broadcast",
+      "placementEligible": false,
+      "reviewOutcome": "official_esports_broadcast_channel_not_person",
+      "twitchAboutUrl": "https://www.twitch.tv/eslcs/about",
+      "references": [
+        "https://eslfaceitgroup.com/press/everything-you-need-to-know-ahead-of-intel-extreme-masters-cologne-2023/"
+      ]
+    },
+    {
+      "observedRank": 15,
+      "userLogin": "buster",
+      "entityKind": "unknown",
+      "placementEligible": false,
+      "reviewOutcome": "no_explicit_supported_official_location_evidence",
+      "twitchAboutUrl": "https://www.twitch.tv/buster/about",
+      "references": []
+    },
+    {
+      "observedRank": 16,
+      "userLogin": "ibai",
+      "entityKind": "unknown",
+      "placementEligible": false,
+      "reviewOutcome": "secondary_location_claim_not_promoted_to_official_external",
+      "twitchAboutUrl": "https://www.twitch.tv/ibai/about",
+      "references": []
+    },
+    {
+      "observedRank": 17,
+      "userLogin": "solo",
+      "entityKind": "unknown",
+      "placementEligible": false,
+      "reviewOutcome": "nationality_or_birth_context_not_home_or_current_location",
+      "twitchAboutUrl": "https://www.twitch.tv/solo/about",
+      "references": []
+    },
+    {
+      "observedRank": 18,
+      "userLogin": "deepins02",
+      "entityKind": "unknown",
+      "placementEligible": false,
+      "reviewOutcome": "no_explicit_supported_official_location_evidence",
+      "twitchAboutUrl": "https://www.twitch.tv/deepins02/about",
+      "references": []
+    },
+    {
+      "observedRank": 19,
+      "userLogin": "shotzzy",
+      "entityKind": "person",
+      "placementEligible": true,
+      "reviewOutcome": "accepted_official_external_declared_location",
+      "location": {
+        "countryCode": "US",
+        "countryName": "United States",
+        "region": "Texas",
+        "city": "Dallas",
+        "locationType": "declared_location",
+        "evidenceSource": "official_external",
+        "confidence": "explicit"
+      },
+      "twitchAboutUrl": "https://www.twitch.tv/shotzzy/about",
+      "references": [
+        "https://x.com/Shotzzy/with_replies",
+        "https://opticgaming.com/member/shotzzy"
+      ]
+    },
+    {
+      "observedRank": 20,
+      "userLogin": "ow_esports",
+      "entityKind": "event_broadcast",
+      "placementEligible": false,
+      "reviewOutcome": "official_esports_broadcast_channel_not_person",
+      "twitchAboutUrl": "https://www.twitch.tv/ow_esports/about",
+      "references": [
+        "https://overwatch.blizzard.com/en-us/news/24215214/2-stadium-asia-streamer-showdown/"
+      ]
+    }
+  ]
+}
