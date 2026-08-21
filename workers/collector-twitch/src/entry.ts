@@ -31,6 +31,7 @@ type TwitchStreamsResponse = {
 const LOCATION_AUDIT_PATH = '/audit/location-evidence'
 const LOCATION_AUDIT_PAGE_SIZE = 100
 const LOCATION_AUDIT_MAX_PAGES = 3
+const LOCATION_AUDIT_PREVIEW_HOST = /^audit-pr-\d+-viewloom-collector-twitch\.[a-z0-9-]+\.workers\.dev$/i
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -165,6 +166,8 @@ async function getAppAccessToken(clientId: string, clientSecret: string): Promis
 function requireAuditToken(request: Request, env: Env):
   | { ok: true }
   | { ok: false; error: string; status: number } {
+  if (isLocationAuditPreviewRequest(request)) return { ok: true }
+
   const expected = String(env.TWITCH_INGEST_TOKEN ?? '').trim()
   if (!expected) return { ok: false, error: 'audit_token_not_configured', status: 503 }
 
@@ -174,6 +177,11 @@ function requireAuditToken(request: Request, env: Env):
     : request.headers.get('x-ingest-token')?.trim()
   if (token && token === expected) return { ok: true }
   return { ok: false, error: 'unauthorized', status: 401 }
+}
+
+function isLocationAuditPreviewRequest(request: Request): boolean {
+  const hostname = new URL(request.url).hostname
+  return LOCATION_AUDIT_PREVIEW_HOST.test(hostname)
 }
 
 function sanitizeAuditError(error: unknown): string {
