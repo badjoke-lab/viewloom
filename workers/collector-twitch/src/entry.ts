@@ -22,10 +22,22 @@ type TwitchTokenResponse = {
 }
 
 type TwitchStreamsResponse = {
-  data?: Array<TwitchLocationEvidenceInput>
+  data?: Array<{
+    user_id?: string
+    title?: unknown
+    tags?: unknown
+    language?: unknown
+  }>
   pagination?: {
     cursor?: string
   }
+}
+
+type TwitchUsersResponse = {
+  data?: Array<{
+    id?: string
+    description?: string
+  }>
 }
 
 const LOCATION_AUDIT_PATH = '/audit/location-evidence'
@@ -113,6 +125,7 @@ async function runLocationEvidenceAudit(env: Env) {
     const data = await response.json() as TwitchStreamsResponse
     const pageItems = Array.isArray(data.data) ? data.data : []
     streams.push(...pageItems.map((stream) => ({
+      userId: String(stream.user_id ?? '').trim(),
       title: stream.title,
       tags: stream.tags,
       language: stream.language,
@@ -127,25 +140,89 @@ async function runLocationEvidenceAudit(env: Env) {
     hasMore = true
   }
 
+  const profileAudit = await fetchProfileDescriptions(clientId, accessToken, streams)
+  const enrichedStreams = streams.map((stream) => ({
+    ...stream,
+    profileDescription: profileAudit.descriptions.get(String(stream.userId ?? '').trim()) ?? '',
+  }))
+
   return {
     provider: 'twitch',
     mode: 'read_only_manual_audit',
     observedAt: new Date().toISOString(),
     coveredPages,
-    streamCount: streams.length,
+    streamCount: enrichedStreams.length,
     hasMore,
     apiRequests: {
       token: 1,
       streams: coveredPages,
-      users: 0,
+      users: profileAudit.requestCount,
+    },
+    profileAudit: {
+      requestedUsers: profileAudit.requestedUsers,
+      returnedUsers: profileAudit.returnedUsers,
+      descriptionsPresent: profileAudit.descriptionsPresent,
     },
     persistence: {
       d1Writes: 0,
       rawTitleStored: false,
       rawTagsStored: false,
       rawLanguageStored: false,
+      rawProfileDescriptionStored: false,
     },
-    audit: auditTwitchLocationEvidence(streams),
+    audit: auditTwitchLocationEvidence(enrichedStreams),
+  }
+}
+
+async function fetchProfileDescriptions(
+  clientId: string,
+  accessToken: string,
+  streams: TwitchLocationEvidenceInput[],
+): Promise<{
+  descriptions: Map<string, string>
+  requestCount: number
+  requestedUsers: number
+  returnedUsers: number
+  descriptionsPresent: number
+}> {
+  const ids = [...new Set(streams
+    .map((stream) => String(stream.userId ?? '').trim())
+    .filter(Boolean))]
+  const descriptions = new Map<string, string>()
+  let requestCount = 0
+  let returnedUsers = 0
+
+  for (let offset = 0; offset < ids.length; offset += LOCATION_AUDIT_PAGE_SIZE) {
+    const batch = ids.slice(offset, offset + LOCATION_AUDIT_PAGE_SIZE)
+    if (batch.length === 0) continue
+
+    const url = new URL('https://api.twitch.tv/helix/users')
+    for (const id of batch) url.searchParams.append('id', id)
+    const response = await fetch(url.toString(), {
+      headers: {
+        'Client-Id': clientId,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    if (!response.ok) throw new Error(`twitch_users_http_${response.status}`)
+
+    requestCount += 1
+    const data = await response.json() as TwitchUsersResponse
+    const users = Array.isArray(data.data) ? data.data : []
+    returnedUsers += users.length
+    for (const user of users) {
+      const id = String(user.id ?? '').trim()
+      if (!id) continue
+      descriptions.set(id, String(user.description ?? ''))
+    }
+  }
+
+  return {
+    descriptions,
+    requestCount,
+    requestedUsers: ids.length,
+    returnedUsers,
+    descriptionsPresent: [...descriptions.values()].filter((description) => description.trim().length > 0).length,
   }
 }
 
