@@ -1,3 +1,5 @@
+import { auditLocationCandidates } from './location-candidate-extractor.mjs'
+
 const PAGE_SIZE = 100
 const MAX_PAGES = 3
 
@@ -113,10 +115,7 @@ const output = {
     count: null,
     reason: 'not_collected_requires_helix_users',
   },
-  candidateExtraction: {
-    status: 'not_implemented',
-    note: 'Source availability is not a geographic match.',
-  },
+  candidateExtraction: auditLocationCandidates(streams),
 }
 
 console.log(JSON.stringify(output, null, 2))
