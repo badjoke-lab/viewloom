@@ -6,6 +6,7 @@ import {
   extractTitleLocationCandidates,
   type TwitchLocationEvidenceInput,
 } from './location-evidence-audit'
+import { buildUnknownLocationAcquisitionSample } from './location-acquisition-sample'
 import { categoryCaptureEnabled } from '../../shared/category-capture'
 import { maybeGenerateCategoryIntradayRollups } from '../../shared/category-intraday-rollup'
 import { maybeApplyIntradaySchema } from '../../shared/intraday-schema'
@@ -160,6 +161,7 @@ async function runLocationEvidenceAudit(env: Env) {
   }))
   const audit = auditTwitchLocationEvidence(enrichedStreams)
   const candidateEvidence = buildCandidateEvidence(enrichedStreams)
+  const acquisitionSample = buildUnknownLocationAcquisitionSample(enrichedStreams, 20)
 
   return {
     provider: 'twitch',
@@ -185,9 +187,11 @@ async function runLocationEvidenceAudit(env: Env) {
       rawLanguageStored: false,
       rawProfileDescriptionStored: false,
       candidateEvidenceArtifactOnly: true,
+      unknownSampleIdentifiersArtifactOnly: true,
     },
     audit,
     candidateEvidence,
+    acquisitionSample,
   }
 }
 
