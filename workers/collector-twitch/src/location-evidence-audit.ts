@@ -1,7 +1,9 @@
 export type TwitchLocationEvidenceInput = {
+  userId?: unknown
   title?: unknown
   tags?: unknown
   language?: unknown
+  profileDescription?: unknown
 }
 
 export type LocationEvidenceCollectionStatus =
@@ -36,7 +38,7 @@ export const TWITCH_LOCATION_EVIDENCE_SOURCE_STATUS = {
     endpoint: '/helix/users',
     collectionStatus: 'not_collected' as const,
     additionalApiRequestRequired: true,
-    evidenceUse: 'unavailable' as const,
+    evidenceUse: 'direct_candidate_source' as const,
   },
 } as const
 
@@ -112,6 +114,15 @@ const TITLE_LOCATION_CUES = [
   'at',
 ] as const
 
+const PROFILE_LOCATION_CUES = [
+  'based in',
+  'based out of',
+  'located in',
+  'living in',
+  'live in',
+  'from',
+] as const
+
 type CandidateRecord = {
   kind: 'country' | 'city'
   countryCode: string
@@ -121,7 +132,7 @@ type CandidateRecord = {
 }
 
 type LocationCandidate = {
-  source: 'stream_title' | 'stream_tag'
+  source: 'account_profile' | 'stream_title' | 'stream_tag'
   kind: 'country' | 'city'
   countryCode: string
   countryName: string
@@ -174,6 +185,42 @@ function dedupeCandidates(candidates: LocationCandidate[]): LocationCandidate[] 
   })
 }
 
+function extractCueLocationCandidates(
+  value: unknown,
+  source: LocationCandidate['source'],
+  cues: readonly string[],
+): LocationCandidate[] {
+  const raw = String(value ?? '').trim()
+  if (!raw) return []
+  const text = normalize(raw)
+  const candidates: LocationCandidate[] = []
+
+  for (const record of LOCATION_RECORDS) {
+    if (!hasBoundaryTerm(text, record.alias)) continue
+    const alias = normalize(record.alias)
+    const cueMatched = cues.some((cue) => {
+      const pattern = new RegExp(`(?:^|\\s)${escapeRegex(cue)}\\s+(?:the\\s+)?${escapeRegex(alias)}(?:$|\\s)`, 'i')
+      return pattern.test(` ${text} `)
+    })
+    if (!cueMatched) continue
+
+    candidates.push({
+      source,
+      kind: record.kind,
+      countryCode: record.countryCode,
+      countryName: record.countryName,
+      city: record.city,
+      confidence: 'candidate_only',
+    })
+  }
+
+  return dedupeCandidates(candidates)
+}
+
+export function extractProfileLocationCandidates(description: unknown): LocationCandidate[] {
+  return extractCueLocationCandidates(description, 'account_profile', PROFILE_LOCATION_CUES)
+}
+
 export function extractTitleLocationCandidates(title: unknown): {
   candidates: LocationCandidate[]
   rejected: 'future_or_planned_travel_wording' | null
@@ -183,30 +230,10 @@ export function extractTitleLocationCandidates(title: unknown): {
   if (FUTURE_TRAVEL_PATTERN.test(raw)) {
     return { candidates: [], rejected: 'future_or_planned_travel_wording' }
   }
-
-  const text = normalize(raw)
-  const candidates: LocationCandidate[] = []
-  for (const record of LOCATION_RECORDS) {
-    if (!hasBoundaryTerm(text, record.alias)) continue
-
-    const alias = normalize(record.alias)
-    const cueMatched = TITLE_LOCATION_CUES.some((cue) => {
-      const pattern = new RegExp(`(?:^|\\s)${escapeRegex(cue)}\\s+(?:the\\s+)?${escapeRegex(alias)}(?:$|\\s)`, 'i')
-      return pattern.test(` ${text} `)
-    })
-    if (!cueMatched) continue
-
-    candidates.push({
-      source: 'stream_title',
-      kind: record.kind,
-      countryCode: record.countryCode,
-      countryName: record.countryName,
-      city: record.city,
-      confidence: 'candidate_only',
-    })
+  return {
+    candidates: extractCueLocationCandidates(raw, 'stream_title', TITLE_LOCATION_CUES),
+    rejected: null,
   }
-
-  return { candidates: dedupeCandidates(candidates), rejected: null }
 }
 
 export function extractTagLocationCandidates(tags: unknown): LocationCandidate[] {
@@ -236,6 +263,7 @@ export function buildTwitchLocationEvidenceSourceAudit(streams: TwitchLocationEv
   let title = 0
   let tags = 0
   let language = 0
+  let description = 0
   let titleAndTags = 0
   let titleAndLanguage = 0
   let tagsAndLanguage = 0
@@ -246,10 +274,12 @@ export function buildTwitchLocationEvidenceSourceAudit(streams: TwitchLocationEv
     const hasTitle = nonEmptyText(stream.title)
     const hasTags = nonEmptyTextArray(stream.tags)
     const hasLanguage = nonEmptyText(stream.language)
+    const hasDescription = nonEmptyText(stream.profileDescription)
 
     if (hasTitle) title += 1
     if (hasTags) tags += 1
     if (hasLanguage) language += 1
+    if (hasDescription) description += 1
     if (hasTitle && hasTags) titleAndTags += 1
     if (hasTitle && hasLanguage) titleAndLanguage += 1
     if (hasTags && hasLanguage) tagsAndLanguage += 1
@@ -264,7 +294,7 @@ export function buildTwitchLocationEvidenceSourceAudit(streams: TwitchLocationEv
       title,
       tags,
       language,
-      description: null,
+      description,
     },
     overlaps: {
       titleAndTags,
@@ -274,41 +304,69 @@ export function buildTwitchLocationEvidenceSourceAudit(streams: TwitchLocationEv
     },
     anyZeroExtraApiEvidence,
     description: {
-      count: null,
-      reason: 'not_collected_requires_helix_users',
+      count: description,
+      reason: description > 0 ? 'audit_fetched_via_helix_users' : 'not_collected_requires_helix_users',
     },
   }
 }
 
 export function auditLocationCandidates(streams: TwitchLocationEvidenceInput[]) {
   const counts = {
+    profileCandidateStreams: 0,
     titleCandidateStreams: 0,
     tagCandidateStreams: 0,
+    profileOnlyCandidateStreams: 0,
+    titleOnlyCandidateStreams: 0,
+    tagOnlyCandidateStreams: 0,
+    profileAndTitleCandidateStreams: 0,
+    profileAndTagCandidateStreams: 0,
     titleAndTagCandidateStreams: 0,
+    allThreeCandidateStreams: 0,
     anyCandidateStreams: 0,
     rejectedFutureTravelTitles: 0,
     countryCandidateStreams: 0,
     cityCandidateStreams: 0,
     multipleLocationCandidateStreams: 0,
+    unknownStreams: 0,
+    acceptedCountryStreams: 0,
+    acceptedCityStreams: 0,
   }
-  const sourceYield = { stream_title: 0, stream_tag: 0 }
+  const sourceYield = { account_profile: 0, stream_title: 0, stream_tag: 0 }
   const countries = new Map<string, number>()
 
   for (const stream of streams) {
+    const profileCandidates = extractProfileLocationCandidates(stream?.profileDescription)
     const titleResult = extractTitleLocationCandidates(stream?.title)
     const tagCandidates = extractTagLocationCandidates(stream?.tags)
     const titleCandidates = titleResult.candidates
-    const allCandidates = dedupeCandidates([...titleCandidates, ...tagCandidates])
+    const allCandidates = dedupeCandidates([...profileCandidates, ...titleCandidates, ...tagCandidates])
+
+    const hasProfile = profileCandidates.length > 0
+    const hasTitle = titleCandidates.length > 0
+    const hasTag = tagCandidates.length > 0
+    const sourceCount = Number(hasProfile) + Number(hasTitle) + Number(hasTag)
 
     if (titleResult.rejected === 'future_or_planned_travel_wording') counts.rejectedFutureTravelTitles += 1
-    if (titleCandidates.length > 0) counts.titleCandidateStreams += 1
-    if (tagCandidates.length > 0) counts.tagCandidateStreams += 1
-    if (titleCandidates.length > 0 && tagCandidates.length > 0) counts.titleAndTagCandidateStreams += 1
-    if (allCandidates.length === 0) continue
+    if (hasProfile) counts.profileCandidateStreams += 1
+    if (hasTitle) counts.titleCandidateStreams += 1
+    if (hasTag) counts.tagCandidateStreams += 1
+    if (hasProfile && !hasTitle && !hasTag) counts.profileOnlyCandidateStreams += 1
+    if (!hasProfile && hasTitle && !hasTag) counts.titleOnlyCandidateStreams += 1
+    if (!hasProfile && !hasTitle && hasTag) counts.tagOnlyCandidateStreams += 1
+    if (hasProfile && hasTitle) counts.profileAndTitleCandidateStreams += 1
+    if (hasProfile && hasTag) counts.profileAndTagCandidateStreams += 1
+    if (hasTitle && hasTag) counts.titleAndTagCandidateStreams += 1
+    if (sourceCount === 3) counts.allThreeCandidateStreams += 1
+
+    if (allCandidates.length === 0) {
+      counts.unknownStreams += 1
+      continue
+    }
 
     counts.anyCandidateStreams += 1
-    sourceYield.stream_title += titleCandidates.length > 0 ? 1 : 0
-    sourceYield.stream_tag += tagCandidates.length > 0 ? 1 : 0
+    sourceYield.account_profile += hasProfile ? 1 : 0
+    sourceYield.stream_title += hasTitle ? 1 : 0
+    sourceYield.stream_tag += hasTag ? 1 : 0
 
     const placeKeys = new Set(allCandidates.map((candidate) => `${candidate.countryCode}:${candidate.city ?? ''}`))
     if (placeKeys.size > 1) counts.multipleLocationCandidateStreams += 1
@@ -326,7 +384,7 @@ export function auditLocationCandidates(streams: TwitchLocationEvidenceInput[]) 
     counts,
     sourceYield,
     candidateCountries: Object.fromEntries([...countries.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))),
-    note: 'Candidates are conservative text/tag matches for audit only. They are not accepted geographic placements.',
+    note: 'Candidates are conservative profile/title/tag matches for audit only. They are not accepted geographic placements.',
   }
 }
 
