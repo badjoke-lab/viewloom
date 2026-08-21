@@ -1,0 +1,127 @@
+.page--stream-map {
+  display: grid;
+  gap: 18px;
+}
+
+.stream-map-shell {
+  padding: 18px;
+  display: grid;
+  gap: 16px;
+}
+
+.stream-map-shell__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.stream-map-shell__head h2 {
+  margin: 4px 0 6px;
+}
+
+.stream-map-shell__head p {
+  margin: 0;
+  color: var(--muted, #9da7b3);
+}
+
+.stream-map-shell__eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted, #9da7b3);
+}
+
+.stream-map-source-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stream-map-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 9px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stream-map-badge--profile { color: #74a7ff; }
+.stream-map-badge--title { color: #69d3b0; }
+.stream-map-badge--tag { color: #d1a35f; }
+.stream-map-badge--external { color: #b58cf3; }
+.stream-map-badge--manual { color: #d97d91; }
+
+.stream-map-placeholder {
+  position: relative;
+  min-height: 430px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  background: #071016;
+  display: grid;
+  place-items: center;
+}
+
+.stream-map-placeholder__grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.22;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.stream-map-placeholder__message {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+  max-width: 520px;
+  padding: 24px;
+  text-align: center;
+}
+
+.stream-map-placeholder__message strong {
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+}
+
+.stream-map-placeholder__message span {
+  color: var(--muted, #9da7b3);
+}
+
+.stream-map-support-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.stream-map-support-grid article {
+  padding: 16px;
+}
+
+.stream-map-support-grid small,
+.stream-map-support-grid strong,
+.stream-map-support-grid p {
+  display: block;
+}
+
+.stream-map-support-grid strong {
+  margin-top: 4px;
+}
+
+.stream-map-support-grid p {
+  margin: 8px 0 0;
+  color: var(--muted, #9da7b3);
+}
+
+@media (max-width: 760px) {
+  .stream-map-placeholder { min-height: 340px; }
+  .stream-map-support-grid { grid-template-columns: 1fr; }
+}
