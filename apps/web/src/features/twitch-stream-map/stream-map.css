@@ -57,43 +57,78 @@
 .stream-map-badge--external { color: #b58cf3; }
 .stream-map-badge--manual { color: #d97d91; }
 
-.stream-map-placeholder {
+.stream-map-stage {
   position: relative;
-  min-height: 430px;
+  min-height: 500px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 16px;
   background: #071016;
-  display: grid;
-  place-items: center;
 }
 
-.stream-map-placeholder__grid {
+.stream-map-canvas {
   position: absolute;
   inset: 0;
-  opacity: 0.22;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
-  background-size: 44px 44px;
 }
 
-.stream-map-placeholder__message {
-  position: relative;
-  z-index: 1;
+.stream-map-canvas .maplibregl-canvas {
+  outline: none;
+}
+
+.stream-map-canvas .maplibregl-ctrl-group {
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 10px;
+  background: rgba(8, 14, 20, 0.88);
+  box-shadow: none;
+}
+
+.stream-map-canvas .maplibregl-ctrl-group button {
+  background-color: transparent;
+}
+
+.stream-map-canvas .maplibregl-ctrl-attrib {
+  background: rgba(7,16,22,0.82);
+  color: #aeb8c3;
+}
+
+.stream-map-canvas .maplibregl-ctrl-attrib a {
+  color: inherit;
+}
+
+.stream-map-status {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  z-index: 2;
   display: grid;
-  gap: 8px;
-  max-width: 520px;
-  padding: 24px;
-  text-align: center;
+  gap: 3px;
+  max-width: min(520px, calc(100% - 88px));
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px;
+  background: rgba(7,16,22,0.88);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
 }
 
-.stream-map-placeholder__message strong {
-  font-size: clamp(1.15rem, 2vw, 1.5rem);
+.stream-map-status[data-state='ready'] {
+  opacity: 0.88;
 }
 
-.stream-map-placeholder__message span {
+.stream-map-status strong {
+  font-size: 0.86rem;
+}
+
+.stream-map-status span {
   color: var(--muted, #9da7b3);
+  font-size: 0.78rem;
+}
+
+.stream-map-interaction-note {
+  margin: 0;
+  color: var(--muted, #9da7b3);
+  font-size: 0.82rem;
 }
 
 .stream-map-support-grid {
@@ -122,6 +157,7 @@
 }
 
 @media (max-width: 760px) {
-  .stream-map-placeholder { min-height: 340px; }
+  .stream-map-stage { min-height: 390px; }
   .stream-map-support-grid { grid-template-columns: 1fr; }
+  .stream-map-status { max-width: calc(100% - 78px); }
 }
