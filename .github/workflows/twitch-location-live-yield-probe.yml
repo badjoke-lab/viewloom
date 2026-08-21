@@ -6,6 +6,11 @@ on:
       - probe/twitch-location-live-yield
     paths:
       - '.github/workflows/twitch-location-live-yield-probe.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/twitch-location-live-yield-probe.yml'
 
 permissions:
   contents: read
