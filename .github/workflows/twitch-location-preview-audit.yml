@@ -1,6 +1,14 @@
 name: Twitch Location Preview Audit
 
 on:
+  push:
+    branches:
+      - feature/twitch-location-external-source-audit
+    paths:
+      - 'workers/collector-twitch/src/entry.ts'
+      - 'workers/collector-twitch/src/location-evidence-audit.ts'
+      - 'workers/collector-twitch/src/location-acquisition-sample.ts'
+      - '.github/workflows/twitch-location-preview-audit.yml'
   pull_request:
     branches:
       - main
@@ -14,12 +22,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: twitch-location-preview-audit-pr-${{ github.event.pull_request.number }}
+  group: twitch-location-preview-audit-970
   cancel-in-progress: true
 
 jobs:
   preview-audit:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -52,7 +60,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$ARTIFACT_DIR"
-          alias="audit-pr-${{ github.event.pull_request.number }}"
+          alias="audit-pr-970"
           output="$(wrangler versions upload \
             --config workers/collector-twitch/wrangler.category-permanent.toml \
             --preview-alias "$alias" \
@@ -118,6 +126,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: twitch-location-preview-audit-pr-${{ github.event.pull_request.number }}
+          name: twitch-location-preview-audit-pr-970
           path: artifacts/twitch-location-preview-audit
           if-no-files-found: warn
