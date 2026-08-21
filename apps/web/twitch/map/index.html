@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stream Map — ViewLoom</title>
+  <meta name="description" content="Explore accepted geographic context for currently observed Twitch live streams in ViewLoom." />
+  <link rel="canonical" href="https://www.viewloom.net/twitch/map/" />
+  <meta property="og:site_name" content="ViewLoom" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://www.viewloom.net/twitch/map/" />
+  <meta property="og:title" content="Stream Map — ViewLoom" />
+  <meta property="og:description" content="Explore accepted geographic context for currently observed Twitch live streams in ViewLoom." />
+  <meta property="og:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:title" content="Stream Map — ViewLoom" />
+  <meta name="twitter:description" content="Explore accepted geographic context for currently observed Twitch live streams in ViewLoom." />
+  <link rel="stylesheet" href="/src/mock-site.css" />
+  <link rel="stylesheet" href="/src/features/twitch-stream-map/stream-map.css" />
+</head>
+<body data-provider="twitch" data-page="twitch-stream-map">
+  <div class="site-frame">
+    <header class="masthead">
+      <div class="masthead__inner">
+        <a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
+        <nav class="global-nav"><a href="/">Portal</a><a href="/twitch/" aria-current="page">Twitch data</a><a href="/kick/">Kick data</a><a href="/about/">About</a><a href="/support/">Support</a></nav>
+        <div class="status-inline"><span class="dot"></span>Collector status loading · 5m cadence</div>
+        <button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button>
+      </div>
+    </header>
+    <main class="page page--full page--stream-map">
+      <div class="breadcrumb">ViewLoom / Twitch data / Stream Map</div>
+      <nav class="feature-tabs"><a href="/twitch/heatmap/">Heatmap</a><a href="/twitch/day-flow/">Day Flow</a><a href="/twitch/battle-lines/">Battle Lines</a><a href="/twitch/history/">History</a><a href="/twitch/status/">Data Status</a></nav>
+      <section class="page-head page-head--stream-map">
+        <div><div class="kicker">TWITCH DATA · WHERE</div><h1>Stream Map</h1><p class="lede">Geographic context for observed Twitch live streams, using only accepted location evidence. Unknown locations remain unknown.</p></div>
+        <div class="head-facts"><div class="fact"><small>Observed</small><strong>—</strong></div><div class="fact"><small>Mapped</small><strong>—</strong></div><div class="fact"><small>Unmapped</small><strong>—</strong></div><div class="fact"><small>State</small><strong>Not connected</strong></div></div>
+      </section>
+      <div class="data-strip"><div class="data-strip__title">Twitch location observation</div><div class="data-strip__cell"><small>Updated</small>—</div><div class="data-strip__cell"><small>Coverage</small>Not connected</div><div class="data-strip__cell"><small>Sources</small>Profile · Title · Tags · External · Manual</div><div class="data-strip__cell"><small>Placement</small>Evidence-backed only</div></div>
+      <section class="surface stream-map-shell" aria-label="Stream Map">
+        <div class="stream-map-shell__head">
+          <div>
+            <div class="stream-map-shell__eyebrow">Map foundation</div>
+            <h2>World map</h2>
+            <p>Map rendering and live location evidence are not connected in this first route gate.</p>
+          </div>
+          <div class="stream-map-source-preview" aria-label="Planned location evidence sources">
+            <span class="stream-map-badge stream-map-badge--profile">Profile</span>
+            <span class="stream-map-badge stream-map-badge--title">Title</span>
+            <span class="stream-map-badge stream-map-badge--tag">Tag</span>
+            <span class="stream-map-badge stream-map-badge--external">External</span>
+            <span class="stream-map-badge stream-map-badge--manual">Manual</span>
+          </div>
+        </div>
+        <div id="stream-map-root" class="stream-map-placeholder" role="status" aria-live="polite">
+          <div class="stream-map-placeholder__grid" aria-hidden="true"></div>
+          <div class="stream-map-placeholder__message">
+            <strong>Map surface not connected yet</strong>
+            <span>Next gate: MapLibre world basemap, country borders, bounded pan/zoom.</span>
+          </div>
+        </div>
+      </section>
+      <section class="stream-map-support-grid">
+        <article class="surface"><small>Mapped coverage</small><strong>—</strong><p>Observed, mapped and unmapped counts will appear only after the real Twitch live join.</p></article>
+        <article class="surface"><small>Location truth</small><strong>No inference</strong><p>Language, timezone, schedule and names do not determine geographic placement.</p></article>
+        <article class="surface"><small>Evidence model</small><strong>Multi-source</strong><p>Profile, title, tags, external references and manual review remain separate provenance sources.</p></article>
+      </section>
+    </main>
+    <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method & limits</a><a href="/support/">Support</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
+  </div>
+  <script type="module" src="/src/mock-site.ts"></script>
+  <script type="module" src="/src/features/twitch-stream-map/stream-map-entry.ts"></script>
+  <script type="module" src="/src/analytics.ts"></script>
+</body>
+</html>
