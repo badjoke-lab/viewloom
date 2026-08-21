@@ -1,0 +1,74 @@
+name: Analytics 12A52 Kick History V2 Dormant Generator Package
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a52-kick-history-v2-dormant-generator-package.yml'
+      - 'docs/audits/12a52-kick-history-v2-dormant-generator-package.json'
+      - 'scripts/test-12a52-kick-history-v2-dormant-generator.py'
+      - 'scripts/verify-12a52-kick-history-v2-dormant-generator-package.mjs'
+      - 'workers/dormant/history-category-v2-generator.ts'
+      - 'workers/dormant/history-category-v2-generator-sql.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Verify exact dormant package scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          expected=(
+            '.github/workflows/analytics-12a52-kick-history-v2-dormant-generator-package.yml'
+            'docs/audits/12a52-kick-history-v2-dormant-generator-package.json'
+            'scripts/test-12a52-kick-history-v2-dormant-generator.py'
+            'scripts/verify-12a52-kick-history-v2-dormant-generator-package.mjs'
+            'workers/dormant/history-category-v2-generator-sql.ts'
+            'workers/dormant/history-category-v2-generator.ts'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+          ! printf '%s\n' "${changed[@]}" | grep -Eq '^(workers/collector-|workers/shared/|db/d1/|apps/)'
+
+      - name: Verify dormant package contract
+        run: node scripts/verify-12a52-kick-history-v2-dormant-generator-package.mjs
+
+      - name: Run SQL and persistence fixtures
+        run: python3 scripts/test-12a52-kick-history-v2-dormant-generator.py
+
+      - name: Revalidate accepted v2 boundaries
+        run: |
+          node scripts/verify-12a42-kick-history-chunked-v2-candidate.mjs
+          node scripts/verify-12a51-kick-history-v2-generator-migration-decision.mjs
+
+      - name: Typecheck all collector and dormant Worker modules
+        run: pnpm typecheck:collectors
+
+      - name: Verify no production execution surface
+        run: |
+          set -euo pipefail
+          file='.github/workflows/analytics-12a52-kick-history-v2-dormant-generator-package.yml'
+          ! grep -Eq '^  (push|workflow_dispatch|schedule):' "$file"
+          secret_needle='sec''rets.'
+          remote_needle='--re''mote'
+          d1_needle='d1'' execute'
+          deploy_needle='wrangler@4'' deploy'
+          ! grep -Fq -- "$secret_needle" "$file"
+          ! grep -Fq -- "$remote_needle" "$file"
+          ! grep -Fq -- "$d1_needle" "$file"
+          ! grep -Fq -- "$deploy_needle" "$file"

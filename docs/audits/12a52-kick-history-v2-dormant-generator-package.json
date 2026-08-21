@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "viewloom-12a52-kick-history-v2-dormant-generator-package-v1",
+  "phase": "12A-52",
+  "issue": 960,
+  "provider": "kick",
+  "status": "dormant_repository_package",
+  "sourceDecision": {
+    "issue": 958,
+    "pr": 959,
+    "mergeSha": "e294c5102c0fd000db223f69b880e781367f2ecf",
+    "phase": "12A-51"
+  },
+  "acceptedInputs": {
+    "rawCategoryContractVersion": "category-source-v1",
+    "outputContractVersion": "category-source-v2-chunked",
+    "chunkSize": 128,
+    "categoryRowCapPerDay": 300,
+    "physicalChunkRowBudgetPerDay": 1000,
+    "encodedContributorBytesCapPerDay": 47196,
+    "retentionDays": 180,
+    "bucketMinutes": 5,
+    "productionSchemaAcceptancePhase": "12A-50",
+    "productionSchemaRunId": 32395881830,
+    "productionSchemaComplete": true,
+    "productionV2RowsBeforeRuntimeMigration": 0
+  },
+  "implementation": {
+    "generator": "workers/dormant/history-category-v2-generator.ts",
+    "sql": "workers/dormant/history-category-v2-generator-sql.ts",
+    "candidateBuilder": "workers/dormant/history-category-chunked-v2-candidate.ts",
+    "activeCollectorEdited": false,
+    "activeWranglerEdited": false,
+    "environmentParsingIncluded": false,
+    "explicitEnabledAndStartDayInputRequired": true,
+    "newCron": false,
+    "backfill": false,
+    "productionWiringIncluded": false
+  },
+  "rawDerivation": {
+    "precheck": "reuse precheckKickHistoryCategoryDay",
+    "categoryTotals": "exact concurrent category snapshot sums then daily viewer-minutes/peak",
+    "contributorTotals": "exact category-streamer daily viewer-minutes/peak/observed-minutes/sample-count",
+    "rawCategoryReadPathsPerDay": 3,
+    "latestCategoryBackprojection": false,
+    "providerMixing": false
+  },
+  "boundedPersistence": {
+    "authoritativeDayBatchStatements": 5,
+    "failClosedDayBatchStatements": 3,
+    "retentionStatements": 3,
+    "maximumNormalStatementsForTwoDaysWithRetention": 19,
+    "oneStatementPerCategoryRow": false,
+    "oneStatementPerChunkRow": false,
+    "categoryRowsEncodedAsOneJsonArrayBind": true,
+    "chunksEncodedAsOneJsonArrayBind": true,
+    "sameDayReplacement": "delete_v2_day_rows_then_insert_json_arrays_and_upsert_status_in_one_d1_batch",
+    "postWriteChangeCountVerification": true,
+    "postWriteMismatchRecovery": "delete_v2_day_rows_and_mark_unavailable_generation_mismatch"
+  },
+  "failClosedStates": {
+    "noCategoryData": "unavailable_no_category_data",
+    "missingCategory": "unavailable_missing_category",
+    "categoryOrPhysicalChunkOverflow": "unavailable_overflow",
+    "encodedBytesOverflow": "unavailable_encoded_bytes_overflow",
+    "generationMismatch": "unavailable_generation_mismatch",
+    "partialRowsExposedWhenUnavailable": false
+  },
+  "localVerification": {
+    "fixtureScript": "scripts/test-12a52-kick-history-v2-dormant-generator.py",
+    "directlyExecutesSqlExtractedFromDormantSqlModule": true,
+    "fixtures": [
+      "Kick/Twitch provider separation",
+      "two-snapshot exact concurrent category totals",
+      "per-streamer category totals",
+      "Unicode display name JSON round-trip",
+      "provider/category/day chunk expansion before ranking",
+      "same-day idempotent replacement",
+      "v1 sentinel tables unchanged",
+      "v2-only 180-day retention deletion"
+    ],
+    "reusesAcceptedBoundaryVerifier": "scripts/verify-12a42-kick-history-chunked-v2-candidate.mjs",
+    "collectorTypecheckRequired": true
+  },
+  "productionCost": {
+    "canonicalHistoricalV1PassRowsRead": 16117,
+    "hardMaximumRowsRead": 250000,
+    "v2ProductionRowsReadMeasured": false,
+    "newProductionCostProbeAuthorized": false,
+    "note": "The dormant package preserves three raw category read paths/day but does not claim a production v2 cost result."
+  },
+  "activeProductionStateMustRemain": {
+    "v1GeneratorEnabled": true,
+    "v1StartDay": "2026-08-17",
+    "cron": "*/5 * * * *",
+    "v2GeneratorWired": false,
+    "v2GeneratorEnabled": false
+  },
+  "authorization": {
+    "repositoryDormantPackage": true,
+    "mergeDormantPackage": true,
+    "productionV2GeneratorWiring": false,
+    "productionV2GeneratorEnablement": false,
+    "productionV1GeneratorDisablement": false,
+    "collectorChange": false,
+    "collectorDeployment": false,
+    "productionD1Read": false,
+    "productionD1Mutation": false,
+    "manualGeneration": false,
+    "backfill": false,
+    "cronChange": false,
+    "rawRetentionChange": false,
+    "historyCategoryApiUiCutover": false,
+    "twitchRollout": false,
+    "crossProviderChange": false,
+    "newProductionCostProbe": false,
+    "thresholdRelaxation": false
+  },
+  "nextGate": "After this dormant package is accepted, open a separate repository-only Decision for a disabled-by-default active collector migration candidate. Do not alter v1/v2 production authority from this package."
+}
