@@ -100,28 +100,32 @@ const CITY_ALIASES = [
   ['Mexico City', 'MX', 'Mexico', ['mexico city']],
 ] as const
 
-const TITLE_LOCATION_CUES = [
-  'live from',
-  'live in',
-  'irl from',
-  'irl in',
-  'streaming from',
-  'streaming in',
-  'currently in',
-  'right now in',
-  'from',
-  'in',
-  'at',
-] as const
+type LocationClaimType = 'home_or_base' | 'declared_country' | 'current_location' | 'ambiguous'
 
-const PROFILE_LOCATION_CUES = [
-  'based in',
-  'based out of',
-  'located in',
-  'living in',
-  'live in',
-  'from',
-] as const
+type LocationCue = {
+  cue: string
+  claimType: LocationClaimType
+}
+
+const TITLE_LOCATION_CUES: readonly LocationCue[] = [
+  { cue: 'live from', claimType: 'current_location' },
+  { cue: 'live in', claimType: 'current_location' },
+  { cue: 'irl from', claimType: 'current_location' },
+  { cue: 'irl in', claimType: 'current_location' },
+  { cue: 'streaming from', claimType: 'current_location' },
+  { cue: 'streaming in', claimType: 'current_location' },
+  { cue: 'currently in', claimType: 'current_location' },
+  { cue: 'right now in', claimType: 'current_location' },
+]
+
+const PROFILE_LOCATION_CUES: readonly LocationCue[] = [
+  { cue: 'based in', claimType: 'home_or_base' },
+  { cue: 'based out of', claimType: 'home_or_base' },
+  { cue: 'located in', claimType: 'home_or_base' },
+  { cue: 'living in', claimType: 'home_or_base' },
+  { cue: 'live in', claimType: 'home_or_base' },
+  { cue: 'from', claimType: 'declared_country' },
+]
 
 type CandidateRecord = {
   kind: 'country' | 'city'
@@ -137,6 +141,7 @@ type LocationCandidate = {
   countryCode: string
   countryName: string
   city: string | null
+  claimType: LocationClaimType
   confidence: 'candidate_only'
 }
 
@@ -178,7 +183,7 @@ const LOCATION_RECORDS = locationRecords()
 function dedupeCandidates(candidates: LocationCandidate[]): LocationCandidate[] {
   const seen = new Set<string>()
   return candidates.filter((candidate) => {
-    const key = [candidate.source, candidate.kind, candidate.countryCode, candidate.city ?? ''].join(':')
+    const key = [candidate.source, candidate.claimType, candidate.kind, candidate.countryCode, candidate.city ?? ''].join(':')
     if (seen.has(key)) return false
     seen.add(key)
     return true
@@ -186,19 +191,29 @@ function dedupeCandidates(candidates: LocationCandidate[]): LocationCandidate[] 
 }
 
 function hasLocationConflict(candidates: LocationCandidate[]): boolean {
-  const countryCodes = new Set(candidates.map((candidate) => candidate.countryCode))
-  if (countryCodes.size > 1) return true
+  const byClaimType = new Map<LocationClaimType, LocationCandidate[]>()
+  for (const candidate of candidates) {
+    const group = byClaimType.get(candidate.claimType) ?? []
+    group.push(candidate)
+    byClaimType.set(candidate.claimType, group)
+  }
 
-  const cities = new Set(candidates
-    .map((candidate) => candidate.city)
-    .filter((city): city is string => typeof city === 'string' && city.length > 0))
-  return cities.size > 1
+  for (const group of byClaimType.values()) {
+    const countryCodes = new Set(group.map((candidate) => candidate.countryCode))
+    if (countryCodes.size > 1) return true
+
+    const cities = new Set(group
+      .map((candidate) => candidate.city)
+      .filter((city): city is string => typeof city === 'string' && city.length > 0))
+    if (cities.size > 1) return true
+  }
+  return false
 }
 
 function extractCueLocationCandidates(
   value: unknown,
   source: LocationCandidate['source'],
-  cues: readonly string[],
+  cues: readonly LocationCue[],
 ): LocationCandidate[] {
   const raw = String(value ?? '').trim()
   if (!raw) return []
@@ -208,20 +223,21 @@ function extractCueLocationCandidates(
   for (const record of LOCATION_RECORDS) {
     if (!hasBoundaryTerm(text, record.alias)) continue
     const alias = normalize(record.alias)
-    const cueMatched = cues.some((cue) => {
-      const pattern = new RegExp(`(?:^|\\s)${escapeRegex(cue)}\\s+(?:the\\s+)?${escapeRegex(alias)}(?:$|\\s)`, 'i')
-      return pattern.test(` ${text} `)
-    })
-    if (!cueMatched) continue
 
-    candidates.push({
-      source,
-      kind: record.kind,
-      countryCode: record.countryCode,
-      countryName: record.countryName,
-      city: record.city,
-      confidence: 'candidate_only',
-    })
+    for (const cue of cues) {
+      const pattern = new RegExp(`(?:^|\\s)${escapeRegex(cue.cue)}\\s+(?:the\\s+)?${escapeRegex(alias)}(?:$|\\s)`, 'i')
+      if (!pattern.test(` ${text} `)) continue
+
+      candidates.push({
+        source,
+        kind: record.kind,
+        countryCode: record.countryCode,
+        countryName: record.countryName,
+        city: record.city,
+        claimType: cue.claimType,
+        confidence: 'candidate_only',
+      })
+    }
   }
 
   return dedupeCandidates(candidates)
@@ -261,6 +277,7 @@ export function extractTagLocationCandidates(tags: unknown): LocationCandidate[]
         countryCode: record.countryCode,
         countryName: record.countryName,
         city: record.city,
+        claimType: 'ambiguous',
         confidence: 'candidate_only',
       })
     }
@@ -336,6 +353,10 @@ export function auditLocationCandidates(streams: TwitchLocationEvidenceInput[]) 
     rejectedFutureTravelTitles: 0,
     countryCandidateStreams: 0,
     cityCandidateStreams: 0,
+    homeOrBaseCandidateStreams: 0,
+    declaredCountryCandidateStreams: 0,
+    currentLocationCandidateStreams: 0,
+    ambiguousCandidateStreams: 0,
     multipleLocationCandidateStreams: 0,
     unknownStreams: 0,
     acceptedCountryStreams: 0,
@@ -381,6 +402,10 @@ export function auditLocationCandidates(streams: TwitchLocationEvidenceInput[]) 
     if (hasLocationConflict(allCandidates)) counts.multipleLocationCandidateStreams += 1
     if (allCandidates.some((candidate) => candidate.kind === 'country')) counts.countryCandidateStreams += 1
     if (allCandidates.some((candidate) => candidate.kind === 'city')) counts.cityCandidateStreams += 1
+    if (allCandidates.some((candidate) => candidate.claimType === 'home_or_base')) counts.homeOrBaseCandidateStreams += 1
+    if (allCandidates.some((candidate) => candidate.claimType === 'declared_country')) counts.declaredCountryCandidateStreams += 1
+    if (allCandidates.some((candidate) => candidate.claimType === 'current_location')) counts.currentLocationCandidateStreams += 1
+    if (allCandidates.some((candidate) => candidate.claimType === 'ambiguous')) counts.ambiguousCandidateStreams += 1
 
     const countryCodes = new Set(allCandidates.map((candidate) => candidate.countryCode))
     for (const code of countryCodes) countries.set(code, (countries.get(code) ?? 0) + 1)
@@ -393,7 +418,7 @@ export function auditLocationCandidates(streams: TwitchLocationEvidenceInput[]) 
     counts,
     sourceYield,
     candidateCountries: Object.fromEntries([...countries.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))),
-    note: 'Candidates are conservative profile/title/tag matches for audit only. They are not accepted geographic placements.',
+    note: 'Candidates preserve claim type. Profile origin, home/base, current-location and ambiguous tag claims are not collapsed together.',
   }
 }
 
