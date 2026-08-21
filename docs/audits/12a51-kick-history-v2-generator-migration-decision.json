@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "viewloom-12a51-kick-history-v2-generator-migration-decision-v1",
+  "phase": "12A-51",
+  "issue": 958,
+  "provider": "kick",
+  "status": "dormant_v2_generator_package_go_production_forbidden",
+  "decision": "GO",
+  "sourceMainSha": "acd1a51c7fffedffbff8bdfb88a8d0f06801ff0b",
+  "acceptedPrerequisites": {
+    "v2CandidatePr": 927,
+    "v2CandidateContractVersion": "category-source-v2-chunked",
+    "chunkSize": 128,
+    "categoryRowCapPerDay": 300,
+    "physicalChunkRowBudgetPerDay": 1000,
+    "encodedContributorBytesCapPerDay": 47196,
+    "retentionDays": 180,
+    "productionSchemaAcceptancePhase": "12A-50",
+    "productionSchemaRunId": 32395881830,
+    "productionSchemaArtifactId": 9416698952,
+    "productionSchemaFirstApplyStatements": 5,
+    "productionSchemaSecondApplyStatements": 0,
+    "v1SchemaComplete": true,
+    "v2SchemaComplete": true,
+    "v2AggregateRowsAfterSchemaApply": 0,
+    "providerLeakageRowsAfterSchemaApply": 0,
+    "productionSchemaAcceptanceEvidence": "docs/audits/12a50-kick-history-v2-schema-retry-acceptance-evidence.json"
+  },
+  "currentProductionRuntime": {
+    "collectorEntry": "workers/collector-kick/src/entry.ts",
+    "wrangler": "workers/collector-kick/wrangler.category-permanent.toml",
+    "v1GeneratorIntegration": "workers/dormant/history-category-aggregate-integration.ts",
+    "v1GeneratorEnabled": true,
+    "v1StartDay": "2026-08-17",
+    "cron": "*/5 * * * *",
+    "v2GeneratorRuntimeWired": false,
+    "v2GeneratorEnabled": false,
+    "v2ProductionRowsExpectedBeforeMigration": 0
+  },
+  "problem": {
+    "v1Representation": "one_physical_row_per_day_category_streamer",
+    "observedFailureDays": {
+      "2026-08-17": {
+        "logicalStreamerCategoryPairs": 1108,
+        "legacyBound": 1000,
+        "coverageState": "unavailable_overflow"
+      },
+      "2026-08-18": {
+        "logicalStreamerCategoryPairs": 1066,
+        "legacyBound": 1000,
+        "coverageState": "unavailable_overflow"
+      }
+    },
+    "v1FailClosedBehaviorAccepted": true,
+    "capRelaxationAllowed": false,
+    "topKOrSamplingAllowed": false
+  },
+  "selectedNextStage": {
+    "name": "repository_only_dormant_v2_generator_package",
+    "purpose": "Implement and locally prove the complete v2 writer before any active collector migration decision.",
+    "requiredLocation": "outside_active_collector_deployment_paths",
+    "mayImplement": [
+      "exact raw minute-snapshot derivation for category/day totals and per-streamer category contributions",
+      "lossless 128-contributor chunk construction through the accepted v2 candidate semantics",
+      "encoded-byte/day fail-close at 47196 bytes",
+      "category/day cap 300 and physical chunk-row budget 1000",
+      "v2 day-status persistence",
+      "v2 category/day persistence",
+      "v2 contributor-chunk persistence",
+      "idempotent same-day replacement",
+      "fail-closed removal of non-authoritative v2 aggregate rows",
+      "180-day v2 retention cleanup",
+      "local deterministic fixtures and query equivalence tests",
+      "dormant integration adapter with explicit enabled/startDay input but no environment parsing"
+    ],
+    "mustPreserve": {
+      "provider": "kick",
+      "contractVersion": "category-source-v2-chunked",
+      "chunkSize": 128,
+      "categoryRowCap": 300,
+      "physicalChunkRowBudget": 1000,
+      "encodedContributorBytesCap": 47196,
+      "retentionDays": 180,
+      "topK": false,
+      "sampling": false,
+      "categoryFilterBeforePeriodRanking": true,
+      "forwardOnly": true,
+      "backfill": false,
+      "newCron": false
+    }
+  },
+  "migrationSafety": {
+    "simultaneousAuthoritativeV1AndV2ProductionGenerationAllowed": false,
+    "v1ProductionDisablementAllowedInNextStage": false,
+    "v2ProductionEnablementAllowedInNextStage": false,
+    "activeCollectorWiringAllowedInNextStage": false,
+    "collectorDeploymentAllowedInNextStage": false,
+    "reason": "The repository must first prove a complete v2 writer and persistence contract. A later independent migration Decision must choose an exclusive production switch and acceptance sequence."
+  },
+  "requiredDormantPackageTests": [
+    "1066 and 1108 logical contributor shapes persist losslessly when encoded bytes remain within the accepted byte cap fixture",
+    "47196 encoded bytes is accepted and 47197 fails closed with unavailable_encoded_bytes_overflow",
+    "301 categories fails closed with zero authoritative category/chunk rows",
+    "1001 physical chunks fails closed with zero authoritative category/chunk rows",
+    "duplicate category-streamer identity fails closed as generation mismatch",
+    "provider/category/day query expands every selected tuple before period ranking",
+    "same-day rerun is idempotent and replaces stale v2 rows atomically at the package-model level",
+    "retention deletes only v2 rows older than 180 days",
+    "pre-start days are ineligible and no backfill path exists",
+    "v1 tables and active v1 runtime are not modified by the dormant package"
+  ],
+  "authorization": {
+    "repositoryDormantV2GeneratorPackage": true,
+    "localDeterministicTests": true,
+    "productionV2GeneratorWiring": false,
+    "productionV2GeneratorEnablement": false,
+    "productionV1GeneratorDisablement": false,
+    "collectorCodeChange": false,
+    "collectorDeployment": false,
+    "productionD1Read": false,
+    "productionD1Mutation": false,
+    "manualGeneration": false,
+    "backfill": false,
+    "cronChange": false,
+    "rawRetentionChange": false,
+    "historyCategoryApiUiCutover": false,
+    "twitchRollout": false,
+    "crossProviderChange": false,
+    "newProductionCostProbe": false,
+    "thresholdRelaxation": false
+  },
+  "nextGate": "Build exactly one repository-only dormant Kick History Category v2 generator package with local deterministic persistence/query fixtures. Do not wire it into the active collector in that gate."
+}
