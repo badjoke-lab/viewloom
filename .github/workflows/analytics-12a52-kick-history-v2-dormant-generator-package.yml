@@ -68,7 +68,7 @@ jobs:
           remote_needle='--re''mote'
           d1_needle='d1'' execute'
           deploy_needle='wrangler@4'' deploy'
-          ! grep -Fq "$secret_needle" "$file"
-          ! grep -Fq "$remote_needle" "$file"
-          ! grep -Fq "$d1_needle" "$file"
-          ! grep -Fq "$deploy_needle" "$file"
+          ! grep -Fq -- "$secret_needle" "$file"
+          ! grep -Fq -- "$remote_needle" "$file"
+          ! grep -Fq -- "$d1_needle" "$file"
+          ! grep -Fq -- "$deploy_needle" "$file"
