@@ -1,0 +1,53 @@
+name: Analytics 12A53 Kick History V2 Active Migration Candidate Decision
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a53-kick-history-v2-active-migration-candidate-decision.yml'
+      - 'docs/audits/12a53-kick-history-v2-active-migration-candidate-decision.json'
+      - 'scripts/verify-12a53-kick-history-v2-active-migration-candidate-decision.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Verify exact Decision scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          expected=(
+            '.github/workflows/analytics-12a53-kick-history-v2-active-migration-candidate-decision.yml'
+            'docs/audits/12a53-kick-history-v2-active-migration-candidate-decision.json'
+            'scripts/verify-12a53-kick-history-v2-active-migration-candidate-decision.mjs'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+      - name: Verify Decision and current runtime truth
+        run: node scripts/verify-12a53-kick-history-v2-active-migration-candidate-decision.mjs
+      - name: Revalidate dormant v2 package
+        run: |
+          node scripts/verify-12a52-kick-history-v2-dormant-generator-package.mjs
+          python3 scripts/test-12a52-kick-history-v2-dormant-generator.py
+      - name: Verify Decision does not alter runtime
+        run: git diff --exit-code "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- workers db apps packages
+      - name: Verify no production execution surface
+        run: |
+          set -euo pipefail
+          file='.github/workflows/analytics-12a53-kick-history-v2-active-migration-candidate-decision.yml'
+          ! grep -Eq '^  (push|workflow_dispatch|schedule):' "$file"
+          for needle in 'CLOUDFLARE_API_TOKEN' 'CLOUDFLARE_ACCOUNT_ID' 'd1 execute' 'wrangler deploy'; do
+            ! grep -Fq -- "$needle" "$file"
+          done
