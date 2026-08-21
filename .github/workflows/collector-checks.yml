@@ -11,6 +11,7 @@ on:
       - 'tsconfig.base.json'
       - '.github/actions/setup-node-pnpm/action.yml'
       - '.github/workflows/collector-checks.yml'
+      - '.github/workflows/twitch-location-live-yield-probe.yml'
   push:
     branches:
       - main
@@ -39,3 +40,22 @@ jobs:
         run: pnpm typecheck:collectors
       - name: Verify collector contracts
         run: pnpm verify:collectors
+      - name: Require Twitch probe credentials
+        env:
+          TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
+          TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
+        shell: bash
+        run: |
+          test -n "$TWITCH_CLIENT_ID"
+          test -n "$TWITCH_CLIENT_SECRET"
+      - name: Probe live Top 300 location evidence yield
+        env:
+          TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
+          TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
+        run: node workers/collector-twitch/scripts/probe-location-evidence.mjs | tee twitch-location-live-yield.json
+      - name: Upload live yield result
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-location-live-yield
+          path: twitch-location-live-yield.json
+          if-no-files-found: error
