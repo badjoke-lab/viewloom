@@ -185,6 +185,16 @@ function dedupeCandidates(candidates: LocationCandidate[]): LocationCandidate[] 
   })
 }
 
+function hasLocationConflict(candidates: LocationCandidate[]): boolean {
+  const countryCodes = new Set(candidates.map((candidate) => candidate.countryCode))
+  if (countryCodes.size > 1) return true
+
+  const cities = new Set(candidates
+    .map((candidate) => candidate.city)
+    .filter((city): city is string => typeof city === 'string' && city.length > 0))
+  return cities.size > 1
+}
+
 function extractCueLocationCandidates(
   value: unknown,
   source: LocationCandidate['source'],
@@ -368,8 +378,7 @@ export function auditLocationCandidates(streams: TwitchLocationEvidenceInput[]) 
     sourceYield.stream_title += hasTitle ? 1 : 0
     sourceYield.stream_tag += hasTag ? 1 : 0
 
-    const placeKeys = new Set(allCandidates.map((candidate) => `${candidate.countryCode}:${candidate.city ?? ''}`))
-    if (placeKeys.size > 1) counts.multipleLocationCandidateStreams += 1
+    if (hasLocationConflict(allCandidates)) counts.multipleLocationCandidateStreams += 1
     if (allCandidates.some((candidate) => candidate.kind === 'country')) counts.countryCandidateStreams += 1
     if (allCandidates.some((candidate) => candidate.kind === 'city')) counts.cityCandidateStreams += 1
 
