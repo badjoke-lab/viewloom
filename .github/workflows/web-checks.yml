@@ -50,6 +50,9 @@ jobs:
           cat web-checks-build.log
           exit $status
 
+      - name: Verify Twitch Stream Map live join
+        run: pnpm --filter @viewloom/web verify:stream-map-live-join
+
       - name: Verify Heatmap page boundaries
         run: pnpm --filter @viewloom/web verify:heatmap-boundaries
 
