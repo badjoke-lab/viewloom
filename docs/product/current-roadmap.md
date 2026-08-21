@@ -5,21 +5,23 @@ Last updated: 2026-08-21
 
 ## Current repository truth
 
-- audited main head before the Stream Map foundation branch: `df99141aced36be5236bf178720521bd81db4e33`
+- audited current main head: `c81ba53769b50263e6f4b6e4930146b551422381`
 - PR #961 merged the dormant Kick History v2 generator package
 - open Issue #962 is the current Kick History v2 decision gate
-- Stream Map foundation work is isolated on `feature/twitch-stream-map-foundation`
+- Stream Map foundation work is isolated on PR #963 / `feature/twitch-stream-map-foundation`
 - Stream Map specification: `docs/product/stream-map-spec-v0.3.md`
 - Stream Map implementation plan: `docs/product/stream-map-implementation-plan-v0.2.md`
+- final Twitch Stage 1D live audit: `docs/audits/twitch-stream-map-stage1d-location-yield-2026-08-21.md`
+- Stage 1D temporary Worker-preview tooling is PR #968 and is not production authority
 
 ## Current product priority
 
-Priority A is **Twitch Stream Map Stage 1**. Priority B is the existing Kick History v2 gated migration line. They remain separate branches/PRs.
+Priority A is **Twitch Stream Map evidence acquisition after Stage 1D**. Priority B is the existing Kick History v2 gated migration line. They remain separate branches/PRs.
 
 ```text
-Priority A: Twitch Stream Map Stage 1
+Priority A: Twitch Stream Map Stage 1 evidence acquisition
 Priority B: Kick History v2 gated migration work
-Later: City -> Current Location -> IRL -> Kick Map -> Location History / Replay
+Later: honest live join -> source filters -> country drilldown -> coverage gate -> City -> Current Location -> IRL -> Kick Map -> Location History / Replay
 ```
 
 ## Priority A — Twitch Stream Map
@@ -47,23 +49,42 @@ Stream Map   = Where
 - never map language -> country
 - never infer from timezone, schedule, display name, nationality or IP
 - unknown remains unknown
-- home/base and current location remain distinct
+- home/base, declared country and current location remain distinct
 - every accepted location keeps source/provenance
 - one streamer may have multiple accepted evidence records
 - conflicting evidence is preserved rather than silently merged
+- tag-only country names remain ambiguous unless independently corroborated
 
 ### Location evidence sources
 
-Initial platform-native candidates:
+Platform-native sources audited in Stage 1D:
 - account/profile description
 - current stream title
 - stream tags
 - public channel/profile fields
 - category/language only as context, never placement
 
-Later only if coverage requires it:
-- official external links
-- manual review
+Stage 1D measured result on the final 300-row live sample:
+
+```text
+profile candidates = 3
+title candidates = 0
+tag candidates = 7
+independent native channel geographic field = 0
+candidate streams = 10 / 300 = 3.33%
+accepted streamers after bounded review = 3 / 300 = 1.00%
+accepted country evidence records = 4
+accepted city records = 0
+accepted current-location records = 0
+candidate conflicts = 1
+```
+
+The measured native-source gap now justifies the previously deferred acquisition sources:
+- official external links attributable to the streamer/channel
+- bounded manual review with retained provenance
+- any separately proven public channel/profile geographic source
+
+These sources are now **next**, not optional future decoration, because the native accepted coverage is only 1.00%.
 
 ### Source-aware UI requirement
 
@@ -95,13 +116,13 @@ Required visual provenance:
 
 ## Stage order
 
-### M1 — Route skeleton
+### M1 — Route skeleton — COMPLETE ON FOUNDATION BRANCH
 Add `/twitch/map/` without changing existing public navigation until route/build QA passes.
 
-### M2 — World basemap and interaction
-MapLibre world rendering, ViewLoom styling, country borders/labels, bounded pan/zoom and mobile-safe interaction.
+### M2 — World basemap and interaction — COMPLETE ON FOUNDATION BRANCH
+MapLibre world rendering, ViewLoom styling, country context, bounded pan/zoom and mobile-safe interaction.
 
-### M3 — Multi-source location contract
+### M3 — Multi-source location contract — COMPLETE ON FOUNDATION BRANCH
 Add normalized location plus multiple evidence records per streamer.
 
 Normalized location:
@@ -132,32 +153,57 @@ confidence
 status
 ```
 
-### M4 — Twitch extraction audit
-Inspect real observed Twitch profile/title/tag/channel fields and measure source yield, overlap and conflicts before broad enrichment.
+### M4 — Twitch extraction audit — COMPLETE
+Real Twitch profile/title/tag/channel surfaces were measured through a non-production Worker version preview. Candidate source text was reviewed only for the bounded candidate set; noncandidate raw text was not persisted.
 
-Required output includes:
+Final required output:
 ```text
-observed_streamers
-profile_candidates
-title_candidates
-tag_candidates
-channel_candidates
-accepted_country
-accepted_city
-current_location_candidates
-conflicts
-unknown
-source_overlap
+observed_streamers = 300
+profile_candidates = 3
+title_candidates = 0
+tag_candidates = 7
+channel_candidates = 0 independent native field
+accepted_country_streamers = 3
+accepted_country_evidence_records = 4
+accepted_city = 0
+current_location_candidates = 0
+candidate_conflicts = 1
+candidate_unknown = 290
+accepted_unmapped = 297
+native_accepted_mapped_percent = 1.00%
 ```
 
-### M5 — Real Twitch live join
-Join accepted evidence-backed locations to current live observations. Compute mapped/unmapped and source-aware coverage.
+M4 decision: native evidence is insufficient for broad map coverage. Proceed to M4.1 acquisition improvement rather than pretending M5/M7 already has useful coverage.
+
+### M4.1 — Evidence acquisition expansion — CURRENT
+
+Audit separately attributable sources, beginning with official external links and bounded manual review. Measure:
+
+```text
+source availability
+source yield
+new accepted-country yield
+source overlap
+conflicts
+request/API cost
+review burden
+provenance quality
+```
+
+Hard constraints:
+- no language/timezone/name/IP inference
+- no tag-only acceptance without corroboration
+- no current-location claim from origin/home evidence
+- no recurring collection or storage expansion before cost/yield are measured
+
+### M5 — Real Twitch live join — BLOCKED ON M4.1
+Join accepted evidence-backed locations to current live observations. Compute mapped/unmapped and source-aware coverage. A bounded experimental join may support acquisition measurement, but broad/public join work must not imply useful coverage while accepted native coverage is ~1%.
 
 ### M6 — Source badges + multi-select source/type filters
 Add All/individual/multiple source filtering and multiple location-type filtering. Recalculate coverage after filters.
 
 ### M7 — Country clusters and drilldown
-World -> country -> live streamer flow with provenance badges and evidence summary.
+World -> country -> live streamer flow with provenance badges and evidence summary. Do not treat this as broadly useful until accepted coverage supports it.
 
 ### M8 — General filters + Unmapped analysis
 Category/language multi-select where practical, minimum viewers, Top N, mapped/unmapped/both and explicit unmapped reasons.
@@ -182,17 +228,18 @@ Audit Kick source availability independently before porting.
 ### M14 — Location History / Replay
 Only after live-map/source semantics are stable.
 
-## Stream Map initial PR order
+## Stream Map implementation order from current state
 
 ```text
-Map PR-1 docs + /twitch/map/ route skeleton
-Map PR-2 MapLibre world basemap + interaction
-Map PR-3 normalized location + evidence contract
-Map PR-4 Twitch source extraction audit
-Map PR-5 real live join + source-aware coverage
-Map PR-6 source badges + multi-select source/type filters
-Map PR-7 country clusters + streamer drilldown
-Map PR-8 general filters + unmapped analysis + mobile QA
+COMPLETE  Map PR-1 docs + /twitch/map/ route skeleton
+COMPLETE  Map PR-2 MapLibre world basemap + interaction
+COMPLETE  Map PR-3 normalized location + evidence contract
+COMPLETE  Map PR-4 Twitch source extraction audit
+CURRENT   Map PR-4.1 evidence acquisition expansion
+BLOCKED   Map PR-5 real live join + source-aware coverage
+LATER     Map PR-6 source badges + multi-select source/type filters
+LATER     Map PR-7 country clusters + streamer drilldown
+LATER     Map PR-8 general filters + unmapped analysis + mobile QA
 ```
 
 ## Priority B — Kick History v2 parallel line
@@ -219,3 +266,4 @@ Current Issue #962 remains the gated next step:
 - no combined-provider Map totals/rankings during Twitch-first stages
 - no current-location claim without explicit supporting evidence
 - unknown/conflicting location remains visible and traceable
+- Stage 1D temporary Worker-preview tooling is not production authority and must not be merged merely to preserve audit machinery
