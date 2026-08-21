@@ -1,0 +1,70 @@
+export const TWITCH_REVIEWED_LOCATION_RECORDS = [
+  {
+    streamerLogin: 'shotzzy',
+    entityKind: 'person',
+    classificationReferences: ['https://opticgaming.com/member/shotzzy'],
+    evidences: [
+      {
+        source: 'official_external',
+        sourceUrl: 'https://x.com/Shotzzy/with_replies',
+        observedAt: '2026-08-21T16:25:30.961Z',
+        countryCode: 'US',
+        countryName: 'United States',
+        region: 'Texas',
+        city: 'Dallas',
+        claimKind: 'declared_location',
+        confidence: 'explicit',
+        status: 'accepted',
+      },
+    ],
+  },
+  {
+    streamerLogin: 'fps_shaka',
+    entityKind: 'person',
+    classificationReferences: ['https://prtimes.jp/main/html/rd/p/000000093.000041650.html'],
+    evidences: [
+      {
+        source: 'official_external',
+        sourceUrl: 'https://prtimes.jp/main/html/rd/p/000000093.000041650.html',
+        observedAt: '2026-08-21T16:25:30.961Z',
+        countryCode: 'JP',
+        countryName: 'Japan',
+        region: 'Fukuoka Prefecture',
+        city: null,
+        claimKind: 'birthplace',
+        confidence: 'explicit',
+        status: 'context_only',
+      },
+    ],
+  },
+  {
+    streamerLogin: 'dota2ti',
+    entityKind: 'event_broadcast',
+    classificationReferences: ['https://blog.twitch.tv/en/2013/08/06/watch-the-international-on-twitch-ab87fe2f9363/'],
+    evidences: [],
+  },
+  {
+    streamerLogin: 'dota2ti_ru',
+    entityKind: 'event_broadcast',
+    classificationReferences: ['https://t.me/dota2ti_ru'],
+    evidences: [],
+  },
+  {
+    streamerLogin: 'callofduty',
+    entityKind: 'event_broadcast',
+    classificationReferences: ['https://callofdutyleague.com/en-us/news/major-i-what-you-need-to-know'],
+    evidences: [],
+  },
+  {
+    streamerLogin: 'eslcs',
+    entityKind: 'event_broadcast',
+    classificationReferences: ['https://eslfaceitgroup.com/press/everything-you-need-to-know-ahead-of-intel-extreme-masters-cologne-2023/'],
+    evidences: [],
+  },
+  {
+    streamerLogin: 'ow_esports',
+    entityKind: 'event_broadcast',
+    classificationReferences: ['https://overwatch.blizzard.com/en-us/news/24215214/2-stadium-asia-streamer-showdown/'],
+    evidences: [],
+  },
+]
