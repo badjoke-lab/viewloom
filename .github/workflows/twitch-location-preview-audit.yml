@@ -7,6 +7,7 @@ on:
     paths:
       - 'workers/collector-twitch/src/entry.ts'
       - 'workers/collector-twitch/src/location-evidence-audit.ts'
+      - 'workers/collector-twitch/src/location-acquisition-sample.ts'
       - '.github/workflows/twitch-location-preview-audit.yml'
 
 permissions:
@@ -81,10 +82,15 @@ jobs:
             .result.persistence.rawTagsStored == false and
             .result.persistence.rawLanguageStored == false and
             .result.persistence.rawProfileDescriptionStored == false and
+            .result.persistence.unknownSampleIdentifiersArtifactOnly == true and
             .result.apiRequests.users >= 1 and
             .result.apiRequests.users <= 3 and
             .result.profileAudit.requestedUsers > 0 and
-            .result.audit.candidateExtraction.languageUsedForPlacement == false
+            .result.audit.candidateExtraction.languageUsedForPlacement == false and
+            .result.acquisitionSample.scope == "top_ranked_native_candidate_unknown_users" and
+            .result.acquisitionSample.rawProfileTitleTagIncluded == false and
+            .result.acquisitionSample.requestedLimit == 20 and
+            .result.acquisitionSample.recordCount == 20
           ' "$ARTIFACT_DIR/result.json" >/dev/null
           jq . "$ARTIFACT_DIR/result.json"
 
@@ -99,14 +105,10 @@ jobs:
             echo '- Worker version upload only: yes'
             if [ -f "$ARTIFACT_DIR/result.json" ]; then
               echo "- Streams observed: $(jq -r '.result.streamCount' "$ARTIFACT_DIR/result.json")"
-              echo "- Profile descriptions present: $(jq -r '.result.profileAudit.descriptionsPresent' "$ARTIFACT_DIR/result.json")"
-              echo "- Profile candidates: $(jq -r '.result.audit.candidateExtraction.counts.profileCandidateStreams' "$ARTIFACT_DIR/result.json")"
-              echo "- Title candidates: $(jq -r '.result.audit.candidateExtraction.counts.titleCandidateStreams' "$ARTIFACT_DIR/result.json")"
-              echo "- Tag candidates: $(jq -r '.result.audit.candidateExtraction.counts.tagCandidateStreams' "$ARTIFACT_DIR/result.json")"
-              echo "- Any candidates: $(jq -r '.result.audit.candidateExtraction.counts.anyCandidateStreams' "$ARTIFACT_DIR/result.json")"
-              echo "- Unknown: $(jq -r '.result.audit.candidateExtraction.counts.unknownStreams' "$ARTIFACT_DIR/result.json")"
-              echo "- Multiple-location candidates: $(jq -r '.result.audit.candidateExtraction.counts.multipleLocationCandidateStreams' "$ARTIFACT_DIR/result.json")"
-              echo "- Future-travel rejects: $(jq -r '.result.audit.candidateExtraction.counts.rejectedFutureTravelTitles' "$ARTIFACT_DIR/result.json")"
+              echo "- Native candidates: $(jq -r '.result.audit.candidateExtraction.counts.anyCandidateStreams' "$ARTIFACT_DIR/result.json")"
+              echo "- Native unknown: $(jq -r '.result.audit.candidateExtraction.counts.unknownStreams' "$ARTIFACT_DIR/result.json")"
+              echo "- External-profile review sample: $(jq -r '.result.acquisitionSample.recordCount' "$ARTIFACT_DIR/result.json")"
+              echo "- Raw noncandidate profile/title/tag included: $(jq -r '.result.acquisitionSample.rawProfileTitleTagIncluded' "$ARTIFACT_DIR/result.json")"
             else
               echo '- Audit result: missing'
             fi
