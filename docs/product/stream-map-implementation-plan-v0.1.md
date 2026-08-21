@@ -1,23 +1,25 @@
-# ViewLoom Stream Map Implementation Plan v0.1
+# ViewLoom Stream Map Implementation Plan v0.2
 
 Status: active implementation plan
-Base feature: `docs/product/stream-map-spec-v0.2.md`
+Base feature: `docs/product/stream-map-spec-v0.3.md`
 Primary platform: Twitch
 
 ## 1. Implementation principle
 
-Build the map in the smallest useful increments. Do not start with city/current-location/history work.
+Build the map in the smallest useful increments, but treat location provenance as a first-class dimension from the start.
 
-The first milestone is only:
+The first public milestone is:
 
 ```text
 Twitch world map
 + country clusters
 + mapped/unmapped accounting
++ source badges
++ multi-select source/type filters
 + country -> streamer drilldown
 ```
 
-The map must be independently developable and must not require changes to Kick History runtime, collector cadence, retention, or production generator selection.
+Do not begin city/current-location/history work before the source/yield coverage gate.
 
 ## 2. Branch strategy
 
@@ -27,14 +29,16 @@ Foundation branch:
 feature/twitch-stream-map-foundation
 ```
 
-Subsequent branches should stay narrowly scoped:
+Subsequent branches:
 
 ```text
 feature/twitch-stream-map-route
 feature/twitch-stream-map-renderer
-feature/twitch-stream-map-country-model
+feature/twitch-stream-map-location-contract
+feature/twitch-stream-map-extraction-audit
 feature/twitch-stream-map-real-data
-feature/twitch-stream-map-filters
+feature/twitch-stream-map-source-filters
+feature/twitch-stream-map-country-drilldown
 feature/twitch-stream-map-mobile
 fix/twitch-stream-map-qa
 ```
@@ -44,75 +48,53 @@ Do not work directly on `main`.
 ## 3. Stage 0 — Documentation and repository boundary
 
 ### Work
-- add Stream Map spec
-- add this implementation plan
+- add/update Stream Map spec and implementation plan
 - confirm `/twitch/*` routing conventions
 - confirm build/typecheck gates
-- keep map code isolated from current collector/runtime work
+- keep map code isolated from Kick History runtime work
 
 ### Done when
-- both docs exist in `docs/product/`
-- implementation branch exists from audited current main
+- authoritative docs exist in `docs/product/`
+- implementation branch exists from audited main
 - exact initial file scope is known
 
 ## 4. Stage 1A — Static map route
 
-### Goal
-Create `/twitch/map/` without connecting real stream/location data yet.
+Create `/twitch/map/` with current ViewLoom shell and an explicit unconnected-data state.
 
-### Work
-- add `apps/web/twitch/map/index.html`
-- add page shell matching current Twitch pages
-- add map-specific feature module under `apps/web/src/features/twitch-stream-map/`
-- add only the dependencies needed for the map renderer
-- render an empty/fixture world map
-- preserve existing global navigation until the route itself passes build/QA
+Work:
+- `apps/web/twitch/map/index.html`
+- `apps/web/src/features/twitch-stream-map/`
+- no nav exposure until route/build QA passes
 
-### User-visible result
-The user can open `/twitch/map/` and see a functioning world map with ViewLoom styling, pan, zoom and an explicit “location data not connected yet” state.
-
-### Gate
-- build passes
-- typecheck passes
-- existing Twitch pages unchanged
-- Kick pages unchanged
+Gate:
+- build/typecheck pass
+- existing Twitch/Kick pages unchanged
 
 ## 5. Stage 1B — Basemap and interaction
 
-### Goal
-Make the geographic surface production-usable before adding streamer data.
+Renderer: MapLibre GL JS.
+Basemap: low-detail world/country/major-city only.
 
-### Renderer
-- MapLibre GL JS
-
-### Basemap
-- low-detail world basemap compatible with PMTiles/Protomaps-style delivery
-- world/country/major-city detail only
-
-### Work
+Work:
 - dark ViewLoom-compatible style
-- country borders
-- country labels
-- optional major-city labels
+- country borders/labels
+- major city labels where available
 - initial world fit
-- bounded zoom appropriate to world/country/city use
-- desktop pan/zoom
-- mobile tap/pan behavior that does not destroy page scrolling
+- bounded zoom
+- desktop/mobile pan/zoom
 
-### Gate
-- map renders without Google Maps
+Gate:
+- no Google Maps dependency
+- no paid map API hard dependency
 - no street/address requirement
-- desktop and mobile interaction accepted
-- no third-party paid API dependency introduced as a hard requirement
 
-## 6. Stage 1C — Location record contract
+## 6. Stage 1C — Multi-source location contract
 
 ### Goal
-Create the smallest evidence-backed location model.
+Create a normalized location model plus multiple evidence records per streamer.
 
-### Model
-At minimum:
-
+Normalized record:
 ```text
 streamerId
 provider
@@ -120,107 +102,175 @@ locationCountry
 locationRegion?
 locationCity?
 locationType
-locationSource
 locationConfidence
 locationUpdatedAt
 ```
 
-### Rules
-- no language -> country inference
-- no timezone inference
-- unknown remains unknown
-- current location is distinct from home/declared country
-
-### Initial source
-Use only accepted, explicit records. The first stage may use a small curated/fixture-compatible dataset to prove the contract before any larger enrichment workflow.
-
-### Gate
-- schema/model supports future city/current-location stages without redefinition
-- unknown is first-class
-- provenance is retained
-
-## 7. Stage 1D — Real Twitch live join
-
-### Goal
-Join accepted country records to the already-observed Twitch live population.
-
-### Work
-- read the existing Twitch live snapshot/page payload rather than inventing a second collector
-- match streamers by stable Twitch identity
-- compute:
-  - observed count
-  - mapped count
-  - unmapped count
-  - mapped viewer total
-  - mapped country count
-- aggregate mapped streams by country
-
-### User-visible result
-The map shows real currently-live Twitch observations for streamers with accepted country data.
-
-Example:
-
+Evidence record:
 ```text
-Observed 300
-Mapped 64
-Unmapped 236
-Countries 21
-Mapped viewers 183K
+evidenceId
+streamerId
+provider
+sourceType
+sourceField
+sourceText
+sourceUrl?
+observedAt
+parsedCountry?
+parsedRegion?
+parsedCity?
+claimType
+confidence
+status
 ```
 
-### Gate
-- real live data confirmed
-- mapped/unmapped counts reconcile to observed scope
-- no demo data is presented as real
-- mapped coverage is explicit
+Initial `sourceType` values:
+- account_profile
+- stream_title
+- stream_tag
+- channel_profile
+- official_external_link
+- manual_review
 
-## 8. Stage 1E — Country cluster drilldown
+Rules:
+- one streamer can retain multiple accepted evidence records
+- conflicts are preserved
+- current location never silently overwrites home/base in storage
+- no language/timezone/name/IP inference
 
-### Work
-- bubble/cluster per country
-- bubble size from summed current viewers with compression
-- click/tap country -> focus country
-- show country summary
-- show live streamer list
-- click streamer -> details
+Gate:
+- multiple evidence records supported
+- provenance survives normalization
+- conflicts and unknown are first-class
 
-### Streamer detail
-- name
-- viewers
-- category
-- language
-- mapped country
-- location type
-- source/confidence
-- links to Heatmap/Day Flow/Battle Lines/History where appropriate
+## 7. Stage 1D — Extraction audit before broad enrichment
 
-### Gate
-- country -> streamer flow works on PC/mobile
-- home/declared country is never described as exact current location
+### Goal
+Measure what the platform-native fields actually yield before building a large manual location dataset.
 
-## 9. Stage 2 — Filters and Unmapped analysis
+Inspect for the observed Twitch population:
+- account/user description
+- channel/profile fields available in current/public Twitch API surfaces
+- current stream title
+- stream tags
+- category and language only as context, never geographic placement
 
-### Work
-- category filter
-- language filter
+Produce source-by-source counts:
+```text
+observed_streamers
+profile_candidates
+title_candidates
+tag_candidates
+channel_candidates
+accepted_country
+accepted_city
+current_location_candidates
+conflicts
+unknown
+```
+
+Also measure overlap:
+```text
+profile_only
+ title_only
+ tag_only
+ profile+title
+ profile+tag
+ title+tag
+ 3+ sources
+```
+
+Gate:
+- candidate extraction is proven against real observed payloads
+- source yield and overlap are known
+- ambiguous wording is rejected rather than forced
+
+## 8. Stage 1E — Real Twitch live join + coverage accounting
+
+Join accepted evidence-backed locations to current Twitch live observations by stable Twitch identity.
+
+Compute:
+- observed count
+- mapped count
+- unmapped count
+- mapped viewer total
+- mapped country count
+- mapped coverage by source type
+- current-location coverage
+
+No demo data may be presented as real.
+
+## 9. Stage 1F — Source badges and multi-select filters
+
+### Required controls
+
+Evidence-source multi-select:
+- Account/Profile
+- Stream title
+- Stream tags
+- Channel profile
+- External official link
+- Manual review
+
+Location-type multi-select:
+- Home/base
+- Declared country
+- Current location
+
+Default source mode:
+```text
+All accepted
+```
+
+Combination semantics for v1: OR.
+A streamer remains visible when at least one selected accepted evidence source supports the displayed location.
+
+Work:
+- source badge component
+- stable badge colors
+- legend
+- multi-select desktop control
+- compact mobile sheet/popover
+- URL state after semantics stabilize
+
+Gate:
+- multiple source types can be selected simultaneously
+- multiple location types can be selected simultaneously
+- counts/coverage recalculate after filters
+- streamer rows can show multiple badges
+
+## 10. Stage 1G — Country clusters and drilldown
+
+Work:
+- country bubbles/clusters
+- bubble size = compressed summed current viewers
+- country selection/focus
+- country summary
+- streamer list
+- streamer detail
+- all accepted source badges and evidence summary visible
+
+Gate:
+- country -> streamer works PC/mobile
+- home/base never described as current location
+
+## 11. Stage 2 — General filters and Unmapped analysis
+
+Add:
+- category multi-select where practical
+- language multi-select where practical
 - minimum viewers
 - Top N observed scope
-- unmapped list/summary
-- unmapped language/category breakdown
+- mapped / unmapped / both
+- unmapped reasons: no candidate / candidate-only / conflict / expired current evidence
 
-### Critical semantics
-Filters may change the observed population, but language never determines geographic placement.
+Critical semantics:
+- language filters the population but never determines placement
+- Top N is defined on observed population before geographic/source filtering
 
-### Gate
-- Top N is based on observed population before geographic filtering
-- mapped percentage is recalculated correctly after filters
-
-## 10. Stage 3 — Country coverage gate
-
-Before city/current-location work, measure actual production-like coverage.
+## 12. Stage 3 — Coverage and acquisition decision gate
 
 Required report:
-
 ```text
 observed_streams
 mapped_streams
@@ -230,83 +280,74 @@ mapped_viewers
 mapped_viewer_percent
 countries_represented
 unmapped_streams
+source_yield_by_type
+source_overlap
+conflict_count
+current_location_coverage
 ```
 
 Decision:
-- if coverage is useful, proceed to city/current-location work
-- if coverage is too low, improve evidence-backed country acquisition first
-- do not fake missing geography with language placement
+- useful coverage -> proceed to city
+- low coverage -> expand evidence acquisition first
+- external official links/manual review only if justified by measured gap
+- never fill gaps using language placement
 
-## 11. Stage 4 — City
-
-Only after the country gate.
+## 13. Stage 4 — City
 
 - add reliable city records
 - country-only records remain visible at country level
-- city clusters appear only where data supports them
-- zoom limit may increase modestly
+- city clusters only where supported
+- modestly increase zoom only as needed
 
-## 12. Stage 5 — Current location
+## 14. Stage 5 — Current location
 
-Only explicit/reliable current-location records.
+- only explicit/reliable current-location records
+- source + observed timestamp required
+- stale claims expire or visibly age
+- current-location mode may prioritize current records for display only
 
-- current location overrides home/base only in current-location mode
-- current location has source and timestamp
-- stale current-location claims must expire or visibly age
+## 15. Stage 6 — IRL mode
 
-## 13. Stage 6 — IRL mode
+Only after enough current-location coverage exists.
 
-Only after enough current-location data exists.
+## 16. Stage 7 — Kick
 
-- focus on streams/categories where geography is meaningful
-- show live current-location clusters
-- retain explicit mapped coverage
+Audit Kick source fields and extraction yield separately. Do not assume Twitch source availability transfers.
 
-## 14. Stage 7 — Kick
+## 17. Stage 8 — History / Replay
 
-Audit Kick identity/live payload and location-record coverage separately.
+Only after live-map/source semantics are stable.
 
-Do not assume Twitch mappings or source rules transfer automatically.
-
-## 15. Stage 8 — History / Replay
-
-Only after live-map semantics are stable.
-
-- retain accepted historical location observations
-- provide date/time selection
-- optional map replay
-
-## 16. Initial PR sequence
-
-Recommended first PRs:
+## 18. Initial PR sequence
 
 ```text
 PR-1 docs + route skeleton
 PR-2 MapLibre world basemap + interaction
-PR-3 location contract + test fixtures
-PR-4 real Twitch live join + coverage accounting
-PR-5 country clusters + drilldown
-PR-6 filters + unmapped analysis + mobile QA
+PR-3 normalized location + evidence contract
+PR-4 Twitch source extraction audit
+PR-5 real live join + source-aware coverage
+PR-6 source badges + multi-select source/type filters
+PR-7 country clusters + drilldown
+PR-8 general filters + unmapped analysis + mobile QA
 ```
 
-No PR in this initial sequence may:
+No initial PR may:
 - enable Kick History v2
-- alter Kick generator authority
-- change collector cron
-- expand retention
+- alter generator authority
+- change collector cron/retention
 - introduce cross-platform map aggregation
-- claim current location from country/home data
+- infer country from language
+- collapse conflicting sources into one untraceable value
 
-## 17. Stage 1 completion definition
+## 19. Stage 1 completion definition
 
 Stage 1 is complete when a user can:
 1. open `/twitch/map/`
 2. see a usable world map
-3. understand observed vs mapped vs unmapped coverage
-4. see countries containing accepted mapped live streams
-5. select a country
-6. inspect the currently live mapped streamers in that country
-7. inspect location provenance
-8. navigate back into existing ViewLoom analysis pages
-
-Only after this is accepted do city/current-location/IRL stages begin.
+3. understand observed/mapped/unmapped coverage
+4. filter by one or multiple location evidence sources
+5. filter by one or multiple location types
+6. see source badges/colors on mapped streamers
+7. select a country and inspect currently live streamers
+8. inspect provenance/conflicts/unknown reasons
+9. navigate into existing ViewLoom analysis pages
