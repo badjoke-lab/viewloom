@@ -80,7 +80,11 @@ jobs:
             .result.persistence.rawTitleStored == false and
             .result.persistence.rawTagsStored == false and
             .result.persistence.rawLanguageStored == false and
-            .result.apiRequests.users == 0
+            .result.persistence.rawProfileDescriptionStored == false and
+            .result.apiRequests.users >= 1 and
+            .result.apiRequests.users <= 3 and
+            .result.profileAudit.requestedUsers > 0 and
+            .result.audit.candidateExtraction.languageUsedForPlacement == false
           ' "$ARTIFACT_DIR/result.json" >/dev/null
           jq . "$ARTIFACT_DIR/result.json"
 
@@ -95,9 +99,12 @@ jobs:
             echo '- Worker version upload only: yes'
             if [ -f "$ARTIFACT_DIR/result.json" ]; then
               echo "- Streams observed: $(jq -r '.result.streamCount' "$ARTIFACT_DIR/result.json")"
+              echo "- Profile descriptions present: $(jq -r '.result.profileAudit.descriptionsPresent' "$ARTIFACT_DIR/result.json")"
+              echo "- Profile candidates: $(jq -r '.result.audit.candidateExtraction.counts.profileCandidateStreams' "$ARTIFACT_DIR/result.json")"
               echo "- Title candidates: $(jq -r '.result.audit.candidateExtraction.counts.titleCandidateStreams' "$ARTIFACT_DIR/result.json")"
               echo "- Tag candidates: $(jq -r '.result.audit.candidateExtraction.counts.tagCandidateStreams' "$ARTIFACT_DIR/result.json")"
               echo "- Any candidates: $(jq -r '.result.audit.candidateExtraction.counts.anyCandidateStreams' "$ARTIFACT_DIR/result.json")"
+              echo "- Unknown: $(jq -r '.result.audit.candidateExtraction.counts.unknownStreams' "$ARTIFACT_DIR/result.json")"
               echo "- Multiple-location candidates: $(jq -r '.result.audit.candidateExtraction.counts.multipleLocationCandidateStreams' "$ARTIFACT_DIR/result.json")"
               echo "- Future-travel rejects: $(jq -r '.result.audit.candidateExtraction.counts.rejectedFutureTravelTitles' "$ARTIFACT_DIR/result.json")"
             else
