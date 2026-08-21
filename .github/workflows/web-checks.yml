@@ -53,6 +53,41 @@ jobs:
       - name: Verify Twitch Stream Map live join
         run: pnpm --filter @viewloom/web verify:stream-map-live-join
 
+      - name: Probe production Twitch Stream Map API
+        if: github.event_name == 'pull_request' && github.head_ref == 'probe/twitch-stream-map-production-read'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f production-twitch-stream-map.json
+          for attempt in $(seq 1 24); do
+            echo "production read attempt $attempt/24"
+            if curl --fail --silent --show-error \
+              --connect-timeout 10 --max-time 20 \
+              https://www.viewloom.net/api/twitch-stream-map \
+              -o production-twitch-stream-map.json; then
+              if jq -e '
+                .version == "viewloom-stream-map-live-v1" and
+                .platform == "twitch" and
+                .source == "real" and
+                .state == "ready" and
+                (.coverage.observedStreams > 0) and
+                (.coverage.mappedStreams + .coverage.unmappedStreams == .coverage.observedStreams) and
+                .semantics.languageUsedForPlacement == false and
+                .semantics.candidateOnlyPlacementAllowed == false and
+                .semantics.nonPersonPlacementAllowed == false and
+                .semantics.conflictingAcceptedCountriesAreMapped == false and
+                .semantics.evidenceSourcesRemainDistinct == true
+              ' production-twitch-stream-map.json >/dev/null; then
+                jq '{version,platform,source,state,updatedAt,coverage,semantics,mappedStreams,excludedNonPersonStreams}' production-twitch-stream-map.json
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo 'Production Twitch Stream Map API did not reach the expected read-only contract.' >&2
+          if [ -f production-twitch-stream-map.json ]; then cat production-twitch-stream-map.json >&2; fi
+          exit 1
+
       - name: Verify Heatmap page boundaries
         run: pnpm --filter @viewloom/web verify:heatmap-boundaries
 
@@ -94,3 +129,4 @@ jobs:
           path: |
             web-checks-typecheck.log
             web-checks-build.log
+            production-twitch-stream-map.json
