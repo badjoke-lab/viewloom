@@ -1,0 +1,40 @@
+name: Twitch Location Live Yield Probe
+
+on:
+  push:
+    branches:
+      - probe/twitch-location-live-yield
+    paths:
+      - '.github/workflows/twitch-location-live-yield-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Require Twitch probe credentials
+        env:
+          TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
+          TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
+        shell: bash
+        run: |
+          test -n "$TWITCH_CLIENT_ID"
+          test -n "$TWITCH_CLIENT_SECRET"
+      - name: Probe live Top 300 location evidence yield
+        env:
+          TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
+          TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
+        run: node workers/collector-twitch/scripts/probe-location-evidence.mjs | tee twitch-location-live-yield.json
+      - name: Upload probe result
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-location-live-yield
+          path: twitch-location-live-yield.json
+          if-no-files-found: error
