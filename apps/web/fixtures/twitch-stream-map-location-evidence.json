@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "viewloom-stream-map-location-evidence-v1",
+  "records": [
+    {
+      "provider": "twitch",
+      "streamerId": "fixture-profile-current",
+      "evidences": [
+        {
+          "source": "account_profile",
+          "sourceText": "Based in Japan",
+          "observedAt": "2026-08-21T00:00:00Z",
+          "countryCode": "JP",
+          "countryName": "Japan",
+          "locationType": "home_base",
+          "confidence": "explicit"
+        },
+        {
+          "source": "stream_title",
+          "sourceText": "IRL live from Seoul",
+          "observedAt": "2026-08-21T09:00:00Z",
+          "countryCode": "KR",
+          "countryName": "South Korea",
+          "city": "Seoul",
+          "locationType": "current_location",
+          "confidence": "explicit"
+        },
+        {
+          "source": "stream_tag",
+          "sourceText": "Seoul",
+          "observedAt": "2026-08-21T09:00:00Z",
+          "countryCode": "KR",
+          "countryName": "South Korea",
+          "city": "Seoul",
+          "locationType": "current_location",
+          "confidence": "corroborated"
+        }
+      ]
+    },
+    {
+      "provider": "twitch",
+      "streamerId": "fixture-home-only",
+      "evidences": [
+        {
+          "source": "channel_profile",
+          "sourceText": "Berlin, Germany",
+          "observedAt": "2026-08-21T00:00:00Z",
+          "countryCode": "DE",
+          "countryName": "Germany",
+          "city": "Berlin",
+          "locationType": "home_base",
+          "confidence": "explicit"
+        }
+      ]
+    }
+  ],
+  "nonEvidenceExamples": [
+    {
+      "source": "language",
+      "value": "ja",
+      "reason": "Language is never geographic placement evidence."
+    },
+    {
+      "source": "stream_title",
+      "value": "Japan trip tomorrow",
+      "reason": "Future travel wording does not establish current location."
+    }
+  ]
+}
