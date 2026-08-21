@@ -31,7 +31,7 @@ type TwitchStreamsResponse = {
 const LOCATION_AUDIT_PATH = '/audit/location-evidence'
 const LOCATION_AUDIT_PAGE_SIZE = 100
 const LOCATION_AUDIT_MAX_PAGES = 3
-const LOCATION_AUDIT_PREVIEW_HOST = /^audit-pr-\d+-viewloom-collector-twitch\.[a-z0-9-]+\.workers\.dev$/i
+const LOCATION_AUDIT_PREVIEW_HOST = /^(?:[a-f0-9]{8}|audit-pr-\d+)-viewloom-collector-twitch\.[a-z0-9-]+\.workers\.dev$/i
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
