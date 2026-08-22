@@ -1,14 +1,14 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Last updated: 2026-08-22
+Last updated: 2026-08-23
 
 ## Current execution state
 
 ```text
 Current program Twitch Stream Map
-Current stage Evidence coverage decision
-Accepted main f707b7053be1b6fecc07bb93a26b8d9abb3ebabc
+Current stage Coverage remediation / supported evidence acquisition gate
+Accepted main b58981735a947f0ed4c711bcc8363b8f4430abc7
 Stage 1D source/yield audit complete
 Stage 1E real live join complete PR #972
 Stage 1F public route + source/type filters complete PR #974
@@ -16,7 +16,8 @@ Stage 1G country selection + drilldown complete PR #977
 Stage 2 reason-aware Unmapped analysis complete PR #979
 Population filter contract frozen PR #980
 Population filter runtime complete PR #981
-Production coverage audit PR #982 verification-only / close without merge
+Ready-response population semantics fixed PR #983
+Production coverage audit complete PR #982 verification-only / close without merge
 Production route/API verification complete PR #975 closed without merge
 Public Twitch Map /twitch/map/
 Real Twitch Map API /api/twitch-stream-map
@@ -33,16 +34,14 @@ Kick cadence */5 * * * * unchanged
 4. `docs/product/stream-map-spec-v0.5.md`
 5. `docs/product/stream-map-implementation-plan-v0.4.md`
 6. `docs/product/stream-map-population-filter-decision-v0.1.md`
-7. latest accepted Stream Map audit under `docs/audits/`
+7. `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
 8. affected feature specification/plan and current WIP/handoff
 
 For historical 12A/category rollout work, retain and consult the accepted 12A audit/decision files. They remain valid historical records but are no longer the current execution milestone.
 
 ## Current Stream Map contract
 
-Public Twitch Stream Map behavior is evidence-backed and provider-separated.
-
-Evidence sources:
+Evidence sources remain separate:
 
 ```text
 account_profile
@@ -53,7 +52,7 @@ official_external
 manual_review
 ```
 
-Location types:
+Location types remain separate:
 
 ```text
 home_base
@@ -123,7 +122,7 @@ Placement invariants:
 
 ## Completed population-filter gate
 
-PR #981 added server-side population selection and matching public controls.
+PR #981 added server-side population selection and matching public controls. PR #983 fixed the ready-response semantics contract discovered by the subsequent production audit.
 
 Accepted guarantees:
 
@@ -133,44 +132,91 @@ Accepted guarantees:
 - selected-population streams/viewers are the placement denominator;
 - mapped + unmapped equals selected population;
 - API reason totals reconcile with selected-population unmapped count;
+- ready responses expose `populationFilterBeforeEvidenceFilter=true`;
+- ready responses expose `languageUsedForPopulationFiltering=false`;
 - source/type filtering and country drilldown remain downstream;
 - language remains unavailable as a population control;
 - no second category collector or additional Twitch API request was introduced.
 
-PR #981 passed the dedicated population verifier together with Typecheck, Build, prior Stream Map gates and Heatmap regressions.
+## Completed production coverage decision
 
-## Current order
+Verification-only PR #982 completed the post-population production audit.
 
-1. Complete verification-only PR #982 and retain its production population-coverage evidence.
-2. Decide whether supported/reviewable evidence acquisition should expand.
-3. Add reliable city grouping only if accepted evidence supports it.
-4. Add current-location freshness/expiry before emphasizing current location.
-5. Add IRL mode only if current-location coverage becomes useful.
-6. Audit and implement Kick separately.
-7. Add location history/replay only after live semantics stabilize.
+```text
+workflow run      32583205617
+successful job    97056168203
+artifact          9478398925
+snapshot updated  2026-08-22T16:00:18.854Z
+report generated  2026-08-22T16:01:56Z
+```
 
-## Coverage-decision boundary
-
-Measure Top 20/50/100/300, meaningful minimum-viewer scopes and current high-volume categories. Record mapped streams/viewers, countries, source yield/overlap, conflicts, excluded non-person and current-location coverage.
-
-Weak coverage is not permission to infer geography from language/category/name/timezone/IP or to add unsupported Twitch social/panel crawling.
-
-## Latest retained production Stream Map verification
-
-Until PR #982 is accepted, the retained pre-population-filter observation remains PR #975 at `2026-08-22T01:55:42.393Z`:
+Top 300 result:
 
 ```text
 300 streams
-907197 viewers
+1,358,840 viewers
 0 mapped streams
-300 unmapped streams
-3 excluded non-person streams
-73654 excluded non-person viewers
+0 mapped viewers
 0 mapped countries
 0 current-location streams
+1 excluded non-person stream
+20,413 excluded non-person viewers
+298 no-reviewed-evidence streams
+1 context-only/unaccepted stream
+0 conflicting accepted evidence
+1 unknown-category stream
+0 dictionary-missing items
 ```
 
-A prior live snapshot had one mapped stream. Coverage is dynamic and must not be frozen into a fixture expectation.
+Every audited population slice also had zero mapped streams:
+
+- Top 20 / 50 / 100 / 300;
+- Top 300 with >=1,000 / >=5,000 / >=10,000 viewers;
+- Top 300 Fortnite / Counter-Strike / Just Chatting / League of Legends / IRL;
+- Top 100 Fortnite / Counter-Strike / Just Chatting.
+
+Population filtering therefore works but does not solve the geographic coverage problem. The dominant blocker is reviewed evidence not overlapping the current live population, not accepted-country conflicts.
+
+## Current order
+
+1. Run a bounded coverage-remediation / supported-evidence-acquisition experiment.
+2. Measure incremental accepted live overlap, request/review cost, source overlap, conflicts and freshness needs separately by evidence source.
+3. Proceed with structured acquisition only if attributable/reviewable evidence produces material incremental coverage at acceptable cost.
+4. Add reliable city grouping only if accepted evidence supports it.
+5. Add current-location freshness/expiry only if current-location coverage becomes useful.
+6. Add IRL mode only if current-location coverage becomes useful.
+7. Audit and implement Kick separately.
+8. Add location history/replay only after live semantics stabilize.
+
+## Coverage-remediation boundary
+
+Keep all source lanes separate:
+
+```text
+account_profile
+stream_title
+stream_tag
+channel_profile
+official_external
+manual_review
+```
+
+For each lane or combination, report:
+
+- sampled live population;
+- candidate streamers;
+- accepted streamers;
+- incremental accepted streamers beyond retained evidence;
+- resulting mapped percentage;
+- request cost and manual-review burden;
+- source overlap;
+- conflicts;
+- freshness/expiry requirements;
+- unsupported/private API dependency, if any.
+
+Weak coverage is not permission to infer geography from language/category/name/timezone/IP, accept tag-only candidates as placement, silently resolve conflicts, or add unsupported persistent Twitch panel/social crawling.
+
+If bounded supported remediation still cannot produce useful coverage, preserve the low-coverage map honestly rather than weakening placement rules.
 
 ## Accepted permanent product records
 
@@ -180,6 +226,7 @@ A prior live snapshot had one mapped stream. Coverage is dynamic and must not be
 - `docs/product/stream-map-spec-v0.5.md`
 - `docs/product/stream-map-implementation-plan-v0.4.md`
 - `docs/product/stream-map-population-filter-decision-v0.1.md`
+- `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
 
 ## Retained Twitch category rollout
 
@@ -190,7 +237,7 @@ The completed Twitch category/Heatmap rollout remains a historical accepted mile
 - PR #740 exposed Category + Top;
 - PR #741 repaired the rejected 390px mobile overflow;
 - accepted production SHA was `b006f45d0676c9ff3e05e5d6727458e43802de53`;
-- no Kick category UI was authorized by that Twitch rollout.
+- no Kick category UI was authorized by the Twitch rollout.
 
 ## Operational runbooks
 
