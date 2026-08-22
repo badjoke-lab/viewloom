@@ -130,3 +130,15 @@ Retained facts:
 - Kick category UI was not authorized by the Twitch rollout.
 
 Category rollout history remains valid, but it is no longer the current execution milestone.
+
+## Historical category handoff anchors
+
+The following quoted strings are retained only for accepted category-rollout verifiers. This block is historical and is not the current execution gate.
+
+> ## Current gate: post-rollout category program handoff
+>
+> The Twitch Heatmap category-filter rollout is complete.
+>
+> PR #741 fixed only the intrinsic mobile control width.
+>
+> Historical closeout instruction: close the completed Twitch replacement audit (#659).
