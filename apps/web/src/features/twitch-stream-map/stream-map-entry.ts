@@ -6,7 +6,6 @@ import {
 import {
   countrySelectionState,
   groupMappedStreamsByCountry,
-  type StreamMapCountryGroup,
 } from './country-drilldown-core.mjs'
 import { renderUnmappedReasonAnalysis } from './unmapped-reason-view'
 
@@ -41,6 +40,37 @@ type MapLibreNamespace = {
   NavigationControl: new (options?: { showCompass?: boolean; visualizePitch?: boolean }) => MapLibreControl
 }
 
+type PopulationCategory = {
+  id: string
+  name: string
+  streamCount: number
+  totalViewers: number
+}
+
+type StreamMapPopulationFilter = {
+  implementationState: 'public'
+  order: string[]
+  baseObservedStreams: number
+  selectedTop: number
+  minViewers: number
+  selectedCategory: string
+  selectedCategoryName: string | null
+  categoryState: 'all' | 'selected' | 'unknown_category' | 'category_unavailable'
+  categoryAvailable: boolean
+  categoryCoverageState: 'observed' | 'partial' | 'unavailable'
+  categoryContractVersion: string | null
+  topScopedStreams: number
+  preCategoryStreams: number
+  preCategoryViewers: number
+  selectedPopulationStreams: number
+  selectedPopulationViewers: number
+  unknownCategoryStreams: number
+  dictionaryMissingItems: number
+  availableCategories: PopulationCategory[]
+  languageFilterAvailable: false
+  languageUsedForPopulationFiltering: false
+}
+
 type StreamMapPayload = {
   version: 'viewloom-stream-map-live-v1'
   platform: 'twitch'
@@ -68,6 +98,7 @@ type StreamMapPayload = {
     mappedBySource: Record<string, number>
     unmappedReasons: Record<string, number>
   }
+  populationFilter: StreamMapPopulationFilter
   mappedStreams: StreamMapMappedStream[]
   excludedNonPersonStreams: Array<{
     login: string
@@ -84,6 +115,8 @@ type StreamMapPayload = {
     mappedPlusUnmappedEqualsObserved: true
     excludedNonPersonIsSubsetOfUnmapped: true
     evidenceSourcesRemainDistinct: true
+    populationFilterBeforeEvidenceFilter: true
+    languageUsedForPopulationFiltering: false
   }
   state: string
 }
@@ -129,22 +162,37 @@ const sourceInputs = [...document.querySelectorAll<HTMLInputElement>('[data-loca
 const typeInputs = [...document.querySelectorAll<HTMLInputElement>('[data-location-type]')]
 const clearButton = document.querySelector<HTMLButtonElement>('[data-clear-location-filters]')
 const clearCountryButton = document.querySelector<HTMLButtonElement>('[data-clear-selected-country]')
+const populationTop = document.querySelector<HTMLSelectElement>('[data-population-top]')
+const populationMinViewers = document.querySelector<HTMLSelectElement>('[data-population-min-viewers]')
+const populationCategory = document.querySelector<HTMLSelectElement>('[data-population-category]')
+const resetPopulationButton = document.querySelector<HTMLButtonElement>('[data-reset-population-filters]')
 
 let payload: StreamMapPayload | null = null
 let map: MapLibreMap | null = null
 let mapReady = false
 let mapFailed = false
 let loadError = ''
+let populationLoading = false
+let loadRequestId = 0
 let markers: MapLibreMarker[] = []
 let selectedCountry: string | null = null
 let selectedCountryLabel = ''
 
 for (const input of [...sourceInputs, ...typeInputs]) input.addEventListener('change', renderView)
+for (const select of [populationTop, populationMinViewers, populationCategory]) {
+  select?.addEventListener('change', () => void loadData())
+}
 clearButton?.addEventListener('click', () => {
   for (const input of [...sourceInputs, ...typeInputs]) input.checked = false
   renderView()
 })
 clearCountryButton?.addEventListener('click', clearSelectedCountry)
+resetPopulationButton?.addEventListener('click', () => {
+  if (populationTop) populationTop.value = '300'
+  if (populationMinViewers) populationMinViewers.value = '0'
+  if (populationCategory) populationCategory.value = 'all'
+  void loadData()
+})
 
 initializeMap()
 void loadData()
@@ -190,19 +238,62 @@ function initializeMap(): void {
 }
 
 async function loadData(): Promise<void> {
+  const requestId = ++loadRequestId
+  populationLoading = true
+  loadError = ''
+  syncStatus()
+
   try {
-    const response = await fetch('/api/twitch-stream-map', { cache: 'no-store' })
+    const requestUrl = new URL('/api/twitch-stream-map', window.location.origin)
+    requestUrl.searchParams.set('top', populationTop?.value || '300')
+    requestUrl.searchParams.set('min_viewers', populationMinViewers?.value || '0')
+    requestUrl.searchParams.set('category', populationCategory?.value || 'all')
+    const response = await fetch(requestUrl.toString(), { cache: 'no-store' })
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
     const next = await response.json() as StreamMapPayload
-    if (next.version !== 'viewloom-stream-map-live-v1' || next.platform !== 'twitch' || next.source !== 'real') {
+    if (next.version !== 'viewloom-stream-map-live-v1' || next.platform !== 'twitch' || next.source !== 'real' || !next.coverage || !next.populationFilter) {
       throw new Error('Unexpected Stream Map data contract.')
     }
+    if (requestId !== loadRequestId) return
     payload = next
+    syncPopulationControls(next.populationFilter)
+    populationLoading = false
     renderView()
   } catch (error) {
+    if (requestId !== loadRequestId) return
+    populationLoading = false
     loadError = error instanceof Error ? error.message : String(error)
     renderView()
   }
+}
+
+function syncPopulationControls(filter: StreamMapPopulationFilter): void {
+  if (populationTop) populationTop.value = String(filter.selectedTop)
+  if (populationMinViewers) populationMinViewers.value = String(filter.minViewers)
+  if (!populationCategory) return
+
+  populationCategory.replaceChildren()
+  const all = document.createElement('option')
+  all.value = 'all'
+  all.textContent = 'All categories'
+  populationCategory.append(all)
+
+  for (const category of filter.availableCategories) {
+    const option = document.createElement('option')
+    option.value = category.id
+    option.textContent = `${category.name} · ${formatNumber(category.streamCount)}`
+    populationCategory.append(option)
+  }
+
+  if (filter.selectedCategory !== 'all' && !filter.availableCategories.some((category) => category.id === filter.selectedCategory)) {
+    const retained = document.createElement('option')
+    retained.value = filter.selectedCategory
+    retained.textContent = filter.categoryState === 'category_unavailable'
+      ? `Category unavailable · ${filter.selectedCategory}`
+      : `Not in selected population · ${filter.selectedCategory}`
+    populationCategory.append(retained)
+  }
+  populationCategory.value = filter.selectedCategory
 }
 
 function renderView(): void {
@@ -229,12 +320,13 @@ function renderView(): void {
   text('stream-map-card-excluded', `${formatNumber(payload.coverage.excludedNonPersonStreams)} streams · ${formatNumber(payload.coverage.excludedNonPersonViewers)} viewers`)
   text('stream-map-country-count', formatNumber(summary.mappedCountryCount))
   text('stream-map-current-count', formatNumber(summary.currentLocationStreams))
+  renderPopulationSummary(payload.populationFilter)
 
   const note = document.getElementById('stream-map-filter-note')
   if (note) {
     note.textContent = filtering
-      ? `Filtered coverage: ${formatPercent(summary.mappedPercent)} of observed streams. Unmatched accepted evidence is treated as unmapped in this view.`
-      : `All accepted evidence: ${formatPercent(payload.coverage.mappedPercent)} of observed streams and ${formatPercent(payload.coverage.mappedViewerPercent)} of observed viewers are mapped.`
+      ? `Filtered coverage: ${formatPercent(summary.mappedPercent)} of selected-population streams. Unmatched accepted evidence is treated as unmapped in this view.`
+      : `All accepted evidence: ${formatPercent(payload.coverage.mappedPercent)} of selected-population streams and ${formatPercent(payload.coverage.mappedViewerPercent)} of selected-population viewers are mapped.`
   }
 
   renderUnmappedReasonAnalysis({
@@ -247,6 +339,33 @@ function renderView(): void {
   renderStreamList(selection.visibleStreams, selection)
   renderMarkers(filtered)
   syncStatus(filtered.length, selection)
+}
+
+function renderPopulationSummary(filter: StreamMapPopulationFilter): void {
+  const categoryLabel = filter.selectedCategory === 'all'
+    ? 'all categories'
+    : filter.selectedCategoryName || filter.selectedCategory
+  const viewerLabel = filter.minViewers > 0 ? `${formatNumber(filter.minViewers)}+ viewers` : 'all viewers'
+  text('stream-map-population-summary', `Top ${formatNumber(filter.selectedTop)} · ${viewerLabel} · ${categoryLabel}`)
+
+  const node = document.getElementById('stream-map-population-state')
+  if (!node) return
+  node.dataset.categoryState = filter.categoryState
+  node.dataset.categoryCoverage = filter.categoryCoverageState
+  if (filter.categoryState === 'unknown_category') {
+    node.textContent = `Selected category is not present inside the current Top-N/min-viewer scope. Selected population: 0 streams.`
+    return
+  }
+  if (filter.categoryState === 'category_unavailable' && filter.selectedCategory !== 'all') {
+    node.textContent = 'Category data is unavailable for this snapshot, so the selected category returns an explicit zero population instead of falling back to all categories.'
+    return
+  }
+  const categoryNote = filter.categoryCoverageState === 'partial'
+    ? ` Category coverage is partial: ${formatNumber(filter.unknownCategoryStreams)} rows have no category and ${formatNumber(filter.dictionaryMissingItems)} category names are unresolved.`
+    : filter.categoryCoverageState === 'unavailable'
+      ? ' Category data is unavailable; all-category mode keeps the Top-N/min-viewer population.'
+      : ' Category coverage is observed for this scope.'
+  node.textContent = `${formatNumber(filter.selectedPopulationStreams)} streams · ${formatNumber(filter.selectedPopulationViewers)} viewers selected.${categoryNote}`
 }
 
 function currentFilter(): { sources: Set<string>; types: Set<string> } {
@@ -266,8 +385,8 @@ function renderCountrySummary(streams: StreamMapMappedStream[]): void {
     const empty = document.createElement('p')
     empty.className = 'stream-map-empty'
     empty.textContent = selectedCountry
-      ? 'No mapped country matches the selected evidence filters. The selected country is retained until you clear it.'
-      : 'No accepted mapped country matches the selected evidence filters.'
+      ? 'No mapped country matches the selected population/evidence filters. The selected country is retained until you clear it.'
+      : 'No accepted mapped country matches the selected population/evidence filters.'
     list.append(empty)
     return
   }
@@ -311,7 +430,7 @@ function renderSelectedCountry(selection: CountrySelection): void {
     if (entries.length === 0) {
       const empty = document.createElement('span')
       empty.className = 'stream-map-selected-country-source-empty'
-      empty.textContent = 'No selected accepted evidence matches current source/type filters.'
+      empty.textContent = 'No selected accepted evidence matches current population/source/type filters.'
       sourceList.append(empty)
     } else {
       for (const [source, count] of entries) {
@@ -326,8 +445,8 @@ function renderSelectedCountry(selection: CountrySelection): void {
   const note = document.getElementById('stream-map-selected-country-note')
   if (note) {
     note.textContent = country
-      ? `${label} is selected. The streamer list below is restricted to this country and still obeys the active evidence filters.`
-      : `${label} remains selected, but no accepted mapped evidence for it matches the active filters. The selection was not silently changed.`
+      ? `${label} is selected. The streamer list below is restricted to this country and still obeys the active population/evidence filters.`
+      : `${label} remains selected, but no accepted mapped evidence for it matches the active population/evidence filters. The selection was not silently changed.`
   }
 
   const listTitle = document.getElementById('stream-map-stream-list-title')
@@ -346,8 +465,8 @@ function renderStreamList(streams: StreamMapMappedStream[], selection: CountrySe
     const empty = document.createElement('p')
     empty.className = 'stream-map-empty'
     empty.textContent = selection.selectedCountry
-      ? 'The selected country has no mapped streamer under the active evidence filters. Clear the country or change the filters.'
-      : 'No mapped streamer matches the selected source/type combination.'
+      ? 'The selected country has no mapped streamer under the active population/evidence filters. Clear the country or change the filters.'
+      : 'No mapped streamer matches the selected population/source/type combination.'
     list.append(empty)
     return
   }
@@ -466,13 +585,27 @@ function locationLabel(stream: StreamMapMappedStream): string {
 
 function syncStatus(filteredCount?: number, selection?: CountrySelection): void {
   if (state) {
-    state.textContent = loadError ? 'Data error' : payload ? (mapFailed ? 'Data ready' : mapReady ? 'Ready' : 'Map loading') : 'Loading'
+    state.textContent = loadError
+      ? 'Data error'
+      : populationLoading
+        ? 'Updating population'
+        : payload
+          ? (mapFailed ? 'Data ready' : mapReady ? 'Ready' : 'Map loading')
+          : 'Loading'
   }
   if (!status) return
 
   if (loadError) {
     status.dataset.state = 'error'
     status.replaceChildren(statusStrong('Stream Map data unavailable'), statusSpan(loadError))
+    return
+  }
+  if (populationLoading) {
+    status.dataset.state = 'loading'
+    status.replaceChildren(
+      statusStrong(payload ? 'Updating selected Twitch population…' : 'Loading live Twitch population…'),
+      statusSpan('Population changes are applied before location evidence filters.'),
+    )
     return
   }
   if (!payload) {
@@ -496,7 +629,7 @@ function syncStatus(filteredCount?: number, selection?: CountrySelection): void 
     const label = selection.country?.countryName || selectedCountryLabel || selection.selectedCountry
     status.replaceChildren(
       statusStrong(`${label}: ${formatNumber(selection.visibleStreams.length)} mapped streams in drilldown`),
-      statusSpan(selection.selectedEmpty ? 'Selected country retained with zero matching evidence under the active filters.' : 'Country drilldown is active; source/type filters still apply.'),
+      statusSpan(selection.selectedEmpty ? 'Selected country retained with zero matching population/evidence under the active filters.' : 'Country drilldown is active; population and source/type filters still apply.'),
     )
     return
   }
@@ -509,6 +642,8 @@ function renderFailure(message: string): void {
   text('stream-map-unmapped', 'Unavailable')
   text('stream-map-strip-updated', 'Unavailable')
   text('stream-map-strip-coverage', 'Unavailable')
+  text('stream-map-population-summary', 'Unavailable')
+  text('stream-map-population-state', 'Selected population unavailable.')
   text('stream-map-unmapped-current', 'Unavailable')
   text('stream-map-unmapped-baseline', 'Unavailable')
   text('stream-map-unmapped-filtered-out', 'Unavailable')
