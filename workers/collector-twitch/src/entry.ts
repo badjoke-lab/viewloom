@@ -30,7 +30,7 @@ type TwitchStreamsResponse = {
 }
 
 const TOP20_AUDIT_PATH = '/audit/top20-external-yield-sample'
-const TOP20_PREVIEW_HOST = /^top20-pr-\d+-viewloom-collector-twitch\.[a-z0-9-]+\.workers\.dev$/i
+const TOP20_PREVIEW_HOST = /^(?:[a-f0-9]{8}|top20-pr-\d+)-viewloom-collector-twitch\.[a-z0-9-]+\.workers\.dev$/i
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
