@@ -24,14 +24,34 @@ jobs:
           set -euo pipefail
           mkdir -p artifacts/twitch-stream-map-population-coverage/raw
           base='https://www.viewloom.net/api/twitch-stream-map'
+          route='artifacts/twitch-stream-map-population-coverage/route.html'
 
           curl --fail --silent --show-error --retry 8 --retry-delay 5 --retry-all-errors \
             https://www.viewloom.net/twitch/map/ \
-            -o artifacts/twitch-stream-map-population-coverage/route.html
+            -o "$route"
 
-          grep -Fq 'data-population-top' artifacts/twitch-stream-map-population-coverage/route.html
-          grep -Fq 'data-population-min-viewers' artifacts/twitch-stream-map-population-coverage/route.html
-          grep -Fq 'data-population-category' artifacts/twitch-stream-map-population-coverage/route.html
+          route_top="$(grep -Fc 'data-population-top' "$route" || true)"
+          route_min="$(grep -Fc 'data-population-min-viewers' "$route" || true)"
+          route_category="$(grep -Fc 'data-population-category' "$route" || true)"
+          printf 'route_population_top=%s\nroute_population_min=%s\nroute_population_category=%s\n' \
+            "$route_top" "$route_min" "$route_category" \
+            | tee artifacts/twitch-stream-map-population-coverage/route-diagnostics.txt
+
+          curl --fail --silent --show-error --retry 8 --retry-delay 5 --retry-all-errors \
+            --get "$base" \
+            --data-urlencode 'top=300' \
+            --data-urlencode 'min_viewers=0' \
+            --data-urlencode 'category=all' \
+            -o artifacts/twitch-stream-map-population-coverage/raw/top300.json
+
+          jq '{version,platform,source,state,updatedAt,populationFilter,coverage,semantics,error}' \
+            artifacts/twitch-stream-map-population-coverage/raw/top300.json \
+            | tee artifacts/twitch-stream-map-population-coverage/top300-diagnostics.json
+
+          if [ "$route_top" -lt 1 ] || [ "$route_min" -lt 1 ] || [ "$route_category" -lt 1 ]; then
+            echo 'production_route_population_controls_not_ready' >&2
+            exit 21
+          fi
 
           probe() {
             name="$1"
@@ -39,12 +59,14 @@ jobs:
             min_viewers="$3"
             category="$4"
             output="artifacts/twitch-stream-map-population-coverage/raw/${name}.json"
-            curl --fail --silent --show-error --retry 8 --retry-delay 5 --retry-all-errors \
-              --get "$base" \
-              --data-urlencode "top=${top}" \
-              --data-urlencode "min_viewers=${min_viewers}" \
-              --data-urlencode "category=${category}" \
-              -o "$output"
+            if [ "$name" != 'top300' ]; then
+              curl --fail --silent --show-error --retry 8 --retry-delay 5 --retry-all-errors \
+                --get "$base" \
+                --data-urlencode "top=${top}" \
+                --data-urlencode "min_viewers=${min_viewers}" \
+                --data-urlencode "category=${category}" \
+                -o "$output"
+            fi
             jq -e '
               .version == "viewloom-stream-map-live-v1" and
               .platform == "twitch" and
@@ -57,7 +79,11 @@ jobs:
               .semantics.languageUsedForPopulationFiltering == false and
               (.coverage.mappedStreams + .coverage.unmappedStreams == .coverage.observedStreams) and
               ((.coverage.unmappedReasons | to_entries | map(.value) | add // 0) == .coverage.unmappedStreams)
-            ' "$output" >/dev/null
+            ' "$output" >/dev/null || {
+              echo "population_contract_validation_failed scope=${name}" >&2
+              jq '{version,platform,source,state,populationFilter,coverage,semantics,error}' "$output" >&2 || true
+              exit 22
+            }
           }
 
           probe top300 300 0 all
@@ -138,15 +164,14 @@ jobs:
           jq -s 'sort_by(.scope)' artifacts/twitch-stream-map-population-coverage/*.summary.json \
             > artifacts/twitch-stream-map-population-coverage/summary.json
 
-          jq '{
-            generatedAt: (now | todateiso8601),
-            scopes: .
-          }' artifacts/twitch-stream-map-population-coverage/summary.json \
+          jq '{generatedAt: (now | todateiso8601), scopes: .}' \
+            artifacts/twitch-stream-map-population-coverage/summary.json \
             > artifacts/twitch-stream-map-population-coverage/report.json
 
           cat artifacts/twitch-stream-map-population-coverage/report.json
 
       - name: Upload audit artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: twitch-stream-map-population-coverage
