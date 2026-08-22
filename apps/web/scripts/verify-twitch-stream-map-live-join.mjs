@@ -53,6 +53,45 @@ assert.equal(model.semantics.candidateOnlyPlacementAllowed, false)
 assert.equal(model.semantics.nonPersonPlacementAllowed, false)
 assert.equal(model.coverage.mappedStreams + model.coverage.unmappedStreams, model.coverage.observedStreams)
 
+const remediation = buildTwitchStreamMapLiveModel({
+  snapshot: {
+    bucketMinute: '2026-08-22T17:04:00.000Z',
+    collectedAt: '2026-08-22T17:04:30.000Z',
+    streamCount: 3,
+    totalViewers: 600,
+    payloadJson: JSON.stringify({
+      provider: 'twitch',
+      items: [
+        { channelLogin: 'payo', displayName: 'Payo', viewers: 250 },
+        { channelLogin: 'wirtual', displayName: 'Wirtual', viewers: 200 },
+        { channelLogin: 'knirpz', displayName: 'Knirpz', viewers: 150 },
+      ],
+    }),
+    sourceMode: 'real',
+    coveredPages: 3,
+    hasMore: true,
+  },
+  evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS,
+  topLimit: 300,
+})
+
+assert.equal(remediation.coverage.observedStreams, 3)
+assert.equal(remediation.coverage.mappedStreams, 3)
+assert.equal(remediation.coverage.unmappedStreams, 0)
+assert.equal(remediation.coverage.mappedCountryCount, 3)
+assert.equal(remediation.coverage.mappedBySource.official_external, 3)
+assert.equal(remediation.coverage.currentLocationStreams, 0)
+assert.equal(sumReasonCounts(remediation.coverage.unmappedReasons), 0)
+assert.deepEqual(
+  remediation.mappedStreams.map((row) => [row.login, row.location.countryCode, row.location.city]),
+  [
+    ['payo', 'CA', null],
+    ['wirtual', 'NO', null],
+    ['knirpz', 'DE', 'Berlin'],
+  ],
+)
+assert.ok(remediation.mappedStreams.every((row) => row.sources.includes('official_external')))
+
 const conflict = buildTwitchStreamMapLiveModel({
   snapshot: {
     bucketMinute: '2026-08-21T16:25:00.000Z',
