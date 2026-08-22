@@ -45,7 +45,6 @@ const topThreeGameOne = selectTwitchStreamMapPopulation({
   category: 'g1',
   categoryNames: names,
 })
-// Public minimum Top-N is 20, so use a 25-row fixture below for the actual Top-N boundary test.
 assert.equal(topThreeGameOne.metadata.categoryState, 'selected')
 assert.equal(topThreeGameOne.metadata.selectedCategoryName, 'Game One')
 
@@ -154,6 +153,9 @@ assert.ok(endpoint.includes("url.searchParams.get('min_viewers')"))
 assert.ok(endpoint.includes("url.searchParams.get('category')"))
 assert.ok(endpoint.includes('selectTwitchStreamMapPopulation'))
 assert.ok(endpoint.includes('populationFilter: population.metadata'))
+assert.ok(endpoint.includes('semantics: { ...model.semantics, ...mapSemantics() }'))
+assert.ok(endpoint.includes('populationFilterBeforeEvidenceFilter: true'))
+assert.ok(endpoint.includes('languageUsedForPopulationFiltering: false'))
 assert.ok(endpoint.includes("FROM provider_category_dictionary"))
 assert.equal(endpoint.includes("url.searchParams.get('language')"), false)
 assert.ok(page.includes('data-population-top'))
@@ -179,5 +181,6 @@ console.log(JSON.stringify({
   unknownCategoryExplicitZero: true,
   categoryUnavailableExplicit: true,
   liveModelReconcilesSelectedPopulation: true,
+  readyResponsePopulationSemantics: true,
   languageDeferred: true,
 }, null, 2))
