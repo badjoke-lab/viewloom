@@ -93,8 +93,8 @@ assert.ok(entry.includes("row.setAttribute('aria-pressed'"))
 assert.ok(entry.includes("element.setAttribute('aria-pressed'"))
 assert.ok(entry.includes('selectCountry(country.countryCode, country.countryName'))
 assert.ok(entry.includes('clearCountryButton?.addEventListener'))
-assert.ok(entry.includes('The selected country has no mapped streamer under the active evidence filters.'))
-assert.ok(entry.includes('Country drilldown is active; source/type filters still apply.'))
+assert.ok(entry.includes('The selected country has no mapped streamer under the active population/evidence filters.'))
+assert.ok(entry.includes('Country drilldown is active; population/source/type filters still apply.'))
 
 assert.ok(css.includes('.stream-map-selected-country'))
 assert.ok(css.includes('.stream-map-country-row.is-selected'))
@@ -111,4 +111,5 @@ console.log(JSON.stringify({
   countryRowSelection: true,
   clearSelection: true,
   keyboardAndTapControls: true,
+  populationFilterPreserved: true,
 }, null, 2))
