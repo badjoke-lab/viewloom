@@ -94,7 +94,8 @@ for (const type of STREAM_MAP_TYPE_OPTIONS) {
 
 assert.ok(page.includes('Source and type dimensions are combined with AND'))
 assert.ok(page.includes('No demo geography will be substituted.'))
-assert.ok(entry.includes("fetch('/api/twitch-stream-map', { cache: 'no-store' })"))
+assert.ok(entry.includes("new URL('/api/twitch-stream-map', window.location.origin)"))
+assert.ok(entry.includes("fetch(requestUrl.toString(), { cache: 'no-store' })"))
 assert.ok(entry.includes('filterMappedStreams(payload.mappedStreams, filter)'))
 assert.ok(entry.includes('COUNTRY_CENTROIDS'))
 assert.ok(css.includes('.stream-map-badge--official-external'))
