@@ -145,3 +145,14 @@ A prior snapshot observed one mapped stream. Treat both as live observations, no
 ## Retained category-program state
 
 Phase 12A-5B-R2 Twitch category stability + Heatmap public rollout remains completed. Its historical acceptance records remain valid and should not be rewritten by Stream Map work.
+
+## Historical category schedule anchors
+
+The following strings are retained for completed category-rollout verifiers only; they are not the current execution schedule.
+
+```text
+Twitch category stability + Heatmap public rollout complete
+Public production acceptance run 31244148651 success
+Twitch public category filter active yes
+keep #623 open as the parent category program
+```
