@@ -118,6 +118,34 @@
         <article class="surface"><small>Excluded non-person</small><strong id="stream-map-card-excluded">—</strong><p>Organization and event-broadcast channels remain visible in accounting but are never placed as people.</p></article>
       </section>
 
+      <section class="surface stream-map-unmapped" aria-labelledby="stream-map-unmapped-heading">
+        <div class="stream-map-unmapped__head">
+          <div>
+            <div class="stream-map-shell__eyebrow">Reason-aware accounting</div>
+            <h2 id="stream-map-unmapped-heading">Why streams are unmapped</h2>
+            <p>The real API reasons describe the base snapshot. Active evidence filters can additionally hide otherwise accepted mapped evidence; that client-side adjustment is shown separately and never changes evidence acceptance.</p>
+          </div>
+          <div class="stream-map-unmapped__facts">
+            <div><small>Unmapped in view</small><strong id="stream-map-unmapped-current">—</strong></div>
+            <div><small>Base API unmapped</small><strong id="stream-map-unmapped-baseline">—</strong></div>
+            <div><small>Accepted but filtered out</small><strong id="stream-map-unmapped-filtered-out">—</strong></div>
+          </div>
+        </div>
+        <p id="stream-map-unmapped-reconciliation" class="stream-map-filter-note" aria-live="polite">Loading reason accounting…</p>
+        <div class="stream-map-unmapped-grid">
+          <div class="stream-map-results-card">
+            <h3>Unmapped reasons</h3>
+            <p class="stream-map-unmapped-explainer">Reason codes are preserved from the API. <code>filtered_out_accepted_evidence</code> is the only derived current-view reason and appears only when source/type filters hide accepted mapped evidence. Country drilldown does not alter these totals.</p>
+            <div id="stream-map-unmapped-reason-list" class="stream-map-unmapped-reason-list"><p class="stream-map-empty">Loading…</p></div>
+          </div>
+          <div class="stream-map-results-card">
+            <h3>Excluded non-person channels</h3>
+            <p class="stream-map-unmapped-explainer">Organizations and event broadcasts remain in observed/unmapped accounting, but ViewLoom does not place them as people.</p>
+            <div id="stream-map-excluded-nonperson-list" class="stream-map-excluded-list"><p class="stream-map-empty">Loading…</p></div>
+          </div>
+        </div>
+      </section>
+
       <section class="surface stream-map-results">
         <div class="stream-map-results__head">
           <div><div class="stream-map-shell__eyebrow">Current filtered result</div><h2>Mapped countries and streams</h2><p>Choose a country to restrict the drilldown list. Evidence provenance stays attached to every visible streamer.</p></div>
