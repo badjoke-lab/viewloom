@@ -1,4 +1,4 @@
-name: Twitch Location Preview Audit
+name: Twitch Stream Map Coverage Remediation Audit
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: twitch-location-preview-audit-pr-${{ github.event.pull_request.number }}
+  group: twitch-stream-map-coverage-remediation-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      ARTIFACT_DIR: artifacts/twitch-location-preview-audit
+      ARTIFACT_DIR: artifacts/twitch-stream-map-coverage-remediation
     steps:
       - uses: actions/checkout@v4
 
@@ -64,7 +64,7 @@ jobs:
           echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
           printf '%s\n' "$preview_url" > "$ARTIFACT_DIR/preview-url.txt"
 
-      - name: Run read-only location evidence audit
+      - name: Run read-only supported-source audit
         shell: bash
         run: |
           set -euo pipefail
@@ -81,41 +81,107 @@ jobs:
             .result.persistence.rawTagsStored == false and
             .result.persistence.rawLanguageStored == false and
             .result.persistence.rawProfileDescriptionStored == false and
+            .result.persistence.candidateEvidenceArtifactOnly == true and
+            .result.apiRequests.token == 1 and
+            .result.apiRequests.streams >= 1 and
+            .result.apiRequests.streams <= 3 and
             .result.apiRequests.users >= 1 and
             .result.apiRequests.users <= 3 and
             .result.profileAudit.requestedUsers > 0 and
             .result.audit.candidateExtraction.languageUsedForPlacement == false
           ' "$ARTIFACT_DIR/result.json" >/dev/null
-          jq . "$ARTIFACT_DIR/result.json"
 
-      - name: Publish audit summary
+      - name: Compare candidates with retained reviewed evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE' > "$ARTIFACT_DIR/reviewed-logins.json"
+          import { TWITCH_REVIEWED_LOCATION_RECORDS } from './apps/web/functions/api/twitch-stream-map-reviewed-evidence.mjs'
+          const logins = [...new Set(TWITCH_REVIEWED_LOCATION_RECORDS.map((record) => String(record.streamerLogin ?? '').trim().toLowerCase()).filter(Boolean))].sort()
+          process.stdout.write(JSON.stringify(logins, null, 2))
+          NODE
+
+          jq '[.result.candidateEvidence.records[].userLogin | ascii_downcase] | unique' \
+            "$ARTIFACT_DIR/result.json" > "$ARTIFACT_DIR/candidate-logins.json"
+
+          jq -n \
+            --slurpfile candidates "$ARTIFACT_DIR/candidate-logins.json" \
+            --slurpfile reviewed "$ARTIFACT_DIR/reviewed-logins.json" '
+              {
+                candidateLogins: $candidates[0],
+                reviewedLogins: $reviewed[0],
+                candidateCount: ($candidates[0] | length),
+                retainedReviewedCount: ($reviewed[0] | length),
+                alreadyReviewedCandidates: [$candidates[0][] | select(. as $login | ($reviewed[0] | index($login)) != null)],
+                incrementalCandidateLogins: [$candidates[0][] | select(. as $login | ($reviewed[0] | index($login)) == null)]
+              }
+              | .alreadyReviewedCandidateCount = (.alreadyReviewedCandidates | length)
+              | .incrementalCandidateCount = (.incrementalCandidateLogins | length)
+            ' > "$ARTIFACT_DIR/candidate-overlap.json"
+
+          jq -n \
+            --slurpfile result "$ARTIFACT_DIR/result.json" \
+            --slurpfile overlap "$ARTIFACT_DIR/candidate-overlap.json" '
+              {
+                provider: "twitch",
+                auditMode: "non-production-worker-version-preview",
+                observedAt: $result[0].result.observedAt,
+                streamCount: $result[0].result.streamCount,
+                apiRequests: $result[0].result.apiRequests,
+                profileAudit: $result[0].result.profileAudit,
+                sourceAvailability: $result[0].result.audit.sourceAvailability.availableCounts,
+                candidateCounts: $result[0].result.audit.candidateExtraction.counts,
+                sourceYield: $result[0].result.audit.candidateExtraction.sourceYield,
+                candidateCountries: $result[0].result.audit.candidateExtraction.candidateCountries,
+                candidateEvidenceRecordCount: $result[0].result.candidateEvidence.recordCount,
+                alreadyReviewedCandidateCount: $overlap[0].alreadyReviewedCandidateCount,
+                alreadyReviewedCandidates: $overlap[0].alreadyReviewedCandidates,
+                incrementalCandidateCount: $overlap[0].incrementalCandidateCount,
+                incrementalCandidateLogins: $overlap[0].incrementalCandidateLogins,
+                persistence: $result[0].result.persistence,
+                acceptance: {
+                  automated: false,
+                  requiresBoundedManualReview: true,
+                  tagOnlyAcceptedAutomatically: false,
+                  languageUsedForPlacement: false
+                }
+              }
+            ' > "$ARTIFACT_DIR/summary.json"
+
+          jq . "$ARTIFACT_DIR/summary.json"
+
+      - name: Publish remediation summary
         if: always()
         shell: bash
         run: |
           {
-            echo '## Twitch location preview audit'
+            echo '## Twitch Stream Map coverage remediation audit'
             echo
             echo '- Production deployment: no'
             echo '- Worker version upload only: yes'
-            if [ -f "$ARTIFACT_DIR/result.json" ]; then
-              echo "- Streams observed: $(jq -r '.result.streamCount' "$ARTIFACT_DIR/result.json")"
-              echo "- Profile descriptions present: $(jq -r '.result.profileAudit.descriptionsPresent' "$ARTIFACT_DIR/result.json")"
-              echo "- Profile candidates: $(jq -r '.result.audit.candidateExtraction.counts.profileCandidateStreams' "$ARTIFACT_DIR/result.json")"
-              echo "- Title candidates: $(jq -r '.result.audit.candidateExtraction.counts.titleCandidateStreams' "$ARTIFACT_DIR/result.json")"
-              echo "- Tag candidates: $(jq -r '.result.audit.candidateExtraction.counts.tagCandidateStreams' "$ARTIFACT_DIR/result.json")"
-              echo "- Any candidates: $(jq -r '.result.audit.candidateExtraction.counts.anyCandidateStreams' "$ARTIFACT_DIR/result.json")"
-              echo "- Unknown: $(jq -r '.result.audit.candidateExtraction.counts.unknownStreams' "$ARTIFACT_DIR/result.json")"
-              echo "- Multiple-location candidates: $(jq -r '.result.audit.candidateExtraction.counts.multipleLocationCandidateStreams' "$ARTIFACT_DIR/result.json")"
-              echo "- Future-travel rejects: $(jq -r '.result.audit.candidateExtraction.counts.rejectedFutureTravelTitles' "$ARTIFACT_DIR/result.json")"
+            echo '- D1 writes: 0'
+            echo '- Automated acceptance: no'
+            if [ -f "$ARTIFACT_DIR/summary.json" ]; then
+              echo "- Streams observed: $(jq -r '.streamCount' "$ARTIFACT_DIR/summary.json")"
+              echo "- Profile descriptions present: $(jq -r '.profileAudit.descriptionsPresent' "$ARTIFACT_DIR/summary.json")"
+              echo "- Profile candidates: $(jq -r '.candidateCounts.profileCandidateStreams' "$ARTIFACT_DIR/summary.json")"
+              echo "- Strong-title candidates: $(jq -r '.candidateCounts.titleCandidateStreams' "$ARTIFACT_DIR/summary.json")"
+              echo "- Ambiguous tag candidates: $(jq -r '.candidateCounts.tagCandidateStreams' "$ARTIFACT_DIR/summary.json")"
+              echo "- Any candidates: $(jq -r '.candidateCounts.anyCandidateStreams' "$ARTIFACT_DIR/summary.json")"
+              echo "- Already-reviewed candidates: $(jq -r '.alreadyReviewedCandidateCount' "$ARTIFACT_DIR/summary.json")"
+              echo "- Incremental candidates requiring review: $(jq -r '.incrementalCandidateCount' "$ARTIFACT_DIR/summary.json")"
+              echo "- Current-location candidates: $(jq -r '.candidateCounts.currentLocationCandidateStreams' "$ARTIFACT_DIR/summary.json")"
+              echo "- Conflicting same-claim candidates: $(jq -r '.candidateCounts.multipleLocationCandidateStreams' "$ARTIFACT_DIR/summary.json")"
+              echo "- Future-travel rejects: $(jq -r '.candidateCounts.rejectedFutureTravelTitles' "$ARTIFACT_DIR/summary.json")"
             else
               echo '- Audit result: missing'
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload preview audit evidence
+      - name: Upload remediation evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: twitch-location-preview-audit-pr-${{ github.event.pull_request.number }}
-          path: artifacts/twitch-location-preview-audit
+          name: twitch-stream-map-coverage-remediation-pr-${{ github.event.pull_request.number }}
+          path: artifacts/twitch-stream-map-coverage-remediation
           if-no-files-found: warn
