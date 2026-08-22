@@ -134,3 +134,13 @@ The completed Twitch category/Heatmap rollout remains a historical accepted mile
 - Twitch/Kick collectors remain on existing five-minute cadences unless a separate gate changes them.
 - No retention expansion, backfill, D1/binding change, or production mutation is implied by UI work.
 - Current-main documents and accepted contracts override cached handoffs and superseded draft PR documents.
+
+## Historical category acceptance anchors
+
+The following retained strings describe the completed category rollout only. They are preserved for historical acceptance verifiers and do not override the current Stream Map execution state above.
+
+```text
+Twitch category stability + Heatmap public rollout complete
+Public production acceptance run 31244148651 success
+docs/audits/12a5-twitch-heatmap-category-public-cutover-acceptance.json
+```
