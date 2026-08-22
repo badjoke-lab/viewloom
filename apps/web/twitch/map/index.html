@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stream Map — ViewLoom</title>
+  <meta name="description" content="Explore evidence-backed geographic context for currently observed Twitch live streams in ViewLoom." />
+  <link rel="canonical" href="https://www.viewloom.net/twitch/map/" />
+  <meta property="og:site_name" content="ViewLoom" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.viewloom.net/twitch/map/" />
+  <meta property="og:title" content="Stream Map — ViewLoom" />
+  <meta property="og:description" content="Explore evidence-backed geographic context for currently observed Twitch live streams in ViewLoom." />
+  <meta property="og:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:title" content="Stream Map — ViewLoom" />
+  <meta name="twitter:description" content="Explore evidence-backed geographic context for currently observed Twitch live streams in ViewLoom." />
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.4.1/dist/maplibre-gl.css" />
+  <link rel="stylesheet" href="/src/mock-site.css" />
+  <link rel="stylesheet" href="/src/features/twitch-stream-map/stream-map.css" />
+</head>
+<body data-provider="twitch" data-page="twitch-stream-map">
+  <div class="site-frame">
+    <header class="masthead">
+      <div class="masthead__inner">
+        <a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
+        <nav class="global-nav"><a href="/">Portal</a><a href="/twitch/" aria-current="page">Twitch data</a><a href="/kick/">Kick data</a><a href="/about/">About</a><a href="/support/">Support</a></nav>
+        <div class="status-inline"><span class="dot"></span>Collector status loading · 5m cadence</div>
+        <button class="mobile-menu mobile-only" data-mobile-menu aria-label="Open navigation">Menu</button>
+      </div>
+    </header>
+
+    <main class="page page--full page--stream-map">
+      <div class="breadcrumb">ViewLoom / Twitch data / Stream Map</div>
+      <nav class="feature-tabs"><a href="/twitch/heatmap/">Heatmap</a><a href="/twitch/day-flow/">Day Flow</a><a href="/twitch/battle-lines/">Battle Lines</a><a href="/twitch/history/">History</a><a href="/twitch/map/" aria-current="page">Stream Map</a><a href="/twitch/status/">Data Status</a></nav>
+
+      <section class="page-head page-head--stream-map">
+        <div>
+          <div class="kicker">TWITCH DATA · WHERE</div>
+          <h1>Stream Map</h1>
+          <p class="lede">Geographic context for the current observed Twitch Top 300, using only accepted location evidence. Unknown, conflicting and rejected locations remain unmapped.</p>
+        </div>
+        <div class="head-facts">
+          <div class="fact"><small>Observed</small><strong id="stream-map-observed">—</strong></div>
+          <div class="fact"><small>Mapped in view</small><strong id="stream-map-mapped">—</strong></div>
+          <div class="fact"><small>Unmapped in view</small><strong id="stream-map-unmapped">—</strong></div>
+          <div class="fact"><small>State</small><strong data-stream-map-state>Loading</strong></div>
+        </div>
+      </section>
+
+      <div class="data-strip">
+        <div class="data-strip__title">Twitch location observation</div>
+        <div class="data-strip__cell"><small>Updated</small><span id="stream-map-strip-updated">—</span></div>
+        <div class="data-strip__cell"><small>Coverage</small><span id="stream-map-strip-coverage">—</span></div>
+        <div class="data-strip__cell"><small>Filter</small><span id="stream-map-filter-summary">All accepted</span></div>
+        <div class="data-strip__cell"><small>Placement</small>Evidence-backed only</div>
+      </div>
+
+      <section class="surface stream-map-filter-panel" aria-label="Location evidence filters">
+        <div class="stream-map-filter-head">
+          <div><div class="stream-map-filter-label">Evidence filters</div><strong>Combine multiple sources and location types</strong></div>
+          <button type="button" class="stream-map-filter-clear" data-clear-location-filters>All accepted</button>
+        </div>
+        <div class="stream-map-filter-groups">
+          <fieldset class="stream-map-filter-group">
+            <legend>Evidence source · OR within this group</legend>
+            <div class="stream-map-filter-options">
+              <label class="stream-map-filter-option"><input type="checkbox" value="account_profile" data-location-source /><span class="stream-map-badge stream-map-badge--account-profile">Account/Profile</span></label>
+              <label class="stream-map-filter-option"><input type="checkbox" value="stream_title" data-location-source /><span class="stream-map-badge stream-map-badge--stream-title">Stream title</span></label>
+              <label class="stream-map-filter-option"><input type="checkbox" value="stream_tag" data-location-source /><span class="stream-map-badge stream-map-badge--stream-tag">Stream tag</span></label>
+              <label class="stream-map-filter-option"><input type="checkbox" value="channel_profile" data-location-source /><span class="stream-map-badge stream-map-badge--channel-profile">Channel profile</span></label>
+              <label class="stream-map-filter-option"><input type="checkbox" value="official_external" data-location-source /><span class="stream-map-badge stream-map-badge--official-external">Official external</span></label>
+              <label class="stream-map-filter-option"><input type="checkbox" value="manual_review" data-location-source /><span class="stream-map-badge stream-map-badge--manual-review">Manual review</span></label>
+            </div>
+          </fieldset>
+          <fieldset class="stream-map-filter-group">
+            <legend>Location type · OR within this group</legend>
+            <div class="stream-map-filter-options">
+              <label class="stream-map-filter-option"><input type="checkbox" value="home_base" data-location-type /><span class="stream-map-type-badge">Home / base</span></label>
+              <label class="stream-map-filter-option"><input type="checkbox" value="declared_location" data-location-type /><span class="stream-map-type-badge">Declared location</span></label>
+              <label class="stream-map-filter-option"><input type="checkbox" value="current_location" data-location-type /><span class="stream-map-type-badge">Current location</span></label>
+            </div>
+          </fieldset>
+        </div>
+        <p class="stream-map-filter-note" id="stream-map-filter-note">Source and type dimensions are combined with AND. No selected option means all accepted evidence.</p>
+      </section>
+
+      <section class="surface stream-map-shell" aria-label="Stream Map">
+        <div class="stream-map-shell__head">
+          <div>
+            <div class="stream-map-shell__eyebrow">Live evidence-backed geography</div>
+            <h2>World map</h2>
+            <p>Country markers reflect only streams whose selected accepted evidence supports a placement.</p>
+          </div>
+          <div class="stream-map-badges" aria-label="Location evidence legend">
+            <span class="stream-map-badge stream-map-badge--account-profile">Profile</span>
+            <span class="stream-map-badge stream-map-badge--stream-title">Title</span>
+            <span class="stream-map-badge stream-map-badge--stream-tag">Tag</span>
+            <span class="stream-map-badge stream-map-badge--channel-profile">Channel</span>
+            <span class="stream-map-badge stream-map-badge--official-external">External</span>
+            <span class="stream-map-badge stream-map-badge--manual-review">Manual</span>
+          </div>
+        </div>
+        <div class="stream-map-stage">
+          <div id="stream-map-root" class="stream-map-canvas" role="region" aria-label="Interactive world map"></div>
+          <div class="stream-map-status" data-stream-map-status role="status" aria-live="polite">
+            <strong>Loading live Twitch geography…</strong>
+            <span>No demo geography will be substituted.</span>
+          </div>
+        </div>
+        <p class="stream-map-interaction-note">Drag to move. Use the +/− controls to zoom. Wheel zoom is disabled so page scrolling remains available.</p>
+      </section>
+
+      <section class="stream-map-support-grid">
+        <article class="surface"><small>Mapped streams</small><strong id="stream-map-card-mapped">—</strong><p>Selected accepted evidence only. Filtered-out mapped evidence counts as unmapped in the current view.</p></article>
+        <article class="surface"><small>Mapped viewers</small><strong id="stream-map-card-viewers">—</strong><p>Viewer coverage is recalculated from the currently selected evidence sources and location types.</p></article>
+        <article class="surface"><small>Excluded non-person</small><strong id="stream-map-card-excluded">—</strong><p>Organization and event-broadcast channels remain visible in accounting but are never placed as people.</p></article>
+      </section>
+
+      <section class="surface stream-map-results">
+        <div class="stream-map-results__head">
+          <div><div class="stream-map-shell__eyebrow">Current filtered result</div><h2>Mapped countries and streams</h2><p>Evidence provenance stays attached to every visible streamer.</p></div>
+          <div class="head-facts">
+            <div class="fact"><small>Countries</small><strong id="stream-map-country-count">—</strong></div>
+            <div class="fact"><small>Current-location streams</small><strong id="stream-map-current-count">—</strong></div>
+          </div>
+        </div>
+        <div class="stream-map-results-grid">
+          <div class="stream-map-results-card"><h3>Countries</h3><div id="stream-map-country-list" class="stream-map-country-list"><p class="stream-map-empty">Loading…</p></div></div>
+          <div class="stream-map-results-card"><h3>Mapped streams</h3><div id="stream-map-stream-list" class="stream-map-stream-list"><p class="stream-map-empty">Loading…</p></div></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer"><div>ViewLoom · Independent, unofficial observation of public live-stream data.</div><nav><a href="/about/">Method & limits</a><a href="/support/">Support</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
+  </div>
+  <script src="https://unpkg.com/maplibre-gl@6.4.1/dist/maplibre-gl.js"></script>
+  <script type="module" src="/src/mock-site.ts"></script>
+  <script type="module" src="/src/features/twitch-stream-map/stream-map-entry.ts"></script>
+  <script type="module" src="/src/analytics.ts"></script>
+</body>
+</html>

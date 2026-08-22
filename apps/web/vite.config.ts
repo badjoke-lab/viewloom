@@ -81,6 +81,7 @@ export default defineConfig(({ mode }) => ({
         twitchDayFlow: 'twitch/day-flow/index.html',
         twitchBattleLines: 'twitch/battle-lines/index.html',
         twitchHistory: 'twitch/history/index.html',
+        twitchMap: 'twitch/map/index.html',
         twitchChannel: 'twitch/channel/index.html',
         twitchStatus: 'twitch/status/index.html',
         twitchWatchlist: 'twitch/watchlist/index.html',

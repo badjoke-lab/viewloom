@@ -53,6 +53,9 @@ jobs:
       - name: Verify Twitch Stream Map live join
         run: pnpm --filter @viewloom/web verify:stream-map-live-join
 
+      - name: Verify Twitch Stream Map source filters
+        run: pnpm --filter @viewloom/web verify:stream-map-source-filters
+
       - name: Verify Heatmap page boundaries
         run: pnpm --filter @viewloom/web verify:heatmap-boundaries
 
