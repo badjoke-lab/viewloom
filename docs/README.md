@@ -7,14 +7,16 @@ Last updated: 2026-08-22
 
 ```text
 Current program Twitch Stream Map
-Current stage Population filter implementation
-Accepted main 07eca2c291e4a7c4744a3c9a95013f307c44a9cb
+Current stage Evidence coverage decision
+Accepted main f707b7053be1b6fecc07bb93a26b8d9abb3ebabc
 Stage 1D source/yield audit complete
 Stage 1E real live join complete PR #972
 Stage 1F public route + source/type filters complete PR #974
 Stage 1G country selection + drilldown complete PR #977
 Stage 2 reason-aware Unmapped analysis complete PR #979
-Population filter ordering frozen docs/product/stream-map-population-filter-decision-v0.1.md
+Population filter contract frozen PR #980
+Population filter runtime complete PR #981
+Production coverage audit PR #982 verification-only / close without merge
 Production route/API verification complete PR #975 closed without merge
 Public Twitch Map /twitch/map/
 Real Twitch Map API /api/twitch-stream-map
@@ -31,7 +33,7 @@ Kick cadence */5 * * * * unchanged
 4. `docs/product/stream-map-spec-v0.5.md`
 5. `docs/product/stream-map-implementation-plan-v0.4.md`
 6. `docs/product/stream-map-population-filter-decision-v0.1.md`
-7. `docs/audits/twitch-stream-map-stage1e-1f-production-2026-08-22.md`
+7. latest accepted Stream Map audit under `docs/audits/`
 8. affected feature specification/plan and current WIP/handoff
 
 For historical 12A/category rollout work, retain and consult the accepted 12A audit/decision files. They remain valid historical records but are no longer the current execution milestone.
@@ -40,7 +42,7 @@ For historical 12A/category rollout work, retain and consult the accepted 12A au
 
 Public Twitch Stream Map behavior is evidence-backed and provider-separated.
 
-Evidence source vocabulary:
+Evidence sources:
 
 ```text
 account_profile
@@ -51,7 +53,7 @@ official_external
 manual_review
 ```
 
-Location type vocabulary:
+Location types:
 
 ```text
 home_base
@@ -59,15 +61,41 @@ declared_location
 current_location
 ```
 
-Evidence filter and drilldown semantics:
+Population order:
+
+```text
+latest real Twitch Top 300
+-> overall Top N
+-> minimum viewers
+-> category
+-> server-side entity/evidence placement
+-> client-side evidence source/type filters
+-> country drilldown
+```
+
+Public population controls:
+
+```text
+Top N        20 / 50 / 100 / 300
+Min viewers  any / 100 / 500 / 1,000 / 5,000 / 10,000
+Category     all or one observed Twitch category
+Language     deferred; permanent minute snapshot does not retain it
+```
+
+Evidence-filter semantics:
 
 ```text
 source selections: OR
 type selections: OR
 source dimension AND type dimension
 empty source/type selection: All accepted
+```
+
+Country semantics:
+
+```text
 country selection: drilldown only
-selected country AND active evidence filters
+selected country AND active population/evidence result
 selected country with zero matches: retain selection and show explicit zero state
 ```
 
@@ -81,27 +109,6 @@ sum(current-view reasons) = current-view unmapped streams
 country selection does not alter unmapped accounting
 ```
 
-Accepted population ordering for the next implementation:
-
-```text
-latest real Twitch Top 300
--> overall Top N
--> minimum viewers
--> category
--> server-side entity/evidence placement
--> client-side evidence source/type filters
--> country drilldown
-```
-
-Initial population controls:
-
-```text
-Top N        20 / 50 / 100 / 300
-Min viewers  any / 100 / 500 / 1,000 / 5,000 / 10,000
-Category     all or one observed Twitch category
-Language     deferred; current permanent snapshot does not retain it
-```
-
 Placement invariants:
 
 - candidate-only evidence does not map;
@@ -110,50 +117,47 @@ Placement invariants:
 - organization/event-broadcast channels do not map as people;
 - context-only birthplace/nationality/event-venue/org-HQ claims do not map;
 - conflicting accepted countries remain unmapped;
-- country selection does not create or change accepted evidence;
 - provenance remains separated by source;
 - no demo geography substitutes for failed real data;
 - Twitch and Kick geography remain separated.
 
-## Completed reason-aware Unmapped gate
+## Completed population-filter gate
 
-PR #979 added:
+PR #981 added server-side population selection and matching public controls.
 
-- exact API reason-code display;
-- base API unmapped vs current evidence-view unmapped accounting;
-- client-only `filtered_out_accepted_evidence` for accepted mapped rows hidden by source/type filters;
-- explicit excluded organization/event-broadcast rows;
-- baseline and current-view reason reconciliation;
-- zero/error states;
-- a dedicated verifier plus stronger live-join reason-total assertions.
+Accepted guarantees:
 
-Candidate-only evidence remains within the API's current `context_only_or_unaccepted_evidence` class unless the API itself is explicitly changed.
+- category refs are reconstructed before Top-N slicing;
+- category cannot refill from below the selected overall Top-N boundary;
+- category unknown/unavailable states are explicit;
+- selected-population streams/viewers are the placement denominator;
+- mapped + unmapped equals selected population;
+- API reason totals reconcile with selected-population unmapped count;
+- source/type filtering and country drilldown remain downstream;
+- language remains unavailable as a population control;
+- no second category collector or additional Twitch API request was introduced.
 
-## Population-filter data availability
-
-The current Twitch snapshot contract already retains:
-
-- viewer counts;
-- `category-source-v1` category IDs/references;
-- category names through `provider_category_dictionary`.
-
-It does not retain language in the permanent `minute_snapshots` item contract. Therefore language is not part of the first Stream Map population-control implementation.
-
-The implementation must reuse the existing category contract and must not add a second category collector or additional Twitch API request.
+PR #981 passed the dedicated population verifier together with Typecheck, Build, prior Stream Map gates and Heatmap regressions.
 
 ## Current order
 
-1. Implement server-side population filters and matching public controls.
-2. Repeat supported-source coverage evidence across meaningful population scopes.
-3. Add reliable city grouping only if evidence supports it.
+1. Complete verification-only PR #982 and retain its production population-coverage evidence.
+2. Decide whether supported/reviewable evidence acquisition should expand.
+3. Add reliable city grouping only if accepted evidence supports it.
 4. Add current-location freshness/expiry before emphasizing current location.
 5. Add IRL mode only if current-location coverage becomes useful.
 6. Audit and implement Kick separately.
 7. Add location history/replay only after live semantics stabilize.
 
+## Coverage-decision boundary
+
+Measure Top 20/50/100/300, meaningful minimum-viewer scopes and current high-volume categories. Record mapped streams/viewers, countries, source yield/overlap, conflicts, excluded non-person and current-location coverage.
+
+Weak coverage is not permission to infer geography from language/category/name/timezone/IP or to add unsupported Twitch social/panel crawling.
+
 ## Latest retained production Stream Map verification
 
-Verification-only PR #975 observed at `2026-08-22T01:55:42.393Z`:
+Until PR #982 is accepted, the retained pre-population-filter observation remains PR #975 at `2026-08-22T01:55:42.393Z`:
 
 ```text
 300 streams
@@ -184,7 +188,7 @@ The completed Twitch category/Heatmap rollout remains a historical accepted mile
 - final seven-day audit accepted `2016 / 2016` expected slots;
 - category-reference coverage was `0.995353`;
 - PR #740 exposed Category + Top;
-- PR #741 repaired the rejected 390px mobile overflow without changing semantics;
+- PR #741 repaired the rejected 390px mobile overflow;
 - accepted production SHA was `b006f45d0676c9ff3e05e5d6727458e43802de53`;
 - no Kick category UI was authorized by that Twitch rollout.
 
@@ -199,13 +203,3 @@ The completed Twitch category/Heatmap rollout remains a historical accepted mile
 - Twitch/Kick collectors remain on existing five-minute cadences unless a separate gate changes them.
 - No retention expansion, backfill, D1/binding change, acquisition expansion or production mutation is implied by UI/API work.
 - Current-main documents and accepted contracts override cached handoffs and superseded draft PR documents.
-
-## Historical category acceptance anchors
-
-The following retained strings describe the completed category rollout only. They are preserved for historical acceptance verifiers and do not override the current Stream Map execution state above.
-
-```text
-Twitch category stability + Heatmap public rollout complete
-Public production acceptance run 31244148651 success
-docs/audits/12a5-twitch-heatmap-category-public-cutover-acceptance.json
-```
