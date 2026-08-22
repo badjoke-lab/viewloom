@@ -63,11 +63,13 @@ jobs:
             [ .mappedStreams[]? | select(.login == "payo" or .login == "wirtual" or .login == "knirpz") ]
             | all(
                 (.sources | index("official_external") != null) and
-                ((.location | has("city")) | not)
+                ((.location.cities // []) | length == 0) and
+                ((.location.regions // []) | length == 0)
               )
           ' "$output" >/dev/null
 
           jq '
+            ["payo", "wirtual", "knirpz"] as $targets |
             {
               version,
               platform,
@@ -101,18 +103,18 @@ jobs:
                   viewers,
                   countryCode: .location.countryCode,
                   countryName: .location.countryName,
-                  sources,
-                  claimKinds
+                  regions: (.location.regions // []),
+                  cities: (.location.cities // []),
+                  locationTypes: (.location.locationTypes // []),
+                  sources
                 }
               ],
               remediationTargets: [
-                "payo", "wirtual", "knirpz"
-              ] as $targets |
-              [ $targets[] as $target |
+                $targets[] as $target |
                 {
                   login: $target,
-                  liveAndMapped: ([.mappedStreams[]? | select(.login == $target)] | length) > 0,
-                  mappedRecord: ([.mappedStreams[]? | select(.login == $target) | {login, viewers, countryCode: .location.countryCode, countryName: .location.countryName, sources, claimKinds}] | first // null)
+                  liveAndMapped: (([.mappedStreams[]? | select(.login == $target)] | length) > 0),
+                  mappedRecord: ([.mappedStreams[]? | select(.login == $target) | {login, viewers, countryCode: .location.countryCode, countryName: .location.countryName, regions: (.location.regions // []), cities: (.location.cities // []), locationTypes: (.location.locationTypes // []), sources}] | first // null)
                 }
               ],
               semantics
@@ -125,7 +127,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          if [ ! -f "$ARTIFACT_DIR/summary.json" ]; then
+          if [ ! -s "$ARTIFACT_DIR/summary.json" ]; then
             echo '## Twitch Stream Map reviewed evidence production audit' >> "$GITHUB_STEP_SUMMARY"
             echo '- Result: summary missing' >> "$GITHUB_STEP_SUMMARY"
             exit 0
