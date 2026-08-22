@@ -1,0 +1,153 @@
+name: Twitch Stream Map Population Coverage Audit
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/twitch-stream-map-population-coverage-audit.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: twitch-stream-map-population-coverage-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe production population scopes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/twitch-stream-map-population-coverage/raw
+          base='https://www.viewloom.net/api/twitch-stream-map'
+
+          curl --fail --silent --show-error --retry 8 --retry-delay 5 --retry-all-errors \
+            https://www.viewloom.net/twitch/map/ \
+            -o artifacts/twitch-stream-map-population-coverage/route.html
+
+          grep -Fq 'data-population-top' artifacts/twitch-stream-map-population-coverage/route.html
+          grep -Fq 'data-population-min-viewers' artifacts/twitch-stream-map-population-coverage/route.html
+          grep -Fq 'data-population-category' artifacts/twitch-stream-map-population-coverage/route.html
+
+          probe() {
+            name="$1"
+            top="$2"
+            min_viewers="$3"
+            category="$4"
+            output="artifacts/twitch-stream-map-population-coverage/raw/${name}.json"
+            curl --fail --silent --show-error --retry 8 --retry-delay 5 --retry-all-errors \
+              --get "$base" \
+              --data-urlencode "top=${top}" \
+              --data-urlencode "min_viewers=${min_viewers}" \
+              --data-urlencode "category=${category}" \
+              -o "$output"
+            jq -e '
+              .version == "viewloom-stream-map-live-v1" and
+              .platform == "twitch" and
+              .source == "real" and
+              .state == "ready" and
+              (.populationFilter | type == "object") and
+              (.coverage | type == "object") and
+              .semantics.populationFilterBeforeEvidenceFilter == true and
+              .semantics.languageUsedForPlacement == false and
+              .semantics.languageUsedForPopulationFiltering == false and
+              (.coverage.mappedStreams + .coverage.unmappedStreams == .coverage.observedStreams) and
+              ((.coverage.unmappedReasons | to_entries | map(.value) | add // 0) == .coverage.unmappedStreams)
+            ' "$output" >/dev/null
+          }
+
+          probe top300 300 0 all
+          probe top100 100 0 all
+          probe top50 50 0 all
+          probe top20 20 0 all
+          probe top300_min1000 300 1000 all
+          probe top300_min5000 300 5000 all
+          probe top300_min10000 300 10000 all
+
+          mapfile -t categories < <(jq -r '.populationFilter.availableCategories[:5][].id' artifacts/twitch-stream-map-population-coverage/raw/top300.json)
+          i=0
+          for category in "${categories[@]}"; do
+            i=$((i + 1))
+            probe "top300_category_${i}" 300 0 "$category"
+            if [ "$i" -le 3 ]; then
+              probe "top100_category_${i}" 100 0 "$category"
+            fi
+          done
+
+          for file in artifacts/twitch-stream-map-population-coverage/raw/*.json; do
+            scope="$(basename "$file" .json)"
+            jq --arg scope "$scope" '
+              {
+                scope: $scope,
+                updatedAt,
+                populationFilter: {
+                  selectedTop: .populationFilter.selectedTop,
+                  minViewers: .populationFilter.minViewers,
+                  selectedCategory: .populationFilter.selectedCategory,
+                  selectedCategoryName: .populationFilter.selectedCategoryName,
+                  categoryState: .populationFilter.categoryState,
+                  categoryCoverageState: .populationFilter.categoryCoverageState,
+                  baseObservedStreams: .populationFilter.baseObservedStreams,
+                  topScopedStreams: .populationFilter.topScopedStreams,
+                  preCategoryStreams: .populationFilter.preCategoryStreams,
+                  preCategoryViewers: .populationFilter.preCategoryViewers,
+                  selectedPopulationStreams: .populationFilter.selectedPopulationStreams,
+                  selectedPopulationViewers: .populationFilter.selectedPopulationViewers,
+                  unknownCategoryStreams: .populationFilter.unknownCategoryStreams,
+                  dictionaryMissingItems: .populationFilter.dictionaryMissingItems
+                },
+                coverage: {
+                  observedStreams: .coverage.observedStreams,
+                  observedViewers: .coverage.observedViewers,
+                  mappedStreams: .coverage.mappedStreams,
+                  unmappedStreams: .coverage.unmappedStreams,
+                  mappedPercent: .coverage.mappedPercent,
+                  mappedViewers: .coverage.mappedViewers,
+                  unmappedViewers: .coverage.unmappedViewers,
+                  mappedViewerPercent: .coverage.mappedViewerPercent,
+                  mappedCountryCount: .coverage.mappedCountryCount,
+                  currentLocationStreams: .coverage.currentLocationStreams,
+                  currentLocationPercent: .coverage.currentLocationPercent,
+                  excludedNonPersonStreams: .coverage.excludedNonPersonStreams,
+                  excludedNonPersonViewers: .coverage.excludedNonPersonViewers,
+                  mappedBySource: .coverage.mappedBySource,
+                  unmappedReasons: .coverage.unmappedReasons
+                },
+                countries: (
+                  [.mappedStreams[]? | {code: .location.countryCode, name: .location.countryName}]
+                  | group_by(.code)
+                  | map({code: .[0].code, name: .[0].name, streams: length})
+                ),
+                sourceOverlap: {
+                  multiSourceMappedStreams: ([.mappedStreams[]? | select((.sources | length) > 1)] | length),
+                  combinations: (
+                    [.mappedStreams[]? | (.sources | sort | join("+"))]
+                    | group_by(.)
+                    | map({sources: .[0], streams: length})
+                    | sort_by(-.streams, .sources)
+                  )
+                }
+              }
+            ' "$file" > "artifacts/twitch-stream-map-population-coverage/${scope}.summary.json"
+          done
+
+          jq -s 'sort_by(.scope)' artifacts/twitch-stream-map-population-coverage/*.summary.json \
+            > artifacts/twitch-stream-map-population-coverage/summary.json
+
+          jq '{
+            generatedAt: (now | todateiso8601),
+            scopes: .
+          }' artifacts/twitch-stream-map-population-coverage/summary.json \
+            > artifacts/twitch-stream-map-population-coverage/report.json
+
+          cat artifacts/twitch-stream-map-population-coverage/report.json
+
+      - name: Upload audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-stream-map-population-coverage
+          path: artifacts/twitch-stream-map-population-coverage/
