@@ -1,6 +1,11 @@
 import type { Env } from '../_db/env'
 import { providerRuntime } from '../_provider-runtime'
 import { buildTwitchStreamMapLiveModel } from './twitch-stream-map-core.mjs'
+import {
+  normalizeTwitchStreamMapPopulationQuery,
+  selectTwitchStreamMapPopulation,
+  twitchStreamMapPopulationNeedsCategoryDictionary,
+} from './twitch-stream-map-population-core.mjs'
 import { TWITCH_REVIEWED_LOCATION_RECORDS } from './twitch-stream-map-reviewed-evidence.mjs'
 
 type SnapshotRow = {
@@ -17,10 +22,22 @@ type CoverageRow = {
   has_more: number | null
 }
 
+type CategoryRow = {
+  category_id: string
+  category_name: string
+}
+
 const runtime = providerRuntime('twitch')
 
-export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
+export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   try {
+    const url = new URL(request.url)
+    const populationQuery = normalizeTwitchStreamMapPopulationQuery({
+      top: url.searchParams.get('top'),
+      minViewers: url.searchParams.get('min_viewers'),
+      category: url.searchParams.get('category'),
+    })
+
     const latest = await env.DB_TWITCH_HOT.prepare(`
       SELECT bucket_minute,collected_at,stream_count,total_viewers,payload_json,source_mode
       FROM minute_snapshots
@@ -37,6 +54,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         state: 'empty',
         updatedAt: null,
         coverage: null,
+        populationFilter: null,
         mappedStreams: [],
         excludedNonPersonStreams: [],
         semantics: mapSemantics(),
@@ -56,22 +74,53 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       coverage = null
     }
 
+    const categoryNames = new Map<string, string>()
+    if (twitchStreamMapPopulationNeedsCategoryDictionary(latest.payload_json)) {
+      try {
+        const dictionary = await env.DB_TWITCH_HOT.prepare(`
+          SELECT category_id,category_name
+          FROM provider_category_dictionary
+          WHERE provider = 'twitch'
+          ORDER BY category_id
+        `).all<CategoryRow>()
+        for (const row of dictionary.results ?? []) {
+          const id = String(row.category_id ?? '').trim()
+          const name = String(row.category_name ?? '').trim()
+          if (id && name) categoryNames.set(id, name)
+        }
+      } catch {
+        // The population core reports dictionary misses as partial coverage.
+      }
+    }
+
+    const population = selectTwitchStreamMapPopulation({
+      payloadJson: latest.payload_json,
+      top: populationQuery.selectedTop,
+      minViewers: populationQuery.minViewers,
+      category: populationQuery.selectedCategory,
+      categoryNames,
+    })
+
     const model = buildTwitchStreamMapLiveModel({
       snapshot: {
         bucketMinute: latest.bucket_minute,
         collectedAt: latest.collected_at,
-        streamCount: latest.stream_count,
-        totalViewers: latest.total_viewers,
-        payloadJson: latest.payload_json,
+        streamCount: population.streamCount,
+        totalViewers: population.totalViewers,
+        payloadJson: population.payloadJson,
         sourceMode: latest.source_mode,
         coveredPages: coverage?.covered_pages ?? null,
         hasMore: Boolean(coverage?.has_more),
       },
       evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS,
-      topLimit: runtime.topLimit,
+      topLimit: population.metadata.selectedTop,
     })
 
-    return Response.json({ ...model, state: 'ready' }, {
+    return Response.json({
+      ...model,
+      populationFilter: population.metadata,
+      state: 'ready',
+    }, {
       headers: { 'cache-control': 'no-store' },
     })
   } catch (error) {
@@ -82,6 +131,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       state: 'error',
       updatedAt: null,
       coverage: null,
+      populationFilter: null,
       mappedStreams: [],
       excludedNonPersonStreams: [],
       semantics: mapSemantics(),
@@ -105,6 +155,8 @@ function mapSemantics() {
     mappedPlusUnmappedEqualsObserved: true,
     excludedNonPersonIsSubsetOfUnmapped: true,
     evidenceSourcesRemainDistinct: true,
+    populationFilterBeforeEvidenceFilter: true,
+    languageUsedForPopulationFiltering: false,
   } as const
 }
 
