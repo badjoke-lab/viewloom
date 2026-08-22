@@ -5,14 +5,16 @@ Last updated: 2026-08-22
 
 ```text
 Current program Twitch Stream Map
-Current stage Population filter implementation
-Accepted main 07eca2c291e4a7c4744a3c9a95013f307c44a9cb
+Current stage Evidence coverage decision
+Accepted main f707b7053be1b6fecc07bb93a26b8d9abb3ebabc
 Stage 1D source/yield audit complete
 Stage 1E real live join complete PR #972
 Stage 1F public route + source/type filters complete PR #974
 Stage 1G country selection + drilldown complete PR #977
 Stage 2 reason-aware Unmapped analysis complete PR #979
-Population filter ordering decision frozen docs/product/stream-map-population-filter-decision-v0.1.md
+Population filter decision frozen PR #980
+Population filters complete PR #981
+Population coverage production audit PR #982 verification-only / do not merge
 Production route/API verification complete PR #975 closed without merge
 Twitch Map public route /twitch/map/
 Twitch Map real API /api/twitch-stream-map
@@ -32,10 +34,12 @@ Kick cadence */5 * * * * unchanged
 7. Added `/twitch/map/`, MapLibre, six source filters, three type filters, provenance badges and live country markers in PR #974.
 8. Verified the deployed production route and API through read-only verification-only PR #975, then closed it without merge.
 9. Added true country selection and drilldown in PR #977.
-10. Added reason-aware Unmapped analysis in PR #979.
-11. PR #979 preserves exact API reason codes, exposes excluded non-person rows, separates `filtered_out_accepted_evidence` as client-view accounting, and verifies both API and current-view reason reconciliation.
-12. Audited population-filter data availability: viewer counts and category refs are already retained; language is not retained in the permanent snapshot payload.
-13. Frozen population ordering in `docs/product/stream-map-population-filter-decision-v0.1.md`.
+10. Added reason-aware Unmapped analysis and reason reconciliation in PR #979.
+11. Audited population-filter data availability and froze ordering/contracts in PR #980.
+12. Added public server-side population filters in PR #981.
+13. PR #981 implements overall Top N, minimum viewers and category before placement, while evidence source/type filters and country drilldown remain downstream.
+14. PR #981 reuses existing `category-source-v1` refs and `provider_category_dictionary`; it adds no collector, D1 schema, cadence, retention or Twitch acquisition change.
+15. PR #981 passed Typecheck, Build, Stream Map live-join/source-filter/country-drilldown/Unmapped/population-filter gates and all existing Heatmap regressions before merge.
 
 ## Accepted evidence and drilldown semantics
 
@@ -80,7 +84,7 @@ latest real Twitch Top 300 snapshot
 -> country drilldown
 ```
 
-Initial public control contract:
+Public controls:
 
 ```text
 Top N        20 | 50 | 100 | 300
@@ -91,55 +95,63 @@ Language     deferred; current permanent snapshot does not retain it
 
 `Top 100 + category X` means category-X rows inside the overall current Top 100. It does not refill from ranks 101-300.
 
-## Current order
+Population API rules accepted in PR #981:
 
-### 1. Population filter implementation — CURRENT
-
-Implement the contract in:
-
-- `docs/product/stream-map-spec-v0.5.md`
-- `docs/product/stream-map-implementation-plan-v0.4.md`
-- `docs/product/stream-map-population-filter-decision-v0.1.md`
-
-Required implementation boundary:
-
-- population selection happens in `/api/twitch-stream-map` before mapping because the browser does not receive every unmapped row;
-- reuse existing `category-source-v1` refs and `provider_category_dictionary`;
-- no second category collector;
-- no language control in this gate;
-- category unknown/unavailable states must be explicit;
-- mapped + unmapped must equal selected population;
-- API unmapped-reason totals must equal selected-population unmapped count;
-- source/type filtering still happens after population selection;
+- population selection occurs in `/api/twitch-stream-map` before placement;
+- category refs are reconstructed against their original snapshot row index before Top-N slicing;
+- `category=all` retains rows with missing category;
+- unknown selected category returns an explicit zero population;
+- unavailable category contract plus a selected category returns explicit zero rather than silently using all categories;
+- mapped + unmapped equals the selected population;
+- API unmapped-reason totals equal selected-population unmapped count;
+- source/type filters still happen after population selection;
 - country remains drilldown-only.
 
-### 2. Evidence coverage decision
+## Current order
 
-After population controls are stable, repeat live coverage evidence across meaningful accepted population scopes.
+### 1. Evidence coverage decision — CURRENT
+
+Repeat live production coverage evidence across meaningful accepted population scopes after PR #981.
+
+Temporary verification-only PR #982 is the current measurement vehicle and must be closed without merge after its artifact is retained.
 
 Measure at minimum:
 
 - selected population streams/viewers;
-- mapped streams/viewers;
-- countries;
-- source yield and overlap;
-- conflicts;
-- excluded non-person;
-- current-location coverage.
+- mapped streams/viewers and percentages;
+- represented countries;
+- mapped source yield;
+- source overlap among mapped streams;
+- `conflicting_accepted_evidence` count;
+- excluded non-person streams/viewers;
+- current-location streams/percentage;
+- category coverage state and unknown-category rows.
 
-Low coverage is not authorization for inferred placement or unsupported crawling.
+Required scopes include:
 
-### 3. Later stages
+- Top 20 / 50 / 100 / 300;
+- meaningful minimum-viewer thresholds;
+- current high-volume category slices drawn from the accepted category contract.
 
-- reliable city grouping;
+Decision outcomes:
+
+- if supported/reviewable evidence produces useful coverage, define a bounded acquisition expansion separately;
+- if coverage remains weak, retain the low-coverage product honestly and improve analysis/inspection value rather than inventing geography;
+- no unsupported crawler or inferred placement is authorized by weak coverage.
+
+### 2. Later stages
+
+Only after the coverage decision:
+
+- reliable city grouping if evidence supports it;
 - current-location freshness/expiry;
-- IRL-oriented mode only if coverage is useful;
-- separate Kick audit and implementation;
+- IRL-oriented mode only if current-location coverage is useful;
+- separate Kick source audit and implementation;
 - history/replay after live semantics stabilize.
 
-## Latest production observation
+## Latest retained production observation
 
-Route-verification API snapshot retained from PR #975:
+The last retained pre-population-filter production verification remains PR #975 until the #982 artifact is accepted:
 
 ```text
 updatedAt                 2026-08-22T01:55:42.393Z
@@ -171,6 +183,7 @@ A prior snapshot observed one mapped stream. Treat both as live observations, no
 - No language UI until an accepted snapshot persistence contract actually retains language.
 - No collector cadence, retention, D1 schema, binding or acquisition change without a separate accepted gate.
 - No automatic Kick Map rollout from Twitch acceptance.
+- Temporary production coverage audit PR #982 is verification-only and must not be merged merely to retain the workflow.
 
 ## Retained category-program state
 
