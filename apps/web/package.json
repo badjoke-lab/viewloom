@@ -28,6 +28,7 @@
     "verify:stream-map-source-filters": "node scripts/verify-twitch-stream-map-source-filters.mjs",
     "verify:stream-map-country-drilldown": "node scripts/verify-twitch-stream-map-country-drilldown.mjs",
     "verify:stream-map-unmapped-reasons": "node scripts/verify-twitch-stream-map-unmapped-reasons.mjs",
+    "verify:stream-map-population-filters": "node scripts/verify-twitch-stream-map-population-filters.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.functions.json --noEmit",
     "typecheck:app": "tsc -p tsconfig.json --noEmit",
     "typecheck:functions": "tsc -p tsconfig.functions.json --noEmit",
