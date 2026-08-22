@@ -8,6 +8,7 @@ import {
   groupMappedStreamsByCountry,
   type StreamMapCountryGroup,
 } from './country-drilldown-core.mjs'
+import { renderUnmappedReasonAnalysis } from './unmapped-reason-view'
 
 type MapLibreControl = object
 
@@ -236,6 +237,11 @@ function renderView(): void {
       : `All accepted evidence: ${formatPercent(payload.coverage.mappedPercent)} of observed streams and ${formatPercent(payload.coverage.mappedViewerPercent)} of observed viewers are mapped.`
   }
 
+  renderUnmappedReasonAnalysis({
+    coverage: payload.coverage,
+    excludedNonPersonStreams: payload.excludedNonPersonStreams,
+    filteredMappedStreams: summary.mappedStreams,
+  })
   renderCountrySummary(filtered)
   renderSelectedCountry(selection)
   renderStreamList(selection.visibleStreams, selection)
@@ -503,6 +509,9 @@ function renderFailure(message: string): void {
   text('stream-map-unmapped', 'Unavailable')
   text('stream-map-strip-updated', 'Unavailable')
   text('stream-map-strip-coverage', 'Unavailable')
+  text('stream-map-unmapped-current', 'Unavailable')
+  text('stream-map-unmapped-baseline', 'Unavailable')
+  text('stream-map-unmapped-filtered-out', 'Unavailable')
   syncStatus()
   const list = document.getElementById('stream-map-stream-list')
   if (list) {
@@ -511,6 +520,15 @@ function renderFailure(message: string): void {
     empty.textContent = `Real Stream Map data could not be loaded. ${message}`
     list.replaceChildren(empty)
   }
+  for (const id of ['stream-map-unmapped-reason-list', 'stream-map-excluded-nonperson-list']) {
+    const node = document.getElementById(id)
+    if (!node) continue
+    const empty = document.createElement('p')
+    empty.className = 'stream-map-empty'
+    empty.textContent = `Unmapped analysis unavailable because real Stream Map data could not be loaded. ${message}`
+    node.replaceChildren(empty)
+  }
+  text('stream-map-unmapped-reconciliation', 'Reason accounting unavailable while real Stream Map data is unavailable.')
 }
 
 function filterSummary(sources: Set<string>, types: Set<string>): string {
