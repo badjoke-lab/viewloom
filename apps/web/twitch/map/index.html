@@ -39,10 +39,10 @@
         <div>
           <div class="kicker">TWITCH DATA · WHERE</div>
           <h1>Stream Map</h1>
-          <p class="lede">Geographic context for the current observed Twitch Top 300, using only accepted location evidence. Unknown, conflicting and rejected locations remain unmapped.</p>
+          <p class="lede">Geographic context for a selected slice of the current observed Twitch Top 300, using only accepted location evidence. Unknown, conflicting and rejected locations remain unmapped.</p>
         </div>
         <div class="head-facts">
-          <div class="fact"><small>Observed</small><strong id="stream-map-observed">—</strong></div>
+          <div class="fact"><small>Observed population</small><strong id="stream-map-observed">—</strong></div>
           <div class="fact"><small>Mapped in view</small><strong id="stream-map-mapped">—</strong></div>
           <div class="fact"><small>Unmapped in view</small><strong id="stream-map-unmapped">—</strong></div>
           <div class="fact"><small>State</small><strong data-stream-map-state>Loading</strong></div>
@@ -53,13 +53,52 @@
         <div class="data-strip__title">Twitch location observation</div>
         <div class="data-strip__cell"><small>Updated</small><span id="stream-map-strip-updated">—</span></div>
         <div class="data-strip__cell"><small>Coverage</small><span id="stream-map-strip-coverage">—</span></div>
-        <div class="data-strip__cell"><small>Filter</small><span id="stream-map-filter-summary">All accepted</span></div>
-        <div class="data-strip__cell"><small>Placement</small>Evidence-backed only</div>
+        <div class="data-strip__cell"><small>Population</small><span id="stream-map-population-summary">Top 300 · all viewers · all categories</span></div>
+        <div class="data-strip__cell"><small>Evidence</small><span id="stream-map-filter-summary">All accepted</span></div>
       </div>
+
+      <section class="surface stream-map-population-panel" aria-label="Observed population filters">
+        <div class="stream-map-filter-head">
+          <div><div class="stream-map-filter-label">Population filters</div><strong>Choose the observed Twitch slice before location evidence is evaluated</strong></div>
+          <button type="button" class="stream-map-filter-clear" data-reset-population-filters>Reset population</button>
+        </div>
+        <div class="stream-map-population-controls">
+          <label class="stream-map-population-control">
+            <span>Overall Top N</span>
+            <select data-population-top aria-label="Overall Top N">
+              <option value="20">Top 20</option>
+              <option value="50">Top 50</option>
+              <option value="100">Top 100</option>
+              <option value="300" selected>Top 300</option>
+            </select>
+          </label>
+          <label class="stream-map-population-control">
+            <span>Minimum viewers</span>
+            <select data-population-min-viewers aria-label="Minimum viewers">
+              <option value="0" selected>Any</option>
+              <option value="100">100+</option>
+              <option value="500">500+</option>
+              <option value="1000">1,000+</option>
+              <option value="5000">5,000+</option>
+              <option value="10000">10,000+</option>
+            </select>
+          </label>
+          <label class="stream-map-population-control">
+            <span>Category</span>
+            <select data-population-category aria-label="Twitch category">
+              <option value="all" selected>All categories</option>
+            </select>
+          </label>
+        </div>
+        <div class="stream-map-population-foot">
+          <p class="stream-map-filter-note">Population order: overall Top N → minimum viewers → category → location evidence filters. Category never refills streams from below the Top-N boundary. Language is not exposed because the current permanent snapshot does not retain it.</p>
+          <p class="stream-map-population-state" id="stream-map-population-state" aria-live="polite">Loading selected population…</p>
+        </div>
+      </section>
 
       <section class="surface stream-map-filter-panel" aria-label="Location evidence filters">
         <div class="stream-map-filter-head">
-          <div><div class="stream-map-filter-label">Evidence filters</div><strong>Combine multiple sources and location types</strong></div>
+          <div><div class="stream-map-filter-label">Evidence filters</div><strong>Combine multiple sources and location types inside the selected population</strong></div>
           <button type="button" class="stream-map-filter-clear" data-clear-location-filters>All accepted</button>
         </div>
         <div class="stream-map-filter-groups">
@@ -91,7 +130,7 @@
           <div>
             <div class="stream-map-shell__eyebrow">Live evidence-backed geography</div>
             <h2>World map</h2>
-            <p>Select a country marker to drill into its currently mapped streams. Country selection does not change evidence acceptance.</p>
+            <p>Select a country marker to drill into its currently mapped streams. Country selection does not change population or evidence acceptance.</p>
           </div>
           <div class="stream-map-badges" aria-label="Location evidence legend">
             <span class="stream-map-badge stream-map-badge--account-profile">Profile</span>
@@ -114,7 +153,7 @@
 
       <section class="stream-map-support-grid">
         <article class="surface"><small>Mapped streams</small><strong id="stream-map-card-mapped">—</strong><p>Selected accepted evidence only. Filtered-out mapped evidence counts as unmapped in the current view.</p></article>
-        <article class="surface"><small>Mapped viewers</small><strong id="stream-map-card-viewers">—</strong><p>Viewer coverage is recalculated from the currently selected evidence sources and location types.</p></article>
+        <article class="surface"><small>Mapped viewers</small><strong id="stream-map-card-viewers">—</strong><p>Viewer coverage is recalculated inside the selected population, then by evidence source and location type.</p></article>
         <article class="surface"><small>Excluded non-person</small><strong id="stream-map-card-excluded">—</strong><p>Organization and event-broadcast channels remain visible in accounting but are never placed as people.</p></article>
       </section>
 
@@ -123,7 +162,7 @@
           <div>
             <div class="stream-map-shell__eyebrow">Reason-aware accounting</div>
             <h2 id="stream-map-unmapped-heading">Why streams are unmapped</h2>
-            <p>The real API reasons describe the base snapshot. Active evidence filters can additionally hide otherwise accepted mapped evidence; that client-side adjustment is shown separately and never changes evidence acceptance.</p>
+            <p>The real API reasons describe the selected population. Active evidence filters can additionally hide otherwise accepted mapped evidence; that client-side adjustment is shown separately and never changes evidence acceptance.</p>
           </div>
           <div class="stream-map-unmapped__facts">
             <div><small>Unmapped in view</small><strong id="stream-map-unmapped-current">—</strong></div>
@@ -140,7 +179,7 @@
           </div>
           <div class="stream-map-results-card">
             <h3>Excluded non-person channels</h3>
-            <p class="stream-map-unmapped-explainer">Organizations and event broadcasts remain in observed/unmapped accounting, but ViewLoom does not place them as people.</p>
+            <p class="stream-map-unmapped-explainer">Organizations and event broadcasts remain in observed/unmapped accounting for the selected population, but ViewLoom does not place them as people.</p>
             <div id="stream-map-excluded-nonperson-list" class="stream-map-excluded-list"><p class="stream-map-empty">Loading…</p></div>
           </div>
         </div>
