@@ -1,3 +1,4 @@
+import './stream-map-population.css'
 import { buildUnmappedReasonView, type StreamMapUnmappedReasonView } from './unmapped-reason-core.mjs'
 
 type StreamMapCoverageForUnmapped = {
