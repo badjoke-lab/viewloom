@@ -26,6 +26,7 @@
     "verify:watchlist-contracts": "node scripts/verify-watchlist-contracts-current.mjs",
     "verify:stream-map-live-join": "node scripts/verify-twitch-stream-map-live-join.mjs",
     "verify:stream-map-source-filters": "node scripts/verify-twitch-stream-map-source-filters.mjs",
+    "verify:stream-map-country-drilldown": "node scripts/verify-twitch-stream-map-country-drilldown.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.functions.json --noEmit",
     "typecheck:app": "tsc -p tsconfig.json --noEmit",
     "typecheck:functions": "tsc -p tsconfig.functions.json --noEmit",
