@@ -1,12 +1,12 @@
 # ViewLoom current execution schedule
 
 Status: source of truth  
-Last updated: 2026-08-22
+Last updated: 2026-08-23
 
 ```text
 Current program Twitch Stream Map
-Current stage Evidence coverage decision
-Accepted main f707b7053be1b6fecc07bb93a26b8d9abb3ebabc
+Current stage Coverage remediation / supported evidence acquisition gate
+Accepted main b58981735a947f0ed4c711bcc8363b8f4430abc7
 Stage 1D source/yield audit complete
 Stage 1E real live join complete PR #972
 Stage 1F public route + source/type filters complete PR #974
@@ -14,7 +14,8 @@ Stage 1G country selection + drilldown complete PR #977
 Stage 2 reason-aware Unmapped analysis complete PR #979
 Population filter decision frozen PR #980
 Population filters complete PR #981
-Population coverage production audit PR #982 verification-only / do not merge
+Ready-response population semantics fixed PR #983
+Population coverage production audit complete PR #982 verification-only / close without merge
 Production route/API verification complete PR #975 closed without merge
 Twitch Map public route /twitch/map/
 Twitch Map real API /api/twitch-stream-map
@@ -40,6 +41,9 @@ Kick cadence */5 * * * * unchanged
 13. PR #981 implements overall Top N, minimum viewers and category before placement, while evidence source/type filters and country drilldown remain downstream.
 14. PR #981 reuses existing `category-source-v1` refs and `provider_category_dictionary`; it adds no collector, D1 schema, cadence, retention or Twitch acquisition change.
 15. PR #981 passed Typecheck, Build, Stream Map live-join/source-filter/country-drilldown/Unmapped/population-filter gates and all existing Heatmap regressions before merge.
+16. Verification-only PR #982 exposed a ready-response semantics omission; PR #983 fixed the response contract without changing placement/population logic.
+17. PR #983 passed the full Web checks including the population verifier and merged as `b58981735a947f0ed4c711bcc8363b8f4430abc7`.
+18. PR #982 then completed a read-only production coverage audit successfully. Retained evidence: `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`.
 
 ## Accepted evidence and drilldown semantics
 
@@ -95,7 +99,7 @@ Language     deferred; current permanent snapshot does not retain it
 
 `Top 100 + category X` means category-X rows inside the overall current Top 100. It does not refill from ranks 101-300.
 
-Population API rules accepted in PR #981:
+Population API rules accepted in PR #981/#983:
 
 - population selection occurs in `/api/twitch-stream-map` before placement;
 - category refs are reconstructed against their original snapshot row index before Top-N slicing;
@@ -104,70 +108,117 @@ Population API rules accepted in PR #981:
 - unavailable category contract plus a selected category returns explicit zero rather than silently using all categories;
 - mapped + unmapped equals the selected population;
 - API unmapped-reason totals equal selected-population unmapped count;
+- ready responses explicitly expose `populationFilterBeforeEvidenceFilter=true`;
+- ready responses explicitly expose `languageUsedForPopulationFiltering=false`;
 - source/type filters still happen after population selection;
 - country remains drilldown-only.
 
+## Completed evidence coverage decision
+
+Verification-only PR #982 measured production after PR #981/#983 using read-only GET requests only.
+
+Successful evidence:
+
+```text
+workflow run      32583205617
+successful job    97056168203
+artifact          9478398925
+snapshot updated  2026-08-22T16:00:18.854Z
+report generated  2026-08-22T16:01:56Z
+```
+
+Baseline Top 300:
+
+```text
+streams                         300
+viewers                         1,358,840
+mapped streams                  0
+mapped viewers                  0
+mapped countries                0
+current-location streams        0
+excluded non-person streams     1
+excluded non-person viewers     20,413
+no reviewed evidence            298
+context-only/unaccepted         1
+conflicting accepted evidence   0
+unknown-category streams        1
+dictionary-missing items        0
+```
+
+All audited scopes returned `mappedStreams=0`:
+
+- Top 20 / Top 50 / Top 100 / Top 300;
+- Top 300 with >=1,000 / >=5,000 / >=10,000 viewers;
+- Top 300 Fortnite / Counter-Strike / Just Chatting / League of Legends / IRL;
+- Top 100 Fortnite / Counter-Strike / Just Chatting.
+
+Therefore population narrowing does not solve the current live coverage problem. The dominant blocker is lack of reviewed evidence overlapping the current live population, not accepted-country conflicts.
+
 ## Current order
 
-### 1. Evidence coverage decision — CURRENT
+### 1. Coverage remediation / supported evidence acquisition — CURRENT
 
-Repeat live production coverage evidence across meaningful accepted population scopes after PR #981.
+Run a separately bounded experiment to determine whether attributable, reviewable sources can materially increase accepted live overlap without weakening placement rules.
 
-Temporary verification-only PR #982 is the current measurement vehicle and must be closed without merge after its artifact is retained.
+Keep source lanes separate:
 
-Measure at minimum:
+```text
+account_profile
+stream_title
+stream_tag
+channel_profile
+official_external
+manual_review
+```
 
-- selected population streams/viewers;
-- mapped streams/viewers and percentages;
-- represented countries;
-- mapped source yield;
-- source overlap among mapped streams;
-- `conflicting_accepted_evidence` count;
-- excluded non-person streams/viewers;
-- current-location streams/percentage;
-- category coverage state and unknown-category rows.
+Required report for each lane/combination:
 
-Required scopes include:
+- live population sampled;
+- candidate streamers;
+- accepted streamers;
+- incremental accepted streamers beyond existing evidence;
+- mapped percentage if accepted;
+- request cost / manual-review burden;
+- source overlap;
+- conflicts;
+- freshness/expiry requirement;
+- unsupported/private API dependency, if any.
 
-- Top 20 / 50 / 100 / 300;
-- meaningful minimum-viewer thresholds;
-- current high-volume category slices drawn from the accepted category contract.
+Hard decision rule:
 
-Decision outcomes:
+- supported/reviewable evidence may proceed only if the bounded experiment shows material incremental live coverage at acceptable request/review cost;
+- tag/title candidates remain candidates unless they make an explicit eligible claim;
+- unsupported persistent Twitch panel/social crawling remains unauthorized;
+- language/category/name/timezone/IP inference remains prohibited;
+- if bounded remediation still cannot produce useful coverage, keep the low-coverage map honest and do not proceed to City/Current/IRL merely to create activity.
 
-- if supported/reviewable evidence produces useful coverage, define a bounded acquisition expansion separately;
-- if coverage remains weak, retain the low-coverage product honestly and improve analysis/inspection value rather than inventing geography;
-- no unsupported crawler or inferred placement is authorized by weak coverage.
+### 2. Later stages — BLOCKED ON REMEDIATION RESULT
 
-### 2. Later stages
-
-Only after the coverage decision:
-
-- reliable city grouping if evidence supports it;
-- current-location freshness/expiry;
-- IRL-oriented mode only if current-location coverage is useful;
+- reliable city grouping only if accepted evidence supports it;
+- current-location freshness/expiry only if current-location evidence becomes useful;
+- IRL-oriented mode only if current-location coverage becomes useful;
 - separate Kick source audit and implementation;
 - history/replay after live semantics stabilize.
 
 ## Latest retained production observation
 
-The last retained pre-population-filter production verification remains PR #975 until the #982 artifact is accepted:
+Accepted production coverage snapshot from PR #982:
 
 ```text
-updatedAt                 2026-08-22T01:55:42.393Z
+updatedAt                 2026-08-22T16:00:18.854Z
 observedStreams           300
-observedViewers           907197
+observedViewers           1358840
 mappedStreams             0
 unmappedStreams           300
-excludedNonPersonStreams  3
-excludedNonPersonViewers  73654
+excludedNonPersonStreams  1
+excludedNonPersonViewers  20413
 mappedCountryCount        0
 currentLocationStreams    0
 coveredPages              3
 hasMore                   true
 ```
 
-A prior snapshot observed one mapped stream. Treat both as live observations, not fixed expected counts.
+This is a timestamped live observation, not a fixed target. Earlier production snapshots had one mapped stream, so coverage remains dynamic.
 
 ## Hard stops
 
@@ -183,7 +234,7 @@ A prior snapshot observed one mapped stream. Treat both as live observations, no
 - No language UI until an accepted snapshot persistence contract actually retains language.
 - No collector cadence, retention, D1 schema, binding or acquisition change without a separate accepted gate.
 - No automatic Kick Map rollout from Twitch acceptance.
-- Temporary production coverage audit PR #982 is verification-only and must not be merged merely to retain the workflow.
+- Temporary production coverage audit PR #982 is verification-only and must be closed without merge after this retained evidence is merged.
 
 ## Retained category-program state
 
