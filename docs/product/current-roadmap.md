@@ -3,14 +3,14 @@
 Status: source of truth  
 Last updated: 2026-08-22
 
-## Current milestone: Twitch Stream Map Stage 1G — country selection and drilldown
+## Current milestone: Twitch Stream Map — reason-aware Unmapped analysis
 
-The Twitch Stream Map has passed its source audit, real-data join, public source/type filter implementation, and read-only production route verification.
+The Twitch Stream Map has passed its source audit, real-data join, public source/type filter implementation, read-only production route verification, and Stage 1G country selection/drilldown implementation.
 
 Current accepted implementation baseline:
 
 ```text
-main 17bbe766a79903436501b05dc1e4ccb0379aa00a
+main d7155d3c9d9b6baa27997a2c019e6da03c1cb59a
 ```
 
 Accepted Stream Map sequence:
@@ -22,6 +22,7 @@ Accepted Stream Map sequence:
 - PR #972 — real latest-snapshot join API `/api/twitch-stream-map`
 - PR #974 — public `/twitch/map/` route, MapLibre, source/type filters and provenance badges
 - PR #975 — production route/API read verification, closed without merge after success
+- PR #977 — country selection and drilldown with marker/row selection, selected-country summary, filtered stream list, clear action and explicit retained zero state
 
 Authoritative Stream Map records:
 
@@ -52,11 +53,18 @@ Authoritative Stream Map records:
 - source and type dimensions combine with AND semantics;
 - empty selection means `All accepted`;
 - mapped/unmapped streams and viewers, country count, markers and evidence rows recalculate after filtering;
+- country markers and country rows are real selection controls;
+- selecting a country changes the streamer drilldown state rather than merely scrolling/focusing the page;
+- the selected-country panel shows mapped stream count, mapped viewers and source summary;
+- source/type filters continue to apply inside a country drilldown;
+- if filters remove the selected country, the country remains selected and the UI shows an explicit zero-result state;
+- a clear-country action restores the all-country drilldown list;
+- marker/row buttons use keyboard/tap-capable native button semantics and `aria-pressed`;
 - provenance remains visible through separate source badges and evidence rows.
 
 ## Latest production acceptance evidence
 
-Verification-only PR #975 confirmed the deployed route and API.
+Verification-only PR #975 confirmed the deployed route and API before Stage 1G.
 
 At API `updatedAt=2026-08-22T01:55:42.393Z`:
 
@@ -72,36 +80,57 @@ covered pages             3
 has more                  true
 ```
 
-An earlier live observation had one mapped stream and one mapped country. Coverage is therefore dynamic and must not be treated as a fixed target or demo expectation.
+An earlier live observation had one mapped stream and one mapped country. Coverage is dynamic and must not be treated as a fixed target or demo expectation. PR #977 changes only client-side country drilldown behavior; it does not change evidence acceptance, API placement semantics, collector cadence, D1 schema or retention.
 
-## Current gate: Stage 1G
+## Completed gate: Stage 1G
 
-Next implementation must turn country markers/rows into a real selected-country state.
+PR #977 completed the required selected-country behavior:
 
-Required:
-
-1. marker or country-row selection;
+1. marker and country-row selection;
 2. selected-country summary;
 3. selected-country live-stream drilldown;
 4. clear-country action;
-5. source/type filters continue to apply;
-6. zero mapped countries remains a valid state;
-7. desktop/mobile and keyboard/tap acceptance;
-8. home/base is never described as current physical location.
+5. source/type filters remain active inside selection;
+6. zero-result selected-country state is explicit and retained;
+7. keyboard/tap semantics use native buttons and `aria-pressed`;
+8. home/base remains a location type and is not relabeled as current physical location.
 
-Current marker behavior is not considered full Stage 1G completion until country selection changes the drilldown state rather than merely navigating the page.
+A dedicated `verify:stream-map-country-drilldown` gate covers grouping, selection, filtered zero-state retention, clear wiring, marker/row controls and required accessibility/style hooks. It passed together with Typecheck, Build, Stream Map live-join/source-filter gates and existing Heatmap regression checks before merge.
+
+## Current gate: reason-aware Unmapped analysis
+
+The next implementation must make the unmapped population explainable without inventing placement.
+
+Required reason vocabulary starts with the current real contract and accepted lifecycle rules:
+
+```text
+no_reviewed_evidence
+candidate_only_or_unaccepted
+conflicting_evidence
+excluded_nonperson
+expired_current_location (only after current-location lifecycle exists)
+```
+
+Required behavior:
+
+1. reason totals reconcile with the current observed/unmapped population;
+2. excluded non-person channels are visibly distinct from otherwise eligible unmapped people;
+3. candidates and conflicts remain unmapped and are not auto-promoted;
+4. reason selection/filtering, if interactive, has explicit zero states;
+5. evidence/provenance wording remains aligned with the six-source contract;
+6. no language/category/name/timezone/IP inference is introduced;
+7. desktop/mobile and keyboard/tap behavior is verified.
 
 ## Following Stream Map gates
 
-1. Stage 1G country selection/drilldown;
-2. reason-aware Unmapped analysis;
-3. optional population filters only after ordering semantics are explicit;
-4. repeated evidence-coverage decision using supported/reviewable sources;
-5. reliable city grouping if evidence supports it;
-6. fresh/expiring current-location mode if evidence supports it;
-7. IRL-oriented view only after useful current-location coverage exists;
-8. separate Kick source audit and implementation;
-9. location history/replay only after live semantics stabilize.
+1. reason-aware Unmapped analysis;
+2. optional population filters only after ordering semantics are explicit;
+3. repeated evidence-coverage decision using supported/reviewable sources;
+4. reliable city grouping if evidence supports it;
+5. fresh/expiring current-location mode if evidence supports it;
+6. IRL-oriented view only after useful current-location coverage exists;
+7. separate Kick source audit and implementation;
+8. location history/replay only after live semantics stabilize.
 
 ## Stream Map hard boundaries
 

@@ -7,11 +7,12 @@ Last updated: 2026-08-22
 
 ```text
 Current program Twitch Stream Map
-Current stage 1G country selection + drilldown
-Accepted main 17bbe766a79903436501b05dc1e4ccb0379aa00a
+Current stage reason-aware Unmapped analysis
+Accepted main d7155d3c9d9b6baa27997a2c019e6da03c1cb59a
 Stage 1D source/yield audit complete
 Stage 1E real live join complete PR #972
 Stage 1F public route + source/type filters complete PR #974
+Stage 1G country selection + drilldown complete PR #977
 Production route/API verification complete PR #975 closed without merge
 Public Twitch Map /twitch/map/
 Real Twitch Map API /api/twitch-stream-map
@@ -55,13 +56,16 @@ declared_location
 current_location
 ```
 
-Filter semantics:
+Filter and drilldown semantics:
 
 ```text
 source selections: OR
 type selections: OR
 source dimension AND type dimension
 empty selection: All accepted
+country selection: drilldown only
+selected country AND active evidence filters
+selected country with zero matches: retain selection and show explicit zero state
 ```
 
 Placement invariants:
@@ -71,6 +75,7 @@ Placement invariants:
 - organization/event-broadcast channels do not map as people;
 - context-only birthplace/nationality/event-venue/org-HQ claims do not map;
 - conflicting accepted countries remain unmapped;
+- country selection does not create or change accepted evidence;
 - provenance remains separated by source;
 - no demo geography substitutes for failed real data;
 - Twitch and Kick geography remain separated.
@@ -94,15 +99,16 @@ At `2026-08-22T01:55:42.393Z` the live API observed:
 
 A prior live snapshot had one mapped stream, demonstrating that map coverage moves with the current Top 300 and is not a fixed fixture.
 
+Stage 1G PR #977 was merged after Typecheck, Build, Stream Map live-join/source-filter/country-drilldown verification and existing Heatmap regression gates passed. It changes client-side country drilldown behavior only; it does not change collector cadence, D1, evidence acceptance or API placement semantics.
+
 ## Current order
 
-1. Implement true selected-country state and country-to-streamer drilldown.
-2. Add reason-aware Unmapped analysis.
-3. Decide population filters only after ordering semantics are explicit.
-4. Repeat supported-source coverage evidence before any acquisition expansion.
-5. Add city/current-location/IRL only after their evidence gates justify them.
-6. Audit and implement Kick separately.
-7. Add location history/replay only after live semantics stabilize.
+1. Add reason-aware Unmapped analysis.
+2. Decide population filters only after ordering semantics are explicit.
+3. Repeat supported-source coverage evidence before any acquisition expansion.
+4. Add city/current-location/IRL only after their evidence gates justify them.
+5. Audit and implement Kick separately.
+6. Add location history/replay only after live semantics stabilize.
 
 ## Accepted permanent product records
 

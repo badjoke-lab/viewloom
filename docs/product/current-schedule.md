@@ -5,11 +5,12 @@ Last updated: 2026-08-22
 
 ```text
 Current program Twitch Stream Map
-Current stage 1G country selection + drilldown
-Accepted main 17bbe766a79903436501b05dc1e4ccb0379aa00a
+Current stage Unmapped reason analysis
+Accepted main d7155d3c9d9b6baa27997a2c019e6da03c1cb59a
 Stage 1D source/yield audit complete
 Stage 1E real live join complete PR #972
 Stage 1F public route + source/type filters complete PR #974
+Stage 1G country selection + drilldown complete PR #977
 Production route/API verification complete PR #975 closed without merge
 Twitch Map public route /twitch/map/
 Twitch Map real API /api/twitch-stream-map
@@ -30,14 +31,19 @@ Kick cadence */5 * * * * unchanged
 8. Passed Web typecheck/build, live-join verification, source-filter verification and existing Heatmap regression gates for #974.
 9. Verified the deployed production route and API through read-only verification-only PR #975.
 10. Closed #975 without merge after retaining production evidence.
+11. Added true country selection and drilldown in PR #977: marker/row selection, selected-country summary, filtered streamer list, clear action, retained zero-result state and keyboard/tap button semantics.
+12. Added a dedicated country-drilldown verifier to the normal Web checks; Typecheck, Build, live-join, source-filter, country-drilldown and existing Heatmap regression gates passed before merge.
 
-## Accepted filter semantics
+## Accepted filter and drilldown semantics
 
 ```text
 Sources: OR within selected sources
 Types:   OR within selected types
 Across dimensions: Sources AND Types
 No selected source/type: All accepted
+Country selection: drilldown only; never creates or changes accepted evidence
+Selected country + evidence filters: country AND active evidence filter result
+Selected country with zero matches: retain selection and show explicit zero state
 ```
 
 Exact source vocabulary:
@@ -61,24 +67,9 @@ current_location
 
 ## Current order
 
-### 1. Stage 1G — country selection/drilldown
+### 1. Unmapped reason analysis — CURRENT
 
-Implement next:
-
-- selected-country state;
-- marker and country-row selection;
-- selected-country stream list;
-- selected-country viewer/source summary;
-- clear selection;
-- filter interaction with selected country;
-- explicit zero-result state;
-- keyboard/tap/mobile verification.
-
-Done when country selection changes the actual drilldown state and not only page focus/scroll.
-
-### 2. Unmapped reason analysis
-
-Expose reason-aware accounting from the existing real API contract.
+Expose reason-aware accounting from the existing real API contract and make the unmapped population inspectable without inventing geography.
 
 At minimum support public handling of:
 
@@ -90,19 +81,28 @@ excluded_nonperson
 expired_current_location (after current-location lifecycle exists)
 ```
 
-### 3. Population-filter decision
+Required behavior:
 
-Only then decide category/language/min-viewer/Top-N controls.
+- keep reason totals consistent with the real API population;
+- distinguish excluded non-person rows from otherwise eligible unmapped people;
+- do not convert candidates or conflicts into placement;
+- preserve evidence provenance and source vocabulary;
+- define a truthful zero/unknown state when a reason has no rows;
+- verify desktop/mobile and keyboard/tap behavior for any interactive reason controls.
+
+### 2. Population-filter decision
+
+Only after reason-aware Unmapped behavior is stable, decide category/language/min-viewer/Top-N controls.
 
 Required ordering must be explicit before implementation. Language remains population metadata only and never creates placement.
 
-### 4. Evidence coverage decision
+### 3. Evidence coverage decision
 
 Repeat live coverage evidence and decide whether supported/reviewable acquisition should expand.
 
 Low coverage is not itself authorization for inferred placement or unsupported crawling.
 
-### 5. Later stages
+### 4. Later stages
 
 - reliable city grouping;
 - current-location freshness/expiry;
@@ -112,7 +112,7 @@ Low coverage is not itself authorization for inferred placement or unsupported c
 
 ## Latest production observation
 
-Route-verification API snapshot:
+Route-verification API snapshot retained from PR #975:
 
 ```text
 updatedAt                 2026-08-22T01:55:42.393Z
@@ -128,7 +128,7 @@ coveredPages              3
 hasMore                   true
 ```
 
-A prior snapshot observed one mapped stream. Treat both as live observations, not fixed expected counts.
+A prior snapshot observed one mapped stream. Treat both as live observations, not fixed expected counts. PR #977 changed client-side drilldown behavior only; it did not change collector cadence, D1, evidence acceptance or the API placement contract.
 
 ## Hard stops
 
