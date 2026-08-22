@@ -83,14 +83,19 @@ assert.equal(remediation.coverage.mappedBySource.official_external, 3)
 assert.equal(remediation.coverage.currentLocationStreams, 0)
 assert.equal(sumReasonCounts(remediation.coverage.unmappedReasons), 0)
 assert.deepEqual(
-  remediation.mappedStreams.map((row) => [row.login, row.location.countryCode, row.location.city]),
+  remediation.mappedStreams.map((row) => [row.login, row.location.countryCode]),
   [
-    ['payo', 'CA', null],
-    ['wirtual', 'NO', null],
-    ['knirpz', 'DE', 'Berlin'],
+    ['payo', 'CA'],
+    ['wirtual', 'NO'],
+    ['knirpz', 'DE'],
   ],
 )
 assert.ok(remediation.mappedStreams.every((row) => row.sources.includes('official_external')))
+
+const knirpzReviewed = TWITCH_REVIEWED_LOCATION_RECORDS.find((record) => record.streamerLogin === 'knirpz')
+assert.equal(knirpzReviewed?.evidences[0]?.city, 'Berlin')
+assert.equal(knirpzReviewed?.evidences[0]?.region, 'Berlin')
+assert.equal(knirpzReviewed?.evidences[0]?.claimKind, 'declared_location')
 
 const conflict = buildTwitchStreamMapLiveModel({
   snapshot: {
