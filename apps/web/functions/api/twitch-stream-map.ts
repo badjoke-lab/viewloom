@@ -119,6 +119,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     return Response.json({
       ...model,
       populationFilter: population.metadata,
+      semantics: { ...model.semantics, ...mapSemantics() },
       state: 'ready',
     }, {
       headers: { 'cache-control': 'no-store' },
