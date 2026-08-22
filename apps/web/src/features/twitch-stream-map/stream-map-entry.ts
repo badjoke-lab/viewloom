@@ -3,6 +3,11 @@ import {
   summarizeFilteredStreams,
   type StreamMapMappedStream,
 } from './location-filter-core.mjs'
+import {
+  countrySelectionState,
+  groupMappedStreamsByCountry,
+  type StreamMapCountryGroup,
+} from './country-drilldown-core.mjs'
 
 type MapLibreControl = object
 
@@ -82,6 +87,8 @@ type StreamMapPayload = {
   state: string
 }
 
+type CountrySelection = ReturnType<typeof countrySelectionState>
+
 declare global {
   interface Window {
     maplibregl?: MapLibreNamespace
@@ -120,6 +127,7 @@ const state = document.querySelector<HTMLElement>('[data-stream-map-state]')
 const sourceInputs = [...document.querySelectorAll<HTMLInputElement>('[data-location-source]')]
 const typeInputs = [...document.querySelectorAll<HTMLInputElement>('[data-location-type]')]
 const clearButton = document.querySelector<HTMLButtonElement>('[data-clear-location-filters]')
+const clearCountryButton = document.querySelector<HTMLButtonElement>('[data-clear-selected-country]')
 
 let payload: StreamMapPayload | null = null
 let map: MapLibreMap | null = null
@@ -127,12 +135,15 @@ let mapReady = false
 let mapFailed = false
 let loadError = ''
 let markers: MapLibreMarker[] = []
+let selectedCountry: string | null = null
+let selectedCountryLabel = ''
 
 for (const input of [...sourceInputs, ...typeInputs]) input.addEventListener('change', renderView)
 clearButton?.addEventListener('click', () => {
   for (const input of [...sourceInputs, ...typeInputs]) input.checked = false
   renderView()
 })
+clearCountryButton?.addEventListener('click', clearSelectedCountry)
 
 initializeMap()
 void loadData()
@@ -203,6 +214,7 @@ function renderView(): void {
   const filter = currentFilter()
   const filtered = filterMappedStreams(payload.mappedStreams, filter)
   const summary = summarizeFilteredStreams(filtered, payload.coverage.observedStreams, payload.coverage.observedViewers)
+  const selection = countrySelectionState(filtered, selectedCountry)
   const filtering = filter.sources.size > 0 || filter.types.size > 0
 
   text('stream-map-observed', formatNumber(payload.coverage.observedStreams))
@@ -225,9 +237,10 @@ function renderView(): void {
   }
 
   renderCountrySummary(filtered)
-  renderStreamList(filtered)
+  renderSelectedCountry(selection)
+  renderStreamList(selection.visibleStreams, selection)
   renderMarkers(filtered)
-  syncStatus(filtered.length)
+  syncStatus(filtered.length, selection)
 }
 
 function currentFilter(): { sources: Set<string>; types: Set<string> } {
@@ -242,36 +255,93 @@ function renderCountrySummary(streams: StreamMapMappedStream[]): void {
   if (!list) return
   list.replaceChildren()
 
-  const countries = groupedCountries(streams)
+  const countries = groupMappedStreamsByCountry(streams)
   if (countries.length === 0) {
     const empty = document.createElement('p')
     empty.className = 'stream-map-empty'
-    empty.textContent = 'No accepted mapped country matches the selected evidence filters.'
+    empty.textContent = selectedCountry
+      ? 'No mapped country matches the selected evidence filters. The selected country is retained until you clear it.'
+      : 'No accepted mapped country matches the selected evidence filters.'
     list.append(empty)
     return
   }
 
   for (const country of countries) {
-    const row = document.createElement('div')
+    const row = document.createElement('button')
+    row.type = 'button'
     row.className = 'stream-map-country-row'
+    row.dataset.countryCode = country.countryCode
+    row.setAttribute('aria-pressed', String(selectedCountry === country.countryCode))
+    row.setAttribute('aria-label', `Show ${country.countryName} drilldown: ${country.streams.length} mapped streams, ${formatNumber(country.viewers)} viewers`)
+    if (selectedCountry === country.countryCode) row.classList.add('is-selected')
+
     const name = document.createElement('strong')
     name.textContent = country.countryName
     const detail = document.createElement('span')
     detail.textContent = `${formatNumber(country.streams.length)} stream${country.streams.length === 1 ? '' : 's'} · ${formatNumber(country.viewers)} viewers`
     row.append(name, detail)
+    row.addEventListener('click', () => selectCountry(country.countryCode, country.countryName, false))
     list.append(row)
   }
 }
 
-function renderStreamList(streams: StreamMapMappedStream[]): void {
+function renderSelectedCountry(selection: CountrySelection): void {
+  const panel = document.getElementById('stream-map-selected-country')
+  if (!panel) return
+  panel.hidden = !selection.selectedCountry
+  if (!selection.selectedCountry) return
+
+  const country = selection.country
+  const label = country?.countryName || selectedCountryLabel || selection.selectedCountry
+  if (country?.countryName) selectedCountryLabel = country.countryName
+  text('stream-map-selected-country-name', label)
+  text('stream-map-selected-country-streams', formatNumber(country?.streams.length ?? 0))
+  text('stream-map-selected-country-viewers', formatNumber(country?.viewers ?? 0))
+
+  const sourceList = document.getElementById('stream-map-selected-country-sources')
+  if (sourceList) {
+    sourceList.replaceChildren()
+    const entries = Object.entries(country?.sourceCounts ?? {}).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    if (entries.length === 0) {
+      const empty = document.createElement('span')
+      empty.className = 'stream-map-selected-country-source-empty'
+      empty.textContent = 'No selected accepted evidence matches current source/type filters.'
+      sourceList.append(empty)
+    } else {
+      for (const [source, count] of entries) {
+        const item = document.createElement('span')
+        item.className = 'stream-map-selected-country-source'
+        item.append(sourceBadge(source), document.createTextNode(` ${formatNumber(count)}`))
+        sourceList.append(item)
+      }
+    }
+  }
+
+  const note = document.getElementById('stream-map-selected-country-note')
+  if (note) {
+    note.textContent = country
+      ? `${label} is selected. The streamer list below is restricted to this country and still obeys the active evidence filters.`
+      : `${label} remains selected, but no accepted mapped evidence for it matches the active filters. The selection was not silently changed.`
+  }
+
+  const listTitle = document.getElementById('stream-map-stream-list-title')
+  if (listTitle) listTitle.textContent = `${label} mapped streams`
+}
+
+function renderStreamList(streams: StreamMapMappedStream[], selection: CountrySelection): void {
   const list = document.getElementById('stream-map-stream-list')
   if (!list) return
   list.replaceChildren()
 
+  const listTitle = document.getElementById('stream-map-stream-list-title')
+  if (!selection.selectedCountry && listTitle) listTitle.textContent = 'Mapped streams'
+
   if (streams.length === 0) {
     const empty = document.createElement('p')
     empty.className = 'stream-map-empty'
-    empty.textContent = 'No mapped streamer matches the selected source/type combination.'
+    empty.textContent = selection.selectedCountry
+      ? 'The selected country has no mapped streamer under the active evidence filters. Clear the country or change the filters.'
+      : 'No mapped streamer matches the selected source/type combination.'
     list.append(empty)
     return
   }
@@ -330,42 +400,40 @@ function renderMarkers(streams: StreamMapMappedStream[]): void {
   markers = []
   if (!mapReady || !map || !window.maplibregl) return
 
-  for (const country of groupedCountries(streams)) {
+  for (const country of groupMappedStreamsByCountry(streams)) {
     const coordinates = COUNTRY_CENTROIDS[country.countryCode]
     if (!coordinates) continue
     const element = document.createElement('button')
     element.type = 'button'
     element.className = 'stream-map-country-marker'
-    element.setAttribute('aria-label', `${country.countryName}: ${country.streams.length} mapped streams, ${formatNumber(country.viewers)} viewers`)
+    element.dataset.countryCode = country.countryCode
+    element.setAttribute('aria-pressed', String(selectedCountry === country.countryCode))
+    element.setAttribute('aria-label', `Show ${country.countryName} drilldown: ${country.streams.length} mapped streams, ${formatNumber(country.viewers)} viewers`)
+    if (selectedCountry === country.countryCode) element.classList.add('is-selected')
+
     const count = document.createElement('strong')
     count.textContent = formatNumber(country.streams.length)
     const label = document.createElement('span')
     label.textContent = country.countryCode
     element.append(count, label)
-    element.addEventListener('click', () => {
-      const countryList = document.getElementById('stream-map-country-list')
-      countryList?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    })
+    element.addEventListener('click', () => selectCountry(country.countryCode, country.countryName, true))
     markers.push(new window.maplibregl.Marker({ element, anchor: 'center' }).setLngLat(coordinates).addTo(map))
   }
 }
 
-function groupedCountries(streams: StreamMapMappedStream[]) {
-  const groups = new Map<string, { countryCode: string; countryName: string; viewers: number; streams: StreamMapMappedStream[] }>()
-  for (const stream of streams) {
-    const countryCode = String(stream.location.countryCode || '').toUpperCase()
-    if (!countryCode) continue
-    const current = groups.get(countryCode) ?? {
-      countryCode,
-      countryName: stream.location.countryName || countryCode,
-      viewers: 0,
-      streams: [],
-    }
-    current.viewers += stream.viewers
-    current.streams.push(stream)
-    groups.set(countryCode, current)
+function selectCountry(countryCode: string, countryName: string, scrollToDrilldown: boolean): void {
+  selectedCountry = countryCode.toUpperCase()
+  selectedCountryLabel = countryName
+  renderView()
+  if (scrollToDrilldown) {
+    document.getElementById('stream-map-selected-country')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
-  return [...groups.values()].sort((a, b) => b.viewers - a.viewers || a.countryName.localeCompare(b.countryName))
+}
+
+function clearSelectedCountry(): void {
+  selectedCountry = null
+  selectedCountryLabel = ''
+  renderView()
 }
 
 function sourceBadge(source: string): HTMLElement {
@@ -390,7 +458,7 @@ function locationLabel(stream: StreamMapMappedStream): string {
   return [stream.location.countryName, region, city].filter(Boolean).join(' / ')
 }
 
-function syncStatus(filteredCount?: number): void {
+function syncStatus(filteredCount?: number, selection?: CountrySelection): void {
   if (state) {
     state.textContent = loadError ? 'Data error' : payload ? (mapFailed ? 'Data ready' : mapReady ? 'Ready' : 'Map loading') : 'Loading'
   }
@@ -418,6 +486,14 @@ function syncStatus(filteredCount?: number): void {
   }
 
   status.dataset.state = 'ready'
+  if (selection?.selectedCountry) {
+    const label = selection.country?.countryName || selectedCountryLabel || selection.selectedCountry
+    status.replaceChildren(
+      statusStrong(`${label}: ${formatNumber(selection.visibleStreams.length)} mapped streams in drilldown`),
+      statusSpan(selection.selectedEmpty ? 'Selected country retained with zero matching evidence under the active filters.' : 'Country drilldown is active; source/type filters still apply.'),
+    )
+    return
+  }
   status.replaceChildren(statusStrong(`${filteredCount ?? payload.mappedStreams.length} mapped streams in view`), statusSpan('Unknown and rejected geography remains unmapped.'))
 }
 

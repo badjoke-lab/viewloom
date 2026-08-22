@@ -91,7 +91,7 @@
           <div>
             <div class="stream-map-shell__eyebrow">Live evidence-backed geography</div>
             <h2>World map</h2>
-            <p>Country markers reflect only streams whose selected accepted evidence supports a placement.</p>
+            <p>Select a country marker to drill into its currently mapped streams. Country selection does not change evidence acceptance.</p>
           </div>
           <div class="stream-map-badges" aria-label="Location evidence legend">
             <span class="stream-map-badge stream-map-badge--account-profile">Profile</span>
@@ -109,7 +109,7 @@
             <span>No demo geography will be substituted.</span>
           </div>
         </div>
-        <p class="stream-map-interaction-note">Drag to move. Use the +/− controls to zoom. Wheel zoom is disabled so page scrolling remains available.</p>
+        <p class="stream-map-interaction-note">Drag to move. Use the +/− controls to zoom. Country markers are buttons and can be selected by keyboard or tap. Wheel zoom is disabled so page scrolling remains available.</p>
       </section>
 
       <section class="stream-map-support-grid">
@@ -120,15 +120,32 @@
 
       <section class="surface stream-map-results">
         <div class="stream-map-results__head">
-          <div><div class="stream-map-shell__eyebrow">Current filtered result</div><h2>Mapped countries and streams</h2><p>Evidence provenance stays attached to every visible streamer.</p></div>
+          <div><div class="stream-map-shell__eyebrow">Current filtered result</div><h2>Mapped countries and streams</h2><p>Choose a country to restrict the drilldown list. Evidence provenance stays attached to every visible streamer.</p></div>
           <div class="head-facts">
             <div class="fact"><small>Countries</small><strong id="stream-map-country-count">—</strong></div>
             <div class="fact"><small>Current-location streams</small><strong id="stream-map-current-count">—</strong></div>
           </div>
         </div>
+
+        <section id="stream-map-selected-country" class="stream-map-selected-country" aria-live="polite" hidden>
+          <div class="stream-map-selected-country__head">
+            <div>
+              <div class="stream-map-shell__eyebrow">Selected country</div>
+              <h3 id="stream-map-selected-country-name">—</h3>
+            </div>
+            <button type="button" class="stream-map-filter-clear" data-clear-selected-country>Clear country</button>
+          </div>
+          <div class="stream-map-selected-country__facts">
+            <div><small>Mapped streams</small><strong id="stream-map-selected-country-streams">0</strong></div>
+            <div><small>Mapped viewers</small><strong id="stream-map-selected-country-viewers">0</strong></div>
+            <div><small>Evidence sources</small><div id="stream-map-selected-country-sources" class="stream-map-selected-country-sources"></div></div>
+          </div>
+          <p id="stream-map-selected-country-note" class="stream-map-filter-note"></p>
+        </section>
+
         <div class="stream-map-results-grid">
           <div class="stream-map-results-card"><h3>Countries</h3><div id="stream-map-country-list" class="stream-map-country-list"><p class="stream-map-empty">Loading…</p></div></div>
-          <div class="stream-map-results-card"><h3>Mapped streams</h3><div id="stream-map-stream-list" class="stream-map-stream-list"><p class="stream-map-empty">Loading…</p></div></div>
+          <div class="stream-map-results-card"><h3 id="stream-map-stream-list-title">Mapped streams</h3><div id="stream-map-stream-list" class="stream-map-stream-list"><p class="stream-map-empty">Loading…</p></div></div>
         </div>
       </section>
     </main>
