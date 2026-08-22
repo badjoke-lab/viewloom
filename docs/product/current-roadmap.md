@@ -3,18 +3,18 @@
 Status: source of truth  
 Last updated: 2026-08-23
 
-## Current milestone: Twitch Stream Map — coverage remediation / supported evidence acquisition
+## Current milestone: Twitch Stream Map — fixed Top 20 external evidence yield
 
 Current accepted implementation baseline:
 
 ```text
-main b58981735a947f0ed4c711bcc8363b8f4430abc7
+main b0a99f480ec4f2320af09aa0329b044f8eeee3eb
 ```
 
 The Twitch Stream Map has completed:
 
 - source/yield audit — #964 / #965 / #966;
-- entity/claim eligibility and retained reviewed evidence — #971;
+- entity/claim eligibility and initial reviewed evidence — #971;
 - real latest-snapshot join — #972;
 - public route, MapLibre, source/type filters and provenance badges — #974;
 - read-only production route/API verification — #975, closed without merge;
@@ -23,15 +23,18 @@ The Twitch Stream Map has completed:
 - population-filter contract — #980;
 - server-side Top-N/min-viewer/category population filters — #981;
 - ready-response population semantics repair — #983;
-- post-population read-only production coverage audit — #982, verification-only and to be closed without merge after retained evidence lands.
+- production population coverage decision — #982, closed without merge;
+- supported-source remediation candidate audit — #985, verification-only;
+- three bounded reviewed `official_external` acceptances — #986;
+- post-#986 read-only production verification — #987, verification-only.
 
 Authoritative Stream Map records:
 
 - `docs/product/stream-map-spec-v0.5.md`
 - `docs/product/stream-map-implementation-plan-v0.4.md`
 - `docs/product/stream-map-population-filter-decision-v0.1.md`
-- `docs/audits/twitch-stream-map-stage1e-1f-production-2026-08-22.md`
 - `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
+- `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
 
 ## Current public behavior
 
@@ -47,13 +50,13 @@ latest real Twitch Top 300
 -> country drilldown
 ```
 
-Public population controls:
+Public controls:
 
 ```text
 Top N        20 / 50 / 100 / 300
 Min viewers  any / 100 / 500 / 1,000 / 5,000 / 10,000
 Category     all or one observed Twitch category
-Language     deferred; permanent minute snapshots do not retain it
+Language     deferred
 ```
 
 Evidence sources remain distinct:
@@ -75,130 +78,151 @@ declared_location
 current_location
 ```
 
-Filter semantics:
+Placement remains accepted-evidence-only. Language/category/name/timezone/IP never creates geography. Twitch and Kick remain separate.
+
+## Completed population coverage decision
+
+Verification-only PR #982 showed that population narrowing alone cannot repair the evidence gap.
+
+Baseline production snapshot:
 
 ```text
-sources: OR
-location types: OR
-source dimension AND type dimension
-country selection: drilldown only
+updatedAt        2026-08-22T16:00:18.854Z
+observed streams 300
+observed viewers 1,358,840
+mapped streams   0
+mapped viewers   0
 ```
 
-Placement remains evidence-backed only. Language/category/name/timezone/IP never creates geography.
+Top 20/50/100/300, viewer thresholds and major-category slices all had zero mapped streams.
 
-## Production population-filter acceptance
+## Completed supported-source remediation
 
-PR #981 introduced the runtime population controls. PR #983 repaired one response-contract omission found by the production audit: ready responses now explicitly expose:
+Verification-only PR #985 used only supported Twitch surfaces in a non-production Worker version preview.
 
 ```text
-populationFilterBeforeEvidenceFilter = true
-languageUsedForPopulationFiltering = false
+sample streams                300
+profile descriptions          280
+profile candidates              0
+strong-title candidates         0
+tag-only candidates             3
+unknown                        297
+current-location candidates      0
 ```
 
-Final successful production audit:
+The three Twitch tags were not accepted. They only bounded manual review.
+
+Manual review accepted three independently attributable external records:
 
 ```text
-verification-only PR  #982
-workflow run          32583205617
-successful job        97056168203
-artifact              9478398925
-snapshot updatedAt    2026-08-22T16:00:18.854Z
-report generatedAt    2026-08-22T16:01:56Z
+payo     CA / Canada   official_external   declared_location
+wirtual  NO / Norway   official_external   declared_location
+knirpz   DE / Germany  official_external   declared_location
 ```
 
-The deployed route contained all three population controls and every audited API response reconciled:
+Knirpz also retains Berlin in the reviewed evidence record, but this milestone does not activate City placement.
+
+PR #986 added only those three records and regression coverage. It did not change placement rules, collector behavior, D1, cadence, retention or acquisition runtime.
+
+Same-sample direct ceiling from this native-candidate lane:
 
 ```text
-mapped + unmapped = selected population
-sum(unmappedReasons) = unmapped
-populationFilterBeforeEvidenceFilter = true
-languageUsedForPlacement = false
-languageUsedForPopulationFiltering = false
+3 accepted / 300 sample streams = 1.00%
 ```
 
-## Completed evidence coverage decision
+This proves the review method is valid but the native candidate trigger is too sparse to produce useful geographic coverage by itself.
 
-Top 300 baseline at the audited snapshot:
+## Production verification after remediation
+
+Verification-only PR #987 succeeded after #986:
 
 ```text
-streams                         300
-viewers                         1,358,840
-mapped streams                  0
-mapped viewers                  0
-mapped countries                0
-current-location streams        0
-excluded non-person streams     1
-excluded non-person viewers     20,413
-no reviewed evidence            298
-context-only/unaccepted         1
-conflicting accepted evidence   0
-unknown-category streams        1
-dictionary-missing items        0
+workflow run          32587130892
+successful job        97065114836
+artifact              9479337312
+snapshot updatedAt    2026-08-22T17:10:17.378Z
+observed streams      300
+observed viewers      1,508,683
+mapped streams        2
+mapped percent        0.6667%
+mapped viewers        12,402
+mapped viewer percent 0.8220%
+mapped countries      2
+current-location      0
 ```
 
-Every audited population slice also had `mappedStreams=0`:
+Live mapped remediation records:
 
-- Top 20: 20 streams / 477,236 viewers;
-- Top 50: 50 / 757,507;
-- Top 100: 100 / 965,851;
-- Top 300: 300 / 1,358,840;
-- >=5,000 viewers: 57 / 795,253;
-- >=10,000 viewers: 30 / 597,709;
-- Fortnite Top 300: 29 / 219,546;
-- Counter-Strike Top 300: 21 / 150,172;
-- Just Chatting Top 300: 40 / 138,720;
-- League of Legends Top 300: 15 / 136,677;
-- IRL Top 300: 8 / 55,639;
-- Top-100 Fortnite / Counter-Strike / Just Chatting: all zero mapped.
+```text
+wirtual  NO / Norway  9,816 viewers  official_external
+payo     CA / Canada  2,586 viewers  official_external
+```
 
-The currently retained reviewed-location evidence therefore does not overlap the live Twitch population enough to make geographic coverage useful. Population filtering works, but narrowing the population does not repair evidence coverage.
+`knirpz` was not in the live mapped Top 300 snapshot. The public model kept city/region arrays empty for the live mapped rows and current-location coverage remained zero.
 
-## Current gate: bounded coverage remediation
+This is the first retained production snapshot after remediation with reviewed evidence overlapping the current live Top 300, but coverage remains below 1% by streams.
 
-Do **not** proceed directly to City, Current Location emphasis or IRL geography.
+## Current gate: fixed Top 20 official_external / manual_review yield experiment
 
-The next gate must test whether supported, attributable and reviewable evidence can materially improve live overlap while keeping source lanes separate.
+The next measurement deliberately does **not** depend on Twitch geographic tags/title/profile candidate extraction.
 
-For each source lane or combination, report:
+Question:
 
-- sampled live population;
-- candidates;
-- accepted streamers;
-- incremental accepted streamers over existing evidence;
-- resulting mapped percentage;
-- request cost and manual-review burden;
-- source overlap;
-- conflicts;
-- freshness/expiry requirements;
-- any unsupported/private API dependency.
+> Among a fixed current Top 20, how many streamers have explicit attributable self/official external location evidence that can be accepted without inference?
+
+Execution boundary:
+
+1. obtain one Top 20 identity sample read-only from the supported Twitch stream surface;
+2. retain only the identities needed for the bounded review artifact, not a permanent raw crawl;
+3. review all 20 consistently for explicit self-controlled or official external location statements;
+4. record `official_external` versus `manual_review` provenance separately;
+5. record explicit country, explicit city, current location, no-location, conflicts and review burden;
+6. make no permanent acquisition pipeline change during the experiment.
+
+Required output:
+
+```text
+sample size
+accepted country evidence
+accepted city evidence
+current-location evidence
+no explicit location evidence
+source provenance
+review burden
+conflicts
+same-sample mapped percentage
+```
 
 Decision rule:
 
-- proceed with a bounded acquisition path only if it produces material incremental accepted live coverage at acceptable cost;
-- candidate-only title/tag signals remain candidates unless the claim itself is explicitly placeable;
-- unsupported persistent Twitch panels/social crawling remains unauthorized;
-- if supported remediation still produces weak coverage, preserve the low-coverage map honestly instead of weakening evidence rules.
+- if fixed-sample explicit evidence materially raises coverage at acceptable bounded review cost, design a separately gated update/acquisition model;
+- if it remains sparse or manual cost is too high, stop geography expansion and keep the Map honest;
+- do not weaken evidence rules in either case.
 
-## Following gates — blocked on remediation outcome
+## Following gates — blocked on fixed Top 20 result
 
-1. reliable city grouping only if accepted evidence supports it;
-2. current-location freshness/expiry only if current-location evidence becomes useful;
-3. IRL-oriented view only after useful current-location coverage exists;
-4. separate Kick source audit and implementation;
-5. location history/replay only after live semantics stabilize.
+1. acquisition/update model only if the fixed Top 20 experiment justifies it;
+2. reliable city grouping only after broader accepted city coverage exists;
+3. current-location freshness/expiry only if current-location evidence becomes useful;
+4. IRL-oriented view only after useful current-location coverage exists;
+5. separate Kick source audit and implementation;
+6. location history/replay only after live semantics stabilize.
 
 ## Stream Map hard boundaries
 
 - No language, timezone, name, category or IP inference for placement.
 - No category-to-country inference.
+- No tag-only acceptance.
 - No candidate-only placement.
 - No organization/event-broadcast-as-person placement.
 - No silent accepted-country conflict resolution.
 - No Twitch/Kick geographic aggregation.
 - No demo geography substituted for failed real data.
-- No unsupported external crawler merely to increase coverage.
+- No current-location claim from home/origin evidence.
+- No City rollout from one retained city record.
+- No unsupported persistent external/social/panel crawler merely to increase coverage.
 - No language population UI until an accepted retained-data contract supports it.
-- No D1/schema/cadence/retention/acquisition change without a separate accepted gate.
+- No D1/schema/cadence/retention/permanent-acquisition change without a separate accepted gate.
 
 ## Retained completed milestone: 12A Twitch category rollout
 
