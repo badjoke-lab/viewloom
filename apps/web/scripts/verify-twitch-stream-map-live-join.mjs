@@ -43,6 +43,7 @@ assert.equal(model.coverage.mappedBySource.official_external, 1)
 assert.equal(model.coverage.unmappedReasons.excluded_nonperson, 1)
 assert.equal(model.coverage.unmappedReasons.context_only_or_unaccepted_evidence, 1)
 assert.equal(model.coverage.unmappedReasons.no_reviewed_evidence, 1)
+assert.equal(sumReasonCounts(model.coverage.unmappedReasons), model.coverage.unmappedStreams)
 assert.equal(model.mappedStreams[0]?.login, 'shotzzy')
 assert.equal(model.mappedStreams[0]?.location.countryCode, 'US')
 assert.deepEqual(model.mappedStreams[0]?.sources, ['official_external'])
@@ -85,6 +86,7 @@ const conflict = buildTwitchStreamMapLiveModel({
 assert.equal(conflict.coverage.mappedStreams, 0)
 assert.equal(conflict.coverage.unmappedStreams, 1)
 assert.equal(conflict.coverage.unmappedReasons.conflicting_accepted_evidence, 1)
+assert.equal(sumReasonCounts(conflict.coverage.unmappedReasons), conflict.coverage.unmappedStreams)
 
 const candidateOnly = buildTwitchStreamMapLiveModel({
   snapshot: {
@@ -111,5 +113,10 @@ const candidateOnly = buildTwitchStreamMapLiveModel({
 
 assert.equal(candidateOnly.coverage.mappedStreams, 0)
 assert.equal(candidateOnly.coverage.unmappedReasons.context_only_or_unaccepted_evidence, 1)
+assert.equal(sumReasonCounts(candidateOnly.coverage.unmappedReasons), candidateOnly.coverage.unmappedStreams)
+
+function sumReasonCounts(reasons) {
+  return Object.values(reasons).reduce((sum, value) => sum + Number(value || 0), 0)
+}
 
 console.log('twitch stream map live join verification passed')
