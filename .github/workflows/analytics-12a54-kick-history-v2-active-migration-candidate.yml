@@ -47,13 +47,11 @@ jobs:
           test "${#changed[@]}" -eq "${#expected[@]}"
           for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
 
-      - name: Verify selector matrix and production boundaries
+      - name: Verify selector matrix and accepted predecessor artifacts
         run: node --experimental-strip-types scripts/verify-12a54-kick-history-v2-active-migration-candidate.mjs
 
-      - name: Revalidate accepted dormant v2 package
-        run: |
-          node scripts/verify-12a52-kick-history-v2-dormant-generator-package.mjs
-          python3 scripts/test-12a52-kick-history-v2-dormant-generator.py
+      - name: Revalidate v2 writer deterministic fixture
+        run: python3 scripts/test-12a52-kick-history-v2-dormant-generator.py
 
       - name: Typecheck collectors
         run: pnpm typecheck:collectors
