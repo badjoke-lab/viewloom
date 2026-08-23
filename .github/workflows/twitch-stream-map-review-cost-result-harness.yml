@@ -1,0 +1,36 @@
+name: Twitch Stream Map Review Cost Result Harness
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'docs/audits/twitch-stream-map-review-cost-result-template-v0.1.json'
+      - 'docs/operations/twitch-stream-map-review-cost-measurement-runbook-v0.1.md'
+      - 'scripts/evaluate-twitch-stream-map-review-cost-result.mjs'
+      - 'scripts/verify-twitch-stream-map-review-cost-result-harness.mjs'
+      - '.github/workflows/twitch-stream-map-review-cost-result-harness.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/audits/twitch-stream-map-review-cost-result-template-v0.1.json'
+      - 'docs/operations/twitch-stream-map-review-cost-measurement-runbook-v0.1.md'
+      - 'scripts/evaluate-twitch-stream-map-review-cost-result.mjs'
+      - 'scripts/verify-twitch-stream-map-review-cost-result-harness.mjs'
+      - '.github/workflows/twitch-stream-map-review-cost-result-harness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify fail-closed review-cost result harness
+        run: node scripts/verify-twitch-stream-map-review-cost-result-harness.mjs
