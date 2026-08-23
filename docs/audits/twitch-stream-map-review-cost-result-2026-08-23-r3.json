@@ -67,7 +67,7 @@
     {"rank":17,"twitchUserId":"48677263","login":"lazvell","entityKind":"person","terminalOutcome":"no_qualifying_evidence","searchAttempts":4,"countryConflictDetected":false,"silentCountryConflict":false,"reviewNote":"Current self-controlled profile has no location; origin and event references were not converted to residence."},
     {"rank":18,"twitchUserId":"622498423","login":"otplol_","entityKind":"organization","terminalOutcome":"excluded_nonperson","searchAttempts":1,"countryConflictDetected":false,"silentCountryConflict":false},
     {"rank":19,"twitchUserId":"558530984","login":"echo_esports","entityKind":"organization","terminalOutcome":"excluded_nonperson","searchAttempts":4,"countryConflictDetected":false,"silentCountryConflict":false,"reviewNote":"Blizzard identifies echo_esports as Echo's organization channel, distinct from individual streamers."},
-    {"rank":20,"twitchUserId":"31239503","login":"eslcs","entityKind":"organization","terminalOutcome":"excluded_nonperson","searchAttempts":2,"countryConflictDetected":false,"silentCountryConflict":false}
+    {"rank":20,"twitchUserId":"31239503","login":"eslcs","entityKind":"event_broadcast","terminalOutcome":"excluded_nonperson","searchAttempts":2,"countryConflictDetected":false,"silentCountryConflict":false}
   ],
   "wallClockReviewMinutes": 5.1656,
   "minutesPerReviewedIdentity": 0.25828,
