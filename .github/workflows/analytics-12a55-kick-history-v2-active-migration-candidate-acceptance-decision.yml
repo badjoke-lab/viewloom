@@ -1,0 +1,87 @@
+name: Analytics 12A55 Kick History V2 Candidate Acceptance Decision
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a55-kick-history-v2-active-migration-candidate-acceptance-decision.yml'
+      - 'docs/audits/12a55-kick-history-v2-active-migration-candidate-acceptance-decision.json'
+      - 'scripts/verify-12a55-kick-history-v2-active-migration-candidate-acceptance-decision.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify exact Decision scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          expected=(
+            '.github/workflows/analytics-12a55-kick-history-v2-active-migration-candidate-acceptance-decision.yml'
+            'docs/audits/12a55-kick-history-v2-active-migration-candidate-acceptance-decision.json'
+            'scripts/verify-12a55-kick-history-v2-active-migration-candidate-acceptance-decision.mjs'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+
+      - name: Verify Decision and current production boundary
+        run: node scripts/verify-12a55-kick-history-v2-active-migration-candidate-acceptance-decision.mjs
+
+      - name: Verify frozen candidate ref and five-file scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CANDIDATE_BRANCH: candidate/1020-kick-history-v2-active-migration
+          CANDIDATE_SHA: 184bd489c544af8368a654eec1e09dc7708fb740
+        run: |
+          set -euo pipefail
+          git fetch origin "$CANDIDATE_BRANCH"
+          actual="$(git rev-parse FETCH_HEAD)"
+          test "$actual" = "$CANDIDATE_SHA"
+          merge_base="$(git merge-base "$BASE_SHA" "$CANDIDATE_SHA")"
+          mapfile -t changed < <(git diff --name-only "$merge_base" "$CANDIDATE_SHA")
+          expected=(
+            '.github/workflows/analytics-12a54-kick-history-v2-active-migration-candidate.yml'
+            'docs/audits/12a54-kick-history-v2-active-migration-candidate.json'
+            'scripts/verify-12a54-kick-history-v2-active-migration-candidate.mjs'
+            'workers/collector-kick/src/entry.ts'
+            'workers/collector-kick/src/history-category-generation-engine.ts'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+          git diff --exit-code "$merge_base" "$CANDIDATE_SHA" -- \
+            workers/collector-kick/wrangler.category-permanent.toml \
+            workers/collector-kick/wrangler.toml
+
+      - name: Verify frozen candidate merges cleanly with Decision base
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CANDIDATE_SHA: 184bd489c544af8368a654eec1e09dc7708fb740
+        run: |
+          set -euo pipefail
+          git merge-tree --write-tree "$BASE_SHA" "$CANDIDATE_SHA" > /tmp/12a55-merged-tree
+          test -s /tmp/12a55-merged-tree
+
+      - name: Verify no production execution surface
+        run: |
+          set -euo pipefail
+          file='.github/workflows/analytics-12a55-kick-history-v2-active-migration-candidate-acceptance-decision.yml'
+          ! grep -Eq '^  (push|workflow_dispatch|schedule|repository_dispatch):' "$file"
+          secret_needle='sec''rets.'
+          remote_needle='--re''mote'
+          d1_needle='d1'' execute'
+          deploy_needle='wrangler ''deploy'
+          ! grep -Fq -- "$secret_needle" "$file"
+          ! grep -Fq -- "$remote_needle" "$file"
+          ! grep -Fq -- "$d1_needle" "$file"
+          ! grep -Fq -- "$deploy_needle" "$file"
