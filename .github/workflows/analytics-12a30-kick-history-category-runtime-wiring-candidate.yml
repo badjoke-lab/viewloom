@@ -41,9 +41,9 @@ jobs:
         run: |
           set -euo pipefail
           file='.github/workflows/analytics-12a30-kick-history-category-runtime-wiring-candidate.yml'
-          ! grep -Fq "workers/collector-kick/src/entry.ts" "$file"
-          ! grep -Fq "docs/audits/12a30-kick-history-category-runtime-wiring-candidate.json'" "$file"
-          ! grep -Fq "scripts/verify-12a30-kick-history-category-runtime-wiring-candidate.mjs'" "$file"
+          ! grep -Fqx "      - 'workers/collector-kick/src/entry.ts'" "$file"
+          ! grep -Fqx "      - 'docs/audits/12a30-kick-history-category-runtime-wiring-candidate.json'" "$file"
+          ! grep -Fqx "      - 'scripts/verify-12a30-kick-history-category-runtime-wiring-candidate.mjs'" "$file"
 
       - name: Verify no production execution surface
         run: |
