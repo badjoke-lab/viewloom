@@ -65,6 +65,9 @@ jobs:
       - name: Verify Twitch Stream Map population filters
         run: pnpm --filter @viewloom/web verify:stream-map-population-filters
 
+      - name: Verify Twitch Stream Map fixed Top 20 reviewed evidence
+        run: pnpm --filter @viewloom/web verify:stream-map-top20-reviewed-evidence
+
       - name: Verify Heatmap page boundaries
         run: pnpm --filter @viewloom/web verify:heatmap-boundaries
 
