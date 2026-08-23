@@ -108,8 +108,10 @@ lck           event_broadcast
 lck_carry     organization
 otplol_        organization
 echo_esports  organization
-eslcs         organization
+eslcs         event_broadcast
 ```
+
+The `eslcs` classification intentionally preserves the already accepted registry taxonomy; this taxonomy alignment does not change any review-cost metric or gate result.
 
 ## Derived metrics
 
