@@ -7,8 +7,8 @@ Last updated: 2026-08-23
 
 ```text
 Current program Twitch Stream Map
-Current stage Fixed Top 20 official_external / manual_review yield experiment
-Accepted main b0a99f480ec4f2320af09aa0329b044f8eeee3eb
+Current stage Reviewed-evidence maintenance policy + fixed Top 20 replication
+Accepted main 27b1fb5fbedb9a3d5bf1923a941e7e657c16a5a1
 Stage 1D source/yield audit complete
 Stage 1E real live join complete PR #972
 Stage 1F public route + source/type filters complete PR #974
@@ -18,10 +18,11 @@ Population filter contract frozen PR #980
 Population filter runtime complete PR #981
 Ready-response population semantics fixed PR #983
 Production population coverage audit complete PR #982 closed without merge
-Coverage remediation candidate audit complete PR #985 verification-only
+Coverage remediation candidate audit complete PR #985 closed without merge
 Reviewed evidence remediation complete PR #986
-Reviewed evidence production verification complete PR #987 verification-only
-Production route/API verification complete PR #975 closed without merge
+Reviewed evidence production verification complete PR #987 closed without merge
+Fixed Top 20 sample complete PR #989 verification-only
+Fixed Top 20 reviewed evidence + country-only projection complete PR #990
 Public Twitch Map /twitch/map/
 Real Twitch Map API /api/twitch-stream-map
 Kick Map not authorized
@@ -39,7 +40,8 @@ Kick cadence */5 * * * * unchanged
 6. `docs/product/stream-map-population-filter-decision-v0.1.md`
 7. `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
 8. `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
-9. affected feature specification/plan and current WIP/handoff
+9. `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`
+10. affected feature specification/plan and current WIP/handoff
 
 For historical 12A/category rollout work, retain and consult the accepted 12A audit/decision files. They remain valid historical records but are no longer the current execution milestone.
 
@@ -100,6 +102,9 @@ Country semantics:
 country selection: drilldown only
 selected country AND active population/evidence result
 selected country with zero matches: retain selection and show explicit zero state
+reviewed evidence may retain city/region internally
+public location.regions/cities remain empty until a separate City gate
+public evidence region/city remain null until a separate City gate
 ```
 
 Reason-aware Unmapped semantics:
@@ -118,8 +123,8 @@ Placement invariants:
 - tag-only geography does not map;
 - language does not map;
 - category does not map;
+- nationality/birthplace does not become home/current placement;
 - organization/event-broadcast channels do not map as people;
-- context-only birthplace/nationality/event-venue/org-HQ claims do not map;
 - conflicting accepted countries remain unmapped;
 - provenance remains separated by source;
 - current-location is not derived from home/origin evidence;
@@ -168,11 +173,9 @@ wirtual  NO / Norway   declared_location
 knirpz   DE / Germany  declared_location
 ```
 
-Knirpz has Berlin retained in reviewed evidence, but the current public Map remains country-level. The City gate is still blocked.
-
 Same-sample maximum from the native candidate lane is `3 / 300 = 1.00%`.
 
-## Latest retained production verification
+## Retained production verification before fixed-sample expansion
 
 Verification-only PR #987 final successful read-only production audit:
 
@@ -191,46 +194,77 @@ mapped countries      2
 current-location      0
 ```
 
-Mapped rows:
+Mapped rows were Wirtual/Norway and Payo/Canada. Knirpz was not present in that live Top 300 snapshot.
+
+## Completed fixed Top 20 external/manual review
+
+Verification-only PR #989 captured one unbiased Top 20 identity sample at `2026-08-22T17:28:10.752Z` with one `/helix/streams` request, zero D1 writes and no production deploy.
+
+Review result implemented in PR #990:
 
 ```text
-wirtual  9,816 viewers  NO / Norway  official_external
-payo     2,586 viewers  CA / Canada  official_external
+sample identities                       20
+sample viewers                     473,630
+accepted placeable persons               4
+excluded non-person identities           5
+person-eligible identities              15
+eligible persons without acceptance     11
+accepted current-location                0
+accepted country conflicts               0
 ```
 
-`knirpz` was not present in that live Top 300 snapshot. Live mapped rows retained empty region/city arrays and no current-location classification.
+Accepted placeable records:
 
-This confirms the new evidence is active in production while country-level/current-location boundaries remain unchanged.
+```text
+ibai        ES / Spain          official_external
+papaplatte  DE / Germany        official_external
+ohnepixel   NL / Netherlands    manual_review
+hutchmf     US / United States  official_external
+```
+
+Measured yield:
+
+```text
+raw sample accepted coverage          20.00%
+person-eligible accepted coverage     26.67%
+accepted mapped viewers              134,791
+viewer coverage                       28.4591%
+```
+
+Review minutes were not instrumented, so recurring review cost is not yet proven.
+
+PR #990 also fixed an existing country-only projection gap. Internal reviewed evidence may retain Ibai/Sant Cugat, Papaplatte/Cologne and Knirpz/Berlin, but the current public API strips all region/city values until a separately accepted City gate.
 
 ## Current order
 
-1. Obtain one fixed current Twitch Top 20 identity sample read-only from the supported Twitch stream surface.
-2. Review all 20 consistently for explicit self-controlled or official external location evidence, regardless of Twitch tag/title/profile candidate presence.
-3. Record accepted country/city/current-location evidence, no-location outcomes, provenance, conflicts and review burden.
-4. Decide whether a separately gated acquisition/update model is justified.
-5. If fixed-sample coverage remains sparse or review cost is excessive, stop geography expansion and preserve honest low coverage.
-6. Only then reconsider City; Current Location/IRL remain separately blocked by current-location yield.
+1. Freeze a reviewed-evidence maintenance policy covering source classes, precedence, conflicts, staleness/re-review, source changes, non-person reclassification, public country-only projection and review-time measurement.
+2. Capture a second independent fixed Top 20 at a different observation time.
+3. Review it under exactly the same policy and measure actual review minutes.
+4. Compare sample overlap, raw/person-eligible/viewer coverage, source mix, conflicts, non-person share and review cost with #989.
+5. Authorize recurring bounded reviewed-evidence maintenance only if replicated yield remains useful and measured manual cost is acceptable.
+6. Keep City and Current Location/IRL blocked regardless of the country-coverage result until their own evidence gates are satisfied.
 7. Audit and implement Kick separately.
 8. Add location history/replay only after live semantics stabilize.
 
-## Fixed Top 20 experiment boundary
-
-This experiment is measurement only.
+## Maintenance/replication boundary
 
 Allowed:
 
-- supported Twitch stream surface for one bounded Top 20 identity sample;
+- supported Twitch stream surface for a bounded fixed identity sample;
 - self-controlled profiles and official/attributable external sources;
 - manual review with source URL provenance;
-- explicit country/city claims retained separately.
+- explicit review-time measurement;
+- internally retained city evidence while public response remains country-only.
 
 Not authorized:
 
 - persistent unsupported Twitch panel/social crawling;
 - inferred location from language/category/name/timezone/IP;
+- nationality/birthplace-as-home/current inference;
 - tag-only acceptance;
-- automatic acceptance from external search results;
-- permanent acquisition/storage changes before the experiment decision.
+- automatic acceptance from search results;
+- City/current-location activation;
+- permanent acquisition/storage changes before the replication decision.
 
 ## Accepted permanent product records
 
@@ -242,6 +276,7 @@ Not authorized:
 - `docs/product/stream-map-population-filter-decision-v0.1.md`
 - `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
 - `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
+- `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`
 
 ## Retained Twitch category rollout
 

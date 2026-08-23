@@ -3,12 +3,12 @@
 Status: source of truth  
 Last updated: 2026-08-23
 
-## Current milestone: Twitch Stream Map — fixed Top 20 external evidence yield
+## Current milestone: Twitch Stream Map — reviewed-evidence maintenance policy + fixed Top 20 replication
 
 Current accepted implementation baseline:
 
 ```text
-main b0a99f480ec4f2320af09aa0329b044f8eeee3eb
+main 27b1fb5fbedb9a3d5bf1923a941e7e657c16a5a1
 ```
 
 The Twitch Stream Map has completed:
@@ -24,9 +24,11 @@ The Twitch Stream Map has completed:
 - server-side Top-N/min-viewer/category population filters — #981;
 - ready-response population semantics repair — #983;
 - production population coverage decision — #982, closed without merge;
-- supported-source remediation candidate audit — #985, verification-only;
+- supported-source remediation candidate audit — #985, closed without merge;
 - three bounded reviewed `official_external` acceptances — #986;
-- post-#986 read-only production verification — #987, verification-only.
+- post-#986 read-only production verification — #987, closed without merge;
+- unbiased fixed Top 20 identity sample — #989, verification-only;
+- fixed Top 20 reviewed evidence + country-only projection repair — #990.
 
 Authoritative Stream Map records:
 
@@ -35,6 +37,7 @@ Authoritative Stream Map records:
 - `docs/product/stream-map-population-filter-decision-v0.1.md`
 - `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
 - `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
+- `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`
 
 ## Current public behavior
 
@@ -80,6 +83,18 @@ current_location
 
 Placement remains accepted-evidence-only. Language/category/name/timezone/IP never creates geography. Twitch and Kick remain separate.
 
+Country-only public boundary after #990:
+
+```text
+reviewed evidence may retain region/city internally
+public location.regions = []
+public location.cities  = []
+public evidence.region  = null
+public evidence.city    = null
+```
+
+City remains a separate blocked stage.
+
 ## Completed population coverage decision
 
 Verification-only PR #982 showed that population narrowing alone cannot repair the evidence gap.
@@ -98,7 +113,7 @@ Top 20/50/100/300, viewer thresholds and major-category slices all had zero mapp
 
 ## Completed supported-source remediation
 
-Verification-only PR #985 used only supported Twitch surfaces in a non-production Worker version preview.
+Verification-only PR #985 used supported Twitch surfaces in a non-production Worker version preview.
 
 ```text
 sample streams                300
@@ -120,17 +135,13 @@ wirtual  NO / Norway   official_external   declared_location
 knirpz   DE / Germany  official_external   declared_location
 ```
 
-Knirpz also retains Berlin in the reviewed evidence record, but this milestone does not activate City placement.
-
-PR #986 added only those three records and regression coverage. It did not change placement rules, collector behavior, D1, cadence, retention or acquisition runtime.
+Knirpz retains Berlin internally, but City placement remains blocked.
 
 Same-sample direct ceiling from this native-candidate lane:
 
 ```text
 3 accepted / 300 sample streams = 1.00%
 ```
-
-This proves the review method is valid but the native candidate trigger is too sparse to produce useful geographic coverage by itself.
 
 ## Production verification after remediation
 
@@ -158,51 +169,118 @@ wirtual  NO / Norway  9,816 viewers  official_external
 payo     CA / Canada  2,586 viewers  official_external
 ```
 
-`knirpz` was not in the live mapped Top 300 snapshot. The public model kept city/region arrays empty for the live mapped rows and current-location coverage remained zero.
+This confirmed reviewed evidence was active but also showed that the Twitch-native candidate lane remained too sparse.
 
-This is the first retained production snapshot after remediation with reviewed evidence overlapping the current live Top 300, but coverage remains below 1% by streams.
+## Completed fixed Top 20 external/manual yield experiment
 
-## Current gate: fixed Top 20 official_external / manual_review yield experiment
+Verification-only PR #989 captured one fixed current Top 20 without selecting for geography candidates.
 
-The next measurement deliberately does **not** depend on Twitch geographic tags/title/profile candidate extraction.
+```text
+capturedAt                       2026-08-22T17:28:10.752Z
+sample identities               20
+sample viewers             473,630
+accepted placeable persons       4
+excluded non-person identities   5
+person-eligible identities      15
+eligible persons unmapped       11
+accepted current-location        0
+accepted country conflicts       0
+```
+
+Accepted records implemented in #990:
+
+```text
+ibai        ES / Spain          official_external  declared_location
+papaplatte  DE / Germany        official_external  declared_location
+ohnepixel   NL / Netherlands    manual_review      declared_location
+hutchmf     US / United States  official_external  declared_location
+```
+
+Retained city evidence that remains hidden from the country-only public API:
+
+```text
+ibai        Sant Cugat del Valles
+papaplatte  Cologne
+knirpz      Berlin
+```
+
+Measured fixed-sample yield:
+
+```text
+raw accepted coverage            4 / 20 = 20.00%
+person-eligible accepted         4 / 15 = 26.67%
+mapped viewers                  134,791
+viewer coverage                         28.4591%
+source official_external              3
+source manual_review                   1
+```
+
+This is materially stronger than the native-candidate lane, so bounded external/manual review is worth preserving as a country-evidence method. One sample is not enough to establish temporal stability or operating cost.
+
+Review minutes were not instrumented. The experiment therefore cannot yet support a recurring-cost claim.
+
+## PR #990 boundary repair
+
+During self-audit, #990 found that retained city/region evidence could have leaked through the public API if a reviewed streamer re-entered the live population. The PR added an explicit country-only public projection before merge.
+
+The regression suite now verifies:
+
+- internal city values remain retained;
+- public `location.regions` and `location.cities` are empty;
+- public evidence `region` and `city` are null;
+- country mapping and provenance remain intact;
+- current-location remains zero unless separately supported;
+- the exact #989 sample yields mapped=4, non-person=5, eligible-unmapped=11.
+
+#990 passed Typecheck, Build, all Stream Map gates and all Heatmap regression gates, plus Development policy.
+
+## Current gate: reviewed-evidence maintenance policy + fixed Top 20 replication
 
 Question:
 
-> Among a fixed current Top 20, how many streamers have explicit attributable self/official external location evidence that can be accepted without inference?
+> Can the 20% raw / 26.67% person-eligible fixed-sample yield be reproduced at a different observation time under an explicit maintenance policy, with measured manual cost?
 
-Execution boundary:
+First freeze the maintenance policy. It must define:
 
-1. obtain one Top 20 identity sample read-only from the supported Twitch stream surface;
-2. retain only the identities needed for the bounded review artifact, not a permanent raw crawl;
-3. review all 20 consistently for explicit self-controlled or official external location statements;
-4. record `official_external` versus `manual_review` provenance separately;
-5. record explicit country, explicit city, current location, no-location, conflicts and review burden;
-6. make no permanent acquisition pipeline change during the experiment.
+1. review population and sample selection;
+2. accepted and rejected source classes;
+3. source precedence and attribution requirements;
+4. accepted-country conflict handling;
+5. stale evidence and re-review intervals;
+6. source deletion/change and evidence withdrawal handling;
+7. non-person reclassification handling;
+8. review-time measurement;
+9. country-only public projection as a hard invariant;
+10. no City/current-location activation by implication;
+11. no persistent crawler by implication.
 
-Required output:
+Then capture one second fixed Top 20 at a different observation time and apply the same rules.
+
+Required comparison against #989:
 
 ```text
-sample size
-accepted country evidence
-accepted city evidence
-current-location evidence
-no explicit location evidence
-source provenance
-review burden
+sample overlap
+accepted raw coverage
+accepted person-eligible coverage
+viewer coverage
+non-person share
+source mix
 conflicts
-same-sample mapped percentage
+current-location yield
+review minutes / reviewed identity
+review minutes / accepted identity
 ```
 
 Decision rule:
 
-- if fixed-sample explicit evidence materially raises coverage at acceptable bounded review cost, design a separately gated update/acquisition model;
-- if it remains sparse or manual cost is too high, stop geography expansion and keep the Map honest;
-- do not weaken evidence rules in either case.
+- if the replicated yield remains useful and measured review cost is acceptable, authorize a separately bounded recurring reviewed-evidence maintenance process;
+- if the yield collapses or review cost is excessive, keep evidence maintenance curated/occasional and preserve honest Unmapped coverage;
+- do not weaken evidence rules or substitute automated inference in either case.
 
-## Following gates — blocked on fixed Top 20 result
+## Following gates — blocked on maintenance/replication result
 
-1. acquisition/update model only if the fixed Top 20 experiment justifies it;
-2. reliable city grouping only after broader accepted city coverage exists;
+1. bounded recurring reviewed-evidence maintenance only if replication justifies it;
+2. reliable city grouping only after broader accepted city coverage and a separate City spec/gate;
 3. current-location freshness/expiry only if current-location evidence becomes useful;
 4. IRL-oriented view only after useful current-location coverage exists;
 5. separate Kick source audit and implementation;
@@ -214,12 +292,14 @@ Decision rule:
 - No category-to-country inference.
 - No tag-only acceptance.
 - No candidate-only placement.
+- No nationality/birthplace-as-current/home inference.
 - No organization/event-broadcast-as-person placement.
 - No silent accepted-country conflict resolution.
 - No Twitch/Kick geographic aggregation.
 - No demo geography substituted for failed real data.
 - No current-location claim from home/origin evidence.
-- No City rollout from one retained city record.
+- No City rollout from retained city evidence.
+- No public region/city response before a separate City gate.
 - No unsupported persistent external/social/panel crawler merely to increase coverage.
 - No language population UI until an accepted retained-data contract supports it.
 - No D1/schema/cadence/retention/permanent-acquisition change without a separate accepted gate.
