@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "viewloom-12a53-kick-history-v2-active-migration-candidate-decision-v1",
+  "phase": "12A-53",
+  "issue": 962,
+  "provider": "kick",
+  "status": "separate_draft_candidate_gate_go_active_change_still_forbidden",
+  "decision": "GO",
+  "sourceMainSha": "3e818f8ee40a7173016693687f45c97f6b20e716",
+  "acceptedPrerequisites": {
+    "productionV2SchemaAcceptancePhase": "12A-50",
+    "productionV2SchemaRunId": 32395881830,
+    "productionV2SchemaComplete": true,
+    "productionV2RowsAfterSchemaAcceptance": 0,
+    "dormantGeneratorDecisionPhase": "12A-51",
+    "dormantGeneratorPackagePhase": "12A-52",
+    "dormantGeneratorPackageIssue": 960,
+    "dormantGeneratorPackagePr": 961,
+    "dormantGeneratorPackageMergeSha": "df99141aced36be5236bf178720521bd81db4e33",
+    "outputContractVersion": "category-source-v2-chunked",
+    "chunkSize": 128,
+    "categoryRowCapPerDay": 300,
+    "physicalChunkRowBudgetPerDay": 1000,
+    "encodedContributorBytesCapPerDay": 47196,
+    "retentionDays": 180
+  },
+  "currentProductionRuntime": {
+    "activeCollector": "workers/collector-kick/src/entry.ts",
+    "activeWrangler": "workers/collector-kick/wrangler.category-permanent.toml",
+    "v1GeneratorEnabled": true,
+    "v1StartDay": "2026-08-17",
+    "cron": "*/5 * * * *",
+    "v2GeneratorWired": false,
+    "v2GeneratorEnabled": false,
+    "activeV2EngineSelectorPresent": false
+  },
+  "decisionRationale": {
+    "dormantV2WriterExists": true,
+    "productionV2SchemaExists": true,
+    "legacyV1NormalDaysObservedOverflow": true,
+    "legacyCapRelaxationAllowed": false,
+    "dualAuthoritativeGenerationAllowed": false,
+    "candidateCanPreserveCurrentProductionWhenUnconfigured": true,
+    "conclusion": "A disabled-by-default mutually-exclusive selector candidate is justified for repository review, but active collector modification must be authorized by a separate next gate because merging a collector-path change would deploy production."
+  },
+  "deploymentCoupling": {
+    "workflow": ".github/workflows/deploy-collector-workers.yml",
+    "collectorKickPathTriggersMainPushDeploy": true,
+    "workersDormantPathTriggersMainPushDeploy": false,
+    "candidateMergeWouldBeProductionDeployment": true,
+    "candidatePreparationMustRemainDraftAndUnmerged": true
+  },
+  "selectedCandidateContract": {
+    "candidateState": "Draft",
+    "candidateMustRemainUnmerged": true,
+    "engineSelector": "HISTORY_CATEGORY_GENERATION_ENGINE",
+    "masterEnable": "HISTORY_CATEGORY_GENERATION_ENABLED",
+    "sharedStartDay": "HISTORY_CATEGORY_START_DAY",
+    "selectorSemantics": {
+      "absent": "legacy_v1",
+      "v1": "v1",
+      "v2": "v2",
+      "invalid": "none_fail_closed"
+    },
+    "masterEnableSemantics": {
+      "true": "selected_engine_may_run",
+      "not_exact_true": "neither_engine_runs"
+    },
+    "mutualExclusionRequired": true,
+    "simultaneousV1V2ExecutionAllowed": false,
+    "v2Adapter": "workers/dormant/history-category-v2-generator.ts",
+    "v1Adapter": "workers/dormant/history-category-aggregate-integration.ts",
+    "activeWranglerMayChangeInCandidate": false,
+    "newEngineSelectorMayBeConfiguredInCandidate": false,
+    "newIndependentV2EnableFlagAllowed": false,
+    "newIndependentV2StartDayAllowed": false,
+    "newCron": false,
+    "backfill": false
+  },
+  "requiredCandidateTests": [
+    "selector absent plus master enable true routes to v1 only",
+    "selector v1 plus master enable true routes to v1 only",
+    "selector v2 plus master enable true routes to v2 only",
+    "master enable false routes to neither engine for every selector",
+    "invalid selector routes to neither engine and does not silently default to v2",
+    "shared startDay is passed to exactly the selected engine",
+    "v1 and v2 adapters cannot both be invoked from one scheduled event",
+    "active Wrangler remains unchanged and contains no HISTORY_CATEGORY_GENERATION_ENGINE setting",
+    "collector typecheck and candidate verification pass",
+    "Deploy Collector Workers pull-request planner reports no production deploy jobs",
+    "candidate exact file set is pinned and candidate remains Draft"
+  ],
+  "candidateScopeForNextGate": {
+    "mayAuthorize": [
+      "workers/collector-kick/src/entry.ts",
+      "one repository-only routing helper under workers/collector-kick/src if needed",
+      "candidate evidence/verifier/PR-only CI"
+    ],
+    "mustNotAuthorize": [
+      "workers/collector-kick/wrangler.category-permanent.toml",
+      "workers/collector-kick/wrangler.toml",
+      "workers/collector-twitch/**",
+      "db/d1/**",
+      "apps/**",
+      "active API/UI surfaces"
+    ]
+  },
+  "productionCostBoundary": {
+    "canonicalHistoricalV1PassRowsRead": 16117,
+    "hardMaximumRowsRead": 250000,
+    "v2ProductionRowsReadMeasured": false,
+    "newProductionCostProbeAuthorized": false,
+    "thresholdRelaxationAuthorized": false
+  },
+  "authorization": {
+    "repositoryDecisionArtifact": true,
+    "decisionVerifierAndPrOnlyCi": true,
+    "openSeparateDraftCandidateGate": true,
+    "activeCollectorModificationInThisDecision": false,
+    "prepareCandidateWithoutSeparateGate": false,
+    "candidateReadyTransition": false,
+    "candidateMerge": false,
+    "collectorDeployment": false,
+    "productionV2GeneratorEnablement": false,
+    "productionV1GeneratorDisablement": false,
+    "productionD1Read": false,
+    "productionD1Mutation": false,
+    "manualGeneration": false,
+    "backfill": false,
+    "cronChange": false,
+    "rawRetentionChange": false,
+    "historyCategoryApiUiCutover": false,
+    "twitchRollout": false,
+    "crossProviderChange": false,
+    "newProductionCostProbe": false,
+    "thresholdRelaxation": false
+  },
+  "nextGate": "Open one separate gate that may authorize preparation of exactly one Draft Kick History v2 active migration candidate under the frozen mutually-exclusive selector contract. The candidate must remain Draft and unmerged after CI; production remains separately gated."
+}
