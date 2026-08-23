@@ -47,7 +47,8 @@ const sampleStepEnd = acquisition.indexOf('- name: Persist durable pre-research 
 assert.ok(sampleStepStart >= 0 && sampleStepEnd > sampleStepStart, 'sample step boundaries missing')
 const sampleStep = acquisition.slice(sampleStepStart, sampleStepEnd)
 assert.equal((sampleStep.match(/\/audit\/reviewed-evidence-maintenance-sample/g) || []).length, 1, 'sample endpoint must be invoked exactly once')
-assert.equal((sampleStep.match(/\bcurl\b/g) || []).length, 1, 'sample step must contain exactly one curl')
+const sampleCurlLines = sampleStep.split(/\r?\n/).filter((line) => /^\s*curl\b/.test(line))
+assert.equal(sampleCurlLines.length, 1, 'sample step must contain exactly one executable curl command')
 assert.doesNotMatch(sampleStep, /--retry\b/, 'sample endpoint must never auto-retry')
 
 assert.match(acquisition, /wrangler versions upload/)
