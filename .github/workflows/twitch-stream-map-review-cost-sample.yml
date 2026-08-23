@@ -1,0 +1,168 @@
+name: Twitch Stream Map Review Cost Sample
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'workers/collector-twitch/src/entry.ts'
+      - '.github/workflows/twitch-stream-map-review-cost-sample.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: twitch-stream-map-review-cost-sample-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  sample:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ARTIFACT_DIR: artifacts/twitch-stream-map-review-cost-sample
+      NOT_BEFORE_AT: '2026-08-23T08:28:43.300Z'
+      PRIOR_SAMPLE_AT: '2026-08-23T02:28:43.300Z'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Require accepted not-before time
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const notBefore = Date.parse(process.env.NOT_BEFORE_AT)
+          const prior = Date.parse(process.env.PRIOR_SAMPLE_AT)
+          if (!Number.isFinite(notBefore) || !Number.isFinite(prior)) throw new Error('invalid gate timestamp')
+          if (notBefore - prior !== 21_600_000) throw new Error('not-before delta must be exactly six hours')
+          if (Date.now() < notBefore) {
+            throw new Error(`sample gate is not open before ${process.env.NOT_BEFORE_AT}`)
+          }
+          NODE
+
+      - name: Install Wrangler 4
+        run: npm install --global wrangler@4
+
+      - name: Require Cloudflare credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - id: upload
+        name: Upload non-production Worker version
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          alias="reviewcost-r3-pr-${{ github.event.pull_request.number }}"
+          output="$(wrangler versions upload \
+            --config workers/collector-twitch/wrangler.category-permanent.toml \
+            --preview-alias "$alias" \
+            --keep-vars 2>&1 | tee "$ARTIFACT_DIR/upload.txt")"
+          preview_url="$(printf '%s\n' "$output" | sed -nE 's/.*Version Preview URL: (https:\/\/[^ ]+).*/\1/p' | tail -1)"
+          test -n "$preview_url"
+          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$preview_url" > "$ARTIFACT_DIR/preview-url.txt"
+
+      - name: Capture fresh fixed Top 20 identity sample
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview_url='${{ steps.upload.outputs.preview_url }}'
+          curl --fail --silent --show-error \
+            --retry 4 --retry-delay 3 --retry-all-errors \
+            -X POST "$preview_url/audit/review-cost-top20-sample" \
+            -o "$ARTIFACT_DIR/sample.json"
+
+          jq -e '
+            .ok == true and
+            .result.provider == "twitch" and
+            .result.mode == "read_only_fixed_top20_review_cost_sample" and
+            .result.sampleNotBeforeAt == "2026-08-23T08:28:43.300Z" and
+            .result.requestedSize == 20 and
+            .result.sampleSize == 20 and
+            .result.apiRequests.token == 1 and
+            .result.apiRequests.streams == 1 and
+            .result.apiRequests.users == 0 and
+            .result.persistence.d1Writes == 0 and
+            .result.persistence.productionDeployment == false and
+            .result.persistence.rawTitleStored == false and
+            .result.persistence.rawTagsStored == false and
+            .result.persistence.rawLanguageStored == false and
+            .result.persistence.rawProfileDescriptionStored == false and
+            .result.persistence.rawCategoryStored == false and
+            .result.persistence.geographyStored == false and
+            .result.persistence.identitySampleArtifactOnly == true and
+            .result.fieldsIncluded == ["rank", "twitchUserId", "login", "displayName", "viewers"] and
+            (.result.identities | length == 20) and
+            ([.result.identities[].rank] == [range(1;21)]) and
+            ([.result.identities[].login] | all(length > 0)) and
+            ([.result.identities[].twitchUserId] | all(length > 0)) and
+            (all(.result.identities[]; ((keys | sort) == ["displayName", "login", "rank", "twitchUserId", "viewers"])))
+          ' "$ARTIFACT_DIR/sample.json" >/dev/null
+
+          observed_at="$(jq -r '.result.observedAt' "$ARTIFACT_DIR/sample.json")"
+          node - "$observed_at" "$NOT_BEFORE_AT" <<'NODE'
+          const [observedAt, notBeforeAt] = process.argv.slice(2)
+          const observed = Date.parse(observedAt)
+          const notBefore = Date.parse(notBeforeAt)
+          if (!Number.isFinite(observed) || observed < notBefore) throw new Error('sample observed before not-before gate')
+          NODE
+
+          jq --arg priorSampleAt "$PRIOR_SAMPLE_AT" '{
+            provider:.result.provider,
+            mode:.result.mode,
+            observedAt:.result.observedAt,
+            sampleNotBeforeAt:.result.sampleNotBeforeAt,
+            priorSampleAt:$priorSampleAt,
+            sampleSize:.result.sampleSize,
+            sampleViewers:([.result.identities[].viewers] | add),
+            apiRequests:.result.apiRequests,
+            persistence:.result.persistence,
+            fieldsIncluded:.result.fieldsIncluded,
+            identities:.result.identities
+          }' "$ARTIFACT_DIR/sample.json" > "$ARTIFACT_DIR/review-sample.json"
+          cat "$ARTIFACT_DIR/review-sample.json"
+
+      - name: Publish sample summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## Twitch fresh Top 20 review-cost sample'
+            echo
+            echo "- Hard not-before: $NOT_BEFORE_AT"
+            echo '- Production deployment: no'
+            echo '- D1 writes: 0'
+            if [ -f "$ARTIFACT_DIR/review-sample.json" ]; then
+              echo "- Observed: $(jq -r '.observedAt' "$ARTIFACT_DIR/review-sample.json")"
+              echo "- Sample size: $(jq -r '.sampleSize' "$ARTIFACT_DIR/review-sample.json")"
+              echo "- Sample viewers: $(jq -r '.sampleViewers' "$ARTIFACT_DIR/review-sample.json")"
+              echo
+              echo '| Rank | Login | Viewers |'
+              echo '| ---: | --- | ---: |'
+              jq -r '.identities[] | "| \(.rank) | \(.login) | \(.viewers) |"' "$ARTIFACT_DIR/review-sample.json"
+            else
+              echo '- Sample result: not captured'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload review-cost sample artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-stream-map-review-cost-sample-pr-${{ github.event.pull_request.number }}
+          path: artifacts/twitch-stream-map-review-cost-sample
+          if-no-files-found: warn
