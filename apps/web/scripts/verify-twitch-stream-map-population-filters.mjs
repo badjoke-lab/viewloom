@@ -153,7 +153,9 @@ assert.ok(endpoint.includes("url.searchParams.get('min_viewers')"))
 assert.ok(endpoint.includes("url.searchParams.get('category')"))
 assert.ok(endpoint.includes('selectTwitchStreamMapPopulation'))
 assert.ok(endpoint.includes('populationFilter: population.metadata'))
-assert.ok(endpoint.includes('semantics: { ...model.semantics, ...mapSemantics() }'))
+assert.ok(endpoint.includes("import { projectTwitchStreamMapCountryOnly } from './twitch-stream-map-public-core.mjs'"))
+assert.ok(endpoint.includes('const publicModel = projectTwitchStreamMapCountryOnly(model)'))
+assert.ok(endpoint.includes('semantics: { ...publicModel.semantics, ...mapSemantics() }'))
 assert.ok(endpoint.includes('populationFilterBeforeEvidenceFilter: true'))
 assert.ok(endpoint.includes('languageUsedForPopulationFiltering: false'))
 assert.ok(endpoint.includes("FROM provider_category_dictionary"))
@@ -182,5 +184,6 @@ console.log(JSON.stringify({
   categoryUnavailableExplicit: true,
   liveModelReconcilesSelectedPopulation: true,
   readyResponsePopulationSemantics: true,
+  countryOnlyPublicProjectionWired: true,
   languageDeferred: true,
 }, null, 2))
