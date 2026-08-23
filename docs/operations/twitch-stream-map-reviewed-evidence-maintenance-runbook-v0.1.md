@@ -46,6 +46,18 @@ Before acquisition it fails closed unless:
 
 All dispatch attempts count toward the cadence guard. A failed prior run is not silently ignored merely because it did not produce accepted evidence.
 
+After the cadence guard passes but **before any Twitch API request**, the workflow reserves the authorization issue by writing:
+
+```text
+viewloom-maintenance-run-reservation-v0.1
+sampleRunId: <workflow run id>
+authorizationIssue: <issue number>
+reservedAt: <exact UTC timestamp>
+oneRunOnly: true
+```
+
+The workflow refuses an issue that already has a reservation or review-start marker. This closes the duplicate-acquisition path where sampling could succeed but a later marker step could fail. Once the reservation exists, that authorization issue is consumed even if a later preview/sample step fails; create a new one-run authorization issue rather than replaying the old one.
+
 ## Acquisition ceiling
 
 One run may spend only:
