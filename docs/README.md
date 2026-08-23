@@ -7,13 +7,18 @@ Last updated: 2026-08-23
 
 ```text
 Current program Twitch Stream Map
-Current stage Second fixed Top 20 replication closed; recurring acquisition not authorized
-Accepted main 940840e08daea498361eaa0486b9a211aa280f90
+Current stage Fresh bounded reviewed-evidence review-cost measurement preparation
+Accepted main 276705a6db11f2246c82d7a7ed3639dcd74fe192
+Parent cost-measurement gate Issue #998 open
+Preparation package Issue #999 open
+Sample not before 2026-08-23T08:28:43.300Z / 2026-08-23 17:28:43.300 JST
 Reviewed-evidence maintenance policy complete PR #994
-Second fixed Top 20 sample complete PR #995 verification-only / close without merge
+Second fixed Top 20 sample complete PR #995 verification-only / closed without merge
 Second fixed Top 20 reviewed evidence + retained audit complete PR #996
+Replication closeout docs complete PR #997
 Public Twitch Map /twitch/map/
 Real Twitch Map API /api/twitch-stream-map
+Recurring reviewed-evidence acquisition not authorized
 Kick Map not authorized
 Twitch cadence */5 * * * * unchanged
 Kick cadence */5 * * * * unchanged
@@ -29,13 +34,44 @@ Kick cadence */5 * * * * unchanged
 6. `docs/product/stream-map-population-filter-decision-v0.1.md`
 7. `docs/product/stream-map-reviewed-evidence-maintenance-policy-v0.1.md`
 8. `docs/product/stream-map-top20-replication-plan-v0.1.md`
-9. `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
-10. `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
-11. `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`
-12. `docs/audits/twitch-stream-map-top20-replication-2026-08-23.md`
-13. affected feature specification/plan and current WIP/handoff
+9. `docs/product/stream-map-review-cost-measurement-plan-v0.1.md`
+10. `docs/audits/twitch-stream-map-review-cost-measurement-contract-v0.1.json`
+11. `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
+12. `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
+13. `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`
+14. `docs/audits/twitch-stream-map-top20-replication-2026-08-23.md`
+15. affected feature specification/plan and current WIP/handoff
 
 Historical 12A/category rollout records remain valid but are not the current execution milestone.
+
+## Current review-cost measurement gate
+
+The first two fixed Top 20 reviews established useful country-evidence yield. The second review did not retain exact `reviewStartedAt` before research, so recurring manual cost remained unproven and recurring acquisition remained unauthorized.
+
+Issue #998 governs one fresh bounded measurement. Issue #999 prepares the permanent contract and verifier.
+
+Hard not-before time for the new unbiased Top 20 sample:
+
+```text
+2026-08-23T08:28:43.300Z
+2026-08-23 17:28:43.300 Asia/Tokyo
+```
+
+The new sample must not deliberately reuse #989/#995 as the measurement population. Prior familiarity would bias the cost result.
+
+Fail-closed timing rule:
+
+```text
+persist reviewStartedAt
+-> only then begin research
+-> review all 20 under unchanged #994 policy
+-> persist reviewFinishedAt after twentieth terminal outcome
+-> derive review cost from retained timestamps only
+```
+
+If the exact start is missing or late, the measurement is invalid. Chat/activity timestamps may not be used to reconstruct it.
+
+Passing every threshold may authorize only a separate recurring-maintenance proposal. It does not authorize recurring acquisition itself.
 
 ## Current Stream Map contract
 
@@ -200,17 +236,17 @@ minutes per accepted identity     UNPROVEN
 
 **Recurring reviewed-evidence acquisition is therefore NOT AUTHORIZED.**
 
-If recurring maintenance is reconsidered, it requires a new separately accepted and independently clocked bounded cost measurement.
-
 ## Current order
 
-1. Keep accepted reviewed evidence curated under the 180/365-day staleness policy.
-2. Preserve honest Unmapped coverage.
-3. Keep the public Map country-only.
-4. Do not retroactively repair #995 review timing.
-5. Do not introduce persistent external acquisition or automatic search-result acceptance.
-6. City, Current Location/IRL and Kick Map remain separately blocked.
-7. Any future review-cost, City, Current Location, IRL, Kick Map or location-history stage requires its own accepted gate.
+1. Merge the #999 preparation contract before fresh sampling.
+2. Do not sample before `2026-08-23T08:28:43.300Z`.
+3. Capture one fresh unbiased Twitch Top 20 with verification-only supported infrastructure.
+4. Persist exact `reviewStartedAt` before any research.
+5. Review all 20 under unchanged #994 rules, max five attempts each.
+6. Persist exact `reviewFinishedAt` after the twentieth terminal outcome.
+7. Evaluate the unchanged all-pass cost/coverage/quality thresholds.
+8. A pass may only lead to a separate recurring-maintenance proposal.
+9. City, Current Location/IRL and Kick Map remain separately blocked.
 
 ## Accepted permanent product records
 
@@ -222,6 +258,8 @@ If recurring maintenance is reconsidered, it requires a new separately accepted 
 - `docs/product/stream-map-population-filter-decision-v0.1.md`
 - `docs/product/stream-map-reviewed-evidence-maintenance-policy-v0.1.md`
 - `docs/product/stream-map-top20-replication-plan-v0.1.md`
+- `docs/product/stream-map-review-cost-measurement-plan-v0.1.md`
+- `docs/audits/twitch-stream-map-review-cost-measurement-contract-v0.1.json`
 - `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
 - `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
 - `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`

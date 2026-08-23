@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-review-cost-measurement-contract-v0.1",
+  "status": "candidate",
+  "parentIssue": 998,
+  "preparationIssue": 999,
+  "provider": "twitch",
+  "publicGeographyScope": "country_only",
+  "sample": {
+    "source": "/helix/streams",
+    "topN": 20,
+    "notBeforeAt": "2026-08-23T08:28:43.300Z",
+    "minimumSecondsAfterPriorSample": 21600,
+    "priorSampleCapturedAt": "2026-08-23T02:28:43.300Z",
+    "freshPopulationRequired": true,
+    "reusePriorReviewedPopulationForbidden": true,
+    "refillForbidden": true,
+    "geographyPreselectionForbidden": true
+  },
+  "acquisition": {
+    "tokenRequestsMax": 1,
+    "streamsRequestsMax": 1,
+    "usersRequestsExact": 0,
+    "d1WritesExact": 0,
+    "productionDeploy": false,
+    "retainedIdentityFields": [
+      "rank",
+      "twitchUserId",
+      "login",
+      "displayName",
+      "viewers"
+    ],
+    "forbiddenRetainedFields": [
+      "title",
+      "tags",
+      "language",
+      "profileDescription",
+      "category",
+      "geography",
+      "coordinates",
+      "address"
+    ]
+  },
+  "review": {
+    "policy": "docs/product/stream-map-reviewed-evidence-maintenance-policy-v0.1.md",
+    "maxDistinctSearchAttemptsPerIdentity": 5,
+    "reviewStartedAtRequiredBeforeResearch": true,
+    "reviewFinishedAtRequiredAfterTwentiethTerminalOutcome": true,
+    "reconstructedTimingForbidden": true,
+    "failedAndRejectedResearchCountsTowardTime": true,
+    "terminalOutcomes": [
+      "accepted",
+      "no_qualifying_evidence",
+      "excluded_nonperson",
+      "conflict_unmapped"
+    ]
+  },
+  "thresholds": {
+    "rawAcceptedCountryCoverageMin": 0.1,
+    "personEligibleAcceptedCountryCoverageMin": 0.15,
+    "wallClockReviewMinutesMax": 120,
+    "minutesPerAcceptedIdentityMax": 30,
+    "acceptedEvidenceExplicitAttributableRatioExact": 1,
+    "silentCountryConflictsExact": 0
+  },
+  "requiredResultFields": [
+    "schemaVersion",
+    "provider",
+    "sampleCapturedAt",
+    "sampleNotBeforeAt",
+    "sampleIdentities",
+    "sampleViewers",
+    "sampleOverlapFirstCount",
+    "sampleOverlapSecondCount",
+    "reviewStartedAt",
+    "reviewFinishedAt",
+    "wallClockReviewMinutes",
+    "reviewedIdentities",
+    "acceptedIdentities",
+    "excludedNonPersonIdentities",
+    "eligibleUnmappedIdentities",
+    "conflictUnmappedIdentities",
+    "currentLocationAcceptedIdentities",
+    "minutesPerReviewedIdentity",
+    "minutesPerAcceptedIdentity",
+    "acceptedSourceMix",
+    "rawAcceptedCoverage",
+    "personEligibleAcceptedCoverage",
+    "mappedViewerCoverage",
+    "measurementValid",
+    "invalidReasons",
+    "recurringProposalGatePassed"
+  ],
+  "authority": {
+    "passingGateMayAuthorizeProposalDraftOnly": true,
+    "recurringAcquisitionAuthorized": false,
+    "persistentCrawlerAuthorized": false,
+    "automaticSearchAcceptanceAuthorized": false,
+    "cityAuthorized": false,
+    "currentLocationAuthorized": false,
+    "irlAuthorized": false,
+    "kickMapAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "d1SchemaOrBindingChangeAuthorized": false,
+    "retentionExpansionAuthorized": false,
+    "productionMutationAuthorized": false
+  }
+}

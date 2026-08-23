@@ -5,12 +5,25 @@ Last updated: 2026-08-23
 
 ## Current milestone state
 
-**Twitch Stream Map — reviewed-evidence maintenance policy + second fixed Top 20 replication: COMPLETE, with recurring acquisition NOT AUTHORIZED.**
+**Twitch Stream Map — fresh bounded reviewed-evidence review-cost measurement: PREPARATION ACTIVE.**
 
 Current accepted implementation baseline:
 
 ```text
-main 940840e08daea498361eaa0486b9a211aa280f90
+main 276705a6db11f2246c82d7a7ed3639dcd74fe192
+```
+
+Current governance:
+
+```text
+Parent cost-measurement gate  Issue #998
+Preparation package           Issue #999
+Sample not before             2026-08-23T08:28:43.300Z
+Asia/Tokyo                    2026-08-23 17:28:43.300 JST
+Recurring acquisition         not authorized
+City                          not authorized
+Current Location / IRL        not authorized
+Kick Map                      not authorized
 ```
 
 The Twitch Stream Map has completed:
@@ -32,8 +45,9 @@ The Twitch Stream Map has completed:
 - first unbiased fixed Top 20 identity sample — #989, verification-only / closed without merge;
 - first fixed Top 20 reviewed evidence + country-only projection repair — #990;
 - reviewed-evidence maintenance policy freeze — #994;
-- second unbiased fixed Top 20 identity sample — #995, verification-only;
-- second fixed Top 20 reviewed evidence + retained replication audit — #996.
+- second unbiased fixed Top 20 identity sample — #995, verification-only / closed without merge;
+- second fixed Top 20 reviewed evidence + retained replication audit — #996;
+- replication closeout source-of-truth synchronization — #997.
 
 Authoritative Stream Map records:
 
@@ -42,10 +56,58 @@ Authoritative Stream Map records:
 - `docs/product/stream-map-population-filter-decision-v0.1.md`
 - `docs/product/stream-map-reviewed-evidence-maintenance-policy-v0.1.md`
 - `docs/product/stream-map-top20-replication-plan-v0.1.md`
+- `docs/product/stream-map-review-cost-measurement-plan-v0.1.md`
+- `docs/audits/twitch-stream-map-review-cost-measurement-contract-v0.1.json`
 - `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
 - `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
 - `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`
 - `docs/audits/twitch-stream-map-top20-replication-2026-08-23.md`
+
+## Active review-cost measurement gate — #998 / #999
+
+The only unproven part of the reviewed-evidence maintenance decision is recurring manual review cost. Coverage and evidence-quality thresholds passed in #995/#996, but the exact pre-research `reviewStartedAt` was not durably retained, so cost remained unproven and recurring acquisition remained unauthorized.
+
+The new measurement closes only that instrumentation gap.
+
+### Fresh-population rule
+
+Do not deliberately reuse #989 or #995 as the review population. Prior research would create familiarity bias and make the measured operating cost artificially low.
+
+Use one new unbiased current Twitch Top 20 sample after the hard not-before time:
+
+```text
+2026-08-23T08:28:43.300Z
+```
+
+This is exactly six hours after the #995 sample.
+
+### Timing rule
+
+Before the first external/manual research action, durably retain exact UTC `reviewStartedAt`.
+
+After the twentieth identity reaches a terminal outcome, durably retain exact UTC `reviewFinishedAt`.
+
+Do not estimate or reconstruct either timestamp later. A missing/late start timestamp makes the measurement invalid rather than merely failing a threshold.
+
+### Frozen limits
+
+```text
+sample identities                         exactly 20
+token requests                            <= 1
+/helix/streams requests                   <= 1
+/helix/users requests                     = 0
+D1 writes                                 = 0
+production deploy                         false
+search attempts per identity              <= 5
+wall-clock review                         <= 120 minutes
+minutes per accepted identity             <= 30 minutes
+raw accepted country coverage             >= 10%
+person-eligible accepted country coverage >= 15%
+accepted evidence quality                 100% explicit attributable
+silent country conflicts                  0
+```
+
+Passing this measurement may authorize only a separate recurring-maintenance proposal. It does not authorize recurring execution.
 
 ## Current public behavior
 
@@ -199,10 +261,10 @@ The replication does establish that bounded explicit external/manual review rema
 
 ## Current roadmap boundary
 
-There is no automatic next geographic rollout from this result.
-
 Allowed now:
 
+- prepare and verify the #998 cost-measurement contract;
+- after the not-before time, use separately scoped verification-only infrastructure to capture one fresh Top 20;
 - retain and curate already accepted reviewed evidence;
 - apply the accepted 180-day re-review target and 365-day hard-stale boundary;
 - keep explicit provenance and conflict handling;
@@ -223,16 +285,14 @@ Not authorized now:
 - retention expansion;
 - permanent acquisition changes.
 
-## Possible future gates — each requires separate acceptance
+## Later gates — each requires separate acceptance
 
-1. **Fresh bounded review-cost measurement**, only if recurring reviewed-evidence maintenance is reconsidered. It must record an independent `reviewStartedAt` before research and cannot reuse or repair #995 timing.
+1. **Recurring reviewed-evidence maintenance proposal**, only if the fresh cost measurement passes every frozen threshold.
 2. **City evidence/spec gate**, only if accepted city coverage is broad enough to justify it. Internal retained cities alone do not authorize public City fields.
 3. **Current Location freshness/expiry gate**, only if explicit current-location evidence becomes useful.
 4. **IRL-oriented view gate**, only after useful Current Location coverage exists.
 5. **Separate Kick source audit and implementation gate**. Twitch evidence acceptance does not transfer to Kick.
 6. **Location history/replay gate**, only after live location semantics remain stable.
-
-No item above is automatically started by the #996 merge.
 
 ## Stream Map hard boundaries
 
