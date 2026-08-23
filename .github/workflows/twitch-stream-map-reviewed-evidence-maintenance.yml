@@ -74,7 +74,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          now_ms="$(node -e 'process.stdout.write(String(Date.now()))')"
           runs="$(gh api --paginate \
             -H 'Accept: application/vnd.github+json' \
             "repos/$GITHUB_REPOSITORY/actions/workflows/$WORKFLOW_FILE/runs?event=workflow_dispatch&per_page=100")"
@@ -95,6 +94,39 @@ jobs:
           if (withinSeven.length > 0) throw new Error('maintenance dispatch blocked: prior dispatch exists within seven days')
           if (withinThirty.length >= 4) throw new Error('maintenance dispatch blocked: four prior dispatches already exist in rolling 30 days')
           NODE
+
+      - name: Reserve authorization issue for this run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTHORIZATION_ISSUE: ${{ inputs.authorization_issue }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$AUTHORIZATION_ISSUE/comments?per_page=100" \
+            | jq -s 'add' > /tmp/authorization-comments.json
+
+          node <<'NODE'
+          const fs = require('node:fs')
+          const comments = JSON.parse(fs.readFileSync('/tmp/authorization-comments.json', 'utf8'))
+          const bodies = comments.map((comment) => String(comment.body || ''))
+          if (bodies.some((body) => body.split(/\r?\n/).includes('viewloom-maintenance-run-reservation-v0.1'))) {
+            throw new Error('authorization issue already has a maintenance run reservation')
+          }
+          if (bodies.some((body) => body.split(/\r?\n/).includes('viewloom-review-start-marker-v0.1'))) {
+            throw new Error('authorization issue already has a review start marker')
+          }
+          NODE
+
+          reserved_at="$(node -e 'process.stdout.write(new Date().toISOString())')"
+          marker=$(cat <<EOF
+          viewloom-maintenance-run-reservation-v0.1
+          sampleRunId: $GITHUB_RUN_ID
+          authorizationIssue: $AUTHORIZATION_ISSUE
+          reservedAt: $reserved_at
+          oneRunOnly: true
+          EOF
+          )
+          gh issue comment "$AUTHORIZATION_ISSUE" --repo "$GITHUB_REPOSITORY" --body "$marker"
 
       - name: Install Wrangler 4
         run: npm install --global wrangler@4
