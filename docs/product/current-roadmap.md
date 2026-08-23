@@ -1,16 +1,16 @@
 # ViewLoom current roadmap
 
 Status: source of truth  
-Last updated: 2026-08-23
+Last updated: 2026-08-24
 
 ## Current milestone state
 
-**Twitch Stream Map — bounded reviewed-evidence maintenance harness installed; no maintenance run executed yet.**
+**Twitch Stream Map — first bounded reviewed-evidence maintenance run executed and closed invalid for evidence mutation; fail-closed search-budget correction merged.**
 
 Current accepted implementation baseline:
 
 ```text
-main c52c7d69bf7c062645797bef10348f7d93adcf14
+main 8bcf787166d3c0f197262aecc7faea9cc1607f6e
 ```
 
 Current governance:
@@ -22,7 +22,15 @@ R3 reviewed evidence implementation      complete / PR #1009
 Bounded maintenance proposal             accepted / Issue #1010 closed
 Manual-dispatch implementation gate      complete / Issue #1012
 Manual-dispatch harness                   merged / PR #1013
-Post-#1013 maintenance runs               0
+Reservation/cadence guard correction     merged / PR #1016
+First maintenance authorization          Issue #1015 consumed / closed
+First maintenance acquisition            run 32647808047 success
+First maintenance finish                 run 32651990010 success
+First maintenance review budget          INVALID / one identity searchAttempts=6
+Canonical evidence mutation from run     forbidden / none applied
+Search-budget fail-closed correction     merged / PR #1017
+Post-#1013 maintenance runs               1 executed / 0 valid for new evidence mutation
+Next reservation earliest                2026-08-30T15:12:18.093Z UTC
 Each actual run                           requires separate one-run authorization issue
 Automatic cron                            NOT authorized
 Persistent crawler                       NOT authorized
@@ -34,9 +42,9 @@ Collector/D1/cadence/retention change    NOT authorized
 Production mutation                      NOT authorized
 ```
 
-The accepted maintenance authority is intentionally narrow: one explicitly authorized manual run at a time under the frozen envelope. Installing the harness did not itself acquire a sample or research any identity.
+The accepted maintenance authority remains intentionally narrow: one explicitly authorized manual run at a time under the frozen envelope. One run has now been exercised end-to-end. Its acquisition and durable timing were valid, but the review exceeded the per-identity search ceiling and therefore failed closed before any newly found country evidence could become canonical.
 
-## Manual maintenance harness now on main — #1013
+## Manual maintenance harness on main — #1013 / #1016 / #1017
 
 PR #1013 installs an inert manual-dispatch harness:
 
@@ -44,8 +52,6 @@ PR #1013 installs an inert manual-dispatch harness:
 - no `schedule`, push, pull-request, repository-dispatch or webhook trigger exists on the acquisition workflow;
 - every run requires a separate open one-run authorization issue;
 - the issue is reserved before any Twitch API request so it cannot be replayed;
-- prior maintenance dispatch within seven days blocks a new dispatch;
-- four prior dispatches in the rolling 30-day window block a new dispatch;
 - one app-token request maximum;
 - one `/helix/streams?first=20` request maximum;
 - zero `/helix/users` requests;
@@ -62,13 +68,24 @@ PR #1013 installs an inert manual-dispatch harness:
 - 120-minute review ceiling;
 - country-only public projection remains regression-tested.
 
-The preview Worker/config live under:
+PR #1016 corrected the reservation detector and cadence accounting after the first pre-reservation dispatch failed before Twitch acquisition. Cadence is now counted from **structured durable reservation timestamps**, not raw workflow-dispatch attempts. A failure before reservation consumes neither the authorization issue nor the cadence slot; a failure after reservation consumes both.
+
+PR #1017 adds the fail-closed review-budget rule after the first completed maintenance review recorded six attempts for one identity:
+
+- identity-resolution searches count toward the same five-attempt budget as source/location research;
+- the counter increments before each distinct external search/lookup attempt;
+- reaching five without another terminal result ends as `no_qualifying_evidence`;
+- a sixth distinct search/lookup attempt is forbidden;
+- any `searchAttempts > 5` makes `reviewBudgetValid=false`;
+- an invalid run may be retained for audit but must not mutate accepted reviewed evidence.
+
+The preview Worker/config remain under:
 
 ```text
 tools/twitch-stream-map-reviewed-evidence-maintenance/
 ```
 
-They deliberately do **not** live under `workers/collector-twitch/**`. This avoids triggering the existing production Collector Worker deployment workflow when the maintenance harness itself changes. The #1013 final diff contained no production collector path, and the PR-side deployment planner skipped both Twitch and Kick deployment.
+They deliberately do **not** live under `workers/collector-twitch/**`, avoiding production Collector Worker deployment when maintenance tooling changes.
 
 ## One-run authorization contract
 
@@ -102,7 +119,69 @@ viewloom-review-finish-marker-v0.1
 
 Timing may not be reconstructed from chat, browser history or approximate activity timestamps.
 
-No one-run authorization issue has been created for a post-#1013 maintenance execution yet, and no maintenance sample has been acquired through the new harness.
+Issue #1015 was the first post-#1013 one-run authorization. It is consumed and closed and may not be reused.
+
+## First post-#1013 maintenance run — invalid closeout
+
+Durable run identity:
+
+```text
+authorization issue              #1015
+reservation                      2026-08-23T15:12:18.093Z
+sample run                       32647808047
+sampleObservedAt                 2026-08-23T15:12:32.244Z
+reviewStartedAt                  2026-08-23T15:12:34.017Z
+finish run                       32651990010
+reviewFinishedAt                 2026-08-23T16:32:51.965Z
+wall-clock review                80.29913333333333 minutes
+```
+
+Acquisition stayed inside the accepted envelope:
+
+```text
+sample identities                20
+sample viewers                   539595
+app-token requests               1
+/helix/streams requests          1
+/helix/users requests            0
+D1 writes                        0
+production Worker deployment     false
+non-person refill                none
+geography preselection           none
+```
+
+Observed yield, retained for audit only:
+
+```text
+accepted placeable persons            6
+excluded non-person identities        5
+person-eligible identities           15
+eligible unmapped identities          9
+raw accepted coverage             30.00%
+person-eligible accepted coverage 40.00%
+mapped viewer coverage       31.3981782633%
+silent country conflicts              0
+current-location acceptances           0
+```
+
+The invalidating row was:
+
+```text
+login                 indegnasen0706
+searchAttempts                     6
+allowed maximum                    5
+wallClockValid                  true
+reviewBudgetValid               false
+evidenceMutationAuthorized      false
+```
+
+The six attempts consisted of identity-resolution work plus later location/source checks. That distinction is no longer allowed: all external lookups for one sampled identity share the same five-attempt budget.
+
+Fresh previously accepted evidence observed again during this invalid run remains valid under its own earlier reviews. Newly found qualifying evidence for `eliasn97` and `paradeev1ch` is **not** added to the canonical reviewed-evidence set from this run because the run as a whole is invalid for evidence mutation.
+
+Durable closeout:
+
+- `docs/operations/twitch-stream-map-reviewed-evidence-maintenance-run-32647808047-closeout-2026-08-23.md`
 
 ## Accepted operating envelope
 
@@ -110,7 +189,7 @@ No one-run authorization issue has been created for a post-#1013 maintenance exe
 provider                           Twitch only
 population                         one fixed current overall Top 20
 maintenance frequency              at most once per week
-rolling 30-day maximum             4 dispatches
+rolling 30-day maximum             4 durable reservations
 execution mode                     manual dispatch only
 sample token requests              <= 1
 /helix/streams requests            <= 1
@@ -123,7 +202,9 @@ non-person refill                  none
 geography preselection             none
 ```
 
-Automatic cron scheduling remains a later, separately gated decision and requires operating history. It is not implied by #1013.
+The first durable reservation was `2026-08-23T15:12:18.093Z`, so the weekly cadence blocks a second reservation until at least `2026-08-30T15:12:18.093Z` UTC (`2026-08-31T00:12:18.093+09:00`). A later run still requires a fresh separately scoped authorization issue.
+
+Automatic cron scheduling remains a later, separately gated decision and requires valid operating history. It is not implied by the harness or by one invalid review run.
 
 ## What the R3 gate established
 
@@ -160,7 +241,7 @@ accepted evidence 100% explicit attributable       PASS
 silent country conflicts == 0                     PASS
 ```
 
-`measurementValid = true` and `recurringProposalGatePassed = true`. That measurement enabled the bounded proposal and manual implementation; it did not authorize automatic scheduling.
+`measurementValid = true` and `recurringProposalGatePassed = true`. R3 remains the latest valid accepted review baseline because the first post-#1013 maintenance run failed its search-budget contract.
 
 ## R3 evidence implemented
 
@@ -281,18 +362,21 @@ No maintenance run, retained city value or review result activates City.
 
 ## Current next execution stage
 
-When a maintenance review is actually due:
+The next maintenance acquisition cannot be reserved before `2026-08-30T15:12:18.093Z` UTC under the accepted weekly cadence. When that boundary is reached and a maintenance review is actually due:
 
-1. create one dedicated authorization issue with the exact guard tokens;
+1. create one fresh dedicated authorization issue with the exact guard tokens;
 2. manually dispatch the acquisition workflow once;
 3. allow the workflow to reserve the issue, capture the fixed Top 20, validate the artifact and persist `reviewStartedAt`;
 4. begin research only after the durable start marker exists;
-5. review all 20 identities under #994, max five search rounds each, with no refill;
-6. manually dispatch the finish workflow after the twentieth terminal outcome;
-7. retain the full result and accepted evidence in normal reviewed PRs;
-8. evaluate operating history before any automatic-schedule proposal.
+5. for each identity initialize `searchAttempts=0` and increment before every distinct external lookup, including identity resolution;
+6. stop immediately on accepted/conflict/non-person; otherwise stop at attempt five as `no_qualifying_evidence`;
+7. never perform a sixth distinct lookup for any identity;
+8. complete all 20 terminal outcomes with no refill;
+9. manually dispatch the finish workflow after the twentieth terminal outcome;
+10. retain the full result; only a fully valid run may mutate accepted reviewed evidence;
+11. accumulate valid manual operating history before any automatic-schedule proposal.
 
-There is no reason to immediately repeat the just-completed R3 review merely because the harness exists. The harness is available for the next separately authorized maintenance interval; it is not a background job.
+The harness is not a background job. Automatic scheduling remains unauthorized.
 
 ## Authoritative Stream Map records
 
@@ -303,6 +387,7 @@ There is no reason to immediately repeat the just-completed R3 review merely bec
 - `docs/product/stream-map-top20-replication-plan-v0.1.md`
 - `docs/product/stream-map-review-cost-measurement-plan-v0.1.md`
 - `docs/operations/twitch-stream-map-reviewed-evidence-maintenance-runbook-v0.1.md`
+- `docs/operations/twitch-stream-map-reviewed-evidence-maintenance-run-32647808047-closeout-2026-08-23.md`
 - `docs/audits/twitch-stream-map-review-cost-measurement-contract-v0.1.json`
 - `docs/audits/twitch-stream-map-review-cost-result-2026-08-23-r3.json`
 - `docs/audits/twitch-stream-map-review-cost-measurement-2026-08-23-r3.md`
@@ -345,6 +430,9 @@ PR #1009 R3 reviewed evidence implementation
 Issue #1010 bounded recurring-maintenance proposal / accepted and closed
 Issue #1012 manual-dispatch implementation gate / complete
 PR #1013 manual-dispatch maintenance harness / merged
+PR #1016 reservation/cadence guard correction / merged
+Issue #1015 first bounded maintenance authorization / consumed and closed
+PR #1017 invalid maintenance closeout + search-budget fail-closed correction / merged
 ```
 
 ## Stream Map hard boundaries
@@ -369,8 +457,8 @@ PR #1013 manual-dispatch maintenance harness / merged
 
 ## Later gates — each requires separate acceptance
 
-1. First and subsequent bounded manual maintenance runs: each requires a fresh one-run authorization issue.
-2. Automatic schedule gate: only after sufficient manual operating history and a separate acceptance.
+1. Next bounded manual maintenance run: requires a fresh one-run authorization issue after the weekly reservation boundary.
+2. Automatic schedule gate: only after sufficient **valid** manual operating history and a separate acceptance.
 3. City evidence/spec gate: only if accepted city coverage is broad enough to justify it.
 4. Current Location freshness/expiry gate: only if explicit current-location evidence becomes useful.
 5. IRL-oriented view gate: only after useful Current Location coverage exists.

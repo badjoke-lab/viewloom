@@ -1,19 +1,26 @@
 # ViewLoom current execution schedule
 
 Status: source of truth  
-Last updated: 2026-08-23
+Last updated: 2026-08-24
 
 ```text
 Current program Twitch Stream Map
-Current stage Manual reviewed-evidence maintenance harness installed; next run requires separate one-run authorization
-Accepted main c52c7d69bf7c062645797bef10348f7d93adcf14
+Current stage First bounded reviewed-evidence maintenance run closed invalid; next run must wait for accepted weekly cadence and use a fresh one-run authorization
+Accepted main 8bcf787166d3c0f197262aecc7faea9cc1607f6e
 Reviewed-evidence maintenance policy complete PR #994
 Fresh review-cost measurement complete PR #1007
 R3 reviewed evidence implementation complete PR #1009
 Bounded maintenance proposal accepted Issue #1010 closed
 Manual-dispatch implementation gate complete Issue #1012
 Manual-dispatch harness merged PR #1013
-Post-#1013 maintenance runs 0
+Reservation/cadence guard correction merged PR #1016
+First post-#1013 maintenance authorization Issue #1015 closed
+First post-#1013 sample run 32647808047 completed
+First post-#1013 finish run 32651990010 completed
+First post-#1013 maintenance result INVALID for evidence mutation: search budget overflow
+Search-budget fail-closed correction merged PR #1017
+Post-#1013 maintenance runs 1 executed / 0 valid for new evidence mutation
+Next reservation earliest 2026-08-30T15:12:18.093Z UTC / 2026-08-31T00:12:18.093+09:00
 Automatic cron NOT authorized
 City NOT authorized
 Current Location / IRL NOT authorized
@@ -24,9 +31,11 @@ Kick cadence */5 * * * * unchanged
 
 ## Current execution state
 
-The repository now contains an inert manual-dispatch maintenance harness. It does not run on a schedule, push or pull request and it did not execute a Twitch maintenance sample when merged.
+The repository contains an inert manual-dispatch maintenance harness. It does not run on a schedule, push or pull request.
 
-Every actual maintenance execution requires a fresh open one-run authorization issue containing:
+One bounded post-#1013 maintenance run has now been executed under Issue #1015. Its acquisition and timing boundaries were valid, but the review itself exceeded the five-search-attempt ceiling for one sampled identity. The run is therefore retained for audit only and is **not authorized to mutate accepted reviewed evidence**.
+
+Every future maintenance execution still requires a fresh open one-run authorization issue containing:
 
 ```text
 viewloom-maintenance-authorization-v0.1
@@ -36,13 +45,13 @@ oneRunOnly: true
 automaticSchedule: false
 ```
 
-The accepted manual envelope is:
+The accepted manual envelope remains:
 
 ```text
 provider                           Twitch only
 population                         fixed overall Top 20
 maintenance frequency              at most once per week
-rolling 30-day maximum             4 dispatches
+rolling 30-day maximum             4 reservations
 execution                          manual workflow_dispatch only
 app-token requests per run         <= 1
 /helix/streams requests per run    <= 1
@@ -56,27 +65,91 @@ non-person refill                  none
 geography preselection             none
 ```
 
-The workflow reserves the one-run issue before any Twitch API request. A reserved issue cannot be replayed. The sample endpoint is called exactly once and has no automatic retry.
+Cadence is measured from durable structured reservation timestamps, not raw dispatch attempts. The first valid reservation was written at `2026-08-23T15:12:18.093Z`; therefore no later maintenance reservation may be created before `2026-08-30T15:12:18.093Z` under the accepted weekly envelope.
+
+## First post-#1013 maintenance run closeout
+
+Authorization:
+
+```text
+Issue #1015
+```
+
+Durable execution:
+
+```text
+reservation                   2026-08-23T15:12:18.093Z
+sample run                    32647808047
+sample observed               2026-08-23T15:12:32.244Z
+reviewStartedAt               2026-08-23T15:12:34.017Z
+finish run                    32651990010
+reviewFinishedAt              2026-08-23T16:32:51.965Z
+wall-clock review             80.29913333333333 minutes
+```
+
+Acquisition invariants:
+
+```text
+sample identities             20
+sample viewers                539595
+app-token requests            1
+/helix/streams requests       1
+/helix/users requests         0
+D1 writes                     0
+production Worker deploy      false
+refill                         none
+geography preselection        none
+```
+
+Observed review yield, retained only as an invalid-run audit result:
+
+```text
+reviewed identities                 20
+accepted identities                  6
+excluded non-person identities       5
+person-eligible identities          15
+eligible unmapped identities         9
+country conflicts                    0
+current-location acceptances         0
+raw accepted coverage            30.00%
+person-eligible accepted         40.00%
+mapped viewer coverage       31.3981782633%
+```
+
+Invalidating finding:
+
+```text
+identity              indegnasen0706
+recorded searchAttempts            6
+allowed maximum                    5
+wallClockValid                  true
+reviewBudgetValid               false
+evidenceMutationAuthorized      false
+```
+
+The overflow occurred because identity-resolution lookups were treated as separate from location/source lookups. PR #1017 now makes that interpretation explicitly invalid: identity resolution shares the same five-attempt budget; the counter increments before every distinct external lookup; reaching five without another terminal result ends as `no_qualifying_evidence`; a sixth attempt is forbidden. Any future `searchAttempts > 5` invalidates the run for evidence mutation.
+
+No newly discovered country evidence from this invalid run was added to canonical reviewed evidence. Existing fresh accepted evidence remains unchanged.
 
 ## Maintenance run sequence
 
-When a maintenance review is due:
+When the next maintenance review is eligible under the cadence guard:
 
 1. create a fresh one-run authorization issue with the exact guard lines;
 2. manually dispatch `.github/workflows/twitch-stream-map-reviewed-evidence-maintenance.yml` once;
-3. let the workflow enforce the seven-day and rolling-30-day cadence guards;
+3. let the workflow enforce the seven-day and rolling-30-day structured-reservation cadence guards;
 4. let it durably write `viewloom-maintenance-run-reservation-v0.1` before Twitch access;
 5. let it create only a non-production preview version from `tools/twitch-stream-map-reviewed-evidence-maintenance/`;
 6. let it capture and validate exactly one fixed Top 20 sample;
 7. let it durably write `viewloom-review-start-marker-v0.1` and exact UTC `reviewStartedAt`;
 8. begin external/manual research only after that marker exists;
-9. review all 20 identities under #994 with no refill and max five search rounds per identity;
-10. after the twentieth terminal outcome, manually dispatch `.github/workflows/twitch-stream-map-reviewed-evidence-review-finish.yml`;
-11. let the finish workflow write exact `reviewFinishedAt` and wall-clock minutes before enforcing the 120-minute ceiling;
-12. retain the complete result and accepted evidence in normal reviewed PRs;
-13. accumulate manual operating history before proposing any automatic schedule.
-
-No post-#1013 run has been authorized or executed yet. The just-completed R3 review should not be duplicated immediately merely because the harness now exists.
+9. for each identity initialize `searchAttempts=0`, increment before every distinct external lookup including identity resolution, and never perform a sixth attempt;
+10. at five attempts without another terminal result, record `no_qualifying_evidence` and stop that identity;
+11. review all 20 identities under #994 with no refill;
+12. after the twentieth terminal outcome, manually dispatch `.github/workflows/twitch-stream-map-reviewed-evidence-review-finish.yml`;
+13. let the finish workflow write exact `reviewFinishedAt` and wall-clock minutes before enforcing the 120-minute ceiling;
+14. retain the complete result; only a fully valid run may mutate accepted reviewed evidence in a normal reviewed PR;
+15. accumulate valid manual operating history before proposing any automatic schedule.
 
 ## Production-deploy isolation
 
@@ -113,6 +186,8 @@ conflict_unmapped
 
 Conflicting accepted countries remain unmapped unless explicit temporal supersession is manually reviewed.
 
+For every terminal outcome, the retained result must include `searchAttempts`. Identity-resolution searches consume the same five-attempt budget as source/location searches. Any value greater than five makes `reviewBudgetValid=false` and blocks accepted-evidence mutation.
+
 ## Re-review lifecycle
 
 For accepted `declared_location` / `home_base` evidence:
@@ -128,7 +203,7 @@ Current Location / IRL remains blocked and is not governed by this lifecycle.
 
 ## R3 accepted baseline
 
-The fresh independently clocked R3 Top 20 measurement remains the latest completed review baseline:
+The fresh independently clocked R3 Top 20 measurement remains the latest **valid accepted review baseline**:
 
 ```text
 sample captured                    2026-08-23T09:22:22.534Z
@@ -216,6 +291,7 @@ No address or coordinate collection is authorized. No maintenance run activates 
 - `docs/product/stream-map-reviewed-evidence-maintenance-policy-v0.1.md`
 - `docs/product/stream-map-review-cost-measurement-plan-v0.1.md`
 - `docs/operations/twitch-stream-map-reviewed-evidence-maintenance-runbook-v0.1.md`
+- `docs/operations/twitch-stream-map-reviewed-evidence-maintenance-run-32647808047-closeout-2026-08-23.md`
 - `docs/audits/twitch-stream-map-review-cost-measurement-contract-v0.1.json`
 - `docs/audits/twitch-stream-map-review-cost-result-2026-08-23-r3.json`
 - `docs/audits/twitch-stream-map-review-cost-measurement-2026-08-23-r3.md`
@@ -251,6 +327,9 @@ PR #1009 R3 reviewed evidence implementation
 Issue #1010 bounded maintenance proposal / accepted and closed
 Issue #1012 manual-dispatch implementation gate / complete
 PR #1013 manual-dispatch maintenance harness / merged
+PR #1016 reservation/cadence guard correction / merged
+Issue #1015 first bounded maintenance authorization / consumed and closed
+PR #1017 invalid-run closeout + search-budget fail-closed correction / merged
 ```
 
 ## Hard stops
