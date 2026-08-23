@@ -3,11 +3,13 @@ import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 
 const read = (path) => readFileSync(path, 'utf8')
+const workerPath = 'tools/twitch-stream-map-reviewed-evidence-maintenance/worker.mjs'
+const wranglerPath = 'tools/twitch-stream-map-reviewed-evidence-maintenance/wrangler.toml'
 
 const acquisition = read('.github/workflows/twitch-stream-map-reviewed-evidence-maintenance.yml')
 const finish = read('.github/workflows/twitch-stream-map-reviewed-evidence-review-finish.yml')
-const worker = read('workers/collector-twitch/src/reviewed-evidence-maintenance.ts')
-const wrangler = read('workers/collector-twitch/wrangler.reviewed-evidence-maintenance.toml')
+const worker = read(workerPath)
+const wrangler = read(wranglerPath)
 const runbook = read('docs/operations/twitch-stream-map-reviewed-evidence-maintenance-runbook-v0.1.md')
 
 function assertManualOnlyWorkflow(text, label) {
@@ -54,7 +56,8 @@ assert.doesNotMatch(sampleStep, /--retry\b/, 'sample endpoint must never auto-re
 assert.match(acquisition, /wrangler versions upload/)
 assert.doesNotMatch(acquisition, /\bwrangler\s+deploy\b/, 'production wrangler deploy is forbidden')
 assert.ok(acquisition.includes('--preview-alias'))
-assert.ok(acquisition.includes('wrangler.reviewed-evidence-maintenance.toml'))
+assert.ok(acquisition.includes(wranglerPath))
+assert.doesNotMatch(acquisition, /workers\/collector-twitch\//, 'maintenance acquisition must stay outside production collector tree')
 assert.ok(acquisition.includes('.result.apiRequests.token == 1'))
 assert.ok(acquisition.includes('.result.apiRequests.streams == 1'))
 assert.ok(acquisition.includes('.result.apiRequests.users == 0'))
@@ -64,7 +67,7 @@ assert.ok(acquisition.includes('.result.fieldsIncluded == ["rank", "twitchUserId
 assert.ok(acquisition.includes('researchMayBeginAfterThisMarker: true'))
 assert.ok(acquisition.includes('viewloom-review-start-marker-v0.1'))
 
-assert.match(wrangler, /^main = "src\/reviewed-evidence-maintenance\.ts"$/m)
+assert.match(wrangler, /^main = "worker\.mjs"$/m)
 assert.match(wrangler, /^keep_vars = true$/m)
 assert.match(wrangler, /^\[secrets\]$/m)
 assert.match(wrangler, /^required = \["TWITCH_CLIENT_ID", "TWITCH_CLIENT_SECRET"\]$/m)
@@ -72,6 +75,7 @@ assert.doesNotMatch(wrangler, /^\s*\[triggers\]\s*$/m, 'maintenance config must 
 assert.doesNotMatch(wrangler, /^\s*\[\[d1_databases\]\]\s*$/m, 'maintenance config must not have D1 databases')
 assert.doesNotMatch(wrangler, /^\s*binding\s*=\s*"DB_TWITCH_/m, 'maintenance config must not have Twitch D1 binding')
 
+execFileSync(process.execPath, ['--check', workerPath], { stdio: 'pipe' })
 assert.equal((worker.match(/await fetch\(/g) || []).length, 2, 'maintenance worker must have exactly token + streams fetches')
 assert.ok(worker.includes("https://id.twitch.tv/oauth2/token"))
 assert.ok(worker.includes("https://api.twitch.tv/helix/streams?first=20"))
@@ -81,12 +85,12 @@ assert.doesNotMatch(worker, /\/helix\/users/, 'maintenance worker must not call 
 assert.doesNotMatch(worker, /DB_TWITCH_HOT|\.prepare\(|\.batch\(/, 'maintenance worker must not access D1')
 
 for (const forbiddenAccess of [
-  /row\.title\b/,
-  /row\.tags\b/,
-  /row\.language\b/,
-  /row\.game_id\b/,
-  /row\.game_name\b/,
-  /row\.description\b/,
+  /row\?*\.title\b/,
+  /row\?*\.tags\b/,
+  /row\?*\.language\b/,
+  /row\?*\.game_id\b/,
+  /row\?*\.game_name\b/,
+  /row\?*\.description\b/,
 ]) assert.doesNotMatch(worker, forbiddenAccess, `maintenance worker accesses forbidden Twitch field: ${forbiddenAccess}`)
 
 assert.ok(worker.includes("fieldsIncluded: ['rank', 'twitchUserId', 'login', 'displayName', 'viewers']"))
@@ -145,6 +149,7 @@ console.log(JSON.stringify({
   ok: true,
   manualDispatchOnly: true,
   automaticSchedule: false,
+  productionCollectorTreeTouched: false,
   tokenRequestsMax: 1,
   streamsRequestsMax: 1,
   usersRequestsExact: 0,
