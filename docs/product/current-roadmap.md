@@ -265,3 +265,9 @@ The Twitch Heatmap category-filter rollout remains completed and accepted:
 - accepted production SHA `b006f45d0676c9ff3e05e5d6727458e43802de53`;
 - Twitch/Kick collector cadences remain five minutes;
 - Kick category UI was not authorized by the Twitch rollout.
+
+## Current gate: post-rollout category program handoff
+
+This heading and the sentence below are retained as historical verifier anchors for the completed category program; they do not override the Stream Map current milestone above.
+
+PR #741 fixed only the intrinsic mobile control width; the accepted Twitch category rollout remains complete and does not authorize Kick category UI or any collector/cadence/storage change.
