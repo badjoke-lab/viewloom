@@ -1,0 +1,81 @@
+name: Analytics 12A54 Kick History V2 Active Migration Candidate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/analytics-12a54-kick-history-v2-active-migration-candidate.yml'
+      - 'docs/audits/12a54-kick-history-v2-active-migration-candidate.json'
+      - 'scripts/verify-12a54-kick-history-v2-active-migration-candidate.mjs'
+      - 'workers/collector-kick/src/entry.ts'
+      - 'workers/collector-kick/src/history-category-generation-engine.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup repository toolchain
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Require Draft candidate state
+        env:
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+        run: test "$PR_DRAFT" = "true"
+
+      - name: Verify exact candidate scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          expected=(
+            '.github/workflows/analytics-12a54-kick-history-v2-active-migration-candidate.yml'
+            'docs/audits/12a54-kick-history-v2-active-migration-candidate.json'
+            'scripts/verify-12a54-kick-history-v2-active-migration-candidate.mjs'
+            'workers/collector-kick/src/entry.ts'
+            'workers/collector-kick/src/history-category-generation-engine.ts'
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for path in "${expected[@]}"; do printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; done
+
+      - name: Verify selector matrix and accepted predecessor artifacts
+        run: node --experimental-strip-types scripts/verify-12a54-kick-history-v2-active-migration-candidate.mjs
+
+      - name: Revalidate v2 writer deterministic fixture
+        run: python3 scripts/test-12a52-kick-history-v2-dormant-generator.py
+
+      - name: Typecheck collectors
+        run: pnpm typecheck:collectors
+
+      - name: Verify active Wrangler is untouched
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            workers/collector-kick/wrangler.category-permanent.toml \
+            workers/collector-kick/wrangler.toml
+          ! grep -Fq 'HISTORY_CATEGORY_GENERATION_ENGINE' workers/collector-kick/wrangler.category-permanent.toml
+
+      - name: Verify no production execution surface in candidate CI
+        run: |
+          set -euo pipefail
+          file='.github/workflows/analytics-12a54-kick-history-v2-active-migration-candidate.yml'
+          ! grep -Eq '^  (push|workflow_dispatch|schedule|repository_dispatch):' "$file"
+          secret_needle='sec''rets.'
+          remote_needle='--re''mote'
+          d1_needle='d1'' execute'
+          deploy_needle='wrangler ''deploy'
+          ! grep -Fq -- "$secret_needle" "$file"
+          ! grep -Fq -- "$remote_needle" "$file"
+          ! grep -Fq -- "$d1_needle" "$file"
+          ! grep -Fq -- "$deploy_needle" "$file"
