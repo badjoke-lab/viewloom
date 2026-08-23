@@ -3,12 +3,14 @@
 Status: source of truth  
 Last updated: 2026-08-23
 
-## Current milestone: Twitch Stream Map — reviewed-evidence maintenance policy + fixed Top 20 replication
+## Current milestone state
+
+**Twitch Stream Map — reviewed-evidence maintenance policy + second fixed Top 20 replication: COMPLETE, with recurring acquisition NOT AUTHORIZED.**
 
 Current accepted implementation baseline:
 
 ```text
-main 27b1fb5fbedb9a3d5bf1923a941e7e657c16a5a1
+main 940840e08daea498361eaa0486b9a211aa280f90
 ```
 
 The Twitch Stream Map has completed:
@@ -27,17 +29,23 @@ The Twitch Stream Map has completed:
 - supported-source remediation candidate audit — #985, closed without merge;
 - three bounded reviewed `official_external` acceptances — #986;
 - post-#986 read-only production verification — #987, closed without merge;
-- unbiased fixed Top 20 identity sample — #989, verification-only;
-- fixed Top 20 reviewed evidence + country-only projection repair — #990.
+- first unbiased fixed Top 20 identity sample — #989, verification-only / closed without merge;
+- first fixed Top 20 reviewed evidence + country-only projection repair — #990;
+- reviewed-evidence maintenance policy freeze — #994;
+- second unbiased fixed Top 20 identity sample — #995, verification-only;
+- second fixed Top 20 reviewed evidence + retained replication audit — #996.
 
 Authoritative Stream Map records:
 
 - `docs/product/stream-map-spec-v0.5.md`
 - `docs/product/stream-map-implementation-plan-v0.4.md`
 - `docs/product/stream-map-population-filter-decision-v0.1.md`
+- `docs/product/stream-map-reviewed-evidence-maintenance-policy-v0.1.md`
+- `docs/product/stream-map-top20-replication-plan-v0.1.md`
 - `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
 - `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
 - `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`
+- `docs/audits/twitch-stream-map-top20-replication-2026-08-23.md`
 
 ## Current public behavior
 
@@ -81,9 +89,9 @@ declared_location
 current_location
 ```
 
-Placement remains accepted-evidence-only. Language/category/name/timezone/IP never creates geography. Twitch and Kick remain separate.
+Placement remains accepted-evidence-only. Language/category/name/timezone/IP never creates geography. Nationality and birthplace do not become residence/base. Twitch and Kick remain separate.
 
-Country-only public boundary after #990:
+Country-only public boundary:
 
 ```text
 reviewed evidence may retain region/city internally
@@ -95,85 +103,7 @@ public evidence.city    = null
 
 City remains a separate blocked stage.
 
-## Completed population coverage decision
-
-Verification-only PR #982 showed that population narrowing alone cannot repair the evidence gap.
-
-Baseline production snapshot:
-
-```text
-updatedAt        2026-08-22T16:00:18.854Z
-observed streams 300
-observed viewers 1,358,840
-mapped streams   0
-mapped viewers   0
-```
-
-Top 20/50/100/300, viewer thresholds and major-category slices all had zero mapped streams.
-
-## Completed supported-source remediation
-
-Verification-only PR #985 used supported Twitch surfaces in a non-production Worker version preview.
-
-```text
-sample streams                300
-profile descriptions          280
-profile candidates              0
-strong-title candidates         0
-tag-only candidates             3
-unknown                        297
-current-location candidates      0
-```
-
-The three Twitch tags were not accepted. They only bounded manual review.
-
-Manual review accepted three independently attributable external records:
-
-```text
-payo     CA / Canada   official_external   declared_location
-wirtual  NO / Norway   official_external   declared_location
-knirpz   DE / Germany  official_external   declared_location
-```
-
-Knirpz retains Berlin internally, but City placement remains blocked.
-
-Same-sample direct ceiling from this native-candidate lane:
-
-```text
-3 accepted / 300 sample streams = 1.00%
-```
-
-## Production verification after remediation
-
-Verification-only PR #987 succeeded after #986:
-
-```text
-workflow run          32587130892
-successful job        97065114836
-artifact              9479337312
-snapshot updatedAt    2026-08-22T17:10:17.378Z
-observed streams      300
-observed viewers      1,508,683
-mapped streams        2
-mapped percent        0.6667%
-mapped viewers        12,402
-mapped viewer percent 0.8220%
-mapped countries      2
-current-location      0
-```
-
-Live mapped remediation records:
-
-```text
-wirtual  NO / Norway  9,816 viewers  official_external
-payo     CA / Canada  2,586 viewers  official_external
-```
-
-This confirmed reviewed evidence was active but also showed that the Twitch-native candidate lane remained too sparse.
-
-## Completed fixed Top 20 external/manual yield experiment
-
-Verification-only PR #989 captured one fixed current Top 20 without selecting for geography candidates.
+## First fixed Top 20 baseline — #989 / #990
 
 ```text
 capturedAt                       2026-08-22T17:28:10.752Z
@@ -183,11 +113,17 @@ accepted placeable persons       4
 excluded non-person identities   5
 person-eligible identities      15
 eligible persons unmapped       11
-accepted current-location        0
-accepted country conflicts       0
+raw accepted coverage        20.00%
+person-eligible accepted     26.67%
+mapped viewer coverage       28.4591%
+official_external                 3
+manual_review                      1
+current-location                   0
+country conflicts                  0
+review cost             not instrumented
 ```
 
-Accepted records implemented in #990:
+Accepted records:
 
 ```text
 ibai        ES / Spain          official_external  declared_location
@@ -196,95 +132,107 @@ ohnepixel   NL / Netherlands    manual_review      declared_location
 hutchmf     US / United States  official_external  declared_location
 ```
 
-Retained city evidence that remains hidden from the country-only public API:
+## Second fixed Top 20 replication — #995 / #996
+
+Verification-only PR #995 captured the second sample at `2026-08-23T02:28:43.300Z`, 32,433 seconds after #989. Acquisition used one `/helix/streams` request, zero `/helix/users` requests, zero D1 writes and no production deploy.
 
 ```text
-ibai        Sant Cugat del Valles
-papaplatte  Cologne
-knirpz      Berlin
+sample identities                       20
+sample viewers                     480,179
+overlap with #989                         2
+overlap percent                       10.00%
+accepted placeable persons               5
+excluded non-person identities           4
+person-eligible identities              16
+eligible persons unmapped               11
+raw accepted coverage                25.00%
+person-eligible accepted             31.25%
+mapped viewer coverage               17.4004%
+official_external                         2
+manual_review                              3
+current-location                           0
+country conflicts                          0
 ```
 
-Measured fixed-sample yield:
+Accepted records implemented in #996:
 
 ```text
-raw accepted coverage            4 / 20 = 20.00%
-person-eligible accepted         4 / 15 = 26.67%
-mapped viewers                  134,791
-viewer coverage                         28.4591%
-source official_external              3
-source manual_review                   1
+adinross  US / United States  official_external  home_base
+xqc       US / United States  manual_review      declared_location
+lacy      US / United States  manual_review      home_base
+cinna     US / United States  manual_review      declared_location
+ddg       US / United States  official_external  home_base
 ```
 
-This is materially stronger than the native-candidate lane, so bounded external/manual review is worth preserving as a country-evidence method. One sample is not enough to establish temporal stability or operating cost.
-
-Review minutes were not instrumented. The experiment therefore cannot yet support a recurring-cost claim.
-
-## PR #990 boundary repair
-
-During self-audit, #990 found that retained city/region evidence could have leaked through the public API if a reviewed streamer re-entered the live population. The PR added an explicit country-only public projection before merge.
-
-The regression suite now verifies:
-
-- internal city values remain retained;
-- public `location.regions` and `location.cities` are empty;
-- public evidence `region` and `city` are null;
-- country mapping and provenance remain intact;
-- current-location remains zero unless separately supported;
-- the exact #989 sample yields mapped=4, non-person=5, eligible-unmapped=11.
-
-#990 passed Typecheck, Build, all Stream Map gates and all Heatmap regression gates, plus Development policy.
-
-## Current gate: reviewed-evidence maintenance policy + fixed Top 20 replication
-
-Question:
-
-> Can the 20% raw / 26.67% person-eligible fixed-sample yield be reproduced at a different observation time under an explicit maintenance policy, with measured manual cost?
-
-First freeze the maintenance policy. It must define:
-
-1. review population and sample selection;
-2. accepted and rejected source classes;
-3. source precedence and attribution requirements;
-4. accepted-country conflict handling;
-5. stale evidence and re-review intervals;
-6. source deletion/change and evidence withdrawal handling;
-7. non-person reclassification handling;
-8. review-time measurement;
-9. country-only public projection as a hard invariant;
-10. no City/current-location activation by implication;
-11. no persistent crawler by implication.
-
-Then capture one second fixed Top 20 at a different observation time and apply the same rules.
-
-Required comparison against #989:
+Retained city evidence remains internal only:
 
 ```text
-sample overlap
-accepted raw coverage
-accepted person-eligible coverage
-viewer coverage
-non-person share
-source mix
-conflicts
-current-location yield
-review minutes / reviewed identity
-review minutes / accepted identity
+adinross  Miami
+xqc       Miami
+lacy      Los Angeles
+cinna     Austin
+ddg       Los Angeles
 ```
 
-Decision rule:
+`dota2ti_es` was classified as `event_broadcast` and is not placed as a person.
 
-- if the replicated yield remains useful and measured review cost is acceptable, authorize a separately bounded recurring reviewed-evidence maintenance process;
-- if the yield collapses or review cost is excessive, keep evidence maintenance curated/occasional and preserve honest Unmapped coverage;
-- do not weaken evidence rules or substitute automated inference in either case.
+## Replication decision
 
-## Following gates — blocked on maintenance/replication result
+The frozen recurring-maintenance decision required every threshold to pass:
 
-1. bounded recurring reviewed-evidence maintenance only if replication justifies it;
-2. reliable city grouping only after broader accepted city coverage and a separate City spec/gate;
-3. current-location freshness/expiry only if current-location evidence becomes useful;
-4. IRL-oriented view only after useful current-location coverage exists;
-5. separate Kick source audit and implementation;
-6. location history/replay only after live semantics stabilize.
+```text
+raw accepted country coverage             >= 10%   PASS
+person-eligible accepted country coverage >= 15%   PASS
+wall-clock review time                     <= 120m  UNPROVEN
+minutes per accepted identity              <= 30m   UNPROVEN
+accepted evidence quality                  100%     PASS
+silent country conflicts                   0        PASS
+```
+
+The prior review thread did not durably retain the exact pre-research `reviewStartedAt`. The project does not reconstruct or invent that value after the fact.
+
+Therefore:
+
+**Recurring reviewed-evidence acquisition is NOT AUTHORIZED from the two-sample gate.**
+
+The replication does establish that bounded explicit external/manual review remains useful for country coverage, but it does not establish recurring operating cost.
+
+## Current roadmap boundary
+
+There is no automatic next geographic rollout from this result.
+
+Allowed now:
+
+- retain and curate already accepted reviewed evidence;
+- apply the accepted 180-day re-review target and 365-day hard-stale boundary;
+- keep explicit provenance and conflict handling;
+- keep honest Unmapped states;
+- retain publicly declared city/region internally while stripping them from the public API.
+
+Not authorized now:
+
+- recurring/persistent external acquisition;
+- automatic search-result acceptance;
+- City public grouping;
+- Current Location activation;
+- IRL mode;
+- Kick Map rollout;
+- Twitch/Kick geographic aggregation;
+- collector cadence changes;
+- D1 schema/binding changes;
+- retention expansion;
+- permanent acquisition changes.
+
+## Possible future gates — each requires separate acceptance
+
+1. **Fresh bounded review-cost measurement**, only if recurring reviewed-evidence maintenance is reconsidered. It must record an independent `reviewStartedAt` before research and cannot reuse or repair #995 timing.
+2. **City evidence/spec gate**, only if accepted city coverage is broad enough to justify it. Internal retained cities alone do not authorize public City fields.
+3. **Current Location freshness/expiry gate**, only if explicit current-location evidence becomes useful.
+4. **IRL-oriented view gate**, only after useful Current Location coverage exists.
+5. **Separate Kick source audit and implementation gate**. Twitch evidence acceptance does not transfer to Kick.
+6. **Location history/replay gate**, only after live location semantics remain stable.
+
+No item above is automatically started by the #996 merge.
 
 ## Stream Map hard boundaries
 
@@ -301,6 +249,7 @@ Decision rule:
 - No City rollout from retained city evidence.
 - No public region/city response before a separate City gate.
 - No unsupported persistent external/social/panel crawler merely to increase coverage.
+- No automatic search-result acceptance.
 - No language population UI until an accepted retained-data contract supports it.
 - No D1/schema/cadence/retention/permanent-acquisition change without a separate accepted gate.
 
