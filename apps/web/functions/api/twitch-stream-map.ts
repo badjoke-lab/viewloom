@@ -6,6 +6,7 @@ import {
   selectTwitchStreamMapPopulation,
   twitchStreamMapPopulationNeedsCategoryDictionary,
 } from './twitch-stream-map-population-core.mjs'
+import { projectTwitchStreamMapCountryOnly } from './twitch-stream-map-public-core.mjs'
 import { TWITCH_REVIEWED_LOCATION_RECORDS } from './twitch-stream-map-reviewed-evidence.mjs'
 
 type SnapshotRow = {
@@ -115,11 +116,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS,
       topLimit: population.metadata.selectedTop,
     })
+    const publicModel = projectTwitchStreamMapCountryOnly(model)
 
     return Response.json({
-      ...model,
+      ...publicModel,
       populationFilter: population.metadata,
-      semantics: { ...model.semantics, ...mapSemantics() },
+      semantics: { ...publicModel.semantics, ...mapSemantics() },
       state: 'ready',
     }, {
       headers: { 'cache-control': 'no-store' },
