@@ -39,10 +39,19 @@ for (const fragment of [
   'const thirtyDays = 30 * 24 * 60 * 60 * 1000',
   'withinSeven.length > 0',
   'withinThirty.length >= 4',
-  'event=workflow_dispatch',
+  'in:comments',
+  'reservationPattern',
+  'reservedAt',
   'viewloom-maintenance-run-reservation-v0.1',
   'authorization issue already has a maintenance run reservation',
+  'maintenance reservation blocked: prior reserved run exists within seven days',
 ]) assert.ok(acquisition.includes(fragment), `acquisition cadence/one-run guard missing ${fragment}`)
+assert.doesNotMatch(acquisition, /event=workflow_dispatch/, 'raw dispatch attempts must not define maintenance cadence')
+
+const cadenceIndex = acquisition.indexOf('- name: Enforce bounded reservation cadence')
+const reservationIndex = acquisition.indexOf('- name: Reserve authorization issue for this run')
+const installIndex = acquisition.indexOf('- name: Install Wrangler 4')
+assert.ok(cadenceIndex >= 0 && reservationIndex > cadenceIndex && installIndex > reservationIndex, 'cadence and reservation must happen before preview/Twitch acquisition')
 
 const sampleStepStart = acquisition.indexOf('- name: Capture exactly one fixed Top 20 sample')
 const sampleStepEnd = acquisition.indexOf('- name: Persist durable pre-research start marker')
@@ -138,6 +147,8 @@ for (const fragment of [
   'wrangler versions upload --preview-alias',
   '`wrangler deploy` is forbidden',
   'no scheduled trigger',
+  'Failed before reservation',
+  'reservation timestamp',
 ]) assert.ok(runbook.includes(fragment), `runbook missing ${fragment}`)
 
 const countryOnlyOutput = execFileSync(process.execPath, [
@@ -149,6 +160,7 @@ console.log(JSON.stringify({
   ok: true,
   manualDispatchOnly: true,
   automaticSchedule: false,
+  cadenceSource: 'structured_reservation_markers',
   productionCollectorTreeTouched: false,
   tokenRequestsMax: 1,
   streamsRequestsMax: 1,

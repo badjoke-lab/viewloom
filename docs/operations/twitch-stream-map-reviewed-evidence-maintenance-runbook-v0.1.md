@@ -24,6 +24,8 @@ automaticSchedule: false
 
 The issue should also state the purpose of the run and explicitly retain the Stream Map hard boundaries. Reusing one authorization issue for multiple sample runs is forbidden by the one-run contract.
 
+Do not reproduce the reservation-marker or review-start-marker tokens as standalone lines in instructional comments. The workflow recognizes only structured workflow-created marker blocks, but operator comments should still avoid marker lookalikes.
+
 ## Dispatch acquisition
 
 Run `.github/workflows/twitch-stream-map-reviewed-evidence-maintenance.yml` manually with:
@@ -41,12 +43,16 @@ Before acquisition it fails closed unless:
 - the authorization issue is open;
 - every required authorization token is present;
 - the operator acknowledged one-run scope;
-- there has been no prior maintenance dispatch within the preceding seven days;
-- fewer than four prior maintenance dispatches exist in the rolling preceding 30 days.
+- there has been no prior **structured durable reservation** within the preceding seven days;
+- fewer than four prior structured durable reservations exist in the rolling preceding 30 days.
 
-All dispatch attempts count toward the cadence guard. A failed prior run is not silently ignored merely because it did not produce accepted evidence.
+Cadence is measured from the durable reservation timestamp, not from raw workflow-dispatch attempts. This distinction is required because a workflow can fail before it reserves a run and before it spends any Twitch request budget.
 
-After the cadence guard passes but **before any Twitch API request**, the workflow reserves the authorization issue by writing:
+**Failed before reservation:** the authorization issue is not consumed and that failed dispatch does not consume the weekly/rolling maintenance cadence. A corrected retry may use the same one-run authorization issue because no acquisition authority was reserved.
+
+**Failed after reservation:** the authorization issue is consumed and the reservation timestamp counts toward the cadence even if a later preview, Twitch request, artifact or start-marker step fails. Create a new one-run authorization issue for any later permitted run; do not replay the consumed issue.
+
+After the cadence guard passes but **before any Twitch API request**, the workflow reserves the authorization issue by writing exactly one structured block:
 
 ```text
 viewloom-maintenance-run-reservation-v0.1
@@ -56,7 +62,9 @@ reservedAt: <exact UTC timestamp>
 oneRunOnly: true
 ```
 
-The workflow refuses an issue that already has a reservation or review-start marker. This closes the duplicate-acquisition path where sampling could succeed but a later marker step could fail. Once the reservation exists, that authorization issue is consumed even if a later preview/sample step fails; create a new one-run authorization issue rather than replaying the old one.
+The reservation detector requires the complete structured marker block; merely mentioning a marker token in explanatory prose is not a reservation.
+
+The workflow refuses an issue that already has a structured reservation or structured review-start marker. This closes the duplicate-acquisition path where sampling could succeed but a later marker step could fail.
 
 ## Acquisition ceiling
 
