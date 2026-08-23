@@ -1,0 +1,26 @@
+name: Twitch Stream Map Review Cost R3 Result
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'docs/audits/twitch-stream-map-review-cost-result-2026-08-23-r3.json'
+      - 'scripts/verify-twitch-stream-map-review-cost-result-r3.mjs'
+      - 'scripts/evaluate-twitch-stream-map-review-cost-result.mjs'
+      - '.github/workflows/twitch-stream-map-review-cost-result-r3.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Evaluate measured review-cost result
+        run: node scripts/verify-twitch-stream-map-review-cost-result-r3.mjs
