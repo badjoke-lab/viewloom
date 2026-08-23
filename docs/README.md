@@ -249,3 +249,11 @@ The completed Twitch category/Heatmap rollout remains a historical accepted mile
 - PR #741 repaired the rejected 390px mobile overflow;
 - accepted production SHA was `b006f45d0676c9ff3e05e5d6727458e43802de53`;
 - no Kick category UI was authorized by the Twitch rollout.
+
+Historical development-policy verifier anchors retained below; they do not redefine the current Stream Map milestone:
+
+```text
+Twitch category stability + Heatmap public rollout complete
+Public production acceptance run 31244148651 success
+12a5-twitch-heatmap-category-public-cutover-acceptance.json
+```
