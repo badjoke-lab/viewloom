@@ -1,0 +1,270 @@
+name: Twitch Stream Map Reviewed Evidence Maintenance
+
+on:
+  workflow_dispatch:
+    inputs:
+      authorization_issue:
+        description: Open one-run authorization issue number
+        required: true
+        type: string
+      acknowledge_one_run:
+        description: I acknowledge this dispatch authorizes exactly one bounded sample run
+        required: true
+        default: false
+        type: boolean
+      reason:
+        description: Optional operator note
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+  actions: read
+
+concurrency:
+  group: twitch-stream-map-reviewed-evidence-maintenance
+  cancel-in-progress: false
+
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ARTIFACT_DIR: artifacts/twitch-stream-map-reviewed-evidence-maintenance
+      WORKFLOW_FILE: twitch-stream-map-reviewed-evidence-maintenance.yml
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate one-run acknowledgement
+        env:
+          ACKNOWLEDGE_ONE_RUN: ${{ inputs.acknowledge_one_run }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$ACKNOWLEDGE_ONE_RUN" = "true"
+
+      - name: Validate one-run authorization issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTHORIZATION_ISSUE: ${{ inputs.authorization_issue }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$AUTHORIZATION_ISSUE" =~ ^[0-9]+$ ]]
+          issue_json="$(gh api "repos/$GITHUB_REPOSITORY/issues/$AUTHORIZATION_ISSUE")"
+          test "$(jq -r '.state' <<<"$issue_json")" = "open"
+          body="$(jq -r '.body // ""' <<<"$issue_json")"
+          for token in \
+            'viewloom-maintenance-authorization-v0.1' \
+            'provider: twitch' \
+            'topN: 20' \
+            'oneRunOnly: true' \
+            'automaticSchedule: false'; do
+            grep -Fqx "$token" <<<"$body"
+          done
+
+      - name: Enforce bounded dispatch cadence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          now_ms="$(node -e 'process.stdout.write(String(Date.now()))')"
+          runs="$(gh api --paginate \
+            -H 'Accept: application/vnd.github+json' \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/$WORKFLOW_FILE/runs?event=workflow_dispatch&per_page=100")"
+
+          jq -s --argjson current "$GITHUB_RUN_ID" '[.[].workflow_runs[] | select(.id != $current)]' <<<"$runs" > /tmp/prior-runs.json
+
+          node <<'NODE'
+          const fs = require('node:fs')
+          const now = Date.now()
+          const runs = JSON.parse(fs.readFileSync('/tmp/prior-runs.json', 'utf8'))
+          const sevenDays = 7 * 24 * 60 * 60 * 1000
+          const thirtyDays = 30 * 24 * 60 * 60 * 1000
+          const times = runs
+            .map((run) => Date.parse(run.created_at))
+            .filter(Number.isFinite)
+          const withinSeven = times.filter((time) => now - time >= 0 && now - time < sevenDays)
+          const withinThirty = times.filter((time) => now - time >= 0 && now - time < thirtyDays)
+          if (withinSeven.length > 0) throw new Error('maintenance dispatch blocked: prior dispatch exists within seven days')
+          if (withinThirty.length >= 4) throw new Error('maintenance dispatch blocked: four prior dispatches already exist in rolling 30 days')
+          NODE
+
+      - name: Install Wrangler 4
+        run: npm install --global wrangler@4
+
+      - name: Require Cloudflare credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - id: upload
+        name: Upload non-production maintenance preview version
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          alias="review-maint-${GITHUB_RUN_ID}"
+          output="$(wrangler versions upload \
+            --config workers/collector-twitch/wrangler.reviewed-evidence-maintenance.toml \
+            --preview-alias "$alias" \
+            --keep-vars 2>&1 | tee "$ARTIFACT_DIR/upload.txt")"
+          preview_url="$(printf '%s\n' "$output" | sed -nE 's/.*Version Preview URL: (https:\/\/[^ ]+).*/\1/p' | tail -1)"
+          test -n "$preview_url"
+          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$preview_url" > "$ARTIFACT_DIR/preview-url.txt"
+
+      - name: Verify preview health
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview_url='${{ steps.upload.outputs.preview_url }}'
+          curl --fail --silent --show-error \
+            --retry 4 --retry-delay 3 --retry-all-errors \
+            "$preview_url/health" \
+            -o "$ARTIFACT_DIR/health.json"
+          jq -e '
+            .ok == true and
+            .mode == "manual_dispatch_reviewed_evidence_maintenance_preview" and
+            .productionDeployment == false and
+            .d1Writes == 0
+          ' "$ARTIFACT_DIR/health.json" >/dev/null
+
+      - name: Capture exactly one fixed Top 20 sample
+        env:
+          AUTHORIZATION_ISSUE: ${{ inputs.authorization_issue }}
+          OPERATOR_REASON: ${{ inputs.reason }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview_url='${{ steps.upload.outputs.preview_url }}'
+
+          # Intentionally one curl and no retry: this endpoint spends the bounded
+          # Twitch request budget and must never be replayed automatically.
+          curl --fail --silent --show-error \
+            -X POST "$preview_url/audit/reviewed-evidence-maintenance-sample" \
+            -o "$ARTIFACT_DIR/sample.json"
+
+          jq -e '
+            .ok == true and
+            .result.provider == "twitch" and
+            .result.mode == "manual_dispatch_fixed_top20_reviewed_evidence_maintenance_sample" and
+            .result.requestedSize == 20 and
+            .result.sampleSize == 20 and
+            .result.apiRequests.token == 1 and
+            .result.apiRequests.streams == 1 and
+            .result.apiRequests.users == 0 and
+            .result.persistence.d1Writes == 0 and
+            .result.persistence.productionDeployment == false and
+            .result.persistence.rawTitleStored == false and
+            .result.persistence.rawTagsStored == false and
+            .result.persistence.rawLanguageStored == false and
+            .result.persistence.rawProfileDescriptionStored == false and
+            .result.persistence.rawCategoryStored == false and
+            .result.persistence.geographyStored == false and
+            .result.persistence.coordinatesStored == false and
+            .result.persistence.addressStored == false and
+            .result.persistence.identitySampleArtifactOnly == true and
+            .result.fieldsIncluded == ["rank", "twitchUserId", "login", "displayName", "viewers"] and
+            (.result.identities | length == 20) and
+            ([.result.identities[].rank] == [range(1;21)]) and
+            (all(.result.identities[]; ((keys | sort) == ["displayName", "login", "rank", "twitchUserId", "viewers"])))
+          ' "$ARTIFACT_DIR/sample.json" >/dev/null
+
+          jq \
+            --arg authorizationIssue "$AUTHORIZATION_ISSUE" \
+            --arg runId "$GITHUB_RUN_ID" \
+            --arg reason "$OPERATOR_REASON" \
+            '{
+              schemaVersion:"viewloom-twitch-reviewed-evidence-maintenance-sample-v0.1",
+              authorizationIssue:($authorizationIssue|tonumber),
+              workflowRunId:($runId|tonumber),
+              operatorReason:$reason,
+              provider:.result.provider,
+              mode:.result.mode,
+              observedAt:.result.observedAt,
+              sampleSize:.result.sampleSize,
+              sampleViewers:([.result.identities[].viewers] | add),
+              apiRequests:.result.apiRequests,
+              persistence:.result.persistence,
+              fieldsIncluded:.result.fieldsIncluded,
+              identities:.result.identities
+            }' "$ARTIFACT_DIR/sample.json" > "$ARTIFACT_DIR/review-sample.json"
+
+      - name: Persist durable pre-research start marker
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTHORIZATION_ISSUE: ${{ inputs.authorization_issue }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          observed_at="$(jq -r '.observedAt' "$ARTIFACT_DIR/review-sample.json")"
+          review_started_at="$(node -e 'process.stdout.write(new Date().toISOString())')"
+          node - "$observed_at" "$review_started_at" <<'NODE'
+          const [observedAt, startedAt] = process.argv.slice(2)
+          if (!(Date.parse(startedAt) >= Date.parse(observedAt))) throw new Error('review start precedes sample observation')
+          NODE
+
+          marker=$(cat <<EOF
+          viewloom-review-start-marker-v0.1
+          sampleRunId: $GITHUB_RUN_ID
+          authorizationIssue: $AUTHORIZATION_ISSUE
+          reviewStartedAt: $review_started_at
+          researchMayBeginAfterThisMarker: true
+          EOF
+          )
+          gh issue comment "$AUTHORIZATION_ISSUE" --repo "$GITHUB_REPOSITORY" --body "$marker"
+
+          jq -n \
+            --argjson sampleRunId "$GITHUB_RUN_ID" \
+            --argjson authorizationIssue "$AUTHORIZATION_ISSUE" \
+            --arg reviewStartedAt "$review_started_at" \
+            '{schemaVersion:"viewloom-review-start-marker-v0.1",sampleRunId:$sampleRunId,authorizationIssue:$authorizationIssue,reviewStartedAt:$reviewStartedAt,researchMayBeginAfterThisMarker:true}' \
+            > "$ARTIFACT_DIR/review-start-marker.json"
+
+      - name: Publish bounded maintenance summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## Twitch reviewed-evidence maintenance sample'
+            echo
+            echo '- Trigger: manual workflow dispatch only'
+            echo '- Automatic schedule: none'
+            echo '- Production deployment: no'
+            echo '- D1 writes: 0'
+            if [ -f "$ARTIFACT_DIR/review-sample.json" ]; then
+              echo "- Authorization issue: #$(jq -r '.authorizationIssue' "$ARTIFACT_DIR/review-sample.json")"
+              echo "- Observed: $(jq -r '.observedAt' "$ARTIFACT_DIR/review-sample.json")"
+              echo "- Sample size: $(jq -r '.sampleSize' "$ARTIFACT_DIR/review-sample.json")"
+              echo "- Sample viewers: $(jq -r '.sampleViewers' "$ARTIFACT_DIR/review-sample.json")"
+            fi
+            if [ -f "$ARTIFACT_DIR/review-start-marker.json" ]; then
+              echo "- Durable reviewStartedAt: $(jq -r '.reviewStartedAt' "$ARTIFACT_DIR/review-start-marker.json")"
+              echo '- Research may begin only after the durable issue marker exists.'
+            else
+              echo '- Research must NOT begin: no durable start marker exists.'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload bounded maintenance artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-reviewed-evidence-maintenance-${{ github.run_id }}
+          path: artifacts/twitch-stream-map-reviewed-evidence-maintenance
+          if-no-files-found: error
