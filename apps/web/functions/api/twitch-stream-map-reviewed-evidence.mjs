@@ -342,19 +342,19 @@ export const TWITCH_REVIEWED_LOCATION_RECORDS = [
   {
     streamerLogin: 'lck',
     entityKind: 'event_broadcast',
-    classificationReferences: ['https://lolesports.com/en-US/news/lck-broadcast-partners'],
+    classificationReferences: ['https://lolesports.com/ko-KR/news/2026-lck-cup-finals-guide'],
     evidences: [],
   },
   {
     streamerLogin: 'lck_carry',
     entityKind: 'organization',
-    classificationReferences: ['https://www.youtube.com/@LCKCarry'],
+    classificationReferences: ['https://www.youtube.com/live/NTEh8MX3pHg'],
     evidences: [],
   },
   {
     streamerLogin: 'echo_esports',
     entityKind: 'organization',
-    classificationReferences: ['https://overwatch.blizzard.com/en-us/news/24150105/overwatch-champions-series-2025-partner-team-streams/'],
+    classificationReferences: ['https://news.blizzard.com/es-es/article/23891616/comienza-la-carrera-por-ser-los-primeros-del-mundo-en-la-camara-de-las-encarnaciones'],
     evidences: [],
   },
   {
@@ -388,3 +388,8 @@ export const TWITCH_REVIEWED_LOCATION_RECORDS = [
     evidences: [],
   },
 ]
+
+const R3_ADDITIONS = new Set(['ramzes', 'jasontheween', 'fps_shaka', 'lck', 'lck_carry', 'echo_esports'])
+export const TWITCH_REVIEWED_LOCATION_RECORDS_PRE_R3 = TWITCH_REVIEWED_LOCATION_RECORDS.filter(
+  (record) => !R3_ADDITIONS.has(record.streamerLogin),
+)
