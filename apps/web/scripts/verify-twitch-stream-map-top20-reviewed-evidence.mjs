@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { buildTwitchStreamMapLiveModel } from '../functions/api/twitch-stream-map-core.mjs'
+import { projectTwitchStreamMapCountryOnly } from '../functions/api/twitch-stream-map-public-core.mjs'
 import { TWITCH_REVIEWED_LOCATION_RECORDS } from '../functions/api/twitch-stream-map-reviewed-evidence.mjs'
 
 const sample = [
@@ -97,6 +98,32 @@ assert.equal(ibai?.evidences[0]?.claimKind, 'declared_location')
 const papaplatte = TWITCH_REVIEWED_LOCATION_RECORDS.find((record) => record.streamerLogin === 'papaplatte')
 assert.equal(papaplatte?.evidences[0]?.city, 'Cologne')
 assert.equal(papaplatte?.evidences[0]?.claimKind, 'declared_location')
+
+const publicModel = projectTwitchStreamMapCountryOnly(model)
+assert.ok(publicModel.mappedStreams.every((row) => row.location.regions.length === 0))
+assert.ok(publicModel.mappedStreams.every((row) => row.location.cities.length === 0))
+assert.ok(publicModel.mappedStreams.every((row) => row.evidence.every((evidence) => evidence.region === null && evidence.city === null)))
+assert.deepEqual(publicModel.mappedStreams.map((row) => row.location.countryCode), ['ES', 'DE', 'NL', 'US'])
+
+const knirpzRetained = TWITCH_REVIEWED_LOCATION_RECORDS.find((record) => record.streamerLogin === 'knirpz')
+assert.equal(knirpzRetained?.evidences[0]?.city, 'Berlin')
+const knirpzProjection = projectTwitchStreamMapCountryOnly(buildTwitchStreamMapLiveModel({
+  snapshot: {
+    bucketMinute: '2026-08-23T02:04:00.000Z',
+    collectedAt: '2026-08-23T02:04:10.000Z',
+    streamCount: 1,
+    totalViewers: 1,
+    payloadJson: JSON.stringify({ items: [{ channelLogin: 'knirpz', displayName: 'Knirpz', viewers: 1 }] }),
+    sourceMode: 'real',
+    coveredPages: 1,
+    hasMore: false,
+  },
+  evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS,
+  topLimit: 20,
+}))
+assert.equal(knirpzProjection.mappedStreams[0]?.location.countryCode, 'DE')
+assert.deepEqual(knirpzProjection.mappedStreams[0]?.location.cities, [])
+assert.equal(knirpzProjection.mappedStreams[0]?.evidence[0]?.city, null)
 
 assert.equal(model.semantics.languageUsedForPlacement, false)
 assert.equal(model.semantics.candidateOnlyPlacementAllowed, false)
