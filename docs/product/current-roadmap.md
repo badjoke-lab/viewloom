@@ -5,37 +5,129 @@ Last updated: 2026-08-23
 
 ## Current milestone state
 
-**Twitch Stream Map — reviewed-evidence cost gate passed; bounded maintenance proposal pending.**
+**Twitch Stream Map — bounded reviewed-evidence maintenance harness installed; no maintenance run executed yet.**
 
 Current accepted implementation baseline:
 
 ```text
-main 400c93d31391aebe6e80682251d128410928459a
+main c52c7d69bf7c062645797bef10348f7d93adcf14
 ```
 
 Current governance:
 
 ```text
-Reviewed-evidence maintenance policy   complete / PR #994
-Fresh review-cost measurement          complete / PR #1007
-R3 reviewed evidence implementation    complete / PR #1009
-Recurring-maintenance proposal         Issue #1010 open
-Recurring acquisition                  NOT authorized
-Automatic cron                         NOT authorized
-Persistent crawler                     NOT authorized
-Automatic search acceptance            NOT authorized
-City                                   NOT authorized
-Current Location / IRL                 NOT authorized
-Kick Map                               NOT authorized
-Collector/D1/cadence/retention change  NOT authorized
-Production mutation                    NOT authorized
+Reviewed-evidence maintenance policy     complete / PR #994
+Fresh review-cost measurement            complete / PR #1007
+R3 reviewed evidence implementation      complete / PR #1009
+Bounded maintenance proposal             accepted / Issue #1010 closed
+Manual-dispatch implementation gate      complete / Issue #1012
+Manual-dispatch harness                   merged / PR #1013
+Post-#1013 maintenance runs               0
+Each actual run                           requires separate one-run authorization issue
+Automatic cron                            NOT authorized
+Persistent crawler                       NOT authorized
+Automatic search acceptance              NOT authorized
+City                                     NOT authorized
+Current Location / IRL                   NOT authorized
+Kick Map                                 NOT authorized
+Collector/D1/cadence/retention change    NOT authorized
+Production mutation                      NOT authorized
 ```
+
+The accepted maintenance authority is intentionally narrow: one explicitly authorized manual run at a time under the frozen envelope. Installing the harness did not itself acquire a sample or research any identity.
+
+## Manual maintenance harness now on main — #1013
+
+PR #1013 installs an inert manual-dispatch harness:
+
+- acquisition trigger is `workflow_dispatch` only;
+- no `schedule`, push, pull-request, repository-dispatch or webhook trigger exists on the acquisition workflow;
+- every run requires a separate open one-run authorization issue;
+- the issue is reserved before any Twitch API request so it cannot be replayed;
+- prior maintenance dispatch within seven days blocks a new dispatch;
+- four prior dispatches in the rolling 30-day window block a new dispatch;
+- one app-token request maximum;
+- one `/helix/streams?first=20` request maximum;
+- zero `/helix/users` requests;
+- zero D1 writes;
+- no production Worker deploy;
+- no non-person refill;
+- no geography preselection;
+- exactly 20 fixed identities;
+- retained sample fields are only rank, Twitch user ID, login, display name and viewers plus run metadata;
+- title, tags, language, profile description, category, geography, coordinates and address are forbidden in the sample artifact;
+- `reviewStartedAt` is durably posted before research;
+- `reviewFinishedAt` is durably posted after all 20 terminal outcomes;
+- maximum five search rounds per reviewed identity;
+- 120-minute review ceiling;
+- country-only public projection remains regression-tested.
+
+The preview Worker/config live under:
+
+```text
+tools/twitch-stream-map-reviewed-evidence-maintenance/
+```
+
+They deliberately do **not** live under `workers/collector-twitch/**`. This avoids triggering the existing production Collector Worker deployment workflow when the maintenance harness itself changes. The #1013 final diff contained no production collector path, and the PR-side deployment planner skipped both Twitch and Kick deployment.
+
+## One-run authorization contract
+
+Every actual maintenance run requires a new open issue containing these exact lines:
+
+```text
+viewloom-maintenance-authorization-v0.1
+provider: twitch
+topN: 20
+oneRunOnly: true
+automaticSchedule: false
+```
+
+The acquisition workflow writes a durable reservation before Twitch access:
+
+```text
+viewloom-maintenance-run-reservation-v0.1
+```
+
+After sample validation it writes:
+
+```text
+viewloom-review-start-marker-v0.1
+```
+
+Only then may external/manual research begin. After all 20 terminal outcomes, the separate finish workflow writes:
+
+```text
+viewloom-review-finish-marker-v0.1
+```
+
+Timing may not be reconstructed from chat, browser history or approximate activity timestamps.
+
+No one-run authorization issue has been created for a post-#1013 maintenance execution yet, and no maintenance sample has been acquired through the new harness.
+
+## Accepted operating envelope
+
+```text
+provider                           Twitch only
+population                         one fixed current overall Top 20
+maintenance frequency              at most once per week
+rolling 30-day maximum             4 dispatches
+execution mode                     manual dispatch only
+sample token requests              <= 1
+/helix/streams requests            <= 1
+/helix/users requests              0
+sample D1 writes                   0
+sample production deploy           false
+search rounds per identity         <= 5
+wall-clock review ceiling          120 minutes
+non-person refill                  none
+geography preselection             none
+```
+
+Automatic cron scheduling remains a later, separately gated decision and requires operating history. It is not implied by #1013.
 
 ## What the R3 gate established
 
-Verification-only acquisition #1006 captured one fresh Twitch Top 20 after the accepted six-hour not-before boundary. The sample retained only rank, Twitch user ID, login, display name, viewers and timing/request metadata.
-
-The independently clocked review result was retained by #1007:
+Verification-only acquisition #1006 captured the fresh R3 Twitch Top 20 after the accepted six-hour not-before boundary. The independently clocked result retained by #1007 was:
 
 ```text
 sampleCapturedAt                         2026-08-23T09:22:22.534Z
@@ -68,15 +160,11 @@ accepted evidence 100% explicit attributable       PASS
 silent country conflicts == 0                     PASS
 ```
 
-`measurementValid = true` and `recurringProposalGatePassed = true`.
+`measurementValid = true` and `recurringProposalGatePassed = true`. That measurement enabled the bounded proposal and manual implementation; it did not authorize automatic scheduling.
 
-This result authorizes only consideration of a separate bounded recurring-maintenance proposal. It does not itself authorize recurring execution.
+## R3 evidence implemented
 
-## R3 evidence now implemented
-
-PR #1009 added the accepted R3 evidence to the current reviewed-evidence registry and preserved the earlier audit populations through an explicit pre-R3 evidence snapshot.
-
-Accepted R3 person records:
+PR #1009 retained:
 
 ```text
 ramzes       RU / Russia          Moscow retained internally       declared_location  official_external
@@ -92,33 +180,47 @@ lck_carry     organization
 echo_esports  organization
 ```
 
-Existing `eslcs = event_broadcast` remains unchanged.
+Existing `eslcs = event_broadcast` remains unchanged. The existing Fukuoka birthplace evidence for `fps_shaka` remains `context_only` and is not converted into residence evidence.
 
-The existing Fukuoka birthplace evidence for `fps_shaka` remains `context_only`; it is not converted into residence evidence.
+Historical #989/#995 audit metrics are evaluated against an explicit pre-R3 evidence snapshot so later accepted evidence does not rewrite earlier measurements.
 
-## Current next gate — Issue #1010
+## Reviewed-evidence lifecycle
 
-Issue #1010 is a proposal only. It does not create or arm a recurring workflow.
-
-Candidate operating envelope:
+For accepted `declared_location` / `home_base` evidence:
 
 ```text
-provider                           Twitch only
-population                         one fixed current overall Top 20
-candidate cadence                  at most weekly
-rolling 30-day maximum             4 runs
-initial execution mode             manual dispatch only
-sample token requests              <= 1
-/helix/streams requests            <= 1
-/helix/users requests              0
-sample D1 writes                   0
-sample production deploy           false
-search rounds per identity         <= 5
-wall-clock review ceiling          120 minutes
-non-person refill                  none
+age < 180 days, no contradiction     fresh; unnecessary source hunting may be skipped
+age >= 180 days                      due for bounded re-review
+age >= 365 days without refresh      placement stops until refreshed
+new explicit contradiction/change    immediate manual conflict/change review
 ```
 
-Before any recurring acquisition exists, a separately accepted implementation gate must prove the request ceilings, fail-closed timing, manual-dispatch-only default, rollback/disable path, country-only projection and all existing hard stops.
+Current Location is not covered by this lifecycle and remains blocked.
+
+Accepted source classes remain:
+
+- self-controlled current statement;
+- official affiliated source explicitly about the person;
+- attributable editorial/interview source;
+- reviewed transcript of a direct self-statement.
+
+Rejected as standalone placement evidence remain:
+
+- aggregators or unverified search snippets;
+- nationality or birthplace;
+- language, timezone, category, name cue or IP;
+- organization/team headquarters;
+- event venue;
+- temporary or planned travel;
+- tag-only geography;
+- home/origin converted into current-location evidence.
+
+Conflict rule:
+
+```text
+conflicting accepted countries
+-> unmapped unless explicit temporal supersession is manually reviewed
+```
 
 ## Current public behavior
 
@@ -166,7 +268,7 @@ Placement remains accepted-evidence-only. Language, timezone, name, category and
 
 ## Country-only public boundary
 
-Reviewed evidence may retain explicitly public city/region text internally for future separately gated decisions, but the public Twitch Map remains country-only:
+Reviewed evidence may retain explicitly public city/region text internally for future separately gated decisions, but public Twitch Map responses remain country-only:
 
 ```text
 public location.regions = []
@@ -175,43 +277,22 @@ public evidence.region  = null
 public evidence.city    = null
 ```
 
-PR #1009 exact regressions prove the R3 sample maps only RU / US / JP, keeps eight non-person rows excluded, retains nine eligible-unmapped rows, returns zero Current Location, and does not leak retained Moscow / Los Angeles / Tokyo city values publicly.
+No maintenance run, retained city value or review result activates City.
 
-## Reviewed-evidence maintenance policy retained
+## Current next execution stage
 
-Accepted source classes:
+When a maintenance review is actually due:
 
-- self-controlled current statement;
-- official affiliated source explicitly about the person;
-- attributable editorial/interview source;
-- reviewed transcript of a direct self-statement.
+1. create one dedicated authorization issue with the exact guard tokens;
+2. manually dispatch the acquisition workflow once;
+3. allow the workflow to reserve the issue, capture the fixed Top 20, validate the artifact and persist `reviewStartedAt`;
+4. begin research only after the durable start marker exists;
+5. review all 20 identities under #994, max five search rounds each, with no refill;
+6. manually dispatch the finish workflow after the twentieth terminal outcome;
+7. retain the full result and accepted evidence in normal reviewed PRs;
+8. evaluate operating history before any automatic-schedule proposal.
 
-Rejected as standalone placement evidence:
-
-- aggregators or unverified search snippets;
-- nationality or birthplace;
-- language, timezone, category, name cue or IP;
-- organization/team headquarters;
-- event venue;
-- temporary or planned travel;
-- tag-only geography;
-- home/origin converted into current-location evidence.
-
-Conflict rule:
-
-```text
-conflicting accepted countries
--> unmapped unless explicit temporal supersession is manually reviewed
-```
-
-Staleness for `declared_location` and `home_base`:
-
-```text
-re-review target 180 days
-hard stale        365 days
-```
-
-Current Location / IRL remains a separate blocked stage.
+There is no reason to immediately repeat the just-completed R3 review merely because the harness exists. The harness is available for the next separately authorized maintenance interval; it is not a background job.
 
 ## Authoritative Stream Map records
 
@@ -221,6 +302,7 @@ Current Location / IRL remains a separate blocked stage.
 - `docs/product/stream-map-reviewed-evidence-maintenance-policy-v0.1.md`
 - `docs/product/stream-map-top20-replication-plan-v0.1.md`
 - `docs/product/stream-map-review-cost-measurement-plan-v0.1.md`
+- `docs/operations/twitch-stream-map-reviewed-evidence-maintenance-runbook-v0.1.md`
 - `docs/audits/twitch-stream-map-review-cost-measurement-contract-v0.1.json`
 - `docs/audits/twitch-stream-map-review-cost-result-2026-08-23-r3.json`
 - `docs/audits/twitch-stream-map-review-cost-measurement-2026-08-23-r3.md`
@@ -260,7 +342,9 @@ PR #1005 review-cost result harness
 PR #1006 fresh R3 sample verification-only / closed without merge
 PR #1007 measured R3 cost result
 PR #1009 R3 reviewed evidence implementation
-Issue #1010 bounded recurring-maintenance proposal / open
+Issue #1010 bounded recurring-maintenance proposal / accepted and closed
+Issue #1012 manual-dispatch implementation gate / complete
+PR #1013 manual-dispatch maintenance harness / merged
 ```
 
 ## Stream Map hard boundaries
@@ -285,12 +369,13 @@ Issue #1010 bounded recurring-maintenance proposal / open
 
 ## Later gates — each requires separate acceptance
 
-1. Bounded recurring reviewed-evidence maintenance implementation, only if Issue #1010 is explicitly accepted.
-2. City evidence/spec gate, only if accepted city coverage is broad enough to justify it.
-3. Current Location freshness/expiry gate, only if explicit current-location evidence becomes useful.
-4. IRL-oriented view gate, only after useful Current Location coverage exists.
-5. Separate Kick source audit and implementation gate.
-6. Location history/replay gate, only after live location semantics remain stable.
+1. First and subsequent bounded manual maintenance runs: each requires a fresh one-run authorization issue.
+2. Automatic schedule gate: only after sufficient manual operating history and a separate acceptance.
+3. City evidence/spec gate: only if accepted city coverage is broad enough to justify it.
+4. Current Location freshness/expiry gate: only if explicit current-location evidence becomes useful.
+5. IRL-oriented view gate: only after useful Current Location coverage exists.
+6. Separate Kick source audit and implementation gate.
+7. Location history/replay gate: only after live location semantics remain stable.
 
 ## Retained completed milestone: 12A Twitch category rollout
 
