@@ -1,0 +1,153 @@
+name: Twitch Stream Map Country Only Production Audit
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/twitch-stream-map-country-only-production-audit.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: twitch-stream-map-country-only-production-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ARTIFACT_DIR: artifacts/twitch-stream-map-country-only-production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe production country-only contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          base='https://www.viewloom.net/api/twitch-stream-map'
+          output="$ARTIFACT_DIR/top300.json"
+
+          for attempt in $(seq 1 12); do
+            if curl --fail --silent --show-error --retry 2 --retry-delay 2 --retry-all-errors \
+              --get "$base" \
+              --data-urlencode 'top=300' \
+              --data-urlencode 'min_viewers=0' \
+              --data-urlencode 'category=all' \
+              -o "$output" \
+              && jq -e '
+                .version == "viewloom-stream-map-live-v1" and
+                .platform == "twitch" and
+                .source == "real" and
+                .state == "ready" and
+                (.coverage | type == "object") and
+                (.mappedStreams | type == "array") and
+                .semantics.populationFilterBeforeEvidenceFilter == true and
+                .semantics.languageUsedForPlacement == false and
+                (.coverage.mappedStreams + .coverage.unmappedStreams == .coverage.observedStreams)
+              ' "$output" >/dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 12 ]; then
+              echo 'production_stream_map_not_ready' >&2
+              exit 21
+            fi
+            sleep 5
+          done
+
+          jq -e '
+            all(.mappedStreams[]?;
+              ((.location.regions // []) | length == 0) and
+              ((.location.cities // []) | length == 0) and
+              all(.evidence[]?; .region == null and .city == null)
+            )
+          ' "$output" >/dev/null
+
+          jq '
+            ["ibai", "papaplatte", "ohnepixel", "hutchmf", "knirpz"] as $targets |
+            {
+              version,
+              platform,
+              source,
+              state,
+              updatedAt,
+              coverage: {
+                observedStreams: .coverage.observedStreams,
+                observedViewers: .coverage.observedViewers,
+                mappedStreams: .coverage.mappedStreams,
+                unmappedStreams: .coverage.unmappedStreams,
+                mappedPercent: .coverage.mappedPercent,
+                mappedViewers: .coverage.mappedViewers,
+                mappedViewerPercent: .coverage.mappedViewerPercent,
+                mappedCountryCount: .coverage.mappedCountryCount,
+                currentLocationStreams: .coverage.currentLocationStreams,
+                excludedNonPersonStreams: .coverage.excludedNonPersonStreams,
+                mappedBySource: .coverage.mappedBySource,
+                unmappedReasons: .coverage.unmappedReasons
+              },
+              mapped: [
+                .mappedStreams[]? |
+                {
+                  login,
+                  viewers,
+                  countryCode: .location.countryCode,
+                  countryName: .location.countryName,
+                  regions: (.location.regions // []),
+                  cities: (.location.cities // []),
+                  locationTypes: (.location.locationTypes // []),
+                  sources,
+                  evidence: [.evidence[]? | {source, locationType, region, city}]
+                }
+              ],
+              reviewTargets: [
+                $targets[] as $target |
+                {
+                  login: $target,
+                  liveAndMapped: (([.mappedStreams[]? | select(.login == $target)] | length) > 0),
+                  mappedRecord: ([.mappedStreams[]? | select(.login == $target) | {
+                    login,
+                    viewers,
+                    countryCode: .location.countryCode,
+                    regions: (.location.regions // []),
+                    cities: (.location.cities // []),
+                    sources,
+                    evidence: [.evidence[]? | {source, locationType, region, city}]
+                  }] | first // null)
+                }
+              ],
+              semantics
+            }
+          ' "$output" > "$ARTIFACT_DIR/summary.json"
+
+          cat "$ARTIFACT_DIR/summary.json"
+
+      - name: Publish audit summary
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -s "$ARTIFACT_DIR/summary.json" ]; then
+            echo '## Twitch Stream Map country-only production audit' >> "$GITHUB_STEP_SUMMARY"
+            echo '- Result: summary missing' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo '## Twitch Stream Map country-only production audit'
+            echo
+            echo "- Updated: $(jq -r '.updatedAt' "$ARTIFACT_DIR/summary.json")"
+            echo "- Observed streams: $(jq -r '.coverage.observedStreams' "$ARTIFACT_DIR/summary.json")"
+            echo "- Mapped streams: $(jq -r '.coverage.mappedStreams' "$ARTIFACT_DIR/summary.json")"
+            echo "- Mapped countries: $(jq -r '.coverage.mappedCountryCount' "$ARTIFACT_DIR/summary.json")"
+            echo "- Current-location streams: $(jq -r '.coverage.currentLocationStreams' "$ARTIFACT_DIR/summary.json")"
+            echo "- Country-only projection: PASS"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-stream-map-country-only-production-pr-${{ github.event.pull_request.number }}
+          path: artifacts/twitch-stream-map-country-only-production
+          if-no-files-found: warn
