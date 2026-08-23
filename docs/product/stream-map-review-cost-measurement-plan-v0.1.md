@@ -115,7 +115,7 @@ Create the measurement record and durably write:
 reviewStartedAt=<UTC timestamp>
 ```
 
-This write must happen **before** the first external/manual lookup, search, page open, transcript search, profile review, or other research action for any of the 20 identities.
+This write must happen before the first external/manual lookup, search, page open, transcript search, profile review, or other research action for any of the 20 identities.
 
 ### During review
 
