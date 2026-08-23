@@ -247,9 +247,47 @@ export const TWITCH_REVIEWED_LOCATION_RECORDS = [
     ],
   },
   {
+    streamerLogin: 'ramzes',
+    entityKind: 'person',
+    classificationReferences: ['https://x.com/ramzes/with_replies'],
+    evidences: [
+      {
+        source: 'official_external',
+        sourceUrl: 'https://x.com/ramzes/with_replies',
+        observedAt: '2026-08-23T09:28:54.276Z',
+        countryCode: 'RU',
+        countryName: 'Russia',
+        region: null,
+        city: 'Moscow',
+        claimKind: 'declared_location',
+        confidence: 'explicit',
+        status: 'accepted',
+      },
+    ],
+  },
+  {
+    streamerLogin: 'jasontheween',
+    entityKind: 'person',
+    classificationReferences: ['https://www.bloomberg.com/news/articles/2026-02-10/jasontheween-parlays-goofy-antics-into-3-million-a-year-job'],
+    evidences: [
+      {
+        source: 'official_external',
+        sourceUrl: 'https://www.bloomberg.com/news/articles/2026-02-10/jasontheween-parlays-goofy-antics-into-3-million-a-year-job',
+        observedAt: '2026-08-23T09:28:54.276Z',
+        countryCode: 'US',
+        countryName: 'United States',
+        region: null,
+        city: 'Los Angeles',
+        claimKind: 'home_base',
+        confidence: 'explicit',
+        status: 'accepted',
+      },
+    ],
+  },
+  {
     streamerLogin: 'fps_shaka',
     entityKind: 'person',
-    classificationReferences: ['https://prtimes.jp/main/html/rd/p/000000093.000041650.html'],
+    classificationReferences: ['https://prtimes.jp/main/html/rd/p/000000093.000041650.html', 'https://x.com/avashaka/with_replies'],
     evidences: [
       {
         source: 'official_external',
@@ -262,6 +300,18 @@ export const TWITCH_REVIEWED_LOCATION_RECORDS = [
         claimKind: 'birthplace',
         confidence: 'explicit',
         status: 'context_only',
+      },
+      {
+        source: 'official_external',
+        sourceUrl: 'https://x.com/avashaka/with_replies',
+        observedAt: '2026-08-23T09:28:54.276Z',
+        countryCode: 'JP',
+        countryName: 'Japan',
+        region: null,
+        city: 'Tokyo',
+        claimKind: 'declared_location',
+        confidence: 'explicit',
+        status: 'accepted',
       },
     ],
   },
@@ -287,6 +337,24 @@ export const TWITCH_REVIEWED_LOCATION_RECORDS = [
     streamerLogin: 'callofduty',
     entityKind: 'event_broadcast',
     classificationReferences: ['https://callofdutyleague.com/en-us/news/major-i-what-you-need-to-know'],
+    evidences: [],
+  },
+  {
+    streamerLogin: 'lck',
+    entityKind: 'event_broadcast',
+    classificationReferences: ['https://lolesports.com/ko-KR/news/2026-lck-cup-finals-guide'],
+    evidences: [],
+  },
+  {
+    streamerLogin: 'lck_carry',
+    entityKind: 'organization',
+    classificationReferences: ['https://www.youtube.com/live/NTEh8MX3pHg'],
+    evidences: [],
+  },
+  {
+    streamerLogin: 'echo_esports',
+    entityKind: 'organization',
+    classificationReferences: ['https://news.blizzard.com/es-es/article/23891616/comienza-la-carrera-por-ser-los-primeros-del-mundo-en-la-camara-de-las-encarnaciones'],
     evidences: [],
   },
   {
@@ -320,3 +388,14 @@ export const TWITCH_REVIEWED_LOCATION_RECORDS = [
     evidences: [],
   },
 ]
+
+const R3_NEW_RECORDS = new Set(['ramzes', 'jasontheween', 'lck', 'lck_carry', 'echo_esports'])
+export const TWITCH_REVIEWED_LOCATION_RECORDS_PRE_R3 = TWITCH_REVIEWED_LOCATION_RECORDS
+  .filter((record) => !R3_NEW_RECORDS.has(record.streamerLogin))
+  .map((record) => record.streamerLogin === 'fps_shaka'
+    ? {
+        ...record,
+        classificationReferences: ['https://prtimes.jp/main/html/rd/p/000000093.000041650.html'],
+        evidences: record.evidences.filter((evidence) => evidence.status === 'context_only'),
+      }
+    : record)

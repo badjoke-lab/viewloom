@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import { buildTwitchStreamMapLiveModel } from '../functions/api/twitch-stream-map-core.mjs'
 import { projectTwitchStreamMapCountryOnly } from '../functions/api/twitch-stream-map-public-core.mjs'
-import { TWITCH_REVIEWED_LOCATION_RECORDS } from '../functions/api/twitch-stream-map-reviewed-evidence.mjs'
+import {
+  TWITCH_REVIEWED_LOCATION_RECORDS,
+  TWITCH_REVIEWED_LOCATION_RECORDS_PRE_R3,
+} from '../functions/api/twitch-stream-map-reviewed-evidence.mjs'
 
 const sample = [
   ['caedrel', 'Caedrel', 42344],
@@ -43,7 +46,7 @@ const model = buildTwitchStreamMapLiveModel({
     coveredPages: 1,
     hasMore: true,
   },
-  evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS,
+  evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS_PRE_R3,
   topLimit: 20,
 })
 
@@ -165,7 +168,7 @@ const replicationModel = buildTwitchStreamMapLiveModel({
     coveredPages: 1,
     hasMore: true,
   },
-  evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS,
+  evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS_PRE_R3,
   topLimit: 20,
 })
 
@@ -210,7 +213,7 @@ assert.deepEqual(
 )
 
 for (const login of ['nix', 'theburntpeanut', 'stableronaldo', 'kato_junichi0817', 'ramzes', 'jasontheween', 'shroud', 'moonmoon', 'maximum', 'jerma985', 'loltyler1']) {
-  assert.equal(replicationModel.mappedStreams.some((row) => row.login === login), false, `${login} must remain unmapped without accepted attributable evidence`)
+  assert.equal(replicationModel.mappedStreams.some((row) => row.login === login), false, `${login} must remain unmapped in the pre-R3 evidence snapshot`)
 }
 
 for (const login of ['adinross', 'xqc', 'lacy', 'cinna', 'ddg']) {
@@ -226,14 +229,126 @@ assert.ok(replicationPublic.mappedStreams.every((row) => row.location.cities.len
 assert.ok(replicationPublic.mappedStreams.every((row) => row.evidence.every((evidence) => evidence.region === null && evidence.city === null)))
 assert.deepEqual(replicationPublic.mappedStreams.map((row) => row.location.countryCode), ['US', 'US', 'US', 'US', 'US'])
 
-assert.equal(model.semantics.languageUsedForPlacement, false)
-assert.equal(model.semantics.candidateOnlyPlacementAllowed, false)
-assert.equal(model.semantics.nonPersonPlacementAllowed, false)
-assert.equal(model.semantics.conflictingAcceptedCountriesAreMapped, false)
-assert.equal(replicationModel.semantics.languageUsedForPlacement, false)
-assert.equal(replicationModel.semantics.candidateOnlyPlacementAllowed, false)
-assert.equal(replicationModel.semantics.nonPersonPlacementAllowed, false)
-assert.equal(replicationModel.semantics.conflictingAcceptedCountriesAreMapped, false)
+const r3Sample = [
+  ['nix', 'Nix', 166751],
+  ['dota2ti', 'dota2ti', 158533],
+  ['dota2ti_ru', 'dota2ti_ru', 154480],
+  ['caedrel', 'Caedrel', 83248],
+  ['ow_esports', 'ow_esports', 51761],
+  ['kato_junichi0817', '加藤純一うん〇ちゃん', 45447],
+  ['theburntpeanut', 'TheBurntPeanut', 35260],
+  ['lck', 'LCK', 23307],
+  ['ramzes', 'ramzes', 21555],
+  ['hoangluanblv', 'HoangLuanBLV', 18077],
+  ['jasontheween', 'jasontheween', 17290],
+  ['lck_carry', 'LCK_Carry', 14742],
+  ['just_ns', 'just_ns', 13776],
+  ['indegnasen0706', '布団ちゃんと申します', 13345],
+  ['fps_shaka', 'fps_shaka', 12846],
+  ['solo', 'Solo', 11904],
+  ['lazvell', 'Lazvell', 11829],
+  ['otplol_', 'otplol_', 11603],
+  ['echo_esports', 'Echo_Esports', 10279],
+  ['eslcs', 'ESLCS', 10263],
+]
+
+const r3Viewers = r3Sample.reduce((sum, [, , viewers]) => sum + viewers, 0)
+assert.equal(r3Viewers, 886296)
+
+const r3Model = buildTwitchStreamMapLiveModel({
+  snapshot: {
+    bucketMinute: '2026-08-23T09:22:00.000Z',
+    collectedAt: '2026-08-23T09:22:22.534Z',
+    streamCount: r3Sample.length,
+    totalViewers: r3Viewers,
+    payloadJson: JSON.stringify({
+      provider: 'twitch',
+      items: r3Sample.map(([channelLogin, displayName, viewers]) => ({ channelLogin, displayName, viewers })),
+    }),
+    sourceMode: 'real',
+    coveredPages: 1,
+    hasMore: true,
+  },
+  evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS,
+  topLimit: 20,
+})
+
+assert.equal(r3Model.coverage.observedStreams, 20)
+assert.equal(r3Model.coverage.observedViewers, 886296)
+assert.equal(r3Model.coverage.mappedStreams, 3)
+assert.equal(r3Model.coverage.unmappedStreams, 17)
+assert.equal(r3Model.coverage.excludedNonPersonStreams, 8)
+assert.equal(r3Model.coverage.eligibleUnmappedStreams, 9)
+assert.equal(r3Model.coverage.mappedViewers, 51691)
+assert.equal(r3Model.coverage.excludedNonPersonViewers, 434968)
+assert.equal(r3Model.coverage.mappedCountryCount, 3)
+assert.equal(r3Model.coverage.currentLocationStreams, 0)
+assert.equal(r3Model.coverage.mappedBySource.official_external, 3)
+assert.equal(Number(r3Model.coverage.mappedBySource.manual_review || 0), 0)
+assert.equal(r3Model.coverage.unmappedReasons.excluded_nonperson, 8)
+assert.equal(r3Model.coverage.unmappedReasons.no_reviewed_evidence, 9)
+assert.equal(sumReasonCounts(r3Model.coverage.unmappedReasons), r3Model.coverage.unmappedStreams)
+assert.equal(r3Model.coverage.mappedPercent, 0.15)
+assert.equal(r3Model.coverage.mappedViewerPercent, 0.058323)
+assert.equal(r3Model.coverage.mappedStreams + r3Model.coverage.unmappedStreams, r3Model.coverage.observedStreams)
+
+assert.deepEqual(
+  r3Model.mappedStreams.map((row) => [row.login, row.location.countryCode, row.sources]),
+  [
+    ['ramzes', 'RU', ['official_external']],
+    ['jasontheween', 'US', ['official_external']],
+    ['fps_shaka', 'JP', ['official_external']],
+  ],
+)
+
+assert.deepEqual(
+  r3Model.excludedNonPersonStreams.map((row) => [row.login, row.entityKind]),
+  [
+    ['dota2ti', 'event_broadcast'],
+    ['dota2ti_ru', 'event_broadcast'],
+    ['ow_esports', 'event_broadcast'],
+    ['lck', 'event_broadcast'],
+    ['lck_carry', 'organization'],
+    ['otplol_', 'organization'],
+    ['echo_esports', 'organization'],
+    ['eslcs', 'event_broadcast'],
+  ],
+)
+
+for (const login of ['nix', 'caedrel', 'kato_junichi0817', 'theburntpeanut', 'hoangluanblv', 'just_ns', 'indegnasen0706', 'solo', 'lazvell']) {
+  assert.equal(r3Model.mappedStreams.some((row) => row.login === login), false, `${login} must remain unmapped without accepted R3 evidence`)
+}
+
+const ramzes = TWITCH_REVIEWED_LOCATION_RECORDS.find((record) => record.streamerLogin === 'ramzes')
+assert.equal(ramzes?.evidences[0]?.countryCode, 'RU')
+assert.equal(ramzes?.evidences[0]?.city, 'Moscow')
+assert.equal(ramzes?.evidences[0]?.claimKind, 'declared_location')
+
+const jasontheween = TWITCH_REVIEWED_LOCATION_RECORDS.find((record) => record.streamerLogin === 'jasontheween')
+assert.equal(jasontheween?.evidences[0]?.countryCode, 'US')
+assert.equal(jasontheween?.evidences[0]?.city, 'Los Angeles')
+assert.equal(jasontheween?.evidences[0]?.claimKind, 'home_base')
+
+const shaka = TWITCH_REVIEWED_LOCATION_RECORDS.find((record) => record.streamerLogin === 'fps_shaka')
+assert.equal(shaka?.evidences[0]?.claimKind, 'birthplace')
+assert.equal(shaka?.evidences[0]?.status, 'context_only')
+assert.equal(shaka?.evidences[1]?.countryCode, 'JP')
+assert.equal(shaka?.evidences[1]?.city, 'Tokyo')
+assert.equal(shaka?.evidences[1]?.claimKind, 'declared_location')
+assert.equal(shaka?.evidences[1]?.status, 'accepted')
+
+const r3Public = projectTwitchStreamMapCountryOnly(r3Model)
+assert.ok(r3Public.mappedStreams.every((row) => row.location.regions.length === 0))
+assert.ok(r3Public.mappedStreams.every((row) => row.location.cities.length === 0))
+assert.ok(r3Public.mappedStreams.every((row) => row.evidence.every((evidence) => evidence.region === null && evidence.city === null)))
+assert.deepEqual(r3Public.mappedStreams.map((row) => row.location.countryCode), ['RU', 'US', 'JP'])
+
+for (const currentModel of [model, replicationModel, r3Model]) {
+  assert.equal(currentModel.semantics.languageUsedForPlacement, false)
+  assert.equal(currentModel.semantics.candidateOnlyPlacementAllowed, false)
+  assert.equal(currentModel.semantics.nonPersonPlacementAllowed, false)
+  assert.equal(currentModel.semantics.conflictingAcceptedCountriesAreMapped, false)
+}
 
 function sumReasonCounts(reasons) {
   return Object.values(reasons).reduce((sum, value) => sum + Number(value || 0), 0)
