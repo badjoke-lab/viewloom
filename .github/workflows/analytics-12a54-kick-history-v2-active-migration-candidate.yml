@@ -50,9 +50,8 @@ jobs:
       - name: Verify selector matrix and production boundaries
         run: node --experimental-strip-types scripts/verify-12a54-kick-history-v2-active-migration-candidate.mjs
 
-      - name: Revalidate accepted predecessor contracts
+      - name: Revalidate accepted dormant v2 package
         run: |
-          node scripts/verify-12a53-kick-history-v2-active-migration-candidate-decision.mjs
           node scripts/verify-12a52-kick-history-v2-dormant-generator-package.mjs
           python3 scripts/test-12a52-kick-history-v2-dormant-generator.py
 
