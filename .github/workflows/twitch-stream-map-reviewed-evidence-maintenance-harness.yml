@@ -1,0 +1,40 @@
+name: Twitch Stream Map Reviewed Evidence Maintenance Harness
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/twitch-stream-map-reviewed-evidence-maintenance.yml'
+      - '.github/workflows/twitch-stream-map-reviewed-evidence-review-finish.yml'
+      - '.github/workflows/twitch-stream-map-reviewed-evidence-maintenance-harness.yml'
+      - 'tools/twitch-stream-map-reviewed-evidence-maintenance/**'
+      - 'docs/operations/twitch-stream-map-reviewed-evidence-maintenance-runbook-v0.1.md'
+      - 'scripts/verify-twitch-stream-map-reviewed-evidence-maintenance-harness.mjs'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/twitch-stream-map-reviewed-evidence-maintenance.yml'
+      - '.github/workflows/twitch-stream-map-reviewed-evidence-review-finish.yml'
+      - '.github/workflows/twitch-stream-map-reviewed-evidence-maintenance-harness.yml'
+      - 'tools/twitch-stream-map-reviewed-evidence-maintenance/**'
+      - 'docs/operations/twitch-stream-map-reviewed-evidence-maintenance-runbook-v0.1.md'
+      - 'scripts/verify-twitch-stream-map-reviewed-evidence-maintenance-harness.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify inert manual-dispatch maintenance harness
+        run: node scripts/verify-twitch-stream-map-reviewed-evidence-maintenance-harness.mjs

@@ -1,0 +1,173 @@
+name: Twitch Stream Map Reviewed Evidence Review Finish
+
+on:
+  workflow_dispatch:
+    inputs:
+      authorization_issue:
+        description: Open one-run authorization issue number
+        required: true
+        type: string
+      sample_run_id:
+        description: Workflow run ID that created the sample and reviewStartedAt marker
+        required: true
+        type: string
+      twenty_terminal_outcomes_complete:
+        description: All 20 sampled identities have terminal review outcomes
+        required: true
+        default: false
+        type: boolean
+      acknowledge_no_reconstructed_timing:
+        description: I acknowledge timing must come only from durable markers
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: twitch-stream-map-reviewed-evidence-review-finish-${{ inputs.sample_run_id }}
+  cancel-in-progress: false
+
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate finish acknowledgement
+        env:
+          TERMINAL_OUTCOMES_COMPLETE: ${{ inputs.twenty_terminal_outcomes_complete }}
+          NO_RECONSTRUCTED_TIMING: ${{ inputs.acknowledge_no_reconstructed_timing }}
+          AUTHORIZATION_ISSUE: ${{ inputs.authorization_issue }}
+          SAMPLE_RUN_ID: ${{ inputs.sample_run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$TERMINAL_OUTCOMES_COMPLETE" = "true"
+          test "$NO_RECONSTRUCTED_TIMING" = "true"
+          [[ "$AUTHORIZATION_ISSUE" =~ ^[0-9]+$ ]]
+          [[ "$SAMPLE_RUN_ID" =~ ^[0-9]+$ ]]
+
+      - name: Validate authorization and unique start marker
+        id: start
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTHORIZATION_ISSUE: ${{ inputs.authorization_issue }}
+          SAMPLE_RUN_ID: ${{ inputs.sample_run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          issue_json="$(gh api "repos/$GITHUB_REPOSITORY/issues/$AUTHORIZATION_ISSUE")"
+          test "$(jq -r '.state' <<<"$issue_json")" = "open"
+          body="$(jq -r '.body // ""' <<<"$issue_json")"
+          for token in \
+            'viewloom-maintenance-authorization-v0.1' \
+            'provider: twitch' \
+            'topN: 20' \
+            'oneRunOnly: true' \
+            'automaticSchedule: false'; do
+            grep -Fqx "$token" <<<"$body"
+          done
+
+          gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$AUTHORIZATION_ISSUE/comments?per_page=100" \
+            | jq -s 'add' > /tmp/comments.json
+
+          node - "$SAMPLE_RUN_ID" <<'NODE' > /tmp/start-marker.json
+          const fs = require('node:fs')
+          const runId = process.argv[2]
+          const comments = JSON.parse(fs.readFileSync('/tmp/comments.json', 'utf8'))
+          const startToken = 'viewloom-review-start-marker-v0.1'
+          const runLine = `sampleRunId: ${runId}`
+          const matches = comments.filter((comment) => {
+            const body = String(comment.body || '')
+            return body.split(/\r?\n/).includes(startToken) && body.split(/\r?\n/).includes(runLine)
+          })
+          if (matches.length !== 1) throw new Error(`expected exactly one start marker, got ${matches.length}`)
+          const lines = String(matches[0].body || '').split(/\r?\n/)
+          const startedLine = lines.find((line) => line.startsWith('reviewStartedAt: '))
+          if (!startedLine) throw new Error('start marker missing reviewStartedAt')
+          const reviewStartedAt = startedLine.slice('reviewStartedAt: '.length).trim()
+          if (!Number.isFinite(Date.parse(reviewStartedAt))) throw new Error('invalid reviewStartedAt')
+
+          const finishMatches = comments.filter((comment) => {
+            const body = String(comment.body || '')
+            return body.split(/\r?\n/).includes('viewloom-review-finish-marker-v0.1') && body.split(/\r?\n/).includes(runLine)
+          })
+          if (finishMatches.length !== 0) throw new Error('finish marker already exists for sample run')
+
+          process.stdout.write(JSON.stringify({ reviewStartedAt }))
+          NODE
+
+          review_started_at="$(jq -r '.reviewStartedAt' /tmp/start-marker.json)"
+          echo "review_started_at=$review_started_at" >> "$GITHUB_OUTPUT"
+
+      - name: Persist exact finish marker
+        id: finish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTHORIZATION_ISSUE: ${{ inputs.authorization_issue }}
+          SAMPLE_RUN_ID: ${{ inputs.sample_run_id }}
+          REVIEW_STARTED_AT: ${{ steps.start.outputs.review_started_at }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          review_finished_at="$(node -e 'process.stdout.write(new Date().toISOString())')"
+          wall_clock_minutes="$(node - "$REVIEW_STARTED_AT" "$review_finished_at" <<'NODE'
+          const [startedAt, finishedAt] = process.argv.slice(2)
+          const started = Date.parse(startedAt)
+          const finished = Date.parse(finishedAt)
+          if (!Number.isFinite(started) || !Number.isFinite(finished) || finished < started) throw new Error('invalid durable review interval')
+          process.stdout.write(String((finished - started) / 60000))
+          NODE
+          )"
+
+          marker=$(cat <<EOF
+          viewloom-review-finish-marker-v0.1
+          sampleRunId: $SAMPLE_RUN_ID
+          authorizationIssue: $AUTHORIZATION_ISSUE
+          reviewStartedAt: $REVIEW_STARTED_AT
+          reviewFinishedAt: $review_finished_at
+          wallClockReviewMinutes: $wall_clock_minutes
+          twentyTerminalOutcomesComplete: true
+          reconstructedTimingUsed: false
+          EOF
+          )
+          gh issue comment "$AUTHORIZATION_ISSUE" --repo "$GITHUB_REPOSITORY" --body "$marker"
+
+          echo "review_finished_at=$review_finished_at" >> "$GITHUB_OUTPUT"
+          echo "wall_clock_minutes=$wall_clock_minutes" >> "$GITHUB_OUTPUT"
+
+      - name: Enforce wall-clock ceiling after durable persistence
+        env:
+          WALL_CLOCK_MINUTES: ${{ steps.finish.outputs.wall_clock_minutes }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - "$WALL_CLOCK_MINUTES" <<'NODE'
+          const minutes = Number(process.argv[2])
+          if (!Number.isFinite(minutes)) throw new Error('invalid wall-clock minutes')
+          if (minutes > 120) throw new Error(`review exceeded 120-minute ceiling: ${minutes}`)
+          NODE
+
+      - name: Publish finish summary
+        if: always()
+        env:
+          SAMPLE_RUN_ID: ${{ inputs.sample_run_id }}
+          REVIEW_STARTED_AT: ${{ steps.start.outputs.review_started_at }}
+          REVIEW_FINISHED_AT: ${{ steps.finish.outputs.review_finished_at }}
+          WALL_CLOCK_MINUTES: ${{ steps.finish.outputs.wall_clock_minutes }}
+        shell: bash
+        run: |
+          {
+            echo '## Twitch reviewed-evidence review finish'
+            echo
+            echo "- Sample run: $SAMPLE_RUN_ID"
+            echo "- reviewStartedAt: $REVIEW_STARTED_AT"
+            echo "- reviewFinishedAt: $REVIEW_FINISHED_AT"
+            echo "- wallClockReviewMinutes: $WALL_CLOCK_MINUTES"
+            echo '- Timing source: durable issue markers only'
+            echo '- Acquisition performed by this workflow: no'
+          } >> "$GITHUB_STEP_SUMMARY"
