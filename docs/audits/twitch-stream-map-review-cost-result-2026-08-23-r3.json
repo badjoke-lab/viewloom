@@ -34,7 +34,7 @@
   "sampleOverlapSecondCount": null,
   "reviewStartedAt": "2026-08-23T09:23:44.340Z",
   "reviewFinishedAt": null,
-  "researchStartedAfterDurableStartMarker": null,
+  "researchStartedAfterDurableStartMarker": true,
   "reviewedIdentities": null,
   "acceptedIdentities": null,
   "excludedNonPersonIdentities": null,
