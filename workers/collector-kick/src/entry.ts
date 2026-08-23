@@ -1,5 +1,6 @@
 import collector from './index'
 import { maybeRunKickHistoryCategoryPermanentIntegration } from '../../dormant/history-category-aggregate-integration'
+import { maybeGenerateKickHistoryCategoryV2Dormant } from '../../dormant/history-category-v2-generator'
 import { categoryCaptureEnabled } from '../../shared/category-capture'
 import { maybeGenerateCategoryIntradayRollups } from '../../shared/category-intraday-rollup'
 import { maybeApplyIntradaySchema } from '../../shared/intraday-schema'
@@ -7,6 +8,7 @@ import {
   intradayGenerationEnabled,
   maybeGenerateIntradayRollups,
 } from '../../shared/intraday-rollup'
+import { resolveKickHistoryCategoryGenerationEngine } from './history-category-generation-engine'
 import { runKickScheduledObservation } from './scheduled-observation'
 
 type Env = {
@@ -20,6 +22,7 @@ type Env = {
   INTRADAY_GENERATION_ENABLED?: string
   CATEGORY_CAPTURE_ENABLED?: string
   HISTORY_CATEGORY_GENERATION_ENABLED?: string
+  HISTORY_CATEGORY_GENERATION_ENGINE?: string
   HISTORY_CATEGORY_START_DAY?: string
 }
 
@@ -59,21 +62,49 @@ export default {
         }))
       }
 
-      const historyCategoryEnabled = categoryEnabled
-        && env.HISTORY_CATEGORY_GENERATION_ENABLED === 'true'
       const historyCategoryStartDay = env.HISTORY_CATEGORY_START_DAY?.trim() ?? ''
-      const historyCategoryGeneration = await maybeRunKickHistoryCategoryPermanentIntegration(
-        env.DB_KICK_HOT,
-        {
-          enabled: historyCategoryEnabled,
-          startDay: historyCategoryStartDay,
-        },
-      )
-      if (historyCategoryGeneration.attempted || historyCategoryEnabled) {
+      const historyCategoryEngine = categoryEnabled
+        ? resolveKickHistoryCategoryGenerationEngine(
+            env.HISTORY_CATEGORY_GENERATION_ENABLED,
+            env.HISTORY_CATEGORY_GENERATION_ENGINE,
+          )
+        : 'none'
+
+      if (historyCategoryEngine === 'v1') {
+        const historyCategoryGeneration = await maybeRunKickHistoryCategoryPermanentIntegration(
+          env.DB_KICK_HOT,
+          {
+            enabled: true,
+            startDay: historyCategoryStartDay,
+          },
+        )
         console.log(JSON.stringify({
           event: 'history_category_aggregate_generation',
           worker: 'viewloom-collector-kick',
+          engine: 'v1',
           ...historyCategoryGeneration,
+        }))
+      } else if (historyCategoryEngine === 'v2') {
+        const historyCategoryGeneration = await maybeGenerateKickHistoryCategoryV2Dormant(
+          env.DB_KICK_HOT,
+          {
+            enabled: true,
+            startDay: historyCategoryStartDay,
+          },
+        )
+        console.log(JSON.stringify({
+          event: 'history_category_aggregate_generation',
+          worker: 'viewloom-collector-kick',
+          engine: 'v2',
+          ...historyCategoryGeneration,
+        }))
+      } else if (categoryEnabled && env.HISTORY_CATEGORY_GENERATION_ENABLED === 'true') {
+        console.log(JSON.stringify({
+          event: 'history_category_aggregate_generation_skipped',
+          worker: 'viewloom-collector-kick',
+          engine: 'none',
+          selector: env.HISTORY_CATEGORY_GENERATION_ENGINE ?? null,
+          reason: 'invalid_generation_engine_selector',
         }))
       }
     }
