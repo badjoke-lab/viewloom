@@ -62,7 +62,7 @@ assert.deepEqual(
     ['lck_carry', 'organization'],
     ['otplol_', 'organization'],
     ['echo_esports', 'organization'],
-    ['eslcs', 'organization'],
+    ['eslcs', 'event_broadcast'],
   ],
 )
 
