@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import { buildTwitchStreamMapLiveModel } from '../functions/api/twitch-stream-map-core.mjs'
-import { TWITCH_REVIEWED_LOCATION_RECORDS } from '../functions/api/twitch-stream-map-reviewed-evidence.mjs'
+import {
+  TWITCH_REVIEWED_LOCATION_RECORDS,
+  TWITCH_REVIEWED_LOCATION_RECORDS_PRE_R3,
+} from '../functions/api/twitch-stream-map-reviewed-evidence.mjs'
 
 const model = buildTwitchStreamMapLiveModel({
   snapshot: {
@@ -21,7 +24,7 @@ const model = buildTwitchStreamMapLiveModel({
     coveredPages: 3,
     hasMore: true,
   },
-  evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS,
+  evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS_PRE_R3,
   topLimit: 300,
 })
 
