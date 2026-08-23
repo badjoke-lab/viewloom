@@ -1,142 +1,72 @@
-name: Analytics 12A30 Kick History Runtime Wiring Candidate
+name: Analytics 12A30 Kick History Runtime Wiring Historical Guard
 
 on:
   pull_request:
     branches: [main]
     paths:
       - '.github/workflows/analytics-12a30-kick-history-category-runtime-wiring-candidate.yml'
-      - 'docs/audits/12a30-kick-history-category-runtime-wiring-candidate.json'
-      - 'scripts/verify-12a30-kick-history-category-runtime-wiring-candidate.mjs'
-      - 'workers/collector-kick/src/entry.ts'
 
 permissions:
   contents: read
 
 concurrency:
-  group: analytics-12a30-kick-history-runtime-wiring-candidate-${{ github.event.pull_request.number }}
+  group: analytics-12a30-kick-history-runtime-wiring-historical-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
-  candidate:
+  historical-guard:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup repository toolchain
-        uses: ./.github/actions/setup-node-pnpm
-
-      - name: Require Draft PR state
-        env:
-          IS_DRAFT: ${{ github.event.pull_request.draft }}
-        run: test "$IS_DRAFT" = 'true'
-
-      - name: Verify exact 12A30 candidate scope
+      - name: Verify historical guard-only scope
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
-          printf '%s\n' "${changed[@]}"
-          expected=(
-            '.github/workflows/analytics-12a30-kick-history-category-runtime-wiring-candidate.yml'
-            'docs/audits/12a30-kick-history-category-runtime-wiring-candidate.json'
-            'scripts/verify-12a30-kick-history-category-runtime-wiring-candidate.mjs'
-            'workers/collector-kick/src/entry.ts'
-          )
-          test "${#changed[@]}" -eq "${#expected[@]}"
-          for path in "${expected[@]}"; do
-            printf '%s\n' "${changed[@]}" | grep -Fxq "$path"
-          done
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = '.github/workflows/analytics-12a30-kick-history-category-runtime-wiring-candidate.yml'
 
-      - name: Verify disabled runtime wiring candidate and prior authority linkage
-        run: node scripts/verify-12a30-kick-history-category-runtime-wiring-candidate.mjs
+      - name: Verify historical 12A-30 records remain retained
+        run: |
+          test -f docs/audits/12a30-kick-history-category-runtime-wiring-candidate.json
+          test -f scripts/verify-12a30-kick-history-category-runtime-wiring-candidate.mjs
 
-      - name: Verify PR deploy planner remains no-op
-        env:
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      - name: Verify historical workflow cannot gate future runtime edits
         run: |
           set -euo pipefail
-          : > /tmp/12a30-plan-output
-          GITHUB_EVENT_NAME=pull_request \
-          GITHUB_EVENT_BEFORE='' \
-          GITHUB_SHA="$HEAD_SHA" \
-          GITHUB_OUTPUT=/tmp/12a30-plan-output \
-          DEPLOY_PROVIDER='' \
-          node scripts/plan-collector-worker-deploy.mjs > /tmp/12a30-plan.json
-          cat /tmp/12a30-plan.json
-          grep -Fxq 'deploy_twitch=false' /tmp/12a30-plan-output
-          grep -Fxq 'deploy_kick=false' /tmp/12a30-plan-output
-          grep -Fxq 'any_deploy=false' /tmp/12a30-plan-output
-          node - <<'NODE'
-          const fs = require('fs')
-          const plan = JSON.parse(fs.readFileSync('/tmp/12a30-plan.json', 'utf8'))
-          if (plan.eventName !== 'pull_request') throw new Error('planner event')
-          if (plan.deployTwitch !== false) throw new Error('Twitch deploy planned')
-          if (plan.deployKick !== false) throw new Error('Kick deploy planned')
-          if (plan.anyDeploy !== false) throw new Error('deploy planned')
-          NODE
+          file='.github/workflows/analytics-12a30-kick-history-category-runtime-wiring-candidate.yml'
+          ! grep -Fq "workers/collector-kick/src/entry.ts" "$file"
+          ! grep -Fq "docs/audits/12a30-kick-history-category-runtime-wiring-candidate.json'" "$file"
+          ! grep -Fq "scripts/verify-12a30-kick-history-category-runtime-wiring-candidate.mjs'" "$file"
 
-      - name: Revalidate production evidence, generator semantics and collector typecheck
-        run: |
-          node scripts/verify-12a26-kick-history-category-reprobe-pass.mjs
-          node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
-          python3 scripts/test-12a15-kick-history-category-aggregate.py
-          pnpm typecheck:collectors
-          pnpm verify:collectors
-          pnpm typecheck:web
-          pnpm build:web
-
-      - name: Verify active Kick wrangler remains disabled for History Category
+      - name: Verify no production execution surface
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          wrangler = Path('workers/collector-kick/wrangler.toml').read_text()
-          if 'HISTORY_' + 'CATEGORY' in wrangler:
-              raise SystemExit('active Kick wrangler unexpectedly contains History Category runtime config')
-          if 'crons = ["*/5 * * * *"]' not in wrangler:
-              raise SystemExit('existing Kick cron changed')
-          PY
+          file='.github/workflows/analytics-12a30-kick-history-category-runtime-wiring-candidate.yml'
+          ! grep -Eq '^  (push|workflow_dispatch|schedule|repository_dispatch):' "$file"
+          secret_needle='sec''rets.'
+          remote_needle='--re''mote'
+          d1_needle='d1'' execute'
+          deploy_needle='wrangler ''deploy'
+          ! grep -Fq -- "$secret_needle" "$file"
+          ! grep -Fq -- "$remote_needle" "$file"
+          ! grep -Fq -- "$d1_needle" "$file"
+          ! grep -Fq -- "$deploy_needle" "$file"
 
-      - name: Verify PR-only candidate workflow
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          text = Path('.github/workflows/analytics-12a30-kick-history-category-runtime-wiring-candidate.yml').read_text()
-          forbidden = [
-              '\n  ' + 'push:',
-              'workflow_' + 'dispatch:',
-              'sched' + 'ule:',
-              'CLOUDFLARE_' + 'API_TOKEN',
-              'CLOUDFLARE_' + 'ACCOUNT_ID',
-              'wrangler@4 ' + 'deploy',
-              'actions/' + 'upload-artifact',
-          ]
-          for token in forbidden:
-              if token in text:
-                  raise SystemExit(f'production-capable candidate workflow surface: {token}')
-          PY
-
-      - name: Publish Draft candidate boundary
-        if: always()
+      - name: Publish historical-only boundary
         run: |
           {
-            echo '## Kick History Category — 12A30 Draft runtime wiring candidate'
+            echo '## Kick History Category — retired 12A-30 runtime candidate guard'
             echo
-            echo '- PR must remain Draft: yes'
-            echo '- Candidate merge: not authorized'
-            echo '- Production Collector Worker deployment: not authorized'
-            echo '- Production generator enablement: not authorized'
-            echo '- Active Kick wrangler History vars: none'
-            echo '- Missing/non-true enable value: disabled'
-            echo '- Category capture prerequisite: required'
-            echo '- Explicit startDay before enablement: required'
-            echo '- New cron/backfill/raw-retention change: none'
-            echo '- 12A29/12A28/12A27 authority and package linkage are validated by the 12A30 verifier without replaying their pre-wiring state assertions'
-            echo '- Next gate: explicit production-deployment decision for exact candidate head'
+            echo '- Historical artifact retained: yes'
+            echo '- Historical verifier retained: yes'
+            echo '- Future Kick entry.ts trigger: no'
+            echo '- Runtime files changed by this cleanup: no'
+            echo '- Production execution surface: none'
           } >> "$GITHUB_STEP_SUMMARY"
