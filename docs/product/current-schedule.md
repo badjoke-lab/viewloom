@@ -5,19 +5,62 @@ Last updated: 2026-08-23
 
 ```text
 Current program Twitch Stream Map
-Current stage Second fixed Top 20 replication closed; recurring acquisition not authorized
-Accepted main 940840e08daea498361eaa0486b9a211aa280f90
+Current stage Fresh bounded reviewed-evidence review-cost measurement preparation
+Accepted main 276705a6db11f2246c82d7a7ed3639dcd74fe192
+Parent cost-measurement gate Issue #998 open
+Preparation package Issue #999 open
+Sample not before 2026-08-23T08:28:43.300Z / 2026-08-23 17:28:43.300 JST
 Reviewed-evidence maintenance policy complete PR #994
-Second fixed Top 20 sample complete PR #995 verification-only / close without merge
+Second fixed Top 20 sample complete PR #995 verification-only / closed without merge
 Second fixed Top 20 reviewed evidence + retained audit complete PR #996
+Replication closeout docs complete PR #997
 Twitch Map public route /twitch/map/
 Twitch Map real API /api/twitch-stream-map
+Recurring reviewed-evidence acquisition not authorized
 Kick Map not authorized
 Twitch cadence */5 * * * * unchanged
 Kick cadence */5 * * * * unchanged
 ```
 
-## Current decision
+## Current cost-measurement gate
+
+The first two fixed Top 20 reviews established useful explicit country-evidence yield but did not prove recurring review cost. #995 lacked a durably retained exact pre-research `reviewStartedAt`, so the all-pass gate remained correctly unproven.
+
+Issue #998 now governs one fresh, independently clocked cost measurement. Issue #999 prepares the repository-side contract only.
+
+The third sample must not reuse #989/#995 as a selected review population because prior familiarity would bias review cost downward. It must use one new unbiased current Twitch Top 20 sample.
+
+Hard not-before time:
+
+```text
+2026-08-23T08:28:43.300Z
+2026-08-23 17:28:43.300 Asia/Tokyo
+```
+
+This is exactly six hours after the #995 sample at `2026-08-23T02:28:43.300Z`.
+
+Before the first external/manual research action, the measurement must durably retain `reviewStartedAt`. If that value is missing or written after research begins, the measurement is invalid and may not be reconstructed from chat or activity timestamps.
+
+Preparation authority only:
+
+- measurement plan/spec;
+- exact machine-readable contract;
+- fail-closed verifier;
+- verification-only sample infrastructure after the not-before time.
+
+Not authorized by the preparation gate:
+
+- sample acquisition before the not-before time;
+- recurring reviewed-evidence acquisition;
+- persistent crawler;
+- automatic search-result acceptance;
+- City;
+- Current Location/IRL;
+- Kick Map;
+- collector cadence/D1/retention/binding changes;
+- production mutation.
+
+## Current decision from the two-sample replication
 
 The reviewed-evidence maintenance policy was frozen before the second sample in PR #994. Verification-only PR #995 captured the second current Twitch Top 20 at `2026-08-23T02:28:43.300Z`, 32,433 seconds after the first #989 sample, satisfying the precommitted six-hour separation requirement.
 
@@ -75,15 +118,16 @@ Useful replicated evidence yield does not substitute for the missing cost measur
 
 ## Current order
 
-The policy + two-sample replication milestone is closed. There is no automatic transition to a new geographic stage.
-
-1. Keep the existing reviewed evidence curated under the accepted staleness rules.
-2. Preserve honest Unmapped coverage when no accepted evidence exists.
-3. Preserve the country-only public projection.
-4. Do not retroactively repair or estimate the missing #995 review-start timestamp.
-5. If recurring reviewed-evidence maintenance is reconsidered, require a new separately accepted and independently clocked bounded cost measurement.
-6. City, Current Location/IRL and Kick Map remain blocked until separate specifications/gates are accepted.
-7. No collector cadence, D1 schema, retention, binding or permanent acquisition change is implied by this closeout.
+1. Merge the #999 preparation package before any fresh sample acquisition.
+2. Do not capture the fresh Top 20 before `2026-08-23T08:28:43.300Z`.
+3. After that time, capture exactly one unbiased current Twitch Top 20 through verification-only supported `/helix/streams` infrastructure.
+4. Retain only rank/user ID/login/display name/viewers plus sample timing/request metadata; no geography or unrelated stream metadata.
+5. Durably write exact `reviewStartedAt` before the first research action.
+6. Review all 20 under unchanged #994 evidence rules and the five-attempt-per-identity cap.
+7. Durably write `reviewFinishedAt` after the twentieth terminal outcome and compute cost from those timestamps only.
+8. Evaluate the unchanged #994 all-pass thresholds.
+9. A pass may only authorize a separate recurring-maintenance proposal; it does not authorize recurring execution.
+10. City, Current Location/IRL and Kick Map remain blocked behind separate gates.
 
 ## Reviewed-evidence maintenance rules retained
 
@@ -132,12 +176,14 @@ public evidence.city    = null
 
 No address or coordinate collection is authorized.
 
-## Authoritative retained audits
+## Authoritative retained audits and active cost plan
 
 - `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
 - `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
 - `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`
 - `docs/audits/twitch-stream-map-top20-replication-2026-08-23.md`
+- `docs/product/stream-map-review-cost-measurement-plan-v0.1.md`
+- `docs/audits/twitch-stream-map-review-cost-measurement-contract-v0.1.json`
 
 ## Completed Stream Map execution anchors
 
@@ -162,8 +208,11 @@ PR #987 production verification-only / closed without merge
 PR #989 first fixed Top 20 sample verification-only / closed without merge
 PR #990 first Top 20 reviewed evidence + country-only projection repair
 PR #994 maintenance policy freeze
-PR #995 second fixed Top 20 sample verification-only / close without merge
+PR #995 second fixed Top 20 sample verification-only / closed without merge
 PR #996 second Top 20 reviewed evidence + retained replication audit
+PR #997 replication closeout docs
+Issue #998 fresh bounded review-cost measurement
+Issue #999 measurement preparation package
 ```
 
 ## Hard stops
@@ -188,7 +237,7 @@ PR #996 second Top 20 reviewed evidence + retained replication audit
 
 ## Retained category-program state
 
-Phase 12A-5B-R2 Twitch category stability + Heatmap public rollout remains completed. Its historical acceptance records remain valid and are not rewritten by Stream Map closeout.
+Phase 12A-5B-R2 Twitch category stability + Heatmap public rollout remains completed. Its historical acceptance records remain valid and are not rewritten by Stream Map work.
 
 The following strings remain historical category-rollout verifier anchors and are not the current execution schedule:
 
