@@ -7,22 +7,11 @@ Last updated: 2026-08-23
 
 ```text
 Current program Twitch Stream Map
-Current stage Reviewed-evidence maintenance policy + fixed Top 20 replication
-Accepted main 27b1fb5fbedb9a3d5bf1923a941e7e657c16a5a1
-Stage 1D source/yield audit complete
-Stage 1E real live join complete PR #972
-Stage 1F public route + source/type filters complete PR #974
-Stage 1G country selection + drilldown complete PR #977
-Stage 2 reason-aware Unmapped analysis complete PR #979
-Population filter contract frozen PR #980
-Population filter runtime complete PR #981
-Ready-response population semantics fixed PR #983
-Production population coverage audit complete PR #982 closed without merge
-Coverage remediation candidate audit complete PR #985 closed without merge
-Reviewed evidence remediation complete PR #986
-Reviewed evidence production verification complete PR #987 closed without merge
-Fixed Top 20 sample complete PR #989 verification-only
-Fixed Top 20 reviewed evidence + country-only projection complete PR #990
+Current stage Second fixed Top 20 replication closed; recurring acquisition not authorized
+Accepted main 940840e08daea498361eaa0486b9a211aa280f90
+Reviewed-evidence maintenance policy complete PR #994
+Second fixed Top 20 sample complete PR #995 verification-only / close without merge
+Second fixed Top 20 reviewed evidence + retained audit complete PR #996
 Public Twitch Map /twitch/map/
 Real Twitch Map API /api/twitch-stream-map
 Kick Map not authorized
@@ -38,12 +27,15 @@ Kick cadence */5 * * * * unchanged
 4. `docs/product/stream-map-spec-v0.5.md`
 5. `docs/product/stream-map-implementation-plan-v0.4.md`
 6. `docs/product/stream-map-population-filter-decision-v0.1.md`
-7. `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
-8. `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
-9. `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`
-10. affected feature specification/plan and current WIP/handoff
+7. `docs/product/stream-map-reviewed-evidence-maintenance-policy-v0.1.md`
+8. `docs/product/stream-map-top20-replication-plan-v0.1.md`
+9. `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
+10. `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
+11. `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`
+12. `docs/audits/twitch-stream-map-top20-replication-2026-08-23.md`
+13. affected feature specification/plan and current WIP/handoff
 
-For historical 12A/category rollout work, retain and consult the accepted 12A audit/decision files. They remain valid historical records but are no longer the current execution milestone.
+Historical 12A/category rollout records remain valid but are not the current execution milestone.
 
 ## Current Stream Map contract
 
@@ -107,100 +99,35 @@ public location.regions/cities remain empty until a separate City gate
 public evidence region/city remain null until a separate City gate
 ```
 
-Reason-aware Unmapped semantics:
-
-```text
-API unmappedReasons describe the selected server-side population
-sum(API unmappedReasons) = API unmappedStreams
-source/type filters may derive filtered_out_accepted_evidence
-sum(current-view reasons) = current-view unmapped streams
-country selection does not alter unmapped accounting
-```
-
 Placement invariants:
 
 - candidate-only evidence does not map;
 - tag-only geography does not map;
-- language does not map;
-- category does not map;
+- language/category/name/timezone/IP does not map;
 - nationality/birthplace does not become home/current placement;
 - organization/event-broadcast channels do not map as people;
-- conflicting accepted countries remain unmapped;
+- conflicting accepted countries remain unmapped unless explicit temporal supersession is reviewed;
 - provenance remains separated by source;
 - current-location is not derived from home/origin evidence;
 - no demo geography substitutes for failed real data;
 - Twitch and Kick geography remain separated.
 
-## Completed population-filter and coverage-decision gates
+## Reviewed-evidence maintenance policy
 
-PR #981 added server-side population selection; PR #983 fixed ready-response semantics; verification-only PR #982 measured production.
-
-PR #982 retained baseline:
+The accepted policy in PR #994 allows bounded manual review only from explicit attributable sources and fixes the following staleness boundary for `declared_location` / `home_base`:
 
 ```text
-workflow run      32583205617
-successful job    97056168203
-artifact          9478398925
-snapshot updated  2026-08-22T16:00:18.854Z
-300 streams
-1,358,840 viewers
-0 mapped streams
-0 mapped viewers
+re-review target 180 days
+hard stale        365 days
 ```
 
-Top 20/50/100/300, viewer thresholds and major-category slices all had zero mapped streams. Population narrowing therefore did not solve geographic coverage.
+Accepted source classes include self-controlled statements, official affiliated sources about the person, attributable editorial/interview sources, and reviewed transcripts of direct self-statements.
 
-## Completed supported-source remediation
+Aggregators, snippets, nationality, birthplace, language, timezone, category, name cues, IP, organization HQ, event venue, temporary/planned travel and tag-only geography cannot independently place a streamer.
 
-Verification-only PR #985 sampled 300 current Twitch streams through supported read-only Twitch surfaces in a non-production Worker preview:
+## First fixed Top 20 result
 
-```text
-profile descriptions          280
-profile candidates              0
-strong-title candidates         0
-tag-only candidates             3
-unknown                        297
-current-location candidates      0
-```
-
-The Twitch tags were candidate triggers only. They were not accepted.
-
-Bounded manual review produced three independent explicit `official_external` records, implemented in PR #986:
-
-```text
-payo     CA / Canada   declared_location
-wirtual  NO / Norway   declared_location
-knirpz   DE / Germany  declared_location
-```
-
-Same-sample maximum from the native candidate lane is `3 / 300 = 1.00%`.
-
-## Retained production verification before fixed-sample expansion
-
-Verification-only PR #987 final successful read-only production audit:
-
-```text
-workflow run          32587130892
-successful job        97065114836
-artifact              9479337312
-snapshot updatedAt    2026-08-22T17:10:17.378Z
-observed streams      300
-observed viewers      1,508,683
-mapped streams        2
-mapped percent        0.6667%
-mapped viewers        12,402
-mapped viewer percent 0.8220%
-mapped countries      2
-current-location      0
-```
-
-Mapped rows were Wirtual/Norway and Payo/Canada. Knirpz was not present in that live Top 300 snapshot.
-
-## Completed fixed Top 20 external/manual review
-
-Verification-only PR #989 captured one unbiased Top 20 identity sample at `2026-08-22T17:28:10.752Z` with one `/helix/streams` request, zero D1 writes and no production deploy.
-
-Review result implemented in PR #990:
+Verification-only PR #989 captured one unbiased Top 20 identity sample at `2026-08-22T17:28:10.752Z`. PR #990 retained the accepted result and repaired the country-only public projection.
 
 ```text
 sample identities                       20
@@ -209,11 +136,13 @@ accepted placeable persons               4
 excluded non-person identities           5
 person-eligible identities              15
 eligible persons without acceptance     11
-accepted current-location                0
-accepted country conflicts               0
+raw accepted coverage                20.00%
+person-eligible accepted             26.67%
+mapped viewer coverage               28.4591%
+review minutes                  not instrumented
 ```
 
-Accepted placeable records:
+Accepted records:
 
 ```text
 ibai        ES / Spain          official_external
@@ -222,49 +151,66 @@ ohnepixel   NL / Netherlands    manual_review
 hutchmf     US / United States  official_external
 ```
 
-Measured yield:
+## Second fixed Top 20 replication result
+
+Verification-only PR #995 captured a second unbiased Top 20 sample at `2026-08-23T02:28:43.300Z`, 32,433 seconds after #989. It used one `/helix/streams` request, zero `/helix/users` requests, zero D1 writes and no production deploy.
+
+PR #996 retained the review result and exact regression:
 
 ```text
-raw sample accepted coverage          20.00%
-person-eligible accepted coverage     26.67%
-accepted mapped viewers              134,791
-viewer coverage                       28.4591%
+sample identities                       20
+sample viewers                     480,179
+overlap with #989                         2
+overlap percent                       10.00%
+accepted placeable persons               5
+excluded non-person identities           4
+person-eligible identities              16
+eligible persons without acceptance     11
+raw accepted coverage                25.00%
+person-eligible accepted             31.25%
+mapped viewer coverage               17.4004%
+official_external                         2
+manual_review                              3
+current-location                           0
+country conflicts                          0
 ```
 
-Review minutes were not instrumented, so recurring review cost is not yet proven.
+Accepted records:
 
-PR #990 also fixed an existing country-only projection gap. Internal reviewed evidence may retain Ibai/Sant Cugat, Papaplatte/Cologne and Knirpz/Berlin, but the current public API strips all region/city values until a separately accepted City gate.
+```text
+adinross  US / United States  official_external  home_base
+xqc       US / United States  manual_review      declared_location
+lacy      US / United States  manual_review      home_base
+cinna     US / United States  manual_review      declared_location
+ddg       US / United States  official_external  home_base
+```
+
+The second sample reproduced useful country-evidence yield, but the exact pre-research `reviewStartedAt` was not durably retained. The project does not invent a replacement timestamp.
+
+Frozen decision gate:
+
+```text
+raw accepted coverage             PASS
+person-eligible accepted          PASS
+evidence quality                  PASS
+silent country conflicts          PASS
+wall-clock review time            UNPROVEN
+minutes per accepted identity     UNPROVEN
+```
+
+**Recurring reviewed-evidence acquisition is therefore NOT AUTHORIZED.**
+
+If recurring maintenance is reconsidered, it requires a new separately accepted and independently clocked bounded cost measurement.
 
 ## Current order
 
-1. Freeze a reviewed-evidence maintenance policy covering source classes, precedence, conflicts, staleness/re-review, source changes, non-person reclassification, public country-only projection and review-time measurement.
-2. Capture a second independent fixed Top 20 at a different observation time.
-3. Review it under exactly the same policy and measure actual review minutes.
-4. Compare sample overlap, raw/person-eligible/viewer coverage, source mix, conflicts, non-person share and review cost with #989.
-5. Authorize recurring bounded reviewed-evidence maintenance only if replicated yield remains useful and measured manual cost is acceptable.
-6. Keep City and Current Location/IRL blocked regardless of the country-coverage result until their own evidence gates are satisfied.
-7. Audit and implement Kick separately.
-8. Add location history/replay only after live semantics stabilize.
-
-## Maintenance/replication boundary
-
-Allowed:
-
-- supported Twitch stream surface for a bounded fixed identity sample;
-- self-controlled profiles and official/attributable external sources;
-- manual review with source URL provenance;
-- explicit review-time measurement;
-- internally retained city evidence while public response remains country-only.
-
-Not authorized:
-
-- persistent unsupported Twitch panel/social crawling;
-- inferred location from language/category/name/timezone/IP;
-- nationality/birthplace-as-home/current inference;
-- tag-only acceptance;
-- automatic acceptance from search results;
-- City/current-location activation;
-- permanent acquisition/storage changes before the replication decision.
+1. Keep accepted reviewed evidence curated under the 180/365-day staleness policy.
+2. Preserve honest Unmapped coverage.
+3. Keep the public Map country-only.
+4. Do not retroactively repair #995 review timing.
+5. Do not introduce persistent external acquisition or automatic search-result acceptance.
+6. City, Current Location/IRL and Kick Map remain separately blocked.
+7. Any future review-cost, City, Current Location, IRL, Kick Map or location-history stage requires its own accepted gate.
 
 ## Accepted permanent product records
 
@@ -274,20 +220,12 @@ Not authorized:
 - `docs/product/stream-map-spec-v0.5.md`
 - `docs/product/stream-map-implementation-plan-v0.4.md`
 - `docs/product/stream-map-population-filter-decision-v0.1.md`
+- `docs/product/stream-map-reviewed-evidence-maintenance-policy-v0.1.md`
+- `docs/product/stream-map-top20-replication-plan-v0.1.md`
 - `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
 - `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
 - `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`
-
-## Retained Twitch category rollout
-
-The completed Twitch category/Heatmap rollout remains a historical accepted milestone:
-
-- final seven-day audit accepted `2016 / 2016` expected slots;
-- category-reference coverage was `0.995353`;
-- PR #740 exposed Category + Top;
-- PR #741 repaired the rejected 390px mobile overflow;
-- accepted production SHA was `b006f45d0676c9ff3e05e5d6727458e43802de53`;
-- no Kick category UI was authorized by the Twitch rollout.
+- `docs/audits/twitch-stream-map-top20-replication-2026-08-23.md`
 
 ## Operational runbooks
 
@@ -300,3 +238,22 @@ The completed Twitch category/Heatmap rollout remains a historical accepted mile
 - Twitch/Kick collectors remain on existing five-minute cadences unless a separate gate changes them.
 - No retention expansion, backfill, D1/binding change, permanent acquisition expansion or production mutation is implied by UI/API work.
 - Current-main documents and accepted contracts override cached handoffs and superseded draft PR documents.
+
+## Retained Twitch category rollout
+
+The completed Twitch category/Heatmap rollout remains a historical accepted milestone:
+
+- final seven-day audit accepted `2016 / 2016` expected slots;
+- category-reference coverage was `0.995353`;
+- PR #740 exposed Category + Top;
+- PR #741 repaired the rejected 390px mobile overflow;
+- accepted production SHA was `b006f45d0676c9ff3e05e5d6727458e43802de53`;
+- no Kick category UI was authorized by the Twitch rollout.
+
+Historical development-policy verifier anchors retained below; they do not redefine the current Stream Map milestone:
+
+```text
+Twitch category stability + Heatmap public rollout complete
+Public production acceptance run 31244148651 success
+12a5-twitch-heatmap-category-public-cutover-acceptance.json
+```
