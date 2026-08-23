@@ -1,0 +1,42 @@
+name: Twitch Stream Map Review Cost Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'docs/product/stream-map-review-cost-measurement-plan-v0.1.md'
+      - 'docs/audits/twitch-stream-map-review-cost-measurement-contract-v0.1.json'
+      - 'scripts/verify-twitch-stream-map-review-cost-measurement-contract.mjs'
+      - '.github/workflows/twitch-stream-map-review-cost-gate.yml'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/README.md'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/product/stream-map-review-cost-measurement-plan-v0.1.md'
+      - 'docs/audits/twitch-stream-map-review-cost-measurement-contract-v0.1.json'
+      - 'scripts/verify-twitch-stream-map-review-cost-measurement-contract.mjs'
+      - '.github/workflows/twitch-stream-map-review-cost-gate.yml'
+      - 'docs/product/current-roadmap.md'
+      - 'docs/product/current-schedule.md'
+      - 'docs/README.md'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify review-cost measurement contract
+        run: node scripts/verify-twitch-stream-map-review-cost-measurement-contract.mjs
