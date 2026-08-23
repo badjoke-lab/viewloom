@@ -389,7 +389,13 @@ export const TWITCH_REVIEWED_LOCATION_RECORDS = [
   },
 ]
 
-const R3_ADDITIONS = new Set(['ramzes', 'jasontheween', 'fps_shaka', 'lck', 'lck_carry', 'echo_esports'])
-export const TWITCH_REVIEWED_LOCATION_RECORDS_PRE_R3 = TWITCH_REVIEWED_LOCATION_RECORDS.filter(
-  (record) => !R3_ADDITIONS.has(record.streamerLogin),
-)
+const R3_NEW_RECORDS = new Set(['ramzes', 'jasontheween', 'lck', 'lck_carry', 'echo_esports'])
+export const TWITCH_REVIEWED_LOCATION_RECORDS_PRE_R3 = TWITCH_REVIEWED_LOCATION_RECORDS
+  .filter((record) => !R3_NEW_RECORDS.has(record.streamerLogin))
+  .map((record) => record.streamerLogin === 'fps_shaka'
+    ? {
+        ...record,
+        classificationReferences: ['https://prtimes.jp/main/html/rd/p/000000093.000041650.html'],
+        evidences: record.evidences.filter((evidence) => evidence.status === 'context_only'),
+      }
+    : record)
