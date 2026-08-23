@@ -80,16 +80,16 @@ for (const fragment of [
   '2026-08-23T08:28:43.300Z',
   'reviewStartedAt',
   'before the first external/manual lookup',
-  'maximum five distinct search attempts per identity',
+  'Maximum: 5 per identity.',
   'measurement_valid=false',
   'A passing measurement authorizes **only** drafting a separate bounded recurring-reviewed-evidence maintenance proposal.',
 ]) assert.ok(plan.includes(fragment), `measurement plan missing: ${fragment}`)
 
 for (const fragment of [
-  'Raw accepted country coverage >= `10%`',
-  'Person-eligible accepted country coverage >= `15%`',
-  'Wall-clock review time <= `120 minutes` for 20 identities',
-  'Minutes per accepted identity <= `30 minutes`',
+  'raw accepted country coverage             >= 10%',
+  'person-eligible accepted country coverage >= 15%',
+  'wall-clock review time                     <= 120 minutes / 20 identities',
+  'minutes per accepted identity              <= 30 minutes',
 ]) assert.ok(maintenance.includes(fragment), `maintenance policy threshold missing: ${fragment}`)
 
 console.log(JSON.stringify({
