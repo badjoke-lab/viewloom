@@ -68,31 +68,44 @@ jobs:
             grep -Fqx "$token" <<<"$body"
           done
 
-      - name: Enforce bounded dispatch cadence
+      - name: Enforce bounded reservation cadence
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          runs="$(gh api --paginate \
-            -H 'Accept: application/vnd.github+json' \
-            "repos/$GITHUB_REPOSITORY/actions/workflows/$WORKFLOW_FILE/runs?event=workflow_dispatch&per_page=100")"
-
-          jq -s --argjson current "$GITHUB_RUN_ID" '[.[].workflow_runs[] | select(.id != $current)]' <<<"$runs" > /tmp/prior-runs.json
+          query="repo:$GITHUB_REPOSITORY \"viewloom-maintenance-run-reservation-v0.1\" in:comments"
+          gh api graphql \
+            -f query='query($q:String!){search(query:$q,type:ISSUE,first:100){nodes{... on Issue{number comments(first:100){nodes{body}}}}}}' \
+            -f q="$query" \
+            > /tmp/reservation-search.json
 
           node <<'NODE'
           const fs = require('node:fs')
           const now = Date.now()
-          const runs = JSON.parse(fs.readFileSync('/tmp/prior-runs.json', 'utf8'))
+          const payload = JSON.parse(fs.readFileSync('/tmp/reservation-search.json', 'utf8'))
           const sevenDays = 7 * 24 * 60 * 60 * 1000
           const thirtyDays = 30 * 24 * 60 * 60 * 1000
-          const times = runs
-            .map((run) => Date.parse(run.created_at))
-            .filter(Number.isFinite)
+          const reservationPattern = /^viewloom-maintenance-run-reservation-v0\.1\r?\nsampleRunId: (\d+)\r?\nauthorizationIssue: (\d+)\r?\nreservedAt: ([^\r\n]+)\r?\noneRunOnly: true\s*$/
+          const times = []
+
+          for (const issue of payload?.data?.search?.nodes ?? []) {
+            if (!issue || !Number.isInteger(Number(issue.number))) continue
+            for (const comment of issue?.comments?.nodes ?? []) {
+              const match = String(comment?.body ?? '').trim().match(reservationPattern)
+              if (!match) continue
+              const authorizationIssue = Number(match[2])
+              const reservedAt = Date.parse(match[3])
+              if (authorizationIssue !== Number(issue.number)) continue
+              if (!Number.isFinite(reservedAt)) continue
+              times.push(reservedAt)
+            }
+          }
+
           const withinSeven = times.filter((time) => now - time >= 0 && now - time < sevenDays)
           const withinThirty = times.filter((time) => now - time >= 0 && now - time < thirtyDays)
-          if (withinSeven.length > 0) throw new Error('maintenance dispatch blocked: prior dispatch exists within seven days')
-          if (withinThirty.length >= 4) throw new Error('maintenance dispatch blocked: four prior dispatches already exist in rolling 30 days')
+          if (withinSeven.length > 0) throw new Error('maintenance reservation blocked: prior reserved run exists within seven days')
+          if (withinThirty.length >= 4) throw new Error('maintenance reservation blocked: four prior reserved runs already exist in rolling 30 days')
           NODE
 
       - name: Reserve authorization issue for this run
@@ -108,11 +121,13 @@ jobs:
           node <<'NODE'
           const fs = require('node:fs')
           const comments = JSON.parse(fs.readFileSync('/tmp/authorization-comments.json', 'utf8'))
-          const bodies = comments.map((comment) => String(comment.body || ''))
-          if (bodies.some((body) => body.split(/\r?\n/).includes('viewloom-maintenance-run-reservation-v0.1'))) {
+          const reservationPattern = /^viewloom-maintenance-run-reservation-v0\.1\r?\nsampleRunId: \d+\r?\nauthorizationIssue: \d+\r?\nreservedAt: [^\r\n]+\r?\noneRunOnly: true\s*$/
+          const startPattern = /^viewloom-review-start-marker-v0\.1\r?\nsampleRunId: \d+\r?\nauthorizationIssue: \d+\r?\nreviewStartedAt: [^\r\n]+\r?\nresearchMayBeginAfterThisMarker: true\s*$/
+          const bodies = comments.map((comment) => String(comment.body || '').trim())
+          if (bodies.some((body) => reservationPattern.test(body))) {
             throw new Error('authorization issue already has a maintenance run reservation')
           }
-          if (bodies.some((body) => body.split(/\r?\n/).includes('viewloom-review-start-marker-v0.1'))) {
+          if (bodies.some((body) => startPattern.test(body))) {
             throw new Error('authorization issue already has a review start marker')
           }
           NODE
