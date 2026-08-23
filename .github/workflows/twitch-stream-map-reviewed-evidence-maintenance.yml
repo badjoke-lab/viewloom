@@ -152,7 +152,7 @@ jobs:
           mkdir -p "$ARTIFACT_DIR"
           alias="review-maint-${GITHUB_RUN_ID}"
           output="$(wrangler versions upload \
-            --config workers/collector-twitch/wrangler.reviewed-evidence-maintenance.toml \
+            --config tools/twitch-stream-map-reviewed-evidence-maintenance/wrangler.toml \
             --preview-alias "$alias" \
             --keep-vars 2>&1 | tee "$ARTIFACT_DIR/upload.txt")"
           preview_url="$(printf '%s\n' "$output" | sed -nE 's/.*Version Preview URL: (https:\/\/[^ ]+).*/\1/p' | tail -1)"
