@@ -139,6 +139,21 @@ conflict_unmapped
 
 Maximum distinct search rounds: **5 per reviewed identity**. Failed searches and rejected source checks remain inside the measured wall clock.
 
+### Search-attempt accounting — hard stop
+
+The five-attempt ceiling covers the complete external lookup process for one sampled Twitch identity. **Identity-resolution searches count toward the same five-attempt identity budget.** A sampled `login`, `twitchUserId`, or `displayName` mismatch does not create a separate allowance.
+
+For every identity:
+
+1. initialize `searchAttempts=0` before the first external lookup;
+2. **increment the per-identity counter before each distinct external search/lookup attempt**;
+3. retain that counter with the terminal outcome;
+4. if an accepted, conflict, or non-person terminal outcome is established earlier, stop immediately;
+5. **when the counter reaches five without another terminal result, stop research and record `no_qualifying_evidence`**;
+6. **a sixth distinct search/lookup attempt is forbidden**.
+
+Do not perform an extra lookup merely to resolve identity after five attempts have already been consumed. The correct fail-closed result is `no_qualifying_evidence`. Any run that records `searchAttempts > 5` for any identity is `reviewBudgetValid=false` and **must not mutate accepted reviewed evidence**, even if coverage and wall-clock thresholds otherwise pass.
+
 The accepted source and claim policy remains exactly `docs/product/stream-map-reviewed-evidence-maintenance-policy-v0.1.md`.
 
 Do not accept geography from language, timezone, name, category, IP, nationality, birthplace, event venue, organization headquarters, temporary/planned travel or tag-only material. Do not convert home/origin evidence into Current Location evidence. Conflicting accepted countries remain **unmapped** unless explicit temporal supersession is manually reviewed.
@@ -190,8 +205,9 @@ After the finish marker exists:
 2. retain accepted source mix, raw coverage, person-eligible coverage, mapped viewer coverage, conflicts and Current Location count;
 3. calculate review cost only from the durable start/finish timestamps;
 4. use the existing review-cost result evaluator semantics rather than inventing replacement thresholds;
-5. retain accepted reviewed evidence in a normal implementation PR with exact regressions;
-6. keep historical sample metrics tied to their historical evidence snapshot when later evidence changes.
+5. verify every identity has `searchAttempts <= 5`; if any identity exceeds five, retain the run as an invalid audit result and do not mutate accepted reviewed evidence;
+6. retain accepted reviewed evidence in a normal implementation PR with exact regressions only when the run remains valid;
+7. keep historical sample metrics tied to their historical evidence snapshot when later evidence changes.
 
 No source may be accepted automatically from search output. Human review remains required.
 
