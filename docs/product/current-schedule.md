@@ -5,129 +5,137 @@ Last updated: 2026-08-23
 
 ```text
 Current program Twitch Stream Map
-Current stage Fresh bounded reviewed-evidence review-cost measurement preparation
-Accepted main 276705a6db11f2246c82d7a7ed3639dcd74fe192
-Parent cost-measurement gate Issue #998 open
-Preparation package Issue #999 open
-Sample not before 2026-08-23T08:28:43.300Z / 2026-08-23 17:28:43.300 JST
+Current stage Bounded reviewed-evidence maintenance proposal review
+Accepted main 400c93d31391aebe6e80682251d128410928459a
 Reviewed-evidence maintenance policy complete PR #994
-Second fixed Top 20 sample complete PR #995 verification-only / closed without merge
-Second fixed Top 20 reviewed evidence + retained audit complete PR #996
-Replication closeout docs complete PR #997
-Twitch Map public route /twitch/map/
-Twitch Map real API /api/twitch-stream-map
-Recurring reviewed-evidence acquisition not authorized
-Kick Map not authorized
+Fresh review-cost measurement complete PR #1007
+R3 reviewed evidence implementation complete PR #1009
+Current proposal Issue #1010 open
+Recurring reviewed-evidence acquisition NOT authorized
+Automatic cron NOT authorized
+City NOT authorized
+Current Location / IRL NOT authorized
+Kick Map NOT authorized
 Twitch cadence */5 * * * * unchanged
 Kick cadence */5 * * * * unchanged
 ```
 
-## Current cost-measurement gate
+## Current decision
 
-The first two fixed Top 20 reviews established useful explicit country-evidence yield but did not prove recurring review cost. #995 lacked a durably retained exact pre-research `reviewStartedAt`, so the all-pass gate remained correctly unproven.
+The fresh independently clocked R3 Top 20 review closed the only previously unproven review-cost threshold.
 
-Issue #998 now governs one fresh, independently clocked cost measurement. Issue #999 prepares the repository-side contract only.
-
-The third sample must not reuse #989/#995 as a selected review population because prior familiarity would bias review cost downward. It must use one new unbiased current Twitch Top 20 sample.
-
-Hard not-before time:
+Accepted measured result:
 
 ```text
-2026-08-23T08:28:43.300Z
-2026-08-23 17:28:43.300 Asia/Tokyo
+sample captured                    2026-08-23T09:22:22.534Z
+sample identities                  20
+sample viewers                886,296
+reviewStartedAt                    2026-08-23T09:23:44.340Z
+reviewFinishedAt                   2026-08-23T09:28:54.276Z
+wall-clock review                   5.1656 minutes
+accepted persons                    3
+non-person exclusions               8
+person-eligible identities         12
+eligible unmapped                   9
+raw accepted coverage           15.00%
+person-eligible accepted        25.00%
+mapped viewer coverage          5.83225%
+minutes / accepted identity      1.72187
+explicit attributable evidence      3/3
+silent country conflicts             0
+current-location acceptances          0
 ```
 
-This is exactly six hours after the #995 sample at `2026-08-23T02:28:43.300Z`.
-
-Before the first external/manual research action, the measurement must durably retain `reviewStartedAt`. If that value is missing or written after research begins, the measurement is invalid and may not be reconstructed from chat or activity timestamps.
-
-Preparation authority only:
-
-- measurement plan/spec;
-- exact machine-readable contract;
-- fail-closed verifier;
-- verification-only sample infrastructure after the not-before time.
-
-Not authorized by the preparation gate:
-
-- sample acquisition before the not-before time;
-- recurring reviewed-evidence acquisition;
-- persistent crawler;
-- automatic search-result acceptance;
-- City;
-- Current Location/IRL;
-- Kick Map;
-- collector cadence/D1/retention/binding changes;
-- production mutation.
-
-## Current decision from the two-sample replication
-
-The reviewed-evidence maintenance policy was frozen before the second sample in PR #994. Verification-only PR #995 captured the second current Twitch Top 20 at `2026-08-23T02:28:43.300Z`, 32,433 seconds after the first #989 sample, satisfying the precommitted six-hour separation requirement.
-
-PR #996 retained the second review result on main:
+Frozen #994 gate:
 
 ```text
-sample identities                         20
-sample viewers                       480,179
-sample overlap with #989                   2
-sample overlap percent                 10.00%
-accepted placeable persons                  5
-excluded non-person identities              4
-person-eligible identities                 16
-eligible persons without acceptance        11
-accepted country conflicts                  0
-accepted current-location records           0
-official_external accepted                  2
-manual_review accepted                       3
-mapped viewers                          83,553
-raw accepted coverage                   25.00%
-person-eligible accepted coverage       31.25%
-mapped viewer coverage                  17.4004%
+raw accepted country coverage >= 10%              PASS
+person-eligible accepted coverage >= 15%           PASS
+wall-clock review <= 120 minutes                   PASS
+minutes per accepted identity <= 30               PASS
+accepted evidence 100% explicit attributable       PASS
+silent country conflicts == 0                     PASS
 ```
 
-Accepted second-sample records:
+Therefore:
 
 ```text
-adinross  US / United States  official_external  home_base
-xqc       US / United States  manual_review      declared_location
-lacy      US / United States  manual_review      home_base
-cinna     US / United States  manual_review      declared_location
-ddg       US / United States  official_external  home_base
+measurementValid = true
+recurringProposalGatePassed = true
 ```
 
-`dota2ti_es` was additionally classified as `event_broadcast`. Existing `dota2ti`, `dota2ti_ru` and `ow_esports` non-person classifications remain active.
+This does **not** authorize recurring execution. It only opens the separately governed proposal stage in Issue #1010.
 
-## Frozen recurring-maintenance gate result
+## Completed R3 implementation
 
-The precommitted thresholds are evaluated separately:
+PR #1009 is merged on main and applies the accepted R3 evidence:
 
 ```text
-raw accepted country coverage             >= 10%   PASS  25.00%
-person-eligible accepted country coverage >= 15%   PASS  31.25%
-wall-clock review time                     <= 120m  UNPROVEN
-minutes per accepted identity              <= 30m   UNPROVEN
-accepted evidence quality                  100%     PASS  5/5 explicit attributable
-silent country conflicts                   0        PASS  0
+ramzes       RU / Moscow       declared_location  official_external
+jasontheween US / Los Angeles  home_base           official_external
+fps_shaka    JP / Tokyo        declared_location  official_external
 ```
 
-The prior review thread began research without durably retaining the exact `reviewStartedAt` required by the accepted policy. No replacement timestamp was invented. Therefore review wall-clock minutes and minutes per accepted identity are unproven.
+It also classifies:
 
-**Overall recurring-maintenance proposal gate: NOT PASSED / NOT AUTHORIZED.**
+```text
+lck           event_broadcast
+lck_carry     organization
+echo_esports  organization
+```
 
-Useful replicated evidence yield does not substitute for the missing cost measurement. No recurring acquisition, persistent external crawler or automatic search-result acceptance follows from this result.
+Existing `eslcs = event_broadcast` remains unchanged. Existing `fps_shaka` Fukuoka birthplace evidence remains `context_only`.
+
+The exact R3 regression proves:
+
+```text
+observed streams                 20
+observed viewers            886,296
+mapped persons                    3
+mapped viewers               51,691
+excluded non-person streams       8
+excluded non-person viewers 434,968
+eligible unmapped                 9
+mapped countries          RU / US / JP
+current-location streams          0
+public city/region leakage        0
+```
+
+Historical #989/#995 audit metrics are evaluated against a pre-R3 evidence snapshot so the new evidence does not rewrite prior accepted measurements.
 
 ## Current order
 
-1. Merge the #999 preparation package before any fresh sample acquisition.
-2. Do not capture the fresh Top 20 before `2026-08-23T08:28:43.300Z`.
-3. After that time, capture exactly one unbiased current Twitch Top 20 through verification-only supported `/helix/streams` infrastructure.
-4. Retain only rank/user ID/login/display name/viewers plus sample timing/request metadata; no geography or unrelated stream metadata.
-5. Durably write exact `reviewStartedAt` before the first research action.
-6. Review all 20 under unchanged #994 evidence rules and the five-attempt-per-identity cap.
-7. Durably write `reviewFinishedAt` after the twentieth terminal outcome and compute cost from those timestamps only.
-8. Evaluate the unchanged #994 all-pass thresholds.
-9. A pass may only authorize a separate recurring-maintenance proposal; it does not authorize recurring execution.
-10. City, Current Location/IRL and Kick Map remain blocked behind separate gates.
+1. Review Issue #1010 as a proposal only.
+2. If accepted, create a separately bounded implementation gate.
+3. Initial recurring implementation, if separately accepted, must be manual-dispatch only.
+4. Prove one-run API/request ceilings and fail-closed timing before any recurring execution exists.
+5. Preserve the existing 180-day re-review target and 365-day hard-stale rule for `declared_location` / `home_base`.
+6. Preserve country-only public projection.
+7. Do not arm automatic cron scheduling without a later explicit gate based on operating history.
+8. City, Current Location/IRL and Kick Map remain blocked behind independent gates.
+
+## Issue #1010 candidate envelope
+
+Proposal only; execution authority remains false.
+
+```text
+provider                           Twitch only
+population                         fixed overall Top 20
+candidate frequency                at most once per week
+rolling 30-day maximum             4 runs
+initial execution                  manual dispatch only
+app-token requests per run         <= 1
+/helix/streams requests per run    <= 1
+/helix/users requests              0
+sample D1 writes                   0
+sample production deploy           false
+retained sample fields             rank/user ID/login/display name/viewers/timing only
+search rounds / identity           <= 5
+review wall-clock ceiling          120 minutes
+non-person refill                  none
+```
+
+No automatic recurring acquisition follows merely from this proposal.
 
 ## Reviewed-evidence maintenance rules retained
 
@@ -153,10 +161,10 @@ Conflict rule:
 
 ```text
 conflicting accepted countries
--> unmapped unless explicit temporal supersession is reviewed
+-> unmapped unless explicit temporal supersession is manually reviewed
 ```
 
-Staleness for `declared_location` and `home_base`:
+Staleness for `declared_location` / `home_base`:
 
 ```text
 re-review target 180 days
@@ -165,7 +173,7 @@ hard stale        365 days
 
 ## Country-only public boundary
 
-Reviewed evidence may retain explicitly public region/city values internally for future gated decisions. The public Twitch Map remains country-only:
+Reviewed evidence may retain publicly declared city/region text internally, but public responses remain country-only:
 
 ```text
 public location.regions = []
@@ -176,43 +184,46 @@ public evidence.city    = null
 
 No address or coordinate collection is authorized.
 
-## Authoritative retained audits and active cost plan
+## Authoritative current records
 
-- `docs/audits/twitch-stream-map-population-coverage-2026-08-23.md`
-- `docs/audits/twitch-stream-map-coverage-remediation-2026-08-23.md`
-- `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`
-- `docs/audits/twitch-stream-map-top20-replication-2026-08-23.md`
+- `docs/product/current-roadmap.md`
+- `docs/product/stream-map-spec-v0.5.md`
+- `docs/product/stream-map-implementation-plan-v0.4.md`
+- `docs/product/stream-map-reviewed-evidence-maintenance-policy-v0.1.md`
 - `docs/product/stream-map-review-cost-measurement-plan-v0.1.md`
 - `docs/audits/twitch-stream-map-review-cost-measurement-contract-v0.1.json`
+- `docs/audits/twitch-stream-map-review-cost-result-2026-08-23-r3.json`
+- `docs/audits/twitch-stream-map-review-cost-measurement-2026-08-23-r3.md`
+- `docs/audits/twitch-stream-map-top20-external-yield-2026-08-23.md`
+- `docs/audits/twitch-stream-map-top20-replication-2026-08-23.md`
 
-## Completed Stream Map execution anchors
+## Completed Stream Map anchors
 
 ```text
 PR #964 source/yield audit
 PR #965 bounded live probe
 PR #966 title/tag candidate extraction
-PR #970 temporary acquisition verification-only / closed without merge
 PR #971 entity/claim rules
 PR #972 real live join
 PR #974 public route + source/type filters
-PR #975 production route/API verification-only / closed without merge
 PR #977 country drilldown
 PR #979 reason-aware Unmapped
 PR #980 population-filter decision
 PR #981 population filters
 PR #983 ready-response semantics repair
-PR #982 population coverage verification-only / closed without merge
-PR #985 coverage-remediation candidate audit verification-only / closed without merge
 PR #986 reviewed evidence remediation
-PR #987 production verification-only / closed without merge
 PR #989 first fixed Top 20 sample verification-only / closed without merge
 PR #990 first Top 20 reviewed evidence + country-only projection repair
 PR #994 maintenance policy freeze
 PR #995 second fixed Top 20 sample verification-only / closed without merge
 PR #996 second Top 20 reviewed evidence + retained replication audit
 PR #997 replication closeout docs
-Issue #998 fresh bounded review-cost measurement
-Issue #999 measurement preparation package
+PR #1002 cost-measurement package
+PR #1005 result harness
+PR #1006 fresh R3 sample verification-only / closed without merge
+PR #1007 measured R3 cost result
+PR #1009 R3 reviewed evidence implementation
+Issue #1010 bounded maintenance proposal / open
 ```
 
 ## Hard stops
