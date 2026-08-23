@@ -125,10 +125,115 @@ assert.equal(knirpzProjection.mappedStreams[0]?.location.countryCode, 'DE')
 assert.deepEqual(knirpzProjection.mappedStreams[0]?.location.cities, [])
 assert.equal(knirpzProjection.mappedStreams[0]?.evidence[0]?.city, null)
 
+const replicationSample = [
+  ['dota2ti', 'dota2ti', 72710],
+  ['nix', 'Nix', 60587],
+  ['theburntpeanut', 'TheBurntPeanut', 59200],
+  ['dota2ti_ru', 'dota2ti_ru', 37755],
+  ['ow_esports', 'ow_esports', 32574],
+  ['adinross', 'AdinRoss', 24169],
+  ['stableronaldo', 'stableronaldo', 23860],
+  ['xqc', 'xQc', 18818],
+  ['kato_junichi0817', '加藤純一うん〇ちゃん', 18571],
+  ['lacy', 'Lacy', 17524],
+  ['ramzes', 'ramzes', 13270],
+  ['jasontheween', 'jasontheween', 12827],
+  ['shroud', 'shroud', 12461],
+  ['cinna', 'Cinna', 12188],
+  ['moonmoon', 'MOONMOON', 12143],
+  ['dota2ti_es', 'dota2ti_es', 11021],
+  ['ddg', 'DDG', 10854],
+  ['maximum', 'Maximum', 10082],
+  ['jerma985', 'Jerma985', 9830],
+  ['loltyler1', 'loltyler1', 9735],
+]
+
+const replicationViewers = replicationSample.reduce((sum, [, , viewers]) => sum + viewers, 0)
+assert.equal(replicationViewers, 480179)
+
+const replicationModel = buildTwitchStreamMapLiveModel({
+  snapshot: {
+    bucketMinute: '2026-08-23T02:28:00.000Z',
+    collectedAt: '2026-08-23T02:28:43.300Z',
+    streamCount: replicationSample.length,
+    totalViewers: replicationViewers,
+    payloadJson: JSON.stringify({
+      provider: 'twitch',
+      items: replicationSample.map(([channelLogin, displayName, viewers]) => ({ channelLogin, displayName, viewers })),
+    }),
+    sourceMode: 'real',
+    coveredPages: 1,
+    hasMore: true,
+  },
+  evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS,
+  topLimit: 20,
+})
+
+assert.equal(replicationModel.coverage.observedStreams, 20)
+assert.equal(replicationModel.coverage.observedViewers, 480179)
+assert.equal(replicationModel.coverage.mappedStreams, 5)
+assert.equal(replicationModel.coverage.unmappedStreams, 15)
+assert.equal(replicationModel.coverage.excludedNonPersonStreams, 4)
+assert.equal(replicationModel.coverage.eligibleUnmappedStreams, 11)
+assert.equal(replicationModel.coverage.mappedViewers, 83553)
+assert.equal(replicationModel.coverage.excludedNonPersonViewers, 154060)
+assert.equal(replicationModel.coverage.mappedCountryCount, 1)
+assert.equal(replicationModel.coverage.currentLocationStreams, 0)
+assert.equal(replicationModel.coverage.mappedBySource.official_external, 2)
+assert.equal(replicationModel.coverage.mappedBySource.manual_review, 3)
+assert.equal(replicationModel.coverage.unmappedReasons.excluded_nonperson, 4)
+assert.equal(replicationModel.coverage.unmappedReasons.no_reviewed_evidence, 11)
+assert.equal(sumReasonCounts(replicationModel.coverage.unmappedReasons), replicationModel.coverage.unmappedStreams)
+assert.equal(replicationModel.coverage.mappedPercent, 0.25)
+assert.equal(replicationModel.coverage.mappedViewerPercent, 0.174004)
+assert.equal(replicationModel.coverage.mappedStreams + replicationModel.coverage.unmappedStreams, replicationModel.coverage.observedStreams)
+
+assert.deepEqual(
+  replicationModel.mappedStreams.map((row) => [row.login, row.location.countryCode, row.sources]),
+  [
+    ['adinross', 'US', ['official_external']],
+    ['xqc', 'US', ['manual_review']],
+    ['lacy', 'US', ['manual_review']],
+    ['cinna', 'US', ['manual_review']],
+    ['ddg', 'US', ['official_external']],
+  ],
+)
+
+assert.deepEqual(
+  replicationModel.excludedNonPersonStreams.map((row) => [row.login, row.entityKind]),
+  [
+    ['dota2ti', 'event_broadcast'],
+    ['dota2ti_ru', 'event_broadcast'],
+    ['ow_esports', 'event_broadcast'],
+    ['dota2ti_es', 'event_broadcast'],
+  ],
+)
+
+for (const login of ['nix', 'theburntpeanut', 'stableronaldo', 'kato_junichi0817', 'ramzes', 'jasontheween', 'shroud', 'moonmoon', 'maximum', 'jerma985', 'loltyler1']) {
+  assert.equal(replicationModel.mappedStreams.some((row) => row.login === login), false, `${login} must remain unmapped without accepted attributable evidence`)
+}
+
+for (const login of ['adinross', 'xqc', 'lacy', 'cinna', 'ddg']) {
+  const record = TWITCH_REVIEWED_LOCATION_RECORDS.find((entry) => entry.streamerLogin === login)
+  assert.equal(record?.evidences[0]?.status, 'accepted')
+  assert.equal(record?.evidences[0]?.confidence, 'explicit')
+  assert.equal(record?.evidences[0]?.countryCode, 'US')
+}
+
+const replicationPublic = projectTwitchStreamMapCountryOnly(replicationModel)
+assert.ok(replicationPublic.mappedStreams.every((row) => row.location.regions.length === 0))
+assert.ok(replicationPublic.mappedStreams.every((row) => row.location.cities.length === 0))
+assert.ok(replicationPublic.mappedStreams.every((row) => row.evidence.every((evidence) => evidence.region === null && evidence.city === null)))
+assert.deepEqual(replicationPublic.mappedStreams.map((row) => row.location.countryCode), ['US', 'US', 'US', 'US', 'US'])
+
 assert.equal(model.semantics.languageUsedForPlacement, false)
 assert.equal(model.semantics.candidateOnlyPlacementAllowed, false)
 assert.equal(model.semantics.nonPersonPlacementAllowed, false)
 assert.equal(model.semantics.conflictingAcceptedCountriesAreMapped, false)
+assert.equal(replicationModel.semantics.languageUsedForPlacement, false)
+assert.equal(replicationModel.semantics.candidateOnlyPlacementAllowed, false)
+assert.equal(replicationModel.semantics.nonPersonPlacementAllowed, false)
+assert.equal(replicationModel.semantics.conflictingAcceptedCountriesAreMapped, false)
 
 function sumReasonCounts(reasons) {
   return Object.values(reasons).reduce((sum, value) => sum + Number(value || 0), 0)
