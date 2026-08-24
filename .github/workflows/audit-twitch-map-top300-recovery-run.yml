@@ -1,0 +1,102 @@
+name: Audit Twitch Map Top300 Recovery Run
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/audit-twitch-map-top300-recovery-run.yml'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TARGET_HEAD_SHA: 9f9540a022044ed294dda4799c928624ef1633c4
+      TARGET_WORKFLOW: twitch-stream-map-coverage-acquisition-recovery.yml
+    steps:
+      - name: Locate exact recovery run
+        id: locate
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          run_id=''
+          for attempt in $(seq 1 18); do
+            gh api \
+              -H 'Accept: application/vnd.github+json' \
+              "/repos/${GITHUB_REPOSITORY}/actions/workflows/${TARGET_WORKFLOW}/runs?branch=main&event=push&per_page=20" \
+              > /tmp/runs.json
+            run_id="$(jq -r --arg sha "$TARGET_HEAD_SHA" '.workflow_runs[] | select(.head_sha == $sha and .event == "push") | .id' /tmp/runs.json | head -1)"
+            if [[ -n "$run_id" ]]; then
+              status="$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .status' /tmp/runs.json)"
+              conclusion="$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | (.conclusion // "null")' /tmp/runs.json)"
+              echo "run_id=$run_id status=$status conclusion=$conclusion"
+              if [[ "$status" == 'completed' ]]; then
+                break
+              fi
+            fi
+            sleep 5
+          done
+          test -n "$run_id"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          jq --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | {id,status,conclusion,head_sha,created_at,updated_at,html_url}' /tmp/runs.json
+
+      - name: Read jobs, artifacts, diagnostics and derived measurements
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          run_id='${{ steps.locate.outputs.run_id }}'
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" > /tmp/jobs.json
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts?per_page=100" > /tmp/artifacts.json
+
+          echo '=== JOBS ==='
+          jq -r '.jobs[] | [.id,.name,.status,(.conclusion // "null")] | @tsv' /tmp/jobs.json
+          echo '=== ARTIFACTS ==='
+          jq -r '.artifacts[] | [.id,.name,.size_in_bytes,.expired] | @tsv' /tmp/artifacts.json
+
+          artifact_id="$(jq -r '.artifacts[] | select(.name | startswith("twitch-stream-map-top300-recovery-")) | .id' /tmp/artifacts.json | head -1)"
+          if [[ -z "$artifact_id" ]]; then
+            echo 'RECOVERY_ARTIFACT_NOT_AVAILABLE'
+            exit 0
+          fi
+
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/artifact.zip
+          mkdir -p /tmp/artifact
+          unzip -q /tmp/artifact.zip -d /tmp/artifact
+
+          echo '=== ARTIFACT FILES ==='
+          find /tmp/artifact -maxdepth 2 -type f -printf '%P\n' | sort
+
+          health="$(find /tmp/artifact -name health.json -print -quit)"
+          diagnostic="$(find /tmp/artifact -name post-diagnostic.json -print -quit)"
+          top300="$(find /tmp/artifact -name top300-stable-identities.json -print -quit)"
+          country="$(find /tmp/artifact -name country-coverage-queue.json -print -quit)"
+          city="$(find /tmp/artifact -name city-live-coverage.json -print -quit)"
+
+          if [[ -n "$health" ]]; then
+            echo '=== HEALTH ==='
+            jq '{ok,mode,productionDeployment,d1Writes,maxStreamsRequests,usersRequests,credentialPresence}' "$health"
+          fi
+          if [[ -n "$diagnostic" ]]; then
+            echo '=== POST DIAGNOSTIC ==='
+            jq . "$diagnostic"
+          fi
+          if [[ -n "$top300" ]]; then
+            echo '=== TOP300 ==='
+            jq '{schemaVersion,headSha,workflowRunId,observedAt,requestedSize,sampleSize,apiRequests,persistence,identityCount:(.identities|length),uniqueTwitchUserIds:([.identities[].twitchUserId]|unique|length)}' "$top300"
+          fi
+          if [[ -n "$country" ]]; then
+            echo '=== COUNTRY QUEUE ==='
+            jq '{schemaVersion,capturedAt,counts,reconciliation,invariants}' "$country"
+          fi
+          if [[ -n "$city" ]]; then
+            echo '=== CITY COVERAGE ==='
+            jq '{schemaVersion,capturedAt,populationSize,totalViewers,personEligiblePopulation,cityPlaceableStreams,cityPlaceableViewers,cityStreamCoveragePct,cityViewerCoveragePct,countryPlaceableStreams,countryPlaceableViewers,countryStreamCoveragePct,countryViewerCoveragePct,cityPlaceableByCity,eligibleUnmappedPersonCount:(.eligibleUnmappedPersons|length),baseCityConflictCount:(.baseCityConflicts|length),excludedNonPersonCount:(.excludedNonPerson|length),reconciliation,privacy,decision}' "$city"
+          fi
