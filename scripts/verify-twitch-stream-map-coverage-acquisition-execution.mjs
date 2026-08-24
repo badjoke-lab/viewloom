@@ -29,7 +29,7 @@ assert.equal(contract.triggerPath, triggerPath)
 
 assert.match(workflow, /push:\s*\n\s*branches: \[main\]/)
 assert.match(workflow, /docs\/audits\/twitch-stream-map-coverage-acquisition-trigger\.json/)
-assert.match(workflow, /wrangler versions upload/)
+assert.match(workflow, /wrangler@4 versions upload/)
 assert.match(workflow, /--preview-alias/)
 assert.match(workflow, /Capture one Top300 stable-identity artifact/)
 assert.match(workflow, /actions\/upload-artifact@v4/)
