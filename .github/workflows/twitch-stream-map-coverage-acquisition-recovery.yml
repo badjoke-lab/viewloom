@@ -1,0 +1,287 @@
+name: Twitch Stream Map Coverage Acquisition Recovery
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/twitch-stream-map-coverage-acquisition-recovery.yml'
+      - 'tools/twitch-stream-map-coverage-expansion/worker.mjs'
+      - 'tools/twitch-stream-map-coverage-expansion/wrangler.toml'
+      - 'scripts/verify-twitch-stream-map-coverage-acquisition.mjs'
+      - 'scripts/verify-twitch-stream-map-coverage-queue.mjs'
+      - 'scripts/build-twitch-stream-map-coverage-queue.mjs'
+      - 'scripts/verify-twitch-stream-map-city-coverage.mjs'
+      - 'scripts/measure-twitch-stream-map-city-coverage.mjs'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/twitch-stream-map-coverage-acquisition-recovery-trigger.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: twitch-stream-map-coverage-acquisition-recovery-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  RECOVERY_TRIGGER_FILE: docs/audits/twitch-stream-map-coverage-acquisition-recovery-trigger.json
+  ARTIFACT_DIR: artifacts/twitch-stream-map-coverage-acquisition-recovery
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify acquisition package
+        run: node scripts/verify-twitch-stream-map-coverage-acquisition.mjs
+
+      - name: Verify Country queue
+        run: node scripts/verify-twitch-stream-map-coverage-queue.mjs
+
+      - name: Verify City semantics
+        run: node scripts/verify-twitch-stream-map-city-coverage.mjs
+
+      - name: Bundle recovery preview without deploying
+        run: npx --yes wrangler@4 deploy --dry-run --config tools/twitch-stream-map-coverage-expansion/wrangler.toml
+
+      - name: Publish recovery boundary
+        shell: bash
+        run: |
+          {
+            echo '## Twitch Stream Map Top300 recovery package'
+            echo
+            echo '- Production deployment: no'
+            echo '- D1 writes: 0'
+            echo '- Automatic schedule: none'
+            echo '- workflow_dispatch: none'
+            echo '- Recovery execution: exact one-file main trigger only'
+            echo '- Max Twitch token requests during recovery: 1'
+            echo '- Max /helix/streams requests during recovery: 3'
+            echo '- /helix/users requests: 0'
+            echo '- Failed POST body retained only as safe error/errorClass JSON'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  recover-top300:
+    needs: contract
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enforce exact one-file recovery trigger
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          test -f "$RECOVERY_TRIGGER_FILE"
+          mapfile -t changed < <(git diff --name-only "${GITHUB_SHA}^1" "$GITHUB_SHA")
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = "$RECOVERY_TRIGGER_FILE"
+          jq -e '
+            .schemaVersion == "viewloom-twitch-stream-map-top300-recovery-trigger-v0.1" and
+            .oneTime == true and
+            .rearm == false and
+            .productionDeployment == false and
+            .d1Writes == 0 and
+            .maxTokenRequests == 1 and
+            .maxStreamsRequests == 3 and
+            .usersRequests == 0 and
+            (.expectedAcquisitionMergeSha | type == "string" and length == 40) and
+            (.expectedRecoveryPackageMergeSha | type == "string" and length == 40)
+          ' "$RECOVERY_TRIGGER_FILE" >/dev/null
+          acquisition_sha="$(jq -r '.expectedAcquisitionMergeSha' "$RECOVERY_TRIGGER_FILE")"
+          recovery_sha="$(jq -r '.expectedRecoveryPackageMergeSha' "$RECOVERY_TRIGGER_FILE")"
+          test "$acquisition_sha" = '6544a67f302100ef691edb1f49f9af2b176ccc3d'
+          git cat-file -e "${acquisition_sha}^{commit}"
+          git cat-file -e "${recovery_sha}^{commit}"
+          git merge-base --is-ancestor "$acquisition_sha" HEAD
+          git merge-base --is-ancestor "$recovery_sha" HEAD
+
+      - name: Require Cloudflare preview credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - id: upload
+        name: Upload non-production recovery preview version
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          alias="map-top300-recovery-${GITHUB_RUN_ID}"
+          output="$(npx --yes wrangler@4 versions upload \
+            --config tools/twitch-stream-map-coverage-expansion/wrangler.toml \
+            --preview-alias "$alias" \
+            --keep-vars 2>&1 | tee "$ARTIFACT_DIR/upload.txt")"
+          preview_url="$(printf '%s\n' "$output" | sed -nE 's/.*Version Preview URL: (https:\/\/[^ ]+).*/\1/p' | tail -1)"
+          test -n "$preview_url"
+          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+
+      - name: Verify credential presence and preview boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview_url='${{ steps.upload.outputs.preview_url }}'
+          curl --fail --silent --show-error \
+            --retry 4 --retry-delay 3 --retry-all-errors \
+            "$preview_url/health" \
+            -o "$ARTIFACT_DIR/health.json"
+          jq -e '
+            .ok == true and
+            .mode == "coverage_expansion_top300_preview" and
+            .productionDeployment == false and
+            .d1Writes == 0 and
+            .maxStreamsRequests == 3 and
+            .usersRequests == 0 and
+            .credentialPresence.twitchClientId == true and
+            .credentialPresence.twitchClientSecret == true
+          ' "$ARTIFACT_DIR/health.json" >/dev/null
+
+      - name: Capture one bounded Top300 recovery sample
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview_url='${{ steps.upload.outputs.preview_url }}'
+
+          set +e
+          http_code="$(curl --silent --show-error \
+            -X POST "$preview_url/audit/coverage-expansion-sample" \
+            -o "$ARTIFACT_DIR/sample.json" \
+            -w '%{http_code}')"
+          curl_rc=$?
+          set -e
+
+          jq -n \
+            --arg httpCode "$http_code" \
+            --argjson curlExit "$curl_rc" \
+            --slurpfile body "$ARTIFACT_DIR/sample.json" \
+            '{
+              httpCode:$httpCode,
+              curlExit:$curlExit,
+              response: (
+                if (($body[0] // null) | type) == "object" then
+                  {ok:($body[0].ok // false), error:($body[0].error // null), errorClass:($body[0].errorClass // null)}
+                else
+                  {ok:false, error:"non_json_or_empty_response", errorClass:"transport"}
+                end
+              )
+            }' > "$ARTIFACT_DIR/post-diagnostic.json"
+
+          if [[ "$curl_rc" -ne 0 || "$http_code" != '200' ]]; then
+            cat "$ARTIFACT_DIR/post-diagnostic.json"
+            exit 1
+          fi
+
+          jq -e '
+            .ok == true and
+            .result.provider == "twitch" and
+            .result.mode == "coverage_expansion_stable_identity_top300_preview" and
+            .result.requestedSize == 300 and
+            .result.sampleSize == 300 and
+            .result.coveredPages == 3 and
+            .result.apiRequests.token == 1 and
+            .result.apiRequests.streams == 3 and
+            .result.apiRequests.users == 0 and
+            .result.persistence.d1Writes == 0 and
+            .result.persistence.productionDeployment == false and
+            .result.persistence.identityArtifactOnly == true and
+            .result.fieldsIncluded == ["rank", "twitchUserId", "login", "displayName", "viewers"] and
+            (.result.identities | length == 300) and
+            ([.result.identities[].rank] == [range(1;301)]) and
+            ([.result.identities[].twitchUserId] | unique | length == 300)
+          ' "$ARTIFACT_DIR/sample.json" >/dev/null
+
+          jq \
+            --arg headSha "$GITHUB_SHA" \
+            --argjson workflowRunId "$GITHUB_RUN_ID" \
+            --slurpfile trigger "$RECOVERY_TRIGGER_FILE" \
+            '{
+              schemaVersion:"viewloom-twitch-stream-map-top300-stable-identity-artifact-v0.1",
+              headSha:$headSha,
+              workflowRunId:$workflowRunId,
+              trigger:$trigger[0],
+              provider:.result.provider,
+              observedAt:.result.capturedAt,
+              requestedSize:.result.requestedSize,
+              sampleSize:.result.sampleSize,
+              apiRequests:.result.apiRequests,
+              persistence:.result.persistence,
+              fieldsIncluded:.result.fieldsIncluded,
+              identities:.result.identities
+            }' "$ARTIFACT_DIR/sample.json" > "$ARTIFACT_DIR/top300-stable-identities.json"
+
+      - name: Build Country unique review queue
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-twitch-stream-map-coverage-queue.mjs \
+            "$ARTIFACT_DIR/top300-stable-identities.json" \
+            > "$ARTIFACT_DIR/country-coverage-queue.json"
+          jq -e '
+            .counts.population == 300 and
+            .reconciliation.reconciled == 300 and
+            .reconciliation.passes == true and
+            .invariants.calendarWeekControlsQueue == false
+          ' "$ARTIFACT_DIR/country-coverage-queue.json" >/dev/null
+
+      - name: Measure City coverage from the same Top300 artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/measure-twitch-stream-map-city-coverage.mjs \
+            "$ARTIFACT_DIR/top300-stable-identities.json" \
+            > "$ARTIFACT_DIR/city-live-coverage.json"
+          jq -e '
+            .populationSize == 300 and
+            .reconciliation.reconciledPopulation == 300 and
+            .reconciliation.passes == true and
+            .privacy.addressOrPreciseCoordinatePublicationAllowed == false and
+            .decision.publicCityFieldsActivated == false
+          ' "$ARTIFACT_DIR/city-live-coverage.json" >/dev/null
+
+      - name: Publish recovery result
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## Twitch Stream Map Top300 recovery result'
+            if [[ -f "$ARTIFACT_DIR/post-diagnostic.json" ]]; then
+              jq -r '"- POST HTTP: \(.httpCode)\n- curl exit: \(.curlExit)\n- response ok: \(.response.ok)\n- error class: \(.response.errorClass // "none")\n- error: \(.response.error // "none")"' "$ARTIFACT_DIR/post-diagnostic.json"
+            fi
+            if [[ -f "$ARTIFACT_DIR/country-coverage-queue.json" ]]; then
+              jq -r '"- Country selected population: \(.counts.population)\n- Country queued for review: \(.counts.queued)\n- Fresh accepted evidence excluded: \(.counts.excludedFreshEvidence)\n- Confirmed non-person excluded: \(.counts.excludedNonPerson)"' "$ARTIFACT_DIR/country-coverage-queue.json"
+            fi
+            if [[ -f "$ARTIFACT_DIR/city-live-coverage.json" ]]; then
+              jq -r '"- City-placeable streams: \(.cityPlaceableStreams)/\(.populationSize) (\(.cityStreamCoveragePct)%)\n- City-placeable viewers: \(.cityPlaceableViewers)/\(.totalViewers) (\(.cityViewerCoveragePct)%)\n- Eligible unmapped persons: \(.eligibleUnmappedPersons | length)\n- Base City conflicts: \(.baseCityConflicts | length)\n- City API recommendation: \(.decision.recommendation)"' "$ARTIFACT_DIR/city-live-coverage.json"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload recovery evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-stream-map-top300-recovery-${{ github.run_id }}
+          path: artifacts/twitch-stream-map-coverage-acquisition-recovery/
+          if-no-files-found: error
+          retention-days: 30
