@@ -1,0 +1,205 @@
+name: Kick Stream Map Source Probe
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/kick-stream-map-source-probe.yml'
+      - 'docs/audits/kick-stream-map-source-probe-contract-v0.1.json'
+      - 'scripts/verify-kick-stream-map-source-probe.mjs'
+      - 'tools/kick-stream-map-source-probe/worker.mjs'
+      - 'tools/kick-stream-map-source-probe/wrangler.toml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/kick-stream-map-source-probe-trigger.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kick-stream-map-source-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TRIGGER_FILE: docs/audits/kick-stream-map-source-probe-trigger.json
+  ARTIFACT_DIR: artifacts/kick-stream-map-source-probe
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      armed: ${{ steps.trigger-state.outputs.armed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify bounded source probe package
+        run: node scripts/verify-kick-stream-map-source-probe.mjs
+      - name: Bundle preview Worker without deploying
+        run: npx --yes wrangler@4 deploy --dry-run --config tools/kick-stream-map-source-probe/wrangler.toml
+      - name: Read optional one-time trigger
+        id: trigger-state
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f "$TRIGGER_FILE" ]]; then
+            node scripts/verify-kick-stream-map-source-probe.mjs --require-trigger
+            echo 'armed=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'armed=false' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Publish probe boundary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## Kick Stream Map source probe'
+            echo '- Official Livestreams endpoint: /public/v2/livestreams'
+            echo '- Official Channels endpoint: /public/v1/channels'
+            echo '- Token requests max: 1'
+            echo '- Livestream requests max: 1'
+            echo '- Channel requests max: 10'
+            echo '- Legacy kick.com fallback requests: 0'
+            echo '- Production deployment: no'
+            echo '- D1 writes: 0'
+            echo '- Raw title/profile/tag retention: no'
+            echo '- Automatic geography acceptance: no'
+            echo '- Armed: ${{ steps.trigger-state.outputs.armed }}'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  probe:
+    needs: contract
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.contract.outputs.armed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enforce exact one-file main trigger
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          node scripts/verify-kick-stream-map-source-probe.mjs --require-trigger
+          mapfile -t changed < <(git diff --name-only "${GITHUB_SHA}^1" "$GITHUB_SHA")
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = "$TRIGGER_FILE"
+          package_sha="$(jq -r '.expectedProbePackageMergeSha' "$TRIGGER_FILE")"
+          git cat-file -e "${package_sha}^{commit}"
+          git merge-base --is-ancestor "$package_sha" HEAD
+      - name: Require Cloudflare preview credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+      - id: upload
+        name: Upload non-production Kick probe preview version
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          alias="kick-map-probe-${GITHUB_RUN_ID}"
+          output="$(npx --yes wrangler@4 versions upload \
+            --config tools/kick-stream-map-source-probe/wrangler.toml \
+            --preview-alias "$alias" \
+            --keep-vars 2>&1 | tee "$ARTIFACT_DIR/upload.txt")"
+          preview_url="$(printf '%s\n' "$output" | sed -nE 's/.*Version Preview URL: (https:\/\/[^ ]+).*/\1/p' | tail -1)"
+          test -n "$preview_url"
+          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+      - name: Verify preview health and inherited Kick credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview_url='${{ steps.upload.outputs.preview_url }}'
+          curl --fail --silent --show-error \
+            --retry 4 --retry-delay 3 --retry-all-errors \
+            "$preview_url/health" \
+            -o "$ARTIFACT_DIR/health.json"
+          jq -e '
+            .ok == true and
+            .mode == "kick_stream_map_source_probe_preview" and
+            .productionDeployment == false and
+            .d1Writes == 0 and
+            .maxLivestreamRequests == 1 and
+            .maxChannelRequests == 10 and
+            .legacyPublicFallbackRequests == 0 and
+            .credentialPresence.kickClientId == true and
+            .credentialPresence.kickClientSecret == true
+          ' "$ARTIFACT_DIR/health.json" >/dev/null
+      - name: Capture exactly one bounded official-source probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview_url='${{ steps.upload.outputs.preview_url }}'
+          set +e
+          http_code="$(curl --silent --show-error \
+            -X POST "$preview_url/audit/kick-map-source-probe" \
+            -o "$ARTIFACT_DIR/result.json" \
+            -w '%{http_code}')"
+          curl_exit=$?
+          set -e
+          jq -n \
+            --arg httpCode "$http_code" \
+            --argjson curlExit "$curl_exit" \
+            --slurpfile response "$ARTIFACT_DIR/result.json" \
+            '{httpCode:$httpCode,curlExit:$curlExit,response:($response[0] // null)}' \
+            > "$ARTIFACT_DIR/post-diagnostic.json"
+          test "$curl_exit" -eq 0
+          test "$http_code" = '200'
+          jq -e '
+            .ok == true and
+            .result.provider == "kick" and
+            .result.mode == "stream_map_official_source_probe_v0.1" and
+            .result.officialEndpoints.livestreams == "/public/v2/livestreams" and
+            .result.officialEndpoints.channels == "/public/v1/channels" and
+            .result.requestCounts.token == 1 and
+            .result.requestCounts.livestreamsV2 == 1 and
+            (.result.requestCounts.channelsV1 >= 0 and .result.requestCounts.channelsV1 <= 10) and
+            .result.requestCounts.legacyPublicFallback == 0 and
+            .result.persistence.d1Writes == 0 and
+            .result.persistence.productionDeployment == false and
+            .result.persistence.rawProfileTextStored == false and
+            .result.persistence.rawTitleTextStored == false and
+            .result.persistence.rawTagTextStored == false and
+            .result.persistence.geographyStored == false and
+            .result.persistence.twitchEvidenceCopied == false and
+            .result.decisionInputs.legacyFallbackNeededForProbe == false and
+            .result.decisionInputs.automaticGeographyAcceptanceAllowed == false
+          ' "$ARTIFACT_DIR/result.json" >/dev/null
+      - name: Publish bounded result summary
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f "$ARTIFACT_DIR/result.json" ]]; then
+            {
+              echo '## Kick official source probe result'
+              jq -r 'if .ok then "- Livestream rows: \(.result.sample.livestreamRows)\n- Channel lookups: \(.result.sample.channelLookupsAttempted)\n- Channel rows: \(.result.sample.channelRows)\n- custom_tags present (live): \(.result.livestreams.customTagsPresent)\n- custom_tags present (channel): \(.result.channels.customTagsPresent)\n- channel_description present: \(.result.channels.channelDescriptionPresent)\n- description present: \(.result.channels.descriptionPresent)\n- token response bytes: \(.result.responseBytes.token)\n- Livestream V2 response bytes: \(.result.responseBytes.livestreamsV2)\n- Channel response bytes total: \(.result.responseBytes.channelsV1Total)" else "- Probe failed safely: \(.errorClass // "unknown")" end' "$ARTIFACT_DIR/result.json"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload redacted schema-and-coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kick-stream-map-source-probe-${{ github.run_id }}
+          path: |
+            artifacts/kick-stream-map-source-probe/health.json
+            artifacts/kick-stream-map-source-probe/result.json
+            artifacts/kick-stream-map-source-probe/post-diagnostic.json
+          if-no-files-found: error
+          retention-days: 30
