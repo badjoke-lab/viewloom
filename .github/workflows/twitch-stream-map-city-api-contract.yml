@@ -1,0 +1,45 @@
+name: Twitch Stream Map City API Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/api/twitch-stream-map.ts'
+      - 'apps/web/functions/api/twitch-stream-map-public-core.mjs'
+      - 'apps/web/functions/api/twitch-stream-map-public-core.d.mts'
+      - 'apps/web/scripts/verify-twitch-stream-map-city-api-contract.mjs'
+      - '.github/workflows/twitch-stream-map-city-api-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/api/twitch-stream-map.ts'
+      - 'apps/web/functions/api/twitch-stream-map-public-core.mjs'
+      - 'apps/web/functions/api/twitch-stream-map-public-core.d.mts'
+      - 'apps/web/scripts/verify-twitch-stream-map-city-api-contract.mjs'
+      - '.github/workflows/twitch-stream-map-city-api-contract.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install web dependencies
+        run: npm ci
+      - name: Verify City API contract
+        run: node scripts/verify-twitch-stream-map-city-api-contract.mjs
+      - name: Verify functions typecheck
+        run: npm run typecheck:functions
+      - name: Preserve Country drilldown contract
+        run: npm run verify:stream-map-country-drilldown
+      - name: Preserve population filters
+        run: npm run verify:stream-map-population-filters
