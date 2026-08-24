@@ -36,3 +36,4 @@ jobs:
           if (result.counts.basePlacementConflicts !== 0) throw new Error('base placement conflicts must fail closed')
           if (result.counts.baseEligibleCityRows < 1) throw new Error('expected at least one accepted base-eligible City row')
           NODE
+          diff -u docs/audits/twitch-stream-map-city-evidence-audit-2026-08-24.json /tmp/twitch-stream-map-city-evidence-audit.json
