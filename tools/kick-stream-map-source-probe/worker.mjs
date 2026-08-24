@@ -40,9 +40,10 @@ async function runProbe(env) {
   const clientSecret = String(env.KICK_CLIENT_SECRET ?? '').trim()
   if (!clientId || !clientSecret) throw new Error('missing_kick_credentials')
 
-  const token = await fetchAppToken(clientId, clientSecret)
+  const tokenResult = await fetchAppToken(clientId, clientSecret)
+  const token = tokenResult.token
   const requestCounts = { token: 1, livestreamsV2: 0, channelsV1: 0, legacyPublicFallback: 0 }
-  const responseBytes = { token: 0, livestreamsV2: 0, channelsV1Total: 0 }
+  const responseBytes = { token: tokenResult.bytes, livestreamsV2: 0, channelsV1Total: 0 }
 
   requestCounts.livestreamsV2 += 1
   const livestreamUrl = new URL('https://api.kick.com/public/v2/livestreams')
@@ -119,12 +120,13 @@ async function fetchAppToken(clientId, clientSecret) {
     body,
   })
   const text = await response.text()
+  const bytes = new TextEncoder().encode(text).byteLength
   if (!response.ok) throw new Error(`kick_token_http_${response.status}`)
   let parsed = null
   try { parsed = JSON.parse(text) } catch { parsed = null }
   const token = String(parsed?.access_token ?? '').trim()
   if (!token) throw new Error('missing_kick_access_token')
-  return token
+  return { token, bytes }
 }
 
 async function fetchJson(url, token) {
