@@ -5,15 +5,19 @@ on:
     branches: [main]
     paths:
       - 'docs/audits/twitch-stream-map-country-review-batch-contract-v0.1.json'
+      - 'docs/audits/twitch-stream-map-country-review-result-contract-v0.1.json'
       - 'docs/audits/twitch-stream-map-country-review-batches-2026-08-24-part*.json'
       - 'scripts/verify-twitch-stream-map-country-review-batches.mjs'
+      - 'scripts/verify-twitch-stream-map-country-review-result.mjs'
       - '.github/workflows/twitch-stream-map-country-review-batches.yml'
   push:
     branches: [main]
     paths:
       - 'docs/audits/twitch-stream-map-country-review-batch-contract-v0.1.json'
+      - 'docs/audits/twitch-stream-map-country-review-result-contract-v0.1.json'
       - 'docs/audits/twitch-stream-map-country-review-batches-2026-08-24-part*.json'
       - 'scripts/verify-twitch-stream-map-country-review-batches.mjs'
+      - 'scripts/verify-twitch-stream-map-country-review-result.mjs'
       - '.github/workflows/twitch-stream-map-country-review-batches.yml'
 
 permissions:
@@ -30,6 +34,8 @@ jobs:
           node-version: '22'
       - name: Verify bounded Country review batches
         run: node scripts/verify-twitch-stream-map-country-review-batches.mjs
+      - name: Self-test Country review result validator
+        run: node scripts/verify-twitch-stream-map-country-review-result.mjs --self-test
       - name: Publish execution boundary
         shell: bash
         run: |
@@ -45,4 +51,5 @@ jobs:
             echo '- Calendar/week wait: none'
             echo '- Automatic source acceptance: no'
             echo '- Canonical mutation before validator: prohibited'
+            echo '- Result validator: required before canonical mutation'
           } >> "$GITHUB_STEP_SUMMARY"
