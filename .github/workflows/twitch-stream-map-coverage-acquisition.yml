@@ -1,0 +1,26 @@
+name: Twitch Stream Map Coverage Acquisition
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'tools/twitch-stream-map-coverage-expansion/worker.mjs'
+      - 'tools/twitch-stream-map-coverage-expansion/wrangler.toml'
+      - 'scripts/verify-twitch-stream-map-coverage-acquisition.mjs'
+      - '.github/workflows/twitch-stream-map-coverage-acquisition.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify bounded Top300 stable-identity acquisition
+        run: node scripts/verify-twitch-stream-map-coverage-acquisition.mjs

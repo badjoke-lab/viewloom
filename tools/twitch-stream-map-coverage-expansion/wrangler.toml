@@ -1,0 +1,17 @@
+name = "viewloom-collector-twitch"
+main = "worker.mjs"
+compatibility_date = "2026-05-18"
+keep_vars = true
+
+# Coverage-expansion Top300 stable-identity preview only.
+# This lives outside workers/collector-twitch so merging it does not trigger
+# the production collector deployment workflow.
+# It MUST NOT be used with `wrangler deploy` and intentionally has:
+# - no active triggers / cron;
+# - no D1 binding;
+# - no production deployment path.
+# A later explicitly authorized workflow may only create a non-production
+# preview version through `wrangler versions upload --preview-alias`.
+
+[secrets]
+required = ["TWITCH_CLIENT_ID", "TWITCH_CLIENT_SECRET"]
