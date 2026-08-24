@@ -1,0 +1,39 @@
+name: Twitch Stream Map City Evidence Audit
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence.mjs'
+      - 'apps/web/scripts/audit-twitch-stream-map-city-evidence.mjs'
+      - '.github/workflows/twitch-stream-map-city-evidence-audit.yml'
+      - 'docs/audits/twitch-stream-map-city-evidence-audit-*.json'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Audit accepted City evidence
+        run: |
+          set -euo pipefail
+          node apps/web/scripts/audit-twitch-stream-map-city-evidence.mjs | tee /tmp/twitch-stream-map-city-evidence-audit.json
+          node - <<'NODE'
+          const fs = require('node:fs')
+          const result = JSON.parse(fs.readFileSync('/tmp/twitch-stream-map-city-evidence-audit.json', 'utf8'))
+          if (result.schemaVersion !== 'viewloom-stream-map-city-evidence-audit-v0.1') throw new Error('unexpected schema version')
+          if (!result.privacy?.passesStaticKeyCheck) throw new Error('privacy key check failed')
+          if (result.counts.basePlacementConflicts !== 0) throw new Error('base placement conflicts must fail closed')
+          if (result.counts.baseEligibleCityRows < 1) throw new Error('expected at least one accepted base-eligible City row')
+          NODE
+          diff -u docs/audits/twitch-stream-map-city-evidence-audit-2026-08-24.json /tmp/twitch-stream-map-city-evidence-audit.json
