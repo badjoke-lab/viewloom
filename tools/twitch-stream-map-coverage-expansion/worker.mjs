@@ -17,6 +17,10 @@ export default {
         d1Writes: 0,
         maxStreamsRequests: MAX_PAGES,
         usersRequests: 0,
+        credentialPresence: {
+          twitchClientId: Boolean(String(env.TWITCH_CLIENT_ID ?? '').trim()),
+          twitchClientSecret: Boolean(String(env.TWITCH_CLIENT_SECRET ?? '').trim()),
+        },
       })
     }
 
@@ -26,9 +30,11 @@ export default {
     try {
       return json({ ok: true, result: await captureTop300StableIdentities(env) })
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown_error'
       return json({
         ok: false,
-        error: error instanceof Error ? error.message : 'unknown_error',
+        error: message,
+        errorClass: classifyError(message),
       }, 502)
     }
   },
@@ -160,6 +166,17 @@ function validateUniqueStableIdentities(identities) {
     if (prior && prior !== row.twitchUserId) throw new Error(`login_identity_collision:${row.login}`)
     loginToId.set(row.login, row.twitchUserId)
   }
+}
+
+function classifyError(message) {
+  if (message === 'missing_twitch_credentials') return 'credentials'
+  if (message.startsWith('twitch_token_http_') || message === 'missing_twitch_access_token') return 'token'
+  if (message.startsWith('twitch_streams_http_') || message.startsWith('invalid_twitch_streams_payload_')) return 'streams'
+  if (message.startsWith('missing_twitch_user_id_') || message.startsWith('missing_login_') || message.startsWith('missing_display_name_') || message.startsWith('invalid_viewers_')) return 'identity_normalization'
+  if (message.startsWith('duplicate_twitch_user_id:') || message.startsWith('login_identity_collision:')) return 'identity_uniqueness'
+  if (message === 'empty_top300_identity_sample') return 'empty_sample'
+  if (message === 'streams_request_budget_exceeded') return 'budget'
+  return 'unknown'
 }
 
 function json(payload, status = 200) {
