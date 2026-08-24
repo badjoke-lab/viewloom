@@ -6,7 +6,10 @@ import {
   selectTwitchStreamMapPopulation,
   twitchStreamMapPopulationNeedsCategoryDictionary,
 } from './twitch-stream-map-population-core.mjs'
-import { projectTwitchStreamMapCountryOnly } from './twitch-stream-map-public-core.mjs'
+import {
+  projectTwitchStreamMapCityContract,
+  projectTwitchStreamMapCountryOnly,
+} from './twitch-stream-map-public-core.mjs'
 import { TWITCH_REVIEWED_LOCATION_RECORDS } from './twitch-stream-map-reviewed-evidence.mjs'
 
 type SnapshotRow = {
@@ -28,11 +31,38 @@ type CategoryRow = {
   category_name: string
 }
 
+type GeographyMode = 'country' | 'city'
+
 const runtime = providerRuntime('twitch')
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
+  let geographyMode: GeographyMode = 'country'
   try {
     const url = new URL(request.url)
+    const normalizedGeography = normalizeGeographyMode(url.searchParams.get('geography'))
+    if (!normalizedGeography.ok) {
+      return Response.json({
+        version: 'viewloom-stream-map-live-v1',
+        platform: 'twitch',
+        source: 'real',
+        state: 'error',
+        updatedAt: null,
+        coverage: null,
+        populationFilter: null,
+        mappedStreams: [],
+        excludedNonPersonStreams: [],
+        semantics: mapSemantics(),
+        error: {
+          code: 'invalid_geography_mode',
+          message: 'geography must be country or city',
+        },
+      }, {
+        status: 400,
+        headers: { 'cache-control': 'no-store' },
+      })
+    }
+    geographyMode = normalizedGeography.value
+
     const populationQuery = normalizeTwitchStreamMapPopulationQuery({
       top: url.searchParams.get('top'),
       minViewers: url.searchParams.get('min_viewers'),
@@ -48,17 +78,55 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     `).first<SnapshotRow>()
 
     if (!latest) {
-      return Response.json({
-        version: 'viewloom-stream-map-live-v1',
-        platform: 'twitch',
-        source: 'real',
-        state: 'empty',
+      const emptyModel = {
+        version: 'viewloom-stream-map-live-v1' as const,
+        platform: 'twitch' as const,
+        source: 'real' as const,
+        sourceMode: 'missing',
         updatedAt: null,
-        coverage: null,
-        populationFilter: null,
+        coverage: {
+          topLimit: populationQuery.selectedTop,
+          observedStreams: 0,
+          observedViewers: 0,
+          payloadStreams: 0,
+          missingPayloadStreams: 0,
+          mappedStreams: 0,
+          unmappedStreams: 0,
+          eligibleUnmappedStreams: 0,
+          excludedNonPersonStreams: 0,
+          mappedPercent: 0,
+          mappedViewers: 0,
+          unmappedViewers: 0,
+          excludedNonPersonViewers: 0,
+          mappedViewerPercent: 0,
+          mappedCountryCount: 0,
+          currentLocationStreams: 0,
+          currentLocationPercent: 0,
+          coveredPages: null,
+          hasMore: false,
+          mappedBySource: {},
+          unmappedReasons: {},
+        },
         mappedStreams: [],
         excludedNonPersonStreams: [],
-        semantics: mapSemantics(),
+        semantics: {
+          languageUsedForPlacement: false as const,
+          candidateOnlyPlacementAllowed: false as const,
+          nonPersonPlacementAllowed: false as const,
+          conflictingAcceptedCountriesAreMapped: false as const,
+          mappedPlusUnmappedEqualsObserved: true as const,
+          excludedNonPersonIsSubsetOfUnmapped: true as const,
+          evidenceSourcesRemainDistinct: true as const,
+        },
+      }
+      const publicModel = geographyMode === 'city'
+        ? projectTwitchStreamMapCityContract(emptyModel)
+        : projectTwitchStreamMapCountryOnly(emptyModel)
+      return Response.json({
+        ...publicModel,
+        populationFilter: populationQuery,
+        semantics: { ...publicModel.semantics, ...mapSemantics() },
+        state: 'empty',
       }, { headers: { 'cache-control': 'no-store' } })
     }
 
@@ -116,7 +184,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS,
       topLimit: population.metadata.selectedTop,
     })
-    const publicModel = projectTwitchStreamMapCountryOnly(model)
+    const publicModel = geographyMode === 'city'
+      ? projectTwitchStreamMapCityContract(model)
+      : projectTwitchStreamMapCountryOnly(model)
 
     return Response.json({
       ...publicModel,
@@ -128,9 +198,10 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     })
   } catch (error) {
     return Response.json({
-      version: 'viewloom-stream-map-live-v1',
+      version: geographyMode === 'city' ? 'viewloom-stream-map-city-contract-v0.1' : 'viewloom-stream-map-live-v1',
       platform: 'twitch',
       source: 'real',
+      geographyMode,
       state: 'error',
       updatedAt: null,
       coverage: null,
@@ -147,6 +218,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       headers: { 'cache-control': 'no-store' },
     })
   }
+}
+
+function normalizeGeographyMode(value: string | null): { ok: true; value: GeographyMode } | { ok: false } {
+  const normalized = String(value ?? '').trim().toLowerCase()
+  if (!normalized || normalized === 'country') return { ok: true, value: 'country' }
+  if (normalized === 'city') return { ok: true, value: 'city' }
+  return { ok: false }
 }
 
 function mapSemantics() {
