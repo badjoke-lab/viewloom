@@ -1,0 +1,195 @@
+{
+  "schemaVersion": "viewloom-stream-map-city-evidence-audit-v0.1",
+  "source": "TWITCH_REVIEWED_LOCATION_RECORDS",
+  "evidenceObservedThrough": "2026-08-23T09:28:54.276Z",
+  "counts": {
+    "reviewedEntities": 28,
+    "evidenceRows": 17,
+    "acceptedEvidenceRows": 16,
+    "acceptedPersonEvidenceRows": 16,
+    "acceptedPersonRowsWithCity": 12,
+    "acceptedPersonRowsWithRegionOrCity": 12,
+    "baseEligibleAcceptedRows": 16,
+    "baseEligibleCityRows": 12,
+    "baseEligibleCityPersons": 12,
+    "uniqueBaseEligibleCities": 9,
+    "currentOrTemporaryCityRows": 0,
+    "contextOnlyEvidenceRows": 1,
+    "contextOnlyRowsWithRegionOrCity": 1,
+    "basePlacementConflicts": 0
+  },
+  "claimSemantics": {
+    "baseEligible": [
+      "home_base",
+      "declared_location"
+    ],
+    "currentOnly": [
+      "current_location",
+      "temporary_location"
+    ],
+    "contextOnlyDoesNotPlace": true
+  },
+  "baseEligibleCities": [
+    "DE / Berlin / Berlin",
+    "DE / Cologne",
+    "ES / Sant Cugat del Valles",
+    "JP / Tokyo",
+    "RU / Moscow",
+    "US / Austin",
+    "US / Los Angeles",
+    "US / Miami",
+    "US / Texas / Dallas"
+  ],
+  "baseEligibleCityPersons": [
+    "adinross",
+    "cinna",
+    "ddg",
+    "fps_shaka",
+    "ibai",
+    "jasontheween",
+    "knirpz",
+    "lacy",
+    "papaplatte",
+    "ramzes",
+    "shotzzy",
+    "xqc"
+  ],
+  "cityRows": [
+    {
+      "streamerLogin": "adinross",
+      "countryCode": "US",
+      "countryName": "United States",
+      "region": null,
+      "city": "Miami",
+      "claimKind": "home_base",
+      "source": "official_external",
+      "observedAt": "2026-08-23T05:00:14.000Z"
+    },
+    {
+      "streamerLogin": "cinna",
+      "countryCode": "US",
+      "countryName": "United States",
+      "region": null,
+      "city": "Austin",
+      "claimKind": "declared_location",
+      "source": "manual_review",
+      "observedAt": "2026-08-23T05:00:14.000Z"
+    },
+    {
+      "streamerLogin": "ddg",
+      "countryCode": "US",
+      "countryName": "United States",
+      "region": null,
+      "city": "Los Angeles",
+      "claimKind": "home_base",
+      "source": "official_external",
+      "observedAt": "2026-08-23T05:00:14.000Z"
+    },
+    {
+      "streamerLogin": "fps_shaka",
+      "countryCode": "JP",
+      "countryName": "Japan",
+      "region": null,
+      "city": "Tokyo",
+      "claimKind": "declared_location",
+      "source": "official_external",
+      "observedAt": "2026-08-23T09:28:54.276Z"
+    },
+    {
+      "streamerLogin": "ibai",
+      "countryCode": "ES",
+      "countryName": "Spain",
+      "region": null,
+      "city": "Sant Cugat del Valles",
+      "claimKind": "declared_location",
+      "source": "official_external",
+      "observedAt": "2026-08-23T02:04:00.000Z"
+    },
+    {
+      "streamerLogin": "jasontheween",
+      "countryCode": "US",
+      "countryName": "United States",
+      "region": null,
+      "city": "Los Angeles",
+      "claimKind": "home_base",
+      "source": "official_external",
+      "observedAt": "2026-08-23T09:28:54.276Z"
+    },
+    {
+      "streamerLogin": "knirpz",
+      "countryCode": "DE",
+      "countryName": "Germany",
+      "region": "Berlin",
+      "city": "Berlin",
+      "claimKind": "declared_location",
+      "source": "official_external",
+      "observedAt": "2026-08-22T17:04:00.000Z"
+    },
+    {
+      "streamerLogin": "lacy",
+      "countryCode": "US",
+      "countryName": "United States",
+      "region": null,
+      "city": "Los Angeles",
+      "claimKind": "home_base",
+      "source": "manual_review",
+      "observedAt": "2026-08-23T05:00:14.000Z"
+    },
+    {
+      "streamerLogin": "papaplatte",
+      "countryCode": "DE",
+      "countryName": "Germany",
+      "region": null,
+      "city": "Cologne",
+      "claimKind": "declared_location",
+      "source": "official_external",
+      "observedAt": "2026-08-23T02:04:00.000Z"
+    },
+    {
+      "streamerLogin": "ramzes",
+      "countryCode": "RU",
+      "countryName": "Russia",
+      "region": null,
+      "city": "Moscow",
+      "claimKind": "declared_location",
+      "source": "official_external",
+      "observedAt": "2026-08-23T09:28:54.276Z"
+    },
+    {
+      "streamerLogin": "shotzzy",
+      "countryCode": "US",
+      "countryName": "United States",
+      "region": "Texas",
+      "city": "Dallas",
+      "claimKind": "declared_location",
+      "source": "official_external",
+      "observedAt": "2026-08-21T16:25:30.961Z"
+    },
+    {
+      "streamerLogin": "xqc",
+      "countryCode": "US",
+      "countryName": "United States",
+      "region": null,
+      "city": "Miami",
+      "claimKind": "declared_location",
+      "source": "manual_review",
+      "observedAt": "2026-08-23T05:00:14.000Z"
+    }
+  ],
+  "contextOnlyRows": [
+    {
+      "streamerLogin": "fps_shaka",
+      "countryCode": "JP",
+      "region": "Fukuoka Prefecture",
+      "city": null,
+      "claimKind": "birthplace",
+      "status": "context_only"
+    }
+  ],
+  "conflicts": [],
+  "privacy": {
+    "preciseLocationKeysFound": [],
+    "publicAddressOrCoordinatePublicationAllowed": false,
+    "passesStaticKeyCheck": true
+  }
+}
