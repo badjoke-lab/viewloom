@@ -1,0 +1,237 @@
+name: Twitch Stream Map Coverage Acquisition Execution
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/twitch-stream-map-coverage-acquisition-execution.yml'
+      - 'docs/audits/twitch-stream-map-coverage-acquisition-execution-contract.json'
+      - 'docs/audits/twitch-stream-map-coverage-acquisition-trigger.json'
+      - 'scripts/verify-twitch-stream-map-coverage-acquisition-execution.mjs'
+      - 'scripts/verify-twitch-stream-map-coverage-acquisition.mjs'
+      - 'tools/twitch-stream-map-coverage-expansion/worker.mjs'
+      - 'tools/twitch-stream-map-coverage-expansion/wrangler.toml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/twitch-stream-map-coverage-acquisition-trigger.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: twitch-stream-map-coverage-acquisition-execution-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TRIGGER_FILE: docs/audits/twitch-stream-map-coverage-acquisition-trigger.json
+  ARTIFACT_DIR: artifacts/twitch-stream-map-coverage-acquisition
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      armed: ${{ steps.trigger-state.outputs.armed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify acquisition package
+        run: node scripts/verify-twitch-stream-map-coverage-acquisition.mjs
+
+      - name: Verify dormant one-shot execution package
+        run: node scripts/verify-twitch-stream-map-coverage-acquisition-execution.mjs
+
+      - name: Bundle preview Worker without deploying
+        run: npx --yes wrangler@4 deploy --dry-run --config tools/twitch-stream-map-coverage-expansion/wrangler.toml
+
+      - name: Read optional one-time trigger
+        id: trigger-state
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f "$TRIGGER_FILE" ]]; then
+            node scripts/verify-twitch-stream-map-coverage-acquisition-execution.mjs --require-trigger
+            echo 'armed=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'armed=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish execution boundary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## Twitch Stream Map Top300 Coverage Acquisition'
+            echo
+            echo '- Country coverage expansion mainline: active'
+            echo '- Trigger: exact one-file main push only'
+            echo '- Automatic schedule: none'
+            echo '- workflow_dispatch: none'
+            echo '- Production deployment: no'
+            echo '- D1 writes: 0'
+            echo '- Max Twitch token requests: 1'
+            echo '- Max /helix/streams requests: 3'
+            echo '- /helix/users requests: 0'
+            echo '- Artifact reuse: Country queue + City coverage audit'
+            echo '- Armed: ${{ steps.trigger-state.outputs.armed }}'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  acquire-top300:
+    needs: contract
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.contract.outputs.armed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enforce exact one-file main trigger
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          node scripts/verify-twitch-stream-map-coverage-acquisition-execution.mjs --require-trigger
+          mapfile -t changed < <(git diff --name-only "${GITHUB_SHA}^1" "$GITHUB_SHA")
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = "$TRIGGER_FILE"
+
+      - name: Verify pinned package ancestry
+        shell: bash
+        run: |
+          set -euo pipefail
+          acquisition_sha="$(jq -r '.expectedAcquisitionMergeSha' "$TRIGGER_FILE")"
+          execution_sha="$(jq -r '.expectedExecutionPackageMergeSha' "$TRIGGER_FILE")"
+          test "$acquisition_sha" = '6544a67f302100ef691edb1f49f9af2b176ccc3d'
+          git cat-file -e "${acquisition_sha}^{commit}"
+          git cat-file -e "${execution_sha}^{commit}"
+          git merge-base --is-ancestor "$acquisition_sha" HEAD
+          git merge-base --is-ancestor "$execution_sha" HEAD
+
+      - name: Require Cloudflare preview credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - id: upload
+        name: Upload non-production Top300 preview version
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          alias="map-top300-${GITHUB_RUN_ID}"
+          output="$(npx --yes wrangler@4 versions upload \
+            --config tools/twitch-stream-map-coverage-expansion/wrangler.toml \
+            --preview-alias "$alias" \
+            --keep-vars 2>&1 | tee "$ARTIFACT_DIR/upload.txt")"
+          preview_url="$(printf '%s\n' "$output" | sed -nE 's/.*Version Preview URL: (https:\/\/[^ ]+).*/\1/p' | tail -1)"
+          test -n "$preview_url"
+          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$preview_url" > "$ARTIFACT_DIR/preview-url.txt"
+
+      - name: Verify preview health
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview_url='${{ steps.upload.outputs.preview_url }}'
+          curl --fail --silent --show-error \
+            --retry 4 --retry-delay 3 --retry-all-errors \
+            "$preview_url/health" \
+            -o "$ARTIFACT_DIR/health.json"
+          jq -e '
+            .ok == true and
+            .mode == "coverage_expansion_top300_preview" and
+            .productionDeployment == false and
+            .d1Writes == 0 and
+            .maxStreamsRequests == 3 and
+            .usersRequests == 0
+          ' "$ARTIFACT_DIR/health.json" >/dev/null
+
+      - name: Capture one Top300 stable-identity artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview_url='${{ steps.upload.outputs.preview_url }}'
+
+          # Exactly one POST and intentionally no retry: this is the complete
+          # bounded acquisition budget for this one-time trigger.
+          curl --fail --silent --show-error \
+            -X POST "$preview_url/audit/coverage-expansion-sample" \
+            -o "$ARTIFACT_DIR/sample.json"
+
+          jq -e '
+            .ok == true and
+            .result.provider == "twitch" and
+            .result.mode == "coverage_expansion_stable_identity_top300_preview" and
+            .result.requestedSize == 300 and
+            .result.sampleSize == 300 and
+            .result.coveredPages == 3 and
+            .result.apiRequests.token == 1 and
+            .result.apiRequests.streams == 3 and
+            .result.apiRequests.users == 0 and
+            .result.persistence.d1Writes == 0 and
+            .result.persistence.productionDeployment == false and
+            .result.persistence.identityArtifactOnly == true and
+            .result.persistence.rawTitleStored == false and
+            .result.persistence.rawTagsStored == false and
+            .result.persistence.rawLanguageStored == false and
+            .result.persistence.rawProfileDescriptionStored == false and
+            .result.persistence.rawCategoryStored == false and
+            .result.persistence.geographyStored == false and
+            .result.persistence.coordinatesStored == false and
+            .result.persistence.addressStored == false and
+            .result.fieldsIncluded == ["rank", "twitchUserId", "login", "displayName", "viewers"] and
+            (.result.identities | length == 300) and
+            ([.result.identities[].rank] == [range(1;301)]) and
+            ([.result.identities[].twitchUserId] | unique | length == 300) and
+            (all(.result.identities[]; ((keys | sort) == ["displayName", "login", "rank", "twitchUserId", "viewers"])))
+          ' "$ARTIFACT_DIR/sample.json" >/dev/null
+
+          jq \
+            --arg headSha "$GITHUB_SHA" \
+            --argjson workflowRunId "$GITHUB_RUN_ID" \
+            --slurpfile trigger "$TRIGGER_FILE" \
+            '{
+              schemaVersion:"viewloom-twitch-stream-map-top300-stable-identity-artifact-v0.1",
+              headSha:$headSha,
+              workflowRunId:$workflowRunId,
+              trigger:$trigger[0],
+              provider:.result.provider,
+              observedAt:.result.capturedAt,
+              requestedSize:.result.requestedSize,
+              sampleSize:.result.sampleSize,
+              apiRequests:.result.apiRequests,
+              persistence:.result.persistence,
+              fieldsIncluded:.result.fieldsIncluded,
+              identities:.result.identities
+            }' "$ARTIFACT_DIR/sample.json" > "$ARTIFACT_DIR/top300-stable-identities.json"
+
+      - name: Upload Country and City shared Top300 artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-stream-map-top300-stable-identities-${{ github.run_id }}
+          path: |
+            artifacts/twitch-stream-map-coverage-acquisition/top300-stable-identities.json
+            artifacts/twitch-stream-map-coverage-acquisition/health.json
+          if-no-files-found: error
+          retention-days: 30
