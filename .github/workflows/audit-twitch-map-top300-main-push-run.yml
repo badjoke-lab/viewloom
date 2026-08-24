@@ -1,0 +1,84 @@
+name: Audit Twitch Map Top300 Main Push Run
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/audit-twitch-map-top300-main-push-run.yml'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_HEAD_SHA: d3cb2c7c27b7954d74583803f0c389d35213f046
+      TARGET_WORKFLOW: twitch-stream-map-coverage-acquisition-execution.yml
+    steps:
+      - name: Locate exact main push run
+        id: locate
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api \
+            -H 'Accept: application/vnd.github+json' \
+            "/repos/${GITHUB_REPOSITORY}/actions/workflows/${TARGET_WORKFLOW}/runs?branch=main&event=push&per_page=20" \
+            > /tmp/runs.json
+
+          jq -r '.workflow_runs[] | [.id,.status,(.conclusion // "null"),.head_sha,.created_at,.html_url] | @tsv' /tmp/runs.json
+
+          run_id="$(jq -r --arg sha "$TARGET_HEAD_SHA" '.workflow_runs[] | select(.head_sha == $sha and .event == "push") | .id' /tmp/runs.json | head -1)"
+          if [[ -z "$run_id" ]]; then
+            echo "TARGET_RUN_NOT_FOUND head_sha=${TARGET_HEAD_SHA}"
+            exit 2
+          fi
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          jq --argjson id "$run_id" '.workflow_runs[] | select(.id == $id)' /tmp/runs.json
+
+      - name: Read exact run jobs and artifacts
+        if: steps.locate.outputs.run_id != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_id='${{ steps.locate.outputs.run_id }}'
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" > /tmp/jobs.json
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts?per_page=100" > /tmp/artifacts.json
+
+          echo '=== JOBS ==='
+          jq -r '.jobs[] | [.id,.name,.status,(.conclusion // "null"),.started_at,.completed_at] | @tsv' /tmp/jobs.json
+          echo '=== ARTIFACTS ==='
+          jq -r '.artifacts[] | [.id,.name,.size_in_bytes,.expired] | @tsv' /tmp/artifacts.json
+
+          artifact_id="$(jq -r '.artifacts[] | select(.name | startswith("twitch-stream-map-top300-stable-identities-")) | .id' /tmp/artifacts.json | head -1)"
+          if [[ -z "$artifact_id" ]]; then
+            echo 'TARGET_ARTIFACT_NOT_AVAILABLE'
+            exit 0
+          fi
+
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/artifact.zip
+          mkdir -p /tmp/artifact
+          unzip -q /tmp/artifact.zip -d /tmp/artifact
+
+          echo '=== ARTIFACT FILES ==='
+          find /tmp/artifact -maxdepth 2 -type f -printf '%P\n' | sort
+
+          country="$(find /tmp/artifact -name country-coverage-queue.json -print -quit)"
+          city="$(find /tmp/artifact -name city-live-coverage.json -print -quit)"
+          stable="$(find /tmp/artifact -name top300-stable-identities.json -print -quit)"
+
+          if [[ -n "$stable" ]]; then
+            echo '=== TOP300 ==='
+            jq '{schemaVersion,headSha,workflowRunId,observedAt,requestedSize,sampleSize,apiRequests,persistence,identityCount:(.identities|length),uniqueTwitchUserIds:([.identities[].twitchUserId]|unique|length)}' "$stable"
+          fi
+          if [[ -n "$country" ]]; then
+            echo '=== COUNTRY QUEUE ==='
+            jq '{schemaVersion,capturedAt,counts,reconciliation,invariants}' "$country"
+          fi
+          if [[ -n "$city" ]]; then
+            echo '=== CITY COVERAGE ==='
+            jq '{schemaVersion,capturedAt,populationSize,totalViewers,personEligiblePopulation,cityPlaceableStreams,cityPlaceableViewers,cityStreamCoveragePct,cityViewerCoveragePct,countryPlaceableStreams,countryPlaceableViewers,countryStreamCoveragePct,countryViewerCoveragePct,cityPlaceableByCity,eligibleUnmappedPersonCount:(.eligibleUnmappedPersons|length),baseCityConflictCount:(.baseCityConflicts|length),excludedNonPersonCount:(.excludedNonPerson|length),reconciliation,privacy,decision}' "$city"
+          fi
