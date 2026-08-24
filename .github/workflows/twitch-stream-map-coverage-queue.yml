@@ -1,0 +1,26 @@
+name: Twitch Stream Map Coverage Queue
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'tools/twitch-stream-map-coverage-expansion/**'
+      - 'scripts/verify-twitch-stream-map-coverage-queue.mjs'
+      - '.github/workflows/twitch-stream-map-coverage-queue.yml'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify stable-ID coverage queue
+        run: node scripts/verify-twitch-stream-map-coverage-queue.mjs
