@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-coverage-acquisition-trigger-v0.1",
+  "workstream": "Twitch Stream Map country coverage expansion Top300 acquisition",
+  "status": "armed_for_one_time_main_push",
+  "confirmation": "RUN_TWITCH_STREAM_MAP_TOP300_COVERAGE_ACQUISITION",
+  "oneTime": true,
+  "rearm": false,
+  "provider": "twitch",
+  "requestedTopN": 300,
+  "runId": "twitch-stream-map-top300-coverage-acquisition-1",
+  "expectedAcquisitionMergeSha": "6544a67f302100ef691edb1f49f9af2b176ccc3d",
+  "expectedExecutionPackageMergeSha": "c441628e7a55aa071e0fab05dfdf9043451e6bde"
+}
