@@ -54,9 +54,7 @@ const conflicts = []
 for (const login of [...new Set(baseEligibleAccepted.map((row) => row.streamerLogin))].sort()) {
   const rows = baseEligibleAccepted.filter((row) => row.streamerLogin === login)
   const places = [...new Set(rows.map((row) => [row.countryCode ?? '', row.region ?? '', row.city ?? ''].join('|')))]
-  if (places.length > 1) {
-    conflicts.push({ streamerLogin: login, places })
-  }
+  if (places.length > 1) conflicts.push({ streamerLogin: login, places })
 }
 
 const uniqueCities = [...new Set(baseEligibleCity.map((row) => cityKey(row)).filter(Boolean))].sort()
@@ -65,7 +63,7 @@ const baseEligibleCityPersons = [...new Set(baseEligibleCity.map((row) => row.st
 const output = {
   schemaVersion: 'viewloom-stream-map-city-evidence-audit-v0.1',
   source: 'TWITCH_REVIEWED_LOCATION_RECORDS',
-  generatedAt: new Date().toISOString(),
+  evidenceObservedThrough: latestObservedAt(normalized),
   counts: {
     reviewedEntities: TWITCH_REVIEWED_LOCATION_RECORDS.length,
     evidenceRows: normalized.length,
@@ -135,6 +133,14 @@ function cityKey(row) {
   const city = text(row.city)
   if (!city) return ''
   return [text(row.countryCode), text(row.region), city].filter(Boolean).join(' / ')
+}
+
+function latestObservedAt(rows) {
+  const values = rows
+    .map((row) => row.observedAt)
+    .filter(Boolean)
+    .sort()
+  return values.at(-1) ?? null
 }
 
 function collectPreciseKeys(value, found) {
