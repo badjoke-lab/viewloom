@@ -1,0 +1,13 @@
+name = "viewloom-collector-kick"
+main = "worker.mjs"
+compatibility_date = "2026-05-18"
+keep_vars = true
+
+# Stream Map evidence-field probe only.
+# This is intentionally outside workers/collector-kick so merging it does not
+# trigger the production collector deployment workflow.
+# It has no cron, no D1 binding, and no production deployment path.
+# Execution may only use `wrangler versions upload --preview-alias`.
+
+[secrets]
+required = ["KICK_CLIENT_ID", "KICK_CLIENT_SECRET"]
