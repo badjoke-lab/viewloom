@@ -9,8 +9,15 @@ on:
       - 'docs/audits/twitch-stream-map-coverage-acquisition-trigger.json'
       - 'scripts/verify-twitch-stream-map-coverage-acquisition-execution.mjs'
       - 'scripts/verify-twitch-stream-map-coverage-acquisition.mjs'
+      - 'scripts/verify-twitch-stream-map-coverage-queue.mjs'
+      - 'scripts/build-twitch-stream-map-coverage-queue.mjs'
+      - 'scripts/verify-twitch-stream-map-city-coverage.mjs'
+      - 'scripts/measure-twitch-stream-map-city-coverage.mjs'
+      - 'tools/twitch-stream-map-coverage-expansion/queue.mjs'
+      - 'tools/twitch-stream-map-coverage-expansion/city-coverage.mjs'
       - 'tools/twitch-stream-map-coverage-expansion/worker.mjs'
       - 'tools/twitch-stream-map-coverage-expansion/wrangler.toml'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence.mjs'
   push:
     branches: [main]
     paths:
@@ -44,6 +51,12 @@ jobs:
 
       - name: Verify acquisition package
         run: node scripts/verify-twitch-stream-map-coverage-acquisition.mjs
+
+      - name: Verify stable-ID Country coverage queue
+        run: node scripts/verify-twitch-stream-map-coverage-queue.mjs
+
+      - name: Verify City live coverage semantics
+        run: node scripts/verify-twitch-stream-map-city-coverage.mjs
 
       - name: Verify dormant one-shot execution package
         run: node scripts/verify-twitch-stream-map-coverage-acquisition-execution.mjs
@@ -79,7 +92,7 @@ jobs:
             echo '- Max Twitch token requests: 1'
             echo '- Max /helix/streams requests: 3'
             echo '- /helix/users requests: 0'
-            echo '- Artifact reuse: Country queue + City coverage audit'
+            echo '- Same artifact derives: Country queue + City live coverage'
             echo '- Armed: ${{ steps.trigger-state.outputs.armed }}'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -225,13 +238,77 @@ jobs:
               identities:.result.identities
             }' "$ARTIFACT_DIR/sample.json" > "$ARTIFACT_DIR/top300-stable-identities.json"
 
-      - name: Upload Country and City shared Top300 artifact
+      - name: Build Country unique review queue from same Top300 artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-twitch-stream-map-coverage-queue.mjs \
+            "$ARTIFACT_DIR/top300-stable-identities.json" \
+            > "$ARTIFACT_DIR/country-coverage-queue.json"
+
+          jq -e '
+            .schemaVersion == "viewloom-twitch-stream-map-coverage-queue-v0.1" and
+            .counts.population == 300 and
+            .reconciliation.population == 300 and
+            .reconciliation.reconciled == 300 and
+            .reconciliation.passes == true and
+            .invariants.stableIdDeduped == true and
+            .invariants.nonPersonExcluded == true and
+            .invariants.freshAcceptedBaseEvidenceExcluded == true and
+            .invariants.currentLocationDoesNotSuppressBaseReview == true and
+            .invariants.calendarWeekControlsQueue == false
+          ' "$ARTIFACT_DIR/country-coverage-queue.json" >/dev/null
+
+      - name: Measure City-capable live coverage from same Top300 artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/measure-twitch-stream-map-city-coverage.mjs \
+            "$ARTIFACT_DIR/top300-stable-identities.json" \
+            > "$ARTIFACT_DIR/city-live-coverage.json"
+
+          jq -e '
+            .schemaVersion == "viewloom-stream-map-city-live-coverage-v0.1" and
+            .populationSize == 300 and
+            .reconciliation.selectedPopulation == 300 and
+            .reconciliation.reconciledPopulation == 300 and
+            .reconciliation.passes == true and
+            .privacy.addressOrPreciseCoordinatePublicationAllowed == false and
+            .privacy.passesStaticKeyCheck == true and
+            .decision.publicCityFieldsActivated == false and
+            .decision.currentLocationActivated == false
+          ' "$ARTIFACT_DIR/city-live-coverage.json" >/dev/null
+
+      - name: Publish Country and City live measurement summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo '## Country coverage-expansion queue'
+            jq -r '"- Selected population: \(.counts.population)"' "$ARTIFACT_DIR/country-coverage-queue.json"
+            jq -r '"- Queued for review: \(.counts.queued)"' "$ARTIFACT_DIR/country-coverage-queue.json"
+            jq -r '"- Fresh accepted base evidence excluded: \(.counts.excludedFreshEvidence)"' "$ARTIFACT_DIR/country-coverage-queue.json"
+            jq -r '"- Confirmed non-person excluded: \(.counts.excludedNonPerson)"' "$ARTIFACT_DIR/country-coverage-queue.json"
+            jq -r '"- Calendar-week queue control: \(.invariants.calendarWeekControlsQueue)"' "$ARTIFACT_DIR/country-coverage-queue.json"
+            echo
+            echo '## City live coverage'
+            jq -r '"- City-placeable streams: \(.cityPlaceableStreams)/\(.populationSize) (\(.cityStreamCoveragePct)%)"' "$ARTIFACT_DIR/city-live-coverage.json"
+            jq -r '"- City-placeable viewers: \(.cityPlaceableViewers)/\(.totalViewers) (\(.cityViewerCoveragePct)%)"' "$ARTIFACT_DIR/city-live-coverage.json"
+            jq -r '"- Country-placeable streams: \(.countryPlaceableStreams)/\(.populationSize) (\(.countryStreamCoveragePct)%)"' "$ARTIFACT_DIR/city-live-coverage.json"
+            jq -r '"- Eligible unmapped persons: \(.eligibleUnmappedPersons | length)"' "$ARTIFACT_DIR/city-live-coverage.json"
+            jq -r '"- Base City conflicts: \(.baseCityConflicts | length)"' "$ARTIFACT_DIR/city-live-coverage.json"
+            jq -r '"- City API recommendation: \(.decision.recommendation)"' "$ARTIFACT_DIR/city-live-coverage.json"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload shared Top300, Country queue and City coverage artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: twitch-stream-map-top300-stable-identities-${{ github.run_id }}
           path: |
             artifacts/twitch-stream-map-coverage-acquisition/top300-stable-identities.json
+            artifacts/twitch-stream-map-coverage-acquisition/country-coverage-queue.json
+            artifacts/twitch-stream-map-coverage-acquisition/city-live-coverage.json
             artifacts/twitch-stream-map-coverage-acquisition/health.json
           if-no-files-found: error
           retention-days: 30
