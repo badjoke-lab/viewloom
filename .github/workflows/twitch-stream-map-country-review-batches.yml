@@ -38,8 +38,20 @@ jobs:
         run: node scripts/verify-twitch-stream-map-country-review-batches.mjs
       - name: Self-test Country review result validator
         run: node scripts/verify-twitch-stream-map-country-review-result.mjs --self-test
-      - name: Validate Batch A review result
-        run: node scripts/verify-twitch-stream-map-country-review-result.mjs docs/audits/twitch-stream-map-country-review-result-a-2026-08-25.json
+      - name: Validate all present Country review results
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          results=(docs/audits/twitch-stream-map-country-review-result-*.json)
+          if (( ${#results[@]} == 0 )); then
+            echo 'No Country review result artifacts found.' >&2
+            exit 1
+          fi
+          for result in "${results[@]}"; do
+            echo "Validating ${result}"
+            node scripts/verify-twitch-stream-map-country-review-result.mjs "$result"
+          done
       - name: Publish execution boundary
         shell: bash
         run: |
@@ -55,5 +67,5 @@ jobs:
             echo '- Calendar/week wait: none'
             echo '- Automatic source acceptance: no'
             echo '- Canonical mutation before validator: prohibited'
-            echo '- Batch A result: validator required and executed by this workflow'
+            echo '- Every present result artifact is validated on each run'
           } >> "$GITHUB_STEP_SUMMARY"
