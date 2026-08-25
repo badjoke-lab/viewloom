@@ -6,10 +6,8 @@ import {
   selectTwitchStreamMapPopulation,
   twitchStreamMapPopulationNeedsCategoryDictionary,
 } from './twitch-stream-map-population-core.mjs'
-import {
-  projectTwitchStreamMapCityContract,
-  projectTwitchStreamMapCountryOnly,
-} from './twitch-stream-map-public-core.mjs'
+import { projectTwitchStreamMapCountryOnly } from './twitch-stream-map-public-core.mjs'
+import { projectTwitchStreamMapCityContract } from './twitch-stream-map-public-core.mjs'
 import { TWITCH_REVIEWED_LOCATION_RECORDS } from './twitch-stream-map-reviewed-evidence.mjs'
 
 type SnapshotRow = {
@@ -119,9 +117,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
           evidenceSourcesRemainDistinct: true as const,
         },
       }
-      const publicModel = geographyMode === 'city'
-        ? projectTwitchStreamMapCityContract(emptyModel)
-        : projectTwitchStreamMapCountryOnly(emptyModel)
+      const publicModel = projectPublicModel(emptyModel, geographyMode)
       return Response.json({
         ...publicModel,
         populationFilter: populationQuery,
@@ -184,9 +180,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS,
       topLimit: population.metadata.selectedTop,
     })
-    const publicModel = geographyMode === 'city'
-      ? projectTwitchStreamMapCityContract(model)
-      : projectTwitchStreamMapCountryOnly(model)
+    const publicModel = projectPublicModel(model, geographyMode)
 
     return Response.json({
       ...publicModel,
@@ -218,6 +212,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       headers: { 'cache-control': 'no-store' },
     })
   }
+}
+
+function projectPublicModel(model: any, geographyMode: GeographyMode) {
+  const publicModel = projectTwitchStreamMapCountryOnly(model)
+  if (geographyMode === 'city') return projectTwitchStreamMapCityContract(model)
+  return publicModel
 }
 
 function normalizeGeographyMode(value: string | null): { ok: true; value: GeographyMode } | { ok: false } {
