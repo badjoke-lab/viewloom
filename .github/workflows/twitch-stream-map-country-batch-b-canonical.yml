@@ -1,0 +1,51 @@
+name: Twitch Stream Map Country Batch B Canonical
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/api/twitch-stream-map.ts'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence-batch-b.mjs'
+      - 'docs/audits/twitch-stream-map-country-review-result-b-2026-08-25.json'
+      - 'docs/audits/twitch-stream-map-country-review-apply-b-2026-08-25.json'
+      - 'scripts/verify-twitch-stream-map-country-batch-b-canonical.mjs'
+      - '.github/workflows/twitch-stream-map-country-batch-b-canonical.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/api/twitch-stream-map.ts'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence-batch-b.mjs'
+      - 'docs/audits/twitch-stream-map-country-review-result-b-2026-08-25.json'
+      - 'docs/audits/twitch-stream-map-country-review-apply-b-2026-08-25.json'
+      - 'scripts/verify-twitch-stream-map-country-batch-b-canonical.mjs'
+      - '.github/workflows/twitch-stream-map-country-batch-b-canonical.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Revalidate source Batch B result
+        run: node scripts/verify-twitch-stream-map-country-review-result.mjs docs/audits/twitch-stream-map-country-review-result-b-2026-08-25.json
+      - name: Verify canonical application alignment
+        run: node scripts/verify-twitch-stream-map-country-batch-b-canonical.mjs
+      - name: Publish canonical application boundary
+        shell: bash
+        run: |
+          {
+            echo '## Twitch Country Batch B canonical application'
+            echo '- Accepted placements applied: 0'
+            echo '- Non-person exclusions applied: 1'
+            echo '- No-qualifying rows applied: 0'
+            echo '- City placements introduced: 0'
+            echo '- Current Location introduced: 0'
+            echo '- D1 mutation: 0'
+            echo '- Production deploy requested: no'
+          } >> "$GITHUB_STEP_SUMMARY"
