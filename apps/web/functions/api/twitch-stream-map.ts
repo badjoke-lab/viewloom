@@ -9,6 +9,7 @@ import {
 import { projectTwitchStreamMapCountryOnly } from './twitch-stream-map-public-core.mjs'
 import { projectTwitchStreamMapCityContract } from './twitch-stream-map-public-core.mjs'
 import { TWITCH_REVIEWED_LOCATION_RECORDS } from './twitch-stream-map-reviewed-evidence.mjs'
+import { TWITCH_REVIEWED_LOCATION_BATCH_A } from './twitch-stream-map-reviewed-evidence-batch-a.mjs'
 
 type SnapshotRow = {
   bucket_minute: string
@@ -32,6 +33,10 @@ type CategoryRow = {
 type GeographyMode = 'country' | 'city'
 
 const runtime = providerRuntime('twitch')
+const reviewedLocationRecords = [
+  ...TWITCH_REVIEWED_LOCATION_RECORDS,
+  ...TWITCH_REVIEWED_LOCATION_BATCH_A,
+]
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   let geographyMode: GeographyMode = 'country'
@@ -177,7 +182,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
         coveredPages: coverage?.covered_pages ?? null,
         hasMore: Boolean(coverage?.has_more),
       },
-      evidenceRecords: TWITCH_REVIEWED_LOCATION_RECORDS,
+      evidenceRecords: reviewedLocationRecords,
       topLimit: population.metadata.selectedTop,
     })
     const publicModel = projectPublicModel(model, geographyMode)
