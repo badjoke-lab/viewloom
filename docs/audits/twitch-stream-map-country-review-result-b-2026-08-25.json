@@ -6,7 +6,7 @@
   "startedAt": "2026-08-25T01:33:00Z",
   "completedAt": "2026-08-25T01:39:00Z",
   "wallClockMinutes": 6,
-  "externalLookupsUsed": 37,
+  "externalLookupsUsed": 35,
   "providerRequests": 0,
   "canonicalMutationApplied": false,
   "completed": true,
