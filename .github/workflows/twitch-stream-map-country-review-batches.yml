@@ -1,0 +1,55 @@
+name: Twitch Stream Map Country Review Batches
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/audits/twitch-stream-map-country-review-batch-contract-v0.1.json'
+      - 'docs/audits/twitch-stream-map-country-review-result-contract-v0.1.json'
+      - 'docs/audits/twitch-stream-map-country-review-batches-2026-08-24-part*.json'
+      - 'scripts/verify-twitch-stream-map-country-review-batches.mjs'
+      - 'scripts/verify-twitch-stream-map-country-review-result.mjs'
+      - '.github/workflows/twitch-stream-map-country-review-batches.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/twitch-stream-map-country-review-batch-contract-v0.1.json'
+      - 'docs/audits/twitch-stream-map-country-review-result-contract-v0.1.json'
+      - 'docs/audits/twitch-stream-map-country-review-batches-2026-08-24-part*.json'
+      - 'scripts/verify-twitch-stream-map-country-review-batches.mjs'
+      - 'scripts/verify-twitch-stream-map-country-review-result.mjs'
+      - '.github/workflows/twitch-stream-map-country-review-batches.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify bounded Country review batches
+        run: node scripts/verify-twitch-stream-map-country-review-batches.mjs
+      - name: Self-test Country review result validator
+        run: node scripts/verify-twitch-stream-map-country-review-result.mjs --self-test
+      - name: Publish execution boundary
+        shell: bash
+        run: |
+          {
+            echo '## Country coverage review batches'
+            echo '- Source population: Top300 run 32704826743'
+            echo '- Queued identities: 297'
+            echo '- Batch count: 12 (A-L)'
+            echo '- Max identities/batch: 25'
+            echo '- Max external lookups/identity: 5'
+            echo '- Max external lookups/batch: 100'
+            echo '- Provider requests/batch: 0'
+            echo '- Calendar/week wait: none'
+            echo '- Automatic source acceptance: no'
+            echo '- Canonical mutation before validator: prohibited'
+            echo '- Result validator: required before canonical mutation'
+          } >> "$GITHUB_STEP_SUMMARY"
