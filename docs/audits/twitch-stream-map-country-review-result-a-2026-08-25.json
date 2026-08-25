@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-country-review-result-v0.1",
+  "sourceRunId": 32704826743,
+  "batchId": "A",
+  "reviewMode": "manual_review",
+  "startedAt": "2026-08-25T01:18:00Z",
+  "completedAt": "2026-08-25T01:25:00Z",
+  "wallClockMinutes": 7,
+  "externalLookupsUsed": 46,
+  "providerRequests": 0,
+  "canonicalMutationApplied": false,
+  "completed": true,
+  "identities": [
+    {
+      "rank": 1,
+      "twitchUserId": "545050196",
+      "login": "kato_junichi0817",
+      "lookupsUsed": 2,
+      "outcome": "accepted",
+      "evidence": [{"sourceClass":"first_party_stream_transcript","sourceUrl":"https://www.twitchtranscripts.com/channel/kato_junichi0817/2777254381","observedAt":"2026-05-21T00:00:00Z","countryCode":"JP","countryName":"Japan","claimKind":"home_base","confidence":"explicit"}],
+      "placement": {"state":"mapped","countryCode":"JP"},
+      "researchNote": "Accepted only at country level from an explicit home-base claim; no address or GPS retained."
+    },
+    {"rank":3,"twitchUserId":"142898099","login":"gon_vl","lookupsUsed":1,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Direct/profile search found no qualifying home-base or declared-location source; third-party residence aggregator not accepted."},
+    {
+      "rank":5,"twitchUserId":"26490481","login":"summit1g","lookupsUsed":2,"outcome":"accepted",
+      "evidence":[{"sourceClass":"first_party_stream_transcript","sourceUrl":"https://www.twitchtranscripts.com/channel/summit1g/2657872345","observedAt":"2025-12-31T00:00:00Z","countryCode":"US","countryName":"United States","claimKind":"home_base","confidence":"explicit"}],
+      "placement":{"state":"mapped","countryCode":"US"},"researchNote":"Accepted only at country level from an explicit home-base statement; no address or GPS retained."
+    },
+    {"rank":6,"twitchUserId":"153670212","login":"topson","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found nationality/history and community discussion, but no qualifying current home-base or declared-location source."},
+    {"rank":7,"twitchUserId":"63000646","login":"rdcgaming","lookupsUsed":1,"outcome":"excluded_nonperson","entityKind":"organization","classificationReferences":["https://www.rdcworld1.com/"],"evidence":[],"placement":null,"researchNote":"Official RDCWorld site presents RDC Gaming alongside a multi-member team and links the shared Twitch channel."},
+    {"rank":8,"twitchUserId":"67519684","login":"sasatikk","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found stream/channel references but no qualifying home-base or declared-location source."},
+    {
+      "rank":9,"twitchUserId":"94130217","login":"gingy","lookupsUsed":2,"outcome":"accepted",
+      "evidence":[{"sourceClass":"first_party_stream_transcript","sourceUrl":"https://www.twitchtranscripts.com/channel/gingy/2653088270","observedAt":"2025-12-26T00:00:00Z","countryCode":"US","countryName":"United States","claimKind":"home_base","confidence":"explicit"}],
+      "placement":{"state":"mapped","countryCode":"US"},"researchNote":"Accepted only at country level from an explicit present-tense home-base statement; no address or GPS retained."
+    },
+    {"rank":10,"twitchUserId":"41952329","login":"bijusan","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Stream transcript search did not produce a qualifying residence claim."},
+    {"rank":11,"twitchUserId":"30104304","login":"maximilian_dood","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found Los Angeles upbringing/event references, not a qualifying current residence claim."},
+    {"rank":12,"twitchUserId":"93828097","login":"batora324","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Profile/transcript search found channel identity but no qualifying residence claim."},
+    {"rank":13,"twitchUserId":"469790580","login":"michaelreeves","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found OfflineTV and Los Angeles association, not a qualifying current residence claim."},
+    {"rank":14,"twitchUserId":"59635827","login":"supertf","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found nationality/upbringing references, not a qualifying current residence claim."},
+    {"rank":15,"twitchUserId":"15027034","login":"zrush","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found no qualifying residence claim."},
+    {
+      "rank":16,"twitchUserId":"169185650","login":"robcdee","lookupsUsed":2,"outcome":"accepted",
+      "evidence":[{"sourceClass":"direct_interview","sourceUrl":"https://antyweb.pl/robcdee-rozmowa-ze-streamerem-twitch","observedAt":"2023-09-03T00:00:00Z","countryCode":"JP","countryName":"Japan","claimKind":"home_base","confidence":"explicit"}],
+      "placement":{"state":"mapped","countryCode":"JP"},"researchNote":"Direct interview contains first-person statement that he was already living in Tokyo; stored only as country-level Japan evidence."
+    },
+    {"rank":17,"twitchUserId":"56489971","login":"metashi12","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found German-language/community references, not a qualifying residence claim."},
+    {"rank":18,"twitchUserId":"20478262","login":"teamliquid","lookupsUsed":1,"outcome":"excluded_nonperson","entityKind":"organization","classificationReferences":["https://teamliquid.com/"],"evidence":[],"placement":null,"researchNote":"Official Team Liquid site identifies Team Liquid as an esports organization; this Twitch identity is not treated as one person."},
+    {"rank":19,"twitchUserId":"172376071","login":"maxim","lookupsUsed":1,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found no qualifying residence claim tied to this Twitch identity."},
+    {"rank":20,"twitchUserId":"28241419","login":"gingitv","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found no qualifying residence claim tied to this Twitch identity."},
+    {"rank":21,"twitchUserId":"501133928","login":"rubenmartinweb","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found journalist/streamer references, not a qualifying residence claim."},
+    {"rank":22,"twitchUserId":"45302947","login":"iitztimmy","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found event/team references, not a qualifying current residence claim."},
+    {"rank":23,"twitchUserId":"233929245","login":"m3wsu","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found competitive/profile references, not a qualifying residence claim."},
+    {
+      "rank":24,"twitchUserId":"43539324","login":"broxah","lookupsUsed":2,"outcome":"accepted",
+      "evidence":[{"sourceClass":"direct_interview","sourceUrl":"https://www.invenglobal.com/articles/17562/broxah-being-someone-who-has-been-active-with-streaming-i-couldnt-avoid-seeing-all-those-comments-it-got-to-me","observedAt":"2022-06-29T00:00:00Z","countryCode":"DK","countryName":"Denmark","claimKind":"declared_location","confidence":"explicit"}],
+      "placement":{"state":"mapped","countryCode":"DK"},"researchNote":"Direct interview explicitly states he moved back to Denmark; nationality alone was not used."
+    },
+    {"rank":25,"twitchUserId":"38770961","login":"dracon","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found no qualifying residence claim tied to this Twitch identity."},
+    {
+      "rank":26,"twitchUserId":"805456112","login":"naru0419045","lookupsUsed":2,"outcome":"accepted",
+      "evidence":[{"sourceClass":"first_party_profile","sourceUrl":"https://camp-fire.jp/profile/naruo0419/projects","observedAt":"2026-08-25T01:25:00Z","countryCode":"JP","countryName":"Japan","claimKind":"home_base","confidence":"explicit"}],
+      "placement":{"state":"mapped","countryCode":"JP"},"researchNote":"Creator profile explicitly states country of residence Japan and links the matching Twitch identity; only country-level evidence retained."
+    },
+    {"rank":27,"twitchUserId":"431882702","login":"teegrizzley","lookupsUsed":2,"outcome":"no_qualifying_evidence","evidence":[],"placement":null,"researchNote":"Search found Detroit upbringing and older historical residence references, but no sufficiently current qualifying home-base claim; no placement accepted."}
+  ]
+}
