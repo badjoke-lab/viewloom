@@ -43,9 +43,9 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
-          results=(docs/audits/twitch-stream-map-country-review-result-*.json)
+          results=(docs/audits/twitch-stream-map-country-review-result-[a-l]-*.json)
           if (( ${#results[@]} == 0 )); then
-            echo 'No Country review result artifacts found.' >&2
+            echo 'No Country batch result artifacts found.' >&2
             exit 1
           fi
           for result in "${results[@]}"; do
@@ -67,5 +67,5 @@ jobs:
             echo '- Calendar/week wait: none'
             echo '- Automatic source acceptance: no'
             echo '- Canonical mutation before validator: prohibited'
-            echo '- Every present result artifact is validated on each run'
+            echo '- Every present A-L batch result artifact is validated on each run'
           } >> "$GITHUB_STEP_SUMMARY"
