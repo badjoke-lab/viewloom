@@ -1,0 +1,1 @@
+{"schemaVersion":"viewloom-kick-stream-map-source-probe-trigger-v0.1","issue":1033,"oneTime":true,"rearm":false,"expectedProbePackageMergeSha":"620b7108c742bd50b5fcfda366e9bb6a2d1d3715","productionDeployment":false,"d1Writes":0,"tokenRequestsMax":1,"livestreamRequestsMax":1,"channelRequestsMax":10}
