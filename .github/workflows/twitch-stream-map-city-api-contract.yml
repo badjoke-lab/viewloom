@@ -1,0 +1,48 @@
+name: Twitch Stream Map City API Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/api/twitch-stream-map.ts'
+      - 'apps/web/functions/api/twitch-stream-map-public-core.mjs'
+      - 'apps/web/functions/api/twitch-stream-map-public-core.d.mts'
+      - 'apps/web/scripts/verify-twitch-stream-map-city-api-contract.mjs'
+      - 'apps/web/scripts/verify-twitch-stream-map-population-filters.mjs'
+      - '.github/workflows/twitch-stream-map-city-api-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/api/twitch-stream-map.ts'
+      - 'apps/web/functions/api/twitch-stream-map-public-core.mjs'
+      - 'apps/web/functions/api/twitch-stream-map-public-core.d.mts'
+      - 'apps/web/scripts/verify-twitch-stream-map-city-api-contract.mjs'
+      - 'apps/web/scripts/verify-twitch-stream-map-population-filters.mjs'
+      - '.github/workflows/twitch-stream-map-city-api-contract.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Verify City API contract
+        run: pnpm --filter @viewloom/web exec node scripts/verify-twitch-stream-map-city-api-contract.mjs
+      - name: Verify functions typecheck
+        run: pnpm --filter @viewloom/web typecheck:functions
+      - name: Preserve Country drilldown contract
+        run: pnpm --filter @viewloom/web verify:stream-map-country-drilldown
+      - name: Preserve population filters
+        run: pnpm --filter @viewloom/web verify:stream-map-population-filters
