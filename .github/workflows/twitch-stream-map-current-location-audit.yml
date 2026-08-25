@@ -1,0 +1,35 @@
+name: Twitch Stream Map Current Location Audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/audits/twitch-stream-map-current-location-audit-2026-08-25.json'
+      - 'docs/product/stream-map-current-location-irl-contract-v0.1.md'
+      - 'tools/twitch-stream-map-current-location/freshness.mjs'
+      - 'scripts/verify-twitch-stream-map-current-location-audit.mjs'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence.mjs'
+      - '.github/workflows/twitch-stream-map-current-location-audit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/twitch-stream-map-current-location-audit-2026-08-25.json'
+      - 'tools/twitch-stream-map-current-location/freshness.mjs'
+      - 'scripts/verify-twitch-stream-map-current-location-audit.mjs'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence.mjs'
+      - '.github/workflows/twitch-stream-map-current-location-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify retained Current Location audit and freshness evaluator
+        run: node scripts/verify-twitch-stream-map-current-location-audit.mjs
