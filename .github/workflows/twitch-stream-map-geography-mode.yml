@@ -5,10 +5,14 @@ on:
     paths:
       - 'apps/web/src/features/twitch-stream-map/geography-mode-core.mjs'
       - 'apps/web/src/features/twitch-stream-map/geography-mode-core.d.mts'
+      - 'apps/web/src/features/twitch-stream-map/geography-ui-bootstrap.ts'
+      - 'apps/web/src/features/twitch-stream-map/unmapped-reason-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/unmapped-reason-view.ts'
       - 'apps/web/fixtures/twitch-stream-map-city-ui-request-fixture.json'
       - 'scripts/verify-twitch-stream-map-geography-mode.mjs'
       - 'scripts/verify-twitch-stream-map-city-ui-gate-audit.mjs'
       - 'scripts/verify-twitch-stream-map-city-ui-request-fixture.mjs'
+      - 'scripts/verify-twitch-stream-map-geography-ui-wiring.mjs'
       - 'docs/product/twitch-stream-map-city-ui-gate-v0.1.md'
       - 'docs/audits/twitch-stream-map-city-ui-gate-2026-08-26.json'
       - 'docs/implementation/twitch-stream-map-city-ui-wiring-plan-v0.1.md'
@@ -33,3 +37,5 @@ jobs:
         run: node scripts/verify-twitch-stream-map-city-ui-gate-audit.mjs
       - name: Verify City UI request fixture
         run: node scripts/verify-twitch-stream-map-city-ui-request-fixture.mjs
+      - name: Verify City UI wiring
+        run: node scripts/verify-twitch-stream-map-geography-ui-wiring.mjs
