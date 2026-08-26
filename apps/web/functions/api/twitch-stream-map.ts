@@ -59,8 +59,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
         mappedStreams: [],
         excludedNonPersonStreams: [],
         semantics: mapSemantics(),
-        error: { code: 'invalid_geography_mode', message: 'geography must be country or city' },
-      }, { status: 400, headers: { 'cache-control': 'no-store' } })
+        error: {
+          code: 'invalid_geography_mode',
+          message: 'geography must be country or city',
+        },
+      }, {
+        status: 400,
+        headers: { 'cache-control': 'no-store' },
+      })
     }
     geographyMode = normalizedGeography.value
 
@@ -190,7 +196,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       populationFilter: population.metadata,
       semantics: { ...publicModel.semantics, ...mapSemantics() },
       state: 'ready',
-    }, { headers: { 'cache-control': 'no-store' } })
+    }, {
+      headers: { 'cache-control': 'no-store' },
+    })
   } catch (error) {
     return Response.json({
       version: geographyMode === 'city' ? 'viewloom-stream-map-city-contract-v0.1' : 'viewloom-stream-map-live-v1',
@@ -204,8 +212,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       mappedStreams: [],
       excludedNonPersonStreams: [],
       semantics: mapSemantics(),
-      error: { code: 'twitch_stream_map_unavailable', message: sanitizeError(error) },
-    }, { status: 500, headers: { 'cache-control': 'no-store' } })
+      error: {
+        code: 'twitch_stream_map_unavailable',
+        message: sanitizeError(error),
+      },
+    }, {
+      status: 500,
+      headers: { 'cache-control': 'no-store' },
+    })
   }
 }
 
