@@ -56,7 +56,18 @@ function installGeographyFetchAdapter(): void {
     else request.searchParams.delete('geography')
 
     const nextInput: RequestInfo | URL = input instanceof Request
-      ? new Request(request.toString(), input)
+      ? new Request(request.toString(), {
+          method: input.method,
+          headers: input.headers,
+          credentials: input.credentials,
+          cache: input.cache,
+          redirect: input.redirect,
+          referrer: input.referrer,
+          referrerPolicy: input.referrerPolicy,
+          integrity: input.integrity,
+          keepalive: input.keepalive,
+          signal: input.signal,
+        })
       : request
     const response = await nativeFetch(nextInput, init)
     if (requestedMode !== 'city' || !response.ok) return response
@@ -79,7 +90,7 @@ function adaptCityPayloadForExistingRenderer(raw: CityPayload): CityPayload {
   const mappedViewers = count(cityCoverage.cityPlaceableViewers ?? mappedStreams.reduce((sum, row) => sum + count(row?.viewers), 0))
   const countryOnlyCount = count(cityCoverage.countryOnlyStreams ?? raw.countryOnlyStreams?.length)
   const baseConflictCount = Array.isArray(raw.baseCityConflicts) ? raw.baseCityConflicts.length : 0
-  const upstreamReasons = { ...(raw.coverage?.unmappedReasons as Record<string, number> ?? {}) }
+  const upstreamReasons = { ...((raw.coverage?.unmappedReasons as Record<string, number> | undefined) ?? {}) }
 
   if (countryOnlyCount > 0) upstreamReasons.country_only_at_city_resolution = countryOnlyCount
   if (baseConflictCount > 0) upstreamReasons.base_city_conflict = baseConflictCount
