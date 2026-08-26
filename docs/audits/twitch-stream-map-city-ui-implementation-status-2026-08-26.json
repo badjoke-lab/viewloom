@@ -1,0 +1,12 @@
+{
+  "issue": 1060,
+  "branch": "feat/twitch-stream-map-city-ui",
+  "requestCoreImplemented": true,
+  "requestFixtureImplemented": true,
+  "dedicatedCiImplemented": true,
+  "htmlControlWired": false,
+  "entryRequestWired": false,
+  "cityRendererWired": false,
+  "mergeAllowed": false,
+  "productionDeployAllowed": false
+}
