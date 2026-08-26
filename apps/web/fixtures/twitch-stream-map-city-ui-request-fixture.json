@@ -1,0 +1,16 @@
+{
+  "country": {
+    "mode": "country",
+    "input": "/api/twitch-stream-map?top=300&min_viewers=0&category=all",
+    "expected": "/api/twitch-stream-map?top=300&min_viewers=0&category=all"
+  },
+  "city": {
+    "mode": "city",
+    "input": "/api/twitch-stream-map?top=300&min_viewers=0&category=all",
+    "expected": "/api/twitch-stream-map?top=300&min_viewers=0&category=all&geography=city"
+  },
+  "current": {
+    "mode": "current",
+    "publiclySelectable": false
+  }
+}
