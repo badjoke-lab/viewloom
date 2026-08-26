@@ -1,0 +1,36 @@
+import fs from 'node:fs'
+
+const bootstrap = fs.readFileSync('apps/web/src/features/twitch-stream-map/geography-ui-bootstrap.ts', 'utf8')
+const view = fs.readFileSync('apps/web/src/features/twitch-stream-map/unmapped-reason-view.ts', 'utf8')
+const reasons = fs.readFileSync('apps/web/src/features/twitch-stream-map/unmapped-reason-core.mjs', 'utf8')
+
+const requiredBootstrap = [
+  "pageUrl.searchParams.get('geography') === 'city'",
+  "request.searchParams.set('geography', 'city')",
+  "request.searchParams.delete('geography')",
+  "raw?.version !== 'viewloom-stream-map-city-contract-v0.1'",
+  "country_only_at_city_resolution",
+  "base_city_conflict",
+  "stableTwitchUserIdAvailableInMinuteSnapshot",
+  "Current / IRL remains unavailable",
+]
+
+for (const token of requiredBootstrap) {
+  if (!bootstrap.includes(token)) throw new Error(`missing City UI bootstrap contract token: ${token}`)
+}
+if (!view.includes("import './geography-ui-bootstrap'")) throw new Error('geography bootstrap is not loaded by Stream Map UI')
+if (!reasons.includes('country_only_at_city_resolution')) throw new Error('country-only City reason metadata missing')
+if (!reasons.includes('base_city_conflict')) throw new Error('base City conflict reason metadata missing')
+if (/latitude|longitude|\blat\b|\blon\b|gps/i.test(bootstrap)) throw new Error('precise-location field token introduced in City UI bootstrap')
+if (/current_location[^\n]{0,80}(set|push|map|place)/i.test(bootstrap)) throw new Error('Current location appears to be activated for placement')
+
+console.log(JSON.stringify({
+  ok: true,
+  countryDefault: true,
+  cityExplicit: true,
+  countryOnlyAccounted: true,
+  baseCityConflictAccounted: true,
+  stableIdLimitationVisible: true,
+  currentIrlUiActive: false,
+  preciseLocationFields: false,
+}, null, 2))

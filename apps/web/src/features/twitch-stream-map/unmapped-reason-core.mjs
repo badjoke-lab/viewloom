@@ -31,6 +31,14 @@ const REASON_META = {
     label: 'Missing snapshot payload rows',
     detail: 'The snapshot reports more observed streams than are present in the retained payload rows.',
   },
+  country_only_at_city_resolution: {
+    label: 'Country-only at City resolution',
+    detail: 'Accepted base evidence resolves to a country but not to an accepted City, so the stream stays unplaced in City mode.',
+  },
+  base_city_conflict: {
+    label: 'Conflicting accepted base City evidence',
+    detail: 'Accepted home/base or declared-location evidence points to more than one City, so ViewLoom fails closed and leaves the stream unmapped.',
+  },
 }
 
 export function buildUnmappedReasonView({

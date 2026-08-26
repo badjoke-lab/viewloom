@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-city-ui-gate-v0.1",
+  "issue": 1060,
+  "countryDefault": true,
+  "cityExplicitQuery": "geography=city",
+  "currentIrlUiActive": false,
+  "populationFiltersOrthogonal": true,
+  "evidenceFiltersOrthogonal": true,
+  "preciseLocationPublished": false,
+  "stableTwitchUserIdAvailableInMinuteSnapshot": false,
+  "productionDeployAuthorized": false,
+  "d1MutationAuthorized": false,
+  "collectorCadenceChangeAuthorized": false
+}
