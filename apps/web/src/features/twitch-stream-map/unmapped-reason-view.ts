@@ -1,4 +1,5 @@
 import './stream-map-population.css'
+import './geography-ui-bootstrap'
 import { buildUnmappedReasonView, type StreamMapUnmappedReasonView } from './unmapped-reason-core.mjs'
 
 type StreamMapCoverageForUnmapped = {
