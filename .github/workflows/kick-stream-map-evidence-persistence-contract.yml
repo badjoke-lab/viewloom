@@ -1,0 +1,32 @@
+name: Kick Stream Map Evidence Persistence Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/product/kick-stream-map-evidence-persistence-contract-v0.1.md'
+      - 'docs/audits/kick-stream-map-evidence-join-fixture-v0.1.json'
+      - 'scripts/verify-kick-stream-map-evidence-persistence-contract.mjs'
+      - '.github/workflows/kick-stream-map-evidence-persistence-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/product/kick-stream-map-evidence-persistence-contract-v0.1.md'
+      - 'docs/audits/kick-stream-map-evidence-join-fixture-v0.1.json'
+      - 'scripts/verify-kick-stream-map-evidence-persistence-contract.mjs'
+      - '.github/workflows/kick-stream-map-evidence-persistence-contract.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Kick evidence persistence and join contract
+        run: node scripts/verify-kick-stream-map-evidence-persistence-contract.mjs
