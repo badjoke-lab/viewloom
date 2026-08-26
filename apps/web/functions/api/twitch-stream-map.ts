@@ -11,6 +11,7 @@ import { projectTwitchStreamMapCityContract } from './twitch-stream-map-public-c
 import { TWITCH_REVIEWED_LOCATION_RECORDS } from './twitch-stream-map-reviewed-evidence.mjs'
 import { TWITCH_REVIEWED_LOCATION_BATCH_A } from './twitch-stream-map-reviewed-evidence-batch-a.mjs'
 import { TWITCH_REVIEWED_LOCATION_BATCH_B } from './twitch-stream-map-reviewed-evidence-batch-b.mjs'
+import { TWITCH_REVIEWED_LOCATION_BATCH_C } from './twitch-stream-map-reviewed-evidence-batch-c.mjs'
 
 type SnapshotRow = {
   bucket_minute: string
@@ -38,6 +39,7 @@ const reviewedLocationRecords = [
   ...TWITCH_REVIEWED_LOCATION_RECORDS,
   ...TWITCH_REVIEWED_LOCATION_BATCH_A,
   ...TWITCH_REVIEWED_LOCATION_BATCH_B,
+  ...TWITCH_REVIEWED_LOCATION_BATCH_C,
 ]
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
@@ -57,14 +59,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
         mappedStreams: [],
         excludedNonPersonStreams: [],
         semantics: mapSemantics(),
-        error: {
-          code: 'invalid_geography_mode',
-          message: 'geography must be country or city',
-        },
-      }, {
-        status: 400,
-        headers: { 'cache-control': 'no-store' },
-      })
+        error: { code: 'invalid_geography_mode', message: 'geography must be country or city' },
+      }, { status: 400, headers: { 'cache-control': 'no-store' } })
     }
     geographyMode = normalizedGeography.value
 
@@ -194,9 +190,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       populationFilter: population.metadata,
       semantics: { ...publicModel.semantics, ...mapSemantics() },
       state: 'ready',
-    }, {
-      headers: { 'cache-control': 'no-store' },
-    })
+    }, { headers: { 'cache-control': 'no-store' } })
   } catch (error) {
     return Response.json({
       version: geographyMode === 'city' ? 'viewloom-stream-map-city-contract-v0.1' : 'viewloom-stream-map-live-v1',
@@ -210,14 +204,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
       mappedStreams: [],
       excludedNonPersonStreams: [],
       semantics: mapSemantics(),
-      error: {
-        code: 'twitch_stream_map_unavailable',
-        message: sanitizeError(error),
-      },
-    }, {
-      status: 500,
-      headers: { 'cache-control': 'no-store' },
-    })
+      error: { code: 'twitch_stream_map_unavailable', message: sanitizeError(error) },
+    }, { status: 500, headers: { 'cache-control': 'no-store' } })
   }
 }
 
