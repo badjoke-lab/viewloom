@@ -1,0 +1,25 @@
+name: Twitch Stream Map Geography Mode
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/src/features/twitch-stream-map/geography-mode-core.mjs'
+      - 'scripts/verify-twitch-stream-map-geography-mode.mjs'
+      - 'docs/product/twitch-stream-map-city-ui-gate-v0.1.md'
+      - '.github/workflows/twitch-stream-map-geography-mode.yml'
+      - 'apps/web/twitch/map/index.html'
+      - 'apps/web/src/features/twitch-stream-map/stream-map-entry.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify geography mode contract
+        run: node scripts/verify-twitch-stream-map-geography-mode.mjs
