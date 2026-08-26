@@ -4,8 +4,11 @@ on:
   pull_request:
     paths:
       - 'apps/web/src/features/twitch-stream-map/geography-mode-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/geography-mode-core.d.mts'
       - 'scripts/verify-twitch-stream-map-geography-mode.mjs'
+      - 'scripts/verify-twitch-stream-map-city-ui-gate-audit.mjs'
       - 'docs/product/twitch-stream-map-city-ui-gate-v0.1.md'
+      - 'docs/audits/twitch-stream-map-city-ui-gate-2026-08-26.json'
       - '.github/workflows/twitch-stream-map-geography-mode.yml'
       - 'apps/web/twitch/map/index.html'
       - 'apps/web/src/features/twitch-stream-map/stream-map-entry.ts'
@@ -23,3 +26,5 @@ jobs:
           node-version: 22
       - name: Verify geography mode contract
         run: node scripts/verify-twitch-stream-map-geography-mode.mjs
+      - name: Verify City UI gate audit
+        run: node scripts/verify-twitch-stream-map-city-ui-gate-audit.mjs
