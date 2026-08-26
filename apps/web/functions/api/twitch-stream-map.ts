@@ -11,6 +11,7 @@ import { projectTwitchStreamMapCityContract } from './twitch-stream-map-public-c
 import { TWITCH_REVIEWED_LOCATION_RECORDS } from './twitch-stream-map-reviewed-evidence.mjs'
 import { TWITCH_REVIEWED_LOCATION_BATCH_A } from './twitch-stream-map-reviewed-evidence-batch-a.mjs'
 import { TWITCH_REVIEWED_LOCATION_BATCH_B } from './twitch-stream-map-reviewed-evidence-batch-b.mjs'
+import { TWITCH_REVIEWED_LOCATION_BATCH_C } from './twitch-stream-map-reviewed-evidence-batch-c.mjs'
 
 type SnapshotRow = {
   bucket_minute: string
@@ -38,6 +39,7 @@ const reviewedLocationRecords = [
   ...TWITCH_REVIEWED_LOCATION_RECORDS,
   ...TWITCH_REVIEWED_LOCATION_BATCH_A,
   ...TWITCH_REVIEWED_LOCATION_BATCH_B,
+  ...TWITCH_REVIEWED_LOCATION_BATCH_C,
 ]
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
