@@ -79,6 +79,7 @@ for (const moduleFile of moduleFiles) {
     assert.equal(canonicalByLogin.has(row.login), false, `${batchId}: rejected row applied ${row.login}`)
   }
 
+  assert.equal(apply.schemaVersion, 'viewloom-twitch-stream-map-country-review-apply-v0.1', `${batchId}: apply schema`)
   assert.equal(apply.sourceResult, resultPath, `${batchId}: apply source result`)
   assert.equal(apply.batchId, batchId, `${batchId}: apply batch`)
   assert.equal(apply.canonicalModule, `${apiDir}/${moduleFile}`, `${batchId}: apply canonical module`)
