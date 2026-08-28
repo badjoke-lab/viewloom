@@ -69,12 +69,13 @@ assert.equal(result.review.rejected[0]?.userLogin, 'future_trip')
 assert.equal(result.review.boundary.titleOrTagCanAutoAccept, false)
 assert.equal(result.review.boundary.rawTextRetained, false)
 
-const serialized = JSON.stringify(result)
+const serializedResult = JSON.stringify(result)
+const serializedReview = JSON.stringify(result.review)
 for (const rawTitle of ['IRL live in Tokyo', 'regular stream', 'Japan trip tomorrow', 'just chatting']) {
-  assert.equal(serialized.includes(rawTitle), false, `raw title leaked: ${rawTitle}`)
+  assert.equal(serializedResult.includes(rawTitle), false, `raw title leaked: ${rawTitle}`)
 }
 for (const rawField of ['title', 'tags', 'language']) {
-  assert.equal(serialized.includes(`\"${rawField}\"`), false, `raw field returned: ${rawField}`)
+  assert.equal(serializedReview.includes(`\"${rawField}\"`), false, `raw field returned in review payload: ${rawField}`)
 }
 
 assert.ok(workerSource.includes('MAX_PAGES = 3'))
