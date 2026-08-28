@@ -1,0 +1,34 @@
+name: Twitch Stream Map Geography Orthogonality
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/src/features/twitch-stream-map/geography-mode-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/geography-ui-bootstrap.ts'
+      - 'apps/web/src/features/twitch-stream-map/location-filter-core.mjs'
+      - 'scripts/verify-twitch-stream-map-geography-orthogonality.mjs'
+      - '.github/workflows/twitch-stream-map-geography-orthogonality.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/src/features/twitch-stream-map/geography-mode-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/geography-ui-bootstrap.ts'
+      - 'apps/web/src/features/twitch-stream-map/location-filter-core.mjs'
+      - 'scripts/verify-twitch-stream-map-geography-orthogonality.mjs'
+      - '.github/workflows/twitch-stream-map-geography-orthogonality.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify geography/filter orthogonality
+        run: node scripts/verify-twitch-stream-map-geography-orthogonality.mjs
