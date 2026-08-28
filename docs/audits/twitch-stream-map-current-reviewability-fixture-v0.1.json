@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-current-reviewability-fixture-v0.1",
+  "observedAt": "2026-08-28T10:00:00.000Z",
+  "streams": [
+    {
+      "twitchUserId": "1001",
+      "userLogin": "tokyo_live",
+      "title": "IRL live in Tokyo",
+      "tags": [],
+      "language": "en"
+    },
+    {
+      "twitchUserId": "1002",
+      "userLogin": "japan_tag",
+      "title": "regular stream",
+      "tags": ["Japan"],
+      "language": "ja"
+    },
+    {
+      "twitchUserId": "1003",
+      "userLogin": "future_trip",
+      "title": "Japan trip tomorrow",
+      "tags": ["Japan"],
+      "language": "en"
+    },
+    {
+      "twitchUserId": "1004",
+      "userLogin": "candidate_conflict",
+      "title": "IRL live in Tokyo",
+      "tags": ["Korea"],
+      "language": "en"
+    },
+    {
+      "twitchUserId": "",
+      "userLogin": "missing_identity",
+      "title": "live in Paris",
+      "tags": [],
+      "language": "fr"
+    },
+    {
+      "twitchUserId": "1006",
+      "userLogin": "no_location",
+      "title": "just chatting",
+      "tags": [],
+      "language": "en"
+    }
+  ],
+  "expected": {
+    "inputStreams": 6,
+    "reviewableCandidates": 3,
+    "rejectedFutureTravel": 1,
+    "invalidIdentity": 1,
+    "conflictingCandidates": 1,
+    "queueLogins": ["tokyo_live", "japan_tag", "candidate_conflict"]
+  },
+  "acceptedCurrentResult": {
+    "outcome": "accepted_current",
+    "reviewedAt": "2026-08-28T10:10:00.000Z",
+    "qualifyingEvidence": {
+      "sourceClass": "self_controlled_current_statement",
+      "sourceUrl": "https://example.com/self-controlled-current-statement",
+      "countryCode": "JP",
+      "countryName": "Japan",
+      "city": "Tokyo",
+      "observedAt": "2026-08-28T10:05:00.000Z",
+      "expiresAt": "2026-08-29T10:05:00.000Z",
+      "confidence": "reviewed"
+    }
+  }
+}
