@@ -33,21 +33,29 @@ City
   live coverage gate                 DONE
   explicit ?geography=city API       DONE
   public geography UI                DONE
+  geography/filter orthogonality CI  DONE
   Current/IRL mixing                 DISABLED
 
 Kick
   source audit                       DONE
   bounded official-source probe      DONE
   provider join/evidence contract    DONE
-  Country API                        NOT YET
+  Kick-only Country live-state core  DONE
+  public readiness gate              DONE
+  snapshot Country adapter           DONE
+  Country response core              DONE
+  stable-ID collector persistence    DRAFT / PROD-DEPLOY-GATED (#1083)
+  production Country API wiring      NOT YET
   Country Map                        NOT YET
 
 Current Location / IRL
   freshness/TTL contract             DONE
   retained-evidence audit            DONE
   deterministic evaluator            DONE
-  retained current/temporary rows    0 at last audit
-  live candidate coverage            NEXT / PARALLEL
+  candidate coverage core            DONE
+  bounded preview live probe         DONE
+  live candidate audit               DONE (11/300 = 3.67%)
+  reviewed candidate acceptance      NOT YET
   current-location API layer         NOT YET
   public Current / IRL mode           NOT YET
 
@@ -58,7 +66,7 @@ Map UI
   source badges / provenance         DONE
   Home/Base vs Current separation    ENFORCED
   provider-separated Twitch/Kick UI  ENFORCED
-  Kick public map controls           WAITING ON KICK COUNTRY API
+  Kick public map controls           WAITING ON PRODUCTION KICK COUNTRY PATH
 ```
 
 ## Execution rule
@@ -68,8 +76,8 @@ Map development proceeds in parallel lanes:
 ```text
 Lane A  Twitch Country canonical closeout + future reviewed coverage maintenance
 Lane B  City contract/UI follow-up and City evidence quality
-Lane C  Kick Country API + provider-specific Map path
-Lane D  Current Location / IRL live-candidate measurement + separate API/UI
+Lane C  Kick Country production persistence/API wiring + provider-specific Map path
+Lane D  Current Location / IRL reviewed-candidate gate + separate API/UI
 Lane E  Map UI control/provenance refinement across provider-separated surfaces
 ```
 
@@ -103,30 +111,40 @@ Merged state:
 - base City conflicts fail closed;
 - current/temporary claims do not place the base City layer;
 - address, latitude, longitude and GPS are not introduced;
-- public geography UI can explicitly select City while Current / IRL remains disabled.
+- public geography UI can explicitly select City while Current / IRL remains disabled;
+- #1078 locks geography selection and evidence/population filter state as orthogonal regression behavior.
 
 City confidence/ambiguity stays independent from Country. A Country placement never implies a City.
 
 ## Lane C — Kick
 
-Kick has progressed beyond source-audit planning.
+Kick has progressed beyond source-audit and live-join planning.
 
 Merged state:
 
 - collector/provider source audit complete;
 - bounded read-only official probe package complete;
 - successful bounded real probe retained;
-- current contract uses Livestreams V2 population with one request and Channels with at most ten requests;
-- stable Kick identity is `broadcaster_user_id` when present; slug/login is not a stable ID;
-- `custom_tags` absence in the measured run is explicit and must not be backfilled from the deprecated legacy public path;
-- provider-specific evidence contract/join fixture is complete;
-- no D1 write, production deployment, legacy fallback or automatic geography acceptance is authorized by those probe/contract steps.
+- empirically measured provider join/evidence contract complete;
+- stable Kick identity is official Channels `broadcaster_user_id`; slug/login is a lookup/display key only;
+- #1076 adds a Kick-only Country live-state core with mapped/unmapped/excluded/conflict accounting;
+- #1081 adds a staged public-readiness gate so public activation cannot silently proceed without stable identity persistence and public exposure;
+- #1084 adds a production-independent snapshot-to-Country adapter and fails closed on absent/ambiguous stable identity or Twitch-only evidence;
+- #1085 adds a production-independent Country response core with stream/viewer reconciliation and `publicActivationAuthorized: false`;
+- raw title/profile/tag content and precise address/coordinates are not exposed by the Country response core;
+- Twitch evidence is never copied to Kick and Twitch/Kick geography is never aggregated.
 
-Next product step is a Kick-only Country population/evidence join/API, then `/kick/map/`. Twitch evidence is not copied automatically and Twitch/Kick geography is never aggregated.
+Production boundary:
+
+- Draft PR #1083 prepares official Channels stable-ID enrichment for the Kick collector;
+- it batches up to 50 slugs per official Channels request, so the current bounded Top100 population needs at most two identity lookup requests;
+- #1083 remains Draft because merging collector behavior to `main` crosses the production collector deployment boundary;
+- no production deploy, D1 write, schema change, cadence change or retention change is authorized by the current work;
+- after stable-ID persistence is authorized and proven in production, the remaining web/API wiring must still be separately gated before public Kick Country activation.
 
 ## Lane D — Current Location / IRL
 
-The freshness contract and deterministic evaluator are already implemented.
+The freshness contract, deterministic evaluator and one bounded live candidate measurement are now implemented.
 
 Current rules:
 
@@ -138,7 +156,25 @@ Current rules:
 - current/temporary evidence never mutates home/base automatically;
 - public precision is Country/City only; no address, GPS trace or precise coordinates.
 
-The last retained-evidence audit found zero accepted `current_location` and zero accepted `temporary_location` rows, so public Current / IRL mode is still not ready. Next safe work is read-only live candidate coverage measurement, followed by a separate API/UI gate if evidence supports it.
+The retained-evidence audit still has zero accepted `current_location` and zero accepted `temporary_location` rows, so public Current / IRL mode is not ready from retained evidence alone.
+
+Live candidate measurement is no longer pending. The bounded preview probe run `33144962164` and merged audit #1082 measured:
+
+```text
+population                  300 Twitch live streams / 3 pages
+candidate streams           11 / 300 = 3.67%
+stream-title candidates     2
+tag candidates              9
+future/travel titles rejected 5
+country candidates          11
+city candidates             1
+/helix/users requests       0
+D1 writes                   0
+production deployment       false
+raw title/tag/language retention false
+```
+
+This establishes non-zero candidate availability, not accepted Current geography. The next safe gate is reviewability/acceptance of candidate evidence under the existing freshness/expiry contract. Public Current API/UI remains disabled until reviewed evidence supports it.
 
 ## Lane E — Map UI
 
@@ -155,7 +191,7 @@ Further UI work must preserve these rules:
 - unmapped, conflicts and excluded non-person rows remain explicit;
 - provenance/evidence strength must remain inspectable.
 
-Kick-facing provider controls remain gated on a real Kick Country API rather than demo geography.
+Kick-facing provider controls remain gated on a production-backed Kick Country API rather than demo or pre-production geography.
 
 ## Historical maintenance records remain intact
 
@@ -186,6 +222,18 @@ They do not define the scheduling cadence of the entire Stream Map product progr
 - no current-location placement after TTL expiry;
 - no collector/D1/cadence/retention mutation without its own accepted gate;
 - no production deployment without the required authorization.
+
+## Immediate safe work
+
+```text
+A. keep #1068 behind explicit production Web Pages authorization
+B. continue City ambiguity/confidence and UI regression work
+C. keep #1083 Draft; prepare/verify downstream Kick API wiring without activating production
+D. build the reviewed Current/IRL candidate acceptance/reviewability gate from the completed live measurement
+E. continue provider/geography/source/provenance UI preparation without provider aggregation
+```
+
+CI or authorization waiting in one lane is not a reason to pause another safe lane.
 
 ## Precedence
 
