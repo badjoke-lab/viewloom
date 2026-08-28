@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-city-corroboration-queue-v0.1",
+  "provider": "twitch",
+  "geographyLayer": "base_city",
+  "sourceContract": "docs/product/stream-map-city-confidence-contract-v0.1.md",
+  "status": "active_evidence_strengthening_queue",
+  "policy": {
+    "existingSingleExplicitMappingRemainsValidWithoutSecondaryEvidence": true,
+    "secondaryEvidenceAutomaticallyAccepted": false,
+    "secondaryEvidenceMustUseBaseClaimKind": true,
+    "acceptedBaseClaimKinds": ["home_base", "declared_location"],
+    "countryMayInferCity": false,
+    "currentMayMutateBaseCity": false,
+    "conflictingSecondaryEvidenceFailsClosed": true,
+    "latestEvidenceSilentlyWinsConflict": false,
+    "preciseLocationAllowed": false,
+    "twitchKickAggregationAllowed": false
+  },
+  "summary": {
+    "queued": 12,
+    "singleExplicit": 12,
+    "consistentMultiple": 0,
+    "conflicts": 0,
+    "completed": 0
+  },
+  "entries": [
+    {"streamerLogin":"adinross","countryCode":"US","region":null,"city":"Miami","currentConfidenceClass":"single_explicit_base_city","reviewStatus":"needs_secondary_explicit_base_evidence"},
+    {"streamerLogin":"cinna","countryCode":"US","region":null,"city":"Austin","currentConfidenceClass":"single_explicit_base_city","reviewStatus":"needs_secondary_explicit_base_evidence"},
+    {"streamerLogin":"ddg","countryCode":"US","region":null,"city":"Los Angeles","currentConfidenceClass":"single_explicit_base_city","reviewStatus":"needs_secondary_explicit_base_evidence"},
+    {"streamerLogin":"fps_shaka","countryCode":"JP","region":null,"city":"Tokyo","currentConfidenceClass":"single_explicit_base_city","reviewStatus":"needs_secondary_explicit_base_evidence"},
+    {"streamerLogin":"ibai","countryCode":"ES","region":null,"city":"Sant Cugat del Valles","currentConfidenceClass":"single_explicit_base_city","reviewStatus":"needs_secondary_explicit_base_evidence"},
+    {"streamerLogin":"jasontheween","countryCode":"US","region":null,"city":"Los Angeles","currentConfidenceClass":"single_explicit_base_city","reviewStatus":"needs_secondary_explicit_base_evidence"},
+    {"streamerLogin":"knirpz","countryCode":"DE","region":"Berlin","city":"Berlin","currentConfidenceClass":"single_explicit_base_city","reviewStatus":"needs_secondary_explicit_base_evidence"},
+    {"streamerLogin":"lacy","countryCode":"US","region":null,"city":"Los Angeles","currentConfidenceClass":"single_explicit_base_city","reviewStatus":"needs_secondary_explicit_base_evidence"},
+    {"streamerLogin":"papaplatte","countryCode":"DE","region":null,"city":"Cologne","currentConfidenceClass":"single_explicit_base_city","reviewStatus":"needs_secondary_explicit_base_evidence"},
+    {"streamerLogin":"ramzes","countryCode":"RU","region":null,"city":"Moscow","currentConfidenceClass":"single_explicit_base_city","reviewStatus":"needs_secondary_explicit_base_evidence"},
+    {"streamerLogin":"shotzzy","countryCode":"US","region":"Texas","city":"Dallas","currentConfidenceClass":"single_explicit_base_city","reviewStatus":"needs_secondary_explicit_base_evidence"},
+    {"streamerLogin":"xqc","countryCode":"US","region":null,"city":"Miami","currentConfidenceClass":"single_explicit_base_city","reviewStatus":"needs_secondary_explicit_base_evidence"}
+  ]
+}
