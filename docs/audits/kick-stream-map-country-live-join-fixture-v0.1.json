@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "viewloom-kick-stream-map-country-live-join-fixture-v0.1",
+  "cases": [
+    {
+      "id": "stable-id-mapped",
+      "input": {
+        "liveRows": [{"provider":"kick","channel":{"slug":"Alpha"}}],
+        "channelRows": [{"provider":"kick","slug":"alpha","broadcaster_user_id":1001}],
+        "reviewedEvidence": [{"provider":"kick","stableKickUserId":1001,"outcome":"accepted","placement":{"state":"mapped","countryCode":"US"}}]
+      },
+      "expected": {"state":"mapped","reason":"reviewed_country_accepted","stableKickUserId":"1001","countryCode":"US"}
+    },
+    {
+      "id": "slug-only-not-stable-identity",
+      "input": {
+        "liveRows": [{"provider":"kick","channel":{"slug":"Bravo"}}],
+        "channelRows": [{"provider":"kick","slug":"bravo","broadcaster_user_id":null}],
+        "reviewedEvidence": [{"provider":"kick","stableKickUserId":"bravo","outcome":"accepted","placement":{"state":"mapped","countryCode":"GB"}}]
+      },
+      "expected": {"state":"unmapped","reason":"stable_identity_unavailable","stableKickUserId":null,"countryCode":null}
+    },
+    {
+      "id": "channel-provider-mismatch",
+      "input": {
+        "liveRows": [{"provider":"kick","channel":{"slug":"Charlie"}}],
+        "channelRows": [{"provider":"twitch","slug":"charlie","broadcaster_user_id":1003}],
+        "reviewedEvidence": [{"provider":"kick","stableKickUserId":1003,"outcome":"accepted","placement":{"state":"mapped","countryCode":"CA"}}]
+      },
+      "expected": {"state":"unmapped","reason":"channel_join_unavailable","stableKickUserId":null,"countryCode":null}
+    },
+    {
+      "id": "twitch-evidence-never-copied",
+      "input": {
+        "liveRows": [{"provider":"kick","channel":{"slug":"Delta"}}],
+        "channelRows": [{"provider":"kick","slug":"delta","broadcaster_user_id":1004}],
+        "reviewedEvidence": [{"provider":"twitch","stableKickUserId":1004,"outcome":"accepted","placement":{"state":"mapped","countryCode":"JP"}}]
+      },
+      "expected": {"state":"unmapped","reason":"no_reviewed_kick_evidence","stableKickUserId":"1004","countryCode":null}
+    },
+    {
+      "id": "reviewed-conflict",
+      "input": {
+        "liveRows": [{"provider":"kick","channel":{"slug":"Echo"}}],
+        "channelRows": [{"provider":"kick","slug":"echo","broadcaster_user_id":1005}],
+        "reviewedEvidence": [{"provider":"kick","stableKickUserId":1005,"outcome":"conflict_unmapped","placement":null}]
+      },
+      "expected": {"state":"conflict","reason":"reviewed_country_conflict","stableKickUserId":"1005","countryCode":null}
+    },
+    {
+      "id": "reviewed-excluded",
+      "input": {
+        "liveRows": [{"provider":"kick","channel":{"slug":"Foxtrot"}}],
+        "channelRows": [{"provider":"kick","slug":"foxtrot","broadcaster_user_id":1006}],
+        "reviewedEvidence": [{"provider":"kick","stableKickUserId":1006,"outcome":"excluded_nonperson","placement":null}]
+      },
+      "expected": {"state":"excluded","reason":"reviewed_nonperson_exclusion","stableKickUserId":"1006","countryCode":null}
+    },
+    {
+      "id": "reviewed-unmapped",
+      "input": {
+        "liveRows": [{"provider":"kick","channel":{"slug":"Golf"}}],
+        "channelRows": [{"provider":"kick","slug":"golf","broadcaster_user_id":1007}],
+        "reviewedEvidence": [{"provider":"kick","stableKickUserId":1007,"outcome":"no_qualifying_evidence","placement":null}]
+      },
+      "expected": {"state":"unmapped","reason":"no_qualifying_reviewed_country","stableKickUserId":"1007","countryCode":null}
+    }
+  ]
+}
