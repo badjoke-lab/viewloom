@@ -3,7 +3,7 @@
 Status: active execution plan  
 Specification: `docs/product/stream-map-spec-v0.6.md`  
 Supersedes: `docs/product/stream-map-implementation-plan-v0.4.md`  
-Baseline: main `7f18f96dc2d42acaefa053a53adeb19c5195f07c`  
+Baseline: main `e93ad2b6b752d23c482ecdb23cb7903dcefecb1f`  
 Last updated: 2026-08-28
 
 ## 1. Current position
@@ -33,11 +33,19 @@ Parallel lanes have also advanced:
 - City retained-evidence audit and live gate — #1035/#1042
 - explicit City API — #1049
 - public City geography UI — #1061
+- City geography/filter orthogonality regression gate — #1078
 - Kick source audit — #1034
 - Kick bounded official probe and real trigger — #1050/#1056
 - Kick provider join/evidence persistence contract — #1059
+- Kick Country live-state core — #1076
+- Kick public-readiness gate — #1081
+- Kick snapshot Country adapter — #1084
+- Kick Country response core — #1085
 - Current Location / IRL contract — #1038
 - Current Location retained-evidence audit + deterministic freshness evaluator — #1051
+- Current / IRL candidate coverage core — #1077
+- Current / IRL bounded preview probe package/trigger — #1079/#1080
+- Current / IRL live candidate audit — #1082
 
 ## 2. Execution model
 
@@ -46,8 +54,8 @@ Map development is parallel, not one serial queue.
 ```text
 Lane A  Twitch Country canonical closeout + future evidence maintenance
 Lane B  City evidence quality / ambiguity / UI refinement
-Lane C  Kick Country live join/API + Map
-Lane D  Current Location / IRL live candidate coverage + separate API/UI
+Lane C  Kick Country production persistence/API wiring + Map
+Lane D  Current Location / IRL reviewed-candidate gate + separate API/UI
 Lane E  Map UI provider/geography/source refinement
 ```
 
@@ -157,14 +165,17 @@ Requirements already implemented:
 
 The public Twitch Map can explicitly request City geography. Country remains the default. Current / IRL remains disabled and separate.
 
-### B5. Next City work
+### B5. Geography/filter orthogonality regression — DONE
+
+#1078 proves geography selection does not silently rewrite population, evidence-source or evidence-type filter state. It also locks country-only-at-city-resolution and base-City-conflict accounting while Current / IRL remains outside the base City contract.
+
+### B6. Next City work
 
 Proceed independently of Country canonical authorization:
 
 - improve City ambiguity/confidence explanation;
-- ensure evidence-source filters and geography resolution remain orthogonal;
-- retain explicit country-only-at-city-resolution accounting;
 - exercise mobile/desktop UI and zero/conflict states;
+- retain explicit country-only-at-city-resolution accounting;
 - reuse newly reviewed evidence only when it contains independently valid City evidence; never derive City from accepted Country alone.
 
 ## 5. Lane C — Kick Country
@@ -175,7 +186,7 @@ The actual collector/provider path has been audited.
 
 ### C2. Bounded official probe — DONE
 
-Measured request ceiling:
+Historical measured probe ceiling:
 
 ```text
 OAuth token            <= 1
@@ -190,7 +201,7 @@ No raw title/tag/profile-description body retention is authorized by the probe.
 
 ### C3. Provider join/evidence contract — DONE
 
-Current frozen join:
+Frozen join:
 
 ```text
 Livestreams V2 channel.slug
@@ -198,33 +209,56 @@ Livestreams V2 channel.slug
 -> broadcaster_user_id as stable identity when present
 ```
 
-Slug/login is not treated as stable ID. `custom_tags` absence in the measured run is explicit. Twitch evidence is not copied automatically.
+Slug/login is not treated as stable ID. Twitch evidence is not copied automatically. Missing or ambiguous stable identity fails closed.
 
-### C4. Next: Kick-only live population/evidence join
+### C4. Kick-only live-state / snapshot adapter / response model — DONE
 
-Build a deterministic Kick-only model before public UI:
+Merged safe layers:
 
 ```text
-Kick live population
--> stable provider identity where available
--> entity eligibility
--> accepted/candidate evidence separation
--> mapped/unmapped/excluded/conflict accounting
+#1076 Kick-only live Country state core
+#1084 persisted-snapshot -> Country state adapter
+#1085 Country response core
 ```
 
-No Twitch/Kick aggregation.
+The response model:
 
-### C5. Next: Kick Country API
+- preserves provider = `kick`;
+- exposes mapped / unmapped / excluded / conflict terminal states;
+- reconciles selected stream and viewer populations;
+- uses `broadcaster_user_id` as stable identity;
+- never treats slug as stable ID;
+- never reuses Twitch evidence;
+- publishes no raw title/profile/tag body and no precise location;
+- keeps `publicActivationAuthorized: false`.
 
-Target:
+### C5. Stable-ID collector persistence — DRAFT / PROD-DEPLOY-GATED
+
+Draft PR #1083 prepares production collector enrichment:
+
+```text
+Livestreams Top100
+-> normalized unique slugs
+-> official Channels lookup batches of <= 50 slugs
+-> at most 2 Channels identity requests for Top100
+-> retain broadcaster_user_id only when the normalized slug join is unique
+```
+
+#1083 collector checks, staged readiness gate and dedicated stable-ID persistence CI are green after aligning the workflow install mode with the repository's no-lockfile setup.
+
+Do not merge #1083 without the required production collector deployment authorization. No schema, cadence or retention change is part of this implementation.
+
+### C6. Later: production Kick Country API wiring
+
+Target remains:
 
 ```text
 /api/kick-stream-map
 ```
 
-Preserve provider-specific source availability and limitations.
+Production wiring must consume the retained stable identity and merged response semantics. It must not activate from slug-only snapshots.
 
-### C6. Next: Kick Map
+### C7. Later: Kick Map
 
 Target:
 
@@ -232,7 +266,7 @@ Target:
 /kick/map/
 ```
 
-Reuse UI components only where semantics are provider-independent. Do not fill missing Kick sources from Twitch or deprecated fallback paths.
+Reuse UI components only where semantics are provider-independent. Do not fill missing Kick sources from Twitch or deprecated fallback paths. Twitch/Kick geography is never aggregated.
 
 ## 6. Lane D — Current Location / IRL
 
@@ -268,26 +302,58 @@ Evaluator proves:
 - overlapping contradictory fresh claims become `conflicting_current_location`;
 - no automatic base/home mutation.
 
-### D4. Next: read-only live candidate coverage measurement
+### D4. Read-only live candidate coverage — DONE
 
-Measure candidate availability from allowed current live/profile signals without promoting them automatically.
-
-Keep candidate sources distinct:
+Merged path:
 
 ```text
-stream title
-stream tag
-profile/channel metadata
-reviewed external/self-controlled evidence
+#1077 candidate coverage measurement core
+#1079 preview-only bounded live probe
+#1080 one-time reviewed trigger
+#1082 aggregate-only retained audit
 ```
 
-Do not treat language, event venue or travel plans as current presence.
+Measured run `33144962164`:
 
-### D5. Later: separate current-location API layer
+```text
+population                       300
+candidate streams                11
+candidate coverage               3.67%
+title candidates                 2
+tag candidates                   9
+future/travel titles rejected    5
+country candidates               11
+city candidates                  1
+Twitch token requests            1
+/helix/streams requests          3
+/helix/users requests            0
+D1 writes                        0
+production deployment            false
+raw title/tag/language retention false
+```
+
+This proves candidate availability only. It does not accept Current geography.
+
+### D5. Next: reviewed-candidate reviewability / acceptance gate
+
+The next safe step must define how a candidate can be reviewed without turning raw live text into an uncontrolled durable corpus.
+
+Requirements:
+
+- identity/provenance must be sufficient to review the candidate;
+- accepted Current claims still require `observedAt` and `expiresAt`;
+- future/travel cues remain reject-only;
+- language remains non-placement metadata;
+- no automatic acceptance from title/tag/profile extraction;
+- no Home/Base mutation;
+- no address/GPS/precise coordinates;
+- raw retention, if any is proposed at all, requires a separate bounded retention/privacy gate before implementation.
+
+### D6. Later: separate current-location API layer
 
 Only after useful reviewed evidence exists. Expired rows must disappear from Current placement.
 
-### D6. Later: Current / IRL UI mode
+### D7. Later: Current / IRL UI mode
 
 Current is not base City. UI must label Home/Base and Current separately and never imply inferred travel paths.
 
@@ -301,7 +367,8 @@ Current is not base City. UI must label Home/Base and Current separately and nev
 - country drilldown;
 - reason-aware Unmapped/excluded display;
 - evidence provenance/source links;
-- explicit Country/City geography mode.
+- explicit Country/City geography mode;
+- geography/filter orthogonality regression coverage.
 
 ### E2. Next safe refinements
 
@@ -332,13 +399,13 @@ This sublane is not the main product schedule and does not block Lane A/B/C/D/E 
 
 ## 9. Immediate branch/issue order
 
-Work can continue in parallel as follows:
+Work continues in parallel:
 
 ```text
-A. keep #1068 and later canonical application behind explicit production-deploy authorization
-B. City ambiguity/confidence + UI/contract regression work
-C. Kick-only Country live join/API contract
-D. Current/IRL read-only live candidate coverage measurement
+A. keep #1068 and later canonical application behind explicit production Web Pages authorization
+B. City ambiguity/confidence + UI regression work
+C. keep #1083 Draft; prepare downstream Kick API wiring without public activation
+D. Current/IRL reviewed-candidate reviewability/acceptance gate
 E. Map UI provider/geography/source/provenance refinement
 ```
 
