@@ -1,0 +1,30 @@
+name: Kick Stream Map Country Response Core
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/kick-stream-map-country-response-core.mjs'
+      - 'scripts/verify-kick-stream-map-country-response-core.mjs'
+      - 'docs/audits/kick-stream-map-country-response-fixture-v0.1.json'
+      - '.github/workflows/kick-stream-map-country-response-core.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/kick-stream-map-country-response-core.mjs'
+      - 'scripts/verify-kick-stream-map-country-response-core.mjs'
+      - 'docs/audits/kick-stream-map-country-response-fixture-v0.1.json'
+      - '.github/workflows/kick-stream-map-country-response-core.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Kick Country response core
+        run: node scripts/verify-kick-stream-map-country-response-core.mjs
