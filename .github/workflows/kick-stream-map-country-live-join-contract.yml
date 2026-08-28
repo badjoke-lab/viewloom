@@ -1,0 +1,34 @@
+name: Kick Stream Map Country Live Join Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/product/kick-stream-map-country-live-join-contract-v0.1.md'
+      - 'docs/audits/kick-stream-map-country-live-join-fixture-v0.1.json'
+      - 'scripts/kick-stream-map-country-live-join-core.mjs'
+      - 'scripts/verify-kick-stream-map-country-live-join.mjs'
+      - '.github/workflows/kick-stream-map-country-live-join-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/product/kick-stream-map-country-live-join-contract-v0.1.md'
+      - 'docs/audits/kick-stream-map-country-live-join-fixture-v0.1.json'
+      - 'scripts/kick-stream-map-country-live-join-core.mjs'
+      - 'scripts/verify-kick-stream-map-country-live-join.mjs'
+      - '.github/workflows/kick-stream-map-country-live-join-contract.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Kick Country live join contract
+        run: node scripts/verify-kick-stream-map-country-live-join.mjs
