@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "viewloom-kick-stream-map-country-snapshot-adapter-fixture-v0.1",
+  "snapshotItems": [
+    { "slug": "mapped", "broadcaster_user_id": 42, "viewer_count": 1000 },
+    { "slug": "missing-id", "viewer_count": 900 },
+    { "slug": "conflict-id", "broadcaster_user_id": 100, "viewer_count": 800 },
+    { "slug": "conflict-id", "broadcaster_user_id": 101, "viewer_count": 800 },
+    { "slug": "twitch-evidence-test", "broadcaster_user_id": 77, "viewer_count": 700 }
+  ],
+  "reviewedEvidence": [
+    { "provider": "kick", "stableKickUserId": "42", "outcome": "accepted", "placement": { "state": "mapped", "countryCode": "US" } },
+    { "provider": "twitch", "stableKickUserId": "77", "outcome": "accepted", "placement": { "state": "mapped", "countryCode": "JP" } }
+  ],
+  "expected": {
+    "mapped": { "state": "mapped", "reason": "reviewed_country_accepted", "stableKickUserId": "42", "countryCode": "US" },
+    "missing-id": { "state": "unmapped", "reason": "stable_identity_unavailable", "stableKickUserId": null },
+    "conflict-id": { "state": "unmapped", "reason": "ambiguous_channel_join" },
+    "twitch-evidence-test": { "state": "unmapped", "reason": "no_reviewed_kick_evidence", "stableKickUserId": "77" }
+  }
+}
