@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-current-live-probe-audit-v0.1",
+  "provider": "twitch",
+  "mode": "current_location_candidate_coverage_top300_preview",
+  "observedAt": "2026-08-28T05:30:59.272Z",
+  "source": {
+    "workflowRunId": 33144962164,
+    "headSha": "8e3f4af14b73ace66dc9617d4ec5f3a590087286",
+    "artifactId": 9675399492,
+    "artifactName": "twitch-stream-map-current-live-probe-33144962164",
+    "artifactDigest": "sha256:92b963da5211091a7228ee09fb061bb3ddb44fbeb90c772113ea9ce4c0b6c64e"
+  },
+  "population": {
+    "requestedSize": 300,
+    "sampleSize": 300,
+    "coveredPages": 3,
+    "hasMore": true,
+    "stableIdentity": "twitchUserId",
+    "stableIdentityUnique": true
+  },
+  "measurement": {
+    "candidateStreams": 11,
+    "candidateCoverage": 0.03666666666666667,
+    "counts": {
+      "titleCandidateStreams": 2,
+      "tagCandidateStreams": 9,
+      "titleAndTagCandidateStreams": 0,
+      "anyCandidateStreams": 11,
+      "rejectedFutureTravelTitles": 5,
+      "countryCandidateStreams": 11,
+      "cityCandidateStreams": 1,
+      "multipleLocationCandidateStreams": 1
+    },
+    "sourceYield": {
+      "stream_title": 2,
+      "stream_tag": 9
+    },
+    "candidateCountries": {
+      "JP": 3,
+      "KR": 2,
+      "TW": 2,
+      "AU": 1,
+      "CA": 1,
+      "CL": 1,
+      "PH": 1
+    }
+  },
+  "requests": {
+    "token": 1,
+    "streams": 3,
+    "users": 0
+  },
+  "safetyBoundary": {
+    "status": "candidate_only",
+    "acceptanceAuthorized": false,
+    "publicCurrentPlacementAuthorized": false,
+    "baseMutationAuthorized": false,
+    "languageUsedForPlacement": false,
+    "productionDeployment": false,
+    "d1Writes": 0,
+    "canonicalMutationApplied": false,
+    "rawTitleStored": false,
+    "rawTagsStored": false,
+    "rawLanguageStored": false,
+    "rawTextArtifactAllowed": false
+  },
+  "conclusion": {
+    "liveCandidateCoverageMeasured": true,
+    "publicCurrentActivationReady": false,
+    "reason": "Candidate coverage is now measured, but candidate detection is not reviewed Current/IRL evidence acceptance and cannot mutate Home/Base placement."
+  }
+}
