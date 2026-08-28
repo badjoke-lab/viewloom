@@ -1,0 +1,15 @@
+name = "viewloom-collector-twitch"
+main = "worker.mjs"
+compatibility_date = "2026-05-18"
+keep_vars = true
+
+# Current / IRL identity-preserving review-queue preview only.
+# This tool is outside workers/collector-twitch so merging it does not trigger
+# production collector deployment. It MUST NOT be used with `wrangler deploy`;
+# the guarded workflow may only use `wrangler versions upload --preview-alias`.
+# There are no active triggers, no cron, no D1 binding, and no production route.
+# Returned rows may contain public Twitch stable identity/login plus derived
+# candidate Country/City metadata, but never raw title/tag/language text.
+
+[secrets]
+required = ["TWITCH_CLIENT_ID", "TWITCH_CLIENT_SECRET"]
