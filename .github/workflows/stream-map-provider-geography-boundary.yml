@@ -1,0 +1,35 @@
+name: Stream Map Provider Geography Boundary
+
+on:
+  pull_request:
+    paths:
+      - 'docs/audits/stream-map-provider-geography-boundary-v0.1.json'
+      - 'scripts/verify-stream-map-provider-geography-boundary.mjs'
+      - 'scripts/kick-stream-map-country-response-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/geography-mode-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/location-filter-core.mjs'
+      - '.github/workflows/stream-map-provider-geography-boundary.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/audits/stream-map-provider-geography-boundary-v0.1.json'
+      - 'scripts/verify-stream-map-provider-geography-boundary.mjs'
+      - 'scripts/kick-stream-map-country-response-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/geography-mode-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/location-filter-core.mjs'
+      - '.github/workflows/stream-map-provider-geography-boundary.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify provider / geography / source boundary
+        run: node scripts/verify-stream-map-provider-geography-boundary.mjs
