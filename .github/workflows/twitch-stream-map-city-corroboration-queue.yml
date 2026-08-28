@@ -1,0 +1,33 @@
+name: Twitch Stream Map City Corroboration Queue
+
+on:
+  pull_request:
+    paths:
+      - 'docs/audits/twitch-stream-map-city-corroboration-queue-2026-08-28.json'
+      - 'scripts/verify-twitch-stream-map-city-corroboration-queue.mjs'
+      - 'tools/twitch-stream-map-city-confidence/classifier.mjs'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence.mjs'
+      - '.github/workflows/twitch-stream-map-city-corroboration-queue.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/audits/twitch-stream-map-city-corroboration-queue-2026-08-28.json'
+      - 'scripts/verify-twitch-stream-map-city-corroboration-queue.mjs'
+      - 'tools/twitch-stream-map-city-confidence/classifier.mjs'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence.mjs'
+      - '.github/workflows/twitch-stream-map-city-corroboration-queue.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify City corroboration queue
+        run: node scripts/verify-twitch-stream-map-city-corroboration-queue.mjs
