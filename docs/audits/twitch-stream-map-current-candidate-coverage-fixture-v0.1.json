@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-current-candidate-input-v0.1",
+  "streams": [
+    {"twitchUserId":"1","title":"IRL live from Seoul","tags":["Seoul"],"language":"ko"},
+    {"twitchUserId":"2","title":"Japan trip tomorrow","tags":["English"],"language":"en"},
+    {"twitchUserId":"3","title":"regular stream","tags":["Tokyo"],"language":"ja"},
+    {"twitchUserId":"4","title":"ranked games","tags":["Just Chatting"],"language":"en"}
+  ],
+  "expected": {
+    "population": 4,
+    "candidateStreams": 2,
+    "candidateCoverage": 0.5,
+    "titleCandidateStreams": 1,
+    "tagCandidateStreams": 2,
+    "rejectedFutureTravelTitles": 1,
+    "acceptanceAuthorized": false,
+    "publicCurrentPlacementAuthorized": false,
+    "baseMutationAuthorized": false,
+    "rawTextRetainedInResult": false
+  }
+}
