@@ -1,0 +1,14 @@
+name = "viewloom-collector-twitch"
+main = "worker.mjs"
+compatibility_date = "2026-05-18"
+keep_vars = true
+
+# Current / IRL candidate-coverage preview only.
+# This tool is outside workers/collector-twitch so merging it does not trigger
+# the production collector deployment workflow.
+# It MUST NOT be used with `wrangler deploy`; the guarded workflow may only use
+# `wrangler versions upload --preview-alias`.
+# There are no active triggers, no cron, no D1 binding, and no production route.
+
+[secrets]
+required = ["TWITCH_CLIENT_ID", "TWITCH_CLIENT_SECRET"]
