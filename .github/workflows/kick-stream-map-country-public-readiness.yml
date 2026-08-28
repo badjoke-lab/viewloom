@@ -1,0 +1,34 @@
+name: Kick Stream Map Country Public Readiness
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'workers/collector-kick/src/official-livestreams.ts'
+      - 'apps/web/functions/_home/model.ts'
+      - 'scripts/kick-stream-map-country-live-join-core.mjs'
+      - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
+      - '.github/workflows/kick-stream-map-country-public-readiness.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'workers/collector-kick/src/official-livestreams.ts'
+      - 'apps/web/functions/_home/model.ts'
+      - 'scripts/kick-stream-map-country-live-join-core.mjs'
+      - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
+      - '.github/workflows/kick-stream-map-country-public-readiness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Kick Country public activation gate
+        run: node scripts/verify-kick-stream-map-country-public-readiness.mjs
