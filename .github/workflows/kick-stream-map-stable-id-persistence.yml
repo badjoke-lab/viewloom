@@ -5,12 +5,14 @@ on:
     paths:
       - 'workers/collector-kick/src/official-livestreams.ts'
       - 'scripts/verify-kick-stream-map-stable-id-persistence.mjs'
+      - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
       - '.github/workflows/kick-stream-map-stable-id-persistence.yml'
   push:
     branches: [main]
     paths:
       - 'workers/collector-kick/src/official-livestreams.ts'
       - 'scripts/verify-kick-stream-map-stable-id-persistence.mjs'
+      - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
       - '.github/workflows/kick-stream-map-stable-id-persistence.yml'
 
 permissions:
@@ -28,8 +30,10 @@ jobs:
         with:
           version: '10.17.1'
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
       - name: Typecheck collectors
         run: pnpm typecheck:collectors
       - name: Verify Kick stable identity persistence boundary
         run: node scripts/verify-kick-stream-map-stable-id-persistence.mjs
+      - name: Verify staged Kick Country readiness
+        run: node scripts/verify-kick-stream-map-country-public-readiness.mjs
