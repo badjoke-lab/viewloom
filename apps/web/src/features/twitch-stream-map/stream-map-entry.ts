@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl'
+import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import {
   filterMappedStreams,
@@ -203,8 +203,8 @@ void loadData()
 
 function initializeMap(): void {
   if (!root) return
-  const maplibregl = window.maplibregl
-  if (!maplibregl) {
+  const renderer = window.maplibregl
+  if (!renderer) {
     mapFailed = true
     root.dataset.mapState = 'renderer-error'
     syncStatus()
@@ -212,7 +212,7 @@ function initializeMap(): void {
   }
 
   root.dataset.mapState = 'basemap-loading'
-  map = new maplibregl.Map({
+  map = new renderer.Map({
     container: root,
     style: 'https://tiles.openfreemap.org/styles/dark',
     center: [10, 18],
@@ -225,7 +225,7 @@ function initializeMap(): void {
     pitchWithRotate: false,
   })
   map.scrollZoom.disable()
-  map.addControl(new maplibregl.NavigationControl({ showCompass: false, visualizePitch: false }), 'top-right')
+  map.addControl(new renderer.NavigationControl({ showCompass: false, visualizePitch: false }), 'top-right')
 
   map.on('load', () => {
     mapReady = true
@@ -527,7 +527,8 @@ function renderStreamList(streams: StreamMapMappedStream[], selection: CountrySe
 function renderMarkers(streams: StreamMapMappedStream[]): void {
   for (const marker of markers) marker.remove()
   markers = []
-  if (!mapReady || !map || !window.maplibregl) return
+  const renderer = window.maplibregl
+  if (!mapReady || !map || !renderer) return
 
   for (const country of groupMappedStreamsByCountry(streams)) {
     const coordinates = COUNTRY_CENTROIDS[country.countryCode]
@@ -546,7 +547,7 @@ function renderMarkers(streams: StreamMapMappedStream[]): void {
     label.textContent = country.countryCode
     element.append(count, label)
     element.addEventListener('click', () => selectCountry(country.countryCode, country.countryName, true))
-    markers.push(new window.maplibregl.Marker({ element, anchor: 'center' }).setLngLat(coordinates).addTo(map))
+    markers.push(new renderer.Marker({ element, anchor: 'center' }).setLngLat(coordinates).addTo(map))
   }
 }
 
