@@ -4,6 +4,9 @@ import {
   buildCurrentLocationReviewQueue,
   validateCurrentLocationReviewResult,
 } from '../tools/twitch-stream-map-current-location/reviewability.mjs'
+import {
+  CURRENT_ACCEPTED_EVIDENCE_CLASSES,
+} from '../workers/collector-twitch/scripts/current-location-evidence-eligibility.mjs'
 
 const fixture = JSON.parse(readFileSync('docs/audits/twitch-stream-map-current-reviewability-fixture-v0.1.json', 'utf8'))
 const contract = readFileSync('docs/product/stream-map-current-location-reviewability-contract-v0.1.md', 'utf8')
@@ -43,6 +46,18 @@ assert.equal(accepted.placement.city, 'Tokyo')
 assert.equal(accepted.titleOrTagAcceptedAsEvidence, false)
 assert.equal(accepted.baseMutationAuthorized, false)
 
+for (const sourceClass of CURRENT_ACCEPTED_EVIDENCE_CLASSES) {
+  const result = validateCurrentLocationReviewResult(tokyoQueue, {
+    ...fixture.acceptedCurrentResult,
+    qualifyingEvidence: {
+      ...fixture.acceptedCurrentResult.qualifyingEvidence,
+      sourceClass,
+    },
+  })
+  assert.equal(result.ok, true, `reviewed accepted class must validate: ${sourceClass}`)
+  assert.equal(result.accepted, true, `reviewed accepted class must be accepted: ${sourceClass}`)
+}
+
 const candidateSourceRejected = validateCurrentLocationReviewResult(tokyoQueue, {
   ...fixture.acceptedCurrentResult,
   qualifyingEvidence: {
@@ -52,6 +67,16 @@ const candidateSourceRejected = validateCurrentLocationReviewResult(tokyoQueue, 
 })
 assert.equal(candidateSourceRejected.ok, false)
 assert.equal(candidateSourceRejected.reason, 'candidate_source_not_qualifying_evidence')
+
+const legacyDirectSelfClassRejected = validateCurrentLocationReviewResult(tokyoQueue, {
+  ...fixture.acceptedCurrentResult,
+  qualifyingEvidence: {
+    ...fixture.acceptedCurrentResult.qualifyingEvidence,
+    sourceClass: 'reviewed_direct_self_statement',
+  },
+})
+assert.equal(legacyDirectSelfClassRejected.ok, false)
+assert.equal(legacyDirectSelfClassRejected.reason, 'candidate_source_not_qualifying_evidence')
 
 const mismatchedCountryRejected = validateCurrentLocationReviewResult(tokyoQueue, {
   ...fixture.acceptedCurrentResult,
@@ -71,8 +96,8 @@ const temporaryTooLong = validateCurrentLocationReviewResult(
     outcome: 'accepted_temporary',
     reviewedAt: '2026-08-28T10:15:00.000Z',
     qualifyingEvidence: {
-      sourceClass: 'reviewed_direct_self_statement',
-      sourceUrl: 'https://example.com/reviewed-direct-statement',
+      sourceClass: 'reviewed_direct_self_statement_transcript',
+      sourceUrl: 'https://example.com/reviewed-direct-statement-transcript',
       countryCode: 'JP',
       observedAt: '2026-08-28T10:10:00.000Z',
       expiresAt: '2026-09-12T10:10:01.000Z'
@@ -121,7 +146,9 @@ console.log(JSON.stringify({
   conflictingCandidates: queue.summary.conflictingCandidates,
   rawTextRetained: queue.boundary.rawTextRetained,
   titleOrTagCanAutoAccept: queue.boundary.titleOrTagCanAutoAccept,
+  acceptedEvidenceClasses: CURRENT_ACCEPTED_EVIDENCE_CLASSES,
   acceptedResultValidated: accepted.accepted,
+  legacyDirectSelfClassRejected: !legacyDirectSelfClassRejected.ok,
   baseMutationAuthorized: accepted.baseMutationAuthorized,
   publicCurrentPlacementAuthorized: queue.boundary.publicCurrentPlacementAuthorized
 }, null, 2))

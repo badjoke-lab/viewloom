@@ -2,14 +2,12 @@ import {
   extractTagLocationCandidates,
   extractTitleLocationCandidates,
 } from '../../workers/collector-twitch/scripts/location-candidate-extractor.mjs'
+import {
+  CURRENT_ACCEPTED_EVIDENCE_CLASSES,
+} from '../../workers/collector-twitch/scripts/current-location-evidence-eligibility.mjs'
 
 const REVIEW_WINDOW_HOURS = 24
-const QUALIFYING_SOURCE_CLASSES = new Set([
-  'self_controlled_current_statement',
-  'official_affiliated_current_statement',
-  'attributable_editorial_current_statement',
-  'reviewed_direct_self_statement',
-])
+const QUALIFYING_SOURCE_CLASSES = new Set(CURRENT_ACCEPTED_EVIDENCE_CLASSES)
 
 function clean(value) {
   return typeof value === 'string' ? value.trim() : String(value ?? '').trim()
