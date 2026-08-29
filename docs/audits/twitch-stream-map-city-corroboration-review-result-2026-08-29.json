@@ -1,0 +1,156 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-city-corroboration-review-result-v0.1",
+  "provider": "twitch",
+  "geographyLayer": "base_city",
+  "reviewedAgainst": "docs/audits/twitch-stream-map-city-corroboration-queue-2026-08-28.json",
+  "reviewObservedAt": "2026-08-29T01:47:00.000Z",
+  "canonicalMutationAuthorized": false,
+  "publicActivationAuthorized": false,
+  "productionDeploymentAuthorized": false,
+  "summary": {
+    "reviewed": 12,
+    "corroboratedSecondaryBaseEvidence": 8,
+    "noQualifyingSecondaryEvidence": 4,
+    "conflicts": 0
+  },
+  "entries": [
+    {
+      "streamerLogin": "adinross",
+      "outcome": "corroborated_secondary_base_evidence",
+      "countryCode": "US",
+      "region": null,
+      "city": "Miami",
+      "claimKind": "home_base",
+      "proposedCanonicalSource": "manual_review",
+      "sourceUrls": ["https://los40.com/2025/05/07/que-es-el-swatting-la-practica-por-la-que-casi-detienen-al-youtuber-plex-en-miami/"],
+      "basis": "independent_editorial_report_describes_visit_to_streamers_miami_mansion"
+    },
+    {
+      "streamerLogin": "cinna",
+      "outcome": "corroborated_secondary_base_evidence",
+      "countryCode": "US",
+      "region": null,
+      "city": "Austin",
+      "claimKind": "declared_location",
+      "proposedCanonicalSource": "official_external",
+      "sourceUrls": ["https://www.loaded.gg/creators/cinna/"],
+      "basis": "official_affiliated_talent_profile_explicitly_describes_creator_as_austin_based"
+    },
+    {
+      "streamerLogin": "ddg",
+      "outcome": "corroborated_secondary_base_evidence",
+      "countryCode": "US",
+      "region": null,
+      "city": "Los Angeles",
+      "claimKind": "home_base",
+      "proposedCanonicalSource": "manual_review",
+      "sourceUrls": ["https://americansongwriter.com/rapper-ddg-learns-he-doesnt-have-fire-insurance-as-blazes-threaten-los-angeles-home/"],
+      "basis": "independent_editorial_report_explicitly_identifies_los_angeles_home_and_quotes_streamer"
+    },
+    {
+      "streamerLogin": "fps_shaka",
+      "outcome": "no_qualifying_secondary_evidence",
+      "countryCode": "JP",
+      "region": null,
+      "city": "Tokyo",
+      "reason": "no_independent_explicit_base_city_source_meeting_review_quality_found"
+    },
+    {
+      "streamerLogin": "ibai",
+      "outcome": "corroborated_secondary_base_evidence",
+      "countryCode": "ES",
+      "region": null,
+      "city": "Sant Cugat del Valles",
+      "claimKind": "declared_location",
+      "proposedCanonicalSource": "manual_review",
+      "sourceUrls": ["https://www.ara.cat/cultura/musica/rosalia-rauw-alejandro-havia-perdut-fe-masculinitat-coneixer_1_4656033.html"],
+      "basis": "independent_editorial_report_explicitly_states_ibai_lives_in_sant_cugat"
+    },
+    {
+      "streamerLogin": "jasontheween",
+      "outcome": "corroborated_secondary_base_evidence",
+      "countryCode": "US",
+      "region": null,
+      "city": "Los Angeles",
+      "claimKind": "home_base",
+      "proposedCanonicalSource": "manual_review",
+      "sourceUrls": [
+        "https://www.twitchtranscripts.com/channel/jasontheween/2811477922",
+        "https://corecrew.org/"
+      ],
+      "basis": "separate_self_stream_places_shared_house_in_la_and_official_core_site_confirms_six_creators_one_house"
+    },
+    {
+      "streamerLogin": "knirpz",
+      "outcome": "no_qualifying_secondary_evidence",
+      "countryCode": "DE",
+      "region": "Berlin",
+      "city": "Berlin",
+      "reason": "secondary_profiles_found_but_source_quality_or_independence_not_strong_enough_for_acceptance"
+    },
+    {
+      "streamerLogin": "lacy",
+      "outcome": "corroborated_secondary_base_evidence",
+      "countryCode": "US",
+      "region": null,
+      "city": "Los Angeles",
+      "claimKind": "home_base",
+      "proposedCanonicalSource": "manual_review",
+      "sourceUrls": [
+        "https://www.twitchtranscripts.com/channel/lacy/2782370425",
+        "https://corecrew.org/"
+      ],
+      "basis": "separate_stream_from_existing_evidence_identifies_shared_house_context_and_los_angeles_base_while_official_core_site_confirms_shared_house_membership"
+    },
+    {
+      "streamerLogin": "papaplatte",
+      "outcome": "corroborated_secondary_base_evidence",
+      "countryCode": "DE",
+      "region": null,
+      "city": "Cologne",
+      "claimKind": "declared_location",
+      "proposedCanonicalSource": "manual_review",
+      "sourceUrls": ["https://www.gmx.net/magazine/unterhaltung/thema/papaplatte"],
+      "basis": "independent_editorial_profile_explicitly_states_he_lives_in_cologne"
+    },
+    {
+      "streamerLogin": "ramzes",
+      "outcome": "corroborated_secondary_base_evidence",
+      "countryCode": "RU",
+      "region": null,
+      "city": "Moscow",
+      "claimKind": "home_base",
+      "proposedCanonicalSource": "manual_review",
+      "sourceUrls": [
+        "https://escorenews.com/en/dota-2/news/61638-ramzes-don-t-tell-me-how-much-we-ll-have-to-pay-in-taxes-after-ti13-i-ll-start-crying",
+        "https://www.cybersport.ru/tags/dota-2/ramzes666-moskva-bezogovorochno-luchsheye-mesto-dlya-zhizni"
+      ],
+      "basis": "direct_self_statements_report_downtown_moscow_apartment_and_moscow_as_place_of_life"
+    },
+    {
+      "streamerLogin": "shotzzy",
+      "outcome": "no_qualifying_secondary_evidence",
+      "countryCode": "US",
+      "region": "Texas",
+      "city": "Dallas",
+      "reason": "current_aggregator_profile_lists_dallas_but_no_independent_high_quality_explicit_base_city_source_confirmed"
+    },
+    {
+      "streamerLogin": "xqc",
+      "outcome": "no_qualifying_secondary_evidence",
+      "countryCode": "US",
+      "region": null,
+      "city": "Miami",
+      "reason": "current_aggregator_profiles_found_but_existing_direct_self_statement_is_already_primary_and_no_independent_high_quality_secondary_source_confirmed"
+    }
+  ],
+  "safety": {
+    "rawQuoteStored": false,
+    "preciseAddressStored": false,
+    "coordinatesStored": false,
+    "currentLocationUsedForBase": false,
+    "countryUsedToInferCity": false,
+    "automaticCanonicalPromotion": false,
+    "twitchKickAggregation": false
+  }
+}
