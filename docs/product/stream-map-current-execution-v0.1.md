@@ -4,7 +4,7 @@ Status: current Stream Map execution override
 Applies to: Stream Map sections of `current-roadmap.md` and `current-schedule.md`  
 Specification: `stream-map-spec-v0.6.md`  
 Implementation plan: `stream-map-implementation-plan-v0.5.md`  
-Last updated: 2026-08-28 UTC / revision c
+Last updated: 2026-08-29 UTC / revision d
 
 ## Purpose
 
@@ -33,6 +33,8 @@ City
   public geography UI               DONE
   geography/filter orthogonality    DONE
   confidence/ambiguity contract     DONE (#1092)
+  corroboration queue               DONE (#1095)
+  corroboration review              DONE (#1096: 8 corroborated / 4 unresolved)
   Current/IRL mixing                DISABLED
 
 Kick Country
@@ -56,7 +58,9 @@ Current Location / IRL
   bounded preview live probe        DONE
   identity-preserving review queue  DONE
   review batch contract             DONE (#1091)
-  reviewed Current placements       0
+  candidate review                  DONE (#1097)
+  reviewed Current placements       0 / 10
+  no-qualifying-evidence results    10 / 10
   current-location API layer        NOT YET
   public Current / IRL mode         NOT YET
 
@@ -76,7 +80,7 @@ Map control boundary
 Lane A  Twitch Country canonical closeout + reviewed maintenance
 Lane B  City evidence strengthening + ambiguity/confidence regression
 Lane C  Kick stable-ID production gate + downstream Country wiring preparation
-Lane D  Current / IRL candidate review + separate API/UI preparation
+Lane D  Current / IRL evidence-yield follow-up + separate API/UI readiness
 Lane E  Provider × Geography × Evidence Source / provenance integration
 ```
 
@@ -111,7 +115,7 @@ Base City rules remain:
 
 PR #1092 added the City confidence / ambiguity classifier. `confidenceClass` means evidence consistency, not a probability estimate.
 
-Current retained-evidence result:
+Retained-evidence baseline:
 
 ```text
 reviewed entities                         28
@@ -123,7 +127,20 @@ Base City conflicts                        0
 privacy-invalid rows                       0
 ```
 
-This means the next City evidence-quality work is not to infer more Cities from Country. It is to strengthen explicit City evidence, including seeking additional attributable Base City evidence where available, while preserving fail-closed conflict behavior.
+PR #1095 converted the 12 single-explicit Base City mappings into a bounded corroboration queue. PR #1096 completed that review without changing canonical runtime evidence:
+
+```text
+reviewed corroboration entries            12
+secondary Base City corroborated            8
+no qualifying secondary evidence            4
+secondary conflicts                         0
+canonical mutation authorized           false
+public activation authorized            false
+```
+
+Corroborated review candidates are `adinross`, `cinna`, `ddg`, `ibai`, `jasontheween`, `lacy`, `papaplatte`, and `ramzes`. `fps_shaka`, `knirpz`, `shotzzy`, and `xqc` remain valid under their existing single-explicit evidence but were not upgraded with weak/aggregator-only secondary material.
+
+The #1096 review result is not canonical application. Applying additional reviewed City evidence would touch the production web evidence surface and therefore remains a separate production-gated step. City evidence-quality work can still continue through read-only corroboration, conflict detection, and regression tooling.
 
 ## Lane C — Kick
 
@@ -164,7 +181,7 @@ Hard rules:
 - Current never mutates Home/Base automatically;
 - public precision is Country/City only; no address/GPS/precise route.
 
-### Live measurement history
+### Live measurement and review result
 
 An earlier bounded candidate-availability probe found 11/300 candidate streams. That measurement established non-zero candidate yield only.
 
@@ -176,7 +193,6 @@ reviewable candidates                     10
 future/planned-travel rejected             3
 candidate conflicts                        0
 invalid identities                         0
-accepted Current placements                0
 Twitch token requests                      1
 /helix/streams requests                    3
 /helix/users requests                      0
@@ -185,9 +201,23 @@ production deployment                  false
 raw title/tag/language retained         false
 ```
 
-The frozen result is retained by #1090. PR #1091 turned the 10 identities into a bounded review batch with all entries initially `pending_review` and zero accepted Current placements.
+The frozen queue result is retained by #1090. PR #1091 turned the 10 identities into a bounded review batch. PR #1097 completed the read-only evidence review before the review window expired:
 
-Candidate stream title/tag evidence cannot auto-accept Current geography. A qualifying acceptance requires separate attributable temporal evidence under the Current/IRL contract. If the review window expires without qualifying evidence, the candidate does not become a Current placement.
+```text
+candidateCount                            10
+pendingReview                              0
+acceptedCurrent                            0
+noQualifyingEvidence                      10
+expired                                    0
+conflict                                   0
+invalid                                    0
+public Current placement authorized    false
+base mutation authorized                false
+```
+
+The zero result is intentional rather than a missing review. Candidate stream title/tag evidence was not promoted into Current geography. Examples of rejected upgrade paths include planned-future travel, static profile/residence context without current-time meaning, language/nationality context, and location words that remained stream-title-only.
+
+Therefore the current live candidate method has demonstrated candidate yield but has not yet demonstrated qualifying temporal Current evidence yield. Public Current API/UI remains disabled. The next safe Current/IRL work is to improve or remeasure reviewable temporal evidence acquisition without weakening the evidence contract or increasing public precision.
 
 ## Lane E — Provider / Geography / Evidence Source controls
 
@@ -225,9 +255,9 @@ The next UI work can build on this matrix without conflating provider, geography
 
 ```text
 A. keep #1068 behind explicit production Web Pages authorization
-B. strengthen City evidence and retain #1092 ambiguity/confidence regression
+B. retain #1092/#1096 City evidence-quality gates; continue read-only corroboration/conflict work
 C. keep #1083 Draft; continue production-independent Kick downstream preparation
-D. review the 10 Current/IRL candidates without auto-acceptance; expired/no-evidence => no placement
+D. treat #1097 as a completed zero-yield Current review and improve/reprobe temporal evidence acquisition without weakening acceptance rules
 E. build provider/geography/source/provenance UI preparation on #1093 without public Kick/Current activation
 ```
 
