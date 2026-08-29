@@ -2,7 +2,7 @@
   "schemaVersion": "viewloom-twitch-stream-map-current-review-batch-v0.1",
   "provider": "twitch",
   "layer": "current",
-  "status": "active_review_queue",
+  "status": "review_complete_no_qualifying_current_evidence",
   "source": {
     "auditPath": "docs/audits/twitch-stream-map-current-review-queue-live-result-2026-08-28.json",
     "workflowRunId": 33182676137,
@@ -10,6 +10,7 @@
     "observedAt": "2026-08-28T14:57:13.438Z",
     "reviewWindowExpiresAt": "2026-08-29T14:57:13.438Z"
   },
+  "reviewCompletedAt": "2026-08-29T01:56:00.000Z",
   "reviewPolicy": {
     "candidateInputsQualifyAsCurrentEvidence": false,
     "requiresAttributableTemporalEvidence": true,
@@ -58,23 +59,23 @@
   },
   "summary": {
     "candidateCount": 10,
-    "pendingReview": 10,
+    "pendingReview": 0,
     "acceptedCurrent": 0,
-    "noQualifyingEvidence": 0,
+    "noQualifyingEvidence": 10,
     "expired": 0,
     "conflict": 0,
     "invalid": 0
   },
   "entries": [
-    {"twitchUserId":"122799408","userLogin":"alois_nl","candidate":{"countryCode":"KR","countryName":"South Korea","city":null,"sourceClass":"stream_tag"},"reviewStatus":"pending_review","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"qualifying_current_evidence_not_yet_reviewed"}},
-    {"twitchUserId":"159498717","userLogin":"jinnytty","candidate":{"countryCode":"KR","countryName":"South Korea","city":null,"sourceClass":"stream_tag"},"reviewStatus":"pending_review","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"qualifying_current_evidence_not_yet_reviewed"}},
-    {"twitchUserId":"45221641","userLogin":"bean","candidate":{"countryCode":"US","countryName":"United States","city":null,"sourceClass":"stream_tag"},"reviewStatus":"pending_review","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"qualifying_current_evidence_not_yet_reviewed"}},
-    {"twitchUserId":"931762164","userLogin":"sera_promisu","candidate":{"countryCode":"JP","countryName":"Japan","city":null,"sourceClass":"stream_tag"},"reviewStatus":"pending_review","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"qualifying_current_evidence_not_yet_reviewed"}},
-    {"twitchUserId":"118547417","userLogin":"j0beats","candidate":{"countryCode":"GB","countryName":"United Kingdom","city":null,"sourceClass":"stream_tag"},"reviewStatus":"pending_review","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"qualifying_current_evidence_not_yet_reviewed"}},
-    {"twitchUserId":"582765062","userLogin":"peter","candidate":{"countryCode":"JP","countryName":"Japan","city":null,"sourceClass":"stream_tag"},"reviewStatus":"pending_review","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"qualifying_current_evidence_not_yet_reviewed"}},
-    {"twitchUserId":"12731745","userLogin":"deadlyslob","candidate":{"countryCode":"CA","countryName":"Canada","city":null,"sourceClass":"stream_tag"},"reviewStatus":"pending_review","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"qualifying_current_evidence_not_yet_reviewed"}},
-    {"twitchUserId":"570335223","userLogin":"rayasianboy","candidate":{"countryCode":"TW","countryName":"Taiwan","city":null,"sourceClass":"stream_tag"},"reviewStatus":"pending_review","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"qualifying_current_evidence_not_yet_reviewed"}},
-    {"twitchUserId":"179896802","userLogin":"berticuss","candidate":{"countryCode":"DE","countryName":"Germany","city":null,"sourceClass":"stream_title"},"reviewStatus":"pending_review","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"qualifying_current_evidence_not_yet_reviewed"}},
-    {"twitchUserId":"49408183","userLogin":"sick_nerd","candidate":{"countryCode":"DK","countryName":"Denmark","city":null,"sourceClass":"stream_tag"},"reviewStatus":"pending_review","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"qualifying_current_evidence_not_yet_reviewed"}}
+    {"twitchUserId":"122799408","userLogin":"alois_nl","candidate":{"countryCode":"KR","countryName":"South Korea","city":null,"sourceClass":"stream_tag"},"reviewStatus":"no_qualifying_evidence","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"no_attributable_temporal_current_evidence_found_beyond_candidate_tag"}},
+    {"twitchUserId":"159498717","userLogin":"jinnytty","candidate":{"countryCode":"KR","countryName":"South Korea","city":null,"sourceClass":"stream_tag"},"reviewStatus":"no_qualifying_evidence","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"self_schedule_was_planned_future_travel_and_live_location_remained_candidate_only"}},
+    {"twitchUserId":"45221641","userLogin":"bean","candidate":{"countryCode":"US","countryName":"United States","city":null,"sourceClass":"stream_tag"},"reviewStatus":"no_qualifying_evidence","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"no_attributable_temporal_current_evidence_found_beyond_candidate_tag"}},
+    {"twitchUserId":"931762164","userLogin":"sera_promisu","candidate":{"countryCode":"JP","countryName":"Japan","city":null,"sourceClass":"stream_tag"},"reviewStatus":"no_qualifying_evidence","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"profile_and_language_context_do_not_establish_current_location"}},
+    {"twitchUserId":"118547417","userLogin":"j0beats","candidate":{"countryCode":"GB","countryName":"United Kingdom","city":null,"sourceClass":"stream_tag"},"reviewStatus":"no_qualifying_evidence","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"public_profile_supports_base_context_without_current_time_meaning"}},
+    {"twitchUserId":"582765062","userLogin":"peter","candidate":{"countryCode":"JP","countryName":"Japan","city":null,"sourceClass":"stream_tag"},"reviewStatus":"no_qualifying_evidence","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"no_attributable_temporal_current_evidence_found_beyond_candidate_tag"}},
+    {"twitchUserId":"12731745","userLogin":"deadlyslob","candidate":{"countryCode":"CA","countryName":"Canada","city":null,"sourceClass":"stream_tag"},"reviewStatus":"no_qualifying_evidence","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"canadian_profile_or_residence_context_is_not_temporal_current_evidence"}},
+    {"twitchUserId":"570335223","userLogin":"rayasianboy","candidate":{"countryCode":"TW","countryName":"Taiwan","city":null,"sourceClass":"stream_tag"},"reviewStatus":"no_qualifying_evidence","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"taiwan_candidate_tag_not_supported_as_current_and_recent_public_activity_was_reported_in_united_states"}},
+    {"twitchUserId":"179896802","userLogin":"berticuss","candidate":{"countryCode":"DE","countryName":"Germany","city":null,"sourceClass":"stream_title"},"reviewStatus":"no_qualifying_evidence","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"location_wording_remained_stream_title_only_and_other_recent_location_titles_prevent_upgrade"}},
+    {"twitchUserId":"49408183","userLogin":"sick_nerd","candidate":{"countryCode":"DK","countryName":"Denmark","city":null,"sourceClass":"stream_tag"},"reviewStatus":"no_qualifying_evidence","qualifyingEvidence":[],"decision":{"acceptedCurrentPlacement":false,"countryCode":null,"countryName":null,"city":null,"observedAt":null,"expiresAt":null,"sourceClass":null,"reason":"denmark_profile_or_residence_context_has_no_current_time_meaning"}}
   ]
 }
