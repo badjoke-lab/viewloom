@@ -30,7 +30,7 @@ jobs:
           done
           cat /tmp/channel-profile-preview.log
           exit 1
-      - run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+      - run: npm install playwright@1.52.0 --no-save --no-audit --no-fund --ignore-scripts
         working-directory: apps/web
       - run: npx playwright install --with-deps chromium
         working-directory: apps/web
