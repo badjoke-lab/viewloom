@@ -4,7 +4,7 @@ Status: current Stream Map execution override
 Applies to: Stream Map sections of `current-roadmap.md` and `current-schedule.md`  
 Specification: `stream-map-spec-v0.6.md`  
 Implementation plan: `stream-map-implementation-plan-v0.5.md`  
-Last updated: 2026-08-29 UTC / revision d
+Last updated: 2026-08-29 UTC / revision e
 
 ## Purpose
 
@@ -46,6 +46,7 @@ Kick Country
   snapshot Country adapter          DONE
   Country response core             DONE
   provider/geography boundary CI    DONE (#1093)
+  web snapshot source contract      DONE (#1100)
   stable-ID collector persistence   DRAFT / PROD-DEPLOY-GATED (#1083)
   production Country API wiring     NOT YET
   public Country Map                NOT YET
@@ -59,6 +60,8 @@ Current Location / IRL
   identity-preserving review queue  DONE
   review batch contract             DONE (#1091)
   candidate review                  DONE (#1097)
+  temporal evidence contract CI     DONE (#1099)
+  reviewability taxonomy alignment  DONE (#1101)
   reviewed Current placements       0 / 10
   no-qualifying-evidence results    10 / 10
   current-location API layer        NOT YET
@@ -152,20 +155,32 @@ Merged safe preparation includes:
 - Kick-only Country live-state derivation;
 - snapshot adapter;
 - Country response core with mapped/unmapped/excluded/conflict reconciliation;
+- provider/geography boundary regression;
+- production-independent web snapshot source contract (#1100);
 - `publicActivationAuthorized: false`;
 - Twitch evidence reuse forbidden;
 - provider aggregation forbidden;
 - Country-to-City inference forbidden;
 - Current-to-Base mutation forbidden.
 
-PR #1093 additionally locks the public-control boundary: Twitch source options must not be copied into Kick before a provider-specific Kick evidence-source UI contract exists.
+PR #1093 locks the public-control boundary: Twitch source options must not be copied into Kick before a provider-specific Kick evidence-source UI contract exists.
+
+PR #1100 closes the remaining production-independent web source-shape gap without adding a public route. The web-side pure adapter:
+
+- accepts only the retained top-level `broadcaster_user_id` as stable Kick identity;
+- does not promote slug or nested channel IDs into stable identity;
+- discards title/profile/precise-location fields before the Country response path;
+- verifies future snapshot payload -> source adapter -> existing snapshot adapter/join -> existing Country response core;
+- verifies mapped, missing-ID, Twitch-only-evidence, ambiguous-ID, conflict, and excluded terminal cases;
+- contains no `onRequest` route and no D1 access.
 
 Production boundary:
 
 - Draft PR #1083 changes the production Kick collector to persist official stable identity;
 - it remains Draft and unmerged without production collector authorization;
-- no D1/schema/cadence/retention change is authorized by this lane;
-- after stable-ID persistence is separately authorized and proven, production API/web activation remains another gate.
+- current production collector output still does not retain `broadcaster_user_id`;
+- production Country API wiring and public Kick Map activation remain separate later gates;
+- no D1/schema/cadence/retention change is authorized by this lane.
 
 ## Lane D — Current Location / IRL
 
@@ -217,7 +232,20 @@ base mutation authorized                false
 
 The zero result is intentional rather than a missing review. Candidate stream title/tag evidence was not promoted into Current geography. Examples of rejected upgrade paths include planned-future travel, static profile/residence context without current-time meaning, language/nationality context, and location words that remained stream-title-only.
 
-Therefore the current live candidate method has demonstrated candidate yield but has not yet demonstrated qualifying temporal Current evidence yield. Public Current API/UI remains disabled. The next safe Current/IRL work is to improve or remeasure reviewable temporal evidence acquisition without weakening the evidence contract or increasing public precision.
+PR #1099 converts the reviewed Current evidence policy into an executable CI contract. The accepted evidence taxonomy is exactly:
+
+```text
+self_controlled_current_statement
+official_affiliated_current_statement
+attributable_editorial_current_statement
+reviewed_direct_self_statement_transcript
+```
+
+Candidate-only classes remain `stream_title`, `stream_tag`, `profile_location_without_current_time_meaning`, `search_snippet`, and `unrelated_social_repost`. Nationality, birthplace, language, timezone, IP inference, name cues, organization headquarters, event venue without presence, planned future travel, old residence statements, and category/game signals remain standalone-rejected. Open-ended accepted Current evidence defaults to a 24-hour TTL. Automatic acceptance and public Current placement remain unauthorized.
+
+PR #1101 removes an older duplicated accepted-source list from the #1087 reviewability validator and makes it import the #1099 taxonomy directly. It also explicitly rejects the obsolete `reviewed_direct_self_statement` token. This prevents the review queue/result validator and the reviewed evidence contract from drifting apart again.
+
+Therefore the current live candidate method has demonstrated candidate yield but has not yet demonstrated qualifying temporal Current evidence yield. Public Current API/UI remains disabled. The next safe Current/IRL work is attributable temporal-evidence acquisition targeted at the accepted classes above, followed by review; repeating title/tag candidate yield alone is not sufficient.
 
 ## Lane E — Provider / Geography / Evidence Source controls
 
@@ -256,8 +284,8 @@ The next UI work can build on this matrix without conflating provider, geography
 ```text
 A. keep #1068 behind explicit production Web Pages authorization
 B. retain #1092/#1096 City evidence-quality gates; continue read-only corroboration/conflict work
-C. keep #1083 Draft; continue production-independent Kick downstream preparation
-D. treat #1097 as a completed zero-yield Current review and improve/reprobe temporal evidence acquisition without weakening acceptance rules
+C. retain #1100 downstream Kick source contract; keep #1083 Draft and production API/public Map activation behind their own gates
+D. use #1099/#1101 as the Current acceptance source; pursue attributable temporal evidence in accepted classes without weakening the contract
 E. build provider/geography/source/provenance UI preparation on #1093 without public Kick/Current activation
 ```
 
