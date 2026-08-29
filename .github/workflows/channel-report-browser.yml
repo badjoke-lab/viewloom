@@ -26,10 +26,11 @@ jobs:
             sleep 1
           done
           exit 1
-      - run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+      - name: Install Playwright in isolated prefix
         working-directory: apps/web
-      - run: npx playwright install --with-deps chromium
-        working-directory: apps/web
+        run: node scripts/install-ci-playwright.mjs
+      - name: Install Chromium
+        run: /tmp/viewloom-playwright/node_modules/.bin/playwright install --with-deps chromium
       - run: node scripts/channel-report-browser.mjs 2>&1 | tee /tmp/channel-report-browser.log
         working-directory: apps/web
         env:
