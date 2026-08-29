@@ -7,6 +7,8 @@ on:
       - 'apps/web/twitch/map/index.html'
       - 'apps/web/src/features/twitch-stream-map/maplibre-bootstrap.ts'
       - 'apps/web/src/features/twitch-stream-map/stream-map-entry.ts'
+      - 'apps/web/scripts/install-ci-playwright.mjs'
+      - 'apps/web/scripts/twitch-stream-map-renderer-browser.mjs'
       - 'scripts/verify-twitch-stream-map-renderer-bundle.mjs'
       - '.github/workflows/twitch-stream-map-renderer-bundle.yml'
 
@@ -20,10 +22,38 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
       - name: Verify bundled Stream Map renderer contract
         run: node scripts/verify-twitch-stream-map-renderer-bundle.mjs
+      - name: Build web application
+        run: pnpm build:web
+      - name: Start local candidate preview
+        shell: bash
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/twitch-stream-map-renderer-preview.log 2>&1 &
+          for attempt in {1..40}; do
+            curl --silent --fail http://127.0.0.1:4173/twitch/map/ > /dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/twitch-stream-map-renderer-preview.log
+          exit 1
+      - name: Install Playwright in isolated prefix
+        working-directory: apps/web
+        run: node scripts/install-ci-playwright.mjs
+      - name: Install Chromium
+        run: /tmp/viewloom-playwright/node_modules/.bin/playwright install --with-deps chromium
+      - name: Verify bundled renderer in browser
+        working-directory: apps/web
+        env:
+          STREAM_MAP_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/twitch-stream-map-renderer-browser.mjs
