@@ -78,7 +78,7 @@ assert.equal(unselected.selectedEmpty, false)
 assert.equal(unselected.visibleStreams.length, 3)
 
 const page = readFileSync('twitch/map/index.html', 'utf8')
-const entry = readFileSync('src/features/twitch-stream-map/stream-map-entry.ts', 'utf8')
+const entry = readFileSync('src/features/twitch-stream-map/stream-map-entry-core.ts', 'utf8')
 const css = readFileSync('src/features/twitch-stream-map/stream-map.css', 'utf8')
 
 assert.ok(page.includes('id="stream-map-selected-country"'))
