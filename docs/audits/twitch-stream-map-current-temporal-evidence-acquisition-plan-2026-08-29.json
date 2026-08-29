@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-current-temporal-evidence-acquisition-plan-v0.1",
+  "sourceReviewBatch": "docs/audits/twitch-stream-map-current-review-batch-2026-08-28.json",
+  "createdAt": "2026-08-29T14:25:00.000Z",
+  "expected": {
+    "identities": 10,
+    "acceptedEvidenceClasses": 4,
+    "lookupTasks": 40,
+    "maxLookupsPerIdentity": 4,
+    "maxExternalLookups": 40,
+    "providerRequests": 0,
+    "logins": [
+      "alois_nl",
+      "jinnytty",
+      "bean",
+      "sera_promisu",
+      "j0beats",
+      "peter",
+      "deadlyslob",
+      "rayasianboy",
+      "berticuss",
+      "sick_nerd"
+    ]
+  },
+  "boundary": {
+    "candidateTitleOrTagCanQualify": false,
+    "profileBaseContextCanQualifyWithoutCurrentTimeMeaning": false,
+    "plannedFutureTravelCanQualify": false,
+    "searchSnippetCanQualify": false,
+    "automaticAcceptanceAuthorized": false,
+    "publicCurrentPlacementAuthorized": false,
+    "baseMutationAuthorized": false,
+    "rawTitleTagLanguageRetained": false,
+    "preciseLocationAllowed": false,
+    "twitchKickAggregationAuthorized": false
+  }
+}
