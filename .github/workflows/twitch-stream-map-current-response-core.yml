@@ -1,0 +1,32 @@
+name: Twitch Stream Map Current Response Core
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/twitch-stream-map-current-response-core.mjs'
+      - 'scripts/verify-twitch-stream-map-current-response-core.mjs'
+      - 'docs/audits/twitch-stream-map-current-response-fixture-v0.1.json'
+      - 'workers/collector-twitch/scripts/current-location-evidence-eligibility.mjs'
+      - '.github/workflows/twitch-stream-map-current-response-core.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/twitch-stream-map-current-response-core.mjs'
+      - 'scripts/verify-twitch-stream-map-current-response-core.mjs'
+      - 'docs/audits/twitch-stream-map-current-response-fixture-v0.1.json'
+      - 'workers/collector-twitch/scripts/current-location-evidence-eligibility.mjs'
+      - '.github/workflows/twitch-stream-map-current-response-core.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Twitch Current response core
+        run: node scripts/verify-twitch-stream-map-current-response-core.mjs
