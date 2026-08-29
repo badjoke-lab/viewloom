@@ -4,7 +4,7 @@ Status: current Stream Map execution override
 Applies to: Stream Map sections of `current-roadmap.md` and `current-schedule.md`  
 Specification: `stream-map-spec-v0.6.md`  
 Implementation plan: `stream-map-implementation-plan-v0.5.md`  
-Last updated: 2026-08-29 UTC / revision e
+Last updated: 2026-08-29 UTC / revision f
 
 ## Purpose
 
@@ -62,10 +62,12 @@ Current Location / IRL
   candidate review                  DONE (#1097)
   temporal evidence contract CI     DONE (#1099)
   reviewability taxonomy alignment  DONE (#1101)
+  accepted-class acquisition queue  DONE (#1103)
+  Current response core             DONE (#1104)
   reviewed Current placements       0 / 10
   no-qualifying-evidence results    10 / 10
-  current-location API layer        NOT YET
-  public Current / IRL mode         NOT YET
+  public current-location API route DISABLED / NOT YET
+  public Current / IRL mode         DISABLED / NOT YET
 
 Map control boundary
   Twitch public geography           Country + City
@@ -83,7 +85,7 @@ Map control boundary
 Lane A  Twitch Country canonical closeout + reviewed maintenance
 Lane B  City evidence strengthening + ambiguity/confidence regression
 Lane C  Kick stable-ID production gate + downstream Country wiring preparation
-Lane D  Current / IRL evidence-yield follow-up + separate API/UI readiness
+Lane D  Current / IRL accepted-class evidence acquisition + API/UI readiness
 Lane E  Provider × Geography × Evidence Source / provenance integration
 ```
 
@@ -188,19 +190,19 @@ Current/IRL remains a separate temporal layer from Home/Base.
 
 Hard rules:
 
-- accepted Current placement requires attributable temporal evidence, provenance, `observedAt`, and `expiresAt`;
+- accepted Current placement requires attributable temporal evidence and provenance;
+- accepted Current evidence requires `observedAt`; explicit or effective expiry is mandatory before placement;
 - expired evidence returns to Unknown;
 - future/planned travel does not place early;
 - overlapping contradictory fresh claims fail closed;
 - Country/Home/Base never implies Current;
 - Current never mutates Home/Base automatically;
-- public precision is Country/City only; no address/GPS/precise route.
+- public precision is Country/City only; no address/GPS/precise route;
+- login is not a stable Twitch identity.
 
-### Live measurement and review result
+### Live measurement and completed review
 
-An earlier bounded candidate-availability probe found 11/300 candidate streams. That measurement established non-zero candidate yield only.
-
-The later identity-preserving review-queue run `33182676137` is the current review source and measured:
+An earlier bounded candidate-availability probe found 11/300 candidate streams. The later identity-preserving review-queue run `33182676137` measured:
 
 ```text
 population                               300
@@ -216,7 +218,7 @@ production deployment                  false
 raw title/tag/language retained         false
 ```
 
-The frozen queue result is retained by #1090. PR #1091 turned the 10 identities into a bounded review batch. PR #1097 completed the read-only evidence review before the review window expired:
+PR #1091 turned the 10 identities into a bounded review batch. PR #1097 completed the read-only review:
 
 ```text
 candidateCount                            10
@@ -230,7 +232,9 @@ public Current placement authorized    false
 base mutation authorized                false
 ```
 
-The zero result is intentional rather than a missing review. Candidate stream title/tag evidence was not promoted into Current geography. Examples of rejected upgrade paths include planned-future travel, static profile/residence context without current-time meaning, language/nationality context, and location words that remained stream-title-only.
+The zero result is intentional rather than a missing review. Candidate stream title/tag evidence was not promoted into Current geography.
+
+### Accepted temporal evidence contract
 
 PR #1099 converts the reviewed Current evidence policy into an executable CI contract. The accepted evidence taxonomy is exactly:
 
@@ -241,11 +245,66 @@ attributable_editorial_current_statement
 reviewed_direct_self_statement_transcript
 ```
 
-Candidate-only classes remain `stream_title`, `stream_tag`, `profile_location_without_current_time_meaning`, `search_snippet`, and `unrelated_social_repost`. Nationality, birthplace, language, timezone, IP inference, name cues, organization headquarters, event venue without presence, planned future travel, old residence statements, and category/game signals remain standalone-rejected. Open-ended accepted Current evidence defaults to a 24-hour TTL. Automatic acceptance and public Current placement remain unauthorized.
+Candidate-only classes remain `stream_title`, `stream_tag`, `profile_location_without_current_time_meaning`, `search_snippet`, and `unrelated_social_repost`.
 
-PR #1101 removes an older duplicated accepted-source list from the #1087 reviewability validator and makes it import the #1099 taxonomy directly. It also explicitly rejects the obsolete `reviewed_direct_self_statement` token. This prevents the review queue/result validator and the reviewed evidence contract from drifting apart again.
+Nationality, birthplace, language, timezone, IP inference, name cues, organization headquarters, event venue without presence, planned future travel, old residence statements, and category/game signals remain standalone-rejected.
 
-Therefore the current live candidate method has demonstrated candidate yield but has not yet demonstrated qualifying temporal Current evidence yield. Public Current API/UI remains disabled. The next safe Current/IRL work is attributable temporal-evidence acquisition targeted at the accepted classes above, followed by review; repeating title/tag candidate yield alone is not sufficient.
+Open-ended accepted Current evidence defaults to a 24-hour TTL. Automatic acceptance and public Current placement remain unauthorized.
+
+PR #1101 removes the older duplicated accepted-source list from the #1087 reviewability validator and makes it import the #1099 taxonomy directly. The obsolete `reviewed_direct_self_statement` token is explicitly rejected.
+
+### Accepted-class acquisition queue
+
+PR #1103 converts the completed 10-entry zero-yield review into a deterministic accepted-class-only research queue:
+
+```text
+stable Twitch identities                  10
+accepted evidence classes per identity     4
+external lookup tasks                     40
+max lookups per identity                    4
+Twitch provider requests                   0
+automatic acceptance                   false
+public Current placement               false
+Home/Base mutation                     false
+```
+
+The queue does not repeat title/tag candidate measurement. Each identity is searched only for the four accepted source classes above. Candidate Country/City remains a review target only; raw title/tag/language is not retained.
+
+### Current response core
+
+PR #1104 adds a production-independent Current response core. It is deliberately not a public Pages Function route.
+
+The response core requires stable `twitchUserId` on each live input row. Missing stable identity becomes `stable_identity_unavailable`; login matching is never used as a fallback.
+
+The core verifies:
+
+- fresh accepted Current evidence -> mapped Current Country/City;
+- expired evidence -> unmapped;
+- future evidence -> not started / unmapped;
+- candidate-only evidence -> unmapped;
+- no reviewed evidence -> unmapped;
+- contradictory fresh places -> conflict / unmapped;
+- multiple fresh reviewed evidences for the same Country/City -> one consistent Current placement;
+- source URLs, raw title/tag/language, precise coordinates and address-like data do not enter the response;
+- `publicActivationAuthorized: false`;
+- Home/Base mutation and Twitch/Kick aggregation remain false.
+
+This closes the response-shaping part of the separate Current API layer without claiming that the public route is ready. The existing production Twitch minute snapshot does not retain stable Twitch user ID, and the reviewed 10-entry Current batch still has zero accepted Current placements. Those are real readiness constraints and are not bypassed with login joins or candidate evidence.
+
+### Next safe Current work
+
+The next Current mainline step is the actual bounded read-only execution of the #1103 40-task accepted-class research queue. For each of the 10 identities:
+
+```text
+1. self-controlled current statement
+2. official-affiliated current statement
+3. attributable editorial current statement
+4. reviewed direct self-statement transcript
+```
+
+Only newly found qualifying temporal evidence proceeds to a separate review result. A zero-yield search remains a valid result; the contract must not be weakened to manufacture coverage.
+
+Public Current API route/UI activation remains later work and requires both a stable-ID-compatible live source boundary and reviewed fresh Current evidence.
 
 ## Lane E — Provider / Geography / Evidence Source controls
 
@@ -276,6 +335,7 @@ The next UI work can build on this matrix without conflating provider, geography
 - no precise residential address/GPS publication;
 - no Current placement after TTL expiry;
 - no automatic promotion of unreviewed geography;
+- no login-as-stable-ID substitution;
 - no collector/D1/schema/cadence/retention mutation without its own gate;
 - no production deployment without required authorization.
 
@@ -285,7 +345,7 @@ The next UI work can build on this matrix without conflating provider, geography
 A. keep #1068 behind explicit production Web Pages authorization
 B. retain #1092/#1096 City evidence-quality gates; continue read-only corroboration/conflict work
 C. retain #1100 downstream Kick source contract; keep #1083 Draft and production API/public Map activation behind their own gates
-D. use #1099/#1101 as the Current acceptance source; pursue attributable temporal evidence in accepted classes without weakening the contract
+D. execute the #1103 bounded 40-task accepted-class Current research queue; review only qualifying temporal evidence; retain #1104 response core without public activation
 E. build provider/geography/source/provenance UI preparation on #1093 without public Kick/Current activation
 ```
 
