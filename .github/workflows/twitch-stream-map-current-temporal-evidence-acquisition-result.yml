@@ -1,0 +1,32 @@
+name: Twitch Stream Map Current Temporal Evidence Acquisition Result
+
+on:
+  pull_request:
+    paths:
+      - 'docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-08-29.json'
+      - 'docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-plan-2026-08-29.json'
+      - 'docs/audits/twitch-stream-map-current-review-batch-2026-08-28.json'
+      - 'scripts/verify-twitch-stream-map-current-temporal-evidence-acquisition-result.mjs'
+      - '.github/workflows/twitch-stream-map-current-temporal-evidence-acquisition-result.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-08-29.json'
+      - 'docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-plan-2026-08-29.json'
+      - 'docs/audits/twitch-stream-map-current-review-batch-2026-08-28.json'
+      - 'scripts/verify-twitch-stream-map-current-temporal-evidence-acquisition-result.mjs'
+      - '.github/workflows/twitch-stream-map-current-temporal-evidence-acquisition-result.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Current temporal evidence acquisition result
+        run: node scripts/verify-twitch-stream-map-current-temporal-evidence-acquisition-result.mjs

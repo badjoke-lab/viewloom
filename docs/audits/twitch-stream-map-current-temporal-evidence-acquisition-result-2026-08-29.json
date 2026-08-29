@@ -1,0 +1,239 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-current-temporal-evidence-acquisition-result-v0.1",
+  "sourcePlan": "docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-plan-2026-08-29.json",
+  "sourceReviewBatch": "docs/audits/twitch-stream-map-current-review-batch-2026-08-28.json",
+  "reviewedAt": "2026-08-29T14:54:56.000Z",
+  "freshnessCutoff": "2026-08-28T14:54:56.000Z",
+  "taskAccounting": {
+    "plannedIdentityCount": 10,
+    "plannedAcceptedEvidenceClasses": 4,
+    "plannedLookupTasks": 40,
+    "identityClassPairsReviewed": 40,
+    "providerRequests": 0,
+    "externalSearchRequestCountMechanicallyAudited": false,
+    "supplementalVerificationQueriesPerformed": true,
+    "lookupBudgetComplianceClaimed": false
+  },
+  "acceptedEvidenceClassesReviewed": [
+    "self_controlled_current_statement",
+    "official_affiliated_current_statement",
+    "attributable_editorial_current_statement",
+    "reviewed_direct_self_statement_transcript"
+  ],
+  "summary": {
+    "identitiesReviewed": 10,
+    "freshQualifyingEvidence": 0,
+    "promotedToReview": 0,
+    "acceptedCurrentPlacement": 0,
+    "noFreshQualifyingEvidence": 10,
+    "publicCurrentPlacementAuthorized": false,
+    "baseMutationAuthorized": false
+  },
+  "entries": [
+    {
+      "twitchUserId": "122799408",
+      "userLogin": "alois_nl",
+      "candidate": {"countryCode": "KR", "city": null},
+      "reviewedEvidenceClasses": [
+        "self_controlled_current_statement",
+        "official_affiliated_current_statement",
+        "attributable_editorial_current_statement",
+        "reviewed_direct_self_statement_transcript"
+      ],
+      "freshQualifyingEvidence": [],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "no_identity_attributable_accepted_class_source_with_fresh_current_location_meaning_found"
+    },
+    {
+      "twitchUserId": "159498717",
+      "userLogin": "jinnytty",
+      "candidate": {"countryCode": "KR", "city": null},
+      "reviewedEvidenceClasses": [
+        "self_controlled_current_statement",
+        "official_affiliated_current_statement",
+        "attributable_editorial_current_statement",
+        "reviewed_direct_self_statement_transcript"
+      ],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {
+          "url": "https://jinnytty.com/topic/schedule.html",
+          "referenceKind": "self_controlled_schedule",
+          "disposition": "not_current_eligible",
+          "reason": "latest_relevant_self_controlled_schedule_material_was_older_than_current_window_or_future_plan_context"
+        }
+      ],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "recent_korea_material_remained_candidate_or_stale_and_self_controlled_schedule_material_did_not_prove_fresh_current_presence"
+    },
+    {
+      "twitchUserId": "45221641",
+      "userLogin": "bean",
+      "candidate": {"countryCode": "US", "city": null},
+      "reviewedEvidenceClasses": [
+        "self_controlled_current_statement",
+        "official_affiliated_current_statement",
+        "attributable_editorial_current_statement",
+        "reviewed_direct_self_statement_transcript"
+      ],
+      "freshQualifyingEvidence": [],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "recent_public_stream_activity_did_not_supply_identity_attributable_current_location_evidence"
+    },
+    {
+      "twitchUserId": "931762164",
+      "userLogin": "sera_promisu",
+      "candidate": {"countryCode": "JP", "city": null},
+      "reviewedEvidenceClasses": [
+        "self_controlled_current_statement",
+        "official_affiliated_current_statement",
+        "attributable_editorial_current_statement",
+        "reviewed_direct_self_statement_transcript"
+      ],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {
+          "url": "https://www.sotwe.com/sera_promisu",
+          "referenceKind": "third_party_social_mirror",
+          "disposition": "not_current_eligible",
+          "reason": "recent_schedule_or_profile_context_did_not_state_current_geography"
+        }
+      ],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "profile_schedule_and_language_context_did_not_establish_fresh_current_location"
+    },
+    {
+      "twitchUserId": "118547417",
+      "userLogin": "j0beats",
+      "candidate": {"countryCode": "GB", "city": null},
+      "reviewedEvidenceClasses": [
+        "self_controlled_current_statement",
+        "official_affiliated_current_statement",
+        "attributable_editorial_current_statement",
+        "reviewed_direct_self_statement_transcript"
+      ],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {
+          "url": "https://streamscharts.com/top-live-channels?lang=en&platform=twitch&type=female",
+          "referenceKind": "third_party_live_directory",
+          "disposition": "not_current_eligible",
+          "reason": "live_activity_and_country_profile_label_do_not_prove_current_presence"
+        }
+      ],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "same_day_live_activity_did_not_supply_attributable_temporal_geography"
+    },
+    {
+      "twitchUserId": "582765062",
+      "userLogin": "peter",
+      "candidate": {"countryCode": "JP", "city": null},
+      "reviewedEvidenceClasses": [
+        "self_controlled_current_statement",
+        "official_affiliated_current_statement",
+        "attributable_editorial_current_statement",
+        "reviewed_direct_self_statement_transcript"
+      ],
+      "freshQualifyingEvidence": [],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "identity_specific_fresh_japan_current_location_evidence_was_not_found"
+    },
+    {
+      "twitchUserId": "12731745",
+      "userLogin": "deadlyslob",
+      "candidate": {"countryCode": "CA", "city": null},
+      "reviewedEvidenceClasses": [
+        "self_controlled_current_statement",
+        "official_affiliated_current_statement",
+        "attributable_editorial_current_statement",
+        "reviewed_direct_self_statement_transcript"
+      ],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {
+          "url": "https://www.twitchmetrics.net/c/12731745-deadlyslob",
+          "referenceKind": "third_party_profile_mirror",
+          "disposition": "not_current_eligible",
+          "reason": "canadian_profile_identity_context_is_static_base_context_without_current_time_meaning"
+        }
+      ],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "canadian_profile_context_remained_base_or_static_not_current"
+    },
+    {
+      "twitchUserId": "570335223",
+      "userLogin": "rayasianboy",
+      "candidate": {"countryCode": "TW", "city": null},
+      "reviewedEvidenceClasses": [
+        "self_controlled_current_statement",
+        "official_affiliated_current_statement",
+        "attributable_editorial_current_statement",
+        "reviewed_direct_self_statement_transcript"
+      ],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {
+          "url": "https://news.tvbs.com.tw/entertainment/4013218",
+          "referenceKind": "attributable_editorial_current_statement",
+          "publishedAt": "2026-08-26T21:10:00+08:00",
+          "countryCode": "US",
+          "disposition": "expired_before_current_freshness_cutoff",
+          "reason": "editorial_evidence_places_recent_activity_in_united_states_but_is_older_than_the_current_24h_window_and_does_not_support_taiwan_candidate"
+        }
+      ],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "taiwan_candidate_not_supported_and_recent_attributable_us_editorial_evidence_was_expired"
+    },
+    {
+      "twitchUserId": "179896802",
+      "userLogin": "berticuss",
+      "candidate": {"countryCode": "DE", "city": null},
+      "reviewedEvidenceClasses": [
+        "self_controlled_current_statement",
+        "official_affiliated_current_statement",
+        "attributable_editorial_current_statement",
+        "reviewed_direct_self_statement_transcript"
+      ],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {
+          "url": "https://streamscharts.com/channels/berticuss",
+          "referenceKind": "stream_title_mirror",
+          "disposition": "candidate_only",
+          "reason": "germany_wording_remained_stream_title_metadata_and_cannot_qualify_without_separate_attributable_temporal_evidence"
+        }
+      ],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "germany_candidate_remained_stream_title_only"
+    },
+    {
+      "twitchUserId": "49408183",
+      "userLogin": "sick_nerd",
+      "candidate": {"countryCode": "DK", "city": null},
+      "reviewedEvidenceClasses": [
+        "self_controlled_current_statement",
+        "official_affiliated_current_statement",
+        "attributable_editorial_current_statement",
+        "reviewed_direct_self_statement_transcript"
+      ],
+      "freshQualifyingEvidence": [],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "recent_stream_activity_did_not_supply_denmark_current_location_evidence"
+    }
+  ],
+  "boundary": {
+    "candidateTitleOrTagCanQualify": false,
+    "profileBaseContextCanQualifyWithoutCurrentTimeMeaning": false,
+    "plannedFutureTravelCanQualify": false,
+    "searchSnippetCanQualify": false,
+    "automaticAcceptanceAuthorized": false,
+    "publicCurrentPlacementAuthorized": false,
+    "baseMutationAuthorized": false,
+    "rawTitleTagLanguageRetained": false,
+    "preciseLocationAllowed": false,
+    "twitchKickAggregationAuthorized": false,
+    "canonicalMutationApplied": false,
+    "productionDeployment": false,
+    "d1Writes": 0
+  }
+}
