@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "viewloom-twitch-current-location-evidence-contract-v0.1",
+  "sourceAudit": "docs/audits/twitch-stream-map-current-review-batch-2026-08-28.json",
+  "policy": {
+    "acceptedEvidenceClasses": [
+      "self_controlled_current_statement",
+      "official_affiliated_current_statement",
+      "attributable_editorial_current_statement",
+      "reviewed_direct_self_statement_transcript"
+    ],
+    "candidateOnlyEvidenceClasses": [
+      "stream_title",
+      "stream_tag",
+      "profile_location_without_current_time_meaning",
+      "search_snippet",
+      "unrelated_social_repost"
+    ],
+    "standaloneRejectedClasses": [
+      "nationality",
+      "birthplace",
+      "language",
+      "timezone",
+      "ip_inference",
+      "name_cue",
+      "organization_headquarters",
+      "event_venue_without_presence",
+      "planned_future_travel",
+      "old_residence_statement",
+      "category_or_game"
+    ],
+    "defaultOpenEndedTtlHours": 24,
+    "requiresAttributableTemporalEvidence": true,
+    "autoAcceptanceAuthorized": false,
+    "publicCurrentPlacementAuthorized": false
+  },
+  "scenarios": [
+    {
+      "name": "fresh self-controlled current statement qualifies as evidence",
+      "evidence": {
+        "evidenceClass": "self_controlled_current_statement",
+        "attributableTemporalEvidence": true,
+        "observedAt": "2026-08-29T00:00:00.000Z"
+      },
+      "evaluatedAt": "2026-08-29T12:00:00.000Z",
+      "expectedEligible": true,
+      "expectedReason": "qualifying_current_temporal_evidence",
+      "expectedEffectiveExpiresAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "name": "open-ended accepted evidence expires after 24 hours",
+      "evidence": {
+        "evidenceClass": "official_affiliated_current_statement",
+        "attributableTemporalEvidence": true,
+        "observedAt": "2026-08-28T12:00:00.000Z"
+      },
+      "evaluatedAt": "2026-08-29T12:00:00.000Z",
+      "expectedEligible": false,
+      "expectedReason": "expired_current_evidence",
+      "expectedEffectiveExpiresAt": "2026-08-29T12:00:00.000Z"
+    },
+    {
+      "name": "explicit active evidence window qualifies",
+      "evidence": {
+        "evidenceClass": "attributable_editorial_current_statement",
+        "attributableTemporalEvidence": true,
+        "observedAt": "2026-08-29T08:00:00.000Z",
+        "expiresAt": "2026-08-29T18:00:00.000Z"
+      },
+      "evaluatedAt": "2026-08-29T12:00:00.000Z",
+      "expectedEligible": true,
+      "expectedReason": "qualifying_current_temporal_evidence",
+      "expectedEffectiveExpiresAt": "2026-08-29T18:00:00.000Z"
+    },
+    {
+      "name": "stream title alone never qualifies",
+      "evidence": {
+        "evidenceClass": "stream_title",
+        "attributableTemporalEvidence": true,
+        "observedAt": "2026-08-29T11:55:00.000Z"
+      },
+      "evaluatedAt": "2026-08-29T12:00:00.000Z",
+      "expectedEligible": false,
+      "expectedReason": "candidate_only_evidence_class",
+      "expectedEffectiveExpiresAt": null
+    },
+    {
+      "name": "stream tag alone never qualifies",
+      "evidence": {
+        "evidenceClass": "stream_tag",
+        "attributableTemporalEvidence": true,
+        "observedAt": "2026-08-29T11:55:00.000Z"
+      },
+      "evaluatedAt": "2026-08-29T12:00:00.000Z",
+      "expectedEligible": false,
+      "expectedReason": "candidate_only_evidence_class",
+      "expectedEffectiveExpiresAt": null
+    },
+    {
+      "name": "profile location without current time meaning never qualifies",
+      "evidence": {
+        "evidenceClass": "profile_location_without_current_time_meaning",
+        "attributableTemporalEvidence": false,
+        "observedAt": "2026-08-29T11:00:00.000Z"
+      },
+      "evaluatedAt": "2026-08-29T12:00:00.000Z",
+      "expectedEligible": false,
+      "expectedReason": "candidate_only_evidence_class",
+      "expectedEffectiveExpiresAt": null
+    },
+    {
+      "name": "planned future travel never qualifies",
+      "evidence": {
+        "evidenceClass": "planned_future_travel",
+        "attributableTemporalEvidence": true,
+        "observedAt": "2026-08-29T11:00:00.000Z"
+      },
+      "evaluatedAt": "2026-08-29T12:00:00.000Z",
+      "expectedEligible": false,
+      "expectedReason": "standalone_rejected_evidence_class",
+      "expectedEffectiveExpiresAt": null
+    },
+    {
+      "name": "accepted source class still requires temporal attribution",
+      "evidence": {
+        "evidenceClass": "reviewed_direct_self_statement_transcript",
+        "attributableTemporalEvidence": false,
+        "observedAt": "2026-08-29T11:00:00.000Z"
+      },
+      "evaluatedAt": "2026-08-29T12:00:00.000Z",
+      "expectedEligible": false,
+      "expectedReason": "missing_attributable_temporal_evidence",
+      "expectedEffectiveExpiresAt": null
+    }
+  ]
+}
