@@ -1,0 +1,32 @@
+name: Twitch Stream Map Renderer Loader
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/twitch/map/**'
+      - 'apps/web/src/features/twitch-stream-map/stream-map-entry.ts'
+      - 'apps/web/src/features/twitch-stream-map/stream-map-entry-core.ts'
+      - 'apps/web/scripts/verify-stream-map-renderer-loader.mjs'
+      - '.github/workflows/twitch-stream-map-renderer-loader.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/twitch/map/**'
+      - 'apps/web/src/features/twitch-stream-map/stream-map-entry.ts'
+      - 'apps/web/src/features/twitch-stream-map/stream-map-entry-core.ts'
+      - 'apps/web/scripts/verify-stream-map-renderer-loader.mjs'
+      - '.github/workflows/twitch-stream-map-renderer-loader.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Twitch Stream Map renderer loader
+        run: node apps/web/scripts/verify-stream-map-renderer-loader.mjs
