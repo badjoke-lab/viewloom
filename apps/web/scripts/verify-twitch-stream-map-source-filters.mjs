@@ -81,7 +81,7 @@ assert.equal(summary.mappedCountryCount, 1)
 assert.equal(summary.currentLocationStreams, 1)
 
 const page = readFileSync('twitch/map/index.html', 'utf8')
-const entry = readFileSync('src/features/twitch-stream-map/stream-map-entry.ts', 'utf8')
+const entry = readFileSync('src/features/twitch-stream-map/stream-map-entry-core.ts', 'utf8')
 const css = readFileSync('src/features/twitch-stream-map/stream-map.css', 'utf8')
 const vite = readFileSync('vite.config.ts', 'utf8')
 
