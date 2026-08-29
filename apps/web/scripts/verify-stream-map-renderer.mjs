@@ -8,7 +8,7 @@ const page = readFileSync('twitch/map/index.html', 'utf8')
 const entry = readFileSync('src/features/twitch-stream-map/stream-map-entry.ts', 'utf8')
 
 assert.equal(pkg.dependencies?.['maplibre-gl'], '6.4.1')
-assert.ok(entry.includes("import maplibregl from 'maplibre-gl'"))
+assert.ok(entry.includes("import * as maplibregl from 'maplibre-gl'"))
 assert.ok(entry.includes("import 'maplibre-gl/dist/maplibre-gl.css'"))
 assert.ok(entry.includes('window.maplibregl = maplibregl as unknown as MapLibreNamespace'))
 assert.ok(entry.includes("style: 'https://tiles.openfreemap.org/styles/dark'"))
