@@ -3,8 +3,7 @@ name: Twitch Stream Map Current Snapshot Source Core
 on:
   pull_request:
     paths:
-      - 'apps/web/functions/api/twitch-stream-map-current-snapshot-source-core.mjs'
-      - 'apps/web/functions/api/twitch-stream-map-current-snapshot-source-core.d.mts'
+      - 'scripts/twitch-stream-map-current-snapshot-source-core.mjs'
       - 'scripts/verify-twitch-stream-map-current-snapshot-source-core.mjs'
       - 'scripts/twitch-stream-map-current-response-core.mjs'
       - 'docs/audits/twitch-stream-map-current-response-fixture-v0.1.json'
@@ -12,8 +11,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'apps/web/functions/api/twitch-stream-map-current-snapshot-source-core.mjs'
-      - 'apps/web/functions/api/twitch-stream-map-current-snapshot-source-core.d.mts'
+      - 'scripts/twitch-stream-map-current-snapshot-source-core.mjs'
       - 'scripts/verify-twitch-stream-map-current-snapshot-source-core.mjs'
       - 'scripts/twitch-stream-map-current-response-core.mjs'
       - 'docs/audits/twitch-stream-map-current-response-fixture-v0.1.json'
