@@ -9,7 +9,7 @@
     "prebuild": "npm run changelog:build",
     "build": "vite build && node scripts/normalize-built-head.mjs",
     "verify:changelog": "node scripts/verify-changelog-qa.mjs",
-    "verify:source": "node scripts/verify-production-source.mjs && node scripts/verify-primary-domain-cutover.mjs",
+    "verify:source": "node scripts/verify-production-source.mjs && node scripts/verify-primary-domain-cutover.mjs && node scripts/verify-stream-map-renderer.mjs",
     "verify:battle-lines": "node scripts/verify-battle-lines-core.mjs",
     "verify:battle-lines-ui": "node scripts/verify-battle-lines-wide-ui.mjs",
     "verify:heatmap-boundaries": "node scripts/verify-heatmap-boundaries.mjs",
@@ -34,6 +34,9 @@
     "typecheck:app": "tsc -p tsconfig.json --noEmit",
     "typecheck:functions": "tsc -p tsconfig.functions.json --noEmit",
     "preview": "vite preview"
+  },
+  "dependencies": {
+    "maplibre-gl": "6.4.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260510.0",
