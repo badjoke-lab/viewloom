@@ -9,7 +9,7 @@
     "typecheck:web": "pnpm --filter @viewloom/web typecheck",
     "preview:web": "pnpm --filter @viewloom/web preview",
     "typecheck:collectors": "tsc -p workers/tsconfig.json",
-    "verify:collectors": "node scripts/verify-collector-contracts.mjs && node workers/collector-twitch/scripts/location-candidate-extractor.test.mjs && node workers/collector-twitch/scripts/location-placement-eligibility.test.mjs",
+    "verify:collectors": "node scripts/verify-collector-contracts.mjs && node workers/collector-twitch/scripts/location-candidate-extractor.test.mjs && node workers/collector-twitch/scripts/location-placement-eligibility.test.mjs && node scripts/verify-stream-map-current-evidence.mjs",
     "check:collectors": "pnpm typecheck:collectors && pnpm verify:collectors",
     "kick:seed-import:check": "node workers/collector-kick/scripts/generate-kick-seed-import-sql.mjs --check-only",
     "kick:seed-import:generate": "node workers/collector-kick/scripts/generate-kick-seed-import-sql.mjs",
