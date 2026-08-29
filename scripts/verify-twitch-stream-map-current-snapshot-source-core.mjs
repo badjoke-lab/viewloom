@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
-import { extractTwitchCurrentSnapshotItems } from '../apps/web/functions/api/twitch-stream-map-current-snapshot-source-core.mjs'
+import { extractTwitchCurrentSnapshotItems } from './twitch-stream-map-current-snapshot-source-core.mjs'
 import { buildTwitchCurrentResponse } from './twitch-stream-map-current-response-core.mjs'
 
 const fixture = JSON.parse(
@@ -72,7 +72,7 @@ assert.equal(response.semantics.stableIdentity, 'twitchUserId')
 assert.equal(response.semantics.loginIsStableIdentity, false)
 
 const sourceModule = readFileSync(
-  'apps/web/functions/api/twitch-stream-map-current-snapshot-source-core.mjs',
+  'scripts/twitch-stream-map-current-snapshot-source-core.mjs',
   'utf8',
 )
 assert.equal(sourceModule.includes('export const onRequest'), false, 'source core must not become a public route')
