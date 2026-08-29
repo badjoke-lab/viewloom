@@ -76,7 +76,7 @@ assert.equal(unmappedReasonMeta('brand_new_reason').code, 'brand_new_reason')
 assert.equal(unmappedReasonMeta('brand_new_reason').label, 'Brand New Reason')
 
 const page = readFileSync('twitch/map/index.html', 'utf8')
-const entry = readFileSync('src/features/twitch-stream-map/stream-map-entry.ts', 'utf8')
+const entry = readFileSync('src/features/twitch-stream-map/stream-map-entry-core.ts', 'utf8')
 const view = readFileSync('src/features/twitch-stream-map/unmapped-reason-view.ts', 'utf8')
 const css = readFileSync('src/features/twitch-stream-map/stream-map.css', 'utf8')
 const apiCore = readFileSync('functions/api/twitch-stream-map-core.mjs', 'utf8')
