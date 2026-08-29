@@ -35,6 +35,9 @@
     "typecheck:functions": "tsc -p tsconfig.functions.json --noEmit",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "maplibre-gl": "6.4.1"
+  },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260510.0",
     "typescript": "^5.9.2",
