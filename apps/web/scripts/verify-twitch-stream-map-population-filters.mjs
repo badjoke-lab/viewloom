@@ -146,7 +146,7 @@ assert.equal(live.coverage.mappedStreams + live.coverage.unmappedStreams, live.c
 assert.equal(sum(live.coverage.unmappedReasons), live.coverage.unmappedStreams)
 
 const endpoint = readFileSync('functions/api/twitch-stream-map.ts', 'utf8')
-const entry = readFileSync('src/features/twitch-stream-map/stream-map-entry.ts', 'utf8')
+const entry = readFileSync('src/features/twitch-stream-map/stream-map-entry-core.ts', 'utf8')
 const page = readFileSync('twitch/map/index.html', 'utf8')
 assert.ok(endpoint.includes("url.searchParams.get('top')"))
 assert.ok(endpoint.includes("url.searchParams.get('min_viewers')"))
