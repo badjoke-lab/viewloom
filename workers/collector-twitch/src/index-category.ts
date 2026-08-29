@@ -14,6 +14,7 @@ type Env = {
 }
 
 type StoredHeatmapItem = {
+  twitchUserId: string | null
   channelLogin: string
   displayName: string
   viewers: number
@@ -31,6 +32,7 @@ type TwitchTokenResponse = {
 
 type TwitchStreamsResponse = {
   data?: Array<{
+    user_id?: string
     user_login?: string
     user_name?: string
     viewer_count?: number
@@ -216,6 +218,7 @@ async function collectTopStreams(
     coveredPages += 1
 
     for (const stream of pageItems) {
+      const twitchUserId = String(stream.user_id ?? '').trim()
       const channelLogin = String(stream.user_login ?? '').trim()
       const displayName = String(stream.user_name ?? '').trim()
       const viewers = clampInt(stream.viewer_count)
@@ -233,6 +236,7 @@ async function collectTopStreams(
       const categoryName = String(stream.game_name ?? '').trim()
 
       items.push({
+        twitchUserId: twitchUserId || null,
         channelLogin,
         displayName,
         viewers,
