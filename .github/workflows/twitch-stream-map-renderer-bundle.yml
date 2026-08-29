@@ -1,0 +1,29 @@
+name: Twitch Stream Map Renderer Bundle
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/package.json'
+      - 'apps/web/twitch/map/index.html'
+      - 'apps/web/src/features/twitch-stream-map/maplibre-bootstrap.ts'
+      - 'apps/web/src/features/twitch-stream-map/stream-map-entry.ts'
+      - 'scripts/verify-twitch-stream-map-renderer-bundle.mjs'
+      - '.github/workflows/twitch-stream-map-renderer-bundle.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: twitch-stream-map-renderer-bundle-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify bundled Stream Map renderer contract
+        run: node scripts/verify-twitch-stream-map-renderer-bundle.mjs
