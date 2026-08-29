@@ -50,6 +50,9 @@ jobs:
           cat web-checks-build.log
           exit $status
 
+      - name: Verify Stream Map renderer bootstrap
+        run: pnpm --filter @viewloom/web exec node scripts/verify-stream-map-renderer.mjs
+
       - name: Verify Twitch Stream Map live join
         run: pnpm --filter @viewloom/web verify:stream-map-live-join
 
