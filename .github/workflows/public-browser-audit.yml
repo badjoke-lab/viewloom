@@ -91,7 +91,7 @@ jobs:
 
       - name: Install Playwright
         working-directory: apps/web
-        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+        run: npm install playwright@1.52.0 --no-save --no-audit --no-fund --ignore-scripts
 
       - name: Install Chromium
         working-directory: apps/web
