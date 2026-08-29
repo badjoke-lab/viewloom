@@ -1,3 +1,5 @@
+import maplibregl from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import {
   filterMappedStreams,
   summarizeFilteredStreams,
@@ -128,6 +130,8 @@ declare global {
     maplibregl?: MapLibreNamespace
   }
 }
+
+window.maplibregl = maplibregl as unknown as MapLibreNamespace
 
 const COUNTRY_CENTROIDS: Record<string, [number, number]> = {
   AR: [-64.0, -34.0], AU: [134.0, -25.0], BR: [-51.0, -10.0], CA: [-106.0, 56.0],
