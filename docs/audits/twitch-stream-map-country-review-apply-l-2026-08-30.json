@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-country-review-apply-v0.1",
+  "sourceResult": "docs/audits/twitch-stream-map-country-review-result-l-2026-08-28.json",
+  "sourceResultMergeCommit": "698f90e72fa607c6845735eb331a534d1a63e223",
+  "batchId": "L",
+  "appliedAt": "2026-08-30T03:32:00Z",
+  "canonicalModule": "apps/web/functions/api/twitch-stream-map-reviewed-evidence-batch-l.mjs",
+  "acceptedPlacementRecordsApplied": 1,
+  "excludedNonPersonRecordsApplied": 0,
+  "noQualifyingEvidenceRecordsApplied": 0,
+  "conflictRecordsApplied": 0,
+  "countryOnly": true,
+  "cityFieldsIntroduced": false,
+  "currentLocationIntroduced": false,
+  "addressOrCoordinatesIntroduced": false,
+  "providerRequests": 0,
+  "d1Mutation": false,
+  "productionDeployRequested": false
+}
