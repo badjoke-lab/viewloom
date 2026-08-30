@@ -1,8 +1,16 @@
 import * as maplibregl from 'maplibre-gl'
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './maplibre-bootstrap.css'
 
 type StreamMapOptions = ConstructorParameters<typeof maplibregl.Map>[0]
+
+// MapLibre 6 no longer inlines its worker. Under Vite the default worker URL can
+// resolve next to the bundled application chunk and silently 404, leaving vector
+// sources stuck forever while the canvas and controls still mount. Bundle the
+// worker through Vite's worker pipeline and register its emitted URL before any
+// map instance is created.
+maplibregl.setWorkerUrl(workerUrl)
 
 // MapLibre 6 can produce a singular inverse projection matrix when maxBounds spans
 // exactly 360 degrees of longitude. Keep the same practical world constraint while
