@@ -28,10 +28,16 @@ if (!bootstrap.includes("from 'maplibre-gl'")) {
 if (!bootstrap.includes("'maplibre-gl/dist/maplibre-gl.css'")) {
   fail('bootstrap must bundle MapLibre CSS')
 }
-const assignIndex = bootstrap.indexOf('Object.assign(window, { maplibregl })')
+if (!bootstrap.includes('[-179.999, -78]') || !bootstrap.includes('[179.999, 82]')) {
+  fail('bootstrap must keep Stream Map maxBounds inside the MapLibre full-wrap singularity')
+}
+if (!bootstrap.includes('class ViewLoomStreamMap extends maplibregl.Map')) {
+  fail('bootstrap must apply the Stream Map bounds compatibility wrapper')
+}
+const assignIndex = bootstrap.indexOf('Object.assign(window, { maplibregl: bundledMaplibregl })')
 const entryIndex = bootstrap.indexOf("await import('./stream-map-entry')")
 if (assignIndex < 0 || entryIndex < 0 || assignIndex > entryIndex) {
-  fail('bootstrap must install window.maplibregl before importing the existing Stream Map entry')
+  fail('bootstrap must install the compatible bundled renderer before importing the existing Stream Map entry')
 }
 if (!entry.includes("style: 'https://tiles.openfreemap.org/styles/dark'")) {
   fail('the accepted OpenFreeMap basemap style contract changed unexpectedly')
