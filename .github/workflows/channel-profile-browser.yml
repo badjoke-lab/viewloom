@@ -30,10 +30,11 @@ jobs:
           done
           cat /tmp/channel-profile-preview.log
           exit 1
-      - run: npm install playwright@1.52.0 --no-save --no-audit --no-fund
+      - name: Install Playwright in isolated prefix
         working-directory: apps/web
-      - run: npx playwright install --with-deps chromium
-        working-directory: apps/web
+        run: node scripts/install-ci-playwright.mjs
+      - name: Install Chromium
+        run: /tmp/viewloom-playwright/node_modules/.bin/playwright install --with-deps chromium
       - name: Run channel profile browser gate
         working-directory: apps/web
         env:
