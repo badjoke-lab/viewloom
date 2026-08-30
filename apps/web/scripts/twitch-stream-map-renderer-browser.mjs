@@ -9,7 +9,7 @@ const browser = await chromium.launch({
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
 const pageErrors = []
 const consoleErrors = []
-page.on('pageerror', (error) => pageErrors.push(error.message))
+page.on('pageerror', (error) => pageErrors.push(error.stack || error.message))
 page.on('console', (message) => {
   if (message.type() === 'error') consoleErrors.push(message.text())
 })
@@ -18,7 +18,18 @@ await page.route('**/styles/dark*', async (route) => {
   await route.fulfill({
     status: 200,
     contentType: 'application/json',
-    body: JSON.stringify({ version: 8, sources: {}, layers: [] }),
+    body: JSON.stringify({
+      version: 8,
+      name: 'ViewLoom renderer CI',
+      sources: {},
+      layers: [
+        {
+          id: 'background',
+          type: 'background',
+          paint: { 'background-color': '#111111' },
+        },
+      ],
+    }),
   })
 })
 
