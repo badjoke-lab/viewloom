@@ -1,0 +1,87 @@
+name: Twitch Map Production Browser Smoke
+
+on:
+  push:
+    branches:
+      - audit/twitch-map-production-browser-smoke
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated Playwright
+        shell: bash
+        run: |
+          mkdir -p /tmp/viewloom-prod-smoke
+          cd /tmp/viewloom-prod-smoke
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.52.0
+          ./node_modules/.bin/playwright install --with-deps chromium
+      - name: Verify production Country and City map rendering
+        shell: bash
+        run: |
+          cat > /tmp/viewloom-prod-smoke/smoke.mjs <<'NODE'
+          import assert from 'node:assert/strict'
+          import { chromium } from 'playwright'
+
+          const url = 'https://www.viewloom.net/twitch/map/?production-browser-smoke=1120'
+          const browser = await chromium.launch({
+            headless: true,
+            args: ['--enable-webgl', '--use-gl=angle', '--use-angle=swiftshader', '--disable-gpu-sandbox'],
+          })
+          const page = await browser.newPage({ viewport: { width: 1440, height: 1200 } })
+          const pageErrors = []
+          const consoleErrors = []
+          page.on('pageerror', (error) => pageErrors.push(error.stack || error.message))
+          page.on('console', (message) => {
+            if (message.type() === 'error') consoleErrors.push(message.text())
+          })
+
+          async function snapshot(label) {
+            await page.locator('#stream-map-root[data-map-state="basemap-ready"]').waitFor({ timeout: 45000 })
+            const state = await page.locator('#stream-map-root').getAttribute('data-map-state')
+            const canvasCount = await page.locator('#stream-map-root canvas.maplibregl-canvas').count()
+            const controls = await page.locator('#stream-map-root .maplibregl-ctrl-zoom-in').count()
+            assert.equal(state, 'basemap-ready')
+            assert.equal(canvasCount, 1)
+            assert.equal(controls, 1)
+            await page.screenshot({ path: `/tmp/viewloom-prod-smoke/${label}.png`, fullPage: true })
+            return { state, canvasCount, controls }
+          }
+
+          try {
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 })
+            const country = await snapshot('country')
+
+            const cityButton = page.getByRole('button', { name: 'City', exact: true })
+            await cityButton.click()
+            await page.waitForTimeout(1500)
+            const city = await snapshot('city')
+
+            assert.equal(pageErrors.length, 0, `page errors: ${pageErrors.join(' | ')}`)
+            assert.equal(consoleErrors.length, 0, `console errors: ${consoleErrors.join(' | ')}`)
+            console.log(JSON.stringify({ url, country, city, pageErrors, consoleErrors }))
+          } finally {
+            await browser.close()
+          }
+          NODE
+          cd /tmp/viewloom-prod-smoke
+          node smoke.mjs
+      - name: Upload production smoke screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-map-production-browser-smoke
+          path: |
+            /tmp/viewloom-prod-smoke/country.png
+            /tmp/viewloom-prod-smoke/city.png
+          if-no-files-found: warn
+          retention-days: 3
