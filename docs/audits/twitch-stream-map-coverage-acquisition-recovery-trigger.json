@@ -9,5 +9,5 @@
   "usersRequests": 0,
   "expectedAcquisitionMergeSha": "6544a67f302100ef691edb1f49f9af2b176ccc3d",
   "expectedRecoveryPackageMergeSha": "689eba371df5b820623db9f4be29861cd3dcdcbe",
-  "reason": "Recover failed Top300 acquisition run 32691012158 with safe diagnostics and generate Country queue plus City coverage from the same bounded sample."
+  "reason": "Capture one fresh Top300 stable-identity sample after Country E-L canonical consolidation, then derive a new Country review queue and City live-coverage measurement from the same bounded read-only sample."
 }
