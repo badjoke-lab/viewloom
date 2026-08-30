@@ -8,6 +8,7 @@ const fail = (message) => {
 const packageJson = JSON.parse(read('apps/web/package.json'))
 const page = read('apps/web/twitch/map/index.html')
 const bootstrap = read('apps/web/src/features/twitch-stream-map/maplibre-bootstrap.ts')
+const bootstrapCss = read('apps/web/src/features/twitch-stream-map/maplibre-bootstrap.css')
 const entry = read('apps/web/src/features/twitch-stream-map/stream-map-entry.ts')
 
 if (packageJson.dependencies?.['maplibre-gl'] !== '6.4.1') {
@@ -25,8 +26,16 @@ if (page.includes('/src/features/twitch-stream-map/stream-map-entry.ts')) {
 if (!bootstrap.includes("from 'maplibre-gl'")) {
   fail('bootstrap must import MapLibre from the web dependency graph')
 }
-if (!bootstrap.includes("'maplibre-gl/dist/maplibre-gl.css'")) {
-  fail('bootstrap must bundle MapLibre CSS')
+const maplibreCssIndex = bootstrap.indexOf("'maplibre-gl/dist/maplibre-gl.css'")
+const compatCssIndex = bootstrap.indexOf("'./maplibre-bootstrap.css'")
+if (maplibreCssIndex < 0 || compatCssIndex < 0 || maplibreCssIndex > compatCssIndex) {
+  fail('Stream Map layout compatibility CSS must load after bundled MapLibre CSS')
+}
+if (!bootstrapCss.includes('.stream-map-stage > .stream-map-canvas.maplibregl-map')) {
+  fail('layout compatibility CSS must target the rendered Stream Map root')
+}
+if (!bootstrapCss.includes('position: absolute') || !bootstrapCss.includes('height: 100%')) {
+  fail('layout compatibility CSS must keep the bundled renderer visible inside the map stage')
 }
 if (!bootstrap.includes('[-179.999, -78]') || !bootstrap.includes('[179.999, 82]')) {
   fail('bootstrap must keep Stream Map maxBounds inside the MapLibre full-wrap singularity')
