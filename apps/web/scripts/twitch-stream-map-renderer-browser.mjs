@@ -2,12 +2,19 @@ import assert from 'node:assert/strict'
 import { chromium } from 'playwright'
 
 const baseUrl = process.env.STREAM_MAP_BASE_URL || 'http://127.0.0.1:4173'
-const browser = await chromium.launch({ headless: true })
+const browser = await chromium.launch({
+  headless: true,
+  args: ['--enable-webgl', '--use-gl=angle', '--use-angle=swiftshader', '--disable-gpu-sandbox'],
+})
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
 const pageErrors = []
+const consoleErrors = []
 page.on('pageerror', (error) => pageErrors.push(error.message))
+page.on('console', (message) => {
+  if (message.type() === 'error') consoleErrors.push(message.text())
+})
 
-await page.route('https://tiles.openfreemap.org/styles/dark', async (route) => {
+await page.route('**/styles/dark*', async (route) => {
   await route.fulfill({
     status: 200,
     contentType: 'application/json',
@@ -89,7 +96,26 @@ await page.route('**/api/twitch-stream-map**', async (route) => {
 
 try {
   await page.goto(`${baseUrl}/twitch/map/`, { waitUntil: 'domcontentloaded' })
-  await page.locator('#stream-map-root[data-map-state="basemap-ready"]').waitFor({ timeout: 15000 })
+
+  try {
+    await page.locator('#stream-map-root[data-map-state="basemap-ready"]').waitFor({ timeout: 15000 })
+  } catch (error) {
+    const diagnostics = await page.evaluate(() => {
+      const root = document.querySelector('#stream-map-root')
+      const canvas = root?.querySelector('canvas.maplibregl-canvas')
+      const gl = canvas instanceof HTMLCanvasElement
+        ? canvas.getContext('webgl2') || canvas.getContext('webgl')
+        : null
+      return {
+        rendererState: root?.getAttribute('data-map-state') || null,
+        canvasCount: root?.querySelectorAll('canvas.maplibregl-canvas').length || 0,
+        rendererAvailable: Boolean(window.maplibregl?.Map),
+        webglAvailable: Boolean(gl),
+      }
+    })
+    console.error(JSON.stringify({ ...diagnostics, pageErrors, consoleErrors }))
+    throw error
+  }
 
   const rendererState = await page.locator('#stream-map-root').getAttribute('data-map-state')
   const canvasCount = await page.locator('#stream-map-root canvas.maplibregl-canvas').count()
@@ -99,8 +125,9 @@ try {
   assert.equal(canvasCount, 1)
   assert.equal(rendererAvailable, true)
   assert.equal(pageErrors.length, 0, `page errors: ${pageErrors.join(' | ')}`)
+  assert.equal(consoleErrors.length, 0, `console errors: ${consoleErrors.join(' | ')}`)
 
-  console.log(JSON.stringify({ rendererState, canvasCount, rendererAvailable, pageErrors }))
+  console.log(JSON.stringify({ rendererState, canvasCount, rendererAvailable, pageErrors, consoleErrors }))
 } finally {
   await browser.close()
 }
