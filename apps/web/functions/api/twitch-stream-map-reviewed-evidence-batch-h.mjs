@@ -1,0 +1,78 @@
+export const TWITCH_REVIEWED_LOCATION_BATCH_H = [
+  {
+    streamerLogin: 'scharo',
+    entityKind: 'person',
+    classificationReferences: ['https://x.com/XScharo'],
+    evidences: [
+      {
+        source: 'official_external',
+        sourceUrl: 'https://x.com/XScharo',
+        observedAt: '2026-08-27T15:25:00Z',
+        countryCode: 'ID',
+        countryName: 'Indonesia',
+        region: null,
+        city: null,
+        claimKind: 'declared_location',
+        confidence: 'explicit',
+        status: 'accepted',
+      },
+    ],
+  },
+  {
+    streamerLogin: 'suto',
+    entityKind: 'person',
+    classificationReferences: ['https://x.com/sutosain'],
+    evidences: [
+      {
+        source: 'official_external',
+        sourceUrl: 'https://x.com/sutosain',
+        observedAt: '2026-08-27T15:25:00Z',
+        countryCode: 'US',
+        countryName: 'United States',
+        region: null,
+        city: null,
+        claimKind: 'declared_location',
+        confidence: 'explicit',
+        status: 'accepted',
+      },
+    ],
+  },
+  {
+    streamerLogin: 'barbe___douce',
+    entityKind: 'person',
+    classificationReferences: ['https://x.com/DouceBarbe'],
+    evidences: [
+      {
+        source: 'official_external',
+        sourceUrl: 'https://x.com/DouceBarbe',
+        observedAt: '2026-08-27T15:25:00Z',
+        countryCode: 'FR',
+        countryName: 'France',
+        region: null,
+        city: null,
+        claimKind: 'declared_location',
+        confidence: 'explicit',
+        status: 'accepted',
+      },
+    ],
+  },
+  {
+    streamerLogin: 'canniny',
+    entityKind: 'person',
+    classificationReferences: ['https://linktr.ee/canniny'],
+    evidences: [
+      {
+        source: 'official_external',
+        sourceUrl: 'https://linktr.ee/canniny',
+        observedAt: '2026-08-27T15:25:00Z',
+        countryCode: 'JP',
+        countryName: 'Japan',
+        region: null,
+        city: null,
+        claimKind: 'declared_location',
+        confidence: 'explicit',
+        status: 'accepted',
+      },
+    ],
+  },
+]
