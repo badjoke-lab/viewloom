@@ -1,0 +1,65 @@
+export const TWITCH_REVIEWED_LOCATION_BATCH_K = [
+  {
+    streamerLogin: 'cineillojuan',
+    entityKind: 'event_broadcast',
+    classificationReferences: ['https://www.twitch.tv/cineillojuan/about'],
+    evidences: [],
+  },
+  {
+    streamerLogin: 'hannahsayce',
+    entityKind: 'person',
+    classificationReferences: ['https://www.twitch.tv/hannahsayce/about'],
+    evidences: [
+      {
+        source: 'account_profile',
+        sourceUrl: 'https://www.twitch.tv/hannahsayce/about',
+        observedAt: '2026-08-28T01:34:00Z',
+        countryCode: 'AU',
+        countryName: 'Australia',
+        region: null,
+        city: null,
+        claimKind: 'declared_location',
+        confidence: 'explicit',
+        status: 'accepted',
+      },
+    ],
+  },
+  {
+    streamerLogin: 'chosen_ow',
+    entityKind: 'person',
+    classificationReferences: ['https://x.com/chowosen'],
+    evidences: [
+      {
+        source: 'official_external',
+        sourceUrl: 'https://x.com/chowosen',
+        observedAt: '2026-08-28T01:34:00Z',
+        countryCode: 'US',
+        countryName: 'United States',
+        region: null,
+        city: null,
+        claimKind: 'declared_location',
+        confidence: 'explicit',
+        status: 'accepted',
+      },
+    ],
+  },
+  {
+    streamerLogin: 'ariasaki',
+    entityKind: 'person',
+    classificationReferences: ['https://x.com/AriaSaki'],
+    evidences: [
+      {
+        source: 'official_external',
+        sourceUrl: 'https://x.com/AriaSaki',
+        observedAt: '2026-08-28T01:34:00Z',
+        countryCode: 'US',
+        countryName: 'United States',
+        region: null,
+        city: null,
+        claimKind: 'declared_location',
+        confidence: 'explicit',
+        status: 'accepted',
+      },
+    ],
+  },
+]
