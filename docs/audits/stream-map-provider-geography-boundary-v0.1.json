@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "viewloom-stream-map-provider-geography-boundary-v0.1",
+  "twitch": {
+    "publicGeographyModes": ["country", "city"],
+    "defaultGeographyMode": "country",
+    "currentIrlUiActive": false,
+    "evidenceSourceOptions": [
+      "account_profile",
+      "stream_title",
+      "stream_tag",
+      "channel_profile",
+      "official_external",
+      "manual_review"
+    ],
+    "locationTypeOptions": ["home_base", "declared_location", "current_location"],
+    "currentTypeFilterActivatesCurrentGeography": false
+  },
+  "kick": {
+    "preparedGeographyModes": ["country"],
+    "publicMapControlsActive": false,
+    "publicActivationAuthorized": false,
+    "evidenceSourceControlState": "not_publicly_wired",
+    "stableIdentity": "broadcaster_user_id",
+    "slugIsStableIdentity": false,
+    "twitchEvidenceReuseAllowed": false
+  },
+  "sharedBoundaries": {
+    "providerAggregationAllowed": false,
+    "countryToCityInferenceAllowed": false,
+    "currentToBasePlacementAllowed": false,
+    "sourceFilterStateMayActivateProvider": false,
+    "sourceFilterStateMayActivateGeography": false
+  }
+}

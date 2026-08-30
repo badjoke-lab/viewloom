@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "viewloom-kick-stream-map-country-response-fixture-v0.1",
+  "observedAt": "2026-08-28T10:00:00.000Z",
+  "snapshotItems": [
+    { "slug": "mapped", "displayName": "Mapped", "broadcaster_user_id": 42, "viewer_count": 1000 },
+    { "slug": "missing-id", "displayName": "Missing ID", "viewer_count": 900 },
+    { "slug": "ambiguous", "displayName": "Ambiguous A", "broadcaster_user_id": 100, "viewer_count": 800 },
+    { "slug": "ambiguous", "displayName": "Ambiguous B", "broadcaster_user_id": 101, "viewer_count": 700 },
+    { "slug": "twitch-only", "displayName": "Twitch Only", "broadcaster_user_id": 77, "viewer_count": 600 },
+    { "slug": "reviewed-conflict", "displayName": "Reviewed Conflict", "broadcaster_user_id": 88, "viewer_count": 500 },
+    { "slug": "excluded", "displayName": "Excluded", "broadcaster_user_id": 99, "viewer_count": 400 }
+  ],
+  "reviewedEvidence": [
+    { "provider": "kick", "stableKickUserId": "42", "outcome": "accepted", "placement": { "state": "mapped", "countryCode": "US" } },
+    { "provider": "twitch", "stableKickUserId": "77", "outcome": "accepted", "placement": { "state": "mapped", "countryCode": "JP" } },
+    { "provider": "kick", "stableKickUserId": "88", "outcome": "conflict_unmapped" },
+    { "provider": "kick", "stableKickUserId": "99", "outcome": "excluded_nonperson" }
+  ],
+  "expected": {
+    "observedStreams": 7,
+    "observedViewers": 4900,
+    "mappedStreams": 1,
+    "mappedViewers": 1000,
+    "unmappedStreams": 4,
+    "unmappedViewers": 3000,
+    "conflictStreams": 1,
+    "conflictViewers": 500,
+    "excludedStreams": 1,
+    "excludedViewers": 400,
+    "streamCoverage": 0.142857,
+    "viewerCoverage": 0.204082
+  }
+}

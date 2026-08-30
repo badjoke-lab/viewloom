@@ -1,0 +1,28 @@
+name: Twitch Stream Map Current Live Probe Audit
+
+on:
+  pull_request:
+    paths:
+      - 'docs/audits/twitch-stream-map-current-live-probe-2026-08-28.json'
+      - 'scripts/verify-twitch-stream-map-current-live-probe-audit.mjs'
+      - '.github/workflows/twitch-stream-map-current-live-probe-audit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/twitch-stream-map-current-live-probe-2026-08-28.json'
+      - 'scripts/verify-twitch-stream-map-current-live-probe-audit.mjs'
+      - '.github/workflows/twitch-stream-map-current-live-probe-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify aggregate-only Current / IRL live probe audit
+        run: node scripts/verify-twitch-stream-map-current-live-probe-audit.mjs

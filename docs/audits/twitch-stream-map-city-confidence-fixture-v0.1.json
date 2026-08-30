@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "viewloom-stream-map-city-confidence-fixture-v0.1",
+  "cases": [
+    {
+      "name": "single explicit home base city",
+      "record": {"streamerLogin":"alpha","entityKind":"person","evidences":[{"status":"accepted","claimKind":"home_base","countryCode":"US","countryName":"United States","city":"Los Angeles","source":"official_external","observedAt":"2026-08-28T00:00:00Z"}]},
+      "expected": {"cityState":"mapped","confidenceClass":"single_explicit_base_city","ambiguityReason":"explicit_base_city","publicPlacementEligible":true,"city":"Los Angeles"}
+    },
+    {
+      "name": "multiple consistent explicit base city rows",
+      "record": {"streamerLogin":"beta","entityKind":"person","evidences":[{"status":"accepted","claimKind":"home_base","countryCode":"JP","countryName":"Japan","city":"Tokyo","source":"official_external","observedAt":"2026-08-27T00:00:00Z"},{"status":"accepted","claimKind":"declared_location","countryCode":"JP","countryName":"Japan","city":"Tokyo","source":"manual_review","observedAt":"2026-08-28T00:00:00Z"}]},
+      "expected": {"cityState":"mapped","confidenceClass":"consistent_multiple_explicit_base_city_rows","ambiguityReason":"explicit_base_city","publicPlacementEligible":true,"city":"Tokyo"}
+    },
+    {
+      "name": "conflicting explicit base cities",
+      "record": {"streamerLogin":"gamma","entityKind":"person","evidences":[{"status":"accepted","claimKind":"home_base","countryCode":"US","city":"Los Angeles","source":"official_external"},{"status":"accepted","claimKind":"declared_location","countryCode":"US","city":"Austin","source":"manual_review"}]},
+      "expected": {"cityState":"conflict","confidenceClass":"conflict","ambiguityReason":"base_placement_conflict","publicPlacementEligible":false}
+    },
+    {
+      "name": "country only at city resolution",
+      "record": {"streamerLogin":"delta","entityKind":"person","evidences":[{"status":"accepted","claimKind":"home_base","countryCode":"CA","countryName":"Canada","source":"official_external"}]},
+      "expected": {"cityState":"country_only","confidenceClass":"country_only","ambiguityReason":"country_only_at_city_resolution","publicPlacementEligible":false,"countryCode":"CA"}
+    },
+    {
+      "name": "current city never mutates base city",
+      "record": {"streamerLogin":"epsilon","entityKind":"person","evidences":[{"status":"accepted","claimKind":"current_location","countryCode":"DE","city":"Berlin","source":"self_controlled_current_statement"}]},
+      "expected": {"cityState":"current_only","confidenceClass":"current_only","ambiguityReason":"current_location_not_base_city","publicPlacementEligible":false,"currentEvidenceExcludedFromBase":true}
+    },
+    {
+      "name": "context city never places base",
+      "record": {"streamerLogin":"zeta","entityKind":"person","evidences":[{"status":"context_only","claimKind":"birthplace","countryCode":"GB","city":"London","source":"official_external"}]},
+      "expected": {"cityState":"context_only","confidenceClass":"context_only","ambiguityReason":"context_evidence_not_base_city","publicPlacementEligible":false}
+    },
+    {
+      "name": "precise location key fails closed",
+      "record": {"streamerLogin":"eta","entityKind":"person","address":"private","evidences":[{"status":"accepted","claimKind":"home_base","countryCode":"US","city":"Miami","source":"official_external"}]},
+      "expected": {"cityState":"privacy_invalid","confidenceClass":"invalid","ambiguityReason":"precise_location_key_present","publicPlacementEligible":false}
+    },
+    {
+      "name": "non person excluded",
+      "record": {"streamerLogin":"theta","entityKind":"organization","evidences":[{"status":"accepted","claimKind":"home_base","countryCode":"US","city":"New York","source":"official_external"}]},
+      "expected": {"cityState":"excluded_non_person","confidenceClass":"not_applicable","ambiguityReason":"confirmed_non_person","publicPlacementEligible":false}
+    }
+  ]
+}

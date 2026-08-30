@@ -1,0 +1,38 @@
+name: Kick Stream Map Snapshot Source Core
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.d.mts'
+      - 'scripts/verify-kick-stream-map-snapshot-source-core.mjs'
+      - 'docs/audits/kick-stream-map-snapshot-source-fixture-v0.1.json'
+      - 'scripts/kick-stream-map-country-live-join-core.mjs'
+      - 'scripts/kick-stream-map-country-snapshot-adapter-core.mjs'
+      - 'scripts/kick-stream-map-country-response-core.mjs'
+      - '.github/workflows/kick-stream-map-snapshot-source-core.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.d.mts'
+      - 'scripts/verify-kick-stream-map-snapshot-source-core.mjs'
+      - 'docs/audits/kick-stream-map-snapshot-source-fixture-v0.1.json'
+      - 'scripts/kick-stream-map-country-live-join-core.mjs'
+      - 'scripts/kick-stream-map-country-snapshot-adapter-core.mjs'
+      - 'scripts/kick-stream-map-country-response-core.mjs'
+      - '.github/workflows/kick-stream-map-snapshot-source-core.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Kick snapshot source to Country response contract
+        run: node scripts/verify-kick-stream-map-snapshot-source-core.mjs

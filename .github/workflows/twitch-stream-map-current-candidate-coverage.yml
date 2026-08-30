@@ -1,0 +1,32 @@
+name: Twitch Stream Map Current Candidate Coverage
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/twitch-stream-map-current-location/candidate-coverage.mjs'
+      - 'docs/audits/twitch-stream-map-current-candidate-coverage-fixture-v0.1.json'
+      - 'scripts/verify-twitch-stream-map-current-candidate-coverage.mjs'
+      - '.github/workflows/twitch-stream-map-current-candidate-coverage.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tools/twitch-stream-map-current-location/candidate-coverage.mjs'
+      - 'docs/audits/twitch-stream-map-current-candidate-coverage-fixture-v0.1.json'
+      - 'scripts/verify-twitch-stream-map-current-candidate-coverage.mjs'
+      - '.github/workflows/twitch-stream-map-current-candidate-coverage.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Current / IRL candidate coverage measurement
+        run: node scripts/verify-twitch-stream-map-current-candidate-coverage.mjs

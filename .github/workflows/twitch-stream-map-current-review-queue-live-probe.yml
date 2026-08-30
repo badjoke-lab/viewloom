@@ -1,0 +1,224 @@
+name: Twitch Stream Map Current Review Queue Live Probe
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/twitch-stream-map-current-review-queue-live-probe/**'
+      - 'tools/twitch-stream-map-current-location/reviewability.mjs'
+      - 'workers/collector-twitch/scripts/location-candidate-extractor.mjs'
+      - 'scripts/verify-twitch-stream-map-current-review-queue-live-probe.mjs'
+      - '.github/workflows/twitch-stream-map-current-review-queue-live-probe.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/twitch-stream-map-current-review-queue-live-probe-trigger.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: twitch-stream-map-current-review-queue-live-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TRIGGER_FILE: docs/audits/twitch-stream-map-current-review-queue-live-probe-trigger.json
+  ARTIFACT_DIR: artifacts/twitch-stream-map-current-review-queue-live-probe
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Current / IRL review queue live probe contract
+        run: node scripts/verify-twitch-stream-map-current-review-queue-live-probe.mjs
+      - name: Bundle preview worker without deploying
+        run: npx --yes wrangler@4 deploy --dry-run --config tools/twitch-stream-map-current-review-queue-live-probe/wrangler.toml
+      - name: Publish safety boundary
+        shell: bash
+        run: |
+          {
+            echo '## Twitch Stream Map Current / IRL review queue live probe'
+            echo
+            echo '- Production deployment: no'
+            echo '- D1 writes: 0'
+            echo '- Automatic schedule: none'
+            echo '- workflow_dispatch: none'
+            echo '- Live execution: exact one-file main trigger only'
+            echo '- Max Twitch token requests: 1'
+            echo '- Max /helix/streams requests: 3'
+            echo '- /helix/users requests: 0'
+            echo '- Raw title/tag/language artifact: no'
+            echo '- Returned identity: public Twitch stable user ID + login only for review candidates'
+            echo '- Automatic Current acceptance: no'
+            echo '- Public Current / IRL placement: no'
+            echo '- Home/Base mutation: no'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  probe:
+    needs: contract
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enforce exact one-file review-queue trigger
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          test -f "$TRIGGER_FILE"
+          mapfile -t changed < <(git diff --name-only "${GITHUB_SHA}^1" "$GITHUB_SHA")
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = "$TRIGGER_FILE"
+          jq -e '
+            .schemaVersion == "viewloom-twitch-stream-map-current-review-queue-live-probe-trigger-v0.1" and
+            .oneTime == true and
+            .rearm == false and
+            .productionDeployment == false and
+            .d1Writes == 0 and
+            .maxTokenRequests == 1 and
+            .maxStreamsRequests == 3 and
+            .usersRequests == 0 and
+            .rawTextArtifactAllowed == false and
+            .identityPreservingCandidateArtifact == true and
+            .automaticAcceptanceAuthorized == false and
+            .publicCurrentPlacementAuthorized == false and
+            .baseMutationAuthorized == false and
+            (.expectedProbePackageMergeSha | type == "string" and length == 40)
+          ' "$TRIGGER_FILE" >/dev/null
+          package_sha="$(jq -r '.expectedProbePackageMergeSha' "$TRIGGER_FILE")"
+          git cat-file -e "${package_sha}^{commit}"
+          git merge-base --is-ancestor "$package_sha" HEAD
+
+      - name: Require Cloudflare preview credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - id: upload
+        name: Upload non-production Current / IRL review-queue preview version
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          alias="map-current-review-${GITHUB_RUN_ID}"
+          output="$(npx --yes wrangler@4 versions upload \
+            --config tools/twitch-stream-map-current-review-queue-live-probe/wrangler.toml \
+            --preview-alias "$alias" \
+            --keep-vars 2>&1 | tee "$ARTIFACT_DIR/upload.txt")"
+          preview_url="$(printf '%s\n' "$output" | sed -nE 's/.*Version Preview URL: (https:\/\/[^ ]+).*/\1/p' | tail -1)"
+          test -n "$preview_url"
+          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+
+      - name: Verify preview-only boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview_url='${{ steps.upload.outputs.preview_url }}'
+          curl --fail --silent --show-error --retry 4 --retry-delay 3 --retry-all-errors \
+            "$preview_url/health" -o "$ARTIFACT_DIR/health.json"
+          jq -e '
+            .ok == true and
+            .mode == "current_location_review_queue_top300_preview" and
+            .productionDeployment == false and
+            .d1Writes == 0 and
+            .maxTokenRequests == 1 and
+            .maxStreamsRequests == 3 and
+            .usersRequests == 0 and
+            .publicCurrentPlacementAuthorized == false and
+            .automaticAcceptanceAuthorized == false and
+            .baseMutationAuthorized == false and
+            .rawTextArtifactAllowed == false and
+            .identityPreservingCandidateArtifact == true and
+            .credentialPresence.twitchClientId == true and
+            .credentialPresence.twitchClientSecret == true
+          ' "$ARTIFACT_DIR/health.json" >/dev/null
+
+      - name: Capture one bounded live review queue
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview_url='${{ steps.upload.outputs.preview_url }}'
+          set +e
+          http_code="$(curl --silent --show-error -X POST \
+            "$preview_url/audit/current-review-queue" \
+            -o "$ARTIFACT_DIR/review-queue.json" -w '%{http_code}')"
+          curl_rc=$?
+          set -e
+          jq -n --arg httpCode "$http_code" --argjson curlExit "$curl_rc" \
+            --slurpfile body "$ARTIFACT_DIR/review-queue.json" \
+            '{httpCode:$httpCode,curlExit:$curlExit,response:(if (($body[0] // null)|type)=="object" then {ok:($body[0].ok//false),error:($body[0].error//null),errorClass:($body[0].errorClass//null)} else {ok:false,error:"non_json_or_empty_response",errorClass:"transport"} end)}' \
+            > "$ARTIFACT_DIR/post-diagnostic.json"
+          if [[ "$curl_rc" -ne 0 || "$http_code" != '200' ]]; then
+            cat "$ARTIFACT_DIR/post-diagnostic.json"
+            exit 1
+          fi
+          jq -e '
+            .ok == true and
+            .result.provider == "twitch" and
+            .result.mode == "current_location_review_queue_top300_preview" and
+            .result.requestedSize == 300 and
+            (.result.sampleSize > 0 and .result.sampleSize <= 300) and
+            .result.stableIdentity == "twitchUserId" and
+            .result.stableIdentityUnique == true and
+            .result.apiRequests.token == 1 and
+            (.result.apiRequests.streams > 0 and .result.apiRequests.streams <= 3) and
+            .result.apiRequests.users == 0 and
+            .result.persistence.d1Writes == 0 and
+            .result.persistence.productionDeployment == false and
+            .result.persistence.rawTitleStored == false and
+            .result.persistence.rawTagsStored == false and
+            .result.persistence.rawLanguageStored == false and
+            .result.persistence.rawTextArtifactAllowed == false and
+            .result.persistence.canonicalMutationApplied == false and
+            .result.decision.status == "review_queue_only" and
+            .result.decision.acceptanceAuthorized == false and
+            .result.decision.publicCurrentPlacementAuthorized == false and
+            .result.decision.baseMutationAuthorized == false and
+            .result.decision.languageUsedForPlacement == false and
+            .result.review.boundary.titleOrTagCanAutoAccept == false and
+            .result.review.boundary.rawTextRetained == false and
+            (all(.result.review.reviewQueue[]?; (has("title")|not) and (has("tags")|not) and (has("language")|not))) and
+            (all(.result.review.rejected[]?; (has("title")|not) and (has("tags")|not) and (has("language")|not)))
+          ' "$ARTIFACT_DIR/review-queue.json" >/dev/null
+
+      - name: Publish review queue summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## Current / IRL live review-queue result'
+            if [[ -f "$ARTIFACT_DIR/post-diagnostic.json" ]]; then
+              jq -r '"- POST HTTP: \(.httpCode)\n- curl exit: \(.curlExit)\n- response ok: \(.response.ok)\n- error class: \(.response.errorClass // "none")\n- error: \(.response.error // "none")"' "$ARTIFACT_DIR/post-diagnostic.json"
+            fi
+            if [[ -f "$ARTIFACT_DIR/review-queue.json" ]]; then
+              jq -r '"- Population measured: \(.result.sampleSize)\n- Reviewable candidates: \(.result.review.summary.reviewableCandidates)\n- Future/planned travel rejected: \(.result.review.summary.rejectedFutureTravel)\n- Candidate conflicts: \(.result.review.summary.conflictingCandidates)\n- Invalid identity rows: \(.result.review.summary.invalidIdentity)\n- Automatic acceptance authorized: \(.result.decision.acceptanceAuthorized)\n- Public Current placement authorized: \(.result.decision.publicCurrentPlacementAuthorized)"' "$ARTIFACT_DIR/review-queue.json"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload raw-text-free review queue evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-stream-map-current-review-queue-live-probe-${{ github.run_id }}
+          path: artifacts/twitch-stream-map-current-review-queue-live-probe/
+          if-no-files-found: error
+          retention-days: 7

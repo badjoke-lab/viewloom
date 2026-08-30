@@ -1,0 +1,32 @@
+name: Twitch Stream Map Current Snapshot Source Core
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/twitch-stream-map-current-snapshot-source-core.mjs'
+      - 'scripts/verify-twitch-stream-map-current-snapshot-source-core.mjs'
+      - 'scripts/twitch-stream-map-current-response-core.mjs'
+      - 'docs/audits/twitch-stream-map-current-response-fixture-v0.1.json'
+      - '.github/workflows/twitch-stream-map-current-snapshot-source-core.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/twitch-stream-map-current-snapshot-source-core.mjs'
+      - 'scripts/verify-twitch-stream-map-current-snapshot-source-core.mjs'
+      - 'scripts/twitch-stream-map-current-response-core.mjs'
+      - 'docs/audits/twitch-stream-map-current-response-fixture-v0.1.json'
+      - '.github/workflows/twitch-stream-map-current-snapshot-source-core.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Twitch Current snapshot source to response contract
+        run: node scripts/verify-twitch-stream-map-current-snapshot-source-core.mjs

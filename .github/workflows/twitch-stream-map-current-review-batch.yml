@@ -1,0 +1,31 @@
+name: Twitch Stream Map Current Review Batch
+
+on:
+  pull_request:
+    paths:
+      - 'docs/audits/twitch-stream-map-current-review-batch-2026-08-28.json'
+      - 'scripts/verify-twitch-stream-map-current-review-batch.mjs'
+      - '.github/workflows/twitch-stream-map-current-review-batch.yml'
+      - 'docs/audits/twitch-stream-map-current-review-queue-live-result-2026-08-28.json'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/audits/twitch-stream-map-current-review-batch-2026-08-28.json'
+      - 'scripts/verify-twitch-stream-map-current-review-batch.mjs'
+      - '.github/workflows/twitch-stream-map-current-review-batch.yml'
+      - 'docs/audits/twitch-stream-map-current-review-queue-live-result-2026-08-28.json'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Current / IRL review batch
+        run: node scripts/verify-twitch-stream-map-current-review-batch.mjs

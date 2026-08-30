@@ -1,0 +1,37 @@
+name: Twitch Stream Map City Confidence
+
+on:
+  pull_request:
+    paths:
+      - 'tools/twitch-stream-map-city-confidence/**'
+      - 'docs/audits/twitch-stream-map-city-confidence-fixture-v0.1.json'
+      - 'docs/audits/twitch-stream-map-city-evidence-audit-2026-08-24.json'
+      - 'docs/product/stream-map-city-confidence-contract-v0.1.md'
+      - 'scripts/verify-twitch-stream-map-city-confidence.mjs'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence.mjs'
+      - '.github/workflows/twitch-stream-map-city-confidence.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/twitch-stream-map-city-confidence/**'
+      - 'docs/audits/twitch-stream-map-city-confidence-fixture-v0.1.json'
+      - 'docs/audits/twitch-stream-map-city-evidence-audit-2026-08-24.json'
+      - 'docs/product/stream-map-city-confidence-contract-v0.1.md'
+      - 'scripts/verify-twitch-stream-map-city-confidence.mjs'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence.mjs'
+      - '.github/workflows/twitch-stream-map-city-confidence.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify City confidence / ambiguity contract
+        run: node scripts/verify-twitch-stream-map-city-confidence.mjs
