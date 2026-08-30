@@ -1,0 +1,146 @@
+name: Twitch Map Production Browser Smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '47 3 * * *'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/twitch-map-production-browser-smoke.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: twitch-map-production-browser-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ORIGIN: https://www.viewloom.net
+      ARTIFACT_DIR: artifacts/twitch-map-production-browser-smoke
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare artifact directory
+        run: mkdir -p "$ARTIFACT_DIR"
+      - name: Wait for exact main deployment
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="$GITHUB_SHA"
+          for attempt in {1..60}; do
+            if curl --silent --show-error --fail --max-time 20 "$ORIGIN/deployment.json?attempt=$attempt&expected=$expected" -o "$ARTIFACT_DIR/deployment.json"; then
+              deployed="$(jq -r '.commit_sha // empty' "$ARTIFACT_DIR/deployment.json")"
+              environment="$(jq -r '.environment // empty' "$ARTIFACT_DIR/deployment.json")"
+              branch="$(jq -r '.branch // empty' "$ARTIFACT_DIR/deployment.json")"
+              if [ "$deployed" = "$expected" ] && [ "$environment" = 'production' ] && [ "$branch" = 'main' ]; then
+                cat "$ARTIFACT_DIR/deployment.json"
+                exit 0
+              fi
+              echo "Production is not on $expected yet (found $deployed, attempt $attempt/60)."
+            else
+              echo "deployment.json unavailable (attempt $attempt/60)."
+            fi
+            sleep 10
+          done
+          echo "Exact production deployment $expected was not observed." >&2
+          exit 1
+      - name: Record current production identity for manual or scheduled smoke
+        if: github.event_name != 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$ORIGIN/deployment.json?smoke=$GITHUB_RUN_ID" -o "$ARTIFACT_DIR/deployment.json"
+          jq -e '.schema == "viewloom-deployment-v1" and .environment == "production" and .branch == "main" and (.commit_sha | type == "string" and length > 0)' "$ARTIFACT_DIR/deployment.json" >/dev/null
+          cat "$ARTIFACT_DIR/deployment.json"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated Playwright
+        shell: bash
+        run: |
+          mkdir -p /tmp/viewloom-prod-smoke
+          cd /tmp/viewloom-prod-smoke
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.52.0
+          ./node_modules/.bin/playwright install --with-deps chromium
+      - name: Verify production Country and City map rendering
+        shell: bash
+        env:
+          TARGET_URL: https://www.viewloom.net/twitch/map/
+        run: |
+          cat > /tmp/viewloom-prod-smoke/smoke.mjs <<'NODE'
+          import assert from 'node:assert/strict'
+          import { chromium } from 'playwright'
+
+          const targetUrl = process.env.TARGET_URL
+          const runId = process.env.GITHUB_RUN_ID || 'manual'
+          const url = `${targetUrl}?production-browser-smoke=${encodeURIComponent(runId)}`
+          const browser = await chromium.launch({
+            headless: true,
+            args: ['--enable-webgl', '--use-gl=angle', '--use-angle=swiftshader', '--disable-gpu-sandbox'],
+          })
+          const page = await browser.newPage({ viewport: { width: 1440, height: 1200 } })
+          const pageErrors = []
+          const consoleErrors = []
+          page.on('pageerror', (error) => pageErrors.push(error.stack || error.message))
+          page.on('console', (message) => {
+            if (message.type() === 'error') consoleErrors.push(message.text())
+          })
+
+          async function snapshot(label) {
+            await page.locator('#stream-map-root[data-map-state="basemap-ready"]').waitFor({ timeout: 45000 })
+            await page.locator('.stream-map-country-marker').first().waitFor({ timeout: 15000 })
+            const state = await page.locator('#stream-map-root').getAttribute('data-map-state')
+            const canvasCount = await page.locator('#stream-map-root canvas.maplibregl-canvas').count()
+            const controls = await page.locator('#stream-map-root .maplibregl-ctrl-zoom-in').count()
+            const markerCount = await page.locator('.stream-map-country-marker').count()
+            const mappedText = (await page.locator('#stream-map-mapped').textContent() || '').trim()
+            const mappedStreams = Number(mappedText.replaceAll(',', ''))
+            assert.equal(state, 'basemap-ready')
+            assert.equal(canvasCount, 1)
+            assert.equal(controls, 1)
+            assert.ok(markerCount > 0, `${label}: expected at least one country marker`)
+            assert.ok(Number.isFinite(mappedStreams) && mappedStreams > 0, `${label}: expected mapped streams > 0, got ${mappedText}`)
+            await page.screenshot({ path: `${process.env.GITHUB_WORKSPACE}/${process.env.ARTIFACT_DIR}/${label}.png`, fullPage: true })
+            return { state, canvasCount, controls, markerCount, mappedStreams }
+          }
+
+          try {
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 })
+            const country = await snapshot('country')
+
+            const cityButton = page.getByRole('button', { name: 'City', exact: true })
+            await cityButton.click()
+            await page.waitForTimeout(1500)
+            const city = await snapshot('city')
+
+            assert.equal(pageErrors.length, 0, `page errors: ${pageErrors.join(' | ')}`)
+            assert.equal(consoleErrors.length, 0, `console errors: ${consoleErrors.join(' | ')}`)
+            const result = { url, country, city, pageErrors, consoleErrors }
+            console.log(JSON.stringify(result))
+            await import('node:fs').then(({ writeFileSync }) => writeFileSync(
+              `${process.env.GITHUB_WORKSPACE}/${process.env.ARTIFACT_DIR}/result.json`,
+              `${JSON.stringify(result, null, 2)}\n`,
+            ))
+          } finally {
+            await browser.close()
+          }
+          NODE
+          cd /tmp/viewloom-prod-smoke
+          node smoke.mjs
+      - name: Upload production smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-map-production-browser-smoke
+          path: artifacts/twitch-map-production-browser-smoke/
+          if-no-files-found: warn
+          retention-days: 7
