@@ -15,6 +15,7 @@ import { TWITCH_REVIEWED_LOCATION_BATCH_C } from './twitch-stream-map-reviewed-e
 import { TWITCH_REVIEWED_LOCATION_BATCH_D } from './twitch-stream-map-reviewed-evidence-batch-d.mjs'
 import { TWITCH_REVIEWED_LOCATION_BATCH_E } from './twitch-stream-map-reviewed-evidence-batch-e.mjs'
 import { TWITCH_REVIEWED_LOCATION_BATCH_F } from './twitch-stream-map-reviewed-evidence-batch-f.mjs'
+import { TWITCH_REVIEWED_LOCATION_BATCH_G } from './twitch-stream-map-reviewed-evidence-batch-g.mjs'
 
 type SnapshotRow = {
   bucket_minute: string
@@ -46,6 +47,7 @@ const reviewedLocationRecords = [
   ...TWITCH_REVIEWED_LOCATION_BATCH_D,
   ...TWITCH_REVIEWED_LOCATION_BATCH_E,
   ...TWITCH_REVIEWED_LOCATION_BATCH_F,
+  ...TWITCH_REVIEWED_LOCATION_BATCH_G,
 ]
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
