@@ -1,5 +1,6 @@
 import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import './maplibre-bootstrap.css'
 
 type StreamMapOptions = ConstructorParameters<typeof maplibregl.Map>[0]
 
