@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { chromium } from 'playwright'
 
 const baseUrl = process.env.STREAM_MAP_BASE_URL || 'http://127.0.0.1:4173'
+const useRealBasemap = process.env.STREAM_MAP_REAL_BASEMAP === '1'
 const browser = await chromium.launch({
   headless: true,
   args: ['--enable-webgl', '--use-gl=angle', '--use-angle=swiftshader', '--disable-gpu-sandbox'],
@@ -14,44 +15,46 @@ page.on('console', (message) => {
   if (message.type() === 'error') consoleErrors.push(message.text())
 })
 
-await page.route('**/styles/dark*', async (route) => {
-  await route.fulfill({
-    status: 200,
-    contentType: 'application/json',
-    body: JSON.stringify({
-      version: 8,
-      name: 'ViewLoom renderer CI',
-      sources: {
-        workerProbe: {
-          type: 'geojson',
-          data: {
-            type: 'FeatureCollection',
-            features: [
-              {
-                type: 'Feature',
-                properties: { probe: true },
-                geometry: { type: 'Point', coordinates: [0, 0] },
-              },
-            ],
+if (!useRealBasemap) {
+  await page.route('**/styles/dark*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        version: 8,
+        name: 'ViewLoom renderer CI',
+        sources: {
+          workerProbe: {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [
+                {
+                  type: 'Feature',
+                  properties: { probe: true },
+                  geometry: { type: 'Point', coordinates: [0, 0] },
+                },
+              ],
+            },
           },
         },
-      },
-      layers: [
-        {
-          id: 'background',
-          type: 'background',
-          paint: { 'background-color': '#111111' },
-        },
-        {
-          id: 'worker-probe',
-          type: 'circle',
-          source: 'workerProbe',
-          paint: { 'circle-radius': 4, 'circle-color': '#ffffff' },
-        },
-      ],
-    }),
+        layers: [
+          {
+            id: 'background',
+            type: 'background',
+            paint: { 'background-color': '#111111' },
+          },
+          {
+            id: 'worker-probe',
+            type: 'circle',
+            source: 'workerProbe',
+            paint: { 'circle-radius': 4, 'circle-color': '#ffffff' },
+          },
+        ],
+      }),
+    })
   })
-})
+}
 
 await page.route('**/api/twitch-stream-map**', async (route) => {
   await route.fulfill({
@@ -61,7 +64,7 @@ await page.route('**/api/twitch-stream-map**', async (route) => {
       version: 'viewloom-stream-map-live-v1',
       platform: 'twitch',
       source: 'real',
-      sourceMode: 'browser-regression-fixture',
+      sourceMode: useRealBasemap ? 'real-basemap-browser-smoke' : 'browser-regression-fixture',
       updatedAt: '2026-08-30T00:00:00.000Z',
       coverage: {
         topLimit: 300,
@@ -129,7 +132,7 @@ try {
   await page.goto(`${baseUrl}/twitch/map/`, { waitUntil: 'domcontentloaded' })
 
   try {
-    await page.locator('#stream-map-root[data-map-state="basemap-ready"]').waitFor({ timeout: 15000 })
+    await page.locator('#stream-map-root[data-map-state="basemap-ready"]').waitFor({ timeout: useRealBasemap ? 30000 : 15000 })
   } catch (error) {
     const diagnostics = await page.evaluate(() => {
       const root = document.querySelector('#stream-map-root')
@@ -144,7 +147,7 @@ try {
         webglAvailable: Boolean(gl),
       }
     })
-    console.error(JSON.stringify({ ...diagnostics, pageErrors, consoleErrors }))
+    console.error(JSON.stringify({ ...diagnostics, useRealBasemap, pageErrors, consoleErrors }))
     throw error
   }
 
@@ -158,7 +161,7 @@ try {
   assert.equal(pageErrors.length, 0, `page errors: ${pageErrors.join(' | ')}`)
   assert.equal(consoleErrors.length, 0, `console errors: ${consoleErrors.join(' | ')}`)
 
-  console.log(JSON.stringify({ rendererState, canvasCount, rendererAvailable, pageErrors, consoleErrors }))
+  console.log(JSON.stringify({ rendererState, canvasCount, rendererAvailable, useRealBasemap, pageErrors, consoleErrors }))
 } finally {
   await browser.close()
 }
