@@ -21,12 +21,32 @@ await page.route('**/styles/dark*', async (route) => {
     body: JSON.stringify({
       version: 8,
       name: 'ViewLoom renderer CI',
-      sources: {},
+      sources: {
+        workerProbe: {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: [
+              {
+                type: 'Feature',
+                properties: { probe: true },
+                geometry: { type: 'Point', coordinates: [0, 0] },
+              },
+            ],
+          },
+        },
+      },
       layers: [
         {
           id: 'background',
           type: 'background',
           paint: { 'background-color': '#111111' },
+        },
+        {
+          id: 'worker-probe',
+          type: 'circle',
+          source: 'workerProbe',
+          paint: { 'circle-radius': 4, 'circle-color': '#ffffff' },
         },
       ],
     }),
