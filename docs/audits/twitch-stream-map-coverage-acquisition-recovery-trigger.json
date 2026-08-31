@@ -5,9 +5,9 @@
   "productionDeployment": false,
   "d1Writes": 0,
   "maxTokenRequests": 1,
-  "maxStreamsRequests": 3,
+  "maxStreamsRequests": 4,
   "usersRequests": 0,
   "expectedAcquisitionMergeSha": "6544a67f302100ef691edb1f49f9af2b176ccc3d",
-  "expectedRecoveryPackageMergeSha": "689eba371df5b820623db9f4be29861cd3dcdcbe",
-  "reason": "Capture one fresh Top300 stable-identity sample after Country E-L canonical consolidation, then derive a new Country review queue and City live-coverage measurement from the same bounded read-only sample."
+  "expectedRecoveryPackageMergeSha": "c71ce70021c1c6276e18bd9d3f0d0028e4292a02",
+  "reason": "Retry one fresh Top300 stable-identity sample after the real page-boundary duplicate failure in run 33322013549. Keep exactly 300 unique Twitch user IDs, permit only one bounded fourth /helix/streams request when overlap requires it, then derive the Country review queue and City live-coverage measurement from the same read-only sample."
 }
