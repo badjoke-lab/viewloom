@@ -1,0 +1,68 @@
+name: Twitch Stream Map Country Fresh Canonical
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/api/twitch-stream-map.ts'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence-fresh-2026-08-31.mjs'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence-fresh-2026-08-31.d.mts'
+      - 'docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-*.json'
+      - 'docs/audits/twitch-stream-map-country-coverage-review-apply-2026-08-31.json'
+      - 'scripts/verify-twitch-stream-map-country-coverage-review-result.mjs'
+      - 'scripts/verify-twitch-stream-map-country-fresh-canonical.mjs'
+      - '.github/workflows/twitch-stream-map-country-fresh-canonical.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/api/twitch-stream-map.ts'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence-fresh-2026-08-31.mjs'
+      - 'apps/web/functions/api/twitch-stream-map-reviewed-evidence-fresh-2026-08-31.d.mts'
+      - 'docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-*.json'
+      - 'docs/audits/twitch-stream-map-country-coverage-review-apply-2026-08-31.json'
+      - 'scripts/verify-twitch-stream-map-country-coverage-review-result.mjs'
+      - 'scripts/verify-twitch-stream-map-country-fresh-canonical.mjs'
+      - '.github/workflows/twitch-stream-map-country-fresh-canonical.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: twitch-stream-map-country-fresh-canonical-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Revalidate all fresh Country review results
+        shell: bash
+        run: |
+          set -euo pipefail
+          for result in docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-*.json; do
+            echo "Validating ${result}"
+            node scripts/verify-twitch-stream-map-country-coverage-review-result.mjs "$result"
+          done
+      - name: Verify fresh canonical application
+        run: node scripts/verify-twitch-stream-map-country-fresh-canonical.mjs
+      - name: Publish safety boundary
+        shell: bash
+        run: |
+          {
+            echo '## Twitch Country fresh canonical application'
+            echo '- Source run: 33348159697'
+            echo '- Reviewed population: 297'
+            echo '- Accepted placements applied: 15'
+            echo '- Non-person exclusions applied: 15'
+            echo '- Rejected/no-qualifying rows applied: 0'
+            echo '- City fields introduced: 0'
+            echo '- Current Location introduced: 0'
+            echo '- Address/coordinates introduced: 0'
+            echo '- Provider requests: 0'
+            echo '- D1 mutation: 0'
+            echo '- Production deploy requested: no'
+          } >> "$GITHUB_STEP_SUMMARY"
