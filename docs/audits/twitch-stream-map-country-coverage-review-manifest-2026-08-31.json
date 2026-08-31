@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-country-coverage-review-manifest-v0.1",
+  "provider": "twitch",
+  "geographyLayer": "country_only",
+  "source": {
+    "workflowRunId": 33348159697,
+    "headSha": "9be1e5228abfdcc62592a7f5cdc485ff2dc82d69",
+    "observedAt": "2026-08-31T01:38:27.145Z",
+    "artifactSha256": "85f2928ed654a9f2ff7fba8a141ac2ab20203e9c5a08f85e3251bb7f625f0e23",
+    "countryQueueSchemaVersion": "viewloom-twitch-stream-map-coverage-queue-v0.1"
+  },
+  "wholeTop300Population": 300,
+  "totalQueuedPopulation": 297,
+  "excludedFreshEvidence": 2,
+  "excludedNonPerson": 1,
+  "batchCount": 12,
+  "maxBatchSize": 25,
+  "batchSizes": [25,25,25,25,25,25,25,25,25,25,25,22],
+  "queueSha256": "5e875e08e30c861521d958151113a3a470f286f659add4a8c66ee3d6f7c5eb42",
+  "reviewBudget": {
+    "profileLookupsPerIdentity": 1,
+    "externalLookupsPerIdentity": 5,
+    "maxProfileLookupsAllBatches": 297,
+    "maxExternalLookupsAllBatches": 1485
+  },
+  "boundaries": {
+    "providerRequestsDuringBatchBuild": 0,
+    "d1Writes": 0,
+    "productionDeployment": false,
+    "cityFieldsIntroduced": false,
+    "currentLocationIntroduced": false,
+    "preciseLocationFieldsIntroduced": false,
+    "automaticCanonicalPromotion": false,
+    "weeklyMaintenanceControlsExecution": false
+  },
+  "batches": [
+    {"batchId":"2026-08-31-01","path":"docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-01.json","queuePopulation":25,"firstRank":1,"lastRank":27},
+    {"batchId":"2026-08-31-02","path":"docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-02.json","queuePopulation":25,"firstRank":28,"lastRank":52},
+    {"batchId":"2026-08-31-03","path":"docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-03.json","queuePopulation":25,"firstRank":53,"lastRank":77},
+    {"batchId":"2026-08-31-04","path":"docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-04.json","queuePopulation":25,"firstRank":78,"lastRank":102},
+    {"batchId":"2026-08-31-05","path":"docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-05.json","queuePopulation":25,"firstRank":103,"lastRank":127},
+    {"batchId":"2026-08-31-06","path":"docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-06.json","queuePopulation":25,"firstRank":128,"lastRank":153},
+    {"batchId":"2026-08-31-07","path":"docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-07.json","queuePopulation":25,"firstRank":154,"lastRank":178},
+    {"batchId":"2026-08-31-08","path":"docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-08.json","queuePopulation":25,"firstRank":179,"lastRank":203},
+    {"batchId":"2026-08-31-09","path":"docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-09.json","queuePopulation":25,"firstRank":204,"lastRank":228},
+    {"batchId":"2026-08-31-10","path":"docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-10.json","queuePopulation":25,"firstRank":229,"lastRank":253},
+    {"batchId":"2026-08-31-11","path":"docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-11.json","queuePopulation":25,"firstRank":254,"lastRank":278},
+    {"batchId":"2026-08-31-12","path":"docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-12.json","queuePopulation":22,"firstRank":279,"lastRank":300}
+  ]
+}
