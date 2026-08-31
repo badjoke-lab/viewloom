@@ -65,8 +65,10 @@ jobs:
             echo '- workflow_dispatch: none'
             echo '- Recovery execution: exact one-file main trigger only'
             echo '- Max Twitch token requests during recovery: 1'
-            echo '- Max /helix/streams requests during recovery: 3'
+            echo '- Nominal /helix/streams requests: 3'
+            echo '- Max /helix/streams requests: 4 (one overlap overfetch only)'
             echo '- /helix/users requests: 0'
+            echo '- Final identity artifact remains exactly 300 unique Twitch user IDs'
             echo '- Failed POST body retained only as safe error/errorClass JSON'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -103,7 +105,7 @@ jobs:
             .productionDeployment == false and
             .d1Writes == 0 and
             .maxTokenRequests == 1 and
-            .maxStreamsRequests == 3 and
+            .maxStreamsRequests == 4 and
             .usersRequests == 0 and
             (.expectedAcquisitionMergeSha | type == "string" and length == 40) and
             (.expectedRecoveryPackageMergeSha | type == "string" and length == 40)
@@ -152,7 +154,9 @@ jobs:
             .mode == "coverage_expansion_top300_preview" and
             .productionDeployment == false and
             .d1Writes == 0 and
-            .maxStreamsRequests == 3 and
+            .nominalStreamsRequests == 3 and
+            .maxStreamsRequests == 4 and
+            .maxOverfetchStreamsRequests == 1 and
             .usersRequests == 0 and
             .credentialPresence.twitchClientId == true and
             .credentialPresence.twitchClientSecret == true
@@ -199,9 +203,9 @@ jobs:
             .result.mode == "coverage_expansion_stable_identity_top300_preview" and
             .result.requestedSize == 300 and
             .result.sampleSize == 300 and
-            .result.coveredPages == 3 and
+            (.result.coveredPages >= 3 and .result.coveredPages <= 4) and
             .result.apiRequests.token == 1 and
-            .result.apiRequests.streams == 3 and
+            (.result.apiRequests.streams >= 3 and .result.apiRequests.streams <= 4) and
             .result.apiRequests.users == 0 and
             .result.persistence.d1Writes == 0 and
             .result.persistence.productionDeployment == false and
@@ -225,6 +229,9 @@ jobs:
               observedAt:.result.capturedAt,
               requestedSize:.result.requestedSize,
               sampleSize:.result.sampleSize,
+              coveredPages:.result.coveredPages,
+              duplicateRowsSkipped:.result.duplicateRowsSkipped,
+              overfetchUsed:.result.overfetchUsed,
               apiRequests:.result.apiRequests,
               persistence:.result.persistence,
               fieldsIncluded:.result.fieldsIncluded,
@@ -268,6 +275,9 @@ jobs:
             echo '## Twitch Stream Map Top300 recovery result'
             if [[ -f "$ARTIFACT_DIR/post-diagnostic.json" ]]; then
               jq -r '"- POST HTTP: \(.httpCode)\n- curl exit: \(.curlExit)\n- response ok: \(.response.ok)\n- error class: \(.response.errorClass // "none")\n- error: \(.response.error // "none")"' "$ARTIFACT_DIR/post-diagnostic.json"
+            fi
+            if [[ -f "$ARTIFACT_DIR/top300-stable-identities.json" ]]; then
+              jq -r '"- Top300 unique identities: \(.sampleSize)\n- Covered pages: \(.coveredPages)\n- Duplicate rows skipped: \(.duplicateRowsSkipped)\n- Overfetch used: \(.overfetchUsed)\n- Streams requests: \(.apiRequests.streams)"' "$ARTIFACT_DIR/top300-stable-identities.json"
             fi
             if [[ -f "$ARTIFACT_DIR/country-coverage-queue.json" ]]; then
               jq -r '"- Country selected population: \(.counts.population)\n- Country queued for review: \(.counts.queued)\n- Fresh accepted evidence excluded: \(.counts.excludedFreshEvidence)\n- Confirmed non-person excluded: \(.counts.excludedNonPerson)"' "$ARTIFACT_DIR/country-coverage-queue.json"

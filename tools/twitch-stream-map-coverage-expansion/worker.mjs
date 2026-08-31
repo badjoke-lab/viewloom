@@ -1,8 +1,9 @@
 const HEALTH_PATH = '/health'
 const SAMPLE_PATH = '/audit/coverage-expansion-sample'
 const PAGE_SIZE = 100
-const MAX_PAGES = 3
-const REQUESTED_SIZE = PAGE_SIZE * MAX_PAGES
+const NOMINAL_PAGES = 3
+const MAX_PAGES = 4
+const REQUESTED_SIZE = PAGE_SIZE * NOMINAL_PAGES
 
 export default {
   async fetch(request, env) {
@@ -15,7 +16,9 @@ export default {
         mode: 'coverage_expansion_top300_preview',
         productionDeployment: false,
         d1Writes: 0,
+        nominalStreamsRequests: NOMINAL_PAGES,
         maxStreamsRequests: MAX_PAGES,
+        maxOverfetchStreamsRequests: MAX_PAGES - NOMINAL_PAGES,
         usersRequests: 0,
         credentialPresence: {
           twitchClientId: Boolean(String(env.TWITCH_CLIENT_ID ?? '').trim()),
@@ -52,11 +55,14 @@ async function captureTop300StableIdentities(env) {
   const accessToken = await fetchAppToken({ clientId, clientSecret })
 
   const identities = []
+  const idToLogin = new Map()
+  const loginToId = new Map()
+  let duplicateRowsSkipped = 0
   let cursor = ''
   let coveredPages = 0
   let hasMore = false
 
-  for (let page = 0; page < MAX_PAGES; page += 1) {
+  for (let page = 0; page < MAX_PAGES && identities.length < REQUESTED_SIZE; page += 1) {
     const url = new URL('https://api.twitch.tv/helix/streams')
     url.searchParams.set('first', String(PAGE_SIZE))
     if (cursor) url.searchParams.set('after', cursor)
@@ -75,9 +81,22 @@ async function captureTop300StableIdentities(env) {
     const payload = await response.json()
     if (!Array.isArray(payload?.data)) throw new Error(`invalid_twitch_streams_payload_page_${page + 1}`)
 
-    for (const row of payload.data) {
+    for (const rawRow of payload.data) {
       if (identities.length >= REQUESTED_SIZE) break
-      identities.push(normalizeIdentity(row, identities.length + 1))
+      const row = normalizeIdentity(rawRow, identities.length + 1)
+      const priorLogin = idToLogin.get(row.twitchUserId)
+      if (priorLogin) {
+        if (priorLogin !== row.login) throw new Error(`stable_identity_login_collision:${row.twitchUserId}`)
+        duplicateRowsSkipped += 1
+        continue
+      }
+
+      const priorId = loginToId.get(row.login)
+      if (priorId && priorId !== row.twitchUserId) throw new Error(`login_identity_collision:${row.login}`)
+
+      idToLogin.set(row.twitchUserId, row.login)
+      loginToId.set(row.login, row.twitchUserId)
+      identities.push({ ...row, rank: identities.length + 1 })
     }
 
     coveredPages += 1
@@ -88,6 +107,7 @@ async function captureTop300StableIdentities(env) {
 
   validateUniqueStableIdentities(identities)
   if (!identities.length) throw new Error('empty_top300_identity_sample')
+  if (identities.length < REQUESTED_SIZE) throw new Error(`insufficient_unique_top300:${identities.length}`)
 
   return {
     provider: 'twitch',
@@ -97,6 +117,8 @@ async function captureTop300StableIdentities(env) {
     sampleSize: identities.length,
     coveredPages,
     hasMore,
+    duplicateRowsSkipped,
+    overfetchUsed: streamsRequests > NOMINAL_PAGES,
     apiRequests: {
       token: tokenRequests,
       streams: streamsRequests,
@@ -173,7 +195,8 @@ function classifyError(message) {
   if (message.startsWith('twitch_token_http_') || message === 'missing_twitch_access_token') return 'token'
   if (message.startsWith('twitch_streams_http_') || message.startsWith('invalid_twitch_streams_payload_')) return 'streams'
   if (message.startsWith('missing_twitch_user_id_') || message.startsWith('missing_login_') || message.startsWith('missing_display_name_') || message.startsWith('invalid_viewers_')) return 'identity_normalization'
-  if (message.startsWith('duplicate_twitch_user_id:') || message.startsWith('login_identity_collision:')) return 'identity_uniqueness'
+  if (message.startsWith('duplicate_twitch_user_id:') || message.startsWith('login_identity_collision:') || message.startsWith('stable_identity_login_collision:')) return 'identity_uniqueness'
+  if (message.startsWith('insufficient_unique_top300:')) return 'insufficient_unique_sample'
   if (message === 'empty_top300_identity_sample') return 'empty_sample'
   if (message === 'streams_request_budget_exceeded') return 'budget'
   return 'unknown'
