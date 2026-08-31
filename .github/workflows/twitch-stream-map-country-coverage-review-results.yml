@@ -1,0 +1,70 @@
+name: Twitch Stream Map Country Coverage Review Results
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-*.json'
+      - 'docs/audits/twitch-stream-map-country-coverage-review-manifest-2026-08-31.json'
+      - 'docs/audits/twitch-stream-map-country-coverage-review-result-contract-v0.1.json'
+      - 'docs/audits/twitch-stream-map-country-coverage-review-result-*.json'
+      - 'scripts/verify-twitch-stream-map-country-coverage-review-batches.mjs'
+      - 'scripts/verify-twitch-stream-map-country-coverage-review-result.mjs'
+      - '.github/workflows/twitch-stream-map-country-coverage-review-results.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/twitch-stream-map-country-coverage-review-batch-2026-08-31-*.json'
+      - 'docs/audits/twitch-stream-map-country-coverage-review-manifest-2026-08-31.json'
+      - 'docs/audits/twitch-stream-map-country-coverage-review-result-contract-v0.1.json'
+      - 'docs/audits/twitch-stream-map-country-coverage-review-result-*.json'
+      - 'scripts/verify-twitch-stream-map-country-coverage-review-batches.mjs'
+      - 'scripts/verify-twitch-stream-map-country-coverage-review-result.mjs'
+      - '.github/workflows/twitch-stream-map-country-coverage-review-results.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Revalidate fresh Country review batches
+        run: node scripts/verify-twitch-stream-map-country-coverage-review-batches.mjs
+      - name: Self-test fresh Country review result validator
+        run: node scripts/verify-twitch-stream-map-country-coverage-review-result.mjs --self-test
+      - name: Validate all present fresh Country review results
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          results=(docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-*.json)
+          if (( ${#results[@]} == 0 )); then
+            echo 'No fresh Country review result artifacts found.' >&2
+            exit 1
+          fi
+          for result in "${results[@]}"; do
+            echo "Validating ${result}"
+            node scripts/verify-twitch-stream-map-country-coverage-review-result.mjs "$result"
+          done
+      - name: Publish execution boundary
+        shell: bash
+        run: |
+          {
+            echo '## Fresh Twitch Country coverage review'
+            echo '- Source run: 33348159697'
+            echo '- Source population: Top300'
+            echo '- Queued identities: 297'
+            echo '- Batch count: 12 (25x11 + 22)'
+            echo '- Max external lookups/identity: 5'
+            echo '- Max external lookups/full 25-row batch: 125'
+            echo '- Provider requests: 0'
+            echo '- Country only; City/Current/precise fields forbidden'
+            echo '- Canonical mutation: false'
+            echo '- Production deployment: none'
+          } >> "$GITHUB_STEP_SUMMARY"
