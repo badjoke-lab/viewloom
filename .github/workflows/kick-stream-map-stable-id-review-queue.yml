@@ -59,15 +59,17 @@ jobs:
         run: |
           {
             echo '## Kick stable-ID review queue'
-            echo '- Population: official Livestreams V2 Top100'
+            echo '- Population: production /api/kick-stream-map observed Top100 snapshot'
+            echo '- Population ordering: viewer_count descending'
+            echo '- Kick Livestreams V2 population requests: 0'
             echo '- Stable identity: official Channels broadcaster_user_id'
+            echo '- Production snapshot requests max: 1'
             echo '- Token requests max: 1'
-            echo '- Livestream requests max: 1'
             echo '- Channels requests max: 2 (50 slugs/request)'
             echo '- D1 writes: 0'
             echo '- Production collector change: no'
             echo '- Production deployment: no'
-            echo '- Geography: none'
+            echo '- Geography output: none'
             echo '- Raw title/tag/profile text: none'
             echo '- Armed: ${{ steps.trigger.outputs.armed }}'
           } >> "$GITHUB_STEP_SUMMARY"
@@ -135,14 +137,16 @@ jobs:
             .productionDeployment == false and
             .productionCollectorChange == false and
             .d1Writes == 0 and
+            .populationSource == "production_kick_stream_map_snapshot" and
+            .maxProductionSnapshotRequests == 1 and
             .maxTokenRequests == 1 and
-            .maxLivestreamRequests == 1 and
+            .maxLivestreamRequests == 0 and
             .channelBatchSize == 50 and
             .maxChannelRequests == 2 and
             .credentialPresence.kickClientId == true and
             .credentialPresence.kickClientSecret == true
           ' "$ARTIFACT_DIR/health.json" >/dev/null
-      - name: Capture bounded official stable-ID review queue
+      - name: Capture bounded production-Top100 stable-ID review queue
         shell: bash
         run: |
           set -euo pipefail
@@ -152,15 +156,21 @@ jobs:
             -o "$ARTIFACT_DIR/result.json"
           jq -e '
             .ok == true and
-            .result.schemaVersion == "viewloom-kick-stream-map-stable-id-review-queue-v0.1" and
+            .result.schemaVersion == "viewloom-kick-stream-map-stable-id-review-queue-v0.2" and
             .result.provider == "kick" and
             .result.mode == "read_only_preview" and
-            (.result.population.queueRows >= 0 and .result.population.queueRows <= 100) and
+            .result.source.type == "production_kick_stream_map_snapshot" and
+            .result.source.url == "https://www.viewloom.net/api/kick-stream-map" and
+            .result.source.ordering == "viewer_count_desc" and
+            (.result.population.queueRows >= 1 and .result.population.queueRows <= 100) and
+            .result.population.snapshotRows == .result.population.queueRows and
             .result.identityCoverage.ready + .result.identityCoverage.missing + .result.identityCoverage.ambiguous == .result.population.queueRows and
+            .result.requestCounts.productionSnapshot == 1 and
             .result.requestCounts.token == 1 and
-            .result.requestCounts.livestreamsV2 == 1 and
-            (.result.requestCounts.channelsV1 >= 0 and .result.requestCounts.channelsV1 <= 2) and
+            .result.requestCounts.livestreamsV2 == 0 and
+            (.result.requestCounts.channelsV1 >= 1 and .result.requestCounts.channelsV1 <= 2) and
             .result.requestCounts.legacyPublicFallback == 0 and
+            ([.result.queue[].viewer_count] as $v | reduce range(0; (($v|length)-1)) as $i (true; . and ($v[$i] >= $v[$i+1]))) and
             .result.retention.rawTitleStored == false and
             .result.retention.rawTagsStored == false and
             .result.retention.rawProfileDescriptionStored == false and
@@ -174,6 +184,9 @@ jobs:
             .result.mutation.twitchEvidenceCopied == false and
             .result.semantics.stableIdentity == "broadcaster_user_id" and
             .result.semantics.slugIsStableIdentity == false and
+            .result.semantics.populationAuthority == "production_kick_stream_map_snapshot" and
+            .result.semantics.viewerOrdering == "desc" and
+            .result.semantics.v2OldestFirstPopulationAllowed == false and
             ([.result.queue[] | (keys - ["rank","slug","viewer_count","broadcaster_user_id","identity_state","observed_at"] | length == 0)] | all) and
             ([.result.queue[] | (.broadcaster_user_id == null or (.broadcaster_user_id | type == "string"))] | all) and
             ([.result.queue[] | (.identity_state == "ready" or .identity_state == "missing" or .identity_state == "ambiguous")] | all)
@@ -185,7 +198,7 @@ jobs:
           if [[ -f "$ARTIFACT_DIR/result.json" ]]; then
             {
               echo '## Kick stable-ID queue result'
-              jq -r 'if .ok then "- Queue rows: \(.result.population.queueRows)\n- Unique slugs: \(.result.population.uniqueSlugs)\n- Stable IDs ready: \(.result.identityCoverage.ready)\n- Missing: \(.result.identityCoverage.missing)\n- Ambiguous: \(.result.identityCoverage.ambiguous)\n- Channels requests: \(.result.requestCounts.channelsV1)" else "- Preview queue failed safely" end' "$ARTIFACT_DIR/result.json"
+              jq -r 'if .ok then "- Population source: \(.result.source.type)\n- Source updated: \(.result.source.updatedAt)\n- Queue rows: \(.result.population.queueRows)\n- Unique slugs: \(.result.population.uniqueSlugs)\n- First viewers: \(.result.queue[0].viewer_count)\n- Last viewers: \(.result.queue[-1].viewer_count)\n- Stable IDs ready: \(.result.identityCoverage.ready)\n- Missing: \(.result.identityCoverage.missing)\n- Ambiguous: \(.result.identityCoverage.ambiguous)\n- Channels requests: \(.result.requestCounts.channelsV1)" else "- Preview queue failed safely" end' "$ARTIFACT_DIR/result.json"
             } >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Upload stable-ID review queue artifact
