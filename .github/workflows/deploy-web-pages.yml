@@ -48,12 +48,15 @@ jobs:
         run: |
           grep -Fq 'VIEWLOOM_PAGES_PROJECT: viewloom' .github/workflows/deploy-web-pages.yml
           grep -Fq 'set -euo pipefail' .github/workflows/deploy-web-pages.yml
-          grep -Fq 'wrangler pages deploy apps/web/dist' .github/workflows/deploy-web-pages.yml
+          grep -Fq 'working-directory: apps/web' .github/workflows/deploy-web-pages.yml
+          grep -Fq 'wrangler pages deploy dist' .github/workflows/deploy-web-pages.yml
           grep -Fq 'CF_PAGES_COMMIT_SHA' .github/workflows/deploy-web-pages.yml
           grep -Fq 'CLOUDFLARE_PAGES_API_TOKEN' .github/workflows/deploy-web-pages.yml
           grep -Fq 'CLOUDFLARE_ACCOUNT_ID' .github/workflows/deploy-web-pages.yml
           grep -Fq "github.event_name != 'pull_request'" .github/workflows/deploy-web-pages.yml
           grep -Fq 'if: always()' .github/workflows/deploy-web-pages.yml
+          test -d apps/web/functions
+          test -f apps/web/functions/api/twitch-stream-map.ts
           test -f apps/web/dist/twitch/history/index.html
           test -f apps/web/dist/kick/history/index.html
 
@@ -93,18 +96,21 @@ jobs:
           jq -e '.environment == "production" and .branch == "main" and .commit_sha == env.GITHUB_SHA' apps/web/dist/deployment.json
       - name: Install Wrangler 4
         run: npm install --global wrangler@4
-      - name: Deploy web build directly to verified Cloudflare Pages project
+      - name: Deploy web build and Pages Functions to verified Cloudflare Pages project
+        working-directory: apps/web
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          wrangler pages deploy apps/web/dist \
+          test -d functions
+          test -f functions/api/twitch-stream-map.ts
+          wrangler pages deploy dist \
             --project-name "$VIEWLOOM_PAGES_PROJECT" \
             --branch main \
             --commit-hash "$GITHUB_SHA" \
             --commit-message "Deploy ViewLoom web $GITHUB_SHA" \
-            | tee artifacts/web-pages-deploy/wrangler.log
+            | tee "$GITHUB_WORKSPACE/artifacts/web-pages-deploy/wrangler.log"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
