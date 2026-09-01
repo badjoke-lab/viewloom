@@ -50,7 +50,7 @@ jobs:
           grep -Fq 'set -euo pipefail' .github/workflows/deploy-web-pages.yml
           grep -Fq 'wrangler pages deploy apps/web/dist' .github/workflows/deploy-web-pages.yml
           grep -Fq 'CF_PAGES_COMMIT_SHA' .github/workflows/deploy-web-pages.yml
-          grep -Fq 'CLOUDFLARE_API_TOKEN' .github/workflows/deploy-web-pages.yml
+          grep -Fq 'CLOUDFLARE_PAGES_API_TOKEN' .github/workflows/deploy-web-pages.yml
           grep -Fq 'CLOUDFLARE_ACCOUNT_ID' .github/workflows/deploy-web-pages.yml
           grep -Fq "github.event_name != 'pull_request'" .github/workflows/deploy-web-pages.yml
           grep -Fq 'if: always()' .github/workflows/deploy-web-pages.yml
@@ -68,7 +68,7 @@ jobs:
         uses: ./.github/actions/setup-node-pnpm
       - name: Require Cloudflare deployment secrets
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           test -n "$CLOUDFLARE_API_TOKEN"
@@ -95,7 +95,7 @@ jobs:
         run: npm install --global wrangler@4
       - name: Deploy web build directly to verified Cloudflare Pages project
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
