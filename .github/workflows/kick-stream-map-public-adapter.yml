@@ -6,7 +6,9 @@ on:
     paths:
       - 'apps/web/functions/api/kick-stream-map.ts'
       - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-public-adapter-core.d.mts'
       - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.d.mts'
       - 'scripts/verify-kick-stream-map-public-adapter.mjs'
       - '.github/workflows/kick-stream-map-public-adapter.yml'
   push:
@@ -14,7 +16,9 @@ on:
     paths:
       - 'apps/web/functions/api/kick-stream-map.ts'
       - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-public-adapter-core.d.mts'
       - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.d.mts'
       - 'scripts/verify-kick-stream-map-public-adapter.mjs'
       - '.github/workflows/kick-stream-map-public-adapter.yml'
 
