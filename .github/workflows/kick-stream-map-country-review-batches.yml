@@ -1,0 +1,48 @@
+name: Kick Stream Map Country Review Batches
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/audits/kick-stream-map-country-review-batches-2026-09-02/**'
+      - 'scripts/verify-kick-stream-map-country-review-batches-2026-09-02.mjs'
+      - '.github/workflows/kick-stream-map-country-review-batches.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/kick-stream-map-country-review-batches-2026-09-02/**'
+      - 'scripts/verify-kick-stream-map-country-review-batches-2026-09-02.mjs'
+      - '.github/workflows/kick-stream-map-country-review-batches.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify fixed Kick Country review batches
+        run: node scripts/verify-kick-stream-map-country-review-batches-2026-09-02.mjs
+      - name: Publish review boundary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## Kick Country review batches'
+            echo '- Source: corrected production-backed stable-ID queue run 33534056449'
+            echo '- Population: 100 viewer-ranked production Kick streams'
+            echo '- Stable IDs ready: 100/100'
+            echo '- Batches: 4 x 25'
+            echo '- First-party profile lookup budget: 1 / identity'
+            echo '- External lookup budget: 5 / identity'
+            echo '- Provider requests during batch build: 0'
+            echo '- D1 writes: 0'
+            echo '- Production deployment: false'
+            echo '- Automatic canonical promotion: false'
+            echo '- City / Current / precise location: excluded'
+          } >> "$GITHUB_STEP_SUMMARY"
