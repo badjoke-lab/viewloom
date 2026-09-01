@@ -1,0 +1,200 @@
+name: Kick Stream Map Stable ID Review Queue
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/kick-stream-map-stable-id-review-queue.yml'
+      - 'docs/audits/kick-stream-map-stable-id-review-queue-contract-v0.1.json'
+      - 'scripts/verify-kick-stream-map-stable-id-review-queue.mjs'
+      - 'tools/kick-stream-map-stable-id-review-queue/worker.mjs'
+      - 'tools/kick-stream-map-stable-id-review-queue/wrangler.toml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/kick-stream-map-stable-id-review-queue-trigger.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kick-stream-map-stable-id-review-queue-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TRIGGER_FILE: docs/audits/kick-stream-map-stable-id-review-queue-trigger.json
+  ARTIFACT_DIR: artifacts/kick-stream-map-stable-id-review-queue
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      armed: ${{ steps.trigger.outputs.armed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify bounded stable-ID queue package
+        run: node scripts/verify-kick-stream-map-stable-id-review-queue.mjs
+      - name: Bundle preview Worker without deploying
+        run: npx --yes wrangler@4 deploy --dry-run --config tools/kick-stream-map-stable-id-review-queue/wrangler.toml
+      - name: Read optional one-time trigger
+        id: trigger
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f "$TRIGGER_FILE" ]]; then
+            node scripts/verify-kick-stream-map-stable-id-review-queue.mjs --require-trigger
+            echo 'armed=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'armed=false' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Publish safety boundary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## Kick stable-ID review queue'
+            echo '- Population: official Livestreams V2 Top100'
+            echo '- Stable identity: official Channels broadcaster_user_id'
+            echo '- Token requests max: 1'
+            echo '- Livestream requests max: 1'
+            echo '- Channels requests max: 2 (50 slugs/request)'
+            echo '- D1 writes: 0'
+            echo '- Production collector change: no'
+            echo '- Production deployment: no'
+            echo '- Geography: none'
+            echo '- Raw title/tag/profile text: none'
+            echo '- Armed: ${{ steps.trigger.outputs.armed }}'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  queue:
+    needs: contract
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.contract.outputs.armed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enforce exact one-file main trigger
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          node scripts/verify-kick-stream-map-stable-id-review-queue.mjs --require-trigger
+          mapfile -t changed < <(git diff --name-only "${GITHUB_SHA}^1" "$GITHUB_SHA")
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = "$TRIGGER_FILE"
+          package_sha="$(jq -r '.expectedPackageMergeSha' "$TRIGGER_FILE")"
+          git cat-file -e "${package_sha}^{commit}"
+          git merge-base --is-ancestor "$package_sha" HEAD
+      - name: Require Cloudflare preview credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+      - id: upload
+        name: Upload non-production Kick stable-ID queue preview version
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          alias="kick-map-stable-id-${GITHUB_RUN_ID}"
+          output="$(npx --yes wrangler@4 versions upload \
+            --config tools/kick-stream-map-stable-id-review-queue/wrangler.toml \
+            --preview-alias "$alias" \
+            --keep-vars 2>&1 | tee "$ARTIFACT_DIR/upload.txt")"
+          preview_url="$(printf '%s\n' "$output" | sed -nE 's/.*Version Preview URL: (https:\/\/[^ ]+).*/\1/p' | tail -1)"
+          test -n "$preview_url"
+          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+      - name: Verify preview health
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview_url='${{ steps.upload.outputs.preview_url }}'
+          curl --fail --silent --show-error --retry 4 --retry-delay 3 --retry-all-errors \
+            "$preview_url/health" -o "$ARTIFACT_DIR/health.json"
+          jq -e '
+            .ok == true and
+            .mode == "kick_stream_map_stable_id_review_queue_preview" and
+            .productionDeployment == false and
+            .productionCollectorChange == false and
+            .d1Writes == 0 and
+            .maxTokenRequests == 1 and
+            .maxLivestreamRequests == 1 and
+            .channelBatchSize == 50 and
+            .maxChannelRequests == 2 and
+            .credentialPresence.kickClientId == true and
+            .credentialPresence.kickClientSecret == true
+          ' "$ARTIFACT_DIR/health.json" >/dev/null
+      - name: Capture bounded official stable-ID review queue
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview_url='${{ steps.upload.outputs.preview_url }}'
+          curl --fail --silent --show-error -X POST \
+            "$preview_url/audit/kick-map-stable-id-review-queue" \
+            -o "$ARTIFACT_DIR/result.json"
+          jq -e '
+            .ok == true and
+            .result.schemaVersion == "viewloom-kick-stream-map-stable-id-review-queue-v0.1" and
+            .result.provider == "kick" and
+            .result.mode == "read_only_preview" and
+            (.result.population.queueRows >= 0 and .result.population.queueRows <= 100) and
+            .result.identityCoverage.ready + .result.identityCoverage.missing + .result.identityCoverage.ambiguous == .result.population.queueRows and
+            .result.requestCounts.token == 1 and
+            .result.requestCounts.livestreamsV2 == 1 and
+            (.result.requestCounts.channelsV1 >= 0 and .result.requestCounts.channelsV1 <= 2) and
+            .result.requestCounts.legacyPublicFallback == 0 and
+            .result.retention.rawTitleStored == false and
+            .result.retention.rawTagsStored == false and
+            .result.retention.rawProfileDescriptionStored == false and
+            .result.retention.geographyStored == false and
+            .result.mutation.productionDeployment == false and
+            .result.mutation.productionCollectorChange == false and
+            .result.mutation.d1Writes == 0 and
+            .result.mutation.d1SchemaChange == false and
+            .result.mutation.collectorCadenceChange == false and
+            .result.mutation.automaticGeographyAcceptance == false and
+            .result.mutation.twitchEvidenceCopied == false and
+            .result.semantics.stableIdentity == "broadcaster_user_id" and
+            .result.semantics.slugIsStableIdentity == false and
+            ([.result.queue[] | (keys - ["rank","slug","viewer_count","broadcaster_user_id","identity_state","observed_at"] | length == 0)] | all) and
+            ([.result.queue[] | (.broadcaster_user_id == null or (.broadcaster_user_id | type == "string"))] | all) and
+            ([.result.queue[] | (.identity_state == "ready" or .identity_state == "missing" or .identity_state == "ambiguous")] | all)
+          ' "$ARTIFACT_DIR/result.json" >/dev/null
+      - name: Publish queue result summary
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f "$ARTIFACT_DIR/result.json" ]]; then
+            {
+              echo '## Kick stable-ID queue result'
+              jq -r 'if .ok then "- Queue rows: \(.result.population.queueRows)\n- Unique slugs: \(.result.population.uniqueSlugs)\n- Stable IDs ready: \(.result.identityCoverage.ready)\n- Missing: \(.result.identityCoverage.missing)\n- Ambiguous: \(.result.identityCoverage.ambiguous)\n- Channels requests: \(.result.requestCounts.channelsV1)" else "- Preview queue failed safely" end' "$ARTIFACT_DIR/result.json"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload stable-ID review queue artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kick-stream-map-stable-id-review-queue-${{ github.run_id }}
+          path: |
+            artifacts/kick-stream-map-stable-id-review-queue/health.json
+            artifacts/kick-stream-map-stable-id-review-queue/result.json
+          if-no-files-found: error
+          retention-days: 30
