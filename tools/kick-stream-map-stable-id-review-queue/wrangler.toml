@@ -1,0 +1,12 @@
+name = "viewloom-collector-kick"
+main = "worker.mjs"
+compatibility_date = "2026-05-18"
+keep_vars = true
+
+# Stable-ID review queue preview only.
+# This package is outside workers/collector-kick so merging it does not trigger
+# the production collector deployment workflow. It has no cron or D1 binding.
+# Execution is limited to `wrangler versions upload --preview-alias`.
+
+[secrets]
+required = ["KICK_CLIENT_ID", "KICK_CLIENT_SECRET"]
