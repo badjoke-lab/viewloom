@@ -1,0 +1,72 @@
+name: Diagnose Pages Token Account Preflight
+
+on:
+  push:
+    branches:
+      - diag/pages-token-account-preflight
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      VIEWLOOM_PAGES_PROJECT: viewloom
+    steps:
+      - name: Require deployment secrets
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - name: Compare secret account with token-visible accounts
+        shell: bash
+        run: |
+          set -euo pipefail
+          accounts_file="$(mktemp)"
+          status="$(curl --silent --show-error \
+            --output "$accounts_file" \
+            --write-out '%{http_code}' \
+            --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            --header 'Content-Type: application/json' \
+            'https://api.cloudflare.com/client/v4/accounts')"
+          echo "accounts_http_status=$status"
+          if [[ "$status" == "200" ]] && jq -e '.success == true' "$accounts_file" >/dev/null; then
+            count="$(jq '.result | length' "$accounts_file")"
+            if jq -e --arg account "$CLOUDFLARE_ACCOUNT_ID" '.result | any(.id == $account)' "$accounts_file" >/dev/null; then
+              matches=true
+            else
+              matches=false
+            fi
+            echo "token_visible_account_count=$count"
+            echo "account_id_matches_token_visible_account=$matches"
+          else
+            code="$(jq -r '.errors[0].code // "unknown"' "$accounts_file" 2>/dev/null || echo unknown)"
+            echo "accounts_api_code=$code"
+            echo "account_id_matches_token_visible_account=unknown"
+          fi
+
+      - name: Probe ViewLoom Pages project read access
+        shell: bash
+        run: |
+          set -euo pipefail
+          response_file="$(mktemp)"
+          status="$(curl --silent --show-error \
+            --output "$response_file" \
+            --write-out '%{http_code}' \
+            --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            --header 'Content-Type: application/json' \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$VIEWLOOM_PAGES_PROJECT")"
+          echo "pages_project_http_status=$status"
+          success="$(jq -r '.success // false' "$response_file" 2>/dev/null || echo false)"
+          code="$(jq -r '.errors[0].code // 0' "$response_file" 2>/dev/null || echo unknown)"
+          echo "pages_project_read_success=$success"
+          echo "pages_project_api_code=$code"
+          if [[ "$status" == "200" && "$success" == "true" ]]; then
+            exit 0
+          fi
+          exit 1
