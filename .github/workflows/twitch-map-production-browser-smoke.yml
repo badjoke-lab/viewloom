@@ -27,14 +27,35 @@ jobs:
       ARTIFACT_DIR: artifacts/twitch-map-production-browser-smoke
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - name: Prepare artifact directory
         run: mkdir -p "$ARTIFACT_DIR"
-      - name: Wait for exact main deployment
+      - name: Resolve production identity for push smoke
         if: github.event_name == 'push'
         shell: bash
         run: |
           set -euo pipefail
           expected="$GITHUB_SHA"
+          require_exact=false
+          if git rev-parse HEAD^ >/dev/null 2>&1; then
+            changed="$(git diff --name-only HEAD^ HEAD)"
+            printf '%s\n' "$changed"
+            if printf '%s\n' "$changed" | grep -Eq '^(apps/web/|package\.json$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|\.github/workflows/deploy-web-pages\.yml$)'; then
+              require_exact=true
+            fi
+          else
+            require_exact=true
+          fi
+
+          if [ "$require_exact" = false ]; then
+            curl --silent --show-error --fail --max-time 30 "$ORIGIN/deployment.json?smoke=$GITHUB_RUN_ID" -o "$ARTIFACT_DIR/deployment.json"
+            jq -e '.schema == "viewloom-deployment-v1" and .environment == "production" and .branch == "main" and (.commit_sha | type == "string" and length > 0)' "$ARTIFACT_DIR/deployment.json" >/dev/null
+            echo 'Workflow-only smoke change: validating the current production deployment.'
+            cat "$ARTIFACT_DIR/deployment.json"
+            exit 0
+          fi
+
           for attempt in {1..60}; do
             if curl --silent --show-error --fail --max-time 20 "$ORIGIN/deployment.json?attempt=$attempt&expected=$expected" -o "$ARTIFACT_DIR/deployment.json"; then
               deployed="$(jq -r '.commit_sha // empty' "$ARTIFACT_DIR/deployment.json")"
@@ -97,20 +118,36 @@ jobs:
 
           async function snapshot(label) {
             await page.locator('#stream-map-root[data-map-state="basemap-ready"]').waitFor({ timeout: 45000 })
-            await page.locator('.stream-map-country-marker').first().waitFor({ timeout: 15000 })
+            await page.locator('[data-stream-map-status][data-state="ready"]').waitFor({ timeout: 45000 })
+
             const state = await page.locator('#stream-map-root').getAttribute('data-map-state')
             const canvasCount = await page.locator('#stream-map-root canvas.maplibregl-canvas').count()
             const controls = await page.locator('#stream-map-root .maplibregl-ctrl-zoom-in').count()
-            const markerCount = await page.locator('.stream-map-country-marker').count()
             const mappedText = (await page.locator('#stream-map-mapped').textContent() || '').trim()
             const mappedStreams = Number(mappedText.replaceAll(',', ''))
+
             assert.equal(state, 'basemap-ready')
             assert.equal(canvasCount, 1)
             assert.equal(controls, 1)
-            assert.ok(markerCount > 0, `${label}: expected at least one country marker`)
-            assert.ok(Number.isFinite(mappedStreams) && mappedStreams > 0, `${label}: expected mapped streams > 0, got ${mappedText}`)
+            assert.ok(Number.isFinite(mappedStreams) && mappedStreams >= 0, `${label}: expected a non-negative mapped stream count, got ${mappedText}`)
+
+            if (mappedStreams > 0) {
+              await page.locator('.stream-map-country-marker').first().waitFor({ timeout: 15000 })
+            }
+            const markerCount = await page.locator('.stream-map-country-marker').count()
+            const countryEmptyCount = await page.locator('#stream-map-country-list .stream-map-empty').count()
+            const streamEmptyCount = await page.locator('#stream-map-stream-list .stream-map-empty').count()
+
+            if (mappedStreams > 0) {
+              assert.ok(markerCount > 0, `${label}: ${mappedStreams} mapped streams require at least one visible country marker`)
+            } else {
+              assert.equal(markerCount, 0, `${label}: zero mapped streams must not leave stale country markers`)
+              assert.ok(countryEmptyCount > 0, `${label}: zero mapped streams require an explicit country empty state`)
+              assert.ok(streamEmptyCount > 0, `${label}: zero mapped streams require an explicit stream-list empty state`)
+            }
+
             await page.screenshot({ path: `${process.env.GITHUB_WORKSPACE}/${process.env.ARTIFACT_DIR}/${label}.png`, fullPage: true })
-            return { state, canvasCount, controls, markerCount, mappedStreams }
+            return { state, canvasCount, controls, markerCount, mappedStreams, countryEmptyCount, streamEmptyCount }
           }
 
           try {
@@ -118,8 +155,10 @@ jobs:
             const country = await snapshot('country')
 
             const cityButton = page.getByRole('button', { name: 'City', exact: true })
-            await cityButton.click()
-            await page.waitForTimeout(1500)
+            await Promise.all([
+              page.waitForURL((next) => next.searchParams.get('geography') === 'city', { timeout: 15000 }),
+              cityButton.click(),
+            ])
             const city = await snapshot('city')
 
             assert.equal(pageErrors.length, 0, `page errors: ${pageErrors.join(' | ')}`)
