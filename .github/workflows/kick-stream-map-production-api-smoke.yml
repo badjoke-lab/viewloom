@@ -1,0 +1,128 @@
+name: Kick Stream Map Production API Smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/kick-stream-map-production-api-smoke.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/api/kick-stream-map.ts'
+      - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-public-adapter-core.d.mts'
+      - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.d.mts'
+      - '.github/workflows/deploy-web-pages.yml'
+      - '.github/workflows/kick-stream-map-production-api-smoke.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kick-stream-map-production-api-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      ORIGIN: https://www.viewloom.net
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Resolve production identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="$GITHUB_SHA"
+          require_exact=false
+
+          if [ "$GITHUB_EVENT_NAME" = 'push' ] && git rev-parse HEAD^ >/dev/null 2>&1; then
+            changed="$(git diff --name-only HEAD^ HEAD)"
+            printf '%s\n' "$changed"
+            if printf '%s\n' "$changed" | grep -Eq '^(apps/web/|\.github/workflows/deploy-web-pages\.yml$)'; then
+              require_exact=true
+            fi
+          fi
+
+          if [ "$require_exact" = true ]; then
+            for attempt in {1..60}; do
+              if curl --silent --show-error --fail --max-time 20 "$ORIGIN/deployment.json?kick-map-smoke=$GITHUB_RUN_ID&attempt=$attempt" -o deployment.json; then
+                deployed="$(jq -r '.commit_sha // empty' deployment.json)"
+                environment="$(jq -r '.environment // empty' deployment.json)"
+                branch="$(jq -r '.branch // empty' deployment.json)"
+                if [ "$deployed" = "$expected" ] && [ "$environment" = 'production' ] && [ "$branch" = 'main' ]; then
+                  cat deployment.json
+                  exit 0
+                fi
+                echo "Production is not on $expected yet (found $deployed, attempt $attempt/60)."
+              fi
+              sleep 10
+            done
+            echo "Exact production deployment $expected was not observed." >&2
+            exit 1
+          fi
+
+          curl --silent --show-error --fail --max-time 30 "$ORIGIN/deployment.json?kick-map-smoke=$GITHUB_RUN_ID" -o deployment.json
+          jq -e '.schema == "viewloom-deployment-v1" and .environment == "production" and .branch == "main" and (.commit_sha | type == "string" and length > 0)' deployment.json >/dev/null
+          cat deployment.json
+
+      - name: Verify production Kick Stream Map fail-closed API
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/kick-stream-map?production-smoke=$GITHUB_RUN_ID" -o kick-stream-map.json
+
+          jq -e '
+            .version == "viewloom-kick-stream-map-public-adapter-v0.1" and
+            .platform == "kick" and
+            .provider == "kick" and
+            .source == "real" and
+            .geographyMode == "country" and
+            .publicActivationAuthorized == false and
+            .activation.publicCountryActivationReady == false and
+            .identity.stableKey == "broadcaster_user_id" and
+            .identity.slugIsStableIdentity == false and
+            .semantics.twitchEvidenceReuseAllowed == false and
+            .semantics.twitchCreatorKeyReuseAllowed == false and
+            .semantics.providerAggregationAllowed == false and
+            .semantics.automaticGeographyPromotionAllowed == false and
+            .semantics.cityInferenceAllowed == false and
+            .semantics.currentLocationPromotionAllowed == false and
+            .semantics.preciseAddressAllowed == false and
+            .semantics.preciseCoordinatesAllowed == false and
+            .semantics.geographyPublishedWhileActivationBlocked == false and
+            .coverage.mappedStreams == 0 and
+            .coverage.mappedViewers == 0 and
+            .coverage.mappedCountryCount == 0 and
+            .coverage.unmappedStreams == .coverage.observedStreams and
+            (.mappedStreams | type == "array" and length == 0) and
+            (.unmappedStreams | type == "array") and
+            ([.unmappedStreams[] | has("countryCode") or has("stableKickUserId") or has("broadcaster_user_id")] | any | not) and
+            (.state == "empty" or .state == "blocked_stable_identity" or .state == "blocked_reviewed_evidence")
+          ' kick-stream-map.json >/dev/null
+
+          observed="$(jq -r '.coverage.observedStreams' kick-stream-map.json)"
+          stable="$(jq -r '.coverage.stableIdentityStreams' kick-stream-map.json)"
+          state="$(jq -r '.state' kick-stream-map.json)"
+          mapped="$(jq -r '.coverage.mappedStreams' kick-stream-map.json)"
+          echo "Kick Stream Map production: state=$state observed=$observed stable_identity=$stable mapped=$mapped"
+          jq '{version, platform, provider, sourceMode, updatedAt, state, publicActivationAuthorized, coverage, identity, activation, semantics}' kick-stream-map.json
+
+      - name: Upload production smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kick-stream-map-production-api-smoke
+          path: |
+            deployment.json
+            kick-stream-map.json
+          if-no-files-found: warn
+          retention-days: 7
