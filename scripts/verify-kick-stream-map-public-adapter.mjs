@@ -65,7 +65,10 @@ assert.match(routeSource, /DB_KICK_HOT/)
 assert.match(routeSource, /SELECT bucket_minute, collected_at, payload_json, source_mode/)
 assert.match(routeSource, /WHERE provider = \?/)
 assert.match(routeSource, /\.bind\('kick'\)/)
-assert.doesNotMatch(routeSource, /\b(?:INSERT|UPDATE|DELETE|REPLACE|ALTER|DROP|CREATE)\b/i)
+const preparedSql = [...routeSource.matchAll(/\.prepare\(`([\s\S]*?)`\)/g)].map((match) => match[1].trim())
+assert.equal(preparedSql.length, 1, 'Kick Stream Map route must have exactly one bounded D1 query')
+assert.match(preparedSql[0], /^SELECT\b/i)
+assert.doesNotMatch(preparedSql[0], /\b(?:INSERT|UPDATE|DELETE|REPLACE|ALTER|DROP|CREATE)\b/i)
 assert.doesNotMatch(routeSource, /DB_TWITCH/)
 assert.doesNotMatch(routeSource, /twitch-stream-map-reviewed-evidence/)
 
@@ -76,6 +79,7 @@ console.log(JSON.stringify({
   slugOnlyState: slugOnlyResponse.state,
   stableIdentityState: stableResponse.state,
   mappedStreamsWithStableIdentityButNoReviewedEvidence: stableResponse.coverage.mappedStreams,
+  d1QueryCount: preparedSql.length,
   d1MutationAllowed: false,
   twitchEvidenceReuseAllowed: false,
 }, null, 2))
