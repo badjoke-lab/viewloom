@@ -1,0 +1,34 @@
+name: Kick Stream Map Public Adapter
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/api/kick-stream-map.ts'
+      - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.mjs'
+      - 'scripts/verify-kick-stream-map-public-adapter.mjs'
+      - '.github/workflows/kick-stream-map-public-adapter.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/functions/api/kick-stream-map.ts'
+      - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.mjs'
+      - 'scripts/verify-kick-stream-map-public-adapter.mjs'
+      - '.github/workflows/kick-stream-map-public-adapter.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify fail-closed Kick Stream Map public adapter
+        run: node scripts/verify-kick-stream-map-public-adapter.mjs
