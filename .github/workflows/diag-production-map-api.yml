@@ -1,0 +1,48 @@
+name: Diagnose Production Map API
+
+on:
+  push:
+    branches:
+      - diag/pages-token-account-preflight
+    paths:
+      - '.github/workflows/diag-production-map-api.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ORIGIN: https://www.viewloom.net
+    steps:
+      - name: Read production deployment identity
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$ORIGIN/deployment.json?diag=$GITHUB_RUN_ID" -o deployment.json
+          jq -c '{schema,environment,branch,commit_sha,generated_at}' deployment.json
+
+      - name: Read production Country API
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/twitch-stream-map?diag=$GITHUB_RUN_ID" -o country.json
+          jq -c '{version,state,geographyMode,coverage,mappedCount:(.mappedStreams|length),excludedCount:(.excludedNonPersonStreams|length),error,firstMapped:(.mappedStreams[0:10])}' country.json
+
+      - name: Read production City API
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/twitch-stream-map?geography=city&diag=$GITHUB_RUN_ID" -o city.json
+          jq -c '{version,state,geographyMode,coverage,mappedCount:(.mappedStreams|length),excludedCount:(.excludedNonPersonStreams|length),error,firstMapped:(.mappedStreams[0:10])}' city.json
+
+      - name: Probe fresh Country review identities in live response
+        run: |
+          set -euo pipefail
+          names=(zackrawrr gingy summit1g crystalmolly nissaxter strippin dvces aenot pestily fobm4ster meesterkeem stankrat chiblee sypeh purpp)
+          for name in "${names[@]}"; do
+            if grep -Fqi "$name" country.json; then
+              echo "fresh_live_response:$name=present"
+            else
+              echo "fresh_live_response:$name=not_present"
+            fi
+          done
