@@ -1,6 +1,8 @@
 const HEALTH_PATH = '/health'
 const QUEUE_PATH = '/audit/kick-map-stable-id-review-queue'
-const LIVESTREAM_LIMIT = 100
+const PRODUCTION_ORIGIN = 'https://www.viewloom.net'
+const PRODUCTION_MAP_PATH = '/api/kick-stream-map'
+const POPULATION_MAX = 100
 const CHANNEL_BATCH_SIZE = 50
 const CHANNEL_REQUEST_MAX = 2
 
@@ -15,8 +17,10 @@ export default {
         productionDeployment: false,
         productionCollectorChange: false,
         d1Writes: 0,
+        populationSource: 'production_kick_stream_map_snapshot',
+        maxProductionSnapshotRequests: 1,
         maxTokenRequests: 1,
-        maxLivestreamRequests: 1,
+        maxLivestreamRequests: 0,
         channelBatchSize: CHANNEL_BATCH_SIZE,
         maxChannelRequests: CHANNEL_REQUEST_MAX,
         credentialPresence: {
@@ -43,22 +47,28 @@ async function buildQueue(env) {
   const clientSecret = clean(env.KICK_CLIENT_SECRET)
   if (!clientId || !clientSecret) throw new Error('missing_kick_credentials')
 
-  const token = await fetchAppToken(clientId, clientSecret)
-  const requestCounts = { token: 1, livestreamsV2: 1, channelsV1: 0, legacyPublicFallback: 0 }
+  const requestCounts = {
+    productionSnapshot: 1,
+    token: 1,
+    livestreamsV2: 0,
+    channelsV1: 0,
+    legacyPublicFallback: 0,
+  }
 
-  const liveUrl = new URL('https://api.kick.com/public/v2/livestreams')
-  liveUrl.searchParams.set('limit', String(LIVESTREAM_LIMIT))
-  const liveResponse = await fetchJson(liveUrl, token)
-  if (!liveResponse.ok) throw new Error(`kick_livestreams_v2_http_${liveResponse.status}`)
+  const productionUrl = new URL(PRODUCTION_MAP_PATH, PRODUCTION_ORIGIN)
+  productionUrl.searchParams.set('stable-id-review', String(Date.now()))
+  const production = await fetchPublicJson(productionUrl)
+  if (!production.ok) throw new Error(`production_kick_map_http_${production.status}`)
+  const snapshot = production.data
+  validateProductionSnapshot(snapshot)
 
-  const liveRows = extractRows(liveResponse.data).slice(0, LIVESTREAM_LIMIT)
-  const population = liveRows.map((row, index) => ({
-    rank: index + 1,
-    slug: extractSlug(row),
-    viewer_count: viewerCount(row?.viewer_count),
-  })).filter((row) => row.slug)
+  const population = productionPopulation(snapshot)
+  if (population.length < 1 || population.length > POPULATION_MAX) throw new Error('production_population_size_invalid')
 
   const uniqueSlugs = unique(population.map((row) => row.slug))
+  if (uniqueSlugs.length !== population.length) throw new Error('production_population_duplicate_slug')
+
+  const token = await fetchAppToken(clientId, clientSecret)
   const channelRows = []
   for (let index = 0; index < uniqueSlugs.length; index += CHANNEL_BATCH_SIZE) {
     if (requestCounts.channelsV1 >= CHANNEL_REQUEST_MAX) throw new Error('channel_request_budget_exceeded')
@@ -66,7 +76,7 @@ async function buildQueue(env) {
     const channelUrl = new URL('https://api.kick.com/public/v1/channels')
     for (const slug of batch) channelUrl.searchParams.append('slug', slug)
     requestCounts.channelsV1 += 1
-    const response = await fetchJson(channelUrl, token)
+    const response = await fetchKickJson(channelUrl, token)
     if (!response.ok) throw new Error(`kick_channels_v1_http_${response.status}`)
     channelRows.push(...extractRows(response.data))
   }
@@ -91,14 +101,25 @@ async function buildQueue(env) {
   const ambiguous = queue.filter((row) => row.identity_state === 'ambiguous').length
 
   return {
-    schemaVersion: 'viewloom-kick-stream-map-stable-id-review-queue-v0.1',
+    schemaVersion: 'viewloom-kick-stream-map-stable-id-review-queue-v0.2',
     provider: 'kick',
     mode: 'read_only_preview',
     observedAt,
+    source: {
+      type: 'production_kick_stream_map_snapshot',
+      url: `${PRODUCTION_ORIGIN}${PRODUCTION_MAP_PATH}`,
+      version: clean(snapshot?.version),
+      updatedAt: clean(snapshot?.updatedAt),
+      state: clean(snapshot?.state),
+      observedStreams: Number(snapshot?.coverage?.observedStreams ?? population.length),
+      observedViewers: Number(snapshot?.coverage?.observedViewers ?? 0),
+      ordering: 'viewer_count_desc',
+    },
     population: {
-      livestreamRows: liveRows.length,
+      snapshotRows: population.length,
       queueRows: queue.length,
       uniqueSlugs: uniqueSlugs.length,
+      maxRows: POPULATION_MAX,
     },
     identityCoverage: {
       ready,
@@ -126,10 +147,46 @@ async function buildQueue(env) {
     semantics: {
       stableIdentity: 'broadcaster_user_id',
       slugIsStableIdentity: false,
+      populationAuthority: 'production_kick_stream_map_snapshot',
+      viewerOrdering: 'desc',
+      v2OldestFirstPopulationAllowed: false,
       ambiguousIdentityFailsClosed: true,
       missingIdentityFailsClosed: true,
     },
   }
+}
+
+function validateProductionSnapshot(snapshot) {
+  if (!isRecord(snapshot)) throw new Error('production_kick_map_invalid_json')
+  if (snapshot.version !== 'viewloom-kick-stream-map-public-adapter-v0.1') throw new Error('production_kick_map_version_mismatch')
+  if (snapshot.platform !== 'kick' || snapshot.provider !== 'kick') throw new Error('production_kick_map_provider_mismatch')
+  if (snapshot.source !== 'real') throw new Error('production_kick_map_not_real')
+  if (snapshot.geographyMode !== 'country') throw new Error('production_kick_map_geography_mismatch')
+  const observed = Number(snapshot?.coverage?.observedStreams)
+  if (!Number.isInteger(observed) || observed < 1 || observed > POPULATION_MAX) throw new Error('production_kick_map_coverage_invalid')
+}
+
+function productionPopulation(snapshot) {
+  const rows = [
+    ...(Array.isArray(snapshot?.mappedStreams) ? snapshot.mappedStreams : []),
+    ...(Array.isArray(snapshot?.unmappedStreams) ? snapshot.unmappedStreams : []),
+  ]
+  const observed = Number(snapshot?.coverage?.observedStreams)
+  if (rows.length !== observed) throw new Error('production_population_coverage_mismatch')
+
+  return rows
+    .map((row, index) => ({
+      sourceIndex: index,
+      slug: extractSlug(row),
+      viewer_count: viewerCount(row?.viewers ?? row?.viewer_count),
+    }))
+    .filter((row) => row.slug)
+    .sort((a, b) => (b.viewer_count - a.viewer_count) || (a.sourceIndex - b.sourceIndex))
+    .map((row, index) => ({
+      rank: index + 1,
+      slug: row.slug,
+      viewer_count: row.viewer_count,
+    }))
 }
 
 function identitiesBySlug(rows) {
@@ -165,12 +222,25 @@ async function fetchAppToken(clientId, clientSecret) {
   return token
 }
 
-async function fetchJson(url, token) {
+async function fetchPublicJson(url) {
+  const response = await fetch(url.toString(), {
+    headers: {
+      accept: 'application/json',
+      'user-agent': 'ViewLoom kick-stream-map-stable-id-review-queue/0.2',
+    },
+  })
+  const raw = await response.text()
+  let data = null
+  try { data = JSON.parse(raw) } catch { data = null }
+  return { ok: response.ok, status: response.status, data }
+}
+
+async function fetchKickJson(url, token) {
   const response = await fetch(url.toString(), {
     headers: {
       accept: 'application/json',
       authorization: `Bearer ${token}`,
-      'user-agent': 'ViewLoom kick-stream-map-stable-id-review-queue/0.1',
+      'user-agent': 'ViewLoom kick-stream-map-stable-id-review-queue/0.2',
     },
   })
   const raw = await response.text()
@@ -216,7 +286,7 @@ function isRecord(value) {
 function classifyError(message) {
   if (message === 'missing_kick_credentials') return 'credentials_missing'
   if (message === 'missing_kick_access_token' || message.startsWith('kick_token_http_')) return 'oauth_failure'
-  if (message.startsWith('kick_livestreams_v2_http_')) return 'livestreams_v2_failure'
+  if (message.startsWith('production_kick_map_') || message.startsWith('production_population_')) return 'production_population_failure'
   if (message.startsWith('kick_channels_v1_http_')) return 'channels_v1_failure'
   if (message === 'channel_request_budget_exceeded') return 'request_budget_failure'
   return 'unexpected_failure'
