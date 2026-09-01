@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-country-coverage-review-apply-v0.1",
+  "sourceRunId": 33348159697,
+  "sourceResults": [
+    "docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-01.json",
+    "docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-02.json",
+    "docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-03.json",
+    "docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-04.json",
+    "docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-05.json",
+    "docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-06.json",
+    "docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-07.json",
+    "docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-08.json",
+    "docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-09.json",
+    "docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-10.json",
+    "docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-11.json",
+    "docs/audits/twitch-stream-map-country-coverage-review-result-2026-08-31-12.json"
+  ],
+  "reviewedPopulation": 297,
+  "canonicalModule": "apps/web/functions/api/twitch-stream-map-reviewed-evidence-fresh-2026-08-31.mjs",
+  "acceptedPlacementRecordsApplied": 15,
+  "excludedNonPersonRecordsApplied": 15,
+  "noQualifyingEvidenceRecordsApplied": 0,
+  "conflictRecordsApplied": 0,
+  "countryOnly": true,
+  "cityFieldsIntroduced": false,
+  "currentLocationIntroduced": false,
+  "addressOrCoordinatesIntroduced": false,
+  "providerRequests": 0,
+  "d1Mutation": false,
+  "schemaChanged": false,
+  "collectorCadenceChanged": false,
+  "productionDeployRequested": false
+}
