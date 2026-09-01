@@ -5,13 +5,19 @@ on:
     branches: [main]
     paths:
       - 'docs/audits/kick-stream-map-country-review-batches-2026-09-02/**'
+      - 'docs/audits/kick-stream-map-country-review-result-contract-v0.1.json'
+      - 'docs/audits/kick-stream-map-country-review-result-2026-09-02-*.json'
       - 'scripts/verify-kick-stream-map-country-review-batches-2026-09-02.mjs'
+      - 'scripts/verify-kick-stream-map-country-review-result.mjs'
       - '.github/workflows/kick-stream-map-country-review-batches.yml'
   push:
     branches: [main]
     paths:
       - 'docs/audits/kick-stream-map-country-review-batches-2026-09-02/**'
+      - 'docs/audits/kick-stream-map-country-review-result-contract-v0.1.json'
+      - 'docs/audits/kick-stream-map-country-review-result-2026-09-02-*.json'
       - 'scripts/verify-kick-stream-map-country-review-batches-2026-09-02.mjs'
+      - 'scripts/verify-kick-stream-map-country-review-result.mjs'
       - '.github/workflows/kick-stream-map-country-review-batches.yml'
 
 permissions:
@@ -28,6 +34,19 @@ jobs:
           node-version: '22'
       - name: Verify fixed Kick Country review batches
         run: node scripts/verify-kick-stream-map-country-review-batches-2026-09-02.mjs
+      - name: Self-test Kick Country review result validator
+        run: node scripts/verify-kick-stream-map-country-review-result.mjs --self-test
+      - name: Validate all present Kick Country review results
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          results=(docs/audits/kick-stream-map-country-review-result-2026-09-02-*.json)
+          test "${#results[@]}" -ge 1
+          for result in "${results[@]}"; do
+            echo "Validating ${result}"
+            node scripts/verify-kick-stream-map-country-review-result.mjs "$result"
+          done
       - name: Publish review boundary
         if: always()
         shell: bash
@@ -40,9 +59,10 @@ jobs:
             echo '- Batches: 4 x 25'
             echo '- First-party profile lookup budget: 1 / identity'
             echo '- External lookup budget: 5 / identity'
-            echo '- Provider requests during batch build: 0'
+            echo '- Provider requests during batch build/review: 0'
             echo '- D1 writes: 0'
             echo '- Production deployment: false'
             echo '- Automatic canonical promotion: false'
             echo '- City / Current / precise location: excluded'
+            echo '- Every present Kick Country result artifact is validated'
           } >> "$GITHUB_STEP_SUMMARY"
