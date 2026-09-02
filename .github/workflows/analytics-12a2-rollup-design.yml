@@ -1,22 +1,10 @@
 name: Analytics 12A2 Rollup Design
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'docs/audits/12a2-intraday-rollup-design-contract.json'
-      - 'docs/audits/12a2-intraday-rollup-budget-evidence.json'
-      - 'docs/product/intraday-rollup-design-v1.md'
-      - 'docs/operations/12a2-intraday-rollup-design-acceptance-*.md'
-      - 'docs/work-in-progress/phase12a2-intraday-rollup-design.md'
-      - 'scripts/measure-12a2-intraday-rollup-budget.mjs'
-      - 'scripts/verify-12a2-intraday-rollup-design.mjs'
-      - '.github/workflows/analytics-12a2-rollup-design.yml'
   workflow_dispatch:
 
 concurrency:
-  group: analytics-12a2-rollup-design-${{ github.event.pull_request.number || github.ref }}
+  group: analytics-12a2-rollup-design-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

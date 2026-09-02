@@ -4,23 +4,12 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '17 3 * * 1'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/analytics-12a3-account-storage-gate.yml'
-      - 'scripts/collect-12a3-account-storage-evidence.mjs'
-      - 'scripts/verify-12a3-account-storage-evidence.mjs'
-      - 'docs/audits/12a3-account-storage-gate-contract.json'
-      - 'docs/audits/12a3-account-storage-evidence.json'
-      - 'docs/operations/12a3-account-storage-*.md'
-      - 'docs/work-in-progress/phase12a3-account-storage-gate.md'
 
 permissions:
   contents: read
 
 concurrency:
-  group: analytics-12a3-account-storage-${{ github.event.pull_request.number || github.ref }}
+  group: analytics-12a3-account-storage-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -65,7 +54,6 @@ jobs:
           NODE
 
   measure:
-    if: ${{ github.event_name != 'pull_request' || (github.repository == 'badjoke-lab/viewloom' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'work-analytics-12a3-d1-read-diagnostic') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
