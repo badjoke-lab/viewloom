@@ -1,13 +1,13 @@
 {
   "schema": "viewloom-public-surface-profiles-v1",
-  "version": 2,
+  "version": 3,
   "group": "history",
   "gates": {
     "common_repository": [".github/workflows/web-build.yml", ".github/workflows/web-verification.yml", ".github/workflows/platform-naming.yml"],
     "public_readiness": [".github/workflows/public-readiness-audit.yml", "apps/web/scripts/public-readiness-audit.mjs"],
     "production_smoke": [".github/workflows/production-smoke.yml"],
-    "history_contract": ["apps/web/scripts/verify-history-qa.mjs", ".github/workflows/history-peak-archive.yml", ".github/workflows/history-battle-archive.yml", ".github/workflows/history-period-comparison.yml", ".github/workflows/history-report-text.yml", ".github/workflows/history-export.yml", ".github/workflows/history-share-card.yml", ".github/workflows/shared-output-r1.yml"],
-    "history_browser": [".github/workflows/history-browser-gate.yml", ".github/workflows/history-overview.yml", ".github/workflows/history-archives.yml", ".github/workflows/history-calendar-heat.yml", ".github/workflows/history-view-shell.yml", ".github/workflows/history-peak-browser.yml", ".github/workflows/history-battle-browser.yml", ".github/workflows/history-period-comparison-browser.yml", ".github/workflows/history-visual-responsive.yml", ".github/workflows/history-report-export-h4.yml"],
+    "history_contract": [".github/workflows/history-feature-contracts.yml", ".github/workflows/shared-output-r1.yml"],
+    "history_browser": [".github/workflows/history-browser-gate.yml", ".github/workflows/history-feature-browser.yml"],
     "history_acceptance": ["docs/operations/history-production-acceptance-2026-06-23.md"],
     "channel_contract": [".github/workflows/channel-checks.yml"],
     "channel_browser": [".github/workflows/channel-checks.yml"],
@@ -21,7 +21,7 @@
       "states": ["loading", "real", "partial", "stale", "empty", "missing", "demo", "error", "in_progress"],
       "gates": ["common_repository", "public_readiness", "history_contract", "history_browser", "history_acceptance", "production_smoke"],
       "assessment": "known_p1_defects",
-      "gaps": ["metric changes not sufficiently observable", "chart scale/ticks/units/interaction inadequate", "selected-day/supporting information too thin", "lower-page task hierarchy sparse/unclear", "old gates do not permanently reject these failures"]
+      "gaps": ["metric changes not sufficiently observable", "chart scale/ticks/units/interaction inadequate", "selected-day/supporting information too thin", "lower-page task hierarchy sparse/unclear"]
     },
     "channel": {
       "owner": ["apps/web/src/live/channel-profile.ts", "apps/web/src/live/channel-report.ts", "apps/web/src/live/channel-watchlist.ts", "apps/web/src/live/channel/url-state.ts"],
