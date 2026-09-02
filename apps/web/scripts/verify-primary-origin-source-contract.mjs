@@ -22,9 +22,7 @@ const requiredPrimaryFiles = [
   resolve(repoRoot, 'scripts/collect-12a0-capacity-baseline.mjs'),
   resolve(repoRoot, 'scripts/collect-12a2-binding-size-production-evidence.mjs'),
   resolve(repoRoot, 'scripts/collect-12a2-remote-schema-production-evidence.mjs'),
-  resolve(repoRoot, '.github/workflows/analytics-12a0-capacity-baseline.yml'),
-  resolve(repoRoot, '.github/workflows/analytics-12a2-binding-size-production.yml'),
-  resolve(repoRoot, '.github/workflows/analytics-12a2-remote-schema-production.yml'),
+  resolve(repoRoot, '.github/workflows/analytics-maintenance-audits.yml'),
   resolve(repoRoot, '.github/workflows/deploy-collector-workers.yml'),
 ]
 
