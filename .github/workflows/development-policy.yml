@@ -20,7 +20,8 @@ on:
       - 'scripts/verify-12a5-twitch-category-source-v2-observation-success-evidence.mjs'
       - 'scripts/verify-12a5-twitch-category-source-v2-observation-execution-path-retirement.mjs'
       - '.github/pull_request_template.md'
-      - '.github/workflows/**'
+      - '.github/workflows/development-policy.yml'
+      - '.github/workflows/analytics-12a5-twitch-category-source-v2-observation-execution.yml'
   push:
     branches: [main]
     paths:
@@ -40,7 +41,8 @@ on:
       - 'scripts/verify-12a5-twitch-category-source-v2-observation-success-evidence.mjs'
       - 'scripts/verify-12a5-twitch-category-source-v2-observation-execution-path-retirement.mjs'
       - '.github/pull_request_template.md'
-      - '.github/workflows/**'
+      - '.github/workflows/development-policy.yml'
+      - '.github/workflows/analytics-12a5-twitch-category-source-v2-observation-execution.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
