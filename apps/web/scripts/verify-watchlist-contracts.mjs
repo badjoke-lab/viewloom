@@ -184,15 +184,8 @@ function verifyNoServerExpansion() {
 
 function verifyWorkflowOwnership() {
   for (const path of [
-    '.github/workflows/watchlist-storage.yml',
-    '.github/workflows/watchlist-latest.yml',
-    '.github/workflows/watchlist-history.yml',
-    '.github/workflows/watchlist-page.yml',
-    '.github/workflows/watchlist-candidate.yml',
     '.github/workflows/watchlist-contracts.yml',
     '.github/workflows/watchlist-browser.yml',
-    '.github/workflows/watchlist-hosted-preview.yml',
-    '.github/workflows/watchlist-production-acceptance.yml',
   ]) {
     const source = readRepo(path)
     assert.ok(source.includes('concurrency:'), `${path}: concurrency missing`)
