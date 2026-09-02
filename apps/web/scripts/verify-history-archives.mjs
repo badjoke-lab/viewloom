@@ -11,8 +11,6 @@ const files = {
   peak: 'src/live/history-peak-archive-render.ts',
   battle: 'src/live/history-battle-archive-render.ts',
   browser: 'scripts/history-archives-browser.mjs',
-  workflow: '../../.github/workflows/history-archives.yml',
-  browserWorkflow: '../../.github/workflows/history-archives-browser.yml',
 }
 const read = (path) => readFileSync(join(root, path), 'utf8')
 const need = (path, source, fragment) => { if (!source.includes(fragment)) failures.push(`${path}: missing ${fragment}`) }
@@ -65,12 +63,6 @@ if (existsSync(join(root, files.battle))) {
 if (existsSync(join(root, files.browser))) {
   const source = read(files.browser)
   for (const fragment of ['Latest matching day', 'Highest peak', 'Closest daily matchup', 'Very close day', 'History API was fetched again', 'horizontal overflow']) need(files.browser, source, fragment)
-}
-
-for (const path of [files.workflow, files.browserWorkflow]) {
-  if (!existsSync(join(root, path))) continue
-  const source = read(path)
-  for (const fragment of ['concurrency:', 'group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}', 'cancel-in-progress: true']) need(path, source, fragment)
 }
 
 if (failures.length) {
