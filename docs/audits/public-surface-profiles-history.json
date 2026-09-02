@@ -7,7 +7,7 @@
     "public_readiness": [".github/workflows/public-readiness-audit.yml", "apps/web/scripts/public-readiness-audit.mjs"],
     "production_smoke": [".github/workflows/production-smoke.yml"],
     "history_contract": [".github/workflows/history-feature-contracts.yml", ".github/workflows/shared-output-r1.yml"],
-    "history_browser": [".github/workflows/history-browser-gate.yml", ".github/workflows/history-feature-browser.yml"],
+    "history_browser": [".github/workflows/history-feature-browser.yml"],
     "history_acceptance": ["docs/operations/history-production-acceptance-2026-06-23.md"],
     "channel_contract": [".github/workflows/channel-checks.yml"],
     "channel_browser": [".github/workflows/channel-checks.yml"],
