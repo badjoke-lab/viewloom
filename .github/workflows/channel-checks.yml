@@ -1,0 +1,90 @@
+name: Channel Checks
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/twitch/channel/**'
+      - 'apps/web/kick/channel/**'
+      - 'apps/web/src/live/channel-*.ts'
+      - 'apps/web/src/channel-*.css'
+      - 'apps/web/scripts/channel-*.mjs'
+      - 'apps/web/scripts/verify-channel-*.mjs'
+      - 'apps/web/functions/**/channel*'
+      - '.github/workflows/channel-checks.yml'
+
+concurrency:
+  group: channel-checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+
+      - name: Verify Channel contracts
+        working-directory: apps/web
+        run: |
+          node scripts/verify-channel-profile.mjs
+          node scripts/verify-channel-state.mjs
+          node scripts/verify-history-additional-rankings.mjs
+          node scripts/verify-deep-link-contract.mjs
+
+      - name: Typecheck web
+        run: pnpm --filter @viewloom/web typecheck
+
+      - name: Build web
+        run: pnpm build:web
+
+      - name: Start local preview
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/channel-preview.log 2>&1 &
+          for attempt in {1..40}; do
+            curl --silent --fail http://127.0.0.1:4173/twitch/channel/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/kick/channel/ > /dev/null \
+              && exit 0
+            sleep 1
+          done
+          cat /tmp/channel-preview.log
+          exit 1
+
+      - name: Install Playwright in isolated prefix
+        working-directory: apps/web
+        run: node scripts/install-ci-playwright.mjs
+
+      - name: Install Chromium
+        run: /tmp/viewloom-playwright/node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Run Channel browser checks
+        working-directory: apps/web
+        env:
+          CHANNEL_BASE_URL: http://127.0.0.1:4173
+        run: |
+          set -o pipefail
+          node scripts/channel-profile-browser.mjs 2>&1 | tee /tmp/channel-profile-browser.log
+          node scripts/channel-overview-browser.mjs 2>&1 | tee /tmp/channel-overview-browser.log
+          node scripts/channel-report-browser.mjs 2>&1 | tee /tmp/channel-report-browser.log
+          node scripts/channel-candidate-desktop-browser.mjs 2>&1 | tee /tmp/channel-candidate-desktop.log
+          node scripts/channel-candidate-days-browser.mjs 2>&1 | tee /tmp/channel-candidate-days.log
+          node scripts/channel-candidate-narrow-browser.mjs 2>&1 | tee /tmp/channel-candidate-narrow.log
+
+      - name: Upload Channel diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: channel-checks-artifacts
+          path: |
+            /tmp/channel-*.log
+            /tmp/channel-*.png
+          if-no-files-found: warn
