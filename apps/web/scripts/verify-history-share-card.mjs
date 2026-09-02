@@ -13,10 +13,8 @@ const renderPath = 'src/live/history-share-card.ts'
 const stylePath = 'src/history-share-card.css'
 const entryPath = 'src/live/history-report-text.ts'
 const browserPath = 'scripts/history-share-card-browser.mjs'
-const workflowPath = '../../.github/workflows/history-share-card.yml'
-const browserWorkflowPath = '../../.github/workflows/history-share-card-browser.yml'
 
-for (const path of [contractPath, renderPath, stylePath, entryPath, browserPath, workflowPath, browserWorkflowPath]) requireFile(path)
+for (const path of [contractPath, renderPath, stylePath, entryPath, browserPath]) requireFile(path)
 
 if (existsSync(join(root, contractPath))) {
   const source = read(contractPath)
