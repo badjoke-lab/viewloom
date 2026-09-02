@@ -1,19 +1,10 @@
 name: Analytics 12A2 Remote Schema Probe
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'apps/web/functions/api/schema-audit.ts'
-      - 'docs/audits/12a2-remote-schema-probe-contract.json'
-      - 'scripts/verify-12a2-remote-schema-probe.mjs'
-      - '.github/workflows/analytics-12a2-remote-schema-probe.yml'
-      - 'docs/work-in-progress/phase12a2-remote-schema-probe.md'
   workflow_dispatch:
 
 concurrency:
-  group: analytics-12a2-remote-schema-probe-${{ github.event.pull_request.number || github.ref }}
+  group: analytics-12a2-remote-schema-probe-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
