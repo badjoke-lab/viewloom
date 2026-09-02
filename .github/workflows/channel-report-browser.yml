@@ -1,7 +1,6 @@
 name: Channel Report Browser
 on:
   workflow_dispatch:
-  pull_request:
 concurrency:
   group: channel-report-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true

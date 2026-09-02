@@ -2,19 +2,6 @@ name: Phase 11 Final Acceptance
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - 'apps/web/package.json'
-      - 'apps/web/src/**'
-      - 'docs/audits/phase11-*.json'
-      - 'docs/operations/phase11-*.md'
-      - 'docs/work-in-progress/phase11-acceptance-operations.md'
-      - 'scripts/build-phase11-*.mjs'
-      - 'scripts/measure-phase11-*.mjs'
-      - 'scripts/verify-phase11-*.mjs'
-      - '.github/workflows/phase11-*.yml'
-      - '.github/workflows/production-smoke.yml'
-      - '.github/workflows/public-readiness-audit.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
