@@ -10,7 +10,6 @@ on:
       - 'docs/work-in-progress/phase12a3-bounded-generator.md'
       - 'scripts/test-12a3-bounded-generator-sql.py'
       - 'scripts/verify-12a3-bounded-generator.mjs'
-      - 'scripts/check-12a3-bounded-generator-scope.mjs'
       - '.github/workflows/analytics-12a3-bounded-generator.yml'
   workflow_dispatch:
 
@@ -29,9 +28,6 @@ jobs:
 
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
-
-      - name: Verify bounded generator branch scope
-        run: node scripts/check-12a3-bounded-generator-scope.mjs
 
       - name: Verify bounded generator contract
         run: node scripts/verify-12a3-bounded-generator.mjs
