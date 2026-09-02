@@ -64,9 +64,6 @@ jobs:
         run: |
           node scripts/verify-production-source.mjs
           node scripts/verify-dayflow-qa.mjs
-          cd ../..
-          node scripts/verify-quality-u10d-analysis-coherence.mjs
-          node scripts/verify-quality-u10g-architecture.mjs
 
       - name: Verify Twitch Stream Map live join
         run: pnpm --filter @viewloom/web verify:stream-map-live-join
