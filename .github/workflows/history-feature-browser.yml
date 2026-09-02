@@ -1,0 +1,91 @@
+name: History Feature Browser
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/src/**history**'
+      - 'apps/web/scripts/history-*-browser.mjs'
+      - 'apps/web/scripts/history-battle-archive-fixture.mjs'
+      - 'apps/web/docs/history-*.md'
+      - '.github/workflows/history-feature-browser.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm build:web
+      - name: Start local History preview
+        run: |
+          pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/history-feature-preview.log 2>&1 &
+          for attempt in {1..40}; do
+            curl --silent --fail http://127.0.0.1:4173/twitch/history/ > /dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/history-feature-preview.log
+          exit 1
+      - name: Install Playwright in isolated prefix
+        working-directory: apps/web
+        run: node scripts/install-ci-playwright.mjs
+      - name: Install Chromium
+        run: /tmp/viewloom-playwright/node_modules/.bin/playwright install --with-deps chromium
+      - name: Run History feature browser checks
+        working-directory: apps/web
+        env:
+          HISTORY_BASE_URL: http://127.0.0.1:4173
+          HISTORY_OVERVIEW_BASE_URL: http://127.0.0.1:4173
+          HISTORY_ARCHIVES_BASE_URL: http://127.0.0.1:4173
+          HISTORY_PEAK_BASE_URL: http://127.0.0.1:4173
+          HISTORY_BATTLE_BASE_URL: http://127.0.0.1:4173
+          HISTORY_CALENDAR_BASE_URL: http://127.0.0.1:4173
+          HISTORY_PERIOD_COMPARISON_BASE_URL: http://127.0.0.1:4173
+          HISTORY_REPORT_BASE_URL: http://127.0.0.1:4173
+          HISTORY_EXPORT_BASE_URL: http://127.0.0.1:4173
+          HISTORY_REPORT_EXPORT_BASE_URL: http://127.0.0.1:4173
+          HISTORY_SHARE_CARD_BASE_URL: http://127.0.0.1:4173
+          HISTORY_VIEW_SHELL_BASE_URL: http://127.0.0.1:4173
+          HISTORY_VISUAL_BASE_URL: http://127.0.0.1:4173
+          HISTORY_CALENDAR_SCREENSHOT_DIR: artifacts/history-calendar
+          HISTORY_REPORT_SCREENSHOT_DIR: artifacts/history-report
+          HISTORY_EXPORT_ARTIFACT_DIR: artifacts/history-export
+        run: |
+          set -euo pipefail
+          for script in \
+            history-overview-browser.mjs \
+            history-archives-browser.mjs \
+            history-peak-archive-browser.mjs \
+            history-battle-archive-browser.mjs \
+            history-calendar-heat-browser.mjs \
+            history-period-comparison-browser.mjs \
+            history-report-text-browser.mjs \
+            history-export-browser.mjs \
+            history-report-export-h4-browser.mjs \
+            history-share-card-browser.mjs \
+            history-view-shell-browser.mjs \
+            history-visual-responsive-browser.mjs
+          do
+            echo "==> $script"
+            node "scripts/$script"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: history-feature-browser-artifacts
+          path: |
+            apps/web/artifacts/history-*/
+            /tmp/history-*.png
+            /tmp/history-feature-preview.log
+          if-no-files-found: warn
