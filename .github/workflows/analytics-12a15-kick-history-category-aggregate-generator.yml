@@ -7,6 +7,12 @@ on:
       - 'workers/shared/history-category-aggregate-sql.ts'
       - 'workers/shared/history-category-aggregate.ts'
       - 'workers/history-category-aggregate-cost-probe/**'
+      - 'workers/dormant/history-category-chunked-v2-candidate.ts'
+      - 'workers/dormant/history-category-v2-generator.ts'
+      - 'workers/dormant/history-category-v2-generator-sql.ts'
+      - 'docs/prototypes/12a42-kick-history-chunked-v2-candidate.sql'
+      - 'scripts/benchmark-12a42-kick-history-chunked-v2-candidate.py'
+      - 'scripts/test-12a52-kick-history-v2-dormant-generator.py'
       - 'scripts/test-12a15-kick-history-category-aggregate.py'
       - 'scripts/verify-12a15-kick-history-category-aggregate-generator.mjs'
       - 'docs/audits/12a15-kick-history-category-aggregate-generator-contract.json'
@@ -57,6 +63,22 @@ jobs:
           node scripts/verify-12a18-kick-history-category-cost-bound.mjs
           python3 scripts/test-12a18-kick-history-category-cost-bound.py
 
+      - name: Verify dormant v2 candidate benchmark
+        run: |
+          python3 scripts/benchmark-12a42-kick-history-chunked-v2-candidate.py --output /tmp/kick-history-v2-candidate.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path('/tmp/kick-history-v2-candidate.json').read_text())
+          assert payload['status'] == 'PASS'
+          PY
+          pnpm exec tsc --noEmit --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,WebWorker workers/dormant/history-category-chunked-v2-candidate.ts
+
+      - name: Verify dormant v2 generator fixtures
+        run: |
+          python3 scripts/test-12a52-kick-history-v2-dormant-generator.py
+          pnpm exec tsc --noEmit --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,WebWorker --types @cloudflare/workers-types workers/dormant/history-category-v2-generator.ts workers/dormant/history-category-v2-generator-sql.ts
+
       - name: Typecheck and verify collectors
         run: |
           pnpm typecheck:collectors
@@ -72,9 +94,9 @@ jobs:
             echo '## Kick History category aggregate checks'
             echo
             echo '- Provider: Kick only'
-            echo '- Aggregate semantics, indexed read path, probe model, and bounded cost model: verified'
-            echo '- Exact historical PR file-set gates: removed'
+            echo '- Aggregate semantics, indexed read path, bounded cost model, and dormant v2 fixtures: verified'
+            echo '- Exact historical PR file-set and evidence gates: removed'
             echo '- Production probe: unauthorized'
-            echo '- Permanent generator: unauthorized'
+            echo '- Production schema mutation: none'
             echo '- Production deploy: none'
           } >> "$GITHUB_STEP_SUMMARY"
