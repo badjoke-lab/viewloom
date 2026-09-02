@@ -1,0 +1,238 @@
+name: Analytics Maintenance Audits
+
+on:
+  workflow_dispatch:
+    inputs:
+      audit:
+        description: Read-only or local analytics audit to run
+        required: true
+        type: choice
+        options:
+          - capacity_baseline
+          - binding_size
+          - remote_d1_size
+          - remote_schema_contract
+          - remote_schema_evidence
+          - rollup_budget
+          - account_storage
+      production_origin:
+        description: Production origin for HTTP evidence audits
+        required: false
+        default: https://www.viewloom.net
+  schedule:
+    - cron: '17 3 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-maintenance-${{ github.event_name == 'schedule' && 'account-storage' || inputs.audit }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  capacity-baseline:
+    if: github.event_name == 'workflow_dispatch' && inputs.audit == 'capacity_baseline'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VIEWLOOM_ORIGIN: ${{ inputs.production_origin || 'https://www.viewloom.net' }}
+      TIMING_SAMPLES: '5'
+      REQUEST_TIMEOUT_MS: '30000'
+      ARTIFACT_DIR: artifacts/capacity-baseline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/verify-development-policy.mjs
+      - run: node scripts/verify-12a0-capacity-baseline-contract.mjs
+      - run: node scripts/collect-12a0-capacity-baseline.mjs "$ARTIFACT_DIR/evidence.json"
+      - run: node scripts/verify-12a0-capacity-baseline-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+      - name: Verify permanent evidence when present
+        run: |
+          if [ -f docs/audits/12a0-current-data-capacity-baseline.json ]; then
+            node scripts/verify-12a0-capacity-baseline-evidence.mjs docs/audits/12a0-current-data-capacity-baseline.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analytics-capacity-baseline
+          path: artifacts/capacity-baseline/
+          if-no-files-found: warn
+
+  binding-size:
+    if: github.event_name == 'workflow_dispatch' && inputs.audit == 'binding_size'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VIEWLOOM_PRODUCTION_ORIGIN: ${{ inputs.production_origin || 'https://www.viewloom.net' }}
+      ARTIFACT_DIR: artifacts/binding-size
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/collect-12a2-binding-size-production-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+      - run: node scripts/verify-12a2-binding-size-production-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+      - name: Verify permanent evidence when present
+        run: |
+          if [ -f docs/audits/12a2-binding-size-production-evidence.json ]; then
+            node scripts/verify-12a2-binding-size-production-evidence.mjs docs/audits/12a2-binding-size-production-evidence.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analytics-binding-size
+          path: artifacts/binding-size/evidence.json
+          if-no-files-found: warn
+
+  remote-d1-size:
+    if: github.event_name == 'workflow_dispatch' && inputs.audit == 'remote_d1_size'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      RAW_DIR: artifacts/remote-d1-size/raw
+      ARTIFACT_DIR: artifacts/remote-d1-size
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Collect read-only D1 control-plane observations
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          mkdir -p "$RAW_DIR"
+          npx --yes wrangler@4 d1 info vl_twitch_hot --json > "$RAW_DIR/twitch-info.json"
+          npx --yes wrangler@4 d1 info vl_kick_hot --json > "$RAW_DIR/kick-info.json"
+          npx --yes wrangler@4 d1 list --json > "$RAW_DIR/account-list.json"
+      - run: node scripts/collect-12a2-remote-d1-size-evidence.mjs "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
+      - run: node scripts/verify-12a2-remote-d1-size-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+      - name: Verify permanent evidence when present
+        run: |
+          if [ -f docs/audits/12a2-remote-d1-size-evidence.json ]; then
+            node scripts/verify-12a2-remote-d1-size-evidence.mjs docs/audits/12a2-remote-d1-size-evidence.json
+          fi
+      - name: Remove raw control-plane responses
+        if: always()
+        run: rm -rf "$RAW_DIR"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analytics-remote-d1-size
+          path: artifacts/remote-d1-size/evidence.json
+          if-no-files-found: warn
+
+  remote-schema-contract:
+    if: github.event_name == 'workflow_dispatch' && inputs.audit == 'remote_schema_contract'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/verify-12a2-remote-schema-probe.mjs
+
+  remote-schema-evidence:
+    if: github.event_name == 'workflow_dispatch' && inputs.audit == 'remote_schema_evidence'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VIEWLOOM_PRODUCTION_ORIGIN: ${{ inputs.production_origin || 'https://www.viewloom.net' }}
+      ARTIFACT_DIR: artifacts/remote-schema
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/collect-12a2-remote-schema-production-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+      - run: node scripts/verify-12a2-remote-schema-production-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+      - name: Verify permanent evidence when present
+        run: |
+          if [ -f docs/audits/12a2-remote-schema-production-evidence.json ]; then
+            node scripts/verify-12a2-remote-schema-production-evidence.mjs docs/audits/12a2-remote-schema-production-evidence.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analytics-remote-schema
+          path: artifacts/remote-schema/evidence.json
+          if-no-files-found: warn
+
+  rollup-budget:
+    if: github.event_name == 'workflow_dispatch' && inputs.audit == 'rollup_budget'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ARTIFACT_DIR: artifacts/intraday-rollup-budget
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install SQLite CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sqlite3
+      - run: node scripts/verify-12a2-intraday-rollup-design.mjs
+      - run: node scripts/measure-12a2-intraday-rollup-budget.mjs "$ARTIFACT_DIR/evidence.json"
+      - run: node scripts/verify-12a2-intraday-rollup-design.mjs docs/audits/12a2-intraday-rollup-design-contract.json "$ARTIFACT_DIR/evidence.json"
+      - name: Verify permanent evidence when present
+        run: |
+          if [ -f docs/audits/12a2-intraday-rollup-budget-evidence.json ]; then
+            node scripts/verify-12a2-intraday-rollup-design.mjs docs/audits/12a2-intraday-rollup-design-contract.json docs/audits/12a2-intraday-rollup-budget-evidence.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analytics-intraday-rollup-budget
+          path: artifacts/intraday-rollup-budget/
+          if-no-files-found: warn
+
+  account-storage:
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.audit == 'account_storage')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      RAW_DIR: artifacts/account-storage/raw
+      ARTIFACT_DIR: artifacts/account-storage
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify account storage scripts and contract
+        run: |
+          node --check scripts/collect-12a3-account-storage-evidence.mjs
+          node --check scripts/verify-12a3-account-storage-evidence.mjs
+      - name: Collect read-only D1 control-plane observations
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          mkdir -p "$RAW_DIR"
+          npx --yes wrangler@4 d1 info vl_twitch_hot --json > "$RAW_DIR/twitch-info.json"
+          npx --yes wrangler@4 d1 info vl_kick_hot --json > "$RAW_DIR/kick-info.json"
+          npx --yes wrangler@4 d1 list --json > "$RAW_DIR/account-list.json"
+      - run: node scripts/collect-12a3-account-storage-evidence.mjs "$RAW_DIR" "$ARTIFACT_DIR/evidence.json"
+      - run: node scripts/verify-12a3-account-storage-evidence.mjs "$ARTIFACT_DIR/evidence.json"
+      - name: Verify permanent evidence when present
+        run: |
+          if [ -f docs/audits/12a3-account-storage-evidence.json ]; then
+            node scripts/verify-12a3-account-storage-evidence.mjs docs/audits/12a3-account-storage-evidence.json
+          fi
+      - name: Remove raw control-plane responses
+        if: always()
+        run: rm -rf "$RAW_DIR"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analytics-account-storage
+          path: artifacts/account-storage/evidence.json
+          if-no-files-found: warn
