@@ -6,10 +6,9 @@
     "common_repository": [".github/workflows/web-build.yml", ".github/workflows/web-verification.yml", ".github/workflows/platform-naming.yml"],
     "public_readiness": [".github/workflows/public-readiness-audit.yml", "apps/web/scripts/public-readiness-audit.mjs"],
     "production_smoke": [".github/workflows/production-smoke.yml"],
-    "watchlist_contract": [".github/workflows/watchlist-storage.yml", ".github/workflows/watchlist-latest.yml", ".github/workflows/watchlist-history.yml", ".github/workflows/watchlist-page.yml", ".github/workflows/watchlist-candidate.yml", ".github/workflows/watchlist-contracts.yml"],
+    "watchlist_contract": [".github/workflows/watchlist-contracts.yml"],
     "watchlist_browser": [".github/workflows/watchlist-browser.yml"],
-    "watchlist_preview": [".github/workflows/watchlist-hosted-preview.yml"],
-    "watchlist_production": [".github/workflows/watchlist-production-acceptance.yml", "docs/operations/watchlist-production-acceptance-2026-06-25.md"]
+    "watchlist_production": ["docs/operations/watchlist-production-acceptance-2026-06-25.md"]
   },
   "profiles": {
     "watchlist": {
@@ -17,9 +16,9 @@
       "data": ["provider Heatmap and History Pages Functions"],
       "controls": ["add", "period", "refresh/retry", "filter/show", "move/remove/clear/reset", "deep links"],
       "states": ["loading", "empty", "populated", "mixed_evidence", "no_results", "latest_error", "history_error", "storage_unavailable", "storage_corrupt"],
-      "gates": ["common_repository", "watchlist_contract", "watchlist_browser", "watchlist_preview", "watchlist_production"],
+      "gates": ["common_repository", "watchlist_contract", "watchlist_browser", "watchlist_production"],
       "assessment": "complete_for_v1_contract",
-      "gaps": ["omitted from public-readiness configured pages", "omitted from general Production Smoke; dedicated acceptance is authoritative"]
+      "gaps": ["production acceptance is preserved as permanent historical evidence; current Watchlist CI is contract plus local browser verification"]
     },
     "not_found": {
       "owner": ["apps/web/public/404.html"],
