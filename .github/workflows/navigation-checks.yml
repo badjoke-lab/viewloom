@@ -1,57 +1,66 @@
-name: Canonical URL checks
+name: Navigation Checks
 
 on:
   workflow_dispatch:
   pull_request:
     paths:
       - 'apps/web/**/*.html'
-      - 'apps/web/src/navigation/url-contract.ts'
+      - 'apps/web/src/navigation/**'
+      - 'apps/web/src/live/day-flow-current-shell-entry.ts'
+      - 'apps/web/src/live/battle-lines-current-shell-entry.ts'
+      - 'apps/web/src/analytics.ts'
+      - 'apps/web/functions/api/_middleware.ts'
       - 'apps/web/scripts/verify-canonical-url-contract.mjs'
       - 'apps/web/scripts/verify-primary-origin-source-contract.mjs'
+      - 'apps/web/scripts/verify-deep-link-contract*.mjs'
       - 'apps/web/docs/canonical-url-contract.md'
       - 'scripts/collect-12a0-capacity-baseline.mjs'
       - 'scripts/collect-12a2-binding-size-production-evidence.mjs'
       - 'scripts/collect-12a2-remote-schema-production-evidence.mjs'
-      - '.github/workflows/analytics-12a0-capacity-baseline.yml'
-      - '.github/workflows/analytics-12a2-binding-size-production.yml'
-      - '.github/workflows/analytics-12a2-remote-schema-production.yml'
+      - '.github/workflows/analytics-maintenance-audits.yml'
       - '.github/workflows/deploy-collector-workers.yml'
       - '.github/actions/setup-node-pnpm/action.yml'
-      - '.github/workflows/canonical-url-checks.yml'
+      - '.github/workflows/navigation-checks.yml'
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - 'apps/web/**/*.html'
-      - 'apps/web/src/navigation/url-contract.ts'
+      - 'apps/web/src/navigation/**'
+      - 'apps/web/src/live/day-flow-current-shell-entry.ts'
+      - 'apps/web/src/live/battle-lines-current-shell-entry.ts'
+      - 'apps/web/src/analytics.ts'
+      - 'apps/web/functions/api/_middleware.ts'
       - 'apps/web/scripts/verify-canonical-url-contract.mjs'
       - 'apps/web/scripts/verify-primary-origin-source-contract.mjs'
+      - 'apps/web/scripts/verify-deep-link-contract*.mjs'
       - 'apps/web/docs/canonical-url-contract.md'
       - 'scripts/collect-12a0-capacity-baseline.mjs'
       - 'scripts/collect-12a2-binding-size-production-evidence.mjs'
       - 'scripts/collect-12a2-remote-schema-production-evidence.mjs'
-      - '.github/workflows/analytics-12a0-capacity-baseline.yml'
-      - '.github/workflows/analytics-12a2-binding-size-production.yml'
-      - '.github/workflows/analytics-12a2-remote-schema-production.yml'
+      - '.github/workflows/analytics-maintenance-audits.yml'
       - '.github/workflows/deploy-collector-workers.yml'
       - '.github/actions/setup-node-pnpm/action.yml'
-      - '.github/workflows/canonical-url-checks.yml'
+      - '.github/workflows/navigation-checks.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  canonical-url-checks:
+  verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
+      - name: Typecheck web app
+        run: pnpm --filter @viewloom/web typecheck:app
       - name: Verify canonical URL contract
         working-directory: apps/web
         run: node scripts/verify-canonical-url-contract.mjs
       - name: Verify primary origin source contract
         working-directory: apps/web
         run: node scripts/verify-primary-origin-source-contract.mjs
+      - name: Verify deep-link and copy-current-view contract
+        working-directory: apps/web
+        run: node scripts/verify-deep-link-contract.mjs
