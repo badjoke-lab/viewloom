@@ -60,9 +60,11 @@ jobs:
         run: node apps/web/scripts/verify-kick-battle-lines-category-candidate.mjs
 
       - name: Verify Day Flow production source and QA
+        working-directory: apps/web
         run: |
-          node apps/web/scripts/verify-production-source.mjs
-          node apps/web/scripts/verify-dayflow-qa.mjs
+          node scripts/verify-production-source.mjs
+          node scripts/verify-dayflow-qa.mjs
+          cd ../..
           node scripts/verify-quality-u10d-analysis-coherence.mjs
           node scripts/verify-quality-u10g-architecture.mjs
 
