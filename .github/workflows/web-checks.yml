@@ -50,6 +50,15 @@ jobs:
           cat web-checks-build.log
           exit $status
 
+      - name: Verify Battle Lines core
+        run: pnpm --filter @viewloom/web verify:battle-lines
+
+      - name: Verify Battle Lines wide UI
+        run: pnpm --filter @viewloom/web verify:battle-lines-ui
+
+      - name: Verify Kick Battle Lines category behavior
+        run: node apps/web/scripts/verify-kick-battle-lines-category-candidate.mjs
+
       - name: Verify Twitch Stream Map live join
         run: pnpm --filter @viewloom/web verify:stream-map-live-join
 
