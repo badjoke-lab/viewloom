@@ -46,7 +46,6 @@ jobs:
         working-directory: apps/web
         env:
           HISTORY_BASE_URL: http://127.0.0.1:4173
-          HISTORY_OVERVIEW_BASE_URL: http://127.0.0.1:4173
           HISTORY_ARCHIVES_BASE_URL: http://127.0.0.1:4173
           HISTORY_PEAK_BASE_URL: http://127.0.0.1:4173
           HISTORY_BATTLE_BASE_URL: http://127.0.0.1:4173
@@ -64,7 +63,6 @@ jobs:
         run: |
           set -euo pipefail
           for script in \
-            history-overview-browser.mjs \
             history-archives-browser.mjs \
             history-peak-archive-browser.mjs \
             history-battle-archive-browser.mjs \
