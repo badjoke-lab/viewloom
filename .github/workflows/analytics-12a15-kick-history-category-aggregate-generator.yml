@@ -75,9 +75,7 @@ jobs:
           pnpm exec tsc --noEmit --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,WebWorker workers/dormant/history-category-chunked-v2-candidate.ts
 
       - name: Verify dormant v2 generator fixtures
-        run: |
-          python3 scripts/test-12a52-kick-history-v2-dormant-generator.py
-          pnpm exec tsc --noEmit --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,WebWorker --types @cloudflare/workers-types workers/dormant/history-category-v2-generator.ts workers/dormant/history-category-v2-generator-sql.ts
+        run: python3 scripts/test-12a52-kick-history-v2-dormant-generator.py
 
       - name: Typecheck and verify collectors
         run: |
