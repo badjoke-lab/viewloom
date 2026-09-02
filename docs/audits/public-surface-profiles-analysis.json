@@ -3,7 +3,7 @@
   "version": 1,
   "group": "analysis",
   "gates": {
-    "common_repository": [".github/workflows/web-build.yml", ".github/workflows/web-verification.yml", ".github/workflows/platform-naming.yml"],
+    "common_repository": [".github/workflows/web-checks.yml", ".github/workflows/web-verification.yml", ".github/workflows/platform-naming.yml"],
     "public_readiness": [".github/workflows/public-readiness-audit.yml", "apps/web/scripts/public-readiness-audit.mjs"],
     "production_smoke": [".github/workflows/production-smoke.yml"],
     "heatmap_contract": ["apps/web/scripts/verify-heatmap-qa.mjs", "apps/web/scripts/verify-heatmap-boundaries.mjs", "apps/web/scripts/verify-heatmap-data-state.mjs", "apps/web/scripts/verify-heatmap-wide-layout.mjs", "apps/web/scripts/verify-heatmap-mobile-accessibility.mjs", "apps/web/scripts/verify-heatmap-final-cutover.mjs"],

@@ -3,7 +3,7 @@
   "version": 3,
   "group": "core",
   "gates": {
-    "common_repository": [".github/workflows/web-build.yml", ".github/workflows/web-verification.yml", ".github/workflows/platform-naming.yml"],
+    "common_repository": [".github/workflows/web-checks.yml", ".github/workflows/web-verification.yml", ".github/workflows/platform-naming.yml"],
     "public_readiness": [".github/workflows/public-readiness-audit.yml", "apps/web/scripts/public-readiness-audit.mjs"],
     "production_smoke": [".github/workflows/production-smoke.yml"],
     "home_contract": ["apps/web/scripts/verify-home-qa.mjs"],
