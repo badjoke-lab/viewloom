@@ -4,9 +4,45 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'apps/web/src/shared/output/**'
+      - 'apps/web/src/live/history-report-text-render.ts'
+      - 'apps/web/src/live/history-report-text-state.ts'
+      - 'apps/web/src/live/history-export-model.ts'
+      - 'apps/web/src/live/history-export-serialize.ts'
+      - 'apps/web/src/live/history-export.ts'
+      - 'apps/web/src/live/channel-report.ts'
+      - 'apps/web/scripts/verify-shared-output-r1.mjs'
+      - 'apps/web/scripts/verify-history-output-r2.mjs'
+      - 'apps/web/scripts/verify-channel-output-r3.mjs'
+      - 'apps/web/docs/shared-output-r1-contract.md'
+      - 'apps/web/docs/history-output-r2-contract.md'
+      - 'apps/web/docs/channel-output-r3-contract.md'
+      - 'apps/web/package.json'
+      - 'apps/web/tsconfig*.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/shared-output-r1.yml'
   push:
     branches:
       - main
+    paths:
+      - 'apps/web/src/shared/output/**'
+      - 'apps/web/src/live/history-report-text-render.ts'
+      - 'apps/web/src/live/history-report-text-state.ts'
+      - 'apps/web/src/live/history-export-model.ts'
+      - 'apps/web/src/live/history-export-serialize.ts'
+      - 'apps/web/src/live/history-export.ts'
+      - 'apps/web/src/live/channel-report.ts'
+      - 'apps/web/scripts/verify-shared-output-r1.mjs'
+      - 'apps/web/scripts/verify-history-output-r2.mjs'
+      - 'apps/web/scripts/verify-channel-output-r3.mjs'
+      - 'apps/web/docs/shared-output-r1-contract.md'
+      - 'apps/web/docs/history-output-r2-contract.md'
+      - 'apps/web/docs/channel-output-r3-contract.md'
+      - 'apps/web/package.json'
+      - 'apps/web/tsconfig*.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/shared-output-r1.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
