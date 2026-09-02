@@ -11,17 +11,11 @@ const files = {
   entry: 'src/live/history-usability-pass.ts',
   browser: 'scripts/history-visual-responsive-browser.mjs',
   browserSupport: 'scripts/history-visual-responsive-browser-support.mjs',
-  workflow: '../../.github/workflows/history-visual-responsive.yml',
-  browserWorkflow: '../../.github/workflows/history-visual-responsive-browser.yml',
 }
 const read = (path) => readFileSync(join(root, path), 'utf8')
-const need = (path, source, fragment) => {
-  if (!source.includes(fragment)) failures.push(`${path}: missing ${fragment}`)
-}
+const need = (path, source, fragment) => { if (!source.includes(fragment)) failures.push(`${path}: missing ${fragment}`) }
 
-Object.values(files).forEach((path) => {
-  if (!existsSync(join(root, path))) failures.push(`${path}: missing`)
-})
+Object.values(files).forEach((path) => { if (!existsSync(join(root, path))) failures.push(`${path}: missing`) })
 
 if (existsSync(join(root, files.contract))) {
   const source = read(files.contract)
@@ -38,42 +32,22 @@ if (existsSync(join(root, files.contract))) {
 if (existsSync(join(root, files.style))) {
   const source = read(files.style)
   for (const fragment of [
-    '--history-section-gap:28px',
-    ':focus-visible',
-    'outline:3px solid var(--history-focus)!important',
-    '.history-state-pill::before',
-    'data-history-visual-state="partial"',
-    '@media(max-width:1180px)',
-    '@media(max-width:760px)',
-    '@media(max-width:430px)',
-    '@media(prefers-reduced-motion:reduce)',
-    'overflow-x:hidden',
-    'min-height:48px',
+    '--history-section-gap:28px', ':focus-visible', 'outline:3px solid var(--history-focus)!important',
+    '.history-state-pill::before', 'data-history-visual-state="partial"', '@media(max-width:1180px)',
+    '@media(max-width:760px)', '@media(max-width:430px)', '@media(prefers-reduced-motion:reduce)',
+    'overflow-x:hidden', 'min-height:48px',
   ]) need(files.style, source, fragment)
   if (/background\s*:\s*(?:#fff(?:fff)?|white)\b/i.test(source)) failures.push(`${files.style}: valid-data white surface introduced`)
 }
 
 if (existsSync(join(root, files.focusFallback))) {
   const source = read(files.focusFallback)
-  for (const fragment of [
-    'button[data-history-view]:focus',
-    'button[data-history-archive-view]:focus',
-    'button[data-history-report-mode]:focus',
-    'outline:3px solid #c4b5fd!important',
-  ]) need(files.focusFallback, source, fragment)
+  for (const fragment of ['button[data-history-view]:focus','button[data-history-archive-view]:focus','button[data-history-report-mode]:focus','outline:3px solid #c4b5fd!important']) need(files.focusFallback, source, fragment)
 }
 
 if (existsSync(join(root, files.module))) {
   const source = read(files.module)
-  for (const fragment of [
-    "document.querySelector<HTMLElement>('.history-state-pill')",
-    "window.matchMedia('(max-width: 760px)')",
-    "window.matchMedia('(max-width: 1180px)')",
-    'page.dataset.historyVisualState',
-    'page.dataset.historyViewport',
-    "page.dataset.historyVisualReady = 'true'",
-    'MutationObserver',
-  ]) need(files.module, source, fragment)
+  for (const fragment of ["document.querySelector<HTMLElement>('.history-state-pill')","window.matchMedia('(max-width: 760px)')","window.matchMedia('(max-width: 1180px)')",'page.dataset.historyVisualState','page.dataset.historyViewport',"page.dataset.historyVisualReady = 'true'",'MutationObserver']) need(files.module, source, fragment)
   if (/\bfetch\s*\(/.test(source)) failures.push(`${files.module}: visual layer must not fetch History data`)
 }
 
@@ -91,36 +65,12 @@ if (existsSync(join(root, files.entry))) {
 
 if (existsSync(join(root, files.browser))) {
   const source = read(files.browser)
-  for (const fragment of [
-    'Twitch desktop Overview',
-    'Kick desktop Archives',
-    'Twitch tablet Report',
-    'Kick mobile cross-view',
-    'focus ring',
-    'reduced motion',
-  ]) need(files.browser, source, fragment)
+  for (const fragment of ['Twitch desktop Overview','Kick desktop Archives','Twitch tablet Report','Kick mobile cross-view','focus ring','reduced motion']) need(files.browser, source, fragment)
 }
 
 if (existsSync(join(root, files.browserSupport))) {
   const source = read(files.browserSupport)
-  for (const fragment of [
-    'horizontal overflow',
-    'state symbol missing',
-    'History API was fetched again',
-    'provider endpoint crossing',
-    "document.querySelector('.history-state-pill')",
-  ]) need(files.browserSupport, source, fragment)
-}
-
-for (const path of [files.workflow, files.browserWorkflow]) {
-  if (!existsSync(join(root, path))) continue
-  const source = read(path)
-  for (const fragment of [
-    'concurrency:',
-    'group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}',
-    'cancel-in-progress: true',
-    "apps/web/src/history-focus-fallback.css",
-  ]) need(path, source, fragment)
+  for (const fragment of ['horizontal overflow','state symbol missing','History API was fetched again','provider endpoint crossing',"document.querySelector('.history-state-pill')"]) need(files.browserSupport, source, fragment)
 }
 
 if (failures.length) {

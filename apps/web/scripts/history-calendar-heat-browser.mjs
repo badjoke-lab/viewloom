@@ -74,6 +74,12 @@ async function check(browser, provider, viewport) {
   assert(snapshot.metric === 'Viewer-minutes', `${provider} initial metric label is incorrect.`)
   await page.screenshot({ path: resolve(screenshotDir, `history-calendar-${provider}.png`), fullPage: true })
 
+  if (viewport.width < 500) {
+    const toggle = page.locator('[data-history-mobile-analysis-toggle="calendar"]')
+    await toggle.click()
+    await page.waitForFunction(() => document.querySelector('[data-history-mobile-analysis-toggle="calendar"]')?.getAttribute('aria-expanded') === 'true')
+  }
+
   const observedCell = page.locator('[data-history-calendar-day]:not([data-calendar-coverage="missing"])').first()
   const firstDay = await observedCell.getAttribute('data-history-calendar-day')
   await observedCell.click()

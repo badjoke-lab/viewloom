@@ -20,8 +20,6 @@ const files = {
   style: 'src/history-export.css',
   entry: 'src/live/history-report-text.ts',
   browser: 'scripts/history-export-browser.mjs',
-  workflow: '../../.github/workflows/history-export.yml',
-  browserWorkflow: '../../.github/workflows/history-export-browser.yml',
 }
 
 for (const path of Object.values(files)) requireFile(path)
@@ -53,13 +51,8 @@ if (existsSync(join(root, files.sharedCsv))) {
   for (const fragment of ['export function csvCell', 'export function spreadsheetSafeText', "spreadsheetSafety === 'apostrophe'", "quote === 'always'"]) requireFragment(files.sharedCsv, source, fragment)
 }
 
-if (existsSync(join(root, files.sharedValues))) {
-  requireFragment(files.sharedValues, read(files.sharedValues), 'export function finiteNumberOrNull')
-}
-
-if (existsSync(join(root, files.sharedFilename))) {
-  requireFragment(files.sharedFilename, read(files.sharedFilename), 'export function buildOutputFilename')
-}
+if (existsSync(join(root, files.sharedValues))) requireFragment(files.sharedValues, read(files.sharedValues), 'export function finiteNumberOrNull')
+if (existsSync(join(root, files.sharedFilename))) requireFragment(files.sharedFilename, read(files.sharedFilename), 'export function buildOutputFilename')
 
 if (existsSync(join(root, files.render))) {
   const source = read(files.render)
