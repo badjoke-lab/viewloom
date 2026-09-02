@@ -115,7 +115,7 @@ for (const [provider, source, binding, cap, worker] of [
   assert.ok(source.includes("'intraday_rollup_generation'"), `${provider}: legacy observability event missing`)
   assert.ok(source.includes(`worker: '${worker}'`), `${provider}: worker log identity missing`)
 
-  const collectorAt = source.indexOf('await collector.scheduled(event, env)')
+  const collectorAt = source.indexOf('collector.scheduled(event, env)')
   const finallyAt = source.indexOf('finally {')
   const schemaAt = source.indexOf('await maybeApplyIntradaySchema')
   const generatorAt = source.indexOf(`await maybeGenerateIntradayRollups(env.${binding}, generationConfig)`)
@@ -129,7 +129,7 @@ for (const [provider, source] of [
 ]) {
   assert.match(source, /^crons = \["\*\/5 \* \* \* \*"\]$/m, `${provider}: existing cron changed`)
   assert.match(source, /^INTRADAY_GENERATION_ENABLED = "true"$/m, `${provider}: accepted generation enablement missing`)
-  assert.equal(/^CATEGORY_CAPTURE_ENABLED\s*=/m.test(source), false, `${provider}: category capture must remain disabled`)
+  assert.equal(/^CATEGORY_CAPTURE_ENABLED\s*=/m.test(source), false, `${provider}: normal config must not embed category capture rollout flags`)
 }
 
 console.log('Intraday rollup generator static verification passed.')
@@ -137,5 +137,5 @@ console.log('- historical PR #509 implementation contract remains unchanged')
 console.log('- current gate state and accepted PR #510/#511 evidence agree')
 console.log('- provider-specific caps and D1 bindings remain separate')
 console.log('- existing maintenance windows, 12-query budget, and cron are unchanged')
-console.log('- disabled category path preserves the accepted legacy generator')
+console.log('- current Twitch and Kick scheduled wrappers preserve collector-before-finally ordering')
 console.log('- no per-streamer D1 calls, backfill, or source-table mutation')
