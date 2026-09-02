@@ -9,8 +9,8 @@
     "heatmap_contract": ["apps/web/scripts/verify-heatmap-qa.mjs", "apps/web/scripts/verify-heatmap-boundaries.mjs", "apps/web/scripts/verify-heatmap-data-state.mjs", "apps/web/scripts/verify-heatmap-wide-layout.mjs", "apps/web/scripts/verify-heatmap-mobile-accessibility.mjs", "apps/web/scripts/verify-heatmap-final-cutover.mjs"],
     "dayflow_contract": ["apps/web/scripts/verify-dayflow-qa.mjs"],
     "battle_contract": ["apps/web/scripts/verify-battle-lines-qa.mjs"],
-    "status_contract": [".github/workflows/data-status-page.yml", "apps/web/scripts/verify-status-qa.mjs"],
-    "status_browser": [".github/workflows/data-status-browser.yml"]
+    "status_contract": [".github/workflows/data-status-checks.yml", "apps/web/scripts/verify-status-qa.mjs"],
+    "status_browser": [".github/workflows/data-status-checks.yml"]
   },
   "profiles": {
     "heatmap": {

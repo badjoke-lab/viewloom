@@ -1,14 +1,26 @@
-name: Data Status Browser
+name: Data Status Checks
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/twitch/status/**'
+      - 'apps/web/kick/status/**'
+      - 'apps/web/src/status-page.css'
+      - 'apps/web/src/live/status-*.ts'
+      - 'apps/web/functions/api/twitch-status.ts'
+      - 'apps/web/functions/api/kick-status.ts'
+      - 'apps/web/scripts/verify-data-status-page.mjs'
+      - 'apps/web/scripts/data-status-browser.mjs'
+      - 'apps/web/docs/data-status-page-contract.md'
+      - '.github/workflows/data-status-checks.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  browser:
+  verify:
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:
@@ -20,8 +32,15 @@ jobs:
         with:
           node-version: 22
       - run: pnpm install --no-frozen-lockfile
-      - run: pnpm build:web
-      - run: |
+      - name: Typecheck web
+        run: pnpm --filter @viewloom/web typecheck
+      - name: Verify Data Status contract
+        working-directory: apps/web
+        run: node scripts/verify-data-status-page.mjs
+      - name: Build web
+        run: pnpm build:web
+      - name: Start local Data Status preview
+        run: |
           pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/data-status-preview.log 2>&1 &
           for attempt in {1..40}; do
             curl --silent --fail http://127.0.0.1:4173/twitch/status/ > /dev/null && exit 0
