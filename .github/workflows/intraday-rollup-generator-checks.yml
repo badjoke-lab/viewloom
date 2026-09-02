@@ -1,4 +1,4 @@
-name: Analytics 12A3 Bounded Generator
+name: Intraday Rollup Generator Checks
 
 on:
   pull_request:
@@ -10,11 +10,11 @@ on:
       - 'docs/work-in-progress/phase12a3-bounded-generator.md'
       - 'scripts/test-12a3-bounded-generator-sql.py'
       - 'scripts/verify-12a3-bounded-generator.mjs'
-      - '.github/workflows/analytics-12a3-bounded-generator.yml'
+      - '.github/workflows/intraday-rollup-generator-checks.yml'
   workflow_dispatch:
 
 concurrency:
-  group: analytics-12a3-bounded-generator-${{ github.event.pull_request.number || github.ref }}
+  group: intraday-rollup-generator-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -23,8 +23,6 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
@@ -38,10 +36,10 @@ jobs:
       - name: Typecheck and verify collectors
         run: pnpm check:collectors
 
-      - name: Publish bounded generator summary
+      - name: Publish generator boundary
         run: |
           {
-            echo '## ViewLoom 12A-3 Bounded Generator'
+            echo '## Intraday Rollup Generator Checks'
             echo
             echo '- providers: Twitch and Kick, separate D1 bindings'
             echo '- source days: today and yesterday UTC only'

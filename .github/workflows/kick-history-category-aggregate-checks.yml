@@ -25,7 +25,7 @@ on:
       - 'docs/audits/12a18-kick-history-category-cost-bound-contract.json'
       - 'scripts/test-12a18-kick-history-category-cost-bound.py'
       - 'scripts/verify-12a18-kick-history-category-cost-bound.mjs'
-      - '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+      - '.github/workflows/kick-history-category-aggregate-checks.yml'
   workflow_dispatch:
 
 permissions:

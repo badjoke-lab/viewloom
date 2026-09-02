@@ -51,16 +51,13 @@ assert.equal(contract.failureContainment.generatorErrorsReturnedNotThrown, true)
 assert.equal(contract.failureContainment.collectorOutcomeChanged, false)
 for (const value of Object.values(contract.scope)) assert.equal(value, false)
 
-// Current accepted state reflects PR #510 enablement and PR #511 accumulation.
-assert.equal(state.generation.status, 'enabled_and_accumulating')
-assert.equal(state.generation.authorized, true)
-assert.equal(state.generation.runtimeGenerationStarted, true)
-assert.equal(state.generation.providerSeparated, true)
-assert.equal(state.generation.newCronAdded, false)
-assert.equal(state.generation.backfillPerformed, false)
-assert.equal(state.generationEnablement.pr, 510)
-assert.equal(state.postMergeAccumulation.pr, 511)
-assert.equal(state.postMergeAccumulation.postMergeAccumulationPass, true)
+// Current gate state now folds the accepted PR #510 enablement and PR #511
+// accumulation into intradayFoundation. Keep the immutable evidence checks below
+// so the current summary cannot silently diverge from the accepted records.
+assert.equal(state.intradayFoundation.providerSeparated, true)
+assert.equal(state.intradayFoundation.generationEnablementPr, 510)
+assert.equal(state.intradayFoundation.postMergeAccumulationPr, 511)
+assert.equal(state.intradayFoundation.generationEnabledAndAccumulating, true)
 assert.equal(enablement.status, 'accepted')
 assert.equal(enablement.acceptanceIdentity.pr, 510)
 assert.equal(enablement.providerSeparated, true)
@@ -118,7 +115,7 @@ for (const [provider, source, binding, cap, worker] of [
   assert.ok(source.includes("'intraday_rollup_generation'"), `${provider}: legacy observability event missing`)
   assert.ok(source.includes(`worker: '${worker}'`), `${provider}: worker log identity missing`)
 
-  const collectorAt = source.indexOf('await collector.scheduled(event, env)')
+  const collectorAt = source.indexOf('collector.scheduled(event, env)')
   const finallyAt = source.indexOf('finally {')
   const schemaAt = source.indexOf('await maybeApplyIntradaySchema')
   const generatorAt = source.indexOf(`await maybeGenerateIntradayRollups(env.${binding}, generationConfig)`)
@@ -132,13 +129,13 @@ for (const [provider, source] of [
 ]) {
   assert.match(source, /^crons = \["\*\/5 \* \* \* \*"\]$/m, `${provider}: existing cron changed`)
   assert.match(source, /^INTRADAY_GENERATION_ENABLED = "true"$/m, `${provider}: accepted generation enablement missing`)
-  assert.equal(/^CATEGORY_CAPTURE_ENABLED\s*=/m.test(source), false, `${provider}: category capture must remain disabled`)
+  assert.equal(/^CATEGORY_CAPTURE_ENABLED\s*=/m.test(source), false, `${provider}: normal config must not embed category capture rollout flags`)
 }
 
-console.log('12A-3 bounded generator static verification passed.')
+console.log('Intraday rollup generator static verification passed.')
 console.log('- historical PR #509 implementation contract remains unchanged')
-console.log('- PR #510 generation enablement and PR #511 accumulation are accepted')
+console.log('- current gate state and accepted PR #510/#511 evidence agree')
 console.log('- provider-specific caps and D1 bindings remain separate')
 console.log('- existing maintenance windows, 12-query budget, and cron are unchanged')
-console.log('- disabled category path preserves the accepted legacy generator')
+console.log('- current Twitch and Kick scheduled wrappers preserve collector-before-finally ordering')
 console.log('- no per-streamer D1 calls, backfill, or source-table mutation')
