@@ -1,0 +1,62 @@
+name: History Feature Contracts
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/functions/api/history/**'
+      - 'apps/web/src/**history**'
+      - 'apps/web/scripts/verify-history-*.mjs'
+      - 'apps/web/scripts/history-battle-archive-fixture.mjs'
+      - 'apps/web/docs/history-*.md'
+      - '.github/workflows/history-feature-contracts.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - name: Typecheck web app and functions
+        run: |
+          pnpm --filter @viewloom/web typecheck
+          pnpm --filter @viewloom/web typecheck:functions
+      - name: Verify History feature contracts
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          for script in \
+            verify-history-qa.mjs \
+            verify-history-qa-v2.mjs \
+            verify-history-streamer-daily-stats.mjs \
+            verify-history-additional-rankings.mjs \
+            verify-history-overview.mjs \
+            verify-history-archives.mjs \
+            verify-history-peak-archive.mjs \
+            verify-history-battle-archive.mjs \
+            verify-history-calendar-heat.mjs \
+            verify-history-period-comparison.mjs \
+            verify-history-report-text.mjs \
+            verify-history-export.mjs \
+            verify-history-report-export-h4.mjs \
+            verify-history-share-card.mjs \
+            verify-history-view-shell.mjs \
+            verify-history-visual-responsive.mjs \
+            verify-deep-link-contract.mjs
+          do
+            echo "==> $script"
+            node "scripts/$script"
+          done
+      - name: Build web
+        run: pnpm build:web
