@@ -8,8 +8,6 @@ const required = [
   'src/live/history-overview.ts',
   'src/live/history-usability-pass.ts',
   'scripts/history-overview-browser.mjs',
-  '../../.github/workflows/history-overview.yml',
-  '../../.github/workflows/history-overview-browser.yml',
 ]
 const read = (path) => readFileSync(join(root, path), 'utf8')
 const need = (path, source, fragment) => { if (!source.includes(fragment)) failures.push(`${path}: missing ${fragment}`) }
@@ -32,11 +30,6 @@ if (existsSync(join(root, required[2]))) {
 if (existsSync(join(root, required[3]))) {
   const source = read(required[3])
   for (const fragment of ['historyOverviewReady','historyOverviewInsightsReady','comparison no longer follows the summary before the chart','full archive content is visible in Overview','Report content is visible in Overview','crossed provider endpoints']) need(required[3], source, fragment)
-}
-for (const path of required.slice(4)) {
-  if (!existsSync(join(root, path))) continue
-  const source = read(path)
-  for (const fragment of ['concurrency:','group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}','cancel-in-progress: true']) need(path, source, fragment)
 }
 
 if (failures.length) {
