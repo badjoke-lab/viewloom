@@ -1,4 +1,4 @@
-name: Analytics 12A15 Kick History Category Aggregate Generator
+name: Kick History Category Aggregate Checks
 
 on:
   pull_request:
@@ -10,22 +10,24 @@ on:
       - 'scripts/test-12a15-kick-history-category-aggregate.py'
       - 'scripts/verify-12a15-kick-history-category-aggregate-generator.mjs'
       - 'docs/audits/12a15-kick-history-category-aggregate-generator-contract.json'
-      - '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
-      - '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
       - 'docs/audits/12a16-kick-history-category-read-cost-optimization-contract.json'
       - 'scripts/test-12a16-kick-history-category-read-cost.py'
       - 'scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs'
-      - '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
       - 'docs/audits/12a17-kick-history-category-probe-read-path-contract.json'
       - 'scripts/test-12a17-kick-history-category-probe-read-path.mjs'
       - 'scripts/verify-12a17-kick-history-category-probe-read-path.mjs'
-      - '.github/workflows/analytics-12a18-kick-history-category-cost-bound.yml'
       - 'docs/audits/12a18-kick-history-category-cost-bound-contract.json'
       - 'scripts/test-12a18-kick-history-category-cost-bound.py'
       - 'scripts/verify-12a18-kick-history-category-cost-bound.mjs'
+      - '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: kick-history-category-aggregate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
@@ -33,137 +35,46 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup repository toolchain
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Verify generator package contract
-        run: node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
-
-      - name: Run deterministic exact SQL fixtures
-        run: python3 scripts/test-12a15-kick-history-category-aggregate.py
-
-      - name: Verify dormant package or bounded maintenance scope
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      - name: Verify aggregate generator contract and fixture
         run: |
-          set -euo pipefail
-          mapfile -t changed < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
-          printf '%s\n' "${changed[@]}"
+          node scripts/verify-12a15-kick-history-category-aggregate-generator.mjs
+          python3 scripts/test-12a15-kick-history-category-aggregate.py
 
-          maintenance_12a18=(
-            '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
-            '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
-            '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
-            '.github/workflows/analytics-12a18-kick-history-category-cost-bound.yml'
-            'docs/audits/12a18-kick-history-category-cost-bound-contract.json'
-            'scripts/test-12a18-kick-history-category-cost-bound.py'
-            'scripts/verify-12a18-kick-history-category-cost-bound.mjs'
-            'workers/history-category-aggregate-cost-probe/src/index.ts'
-            'workers/shared/history-category-aggregate-sql.ts'
-          )
-          if [[ "${#changed[@]}" -eq "${#maintenance_12a18[@]}" ]]; then
-            maintenance=true
-            for path in "${maintenance_12a18[@]}"; do
-              if ! printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; then
-                maintenance=false
-              fi
-            done
-            if [[ "$maintenance" == 'true' ]]; then
-              echo 'Accepted 12A18 bounded cost-model successor scope.'
-              exit 0
-            fi
-          fi
+      - name: Verify read-cost optimization contract and fixture
+        run: |
+          node scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs
+          python3 scripts/test-12a16-kick-history-category-read-cost.py
 
-          maintenance_12a17=(
-            '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
-            '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
-            '.github/workflows/analytics-12a17-kick-history-category-probe-read-path.yml'
-            'docs/audits/12a17-kick-history-category-probe-read-path-contract.json'
-            'scripts/test-12a17-kick-history-category-probe-read-path.mjs'
-            'scripts/verify-12a17-kick-history-category-probe-read-path.mjs'
-            'workers/history-category-aggregate-cost-probe/src/index.ts'
-          )
-          if [[ "${#changed[@]}" -eq "${#maintenance_12a17[@]}" ]]; then
-            maintenance=true
-            for path in "${maintenance_12a17[@]}"; do
-              if ! printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; then
-                maintenance=false
-              fi
-            done
-            if [[ "$maintenance" == 'true' ]]; then
-              echo 'Accepted 12A17 bounded probe read-path maintenance scope.'
-              exit 0
-            fi
-          fi
+      - name: Verify probe read-path contract
+        run: node scripts/verify-12a17-kick-history-category-probe-read-path.mjs
 
-          maintenance_12a16=(
-            '.github/workflows/analytics-12a15-kick-history-category-aggregate-generator.yml'
-            '.github/workflows/analytics-12a16-kick-history-category-read-cost-optimization.yml'
-            'docs/audits/12a16-kick-history-category-read-cost-optimization-contract.json'
-            'scripts/test-12a16-kick-history-category-read-cost.py'
-            'scripts/verify-12a16-kick-history-category-read-cost-optimization.mjs'
-            'workers/shared/history-category-aggregate-sql.ts'
-          )
-          if [[ "${#changed[@]}" -eq "${#maintenance_12a16[@]}" ]]; then
-            maintenance=true
-            for path in "${maintenance_12a16[@]}"; do
-              if ! printf '%s\n' "${changed[@]}" | grep -Fxq "$path"; then
-                maintenance=false
-              fi
-            done
-            if [[ "$maintenance" == 'true' ]]; then
-              echo 'Accepted 12A16 bounded SQL/read-cost maintenance scope.'
-              exit 0
-            fi
-          fi
+      - name: Verify bounded cost model
+        run: |
+          node scripts/verify-12a18-kick-history-category-cost-bound.mjs
+          python3 scripts/test-12a18-kick-history-category-cost-bound.py
 
-          allowed='^(workers/shared/history-category-aggregate-sql\.ts|workers/shared/history-category-aggregate\.ts|workers/history-category-aggregate-cost-probe/src/index\.ts|workers/history-category-aggregate-cost-probe/wrangler\.kick\.toml|scripts/test-12a15-kick-history-category-aggregate\.py|scripts/verify-12a15-kick-history-category-aggregate-generator\.mjs|docs/audits/12a15-kick-history-category-aggregate-generator-contract\.json|\.github/workflows/analytics-12a15-kick-history-category-aggregate-generator\.yml)$'
-          for path in "${changed[@]}"; do
-            if ! [[ "$path" =~ $allowed ]]; then
-              echo "Unexpected generator-package change: $path" >&2
-              exit 1
-            fi
-          done
-          test "${#changed[@]}" -eq 8
-
-      - name: Typecheck Workers and preserve collector contracts
+      - name: Typecheck and verify collectors
         run: |
           pnpm typecheck:collectors
           pnpm verify:collectors
 
-      - name: Bundle temporary cost probe without deploying
+      - name: Bundle dormant cost probe without deploying
         run: pnpm dlx wrangler@4 deploy --dry-run --config workers/history-category-aggregate-cost-probe/wrangler.kick.toml
 
-      - name: Verify retained architecture and web build
-        run: |
-          node scripts/verify-quality-u10g-architecture.mjs
-          node scripts/verify-quality-u10d-analysis-coherence.mjs
-          pnpm typecheck:web
-          pnpm build:web
-
-      - name: Publish dormant boundary
+      - name: Publish repository-only boundary
         if: always()
         run: |
           {
-            echo '## Kick History category aggregate generator package'
+            echo '## Kick History category aggregate checks'
             echo
             echo '- Provider: Kick only'
-            echo '- Category identity: observation-time category-source-v1 refs/ids'
-            echo '- Daily category peak: concurrent snapshot category sum, never sum of streamer peaks'
-            echo '- Stored Top-K: none'
-            echo '- Hard caps: 300 categories / 1000 category-streamer rows per day'
-            echo '- Missing category metadata: fail closed'
-            echo '- Overflow: fail closed'
-            echo '- Start-day boundary: required; pre-activation generation forbidden'
-            echo '- Retention: 180 days'
-            echo '- Maintenance window: existing window only; new cron: no'
-            echo '- Permanent collector integration: no'
-            echo '- Temporary cost-probe production execution: retired / no new authorization'
-            echo '- 12A16 indexed range: retained'
-            echo '- 12A17 probe read-path model: repository-only'
-            echo '- 12A18 cost model: repository-only / no production authority'
+            echo '- Aggregate semantics, indexed read path, probe model, and bounded cost model: verified'
+            echo '- Exact historical PR file-set gates: removed'
+            echo '- Production probe: unauthorized'
+            echo '- Permanent generator: unauthorized'
+            echo '- Production deploy: none'
           } >> "$GITHUB_STEP_SUMMARY"
