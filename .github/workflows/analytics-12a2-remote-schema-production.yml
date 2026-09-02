@@ -7,15 +7,6 @@ on:
         description: Production origin
         required: false
         default: https://www.viewloom.net
-  pull_request:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/analytics-12a2-remote-schema-production.yml'
-      - 'scripts/collect-12a2-remote-schema-production-evidence.mjs'
-      - 'scripts/verify-12a2-remote-schema-production-evidence.mjs'
-      - 'docs/audits/12a2-remote-schema-production-evidence.json'
-      - 'docs/operations/12a2-remote-schema-production-*.md'
 
 concurrency:
   group: analytics-12a2-remote-schema-production-${{ github.event.pull_request.number || github.ref }}
