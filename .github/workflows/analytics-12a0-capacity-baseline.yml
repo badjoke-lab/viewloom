@@ -2,28 +2,9 @@ name: Analytics 12A0 Capacity Baseline
 
 on:
   workflow_dispatch:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'scripts/collect-12a0-capacity-baseline.mjs'
-      - 'scripts/verify-12a0-capacity-baseline-contract.mjs'
-      - 'scripts/verify-12a0-capacity-baseline-evidence.mjs'
-      - 'docs/audits/12a0-capacity-baseline-contract.json'
-      - 'docs/audits/12a0-current-data-capacity-baseline.json'
-      - 'docs/operations/12a0-current-data-capacity-baseline-*.md'
-      - 'docs/work-in-progress/phase12a0-capacity-baseline.md'
-      - 'docs/product/current-roadmap.md'
-      - 'docs/product/current-schedule.md'
-      - 'docs/product/post-watchlist-program-plan.md'
-      - 'README.md'
-      - 'AGENTS.md'
-      - 'CONTRIBUTING.md'
-      - 'scripts/verify-development-policy.mjs'
-      - '.github/workflows/analytics-12a0-capacity-baseline.yml'
 
 concurrency:
-  group: analytics-12a0-capacity-${{ github.event.pull_request.number || github.ref }}
+  group: analytics-12a0-capacity-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
