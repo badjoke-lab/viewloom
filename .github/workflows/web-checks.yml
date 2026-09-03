@@ -80,6 +80,9 @@ jobs:
       - name: Verify Twitch Stream Map population filters
         run: pnpm --filter @viewloom/web verify:stream-map-population-filters
 
+      - name: Verify Twitch Current snapshot stable-ID adapter
+        run: node scripts/verify-twitch-stream-map-current-snapshot-adapter-core.mjs
+
       - name: Verify Heatmap page boundaries
         run: pnpm --filter @viewloom/web verify:heatmap-boundaries
 
