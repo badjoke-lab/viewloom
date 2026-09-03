@@ -4,19 +4,8 @@ export function projectTwitchStreamMapCountryOnly(model) {
   if (!model || typeof model !== 'object') return model
   return {
     ...model,
-    mappedStreams: (Array.isArray(model.mappedStreams) ? model.mappedStreams : []).map((row) => ({
-      ...row,
-      location: {
-        ...row.location,
-        regions: [],
-        cities: [],
-      },
-      evidence: (Array.isArray(row.evidence) ? row.evidence : []).map((evidence) => ({
-        ...evidence,
-        region: null,
-        city: null,
-      })),
-    })),
+    mappedStreams: (Array.isArray(model.mappedStreams) ? model.mappedStreams : []).map(projectCountryRow),
+    excludedNonPersonStreams: (Array.isArray(model.excludedNonPersonStreams) ? model.excludedNonPersonStreams : []).map(stripStableIdentity),
   }
 }
 
@@ -94,6 +83,8 @@ export function projectTwitchStreamMapCityContract(model) {
 
   const observedStreams = Number(model.coverage?.observedStreams ?? 0)
   const observedViewers = Number(model.coverage?.observedViewers ?? 0)
+  const stableIdentityStreams = Number(model.coverage?.stableIdentityStreams ?? 0)
+  const missingStableIdentityStreams = Number(model.coverage?.missingStableIdentityStreams ?? Math.max(0, Number(model.coverage?.payloadStreams ?? 0) - stableIdentityStreams))
   const excludedNonPersonStreams = Number(model.coverage?.excludedNonPersonStreams ?? 0)
   const excludedNonPersonViewers = Number(model.coverage?.excludedNonPersonViewers ?? 0)
   const cityMappedStreams = cityPlaceable.length
@@ -102,6 +93,9 @@ export function projectTwitchStreamMapCityContract(model) {
   const eligibleUnmappedViewers = Math.max(0, observedViewers - cityPlaceableViewers - countryOnlyViewers - excludedNonPersonViewers)
   const upstreamCountryConflictCount = Number(model.coverage?.unmappedReasons?.conflicting_accepted_evidence ?? 0)
   const conflictUnmappedStreams = baseCityConflicts.length + upstreamCountryConflictCount
+  const stableTwitchUserIdState = stableIdentityStreams <= 0
+    ? 'unavailable'
+    : missingStableIdentityStreams > 0 ? 'partial' : 'available'
 
   return {
     ...model,
@@ -111,8 +105,11 @@ export function projectTwitchStreamMapCityContract(model) {
     currentLocationActivated: false,
     identityContract: {
       joinKey: 'login',
-      stableTwitchUserIdAvailableInMinuteSnapshot: false,
-      stableTwitchUserIdState: 'unavailable_without_snapshot_contract_change',
+      stableTwitchUserIdAvailableInMinuteSnapshot: stableIdentityStreams > 0,
+      stableTwitchUserIdState,
+      stableIdentityStreams,
+      missingStableIdentityStreams,
+      loginIsStableIdentity: false,
     },
     mappedStreams: cityPlaceable,
     countryOnlyStreams: countryOnly,
@@ -148,11 +145,36 @@ export function projectTwitchStreamMapCityContract(model) {
       preciseAddressPublished: false,
       coordinatesPublished: false,
       baseCityConflictsAreMapped: false,
+      loginIsStableIdentity: false,
     },
   }
 }
 
+function projectCountryRow(row) {
+  const publicRow = stripStableIdentity(row)
+  return {
+    ...publicRow,
+    location: {
+      ...publicRow.location,
+      regions: [],
+      cities: [],
+    },
+    evidence: (Array.isArray(publicRow.evidence) ? publicRow.evidence : []).map((evidence) => ({
+      ...evidence,
+      region: null,
+      city: null,
+    })),
+  }
+}
+
+function stripStableIdentity(row) {
+  if (!row || typeof row !== 'object') return row
+  const { twitchUserId: _twitchUserId, ...rest } = row
+  return rest
+}
+
 function projectIdentity(row) {
+  const twitchUserId = nullable(row?.twitchUserId)
   return {
     login: String(row.login ?? ''),
     displayName: String(row.displayName ?? ''),
@@ -162,8 +184,8 @@ function projectIdentity(row) {
     identity: {
       provider: 'twitch',
       login: String(row.login ?? ''),
-      twitchUserId: null,
-      stableIdAvailable: false,
+      twitchUserId,
+      stableIdAvailable: Boolean(twitchUserId),
     },
   }
 }
