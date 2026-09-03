@@ -1,0 +1,53 @@
+name: Kick Stream Map Reviewed Country Evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/audits/kick-stream-map-country-review-result-2026-09-02-*.json'
+      - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
+      - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
+      - 'scripts/kick-stream-map-country-live-join-core.mjs'
+      - 'scripts/kick-stream-map-country-snapshot-adapter-core.mjs'
+      - 'scripts/kick-stream-map-country-response-core.mjs'
+      - '.github/workflows/kick-stream-map-reviewed-country-evidence.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audits/kick-stream-map-country-review-result-2026-09-02-*.json'
+      - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
+      - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
+      - 'scripts/kick-stream-map-country-live-join-core.mjs'
+      - 'scripts/kick-stream-map-country-snapshot-adapter-core.mjs'
+      - 'scripts/kick-stream-map-country-response-core.mjs'
+      - '.github/workflows/kick-stream-map-reviewed-country-evidence.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify reviewed Country evidence bridge
+        run: node scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs
+      - name: Publish safety boundary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## Kick reviewed Country evidence bridge'
+            echo '- Input: completed manual Kick Country review artifacts'
+            echo '- Runtime identity: broadcaster_user_id only'
+            echo '- Slug/display/viewers/raw profile fields: omitted from reviewed evidence'
+            echo '- D1 writes: 0'
+            echo '- Production deployment: false'
+            echo '- Collector mutation: false'
+            echo '- Automatic geography promotion: false'
+            echo '- Public activation remains false'
+          } >> "$GITHUB_STEP_SUMMARY"
