@@ -9,6 +9,9 @@ type CityPayload = {
   identityContract?: {
     stableTwitchUserIdAvailableInMinuteSnapshot?: boolean
     stableTwitchUserIdState?: string
+    stableIdentityStreams?: number
+    missingStableIdentityStreams?: number
+    loginIsStableIdentity?: boolean
   }
   coverage?: Record<string, unknown>
   cityCoverage?: {
@@ -194,14 +197,22 @@ function renderCityAccounting(raw: CityPayload): void {
   const countryOnly = count(cityCoverage.countryOnlyStreams ?? raw.countryOnlyStreams?.length)
   const cityMapped = count(cityCoverage.cityPlaceableStreams ?? raw.mappedStreams?.length)
   const conflicts = Array.isArray(raw.baseCityConflicts) ? raw.baseCityConflicts.length : 0
-  const stableIdAvailable = raw.identityContract?.stableTwitchUserIdAvailableInMinuteSnapshot === true
+  const stableState = String(raw.identityContract?.stableTwitchUserIdState ?? 'unavailable')
+  const stableCount = count(raw.identityContract?.stableIdentityStreams)
+  const missingStableCount = count(raw.identityContract?.missingStableIdentityStreams)
 
   details.innerHTML = `
     <div><small>City-placeable</small><strong>${format(cityMapped)}</strong></div>
     <div><small>Country-only</small><strong>${format(countryOnly)}</strong></div>
     <div><small>Base City conflicts</small><strong>${format(conflicts)}</strong></div>
-    <p>${stableIdAvailable ? 'Stable Twitch user ID available.' : 'Minute snapshot has no stable Twitch user ID; login remains a join key only, not a stable identity.'}</p>
+    <p>${stableIdentityMessage(stableState, stableCount, missingStableCount)}</p>
   `
+}
+
+function stableIdentityMessage(state: string, available: number, missing: number): string {
+  if (state === 'available') return `Stable Twitch user ID available for all ${format(available)} parsed snapshot streams.`
+  if (state === 'partial') return `Stable Twitch user ID available for ${format(available)} parsed streams; ${format(missing)} still lack it. Login remains a join key only.`
+  return 'Minute snapshot has no stable Twitch user ID; login remains a join key only, not a stable identity.'
 }
 
 function injectStyles(): void {
