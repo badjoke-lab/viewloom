@@ -83,6 +83,9 @@ jobs:
       - name: Verify Twitch Current snapshot stable-ID adapter
         run: node scripts/verify-twitch-stream-map-current-snapshot-adapter-core.mjs
 
+      - name: Verify Twitch City stable-ID contract
+        run: node apps/web/scripts/verify-twitch-stream-map-city-stable-id.mjs
+
       - name: Verify Heatmap page boundaries
         run: pnpm --filter @viewloom/web verify:heatmap-boundaries
 

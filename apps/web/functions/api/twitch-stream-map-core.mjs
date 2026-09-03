@@ -32,6 +32,7 @@ export function buildTwitchStreamMapLiveModel({ snapshot, evidenceRecords, topLi
     const entityKind = String(record.entityKind ?? 'unknown')
     if (NON_PERSON_ENTITY_KINDS.has(entityKind)) {
       excludedNonPersonStreams.push({
+        twitchUserId: stream.twitchUserId,
         login: stream.login,
         displayName: stream.displayName,
         viewers: stream.viewers,
@@ -68,6 +69,7 @@ export function buildTwitchStreamMapLiveModel({ snapshot, evidenceRecords, topLi
     const locationTypes = uniqueStrings(sameCountryEvidence.map((evidence) => evidence.claimKind))
 
     mappedStreams.push({
+      twitchUserId: stream.twitchUserId,
       login: stream.login,
       displayName: stream.displayName,
       viewers: stream.viewers,
@@ -97,6 +99,8 @@ export function buildTwitchStreamMapLiveModel({ snapshot, evidenceRecords, topLi
   const missingPayloadStreams = Math.max(0, observedStreams - streams.length)
   if (missingPayloadStreams > 0) increment(unmappedReasonCounts, 'missing_payload_rows', missingPayloadStreams)
 
+  const stableIdentityStreams = streams.filter((stream) => Boolean(stream.twitchUserId)).length
+  const missingStableIdentityStreams = Math.max(0, streams.length - stableIdentityStreams)
   const mappedCount = mappedStreams.length
   const excludedCount = excludedNonPersonStreams.length
   const unmappedStreams = Math.max(0, observedStreams - mappedCount)
@@ -115,6 +119,8 @@ export function buildTwitchStreamMapLiveModel({ snapshot, evidenceRecords, topLi
       observedViewers,
       payloadStreams: streams.length,
       missingPayloadStreams,
+      stableIdentityStreams,
+      missingStableIdentityStreams,
       mappedStreams: mappedCount,
       unmappedStreams,
       eligibleUnmappedStreams,
@@ -155,11 +161,13 @@ function parseSnapshotStreams(payloadJson) {
 
 function parseStream(value) {
   if (!value || typeof value !== 'object') return null
+  const twitchUserId = cleanString(value.twitchUserId ?? value.user_id) || null
   const login = normalizeLogin(value.channelLogin ?? value.user_login ?? value.login)
   const displayName = cleanString(value.displayName ?? value.user_name ?? value.name ?? login) || login || 'Unknown'
   const viewers = positiveInteger(value.viewers ?? value.viewer_count ?? value.viewerCount)
   if (viewers <= 0) return null
   return {
+    twitchUserId,
     login,
     displayName,
     viewers,
