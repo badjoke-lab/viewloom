@@ -42,4 +42,8 @@ await import('./country-minimal-basemap')
 // aggregates can drive polygon fills while the existing marker renderer remains
 // available as an alternate view and small-country fallback.
 await import('./country-region-ab')
+// Country selection changes camera scale only: polygon-backed countries fit to
+// their whole bounds, tiny fallback countries use a bounded aggregate center,
+// and clearing the selection returns to the world overview.
+await import('./country-focus-bounds')
 await import('./stream-map-entry')
