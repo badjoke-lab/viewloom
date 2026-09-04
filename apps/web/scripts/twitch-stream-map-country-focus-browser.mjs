@@ -158,7 +158,7 @@ try {
   await page.goto(`${baseUrl}/twitch/map/`, { waitUntil: 'domcontentloaded' })
   await page.locator('#stream-map-root[data-map-state="basemap-ready"]').waitFor({ timeout: 15000 })
   await page.locator('.stream-map-country-row[data-country-code="US"]').waitFor({ timeout: 10000 })
-  await page.locator('.stream-map-view-switch__status').filter({ hasText: 'Regions ready' }).waitFor({ timeout: 10000 })
+  await page.locator('.stream-map-region-controls__status').filter({ hasText: 'Country regions ready' }).waitFor({ timeout: 10000 })
 
   const initialZoom = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
   assert.ok(Math.abs(initialZoom - 1.15) < 0.2, `unexpected initial zoom: ${initialZoom}`)
