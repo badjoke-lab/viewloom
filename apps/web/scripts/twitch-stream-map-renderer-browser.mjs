@@ -254,7 +254,7 @@ try {
 
   await page.locator('[data-map-view="regions"]').click()
   await page.locator('[data-map-view="regions"][aria-pressed="true"]').waitFor({ timeout: 10000 })
-  await page.locator('.stream-map-view-switch__status').filter({ hasText: 'Regions' }).waitFor({ timeout: useRealBasemap ? 30000 : 10000 })
+  await page.locator('.stream-map-view-switch__status').filter({ hasText: 'Regions ready' }).waitFor({ timeout: useRealBasemap ? 30000 : 10000 })
 
   const regionState = await page.evaluate(() => {
     const map = window.__viewloomCountryRegionMap
