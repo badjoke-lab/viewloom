@@ -11,12 +11,15 @@ on:
       - 'apps/web/src/features/twitch-stream-map/country-regions.ts'
       - 'apps/web/src/features/twitch-stream-map/country-minimal-basemap.ts'
       - 'apps/web/src/features/twitch-stream-map/country-focus-bounds.ts'
+      - 'apps/web/src/features/twitch-stream-map/country-ui-density.ts'
+      - 'apps/web/src/features/twitch-stream-map/country-ui-density.css'
       - 'apps/web/scripts/install-ci-playwright.mjs'
       - 'apps/web/scripts/twitch-stream-map-renderer-browser.mjs'
       - 'apps/web/scripts/twitch-stream-map-country-regions-default-browser.mjs'
       - 'apps/web/scripts/twitch-stream-map-country-minimal-basemap-browser.mjs'
       - 'apps/web/scripts/twitch-stream-map-country-focus-browser.mjs'
       - 'apps/web/scripts/twitch-stream-map-country-mobile-world-browser.mjs'
+      - 'apps/web/scripts/twitch-stream-map-country-ui-density-browser.mjs'
       - 'scripts/verify-twitch-stream-map-renderer-bundle.mjs'
       - '.github/workflows/twitch-stream-map-renderer-bundle.yml'
 
@@ -65,11 +68,16 @@ jobs:
         env:
           STREAM_MAP_BASE_URL: http://127.0.0.1:4173
         run: node scripts/twitch-stream-map-country-regions-default-browser.mjs
-      - name: Verify bounded Country focus and world reset
+      - name: Verify Country selection and explicit World view camera
         working-directory: apps/web
         env:
           STREAM_MAP_BASE_URL: http://127.0.0.1:4173
         run: node scripts/twitch-stream-map-country-focus-browser.mjs
+      - name: Verify compact Country UI density and interaction contract
+        working-directory: apps/web
+        env:
+          STREAM_MAP_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/twitch-stream-map-country-ui-density-browser.mjs
       - name: Verify mobile Country world overview
         working-directory: apps/web
         env:
