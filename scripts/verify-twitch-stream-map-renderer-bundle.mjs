@@ -10,6 +10,7 @@ const page = read('apps/web/twitch/map/index.html')
 const bootstrap = read('apps/web/src/features/twitch-stream-map/maplibre-bootstrap.ts')
 const bootstrapCss = read('apps/web/src/features/twitch-stream-map/maplibre-bootstrap.css')
 const entry = read('apps/web/src/features/twitch-stream-map/stream-map-entry.ts')
+const regions = read('apps/web/src/features/twitch-stream-map/country-regions.ts')
 
 if (packageJson.dependencies?.['maplibre-gl'] !== '6.4.1') {
   fail('maplibre-gl must be pinned to 6.4.1 in web runtime dependencies')
@@ -44,9 +45,25 @@ if (!bootstrap.includes('class ViewLoomStreamMap extends maplibregl.Map')) {
   fail('bootstrap must apply the Stream Map bounds compatibility wrapper')
 }
 const assignIndex = bootstrap.indexOf('Object.assign(window, { maplibregl: bundledMaplibregl })')
+const regionIndex = bootstrap.indexOf("await import('./country-regions')")
 const entryIndex = bootstrap.indexOf("await import('./stream-map-entry')")
-if (assignIndex < 0 || entryIndex < 0 || assignIndex > entryIndex) {
-  fail('bootstrap must install the compatible bundled renderer before importing the existing Stream Map entry')
+if (assignIndex < 0 || regionIndex < 0 || entryIndex < 0 || assignIndex > regionIndex || regionIndex > entryIndex) {
+  fail('bootstrap must install the finalized Country region renderer before importing the Stream Map entry')
+}
+if (bootstrap.includes("country-region-ab")) {
+  fail('the obsolete Country A/B renderer must not remain wired into the public bootstrap')
+}
+if (!regions.includes("const REGION_SOURCE_ID = 'viewloom-country-regions'")) {
+  fail('finalized Country region source id is missing')
+}
+if (!regions.includes("document.documentElement.classList.add('stream-map-country-regions-active')")) {
+  fail('Country regions must be the primary Country renderer')
+}
+if (regions.includes("data.mapView") || regions.includes("CountryMapMode") || regions.includes("setMapMode(")) {
+  fail('the public Country renderer must not expose the retired Markers/Regions A/B switch')
+}
+if (!regions.includes('stream-map-country-marker--region-fallback')) {
+  fail('small-country aggregate marker fallback must remain available')
 }
 if (!entry.includes("style: 'https://tiles.openfreemap.org/styles/dark'")) {
   fail('the accepted OpenFreeMap basemap style contract changed unexpectedly')
